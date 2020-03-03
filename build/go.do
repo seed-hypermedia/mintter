@@ -1,7 +1,7 @@
-NIX_GO_PKG="nixpkgs.go_1_13"
+redo-ifchange ../shell.nix
 
 cat >$3 <<-EOF
 	#!/bin/sh
-	exec nix run ${NIX_GO_PKG} -c go "\$@"
+	exec nix-shell --run "go \$@"
 EOF
 chmod a+x $3
