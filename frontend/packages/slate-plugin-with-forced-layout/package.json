@@ -1,0 +1,28 @@
+{
+  "version": "0.2.4",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build",
+    "npm:publish": "npm publish --access public"
+  },
+  "name": "@mintter/slate-plugin-with-forced-layout",
+  "author": "Horacio Herrera",
+  "module": "dist/slate-plugin-forced-layout.esm.js",
+  "dependencies": {
+    "slate": "^0.57.1",
+    "slate-react": "^0.57.1"
+  },
+  "peerDependencies": {
+    "slate": "^0.57.1",
+    "slate-react": "^0.57.1"
+  }
+}

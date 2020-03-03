@@ -1,0 +1,133 @@
+// https://www.bytesized.xyz/announcing-byteconf-react-2020
+{
+  "title": "Announcing Byteconf React: a free React conference, streamed online",
+  "description": "",
+  "metadata": {
+    "author": "AUTHOR_PUBLIC_KEY",
+    "timestamp": 3456789876554,
+    "tags": ["Byteconf", "announcement", "conference", "react"]
+  },
+  "children": [
+    {
+      "hash": "",
+      "type": "text",
+      "timestamp": 3456789876554,
+      "metadata": {
+        "title": "",
+        "author": "AUTHOR_HASH",
+        "price": 0.0000012
+      },
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Two weeks ago, "
+            },
+            {
+              "type": "link",
+              "url": "https://www.bytesized.xyz/graphql-2020",
+              "children": [
+                {
+                  "text": "Byteconf GraphQL 2020"
+                }
+              ]
+            },
+            {
+              "text": " went live - a free remote GraphQL conference, with 12 awesome speakers from around the world. With Byteconf GraphQL under our belt, it's time to announce what I'm expecting will be one of the biggest conferences Byteconf has done to date..."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "On May 1st, join us for ",
+              "bold": true
+            },
+            {
+              "type": "link",
+              "url": "https://www.bytesized.xyz/graphql-2020",
+              "children": [
+                {
+                  "text": "Byteconf React",
+                  "bold": true
+                }
+              ]
+            },
+            {
+              "text": ", our free, remote React conference!",
+              "bold": true
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "I'm thrilled to be announcing the conference today, but it wouldn't be a complete event without a great group of attendees, and of course, an incredible selection of speakers. If you're a React enthusiast, consider submitting a talk via our newly-opened Call for Papers (see the link at the end of this email) for the event – Byteconf is a great place to hone your speaking skills, and we'd love submissions from speakers of all experience levels and backgrounds."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "If you're excited to attend Byteconf React, you can help us put on an amazing conference by doing two things: first, RSVP and get your ticket using the link below – we'll add you to the list for the conference and you'll be first to know when we announce new speakers and updates for the conference. Second, share it with your friends! If you're on Twitter, you can retweet our announcement post (below), or if you want to put your own spin on the event, we'd love to see your tweets and retweet them to our audience."
+            }
+          ]
+        },
+        {
+          "type": "block-quote",
+          "children": [
+            {
+              "text": "📣 Announcing Byteconf React – a free React conference, streamed online ✌️Tune in to our YouTube channel on May 1st + chat with attendees and speakers in our live chat. Let's dig deep into React! 🤯RSVP below 🎟 "
+            },
+            {
+              "type": "link",
+              "url": "https://t.co/H5YqeJoukH",
+              "children": [
+                {
+                  "text": "https://t.co/H5YqeJoukH"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Interested in speaking? "
+            },
+            {
+              "type": "link",
+              "url": "https://www.papercall.io/byteconf-react-2020",
+              "children": [
+                {
+                  "text": "Check out the Byteconf React 2020 Call for Papers on Papercall."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "See you in May!"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "By the way, if you're interested in what Byteconf is all about, check out our past conferences – every talk from every past Byteconf is available to watch on our YouTube channel. Rad!"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "name": "@mintter/site",
+  "version": "0.2.8",
+  "description": "Mintter project packages and frontend code",
+  "main": "index.js",
+  "repository": "https://github.com/mintterteam/frontend",
+  "author": "Mintter team",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "start": "next start",
+    "export": "next build && next export",
+    "build": "echo 1",
+    "npm:publish": "echo 1",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@material-ui/core": "^4.9.2",
+    "@material-ui/icons": "^4.9.1",
+    "@mintter/editor": "*",
+    "@mintter/slate-plugin-with-forced-layout": "*",
+    "@mintter/slate-plugin-with-links": "*",
+    "@mintter/slate-plugin-with-shortcuts": "*",
+    "@horacioh/slate-plugin-with-markdown-parser": "*",
+    "@zeit/next-css": "^1.0.1",
+    "emotion": "^10.0.27",
+    "formik": "^2.1.4",
+    "framer-motion": "^1.8.4",
+    "is-hotkey": "^0.1.6",
+    "is-url": "^1.2.4",
+    "marked": "^0.8.0",
+    "next": "^9.2.1",
+    "react": "16.12.0",
+    "react-dom": "16.12.0",
+    "slate": "^0.57.0",
+    "slate-hyperscript": "^0.57.1",
+    "slate-plugins-next": "^0.57.8",
+    "slate-react": "^0.57.0",
+    "styled-components": "^5.0.1"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.2.1",
+    "@changesets/cli": "^2.5.1",
+    "@fullhuman/postcss-purgecss": "^2.0.6",
+    "@testing-library/react": "^9.4.0",
+    "@types/node": "^13.7.0",
+    "@types/react": "^16.9.19",
+    "husky": "^3.1.0",
+    "jest": "^25.1.0",
+    "lint-staged": "^9.4.2",
+    "postcss-preset-env": "^6.7.0",
+    "prettier": "^1.19.1",
+    "tailwindcss": "^1.1.4",
+    "typescript": "^3.7.5"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

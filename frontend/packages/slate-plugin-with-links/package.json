@@ -1,0 +1,33 @@
+{
+  "version": "0.2.5",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build",
+    "npm:publish": "npm publish --access public"
+  },
+  "name": "@mintter/slate-plugin-with-links",
+  "author": "Horacio Herrera",
+  "module": "dist/slate-plugin-with-links.esm.js",
+  "dependencies": {
+    "slate": "^0.57.1",
+    "slate-react": "^0.57.1",
+    "is-url": "^1.2.4"
+  },
+  "peerDependencies": {
+    "slate": "^0.57.1",
+    "slate-react": "^0.57.1",
+    "is-url": "^1.2.4"
+  },
+  "devDependencies": {
+    "@types/is-url": "^1.2.28"
+  }
+}

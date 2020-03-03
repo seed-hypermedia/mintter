@@ -1,0 +1,36 @@
+{
+  "version": "0.2.6",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build",
+    "npm:publish": "npm publish --access public"
+  },
+  "name": "@mintter/editor",
+  "author": "Horacio Herrera",
+  "module": "dist/editor.esm.js",
+  "dependencies": {
+    "emotion": "^10.0.27",
+    "framer-motion": "^1.8.4",
+    "slate": "^0.57.1",
+    "slate-react": "^0.57.1"
+  },
+  "peerDependencies": {
+    "slate": "^0.57.1",
+    "slate-react": "^0.57.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^25.1.2",
+    "tsdx": "^0.12.3",
+    "tslib": "^1.10.0",
+    "typescript": "^3.7.5"
+  }
+}
