@@ -1,16 +1,16 @@
-import React from "react";
+import React from 'react'
 interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export default function Container({
   children,
-  className = "",
+  className = '',
   ...props
 }: ContainerProps) {
   return (
     <div className={`w-full max-w-3xl my-0 mx-auto p-4 relative ${className}`}>
       {children}
     </div>
-  );
+  )
 }

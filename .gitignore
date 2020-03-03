@@ -2,3 +2,37 @@ node_modules
 !build
 build/*
 !build/*.do
+
+# Frontend
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+frontend/**/node_modules
+frontend/**/.pnp
+frontend/**/.pnp.js
+
+# testing
+frontend/**/coverage
+
+# next.js
+frontend/**/.next/
+frontend/**/out/
+
+# production
+frontend/**/build
+frontend/**/dist
+
+# misc
+.DS_Store
+.env*
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+frontend/**/.now
+
+# Local Netlify folder
+frontend/**/.netlify

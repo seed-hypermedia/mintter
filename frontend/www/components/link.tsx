@@ -1,3 +1,3 @@
-import Link from "next/link";
+import Link from 'next/link'
 
-export default Link;
+export default Link

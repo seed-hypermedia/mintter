@@ -1,10 +1,10 @@
-import { Fragment } from "react";
-import Link from "../../../components/link";
-import Container from "../../../components/container";
-import Seo from "../../../components/seo";
-import Sidebar from "../sidebar";
-import NoteAddOutlinedIcon from "@material-ui/icons/NoteAddOutlined";
-import DocumentList from "./documentList";
+import {Fragment} from 'react'
+import Link from '../../../components/link'
+import Container from '../../../components/container'
+import Seo from '../../../components/seo'
+import Sidebar from '../sidebar'
+import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
+import DocumentList from './documentList'
 
 export default function Library() {
   return (
@@ -42,5 +42,5 @@ export default function Library() {
         </div>
       </div>
     </Fragment>
-  );
+  )
 }

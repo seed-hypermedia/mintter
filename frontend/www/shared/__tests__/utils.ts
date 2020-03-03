@@ -1,5 +1,5 @@
-import { foo } from "../utils";
+import {foo} from '../utils'
 
-test("test example", () => {
-  expect(foo("Horacio")).toBe("Hello Horacio");
-});
+test('test example', () => {
+  expect(foo('Horacio')).toBe('Hello Horacio')
+})

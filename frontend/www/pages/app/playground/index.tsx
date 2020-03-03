@@ -1,27 +1,27 @@
-import React from "react";
-import { createEditor, Node } from "slate";
-import { NextPage } from "next";
-import { Slate, Editable, withReact } from "slate-react";
-import Link from "../../../components/link";
+import React from 'react'
+import {createEditor, Node} from 'slate'
+import {NextPage} from 'next'
+import {Slate, Editable, withReact} from 'slate-react'
+import Link from '../../../components/link'
 const initialValue = [
   {
-    type: "section",
+    type: 'section',
     children: [
       {
-        type: "paragraph",
+        type: 'paragraph',
         children: [
           {
-            text: ""
-          }
-        ]
-      }
-    ]
-  }
-];
+            text: '',
+          },
+        ],
+      },
+    ],
+  },
+]
 
 export default function Playground(): JSX.Element {
-  const editor = React.useMemo(() => withReact(createEditor()), []);
-  const [value, setValue] = React.useState<Node[]>(initialValue);
+  const editor = React.useMemo(() => withReact(createEditor()), [])
+  const [value, setValue] = React.useState<Node[]>(initialValue)
 
   return (
     <div className="">
@@ -55,5 +55,5 @@ export default function Playground(): JSX.Element {
         </Slate>
       </div>
     </div>
-  );
+  )
 }

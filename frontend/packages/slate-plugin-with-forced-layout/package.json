@@ -24,5 +24,8 @@
   "peerDependencies": {
     "slate": "^0.57.1",
     "slate-react": "^0.57.1"
+  },
+  "devDependencies": {
+    "eslint-config-react-app": "^5.2.0"
   }
 }

@@ -1,13 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
-import Seo from "../../../components/seo";
-import Sidebar from "../sidebar";
-import { Formik } from "formik";
-import { useUser } from "../../../shared/userContext";
-import { motion, AnimatePresence } from "framer-motion";
+import React, {useEffect, useRef, useState} from 'react'
+import Seo from '../../../components/seo'
+import Sidebar from '../sidebar'
+import {Formik} from 'formik'
+import {useUser} from '../../../shared/userContext'
+import {motion, AnimatePresence} from 'framer-motion'
 
 export default function Settings() {
-  const { user, setUser } = useUser();
-  const [success, setSuccess] = useState(false);
+  const {user, setUser} = useUser()
+  const [success, setSuccess] = useState(false)
   return (
     <React.Fragment>
       <Seo title="Editor | Mintter" />
@@ -22,11 +22,11 @@ export default function Settings() {
               <Formik
                 initialValues={user}
                 enableReinitialize
-                onSubmit={(values, { setSubmitting }) => {
-                  setUser(values);
-                  setSubmitting(false);
-                  setSuccess(true);
-                  setTimeout(() => setSuccess(false), 2000);
+                onSubmit={(values, {setSubmitting}) => {
+                  setUser(values)
+                  setSubmitting(false)
+                  setSuccess(true)
+                  setTimeout(() => setSuccess(false), 2000)
                 }}
                 // TODO: add validate for alias => url-friendly characters
               >
@@ -37,7 +37,7 @@ export default function Settings() {
                   handleChange,
                   handleBlur,
                   handleSubmit,
-                  isSubmitting
+                  isSubmitting,
                 }) => (
                   <form
                     className="bg-white border-gray-200 border-solid border-2 rounded px-8 pt-6 pb-8 mb-4"
@@ -72,8 +72,8 @@ export default function Settings() {
                         disabled={isSubmitting || success}
                         className={`bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-1 px-3 border border-blue-500 hover:border-transparent rounded ${
                           isSubmitting || success
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
                         }`}
                       >
                         Save
@@ -81,12 +81,12 @@ export default function Settings() {
                       <AnimatePresence>
                         {success && (
                           <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            initial={{opacity: 0, y: 10}}
+                            animate={{opacity: 1, y: 0}}
                             exit={{
                               opacity: 0,
                               y: -10,
-                              transition: { duration: 0.2 }
+                              transition: {duration: 0.2},
                             }}
                           >
                             <p className="flex-1 mx-4 text-green-500">saved!</p>
@@ -102,5 +102,5 @@ export default function Settings() {
         </div>
       </div>
     </React.Fragment>
-  );
+  )
 }

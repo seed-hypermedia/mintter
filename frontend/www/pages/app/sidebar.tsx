@@ -1,11 +1,11 @@
-import React from "react";
-import { css } from "emotion";
-import Link from "../../components/link";
-import { useRouter } from "next/router";
+import React from 'react'
+import {css} from 'emotion'
+import Link from '../../components/link'
+import {useRouter} from 'next/router'
 
-export default function Sidebar({ children = null, ...props }) {
-  const [open, setOpen] = React.useState(false);
-  const router = useRouter();
+export default function Sidebar({children = null, ...props}) {
+  const [open, setOpen] = React.useState(false)
+  const router = useRouter()
   return (
     <React.Fragment>
       <div className="fixed flex w-full top-0 left-0 z-40 text-white bg-gray-800 p-3 lg:hidden">
@@ -37,33 +37,33 @@ export default function Sidebar({ children = null, ...props }) {
         </div>
         <NavItem
           href="/app/library"
-          isActive={router.pathname === "/app/library"}
+          isActive={router.pathname === '/app/library'}
           onClick={() => setOpen(false)}
           title="Library"
         />
         <NavItem
           href="/app/metrics"
-          isActive={router.pathname === "/app/metrics"}
+          isActive={router.pathname === '/app/metrics'}
           onClick={() => setOpen(false)}
           title="Metrics"
         />
         <NavItem
           href="/app/settings"
-          isActive={router.pathname === "/app/settings"}
+          isActive={router.pathname === '/app/settings'}
           onClick={() => setOpen(false)}
           title="Settings"
         />
       </Wrapper>
     </React.Fragment>
-  );
+  )
 }
 
 interface NavItemProps {
-  href: string;
-  onClick: () => void;
-  isActive: boolean;
-  title: string;
-  className?: string;
+  href: string
+  onClick: () => void
+  isActive: boolean
+  title: string
+  className?: string
 }
 
 function NavItem({
@@ -77,7 +77,7 @@ function NavItem({
   return (
     <div
       className={`p-3 bg-gray-700 transition-all ease-in-out duration-200 ${
-        isActive ? "font-bold" : "hover:bg-gray-600"
+        isActive ? 'font-bold' : 'hover:bg-gray-600'
       } ${className}`}
       {...props}
     >
@@ -87,15 +87,15 @@ function NavItem({
         </a>
       </Link>
     </div>
-  );
+  )
 }
 
-function Wrapper({ children, open, ...props }) {
+function Wrapper({children, open, ...props}) {
   return (
     <div
       className={`absolute top-0 left-0 z-30 lg:relative w-full max-w-xs text-gray-100 bg-gray-700 h-full overflow-y-auto ${css`
         transition: all 0.25s;
-        transform: translateX(${open ? "0" : "-100%"});
+        transform: translateX(${open ? '0' : '-100%'});
         @media (min-width: 1024px) {
           transform: translateX(0);
         }
@@ -104,5 +104,5 @@ function Wrapper({ children, open, ...props }) {
     >
       {children}
     </div>
-  );
+  )
 }
