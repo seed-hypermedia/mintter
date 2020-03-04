@@ -16,7 +16,7 @@
     "publish:all": "yarn workspaces run npm:publish",
     "lint": "yarn workspaces run lint",
     "check-types": "tsc",
-    "prettier": "prettier --ignore-path .gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\"",
+    "prettier": "prettier --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\"",
     "format": "yarn prettier --write",
     "check-format": "yarn prettier --list-different",
     "validate": "npm-run-all --parallel check-format lint build"

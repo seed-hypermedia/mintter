@@ -12,7 +12,7 @@ jobs:
     name: Versions Release
     runs-on: ubuntu-latest
     if:
-      github.repository == 'mintterteam/frontend' &&
+      github.repository == 'mintterteam/mintter' &&
       github.event.commits[0].author.name != 'github-actions[bot]'
     steps:
       - name: Checkout Repo
