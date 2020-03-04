@@ -1,5 +1,5 @@
-import React from "react";
-import { css } from "emotion";
+import React from 'react'
+import {css} from 'emotion'
 
 export default function DocumentStatus() {
   return (
@@ -15,5 +15,5 @@ export default function DocumentStatus() {
         <span className="italic font-light">Private</span>
       </p>
     </div>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import withShortcuts from './withShortcuts';
+import withShortcuts from './withShortcuts'
 
-export default withShortcuts;
-export { shortcutTypes, SHORTCUTS } from './types';
+export default withShortcuts
+export {shortcutTypes, SHORTCUTS} from './types'

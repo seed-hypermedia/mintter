@@ -1,5 +1,5 @@
-import AppsOutlinedIcon from "@material-ui/icons/AppsOutlined";
-import FormatListBulletedOutlinedIcon from "@material-ui/icons/FormatListBulletedOutlined";
+import AppsOutlinedIcon from '@material-ui/icons/AppsOutlined'
+import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined'
 
 export default function DocumentList() {
   return (
@@ -21,5 +21,5 @@ export default function DocumentList() {
         <p>List here</p>
       </div>
     </div>
-  );
+  )
 }

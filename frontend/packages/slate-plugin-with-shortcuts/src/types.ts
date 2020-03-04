@@ -11,7 +11,7 @@ export const shortcutTypes = {
   NUMBERED_LIST: 'numbered_list',
   LINK: 'link',
   PARAGRAPH: 'paragraph',
-} as const;
+} as const
 
 // TODO: fix types
 export const SHORTCUTS = {
@@ -26,4 +26,4 @@ export const SHORTCUTS = {
   '####': shortcutTypes.HEADING_FOUR,
   '#####': shortcutTypes.HEADING_FIVE,
   '######': shortcutTypes.HEADING_SIX,
-} as const;
+} as const

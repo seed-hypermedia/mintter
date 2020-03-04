@@ -1,5 +1,5 @@
-import { Editor, Node, Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
+import {Editor, Node, Transforms} from 'slate'
+import {ReactEditor} from 'slate-react'
 // force layout with nested elements
 
 /*
@@ -13,10 +13,10 @@ Document Header
 // export interface WithForcedLayout {}
 
 const withForcedLayout = <T extends Editor>(
-  editor: T
+  editor: T,
 ): Editor & ReactEditor => {
-  const e = editor as T & ReactEditor;
-  const { normalizeNode } = e;
+  const e = editor as T & ReactEditor
+  const {normalizeNode} = e
 
   e.normalizeNode = ([node, path]) => {
     if (path.length === 0) {
@@ -25,7 +25,7 @@ const withForcedLayout = <T extends Editor>(
         // make sure the first child of the editor has the type "document-header", if not, set it to it.
         if (childPath[0] === 0) {
           if (child.type !== 'document-header') {
-            Transforms.setNodes(editor, { type: 'document-header' });
+            Transforms.setNodes(editor, {type: 'document-header'})
           }
 
           // iterate over the "document-header" children
@@ -38,28 +38,28 @@ const withForcedLayout = <T extends Editor>(
                 ? 'title'
                 : childrenPath[0] === 1
                 ? 'description'
-                : 'paragraph';
+                : 'paragraph'
 
             if (children.type !== type) {
-              Transforms.setNodes(editor, { type });
+              Transforms.setNodes(editor, {type})
             }
 
             // "document-header" can only have 2 children (title & description)
             // any other chldren should be sibling of "document-header"
             if (childrenPath[0] === 2) {
-              Transforms.liftNodes(editor, { at: [0, childrenPath[0]] });
+              Transforms.liftNodes(editor, {at: [0, childrenPath[0]]})
             }
           }
         }
       }
 
-      return;
+      return
     }
 
-    normalizeNode([node, path]);
-  };
+    normalizeNode([node, path])
+  }
 
-  return e;
-};
+  return e
+}
 
-export default withForcedLayout;
+export default withForcedLayout

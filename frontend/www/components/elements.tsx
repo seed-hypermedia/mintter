@@ -1,24 +1,24 @@
-import React, { ElementType } from "react";
-import ReactDOM from "react-dom";
-import { css } from "emotion";
-import { RenderElementProps } from "slate-react";
-import { types } from "../pages/app/editor";
+import React, {ElementType} from 'react'
+import ReactDOM from 'react-dom'
+import {css} from 'emotion'
+import {RenderElementProps} from 'slate-react'
+import {types} from '../pages/app/editor'
 
 export interface ElementProps extends RenderElementProps {
-  onAddBlock: () => void;
+  onAddBlock: () => void
 }
 
 export default function Element({
   attributes,
   children,
   element,
-  onAddBlock
+  onAddBlock,
 }: ElementProps) {
-  const Wrapper = ({ children }) => (
+  const Wrapper = ({children}) => (
     <Helper {...attributes} onAddBlock={onAddBlock}>
       {children}
     </Helper>
-  );
+  )
 
   switch (element.type) {
     case types.HEADING_ONE:
@@ -26,19 +26,19 @@ export default function Element({
         <Wrapper>
           <h1 className="text-4xl">{children}</h1>
         </Wrapper>
-      );
+      )
     case types.HEADING_TWO:
       return (
         <Wrapper>
           <h2 className="text-3xl">{children}</h2>
         </Wrapper>
-      );
+      )
     case types.HEADING_THREE:
       return (
         <Wrapper>
           <h3 className="text-2xl">{children}</h3>
         </Wrapper>
-      );
+      )
     case types.BLOCK_QUOTE:
       return (
         <Wrapper>
@@ -46,25 +46,25 @@ export default function Element({
             <p className="italic text-xl font-light font-serif">{children}</p>
           </blockquote>
         </Wrapper>
-      );
+      )
     case types.BULLETED_LIST:
       return (
         <ul {...attributes} className="list-disc list-inside">
           {children}
         </ul>
-      );
+      )
     case types.NUMBERED_LIST:
       return (
         <ol {...attributes} className="list-inside list-decimal">
           {children}
         </ol>
-      );
+      )
     case types.LIST_ITEM:
       return (
         <Helper {...attributes} onAddBlock={onAddBlock}>
           <li>{children}</li>
         </Helper>
-      );
+      )
     case types.LINK:
       return (
         <a
@@ -74,18 +74,18 @@ export default function Element({
             }
           `}`}
           {...attributes}
-          onClick={() => window.open(element.url, "_blank")}
+          onClick={() => window.open(element.url, '_blank')}
           href={element.url}
         >
           {children}
         </a>
-      );
+      )
     case types.TITLE:
       return (
         <h1 {...attributes} className="text-4xl font-bold">
           {children}
         </h1>
-      );
+      )
     case types.DESCRIPTION:
       return (
         <p
@@ -94,7 +94,7 @@ export default function Element({
         >
           {children}
         </p>
-      );
+      )
     case types.BLOCK:
       return (
         <div
@@ -103,17 +103,17 @@ export default function Element({
         >
           {children}
         </div>
-      );
+      )
     default:
       return (
         <Helper {...attributes} onAddBlock={onAddBlock}>
           <p>{children}</p>
         </Helper>
-      );
+      )
   }
 }
 
-function Helper({ children, onAddBlock, ...props }) {
+function Helper({children, onAddBlock, ...props}) {
   return (
     <div
       className={`relative flex mt-4 ${css`
@@ -134,7 +134,7 @@ function Helper({ children, onAddBlock, ...props }) {
       >
         <button
           onClick={() => {
-            onAddBlock();
+            onAddBlock()
           }}
           className="font-bold text-lg text-gray-600 bg-gray-200 rounded p-2"
         >
@@ -145,5 +145,5 @@ function Helper({ children, onAddBlock, ...props }) {
       </div>
       {children}
     </div>
-  );
+  )
 }
