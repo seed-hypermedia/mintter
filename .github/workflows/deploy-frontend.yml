@@ -1,0 +1,22 @@
+name: Deploy Frontend
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'frontent/www/*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Publish Site
+        run: |
+          yarn
+          yarn build:all
+          yarn site:export
+          npx netlify-cli deploy --dir=www/out --prod
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

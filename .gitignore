@@ -1,5 +1,12 @@
 node_modules
+.netlify
+.now
+*.log
+.DS_Store
 !build
 build/*
 !build/*.do
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 tmp

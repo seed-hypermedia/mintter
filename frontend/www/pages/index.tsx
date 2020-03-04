@@ -1,7 +1,7 @@
-import React from "react";
-import Link from "../components/link";
-import Seo from "../components/seo";
-import Container from "../components/container";
+import React from 'react'
+import Link from '../components/link'
+import Seo from '../components/seo'
+import Container from '../components/container'
 
 export default function Home() {
   return (
@@ -16,13 +16,13 @@ export default function Home() {
         </div>
       </Container>
     </Layout>
-  );
+  )
 }
 
-function Layout({ children, ...props }) {
+function Layout({children, ...props}) {
   return (
     <div className="" {...props}>
       {children}
     </div>
-  );
+  )
 }

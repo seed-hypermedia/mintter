@@ -1,9 +1,9 @@
-import { Editor, Node, Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
+import {Editor, Node, Transforms} from 'slate'
+import {ReactEditor} from 'slate-react'
 
 const withBlocks = <T extends Editor>(editor: T): Editor & ReactEditor => {
-  const e = editor as T & ReactEditor;
-  const { normalizeNode } = e;
+  const e = editor as T & ReactEditor
+  const {normalizeNode} = e
 
   e.normalizeNode = ([node, path]) => {
     if (path.length === 0) {
@@ -13,19 +13,19 @@ const withBlocks = <T extends Editor>(editor: T): Editor & ReactEditor => {
           if (child.type !== 'block') {
             Transforms.wrapNodes(
               editor,
-              { type: 'block', children: [] },
-              { at: childPath }
-            );
+              {type: 'block', children: []},
+              {at: childPath},
+            )
           }
         }
       }
 
-      return;
+      return
     }
 
-    normalizeNode([node, path]);
-  };
-  return e;
-};
+    normalizeNode([node, path])
+  }
+  return e
+}
 
-export default withBlocks;
+export default withBlocks

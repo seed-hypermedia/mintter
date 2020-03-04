@@ -10,7 +10,7 @@
     "start": "tsdx watch",
     "build": "tsdx build",
     "test": "tsdx test",
-    "lint": "tsdx lint",
+    "lint": "tsdx lint src",
     "prepare": "tsdx build",
     "npm:publish": "npm publish --access public"
   },
@@ -18,16 +18,17 @@
   "author": "Horacio Herrera",
   "module": "dist/slate-plugin-with-links.esm.js",
   "dependencies": {
+    "is-url": "^1.2.4",
     "slate": "^0.57.1",
-    "slate-react": "^0.57.1",
-    "is-url": "^1.2.4"
+    "slate-react": "^0.57.1"
   },
   "peerDependencies": {
+    "is-url": "^1.2.4",
     "slate": "^0.57.1",
-    "slate-react": "^0.57.1",
-    "is-url": "^1.2.4"
+    "slate-react": "^0.57.1"
   },
   "devDependencies": {
-    "@types/is-url": "^1.2.28"
+    "@types/is-url": "^1.2.28",
+    "eslint-config-react-app": "^5.2.0"
   }
 }
