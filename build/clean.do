@@ -1,1 +1,1 @@
-rm -f mtt mintterd go
+rm -rf `find . ! -name "*.do" ! -path .`
