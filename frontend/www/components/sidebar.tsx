@@ -1,6 +1,6 @@
 import React from 'react'
 import {css} from 'emotion'
-import Link from '../../components/link'
+import Link from './link'
 import {useRouter} from 'next/router'
 
 export default function Sidebar({children = null, ...props}) {
@@ -23,7 +23,7 @@ export default function Sidebar({children = null, ...props}) {
           </svg>
         </button>
         <div className="px-5 text-left text-2xl font-bold">
-          <Link href="/app/library">
+          <Link href="/">
             <a>Mintter</a>
           </Link>
         </div>
@@ -31,7 +31,7 @@ export default function Sidebar({children = null, ...props}) {
 
       <Wrapper {...props} open={open}>
         <div className="py-3 px-5 text-left text-2xl font-bold">
-          <Link href="/app/library">
+          <Link href="/">
             <a>Mintter</a>
           </Link>
         </div>

@@ -2,6 +2,7 @@ import React from 'react'
 import Link from '../components/link'
 import Seo from '../components/seo'
 import Container from '../components/container'
+import Layout from '../components/layout'
 
 export default function Home() {
   return (
@@ -13,16 +14,13 @@ export default function Home() {
           <Link href="/app/library">
             <a className="py-4 px-5 bg-blue-600 text-white rounded">Open App</a>
           </Link>
+          <Link href="/welcome">
+            <a className="py-4 px-5 bg-blue-600 text-white rounded m-4">
+              welcome
+            </a>
+          </Link>
         </div>
       </Container>
     </Layout>
-  )
-}
-
-function Layout({children, ...props}) {
-  return (
-    <div className="" {...props}>
-      {children}
-    </div>
   )
 }
