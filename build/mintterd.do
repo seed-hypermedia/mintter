@@ -1,3 +1,4 @@
-redo-ifchange go ../go.mod ../go.sum
+redo-ifchange go-compile backend.list
+redo-ifchange `cat backend.list`
 
-./go "build -o $3 ../backend/cmd/mintterd"
+./go-compile "-o $3 ../backend/cmd/mintterd/"
