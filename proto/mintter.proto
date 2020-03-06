@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package com.mintter;
+
+option go_package = "proto";
+
+service Accounts {
+  rpc GenSeed(GenSeedRequest) returns (GenSeedResponse) {}
+}
+
+message GenSeedRequest { bytes aezeed_passphrase = 1; }
+
+message GenSeedResponse {
+  repeated string mnemonic = 1;
+
+  bytes enciphered_seed = 2;
+}
