@@ -1,7 +1,8 @@
+import {useState} from 'react'
 import Layout from '../../components/welcome-layout'
 import Container from '../../components/welcome-container'
 import Heading from '../../components/welcome-heading'
-import Button from '../../components/welcome-button'
+import {NextButton, BackButton} from '../../components/welcome-buttons'
 import Footer from '../../components/footer'
 import Content from '../../components/content'
 import P from '../../components/welcome-p'
@@ -15,6 +16,7 @@ const words = [
 ]
 
 export default function SecurityPack() {
+  const [disabled, setDisabled] = useState(false)
   return (
     <Layout>
       <Container>
@@ -28,10 +30,10 @@ export default function SecurityPack() {
             <div key={list_idx} className="flex-1 flex items-center flex-col">
               <ol>
                 {list.map((word, word_idx) => (
-                  <li key={word_idx} className="text-white my-3">
+                  <li key={word_idx} className="my-3 flex items-baseline">
                     <span
-                      className={`text-bold ${css`
-                        width: 32px;
+                      className={`text-bold text-gray-500 text-xs ${css`
+                        width: 24px;
                         display: inline-block;
                       `}`}
                     >
@@ -47,7 +49,17 @@ export default function SecurityPack() {
       </Container>
       <Footer className="flex-none">
         <Container>
-          <Button href="/welcome/retype-seed">Next</Button>
+          <div className="flex w-full justify-between">
+            <BackButton
+              to="/welcome"
+              onClick={() => console.log('starting over!')}
+            >
+              ← start over
+            </BackButton>
+            <NextButton to="/welcome/retype-seed" disabled={disabled}>
+              Next →
+            </NextButton>
+          </div>
         </Container>
       </Footer>
     </Layout>

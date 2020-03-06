@@ -1,14 +1,37 @@
-import Link from 'next/link'
+import {useRouter} from 'next/router'
 
-interface ButtonProps extends React.HTMLAttributes<any> {
-  children: string
-  href: string
+export interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
+  disabled?: boolean
+  to: string
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
 }
 
-export default function Button({children, href, className}: ButtonProps) {
+export default function WelcomeButton({
+  children,
+  to,
+  className = '',
+  disabled = false,
+  onClick,
+  ...props
+}: ButtonProps) {
+  const router = useRouter()
   return (
-    <Link href={href}>
-      <a className={`text-center text-white ${className}`}>{children}</a>
-    </Link>
+    <button
+      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
+        if (!disabled) {
+          if (to) {
+            router.push(to)
+          }
+          if (onClick) {
+            onClick(e)
+          }
+        }
+      }}
+      className={`px-4 py-2 bg-transparent rounded hover:bg-gray-200 ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
   )
 }

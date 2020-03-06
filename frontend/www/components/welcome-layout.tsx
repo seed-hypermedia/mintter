@@ -1,7 +1,16 @@
-import Layout from './layout'
+import Layout, {LayoutProps} from './layout'
 
 export default function WelcomeLayout({
   children,
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return <Layout className="bg-gray-800 flex flex-col">{children}</Layout>
+  className = '',
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & LayoutProps) {
+  return (
+    <Layout
+      {...props}
+      className={`bg-gray-100 flex flex-col py-8 ${className}`}
+    >
+      {children}
+    </Layout>
+  )
 }
