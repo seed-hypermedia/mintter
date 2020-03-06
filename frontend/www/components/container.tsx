@@ -1,5 +1,6 @@
 import React from 'react'
-interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
+
+export interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode
 }
 

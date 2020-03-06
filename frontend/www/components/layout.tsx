@@ -1,6 +1,6 @@
 import {motion} from 'framer-motion'
 
-interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
   initial?: string
   animate?: string
   exit?: string
@@ -18,7 +18,7 @@ export default function Layout({
       initial={initial}
       animate={animate}
       exit={exit}
-      className={`absolute w-full h-full ${className}`}
+      className={`absolute w-screen h-screen ${className}`}
     >
       {children}
     </motion.div>

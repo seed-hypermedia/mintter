@@ -1,9 +1,14 @@
-import Container from './container'
+import Container, {ContainerProps} from './container'
 
-export default function WelcomeContainer({children, className = ''}) {
+export interface WelcomeContainerProps extends ContainerProps {}
+
+export default function WelcomeContainer({
+  children,
+  className = '',
+}: WelcomeContainerProps) {
   return (
     <Container
-      className={`flex flex-col max-w-3xl flex-1 items-center ${className}`}
+      className={`flex flex-col max-w-3xl flex-1 w-full items-center ${className}`}
     >
       {children}
     </Container>
