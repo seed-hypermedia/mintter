@@ -1,4 +1,7 @@
 {
-  "extends": "../tsconfig.json",
-  "include": ["next-env.d.ts"]
+  "extends": "../../tsconfig.json",
+  "include": ["next-env.d.ts"],
+  "compilerOptions": {
+    "isolatedModules": true
+  }
 }

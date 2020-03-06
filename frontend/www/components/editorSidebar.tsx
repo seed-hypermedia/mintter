@@ -1,6 +1,6 @@
 import React from 'react'
 import {css} from 'emotion'
-import Link from '../../../components/link'
+import Link from './link'
 import {useRouter} from 'next/router'
 
 export default function EditorSidebar({children = null, ...props}) {

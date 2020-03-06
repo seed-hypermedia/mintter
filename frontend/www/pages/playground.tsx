@@ -1,8 +1,9 @@
 import React from 'react'
 import {createEditor, Node} from 'slate'
-import {NextPage} from 'next'
 import {Slate, Editable, withReact} from 'slate-react'
-import Link from '../../../components/link'
+import Link from '../components/link'
+import Layout from '../components/layout'
+
 const initialValue = [
   {
     type: 'section',
@@ -19,12 +20,12 @@ const initialValue = [
   },
 ]
 
-export default function Playground(): JSX.Element {
+export default function Playground() {
   const editor = React.useMemo(() => withReact(createEditor()), [])
   const [value, setValue] = React.useState<Node[]>(initialValue)
 
   return (
-    <div className="">
+    <Layout>
       <div className="bg-gray-700 py-6">
         <div className="mx-auto max-w-3xl flex items-center">
           <h1 className="text-gray-200 text-4xl font-bold flex-1">
@@ -54,6 +55,6 @@ export default function Playground(): JSX.Element {
           <Editable placeholder="start writing..." />
         </Slate>
       </div>
-    </div>
+    </Layout>
   )
 }
