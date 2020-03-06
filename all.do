@@ -1,1 +1,1 @@
-redo-ifchange build/all
+redo-ifchange third_party/all build/all
