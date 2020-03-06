@@ -1,15 +1,17 @@
-{
-    pkgs ? import <nixpkgs> {},
-}:
-
 let
+    pkgs = import ./nix/nixpkgs.nix;
     redo = pkgs.callPackage ./nix/redo {};
+    go = pkgs.go_1_14;
+    buildGoModule = (pkgs.buildGoModule.override { go = go; });
+    go-protobuf = pkgs.callPackage ./nix/go-protobuf { buildGoModule = buildGoModule; };
     shell = pkgs.mkShell rec {
         buildInputs = [
             pkgs.nodejs-13_x
             (pkgs.yarn.override { nodejs = pkgs.nodejs-13_x; })
-            pkgs.go_1_13
+            go
+            go-protobuf
             pkgs.python2
+            pkgs.protobuf3_11
             (redo.override {
                 python27 = pkgs.python2;
                 doCheck = false;

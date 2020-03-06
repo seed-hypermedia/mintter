@@ -1,4 +1,3 @@
-redo-ifchange go-compile backend.list
-redo-ifchange `cat backend.list`
+GO_TARGET_PATH="../backend/cmd/mtt/"
 
-./go-compile "-o $3 ../backend/cmd/mtt/"
+. ./go-compile.od

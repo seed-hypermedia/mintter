@@ -1,0 +1,1 @@
+rm -f `find . -type f ! -name "*.proto" ! -name "*.do"`
