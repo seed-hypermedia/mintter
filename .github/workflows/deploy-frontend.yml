@@ -14,7 +14,7 @@ jobs:
       - name: Publish Site
         run: |
           yarn
-          yarn build:all
+          yarn site:build
           yarn site:export
           npx netlify-cli deploy --dir=www/out --prod
         env:

@@ -2,19 +2,28 @@
 
 This is main repository for the Mintter project.
 
+![Deploy Frontend & Publish](https://github.com/mintterteam/mintter/workflows/Deploy%20Frontend%20&%20Publish/badge.svg?branch=master)
+
 ## Getting Started
 
 ### Nix
 
-You need to have [Nix](https://nixos.org/nix) package manager installed on your machine to work with this repository.
+You need to have [Nix](https://nixos.org/nix) package manager installed on your
+machine to work with this repository.
 
-Nix is a really nice _cross-platform_ package manager. Think `brew` but supporting multiple versions at the same time, and ability to create hermetic and isolated environments for any software. It will not mess around with your existing packages. It supports Linux and macOS.
+Nix is a really nice _cross-platform_ package manager. Think `brew` but
+supporting multiple versions at the same time, and ability to create hermetic
+and isolated environments for any software. It will not mess around with your
+existing packages. It supports Linux and macOS.
 
-So Nix is the only piece of software needed. It will install the rest of the tools, and will make sure we all use the same versions. You don't need `node`, `go` or anything else.
+So Nix is the only piece of software needed. It will install the rest of the
+tools, and will make sure we all use the same versions. You don't need `node`,
+`go` or anything else.
 
 Install Nix using official method on the website.
 
-_IMPORTANT! If you are on macOS Catalina, there're some previous steps needed. Run `./scripts/setup-nix.sh` first, and then install Nix_
+_IMPORTANT! If you are on macOS Catalina, there're some previous steps needed.
+Run `./scripts/setup-nix.sh` first, and then install Nix_
 
 ### Hermetic Toolchains
 
@@ -26,7 +35,8 @@ Install direnv by running
 nix-env -iA nixpkgs.direnv
 ```
 
-Hook it into your shell (add one of the following lines to you `~/.profile`, `~/.bashrc`, or `~/.zshrc`, depending on the shell you use).
+Hook it into your shell (add one of the following lines to you `~/.profile`,
+`~/.bashrc`, or `~/.zshrc`, depending on the shell you use).
 
 ```shell
 eval "$(direnv hook bash)"  # for bash
@@ -40,6 +50,8 @@ When inside the repository run
 direnv allow .
 ```
 
-This will ask `direnv` to setup the environment when you navigate to the directory with the project.
+This will ask `direnv` to setup the environment when you navigate to the
+directory with the project.
 
-So open up the directory with the project in a new terminal, and run `which go` to test if it will find Go toolchain.
+So open up the directory with the project in a new terminal, and run `which go`
+to test if it will find Go toolchain.
