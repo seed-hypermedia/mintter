@@ -6,7 +6,7 @@
     "ecmaFeatures": {
       "jsx": true
     },
-    "project": "../../tsconfig.json"
+    "project": "./tsconfig.json"
   },
   "plugins": ["@typescript-eslint/eslint-plugin"],
   "extends": [
@@ -19,7 +19,10 @@
   ],
   "rules": {
     "strict": ["error", "never"],
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/camelcase": "off"
   },
   "env": {
     "browser": true

@@ -2,27 +2,32 @@ import React from 'react'
 import Link from '../components/link'
 import Seo from '../components/seo'
 import Container from '../components/container'
+import Layout from '../components/layout'
+import Heading from '../components/heading'
 
 export default function Home() {
   return (
     <Layout>
       <Seo title="Mintter" />
       <Container>
-        <div className="flex flex-col items-center">
-          <h1 className="text-4xl font-bold mb-4">Welcome to Mintter</h1>
-          <Link href="/app/library">
-            <a className="py-4 px-5 bg-blue-600 text-white rounded">Open App</a>
-          </Link>
+        <div className="flex flex-col items-center justify-center pt-8">
+          <Heading as="h1">Mintter</Heading>
+
+          {/* TODO: remove this soon */}
+          <h4>flows:</h4>
+          <div className="flex p-4">
+            <Link
+              href="/welcome"
+              className="rounded text-blue-700 text-lg mr-4"
+            >
+              Welcome
+            </Link>
+            <Link href="/app/library" className="rounded text-blue-700 text-lg">
+              App
+            </Link>
+          </div>
         </div>
       </Container>
     </Layout>
-  )
-}
-
-function Layout({children, ...props}) {
-  return (
-    <div className="" {...props}>
-      {children}
-    </div>
   )
 }
