@@ -1,4 +1,3 @@
-import {useState} from 'react'
 import Layout from '../../components/welcome-layout'
 import Container from '../../components/welcome-container'
 import Heading from '../../components/welcome-heading'
@@ -16,7 +15,6 @@ const words = [
 ]
 
 export default function SecurityPack() {
-  const [disabled, setDisabled] = useState(false)
   return (
     <Layout>
       <Container>
@@ -27,7 +25,29 @@ export default function SecurityPack() {
         </P>
         <Content className="flex-wrap flex w-full">
           {words.map((list, list_idx) => (
-            <div key={list_idx} className="flex-1 flex items-center flex-col">
+            <div
+              key={list_idx}
+              className={`w-1/2 flex-1 flex flex-col md:order-none ${css`
+                min-width: 162px;
+                margin-top: -12px;
+                align-items: start;
+                padding-left: 30%;
+
+                @media (min-width: 396px) {
+                  min-width: 50%;
+                  order: ${list_idx % 2 == 0 ? '1' : '2'};
+                  margin-top: ${list_idx % 2 == 0 ? '0' : '-12px'};
+                  align-items: center;
+                  padding-left: 0;
+                }
+
+                @media (min-width: 768px) {
+                  min-width: 0;
+                  order: 0;
+                  margin-top: 0;
+                }
+              `}`}
+            >
               <ol>
                 {list.map((word, word_idx) => (
                   <li key={word_idx} className="my-3 flex items-baseline">
@@ -56,9 +76,7 @@ export default function SecurityPack() {
             >
               ← start over
             </BackButton>
-            <NextButton to="/welcome/retype-seed" disabled={disabled}>
-              Next →
-            </NextButton>
+            <NextButton to="/welcome/retype-seed">Next →</NextButton>
           </div>
         </Container>
       </Footer>

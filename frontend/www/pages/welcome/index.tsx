@@ -10,7 +10,7 @@ import Footer from '../../components/footer'
 export default function WelcomeIndex() {
   return (
     <Layout>
-      <Container className="flex-1">
+      <Container className="lg:flex-1">
         <Heading>Welcome to Mintter!</Heading>
         <P>some kind words here</P>
       </Container>

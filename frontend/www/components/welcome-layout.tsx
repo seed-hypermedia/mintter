@@ -4,7 +4,7 @@ export default function WelcomeLayout({
   children,
   className = '',
   ...props
-}: React.HTMLAttributes<HTMLDivElement> & LayoutProps) {
+}: LayoutProps) {
   return (
     <Layout
       {...props}
