@@ -33,15 +33,14 @@ export default function CreatePassword() {
               Please choose a password.
             </p>
           </div>
-          <div className="flex-1 mt-8">
+          <div className="flex-1 mt-6">
             <label
               className="block text-gray-500 text-xs font-semibold mb-1"
               htmlFor="repeat_password"
             >
               Retype Password
             </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 focus:outline-none focus:shadow-outline"
+            <Input
               id="repeat_password"
               type="password"
               placeholder="******************"
@@ -54,16 +53,14 @@ export default function CreatePassword() {
       </Container>
       <Footer className="flex-none">
         <Container>
-        <div className="flex w-full justify-between">
+          <div className="flex w-full justify-between">
             <BackButton
               to="/welcome"
               onClick={() => console.log('starting over!')}
             >
               ← start over
             </BackButton>
-            <NextButton to="/welcome/edit-profile">
-              Next →
-            </NextButton>
+            <NextButton to="/welcome/edit-profile">Next →</NextButton>
           </div>
         </Container>
       </Footer>
