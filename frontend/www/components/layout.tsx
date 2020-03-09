@@ -18,7 +18,7 @@ export default function Layout({
       initial={initial}
       animate={animate}
       exit={exit}
-      className={` ${className}`}
+      className={`absolute w-screen h-screen ${className}`}
     >
       {children}
     </motion.div>
