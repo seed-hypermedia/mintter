@@ -13,6 +13,7 @@ jobs:
         run: |
           yarn
           yarn build:all
+          yarn site:build
           yarn site:export
           npx netlify-cli deploy --dir=frontend/www/out --prod
         env:

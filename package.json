@@ -9,7 +9,7 @@
   "scripts": {
     "changeset": "changeset",
     "test": "echo 1",
-    "build": "yarn workspaces run build",
+    "build:all": "yarn workspaces run build",
     "site:build": "yarn workspace @mintter/site build",
     "site:export": "yarn workspace @mintter/site export",
     "release": "yarn build:all",
