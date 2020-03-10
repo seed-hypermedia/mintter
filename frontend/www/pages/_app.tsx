@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 
 import '../styles/index.css'
 import UserProvider from '../shared/userContext'
+import {RpcProvider, makeRpcClient} from '../shared/rpc'
 
 const NoSSR: React.FC = ({children}) => {
   return <React.Fragment>{children}</React.Fragment>
@@ -17,11 +18,13 @@ const Dynamic = dynamic(() => Promise.resolve(NoSSR), {ssr: false})
 export default function App({Component, pageProps, router}: AppProps) {
   return (
     <Dynamic>
-      <UserProvider>
-        <AnimatePresence exitBeforeEnter>
-          <Component {...pageProps} key={router.route} />
-        </AnimatePresence>
-      </UserProvider>
+      <RpcProvider value={makeRpcClient()}>
+        <UserProvider>
+          <AnimatePresence exitBeforeEnter>
+            <Component {...pageProps} key={router.route} />
+          </AnimatePresence>
+        </UserProvider>
+      </RpcProvider>
     </Dynamic>
   )
 }
