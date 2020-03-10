@@ -4,8 +4,12 @@
 package proto
 
 import (
+	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -130,4 +134,84 @@ var fileDescriptor_459271e8c06255ea = []byte{
 	0x2e, 0x76, 0xa8, 0x1d, 0x42, 0xd2, 0x7a, 0x48, 0x6e, 0xd7, 0x43, 0x75, 0xb8, 0x94, 0x0c, 0x76,
 	0x49, 0x88, 0xb3, 0x94, 0x18, 0x9c, 0xd8, 0xa3, 0x58, 0xc1, 0x01, 0x90, 0xc4, 0x06, 0xa6, 0x8c,
 	0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x5b, 0x4c, 0xa0, 0x6d, 0x18, 0x01, 0x00, 0x00,
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConnInterface
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion6
+
+// AccountsClient is the client API for Accounts service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type AccountsClient interface {
+	GenSeed(ctx context.Context, in *GenSeedRequest, opts ...grpc.CallOption) (*GenSeedResponse, error)
+}
+
+type accountsClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAccountsClient(cc grpc.ClientConnInterface) AccountsClient {
+	return &accountsClient{cc}
+}
+
+func (c *accountsClient) GenSeed(ctx context.Context, in *GenSeedRequest, opts ...grpc.CallOption) (*GenSeedResponse, error) {
+	out := new(GenSeedResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.Accounts/GenSeed", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AccountsServer is the server API for Accounts service.
+type AccountsServer interface {
+	GenSeed(context.Context, *GenSeedRequest) (*GenSeedResponse, error)
+}
+
+// UnimplementedAccountsServer can be embedded to have forward compatible implementations.
+type UnimplementedAccountsServer struct {
+}
+
+func (*UnimplementedAccountsServer) GenSeed(ctx context.Context, req *GenSeedRequest) (*GenSeedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenSeed not implemented")
+}
+
+func RegisterAccountsServer(s *grpc.Server, srv AccountsServer) {
+	s.RegisterService(&_Accounts_serviceDesc, srv)
+}
+
+func _Accounts_GenSeed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenSeedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountsServer).GenSeed(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.Accounts/GenSeed",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountsServer).GenSeed(ctx, req.(*GenSeedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Accounts_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "com.mintter.Accounts",
+	HandlerType: (*AccountsServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GenSeed",
+			Handler:    _Accounts_GenSeed_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "mintter.proto",
 }

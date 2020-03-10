@@ -1,0 +1,10 @@
+{
+  "name": "@mintter/proto",
+  "private": true,
+  "version": "0.0.1",
+  "license": "MIT",
+  "dependencies": {
+    "google-protobuf": "^3.11.4",
+    "grpc-web": "^1.0.7"
+  }
+}
