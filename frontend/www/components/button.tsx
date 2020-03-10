@@ -2,7 +2,7 @@ import {useRouter} from 'next/router'
 
 export interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   disabled?: boolean
-  to: string
+  to?: string
   type?: 'button' | 'submit'
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
 }

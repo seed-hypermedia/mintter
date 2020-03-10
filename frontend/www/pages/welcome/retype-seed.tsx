@@ -5,7 +5,7 @@ import P from '../../components/welcome-p'
 import {NextButton, BackButton} from '../../components/welcome-buttons'
 import Footer from '../../components/footer'
 import Content from '../../components/content'
-import {useState} from 'react'
+import {useRouter} from 'next/router'
 import {useForm} from 'react-hook-form'
 
 const words = [
@@ -24,14 +24,19 @@ const words = [
 ]
 
 export default function RetypeSeed() {
-  const [valid, setValid] = useState(false)
+  const {register, handleSubmit, errors} = useForm({
+    mode: 'onChange',
+  })
 
-  const {register, handleSubmit, errors} = useForm()
-  console.log('RetypeSeed -> errors', errors)
+  const router = useRouter()
 
   function onSubmit(data) {
-    debugger
     console.log('submit => ', data)
+  }
+
+  async function handleNext(e) {
+    await handleSubmit(onSubmit)(e)
+    await router.push('/welcome/create-password')
   }
 
   return (
@@ -45,20 +50,31 @@ export default function RetypeSeed() {
             your seed, please retype the words
           </P>
           <P className="text-center font-bold">23, 16 & 1</P>
+          <P className="text-center">(repeat, rule, black)</P>
           <Content className="flex-wrap flex w-full">
             <div className="flex flex-col items-center w-full">
               {words.map(word => (
-                <div key={word.key} className="flex items-center p-3">
-                  <span className="w-5 text-gray-500 font-light text-right mr-3 text-xs">
-                    {word.key}
-                  </span>
-                  <input
-                    type="text"
-                    name={`word-${word.key}`}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline"
-                    ref={register({required: true})}
-                  />
-                </div>
+                <>
+                  <div key={word.key} className="flex items-center p-3">
+                    <span className="w-5 text-gray-500 font-light text-right mr-3 text-xs">
+                      {word.key}
+                    </span>
+                    <input
+                      type="text"
+                      name={`word-${word.key}`}
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline"
+                      ref={register({
+                        required: true,
+                        validate: value => value === word.value,
+                      })}
+                    />
+                  </div>
+                  {errors[`word-${word.key}`] && (
+                    <p className=" text-red-500 text-sm ">
+                      this word is not correct
+                    </p>
+                  )}
+                </>
               ))}
             </div>
           </Content>
@@ -74,11 +90,8 @@ export default function RetypeSeed() {
               </BackButton>
               <NextButton
                 type="submit"
-                to="/welcome/create-password"
-                onClick={e => {
-                  debugger
-                  handleSubmit(onSubmit)
-                }}
+                onClick={handleNext}
+                disabled={Object.keys(errors).length !== 0}
               >
                 Next →
               </NextButton>
