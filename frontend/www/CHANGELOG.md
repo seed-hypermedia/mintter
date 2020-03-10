@@ -1,5 +1,11 @@
 # @mintter/site
 
+## 0.2.10
+
+### Patch Changes
+
+- 1f7850f: welcome pages WIP connected
+
 ## 0.2.9
 
 ### Patch Changes
