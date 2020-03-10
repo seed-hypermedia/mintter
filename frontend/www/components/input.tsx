@@ -11,7 +11,7 @@ export interface InputProps extends React.HTMLAttributes<HTMLInputElement> {
 const Input = React.forwardRef(
   ({className = '', type = 'text', ...props}: InputProps, ref) => (
     <input
-      className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 focus:outline-none focus:shadow-outline ${className}`}
+      className={`block w-full border border-gray-300 rounded bg-white px-3 py-2 focus:outline-none focus:border-gray-600 ${className}`}
       type={type}
       ref={ref}
       {...props}

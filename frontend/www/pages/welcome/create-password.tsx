@@ -8,27 +8,23 @@ import Content from '../../components/content'
 import Input from '../../components/input'
 import {useRouter} from 'next/router'
 import {useForm} from 'react-hook-form'
+import {NextPage} from 'next'
 
 export default function CreatePassword() {
-  const {register, watch, handleSubmit, errors} = useForm({
+  const {register, watch, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
   })
-
   const router = useRouter()
+  const psswd = watch('password')
 
-  function onSubmit(data) {
+  async function onSubmit(data) {
     console.log('submit => ', data)
-  }
-
-  async function handleNext(e) {
-    await handleSubmit(onSubmit)(e)
     await router.push('/welcome/edit-profile')
   }
 
-  const psswd = watch('password')
   return (
-    <Layout>
-      <form>
+    <>
+      <form className="lg:flex-1 flex flex-col">
         <Container>
           <Heading>Welcome!</Heading>
           <P className="text-center">
@@ -75,7 +71,7 @@ export default function CreatePassword() {
               />
               {errors.repeat_password && (
                 <p className="text-red-500 text-xs italic">
-                  Please choose a password.
+                  Password must match
                 </p>
               )}
             </div>
@@ -92,8 +88,8 @@ export default function CreatePassword() {
               </BackButton>
               <NextButton
                 type="submit"
-                onClick={handleNext}
-                disabled={Object.keys(errors).length !== 0}
+                onClick={handleSubmit(onSubmit)}
+                disabled={!formState.isValid && !formState.isSubmitting}
               >
                 Next →
               </NextButton>
@@ -101,6 +97,8 @@ export default function CreatePassword() {
           </Container>
         </Footer>
       </form>
-    </Layout>
+    </>
   )
 }
+
+CreatePassword.Layout = Layout

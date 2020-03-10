@@ -16,7 +16,7 @@ const words = [
 
 export default function SecurityPack() {
   return (
-    <Layout>
+    <>
       <Container>
         <Heading>Security Pack</Heading>
         <P className="text-center">
@@ -80,6 +80,8 @@ export default function SecurityPack() {
           </div>
         </Container>
       </Footer>
-    </Layout>
+    </>
   )
 }
+
+SecurityPack.Layout = Layout
