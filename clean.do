@@ -1,1 +1,1 @@
-redo build/clean
+redo build/clean frontend/clean
