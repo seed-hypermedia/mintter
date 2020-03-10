@@ -3,11 +3,18 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"strings"
 
 	"mintter/backend/identity"
+	"mintter/backend/rpc"
+	"mintter/proto"
 
 	"github.com/burdiyan/go/mainutil"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p-core/host"
 	peer "github.com/libp2p/go-libp2p-peer"
@@ -20,6 +27,7 @@ import (
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 )
 
 func init() {
@@ -57,7 +65,67 @@ func threadAddr(h peer.ID, addr multiaddr.Multiaddr, tid thread.ID) (ThreadAddr,
 }
 
 func main() {
-	mainutil.Run(run2)
+	mainutil.Run(grpcWeb)
+}
+
+func grpcWeb() (err error) {
+	g, ctx := errgroup.WithContext(mainutil.TrapSignals())
+
+	svc := &rpc.Server{}
+
+	rpcsrv := grpc.NewServer()
+
+	proto.RegisterAccountsServer(rpcsrv, svc)
+
+	grpclis, err := net.Listen("tcp", ":55000")
+	if err != nil {
+		return err
+	}
+
+	wrap := grpcweb.WrapServer(rpcsrv,
+		grpcweb.WithOriginFunc(func(origin string) bool {
+			return true
+		}),
+	)
+
+	u, err := url.Parse("http://localhost:3000")
+	if err != nil {
+		panic(err)
+	}
+	proxy := httputil.NewSingleHostReverseProxy(u)
+
+	srv := &http.Server{
+		Addr: ":55001",
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if wrap.IsGrpcWebRequest(r) {
+				wrap.ServeHTTP(w, r)
+				return
+			}
+
+			proxy.ServeHTTP(w, r)
+		}),
+	}
+
+	g.Go(func() error {
+		return srv.ListenAndServe()
+	})
+
+	g.Go(func() error {
+		<-ctx.Done()
+		return srv.Shutdown(context.Background())
+	})
+
+	g.Go(func() error {
+		return rpcsrv.Serve(grpclis)
+	})
+
+	g.Go(func() error {
+		<-ctx.Done()
+		rpcsrv.GracefulStop()
+		return nil
+	})
+
+	return g.Wait()
 }
 
 func closeFunc(err *error, closer func() error) {

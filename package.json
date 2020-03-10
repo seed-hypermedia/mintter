@@ -24,7 +24,8 @@
   },
   "workspaces": [
     "frontend/www",
-    "frontend/packages/*"
+    "frontend/packages/*",
+    "proto"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.5.2",

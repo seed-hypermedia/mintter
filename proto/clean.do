@@ -1,1 +1,1 @@
-rm -f `find . -type f ! -name "*.proto" ! -name "*.do"`
+rm -f `find . -type f ! -name "*.proto" ! -name "*.do" ! -name "*.od" ! -name "*.json" ! -name "*.md"`
