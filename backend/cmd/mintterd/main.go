@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"strings"
 
 	"mintter/backend/identity"
@@ -88,25 +86,19 @@ func grpcWeb() (err error) {
 		}),
 	)
 
-	u, err := url.Parse("http://localhost:3000")
+	log, err := zap.NewDevelopment()
 	if err != nil {
-		panic(err)
+		return err
 	}
-	proxy := httputil.NewSingleHostReverseProxy(u)
+	defer log.Sync()
 
 	srv := &http.Server{
-		Addr: ":55001",
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if wrap.IsGrpcWebRequest(r) {
-				wrap.ServeHTTP(w, r)
-				return
-			}
-
-			proxy.ServeHTTP(w, r)
-		}),
+		Addr:    ":55001",
+		Handler: wrap,
 	}
 
 	g.Go(func() error {
+		log.Info("ServerStarted", zap.String("url", "http://localhost"+srv.Addr))
 		return srv.ListenAndServe()
 	})
 

@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 
 import '../styles/index.css'
 import UserProvider from '../shared/userContext'
+import {RpcProvider, makeRpcClient} from '../shared/rpc'
 
 const NoSSR: React.FC = ({children}) => {
   return <React.Fragment>{children}</React.Fragment>
@@ -22,17 +23,19 @@ export default function App({
 AppProps & {Component: any}) {
   return (
     <Dynamic>
-      <UserProvider>
-        <AnimatePresence exitBeforeEnter>
-          {router.pathname.startsWith('/welcome') ? (
-            <Component.Layout {...pageProps}>
+      <RpcProvider value={makeRpcClient()}>
+        <UserProvider>
+          <AnimatePresence exitBeforeEnter>
+            {router.pathname.startsWith('/welcome') ? (
+              <Component.Layout {...pageProps}>
+                <Component {...pageProps} key={router.route} />
+              </Component.Layout>
+            ) : (
               <Component {...pageProps} key={router.route} />
-            </Component.Layout>
-          ) : (
-            <Component {...pageProps} key={router.route} />
-          )}
-        </AnimatePresence>
-      </UserProvider>
+            )}
+          </AnimatePresence>
+        </UserProvider>
+      </RpcProvider>
     </Dynamic>
   )
 }
