@@ -4,10 +4,11 @@ import Layout from '../../components/welcome-layout'
 import P from '../../components/welcome-p'
 import {NextButton} from '../../components/welcome-buttons'
 import Footer from '../../components/footer'
+import WelcomeButton from '../../components/button'
 
 export default function WelcomeIndex() {
   return (
-    <Layout>
+    <>
       <Container className="lg:flex-1">
         <Heading>Complete!</Heading>
         <P>you can go to the app now</P>
@@ -19,6 +20,8 @@ export default function WelcomeIndex() {
           </NextButton>
         </Container>
       </Footer>
-    </Layout>
+    </>
   )
 }
+
+WelcomeIndex.Layout = Layout

@@ -9,7 +9,7 @@ import Input from '../../components/input'
 
 export default function EditProfile() {
   return (
-    <Layout>
+    <>
       <Container>
         <Heading>Edit your profile</Heading>
         <P className="text-center">
@@ -69,6 +69,7 @@ export default function EditProfile() {
                 twitter
               </label>
               <Input
+                name="twitter"
                 id="twitter"
                 type="text"
                 placeholder="https://twitter.com/your_username"
@@ -97,6 +98,8 @@ export default function EditProfile() {
           height: 200px;
         }
       `}</style>
-    </Layout>
+    </>
   )
 }
+
+EditProfile.Layout = Layout
