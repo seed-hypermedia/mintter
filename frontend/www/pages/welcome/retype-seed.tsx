@@ -5,6 +5,7 @@ import P from '../../components/welcome-p'
 import {NextButton, BackButton} from '../../components/welcome-buttons'
 import Footer from '../../components/footer'
 import Content from '../../components/content'
+import Input from '../../components/input'
 import {useRouter} from 'next/router'
 import {useForm} from 'react-hook-form'
 
@@ -59,7 +60,7 @@ export default function RetypeSeed() {
                     <span className="w-5 text-gray-500 font-light text-right mr-3 text-xs">
                       {word.key}
                     </span>
-                    <input
+                    <Input
                       type="text"
                       name={`word-${word.key}`}
                       className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline"
