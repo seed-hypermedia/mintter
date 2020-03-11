@@ -4,14 +4,30 @@ package com.mintter;
 
 option go_package = "proto";
 
+// Accounts service deals with local peer identity.
 service Accounts {
+  // Generate cryptographic seed that is used to derive all the cryptographic
+  // keys necessary for Mintter to work. It's currenly supposed to be using
+  // LND's Aezeed implementation, that solves some of the issues with BIP-39.
+  // The seed is encoded as a mnemonic of N human readable words. The seed could
+  // be reconstructed given these words and the passphrase.
+  //
+  // See: https://github.com/lightningnetwork/lnd/tree/master/aezeed.
   rpc GenSeed(GenSeedRequest) returns (GenSeedResponse) {}
 }
 
-message GenSeedRequest { bytes aezeed_passphrase = 1; }
+// Request for generating Aezeed seed.
+message GenSeedRequest {
+  // Passphrase that will be used to encipher the seed.
+  bytes aezeed_passphrase = 1;
+}
 
+// Response with the seed and mnemonic.
 message GenSeedResponse {
+  // The list of human-friendly words that can be used to backup the seed. These
+  // words must be stored in a secret place by the user.
   repeated string mnemonic = 1;
 
+  // Raw bytes of the seed encrypted with the passphraze.
   bytes enciphered_seed = 2;
 }
