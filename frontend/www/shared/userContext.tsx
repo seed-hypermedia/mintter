@@ -5,11 +5,13 @@ import useLocalStorage from '../shared/localstorage'
 export interface User {
   alias: string
   seed?: string[]
+  password?: string
 }
 
 export interface PartialUser {
   alias?: string
   seed?: string[]
+  password?: string
 }
 
 export interface UserProviderProps extends HTMLAttributes<any> {
