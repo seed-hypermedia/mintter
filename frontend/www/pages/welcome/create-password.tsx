@@ -79,13 +79,7 @@ export default function CreatePassword() {
         </Container>
         <Footer className="flex-none">
           <Container>
-            <div className="flex w-full justify-between">
-              <BackButton
-                to="/welcome"
-                onClick={() => console.log('starting over!')}
-              >
-                ← start over
-              </BackButton>
+            <div className="flex w-full justify-between flex-row-reverse">
               <NextButton
                 type="submit"
                 onClick={handleSubmit(onSubmit)}
@@ -93,6 +87,12 @@ export default function CreatePassword() {
               >
                 Next →
               </NextButton>
+              <BackButton
+                to="/welcome"
+                onClick={() => console.log('starting over!')}
+              >
+                ← start over
+              </BackButton>
             </div>
           </Container>
         </Footer>

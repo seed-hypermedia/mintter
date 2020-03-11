@@ -81,10 +81,8 @@ function NavItem({
       } ${className}`}
       {...props}
     >
-      <Link href={href}>
-        <a className="text-lg block" onClick={onClick}>
-          {title}
-        </a>
+      <Link href={href} className="text-lg block" onClick={onClick}>
+        {title}
       </Link>
     </div>
   )

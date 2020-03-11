@@ -43,8 +43,11 @@ export default function RetypeSeed() {
             recover your identity. To make sure that you have properly saved
             your seed, please retype the words
           </P>
-          <P className="text-center font-bold">23, 16 & 1</P>
-          <P className="text-center">(repeat, rule, black)</P>
+          <P className="text-center font-bold">{`${idxs[0] + 1}, ${idxs[1] +
+            1} & ${idxs[2] + 1}`}</P>
+          <P className="text-center">{`(${user.seed[idxs[0]]}, ${
+            user.seed[idxs[1]]
+          }, ${user.seed[idxs[2]]})`}</P>
           <Content className="flex-wrap flex w-full">
             <div className="flex flex-col w-full items-center">
               {idxs.map(n => (
@@ -83,13 +86,7 @@ export default function RetypeSeed() {
         </Container>
         <Footer className="flex-none">
           <Container>
-            <div className="flex w-full justify-between">
-              <BackButton
-                to="/welcome"
-                onClick={() => console.log('starting over!')}
-              >
-                ← start over
-              </BackButton>
+            <div className="flex w-full justify-between flex-row-reverse">
               <NextButton
                 type="submit"
                 onClick={handleSubmit(onSubmit)}
@@ -97,6 +94,12 @@ export default function RetypeSeed() {
               >
                 Next →
               </NextButton>
+              <BackButton
+                to="/welcome"
+                onClick={() => console.log('starting over!')}
+              >
+                ← start over
+              </BackButton>
             </div>
           </Container>
         </Footer>
