@@ -1,3 +1,4 @@
+import {useEffect, useState} from 'react'
 import Layout from '../../components/welcome-layout'
 import Container from '../../components/welcome-container'
 import Heading from '../../components/welcome-heading'
@@ -8,12 +9,13 @@ import P from '../../components/welcome-p'
 import {css} from 'emotion'
 import {useRPC} from '../../shared/rpc'
 import {GenSeedRequest} from '@mintter/proto/mintter_pb'
-import {useEffect, useState} from 'react'
+import {useUser} from '../../shared/userContext'
 
 export default function SecurityPack() {
-  const [error, setError] = useState()
+  const [error, setError] = useState<{code: number; message: string}>()
   const rpc = useRPC()
-  const [mnemonic, setMnemonic] = useState([])
+  const [mnemonic, setMnemonic] = useState<string[]>([])
+  const {setUser} = useUser()
 
   useEffect(() => {
     async function handleRPC() {
@@ -40,6 +42,13 @@ export default function SecurityPack() {
     }
 
     return res
+  }
+
+  function handleNext() {
+    // store seed to the user
+    setUser({seed: mnemonic})
+
+    //send the user to next page
   }
 
   // mnemonic words separated into lists
@@ -108,7 +117,7 @@ export default function SecurityPack() {
             >
               ← start over
             </BackButton>
-            <NextButton to="/welcome/retype-seed">Next →</NextButton>
+            <NextButton onClick={handleNext}>Next →</NextButton>
           </div>
         </Container>
       </Footer>

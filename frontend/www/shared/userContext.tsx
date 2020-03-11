@@ -4,6 +4,12 @@ import useLocalStorage from '../shared/localstorage'
 
 export interface User {
   alias: string
+  seed?: string[]
+}
+
+export interface PartialUser {
+  alias?: string
+  seed?: string[]
 }
 
 export interface UserProviderProps extends HTMLAttributes<any> {
@@ -13,21 +19,30 @@ export interface UserProviderProps extends HTMLAttributes<any> {
 
 interface UserContextInterface {
   user: User
-  setUser?: (user?: User) => void
+  setUser?: (user: PartialUser) => void
 }
 
 export const UserContext = createContext<UserContextInterface>({
-  user: {alias: ''},
+  user: {alias: '', seed: ['']},
 })
 
 export default function UserProvider({
   user: propUser = {alias: ''},
   children,
 }: UserProviderProps) {
-  const [user, setUser] = useLocalStorage({
+  const [user, originalSetUser] = useLocalStorage({
     key: 'MINTTER_USER',
     initialValue: propUser,
   })
+
+  function setUser(partial_user: PartialUser) {
+    const newUser: User = {
+      ...user,
+      partial_user,
+    }
+
+    originalSetUser(newUser)
+  }
 
   return (
     <UserContext.Provider value={{user, setUser}}>
