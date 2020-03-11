@@ -184,12 +184,12 @@ export default function EditorPage(): JSX.Element {
   }, [editor, modal])
 
   return (
-    <Layout className="flex bg-gray-100">
+    <Layout className="flex">
       <Seo title="Editor | Mintter" />
 
       <Sidebar />
       <div className="flex-1 overflow-y-auto pt-12" ref={wrapperRef}>
-        <Container>
+        <Container className="max-w-3xl">
           <div className="flex-1">
             <DocumentStatus />
             <Slate

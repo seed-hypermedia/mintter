@@ -1,7 +1,7 @@
 import React from 'react'
 import {AppProps} from 'next/app'
 import {AnimatePresence} from 'framer-motion'
-
+import DefaultLayout from '../components/layout'
 import dynamic from 'next/dynamic'
 
 import '../styles/index.css'
@@ -21,15 +21,16 @@ export default function App({
   router,
 }: // eslint-disable-next-line @typescript-eslint/no-explicit-any
 AppProps & {Component: any}) {
+  const Layout = Component.Layout || DefaultLayout
   return (
     <Dynamic>
       <RpcProvider value={makeRpcClient()}>
         <UserProvider>
           <AnimatePresence exitBeforeEnter>
             {router.pathname.startsWith('/welcome') ? (
-              <Component.Layout {...pageProps}>
+              <Layout {...pageProps}>
                 <Component {...pageProps} key={router.route} />
-              </Component.Layout>
+              </Layout>
             ) : (
               <Component {...pageProps} key={router.route} />
             )}
