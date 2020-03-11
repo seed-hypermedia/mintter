@@ -1,4 +1,4 @@
-import {createContext} from 'react'
+import {createContext, useContext} from 'react'
 import {AccountsPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
 
 interface RpcContextInterface {
@@ -14,3 +14,7 @@ export const makeRpcClient = (): RpcContextInterface => {
 export const RpcContext = createContext<RpcContextInterface>(makeRpcClient())
 
 export const RpcProvider = RpcContext.Provider
+
+export function useRPC() {
+  return useContext(RpcContext)
+}
