@@ -8,17 +8,19 @@ import Content from '../../components/content'
 import Input from '../../components/input'
 import {useRouter} from 'next/router'
 import {useForm} from 'react-hook-form'
-import {NextPage} from 'next'
+import {useUser} from '../../shared/userContext'
 
 export default function CreatePassword() {
   const {register, watch, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
   })
+  const {setUser} = useUser()
   const router = useRouter()
   const psswd = watch('password')
 
   async function onSubmit(data) {
     console.log('submit => ', data)
+    await setUser({password: data.password})
     await router.push('/welcome/edit-profile')
   }
 
