@@ -24,7 +24,9 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+// Request for generating Aezeed seed.
 type GenSeedRequest struct {
+	// Passphrase that will be used to encipher the seed.
 	AezeedPassphrase     []byte   `protobuf:"bytes,1,opt,name=aezeed_passphrase,json=aezeedPassphrase,proto3" json:"aezeed_passphrase,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -63,8 +65,12 @@ func (m *GenSeedRequest) GetAezeedPassphrase() []byte {
 	return nil
 }
 
+// Response with the seed and mnemonic.
 type GenSeedResponse struct {
-	Mnemonic             []string `protobuf:"bytes,1,rep,name=mnemonic,proto3" json:"mnemonic,omitempty"`
+	// The list of human-friendly words that can be used to backup the seed. These
+	// words must be stored in a secret place by the user.
+	Mnemonic []string `protobuf:"bytes,1,rep,name=mnemonic,proto3" json:"mnemonic,omitempty"`
+	// Raw bytes of the seed encrypted with the passphraze.
 	EncipheredSeed       []byte   `protobuf:"bytes,2,opt,name=enciphered_seed,json=encipheredSeed,proto3" json:"enciphered_seed,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -148,6 +154,13 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type AccountsClient interface {
+	// Generate cryptographic seed that is used to derive all the cryptographic
+	// keys necessary for Mintter to work. It's currenly supposed to be using
+	// LND's Aezeed implementation, that solves some of the issues with BIP-39.
+	// The seed is encoded as a mnemonic of N human readable words. The seed could
+	// be reconstructed given these words and the passphrase.
+	//
+	// See: https://github.com/lightningnetwork/lnd/tree/master/aezeed.
 	GenSeed(ctx context.Context, in *GenSeedRequest, opts ...grpc.CallOption) (*GenSeedResponse, error)
 }
 
@@ -170,6 +183,13 @@ func (c *accountsClient) GenSeed(ctx context.Context, in *GenSeedRequest, opts .
 
 // AccountsServer is the server API for Accounts service.
 type AccountsServer interface {
+	// Generate cryptographic seed that is used to derive all the cryptographic
+	// keys necessary for Mintter to work. It's currenly supposed to be using
+	// LND's Aezeed implementation, that solves some of the issues with BIP-39.
+	// The seed is encoded as a mnemonic of N human readable words. The seed could
+	// be reconstructed given these words and the passphrase.
+	//
+	// See: https://github.com/lightningnetwork/lnd/tree/master/aezeed.
 	GenSeed(context.Context, *GenSeedRequest) (*GenSeedResponse, error)
 }
 
