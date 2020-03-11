@@ -4,24 +4,20 @@ import Seo from '../components/seo'
 import Container from '../components/container'
 import Layout from '../components/layout'
 import Heading from '../components/heading'
-import {RpcContext} from '../shared/rpc'
+import {useRPC} from '../shared/rpc'
 import {GenSeedRequest} from '@mintter/proto/mintter_pb'
 
 const GrpcTest = () => {
-  const rpc = useContext(RpcContext)
-  const [data, setData] = useState<{mnemonic: String[]}>({mnemonic: []})
+  const rpc = useRPC()
+  const [data, setData] = useState<{mnemonic: string[]}>({mnemonic: []})
 
   useEffect(() => {
     const fetchData = async () => {
       const req = new GenSeedRequest()
       req.setAezeedPassphrase('test')
 
-      try {
-        const resp = await rpc.accounts.genSeed(req)
-        setData({mnemonic: resp.getMnemonicList()})
-      } catch (err) {
-        throw err
-      }
+      const resp = await rpc.accounts.genSeed(req)
+      setData({mnemonic: resp.getMnemonicList()})
     }
 
     fetchData()
@@ -58,8 +54,6 @@ export default function Home() {
               App
             </Link>
           </div>
-
-          <GrpcTest />
         </div>
       </Container>
     </Layout>
