@@ -19,7 +19,7 @@ export interface UserProviderProps extends HTMLAttributes<any> {
 
 interface UserContextInterface {
   user: User
-  setUser?: (user: PartialUser) => void
+  setUser?: (user: PartialUser | Function) => void
 }
 
 export const UserContext = createContext<UserContextInterface>({
@@ -38,7 +38,7 @@ export default function UserProvider({
   function setUser(partial_user: PartialUser) {
     const newUser: User = {
       ...user,
-      partial_user,
+      ...partial_user,
     }
 
     originalSetUser(newUser)

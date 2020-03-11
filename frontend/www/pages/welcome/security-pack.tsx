@@ -10,12 +10,14 @@ import {css} from 'emotion'
 import {useRPC} from '../../shared/rpc'
 import {GenSeedRequest} from '@mintter/proto/mintter_pb'
 import {useUser} from '../../shared/userContext'
+import {useRouter} from 'next/router'
 
 export default function SecurityPack() {
   const [error, setError] = useState<{code: number; message: string}>()
   const rpc = useRPC()
   const [mnemonic, setMnemonic] = useState<string[]>([])
   const {setUser} = useUser()
+  const router = useRouter()
 
   useEffect(() => {
     async function handleRPC() {
@@ -49,6 +51,7 @@ export default function SecurityPack() {
     setUser({seed: mnemonic})
 
     //send the user to next page
+    router.push('/welcome/retype-seed')
   }
 
   // mnemonic words separated into lists

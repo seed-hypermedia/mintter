@@ -1,4 +1,4 @@
-import {useEffect} from 'react'
+import {useEffect, useState} from 'react'
 import Layout from '../../components/welcome-layout'
 import Container from '../../components/welcome-container'
 import Heading from '../../components/welcome-heading'
@@ -10,21 +10,7 @@ import Input from '../../components/input'
 import {useRouter} from 'next/router'
 import {useForm} from 'react-hook-form'
 import CheckIcon from '@material-ui/icons/Check'
-
-const words = [
-  {
-    key: 23,
-    value: 'repeat',
-  },
-  {
-    key: 16,
-    value: 'rule',
-  },
-  {
-    key: 1,
-    value: 'black',
-  },
-]
+import {useUser} from '../../shared/userContext'
 
 export default function RetypeSeed() {
   const {register, handleSubmit, errors, formState} = useForm({
@@ -32,9 +18,18 @@ export default function RetypeSeed() {
   })
 
   const router = useRouter()
+  const {user, setUser} = useUser()
+  console.log('user', user)
+  const [idxs, setIdxs] = useState<number[]>([])
+
+  useEffect(() => {
+    const temp = [1, 2, 3].map(() => Math.floor(Math.random() * 23))
+    setIdxs(temp)
+  }, [])
 
   async function onSubmit(data) {
     console.log('submit => ', data)
+    setUser({seed: []})
     await router.push('/welcome/create-password')
   }
 
@@ -52,22 +47,22 @@ export default function RetypeSeed() {
           <P className="text-center">(repeat, rule, black)</P>
           <Content className="flex-wrap flex w-full">
             <div className="flex flex-col w-full items-center">
-              {words.map(word => (
+              {idxs.map(n => (
                 <>
-                  <div key={word.key} className="flex">
+                  <div key={idxs[n]} className="flex">
                     <span className="w-5 text-gray-500 font-light text-right mr-3 text-xs pt-4">
-                      {word.key}
+                      {n + 1}
                     </span>
                     <div className="flex-1 relative mb-12">
                       <Input
                         type="text"
-                        name={`word-${word.key}`}
+                        name={`word-${n}`}
                         ref={register({
                           required: true,
-                          validate: value => value === word.value,
+                          validate: value => value === user.seed[n],
                         })}
                       />
-                      {errors[`word-${word.key}`] && (
+                      {errors[`word-${n}`] && (
                         <p className=" text-red-500 text-xs absolute left-0 mt-1">
                           this word is not correct
                         </p>
@@ -75,8 +70,8 @@ export default function RetypeSeed() {
                     </div>
 
                     <span className="text-green-500 pt-2 pl-2 w-10 h-10">
-                      {!errors[`word-${word.key}`] &&
-                        formState.dirtyFields[`word-${word.key}`] && (
+                      {!errors[`word-${n}`] &&
+                        formState.dirtyFields[`word-${n}`] && (
                           <CheckIcon color="inherit" />
                         )}
                     </span>
