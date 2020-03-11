@@ -3,6 +3,9 @@ package rpc
 import (
 	"context"
 	"mintter/proto"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Server implements Mintter rpc.
@@ -15,8 +18,28 @@ func (s *Server) NewServer() (proto.AccountsServer, error) {
 
 // GenSeed implements GenSeed rpc.
 func (s *Server) GenSeed(ctx context.Context, req *proto.GenSeedRequest) (*proto.GenSeedResponse, error) {
+	if len(req.AezeedPassphrase) == 0 {
+		return nil, status.Error(codes.InvalidArgument, "passphrase is required")
+	}
+
+	seed, err := newSeed()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "unable to generate seed: %w", err)
+	}
+
+	words, err := seed.ToMnemonic(req.AezeedPassphrase)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "unable to generate mnemonic: %w", err)
+	}
+
+	rawSeed, err := seed.Encipher(req.AezeedPassphrase)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "unable to encipher seed: %w", err)
+	}
+
 	resp := &proto.GenSeedResponse{
-		Mnemonic: []string{"hello", "world"},
+		Mnemonic:       words[:],
+		EncipheredSeed: rawSeed[:],
 	}
 
 	return resp, nil
