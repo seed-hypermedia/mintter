@@ -24,17 +24,17 @@ func (s *Server) GenSeed(ctx context.Context, req *proto.GenSeedRequest) (*proto
 
 	seed, err := newSeed()
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "unable to generate seed: %w", err)
+		return nil, status.Errorf(codes.Internal, "unable to generate seed: %v", err)
 	}
 
 	words, err := seed.ToMnemonic(req.AezeedPassphrase)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "unable to generate mnemonic: %w", err)
+		return nil, status.Errorf(codes.Internal, "unable to generate mnemonic: %v", err)
 	}
 
 	rawSeed, err := seed.Encipher(req.AezeedPassphrase)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "unable to encipher seed: %w", err)
+		return nil, status.Errorf(codes.Internal, "unable to encipher seed: %v", err)
 	}
 
 	resp := &proto.GenSeedResponse{
