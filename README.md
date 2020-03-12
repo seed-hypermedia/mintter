@@ -35,3 +35,11 @@ served from the backend.
 Backend is a long-running program that lives on user's local machine. It handles
 all the p2p networking, IPFS and Lightning Network stuff. It exposes the gRPC
 API for frontend to use.
+
+### Submodules
+
+Some of the third-party projects we are using are included as submodules into
+this repository. This makes it easier for us to contribute upstream. We use
+[git-subtrac](https://github.com/apenwarr/git-subtrac) to mitigate many of the
+quirks of submodules. But try to get used to run
+`git pull --recurse-subdmodules` to avoid some headaches :)
