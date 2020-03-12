@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"mintter/backend/daemon"
 	"mintter/backend/identity"
 	"mintter/backend/rpc"
 	"mintter/proto"
@@ -69,7 +70,15 @@ func main() {
 func grpcWeb() (err error) {
 	g, ctx := errgroup.WithContext(mainutil.TrapSignals())
 
-	svc := &rpc.Server{}
+	d, err := daemon.New()
+	if err != nil {
+		return fmt.Errorf("unable to create daemon: %w", err)
+	}
+
+	svc, err := rpc.NewServer(d)
+	if err != nil {
+		return fmt.Errorf("unable to create rpc server: %w", err)
+	}
 
 	rpcsrv := grpc.NewServer()
 

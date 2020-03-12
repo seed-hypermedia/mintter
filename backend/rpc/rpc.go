@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"mintter/backend/daemon"
 	"mintter/proto"
 
 	"google.golang.org/grpc/codes"
@@ -9,33 +10,27 @@ import (
 )
 
 // Server implements Mintter rpc.
-type Server struct{}
+type Server struct {
+	d *daemon.Daemon
+}
 
 // NewServer creates a new Server.
-func (s *Server) NewServer() (proto.AccountsServer, error) {
-	return nil, nil
+func NewServer(d *daemon.Daemon) (*Server, error) {
+	return &Server{
+		d: d,
+	}, nil
 }
 
 // GenSeed implements GenSeed rpc.
 func (s *Server) GenSeed(ctx context.Context, req *proto.GenSeedRequest) (*proto.GenSeedResponse, error) {
-	seed, err := newSeed()
+	mnemonic, seed, err := s.d.GenSeed(req.AezeedPassphrase)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "unable to generate seed: %v", err)
 	}
 
-	words, err := seed.ToMnemonic(req.AezeedPassphrase)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "unable to generate mnemonic: %v", err)
-	}
-
-	rawSeed, err := seed.Encipher(req.AezeedPassphrase)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "unable to encipher seed: %v", err)
-	}
-
 	resp := &proto.GenSeedResponse{
-		Mnemonic:       words[:],
-		EncipheredSeed: rawSeed[:],
+		Mnemonic:       mnemonic[:],
+		EncipheredSeed: seed[:],
 	}
 
 	return resp, nil
