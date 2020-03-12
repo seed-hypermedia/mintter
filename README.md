@@ -41,5 +41,9 @@ API for frontend to use.
 Some of the third-party projects we are using are included as submodules into
 this repository. This makes it easier for us to contribute upstream. We use
 [git-subtrac](https://github.com/apenwarr/git-subtrac) to mitigate many of the
-quirks of submodules. But try to get used to run
-`git pull --recurse-subdmodules` to avoid some headaches :)
+quirks of submodules. To avoid some headaches run this to configure your local
+git repo:
+
+```shell
+git config submodule.recurse true
+```
