@@ -1,5 +1,13 @@
 # @mintter/site
 
+## 0.2.11
+
+### Patch Changes
+
+- 8aa7366: security pack + passphrase
+- Updated dependencies [8aa7366]
+  - @mintter/proto@0.1.0
+
 ## 0.2.10
 
 ### Patch Changes
