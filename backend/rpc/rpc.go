@@ -25,7 +25,7 @@ func NewServer(d *daemon.Daemon) (*Server, error) {
 func (s *Server) GenSeed(ctx context.Context, req *proto.GenSeedRequest) (*proto.GenSeedResponse, error) {
 	mnemonic, seed, err := s.d.GenSeed(req.AezeedPassphrase)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "unable to generate seed: %v", err)
+		return nil, status.Errorf(codes.Internal, "failed GenSeed: %v", err)
 	}
 
 	resp := &proto.GenSeedResponse{
@@ -34,4 +34,17 @@ func (s *Server) GenSeed(ctx context.Context, req *proto.GenSeedRequest) (*proto
 	}
 
 	return resp, nil
+}
+
+// InitWallet implements InitWallet rpc.
+func (s *Server) InitWallet(ctx context.Context, req *proto.InitWalletRequest) (*proto.InitWalletResponse, error) {
+	var m daemon.Mnemonic
+
+	copy(m[:], req.Mnemonic)
+
+	if err := s.d.InitWallet(m, req.AezeedPassphrase); err != nil {
+		return nil, status.Errorf(codes.Internal, "failed InitWallet: %v", err)
+	}
+
+	return &proto.InitWalletResponse{}, nil
 }
