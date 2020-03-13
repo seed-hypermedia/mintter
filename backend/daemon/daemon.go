@@ -2,9 +2,11 @@ package daemon
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/lightningnetwork/lnd/aezeed"
@@ -48,19 +50,55 @@ func (d *Daemon) GenSeed(passphrase []byte) (Mnemonic, EncipheredSeed, error) {
 
 	rawSeed, err := seed.Encipher(passphrase)
 	if err != nil {
-		return Mnemonic{}, EncipheredSeed{}, fmt.Errorf("unable to encipher seed: %w", err)
+		return Mnemonic{}, EncipheredSeed{}, fmt.Errorf("failed to encipher seed: %w", err)
 	}
 
 	words, err := seed.ToMnemonic(passphrase)
 	if err != nil {
-		return Mnemonic{}, EncipheredSeed{}, fmt.Errorf("unable to create mnemonic: %w", err)
+		return Mnemonic{}, EncipheredSeed{}, fmt.Errorf("failed to create mnemonic: %w", err)
 	}
 
 	return words, rawSeed, nil
 }
 
+// InitWallet initialize the daemon from the provided mnemonic.
+func (d *Daemon) InitWallet(m Mnemonic, pass []byte) error {
+	seed, err := m.ToCipherSeed(pass)
+	if err != nil {
+		return fmt.Errorf("failed to decipher seed: %w", err)
+	}
+
+	rawSeed, err := seed.Encipher(pass)
+	if err != nil {
+		return fmt.Errorf("failed to encipher seed: %w", err)
+	}
+
+	if _, err := d.loadSeed(); err == nil {
+		return errors.New("wallet is already initialized")
+	}
+
+	if err := d.storeSeed(rawSeed); err != nil {
+		return fmt.Errorf("failed to store seed: %w", err)
+	}
+
+	return nil
+}
+
 func (d *Daemon) storeSeed(seed EncipheredSeed) error {
-	return ioutil.WriteFile(d.opts.repoPath, seed[:], 0400)
+	return ioutil.WriteFile(filepath.Join(d.opts.repoPath, "seed"), seed[:], 0400)
+}
+
+func (d *Daemon) loadSeed() (EncipheredSeed, error) {
+	var seed EncipheredSeed
+
+	data, err := ioutil.ReadFile(filepath.Join(d.opts.repoPath, "seed"))
+	if err != nil {
+		return seed, err
+	}
+
+	copy(seed[:], data)
+
+	return seed, nil
 }
 
 func newSeed() (*aezeed.CipherSeed, error) {
