@@ -4,13 +4,11 @@ import useLocalStorage from '../shared/localstorage'
 
 export interface User {
   alias: string
-  seed?: string[]
   password?: string
 }
 
 export interface PartialUser {
   alias?: string
-  seed?: string[]
   password?: string
 }
 
@@ -25,7 +23,7 @@ interface UserContextInterface {
 }
 
 export const UserContext = createContext<UserContextInterface>({
-  user: {alias: '', seed: ['']},
+  user: {alias: ''},
 })
 
 export default function UserProvider({
