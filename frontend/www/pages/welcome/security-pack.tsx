@@ -12,6 +12,9 @@ import {GenSeedRequest} from '@mintter/proto/mintter_pb'
 import {useUser} from '../../shared/userContext'
 import {useRouter} from 'next/router'
 import {useSeed} from '../../shared/seedContext'
+import Input from '../../components/input'
+import Button from '../../components/button'
+import {useForm} from 'react-hook-form'
 
 export default function SecurityPack() {
   const [error, setError] = useState<{code: number; message: string}>()
@@ -19,24 +22,23 @@ export default function SecurityPack() {
   const [mnemonic, setMnemonic] = useState<string[]>([])
   const router = useRouter()
   const {setSeed} = useSeed()
+  const {register, handleSubmit} = useForm({
+    mode: 'onChange',
+  })
 
-  useEffect(() => {
-    async function handleRPC() {
-      const req = new GenSeedRequest()
-      try {
-        req.setAezeedPassphrase('test')
-        const resp = await rpc.genSeed(req)
-        setMnemonic(resp.getMnemonicList())
-      } catch (err) {
-        setError(err)
-        console.error('something went wrong...', err)
-      }
+  async function handleRPC(passphr = 'test') {
+    const req = new GenSeedRequest()
+    try {
+      req.setAezeedPassphrase(passphr)
+      const resp = await rpc.genSeed(req)
+      setMnemonic(resp.getMnemonicList())
+    } catch (err) {
+      setError(err)
+      console.error('something went wrong...', err)
     }
+  }
 
-    handleRPC()
-  }, [])
-
-  function splitWords(arr) {
+  function splitWords(arr: string[]): string[][] {
     const temp = [...arr]
     const res = []
 
@@ -54,9 +56,12 @@ export default function SecurityPack() {
     router.push('/welcome/retype-seed')
   }
 
+  function handlePassphrase() {
+    handleRPC()
+  }
+
   // mnemonic words separated into lists
   const lists = splitWords(mnemonic)
-
   return (
     <>
       <Container>
@@ -66,61 +71,33 @@ export default function SecurityPack() {
           your identity ID
         </P>
         <Content className="flex-wrap flex w-full">
-          {error
-            ? error.message
-            : lists.map((list, list_idx) => (
-                <div
-                  key={list_idx}
-                  className={`w-1/2 flex-1 flex flex-col md:order-none ${css`
-                    min-width: 162px;
-                    margin-top: -12px;
-                    align-items: start;
-                    padding-left: 30%;
-
-                    @media (min-width: 396px) {
-                      min-width: 50%;
-                      order: ${list_idx % 2 == 0 ? '1' : '2'};
-                      margin-top: ${list_idx % 2 == 0 ? '0' : '-12px'};
-                      align-items: center;
-                      padding-left: 0;
-                    }
-
-                    @media (min-width: 768px) {
-                      min-width: 0;
-                      order: 0;
-                      margin-top: 0;
-                    }
-                  `}`}
-                >
-                  <ol>
-                    {list.map((word, word_idx) => (
-                      <li key={word_idx} className="my-3 flex items-baseline">
-                        <span
-                          className={`text-bold text-gray-500 text-xs ${css`
-                            width: 24px;
-                            display: inline-block;
-                          `}`}
-                        >
-                          {list_idx * 6 + word_idx + 1}.
-                        </span>
-                        {word}
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              ))}
+          {mnemonic.length === 0 ? (
+            <div className="flex-col flex-1 max-w-xs mx-auto">
+              <label
+                className="block text-gray-500 text-xs font-semibold mb-1"
+                htmlFor="passphrase"
+              >
+                Passphrase?
+              </label>
+              <form>
+                <Input id="passphrase" name="passphrase" ref={register()} />
+                <Button type="submit" onClick={handleSubmit(handlePassphrase)}>
+                  Generate security pack
+                </Button>
+              </form>
+            </div>
+          ) : (
+            <MnemonicWords lists={lists} error={error} />
+          )}
         </Content>
       </Container>
       <Footer className="flex-none">
         <Container>
           <div className="flex w-full justify-between flex-row-reverse">
-            <NextButton onClick={handleNext}>Next →</NextButton>
-            <BackButton
-              to="/welcome"
-              onClick={() => console.log('starting over!')}
-            >
-              ← start over
-            </BackButton>
+            <NextButton disabled={mnemonic.length === 0} onClick={handleNext}>
+              Next →
+            </NextButton>
+            <BackButton to="/welcome">← start over</BackButton>
           </div>
         </Container>
       </Footer>
@@ -129,3 +106,59 @@ export default function SecurityPack() {
 }
 
 SecurityPack.Layout = Layout
+
+function MnemonicWords({
+  lists,
+  error,
+}: {
+  lists?: string[][]
+  error?: {code: number; message: string}
+}) {
+  return (
+    <>
+      {error
+        ? error.message
+        : lists.map((list, list_idx) => (
+            <div
+              key={list_idx}
+              className={`w-1/2 flex-1 flex flex-col md:order-none ${css`
+                min-width: 162px;
+                margin-top: -12px;
+                align-items: start;
+                padding-left: 30%;
+
+                @media (min-width: 396px) {
+                  min-width: 50%;
+                  order: ${list_idx % 2 == 0 ? '1' : '2'};
+                  margin-top: ${list_idx % 2 == 0 ? '0' : '-12px'};
+                  align-items: center;
+                  padding-left: 0;
+                }
+
+                @media (min-width: 768px) {
+                  min-width: 0;
+                  order: 0;
+                  margin-top: 0;
+                }
+              `}`}
+            >
+              <ol>
+                {list.map((word, word_idx) => (
+                  <li key={word_idx} className="my-3 flex items-baseline">
+                    <span
+                      className={`text-bold text-gray-500 text-xs ${css`
+                        width: 24px;
+                        display: inline-block;
+                      `}`}
+                    >
+                      {list_idx * 6 + word_idx + 1}.
+                    </span>
+                    {word}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ))}
+    </>
+  )
+}
