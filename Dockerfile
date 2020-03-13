@@ -7,4 +7,4 @@ RUN nix-env -i git
 COPY . .
 RUN nix-env -f shell.nix -i -A buildInputs
 RUN rm -rf /usr/src/*
-RUN nix-store --gc --print-dead
+RUN nix-collect-garbage -d
