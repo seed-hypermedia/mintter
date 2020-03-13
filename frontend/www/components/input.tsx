@@ -1,6 +1,6 @@
 import React from 'react'
 export interface InputProps extends React.HTMLAttributes<HTMLInputElement> {
-  type: 'text' | 'password'
+  type?: 'text' | 'password'
   name: string
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

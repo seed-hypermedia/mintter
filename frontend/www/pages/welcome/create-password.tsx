@@ -89,12 +89,7 @@ export default function CreatePassword() {
               >
                 Next →
               </NextButton>
-              <BackButton
-                to="/welcome"
-                onClick={() => console.log('starting over!')}
-              >
-                ← start over
-              </BackButton>
+              <BackButton to="/welcome">← start over</BackButton>
             </div>
           </Container>
         </Footer>

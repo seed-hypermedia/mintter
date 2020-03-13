@@ -44,6 +44,7 @@ export default function EditProfile() {
                 Alias
               </label>
               <Input
+                name="alias"
                 id="alias"
                 type="text"
                 placeholder="Your readable username"
@@ -82,12 +83,7 @@ export default function EditProfile() {
         <Container>
           <div className="flex w-full justify-between flex-row-reverse">
             <NextButton to="/welcome/complete">Next →</NextButton>
-            <BackButton
-              to="/welcome"
-              onClick={() => console.log('starting over!')}
-            >
-              ← start over
-            </BackButton>
+            <BackButton to="/welcome">← start over</BackButton>
           </div>
         </Container>
       </Footer>
