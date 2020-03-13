@@ -82,7 +82,7 @@ func grpcWeb() (err error) {
 
 	rpcsrv := grpc.NewServer()
 
-	proto.RegisterAccountsServer(rpcsrv, svc)
+	proto.RegisterMintterServer(rpcsrv, svc)
 
 	grpclis, err := net.Listen("tcp", ":55000")
 	if err != nil {

@@ -126,7 +126,7 @@ func init() {
 }
 
 var fileDescriptor_459271e8c06255ea = []byte{
-	// 206 bytes of a gzipped FileDescriptorProto
+	// 201 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0xcd, 0xcd, 0xcc, 0x2b,
 	0x29, 0x49, 0x2d, 0xd2, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x4e, 0xce, 0xcf, 0xd5, 0x83,
 	0x0a, 0x29, 0xd9, 0x72, 0xf1, 0xb9, 0xa7, 0xe6, 0x05, 0xa7, 0xa6, 0xa6, 0x04, 0xa5, 0x16, 0x96,
@@ -136,10 +136,10 @@ var fileDescriptor_459271e8c06255ea = []byte{
 	0xa9, 0x42, 0x52, 0x5c, 0x1c, 0xb9, 0x79, 0xa9, 0xb9, 0xf9, 0x79, 0x99, 0xc9, 0x12, 0x8c, 0x0a,
 	0xcc, 0x1a, 0x9c, 0x41, 0x70, 0xbe, 0x90, 0x3a, 0x17, 0x7f, 0x6a, 0x5e, 0x72, 0x66, 0x41, 0x46,
 	0x6a, 0x51, 0x6a, 0x4a, 0x7c, 0x71, 0x6a, 0x6a, 0x8a, 0x04, 0x13, 0xd8, 0x64, 0x3e, 0x84, 0x30,
-	0xc8, 0x30, 0xa3, 0x20, 0x2e, 0x0e, 0xc7, 0xe4, 0xe4, 0xfc, 0xd2, 0xbc, 0x92, 0x62, 0x21, 0x37,
-	0x2e, 0x76, 0xa8, 0x1d, 0x42, 0xd2, 0x7a, 0x48, 0x6e, 0xd7, 0x43, 0x75, 0xb8, 0x94, 0x0c, 0x76,
-	0x49, 0x88, 0xb3, 0x94, 0x18, 0x9c, 0xd8, 0xa3, 0x58, 0xc1, 0x01, 0x90, 0xc4, 0x06, 0xa6, 0x8c,
-	0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x5b, 0x4c, 0xa0, 0x6d, 0x18, 0x01, 0x00, 0x00,
+	0xc8, 0x30, 0xa3, 0x40, 0x2e, 0x76, 0x5f, 0x88, 0x0b, 0x85, 0xdc, 0xb8, 0xd8, 0xa1, 0x56, 0x08,
+	0x49, 0xeb, 0x21, 0x39, 0x5d, 0x0f, 0xd5, 0xdd, 0x52, 0x32, 0xd8, 0x25, 0x21, 0xae, 0x52, 0x62,
+	0x70, 0x62, 0x8f, 0x62, 0x05, 0xfb, 0x3f, 0x89, 0x0d, 0x4c, 0x19, 0x03, 0x02, 0x00, 0x00, 0xff,
+	0xff, 0xab, 0x5f, 0xe5, 0x8f, 0x17, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -150,10 +150,10 @@ var _ grpc.ClientConnInterface
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion6
 
-// AccountsClient is the client API for Accounts service.
+// MintterClient is the client API for Mintter service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type AccountsClient interface {
+type MintterClient interface {
 	// Generate cryptographic seed that is used to derive all the cryptographic
 	// keys necessary for Mintter to work. It's currenly supposed to be using
 	// LND's Aezeed implementation, that solves some of the issues with BIP-39.
@@ -164,25 +164,25 @@ type AccountsClient interface {
 	GenSeed(ctx context.Context, in *GenSeedRequest, opts ...grpc.CallOption) (*GenSeedResponse, error)
 }
 
-type accountsClient struct {
+type mintterClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewAccountsClient(cc grpc.ClientConnInterface) AccountsClient {
-	return &accountsClient{cc}
+func NewMintterClient(cc grpc.ClientConnInterface) MintterClient {
+	return &mintterClient{cc}
 }
 
-func (c *accountsClient) GenSeed(ctx context.Context, in *GenSeedRequest, opts ...grpc.CallOption) (*GenSeedResponse, error) {
+func (c *mintterClient) GenSeed(ctx context.Context, in *GenSeedRequest, opts ...grpc.CallOption) (*GenSeedResponse, error) {
 	out := new(GenSeedResponse)
-	err := c.cc.Invoke(ctx, "/com.mintter.Accounts/GenSeed", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/com.mintter.Mintter/GenSeed", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// AccountsServer is the server API for Accounts service.
-type AccountsServer interface {
+// MintterServer is the server API for Mintter service.
+type MintterServer interface {
 	// Generate cryptographic seed that is used to derive all the cryptographic
 	// keys necessary for Mintter to work. It's currenly supposed to be using
 	// LND's Aezeed implementation, that solves some of the issues with BIP-39.
@@ -193,43 +193,43 @@ type AccountsServer interface {
 	GenSeed(context.Context, *GenSeedRequest) (*GenSeedResponse, error)
 }
 
-// UnimplementedAccountsServer can be embedded to have forward compatible implementations.
-type UnimplementedAccountsServer struct {
+// UnimplementedMintterServer can be embedded to have forward compatible implementations.
+type UnimplementedMintterServer struct {
 }
 
-func (*UnimplementedAccountsServer) GenSeed(ctx context.Context, req *GenSeedRequest) (*GenSeedResponse, error) {
+func (*UnimplementedMintterServer) GenSeed(ctx context.Context, req *GenSeedRequest) (*GenSeedResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenSeed not implemented")
 }
 
-func RegisterAccountsServer(s *grpc.Server, srv AccountsServer) {
-	s.RegisterService(&_Accounts_serviceDesc, srv)
+func RegisterMintterServer(s *grpc.Server, srv MintterServer) {
+	s.RegisterService(&_Mintter_serviceDesc, srv)
 }
 
-func _Accounts_GenSeed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Mintter_GenSeed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GenSeedRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccountsServer).GenSeed(ctx, in)
+		return srv.(MintterServer).GenSeed(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.mintter.Accounts/GenSeed",
+		FullMethod: "/com.mintter.Mintter/GenSeed",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccountsServer).GenSeed(ctx, req.(*GenSeedRequest))
+		return srv.(MintterServer).GenSeed(ctx, req.(*GenSeedRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Accounts_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "com.mintter.Accounts",
-	HandlerType: (*AccountsServer)(nil),
+var _Mintter_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "com.mintter.Mintter",
+	HandlerType: (*MintterServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GenSeed",
-			Handler:    _Accounts_GenSeed_Handler,
+			Handler:    _Mintter_GenSeed_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

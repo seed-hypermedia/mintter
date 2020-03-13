@@ -24,7 +24,7 @@ export default function SecurityPack() {
       const req = new GenSeedRequest()
       try {
         req.setAezeedPassphrase('test')
-        const resp = await rpc.accounts.genSeed(req)
+        const resp = await rpc.genSeed(req)
         setMnemonic(resp.getMnemonicList())
       } catch (err) {
         setError(err)
