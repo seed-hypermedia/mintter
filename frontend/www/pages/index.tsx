@@ -16,7 +16,7 @@ const GrpcTest = () => {
       const req = new GenSeedRequest()
       req.setAezeedPassphrase('test')
 
-      const resp = await rpc.accounts.genSeed(req)
+      const resp = await rpc.genSeed(req)
       setData({mnemonic: resp.getMnemonicList()})
     }
 

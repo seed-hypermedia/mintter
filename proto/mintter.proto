@@ -4,8 +4,7 @@ package com.mintter;
 
 option go_package = "proto";
 
-// Accounts service deals with local peer identity.
-service Accounts {
+service Mintter {
   // Generate cryptographic seed that is used to derive all the cryptographic
   // keys necessary for Mintter to work. It's currenly supposed to be using
   // LND's Aezeed implementation, that solves some of the issues with BIP-39.

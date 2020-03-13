@@ -4,7 +4,7 @@ import {
   GenSeedRequest,
   GenSeedResponse} from './mintter_pb';
 
-export class AccountsClient {
+export class MintterClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: string; });
@@ -18,7 +18,7 @@ export class AccountsClient {
 
 }
 
-export class AccountsPromiseClient {
+export class MintterPromiseClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: string; });

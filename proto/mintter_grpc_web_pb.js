@@ -23,7 +23,7 @@ proto.com.mintter = require('./mintter_pb.js');
  * @struct
  * @final
  */
-proto.com.mintter.AccountsClient =
+proto.com.mintter.MintterClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -49,7 +49,7 @@ proto.com.mintter.AccountsClient =
  * @struct
  * @final
  */
-proto.com.mintter.AccountsPromiseClient =
+proto.com.mintter.MintterPromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options['format'] = 'text';
@@ -73,8 +73,8 @@ proto.com.mintter.AccountsPromiseClient =
  *   !proto.com.mintter.GenSeedRequest,
  *   !proto.com.mintter.GenSeedResponse>}
  */
-const methodDescriptor_Accounts_GenSeed = new grpc.web.MethodDescriptor(
-  '/com.mintter.Accounts/GenSeed',
+const methodDescriptor_Mintter_GenSeed = new grpc.web.MethodDescriptor(
+  '/com.mintter.Mintter/GenSeed',
   grpc.web.MethodType.UNARY,
   proto.com.mintter.GenSeedRequest,
   proto.com.mintter.GenSeedResponse,
@@ -95,7 +95,7 @@ const methodDescriptor_Accounts_GenSeed = new grpc.web.MethodDescriptor(
  *   !proto.com.mintter.GenSeedRequest,
  *   !proto.com.mintter.GenSeedResponse>}
  */
-const methodInfo_Accounts_GenSeed = new grpc.web.AbstractClientBase.MethodInfo(
+const methodInfo_Mintter_GenSeed = new grpc.web.AbstractClientBase.MethodInfo(
   proto.com.mintter.GenSeedResponse,
   /**
    * @param {!proto.com.mintter.GenSeedRequest} request
@@ -118,13 +118,13 @@ const methodInfo_Accounts_GenSeed = new grpc.web.AbstractClientBase.MethodInfo(
  * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.GenSeedResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.com.mintter.AccountsClient.prototype.genSeed =
+proto.com.mintter.MintterClient.prototype.genSeed =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/com.mintter.Accounts/GenSeed',
+      '/com.mintter.Mintter/GenSeed',
       request,
       metadata || {},
-      methodDescriptor_Accounts_GenSeed,
+      methodDescriptor_Mintter_GenSeed,
       callback);
 };
 
@@ -137,13 +137,13 @@ proto.com.mintter.AccountsClient.prototype.genSeed =
  * @return {!Promise<!proto.com.mintter.GenSeedResponse>}
  *     A native promise that resolves to the response
  */
-proto.com.mintter.AccountsPromiseClient.prototype.genSeed =
+proto.com.mintter.MintterPromiseClient.prototype.genSeed =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/com.mintter.Accounts/GenSeed',
+      '/com.mintter.Mintter/GenSeed',
       request,
       metadata || {},
-      methodDescriptor_Accounts_GenSeed);
+      methodDescriptor_Mintter_GenSeed);
 };
 
 
