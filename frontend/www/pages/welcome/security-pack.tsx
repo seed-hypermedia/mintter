@@ -11,13 +11,14 @@ import {useRPC} from '../../shared/rpc'
 import {GenSeedRequest} from '@mintter/proto/mintter_pb'
 import {useUser} from '../../shared/userContext'
 import {useRouter} from 'next/router'
+import {useSeed} from '../../shared/seedContext'
 
 export default function SecurityPack() {
   const [error, setError] = useState<{code: number; message: string}>()
   const rpc = useRPC()
   const [mnemonic, setMnemonic] = useState<string[]>([])
-  const {setUser} = useUser()
   const router = useRouter()
+  const {setSeed} = useSeed()
 
   useEffect(() => {
     async function handleRPC() {
@@ -48,8 +49,7 @@ export default function SecurityPack() {
 
   function handleNext() {
     // store seed to the user
-    setUser({seed: mnemonic})
-
+    setSeed(mnemonic)
     //send the user to next page
     router.push('/welcome/retype-seed')
   }

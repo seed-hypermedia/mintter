@@ -10,7 +10,7 @@ import Input from '../../components/input'
 import {useRouter} from 'next/router'
 import {useForm} from 'react-hook-form'
 import CheckIcon from '@material-ui/icons/Check'
-import {useUser} from '../../shared/userContext'
+import {useSeed} from '../../shared/seedContext'
 
 export default function RetypeSeed() {
   const {register, handleSubmit, errors, formState} = useForm({
@@ -18,8 +18,7 @@ export default function RetypeSeed() {
   })
 
   const router = useRouter()
-  const {user, setUser} = useUser()
-  console.log('user', user)
+  const {seed, setSeed} = useSeed()
   const [idxs, setIdxs] = useState<number[]>([])
 
   useEffect(() => {
@@ -29,7 +28,7 @@ export default function RetypeSeed() {
 
   async function onSubmit(data) {
     console.log('submit => ', data)
-    setUser({seed: []})
+    setSeed([''])
     await router.push('/welcome/create-password')
   }
 
@@ -45,9 +44,9 @@ export default function RetypeSeed() {
           </P>
           <P className="text-center font-bold">{`${idxs[0] + 1}, ${idxs[1] +
             1} & ${idxs[2] + 1}`}</P>
-          <P className="text-center">{`(${user.seed[idxs[0]]}, ${
-            user.seed[idxs[1]]
-          }, ${user.seed[idxs[2]]})`}</P>
+          <P className="text-center">{`(${seed[idxs[0]]}, ${seed[idxs[1]]}, ${
+            seed[idxs[2]]
+          })`}</P>
           <Content className="flex-wrap flex w-full">
             <div className="flex flex-col w-full items-center">
               {idxs.map(n => (
@@ -62,7 +61,7 @@ export default function RetypeSeed() {
                         name={`word-${n}`}
                         ref={register({
                           required: true,
-                          validate: value => value === user.seed[n],
+                          validate: value => value === seed[n],
                         })}
                       />
                       {errors[`word-${n}`] && (
