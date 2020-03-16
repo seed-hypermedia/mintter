@@ -5,18 +5,18 @@ export interface SeedContextInterface {
   setSeed?: React.Dispatch<React.SetStateAction<string[]>>
 }
 
+export interface SeedProviderProps
+  extends React.HTMLAttributes<HTMLDivElement> {
+  value: SeedContextInterface
+}
+
 export const SeedContext = createContext<SeedContextInterface>({seed: ['']})
 
-export default function SeedProvider({
-  children,
-}: React.HTMLAttributes<HTMLDivElement>) {
+export default function SeedProvider({children, value}: SeedProviderProps) {
   const [seed, setSeed] = useState<string[]>([''])
 
-  return (
-    <SeedContext.Provider value={{seed, setSeed}}>
-      {children}
-    </SeedContext.Provider>
-  )
+  const v = value || {seed, setSeed}
+  return <SeedContext.Provider value={v}>{children}</SeedContext.Provider>
 }
 
 export function useSeed(): SeedContextInterface {

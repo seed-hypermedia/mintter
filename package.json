@@ -8,10 +8,14 @@
   "private": true,
   "scripts": {
     "changeset": "changeset",
-    "test": "echo 1",
-    "build:all": "yarn workspaces run build",
+    "test": "is-ci \"site:test:coverage\" \"site:test:watch\"",
+    "site:test:coverage": "yarn workspace @mintter/site test --coverage",
+    "build": "yarn workspaces run build",
     "site:build": "yarn workspace @mintter/site build",
     "site:export": "yarn workspace @mintter/site export",
+    "site:test": "yarn workspace @mintter/site test",
+    "site:test:watch": "yarn workspace @mintter/site test:watch",
+    "site:test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch",
     "release": "yarn build:all",
     "dev": "yarn workspace @mintter/site dev",
     "publish:all": "yarn workspaces run npm:publish",
@@ -20,7 +24,7 @@
     "prettier": "prettier --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\"",
     "format": "yarn prettier --write",
     "check-format": "yarn prettier --list-different",
-    "validate": "npm-run-all --parallel check-format lint build"
+    "validate": "npm-run-all --parallel check-format lint test build"
   },
   "workspaces": [
     "frontend/www",
@@ -51,7 +55,8 @@
   },
   "lint-staged": {
     "frontend/**/*.+(js|jsx|ts|tsx|json|css)": [
-      "yarn format"
+      "yarn format",
+      "yarn site:test --findRelatedTests"
     ]
   }
 }

@@ -7,7 +7,15 @@ export const makeRpcClient = (): MintterPromiseClient => {
 
 export const RpcContext = createContext<MintterPromiseClient>(makeRpcClient())
 
-export const RpcProvider = RpcContext.Provider
+export function RpcProvider({
+  children,
+  value = makeRpcClient(),
+}: {
+  children: React.ReactNode
+  value: MintterPromiseClient | any
+}) {
+  return <RpcContext.Provider value={value}>{children}</RpcContext.Provider>
+}
 
 export function useRPC() {
   return useContext(RpcContext)

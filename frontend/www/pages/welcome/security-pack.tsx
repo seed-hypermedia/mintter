@@ -19,6 +19,8 @@ import {useForm} from 'react-hook-form'
 export default function SecurityPack() {
   const [error, setError] = useState<{code: number; message: string}>()
   const rpc = useRPC()
+  // console.log('SecurityPack -> rpc', rpc)
+
   const [mnemonic, setMnemonic] = useState<string[]>([])
   const router = useRouter()
   const {setSeed} = useSeed()
@@ -28,6 +30,7 @@ export default function SecurityPack() {
 
   async function handleRPC(passphr = 'test') {
     const req = new GenSeedRequest()
+    console.log('handleRPC -> req', req.setAezeedPassphrase)
     try {
       req.setAezeedPassphrase(passphr)
       const resp = await rpc.genSeed(req)
@@ -73,13 +76,13 @@ export default function SecurityPack() {
         <Content className="flex-wrap flex w-full">
           {mnemonic.length === 0 ? (
             <div className="flex-col flex-1 max-w-xs mx-auto">
-              <label
-                className="block text-gray-500 text-xs font-semibold mb-1"
-                htmlFor="passphrase"
-              >
-                Passphrase?
-              </label>
               <form>
+                <label
+                  className="block text-gray-500 text-xs font-semibold mb-1"
+                  htmlFor="passphrase"
+                >
+                  Passphrase?
+                </label>
                 <Input id="passphrase" name="passphrase" ref={register()} />
                 <Button type="submit" onClick={handleSubmit(handlePassphrase)}>
                   Generate security pack

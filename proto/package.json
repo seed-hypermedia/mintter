@@ -5,7 +5,9 @@
   "license": "MIT",
   "scripts": {
     "build": "true",
-    "package": "true"
+    "package": "true",
+    "lint": "true",
+    "test": "true"
   },
   "dependencies": {
     "google-protobuf": "^3.11.4",
