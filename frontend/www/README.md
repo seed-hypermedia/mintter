@@ -2,6 +2,8 @@
 
 ![Deploy Frontend & Publish](https://github.com/mintterteam/mintter/workflows/Deploy%20Frontend%20&%20Publish/badge.svg?branch=master)
 
+[![codecov](https://codecov.io/gh/mintterteam/mintter/branch/master/graph/badge.svg?token=nd4gBxSGGp)](https://codecov.io/gh/mintterteam/mintter)
+
 ## Technologies
 
 - NextJS - gives you a really nice and easy platform for building React apps,
