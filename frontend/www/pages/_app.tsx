@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 
 import '../styles/index.css'
 import UserProvider from '../shared/userContext'
-import {RpcProvider, makeRpcClient} from '../shared/rpc'
+import {RpcProvider} from '../shared/rpc'
 
 const NoSSR: React.FC = ({children}) => {
   return <React.Fragment>{children}</React.Fragment>
@@ -24,7 +24,7 @@ AppProps & {Component: any}) {
   const Layout = Component.Layout || DefaultLayout
   return (
     <Dynamic>
-      <RpcProvider value={makeRpcClient()}>
+      <RpcProvider>
         <UserProvider>
           <AnimatePresence exitBeforeEnter>
             {router.pathname.startsWith('/welcome') ? (

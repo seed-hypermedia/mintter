@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'frontend/www/*'
+
+jobs:
+  validate:
+    name: Validate code
+    runs-on: ubuntu-latest
+    if:
+      github.repository == 'mintterteam/mintter' &&
+      github.event.commits[0].author.name != 'github-actions[bot]'
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@master
+        with:
+          # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
+          fetch-depth: 0
+
+      - name: Setup Node.js 12.x
+        uses: actions/setup-node@master
+        with:
+          node-version: 12.x
+
+      - name: Install Dependencies
+        run: yarn
+
+      - name: Run Validation
+        run: yarn validate
+
+      - name: Upload code coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          file: ./frontend/www/coverage/coverage.xml # optional
+          #   flags: unittests # optional
+          name: codecov-mintter # optional
+          fail_ci_if_error: true # optional (default = false)

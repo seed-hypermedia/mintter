@@ -6,6 +6,7 @@ node_modules
 coverage
 .next/
 out/
+dist/
 build
 .now
 .netlify
