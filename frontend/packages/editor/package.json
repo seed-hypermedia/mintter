@@ -11,8 +11,7 @@
     "build": "tsdx build",
     "test": "tsdx test",
     "lint": "tsdx lint src",
-    "prepare": "tsdx build",
-    "npm:publish": "npm publish --access public"
+    "prepare": "tsdx build"
   },
   "name": "@mintter/editor",
   "author": "Horacio Herrera",
