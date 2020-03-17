@@ -1,6 +1,11 @@
 export default function Content({
   children,
   className = '',
+  ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={`p-5 box-border ${className}`}>{children}</div>
+  return (
+    <div {...props} className={`p-5 box-border ${className}`}>
+      {children}
+    </div>
+  )
 }

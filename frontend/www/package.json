@@ -49,6 +49,7 @@
     "@fullhuman/postcss-purgecss": "^2.0.6",
     "@testing-library/jest-dom": "^5.1.1",
     "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^10.0.0",
     "@types/node": "^13.7.0",
     "@types/react": "^16.9.19",
     "eslint": "^6.8.0",
