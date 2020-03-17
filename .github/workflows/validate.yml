@@ -38,7 +38,3 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-          file: ./frontend/www/coverage/coverage.xml # optional
-          #   flags: unittests # optional
-          name: codecov-mintter # optional
-          fail_ci_if_error: true # optional (default = false)
