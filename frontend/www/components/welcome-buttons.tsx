@@ -4,7 +4,7 @@ export function NextButton({
   to,
   onClick,
   children,
-  className,
+  className = '',
   disabled = false,
   type = 'button',
   ...props

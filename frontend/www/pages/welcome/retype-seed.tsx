@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {useEffect, useState, useRef} from 'react'
 import Layout from '../../components/welcome-layout'
 import Container from '../../components/welcome-container'
 import Heading from '../../components/welcome-heading'
@@ -11,6 +11,7 @@ import {useRouter} from 'next/router'
 import {useForm} from 'react-hook-form'
 import CheckIcon from '@material-ui/icons/Check'
 import {useSeed} from '../../shared/seedContext'
+import {getRandom3} from '../../shared/utils'
 
 export default function RetypeSeed() {
   const {register, handleSubmit, errors, formState} = useForm({
@@ -18,18 +19,18 @@ export default function RetypeSeed() {
   })
 
   const router = useRouter()
-  const {seed, setSeed} = useSeed()
+
+  const {seed} = useSeed()
   const [idxs, setIdxs] = useState<number[]>([])
 
   useEffect(() => {
-    const temp = [1, 2, 3].map(() => Math.floor(Math.random() * 23))
-    setIdxs(temp)
+    setIdxs(getRandom3(seed))
   }, [])
 
   async function onSubmit(data) {
     console.log('submit => ', data)
-    setSeed([''])
-    await router.push('/welcome/create-password')
+    // setSeed([''])
+    await router.replace('/welcome/create-password')
   }
 
   return (
@@ -50,35 +51,40 @@ export default function RetypeSeed() {
           <Content className="flex-wrap flex w-full">
             <div className="flex flex-col w-full items-center">
               {idxs.map(n => (
-                <>
-                  <div key={idxs[n]} className="flex">
-                    <span className="w-5 text-gray-500 font-light text-right mr-3 text-xs pt-4">
-                      {n + 1}
-                    </span>
-                    <div className="flex-1 relative mb-12">
-                      <Input
-                        type="text"
-                        name={`word-${n}`}
-                        ref={register({
-                          required: true,
-                          validate: value => value === seed[n],
-                        })}
-                      />
-                      {errors[`word-${n}`] && (
-                        <p className=" text-red-500 text-xs absolute left-0 mt-1">
-                          this word is not correct
-                        </p>
-                      )}
-                    </div>
-
-                    <span className="text-green-500 pt-2 pl-2 w-10 h-10">
-                      {!errors[`word-${n}`] &&
-                        formState.dirtyFields[`word-${n}`] && (
-                          <CheckIcon color="inherit" />
-                        )}
-                    </span>
+                <div key={`word-${n}`} className="flex">
+                  <label
+                    htmlFor={`word-${n}`}
+                    className="w-5 text-gray-500 font-light text-right mr-3 text-xs pt-4"
+                  >
+                    {n + 1}
+                  </label>
+                  <div className="flex-1 relative mb-12">
+                    <Input
+                      type="text"
+                      id={`word-${n}`}
+                      name={`word-${n}`}
+                      ref={register({
+                        required: true,
+                        validate: value => value === seed[n],
+                      })}
+                    />
+                    {errors[`word-${n}`] && (
+                      <p
+                        className="text-red-500 text-xs absolute left-0 mt-1"
+                        data-testid={`tid-error-word-${n}`}
+                      >
+                        this word is not correct
+                      </p>
+                    )}
                   </div>
-                </>
+
+                  <span className="text-green-500 pt-2 pl-2 w-10 h-10">
+                    {!errors[`word-${n}`] &&
+                      formState.dirtyFields[`word-${n}`] && (
+                        <CheckIcon color="inherit" />
+                      )}
+                  </span>
+                </div>
               ))}
             </div>
           </Content>

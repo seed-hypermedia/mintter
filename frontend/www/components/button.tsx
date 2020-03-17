@@ -5,6 +5,7 @@ export interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   to?: string
   type?: 'button' | 'submit'
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
+  replace?: boolean
 }
 
 export default function WelcomeButton({
@@ -12,6 +13,7 @@ export default function WelcomeButton({
   to,
   className = '',
   disabled = false,
+  replace = false,
   type = 'button',
   onClick,
   ...props
@@ -27,7 +29,7 @@ export default function WelcomeButton({
           }
 
           if (to) {
-            router.push(to)
+            replace ? router.replace(to) : router.push(to)
           }
         }
       }}

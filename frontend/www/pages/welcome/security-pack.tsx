@@ -54,7 +54,7 @@ export default function SecurityPack() {
     // store seed to the user
     setSeed(mnemonic)
     //send the user to next page
-    router.push('/welcome/retype-seed')
+    router.replace('/welcome/retype-seed')
   }
 
   function handlePassphrase() {
@@ -82,7 +82,11 @@ export default function SecurityPack() {
                   Passphrase?
                 </label>
                 <Input id="passphrase" name="passphrase" ref={register()} />
-                <Button type="submit" onClick={handleSubmit(handlePassphrase)}>
+                <Button
+                  className="w-full mt-4 text-green-500 transition-opacity border border-green-500 opacity-100 hover:bg-green-500 hover:text-white transition-all"
+                  type="submit"
+                  onClick={handleSubmit(handlePassphrase)}
+                >
                   Generate security pack
                 </Button>
               </form>
@@ -116,7 +120,7 @@ export function MnemonicWords({
   error?: {code: number; message: string}
 }) {
   return (
-    <>
+    <div className="flex-wrap flex w-full" data-testid="mnemonic-list">
       {error
         ? error.message
         : lists.map((list, list_idx) => (
@@ -160,6 +164,6 @@ export function MnemonicWords({
               </ol>
             </div>
           ))}
-    </>
+    </div>
   )
 }
