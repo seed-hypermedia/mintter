@@ -29,4 +29,4 @@ git push --follow-tags
 ``` -->
 
 deploys are manage by this
-[Github Action](../.github/workflows/deploy-frontend.yml).
+[Github Action](../.github/workflows/deploy-frontend.yml)
