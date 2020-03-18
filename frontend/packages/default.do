@@ -5,7 +5,7 @@ exec >&2
 # This allows to build a subdirectory using its yarn build script.
 # Source files are assembled by default.list.do rule.
 
-redo-ifchange $1.list
+redo-ifchange $1.list ../yarn
 redo-ifchange `cat $1.list`
 
 cd $1
