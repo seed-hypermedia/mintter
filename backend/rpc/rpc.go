@@ -1,50 +1,30 @@
 package rpc
 
 import (
-	"context"
-	"mintter/backend/daemon"
-	"mintter/proto"
+	"fmt"
+	"os"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/lightningnetwork/lnd/aezeed"
 )
+
+// Mnemonic is wallet recovery phrase.
+type Mnemonic = aezeed.Mnemonic
+
+// EncipheredSeed is the raw seed enciphered with the passphrase.
+type EncipheredSeed = [aezeed.EncipheredCipherSeedSize]byte
 
 // Server implements Mintter rpc.
 type Server struct {
-	d *daemon.Daemon
+	repoPath string
 }
 
 // NewServer creates a new Server.
-func NewServer(d *daemon.Daemon) (*Server, error) {
+func NewServer(repoPath string) (*Server, error) {
+	if err := os.MkdirAll(repoPath, 0700); err != nil {
+		return nil, fmt.Errorf("unable to initialize local repo: %w", err)
+	}
+
 	return &Server{
-		d: d,
+		repoPath: repoPath,
 	}, nil
-}
-
-// GenSeed implements GenSeed rpc.
-func (s *Server) GenSeed(ctx context.Context, req *proto.GenSeedRequest) (*proto.GenSeedResponse, error) {
-	mnemonic, seed, err := s.d.GenSeed(req.AezeedPassphrase)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed GenSeed: %v", err)
-	}
-
-	resp := &proto.GenSeedResponse{
-		Mnemonic:       mnemonic[:],
-		EncipheredSeed: seed[:],
-	}
-
-	return resp, nil
-}
-
-// InitWallet implements InitWallet rpc.
-func (s *Server) InitWallet(ctx context.Context, req *proto.InitWalletRequest) (*proto.InitWalletResponse, error) {
-	var m daemon.Mnemonic
-
-	copy(m[:], req.Mnemonic)
-
-	if err := s.d.InitWallet(m, req.AezeedPassphrase); err != nil {
-		return nil, status.Errorf(codes.Internal, "failed InitWallet: %v", err)
-	}
-
-	return &proto.InitWalletResponse{}, nil
 }

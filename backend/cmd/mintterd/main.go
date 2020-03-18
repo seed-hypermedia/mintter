@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
-	"mintter/backend/daemon"
 	"mintter/backend/identity"
 	"mintter/backend/rpc"
+	"mintter/backend/threadsutil"
 	"mintter/proto"
 
 	"github.com/burdiyan/go/mainutil"
@@ -20,7 +22,7 @@ import (
 	"github.com/mr-tron/base58"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/textileio/go-threads/cbor"
-	"github.com/textileio/go-threads/core/service"
+	service "github.com/textileio/go-threads/core/net"
 	"github.com/textileio/go-threads/core/thread"
 	"github.com/textileio/go-threads/crypto/symmetric"
 	"go.uber.org/multierr"
@@ -67,15 +69,19 @@ func main() {
 	mainutil.Run(grpcWeb)
 }
 
+func defaultRepoPath() string {
+	d, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+
+	return filepath.Join(d, ".mtt")
+}
+
 func grpcWeb() (err error) {
 	g, ctx := errgroup.WithContext(mainutil.TrapSignals())
 
-	d, err := daemon.New()
-	if err != nil {
-		return fmt.Errorf("unable to create daemon: %w", err)
-	}
-
-	svc, err := rpc.NewServer(d)
+	svc, err := rpc.NewServer(defaultRepoPath())
 	if err != nil {
 		return fmt.Errorf("unable to create rpc server: %w", err)
 	}
@@ -211,7 +217,7 @@ func run2() (err error) {
 	return g.Wait()
 }
 
-func drainChannel(ctx context.Context, ts service.Service, ch <-chan service.ThreadRecord, log *zap.Logger) error {
+func drainChannel(ctx context.Context, ts service.Net, ch <-chan service.ThreadRecord, log *zap.Logger) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -305,7 +311,7 @@ func runBob(ctx context.Context, ch <-chan []string) (err error) {
 		return err
 	}
 
-	ts, err := DefaultService("tmp/.bob", priv, WithServiceHostAddr(addr))
+	ts, err := threadsutil.DefaultService("tmp/.bob", priv, threadsutil.WithServiceHostAddr(addr))
 	if err != nil {
 		return err
 	}
@@ -315,10 +321,7 @@ func runBob(ctx context.Context, ch <-chan []string) (err error) {
 
 	tid := bob.ThreadID()
 
-	readKey, err := symmetric.CreateKey()
-	if err != nil {
-		return err
-	}
+	readKey := symmetric.New()
 
 	tinfo, err := ts.CreateThread(ctx, tid, service.LogKey(priv), service.ReadKey(readKey))
 	if err != nil {
@@ -369,7 +372,7 @@ func runAlice(ctx context.Context, ch chan<- []string) error {
 		return err
 	}
 
-	ts, err := DefaultService("tmp/.alice", priv, WithServiceHostAddr(addr))
+	ts, err := threadsutil.DefaultService("tmp/.alice", priv, threadsutil.WithServiceHostAddr(addr))
 	if err != nil {
 		return err
 	}
@@ -379,10 +382,7 @@ func runAlice(ctx context.Context, ch chan<- []string) error {
 
 	tid := alice.ThreadID()
 
-	readKey, err := symmetric.CreateKey()
-	if err != nil {
-		return err
-	}
+	readKey := symmetric.New()
 
 	tinfo, err := ts.CreateThread(ctx, tid,
 		service.LogKey(priv),
@@ -459,11 +459,11 @@ func parseInviteLink(invite string) (addr multiaddr.Multiaddr, fkey *symmetric.K
 	if err != nil {
 		panic("invalid read key")
 	}
-	fkey, err = symmetric.NewKey(fkeyBytes)
+	fkey, err = symmetric.FromBytes(fkeyBytes)
 	if err != nil {
 		panic("can't create follow symkey")
 	}
-	rkey, err = symmetric.NewKey(rkeyBytes)
+	rkey, err = symmetric.FromBytes(rkeyBytes)
 	if err != nil {
 		panic("can't create read symkey")
 	}
