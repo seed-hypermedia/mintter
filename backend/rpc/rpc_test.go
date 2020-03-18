@@ -1,9 +1,9 @@
-package rpc
+package rpc_test
 
 import (
 	"context"
 	"fmt"
-	"mintter/backend/daemon"
+	"mintter/backend/rpc"
 	"mintter/proto"
 	"os"
 	"testing"
@@ -46,7 +46,7 @@ func TestInitWallet(t *testing.T) {
 	}
 }
 
-func newServer(t *testing.T) *Server {
+func newServer(t *testing.T) *rpc.Server {
 	t.Helper()
 
 	repoPath := fmt.Sprintf("test-repo-%d", time.Now().UnixNano())
@@ -54,12 +54,7 @@ func newServer(t *testing.T) *Server {
 		os.RemoveAll(repoPath)
 	})
 
-	d, err := daemon.New(daemon.WithRepoPath(repoPath))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	srv, err := NewServer(d)
+	srv, err := rpc.NewServer(repoPath)
 	if err != nil {
 		t.Fatal(err)
 	}

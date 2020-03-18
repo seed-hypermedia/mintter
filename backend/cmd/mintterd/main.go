@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
-	"mintter/backend/daemon"
 	"mintter/backend/identity"
 	"mintter/backend/rpc"
 	"mintter/backend/threadsutil"
@@ -68,15 +69,19 @@ func main() {
 	mainutil.Run(grpcWeb)
 }
 
+func defaultRepoPath() string {
+	d, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+
+	return filepath.Join(d, ".mtt")
+}
+
 func grpcWeb() (err error) {
 	g, ctx := errgroup.WithContext(mainutil.TrapSignals())
 
-	d, err := daemon.New()
-	if err != nil {
-		return fmt.Errorf("unable to create daemon: %w", err)
-	}
-
-	svc, err := rpc.NewServer(d)
+	svc, err := rpc.NewServer(defaultRepoPath())
 	if err != nil {
 		return fmt.Errorf("unable to create rpc server: %w", err)
 	}
