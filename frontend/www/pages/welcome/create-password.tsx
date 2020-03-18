@@ -14,6 +14,7 @@ export default function CreatePassword() {
   const {register, watch, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
   })
+
   const {setUser} = useUser()
   const router = useRouter()
   const psswd = watch('password')
