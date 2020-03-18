@@ -12,7 +12,8 @@ export function RpcProvider({
   value = makeRpcClient(),
 }: {
   children: React.ReactNode
-  value: MintterPromiseClient | any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value?: MintterPromiseClient | any
 }) {
   return <RpcContext.Provider value={value}>{children}</RpcContext.Provider>
 }

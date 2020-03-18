@@ -6,8 +6,8 @@ import {
 } from '@testing-library/react'
 import user from '@testing-library/user-event'
 import RetypeSeed from '../../../pages/welcome/retype-seed'
-import SeedProvider from '../../../shared/seedContext'
-import {getRandom3 as mockGetRandom3} from '../../../shared/utils'
+import {getRandomElements as mockGetRandomElements} from '../../../shared/utils'
+import WelcomeProvider from '../../../shared/welcomeProvider'
 
 jest.mock('../../../shared/utils')
 
@@ -19,15 +19,15 @@ afterEach(() => {
 
 function Component() {
   return (
-    <SeedProvider value={{seed}}>
+    <WelcomeProvider value={{state: {seed}}}>
       <RetypeSeed />
-    </SeedProvider>
+    </WelcomeProvider>
   )
 }
 
 describe('<RetypeSeed />', () => {
   test('should <NextButton /> be disabled by default', async () => {
-    mockGetRandom3.mockReturnValueOnce([0, 1, 2])
+    mockGetRandomElements.mockReturnValueOnce([0, 1, 2])
     // next button should be disabled
     const {getByText} = render(<Component />)
 
@@ -36,7 +36,7 @@ describe('<RetypeSeed />', () => {
   })
 
   test('should show input error when value does not match', async () => {
-    mockGetRandom3.mockReturnValueOnce([0, 1, 2])
+    mockGetRandomElements.mockReturnValueOnce([0, 1, 2])
     const {getByLabelText, queryByText, debug} = render(<Component />)
     const firstInput = getByLabelText(/1/i)
 
@@ -49,7 +49,7 @@ describe('<RetypeSeed />', () => {
   })
 
   test('should enable <NextButton /> when form is valid', async () => {
-    mockGetRandom3.mockReturnValueOnce([0, 1, 2])
+    mockGetRandomElements.mockReturnValueOnce([0, 1, 2])
     const {getByLabelText, getByText} = render(<Component />)
 
     const input1 = getByLabelText(/1/i)

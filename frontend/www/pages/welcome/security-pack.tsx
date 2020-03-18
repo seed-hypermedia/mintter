@@ -9,12 +9,12 @@ import P from '../../components/welcome-p'
 import {css} from 'emotion'
 import {useRPC} from '../../shared/rpc'
 import {GenSeedRequest} from '@mintter/proto/mintter_pb'
-import {useUser} from '../../shared/userContext'
+// import {useUser} from '../../shared/userContext'
 import {useRouter} from 'next/router'
-import {useSeed} from '../../shared/seedContext'
 import Input from '../../components/input'
 import Button from '../../components/button'
 import {useForm} from 'react-hook-form'
+import {useWelcome} from '../../shared/welcomeProvider'
 
 export default function SecurityPack() {
   const [error, setError] = useState<{code: number; message: string}>()
@@ -22,15 +22,18 @@ export default function SecurityPack() {
 
   const [mnemonic, setMnemonic] = useState<string[]>([])
   const router = useRouter()
-  const {setSeed} = useSeed()
+  const {dispatch} = useWelcome()
   const {register, handleSubmit} = useForm({
     mode: 'onChange',
   })
 
-  async function handleRPC(passphr = 'test') {
+  async function handleRPC({passphrase}) {
     const req = new GenSeedRequest()
+    if (passphrase) {
+      dispatch({type: 'passphrase', payload: passphrase})
+    }
     try {
-      req.setAezeedPassphrase(passphr)
+      req.setAezeedPassphrase(passphrase)
       const resp = await rpc.genSeed(req)
       setMnemonic(resp.getMnemonicList())
     } catch (err) {
@@ -52,13 +55,9 @@ export default function SecurityPack() {
 
   function handleNext() {
     // store seed to the user
-    setSeed(mnemonic)
+    dispatch({type: 'seed', payload: mnemonic})
     //send the user to next page
     router.replace('/welcome/retype-seed')
-  }
-
-  function handlePassphrase() {
-    handleRPC()
   }
 
   // mnemonic words separated into lists
@@ -85,7 +84,7 @@ export default function SecurityPack() {
                 <Button
                   className="w-full mt-4 text-green-500 transition-opacity border border-green-500 opacity-100 hover:bg-green-500 hover:text-white transition-all"
                   type="submit"
-                  onClick={handleSubmit(handlePassphrase)}
+                  onClick={handleSubmit(handleRPC)}
                 >
                   Generate security pack
                 </Button>

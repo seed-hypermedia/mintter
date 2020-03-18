@@ -8,20 +8,33 @@ import Content from '../../components/content'
 import Input from '../../components/input'
 import {useRouter} from 'next/router'
 import {useForm} from 'react-hook-form'
-import {useUser} from '../../shared/userContext'
-
+import {InitWalletRequest} from '@mintter/proto/mintter_pb'
+import {useWelcome} from '../../shared/welcomeProvider'
+import {useRPC} from '../../shared/rpc'
 export default function CreatePassword() {
   const {register, watch, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
   })
 
-  const {setUser} = useUser()
   const router = useRouter()
   const psswd = watch('password')
+  const {
+    state: {seed, passphrase},
+  } = useWelcome()
+
+  const rpc = useRPC()
 
   async function onSubmit(data) {
     console.log('submit => ', data)
-    await setUser({password: data.password})
+
+    const req = new InitWalletRequest()
+    req.setAezeedPassphrase(passphrase)
+    req.setMnemonicList(seed)
+    req.setWalletPassword(psswd)
+
+    const resp = await rpc.initWallet(req)
+    console.log(resp)
+
     await router.push('/welcome/edit-profile')
   }
 
@@ -86,7 +99,7 @@ export default function CreatePassword() {
               <NextButton
                 type="submit"
                 onClick={handleSubmit(onSubmit)}
-                disabled={!formState.isValid && !formState.isSubmitting}
+                disabled={!formState.isValid || formState.isSubmitting}
               >
                 Next →
               </NextButton>

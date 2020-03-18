@@ -1,4 +1,4 @@
-import {useEffect, useState, useRef} from 'react'
+import {useEffect, useState} from 'react'
 import Layout from '../../components/welcome-layout'
 import Container from '../../components/welcome-container'
 import Heading from '../../components/welcome-heading'
@@ -10,8 +10,8 @@ import Input from '../../components/input'
 import {useRouter} from 'next/router'
 import {useForm} from 'react-hook-form'
 import CheckIcon from '@material-ui/icons/Check'
-import {useSeed} from '../../shared/seedContext'
-import {getRandom3} from '../../shared/utils'
+import {getRandomElements} from '../../shared/utils'
+import {useWelcome} from '../../shared/welcomeProvider'
 
 export default function RetypeSeed() {
   const {register, handleSubmit, errors, formState} = useForm({
@@ -20,17 +20,20 @@ export default function RetypeSeed() {
 
   const router = useRouter()
 
-  const {seed} = useSeed()
+  const {
+    state: {seed},
+  } = useWelcome()
+
   const [idxs, setIdxs] = useState<number[]>([])
 
   useEffect(() => {
-    setIdxs(getRandom3(seed))
+    setIdxs(getRandomElements(seed))
   }, [])
 
-  async function onSubmit(data) {
+  function onSubmit(data) {
     console.log('submit => ', data)
-    // setSeed([''])
-    await router.replace('/welcome/create-password')
+
+    router.replace('/welcome/create-password')
   }
 
   return (
