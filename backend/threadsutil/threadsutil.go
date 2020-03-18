@@ -21,10 +21,11 @@ import (
 	"github.com/libp2p/go-libp2p-peerstore/pstoreds"
 	ma "github.com/multiformats/go-multiaddr"
 	"github.com/textileio/go-threads/core/logstore"
-	coreservice "github.com/textileio/go-threads/core/service"
+	coreservice "github.com/textileio/go-threads/core/net"
 	"github.com/textileio/go-threads/logstore/lstoreds"
-	"github.com/textileio/go-threads/service"
+	service "github.com/textileio/go-threads/net"
 	"github.com/textileio/go-threads/util"
+	"go.uber.org/multierr"
 	"google.golang.org/grpc"
 )
 
@@ -124,7 +125,7 @@ func DefaultService(repoPath string, peerKey crypto.PrivKey, opts ...ServiceOpti
 	}
 
 	// Build a service
-	api, err := service.NewService(ctx, h, lite.BlockStore(), lite, tstore, service.Config{
+	api, err := service.NewNetwork(ctx, h, lite.BlockStore(), lite, tstore, service.Config{
 		Debug: config.Debug,
 	}, config.GRPCOptions...)
 	if err != nil {
@@ -138,7 +139,7 @@ func DefaultService(repoPath string, peerKey crypto.PrivKey, opts ...ServiceOpti
 
 	return &ServiceBootstrapper{
 		cancel:    cancel,
-		Service:   api,
+		Net:       api,
 		litepeer:  lite,
 		pstore:    pstore,
 		logstore:  logstore,
@@ -181,7 +182,7 @@ func WithServiceGRPCOptions(opts ...grpc.ServerOption) ServiceOption {
 // ServiceBootstrapper ...
 type ServiceBootstrapper struct {
 	cancel context.CancelFunc
-	coreservice.Service
+	coreservice.Net
 	litepeer  *ipfslite.Peer
 	pstore    peerstore.Peerstore
 	logstore  datastore.Datastore
@@ -203,28 +204,13 @@ func (tsb *ServiceBootstrapper) GetIpfsLite() *ipfslite.Peer {
 
 // Close ...
 func (tsb *ServiceBootstrapper) Close() error {
-	if err := tsb.Service.Close(); err != nil {
-		return err
-	}
 	tsb.cancel()
-	if err := tsb.dht.Close(); err != nil {
-		return err
-	}
-	if err := tsb.host.Close(); err != nil {
-		return err
-	}
-	if err := tsb.pstore.Close(); err != nil {
-		return err
-	}
-	if err := tsb.litestore.Close(); err != nil {
-		return err
-	}
-	return tsb.logstore.Close()
-	// Logstore closed by service
-}
-
-func getFollowLink(ctx context.Context, svc coreservice.Service) (string, error) {
-	// peerID := svc.Host().ID()
-
-	return "", nil
+	return multierr.Combine(
+		tsb.dht.Close(),
+		tsb.host.Close(),
+		tsb.litestore.Close(),
+		tsb.logstore.Close(),
+		tsb.pstore.Close(),
+		tsb.Net.Close(),
+	)
 }

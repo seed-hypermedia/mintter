@@ -3,15 +3,17 @@ package main
 import (
 	"context"
 
+	profile "mintter/backend/identity"
+	"mintter/backend/threadsutil"
+
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p-core/crypto"
-	profile "mintter/backend/identity"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/multiformats/go-multihash"
-	"github.com/textileio/go-threads/core/service"
+	service "github.com/textileio/go-threads/core/net"
 	"github.com/textileio/go-threads/core/thread"
 	"github.com/textileio/go-threads/crypto/symmetric"
-	threadsvc "github.com/textileio/go-threads/service"
+	threadsvc "github.com/textileio/go-threads/net"
 	"go.uber.org/zap"
 )
 
@@ -19,7 +21,7 @@ type mttPeer struct {
 	tid   thread.ID
 	tinfo thread.Info
 	prof  *profile.Profile
-	ts    *ServiceBootstrapper
+	ts    *threadsutil.ServiceBootstrapper
 	priv  crypto.PrivKey
 	log   *zap.Logger
 }
@@ -40,7 +42,7 @@ func newPeer(seed []byte, repoPath string, address string, log *zap.Logger) (*mt
 		return nil, err
 	}
 
-	ts, err := DefaultService(repoPath, priv, WithServiceHostAddr(addr))
+	ts, err := threadsutil.DefaultService(repoPath, priv, threadsutil.WithServiceHostAddr(addr))
 	if err != nil {
 		return nil, err
 	}
@@ -55,10 +57,7 @@ func newPeer(seed []byte, repoPath string, address string, log *zap.Logger) (*mt
 	}
 
 	if tinfo.ReadKey == nil {
-		readKey, err := symmetric.CreateKey()
-		if err != nil {
-			return nil, err
-		}
+		readKey := symmetric.New()
 
 		tinfo, err = ts.CreateThread(ctx, tid, service.LogKey(priv), service.ReadKey(readKey))
 		if err != nil {
