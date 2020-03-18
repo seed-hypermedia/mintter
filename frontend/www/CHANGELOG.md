@@ -1,5 +1,11 @@
 # @mintter/site
 
+## 0.2.13
+
+### Patch Changes
+
+- 6460ceb: initWallet is working!
+
 ## 0.2.12
 
 ### Patch Changes
