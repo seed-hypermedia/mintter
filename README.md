@@ -16,7 +16,7 @@ To setup Nix see [this](/docs/nix.md).
 Assuming you have the prerequisites:
 
 1. Clone the repo.
-2. Run `redo` to build everything.
+2. Run `redo -j20` to build everything.
 3. Run `./scripts/run-frontend.sh` to run the frontend dev server.
 4. Run `./scripts/run-backend.sh` to start the backend.
 5. Access the frontend URL from the browser.
