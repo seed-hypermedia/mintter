@@ -1,5 +1,6 @@
 import Layout, {LayoutProps} from './layout'
-import SeedProvider from '../shared/seedContext'
+
+import WelcomeProvider from '../shared/welcomeProvider'
 // import {useRouter, NextRouter} from 'next/router'
 // import {useEffect, useState} from 'react'
 
@@ -14,7 +15,7 @@ export default function WelcomeLayout({
       className={`bg-gray-100 flex flex-col py-8 ${className}`}
     >
       {/* <WelcomeProgress router={router} /> */}
-      <SeedProvider>{children}</SeedProvider>
+      <WelcomeProvider>{children}</WelcomeProvider>
     </Layout>
   )
 }
