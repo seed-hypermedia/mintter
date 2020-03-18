@@ -1,5 +1,11 @@
 # @mintter/site
 
+## 0.2.12
+
+### Patch Changes
+
+- 624218d: Tests in place for the page
+
 ## 0.2.11
 
 ### Patch Changes
