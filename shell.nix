@@ -17,6 +17,7 @@ let
         buildInputs = [
             protoc-gen-grpc-web
             node
+            redo
             yarn
             go
             go-protobuf
