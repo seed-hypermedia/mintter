@@ -17,7 +17,7 @@ import (
 func (s *Server) GenSeed(ctx context.Context, req *proto.GenSeedRequest) (*proto.GenSeedResponse, error) {
 	mnemonic, seed, err := s.genSeed(req.AezeedPassphrase)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed GenSeed: %v", err)
+		return nil, err
 	}
 
 	resp := &proto.GenSeedResponse{
@@ -31,17 +31,17 @@ func (s *Server) GenSeed(ctx context.Context, req *proto.GenSeedRequest) (*proto
 func (s *Server) genSeed(passphrase []byte) (Mnemonic, EncipheredSeed, error) {
 	seed, err := newSeed()
 	if err != nil {
-		return Mnemonic{}, EncipheredSeed{}, err
+		return Mnemonic{}, EncipheredSeed{}, status.Errorf(codes.Internal, "genSeed: %v", err)
 	}
 
 	rawSeed, err := seed.Encipher(passphrase)
 	if err != nil {
-		return Mnemonic{}, EncipheredSeed{}, fmt.Errorf("failed to encipher seed: %w", err)
+		return Mnemonic{}, EncipheredSeed{}, status.Errorf(codes.Internal, "genSeed: failed to encipher seed: %v", err)
 	}
 
 	words, err := seed.ToMnemonic(passphrase)
 	if err != nil {
-		return Mnemonic{}, EncipheredSeed{}, fmt.Errorf("failed to create mnemonic: %w", err)
+		return Mnemonic{}, EncipheredSeed{}, status.Errorf(codes.Internal, "genSeed: failed to create mnemonic: %v", err)
 	}
 
 	return words, rawSeed, nil

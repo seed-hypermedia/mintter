@@ -2,8 +2,6 @@ package rpc
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"io/ioutil"
 	"mintter/proto"
 	"path/filepath"
@@ -19,7 +17,7 @@ func (s *Server) InitWallet(ctx context.Context, req *proto.InitWalletRequest) (
 	copy(m[:], req.Mnemonic)
 
 	if err := s.initWallet(m, req.AezeedPassphrase); err != nil {
-		return nil, status.Errorf(codes.Internal, "failed InitWallet: %v", err)
+		return nil, err
 	}
 
 	return &proto.InitWalletResponse{}, nil
@@ -28,20 +26,20 @@ func (s *Server) InitWallet(ctx context.Context, req *proto.InitWalletRequest) (
 func (s *Server) initWallet(m Mnemonic, pass []byte) error {
 	seed, err := m.ToCipherSeed(pass)
 	if err != nil {
-		return fmt.Errorf("failed to decipher seed: %w", err)
+		return status.Errorf(codes.InvalidArgument, "initWallet: failed to decipher seed: %v", err)
 	}
 
 	rawSeed, err := seed.Encipher(pass)
 	if err != nil {
-		return fmt.Errorf("failed to encipher seed: %w", err)
+		return status.Errorf(codes.InvalidArgument, "initWallet: failed to encipher seed: %v", err)
 	}
 
 	if _, err := s.loadSeed(); err == nil {
-		return errors.New("wallet is already initialized")
+		return status.Error(codes.FailedPrecondition, "initWallet: wallet is already initialized")
 	}
 
 	if err := s.storeSeed(rawSeed); err != nil {
-		return fmt.Errorf("failed to store seed: %w", err)
+		return status.Errorf(codes.Internal, "initWallet: failed to store seed: %v", err)
 	}
 
 	return nil
