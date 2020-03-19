@@ -18,7 +18,7 @@ type WelcomeValueType = {
 
 export interface WelcomeProviderProps
   extends React.HTMLAttributes<HTMLDivElement> {
-  value: WelcomeValueType
+  value?: WelcomeValueType
 }
 
 export const WelcomeContext = createContext<WelcomeValueType>({

@@ -8,3 +8,20 @@ html,
 body {
   @apply bg-gray-100;
 }
+
+.theme-light {
+  --bg-background-primary: #f7fafc;
+  --bg-background-secondary: #e2e8f0;
+
+  --text-copy-primary: black;
+  --text-copy-secondary: ;
+}
+
+.theme-dark {
+  --bg-background-primary: #102c44;
+  --bg-background-secondary: #1e3951;
+}
+
+.content-transition {
+  transition: background-color 0.25s;
+}
