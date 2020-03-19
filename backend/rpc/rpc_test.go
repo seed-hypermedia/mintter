@@ -8,6 +8,9 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func TestGenSeed(t *testing.T) {
@@ -43,6 +46,15 @@ func TestInitWallet(t *testing.T) {
 		Mnemonic: resp.Mnemonic,
 	}); err == nil {
 		t.Fatal("IniWallet with existing seed must fail")
+	} else {
+		perr, ok := status.FromError(err)
+		if !ok {
+			t.Fatal("must be grpc error")
+		}
+
+		if code := perr.Code(); code != codes.FailedPrecondition {
+			t.Fatalf("got = %v, want = %v", code, codes.FailedPrecondition)
+		}
 	}
 }
 
