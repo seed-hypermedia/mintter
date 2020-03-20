@@ -28,6 +28,7 @@ require (
 	github.com/mr-tron/base58 v1.1.3
 	github.com/multiformats/go-multiaddr v0.2.0
 	github.com/multiformats/go-multihash v0.0.13
+	github.com/stretchr/testify v1.4.0
 	github.com/textileio/go-textile v0.7.7
 	github.com/textileio/go-threads v0.0.0-local
 	go.uber.org/multierr v1.1.0

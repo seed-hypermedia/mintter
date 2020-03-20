@@ -247,15 +247,12 @@ func run() (err error) {
 func runBob(ctx context.Context, ch <-chan []string) (err error) {
 	seed := bob()
 
-	bob, err := identity.FromSeed(seed.Entropy[:])
+	bob, err := identity.FromSeed(seed.Entropy[:], 0)
 	if err != nil {
 		return err
 	}
 
-	priv, _, err := bob.Child(0)
-	if err != nil {
-		return err
-	}
+	priv := bob.PrivKey
 
 	addr, err := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/55002")
 	if err != nil {
@@ -270,7 +267,7 @@ func runBob(ctx context.Context, ch <-chan []string) (err error) {
 		multierr.Append(err, ts.Close())
 	}()
 
-	tid := bob.ThreadID()
+	tid := bob.ThreadID
 
 	readKey := symmetric.New()
 
@@ -308,15 +305,12 @@ func runBob(ctx context.Context, ch <-chan []string) (err error) {
 func runAlice(ctx context.Context, ch chan<- []string) error {
 	seed := alice()
 
-	alice, err := identity.FromSeed(seed.Entropy[:])
+	alice, err := identity.FromSeed(seed.Entropy[:], 0)
 	if err != nil {
 		return err
 	}
 
-	priv, _, err := alice.Child(1)
-	if err != nil {
-		return err
-	}
+	priv := alice.PrivKey
 
 	addr, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/55001")
 	if err != nil {
@@ -331,7 +325,7 @@ func runAlice(ctx context.Context, ch chan<- []string) error {
 		multierr.Append(err, ts.Close())
 	}()
 
-	tid := alice.ThreadID()
+	tid := alice.ThreadID
 
 	readKey := symmetric.New()
 

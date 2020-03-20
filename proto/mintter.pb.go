@@ -203,11 +203,234 @@ func (m *InitWalletResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_InitWalletResponse proto.InternalMessageInfo
 
+type UpdateProfileRequest struct {
+	// Profile data to be updated.
+	Profile              *Profile `protobuf:"bytes,1,opt,name=profile,proto3" json:"profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdateProfileRequest) Reset()         { *m = UpdateProfileRequest{} }
+func (m *UpdateProfileRequest) String() string { return proto.CompactTextString(m) }
+func (*UpdateProfileRequest) ProtoMessage()    {}
+func (*UpdateProfileRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_459271e8c06255ea, []int{4}
+}
+
+func (m *UpdateProfileRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateProfileRequest.Unmarshal(m, b)
+}
+func (m *UpdateProfileRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateProfileRequest.Marshal(b, m, deterministic)
+}
+func (m *UpdateProfileRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateProfileRequest.Merge(m, src)
+}
+func (m *UpdateProfileRequest) XXX_Size() int {
+	return xxx_messageInfo_UpdateProfileRequest.Size(m)
+}
+func (m *UpdateProfileRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateProfileRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateProfileRequest proto.InternalMessageInfo
+
+func (m *UpdateProfileRequest) GetProfile() *Profile {
+	if m != nil {
+		return m.Profile
+	}
+	return nil
+}
+
+type UpdateProfileResponse struct {
+	// Profile data after update.
+	Profile              *Profile `protobuf:"bytes,1,opt,name=profile,proto3" json:"profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdateProfileResponse) Reset()         { *m = UpdateProfileResponse{} }
+func (m *UpdateProfileResponse) String() string { return proto.CompactTextString(m) }
+func (*UpdateProfileResponse) ProtoMessage()    {}
+func (*UpdateProfileResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_459271e8c06255ea, []int{5}
+}
+
+func (m *UpdateProfileResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateProfileResponse.Unmarshal(m, b)
+}
+func (m *UpdateProfileResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateProfileResponse.Marshal(b, m, deterministic)
+}
+func (m *UpdateProfileResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateProfileResponse.Merge(m, src)
+}
+func (m *UpdateProfileResponse) XXX_Size() int {
+	return xxx_messageInfo_UpdateProfileResponse.Size(m)
+}
+func (m *UpdateProfileResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateProfileResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateProfileResponse proto.InternalMessageInfo
+
+func (m *UpdateProfileResponse) GetProfile() *Profile {
+	if m != nil {
+		return m.Profile
+	}
+	return nil
+}
+
+type GetProfileRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetProfileRequest) Reset()         { *m = GetProfileRequest{} }
+func (m *GetProfileRequest) String() string { return proto.CompactTextString(m) }
+func (*GetProfileRequest) ProtoMessage()    {}
+func (*GetProfileRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_459271e8c06255ea, []int{6}
+}
+
+func (m *GetProfileRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetProfileRequest.Unmarshal(m, b)
+}
+func (m *GetProfileRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetProfileRequest.Marshal(b, m, deterministic)
+}
+func (m *GetProfileRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetProfileRequest.Merge(m, src)
+}
+func (m *GetProfileRequest) XXX_Size() int {
+	return xxx_messageInfo_GetProfileRequest.Size(m)
+}
+func (m *GetProfileRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetProfileRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetProfileRequest proto.InternalMessageInfo
+
+type GetProfileResponse struct {
+	// Retrieved profile data.
+	Profile              *Profile `protobuf:"bytes,1,opt,name=profile,proto3" json:"profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetProfileResponse) Reset()         { *m = GetProfileResponse{} }
+func (m *GetProfileResponse) String() string { return proto.CompactTextString(m) }
+func (*GetProfileResponse) ProtoMessage()    {}
+func (*GetProfileResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_459271e8c06255ea, []int{7}
+}
+
+func (m *GetProfileResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetProfileResponse.Unmarshal(m, b)
+}
+func (m *GetProfileResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetProfileResponse.Marshal(b, m, deterministic)
+}
+func (m *GetProfileResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetProfileResponse.Merge(m, src)
+}
+func (m *GetProfileResponse) XXX_Size() int {
+	return xxx_messageInfo_GetProfileResponse.Size(m)
+}
+func (m *GetProfileResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetProfileResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetProfileResponse proto.InternalMessageInfo
+
+func (m *GetProfileResponse) GetProfile() *Profile {
+	if m != nil {
+		return m.Profile
+	}
+	return nil
+}
+
+type Profile struct {
+	// Libp2p peer ID. Generated by the server and can't be updated.
+	PeerId string `protobuf:"bytes,1,opt,name=peer_id,json=peerId,proto3" json:"peer_id,omitempty"`
+	// Readable username or alias. Doesn't have to be unique.
+	Username string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	// Optional. Real email that could be publically shared.
+	Email string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	// Optional. Twitter handle including @ symbol.
+	TwitterUsername      string   `protobuf:"bytes,4,opt,name=twitter_username,json=twitterUsername,proto3" json:"twitter_username,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Profile) Reset()         { *m = Profile{} }
+func (m *Profile) String() string { return proto.CompactTextString(m) }
+func (*Profile) ProtoMessage()    {}
+func (*Profile) Descriptor() ([]byte, []int) {
+	return fileDescriptor_459271e8c06255ea, []int{8}
+}
+
+func (m *Profile) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Profile.Unmarshal(m, b)
+}
+func (m *Profile) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Profile.Marshal(b, m, deterministic)
+}
+func (m *Profile) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Profile.Merge(m, src)
+}
+func (m *Profile) XXX_Size() int {
+	return xxx_messageInfo_Profile.Size(m)
+}
+func (m *Profile) XXX_DiscardUnknown() {
+	xxx_messageInfo_Profile.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Profile proto.InternalMessageInfo
+
+func (m *Profile) GetPeerId() string {
+	if m != nil {
+		return m.PeerId
+	}
+	return ""
+}
+
+func (m *Profile) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
+func (m *Profile) GetEmail() string {
+	if m != nil {
+		return m.Email
+	}
+	return ""
+}
+
+func (m *Profile) GetTwitterUsername() string {
+	if m != nil {
+		return m.TwitterUsername
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*GenSeedRequest)(nil), "com.mintter.GenSeedRequest")
 	proto.RegisterType((*GenSeedResponse)(nil), "com.mintter.GenSeedResponse")
 	proto.RegisterType((*InitWalletRequest)(nil), "com.mintter.InitWalletRequest")
 	proto.RegisterType((*InitWalletResponse)(nil), "com.mintter.InitWalletResponse")
+	proto.RegisterType((*UpdateProfileRequest)(nil), "com.mintter.UpdateProfileRequest")
+	proto.RegisterType((*UpdateProfileResponse)(nil), "com.mintter.UpdateProfileResponse")
+	proto.RegisterType((*GetProfileRequest)(nil), "com.mintter.GetProfileRequest")
+	proto.RegisterType((*GetProfileResponse)(nil), "com.mintter.GetProfileResponse")
+	proto.RegisterType((*Profile)(nil), "com.mintter.Profile")
 }
 
 func init() {
@@ -215,25 +438,34 @@ func init() {
 }
 
 var fileDescriptor_459271e8c06255ea = []byte{
-	// 278 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x91, 0xc1, 0x4b, 0xc3, 0x30,
-	0x14, 0xc6, 0xcd, 0x86, 0x4e, 0x9f, 0xda, 0xba, 0x87, 0x87, 0x52, 0x45, 0x47, 0x2f, 0x1b, 0x08,
-	0x3d, 0xe8, 0xd9, 0x8b, 0x07, 0xc5, 0x83, 0x38, 0x2a, 0x28, 0x78, 0x19, 0xb5, 0x79, 0xb0, 0xc2,
-	0x9a, 0xc4, 0x24, 0x32, 0xf0, 0xee, 0x3f, 0xe2, 0x5f, 0x2a, 0x26, 0x5d, 0xb7, 0xea, 0x76, 0x0a,
-	0xf9, 0x5e, 0xf2, 0xe5, 0xf7, 0x7d, 0x81, 0xc3, 0xaa, 0x14, 0xd6, 0x92, 0x4e, 0x95, 0x96, 0x56,
-	0xe2, 0x7e, 0x21, 0xab, 0xb4, 0x96, 0x92, 0x6b, 0x08, 0xee, 0x48, 0x3c, 0x11, 0xf1, 0x8c, 0xde,
-	0x3f, 0xc8, 0x58, 0xbc, 0x80, 0x7e, 0x4e, 0x9f, 0x44, 0x7c, 0xa2, 0x72, 0x63, 0xd4, 0x54, 0xe7,
-	0x86, 0x22, 0x36, 0x60, 0xa3, 0x83, 0xec, 0xc8, 0x0f, 0xc6, 0x8d, 0x9e, 0x3c, 0x43, 0xd8, 0x5c,
-	0x37, 0x4a, 0x0a, 0x43, 0x18, 0xc3, 0x6e, 0x25, 0xa8, 0x92, 0xa2, 0x2c, 0x22, 0x36, 0xe8, 0x8e,
-	0xf6, 0xb2, 0x66, 0x8f, 0x43, 0x08, 0x49, 0x14, 0xa5, 0x9a, 0x92, 0x26, 0x3e, 0x31, 0x44, 0x3c,
-	0xea, 0x38, 0xe7, 0x60, 0x29, 0xff, 0x9a, 0x25, 0x5f, 0x0c, 0xfa, 0xf7, 0xa2, 0xb4, 0x2f, 0xf9,
-	0x6c, 0x46, 0x76, 0x81, 0x36, 0x84, 0x70, 0xee, 0x04, 0x87, 0x36, 0x97, 0x9a, 0xd7, 0x60, 0x81,
-	0x97, 0xc7, 0xb5, 0xda, 0x62, 0xe8, 0xfc, 0x61, 0x58, 0x9b, 0xaf, 0xbb, 0x21, 0xdf, 0x31, 0xe0,
-	0x2a, 0x86, 0x8f, 0x78, 0xf9, 0xcd, 0xa0, 0xf7, 0xe0, 0x0b, 0xc4, 0x5b, 0xe8, 0xd5, 0x0d, 0xe0,
-	0x49, 0xba, 0xd2, 0x6c, 0xda, 0xae, 0x35, 0x3e, 0x5d, 0x3f, 0xf4, 0x8e, 0xc9, 0x16, 0x3e, 0x02,
-	0x2c, 0x5f, 0xc2, 0xb3, 0xd6, 0xe9, 0x7f, 0x4d, 0xc4, 0xe7, 0x1b, 0xe7, 0x0b, 0xc3, 0x9b, 0xde,
-	0xeb, 0xb6, 0xfb, 0xef, 0xb7, 0x1d, 0xb7, 0x5c, 0xfd, 0x04, 0x00, 0x00, 0xff, 0xff, 0x8b, 0x7a,
-	0x5f, 0x1c, 0x07, 0x02, 0x00, 0x00,
+	// 430 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x54, 0xc1, 0x6e, 0xd3, 0x40,
+	0x10, 0xad, 0x53, 0x5a, 0xe3, 0x29, 0x8d, 0x9b, 0xc5, 0x88, 0xc8, 0x20, 0x28, 0x7b, 0x69, 0x11,
+	0x92, 0x0f, 0xe5, 0xcc, 0x05, 0xa1, 0x46, 0x39, 0x20, 0x22, 0xa3, 0x00, 0xe2, 0x62, 0x99, 0x78,
+	0x50, 0x56, 0xb2, 0xd7, 0xcb, 0xee, 0x46, 0x91, 0xb8, 0x70, 0xe2, 0xf3, 0xf8, 0x27, 0x94, 0xf5,
+	0xda, 0xb1, 0x9d, 0x04, 0x89, 0x9e, 0xac, 0x79, 0x33, 0xf3, 0xfc, 0xe6, 0xcd, 0x68, 0xe1, 0xbc,
+	0x60, 0x5c, 0x6b, 0x94, 0x91, 0x90, 0xa5, 0x2e, 0xc9, 0xd9, 0xa2, 0x2c, 0x22, 0x0b, 0xd1, 0x37,
+	0x30, 0x9c, 0x20, 0xff, 0x88, 0x98, 0xc5, 0xf8, 0x63, 0x85, 0x4a, 0x93, 0x57, 0x30, 0x4a, 0xf1,
+	0x27, 0x62, 0x96, 0x88, 0x54, 0x29, 0xb1, 0x94, 0xa9, 0xc2, 0xb1, 0x73, 0xe9, 0x5c, 0x3f, 0x88,
+	0x2f, 0xaa, 0xc4, 0xac, 0xc1, 0xe9, 0x27, 0xf0, 0x9b, 0x76, 0x25, 0x4a, 0xae, 0x90, 0x84, 0x70,
+	0xbf, 0xe0, 0x58, 0x94, 0x9c, 0x2d, 0xc6, 0xce, 0xe5, 0xf1, 0xb5, 0x17, 0x37, 0x31, 0xb9, 0x02,
+	0x1f, 0xf9, 0x82, 0x89, 0x25, 0x4a, 0xcc, 0x12, 0x85, 0x98, 0x8d, 0x07, 0x86, 0x79, 0xb8, 0x85,
+	0x37, 0x64, 0xf4, 0xb7, 0x03, 0xa3, 0x29, 0x67, 0xfa, 0x73, 0x9a, 0xe7, 0xa8, 0x6b, 0x69, 0x57,
+	0xe0, 0xaf, 0x0d, 0x60, 0xa4, 0xad, 0x4b, 0x99, 0x59, 0x61, 0xc3, 0x0a, 0x9e, 0x59, 0xb4, 0xa3,
+	0x61, 0xd0, 0xd3, 0xb0, 0x77, 0xbe, 0xe3, 0x03, 0xf3, 0x05, 0x40, 0xda, 0x32, 0xaa, 0x11, 0xe9,
+	0x2d, 0x04, 0x73, 0x91, 0xa5, 0x1a, 0x67, 0xb2, 0xfc, 0xce, 0x72, 0xac, 0xf5, 0x45, 0xe0, 0x8a,
+	0x0a, 0x31, 0xba, 0xce, 0x6e, 0x82, 0xa8, 0xe5, 0x75, 0x54, 0x57, 0xd7, 0x45, 0x74, 0x02, 0x8f,
+	0x7a, 0x3c, 0xd6, 0xc3, 0xff, 0x25, 0x7a, 0x08, 0xa3, 0x09, 0xea, 0xae, 0x1a, 0xfa, 0x0e, 0x48,
+	0x1b, 0xbc, 0x23, 0xf5, 0x2f, 0x70, 0x2d, 0x46, 0x1e, 0x83, 0x2b, 0x10, 0x65, 0xc2, 0x2a, 0xdb,
+	0xbd, 0xf8, 0x74, 0x13, 0x4e, 0x8d, 0xdd, 0x2b, 0x85, 0x92, 0xa7, 0x05, 0x9a, 0x7d, 0x7a, 0x71,
+	0x13, 0x93, 0x00, 0x4e, 0xb0, 0x48, 0x59, 0x6e, 0x2c, 0xf6, 0xe2, 0x2a, 0x20, 0x2f, 0xe1, 0x42,
+	0xaf, 0xd9, 0xe6, 0x8f, 0x49, 0xd3, 0x79, 0xcf, 0x14, 0xf8, 0x16, 0x9f, 0x5b, 0xf8, 0xe6, 0xcf,
+	0x00, 0xdc, 0xf7, 0x95, 0x3a, 0x72, 0x0b, 0xae, 0x3d, 0x37, 0xf2, 0xa4, 0x23, 0xbb, 0x7b, 0xc3,
+	0xe1, 0xd3, 0xfd, 0x49, 0xbb, 0xbe, 0x23, 0xf2, 0x01, 0x60, 0xbb, 0x56, 0xf2, 0xac, 0x53, 0xbd,
+	0x73, 0x76, 0xe1, 0xf3, 0x83, 0xf9, 0x36, 0xe1, 0xd6, 0xeb, 0x1e, 0xe1, 0xce, 0x66, 0x7a, 0x84,
+	0xbb, 0x4b, 0xa2, 0x47, 0xe4, 0x0b, 0x9c, 0x77, 0x4e, 0x83, 0xbc, 0xe8, 0xf4, 0xec, 0x3b, 0xbf,
+	0x90, 0xfe, 0xab, 0xa4, 0x66, 0x7e, 0xeb, 0x7e, 0x3d, 0x31, 0xef, 0xc0, 0xb7, 0x53, 0xf3, 0x79,
+	0xfd, 0x37, 0x00, 0x00, 0xff, 0xff, 0x3c, 0xde, 0xad, 0x00, 0x1f, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -248,7 +480,7 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MintterClient interface {
-	// Generate cryptographic seed that is used to derive all the cryptographic
+	// Generates cryptographic seed that is used to derive all the cryptographic
 	// keys necessary for Mintter to work. It's currenly supposed to be using
 	// LND's Aezeed implementation, that solves some of the issues with BIP-39.
 	// The seed is encoded as a mnemonic of N human readable words. The seed could
@@ -256,9 +488,13 @@ type MintterClient interface {
 	//
 	// See: https://github.com/lightningnetwork/lnd/tree/master/aezeed.
 	GenSeed(ctx context.Context, in *GenSeedRequest, opts ...grpc.CallOption) (*GenSeedResponse, error)
-	// InitWallet is used to commit the previously generated seed and initialize
-	// the daemon's internal wallet (master key).
+	// After generating the seed, this call is used to commit the seed and
+	// initialize the daemon's internal wallet (master key).
 	InitWallet(ctx context.Context, in *InitWalletRequest, opts ...grpc.CallOption) (*InitWalletResponse, error)
+	// Retrieves profile information.
+	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error)
+	// Updates profile information.
+	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
 }
 
 type mintterClient struct {
@@ -287,9 +523,27 @@ func (c *mintterClient) InitWallet(ctx context.Context, in *InitWalletRequest, o
 	return out, nil
 }
 
+func (c *mintterClient) GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error) {
+	out := new(GetProfileResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.Mintter/GetProfile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mintterClient) UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error) {
+	out := new(UpdateProfileResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.Mintter/UpdateProfile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MintterServer is the server API for Mintter service.
 type MintterServer interface {
-	// Generate cryptographic seed that is used to derive all the cryptographic
+	// Generates cryptographic seed that is used to derive all the cryptographic
 	// keys necessary for Mintter to work. It's currenly supposed to be using
 	// LND's Aezeed implementation, that solves some of the issues with BIP-39.
 	// The seed is encoded as a mnemonic of N human readable words. The seed could
@@ -297,9 +551,13 @@ type MintterServer interface {
 	//
 	// See: https://github.com/lightningnetwork/lnd/tree/master/aezeed.
 	GenSeed(context.Context, *GenSeedRequest) (*GenSeedResponse, error)
-	// InitWallet is used to commit the previously generated seed and initialize
-	// the daemon's internal wallet (master key).
+	// After generating the seed, this call is used to commit the seed and
+	// initialize the daemon's internal wallet (master key).
 	InitWallet(context.Context, *InitWalletRequest) (*InitWalletResponse, error)
+	// Retrieves profile information.
+	GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error)
+	// Updates profile information.
+	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error)
 }
 
 // UnimplementedMintterServer can be embedded to have forward compatible implementations.
@@ -311,6 +569,12 @@ func (*UnimplementedMintterServer) GenSeed(ctx context.Context, req *GenSeedRequ
 }
 func (*UnimplementedMintterServer) InitWallet(ctx context.Context, req *InitWalletRequest) (*InitWalletResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InitWallet not implemented")
+}
+func (*UnimplementedMintterServer) GetProfile(ctx context.Context, req *GetProfileRequest) (*GetProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
+}
+func (*UnimplementedMintterServer) UpdateProfile(ctx context.Context, req *UpdateProfileRequest) (*UpdateProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
 }
 
 func RegisterMintterServer(s *grpc.Server, srv MintterServer) {
@@ -353,6 +617,42 @@ func _Mintter_InitWallet_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Mintter_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MintterServer).GetProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.Mintter/GetProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MintterServer).GetProfile(ctx, req.(*GetProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Mintter_UpdateProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MintterServer).UpdateProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.Mintter/UpdateProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MintterServer).UpdateProfile(ctx, req.(*UpdateProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Mintter_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "com.mintter.Mintter",
 	HandlerType: (*MintterServer)(nil),
@@ -364,6 +664,14 @@ var _Mintter_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "InitWallet",
 			Handler:    _Mintter_InitWallet_Handler,
+		},
+		{
+			MethodName: "GetProfile",
+			Handler:    _Mintter_GetProfile_Handler,
+		},
+		{
+			MethodName: "UpdateProfile",
+			Handler:    _Mintter_UpdateProfile_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

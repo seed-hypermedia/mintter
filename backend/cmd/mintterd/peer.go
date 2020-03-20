@@ -20,22 +20,19 @@ import (
 type mttPeer struct {
 	tid   thread.ID
 	tinfo thread.Info
-	prof  *profile.Profile
+	prof  profile.Profile
 	ts    *threadsutil.ServiceBootstrapper
 	priv  crypto.PrivKey
 	log   *zap.Logger
 }
 
 func newPeer(seed []byte, repoPath string, address string, log *zap.Logger) (*mttPeer, error) {
-	prof, err := profile.FromSeed(seed)
+	prof, err := profile.FromSeed(seed, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	priv, _, err := prof.Child(0)
-	if err != nil {
-		return nil, err
-	}
+	priv := prof.PrivKey
 
 	addr, err := multiaddr.NewMultiaddr(address)
 	if err != nil {
@@ -47,7 +44,7 @@ func newPeer(seed []byte, repoPath string, address string, log *zap.Logger) (*mt
 		return nil, err
 	}
 
-	tid := prof.ThreadID()
+	tid := prof.ThreadID
 
 	ctx := context.TODO()
 

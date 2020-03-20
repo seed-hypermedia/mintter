@@ -92,3 +92,107 @@ export namespace InitWalletResponse {
   }
 }
 
+export class UpdateProfileRequest extends jspb.Message {
+  getProfile(): Profile | undefined;
+  setProfile(value?: Profile): void;
+  hasProfile(): boolean;
+  clearProfile(): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateProfileRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateProfileRequest): UpdateProfileRequest.AsObject;
+  static serializeBinaryToWriter(message: UpdateProfileRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateProfileRequest;
+  static deserializeBinaryFromReader(message: UpdateProfileRequest, reader: jspb.BinaryReader): UpdateProfileRequest;
+}
+
+export namespace UpdateProfileRequest {
+  export type AsObject = {
+    profile?: Profile.AsObject,
+  }
+}
+
+export class UpdateProfileResponse extends jspb.Message {
+  getProfile(): Profile | undefined;
+  setProfile(value?: Profile): void;
+  hasProfile(): boolean;
+  clearProfile(): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateProfileResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateProfileResponse): UpdateProfileResponse.AsObject;
+  static serializeBinaryToWriter(message: UpdateProfileResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateProfileResponse;
+  static deserializeBinaryFromReader(message: UpdateProfileResponse, reader: jspb.BinaryReader): UpdateProfileResponse;
+}
+
+export namespace UpdateProfileResponse {
+  export type AsObject = {
+    profile?: Profile.AsObject,
+  }
+}
+
+export class GetProfileRequest extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetProfileRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetProfileRequest): GetProfileRequest.AsObject;
+  static serializeBinaryToWriter(message: GetProfileRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetProfileRequest;
+  static deserializeBinaryFromReader(message: GetProfileRequest, reader: jspb.BinaryReader): GetProfileRequest;
+}
+
+export namespace GetProfileRequest {
+  export type AsObject = {
+  }
+}
+
+export class GetProfileResponse extends jspb.Message {
+  getProfile(): Profile | undefined;
+  setProfile(value?: Profile): void;
+  hasProfile(): boolean;
+  clearProfile(): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetProfileResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetProfileResponse): GetProfileResponse.AsObject;
+  static serializeBinaryToWriter(message: GetProfileResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetProfileResponse;
+  static deserializeBinaryFromReader(message: GetProfileResponse, reader: jspb.BinaryReader): GetProfileResponse;
+}
+
+export namespace GetProfileResponse {
+  export type AsObject = {
+    profile?: Profile.AsObject,
+  }
+}
+
+export class Profile extends jspb.Message {
+  getPeerId(): string;
+  setPeerId(value: string): void;
+
+  getUsername(): string;
+  setUsername(value: string): void;
+
+  getEmail(): string;
+  setEmail(value: string): void;
+
+  getTwitterUsername(): string;
+  setTwitterUsername(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Profile.AsObject;
+  static toObject(includeInstance: boolean, msg: Profile): Profile.AsObject;
+  static serializeBinaryToWriter(message: Profile, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Profile;
+  static deserializeBinaryFromReader(message: Profile, reader: jspb.BinaryReader): Profile;
+}
+
+export namespace Profile {
+  export type AsObject = {
+    peerId: string,
+    username: string,
+    email: string,
+    twitterUsername: string,
+  }
+}
+
