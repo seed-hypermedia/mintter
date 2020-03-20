@@ -1,15 +1,16 @@
-package rpc_test
+package server_test
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"mintter/backend/rpc"
-	"mintter/proto"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"mintter/backend/server"
+	"mintter/proto"
 
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/stretchr/testify/require"
@@ -18,7 +19,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var _ proto.MintterServer = (*rpc.Server)(nil)
+var _ proto.MintterServer = (*server.Server)(nil)
 
 func TestInitProfile(t *testing.T) {
 	srv := newServer(t)
@@ -104,7 +105,7 @@ func TestLoadProfile(t *testing.T) {
 	require.Equal(t, pid.String(), resp.Profile.PeerId)
 }
 
-func newServer(t *testing.T) *rpc.Server {
+func newServer(t *testing.T) *server.Server {
 	t.Helper()
 
 	repoPath := fmt.Sprintf("test-repo-%d", time.Now().UnixNano())
@@ -113,7 +114,7 @@ func newServer(t *testing.T) *rpc.Server {
 		os.RemoveAll(repoPath)
 	})
 
-	srv, err := rpc.NewServer(repoPath, zap.NewNop())
+	srv, err := server.NewServer(repoPath, zap.NewNop())
 	if err != nil {
 		t.Fatal(err)
 	}
