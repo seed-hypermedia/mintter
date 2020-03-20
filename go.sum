@@ -26,6 +26,9 @@ github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412 h1:w1UutsfOrms1J05zt7I
 github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412/go.mod h1:WPjqKcmVOxf0XSf3YxCJs6N6AOSrOx3obionmG7T0y0=
 github.com/alecthomas/jsonschema v0.0.0-20191017121752-4bb6e3fae4f2 h1:swGeCLPiUQ647AIRnFxnAHdzlg6IPpmU6QdkOPZINt8=
 github.com/alecthomas/jsonschema v0.0.0-20191017121752-4bb6e3fae4f2/go.mod h1:Juc2PrI3wtNfUwptSvAIeNx+HrETwHQs6nf+TkOJlOA=
+github.com/alecthomas/kong v0.2.1/go.mod h1:+inYUSluD+p4L8KdviBSgzcqEjUQOfC5fQDRFuc36lI=
+github.com/alecthomas/kong v0.2.4 h1:Y0ZBCHAvHhTHw7FFJ2FzCAAG4pkbTgA45nc7BpMhDNk=
+github.com/alecthomas/kong v0.2.4/go.mod h1:kQOmtJgV+Lb4aj+I2LEn40cbtawdWJ9Y8QLq+lElKxE=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
@@ -73,6 +76,7 @@ github.com/btcsuite/snappy-go v1.0.0/go.mod h1:8woku9dyThutzjeg+3xrA5iCpBRH8XEEg
 github.com/btcsuite/websocket v0.0.0-20150119174127-31079b680792 h1:R8vQdOQdZ9Y3SkEwmHoWBmX1DNXhXZqlTpq6s4tyJGc=
 github.com/btcsuite/websocket v0.0.0-20150119174127-31079b680792/go.mod h1:ghJtEyQwv5/p4Mg4C0fgbePVuGr935/5ddU9Z3TmDRY=
 github.com/btcsuite/winsvc v1.0.0/go.mod h1:jsenWakMcC0zFBFurPLEAyrnc/teJEM1O46fmI40EZs=
+github.com/burdiyan/go/kongcli v0.0.0-20200124222818-6f87e0e684b6/go.mod h1:bON41FvB3v8MDMNb1yN+VEoIWaVknzysVXns7QKXlMs=
 github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6 h1:6H15Dgf4zZ8KlEXg3gHXVeSaJ7lmxmPwTGuhtuZuL2w=
 github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6/go.mod h1:rw0aHTLAgD7uczBMUzhtLU8+OH5NZbJOg56QnIC6YF0=
 github.com/c-bata/go-prompt v0.2.3 h1:jjCS+QhG/sULBhAaBdjb2PlMRVaKXQgn+4yzaauvs2s=
