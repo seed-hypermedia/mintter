@@ -13,6 +13,41 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// InitProfile implements InitProfile rpc.
+func (s *Server) InitProfile(ctx context.Context, req *proto.InitProfileRequest) (*proto.InitProfileResponse, error) {
+	var m Mnemonic
+
+	copy(m[:], req.Mnemonic)
+
+	if err := s.initProfile(m, req.AezeedPassphrase); err != nil {
+		return nil, err
+	}
+
+	return &proto.InitProfileResponse{}, nil
+}
+
+func (s *Server) initProfile(m Mnemonic, pass []byte) error {
+	seed, err := m.ToCipherSeed(pass)
+	if err != nil {
+		return status.Errorf(codes.InvalidArgument, "failed to decipher seed: %v", err)
+	}
+
+	if _, err := s.loadProfile(); err == nil {
+		return status.Error(codes.FailedPrecondition, "wallet is already initialized")
+	}
+
+	profile, err := identity.FromSeed(seed.Entropy[:], 0)
+	if err != nil {
+		return status.Errorf(codes.Internal, "failed to generate identity: %v", err)
+	}
+
+	if err := s.storeProfile(profile); err != nil {
+		return status.Errorf(codes.Internal, "failed to store profile: %v", err)
+	}
+
+	return nil
+}
+
 // GetProfile implements Mintter rpc.
 func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*proto.GetProfileResponse, error) {
 	prof, err := s.loadProfile()

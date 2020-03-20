@@ -46,7 +46,7 @@ export namespace GenSeedResponse {
   }
 }
 
-export class InitWalletRequest extends jspb.Message {
+export class InitProfileRequest extends jspb.Message {
   getWalletPassword(): Uint8Array | string;
   getWalletPassword_asU8(): Uint8Array;
   getWalletPassword_asB64(): string;
@@ -63,14 +63,14 @@ export class InitWalletRequest extends jspb.Message {
   setAezeedPassphrase(value: Uint8Array | string): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): InitWalletRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: InitWalletRequest): InitWalletRequest.AsObject;
-  static serializeBinaryToWriter(message: InitWalletRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): InitWalletRequest;
-  static deserializeBinaryFromReader(message: InitWalletRequest, reader: jspb.BinaryReader): InitWalletRequest;
+  toObject(includeInstance?: boolean): InitProfileRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: InitProfileRequest): InitProfileRequest.AsObject;
+  static serializeBinaryToWriter(message: InitProfileRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): InitProfileRequest;
+  static deserializeBinaryFromReader(message: InitProfileRequest, reader: jspb.BinaryReader): InitProfileRequest;
 }
 
-export namespace InitWalletRequest {
+export namespace InitProfileRequest {
   export type AsObject = {
     walletPassword: Uint8Array | string,
     mnemonicList: Array<string>,
@@ -78,16 +78,16 @@ export namespace InitWalletRequest {
   }
 }
 
-export class InitWalletResponse extends jspb.Message {
+export class InitProfileResponse extends jspb.Message {
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): InitWalletResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: InitWalletResponse): InitWalletResponse.AsObject;
-  static serializeBinaryToWriter(message: InitWalletResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): InitWalletResponse;
-  static deserializeBinaryFromReader(message: InitWalletResponse, reader: jspb.BinaryReader): InitWalletResponse;
+  toObject(includeInstance?: boolean): InitProfileResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: InitProfileResponse): InitProfileResponse.AsObject;
+  static serializeBinaryToWriter(message: InitProfileResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): InitProfileResponse;
+  static deserializeBinaryFromReader(message: InitProfileResponse, reader: jspb.BinaryReader): InitProfileResponse;
 }
 
-export namespace InitWalletResponse {
+export namespace InitProfileResponse {
   export type AsObject = {
   }
 }

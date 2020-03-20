@@ -5,8 +5,8 @@ import {
   GenSeedResponse,
   GetProfileRequest,
   GetProfileResponse,
-  InitWalletRequest,
-  InitWalletResponse,
+  InitProfileRequest,
+  InitProfileResponse,
   UpdateProfileRequest,
   UpdateProfileResponse} from './mintter_pb';
 
@@ -22,12 +22,12 @@ export class MintterClient {
                response: GenSeedResponse) => void
   ): grpcWeb.ClientReadableStream<GenSeedResponse>;
 
-  initWallet(
-    request: InitWalletRequest,
+  initProfile(
+    request: InitProfileRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.Error,
-               response: InitWalletResponse) => void
-  ): grpcWeb.ClientReadableStream<InitWalletResponse>;
+               response: InitProfileResponse) => void
+  ): grpcWeb.ClientReadableStream<InitProfileResponse>;
 
   getProfile(
     request: GetProfileRequest,
@@ -55,10 +55,10 @@ export class MintterPromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<GenSeedResponse>;
 
-  initWallet(
-    request: InitWalletRequest,
+  initProfile(
+    request: InitProfileRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<InitWalletResponse>;
+  ): Promise<InitProfileResponse>;
 
   getProfile(
     request: GetProfileRequest,
