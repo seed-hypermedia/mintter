@@ -40,7 +40,7 @@ func Run(ctx context.Context, cfg Config) error {
 
 	rpcsrv := grpc.NewServer()
 	{
-		svc, err := rpc.NewServer(cfg.RepoPath)
+		svc, err := rpc.NewServer(cfg.RepoPath, log.Named("rpcServer"))
 		if err != nil {
 			return fmt.Errorf("failed to create rpc server: %w", err)
 		}

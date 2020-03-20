@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"io/ioutil"
+	"mintter/backend/identity"
 	"mintter/proto"
 	"path/filepath"
 
@@ -26,20 +27,20 @@ func (s *Server) InitWallet(ctx context.Context, req *proto.InitWalletRequest) (
 func (s *Server) initWallet(m Mnemonic, pass []byte) error {
 	seed, err := m.ToCipherSeed(pass)
 	if err != nil {
-		return status.Errorf(codes.InvalidArgument, "initWallet: failed to decipher seed: %v", err)
+		return status.Errorf(codes.InvalidArgument, "failed to decipher seed: %v", err)
 	}
 
-	rawSeed, err := seed.Encipher(pass)
+	if _, err := s.loadProfile(); err == nil {
+		return status.Error(codes.FailedPrecondition, "wallet is already initialized")
+	}
+
+	profile, err := identity.FromSeed(seed.Entropy[:], 0)
 	if err != nil {
-		return status.Errorf(codes.InvalidArgument, "initWallet: failed to encipher seed: %v", err)
+		return status.Errorf(codes.Internal, "failed to generate identity: %v", err)
 	}
 
-	if _, err := s.loadSeed(); err == nil {
-		return status.Error(codes.FailedPrecondition, "initWallet: wallet is already initialized")
-	}
-
-	if err := s.storeSeed(rawSeed); err != nil {
-		return status.Errorf(codes.Internal, "initWallet: failed to store seed: %v", err)
+	if err := s.storeProfile(profile); err != nil {
+		return status.Errorf(codes.Internal, "failed to store profile: %v", err)
 	}
 
 	return nil

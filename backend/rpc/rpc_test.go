@@ -2,71 +2,108 @@ package rpc_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"mintter/backend/rpc"
 	"mintter/proto"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func TestGenSeed(t *testing.T) {
+var _ proto.MintterServer = (*rpc.Server)(nil)
+
+func TestInitProfile(t *testing.T) {
 	srv := newServer(t)
 	ctx := context.Background()
 
-	resp, err := srv.GenSeed(ctx, &proto.GenSeedRequest{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	var mnemonic []string
 
-	if len(resp.Mnemonic) != 24 {
-		t.Fatalf("aezeed mnemonic must have 24 words, got = %v", len(resp.Mnemonic))
-	}
+	t.Run("seed must be 24 words", func(t *testing.T) {
+		resp, err := srv.GenSeed(ctx, &proto.GenSeedRequest{})
+
+		require.NoError(t, err)
+		require.Equal(t, 24, len(resp.Mnemonic))
+
+		mnemonic = resp.Mnemonic
+	})
+
+	t.Run("daemon must initialize and only once", func(t *testing.T) {
+		_, err := srv.InitWallet(ctx, &proto.InitWalletRequest{
+			Mnemonic: mnemonic,
+		})
+
+		require.NoError(t, err)
+
+		_, err = srv.InitWallet(ctx, &proto.InitWalletRequest{
+			Mnemonic: mnemonic,
+		})
+
+		require.Error(t, err, "init more than once must fail")
+
+		perr, ok := status.FromError(err)
+
+		require.True(t, ok, "error must be grpc error")
+		require.Equal(t, codes.FailedPrecondition, perr.Code())
+	})
+
+	t.Run("daemon must return profile after initialized", func(t *testing.T) {
+		resp, err := srv.GetProfile(ctx, &proto.GetProfileRequest{})
+
+		require.NoError(t, err)
+
+		require.NotEqual(t, "", resp.Profile.PeerId)
+	})
 }
 
-func TestInitWallet(t *testing.T) {
+func TestLoadProfile(t *testing.T) {
 	srv := newServer(t)
-	ctx := context.Background()
 
-	resp, err := srv.GenSeed(ctx, &proto.GenSeedRequest{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	fileName := filepath.Join(srv.RepoPath(), "profile.json")
+	f, err := os.Create(fileName)
+	require.NoError(t, err)
 
-	if _, err := srv.InitWallet(ctx, &proto.InitWalletRequest{
-		Mnemonic: resp.Mnemonic,
-	}); err != nil {
-		t.Fatal(err)
-	}
+	pid, err := peer.IDB58Decode("QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ")
+	require.NoError(t, err)
 
-	if _, err := srv.InitWallet(ctx, &proto.InitWalletRequest{
-		Mnemonic: resp.Mnemonic,
-	}); err == nil {
-		t.Fatal("IniWallet with existing seed must fail")
-	} else {
-		perr, ok := status.FromError(err)
-		if !ok {
-			t.Fatal("must be grpc error")
-		}
+	err = json.NewEncoder(f).Encode(map[string]interface{}{
+		"PeerID": pid.String(),
+	})
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
 
-		if code := perr.Code(); code != codes.FailedPrecondition {
-			t.Fatalf("got = %v, want = %v", code, codes.FailedPrecondition)
-		}
-	}
+	// GetProfile must work if profile is stored in the file.
+	resp, err := srv.GetProfile(context.Background(), &proto.GetProfileRequest{})
+	require.NoError(t, err)
+	require.Equal(t, pid.String(), resp.Profile.PeerId)
+
+	_, err = srv.InitWallet(context.Background(), &proto.InitWalletRequest{})
+	require.Error(t, err, "init must fail if profile is cached")
+
+	// GetProfile must return cached profile even if file disappears.
+	require.NoError(t, os.Remove(fileName))
+	resp, err = srv.GetProfile(context.Background(), &proto.GetProfileRequest{})
+	require.NoError(t, err)
+	require.Equal(t, pid.String(), resp.Profile.PeerId)
 }
 
 func newServer(t *testing.T) *rpc.Server {
 	t.Helper()
 
 	repoPath := fmt.Sprintf("test-repo-%d", time.Now().UnixNano())
+	repoPath = filepath.Join(os.TempDir(), repoPath)
 	t.Cleanup(func() {
 		os.RemoveAll(repoPath)
 	})
 
-	srv, err := rpc.NewServer(repoPath)
+	srv, err := rpc.NewServer(repoPath, zap.NewNop())
 	if err != nil {
 		t.Fatal(err)
 	}
