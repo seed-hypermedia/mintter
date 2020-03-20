@@ -18,6 +18,10 @@ type Profile struct {
 	PubKey   crypto.PubKey
 	PrivKey  crypto.PrivKey
 	PeerID   peer.ID
+
+	Username        string
+	Email           string
+	TwitterUsername string
 }
 
 // FromSeed generates a profile based on seed.
