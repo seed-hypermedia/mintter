@@ -15,20 +15,15 @@ export default function EditProfile() {
         <P className="text-center">
           Link your personal data with your new identity
         </P>
-        {/*
-        - alias
-        - email
-        - avatar
-        -  */}
         <Content className="flex-wrap flex w-full flex-col md:flex-row">
           <div className="pr-8 order-12 md:order-none flex mt-6 md:mt-0 flex-col">
             <label
-              className="block text-gray-500 text-xs font-semibold mb-1"
+              className="block text-body-muted text-xs font-semibold mb-1"
               htmlFor="avatar"
             >
-              avatar
+              Avatar
             </label>
-            <div className="avatar-container overflow-hidden relative">
+            <div className="avatar-container overflow-hidden relative bg-background-muted rounded-sm">
               <input
                 className="absolute bottom-0 left-0 opacity-0 hover:opacity-100 transition-opacity ease-in-out duration-300 m-4"
                 type="file"
@@ -36,9 +31,9 @@ export default function EditProfile() {
             </div>
           </div>
           <div className="flex-col flex flex-1">
-            <div className="flex-1">
+            <div className="flex-1 relative">
               <label
-                className="block text-gray-500 text-xs font-semibold mb-1"
+                className="block text-body-muted text-xs font-semibold mb-1"
                 htmlFor="alias"
               >
                 Alias
@@ -50,24 +45,30 @@ export default function EditProfile() {
                 placeholder="Your readable username"
               />
             </div>
-            <div className="flex-1 mt-6">
+            <div className="flex-1 relative mt-10">
               <label
-                className="block text-gray-500 text-xs font-semibold mb-1"
+                className="block text-body-muted text-xs font-semibold mb-1"
                 htmlFor="email"
               >
-                email
+                Email
               </label>
-              <Input id="email" type="email" placeholder="your@email.com" />
-              <p className="text-red-500 text-xs italic">
+              <Input
+                name="email"
+                id="email"
+                type="email"
+                placeholder="your@email.com"
+              />
+
+              <p className="text-danger text-xs absolute left-0 mt-1">
                 Please type a valid email.
               </p>
             </div>
-            <div className="flex-1 mt-6">
+            <div className="flex-1 relative mt-10">
               <label
-                className="block text-gray-500 text-xs font-semibold mb-1"
+                className="block text-body-muted text-xs font-semibold mb-1"
                 htmlFor="twitter"
               >
-                twitter
+                Twitter
               </label>
               <Input
                 name="twitter"
@@ -89,7 +90,6 @@ export default function EditProfile() {
       </Footer>
       <style jsx>{`
         .avatar-container {
-          background-color: #dadada;
           width: 200px;
           height: 200px;
         }

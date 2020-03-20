@@ -1,5 +1,5 @@
 interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
-  as: 'h1' | 'h2' | 'h3'
+  as?: 'h1' | 'h2' | 'h3'
 }
 
 export default function Heading({
@@ -12,7 +12,7 @@ export default function Heading({
   return (
     <Elm
       {...props}
-      className={`font-semibold text-3xl text-center ${className}`}
+      className={`font-semibold text-3xl text-center text-heading ${className}`}
     >
       {children}
     </Elm>

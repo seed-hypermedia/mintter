@@ -1,7 +1,7 @@
 import Layout, {LayoutProps} from './layout'
 
 import WelcomeProvider from '../shared/welcomeProvider'
-import {useState} from 'react'
+import {useTheme} from '../shared/themeContext'
 // import {useRouter, NextRouter} from 'next/router'
 // import {useEffect, useState} from 'react'
 
@@ -10,20 +10,16 @@ export default function WelcomeLayout({
   className = '',
   ...props
 }: LayoutProps) {
-  const [theme, setTheme] = useState('theme-light')
-
-  function toggleThemeClass() {
-    setTheme(theme === 'theme-light' ? 'theme-dark' : 'theme-light')
-  }
+  const {theme, toggleTheme} = useTheme()
 
   return (
     <div className={theme}>
       <Layout
         {...props}
-        className={`content-transition bg-background-primary flex flex-col py-8 ${className}`}
+        className={`content-transition bg-background flex flex-col py-8 ${className}`}
       >
         <button
-          onClick={toggleThemeClass}
+          onClick={() => toggleTheme()}
           className="border absolute right-0 top-0 py-2 px-4"
         >
           theme toggle

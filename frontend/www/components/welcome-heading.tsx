@@ -8,7 +8,7 @@ export default function WelcomeHeading({
   return (
     <Heading
       {...props}
-      className={`mb-4 ${className} ${css`
+      className={`mb-4 text-heading ${className} ${css`
         font-weight: 300;
       `}`}
     />

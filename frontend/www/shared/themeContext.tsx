@@ -1,7 +1,8 @@
-import {createContext, useState} from 'react'
+import {createContext, useState, useContext} from 'react'
+import useLocalStorage from './localstorage'
 export type ThemeContextValueType = {
   theme: string
-  setTheme?: React.Dispatch<React.SetStateAction<string>>
+  toggleTheme?: () => void
 }
 
 const initialValue: ThemeContextValueType = {
@@ -19,11 +20,22 @@ export function ThemeProvider({
   children,
   value = initialValue,
 }: ThemeProviderProps) {
-  const [localTheme, setTheme] = useState(value.theme)
+  const [theme, setTheme] = useLocalStorage<string>({
+    key: 'MINTTER_THEME',
+    initialValue: 'theme-light',
+  })
+
+  function toggleTheme() {
+    setTheme(theme === 'theme-light' ? 'theme-dark' : 'theme-light')
+  }
 
   return (
-    <ThemeContext.Provider value={{theme: localTheme, setTheme}}>
+    <ThemeContext.Provider value={{theme, toggleTheme}}>
       {children}
     </ThemeContext.Provider>
   )
+}
+
+export function useTheme() {
+  return useContext<ThemeContextValueType>(ThemeContext)
 }
