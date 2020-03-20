@@ -1,1 +1,1 @@
-redo-ifchange yarn packages/all
+redo-ifchange packages/all

@@ -1,4 +1,4 @@
-package rpc
+package server
 
 import (
 	"context"
@@ -31,17 +31,17 @@ func (s *Server) GenSeed(ctx context.Context, req *proto.GenSeedRequest) (*proto
 func (s *Server) genSeed(passphrase []byte) (Mnemonic, EncipheredSeed, error) {
 	seed, err := newSeed()
 	if err != nil {
-		return Mnemonic{}, EncipheredSeed{}, status.Errorf(codes.Internal, "genSeed: %v", err)
+		return Mnemonic{}, EncipheredSeed{}, status.Errorf(codes.Internal, "failed to generate new seed: %v", err)
 	}
 
 	rawSeed, err := seed.Encipher(passphrase)
 	if err != nil {
-		return Mnemonic{}, EncipheredSeed{}, status.Errorf(codes.Internal, "genSeed: failed to encipher seed: %v", err)
+		return Mnemonic{}, EncipheredSeed{}, status.Errorf(codes.Internal, "failed to encipher seed: %v", err)
 	}
 
 	words, err := seed.ToMnemonic(passphrase)
 	if err != nil {
-		return Mnemonic{}, EncipheredSeed{}, status.Errorf(codes.Internal, "genSeed: failed to create mnemonic: %v", err)
+		return Mnemonic{}, EncipheredSeed{}, status.Errorf(codes.Internal, "failed to create mnemonic: %v", err)
 	}
 
 	return words, rawSeed, nil

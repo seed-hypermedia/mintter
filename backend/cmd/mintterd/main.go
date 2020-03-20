@@ -3,19 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
-	"net"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"mintter/backend/daemon"
 	"mintter/backend/identity"
-	"mintter/backend/rpc"
 	"mintter/backend/threadsutil"
-	"mintter/proto"
 
+	"github.com/alecthomas/kong"
+	"github.com/burdiyan/go/kongcli"
 	"github.com/burdiyan/go/mainutil"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p-core/host"
 	peer "github.com/libp2p/go-libp2p-peer"
@@ -28,7 +26,6 @@ import (
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
 )
 
 func init() {
@@ -66,7 +63,18 @@ func threadAddr(h peer.ID, addr multiaddr.Multiaddr, tid thread.ID) (ThreadAddr,
 }
 
 func main() {
-	mainutil.Run(grpcWeb)
+	var cfg daemon.Config
+
+	kong.Parse(&cfg,
+		kong.Name("mintterd"),
+		kong.Resolvers(kongcli.EnvResolver("")),
+	)
+
+	ctx := mainutil.TrapSignals()
+
+	mainutil.Run(func() error {
+		return daemon.Run(ctx, cfg)
+	})
 }
 
 func defaultRepoPath() string {
@@ -76,63 +84,6 @@ func defaultRepoPath() string {
 	}
 
 	return filepath.Join(d, ".mtt")
-}
-
-func grpcWeb() (err error) {
-	g, ctx := errgroup.WithContext(mainutil.TrapSignals())
-
-	svc, err := rpc.NewServer(defaultRepoPath())
-	if err != nil {
-		return fmt.Errorf("unable to create rpc server: %w", err)
-	}
-
-	rpcsrv := grpc.NewServer()
-
-	proto.RegisterMintterServer(rpcsrv, svc)
-
-	grpclis, err := net.Listen("tcp", ":55000")
-	if err != nil {
-		return err
-	}
-
-	wrap := grpcweb.WrapServer(rpcsrv,
-		grpcweb.WithOriginFunc(func(origin string) bool {
-			return true
-		}),
-	)
-
-	log, err := zap.NewDevelopment()
-	if err != nil {
-		return err
-	}
-	defer log.Sync()
-
-	srv := &http.Server{
-		Addr:    ":55001",
-		Handler: wrap,
-	}
-
-	g.Go(func() error {
-		log.Info("ServerStarted", zap.String("url", "http://localhost"+srv.Addr))
-		return srv.ListenAndServe()
-	})
-
-	g.Go(func() error {
-		<-ctx.Done()
-		return srv.Shutdown(context.Background())
-	})
-
-	g.Go(func() error {
-		return rpcsrv.Serve(grpclis)
-	})
-
-	g.Go(func() error {
-		<-ctx.Done()
-		rpcsrv.GracefulStop()
-		return nil
-	})
-
-	return g.Wait()
 }
 
 func closeFunc(err *error, closer func() error) {
@@ -296,15 +247,12 @@ func run() (err error) {
 func runBob(ctx context.Context, ch <-chan []string) (err error) {
 	seed := bob()
 
-	bob, err := identity.FromSeed(seed.Entropy[:])
+	bob, err := identity.FromSeed(seed.Entropy[:], 0)
 	if err != nil {
 		return err
 	}
 
-	priv, _, err := bob.Child(0)
-	if err != nil {
-		return err
-	}
+	priv := bob.PrivKey
 
 	addr, err := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/55002")
 	if err != nil {
@@ -319,7 +267,7 @@ func runBob(ctx context.Context, ch <-chan []string) (err error) {
 		multierr.Append(err, ts.Close())
 	}()
 
-	tid := bob.ThreadID()
+	tid := bob.ThreadID
 
 	readKey := symmetric.New()
 
@@ -357,15 +305,12 @@ func runBob(ctx context.Context, ch <-chan []string) (err error) {
 func runAlice(ctx context.Context, ch chan<- []string) error {
 	seed := alice()
 
-	alice, err := identity.FromSeed(seed.Entropy[:])
+	alice, err := identity.FromSeed(seed.Entropy[:], 0)
 	if err != nil {
 		return err
 	}
 
-	priv, _, err := alice.Child(1)
-	if err != nil {
-		return err
-	}
+	priv := alice.PrivKey
 
 	addr, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/55001")
 	if err != nil {
@@ -380,7 +325,7 @@ func runAlice(ctx context.Context, ch chan<- []string) error {
 		multierr.Append(err, ts.Close())
 	}()
 
-	tid := alice.ThreadID()
+	tid := alice.ThreadID
 
 	readKey := symmetric.New()
 

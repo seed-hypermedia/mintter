@@ -4,66 +4,58 @@ import (
 	"bytes"
 	"crypto/ed25519"
 	"encoding/binary"
+	"fmt"
 
 	"github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/textileio/go-textile/wallet"
 	"github.com/textileio/go-threads/core/thread"
 )
 
 // Profile is the main identity of a user.
 type Profile struct {
-	tid       thread.ID
-	masterKey *wallet.Key
-	pubKey    crypto.PubKey
-	privKey   crypto.PrivKey
-}
+	ThreadID thread.ID
+	PubKey   crypto.PubKey
+	PrivKey  crypto.PrivKey
+	PeerID   peer.ID
 
-// ThreadID returns a stable ID for Textile v2 Threads based on the profile public key.
-func (p *Profile) ThreadID() thread.ID {
-	return p.tid
-}
-
-// PubKey returns private root key.
-func (p *Profile) PubKey() crypto.PubKey {
-	return p.pubKey
-}
-
-// PrivKey returns private root key.
-func (p *Profile) PrivKey() crypto.PrivKey {
-	return p.privKey
-}
-
-func (p *Profile) Child(idx uint32) (crypto.PrivKey, crypto.PubKey, error) {
-	k, err := p.masterKey.Derive(wallet.FirstHardenedIndex + idx)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return crypto.GenerateEd25519Key(bytes.NewReader(k.Key))
+	Username        string
+	Email           string
+	TwitterUsername string
 }
 
 // FromSeed generates a profile based on seed.
-func FromSeed(seed []byte) (*Profile, error) {
+func FromSeed(seed []byte, idx uint32) (Profile, error) {
 	masterKey, err := wallet.NewMasterKey(seed)
 	if err != nil {
-		return nil, err
+		return Profile{}, err
 	}
 
-	priv, pub, err := crypto.GenerateEd25519Key(bytes.NewReader(masterKey.Key))
+	k, err := masterKey.Derive(wallet.FirstHardenedIndex + idx)
 	if err != nil {
-		return nil, err
+		return Profile{}, fmt.Errorf("identity: failed to derive child key: %w", err)
+	}
+
+	priv, pub, err := crypto.GenerateEd25519Key(bytes.NewReader(k.Key))
+	if err != nil {
+		return Profile{}, fmt.Errorf("identity: failed to generate key pair: %w", err)
 	}
 
 	pubkey, err := pub.Raw()
 	if err != nil {
-		return nil, err
+		return Profile{}, fmt.Errorf("identity: failed to convert pub key to raw bytes: %w", err)
 	}
 
-	return &Profile{
-		masterKey: masterKey,
-		pubKey:    pub,
-		privKey:   priv,
-		tid:       threadIDFromPubKey(thread.Raw, pubkey),
+	peerID, err := peer.IDFromPublicKey(pub)
+	if err != nil {
+		return Profile{}, fmt.Errorf("identity: failed to generated peer id: %w", err)
+	}
+
+	return Profile{
+		PubKey:   pub,
+		PeerID:   peerID,
+		PrivKey:  priv,
+		ThreadID: threadIDFromPubKey(thread.Raw, pubkey),
 	}, nil
 }
 

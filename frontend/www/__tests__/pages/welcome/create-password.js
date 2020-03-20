@@ -14,9 +14,9 @@ describe('<CreatePassword />', () => {
   })
 
   test("should submit and generate the user's seed", async () => {
-    const mockInitWallet = jest.fn(() => console.log('hola'))
+    const mockInitProfile = jest.fn(() => console.log('hola'))
     const {getAllByLabelText, getByText} = render(
-      <RpcProvider value={{initWallet: mockInitWallet}}>
+      <RpcProvider value={{initProfile: mockInitProfile}}>
         <WelcomeProvider
           value={{state: {seed: ['a', 'b', 'c'], passphrase: 'abc'}}}
         >
@@ -38,6 +38,6 @@ describe('<CreatePassword />', () => {
     expect(nextButton).toBeDisabled()
 
     // TODO: test if the method is being called
-    // expect(mockInitWallet).toBeCalledTimes(1)
+    // expect(mockInitProfile).toBeCalledTimes(1)
   })
 })
