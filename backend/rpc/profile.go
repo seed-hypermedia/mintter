@@ -29,7 +29,35 @@ func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*
 
 // UpdateProfile implements Mintter rpc.
 func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileRequest) (*proto.UpdateProfileResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "not implemented")
+	prof, err := s.loadProfile()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to load profile: %v", err)
+	}
+
+	if in.Profile.Email != "" {
+		prof.Email = in.Profile.Email
+	}
+
+	if in.Profile.Username != "" {
+		prof.Username = in.Profile.Username
+	}
+
+	if in.Profile.TwitterUsername != "" {
+		prof.TwitterUsername = in.Profile.TwitterUsername
+	}
+
+	if err := s.storeProfile(prof); err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to store profile: %v", err)
+	}
+
+	return &proto.UpdateProfileResponse{
+		Profile: &proto.Profile{
+			PeerId:          prof.PeerID.String(),
+			Username:        prof.Username,
+			TwitterUsername: prof.TwitterUsername,
+			Email:           prof.Email,
+		},
+	}, nil
 }
 
 func (s *Server) storeProfile(prof identity.Profile) error {

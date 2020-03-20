@@ -61,6 +61,16 @@ func TestInitProfile(t *testing.T) {
 
 		require.NotEqual(t, "", resp.Profile.PeerId)
 	})
+
+	t.Run("daemon must update profile", func(t *testing.T) {
+		resp, err := srv.UpdateProfile(ctx, &proto.UpdateProfileRequest{
+			Profile: &proto.Profile{
+				Username: "burdiyan",
+			},
+		})
+		require.NoError(t, err)
+		require.Equal(t, "burdiyan", resp.Profile.Username)
+	})
 }
 
 func TestLoadProfile(t *testing.T) {
