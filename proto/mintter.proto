@@ -15,8 +15,8 @@ service Mintter {
   rpc GenSeed(GenSeedRequest) returns (GenSeedResponse) {}
 
   // After generating the seed, this call is used to commit the seed and
-  // initialize the daemon's internal wallet (master key).
-  rpc InitWallet(InitWalletRequest) returns (InitWalletResponse) {}
+  // initialize the daemon's internal profile.
+  rpc InitProfile(InitProfileRequest) returns (InitProfileResponse) {}
 
   // Retrieves profile information.
   rpc GetProfile(GetProfileRequest) returns (GetProfileResponse) {}
@@ -39,7 +39,7 @@ message GenSeedResponse {
   bytes enciphered_seed = 2;
 }
 
-message InitWalletRequest {
+message InitProfileRequest {
   // This is the password to encrypt the wallet data on-disk.
   bytes wallet_password = 1;
 
@@ -50,7 +50,7 @@ message InitWalletRequest {
   bytes aezeed_passphrase = 3;
 }
 
-message InitWalletResponse {}
+message InitProfileResponse {}
 
 message UpdateProfileRequest {
   // Profile data to be updated.

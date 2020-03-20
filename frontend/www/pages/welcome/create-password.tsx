@@ -8,7 +8,7 @@ import Content from '../../components/content'
 import Input from '../../components/input'
 import {useRouter} from 'next/router'
 import {useForm} from 'react-hook-form'
-import {InitWalletRequest} from '@mintter/proto/mintter_pb'
+import {InitProfileRequest} from '@mintter/proto/mintter_pb'
 import {useWelcome} from '../../shared/welcomeProvider'
 import {useRPC} from '../../shared/rpc'
 export default function CreatePassword() {
@@ -27,12 +27,12 @@ export default function CreatePassword() {
   async function onSubmit(data) {
     console.log('submit => ', data)
 
-    const req = new InitWalletRequest()
+    const req = new InitProfileRequest()
     req.setAezeedPassphrase(passphrase)
     req.setMnemonicList(seed)
     req.setWalletPassword(psswd)
 
-    const resp = await rpc.initWallet(req)
+    const resp = await rpc.initProfile(req)
     console.log(resp)
 
     await router.push('/welcome/edit-profile')

@@ -150,80 +150,80 @@ proto.com.mintter.MintterPromiseClient.prototype.genSeed =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.com.mintter.InitWalletRequest,
- *   !proto.com.mintter.InitWalletResponse>}
+ *   !proto.com.mintter.InitProfileRequest,
+ *   !proto.com.mintter.InitProfileResponse>}
  */
-const methodDescriptor_Mintter_InitWallet = new grpc.web.MethodDescriptor(
-  '/com.mintter.Mintter/InitWallet',
+const methodDescriptor_Mintter_InitProfile = new grpc.web.MethodDescriptor(
+  '/com.mintter.Mintter/InitProfile',
   grpc.web.MethodType.UNARY,
-  proto.com.mintter.InitWalletRequest,
-  proto.com.mintter.InitWalletResponse,
+  proto.com.mintter.InitProfileRequest,
+  proto.com.mintter.InitProfileResponse,
   /**
-   * @param {!proto.com.mintter.InitWalletRequest} request
+   * @param {!proto.com.mintter.InitProfileRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.com.mintter.InitWalletResponse.deserializeBinary
+  proto.com.mintter.InitProfileResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.com.mintter.InitWalletRequest,
- *   !proto.com.mintter.InitWalletResponse>}
+ *   !proto.com.mintter.InitProfileRequest,
+ *   !proto.com.mintter.InitProfileResponse>}
  */
-const methodInfo_Mintter_InitWallet = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.com.mintter.InitWalletResponse,
+const methodInfo_Mintter_InitProfile = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.com.mintter.InitProfileResponse,
   /**
-   * @param {!proto.com.mintter.InitWalletRequest} request
+   * @param {!proto.com.mintter.InitProfileRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.com.mintter.InitWalletResponse.deserializeBinary
+  proto.com.mintter.InitProfileResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.com.mintter.InitWalletRequest} request The
+ * @param {!proto.com.mintter.InitProfileRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.com.mintter.InitWalletResponse)}
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.InitProfileResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.InitWalletResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.InitProfileResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.com.mintter.MintterClient.prototype.initWallet =
+proto.com.mintter.MintterClient.prototype.initProfile =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/com.mintter.Mintter/InitWallet',
+      '/com.mintter.Mintter/InitProfile',
       request,
       metadata || {},
-      methodDescriptor_Mintter_InitWallet,
+      methodDescriptor_Mintter_InitProfile,
       callback);
 };
 
 
 /**
- * @param {!proto.com.mintter.InitWalletRequest} request The
+ * @param {!proto.com.mintter.InitProfileRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.com.mintter.InitWalletResponse>}
+ * @return {!Promise<!proto.com.mintter.InitProfileResponse>}
  *     A native promise that resolves to the response
  */
-proto.com.mintter.MintterPromiseClient.prototype.initWallet =
+proto.com.mintter.MintterPromiseClient.prototype.initProfile =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/com.mintter.Mintter/InitWallet',
+      '/com.mintter.Mintter/InitProfile',
       request,
       metadata || {},
-      methodDescriptor_Mintter_InitWallet);
+      methodDescriptor_Mintter_InitProfile);
 };
 
 
