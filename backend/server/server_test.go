@@ -37,13 +37,13 @@ func TestInitProfile(t *testing.T) {
 	})
 
 	t.Run("daemon must initialize and only once", func(t *testing.T) {
-		_, err := srv.InitWallet(ctx, &proto.InitWalletRequest{
+		_, err := srv.InitProfile(ctx, &proto.InitProfileRequest{
 			Mnemonic: mnemonic,
 		})
 
 		require.NoError(t, err)
 
-		_, err = srv.InitWallet(ctx, &proto.InitWalletRequest{
+		_, err = srv.InitProfile(ctx, &proto.InitProfileRequest{
 			Mnemonic: mnemonic,
 		})
 
@@ -95,7 +95,7 @@ func TestLoadProfile(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, pid.String(), resp.Profile.PeerId)
 
-	_, err = srv.InitWallet(context.Background(), &proto.InitWalletRequest{})
+	_, err = srv.InitProfile(context.Background(), &proto.InitProfileRequest{})
 	require.Error(t, err, "init must fail if profile is cached")
 
 	// GetProfile must return cached profile even if file disappears.
