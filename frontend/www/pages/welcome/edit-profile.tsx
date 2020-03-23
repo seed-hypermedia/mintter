@@ -1,7 +1,6 @@
 import Layout from '../../components/welcome-layout'
 import Container from '../../components/welcome-container'
 import Heading from '../../components/welcome-heading'
-
 import P from '../../components/welcome-p'
 import {NextButton, BackButton} from '../../components/welcome-buttons'
 import Footer from '../../components/footer'
@@ -9,35 +8,19 @@ import Content from '../../components/content'
 import Input from '../../components/input'
 import {useForm} from 'react-hook-form'
 import {useRouter} from 'next/router'
-import {
-  UpdateProfileRequest,
-  GetProfileRequest,
-} from '@mintter/proto/mintter_pb'
-import {useRPC} from '../../shared/rpc'
+import {useProfile} from '../../shared/profileContext'
 
 export default function EditProfile() {
   const {register, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
   })
 
-  const rpc = useRPC()
   const router = useRouter()
+  const {profile, setProfile} = useProfile()
+  console.log('profile', profile)
 
-  async function onSubmit({username, email, twitterUsername}) {
-    const profile_req = new GetProfileRequest()
-    const profile_resp = await rpc.getProfile(profile_req)
-
-    const profile = profile_resp.getProfile()
-
-    username.length > 1 && profile.setUsername(username)
-    email.length > 1 && profile.setEmail(email)
-    twitterUsername.length > 1 && profile.setTwitterUsername(twitterUsername)
-
-    const req = new UpdateProfileRequest()
-    req.setProfile(profile)
-    const resp = await rpc.updateProfile(req)
-    console.log('onSubmit -> resp', resp)
-
+  async function onSubmit(data) {
+    await setProfile(data)
     router.replace('/welcome/complete')
   }
 
