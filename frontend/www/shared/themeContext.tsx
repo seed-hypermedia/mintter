@@ -1,4 +1,4 @@
-import {createContext, useState, useContext} from 'react'
+import {createContext, useContext} from 'react'
 import useLocalStorage from './localstorage'
 export type ThemeContextValueType = {
   theme: string
@@ -11,18 +11,18 @@ const initialValue: ThemeContextValueType = {
 
 export const ThemeContext = createContext<ThemeContextValueType>(initialValue)
 
-export interface ThemeProviderProps
-  extends React.HTMLAttributes<HTMLDivElement> {
-  value?: ThemeContextValueType
+export interface ThemeProviderProps {
+  children: React.ReactNode
+  value?: string
 }
 
 export function ThemeProvider({
   children,
-  value = initialValue,
+  value = 'theme-light',
 }: ThemeProviderProps) {
   const [theme, setTheme] = useLocalStorage<string>({
     key: 'MINTTER_THEME',
-    initialValue: 'theme-light',
+    initialValue: value,
   })
 
   function toggleTheme() {

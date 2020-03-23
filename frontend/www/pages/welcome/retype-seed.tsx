@@ -32,7 +32,6 @@ export default function RetypeSeed() {
 
   async function onSubmit(data) {
     console.log('submit => ', data)
-    // debugger
     await router.replace('/welcome/create-password')
   }
 

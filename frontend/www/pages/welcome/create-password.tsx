@@ -9,34 +9,27 @@ import Content from '../../components/content'
 import Input from '../../components/input'
 import {useRouter} from 'next/router'
 import {useForm} from 'react-hook-form'
-import {InitProfileRequest} from '@mintter/proto/mintter_pb'
+
 import {useWelcome} from '../../shared/welcomeProvider'
-import {useRPC} from '../../shared/rpc'
 import {useState} from 'react'
 import ErrorMessage from '../../components/errorMessage'
+import {useProfile} from '../../shared/profileContext'
 export default function CreatePassword() {
   const {register, watch, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
   })
 
   const [submitError, setSubmitError] = useState(null)
-
+  const {initProfile} = useProfile()
   const router = useRouter()
   const psswd = watch('password')
   const {
     state: {seed, passphrase},
   } = useWelcome()
 
-  const rpc = useRPC()
-
-  async function onSubmit(data) {
-    const req = new InitProfileRequest()
-    req.setAezeedPassphrase(passphrase)
-    req.setMnemonicList(seed)
-    req.setWalletPassword(psswd)
-
+  async function onSubmit({password}) {
     try {
-      await rpc.initProfile(req)
+      await initProfile({passphrase, seed, password})
       router.replace('/welcome/edit-profile')
     } catch (err) {
       setSubmitError(err)
