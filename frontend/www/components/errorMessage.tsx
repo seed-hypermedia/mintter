@@ -3,14 +3,19 @@ type ErrorProps = {
   message: string
 }
 
-interface ErrorMessageProps extends React.ReactElement<HTMLDivElement> {
+interface ErrorMessageProps {
   error?: ErrorProps
 }
 
-export default function ErrorMessage({error}: ErrorMessageProps) {
+export default function ErrorMessage({
+  error,
+}: ErrorMessageProps & React.ReactElement<HTMLDivElement>) {
   return error ? (
-    <div className=" py-4 px-6 rounded my-4 border border-danger-hover bg-danger-background">
-      <p className="text-danger-hover">{error.message}</p>
+    <div
+      role="alert"
+      className=" py-4 px-6 rounded my-4 border border-danger-hover bg-danger-background"
+    >
+      <p className="text-white">{error.message}</p>
     </div>
   ) : null
 }

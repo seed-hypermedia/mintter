@@ -8,7 +8,7 @@ export interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   replace?: boolean
 }
 
-export default function WelcomeButton({
+export default function Button({
   children,
   to,
   className = '',

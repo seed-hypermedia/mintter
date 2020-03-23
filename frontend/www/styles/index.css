@@ -33,7 +33,7 @@ body {
 
   --color-danger: theme('colors.red.500');
   --color-danger-hover: theme('colors.red.700');
-  --color-danger-background: theme('colors.red.100');
+  --color-danger-background: theme('colors.red.500');
 
   --color-body: theme('colors.gray.700');
   --color-body-muted: theme('colors.gray.500');

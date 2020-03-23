@@ -30,8 +30,6 @@ export default function CreatePassword() {
   const rpc = useRPC()
 
   async function onSubmit(data) {
-    console.log('submit => ', data)
-
     const req = new InitProfileRequest()
     req.setAezeedPassphrase(passphrase)
     req.setMnemonicList(seed)

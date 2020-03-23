@@ -1,13 +1,46 @@
 import Layout from '../../components/welcome-layout'
 import Container from '../../components/welcome-container'
 import Heading from '../../components/welcome-heading'
+
 import P from '../../components/welcome-p'
 import {NextButton, BackButton} from '../../components/welcome-buttons'
 import Footer from '../../components/footer'
 import Content from '../../components/content'
 import Input from '../../components/input'
+import {useForm} from 'react-hook-form'
+import {useRouter} from 'next/router'
+import {
+  UpdateProfileRequest,
+  GetProfileRequest,
+} from '@mintter/proto/mintter_pb'
+import {useRPC} from '../../shared/rpc'
 
 export default function EditProfile() {
+  const {register, handleSubmit, errors, formState} = useForm({
+    mode: 'onChange',
+  })
+
+  const rpc = useRPC()
+  const router = useRouter()
+
+  async function onSubmit({username, email, twitterUsername}) {
+    const profile_req = new GetProfileRequest()
+    const profile_resp = await rpc.getProfile(profile_req)
+
+    const profile = profile_resp.getProfile()
+
+    username.length > 1 && profile.setUsername(username)
+    email.length > 1 && profile.setEmail(email)
+    twitterUsername.length > 1 && profile.setTwitterUsername(twitterUsername)
+
+    const req = new UpdateProfileRequest()
+    req.setProfile(profile)
+    const resp = await rpc.updateProfile(req)
+    console.log('onSubmit -> resp', resp)
+
+    router.replace('/welcome/complete')
+  }
+
   return (
     <>
       <Container>
@@ -16,7 +49,7 @@ export default function EditProfile() {
           Link your personal data with your new identity
         </P>
         <Content className="flex-wrap flex w-full flex-col md:flex-row">
-          <div className="pr-8 order-12 md:order-none flex mt-6 md:mt-0 flex-col">
+          {/* <div className="pr-8 order-12 md:order-none flex mt-6 md:mt-0 flex-col">
             <label
               className="block text-body-muted text-xs font-semibold mb-1"
               htmlFor="avatar"
@@ -29,20 +62,20 @@ export default function EditProfile() {
                 type="file"
               />
             </div>
-          </div>
+          </div> */}
           <div className="flex-col flex flex-1">
             <div className="flex-1 relative">
               <label
                 className="block text-body-muted text-xs font-semibold mb-1"
-                htmlFor="alias"
+                htmlFor="username"
               >
-                Alias
+                Username
               </label>
               <Input
-                name="alias"
-                id="alias"
+                name="username"
+                ref={register}
                 type="text"
-                placeholder="Your readable username"
+                placeholder="Readable username or alias. Doesn't have to be unique."
               />
             </div>
             <div className="flex-1 relative mt-10">
@@ -54,27 +87,35 @@ export default function EditProfile() {
               </label>
               <Input
                 name="email"
-                id="email"
+                ref={register({
+                  pattern: {
+                    value: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+                    message: 'Please type a valid email.',
+                  },
+                })}
+                error={!!errors.email}
                 type="email"
-                placeholder="your@email.com"
+                placeholder="Real email that could be publically shared"
               />
 
-              <p className="text-danger text-xs absolute left-0 mt-1">
-                Please type a valid email.
-              </p>
+              {errors.email && (
+                <p className="text-danger text-xs absolute left-0 mt-1">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
             <div className="flex-1 relative mt-10">
               <label
                 className="block text-body-muted text-xs font-semibold mb-1"
-                htmlFor="twitter"
+                htmlFor="twitterUsername"
               >
                 Twitter
               </label>
               <Input
-                name="twitter"
-                id="twitter"
+                name="twitterUsername"
+                ref={register}
                 type="text"
-                placeholder="https://twitter.com/your_username"
+                placeholder="Twitter handle including @ symbol (@YOUR_USERNAME)"
               />
             </div>
           </div>
@@ -83,7 +124,12 @@ export default function EditProfile() {
       <Footer className="flex-none">
         <Container>
           <div className="flex w-full justify-between flex-row-reverse">
-            <NextButton to="/welcome/complete">Next →</NextButton>
+            <NextButton
+              onClick={handleSubmit(onSubmit)}
+              disabled={!formState.isValid || formState.isSubmitting}
+            >
+              Next →
+            </NextButton>
             <BackButton to="/welcome">← start over</BackButton>
           </div>
         </Container>
