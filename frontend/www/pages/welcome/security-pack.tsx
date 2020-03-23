@@ -9,7 +9,6 @@ import P from '../../components/welcome-p'
 import {css} from 'emotion'
 import {useRPC} from '../../shared/rpc'
 import {GenSeedRequest} from '@mintter/proto/mintter_pb'
-// import {useUser} from '../../shared/userContext'
 import {useRouter} from 'next/router'
 import Input from '../../components/input'
 import Button from '../../components/button'
@@ -80,7 +79,12 @@ export default function SecurityPack() {
                 >
                   Passphrase?
                 </label>
-                <Input id="passphrase" name="passphrase" ref={register()} />
+                <Input
+                  id="passphrase"
+                  type="password"
+                  name="passphrase"
+                  ref={register()}
+                />
                 <Button
                   className="w-full mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white transition-all"
                   type="submit"

@@ -5,7 +5,6 @@ import DefaultLayout from '../components/layout'
 import dynamic from 'next/dynamic'
 
 import '../styles/index.css'
-import UserProvider from '../shared/userContext'
 import {RpcProvider} from '../shared/rpc'
 import {ThemeProvider} from '../shared/themeContext'
 
@@ -26,19 +25,17 @@ AppProps & {Component: any}) {
   return (
     <Dynamic>
       <RpcProvider>
-        <UserProvider>
-          <ThemeProvider>
-            <AnimatePresence exitBeforeEnter>
-              {router.pathname.startsWith('/welcome') ? (
-                <Layout {...pageProps}>
-                  <Component {...pageProps} key={router.route} />
-                </Layout>
-              ) : (
+        <ThemeProvider>
+          <AnimatePresence exitBeforeEnter>
+            {router.pathname.startsWith('/welcome') ? (
+              <Layout {...pageProps}>
                 <Component {...pageProps} key={router.route} />
-              )}
-            </AnimatePresence>
-          </ThemeProvider>
-        </UserProvider>
+              </Layout>
+            ) : (
+              <Component {...pageProps} key={router.route} />
+            )}
+          </AnimatePresence>
+        </ThemeProvider>
       </RpcProvider>
     </Dynamic>
   )

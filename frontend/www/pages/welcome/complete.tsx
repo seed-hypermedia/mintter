@@ -4,7 +4,6 @@ import Layout from '../../components/welcome-layout'
 import P from '../../components/welcome-p'
 import {NextButton} from '../../components/welcome-buttons'
 import Footer from '../../components/footer'
-import WelcomeButton from '../../components/button'
 
 export default function WelcomeIndex() {
   return (

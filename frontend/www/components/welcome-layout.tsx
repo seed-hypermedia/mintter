@@ -1,9 +1,9 @@
-import Layout, {LayoutProps} from './layout'
+import {useEffect} from 'react'
 
+import Layout, {LayoutProps} from './layout'
+import {useRouter} from 'next/router'
 import WelcomeProvider from '../shared/welcomeProvider'
 import {useTheme} from '../shared/themeContext'
-// import {useRouter, NextRouter} from 'next/router'
-// import {useEffect, useState} from 'react'
 
 export default function WelcomeLayout({
   children,
@@ -11,6 +11,8 @@ export default function WelcomeLayout({
   ...props
 }: LayoutProps) {
   const {theme, toggleTheme} = useTheme()
+
+  useEffect(() => {}, [])
 
   return (
     <div className={theme}>
