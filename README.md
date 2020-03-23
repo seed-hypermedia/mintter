@@ -47,3 +47,26 @@ git repo:
 ```shell
 git config submodule.recurse true
 ```
+
+### Submodules troubleshooting
+
+we found that sometimes git submodules stop working:
+
+```bash
+→ git submodule update
+error: Server does not allow request for unadvertised object d755705398300d4ee611f0edcb84b0b60cb670c5
+Fetched in submodule path 'third_party/go-threads', but it did not contain d755705398300d4ee611f0edcb84b0b60cb670c5. Direct fetching of that commit failed.
+```
+
+the way we found to fix it is running these commands:
+
+```bash
+git submodule deinit --all -f
+rm -rf .git/modules
+git pull
+git module update --init
+git config submodule.recurse true
+git pull
+```
+
+let us know if you find other issues!
