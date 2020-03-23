@@ -33,7 +33,7 @@ export default function WelcomeButton({
           }
         }
       }}
-      className={`px-4 py-2 bg-transparent rounded hover:bg-gray-200 ${className}`}
+      className={`px-4 py-2 bg-transparent rounded transition duration-200 hover:bg-muted ${className}`}
       type={type}
       disabled={disabled}
       {...props}

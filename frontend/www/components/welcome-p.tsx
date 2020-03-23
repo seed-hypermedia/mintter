@@ -3,8 +3,6 @@ export default function WelcomeP({
   className = '',
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={`text-gray-500 text-lg font-light ${className}`}>
-      {children}
-    </p>
+    <p className={`text-body text-lg font-light ${className}`}>{children}</p>
   )
 }

@@ -15,10 +15,10 @@ export function NextButton({
       to={to}
       onClick={onClick}
       disabled={disabled}
-      className={`text-green-500 transition-opacity border  ${
+      className={`text-success border  ${
         disabled
           ? 'border-transparent opacity-50 hover:bg-transparent cursor-not-allowed'
-          : 'border-green-500 opacity-100 hover:bg-green-500 hover:text-white transition-all'
+          : 'border-success opacity-100 hover:bg-success hover:text-white'
       } ${className}`}
       {...props}
     >
@@ -42,7 +42,7 @@ export function BackButton({
       to={to}
       onClick={onClick}
       disabled={disabled}
-      className={`text-gray-500 hover:bg-transparent hover:opacity-100 ${
+      className={`text-secondary hover:bg-transparent hover:opacity-100 ${
         disabled ? 'opacity-25' : 'opacity-50'
       } ${className}`}
       {...props}
