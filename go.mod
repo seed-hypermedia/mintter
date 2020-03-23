@@ -17,17 +17,13 @@ require (
 	github.com/ipfs/go-datastore v0.3.1
 	github.com/ipfs/go-ds-badger v0.2.0
 	github.com/ipfs/go-ipfs-chunker v0.0.3 // indirect
-	github.com/ipfs/go-ipld-cbor v0.0.3
 	github.com/libp2p/go-libp2p v0.4.2
 	github.com/libp2p/go-libp2p-connmgr v0.1.1
 	github.com/libp2p/go-libp2p-core v0.3.0
 	github.com/libp2p/go-libp2p-kad-dht v0.3.0
-	github.com/libp2p/go-libp2p-peer v0.2.0
 	github.com/libp2p/go-libp2p-peerstore v0.1.4
 	github.com/lightningnetwork/lnd v0.9.0-beta
-	github.com/mr-tron/base58 v1.1.3
 	github.com/multiformats/go-multiaddr v0.2.0
-	github.com/multiformats/go-multihash v0.0.13
 	github.com/stretchr/testify v1.4.0
 	github.com/textileio/go-textile v0.7.7
 	github.com/textileio/go-threads v0.0.0-local
