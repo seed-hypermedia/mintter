@@ -5,7 +5,7 @@ export default function DocumentList() {
   return (
     <div>
       <div className="flex items-center">
-        <h2 className="text-2xl text-gray-900 font-normal flex-1">
+        <h2 className="text-2xl text-heading font-normal flex-1">
           My Documents
         </h2>
         <div>

@@ -1,6 +1,6 @@
 import React from 'react'
 export interface InputProps extends React.HTMLAttributes<HTMLInputElement> {
-  type?: 'text' | 'password'
+  type?: 'text' | 'password' | 'email'
   name: string
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -11,7 +11,7 @@ export interface InputProps extends React.HTMLAttributes<HTMLInputElement> {
 const Input = React.forwardRef(
   ({className = '', type = 'text', ...props}: InputProps, ref) => (
     <input
-      className={`block w-full border border-gray-300 rounded bg-white px-3 py-2 focus:outline-none focus:border-gray-600 ${className}`}
+      className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body ${className}`}
       type={type}
       ref={ref}
       {...props}

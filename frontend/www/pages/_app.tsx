@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import '../styles/index.css'
 import UserProvider from '../shared/userContext'
 import {RpcProvider} from '../shared/rpc'
+import {ThemeProvider} from '../shared/themeContext'
 
 const NoSSR: React.FC = ({children}) => {
   return <React.Fragment>{children}</React.Fragment>
@@ -26,15 +27,17 @@ AppProps & {Component: any}) {
     <Dynamic>
       <RpcProvider>
         <UserProvider>
-          <AnimatePresence exitBeforeEnter>
-            {router.pathname.startsWith('/welcome') ? (
-              <Layout {...pageProps}>
+          <ThemeProvider>
+            <AnimatePresence exitBeforeEnter>
+              {router.pathname.startsWith('/welcome') ? (
+                <Layout {...pageProps}>
+                  <Component {...pageProps} key={router.route} />
+                </Layout>
+              ) : (
                 <Component {...pageProps} key={router.route} />
-              </Layout>
-            ) : (
-              <Component {...pageProps} key={router.route} />
-            )}
-          </AnimatePresence>
+              )}
+            </AnimatePresence>
+          </ThemeProvider>
         </UserProvider>
       </RpcProvider>
     </Dynamic>

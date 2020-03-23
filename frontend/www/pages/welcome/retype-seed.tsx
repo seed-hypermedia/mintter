@@ -30,11 +30,15 @@ export default function RetypeSeed() {
     setIdxs(getRandomElements(seed))
   }, [])
 
-  function onSubmit(data) {
+  async function onSubmit(data) {
     console.log('submit => ', data)
-
-    router.replace('/welcome/create-password')
+    // debugger
+    await router.replace('/welcome/create-password')
   }
+
+  // function handleNext() {
+  //   console.log('handleNext -> handleNext', router)
+  // }
 
   return (
     <>
@@ -53,42 +57,46 @@ export default function RetypeSeed() {
           })`}</P>
           <Content className="flex-wrap flex w-full">
             <div className="flex flex-col w-full items-center">
-              {idxs.map(n => (
-                <div key={`word-${n}`} className="flex">
-                  <label
-                    htmlFor={`word-${n}`}
-                    className="w-5 text-gray-500 font-light text-right mr-3 text-xs pt-4"
-                  >
-                    {n + 1}
-                  </label>
-                  <div className="flex-1 relative mb-12">
-                    <Input
-                      type="text"
-                      id={`word-${n}`}
-                      name={`word-${n}`}
-                      ref={register({
-                        required: true,
-                        validate: value => value === seed[n],
-                      })}
-                    />
-                    {errors[`word-${n}`] && (
-                      <p
-                        className="text-red-500 text-xs absolute left-0 mt-1"
-                        data-testid={`tid-error-word-${n}`}
-                      >
-                        this word is not correct
-                      </p>
-                    )}
-                  </div>
+              {idxs.map((n, index) => {
+                const key = `word-${n}`
+                return (
+                  <div key={key} className={`flex ${index && 'mt-12'} `}>
+                    <label
+                      htmlFor={key}
+                      className="w-5 text-body-muted font-light text-right mr-3 text-xs pt-4"
+                    >
+                      {n + 1}
+                    </label>
+                    <div className="flex-1 relative">
+                      <Input
+                        type="text"
+                        id={key}
+                        name={key}
+                        ref={register({
+                          required: true,
+                          validate: {
+                            match: value => value === seed[n] || 'not a match',
+                          },
+                        })}
+                      />
+                      {errors[key] && (
+                        <p
+                          className="text-danger text-xs absolute left-0 mt-1"
+                          data-testid={`tid-error-word-${n}`}
+                        >
+                          {errors[key].message}
+                        </p>
+                      )}
+                    </div>
 
-                  <span className="text-green-500 pt-2 pl-2 w-10 h-10">
-                    {!errors[`word-${n}`] &&
-                      formState.dirtyFields[`word-${n}`] && (
+                    <span className="text-success pt-2 pl-2 w-10 h-10">
+                      {!errors[key] && formState.dirtyFields.has(key) && (
                         <CheckIcon color="inherit" />
                       )}
-                  </span>
-                </div>
-              ))}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
           </Content>
         </Container>

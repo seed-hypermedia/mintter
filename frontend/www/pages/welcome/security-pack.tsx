@@ -82,7 +82,7 @@ export default function SecurityPack() {
                 </label>
                 <Input id="passphrase" name="passphrase" ref={register()} />
                 <Button
-                  className="w-full mt-4 text-green-500 transition-opacity border border-green-500 opacity-100 hover:bg-green-500 hover:text-white transition-all"
+                  className="w-full mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white transition-all"
                   type="submit"
                   onClick={handleSubmit(handleRPC)}
                 >
@@ -150,14 +150,15 @@ export function MnemonicWords({
                 {list.map((word, word_idx) => (
                   <li key={word_idx} className="my-3 flex items-baseline">
                     <span
-                      className={`text-bold text-gray-500 text-xs ${css`
+                      className={`text-bold text-body-muted ${css`
+                        font-size: 0.65rem;
                         width: 24px;
                         display: inline-block;
                       `}`}
                     >
                       {list_idx * 6 + word_idx + 1}.
                     </span>
-                    {word}
+                    <span className="text-body">{word}</span>
                   </li>
                 ))}
               </ol>
