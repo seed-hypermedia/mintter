@@ -4,6 +4,7 @@ import Layout, {LayoutProps} from './layout'
 import {useRouter} from 'next/router'
 import WelcomeProvider from '../shared/welcomeProvider'
 import {useTheme} from '../shared/themeContext'
+import {useProfile} from '../shared/profileContext'
 
 export default function WelcomeLayout({
   children,
@@ -11,8 +12,12 @@ export default function WelcomeLayout({
   ...props
 }: LayoutProps) {
   const {theme, toggleTheme} = useTheme()
+  const router = useRouter()
+  const {prof} = useProfile()
 
   useEffect(() => {}, [])
+
+  async function checkProfile() {}
 
   return (
     <div className={theme}>

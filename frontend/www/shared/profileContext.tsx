@@ -6,31 +6,28 @@ import {
   Profile,
 } from '@mintter/proto/mintter_pb'
 import {useRPC} from './rpc'
-/*
-- UserContext Context
-- UserProvider component
-- useUser hook 
-*/
 
-export const ProfileContext = createContext(null)
+interface ProfileContextValue {
+  profile: Profile
+  setProfile: (data: Partial<Profile.AsObject>) => void
+  initProfile: (data: InitProfileRequest.AsObject) => void
+}
 
-// const initialValue = {
-//     profile: {},
-//     setProfile: () => void
-//     createProfile: () => void
-// }
+export const ProfileContext = createContext<ProfileContextValue>(null)
 
 interface ProfileProviderProps {
   children: React.ReactNode
-  //   value?: string
+  value?: Partial<ProfileContextValue>
 }
 
-export default function ProfileProvider({children}: ProfileProviderProps) {
-  const [value, setValue] = useState(null)
+export default function ProfileProvider({
+  children,
+  value: propValue = null,
+}: ProfileProviderProps) {
+  const [value, setValue] = useState(propValue)
   const rpc = useRPC()
 
   useEffect(() => {
-    console.log('UserContext effect runned!')
     getProfile()
   }, [])
 
@@ -58,11 +55,15 @@ export default function ProfileProvider({children}: ProfileProviderProps) {
     getProfile()
   }
 
-  async function initProfile({passphrase, seed, password}) {
+  async function initProfile({
+    aezeedPassphrase,
+    mnemonicList,
+    walletPassword,
+  }: InitProfileRequest.AsObject) {
     const req = new InitProfileRequest()
-    req.setAezeedPassphrase(passphrase)
-    req.setMnemonicList(seed)
-    req.setWalletPassword(password)
+    req.setAezeedPassphrase(aezeedPassphrase)
+    req.setMnemonicList(mnemonicList)
+    req.setWalletPassword(walletPassword)
     await rpc.initProfile(req)
   }
 

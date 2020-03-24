@@ -21,23 +21,18 @@ export default function RetypeSeed() {
   const router = useRouter()
 
   const {
-    state: {seed},
+    state: {mnemonicList},
   } = useWelcome()
 
   const [idxs, setIdxs] = useState<number[]>([])
 
   useEffect(() => {
-    setIdxs(getRandomElements(seed))
+    setIdxs(getRandomElements(mnemonicList))
   }, [])
 
-  async function onSubmit(data) {
-    console.log('submit => ', data)
+  async function onSubmit() {
     await router.replace('/welcome/create-password')
   }
-
-  // function handleNext() {
-  //   console.log('handleNext -> handleNext', router)
-  // }
 
   return (
     <>
@@ -51,9 +46,9 @@ export default function RetypeSeed() {
           </P>
           <P className="text-center font-bold">{`${idxs[0] + 1}, ${idxs[1] +
             1} & ${idxs[2] + 1}`}</P>
-          <P className="text-center">{`(${seed[idxs[0]]}, ${seed[idxs[1]]}, ${
-            seed[idxs[2]]
-          })`}</P>
+          <P className="text-center">{`(${mnemonicList[idxs[0]]}, ${
+            mnemonicList[idxs[1]]
+          }, ${mnemonicList[idxs[2]]})`}</P>
           <Content className="flex-wrap flex w-full">
             <div className="flex flex-col w-full items-center">
               {idxs.map((n, index) => {
@@ -74,7 +69,8 @@ export default function RetypeSeed() {
                         ref={register({
                           required: true,
                           validate: {
-                            match: value => value === seed[n] || 'not a match',
+                            match: value =>
+                              value === mnemonicList[n] || 'not a match',
                           },
                         })}
                       />
@@ -82,6 +78,7 @@ export default function RetypeSeed() {
                         <p
                           className="text-danger text-xs absolute left-0 mt-1"
                           data-testid={`tid-error-word-${n}`}
+                          role="alert"
                         >
                           {errors[key].message}
                         </p>

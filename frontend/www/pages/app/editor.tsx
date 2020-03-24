@@ -147,7 +147,6 @@ export default function EditorPage(): JSX.Element {
           const block = Editor.above(editor, {
             match: n => Editor.isBlock(editor, n),
           })
-          console.log('TCL: block', block)
 
           const path = block ? block[1] : []
           const start = Editor.start(editor, path)
@@ -214,7 +213,6 @@ export default function EditorPage(): JSX.Element {
                       const node = Editor.nodes(editor, {
                         at: editor.selection,
                       })
-                      console.log('TCL: node', node)
 
                       const url = window.prompt('Enter the URL of the link:')
                       if (!url) return

@@ -17,7 +17,6 @@ export default function EditProfile() {
 
   const router = useRouter()
   const {profile, setProfile} = useProfile()
-  console.log('profile', profile)
 
   async function onSubmit(data) {
     await setProfile(data)
