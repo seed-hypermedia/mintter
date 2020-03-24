@@ -14,6 +14,7 @@ import {useWelcome} from '../../shared/welcomeProvider'
 import {useState} from 'react'
 import ErrorMessage from '../../components/errorMessage'
 import {useProfile} from '../../shared/profileContext'
+
 export default function CreatePassword() {
   const {register, watch, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
@@ -21,15 +22,16 @@ export default function CreatePassword() {
 
   const [submitError, setSubmitError] = useState(null)
   const {initProfile} = useProfile()
+
   const router = useRouter()
-  const psswd = watch('password')
+  const psswd = watch('walletPassword')
   const {
-    state: {seed, passphrase},
+    state: {mnemonicList, aezeedPassphrase},
   } = useWelcome()
 
-  async function onSubmit({password}) {
+  async function onSubmit({walletPassword}) {
     try {
-      await initProfile({passphrase, seed, password})
+      await initProfile({aezeedPassphrase, mnemonicList, walletPassword})
       router.replace('/welcome/edit-profile')
     } catch (err) {
       setSubmitError(err)
@@ -49,13 +51,13 @@ export default function CreatePassword() {
             <div className="flex-1 relative">
               <label
                 className="block text-body-muted text-xs font-semibold mb-1"
-                htmlFor="password"
+                htmlFor="walletPassword"
               >
                 Password
               </label>
               <Input
-                name="password"
-                id="password"
+                name="walletPassword"
+                id="walletPassword"
                 type="password"
                 placeholder="******************"
                 ref={register({required: true, minLength: 8})}
@@ -69,13 +71,13 @@ export default function CreatePassword() {
             <div className="flex-1 relative mt-12">
               <label
                 className="block text-body-muted text-xs font-semibold mb-1"
-                htmlFor="repeat_password"
+                htmlFor="repeat_walletPassword"
               >
                 Retype Password
               </label>
               <Input
-                name="repeat_password"
-                id="repeat_password"
+                name="repeat_walletPassword"
+                id="repeat_walletPassword"
                 type="password"
                 placeholder="******************"
                 ref={register({
@@ -83,7 +85,7 @@ export default function CreatePassword() {
                   validate: value => value === psswd,
                 })}
               />
-              {errors.repeat_password && (
+              {errors['repeat_walletPassword'] && (
                 <p className="text-danger text-xs absolute left-0 mt-1">
                   Password must match
                 </p>

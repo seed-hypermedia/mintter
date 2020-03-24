@@ -1,13 +1,13 @@
 import {useContext, createContext, useReducer} from 'react'
 
 interface WelcomeState {
-  seed?: string[]
-  passphrase?: string
+  mnemonicList?: string[]
+  aezeedPassphrase?: string
 }
 
 const initialState: WelcomeState = {
-  seed: [''],
-  passphrase: '',
+  mnemonicList: [''],
+  aezeedPassphrase: '',
 }
 
 type WelcomeValueType = {
@@ -26,15 +26,15 @@ export const WelcomeContext = createContext<WelcomeValueType>({
 })
 
 type Action =
-  | {type: 'seed'; payload: string[]}
-  | {type: 'passphrase'; payload: string}
+  | {type: 'mnemonicList'; payload: string[]}
+  | {type: 'aezeedPassphrase'; payload: string}
 
 export function reducer(state: WelcomeState, action: Action): WelcomeState {
   switch (action.type) {
-    case 'seed':
-      return {...state, seed: action.payload}
-    case 'passphrase':
-      return {...state, passphrase: action.payload}
+    case 'mnemonicList':
+      return {...state, mnemonicList: action.payload}
+    case 'aezeedPassphrase':
+      return {...state, aezeedPassphrase: action.payload}
   }
 }
 

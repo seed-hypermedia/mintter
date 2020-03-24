@@ -29,7 +29,7 @@ export default function SecurityPack() {
   async function handleRPC({passphrase}) {
     const req = new GenSeedRequest()
     if (passphrase) {
-      dispatch({type: 'passphrase', payload: passphrase})
+      dispatch({type: 'aezeedPassphrase', payload: passphrase})
     }
     try {
       req.setAezeedPassphrase(passphrase)
@@ -54,7 +54,7 @@ export default function SecurityPack() {
 
   function handleNext() {
     // store seed to the user
-    dispatch({type: 'seed', payload: mnemonic})
+    dispatch({type: 'mnemonicList', payload: mnemonic})
     //send the user to next page
     router.replace('/welcome/retype-seed')
   }
