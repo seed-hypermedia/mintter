@@ -27,6 +27,7 @@ module.exports = {
         'heading-muted': 'var(--color-heading-muted)',
         body: 'var(--color-body)',
         'body-muted': 'var(--color-body-muted)',
+        'toggle-theme': 'var(--color-toggle-theme)',
       },
     },
   },
