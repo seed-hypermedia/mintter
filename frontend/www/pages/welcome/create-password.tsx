@@ -20,6 +20,8 @@ export default function CreatePassword() {
     mode: 'onChange',
   })
 
+  console.log('create password render')
+
   const [submitError, setSubmitError] = useState(null)
   const {initProfile} = useProfile()
 
@@ -30,6 +32,7 @@ export default function CreatePassword() {
   } = useWelcome()
 
   async function onSubmit({walletPassword}) {
+    console.log('ONSUBMIT')
     try {
       await initProfile({aezeedPassphrase, mnemonicList, walletPassword})
       router.replace('/welcome/edit-profile')
@@ -62,7 +65,7 @@ export default function CreatePassword() {
                 placeholder="******************"
                 ref={register({required: true, minLength: 8})}
               />
-              {errors.password && (
+              {errors.walletPassword && (
                 <p className="text-danger text-xs absolute left-0 mt-1">
                   Please choose a password with more than 8 characters.
                 </p>

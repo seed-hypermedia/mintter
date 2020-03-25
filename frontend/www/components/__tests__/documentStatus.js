@@ -14,10 +14,10 @@ test('renders', () => {
       class="flex items-start items-center py-2"
     >
       <div
-        class="bg-gray-300 rounded-full mr-1 emotion-0"
+        class="bg-muted rounded-full mr-1 emotion-0"
       />
       <p
-        class="text-sm text-gray-700"
+        class="text-sm text-muted-hover"
       >
         <span
           class="font-bold"

@@ -19,8 +19,13 @@ export default function EditProfile() {
   const {profile, setProfile} = useProfile()
 
   async function onSubmit(data) {
-    await setProfile(data)
-    router.replace('/welcome/complete')
+    console.log('profile ==> ', profile)
+    try {
+      await setProfile(data)
+      router.replace('/welcome/complete')
+    } catch (err) {
+      console.error('Error ==> ', err)
+    }
   }
 
   return (

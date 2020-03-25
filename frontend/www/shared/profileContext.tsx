@@ -9,32 +9,39 @@ import {useRPC} from './rpc'
 
 interface ProfileContextValue {
   profile: Profile
-  setProfile: (data: Partial<Profile.AsObject>) => void
-  initProfile: (data: InitProfileRequest.AsObject) => void
+  setProfile?: (data: Partial<Profile.AsObject>) => void
+  initProfile?: (data: InitProfileRequest.AsObject) => void
+  hasProfile?: () => boolean
 }
 
 export const ProfileContext = createContext<ProfileContextValue>(null)
 
 interface ProfileProviderProps {
   children: React.ReactNode
-  value?: Partial<ProfileContextValue>
+  value?: ProfileContextValue
 }
+
+const initialValue = {profile: null}
 
 export default function ProfileProvider({
   children,
-  value: propValue = null,
+  value: propValue = initialValue,
 }: ProfileProviderProps) {
-  const [value, setValue] = useState(propValue)
+  const [value, setValue] = useState(propValue.profile)
   const rpc = useRPC()
 
   useEffect(() => {
-    getProfile()
+    rpc.getProfile(new GetProfileRequest()).then(resp => {
+      const profile = resp.getProfile()
+      console.log('profile on useEffect', profile)
+      setValue(profile)
+    })
   }, [])
 
   async function getProfile() {
-    const profile_req = new GetProfileRequest()
-    const profile_resp = await rpc.getProfile(profile_req)
-    setValue(profile_resp.getProfile())
+    const profile_resp = await rpc.getProfile(new GetProfileRequest())
+    const profile = profile_resp.getProfile()
+    return profile
   }
 
   async function setProfile({
@@ -46,16 +53,22 @@ export default function ProfileProvider({
     email: string
     twitterUsername: string
   }) {
-    username.length > 1 && value.setUsername(username)
-    email.length > 1 && value.setEmail(email)
-    twitterUsername.length > 1 && value.setTwitterUsername(twitterUsername)
+    console.log('value ==>', value)
+
+    const profile = await getProfile()
+    username.length > 1 && profile.setUsername(username)
+    email.length > 1 && profile.setEmail(email)
+    twitterUsername.length > 1 && profile.setTwitterUsername(twitterUsername)
     const req = new UpdateProfileRequest()
     req.setProfile(value)
-    await rpc.updateProfile(req)
-    getProfile()
+    try {
+      await rpc.updateProfile(req)
+    } catch (err) {
+      console.error('setProfileError ===> ', err)
+    }
   }
 
-  async function initProfile({
+  function initProfile({
     aezeedPassphrase,
     mnemonicList,
     walletPassword,
@@ -64,11 +77,18 @@ export default function ProfileProvider({
     req.setAezeedPassphrase(aezeedPassphrase)
     req.setMnemonicList(mnemonicList)
     req.setWalletPassword(walletPassword)
-    await rpc.initProfile(req)
+    return rpc.initProfile(req)
+  }
+
+  function hasProfile() {
+    const req = new UpdateProfileRequest()
+    return req.hasProfile()
   }
 
   return (
-    <ProfileContext.Provider value={{profile: value, setProfile, initProfile}}>
+    <ProfileContext.Provider
+      value={{profile: value, setProfile, initProfile, hasProfile}}
+    >
       {children}
     </ProfileContext.Provider>
   )

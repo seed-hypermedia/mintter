@@ -1,10 +1,4 @@
-import {
-  render,
-  wait,
-  getByTestId,
-  queryAllByAttribute,
-  cleanup,
-} from '@testing-library/react'
+import {render, waitFor, cleanup} from '@testing-library/react'
 import user from '@testing-library/user-event'
 import RetypeSeed from '../../../pages/welcome/retype-seed'
 import {getRandomElements as mockGetRandomElements} from '../../../shared/utils'
@@ -33,7 +27,7 @@ describe('<RetypeSeed />', () => {
     const {getByText} = renderComponent()
 
     const nextButton = getByText('Next →')
-    await wait(() => expect(nextButton).toBeDisabled())
+    await waitFor(() => expect(nextButton).toBeDisabled())
   })
 
   test('should show input error when value does not match', async () => {
@@ -42,7 +36,7 @@ describe('<RetypeSeed />', () => {
 
     user.type(firstInput, 'no')
 
-    await wait(() => {
+    await waitFor(() => {
       const firstInputError = queryByRole('alert')
       expect(firstInputError).toBeInTheDocument()
     })
@@ -62,7 +56,7 @@ describe('<RetypeSeed />', () => {
     user.type(input2, 'b')
     user.type(input3, 'c')
 
-    await wait(() => {
+    await waitFor(() => {
       expect(nextButton).not.toBeDisabled()
     })
   })

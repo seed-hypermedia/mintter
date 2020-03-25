@@ -14,7 +14,7 @@ test('<Input />', async () => {
 
   expect(input).toMatchInlineSnapshot(`
     <input
-      class="block w-full border border-gray-300 rounded bg-white px-3 py-2 focus:outline-none focus:border-gray-600 "
+      class="block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body false "
       id="input-demo"
       name="input-demo"
       type="text"

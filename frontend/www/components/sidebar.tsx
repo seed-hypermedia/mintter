@@ -23,17 +23,13 @@ export default function Sidebar({children = null, ...props}) {
           </svg>
         </button>
         <div className="px-5 text-left text-2xl font-bold">
-          <Link href="/">
-            <a>Mintter</a>
-          </Link>
+          <Link href="/">Mintter</Link>
         </div>
       </div>
 
       <Wrapper {...props} open={open}>
         <div className="py-3 px-5 text-left text-2xl font-bold">
-          <Link href="/">
-            <a>Mintter</a>
-          </Link>
+          <Link href="/">Mintter</Link>
         </div>
         <NavItem
           href="/app/library"
