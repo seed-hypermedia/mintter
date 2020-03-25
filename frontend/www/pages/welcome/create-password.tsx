@@ -20,7 +20,7 @@ export default function CreatePassword() {
     mode: 'onChange',
   })
 
-  console.log('create password render')
+  // console.log('create password render')
 
   const [submitError, setSubmitError] = useState(null)
   const {initProfile} = useProfile()
@@ -61,6 +61,7 @@ export default function CreatePassword() {
               <Input
                 name="walletPassword"
                 id="walletPassword"
+                data-testid="first"
                 type="password"
                 placeholder="******************"
                 ref={register({required: true, minLength: 8})}
@@ -81,6 +82,7 @@ export default function CreatePassword() {
               <Input
                 name="repeat_walletPassword"
                 id="repeat_walletPassword"
+                data-testid="second"
                 type="password"
                 placeholder="******************"
                 ref={register({
