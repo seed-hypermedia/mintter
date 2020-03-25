@@ -5,6 +5,7 @@ import Layout, {LayoutProps} from './layout'
 import WelcomeProvider from '../shared/welcomeProvider'
 import {useTheme} from '../shared/themeContext'
 // import {useProfile} from '../shared/profileContext'
+import ThemeToggle from './themeToggle'
 
 export default function WelcomeLayout({
   children,
@@ -22,12 +23,10 @@ export default function WelcomeLayout({
         {...props}
         className={`content-transition bg-background flex flex-col py-8 ${className}`}
       >
-        <button
-          onClick={() => toggleTheme()}
-          className="border absolute right-0 top-0 py-2 px-4"
-        >
-          theme toggle
-        </button>
+        <div className="absolute right-0 top-0 p-4">
+          <ThemeToggle isDark={theme === 'theme-dark'} toggle={toggleTheme} />
+        </div>
+
         <WelcomeProvider>{children}</WelcomeProvider>
       </Layout>
     </div>

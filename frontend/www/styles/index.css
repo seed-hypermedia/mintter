@@ -43,6 +43,7 @@ body {
 
   --color-background: theme('colors.gray.100');
   --color-background-muted: theme('colors.gray.200');
+  --color-toggle-theme: theme('colors.gray.800');
 }
 
 .theme-dark {
@@ -79,6 +80,7 @@ body {
 
   --color-background: theme('colors.gray.900');
   --color-background-muted: theme('colors.gray.800');
+  --color-toggle-theme: theme('colors.gray.400');
 }
 
 .content-transition {

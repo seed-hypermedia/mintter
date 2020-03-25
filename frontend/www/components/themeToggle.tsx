@@ -12,32 +12,53 @@ export default function ThemeToggle({isDark, toggle}: Props) {
       type="button"
       aria-label={isDark ? `Activate Light Mode` : `Activate Dark Mode`}
       title={isDark ? `Activate Light Mode` : `Activate Dark Mode`}
-      className="relative rounded-md flex items-center justify-center transition outline-none cursor-pointer p-0 appearance-none hover:opacity-100 focus:opacity-100 opacity-50 w-24 h-16"
+      className="button relative flex items-center justify-center border-none bg-transparent cursor-pointer p-0 appearance-none hover:opacity-100 focus:opacity-100"
     >
       <div
-        className={`theme-toggle relative w-16 h-16 rounded-full transition ${
+        className={`inner relative rounded-full ${
           isDark
-            ? 'border-danger border-4 border-solid bg-danger-hover scale-50 overflow-visible shadow-none'
-            : 'border-none bg-transparent scale-100 overflow-hidden shadow-inner'
+            ? 'border-toggle-theme bg-toggle-theme overflow-visible'
+            : 'border-none bg-transparent overflow-hidden shadow-inner'
         }`}
-        // boxShadow: t => `0 -23px 0 ${t.colors.toggleIcon}, 0 23px 0 ${t.colors.toggleIcon}, 23px 0 0 ${t.colors.toggleIcon}, -23px 0 0 ${t.colors.toggleIcon}, 15px 15px 0 ${t.colors.toggleIcon}, -15px 15px 0 ${t.colors.toggleIcon}, 15px -15px 0 ${t.colors.toggleIcon}, -15px -15px 0 ${t.colors.toggleIcon}`,
+        // boxShadow: t => `0 -23px 0 var(--color-toggle-theme), 0 23px 0 var(--color-toggle-theme), 23px 0 0 var(--color-toggle-theme), -23px 0 0 var(--color-toggle-theme), 15px 15px 0 var(--color-toggle-theme), -15px 15px 0 var(--color-toggle-theme), 15px -15px 0 var(--color-toggle-theme), -15px -15px 0 var(--color-toggle-theme)`,
       />
       <style jsx>{`
-        .theme-toggle:before {
-          content: '""';
+        .button {
+          opacity: 0.65;
+          border-radius: 5px;
+          width: 40px;
+          height: 25px;
+          transition: opacity 0.3s ease;
+        }
+
+        .inner {
+          position: relative;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          transition: all 0.45s ease;
+          transform: ${isDark ? 'scale(0.55)' : 'scale(1)'};
+          box-shadow: ${isDark
+            ? 'none'
+            : `inset 8px -8px 0px 0px var(--color-toggle-theme)`};
+        }
+        .inner:before {
+          content: '';
           position: absolute;
           right: -9px;
           top: -9px;
           height: 24px;
           width: 24px;
-          border: ${isDark ? '2px solid red' : 'none'};
+          border: t =>
+            ${isDark ? '2px solid var(--color-toggle-theme)' : 'none'};
           border-radius: 50%;
-          transform: ${isDark ? `translate(14px, -14px)` : `translate(0, 0)`};
+          transform: ${isDark ? 'translate(14px, -14px)' : 'translate(0, 0)'};
           opacity: ${isDark ? 0 : 1};
           transition: transform 0.45s ease;
         }
-        .theme-toggle:after {
-          content: '""';
+
+        .inner:after {
+          content: '';
           width: 8px;
           height: 8px;
           border-radius: 50%;
@@ -45,7 +66,15 @@ export default function ThemeToggle({isDark, toggle}: Props) {
           position: absolute;
           top: 50%;
           left: 50%;
-          transform: ${isDark ? `scale(1)` : `scale(0)`};
+          box-shadow: 0 -23px 0 var(--color-toggle-theme),
+            0 23px 0 var(--color-toggle-theme),
+            23px 0 0 var(--color-toggle-theme),
+            -23px 0 0 var(--color-toggle-theme),
+            15px 15px 0 var(--color-toggle-theme),
+            -15px 15px 0 var(--color-toggle-theme),
+            15px -15px 0 var(--color-toggle-theme),
+            -15px -15px 0 var(--color-toggle-theme);
+          transform: ${isDark ? 'scale(1)' : 'scale(0)'};
           transition: all 0.35s ease;
         }
       `}</style>
