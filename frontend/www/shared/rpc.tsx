@@ -5,15 +5,17 @@ export const makeRpcClient = (): MintterPromiseClient => {
   return new MintterPromiseClient('http://localhost:55001')
 }
 
-export const RpcContext = createContext<MintterPromiseClient>(makeRpcClient())
+const initialValue: MintterPromiseClient = makeRpcClient()
+
+export const RpcContext = createContext<MintterPromiseClient>(initialValue)
 
 export function RpcProvider({
   children,
-  value = makeRpcClient(),
+  value = initialValue,
 }: {
   children: React.ReactNode
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value?: MintterPromiseClient | any
+  value?: MintterPromiseClient
 }) {
   return <RpcContext.Provider value={value}>{children}</RpcContext.Provider>
 }

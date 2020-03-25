@@ -5,7 +5,7 @@ export interface RedirectProps {
   to: string
 }
 
-export function Redirect({to}: RedirectProps) {
+export default function Redirect({to}: RedirectProps) {
   const router = useRouter()
 
   useEffect(() => {

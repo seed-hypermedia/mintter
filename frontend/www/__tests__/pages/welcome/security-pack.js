@@ -1,10 +1,4 @@
-import {
-  render,
-  fireEvent,
-  wait,
-  queryByTestId,
-  getByTestId,
-} from '@testing-library/react'
+import {render, fireEvent, waitFor} from '@testing-library/react'
 // import user from '@testing-library/user-event'
 import SecurityPack from '../../../pages/welcome/security-pack'
 import {axe} from 'jest-axe'
@@ -58,7 +52,7 @@ describe('<SecurityPack />', () => {
 
     fireEvent.click(passPhraseButton)
 
-    await wait(() =>
+    await waitFor(() =>
       // check the passphrase input is not visible
       expect(queryByText(/Generate security pack/i)).not.toBeInTheDocument(),
     )
