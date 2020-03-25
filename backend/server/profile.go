@@ -69,6 +69,10 @@ func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileReque
 		return nil, status.Errorf(codes.Internal, "failed to load profile: %v", err)
 	}
 
+	if in.Profile == nil {
+		return nil, status.Error(codes.InvalidArgument, "parameter 'profile' is required")
+	}
+
 	if in.Profile.Email != "" {
 		prof.Email = in.Profile.Email
 	}
