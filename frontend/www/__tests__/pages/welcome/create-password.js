@@ -13,9 +13,36 @@ afterEach(() => {
   jest.clearAllMocks()
 })
 
+const mockGetMnemonicList = jest.fn(['a', 'b', 'c'])
+const mockSetProfile = jest.fn()
+const mockHasProfile = jest.fn(true)
+const mockClearProfile = jest.fn()
+const mockInitProfile = jest.fn()
+
+const mockRpc = {
+  genSeed: () => ({
+    getMnemonicList: mockGetMnemonicList,
+  }),
+  initProfile: mockInitProfile,
+  getProfile: () =>
+    Promise.resolve({
+      getProfile: () => new Profile(),
+      setProfile: mockSetProfile,
+      hasProfile: mockHasProfile,
+      clearProfile: mockClearProfile,
+    }),
+  updateProfile: () =>
+    Promise.resolve({
+      getProfile: () => new Profile(),
+      setProfile: mockSetProfile,
+      hasProfile: mockHasProfile,
+      clearProfile: mockClearProfile,
+    }),
+}
+
 function renderComponent() {
   return render(
-    <RpcProvider>
+    <RpcProvider value={mockRpc}>
       <ProfileProvider>
         <WelcomeProvider
           value={{
@@ -30,34 +57,25 @@ function renderComponent() {
 }
 
 describe('<CreatePassword />', () => {
-  xtest('should <NextButton /> be disabled', async () => {
-    const {queryByText} = renderComponent()
-
-    const nextButton = queryByText(/Next →/i)
-
-    await waitFor(() => expect(nextButton).toBeDisabled())
-  })
-
   xtest("should submit and generate the user's mnemonicList", async () => {
-    const {queryAllByLabelText, getByText, queryByText} = renderComponent()
+    const {queryByTestId, queryByText, debug} = renderComponent()
     const fakepassword = 'demopassword'
 
-    const inputs = await queryAllByLabelText(/Password/i)
+    queryByTestId(/first/i).value = fakepassword
+    queryByTestId(/second/i).value = fakepassword
 
-    user.type(inputs[0], fakepassword)
-    user.type(inputs[1], fakepassword)
+    // user.type(inputs[0], fakepassword)
+    // user.type(inputs[1], fakepassword)
 
-    await act(async () => {
-      const nextButton = await queryByText(/Next →/i)
+    const nextButton = queryByText(/Next →/i)
+    debug(nextButton)
 
-      await waitFor(() => expect(nextButton).not.toBeDisabled())
-    })
-
+    await waitFor(() => expect(nextButton).not.toBeDisabled())
     user.click(nextButton)
 
-    expect(nextButton).toBeDisabled()
+    await waitFor(() => expect(nextButton).toBeDisabled())
 
     // TODO: test if the method is being called
-    // expect(mockInitProfile).toBeCalledTimes(1)
+    expect(mockInitProfile).toBeCalledTimes(1)
   })
 })

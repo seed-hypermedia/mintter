@@ -33,7 +33,6 @@ export default function ProfileProvider({
   useEffect(() => {
     rpc.getProfile(new GetProfileRequest()).then(resp => {
       const profile = resp.getProfile()
-      console.log('profile on useEffect', profile)
       setValue(profile)
     })
   }, [])
@@ -53,14 +52,12 @@ export default function ProfileProvider({
     email: string
     twitterUsername: string
   }) {
-    console.log('value ==>', value)
-
     const profile = await getProfile()
     username.length > 1 && profile.setUsername(username)
     email.length > 1 && profile.setEmail(email)
     twitterUsername.length > 1 && profile.setTwitterUsername(twitterUsername)
     const req = new UpdateProfileRequest()
-    req.setProfile(value)
+    req.setProfile(profile)
     try {
       await rpc.updateProfile(req)
     } catch (err) {
