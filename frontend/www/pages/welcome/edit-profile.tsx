@@ -9,11 +9,14 @@ import Input from '../../components/input'
 import {useForm} from 'react-hook-form'
 import {useRouter} from 'next/router'
 import {useProfile} from '../../shared/profileContext'
+import {useFocus} from '../../shared/hooks'
 
 export default function EditProfile() {
   const {register, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
   })
+
+  const {focusFirst} = useFocus()
 
   const router = useRouter()
   const {profile, setProfile} = useProfile()
@@ -29,7 +32,7 @@ export default function EditProfile() {
   }
 
   return (
-    <>
+    <form className="lg:flex-1 flex flex-col">
       <Container>
         <Heading>Edit your profile</Heading>
         <P className="text-center">
@@ -60,7 +63,10 @@ export default function EditProfile() {
               </label>
               <Input
                 name="username"
-                ref={register}
+                ref={e => {
+                  register(e)
+                  focusFirst(e)
+                }}
                 type="text"
                 placeholder="Readable username or alias. Doesn't have to be unique."
               />
@@ -127,7 +133,7 @@ export default function EditProfile() {
           height: 200px;
         }
       `}</style>
-    </>
+    </form>
   )
 }
 

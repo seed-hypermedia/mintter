@@ -1,4 +1,11 @@
-import {createContext, useContext, useState, useEffect} from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  RefObject,
+  MutableRefObject,
+} from 'react'
 import {
   UpdateProfileRequest,
   GetProfileRequest,
@@ -8,10 +15,10 @@ import {
 import {useRPC} from './rpc'
 
 interface ProfileContextValue {
-  profile: Profile
+  readonly profile: MutableRefObject<Profile>
   setProfile?: (data: Partial<Profile.AsObject>) => void
   initProfile?: (data: InitProfileRequest.AsObject) => void
-  hasProfile?: () => boolean
+  hasProfile?: () => Promise<boolean>
 }
 
 export const ProfileContext = createContext<ProfileContextValue>(null)
@@ -21,25 +28,24 @@ interface ProfileProviderProps {
   value?: ProfileContextValue
 }
 
-const initialValue = {profile: null}
-
 export default function ProfileProvider({
   children,
-  value: propValue = initialValue,
+  value: propValue,
 }: ProfileProviderProps) {
-  const [value, setValue] = useState(propValue.profile)
+  const value = useRef<Profile>(null)
   const rpc = useRPC()
 
   useEffect(() => {
     rpc.getProfile(new GetProfileRequest()).then(resp => {
       const profile = resp.getProfile()
-      setValue(profile)
+      value.current = profile
     })
   }, [])
 
   async function getProfile() {
     const profile_resp = await rpc.getProfile(new GetProfileRequest())
     const profile = profile_resp.getProfile()
+    value.current = profile
     return profile
   }
 
@@ -65,7 +71,7 @@ export default function ProfileProvider({
     }
   }
 
-  function initProfile({
+  async function initProfile({
     aezeedPassphrase,
     mnemonicList,
     walletPassword,
@@ -74,12 +80,14 @@ export default function ProfileProvider({
     req.setAezeedPassphrase(aezeedPassphrase)
     req.setMnemonicList(mnemonicList)
     req.setWalletPassword(walletPassword)
-    return rpc.initProfile(req)
+    await rpc.initProfile(req)
+    getProfile()
   }
 
-  function hasProfile() {
-    const req = new UpdateProfileRequest()
-    return req.hasProfile()
+  async function hasProfile() {
+    const req = new GetProfileRequest()
+    const resp = await rpc.getProfile(req)
+    return resp.hasProfile()
   }
 
   return (

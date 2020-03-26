@@ -14,11 +14,12 @@ import Input from '../../components/input'
 import Button from '../../components/button'
 import {useForm} from 'react-hook-form'
 import {useWelcome} from '../../shared/welcomeProvider'
+import {useFocus} from '../../shared/hooks'
 
 export default function SecurityPack() {
   const [error, setError] = useState<{code: number; message: string}>()
   const rpc = useRPC()
-
+  const {focusFirst} = useFocus()
   const [mnemonic, setMnemonic] = useState<string[]>([])
   const router = useRouter()
   const {dispatch} = useWelcome()
@@ -83,7 +84,10 @@ export default function SecurityPack() {
                   id="passphrase"
                   type="password"
                   name="passphrase"
-                  ref={register()}
+                  ref={e => {
+                    focusFirst(e)
+                    register(e)
+                  }}
                 />
                 <Button
                   className="w-full mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white transition-all"

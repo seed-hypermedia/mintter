@@ -42,79 +42,77 @@ export default function CreatePassword() {
   }
 
   return (
-    <>
-      <form className="lg:flex-1 flex flex-col">
+    <form className="lg:flex-1 flex flex-col">
+      <Container>
+        <Heading>Welcome!</Heading>
+        <P className="text-center">
+          Set a password to encrypt your identity. This password will be needed
+          to unlock your identity in the future
+        </P>
+        <Content className="flex-wrap flex w-full flex-col">
+          <div className="flex-1 relative">
+            <label
+              className="block text-body-muted text-xs font-semibold mb-1"
+              htmlFor="walletPassword"
+            >
+              Password
+            </label>
+            <Input
+              name="walletPassword"
+              id="walletPassword"
+              data-testid="first"
+              type="password"
+              placeholder="******************"
+              ref={register({required: true, minLength: 8})}
+            />
+            {errors.walletPassword && (
+              <p className="text-danger text-xs absolute left-0 mt-1">
+                Please choose a password with more than 8 characters.
+              </p>
+            )}
+          </div>
+          <div className="flex-1 relative mt-12">
+            <label
+              className="block text-body-muted text-xs font-semibold mb-1"
+              htmlFor="repeat_walletPassword"
+            >
+              Retype Password
+            </label>
+            <Input
+              name="repeat_walletPassword"
+              id="repeat_walletPassword"
+              data-testid="second"
+              type="password"
+              placeholder="******************"
+              ref={register({
+                required: true,
+                validate: value => value === psswd,
+              })}
+            />
+            {errors['repeat_walletPassword'] && (
+              <p className="text-danger text-xs absolute left-0 mt-1">
+                Password must match
+              </p>
+            )}
+          </div>
+          <ErrorMessage error={submitError} />
+        </Content>
+      </Container>
+      <Footer className="flex-none">
         <Container>
-          <Heading>Welcome!</Heading>
-          <P className="text-center">
-            Set a password to encrypt your identity. This password will be
-            needed to unlock your identity in the future
-          </P>
-          <Content className="flex-wrap flex w-full flex-col">
-            <div className="flex-1 relative">
-              <label
-                className="block text-body-muted text-xs font-semibold mb-1"
-                htmlFor="walletPassword"
-              >
-                Password
-              </label>
-              <Input
-                name="walletPassword"
-                id="walletPassword"
-                data-testid="first"
-                type="password"
-                placeholder="******************"
-                ref={register({required: true, minLength: 8})}
-              />
-              {errors.walletPassword && (
-                <p className="text-danger text-xs absolute left-0 mt-1">
-                  Please choose a password with more than 8 characters.
-                </p>
-              )}
-            </div>
-            <div className="flex-1 relative mt-12">
-              <label
-                className="block text-body-muted text-xs font-semibold mb-1"
-                htmlFor="repeat_walletPassword"
-              >
-                Retype Password
-              </label>
-              <Input
-                name="repeat_walletPassword"
-                id="repeat_walletPassword"
-                data-testid="second"
-                type="password"
-                placeholder="******************"
-                ref={register({
-                  required: true,
-                  validate: value => value === psswd,
-                })}
-              />
-              {errors['repeat_walletPassword'] && (
-                <p className="text-danger text-xs absolute left-0 mt-1">
-                  Password must match
-                </p>
-              )}
-            </div>
-            <ErrorMessage error={submitError} />
-          </Content>
+          <div className="flex w-full justify-between flex-row-reverse">
+            <NextButton
+              type="submit"
+              onClick={handleSubmit(onSubmit)}
+              disabled={!formState.isValid || formState.isSubmitting}
+            >
+              Next →
+            </NextButton>
+            <BackButton to="/welcome">← start over</BackButton>
+          </div>
         </Container>
-        <Footer className="flex-none">
-          <Container>
-            <div className="flex w-full justify-between flex-row-reverse">
-              <NextButton
-                type="submit"
-                onClick={handleSubmit(onSubmit)}
-                disabled={!formState.isValid || formState.isSubmitting}
-              >
-                Next →
-              </NextButton>
-              <BackButton to="/welcome">← start over</BackButton>
-            </div>
-          </Container>
-        </Footer>
-      </form>
-    </>
+      </Footer>
+    </form>
   )
 }
 

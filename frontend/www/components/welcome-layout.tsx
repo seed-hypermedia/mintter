@@ -15,8 +15,6 @@ export default function WelcomeLayout({
   const {theme, toggleTheme} = useTheme()
   // const router = useRouter()
 
-  async function checkProfile() {}
-
   return (
     <div className={theme}>
       <Layout
