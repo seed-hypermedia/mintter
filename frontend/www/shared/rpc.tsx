@@ -23,3 +23,5 @@ export function RpcProvider({
 export function useRPC() {
   return useContext(RpcContext)
 }
+
+export default makeRpcClient()

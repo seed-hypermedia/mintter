@@ -30,7 +30,7 @@ interface ProfileProviderProps {
 
 export default function ProfileProvider({
   children,
-  value: {profile: propProfile = null, ...rest},
+  value: {profile: propProfile = null, ...rest} = {profile: null},
 }: ProfileProviderProps) {
   const value = useRef<Profile>(propProfile)
   const rpc = useRPC()
