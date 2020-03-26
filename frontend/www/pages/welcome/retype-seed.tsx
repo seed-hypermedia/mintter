@@ -42,8 +42,8 @@ export default function RetypeSeed() {
         <Container>
           <Heading>Retype your seed</Heading>
           <P className="text-center">
-            Your seed is important! If you lose your seed you'll have no way to
-            recover your identity. To make sure that you have properly saved
+            Your seed is important! If you lose your seed you will have no way
+            to recover your identity. To make sure that you have properly saved
             your seed, please retype the words
           </P>
           <P className="text-center font-bold">{`${idxs[0] + 1}, ${idxs[1] +

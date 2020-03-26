@@ -31,7 +31,7 @@ export function BackButton({
   to,
   onClick,
   children,
-  className,
+  className = '',
   type = 'button',
   disabled = false,
   ...props
