@@ -61,21 +61,19 @@ describe('<CreatePassword />', () => {
     const {queryByTestId, queryByText, debug} = renderComponent()
     const fakepassword = 'demopassword'
 
-    queryByTestId(/first/i).value = fakepassword
-    queryByTestId(/second/i).value = fakepassword
+    const input1 = queryByTestId(/first/i)
+    const input2 = queryByTestId(/second/i)
 
-    // user.type(inputs[0], fakepassword)
-    // user.type(inputs[1], fakepassword)
+    user.type(input1, fakepassword)
+    user.type(input2, fakepassword)
 
-    const nextButton = queryByText(/Next →/i)
-    debug(nextButton)
+    const nextButton = await queryByText(/Next →/i)
 
-    await waitFor(() => expect(nextButton).not.toBeDisabled())
     user.click(nextButton)
 
     await waitFor(() => expect(nextButton).toBeDisabled())
 
     // TODO: test if the method is being called
-    expect(mockInitProfile).toBeCalledTimes(1)
+    await waitFor(() => expect(mockInitProfile).toBeCalledTimes(1))
   })
 })

@@ -12,6 +12,7 @@ import {useForm} from 'react-hook-form'
 import CheckIcon from '@material-ui/icons/Check'
 import {getRandomElements} from '../../shared/utils'
 import {useWelcome} from '../../shared/welcomeProvider'
+import {useFocus} from '../../shared/hooks'
 
 export default function RetypeSeed() {
   const {register, handleSubmit, errors, formState} = useForm({
@@ -19,6 +20,7 @@ export default function RetypeSeed() {
   })
 
   const router = useRouter()
+  const {focusFirst} = useFocus()
 
   const {
     state: {mnemonicList},
@@ -66,13 +68,18 @@ export default function RetypeSeed() {
                         type="text"
                         id={key}
                         name={key}
-                        ref={register({
-                          required: true,
-                          validate: {
-                            match: value =>
-                              value === mnemonicList[n] || 'not a match',
-                          },
-                        })}
+                        ref={e => {
+                          register({
+                            required: true,
+                            validate: {
+                              match: value =>
+                                value === mnemonicList[n] || 'not a match',
+                            },
+                          })(e)
+                          if (n === idxs[0]) {
+                            focusFirst(e)
+                          }
+                        }}
                       />
                       {errors[key] && (
                         <p

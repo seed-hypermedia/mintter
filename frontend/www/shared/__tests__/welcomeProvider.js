@@ -1,5 +1,5 @@
-import {waitFor} from '@testing-library/react'
-import {reducer} from '../welcomeProvider'
+import {waitFor, render} from '@testing-library/react'
+import WelcomeProvider, {reducer} from '../welcomeProvider'
 
 describe('Welcome Provider', () => {
   test('should the reducer not delete current state when changing other branch', async () => {
@@ -11,4 +11,6 @@ describe('Welcome Provider', () => {
       ).toStrictEqual(expected),
     )
   })
+
+  xtest('should redirect to the library if profile is available', () => {})
 })
