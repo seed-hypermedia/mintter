@@ -7,7 +7,8 @@ import Footer from '../../components/footer'
 import Content from '../../components/content'
 import P from '../../components/welcome-p'
 import {css} from 'emotion'
-import {useRPC} from '../../shared/rpc'
+import rpcModule from '../../shared/rpc'
+import {MintterPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
 import {GenSeedRequest} from '@mintter/proto/mintter_pb'
 import {useRouter} from 'next/router'
 import Input from '../../components/input'
@@ -16,9 +17,12 @@ import {useForm} from 'react-hook-form'
 import {useWelcome} from '../../shared/welcomeProvider'
 import {useFocus} from '../../shared/hooks'
 
-export default function SecurityPack() {
+interface SecurityPackProps {
+  rpc: MintterPromiseClient
+}
+
+export default function SecurityPack({rpc = rpcModule}: SecurityPackProps) {
   const [error, setError] = useState<{code: number; message: string}>()
-  const rpc = useRPC()
   const {focusFirst} = useFocus()
   const [mnemonic, setMnemonic] = useState<string[]>([])
   const router = useRouter()

@@ -64,7 +64,7 @@ export default function WelcomeProvider({
       }
     }
 
-    checkProfile()
+    // checkProfile()
   }, [])
 
   return <WelcomeContext.Provider value={v}>{children}</WelcomeContext.Provider>

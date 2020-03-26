@@ -1,20 +1,27 @@
-import {render, fireEvent, waitFor} from '@testing-library/react'
+import {render, fireEvent, waitFor, cleanup} from '@testing-library/react'
 // import user from '@testing-library/user-event'
 import SecurityPack from '../../../pages/welcome/security-pack'
 import {axe} from 'jest-axe'
-import {RpcProvider} from '../../../shared/rpc'
+import rpc from '../../../shared/rpc'
 
-const mockGetMnemonicList = jest.fn(() => ['a', 'b', 'c'])
+const mockGetMnemonicList = jest.fn()
+
+jest.mock('../../../shared/rpc', () => {
+  genSeed: () => ({getMnemonicList: mockGetMnemonicList})
+})
+
+afterEach(() => {
+  jest.resetAllMocks()
+  cleanup()
+})
 
 function Component() {
   return (
-    <RpcProvider
-      value={{
+    <SecurityPack
+      rpc={{
         genSeed: () => ({getMnemonicList: mockGetMnemonicList}),
       }}
-    >
-      <SecurityPack />
-    </RpcProvider>
+    />
   )
 }
 
@@ -46,6 +53,7 @@ describe('<SecurityPack />', () => {
   })
 
   test('should generate the mnemonic words, show them and enable the Next button', async () => {
+    mockGetMnemonicList.mockReturnValueOnce(['a', 'b', 'c'])
     const {getByText, queryByText, getByTestId} = render(<Component />)
 
     const passPhraseButton = getByText(/Generate security pack/i)
