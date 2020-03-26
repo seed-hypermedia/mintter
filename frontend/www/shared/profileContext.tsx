@@ -30,9 +30,9 @@ interface ProfileProviderProps {
 
 export default function ProfileProvider({
   children,
-  value: propValue,
+  value: {profile: propProfile = null, ...rest},
 }: ProfileProviderProps) {
-  const value = useRef<Profile>(null)
+  const value = useRef<Profile>(propProfile)
   const rpc = useRPC()
 
   useEffect(() => {
@@ -89,10 +89,9 @@ export default function ProfileProvider({
     const resp = await rpc.getProfile(req)
     return resp.hasProfile()
   }
-
   return (
     <ProfileContext.Provider
-      value={{profile: value, setProfile, initProfile, hasProfile}}
+      value={{profile: value, setProfile, initProfile, hasProfile, ...rest}}
     >
       {children}
     </ProfileContext.Provider>
