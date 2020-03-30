@@ -1,11 +1,8 @@
 // import {useEffect} from 'react'
 
 import Layout, {LayoutProps} from './layout'
-// import {useRouter} from 'next/router'
+import {useRouter} from 'next/router'
 import WelcomeProvider from '../shared/welcomeProvider'
-import {useTheme} from '../shared/themeContext'
-// import {useProfile} from '../shared/profileContext'
-import ThemeToggle from './themeToggle'
 
 export default function WelcomeLayout({
   children,
@@ -13,6 +10,8 @@ export default function WelcomeLayout({
   ...props
 }: LayoutProps) {
   // const router = useRouter()
+  const router = useRouter()
+  console.log('router', router)
 
   return (
     <Layout
