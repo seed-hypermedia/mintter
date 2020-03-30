@@ -1,7 +1,8 @@
-import {useContext, createContext, useReducer, useEffect} from 'react'
+import {useContext, createContext, useReducer, useEffect, useRef} from 'react'
 import {useProfile} from './profileContext'
-import Container from '../components/welcome-container'
+// import Container from '../components/welcome-container'
 import {useRouter} from 'next/router'
+import Steps from '../components/welcome-steps'
 
 interface WelcomeState {
   mnemonicList?: string[]
@@ -68,9 +69,11 @@ export default function WelcomeProvider({
     // checkProfile()
   }, [])
 
+  const activeStep = steps.findIndex(s => s.url === router.pathname)
+
   return (
     <WelcomeContext.Provider value={v}>
-      <Steps />
+      {activeStep >= 0 ? <Steps steps={steps} active={activeStep} /> : null}
       {children}
     </WelcomeContext.Provider>
   )
@@ -80,27 +83,21 @@ export function useWelcome(): WelcomeValueType {
   return useContext<WelcomeValueType>(WelcomeContext)
 }
 
-function Steps() {
-  return (
-    <div className="w-full max-w-3xl mt-12 mx-auto mb-6">
-      <ul className="flex w-full bg-red-500 justify-between">
-        <li className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-200">
-          <span>1</span>
-          <p>Security pack</p>
-        </li>
-        <li className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-400">
-          <span>2</span>
-          <p>Confirm your pack</p>
-        </li>
-        <li className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-200">
-          <span>3</span>
-          <p>Set your password</p>
-        </li>
-        <li className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-400">
-          <span>4</span>
-          <p>Edit Profile</p>
-        </li>
-      </ul>
-    </div>
-  )
-}
+const steps = [
+  {
+    title: 'Security Pack',
+    url: '/welcome/security-pack',
+  },
+  {
+    title: 'Retype your Seed',
+    url: '/welcome/retype-seed',
+  },
+  {
+    title: 'Create Password',
+    url: '/welcome/create-password',
+  },
+  {
+    title: 'Edit profile',
+    url: '/welcome/edit-profile',
+  },
+]

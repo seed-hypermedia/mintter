@@ -25,9 +25,6 @@ export default function CreatePassword() {
 
   const router = useRouter()
   const psswd = watch('walletPassword')
-  console.log('psswd', psswd)
-  const psswd2 = watch('repeat_walletPassword')
-  console.log('psswd2', psswd2)
   const {
     state: {mnemonicList, aezeedPassphrase},
   } = useWelcome()
