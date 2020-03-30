@@ -20,19 +20,19 @@ export default function CreatePassword() {
     mode: 'onChange',
   })
 
-  // console.log('create password render')
-
   const [submitError, setSubmitError] = useState(null)
   const {initProfile} = useProfile()
 
   const router = useRouter()
   const psswd = watch('walletPassword')
+  console.log('psswd', psswd)
+  const psswd2 = watch('repeat_walletPassword')
+  console.log('psswd2', psswd2)
   const {
     state: {mnemonicList, aezeedPassphrase},
   } = useWelcome()
 
   async function onSubmit({walletPassword}) {
-    console.log('ONSUBMIT')
     try {
       await initProfile({aezeedPassphrase, mnemonicList, walletPassword})
       router.replace('/welcome/edit-profile')
@@ -105,6 +105,7 @@ export default function CreatePassword() {
               type="submit"
               onClick={handleSubmit(onSubmit)}
               disabled={!formState.isValid || formState.isSubmitting}
+              data-testid="next-btn"
             >
               Next →
             </NextButton>
