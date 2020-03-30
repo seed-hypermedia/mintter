@@ -12,22 +12,15 @@ export default function WelcomeLayout({
   className = '',
   ...props
 }: LayoutProps) {
-  const {theme, toggleTheme} = useTheme()
   // const router = useRouter()
 
   return (
-    <div className={theme}>
-      <Layout
-        {...props}
-        className={`content-transition bg-background flex flex-col py-8 ${className}`}
-      >
-        <div className="absolute right-0 top-0 p-4">
-          <ThemeToggle isDark={theme === 'theme-dark'} toggle={toggleTheme} />
-        </div>
-
-        <WelcomeProvider>{children}</WelcomeProvider>
-      </Layout>
-    </div>
+    <Layout
+      {...props}
+      className={`bg-background flex flex-col py-8 ${className}`}
+    >
+      <WelcomeProvider>{children}</WelcomeProvider>
+    </Layout>
   )
 }
 

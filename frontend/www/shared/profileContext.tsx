@@ -3,7 +3,6 @@ import {
   useContext,
   useEffect,
   useRef,
-  RefObject,
   MutableRefObject,
 } from 'react'
 import {
@@ -12,10 +11,11 @@ import {
   InitProfileRequest,
   Profile,
 } from '@mintter/proto/mintter_pb'
-import {useRPC} from './rpc'
+import rpcModule from './rpc'
+import {MintterPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
 
 interface ProfileContextValue {
-  readonly profile: MutableRefObject<Profile>
+  readonly profile: MutableRefObject<Profile> | null
   setProfile?: (data: Partial<Profile.AsObject>) => void
   initProfile?: (data: InitProfileRequest.AsObject) => void
   hasProfile?: () => Promise<boolean>
@@ -26,14 +26,15 @@ export const ProfileContext = createContext<ProfileContextValue>(null)
 interface ProfileProviderProps {
   children: React.ReactNode
   value?: ProfileContextValue
+  rpc?: MintterPromiseClient
 }
 
 export default function ProfileProvider({
   children,
   value: {profile: propProfile = null, ...rest} = {profile: null},
+  rpc = rpcModule,
 }: ProfileProviderProps) {
-  const value = useRef<Profile>(propProfile)
-  const rpc = useRPC()
+  const value = useRef<Profile>(propProfile as any)
 
   useEffect(() => {
     rpc.getProfile(new GetProfileRequest()).then(resp => {

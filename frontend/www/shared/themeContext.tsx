@@ -1,5 +1,7 @@
 import {createContext, useContext} from 'react'
 import useLocalStorage from './localstorage'
+import ThemeToggle from '../components/themeToggle'
+
 export type ThemeContextValueType = {
   theme: string
   toggleTheme?: () => void

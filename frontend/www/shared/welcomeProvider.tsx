@@ -1,5 +1,6 @@
 import {useContext, createContext, useReducer, useEffect} from 'react'
 import {useProfile} from './profileContext'
+import Container from '../components/welcome-container'
 import {useRouter} from 'next/router'
 
 interface WelcomeState {
@@ -67,9 +68,39 @@ export default function WelcomeProvider({
     // checkProfile()
   }, [])
 
-  return <WelcomeContext.Provider value={v}>{children}</WelcomeContext.Provider>
+  return (
+    <WelcomeContext.Provider value={v}>
+      <Steps />
+      {children}
+    </WelcomeContext.Provider>
+  )
 }
 
 export function useWelcome(): WelcomeValueType {
   return useContext<WelcomeValueType>(WelcomeContext)
+}
+
+function Steps() {
+  return (
+    <div className="w-full max-w-3xl mt-12 mx-auto mb-6">
+      <ul className="flex w-full bg-red-500 justify-between">
+        <li className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-200">
+          <span>1</span>
+          <p>Security pack</p>
+        </li>
+        <li className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-400">
+          <span>2</span>
+          <p>Confirm your pack</p>
+        </li>
+        <li className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-200">
+          <span>3</span>
+          <p>Set your password</p>
+        </li>
+        <li className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-400">
+          <span>4</span>
+          <p>Edit Profile</p>
+        </li>
+      </ul>
+    </div>
+  )
 }
