@@ -16,3 +16,5 @@ build/*
 !build/*.do
 !build/*.od
 .redo
+
+!.vscode
