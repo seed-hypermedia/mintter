@@ -4,6 +4,13 @@ import RetypeSeed from '../../../pages/welcome/retype-seed'
 import {getRandomElements as mockGetRandomElements} from '../../../shared/utils'
 import WelcomeProvider from '../../../shared/welcomeProvider'
 import ProfileProvider from '../../../shared/profileContext'
+import * as nextRouter from 'next/router'
+
+nextRouter.useRouter = jest.fn()
+nextRouter.useRouter.mockImplementation(() => ({
+  route: '/welcome/retype-seed',
+  pathname: '/welcome/retype-seed',
+}))
 
 jest.mock('../../../shared/utils')
 
@@ -26,13 +33,6 @@ function renderComponent() {
 }
 
 describe('<RetypeSeed />', () => {
-  xtest('should <NextButton /> be disabled by default', async () => {
-    // next button should be disabled
-    const {getByText} = renderComponent()
-    const nextButton = getByText(/Next →/i)
-    await wait(() => expect(nextButton).toBeDisabled())
-  })
-
   test('should show input error when value does not match', async () => {
     const {getByLabelText, queryByRole} = renderComponent()
     const firstInput = getByLabelText(/1/i)
