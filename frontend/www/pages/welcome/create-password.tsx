@@ -16,7 +16,7 @@ import ErrorMessage from '../../components/errorMessage'
 import {useProfile} from '../../shared/profileContext'
 
 export default function CreatePassword() {
-  const {register, watch, handleSubmit, errors, formState} = useForm({
+  const {register, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
   })
 
@@ -24,7 +24,9 @@ export default function CreatePassword() {
   const {initProfile} = useProfile()
 
   const router = useRouter()
-  const psswd = watch('walletPassword')
+  // const psswd = watch('walletPassword')
+  // console.log('psswd', psswd)
+
   const {
     state: {mnemonicList, aezeedPassphrase},
   } = useWelcome()
@@ -37,6 +39,10 @@ export default function CreatePassword() {
       setSubmitError(err)
     }
   }
+
+  // console.log('FormState => ', formState)
+  const isDisabled = !formState.isValid
+  // console.log('isDisabled', isDisabled)
 
   return (
     <form className="lg:flex-1 flex flex-col">
@@ -83,11 +89,14 @@ export default function CreatePassword() {
               placeholder="******************"
               ref={register({
                 required: true,
-                validate: value => value === psswd,
+                // validate: value => value === psswd,
               })}
             />
             {errors['repeat_walletPassword'] && (
-              <p className="text-danger text-xs absolute left-0 mt-1">
+              <p
+                role="alert"
+                className="text-danger text-xs absolute left-0 mt-1"
+              >
                 Password must match
               </p>
             )}
@@ -101,7 +110,7 @@ export default function CreatePassword() {
             <NextButton
               type="submit"
               onClick={handleSubmit(onSubmit)}
-              disabled={!formState.isValid || formState.isSubmitting}
+              disabled={isDisabled}
               data-testid="next-btn"
             >
               Next →
