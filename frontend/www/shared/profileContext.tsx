@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
   MutableRefObject,
+  useState,
 } from 'react'
 import {
   UpdateProfileRequest,
@@ -34,19 +35,19 @@ export default function ProfileProvider({
   value: {profile: propProfile = null, ...rest} = {profile: null},
   rpc = rpcModule,
 }: ProfileProviderProps) {
-  const value = useRef<Profile>(propProfile as any)
+  const [profile, setLocalProfile] = useState<any>(propProfile)
 
   useEffect(() => {
-    rpc.getProfile(new GetProfileRequest()).then(resp => {
-      const profile = resp.getProfile()
-      value.current = profile
+    rpc.getProfile(new GetProfileRequest()).then(data => {
+      const resp = data.getProfile()
+      setLocalProfile(resp)
     })
   }, [])
 
   async function getProfile() {
     const profile_resp = await rpc.getProfile(new GetProfileRequest())
     const profile = profile_resp.getProfile()
-    value.current = profile
+    setLocalProfile(profile)
     return profile
   }
 
@@ -92,7 +93,7 @@ export default function ProfileProvider({
   }
   return (
     <ProfileContext.Provider
-      value={{profile: value, setProfile, initProfile, hasProfile, ...rest}}
+      value={{profile, setProfile, initProfile, hasProfile, ...rest}}
     >
       {children}
     </ProfileContext.Provider>

@@ -1,12 +1,26 @@
 // should <NextButton /> be disabled
 // should form be valid if passwords match
-import {render, waitFor, cleanup, act} from '@testing-library/react'
+import {
+  render,
+  waitFor,
+  cleanup,
+  waitForElementToBeRemoved,
+  queryAllByRole,
+  fireEvent,
+} from '@testing-library/react'
 import user from '@testing-library/user-event'
 import CreatePassword from '../../../pages/welcome/create-password'
 import WelcomeProvider from '../../../shared/welcomeProvider'
-import {RpcProvider} from '../../../shared/rpc'
 import ProfileProvider from '../../../shared/profileContext'
 import {Profile} from '@mintter/proto/mintter_pb'
+import {RouterContext} from 'next-server/dist/lib/router-context'
+import * as nextRouter from 'next/router'
+
+nextRouter.useRouter = jest.fn()
+nextRouter.useRouter.mockImplementation(() => ({
+  route: '/welcome/create-password',
+  pathname: '/welcome/create-password',
+}))
 
 afterEach(() => {
   cleanup()
@@ -42,38 +56,49 @@ const mockRpc = {
 
 function renderComponent() {
   return render(
-    <RpcProvider value={mockRpc}>
-      <ProfileProvider>
-        <WelcomeProvider
-          value={{
-            state: {mnemonicList: ['a', 'b', 'c'], aezeedPassphrase: 'abc'},
-          }}
-        >
-          <CreatePassword />
-        </WelcomeProvider>
-      </ProfileProvider>
-    </RpcProvider>,
+    <ProfileProvider rpc={mockRpc}>
+      <WelcomeProvider
+        value={{
+          state: {mnemonicList: ['a', 'b', 'c'], aezeedPassphrase: 'abc'},
+        }}
+      >
+        <CreatePassword />
+      </WelcomeProvider>
+    </ProfileProvider>,
   )
 }
 
+function wait(time) {
+  return new Promise(function(resolve) {
+    setTimeout(() => resolve(), time)
+  })
+}
+
 describe('<CreatePassword />', () => {
-  xtest("should submit and generate the user's mnemonicList", async () => {
-    const {queryByTestId, queryByText, debug} = renderComponent()
+  test("should submit and generate the user's mnemonicList", async () => {
+    const {
+      queryByTestId,
+      queryByText,
+      queryAllByRole,
+      debug,
+    } = renderComponent()
     const fakepassword = 'demopassword'
 
-    const input1 = queryByTestId(/first/i)
-    const input2 = queryByTestId(/second/i)
+    const nextButton = queryByText(/Next →/i)
+
+    await waitFor(() => expect(nextButton).toBeDisabled())
+
+    const input1 = queryByTestId('first')
+    const input2 = queryByTestId('second')
 
     user.type(input1, fakepassword)
     user.type(input2, fakepassword)
 
-    const nextButton = await queryByText(/Next →/i)
+    await waitFor(() => expect(nextButton).not.toBeDisabled())
 
     user.click(nextButton)
 
-    await waitFor(() => expect(nextButton).toBeDisabled())
-
     // TODO: test if the method is being called
-    await waitFor(() => expect(mockInitProfile).toBeCalledTimes(1))
+    await waitFor(() => expect(mockInitProfile).toHaveBeenCalledTimes(1))
   })
 })
