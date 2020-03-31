@@ -76,29 +76,24 @@ function wait(time) {
 
 describe('<CreatePassword />', () => {
   test("should submit and generate the user's mnemonicList", async () => {
-    const {
-      queryByTestId,
-      queryByText,
-      queryAllByRole,
-      debug,
-    } = renderComponent()
+    const {queryByTestId, queryByText, queryByRole, debug} = renderComponent()
     const fakepassword = 'demopassword'
 
     const nextButton = queryByText(/Next →/i)
-
-    await waitFor(() => expect(nextButton).toBeDisabled())
 
     const input1 = queryByTestId('first')
     const input2 = queryByTestId('second')
 
     user.type(input1, fakepassword)
+    user.click(nextButton)
+    await waitFor(() => wait(100))
+
+    const error = queryByRole('alert')
+    await waitFor(() => expect(error).toBeInTheDocument())
+
     user.type(input2, fakepassword)
-
-    await waitFor(() => expect(nextButton).not.toBeDisabled())
-
     user.click(nextButton)
 
-    // TODO: test if the method is being called
     await waitFor(() => expect(mockInitProfile).toHaveBeenCalledTimes(1))
   })
 })

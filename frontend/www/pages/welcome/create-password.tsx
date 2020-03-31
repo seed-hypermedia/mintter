@@ -16,9 +16,7 @@ import ErrorMessage from '../../components/errorMessage'
 import {useProfile} from '../../shared/profileContext'
 
 export default function CreatePassword() {
-  const {register, handleSubmit, errors, formState} = useForm({
-    mode: 'onChange',
-  })
+  const {register, handleSubmit, errors, formState} = useForm()
 
   const [submitError, setSubmitError] = useState(null)
   const {initProfile} = useProfile()
@@ -41,7 +39,7 @@ export default function CreatePassword() {
   }
 
   // console.log('FormState => ', formState)
-  const isDisabled = !formState.isValid
+  // const isDisabled = !formState.isValid
   // console.log('isDisabled', isDisabled)
 
   return (
@@ -69,7 +67,10 @@ export default function CreatePassword() {
               ref={register({required: true, minLength: 8})}
             />
             {errors.walletPassword && (
-              <p className="text-danger text-xs absolute left-0 mt-1">
+              <p
+                role="alert"
+                className="text-danger text-xs absolute left-0 mt-1"
+              >
                 Please choose a password with more than 8 characters.
               </p>
             )}
@@ -110,7 +111,7 @@ export default function CreatePassword() {
             <NextButton
               type="submit"
               onClick={handleSubmit(onSubmit)}
-              disabled={isDisabled}
+              // disabled={isDisabled}
               data-testid="next-btn"
             >
               Next →
