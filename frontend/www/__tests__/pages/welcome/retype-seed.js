@@ -11,6 +11,7 @@ nextRouter.useRouter = jest.fn()
 nextRouter.useRouter.mockImplementation(() => ({
   route: '/welcome/retype-seed',
   pathname: '/welcome/retype-seed',
+  replace: jest.fn(),
 }))
 
 jest.mock('../../../shared/utils')
@@ -24,7 +25,8 @@ afterEach(() => {
 
 const mockGetMnemonicList = jest.fn(['a', 'b', 'c'])
 const mockSetProfile = jest.fn()
-const mockHasProfile = jest.fn(true)
+const mockHasProfile = jest.fn()
+mockHasProfile.mockReturnValue(false)
 const mockClearProfile = jest.fn()
 const mockInitProfile = jest.fn()
 

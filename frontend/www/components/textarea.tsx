@@ -1,9 +1,9 @@
 import React from 'react'
 import {css} from 'emotion'
 
-export default function Textarea({
+export default function EditorTitle({
   value = '',
-  onChange,
+  onChange = null,
   className = '',
   ...props
 }) {

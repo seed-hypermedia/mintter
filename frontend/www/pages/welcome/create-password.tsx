@@ -45,8 +45,8 @@ export default function CreatePassword() {
       <Container>
         <Heading>Welcome!</Heading>
         <P className="text-center">
-          Set a password to encrypt your identity. This password will be needed
-          to unlock your identity in the future
+          Set a password to encrypt your account. This password will be needed
+          to unlock your account in the future
         </P>
         <Content className="flex-wrap flex w-full flex-col">
           <div className="flex-1 relative">
