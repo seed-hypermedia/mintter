@@ -15,7 +15,7 @@ import rpcModule from './rpc'
 import {MintterPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
 
 interface ProfileContextValue {
-  readonly profile: MutableRefObject<Profile> | null
+  readonly profile: Profile | null
   setProfile?: (data: Partial<Profile.AsObject>) => void
   initProfile?: (data: InitProfileRequest.AsObject) => void
   hasProfile?: () => Promise<boolean>
@@ -34,12 +34,14 @@ export default function ProfileProvider({
   value: {profile: propProfile = null, ...rest} = {profile: null},
   rpc = rpcModule,
 }: ProfileProviderProps) {
-  const [profile, setLocalProfile] = useState<any>(propProfile)
+  const [profile, setLocalProfile] = useState<Profile>(propProfile)
 
   useEffect(() => {
     rpc.getProfile(new GetProfileRequest()).then(data => {
-      const resp = data.getProfile()
-      setLocalProfile(resp)
+      if (!data.hasProfile()) {
+        const resp = data.getProfile()
+        setLocalProfile(resp)
+      }
     })
   }, [])
 
