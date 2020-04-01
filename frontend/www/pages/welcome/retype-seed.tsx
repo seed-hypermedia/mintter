@@ -33,9 +33,9 @@ export default function RetypeSeed() {
   }, [])
 
   // console.log('formState ==> ', formState)
-  const isDisabled = formState
-    ? !formState.isValid && !formState.isSubmitting
-    : true
+  // const isDisabled = formState
+  //   ? !formState.isValid
+  //   : true
   // console.log('isDisabled ==> ', isDisabled)
   async function onSubmit() {
     await router.replace('/welcome/create-password')
@@ -114,7 +114,7 @@ export default function RetypeSeed() {
               <NextButton
                 type="submit"
                 onClick={handleSubmit(onSubmit)}
-                disabled={isDisabled}
+                disabled={!formState.isValid}
               >
                 Next →
               </NextButton>

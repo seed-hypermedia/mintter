@@ -16,13 +16,15 @@ import ErrorMessage from '../../components/errorMessage'
 import {useProfile} from '../../shared/profileContext'
 
 export default function CreatePassword() {
-  const {register, handleSubmit, errors, formState} = useForm()
+  const {register, watch, handleSubmit, errors, formState} = useForm({
+    mode: 'onChange',
+  })
 
   const [submitError, setSubmitError] = useState(null)
   const {initProfile} = useProfile()
 
   const router = useRouter()
-  // const psswd = watch('walletPassword')
+  const psswd = watch('walletPassword')
   // console.log('psswd', psswd)
 
   const {
@@ -37,10 +39,6 @@ export default function CreatePassword() {
       setSubmitError(err)
     }
   }
-
-  // console.log('FormState => ', formState)
-  // const isDisabled = !formState.isValid
-  // console.log('isDisabled', isDisabled)
 
   return (
     <form className="lg:flex-1 flex flex-col">
@@ -90,7 +88,7 @@ export default function CreatePassword() {
               placeholder="******************"
               ref={register({
                 required: true,
-                // validate: value => value === psswd,
+                validate: value => value === psswd,
               })}
             />
             {errors['repeat_walletPassword'] && (
@@ -111,7 +109,7 @@ export default function CreatePassword() {
             <NextButton
               type="submit"
               onClick={handleSubmit(onSubmit)}
-              // disabled={isDisabled}
+              disabled={!formState.isValid}
               data-testid="next-btn"
             >
               Next →
