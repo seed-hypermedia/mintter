@@ -77,7 +77,7 @@ export default function Steps({steps, active}: Props) {
                   },
                 })}`}
               >
-                <span className={`absolute z-10 text-body `}>
+                <span className={`absolute z-10 text-body-muted`}>
                   {active > index ? (
                     <svg
                       width="0.75rem"

@@ -92,6 +92,7 @@ describe('<CreatePassword />', () => {
     await waitFor(() => expect(error).toBeInTheDocument())
 
     user.type(input2, fakepassword)
+    await waitFor(() => wait(100))
     user.click(nextButton)
 
     await waitFor(() => expect(mockInitProfile).toHaveBeenCalledTimes(1))

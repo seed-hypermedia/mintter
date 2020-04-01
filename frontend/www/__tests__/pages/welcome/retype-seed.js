@@ -1,9 +1,10 @@
-import {render, waitFor, cleanup} from '@testing-library/react'
+import {render, waitFor, cleanup, fireEvent} from '@testing-library/react'
 import user from '@testing-library/user-event'
 import RetypeSeed from '../../../pages/welcome/retype-seed'
 import {getRandomElements as mockGetRandomElements} from '../../../shared/utils'
 import WelcomeProvider from '../../../shared/welcomeProvider'
 import ProfileProvider from '../../../shared/profileContext'
+import {Profile} from '@mintter/proto/mintter_pb'
 import * as nextRouter from 'next/router'
 
 nextRouter.useRouter = jest.fn()
@@ -21,10 +22,37 @@ afterEach(() => {
   jest.clearAllMocks()
 })
 
+const mockGetMnemonicList = jest.fn(['a', 'b', 'c'])
+const mockSetProfile = jest.fn()
+const mockHasProfile = jest.fn(true)
+const mockClearProfile = jest.fn()
+const mockInitProfile = jest.fn()
+
+const mockRpc = {
+  genSeed: () => ({
+    getMnemonicList: mockGetMnemonicList,
+  }),
+  initProfile: mockInitProfile,
+  getProfile: () =>
+    Promise.resolve({
+      getProfile: () => new Profile(),
+      setProfile: mockSetProfile,
+      hasProfile: mockHasProfile,
+      clearProfile: mockClearProfile,
+    }),
+  updateProfile: () =>
+    Promise.resolve({
+      getProfile: () => new Profile(),
+      setProfile: mockSetProfile,
+      hasProfile: mockHasProfile,
+      clearProfile: mockClearProfile,
+    }),
+}
+
 function renderComponent() {
   mockGetRandomElements.mockReturnValueOnce([0, 1, 2])
   return render(
-    <ProfileProvider value={{hasProfile: jest.fn(() => false)}}>
+    <ProfileProvider rpc={mockRpc}>
       <WelcomeProvider value={{state: {mnemonicList}}}>
         <RetypeSeed />
       </WelcomeProvider>
@@ -34,30 +62,28 @@ function renderComponent() {
 
 describe('<RetypeSeed />', () => {
   test('should show input error when value does not match', async () => {
-    const {getByLabelText, queryByRole} = renderComponent()
-    const firstInput = getByLabelText(/1/i)
+    const {getByLabelText, queryByRole, getByText} = renderComponent()
 
-    user.type(firstInput, 'no')
+    const nextButton = getByText(/Next →/i)
+    fireEvent.input(getByLabelText(/1/i), {target: {value: 'no'}})
 
-    await waitFor(() => {
-      const firstInputError = queryByRole('alert')
-      expect(firstInputError).toBeInTheDocument()
-    })
+    await waitFor(() => expect(nextButton).toBeDisabled())
+
+    await waitFor(() => expect(queryByRole('alert')).toBeInTheDocument())
   })
 
   test('should enable <NextButton /> when form is valid', async () => {
     const {getByLabelText, getByText, debug} = renderComponent()
 
-    const nextButton = getByText('Next →')
+    const nextButton = getByText(/Next →/i)
 
-    const input1 = getByLabelText(/1/i)
-    const input2 = getByLabelText(/2/i)
-    const input3 = getByLabelText(/3/i)
+    // await waitFor(() => expect(nextButton).toBeDisabled())
+
+    fireEvent.input(getByLabelText(/1/i), {target: {value: 'a'}})
+    fireEvent.input(getByLabelText(/2/i), {target: {value: 'b'}})
+    fireEvent.input(getByLabelText(/3/i), {target: {value: 'c'}})
 
     // I need the user interaction since I'm checking also if the input is dirty or not to enable the Next button
-    user.type(input1, 'a')
-    user.type(input2, 'b')
-    user.type(input3, 'c')
 
     await waitFor(() => {
       expect(nextButton).not.toBeDisabled()
