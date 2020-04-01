@@ -72,7 +72,7 @@ export default function SecurityPack({rpc = rpcModule}: SecurityPackProps) {
         <Heading>Security Pack</Heading>
         <P className="text-center">
           Please save these 24 words securely! This will allow you to recreate
-          your identity ID
+          your account
         </P>
         <Content className="flex-wrap flex w-full">
           {mnemonic.length === 0 ? (

@@ -20,6 +20,7 @@ nextRouter.useRouter = jest.fn()
 nextRouter.useRouter.mockImplementation(() => ({
   route: '/welcome/create-password',
   pathname: '/welcome/create-password',
+  replace: jest.fn(),
 }))
 
 afterEach(() => {
@@ -29,7 +30,8 @@ afterEach(() => {
 
 const mockGetMnemonicList = jest.fn(['a', 'b', 'c'])
 const mockSetProfile = jest.fn()
-const mockHasProfile = jest.fn(true)
+const mockHasProfile = jest.fn()
+mockHasProfile.mockReturnValue(false)
 const mockClearProfile = jest.fn()
 const mockInitProfile = jest.fn()
 

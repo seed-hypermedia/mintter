@@ -6,10 +6,12 @@ import {NextButton, BackButton} from '../../components/welcome-buttons'
 import Footer from '../../components/footer'
 import Content from '../../components/content'
 import Input from '../../components/input'
+import Textarea from '../../components/textarea'
 import {useForm} from 'react-hook-form'
 import {useRouter} from 'next/router'
 import {useProfile} from '../../shared/profileContext'
 import {useFocus} from '../../shared/hooks'
+import {css} from 'emotion'
 
 export default function EditProfile() {
   const {register, handleSubmit, errors, formState} = useForm({
@@ -22,7 +24,6 @@ export default function EditProfile() {
   const {profile, setProfile} = useProfile()
 
   async function onSubmit(data) {
-    console.log('profile ==> ', profile)
     try {
       await setProfile(data)
       router.replace('/welcome/complete')
@@ -36,23 +37,23 @@ export default function EditProfile() {
       <Container>
         <Heading>Edit your profile</Heading>
         <P className="text-center">
-          Link your personal data with your new identity
+          Link your personal data with your new account
         </P>
         <Content className="flex-wrap flex w-full flex-col md:flex-row">
-          {/* <div className="pr-8 order-12 md:order-none flex mt-6 md:mt-0 flex-col">
+          <div className="pr-8 order-12 md:order-none flex mt-6 md:mt-0 flex-col">
             <label
               className="block text-body-muted text-xs font-semibold mb-1"
               htmlFor="avatar"
             >
               Avatar
             </label>
-            <div className="avatar-container overflow-hidden relative bg-background-muted rounded-sm">
+            <div className="avatar-container overflow-hidden relative bg-background-muted border bg-background-muted border-muted rounded">
               <input
                 className="absolute bottom-0 left-0 opacity-0 hover:opacity-100 transition-opacity ease-in-out duration-300 m-4"
                 type="file"
               />
             </div>
-          </div> */}
+          </div>
           <div className="flex-col flex flex-1">
             <div className="flex-1 relative">
               <label
@@ -100,16 +101,25 @@ export default function EditProfile() {
             <div className="flex-1 relative mt-10">
               <label
                 className="block text-body-muted text-xs font-semibold mb-1"
-                htmlFor="twitterUsername"
+                htmlFor="bio"
               >
-                Twitter
+                Bio
               </label>
-              <Input
-                name="twitterUsername"
+              <Textarea
+                name="bio"
                 ref={register}
-                type="text"
-                placeholder="Twitter handle including @ symbol (@YOUR_USERNAME)"
+                placeholder="A little bit about yourself..."
+                className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body ${errors.bio &&
+                  'border-danger'} ${css`
+                  min-height: 100px;
+                `}`}
               />
+
+              {errors.bio && (
+                <p className="text-danger text-xs absolute left-0 mt-1">
+                  {errors.bio.message}
+                </p>
+              )}
             </div>
           </div>
         </Content>

@@ -66,7 +66,7 @@ export default function WelcomeProvider({
       }
     }
 
-    // checkProfile()
+    checkProfile()
   }, [])
 
   const activeStep = steps.findIndex(s => s.url === router.pathname)

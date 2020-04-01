@@ -2,7 +2,6 @@ import {
   createContext,
   useContext,
   useEffect,
-  useRef,
   MutableRefObject,
   useState,
 } from 'react'
@@ -54,16 +53,13 @@ export default function ProfileProvider({
   async function setProfile({
     username,
     email,
-    twitterUsername,
   }: {
     username: string
     email: string
-    twitterUsername: string
   }) {
     const profile = await getProfile()
     username.length > 1 && profile.setUsername(username)
     email.length > 1 && profile.setEmail(email)
-    twitterUsername.length > 1 && profile.setTwitterUsername(twitterUsername)
     const req = new UpdateProfileRequest()
     req.setProfile(profile)
     try {
