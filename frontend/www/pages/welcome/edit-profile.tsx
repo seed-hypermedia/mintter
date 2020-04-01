@@ -63,6 +63,7 @@ export default function EditProfile() {
                 Username
               </label>
               <Input
+                id="username"
                 name="username"
                 ref={e => {
                   register(e)
@@ -80,6 +81,7 @@ export default function EditProfile() {
                 Email
               </label>
               <Input
+                id="email"
                 name="email"
                 ref={register({
                   pattern: {
@@ -93,7 +95,10 @@ export default function EditProfile() {
               />
 
               {errors.email && (
-                <p className="text-danger text-xs absolute left-0 mt-1">
+                <p
+                  role="alert"
+                  className="text-danger text-xs absolute left-0 mt-1"
+                >
                   {errors.email.message}
                 </p>
               )}
@@ -106,6 +111,7 @@ export default function EditProfile() {
                 Bio
               </label>
               <Textarea
+                id="bio"
                 name="bio"
                 ref={register}
                 placeholder="A little bit about yourself..."
@@ -114,12 +120,6 @@ export default function EditProfile() {
                   min-height: 100px;
                 `}`}
               />
-
-              {errors.bio && (
-                <p className="text-danger text-xs absolute left-0 mt-1">
-                  {errors.bio.message}
-                </p>
-              )}
             </div>
           </div>
         </Content>
