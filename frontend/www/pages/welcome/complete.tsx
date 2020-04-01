@@ -15,37 +15,30 @@ export default function WelcomeIndex() {
   const router = useRouter()
   const {dispatch} = useWelcome()
   const {profile} = useProfile()
-  console.log('WelcomeIndex -> profile', profile)
 
   function handleNext() {
     dispatch({type: 'reset'})
     router.push('/app/library')
   }
 
-  useEffect(() => {
-    //generate QR
-  }, [])
-
   return (
     <>
       <Container className="lg:flex-1">
         <Heading>Complete!</Heading>
         <P>
-          Here's your new Mintter Profile. Please share it with others and the
-          world!!
+          you just create your Mintter account!. Please share it with others and
+          the world!!
         </P>
-        {profile && (
+        {/* {profile && (
           <div className="bg-white p-2 rounded m-8">
-            {profile && profile.current && (
-              <QRCode
-                value={profile.current.getPeerId()}
-                size={320}
-                logo="/logo.png"
-                logoWidth={320 * 0.3}
-              />
-            )}
+            <QRCode
+              value={profile.getPeerId()}
+              size={320}
+              logo="/logo.png"
+              logoWidth={320 * 0.3}
+            />
           </div>
-        )}
+        )} */}
       </Container>
       <Footer className="flex-none">
         <Container>
