@@ -21,7 +21,7 @@ export default function EditProfile() {
   const {focusFirst} = useFocus()
 
   const router = useRouter()
-  const {profile, setProfile} = useProfile()
+  const {setProfile} = useProfile()
 
   async function onSubmit(data) {
     try {
