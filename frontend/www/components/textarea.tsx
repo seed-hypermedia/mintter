@@ -21,18 +21,16 @@ const Textarea = forwardRef(
       onChange && onChange(e.target.value)
     }
 
-    function handleInput(e) {}
+    // function handleInput(e) {}
 
-    React.useEffect(() => {
-      const textarea = innerRef.current
-      textarea.addEventListener('input', handleInput)
+    // React.useEffect(() => {
+    //   const textarea = innerRef.current
+    //   textarea.addEventListener('input', handleInput)
 
-      return () => {
-        textarea.removeEventListener('input', handleInput)
-      }
-    }, [])
-
-    console.log('ref => ', ref)
+    //   return () => {
+    //     textarea.removeEventListener('input', handleInput)
+    //   }
+    // }, [])
 
     React.useEffect(() => {
       const txt = innerRef.current
