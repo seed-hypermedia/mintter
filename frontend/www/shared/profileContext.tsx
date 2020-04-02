@@ -59,13 +59,16 @@ export default function ProfileProvider({
   async function setProfile({
     username,
     email,
+    bio,
   }: {
     username: string
     email: string
+    bio: string
   }) {
     const profile = await getProfile()
     username.length > 1 && profile.setUsername(username)
     email.length > 1 && profile.setEmail(email)
+    bio.length > 1 && profile.setBio(bio)
     const req = new UpdateProfileRequest()
     req.setProfile(profile)
     try {

@@ -12,16 +12,9 @@ import Container from '../../components/container'
 import {useProfile} from '../../shared/profileContext'
 
 export default function Settings() {
-  const {profile, getProfile} = useProfile()
-  // const [loading, setLoading] = useState<boolean>(true)
-  const {
-    register,
-    handleSubmit,
-    errors,
-    formState,
-    setValue,
-    getValues,
-  } = useForm({
+  const {getProfile, setProfile} = useProfile()
+  const [success, setSuccess] = React.useState<boolean>(false)
+  const {register, handleSubmit, errors, formState, setValue} = useForm({
     mode: 'onChange',
   })
 
@@ -29,19 +22,23 @@ export default function Settings() {
     init()
   }, [])
 
-  function onSubmit(data) {
-    console.log('SUBMIT', data)
+  async function onSubmit(data) {
+    try {
+      await setProfile(data)
+      setSuccess(true)
+      setTimeout(() => {
+        setSuccess(false)
+      }, 2000)
+    } catch (err) {
+      console.error('Settings::editProfile Error ==> ', err)
+    }
   }
 
   async function init() {
     const values = await (await getProfile()).toObject()
-    console.log('init -> values', values)
 
-    setValue([
-      {username: 'horacio'},
-      {email: 'hi@horacioh.com'},
-      {bio: 'a short bio'},
-    ])
+    const data = Object.keys(values).map(v => ({[v]: values[v]}))
+    setValue(data)
   }
 
   return (
@@ -126,7 +123,7 @@ export default function Settings() {
                   <Textarea
                     id="bio"
                     name="bio"
-                    ref={register}
+                    ref={e => register(e)}
                     placeholder="A little bit about yourself..."
                     className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body ${errors.bio &&
                       'border-danger'} ${css`
@@ -134,20 +131,20 @@ export default function Settings() {
                     `}`}
                   />
                 </div>
-                <div className="flex-1 relative mt-10">
+                <div className="flex-1 flex items-center relative mt-10">
                   <button
                     type="submit"
                     disabled={!formState.isValid}
                     className={`text-success border px-4 py-2 rounded transition duration-200 ${
                       !formState.isValid
-                        ? 'border-transparent opacity-50 hover:bg-transparent cursor-not-allowed'
+                        ? 'opacity-50 hover:bg-transparent cursor-not-allowed'
                         : 'border-success opacity-100 hover:bg-success hover:text-white'
                     }`}
                   >
                     Save
                   </button>
                   <AnimatePresence>
-                    {false && (
+                    {success && (
                       <motion.div
                         initial={{opacity: 0, y: 10}}
                         animate={{opacity: 1, y: 0}}
