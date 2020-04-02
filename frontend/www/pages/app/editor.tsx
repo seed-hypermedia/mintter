@@ -5,7 +5,7 @@ import {Slate, Editable, ReactEditor} from 'slate-react'
 import {Editor, Portal, Toolbar} from '@mintter/editor'
 
 import isHotkey from 'is-hotkey'
-import Sidebar from '../../components/editorSidebar'
+
 import Seo from '../../components/seo'
 import Leaf from '../../components/leaf'
 import Element from '../../components/elements'
@@ -186,7 +186,6 @@ export default function EditorPage(): JSX.Element {
     <Layout className="flex">
       <Seo title="Editor | Mintter" />
 
-      <Sidebar />
       <div className="flex-1 overflow-y-auto pt-12" ref={wrapperRef}>
         <Container className="max-w-3xl">
           <div className="flex-1">
@@ -200,7 +199,7 @@ export default function EditorPage(): JSX.Element {
             >
               {
                 <Toolbar
-                  className={`bg-gray-900 rounded overflow-hidden py-1 px-2 shadow-xs z-40 text-gray-300 absolute opacity-0 transition transition-opacity duration-500 ease-in-out ${css`
+                  className={`bg-gray-900 rounded overflow-hidden py-1 px-2 shadow-xs z-40 text-body absolute opacity-0 transition transition-opacity duration-500 ease-in-out ${css`
                     transform: translateY(-8px);
                     top: -99999px;
                     left: -999999px;
@@ -256,7 +255,7 @@ export default function EditorPage(): JSX.Element {
                     value={title}
                     onChange={t => setTitle(t)}
                     placeholder="Let's do this..."
-                    className={`text-4xl font-bold leading-10 ${css`
+                    className={`text-4xl text-heading font-bold leading-10 ${css`
                       min-height: 56px;
                     `}`}
                   />
@@ -264,7 +263,7 @@ export default function EditorPage(): JSX.Element {
                     value={description}
                     placeholder="What is this document about?"
                     onChange={t => setDescription(t)}
-                    className={`text-lg font-light text-gray-700 italic ${css`
+                    className={`text-lg font-light text-heading-muted italic ${css`
                       min-height: 28px;
                     `}`}
                   />
@@ -294,7 +293,7 @@ export default function EditorPage(): JSX.Element {
                         }}
                         key={format}
                         className={`py-1 px-2 rounded-sm ${
-                          i === index ? 'bg-blue-200' : 'bg-transparent'
+                          i === index ? 'bg-info' : 'bg-transparent'
                         } ${css`
                           &:hover {
                             cursor: pointer;

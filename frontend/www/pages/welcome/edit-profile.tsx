@@ -49,6 +49,9 @@ export default function EditProfile() {
             </label>
             <div className="avatar-container overflow-hidden relative bg-background-muted border bg-background-muted border-muted rounded">
               <input
+                name="avatar"
+                id="avatar"
+                ref={register}
                 className="absolute bottom-0 left-0 opacity-0 hover:opacity-100 transition-opacity ease-in-out duration-300 m-4"
                 type="file"
               />

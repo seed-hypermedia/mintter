@@ -8,7 +8,7 @@ export default function Sidebar({children = null, ...props}) {
   const router = useRouter()
   return (
     <React.Fragment>
-      <div className="fixed flex w-full top-0 left-0 z-40 text-white bg-gray-800 p-3 lg:hidden">
+      <div className="fixed flex w-full top-0 left-0 z-40 p-3 lg:hidden">
         <button
           onClick={() => setOpen(!open)}
           aria-pressed={open}
@@ -72,8 +72,8 @@ function NavItem({
 }: NavItemProps) {
   return (
     <div
-      className={`p-3 bg-gray-700 transition-all ease-in-out duration-200 ${
-        isActive ? 'font-bold' : 'hover:bg-gray-600'
+      className={`p-3 transition-all ease-in-out duration-200 ${
+        isActive ? 'font-bold' : 'hover:bg-muted'
       } ${className}`}
       {...props}
     >
@@ -87,7 +87,7 @@ function NavItem({
 function Wrapper({children, open, ...props}) {
   return (
     <div
-      className={`absolute top-0 left-0 z-30 lg:relative w-full max-w-xs text-gray-100 bg-gray-700 h-full overflow-y-auto ${css`
+      className={`absolute top-0 left-0 z-30 lg:relative w-full max-w-xs text-body bg-background-muted h-full overflow-y-auto ${css`
         transition: all 0.25s;
         transform: translateX(${open ? '0' : '-100%'});
         @media (min-width: 1024px) {
