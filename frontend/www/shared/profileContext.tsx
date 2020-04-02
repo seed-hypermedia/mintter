@@ -19,6 +19,7 @@ interface ProfileContextValue {
   setProfile?: (data: Partial<Profile.AsObject>) => void
   initProfile?: (data: InitProfileRequest.AsObject) => void
   hasProfile?: () => Promise<boolean>
+  getProfile?: () => Promise<Profile>
 }
 
 export const ProfileContext = createContext<ProfileContextValue>(null)
@@ -37,12 +38,15 @@ export default function ProfileProvider({
   const [profile, setLocalProfile] = useState<Profile>(propProfile)
 
   useEffect(() => {
-    rpc.getProfile(new GetProfileRequest()).then(data => {
-      if (!data.hasProfile()) {
-        const resp = data.getProfile()
-        setLocalProfile(resp)
-      }
-    })
+    rpc
+      .getProfile(new GetProfileRequest())
+      .then(data => {
+        if (!data.hasProfile()) {
+          const resp = data.getProfile()
+          setLocalProfile(resp)
+        }
+      })
+      .catch(err => console.error('ProfileProvider::getProfile Error => ', err))
   }, [])
 
   async function getProfile() {
@@ -91,7 +95,14 @@ export default function ProfileProvider({
   }
   return (
     <ProfileContext.Provider
-      value={{profile, setProfile, initProfile, hasProfile, ...rest}}
+      value={{
+        profile,
+        setProfile,
+        initProfile,
+        hasProfile,
+        getProfile,
+        ...rest,
+      }}
     >
       {children}
     </ProfileContext.Provider>

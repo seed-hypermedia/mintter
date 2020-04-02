@@ -5,20 +5,20 @@ export default function DocumentList() {
   return (
     <div>
       <div className="flex items-center">
-        <h2 className="text-2xl text-heading font-normal flex-1">
+        <h2 className="text-2xl text-heading text-heading font-normal flex-1">
           My Documents
         </h2>
         <div>
           <button>
-            <AppsOutlinedIcon />
+            <AppsOutlinedIcon className="text-primary" />
           </button>
           <button>
-            <FormatListBulletedOutlinedIcon />
+            <FormatListBulletedOutlinedIcon className="text-primary" />
           </button>
         </div>
       </div>
       <div>
-        <p>List here</p>
+        <p className="text-body">List here</p>
       </div>
     </div>
   )

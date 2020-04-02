@@ -51,7 +51,7 @@ const Textarea = forwardRef(
         <textarea
           ref={r => {
             innerRef.current = r
-            ref(r)
+            ref && ref(r)
           }}
           {...props}
           value={text}
