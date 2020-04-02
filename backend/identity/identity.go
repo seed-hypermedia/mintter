@@ -22,6 +22,7 @@ type Profile struct {
 	Username        string
 	Email           string
 	TwitterUsername string
+	Bio             string
 }
 
 // FromSeed generates a profile based on seed.

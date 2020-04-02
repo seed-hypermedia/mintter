@@ -67,10 +67,14 @@ func TestInitProfile(t *testing.T) {
 		resp, err := srv.UpdateProfile(ctx, &proto.UpdateProfileRequest{
 			Profile: &proto.Profile{
 				Username: "burdiyan",
+				Bio:      "fake-bio",
+				Email:    "foo@example.com",
 			},
 		})
 		require.NoError(t, err)
 		require.Equal(t, "burdiyan", resp.Profile.Username)
+		require.Equal(t, "fake-bio", resp.Profile.Bio)
+		require.Equal(t, "foo@example.com", resp.Profile.Email)
 	})
 }
 

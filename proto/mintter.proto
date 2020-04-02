@@ -81,4 +81,7 @@ message Profile {
 
   // Optional. Twitter handle including @ symbol.
   string twitter_username = 4;
+
+  // Optional. Free-form bio. Text only.
+  string bio = 5;
 }
