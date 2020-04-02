@@ -1,5 +1,12 @@
 # @mintter/site
 
+## 0.2.14
+
+### Patch Changes
+
+- 6efc586: theming on welcome screens
+- ce446d9: tests passing! 💪
+
 ## 0.2.13
 
 ### Patch Changes
