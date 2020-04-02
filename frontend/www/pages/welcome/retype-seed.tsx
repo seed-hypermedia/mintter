@@ -32,11 +32,6 @@ export default function RetypeSeed() {
     setIdxs(getRandomElements(mnemonicList))
   }, [])
 
-  // console.log('formState ==> ', formState)
-  // const isDisabled = formState
-  //   ? !formState.isValid
-  //   : true
-  // console.log('isDisabled ==> ', isDisabled)
   async function onSubmit() {
     await router.replace('/welcome/create-password')
   }

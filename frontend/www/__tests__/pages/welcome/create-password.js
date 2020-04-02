@@ -1,14 +1,6 @@
 // should <NextButton /> be disabled
 // should form be valid if passwords match
-import {
-  render,
-  waitFor,
-  cleanup,
-  waitForElementToBeRemoved,
-  queryAllByRole,
-  fireEvent,
-} from '@testing-library/react'
-import user from '@testing-library/user-event'
+import {render, waitFor, cleanup, fireEvent} from '@testing-library/react'
 import CreatePassword from '../../../pages/welcome/create-password'
 import WelcomeProvider from '../../../shared/welcomeProvider'
 import ProfileProvider from '../../../shared/profileContext'
@@ -83,19 +75,14 @@ describe('<CreatePassword />', () => {
 
     const nextButton = queryByText(/Next →/i)
 
-    const input1 = queryByTestId('first')
-    const input2 = queryByTestId('second')
+    await waitFor(() =>
+      fireEvent.input(queryByTestId('first'), {target: {value: fakepassword}}),
+    )
+    await waitFor(() =>
+      fireEvent.input(queryByTestId('second'), {target: {value: fakepassword}}),
+    )
 
-    user.type(input1, fakepassword)
-    user.click(nextButton)
-    await waitFor(() => wait(100))
-
-    const error = queryByRole('alert')
-    await waitFor(() => expect(error).toBeInTheDocument())
-
-    user.type(input2, fakepassword)
-    await waitFor(() => wait(100))
-    user.click(nextButton)
+    fireEvent.click(nextButton)
 
     await waitFor(() => expect(mockInitProfile).toHaveBeenCalledTimes(1))
   })

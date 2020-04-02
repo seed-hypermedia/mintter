@@ -14,6 +14,7 @@ import {useWelcome} from '../../shared/welcomeProvider'
 import {useState} from 'react'
 import ErrorMessage from '../../components/errorMessage'
 import {useProfile} from '../../shared/profileContext'
+import {useFocus} from '../../shared/hooks'
 
 export default function CreatePassword() {
   const {register, watch, handleSubmit, errors, formState} = useForm({
@@ -24,8 +25,8 @@ export default function CreatePassword() {
   const {initProfile} = useProfile()
 
   const router = useRouter()
+  const {focusFirst} = useFocus()
   const psswd = watch('walletPassword')
-  // console.log('psswd', psswd)
 
   const {
     state: {mnemonicList, aezeedPassphrase},
@@ -62,7 +63,10 @@ export default function CreatePassword() {
               data-testid="first"
               type="password"
               placeholder="******************"
-              ref={register({required: true, minLength: 8})}
+              ref={e => {
+                register({required: true, minLength: 8})(e)
+                focusFirst(e)
+              }}
             />
             {errors.walletPassword && (
               <p

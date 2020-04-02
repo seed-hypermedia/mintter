@@ -63,6 +63,13 @@ function renderComponent() {
 }
 
 describe('<RetypeSeed />', () => {
+  test('should focus the first input on enter', async () => {
+    const {getByLabelText} = renderComponent()
+
+    await waitFor(() =>
+      expect(getByLabelText(/1/i)).toEqual(document.activeElement),
+    )
+  })
   test('should show input error when value does not match', async () => {
     const {getByLabelText, queryByRole, getByText} = renderComponent()
 
