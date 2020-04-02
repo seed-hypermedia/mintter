@@ -8,11 +8,9 @@ interface TextareaProps extends React.HTMLAttributes<HTMLTextAreaElement> {
 
 // eslint-disable-next-line react/display-name
 const Textarea = forwardRef(
-  (
-    {value = '', onChange = null, className = '', ...props}: TextareaProps,
-    ref,
-  ) => {
-    const [text, setText] = React.useState<string>(value)
+  ({value, onChange = null, className = '', ...props}: TextareaProps, ref) => {
+    const v = ref ? null : value || ''
+    const [text, setText] = React.useState<string>(v)
     const innerRef = React.useRef<HTMLTextAreaElement>()
     const divRef = React.useRef<HTMLDivElement>()
 
@@ -59,6 +57,7 @@ const Textarea = forwardRef(
           className={`resize-none overflow-hidden text-base leading-normal w-full outline-none bg-transparent ${css`
             word-wrap: break-word;
           `} ${className}`}
+          {...props}
         />
         <div
           ref={divRef}
