@@ -179,6 +179,9 @@ export class Profile extends jspb.Message {
   getTwitterUsername(): string;
   setTwitterUsername(value: string): void;
 
+  getBio(): string;
+  setBio(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Profile.AsObject;
   static toObject(includeInstance: boolean, msg: Profile): Profile.AsObject;
@@ -193,6 +196,7 @@ export namespace Profile {
     username: string,
     email: string,
     twitterUsername: string,
+    bio: string,
   }
 }
 

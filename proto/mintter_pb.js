@@ -1528,7 +1528,8 @@ proto.com.mintter.Profile.toObject = function(includeInstance, msg) {
     peerId: jspb.Message.getFieldWithDefault(msg, 1, ""),
     username: jspb.Message.getFieldWithDefault(msg, 2, ""),
     email: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    twitterUsername: jspb.Message.getFieldWithDefault(msg, 4, "")
+    twitterUsername: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    bio: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
   if (includeInstance) {
@@ -1580,6 +1581,10 @@ proto.com.mintter.Profile.deserializeBinaryFromReader = function(msg, reader) {
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setTwitterUsername(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setBio(value);
       break;
     default:
       reader.skipField();
@@ -1635,6 +1640,13 @@ proto.com.mintter.Profile.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       4,
+      f
+    );
+  }
+  f = message.getBio();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
       f
     );
   }
@@ -1710,6 +1722,24 @@ proto.com.mintter.Profile.prototype.getTwitterUsername = function() {
  */
 proto.com.mintter.Profile.prototype.setTwitterUsername = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional string bio = 5;
+ * @return {string}
+ */
+proto.com.mintter.Profile.prototype.getBio = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.mintter.Profile} returns this
+ */
+proto.com.mintter.Profile.prototype.setBio = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 

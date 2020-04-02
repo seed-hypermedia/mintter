@@ -57,7 +57,11 @@ func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*
 
 	return &proto.GetProfileResponse{
 		Profile: &proto.Profile{
-			PeerId: prof.PeerID.String(),
+			PeerId:          prof.PeerID.String(),
+			Username:        prof.Username,
+			Email:           prof.Email,
+			TwitterUsername: prof.TwitterUsername,
+			Bio:             prof.Bio,
 		},
 	}, nil
 }
@@ -85,6 +89,10 @@ func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileReque
 		prof.TwitterUsername = in.Profile.TwitterUsername
 	}
 
+	if in.Profile.Bio != "" {
+		prof.Bio = in.Profile.Bio
+	}
+
 	if err := s.storeProfile(prof); err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to store profile: %v", err)
 	}
@@ -95,6 +103,7 @@ func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileReque
 			Username:        prof.Username,
 			TwitterUsername: prof.TwitterUsername,
 			Email:           prof.Email,
+			Bio:             prof.Bio,
 		},
 	}, nil
 }
