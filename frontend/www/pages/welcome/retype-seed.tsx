@@ -48,9 +48,11 @@ export default function RetypeSeed() {
           </P>
           <P className="text-center font-bold">{`${idxs[0] + 1}, ${idxs[1] +
             1} & ${idxs[2] + 1}`}</P>
-          <P className="text-center">{`(${mnemonicList[idxs[0]]}, ${
-            mnemonicList[idxs[1]]
-          }, ${mnemonicList[idxs[2]]})`}</P>
+          {process.env.NODE_ENV === 'development' && (
+            <P className="text-center">{`(${mnemonicList[idxs[0]]}, ${
+              mnemonicList[idxs[1]]
+            }, ${mnemonicList[idxs[2]]})`}</P>
+          )}
           <Content className="flex-wrap flex w-full">
             <div className="flex flex-col w-full items-center">
               {idxs.map((n, index) => {

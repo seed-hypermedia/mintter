@@ -16,11 +16,23 @@ export default function Settings() {
   const [success, setSuccess] = React.useState<boolean>(false)
   const {register, handleSubmit, errors, formState, setValue} = useForm({
     mode: 'onChange',
+    defaultValues: {
+      username: '',
+      email: '',
+      bio: '',
+    },
   })
 
   useEffect(() => {
     init()
   }, [])
+
+  async function init() {
+    const values = await (await getProfile()).toObject()
+
+    const data = Object.keys(values).map(v => ({[v]: values[v]}))
+    setValue(data)
+  }
 
   async function onSubmit(data) {
     try {
@@ -32,13 +44,6 @@ export default function Settings() {
     } catch (err) {
       console.error('Settings::editProfile Error ==> ', err)
     }
-  }
-
-  async function init() {
-    const values = await (await getProfile()).toObject()
-
-    const data = Object.keys(values).map(v => ({[v]: values[v]}))
-    setValue(data)
   }
 
   return (

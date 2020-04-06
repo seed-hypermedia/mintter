@@ -10,7 +10,7 @@ import Seo from '../../components/seo'
 import Leaf from '../../components/leaf'
 import Element from '../../components/elements'
 import useCustomEditor from '../../components/useEditor'
-import DocumentStatus from '../../components/documentStatus'
+import EditorHeader from '../../components/editor-header'
 import {DebugValue} from '../../components/debug'
 import {css} from 'emotion'
 import {shortcutTypes} from '@mintter/slate-plugin-with-shortcuts'
@@ -186,10 +186,21 @@ export default function EditorPage(): JSX.Element {
     <Layout className="flex">
       <Seo title="Editor | Mintter" />
 
-      <div className="flex-1 overflow-y-auto pt-12" ref={wrapperRef}>
-        <Container className="max-w-3xl">
-          <div className="flex-1">
-            <DocumentStatus />
+      <div className="flex-1 overflow-y-auto pt-4" ref={wrapperRef}>
+        <EditorHeader />
+        <Container className="flex">
+          <div
+            className={`w-full pr-4 sticky top-0 self-start mr-8 ${css`
+              max-width: 300px;
+            `}`}
+          >
+            <div className="bg-muted rounded p-4">
+              <p className="font-bold text-heading text-xxl">
+                {title || 'Untitled document'}
+              </p>
+            </div>
+          </div>
+          <div className="flex-1 max-w-3xl">
             <Slate
               editor={editor}
               value={value}
@@ -199,7 +210,7 @@ export default function EditorPage(): JSX.Element {
             >
               {
                 <Toolbar
-                  className={`bg-gray-900 rounded overflow-hidden py-1 px-2 shadow-xs z-40 text-body absolute opacity-0 transition transition-opacity duration-500 ease-in-out ${css`
+                  className={`bg-background rounded overflow-hidden py-1 px-2 shadow-xs z-40 text-body absolute opacity-0 transition transition-opacity duration-500 ease-in-out ${css`
                     transform: translateY(-8px);
                     top: -99999px;
                     left: -999999px;
@@ -243,25 +254,25 @@ export default function EditorPage(): JSX.Element {
                       position: absolute;
                       bottom: 0;
                       left: 0;
-                      width: 40%;
-                      max-width: 300px;
-                      height: 2px;
+                      width: 50%;
+                      max-width: 360px;
+                      height: 1px;
                       z-index: 20;
-                      background-color: #222;
+                      background-color: var(--color-muted-hover);
                     }
                   `}`}
                 >
                   <Textarea
                     value={title}
                     onChange={t => setTitle(t)}
-                    placeholder="Let's do this..."
+                    placeholder="Untitled document"
                     className={`text-4xl text-heading font-bold leading-10 ${css`
                       min-height: 56px;
                     `}`}
                   />
                   <Textarea
                     value={description}
-                    placeholder="What is this document about?"
+                    placeholder="+ Add a subtitle"
                     onChange={t => setDescription(t)}
                     className={`text-lg font-light text-heading-muted italic ${css`
                       min-height: 28px;

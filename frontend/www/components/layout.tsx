@@ -16,7 +16,7 @@ export default function Layout({
   animate = 'enter',
   exit = 'exit',
 }: LayoutProps) {
-  const {theme, toggleTheme} = useTheme()
+  const {theme} = useTheme()
   return (
     <motion.div
       initial={initial}
@@ -24,9 +24,6 @@ export default function Layout({
       exit={exit}
       className={`fixed overflow-y-scroll w-screen h-screen flex bg-background content-transition ${theme} ${className}`}
     >
-      <div className="absolute right-0 top-0 p-4">
-        <ThemeToggle isDark={theme === 'theme-dark'} toggle={toggleTheme} />
-      </div>
       {children}
     </motion.div>
   )
