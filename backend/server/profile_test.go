@@ -3,6 +3,7 @@ package server_test
 import (
 	"context"
 	"encoding/json"
+	"mintter/backend/server"
 	"mintter/proto"
 	"os"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 
 	peer "github.com/libp2p/go-libp2p-peer"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -33,6 +35,14 @@ func TestGetProfile(t *testing.T) {
 	ctx := context.Background()
 
 	resp, err := srv.GetProfile(ctx, &proto.GetProfileRequest{})
+	require.NoError(t, err)
+	require.NotEqual(t, "", resp.Profile.PeerId)
+
+	// Server must be able to load initialized profile after restart.
+	srv, err = server.NewServer(srv.RepoPath(), zap.NewNop())
+	require.NoError(t, err)
+
+	resp, err = srv.GetProfile(ctx, &proto.GetProfileRequest{})
 	require.NoError(t, err)
 	require.NotEqual(t, "", resp.Profile.PeerId)
 }

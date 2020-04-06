@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/ed25519"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -12,11 +13,75 @@ import (
 	"github.com/textileio/go-threads/core/thread"
 )
 
+// PubKey wraps crypto.PubKey to enable JSON encoding.
+type PubKey struct {
+	crypto.PubKey
+}
+
+// MarshalJSON implements json.Marshaler.
+func (pk PubKey) MarshalJSON() ([]byte, error) {
+	raw, err := crypto.MarshalPublicKey(pk)
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(raw)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (pk *PubKey) UnmarshalJSON(data []byte) error {
+	var in []byte
+	if err := json.Unmarshal(data, &in); err != nil {
+		return err
+	}
+
+	k, err := crypto.UnmarshalPublicKey(in)
+	if err != nil {
+		return err
+	}
+
+	pk.PubKey = k
+
+	return nil
+}
+
+// PrivKey wraps crypto.PrivKey to enable JSON encoding.
+type PrivKey struct {
+	crypto.PrivKey
+}
+
+// MarshalJSON implements json.Marshaler.
+func (pk PrivKey) MarshalJSON() ([]byte, error) {
+	raw, err := crypto.MarshalPrivateKey(pk)
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(raw)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (pk *PrivKey) UnmarshalJSON(data []byte) error {
+	var in []byte
+	if err := json.Unmarshal(data, &in); err != nil {
+		return err
+	}
+
+	k, err := crypto.UnmarshalPrivateKey(in)
+	if err != nil {
+		return err
+	}
+
+	pk.PrivKey = k
+
+	return nil
+}
+
 // Profile is the main identity of a user.
 type Profile struct {
 	ThreadID thread.ID
-	PubKey   crypto.PubKey
-	PrivKey  crypto.PrivKey
+	PubKey   PubKey
+	PrivKey  PrivKey
 	PeerID   peer.ID
 
 	Username        string
@@ -53,9 +118,9 @@ func FromSeed(seed []byte, idx uint32) (Profile, error) {
 	}
 
 	return Profile{
-		PubKey:   pub,
+		PubKey:   PubKey{pub},
 		PeerID:   peerID,
-		PrivKey:  priv,
+		PrivKey:  PrivKey{priv},
 		ThreadID: threadIDFromPubKey(thread.Raw, pubkey),
 	}, nil
 }
