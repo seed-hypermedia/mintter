@@ -10,7 +10,7 @@ export default function Container({
   ...props
 }: ContainerProps) {
   return (
-    <div className={`container mx-auto p-4 relative ${className}`} {...props}>
+    <div className={`container mx-auto p-4  ${className}`} {...props}>
       {children}
     </div>
   )
