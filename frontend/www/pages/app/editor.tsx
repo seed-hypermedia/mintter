@@ -186,21 +186,28 @@ export default function EditorPage(): JSX.Element {
     <Layout className="flex">
       <Seo title="Editor | Mintter" />
 
-      <div className="flex-1 overflow-y-auto pt-4" ref={wrapperRef}>
+      <div
+        className="flex-1 overflow-y-auto pt-4 overflow-y-scroll"
+        ref={wrapperRef}
+      >
         <EditorHeader />
-        <Container className="flex">
-          <div
-            className={`w-full pr-4 sticky top-0 self-start mr-8 ${css`
-              max-width: 300px;
-            `}`}
-          >
-            <div className="bg-muted rounded p-4">
-              <p className="font-bold text-heading text-xxl">
-                {title || 'Untitled document'}
-              </p>
-            </div>
+        <div
+          className={`float-left w-full pr-4 absolute xl:sticky left-0 top-0 mt-16 self-start mx-4 opacity-0 pointer-events-none xl:opacity-100 xl:pointer-events-auto transition duration-200 ${css`
+            max-width: 300px;
+          `}`}
+        >
+          <div className="">
+            <p className="font-semibold text-heading text-xl">
+              {title || 'Untitled document'}
+            </p>
           </div>
-          <div className="flex-1 max-w-3xl">
+          <DebugValue
+            className="absolute"
+            value={{title, description, value}}
+          />
+        </div>
+        <Container className="mt-8">
+          <div className="flex-1 mx-auto max-w-3xl">
             <Slate
               editor={editor}
               value={value}
@@ -248,7 +255,7 @@ export default function EditorPage(): JSX.Element {
                 `}`}
               >
                 <div
-                  className={`mb-6 pb-6 relative ${css`
+                  className={`mb-12 pb-2 relative ${css`
                     &:after {
                       content: '';
                       position: absolute;
@@ -334,7 +341,6 @@ export default function EditorPage(): JSX.Element {
                 </Portal>
               )}
             </Slate>
-            <DebugValue value={{title, description, value}} />
           </div>
         </Container>
       </div>

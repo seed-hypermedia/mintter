@@ -8,7 +8,7 @@ export default function EditorHeader() {
       <div className="text-primary">
         <Logo width="50px" className="fill-current" />
       </div>
-      <div className="flex-1 h-px bg-muted-hover mx-4 opacity-50"></div>
+      <div className="flex-1"></div>
       <button className="text-muted-hover bg-transparent hover:shadow-lg hover:text-muted-hover p-2 rounded-full shadow transition duration-200">
         <IconEye width="24px" />
       </button>
