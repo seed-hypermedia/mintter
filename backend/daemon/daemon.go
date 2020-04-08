@@ -1,3 +1,4 @@
+// Package daemon is an entrypoint for the Mintter local daemon app.
 package daemon
 
 import (
