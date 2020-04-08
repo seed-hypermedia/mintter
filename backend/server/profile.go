@@ -109,8 +109,6 @@ func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileReque
 }
 
 func (s *Server) storeProfile(prof identity.Profile) error {
-	fmt.Printf("%T\n", prof.PubKey)
-
 	f, err := os.Create(filepath.Join(s.repoPath, "profile.json"))
 	if err != nil {
 		return fmt.Errorf("failed to create profile file: %w", err)
