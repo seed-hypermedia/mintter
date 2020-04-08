@@ -1,3 +1,4 @@
+// Package server implements Mintter HTTP server.
 package server
 
 import (

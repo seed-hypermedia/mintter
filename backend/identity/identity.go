@@ -1,3 +1,4 @@
+// Package identity provides the identity of the user.
 package identity
 
 import (
