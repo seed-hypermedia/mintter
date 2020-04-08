@@ -2,6 +2,6 @@
 
 set -e
 
-redo frontend/all
+redo -j20 frontend/all
 
 yarn dev
