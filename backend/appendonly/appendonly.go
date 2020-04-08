@@ -4,11 +4,10 @@ package appendonly
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"mintter/backend/identity"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -18,6 +17,26 @@ import (
 )
 
 const defaultMultihashCode = multihash.SHA2_256
+
+type head struct {
+	seq  uint64
+	hash string
+}
+
+func (h head) MarshalBinary() ([]byte, error) {
+	hash := []byte(h.hash)
+	out := make([]byte, 8+len(hash))
+	binary.BigEndian.PutUint64(out, h.seq)
+	out = append(out, hash...)
+
+	return out, nil
+}
+
+func (h *head) UnmarshalBinary(data []byte) error {
+	h.seq = binary.BigEndian.Uint64(data)
+	h.hash = string(data[8:])
+	return nil
+}
 
 // Log is a single-writer append-only log.
 type Log struct {
@@ -30,8 +49,8 @@ type Log struct {
 	nowFunc    func() time.Time
 
 	mu      sync.Mutex
+	head    head
 	nextSeq int
-	head    string
 }
 
 // NewLog creates a new Log. The underlying database will have the following keys scheme:
@@ -56,7 +75,7 @@ func NewLog(name string, prof identity.Profile, db datastore.TxnDatastore) (*Log
 	return l, nil
 }
 
-func (l *Log) init() (err error) {
+func (l *Log) init() error {
 	v, err := l.db.Get(l.headKey)
 	if err != nil {
 		if errors.Is(err, datastore.ErrNotFound) {
@@ -65,18 +84,16 @@ func (l *Log) init() (err error) {
 		return err
 	}
 
-	key := strings.Split(string(v), "-")
-	lastSeq, err := strconv.Atoi(key[0])
-	if err != nil {
-		panic("bug: " + err.Error())
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	if err := l.head.UnmarshalBinary(v); err != nil {
+		return err
 	}
 
-	l.mu.Lock()
-	l.nextSeq = lastSeq + 1
-	l.head = key[1]
-	l.mu.Unlock()
+	l.nextSeq = int(l.head.seq + 1)
 
-	return
+	return nil
 }
 
 // Append record to the log.
@@ -101,7 +118,7 @@ func (l *Log) Append(v interface{}) (SignedRecord, error) {
 		Seq:           seq,
 		Author:        l.prof.ID(),
 		MultihashCode: defaultMultihashCode,
-		Previous:      l.head,
+		Previous:      l.head.hash,
 		Content:       content,
 		AppendTime:    l.nowFunc(),
 	}
@@ -118,14 +135,20 @@ func (l *Log) Append(v interface{}) (SignedRecord, error) {
 		return SignedRecord{}, fmt.Errorf("failed to marshal record before storing: %w", err)
 	}
 
-	seqstr := strconv.Itoa(seq)
-	headKey := seqstr + "-" + signed.Hash()
+	newHead := head{seq: uint64(seq), hash: signed.Hash()}
+	binhead, err := newHead.MarshalBinary()
+	if err != nil {
+		return SignedRecord{}, err
+	}
+
+	// Sequence number is encoded as big endian uint64 to sort lexicographically correctly.
+	seqstr := string(binhead[:8])
 
 	if err := txn.Put(l.recordsKey.ChildString(seqstr), data); err != nil {
 		return SignedRecord{}, fmt.Errorf("failed to add record to datastore: %w", err)
 	}
 
-	if err := txn.Put(l.headKey, []byte(headKey)); err != nil {
+	if err := txn.Put(l.headKey, binhead); err != nil {
 		return SignedRecord{}, fmt.Errorf("failed to store head: %w", err)
 	}
 
@@ -133,15 +156,18 @@ func (l *Log) Append(v interface{}) (SignedRecord, error) {
 		return SignedRecord{}, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	l.nextSeq++
-	l.head = signed.Hash()
+	l.head = newHead
+	l.nextSeq = seq + 1
 
 	return signed, nil
 }
 
 // Get record by its seq.
 func (l *Log) Get(seq int) (SignedRecord, error) {
-	v, err := l.db.Get(l.recordsKey.ChildString(strconv.Itoa(seq)))
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, uint64(seq))
+
+	v, err := l.db.Get(l.recordsKey.ChildString(string(b)))
 	if err != nil {
 		return SignedRecord{}, err
 	}
