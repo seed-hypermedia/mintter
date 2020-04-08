@@ -83,11 +83,16 @@ type Profile struct {
 	PubKey   PubKey
 	PrivKey  PrivKey
 	PeerID   peer.ID
+	// TODO(burdiyan): add profile id similar to peer id.
 
 	Username        string
 	Email           string
 	TwitterUsername string
 	Bio             string
+}
+
+func (p Profile) ID() string {
+	return p.PeerID.String()
 }
 
 // FromSeed generates a profile based on seed.
