@@ -1,4 +1,4 @@
-import React, {SyntheticEvent} from 'react'
+import React from 'react'
 
 import {Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
@@ -9,15 +9,9 @@ import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-  InlineCodePlugin,
-  getRenderElement,
-  CODE,
   ListPlugin,
-  ListType,
 } from 'slate-plugins-next'
 import {Editor, Toolbar} from '@mintter/editor'
-
-import isHotkey from 'is-hotkey'
 
 import Seo from '../../components/seo'
 import Leaf from '../../components/leaf'
@@ -26,19 +20,11 @@ import useCustomEditor from '../../components/useEditor'
 import EditorHeader from '../../components/editor-header'
 import {DebugValue} from '../../components/debug'
 import {css} from 'emotion'
-import {shortcutTypes} from '@mintter/slate-plugin-with-shortcuts'
+
 // import {wrapLink, unwrapLink} from '@mintter/slate-plugin-with-links'
 import Textarea from '../../components/textarea'
 import Layout from '../../components/layout'
-import {PARAGRAPH, renderElementList} from 'slate-plugins-next'
-
-export const types = {
-  ...shortcutTypes,
-  TITLE: 'title',
-  DESCRIPTION: 'description',
-  DOCUMENT_HEADER: 'document-header',
-  BLOCK: 'section',
-} as const
+import {PARAGRAPH} from 'slate-plugins-next'
 
 const initialValue = [
   {
