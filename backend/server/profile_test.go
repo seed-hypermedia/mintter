@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	peer "github.com/libp2p/go-libp2p-peer"
+	peer "github.com/libp2p/go-libp2p-core/peer"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -36,7 +36,7 @@ func TestGetProfile(t *testing.T) {
 
 	resp, err := srv.GetProfile(ctx, &proto.GetProfileRequest{})
 	require.NoError(t, err)
-	require.NotEqual(t, "", resp.Profile.PeerId)
+	require.Equal(t, "12D3KooWKLAyRToYcHTQxbrZ4XWtZKbQ29Gz73STf477CGASwX6v", resp.Profile.PeerId)
 
 	// Server must be able to load initialized profile after restart.
 	srv, err = server.NewServer(srv.RepoPath(), zap.NewNop())
@@ -59,10 +59,17 @@ func TestUpdateProfile(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
+
+	require.Equal(t, "12D3KooWKLAyRToYcHTQxbrZ4XWtZKbQ29Gz73STf477CGASwX6v", resp.Profile.PeerId)
 	require.Equal(t, "burdiyan", resp.Profile.Username)
 	require.Equal(t, "foo@example.com", resp.Profile.Email)
 	require.Equal(t, "Fake bio", resp.Profile.Bio)
 	require.NotEqual(t, "", resp.Profile.PeerId)
+
+	get, err := srv.GetProfile(ctx, &proto.GetProfileRequest{})
+	require.NoError(t, err)
+
+	require.Equal(t, resp.Profile, get.Profile)
 }
 
 func TestLoadProfile(t *testing.T) {
@@ -72,7 +79,7 @@ func TestLoadProfile(t *testing.T) {
 	f, err := os.Create(fileName)
 	require.NoError(t, err)
 
-	pid, err := peer.IDB58Decode("QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ")
+	pid, err := peer.IDB58Decode("12D3KooWSEV7CwbRHgq3QnVVYCnrtTHJ76GePELvi25CsJKF3K9U")
 	require.NoError(t, err)
 
 	err = json.NewEncoder(f).Encode(map[string]interface{}{

@@ -1528,8 +1528,7 @@ proto.com.mintter.Profile.toObject = function(includeInstance, msg) {
     peerId: jspb.Message.getFieldWithDefault(msg, 1, ""),
     username: jspb.Message.getFieldWithDefault(msg, 2, ""),
     email: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    twitterUsername: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    bio: jspb.Message.getFieldWithDefault(msg, 5, "")
+    bio: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -1579,10 +1578,6 @@ proto.com.mintter.Profile.deserializeBinaryFromReader = function(msg, reader) {
       msg.setEmail(value);
       break;
     case 4:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setTwitterUsername(value);
-      break;
-    case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.setBio(value);
       break;
@@ -1636,17 +1631,10 @@ proto.com.mintter.Profile.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getTwitterUsername();
-  if (f.length > 0) {
-    writer.writeString(
-      4,
-      f
-    );
-  }
   f = message.getBio();
   if (f.length > 0) {
     writer.writeString(
-      5,
+      4,
       f
     );
   }
@@ -1708,10 +1696,10 @@ proto.com.mintter.Profile.prototype.setEmail = function(value) {
 
 
 /**
- * optional string twitter_username = 4;
+ * optional string bio = 4;
  * @return {string}
  */
-proto.com.mintter.Profile.prototype.getTwitterUsername = function() {
+proto.com.mintter.Profile.prototype.getBio = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -1720,26 +1708,8 @@ proto.com.mintter.Profile.prototype.getTwitterUsername = function() {
  * @param {string} value
  * @return {!proto.com.mintter.Profile} returns this
  */
-proto.com.mintter.Profile.prototype.setTwitterUsername = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
-};
-
-
-/**
- * optional string bio = 5;
- * @return {string}
- */
-proto.com.mintter.Profile.prototype.getBio = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.com.mintter.Profile} returns this
- */
 proto.com.mintter.Profile.prototype.setBio = function(value) {
-  return jspb.Message.setProto3StringField(this, 5, value);
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 

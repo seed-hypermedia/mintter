@@ -13,6 +13,7 @@ require (
 	github.com/golang/protobuf v1.3.5
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/hsanjuan/ipfs-lite v0.1.8
+	github.com/imdario/mergo v0.3.9
 	github.com/improbable-eng/grpc-web v0.12.0
 	github.com/ipfs/go-datastore v0.4.4
 	github.com/ipfs/go-ds-badger v0.2.4
@@ -24,7 +25,6 @@ require (
 	github.com/libp2p/go-libp2p-core v0.3.0
 	github.com/libp2p/go-libp2p-crypto v0.1.0
 	github.com/libp2p/go-libp2p-kad-dht v0.3.0
-	github.com/libp2p/go-libp2p-peer v0.2.0
 	github.com/libp2p/go-libp2p-peerstore v0.1.4
 	github.com/libp2p/go-libp2p-protocol v0.1.0
 	github.com/lightningnetwork/lnd v0.9.0-beta
