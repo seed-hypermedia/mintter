@@ -1,35 +1,49 @@
 import React from 'react'
 import {createEditor, Editor} from 'slate'
-import {withReact, ReactEditor} from 'slate-react'
-import withShortcuts from '@mintter/slate-plugin-with-shortcuts'
-import withLinks from '@mintter/slate-plugin-with-links'
-import {withBreakEmptyReset} from 'slate-plugins-next'
+import {withReact} from 'slate-react'
+import {
+  withBreakEmptyReset,
+  withDeleteStartReset,
+  withShortcuts,
+  withList,
+  withLink,
+  withBlock,
+  ACTION_ITEM,
+  CODE,
+  BLOCKQUOTE,
+  HeadingType,
+  ListType,
+  withPasteHtml,
+} from 'slate-plugins-next'
 import {withMarkdownParser} from '@horacioh/slate-plugin-with-markdown-parser'
 
 const resetOptions = {
   types: [
-    'list-item',
-    'block-quote',
-    'heading-one',
-    'heading-two',
-    'heading-three',
-    'heading-four',
-    'heading-five',
-    'heading-six',
-    'bulleted_list',
-    'numbered_list',
-    'link',
-    'paragraph',
+    ACTION_ITEM,
+    BLOCKQUOTE,
+    CODE,
+    HeadingType.H1,
+    HeadingType.H2,
+    HeadingType.H3,
+    ListType.UL_LIST,
+    ListType.OL_LIST,
+    ListType.LIST_ITEM,
   ],
 }
 
-export default function useEditor(): Editor {
+export default function useEditor(plugins): Editor {
   return React.useMemo(
     () =>
-      withMarkdownParser(
-        withLinks(
-          withShortcuts(
-            withReact(withBreakEmptyReset(resetOptions)(createEditor())),
+      withShortcuts(
+        withList(
+          withBreakEmptyReset(resetOptions)(
+            withDeleteStartReset(resetOptions)(
+              withPasteHtml(plugins)(
+                withBlock(
+                  withMarkdownParser(withLink(withReact(createEditor()))),
+                ),
+              ),
+            ),
           ),
         ),
       ),

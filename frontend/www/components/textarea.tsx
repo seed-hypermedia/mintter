@@ -9,7 +9,6 @@ interface TextareaProps extends React.HTMLAttributes<HTMLTextAreaElement> {
 // eslint-disable-next-line react/display-name
 const Textarea = forwardRef(
   ({value, onChange = null, className = '', ...props}: TextareaProps, ref) => {
-    console.log('ref', ref)
     const v = ref ? null : value || ''
 
     const [text, setText] = React.useState(v)
