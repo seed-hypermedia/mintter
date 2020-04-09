@@ -56,9 +56,15 @@ export default function Element({
       return (
         <ul
           {...attributes}
-          className={`list-disc list-inside ${css`
+          className={`list-inside ${css`
+            list-style-type: disc;
             ul {
+              list-style-type: circle;
               padding-left: 2rem;
+            }
+
+            ul ul {
+              list-style-type: square;
             }
           `}`}
         >
@@ -67,9 +73,46 @@ export default function Element({
       )
     case ListType.OL_LIST:
       return (
-        <ol {...attributes} className="list-inside list-decimal">
+        <ol
+          {...attributes}
+          className={`list-inside ${css`
+            list-style: none;
+            counter-reset: item;
+
+            li {
+              counter-increment: item;
+
+              &:before {
+                margin-right: 8px;
+                content: counters(item, '.') '. ';
+                display: inline-block;
+              }
+            }
+
+            ol {
+              padding-left: 2rem;
+            }
+          `}`}
+        >
           {children}
         </ol>
+      )
+    case ListType.LIST_ITEM:
+      return (
+        <li
+          {...attributes}
+          className={`relative text-body mt-4 ${css`
+            display: list-item;
+            p,
+            div {
+              display: inline-block;
+              margin: 0;
+              padding: 0;
+            }
+          `}`}
+        >
+          {children}
+        </li>
       )
     case CODE:
       return (
@@ -79,22 +122,6 @@ export default function Element({
         >
           {children}
         </code>
-      )
-    case ListType.LIST_ITEM:
-      return (
-        <Helper {...attributes} onAddBlock={onAddBlock}>
-          <li
-            className={`text-body mt-4 ${css`
-              p {
-                display: inline-block;
-                margin: 0;
-                padding: 0;
-              }
-            `}`}
-          >
-            {children}
-          </li>
-        </Helper>
       )
     case LINK:
       return (

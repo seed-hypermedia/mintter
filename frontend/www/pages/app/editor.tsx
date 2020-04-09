@@ -13,6 +13,7 @@ import {
   getRenderElement,
   CODE,
   ListPlugin,
+  ListType,
 } from 'slate-plugins-next'
 import {Editor, Toolbar} from '@mintter/editor'
 
@@ -29,7 +30,7 @@ import {shortcutTypes} from '@mintter/slate-plugin-with-shortcuts'
 // import {wrapLink, unwrapLink} from '@mintter/slate-plugin-with-links'
 import Textarea from '../../components/textarea'
 import Layout from '../../components/layout'
-import {PARAGRAPH} from 'slate-plugins-next'
+import {PARAGRAPH, renderElementList} from 'slate-plugins-next'
 
 export const types = {
   ...shortcutTypes,
