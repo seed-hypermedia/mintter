@@ -7,15 +7,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/lightningnetwork/lnd/aezeed"
 	"go.uber.org/zap"
 )
-
-// Mnemonic is wallet recovery phrase.
-type Mnemonic = aezeed.Mnemonic
-
-// EncipheredSeed is the raw seed enciphered with the passphrase.
-type EncipheredSeed = [aezeed.EncipheredCipherSeedSize]byte
 
 // Server implements Mintter rpc.
 type Server struct {

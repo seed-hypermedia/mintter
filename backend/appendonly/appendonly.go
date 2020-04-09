@@ -41,7 +41,7 @@ func (h *head) UnmarshalBinary(data []byte) error {
 // Log is a single-writer append-only log.
 type Log struct {
 	name string
-	prof identity.Profile
+	prof identity.Account
 	db   datastore.TxnDatastore
 
 	headKey    datastore.Key
@@ -57,7 +57,7 @@ type Log struct {
 //
 // `/logs/<profile-id>/<log-name>/head` - stores head of the log.
 // `/logs/<profile-id>/<log-name>/records/<seq>` - stored records by their sequence id.
-func NewLog(name string, prof identity.Profile, db datastore.TxnDatastore) (*Log, error) {
+func NewLog(name string, prof identity.Account, db datastore.TxnDatastore) (*Log, error) {
 	k := datastore.KeyWithNamespaces([]string{"/logs", prof.ID.String(), string(name)})
 	l := &Log{
 		headKey:    k.ChildString("head"),

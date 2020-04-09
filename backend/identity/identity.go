@@ -3,64 +3,125 @@ package identity
 
 import (
 	"bytes"
+	"crypto/rand"
 	"fmt"
+	"io"
+	"time"
 
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/lightningnetwork/lnd/aezeed"
+	"github.com/lightningnetwork/lnd/keychain"
 	"github.com/textileio/go-textile/wallet"
 )
 
-// ProfileID is a unique global id for an account.
-// It has the same mechanics as libp2p peer ID
-// but is not interchangeable.
-type ProfileID peer.ID
-
-// P2PConfig for libp2p network.
-type P2PConfig struct {
-	PeerID  peer.ID
+// Identity is a cryptographic identity.
+type Identity struct {
+	ID      peer.ID
 	PubKey  PubKey
 	PrivKey PrivKey
 }
 
-// Profile is the main identity of a user.
-type Profile struct {
-	ID      peer.ID
-	PubKey  PubKey
-	PrivKey PrivKey
-	PeerID  peer.ID
-	// TODO(burdiyan): add profile id similar to peer id.
+// Account is a primary Mintter account. Its ID has the same semantics as
+// libp2p PeerID, but is not interchangeable and should not be used for libp2p.
+// The keys are used to sign all the user's content.
+type Account Identity
 
+// Peer is the identity for p2p communication.
+type Peer Identity
+
+// About is a mutable human-friendly information about the user.
+type About struct {
 	Username string
 	Email    string
 	Bio      string
 }
 
+// Profile is the main identity of a user.
+type Profile struct {
+	Account Account
+	Peer    Peer
+	About   About
+}
+
+// NewIdentity creates new identity.
+func NewIdentity(src io.Reader) (Identity, error) {
+	priv, pub, err := crypto.GenerateEd25519Key(src)
+	if err != nil {
+		return Identity{}, err
+	}
+
+	pid, err := peer.IDFromPublicKey(pub)
+	if err != nil {
+		return Identity{}, err
+	}
+
+	return Identity{
+		ID:      pid,
+		PrivKey: PrivKey{priv},
+		PubKey:  PubKey{pub},
+	}, nil
+}
+
 // FromSeed generates a profile based on seed.
 func FromSeed(seed []byte, idx uint32) (Profile, error) {
-	masterKey, err := wallet.NewMasterKey(seed)
+	masterKey, err := wallet.DeriveForPath(wallet.TextilePrimaryAccountPath, seed)
 	if err != nil {
 		return Profile{}, err
 	}
 
+	account, err := NewIdentity(bytes.NewReader(masterKey.Key))
+	if err != nil {
+		return Profile{}, fmt.Errorf("failed to create account: %w", err)
+	}
+
 	k, err := masterKey.Derive(wallet.FirstHardenedIndex + idx)
 	if err != nil {
-		return Profile{}, fmt.Errorf("identity: failed to derive child key: %w", err)
+		return Profile{}, fmt.Errorf("failed to derive child key: %w", err)
 	}
 
-	priv, pub, err := crypto.GenerateEd25519Key(bytes.NewReader(k.Key))
+	peer, err := NewIdentity(bytes.NewReader(k.Key))
 	if err != nil {
-		return Profile{}, fmt.Errorf("identity: failed to generate key pair: %w", err)
-	}
-
-	peerID, err := peer.IDFromPublicKey(pub)
-	if err != nil {
-		return Profile{}, fmt.Errorf("identity: failed to generated peer id: %w", err)
+		return Profile{}, fmt.Errorf("failed to create peer: %w", err)
 	}
 
 	return Profile{
-		ID:      peerID,
-		PubKey:  PubKey{pub},
-		PeerID:  peerID,
-		PrivKey: PrivKey{priv},
+		Account: Account(account),
+		Peer:    Peer(peer),
 	}, nil
+}
+
+// FromMnemonic creates profile information from mnemonic.
+func FromMnemonic(words []string, pass []byte, idx uint32) (Profile, error) {
+	var m aezeed.Mnemonic
+
+	copy(m[:], words)
+
+	seed, err := m.ToCipherSeed(pass)
+	if err != nil {
+		return Profile{}, fmt.Errorf("failed to create seed: %w", err)
+	}
+
+	return FromSeed(seed.Entropy[:], idx)
+}
+
+// NewMnemonic creates a new random mnemonic.
+func NewMnemonic(passphraze []byte) ([]string, error) {
+	var entropy [aezeed.EntropySize]byte
+
+	if _, err := rand.Read(entropy[:]); err != nil {
+		return nil, fmt.Errorf("unable to generate random seed: %w", err)
+	}
+
+	seed, err := aezeed.New(keychain.KeyDerivationVersion, &entropy, time.Now())
+	if err != nil {
+		return nil, err
+	}
+
+	mnem, err := seed.ToMnemonic(passphraze)
+	if err != nil {
+		return nil, err
+	}
+
+	return mnem[:], nil
 }

@@ -26,11 +26,6 @@ export class GenSeedResponse extends jspb.Message {
   clearMnemonicList(): void;
   addMnemonic(value: string, index?: number): void;
 
-  getEncipheredSeed(): Uint8Array | string;
-  getEncipheredSeed_asU8(): Uint8Array;
-  getEncipheredSeed_asB64(): string;
-  setEncipheredSeed(value: Uint8Array | string): void;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GenSeedResponse.AsObject;
   static toObject(includeInstance: boolean, msg: GenSeedResponse): GenSeedResponse.AsObject;
@@ -42,7 +37,6 @@ export class GenSeedResponse extends jspb.Message {
 export namespace GenSeedResponse {
   export type AsObject = {
     mnemonicList: Array<string>,
-    encipheredSeed: Uint8Array | string,
   }
 }
 
