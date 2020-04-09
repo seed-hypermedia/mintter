@@ -403,8 +403,7 @@ proto.com.mintter.GenSeedResponse.prototype.toObject = function(opt_includeInsta
  */
 proto.com.mintter.GenSeedResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    mnemonicList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
-    encipheredSeed: msg.getEncipheredSeed_asB64()
+    mnemonicList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -445,10 +444,6 @@ proto.com.mintter.GenSeedResponse.deserializeBinaryFromReader = function(msg, re
       var value = /** @type {string} */ (reader.readString());
       msg.addMnemonic(value);
       break;
-    case 2:
-      var value = /** @type {!Uint8Array} */ (reader.readBytes());
-      msg.setEncipheredSeed(value);
-      break;
     default:
       reader.skipField();
       break;
@@ -482,13 +477,6 @@ proto.com.mintter.GenSeedResponse.serializeBinaryToWriter = function(message, wr
   if (f.length > 0) {
     writer.writeRepeatedString(
       1,
-      f
-    );
-  }
-  f = message.getEncipheredSeed_asU8();
-  if (f.length > 0) {
-    writer.writeBytes(
-      2,
       f
     );
   }
@@ -529,48 +517,6 @@ proto.com.mintter.GenSeedResponse.prototype.addMnemonic = function(value, opt_in
  */
 proto.com.mintter.GenSeedResponse.prototype.clearMnemonicList = function() {
   return this.setMnemonicList([]);
-};
-
-
-/**
- * optional bytes enciphered_seed = 2;
- * @return {string}
- */
-proto.com.mintter.GenSeedResponse.prototype.getEncipheredSeed = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * optional bytes enciphered_seed = 2;
- * This is a type-conversion wrapper around `getEncipheredSeed()`
- * @return {string}
- */
-proto.com.mintter.GenSeedResponse.prototype.getEncipheredSeed_asB64 = function() {
-  return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getEncipheredSeed()));
-};
-
-
-/**
- * optional bytes enciphered_seed = 2;
- * Note that Uint8Array is not supported on all browsers.
- * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getEncipheredSeed()`
- * @return {!Uint8Array}
- */
-proto.com.mintter.GenSeedResponse.prototype.getEncipheredSeed_asU8 = function() {
-  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getEncipheredSeed()));
-};
-
-
-/**
- * @param {!(string|Uint8Array)} value
- * @return {!proto.com.mintter.GenSeedResponse} returns this
- */
-proto.com.mintter.GenSeedResponse.prototype.setEncipheredSeed = function(value) {
-  return jspb.Message.setProto3BytesField(this, 2, value);
 };
 
 

@@ -19,28 +19,19 @@ import (
 
 // InitProfile implements InitProfile rpc.
 func (s *Server) InitProfile(ctx context.Context, req *proto.InitProfileRequest) (*proto.InitProfileResponse, error) {
-	var m Mnemonic
-
-	copy(m[:], req.Mnemonic)
-
-	if err := s.initProfile(m, req.AezeedPassphrase); err != nil {
+	if err := s.initProfile(req.Mnemonic, req.AezeedPassphrase); err != nil {
 		return nil, err
 	}
 
 	return &proto.InitProfileResponse{}, nil
 }
 
-func (s *Server) initProfile(m Mnemonic, pass []byte) error {
-	seed, err := m.ToCipherSeed(pass)
-	if err != nil {
-		return status.Errorf(codes.InvalidArgument, "failed to decipher seed: %v", err)
-	}
-
+func (s *Server) initProfile(words []string, pass []byte) error {
 	if _, err := s.loadProfile(); err == nil {
-		return status.Error(codes.FailedPrecondition, "wallet is already initialized")
+		return status.Error(codes.FailedPrecondition, "account is already initialized")
 	}
 
-	profile, err := identity.FromSeed(seed.Entropy[:], 0)
+	profile, err := identity.FromMnemonic(words, pass, 0)
 	if err != nil {
 		return status.Errorf(codes.Internal, "failed to generate identity: %v", err)
 	}
@@ -120,7 +111,7 @@ func (s *Server) storeProfile(prof identity.Profile) error {
 func (s *Server) loadProfile() (identity.Profile, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.prof.PeerID != "" {
+	if s.prof.Account.ID != "" {
 		return s.prof, nil
 	}
 
@@ -146,18 +137,20 @@ func (s *Server) loadProfile() (identity.Profile, error) {
 
 func profileToProto(prof identity.Profile) *proto.Profile {
 	return &proto.Profile{
-		PeerId:   prof.PeerID.String(),
-		Username: prof.Username,
-		Email:    prof.Email,
-		Bio:      prof.Bio,
+		PeerId:   prof.Peer.ID.String(),
+		Username: prof.About.Username,
+		Email:    prof.About.Email,
+		Bio:      prof.About.Bio,
 	}
 }
 
 func profileFromProto(pbprof *proto.Profile) (identity.Profile, error) {
 	prof := identity.Profile{
-		Username: pbprof.Username,
-		Email:    pbprof.Email,
-		Bio:      pbprof.Bio,
+		About: identity.About{
+			Username: pbprof.Username,
+			Email:    pbprof.Email,
+			Bio:      pbprof.Bio,
+		},
 	}
 
 	if pbprof.PeerId != "" {
@@ -165,7 +158,7 @@ func profileFromProto(pbprof *proto.Profile) (identity.Profile, error) {
 		if err != nil {
 			return identity.Profile{}, err
 		}
-		prof.PeerID = pid
+		prof.Peer.ID = pid
 	}
 
 	return prof, nil

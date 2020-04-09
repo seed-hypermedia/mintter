@@ -13,37 +13,66 @@ import (
 
 func TestFromSeed(t *testing.T) {
 	cases := []struct {
-		Idx         uint32
-		WantPubKey  string
-		WantPrivKey string
-		WantPeerID  string
+		Idx uint32
+
+		WantPeerID      string
+		WantPeerPubKey  string
+		WantPeerPrivKey string
+
+		WantAccountID      string
+		WantAccountPubKey  string
+		WantAccountPrivKey string
 	}{
 		{
-			Idx:         0,
-			WantPubKey:  "CAESIPPoxrTSxCGBdNZ0PxE5H9ZsGhzMq9vmSXpr5aseVEUj",
-			WantPrivKey: "CAESQDjb4g9GJyaXgqI9ppiRSdHXt2Un07HutP3FqfrbD87e8+jGtNLEIYF01nQ/ETkf1mwaHMyr2+ZJemvlqx5URSM=",
-			WantPeerID:  "12D3KooWSEV7CwbRHgq3QnVVYCnrtTHJ76GePELvi25CsJKF3K9U",
+			Idx:             0,
+			WantPeerPubKey:  "CAESILp1y6IeWNyxGoYasA6MLaKG+FUuZWFntS3o7Ftn55SF",
+			WantPeerPrivKey: "CAESQI4RbZ/+v4si0zudLvPDn8GU9zaJDg2rnvz4i9bOofvMunXLoh5Y3LEahhqwDowtoob4VS5lYWe1LejsW2fnlIU=",
+			WantPeerID:      "12D3KooWNNEBN2SZGDRpQUAG4b4uJyxWjsDBqYaetkKu8SzudpHA",
+
+			WantAccountID:      "12D3KooWCX9pUgP2CsGYJ8xnYv97XUoh6zq1M6dtgRTCUXcH1hN6",
+			WantAccountPubKey:  "CAESICgqOTalyIG2/CoQS4aOZQYVIOXRh3O6WQuaa5CIP2ZH",
+			WantAccountPrivKey: "CAESQGs2pC5kJZwjzx7DO3TS/mfCpjJi2kIGcSqz+EZjZZfhKCo5NqXIgbb8KhBLho5lBhUg5dGHc7pZC5prkIg/Zkc=",
 		},
 		{
-			Idx:         1,
-			WantPubKey:  "CAESIMvm/ZhQtQmVLcA4sQsy19+4nVc5tIbrAqX4eDpAIYOs",
-			WantPrivKey: "CAESQOcUc5jCzyTqSNI3s8ogihxRCcms1hVH/10X+yEAWr1Wy+b9mFC1CZUtwDixCzLX37idVzm0husCpfh4OkAhg6w=",
-			WantPeerID:  "12D3KooWPYKDkkSYAvxYCYSic7WJjHSm79MK591pjxpF7crqKMS3",
+			Idx:             1,
+			WantPeerPubKey:  "CAESIL8mHHKD75RGGH65xsEzBkRdgYzgdQdAKMYzW49j8vA3",
+			WantPeerPrivKey: "CAESQKV8n/xVCBlORwB2Kq4ZBqo001EBnzk0ke+NjG8UGz05vyYccoPvlEYYfrnGwTMGRF2BjOB1B0AoxjNbj2Py8Dc=",
+			WantPeerID:      "12D3KooWNgXk9bpXMFUaWAwoBYFeAKXD2Scb6f88m4Y5tcpkXsvn",
+
+			// Same account data as in first case.
+			WantAccountID:      "12D3KooWCX9pUgP2CsGYJ8xnYv97XUoh6zq1M6dtgRTCUXcH1hN6",
+			WantAccountPubKey:  "CAESICgqOTalyIG2/CoQS4aOZQYVIOXRh3O6WQuaa5CIP2ZH",
+			WantAccountPrivKey: "CAESQGs2pC5kJZwjzx7DO3TS/mfCpjJi2kIGcSqz+EZjZZfhKCo5NqXIgbb8KhBLho5lBhUg5dGHc7pZC5prkIg/Zkc=",
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(strconv.Itoa(int(c.Idx)), func(t *testing.T) {
 			prof := testProfile(t, c.Idx)
-			require.Equal(t, c.WantPeerID, prof.PeerID.String())
 
-			pubkey, err := prof.PubKey.MarshalJSON()
-			require.NoError(t, err)
-			require.Equal(t, c.WantPubKey, strings.Trim(string(pubkey), "\""))
+			{
+				pubkey, err := prof.Peer.PubKey.MarshalJSON()
+				require.NoError(t, err)
 
-			privkey, err := prof.PrivKey.MarshalJSON()
-			require.NoError(t, err)
-			require.Equal(t, c.WantPrivKey, strings.Trim(string(privkey), "\""))
+				privkey, err := prof.Peer.PrivKey.MarshalJSON()
+				require.NoError(t, err)
+
+				require.Equal(t, c.WantPeerID, prof.Peer.ID.String())
+				require.Equal(t, c.WantPeerPubKey, strings.Trim(string(pubkey), "\""))
+				require.Equal(t, c.WantPeerPrivKey, strings.Trim(string(privkey), "\""))
+			}
+			{
+				pubkey, err := prof.Account.PubKey.MarshalJSON()
+				require.NoError(t, err)
+
+				privkey, err := prof.Account.PrivKey.MarshalJSON()
+				require.NoError(t, err)
+
+				require.Equal(t, c.WantAccountID, prof.Account.ID.String())
+				require.Equal(t, c.WantAccountPubKey, strings.Trim(string(pubkey), "\""))
+				require.Equal(t, c.WantAccountPrivKey, strings.Trim(string(privkey), "\""))
+			}
+
 		})
 	}
 }

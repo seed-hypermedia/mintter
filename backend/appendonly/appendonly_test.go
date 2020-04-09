@@ -2,6 +2,7 @@ package appendonly
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -34,52 +35,56 @@ func TestLogAppend(t *testing.T) {
 		{
 			In:               About{FirstName: "Alex"},
 			WantSeq:          0,
-			WantHash:         "1220305e00746c56f8cdf695ad03992cfb4918d0d7922ee2a750b94b3d2c811c2820",
-			WantSignature:    []byte{8, 251, 227, 78, 151, 93, 223, 156, 233, 15, 158, 107, 190, 100, 171, 137, 226, 58, 23, 40, 160, 32, 103, 81, 127, 206, 107, 186, 246, 138, 250, 94, 125, 58, 251, 175, 198, 198, 38, 57, 174, 103, 106, 24, 102, 235, 240, 75, 121, 188, 141, 129, 149, 73, 192, 30, 239, 193, 158, 199, 242, 188, 235, 5},
-			WantSigningBytes: []byte{18, 32, 194, 197, 166, 125, 171, 151, 47, 54, 138, 51, 106, 168, 196, 121, 231, 36, 192, 254, 186, 253, 124, 13, 169, 61, 64, 85, 254, 182, 43, 184, 196, 221},
+			WantHash:         "12204837b92e4f827f8b73b163b6f83b59cb7fa2624d7393c448cf33802662058190",
+			WantSignature:    []byte{0x55, 0x66, 0x68, 0x40, 0xc7, 0x21, 0x73, 0x26, 0xba, 0x99, 0x1c, 0x54, 0xd6, 0x66, 0xdb, 0x57, 0x90, 0xe2, 0x45, 0x20, 0x79, 0x6f, 0x3d, 0x49, 0xa4, 0x6b, 0x26, 0xbf, 0x1c, 0x7a, 0xfb, 0xab, 0xfc, 0x15, 0xf2, 0x11, 0x40, 0x84, 0x5c, 0x5, 0x84, 0x75, 0x53, 0x8b, 0xc2, 0xf0, 0x69, 0x48, 0xd9, 0x3c, 0xce, 0x44, 0x17, 0x91, 0xd0, 0x40, 0x29, 0x69, 0x2, 0x7c, 0xc3, 0x89, 0xe8, 0xc},
+			WantSigningBytes: []byte{0x12, 0x20, 0xac, 0xf1, 0x8e, 0xb6, 0x77, 0xd3, 0x42, 0xf7, 0xaf, 0x9b, 0x83, 0x3b, 0x73, 0x4, 0x3d, 0x71, 0xbf, 0xa7, 0x1, 0x3d, 0x57, 0x2d, 0xd, 0xe4, 0x1a, 0x9b, 0xd5, 0x7e, 0x18, 0x47, 0xf8, 0x4a},
 		},
 		{
 			In:               About{LastName: "Burdiyan", Bio: "Fake bio"},
 			WantSeq:          1,
-			WantHash:         "1220a2691f5ef5461d777ef51724be8b043d0c7ca49aa2dc54bfbcf5eddfb004d3bc",
-			WantSignature:    []byte{238, 16, 26, 200, 73, 48, 76, 58, 247, 46, 62, 6, 245, 177, 202, 52, 135, 107, 178, 204, 215, 195, 27, 76, 245, 8, 168, 150, 157, 59, 19, 31, 183, 235, 162, 129, 206, 216, 233, 58, 47, 207, 155, 126, 232, 95, 199, 136, 94, 106, 30, 14, 205, 105, 158, 56, 221, 231, 173, 217, 104, 210, 112, 2},
-			WantSigningBytes: []byte{18, 32, 83, 194, 42, 199, 100, 109, 177, 168, 85, 61, 137, 151, 12, 141, 206, 225, 252, 111, 100, 90, 39, 3, 206, 184, 221, 145, 64, 130, 197, 229, 245, 120},
+			WantHash:         "122087761d772b3c197a43ed7707ed550f3166f04a298a8ab20731551c950a151f68",
+			WantSignature:    []byte{0xf, 0x17, 0xa0, 0xfd, 0x61, 0xc8, 0xd4, 0x99, 0xe5, 0xb5, 0x31, 0x5b, 0xcb, 0xd7, 0x73, 0xe, 0xe0, 0xe1, 0x72, 0xf6, 0xcc, 0x62, 0xf5, 0x48, 0x80, 0x21, 0xd8, 0x26, 0x4, 0xa0, 0x15, 0xf0, 0xca, 0xec, 0x9e, 0x23, 0x28, 0x50, 0xed, 0x6f, 0xd5, 0xbc, 0x1c, 0x31, 0xb8, 0x10, 0x32, 0x85, 0xd0, 0xf8, 0x25, 0xd3, 0x6d, 0x1c, 0xad, 0x6, 0xbe, 0x93, 0xc2, 0x10, 0xc2, 0xf3, 0x68, 0x4},
+			WantSigningBytes: []byte{0x12, 0x20, 0x13, 0x31, 0x23, 0x2b, 0x1b, 0x3b, 0x9d, 0x99, 0xf6, 0x4, 0x75, 0x72, 0xc0, 0xf2, 0x17, 0x9d, 0x2b, 0xe5, 0x5a, 0xa3, 0x68, 0xf1, 0x49, 0x1f, 0x9c, 0x71, 0x64, 0x45, 0x53, 0xdd, 0x71, 0x9d},
 		},
 	}
 
 	var added []SignedRecord
 
 	// Append records and check expectations.
-	for _, c := range cases {
-		rec, err := log.Append(c.In)
-		require.NoError(t, err)
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("test append records %d", i), func(t *testing.T) {
+			rec, err := log.Append(c.In)
+			require.NoError(t, err)
 
-		added = append(added, rec)
+			added = append(added, rec)
 
-		require.NoError(t, rec.Verify(log.prof.PubKey))
-		require.Equal(t, c.WantSeq, rec.Record.Seq)
-		require.Equal(t, c.WantHash, rec.Hash())
-		require.Equal(t, c.WantSignature, rec.Signature)
-		require.Equal(t, c.WantSigningBytes, rec.SigningBytes())
+			require.NoError(t, rec.Verify(log.prof.PubKey))
+			require.Equal(t, c.WantSeq, rec.Record.Seq)
+			require.Equal(t, c.WantHash, rec.Hash())
+			require.Equal(t, c.WantSignature, rec.Signature)
+			require.Equal(t, c.WantSigningBytes, rec.SigningBytes())
 
-		var a About
-		require.NoError(t, cbor.Unmarshal(rec.Record.Content, &a))
-		require.Equal(t, c.In, a, "record content must match the inserted data")
+			var a About
+			require.NoError(t, cbor.Unmarshal(rec.Record.Content, &a))
+			require.Equal(t, c.In, a, "record content must match the inserted data")
 
-		if rec.Record.Seq > 0 {
-			require.Equal(t, cases[rec.Record.Seq-1].WantHash, rec.Record.Previous)
-		}
+			if rec.Record.Seq > 0 {
+				require.Equal(t, cases[rec.Record.Seq-1].WantHash, rec.Record.Previous)
+			}
+		})
 	}
 
 	require.Equal(t, len(cases), len(added))
 
 	// === Test Get ===
 
-	for _, rec := range added {
-		sr, err := log.Get(rec.Record.Seq)
-		require.NoError(t, err)
-		require.Equal(t, rec, sr)
-		require.NoError(t, sr.Verify(log.prof.PubKey))
+	for i, rec := range added {
+		t.Run(fmt.Sprintf("test get records %d", i), func(t *testing.T) {
+			sr, err := log.Get(rec.Record.Seq)
+			require.NoError(t, err)
+			require.Equal(t, rec, sr)
+			require.NoError(t, sr.Verify(log.prof.PubKey))
+		})
 	}
 
 	// === Test List ===
@@ -143,7 +148,7 @@ func makeLog(t *testing.T) *Log {
 
 	store := badgerStore(t)
 
-	log, err := NewLog("profile", prof, store)
+	log, err := NewLog("profile", prof.Account, store)
 	require.NoError(t, err)
 	log.nowFunc = mockTime(time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), time.Second)
 

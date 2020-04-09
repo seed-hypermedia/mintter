@@ -3,13 +3,13 @@ package server_test
 import (
 	"context"
 	"encoding/json"
+	"mintter/backend/identity"
 	"mintter/backend/server"
 	"mintter/proto"
 	"os"
 	"path/filepath"
 	"testing"
 
-	peer "github.com/libp2p/go-libp2p-core/peer"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -36,7 +36,7 @@ func TestGetProfile(t *testing.T) {
 
 	resp, err := srv.GetProfile(ctx, &proto.GetProfileRequest{})
 	require.NoError(t, err)
-	require.Equal(t, "12D3KooWKLAyRToYcHTQxbrZ4XWtZKbQ29Gz73STf477CGASwX6v", resp.Profile.PeerId)
+	require.Equal(t, "12D3KooWGkrLHeWFdhFoLqjbxriuHT6Nm1k8HNZmagP8Lj4FLJw4", resp.Profile.PeerId)
 
 	// Server must be able to load initialized profile after restart.
 	srv, err = server.NewServer(srv.RepoPath(), zap.NewNop())
@@ -60,7 +60,7 @@ func TestUpdateProfile(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.Equal(t, "12D3KooWKLAyRToYcHTQxbrZ4XWtZKbQ29Gz73STf477CGASwX6v", resp.Profile.PeerId)
+	require.Equal(t, "12D3KooWGkrLHeWFdhFoLqjbxriuHT6Nm1k8HNZmagP8Lj4FLJw4", resp.Profile.PeerId)
 	require.Equal(t, "burdiyan", resp.Profile.Username)
 	require.Equal(t, "foo@example.com", resp.Profile.Email)
 	require.Equal(t, "Fake bio", resp.Profile.Bio)
@@ -79,26 +79,35 @@ func TestLoadProfile(t *testing.T) {
 	f, err := os.Create(fileName)
 	require.NoError(t, err)
 
-	pid, err := peer.IDB58Decode("12D3KooWSEV7CwbRHgq3QnVVYCnrtTHJ76GePELvi25CsJKF3K9U")
+	prof, err := identity.FromMnemonic(testMnemonic, nil, 0)
 	require.NoError(t, err)
+	prof.About.Username = "username"
+	prof.About.Email = "foo@example.About.com"
+	prof.About.Bio = "fake-bio"
 
-	err = json.NewEncoder(f).Encode(map[string]interface{}{
-		"peerID": pid.String(),
-	})
+	err = json.NewEncoder(f).Encode(prof)
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 
 	// GetProfile must work if profile is stored in the file.
 	resp, err := srv.GetProfile(context.Background(), &proto.GetProfileRequest{})
 	require.NoError(t, err)
-	require.Equal(t, pid.String(), resp.Profile.PeerId)
 
 	_, err = srv.InitProfile(context.Background(), &proto.InitProfileRequest{})
 	require.Error(t, err, "init must fail if profile is cached")
+
+	require.Equal(t, prof.Peer.ID.String(), resp.Profile.PeerId)
+	require.Equal(t, prof.About.Username, resp.Profile.Username)
+	require.Equal(t, prof.About.Email, resp.Profile.Email)
+	require.Equal(t, prof.About.Bio, resp.Profile.Bio)
 
 	// GetProfile must return cached profile even if file disappears.
 	require.NoError(t, os.Remove(fileName))
 	resp, err = srv.GetProfile(context.Background(), &proto.GetProfileRequest{})
 	require.NoError(t, err)
-	require.Equal(t, pid.String(), resp.Profile.PeerId)
+
+	require.Equal(t, prof.Peer.ID.String(), resp.Profile.PeerId)
+	require.Equal(t, prof.About.Username, resp.Profile.Username)
+	require.Equal(t, prof.About.Email, resp.Profile.Email)
+	require.Equal(t, prof.About.Bio, resp.Profile.Bio)
 }
