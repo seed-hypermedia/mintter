@@ -2,8 +2,6 @@ module mintter
 
 go 1.13
 
-replace github.com/textileio/go-threads => ./third_party/go-threads
-
 require (
 	github.com/AndreasBriese/bbloom v0.0.0-20190825152654-46b345b51c96 // indirect
 	github.com/alecthomas/kong v0.2.4
@@ -34,7 +32,7 @@ require (
 	github.com/multiformats/go-multihash v0.0.13
 	github.com/stretchr/testify v1.4.0
 	github.com/textileio/go-textile v0.7.7
-	github.com/textileio/go-threads v0.0.0-local
+	github.com/textileio/go-threads v0.1.14
 	go.uber.org/multierr v1.5.0
 	go.uber.org/zap v1.14.1
 	golang.org/x/crypto v0.0.0-20200210222208-86ce3cb69678 // indirect
