@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/imdario/mergo"
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -72,7 +71,7 @@ func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileReque
 		return nil, status.Errorf(codes.InvalidArgument, "failed to convert proto profile into profile: %v", err)
 	}
 
-	if err := mergo.Merge(&prof, update); err != nil {
+	if err := prof.Merge(update); err != nil {
 		return nil, fmt.Errorf("failed to merge profiles: %v", err)
 	}
 

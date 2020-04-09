@@ -90,6 +90,53 @@ func TestJSONEncoding(t *testing.T) {
 	require.Equal(t, prof, readProf)
 }
 
+func TestMerge(t *testing.T) {
+	orig := testProfile(t, 0)
+
+	{
+		merged := orig
+		require.NoError(t, merged.Merge(identity.Profile{}))
+		require.Equal(t, orig, merged)
+	}
+	{
+		merged := identity.Profile{}
+		expected := orig
+		incoming := orig
+		require.NoError(t, merged.Merge(incoming))
+		require.Equal(t, expected, merged)
+	}
+	{
+		merged := orig
+		a := identity.About{Username: "foo", Email: "foo@example.com", Bio: "Fake bio."}
+		expected := orig
+		expected.About = a
+		require.NoError(t, merged.Merge(identity.Profile{About: a}))
+		require.Equal(t, expected, merged)
+	}
+	{
+		merged := orig
+		a := identity.About{Username: "foo", Email: "foo@example.com", Bio: "Fake bio."}
+		expected := orig
+		expected.About = a
+		incoming := orig
+		incoming.About = a
+		incoming.Peer.ID = "foobar"
+		require.NoError(t, merged.Merge(incoming))
+		require.Equal(t, expected, merged)
+	}
+	{
+		merged := orig
+		a := identity.About{Username: "foo", Email: "foo@example.com", Bio: "Fake bio."}
+		expected := orig
+		expected.About = a
+		incoming := orig
+		incoming.About = a
+		incoming.Account.ID = "foobar"
+		require.NoError(t, merged.Merge(incoming))
+		require.Equal(t, expected, merged)
+	}
+}
+
 func testProfile(t *testing.T, idx uint32) identity.Profile {
 	t.Helper()
 
