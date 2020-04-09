@@ -19,7 +19,9 @@
   "dependencies": {
     "emotion": "^10.0.27",
     "framer-motion": "^1.8.4",
+    "react-feather": "^2.0.4",
     "slate": "^0.57.1",
+    "slate-plugins-next": "^0.57.11",
     "slate-react": "^0.57.1"
   },
   "peerDependencies": {

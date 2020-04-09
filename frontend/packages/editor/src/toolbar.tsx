@@ -1,47 +1,36 @@
 import React from 'react'
-import {useSlate, ReactEditor} from 'slate-react'
-import {Portal} from './portal'
-import {Editor} from 'slate'
-import {Range} from 'slate'
+import {
+  HoveringToolbar,
+  ToolbarMark,
+  ToolbarBlock,
+  ToolbarImage,
+  ToolbarCode,
+  MARK_BOLD,
+  MARK_ITALIC,
+  MARK_CODE,
+} from 'slate-plugins-next'
+import {Bold, Italic, Code} from 'react-feather'
 
-export function Toolbar({children, className}) {
-  const ref = React.useRef<any>()
-  const editor = useSlate()
-
-  React.useEffect(() => {
-    const el = ref.current
-    const {selection} = editor
-
-    if (!el) {
-      return
-    }
-
-    if (
-      !selection ||
-      !ReactEditor.isFocused(editor) ||
-      Range.isCollapsed(selection) ||
-      Editor.string(editor, selection) === ''
-    ) {
-      el.removeAttribute('style')
-      return
-    }
-
-    // TODO: fix types here
-    const domSelection: any = window.getSelection()
-    const domRange = domSelection.getRangeAt(0)
-    const rect = domRange.getBoundingClientRect()
-    el.style.opacity = '1'
-    el.style.top = `${rect.top + window.pageYOffset - el.offsetHeight}px`
-    el.style.left = `${rect.left +
-      window.pageXOffset -
-      el.offsetWidth / 2 +
-      rect.width / 2}px`
-  })
+export function Toolbar() {
   return (
-    <Portal>
-      <div ref={ref} className={className}>
-        {children}
-      </div>
-    </Portal>
+    <HoveringToolbar>
+      <ToolbarBoldMark />
+      <ToolbarMarkItalic />
+      <ToolbarMarkCode />
+    </HoveringToolbar>
   )
 }
+
+export function ToolbarBoldMark() {
+  return <ToolbarMark reversed format={MARK_BOLD} icon={<Bold />} />
+}
+
+export function ToolbarMarkItalic() {
+  return <ToolbarMark reversed format={MARK_ITALIC} icon={<Italic />} />
+}
+
+export function ToolbarMarkCode() {
+  return <ToolbarMark reversed format={MARK_CODE} icon={<Code />} />
+}
+
+export {ToolbarMark, ToolbarBlock, ToolbarImage, ToolbarCode}

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import {css} from 'emotion'
 import {RenderElementProps} from 'slate-react'
 import {types} from '../pages/app/editor'
+import {ListType, LINK, HeadingType, BLOCKQUOTE, CODE} from 'slate-plugins-next'
 
 export interface ElementProps extends RenderElementProps {
   onAddBlock: () => void
@@ -21,54 +22,84 @@ export default function Element({
   )
 
   switch (element.type) {
-    case types.HEADING_ONE:
+    case HeadingType.H1:
       return (
         <Wrapper>
-          <h1 className="text-4xl">{children}</h1>
+          <h1 className="text-4xl text-heading mt-8 leading-normal">
+            {children}
+          </h1>
         </Wrapper>
       )
-    case types.HEADING_TWO:
+    case HeadingType.H2:
       return (
         <Wrapper>
-          <h2 className="text-3xl">{children}</h2>
+          <h2 className="text-3xl text-heading mt-8">{children}</h2>
         </Wrapper>
       )
-    case types.HEADING_THREE:
+    case HeadingType.H3:
       return (
         <Wrapper>
-          <h3 className="text-2xl">{children}</h3>
+          <h3 className="text-2xl text-heading mt-8">{children}</h3>
         </Wrapper>
       )
-    case types.BLOCK_QUOTE:
+    case BLOCKQUOTE:
       return (
         <Wrapper>
-          <blockquote className="w-full block relative p-4 border-l-4 border-gray-500">
-            <p className="italic text-xl font-light font-serif">{children}</p>
+          <blockquote className="mt-4 p-4 md:-mx-8 md:px-8 box-border w-auto block relative border-l-4 border-muted-hover bg-background-muted rounded-md rounded-tl-none rounded-bl-none">
+            <p className="italic text-xl font-light font-serif text-body">
+              {children}
+            </p>
           </blockquote>
         </Wrapper>
       )
-    case types.BULLETED_LIST:
+    case ListType.UL_LIST:
       return (
-        <ul {...attributes} className="list-disc list-inside">
+        <ul
+          {...attributes}
+          className={`list-disc list-inside ${css`
+            ul {
+              padding-left: 2rem;
+            }
+          `}`}
+        >
           {children}
         </ul>
       )
-    case types.NUMBERED_LIST:
+    case ListType.OL_LIST:
       return (
         <ol {...attributes} className="list-inside list-decimal">
           {children}
         </ol>
       )
-    case types.LIST_ITEM:
+    case CODE:
+      return (
+        <code
+          {...attributes}
+          className="bg-muted text-body px-2 py-1 rounded-sm border-none"
+        >
+          {children}
+        </code>
+      )
+    case ListType.LIST_ITEM:
       return (
         <Helper {...attributes} onAddBlock={onAddBlock}>
-          <li>{children}</li>
+          <li
+            className={`text-body mt-4 ${css`
+              p {
+                display: inline-block;
+                margin: 0;
+                padding: 0;
+              }
+            `}`}
+          >
+            {children}
+          </li>
         </Helper>
       )
-    case types.LINK:
+    case LINK:
       return (
         <a
-          className={`text-blue-500 cursor-pointer ${css`
+          className={`text-primary cursor-pointer hover:text-primary-hover transition duration-200 ${css`
             p {
               display: inline;
             }
@@ -80,43 +111,19 @@ export default function Element({
           {children}
         </a>
       )
-    case types.TITLE:
-      return (
-        <h1 {...attributes} className="text-4xl font-bold">
-          {children}
-        </h1>
-      )
-    case types.DESCRIPTION:
-      return (
-        <p
-          className="text-lg font-light text-gray-700 italic mb-4"
-          {...attributes}
-        >
-          {children}
-        </p>
-      )
-    case types.BLOCK:
-      return (
-        <div
-          className="p-2 border rounded mt-4 border-gray-500"
-          {...attributes}
-        >
-          {children}
-        </div>
-      )
     default:
       return (
-        <Helper {...attributes} onAddBlock={onAddBlock}>
-          <p>{children}</p>
-        </Helper>
+        <Wrapper>
+          <p className="text-body mt-4">{children}</p>
+        </Wrapper>
       )
   }
 }
 
-function Helper({children, onAddBlock, ...props}) {
+function Helper({children, ...props}) {
   return (
     <div
-      className={`relative flex mt-4 ${css`
+      className={`relative ${css`
         &:hover {
           .helper-actions {
             opacity: 1;
@@ -125,7 +132,7 @@ function Helper({children, onAddBlock, ...props}) {
       `}`}
       {...props}
     >
-      <div
+      {/* <div
         contentEditable={false}
         className={`helper-actions self-center absolute left-0 opacity-0 pr-3 ${css`
           transition: all 0.25s ease;
@@ -142,7 +149,7 @@ function Helper({children, onAddBlock, ...props}) {
             <path d="M492 236H276V20c0-11.046-8.954-20-20-20s-20 8.954-20 20v216H20c-11.046 0-20 8.954-20 20s8.954 20 20 20h216v216c0 11.046 8.954 20 20 20s20-8.954 20-20V276h216c11.046 0 20-8.954 20-20s-8.954-20-20-20z" />
           </svg>
         </button>
-      </div>
+      </div> */}
       {children}
     </div>
   )

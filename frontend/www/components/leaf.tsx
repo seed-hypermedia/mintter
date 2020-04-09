@@ -7,7 +7,11 @@ export default function Leaf({attributes, children, leaf}: RenderLeafProps) {
   }
 
   if (leaf.code) {
-    children = <code className="bg-green-800 text-white">{children}</code>
+    children = (
+      <code className="bg-muted text-body text-sm py-1 px-2 rounded-sm border-none">
+        {children}
+      </code>
+    )
   }
 
   if (leaf.italic) {
