@@ -8,6 +8,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/imdario/mergo"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/lightningnetwork/lnd/aezeed"
@@ -42,6 +43,20 @@ type Profile struct {
 	Account Account
 	Peer    Peer
 	About   About
+}
+
+// Merge prof into p respecting immutable fields.
+func (p *Profile) Merge(prof Profile) error {
+	// Clear immutable fields
+	if p.Account.ID != "" {
+		prof.Account = Account{}
+	}
+
+	if p.Peer.ID != "" {
+		prof.Peer = Peer{}
+	}
+
+	return mergo.Merge(p, prof)
 }
 
 // NewIdentity creates new identity.
