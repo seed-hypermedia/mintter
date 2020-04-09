@@ -19,6 +19,23 @@ type PubKey struct {
 	crypto.PubKey
 }
 
+// MarshalBinary implements binary.Marshaler.
+func (pk PubKey) MarshalBinary() ([]byte, error) {
+	return crypto.MarshalPublicKey(pk)
+}
+
+// UnmarshalBinary implements binary.Unmarshaler.
+func (pk *PubKey) UnmarshalBinary(data []byte) error {
+	k, err := crypto.UnmarshalPublicKey(data)
+	if err != nil {
+		return err
+	}
+
+	pk.PubKey = k
+
+	return nil
+}
+
 // MarshalJSON implements json.Marshaler.
 func (pk PubKey) MarshalJSON() ([]byte, error) {
 	raw, err := crypto.MarshalPublicKey(pk)
@@ -49,6 +66,23 @@ func (pk *PubKey) UnmarshalJSON(data []byte) error {
 // PrivKey wraps crypto.PrivKey to enable JSON encoding.
 type PrivKey struct {
 	crypto.PrivKey
+}
+
+// MarshalBinary implements binary.Marshaler.
+func (pk PrivKey) MarshalBinary() ([]byte, error) {
+	return crypto.MarshalPrivateKey(pk)
+}
+
+// UnmarshalBinary implements binary.Unmarshaler.
+func (pk *PrivKey) UnmarshalBinary(data []byte) error {
+	k, err := crypto.UnmarshalPrivateKey(data)
+	if err != nil {
+		return err
+	}
+
+	pk.PrivKey = k
+
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
