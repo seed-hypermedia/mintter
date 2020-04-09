@@ -1,11 +1,9 @@
 package server
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"mintter/backend/identity"
 	"mintter/proto"
 	"os"
@@ -121,12 +119,8 @@ func (s *Server) loadProfile() (identity.Profile, error) {
 	}
 	defer f.Close()
 
-	var b bytes.Buffer
-
-	io.Copy(&b, f)
-
 	var p identity.Profile
-	if err := json.NewDecoder(&b).Decode(&p); err != nil {
+	if err := json.NewDecoder(f).Decode(&p); err != nil {
 		return identity.Profile{}, fmt.Errorf("failed to decode json profile: %w", err)
 	}
 
