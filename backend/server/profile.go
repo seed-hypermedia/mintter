@@ -1,14 +1,18 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"mintter/backend/identity"
 	"mintter/proto"
 	"os"
 	"path/filepath"
 
+	"github.com/imdario/mergo"
+	peer "github.com/libp2p/go-libp2p-core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -56,13 +60,7 @@ func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*
 	}
 
 	return &proto.GetProfileResponse{
-		Profile: &proto.Profile{
-			PeerId:          prof.PeerID.String(),
-			Username:        prof.Username,
-			Email:           prof.Email,
-			TwitterUsername: prof.TwitterUsername,
-			Bio:             prof.Bio,
-		},
+		Profile: profileToProto(prof),
 	}, nil
 }
 
@@ -77,20 +75,16 @@ func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileReque
 		return nil, status.Error(codes.InvalidArgument, "parameter 'profile' is required")
 	}
 
-	if in.Profile.Email != "" {
-		prof.Email = in.Profile.Email
+	// Clear output only fields.
+	in.Profile.PeerId = ""
+
+	update, err := profileFromProto(in.Profile)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "failed to convert proto profile into profile: %v", err)
 	}
 
-	if in.Profile.Username != "" {
-		prof.Username = in.Profile.Username
-	}
-
-	if in.Profile.TwitterUsername != "" {
-		prof.TwitterUsername = in.Profile.TwitterUsername
-	}
-
-	if in.Profile.Bio != "" {
-		prof.Bio = in.Profile.Bio
+	if err := mergo.Merge(&prof, update); err != nil {
+		return nil, fmt.Errorf("failed to merge profiles: %v", err)
 	}
 
 	if err := s.storeProfile(prof); err != nil {
@@ -98,13 +92,7 @@ func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileReque
 	}
 
 	return &proto.UpdateProfileResponse{
-		Profile: &proto.Profile{
-			PeerId:          prof.PeerID.String(),
-			Username:        prof.Username,
-			TwitterUsername: prof.TwitterUsername,
-			Email:           prof.Email,
-			Bio:             prof.Bio,
-		},
+		Profile: profileToProto(prof),
 	}, nil
 }
 
@@ -140,13 +128,45 @@ func (s *Server) loadProfile() (identity.Profile, error) {
 	if err != nil {
 		return identity.Profile{}, fmt.Errorf("failed to load profile: %w", err)
 	}
+	defer f.Close()
+
+	var b bytes.Buffer
+
+	io.Copy(&b, f)
 
 	var p identity.Profile
-	if err := json.NewDecoder(f).Decode(&p); err != nil {
+	if err := json.NewDecoder(&b).Decode(&p); err != nil {
 		return identity.Profile{}, fmt.Errorf("failed to decode json profile: %w", err)
 	}
 
 	s.prof = p
 
 	return s.prof, nil
+}
+
+func profileToProto(prof identity.Profile) *proto.Profile {
+	return &proto.Profile{
+		PeerId:   prof.PeerID.String(),
+		Username: prof.Username,
+		Email:    prof.Email,
+		Bio:      prof.Bio,
+	}
+}
+
+func profileFromProto(pbprof *proto.Profile) (identity.Profile, error) {
+	prof := identity.Profile{
+		Username: pbprof.Username,
+		Email:    pbprof.Email,
+		Bio:      pbprof.Bio,
+	}
+
+	if pbprof.PeerId != "" {
+		pid, err := peer.IDFromString(pbprof.PeerId)
+		if err != nil {
+			return identity.Profile{}, err
+		}
+		prof.PeerID = pid
+	}
+
+	return prof, nil
 }

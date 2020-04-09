@@ -176,9 +176,6 @@ export class Profile extends jspb.Message {
   getEmail(): string;
   setEmail(value: string): void;
 
-  getTwitterUsername(): string;
-  setTwitterUsername(value: string): void;
-
   getBio(): string;
   setBio(value: string): void;
 
@@ -195,7 +192,6 @@ export namespace Profile {
     peerId: string,
     username: string,
     email: string,
-    twitterUsername: string,
     bio: string,
   }
 }

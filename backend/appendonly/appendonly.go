@@ -58,7 +58,7 @@ type Log struct {
 // `/logs/<profile-id>/<log-name>/head` - stores head of the log.
 // `/logs/<profile-id>/<log-name>/records/<seq>` - stored records by their sequence id.
 func NewLog(name string, prof identity.Profile, db datastore.TxnDatastore) (*Log, error) {
-	k := datastore.KeyWithNamespaces([]string{"/logs", prof.ID(), string(name)})
+	k := datastore.KeyWithNamespaces([]string{"/logs", prof.ID.String(), string(name)})
 	l := &Log{
 		headKey:    k.ChildString("head"),
 		recordsKey: k.ChildString("records"),
@@ -116,7 +116,7 @@ func (l *Log) Append(v interface{}) (SignedRecord, error) {
 
 	rec := Record{
 		Seq:           seq,
-		Author:        l.prof.ID(),
+		Author:        l.prof.ID.String(),
 		MultihashCode: defaultMultihashCode,
 		Previous:      l.head.hash,
 		Content:       content,
