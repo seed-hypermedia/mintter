@@ -10,6 +10,8 @@ import (
 
 func TestGenSeed(t *testing.T) {
 	srv := newServer(t)
+	defer require.NoError(t, srv.Close())
+
 	ctx := context.Background()
 
 	resp, err := srv.GenSeed(ctx, &proto.GenSeedRequest{})

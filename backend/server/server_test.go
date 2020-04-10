@@ -17,7 +17,7 @@ import (
 
 var _ proto.MintterServer = (*server.Server)(nil)
 
-func newServer(t *testing.T) *server.Server {
+func testRepoPath(t *testing.T) string {
 	t.Helper()
 
 	repoPath := fmt.Sprintf("test-repo-%d", time.Now().UnixNano())
@@ -26,7 +26,13 @@ func newServer(t *testing.T) *server.Server {
 		os.RemoveAll(repoPath)
 	})
 
-	srv, err := server.NewServer(repoPath, zap.NewNop())
+	return repoPath
+}
+
+func newServer(t *testing.T) *server.Server {
+	t.Helper()
+
+	srv, err := server.NewServer(testRepoPath(t), zap.NewNop())
 	require.NoError(t, err)
 
 	return srv

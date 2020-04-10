@@ -13,6 +13,7 @@ import (
 	"mintter/proto"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -27,7 +28,7 @@ type Config struct {
 }
 
 // Run the daemon.
-func Run(ctx context.Context, cfg Config) error {
+func Run(ctx context.Context, cfg Config) (err error) {
 	g, ctx := errgroup.WithContext(ctx)
 	if cfg.RepoPath == "" {
 		cfg.RepoPath = defaultRepoPath()
@@ -45,6 +46,9 @@ func Run(ctx context.Context, cfg Config) error {
 		if err != nil {
 			return fmt.Errorf("failed to create rpc server: %w", err)
 		}
+		defer func() {
+			err = multierr.Append(err, svc.Close())
+		}()
 
 		proto.RegisterMintterServer(rpcsrv, svc)
 		reflection.Register(rpcsrv)
@@ -66,7 +70,9 @@ func Run(ctx context.Context, cfg Config) error {
 	if err != nil {
 		return fmt.Errorf("failed to bind grpc listener: %w", err)
 	}
-	defer l.Close()
+	defer func() {
+		err = multierr.Append(err, l.Close())
+	}()
 
 	// Start gRPC server with graceful shutdown.
 
@@ -98,7 +104,9 @@ func Run(ctx context.Context, cfg Config) error {
 		zap.String("grpcURL", "grpc://localhost:"+cfg.GRPCPort),
 	)
 
-	return g.Wait()
+	err = g.Wait()
+
+	return
 }
 
 func defaultRepoPath() string {

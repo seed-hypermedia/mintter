@@ -137,6 +137,54 @@ func TestMerge(t *testing.T) {
 	}
 }
 
+func TestAboutDiff(t *testing.T) {
+	cases := []struct {
+		Old      identity.About
+		New      identity.About
+		Want     identity.About
+		WantNone bool
+	}{
+		{
+			Old:      identity.About{},
+			New:      identity.About{},
+			WantNone: true,
+		},
+		{
+			Old:  identity.About{Username: "foo"},
+			New:  identity.About{Bio: "fake-bio"},
+			Want: identity.About{Bio: "fake-bio"},
+		},
+		{
+			Old:  identity.About{Username: "foo", Bio: "fake-bio"},
+			New:  identity.About{Username: "foo2"},
+			Want: identity.About{Username: "foo2"},
+		},
+		{
+			Old:      identity.About{Username: "foo", Bio: "fake-bio"},
+			New:      identity.About{Username: "foo"},
+			WantNone: true,
+		},
+		{
+			Old:  identity.About{Username: "foo", Bio: "fake-bio"},
+			New:  identity.About{Bio: "fake-bio-2"},
+			Want: identity.About{Bio: "fake-bio-2"},
+		},
+		{
+			Old:  identity.About{},
+			New:  identity.About{Username: "foo", Bio: "fake-bio"},
+			Want: identity.About{Username: "foo", Bio: "fake-bio"},
+		},
+	}
+
+	for i, c := range cases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			diff, ok := c.Old.Diff(c.New)
+			require.NotEqual(t, c.WantNone, ok)
+			require.Equal(t, c.Want, diff)
+		})
+	}
+}
+
 func testProfile(t *testing.T, idx uint32) identity.Profile {
 	t.Helper()
 
