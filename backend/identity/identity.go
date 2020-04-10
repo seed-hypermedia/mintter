@@ -33,12 +33,34 @@ type Peer Identity
 
 // About is a mutable human-friendly information about the user.
 type About struct {
-	Username string
-	Email    string
-	Bio      string
+	Username string `cbor:"usernane,omitempty"`
+	Email    string `cbor:"email,omitempty"`
+	Bio      string `cbor:"bio,omitempty"`
+}
+
+// Diff two structs and return fields from aa that are chenged.
+func (a About) Diff(aa About) (diff About, ok bool) {
+	if aa.Email != "" && a.Email != aa.Email {
+		diff.Email = aa.Email
+		ok = true
+	}
+
+	if aa.Username != "" && a.Username != aa.Username {
+		diff.Username = aa.Username
+		ok = true
+	}
+
+	if aa.Bio != "" && a.Bio != aa.Bio {
+		diff.Bio = aa.Bio
+		ok = true
+	}
+
+	return
 }
 
 // Profile is the main identity of a user.
+//
+// TODO(burdiyan): add better separate for crypto and human info.
 type Profile struct {
 	Account Account
 	Peer    Peer

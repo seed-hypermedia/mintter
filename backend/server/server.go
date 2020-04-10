@@ -3,9 +3,8 @@ package server
 
 import (
 	"fmt"
-	"mintter/backend/identity"
-	"os"
-	"sync"
+
+	"mintter/backend/store"
 
 	"go.uber.org/zap"
 )
@@ -14,25 +13,29 @@ import (
 type Server struct {
 	repoPath string
 	log      *zap.Logger
-
-	// Don't access these directly. Use loadProfile and storeProfile methods.
-	mu   sync.Mutex
-	prof identity.Profile
+	store    *store.Store
 }
 
 // NewServer creates a new Server.
 func NewServer(repoPath string, log *zap.Logger) (*Server, error) {
-	if err := os.MkdirAll(repoPath, 0700); err != nil {
-		return nil, fmt.Errorf("unable to initialize local repo: %w", err)
+	store, err := store.New(repoPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create the store: %w", err)
 	}
 
 	return &Server{
 		repoPath: repoPath,
 		log:      log,
+		store:    store,
 	}, nil
 }
 
-// RepoPath returns repo path.
+// RepoPath returns server's repo path.
 func (s *Server) RepoPath() string {
 	return s.repoPath
+}
+
+// Close the server.
+func (s *Server) Close() error {
+	return s.store.Close()
 }

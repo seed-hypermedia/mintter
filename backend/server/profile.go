@@ -2,12 +2,10 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+
 	"mintter/backend/identity"
 	"mintter/proto"
-	"os"
-	"path/filepath"
 
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	"google.golang.org/grpc/codes"
@@ -16,33 +14,21 @@ import (
 
 // InitProfile implements InitProfile rpc.
 func (s *Server) InitProfile(ctx context.Context, req *proto.InitProfileRequest) (*proto.InitProfileResponse, error) {
-	if err := s.initProfile(req.Mnemonic, req.AezeedPassphrase); err != nil {
-		return nil, err
+	profile, err := identity.FromMnemonic(req.Mnemonic, req.AezeedPassphrase, 0)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to generate identity: %v", err)
+	}
+
+	if err := s.store.CreateProfile(ctx, profile); err != nil {
+		return nil, status.Errorf(codes.FailedPrecondition, "failed to create profile: %v", err)
 	}
 
 	return &proto.InitProfileResponse{}, nil
 }
 
-func (s *Server) initProfile(words []string, pass []byte) error {
-	if _, err := s.loadProfile(); err == nil {
-		return status.Error(codes.FailedPrecondition, "account is already initialized")
-	}
-
-	profile, err := identity.FromMnemonic(words, pass, 0)
-	if err != nil {
-		return status.Errorf(codes.Internal, "failed to generate identity: %v", err)
-	}
-
-	if err := s.storeProfile(profile); err != nil {
-		return status.Errorf(codes.Internal, "failed to store profile: %v", err)
-	}
-
-	return nil
-}
-
 // GetProfile implements Mintter rpc.
 func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*proto.GetProfileResponse, error) {
-	prof, err := s.loadProfile()
+	prof, err := s.store.GetProfile(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to load profile: %v", err)
 	}
@@ -54,11 +40,6 @@ func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*
 
 // UpdateProfile implements Mintter rpc.
 func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileRequest) (*proto.UpdateProfileResponse, error) {
-	prof, err := s.loadProfile()
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to load profile: %v", err)
-	}
-
 	if in.Profile == nil {
 		return nil, status.Error(codes.InvalidArgument, "parameter 'profile' is required")
 	}
@@ -71,61 +52,14 @@ func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileReque
 		return nil, status.Errorf(codes.InvalidArgument, "failed to convert proto profile into profile: %v", err)
 	}
 
-	if err := prof.Merge(update); err != nil {
-		return nil, fmt.Errorf("failed to merge profiles: %v", err)
-	}
-
-	if err := s.storeProfile(prof); err != nil {
+	stored, err := s.store.UpdateProfile(ctx, update)
+	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to store profile: %v", err)
 	}
 
 	return &proto.UpdateProfileResponse{
-		Profile: profileToProto(prof),
+		Profile: profileToProto(stored),
 	}, nil
-}
-
-func (s *Server) storeProfile(prof identity.Profile) error {
-	f, err := os.Create(filepath.Join(s.repoPath, "profile.json"))
-	if err != nil {
-		return fmt.Errorf("failed to create profile file: %w", err)
-	}
-	defer f.Close()
-
-	enc := json.NewEncoder(f)
-	enc.SetIndent("", "  ")
-
-	if err := enc.Encode(prof); err != nil {
-		return fmt.Errorf("failed to encode json: %w", err)
-	}
-
-	s.mu.Lock()
-	s.prof = prof
-	s.mu.Unlock()
-
-	return nil
-}
-
-func (s *Server) loadProfile() (identity.Profile, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.prof.Account.ID != "" {
-		return s.prof, nil
-	}
-
-	f, err := os.Open(filepath.Join(s.repoPath, "profile.json"))
-	if err != nil {
-		return identity.Profile{}, fmt.Errorf("failed to load profile: %w", err)
-	}
-	defer f.Close()
-
-	var p identity.Profile
-	if err := json.NewDecoder(f).Decode(&p); err != nil {
-		return identity.Profile{}, fmt.Errorf("failed to decode json profile: %w", err)
-	}
-
-	s.prof = p
-
-	return s.prof, nil
 }
 
 func profileToProto(prof identity.Profile) *proto.Profile {
@@ -147,9 +81,9 @@ func profileFromProto(pbprof *proto.Profile) (identity.Profile, error) {
 	}
 
 	if pbprof.PeerId != "" {
-		pid, err := peer.IDFromString(pbprof.PeerId)
+		pid, err := peer.Decode(pbprof.PeerId)
 		if err != nil {
-			return identity.Profile{}, err
+			return identity.Profile{}, fmt.Errorf("failed to decode peer id: %w", err)
 		}
 		prof.Peer.ID = pid
 	}

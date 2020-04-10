@@ -2,29 +2,78 @@
 package store
 
 import (
-	"context"
-	"mintter/backend/identity"
+	"errors"
+	"fmt"
+	"mintter/backend/appendonly"
+	"os"
+	"path/filepath"
+	"sync"
+
+	"github.com/ipfs/go-datastore"
+	badger "github.com/ipfs/go-ds-badger"
 )
 
 // Store is the persistence layer of the app.
 type Store struct {
+	repoPath string
+	db       datastore.TxnDatastore
+	pc       profileCache
+
+	// Use logs() method to access these. Lazy initialization.
+	once sync.Once
+	l    *logs
 }
 
-// UpdateProfile in the store.
-func (s *Store) UpdateProfile(ctx context.Context, prof identity.Profile) error {
-	// Store profile.
-	// Diff with existing profile.
-	// Publish diff in the log.
+// New creates a new Store.
+func New(repoPath string) (*Store, error) {
+	if err := os.MkdirAll(repoPath, 0700); err != nil {
+		return nil, fmt.Errorf("failed initialize local repo: %w", err)
+	}
 
-	return nil
+	db, err := badger.NewDatastore(filepath.Join(repoPath, "store"), &badger.DefaultOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	s := &Store{
+		repoPath: repoPath,
+		db:       db,
+	}
+
+	s.pc.filename = filepath.Join(repoPath, "profile.json")
+
+	return s, nil
 }
 
-// GetProfile from the store.
-func (s *Store) GetProfile(ctx context.Context) (identity.Profile, error) {
-	return identity.Profile{}, nil
+// Close the store.
+func (s *Store) Close() error {
+	return s.db.Close()
 }
 
-type logRecord struct {
-	Type string      `cbor:"type"`
-	Data interface{} `cbor:"data"`
+// RepoPath returns the base repo path.
+func (s *Store) RepoPath() string {
+	return s.repoPath
+}
+
+func (s *Store) logs() (*logs, error) {
+	// Load profile, if good, init logs.
+	prof, err := s.pc.load()
+	if err != nil {
+		return nil, err
+	}
+
+	if prof.Account.ID == "" {
+		return nil, errors.New("account is not initialized")
+	}
+
+	s.once.Do(func() {
+		s.l = &logs{}
+		s.l.profile, err = appendonly.NewLog("profile", prof.Account, s.db)
+	})
+
+	return s.l, err
+}
+
+type logs struct {
+	profile *appendonly.Log
 }
