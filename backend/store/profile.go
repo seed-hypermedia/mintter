@@ -42,13 +42,13 @@ func (s *Store) UpdateProfile(ctx context.Context, prof identity.Profile) (ident
 		return merged, nil
 	}
 
-	logs, err := s.logs()
+	lb, err := s.logbook()
 	if err != nil {
 		return identity.Profile{}, err
 	}
 
 	// TODO(burdiyan): verify the signature of the record?
-	if _, err := logs.profile.Append(eventAbout.New(diff)); err != nil {
+	if _, err := lb.Profile.Append(eventAbout.New(diff)); err != nil {
 		return identity.Profile{}, fmt.Errorf("failed to append to log: %w", err)
 	}
 
