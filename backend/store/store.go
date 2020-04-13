@@ -4,7 +4,7 @@ package store
 import (
 	"errors"
 	"fmt"
-	"mintter/backend/appendonly"
+	"mintter/backend/logbook"
 	"os"
 	"path/filepath"
 	"sync"
@@ -21,7 +21,7 @@ type Store struct {
 
 	// Use logs() method to access these. Lazy initialization.
 	once sync.Once
-	l    *logs
+	l    *logbook.Book
 }
 
 // New creates a new Store.
@@ -55,7 +55,7 @@ func (s *Store) RepoPath() string {
 	return s.repoPath
 }
 
-func (s *Store) logs() (*logs, error) {
+func (s *Store) logbook() (*logbook.Book, error) {
 	// Load profile, if good, init logs.
 	prof, err := s.pc.load()
 	if err != nil {
@@ -67,13 +67,8 @@ func (s *Store) logs() (*logs, error) {
 	}
 
 	s.once.Do(func() {
-		s.l = &logs{}
-		s.l.profile, err = appendonly.NewLog("profile", prof.Account, s.db)
+		s.l, err = logbook.New(prof.Account, s.db)
 	})
 
 	return s.l, err
-}
-
-type logs struct {
-	profile *appendonly.Log
 }
