@@ -1,0 +1,24 @@
+[
+  {
+    "In": {
+      "FirstName": "Alex",
+      "LastName": "",
+      "Bio": ""
+    },
+    "WantSeq": 0,
+    "WantHash": "12209c95e0327be53a909386c813f7b8c9fc25b895b9f8640b8ead2913198a7ed95b",
+    "WantSignature": "qua1S2UlLaSeM2OnDcdTqMPaLho+6QVsz/0nE318BfeG88DqapWaovqFfHrk7Imgz91qwUkETD583wn3+WkSBA==",
+    "WantSigningBytes": "EiA6NzlzmkBC4AqF2CFQmcprjYCHvucNQZId9QLID9O75g=="
+  },
+  {
+    "In": {
+      "FirstName": "",
+      "LastName": "Burdiyan",
+      "Bio": "Fake bio"
+    },
+    "WantSeq": 1,
+    "WantHash": "1220dd70faa14aa743f6854e353e5f315eca12a80d05e2f8631f2d8403c44002e2e9",
+    "WantSignature": "fL7umC3MeW5bFEfQS4APko6qFI7dXLV2Vi34Zh3dNSxB6gwE3wHwpaBK3EsIIdMlraByZ7GZ1CNjuO8ZqE8sCg==",
+    "WantSigningBytes": "EiDZ8EXRpPYk595cgLy4tifp1iitjZFd0kUuV1ZX+SWWCw=="
+  }
+]
