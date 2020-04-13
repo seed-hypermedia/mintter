@@ -10,6 +10,34 @@ import (
 	"github.com/multiformats/go-multihash"
 )
 
+var (
+	encMode cbor.EncMode
+)
+
+func init() {
+	opts := cbor.CanonicalEncOptions()
+	opts.Time = cbor.TimeRFC3339
+	m, err := opts.EncMode()
+	if err != nil {
+		panic(err)
+	}
+
+	encMode = m
+}
+
+// LogRecord is the record including the sequence number.
+// This is how it's stored in the actual log.
+// So the overall layout of the log data is:
+//
+// - LogRecord: stored in DB and includes the seq number.
+//   - SignedRecord: record and the author's signature of the underlying record.
+//     - Record: includes user-produced content and metadata like timestamp, author and etc.
+//       - Content: actual user's content.
+type LogRecord struct {
+	Seq int          `cbor:"1,keyasint"`
+	Rec SignedRecord `cbor:"2,keyasint"`
+}
+
 // SignedRecord is the final record signed with the private key.
 type SignedRecord struct {
 	signingBytes []byte
@@ -41,6 +69,14 @@ func (sr SignedRecord) Verify(key crypto.PubKey) error {
 	}
 
 	return nil
+}
+
+func (sr SignedRecord) Marshal() ([]byte, error) {
+	return encMode.Marshal(sr)
+}
+
+func (sr *SignedRecord) Unmarshal(data []byte) error {
+	return sr.UnmarshalCBOR(data)
 }
 
 // UnmarshalCBOR implements cbor.Unmarshaler.
@@ -76,14 +112,22 @@ func (sr *SignedRecord) UnmarshalCBOR(data []byte) error {
 	return nil
 }
 
+// ContentType is a type for types of content.
+type ContentType uint32
+
+// Content types.
+const (
+	ContentTypeCBOR ContentType = iota
+)
+
 // Record of the log.
 type Record struct {
-	Seq           int       `cbor:"1,keyasint"`
-	Author        string    `cbor:"2,keyasint"`
-	MultihashCode uint64    `cbor:"3,keyasint"`
-	Previous      string    `cbor:"4,keyasint"`
-	Content       []byte    `cbor:"5,keyasint"`
-	AppendTime    time.Time `cbor:"6,keyasint"`
+	Author        string      `cbor:"1,keyasint"`
+	MultihashCode uint64      `cbor:"2,keyasint"`
+	Previous      string      `cbor:"3,keyasint"`
+	ContentType   ContentType `cbor:"4,keyasint"`
+	Content       []byte      `cbor:"5,keyasint"`
+	AppendTime    time.Time   `cbor:"6,keyasint"`
 }
 
 // Sign the record with key.

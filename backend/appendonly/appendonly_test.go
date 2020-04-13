@@ -2,6 +2,7 @@ package appendonly
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -25,65 +26,77 @@ type About struct {
 func TestLogAppend(t *testing.T) {
 	log := makeLog(t)
 
-	cases := []struct {
-		In               interface{}
+	var cases []struct {
+		In               About
 		WantSeq          int
 		WantHash         string
 		WantSignature    []byte
 		WantSigningBytes []byte
-	}{
-		{
-			In:               About{FirstName: "Alex"},
-			WantSeq:          0,
-			WantHash:         "12204837b92e4f827f8b73b163b6f83b59cb7fa2624d7393c448cf33802662058190",
-			WantSignature:    []byte{0x55, 0x66, 0x68, 0x40, 0xc7, 0x21, 0x73, 0x26, 0xba, 0x99, 0x1c, 0x54, 0xd6, 0x66, 0xdb, 0x57, 0x90, 0xe2, 0x45, 0x20, 0x79, 0x6f, 0x3d, 0x49, 0xa4, 0x6b, 0x26, 0xbf, 0x1c, 0x7a, 0xfb, 0xab, 0xfc, 0x15, 0xf2, 0x11, 0x40, 0x84, 0x5c, 0x5, 0x84, 0x75, 0x53, 0x8b, 0xc2, 0xf0, 0x69, 0x48, 0xd9, 0x3c, 0xce, 0x44, 0x17, 0x91, 0xd0, 0x40, 0x29, 0x69, 0x2, 0x7c, 0xc3, 0x89, 0xe8, 0xc},
-			WantSigningBytes: []byte{0x12, 0x20, 0xac, 0xf1, 0x8e, 0xb6, 0x77, 0xd3, 0x42, 0xf7, 0xaf, 0x9b, 0x83, 0x3b, 0x73, 0x4, 0x3d, 0x71, 0xbf, 0xa7, 0x1, 0x3d, 0x57, 0x2d, 0xd, 0xe4, 0x1a, 0x9b, 0xd5, 0x7e, 0x18, 0x47, 0xf8, 0x4a},
-		},
-		{
-			In:               About{LastName: "Burdiyan", Bio: "Fake bio"},
-			WantSeq:          1,
-			WantHash:         "122087761d772b3c197a43ed7707ed550f3166f04a298a8ab20731551c950a151f68",
-			WantSignature:    []byte{0xf, 0x17, 0xa0, 0xfd, 0x61, 0xc8, 0xd4, 0x99, 0xe5, 0xb5, 0x31, 0x5b, 0xcb, 0xd7, 0x73, 0xe, 0xe0, 0xe1, 0x72, 0xf6, 0xcc, 0x62, 0xf5, 0x48, 0x80, 0x21, 0xd8, 0x26, 0x4, 0xa0, 0x15, 0xf0, 0xca, 0xec, 0x9e, 0x23, 0x28, 0x50, 0xed, 0x6f, 0xd5, 0xbc, 0x1c, 0x31, 0xb8, 0x10, 0x32, 0x85, 0xd0, 0xf8, 0x25, 0xd3, 0x6d, 0x1c, 0xad, 0x6, 0xbe, 0x93, 0xc2, 0x10, 0xc2, 0xf3, 0x68, 0x4},
-			WantSigningBytes: []byte{0x12, 0x20, 0x13, 0x31, 0x23, 0x2b, 0x1b, 0x3b, 0x9d, 0x99, 0xf6, 0x4, 0x75, 0x72, 0xc0, 0xf2, 0x17, 0x9d, 0x2b, 0xe5, 0x5a, 0xa3, 0x68, 0xf1, 0x49, 0x1f, 0x9c, 0x71, 0x64, 0x45, 0x53, 0xdd, 0x71, 0x9d},
-		},
 	}
 
-	var added []SignedRecord
+	isGolden := os.Getenv("MTT_TEST_GOLDEN") != ""
+
+	// Load cases from file.
+	{
+		testdata, err := ioutil.ReadFile("testdata/" + t.Name() + ".json")
+		require.NoError(t, err)
+		require.NoError(t, json.Unmarshal(testdata, &cases))
+	}
+
+	var added []LogRecord
 
 	// Append records and check expectations.
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("test append records %d", i), func(t *testing.T) {
-			rec, err := log.Append(c.In)
+			lr, err := log.Append(c.In)
 			require.NoError(t, err)
+			added = append(added, lr)
 
-			added = append(added, rec)
+			if isGolden {
+				c.WantSeq = lr.Seq
+				c.WantHash = lr.Rec.Hash()
+				c.WantSignature = lr.Rec.Signature
+				c.WantSigningBytes = lr.Rec.SigningBytes()
+				cases[i] = c
+			}
 
-			require.NoError(t, rec.Verify(log.prof.PubKey))
-			require.Equal(t, c.WantSeq, rec.Record.Seq)
-			require.Equal(t, c.WantHash, rec.Hash())
-			require.Equal(t, c.WantSignature, rec.Signature)
-			require.Equal(t, c.WantSigningBytes, rec.SigningBytes())
+			require.NoError(t, lr.Rec.Verify(log.prof.PubKey))
+			require.Equal(t, c.WantSeq, lr.Seq)
+			require.Equal(t, c.WantHash, lr.Rec.Hash())
+			require.Equal(t, c.WantSignature, lr.Rec.Signature)
+			require.Equal(t, c.WantSigningBytes, lr.Rec.SigningBytes())
 
 			var a About
-			require.NoError(t, cbor.Unmarshal(rec.Record.Content, &a))
+			require.NoError(t, cbor.Unmarshal(lr.Rec.Record.Content, &a))
 			require.Equal(t, c.In, a, "record content must match the inserted data")
 
-			if rec.Record.Seq > 0 {
-				require.Equal(t, cases[rec.Record.Seq-1].WantHash, rec.Record.Previous)
+			if lr.Seq > 0 {
+				require.Equal(t, cases[lr.Seq-1].WantHash, lr.Rec.Record.Previous)
 			}
 		})
 	}
 
 	require.Equal(t, len(cases), len(added))
 
+	// Overwrite golden files for test if needed.
+	if isGolden {
+		f, err := os.Create("testdata/" + t.Name() + ".json")
+		require.NoError(t, err)
+		enc := json.NewEncoder(f)
+		enc.SetIndent("", "  ")
+		err = enc.Encode(cases)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+	}
+
 	// === Test Get ===
 
 	for i, rec := range added {
 		t.Run(fmt.Sprintf("test get records %d", i), func(t *testing.T) {
-			sr, err := log.Get(rec.Record.Seq)
+			lr, err := log.Get(rec.Seq)
 			require.NoError(t, err)
-			require.Equal(t, rec, sr)
-			require.NoError(t, sr.Verify(log.prof.PubKey))
+			require.Equal(t, rec, lr)
+			require.NoError(t, lr.Rec.Verify(log.prof.PubKey))
 		})
 	}
 
@@ -96,15 +109,15 @@ func TestLogAppend(t *testing.T) {
 	}()
 
 	for {
-		sr, more := list.Next(context.TODO())
+		lr, more := list.Next(context.TODO())
 		if !more {
 			break
 		}
 
-		rec := added[sr.Record.Seq]
+		rec := added[lr.Seq]
 
-		require.Equal(t, rec, sr)
-		require.NoError(t, sr.Verify(log.prof.PubKey))
+		require.Equal(t, rec, lr)
+		require.NoError(t, lr.Rec.Verify(log.prof.PubKey))
 	}
 }
 
@@ -114,10 +127,10 @@ func TestLogInit(t *testing.T) {
 	// Append some records.
 	r1, err := log.Append(About{FirstName: "Alex"})
 	require.NoError(t, err)
-	require.Equal(t, 0, r1.Record.Seq)
+	require.Equal(t, 0, r1.Seq)
 	r2, err := log.Append(About{LastName: "Burdiyan"})
 	require.NoError(t, err)
-	require.Equal(t, 1, r2.Record.Seq)
+	require.Equal(t, 1, r2.Seq)
 
 	// Recreate log from the existing store.
 	log, err = NewLog(log.name, log.prof, log.db)
@@ -126,7 +139,7 @@ func TestLogInit(t *testing.T) {
 
 	r3, err := log.Append(About{Bio: "Fake bio"})
 	require.NoError(t, err)
-	require.Equal(t, 2, r3.Record.Seq)
+	require.Equal(t, 2, r3.Seq)
 }
 
 func mockTime(start time.Time, interval time.Duration) func() time.Time {

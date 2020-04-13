@@ -11,32 +11,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fxamacker/cbor/v2"
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/query"
 	"github.com/multiformats/go-multihash"
 )
 
 const defaultMultihashCode = multihash.SHA2_256
-
-type head struct {
-	seq  uint64
-	hash string
-}
-
-func (h head) MarshalBinary() ([]byte, error) {
-	hash := []byte(h.hash)
-	out := make([]byte, 8+len(hash))
-	binary.BigEndian.PutUint64(out, h.seq)
-	out = append(out, hash...)
-
-	return out, nil
-}
-
-func (h *head) UnmarshalBinary(data []byte) error {
-	h.seq = binary.BigEndian.Uint64(data)
-	h.hash = string(data[8:])
-	return nil
-}
 
 // Log is a single-writer append-only log.
 type Log struct {
@@ -97,82 +78,92 @@ func (l *Log) init() error {
 }
 
 // Append record to the log.
-func (l *Log) Append(v interface{}) (SignedRecord, error) {
+func (l *Log) Append(v interface{}) (LogRecord, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	txn, err := l.db.NewTransaction(false)
 	if err != nil {
-		return SignedRecord{}, fmt.Errorf("failed to open transaction: %w", err)
+		return LogRecord{}, fmt.Errorf("failed to open transaction: %w", err)
 	}
 	defer txn.Discard()
 
 	content, err := encMode.Marshal(v)
 	if err != nil {
-		return SignedRecord{}, fmt.Errorf("failed to encode content: %w", err)
+		return LogRecord{}, fmt.Errorf("failed to encode content: %w", err)
 	}
 
 	seq := l.nextSeq
 
 	rec := Record{
-		Seq:           seq,
 		Author:        l.prof.ID.String(),
 		MultihashCode: defaultMultihashCode,
 		Previous:      l.head.hash,
+		ContentType:   ContentTypeCBOR,
 		Content:       content,
 		AppendTime:    l.nowFunc(),
 	}
 
 	signed, err := rec.Sign(l.prof.PrivKey)
 	if err != nil {
-		return SignedRecord{}, err
+		return LogRecord{}, err
 	}
 
 	// TODO(burdiyan): Think how expensive is this marshaling.
 	// This could be optimized, because we already marshaled the whole record to produce the hash.
-	data, err := encMode.Marshal(signed)
+	lr := LogRecord{
+		Seq: seq,
+		Rec: signed,
+	}
+
+	data, err := encMode.Marshal(lr)
 	if err != nil {
-		return SignedRecord{}, fmt.Errorf("failed to marshal record before storing: %w", err)
+		return LogRecord{}, fmt.Errorf("failed to marshal record before storing: %w", err)
 	}
 
 	newHead := head{seq: uint64(seq), hash: signed.Hash()}
 	binhead, err := newHead.MarshalBinary()
 	if err != nil {
-		return SignedRecord{}, err
+		return LogRecord{}, err
 	}
 
 	// Sequence number is encoded as big endian uint64 to sort lexicographically correctly.
 	seqstr := string(binhead[:8])
 
 	if err := txn.Put(l.recordsKey.ChildString(seqstr), data); err != nil {
-		return SignedRecord{}, fmt.Errorf("failed to add record to datastore: %w", err)
+		return LogRecord{}, fmt.Errorf("failed to add record to datastore: %w", err)
 	}
 
 	if err := txn.Put(l.headKey, binhead); err != nil {
-		return SignedRecord{}, fmt.Errorf("failed to store head: %w", err)
+		return LogRecord{}, fmt.Errorf("failed to store head: %w", err)
 	}
 
 	if err := txn.Commit(); err != nil {
-		return SignedRecord{}, fmt.Errorf("failed to commit transaction: %w", err)
+		return LogRecord{}, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	l.head = newHead
 	l.nextSeq = seq + 1
 
-	return signed, nil
+	return lr, nil
 }
 
 // Get record by its seq.
-func (l *Log) Get(seq int) (SignedRecord, error) {
+func (l *Log) Get(seq int) (LogRecord, error) {
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, uint64(seq))
 
 	v, err := l.db.Get(l.recordsKey.ChildString(string(b)))
 	if err != nil {
-		return SignedRecord{}, err
+		return LogRecord{}, err
 	}
 
-	return DecodeSignedRecord(v)
+	var lr LogRecord
+	if err := cbor.Unmarshal(v, &lr); err != nil {
+		return LogRecord{}, err
+	}
+
+	return lr, nil
 }
 
 // List appended records from the log.
@@ -195,25 +186,45 @@ type Results struct {
 }
 
 // Next record. Blocks until context is canceled or record is retrieved.
-func (r *Results) Next(ctx context.Context) (sr SignedRecord, hasMore bool) {
+func (r *Results) Next(ctx context.Context) (sr LogRecord, hasMore bool) {
 	select {
 	case <-ctx.Done():
-		return SignedRecord{}, false
+		return LogRecord{}, false
 	case rec, ok := <-r.q.Next():
 		if !ok {
-			return SignedRecord{}, false
+			return LogRecord{}, false
 		}
 
-		sr, err := DecodeSignedRecord(rec.Value)
-		if err != nil {
+		var lr LogRecord
+		if err := cbor.Unmarshal(rec.Value, &lr); err != nil {
 			panic("bug: " + err.Error())
 		}
 
-		return sr, true
+		return lr, true
 	}
 }
 
 // Close the results.
 func (r *Results) Close() error {
 	return r.q.Close()
+}
+
+type head struct {
+	seq  uint64
+	hash string
+}
+
+func (h head) MarshalBinary() ([]byte, error) {
+	hash := []byte(h.hash)
+	out := make([]byte, 8+len(hash))
+	binary.BigEndian.PutUint64(out, h.seq)
+	out = append(out, hash...)
+
+	return out, nil
+}
+
+func (h *head) UnmarshalBinary(data []byte) error {
+	h.seq = binary.BigEndian.Uint64(data)
+	h.hash = string(data[8:])
+	return nil
 }
