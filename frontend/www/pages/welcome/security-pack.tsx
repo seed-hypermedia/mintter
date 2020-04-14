@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {useState} from 'react'
 import Layout from '../../components/welcome-layout'
 import Container from '../../components/welcome-container'
 import Heading from '../../components/welcome-heading'
@@ -7,8 +7,6 @@ import Footer from '../../components/footer'
 import Content from '../../components/content'
 import P from '../../components/welcome-p'
 import {css} from 'emotion'
-import rpcModule from '../../shared/rpc'
-import {MintterPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
 import {GenSeedRequest} from '@mintter/proto/mintter_pb'
 import {useRouter} from 'next/router'
 import Input from '../../components/input'
@@ -16,12 +14,15 @@ import Button from '../../components/button'
 import {useForm} from 'react-hook-form'
 import {useWelcome} from '../../shared/welcomeProvider'
 import {useFocus} from '../../shared/hooks'
+import {makeRpcClient, MintterPromiseClient} from '../../shared/rpc'
 
 interface SecurityPackProps {
   rpc: MintterPromiseClient
 }
 
-export default function SecurityPack({rpc = rpcModule}: SecurityPackProps) {
+export default function SecurityPack({
+  rpc = makeRpcClient(),
+}: SecurityPackProps) {
   const [error, setError] = useState<{code: number; message: string}>()
   const {focusFirst} = useFocus()
   const [mnemonic, setMnemonic] = useState<string[]>([])

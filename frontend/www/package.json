@@ -37,11 +37,11 @@
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-hook-form": "^5.0.3",
-    "slate": "^0.57.0",
+    "slate": "^0.57.1",
     "slate-hyperscript": "^0.57.1",
-    "slate-plugins-next": "^0.57.8",
-    "slate-react": "^0.57.0",
-    "styled-components": "^5.0.1"
+    "slate-plugins-next": "^0.57.12",
+    "slate-react": "^0.57.1",
+    "styled-components": "^5.1.0"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.2.1",
