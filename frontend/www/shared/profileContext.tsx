@@ -1,18 +1,15 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  MutableRefObject,
-  useState,
-} from 'react'
+import {createContext, useContext, useEffect, useState} from 'react'
 import {
   UpdateProfileRequest,
   GetProfileRequest,
   InitProfileRequest,
   Profile,
 } from '@mintter/proto/mintter_pb'
-import rpcModule from './rpc'
 import {MintterPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
+
+export const makeRpcClient = (): MintterPromiseClient => {
+  return new MintterPromiseClient('http://localhost:55001')
+}
 
 interface ProfileContextValue {
   readonly profile: Profile | null
@@ -33,7 +30,7 @@ interface ProfileProviderProps {
 export default function ProfileProvider({
   children,
   value: {profile: propProfile = null, ...rest} = {profile: null},
-  rpc = rpcModule,
+  rpc = makeRpcClient(),
 }: ProfileProviderProps) {
   const [profile, setLocalProfile] = useState<Profile>(propProfile)
 
