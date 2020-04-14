@@ -89,7 +89,8 @@ export default function EditorPage(): JSX.Element {
         ref={wrapperRef}
       >
         <EditorHeader />
-        <div className="flex pt-8 pb-32">
+        <div className="flex pt-8 pb-32 relative">
+            <DebugValue value={{title, description, value}} className="absolute z-10 right-0 top-0 w-full max-w-xs" />
           <div
             className={`w-full pr-4 absolute xl:sticky left-0 top-0 self-start mx-4 opacity-0 pointer-events-none xl:opacity-100 xl:pointer-events-auto transition duration-200 ${css`
               max-width: 300px;
@@ -100,10 +101,6 @@ export default function EditorPage(): JSX.Element {
                 {title || 'Untitled document'}
               </p>
             </div>
-            <DebugValue
-              className="absolute"
-              value={{title, description, value}}
-            />
           </div>
           <div
             className={`flex-1 ${css`

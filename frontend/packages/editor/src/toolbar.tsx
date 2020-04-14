@@ -5,11 +5,12 @@ import {
   ToolbarBlock,
   ToolbarImage,
   ToolbarCode,
+  ToolbarLink as DefaultToolbarLink,
   MARK_BOLD,
   MARK_ITALIC,
   MARK_CODE,
 } from 'slate-plugins-next'
-import {Bold, Italic, Code} from 'react-feather'
+import {Bold, Italic, Code, Link} from 'react-feather'
 
 export function Toolbar() {
   return (
@@ -17,6 +18,7 @@ export function Toolbar() {
       <ToolbarBoldMark />
       <ToolbarMarkItalic />
       <ToolbarMarkCode />
+      <ToolbarLink />
     </HoveringToolbar>
   )
 }
@@ -31,6 +33,10 @@ export function ToolbarMarkItalic() {
 
 export function ToolbarMarkCode() {
   return <ToolbarMark reversed format={MARK_CODE} icon={<Code />} />
+}
+
+export function ToolbarLink() {
+  return <DefaultToolbarLink icon={<Link />} />
 }
 
 export {ToolbarMark, ToolbarBlock, ToolbarImage, ToolbarCode}
