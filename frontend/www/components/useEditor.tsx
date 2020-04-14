@@ -14,6 +14,7 @@ import {
   HeadingType,
   ListType,
   withPasteHtml,
+  withPasteMd,
 } from 'slate-plugins-next'
 import {withMarkdownParser} from '@horacioh/slate-plugin-with-markdown-parser'
 
@@ -39,8 +40,10 @@ export default function useEditor(plugins): Editor {
           withBreakEmptyReset(resetOptions)(
             withDeleteStartReset(resetOptions)(
               withPasteHtml(plugins)(
-                withBlock(
-                  withMarkdownParser(withLink(withReact(createEditor()))),
+                withPasteMd(plugins)(
+                  withBlock(
+                    withMarkdownParser(withLink(withReact(createEditor()))),
+                  ),
                 ),
               ),
             ),

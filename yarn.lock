@@ -1321,7 +1321,7 @@
   resolved "https://registry.yarnpkg.com/@emotion/hash/-/hash-0.7.4.tgz#f14932887422c9056b15a8d222a9074a7dfa2831"
   integrity sha512-fxfMSBMX3tlIbKUdtGKxqB1fyrH6gVrX39Gsv3y8lRYKUqlgDt3UMqQyGnR1bQMa2B8aGnhLZokZgg8vT0Le+A==
 
-"@emotion/is-prop-valid@^0.8.2", "@emotion/is-prop-valid@^0.8.3":
+"@emotion/is-prop-valid@^0.8.2", "@emotion/is-prop-valid@^0.8.8":
   version "0.8.8"
   resolved "https://registry.yarnpkg.com/@emotion/is-prop-valid/-/is-prop-valid-0.8.8.tgz#db28b1c4368a259b60a97311d6a952d4fd01ac1a"
   integrity sha512-u5WtneEAr5IDG2Wv65yhunPSMLIpuKsbuOktRojfrEiEvRyC85LgPMZI63cr7NUqT8ZIGdSVg8ZKGxIug4lXcA==
@@ -11005,7 +11005,7 @@ slate-hyperscript@^0.57.1:
   dependencies:
     is-plain-object "^3.0.0"
 
-slate-plugins-next@^0.57.11, slate-plugins-next@^0.57.8:
+slate-plugins-next@^0.57.11:
   version "0.57.11"
   resolved "https://registry.yarnpkg.com/slate-plugins-next/-/slate-plugins-next-0.57.11.tgz#3ccceedb5431caa42c96c8380110ff63a945c775"
   integrity sha512-chxtlc9Brgunp0r7YuM2DkrzCmWBTUCkYhNjCZCsAR1FGoz3rnyQeQ8eJOIDscLA68RiEWD4yO+zeF4b48MbkQ==
@@ -11016,7 +11016,18 @@ slate-plugins-next@^0.57.11, slate-plugins-next@^0.57.8:
     marked "^0.8.0"
     prismjs "^1.17.1"
 
-slate-react@^0.57.0, slate-react@^0.57.1:
+slate-plugins-next@^0.57.12:
+  version "0.57.12"
+  resolved "https://registry.yarnpkg.com/slate-plugins-next/-/slate-plugins-next-0.57.12.tgz#7df7d772d1b3d58d6c5a36bb6ba5d219460e3144"
+  integrity sha512-RpjikoL+qaaEb4TfigCgM8mqRY0qFg1neahEitCrL15zrT/ZTLzvVNNzymWm1rn2YAi2yHM9DTkJbU8rkcaZ1g==
+  dependencies:
+    image-extensions "^1.1.0"
+    is-hotkey "^0.1.6"
+    is-url "^1.2.4"
+    marked "^0.8.0"
+    prismjs "^1.17.1"
+
+slate-react@^0.57.1:
   version "0.57.1"
   resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.57.1.tgz#219a95b7caaea365a7f6fac5f3f5aa2e9da62295"
   integrity sha512-W+M+YEcqBvuJD2xoU1gKgGbvhv6shwYJ5OOjPF8ZPEokUvGJh81Egxf65ZnnKxJejodsERdlwc2rRjpRphx2LQ==
@@ -11029,7 +11040,7 @@ slate-react@^0.57.0, slate-react@^0.57.1:
     is-plain-object "^3.0.0"
     scroll-into-view-if-needed "^2.2.20"
 
-slate@^0.57.0, slate@^0.57.1:
+slate@^0.57.1:
   version "0.57.1"
   resolved "https://registry.yarnpkg.com/slate/-/slate-0.57.1.tgz#dc99d9a77840894c9e3d3bc1185b67ee36c17686"
   integrity sha512-av95C0zbsi0+khfOuyQlpZy0Q3Pqqh0loCusGGi0Wlb/J8OUBAyK/a5EgTfE0zK4pmjtEBnPksfBuVilg5jrNg==
@@ -11487,14 +11498,14 @@ style-value-types@^3.1.6, style-value-types@^3.1.7:
     hey-listen "^1.0.8"
     tslib "^1.10.0"
 
-styled-components@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/styled-components/-/styled-components-5.0.1.tgz#57782a6471031abefb2db5820a1876ae853bc619"
-  integrity sha512-E0xKTRIjTs4DyvC1MHu/EcCXIj6+ENCP8hP01koyoADF++WdBUOrSGwU1scJRw7/YaYOhDvvoad6VlMG+0j53A==
+styled-components@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/styled-components/-/styled-components-5.1.0.tgz#2e3985b54f461027e1c91af3229e1c2530872a4e"
+  integrity sha512-0Qs2wEkFBXHFlysz6CV831VG6HedcrFUwChjnWylNivsx14MtmqQsohi21rMHZxzuTba063dEyoe/SR6VGJI7Q==
   dependencies:
     "@babel/helper-module-imports" "^7.0.0"
     "@babel/traverse" "^7.4.5"
-    "@emotion/is-prop-valid" "^0.8.3"
+    "@emotion/is-prop-valid" "^0.8.8"
     "@emotion/stylis" "^0.8.4"
     "@emotion/unitless" "^0.7.4"
     babel-plugin-styled-components ">= 1"
