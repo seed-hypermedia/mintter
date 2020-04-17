@@ -21,6 +21,7 @@
     "framer-motion": "^1.8.4",
     "react-feather": "^2.0.4",
     "slate": "^0.57.1",
+    "slate-history": "^0.57.1",
     "slate-plugins-next": "^0.57.12",
     "slate-react": "^0.57.1"
   },
