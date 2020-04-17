@@ -37,6 +37,8 @@ export default function EditorPage(): JSX.Element {
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
   const [value, setValue] = React.useState<Node[]>(initialValue)
   const wrapperRef = React.useRef<HTMLDivElement>(null)
+  const titleRef = React.useRef(null)
+  const descriptionRef = React.useRef(null)
   const [title, setTitle] = React.useState<string>('')
   const [description, setDescription] = React.useState<string>('')
 
@@ -125,22 +127,30 @@ export default function EditorPage(): JSX.Element {
                     `}`}
                   >
                     <Textarea
+                      ref={titleRef}
                       value={title}
-                      onChange={t => setTitle(t)}
+                      onChange={t => {
+                        console.log('changed!')
+                        setTitle(t)
+                      }}
                       placeholder="Untitled document"
                       minHeight={56}
                       className={`text-4xl text-heading font-bold leading-10`}
+                      onEnterPress={() => {
+                        descriptionRef.current.focus()
+                      }}
                     />
                     <Textarea
+                      ref={descriptionRef}
                       value={description}
                       onChange={t => setDescription(t)}
                       placeholder="+ Add a subtitle"
                       minHeight={28}
                       className={`text-lg font-light text-heading-muted italic`}
+                      onEnterPress={() => {
+                        ReactEditor.focus(editor)
+                      }}
                     />
-                    <HeadingToolbar>
-                      <ToolbarImage />
-                    </HeadingToolbar>
                   </div>
                   <Toolbar />
                   <EditablePlugins

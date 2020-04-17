@@ -8,11 +8,20 @@ interface TextareaProps {
   minHeight: number
   className?: string
   placeholder?: string
+  onEnterPress: (e: any) => void
 }
 
 // eslint-disable-next-line react/display-name
 const Textarea = (
-  {value, name, onChange, minHeight, className, ...props}: TextareaProps,
+  {
+    value,
+    name,
+    onChange,
+    minHeight,
+    className,
+    onEnterPress,
+    ...props
+  }: TextareaProps,
   ref: any,
 ) => {
   const [innerValue, setInnerValue] = React.useState('')
@@ -28,6 +37,7 @@ const Textarea = (
   })
 
   function handleChange(e) {
+    console.log(e.keyCode)
     if (onChange) {
       onChange(e.target.value)
       return
@@ -53,6 +63,7 @@ const Textarea = (
   function handleKeyDown(e) {
     if (e.keyCode === 13) {
       e.preventDefault()
+      onEnterPress(e)
       return false
     }
   }
@@ -73,7 +84,13 @@ const Textarea = (
         onKeyDown={handleKeyDown}
         ref={r => {
           innerRef.current = r
-          ref && ref(r)
+          if (ref) {
+            if (typeof ref === 'function') {
+              ref(r)
+            } else {
+              ref.current = r
+            }
+          }
         }}
       />
       <div
