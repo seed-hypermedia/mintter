@@ -1,4 +1,5 @@
 import {Editor as SlateEditor} from 'slate'
+import {PARAGRAPH} from 'slate-plugins-next'
 
 export interface MintterEditor {}
 
@@ -6,3 +7,14 @@ export interface MintterEditor {}
 export const Editor = {
   ...SlateEditor,
 }
+
+export const initialValue = [
+  {
+    type: PARAGRAPH,
+    children: [
+      {
+        text: '',
+      },
+    ],
+  },
+]

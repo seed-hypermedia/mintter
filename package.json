@@ -16,6 +16,7 @@
     "site:test": "yarn workspace @mintter/site test",
     "site:test:watch": "yarn workspace @mintter/site test:watch",
     "site:test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch",
+    "editor:watch": "yarn workspace @mintter/editor start",
     "release": "yarn build:all",
     "dev": "yarn workspace @mintter/site dev",
     "publish:all": "yarn workspaces run npm:publish",
