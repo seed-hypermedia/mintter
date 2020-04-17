@@ -1,7 +1,14 @@
 import React from 'react'
 import {css} from 'emotion'
 import {RenderElementProps} from 'slate-react'
-import {ListType, LINK, HeadingType, BLOCKQUOTE, CODE} from 'slate-plugins-next'
+import {
+  ListType,
+  LINK,
+  HeadingType,
+  BLOCKQUOTE,
+  CODE,
+  PARAGRAPH,
+} from 'slate-plugins-next'
 
 export default function Element({
   attributes,
@@ -127,24 +134,13 @@ export default function Element({
           {children}
         </a>
       )
-    default:
+    case PARAGRAPH:
       return (
-        <p {...attributes} className="text-body mt-4">
+        <p {...attributes} className={`text-body mt-4`}>
           {children}
         </p>
       )
+    default:
+      return children
   }
 }
-
-export const renderElementParagraph = () => ({className, ...props}) => (
-  <p {...props} className={`text-body mt-4 ${className}`} />
-)
-
-export const renderElementBlockquote = () => ({children, ...props}) => (
-  <blockquote
-    {...props}
-    className="mt-4 p-4 md:-mx-8 md:px-8 box-border w-auto block relative border-l-4 border-muted-hover bg-background-muted rounded-md rounded-tl-none rounded-bl-none"
-  >
-    <p className="italic text-xl font-light font-serif text-body">{children}</p>
-  </blockquote>
-)

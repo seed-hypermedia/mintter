@@ -21,6 +21,7 @@ const resetOptions = {
 }
 
 export function useEditor(plugins: any[]): Editor {
+  console.log('functionuseEditor -> plugins', plugins)
   return React.useMemo(
     () =>
       withShortcuts(

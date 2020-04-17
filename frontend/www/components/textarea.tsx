@@ -81,7 +81,6 @@ const Textarea = (
         className={`${className} ${css`
           word-wrap: break-word;
           white-space: pre-wrap;
-          background: red;
           min-height: ${minHeight ? minHeight : lh}px;
           line-height: ${minHeight}px;
         `}`}

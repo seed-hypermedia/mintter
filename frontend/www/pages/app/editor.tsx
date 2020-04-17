@@ -8,12 +8,13 @@ import {
   useEditor,
   plugins as editorPlugins,
   initialValue,
+  ToolbarImage,
 } from '@mintter/editor'
 import {
   EditablePlugins,
   SlatePlugin,
   renderLeafPreview,
-  renderElementCode,
+  HeadingToolbar,
 } from 'slate-plugins-next'
 import Seo from '../../components/seo'
 import {
@@ -22,7 +23,7 @@ import {
   renderLeafUnderline,
   renderLeafInlineCode,
 } from '../../components/leafs'
-import renderElement, {renderElementParagraph} from '../../components/elements'
+import renderElement from '../../components/elements'
 import EditorHeader from '../../components/editor-header'
 import {DebugValue} from '../../components/debug'
 import {css} from 'emotion'
@@ -128,10 +129,7 @@ export default function EditorPage(): JSX.Element {
                       onChange={t => setTitle(t)}
                       placeholder="Untitled document"
                       minHeight={56}
-                      className={`text-4xl text-heading font-bold leading-10 ${css`
-                        word-wrap: break-word;
-                        white-space: pre-wrap;
-                      `}`}
+                      className={`text-4xl text-heading font-bold leading-10`}
                     />
                     <Textarea
                       value={description}
@@ -140,15 +138,14 @@ export default function EditorPage(): JSX.Element {
                       minHeight={28}
                       className={`text-lg font-light text-heading-muted italic`}
                     />
+                    <HeadingToolbar>
+                      <ToolbarImage />
+                    </HeadingToolbar>
                   </div>
                   <Toolbar />
                   <EditablePlugins
                     plugins={plugins}
-                    renderElement={[
-                      renderElement,
-                      renderElementParagraph(),
-                      renderElementCode(),
-                    ]}
+                    renderElement={[renderElement]}
                     renderLeaf={[
                       renderLeafBold(),
                       renderLeafItalic(),
@@ -175,7 +172,6 @@ const SoftBreakPlugin = (): SlatePlugin => ({
 })
 
 const onKeyDownSoftBreak = () => (e: KeyboardEvent, editor: SlateEditor) => {
-  console.log('using is-hothey => ')
   if (
     isHotkey('shift+enter', e) &&
     editor.selection &&
