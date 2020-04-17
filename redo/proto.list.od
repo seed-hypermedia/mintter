@@ -1,0 +1,2 @@
+redo-always
+find . -type f -name "*.proto" | redo-stamp

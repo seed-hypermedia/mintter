@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"mintter/backend/p2p"
 	"mintter/backend/server"
 	"mintter/proto"
 
@@ -25,6 +26,8 @@ type Config struct {
 	HTTPPort string `help:"Port to expose HTTP server (including grpc-web)" default:"55001"`
 	GRPCPort string `help:"Port to expose gRPC server" default:"55002"`
 	RepoPath string `help:"Path to where to store node data (default: ~/.mtt)"`
+
+	P2P p2p.Config `help:"P2P configuration" prefix:"p2p." embed:""`
 }
 
 // Run the daemon.

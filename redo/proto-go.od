@@ -1,0 +1,6 @@
+redo-ifchange proto.list
+
+echo "Executing protoc for Go" >&2
+protoc --go_out=plugins=grpc:. *.proto
+
+redo-ifchange `find . -type f -name "*.pb.go" -o -name "*.proto"`

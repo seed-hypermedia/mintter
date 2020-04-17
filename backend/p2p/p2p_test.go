@@ -1,0 +1,52 @@
+package p2p
+
+import (
+	"context"
+	"encoding/json"
+	"io/ioutil"
+	"mintter/backend/identity"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+func makeTestNode(t *testing.T, name string) *Node {
+	t.Helper()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	n, err := NodeFromConfig(ctx, makeTestRepoPath(t), makeTestProfile(t, name), Config{Addr: "/ip4/0.0.0.0/tcp/0"})
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, n.Close())
+	})
+
+	return n
+}
+
+func makeTestProfile(t *testing.T, name string) identity.Profile {
+	t.Helper()
+
+	data, err := ioutil.ReadFile("testdata/profiles/" + name + ".json")
+	require.NoError(t, err)
+
+	var p identity.Profile
+	require.NoError(t, json.Unmarshal(data, &p))
+
+	return p
+}
+
+func makeTestRepoPath(t *testing.T) string {
+	t.Helper()
+
+	dir, err := ioutil.TempDir(os.TempDir(), "p2p-test-repo")
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		os.RemoveAll(dir)
+	})
+
+	return dir
+}

@@ -1,0 +1,1 @@
+. ../../../redo/proto-go.od

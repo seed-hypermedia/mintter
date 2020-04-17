@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package mintter.p2p;
+
+option go_package = "internal";
+
+service PeerService {
+  rpc Ping(PingRequest) returns (PingResponse) {}
+}
+
+message PingRequest {}
+
+message PingResponse {}
