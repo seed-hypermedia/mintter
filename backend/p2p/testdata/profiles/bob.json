@@ -1,0 +1,17 @@
+{
+  "Account": {
+    "ID": "12D3KooWE9KLCLmcVLWnghj7d2oN8LvSGVfF2cgegEq5yFvbTkMC",
+    "PubKey": "CAESIEBJk0JSg3q6X+q/dBEcSJVGj01/bj2+X0MCW1LGV9tv",
+    "PrivKey": "CAESQO89km7Cis1PMBoBV3MHx3JNO4XdtN5a+y+OgIL4klX3QEmTQlKDerpf6r90ERxIlUaPTX9uPb5fQwJbUsZX228="
+  },
+  "Peer": {
+    "ID": "12D3KooWQJgEXdhuBnY84tMRy8VYTYQQUQqXmKCawGcN28aYa2pi",
+    "PubKey": "CAESINdETlpjV2BWIkp4bfMu/8mrDXqztnzjm5vpDXMSPUrr",
+    "PrivKey": "CAESQNHDw1Cp9rFiOdKfyrx+wBVzTcv9upV18O2s5CJO1fCJ10ROWmNXYFYiSnht8y7/yasNerO2fOObm+kNcxI9Sus="
+  },
+  "About": {
+    "Username": "",
+    "Email": "",
+    "Bio": ""
+  }
+}
