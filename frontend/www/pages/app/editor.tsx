@@ -1,13 +1,28 @@
 import React from 'react'
-
-import {Transforms, Node, Range} from 'slate'
+import isHotkey from 'is-hotkey'
+import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
-import {Editor, Toolbar, plugins as editorPlugins} from '@mintter/editor'
-import { EditablePlugins } from 'slate-plugins-next'
+import {
+  Editor,
+  Toolbar,
+  useEditor,
+  plugins as editorPlugins,
+  initialValue,
+} from '@mintter/editor'
+import {
+  EditablePlugins,
+  SlatePlugin,
+  renderLeafPreview,
+  renderElementCode,
+} from 'slate-plugins-next'
 import Seo from '../../components/seo'
-import Leaf from '../../components/leaf'
-import Element from '../../components/elements'
-import useCustomEditor from '../../components/useEditor'
+import {
+  renderLeafBold,
+  renderLeafItalic,
+  renderLeafUnderline,
+  renderLeafInlineCode,
+} from '../../components/leafs'
+import renderElement, {renderElementParagraph} from '../../components/elements'
 import EditorHeader from '../../components/editor-header'
 import {DebugValue} from '../../components/debug'
 import {css} from 'emotion'
@@ -15,31 +30,14 @@ import {css} from 'emotion'
 // import {wrapLink, unwrapLink} from '@mintter/slate-plugin-with-links'
 import Textarea from '../../components/textarea'
 import Layout from '../../components/layout'
-import {PARAGRAPH} from 'slate-plugins-next'
-
-const initialValue = [
-  {
-    type: PARAGRAPH,
-    children: [
-      {
-        text: '',
-      },
-    ],
-  },
-]
 
 export default function EditorPage(): JSX.Element {
-  const plugins = [
-    ...editorPlugins
-  ]
-  const editor = useCustomEditor(plugins) as ReactEditor
+  const plugins = [...editorPlugins, SoftBreakPlugin()]
+  const editor: ReactEditor = useEditor(plugins) as ReactEditor
   const [value, setValue] = React.useState<Node[]>(initialValue)
   const wrapperRef = React.useRef<HTMLDivElement>(null)
   const [title, setTitle] = React.useState<string>('')
   const [description, setDescription] = React.useState<string>('')
-
-  const renderElement = React.useCallback(props => <Element {...props} />, [])
-  const renderLeaf = React.useCallback(props => <Leaf {...props} />, [])
 
   // send focus to the editor when you click outside.
   // TODO: check if focus is on title or description
@@ -59,10 +57,6 @@ export default function EditorPage(): JSX.Element {
     return () => {
       wrapperRef.current.removeEventListener('click', wrapperClick)
     }
-  }, [])
-
-  const onKeyDown = React.useCallback(event => {
-    withSoftBreak(editor, event)
   }, [])
 
   return (
@@ -133,26 +127,36 @@ export default function EditorPage(): JSX.Element {
                       value={title}
                       onChange={t => setTitle(t)}
                       placeholder="Untitled document"
+                      minHeight={56}
                       className={`text-4xl text-heading font-bold leading-10 ${css`
-                        min-height: 56px;
+                        word-wrap: break-word;
+                        white-space: pre-wrap;
                       `}`}
                     />
                     <Textarea
                       value={description}
-                      placeholder="+ Add a subtitle"
                       onChange={t => setDescription(t)}
-                      className={`text-lg font-light text-heading-muted italic ${css`
-                        min-height: 28px;
-                      `}`}
+                      placeholder="+ Add a subtitle"
+                      minHeight={28}
+                      className={`text-lg font-light text-heading-muted italic`}
                     />
                   </div>
                   <Toolbar />
                   <EditablePlugins
                     plugins={plugins}
-                    renderElement={[renderElement]}
-                    renderLeaf={[renderLeaf]}
+                    renderElement={[
+                      renderElement,
+                      renderElementParagraph(),
+                      renderElementCode(),
+                    ]}
+                    renderLeaf={[
+                      renderLeafBold(),
+                      renderLeafItalic(),
+                      renderLeafUnderline(),
+                      renderLeafInlineCode(),
+                      renderLeafPreview(),
+                    ]}
                     placeholder="Start writing your masterpiece..."
-                    onKeyDown={[onKeyDown]}
                     spellCheck
                     autoFocus
                   />
@@ -166,15 +170,18 @@ export default function EditorPage(): JSX.Element {
   )
 }
 
-function withSoftBreak(editor: ReactEditor, event) {
+const SoftBreakPlugin = (): SlatePlugin => ({
+  onKeyDown: onKeyDownSoftBreak(),
+})
+
+const onKeyDownSoftBreak = () => (e: KeyboardEvent, editor: SlateEditor) => {
+  console.log('using is-hothey => ')
   if (
-    event.key === 'Enter' &&
-    event.shiftKey &&
+    isHotkey('shift+enter', e) &&
     editor.selection &&
     Range.isCollapsed(editor.selection)
   ) {
-    console.log('entro en shift enter!')
-    event.preventDefault()
+    e.preventDefault()
     editor.insertText('\n')
   }
 }

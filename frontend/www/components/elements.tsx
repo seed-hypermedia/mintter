@@ -1,56 +1,45 @@
-import React, {ElementType} from 'react'
-import ReactDOM from 'react-dom'
+import React from 'react'
 import {css} from 'emotion'
 import {RenderElementProps} from 'slate-react'
-import {types} from '../pages/app/editor'
 import {ListType, LINK, HeadingType, BLOCKQUOTE, CODE} from 'slate-plugins-next'
-
-export interface ElementProps extends RenderElementProps {
-  onAddBlock: () => void
-}
 
 export default function Element({
   attributes,
   children,
   element,
-  onAddBlock,
-}: ElementProps) {
-  const Wrapper = ({children}) => (
-    <Helper {...attributes} onAddBlock={onAddBlock}>
-      {children}
-    </Helper>
-  )
-
+}: RenderElementProps) {
   switch (element.type) {
     case HeadingType.H1:
       return (
-        <Wrapper>
-          <h1 className="text-4xl text-heading mt-8 leading-normal">
-            {children}
-          </h1>
-        </Wrapper>
+        <h1
+          {...attributes}
+          className="text-4xl text-heading mt-8 leading-normal"
+        >
+          {children}
+        </h1>
       )
     case HeadingType.H2:
       return (
-        <Wrapper>
-          <h2 className="text-3xl text-heading mt-8">{children}</h2>
-        </Wrapper>
+        <h2 {...attributes} className="text-3xl text-heading mt-8">
+          {children}
+        </h2>
       )
     case HeadingType.H3:
       return (
-        <Wrapper>
-          <h3 className="text-2xl text-heading mt-8">{children}</h3>
-        </Wrapper>
+        <h3 {...attributes} className="text-2xl text-heading mt-8">
+          {children}
+        </h3>
       )
     case BLOCKQUOTE:
       return (
-        <Wrapper>
-          <blockquote className="mt-4 p-4 md:-mx-8 md:px-8 box-border w-auto block relative border-l-4 border-muted-hover bg-background-muted rounded-md rounded-tl-none rounded-bl-none">
-            <p className="italic text-xl font-light font-serif text-body">
-              {children}
-            </p>
-          </blockquote>
-        </Wrapper>
+        <blockquote
+          {...attributes}
+          className="mt-4 p-4 md:-mx-8 md:px-8 box-border w-auto block relative border-l-4 border-muted-hover bg-background-muted rounded-md rounded-tl-none rounded-bl-none"
+        >
+          <p className="italic text-xl font-light font-serif text-body">
+            {children}
+          </p>
+        </blockquote>
       )
     case ListType.UL_LIST:
       return (
@@ -126,12 +115,12 @@ export default function Element({
     case LINK:
       return (
         <a
+          {...attributes}
           className={`text-primary cursor-pointer hover:text-primary-hover transition duration-200 ${css`
             p {
               display: inline;
             }
           `}`}
-          {...attributes}
           onClick={() => window.open(element.url, '_blank')}
           href={element.url}
         >
@@ -140,44 +129,22 @@ export default function Element({
       )
     default:
       return (
-        <Wrapper>
-          <p className="text-body mt-4">{children}</p>
-        </Wrapper>
+        <p {...attributes} className="text-body mt-4">
+          {children}
+        </p>
       )
   }
 }
 
-function Helper({children, ...props}) {
-  return (
-    <div
-      className={`relative ${css`
-        &:hover {
-          .helper-actions {
-            opacity: 1;
-          }
-        }
-      `}`}
-      {...props}
-    >
-      {/* <div
-        contentEditable={false}
-        className={`helper-actions self-center absolute left-0 opacity-0 pr-3 ${css`
-          transition: all 0.25s ease;
-          transform: translateX(-100%);
-        `}`}
-      >
-        <button
-          onClick={() => {
-            onAddBlock()
-          }}
-          className="font-bold text-lg text-gray-600 bg-gray-200 rounded p-2"
-        >
-          <svg viewBox="0 0 512 512" width="0.75em" height="0.75em">
-            <path d="M492 236H276V20c0-11.046-8.954-20-20-20s-20 8.954-20 20v216H20c-11.046 0-20 8.954-20 20s8.954 20 20 20h216v216c0 11.046 8.954 20 20 20s20-8.954 20-20V276h216c11.046 0 20-8.954 20-20s-8.954-20-20-20z" />
-          </svg>
-        </button>
-      </div> */}
-      {children}
-    </div>
-  )
-}
+export const renderElementParagraph = () => ({className, ...props}) => (
+  <p {...props} className={`text-body mt-4 ${className}`} />
+)
+
+export const renderElementBlockquote = () => ({children, ...props}) => (
+  <blockquote
+    {...props}
+    className="mt-4 p-4 md:-mx-8 md:px-8 box-border w-auto block relative border-l-4 border-muted-hover bg-background-muted rounded-md rounded-tl-none rounded-bl-none"
+  >
+    <p className="italic text-xl font-light font-serif text-body">{children}</p>
+  </blockquote>
+)
