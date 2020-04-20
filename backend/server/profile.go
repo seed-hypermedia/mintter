@@ -5,29 +5,43 @@ import (
 	"fmt"
 
 	"mintter/backend/identity"
+	"mintter/backend/store"
 	"mintter/proto"
 
 	peer "github.com/libp2p/go-libp2p-core/peer"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 // InitProfile implements InitProfile rpc.
 func (s *Server) InitProfile(ctx context.Context, req *proto.InitProfileRequest) (*proto.InitProfileResponse, error) {
+	if s.ready.Load() {
+		return nil, status.Errorf(codes.FailedPrecondition, "profile is already initialized")
+	}
+
 	profile, err := identity.FromMnemonic(req.Mnemonic, req.AezeedPassphrase, 0)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to generate identity: %v", err)
 	}
 
-	if err := s.store.CreateProfile(ctx, profile); err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, "failed to create profile: %v", err)
+	s.store, err = store.New(s.repoPath, profile)
+	if err != nil {
+		s.log.Error("StoreInitializationFailed", zap.Error(err))
+		return nil, err
 	}
+
+	s.ready.CAS(false, true)
 
 	return &proto.InitProfileResponse{}, nil
 }
 
 // GetProfile implements Mintter rpc.
 func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*proto.GetProfileResponse, error) {
+	if !s.ready.Load() {
+		return nil, status.Error(codes.FailedPrecondition, "call InitProfile first")
+	}
+
 	prof, err := s.store.GetProfile(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to load profile: %v", err)
@@ -40,6 +54,10 @@ func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*
 
 // UpdateProfile implements Mintter rpc.
 func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileRequest) (*proto.UpdateProfileResponse, error) {
+	if !s.ready.Load() {
+		return nil, status.Error(codes.FailedPrecondition, "call InitProfile first")
+	}
+
 	if in.Profile == nil {
 		return nil, status.Error(codes.InvalidArgument, "parameter 'profile' is required")
 	}

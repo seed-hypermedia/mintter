@@ -86,9 +86,273 @@ func (m *PingResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_PingResponse proto.InternalMessageInfo
 
+type GetProfileRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetProfileRequest) Reset()         { *m = GetProfileRequest{} }
+func (m *GetProfileRequest) String() string { return proto.CompactTextString(m) }
+func (*GetProfileRequest) ProtoMessage()    {}
+func (*GetProfileRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_e7fdddb109e6467a, []int{2}
+}
+
+func (m *GetProfileRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetProfileRequest.Unmarshal(m, b)
+}
+func (m *GetProfileRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetProfileRequest.Marshal(b, m, deterministic)
+}
+func (m *GetProfileRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetProfileRequest.Merge(m, src)
+}
+func (m *GetProfileRequest) XXX_Size() int {
+	return xxx_messageInfo_GetProfileRequest.Size(m)
+}
+func (m *GetProfileRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetProfileRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetProfileRequest proto.InternalMessageInfo
+
+type GetLogRecordsRequest struct {
+	// Log name in form of <account-id>/<log-name>
+	LogName string `protobuf:"bytes,1,opt,name=log_name,json=logName,proto3" json:"log_name,omitempty"`
+	// Only return records that starts from this sequence number (inclusive).
+	StartSeq int64 `protobuf:"varint,2,opt,name=start_seq,json=startSeq,proto3" json:"start_seq,omitempty"`
+	// Limit number of records to return.
+	Limit                int64    `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetLogRecordsRequest) Reset()         { *m = GetLogRecordsRequest{} }
+func (m *GetLogRecordsRequest) String() string { return proto.CompactTextString(m) }
+func (*GetLogRecordsRequest) ProtoMessage()    {}
+func (*GetLogRecordsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_e7fdddb109e6467a, []int{3}
+}
+
+func (m *GetLogRecordsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetLogRecordsRequest.Unmarshal(m, b)
+}
+func (m *GetLogRecordsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetLogRecordsRequest.Marshal(b, m, deterministic)
+}
+func (m *GetLogRecordsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetLogRecordsRequest.Merge(m, src)
+}
+func (m *GetLogRecordsRequest) XXX_Size() int {
+	return xxx_messageInfo_GetLogRecordsRequest.Size(m)
+}
+func (m *GetLogRecordsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetLogRecordsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetLogRecordsRequest proto.InternalMessageInfo
+
+func (m *GetLogRecordsRequest) GetLogName() string {
+	if m != nil {
+		return m.LogName
+	}
+	return ""
+}
+
+func (m *GetLogRecordsRequest) GetStartSeq() int64 {
+	if m != nil {
+		return m.StartSeq
+	}
+	return 0
+}
+
+func (m *GetLogRecordsRequest) GetLimit() int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+type GetLogRecordsResponse struct {
+	LogName              string       `protobuf:"bytes,1,opt,name=log_name,json=logName,proto3" json:"log_name,omitempty"`
+	Records              []*LogRecord `protobuf:"bytes,2,rep,name=records,proto3" json:"records,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
+	XXX_unrecognized     []byte       `json:"-"`
+	XXX_sizecache        int32        `json:"-"`
+}
+
+func (m *GetLogRecordsResponse) Reset()         { *m = GetLogRecordsResponse{} }
+func (m *GetLogRecordsResponse) String() string { return proto.CompactTextString(m) }
+func (*GetLogRecordsResponse) ProtoMessage()    {}
+func (*GetLogRecordsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_e7fdddb109e6467a, []int{4}
+}
+
+func (m *GetLogRecordsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetLogRecordsResponse.Unmarshal(m, b)
+}
+func (m *GetLogRecordsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetLogRecordsResponse.Marshal(b, m, deterministic)
+}
+func (m *GetLogRecordsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetLogRecordsResponse.Merge(m, src)
+}
+func (m *GetLogRecordsResponse) XXX_Size() int {
+	return xxx_messageInfo_GetLogRecordsResponse.Size(m)
+}
+func (m *GetLogRecordsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetLogRecordsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetLogRecordsResponse proto.InternalMessageInfo
+
+func (m *GetLogRecordsResponse) GetLogName() string {
+	if m != nil {
+		return m.LogName
+	}
+	return ""
+}
+
+func (m *GetLogRecordsResponse) GetRecords() []*LogRecord {
+	if m != nil {
+		return m.Records
+	}
+	return nil
+}
+
+type LogRecord struct {
+	Seq                  int64    `protobuf:"varint,1,opt,name=seq,proto3" json:"seq,omitempty"`
+	Data                 []byte   `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *LogRecord) Reset()         { *m = LogRecord{} }
+func (m *LogRecord) String() string { return proto.CompactTextString(m) }
+func (*LogRecord) ProtoMessage()    {}
+func (*LogRecord) Descriptor() ([]byte, []int) {
+	return fileDescriptor_e7fdddb109e6467a, []int{5}
+}
+
+func (m *LogRecord) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_LogRecord.Unmarshal(m, b)
+}
+func (m *LogRecord) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_LogRecord.Marshal(b, m, deterministic)
+}
+func (m *LogRecord) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LogRecord.Merge(m, src)
+}
+func (m *LogRecord) XXX_Size() int {
+	return xxx_messageInfo_LogRecord.Size(m)
+}
+func (m *LogRecord) XXX_DiscardUnknown() {
+	xxx_messageInfo_LogRecord.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LogRecord proto.InternalMessageInfo
+
+func (m *LogRecord) GetSeq() int64 {
+	if m != nil {
+		return m.Seq
+	}
+	return 0
+}
+
+func (m *LogRecord) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+type Profile struct {
+	// ID of the libp2p peer.
+	PeerId string `protobuf:"bytes,1,opt,name=peer_id,json=peerId,proto3" json:"peer_id,omitempty"`
+	// ID of the Mintter account.
+	AccountId string `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	// Human readable username.
+	Username string `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
+	// Optional. Public email.
+	Email string `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
+	// Optional. Public bio.
+	Bio                  string   `protobuf:"bytes,5,opt,name=bio,proto3" json:"bio,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Profile) Reset()         { *m = Profile{} }
+func (m *Profile) String() string { return proto.CompactTextString(m) }
+func (*Profile) ProtoMessage()    {}
+func (*Profile) Descriptor() ([]byte, []int) {
+	return fileDescriptor_e7fdddb109e6467a, []int{6}
+}
+
+func (m *Profile) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Profile.Unmarshal(m, b)
+}
+func (m *Profile) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Profile.Marshal(b, m, deterministic)
+}
+func (m *Profile) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Profile.Merge(m, src)
+}
+func (m *Profile) XXX_Size() int {
+	return xxx_messageInfo_Profile.Size(m)
+}
+func (m *Profile) XXX_DiscardUnknown() {
+	xxx_messageInfo_Profile.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Profile proto.InternalMessageInfo
+
+func (m *Profile) GetPeerId() string {
+	if m != nil {
+		return m.PeerId
+	}
+	return ""
+}
+
+func (m *Profile) GetAccountId() string {
+	if m != nil {
+		return m.AccountId
+	}
+	return ""
+}
+
+func (m *Profile) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
+func (m *Profile) GetEmail() string {
+	if m != nil {
+		return m.Email
+	}
+	return ""
+}
+
+func (m *Profile) GetBio() string {
+	if m != nil {
+		return m.Bio
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*PingRequest)(nil), "mintter.p2p.PingRequest")
 	proto.RegisterType((*PingResponse)(nil), "mintter.p2p.PingResponse")
+	proto.RegisterType((*GetProfileRequest)(nil), "mintter.p2p.GetProfileRequest")
+	proto.RegisterType((*GetLogRecordsRequest)(nil), "mintter.p2p.GetLogRecordsRequest")
+	proto.RegisterType((*GetLogRecordsResponse)(nil), "mintter.p2p.GetLogRecordsResponse")
+	proto.RegisterType((*LogRecord)(nil), "mintter.p2p.LogRecord")
+	proto.RegisterType((*Profile)(nil), "mintter.p2p.Profile")
 }
 
 func init() {
@@ -96,16 +360,32 @@ func init() {
 }
 
 var fileDescriptor_e7fdddb109e6467a = []byte{
-	// 130 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2c, 0x30, 0x2a, 0xd0,
-	0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0xce, 0xcd, 0xcc, 0x2b, 0x29, 0x49, 0x2d, 0xd2, 0x2b,
-	0x30, 0x2a, 0x50, 0xe2, 0xe5, 0xe2, 0x0e, 0xc8, 0xcc, 0x4b, 0x0f, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d,
-	0x2e, 0x51, 0xe2, 0xe3, 0xe2, 0x81, 0x70, 0x8b, 0x0b, 0xf2, 0xf3, 0x8a, 0x53, 0x8d, 0x7c, 0xb8,
-	0xb8, 0x03, 0x52, 0x53, 0x8b, 0x82, 0x53, 0x8b, 0xca, 0x32, 0x93, 0x53, 0x85, 0x6c, 0xb9, 0x58,
-	0x40, 0xd2, 0x42, 0x12, 0x7a, 0x48, 0x66, 0xe8, 0x21, 0x19, 0x20, 0x25, 0x89, 0x45, 0x06, 0x62,
-	0x96, 0x12, 0x83, 0x13, 0x57, 0x14, 0x47, 0x66, 0x5e, 0x49, 0x6a, 0x51, 0x5e, 0x62, 0x4e, 0x12,
-	0x1b, 0xd8, 0x31, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0x25, 0x99, 0x84, 0x1a, 0x99, 0x00,
-	0x00, 0x00,
+	// 389 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x52, 0x41, 0xcf, 0x93, 0x40,
+	0x10, 0xfd, 0x28, 0xfd, 0x3e, 0x60, 0xf8, 0x6a, 0x74, 0xac, 0x4a, 0x31, 0x9a, 0xba, 0xa7, 0x9e,
+	0x88, 0xe2, 0xd9, 0x8b, 0x31, 0x69, 0x9a, 0x18, 0xd3, 0xd0, 0x8b, 0xf1, 0xd2, 0x50, 0x18, 0xc9,
+	0x26, 0xc0, 0xd2, 0x65, 0xeb, 0x3f, 0xf0, 0xdf, 0xfa, 0x23, 0xcc, 0x2e, 0xb4, 0x96, 0xd6, 0xf4,
+	0xb6, 0xf3, 0xde, 0xcb, 0xec, 0x9b, 0x79, 0x03, 0x5e, 0x13, 0x37, 0x51, 0x23, 0x85, 0x12, 0xe8,
+	0x57, 0xbc, 0x56, 0x8a, 0x64, 0xd4, 0xc4, 0x0d, 0x9b, 0x80, 0xbf, 0xe6, 0x75, 0x91, 0xd0, 0xfe,
+	0x40, 0xad, 0x62, 0x4f, 0xe0, 0xb1, 0x2b, 0xdb, 0x46, 0xd4, 0x2d, 0xb1, 0xe7, 0xf0, 0x6c, 0x49,
+	0x6a, 0x2d, 0xc5, 0x4f, 0x5e, 0xd2, 0x51, 0x94, 0xc3, 0x74, 0x49, 0xea, 0xab, 0x28, 0x12, 0xca,
+	0x84, 0xcc, 0xdb, 0x1e, 0xc7, 0x19, 0xb8, 0xa5, 0x28, 0xb6, 0x75, 0x5a, 0x51, 0x60, 0xcd, 0xad,
+	0x85, 0x97, 0x38, 0xa5, 0x28, 0xbe, 0xa5, 0x15, 0xe1, 0x6b, 0xf0, 0x5a, 0x95, 0x4a, 0xb5, 0x6d,
+	0x69, 0x1f, 0x8c, 0xe6, 0xd6, 0xc2, 0x4e, 0x5c, 0x03, 0x6c, 0x68, 0x8f, 0x53, 0xb8, 0x2f, 0x79,
+	0xc5, 0x55, 0x60, 0x1b, 0xa2, 0x2b, 0x58, 0x0e, 0x2f, 0x2e, 0x7e, 0xe9, 0x3c, 0xdd, 0xfa, 0xe6,
+	0x3d, 0x38, 0xb2, 0x53, 0x07, 0xa3, 0xb9, 0xbd, 0xf0, 0xe3, 0x97, 0xd1, 0xd9, 0xb0, 0xd1, 0xa9,
+	0x59, 0x72, 0x94, 0xb1, 0x0f, 0xe0, 0x9d, 0x50, 0x7c, 0x0a, 0xb6, 0xf6, 0x67, 0x19, 0x1b, 0xfa,
+	0x89, 0x08, 0xe3, 0x3c, 0x55, 0xa9, 0xb1, 0xfc, 0x98, 0x98, 0x37, 0xfb, 0x6d, 0x81, 0xd3, 0x6f,
+	0x04, 0x5f, 0x81, 0xd3, 0x10, 0xc9, 0x2d, 0xcf, 0x7b, 0x2b, 0x0f, 0xba, 0x5c, 0xe5, 0xf8, 0x06,
+	0x20, 0xcd, 0x32, 0x71, 0xa8, 0x95, 0xe6, 0x46, 0x86, 0xf3, 0x7a, 0x64, 0x95, 0x63, 0x08, 0xee,
+	0xa1, 0x25, 0x69, 0x66, 0xb0, 0x0d, 0x79, 0xaa, 0xf5, 0x3a, 0xa8, 0x4a, 0x79, 0x19, 0x8c, 0x0d,
+	0xd1, 0x15, 0xda, 0xdb, 0x8e, 0x8b, 0xe0, 0xde, 0x60, 0xfa, 0x19, 0xff, 0xb1, 0xc0, 0x5f, 0x13,
+	0xc9, 0x0d, 0xc9, 0x5f, 0x3c, 0x23, 0xfc, 0x04, 0x63, 0x9d, 0x1d, 0x06, 0x83, 0x99, 0xcf, 0xd2,
+	0x0d, 0x67, 0xff, 0x61, 0xfa, 0xa0, 0xef, 0xf0, 0x0b, 0xc0, 0xbf, 0xa8, 0xf1, 0xed, 0x40, 0x7a,
+	0x75, 0x03, 0xe1, 0x74, 0xd8, 0xaa, 0x23, 0xd9, 0x1d, 0x7e, 0x87, 0xc9, 0x20, 0x35, 0x7c, 0x77,
+	0xd9, 0xe8, 0xea, 0x6e, 0x42, 0x76, 0x4b, 0x72, 0xf4, 0xf7, 0x19, 0x7e, 0xb8, 0xbc, 0x56, 0x7a,
+	0x47, 0xe5, 0xee, 0xc1, 0x5c, 0xf2, 0xc7, 0xbf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x51, 0xad, 0xf6,
+	0xca, 0xd6, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -121,6 +401,8 @@ const _ = grpc.SupportPackageIsVersion6
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type PeerServiceClient interface {
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
+	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*Profile, error)
+	GetLogRecords(ctx context.Context, in *GetLogRecordsRequest, opts ...grpc.CallOption) (*GetLogRecordsResponse, error)
 }
 
 type peerServiceClient struct {
@@ -140,9 +422,29 @@ func (c *peerServiceClient) Ping(ctx context.Context, in *PingRequest, opts ...g
 	return out, nil
 }
 
+func (c *peerServiceClient) GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*Profile, error) {
+	out := new(Profile)
+	err := c.cc.Invoke(ctx, "/mintter.p2p.PeerService/GetProfile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *peerServiceClient) GetLogRecords(ctx context.Context, in *GetLogRecordsRequest, opts ...grpc.CallOption) (*GetLogRecordsResponse, error) {
+	out := new(GetLogRecordsResponse)
+	err := c.cc.Invoke(ctx, "/mintter.p2p.PeerService/GetLogRecords", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PeerServiceServer is the server API for PeerService service.
 type PeerServiceServer interface {
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
+	GetProfile(context.Context, *GetProfileRequest) (*Profile, error)
+	GetLogRecords(context.Context, *GetLogRecordsRequest) (*GetLogRecordsResponse, error)
 }
 
 // UnimplementedPeerServiceServer can be embedded to have forward compatible implementations.
@@ -151,6 +453,12 @@ type UnimplementedPeerServiceServer struct {
 
 func (*UnimplementedPeerServiceServer) Ping(ctx context.Context, req *PingRequest) (*PingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
+func (*UnimplementedPeerServiceServer) GetProfile(ctx context.Context, req *GetProfileRequest) (*Profile, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
+}
+func (*UnimplementedPeerServiceServer) GetLogRecords(ctx context.Context, req *GetLogRecordsRequest) (*GetLogRecordsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLogRecords not implemented")
 }
 
 func RegisterPeerServiceServer(s *grpc.Server, srv PeerServiceServer) {
@@ -175,6 +483,42 @@ func _PeerService_Ping_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PeerService_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PeerServiceServer).GetProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mintter.p2p.PeerService/GetProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PeerServiceServer).GetProfile(ctx, req.(*GetProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PeerService_GetLogRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLogRecordsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PeerServiceServer).GetLogRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mintter.p2p.PeerService/GetLogRecords",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PeerServiceServer).GetLogRecords(ctx, req.(*GetLogRecordsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _PeerService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "mintter.p2p.PeerService",
 	HandlerType: (*PeerServiceServer)(nil),
@@ -182,6 +526,14 @@ var _PeerService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Ping",
 			Handler:    _PeerService_Ping_Handler,
+		},
+		{
+			MethodName: "GetProfile",
+			Handler:    _PeerService_GetProfile_Handler,
+		},
+		{
+			MethodName: "GetLogRecords",
+			Handler:    _PeerService_GetLogRecords_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

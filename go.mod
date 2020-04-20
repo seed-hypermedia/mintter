@@ -38,6 +38,7 @@ require (
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/textileio/go-textile v0.7.7
+	go.uber.org/atomic v1.6.0
 	go.uber.org/multierr v1.5.0
 	go.uber.org/zap v1.14.1
 	golang.org/x/crypto v0.0.0-20200414173820-0848c9571904 // indirect
