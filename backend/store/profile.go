@@ -6,20 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"mintter/backend/identity"
+	"mintter/backend/logbook"
 	"os"
 	"sync"
 )
-
-// TODO: Rehydrate profile from the log.
-
-// CreateProfile for the first time.
-func (s *Store) CreateProfile(ctx context.Context, prof identity.Profile) error {
-	if _, err := s.pc.load(); err == nil {
-		return errors.New("account is already initialized")
-	}
-
-	return s.pc.store(prof)
-}
 
 // UpdateProfile in the store. It is actually an upsert.
 func (s *Store) UpdateProfile(ctx context.Context, prof identity.Profile) (identity.Profile, error) {
@@ -42,13 +32,16 @@ func (s *Store) UpdateProfile(ctx context.Context, prof identity.Profile) (ident
 		return merged, nil
 	}
 
-	lb, err := s.logbook()
+	lg, err := s.lb.Get(logbook.LogID{
+		LogName: logbook.NameProfile,
+		Account: s.pc.p.Account,
+	})
 	if err != nil {
-		return identity.Profile{}, err
+		return identity.Profile{}, fmt.Errorf("failed to get profile log: %w", err)
 	}
 
 	// TODO(burdiyan): verify the signature of the record?
-	if _, err := lb.Profile.Append(eventAbout.New(diff)); err != nil {
+	if _, err := lg.Append(eventAbout.New(diff)); err != nil {
 		return identity.Profile{}, fmt.Errorf("failed to append to log: %w", err)
 	}
 

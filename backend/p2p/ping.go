@@ -7,30 +7,25 @@ import (
 	"mintter/backend/p2p/internal"
 
 	peer "github.com/libp2p/go-libp2p-core/peer"
-	"go.uber.org/multierr"
 )
 
 // Ping another peer to check the connectivity.
-func (n *Node) Ping(ctx context.Context, pid peer.ID) (dur time.Duration, err error) {
+func (n *Node) Ping(ctx context.Context, pid peer.ID) (time.Duration, error) {
 	conn, err := n.dial(ctx, pid)
 	if err != nil {
 		return 0, err
 	}
-	defer func() {
-		err = multierr.Append(err, conn.Close())
-	}()
+	defer logClose(n.log, conn.Close, "failed closing grpc connection")
 
 	start := time.Now()
-	_, err = internal.NewPeerServiceClient(conn).Ping(ctx, &internal.PingRequest{})
-	if err != nil {
-		return
+	if _, err = internal.NewPeerServiceClient(conn).Ping(ctx, &internal.PingRequest{}); err != nil {
+		return 0, err
 	}
 
-	dur = time.Since(start)
-	return
+	return time.Since(start), nil
 }
 
 func (n *rpcHandler) Ping(ctx context.Context, in *internal.PingRequest) (*internal.PingResponse, error) {
-	time.Sleep(1 * time.Second)
+	time.Sleep(1 * time.Second) // TODO(burdiyan): remove this :)
 	return &internal.PingResponse{}, nil
 }

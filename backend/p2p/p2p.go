@@ -11,6 +11,7 @@ import (
 	"mintter/backend"
 	"mintter/backend/identity"
 	"mintter/backend/p2p/internal"
+	"mintter/backend/store"
 
 	"github.com/ipfs/go-datastore"
 	badger "github.com/ipfs/go-ds-badger"
@@ -72,10 +73,11 @@ type Config struct {
 
 // Node is a Mintter p2p node.
 type Node struct {
-	acc  identity.Account
-	peer identity.Peer
-	host host.Host
-	log  *zap.Logger
+	acc   identity.Account
+	peer  identity.Peer
+	host  host.Host
+	log   *zap.Logger
+	store *store.Store
 
 	addrs    []multiaddr.Multiaddr // Libp2p peer addresses for this node.
 	quitc    chan struct{}         // This channel will be closed to indicate all the goroutines to exit.
@@ -115,11 +117,13 @@ func NewNode(h host.Host, prof identity.Profile, log *zap.Logger) (*Node, error)
 
 // Close the node gracefully.
 func (n *Node) Close() (err error) {
+	// Signal goroutines to return.
 	close(n.quitc)
 
 	// TODO(burdiyan): if host is passed as a dependency it shouldn't be closing here.
-	err = multierr.Append(err, n.host.Close())
+	// No wait for all the goroutines to return and close the dependencies.
 	err = multierr.Append(err, n.g.Wait())
+	err = multierr.Append(err, n.host.Close())
 	err = multierr.Append(err, n.lis.Close())
 
 	return
@@ -267,4 +271,10 @@ func wrapAddrs(pid peer.ID, addrs ...multiaddr.Multiaddr) ([]multiaddr.Multiaddr
 // This way we don't expose server handlers on the main type.
 type rpcHandler struct {
 	*Node
+}
+
+func logClose(l *zap.Logger, fn func() error, errmsg string) {
+	if err := fn(); err != nil {
+		l.Warn("CloseError", zap.Error(err), zap.String("details", errmsg))
+	}
 }
