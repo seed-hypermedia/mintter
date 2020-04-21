@@ -58,7 +58,6 @@ export default function ProfileProvider({
     email: string
     bio: string
   }) {
-    debugger
     const profile = await getProfile()
     username.length > 1 && profile.setUsername(username)
     email.length > 1 && profile.setEmail(email)
