@@ -2,13 +2,14 @@ import React, {forwardRef} from 'react'
 import {css} from 'emotion'
 
 interface TextareaProps {
+  id?: string
   value?: string
   name?: string
   onChange?: (textValue: string) => void
   minHeight: number
   className?: string
   placeholder?: string
-  onEnterPress: (e: any) => void
+  onEnterPress?: (e: any) => void
 }
 
 // eslint-disable-next-line react/display-name
@@ -31,7 +32,6 @@ const Textarea = (
     () => innerRef.current && getComputedStyle(innerRef.current)['line-height'],
     [],
   )
-
   React.useEffect(() => {
     update()
   })
@@ -61,14 +61,14 @@ const Textarea = (
   }
 
   function handleKeyDown(e) {
-    if (e.keyCode === 13) {
+    if (e.keyCode === 13 && onEnterPress) {
       e.preventDefault()
       onEnterPress(e)
       return false
     }
   }
 
-  const content = value || innerValue
+  const content = value || typeof ref === 'function' ? undefined : innerValue
 
   return (
     <>
@@ -86,6 +86,7 @@ const Textarea = (
           innerRef.current = r
           if (ref) {
             if (typeof ref === 'function') {
+              console.log('ref es una funcion => ', ref(r))
               ref(r)
             } else {
               ref.current = r

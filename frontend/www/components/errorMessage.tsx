@@ -13,7 +13,7 @@ export default function ErrorMessage({
   return error ? (
     <div
       role="alert"
-      className=" py-4 px-6 rounded my-4 border border-danger-hover bg-danger-background"
+      className="w-full py-4 px-6 rounded my-4 border border-danger-hover bg-danger-background"
     >
       <p className="text-white">{error.message}</p>
     </div>

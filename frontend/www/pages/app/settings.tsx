@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useEffect} from 'react'
 import {css} from 'emotion'
 import Seo from '../../components/seo'
 import Sidebar from '../../components/sidebar'
@@ -10,10 +10,12 @@ import Layout from '../../components/layout'
 import {useForm} from 'react-hook-form'
 import Container from '../../components/container'
 import {useProfile} from '../../shared/profileContext'
+import ErrorMessage from '../../components/errorMessage'
 
 export default function Settings() {
   const {getProfile, setProfile} = useProfile()
   const [success, setSuccess] = React.useState<boolean>(false)
+  const [submitError, setSubmitError] = React.useState()
   const {register, handleSubmit, errors, formState, setValue} = useForm({
     mode: 'onChange',
     defaultValues: {
@@ -29,12 +31,14 @@ export default function Settings() {
 
   async function init() {
     const values = await (await getProfile()).toObject()
+    console.log('init -> values', values)
 
     const data = Object.keys(values).map(v => ({[v]: values[v]}))
     setValue(data)
   }
 
   async function onSubmit(data) {
+    console.log('onSubmit -> data', data)
     try {
       await setProfile(data)
       setSuccess(true)
@@ -42,6 +46,8 @@ export default function Settings() {
         setSuccess(false)
       }, 2000)
     } catch (err) {
+      setSuccess(false)
+      setSubmitError(err)
       console.error('Settings::editProfile Error ==> ', err)
     }
   }
@@ -128,12 +134,11 @@ export default function Settings() {
                   <Textarea
                     id="bio"
                     name="bio"
-                    ref={e => register(e)}
+                    ref={register}
+                    minHeight={100}
                     placeholder="A little bit about yourself..."
                     className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body ${errors.bio &&
-                      'border-danger'} ${css`
-                      min-height: 100px;
-                    `}`}
+                      'border-danger'}`}
                   />
                 </div>
                 <div className="flex-1 flex items-center relative mt-10">
@@ -165,6 +170,7 @@ export default function Settings() {
                   </AnimatePresence>
                 </div>
               </div>
+              <ErrorMessage error={submitError} />
             </Content>
           </Container>
         </form>
