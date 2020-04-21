@@ -73,22 +73,22 @@ type Config struct {
 
 // Node is a Mintter p2p node.
 type Node struct {
-	acc   identity.Account
-	peer  identity.Peer
-	host  host.Host
-	log   *zap.Logger
 	store *store.Store
+	log   *zap.Logger
 
+	g errgroup.Group // Background goroutines will be running in this group.
+
+	acc      identity.Account
+	peer     identity.Peer
+	host     host.Host
 	cleanup  cleanup
 	addrs    []multiaddr.Multiaddr // Libp2p peer addresses for this node.
 	quitc    chan struct{}         // This channel will be closed to indicate all the goroutines to exit.
 	lis      net.Listener          // Libp2p listener wrapped into net.Listener. Used by the underlying gRPC server.
 	dialOpts []grpc.DialOption     // Default dial options for gRPC client. Cached to avoid allocating same options for every call.
-
-	g errgroup.Group // Groups
 }
 
-// NewNode creates a new node.
+// NewNode creates a new node. User must call Close() to shutdown the node gracefully.
 func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logger, cfg Config) (n *Node, err error) {
 	var cleanup cleanup
 	defer func() {
@@ -126,11 +126,12 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 	cleanup = append(cleanup, lis)
 
 	n = &Node{
+		store: s,
+		log:   log,
+
 		acc:      prof.Account,
 		peer:     prof.Peer,
 		host:     h,
-		store:    s,
-		log:      log,
 		addrs:    addrs,
 		cleanup:  cleanup,
 		lis:      lis,
