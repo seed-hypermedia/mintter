@@ -5,6 +5,10 @@ package mintter.p2p;
 option go_package = "internal";
 
 service PeerService {
+  // Handshake performs profile exchange for the first time between peers.
+  // This should ideally only happen once between a given pair of peers.
+  rpc Handshake(HandshakeRequest) returns (HandshakeResponse) {}
+
   rpc Ping(PingRequest) returns (PingResponse) {}
 
   rpc GetProfile(GetProfileRequest) returns (Profile) {}
@@ -12,15 +16,21 @@ service PeerService {
   rpc GetLogRecords(GetLogRecordsRequest) returns (GetLogRecordsResponse) {}
 }
 
+message HandshakeRequest {
+  // Profile of the request initiator.
+  Profile profile = 1;
+}
+
+message HandshakeResponse {
+  // Profile of the responding peer.
+  Profile profile = 2;
+}
+
 message PingRequest {}
 
 message PingResponse {}
 
-message GetProfileRequest {
-  // Optional. Profile of the user that initiated the request.
-  // Used to exchange profile information upon connect.
-  Profile profile = 1;
-}
+message GetProfileRequest {}
 
 message GetLogRecordsRequest {
   // Log name in form of <account-id>/<log-name>

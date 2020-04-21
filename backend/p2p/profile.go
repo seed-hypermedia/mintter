@@ -30,9 +30,7 @@ func (n *Node) GetProfile(ctx context.Context, pid peer.ID) (identity.Profile, e
 		return me, err
 	}
 
-	pbprof, err := internal.NewPeerServiceClient(conn).GetProfile(ctx, &internal.GetProfileRequest{
-		Profile: profileToProto(me),
-	})
+	pbprof, err := internal.NewPeerServiceClient(conn).GetProfile(ctx, &internal.GetProfileRequest{})
 	if err != nil {
 		return identity.Profile{}, err
 	}
@@ -44,18 +42,6 @@ func (n *rpcHandler) GetProfile(ctx context.Context, in *internal.GetProfileRequ
 	prof, err := n.store.CurrentProfile(ctx)
 	if err != nil {
 		return nil, err
-	}
-
-	if in.Profile != nil {
-		prof, err := profileFromProto(in.Profile)
-		if err != nil {
-			return nil, err
-		}
-
-		// TODO(burdiyan): this will call get profile rpc again but there's no need.
-		if err := n.Node.upgradeConnection(ctx, prof.Peer.ID); err != nil {
-			return nil, err
-		}
 	}
 
 	return profileToProto(prof), nil
