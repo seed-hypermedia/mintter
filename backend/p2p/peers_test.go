@@ -20,4 +20,6 @@ func TestConnect(t *testing.T) {
 		alice.Host().Peerstore().Peers(),
 		bob.Host().Peerstore().Peers(),
 		"both peers must have each other in the peer store")
+
+	require.NoError(t, alice.Connect(ctx, bob.Addrs()...), "connecting more than once must not fail")
 }

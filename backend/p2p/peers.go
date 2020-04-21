@@ -3,10 +3,15 @@ package p2p
 import (
 	"context"
 	"fmt"
+	"mintter/backend/identity"
+	"mintter/backend/p2p/internal"
 
+	"github.com/libp2p/go-libp2p-core/host"
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	swarm "github.com/libp2p/go-libp2p-swarm"
 	"github.com/multiformats/go-multiaddr"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Connect to a peer using one of the provided addresses.
@@ -34,7 +39,12 @@ func (n *Node) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) error 
 			return fmt.Errorf("failed to connect %s: %w", pinfo.ID.Pretty(), err)
 		}
 
-		if err := n.upgradeConnection(ctx, pinfo.ID); err != nil {
+		prof, err := n.handshake(ctx, pinfo.ID)
+		if err != nil {
+			return fmt.Errorf("failed invoking handshake to %s: %w", pinfo.ID.Pretty(), err)
+		}
+
+		if err := n.upgradeConnection(ctx, prof); err != nil {
 			// TODO: if the err is ErrQriProtocolNotSupported, let the user know the
 			// connection has been established, but that the Qri Protocol is not supported
 			return err
@@ -47,7 +57,9 @@ func (n *Node) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) error 
 }
 
 // upgradeConnection attempt to open a Mintter protocol connection to a peer.
-func (n *Node) upgradeConnection(ctx context.Context, pid peer.ID) error {
+func (n *Node) upgradeConnection(ctx context.Context, prof identity.Profile) error {
+	pid := prof.Peer.ID
+
 	// bail early if we have seen this peer before
 	// OKAY
 	// log.Debugf("%s, attempting to upgrading %s to qri connection", n.ID, pid)
@@ -62,16 +74,12 @@ func (n *Node) upgradeConnection(ctx context.Context, pid peer.ID) error {
 	}
 
 	// check if this connection supports the qri protocol
-	support, err := n.supportsProtocol(pid)
+	support, err := supportsProtocol(n.host, pid)
 	if err != nil {
 		// log.Debugf("error checking for qri support: %s", err)
-		return err
+		return fmt.Errorf("error checking for protocol support: %w", err)
 	}
-	// mark whether or not this connection supports the qri protocol:
-	if err := n.host.Peerstore().Put(pid, supportKey, support); err != nil {
-		// log.Debugf("error setting qri support flag: %s", err)
-		return err
-	}
+
 	// if it does support the qri protocol
 	// - tag the connection as a qri connection in the ConnManager
 	// - request profile
@@ -81,21 +89,22 @@ func (n *Node) upgradeConnection(ctx context.Context, pid peer.ID) error {
 		return ErrUnsupportedProtocol
 	}
 
-	// log.Debugf("%s upgraded %s to Qri connection", n.ID, pid)
-	// tag the connection as more important in the conn manager:
-	n.host.ConnManager().TagPeer(pid, supportKey, supportValue)
-
-	prof, err := n.GetProfile(ctx, pid)
-	if err != nil {
-		return fmt.Errorf("failed to get profile: %w", err)
-	}
-
 	if err := n.store.StoreProfile(ctx, prof); err != nil {
 		return fmt.Errorf("failed to store profile: %w", err)
 	}
 
 	if err := n.host.Peerstore().Put(pid, profileKey, prof.ID.String()); err != nil {
 		return fmt.Errorf("failed to store profile id in peer store: %w", err)
+	}
+
+	// log.Debugf("%s upgraded %s to Qri connection", n.ID, pid)
+	// tag the connection as more important in the conn manager:
+	n.host.ConnManager().TagPeer(pid, supportKey, supportValue)
+
+	// mark whether or not this connection supports the qri protocol:
+	if err := n.host.Peerstore().Put(pid, supportKey, support); err != nil {
+		// log.Debugf("error setting qri support flag: %s", err)
+		return err
 	}
 
 	// if _, err := n.RequestProfile(ctx, pid); err != nil {
@@ -114,10 +123,57 @@ func (n *Node) upgradeConnection(ctx context.Context, pid peer.ID) error {
 	return nil
 }
 
+func (n *Node) handshake(ctx context.Context, pid peer.ID) (identity.Profile, error) {
+	conn, err := n.dial(ctx, pid)
+	if err != nil {
+		return identity.Profile{}, err
+	}
+	defer logClose(n.log, conn.Close, "failed closing grpc connection")
+
+	me, err := n.store.CurrentProfile(ctx)
+	if err != nil {
+		return identity.Profile{}, err
+	}
+
+	resp, err := internal.NewPeerServiceClient(conn).Handshake(ctx, &internal.HandshakeRequest{
+		Profile: profileToProto(me),
+	})
+	if err != nil {
+		return identity.Profile{}, err
+	}
+
+	return profileFromProto(resp.Profile)
+}
+
+func (n *rpcHandler) Handshake(ctx context.Context, in *internal.HandshakeRequest) (*internal.HandshakeResponse, error) {
+	// Check if request contains the profile.
+	if in.Profile == nil {
+		return nil, status.Error(codes.InvalidArgument, "profile is required")
+	}
+
+	prof, err := profileFromProto(in.Profile)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := n.upgradeConnection(ctx, prof); err != nil {
+		return nil, err
+	}
+
+	me, err := n.store.CurrentProfile(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &internal.HandshakeResponse{
+		Profile: profileToProto(me),
+	}, nil
+}
+
 // supportsProtocol checks to see if this peer supports the qri
 // streaming protocol, returns
-func (n *Node) supportsProtocol(peer peer.ID) (bool, error) {
-	protos, err := n.host.Peerstore().GetProtocols(peer)
+func supportsProtocol(h host.Host, peer peer.ID) (bool, error) {
+	protos, err := h.Peerstore().GetProtocols(peer)
 	if err != nil {
 		return false, err
 	}

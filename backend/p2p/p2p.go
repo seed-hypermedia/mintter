@@ -11,7 +11,6 @@ import (
 	"mintter/backend"
 	"mintter/backend/cleanup"
 	"mintter/backend/identity"
-	"mintter/backend/p2p/internal"
 	"mintter/backend/store"
 
 	"github.com/ipfs/go-datastore"
@@ -141,7 +140,7 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 		dialOpts: dialOpts(h),
 	}
 
-	go n.start()
+	n.serveRPC()
 
 	return n, nil
 }
@@ -172,23 +171,6 @@ func (n *Node) Account() identity.Account {
 // Addrs return p2p multiaddresses this node is listening on.
 func (n *Node) Addrs() []multiaddr.Multiaddr {
 	return n.addrs
-}
-
-func (n *Node) start() {
-	srv := grpc.NewServer()
-
-	rpc := &rpcHandler{n}
-	internal.RegisterPeerServiceServer(srv, rpc)
-
-	n.g.Go(func() error {
-		return srv.Serve(n.lis)
-	})
-
-	n.g.Go(func() error {
-		<-n.quitc
-		srv.GracefulStop()
-		return nil
-	})
 }
 
 // makeHost creates a new libp2p host.

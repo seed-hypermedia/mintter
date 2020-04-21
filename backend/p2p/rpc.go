@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"mintter/backend/identity"
+	"mintter/backend/p2p/internal"
 	"net"
 
 	"github.com/libp2p/go-libp2p-core/host"
@@ -17,6 +18,23 @@ import (
 // This way we don't expose server handlers on the main type.
 type rpcHandler struct {
 	*Node
+}
+
+func (n *Node) serveRPC() {
+	srv := grpc.NewServer()
+
+	rpc := &rpcHandler{n}
+	internal.RegisterPeerServiceServer(srv, rpc)
+
+	n.g.Go(func() error {
+		return srv.Serve(n.lis)
+	})
+
+	n.g.Go(func() error {
+		<-n.quitc
+		srv.GracefulStop()
+		return nil
+	})
 }
 
 func (n *Node) dialProfile(ctx context.Context, pid identity.ProfileID, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
