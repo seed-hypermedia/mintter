@@ -1,4 +1,4 @@
-package p2p
+package p2p_test
 
 import (
 	"context"
@@ -14,14 +14,14 @@ func TestPing(t *testing.T) {
 
 	require.NoError(t, alice.Connect(ctx, bob.Addrs()...))
 
-	dur, err := alice.Ping(ctx, bob.peer.ID)
+	dur, err := alice.Ping(ctx, bob.Account().ID)
 	require.NoError(t, err, "alice must be able to ping bob")
 	require.NotEqual(t, 0, dur)
 
-	dur, err = bob.Ping(ctx, alice.peer.ID)
+	dur, err = bob.Ping(ctx, alice.Account().ID)
 	require.NoError(t, err, "bob must be able to ping alice")
 	require.NotEqual(t, 0, dur)
 
-	dur, err = bob.Ping(ctx, bob.peer.ID)
+	dur, err = bob.Ping(ctx, bob.Account().ID)
 	require.Error(t, err, "pinging youself must fail")
 }

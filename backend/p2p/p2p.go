@@ -3,11 +3,13 @@ package p2p
 
 import (
 	"context"
+	"io"
 	"net"
 	"path/filepath"
 	"time"
 
 	"mintter/backend"
+	"mintter/backend/cleanup"
 	"mintter/backend/identity"
 	"mintter/backend/p2p/internal"
 	"mintter/backend/store"
@@ -46,6 +48,7 @@ const (
 	supportValue = 100
 	// Under this key we store support flag in the peer store.
 	supportKey = "mtt-support"
+	profileKey = "mtt-profile"
 )
 
 // userAgent is type & version of the mtt service.
@@ -80,7 +83,7 @@ type Node struct {
 	acc      identity.Account
 	peer     identity.Peer
 	host     host.Host
-	cleanup  cleanup
+	cleanup  io.Closer
 	addrs    []multiaddr.Multiaddr // Libp2p peer addresses for this node.
 	quitc    chan struct{}         // This channel will be closed to indicate all the goroutines to exit.
 	lis      net.Listener          // Libp2p listener wrapped into net.Listener. Used by the underlying gRPC server.
@@ -89,7 +92,7 @@ type Node struct {
 
 // NewNode creates a new node. User must call Close() to shutdown the node gracefully.
 func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logger, cfg Config) (n *Node, err error) {
-	var cleanup cleanup
+	var cleanup cleanup.Stack
 	defer func() {
 		if err != nil {
 			err = multierr.Append(err, cleanup.Close())
@@ -154,6 +157,16 @@ func (n *Node) Close() (err error) {
 // Host of the p2p node.
 func (n *Node) Host() host.Host {
 	return n.host
+}
+
+// Store of the node.
+func (n *Node) Store() *store.Store {
+	return n.store
+}
+
+// Account of the node.
+func (n *Node) Account() identity.Account {
+	return n.acc
 }
 
 // Addrs return p2p multiaddresses this node is listening on.
@@ -249,4 +262,3 @@ func wrapAddrs(pid peer.ID, addrs ...multiaddr.Multiaddr) ([]multiaddr.Multiaddr
 
 	return res, nil
 }
-

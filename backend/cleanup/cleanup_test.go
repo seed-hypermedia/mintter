@@ -1,4 +1,4 @@
-package p2p
+package cleanup
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCleanup(t *testing.T) {
+func TestStack(t *testing.T) {
 	var errs []error
 
 	e1 := errors.New("one")
@@ -16,7 +16,7 @@ func TestCleanup(t *testing.T) {
 
 	expected := []error{e3, e2, e1}
 
-	c := cleanup{
+	c := Stack{
 		funcCloser(func() error {
 			errs = append(errs, e1)
 			return e1

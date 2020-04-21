@@ -1,4 +1,4 @@
-package p2p
+package p2p_test
 
 import (
 	"context"
@@ -8,6 +8,8 @@ import (
 	"mintter/backend/store"
 	"os"
 	"testing"
+
+	. "mintter/backend/p2p"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"

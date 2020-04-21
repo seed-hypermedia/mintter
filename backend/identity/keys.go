@@ -1,10 +1,13 @@
 package identity
 
 import (
+	"bytes"
 	"encoding/json"
 
 	crypto "github.com/libp2p/go-libp2p-core/crypto"
 )
+
+var jsonNull = []byte{'n', 'u', 'l', 'l'}
 
 // PubKey wraps crypto.PubKey to enable JSON encoding.
 type PubKey struct {
@@ -30,6 +33,10 @@ func (pk *PubKey) UnmarshalBinary(data []byte) error {
 
 // MarshalJSON implements json.Marshaler.
 func (pk PubKey) MarshalJSON() ([]byte, error) {
+	if pk.PubKey == nil {
+		return jsonNull, nil
+	}
+
 	raw, err := crypto.MarshalPublicKey(pk)
 	if err != nil {
 		return nil, err
@@ -40,6 +47,10 @@ func (pk PubKey) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (pk *PubKey) UnmarshalJSON(data []byte) error {
+	if bytes.Equal(data, jsonNull) {
+		return nil
+	}
+
 	var in []byte
 	if err := json.Unmarshal(data, &in); err != nil {
 		return err
@@ -79,6 +90,10 @@ func (pk *PrivKey) UnmarshalBinary(data []byte) error {
 
 // MarshalJSON implements json.Marshaler.
 func (pk PrivKey) MarshalJSON() ([]byte, error) {
+	if pk.PrivKey == nil {
+		return jsonNull, nil
+	}
+
 	raw, err := crypto.MarshalPrivateKey(pk)
 	if err != nil {
 		return nil, err
@@ -89,6 +104,10 @@ func (pk PrivKey) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (pk *PrivKey) UnmarshalJSON(data []byte) error {
+	if bytes.Equal(data, jsonNull) {
+		return nil
+	}
+
 	var in []byte
 	if err := json.Unmarshal(data, &in); err != nil {
 		return err

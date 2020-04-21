@@ -1,1 +1,1 @@
-. ../redo/proto-js.od
+. $REDO_BASE/redo/proto-js.od

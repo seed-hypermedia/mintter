@@ -16,24 +16,31 @@ import (
 	"github.com/textileio/go-textile/wallet"
 )
 
-// Identity is a cryptographic identity.
-type Identity struct {
-	ID      peer.ID
-	PubKey  PubKey
-	PrivKey PrivKey // Private Key is only expected for the current user.
+// ProfileID is the main identity of the Mintter profile. Its semantics are the
+// same as libp2p peer ID, but they are not interchangeable.
+type ProfileID struct {
+	peer.ID
 }
 
 // Account is a primary Mintter account. Its ID has the same semantics as
 // libp2p PeerID, but is not interchangeable and should not be used for libp2p.
 // The keys are used to sign all the user's content.
-type Account Identity
+type Account struct {
+	ID      ProfileID
+	PubKey  PubKey
+	PrivKey PrivKey
+}
 
 // Peer is the identity for p2p communication.
-type Peer Identity
+type Peer struct {
+	ID      peer.ID
+	PubKey  PubKey
+	PrivKey PrivKey // Private Key is only expected for the current user.
+}
 
 // About is a mutable human-friendly information about the user.
 type About struct {
-	Username string `cbor:"usernane,omitempty"`
+	Username string `cbor:"username,omitempty"`
 	Email    string `cbor:"email,omitempty"`
 	Bio      string `cbor:"bio,omitempty"`
 }
@@ -62,6 +69,7 @@ func (a About) Diff(aa About) (diff About, ok bool) {
 //
 // TODO(burdiyan): add better separate for crypto and human info.
 type Profile struct {
+	ID      ProfileID
 	Account Account
 	Peer    Peer
 	About   About
@@ -70,7 +78,7 @@ type Profile struct {
 // Merge prof into p respecting immutable fields.
 func (p *Profile) Merge(prof Profile) error {
 	// Clear immutable fields
-	if p.Account.ID != "" {
+	if p.Account.ID.ID != "" {
 		prof.Account = Account{}
 	}
 
@@ -81,19 +89,25 @@ func (p *Profile) Merge(prof Profile) error {
 	return mergo.Merge(p, prof)
 }
 
-// NewIdentity creates new identity.
-func NewIdentity(src io.Reader) (Identity, error) {
+type identity struct {
+	ID      peer.ID
+	PubKey  PubKey
+	PrivKey PrivKey // Private Key is only expected for the current user.
+}
+
+// newIdentity creates a new identity.
+func newIdentity(src io.Reader) (identity, error) {
 	priv, pub, err := crypto.GenerateEd25519Key(src)
 	if err != nil {
-		return Identity{}, err
+		return identity{}, err
 	}
 
 	pid, err := peer.IDFromPublicKey(pub)
 	if err != nil {
-		return Identity{}, err
+		return identity{}, err
 	}
 
-	return Identity{
+	return identity{
 		ID:      pid,
 		PrivKey: PrivKey{priv},
 		PubKey:  PubKey{pub},
@@ -107,7 +121,7 @@ func FromSeed(seed []byte, idx uint32) (Profile, error) {
 		return Profile{}, err
 	}
 
-	account, err := NewIdentity(bytes.NewReader(masterKey.Key))
+	account, err := newIdentity(bytes.NewReader(masterKey.Key))
 	if err != nil {
 		return Profile{}, fmt.Errorf("failed to create account: %w", err)
 	}
@@ -117,14 +131,19 @@ func FromSeed(seed []byte, idx uint32) (Profile, error) {
 		return Profile{}, fmt.Errorf("failed to derive child key: %w", err)
 	}
 
-	peer, err := NewIdentity(bytes.NewReader(k.Key))
+	peer, err := newIdentity(bytes.NewReader(k.Key))
 	if err != nil {
 		return Profile{}, fmt.Errorf("failed to create peer: %w", err)
 	}
 
 	return Profile{
-		Account: Account(account),
-		Peer:    Peer(peer),
+		ID: ProfileID{account.ID},
+		Account: Account{
+			ID:      ProfileID{account.ID},
+			PrivKey: account.PrivKey,
+			PubKey:  account.PubKey,
+		},
+		Peer: Peer(peer),
 	}, nil
 }
 

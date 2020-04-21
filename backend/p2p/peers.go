@@ -80,9 +80,23 @@ func (n *Node) upgradeConnection(ctx context.Context, pid peer.ID) error {
 		// log.Debugf("%s could not upgrade %s to Qri connection: %s", n.ID, pid, ErrQriProtocolNotSupported)
 		return ErrUnsupportedProtocol
 	}
+
 	// log.Debugf("%s upgraded %s to Qri connection", n.ID, pid)
 	// tag the connection as more important in the conn manager:
 	n.host.ConnManager().TagPeer(pid, supportKey, supportValue)
+
+	prof, err := n.GetProfile(ctx, pid)
+	if err != nil {
+		return fmt.Errorf("failed to get profile: %w", err)
+	}
+
+	if err := n.store.StoreProfile(ctx, prof); err != nil {
+		return fmt.Errorf("failed to store profile: %w", err)
+	}
+
+	if err := n.host.Peerstore().Put(pid, profileKey, prof.ID.String()); err != nil {
+		return fmt.Errorf("failed to store profile id in peer store: %w", err)
+	}
 
 	// if _, err := n.RequestProfile(ctx, pid); err != nil {
 	// 	// log.Debug(err.Error())
