@@ -88,7 +88,7 @@ type Node struct {
 }
 
 // NewNode creates a new node.
-func NewNode(h host.Host, prof identity.Profile, log *zap.Logger) (*Node, error) {
+func NewNode(h host.Host, prof identity.Profile, s *store.Store, log *zap.Logger) (*Node, error) {
 	addrs, err := wrapAddrs(prof.Peer.ID, h.Addrs()...)
 	if err != nil {
 		return nil, err
@@ -103,6 +103,7 @@ func NewNode(h host.Host, prof identity.Profile, log *zap.Logger) (*Node, error)
 		acc:      prof.Account,
 		peer:     prof.Peer,
 		host:     h,
+		store:    s,
 		log:      log,
 		addrs:    addrs,
 		lis:      lis,
@@ -249,8 +250,13 @@ func NodeFromConfig(ctx context.Context, repoPath string, prof identity.Profile,
 		return nil, err
 	}
 
+	store, err := store.New(repoPath, prof)
+	if err != nil {
+		return nil, err
+	}
+
 	// TODO(burdiyan): provide proper logger.
-	return NewNode(host, prof, zap.NewNop())
+	return NewNode(host, prof, store, zap.NewNop())
 }
 
 func wrapAddrs(pid peer.ID, addrs ...multiaddr.Multiaddr) ([]multiaddr.Multiaddr, error) {

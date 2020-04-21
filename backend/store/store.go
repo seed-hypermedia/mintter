@@ -18,7 +18,8 @@ type Store struct {
 	db       datastore.TxnDatastore
 	lb       *logbook.Book
 
-	pc profileCache
+	pc   profileCache
+	prof identity.Profile
 }
 
 // New creates a new Store.
@@ -35,6 +36,7 @@ func New(repoPath string, prof identity.Profile) (*Store, error) {
 	s := &Store{
 		repoPath: repoPath,
 		db:       db,
+		prof:     prof,
 	}
 
 	s.lb, err = logbook.New(prof.Account, s.db)
@@ -59,4 +61,18 @@ func (s *Store) Close() error {
 // RepoPath returns the base repo path.
 func (s *Store) RepoPath() string {
 	return s.repoPath
+}
+
+// Load from disk previously existing store.
+func Load(repoPath string) (*Store, error) {
+	pc := &profileCache{
+		filename: filepath.Join(repoPath, "profile.json"),
+	}
+
+	prof, err := pc.load()
+	if err != nil {
+		return nil, err
+	}
+
+	return New(repoPath, prof)
 }
