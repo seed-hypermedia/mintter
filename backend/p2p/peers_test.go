@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestConnectToPeer(t *testing.T) {
+func TestConnect(t *testing.T) {
 	ctx := context.Background()
 
 	alice := makeTestNode(t, "alice")

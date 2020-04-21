@@ -22,8 +22,8 @@ type Store struct {
 	prof identity.Profile
 }
 
-// New creates a new Store.
-func New(repoPath string, prof identity.Profile) (*Store, error) {
+// Create a new Store.
+func Create(repoPath string, prof identity.Profile) (*Store, error) {
 	if err := os.MkdirAll(repoPath, 0700); err != nil {
 		return nil, fmt.Errorf("failed to initialize local repo: %w", err)
 	}
@@ -74,5 +74,5 @@ func Load(repoPath string) (*Store, error) {
 		return nil, err
 	}
 
-	return New(repoPath, prof)
+	return Create(repoPath, prof)
 }

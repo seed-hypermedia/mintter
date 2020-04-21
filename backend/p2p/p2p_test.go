@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"mintter/backend/identity"
+	"mintter/backend/store"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func makeTestNode(t *testing.T, name string) *Node {
@@ -17,7 +19,15 @@ func makeTestNode(t *testing.T, name string) *Node {
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
-	n, err := NodeFromConfig(ctx, makeTestRepoPath(t), makeTestProfile(t, name), Config{Addr: "/ip4/0.0.0.0/tcp/0"})
+	repoPath := makeTestRepoPath(t)
+	prof := makeTestProfile(t, name)
+	s, err := store.Create(repoPath, prof)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, s.Close())
+	})
+
+	n, err := NewNode(ctx, repoPath, s, zap.NewNop(), Config{Addr: "/ip4/0.0.0.0/tcp/0"})
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, n.Close())

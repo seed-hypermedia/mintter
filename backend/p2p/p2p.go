@@ -4,6 +4,7 @@ package p2p
 import (
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"path/filepath"
 	"time"
@@ -14,24 +15,24 @@ import (
 	"mintter/backend/store"
 
 	"github.com/ipfs/go-datastore"
-	badger "github.com/ipfs/go-ds-badger"
 	"github.com/ipfs/go-ipns"
 	"github.com/libp2p/go-libp2p"
-	relay "github.com/libp2p/go-libp2p-circuit" // OMG someone should kill the people naming IPFS Go packages.
-	connmgr "github.com/libp2p/go-libp2p-connmgr"
-	host "github.com/libp2p/go-libp2p-core/host"
-	peer "github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
-	"github.com/libp2p/go-libp2p-core/routing"
-	gostream "github.com/libp2p/go-libp2p-gostream"
-	dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p-peerstore/pstoreds"
-	record "github.com/libp2p/go-libp2p-record"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+
+	badger "github.com/ipfs/go-ds-badger"
+	relay "github.com/libp2p/go-libp2p-circuit" // OMG someone should kill the people naming IPFS Go packages.
+	connmgr "github.com/libp2p/go-libp2p-connmgr"
+	gostream "github.com/libp2p/go-libp2p-gostream"
+	dht "github.com/libp2p/go-libp2p-kad-dht"
+	record "github.com/libp2p/go-libp2p-record"
 )
 
 // Prototcol values.
@@ -79,6 +80,7 @@ type Node struct {
 	log   *zap.Logger
 	store *store.Store
 
+	cleanup  cleanup
 	addrs    []multiaddr.Multiaddr // Libp2p peer addresses for this node.
 	quitc    chan struct{}         // This channel will be closed to indicate all the goroutines to exit.
 	lis      net.Listener          // Libp2p listener wrapped into net.Listener. Used by the underlying gRPC server.
@@ -88,7 +90,31 @@ type Node struct {
 }
 
 // NewNode creates a new node.
-func NewNode(h host.Host, prof identity.Profile, s *store.Store, log *zap.Logger) (*Node, error) {
+func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logger, cfg Config) (n *Node, err error) {
+	var cleanup cleanup
+	defer func() {
+		if err != nil {
+			err = multierr.Append(err, cleanup.Close())
+		}
+	}()
+
+	db, err := badger.NewDatastore(filepath.Join(repoPath, "ipfslite"), &badger.DefaultOptions)
+	if err != nil {
+		return nil, err
+	}
+	cleanup = append(cleanup, db)
+
+	prof, err := s.CurrentProfile(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	h, err := makeHost(ctx, prof.Peer, db, libp2p.ListenAddrStrings(cfg.Addr))
+	if err != nil {
+		return nil, err
+	}
+	cleanup = append(cleanup, h)
+
 	addrs, err := wrapAddrs(prof.Peer.ID, h.Addrs()...)
 	if err != nil {
 		return nil, err
@@ -98,14 +124,16 @@ func NewNode(h host.Host, prof identity.Profile, s *store.Store, log *zap.Logger
 	if err != nil {
 		return nil, err
 	}
+	cleanup = append(cleanup, lis)
 
-	n := &Node{
+	n = &Node{
 		acc:      prof.Account,
 		peer:     prof.Peer,
 		host:     h,
 		store:    s,
 		log:      log,
 		addrs:    addrs,
+		cleanup:  cleanup,
 		lis:      lis,
 		quitc:    make(chan struct{}),
 		dialOpts: dialOpts(h),
@@ -121,13 +149,7 @@ func (n *Node) Close() (err error) {
 	// Signal goroutines to return.
 	close(n.quitc)
 
-	// TODO(burdiyan): if host is passed as a dependency it shouldn't be closing here.
-	// No wait for all the goroutines to return and close the dependencies.
-	err = multierr.Append(err, n.g.Wait())
-	err = multierr.Append(err, n.host.Close())
-	err = multierr.Append(err, n.lis.Close())
-
-	return
+	return multierr.Combine(err, n.g.Wait(), n.cleanup.Close())
 }
 
 // Host of the p2p node.
@@ -178,8 +200,9 @@ func dialOpts(host host.Host) []grpc.DialOption {
 	}
 }
 
-// MakeHost creates a new libp2p host.
-func MakeHost(ctx context.Context, p identity.Peer, db datastore.Batching, addrs []multiaddr.Multiaddr, opts ...libp2p.Option) (host.Host, error) {
+// makeHost creates a new libp2p host.
+func makeHost(ctx context.Context, p identity.Peer, db datastore.Batching, opts ...libp2p.Option) (host.Host, error) {
+	// TODO(burdiyan): pass the ps and don't forget to close.
 	ps, err := pstoreds.NewPeerstore(ctx, db, pstoreds.DefaultOpts())
 	if err != nil {
 		return nil, err
@@ -197,7 +220,6 @@ func MakeHost(ctx context.Context, p identity.Peer, db datastore.Batching, addrs
 	}
 
 	o := []libp2p.Option{
-		libp2p.ListenAddrs(addrs...),
 		libp2p.UserAgent(userAgent),
 		libp2p.Identity(p.PrivKey),
 		libp2p.Peerstore(ps),
@@ -205,11 +227,14 @@ func MakeHost(ctx context.Context, p identity.Peer, db datastore.Batching, addrs
 		libp2p.EnableRelay(relay.OptHop),
 		// Borrowed from go-threads.
 		libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute)),
+
+		// TODO(burdiyan): for some reason adding this option started to fail everything. Not sure what's that.
 		// Borrowed from ipfs-lite.
-		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
-			// TODO(burdiyan): Check if DHT closes properly.
-			return newDHT(ctx, h, db)
-		}),
+		// libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
+		// 	// TODO(burdiyan): Check if DHT closes properly.
+		// 	return newDHT(ctx, h, db)
+		// }),
+
 		// Check out extra options from ipfs-lite.
 	}
 
@@ -220,43 +245,17 @@ func MakeHost(ctx context.Context, p identity.Peer, db datastore.Batching, addrs
 
 // borrowed from ipfs-lite.
 func newDHT(ctx context.Context, h host.Host, ds datastore.Batching) (*dht.IpfsDHT, error) {
-	dhtOpts := []dht.Option{
+	opts := []dht.Option{
 		dht.NamespacedValidator("pk", record.PublicKeyValidator{}),
 		dht.NamespacedValidator("ipns", ipns.Validator{KeyBook: h.Peerstore()}), // TODO(burdiyan): Shall we get rid of the ipns stuff here?
 		dht.Concurrency(10),
 		dht.Mode(dht.ModeAuto),
 	}
 	if ds != nil {
-		dhtOpts = append(dhtOpts, dht.Datastore(ds))
+		opts = append(opts, dht.Datastore(ds))
 	}
 
-	return dht.New(ctx, h, dhtOpts...)
-}
-
-// NodeFromConfig builds default p2p node with all its dependencies.
-func NodeFromConfig(ctx context.Context, repoPath string, prof identity.Profile, cfg Config) (*Node, error) {
-	db, err := badger.NewDatastore(filepath.Join(repoPath, "ipfslite"), &badger.DefaultOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	a, err := multiaddr.NewMultiaddr(cfg.Addr)
-	if err != nil {
-		return nil, err
-	}
-
-	host, err := MakeHost(ctx, prof.Peer, db, []multiaddr.Multiaddr{a})
-	if err != nil {
-		return nil, err
-	}
-
-	store, err := store.New(repoPath, prof)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO(burdiyan): provide proper logger.
-	return NewNode(host, prof, store, zap.NewNop())
+	return dht.New(ctx, h, opts...)
 }
 
 func wrapAddrs(pid peer.ID, addrs ...multiaddr.Multiaddr) ([]multiaddr.Multiaddr, error) {
@@ -283,4 +282,18 @@ func logClose(l *zap.Logger, fn func() error, errmsg string) {
 	if err := fn(); err != nil {
 		l.Warn("CloseError", zap.Error(err), zap.String("details", errmsg))
 	}
+}
+
+type cleanup []io.Closer
+
+func (c cleanup) Close() error {
+	var err error
+
+	// We have to close in reverse order because some later dependencies
+	// can use previous ones. This is similar to defer statement.
+	for i := len(c) - 1; i >= 0; i-- {
+		err = multierr.Append(err, c[i].Close())
+	}
+
+	return err
 }
