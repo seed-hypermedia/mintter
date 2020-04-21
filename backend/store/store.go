@@ -22,12 +22,7 @@ type Store struct {
 	prof identity.Profile
 }
 
-// Create a new Store.
-func Create(repoPath string, prof identity.Profile) (*Store, error) {
-	if err := os.MkdirAll(repoPath, 0700); err != nil {
-		return nil, fmt.Errorf("failed to initialize local repo: %w", err)
-	}
-
+func new(repoPath string, prof identity.Profile) (*Store, error) {
 	db, err := badger.NewDatastore(filepath.Join(repoPath, "store"), &badger.DefaultOptions)
 	if err != nil {
 		return nil, err
@@ -53,18 +48,17 @@ func Create(repoPath string, prof identity.Profile) (*Store, error) {
 	return s, nil
 }
 
-// Close the store.
-func (s *Store) Close() error {
-	return s.db.Close()
+// Create a new Store.
+func Create(repoPath string, prof identity.Profile) (*Store, error) {
+	if err := os.MkdirAll(repoPath, 0700); err != nil {
+		return nil, fmt.Errorf("failed to initialize local repo: %w", err)
+	}
+
+	return new(repoPath, prof)
 }
 
-// RepoPath returns the base repo path.
-func (s *Store) RepoPath() string {
-	return s.repoPath
-}
-
-// Load from disk previously existing store.
-func Load(repoPath string) (*Store, error) {
+// Open an existing store from disk.
+func Open(repoPath string) (*Store, error) {
 	pc := &profileCache{
 		filename: filepath.Join(repoPath, "profile.json"),
 	}
@@ -74,5 +68,15 @@ func Load(repoPath string) (*Store, error) {
 		return nil, err
 	}
 
-	return Create(repoPath, prof)
+	return new(repoPath, prof)
+}
+
+// Close the store.
+func (s *Store) Close() error {
+	return s.db.Close()
+}
+
+// RepoPath returns the base repo path.
+func (s *Store) RepoPath() string {
+	return s.repoPath
 }
