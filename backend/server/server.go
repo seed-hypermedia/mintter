@@ -30,7 +30,7 @@ func NewServer(repoPath string, log *zap.Logger) (*Server, error) {
 		log:      log,
 	}
 
-	if store, err := store.Load(repoPath); err == nil {
+	if store, err := store.Open(repoPath); err == nil {
 		s.store = store
 		s.ready.CAS(false, true)
 	}
