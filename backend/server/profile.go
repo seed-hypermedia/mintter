@@ -42,7 +42,7 @@ func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*
 		return nil, status.Error(codes.FailedPrecondition, "call InitProfile first")
 	}
 
-	prof, err := s.store.GetProfile(ctx)
+	prof, err := s.store.CurrentProfile(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to load profile: %v", err)
 	}

@@ -2,6 +2,7 @@ package p2p
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"mintter/backend/p2p/internal"
@@ -11,6 +12,11 @@ import (
 
 // Ping another peer to check the connectivity.
 func (n *Node) Ping(ctx context.Context, pid peer.ID) (time.Duration, error) {
+	// Libp2p doesn't allow to open a stream to yourself.
+	if pid == n.peer.ID || pid == n.acc.ID {
+		return 0, errors.New("must not ping yourself")
+	}
+
 	conn, err := n.dial(ctx, pid)
 	if err != nil {
 		return 0, err

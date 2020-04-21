@@ -17,7 +17,7 @@ func (n *Node) GetProfile(ctx context.Context, pid peer.ID) (identity.Profile, e
 
 	// TODO(burdiyan): Peer ID vs Account ID here?
 	if pid == n.peer.ID || pid == n.acc.ID {
-		return n.store.GetProfile(ctx)
+		return n.store.CurrentProfile(ctx)
 	}
 
 	conn, err := n.dial(ctx, pid)
@@ -26,13 +26,16 @@ func (n *Node) GetProfile(ctx context.Context, pid peer.ID) (identity.Profile, e
 	}
 	defer logClose(n.log, conn.Close, "error closing grpc connection")
 
-	internal.NewPeerServiceClient(conn).GetProfile(ctx, &internal.GetProfileRequest{})
+	pbprof, err := internal.NewPeerServiceClient(conn).GetProfile(ctx, &internal.GetProfileRequest{})
+	if err != nil {
+		return identity.Profile{}, err
+	}
 
-	return identity.Profile{}, nil
+	return profileFromProto(pbprof)
 }
 
 func (n *rpcHandler) GetProfile(ctx context.Context, in *internal.GetProfileRequest) (*internal.Profile, error) {
-	prof, err := n.store.GetProfile(ctx)
+	prof, err := n.store.CurrentProfile(ctx)
 	if err != nil {
 		return nil, err
 	}

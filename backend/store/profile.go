@@ -13,6 +13,8 @@ import (
 
 // UpdateProfile in the store. It is actually an upsert.
 func (s *Store) UpdateProfile(ctx context.Context, prof identity.Profile) (identity.Profile, error) {
+	// TODO(burdiyan): Check to only update current profile.
+
 	old, err := s.pc.load()
 	if err != nil {
 		return identity.Profile{}, err
@@ -49,7 +51,12 @@ func (s *Store) UpdateProfile(ctx context.Context, prof identity.Profile) (ident
 }
 
 // GetProfile from the store.
-func (s *Store) GetProfile(ctx context.Context) (identity.Profile, error) {
+// func (s *Store) GetProfile(ctx context.Context) (identity.Profile, error) {
+// 	return s.pc.load()
+// }
+
+// CurrentProfile returns current user's profile.
+func (s *Store) CurrentProfile(ctx context.Context) (identity.Profile, error) {
 	return s.pc.load()
 }
 

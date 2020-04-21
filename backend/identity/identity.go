@@ -20,7 +20,7 @@ import (
 type Identity struct {
 	ID      peer.ID
 	PubKey  PubKey
-	PrivKey PrivKey
+	PrivKey PrivKey // Private Key is only expected for the current user.
 }
 
 // Account is a primary Mintter account. Its ID has the same semantics as
