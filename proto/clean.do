@@ -1,1 +1,1 @@
-. ../redo/proto-clean.od
+. $REDO_BASE/redo/proto-clean.od

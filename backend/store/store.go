@@ -18,8 +18,33 @@ type Store struct {
 	db       datastore.TxnDatastore
 	lb       *logbook.Book
 
+	profilesKey datastore.Key
+
 	pc   profileCache
 	prof identity.Profile
+}
+
+// Create a new Store.
+func Create(repoPath string, prof identity.Profile) (*Store, error) {
+	if err := os.MkdirAll(repoPath, 0700); err != nil {
+		return nil, fmt.Errorf("failed to initialize local repo: %w", err)
+	}
+
+	return new(repoPath, prof)
+}
+
+// Open an existing store from disk.
+func Open(repoPath string) (*Store, error) {
+	pc := profileCache{
+		filename: filepath.Join(repoPath, "profile.json"),
+	}
+
+	prof, err := pc.load()
+	if err != nil {
+		return nil, err
+	}
+
+	return new(repoPath, prof)
 }
 
 func new(repoPath string, prof identity.Profile) (*Store, error) {
@@ -27,11 +52,17 @@ func new(repoPath string, prof identity.Profile) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err != nil {
+			db.Close()
+		}
+	}()
 
 	s := &Store{
-		repoPath: repoPath,
-		db:       db,
-		prof:     prof,
+		repoPath:    repoPath,
+		db:          db,
+		prof:        prof,
+		profilesKey: datastore.NewKey("/profiles"),
 	}
 
 	s.lb, err = logbook.New(prof.Account, s.db)
@@ -48,29 +79,6 @@ func new(repoPath string, prof identity.Profile) (*Store, error) {
 	return s, nil
 }
 
-// Create a new Store.
-func Create(repoPath string, prof identity.Profile) (*Store, error) {
-	if err := os.MkdirAll(repoPath, 0700); err != nil {
-		return nil, fmt.Errorf("failed to initialize local repo: %w", err)
-	}
-
-	return new(repoPath, prof)
-}
-
-// Open an existing store from disk.
-func Open(repoPath string) (*Store, error) {
-	pc := &profileCache{
-		filename: filepath.Join(repoPath, "profile.json"),
-	}
-
-	prof, err := pc.load()
-	if err != nil {
-		return nil, err
-	}
-
-	return new(repoPath, prof)
-}
-
 // Close the store.
 func (s *Store) Close() error {
 	return s.db.Close()
@@ -79,4 +87,9 @@ func (s *Store) Close() error {
 // RepoPath returns the base repo path.
 func (s *Store) RepoPath() string {
 	return s.repoPath
+}
+
+// LogBook retrieves the underlying store log book.
+func (s *Store) LogBook() *logbook.Book {
+	return s.lb
 }

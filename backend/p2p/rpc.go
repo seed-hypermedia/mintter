@@ -3,6 +3,7 @@ package p2p
 import (
 	"context"
 	"fmt"
+	"mintter/backend/identity"
 	"net"
 
 	"github.com/libp2p/go-libp2p-core/host"
@@ -16,6 +17,15 @@ import (
 // This way we don't expose server handlers on the main type.
 type rpcHandler struct {
 	*Node
+}
+
+func (n *Node) dialProfile(ctx context.Context, pid identity.ProfileID, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
+	prof, err := n.store.GetProfile(ctx, pid)
+	if err != nil {
+		return nil, err
+	}
+
+	return n.dial(ctx, prof.Peer.ID, opts...)
 }
 
 func (n *Node) dial(ctx context.Context, pid peer.ID, opts ...grpc.DialOption) (*grpc.ClientConn, error) {

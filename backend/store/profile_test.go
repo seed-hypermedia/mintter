@@ -1,7 +1,9 @@
 package store
 
 import (
+	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -48,6 +50,29 @@ func TestProfileCache(t *testing.T) {
 	p, err = pc.load()
 	require.NoError(t, err)
 	require.Equal(t, prof, p)
+}
+
+func TestStoreProfile(t *testing.T) {
+	dir, err := ioutil.TempDir("", t.Name())
+	require.NoError(t, err)
+	defer func() {
+		require.NoError(t, os.RemoveAll(dir))
+	}()
+
+	ctx := context.Background()
+	prof := testProfile(t)
+
+	store, err := Create(dir, prof)
+	require.NoError(t, err)
+	defer func() {
+		require.NoError(t, store.Close())
+	}()
+
+	require.NoError(t, store.StoreProfile(ctx, prof))
+
+	pp, err := store.GetProfile(ctx, prof.ID)
+	require.NoError(t, err)
+	require.Equal(t, prof.ID, pp.ID)
 }
 
 func testProfile(t *testing.T) identity.Profile {

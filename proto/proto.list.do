@@ -1,1 +1,1 @@
-. ../redo/proto.list.od
+. $REDO_BASE/redo/proto.list.od

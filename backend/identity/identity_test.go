@@ -131,7 +131,7 @@ func TestMerge(t *testing.T) {
 		expected.About = a
 		incoming := orig
 		incoming.About = a
-		incoming.Account.ID = "foobar"
+		incoming.Account.ID.ID = "foobar"
 		require.NoError(t, merged.Merge(incoming))
 		require.Equal(t, expected, merged)
 	}

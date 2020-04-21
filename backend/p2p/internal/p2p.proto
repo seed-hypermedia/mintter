@@ -16,7 +16,11 @@ message PingRequest {}
 
 message PingResponse {}
 
-message GetProfileRequest {}
+message GetProfileRequest {
+  // Optional. Profile of the user that initiated the request.
+  // Used to exchange profile information upon connect.
+  Profile profile = 1;
+}
 
 message GetLogRecordsRequest {
   // Log name in form of <account-id>/<log-name>

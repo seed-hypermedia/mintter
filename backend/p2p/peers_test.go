@@ -1,4 +1,4 @@
-package p2p
+package p2p_test
 
 import (
 	"context"
@@ -16,5 +16,8 @@ func TestConnect(t *testing.T) {
 	err := alice.Connect(ctx, bob.Addrs()...)
 	require.NoError(t, err)
 
-	require.ElementsMatch(t, alice.Host().Peerstore().Peers(), bob.Host().Peerstore().Peers())
+	require.ElementsMatch(t,
+		alice.Host().Peerstore().Peers(),
+		bob.Host().Peerstore().Peers(),
+		"both peers must have each other in the peer store")
 }

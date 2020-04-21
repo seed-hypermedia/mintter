@@ -70,7 +70,7 @@ func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileReque
 		return nil, status.Errorf(codes.InvalidArgument, "failed to convert proto profile into profile: %v", err)
 	}
 
-	stored, err := s.store.UpdateProfile(ctx, update)
+	stored, err := s.store.UpdateProfile(ctx, update.About)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to store profile: %v", err)
 	}
