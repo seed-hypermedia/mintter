@@ -25,7 +25,7 @@ func (s *Server) InitProfile(ctx context.Context, req *proto.InitProfileRequest)
 		return nil, status.Errorf(codes.Internal, "failed to generate identity: %v", err)
 	}
 
-	s.store, err = store.New(s.repoPath, profile)
+	s.store, err = store.Create(s.repoPath, profile)
 	if err != nil {
 		s.log.Error("StoreInitializationFailed", zap.Error(err))
 		return nil, err
