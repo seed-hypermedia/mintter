@@ -83,6 +83,37 @@ func (s *Store) GetProfile(ctx context.Context, pid identity.ProfileID) (identit
 	return p, nil
 }
 
+// ListProfiles stored in the store.
+func (s *Store) ListProfiles(ctx context.Context) ([]identity.Profile, error) {
+	res, err := s.db.Query(query.Query{
+		Prefix: s.profilesKey.String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer res.Close()
+
+	var out []identity.Profile
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case rec, ok := <-res.Next():
+			if !ok {
+				return out, nil
+			}
+
+			var p identity.Profile
+			if err := json.Unmarshal(rec.Value, &p); err != nil {
+				return nil, err
+			}
+
+			out = append(out, p)
+		}
+	}
+}
+
 // ListProfileIDs of known profiles.
 func (s *Store) ListProfileIDs(ctx context.Context) ([]identity.ProfileID, error) {
 	res, err := s.db.Query(query.Query{
