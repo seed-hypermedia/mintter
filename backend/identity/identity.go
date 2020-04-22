@@ -77,6 +77,10 @@ type Profile struct {
 
 // Merge prof into p respecting immutable fields.
 func (p *Profile) Merge(prof Profile) error {
+	if p.ID.ID != "" {
+		prof.ID = ProfileID{}
+	}
+
 	// Clear immutable fields
 	if p.Account.ID.ID != "" {
 		prof.Account = Account{}
@@ -86,7 +90,7 @@ func (p *Profile) Merge(prof Profile) error {
 		prof.Peer = Peer{}
 	}
 
-	return mergo.Merge(p, prof)
+	return mergo.Merge(p, prof, mergo.WithOverride)
 }
 
 type identity struct {

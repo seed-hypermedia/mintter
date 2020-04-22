@@ -135,6 +135,17 @@ func TestMerge(t *testing.T) {
 		require.NoError(t, merged.Merge(incoming))
 		require.Equal(t, expected, merged)
 	}
+	{
+		// Non-empty incoming fields must overwrite existing fields.
+		merged := orig
+		merged.About.Bio = "Old bio."
+		incoming := orig
+		incoming.About.Bio = "New bio."
+		expected := orig
+		expected.About.Bio = "New bio."
+		require.NoError(t, merged.Merge(incoming))
+		require.Equal(t, expected, merged)
+	}
 }
 
 func TestAboutDiff(t *testing.T) {
