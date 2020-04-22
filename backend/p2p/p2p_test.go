@@ -4,18 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"io/ioutil"
-	"mintter/backend/identity"
-	"mintter/backend/store"
 	"os"
 	"testing"
 
-	. "mintter/backend/p2p"
+	"mintter/backend/identity"
+	"mintter/backend/p2p"
+	"mintter/backend/store"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
 
-func makeTestNode(t *testing.T, name string) *Node {
+func makeTestNode(t *testing.T, name string) *p2p.Node {
 	t.Helper()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -29,7 +29,7 @@ func makeTestNode(t *testing.T, name string) *Node {
 		require.NoError(t, s.Close())
 	})
 
-	n, err := NewNode(ctx, repoPath, s, zap.NewNop(), Config{Addr: "/ip4/0.0.0.0/tcp/0"})
+	n, err := p2p.NewNode(ctx, repoPath, s, zap.NewNop(), p2p.Config{Addr: "/ip4/0.0.0.0/tcp/0"})
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, n.Close())
