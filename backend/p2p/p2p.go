@@ -11,14 +11,15 @@ import (
 	"mintter/backend"
 	"mintter/backend/cleanup"
 	"mintter/backend/identity"
+	"mintter/backend/ipfsutil"
 	"mintter/backend/store"
 
 	"github.com/ipfs/go-datastore"
-	"github.com/ipfs/go-ipns"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
+	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	"github.com/libp2p/go-libp2p-peerstore/pstoreds"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
@@ -27,11 +28,10 @@ import (
 	"google.golang.org/grpc"
 
 	badger "github.com/ipfs/go-ds-badger"
+	ipld "github.com/ipfs/go-ipld-format"       // OMG someone should kill the people naming IPFS Go packages.
 	relay "github.com/libp2p/go-libp2p-circuit" // OMG someone should kill the people naming IPFS Go packages.
 	connmgr "github.com/libp2p/go-libp2p-connmgr"
 	gostream "github.com/libp2p/go-libp2p-gostream"
-	dht "github.com/libp2p/go-libp2p-kad-dht"
-	record "github.com/libp2p/go-libp2p-record"
 )
 
 // Prototcol values.
@@ -82,6 +82,7 @@ type Node struct {
 	acc      identity.Account
 	peer     identity.Peer
 	host     host.Host
+	dag      ipld.DAGService
 	cleanup  io.Closer
 	addrs    []multiaddr.Multiaddr // Libp2p peer addresses for this node.
 	quitc    chan struct{}         // This channel will be closed to indicate all the goroutines to exit.
@@ -109,11 +110,19 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 		return nil, err
 	}
 
-	h, err := makeHost(ctx, prof.Peer, db, libp2p.ListenAddrStrings(cfg.Addr))
+	h, dht, err := makeHost(ctx, prof.Peer, db, libp2p.ListenAddrStrings(cfg.Addr))
 	if err != nil {
 		return nil, err
 	}
-	cleanup = append(cleanup, h)
+	cleanup = append(cleanup, h, dht)
+
+	ipfsnode, err := ipfsutil.New(ctx, db, h, dht, nil)
+	if err != nil {
+		return nil, err
+	}
+	cleanup = append(cleanup, ipfsnode)
+
+	// TODO(burdiyan): Bootstrap IPFS node.
 
 	addrs, err := wrapAddrs(prof.Peer.ID, h.Addrs()...)
 	if err != nil {
@@ -133,6 +142,7 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 		acc:      prof.Account,
 		peer:     prof.Peer,
 		host:     h,
+		dag:      ipfsnode,
 		addrs:    addrs,
 		cleanup:  cleanup,
 		lis:      lis,
@@ -174,61 +184,37 @@ func (n *Node) Addrs() []multiaddr.Multiaddr {
 }
 
 // makeHost creates a new libp2p host.
-func makeHost(ctx context.Context, p identity.Peer, db datastore.Batching, opts ...libp2p.Option) (host.Host, error) {
+func makeHost(ctx context.Context, p identity.Peer, db datastore.Batching, opts ...libp2p.Option) (host.Host, *dual.DHT, error) {
 	// TODO(burdiyan): pass the ps and don't forget to close.
 	ps, err := pstoreds.NewPeerstore(ctx, db, pstoreds.DefaultOpts())
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// This is borrowed from Qri's makeBasicHost. Not sure if it's needed.
 	{
 		if err := ps.AddPrivKey(p.ID, p.PrivKey); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		if err := ps.AddPubKey(p.ID, p.PubKey); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
 	o := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
-		libp2p.Identity(p.PrivKey),
 		libp2p.Peerstore(ps),
-		// Borrowed from qri.
+		// Borrowed from qri. Is this really needed for non-public nodes?
 		libp2p.EnableRelay(relay.OptHop),
 		// Borrowed from go-threads.
 		libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute)),
-
-		// TODO(burdiyan): for some reason adding this option started to fail everything. Not sure what's that.
-		// Borrowed from ipfs-lite.
-		// libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
-		// 	// TODO(burdiyan): Check if DHT closes properly.
-		// 	return newDHT(ctx, h, db)
-		// }),
-
-		// Check out extra options from ipfs-lite.
+		// Check out extra options in ipfsutil.
 	}
 
 	o = append(o, opts...)
 
-	return libp2p.New(ctx, o...)
-}
-
-// borrowed from ipfs-lite.
-func newDHT(ctx context.Context, h host.Host, ds datastore.Batching) (*dht.IpfsDHT, error) {
-	opts := []dht.Option{
-		dht.NamespacedValidator("pk", record.PublicKeyValidator{}),
-		dht.NamespacedValidator("ipns", ipns.Validator{KeyBook: h.Peerstore()}), // TODO(burdiyan): Shall we get rid of the ipns stuff here?
-		dht.Concurrency(10),
-		dht.Mode(dht.ModeAuto),
-	}
-	if ds != nil {
-		opts = append(opts, dht.Datastore(ds))
-	}
-
-	return dht.New(ctx, h, opts...)
+	return ipfsutil.SetupLibp2p(ctx, p.PrivKey, nil, db, o...)
 }
 
 func wrapAddrs(pid peer.ID, addrs ...multiaddr.Multiaddr) ([]multiaddr.Multiaddr, error) {
