@@ -48,7 +48,7 @@ export function ToolbarMarkItalic({size = 24, className, ...rest}: IconProps) {
     <ToolbarMark
       reversed
       format={MARK_ITALIC}
-      icon={<Italic size={size} />}
+      icon={<Italic size={size} color="currentColor" />}
       className={className}
       {...rest}
     />
@@ -60,7 +60,8 @@ export function ToolbarMarkCode({size = 24, className, ...rest}: IconProps) {
     <ToolbarMark
       reversed
       format={MARK_CODE}
-      icon={<Code size={size} className={className} {...rest} />}
+      className={className}
+      icon={<Code size={size} color="currentColor" {...rest} />}
     />
   )
 }
@@ -68,7 +69,7 @@ export function ToolbarMarkCode({size = 24, className, ...rest}: IconProps) {
 export function ToolbarLink({size = 24, className, ...rest}: IconProps) {
   return (
     <DefaultToolbarLink
-      icon={<Link size={size} />}
+      icon={<Link size={size} color="currentColor" />}
       className={className}
       {...rest}
     />
@@ -78,7 +79,7 @@ export function ToolbarLink({size = 24, className, ...rest}: IconProps) {
 export function ToolbarImage({size = 24, className, ...rest}: IconProps) {
   return (
     <DefaultToolbarImage
-      icon={<Image size={size} />}
+      icon={<Image size={size} color="currentColor" />}
       className={className}
       {...rest}
     />
