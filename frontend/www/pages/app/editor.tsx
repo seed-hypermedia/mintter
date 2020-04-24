@@ -8,13 +8,12 @@ import {
   useEditor,
   plugins as editorPlugins,
   initialValue,
-  ToolbarImage,
+  SectionToolbar,
 } from '@mintter/editor'
 import {
   EditablePlugins,
   SlatePlugin,
   renderLeafPreview,
-  HeadingToolbar,
 } from 'slate-plugins-next'
 import Seo from '../../components/seo'
 import {
@@ -37,6 +36,7 @@ export default function EditorPage(): JSX.Element {
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
   const [value, setValue] = React.useState<Node[]>(initialValue)
   const wrapperRef = React.useRef<HTMLDivElement>(null)
+  const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
   const descriptionRef = React.useRef(null)
   const [title, setTitle] = React.useState<string>('')
@@ -153,20 +153,23 @@ export default function EditorPage(): JSX.Element {
                     />
                   </div>
                   <Toolbar />
-                  <EditablePlugins
-                    plugins={plugins}
-                    renderElement={[renderElement]}
-                    renderLeaf={[
-                      renderLeafBold(),
-                      renderLeafItalic(),
-                      renderLeafUnderline(),
-                      renderLeafInlineCode(),
-                      renderLeafPreview(),
-                    ]}
-                    placeholder="Start writing your masterpiece..."
-                    spellCheck
-                    autoFocus
-                  />
+                  <div className="relative" ref={editorContainerRef}>
+                    <SectionToolbar />
+                    <EditablePlugins
+                      plugins={plugins}
+                      renderElement={[renderElement]}
+                      renderLeaf={[
+                        renderLeafBold(),
+                        renderLeafItalic(),
+                        renderLeafUnderline(),
+                        renderLeafInlineCode(),
+                        renderLeafPreview(),
+                      ]}
+                      placeholder="Start writing your masterpiece..."
+                      spellCheck
+                      autoFocus
+                    />
+                  </div>
                 </div>
               </Slate>
             </div>
