@@ -46,8 +46,6 @@ var Libp2pOptionsExtra = []libp2p.Option{
 // Interesting options to pass: NATPortMap() EnableAutoRelay(),
 // libp2p.EnableNATService(), DisableRelay(), ConnectionManager(...)... see
 // https://godoc.org/github.com/libp2p/go-libp2p#Option for more info.
-//
-// The secret should be a 32-byte pre-shared-key byte slice.
 func SetupLibp2p(
 	ctx context.Context,
 	hostKey crypto.PrivKey,

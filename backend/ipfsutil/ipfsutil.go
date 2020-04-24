@@ -65,17 +65,18 @@ func (cfg *Config) setDefaults() {
 
 // Node is a lightweight IPFS peer.
 type Node struct {
+	ipld.DAGService
+
 	cfg *Config
 
 	host  host.Host
 	dht   routing.Routing
 	store datastore.Batching
 
-	ipld.DAGService // become a DAG service
-	bstore          blockstore.Blockstore
-	bserv           blockservice.BlockService
-	reprovider      provider.System
-	cleanup         io.Closer
+	bstore     blockstore.Blockstore
+	bserv      blockservice.BlockService
+	reprovider provider.System
+	cleanup    io.Closer
 }
 
 // New creates an IPFS-Lite Peer. It uses the given datastore, libp2p Host and
@@ -307,10 +308,4 @@ func (p *Node) GetFile(ctx context.Context, c cid.Cid) (ufsio.ReadSeekCloser, er
 // BlockStore offers access to the blockstore underlying the Peer's DAGService.
 func (p *Node) BlockStore() blockstore.Blockstore {
 	return p.bstore
-}
-
-// HasBlock returns whether a given block is available locally. It is
-// a shorthand for .Blockstore().Has().
-func (p *Node) HasBlock(c cid.Cid) (bool, error) {
-	return p.BlockStore().Has(c)
 }
