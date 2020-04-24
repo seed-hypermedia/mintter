@@ -152,8 +152,8 @@ export default function EditorPage(): JSX.Element {
                       }}
                     />
                   </div>
-                  <Toolbar />
                   <div className="relative" ref={editorContainerRef}>
+                    <Toolbar />
                     <SectionToolbar />
                     <EditablePlugins
                       plugins={plugins}

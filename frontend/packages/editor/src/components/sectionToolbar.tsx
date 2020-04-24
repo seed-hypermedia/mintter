@@ -1,8 +1,10 @@
 import React from 'react'
 import {useSlate, ReactEditor} from 'slate-react'
-import {Range, Node} from 'slate'
+import {Range, Node, Path} from 'slate'
 import {css} from 'emotion'
-import {ToolbarLink, ToolbarImage} from './toolbar'
+import {ToolbarImage} from './toolbar'
+import {ToolbarButton, BLOCKQUOTE} from 'slate-plugins-next'
+import {AlignLeft, Plus} from 'react-feather'
 
 export function SectionToolbar() {
   const editor = useSlate()
@@ -23,6 +25,8 @@ export function SectionToolbar() {
     ) {
       console.log('selection is available')
       const path = selection.anchor.path
+      const node = Node.get(editor, Path.parent(path))
+      console.log('node => ', node)
       const domSelection = window.getSelection() || Node.get(editor, path)
       const domRange = domSelection.getRangeAt(0)
       const rect = domRange.getBoundingClientRect()
@@ -30,26 +34,30 @@ export function SectionToolbar() {
 
       if (rect && parentRect) {
         element.style.opacity = '1'
-        element.style.top = `${rect.top - parentRect.top - rect.height / 2}px`
-        element.style.left = `${rect.left - parentRect.left}px`
+        element.style.top = `${rect.top + rect.height / 2 - parentRect.top}px`
+        const factor = node.type === BLOCKQUOTE ? 24 : 0
+        element.style.left = `${rect.left - parentRect.left - factor}px`
       }
     } else {
-      console.log('no selection is available')
-
       element.removeAttribute('style')
     }
-    console.log('selection => ', selection)
   })
+
+  function createTextSection(event) {
+    console.log('create text section', event)
+  }
 
   return (
     <div
+      data-testid="section-toolbar"
       ref={wrapper}
       contentEditable={false}
       className={`${css`
+        box-sizing: border-box;
         position: absolute;
         padding-right: 16px;
         opacity: 0;
-        transform: translateX(-100%);
+        transform: translate(-100%, -50%);
       `}`}
     >
       <div
@@ -57,23 +65,49 @@ export function SectionToolbar() {
           overflow: hidden;
           border-radius: 16px;
           border: 1px solid #cdcdcd;
-          padding: 0 16px;
+          padding: 0 8px;
           display: flex;
           align-items: center;
         `}
       >
-        <ToolbarLink
-          className={css`
-            padding: 4px;
-          `}
-          size={20}
-        />
+        <button
+          onClick={createTextSection}
+          className={`text-muted-hover ${css`
+            padding: 5px;
+            font-size: 16px;
+            line-height: 1.2;
+          `}`}
+        >
+          ab
+        </button>
         <ToolbarImage
-          className={css`
-            padding: 4px;
-          `}
+          className={`text-muted-hover ${css`
+            padding: 5px;
+          `}`}
           size={20}
         />
+        <ToolbarButton
+          className={`text-muted-hover ${css`
+            padding: 5px;
+          `}`}
+          icon={<AlignLeft size={16} />}
+        />
+        <div
+          className={`bg-muted-hover ${css`
+            width: 1px;
+            height: 16px;
+            margin: 0 4px;
+          `}`}
+        />
+        <button
+          className={css`
+            padding: 5px;
+            font-size: 16px;
+            line-height: 1.2;
+          `}
+        >
+          <Plus size={16} className="text-muted-hover" />
+        </button>
       </div>
     </div>
   )
