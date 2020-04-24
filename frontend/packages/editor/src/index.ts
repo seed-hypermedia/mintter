@@ -1,5 +1,4 @@
 export * from './editor'
-export * from './toolbar'
-export * from './portal'
 export * from './useEditor'
 export * from './plugins'
+export * from './components'
