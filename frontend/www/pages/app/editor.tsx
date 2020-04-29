@@ -42,6 +42,10 @@ export default function EditorPage(): JSX.Element {
   const [title, setTitle] = React.useState<string>('')
   const [description, setDescription] = React.useState<string>('')
 
+  function isEmpty(): boolean {
+    return value.length === 1 && Node.string(value[0]) === ''
+  }
+
   // send focus to the editor when you click outside.
   // TODO: check if focus is on title or description
   React.useEffect(() => {
@@ -61,6 +65,8 @@ export default function EditorPage(): JSX.Element {
       wrapperRef.current.removeEventListener('click', wrapperClick)
     }
   }, [])
+
+  console.log('empty => ', isEmpty())
 
   return (
     <Layout className="flex">
@@ -154,7 +160,7 @@ export default function EditorPage(): JSX.Element {
                   </div>
                   <div className="relative" ref={editorContainerRef}>
                     <Toolbar />
-                    <SectionToolbar />
+                    {!isEmpty() && <SectionToolbar />}
                     <EditablePlugins
                       plugins={plugins}
                       renderElement={[renderElement]}
