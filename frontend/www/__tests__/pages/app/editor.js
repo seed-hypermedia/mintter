@@ -16,7 +16,7 @@ describe('<Editor />', () => {
     const {queryByTestId} = renderComponent()
 
     await waitFor(() => {
-      expect(queryByTestId(/section-toolbar/i)).toBeInTheDocument()
+      expect(queryByTestId(/section-toolbar/i)).not.toBeInTheDocument()
     })
   })
 })

@@ -1,5 +1,9 @@
 import React from 'react'
-import {createEditor, Editor} from 'slate'
+import {
+  createEditor,
+  Editor,
+  // Transforms, Node, Element, Path
+} from 'slate'
 import {withReact} from 'slate-react'
 import {
   withBreakEmptyReset,
@@ -15,23 +19,32 @@ import {
   BLOCKQUOTE,
   HeadingType,
 } from 'slate-plugins-next'
+import {withSections} from './SectionPlugin'
 
 const resetOptions = {
-  types: [BLOCKQUOTE, HeadingType.H1, HeadingType.H2, HeadingType.H3],
+  types: [
+    BLOCKQUOTE,
+    HeadingType.H1,
+    HeadingType.H2,
+    HeadingType.H3,
+    'section',
+  ],
 }
 
 export function useEditor(plugins: any[]): Editor {
   return React.useMemo(
     () =>
-      withShortcuts(
-        withVideo(
-          withList(
-            withBreakEmptyReset(resetOptions)(
-              withDeleteStartReset(resetOptions)(
-                withImage(
-                  withPasteHtml(plugins)(
-                    withPasteMd(plugins)(
-                      withBlock(withLink(withReact(createEditor()))),
+      withSections()(
+        withShortcuts(
+          withVideo(
+            withList(
+              withBreakEmptyReset(resetOptions)(
+                withDeleteStartReset(resetOptions)(
+                  withImage(
+                    withPasteHtml(plugins)(
+                      withPasteMd(plugins)(
+                        withBlock(withLink(withReact(createEditor()))),
+                      ),
                     ),
                   ),
                 ),
