@@ -140,6 +140,16 @@ export default function Element({
           {children}
         </p>
       )
+
+    case 'section':
+      return (
+        <div
+          className="p-2 border rounded mt-4 border-gray-500"
+          {...attributes}
+        >
+          {children}
+        </div>
+      )
     default:
       return children
   }
