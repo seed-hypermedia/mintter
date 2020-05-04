@@ -50,8 +50,7 @@ const Textarea = (
     const txt = innerRef.current
     if (txt) {
       const div = divRef.current
-      const content = txt.value
-      div.innerHTML = content
+      // const content = txt.value
       div.style.visibility = 'hidden'
       div.style.display = 'block'
       txt.style.height = `${div.offsetHeight ? div.offsetHeight : lh}px`
@@ -69,6 +68,8 @@ const Textarea = (
   }
 
   const content = value || typeof ref === 'function' ? undefined : innerValue
+  const divValue = innerRef?.current?.value || ''
+  console.log(divValue[divValue.length - 1] === '\n')
 
   return (
     <>
@@ -96,13 +97,17 @@ const Textarea = (
       />
       <div
         ref={divRef}
-        className={`${className} ${css`
+        className={`leading-normal ${className} ${css`
           word-wrap: break-word;
           white-space: pre-wrap;
           min-height: ${minHeight ? minHeight : lh}px;
-          line-height: ${minHeight}px;
+          // line-height: ${minHeight}px;
         `}`}
-      ></div>
+      >
+        {divValue}
+        {/* this empty space is to let the textarea aware of it to change its size, thanks to trevorblades! */}
+        {divValue[divValue.length - 1] === '\n' && '\n'}
+      </div>
     </>
   )
 }
