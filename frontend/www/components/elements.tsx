@@ -143,10 +143,7 @@ export default function Element({
 
     case 'section':
       return (
-        <div
-          className="p-2 border rounded mt-4 border-gray-500"
-          {...attributes}
-        >
+        <div className="rounded px-4 py-8 pt-4 mt-8 first:mt-0" {...attributes}>
           {children}
         </div>
       )
