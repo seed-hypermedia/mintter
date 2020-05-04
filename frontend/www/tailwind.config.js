@@ -28,6 +28,8 @@ module.exports = {
         body: 'var(--color-body)',
         'body-muted': 'var(--color-body-muted)',
         'toggle-theme': 'var(--color-toggle-theme)',
+        toolbar: 'var(--color-toolbar)',
+        'toolbar-active': 'var(--color-toolbar-active)',
       },
     },
   },
