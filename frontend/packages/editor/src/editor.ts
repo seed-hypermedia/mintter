@@ -1,5 +1,5 @@
 import {Editor as SlateEditor, Transforms} from 'slate'
-import {PARAGRAPH, HeadingType} from 'slate-plugins-next'
+import {PARAGRAPH} from 'slate-plugins-next'
 import {ReactEditor} from 'slate-react'
 
 export interface MintterEditor {}
@@ -10,7 +10,7 @@ export const Editor = {
   addSection: (editor: ReactEditor): void => {
     const newNode = {
       type: 'section',
-      children: [{type: HeadingType.H2, children: [{text: ''}]}],
+      children: [{type: PARAGRAPH, children: [{text: ''}]}],
     }
     const at = [editor.children.length]
     Transforms.insertNodes(editor, newNode, {at})

@@ -31,6 +31,8 @@ module.exports = {
       },
     },
   },
-  variants: {},
+  variants: {
+    backgroundColor: ['responsive', 'hover', 'focus', 'focus-within'],
+  },
   plugins: [],
 }
