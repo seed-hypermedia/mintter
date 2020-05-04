@@ -177,7 +177,7 @@ export default function EditorPage(): JSX.Element {
                   </div>
                 </div>
               </Slate>
-              <div className="p-16 flex flex-col items-center justify-center">
+              <div className="py-16 flex flex-col items-start">
                 <button
                   className="flex items-center bg-transparent text-body-muted transition duration-200 hover:text-body hover:border-body border border-body-muted rounded-md px-2 pl-2 py-2"
                   onClick={() => Editor.addSection(editor)}

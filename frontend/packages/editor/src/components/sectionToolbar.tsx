@@ -2,7 +2,6 @@ import React from 'react'
 import {useSlate, ReactEditor} from 'slate-react'
 import {Range, Node, Path} from 'slate'
 import {css} from 'emotion'
-import {ToolbarImage} from './toolbar'
 import {ToolbarButton, BLOCKQUOTE} from 'slate-plugins-next'
 import {AlignLeft, Plus} from 'react-feather'
 
@@ -36,7 +35,8 @@ export function SectionToolbar() {
         element.style.opacity = '1'
         element.style.top = `${rect.top + rect.height / 2 - parentRect.top}px`
         const factor = node.type === BLOCKQUOTE ? 24 : 0
-        element.style.left = `${rect.left - parentRect.left - factor}px`
+        // element.style.left = `${rect.left - parentRect.left - factor}px`
+        element.style.left = `${-8 - factor}px`
       }
     } else {
       element.removeAttribute('style')
@@ -80,12 +80,6 @@ export function SectionToolbar() {
         >
           ab
         </button>
-        <ToolbarImage
-          className={`text-muted-hover ${css`
-            padding: 5px;
-          `}`}
-          size={20}
-        />
         <ToolbarButton
           className={`text-muted-hover ${css`
             padding: 5px;
