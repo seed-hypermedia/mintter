@@ -1,14 +1,7 @@
 import React from 'react'
 import {css} from 'emotion'
 import {RenderElementProps} from 'slate-react'
-import {
-  ListType,
-  LINK,
-  HeadingType,
-  BLOCKQUOTE,
-  CODE,
-  PARAGRAPH,
-} from 'slate-plugins-next'
+import {nodeTypes} from '@mintter/editor'
 
 export default function Element({
   attributes,
@@ -16,7 +9,7 @@ export default function Element({
   element,
 }: RenderElementProps) {
   switch (element.type) {
-    case HeadingType.H1:
+    case nodeTypes.typeH1:
       return (
         <h1
           {...attributes}
@@ -25,19 +18,19 @@ export default function Element({
           {children}
         </h1>
       )
-    case HeadingType.H2:
+    case nodeTypes.typeH2:
       return (
         <h2 {...attributes} className="text-3xl text-heading mt-8">
           {children}
         </h2>
       )
-    case HeadingType.H3:
+    case nodeTypes.typeH3:
       return (
         <h3 {...attributes} className="text-2xl text-heading mt-8">
           {children}
         </h3>
       )
-    case BLOCKQUOTE:
+    case nodeTypes.typeBlockquote:
       return (
         <blockquote
           {...attributes}
@@ -48,7 +41,7 @@ export default function Element({
           </p>
         </blockquote>
       )
-    case ListType.UL_LIST:
+    case nodeTypes.typeUl:
       return (
         <ul
           {...attributes}
@@ -67,7 +60,7 @@ export default function Element({
           {children}
         </ul>
       )
-    case ListType.OL_LIST:
+    case nodeTypes.typeOl:
       return (
         <ol
           {...attributes}
@@ -93,7 +86,7 @@ export default function Element({
           {children}
         </ol>
       )
-    case ListType.LIST_ITEM:
+    case nodeTypes.typeLi:
       return (
         <li
           {...attributes}
@@ -110,7 +103,7 @@ export default function Element({
           {children}
         </li>
       )
-    case CODE:
+    case nodeTypes.typeCode:
       return (
         <code
           {...attributes}
@@ -119,7 +112,7 @@ export default function Element({
           {children}
         </code>
       )
-    case LINK:
+    case nodeTypes.typeLink:
       return (
         <a
           {...attributes}
@@ -134,14 +127,14 @@ export default function Element({
           {children}
         </a>
       )
-    case PARAGRAPH:
+    case nodeTypes.typeP:
       return (
         <p {...attributes} className={`text-body mt-4`}>
           {children}
         </p>
       )
 
-    case 'section':
+    case nodeTypes.typeSection:
       return (
         <div
           className="roundedpx-4 py-8 pt-4 mt-8 first:mt-0 -mx-1"

@@ -12,7 +12,6 @@ import {
   withList,
   withPasteHtml,
   withPasteMd,
-  withVideo,
   withImage,
   withLink,
   withBlock,
@@ -20,6 +19,8 @@ import {
   HeadingType,
 } from 'slate-plugins-next'
 import {withSections} from './SectionPlugin'
+import {nodeTypes} from './nodeTypes'
+import {withHistory} from 'slate-history'
 
 const resetOptions = {
   types: [
@@ -35,15 +36,17 @@ export function useEditor(plugins: any[]): Editor {
   return React.useMemo(
     () =>
       withSections()(
-        withShortcuts(
-          withVideo(
-            withList(
-              withBreakEmptyReset(resetOptions)(
-                withDeleteStartReset(resetOptions)(
-                  withImage(
-                    withPasteHtml(plugins)(
-                      withPasteMd(plugins)(
-                        withBlock(withLink(withReact(createEditor()))),
+        withShortcuts(nodeTypes)(
+          withList(nodeTypes)(
+            withBreakEmptyReset(resetOptions)(
+              withDeleteStartReset(resetOptions)(
+                withImage(nodeTypes)(
+                  withPasteHtml(plugins)(
+                    withPasteMd(plugins)(
+                      withBlock(nodeTypes)(
+                        withLink(nodeTypes)(
+                          withHistory(withReact(createEditor())),
+                        ),
                       ),
                     ),
                   ),

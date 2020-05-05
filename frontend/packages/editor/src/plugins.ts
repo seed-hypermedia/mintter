@@ -9,19 +9,18 @@ import {
   ListPlugin,
   ParagraphPlugin,
   UnderlinePlugin,
-  VideoPlugin,
 } from 'slate-plugins-next'
+import {nodeTypes} from './nodeTypes'
 
 export const plugins = [
-  BlockquotePlugin(),
+  BlockquotePlugin(nodeTypes),
   BoldPlugin(),
-  HeadingPlugin(),
-  ImagePlugin(),
+  HeadingPlugin(nodeTypes),
+  ImagePlugin(nodeTypes),
   InlineCodePlugin(),
   ItalicPlugin(),
-  LinkPlugin(),
-  ListPlugin(),
-  ParagraphPlugin(),
+  LinkPlugin(nodeTypes),
+  ListPlugin(nodeTypes),
+  ParagraphPlugin(nodeTypes),
   UnderlinePlugin(),
-  VideoPlugin(),
 ]
