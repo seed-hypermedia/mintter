@@ -2,8 +2,8 @@ import React from 'react'
 import {useSlate, ReactEditor} from 'slate-react'
 import {Range, Node, Path} from 'slate'
 import {css} from 'emotion'
-import {ToolbarButton, BLOCKQUOTE} from 'slate-plugins-next'
-import {AlignLeft, Plus} from 'react-feather'
+import {BLOCKQUOTE} from 'slate-plugins-next'
+import {Plus} from 'react-feather'
 
 export function SectionToolbar() {
   const editor = useSlate()
@@ -80,12 +80,7 @@ export function SectionToolbar() {
         >
           ab
         </button>
-        <ToolbarButton
-          className={`text-muted-hover ${css`
-            padding: 5px;
-          `}`}
-          icon={<AlignLeft size={16} />}
-        />
+
         <div
           className={`bg-muted-hover ${css`
             width: 1px;

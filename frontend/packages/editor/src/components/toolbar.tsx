@@ -6,12 +6,11 @@ import {
   toggleMark,
   isMarkActive,
   isBlockActive,
-  ListType,
   insertLink,
   isLinkActive,
-  PARAGRAPH,
-  HeadingType,
+  toggleList,
 } from 'slate-plugins-next'
+import {nodeTypes} from '../nodeTypes'
 import Icons from './icons'
 import {useSlate} from 'slate-react'
 
@@ -23,14 +22,6 @@ export function ToolbarMarkItalic() {
   return <ToolbarMark mark={MARK_ITALIC} icon="Italic" />
 }
 
-export function ToolbarBlockUList() {
-  return <ToolbarBlock type={ListType.UL_LIST} icon="List" />
-}
-
-export function ToolbarBlockOList() {
-  return <ToolbarBlock type={ListType.OL_LIST} icon="OList" />
-}
-
 export function ToolbarBlockLink() {
   const editor = useSlate()
   return (
@@ -39,7 +30,7 @@ export function ToolbarBlockLink() {
       onClick={() => {
         const url = window.prompt('Enter the URL of the link:')
         if (!url) return
-        insertLink(editor, url)
+        insertLink(editor, url, {typeLink: nodeTypes.typeLink})
       }}
       icon="Link"
     />
@@ -47,15 +38,15 @@ export function ToolbarBlockLink() {
 }
 
 export function ToolbarBlockP() {
-  return <ToolbarBlock type={PARAGRAPH} icon="P" />
+  return <ToolbarBlock type={nodeTypes.typeP} icon="P" />
 }
 
 export function ToolbarBlockH1() {
-  return <ToolbarBlock type={HeadingType.H1} icon="H1" />
+  return <ToolbarBlock type={nodeTypes.typeH1} icon="H1" />
 }
 
 export function ToolbarBlockH2() {
-  return <ToolbarBlock type={HeadingType.H2} icon="H2" />
+  return <ToolbarBlock type={nodeTypes.typeH2} icon="H2" />
 }
 
 export interface ToolbarButtonProps {
@@ -129,6 +120,30 @@ export function ToolbarBlock({icon, type}) {
 
 export function Separator() {
   return <div className="w-px h-4 bg-toolbar" />
+}
+
+export function ToolbarList({
+  typeList = nodeTypes.typeUl,
+  icon = 'List',
+  ...props
+}) {
+  const editor = useSlate()
+  return (
+    <ToolbarButton
+      {...props}
+      active={isLinkActive(editor)}
+      onClick={() => toggleList(editor, {...props, typeList})}
+      icon={icon}
+    />
+  )
+}
+
+export function ToolbarBlockUList() {
+  return <ToolbarList typeList={nodeTypes.typeUl} {...nodeTypes} icon="List" />
+}
+
+export function ToolbarBlockOList() {
+  return <ToolbarList typeList={nodeTypes.typeOl} {...nodeTypes} icon="OList" />
 }
 
 export function Toolbar() {

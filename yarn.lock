@@ -10615,6 +10615,17 @@ slate-plugins-next@^0.57.12:
     marked "^0.8.0"
     prismjs "^1.17.1"
 
+slate-plugins-next@^0.58.0:
+  version "0.58.0"
+  resolved "https://registry.yarnpkg.com/slate-plugins-next/-/slate-plugins-next-0.58.0.tgz#2a0b7e16bd902b54f3ba50cbcfc672dd5be6899d"
+  integrity sha512-f8mJeysddgU9wZ0RFycls2SPXaw97zx/kfjPRXzz1x8LW5lFTXSa4bV3G+bHU/76RgA/qqPxAdJA1YtT80us6g==
+  dependencies:
+    image-extensions "^1.1.0"
+    is-hotkey "^0.1.6"
+    is-url "^1.2.4"
+    marked "^0.8.0"
+    prismjs "^1.17.1"
+
 slate-react@^0.57.1:
   version "0.57.1"
   resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.57.1.tgz#219a95b7caaea365a7f6fac5f3f5aa2e9da62295"

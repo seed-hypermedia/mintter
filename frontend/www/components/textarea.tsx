@@ -69,7 +69,6 @@ const Textarea = (
 
   const content = value || typeof ref === 'function' ? undefined : innerValue
   const divValue = innerRef?.current?.value || ''
-  console.log(divValue[divValue.length - 1] === '\n')
 
   return (
     <>
