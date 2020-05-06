@@ -16,7 +16,7 @@ import (
 
 // InitProfile implements InitProfile rpc.
 func (s *Server) InitProfile(ctx context.Context, req *proto.InitProfileRequest) (*proto.InitProfileResponse, error) {
-	if s.ready.Load() {
+	if err := s.checkReady(); err == nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "profile is already initialized")
 	}
 
@@ -38,8 +38,8 @@ func (s *Server) InitProfile(ctx context.Context, req *proto.InitProfileRequest)
 
 // GetProfile implements Mintter rpc.
 func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*proto.GetProfileResponse, error) {
-	if !s.ready.Load() {
-		return nil, status.Error(codes.FailedPrecondition, "call InitProfile first")
+	if err := s.checkReady(); err != nil {
+		return nil, err
 	}
 
 	prof, err := s.store.CurrentProfile(ctx)
@@ -54,8 +54,8 @@ func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*
 
 // UpdateProfile implements Mintter rpc.
 func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileRequest) (*proto.UpdateProfileResponse, error) {
-	if !s.ready.Load() {
-		return nil, status.Error(codes.FailedPrecondition, "call InitProfile first")
+	if err := s.checkReady(); err != nil {
+		return nil, err
 	}
 
 	if in.Profile == nil {

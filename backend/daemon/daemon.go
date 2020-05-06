@@ -54,6 +54,7 @@ func Run(ctx context.Context, cfg Config) (err error) {
 		}()
 
 		proto.RegisterMintterServer(rpcsrv, svc)
+		proto.RegisterDocumentsServer(rpcsrv, svc)
 		reflection.Register(rpcsrv)
 	}
 
