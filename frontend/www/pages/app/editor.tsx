@@ -100,7 +100,7 @@ export default function EditorPage(): JSX.Element {
             `}`}
           >
             <div
-              className={`mx-auto px-4 ${css`
+              className={`mx-auto ${css`
                 max-width: 80ch;
               `} `}
             >
@@ -117,7 +117,7 @@ export default function EditorPage(): JSX.Element {
                   `}`}
                 >
                   <div
-                    className={`mb-12 pb-2 relative ${css`
+                    className={`mb-12 mx-8 pb-2 relative ${css`
                       &:after {
                         content: '';
                         position: absolute;
@@ -177,7 +177,7 @@ export default function EditorPage(): JSX.Element {
                   </div>
                 </div>
               </Slate>
-              <div className="py-16 flex flex-col items-start">
+              <div className="py-16 px-8 flex flex-col items-start">
                 <button
                   className="flex items-center bg-transparent text-body-muted transition duration-200 hover:text-body hover:border-body border border-body-muted rounded-md px-2 pl-2 py-2"
                   onClick={() => Editor.addSection(editor)}
