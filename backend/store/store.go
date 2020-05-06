@@ -19,6 +19,7 @@ type Store struct {
 	lb       *logbook.Book
 
 	profilesKey datastore.Key
+	draftsKey   datastore.Key
 
 	pc   profileCache
 	prof identity.Profile
@@ -63,6 +64,7 @@ func new(repoPath string, prof identity.Profile) (*Store, error) {
 		db:          db,
 		prof:        prof,
 		profilesKey: datastore.NewKey("/profiles"),
+		draftsKey:   datastore.NewKey("/drafts"),
 	}
 
 	s.lb, err = logbook.New(prof.Account, s.db)

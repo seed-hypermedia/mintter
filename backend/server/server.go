@@ -4,14 +4,19 @@ package server
 import (
 	"fmt"
 	"mintter/backend/store"
+	"mintter/proto"
 	"os"
 
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Server implements Mintter rpc.
 type Server struct {
+	proto.DocumentsServer
+
 	repoPath string
 	log      *zap.Logger
 
@@ -28,6 +33,8 @@ func NewServer(repoPath string, log *zap.Logger) (*Server, error) {
 	s := &Server{
 		repoPath: repoPath,
 		log:      log,
+		// TODO(burdiyan): Remove this when server is implemented fully. It's just for convenience now.
+		DocumentsServer: &proto.UnimplementedDocumentsServer{},
 	}
 
 	if store, err := store.Open(repoPath); err == nil {
@@ -50,4 +57,12 @@ func (s *Server) Close() error {
 	}
 
 	return s.store.Close()
+}
+
+func (s *Server) checkReady() error {
+	if !s.ready.Load() {
+		return status.Error(codes.FailedPrecondition, "call InitProfile first")
+	}
+
+	return nil
 }

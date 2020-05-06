@@ -13,6 +13,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20191002201903-404acd9df4cc // indirect
 	github.com/golang/protobuf v1.3.5
 	github.com/google/go-cmp v0.3.1 // indirect
+	github.com/google/uuid v1.1.1
 	github.com/imdario/mergo v0.3.9
 	github.com/improbable-eng/grpc-web v0.12.0
 	github.com/ipfs/go-bitswap v0.1.8
