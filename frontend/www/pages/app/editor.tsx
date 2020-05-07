@@ -31,6 +31,7 @@ import {css} from 'emotion'
 // import {wrapLink, unwrapLink} from '@mintter/slate-plugin-with-links'
 import Textarea from '../../components/textarea'
 import Layout from '../../components/layout'
+import {publish} from '../../shared/publishDocument'
 
 export default function EditorPage(): JSX.Element {
   const plugins = [...editorPlugins, SoftBreakPlugin()]
@@ -75,7 +76,7 @@ export default function EditorPage(): JSX.Element {
         className="flex-1 overflow-y-auto pt-4 overflow-y-scroll"
         ref={wrapperRef}
       >
-        <EditorHeader />
+        <EditorHeader onPublish={() => publish(value)} />
         <div className="flex pt-8 pb-32 relative">
           <DebugValue
             value={{title, description, value}}
