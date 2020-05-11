@@ -17,14 +17,10 @@
     "lint": "true"
   },
   "dependencies": {
-    "@horacioh/slate-plugin-with-markdown-parser": "*",
     "@material-ui/core": "^4.9.2",
     "@material-ui/icons": "^4.9.1",
     "@mintter/editor": "*",
     "@mintter/proto": "*",
-    "@mintter/slate-plugin-with-forced-layout": "*",
-    "@mintter/slate-plugin-with-links": "*",
-    "@mintter/slate-plugin-with-shortcuts": "*",
     "@zeit/next-css": "^1.0.1",
     "emotion": "^10.0.27",
     "formik": "^2.1.4",
@@ -38,6 +34,7 @@
     "react-dom": "^16.13.0",
     "react-feather": "^2.0.8",
     "react-hook-form": "^5.0.3",
+    "react-query": "^1.3.3",
     "slate": "^0.57.1",
     "slate-hyperscript": "^0.57.1",
     "slate-plugins-next": "^0.57.12",
@@ -64,6 +61,7 @@
     "next-server": "^9.0.5",
     "postcss-preset-env": "^6.7.0",
     "prettier": "^1.19.1",
+    "react-query-devtools": "^1.1.5",
     "tailwindcss": "^1.1.4",
     "typescript": "^3.7.5"
   },

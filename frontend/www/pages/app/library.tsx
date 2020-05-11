@@ -1,5 +1,5 @@
 import {Fragment} from 'react'
-import Link from '../../components/link'
+import {useRouter} from 'next/router'
 import Container from '../../components/container'
 import Seo from '../../components/seo'
 import Sidebar from '../../components/sidebar'
@@ -7,8 +7,34 @@ import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
 import DocumentList from '../../components/documentList'
 import Layout from '../../components/layout'
 import Content from '../../components/content'
+import {useDrafts, createDraft} from '../../shared/drafts'
 
 export default function Library() {
+  const router = useRouter()
+  const {drafts, draftsError, isDraftsValidating} = useDrafts()
+  console.log('Library -> drafts', drafts)
+
+  async function handleCreateDraft() {
+    await createDraft(async newDraft => {
+      const value = newDraft.toObject()
+      router.push({
+        pathname: '/app/editor',
+        query: {
+          draftId: value.documentId,
+        },
+      })
+    })
+    // mutate('DraftsList', {
+    //   ...drafts,
+    //   results: {
+    //     ...drafts.results,
+    //     draftList: {
+    //       ...drafts.results.draftsList,
+    //       newDraft,
+    //     },
+    //   },
+    // })
+  }
   return (
     <Layout className="flex">
       <Seo title="Library | Mintter" />
@@ -27,18 +53,20 @@ export default function Library() {
                   Some clain sentence that's fun, welcomes user to the community
                   and tells how it works and encourages to get started
                 </p>
-                <Link
-                  href="/app/editor"
+                <button
+                  onClick={handleCreateDraft}
                   className="bg-info hover:bg-info-hover text-white font-bold py-3 px-4 rounded rounded-full flex items-center mt-5 justify-center"
                 >
                   <NoteAddOutlinedIcon />
                   <span className="ml-2">Create your first document</span>
-                </Link>
+                </button>
               </div>
               <hr className="border-t-2 border-muted border-solid my-8" />
             </Fragment>
 
-            <DocumentList />
+            {!isDraftsValidating && (
+              <DocumentList drafts={drafts} errors={draftsError} />
+            )}
           </Content>
         </Container>
       </div>

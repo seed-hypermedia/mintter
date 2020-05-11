@@ -62,12 +62,10 @@ function H2({size}) {
   )
 }
 
-const Icons = {
+export const Icons = {
   ...FeatherIcons,
   OList,
   P,
   H1,
   H2,
 }
-
-export default Icons

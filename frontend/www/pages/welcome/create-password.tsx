@@ -49,7 +49,7 @@ export default function CreatePassword() {
           Set a password to encrypt your account. This password will be needed
           to unlock your account in the future
         </P>
-        <Content className="flex-wrap flex w-full flex-col">
+        <Content className="flex flex-col w-full items-center">
           <div className="flex-1 relative">
             <label
               className="block text-body-muted text-xs font-semibold mb-1"

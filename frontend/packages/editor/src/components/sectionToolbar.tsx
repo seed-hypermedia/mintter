@@ -3,7 +3,7 @@ import {useSlate, ReactEditor} from 'slate-react'
 import {Range, Node, Path} from 'slate'
 import {css} from 'emotion'
 import {BLOCKQUOTE} from 'slate-plugins-next'
-import {Plus} from 'react-feather'
+import {Icons} from '@mintter/editor'
 
 export function SectionToolbar() {
   const editor = useSlate()
@@ -95,7 +95,7 @@ export function SectionToolbar() {
             line-height: 1.2;
           `}
         >
-          <Plus size={16} className="text-muted-hover" />
+          <Icons.Plus size={16} className="text-muted-hover" />
         </button>
       </div>
     </div>
