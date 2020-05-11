@@ -38,7 +38,6 @@ export default function Settings() {
   }
 
   async function onSubmit(data) {
-    console.log('onSubmit -> data', data)
     try {
       await setProfile(data)
       setSuccess(true)

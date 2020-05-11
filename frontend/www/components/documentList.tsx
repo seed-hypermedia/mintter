@@ -1,7 +1,9 @@
 import React from 'react'
 import AppsOutlinedIcon from '@material-ui/icons/AppsOutlined'
 import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined'
+import {queryCache} from 'react-query'
 import Link from './link'
+import {useFetchDraft} from '../shared/drafts'
 
 export default function DocumentList({drafts, draftErrors}) {
   console.log('DocumentList -> drafts', drafts)
@@ -32,10 +34,24 @@ export default function DocumentList({drafts, draftErrors}) {
 }
 
 function DraftListItem({draft}: any) {
+  const {title, description, documentId} = draft
+
+  const theTitle = title ? title : 'Untitled Draft'
+  const theDescription = description ? description : 'Draft with no description'
+
+  async function handlePrefetch() {
+    await queryCache.prefetchQuery(['Draft', documentId], async (key, id) => {
+      useFetchDraft(id)
+    })
+  }
   return (
     <Link href={`/app/editor?draftId=${draft.documentId}`}>
-      <div className="bg-gray-200 p-4 rounded mt-8 first:mt-0">
-        {JSON.stringify(draft, null, 2)}
+      <div
+        className="bg-gray-200 p-4 rounded mt-8 first:mt-0"
+        onMouseEnter={handlePrefetch}
+      >
+        <h3>{theTitle}</h3>
+        <p>{theDescription}</p>
       </div>
     </Link>
   )
