@@ -61,6 +61,7 @@ export default function Settings() {
           <Container>
             <h1 className="p-5 text-4xl font-bold text-heading">Settings</h1>
             <Content className="flex-wrap flex w-full flex-col md:flex-row max-w-3xl">
+              {/* // TODO: render avatar when the API is ready to accept images
               <div className="pr-8 order-12 md:order-none flex mt-6 md:mt-0 flex-col">
                 <label
                   className="block text-body-muted text-xs font-semibold mb-1"
@@ -77,7 +78,7 @@ export default function Settings() {
                     type="file"
                   />
                 </div>
-              </div>
+              </div> */}
               <div className="flex-col flex flex-1">
                 <div className="flex-1 relative">
                   <label

@@ -8,6 +8,8 @@ import '../styles/index.css'
 import {ThemeProvider} from '../shared/themeContext'
 import ProfileProvider from '../shared/profileContext'
 
+import {ReactQueryDevtools} from 'react-query-devtools'
+
 const NoSSR: React.FC = ({children}) => {
   return <React.Fragment>{children}</React.Fragment>
 }
@@ -24,6 +26,7 @@ AppProps & {Component: any}) {
   const Layout = Component.Layout || DefaultLayout
   return (
     <Dynamic>
+      <ReactQueryDevtools initialIsOpen={false} />
       <ProfileProvider>
         <ThemeProvider>
           <AnimatePresence exitBeforeEnter>

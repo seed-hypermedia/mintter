@@ -11,7 +11,7 @@ import {
   toggleList,
 } from 'slate-plugins-next'
 import {nodeTypes} from '../nodeTypes'
-import Icons from './icons'
+import {Icons} from './icons'
 import {useSlate} from 'slate-react'
 
 export function ToolbarBoldMark() {

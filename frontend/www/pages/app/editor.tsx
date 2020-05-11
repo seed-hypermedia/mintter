@@ -2,7 +2,8 @@ import React from 'react'
 import isHotkey from 'is-hotkey'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
-import {Plus} from 'react-feather'
+import {Icons} from '@mintter/editor'
+import {useQuery} from 'react-query'
 import {
   Editor,
   Toolbar,
@@ -47,6 +48,9 @@ export default function EditorPage(): JSX.Element {
   function isEmpty(): boolean {
     return value.length === 1 && Node.string(value[0]) === ''
   }
+
+  // NO: create a new Draft?
+  // save on throttle
 
   // send focus to the editor when you click outside.
   // TODO: check if focus is on title or description
@@ -136,7 +140,6 @@ export default function EditorPage(): JSX.Element {
                       ref={titleRef}
                       value={title}
                       onChange={t => {
-                        console.log('changed!')
                         setTitle(t)
                       }}
                       placeholder="Untitled document"
@@ -183,7 +186,7 @@ export default function EditorPage(): JSX.Element {
                   className="flex items-center bg-transparent text-body-muted transition duration-200 hover:text-body hover:border-body border border-body-muted rounded-md px-2 pl-2 py-2"
                   onClick={() => Editor.addSection(editor)}
                 >
-                  <Plus color="currentColor" />
+                  <Icons.Plus color="currentColor" />
                   <span className="px-2 text-sm">add section</span>
                 </button>
                 <a className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline">

@@ -1,7 +1,15 @@
 import {MintterPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
+import {DocumentsPromiseClient} from '@mintter/proto/documents_grpc_web_pb'
 
-export const makeRpcClient = (): MintterPromiseClient => {
-  return new MintterPromiseClient('http://localhost:55001')
+const hostname = `http://localhost`
+const port = `55001`
+
+const path = `${hostname}:${port}`
+
+export function makeRpcClient(): MintterPromiseClient {
+  return new MintterPromiseClient(path)
 }
 
-export {MintterPromiseClient}
+export function makeRpcDocumentsClient(): DocumentsPromiseClient {
+  return new DocumentsPromiseClient(path)
+}

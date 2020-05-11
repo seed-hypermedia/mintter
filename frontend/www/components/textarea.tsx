@@ -86,7 +86,6 @@ const Textarea = (
           innerRef.current = r
           if (ref) {
             if (typeof ref === 'function') {
-              console.log('ref es una funcion => ', ref(r))
               ref(r)
             } else {
               ref.current = r
