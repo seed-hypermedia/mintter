@@ -37,7 +37,6 @@ const Textarea = (
   })
 
   function handleChange(e) {
-    console.log(e.keyCode)
     if (onChange) {
       onChange(e.target.value)
       return

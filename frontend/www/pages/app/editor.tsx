@@ -3,7 +3,7 @@ import isHotkey from 'is-hotkey'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
 import {Icons} from '@mintter/editor'
-import {useQuery} from 'react-query'
+import debounce from 'lodash.debounce'
 import {
   Editor,
   Toolbar,
@@ -33,6 +33,10 @@ import {css} from 'emotion'
 import Textarea from '../../components/textarea'
 import Layout from '../../components/layout'
 import {publish} from '../../shared/publishDocument'
+import {useRouter} from 'next/router'
+import {useFetchDraft, useDraftAutosave} from '../../shared/drafts'
+import {useDebounce} from '../../shared/hooks'
+import {useForm} from 'react-hook-form'
 
 export default function EditorPage(): JSX.Element {
   const plugins = [...editorPlugins, SoftBreakPlugin()]
@@ -42,8 +46,36 @@ export default function EditorPage(): JSX.Element {
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
   const descriptionRef = React.useRef(null)
-  const [title, setTitle] = React.useState<string>('')
-  const [description, setDescription] = React.useState<string>('')
+  const {
+    register,
+    setValue: setTitleAndDescription,
+    watch,
+    formState,
+  } = useForm()
+  const {
+    query: {draftId},
+  } = useRouter()
+
+  // get draft data if draftId is avaliable
+  const draft = useFetchDraft(draftId)
+
+  // reading values to render it in the outliner
+  const title = watch('title')
+  const description = watch('description')
+
+  // debounce auto-save values
+  useDraftAutosave(draftId, title, description, value)
+
+  // update values from draft data
+  React.useEffect(() => {
+    if (draft.status === 'success') {
+      // console.log('se ejecuta el efecto!!', draft.data.toObject())
+      const values = draft.data.toObject()
+
+      const data = Object.keys(values).map(v => ({[v]: values[v]}))
+      setTitleAndDescription(data)
+    }
+  }, [draft.status])
 
   function isEmpty(): boolean {
     return value.length === 1 && Node.string(value[0]) === ''
@@ -55,6 +87,12 @@ export default function EditorPage(): JSX.Element {
   // send focus to the editor when you click outside.
   // TODO: check if focus is on title or description
   React.useEffect(() => {
+    wrapperRef.current.addEventListener('click', wrapperClick)
+
+    return () => {
+      wrapperRef.current.removeEventListener('click', wrapperClick)
+    }
+
     function wrapperClick(e) {
       if (
         !ReactEditor.isFocused(editor) &&
@@ -63,12 +101,6 @@ export default function EditorPage(): JSX.Element {
         ReactEditor.focus(editor)
         Transforms.select(editor, Editor.end(editor, []))
       }
-    }
-
-    wrapperRef.current.addEventListener('click', wrapperClick)
-
-    return () => {
-      wrapperRef.current.removeEventListener('click', wrapperClick)
     }
   }, [])
 
@@ -83,7 +115,7 @@ export default function EditorPage(): JSX.Element {
         <EditorHeader onPublish={() => publish(value)} />
         <div className="flex pt-8 pb-32 relative">
           <DebugValue
-            value={{title, description, value}}
+            value={{...formState, value}}
             className="absolute z-10 right-0 top-0 w-full max-w-xs"
           />
           <div
@@ -137,11 +169,11 @@ export default function EditorPage(): JSX.Element {
                     `}`}
                   >
                     <Textarea
-                      ref={titleRef}
-                      value={title}
-                      onChange={t => {
-                        setTitle(t)
+                      ref={t => {
+                        titleRef.current = t
+                        register(t)
                       }}
+                      name="title"
                       placeholder="Untitled document"
                       minHeight={56}
                       className={`text-4xl text-heading font-bold leading-10`}
@@ -150,9 +182,11 @@ export default function EditorPage(): JSX.Element {
                       }}
                     />
                     <Textarea
-                      ref={descriptionRef}
-                      value={description}
-                      onChange={t => setDescription(t)}
+                      ref={d => {
+                        descriptionRef.current = d
+                        register(d)
+                      }}
+                      name="description"
                       placeholder="+ Add a subtitle"
                       minHeight={28}
                       className={`text-lg font-light text-heading-muted italic`}

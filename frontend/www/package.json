@@ -27,6 +27,7 @@
     "framer-motion": "^1.8.4",
     "is-hotkey": "^0.1.6",
     "is-url": "^1.2.4",
+    "lodash.debounce": "^4.0.8",
     "marked": "^0.8.0",
     "next": "^9.3.0",
     "qrcode-react": "^0.1.16",

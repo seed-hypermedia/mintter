@@ -12,7 +12,6 @@ import {useDrafts, createDraft} from '../../shared/drafts'
 export default function Library() {
   const router = useRouter()
   const {drafts, draftsError, isDraftsValidating} = useDrafts()
-  console.log('Library -> drafts', drafts)
 
   async function handleCreateDraft() {
     await createDraft(async newDraft => {
@@ -24,16 +23,6 @@ export default function Library() {
         },
       })
     })
-    // mutate('DraftsList', {
-    //   ...drafts,
-    //   results: {
-    //     ...drafts.results,
-    //     draftList: {
-    //       ...drafts.results.draftsList,
-    //       newDraft,
-    //     },
-    //   },
-    // })
   }
   return (
     <Layout className="flex">
