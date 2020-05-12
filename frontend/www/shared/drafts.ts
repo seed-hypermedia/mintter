@@ -1,6 +1,6 @@
-import {useState, useEffect, useCallback} from 'react'
+import {useEffect} from 'react'
 import {Node} from 'slate'
-import {useQuery, useMutation, queryCache} from 'react-query'
+import {useQuery, useMutation, queryCache, usePaginatedQuery} from 'react-query'
 import {makeRpcDocumentsClient} from './rpc'
 import {
   ListDraftsRequest,
@@ -13,26 +13,13 @@ import {fromSlateToMarkdown} from './parseToMarkdown'
 
 const rpc = makeRpcDocumentsClient()
 
-export function useDrafts() {
-  const {status, data, error} = useQuery('DraftsList', async () => {
+export function useDraftsList(page = 0) {
+  return usePaginatedQuery(['DraftsList', page], async (key, page) => {
     const req = new ListDraftsRequest()
-    try {
-      const response = await rpc.listDrafts(req)
-      return {
-        raw: response,
-        results: response.toObject(),
-      }
-    } catch (err) {
-      console.error('Error on useDrafts -> ', err)
-      throw err
-    }
-  })
+    req.setPageSize(page)
 
-  return {
-    drafts: data,
-    draftsError: error,
-    loading: status === 'loading',
-  }
+    return await rpc.listDrafts(req)
+  })
 }
 
 export async function createDraft(cb) {

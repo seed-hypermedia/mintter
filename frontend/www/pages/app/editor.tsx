@@ -32,6 +32,11 @@ import {css} from 'emotion'
 import Textarea from '../../components/textarea'
 import Layout from '../../components/layout'
 import {publish} from '../../shared/publishDocument'
+import {useRouter} from 'next/router'
+import {useQuery} from 'react-query'
+import {GetDraftRequest} from '@mintter/proto/documents_pb'
+import {makeRpcDocumentsClient} from '../../shared/rpc'
+import {useClickEvent} from '../../shared/hooks'
 
 function draftReducer(state, action) {
   const {type, payload} = action
@@ -55,6 +60,10 @@ function draftReducer(state, action) {
       }
     }
 
+    case 'SET_ALL': {
+      return payload
+    }
+
     default: {
       return state
     }
@@ -72,6 +81,8 @@ function initializeEditorValue() {
   return editorInitialValue
 }
 
+const rpc = makeRpcDocumentsClient()
+
 export default function EditorPage(): JSX.Element {
   const plugins = [...editorPlugins, SoftBreakPlugin()]
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
@@ -84,35 +95,38 @@ export default function EditorPage(): JSX.Element {
     initialValue,
     initializeEditorValue,
   )
+  const {query} = useRouter()
 
-  const {title, description, value} = state
+  const {title, value} = state
 
   function isEmpty(): boolean {
-    return value.length === 1 && Node.string(value[0]) === ''
+    return value ? value.length === 1 && Node.string(value[0]) === '' : false
   }
 
-  // NO: create a new Draft?
-  // save on throttle
-
-  // send focus to the editor when you click outside.
-  // TODO: check if focus is on title or description
-  React.useEffect(() => {
-    wrapperRef.current.addEventListener('click', wrapperClick)
-
-    return () => {
-      wrapperRef.current.removeEventListener('click', wrapperClick)
+  useQuery(query && ['testing', query.draftId], async (key, queryId) => {
+    if (Array.isArray(queryId)) {
+      throw new Error(
+        `Impossible render: You are trying to access the editor passing ${
+          queryId.length
+        } document IDs => ${queryId.map(q => q).join(', ')}`,
+      )
     }
 
-    function wrapperClick(e) {
-      if (
-        !ReactEditor.isFocused(editor) &&
-        typeof e.target.value !== 'string'
-      ) {
-        ReactEditor.focus(editor)
-        Transforms.select(editor, Editor.end(editor, []))
-      }
+    const req = new GetDraftRequest()
+    req.setDocumentId(queryId)
+
+    const result = await rpc.getDraft(req)
+    console.log('result', result.toObject())
+
+    return result
+  })
+
+  useClickEvent(wrapperRef, e => {
+    if (!ReactEditor.isFocused(editor) && typeof e.target.value !== 'string') {
+      ReactEditor.focus(editor)
+      Transforms.select(editor, Editor.end(editor, []))
     }
-  }, [])
+  })
 
   return (
     <Layout className="flex">
