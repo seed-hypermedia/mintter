@@ -17,7 +17,6 @@ export function useDraftsList(page = 0) {
   return usePaginatedQuery(['DraftsList', page], async (key, page) => {
     const req = new ListDraftsRequest()
     req.setPageSize(page)
-
     return await rpc.listDrafts(req)
   })
 }
