@@ -96,7 +96,7 @@ export default function EditorPage(): JSX.Element {
     initializeEditorValue,
   )
   const {
-    query: {draftId},
+    query: {id},
   } = useRouter()
 
   const {title, value} = state
@@ -105,39 +105,61 @@ export default function EditorPage(): JSX.Element {
     return value ? value.length === 1 && Node.string(value[0]) === '' : false
   }
 
-  useQuery(draftId && ['Draft', draftId], async (key, queryId) => {
-    console.log('Draft Query is done!')
-    if (Array.isArray(queryId)) {
-      throw new Error(
-        `Impossible render: You are trying to access the editor passing ${
-          queryId.length
-        } document IDs => ${queryId.map(q => q).join(', ')}`,
-      )
-    }
+  const {status, error, data} = useQuery(
+    id && ['Draft', id],
+    async (key, queryId) => {
+      // console.log('Draft Query is done!')
+      if (Array.isArray(queryId)) {
+        throw new Error(
+          `Impossible render: You are trying to access the editor passing ${
+            queryId.length
+          } document IDs => ${queryId.map(q => q).join(', ')}`,
+        )
+      }
 
-    const req = new GetDraftRequest()
-    req.setDocumentId(queryId)
+      const req = new GetDraftRequest()
+      req.setDocumentId(queryId)
 
-    const result = await rpc.getDraft(req)
-    console.log('result', result.toObject())
+      const result = await rpc.getDraft(req)
+      console.log('result', result.toObject())
 
-    return result
-  })
+      return result
+    },
+  )
 
   React.useEffect(() => {
-    if (draftId) {
+    if (id) {
       console.log('render draftId from API')
     } else {
       console.log('NO DRAFT AVAILABLE')
     }
+  }, [status === 'success'])
+
+  React.useEffect(() => {
+    function handler(e) {
+      if (
+        !ReactEditor.isFocused(editor) &&
+        typeof e.target.value !== 'string'
+      ) {
+        ReactEditor.focus(editor)
+        Transforms.select(editor, Editor.end(editor, []))
+      }
+    }
+    if (wrapperRef.current) {
+      wrapperRef.current.addEventListener('click', handler)
+    }
+    return () => {
+      wrapperRef.current.removeEventListener('click', handler)
+    }
   }, [])
 
-  useClickEvent(wrapperRef, e => {
-    if (!ReactEditor.isFocused(editor) && typeof e.target.value !== 'string') {
-      ReactEditor.focus(editor)
-      Transforms.select(editor, Editor.end(editor, []))
-    }
-  })
+  if (status === 'loading') {
+    return <p>Loading...</p>
+  }
+
+  if (status === 'error') {
+    return <p>ERROR! == {error}</p>
+  }
 
   return (
     <Layout className="flex">

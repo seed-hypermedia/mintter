@@ -48,15 +48,3 @@ export function useDebounce<T>(value: T, delay = 500): T {
 
   return debouncedValue
 }
-
-export function useClickEvent(ref, cb) {
-  // send focus to the editor when you click outside.
-  // TODO: check if focus is on title or description
-  useEffect(() => {
-    ref.current.addEventListener('click', cb)
-
-    return () => {
-      ref.current.removeEventListener('click', cb)
-    }
-  }, [])
-}

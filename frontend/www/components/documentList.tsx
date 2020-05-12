@@ -23,8 +23,8 @@ export default function DocumentList({
   return (
     <div>
       <div className="flex items-center">
-        <h2 className="text-2xl text-heading text-heading font-normal flex-1">
-          My Drafts
+        <h2 className="text-2xl text-heading text-heading font-bold flex-1">
+          Drafts
         </h2>
         <div>
           <button>
