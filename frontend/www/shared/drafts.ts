@@ -57,17 +57,15 @@ export async function saveDraft({documentId, values}) {
 
   if (value.length > 0) {
     // console.log('fromSlateToMarkdown => ', fromSlateToMarkdown(value))
-    request.setSectionsList(fromSlateToMarkdown(value, documentId))
+    request.setSectionsList(fromSlateToMarkdown(value))
   }
   const resp = await rpc.saveDraft(request)
   console.log('saveDraft -> resp', resp)
   console.log('saveDraft -> resp.toObject', resp.toObject())
 }
 
-export function useFetchDraft(documentId: string | string[]) {
-  // TODO: do I need this for TS to not complain?? 🤷‍♂️
-  const value = Array.isArray(documentId) ? documentId.join('') : documentId
-  return useQuery(documentId && ['Draft', value], async (key, id) => {
+export async function useFetchDraft(documentId: string) {
+  return useQuery(documentId && ['Draft', documentId], async (key, id) => {
     const request = new GetDraftRequest()
     request.setDocumentId(id)
     return await rpc.getDraft(request)

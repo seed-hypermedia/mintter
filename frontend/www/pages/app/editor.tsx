@@ -33,8 +33,17 @@ import Textarea from '../../components/textarea'
 import Layout from '../../components/layout'
 import {publish} from '../../shared/publishDocument'
 import {useRouter} from 'next/router'
-import {useFetchDraft, useDraftAutosave} from '../../shared/drafts'
+import {
+  // useFetchDraft,
+  useDraftAutosave,
+  saveDraft,
+} from '../../shared/drafts'
 import {useForm} from 'react-hook-form'
+import {useQuery} from 'react-query'
+import {GetDraftRequest} from '@mintter/proto/documents_pb'
+import {makeRpcDocumentsClient} from '../../shared/rpc'
+
+const rpc = makeRpcDocumentsClient()
 
 export default function EditorPage(): JSX.Element {
   const plugins = [...editorPlugins, SoftBreakPlugin()]
@@ -44,20 +53,32 @@ export default function EditorPage(): JSX.Element {
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
   const descriptionRef = React.useRef(null)
+  const [readyToSave, setReadyToSave] = React.useState<boolean>(false)
   const {register, setValue: setTitleAndDescription, watch} = useForm()
   const {
     query: {draftId},
   } = useRouter()
 
+  // TODO: do I need this for TS to not complain?? 🤷‍♂️
+  // this can be an string[] because is a query param
+  const queryId: string = Array.isArray(draftId) ? draftId[0] : draftId
   // get draft data if draftId is avaliable
-  const draft = useFetchDraft(draftId)
+  // const draft = useFetchDraft(queryId)
+
+  const draft = useQuery(queryId && ['Draft', queryId], async (key, id) => {
+    const request = new GetDraftRequest()
+    request.setDocumentId(id)
+    return await rpc.getDraft(request)
+  })
 
   // reading values to render it in the outliner
   const title = watch('title')
   const description = watch('description')
 
   // debounce auto-save values
-  useDraftAutosave(draftId, title, description, value)
+  React.useEffect(() => {
+    useDraftAutosave(draftId, title, description, value)
+  }, [readyToSave])
 
   // update values from draft data
   React.useEffect(() => {
@@ -65,10 +86,11 @@ export default function EditorPage(): JSX.Element {
       // console.log('se ejecuta el efecto!!', draft.data.toObject())
       const values = draft.data.toObject()
       console.log('draft', draft)
-      console.log('values', values.sectionsList)
+      console.log('values ===>', values.sectionsList)
 
       const data = ['title', 'description'].map(v => ({[v]: values[v]}))
       setTitleAndDescription(data)
+      setReadyToSave(true)
     }
   }, [draft.status])
 
@@ -98,6 +120,17 @@ export default function EditorPage(): JSX.Element {
       }
     }
   }, [])
+
+  function handleSaveDraft() {
+    saveDraft({
+      documentId: queryId,
+      values: {
+        title,
+        description,
+        value,
+      },
+    })
+  }
 
   return (
     <Layout className="flex">
@@ -189,6 +222,7 @@ export default function EditorPage(): JSX.Element {
                         ReactEditor.focus(editor)
                       }}
                     />
+                    <button onClick={handleSaveDraft}>save draft</button>
                   </div>
                   <div className="relative" ref={editorContainerRef}>
                     <Toolbar />

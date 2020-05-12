@@ -34,15 +34,13 @@ export default function DocumentList({drafts, draftErrors}) {
 }
 
 function DraftListItem({draft}: any) {
-  const {title, description, documentId} = draft
+  const {title, description} = draft
 
   const theTitle = title ? title : 'Untitled Draft'
   const theDescription = description ? description : 'Draft with no description'
 
   async function handlePrefetch() {
-    await queryCache.prefetchQuery(['Draft', documentId], async (key, id) => {
-      useFetchDraft(id)
-    })
+    // TODO: prefetch on hover
   }
   return (
     <Link href={`/app/editor?draftId=${draft.documentId}`}>
