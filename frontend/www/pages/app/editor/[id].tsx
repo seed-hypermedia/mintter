@@ -16,27 +16,27 @@ import {
   SlatePlugin,
   renderLeafPreview,
 } from 'slate-plugins-next'
-import Seo from '../../components/seo'
+import Seo from '../../../components/seo'
 import {
   renderLeafBold,
   renderLeafItalic,
   renderLeafUnderline,
   renderLeafInlineCode,
-} from '../../components/leafs'
-import renderElement from '../../components/elements'
-import EditorHeader from '../../components/editor-header'
-import {DebugValue} from '../../components/debug'
+} from '../../../components/leafs'
+import renderElement from '../../../components/elements'
+import EditorHeader from '../../../components/editor-header'
+import {DebugValue} from '../../../components/debug'
 import {css} from 'emotion'
 
 // import {wrapLink, unwrapLink} from '@mintter/slate-plugin-with-links'
-import Textarea from '../../components/textarea'
-import Layout from '../../components/layout'
-import {publish} from '../../shared/publishDocument'
+import Textarea from '../../../components/textarea'
+import Layout from '../../../components/layout'
+import {publish} from '../../../shared/publishDocument'
 import {useRouter} from 'next/router'
 import {useQuery} from 'react-query'
 import {GetDraftRequest} from '@mintter/proto/documents_pb'
-import {makeRpcDocumentsClient} from '../../shared/rpc'
-import {useClickEvent} from '../../shared/hooks'
+import {makeRpcDocumentsClient} from '../../../shared/rpc'
+import {useClickEvent} from '../../../shared/hooks'
 
 function draftReducer(state, action) {
   const {type, payload} = action
@@ -95,7 +95,9 @@ export default function EditorPage(): JSX.Element {
     initialValue,
     initializeEditorValue,
   )
-  const {query} = useRouter()
+  const {
+    query: {draftId},
+  } = useRouter()
 
   const {title, value} = state
 
@@ -103,7 +105,8 @@ export default function EditorPage(): JSX.Element {
     return value ? value.length === 1 && Node.string(value[0]) === '' : false
   }
 
-  useQuery(query && ['testing', query.draftId], async (key, queryId) => {
+  useQuery(draftId && ['Draft', draftId], async (key, queryId) => {
+    console.log('Draft Query is done!')
     if (Array.isArray(queryId)) {
       throw new Error(
         `Impossible render: You are trying to access the editor passing ${
@@ -120,6 +123,14 @@ export default function EditorPage(): JSX.Element {
 
     return result
   })
+
+  React.useEffect(() => {
+    if (draftId) {
+      console.log('render draftId from API')
+    } else {
+      console.log('NO DRAFT AVAILABLE')
+    }
+  }, [])
 
   useClickEvent(wrapperRef, e => {
     if (!ReactEditor.isFocused(editor) && typeof e.target.value !== 'string') {

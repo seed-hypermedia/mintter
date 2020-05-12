@@ -17,10 +17,7 @@ export default function Library() {
     await createDraft(async newDraft => {
       const value = newDraft.toObject()
       router.push({
-        pathname: '/app/editor',
-        query: {
-          draftId: value.documentId,
-        },
+        pathname: `/app/editor/${value.documentId}`,
       })
     })
   }

@@ -59,7 +59,7 @@ function DraftListItem({draft}: {draft: Draft.AsObject}) {
     }
   }
   return (
-    <Link href={`/app/editor?draftId=${draft.documentId}`}>
+    <Link href={`/app/editor/${draft.documentId}`}>
       <div
         className="bg-gray-200 p-4 rounded mt-8 first:mt-0"
         onMouseEnter={handlePrefetch}
