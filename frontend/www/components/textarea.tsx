@@ -15,7 +15,7 @@ interface TextareaProps {
 // eslint-disable-next-line react/display-name
 const Textarea = (
   {
-    value,
+    value: valueFromProps,
     name,
     onChange,
     minHeight,
@@ -25,7 +25,9 @@ const Textarea = (
   }: TextareaProps,
   ref: any,
 ) => {
-  const [innerValue, setInnerValue] = React.useState('')
+  const [value, setInnerValue] = React.useState(() =>
+    valueFromProps || typeof ref === 'function' ? undefined : '',
+  )
   const innerRef = React.useRef(null)
   const divRef = React.useRef(null)
   const lh = React.useMemo(
@@ -66,7 +68,6 @@ const Textarea = (
     }
   }
 
-  const content = value || typeof ref === 'function' ? undefined : innerValue
   const divValue = innerRef?.current?.value || ''
 
   return (
@@ -77,7 +78,7 @@ const Textarea = (
           word-wrap: break-word;
           white-space: pre-wrap;
         `} ${className}`}
-        value={content}
+        value={value}
         name={name}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
