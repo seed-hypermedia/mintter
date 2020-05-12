@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useReducer} from 'react'
 import isHotkey from 'is-hotkey'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
@@ -32,67 +32,60 @@ import {css} from 'emotion'
 import Textarea from '../../components/textarea'
 import Layout from '../../components/layout'
 import {publish} from '../../shared/publishDocument'
-import {useRouter} from 'next/router'
-import {
-  // useFetchDraft,
-  useDraftAutosave,
-  saveDraft,
-} from '../../shared/drafts'
-import {useForm} from 'react-hook-form'
-import {useQuery} from 'react-query'
-import {GetDraftRequest} from '@mintter/proto/documents_pb'
-import {makeRpcDocumentsClient} from '../../shared/rpc'
 
-const rpc = makeRpcDocumentsClient()
+function draftReducer(state, action) {
+  const {type, payload} = action
+
+  switch (type) {
+    case 'TITLE':
+      return {
+        ...state,
+        title: payload,
+      }
+    case 'DESCRIPTION': {
+      return {
+        ...state,
+        description: payload,
+      }
+    }
+    case 'VALUE': {
+      return {
+        ...state,
+        value: payload,
+      }
+    }
+
+    default: {
+      return state
+    }
+  }
+}
+
+const editorInitialValue = {
+  title: '',
+  description: '',
+  value: initialValue,
+}
+
+function initializeEditorValue() {
+  // TODO: change this to a lazy initialization function later
+  return editorInitialValue
+}
 
 export default function EditorPage(): JSX.Element {
   const plugins = [...editorPlugins, SoftBreakPlugin()]
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
-  const [value, setValue] = React.useState<Node[]>(initialValue)
   const wrapperRef = React.useRef<HTMLDivElement>(null)
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
   const descriptionRef = React.useRef(null)
-  const [readyToSave, setReadyToSave] = React.useState<boolean>(false)
-  const {register, setValue: setTitleAndDescription, watch} = useForm()
-  const {
-    query: {draftId},
-  } = useRouter()
+  const [state, dispatch] = useReducer(
+    draftReducer,
+    initialValue,
+    initializeEditorValue,
+  )
 
-  // TODO: do I need this for TS to not complain?? 🤷‍♂️
-  // this can be an string[] because is a query param
-  const queryId: string = Array.isArray(draftId) ? draftId[0] : draftId
-  // get draft data if draftId is avaliable
-  // const draft = useFetchDraft(queryId)
-
-  const draft = useQuery(queryId && ['Draft', queryId], async (key, id) => {
-    const request = new GetDraftRequest()
-    request.setDocumentId(id)
-    return await rpc.getDraft(request)
-  })
-
-  // reading values to render it in the outliner
-  const title = watch('title')
-  const description = watch('description')
-
-  // debounce auto-save values
-  React.useEffect(() => {
-    useDraftAutosave(draftId, title, description, value)
-  }, [readyToSave])
-
-  // update values from draft data
-  React.useEffect(() => {
-    if (draft.status === 'success' && draft.data) {
-      // console.log('se ejecuta el efecto!!', draft.data.toObject())
-      const values = draft.data.toObject()
-      console.log('draft', draft)
-      console.log('values ===>', values.sectionsList)
-
-      const data = ['title', 'description'].map(v => ({[v]: values[v]}))
-      setTitleAndDescription(data)
-      setReadyToSave(true)
-    }
-  }, [draft.status])
+  const {title, description, value} = state
 
   function isEmpty(): boolean {
     return value.length === 1 && Node.string(value[0]) === ''
@@ -121,17 +114,6 @@ export default function EditorPage(): JSX.Element {
     }
   }, [])
 
-  function handleSaveDraft() {
-    saveDraft({
-      documentId: queryId,
-      values: {
-        title,
-        description,
-        value,
-      },
-    })
-  }
-
   return (
     <Layout className="flex">
       <Seo title="Editor | Mintter" />
@@ -143,7 +125,7 @@ export default function EditorPage(): JSX.Element {
         <EditorHeader onPublish={() => publish(value)} />
         <div className="flex pt-8 pb-32 relative">
           <DebugValue
-            value={{title, description, value}}
+            value={state}
             className="absolute z-10 right-0 top-0 w-full max-w-xs"
           />
           <div
@@ -173,7 +155,7 @@ export default function EditorPage(): JSX.Element {
                 editor={editor}
                 value={value}
                 onChange={value => {
-                  setValue(value)
+                  dispatch({type: 'VALUE', payload: value})
                 }}
               >
                 <div
@@ -199,8 +181,10 @@ export default function EditorPage(): JSX.Element {
                     <Textarea
                       ref={t => {
                         titleRef.current = t
-                        register(t)
                       }}
+                      onChange={text =>
+                        dispatch({type: 'TITLE', payload: text})
+                      }
                       name="title"
                       placeholder="Untitled document"
                       minHeight={56}
@@ -212,8 +196,10 @@ export default function EditorPage(): JSX.Element {
                     <Textarea
                       ref={d => {
                         descriptionRef.current = d
-                        register(d)
                       }}
+                      onChange={text =>
+                        dispatch({type: 'DESCRIPTION', payload: text})
+                      }
                       name="description"
                       placeholder="+ Add a subtitle"
                       minHeight={28}
@@ -222,7 +208,7 @@ export default function EditorPage(): JSX.Element {
                         ReactEditor.focus(editor)
                       }}
                     />
-                    <button onClick={handleSaveDraft}>save draft</button>
+                    {/* <button onClick={handleSaveDraft}>save draft</button> */}
                   </div>
                   <div className="relative" ref={editorContainerRef}>
                     <Toolbar />
