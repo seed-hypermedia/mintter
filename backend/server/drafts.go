@@ -67,6 +67,10 @@ func (s *Server) SaveDraft(ctx context.Context, in *proto.Draft) (*proto.Draft, 
 
 // GetDraft implements DocumentsServer.
 func (s *Server) GetDraft(ctx context.Context, in *proto.GetDraftRequest) (*proto.Draft, error) {
+	if err := s.checkReady(); err != nil {
+		return nil, err
+	}
+
 	if in.DocumentId == "" {
 		return nil, status.Error(codes.InvalidArgument, "documentId is required")
 	}
@@ -76,6 +80,10 @@ func (s *Server) GetDraft(ctx context.Context, in *proto.GetDraftRequest) (*prot
 
 // ListDrafts implements DocumentsServer.
 func (s *Server) ListDrafts(ctx context.Context, in *proto.ListDraftsRequest) (*proto.ListDraftsResponse, error) {
+	if err := s.checkReady(); err != nil {
+		return nil, err
+	}
+
 	if in.PageSize != 0 || in.PageToken != "" {
 		return nil, status.Error(codes.Unimplemented, "pagination for this request is not implemented yet - make the request without limiting page size and with no page token")
 	}
