@@ -26,7 +26,11 @@ const Textarea = (
   ref: any,
 ) => {
   const [value, setInnerValue] = React.useState(() =>
-    valueFromProps || typeof ref === 'function' ? undefined : '',
+    valueFromProps
+      ? valueFromProps
+      : typeof ref === 'function'
+      ? undefined
+      : '',
   )
   const innerRef = React.useRef(null)
   const divRef = React.useRef(null)
@@ -37,6 +41,10 @@ const Textarea = (
   React.useEffect(() => {
     update()
   })
+
+  React.useEffect(() => {
+    setInnerValue(valueFromProps)
+  }, [valueFromProps])
 
   function handleChange(e) {
     if (onChange) {
