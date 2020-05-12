@@ -9,6 +9,7 @@ import {
   Draft,
 } from '@mintter/proto/documents_pb'
 import {useDebounce} from './hooks'
+import {fromSlateToMarkdown} from './parseToMarkdown'
 
 const rpc = makeRpcDocumentsClient()
 
@@ -46,16 +47,21 @@ export async function createDraft(cb) {
 }
 
 export async function saveDraft({documentId, values}) {
-  const {title, description} = values
-  console.log('saveDraft -> values', values)
+  const {title, description, value} = values
+
   const request = new Draft()
 
   request.setDocumentId(documentId)
   title && request.setTitle(title)
   description && request.setDescription(description)
 
+  if (value.length > 0) {
+    // console.log('fromSlateToMarkdown => ', fromSlateToMarkdown(value))
+    request.setSectionsList(fromSlateToMarkdown(value, documentId))
+  }
   const resp = await rpc.saveDraft(request)
-  console.log('saveDraft -> resp', resp.toObject())
+  console.log('saveDraft -> resp', resp)
+  console.log('saveDraft -> resp.toObject', resp.toObject())
 }
 
 export function useFetchDraft(documentId: string | string[]) {
@@ -91,12 +97,12 @@ export function useDraftAutosave(
   const debouncedValue = useDebounce<Node[]>(value, debounceDelay)
 
   useEffect(() => {
-    console.log('MUTATE')
     mutateDraft({
       documentId,
       values: {
         title: debouncedTitle,
         description: debouncedDescription,
+        value: debouncedValue,
       },
     })
   }, [debouncedTitle, debouncedDescription, debouncedValue])
