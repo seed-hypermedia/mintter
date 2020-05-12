@@ -1,4 +1,21 @@
 import {nodeTypes} from '@mintter/editor'
+import {Node} from 'slate'
+import {Section} from '@mintter/proto/documents_pb'
+
+export function fromSlateToMarkdown(
+  slateTree: Node[],
+  documentId: string,
+): Section[] {
+  const newSections = slateTree.map((s: Node) => {
+    const {children} = s
+    const n = new Section()
+    n.setDocumentId(documentId)
+    n.setBody(children.map(parseToMarkdown).join(''))
+
+    return n
+  })
+  return newSections
+}
 
 const LIST_TYPES = [nodeTypes.typeUl, nodeTypes.typeOl]
 

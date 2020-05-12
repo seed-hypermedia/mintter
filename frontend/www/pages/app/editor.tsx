@@ -3,7 +3,6 @@ import isHotkey from 'is-hotkey'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
 import {Icons} from '@mintter/editor'
-import debounce from 'lodash.debounce'
 import {
   Editor,
   Toolbar,
@@ -35,7 +34,6 @@ import Layout from '../../components/layout'
 import {publish} from '../../shared/publishDocument'
 import {useRouter} from 'next/router'
 import {useFetchDraft, useDraftAutosave} from '../../shared/drafts'
-import {useDebounce} from '../../shared/hooks'
 import {useForm} from 'react-hook-form'
 
 export default function EditorPage(): JSX.Element {
@@ -46,12 +44,7 @@ export default function EditorPage(): JSX.Element {
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
   const descriptionRef = React.useRef(null)
-  const {
-    register,
-    setValue: setTitleAndDescription,
-    watch,
-    formState,
-  } = useForm()
+  const {register, setValue: setTitleAndDescription, watch} = useForm()
   const {
     query: {draftId},
   } = useRouter()
@@ -68,11 +61,13 @@ export default function EditorPage(): JSX.Element {
 
   // update values from draft data
   React.useEffect(() => {
-    if (draft.status === 'success') {
+    if (draft.status === 'success' && draft.data) {
       // console.log('se ejecuta el efecto!!', draft.data.toObject())
       const values = draft.data.toObject()
+      console.log('draft', draft)
+      console.log('values', values.sectionsList)
 
-      const data = Object.keys(values).map(v => ({[v]: values[v]}))
+      const data = ['title', 'description'].map(v => ({[v]: values[v]}))
       setTitleAndDescription(data)
     }
   }, [draft.status])
@@ -115,7 +110,7 @@ export default function EditorPage(): JSX.Element {
         <EditorHeader onPublish={() => publish(value)} />
         <div className="flex pt-8 pb-32 relative">
           <DebugValue
-            value={{...formState, value}}
+            value={{title, description, value}}
             className="absolute z-10 right-0 top-0 w-full max-w-xs"
           />
           <div
