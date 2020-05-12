@@ -43,12 +43,16 @@ func TestSaveDraft(t *testing.T) {
 
 	draft.Title = "My first document"
 	draft.Description = "This is a description"
+	draft.Sections = append(draft.Sections, &pb.Section{
+		Body: "Hello world",
+	})
 
 	stored, err := srv.SaveDraft(ctx, draft)
 	require.NoError(t, err)
 	require.NotEqual(t, draft.UpdateTime, stored.UpdateTime)
 	require.Equal(t, draft.Title, stored.Title)
 	require.Equal(t, draft.Description, stored.Description)
+	require.Equal(t, "Hello world", stored.Sections[0].Body)
 
 	got, err := srv.GetDraft(ctx, &pb.GetDraftRequest{DocumentId: draft.DocumentId})
 	require.NoError(t, err)
