@@ -1,13 +1,24 @@
 import React from 'react'
 import AppsOutlinedIcon from '@material-ui/icons/AppsOutlined'
 import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined'
-import {queryCache} from 'react-query'
+import {PaginatedQueryResult} from 'react-query'
 import Link from './link'
-import {useFetchDraft} from '../shared/drafts'
+import {ListDraftsResponse, Draft} from '@mintter/proto/documents_pb'
 
-export default function DocumentList({drafts, draftErrors}) {
-  console.log('DocumentList -> drafts', drafts)
-  const list = (drafts && drafts.results && drafts.results.draftsList) || []
+export default function DocumentList({
+  data,
+}: {
+  data: PaginatedQueryResult<ListDraftsResponse>
+}) {
+  if (data.status === 'loading') {
+    return <p>Loading...</p>
+  }
+
+  if (data.status === 'error') {
+    return <p>ERROR! == {data.error}</p>
+  }
+
+  const draftsList = data.resolvedData.toObject().draftsList
 
   return (
     <div>
@@ -25,7 +36,7 @@ export default function DocumentList({drafts, draftErrors}) {
         </div>
       </div>
       <div>
-        {list.map(draft => (
+        {draftsList.map(draft => (
           <DraftListItem key={draft.documentId} draft={draft} />
         ))}
       </div>
@@ -33,14 +44,19 @@ export default function DocumentList({drafts, draftErrors}) {
   )
 }
 
-function DraftListItem({draft}: any) {
+function DraftListItem({draft}: {draft: Draft.AsObject}) {
+  const [prefetched, setPrefetch] = React.useState<boolean>(false)
   const {title, description} = draft
 
   const theTitle = title ? title : 'Untitled Draft'
   const theDescription = description ? description : 'Draft with no description'
 
-  async function handlePrefetch() {
-    // TODO: prefetch on hover
+  function handlePrefetch() {
+    if (!prefetched) {
+      // TODO: prefetch on hover
+      console.log(`prefetch draft with id ${draft.documentId}`)
+      setPrefetch(true)
+    }
   }
   return (
     <Link href={`/app/editor?draftId=${draft.documentId}`}>

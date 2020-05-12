@@ -7,11 +7,11 @@ import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
 import DocumentList from '../../components/documentList'
 import Layout from '../../components/layout'
 import Content from '../../components/content'
-import {useDrafts, createDraft} from '../../shared/drafts'
+import {useDraftsList, createDraft} from '../../shared/drafts'
 
 export default function Library() {
   const router = useRouter()
-  const {drafts, draftsError, isDraftsValidating} = useDrafts()
+  const data = useDraftsList()
 
   async function handleCreateDraft() {
     await createDraft(async newDraft => {
@@ -24,6 +24,7 @@ export default function Library() {
       })
     })
   }
+
   return (
     <Layout className="flex">
       <Seo title="Library | Mintter" />
@@ -53,9 +54,7 @@ export default function Library() {
               <hr className="border-t-2 border-muted border-solid my-8" />
             </Fragment>
 
-            {!isDraftsValidating && (
-              <DocumentList drafts={drafts} errors={draftsError} />
-            )}
+            <DocumentList data={data} />
           </Content>
         </Container>
       </div>
