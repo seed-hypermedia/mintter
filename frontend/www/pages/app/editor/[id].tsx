@@ -33,9 +33,9 @@ import Textarea from '../../../components/textarea'
 import Layout from '../../../components/layout'
 import {publish} from '../../../shared/publishDocument'
 import {useRouter} from 'next/router'
-import {useQuery} from 'react-query'
-import {GetDraftRequest} from '@mintter/proto/documents_pb'
-import {makeRpcDocumentsClient} from '../../../shared/rpc'
+import {Section} from '@mintter/proto/documents_pb'
+import {useFetchDraft, saveDraft} from '../../../shared/drafts'
+import { markdownToSlate } from '../../../shared/markdownToSlate'
 
 function draftReducer(state, action) {
   const {type, payload} = action
@@ -115,8 +115,6 @@ function initializeEditorValue() {
   return editorInitialValue
 }
 
-const rpc = makeRpcDocumentsClient()
-
 export default function EditorPage(): JSX.Element {
   const plugins = [...editorPlugins, SoftBreakPlugin()]
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
@@ -142,32 +140,20 @@ export default function EditorPage(): JSX.Element {
     return value ? value.length === 1 && Node.string(value[0]) === '' : false
   }
 
-  const {status, error, data} = useQuery(
-    id && ['Draft', id],
-    async (key, queryId) => {
-      // console.log('Draft Query is done!')
-      if (Array.isArray(queryId)) {
-        throw new Error(
-          `Impossible render: You are trying to access the editor passing ${
-            queryId.length
-          } document IDs => ${queryId.map(q => q).join(', ')}`,
-        )
-      }
-
-      const req = new GetDraftRequest()
-      req.setDocumentId(queryId)
-
-      return await rpc.getDraft(req)
-    },
-  )
+  const {status, error, data} = useFetchDraft(id)
 
   React.useEffect(() => {
     console.log('Data changed => ', data)
     if (data) {
       const obj = data.toObject()
+      console.log('sections => ', obj.sectionsList)
       setValue({
         title: obj.title,
         description: obj.description,
+        value: obj.sectionsList.map((s: Section.AsObject) => ({
+          type: 'section',
+          children: markdownToSlate(s.body),
+        })),
       })
     }
   }, [data])
@@ -287,7 +273,7 @@ export default function EditorPage(): JSX.Element {
                             ReactEditor.focus(editor)
                           }}
                         />
-                        {/* <button onClick={handleSaveDraft}>save draft</button> */}
+                        <button onClick={() => saveDraft({ documentId: id, title, description, sections: value})}>save draft</button>
                       </div>
                       <div className="relative" ref={editorContainerRef}>
                         <Toolbar />
