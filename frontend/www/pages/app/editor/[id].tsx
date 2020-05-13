@@ -8,7 +8,7 @@ import {
   Toolbar,
   useEditor,
   plugins as editorPlugins,
-  initialValue,
+  initialSectionsValue,
   SectionToolbar,
 } from '@mintter/editor'
 import {
@@ -35,7 +35,7 @@ import {publish} from '../../../shared/publishDocument'
 import {useRouter} from 'next/router'
 import {Section} from '@mintter/proto/documents_pb'
 import {useFetchDraft, saveDraft} from '../../../shared/drafts'
-import { markdownToSlate } from '../../../shared/markdownToSlate'
+import {markdownToSlate} from '../../../shared/markdownToSlate'
 
 function draftReducer(state, action) {
   const {type, payload} = action
@@ -104,15 +104,15 @@ function useEditorValue() {
   }
 }
 
-const editorInitialValue = {
+const initialValue = {
   title: '',
   description: '',
-  value: initialValue,
+  value: initialSectionsValue,
 }
 
 function initializeEditorValue() {
   // TODO: change this to a lazy initialization function later
-  return editorInitialValue
+  return initialValue
 }
 
 export default function EditorPage(): JSX.Element {
@@ -150,10 +150,12 @@ export default function EditorPage(): JSX.Element {
       setValue({
         title: obj.title,
         description: obj.description,
-        value: obj.sectionsList.map((s: Section.AsObject) => ({
-          type: 'section',
-          children: markdownToSlate(s.body),
-        })),
+        value: obj.sectionsList.length
+          ? obj.sectionsList.map((s: Section.AsObject) => ({
+              type: 'section',
+              children: markdownToSlate(s.body),
+            }))
+          : initialSectionsValue,
       })
     }
   }, [data])
@@ -273,7 +275,18 @@ export default function EditorPage(): JSX.Element {
                             ReactEditor.focus(editor)
                           }}
                         />
-                        <button onClick={() => saveDraft({ documentId: id, title, description, sections: value})}>save draft</button>
+                        <button
+                          onClick={() =>
+                            saveDraft({
+                              documentId: id,
+                              title,
+                              description,
+                              sections: value,
+                            })
+                          }
+                        >
+                          save draft
+                        </button>
                       </div>
                       <div className="relative" ref={editorContainerRef}>
                         <Toolbar />

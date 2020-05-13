@@ -1,6 +1,7 @@
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {PARAGRAPH} from 'slate-plugins-next'
 import {ReactEditor} from 'slate-react'
+import {nodeTypes} from './nodeTypes'
 
 export interface MintterEditor {}
 
@@ -19,12 +20,12 @@ export const Editor = {
   },
 }
 
-export const initialValue = [
+export const initialSectionsValue = [
   {
     type: 'section',
     children: [
       {
-        type: PARAGRAPH,
+        type: nodeTypes.typeP,
         children: [
           {
             text: '',
