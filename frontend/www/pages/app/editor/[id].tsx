@@ -36,8 +36,16 @@ import {useRouter} from 'next/router'
 import {Section} from '@mintter/proto/documents_pb'
 import {useFetchDraft, saveDraft} from '../../../shared/drafts'
 import {markdownToSlate} from '../../../shared/markdownToSlate'
+import {useMutation} from 'react-query'
+import {useDebounce} from '../../../shared/hooks'
 
-function draftReducer(state, action) {
+interface EditorState {
+  title: string
+  description: string
+  sections: Node[]
+}
+
+function draftReducer(state: EditorState, action) {
   const {type, payload} = action
 
   switch (type) {
@@ -55,7 +63,7 @@ function draftReducer(state, action) {
     case 'SECTIONS': {
       return {
         ...state,
-        value: payload,
+        sections: payload,
       }
     }
 
@@ -104,10 +112,10 @@ function useEditorValue() {
   }
 }
 
-const initialValue = {
+const initialValue: EditorState = {
   title: '',
   description: '',
-  value: initialSectionsValue,
+  sections: initialSectionsValue,
 }
 
 function initializeEditorValue() {
@@ -122,6 +130,7 @@ export default function EditorPage(): JSX.Element {
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
   const descriptionRef = React.useRef(null)
+  const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
   const {
     state,
     setTitle,
@@ -129,18 +138,39 @@ export default function EditorPage(): JSX.Element {
     setSections,
     setValue,
   } = useEditorValue()
+
   const {
     query: {id},
   } = useRouter()
 
-  const {title, value, description} = state
-  console.log('title, value, description', title, value, description)
+  const {title, sections, description} = state
 
   function isEmpty(): boolean {
-    return value ? value.length === 1 && Node.string(value[0]) === '' : false
+    return sections
+      ? sections.length === 1 && Node.string(sections[0]) === ''
+      : false
   }
 
-  const {status, error, data} = useFetchDraft(id)
+  const {status, error, data} = useFetchDraft(id, {
+    onSuccess: () => {
+      setReadyToAutosave(true)
+    },
+  })
+
+  const [autosaveDraft] = useMutation(async ({state}: {state: EditorState}) => {
+    console.log('autosave!!', state)
+    const {title, description, sections} = state
+    saveDraft({documentId: id, title, description, sections})
+  })
+
+  const debouncedValue = useDebounce(state, 1000)
+
+  React.useEffect(() => {
+    if (readyToAutosave) {
+      console.log('--------------------- SAVE!!!', readyToAutosave)
+      autosaveDraft({state})
+    }
+  }, [debouncedValue])
 
   React.useEffect(() => {
     console.log('Data changed => ', data)
@@ -150,12 +180,13 @@ export default function EditorPage(): JSX.Element {
       setValue({
         title: obj.title,
         description: obj.description,
-        value: obj.sectionsList.length
-          ? obj.sectionsList.map((s: Section.AsObject) => ({
-              type: 'section',
-              children: markdownToSlate(s.body),
-            }))
-          : initialSectionsValue,
+        sections:
+          obj.sectionsList.length > 0
+            ? obj.sectionsList.map((s: Section.AsObject) => ({
+                type: 'section',
+                children: markdownToSlate(s.body),
+              }))
+            : initialSectionsValue,
       })
     }
   }, [data])
@@ -191,7 +222,7 @@ export default function EditorPage(): JSX.Element {
           <p>ERROR! == {error}</p>
         ) : (
           <>
-            <EditorHeader onPublish={() => publish(value)} />
+            <EditorHeader onPublish={() => publish(state)} />
             <div className="flex pt-8 pb-32 relative">
               <DebugValue
                 value={state}
@@ -222,9 +253,9 @@ export default function EditorPage(): JSX.Element {
                 >
                   <Slate
                     editor={editor}
-                    value={value}
-                    onChange={value => {
-                      setSections(value)
+                    value={sections}
+                    onChange={sections => {
+                      setSections(sections)
                     }}
                   >
                     <div
@@ -252,6 +283,7 @@ export default function EditorPage(): JSX.Element {
                             titleRef.current = t
                           }}
                           value={title}
+                          data-test-id="editor_title"
                           onChange={setTitle}
                           name="title"
                           placeholder="Untitled document"
@@ -275,18 +307,6 @@ export default function EditorPage(): JSX.Element {
                             ReactEditor.focus(editor)
                           }}
                         />
-                        <button
-                          onClick={() =>
-                            saveDraft({
-                              documentId: id,
-                              title,
-                              description,
-                              sections: value,
-                            })
-                          }
-                        >
-                          save draft
-                        </button>
                       </div>
                       <div className="relative" ref={editorContainerRef}>
                         <Toolbar />

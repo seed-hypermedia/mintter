@@ -6,6 +6,7 @@ import {
   queryCache,
   usePaginatedQuery,
   QueryResult,
+  QueryOptions,
 } from 'react-query'
 import {makeRpcDocumentsClient} from './rpc'
 import {
@@ -72,20 +73,30 @@ export async function saveDraft({
   console.log('saveDraft -> resp.toObject', resp.toObject())
 }
 
-export function useFetchDraft(id: string | string[]): QueryResult<Draft> {
-  return useQuery(id && ['Draft', id], async (key, queryId) => {
-    // console.log('Draft Query is done!')
-    if (Array.isArray(queryId)) {
-      throw new Error(
-        `Impossible render: You are trying to access the editor passing ${
-          queryId.length
-        } document IDs => ${queryId.map(q => q).join(', ')}`,
-      )
-    }
+export function useFetchDraft(
+  id: string | string[],
+  options: QueryOptions<Draft>,
+): QueryResult<Draft> {
+  return useQuery(
+    id && ['Draft', id],
+    async (key, queryId) => {
+      // console.log('Draft Query is done!')
+      if (Array.isArray(queryId)) {
+        throw new Error(
+          `Impossible render: You are trying to access the editor passing ${
+            queryId.length
+          } document IDs => ${queryId.map(q => q).join(', ')}`,
+        )
+      }
 
-    const req = new GetDraftRequest()
-    req.setDocumentId(queryId)
+      const req = new GetDraftRequest()
+      req.setDocumentId(queryId)
 
-    return await rpc.getDraft(req)
-  })
+      return await rpc.getDraft(req)
+    },
+    {
+      refetchOnWindowFocus: false,
+      ...options,
+    },
+  )
 }
