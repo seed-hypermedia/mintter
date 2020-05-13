@@ -1,6 +1,12 @@
 import {useEffect} from 'react'
 import {Node} from 'slate'
-import {useQuery, useMutation, queryCache, usePaginatedQuery} from 'react-query'
+import {
+  useQuery,
+  useMutation,
+  queryCache,
+  usePaginatedQuery,
+  QueryResult,
+} from 'react-query'
 import {makeRpcDocumentsClient} from './rpc'
 import {
   ListDraftsRequest,
@@ -32,62 +38,54 @@ export async function createDraft(cb) {
   }
 }
 
-export async function saveDraft({documentId, values}) {
-  const {title, description, value} = values
-
+export async function saveDraft({
+  documentId,
+  title,
+  description,
+  sections,
+}: {
+  documentId: string | string[]
+  title: string
+  description: string
+  sections: any[]
+}) {
   const request = new Draft()
+
+  if (Array.isArray(documentId)) {
+    throw new Error(
+      `Impossible render: You are trying to access the editor passing ${
+        documentId.length
+      } document IDs => ${documentId.map(q => q).join(', ')}`,
+    )
+  }
 
   request.setDocumentId(documentId)
   title && request.setTitle(title)
   description && request.setDescription(description)
 
-  if (value.length > 0) {
+  if (sections.length > 0) {
     // console.log('fromSlateToMarkdown => ', fromSlateToMarkdown(value))
-    request.setSectionsList(fromSlateToMarkdown(value))
+    request.setSectionsList(fromSlateToMarkdown(sections))
   }
   const resp = await rpc.saveDraft(request)
   console.log('saveDraft -> resp', resp)
   console.log('saveDraft -> resp.toObject', resp.toObject())
 }
 
-export async function useFetchDraft(documentId: string) {
-  return useQuery(documentId && ['Draft', documentId], async (key, id) => {
-    const request = new GetDraftRequest()
-    request.setDocumentId(id)
-    return await rpc.getDraft(request)
+export function useFetchDraft(id: string | string[]): QueryResult<Draft> {
+  return useQuery(id && ['Draft', id], async (key, queryId) => {
+    // console.log('Draft Query is done!')
+    if (Array.isArray(queryId)) {
+      throw new Error(
+        `Impossible render: You are trying to access the editor passing ${
+          queryId.length
+        } document IDs => ${queryId.map(q => q).join(', ')}`,
+      )
+    }
+
+    const req = new GetDraftRequest()
+    req.setDocumentId(queryId)
+
+    return await rpc.getDraft(req)
   })
-}
-
-export function useDraftAutosave(
-  documentId: string | string[],
-  title: string,
-  description: string,
-  value: Node[],
-) {
-  const [mutateDraft] = useMutation(saveDraft, {
-    onSuccess: () => {
-      queryCache.refetchQueries('Draft')
-    },
-  })
-  // get draft id, title, description and  sections (slate values)
-  // transform sections
-  // save to draft
-  // throttle save listener
-
-  // debounce auto-save values
-  const debounceDelay = 1000
-  const debouncedTitle = useDebounce<string>(title, debounceDelay)
-  const debouncedDescription = useDebounce<string>(description, debounceDelay)
-  const debouncedValue = useDebounce<Node[]>(value, debounceDelay)
-
-  useEffect(() => {
-    mutateDraft({
-      documentId,
-      values: {
-        title: debouncedTitle,
-        description: debouncedDescription,
-        value: debouncedValue,
-      },
-    })
-  }, [debouncedTitle, debouncedDescription, debouncedValue])
 }
