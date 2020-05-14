@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"mintter/backend/config"
 	"mintter/backend/identity"
 	"mintter/backend/p2p"
 	"mintter/backend/store"
@@ -29,7 +30,7 @@ func makeTestNode(t *testing.T, name string) *p2p.Node {
 		require.NoError(t, s.Close())
 	})
 
-	n, err := p2p.NewNode(ctx, repoPath, s, zap.NewNop(), p2p.Config{Addr: "/ip4/0.0.0.0/tcp/0"})
+	n, err := p2p.NewNode(ctx, repoPath, s, zap.NewNop(), config.P2P{Addr: "/ip4/0.0.0.0/tcp/0"})
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, n.Close())

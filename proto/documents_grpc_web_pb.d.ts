@@ -4,14 +4,18 @@ import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/t
 import * as google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb';
 
 import {
+  BatchGetSectionsRequest,
+  BatchGetSectionsResponse,
   CreateDraftRequest,
   DeleteDraftRequest,
   Draft,
   GetDraftRequest,
+  GetSectionRequest,
   ListDraftsRequest,
   ListDraftsResponse,
+  Publication,
   PublishDraftRequest,
-  PublishDraftResponse} from './documents_pb';
+  Section} from './documents_pb';
 
 export class DocumentsClient {
   constructor (hostname: string,
@@ -57,8 +61,22 @@ export class DocumentsClient {
     request: PublishDraftRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.Error,
-               response: PublishDraftResponse) => void
-  ): grpcWeb.ClientReadableStream<PublishDraftResponse>;
+               response: Publication) => void
+  ): grpcWeb.ClientReadableStream<Publication>;
+
+  getSection(
+    request: GetSectionRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: Section) => void
+  ): grpcWeb.ClientReadableStream<Section>;
+
+  batchGetSections(
+    request: BatchGetSectionsRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: BatchGetSectionsResponse) => void
+  ): grpcWeb.ClientReadableStream<BatchGetSectionsResponse>;
 
 }
 
@@ -95,7 +113,17 @@ export class DocumentsPromiseClient {
   publishDraft(
     request: PublishDraftRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<PublishDraftResponse>;
+  ): Promise<Publication>;
+
+  getSection(
+    request: GetSectionRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<Section>;
+
+  batchGetSections(
+    request: BatchGetSectionsRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<BatchGetSectionsResponse>;
 
 }
 

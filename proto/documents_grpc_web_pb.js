@@ -475,13 +475,13 @@ proto.com.mintter.DocumentsPromiseClient.prototype.deleteDraft =
  * @const
  * @type {!grpc.web.MethodDescriptor<
  *   !proto.com.mintter.PublishDraftRequest,
- *   !proto.com.mintter.PublishDraftResponse>}
+ *   !proto.com.mintter.Publication>}
  */
 const methodDescriptor_Documents_PublishDraft = new grpc.web.MethodDescriptor(
   '/com.mintter.Documents/PublishDraft',
   grpc.web.MethodType.UNARY,
   proto.com.mintter.PublishDraftRequest,
-  proto.com.mintter.PublishDraftResponse,
+  proto.com.mintter.Publication,
   /**
    * @param {!proto.com.mintter.PublishDraftRequest} request
    * @return {!Uint8Array}
@@ -489,7 +489,7 @@ const methodDescriptor_Documents_PublishDraft = new grpc.web.MethodDescriptor(
   function(request) {
     return request.serializeBinary();
   },
-  proto.com.mintter.PublishDraftResponse.deserializeBinary
+  proto.com.mintter.Publication.deserializeBinary
 );
 
 
@@ -497,10 +497,10 @@ const methodDescriptor_Documents_PublishDraft = new grpc.web.MethodDescriptor(
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
  *   !proto.com.mintter.PublishDraftRequest,
- *   !proto.com.mintter.PublishDraftResponse>}
+ *   !proto.com.mintter.Publication>}
  */
 const methodInfo_Documents_PublishDraft = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.com.mintter.PublishDraftResponse,
+  proto.com.mintter.Publication,
   /**
    * @param {!proto.com.mintter.PublishDraftRequest} request
    * @return {!Uint8Array}
@@ -508,7 +508,7 @@ const methodInfo_Documents_PublishDraft = new grpc.web.AbstractClientBase.Method
   function(request) {
     return request.serializeBinary();
   },
-  proto.com.mintter.PublishDraftResponse.deserializeBinary
+  proto.com.mintter.Publication.deserializeBinary
 );
 
 
@@ -517,9 +517,9 @@ const methodInfo_Documents_PublishDraft = new grpc.web.AbstractClientBase.Method
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.com.mintter.PublishDraftResponse)}
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.Publication)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.PublishDraftResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.Publication>|undefined}
  *     The XHR Node Readable Stream
  */
 proto.com.mintter.DocumentsClient.prototype.publishDraft =
@@ -538,7 +538,7 @@ proto.com.mintter.DocumentsClient.prototype.publishDraft =
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.com.mintter.PublishDraftResponse>}
+ * @return {!Promise<!proto.com.mintter.Publication>}
  *     A native promise that resolves to the response
  */
 proto.com.mintter.DocumentsPromiseClient.prototype.publishDraft =
@@ -548,6 +548,166 @@ proto.com.mintter.DocumentsPromiseClient.prototype.publishDraft =
       request,
       metadata || {},
       methodDescriptor_Documents_PublishDraft);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.mintter.GetSectionRequest,
+ *   !proto.com.mintter.Section>}
+ */
+const methodDescriptor_Documents_GetSection = new grpc.web.MethodDescriptor(
+  '/com.mintter.Documents/GetSection',
+  grpc.web.MethodType.UNARY,
+  proto.com.mintter.GetSectionRequest,
+  proto.com.mintter.Section,
+  /**
+   * @param {!proto.com.mintter.GetSectionRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.Section.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.com.mintter.GetSectionRequest,
+ *   !proto.com.mintter.Section>}
+ */
+const methodInfo_Documents_GetSection = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.com.mintter.Section,
+  /**
+   * @param {!proto.com.mintter.GetSectionRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.Section.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.mintter.GetSectionRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.Section)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.Section>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.mintter.DocumentsClient.prototype.getSection =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.mintter.Documents/GetSection',
+      request,
+      metadata || {},
+      methodDescriptor_Documents_GetSection,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.mintter.GetSectionRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.mintter.Section>}
+ *     A native promise that resolves to the response
+ */
+proto.com.mintter.DocumentsPromiseClient.prototype.getSection =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.mintter.Documents/GetSection',
+      request,
+      metadata || {},
+      methodDescriptor_Documents_GetSection);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.mintter.BatchGetSectionsRequest,
+ *   !proto.com.mintter.BatchGetSectionsResponse>}
+ */
+const methodDescriptor_Documents_BatchGetSections = new grpc.web.MethodDescriptor(
+  '/com.mintter.Documents/BatchGetSections',
+  grpc.web.MethodType.UNARY,
+  proto.com.mintter.BatchGetSectionsRequest,
+  proto.com.mintter.BatchGetSectionsResponse,
+  /**
+   * @param {!proto.com.mintter.BatchGetSectionsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.BatchGetSectionsResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.com.mintter.BatchGetSectionsRequest,
+ *   !proto.com.mintter.BatchGetSectionsResponse>}
+ */
+const methodInfo_Documents_BatchGetSections = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.com.mintter.BatchGetSectionsResponse,
+  /**
+   * @param {!proto.com.mintter.BatchGetSectionsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.BatchGetSectionsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.mintter.BatchGetSectionsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.BatchGetSectionsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.BatchGetSectionsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.mintter.DocumentsClient.prototype.batchGetSections =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.mintter.Documents/BatchGetSections',
+      request,
+      metadata || {},
+      methodDescriptor_Documents_BatchGetSections,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.mintter.BatchGetSectionsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.mintter.BatchGetSectionsResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.com.mintter.DocumentsPromiseClient.prototype.batchGetSections =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.mintter.Documents/BatchGetSections',
+      request,
+      metadata || {},
+      methodDescriptor_Documents_BatchGetSections);
 };
 
 

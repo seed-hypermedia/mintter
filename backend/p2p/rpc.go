@@ -2,6 +2,7 @@ package p2p
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"mintter/backend/identity"
 	"mintter/backend/p2p/internal"
@@ -27,7 +28,12 @@ func (n *Node) serveRPC() {
 	internal.RegisterPeerServiceServer(srv, rpc)
 
 	n.g.Go(func() error {
-		return srv.Serve(n.lis)
+		err := srv.Serve(n.lis)
+		if errors.Is(err, grpc.ErrServerStopped) {
+			return nil
+		}
+
+		return err
 	})
 
 	n.g.Go(func() error {

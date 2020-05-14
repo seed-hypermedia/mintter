@@ -84,6 +84,37 @@ func TestListDrafts(t *testing.T) {
 	resp, err := srv.ListDrafts(ctx, &pb.ListDraftsRequest{})
 	require.NoError(t, err)
 
-	require.Equal(t, resp.Drafts[0].Title, d1.Title)
-	require.Equal(t, resp.Drafts[1].Title, d2.Title)
+	titles := []string{resp.Drafts[0].Title, resp.Drafts[1].Title}
+	require.ElementsMatch(t, []string{d1.Title, d2.Title}, titles)
+}
+
+func TestPublishDraft(t *testing.T) {
+	srv := newSeededServer(t)
+	t.Cleanup(func() {
+		require.NoError(t, srv.Close())
+	})
+	ctx := context.Background()
+
+	draft, err := srv.CreateDraft(ctx, &pb.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	draft.Title = "My crazy new document"
+	draft.Sections = append(draft.Sections, &pb.Section{
+		Body: "Hello world",
+	})
+
+	draft, err = srv.SaveDraft(ctx, draft)
+	require.NoError(t, err)
+
+	pub, err := srv.PublishDraft(ctx, &pb.PublishDraftRequest{
+		DocumentId: draft.DocumentId,
+	})
+	require.NoError(t, err)
+
+	sec, err := srv.GetSection(ctx, &pb.GetSectionRequest{
+		SectionId: pub.Sections[0],
+	})
+	require.NoError(t, err)
+
+	require.Equal(t, "Hello world", sec.Body)
 }

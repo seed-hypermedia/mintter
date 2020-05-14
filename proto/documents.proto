@@ -21,7 +21,13 @@ service Documents {
 
   rpc DeleteDraft(DeleteDraftRequest) returns (google.protobuf.Empty);
 
-  rpc PublishDraft(PublishDraftRequest) returns (PublishDraftResponse);
+  // Publish the latest draft of a given document ID.
+  rpc PublishDraft(PublishDraftRequest) returns (Publication);
+
+  rpc GetSection(GetSectionRequest) returns (Section);
+
+  rpc BatchGetSections(BatchGetSectionsRequest)
+      returns (BatchGetSectionsResponse);
 }
 
 message CreateDraftRequest {}
@@ -52,9 +58,25 @@ message DeleteDraftRequest {
   string document_id = 1;
 }
 
-message PublishDraftRequest {}
+message PublishDraftRequest {
+  // ID of the document of which ongoing draft is going to be published.
+  string document_id = 1;
+}
 
-message PublishDraftResponse {}
+message GetSectionRequest {
+  // The id of the section to retrieve.
+  string section_id = 1;
+}
+
+message BatchGetSectionsRequest {
+  // List of section ids to retrieve.
+  repeated string section_ids = 1;
+}
+
+message BatchGetSectionsResponse {
+  // List of sections.
+  repeated Section sections = 1;
+}
 
 // Draft is a working document that is being written to become a publication.
 // After being published Draft becomes a Publication. Both Drafts and
@@ -105,14 +127,32 @@ message Section {
   google.protobuf.Timestamp create_time = 6;
 }
 
+// Immutable snapshot of a document that is available to the public.
 message Publication {
-  string document_id = 1;
+  // Output only. Content addressable identifier of this publication.
+  string id = 1;
 
-  string author = 2;
+  // Output only. Cannot be updated.
+  string document_id = 2;
 
-  repeated string sections = 3;
+  // Title of the document.
+  string title = 3;
 
-  google.protobuf.Timestamp create_time = 4;
+  // Brief description of the content.
+  string description = 4;
 
-  google.protobuf.Timestamp publish_time = 5;
+  // Output only. Cannot be updated.
+  string author = 5;
+
+  // ID of the previous version.
+  string previous = 6;
+
+  // List of sections this draft is composed of.
+  repeated string sections = 7;
+
+  // Output only. Time when draft was initially created.
+  google.protobuf.Timestamp create_time = 8;
+
+  // Output only. Time when document was published.
+  google.protobuf.Timestamp publish_time = 9;
 }

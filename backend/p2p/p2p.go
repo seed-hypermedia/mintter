@@ -10,6 +10,7 @@ import (
 
 	"mintter/backend"
 	"mintter/backend/cleanup"
+	"mintter/backend/config"
 	"mintter/backend/identity"
 	"mintter/backend/ipfsutil"
 	"mintter/backend/store"
@@ -66,12 +67,6 @@ func (e Error) Error() string {
 	return string(e)
 }
 
-// Config for p2p node.
-type Config struct {
-	// Disable bool   `help:"disable p2p networking"`
-	Addr string `help:"address for binding p2p listener" default:"/ip4/0.0.0.0/tcp/55000"`
-}
-
 // Node is a Mintter p2p node.
 type Node struct {
 	store *store.Store
@@ -91,7 +86,7 @@ type Node struct {
 }
 
 // NewNode creates a new node. User must call Close() to shutdown the node gracefully.
-func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logger, cfg Config) (n *Node, err error) {
+func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (n *Node, err error) {
 	var cleanup cleanup.Stack
 	defer func() {
 		if err != nil {
@@ -181,6 +176,11 @@ func (n *Node) Account() identity.Account {
 // Addrs return p2p multiaddresses this node is listening on.
 func (n *Node) Addrs() []multiaddr.Multiaddr {
 	return n.addrs
+}
+
+// DAG returns the IPLD DAG service.
+func (n *Node) DAG() ipld.DAGService {
+	return n.dag
 }
 
 // makeHost creates a new libp2p host.

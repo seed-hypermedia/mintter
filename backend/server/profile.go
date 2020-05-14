@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"mintter/backend/identity"
+	"mintter/backend/p2p"
 	"mintter/backend/store"
 	"mintter/proto"
 
@@ -25,9 +26,15 @@ func (s *Server) InitProfile(ctx context.Context, req *proto.InitProfileRequest)
 		return nil, status.Errorf(codes.Internal, "failed to generate identity: %v", err)
 	}
 
-	s.store, err = store.Create(s.repoPath, profile)
+	s.store, err = store.Create(s.cfg.RepoPath, profile)
 	if err != nil {
 		s.log.Error("StoreInitializationFailed", zap.Error(err))
+		return nil, err
+	}
+
+	s.node, err = p2p.NewNode(context.Background(), s.cfg.RepoPath, s.store, s.log.With(zap.String("component", "p2p")), s.cfg.P2P)
+	if err != nil {
+		s.log.Error("P2PNodeInitializationFailed", zap.Error(err))
 		return nil, err
 	}
 

@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"mintter/backend/p2p"
+	"mintter/backend/config"
 	"mintter/backend/server"
 	"mintter/proto"
 
@@ -21,17 +21,8 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-// Config is a daemon config.
-type Config struct {
-	HTTPPort string `help:"Port to expose HTTP server (including grpc-web)" default:"55001"`
-	GRPCPort string `help:"Port to expose gRPC server" default:"55002"`
-	RepoPath string `help:"Path to where to store node data (default: ~/.mtt)"`
-
-	P2P p2p.Config `help:"P2P configuration" prefix:"p2p." embed:""`
-}
-
 // Run the daemon.
-func Run(ctx context.Context, cfg Config) (err error) {
+func Run(ctx context.Context, cfg config.Config) (err error) {
 	g, ctx := errgroup.WithContext(ctx)
 	if cfg.RepoPath == "" {
 		cfg.RepoPath = defaultRepoPath()
@@ -45,7 +36,7 @@ func Run(ctx context.Context, cfg Config) (err error) {
 
 	rpcsrv := grpc.NewServer()
 	{
-		svc, err := server.NewServer(cfg.RepoPath, log.Named("rpcServer"))
+		svc, err := server.NewServer(cfg, log.Named("rpcServer"))
 		if err != nil {
 			return fmt.Errorf("failed to create rpc server: %w", err)
 		}

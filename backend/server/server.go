@@ -2,12 +2,16 @@
 package server
 
 import (
+	"context"
 	"fmt"
+	"mintter/backend/config"
+	"mintter/backend/p2p"
 	"mintter/backend/store"
 	"mintter/proto"
 	"os"
 
 	"go.uber.org/atomic"
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,46 +21,56 @@ import (
 type Server struct {
 	proto.DocumentsServer
 
-	repoPath string
-	log      *zap.Logger
+	cfg config.Config
+	log *zap.Logger
 
+	// We are doing a kind of lazy init for these within InitProfile handler
+	// and we recover the state in the constructor if profile was previously initialized.
 	ready atomic.Bool
 	store *store.Store
+	node  *p2p.Node
 }
 
 // NewServer creates a new Server.
-func NewServer(repoPath string, log *zap.Logger) (*Server, error) {
-	if err := os.MkdirAll(repoPath, 0700); err != nil {
-		return nil, fmt.Errorf("failed initialize local repo: %w", err)
+func NewServer(cfg config.Config, log *zap.Logger) (*Server, error) {
+	if err := os.MkdirAll(cfg.RepoPath, 0700); err != nil {
+		return nil, fmt.Errorf("failed to initialize local repo in %s: %w", cfg.RepoPath, err)
 	}
 
 	s := &Server{
-		repoPath: repoPath,
-		log:      log,
+		log: log,
+		cfg: cfg,
 		// TODO(burdiyan): Remove this when server is implemented fully. It's just for convenience now.
 		DocumentsServer: &proto.UnimplementedDocumentsServer{},
 	}
 
-	if store, err := store.Open(repoPath); err == nil {
+	// Make sure to check InitProfile handler if changing this.
+	if store, err := store.Open(cfg.RepoPath); err == nil {
 		s.store = store
+		s.node, err = p2p.NewNode(context.Background(), cfg.RepoPath, store, log.With(zap.String("component", "p2p")), cfg.P2P)
+		if err != nil {
+			return nil, err
+		}
 		s.ready.CAS(false, true)
 	}
 
 	return s, nil
 }
 
-// RepoPath returns server's repo path.
-func (s *Server) RepoPath() string {
-	return s.repoPath
+// Config returns underlying config for tests.
+func (s *Server) Config() config.Config {
+	return s.cfg
 }
 
 // Close the server.
-func (s *Server) Close() error {
+func (s *Server) Close() (err error) {
 	if !s.ready.Load() {
 		return nil
 	}
 
-	return s.store.Close()
+	err = multierr.Combine(err, s.node.Close(), s.store.Close())
+
+	return err
 }
 
 func (s *Server) checkReady() error {

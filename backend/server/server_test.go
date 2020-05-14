@@ -2,12 +2,11 @@ package server_test
 
 import (
 	"context"
-	"fmt"
+	"io/ioutil"
 	"os"
-	"path/filepath"
 	"testing"
-	"time"
 
+	"mintter/backend/config"
 	"mintter/backend/server"
 	"mintter/proto"
 
@@ -17,22 +16,27 @@ import (
 
 var _ proto.MintterServer = (*server.Server)(nil)
 
-func testRepoPath(t *testing.T) string {
+func testConfig(t *testing.T) config.Config {
 	t.Helper()
 
-	repoPath := fmt.Sprintf("test-repo-%d", time.Now().UnixNano())
-	repoPath = filepath.Join(os.TempDir(), repoPath)
+	repoPath, err := ioutil.TempDir("", "mtt-server-test")
+	require.NoError(t, err)
 	t.Cleanup(func() {
 		os.RemoveAll(repoPath)
 	})
 
-	return repoPath
+	return config.Config{
+		RepoPath: repoPath,
+		P2P: config.P2P{
+			Addr: "/ip4/0.0.0.0/tcp/0",
+		},
+	}
 }
 
 func newServer(t *testing.T) *server.Server {
 	t.Helper()
 
-	srv, err := server.NewServer(testRepoPath(t), zap.NewNop())
+	srv, err := server.NewServer(testConfig(t), zap.NewNop())
 	require.NoError(t, err)
 
 	return srv
