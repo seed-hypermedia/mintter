@@ -50,6 +50,7 @@ require (
 	github.com/multiformats/go-multibase v0.0.2 // indirect
 	github.com/multiformats/go-multihash v0.0.13
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
+	github.com/polydawn/refmt v0.0.0-20190408063855-01bf1e26dd14
 	github.com/stretchr/testify v1.5.1
 	github.com/textileio/go-textile v0.7.7
 	go.uber.org/atomic v1.6.0

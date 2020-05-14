@@ -20,6 +20,7 @@ type Store struct {
 
 	profilesKey datastore.Key
 	draftsKey   datastore.Key
+	pubsKey     datastore.Key
 
 	pc   profileCache
 	prof identity.Profile
@@ -28,7 +29,7 @@ type Store struct {
 // Create a new Store.
 func Create(repoPath string, prof identity.Profile) (*Store, error) {
 	if err := os.MkdirAll(repoPath, 0700); err != nil {
-		return nil, fmt.Errorf("failed to initialize local repo: %w", err)
+		return nil, fmt.Errorf("store: failed to initialize local repo in %s: %w", repoPath, err)
 	}
 
 	return new(repoPath, prof)
@@ -65,6 +66,7 @@ func new(repoPath string, prof identity.Profile) (*Store, error) {
 		prof:        prof,
 		profilesKey: datastore.NewKey("/profiles"),
 		draftsKey:   datastore.NewKey("/drafts"),
+		pubsKey:     datastore.NewKey("/publications"),
 	}
 
 	s.lb, err = logbook.New(prof.Account, s.db)

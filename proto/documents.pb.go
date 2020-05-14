@@ -236,6 +236,8 @@ func (m *DeleteDraftRequest) GetDocumentId() string {
 }
 
 type PublishDraftRequest struct {
+	// ID of the document of which ongoing draft is going to be published.
+	DocumentId           string   `protobuf:"bytes,1,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -266,36 +268,132 @@ func (m *PublishDraftRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_PublishDraftRequest proto.InternalMessageInfo
 
-type PublishDraftResponse struct {
+func (m *PublishDraftRequest) GetDocumentId() string {
+	if m != nil {
+		return m.DocumentId
+	}
+	return ""
+}
+
+type GetSectionRequest struct {
+	// The id of the section to retrieve.
+	SectionId            string   `protobuf:"bytes,1,opt,name=section_id,json=sectionId,proto3" json:"section_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *PublishDraftResponse) Reset()         { *m = PublishDraftResponse{} }
-func (m *PublishDraftResponse) String() string { return proto.CompactTextString(m) }
-func (*PublishDraftResponse) ProtoMessage()    {}
-func (*PublishDraftResponse) Descriptor() ([]byte, []int) {
+func (m *GetSectionRequest) Reset()         { *m = GetSectionRequest{} }
+func (m *GetSectionRequest) String() string { return proto.CompactTextString(m) }
+func (*GetSectionRequest) ProtoMessage()    {}
+func (*GetSectionRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_37d3647adf041676, []int{6}
 }
 
-func (m *PublishDraftResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_PublishDraftResponse.Unmarshal(m, b)
+func (m *GetSectionRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetSectionRequest.Unmarshal(m, b)
 }
-func (m *PublishDraftResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_PublishDraftResponse.Marshal(b, m, deterministic)
+func (m *GetSectionRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetSectionRequest.Marshal(b, m, deterministic)
 }
-func (m *PublishDraftResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PublishDraftResponse.Merge(m, src)
+func (m *GetSectionRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetSectionRequest.Merge(m, src)
 }
-func (m *PublishDraftResponse) XXX_Size() int {
-	return xxx_messageInfo_PublishDraftResponse.Size(m)
+func (m *GetSectionRequest) XXX_Size() int {
+	return xxx_messageInfo_GetSectionRequest.Size(m)
 }
-func (m *PublishDraftResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_PublishDraftResponse.DiscardUnknown(m)
+func (m *GetSectionRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetSectionRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_PublishDraftResponse proto.InternalMessageInfo
+var xxx_messageInfo_GetSectionRequest proto.InternalMessageInfo
+
+func (m *GetSectionRequest) GetSectionId() string {
+	if m != nil {
+		return m.SectionId
+	}
+	return ""
+}
+
+type BatchGetSectionsRequest struct {
+	// List of section ids to retrieve.
+	SectionIds           []string `protobuf:"bytes,1,rep,name=section_ids,json=sectionIds,proto3" json:"section_ids,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *BatchGetSectionsRequest) Reset()         { *m = BatchGetSectionsRequest{} }
+func (m *BatchGetSectionsRequest) String() string { return proto.CompactTextString(m) }
+func (*BatchGetSectionsRequest) ProtoMessage()    {}
+func (*BatchGetSectionsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_37d3647adf041676, []int{7}
+}
+
+func (m *BatchGetSectionsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_BatchGetSectionsRequest.Unmarshal(m, b)
+}
+func (m *BatchGetSectionsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_BatchGetSectionsRequest.Marshal(b, m, deterministic)
+}
+func (m *BatchGetSectionsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BatchGetSectionsRequest.Merge(m, src)
+}
+func (m *BatchGetSectionsRequest) XXX_Size() int {
+	return xxx_messageInfo_BatchGetSectionsRequest.Size(m)
+}
+func (m *BatchGetSectionsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_BatchGetSectionsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_BatchGetSectionsRequest proto.InternalMessageInfo
+
+func (m *BatchGetSectionsRequest) GetSectionIds() []string {
+	if m != nil {
+		return m.SectionIds
+	}
+	return nil
+}
+
+type BatchGetSectionsResponse struct {
+	// List of sections.
+	Sections             []*Section `protobuf:"bytes,1,rep,name=sections,proto3" json:"sections,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
+	XXX_unrecognized     []byte     `json:"-"`
+	XXX_sizecache        int32      `json:"-"`
+}
+
+func (m *BatchGetSectionsResponse) Reset()         { *m = BatchGetSectionsResponse{} }
+func (m *BatchGetSectionsResponse) String() string { return proto.CompactTextString(m) }
+func (*BatchGetSectionsResponse) ProtoMessage()    {}
+func (*BatchGetSectionsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_37d3647adf041676, []int{8}
+}
+
+func (m *BatchGetSectionsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_BatchGetSectionsResponse.Unmarshal(m, b)
+}
+func (m *BatchGetSectionsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_BatchGetSectionsResponse.Marshal(b, m, deterministic)
+}
+func (m *BatchGetSectionsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BatchGetSectionsResponse.Merge(m, src)
+}
+func (m *BatchGetSectionsResponse) XXX_Size() int {
+	return xxx_messageInfo_BatchGetSectionsResponse.Size(m)
+}
+func (m *BatchGetSectionsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_BatchGetSectionsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_BatchGetSectionsResponse proto.InternalMessageInfo
+
+func (m *BatchGetSectionsResponse) GetSections() []*Section {
+	if m != nil {
+		return m.Sections
+	}
+	return nil
+}
 
 // Draft is a working document that is being written to become a publication.
 // After being published Draft becomes a Publication. Both Drafts and
@@ -327,7 +425,7 @@ func (m *Draft) Reset()         { *m = Draft{} }
 func (m *Draft) String() string { return proto.CompactTextString(m) }
 func (*Draft) ProtoMessage()    {}
 func (*Draft) Descriptor() ([]byte, []int) {
-	return fileDescriptor_37d3647adf041676, []int{7}
+	return fileDescriptor_37d3647adf041676, []int{9}
 }
 
 func (m *Draft) XXX_Unmarshal(b []byte) error {
@@ -419,7 +517,7 @@ func (m *Section) Reset()         { *m = Section{} }
 func (m *Section) String() string { return proto.CompactTextString(m) }
 func (*Section) ProtoMessage()    {}
 func (*Section) Descriptor() ([]byte, []int) {
-	return fileDescriptor_37d3647adf041676, []int{8}
+	return fileDescriptor_37d3647adf041676, []int{10}
 }
 
 func (m *Section) XXX_Unmarshal(b []byte) error {
@@ -482,12 +580,26 @@ func (m *Section) GetCreateTime() *timestamp.Timestamp {
 	return nil
 }
 
+// Immutable snapshot of a document that is available to the public.
 type Publication struct {
-	DocumentId           string               `protobuf:"bytes,1,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
-	Author               string               `protobuf:"bytes,2,opt,name=author,proto3" json:"author,omitempty"`
-	Sections             []string             `protobuf:"bytes,3,rep,name=sections,proto3" json:"sections,omitempty"`
-	CreateTime           *timestamp.Timestamp `protobuf:"bytes,4,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
-	PublishTime          *timestamp.Timestamp `protobuf:"bytes,5,opt,name=publish_time,json=publishTime,proto3" json:"publish_time,omitempty"`
+	// Output only. Content addressable identifier of this publication.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Output only. Cannot be updated.
+	DocumentId string `protobuf:"bytes,2,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
+	// Title of the document.
+	Title string `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	// Brief description of the content.
+	Description string `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	// Output only. Cannot be updated.
+	Author string `protobuf:"bytes,5,opt,name=author,proto3" json:"author,omitempty"`
+	// ID of the previous version.
+	Previous string `protobuf:"bytes,6,opt,name=previous,proto3" json:"previous,omitempty"`
+	// List of sections this draft is composed of.
+	Sections []string `protobuf:"bytes,7,rep,name=sections,proto3" json:"sections,omitempty"`
+	// Output only. Time when draft was initially created.
+	CreateTime *timestamp.Timestamp `protobuf:"bytes,8,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
+	// Output only. Time when document was published.
+	PublishTime          *timestamp.Timestamp `protobuf:"bytes,9,opt,name=publish_time,json=publishTime,proto3" json:"publish_time,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
 	XXX_unrecognized     []byte               `json:"-"`
 	XXX_sizecache        int32                `json:"-"`
@@ -497,7 +609,7 @@ func (m *Publication) Reset()         { *m = Publication{} }
 func (m *Publication) String() string { return proto.CompactTextString(m) }
 func (*Publication) ProtoMessage()    {}
 func (*Publication) Descriptor() ([]byte, []int) {
-	return fileDescriptor_37d3647adf041676, []int{9}
+	return fileDescriptor_37d3647adf041676, []int{11}
 }
 
 func (m *Publication) XXX_Unmarshal(b []byte) error {
@@ -518,6 +630,13 @@ func (m *Publication) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Publication proto.InternalMessageInfo
 
+func (m *Publication) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
 func (m *Publication) GetDocumentId() string {
 	if m != nil {
 		return m.DocumentId
@@ -525,9 +644,30 @@ func (m *Publication) GetDocumentId() string {
 	return ""
 }
 
+func (m *Publication) GetTitle() string {
+	if m != nil {
+		return m.Title
+	}
+	return ""
+}
+
+func (m *Publication) GetDescription() string {
+	if m != nil {
+		return m.Description
+	}
+	return ""
+}
+
 func (m *Publication) GetAuthor() string {
 	if m != nil {
 		return m.Author
+	}
+	return ""
+}
+
+func (m *Publication) GetPrevious() string {
+	if m != nil {
+		return m.Previous
 	}
 	return ""
 }
@@ -560,7 +700,9 @@ func init() {
 	proto.RegisterType((*ListDraftsResponse)(nil), "com.mintter.ListDraftsResponse")
 	proto.RegisterType((*DeleteDraftRequest)(nil), "com.mintter.DeleteDraftRequest")
 	proto.RegisterType((*PublishDraftRequest)(nil), "com.mintter.PublishDraftRequest")
-	proto.RegisterType((*PublishDraftResponse)(nil), "com.mintter.PublishDraftResponse")
+	proto.RegisterType((*GetSectionRequest)(nil), "com.mintter.GetSectionRequest")
+	proto.RegisterType((*BatchGetSectionsRequest)(nil), "com.mintter.BatchGetSectionsRequest")
+	proto.RegisterType((*BatchGetSectionsResponse)(nil), "com.mintter.BatchGetSectionsResponse")
 	proto.RegisterType((*Draft)(nil), "com.mintter.Draft")
 	proto.RegisterType((*Section)(nil), "com.mintter.Section")
 	proto.RegisterType((*Publication)(nil), "com.mintter.Publication")
@@ -571,43 +713,50 @@ func init() {
 }
 
 var fileDescriptor_37d3647adf041676 = []byte{
-	// 572 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x54, 0xc1, 0x6e, 0xd3, 0x40,
-	0x10, 0x95, 0x9b, 0x3a, 0x4d, 0xc6, 0x45, 0x11, 0x43, 0x88, 0x2c, 0x17, 0x88, 0xf1, 0x01, 0x45,
-	0x1c, 0x5c, 0x94, 0x8a, 0x13, 0x70, 0x29, 0x01, 0x84, 0x04, 0xa2, 0x4a, 0x7a, 0xe2, 0x12, 0x39,
-	0xf6, 0x34, 0xb1, 0x88, 0xbd, 0xc6, 0xbb, 0x46, 0xb4, 0xdf, 0xc3, 0x99, 0x1f, 0xe1, 0x1f, 0xf8,
-	0x16, 0xe4, 0x5d, 0x3b, 0xb5, 0x93, 0x94, 0x80, 0x90, 0x38, 0x25, 0xfb, 0xe6, 0xbd, 0xdd, 0xd9,
-	0xb7, 0xe3, 0x07, 0x9d, 0x80, 0xf9, 0x59, 0x44, 0xb1, 0xe0, 0x6e, 0x92, 0x32, 0xc1, 0xd0, 0xf0,
-	0x59, 0xe4, 0x46, 0x61, 0x2c, 0x04, 0xa5, 0x56, 0x7f, 0xce, 0xd8, 0x7c, 0x49, 0xc7, 0xb2, 0x34,
-	0xcb, 0x2e, 0x8e, 0x45, 0x18, 0x11, 0x17, 0x5e, 0x94, 0x28, 0xb6, 0x75, 0xb4, 0x4e, 0xa0, 0x28,
-	0x11, 0x97, 0xaa, 0xe8, 0x74, 0x01, 0x5f, 0xa6, 0xe4, 0x09, 0x1a, 0xa5, 0xde, 0x85, 0x18, 0xd3,
-	0xe7, 0x8c, 0xb8, 0x70, 0x86, 0xd0, 0x79, 0x43, 0xa2, 0x0a, 0x61, 0x1f, 0x8c, 0xb2, 0x8d, 0x69,
-	0x18, 0x98, 0x9a, 0xad, 0x0d, 0xda, 0x63, 0x28, 0xa1, 0xb7, 0x81, 0xf3, 0x01, 0x6e, 0xbf, 0x0b,
-	0xb9, 0x12, 0xf1, 0x52, 0x75, 0x04, 0xed, 0xc4, 0x9b, 0xd3, 0x94, 0x87, 0x57, 0x24, 0x35, 0xfa,
-	0xb8, 0x95, 0x03, 0x93, 0xf0, 0x8a, 0xf0, 0x3e, 0x80, 0x2c, 0x0a, 0xf6, 0x89, 0x62, 0x73, 0x4f,
-	0xee, 0x28, 0xe9, 0xe7, 0x39, 0xe0, 0x2c, 0x00, 0xab, 0x1b, 0xf2, 0x84, 0xc5, 0x9c, 0xf0, 0x31,
-	0x34, 0x03, 0x89, 0x98, 0x9a, 0xdd, 0x18, 0x18, 0x43, 0x74, 0x2b, 0x66, 0xb8, 0xaa, 0xe5, 0x82,
-	0x81, 0x8f, 0xa0, 0x13, 0xd3, 0x57, 0x31, 0xdd, 0x38, 0xe5, 0x56, 0x0e, 0x9f, 0xad, 0x4e, 0x7a,
-	0x0a, 0x38, 0xa2, 0x25, 0xd5, 0x4d, 0xd8, 0x7d, 0xe3, 0xbb, 0x70, 0xe7, 0x2c, 0x9b, 0x2d, 0x43,
-	0xbe, 0xa8, 0x99, 0xd7, 0x83, 0x6e, 0x1d, 0x56, 0x9d, 0x3b, 0xdf, 0xf6, 0x40, 0x97, 0xc8, 0xce,
-	0x9d, 0xb1, 0x0b, 0xba, 0x08, 0xc5, 0x92, 0x8a, 0x76, 0xd5, 0x02, 0x6d, 0x30, 0x02, 0xe2, 0x7e,
-	0x1a, 0x26, 0x22, 0x64, 0xb1, 0xd9, 0x90, 0xb5, 0x2a, 0x84, 0x3d, 0x68, 0x7a, 0x99, 0x58, 0xb0,
-	0xd4, 0xdc, 0x97, 0xc5, 0x62, 0x85, 0x4f, 0xa0, 0xc5, 0xc9, 0xcf, 0x29, 0xdc, 0xd4, 0xa5, 0x6d,
-	0xdd, 0x9a, 0x6d, 0x13, 0x55, 0x1c, 0xaf, 0x58, 0xf8, 0x0c, 0x0c, 0x5f, 0xce, 0xc5, 0x34, 0x1f,
-	0x27, 0xb3, 0x69, 0x6b, 0x03, 0x63, 0x68, 0xb9, 0x6a, 0x94, 0xdc, 0x72, 0x94, 0xdc, 0xf3, 0x72,
-	0xd6, 0xc6, 0xa0, 0xe8, 0x39, 0x90, 0x8b, 0xb3, 0x24, 0x58, 0x89, 0x0f, 0x76, 0x8b, 0x15, 0x3d,
-	0x07, 0x9c, 0x1f, 0x1a, 0x1c, 0x14, 0xfd, 0xfc, 0x7f, 0xa3, 0x10, 0xf6, 0x67, 0x2c, 0xb8, 0x34,
-	0x75, 0x89, 0xca, 0xff, 0xff, 0x64, 0x85, 0xf3, 0x53, 0x03, 0x43, 0x4e, 0x83, 0xef, 0xfd, 0xd9,
-	0x8d, 0xae, 0x3b, 0xdb, 0xab, 0x75, 0x66, 0x55, 0x9e, 0xb0, 0x61, 0x37, 0x06, 0xed, 0x9b, 0x1f,
-	0x6b, 0xff, 0xaf, 0x1e, 0xeb, 0x05, 0x1c, 0x26, 0x6a, 0x5c, 0x95, 0x5a, 0xdf, 0xa9, 0x36, 0x0a,
-	0x7e, 0x8e, 0x0c, 0xbf, 0x37, 0xa0, 0x3d, 0x2a, 0xf3, 0x09, 0x4f, 0xc1, 0xa8, 0xc4, 0x09, 0xf6,
-	0x6b, 0x53, 0xb6, 0x19, 0x34, 0xd6, 0x96, 0xaf, 0x17, 0x9f, 0x43, 0xab, 0x0c, 0x1f, 0xbc, 0x57,
-	0xab, 0xaf, 0x65, 0xd2, 0x56, 0xf5, 0x7b, 0x80, 0xeb, 0xd4, 0xc0, 0x07, 0x35, 0xc6, 0x46, 0x3e,
-	0x59, 0xfd, 0x1b, 0xeb, 0x45, 0xdc, 0x9c, 0x40, 0x7b, 0xe2, 0x7d, 0x29, 0xae, 0xb3, 0xe5, 0xbc,
-	0xad, 0x3d, 0xbc, 0x06, 0xa3, 0x92, 0x27, 0x6b, 0x2e, 0x6c, 0x26, 0x8d, 0xd5, 0xdb, 0x30, 0xfb,
-	0x55, 0x1e, 0xd1, 0x38, 0x81, 0xc3, 0x6a, 0x92, 0xa0, 0x5d, 0xdb, 0x68, 0x4b, 0xf6, 0x58, 0x0f,
-	0x7f, 0xc3, 0x50, 0x37, 0x3a, 0x3d, 0xf8, 0xa8, 0xab, 0x63, 0x9a, 0xf2, 0xe7, 0xe4, 0x57, 0x00,
-	0x00, 0x00, 0xff, 0xff, 0xf0, 0x94, 0xd4, 0x4d, 0x5f, 0x06, 0x00, 0x00,
+	// 675 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x55, 0x4d, 0x6f, 0xd3, 0x40,
+	0x10, 0x55, 0xd2, 0x38, 0x89, 0xc7, 0x85, 0xd2, 0xa5, 0x2a, 0x96, 0x4b, 0x49, 0x64, 0x01, 0xaa,
+	0x38, 0xb8, 0x28, 0x15, 0x1c, 0xf8, 0xb8, 0x84, 0x42, 0x55, 0x54, 0x44, 0xe5, 0xf6, 0xc4, 0x25,
+	0x72, 0xed, 0x6d, 0xb3, 0x22, 0xf6, 0x1a, 0xef, 0xba, 0xa2, 0xfd, 0x3d, 0xfc, 0x12, 0x8e, 0xf0,
+	0xa7, 0x90, 0x77, 0x6d, 0xc7, 0x5f, 0x69, 0xa8, 0x90, 0x38, 0xb5, 0x7e, 0xf3, 0xde, 0xee, 0xcc,
+	0xd3, 0xec, 0x0b, 0xac, 0x79, 0xd4, 0x8d, 0x7d, 0x1c, 0x70, 0x66, 0x85, 0x11, 0xe5, 0x14, 0x69,
+	0x2e, 0xf5, 0x2d, 0x9f, 0x04, 0x9c, 0xe3, 0xc8, 0x18, 0x5c, 0x50, 0x7a, 0x31, 0xc3, 0xbb, 0xa2,
+	0x74, 0x16, 0x9f, 0xef, 0x72, 0xe2, 0x63, 0xc6, 0x1d, 0x3f, 0x94, 0x6c, 0x63, 0xab, 0x4a, 0xc0,
+	0x7e, 0xc8, 0xaf, 0x64, 0xd1, 0xdc, 0x00, 0xf4, 0x2e, 0xc2, 0x0e, 0xc7, 0xfb, 0x91, 0x73, 0xce,
+	0x6d, 0xfc, 0x2d, 0xc6, 0x8c, 0x9b, 0x23, 0x58, 0x3b, 0xc0, 0xbc, 0x08, 0xa1, 0x01, 0x68, 0x59,
+	0x1b, 0x13, 0xe2, 0xe9, 0xad, 0x61, 0x6b, 0x47, 0xb5, 0x21, 0x83, 0x0e, 0x3d, 0xf3, 0x33, 0xac,
+	0x1f, 0x11, 0x26, 0x45, 0x2c, 0x53, 0x6d, 0x81, 0x1a, 0x3a, 0x17, 0x78, 0xc2, 0xc8, 0x35, 0x16,
+	0x1a, 0xc5, 0xee, 0x27, 0xc0, 0x09, 0xb9, 0xc6, 0x68, 0x1b, 0x40, 0x14, 0x39, 0xfd, 0x8a, 0x03,
+	0xbd, 0x2d, 0x4e, 0x14, 0xf4, 0xd3, 0x04, 0x30, 0xa7, 0x80, 0x8a, 0x07, 0xb2, 0x90, 0x06, 0x0c,
+	0xa3, 0x67, 0xd0, 0xf5, 0x04, 0xa2, 0xb7, 0x86, 0x2b, 0x3b, 0xda, 0x08, 0x59, 0x05, 0x33, 0x2c,
+	0xd9, 0x72, 0xca, 0x40, 0x4f, 0x61, 0x2d, 0xc0, 0xdf, 0xf9, 0xa4, 0x76, 0xcb, 0x9d, 0x04, 0x3e,
+	0xce, 0x6f, 0x7a, 0x01, 0x68, 0x1f, 0xcf, 0x70, 0xd9, 0x84, 0xe5, 0x13, 0xbf, 0x84, 0xfb, 0xc7,
+	0xf1, 0xd9, 0x8c, 0xb0, 0xe9, 0xed, 0x74, 0x23, 0x58, 0x3f, 0xc0, 0xfc, 0x04, 0xbb, 0x9c, 0xd0,
+	0x20, 0x53, 0x6d, 0x03, 0x30, 0x89, 0xcc, 0x45, 0x6a, 0x8a, 0x1c, 0x7a, 0xe6, 0x2b, 0x78, 0x30,
+	0x76, 0xb8, 0x3b, 0x9d, 0x0b, 0x59, 0xe1, 0xbe, 0xb9, 0x52, 0xda, 0xa2, 0xda, 0x90, 0x4b, 0x99,
+	0x79, 0x04, 0x7a, 0x5d, 0x9b, 0xda, 0xf9, 0x1c, 0xfa, 0x29, 0x33, 0x33, 0x74, 0xa3, 0x64, 0x68,
+	0xd6, 0x65, 0xce, 0x32, 0x7f, 0xb4, 0x41, 0x11, 0xf3, 0x2e, 0x1d, 0x14, 0x6d, 0x80, 0xc2, 0x09,
+	0x9f, 0xe1, 0xd4, 0x75, 0xf9, 0x81, 0x86, 0xa0, 0x79, 0x98, 0xb9, 0x11, 0x09, 0x93, 0x03, 0xf5,
+	0x15, 0x51, 0x2b, 0x42, 0x68, 0x13, 0xba, 0x4e, 0xcc, 0xa7, 0x34, 0xd2, 0x3b, 0xa2, 0x98, 0x7e,
+	0x95, 0x9a, 0x55, 0xfe, 0xa6, 0x59, 0xf4, 0x1a, 0x34, 0x57, 0xac, 0xf7, 0x24, 0x79, 0x15, 0x7a,
+	0x77, 0xd8, 0xda, 0xd1, 0x46, 0x86, 0x25, 0x5f, 0x84, 0x95, 0xbd, 0x08, 0xeb, 0x34, 0x7b, 0x32,
+	0x36, 0x48, 0x7a, 0x02, 0x24, 0xe2, 0x38, 0xf4, 0x72, 0x71, 0x6f, 0xb9, 0x58, 0xd2, 0x13, 0xc0,
+	0xfc, 0xdd, 0x82, 0x5e, 0xda, 0xcf, 0xff, 0x37, 0x0a, 0x41, 0xe7, 0x8c, 0x7a, 0x57, 0xba, 0x22,
+	0x50, 0xf1, 0xff, 0x3f, 0x59, 0x61, 0xfe, 0x6c, 0x83, 0x26, 0x76, 0xdd, 0x75, 0xc4, 0xc5, 0x77,
+	0xa1, 0x9d, 0x0f, 0xd2, 0x26, 0x5e, 0x75, 0xc2, 0xf6, 0xe2, 0x09, 0x57, 0x6e, 0x98, 0xb0, 0x73,
+	0xd3, 0x84, 0x4a, 0x69, 0x42, 0x03, 0xfa, 0x61, 0x84, 0x2f, 0x09, 0x8d, 0x99, 0x18, 0x45, 0xb5,
+	0xf3, 0xef, 0xa4, 0x96, 0xaf, 0x49, 0x4f, 0xbc, 0x86, 0x85, 0x0b, 0xd1, 0xbf, 0xd5, 0x42, 0xbc,
+	0x85, 0xd5, 0x50, 0x3e, 0x78, 0xa9, 0x56, 0x97, 0xaa, 0xb5, 0x94, 0x9f, 0x20, 0xa3, 0x5f, 0x1d,
+	0x50, 0xf7, 0xb3, 0x28, 0x47, 0x63, 0xd0, 0x0a, 0xc9, 0x8b, 0x06, 0xa5, 0x4d, 0xae, 0x67, 0xb2,
+	0xd1, 0x10, 0x74, 0xe8, 0x0d, 0xf4, 0xb3, 0x9c, 0x46, 0x0f, 0x4b, 0xf5, 0x4a, 0x7c, 0x37, 0xaa,
+	0x3f, 0x01, 0xcc, 0x03, 0x16, 0x3d, 0x2a, 0x31, 0x6a, 0x51, 0x6e, 0x0c, 0x16, 0xd6, 0xd3, 0x28,
+	0xd9, 0x03, 0xf5, 0xc4, 0xb9, 0x4c, 0xc7, 0x69, 0xb8, 0xaf, 0xb1, 0x87, 0x0f, 0xa0, 0x15, 0xa2,
+	0xb7, 0xe2, 0x42, 0x3d, 0x94, 0x8d, 0xcd, 0x9a, 0xd9, 0xef, 0x93, 0x5f, 0x33, 0xf4, 0x11, 0x56,
+	0x8b, 0x59, 0x8c, 0x86, 0xa5, 0x83, 0x1a, 0x62, 0xda, 0xd0, 0xeb, 0x8c, 0x74, 0xb9, 0xc7, 0x00,
+	0xf3, 0xa8, 0xac, 0xf8, 0x52, 0x0b, 0x6e, 0xa3, 0x31, 0x82, 0xd0, 0x04, 0xee, 0x55, 0x33, 0x17,
+	0x3d, 0x2e, 0x31, 0x17, 0xc4, 0xb9, 0xf1, 0x64, 0x09, 0x4b, 0xba, 0x3d, 0xee, 0x7d, 0x51, 0xa4,
+	0x05, 0x5d, 0xf1, 0x67, 0xef, 0x4f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x1d, 0xca, 0xd1, 0xcf, 0x26,
+	0x08, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -630,7 +779,10 @@ type DocumentsClient interface {
 	// previously using CreateDraft.
 	SaveDraft(ctx context.Context, in *Draft, opts ...grpc.CallOption) (*Draft, error)
 	DeleteDraft(ctx context.Context, in *DeleteDraftRequest, opts ...grpc.CallOption) (*empty.Empty, error)
-	PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*PublishDraftResponse, error)
+	// Publish the latest draft of a given document ID.
+	PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*Publication, error)
+	GetSection(ctx context.Context, in *GetSectionRequest, opts ...grpc.CallOption) (*Section, error)
+	BatchGetSections(ctx context.Context, in *BatchGetSectionsRequest, opts ...grpc.CallOption) (*BatchGetSectionsResponse, error)
 }
 
 type documentsClient struct {
@@ -686,9 +838,27 @@ func (c *documentsClient) DeleteDraft(ctx context.Context, in *DeleteDraftReques
 	return out, nil
 }
 
-func (c *documentsClient) PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*PublishDraftResponse, error) {
-	out := new(PublishDraftResponse)
+func (c *documentsClient) PublishDraft(ctx context.Context, in *PublishDraftRequest, opts ...grpc.CallOption) (*Publication, error) {
+	out := new(Publication)
 	err := c.cc.Invoke(ctx, "/com.mintter.Documents/PublishDraft", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentsClient) GetSection(ctx context.Context, in *GetSectionRequest, opts ...grpc.CallOption) (*Section, error) {
+	out := new(Section)
+	err := c.cc.Invoke(ctx, "/com.mintter.Documents/GetSection", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *documentsClient) BatchGetSections(ctx context.Context, in *BatchGetSectionsRequest, opts ...grpc.CallOption) (*BatchGetSectionsResponse, error) {
+	out := new(BatchGetSectionsResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.Documents/BatchGetSections", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -705,7 +875,10 @@ type DocumentsServer interface {
 	// previously using CreateDraft.
 	SaveDraft(context.Context, *Draft) (*Draft, error)
 	DeleteDraft(context.Context, *DeleteDraftRequest) (*empty.Empty, error)
-	PublishDraft(context.Context, *PublishDraftRequest) (*PublishDraftResponse, error)
+	// Publish the latest draft of a given document ID.
+	PublishDraft(context.Context, *PublishDraftRequest) (*Publication, error)
+	GetSection(context.Context, *GetSectionRequest) (*Section, error)
+	BatchGetSections(context.Context, *BatchGetSectionsRequest) (*BatchGetSectionsResponse, error)
 }
 
 // UnimplementedDocumentsServer can be embedded to have forward compatible implementations.
@@ -727,8 +900,14 @@ func (*UnimplementedDocumentsServer) SaveDraft(ctx context.Context, req *Draft) 
 func (*UnimplementedDocumentsServer) DeleteDraft(ctx context.Context, req *DeleteDraftRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteDraft not implemented")
 }
-func (*UnimplementedDocumentsServer) PublishDraft(ctx context.Context, req *PublishDraftRequest) (*PublishDraftResponse, error) {
+func (*UnimplementedDocumentsServer) PublishDraft(ctx context.Context, req *PublishDraftRequest) (*Publication, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PublishDraft not implemented")
+}
+func (*UnimplementedDocumentsServer) GetSection(ctx context.Context, req *GetSectionRequest) (*Section, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSection not implemented")
+}
+func (*UnimplementedDocumentsServer) BatchGetSections(ctx context.Context, req *BatchGetSectionsRequest) (*BatchGetSectionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchGetSections not implemented")
 }
 
 func RegisterDocumentsServer(s *grpc.Server, srv DocumentsServer) {
@@ -843,6 +1022,42 @@ func _Documents_PublishDraft_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Documents_GetSection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSectionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentsServer).GetSection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.Documents/GetSection",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentsServer).GetSection(ctx, req.(*GetSectionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Documents_BatchGetSections_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchGetSectionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentsServer).BatchGetSections(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.Documents/BatchGetSections",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentsServer).BatchGetSections(ctx, req.(*BatchGetSectionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Documents_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "com.mintter.Documents",
 	HandlerType: (*DocumentsServer)(nil),
@@ -870,6 +1085,14 @@ var _Documents_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PublishDraft",
 			Handler:    _Documents_PublishDraft_Handler,
+		},
+		{
+			MethodName: "GetSection",
+			Handler:    _Documents_GetSection_Handler,
+		},
+		{
+			MethodName: "BatchGetSections",
+			Handler:    _Documents_BatchGetSections_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

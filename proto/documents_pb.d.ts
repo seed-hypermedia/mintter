@@ -100,6 +100,9 @@ export namespace DeleteDraftRequest {
 }
 
 export class PublishDraftRequest extends jspb.Message {
+  getDocumentId(): string;
+  setDocumentId(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PublishDraftRequest.AsObject;
   static toObject(includeInstance: boolean, msg: PublishDraftRequest): PublishDraftRequest.AsObject;
@@ -110,20 +113,65 @@ export class PublishDraftRequest extends jspb.Message {
 
 export namespace PublishDraftRequest {
   export type AsObject = {
+    documentId: string,
   }
 }
 
-export class PublishDraftResponse extends jspb.Message {
+export class GetSectionRequest extends jspb.Message {
+  getSectionId(): string;
+  setSectionId(value: string): void;
+
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): PublishDraftResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: PublishDraftResponse): PublishDraftResponse.AsObject;
-  static serializeBinaryToWriter(message: PublishDraftResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): PublishDraftResponse;
-  static deserializeBinaryFromReader(message: PublishDraftResponse, reader: jspb.BinaryReader): PublishDraftResponse;
+  toObject(includeInstance?: boolean): GetSectionRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetSectionRequest): GetSectionRequest.AsObject;
+  static serializeBinaryToWriter(message: GetSectionRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetSectionRequest;
+  static deserializeBinaryFromReader(message: GetSectionRequest, reader: jspb.BinaryReader): GetSectionRequest;
 }
 
-export namespace PublishDraftResponse {
+export namespace GetSectionRequest {
   export type AsObject = {
+    sectionId: string,
+  }
+}
+
+export class BatchGetSectionsRequest extends jspb.Message {
+  getSectionIdsList(): Array<string>;
+  setSectionIdsList(value: Array<string>): void;
+  clearSectionIdsList(): void;
+  addSectionIds(value: string, index?: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): BatchGetSectionsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: BatchGetSectionsRequest): BatchGetSectionsRequest.AsObject;
+  static serializeBinaryToWriter(message: BatchGetSectionsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): BatchGetSectionsRequest;
+  static deserializeBinaryFromReader(message: BatchGetSectionsRequest, reader: jspb.BinaryReader): BatchGetSectionsRequest;
+}
+
+export namespace BatchGetSectionsRequest {
+  export type AsObject = {
+    sectionIdsList: Array<string>,
+  }
+}
+
+export class BatchGetSectionsResponse extends jspb.Message {
+  getSectionsList(): Array<Section>;
+  setSectionsList(value: Array<Section>): void;
+  clearSectionsList(): void;
+  addSections(value?: Section, index?: number): Section;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): BatchGetSectionsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: BatchGetSectionsResponse): BatchGetSectionsResponse.AsObject;
+  static serializeBinaryToWriter(message: BatchGetSectionsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): BatchGetSectionsResponse;
+  static deserializeBinaryFromReader(message: BatchGetSectionsResponse, reader: jspb.BinaryReader): BatchGetSectionsResponse;
+}
+
+export namespace BatchGetSectionsResponse {
+  export type AsObject = {
+    sectionsList: Array<Section.AsObject>,
   }
 }
 
@@ -216,11 +264,23 @@ export namespace Section {
 }
 
 export class Publication extends jspb.Message {
+  getId(): string;
+  setId(value: string): void;
+
   getDocumentId(): string;
   setDocumentId(value: string): void;
 
+  getTitle(): string;
+  setTitle(value: string): void;
+
+  getDescription(): string;
+  setDescription(value: string): void;
+
   getAuthor(): string;
   setAuthor(value: string): void;
+
+  getPrevious(): string;
+  setPrevious(value: string): void;
 
   getSectionsList(): Array<string>;
   setSectionsList(value: Array<string>): void;
@@ -247,8 +307,12 @@ export class Publication extends jspb.Message {
 
 export namespace Publication {
   export type AsObject = {
+    id: string,
     documentId: string,
+    title: string,
+    description: string,
     author: string,
+    previous: string,
     sectionsList: Array<string>,
     createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     publishTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"mintter/backend/config"
 	"mintter/backend/daemon"
 
 	"github.com/alecthomas/kong"
@@ -9,7 +10,7 @@ import (
 )
 
 func main() {
-	var cfg daemon.Config
+	var cfg config.Config
 
 	kong.Parse(&cfg,
 		kong.Name("mintterd"),

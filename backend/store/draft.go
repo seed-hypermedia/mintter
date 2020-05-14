@@ -5,6 +5,7 @@ import (
 	pb "mintter/proto"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore/query"
 )
 
@@ -70,4 +71,12 @@ func (s *Store) ListDrafts(offset, limit int) ([]*pb.Draft, error) {
 	}
 
 	return out, nil
+}
+
+// AddPublication to for our internal tracking.
+func (s *Store) AddPublication(docID string, cid cid.Cid) error {
+	k := s.pubsKey.ChildString(docID)
+
+	// TODO(burdiyan): allow multiple publications.
+	return s.db.Put(k, cid.Bytes())
 }

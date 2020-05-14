@@ -44,7 +44,7 @@ func TestGetProfile(t *testing.T) {
 
 	// Server must be able to load initialized profile after restart.
 	require.NoError(t, srv.Close())
-	srv, err = server.NewServer(srv.RepoPath(), zap.NewNop())
+	srv, err = server.NewServer(srv.Config(), zap.NewNop())
 	require.NoError(t, err)
 
 	r2, err := srv.GetProfile(ctx, &proto.GetProfileRequest{})
@@ -81,7 +81,7 @@ func TestUpdateProfile(t *testing.T) {
 
 	// It must return the same profile when server restarts.
 	require.NoError(t, srv.Close())
-	srv, err = server.NewServer(srv.RepoPath(), zap.NewNop())
+	srv, err = server.NewServer(srv.Config(), zap.NewNop())
 	require.NoError(t, err)
 
 	get, err = srv.GetProfile(ctx, &proto.GetProfileRequest{})
