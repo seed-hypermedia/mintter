@@ -1,15 +1,8 @@
-type ErrorProps = {
-  code: number
-  message: string
+export type ErrorType = {
+  message?: string
 }
 
-interface ErrorMessageProps {
-  error?: ErrorProps
-}
-
-export default function ErrorMessage({
-  error,
-}: ErrorMessageProps & React.ReactElement<HTMLDivElement>) {
+export default function ErrorMessage({error}: {error: ErrorType}) {
   return error ? (
     <div
       role="alert"

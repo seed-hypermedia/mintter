@@ -1,14 +1,16 @@
+import {Plugin, Settings, ProcessorSettings} from 'unified'
 import {nodeTypes} from '@mintter/editor'
+import {Node, Element, Text} from 'slate'
 import extend from 'xtend'
 
-export default function plugin(opts) {
+export default function plugin(opts: Settings) {
   const settings = opts || {}
   this.Compiler = function compiler(node) {
     return node.children.map(c => transform(c, {}))
   }
 }
 
-export function transform(node, opts) {
+export function transform(node: Node, opts: Settings) {
   const settings = opts || {}
 
   let parentNode = node.parentNode || null

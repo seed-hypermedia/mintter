@@ -70,7 +70,7 @@ export default function RetypeSeed() {
                         type="text"
                         id={key}
                         name={key}
-                        ref={e => {
+                        ref={(e: HTMLInputElement) => {
                           register({
                             required: true,
                             validate: {
