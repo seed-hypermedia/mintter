@@ -13,3 +13,5 @@ export function makeRpcClient(): MintterPromiseClient {
 export function makeRpcDocumentsClient(): DocumentsPromiseClient {
   return new DocumentsPromiseClient(path)
 }
+
+export {MintterPromiseClient}

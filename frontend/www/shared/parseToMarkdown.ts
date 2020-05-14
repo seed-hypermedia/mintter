@@ -37,7 +37,7 @@ interface ParseToMarkdownOptions {
 export function parseToMarkdown(node, options: ParseToMarkdownOptions = {}) {
   const {ignoreParagraphNewline = false, listDepth = 0} = options
 
-  const {text = '', type = ''} = node
+  let {text = '', type = ''} = node
 
   let children = type
     ? node.children

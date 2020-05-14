@@ -6,7 +6,7 @@ interface TextareaProps {
   value?: string
   name?: string
   onChange?: (textValue: string) => void
-  minHeight: number
+  minHeight?: number
   className?: string
   placeholder?: string
   onEnterPress?: (e: any) => void

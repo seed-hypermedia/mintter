@@ -136,7 +136,7 @@ export default function Element({
       )
 
     case nodeTypes.typeSection:
-      return <Section {...attributes}>{children}</Section>
+      return <Section element={element} attributes={attributes}>{children}</Section>
     default:
       return children
   }

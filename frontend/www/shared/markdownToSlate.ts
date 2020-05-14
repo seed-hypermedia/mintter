@@ -1,4 +1,4 @@
-import unified from 'unified'
+import unified, {Parser} from 'unified'
 import markdown from 'remark-parse'
 import toSlate from './remarkSlate'
 import {initialSectionsValue} from '@mintter/editor'
@@ -8,9 +8,10 @@ export function markdownToSlate(body: string) {
     return initialSectionsValue[0].children
   }
 
-  const {result} = unified()
+  // TODO: Fixme types
+  const p: any = unified()
     .use(markdown)
-    .use(toSlate)
+    .use(toSlate as any)
     .processSync(body)
-  return result
+  return p.result
 }
