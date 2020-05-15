@@ -2,12 +2,13 @@ import React, {RefObject} from 'react'
 import {RenderElementProps} from 'slate-react'
 
 export function Section(
-  {children, ...props}: RenderElementProps,
+  {children, element, ...attributes}: RenderElementProps,
   ref: RefObject<HTMLDivElement>,
 ) {
   return (
     <div
-      {...props}
+      data-slate-type={element.type}
+      {...attributes}
       ref={ref}
       className={`px-8 py-8 pt-4 mt-8 first:mt-0 border-t first:border-0 border-muted`}
     >
