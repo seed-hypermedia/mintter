@@ -9,6 +9,7 @@ module.exports = {
   setupFilesAfterEnv: [
     '@testing-library/jest-dom/extend-expect',
     'jest-axe/extend-expect',
+    './test/get-selection-mock',
   ],
   snapshotSerializers: ['jest-emotion'],
   // coverageThreshold: {
