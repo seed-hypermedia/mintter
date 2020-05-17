@@ -15,7 +15,6 @@ import {
   GetDraftRequest,
   Draft,
 } from '@mintter/proto/documents_pb'
-import {useDebounce} from './hooks'
 import {fromSlateToMarkdown} from './parseToMarkdown'
 
 const rpc = makeRpcDocumentsClient()
@@ -69,34 +68,32 @@ export async function saveDraft({
     request.setSectionsList(fromSlateToMarkdown(sections))
   }
   const resp = await rpc.saveDraft(request)
-  console.log('saveDraft -> resp', resp)
-  console.log('saveDraft -> resp.toObject', resp.toObject())
+  // console.log('saveDraft -> resp', resp)
+  // console.log('saveDraft -> resp.toObject', resp.toObject())
 }
 
 export function useFetchDraft(
   id: string | string[],
   options: QueryOptions<Draft>,
 ): QueryResult<Draft> {
-  return useQuery(
-    id && ['Draft', id],
-    async (key, queryId) => {
-      // console.log('Draft Query is done!')
-      if (Array.isArray(queryId)) {
-        throw new Error(
-          `Impossible render: You are trying to access the editor passing ${
-            queryId.length
-          } document IDs => ${queryId.map(q => q).join(', ')}`,
-        )
-      }
+  return useQuery(id && ['Draft', id], getDraftFetcher, {
+    refetchOnWindowFocus: false,
+    ...options,
+  })
+}
 
-      const req = new GetDraftRequest()
-      req.setDocumentId(queryId)
+export async function getDraftFetcher(key, queryId) {
+  console.log('Draft Query is doneeee!', queryId)
+  if (Array.isArray(queryId)) {
+    throw new Error(
+      `Impossible render: You are trying to access the editor passing ${
+        queryId.length
+      } document IDs => ${queryId.map(q => q).join(', ')}`,
+    )
+  }
 
-      return await rpc.getDraft(req)
-    },
-    {
-      refetchOnWindowFocus: false,
-      ...options,
-    },
-  )
+  const req = new GetDraftRequest()
+  req.setDocumentId(queryId)
+
+  return await rpc.getDraft(req)
 }

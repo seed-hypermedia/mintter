@@ -158,7 +158,6 @@ export default function EditorPage(): JSX.Element {
   })
 
   const [autosaveDraft] = useMutation(async ({state}: {state: EditorState}) => {
-    console.log('autosave!!', state)
     const {title, description, sections} = state
     saveDraft({documentId: id, title, description, sections})
   })
@@ -167,16 +166,16 @@ export default function EditorPage(): JSX.Element {
 
   React.useEffect(() => {
     if (readyToAutosave) {
-      console.log('--------------------- SAVE!!!', readyToAutosave)
+      // console.log('--------------------- SAVE!!!', readyToAutosave)
       autosaveDraft({state})
     }
   }, [debouncedValue])
 
   React.useEffect(() => {
-    console.log('Data changed => ', data)
     if (data) {
+      // console.log('dentro de data if', JSON.stringify(data, null, 4))
       const obj = data.toObject()
-      console.log('sections => ', obj.sectionsList)
+      // console.log('sections => ', obj.sectionsList)
       setValue({
         title: obj.title,
         description: obj.description,
