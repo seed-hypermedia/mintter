@@ -37,4 +37,11 @@ module.exports = {
     borderWidth: ['responsive', 'first', 'hover', 'focus'],
   },
   plugins: [],
+  purge: {
+    content: [
+      './pages/**/*.{ts,tsx}',
+      './components/**/*.{ts,tsx}',
+      './plugins/**/*.{ts,tsx}',
+    ],
+  },
 }
