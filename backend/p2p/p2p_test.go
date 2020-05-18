@@ -30,7 +30,7 @@ func makeTestNode(t *testing.T, name string) *p2p.Node {
 		require.NoError(t, s.Close())
 	})
 
-	n, err := p2p.NewNode(ctx, repoPath, s, zap.NewNop(), config.P2P{Addr: "/ip4/0.0.0.0/tcp/0"})
+	n, err := p2p.NewNode(ctx, repoPath, s, zap.NewNop(), config.P2P{Addr: "/ip4/127.0.0.1/tcp/0"})
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, n.Close())
