@@ -178,11 +178,6 @@ func (n *Node) Addrs() []multiaddr.Multiaddr {
 	return n.addrs
 }
 
-// DAG returns the IPLD DAG service.
-func (n *Node) DAG() ipld.DAGService {
-	return n.dag
-}
-
 // makeHost creates a new libp2p host.
 func makeHost(ctx context.Context, p identity.Peer, db datastore.Batching, opts ...libp2p.Option) (host.Host, *dual.DHT, error) {
 	// TODO(burdiyan): pass the ps and don't forget to close.

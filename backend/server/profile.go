@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"mintter/backend/identity"
-	"mintter/backend/p2p"
-	"mintter/backend/store"
 	"mintter/proto"
 
 	peer "github.com/libp2p/go-libp2p-core/peer"
@@ -26,19 +24,10 @@ func (s *Server) InitProfile(ctx context.Context, req *proto.InitProfileRequest)
 		return nil, status.Errorf(codes.Internal, "failed to generate identity: %v", err)
 	}
 
-	s.store, err = store.Create(s.cfg.RepoPath, profile)
-	if err != nil {
-		s.log.Error("StoreInitializationFailed", zap.Error(err))
+	if err := s.init(profile); err != nil {
+		s.log.Error("NodeInitFailed", zap.Error(err))
 		return nil, err
 	}
-
-	s.node, err = p2p.NewNode(context.Background(), s.cfg.RepoPath, s.store, s.log.With(zap.String("component", "p2p")), s.cfg.P2P)
-	if err != nil {
-		s.log.Error("P2PNodeInitializationFailed", zap.Error(err))
-		return nil, err
-	}
-
-	s.ready.CAS(false, true)
 
 	return &proto.InitProfileResponse{}, nil
 }

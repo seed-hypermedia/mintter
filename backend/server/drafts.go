@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"mintter/backend/ipldutil"
 	"mintter/backend/publishing"
 	"mintter/proto"
 	"time"
@@ -11,7 +10,6 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
-	format "github.com/ipfs/go-ipld-format"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -123,47 +121,25 @@ func (s *Server) PublishDraft(ctx context.Context, in *proto.PublishDraftRequest
 		return nil, err
 	}
 
+	sectcids, err := s.node.AddSections(ctx, sects...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to add sections: %w", err)
+	}
+
 	pub := publishing.Publication{
 		DocumentID:  draft.DocumentId,
 		Title:       draft.Title,
 		Description: draft.Description,
 		Author:      draft.Author,
-		Sections:    make([]cid.Cid, len(sects)),
+		Sections:    sectcids,
 	}
 
-	ipldNodes := make([]format.Node, 0, len(sects)+1) // All sections + publication itself.
-
-	prof, err := s.store.CurrentProfile(ctx)
+	pubcid, err := s.node.AddPublication(ctx, pub)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to add publication: %w", err)
 	}
 
-	for i, sec := range sects {
-		n, err := ipldutil.MarshalSigned(sec, prof.Account.PrivKey)
-		if err != nil {
-			return nil, err
-		}
-
-		ipldNodes = append(ipldNodes, n)
-		pub.Sections[i] = n.Cid()
-	}
-
-	pubnode, err := ipldutil.MarshalSigned(pub, prof.Account.PrivKey)
-	if err != nil {
-		return nil, err
-	}
-
-	ipldNodes = append(ipldNodes, pubnode)
-
-	if err := s.node.DAG().AddMany(ctx, ipldNodes); err != nil {
-		return nil, fmt.Errorf("failed to add IPLD nodes: %w", err)
-	}
-
-	if err := s.store.AddPublication(pub.DocumentID, pubnode.Cid()); err != nil {
-		return nil, fmt.Errorf("failed to add publication to store: %w", err)
-	}
-
-	return publicationToProto(pubnode.Cid(), pub)
+	return publicationToProto(pubcid, pub)
 }
 
 // ListPublications stored on the server.
@@ -181,29 +157,21 @@ func (s *Server) ListPublications(ctx context.Context, in *proto.ListPublication
 		return nil, err
 	}
 
-	prof, err := s.store.CurrentProfile(ctx)
-	if err != nil {
-		return nil, err
-	}
+	pubs := make([]*proto.Publication, len(cids))
 
-	pubs := make([]*proto.Publication, 0, len(cids))
-
-	for item := range s.node.DAG().GetMany(ctx, cids) {
-		if item.Err != nil {
-			return nil, fmt.Errorf("failed to get block: %w", item.Err)
-		}
-
-		var v publishing.Publication
-		if err := ipldutil.UnmarshalSigned(item.Node.RawData(), &v, prof.Account.PubKey); err != nil {
-			return nil, err
-		}
-
-		p, err := publicationToProto(item.Node.Cid(), v)
+	for i, cid := range cids {
+		// TODO(burdiyan): find a way to optimize this and get multiple nodes in one request preserve CID for the UI.
+		pub, err := s.node.GetPublication(ctx, cid)
 		if err != nil {
 			return nil, err
 		}
 
-		pubs = append(pubs, p)
+		pbpub, err := publicationToProto(cid, pub)
+		if err != nil {
+			return nil, err
+		}
+
+		pubs[i] = pbpub
 	}
 
 	return &proto.ListPublicationsResponse{
@@ -222,23 +190,12 @@ func (s *Server) GetSection(ctx context.Context, in *proto.GetSectionRequest) (*
 		return nil, fmt.Errorf("failed to decode section CID: %w", err)
 	}
 
-	node, err := s.node.DAG().Get(ctx, secid)
+	sects, err := s.node.GetSections(ctx, secid)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get IPLD node: %w", err)
 	}
 
-	var sect publishing.Section
-
-	prof, err := s.store.CurrentProfile(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := ipldutil.UnmarshalSigned(node.RawData(), &sect, prof.Account.PubKey); err != nil {
-		return nil, fmt.Errorf("failed to decode CBOR node: %w", err)
-	}
-
-	return sectionToProto(sect)
+	return sectionToProto(sects[0])
 }
 
 // BatchGetSections implements DocumentsServer.
@@ -252,32 +209,22 @@ func (s *Server) BatchGetSections(ctx context.Context, in *proto.BatchGetSection
 		return nil, err
 	}
 
-	prof, err := s.store.CurrentProfile(ctx)
+	resp := &proto.BatchGetSectionsResponse{
+		Sections: make([]*proto.Section, len(cids)),
+	}
+
+	sects, err := s.node.GetSections(ctx, cids...)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := &proto.BatchGetSectionsResponse{
-		Sections: make([]*proto.Section, 0, len(cids)),
-	}
-
-	for item := range s.node.DAG().GetMany(ctx, cids) {
-		if item.Err != nil {
-			return nil, item.Err
-		}
-
-		var v publishing.Section
-
-		if err := ipldutil.UnmarshalSigned(item.Node.RawData(), &v, prof.Account.PubKey); err != nil {
-			return nil, err
-		}
-
-		secpb, err := sectionToProto(v)
+	for i, sec := range sects {
+		pbsec, err := sectionToProto(sec)
 		if err != nil {
 			return nil, err
 		}
 
-		resp.Sections = append(resp.Sections, secpb)
+		resp.Sections[i] = pbsec
 	}
 
 	return resp, nil
@@ -327,6 +274,18 @@ func sectionsFromDraft(d *proto.Draft) ([]publishing.Section, error) {
 			}
 
 			sec.CreateTime = t.UTC().Format(time.RFC3339)
+		}
+
+		if sec.Author == "" {
+			sec.Author = d.Author
+		}
+
+		if sec.Title == "" {
+			sec.Title = d.Title
+		}
+
+		if sec.Description == "" {
+			sec.Description = d.Description
 		}
 
 		out[i] = sec
