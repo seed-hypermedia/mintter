@@ -28,7 +28,7 @@ func testConfig(t *testing.T) config.Config {
 	return config.Config{
 		RepoPath: repoPath,
 		P2P: config.P2P{
-			Addr: "/ip4/0.0.0.0/tcp/0",
+			Addr: "/ip4/127.0.0.1/tcp/0",
 		},
 	}
 }
