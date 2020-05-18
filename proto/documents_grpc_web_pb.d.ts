@@ -13,6 +13,8 @@ import {
   GetSectionRequest,
   ListDraftsRequest,
   ListDraftsResponse,
+  ListPublicationsRequest,
+  ListPublicationsResponse,
   Publication,
   PublishDraftRequest,
   Section} from './documents_pb';
@@ -64,6 +66,13 @@ export class DocumentsClient {
                response: Publication) => void
   ): grpcWeb.ClientReadableStream<Publication>;
 
+  listPublications(
+    request: ListPublicationsRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: ListPublicationsResponse) => void
+  ): grpcWeb.ClientReadableStream<ListPublicationsResponse>;
+
   getSection(
     request: GetSectionRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -114,6 +123,11 @@ export class DocumentsPromiseClient {
     request: PublishDraftRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<Publication>;
+
+  listPublications(
+    request: ListPublicationsRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<ListPublicationsResponse>;
 
   getSection(
     request: GetSectionRequest,

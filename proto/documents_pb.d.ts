@@ -117,6 +117,52 @@ export namespace PublishDraftRequest {
   }
 }
 
+export class ListPublicationsRequest extends jspb.Message {
+  getPageSize(): number;
+  setPageSize(value: number): void;
+
+  getPageToken(): string;
+  setPageToken(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListPublicationsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListPublicationsRequest): ListPublicationsRequest.AsObject;
+  static serializeBinaryToWriter(message: ListPublicationsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListPublicationsRequest;
+  static deserializeBinaryFromReader(message: ListPublicationsRequest, reader: jspb.BinaryReader): ListPublicationsRequest;
+}
+
+export namespace ListPublicationsRequest {
+  export type AsObject = {
+    pageSize: number,
+    pageToken: string,
+  }
+}
+
+export class ListPublicationsResponse extends jspb.Message {
+  getPublicationsList(): Array<Publication>;
+  setPublicationsList(value: Array<Publication>): void;
+  clearPublicationsList(): void;
+  addPublications(value?: Publication, index?: number): Publication;
+
+  getNextPageToken(): string;
+  setNextPageToken(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListPublicationsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListPublicationsResponse): ListPublicationsResponse.AsObject;
+  static serializeBinaryToWriter(message: ListPublicationsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListPublicationsResponse;
+  static deserializeBinaryFromReader(message: ListPublicationsResponse, reader: jspb.BinaryReader): ListPublicationsResponse;
+}
+
+export namespace ListPublicationsResponse {
+  export type AsObject = {
+    publicationsList: Array<Publication.AsObject>,
+    nextPageToken: string,
+  }
+}
+
 export class GetSectionRequest extends jspb.Message {
   getSectionId(): string;
   setSectionId(value: string): void;

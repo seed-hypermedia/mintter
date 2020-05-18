@@ -163,16 +163,51 @@ func (s *Server) PublishDraft(ctx context.Context, in *proto.PublishDraftRequest
 		return nil, fmt.Errorf("failed to add publication to store: %w", err)
 	}
 
-	return &proto.Publication{
-		Id:          pubnode.Cid().String(),
-		DocumentId:  pub.DocumentID,
-		Title:       pub.Title,
-		Description: pub.Description,
-		Author:      pub.Author,
-		// Previous:    pub.Previous.String(),
-		Sections: cidStringList(pub.Sections),
-		// CreateTime
-		// PublishTime
+	return publicationToProto(pubnode.Cid(), pub)
+}
+
+// ListPublications stored on the server.
+func (s *Server) ListPublications(ctx context.Context, in *proto.ListPublicationsRequest) (*proto.ListPublicationsResponse, error) {
+	if err := s.checkReady(); err != nil {
+		return nil, err
+	}
+
+	if in.PageSize != 0 || in.PageToken != "" {
+		return nil, status.Error(codes.Unimplemented, "pagination for this request is not implemented yet - make the request without limiting page size and with no page token")
+	}
+
+	cids, err := s.store.ListPublications(0, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	prof, err := s.store.CurrentProfile(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	pubs := make([]*proto.Publication, 0, len(cids))
+
+	for item := range s.node.DAG().GetMany(ctx, cids) {
+		if item.Err != nil {
+			return nil, fmt.Errorf("failed to get block: %w", item.Err)
+		}
+
+		var v publishing.Publication
+		if err := ipldutil.UnmarshalSigned(item.Node.RawData(), &v, prof.Account.PubKey); err != nil {
+			return nil, err
+		}
+
+		p, err := publicationToProto(item.Node.Cid(), v)
+		if err != nil {
+			return nil, err
+		}
+
+		pubs = append(pubs, p)
+	}
+
+	return &proto.ListPublicationsResponse{
+		Publications: pubs,
 	}, nil
 }
 
@@ -206,6 +241,48 @@ func (s *Server) GetSection(ctx context.Context, in *proto.GetSectionRequest) (*
 	return sectionToProto(sect)
 }
 
+// BatchGetSections implements DocumentsServer.
+func (s *Server) BatchGetSections(ctx context.Context, in *proto.BatchGetSectionsRequest) (*proto.BatchGetSectionsResponse, error) {
+	if err := s.checkReady(); err != nil {
+		return nil, err
+	}
+
+	cids, err := cidsFromStrings(in.SectionIds)
+	if err != nil {
+		return nil, err
+	}
+
+	prof, err := s.store.CurrentProfile(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &proto.BatchGetSectionsResponse{
+		Sections: make([]*proto.Section, 0, len(cids)),
+	}
+
+	for item := range s.node.DAG().GetMany(ctx, cids) {
+		if item.Err != nil {
+			return nil, item.Err
+		}
+
+		var v publishing.Section
+
+		if err := ipldutil.UnmarshalSigned(item.Node.RawData(), &v, prof.Account.PubKey); err != nil {
+			return nil, err
+		}
+
+		secpb, err := sectionToProto(v)
+		if err != nil {
+			return nil, err
+		}
+
+		resp.Sections = append(resp.Sections, secpb)
+	}
+
+	return resp, nil
+}
+
 func cidStringList(cids []cid.Cid) []string {
 	out := make([]string, len(cids))
 
@@ -214,6 +291,21 @@ func cidStringList(cids []cid.Cid) []string {
 	}
 
 	return out
+}
+
+func cidsFromStrings(list []string) ([]cid.Cid, error) {
+	out := make([]cid.Cid, len(list))
+
+	for i, l := range list {
+		cid, err := cid.Decode(l)
+		if err != nil {
+			return nil, err
+		}
+
+		out[i] = cid
+	}
+
+	return out, nil
 }
 
 func sectionsFromDraft(d *proto.Draft) ([]publishing.Section, error) {
@@ -267,4 +359,18 @@ func sectionToProto(s publishing.Section) (*proto.Section, error) {
 	}
 
 	return pbsec, nil
+}
+
+func publicationToProto(id cid.Cid, p publishing.Publication) (*proto.Publication, error) {
+	pubpb := &proto.Publication{
+		Id:          id.String(),
+		DocumentId:  p.DocumentID,
+		Title:       p.Title,
+		Description: p.Description,
+		Author:      p.Author,
+		Previous:    "",
+		Sections:    cidStringList(p.Sections),
+	}
+
+	return pubpb, nil
 }
