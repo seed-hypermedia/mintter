@@ -24,6 +24,9 @@ service Documents {
   // Publish the latest draft of a given document ID.
   rpc PublishDraft(PublishDraftRequest) returns (Publication);
 
+  rpc ListPublications(ListPublicationsRequest)
+      returns (ListPublicationsResponse);
+
   rpc GetSection(GetSectionRequest) returns (Section);
 
   rpc BatchGetSections(BatchGetSectionsRequest)
@@ -61,6 +64,20 @@ message DeleteDraftRequest {
 message PublishDraftRequest {
   // ID of the document of which ongoing draft is going to be published.
   string document_id = 1;
+}
+
+message ListPublicationsRequest {
+  int32 page_size = 1;
+
+  string page_token = 2;
+}
+
+message ListPublicationsResponse {
+  // List of publications.
+  repeated Publication publications = 1;
+
+  // If this is empty, there're no more results.
+  string next_page_token = 2;
 }
 
 message GetSectionRequest {

@@ -77,6 +77,45 @@ func (s *Store) ListDrafts(offset, limit int) ([]*pb.Draft, error) {
 func (s *Store) AddPublication(docID string, cid cid.Cid) error {
 	k := s.pubsKey.ChildString(docID)
 
+	ok, err := s.db.Has(k)
+	if err != nil {
+		return err
+	}
+
 	// TODO(burdiyan): allow multiple publications.
+	if ok {
+		return fmt.Errorf("document %s already has saved publication", docID)
+	}
+
 	return s.db.Put(k, cid.Bytes())
+}
+
+// ListPublications stored in the database.
+func (s *Store) ListPublications(offset, limit int) ([]cid.Cid, error) {
+	res, err := s.db.Query(query.Query{
+		Prefix: s.pubsKey.String(),
+		Offset: offset,
+		Limit:  limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer res.Close()
+
+	items, err := res.Rest()
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]cid.Cid, len(items))
+
+	for i, it := range items {
+		cid, err := cid.Cast(it.Value)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = cid
+	}
+
+	return out, nil
 }

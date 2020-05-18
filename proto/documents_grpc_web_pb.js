@@ -554,6 +554,86 @@ proto.com.mintter.DocumentsPromiseClient.prototype.publishDraft =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.mintter.ListPublicationsRequest,
+ *   !proto.com.mintter.ListPublicationsResponse>}
+ */
+const methodDescriptor_Documents_ListPublications = new grpc.web.MethodDescriptor(
+  '/com.mintter.Documents/ListPublications',
+  grpc.web.MethodType.UNARY,
+  proto.com.mintter.ListPublicationsRequest,
+  proto.com.mintter.ListPublicationsResponse,
+  /**
+   * @param {!proto.com.mintter.ListPublicationsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.ListPublicationsResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.com.mintter.ListPublicationsRequest,
+ *   !proto.com.mintter.ListPublicationsResponse>}
+ */
+const methodInfo_Documents_ListPublications = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.com.mintter.ListPublicationsResponse,
+  /**
+   * @param {!proto.com.mintter.ListPublicationsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.ListPublicationsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.mintter.ListPublicationsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.ListPublicationsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.ListPublicationsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.mintter.DocumentsClient.prototype.listPublications =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.mintter.Documents/ListPublications',
+      request,
+      metadata || {},
+      methodDescriptor_Documents_ListPublications,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.mintter.ListPublicationsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.mintter.ListPublicationsResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.com.mintter.DocumentsPromiseClient.prototype.listPublications =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.mintter.Documents/ListPublications',
+      request,
+      metadata || {},
+      methodDescriptor_Documents_ListPublications);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.com.mintter.GetSectionRequest,
  *   !proto.com.mintter.Section>}
  */
