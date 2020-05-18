@@ -3,8 +3,10 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"mintter/backend/config"
+	"mintter/backend/identity"
 	"mintter/backend/p2p"
 	"mintter/backend/store"
 	"mintter/proto"
@@ -44,14 +46,8 @@ func NewServer(cfg config.Config, log *zap.Logger) (*Server, error) {
 		DocumentsServer: &proto.UnimplementedDocumentsServer{},
 	}
 
-	// Make sure to check InitProfile handler if changing this.
-	if store, err := store.Open(cfg.RepoPath); err == nil {
-		s.store = store
-		s.node, err = p2p.NewNode(context.Background(), cfg.RepoPath, store, log.With(zap.String("component", "p2p")), cfg.P2P)
-		if err != nil {
-			return nil, err
-		}
-		s.ready.CAS(false, true)
+	if err := s.init(identity.Profile{}); err != nil {
+		return nil, fmt.Errorf("failed to init node: %w", err)
 	}
 
 	return s, nil
@@ -71,6 +67,39 @@ func (s *Server) Close() (err error) {
 	err = multierr.Combine(err, s.node.Close(), s.store.Close())
 
 	return err
+}
+
+func (s *Server) init(prof identity.Profile) (err error) {
+	if s.ready.Load() {
+		return errors.New("already initialized")
+	}
+
+	// We have to attempt to load profile from the repo in case in was already initialized before.
+	// Initializing with a new profile in this case should fail. Otherwise we can safely create a new profile.
+	s.store, err = store.Open(s.cfg.RepoPath)
+	if err != nil {
+		if prof.ID.ID == "" {
+			return nil
+		}
+
+		s.store, err = store.Create(s.cfg.RepoPath, prof)
+		if err != nil {
+			return fmt.Errorf("failed to create a store: %w", err)
+		}
+	} else {
+		if prof.ID.ID != "" {
+			return errors.New("remove existing profile before initializing a new one")
+		}
+	}
+
+	s.node, err = p2p.NewNode(context.Background(), s.cfg.RepoPath, s.store, s.log.With(zap.String("component", "p2p")), s.cfg.P2P)
+	if err != nil {
+		return fmt.Errorf("failed to init P2P node: %w", err)
+	}
+
+	s.ready.CAS(false, true)
+
+	return nil
 }
 
 func (s *Server) checkReady() error {

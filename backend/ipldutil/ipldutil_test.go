@@ -6,6 +6,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/stretchr/testify/require"
 
+	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 )
 
@@ -23,7 +24,7 @@ func TestSign(t *testing.T) {
 	n, err := MarshalSigned(inputNode, k)
 	require.NoError(t, err)
 
-	expected := []byte{162, 100, 100, 97, 116, 97, 73, 162, 97, 97, 97, 65, 97, 98, 97, 66, 105, 115, 105, 103, 110, 97, 116, 117, 114, 101, 88, 64, 171, 40, 179, 176, 124, 194, 230, 82, 182, 161, 204, 12, 180, 143, 139, 35, 157, 79, 97, 224, 206, 216, 14, 69, 74, 37, 182, 173, 120, 148, 77, 36, 127, 16, 62, 200, 130, 71, 154, 220, 130, 194, 188, 90, 212, 211, 126, 245, 234, 96, 237, 136, 49, 60, 194, 58, 74, 162, 153, 131, 25, 115, 179, 15}
+	expected := []byte{162, 100, 100, 97, 116, 97, 162, 97, 97, 97, 65, 97, 98, 97, 66, 105, 115, 105, 103, 110, 97, 116, 117, 114, 101, 88, 64, 171, 40, 179, 176, 124, 194, 230, 82, 182, 161, 204, 12, 180, 143, 139, 35, 157, 79, 97, 224, 206, 216, 14, 69, 74, 37, 182, 173, 120, 148, 77, 36, 127, 16, 62, 200, 130, 71, 154, 220, 130, 194, 188, 90, 212, 211, 126, 245, 234, 96, 237, 136, 49, 60, 194, 58, 74, 162, 153, 131, 25, 115, 179, 15}
 	require.Equal(t, expected, n.RawData())
 
 	var readNode testNode
@@ -32,8 +33,9 @@ func TestSign(t *testing.T) {
 }
 
 type testNode struct {
-	A string
 	B string
+	A string
+	C []cid.Cid `refmt:",omitempty"`
 }
 
 func testKey(t *testing.T) crypto.PrivKey {
