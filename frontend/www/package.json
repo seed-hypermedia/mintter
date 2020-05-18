@@ -43,6 +43,7 @@
     "slate-plugins-next": "^0.57.12",
     "slate-react": "^0.57.1",
     "styled-components": "^5.1.0",
+    "tailwindcss": "1.4",
     "unified": "^9.0.0",
     "xtend": "^4.0.2"
   },
