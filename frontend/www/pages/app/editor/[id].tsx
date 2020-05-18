@@ -312,7 +312,7 @@ export default function EditorPage(): JSX.Element {
                         {!isEmpty() && <SectionToolbar />}
                         <EditablePlugins
                           plugins={plugins}
-                          renderElement={[renderElement]}
+                          renderElement={[renderElement(editor)]}
                           renderLeaf={[
                             renderLeafBold(),
                             renderLeafItalic(),
