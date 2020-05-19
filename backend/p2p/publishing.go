@@ -2,13 +2,16 @@ package p2p
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"mintter/backend/identity"
 	"mintter/backend/ipldutil"
 	"mintter/backend/publishing"
 
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
+	"github.com/libp2p/go-libp2p-core/peer"
 )
 
 // AddSections to the IPLD service.
@@ -86,8 +89,32 @@ func (n *Node) GetPublication(ctx context.Context, cid cid.Cid) (publishing.Publ
 		return publishing.Publication{}, fmt.Errorf("failed to get IPLD node: %w", err)
 	}
 
+	var author identity.ProfileID
+	{
+		v, _, err := node.Resolve([]string{"data", "author"})
+		if err != nil {
+			return publishing.Publication{}, err
+		}
+		a := v.(string)
+		if a == "" {
+			return publishing.Publication{}, errors.New("missing author field for signed IPLD")
+		}
+
+		pid, err := peer.Decode(a)
+		if err != nil {
+			return publishing.Publication{}, err
+		}
+
+		author.ID = pid
+	}
+
+	prof, err := n.store.GetProfile(ctx, author)
+	if err != nil {
+		return publishing.Publication{}, err
+	}
+
 	var p publishing.Publication
-	if err := ipldutil.UnmarshalSigned(node.RawData(), &p, n.acc.PubKey); err != nil {
+	if err := ipldutil.UnmarshalSigned(node.RawData(), &p, prof.Account.PubKey); err != nil {
 		return publishing.Publication{}, err
 	}
 

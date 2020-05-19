@@ -135,8 +135,13 @@ func (n *Node) handshake(ctx context.Context, pid peer.ID) (identity.Profile, er
 		return identity.Profile{}, err
 	}
 
+	pbprof, err := profileToProto(me)
+	if err != nil {
+		return identity.Profile{}, err
+	}
+
 	resp, err := internal.NewPeerServiceClient(conn).Handshake(ctx, &internal.HandshakeRequest{
-		Profile: profileToProto(me),
+		Profile: pbprof,
 	})
 	if err != nil {
 		return identity.Profile{}, err
@@ -165,8 +170,13 @@ func (n *rpcHandler) Handshake(ctx context.Context, in *internal.HandshakeReques
 		return nil, err
 	}
 
+	pbprof, err := profileToProto(me)
+	if err != nil {
+		return nil, err
+	}
+
 	return &internal.HandshakeResponse{
-		Profile: profileToProto(me),
+		Profile: pbprof,
 	}, nil
 }
 

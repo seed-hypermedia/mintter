@@ -70,4 +70,7 @@ message Profile {
 
   // Optional. Public bio.
   string bio = 5;
+
+  // Account's public key.
+  bytes account_pub_key = 6;
 }

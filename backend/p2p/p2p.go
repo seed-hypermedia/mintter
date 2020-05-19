@@ -16,6 +16,7 @@ import (
 	"mintter/backend/store"
 
 	"github.com/ipfs/go-datastore"
+	format "github.com/ipfs/go-ipld-format"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -176,6 +177,10 @@ func (n *Node) Account() identity.Account {
 // Addrs return p2p multiaddresses this node is listening on.
 func (n *Node) Addrs() []multiaddr.Multiaddr {
 	return n.addrs
+}
+
+func (n *Node) unwrapIPLD(ipld format.Node, v interface{}) {
+
 }
 
 // makeHost creates a new libp2p host.
