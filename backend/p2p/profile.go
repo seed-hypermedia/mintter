@@ -7,6 +7,7 @@ import (
 	"mintter/backend/identity"
 	"mintter/backend/p2p/internal"
 
+	"github.com/libp2p/go-libp2p-core/crypto"
 	peer "github.com/libp2p/go-libp2p-core/peer"
 )
 
@@ -44,17 +45,23 @@ func (n *rpcHandler) GetProfile(ctx context.Context, in *internal.GetProfileRequ
 		return nil, err
 	}
 
-	return profileToProto(prof), nil
+	return profileToProto(prof)
 }
 
-func profileToProto(p identity.Profile) *internal.Profile {
-	return &internal.Profile{
-		PeerId:    p.Peer.ID.String(),
-		AccountId: p.Account.ID.String(),
-		Username:  p.About.Username,
-		Email:     p.About.Email,
-		Bio:       p.About.Bio,
+func profileToProto(p identity.Profile) (*internal.Profile, error) {
+	pk, err := crypto.MarshalPublicKey(p.Account.PubKey)
+	if err != nil {
+		return nil, err
 	}
+
+	return &internal.Profile{
+		PeerId:        p.Peer.ID.String(),
+		AccountId:     p.Account.ID.String(),
+		AccountPubKey: pk,
+		Username:      p.About.Username,
+		Email:         p.About.Email,
+		Bio:           p.About.Bio,
+	}, nil
 }
 
 func profileFromProto(pb *internal.Profile) (identity.Profile, error) {
@@ -81,6 +88,15 @@ func profileFromProto(pb *internal.Profile) (identity.Profile, error) {
 		}
 		prof.Account.ID = identity.ProfileID{ID: pid}
 		prof.ID = identity.ProfileID{ID: pid}
+	}
+
+	if pb.AccountPubKey != nil {
+		pk, err := crypto.UnmarshalPublicKey(pb.AccountPubKey)
+		if err != nil {
+			return identity.Profile{}, err
+		}
+
+		prof.Account.PubKey.PubKey = pk
 	}
 
 	return prof, nil
