@@ -41,6 +41,7 @@ func TestGetProfile(t *testing.T) {
 	r1, err := srv.GetProfile(ctx, &proto.GetProfileRequest{})
 	require.NoError(t, err)
 	require.Equal(t, "12D3KooWGkrLHeWFdhFoLqjbxriuHT6Nm1k8HNZmagP8Lj4FLJw4", r1.Profile.PeerId)
+	require.NotEqual(t, "", r1.Profile.AccountId)
 
 	// Server must be able to load initialized profile after restart.
 	require.NoError(t, srv.Close())
@@ -49,7 +50,7 @@ func TestGetProfile(t *testing.T) {
 
 	r2, err := srv.GetProfile(ctx, &proto.GetProfileRequest{})
 	require.NoError(t, err)
-	require.Equal(t, r1.Profile, r2.Profile)
+	require.Equal(t, r1, r2)
 }
 
 func TestUpdateProfile(t *testing.T) {

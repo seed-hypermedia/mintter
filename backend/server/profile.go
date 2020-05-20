@@ -76,12 +76,27 @@ func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileReque
 	}, nil
 }
 
+// GetProfileAddrs implements Mintter server.
+func (s *Server) GetProfileAddrs(ctx context.Context, in *proto.GetProfileAddrsRequest) (*proto.GetProfileAddrsResponse, error) {
+	mas := s.node.Addrs()
+	resp := &proto.GetProfileAddrsResponse{
+		Addrs: make([]string, len(mas)),
+	}
+
+	for i, ma := range mas {
+		resp.Addrs[i] = ma.String()
+	}
+
+	return resp, nil
+}
+
 func profileToProto(prof identity.Profile) *proto.Profile {
 	return &proto.Profile{
-		PeerId:   prof.Peer.ID.String(),
-		Username: prof.About.Username,
-		Email:    prof.About.Email,
-		Bio:      prof.About.Bio,
+		PeerId:    prof.Peer.ID.String(),
+		AccountId: prof.Account.ID.String(),
+		Username:  prof.About.Username,
+		Email:     prof.About.Email,
+		Bio:       prof.About.Bio,
 	}
 }
 
@@ -100,6 +115,14 @@ func profileFromProto(pbprof *proto.Profile) (identity.Profile, error) {
 			return identity.Profile{}, fmt.Errorf("failed to decode peer id: %w", err)
 		}
 		prof.Peer.ID = pid
+	}
+
+	if pbprof.AccountId != "" {
+		pid, err := peer.Decode(pbprof.AccountId)
+		if err != nil {
+			return identity.Profile{}, fmt.Errorf("failed to decode account id: %w", err)
+		}
+		prof.Account.ID.ID = pid
 	}
 
 	return prof, nil
