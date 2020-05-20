@@ -345,15 +345,160 @@ func (m *GetProfileResponse) GetProfile() *Profile {
 	return nil
 }
 
+type GetProfileAddrsRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetProfileAddrsRequest) Reset()         { *m = GetProfileAddrsRequest{} }
+func (m *GetProfileAddrsRequest) String() string { return proto.CompactTextString(m) }
+func (*GetProfileAddrsRequest) ProtoMessage()    {}
+func (*GetProfileAddrsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_459271e8c06255ea, []int{8}
+}
+
+func (m *GetProfileAddrsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetProfileAddrsRequest.Unmarshal(m, b)
+}
+func (m *GetProfileAddrsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetProfileAddrsRequest.Marshal(b, m, deterministic)
+}
+func (m *GetProfileAddrsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetProfileAddrsRequest.Merge(m, src)
+}
+func (m *GetProfileAddrsRequest) XXX_Size() int {
+	return xxx_messageInfo_GetProfileAddrsRequest.Size(m)
+}
+func (m *GetProfileAddrsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetProfileAddrsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetProfileAddrsRequest proto.InternalMessageInfo
+
+type GetProfileAddrsResponse struct {
+	// List of multiaddrs this node can be connected at.
+	Addrs                []string `protobuf:"bytes,1,rep,name=addrs,proto3" json:"addrs,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetProfileAddrsResponse) Reset()         { *m = GetProfileAddrsResponse{} }
+func (m *GetProfileAddrsResponse) String() string { return proto.CompactTextString(m) }
+func (*GetProfileAddrsResponse) ProtoMessage()    {}
+func (*GetProfileAddrsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_459271e8c06255ea, []int{9}
+}
+
+func (m *GetProfileAddrsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetProfileAddrsResponse.Unmarshal(m, b)
+}
+func (m *GetProfileAddrsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetProfileAddrsResponse.Marshal(b, m, deterministic)
+}
+func (m *GetProfileAddrsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetProfileAddrsResponse.Merge(m, src)
+}
+func (m *GetProfileAddrsResponse) XXX_Size() int {
+	return xxx_messageInfo_GetProfileAddrsResponse.Size(m)
+}
+func (m *GetProfileAddrsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetProfileAddrsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetProfileAddrsResponse proto.InternalMessageInfo
+
+func (m *GetProfileAddrsResponse) GetAddrs() []string {
+	if m != nil {
+		return m.Addrs
+	}
+	return nil
+}
+
+type ConnectToPeerRequest struct {
+	// A list of multiaddrs for the same peer ID to attempt p2p connection.
+	// For example `/ip4/10.0.0.1/tcp/55000/p2p/QmDeadBeef`.
+	Addrs                []string `protobuf:"bytes,1,rep,name=addrs,proto3" json:"addrs,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ConnectToPeerRequest) Reset()         { *m = ConnectToPeerRequest{} }
+func (m *ConnectToPeerRequest) String() string { return proto.CompactTextString(m) }
+func (*ConnectToPeerRequest) ProtoMessage()    {}
+func (*ConnectToPeerRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_459271e8c06255ea, []int{10}
+}
+
+func (m *ConnectToPeerRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ConnectToPeerRequest.Unmarshal(m, b)
+}
+func (m *ConnectToPeerRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ConnectToPeerRequest.Marshal(b, m, deterministic)
+}
+func (m *ConnectToPeerRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ConnectToPeerRequest.Merge(m, src)
+}
+func (m *ConnectToPeerRequest) XXX_Size() int {
+	return xxx_messageInfo_ConnectToPeerRequest.Size(m)
+}
+func (m *ConnectToPeerRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ConnectToPeerRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ConnectToPeerRequest proto.InternalMessageInfo
+
+func (m *ConnectToPeerRequest) GetAddrs() []string {
+	if m != nil {
+		return m.Addrs
+	}
+	return nil
+}
+
+type ConnectToPeerResponse struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ConnectToPeerResponse) Reset()         { *m = ConnectToPeerResponse{} }
+func (m *ConnectToPeerResponse) String() string { return proto.CompactTextString(m) }
+func (*ConnectToPeerResponse) ProtoMessage()    {}
+func (*ConnectToPeerResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_459271e8c06255ea, []int{11}
+}
+
+func (m *ConnectToPeerResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ConnectToPeerResponse.Unmarshal(m, b)
+}
+func (m *ConnectToPeerResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ConnectToPeerResponse.Marshal(b, m, deterministic)
+}
+func (m *ConnectToPeerResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ConnectToPeerResponse.Merge(m, src)
+}
+func (m *ConnectToPeerResponse) XXX_Size() int {
+	return xxx_messageInfo_ConnectToPeerResponse.Size(m)
+}
+func (m *ConnectToPeerResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ConnectToPeerResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ConnectToPeerResponse proto.InternalMessageInfo
+
 type Profile struct {
 	// Libp2p peer ID. Generated by the server and can't be updated.
 	PeerId string `protobuf:"bytes,1,opt,name=peer_id,json=peerId,proto3" json:"peer_id,omitempty"`
+	// Mintter account ID.
+	AccountId string `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	// Readable username or alias. Doesn't have to be unique.
-	Username string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
-	// Optional. Real email that could be publically shared.
-	Email string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Username string `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
+	// Optional. Real email that could be publicly shared.
+	Email string `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
 	// Optional. Free-form bio. Text only.
-	Bio                  string   `protobuf:"bytes,4,opt,name=bio,proto3" json:"bio,omitempty"`
+	Bio                  string   `protobuf:"bytes,5,opt,name=bio,proto3" json:"bio,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -363,7 +508,7 @@ func (m *Profile) Reset()         { *m = Profile{} }
 func (m *Profile) String() string { return proto.CompactTextString(m) }
 func (*Profile) ProtoMessage()    {}
 func (*Profile) Descriptor() ([]byte, []int) {
-	return fileDescriptor_459271e8c06255ea, []int{8}
+	return fileDescriptor_459271e8c06255ea, []int{12}
 }
 
 func (m *Profile) XXX_Unmarshal(b []byte) error {
@@ -387,6 +532,13 @@ var xxx_messageInfo_Profile proto.InternalMessageInfo
 func (m *Profile) GetPeerId() string {
 	if m != nil {
 		return m.PeerId
+	}
+	return ""
+}
+
+func (m *Profile) GetAccountId() string {
+	if m != nil {
+		return m.AccountId
 	}
 	return ""
 }
@@ -421,6 +573,10 @@ func init() {
 	proto.RegisterType((*UpdateProfileResponse)(nil), "com.mintter.UpdateProfileResponse")
 	proto.RegisterType((*GetProfileRequest)(nil), "com.mintter.GetProfileRequest")
 	proto.RegisterType((*GetProfileResponse)(nil), "com.mintter.GetProfileResponse")
+	proto.RegisterType((*GetProfileAddrsRequest)(nil), "com.mintter.GetProfileAddrsRequest")
+	proto.RegisterType((*GetProfileAddrsResponse)(nil), "com.mintter.GetProfileAddrsResponse")
+	proto.RegisterType((*ConnectToPeerRequest)(nil), "com.mintter.ConnectToPeerRequest")
+	proto.RegisterType((*ConnectToPeerResponse)(nil), "com.mintter.ConnectToPeerResponse")
 	proto.RegisterType((*Profile)(nil), "com.mintter.Profile")
 }
 
@@ -429,32 +585,38 @@ func init() {
 }
 
 var fileDescriptor_459271e8c06255ea = []byte{
-	// 395 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x53, 0xcd, 0x4e, 0xf2, 0x50,
-	0x10, 0xfd, 0x0a, 0x1f, 0x54, 0x06, 0xf9, 0x1b, 0x20, 0x36, 0xd5, 0x08, 0x76, 0x23, 0x89, 0xb1,
-	0x0b, 0x5c, 0xbb, 0x31, 0x06, 0xc2, 0xc2, 0x48, 0x6a, 0x4c, 0x8c, 0x1b, 0x52, 0xe8, 0x10, 0x9b,
-	0xb4, 0xbd, 0xb5, 0x2d, 0x21, 0xf1, 0x01, 0x7c, 0x3e, 0x1f, 0xc9, 0x70, 0xfb, 0x23, 0xb7, 0x82,
-	0x89, 0xae, 0xda, 0x39, 0x33, 0xf7, 0xcc, 0xc9, 0xb9, 0xe7, 0x42, 0xcd, 0xb5, 0xbd, 0x28, 0xa2,
-	0x40, 0xf7, 0x03, 0x16, 0x31, 0xac, 0x2e, 0x98, 0xab, 0x27, 0x90, 0x76, 0x0d, 0xf5, 0x31, 0x79,
-	0x0f, 0x44, 0x96, 0x41, 0xaf, 0x2b, 0x0a, 0x23, 0xbc, 0x80, 0x96, 0x49, 0x6f, 0x44, 0xd6, 0xcc,
-	0x37, 0xc3, 0xd0, 0x7f, 0x09, 0xcc, 0x90, 0x14, 0xa9, 0x2f, 0x0d, 0x0e, 0x8d, 0x66, 0xdc, 0x98,
-	0x66, 0xb8, 0x76, 0x09, 0x8d, 0xec, 0x78, 0xe8, 0x33, 0x2f, 0x24, 0x54, 0xe1, 0xc0, 0xf5, 0xc8,
-	0x65, 0x9e, 0xbd, 0x50, 0xa4, 0x7e, 0x71, 0x50, 0x31, 0xb2, 0x5a, 0x7b, 0x97, 0x00, 0x27, 0x9e,
-	0x1d, 0x4d, 0x03, 0xb6, 0xb4, 0x1d, 0x4a, 0x57, 0x9e, 0x43, 0x63, 0x6d, 0x3a, 0x0e, 0x45, 0x7c,
-	0xe5, 0x9a, 0x05, 0x56, 0xb2, 0xb0, 0x1e, 0xc3, 0xd3, 0x04, 0x15, 0xb8, 0x0b, 0x22, 0xf7, 0x6e,
-	0xdd, 0xc5, 0x3d, 0xba, 0xbb, 0xd0, 0x16, 0x74, 0xc4, 0xda, 0xb5, 0x11, 0x74, 0x1e, 0x7d, 0xcb,
-	0x8c, 0x28, 0x27, 0x50, 0x07, 0xd9, 0x8f, 0x11, 0x2e, 0xac, 0x3a, 0xec, 0xe8, 0x5b, 0x26, 0xea,
-	0xe9, 0x74, 0x3a, 0xa4, 0x8d, 0xa1, 0x9b, 0xe3, 0x49, 0xcc, 0xf9, 0x2d, 0x51, 0x1b, 0x5a, 0x63,
-	0xca, 0xd9, 0xa5, 0xdd, 0x02, 0x6e, 0x83, 0x7f, 0xa4, 0x5e, 0x82, 0x9c, 0x60, 0x78, 0x04, 0xb2,
-	0x4f, 0x14, 0xcc, 0xec, 0xd8, 0xf7, 0x8a, 0x51, 0xde, 0x94, 0x13, 0xee, 0xf7, 0x2a, 0xa4, 0xc0,
-	0x33, 0x5d, 0x52, 0x0a, 0xbc, 0x93, 0xd5, 0xd8, 0x81, 0x12, 0xb9, 0xa6, 0xed, 0x70, 0x8f, 0x2b,
-	0x46, 0x5c, 0x60, 0x13, 0x8a, 0x73, 0x9b, 0x29, 0xff, 0x39, 0xb6, 0xf9, 0x1d, 0x7e, 0x14, 0x40,
-	0xbe, 0x8b, 0x45, 0xe0, 0x08, 0xe4, 0x24, 0x2e, 0x78, 0x2c, 0xa8, 0x13, 0x33, 0xa8, 0x9e, 0xec,
-	0x6e, 0x26, 0xb7, 0xf4, 0x0f, 0x0d, 0xa8, 0x6e, 0x5d, 0x1f, 0xf6, 0x84, 0xf1, 0xef, 0x01, 0x53,
-	0xfb, 0xfb, 0x07, 0x32, 0xce, 0x7b, 0x80, 0x2f, 0x57, 0xf1, 0x34, 0xa7, 0x20, 0xcf, 0xd8, 0xdb,
-	0xdb, 0xcf, 0x08, 0x9f, 0xa0, 0x26, 0x84, 0x00, 0xcf, 0x84, 0x33, 0xbb, 0x82, 0xa6, 0x6a, 0x3f,
-	0x8d, 0xa4, 0xcc, 0x37, 0xf2, 0x73, 0x89, 0x3f, 0xe5, 0x79, 0x99, 0x7f, 0xae, 0x3e, 0x03, 0x00,
-	0x00, 0xff, 0xff, 0x2f, 0x32, 0x2c, 0x9b, 0xe2, 0x03, 0x00, 0x00,
+	// 491 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x54, 0xdf, 0x8b, 0xd3, 0x40,
+	0x10, 0x26, 0x57, 0x7b, 0xb1, 0x53, 0xef, 0xd7, 0x5e, 0x6b, 0x43, 0xfc, 0x71, 0x35, 0x0a, 0x1e,
+	0xa8, 0x11, 0xce, 0x67, 0x1f, 0xd4, 0xc3, 0xd2, 0x87, 0x83, 0x10, 0x7f, 0x3c, 0x88, 0x70, 0xec,
+	0x25, 0x23, 0x06, 0x9a, 0xdd, 0xb8, 0xd9, 0x72, 0xe0, 0xbb, 0xfe, 0xd9, 0x22, 0xc9, 0x6e, 0xda,
+	0xee, 0x5e, 0x52, 0xd0, 0xa7, 0x76, 0xbe, 0x99, 0xfd, 0x66, 0xf8, 0xe6, 0x9b, 0xc0, 0x5e, 0x9e,
+	0x31, 0x29, 0x51, 0x84, 0x85, 0xe0, 0x92, 0x93, 0x61, 0xc2, 0xf3, 0x50, 0x43, 0xc1, 0x6b, 0xd8,
+	0x9f, 0x21, 0xfb, 0x80, 0x98, 0xc6, 0xf8, 0x63, 0x89, 0xa5, 0x24, 0xcf, 0xe0, 0x88, 0xe2, 0x4f,
+	0xc4, 0xf4, 0xb2, 0xa0, 0x65, 0x59, 0x7c, 0x17, 0xb4, 0x44, 0xcf, 0x99, 0x3a, 0xa7, 0x77, 0xe2,
+	0x43, 0x95, 0x88, 0x56, 0x78, 0xf0, 0x02, 0x0e, 0x56, 0xcf, 0xcb, 0x82, 0xb3, 0x12, 0x89, 0x0f,
+	0xb7, 0x73, 0x86, 0x39, 0x67, 0x59, 0xe2, 0x39, 0xd3, 0xde, 0xe9, 0x20, 0x5e, 0xc5, 0xc1, 0x6f,
+	0x07, 0xc8, 0x9c, 0x65, 0x32, 0x12, 0xfc, 0x5b, 0xb6, 0xc0, 0xa6, 0xe5, 0x53, 0x38, 0xb8, 0xa6,
+	0x8b, 0x05, 0xca, 0xba, 0xe5, 0x35, 0x17, 0xa9, 0x6e, 0xb8, 0xaf, 0xe0, 0x48, 0xa3, 0x06, 0xf7,
+	0x8e, 0xc9, 0xdd, 0x3e, 0x77, 0xaf, 0x63, 0xee, 0x31, 0x1c, 0x1b, 0x73, 0xa8, 0xd9, 0x83, 0xf7,
+	0x30, 0xfa, 0x54, 0xa4, 0x54, 0xa2, 0x35, 0x60, 0x08, 0x6e, 0xa1, 0x90, 0x7a, 0xb0, 0xe1, 0xd9,
+	0x28, 0xdc, 0x10, 0x31, 0x6c, 0xaa, 0x9b, 0xa2, 0x60, 0x06, 0x63, 0x8b, 0x47, 0x8b, 0xf3, 0xaf,
+	0x44, 0xc7, 0x70, 0x34, 0x43, 0x4b, 0xae, 0xe0, 0x1c, 0xc8, 0x26, 0xf8, 0x9f, 0xd4, 0x1e, 0xdc,
+	0x5d, 0xb3, 0xbc, 0x49, 0x53, 0x51, 0x36, 0xfc, 0x2f, 0x61, 0x72, 0x23, 0xa3, 0x9b, 0x8c, 0xa0,
+	0x4f, 0x2b, 0x40, 0x6f, 0x56, 0x05, 0xc1, 0x73, 0x18, 0xbd, 0xe3, 0x8c, 0x61, 0x22, 0x3f, 0xf2,
+	0x08, 0x51, 0x34, 0xb2, 0xb5, 0x57, 0x4f, 0x60, 0x6c, 0x55, 0x6b, 0xf5, 0x7f, 0x39, 0xe0, 0xea,
+	0xae, 0x64, 0x02, 0x6e, 0x81, 0x28, 0x2e, 0x33, 0x65, 0x85, 0x41, 0xbc, 0x5b, 0x85, 0xf3, 0x94,
+	0x3c, 0x00, 0xa0, 0x49, 0xc2, 0x97, 0x4c, 0x56, 0xb9, 0x9d, 0x3a, 0x37, 0xd0, 0xc8, 0xbc, 0x76,
+	0xc8, 0xb2, 0x44, 0xc1, 0x68, 0xae, 0x96, 0x3f, 0x88, 0x57, 0x71, 0x35, 0x0e, 0xe6, 0x34, 0x5b,
+	0x78, 0xb7, 0xea, 0x84, 0x0a, 0xc8, 0x21, 0xf4, 0xae, 0x32, 0xee, 0xf5, 0x6b, 0xac, 0xfa, 0x7b,
+	0xf6, 0xa7, 0x07, 0xee, 0x85, 0x92, 0x8d, 0x9c, 0x83, 0xab, 0x0d, 0x4e, 0xee, 0x19, 0x7a, 0x9a,
+	0x57, 0xe3, 0xdf, 0x6f, 0x4f, 0x6a, 0xd9, 0x22, 0x18, 0x6e, 0xd8, 0x8d, 0x9c, 0x18, 0xc5, 0x37,
+	0x0f, 0xc2, 0x9f, 0x76, 0x17, 0x68, 0xc6, 0x0b, 0x80, 0xf5, 0x8e, 0xc8, 0x43, 0xab, 0xbb, 0xcd,
+	0x77, 0xd2, 0x99, 0xd7, 0x74, 0x5f, 0xab, 0x3b, 0x36, 0x56, 0x4e, 0x1e, 0x77, 0xbc, 0xd9, 0xb4,
+	0x8a, 0xff, 0x64, 0x7b, 0x91, 0x66, 0xff, 0x0c, 0x7b, 0xc6, 0x39, 0x90, 0x47, 0xc6, 0xb3, 0xb6,
+	0x93, 0xf3, 0x83, 0x6d, 0x25, 0x6b, 0x5e, 0xc3, 0x49, 0x16, 0x6f, 0x9b, 0x27, 0x2d, 0xde, 0x56,
+	0x23, 0xbe, 0x75, 0xbf, 0xf4, 0xeb, 0x4f, 0xe5, 0xd5, 0x6e, 0xfd, 0xf3, 0xea, 0x6f, 0x00, 0x00,
+	0x00, 0xff, 0xff, 0xf1, 0x34, 0x8e, 0xa9, 0x42, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -482,8 +644,12 @@ type MintterClient interface {
 	InitProfile(ctx context.Context, in *InitProfileRequest, opts ...grpc.CallOption) (*InitProfileResponse, error)
 	// Retrieves profile information.
 	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error)
+	// Get network multiaddrs of the current node.
+	GetProfileAddrs(ctx context.Context, in *GetProfileAddrsRequest, opts ...grpc.CallOption) (*GetProfileAddrsResponse, error)
 	// Updates profile information.
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
+	// Establish a p2p connection to another peer on the network.
+	ConnectToPeer(ctx context.Context, in *ConnectToPeerRequest, opts ...grpc.CallOption) (*ConnectToPeerResponse, error)
 }
 
 type mintterClient struct {
@@ -521,9 +687,27 @@ func (c *mintterClient) GetProfile(ctx context.Context, in *GetProfileRequest, o
 	return out, nil
 }
 
+func (c *mintterClient) GetProfileAddrs(ctx context.Context, in *GetProfileAddrsRequest, opts ...grpc.CallOption) (*GetProfileAddrsResponse, error) {
+	out := new(GetProfileAddrsResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.Mintter/GetProfileAddrs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *mintterClient) UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error) {
 	out := new(UpdateProfileResponse)
 	err := c.cc.Invoke(ctx, "/com.mintter.Mintter/UpdateProfile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mintterClient) ConnectToPeer(ctx context.Context, in *ConnectToPeerRequest, opts ...grpc.CallOption) (*ConnectToPeerResponse, error) {
+	out := new(ConnectToPeerResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.Mintter/ConnectToPeer", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -545,8 +729,12 @@ type MintterServer interface {
 	InitProfile(context.Context, *InitProfileRequest) (*InitProfileResponse, error)
 	// Retrieves profile information.
 	GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error)
+	// Get network multiaddrs of the current node.
+	GetProfileAddrs(context.Context, *GetProfileAddrsRequest) (*GetProfileAddrsResponse, error)
 	// Updates profile information.
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error)
+	// Establish a p2p connection to another peer on the network.
+	ConnectToPeer(context.Context, *ConnectToPeerRequest) (*ConnectToPeerResponse, error)
 }
 
 // UnimplementedMintterServer can be embedded to have forward compatible implementations.
@@ -562,8 +750,14 @@ func (*UnimplementedMintterServer) InitProfile(ctx context.Context, req *InitPro
 func (*UnimplementedMintterServer) GetProfile(ctx context.Context, req *GetProfileRequest) (*GetProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
 }
+func (*UnimplementedMintterServer) GetProfileAddrs(ctx context.Context, req *GetProfileAddrsRequest) (*GetProfileAddrsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfileAddrs not implemented")
+}
 func (*UnimplementedMintterServer) UpdateProfile(ctx context.Context, req *UpdateProfileRequest) (*UpdateProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
+}
+func (*UnimplementedMintterServer) ConnectToPeer(ctx context.Context, req *ConnectToPeerRequest) (*ConnectToPeerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConnectToPeer not implemented")
 }
 
 func RegisterMintterServer(s *grpc.Server, srv MintterServer) {
@@ -624,6 +818,24 @@ func _Mintter_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Mintter_GetProfileAddrs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProfileAddrsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MintterServer).GetProfileAddrs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.Mintter/GetProfileAddrs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MintterServer).GetProfileAddrs(ctx, req.(*GetProfileAddrsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Mintter_UpdateProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateProfileRequest)
 	if err := dec(in); err != nil {
@@ -638,6 +850,24 @@ func _Mintter_UpdateProfile_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MintterServer).UpdateProfile(ctx, req.(*UpdateProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Mintter_ConnectToPeer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConnectToPeerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MintterServer).ConnectToPeer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.Mintter/ConnectToPeer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MintterServer).ConnectToPeer(ctx, req.(*ConnectToPeerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -659,8 +889,16 @@ var _Mintter_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Mintter_GetProfile_Handler,
 		},
 		{
+			MethodName: "GetProfileAddrs",
+			Handler:    _Mintter_GetProfileAddrs_Handler,
+		},
+		{
 			MethodName: "UpdateProfile",
 			Handler:    _Mintter_UpdateProfile_Handler,
+		},
+		{
+			MethodName: "ConnectToPeer",
+			Handler:    _Mintter_ConnectToPeer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

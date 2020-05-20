@@ -310,6 +310,86 @@ proto.com.mintter.MintterPromiseClient.prototype.getProfile =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.mintter.GetProfileAddrsRequest,
+ *   !proto.com.mintter.GetProfileAddrsResponse>}
+ */
+const methodDescriptor_Mintter_GetProfileAddrs = new grpc.web.MethodDescriptor(
+  '/com.mintter.Mintter/GetProfileAddrs',
+  grpc.web.MethodType.UNARY,
+  proto.com.mintter.GetProfileAddrsRequest,
+  proto.com.mintter.GetProfileAddrsResponse,
+  /**
+   * @param {!proto.com.mintter.GetProfileAddrsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.GetProfileAddrsResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.com.mintter.GetProfileAddrsRequest,
+ *   !proto.com.mintter.GetProfileAddrsResponse>}
+ */
+const methodInfo_Mintter_GetProfileAddrs = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.com.mintter.GetProfileAddrsResponse,
+  /**
+   * @param {!proto.com.mintter.GetProfileAddrsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.GetProfileAddrsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.mintter.GetProfileAddrsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.GetProfileAddrsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.GetProfileAddrsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.mintter.MintterClient.prototype.getProfileAddrs =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.mintter.Mintter/GetProfileAddrs',
+      request,
+      metadata || {},
+      methodDescriptor_Mintter_GetProfileAddrs,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.mintter.GetProfileAddrsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.mintter.GetProfileAddrsResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.com.mintter.MintterPromiseClient.prototype.getProfileAddrs =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.mintter.Mintter/GetProfileAddrs',
+      request,
+      metadata || {},
+      methodDescriptor_Mintter_GetProfileAddrs);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.com.mintter.UpdateProfileRequest,
  *   !proto.com.mintter.UpdateProfileResponse>}
  */
@@ -384,6 +464,86 @@ proto.com.mintter.MintterPromiseClient.prototype.updateProfile =
       request,
       metadata || {},
       methodDescriptor_Mintter_UpdateProfile);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.mintter.ConnectToPeerRequest,
+ *   !proto.com.mintter.ConnectToPeerResponse>}
+ */
+const methodDescriptor_Mintter_ConnectToPeer = new grpc.web.MethodDescriptor(
+  '/com.mintter.Mintter/ConnectToPeer',
+  grpc.web.MethodType.UNARY,
+  proto.com.mintter.ConnectToPeerRequest,
+  proto.com.mintter.ConnectToPeerResponse,
+  /**
+   * @param {!proto.com.mintter.ConnectToPeerRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.ConnectToPeerResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.com.mintter.ConnectToPeerRequest,
+ *   !proto.com.mintter.ConnectToPeerResponse>}
+ */
+const methodInfo_Mintter_ConnectToPeer = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.com.mintter.ConnectToPeerResponse,
+  /**
+   * @param {!proto.com.mintter.ConnectToPeerRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.ConnectToPeerResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.mintter.ConnectToPeerRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.ConnectToPeerResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.ConnectToPeerResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.mintter.MintterClient.prototype.connectToPeer =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.mintter.Mintter/ConnectToPeer',
+      request,
+      metadata || {},
+      methodDescriptor_Mintter_ConnectToPeer,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.mintter.ConnectToPeerRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.mintter.ConnectToPeerResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.com.mintter.MintterPromiseClient.prototype.connectToPeer =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.mintter.Mintter/ConnectToPeer',
+      request,
+      metadata || {},
+      methodDescriptor_Mintter_ConnectToPeer);
 };
 
 

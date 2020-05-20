@@ -42,15 +42,24 @@ func newServer(t *testing.T) *server.Server {
 	return srv
 }
 
-var testMnemonic = []string{"abandon", "impact", "blossom", "roast", "early", "turkey", "oblige", "cry", "citizen", "toilet", "prefer", "sudden", "glad", "luxury", "vehicle", "broom", "view", "front", "office", "rain", "machine", "angle", "humor", "acid"}
+var (
+	testMnemonic  = []string{"abandon", "impact", "blossom", "roast", "early", "turkey", "oblige", "cry", "citizen", "toilet", "prefer", "sudden", "glad", "luxury", "vehicle", "broom", "view", "front", "office", "rain", "machine", "angle", "humor", "acid"}
+	testMnemonic2 = []string{"ability", "panther", "verb", "beef", "load", "violin", "cloud", "miracle", "wage", "subway", "gravity", "enter", "cargo", "evil", "loop", "celery", "pass", "absurd", "switch", "auction", "under", "able", "rate", "tiger"}
+)
 
-func newSeededServer(t *testing.T) *server.Server {
+func newSeededServer(t *testing.T, words ...string) *server.Server {
 	t.Helper()
 	srv := newServer(t)
 
-	_, err := srv.InitProfile(context.TODO(), &proto.InitProfileRequest{
+	req := &proto.InitProfileRequest{
 		Mnemonic: testMnemonic,
-	})
+	}
+
+	if words != nil {
+		req.Mnemonic = words
+	}
+
+	_, err := srv.InitProfile(context.TODO(), req)
 
 	require.NoError(t, err)
 

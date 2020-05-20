@@ -160,9 +160,80 @@ export namespace GetProfileResponse {
   }
 }
 
+export class GetProfileAddrsRequest extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetProfileAddrsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetProfileAddrsRequest): GetProfileAddrsRequest.AsObject;
+  static serializeBinaryToWriter(message: GetProfileAddrsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetProfileAddrsRequest;
+  static deserializeBinaryFromReader(message: GetProfileAddrsRequest, reader: jspb.BinaryReader): GetProfileAddrsRequest;
+}
+
+export namespace GetProfileAddrsRequest {
+  export type AsObject = {
+  }
+}
+
+export class GetProfileAddrsResponse extends jspb.Message {
+  getAddrsList(): Array<string>;
+  setAddrsList(value: Array<string>): void;
+  clearAddrsList(): void;
+  addAddrs(value: string, index?: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetProfileAddrsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetProfileAddrsResponse): GetProfileAddrsResponse.AsObject;
+  static serializeBinaryToWriter(message: GetProfileAddrsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetProfileAddrsResponse;
+  static deserializeBinaryFromReader(message: GetProfileAddrsResponse, reader: jspb.BinaryReader): GetProfileAddrsResponse;
+}
+
+export namespace GetProfileAddrsResponse {
+  export type AsObject = {
+    addrsList: Array<string>,
+  }
+}
+
+export class ConnectToPeerRequest extends jspb.Message {
+  getAddrsList(): Array<string>;
+  setAddrsList(value: Array<string>): void;
+  clearAddrsList(): void;
+  addAddrs(value: string, index?: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ConnectToPeerRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ConnectToPeerRequest): ConnectToPeerRequest.AsObject;
+  static serializeBinaryToWriter(message: ConnectToPeerRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ConnectToPeerRequest;
+  static deserializeBinaryFromReader(message: ConnectToPeerRequest, reader: jspb.BinaryReader): ConnectToPeerRequest;
+}
+
+export namespace ConnectToPeerRequest {
+  export type AsObject = {
+    addrsList: Array<string>,
+  }
+}
+
+export class ConnectToPeerResponse extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ConnectToPeerResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ConnectToPeerResponse): ConnectToPeerResponse.AsObject;
+  static serializeBinaryToWriter(message: ConnectToPeerResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ConnectToPeerResponse;
+  static deserializeBinaryFromReader(message: ConnectToPeerResponse, reader: jspb.BinaryReader): ConnectToPeerResponse;
+}
+
+export namespace ConnectToPeerResponse {
+  export type AsObject = {
+  }
+}
+
 export class Profile extends jspb.Message {
   getPeerId(): string;
   setPeerId(value: string): void;
+
+  getAccountId(): string;
+  setAccountId(value: string): void;
 
   getUsername(): string;
   setUsername(value: string): void;
@@ -184,6 +255,7 @@ export class Profile extends jspb.Message {
 export namespace Profile {
   export type AsObject = {
     peerId: string,
+    accountId: string,
     username: string,
     email: string,
     bio: string,
