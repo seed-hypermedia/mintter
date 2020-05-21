@@ -40,7 +40,7 @@
     "remark-slate": "^0.8.0",
     "slate": "^0.57.1",
     "slate-hyperscript": "^0.57.1",
-    "slate-plugins-next": "^0.57.12",
+    "slate-plugins-next": "0.58",
     "slate-react": "^0.57.1",
     "styled-components": "^5.1.0",
     "tailwindcss": "1.4",

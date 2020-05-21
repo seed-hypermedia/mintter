@@ -1,27 +1,33 @@
 import React, {RefObject} from 'react'
-import {RenderElementProps, ReactEditor} from 'slate-react'
-import {Icons} from '@mintter/editor'
+import {RenderElementProps, ReactEditor, useEditor} from 'slate-react'
+import {Icons, Editor} from '@mintter/editor'
 import {css} from 'emotion'
-import {Editor} from 'slate'
 
 export function Section(
-  {
-    children,
-    element,
-    editor,
-    ...rest
-  }: RenderElementProps & {editor: ReactEditor},
+  {children, element, ...rest}: RenderElementProps,
   ref: RefObject<HTMLDivElement>,
 ) {
+  const editor = useEditor()
   const path = ReactEditor.findPath(editor, element)
-  const sectionChars = Editor.string(editor, path).trim().length
+  const sectionChars = Editor.charCount(editor, path)
+  const [inside, setInside] = React.useState<boolean>(false)
+
+  function handleMouseEnter(e: React.SyntheticEvent<HTMLDivElement>) {
+    setInside(true)
+  }
+
+  function handleMouseLeave(e: React.SyntheticEvent<HTMLDivElement>) {
+    setInside(false)
+  }
 
   return (
     <div
+      {...rest}
       data-slate-type={element.type}
-      // {...attributes}
       ref={ref}
-      className={`relative px-8 pt-12 pb-16 group ${css`
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className={`relative px-8 pt-12 pb-16 group bg-gray-200 ${css`
         &:after {
           display: ${path[0] === 0 ? 'none' : 'block'};
           content: '';
@@ -50,12 +56,16 @@ export function Section(
     >
       <div
         contentEditable={false}
-        className="absolute right-0 top-0 mt-4 mr-4 bg-gray-800 rounded shadows-md opacity-0 group-hover:opacity-100 transition duration-200 theme-dark flex items-center pl-2 text-xs leading-none text-body"
+        className={`select-none absolute right-0 top-0 mt-4 mr-4 bg-gray-800 rounded shadows-md transition duration-200 theme-dark flex items-center pl-2 text-xs leading-none text-body ${
+          inside
+            ? 'pointer-events-auto opacity-100'
+            : 'pointer-events-none opacity-0'
+        }`}
       >
         <p className="font-bold border-r px-2">Section text</p>
-        <p className={`text-body border-r px-2 ${css``}`}>
+        <p className={`text-body border-r px-2`}>
           <span>Characters:</span>{' '}
-          {/* TODO: FIX avoid characters to juno when change chars number */}
+          {/* TODO: FIX avoid characters to jump when change chars number */}
           <span className={`inline-block text-right`}>{sectionChars}</span>
         </p>
         <p className=" border-r px-2">Royalties $0.02</p>

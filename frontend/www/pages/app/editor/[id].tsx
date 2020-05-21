@@ -2,7 +2,7 @@ import React, {useReducer, useCallback} from 'react'
 import isHotkey from 'is-hotkey'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
-import {Icons} from '@mintter/editor'
+import {Icons, nodeTypes} from '@mintter/editor'
 import {
   Editor,
   Toolbar,
@@ -312,12 +312,11 @@ export default function EditorPage(): JSX.Element {
                         {!isEmpty() && <SectionToolbar />}
                         <EditablePlugins
                           plugins={plugins}
-                          renderElement={[renderElement(editor)]}
+                          renderElement={[renderElement]}
                           renderLeaf={[
                             renderLeafBold(),
                             renderLeafItalic(),
                             renderLeafUnderline(),
-                            renderLeafInlineCode(),
                             renderLeafPreview(),
                           ]}
                           placeholder="Start writing your masterpiece..."
@@ -351,6 +350,10 @@ export default function EditorPage(): JSX.Element {
 
 const SoftBreakPlugin = (): SlatePlugin => ({
   onKeyDown: onKeyDownSoftBreak(),
+})
+
+const InlineCodePlugin = (): SlatePlugin => ({
+  renderLeaf: renderLeafInlineCode(),
 })
 
 const onKeyDownSoftBreak = () => (e: KeyboardEvent, editor: SlateEditor) => {
