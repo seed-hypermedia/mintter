@@ -5,9 +5,8 @@ import {
   MARK_ITALIC,
   toggleMark,
   isMarkActive,
-  isBlockActive,
   insertLink,
-  isLinkActive,
+  isNodeInSelection,
   toggleList,
 } from 'slate-plugins-next'
 import {nodeTypes} from '../nodeTypes'
@@ -18,6 +17,10 @@ export function ToolbarBoldMark() {
   return <ToolbarMark mark={MARK_BOLD} icon="Bold" />
 }
 
+export function ToolbarCodeMark() {
+  return <ToolbarMark mark={nodeTypes.typeCode} icon="Code" />
+}
+
 export function ToolbarMarkItalic() {
   return <ToolbarMark mark={MARK_ITALIC} icon="Italic" />
 }
@@ -26,7 +29,7 @@ export function ToolbarBlockLink() {
   const editor = useSlate()
   return (
     <ToolbarButton
-      active={isLinkActive(editor)}
+      active={isNodeInSelection(editor, nodeTypes.typeLink)}
       onClick={() => {
         const url = window.prompt('Enter the URL of the link:')
         if (!url) return
@@ -113,7 +116,7 @@ export function ToolbarBlock({icon, type}) {
     <ToolbarButton
       icon={icon}
       onClick={handleClick}
-      active={isBlockActive(editor, type)}
+      active={isNodeInSelection(editor, type)}
     />
   )
 }
@@ -131,7 +134,7 @@ export function ToolbarList({
   return (
     <ToolbarButton
       {...props}
-      active={isLinkActive(editor)}
+      active={isNodeInSelection(editor, typeList)}
       onClick={() => toggleList(editor, {...props, typeList})}
       icon={icon}
     />
@@ -151,6 +154,7 @@ export function Toolbar() {
   return (
     <HoveringToolbar className="theme-dark">
       <ToolbarBoldMark />
+      <ToolbarCodeMark />
       <ToolbarMarkItalic />
       <ToolbarBlockUList />
       <ToolbarBlockOList />

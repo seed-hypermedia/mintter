@@ -10,13 +10,14 @@ import {
   withDeleteStartReset,
   withShortcuts,
   withList,
-  withPasteHtml,
-  withPasteMd,
   withImage,
+  withDeserializeHtml,
   withLink,
   withBlock,
+  withDeserializeMd,
   BLOCKQUOTE,
   HeadingType,
+  pipe,
 } from 'slate-plugins-next'
 import {withSections} from './SectionPlugin'
 import {nodeTypes} from './nodeTypes'
@@ -28,36 +29,26 @@ const resetOptions = {
     HeadingType.H1,
     HeadingType.H2,
     HeadingType.H3,
-    'section',
+    nodeTypes.typeSection,
   ],
 }
 
 export function useEditor(plugins: any[]): Editor {
-  return React.useMemo(
-    () =>
-      withSections()(
-        withShortcuts(nodeTypes)(
-          withList(nodeTypes)(
-            withBreakEmptyReset(resetOptions)(
-              withDeleteStartReset(resetOptions)(
-                withImage(nodeTypes)(
-                  withPasteHtml(plugins)(
-                    withPasteMd(plugins)(
-                      withBlock(nodeTypes)(
-                        withLink(nodeTypes)(
-                          withHistory(withReact(createEditor())),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withLink(nodeTypes),
+    withBlock(nodeTypes),
+    withDeserializeMd(plugins),
+    withDeserializeHtml(plugins),
+    withImage(nodeTypes),
+    withSections(),
+    withBreakEmptyReset(resetOptions),
+    withList(nodeTypes),
+    withShortcuts(nodeTypes),
+    withDeleteStartReset(resetOptions),
+  ] as const
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  )
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return React.useMemo(() => pipe(createEditor(), ...withPlugins), [])
 }

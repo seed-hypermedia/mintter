@@ -8040,6 +8040,11 @@ marked@^0.8.0:
   resolved "https://registry.yarnpkg.com/marked/-/marked-0.8.2.tgz#4faad28d26ede351a7a1aaa5fec67915c869e355"
   integrity sha512-EGwzEeCcLniFX51DhTpmTom+dSA/MG/OBUDjnWtHbEnjAH180VzUeAw+oE4+Zv+CoYBWyRlYOTR0N8SO9R1PVw==
 
+marked@^1.0.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/marked/-/marked-1.1.0.tgz#62504ad4d11550c942935ccc5e39d64e5a4c4e50"
+  integrity sha512-EkE7RW6KcXfMHy2PA7Jg0YJE1l8UPEZE8k45tylzmZM30/r1M1MUXWQfJlrSbsTeh7m/XTwHbWUENvAJZpp1YA==
+
 match-sorter@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/match-sorter/-/match-sorter-4.1.0.tgz#8ba63f4aaf438d7a844829f1a75aa3ab1b2587ba"
@@ -9645,7 +9650,7 @@ pretty-hrtime@^1.0.3:
   resolved "https://registry.yarnpkg.com/pretty-hrtime/-/pretty-hrtime-1.0.3.tgz#b7e3ea42435a4c9b2759d99e0f201eb195802ee1"
   integrity sha1-t+PqQkNaTJsnWdmeDyAesZWALuE=
 
-prismjs@^1.17.1:
+prismjs@^1.20.0:
   version "1.20.0"
   resolved "https://registry.yarnpkg.com/prismjs/-/prismjs-1.20.0.tgz#9b685fc480a3514ee7198eac6a3bf5024319ff03"
   integrity sha512-AEDjSrVNkynnw6A+B1DsFkd6AVdTnp+/WoUixFRULlCLZVRZlVQMVWio/16jv7G1FscUxQxOQhWwApgbnxr6kQ==
@@ -10811,27 +10816,27 @@ slate-hyperscript@^0.57.1:
   dependencies:
     is-plain-object "^3.0.0"
 
-slate-plugins-next@^0.57.12:
-  version "0.57.12"
-  resolved "https://registry.yarnpkg.com/slate-plugins-next/-/slate-plugins-next-0.57.12.tgz#7df7d772d1b3d58d6c5a36bb6ba5d219460e3144"
-  integrity sha512-RpjikoL+qaaEb4TfigCgM8mqRY0qFg1neahEitCrL15zrT/ZTLzvVNNzymWm1rn2YAi2yHM9DTkJbU8rkcaZ1g==
+slate-plugins-next@0.58:
+  version "0.58.4"
+  resolved "https://registry.yarnpkg.com/slate-plugins-next/-/slate-plugins-next-0.58.4.tgz#a11b4117e6571cc51c87782f742275a210f2aef0"
+  integrity sha512-BgLnEmCZHYEwp/1zgDMtm1bJyccJaNx1isPADdfJRTyzKJCJMW+SrkGNgM3cYT705D215/6UBwIIX5UFnoj1nw==
   dependencies:
     image-extensions "^1.1.0"
     is-hotkey "^0.1.6"
-    is-url "^1.2.4"
-    marked "^0.8.0"
-    prismjs "^1.17.1"
+    lodash "^4.17.15"
+    marked "^1.0.0"
+    prismjs "^1.20.0"
 
-slate-plugins-next@^0.58.0:
-  version "0.58.0"
-  resolved "https://registry.yarnpkg.com/slate-plugins-next/-/slate-plugins-next-0.58.0.tgz#2a0b7e16bd902b54f3ba50cbcfc672dd5be6899d"
-  integrity sha512-f8mJeysddgU9wZ0RFycls2SPXaw97zx/kfjPRXzz1x8LW5lFTXSa4bV3G+bHU/76RgA/qqPxAdJA1YtT80us6g==
+slate-plugins-next@^0.58.5:
+  version "0.58.5"
+  resolved "https://registry.yarnpkg.com/slate-plugins-next/-/slate-plugins-next-0.58.5.tgz#bd7b3ce3f2a14dc8073168bcaf3c7685ac66d77d"
+  integrity sha512-R5GQBzF8C8T61BB1HgaVAj4TWjJPBLVn6nUTaDEc3uByQij0+nANMkN1En/LJM25PhxDLnUmKQTWas+9dSQUlQ==
   dependencies:
     image-extensions "^1.1.0"
     is-hotkey "^0.1.6"
-    is-url "^1.2.4"
-    marked "^0.8.0"
-    prismjs "^1.17.1"
+    lodash "^4.17.15"
+    marked "^1.0.0"
+    prismjs "^1.20.0"
 
 slate-react@^0.57.1:
   version "0.57.1"
