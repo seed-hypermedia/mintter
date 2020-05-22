@@ -1,5 +1,6 @@
 import {Editor, Transforms, Range, Point} from 'slate'
 import {ReactEditor} from 'slate-react'
+import {nodeTypes} from '../nodeTypes'
 
 export function withSections() {
   return <T extends ReactEditor>(editor: T) => {
@@ -9,7 +10,7 @@ export function withSections() {
       const {selection} = editor
       if (selection && Range.isCollapsed(selection)) {
         const parent = Editor.above(editor, {
-          match: n => n.type === 'section',
+          match: n => n.type === nodeTypes.typeSection,
         })
 
         if (parent) {

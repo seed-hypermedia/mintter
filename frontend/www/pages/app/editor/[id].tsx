@@ -23,7 +23,7 @@ import {
   renderLeafUnderline,
   renderLeafInlineCode,
 } from '../../../components/leafs'
-import renderElement from '../../../components/elements'
+import renderElements from '../../../components/elements'
 import EditorHeader from '../../../components/editor-header'
 import {DebugValue} from '../../../components/debug'
 import {css} from 'emotion'
@@ -123,6 +123,10 @@ function initializeEditorValue() {
   return initialValue
 }
 
+export const tippyContext = React.createContext(null)
+
+const TippyProvider = tippyContext.Provider
+
 export default function EditorPage(): JSX.Element {
   const plugins = [...editorPlugins, SoftBreakPlugin()]
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
@@ -131,6 +135,8 @@ export default function EditorPage(): JSX.Element {
   const titleRef = React.useRef(null)
   const descriptionRef = React.useRef(null)
   const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
+
+  const renderElement = React.useCallback(renderElements, [])
   const {
     state,
     setTitle,
@@ -166,25 +172,29 @@ export default function EditorPage(): JSX.Element {
 
   React.useEffect(() => {
     if (readyToAutosave) {
-      // console.log('--------------------- SAVE!!!', readyToAutosave)
       autosaveDraft({state})
     }
   }, [debouncedValue])
 
   React.useEffect(() => {
     if (data) {
-      // console.log('dentro de data if', JSON.stringify(data, null, 4))
       const obj = data.toObject()
-      // console.log('sections => ', obj.sectionsList)
+      console.log('obj', obj)
       setValue({
         title: obj.title,
         description: obj.description,
         sections:
           obj.sectionsList.length > 0
-            ? obj.sectionsList.map((s: Section.AsObject) => ({
-                type: 'section',
-                children: markdownToSlate(s.body),
-              }))
+            ? obj.sectionsList.map((s: Section.AsObject) => {
+                console.log('s', s)
+                return {
+                  type: nodeTypes.typeSection,
+                  title: s.title,
+                  description: s.description,
+                  author: s.author,
+                  children: markdownToSlate(s.body),
+                }
+              })
             : initialSectionsValue,
       })
     }

@@ -113,8 +113,8 @@ export default function Element({
               display: inline;
             }
           `}`}
-          onClick={() => window.open(element.url, '_blank')}
-          href={element.url}
+          onClick={() => window.open(element.url as string, '_blank')}
+          href={element.url as string}
         >
           {children}
         </a>

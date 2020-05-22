@@ -58,7 +58,6 @@ export default function WelcomeProvider({
     async function checkProfile() {
       try {
         const resp = await hasProfile()
-        console.log('checkProfile -> resp', resp)
         if (resp) {
           router.replace('/app/library')
         }

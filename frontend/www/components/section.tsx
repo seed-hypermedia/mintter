@@ -1,23 +1,34 @@
 import React, {RefObject} from 'react'
+import {Transforms} from 'slate'
 import {RenderElementProps, ReactEditor, useEditor} from 'slate-react'
 import {Icons, Editor} from '@mintter/editor'
 import {css} from 'emotion'
+import {SlateSection} from '../shared/parseToMarkdown'
+import Tippy from '@tippyjs/react'
+
+interface SectionElementProps extends Omit<RenderElementProps, 'element'> {
+  element?: SlateSection
+}
 
 export function Section(
-  {children, element, ...rest}: RenderElementProps,
+  {children, element, ...rest}: SectionElementProps,
   ref: RefObject<HTMLDivElement>,
 ) {
   const editor = useEditor()
   const path = ReactEditor.findPath(editor, element)
   const sectionChars = Editor.charCount(editor, path)
-  const [inside, setInside] = React.useState<boolean>(false)
+  const [isHover, setHover] = React.useState<boolean>(false)
+  const [visible, setVisible] = React.useState<boolean>(true)
+  const show = () => setVisible(true)
+  const hide = () => setVisible(false)
 
   function handleMouseEnter(e: React.SyntheticEvent<HTMLDivElement>) {
-    setInside(true)
+    setHover(true)
   }
 
   function handleMouseLeave(e: React.SyntheticEvent<HTMLDivElement>) {
-    setInside(false)
+    setHover(false)
+    hide()
   }
 
   return (
@@ -27,7 +38,9 @@ export function Section(
       ref={ref}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative px-8 pt-12 pb-16 group bg-gray-200 ${css`
+      className={`relative px-8 pt-12 pb-16 group ${
+        isHover ? 'bg-gray-200' : ''
+      } ${css`
         &:after {
           display: ${path[0] === 0 ? 'none' : 'block'};
           content: '';
@@ -56,8 +69,8 @@ export function Section(
     >
       <div
         contentEditable={false}
-        className={`select-none absolute right-0 top-0 mt-4 mr-4 bg-gray-800 rounded shadows-md transition duration-200 theme-dark flex items-center pl-2 text-xs leading-none text-body ${
-          inside
+        className={`absolute top-0 right-0 select-none mt-4 mr-4 bg-gray-800 rounded shadows-md transition duration-200 theme-dark flex items-center pl-2 text-xs leading-none text-body ${
+          isHover
             ? 'pointer-events-auto opacity-100'
             : 'pointer-events-none opacity-0'
         }`}
@@ -69,18 +82,13 @@ export function Section(
           <span className={`inline-block text-right`}>{sectionChars}</span>
         </p>
         <p className=" border-r px-2">Royalties $0.02</p>
-        <button
-          className="px-3 py-2"
-          onClick={() => alert('section settings clicked')}
-        >
-          <Icons.Settings
-            // fill="currentColor"
-            className="text-white"
-            size={16}
-            color="currentColor"
-            strokeWidth="1"
-          />
-        </button>
+        <SettingsButton
+          section={element}
+          path={path}
+          visible={visible}
+          show={show}
+          hide={hide}
+        />
       </div>
       {children}
     </div>
@@ -88,3 +96,92 @@ export function Section(
 }
 
 export default React.forwardRef(Section)
+
+function SettingsButton({section, path, visible, show, hide}) {
+  const {title, description} = section
+  const titleRef = React.useRef<HTMLInputElement>(null)
+  const editor = useEditor()
+  const [innterTitle, setTitle] = React.useState<string>(() => title || '')
+  const [innterDescription, setDescription] = React.useState<string>(
+    () => description || '',
+  )
+
+  function toggleFormMetadata() {
+    if (visible) {
+      hide()
+    } else {
+      show()
+      titleRef.current.focus()
+    }
+  }
+
+  return (
+    <Tippy
+      visible={visible}
+      placement="bottom-end"
+      interactive
+      onClickOutside={hide}
+      content={
+        <div
+          contentEditable={false}
+          className={`theme-light select-none transition duration-200 p-2 rounded bg-gray-300`}
+        >
+          <div>
+            <label
+              className="block text-sm text-heading mb-2"
+              htmlFor="section-title"
+            >
+              title:
+            </label>
+            <input
+              className="block w-full px-2 py-1 bg-white rounded-sm border-muted-hover text-body"
+              name="title"
+              ref={titleRef}
+              onClick={e => e.stopPropagation()}
+              type="text"
+              placeholder="title"
+              value={innterTitle}
+              onChange={e => {
+                setTitle(e.target.value)
+                Transforms.setNodes(editor, {title: e.target.value}, {at: path})
+              }}
+            />
+          </div>
+          <div className="mt-2">
+            <label
+              className="block text-sm text-heading mb-2"
+              htmlFor="section-title"
+            >
+              description:
+            </label>
+            <textarea
+              className="block w-full px-2 py-1 bg-white rounded-sm border-muted-hover text-body"
+              name="description"
+              onClick={e => e.stopPropagation()}
+              placeholder="section description"
+              value={innterDescription}
+              onChange={e => {
+                setDescription(e.target.value)
+                Transforms.setNodes(
+                  editor,
+                  {description: e.target.value},
+                  {at: path},
+                )
+              }}
+            />
+          </div>
+        </div>
+      }
+    >
+      <button className="px-3 py-2" onClick={toggleFormMetadata}>
+        <Icons.Settings
+          // fill="currentColor"
+          className="text-white"
+          size={16}
+          color="currentColor"
+          strokeWidth="1"
+        />
+      </button>
+    </Tippy>
+  )
+}

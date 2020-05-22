@@ -24,7 +24,6 @@ export const Editor = {
   },
   charCount: (editor: ReactEditor, path: Path): number => {
     const txt = SlateEditor.string(editor, path)
-    console.log('txt', txt.split('\n'))
     return txt.trim().length
   },
 }

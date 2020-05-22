@@ -106,7 +106,8 @@ export function ToolbarMark({icon, mark}) {
 }
 
 export function ToolbarBlock({icon, type}) {
-  const editor = useSlate()
+  // TODO: (horacio) Fixme types
+  const editor: any = useSlate()
 
   function handleClick() {
     editor.toggleBlock(type)
