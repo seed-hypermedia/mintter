@@ -63,7 +63,7 @@ export default function CreatePassword() {
               data-testid="first"
               type="password"
               placeholder="******************"
-              ref={(e: HTMLInputElement)  => {
+              ref={(e: HTMLInputElement) => {
                 register({required: true, minLength: 8})(e)
                 focusFirst(e)
               }}

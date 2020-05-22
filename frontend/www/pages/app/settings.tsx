@@ -31,8 +31,6 @@ export default function Settings() {
 
   async function init() {
     const values = await (await getProfile()).toObject()
-    console.log('init -> values', values)
-
     const data = Object.keys(values).map(v => ({[v]: values[v]}))
     setValue(data)
   }

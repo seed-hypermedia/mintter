@@ -7,7 +7,8 @@ export function publish(slateTree: Node[]) {
 }
 
 export function parseSlatetree(slateTree: Node[]) {
-  return slateTree.map(section => {
+  // TODO: (horacio) Fixme types
+  return slateTree.map((section: any) => {
     const {children, ...rest} = section
 
     return {

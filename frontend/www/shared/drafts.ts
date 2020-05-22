@@ -64,12 +64,11 @@ export async function saveDraft({
   description && request.setDescription(description)
 
   if (sections.length > 0) {
-    // console.log('fromSlateToMarkdown => ', fromSlateToMarkdown(value))
-    request.setSectionsList(fromSlateToMarkdown(sections))
+    const s = fromSlateToMarkdown(sections)
+
+    request.setSectionsList(s)
   }
-  const resp = await rpc.saveDraft(request)
-  // console.log('saveDraft -> resp', resp)
-  // console.log('saveDraft -> resp.toObject', resp.toObject())
+  await rpc.saveDraft(request)
 }
 
 export function useFetchDraft(
@@ -83,7 +82,6 @@ export function useFetchDraft(
 }
 
 export async function getDraftFetcher(key, queryId) {
-  console.log('Draft Query is doneeee!', queryId)
   if (Array.isArray(queryId)) {
     throw new Error(
       `Impossible render: You are trying to access the editor passing ${

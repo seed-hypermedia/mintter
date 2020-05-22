@@ -4,8 +4,6 @@ import {createDraft} from '../../../shared/drafts'
 
 export default function EditorIndexPage() {
   const router = useRouter()
-  console.log('EditorIndexPage -> router', router)
-
   useEffect(() => {
     async function redirect() {
       await createDraft(async newDraft => {

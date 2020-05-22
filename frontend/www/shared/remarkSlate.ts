@@ -10,7 +10,8 @@ export default function plugin(opts: Settings) {
   }
 }
 
-export function transform(node: Node, opts: Settings) {
+// TODO: (horacio) Fixme types
+export function transform(node: any, opts: Settings) {
   const settings = opts || {}
 
   let parentNode = node.parentNode || null

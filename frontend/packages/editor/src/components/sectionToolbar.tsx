@@ -22,12 +22,11 @@ export function SectionToolbar() {
       Range.isCollapsed(selection) &&
       selection.focus.offset === 0
     ) {
-      console.log('selection is available')
       const path = selection.anchor.path
       const node = Node.get(editor, Path.parent(path))
-      console.log('node => ', node)
-      const domSelection = window.getSelection() || Node.get(editor, path)
-      const domRange = domSelection.getRangeAt(0)
+      // TODO: (horacio) Fixme types
+      const domSelection: any = window.getSelection() || Node.get(editor, path)
+      const domRange: any = domSelection.getRangeAt(0)
       const rect = domRange.getBoundingClientRect()
       const parentRect = element.parentElement?.getBoundingClientRect()
 

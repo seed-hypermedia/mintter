@@ -20,10 +20,11 @@
     "emotion": "^10.0.27",
     "framer-motion": "^1.8.4",
     "react-feather": "^2.0.4",
-    "slate": "^0.57.1",
+    "slate": "^0.58.1",
     "slate-history": "^0.57.1",
+    "slate-hyperscript": "^0.58.1",
     "slate-plugins-next": "^0.58.5",
-    "slate-react": "^0.57.1"
+    "slate-react": "^0.58.1"
   },
   "peerDependencies": {
     "slate": "^0.57.1",
