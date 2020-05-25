@@ -199,6 +199,7 @@ export default function EditorPage(): JSX.Element {
   React.useEffect(() => {
     function handler(e) {
       if (
+        // TODO: (horacio) if there's an error on this page and the editor has not being loaded properly, this will fail
         !ReactEditor.isFocused(editor) &&
         typeof e.target.value !== 'string'
       ) {
@@ -238,11 +239,11 @@ export default function EditorPage(): JSX.Element {
                   max-width: 300px;
                 `}`}
               >
-                <div className="">
+                {/* <div className="">
                   <p className="font-semibold text-heading text-xl">
                     {title || 'Untitled document'}
                   </p>
-                </div>
+                </div> */}
               </div>
               <div
                 className={`flex-1 ${css`
