@@ -29,8 +29,8 @@ import (
 	"google.golang.org/grpc"
 
 	badger "github.com/ipfs/go-ds-badger"
-	ipld "github.com/ipfs/go-ipld-format"       // OMG someone should kill the people naming IPFS Go packages.
-	relay "github.com/libp2p/go-libp2p-circuit" // OMG someone should kill the people naming IPFS Go packages.
+	ipfsconfig "github.com/ipfs/go-ipfs-config"
+	ipld "github.com/ipfs/go-ipld-format"
 	connmgr "github.com/libp2p/go-libp2p-connmgr"
 	gostream "github.com/libp2p/go-libp2p-gostream"
 )
@@ -105,7 +105,23 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 		return nil, err
 	}
 
-	h, dht, err := makeHost(ctx, prof.Peer, db, libp2p.ListenAddrStrings(cfg.Addr))
+	opts := []libp2p.Option{
+		libp2p.ListenAddrStrings(cfg.Addr),
+		libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute)),
+		ipfsutil.TransportOpts,
+		// TODO(burdiyan): allow to enable this for nodes with public IPs.
+		// libp2p.EnableRelay(relay.OptHop),
+	}
+
+	if cfg.EnableRelay {
+		opts = append(opts, ipfsutil.RelayOpts)
+	}
+
+	if cfg.EnableTLS {
+		opts = append(opts, ipfsutil.SecurityOpts)
+	}
+
+	h, dht, err := makeHost(ctx, prof.Peer, db, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +132,6 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 		return nil, err
 	}
 	cleanup = append(cleanup, ipfsnode)
-
-	// TODO(burdiyan): Bootstrap IPFS node.
 
 	addrs, err := wrapAddrs(prof.Peer.ID, h.Addrs()...)
 	if err != nil {
@@ -146,6 +160,19 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 	}
 
 	n.serveRPC()
+
+	if cfg.Bootstrap {
+		n.g.Go(func() error {
+			peers, err := ipfsconfig.DefaultBootstrapPeers()
+			if err != nil {
+				return err
+			}
+			log.Debug("Boostrapping IPFS")
+			err = ipfsnode.Bootstrap(ctx, peers)
+			log.Debug("Bootstrap returned", zap.Error(err))
+			return err
+		})
+	}
 
 	return n, nil
 }
@@ -200,11 +227,6 @@ func makeHost(ctx context.Context, p identity.Peer, db datastore.Batching, opts 
 	o := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
 		libp2p.Peerstore(ps),
-		// Borrowed from qri. Is this really needed for non-public nodes?
-		libp2p.EnableRelay(relay.OptHop),
-		// Borrowed from go-threads.
-		libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute)),
-		// Check out extra options in ipfsutil.
 	}
 
 	o = append(o, opts...)

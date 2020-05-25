@@ -112,7 +112,6 @@ func setupPeers(t *testing.T) (p1, p2 *Node) {
 		priv1,
 		[]multiaddr.Multiaddr{listen},
 		nil,
-		Libp2pOptionsExtra...,
 	)
 	require.NoError(t, err)
 	t.Cleanup(func() {
@@ -130,7 +129,6 @@ func setupPeers(t *testing.T) (p1, p2 *Node) {
 		priv2,
 		[]multiaddr.Multiaddr{listen},
 		nil,
-		Libp2pOptionsExtra...,
 	)
 	require.NoError(t, err)
 	t.Cleanup(func() {
