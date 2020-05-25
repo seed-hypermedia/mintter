@@ -2,7 +2,7 @@ import React, {useReducer, useCallback} from 'react'
 import isHotkey from 'is-hotkey'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
-import {Icons, nodeTypes} from '@mintter/editor'
+import {Icons, nodeTypes, renderSectionElement} from '@mintter/editor'
 import {
   Editor,
   Toolbar,
@@ -322,7 +322,7 @@ export default function EditorPage(): JSX.Element {
                         {!isEmpty() && <SectionToolbar />}
                         <EditablePlugins
                           plugins={plugins}
-                          renderElement={[renderElement]}
+                          renderElement={[renderSectionElement(), renderElement]}
                           renderLeaf={[
                             renderLeafBold(),
                             renderLeafItalic(),
