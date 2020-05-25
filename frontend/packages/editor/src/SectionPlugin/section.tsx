@@ -1,19 +1,20 @@
 import React, {RefObject} from 'react'
 import {Transforms} from 'slate'
 import {RenderElementProps, ReactEditor, useEditor} from 'slate-react'
-import {Icons, Editor} from '@mintter/editor'
+import {Icons} from '../components/icons'
+import {Editor} from '../editor'
 import {css} from 'emotion'
-import {SlateSection} from '../shared/parseToMarkdown'
 import Tippy from '@tippyjs/react'
 
-interface SectionElementProps extends Omit<RenderElementProps, 'element'> {
-  element?: SlateSection
-}
+// interface SectionElementProps extends Omit<RenderElementProps, 'element'> {
+//   element?: SlateSection
+// }
 
 export function Section(
-  {children, element, ...rest}: SectionElementProps,
+  {children, element, ...rest}: RenderElementProps,
   ref: RefObject<HTMLDivElement>,
 ) {
+  console.log('SECTION INSIDE EDITOR')
   const editor = useEditor()
   const path = ReactEditor.findPath(editor, element)
   const sectionChars = Editor.charCount(editor, path)
@@ -22,11 +23,11 @@ export function Section(
   const show = () => setVisible(true)
   const hide = () => setVisible(false)
 
-  function handleMouseEnter(e: React.SyntheticEvent<HTMLDivElement>) {
+  function handleMouseEnter() {
     setHover(true)
   }
 
-  function handleMouseLeave(e: React.SyntheticEvent<HTMLDivElement>) {
+  function handleMouseLeave() {
     setHover(false)
     hide()
   }
@@ -95,7 +96,8 @@ export function Section(
   )
 }
 
-export default React.forwardRef(Section)
+// TODO: (Horacio) Fixme types
+export default React.forwardRef(Section as any)
 
 function SettingsButton({section, path, visible, show, hide}) {
   const {title, description} = section
@@ -111,7 +113,7 @@ function SettingsButton({section, path, visible, show, hide}) {
       hide()
     } else {
       show()
-      titleRef.current.focus()
+      titleRef.current?.focus()
     }
   }
 

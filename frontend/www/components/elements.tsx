@@ -125,13 +125,6 @@ export default function Element({
           {children}
         </p>
       )
-
-    case nodeTypes.typeSection:
-      return (
-        <Section element={element} attributes={attributes}>
-          {children}
-        </Section>
-      )
     default:
       return children
   }

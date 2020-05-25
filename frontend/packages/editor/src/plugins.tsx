@@ -11,7 +11,6 @@ import {
   UnderlinePlugin,
 } from 'slate-plugins-next'
 import {nodeTypes} from './nodeTypes'
-// import {RenderLeafProps} from 'slate-react'
 
 export const plugins = [
   BlockquotePlugin(nodeTypes),
