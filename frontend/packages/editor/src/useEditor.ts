@@ -24,13 +24,7 @@ import {nodeTypes} from './nodeTypes'
 import {withHistory} from 'slate-history'
 
 const resetOptions = {
-  types: [
-    BLOCKQUOTE,
-    HeadingType.H1,
-    HeadingType.H2,
-    HeadingType.H3,
-    nodeTypes.typeSection,
-  ],
+  types: [BLOCKQUOTE, HeadingType.H1, HeadingType.H2, HeadingType.H3],
 }
 
 export function useEditor(plugins: any[]): Editor {

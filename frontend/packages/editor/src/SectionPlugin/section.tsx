@@ -14,7 +14,6 @@ export function Section(
   {children, element, ...rest}: RenderElementProps,
   ref: RefObject<HTMLDivElement>,
 ) {
-  console.log('SECTION INSIDE EDITOR')
   const editor = useEditor()
   const path = ReactEditor.findPath(editor, element)
   const sectionChars = Editor.charCount(editor, path)

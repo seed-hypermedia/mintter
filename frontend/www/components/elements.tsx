@@ -2,7 +2,6 @@ import React from 'react'
 import {css} from 'emotion'
 import {RenderElementProps} from 'slate-react'
 import {nodeTypes} from '@mintter/editor'
-import Section from './section'
 
 export default function Element({
   attributes,
