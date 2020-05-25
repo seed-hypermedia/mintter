@@ -38,8 +38,8 @@ export function Section(
       ref={ref}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative px-8 pt-12 pb-16 group ${
-        isHover ? 'bg-gray-200' : ''
+      className={`relative px-8 pt-12 pb-16 group transition duration-200 ${
+        element.active ? 'bg-gray-200' : ''
       } ${css`
         &:after {
           display: ${path[0] === 0 ? 'none' : 'block'};
