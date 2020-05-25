@@ -15,16 +15,15 @@ import {
   withLink,
   withBlock,
   withDeserializeMd,
-  BLOCKQUOTE,
-  HeadingType,
   pipe,
 } from 'slate-plugins-next'
 import {withSections} from './SectionPlugin'
 import {nodeTypes} from './nodeTypes'
 import {withHistory} from 'slate-history'
 
+// need this object because the plugin required it, I made an issue in the plugin's repo
 const resetOptions = {
-  types: [BLOCKQUOTE, HeadingType.H1, HeadingType.H2, HeadingType.H3],
+  types: [],
 }
 
 export function useEditor(plugins: any[]): Editor {

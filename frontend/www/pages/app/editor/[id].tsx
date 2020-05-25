@@ -2,14 +2,19 @@ import React, {useReducer, useCallback} from 'react'
 import isHotkey from 'is-hotkey'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
-import {Icons, nodeTypes, renderSectionElement} from '@mintter/editor'
+
 import {
+  Icons,
+  nodeTypes,
+  renderElements,
   Editor,
   Toolbar,
   useEditor,
   plugins as editorPlugins,
   initialSectionsValue,
   SectionToolbar,
+  renderLeafs,
+  renderLeafInlineCode,
 } from '@mintter/editor'
 import {
   EditablePlugins,
@@ -17,13 +22,6 @@ import {
   renderLeafPreview,
 } from 'slate-plugins-next'
 import Seo from '../../../components/seo'
-import {
-  renderLeafBold,
-  renderLeafItalic,
-  renderLeafUnderline,
-  renderLeafInlineCode,
-} from '../../../components/leafs'
-import renderElements from '../../../components/elements'
 import EditorHeader from '../../../components/editor-header'
 import {DebugValue} from '../../../components/debug'
 import {css} from 'emotion'
@@ -135,8 +133,6 @@ export default function EditorPage(): JSX.Element {
   const titleRef = React.useRef(null)
   const descriptionRef = React.useRef(null)
   const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
-
-  const renderElement = React.useCallback(renderElements, [])
   const {
     state,
     setTitle,
@@ -322,13 +318,8 @@ export default function EditorPage(): JSX.Element {
                         {!isEmpty() && <SectionToolbar />}
                         <EditablePlugins
                           plugins={plugins}
-                          renderElement={[renderSectionElement(), renderElement]}
-                          renderLeaf={[
-                            renderLeafBold(),
-                            renderLeafItalic(),
-                            renderLeafUnderline(),
-                            renderLeafPreview(),
-                          ]}
+                          renderElement={[...renderElements]}
+                          renderLeaf={[...renderLeafs, renderLeafPreview()]}
                           placeholder="Start writing your masterpiece..."
                           spellCheck
                           autoFocus
