@@ -2,38 +2,23 @@ package ipfsutil
 
 import (
 	"context"
-	"time"
 
 	"github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/libp2p/go-libp2p/config"
 	"github.com/multiformats/go-multiaddr"
 
 	ipns "github.com/ipfs/go-ipns"
-	connmgr "github.com/libp2p/go-libp2p-connmgr"
 	routing "github.com/libp2p/go-libp2p-core/routing"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
+	libp2pquic "github.com/libp2p/go-libp2p-quic-transport"
 	record "github.com/libp2p/go-libp2p-record"
 	secio "github.com/libp2p/go-libp2p-secio"
 	libp2ptls "github.com/libp2p/go-libp2p-tls"
 )
-
-// Libp2pOptionsExtra provides some useful libp2p options
-// to create a fully featured libp2p host. It can be used with
-// SetupLibp2p.
-var Libp2pOptionsExtra = []libp2p.Option{
-	libp2p.NATPortMap(),
-	libp2p.ConnectionManager(connmgr.NewConnManager(100, 600, time.Minute)),
-	libp2p.EnableAutoRelay(),
-	libp2p.EnableNATService(),
-	libp2p.Security(libp2ptls.ID, libp2ptls.New),
-	libp2p.Security(secio.ID, secio.New),
-	// TODO: re-enable when QUIC support private networks.
-	// libp2p.Transport(libp2pquic.NewTransport),
-	libp2p.DefaultTransports,
-}
 
 // SetupLibp2p returns a routed host and DHT instances that can be used to
 // easily create a ipfslite Peer. You may consider to use Peer.Bootstrap()
@@ -53,24 +38,21 @@ func SetupLibp2p(
 	ds datastore.Batching,
 	opts ...libp2p.Option,
 ) (host.Host, *dualdht.DHT, error) {
+	var (
+		ddht *dualdht.DHT
+		err  error
+	)
 
-	var ddht *dualdht.DHT
-	var err error
-
-	finalOpts := []libp2p.Option{
+	opts = append(opts,
 		libp2p.Identity(hostKey),
 		libp2p.ListenAddrs(listenAddrs...),
 		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
 			ddht, err = newDHT(ctx, h, ds)
 			return ddht, err
 		}),
-	}
-	finalOpts = append(finalOpts, opts...)
-
-	h, err := libp2p.New(
-		ctx,
-		finalOpts...,
 	)
+
+	h, err := libp2p.New(ctx, opts...)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -90,5 +72,30 @@ func newDHT(ctx context.Context, h host.Host, ds datastore.Batching) (*dualdht.D
 	}
 
 	return dualdht.New(ctx, h, dhtOpts...)
+}
 
+// RelayOpts set sane options for enabling circuit-relay.
+func RelayOpts(cfg *config.Config) error {
+	return cfg.Apply(
+		libp2p.NATPortMap(),
+		libp2p.EnableAutoRelay(),
+		libp2p.EnableNATService(),
+		libp2p.DefaultStaticRelays(),
+	)
+}
+
+// SecurityOpts set sane options for security.
+func SecurityOpts(cfg *config.Config) error {
+	return cfg.Apply(
+		libp2p.Security(libp2ptls.ID, libp2ptls.New),
+		libp2p.Security(secio.ID, secio.New),
+	)
+}
+
+// TransportOpts set sane options for transport.
+func TransportOpts(cfg *config.Config) error {
+	return cfg.Apply(
+		libp2p.Transport(libp2pquic.NewTransport),
+		libp2p.DefaultTransports,
+	)
 }
