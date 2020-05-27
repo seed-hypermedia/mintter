@@ -89,6 +89,10 @@ type Node struct {
 func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (n *Node, err error) {
 	var cleanup cleanup.Stack
 	defer func() {
+		// We have to close all the dependencies that were initialized until the error happened.
+		// This is for convenience, because otherwise we'd have to accept each dependency in the constructor
+		// and it would be cumbersome to use.
+		// In the happy path scenario the caller would have to call Close on the returned Node struct.
 		if err != nil {
 			err = multierr.Append(err, cleanup.Close())
 		}

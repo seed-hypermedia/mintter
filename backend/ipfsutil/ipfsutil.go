@@ -98,6 +98,9 @@ func New(
 
 	var cleanup cleanup.Stack
 	defer func() {
+		// We have to close all the dependencies created until the error happened.
+		// This is for convenience because otherwise we'd have to accept each dependency in the constructor.
+		// If there's no error, the caller would have to manually close the returned Node.
 		if err != nil {
 			err = multierr.Append(err, cleanup.Close())
 		}
