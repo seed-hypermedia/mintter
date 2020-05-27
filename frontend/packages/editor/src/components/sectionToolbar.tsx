@@ -3,7 +3,7 @@ import {useSlate, ReactEditor} from 'slate-react'
 import {Range, Node, Path} from 'slate'
 import {css} from 'emotion'
 import {BLOCKQUOTE} from 'slate-plugins-next'
-import {Icons} from '@mintter/editor'
+import {Icons} from '../components/icons'
 
 export function SectionToolbar() {
   const editor = useSlate()
@@ -42,10 +42,6 @@ export function SectionToolbar() {
     }
   })
 
-  function createTextSection(event) {
-    console.log('create text section', event)
-  }
-
   return (
     <div
       data-testid="section-toolbar"
@@ -60,17 +56,17 @@ export function SectionToolbar() {
       `}`}
     >
       <div
-        className={css`
+        className={`${css`
           overflow: hidden;
           border-radius: 16px;
           border: 1px solid #cdcdcd;
           padding: 0 8px;
           display: flex;
           align-items: center;
-        `}
+        `}`}
       >
         <button
-          onClick={createTextSection}
+          onClick={() => {}}
           className={`text-muted-hover ${css`
             padding: 5px;
             font-size: 16px;

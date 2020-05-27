@@ -29,20 +29,13 @@ export default function Layout({
 }: LayoutProps) {
   const {theme} = useTheme()
   return (
-    <ErrorBoundary
-      FallbackComponent={ErrorFallback}
-      onReset={() => {
-        window.location.reload()
-      }}
+    <motion.div
+      initial={initial}
+      animate={animate}
+      exit={exit}
+      className={`fixed overflow-y-scroll w-screen h-screen flex bg-background content-transition ${theme} ${className}`}
     >
-      <motion.div
-        initial={initial}
-        animate={animate}
-        exit={exit}
-        className={`fixed overflow-y-scroll w-screen h-screen flex bg-background content-transition ${theme} ${className}`}
-      >
-        {children}
-      </motion.div>
-    </ErrorBoundary>
+      {children}
+    </motion.div>
   )
 }

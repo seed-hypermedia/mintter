@@ -1,4 +1,4 @@
-import {createContext, useContext} from 'react'
+import {createContext, useContext, useCallback} from 'react'
 import useLocalStorage from './localstorage'
 import ThemeToggle from '../components/themeToggle'
 
@@ -15,7 +15,7 @@ export const ThemeContext = createContext<ThemeContextValueType>(initialValue)
 
 export interface ThemeProviderProps {
   children: React.ReactNode
-  value?: string
+  value?: 'theme-light' | 'theme-dark'
 }
 
 export function ThemeProvider({
@@ -27,9 +27,9 @@ export function ThemeProvider({
     initialValue: value,
   })
 
-  function toggleTheme() {
+  const toggleTheme = useCallback(() => {
     setTheme(theme === 'theme-light' ? 'theme-dark' : 'theme-light')
-  }
+  }, [theme])
 
   return (
     <ThemeContext.Provider value={{theme, toggleTheme}}>
@@ -39,5 +39,10 @@ export function ThemeProvider({
 }
 
 export function useTheme() {
-  return useContext<ThemeContextValueType>(ThemeContext)
+  const context = useContext<ThemeContextValueType>(ThemeContext)
+  if (context === undefined) {
+    throw new Error(`useTheme must be used within a ThemeProvider`)
+  }
+
+  return context
 }

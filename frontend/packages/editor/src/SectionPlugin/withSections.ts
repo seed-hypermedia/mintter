@@ -10,11 +10,7 @@ import {nodeTypes} from '../nodeTypes'
 
 export function withSections() {
   return <T extends ReactEditor>(editor: T) => {
-    const {
-      deleteBackward,
-      insertText,
-      // normalizeNode,
-    } = editor
+    const {deleteBackward, insertText} = editor
 
     editor.deleteBackward = (...args) => {
       const {selection} = editor

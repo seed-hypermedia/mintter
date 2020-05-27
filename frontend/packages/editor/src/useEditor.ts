@@ -23,7 +23,14 @@ import {withHistory} from 'slate-history'
 
 // need this object because the plugin required it, I made an issue in the plugin's repo
 const resetOptions = {
-  types: [],
+  types: [
+    nodeTypes.typeH1,
+    nodeTypes.typeH2,
+    nodeTypes.typeH3,
+    nodeTypes.typeBlockquote,
+    nodeTypes.typeCode,
+  ],
+  typeP: nodeTypes.typeP,
 }
 
 export function useEditor(plugins: any[]): Editor {
