@@ -8,6 +8,7 @@ import {renderLink} from './renderLink'
 import {renderListItem} from './renderListItem'
 import {renderParagraph} from './renderParagraph'
 import {renderSectionElement} from '../SectionPlugin'
+import {renderCodeBlockElement} from './renderCodeBlockElement'
 
 export const renderElements = [
   renderSectionElement(),
@@ -20,4 +21,5 @@ export const renderElements = [
   renderListItem(),
   renderLink(),
   renderParagraph(),
+  renderCodeBlockElement(),
 ]

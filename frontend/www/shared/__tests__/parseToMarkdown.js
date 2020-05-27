@@ -5,6 +5,27 @@ const sectionChildren = [
     type: 'p',
     children: [
       {
+        text: 'hello ',
+      },
+      {
+        text: 'world',
+        code: true,
+      },
+    ],
+  },
+
+  {
+    type: 'code',
+    children: [
+      {
+        text: 'var foo = () => `Hello World`;',
+      },
+    ],
+  },
+  {
+    type: 'p',
+    children: [
+      {
         text: 'Advertisement ',
         bold: true,
       },
@@ -81,7 +102,13 @@ describe('Parse to Markdown', () => {
   test('should parse the slate node tree', async () => {
     expect(sectionChildren.map(parseToMarkdown).join(''))
       .toMatchInlineSnapshot(`
-      "**Advertisement** 
+      "hello \`world\`
+
+      \`\`\`
+      var foo = () => \`Hello World\`;
+      \`\`\`
+
+      **Advertisement** 
 
       - [**pica**](https://nodeca.github.io/pica/demo/) - high quality and fast image resize in browser.
       - [**babelfish**](https://github.com/nodeca/babelfish/) - developer friendly i18n with plurals support and easy syntax.

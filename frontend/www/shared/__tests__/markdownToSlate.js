@@ -90,4 +90,42 @@ describe('markdown to Slate', () => {
       ]
     `)
   })
+
+  test('should return an inline code element', () => {
+    expect(markdownToSlate(`Hello \`world\``)).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "children": Array [
+            Object {
+              "text": "Hello ",
+            },
+            Object {
+              "code": true,
+              "text": "world",
+            },
+          ],
+          "type": "p",
+        },
+      ]
+    `)
+  })
+
+  test('should render a codeblock', () => {
+    expect(
+      markdownToSlate(`\n\`\`\`\nvar foo = () => \`Hello World\`;\n\`\`\`\n\n`),
+    ).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "children": Array [
+            Object {
+              "text": "var foo = () => \`Hello World\`;",
+            },
+          ],
+          "lang": null,
+          "meta": null,
+          "type": "code",
+        },
+      ]
+    `)
+  })
 })

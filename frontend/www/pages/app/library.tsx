@@ -1,4 +1,4 @@
-import {Fragment} from 'react'
+import {Fragment, useState} from 'react'
 import {useRouter} from 'next/router'
 import Container from '../../components/container'
 import Seo from '../../components/seo'
@@ -9,9 +9,11 @@ import Layout from '../../components/layout'
 import Content from '../../components/content'
 import {useDraftsList, createDraft} from '../../shared/drafts'
 
+export type ListType = 'drafts' | 'publications'
 export default function Library() {
   const router = useRouter()
-  const data = useDraftsList()
+  const drafts = useDraftsList()
+  const [activeList, setActiveList] = useState<ListType>('drafts')
 
   async function handleCreateDraft() {
     await createDraft(async newDraft => {
@@ -30,8 +32,8 @@ export default function Library() {
         <Container>
           <div className="p-5 flex items-center justify-between">
             <h1 className="text-4xl font-bold text-heading">Library</h1>
-            {data.status === 'success' &&
-              data.resolvedData.toObject().draftsList.length > 0 && (
+            {drafts.status === 'success' &&
+              drafts.resolvedData.toObject().draftsList.length > 0 && (
                 <button
                   className="bg-info-hover hover:bg-info text-white font-bold py-2 px-4 rounded rounded-full flex items-centerjustify-center"
                   onClick={handleCreateDraft}
@@ -42,8 +44,8 @@ export default function Library() {
           </div>
           <Content>
             {/* show/hide depending on the desired criteria (TBD) */}
-            {data.status === 'success' &&
-              data.resolvedData.toObject().draftsList.length === 0 && (
+            {drafts.status === 'success' &&
+              drafts.resolvedData.toObject().draftsList.length === 0 && (
                 <Fragment>
                   <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
                     <h2 className="text-3xl font-semibold text-info">
@@ -66,7 +68,7 @@ export default function Library() {
                 </Fragment>
               )}
 
-            <DocumentList data={data} />
+            <DocumentList data={drafts} />
           </Content>
         </Container>
       </div>
