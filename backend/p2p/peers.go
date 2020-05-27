@@ -44,7 +44,7 @@ func (n *Node) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) error 
 			return fmt.Errorf("failed invoking handshake to %s: %w", pinfo.ID.Pretty(), err)
 		}
 
-		if err := n.upgradeConnection(ctx, prof); err != nil {
+		if err := n.savePeerProfile(ctx, prof); err != nil {
 			// TODO: if the err is ErrQriProtocolNotSupported, let the user know the
 			// connection has been established, but that the Qri Protocol is not supported
 			return err
@@ -56,8 +56,8 @@ func (n *Node) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) error 
 	return nil
 }
 
-// upgradeConnection attempt to open a Mintter protocol connection to a peer.
-func (n *Node) upgradeConnection(ctx context.Context, prof identity.Profile) error {
+// savePeerProfile stores another peer's profile and marks it's connection to support mintter protocol.
+func (n *Node) savePeerProfile(ctx context.Context, prof identity.Profile) error {
 	pid := prof.Peer.ID
 
 	// bail early if we have seen this peer before
@@ -161,7 +161,7 @@ func (n *rpcHandler) Handshake(ctx context.Context, in *internal.HandshakeReques
 		return nil, err
 	}
 
-	if err := n.upgradeConnection(ctx, prof); err != nil {
+	if err := n.savePeerProfile(ctx, prof); err != nil {
 		return nil, err
 	}
 
