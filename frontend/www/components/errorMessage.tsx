@@ -8,7 +8,7 @@ export function ErrorMessage({
   className,
   ...props
 }: {
-  error: ErrorInterface
+  error?: ErrorInterface
   className?: string
 }) {
   return error ? (
@@ -22,7 +22,7 @@ export function ErrorMessage({
   ) : null
 }
 
-export function FullPageErrorMessage({error}: {error: any}) {
+export function FullPageErrorMessage({error}: {error?: ErrorInterface}) {
   return error ? (
     <div
       className={`absolute z-50 w-screen h-screen bg-danger text-body flex items-center justify-center flex-col`}

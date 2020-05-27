@@ -30,13 +30,9 @@ AppProps & {Component: any}) {
       <ProfileProvider>
         <ThemeProvider>
           <AnimatePresence exitBeforeEnter>
-            {router.pathname.startsWith('/welcome') ? (
-              <Layout {...pageProps}>
-                <Component {...pageProps} key={router.route} />
-              </Layout>
-            ) : (
+            <Layout {...pageProps}>
               <Component {...pageProps} key={router.route} />
-            )}
+            </Layout>
           </AnimatePresence>
         </ThemeProvider>
       </ProfileProvider>

@@ -10,12 +10,12 @@ import Layout from '../../components/layout'
 import {useForm} from 'react-hook-form'
 import Container from '../../components/container'
 import {useProfile} from '../../shared/profileContext'
-import ErrorMessage, {ErrorType} from '../../components/errorMessage'
+import {ErrorMessage, ErrorInterface} from '../../components/errorMessage'
 
 export default function Settings() {
   const {getProfile, setProfile} = useProfile()
   const [success, setSuccess] = React.useState<boolean>(false)
-  const [submitError, setSubmitError] = React.useState<ErrorType>()
+  const [submitError, setSubmitError] = React.useState<ErrorInterface>()
   const {register, handleSubmit, errors, formState, setValue} = useForm({
     mode: 'onChange',
     defaultValues: {
