@@ -1,5 +1,4 @@
 import React, {useReducer, useCallback} from 'react'
-import isHotkey from 'is-hotkey'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
 
@@ -14,12 +13,11 @@ import {
   initialSectionsValue,
   SectionToolbar,
   renderLeafs,
-  renderLeafInlineCode,
 } from '@mintter/editor'
 import {
   EditablePlugins,
-  SlatePlugin,
   renderLeafPreview,
+  SoftBreakPlugin,
 } from 'slate-plugins-next'
 import Seo from '../../../components/seo'
 import EditorHeader from '../../../components/editor-header'
@@ -28,7 +26,7 @@ import {css} from 'emotion'
 
 // import {wrapLink, unwrapLink} from '@mintter/slate-plugin-with-links'
 import Textarea from '../../../components/textarea'
-import Layout from '../../../components/layout'
+// import Layout from '../../../components/layout'
 import {publish} from '../../../shared/publishDocument'
 import {useRouter} from 'next/router'
 import {Section} from '@mintter/proto/documents_pb'
@@ -121,10 +119,6 @@ function initializeEditorValue() {
   return initialValue
 }
 
-export const tippyContext = React.createContext(null)
-
-const TippyProvider = tippyContext.Provider
-
 export default function EditorPage(): JSX.Element {
   const plugins = [...editorPlugins, SoftBreakPlugin()]
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
@@ -175,14 +169,12 @@ export default function EditorPage(): JSX.Element {
   React.useEffect(() => {
     if (data) {
       const obj = data.toObject()
-      console.log('obj', obj)
       setValue({
         title: obj.title,
         description: obj.description,
         sections:
           obj.sectionsList.length > 0
             ? obj.sectionsList.map((s: Section.AsObject) => {
-                console.log('s', s)
                 return {
                   type: nodeTypes.typeSection,
                   title: s.title,
@@ -216,7 +208,7 @@ export default function EditorPage(): JSX.Element {
   }, [])
 
   return (
-    <Layout className="flex">
+    <>
       <Seo title="Editor | Mintter" />
       <div
         className="flex-1 overflow-y-auto pt-4 overflow-y-scroll"
@@ -346,25 +338,6 @@ export default function EditorPage(): JSX.Element {
           </>
         )}
       </div>
-    </Layout>
+    </>
   )
-}
-
-const SoftBreakPlugin = (): SlatePlugin => ({
-  onKeyDown: onKeyDownSoftBreak(),
-})
-
-const InlineCodePlugin = (): SlatePlugin => ({
-  renderLeaf: renderLeafInlineCode(),
-})
-
-const onKeyDownSoftBreak = () => (e: KeyboardEvent, editor: SlateEditor) => {
-  if (
-    isHotkey('shift+enter', e) &&
-    editor.selection &&
-    Range.isCollapsed(editor.selection)
-  ) {
-    e.preventDefault()
-    editor.insertText('\n')
-  }
 }
