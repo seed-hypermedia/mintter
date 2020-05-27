@@ -94,6 +94,10 @@ export function parseToMarkdown(node, options: ParseToMarkdownOptions = {}) {
     children = `~~${children}~~`
   }
 
+  if (node.code) {
+    children = `\`${children}\``
+  }
+
   switch (type) {
     case nodeTypes.typeH1:
       return `# ${children}\n`
@@ -125,6 +129,8 @@ export function parseToMarkdown(node, options: ParseToMarkdownOptions = {}) {
       }
       return `${spacer}${isOL ? '1.' : '-'} ${children}\n`
     }
+    case 'code':
+      return `\n\`\`\`\n${children}\n\`\`\`\n\n`
     case 'p':
       return `${children}\n`
     default:

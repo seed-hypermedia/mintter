@@ -11,14 +11,10 @@ import {
   useEditor,
   plugins as editorPlugins,
   initialSectionsValue,
-  SectionToolbar,
+  // SectionToolbar,
   renderLeafs,
 } from '@mintter/editor'
-import {
-  EditablePlugins,
-  renderLeafPreview,
-  SoftBreakPlugin,
-} from 'slate-plugins-next'
+import {EditablePlugins, SoftBreakPlugin} from 'slate-plugins-next'
 import Seo from '../../../components/seo'
 import EditorHeader from '../../../components/editor-header'
 import {DebugValue} from '../../../components/debug'
@@ -308,11 +304,11 @@ export default function EditorPage(): JSX.Element {
                       </div>
                       <div className="relative" ref={editorContainerRef}>
                         <Toolbar />
-                        {!isEmpty() && <SectionToolbar />}
+                        {/* {!isEmpty() && <SectionToolbar />} */}
                         <EditablePlugins
                           plugins={plugins}
                           renderElement={[...renderElements]}
-                          renderLeaf={[...renderLeafs, renderLeafPreview()]}
+                          renderLeaf={[...renderLeafs]}
                           placeholder="Start writing your masterpiece..."
                           spellCheck
                           autoFocus

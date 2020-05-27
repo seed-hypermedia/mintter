@@ -76,6 +76,23 @@ export function transform(node: any, opts: Settings) {
         }
       }
       break
+    case 'inlineCode':
+      return {
+        text: node.value,
+        code: true,
+      }
+
+    case 'code':
+      return {
+        type: node.type,
+        lang: node.lang,
+        meta: node.meta,
+        children: [
+          {
+            text: node.value,
+          },
+        ],
+      }
     case 'text':
     default:
       return {

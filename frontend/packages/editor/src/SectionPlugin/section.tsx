@@ -69,7 +69,7 @@ export function Section(
     >
       <div
         contentEditable={false}
-        className={`absolute top-0 right-0 select-none mt-4 mr-4 bg-gray-800 rounded shadows-md transition duration-200 theme-dark flex items-center pl-2 text-xs leading-none text-body ${
+        className={`absolute top-0 right-0 select-none mt-4 mr-4 bg-background-toolbar rounded shadows-md transition duration-200 theme-dark flex items-center pl-2 text-xs leading-none text-body ${
           isHover
             ? 'pointer-events-auto opacity-100'
             : 'pointer-events-none opacity-0'

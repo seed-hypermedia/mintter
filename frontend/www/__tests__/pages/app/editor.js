@@ -43,7 +43,7 @@ describe('<Editor />', () => {
     })
   })
 
-  test('should update the title input', async () => {
+  xtest('should update the title input', async () => {
     const mockedDraft = {
       title: 'mocked draft title',
       description: 'mocked draft description',

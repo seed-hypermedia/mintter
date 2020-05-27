@@ -23,6 +23,8 @@ module.exports = {
         'danger-background': 'var(--color-danger-background)',
         background: 'var(--color-background)',
         'background-muted': 'var(--color-background-muted)',
+        'background-emphasize': 'var(--color-background-emphasize)',
+        'background-toolbar': 'var(----color-background-toolbar)',
         heading: 'var(--color-heading)',
         'heading-muted': 'var(--color-heading-muted)',
         body: 'var(--color-body)',
