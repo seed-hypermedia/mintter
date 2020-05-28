@@ -1,15 +1,11 @@
 import React from 'react'
 import AppsOutlinedIcon from '@material-ui/icons/AppsOutlined'
 import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined'
-import {PaginatedQueryResult} from 'react-query'
 import Link from './link'
-import {
-  ListDraftsResponse,
-  Draft,
-  ListPublicationsResponse,
-} from '@mintter/proto/documents_pb'
+import {useRouter} from 'next/router'
 
 export default function DocumentList({data, status, error}) {
+  const router = useRouter()
   if (status === 'loading') {
     return <p>Loading...</p>
   }
@@ -22,12 +18,22 @@ export default function DocumentList({data, status, error}) {
     <div>
       <div className="flex items-center -mx-4">
         <Link href="/drafts">
-          <h2 className="text-2xl text-heading text-heading font-bold flex-1">
+          <h2
+            className={`text-2xl font-bold flex-1 ${
+              router.pathname === '/drafts' ? 'text-primary' : 'text-heading'
+            }`}
+          >
             Drafts
           </h2>
         </Link>
         <Link href="/publications">
-          <h2 className="text-2xl text-heading text-heading font-bold flex-1">
+          <h2
+            className={`text-2xl font-bold flex-1 ${
+              router.pathname === '/publications'
+                ? 'text-primary'
+                : 'text-heading'
+            }`}
+          >
             Publications
           </h2>
         </Link>
@@ -51,6 +57,7 @@ export default function DocumentList({data, status, error}) {
 }
 
 function ListItem({item}) {
+  const router = useRouter()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
   const {title, description} = item
 
@@ -65,7 +72,11 @@ function ListItem({item}) {
     }
   }
   return (
-    <Link href={`/editor/${item.documentId}`}>
+    <Link
+      href={`/${router.pathname === '/drafts' ? 'editor' : 'p'}/${
+        item.documentId
+      }`}
+    >
       <div
         className="bg-background-muted p-4 rounded-lg mt-8 first:mt-0"
         onMouseEnter={handlePrefetch}

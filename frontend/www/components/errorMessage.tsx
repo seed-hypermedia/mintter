@@ -28,6 +28,7 @@ export function FullPageErrorMessage({error}: {error?: ErrorInterface}) {
       className={`absolute z-50 w-screen h-screen bg-danger text-body flex items-center justify-center flex-col`}
     >
       <h1>Something went wrong with the Profile</h1>
+      <p>{error.message}</p>
       <pre>
         <code>{JSON.stringify(error, null, 4)}</code>
       </pre>

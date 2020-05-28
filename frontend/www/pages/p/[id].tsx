@@ -7,7 +7,6 @@ import {
   nodeTypes,
   renderElements,
   Editor,
-  Toolbar,
   useEditor,
   plugins as editorPlugins,
   initialSectionsValue,
@@ -19,17 +18,14 @@ import Seo from '../../components/seo'
 import EditorHeader from '../../components/editor-header'
 import {DebugValue} from '../../components/debug'
 import {css} from 'emotion'
-
-// import {wrapLink, unwrapLink} from '@mintter/slate-plugin-with-links'
-import Textarea from '../../components/textarea'
-// import Layout from '../../../components/layout'
 import {publish} from '../../shared/publishDocument'
 import {useRouter} from 'next/router'
 import {Section} from '@mintter/proto/documents_pb'
-import {useFetchDraft, saveDraft} from '../../shared/drafts'
+import {
+  useFetchPublication,
+  getBatchPublicationSections,
+} from '../../shared/publications'
 import {markdownToSlate} from '../../shared/markdownToSlate'
-import {useMutation} from 'react-query'
-import {useDebounce} from '../../shared/hooks'
 
 interface EditorState {
   title: string
@@ -118,11 +114,6 @@ function initializeEditorValue() {
 export default function EditorPage(): JSX.Element {
   const plugins = [...editorPlugins, SoftBreakPlugin()]
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
-  const wrapperRef = React.useRef<HTMLDivElement>(null)
-  const editorContainerRef = React.useRef<HTMLDivElement>(null)
-  const titleRef = React.useRef(null)
-  const descriptionRef = React.useRef(null)
-  const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
   const {
     state,
     setTitle,
@@ -133,7 +124,6 @@ export default function EditorPage(): JSX.Element {
 
   const {
     query: {id},
-    push,
   } = useRouter()
 
   const {title, sections, description} = state
@@ -144,84 +134,44 @@ export default function EditorPage(): JSX.Element {
       : false
   }
 
-  const {status, error, data} = useFetchDraft(id, {
-    onSuccess: () => {
-      setReadyToAutosave(true)
-    },
-  })
-
-  const [autosaveDraft] = useMutation(async ({state}: {state: EditorState}) => {
-    const {title, description, sections} = state
-    saveDraft({documentId: id, title, description, sections})
-  })
-
-  const debouncedValue = useDebounce(state, 1000)
-
-  React.useEffect(() => {
-    if (readyToAutosave) {
-      autosaveDraft({state})
-    }
-  }, [debouncedValue])
+  const {status, error, data} = useFetchPublication(id)
 
   React.useEffect(() => {
     if (data) {
       const obj = data.toObject()
-      setValue({
-        title: obj.title,
-        description: obj.description,
-        sections:
-          obj.sectionsList.length > 0
-            ? obj.sectionsList.map((s: Section.AsObject) => {
-                return {
-                  type: nodeTypes.typeSection,
-                  title: s.title,
-                  description: s.description,
-                  author: s.author,
-                  children: markdownToSlate(s.body),
-                }
-              })
-            : initialSectionsValue,
+      console.log('obj', obj)
+      getBatchPublicationSections(obj.sectionsList).then(res => {
+        const sections = res
+          .getSectionsList()
+          .map((f: Section) => f.toObject())
+          .map(s => ({
+            type: nodeTypes.typeSection,
+            title: s.title,
+            description: s.description,
+            author: s.author,
+            children: markdownToSlate(s.body),
+          }))
+
+        setValue({
+          title: obj.title,
+          description: obj.description,
+          sections,
+        })
       })
     }
   }, [data])
 
-  React.useEffect(() => {
-    function handler(e) {
-      if (
-        // TODO: (horacio) if there's an error on this page and the editor has not being loaded properly, this will fail
-        !ReactEditor.isFocused(editor) &&
-        typeof e.target.value !== 'string'
-      ) {
-        ReactEditor.focus(editor)
-        Transforms.select(editor, Editor.end(editor, []))
-      }
-    }
-
-    wrapperRef.current.addEventListener('click', handler)
-
-    return () => {
-      wrapperRef.current.removeEventListener('click', handler)
-    }
-  }, [])
-
-  async function handlePublish() {
-    await publish(state, id)
-  }
-
   return (
     <>
-      <Seo title="Editor | Mintter" />
-      <div
-        className="flex-1 overflow-y-auto pt-4 overflow-y-scroll"
-        ref={wrapperRef}
-      >
+      <Seo title="Publication | Mintter" />
+      <div className="flex-1 overflow-y-auto pt-4 overflow-y-scroll">
         {status === 'loading' ? (
           <p>Loading...</p>
         ) : status === 'error' ? (
           <p>ERROR! == {error}</p>
         ) : (
           <>
-            <EditorHeader onPublish={handlePublish} />
+            <EditorHeader onPublish={() => publish(state, id)} />
             <div className="flex pt-8 pb-32 relative">
               <DebugValue
                 value={state}
@@ -263,7 +213,7 @@ export default function EditorPage(): JSX.Element {
                       `}`}
                     >
                       <div
-                        className={`mb-12 mx-8 pb-2 relative ${css`
+                        className={`mb-12 mx-8 pb-6 relative ${css`
                           &:after {
                             content: '';
                             position: absolute;
@@ -277,46 +227,23 @@ export default function EditorPage(): JSX.Element {
                           }
                         `}`}
                       >
-                        <Textarea
-                          ref={t => {
-                            titleRef.current = t
-                          }}
-                          value={title}
-                          data-test-id="editor_title"
-                          onChange={setTitle}
-                          name="title"
-                          placeholder="Untitled document"
-                          minHeight={56}
-                          className={`text-4xl text-heading font-bold leading-10`}
-                          onEnterPress={() => {
-                            descriptionRef.current.focus()
-                          }}
-                        />
-                        <Textarea
-                          ref={d => {
-                            descriptionRef.current = d
-                          }}
-                          value={description}
-                          onChange={setDescription}
-                          name="description"
-                          placeholder="+ Add a subtitle"
-                          minHeight={28}
-                          className={`text-lg font-light text-heading-muted italic`}
-                          onEnterPress={() => {
-                            ReactEditor.focus(editor)
-                          }}
-                        />
+                        <h1 className={`text-4xl text-heading font-bold`}>
+                          {title}
+                        </h1>
+                        <p
+                          className={`text-lg font-light text-heading-muted italic mt-3`}
+                        >
+                          {description}
+                        </p>
                       </div>
-                      <div className="relative" ref={editorContainerRef}>
-                        <Toolbar />
-                        {/* {!isEmpty() && <SectionToolbar />} */}
+                      <div className="relative">
                         <EditablePlugins
+                          readOnly
                           plugins={plugins}
                           renderElement={[...renderElements]}
                           renderLeaf={[...renderLeafs]}
                           placeholder="Start writing your masterpiece..."
                           spellCheck
-                          autoFocus
                         />
                       </div>
                     </div>

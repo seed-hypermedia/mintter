@@ -1,22 +1,42 @@
-import Seo from './seo'
 import Layout from './layout'
 import LibraryHeader from './library-header'
 import Container from './container'
-import Content from './content'
+import {ErrorBoundary} from 'react-error-boundary'
+import {FullPageErrorMessage} from './errorMessage'
+import {useRouter} from 'next/router'
+import {createDraft} from '../shared/drafts'
 
-export function LibraryLayout({children, title}) {
+export function LibraryLayout({children}) {
+  const router = useRouter()
+
+  async function handleCreateDraft() {
+    await createDraft(async newDraft => {
+      const value = newDraft.toObject()
+      router.push({
+        pathname: `/editor/${value.documentId}`,
+      })
+    })
+  }
+
   return (
-    <Layout className="flex flex-col">
-      <Seo title={title} />
-      <LibraryHeader />
-      <div className="flex-1 overflow-y-auto">
-        <Container>
-          <div className="p-5 flex items-center justify-between">
-            <h1 className="text-4xl font-bold text-heading">Library</h1>
-          </div>
-          {children}
-        </Container>
-      </div>
-    </Layout>
+    <ErrorBoundary FallbackComponent={FullPageErrorMessage}>
+      <Layout className="flex flex-col">
+        <LibraryHeader />
+        <div className="flex-1 overflow-y-auto">
+          <Container>
+            <div className="p-5 flex items-center justify-between">
+              <h1 className="text-4xl font-bold text-heading">Library</h1>
+              <button
+                onClick={handleCreateDraft}
+                className="bg-info hover:bg-info-hover text-white font-bold py-2 px-4 rounded rounded-full flex items-center mt-5 justify-center"
+              >
+                new Draft
+              </button>
+            </div>
+            {children}
+          </Container>
+        </div>
+      </Layout>
+    </ErrorBoundary>
   )
 }
