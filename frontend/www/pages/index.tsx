@@ -22,7 +22,7 @@ export default function Home() {
             >
               Welcome
             </Link>
-            <Link href="/app/library" className="rounded text-blue-700 text-lg">
+            <Link href="/drafts" className="rounded text-blue-700 text-lg">
               App
             </Link>
           </div>

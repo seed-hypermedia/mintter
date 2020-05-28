@@ -5,10 +5,10 @@ interface SeoProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string
 }
 
-export default function Seo({title = 'Mintter'}: SeoProps) {
+export default function Seo({title}: SeoProps) {
   return (
     <Head>
-      <title>{title}</title>
+      <title>{`${title}${title ? ' | ' : ''}Mintter`}</title>
       <link rel="icon" href="/favicon.ico" />
     </Head>
   )

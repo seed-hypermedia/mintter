@@ -1,8 +1,8 @@
-import Container from '../../components/container'
-import Content from '../../components/content'
-import Seo from '../../components/seo'
-import Sidebar from '../../components/sidebar'
-import Layout from '../../components/layout'
+import Container from '../components/container'
+import Content from '../components/content'
+import Seo from '../components/seo'
+import Sidebar from '../components/sidebar'
+import Layout from '../components/layout'
 
 export default function Library() {
   return (
