@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useMemo} from 'react'
 import AppsOutlinedIcon from '@material-ui/icons/AppsOutlined'
 import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined'
 import Link from './link'
@@ -59,11 +59,17 @@ export default function DocumentList({data, status, error}) {
 function ListItem({item}) {
   const router = useRouter()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
-  const {title, description, id} = item
-  console.log('item => ', item)
+  const {title, description} = item
   const theTitle = title ? title : 'Untitled Draft'
   const theDescription = description ? description : 'Draft with no description'
 
+  const href = useMemo(
+    () =>
+      router.pathname === '/drafts'
+        ? `/editor/${item.documentId}`
+        : `/p/${item.id}`,
+    [router.pathname],
+  )
   function handlePrefetch() {
     if (!prefetched) {
       // TODO: prefetch on hover
@@ -72,7 +78,7 @@ function ListItem({item}) {
     }
   }
   return (
-    <Link href={`/${router.pathname === '/drafts' ? 'editor' : 'p'}/${id}`}>
+    <Link href={href}>
       <div
         className="bg-background-muted p-6 rounded-lg mt-8 first:mt-0"
         onMouseEnter={handlePrefetch}

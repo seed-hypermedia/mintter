@@ -155,6 +155,8 @@ export default function EditorPage(): JSX.Element {
           title: obj.title,
           description: obj.description,
           sections,
+          author: obj.author,
+          createTime: obj.createTime,
         })
       })
     }
