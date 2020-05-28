@@ -1,11 +1,14 @@
 package store
 
 import (
+	"errors"
 	"fmt"
+
 	pb "mintter/proto"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/ipfs/go-cid"
+	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/query"
 )
 
@@ -33,6 +36,11 @@ func (s *Store) GetDraft(docID string) (*pb.Draft, error) {
 	}
 
 	return draft, err
+}
+
+// DeleteDraft from the database.
+func (s *Store) DeleteDraft(docID string) error {
+	return s.db.Delete(s.draftsKey.ChildString(docID))
 }
 
 // HasDraft checks if there's a draft for given document ID.
@@ -118,4 +126,9 @@ func (s *Store) ListPublications(offset, limit int) ([]cid.Cid, error) {
 	}
 
 	return out, nil
+}
+
+// IsNotFound is used to check if error because of not found item.
+func IsNotFound(err error) bool {
+	return errors.Is(err, datastore.ErrNotFound)
 }
