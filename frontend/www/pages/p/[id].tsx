@@ -247,18 +247,6 @@ export default function EditorPage(): JSX.Element {
                       </div>
                     </div>
                   </Slate>
-                  <div className="py-16 px-8 flex flex-col items-start">
-                    <button
-                      className="flex items-center bg-transparent text-body-muted transition duration-200 hover:text-body hover:border-body border border-body-muted rounded-md px-2 pl-2 py-2"
-                      onClick={() => Editor.addSection(editor)}
-                    >
-                      <Icons.Plus color="currentColor" />
-                      <span className="px-2 text-sm">add section</span>
-                    </button>
-                    <a className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline">
-                      what are sections and how to use them
-                    </a>
-                  </div>
                 </div>
               </div>
             </div>

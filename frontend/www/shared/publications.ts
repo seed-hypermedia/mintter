@@ -41,7 +41,7 @@ export async function getPublicationFetcher(key, queryId) {
     .filter(p => {
       const doc = p.toObject()
 
-      return doc.documentId === queryId
+      return doc.id === queryId
     })
 
   return list.length ? list[0] : null
