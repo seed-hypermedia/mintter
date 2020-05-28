@@ -139,7 +139,6 @@ export default function EditorPage(): JSX.Element {
   React.useEffect(() => {
     if (data) {
       const obj = data.toObject()
-      console.log('obj', obj)
       getBatchPublicationSections(obj.sectionsList).then(res => {
         const sections = res
           .getSectionsList()

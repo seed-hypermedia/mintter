@@ -19,7 +19,7 @@ export default function DocumentList({data, status, error}) {
       <div className="flex items-center -mx-4">
         <Link href="/drafts">
           <h2
-            className={`text-2xl font-bold flex-1 ${
+            className={`text-md font-bold flex-1 ${
               router.pathname === '/drafts' ? 'text-primary' : 'text-heading'
             }`}
           >
@@ -28,7 +28,7 @@ export default function DocumentList({data, status, error}) {
         </Link>
         <Link href="/publications">
           <h2
-            className={`text-2xl font-bold flex-1 ${
+            className={`text-md font-bold flex-1 ${
               router.pathname === '/publications'
                 ? 'text-primary'
                 : 'text-heading'
@@ -78,11 +78,11 @@ function ListItem({item}) {
       }`}
     >
       <div
-        className="bg-background-muted p-4 rounded-lg mt-8 first:mt-0"
+        className="bg-background-muted p-6 rounded-lg mt-8 first:mt-0"
         onMouseEnter={handlePrefetch}
       >
-        <h3 className="text-heading text-3xl font-bold">{theTitle}</h3>
-        <p className="text-body">{theDescription}</p>
+        <h3 className="text-heading text-2xl font-bold">{theTitle}</h3>
+        <p className="text-body mt-4">{theDescription}</p>
       </div>
     </Link>
   )

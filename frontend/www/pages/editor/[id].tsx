@@ -210,7 +210,7 @@ export default function EditorPage(): JSX.Element {
 
   return (
     <>
-      <Seo title="Editor | Mintter" />
+      <Seo title="Editor" />
       <div
         className="flex-1 overflow-y-auto pt-4 overflow-y-scroll"
         ref={wrapperRef}
