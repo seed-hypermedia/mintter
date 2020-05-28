@@ -38,7 +38,7 @@ export function withSections() {
     editor.insertText = (text: string) => {
       const {selection} = editor
 
-      if (selection) {
+      if (selection && Range.isCollapsed(selection)) {
         // check which section has focus
         const [, activePath = [0]]: any = Editor.above(editor, {
           match: n => {

@@ -17,7 +17,6 @@ export const plugins = [
   BoldPlugin(),
   HeadingPlugin(nodeTypes),
   ImagePlugin(nodeTypes),
-  // InlineCodePlugin(),
   ItalicPlugin(),
   LinkPlugin(nodeTypes),
   ListPlugin(nodeTypes),

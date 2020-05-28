@@ -38,6 +38,7 @@ export function useEditor(plugins: any[]): Editor {
     withReact,
     withHistory,
     withLink(nodeTypes),
+    withShortcuts(nodeTypes),
     withBlock(nodeTypes),
     withDeserializeMd(plugins),
     withDeserializeHtml(plugins),
@@ -45,7 +46,6 @@ export function useEditor(plugins: any[]): Editor {
     withSections(),
     withBreakEmptyReset(resetOptions),
     withList(nodeTypes),
-    withShortcuts(nodeTypes),
     withDeleteStartReset(resetOptions),
   ] as const
 

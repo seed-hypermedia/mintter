@@ -37,16 +37,12 @@ export default function Library() {
               <h2 className="text-3xl font-semibold text-info">
                 No Publications (yet)
               </h2>
-              <p className="text-body font-light mt-5">
-                Some clain sentence that's fun, welcomes user to the community
-                and tells how it works and encourages to get started
-              </p>
               <button
                 onClick={handleCreateDraft}
                 className="bg-info hover:bg-info-hover text-white font-bold py-3 px-4 rounded rounded-full flex items-center mt-5 justify-center"
               >
                 <NoteAddOutlinedIcon />
-                <span className="ml-2">Create your first document</span>
+                <span className="ml-2">Create your first Draft</span>
               </button>
             </div>
             <hr className="border-t-2 border-muted border-solid my-8" />
