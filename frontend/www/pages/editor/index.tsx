@@ -1,6 +1,6 @@
 import {useEffect} from 'react'
 import {useRouter} from 'next/router'
-import {createDraft} from '../../../shared/drafts'
+import {createDraft} from '../../shared/drafts'
 
 export default function EditorIndexPage() {
   const router = useRouter()
@@ -9,7 +9,7 @@ export default function EditorIndexPage() {
       await createDraft(async newDraft => {
         const value = newDraft.toObject()
         router.replace({
-          pathname: `/app/editor/${value.documentId}`,
+          pathname: `/editor/${value.documentId}`,
         })
       })
     }

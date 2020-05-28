@@ -35,7 +35,7 @@ export default function Playground() {
             <Link href="/">Home</Link>
           </span>
           <span className="px-4 py-1">
-            <Link href="/app/editor">Editor</Link>
+            <Link href="/editor">Editor</Link>
           </span>
           <button
             className="bg-orange-500 text-white px-4 py-1 rounded-sm"

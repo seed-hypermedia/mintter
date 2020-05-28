@@ -23,7 +23,7 @@ export default function EditorSidebar({children = null, ...props}) {
           </svg>
         </button>
         <div className="px-5 text-left text-2xl font-bold">
-          <Link href="/app/library">
+          <Link href="/drafts">
             <a>Mintter</a>
           </Link>
         </div>
@@ -31,32 +31,32 @@ export default function EditorSidebar({children = null, ...props}) {
 
       <Wrapper {...props} open={open}>
         <div className="py-3 px-5 text-left text-2xl font-bold">
-          <Link href="/app/library">
+          <Link href="/drafts">
             <a>Mintter</a>
           </Link>
         </div>
         <NavItem
-          href="/app/editor"
-          isActive={router.pathname === '/app/editor'}
+          href="/editor"
+          isActive={router.pathname === '/editor'}
           onClick={() => setOpen(false)}
           title="Editor"
         />
         <div className="p-3 h-64">Document tree here {children}</div>
         {/* <NavItem
-          href="/app/editor/royalties"
-          isActive={router.pathname === "/app/editor/royalties"}
+          href="/editor/royalties"
+          isActive={router.pathname === "/editor/royalties"}
           onClick={() => setOpen(false)}
           title="Royalties"
         />
         <NavItem
-          href="/app/editor/visibility"
-          isActive={router.pathname === "/app/editor/visibility"}
+          href="/editor/visibility"
+          isActive={router.pathname === "/editor/visibility"}
           onClick={() => setOpen(false)}
           title="Visibility"
         />
         <NavItem
-          href="/app/editor/settings"
-          isActive={router.pathname === "/app/editor/settings"}
+          href="/editor/settings"
+          isActive={router.pathname === "/editor/settings"}
           onClick={() => setOpen(false)}
           title="Settings"
         /> */}

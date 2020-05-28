@@ -59,7 +59,7 @@ export default function WelcomeProvider({
       try {
         const resp = await hasProfile()
         if (resp) {
-          router.replace('/app/library')
+          router.replace('/drafts')
         }
       } catch (err) {
         console.error('Error trying to redirect => ', err)
