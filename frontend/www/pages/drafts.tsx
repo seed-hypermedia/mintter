@@ -42,7 +42,7 @@ export default function Drafts() {
                 className="bg-info hover:bg-info-hover text-white font-bold py-3 px-4 rounded rounded-full flex items-center mt-5 justify-center"
               >
                 <NoteAddOutlinedIcon />
-                <span className="ml-2">Create your first document</span>
+                <span className="ml-2">Create your first Draft</span>
               </button>
             </div>
             <hr className="border-t-2 border-muted border-solid my-8" />
