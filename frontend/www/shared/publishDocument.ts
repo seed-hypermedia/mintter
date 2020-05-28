@@ -1,9 +1,16 @@
 import {Node} from 'slate'
 import {parseToMarkdown} from './parseToMarkdown'
+import {publishDraft} from './drafts'
 
-export function publish(slateTree: Node[]) {
-  const content = parseSlatetree(slateTree)
-  return content
+export async function publish(slateTree, draftId) {
+  const content = parseSlatetree(slateTree.sections)
+
+  return await publishDraft({
+    id: draftId,
+    title: slateTree.title,
+    description: slateTree.description,
+    sections: content,
+  })
 }
 
 export function parseSlatetree(slateTree: Node[]) {

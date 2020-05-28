@@ -1,9 +1,5 @@
-import {useEffect} from 'react'
-import {Node} from 'slate'
 import {
   useQuery,
-  useMutation,
-  queryCache,
   usePaginatedQuery,
   QueryResult,
   QueryOptions,
@@ -14,6 +10,7 @@ import {
   CreateDraftRequest,
   GetDraftRequest,
   Draft,
+  PublishDraftRequest,
 } from '@mintter/proto/documents_pb'
 import {fromSlateToMarkdown} from './parseToMarkdown'
 
@@ -69,6 +66,17 @@ export async function saveDraft({
     request.setSectionsList(s)
   }
   await rpc.saveDraft(request)
+}
+
+export async function publishDraft(draft) {
+  const req = new PublishDraftRequest()
+  req.setDocumentId(draft.id)
+  try {
+    const publication = await rpc.publishDraft(req)
+    return publication
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 export function useFetchDraft(

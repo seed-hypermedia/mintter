@@ -1,6 +1,5 @@
 import {Fragment, useState} from 'react'
 import {useRouter} from 'next/router'
-import Container from '../components/container'
 import Seo from '../components/seo'
 import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
 import DocumentList from '../components/documentList'
@@ -25,6 +24,7 @@ export default function Drafts() {
 
   return (
     <Content>
+      <Seo title="Drafts" />
       {/* show/hide depending on the desired criteria (TBD) */}
       {drafts.status === 'success' &&
         drafts.resolvedData.toObject().draftsList.length === 0 && (
