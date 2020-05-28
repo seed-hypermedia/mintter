@@ -9,7 +9,6 @@ import (
 	"mintter/backend/identity"
 	"mintter/backend/p2p"
 	"mintter/backend/store"
-	"mintter/proto"
 	"os"
 
 	"go.uber.org/atomic"
@@ -21,8 +20,6 @@ import (
 
 // Server implements Mintter rpc.
 type Server struct {
-	proto.DocumentsServer
-
 	cfg config.Config
 	log *zap.Logger
 
@@ -42,8 +39,6 @@ func NewServer(cfg config.Config, log *zap.Logger) (*Server, error) {
 	s := &Server{
 		log: log,
 		cfg: cfg,
-		// TODO(burdiyan): Remove this when server is implemented fully. It's just for convenience now.
-		DocumentsServer: &proto.UnimplementedDocumentsServer{},
 	}
 
 	if err := s.init(identity.Profile{}); err != nil {

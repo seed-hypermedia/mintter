@@ -2,8 +2,9 @@ package server_test
 
 import (
 	"context"
-	pb "mintter/proto"
 	"testing"
+
+	pb "mintter/proto"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/require"
@@ -117,6 +118,11 @@ func TestPublishDraft(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, "Hello world", sec.Body)
+
+	// Draft must be deleted after publication.
+	resp, err := srv.GetDraft(ctx, &pb.GetDraftRequest{DocumentId: draft.DocumentId})
+	require.Error(t, err)
+	require.Nil(t, resp)
 }
 
 func TestListPublications(t *testing.T) {

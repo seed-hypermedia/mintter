@@ -3,13 +3,17 @@ package server
 import (
 	"context"
 	"fmt"
-	"mintter/backend/publishing"
-	"mintter/proto"
 	"time"
 
+	"mintter/backend/publishing"
+	"mintter/backend/store"
+	"mintter/proto"
+
 	"github.com/golang/protobuf/ptypes"
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -78,7 +82,12 @@ func (s *Server) GetDraft(ctx context.Context, in *proto.GetDraftRequest) (*prot
 		return nil, status.Error(codes.InvalidArgument, "documentId is required")
 	}
 
-	return s.store.GetDraft(in.DocumentId)
+	d, err := s.store.GetDraft(in.DocumentId)
+	if err != nil {
+		return nil, storeErrorToProto(err)
+	}
+
+	return d, nil
 }
 
 // ListDrafts implements DocumentsServer.
@@ -139,7 +148,24 @@ func (s *Server) PublishDraft(ctx context.Context, in *proto.PublishDraftRequest
 		return nil, fmt.Errorf("failed to add publication: %w", err)
 	}
 
+	if err := s.store.DeleteDraft(in.DocumentId); err != nil {
+		s.log.Error("FailedDeletingDraft", zap.Error(err), zap.String("documentID", in.DocumentId))
+	}
+
 	return publicationToProto(pubcid, pub)
+}
+
+// DeleteDraft implements DocumentsServer.
+func (s *Server) DeleteDraft(ctx context.Context, in *proto.DeleteDraftRequest) (*empty.Empty, error) {
+	if err := s.checkReady(); err != nil {
+		return nil, err
+	}
+
+	if err := s.store.DeleteDraft(in.DocumentId); err != nil {
+		return nil, err
+	}
+
+	return &empty.Empty{}, nil
 }
 
 // ListPublications stored on the server.
@@ -332,4 +358,12 @@ func publicationToProto(id cid.Cid, p publishing.Publication) (*proto.Publicatio
 	}
 
 	return pubpb, nil
+}
+
+func storeErrorToProto(err error) error {
+	if store.IsNotFound(err) {
+		return status.Error(codes.NotFound, err.Error())
+	}
+
+	return status.Error(codes.Internal, err.Error())
 }
