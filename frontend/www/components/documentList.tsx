@@ -38,14 +38,14 @@ export default function DocumentList({data, status, error}) {
           </h2>
         </Link>
         <div className="flex-1" />
-        <div className="mx-2">
+        {/* <div className="mx-2">
           <button className="m-2">
             <AppsOutlinedIcon className="text-primary" />
           </button>
           <button className="m-2">
             <FormatListBulletedOutlinedIcon className="text-primary" />
           </button>
-        </div>
+        </div> */}
       </div>
       <div>
         {data.map(item => (
@@ -59,8 +59,8 @@ export default function DocumentList({data, status, error}) {
 function ListItem({item}) {
   const router = useRouter()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
-  const {title, description} = item
-
+  const {title, description, id} = item
+  console.log('item => ', item)
   const theTitle = title ? title : 'Untitled Draft'
   const theDescription = description ? description : 'Draft with no description'
 
@@ -72,11 +72,7 @@ function ListItem({item}) {
     }
   }
   return (
-    <Link
-      href={`/${router.pathname === '/drafts' ? 'editor' : 'p'}/${
-        item.documentId
-      }`}
-    >
+    <Link href={`/${router.pathname === '/drafts' ? 'editor' : 'p'}/${id}`}>
       <div
         className="bg-background-muted p-6 rounded-lg mt-8 first:mt-0"
         onMouseEnter={handlePrefetch}
