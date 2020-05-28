@@ -67,28 +67,30 @@ export function Section(
         }
       `}`}
     >
-      <div
-        contentEditable={false}
-        className={`absolute top-0 right-0 select-none mt-4 mr-4 bg-background-toolbar rounded shadows-md transition duration-200 theme-dark flex items-center pl-2 text-xs leading-none text-body ${
-          isHover
-            ? 'pointer-events-auto opacity-100'
-            : 'pointer-events-none opacity-0'
-        }`}
-      >
-        <p className="font-bold border-r px-2">Section text</p>
-        <p className={`text-body border-r px-2`}>
-          <span>Characters:</span>{' '}
-          {/* TODO: FIX avoid characters to jump when change chars number */}
-          <span className={`inline-block text-right`}>{sectionChars}</span>
-        </p>
-        <p className=" border-r px-2">Royalties $0.02</p>
-        <SettingsButton
-          section={element}
-          path={path}
-          visible={visible}
-          show={show}
-          hide={hide}
-        />
+      <div className="theme-invert">
+        <div
+          contentEditable={false}
+          className={`absolute top-0 right-0 select-none mt-4 mr-4 rounded shadows-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-background-toolbar ${
+            isHover
+              ? 'pointer-events-auto opacity-100'
+              : 'pointer-events-none opacity-0'
+          }`}
+        >
+          <p className="font-bold border-r px-2">Section text</p>
+          <p className={`text-body border-r px-2`}>
+            <span>Characters:</span>{' '}
+            {/* TODO: FIX avoid characters to jump when change chars number */}
+            <span className={`inline-block text-right`}>{sectionChars}</span>
+          </p>
+          <p className=" border-r px-2">Royalties $0.02</p>
+          <SettingsButton
+            section={element}
+            path={path}
+            visible={visible}
+            show={show}
+            hide={hide}
+          />
+        </div>
       </div>
       {children}
     </div>

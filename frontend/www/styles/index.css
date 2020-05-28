@@ -9,7 +9,8 @@ body {
   @apply bg-background;
 }
 
-.theme-light {
+.theme-light,
+.theme-dark .theme-invert {
   --color-primary: theme('colors.blue.700');
   --color-primary-hover: theme('colors.blue.800');
 
@@ -51,7 +52,8 @@ body {
   --color-toolbar-active: theme('colors.black');
 }
 
-.theme-dark {
+.theme-dark,
+.theme-light .theme-invert {
   --color-primary: theme('colors.blue.300');
   --color-primary-hover: theme('colors.blue.200');
 
