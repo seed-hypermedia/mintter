@@ -1,11 +1,10 @@
-import Layout from './layout'
-import Link from './link'
+import Layout from 'components/layout'
 import LibraryHeader from './library-header'
 import Container from './container'
 import {ErrorBoundary} from 'react-error-boundary'
 import {FullPageErrorMessage} from './errorMessage'
 import {useRouter} from 'next/router'
-import {createDraft} from '../shared/drafts'
+import {createDraft} from 'shared/drafts'
 
 export function LibraryLayout({children}) {
   const router = useRouter()

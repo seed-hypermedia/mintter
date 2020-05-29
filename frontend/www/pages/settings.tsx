@@ -1,39 +1,56 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import {css} from 'emotion'
-import Seo from '../components/seo'
-import Sidebar from '../components/sidebar'
-import Content from '../components/content'
-import Input from '../components/input'
-import Textarea from '../components/textarea'
+import Seo from 'components/seo'
+import Sidebar from 'components/sidebar'
+import Content from 'components/content'
+import Input from 'components/input'
+import Textarea from 'components/textarea'
 import {motion, AnimatePresence} from 'framer-motion'
-import Layout from '../components/layout'
+import Layout from 'components/layout'
 import {useForm} from 'react-hook-form'
-import Container from '../components/container'
+import Container from 'components/container'
 import {useProfile} from '../shared/profileContext'
-import {ErrorMessage, ErrorInterface} from '../components/errorMessage'
+import {ErrorMessage, ErrorInterface} from 'components/errorMessage'
+import {GetProfileAddrsRequest} from '@mintter/proto/mintter_pb'
+import {makeRpcClient} from 'shared/rpc'
+const rpc = makeRpcClient()
 
 export default function Settings() {
   const {getProfile, setProfile} = useProfile()
   const [success, setSuccess] = React.useState<boolean>(false)
   const [submitError, setSubmitError] = React.useState<ErrorInterface>()
+  const [addresses, setAddresses] = useState<string[]>()
   const {register, handleSubmit, errors, formState, setValue} = useForm({
     mode: 'onChange',
     defaultValues: {
       username: '',
       email: '',
       bio: '',
+      accountId: '',
     },
   })
 
   useEffect(() => {
-    init()
+    initProfile()
+
+    async function initProfile() {
+      const values = await (await getProfile()).toObject()
+      console.log('initProfile -> values', values)
+
+      const data = Object.keys(values).map(v => ({[v]: values[v]}))
+      setValue(data)
+    }
   }, [])
 
-  async function init() {
-    const values = await (await getProfile()).toObject()
-    const data = Object.keys(values).map(v => ({[v]: values[v]}))
-    setValue(data)
-  }
+  useEffect(() => {
+    async function initAddresses() {
+      const req = new GetProfileAddrsRequest()
+      const res = await rpc.getProfileAddrs(req)
+      setAddresses(res.toObject().addrsList)
+    }
+
+    initAddresses()
+  }, [])
 
   async function onSubmit(data) {
     try {
@@ -51,7 +68,7 @@ export default function Settings() {
 
   return (
     <Layout>
-      <Seo title="Settings | Mintter" />
+      <Seo title="Settings" />
       <Sidebar />
       <div className="flex-1 overflow-y-auto p-8 lg:px-10 lg:py-12">
         <form className="rounded pb-8 mb-4" onSubmit={handleSubmit(onSubmit)}>
@@ -166,6 +183,39 @@ export default function Settings() {
                       </motion.div>
                     )}
                   </AnimatePresence>
+                </div>
+
+                <div className="flex-1 relative mt-10">
+                  <label
+                    className="block text-body-muted text-xs font-semibold mb-1"
+                    htmlFor="accountId"
+                  >
+                    Account Id
+                  </label>
+                  <Input
+                    id="accountId"
+                    name="accountId"
+                    disabled
+                    ref={register}
+                    type="text"
+                  />
+                </div>
+
+                <div className="mt-10">
+                  <label
+                    className="block text-body-muted text-xs font-semibold mb-1"
+                    htmlFor="addresses"
+                  >
+                    your Mintter addresses
+                  </label>
+
+                  <Textarea
+                    readOnly
+                    minHeight={150}
+                    id="addresses"
+                    className="block text-body-muted w-full border bg-background-muted border-muted rounded px-3 py-2"
+                    value={addresses && addresses.join('\n\n')}
+                  />
                 </div>
               </div>
               <ErrorMessage error={submitError} />

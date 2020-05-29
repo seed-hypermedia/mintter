@@ -45,7 +45,6 @@
     "slate-plugins-next": "0.58",
     "slate-react": "^0.58.1",
     "styled-components": "^5.1.0",
-    "tailwindcss": "1.4",
     "unified": "^9.0.0",
     "xtend": "^4.0.2"
   },
@@ -70,8 +69,8 @@
     "postcss-preset-env": "^6.7.0",
     "prettier": "^1.19.1",
     "react-query-devtools": "^1.1.5",
-    "tailwindcss": "^1.1.4",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "tailwindcss": "1.4"
   },
   "browserslist": {
     "production": [

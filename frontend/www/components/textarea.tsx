@@ -8,6 +8,7 @@ interface TextareaProps {
   onChange?: (textValue: string) => void
   minHeight?: number
   className?: string
+  readOnly?: boolean
   placeholder?: string
   onEnterPress?: (e: any) => void
 }
@@ -21,6 +22,7 @@ const Textarea = (
     minHeight,
     className,
     onEnterPress,
+    readOnly = false,
     ...props
   }: TextareaProps,
   ref: any,
@@ -81,6 +83,7 @@ const Textarea = (
   return (
     <>
       <textarea
+      readOnly={readOnly}
         {...props}
         className={`resize-none overflow-hidden text-base leading-normal w-full outline-none bg-transparent ${css`
           word-wrap: break-word;
