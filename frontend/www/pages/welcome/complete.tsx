@@ -18,7 +18,7 @@ export default function WelcomeIndex() {
 
   function handleNext() {
     dispatch({type: 'reset'})
-    router.push('/drafts')
+    router.push('/library/drafts')
   }
 
   return (

@@ -1,6 +1,6 @@
 import {useEffect} from 'react'
 import {useRouter} from 'next/router'
-import {createDraft} from '../../shared/drafts'
+import {createDraft} from 'shared/drafts'
 
 export default function EditorIndexPage() {
   const router = useRouter()

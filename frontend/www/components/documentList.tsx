@@ -3,6 +3,7 @@ import AppsOutlinedIcon from '@material-ui/icons/AppsOutlined'
 import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined'
 import Link from './link'
 import {useRouter} from 'next/router'
+import {NavItem} from 'components/nav'
 
 export default function DocumentList({data, status, error}) {
   const router = useRouter()
@@ -17,26 +18,18 @@ export default function DocumentList({data, status, error}) {
   return (
     <div>
       <div className="flex items-center -mx-4">
-        <Link href="/drafts">
-          <h2
-            className={`text-md font-bold flex-1 ${
-              router.pathname === '/drafts' ? 'text-primary' : 'text-heading'
-            }`}
-          >
-            Drafts
-          </h2>
-        </Link>
-        <Link href="/publications">
-          <h2
-            className={`text-md font-bold flex-1 ${
-              router.pathname === '/publications'
-                ? 'text-primary'
-                : 'text-heading'
-            }`}
-          >
-            Publications
-          </h2>
-        </Link>
+        <NavItem
+          href="/library/drafts"
+          active={router.pathname === '/library/drafts'}
+        >
+          Drafts
+        </NavItem>
+        <NavItem
+          href="/library/publications"
+          active={router.pathname === '/library/publications'}
+        >
+          Publications
+        </NavItem>
         <div className="flex-1" />
         {/* <div className="mx-2">
           <button className="m-2">
@@ -65,7 +58,7 @@ function ListItem({item}) {
 
   const href = useMemo(
     () =>
-      router.pathname === '/drafts'
+      router.pathname === '/library/drafts'
         ? `/editor/${item.documentId}`
         : `/p/${item.id}`,
     [router.pathname],

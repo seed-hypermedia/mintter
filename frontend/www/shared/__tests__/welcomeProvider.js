@@ -50,6 +50,6 @@ describe('Welcome Provider', () => {
     )
 
     await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1))
-    expect(mockReplace).toHaveBeenCalledWith('/drafts')
+    expect(mockReplace).toHaveBeenCalledWith('/library/drafts')
   })
 })

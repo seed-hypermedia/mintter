@@ -1,9 +1,9 @@
 import {render, cleanup, waitFor, fireEvent} from '@testing-library/react'
-import Editor from '../../../pages/editor/[id]'
-import {Draft} from '@mintter/proto/documents_pb'
+import Editor from 'pages/editor/[id]'
+// import {Draft} from '@mintter/proto/documents_pb'
 import * as nextRouter from 'next/router'
 import {RouterContext} from 'next-server/dist/lib/router-context'
-import * as mockDrafts from '../../../shared/drafts'
+import * as mockDrafts from 'shared/drafts'
 // jest.mock('../../../shared/drafts', () => {
 //   return {
 //     ...mockDrafts,

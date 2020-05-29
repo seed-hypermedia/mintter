@@ -1,26 +1,27 @@
-import {useEffect, useState} from 'react'
-import Logo from './logo_square'
-import Link from 'next/link'
-import Input from './input'
+import {useRouter} from 'next/router'
+import {createDraft} from 'shared/drafts'
 
-export default function LibraryHeader() {
+export function LibraryHeader() {
+  const router = useRouter()
+
+  async function handleCreateDraft() {
+    await createDraft(async newDraft => {
+      const value = newDraft.toObject()
+      router.push({
+        pathname: `/editor/${value.id}`,
+      })
+    })
+  }
+
   return (
-    <div className="flex items-center m-8">
-      <div className="text-primary">
-        <Link href="/drafts">
-          <a>
-            <Logo width="50px" className="fill-current" />
-          </a>
-        </Link>
-      </div>
-      <div className="flex-1" />
-      <div className="w-full max-w-3xl pl-8">
-        <Input
-          name="hash-search"
-          type="text"
-          placeholder="Enter a publication CID"
-        />
-      </div>
+    <div className="py-5 flex items-baseline justify-between">
+      <h1 className="text-4xl font-bold text-heading">Library</h1>
+      <button
+        onClick={handleCreateDraft}
+        className="bg-info hover:bg-info-hover text-white font-bold py-2 px-4 rounded rounded-full flex items-center justify-center"
+      >
+        new Draft
+      </button>
     </div>
   )
 }
