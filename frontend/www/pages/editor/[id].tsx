@@ -15,21 +15,21 @@ import {
   renderLeafs,
 } from '@mintter/editor'
 import {EditablePlugins, SoftBreakPlugin} from 'slate-plugins-next'
-import Seo from '../../components/seo'
-import EditorHeader from '../../components/editor-header'
-import {DebugValue} from '../../components/debug'
+import Seo from 'components/seo'
+import EditorHeader from 'components/editor-header'
+import {DebugValue} from 'components/debug'
 import {css} from 'emotion'
 
 // import {wrapLink, unwrapLink} from '@mintter/slate-plugin-with-links'
-import Textarea from '../../components/textarea'
-// import Layout from '../../../components/layout'
-import {publish} from '../../shared/publishDocument'
+import Textarea from 'components/textarea'
+// import Layout from '../components/layout'
+import {publish} from 'shared/publishDocument'
 import {useRouter} from 'next/router'
 import {Section} from '@mintter/proto/documents_pb'
-import {useFetchDraft, saveDraft} from '../../shared/drafts'
-import {markdownToSlate} from '../../shared/markdownToSlate'
+import {useFetchDraft, saveDraft} from 'shared/drafts'
+import {markdownToSlate} from 'shared/markdownToSlate'
 import {useMutation} from 'react-query'
-import {useDebounce} from '../../shared/hooks'
+import {useDebounce} from 'shared/hooks'
 
 interface EditorState {
   title: string

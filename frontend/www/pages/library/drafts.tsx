@@ -1,11 +1,11 @@
-import {Fragment, useState} from 'react'
 import {useRouter} from 'next/router'
-import Seo from '../components/seo'
+import Seo from 'components/seo'
 import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
-import DocumentList from '../components/documentList'
-import Content from '../components/content'
-import {useDraftsList, createDraft} from '../shared/drafts'
-import {LibraryLayout} from '../components/library-layout'
+import DocumentList from 'components/documentList'
+import Content from 'components/content'
+import {useDraftsList, createDraft} from 'shared/drafts'
+import {MainLayout} from 'components/main-layout'
+import {LibraryHeader} from 'components/library-header'
 
 export type ListType = 'drafts' | 'publications'
 
@@ -25,10 +25,11 @@ export default function Drafts() {
   return (
     <Content>
       <Seo title="Drafts" />
+      <LibraryHeader />
       {/* show/hide depending on the desired criteria (TBD) */}
       {drafts.status === 'success' &&
         drafts.resolvedData.toObject().draftsList.length === 0 && (
-          <Fragment>
+          <>
             <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
               <h2 className="text-3xl font-semibold text-info">
                 Welcome to Mintter!
@@ -46,7 +47,7 @@ export default function Drafts() {
               </button>
             </div>
             <hr className="border-t-2 border-muted border-solid my-8" />
-          </Fragment>
+          </>
         )}
 
       <DocumentList
@@ -58,4 +59,4 @@ export default function Drafts() {
   )
 }
 
-Drafts.Layout = LibraryLayout
+Drafts.Layout = MainLayout

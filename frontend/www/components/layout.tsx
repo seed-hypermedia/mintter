@@ -1,24 +1,9 @@
-import {motion} from 'framer-motion'
 import {useTheme} from '../shared/themeContext'
-// import {useProfile} from '../shared/profileContext'
-import {ErrorBoundary} from 'react-error-boundary'
-import {FullPageErrorMessage} from './errorMessage'
 
 export interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
   initial?: string
   animate?: string
   exit?: string
-}
-
-function ErrorFallback({error, componentStack, resetErrorBoundary}) {
-  return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre>{error.message}</pre>
-      <pre>{componentStack}</pre>
-      <button onClick={resetErrorBoundary}>Try again</button>
-    </div>
-  )
 }
 
 export default function Layout({
@@ -30,15 +15,10 @@ export default function Layout({
 }: LayoutProps) {
   const {theme} = useTheme()
   return (
-    <ErrorBoundary FallbackComponent={FullPageErrorMessage}>
-      <motion.div
-        initial={initial}
-        animate={animate}
-        exit={exit}
-        className={`fixed overflow-y-scroll w-screen h-screen flex bg-background content-transition ${theme} ${className}`}
-      >
-        {children}
-      </motion.div>
-    </ErrorBoundary>
+    <div
+      className={`fixed overflow-y-scroll w-screen h-screen flex bg-background content-transition ${theme} ${className}`}
+    >
+      {children}
+    </div>
   )
 }

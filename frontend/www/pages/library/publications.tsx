@@ -1,12 +1,12 @@
-import {Fragment, useState} from 'react'
 import {useRouter} from 'next/router'
-import Seo from '../components/seo'
+import Seo from 'components/seo'
 import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
-import DocumentList from '../components/documentList'
-import Content from '../components/content'
-import {usePublicationsList} from '../shared/publications'
-import {createDraft} from '../shared/drafts'
-import {LibraryLayout} from '../components/library-layout'
+import DocumentList from 'components/documentList'
+import Content from 'components/content'
+import {usePublicationsList} from 'shared/publications'
+import {createDraft} from 'shared/drafts'
+import {MainLayout} from 'components/main-layout'
+import {LibraryHeader} from 'components/library-header'
 
 export type ListType = 'drafts' | 'publications'
 export default function Library() {
@@ -25,6 +25,7 @@ export default function Library() {
   return (
     <Content>
       <Seo title="Publications" />
+      <LibraryHeader />
       <DocumentList
         status={publications.status}
         error={publications.error}
@@ -52,4 +53,4 @@ export default function Library() {
   )
 }
 
-Library.Layout = LibraryLayout
+Library.Layout = MainLayout

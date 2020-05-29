@@ -32,7 +32,7 @@ export default function Sidebar({children = null, ...props}) {
           <Link href="/">Mintter</Link>
         </div>
         <NavItem
-          href="/drafts"
+          href="/library/drafts"
           isActive={router.pathname === '/drafts'}
           onClick={() => setOpen(false)}
           title="Drafts"

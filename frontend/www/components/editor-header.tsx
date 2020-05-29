@@ -11,7 +11,7 @@ export default function EditorHeader({onPublish}: Props) {
   return (
     <div className="flex items-center mx-4">
       <div className="text-primary">
-        <Link href="/drafts">
+        <Link href="/library/drafts">
           <a>
             <Logo width="50px" className="fill-current" />
           </a>
