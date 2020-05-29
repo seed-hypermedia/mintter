@@ -207,7 +207,7 @@ export default function EditorPage(): JSX.Element {
   async function handlePublish() {
     const res = await publish(state, id)
     const doc = res.toObject()
-    push(`/p/${doc.documentId}`)
+    push(`/p/${doc.id}`)
   }
 
   return (
