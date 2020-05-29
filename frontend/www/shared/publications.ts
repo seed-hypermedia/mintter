@@ -36,14 +36,14 @@ export async function getPublicationFetcher(key, queryId) {
   }
 
   // get document by filtering publication list
-  const list = await (await publicationsListFetcher('PublicationsList', 0))
+  const publication = await (await publicationsListFetcher('PublicationsList', 0))
     .getPublicationsList()
-    .filter(p => {
+    .find(p => {
       const doc = p.toObject()
       return doc.id === queryId
     })
 
-  return list.length ? list[0] : null
+  return publication
 }
 
 export async function getBatchPublicationSections(sectionIds) {
