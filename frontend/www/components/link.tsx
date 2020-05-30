@@ -19,7 +19,7 @@ export default function Link({href, className = '', ...props}: LinkProps) {
     <NextLink href={href} {...linkProps}>
       <a
         {...otherProps}
-        className={`px-4 py-2 bg-transparent rounded ${className}`}
+        className={`p-2 bg-transparent rounded ${className}`}
       />
     </NextLink>
   )

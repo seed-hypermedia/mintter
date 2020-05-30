@@ -26,14 +26,14 @@ export function NavItem({
   ...props
 }) {
   return (
-    <Link href={href} {...props}>
-      <a
-        className={`mx-2 text-md font-bold flex-1 ${className} ${
-          active ? 'text-primary' : 'text-heading'
-        }`}
-      >
-        {children}
-      </a>
+    <Link
+      href={href}
+      className={`mx-2 text-md font-semibold hover:bg-background-muted transition duration-200 ${className} ${
+        active ? 'text-primary' : 'text-heading'
+      }`}
+      {...props}
+    >
+      {children}
     </Link>
   )
 }

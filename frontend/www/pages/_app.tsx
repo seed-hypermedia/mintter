@@ -9,6 +9,7 @@ import {ThemeProvider} from '../shared/themeContext'
 import ProfileProvider from '../shared/profileContext'
 
 import {ReactQueryDevtools} from 'react-query-devtools'
+import {MintterProvider} from 'shared/mintterContext'
 
 const NoSSR: React.FC = ({children}) => {
   return <React.Fragment>{children}</React.Fragment>
@@ -27,15 +28,17 @@ AppProps & {Component: any}) {
   return (
     <Dynamic>
       <ReactQueryDevtools initialIsOpen={false} />
-      <ProfileProvider>
-        <ThemeProvider>
-          <AnimatePresence exitBeforeEnter>
-            <Layout {...pageProps}>
-              <Component {...pageProps} key={router.route} />
-            </Layout>
-          </AnimatePresence>
-        </ThemeProvider>
-      </ProfileProvider>
+      <MintterProvider>
+        <ProfileProvider>
+          <ThemeProvider>
+            <AnimatePresence exitBeforeEnter>
+              <Layout {...pageProps}>
+                <Component {...pageProps} key={router.route} />
+              </Layout>
+            </AnimatePresence>
+          </ThemeProvider>
+        </ProfileProvider>
+      </MintterProvider>
     </Dynamic>
   )
 }

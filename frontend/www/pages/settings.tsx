@@ -1,20 +1,15 @@
 import React, {useEffect, useState} from 'react'
-import {css} from 'emotion'
 import Seo from 'components/seo'
-import Sidebar from 'components/sidebar'
 import Content from 'components/content'
 import Input from 'components/input'
 import Textarea from 'components/textarea'
 import {motion, AnimatePresence} from 'framer-motion'
 import {useForm} from 'react-hook-form'
-import Container from 'components/container'
-import {useProfile} from '../shared/profileContext'
 import {ErrorMessage, ErrorInterface} from 'components/errorMessage'
 import {GetProfileAddrsRequest} from '@mintter/proto/mintter_pb'
-import {makeRpcClient} from 'shared/rpc'
+import {usersClient} from 'shared/mintterClient'
 import {MainLayout} from 'components/main-layout'
-
-const rpc = makeRpcClient()
+import {useProfile} from 'shared/profileContext'
 
 export default function Settings() {
   const {getProfile, setProfile} = useProfile()
@@ -46,7 +41,7 @@ export default function Settings() {
   useEffect(() => {
     async function initAddresses() {
       const req = new GetProfileAddrsRequest()
-      const res = await rpc.getProfileAddrs(req)
+      const res = await usersClient.getProfileAddrs(req)
       setAddresses(res.toObject().addrsList)
     }
 

@@ -1,17 +1,14 @@
 import {
   ListPublicationsRequest,
-  Publication,
   BatchGetSectionsRequest,
 } from '@mintter/proto/documents_pb'
-import {usePaginatedQuery, QueryResult, useQuery, queryCache} from 'react-query'
-import {makeRpcDocumentsClient} from './rpc'
-
-const rpc = makeRpcDocumentsClient()
+import {usePaginatedQuery, useQuery} from 'react-query'
+import {documentsClient} from './mintterClient'
 
 export async function publicationsListFetcher(key, page) {
   const req = new ListPublicationsRequest()
   req.setPageSize(page)
-  return await rpc.listPublications(req)
+  return await documentsClient.listPublications(req)
 }
 
 export function usePublicationsList(page = 0) {
@@ -36,7 +33,9 @@ export async function getPublicationFetcher(key, queryId) {
   }
 
   // get document by filtering publication list
-  const publication = await (await publicationsListFetcher('PublicationsList', 0))
+  const publication = await (
+    await publicationsListFetcher('PublicationsList', 0)
+  )
     .getPublicationsList()
     .find(p => {
       const doc = p.toObject()
@@ -50,7 +49,7 @@ export async function getBatchPublicationSections(sectionIds) {
   const req = new BatchGetSectionsRequest()
   req.setSectionIdsList(sectionIds)
 
-  const sections = await rpc.batchGetSections(req)
+  const sections = await documentsClient.batchGetSections(req)
   console.log('getBatchPublicationSections -> sections', sections.toObject())
 
   return sections

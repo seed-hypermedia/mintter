@@ -5,7 +5,7 @@ import {
   InitProfileRequest,
   Profile,
 } from '@mintter/proto/mintter_pb'
-import {makeRpcClient, MintterPromiseClient} from './rpc'
+import {usersClient, MintterPromiseClient} from './mintterClient'
 
 interface ProfileContextValue {
   readonly profile: Profile | null
@@ -26,7 +26,7 @@ interface ProfileProviderProps {
 export default function ProfileProvider({
   children,
   value: {profile: propProfile = null, ...rest} = {profile: null},
-  rpc = makeRpcClient(),
+  rpc = usersClient,
 }: ProfileProviderProps) {
   const [profile, setLocalProfile] = useState<Profile>(propProfile)
 
