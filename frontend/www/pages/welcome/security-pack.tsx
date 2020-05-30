@@ -1,28 +1,26 @@
 import {useState} from 'react'
-import Layout from '../../components/welcome-layout'
-import Container from '../../components/welcome-container'
-import Heading from '../../components/welcome-heading'
-import {NextButton, BackButton} from '../../components/welcome-buttons'
-import Footer from '../../components/footer'
-import Content from '../../components/content'
-import P from '../../components/welcome-p'
+import Layout from 'components/welcome-layout'
+import Container from 'components/welcome-container'
+import Heading from 'components/welcome-heading'
+import {NextButton, BackButton} from 'components/welcome-buttons'
+import Footer from 'components/footer'
+import Content from 'components/content'
+import P from 'components/welcome-p'
 import {css} from 'emotion'
 import {GenSeedRequest} from '@mintter/proto/mintter_pb'
 import {useRouter} from 'next/router'
-import Input from '../../components/input'
-import Button from '../../components/button'
+import Input from 'components/input'
+import Button from 'components/button'
 import {useForm} from 'react-hook-form'
-import {useWelcome} from '../../shared/welcomeProvider'
-import {useFocus} from '../../shared/hooks'
-import {makeRpcClient, MintterPromiseClient} from '../../shared/rpc'
+import {useWelcome} from 'shared/welcomeProvider'
+import {useFocus} from 'shared/hooks'
+import {usersClient, MintterPromiseClient} from 'shared/mintterClient'
 
 interface SecurityPackProps {
   rpc: MintterPromiseClient
 }
 
-export default function SecurityPack({
-  rpc = makeRpcClient(),
-}: SecurityPackProps) {
+export default function SecurityPack({rpc = usersClient}: SecurityPackProps) {
   const [error, setError] = useState<{code: number; message: string}>()
   const {focusFirst} = useFocus()
   const [mnemonic, setMnemonic] = useState<string[]>([])

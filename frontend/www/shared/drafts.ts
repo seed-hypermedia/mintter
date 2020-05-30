@@ -4,7 +4,6 @@ import {
   QueryResult,
   QueryOptions,
 } from 'react-query'
-import {makeRpcDocumentsClient} from './rpc'
 import {
   ListDraftsRequest,
   CreateDraftRequest,
@@ -13,21 +12,20 @@ import {
   PublishDraftRequest,
 } from '@mintter/proto/documents_pb'
 import {fromSlateToMarkdown} from './parseToMarkdown'
-
-const rpc = makeRpcDocumentsClient()
+import {documentsClient} from './mintterClient'
 
 export function useDraftsList(page = 0) {
   return usePaginatedQuery(['DraftsList', page], async (key, page) => {
     const req = new ListDraftsRequest()
     req.setPageSize(page)
-    return await rpc.listDrafts(req)
+    return await documentsClient.listDrafts(req)
   })
 }
 
 export async function createDraft(cb) {
   const req = new CreateDraftRequest()
   try {
-    const resp = await rpc.createDraft(req)
+    const resp = await documentsClient.createDraft(req)
     cb(resp)
   } catch (err) {
     console.error('Error on createDraft -> ', err)
@@ -65,14 +63,14 @@ export async function saveDraft({
 
     request.setSectionsList(s)
   }
-  await rpc.saveDraft(request)
+  await documentsClient.saveDraft(request)
 }
 
 export async function publishDraft(draft) {
   const req = new PublishDraftRequest()
   req.setDocumentId(draft.id)
   try {
-    const publication = await rpc.publishDraft(req)
+    const publication = await documentsClient.publishDraft(req)
     return publication
   } catch (err) {
     console.error(err)
@@ -101,5 +99,5 @@ export async function getDraftFetcher(key, queryId) {
   const req = new GetDraftRequest()
   req.setDocumentId(queryId)
 
-  return await rpc.getDraft(req)
+  return await documentsClient.getDraft(req)
 }
