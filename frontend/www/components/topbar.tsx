@@ -18,22 +18,16 @@ interface NavItemProps {
 export default function LibraryHeader(props) {
   const router = useRouter()
   const [input, setInput] = useState<string>('')
-  const {searchPublicationById, connectToPeerById} = useMintter()
+  const {connectToPeerById} = useMintter()
 
   async function handleSearch(e) {
     e.preventDefault()
-    try {
-      const res = await searchPublicationById(input)
-      console.log('handleSearch -> res', res)
-    } catch (err) {
-      throw new Error(`error in topbar => ${err}`)
-    }
+    router.push(`/p/${input}`)
   }
 
   async function handlePeerConnection() {
     const peer = window.prompt(`enter a peer address`)
     await connectToPeerById([peer])
-    console.log('Success!')
   }
 
   return (

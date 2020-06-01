@@ -1,15 +1,16 @@
 import {useRouter} from 'next/router'
-import {createDraft} from 'shared/drafts'
+import {useMintter} from 'shared/mintterContext'
 
 export function LibraryHeader() {
   const router = useRouter()
+  const {createDraft} = useMintter()
 
   async function handleCreateDraft() {
-    await createDraft(async newDraft => {
-      const value = newDraft.toObject()
-      router.push({
-        pathname: `/editor/${value.id}`,
-      })
+    const d = await createDraft()
+
+    const value = d.toObject()
+    router.push({
+      pathname: `/editor/${value.documentId}`,
     })
   }
 
