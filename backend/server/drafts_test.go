@@ -178,3 +178,52 @@ func TestListPublications(t *testing.T) {
 
 	require.ElementsMatch(t, pubs, resp.Publications)
 }
+
+func TestGetPublication(t *testing.T) {
+	ctx := context.Background()
+
+	alice := newSeededServer(t, testMnemonic...)
+	bob := newSeededServer(t, testMnemonic2...)
+
+	t.Cleanup(func() {
+		require.NoError(t, alice.Close())
+		require.NoError(t, bob.Close())
+	})
+
+	var publication *pb.Publication
+	{
+		draft, err := alice.CreateDraft(ctx, &pb.CreateDraftRequest{})
+		require.NoError(t, err)
+
+		draft.Title = "My crazy new document"
+		draft.Sections = append(draft.Sections, &pb.Section{
+			Body: "Hello world",
+		})
+
+		draft, err = alice.SaveDraft(ctx, draft)
+		require.NoError(t, err)
+
+		pub, err := alice.PublishDraft(ctx, &pb.PublishDraftRequest{
+			DocumentId: draft.DocumentId,
+		})
+		require.NoError(t, err)
+
+		publication = pub
+	}
+
+	connectPeers(t, ctx, alice, bob)
+
+	list, err := bob.ListPublications(ctx, &pb.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Empty(t, list.Publications, "bob must have no publications initially")
+
+	gotPub, err := bob.GetPublication(ctx, &pb.GetPublicationRequest{
+		PublicationId: publication.Id,
+	})
+	require.NoError(t, err)
+	require.True(t, proto.Equal(publication, gotPub), "bob must fetch publication via alice")
+
+	list, err = bob.ListPublications(ctx, &pb.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 1, "bob must now have alice's publication locally")
+}
