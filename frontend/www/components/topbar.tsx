@@ -18,7 +18,7 @@ interface NavItemProps {
 export default function LibraryHeader(props) {
   const router = useRouter()
   const [input, setInput] = useState<string>('')
-  const {searchPublicationById} = useMintter()
+  const {searchPublicationById, connectToPeerById} = useMintter()
 
   async function handleSearch(e) {
     e.preventDefault()
@@ -28,6 +28,12 @@ export default function LibraryHeader(props) {
     } catch (err) {
       throw new Error(`error in topbar => ${err}`)
     }
+  }
+
+  async function handlePeerConnection() {
+    const peer = window.prompt(`enter a peer address`)
+    await connectToPeerById([peer])
+    console.log('Success!')
   }
 
   return (
@@ -42,8 +48,8 @@ export default function LibraryHeader(props) {
         </span>
         <MainNav />
         <div className="flex-1" />
-        <div className="w-full max-w-xl pl-8">
-          <form onSubmit={handleSearch}>
+        <div className="w-full max-w-xl pl-8 flex">
+          <form onSubmit={handleSearch} className="flex-1">
             <Input
               onChange={(e: any) => setInput(e.target.value)}
               name="hash-search"
@@ -51,6 +57,12 @@ export default function LibraryHeader(props) {
               placeholder="Enter a publication CID"
             />
           </form>
+          <button
+            className="bg-primary text-white hover:bg-primary-hover px-4 py-2 font-bold ml-12 rounded-full"
+            onClick={handlePeerConnection}
+          >
+            add connection
+          </button>
         </div>
       </div>
     </>

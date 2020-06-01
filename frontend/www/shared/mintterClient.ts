@@ -5,6 +5,7 @@ import {
   ListPublicationsResponse,
   Publication,
 } from '@mintter/proto/documents_pb'
+import {ConnectToPeerRequest} from '@mintter/proto/mintter_pb'
 
 const hostname = `http://localhost`
 const port = `55001`
@@ -31,6 +32,15 @@ export async function searchPublicationById(
 
   const list = await documentsClient.listPublications(req)
   console.log(list.toObject())
+}
+
+export async function connectToPeerById(peerIds: string[]) {
+  console.log('peerId => ', peerIds)
+  const req = new ConnectToPeerRequest()
+  req.setAddrsList(peerIds)
+  const res = await usersClient.connectToPeer(req)
+  console.log('peerId res => ', res)
+  return res
 }
 
 export {MintterPromiseClient}

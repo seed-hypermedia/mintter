@@ -5,6 +5,7 @@ import * as apiClient from './mintterClient'
 export interface MintterClient {
   allPublications: (d: any) => Promise<string>
   searchPublicationById: (id: string) => any
+  connectToPeerById: (peerIds: string[]) => any
 }
 
 const MintterClientContext = createContext<MintterClient>(null)
@@ -25,10 +26,16 @@ export function MintterProvider(props) {
     [],
   )
 
-  const value = useMemo(() => ({allPublications, searchPublicationById}), [
-    allPublications,
-    searchPublicationById,
-  ])
+  const connectToPeerById = useCallback(
+    peerId =>
+      apiClient.connectToPeerById(peerId).catch(err => console.error(err)),
+    [],
+  )
+
+  const value = useMemo(
+    () => ({allPublications, searchPublicationById, connectToPeerById}),
+    [allPublications, searchPublicationById, connectToPeerById],
+  )
 
   return <MintterClientContext.Provider value={value} {...props} />
 }
