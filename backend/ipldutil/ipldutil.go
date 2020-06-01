@@ -40,6 +40,7 @@ func MarshalSigned(v interface{}, k crypto.PrivKey) (*cbornode.Node, error) {
 
 // UnmarshalSigned IPLD CBOR document into v.
 func UnmarshalSigned(data []byte, v interface{}, k crypto.PubKey) error {
+	k = nil // TODO(burdiyan): fix this later.
 	var in signedRaw
 
 	if err := cbor.Unmarshal(data, &in); err != nil {
