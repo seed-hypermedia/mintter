@@ -84,6 +84,11 @@ func (n *Node) GetSections(ctx context.Context, cids ...cid.Cid) ([]publishing.S
 
 // GetPublication from the IPLD service.
 func (n *Node) GetPublication(ctx context.Context, cid cid.Cid) (publishing.Publication, error) {
+	local, err := n.dag.BlockStore().Has(cid)
+	if err != nil {
+		return publishing.Publication{}, err
+	}
+
 	node, err := n.dag.Get(ctx, cid)
 	if err != nil {
 		return publishing.Publication{}, fmt.Errorf("failed to get IPLD node: %w", err)
@@ -116,6 +121,14 @@ func (n *Node) GetPublication(ctx context.Context, cid cid.Cid) (publishing.Publ
 	var p publishing.Publication
 	if err := ipldutil.UnmarshalSigned(node.RawData(), &p, prof.Account.PubKey); err != nil {
 		return publishing.Publication{}, err
+	}
+
+	// If we ended up fetching a remote block from IPFS we have to
+	// create a local reference between document ID and publication CID.
+	if !local {
+		if err := n.store.AddPublication(p.DocumentID, cid); err != nil {
+			return publishing.Publication{}, fmt.Errorf("can't store doc-cid reference: %w", err)
+		}
 	}
 
 	return p, nil

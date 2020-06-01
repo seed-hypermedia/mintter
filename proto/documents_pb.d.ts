@@ -117,6 +117,24 @@ export namespace PublishDraftRequest {
   }
 }
 
+export class GetPublicationRequest extends jspb.Message {
+  getPublicationId(): string;
+  setPublicationId(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetPublicationRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetPublicationRequest): GetPublicationRequest.AsObject;
+  static serializeBinaryToWriter(message: GetPublicationRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetPublicationRequest;
+  static deserializeBinaryFromReader(message: GetPublicationRequest, reader: jspb.BinaryReader): GetPublicationRequest;
+}
+
+export namespace GetPublicationRequest {
+  export type AsObject = {
+    publicationId: string,
+  }
+}
+
 export class ListPublicationsRequest extends jspb.Message {
   getPageSize(): number;
   setPageSize(value: number): void;

@@ -10,6 +10,7 @@ import {
   DeleteDraftRequest,
   Draft,
   GetDraftRequest,
+  GetPublicationRequest,
   GetSectionRequest,
   ListDraftsRequest,
   ListDraftsResponse,
@@ -61,6 +62,13 @@ export class DocumentsClient {
 
   publishDraft(
     request: PublishDraftRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: Publication) => void
+  ): grpcWeb.ClientReadableStream<Publication>;
+
+  getPublication(
+    request: GetPublicationRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.Error,
                response: Publication) => void
@@ -121,6 +129,11 @@ export class DocumentsPromiseClient {
 
   publishDraft(
     request: PublishDraftRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<Publication>;
+
+  getPublication(
+    request: GetPublicationRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<Publication>;
 

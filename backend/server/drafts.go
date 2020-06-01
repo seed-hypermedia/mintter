@@ -168,6 +168,25 @@ func (s *Server) DeleteDraft(ctx context.Context, in *proto.DeleteDraftRequest) 
 	return &empty.Empty{}, nil
 }
 
+// GetPublication from IPFS.
+func (s *Server) GetPublication(ctx context.Context, in *proto.GetPublicationRequest) (*proto.Publication, error) {
+	if err := s.checkReady(); err != nil {
+		return nil, err
+	}
+
+	cid, err := cid.Decode(in.PublicationId)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "failed to decode publication CID: %v", err)
+	}
+
+	pub, err := s.node.GetPublication(ctx, cid)
+	if err != nil {
+		return nil, err
+	}
+
+	return publicationToProto(cid, pub)
+}
+
 // ListPublications stored on the server.
 func (s *Server) ListPublications(ctx context.Context, in *proto.ListPublicationsRequest) (*proto.ListPublicationsResponse, error) {
 	if err := s.checkReady(); err != nil {

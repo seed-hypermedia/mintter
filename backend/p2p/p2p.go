@@ -30,7 +30,6 @@ import (
 
 	badger "github.com/ipfs/go-ds-badger"
 	ipfsconfig "github.com/ipfs/go-ipfs-config"
-	ipld "github.com/ipfs/go-ipld-format"
 	connmgr "github.com/libp2p/go-libp2p-connmgr"
 	gostream "github.com/libp2p/go-libp2p-gostream"
 )
@@ -77,7 +76,7 @@ type Node struct {
 	acc      identity.Account
 	peer     identity.Peer
 	host     host.Host
-	dag      ipld.DAGService
+	dag      *ipfsutil.Node
 	cleanup  io.Closer
 	addrs    []multiaddr.Multiaddr // Libp2p peer addresses for this node.
 	quitc    chan struct{}         // This channel will be closed to indicate all the goroutines to exit.
