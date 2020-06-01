@@ -6,10 +6,11 @@ import {
   Publication,
 } from '@mintter/proto/documents_pb'
 import {ConnectToPeerRequest} from '@mintter/proto/mintter_pb'
+import getConfig from 'next/config'
 
-const hostname = `http://localhost`
-const port = `55001`
-
+const {publicRuntimeConfig} = getConfig()
+const hostname = publicRuntimeConfig.MINTTER_HOSTNAME
+const port = publicRuntimeConfig.MINTTER_PORT
 const path = `${hostname}:${port}`
 
 export const documentsClient = new DocumentsPromiseClient(path)

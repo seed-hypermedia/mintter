@@ -8,6 +8,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
+    "dev2": "export MINTTER_PORT=56001 && next dev -p 3001",
     "start": "next start",
     "export": "next build && next export",
     "build": "echo 1",
