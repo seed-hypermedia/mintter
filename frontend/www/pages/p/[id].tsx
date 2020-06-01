@@ -21,11 +21,10 @@ import {css} from 'emotion'
 import {publish} from 'shared/publishDocument'
 import {useRouter} from 'next/router'
 import {Section} from '@mintter/proto/documents_pb'
-import {
-  useFetchPublication,
-  getBatchPublicationSections,
-} from 'shared/publications'
+import {getBatchPublicationSections} from 'shared/publications'
 import {markdownToSlate} from 'shared/markdownToSlate'
+import {useMintter} from 'shared/mintterContext'
+import {useQuery} from 'react-query'
 
 interface EditorState {
   title: string
@@ -121,6 +120,7 @@ export default function EditorPage(): JSX.Element {
     setSections,
     setValue,
   } = useEditorValue()
+  const {getPublication, getSections} = useMintter()
 
   const {
     query: {id},
@@ -134,12 +134,13 @@ export default function EditorPage(): JSX.Element {
       : false
   }
 
-  const {status, error, data} = useFetchPublication(id)
+  const {status, error, data} = useQuery(['PublicationId', id], getPublication)
 
   React.useEffect(() => {
     if (data) {
       const obj = data.toObject()
-      getBatchPublicationSections(obj.sectionsList).then(res => {
+      console.log('obj', obj)
+      getSections(obj.sectionsList).then(res => {
         const sections = res
           .getSectionsList()
           .map((f: Section) => f.toObject())

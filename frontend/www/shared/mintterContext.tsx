@@ -1,11 +1,14 @@
 import {createContext, useContext, useMemo, useCallback} from 'react'
 import * as apiClient from './mintterClient'
+import {Publication, Draft} from '@mintter/proto/documents_pb'
 
 // TODO: (Horacio) Fixme Types
 export interface MintterClient {
   allPublications: (d: any) => Promise<string>
-  searchPublicationById: (id: string) => any
+  getPublication: (p: any) => Promise<Publication>
   connectToPeerById: (peerIds: string[]) => any
+  getSections: (sections: any[]) => any
+  createDraft: () => Draft
 }
 
 const MintterClientContext = createContext<MintterClient>(null)
@@ -20,9 +23,19 @@ export function MintterProvider(props) {
     [],
   )
 
-  const searchPublicationById = useCallback(
-    // id => apiClient.searchPublicationById(id).then(res => res.toObject()),
-    id => apiClient.searchPublicationById(id),
+  const getPublication = useCallback(
+    (key, id) => apiClient.getPublication(id).catch(err => console.error(err)),
+    [],
+  )
+
+  const getSections = useCallback(
+    sections =>
+      apiClient.getSections(sections).catch(err => console.error(err)),
+    [],
+  )
+
+  const createDraft = useCallback(
+    () => apiClient.createDraft().catch(err => console.error(err)),
     [],
   )
 
@@ -33,8 +46,20 @@ export function MintterProvider(props) {
   )
 
   const value = useMemo(
-    () => ({allPublications, searchPublicationById, connectToPeerById}),
-    [allPublications, searchPublicationById, connectToPeerById],
+    () => ({
+      allPublications,
+      getPublication,
+      connectToPeerById,
+      getSections,
+      createDraft,
+    }),
+    [
+      allPublications,
+      getPublication,
+      connectToPeerById,
+      getSections,
+      createDraft,
+    ],
   )
 
   return <MintterClientContext.Provider value={value} {...props} />

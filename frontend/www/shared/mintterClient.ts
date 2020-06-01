@@ -4,6 +4,9 @@ import {
   ListPublicationsRequest,
   ListPublicationsResponse,
   Publication,
+  GetPublicationRequest,
+  BatchGetSectionsRequest,
+  CreateDraftRequest,
 } from '@mintter/proto/documents_pb'
 import {ConnectToPeerRequest} from '@mintter/proto/mintter_pb'
 import getConfig from 'next/config'
@@ -23,16 +26,23 @@ export async function allPublications(data): Promise<string> {
   return Promise.resolve('all publications resolved')
 }
 
-export async function searchPublicationById(
-  id,
-  page = 0,
-  // ): Promise<Publication | undefined> {
-) {
-  const req = new ListPublicationsRequest()
-  req.setPageSize(page)
+export async function getPublication(id): Promise<Publication | undefined> {
+  const req = new GetPublicationRequest()
+  req.setPublicationId(id)
 
-  const list = await documentsClient.listPublications(req)
-  console.log(list.toObject())
+  return await documentsClient.getPublication(req)
+}
+
+export async function getSections(sectionsList: any) {
+  const req = new BatchGetSectionsRequest()
+  req.setSectionIdsList(sectionsList)
+
+  return await documentsClient.batchGetSections(req)
+}
+
+export async function createDraft() {
+  const req = new CreateDraftRequest()
+  return await documentsClient.createDraft(req)
 }
 
 export async function connectToPeerById(peerIds: string[]) {
