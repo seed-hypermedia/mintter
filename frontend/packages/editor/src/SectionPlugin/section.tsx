@@ -10,7 +10,7 @@ import Tippy from '@tippyjs/react'
 //   element?: SlateSection
 // }
 
-export function Section(
+export function EditableSectionComponent(
   {children, element, ...rest}: RenderElementProps,
   ref: RefObject<HTMLDivElement>,
 ) {
@@ -96,8 +96,53 @@ export function Section(
   )
 }
 
+export function ReadOnlySectionComponent(
+  {children, element, ...rest}: RenderElementProps,
+  ref: RefObject<HTMLDivElement>,
+) {
+  const editor = useEditor()
+  const path = ReactEditor.findPath(editor, element)
+
+  return (
+    <div
+      {...rest}
+      data-slate-type={element.type}
+      ref={ref}
+      className={`relative px-8 py-8 ${css`
+        &:after {
+          display: ${path[0] === 0 ? 'none' : 'block'};
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          z-index: 100;
+          background-image: linear-gradient(
+            to right,
+            black 33%,
+            rgba(255, 255, 255, 0) 0%
+          );
+          background-position: bottom;
+          background-size: 10px 2px;
+          background-repeat: repeat-x;
+        }
+
+        &:first {
+          &:after {
+            display: none;
+          }
+        }
+      `}`}
+    >
+      {children}
+    </div>
+  )
+}
+
 // TODO: (Horacio) Fixme types
-export default React.forwardRef(Section as any)
+export const EditableSection = React.forwardRef(EditableSectionComponent as any)
+export const ReadOnlySection = React.forwardRef(ReadOnlySectionComponent as any)
 
 function SettingsButton({section, path, visible, show, hide}) {
   const {title, description} = section

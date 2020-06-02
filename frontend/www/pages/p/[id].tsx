@@ -18,11 +18,10 @@ import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
 import {css} from 'emotion'
-import {publish} from 'shared/publishDocument'
 import {useRouter} from 'next/router'
 import {Section} from '@mintter/proto/documents_pb'
-import {getBatchPublicationSections} from 'shared/publications'
 import {markdownToSlate} from 'shared/markdownToSlate'
+import {renderReadOnlySectionElement} from '@mintter/editor'
 import {useMintter, useAuthor} from 'shared/mintterContext'
 import {useQuery} from 'react-query'
 
@@ -49,9 +48,8 @@ export default function EditorPage(): JSX.Element {
   } = useRouter()
 
   const {title, sections, description, author: pubAuthor} = state
-  console.log('pubAuthor', pubAuthor)
+
   const author = useAuthor(pubAuthor)
-  console.log('author', author)
 
   const {status, error, data} = useQuery(['PublicationId', id], getPublication)
 
@@ -167,7 +165,10 @@ export default function EditorPage(): JSX.Element {
                         <EditablePlugins
                           readOnly
                           plugins={plugins}
-                          renderElement={[...renderElements]}
+                          renderElement={[
+                            ...renderElements,
+                            renderReadOnlySectionElement(),
+                          ]}
                           renderLeaf={[...renderLeafs]}
                           placeholder="Start writing your masterpiece..."
                           spellCheck
