@@ -3,6 +3,7 @@ package daemon
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -65,9 +66,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	if err != nil {
 		return fmt.Errorf("failed to bind grpc listener: %w", err)
 	}
-	defer func() {
-		err = multierr.Append(err, l.Close())
-	}()
+	// No need to close l because grpc server closes it during shutdown.
 
 	// Start gRPC server with graceful shutdown.
 
@@ -85,7 +84,12 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	// Start HTTP server with graceful shutdown.
 
 	g.Go(func() error {
-		return srv.ListenAndServe()
+		err := srv.ListenAndServe()
+		if errors.Is(err, http.ErrServerClosed) {
+			return nil
+		}
+
+		return err
 	})
 
 	g.Go(func() error {
