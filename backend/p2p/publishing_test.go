@@ -32,7 +32,10 @@ func TestPublishing(t *testing.T) {
 	pubcid, err := bob.AddPublication(ctx, pub1)
 	require.NoError(t, err)
 
-	require.NoError(t, alice.Connect(ctx, bob.Addrs()...))
+	addrs, err := bob.Addrs()
+	require.NoError(t, err)
+
+	require.NoError(t, alice.Connect(ctx, addrs...))
 
 	pub, err := alice.GetPublication(ctx, pubcid)
 	require.NoError(t, err)

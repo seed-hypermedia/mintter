@@ -78,10 +78,9 @@ type Node struct {
 	host     host.Host
 	dag      *ipfsutil.Node
 	cleanup  io.Closer
-	addrs    []multiaddr.Multiaddr // Libp2p peer addresses for this node.
-	quitc    chan struct{}         // This channel will be closed to indicate all the goroutines to exit.
-	lis      net.Listener          // Libp2p listener wrapped into net.Listener. Used by the underlying gRPC server.
-	dialOpts []grpc.DialOption     // Default dial options for gRPC client. Cached to avoid allocating same options for every call.
+	quitc    chan struct{}     // This channel will be closed to indicate all the goroutines to exit.
+	lis      net.Listener      // Libp2p listener wrapped into net.Listener. Used by the underlying gRPC server.
+	dialOpts []grpc.DialOption // Default dial options for gRPC client. Cached to avoid allocating same options for every call.
 }
 
 // NewNode creates a new node. User must call Close() to shutdown the node gracefully.
@@ -136,11 +135,6 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 	}
 	cleanup = append(cleanup, ipfsnode)
 
-	addrs, err := wrapAddrs(prof.Peer.ID, h.Addrs()...)
-	if err != nil {
-		return nil, err
-	}
-
 	lis, err := gostream.Listen(h, ProtocolID)
 	if err != nil {
 		return nil, err
@@ -155,7 +149,6 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 		peer:     prof.Peer,
 		host:     h,
 		dag:      ipfsnode,
-		addrs:    addrs,
 		cleanup:  cleanup,
 		lis:      lis,
 		quitc:    make(chan struct{}),
@@ -204,8 +197,8 @@ func (n *Node) Account() identity.Account {
 }
 
 // Addrs return p2p multiaddresses this node is listening on.
-func (n *Node) Addrs() []multiaddr.Multiaddr {
-	return n.addrs
+func (n *Node) Addrs() ([]multiaddr.Multiaddr, error) {
+	return peer.AddrInfoToP2pAddrs(host.InfoFromHost(n.host))
 }
 
 // makeHost creates a new libp2p host.
