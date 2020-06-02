@@ -66,13 +66,44 @@ func (n *Node) AddPublication(ctx context.Context, pub publishing.Publication) (
 func (n *Node) GetSections(ctx context.Context, cids ...cid.Cid) ([]publishing.Section, error) {
 	out := make([]publishing.Section, 0, len(cids))
 
+	// To avoid calling database for each section to get the profile
+	// we cache them locally. It's probably a good idea to have a global LRU cache or similar.
+	cache := map[string]identity.Profile{}
+
 	for item := range n.dag.GetMany(ctx, cids) {
 		if item.Err != nil {
 			return nil, fmt.Errorf("failed to get block: %w", item.Err)
 		}
 
+		var prof identity.Profile
+		{
+			var authorID string
+			v, _, err := item.Node.Resolve([]string{"data", "author"})
+			if err != nil {
+				return nil, fmt.Errorf("failed to retrieve author's profile ID: %w", err)
+			}
+
+			authorID = v.(string)
+
+			pid, err := identity.DecodeProfileID(authorID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to decode profile ID: %w", err)
+			}
+
+			p, ok := cache[authorID]
+			if !ok {
+				p, err = n.store.GetProfile(ctx, pid)
+				if err != nil {
+					return nil, fmt.Errorf("failed to get profile %s: %w", pid, err)
+				}
+				cache[authorID] = p
+			}
+
+			prof = p
+		}
+
 		var v publishing.Section
-		if err := ipldutil.UnmarshalSigned(item.Node.RawData(), &v, n.acc.PubKey); err != nil {
+		if err := ipldutil.UnmarshalSigned(item.Node.RawData(), &v, prof.Account.PubKey); err != nil {
 			return nil, fmt.Errorf("failed to verify section signature: %w", err)
 		}
 
@@ -93,6 +124,8 @@ func (n *Node) GetPublication(ctx context.Context, cid cid.Cid) (publishing.Publ
 	if err != nil {
 		return publishing.Publication{}, fmt.Errorf("failed to get IPLD node: %w", err)
 	}
+
+	// TODO(burdiyan): Should we verify signature here?
 
 	var author identity.ProfileID
 	{
