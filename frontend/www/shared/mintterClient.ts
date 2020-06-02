@@ -8,7 +8,10 @@ import {
   BatchGetSectionsRequest,
   CreateDraftRequest,
 } from '@mintter/proto/documents_pb'
-import {ConnectToPeerRequest} from '@mintter/proto/mintter_pb'
+import {
+  ConnectToPeerRequest,
+  GetProfileRequest,
+} from '@mintter/proto/mintter_pb'
 import getConfig from 'next/config'
 
 const {publicRuntimeConfig} = getConfig()
@@ -21,9 +24,10 @@ export const usersClient = new MintterPromiseClient(path)
 
 // ============================
 
-export async function allPublications(data): Promise<string> {
-  console.log('all publications!', data)
-  return Promise.resolve('all publications resolved')
+export async function allPublications(page = 0) {
+  const req = new ListPublicationsRequest()
+  req.setPageSize(page)
+  return await documentsClient.listPublications(req)
 }
 
 export async function getPublication(id): Promise<Publication | undefined> {
@@ -49,9 +53,18 @@ export async function connectToPeerById(peerIds: string[]) {
   console.log('peerId => ', peerIds)
   const req = new ConnectToPeerRequest()
   req.setAddrsList(peerIds)
-  const res = await usersClient.connectToPeer(req)
-  console.log('peerId res => ', res)
-  return res
+  return await usersClient.connectToPeer(req)
+}
+
+export async function getProfile() {
+  // TODO: (horacio): add react query here?
+  const req = new GetProfileRequest()
+  return await usersClient.getProfile(req)
+}
+
+export async function getAuthor(authorId: string) {
+  const {profile} = await (await getProfile()).toObject()
+  return profile.accountId === authorId ? 'me' : authorId
 }
 
 export {MintterPromiseClient}

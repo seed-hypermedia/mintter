@@ -7,18 +7,24 @@ import {usePublicationsList} from 'shared/publications'
 import {createDraft} from 'shared/drafts'
 import {MainLayout} from 'components/main-layout'
 import {LibraryHeader} from 'components/library-header'
+import {useMintter} from 'shared/mintterContext'
 
-export type ListType = 'drafts' | 'publications'
+export type ListType = 'drafts' | 'publications' | 'my_publications'
 export default function Library() {
   const router = useRouter()
   const publications = usePublicationsList()
+  const {createDraft} = useMintter()
 
   async function handleCreateDraft() {
-    await createDraft(async newDraft => {
-      const value = newDraft.toObject()
-      router.push({
-        pathname: `/editor/${value.documentId}`,
-      })
+    // await createDraft(async newDraft => {
+    //   const value = newDraft.toObject()
+    //   router.push({
+    //     pathname: `/editor/${value.documentId}`,
+    //   })
+    // })
+    const newDraft = await createDraft().toObject()
+    router.push({
+      pathname: `/editor/${newDraft.documentId}`,
     })
   }
 
