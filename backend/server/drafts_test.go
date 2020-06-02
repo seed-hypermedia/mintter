@@ -179,7 +179,7 @@ func TestListPublications(t *testing.T) {
 	require.ElementsMatch(t, pubs, resp.Publications)
 }
 
-func TestGetPublication(t *testing.T) {
+func TestGetPublication_Remote(t *testing.T) {
 	ctx := context.Background()
 
 	alice := newSeededServer(t, testMnemonic...)
@@ -222,6 +222,12 @@ func TestGetPublication(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.True(t, proto.Equal(publication, gotPub), "bob must fetch publication via alice")
+
+	secResp, err := bob.BatchGetSections(ctx, &pb.BatchGetSectionsRequest{
+		SectionIds: gotPub.Sections,
+	})
+	require.NoError(t, err)
+	require.Equal(t, len(gotPub.Sections), len(secResp.Sections))
 
 	list, err = bob.ListPublications(ctx, &pb.ListPublicationsRequest{})
 	require.NoError(t, err)

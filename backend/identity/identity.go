@@ -22,6 +22,14 @@ type ProfileID struct {
 	peer.ID
 }
 
+// DecodeProfileID from string.
+func DecodeProfileID(s string) (ProfileID, error) {
+	pid, err := peer.Decode(s)
+	p := ProfileID{pid}
+
+	return p, err
+}
+
 // Account is a primary Mintter account. Its ID has the same semantics as
 // libp2p PeerID, but is not interchangeable and should not be used for libp2p.
 // The keys are used to sign all the user's content.
