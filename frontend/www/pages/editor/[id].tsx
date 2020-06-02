@@ -26,6 +26,7 @@ import Textarea from 'components/textarea'
 import {publish} from 'shared/publishDocument'
 import {useRouter} from 'next/router'
 import {Section} from '@mintter/proto/documents_pb'
+import {renderEditableSectionElement} from '@mintter/editor'
 import {useFetchDraft, saveDraft} from 'shared/drafts'
 import {markdownToSlate} from 'shared/markdownToSlate'
 import {useMutation} from 'react-query'
@@ -314,7 +315,10 @@ export default function EditorPage(): JSX.Element {
                         {/* {!isEmpty() && <SectionToolbar />} */}
                         <EditablePlugins
                           plugins={plugins}
-                          renderElement={[...renderElements]}
+                          renderElement={[
+                            ...renderElements,
+                            renderEditableSectionElement(),
+                          ]}
                           renderLeaf={[...renderLeafs]}
                           placeholder="Start writing your masterpiece..."
                           spellCheck

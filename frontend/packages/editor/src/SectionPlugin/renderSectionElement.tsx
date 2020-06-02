@@ -1,10 +1,17 @@
 import {getRenderElement} from 'slate-plugins-next'
 import {nodeTypes} from '../nodeTypes'
-import Section from './section'
+import {EditableSection, ReadOnlySection} from './section'
 
-export function renderSectionElement() {
+export function renderEditableSectionElement() {
   return getRenderElement({
     type: nodeTypes.typeSection,
-    component: Section,
+    component: EditableSection,
+  })
+}
+
+export function renderReadOnlySectionElement() {
+  return getRenderElement({
+    type: nodeTypes.typeSection,
+    component: ReadOnlySection,
   })
 }
