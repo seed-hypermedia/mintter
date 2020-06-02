@@ -78,7 +78,11 @@ func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileReque
 
 // GetProfileAddrs implements Mintter server.
 func (s *Server) GetProfileAddrs(ctx context.Context, in *proto.GetProfileAddrsRequest) (*proto.GetProfileAddrsResponse, error) {
-	mas := s.node.Addrs()
+	mas, err := s.node.Addrs()
+	if err != nil {
+		return nil, err
+	}
+
 	resp := &proto.GetProfileAddrsResponse{
 		Addrs: make([]string, len(mas)),
 	}

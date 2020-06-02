@@ -13,7 +13,10 @@ func TestConnect(t *testing.T) {
 	alice := makeTestNode(t, "alice")
 	bob := makeTestNode(t, "bob")
 
-	err := alice.Connect(ctx, bob.Addrs()...)
+	addrs, err := bob.Addrs()
+	require.NoError(t, err)
+
+	err = alice.Connect(ctx, addrs...)
 	require.NoError(t, err)
 
 	require.ElementsMatch(t,
@@ -21,5 +24,5 @@ func TestConnect(t *testing.T) {
 		bob.Host().Peerstore().Peers(),
 		"both peers must have each other in the peer store")
 
-	require.NoError(t, alice.Connect(ctx, bob.Addrs()...), "connecting more than once must not fail")
+	require.NoError(t, alice.Connect(ctx, addrs...), "connecting more than once must not fail")
 }
