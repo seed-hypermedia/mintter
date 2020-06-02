@@ -185,24 +185,24 @@ export default function EditorPage(): JSX.Element {
     }
   }, [data])
 
-  React.useEffect(() => {
-    function handler(e) {
-      if (
-        // TODO: (horacio) if there's an error on this page and the editor has not being loaded properly, this will fail
-        !ReactEditor.isFocused(editor) &&
-        typeof e.target.value !== 'string'
-      ) {
-        ReactEditor.focus(editor)
-        Transforms.select(editor, Editor.end(editor, []))
-      }
-    }
+  // React.useEffect(() => {
+  //   function handler(e) {
+  //     if (
+  //       // TODO: (horacio) if there's an error on this page and the editor has not being loaded properly, this will fail
+  //       !ReactEditor.isFocused(editor) &&
+  //       typeof e.target.value !== 'string'
+  //     ) {
+  //       ReactEditor.focus(editor)
+  //       Transforms.select(editor, Editor.end(editor, []))
+  //     }
+  //   }
 
-    wrapperRef.current.addEventListener('click', handler)
+  //   wrapperRef.current.addEventListener('click', handler)
 
-    return () => {
-      wrapperRef.current.removeEventListener('click', handler)
-    }
-  }, [])
+  //   return () => {
+  //     wrapperRef.current.removeEventListener('click', handler)
+  //   }
+  // }, [])
 
   async function handlePublish() {
     const res = await publish(state, id)
@@ -265,7 +265,7 @@ export default function EditorPage(): JSX.Element {
                       `}`}
                     >
                       <div
-                        className={`mb-12 mx-8 pb-2 relative ${css`
+                        className={`mx-8 pb-2 relative ${css`
                           &:after {
                             content: '';
                             position: absolute;
@@ -289,7 +289,7 @@ export default function EditorPage(): JSX.Element {
                           name="title"
                           placeholder="Untitled document"
                           minHeight={56}
-                          className={`text-4xl text-heading font-bold leading-10`}
+                          className={`text-4xl text-heading font-bold`}
                           onEnterPress={() => {
                             descriptionRef.current.focus()
                           }}
@@ -303,7 +303,7 @@ export default function EditorPage(): JSX.Element {
                           name="description"
                           placeholder="+ Add a subtitle"
                           minHeight={28}
-                          className={`text-lg font-light text-heading-muted italic`}
+                          className={`leading-relaxed text-lg font-light text-heading-muted italic`}
                           onEnterPress={() => {
                             ReactEditor.focus(editor)
                           }}

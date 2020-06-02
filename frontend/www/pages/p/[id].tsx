@@ -1,4 +1,4 @@
-import React, {useReducer, useCallback} from 'react'
+import React, {useReducer, useCallback, useState} from 'react'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
 
@@ -30,121 +30,36 @@ interface EditorState {
   title: string
   description: string
   sections: Node[]
-}
-
-function draftReducer(state: EditorState, action) {
-  const {type, payload} = action
-
-  switch (type) {
-    case 'TITLE':
-      return {
-        ...state,
-        title: payload,
-      }
-    case 'DESCRIPTION': {
-      return {
-        ...state,
-        description: payload,
-      }
-    }
-    case 'SECTIONS': {
-      return {
-        ...state,
-        sections: payload,
-      }
-    }
-
-    case 'VALUE': {
-      return {
-        ...state,
-        ...payload,
-      }
-    }
-
-    default: {
-      return state
-    }
-  }
-}
-
-function useEditorValue() {
-  const [state, dispatch] = useReducer(
-    draftReducer,
-    initialValue,
-    initializeEditorValue,
-  )
-
-  const setTitle = useCallback(payload => {
-    dispatch({type: 'TITLE', payload})
-  }, [])
-
-  const setDescription = useCallback(payload => {
-    dispatch({type: 'DESCRIPTION', payload})
-  }, [])
-
-  const setSections = useCallback(payload => {
-    dispatch({type: 'SECTIONS', payload})
-  }, [])
-
-  const setValue = useCallback(payload => {
-    dispatch({type: 'VALUE', payload})
-  }, [])
-
-  return {
-    state,
-    setTitle,
-    setDescription,
-    setSections,
-    setValue,
-  }
-}
-
-const initialValue: EditorState = {
-  title: '',
-  description: '',
-  sections: initialSectionsValue,
-}
-
-function initializeEditorValue() {
-  // TODO: change this to a lazy initialization function later
-  return initialValue
+  author: string
 }
 
 export default function EditorPage(): JSX.Element {
   const plugins = [...editorPlugins, SoftBreakPlugin()]
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
-  const {
-    state,
-    setTitle,
-    setDescription,
-    setSections,
-    setValue,
-  } = useEditorValue()
+  const [state, setValue] = useState<EditorState>({
+    title: '',
+    description: '',
+    sections: [],
+    author: '',
+  })
   const {getPublication, getSections} = useMintter()
 
   const {
     query: {id},
   } = useRouter()
 
-  const {title, sections, description} = state
-
-  function isEmpty(): boolean {
-    return sections
-      ? sections.length === 1 && Node.string(sections[0]) === ''
-      : false
-  }
+  const {title, sections, description, author} = state
 
   const {status, error, data} = useQuery(['PublicationId', id], getPublication)
 
   React.useEffect(() => {
     if (data) {
       const obj = data.toObject()
-      console.log('obj', obj)
       getSections(obj.sectionsList).then(res => {
         const sections = res
           .getSectionsList()
           .map((f: Section) => f.toObject())
-          .map(s => ({
+          .map((s: Section.AsObject) => ({
             type: nodeTypes.typeSection,
             title: s.title,
             description: s.description,
@@ -157,7 +72,6 @@ export default function EditorPage(): JSX.Element {
           description: obj.description,
           sections,
           author: obj.author,
-          createTime: obj.createTime,
         })
       })
     }
@@ -165,7 +79,7 @@ export default function EditorPage(): JSX.Element {
 
   return (
     <>
-      <Seo title="Publication | Mintter" />
+      <Seo title="Publication" />
       <div className="flex-1 overflow-y-auto pt-4 overflow-y-scroll">
         {status === 'loading' ? (
           <p>Loading...</p>
@@ -173,7 +87,7 @@ export default function EditorPage(): JSX.Element {
           <p>ERROR! == {error}</p>
         ) : (
           <>
-            <EditorHeader onPublish={() => publish(state, id)} />
+            <EditorHeader />
             <div className="flex pt-8 pb-32 relative">
               <DebugValue
                 value={state}
@@ -183,13 +97,7 @@ export default function EditorPage(): JSX.Element {
                 className={`w-full pr-4 absolute xl:sticky left-0 top-0 self-start mx-4 opacity-0 pointer-events-none xl:opacity-100 xl:pointer-events-auto transition duration-200 ${css`
                   max-width: 300px;
                 `}`}
-              >
-                {/* <div className="">
-                  <p className="font-semibold text-heading text-xl">
-                    {title || 'Untitled document'}
-                  </p>
-                </div> */}
-              </div>
+              ></div>
               <div
                 className={`flex-1 ${css`
                   @media (min-width: 1280px) {
@@ -205,9 +113,7 @@ export default function EditorPage(): JSX.Element {
                   <Slate
                     editor={editor}
                     value={sections}
-                    onChange={sections => {
-                      setSections(sections)
-                    }}
+                    onChange={sections => sections}
                   >
                     <div
                       className={`${css`
@@ -215,11 +121,11 @@ export default function EditorPage(): JSX.Element {
                       `}`}
                     >
                       <div
-                        className={`mb-12 mx-8 pb-6 relative ${css`
+                        className={`mx-8 pb-6 relative mb-px ${css`
                           &:after {
                             content: '';
                             position: absolute;
-                            bottom: 0;
+                            bottom: 1px;
                             left: 0;
                             width: 50%;
                             max-width: 360px;
@@ -229,13 +135,29 @@ export default function EditorPage(): JSX.Element {
                           }
                         `}`}
                       >
-                        <h1 className={`text-4xl text-heading font-bold`}>
+                        <h1
+                          className={`text-4xl text-heading font-bold ${css`
+                            word-wrap: break-word;
+                            white-space: pre-wrap;
+                            min-height: 56px;
+                          `}`}
+                        >
                           {title}
                         </h1>
                         <p
-                          className={`text-lg font-light text-heading-muted italic mt-3`}
+                          className={`leading-relaxed text-lg font-light text-heading-muted italic mt-4 ${css`
+                            word-wrap: break-word;
+                            white-space: pre-wrap;
+                            min-height: 28px;
+                          `}`}
                         >
                           {description}
+                        </p>
+                        <p className=" text-sm mt-4 text-heading">
+                          <span>by </span>
+                          <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
+                            {author}
+                          </span>
                         </p>
                       </div>
                       <div className="relative">
