@@ -4,7 +4,7 @@ import IconEye from './icon-eye'
 import Link from 'next/link'
 
 interface Props {
-  onPublish: () => void
+  onPublish?: () => void
 }
 
 export default function EditorHeader({onPublish}: Props) {
@@ -24,12 +24,14 @@ export default function EditorHeader({onPublish}: Props) {
       <button className="text-muted-hover bg-transparent hover:shadow-lg hover:text-muted-hover p-2 rounded-full shadow transition duration-200 ml-4">
         <IconSettings width="24px" />
       </button> */}
-      <button
-        onClick={onPublish}
-        className="bg-primary rounded-full px-12 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
-      >
-        Publish
-      </button>
+      {onPublish && (
+        <button
+          onClick={onPublish}
+          className="bg-primary rounded-full px-12 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
+        >
+          Publish
+        </button>
+      )}
     </div>
   )
 }

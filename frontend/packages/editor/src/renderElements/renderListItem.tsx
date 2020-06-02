@@ -9,7 +9,7 @@ export function renderListItem() {
     component: ({children, ...props}) => (
       <li
         {...props}
-        className={`relative text-body mt-4 ${css`
+        className={`relative text-body ${css`
           display: list-item;
           p,
           div {

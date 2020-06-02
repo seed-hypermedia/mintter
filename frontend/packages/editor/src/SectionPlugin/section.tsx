@@ -38,7 +38,7 @@ export function Section(
       ref={ref}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative px-8 pt-12 pb-16 group transition duration-200 ${
+      className={`relative px-8 py-8 group transition duration-200 ${
         element.active ? 'bg-background-muted' : ''
       } ${css`
         &:after {
@@ -69,7 +69,7 @@ export function Section(
     >
       <div contentEditable={false} className="theme-invert">
         <div
-          className={`absolute top-0 right-0 select-none mt-4 mr-4 rounded shadows-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-background-toolbar ${
+          className={`absolute top-0 right-0 select-none mt-4 mr-4 rounded shadow-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-background-toolbar ${
             isHover
               ? 'pointer-events-auto opacity-100'
               : 'pointer-events-none opacity-0'
@@ -126,7 +126,7 @@ function SettingsButton({section, path, visible, show, hide}) {
       content={
         <div
           contentEditable={false}
-          className={`theme-light select-none transition duration-200 p-2 rounded bg-gray-300`}
+          className={`theme-light select-none transition duration-200 p-2 rounded bg-gray-300 shadow-md`}
         >
           <div>
             <label
