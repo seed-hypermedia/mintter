@@ -1,9 +1,11 @@
-import React, {useMemo} from 'react'
+import React, {useMemo, useEffect, useState} from 'react'
 import AppsOutlinedIcon from '@material-ui/icons/AppsOutlined'
 import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined'
 import Link from './link'
 import {useRouter} from 'next/router'
 import {NavItem} from 'components/nav'
+import {getProfile} from 'shared/mintterClient'
+import {useMintter, useAuthor} from 'shared/mintterContext'
 
 export default function DocumentList({data, status, error}) {
   const router = useRouter()
@@ -19,16 +21,22 @@ export default function DocumentList({data, status, error}) {
     <div>
       <div className="flex items-center -mx-4">
         <NavItem
-          href="/library/drafts"
-          active={router.pathname === '/library/drafts'}
-        >
-          Drafts
-        </NavItem>
-        <NavItem
           href="/library/publications"
           active={router.pathname === '/library/publications'}
         >
           Publications
+        </NavItem>
+        <NavItem
+          href="/library/my-publications"
+          active={router.pathname === '/library/my-publications'}
+        >
+          My Publications
+        </NavItem>
+        <NavItem
+          href="/library/drafts"
+          active={router.pathname === '/library/drafts'}
+        >
+          Drafts
         </NavItem>
         <div className="flex-1" />
         {/* <div className="mx-2">
@@ -52,15 +60,20 @@ export default function DocumentList({data, status, error}) {
 function ListItem({item}) {
   const router = useRouter()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
-  const {title, description} = item
-  const theTitle = title ? title : 'Untitled Draft'
-  const theDescription = description ? description : 'Draft with no description'
+  const {title, description, author: itemAuthor} = item
+  const theTitle = title ? title : 'Untitled Document'
+  const theDescription = description
+    ? description
+    : 'Document with no description'
+
+  const author = useAuthor(itemAuthor)
+
+  const isDraft = useMemo(() => router.pathname === '/library/drafts', [
+    router.pathname,
+  ])
 
   const href = useMemo(
-    () =>
-      router.pathname === '/library/drafts'
-        ? `/editor/${item.documentId}`
-        : `/p/${item.id}`,
+    () => (isDraft ? `/editor/${item.documentId}` : `/p/${item.id}`),
     [router.pathname],
   )
   function handlePrefetch() {
@@ -70,6 +83,7 @@ function ListItem({item}) {
       setPrefetch(true)
     }
   }
+
   return (
     <Link href={href}>
       <div
@@ -78,6 +92,14 @@ function ListItem({item}) {
       >
         <h3 className="text-heading text-2xl font-bold">{theTitle}</h3>
         <p className="text-body mt-4">{theDescription}</p>
+        {!isDraft && (
+          <p className=" text-sm mt-4 text-heading">
+            <span>by </span>
+            <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
+              {author}
+            </span>
+          </p>
+        )}
       </div>
     </Link>
   )

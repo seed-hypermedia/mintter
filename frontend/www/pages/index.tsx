@@ -23,7 +23,7 @@ export default function Home() {
               Welcome
             </Link>
             <Link
-              href="/library/drafts"
+              href="/library/publications"
               className="rounded text-blue-700 text-lg"
             >
               App

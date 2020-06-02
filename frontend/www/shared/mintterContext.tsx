@@ -1,25 +1,33 @@
-import {createContext, useContext, useMemo, useCallback} from 'react'
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useCallback,
+  useState,
+  useEffect,
+} from 'react'
 import * as apiClient from './mintterClient'
-import {Publication, Draft} from '@mintter/proto/documents_pb'
+import {
+  Publication,
+  Draft,
+  ListPublicationsResponse,
+} from '@mintter/proto/documents_pb'
 
 // TODO: (Horacio) Fixme Types
 export interface MintterClient {
-  allPublications: (d: any) => Promise<string>
+  allPublications: () => Promise<ListPublicationsResponse>
   getPublication: (p: any) => Promise<Publication>
   connectToPeerById: (peerIds: string[]) => any
   getSections: (sections: any[]) => any
   createDraft: () => Draft
+  getAuthor: (authorId: string) => Promise<string>
 }
 
 const MintterClientContext = createContext<MintterClient>(null)
 
 export function MintterProvider(props) {
   const allPublications = useCallback(
-    form =>
-      apiClient.allPublications(form).then(res => {
-        console.log('ress => ', res)
-        return res
-      }),
+    form => apiClient.allPublications().catch(err => console.error(err)),
     [],
   )
 
@@ -45,6 +53,11 @@ export function MintterProvider(props) {
     [],
   )
 
+  const getAuthor = useCallback(
+    authorId => apiClient.getAuthor(authorId).catch(err => console.error(err)),
+    [],
+  )
+
   const value = useMemo(
     () => ({
       allPublications,
@@ -52,6 +65,7 @@ export function MintterProvider(props) {
       connectToPeerById,
       getSections,
       createDraft,
+      getAuthor,
     }),
     [
       allPublications,
@@ -59,6 +73,7 @@ export function MintterProvider(props) {
       connectToPeerById,
       getSections,
       createDraft,
+      getAuthor,
     ],
   )
 
@@ -73,4 +88,21 @@ export function useMintter() {
   }
 
   return context
+}
+
+export function useAuthor(authorId: string) {
+  const [author, setAuthor] = useState<string>('')
+  const {getAuthor} = useMintter()
+
+  useEffect(() => {
+    fetchAuthor().then(r => {
+      setAuthor(r)
+    })
+
+    async function fetchAuthor() {
+      return await getAuthor(authorId)
+    }
+  }, [authorId])
+
+  return author
 }

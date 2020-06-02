@@ -23,7 +23,7 @@ import {useRouter} from 'next/router'
 import {Section} from '@mintter/proto/documents_pb'
 import {getBatchPublicationSections} from 'shared/publications'
 import {markdownToSlate} from 'shared/markdownToSlate'
-import {useMintter} from 'shared/mintterContext'
+import {useMintter, useAuthor} from 'shared/mintterContext'
 import {useQuery} from 'react-query'
 
 interface EditorState {
@@ -48,7 +48,10 @@ export default function EditorPage(): JSX.Element {
     query: {id},
   } = useRouter()
 
-  const {title, sections, description, author} = state
+  const {title, sections, description, author: pubAuthor} = state
+  console.log('pubAuthor', pubAuthor)
+  const author = useAuthor(pubAuthor)
+  console.log('author', author)
 
   const {status, error, data} = useQuery(['PublicationId', id], getPublication)
 
