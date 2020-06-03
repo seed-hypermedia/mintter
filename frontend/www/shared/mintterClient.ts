@@ -36,6 +36,8 @@ export const usersClient = new MintterPromiseClient(path)
 
 // ============================
 
+// TODO: horacio: remove useQuery from api client layer
+
 export function allPublications(
   page = 0,
 ): PaginatedQueryResult<ListPublicationsResponse> {
@@ -56,6 +58,7 @@ export function getPublication(id: string): QueryResult<Publication> {
 }
 
 export async function getSections(sectionsList: any) {
+  // TODO: horacio: refactor
   const req = new BatchGetSectionsRequest()
   req.setSectionIdsList(sectionsList)
 
@@ -63,12 +66,13 @@ export async function getSections(sectionsList: any) {
 }
 
 export async function createDraft() {
+  // TODO: horacio: refactor
   const req = new CreateDraftRequest()
   return await documentsClient.createDraft(req)
 }
 
 export async function connectToPeerById(peerIds: string[]) {
-  console.log('peerId => ', peerIds)
+  // TODO: horacio: refactor
   const req = new ConnectToPeerRequest()
   req.setAddrsList(peerIds)
   return await usersClient.connectToPeer(req)
@@ -117,7 +121,7 @@ export async function setProfile({
 
 export function getAuthor(authorId: string) {
   const profile = queryCache.getQueryData('Profile') as Profile
-
+  // TODO: (Horacio): FIXME not returning `me`..
   let author
   if (profile.toObject) {
     let p = profile.toObject()

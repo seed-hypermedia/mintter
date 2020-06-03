@@ -4,7 +4,7 @@ import {GetProfileRequest} from '@mintter/proto/mintter_pb'
 
 async function profileFetcher() {
   const req = new GetProfileRequest()
-  return await usersClient.getProfile(req)
+  return await (await usersClient.getProfile(req)).getProfile()
 }
 
 export async function bootstrapAppData() {

@@ -4,12 +4,10 @@ import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
 import DocumentList from 'components/documentList'
 import Content from 'components/content'
 import {usePublicationsList} from 'shared/publications'
-import {createDraft} from 'shared/drafts'
 import {MainLayout} from 'components/main-layout'
 import {LibraryHeader} from 'components/library-header'
 import {useMintter} from 'shared/mintterContext'
 
-export type ListType = 'drafts' | 'publications' | 'my_publications'
 export default function Library() {
   const router = useRouter()
   const publications = usePublicationsList()

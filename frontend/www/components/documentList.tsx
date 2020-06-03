@@ -8,6 +8,7 @@ import {getProfile} from 'shared/mintterClient'
 import {useMintter} from 'shared/mintterContext'
 import {useProfile} from 'shared/profileContext'
 import useLocalStorage from 'shared/localstorage'
+import {ErrorMessage} from './errorMessage'
 
 export default function DocumentList({data, status, error}) {
   const [view, setView] = useLocalStorage<'grid' | 'list'>({
@@ -15,16 +16,21 @@ export default function DocumentList({data, status, error}) {
     initialValue: 'list',
   })
 
-  const {getAuthor} = useProfile()
-
   const isGrid = useMemo(() => view === 'grid', [view])
   const router = useRouter()
-  if (status === 'loading') {
-    return <p>Loading...</p>
-  }
 
-  if (status === 'error') {
-    return <p>ERROR! == {error}</p>
+  let content
+
+  if (status === 'loading') {
+    content = (
+      <div className="flex items-center -mx-4 p-16 bg-background-muted rounded">
+        <p>Loading...</p>
+      </div>
+    )
+  } else if (status === 'error') {
+    content = <ErrorMessage error={error} />
+  } else {
+    content = data.map(item => <ListItem key={item.documentId} item={item} />)
   }
 
   return (
@@ -77,9 +83,7 @@ export default function DocumentList({data, status, error}) {
           isGrid ? 'grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : ''
         }
       >
-        {data.map(item => (
-          <ListItem key={item.documentId} item={item} />
-        ))}
+        {content}
       </div>
     </>
   )
@@ -97,7 +101,6 @@ function ListItem({item}) {
   const {getAuthor} = useProfile()
 
   const author = getAuthor(itemAuthor)
-  console.log('ListItem -> author', author)
 
   const isDraft = useMemo(() => router.pathname === '/library/drafts', [
     router.pathname,
@@ -123,7 +126,7 @@ function ListItem({item}) {
       >
         <h3 className="text-heading text-2xl font-bold truncate">{theTitle}</h3>
         <p className="text-body mt-4 truncate">{theDescription}</p>
-        {!isDraft && (
+        {!isDraft && router.pathname !== '/library/my-publications' && (
           <p className="text-sm mt-4 text-heading truncate overflow-hidden inline-block">
             <span>by </span>
             <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed truncate">
