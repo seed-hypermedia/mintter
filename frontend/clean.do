@@ -1,1 +1,1 @@
-redo packages/clean
+redo packages/clean www/clean

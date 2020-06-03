@@ -1,1 +1,1 @@
-redo-ifchange packages/all
+redo-ifchange packages/all www/all
