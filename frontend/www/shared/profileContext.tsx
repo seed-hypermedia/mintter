@@ -1,11 +1,24 @@
-import {createContext, useContext, useEffect, useState} from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useLayoutEffect,
+} from 'react'
 import {
   UpdateProfileRequest,
   GetProfileRequest,
   InitProfileRequest,
   Profile,
 } from '@mintter/proto/mintter_pb'
-import {usersClient, MintterPromiseClient} from './mintterClient'
+import * as apiClient from './mintterClient'
+import {useMintter} from './mintterContext'
+import {useAsync} from './useAsync'
+import {bootstrapAppData} from './appBootstrap'
+import {FullPageSpinner} from 'components/fullPageSpinner'
+import {FullPageErrorMessage} from 'components/errorMessage'
 
 interface ProfileContextValue {
   readonly profile: Profile | null
@@ -15,96 +28,74 @@ interface ProfileContextValue {
   getProfile?: () => Promise<Profile>
 }
 
-export const ProfileContext = createContext<ProfileContextValue>(null)
+// TODO: (horacio): Fixme types ☝
+export const ProfileContext = createContext(null)
 
+// TODO: (horacio)
 interface ProfileProviderProps {
   children: React.ReactNode
   value?: ProfileContextValue
-  rpc?: MintterPromiseClient
+  rpc?: apiClient.MintterPromiseClient
 }
 
-export default function ProfileProvider({
-  children,
-  value: {profile: propProfile = null, ...rest} = {profile: null},
-  rpc = usersClient,
-}: ProfileProviderProps) {
-  const [profile, setLocalProfile] = useState<Profile>(propProfile)
+export default function ProfileProvider(props: ProfileProviderProps) {
+  const {
+    data,
+    status,
+    error,
+    isLoading,
+    isIdle,
+    isError,
+    isSuccess,
+    run,
+    setData,
+  } = useAsync()
 
-  useEffect(() => {
-    rpc
-      .getProfile(new GetProfileRequest())
-      .then(data => {
-        if (!data.hasProfile()) {
-          const resp = data.getProfile()
-          setLocalProfile(resp)
-        }
-      })
-      .catch(err => console.error('ProfileProvider::getProfile Error => ', err))
-  }, [])
+  useLayoutEffect(() => {
+    run(bootstrapAppData())
+  }, [run])
 
-  async function getProfile() {
-    const profile_resp = await rpc.getProfile(new GetProfileRequest())
-    const profile = profile_resp.getProfile()
-    setLocalProfile(profile)
-    return profile
-  }
-
-  async function setProfile({
-    username,
-    email,
-    bio,
-  }: {
-    username: string
-    email: string
-    bio: string
-  }) {
-    const profile = await getProfile()
-    username.length > 1 && profile.setUsername(username)
-    email.length > 1 && profile.setEmail(email)
-    bio.length > 1 && profile.setBio(bio)
-    const req = new UpdateProfileRequest()
-    req.setProfile(profile)
-    try {
-      await rpc.updateProfile(req)
-    } catch (err) {
-      console.error('setProfileError ===> ', err)
-    }
-  }
-
-  async function initProfile({
-    aezeedPassphrase,
-    mnemonicList,
-    walletPassword,
-  }: InitProfileRequest.AsObject) {
-    const req = new InitProfileRequest()
-    req.setAezeedPassphrase(aezeedPassphrase)
-    req.setMnemonicList(mnemonicList)
-    req.setWalletPassword(walletPassword)
-    await rpc.initProfile(req)
-    getProfile()
-  }
-
-  async function hasProfile() {
-    const req = new GetProfileRequest()
-    const resp = await rpc.getProfile(req)
-    return resp.hasProfile()
-  }
-  return (
-    <ProfileContext.Provider
-      value={{
-        profile,
-        setProfile,
-        initProfile,
-        hasProfile,
-        getProfile,
-        ...rest,
-      }}
-    >
-      {children}
-    </ProfileContext.Provider>
+  const createProfile = useCallback(
+    form => apiClient.createProfile(form).then(profile => setData(profile)),
+    [setData],
   )
+
+  const setProfile = useCallback(
+    form => apiClient.setProfile(form).then(profile => setData({profile})),
+    [setData],
+  )
+
+  const profile = data?.profile
+
+  const value = useMemo(
+    () => ({
+      profile,
+      setProfile,
+      createProfile,
+    }),
+    [profile, setProfile, createProfile],
+  )
+
+  if (isLoading || isIdle) {
+    return <FullPageSpinner />
+  }
+
+  if (isError) {
+    return <FullPageErrorMessage error={error} />
+  }
+
+  if (isSuccess) {
+    return <ProfileContext.Provider value={value} {...props} />
+  }
+
+  throw new Error(`Unhandled status: ${status}`)
 }
 
 export function useProfile() {
-  return useContext(ProfileContext)
+  const context = useContext(ProfileContext)
+  if (context === undefined) {
+    throw new Error(`useProfile must be used within a ProfileProvider`)
+  }
+
+  return context
 }
