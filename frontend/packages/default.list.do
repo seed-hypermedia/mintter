@@ -4,7 +4,7 @@ DIR=${1%.list}
 
 # This will create a list of files the subdir contains.
 cat > $3 <<-EOF
-`find ${DIR}/src -type f -name "*.ts"`
+`find ${DIR}/src -type f -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx"`
 ${DIR}/package.json
 ${DIR}/tsconfig.json
 EOF
