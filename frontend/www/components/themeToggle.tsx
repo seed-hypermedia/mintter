@@ -1,11 +1,11 @@
-import {useTheme, THEME} from 'shared/themeContext'
+import {useTheme, THEME_DARK} from 'shared/themeContext'
 
 // Adapted from: https://codepen.io/aaroniker/pen/KGpXZo and https://github.com/narative/gatsby-theme-novela/blob/master/%40narative/gatsby-theme-novela/src/components/Navigation/Navigation.Header.tsx
 
 export default function ThemeToggle() {
   const {theme, toggleTheme} = useTheme()
 
-  const isDark = theme === THEME.DARK
+  const isDark = theme === THEME_DARK
 
   return (
     <button

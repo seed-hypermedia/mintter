@@ -1,10 +1,10 @@
 import {createContext, useContext, useCallback, useMemo, ReactNode} from 'react'
 import useLocalStorage from './localstorage'
 
-export enum THEME {
-  LIGHT,
-  DARK,
-}
+export const THEME_DARK: THEME = 'theme-dark'
+export const THEME_LIGHT: THEME = 'theme-light'
+
+export type THEME = 'theme-dark' | 'theme-light'
 
 export type ThemeContextValueType = {
   theme: THEME
@@ -12,7 +12,7 @@ export type ThemeContextValueType = {
 }
 
 const initialValue: ThemeContextValueType = {
-  theme: THEME.LIGHT,
+  theme: THEME_LIGHT,
 }
 
 export const ThemeContext = createContext<ThemeContextValueType>(initialValue)
@@ -26,12 +26,12 @@ export interface ThemeProviderProps {
 export function ThemeProvider(props: ThemeProviderProps) {
   const [theme, setTheme] = useLocalStorage<THEME>({
     key: 'MINTTER_THEME',
-    initialValue: props.theme || THEME.LIGHT,
+    initialValue: props.theme || THEME_LIGHT,
   })
 
   const toggleTheme = useCallback(() => {
     setTheme(prevTheme =>
-      prevTheme === THEME.LIGHT ? THEME.DARK : THEME.LIGHT,
+      prevTheme === THEME_LIGHT ? THEME_DARK : THEME_LIGHT,
     )
   }, [setTheme])
 
