@@ -58,7 +58,7 @@ export default function DocumentList({data, status, error}) {
         <div className="ml-4 mr-6">
           <button
             className={`m-2 p-1 rounded transition duration-100 ${
-              isGrid ? 'bg-primary' : 'bg-transparent hover:bg-background-muted'
+              isGrid ? 'bg-info' : 'bg-transparent hover:bg-background-muted'
             }`}
             onClick={() => setView('grid')}
           >
@@ -68,7 +68,7 @@ export default function DocumentList({data, status, error}) {
           </button>
           <button
             className={`m-2 p-1 rounded transition duration-100 ${
-              isGrid ? 'bg-transparent hover:bg-background-muted' : 'bg-primary'
+              isGrid ? 'bg-transparent hover:bg-background-muted' : 'bg-info'
             }`}
             onClick={() => setView('list')}
           >

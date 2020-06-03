@@ -52,7 +52,7 @@ export default function LibraryHeader(props) {
             />
           </form>
           <button
-            className="bg-primary text-white hover:bg-primary-hover px-4 py-2 font-bold ml-12 rounded-full"
+            className="bg-info hover:bg-info-hover text-white font-bold py-2 px-4 rounded rounded-full flex items-center justify-center transition duration-100 ml-8"
             onClick={handlePeerConnection}
           >
             add connection
