@@ -115,12 +115,17 @@ export async function setProfile({
   }
 }
 
-export async function getAuthor(authorId: string) {
-  const profile = await queryCache.getQueryData('Profile')
-  console.log('getAuthor -> profile', profile)
+export function getAuthor(authorId: string) {
+  const profile = queryCache.getQueryData('Profile') as Profile
 
-  return 'me'
-  // return profile.accountId === authorId ? 'me' : `...${authorId.slice(-16)}`
+  let author
+  if (profile.toObject) {
+    let p = profile.toObject()
+
+    author = p.accountId === authorId ? 'me' : `...${authorId.slice(-16)}`
+  }
+
+  return author
 }
 
 export {MintterPromiseClient}

@@ -23,22 +23,14 @@ import {FullPageErrorMessage} from 'components/errorMessage'
 interface ProfileContextValue {
   readonly profile: Profile | null
   setProfile?: (data: Partial<Profile.AsObject>) => void
-  initProfile?: (data: InitProfileRequest.AsObject) => void
-  hasProfile?: () => Promise<boolean>
-  getProfile?: () => Promise<Profile>
+  createProfile?: (form: InitProfileRequest.AsObject) => void
+  getAuthor?: (author: string) => string
 }
 
 // TODO: (horacio): Fixme types ☝
-export const ProfileContext = createContext(null)
+export const ProfileContext = createContext<ProfileContextValue>(null)
 
-// TODO: (horacio)
-interface ProfileProviderProps {
-  children: React.ReactNode
-  value?: ProfileContextValue
-  rpc?: apiClient.MintterPromiseClient
-}
-
-export default function ProfileProvider(props: ProfileProviderProps) {
+export default function ProfileProvider(props) {
   const {
     data,
     status,
@@ -65,6 +57,8 @@ export default function ProfileProvider(props: ProfileProviderProps) {
     [setData],
   )
 
+  const getAuthor = useCallback(authorId => apiClient.getAuthor(authorId), [])
+
   const profile = data?.profile
 
   const value = useMemo(
@@ -72,8 +66,9 @@ export default function ProfileProvider(props: ProfileProviderProps) {
       profile,
       setProfile,
       createProfile,
+      getAuthor,
     }),
-    [profile, setProfile, createProfile],
+    [profile, setProfile, createProfile, getAuthor],
   )
 
   if (isLoading || isIdle) {
