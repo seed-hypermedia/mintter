@@ -69,7 +69,11 @@ export default function DocumentList({data, status, error}) {
           </button>
         </div>
       </div>
-      <div className={isGrid ? 'grid gap-4 md:grid-cols-1 lg:grid-cols-3' : ''}>
+      <div
+        className={
+          isGrid ? 'grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : ''
+        }
+      >
         {data.map(item => (
           <ListItem key={item.documentId} item={item} />
         ))}
