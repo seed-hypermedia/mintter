@@ -1,5 +1,33 @@
 # @mintter/site
 
+## 1.0.0
+
+### Major Changes
+
+- 2dda872: refactor elements/leafs/section on editor package
+
+### Minor Changes
+
+- 422ffb2: export icons from editor + Drafts WIP
+- 9bf6962: edit section metadata
+- 0211d18: publications working
+- 422ffb2: publish phase one
+- 218d858: move editor plugins to package. new editor page features
+- 8383dca: Section component refactor + Grid / List view on documentList
+
+### Patch Changes
+
+- ce05dbe: tailwind setup refactor + other stuff
+- Updated dependencies [422ffb2]
+- Updated dependencies [49338c7]
+- Updated dependencies [2dda872]
+- Updated dependencies [9bf6962]
+- Updated dependencies [0211d18]
+- Updated dependencies [422ffb2]
+- Updated dependencies [218d858]
+- Updated dependencies [8383dca]
+  - @mintter/editor@1.0.0
+
 ## 0.2.14
 
 ### Patch Changes
