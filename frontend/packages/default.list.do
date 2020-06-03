@@ -1,3 +1,5 @@
+redo-always
+
 DIR=${1%.list}
 
 [ -e $DIR ] || (echo "$DIR does not exist" >&2; exit 1)
