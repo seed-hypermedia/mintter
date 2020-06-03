@@ -33,6 +33,9 @@ module.exports = {
         toolbar: 'var(--color-toolbar)',
         'toolbar-active': 'var(--color-toolbar-active)',
       },
+      gridTemplateColumns: {
+        'document-grid': 'repeat(auto-fill, minmax(300px, 1fr))',
+      },
     },
   },
   variants: [

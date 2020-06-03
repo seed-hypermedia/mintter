@@ -64,7 +64,7 @@ export async function getProfile() {
 
 export async function getAuthor(authorId: string) {
   const {profile} = await (await getProfile()).toObject()
-  return profile.accountId === authorId ? 'me' : authorId
+  return profile.accountId === authorId ? 'me' : `...${authorId.slice(-16)}`
 }
 
 export {MintterPromiseClient}
