@@ -19,6 +19,7 @@ import {useAsync} from './useAsync'
 import {bootstrapAppData} from './appBootstrap'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
+import {useQuery, useMutation, queryCache} from 'react-query'
 
 interface ProfileContextValue {
   readonly profile: Profile | null
@@ -31,32 +32,37 @@ interface ProfileContextValue {
 export const ProfileContext = createContext<ProfileContextValue>(null)
 
 export function ProfileProvider(props) {
-  const {
-    data,
-    status,
-    error,
-    isLoading,
-    isIdle,
-    isError,
-    isSuccess,
-    run,
-    setData,
-  } = useAsync()
-
-  useLayoutEffect(() => {
-    run(bootstrapAppData())
-  }, [run])
-
-  const profile = data?.profile
-
-  const createProfile = useCallback(
-    form => apiClient.createProfile(form).then(profile => setData(profile)),
-    [setData],
+  const {status, error, data} = useQuery(
+    'Profile',
+    async () => {
+      const req = new GetProfileRequest()
+      try {
+        return await (await apiClient.usersClient.getProfile(req)).getProfile()
+      } catch (err) {
+        console.error('err ==> ', err)
+      }
+    },
+    {
+      retry: false,
+    },
   )
 
-  const setProfile = useCallback(
-    form => apiClient.setProfile(form).then(profile => setData({profile})),
-    [setData],
+  function handleOnSuccess(params) {
+    console.log('params!')
+    queryCache.setQueryData('Profile', params)
+  }
+
+  const profile = data
+
+  const [createProfile] = useMutation(apiClient.createProfile, {
+    onSuccess: handleOnSuccess,
+  })
+
+  const [setProfile] = useMutation(
+    formData => apiClient.setProfile(profile, formData),
+    {
+      onSuccess: handleOnSuccess,
+    },
   )
 
   const getAuthor = useCallback(authorId => apiClient.getAuthor(authorId), [])
@@ -71,15 +77,15 @@ export function ProfileProvider(props) {
     [profile, setProfile, createProfile, getAuthor],
   )
 
-  if (isLoading || isIdle) {
+  if (status === 'loading') {
     return <FullPageSpinner />
   }
 
-  if (isError) {
+  if (status === 'error') {
     return <FullPageErrorMessage error={error} />
   }
 
-  if (isSuccess) {
+  if (status === 'success') {
     return <ProfileContext.Provider value={value} {...props} />
   }
 

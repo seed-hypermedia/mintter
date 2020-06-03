@@ -25,7 +25,7 @@ export default function EditProfile() {
 
   async function onSubmit(data) {
     try {
-      await setProfile(data)
+      setProfile(data)
       router.replace('/welcome/complete')
     } catch (err) {
       console.error('Error ==> ', err)

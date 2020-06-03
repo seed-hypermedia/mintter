@@ -87,33 +87,35 @@ export async function createProfile({
   req.setAezeedPassphrase(aezeedPassphrase)
   req.setMnemonicList(mnemonicList)
   req.setWalletPassword(walletPassword)
-  await usersClient.initProfile(req)
+  return await usersClient.initProfile(req)
 }
 
-export function getProfile(): QueryResult<GetProfileResponse> {
-  return useQuery('Profile', async () => {
-    const req = new GetProfileRequest()
-    return await usersClient.getProfile(req)
-  })
-}
+// export function getProfile(): QueryResult<GetProfileResponse> {
+//   return useQuery('Profile', async () => {
+//     const req = new GetProfileRequest()
+//     return await usersClient.getProfile(req)
+//   })
+// }
 
-export async function setProfile({
-  username,
-  email,
-  bio,
-}: {
-  username: string
-  email: string
-  bio: string
-}) {
-  const profile = (await queryCache.getQueryData('Profile')) as Profile
+export async function setProfile(
+  profile,
+  {
+    username,
+    email,
+    bio,
+  }: {
+    username: string
+    email: string
+    bio: string
+  },
+) {
   username.length > 1 && profile.setUsername(username)
   email.length > 1 && profile.setEmail(email)
   bio.length > 1 && profile.setBio(bio)
   const req = new UpdateProfileRequest()
   req.setProfile(profile)
   try {
-    await usersClient.updateProfile(req)
+    return await usersClient.updateProfile(req)
   } catch (err) {
     console.error('setProfileError ===> ', err)
   }

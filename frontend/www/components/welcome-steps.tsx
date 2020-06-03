@@ -80,8 +80,8 @@ export default function Steps({steps, active}: Props) {
                 <span className={`absolute z-10 text-body-muted`}>
                   {active > index ? (
                     <svg
-                      width="0.75rem"
-                      height="0.75rem"
+                      width="0.75em"
+                      height="0.75em"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="white"

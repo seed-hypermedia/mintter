@@ -38,7 +38,7 @@ export default function Library() {
       {publications.status === 'success' &&
         publications.resolvedData.toObject().publicationsList.length === 0 && (
           <>
-            <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
+            <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center mt-8">
               <h2 className="text-3xl font-semibold text-info">
                 No Publications (yet)
               </h2>
