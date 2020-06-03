@@ -6,41 +6,10 @@ import {Editor} from '../editor'
 import {css} from 'emotion'
 import Tippy from '@tippyjs/react'
 
-// interface SectionElementProps extends Omit<RenderElementProps, 'element'> {
-//   element?: SlateSection
-// }
-
-export function EditableSectionComponent(
-  {children, element, ...rest}: RenderElementProps,
-  ref: RefObject<HTMLDivElement>,
-) {
-  const editor = useEditor()
-  const path = ReactEditor.findPath(editor, element)
-  const sectionChars = Editor.charCount(editor, path)
-  const [isHover, setHover] = React.useState<boolean>(false)
-  const [visible, setVisible] = React.useState<boolean>(true)
-  const show = () => setVisible(true)
-  const hide = () => setVisible(false)
-
-  function handleMouseEnter() {
-    setHover(true)
-  }
-
-  function handleMouseLeave() {
-    setHover(false)
-    hide()
-  }
-
+function Section({path, className = '', ...props}) {
   return (
     <div
-      {...rest}
-      data-slate-type={element.type}
-      ref={ref}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className={`relative px-8 py-8 group transition duration-200 ${
-        element.active ? 'bg-background-muted' : ''
-      } ${css`
+      className={`relative px-8 py-8 ${css`
         &:after {
           display: ${path[0] === 0 ? 'none' : 'block'};
           content: '';
@@ -65,7 +34,42 @@ export function EditableSectionComponent(
             display: none;
           }
         }
-      `}`}
+      `} ${className}`}
+      {...props}
+    />
+  )
+}
+
+export function EditableSectionElement(
+  {children, element, ...rest}: RenderElementProps,
+  ref: RefObject<HTMLDivElement>,
+) {
+  const editor = useEditor()
+  const path = ReactEditor.findPath(editor, element)
+  const sectionChars = Editor.charCount(editor, path)
+  const [isHover, setHover] = React.useState<boolean>(false)
+  const [visible, setVisible] = React.useState<boolean>(true)
+  const show = () => setVisible(true)
+  const hide = () => setVisible(false)
+
+  function handleMouseEnter() {
+    setHover(true)
+  }
+
+  function handleMouseLeave() {
+    setHover(false)
+    hide()
+  }
+
+  return (
+    <Section
+      data-slate-type={element.type}
+      ref={ref}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className={element.active ? 'bg-background-muted' : ''}
+      path={path}
+      {...rest}
     >
       <div contentEditable={false} className="theme-invert">
         <div
@@ -92,11 +96,11 @@ export function EditableSectionComponent(
         </div>
       </div>
       {children}
-    </div>
+    </Section>
   )
 }
 
-export function ReadOnlySectionComponent(
+export function ReadonlySection(
   {children, element, ...rest}: RenderElementProps,
   ref: RefObject<HTMLDivElement>,
 ) {
@@ -104,45 +108,15 @@ export function ReadOnlySectionComponent(
   const path = ReactEditor.findPath(editor, element)
 
   return (
-    <div
-      {...rest}
-      data-slate-type={element.type}
-      ref={ref}
-      className={`relative px-8 py-8 ${css`
-        &:after {
-          display: ${path[0] === 0 ? 'none' : 'block'};
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 2px;
-          z-index: 100;
-          background-image: linear-gradient(
-            to right,
-            black 33%,
-            rgba(255, 255, 255, 0) 0%
-          );
-          background-position: bottom;
-          background-size: 10px 2px;
-          background-repeat: repeat-x;
-        }
-
-        &:first {
-          &:after {
-            display: none;
-          }
-        }
-      `}`}
-    >
+    <Section path={path} data-slate-type={element.type} ref={ref} {...rest}>
       {children}
-    </div>
+    </Section>
   )
 }
 
 // TODO: (Horacio) Fixme types
-export const EditableSection = React.forwardRef(EditableSectionComponent as any)
-export const ReadOnlySection = React.forwardRef(ReadOnlySectionComponent as any)
+export const EditableSection = React.forwardRef(EditableSectionElement as any)
+export const ReadOnlySection = React.forwardRef(ReadonlySection as any)
 
 function SettingsButton({section, path, visible, show, hide}) {
   const {title, description} = section

@@ -207,7 +207,7 @@ export default function Settings() {
 
               <Textarea
                 readOnly
-                minHeight={150}
+                minHeight={200}
                 id="addresses"
                 className="block text-body-muted w-full border bg-background-muted border-muted rounded px-3 py-2"
                 value={addresses && addresses.join('\n\n')}
