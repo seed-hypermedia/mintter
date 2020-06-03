@@ -1,15 +1,10 @@
 import React from 'react'
 import {AppProps} from 'next/app'
-import {AnimatePresence} from 'framer-motion'
 import DefaultLayout from '../components/layout'
 import dynamic from 'next/dynamic'
 
 import '../styles/index.css'
-import {ThemeProvider} from '../shared/themeContext'
-import ProfileProvider from '../shared/profileContext'
-
-import {ReactQueryDevtools} from 'react-query-devtools'
-import {MintterProvider} from 'shared/mintterContext'
+import {AppProviders} from 'components/app-providers'
 
 const NoSSR: React.FC = ({children}) => {
   return <React.Fragment>{children}</React.Fragment>
@@ -27,18 +22,11 @@ AppProps & {Component: any}) {
   const Layout = Component.Layout || DefaultLayout
   return (
     <Dynamic>
-      <ReactQueryDevtools initialIsOpen={false} />
-      <MintterProvider>
-        <ProfileProvider>
-          <ThemeProvider>
-            <AnimatePresence exitBeforeEnter>
-              <Layout {...pageProps}>
-                <Component {...pageProps} key={router.route} />
-              </Layout>
-            </AnimatePresence>
-          </ThemeProvider>
-        </ProfileProvider>
-      </MintterProvider>
+      <AppProviders>
+        <Layout {...pageProps}>
+          <Component {...pageProps} key={router.route} />
+        </Layout>
+      </AppProviders>
     </Dynamic>
   )
 }
