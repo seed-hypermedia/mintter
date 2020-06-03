@@ -68,11 +68,6 @@ export function MintterProvider(props) {
     [],
   )
 
-  const getAuthor = useCallback(
-    authorId => apiClient.getAuthor(authorId).catch(err => console.error(err)),
-    [],
-  )
-
   const value = useMemo(
     () => ({
       allPublications,
@@ -80,7 +75,6 @@ export function MintterProvider(props) {
       connectToPeerById,
       getSections,
       createDraft,
-      getAuthor,
     }),
     [
       allPublications,
@@ -88,7 +82,6 @@ export function MintterProvider(props) {
       connectToPeerById,
       getSections,
       createDraft,
-      getAuthor,
     ],
   )
 
@@ -103,21 +96,4 @@ export function useMintter() {
   }
 
   return context
-}
-
-export function useAuthor(authorId: string) {
-  const [author, setAuthor] = useState<string>('')
-  const {getAuthor} = useMintter()
-
-  useEffect(() => {
-    fetchAuthor().then(r => {
-      setAuthor(r)
-    })
-
-    async function fetchAuthor() {
-      return await getAuthor(authorId)
-    }
-  }, [authorId])
-
-  return author
 }

@@ -5,7 +5,8 @@ import Link from './link'
 import {useRouter} from 'next/router'
 import {NavItem} from 'components/nav'
 import {getProfile} from 'shared/mintterClient'
-import {useMintter, useAuthor} from 'shared/mintterContext'
+import {useMintter} from 'shared/mintterContext'
+import {useProfile} from 'shared/profileContext'
 import useLocalStorage from 'shared/localstorage'
 
 export default function DocumentList({data, status, error}) {
@@ -13,6 +14,8 @@ export default function DocumentList({data, status, error}) {
     key: 'MINTTER_GRID_VIEW',
     initialValue: 'list',
   })
+
+  const {getAuthor} = useProfile()
 
   const isGrid = useMemo(() => view === 'grid', [view])
   const router = useRouter()
@@ -91,7 +94,10 @@ function ListItem({item}) {
     ? description
     : 'Document with no description'
 
-  const author = useAuthor(itemAuthor)
+  const {getAuthor} = useProfile()
+
+  const author = getAuthor(itemAuthor)
+  console.log('ListItem -> author', author)
 
   const isDraft = useMemo(() => router.pathname === '/library/drafts', [
     router.pathname,
