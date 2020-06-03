@@ -12,7 +12,7 @@ import {MainLayout} from 'components/main-layout'
 import {useProfile} from 'shared/profileContext'
 
 export default function Settings() {
-  const {getProfile, setProfile} = useProfile()
+  const {profile, setProfile} = useProfile()
   const [success, setSuccess] = React.useState<boolean>(false)
   const [submitError, setSubmitError] = React.useState<ErrorInterface>()
   const [addresses, setAddresses] = useState<string[]>()
@@ -27,15 +27,10 @@ export default function Settings() {
   })
 
   useEffect(() => {
-    initProfile()
-
-    async function initProfile() {
-      const values = await (await getProfile()).toObject()
-      console.log('initProfile -> values', values)
-
-      const data = Object.keys(values).map(v => ({[v]: values[v]}))
-      setValue(data)
-    }
+    const values = profile.toObject()
+    console.log('values', values)
+    const data = Object.keys(values).map(v => ({[v]: values[v]}))
+    setValue(data)
   }, [])
 
   useEffect(() => {

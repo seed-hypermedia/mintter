@@ -47,6 +47,8 @@ export default function ProfileProvider(props) {
     run(bootstrapAppData())
   }, [run])
 
+  const profile = data?.profile
+
   const createProfile = useCallback(
     form => apiClient.createProfile(form).then(profile => setData(profile)),
     [setData],
@@ -58,8 +60,6 @@ export default function ProfileProvider(props) {
   )
 
   const getAuthor = useCallback(authorId => apiClient.getAuthor(authorId), [])
-
-  const profile = data?.profile
 
   const value = useMemo(
     () => ({

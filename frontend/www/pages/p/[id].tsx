@@ -22,8 +22,8 @@ import {useRouter} from 'next/router'
 import {Section} from '@mintter/proto/documents_pb'
 import {markdownToSlate} from 'shared/markdownToSlate'
 import {renderReadOnlySectionElement} from '@mintter/editor'
-import {useMintter, useAuthor} from 'shared/mintterContext'
-import {useQuery} from 'react-query'
+import {useMintter} from 'shared/mintterContext'
+import {useProfile} from 'shared/profileContext'
 
 interface EditorState {
   title: string
@@ -42,6 +42,7 @@ export default function EditorPage(): JSX.Element {
     author: '',
   })
   const {getPublication, getSections} = useMintter()
+  const {getAuthor} = useProfile()
 
   const {
     query: {id},
@@ -49,7 +50,7 @@ export default function EditorPage(): JSX.Element {
 
   const {title, sections, description, author: pubAuthor} = state
 
-  const author = useAuthor(pubAuthor)
+  const author = getAuthor(pubAuthor)
 
   const {status, error, data} = getPublication(id)
   console.log('status, error, data', status, error, data)

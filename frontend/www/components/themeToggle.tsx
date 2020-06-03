@@ -1,14 +1,15 @@
-type Props = {
-  isDark: boolean
-  toggle: (e: any) => void
-}
+import {useTheme, THEME} from 'shared/themeContext'
 
 // Adapted from: https://codepen.io/aaroniker/pen/KGpXZo and https://github.com/narative/gatsby-theme-novela/blob/master/%40narative/gatsby-theme-novela/src/components/Navigation/Navigation.Header.tsx
 
-export default function ThemeToggle({isDark, toggle}: Props) {
+export default function ThemeToggle() {
+  const {theme, toggleTheme} = useTheme()
+
+  const isDark = theme === THEME.DARK
+
   return (
     <button
-      onClick={toggle}
+      onClick={toggleTheme}
       type="button"
       aria-label={isDark ? `Activate Light Mode` : `Activate Dark Mode`}
       title={isDark ? `Activate Light Mode` : `Activate Dark Mode`}

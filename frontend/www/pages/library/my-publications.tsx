@@ -6,21 +6,14 @@ import Content from 'components/content'
 import {MainLayout} from 'components/main-layout'
 import {LibraryHeader} from 'components/library-header'
 import {useMintter} from 'shared/mintterContext'
-import {getProfile} from 'shared/mintterClient'
-import {useEffect} from 'react'
+import {useProfile} from 'shared/profileContext'
+import {useMemo} from 'react'
 
 export default function MyPublications() {
   const router = useRouter()
-  const {createDraft, allPublications, getProfile} = useMintter()
-  const publications = {status: 'success', error: null, data: []}
-
-  const {
-    status: profileStatus,
-    error: profileError,
-    data: profile,
-  } = getProfile()
-
+  const {createDraft, allPublications} = useMintter()
   const {status, error, resolvedData} = allPublications()
+  const {profile} = useProfile()
 
   async function handleCreateDraft() {
     const newDraft = await createDraft().toObject()
@@ -29,12 +22,22 @@ export default function MyPublications() {
     })
   }
 
+  const myPubs = useMemo(
+    () =>
+      resolvedData
+        ?.toObject()
+        .publicationsList.filter(
+          p => p.author === profile.toObject().accountId,
+        ),
+    [resolvedData],
+  )
+
   return (
     <Content>
       <Seo title="My Publications" />
       <LibraryHeader />
-      <DocumentList status={status} error={error} data={resolvedData} />
-      {publications.status === 'success' && publications.data.length === 0 && (
+      <DocumentList status={status} error={error} data={myPubs} />
+      {status === 'success' && myPubs.length === 0 && (
         <>
           <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center mt-8">
             <h2 className="text-3xl font-semibold text-info">
