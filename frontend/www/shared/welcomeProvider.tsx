@@ -1,4 +1,11 @@
-import {useContext, createContext, useReducer, useEffect, useRef} from 'react'
+import {
+  useContext,
+  createContext,
+  useReducer,
+  useEffect,
+  useRef,
+  useMemo,
+} from 'react'
 import {useProfile} from './profileContext'
 // import Container from '../components/welcome-container'
 import {useRouter} from 'next/router'
@@ -7,11 +14,6 @@ import Steps from '../components/welcome-steps'
 interface WelcomeState {
   mnemonicList?: string[]
   aezeedPassphrase?: string
-}
-
-const initialState: WelcomeState = {
-  mnemonicList: [''],
-  aezeedPassphrase: '',
 }
 
 type WelcomeValueType = {
@@ -23,6 +25,11 @@ type WelcomeValueType = {
 export interface WelcomeProviderProps
   extends React.HTMLAttributes<HTMLDivElement> {
   value?: WelcomeValueType
+}
+
+const initialState: WelcomeState = {
+  mnemonicList: [''],
+  aezeedPassphrase: '',
 }
 
 export const WelcomeContext = createContext<WelcomeValueType>({
@@ -45,42 +52,34 @@ export function reducer(state: WelcomeState, action: Action): WelcomeState {
   }
 }
 
-export default function WelcomeProvider({
-  children,
-  value,
-}: WelcomeProviderProps) {
+export default function WelcomeProvider(props: WelcomeProviderProps) {
   const router = useRouter()
   const [state, dispatch] = useReducer(reducer, initialState)
-  const v = value || {state, dispatch}
-  const {hasProfile} = useProfile()
 
-  useEffect(() => {
-    async function checkProfile() {
-      try {
-        const resp = await hasProfile()
-        if (resp) {
-          router.replace('/library/publications')
-        }
-      } catch (err) {
-        console.error('Error trying to redirect => ', err)
-      }
-    }
+  const activeStep = useMemo(
+    () => steps.findIndex(s => s.url === router.pathname),
+    [router.pathname],
+  )
 
-    checkProfile()
-  }, [])
-
-  const activeStep = steps.findIndex(s => s.url === router.pathname)
+  const v = useMemo(() => props.value || {state, dispatch}, [
+    props.value,
+    state,
+  ])
 
   return (
-    <WelcomeContext.Provider value={v}>
+    <>
       {activeStep >= 0 ? <Steps steps={steps} active={activeStep} /> : null}
-      {children}
-    </WelcomeContext.Provider>
+      <WelcomeContext.Provider value={v} {...props} />
+    </>
   )
 }
 
 export function useWelcome(): WelcomeValueType {
-  return useContext<WelcomeValueType>(WelcomeContext)
+  const context = useContext<WelcomeValueType>(WelcomeContext)
+  if (context === undefined) {
+    throw new Error(`useWelcome must be used within a WelcomeProvider`)
+  }
+  return context
 }
 
 const steps = [

@@ -14,7 +14,7 @@ import {
   Profile,
 } from '@mintter/proto/mintter_pb'
 import * as apiClient from './mintterClient'
-import {useMintter} from './mintterContext'
+import {Redirect} from 'components/redirect'
 import {useAsync} from './useAsync'
 import {bootstrapAppData} from './appBootstrap'
 import {FullPageSpinner} from 'components/fullPageSpinner'
@@ -30,7 +30,7 @@ interface ProfileContextValue {
 // TODO: (horacio): Fixme types ☝
 export const ProfileContext = createContext<ProfileContextValue>(null)
 
-export default function ProfileProvider(props) {
+export function ProfileProvider(props) {
   const {
     data,
     status,
