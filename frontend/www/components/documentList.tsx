@@ -4,8 +4,6 @@ import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBullete
 import Link from './link'
 import {useRouter} from 'next/router'
 import {NavItem} from 'components/nav'
-import {getProfile} from 'shared/mintterClient'
-import {useMintter} from 'shared/mintterContext'
 import {useProfile} from 'shared/profileContext'
 import useLocalStorage from 'shared/localstorage'
 import {ErrorMessage} from './errorMessage'

@@ -12,9 +12,10 @@ import {useForm} from 'react-hook-form'
 
 import {useWelcome} from '../../shared/welcomeProvider'
 import {useState} from 'react'
-import { ErrorMessage } from '../../components/errorMessage'
+import {ErrorMessage} from '../../components/errorMessage'
 import {useProfile} from '../../shared/profileContext'
 import {useFocus} from '../../shared/hooks'
+import {useMutation} from 'react-query'
 
 export default function CreatePassword() {
   const {register, watch, handleSubmit, errors, formState} = useForm({
@@ -22,7 +23,7 @@ export default function CreatePassword() {
   })
 
   const [submitError, setSubmitError] = useState(null)
-  const {initProfile} = useProfile()
+  const {createProfile} = useProfile()
 
   const router = useRouter()
   const {focusFirst} = useFocus()
@@ -34,7 +35,7 @@ export default function CreatePassword() {
 
   async function onSubmit({walletPassword}) {
     try {
-      await initProfile({aezeedPassphrase, mnemonicList, walletPassword})
+      createProfile({aezeedPassphrase, mnemonicList, walletPassword})
       router.replace('/welcome/edit-profile')
     } catch (err) {
       setSubmitError(err)
