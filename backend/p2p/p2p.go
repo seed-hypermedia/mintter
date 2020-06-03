@@ -115,11 +115,11 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 		// libp2p.EnableRelay(relay.OptHop),
 	}
 
-	if cfg.EnableRelay {
+	if !cfg.NoRelay {
 		opts = append(opts, ipfsutil.RelayOpts)
 	}
 
-	if cfg.EnableTLS {
+	if !cfg.NoTLS {
 		opts = append(opts, ipfsutil.SecurityOpts)
 	}
 
@@ -157,7 +157,7 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 
 	n.serveRPC()
 
-	if cfg.Bootstrap {
+	if !cfg.NoBootstrap {
 		n.g.Go(func() error {
 			peers, err := ipfsconfig.DefaultBootstrapPeers()
 			if err != nil {
