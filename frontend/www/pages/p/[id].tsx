@@ -51,7 +51,8 @@ export default function EditorPage(): JSX.Element {
 
   const author = useAuthor(pubAuthor)
 
-  const {status, error, data} = useQuery(['PublicationId', id], getPublication)
+  const {status, error, data} = getPublication(id)
+  console.log('status, error, data', status, error, data)
 
   React.useEffect(() => {
     if (data) {

@@ -1,3 +1,4 @@
+import getConfig from 'next/config'
 import {MintterPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
 import {DocumentsPromiseClient} from '@mintter/proto/documents_grpc_web_pb'
 import {
@@ -11,8 +12,19 @@ import {
 import {
   ConnectToPeerRequest,
   GetProfileRequest,
+  Profile,
+  GetProfileResponse,
+  UpdateProfileRequest,
+  InitProfileRequest,
+  InitProfileResponse,
 } from '@mintter/proto/mintter_pb'
-import getConfig from 'next/config'
+import {
+  useQuery,
+  QueryResult,
+  usePaginatedQuery,
+  PaginatedQueryResult,
+  queryCache,
+} from 'react-query'
 
 const {publicRuntimeConfig} = getConfig()
 const hostname = publicRuntimeConfig.MINTTER_HOSTNAME
@@ -24,17 +36,23 @@ export const usersClient = new MintterPromiseClient(path)
 
 // ============================
 
-export async function allPublications(page = 0) {
-  const req = new ListPublicationsRequest()
-  req.setPageSize(page)
-  return await documentsClient.listPublications(req)
+export function allPublications(
+  page = 0,
+): PaginatedQueryResult<ListPublicationsResponse> {
+  return usePaginatedQuery(['AllPublications', page], async (key, page) => {
+    const req = new ListPublicationsRequest()
+    req.setPageSize(page)
+    return await documentsClient.listPublications(req)
+  })
 }
 
-export async function getPublication(id): Promise<Publication | undefined> {
-  const req = new GetPublicationRequest()
-  req.setPublicationId(id)
+export function getPublication(id: string): QueryResult<Publication> {
+  return useQuery(['Publication', id], async (key, id) => {
+    const req = new GetPublicationRequest()
+    req.setPublicationId(id)
 
-  return await documentsClient.getPublication(req)
+    return await documentsClient.getPublication(req)
+  })
 }
 
 export async function getSections(sectionsList: any) {
@@ -56,15 +74,53 @@ export async function connectToPeerById(peerIds: string[]) {
   return await usersClient.connectToPeer(req)
 }
 
-export async function getProfile() {
-  // TODO: (horacio): add react query here?
-  const req = new GetProfileRequest()
-  return await usersClient.getProfile(req)
+export async function createProfile({
+  aezeedPassphrase,
+  mnemonicList,
+  walletPassword,
+}: InitProfileRequest.AsObject) {
+  const req = new InitProfileRequest()
+  req.setAezeedPassphrase(aezeedPassphrase)
+  req.setMnemonicList(mnemonicList)
+  req.setWalletPassword(walletPassword)
+  await usersClient.initProfile(req)
+}
+
+export function getProfile(): QueryResult<GetProfileResponse> {
+  return useQuery('Profile', async () => {
+    const req = new GetProfileRequest()
+    return await usersClient.getProfile(req)
+  })
+}
+
+export async function setProfile({
+  username,
+  email,
+  bio,
+}: {
+  username: string
+  email: string
+  bio: string
+}) {
+  const profile = (await queryCache.getQueryData('Profile')) as Profile
+  username.length > 1 && profile.setUsername(username)
+  email.length > 1 && profile.setEmail(email)
+  bio.length > 1 && profile.setBio(bio)
+  const req = new UpdateProfileRequest()
+  req.setProfile(profile)
+  try {
+    await usersClient.updateProfile(req)
+  } catch (err) {
+    console.error('setProfileError ===> ', err)
+  }
 }
 
 export async function getAuthor(authorId: string) {
-  const {profile} = await (await getProfile()).toObject()
-  return profile.accountId === authorId ? 'me' : `...${authorId.slice(-16)}`
+  const profile = await queryCache.getQueryData('Profile')
+  console.log('getAuthor -> profile', profile)
+
+  return 'me'
+  // return profile.accountId === authorId ? 'me' : `...${authorId.slice(-16)}`
 }
 
 export {MintterPromiseClient}

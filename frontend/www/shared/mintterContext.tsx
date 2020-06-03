@@ -12,29 +12,45 @@ import {
   Draft,
   ListPublicationsResponse,
 } from '@mintter/proto/documents_pb'
+import {QueryResult, PaginatedQueryResult} from 'react-query'
+import {GetProfileResponse} from '@mintter/proto/mintter_pb'
+
+type QueryParam<T> = T | T[]
 
 // TODO: (Horacio) Fixme Types
 export interface MintterClient {
-  allPublications: () => Promise<ListPublicationsResponse>
-  getPublication: (p: any) => Promise<Publication>
+  allPublications: (
+    page?: number,
+  ) => PaginatedQueryResult<ListPublicationsResponse>
+  getPublication: (id: QueryParam<string>) => QueryResult<Publication>
   connectToPeerById: (peerIds: string[]) => any
   getSections: (sections: any[]) => any
   createDraft: () => Draft
   getAuthor: (authorId: string) => Promise<string>
+  getProfile: () => QueryResult<GetProfileResponse>
+  setProfile: () => any
 }
 
 const MintterClientContext = createContext<MintterClient>(null)
 
 export function MintterProvider(props) {
   const allPublications = useCallback(
-    form => apiClient.allPublications().catch(err => console.error(err)),
+    (page: number) => apiClient.allPublications(page),
     [],
   )
 
-  const getPublication = useCallback(
-    (key, id) => apiClient.getPublication(id).catch(err => console.error(err)),
-    [],
-  )
+  const getPublication = useCallback((id: QueryParam<string>) => {
+    // type guard on id
+    if (Array.isArray(id)) {
+      throw new Error(
+        `Impossible render: You are trying to access a publication passing ${
+          id.length
+        } publication IDs => ${id.map(q => q).join(', ')}`,
+      )
+    }
+
+    return apiClient.getPublication(id)
+  }, [])
 
   const getSections = useCallback(
     sections =>
@@ -48,8 +64,7 @@ export function MintterProvider(props) {
   )
 
   const connectToPeerById = useCallback(
-    peerId =>
-      apiClient.connectToPeerById(peerId).catch(err => console.error(err)),
+    peerId => apiClient.connectToPeerById(peerId),
     [],
   )
 
