@@ -13,7 +13,7 @@ type Config struct {
 // P2P configuration.
 type P2P struct {
 	Addr        string `help:"address for binding p2p listener" default:"/ip4/0.0.0.0/tcp/55000"`
-	EnableTLS   bool   `help:"enable TLS security options" default:"false"`
-	EnableRelay bool   `help:"enable circuit-relay for libp2p" default:"false"`
-	Bootstrap   bool   `help:"start IPFS bootstrapping process" default:"false"`
+	NoTLS       bool   `help:"disable TLS in libp2p"`
+	NoRelay     bool   `help:"disable libp2p circuit relay"`
+	NoBootstrap bool   `help:"disable IPFS bootstrapping"`
 }
