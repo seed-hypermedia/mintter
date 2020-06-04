@@ -39,10 +39,14 @@ export interface MintterClient {
 const MintterClientContext = createContext<MintterClient>(null)
 
 export function MintterProvider(props) {
-  const allPublications = useCallback(
-    (page: number) => apiClient.allPublications(page),
-    [],
-  )
+  function allPublications(
+    page = 0,
+  ): PaginatedQueryResult<ListPublicationsResponse> {
+    return usePaginatedQuery(
+      ['AllPublications', page],
+      apiClient.allPublications,
+    )
+  }
 
   const getPublication = useCallback((id: QueryParam<string>) => {
     // type guard on id

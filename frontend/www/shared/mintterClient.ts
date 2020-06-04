@@ -44,14 +44,13 @@ export const usersClient = new MintterPromiseClient(path)
 
 // TODO: horacio: remove useQuery from api client layer
 
-export function allPublications(
+export async function allPublications(
+  key,
   page = 0,
-): PaginatedQueryResult<ListPublicationsResponse> {
-  return usePaginatedQuery(['AllPublications', page], async (key, page) => {
-    const req = new ListPublicationsRequest()
-    req.setPageSize(page)
-    return await documentsClient.listPublications(req)
-  })
+): Promise<ListPublicationsResponse> {
+  const req = new ListPublicationsRequest()
+  req.setPageSize(page)
+  return await documentsClient.listPublications(req)
 }
 
 export function getPublication(id: string): QueryResult<Publication> {
