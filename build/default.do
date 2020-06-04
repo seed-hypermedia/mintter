@@ -2,6 +2,7 @@
 redo-always
 
 APP=`basename $1`
+APP="${APP%.exe}"
 
 . ./$APP.od
 
