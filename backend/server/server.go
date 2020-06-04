@@ -10,6 +10,7 @@ import (
 	"mintter/backend/p2p"
 	"mintter/backend/store"
 	"os"
+	"strings"
 
 	"go.uber.org/atomic"
 	"go.uber.org/multierr"
@@ -20,8 +21,9 @@ import (
 
 // Server implements Mintter rpc.
 type Server struct {
-	cfg config.Config
-	log *zap.Logger
+	cfg    config.Config
+	log    *zap.Logger
+	p2pLog *zap.Logger
 
 	// We are doing a kind of lazy init for these within InitProfile handler
 	// and we recover the state in the constructor if profile was previously initialized.
@@ -32,18 +34,30 @@ type Server struct {
 
 // NewServer creates a new Server.
 func NewServer(cfg config.Config, log *zap.Logger) (*Server, error) {
+	if strings.HasPrefix(cfg.RepoPath, "~") {
+		homedir, err := os.UserHomeDir()
+		if err != nil {
+			return nil, fmt.Errorf("failed to detect home directory: %w", err)
+		}
+
+		cfg.RepoPath = strings.Replace(cfg.RepoPath, "~", homedir, 1)
+	}
+
 	if err := os.MkdirAll(cfg.RepoPath, 0700); err != nil {
 		return nil, fmt.Errorf("failed to initialize local repo in %s: %w", cfg.RepoPath, err)
 	}
 
 	s := &Server{
-		log: log,
-		cfg: cfg,
+		log:    log.Named("rpc"),
+		p2pLog: log.Named("p2p"),
+		cfg:    cfg,
 	}
 
 	if err := s.init(identity.Profile{}); err != nil {
 		return nil, fmt.Errorf("failed to init node: %w", err)
 	}
+
+	s.log.Debug("ServerInitialized", zap.String("repoPath", cfg.RepoPath))
 
 	return s, nil
 }
@@ -87,7 +101,7 @@ func (s *Server) init(prof identity.Profile) (err error) {
 		}
 	}
 
-	s.node, err = p2p.NewNode(context.Background(), s.cfg.RepoPath, s.store, s.log.With(zap.String("component", "p2p")), s.cfg.P2P)
+	s.node, err = p2p.NewNode(context.Background(), s.cfg.RepoPath, s.store, s.p2pLog, s.cfg.P2P)
 	if err != nil {
 		return fmt.Errorf("failed to init P2P node: %w", err)
 	}

@@ -31,7 +31,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		cfg.RepoPath = defaultRepoPath()
 	}
 
-	log, err := zap.NewDevelopment()
+	log, err := zap.NewDevelopment(zap.WithCaller(false))
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	rpcsrv := grpc.NewServer()
 	{
-		svc, err := server.NewServer(cfg, log.Named("rpcServer"))
+		svc, err := server.NewServer(cfg, log)
 		if err != nil {
 			return fmt.Errorf("failed to create rpc server: %w", err)
 		}
@@ -51,6 +51,8 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		proto.RegisterDocumentsServer(rpcsrv, svc)
 		reflection.Register(rpcsrv)
 	}
+
+	log = log.Named("daemon")
 
 	var handler http.Handler
 	{
@@ -90,13 +92,6 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		return rpcsrv.Serve(l)
 	})
 
-	g.Go(func() error {
-		<-ctx.Done()
-		log.Debug("ClosingGRPCServer")
-		rpcsrv.GracefulStop()
-		return nil
-	})
-
 	// Start HTTP server with graceful shutdown.
 
 	g.Go(func() error {
@@ -110,7 +105,9 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	g.Go(func() error {
 		<-ctx.Done()
-		log.Debug("ClosingHTTPServer")
+		log.Info("GracefulShutdownStarted")
+		log.Debug("Press ctrl+c to force quit, but it's better to wait :)")
+		rpcsrv.GracefulStop()
 		return srv.Shutdown(context.Background())
 	})
 
@@ -123,6 +120,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	err = g.Wait()
 
+	log.Info("GracefulShutdownEnded")
 	return
 }
 

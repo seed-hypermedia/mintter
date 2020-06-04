@@ -163,9 +163,9 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 			if err != nil {
 				return err
 			}
-			log.Debug("Boostrapping IPFS")
+			log.Debug("IPFSBootstrapStarted")
 			err = ipfsnode.Bootstrap(ctx, peers)
-			log.Debug("Bootstrap returned", zap.Error(err))
+			log.Debug("IPFSBootstrapEnded", zap.Error(err))
 			return err
 		})
 	}
