@@ -18,3 +18,5 @@ build/*
 .redo
 
 !.vscode
+
+rice-box.go

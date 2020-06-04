@@ -4,9 +4,11 @@ go 1.13
 
 require (
 	github.com/AndreasBriese/bbloom v0.0.0-20190825152654-46b345b51c96 // indirect
+	github.com/GeertJohan/go.rice v1.0.0
 	github.com/alecthomas/kong v0.2.9
 	github.com/burdiyan/go/kongcli v0.0.0-20200124222818-6f87e0e684b6
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
+	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/fxamacker/cbor/v2 v2.2.0
 	github.com/golang/groupcache v0.0.0-20191002201903-404acd9df4cc // indirect
@@ -45,6 +47,7 @@ require (
 	github.com/multiformats/go-multiaddr v0.2.2
 	github.com/multiformats/go-multihash v0.0.13
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
+	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/polydawn/refmt v0.0.0-20190408063855-01bf1e26dd14
 	github.com/stretchr/testify v1.5.1
 	github.com/textileio/go-textile v0.7.7

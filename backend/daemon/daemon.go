@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mintter"
 	"net"
 	"net/http"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"mintter/proto"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/pkg/browser"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -50,16 +52,30 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		reflection.Register(rpcsrv)
 	}
 
-	grpcWebHandler := grpcweb.WrapServer(rpcsrv,
-		grpcweb.WithOriginFunc(func(origin string) bool {
-			return true
-		}),
-	)
+	var handler http.Handler
+	{
+		grpcWebHandler := grpcweb.WrapServer(rpcsrv,
+			grpcweb.WithOriginFunc(func(origin string) bool {
+				return true
+			}),
+		)
+
+		ui := mintter.UIHandler()
+
+		handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if grpcWebHandler.IsGrpcWebRequest(r) {
+				grpcWebHandler.ServeHTTP(w, r)
+				return
+			}
+
+			ui.ServeHTTP(w, r)
+		})
+	}
 
 	// TODO(burdiyan): Add timeout configuration.
 	srv := &http.Server{
 		Addr:    ":" + cfg.HTTPPort,
-		Handler: grpcWebHandler,
+		Handler: handler,
 	}
 
 	l, err := net.Listen("tcp", ":"+cfg.GRPCPort)
@@ -102,6 +118,8 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		zap.String("httpURL", "http://localhost:"+cfg.HTTPPort),
 		zap.String("grpcURL", "grpc://localhost:"+cfg.GRPCPort),
 	)
+
+	browser.OpenURL("http://localhost:55001")
 
 	err = g.Wait()
 
