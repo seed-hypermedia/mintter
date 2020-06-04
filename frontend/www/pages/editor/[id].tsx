@@ -156,7 +156,7 @@ export default function EditorPage(): JSX.Element {
   const [autosaveDraft] = useMutation(
     async ({state}: {state: EditorState}) => {
       const {title, description, sections} = state
-      saveDraft({documentId: id, title, description, sections})
+      setDraft({documentId: id, title, description, sections})
     },
     {
       onSuccess: () => {
