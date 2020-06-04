@@ -21,19 +21,21 @@ export default function DocumentList({data, status, error}) {
 
   if (status === 'loading') {
     content = (
-      <div className="flex items-center -mx-4 p-16 bg-background-muted rounded">
+      <div className="flex items-center -mx-4 p-12 bg-background-muted rounded">
         <p>Loading...</p>
       </div>
     )
   } else if (status === 'error') {
     content = <ErrorMessage error={error} />
   } else {
-    content = data.map(item => <ListItem key={item.documentId} item={item} />)
+    content = data.map(item => (
+      <ListItem key={item.documentId} isGrid={isGrid} item={item} />
+    ))
   }
 
   return (
     <>
-      <div className="flex items-center -mx-4">
+      <div className="flex items-center -mx-2">
         <NavItem
           href="/library/publications"
           active={router.pathname === '/library/publications'}
@@ -87,7 +89,7 @@ export default function DocumentList({data, status, error}) {
   )
 }
 
-function ListItem({item}) {
+function ListItem({item, isGrid = false}) {
   const router = useRouter()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
   const {title, description, author: itemAuthor} = item
@@ -117,15 +119,38 @@ function ListItem({item}) {
   }
 
   return (
-    <Link href={href} className="block w-full -m-2 mt-4">
+    <Link
+      href={href}
+      className={`block w-full -m-2 ${isGrid ? 'mt-4' : 'first:mt-4'}`}
+    >
       <div
-        className="bg-background-muted p-6 rounded-lg transition duration-200 hover:shadow-lg"
+        className={`bg-background-muted transition duration-200 hover:shadow-lg ${
+          isGrid ? 'p-6 rounded-lg' : 'flex items-center justify-between'
+        }`}
         onMouseEnter={handlePrefetch}
       >
-        <h3 className="text-heading text-2xl font-bold truncate">{theTitle}</h3>
-        <p className="text-body mt-4 truncate">{theDescription}</p>
+        <h3
+          className={`text-heading font-bold truncate ${
+            isGrid ? 'text-2xl' : 'flex-1 p-4'
+          }`}
+        >
+          {theTitle}
+        </h3>
+        <p
+          className={`text-body truncate ${
+            isGrid ? 'mt-4' : 'p-4 flex-1 border-0 border-l border-muted'
+          }`}
+        >
+          {theDescription}
+        </p>
         {!isDraft && router.pathname !== '/library/my-publications' && (
-          <p className="text-sm mt-4 text-heading truncate overflow-hidden inline-block">
+          <p
+            className={`text-sm text-heading inline-block ${
+              isGrid
+                ? 'mt-4 truncate overflow-hidden'
+                : 'p-4 border-0 border-l border-muted'
+            }`}
+          >
             <span>by </span>
             <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed truncate">
               {author}

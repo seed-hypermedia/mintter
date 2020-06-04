@@ -138,7 +138,7 @@ export default function EditorPage(): JSX.Element {
     push,
   } = useRouter()
 
-  const {getDraft} = useMintter()
+  const {getDraft, setDraft} = useMintter()
 
   const {title, sections, description} = state
 

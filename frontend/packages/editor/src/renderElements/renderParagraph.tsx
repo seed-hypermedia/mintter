@@ -6,7 +6,7 @@ export function renderParagraph() {
   return getRenderElement({
     type: nodeTypes.typeP,
     component: ({children, ...props}) => (
-      <p {...props} className={`text-body text-xl leading-loose mt-6`}>
+      <p {...props} className={`text-body text-xl leading-loose`}>
         {children}
       </p>
     ),

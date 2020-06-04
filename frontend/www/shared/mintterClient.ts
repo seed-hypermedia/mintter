@@ -30,6 +30,7 @@ import {
   queryCache,
   QueryOptions,
 } from 'react-query'
+import {fromSlateToMarkdown} from './parseToMarkdown'
 
 const {publicRuntimeConfig} = getConfig()
 const hostname = publicRuntimeConfig.MINTTER_HOSTNAME
@@ -70,12 +71,16 @@ export async function getSections(sectionsList: any) {
   return await documentsClient.batchGetSections(req)
 }
 
-export function allDrafts(page = 0): PaginatedQueryResult<ListDraftsResponse> {
-  return usePaginatedQuery(['AllDrafts', page], async (key, page) => {
-    const req = new ListDraftsRequest()
-    req.setPageSize(page)
-    return await documentsClient.listDrafts(req)
-  })
+export async function allDrafts(key, page = 0): Promise<ListDraftsResponse> {
+  const req = new ListDraftsRequest()
+  req.setPageSize(page)
+  return await documentsClient.listDrafts(req)
+}
+
+export async function createDraft() {
+  // TODO: horacio: refactor
+  const req = new CreateDraftRequest()
+  return await documentsClient.createDraft(req)
 }
 
 export function getDraft(
@@ -96,10 +101,39 @@ export function getDraft(
   )
 }
 
-export async function createDraft() {
-  // TODO: horacio: refactor
-  const req = new CreateDraftRequest()
-  return await documentsClient.createDraft(req)
+export interface SetDraftRequest {
+  documentId: string | string[]
+  title: string
+  description: string
+  sections: any[]
+}
+
+export async function setDraft({
+  documentId,
+  title,
+  description,
+  sections,
+}: SetDraftRequest) {
+  const request = new Draft()
+
+  if (Array.isArray(documentId)) {
+    throw new Error(
+      `Impossible render: You are trying to access the editor passing ${
+        documentId.length
+      } document IDs => ${documentId.map(q => q).join(', ')}`,
+    )
+  }
+
+  request.setDocumentId(documentId)
+  title && request.setTitle(title)
+  description && request.setDescription(description)
+
+  if (sections.length > 0) {
+    const s = fromSlateToMarkdown(sections)
+
+    request.setSectionsList(s)
+  }
+  await documentsClient.saveDraft(request)
 }
 
 export async function connectToPeerById(peerIds: string[]) {
