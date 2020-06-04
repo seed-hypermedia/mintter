@@ -8,6 +8,10 @@ import {
   GetPublicationRequest,
   BatchGetSectionsRequest,
   CreateDraftRequest,
+  ListDraftsResponse,
+  ListDraftsRequest,
+  Draft,
+  GetDraftRequest,
 } from '@mintter/proto/documents_pb'
 import {
   ConnectToPeerRequest,
@@ -24,6 +28,7 @@ import {
   usePaginatedQuery,
   PaginatedQueryResult,
   queryCache,
+  QueryOptions,
 } from 'react-query'
 
 const {publicRuntimeConfig} = getConfig()
@@ -63,6 +68,32 @@ export async function getSections(sectionsList: any) {
   req.setSectionIdsList(sectionsList)
 
   return await documentsClient.batchGetSections(req)
+}
+
+export function allDrafts(page = 0): PaginatedQueryResult<ListDraftsResponse> {
+  return usePaginatedQuery(['AllDrafts', page], async (key, page) => {
+    const req = new ListDraftsRequest()
+    req.setPageSize(page)
+    return await documentsClient.listDrafts(req)
+  })
+}
+
+export function getDraft(
+  id: string,
+  options?: QueryOptions<Draft>,
+): QueryResult<Draft> {
+  return useQuery(
+    id && ['Draft', id],
+    async (key, id) => {
+      const req = new GetDraftRequest()
+      req.setDocumentId(id)
+      return await documentsClient.getDraft(req)
+    },
+    {
+      refetchOnWindowFocus: false,
+      ...options,
+    },
+  )
 }
 
 export async function createDraft() {

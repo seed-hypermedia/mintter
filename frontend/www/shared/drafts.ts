@@ -14,25 +14,6 @@ import {
 import {fromSlateToMarkdown} from './parseToMarkdown'
 import {documentsClient} from './mintterClient'
 
-export function useDraftsList(page = 0) {
-  return usePaginatedQuery(['DraftsList', page], async (key, page) => {
-    const req = new ListDraftsRequest()
-    req.setPageSize(page)
-    return await documentsClient.listDrafts(req)
-  })
-}
-
-export async function createDraft(cb) {
-  const req = new CreateDraftRequest()
-  try {
-    const resp = await documentsClient.createDraft(req)
-    cb(resp)
-  } catch (err) {
-    console.error('Error on createDraft -> ', err)
-    throw err
-  }
-}
-
 export async function saveDraft({
   documentId,
   title,
@@ -75,16 +56,6 @@ export async function publishDraft(draft) {
   } catch (err) {
     console.error(err)
   }
-}
-
-export function useFetchDraft(
-  id: string | string[],
-  options: QueryOptions<Draft>,
-): QueryResult<Draft> {
-  return useQuery(id && ['Draft', id], getDraftFetcher, {
-    refetchOnWindowFocus: false,
-    ...options,
-  })
 }
 
 export async function getDraftFetcher(key, queryId) {

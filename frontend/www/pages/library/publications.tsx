@@ -3,15 +3,17 @@ import Seo from 'components/seo'
 import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
 import DocumentList from 'components/documentList'
 import Content from 'components/content'
-import {usePublicationsList} from 'shared/publications'
+
 import {MainLayout} from 'components/main-layout'
 import {LibraryHeader} from 'components/library-header'
 import {useMintter} from 'shared/mintterContext'
 
 export default function Library() {
   const router = useRouter()
-  const publications = usePublicationsList()
+  const {allPublications} = useMintter()
   const {createDraft} = useMintter()
+
+  const {status, error, resolvedData} = allPublications()
 
   async function handleCreateDraft() {
     // await createDraft(async newDraft => {
@@ -30,16 +32,11 @@ export default function Library() {
     <Content>
       <Seo title="Publications" />
       <LibraryHeader />
-      <DocumentList
-        status={publications.status}
-        error={publications.error}
-        data={publications?.resolvedData?.toObject().publicationsList}
-      />
-      {publications.status === 'success' &&
-        publications.resolvedData.toObject().publicationsList.length === 0 && (
+      {status === 'success' &&
+        resolvedData.toObject().publicationsList.length === 0 && (
           <>
-            <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center mt-8">
-              <h2 className="text-3xl font-semibold text-info">
+            <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
+              <h2 className="text-3xl font-semibold text-primary">
                 No Publications (yet)
               </h2>
               <button
@@ -53,6 +50,11 @@ export default function Library() {
             <hr className="border-t-2 border-muted border-solid my-8" />
           </>
         )}
+      <DocumentList
+        status={status}
+        error={error}
+        data={resolvedData?.toObject().publicationsList}
+      />
     </Content>
   )
 }

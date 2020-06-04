@@ -27,10 +27,11 @@ import {publish} from 'shared/publishDocument'
 import {useRouter} from 'next/router'
 import {Section} from '@mintter/proto/documents_pb'
 import {renderEditableSectionElement} from '@mintter/editor'
-import {useFetchDraft, saveDraft} from 'shared/drafts'
+import {saveDraft} from 'shared/drafts'
 import {markdownToSlate} from 'shared/markdownToSlate'
-import {useMutation} from 'react-query'
+import {useMutation, queryCache} from 'react-query'
 import {useDebounce} from 'shared/hooks'
+import {useMintter} from 'shared/mintterContext'
 
 interface EditorState {
   title: string
@@ -137,6 +138,8 @@ export default function EditorPage(): JSX.Element {
     push,
   } = useRouter()
 
+  const {getDraft} = useMintter()
+
   const {title, sections, description} = state
 
   function isEmpty(): boolean {
@@ -145,16 +148,23 @@ export default function EditorPage(): JSX.Element {
       : false
   }
 
-  const {status, error, data} = useFetchDraft(id, {
+  const {status, error, data} = getDraft(id, {
     onSuccess: () => {
       setReadyToAutosave(true)
     },
   })
 
-  const [autosaveDraft] = useMutation(async ({state}: {state: EditorState}) => {
-    const {title, description, sections} = state
-    saveDraft({documentId: id, title, description, sections})
-  })
+  const [autosaveDraft] = useMutation(
+    async ({state}: {state: EditorState}) => {
+      const {title, description, sections} = state
+      saveDraft({documentId: id, title, description, sections})
+    },
+    {
+      onSuccess: () => {
+        queryCache.setQueryData(['Draft', id], data)
+      },
+    },
+  )
 
   const debouncedValue = useDebounce(state, 1000)
 

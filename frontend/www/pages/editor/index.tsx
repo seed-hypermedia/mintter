@@ -1,16 +1,17 @@
 import {useEffect} from 'react'
 import {useRouter} from 'next/router'
-import {createDraft} from 'shared/drafts'
+import {useMintter} from 'shared/mintterContext'
 
 export default function EditorIndexPage() {
   const router = useRouter()
+  const {createDraft} = useMintter()
   useEffect(() => {
     async function redirect() {
-      await createDraft(async newDraft => {
-        const value = newDraft.toObject()
-        router.replace({
-          pathname: `/editor/${value.documentId}`,
-        })
+      const d = await createDraft()
+
+      const draft = d.toObject()
+      router.replace({
+        pathname: `/editor/${draft.documentId}`,
       })
     }
 

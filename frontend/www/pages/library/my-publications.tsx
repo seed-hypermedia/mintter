@@ -36,10 +36,9 @@ export default function MyPublications() {
     <Content>
       <Seo title="My Publications" />
       <LibraryHeader />
-      <DocumentList status={status} error={error} data={myPubs} />
       {status === 'success' && myPubs.length === 0 && (
         <>
-          <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center mt-8">
+          <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
             <h2 className="text-3xl font-semibold text-primary">
               No Publications (yet)
             </h2>
@@ -54,6 +53,7 @@ export default function MyPublications() {
           <hr className="border-t-2 border-muted border-solid my-8" />
         </>
       )}
+      <DocumentList status={status} error={error} data={myPubs} />
     </Content>
   )
 }
