@@ -60,6 +60,11 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		ui := mintter.UIHandler()
 
 		handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if grpcWebHandler.IsAcceptableGrpcCorsRequest(r) {
+				grpcWebHandler.ServeHTTP(w, r)
+				return
+			}
+
 			if grpcWebHandler.IsGrpcWebRequest(r) {
 				grpcWebHandler.ServeHTTP(w, r)
 				return
