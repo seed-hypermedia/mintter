@@ -8,7 +8,7 @@ import (
 	rice "github.com/GeertJohan/go.rice"
 )
 
-// UIHandler serves UI from filesystem or embedded files in production.
+// UIHandler serves UI from filesystem or embedded files in production. Heyho
 func UIHandler() http.Handler {
 	box := rice.MustFindBox("frontend/www/out").HTTPBox()
 	fs := http.FileServer(box)
