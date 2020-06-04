@@ -6,7 +6,7 @@ export function renderHeadingThree() {
   return getRenderElement({
     type: nodeTypes.typeH3,
     component: ({children, ...props}) => (
-      <h3 {...props} className="text-2xl text-heading mt-8">
+      <h3 {...props} className="text-2xl text-heading my-6">
         {children}
       </h3>
     ),

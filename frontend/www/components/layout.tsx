@@ -1,4 +1,4 @@
-import {useTheme} from '../shared/themeContext'
+import {useTheme} from 'shared/themeContext'
 
 export interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
   initial?: string

@@ -10,9 +10,7 @@ export function AppProviders({children, ...props}) {
       <ReactQueryDevtools initialIsOpen={false} />
       <ThemeProvider>
         <ProfileProvider>
-          <MintterProvider>
-            <AnimatePresence exitBeforeEnter>{children}</AnimatePresence>
-          </MintterProvider>
+          <MintterProvider>{children}</MintterProvider>
         </ProfileProvider>
       </ThemeProvider>
     </>

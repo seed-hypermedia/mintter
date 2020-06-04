@@ -6,7 +6,12 @@ import {
   ListPublicationsResponse,
   ListDraftsResponse,
 } from '@mintter/proto/documents_pb'
-import {QueryResult, PaginatedQueryResult, QueryOptions} from 'react-query'
+import {
+  usePaginatedQuery,
+  QueryResult,
+  PaginatedQueryResult,
+  QueryOptions,
+} from 'react-query'
 import {GetProfileResponse} from '@mintter/proto/mintter_pb'
 
 type QueryParam<T> = T | T[]
@@ -23,6 +28,7 @@ export interface MintterClient {
     id: QueryParam<string>,
     options?: QueryOptions<Draft>,
   ) => QueryResult<Draft>
+  setDraft: (draft: apiClient.SetDraftRequest) => Draft
   createDraft: () => Draft
   connectToPeerById: (peerIds: string[]) => any
   getAuthor: (authorId: string) => Promise<string>
@@ -57,7 +63,9 @@ export function MintterProvider(props) {
     [],
   )
 
-  const allDrafts = useCallback((page: number) => apiClient.allDrafts(page), [])
+  function allDrafts(page = 0): PaginatedQueryResult<ListDraftsResponse> {
+    return usePaginatedQuery(['AllDrafts', page], apiClient.allDrafts)
+  }
 
   const getDraft = useCallback(
     (id: QueryParam<string>, options?: QueryOptions<Draft>) => {

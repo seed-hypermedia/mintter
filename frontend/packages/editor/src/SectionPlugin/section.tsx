@@ -21,7 +21,7 @@ function Section({path, className = '', ...props}) {
           z-index: 100;
           background-image: linear-gradient(
             to right,
-            black 33%,
+            var(--color-background-muted) 33%,
             rgba(255, 255, 255, 0) 0%
           );
           background-position: bottom;
