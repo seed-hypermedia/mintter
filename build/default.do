@@ -1,12 +1,9 @@
-# Go can uses cache for build so it's safer to run this target always.
-redo-always
-
 APP=`basename $1`
 APP="${APP%.exe}"
 
-. ./$APP.od
+redo-ifchange $REDO_BASE/rice-box go.list
+redo-ifchange `cat go.list`
 
 export GOOS=`dirname $1`
+echo "Building Go binary ${APP} for ${GOOS}" >&2
 go build -o $3 $REDO_BASE/backend/cmd/$APP/
-
-redo-stamp <$3
