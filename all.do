@@ -1,1 +1,1 @@
-redo-ifchange generate build/all frontend/all
+redo-ifchange generate frontend/all build/all

@@ -1,1 +1,1 @@
-redo-ifchange mtt mintterd
+redo-ifchange darwin/mintterd linux/mintterd windows/mintterd
