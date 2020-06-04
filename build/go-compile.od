@@ -1,4 +1,0 @@
-redo-ifchange backend.list ../third_party/all
-redo-ifchange `cat backend.list`
-
-go build -o $3 $GO_TARGET_PATH
