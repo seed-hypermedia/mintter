@@ -8,8 +8,6 @@ import (
 	"mintter"
 	"net"
 	"net/http"
-	"os"
-	"path/filepath"
 
 	"mintter/backend/config"
 	"mintter/backend/server"
@@ -27,9 +25,6 @@ import (
 // Run the daemon.
 func Run(ctx context.Context, cfg config.Config) (err error) {
 	g, ctx := errgroup.WithContext(ctx)
-	if cfg.RepoPath == "" {
-		cfg.RepoPath = defaultRepoPath()
-	}
 
 	log, err := zap.NewDevelopment(zap.WithCaller(false))
 	if err != nil {
@@ -122,13 +117,4 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	log.Info("GracefulShutdownEnded")
 	return
-}
-
-func defaultRepoPath() string {
-	d, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
-
-	return filepath.Join(d, ".mtt")
 }
