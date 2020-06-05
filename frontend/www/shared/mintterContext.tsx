@@ -1,4 +1,5 @@
 import {createContext, useContext, useMemo, useCallback} from 'react'
+import {Node} from 'slate'
 import * as apiClient from './mintterClient'
 import {
   Publication,
@@ -11,8 +12,14 @@ import {
   QueryResult,
   PaginatedQueryResult,
   QueryOptions,
+  useMutation,
+  MutationResult,
+  MutationOptions,
 } from 'react-query'
-import {GetProfileResponse} from '@mintter/proto/mintter_pb'
+import {
+  GetProfileResponse,
+  GetProfileAddrsResponse,
+} from '@mintter/proto/mintter_pb'
 
 type QueryParam<T> = T | T[]
 
@@ -24,16 +31,21 @@ export interface MintterClient {
   getPublication: (id: QueryParam<string>) => QueryResult<Publication>
   getSections: (sections: any[]) => any
   allDrafts: (page?: number) => PaginatedQueryResult<ListDraftsResponse>
+  createDraft: () => Draft
   getDraft: (
     id: QueryParam<string>,
     options?: QueryOptions<Draft>,
   ) => QueryResult<Draft>
   setDraft: (draft: apiClient.SetDraftRequest) => Draft
-  createDraft: () => Draft
+  publishDraft: (
+    documentId: string,
+    options?: MutationOptions<Publication, string>,
+  ) => MutationResult<Publication>
   connectToPeerById: (peerIds: string[]) => any
-  getAuthor: (authorId: string) => Promise<string>
   getProfile: () => QueryResult<GetProfileResponse>
   setProfile: () => any
+  getAuthor: (authorId: string) => Promise<string>
+  getProfileAddrs: () => Promise<GetProfileAddrsResponse>
 }
 
 const MintterClientContext = createContext<MintterClient>(null)
@@ -71,6 +83,11 @@ export function MintterProvider(props) {
     return usePaginatedQuery(['AllDrafts', page], apiClient.allDrafts)
   }
 
+  const createDraft = useCallback(
+    () => apiClient.createDraft().catch(err => console.error(err)),
+    [],
+  )
+
   const getDraft = useCallback(
     (id: QueryParam<string>, options?: QueryOptions<Draft>) => {
       // type guard on id
@@ -87,10 +104,12 @@ export function MintterProvider(props) {
     [],
   )
 
-  const createDraft = useCallback(
-    () => apiClient.createDraft().catch(err => console.error(err)),
+  const setDraft = useCallback(
+    (draft: apiClient.SetDraftRequest) => apiClient.setDraft(draft),
     [],
   )
+
+  const [publishDraft] = useMutation((id: string) => apiClient.publishDraft(id))
 
   const connectToPeerById = useCallback(
     peerId => apiClient.connectToPeerById(peerId),
@@ -103,8 +122,10 @@ export function MintterProvider(props) {
       getPublication,
       getSections,
       allDrafts,
-      getDraft,
       createDraft,
+      getDraft,
+      setDraft,
+      publishDraft,
       connectToPeerById,
     }),
     [
@@ -112,8 +133,10 @@ export function MintterProvider(props) {
       getPublication,
       getSections,
       allDrafts,
-      getDraft,
       createDraft,
+      getDraft,
+      setDraft,
+      publishDraft,
       connectToPeerById,
     ],
   )

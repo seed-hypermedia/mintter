@@ -1,7 +1,10 @@
 import React, {useReducer, useCallback} from 'react'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
-
+import {css} from 'emotion'
+import {useRouter} from 'next/router'
+import {EditablePlugins, SoftBreakPlugin} from 'slate-plugins-next'
+import {useMutation, queryCache} from 'react-query'
 import {
   Icons,
   nodeTypes,
@@ -13,22 +16,14 @@ import {
   initialSectionsValue,
   // SectionToolbar,
   renderLeafs,
+  renderEditableSectionElement,
 } from '@mintter/editor'
-import {EditablePlugins, SoftBreakPlugin} from 'slate-plugins-next'
 import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
-import {css} from 'emotion'
-
-// import {wrapLink, unwrapLink} from '@mintter/slate-plugin-with-links'
 import Textarea from 'components/textarea'
-// import Layout from '../components/layout'
-import {publish} from 'shared/publishDocument'
-import {useRouter} from 'next/router'
-import {Section} from '@mintter/proto/documents_pb'
-import {renderEditableSectionElement} from '@mintter/editor'
+import {Section, Publication} from '@mintter/proto/documents_pb'
 import {markdownToSlate} from 'shared/markdownToSlate'
-import {useMutation, queryCache} from 'react-query'
 import {useDebounce} from 'shared/hooks'
 import {useMintter} from 'shared/mintterContext'
 
@@ -133,11 +128,11 @@ export default function EditorPage(): JSX.Element {
   } = useEditorValue()
 
   const {
-    query: {id},
+    query: {documentId},
     push,
   } = useRouter()
 
-  const {getDraft, setDraft} = useMintter()
+  const {getDraft, setDraft, publishDraft} = useMintter()
 
   const {title, sections, description} = state
 
@@ -147,7 +142,7 @@ export default function EditorPage(): JSX.Element {
       : false
   }
 
-  const {status, error, data} = getDraft(id, {
+  const {status, error, data} = getDraft(documentId, {
     onSuccess: () => {
       setReadyToAutosave(true)
     },
@@ -156,11 +151,11 @@ export default function EditorPage(): JSX.Element {
   const [autosaveDraft] = useMutation(
     async ({state}: {state: EditorState}) => {
       const {title, description, sections} = state
-      setDraft({documentId: id, title, description, sections})
+      setDraft({documentId, title, description, sections})
     },
     {
       onSuccess: () => {
-        queryCache.setQueryData(['Draft', id], data)
+        queryCache.setQueryData(['Draft', documentId], data)
       },
     },
   )
@@ -215,9 +210,12 @@ export default function EditorPage(): JSX.Element {
   // }, [])
 
   async function handlePublish() {
-    const res = await publish(state, id)
-    const doc = res.toObject()
-    push(`/p/${doc.id}`)
+    publishDraft(documentId as string, {
+      onSuccess: (publication: Publication) => {
+        const doc = publication.toObject()
+        push(`/p/${doc.id}`)
+      },
+    })
   }
 
   return (

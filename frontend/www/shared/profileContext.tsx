@@ -12,20 +12,20 @@ import {
   GetProfileRequest,
   InitProfileRequest,
   Profile,
+  GetProfileAddrsResponse,
 } from '@mintter/proto/mintter_pb'
 import * as apiClient from './mintterClient'
-import {Redirect} from 'components/redirect'
-import {useAsync} from './useAsync'
 import {bootstrapAppData} from './appBootstrap'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
-import {useQuery, useMutation, queryCache} from 'react-query'
+import {useQuery, useMutation, queryCache, QueryResult} from 'react-query'
 
 interface ProfileContextValue {
   readonly profile: Profile | null
-  setProfile?: (data: Partial<Profile.AsObject>) => void
-  createProfile?: (form: InitProfileRequest.AsObject) => void
-  getAuthor?: (author: string) => string
+  setProfile: (data: Partial<Profile.AsObject>) => void
+  createProfile: (form: InitProfileRequest.AsObject) => void
+  getAuthor: (author: string) => string
+  getProfileAddrs: () => QueryResult<GetProfileAddrsResponse>
 }
 
 // TODO: (horacio): Fixme types ☝
@@ -48,7 +48,7 @@ export function ProfileProvider(props) {
   )
 
   function handleOnSuccess(params) {
-    console.log('params!')
+    console.log('handleOnSuccess -> params', params)
     queryCache.setQueryData('Profile', params)
   }
 
@@ -67,14 +67,19 @@ export function ProfileProvider(props) {
 
   const getAuthor = useCallback(authorId => apiClient.getAuthor(authorId), [])
 
+  function getProfileAddrs() {
+    return useQuery(['ProfileAddrs'], apiClient.getProfileAddrs)
+  }
+
   const value = useMemo(
     () => ({
       profile,
-      setProfile,
       createProfile,
+      setProfile,
       getAuthor,
+      getProfileAddrs,
     }),
-    [profile, setProfile, createProfile, getAuthor],
+    [profile, createProfile, setProfile, getAuthor, getProfileAddrs],
   )
 
   if (status === 'loading') {
