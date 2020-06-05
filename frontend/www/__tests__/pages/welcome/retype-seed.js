@@ -1,9 +1,9 @@
 import {render, waitFor, cleanup, fireEvent} from '@testing-library/react'
 import user from '@testing-library/user-event'
-import RetypeSeed from '../../../pages/welcome/retype-seed'
-import {getRandomElements as mockGetRandomElements} from '../../../shared/utils'
-import WelcomeProvider from '../../../shared/welcomeProvider'
-import ProfileProvider from '../../../shared/profileContext'
+import RetypeSeed from 'pages/welcome/retype-seed'
+import {getRandomElements as mockGetRandomElements} from 'shared/utils'
+import WelcomeProvider from 'shared/welcomeProvider'
+import ProfileProvider from 'shared/profileContext'
 import {Profile} from '@mintter/proto/mintter_pb'
 import * as nextRouter from 'next/router'
 
@@ -14,7 +14,7 @@ nextRouter.useRouter.mockImplementation(() => ({
   replace: jest.fn(),
 }))
 
-jest.mock('../../../shared/utils')
+jest.mock('shared/utils')
 
 const mnemonicList = 'abcdefghijklmnopqrtvwxyz'.split('')
 

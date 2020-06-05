@@ -4,7 +4,7 @@ import Editor from 'pages/editor/[documentId]'
 import * as nextRouter from 'next/router'
 import {RouterContext} from 'next-server/dist/lib/router-context'
 import * as mockDrafts from 'shared/drafts'
-// jest.mock('../../../shared/drafts', () => {
+// jest.mock('shared/drafts', () => {
 //   return {
 //     ...mockDrafts,
 //     // useFetchDraft: () => ({

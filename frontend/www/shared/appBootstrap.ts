@@ -1,8 +1,15 @@
 import {queryCache} from 'react-query'
 import {usersClient} from './mintterClient'
-import {InitProfileRequest} from '@mintter/proto/mintter_pb'
+import {InitProfileRequest, GetProfileRequest} from '@mintter/proto/mintter_pb'
 
-async function profileFetcher() {}
+async function profileFetcher() {
+  try {
+    const req = new GetProfileRequest()
+    return await usersClient.getProfile(req)
+  } catch (err) {
+    throw new Error(err)
+  }
+}
 
 export async function bootstrapAppData() {
   let appData = {profile: null}
