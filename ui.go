@@ -14,7 +14,7 @@ func UIHandler() http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if path.Ext(r.URL.Path) == "" && r.URL.Path != "/" {
-			r.URL.Path = "/index.html"
+			r.URL.Path = "/"
 		}
 
 		fs.ServeHTTP(w, r)
