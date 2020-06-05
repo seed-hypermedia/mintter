@@ -1,21 +1,19 @@
 import React, {useEffect, useState} from 'react'
+import {useForm} from 'react-hook-form'
+import {motion, AnimatePresence} from 'framer-motion'
 import Seo from 'components/seo'
 import Content from 'components/content'
 import Input from 'components/input'
 import Textarea from 'components/textarea'
-import {motion, AnimatePresence} from 'framer-motion'
-import {useForm} from 'react-hook-form'
-import {ErrorMessage, ErrorInterface} from 'components/errorMessage'
-import {GetProfileAddrsRequest} from '@mintter/proto/mintter_pb'
-import {usersClient} from 'shared/mintterClient'
+import {ProfileAddress} from 'components/profile-address'
 import {MainLayout} from 'components/main-layout'
+import {ErrorMessage, ErrorInterface} from 'components/errorMessage'
 import {useProfile} from 'shared/profileContext'
 
 export default function Settings() {
   const {profile, setProfile} = useProfile()
   const [success, setSuccess] = React.useState<boolean>(false)
   const [submitError, setSubmitError] = React.useState<ErrorInterface>()
-  const [addresses, setAddresses] = useState<string[]>()
   const {register, handleSubmit, errors, formState, setValue} = useForm({
     mode: 'onChange',
     defaultValues: {
@@ -28,19 +26,8 @@ export default function Settings() {
 
   useEffect(() => {
     const values = profile.toObject()
-    console.log('values', values)
     const data = Object.keys(values).map(v => ({[v]: values[v]}))
     setValue(data)
-  }, [])
-
-  useEffect(() => {
-    async function initAddresses() {
-      const req = new GetProfileAddrsRequest()
-      const res = await usersClient.getProfileAddrs(req)
-      setAddresses(res.toObject().addrsList)
-    }
-
-    initAddresses()
   }, [])
 
   async function onSubmit(data) {
@@ -175,7 +162,6 @@ export default function Settings() {
                 )}
               </AnimatePresence>
             </div>
-
             <div className="flex-1 relative mt-10">
               <label
                 className="block text-body-muted text-xs font-semibold mb-1"
@@ -184,30 +170,14 @@ export default function Settings() {
                 Account Id
               </label>
               <Input
+                ref={register}
                 id="accountId"
                 name="accountId"
                 disabled
-                ref={register}
                 type="text"
               />
             </div>
-
-            <div className="mt-10">
-              <label
-                className="block text-body-muted text-xs font-semibold mb-1"
-                htmlFor="addresses"
-              >
-                your Mintter addresses
-              </label>
-
-              <Textarea
-                readOnly
-                minHeight={200}
-                id="addresses"
-                className="block text-body-muted w-full border bg-background-muted border-muted rounded px-3 py-2"
-                value={addresses && addresses.join('\n\n')}
-              />
-            </div>
+            <ProfileAddress className="mt-10" />
           </div>
           <ErrorMessage error={submitError} />
         </form>

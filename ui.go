@@ -16,7 +16,7 @@ func UIHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/p/") || strings.HasPrefix(r.URL.Path, "/editor/") {
 			parts := strings.Split(r.URL.Path, "/")
-			parts[2] = "[id]"
+			parts[2] = "[documentId]"
 			r.URL.Path = strings.Join(parts, "/")
 		}
 

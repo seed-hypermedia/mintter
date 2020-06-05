@@ -1,4 +1,5 @@
 import getConfig from 'next/config'
+import {Node} from 'slate'
 import {MintterPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
 import {DocumentsPromiseClient} from '@mintter/proto/documents_grpc_web_pb'
 import {
@@ -12,6 +13,7 @@ import {
   ListDraftsRequest,
   Draft,
   GetDraftRequest,
+  PublishDraftRequest,
 } from '@mintter/proto/documents_pb'
 import {
   ConnectToPeerRequest,
@@ -21,6 +23,7 @@ import {
   UpdateProfileRequest,
   InitProfileRequest,
   InitProfileResponse,
+  GetProfileAddrsRequest,
 } from '@mintter/proto/mintter_pb'
 import {
   useQuery,
@@ -31,6 +34,7 @@ import {
   QueryOptions,
 } from 'react-query'
 import {fromSlateToMarkdown} from './parseToMarkdown'
+import {parseToMarkdown} from './parseToMarkdown'
 
 const {publicRuntimeConfig} = getConfig()
 const hostname = publicRuntimeConfig.MINTTER_HOSTNAME
@@ -132,7 +136,13 @@ export async function setDraft({
 
     request.setSectionsList(s)
   }
-  await documentsClient.saveDraft(request)
+  return await documentsClient.saveDraft(request)
+}
+
+export async function publishDraft(draftId: string) {
+  const req = new PublishDraftRequest()
+  req.setDocumentId(draftId)
+  return await documentsClient.publishDraft(req)
 }
 
 export async function connectToPeerById(peerIds: string[]) {
@@ -196,6 +206,23 @@ export function getAuthor(authorId: string) {
   }
 
   return author
+}
+
+export async function getProfileAddrs() {
+  const req = new GetProfileAddrsRequest()
+  return await usersClient.getProfileAddrs(req)
+}
+
+export function parseSlatetree(slateTree: Node[]) {
+  // TODO: (horacio) Fixme types
+  return slateTree.map((section: any) => {
+    const {children, ...rest} = section
+
+    return {
+      ...rest,
+      body: children.map(parseToMarkdown).join(''),
+    }
+  })
 }
 
 export {MintterPromiseClient}
