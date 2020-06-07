@@ -1,7 +1,8 @@
 import React from 'react'
 import {AppProps} from 'next/app'
 import dynamic from 'next/dynamic'
-import {App} from 'screens/app'
+import {App} from 'shared/app'
+import {AppProviders} from 'components/app-providers'
 
 import '../styles/index.css'
 
@@ -19,7 +20,9 @@ export default function Root({
 AppProps & {Component: any}) {
   return (
     <Dynamic>
-      <App {...pageProps} />
+      <AppProviders>
+        <App {...pageProps} />
+      </AppProviders>
     </Dynamic>
   )
 }

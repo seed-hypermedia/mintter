@@ -1,18 +1,15 @@
 import {useRouter} from 'next/router'
-import Link from 'components/link'
+import {Link} from 'components/link'
 import {css} from 'emotion'
 
 export function MainNav() {
   const router = useRouter()
   return (
     <div className="mx-4 flex items-center">
-      <NavItem href="/library" active={router.pathname.startsWith('/library/')}>
+      <NavItem to="/library" active={router.pathname.startsWith('/library/')}>
         Library
       </NavItem>
-      <NavItem
-        href="/settings"
-        active={router.pathname.startsWith('/settings')}
-      >
+      <NavItem to="/settings" active={router.pathname.startsWith('/settings')}>
         Settings
       </NavItem>
     </div>
@@ -21,14 +18,14 @@ export function MainNav() {
 
 export function NavItem({
   children,
-  href,
+  to,
   active = false,
   className = '',
   ...props
 }) {
   return (
     <Link
-      href={href}
+      to={to}
       className={`mx-2 text-md font-semibold hover:bg-background-muted hover:text-primary transition duration-200 relative ${className} ${
         active ? 'text-primary' : 'text-heading'
       } ${css`
