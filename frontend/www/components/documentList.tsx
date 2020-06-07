@@ -1,9 +1,6 @@
 import React, {useMemo, useEffect, useState} from 'react'
-import AppsOutlinedIcon from '@material-ui/icons/AppsOutlined'
-import FormatListBulletedOutlinedIcon from '@material-ui/icons/FormatListBulletedOutlined'
+import {useLocation} from 'react-router-dom'
 import Link from './link'
-import {useRouter} from 'next/router'
-import {NavItem} from 'components/nav'
 import {useProfile} from 'shared/profileContext'
 import useLocalStorage from 'shared/localstorage'
 import {ErrorMessage} from './errorMessage'
@@ -13,9 +10,6 @@ export default function DocumentList({data, status, error}) {
     key: 'MINTTER_GRID_VIEW',
     initialValue: 'list',
   })
-
-  const isGrid = useMemo(() => view === 'grid', [view])
-  const router = useRouter()
 
   let content
 
@@ -28,69 +22,14 @@ export default function DocumentList({data, status, error}) {
   } else if (status === 'error') {
     content = <ErrorMessage error={error} />
   } else {
-    content = data.map(item => (
-      <ListItem key={item.documentId} isGrid={isGrid} item={item} />
-    ))
+    content = data.map(item => <ListItem key={item.documentId} item={item} />)
   }
 
-  return (
-    <>
-      <div className="flex items-center -mx-2">
-        <NavItem
-          href="/library/publications"
-          active={router.pathname === '/library/publications'}
-        >
-          Publications
-        </NavItem>
-        <NavItem
-          href="/library/my-publications"
-          active={router.pathname === '/library/my-publications'}
-        >
-          My Publications
-        </NavItem>
-        <NavItem
-          href="/library/drafts"
-          active={router.pathname === '/library/drafts'}
-        >
-          Drafts
-        </NavItem>
-        <div className="flex-1" />
-        <div className="ml-4 mr-6">
-          <button
-            className={`m-2 p-1 rounded transition duration-100 ${
-              isGrid ? 'bg-info' : 'bg-transparent hover:bg-background-muted'
-            }`}
-            onClick={() => setView('grid')}
-          >
-            <AppsOutlinedIcon
-              className={isGrid ? 'text-white' : 'text-body-muted'}
-            />
-          </button>
-          <button
-            className={`m-2 p-1 rounded transition duration-100 ${
-              isGrid ? 'bg-transparent hover:bg-background-muted' : 'bg-info'
-            }`}
-            onClick={() => setView('list')}
-          >
-            <FormatListBulletedOutlinedIcon
-              className={isGrid ? 'text-body-muted' : 'text-white'}
-            />
-          </button>
-        </div>
-      </div>
-      <div
-        className={
-          isGrid ? 'grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : ''
-        }
-      >
-        {content}
-      </div>
-    </>
-  )
+  return <div>{content}</div>
 }
 
-function ListItem({item, isGrid = false}) {
-  const router = useRouter()
+function ListItem({item}) {
+  const location = useLocation()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
   const {title, description, author: itemAuthor} = item
   const theTitle = title ? title : 'Untitled Document'
@@ -102,13 +41,13 @@ function ListItem({item, isGrid = false}) {
 
   const author = getAuthor(itemAuthor)
 
-  const isDraft = useMemo(() => router.pathname === '/library/drafts', [
-    router.pathname,
+  const isDraft = useMemo(() => location.pathname === '/library/drafts', [
+    location.pathname,
   ])
 
   const href = useMemo(
     () => (isDraft ? `/editor/${item.documentId}` : `/p/${item.id}`),
-    [router.pathname],
+    [location.pathname],
   )
   function handlePrefetch() {
     if (!prefetched) {
@@ -119,37 +58,22 @@ function ListItem({item, isGrid = false}) {
   }
 
   return (
-    <Link
-      href={href}
-      className={`block w-full -m-2 ${isGrid ? 'mt-4' : 'first:mt-4'}`}
-    >
+    <Link href={href} className={`block w-full -m-2 first:mt-4`}>
       <div
-        className={`bg-background-muted transition duration-200 hover:shadow-lg ${
-          isGrid ? 'p-6 rounded-lg' : 'flex items-center justify-between'
-        }`}
+        className={`bg-background-muted transition duration-200 hover:shadow-lg flex items-center justify-between`}
         onMouseEnter={handlePrefetch}
       >
-        <h3
-          className={`text-heading font-bold truncate ${
-            isGrid ? 'text-2xl' : 'flex-1 p-4'
-          }`}
-        >
+        <h3 className={`text-heading font-bold truncate flex-1 p-4 `}>
           {theTitle}
         </h3>
         <p
-          className={`text-body truncate ${
-            isGrid ? 'mt-4' : 'p-4 flex-1 border-0 border-l border-muted'
-          }`}
+          className={`text-body truncate p-4 flex-1 border-0 border-l border-muted`}
         >
           {theDescription}
         </p>
-        {!isDraft && router.pathname !== '/library/my-publications' && (
+        {!isDraft && location.pathname !== '/library/my-publications' && (
           <p
-            className={`text-sm text-heading inline-block ${
-              isGrid
-                ? 'mt-4 truncate overflow-hidden'
-                : 'p-4 border-0 border-l border-muted'
-            }`}
+            className={`text-sm text-heading inline-block p-4 border-0 border-l border-muted`}
           >
             <span>by </span>
             <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed truncate">

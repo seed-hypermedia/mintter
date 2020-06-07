@@ -11,12 +11,10 @@ import Topbar from 'components/topbar'
 import Layout from 'components/layout'
 import Container from 'components/container'
 import {Library} from 'screens/library'
+import {Settings} from 'screens/settings'
 
 export default function AuthenticatedApp(props) {
-  console.log('AuthenticatedApp -> props', props)
-  // const location = useLocation()
   const match = useRouteMatch('/')
-  console.log('AuthenticatedApp -> match', match)
 
   return (
     <ErrorBoundary FallbackComponent={FullPageErrorMessage}>
@@ -29,9 +27,7 @@ export default function AuthenticatedApp(props) {
                 <Library />
               </Route>
               <Route path={`${match.path}settings`}>
-                <div>
-                  <p>Settings</p>
-                </div>
+                <Settings />
               </Route>
             </Switch>
           </Container>

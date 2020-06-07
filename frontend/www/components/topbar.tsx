@@ -35,9 +35,7 @@ export default function LibraryHeader(props) {
       <div className="flex items-center px-8 py-4">
         <span className={`text-primary`}>
           <Link to="/library">
-            <a>
-              <Logo width="50px" className="fill-current" />
-            </a>
+            <Logo width="50px" className="fill-current" />
           </Link>
         </span>
         <MainNav />
