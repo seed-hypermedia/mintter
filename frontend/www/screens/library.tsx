@@ -5,6 +5,7 @@ import {PrivateRoute} from 'components/private-route'
 import {NavItem} from 'components/nav'
 import {Publications} from 'screens/publications'
 import {MyPublications} from 'screens/my-publications'
+import {Drafts} from './drafts'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export function Library(props) {
@@ -29,9 +30,7 @@ export function Library(props) {
           <MyPublications />
         </PrivateRoute>
         <PrivateRoute path={`${match.url}/drafts`}>
-          <div>
-            <p>Drafts</p>
-          </div>
+          <Drafts />
         </PrivateRoute>
       </Switch>
     </Content>
