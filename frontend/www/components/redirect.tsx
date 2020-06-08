@@ -1,4 +1,4 @@
-import {useRouter} from 'next/router'
+import {useHistory} from 'react-router-dom'
 import {useEffect} from 'react'
 
 export interface RedirectProps {
@@ -6,10 +6,10 @@ export interface RedirectProps {
 }
 
 export function Redirect({to}: RedirectProps) {
-  const router = useRouter()
+  const history = useHistory()
 
   useEffect(() => {
-    router.push(to)
+    history.push(to)
   }, [])
   return null
 }
