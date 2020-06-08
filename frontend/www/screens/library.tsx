@@ -1,14 +1,14 @@
 import {Switch, Route, useRouteMatch, Redirect} from 'react-router-dom'
 import {LibraryHeader} from 'components/library-header'
 import Content from 'components/content'
-import {PrivateRoute} from 'components/private-route'
+import {PrivateRoute} from 'components/routes'
 import {NavItem} from 'components/nav'
 import {Publications} from 'screens/publications'
 import {MyPublications} from 'screens/my-publications'
 import {Drafts} from './drafts'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
-export function Library(props) {
+export default function Library(props) {
   const match = useRouteMatch('/library')
   return (
     <Content>

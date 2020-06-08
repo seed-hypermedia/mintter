@@ -9,7 +9,7 @@ import {ProfileAddress} from 'components/profile-address'
 import {ErrorMessage, ErrorInterface} from 'components/errorMessage'
 import {useProfile} from 'shared/profileContext'
 
-export function Settings() {
+export default function Settings() {
   const {profile, setProfile} = useProfile()
   const [success, setSuccess] = React.useState<boolean>(false)
   const [submitError, setSubmitError] = React.useState<ErrorInterface>()

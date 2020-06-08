@@ -1,7 +1,7 @@
 import React from 'react'
 import {Switch, Route, Redirect} from 'react-router-dom'
 import {FullPageSpinner} from 'components/fullPageSpinner'
-import {PrivateRoute} from 'components/private-route'
+import {PrivateRoute} from 'components/routes'
 import {Home} from 'screens/home'
 import {NoRoute} from 'screens/no-route'
 
@@ -18,7 +18,7 @@ export function App() {
         <Route exact path="/">
           <Redirect to="/library" />
         </Route>
-        <Route exact path="/welcome">
+        <Route path="/welcome">
           <UnAuthenticatedApp />
         </Route>
         <PrivateRoute path="/">
