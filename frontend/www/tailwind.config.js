@@ -54,6 +54,7 @@ module.exports = {
     'disabled',
   ],
   plugins: [],
+
   purge: {
     content: [
       './pages/**/*.{ts,tsx}',
