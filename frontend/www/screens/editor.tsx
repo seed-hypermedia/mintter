@@ -230,12 +230,12 @@ export default function Editor(): JSX.Element {
 
   return (
     <Layout>
-      <div className="flex-1 overflow-y-auto">
-        <Seo title="Editor" />
-        <div
-          className="flex-1 overflow-y-auto pt-4 overflow-y-scroll"
-          ref={wrapperRef}
-        >
+      <Seo title="Editor" />
+      <div
+        className="flex-1 overflow-y-auto pt-4 overflow-y-scroll"
+        ref={wrapperRef}
+      >
+        <div className="flex-1 overflow-y-auto">
           <EditorHeader onPublish={handlePublish} />
           <div className="flex pt-8 pb-32 relative">
             <DebugValue
