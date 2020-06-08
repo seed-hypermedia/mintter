@@ -24,6 +24,7 @@ import {markdownToSlate} from 'shared/markdownToSlate'
 import {renderReadOnlySectionElement} from '@mintter/editor'
 import {useMintter} from 'shared/mintterContext'
 import {useProfile} from 'shared/profileContext'
+import Layout from 'components/layout'
 
 interface EditorState {
   title: string
@@ -79,109 +80,111 @@ export default function Publication(): JSX.Element {
   }, [data])
 
   return (
-    <>
-      <Seo title="Publication" />
-      <div className="flex-1 overflow-y-auto pt-4 overflow-y-scroll">
-        {status === 'loading' ? (
-          <p>Loading...</p>
-        ) : status === 'error' ? (
-          <p>ERROR! == {error}</p>
-        ) : (
-          <>
-            <EditorHeader />
-            <div className="flex pt-8 pb-32 relative">
-              <DebugValue
-                value={state}
-                className="absolute z-10 right-0 top-0 w-full max-w-xs"
-              />
-              <div
-                className={`w-full pr-4 absolute xl:sticky left-0 top-0 self-start mx-4 opacity-0 pointer-events-none xl:opacity-100 xl:pointer-events-auto transition duration-200 ${css`
-                  max-width: 300px;
-                `}`}
-              ></div>
-              <div
-                className={`flex-1 ${css`
-                  @media (min-width: 1280px) {
-                    transform: translateX(-150px);
-                  }
-                `}`}
-              >
+    <Layout>
+      <div className="flex-1 overflow-y-auto">
+        <Seo title="Publication" />
+        <div className="flex-1 overflow-y-auto pt-4 overflow-y-scroll">
+          {status === 'loading' ? (
+            <p>Loading...</p>
+          ) : status === 'error' ? (
+            <p>ERROR! == {error}</p>
+          ) : (
+            <>
+              <EditorHeader />
+              <div className="flex pt-8 pb-32 relative">
+                <DebugValue
+                  value={state}
+                  className="absolute z-10 right-0 top-0 w-full max-w-xs"
+                />
                 <div
-                  className={`mx-auto ${css`
-                    max-width: 80ch;
-                  `} `}
+                  className={`w-full pr-4 absolute xl:sticky left-0 top-0 self-start mx-4 opacity-0 pointer-events-none xl:opacity-100 xl:pointer-events-auto transition duration-200 ${css`
+                    max-width: 300px;
+                  `}`}
+                ></div>
+                <div
+                  className={`flex-1 ${css`
+                    @media (min-width: 1280px) {
+                      transform: translateX(-150px);
+                    }
+                  `}`}
                 >
-                  <Slate
-                    editor={editor}
-                    value={sections}
-                    onChange={sections => sections}
+                  <div
+                    className={`mx-auto ${css`
+                      max-width: 80ch;
+                    `} `}
                   >
-                    <div
-                      className={`${css`
-                        word-break: break-word;
-                      `}`}
+                    <Slate
+                      editor={editor}
+                      value={sections}
+                      onChange={sections => sections}
                     >
                       <div
-                        className={`mx-8 pb-6 relative mb-px ${css`
-                          &:after {
-                            content: '';
-                            position: absolute;
-                            bottom: 1px;
-                            left: 0;
-                            width: 50%;
-                            max-width: 360px;
-                            height: 1px;
-                            z-index: 20;
-                            background-color: var(--color-muted-hover);
-                          }
+                        className={`${css`
+                          word-break: break-word;
                         `}`}
                       >
-                        <h1
-                          className={`text-4xl text-heading font-bold ${css`
-                            word-wrap: break-word;
-                            white-space: pre-wrap;
-                            min-height: 56px;
+                        <div
+                          className={`mx-8 pb-6 relative mb-px ${css`
+                            &:after {
+                              content: '';
+                              position: absolute;
+                              bottom: 1px;
+                              left: 0;
+                              width: 50%;
+                              max-width: 360px;
+                              height: 1px;
+                              z-index: 20;
+                              background-color: var(--color-muted-hover);
+                            }
                           `}`}
                         >
-                          {title}
-                        </h1>
-                        <p
-                          className={`leading-relaxed text-lg font-light text-heading-muted italic mt-4 ${css`
-                            word-wrap: break-word;
-                            white-space: pre-wrap;
-                            min-height: 28px;
-                          `}`}
-                        >
-                          {description}
-                        </p>
-                        <p className=" text-sm mt-4 text-heading">
-                          <span>by </span>
-                          <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
-                            {author}
-                          </span>
-                        </p>
+                          <h1
+                            className={`text-4xl text-heading font-bold ${css`
+                              word-wrap: break-word;
+                              white-space: pre-wrap;
+                              min-height: 56px;
+                            `}`}
+                          >
+                            {title}
+                          </h1>
+                          <p
+                            className={`leading-relaxed text-lg font-light text-heading-muted italic mt-4 ${css`
+                              word-wrap: break-word;
+                              white-space: pre-wrap;
+                              min-height: 28px;
+                            `}`}
+                          >
+                            {description}
+                          </p>
+                          <p className=" text-sm mt-4 text-heading">
+                            <span>by </span>
+                            <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
+                              {author}
+                            </span>
+                          </p>
+                        </div>
+                        <div className="relative">
+                          <EditablePlugins
+                            readOnly
+                            plugins={plugins}
+                            renderElement={[
+                              ...renderElements,
+                              renderReadOnlySectionElement(),
+                            ]}
+                            renderLeaf={[...renderLeafs]}
+                            placeholder="Start writing your masterpiece..."
+                            spellCheck
+                          />
+                        </div>
                       </div>
-                      <div className="relative">
-                        <EditablePlugins
-                          readOnly
-                          plugins={plugins}
-                          renderElement={[
-                            ...renderElements,
-                            renderReadOnlySectionElement(),
-                          ]}
-                          renderLeaf={[...renderLeafs]}
-                          placeholder="Start writing your masterpiece..."
-                          spellCheck
-                        />
-                      </div>
-                    </div>
-                  </Slate>
+                    </Slate>
+                  </div>
                 </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
-    </>
+    </Layout>
   )
 }

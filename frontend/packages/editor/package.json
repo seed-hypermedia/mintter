@@ -34,6 +34,7 @@
   "devDependencies": {
     "@types/jest": "^25.1.2",
     "autoprefixer": "^9.8.0",
+    "cssnano": "^4.1.10",
     "eslint-config-react-app": "^5.2.0",
     "rollup-plugin-postcss": "^3.1.2",
     "tsdx": "^0.12.3",

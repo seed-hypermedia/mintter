@@ -29,6 +29,8 @@ import {useMintter} from 'shared/mintterContext'
 import {useParams, useHistory} from 'react-router-dom'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
+import Layout from 'components/layout'
+import {Container} from '@material-ui/core'
 
 interface EditorState {
   title: string
@@ -227,131 +229,133 @@ export default function Editor(): JSX.Element {
   }
 
   return (
-    <>
-      <Seo title="Editor" />
-      <div
-        className="flex-1 overflow-y-auto pt-4 overflow-y-scroll"
-        ref={wrapperRef}
-      >
-        <EditorHeader onPublish={handlePublish} />
-        <div className="flex pt-8 pb-32 relative">
-          <DebugValue
-            value={state}
-            className="absolute z-10 right-0 top-0 w-full max-w-xs"
-          />
-          <div
-            className={`w-full pr-4 absolute xl:sticky left-0 top-0 self-start mx-4 opacity-0 pointer-events-none xl:opacity-100 xl:pointer-events-auto transition duration-200 ${css`
-              max-width: 300px;
-            `}`}
-          >
-            {/* <div className="">
+    <Layout>
+      <div className="flex-1 overflow-y-auto">
+        <Seo title="Editor" />
+        <div
+          className="flex-1 overflow-y-auto pt-4 overflow-y-scroll"
+          ref={wrapperRef}
+        >
+          <EditorHeader onPublish={handlePublish} />
+          <div className="flex pt-8 pb-32 relative">
+            <DebugValue
+              value={state}
+              className="absolute z-10 right-0 top-0 w-full max-w-xs"
+            />
+            <div
+              className={`w-full pr-4 absolute xl:sticky left-0 top-0 self-start mx-4 opacity-0 pointer-events-none xl:opacity-100 xl:pointer-events-auto transition duration-200 ${css`
+                max-width: 300px;
+              `}`}
+            >
+              {/* <div className="">
                   <p className="font-semibold text-heading text-xl">
                     {title || 'Untitled document'}
                   </p>
                 </div> */}
-          </div>
-          <div
-            className={`flex-1 ${css`
-              @media (min-width: 1280px) {
-                transform: translateX(-150px);
-              }
-            `}`}
-          >
+            </div>
             <div
-              className={`mx-auto ${css`
-                max-width: 80ch;
-              `} `}
+              className={`flex-1 ${css`
+                @media (min-width: 1280px) {
+                  transform: translateX(-150px);
+                }
+              `}`}
             >
-              <Slate
-                editor={editor}
-                value={sections}
-                onChange={sections => {
-                  setSections(sections)
-                }}
+              <div
+                className={`mx-auto ${css`
+                  max-width: 80ch;
+                `} `}
               >
-                <div
-                  className={`${css`
-                    word-break: break-word;
-                  `}`}
+                <Slate
+                  editor={editor}
+                  value={sections}
+                  onChange={sections => {
+                    setSections(sections)
+                  }}
                 >
                   <div
-                    className={`mx-8 pb-2 relative ${css`
-                      &:after {
-                        content: '';
-                        position: absolute;
-                        bottom: 0;
-                        left: 0;
-                        width: 50%;
-                        max-width: 360px;
-                        height: 1px;
-                        z-index: 20;
-                        background-color: var(--color-muted-hover);
-                      }
+                    className={`${css`
+                      word-break: break-word;
                     `}`}
                   >
-                    <Textarea
-                      ref={t => {
-                        titleRef.current = t
-                      }}
-                      value={title}
-                      data-test-id="editor_title"
-                      onChange={setTitle}
-                      name="title"
-                      placeholder="Untitled document"
-                      minHeight={56}
-                      className={`text-4xl text-heading font-bold`}
-                      onEnterPress={() => {
-                        descriptionRef.current.focus()
-                      }}
-                    />
-                    <Textarea
-                      ref={d => {
-                        descriptionRef.current = d
-                      }}
-                      value={description}
-                      onChange={setDescription}
-                      name="description"
-                      placeholder="+ Add a subtitle"
-                      minHeight={28}
-                      className={`leading-relaxed text-lg font-light text-heading-muted italic`}
-                      onEnterPress={() => {
-                        ReactEditor.focus(editor)
-                      }}
-                    />
+                    <div
+                      className={`mx-8 pb-2 relative ${css`
+                        &:after {
+                          content: '';
+                          position: absolute;
+                          bottom: 0;
+                          left: 0;
+                          width: 50%;
+                          max-width: 360px;
+                          height: 1px;
+                          z-index: 20;
+                          background-color: var(--color-muted-hover);
+                        }
+                      `}`}
+                    >
+                      <Textarea
+                        ref={t => {
+                          titleRef.current = t
+                        }}
+                        value={title}
+                        data-test-id="editor_title"
+                        onChange={setTitle}
+                        name="title"
+                        placeholder="Untitled document"
+                        minHeight={56}
+                        className={`text-4xl text-heading font-bold`}
+                        onEnterPress={() => {
+                          descriptionRef.current.focus()
+                        }}
+                      />
+                      <Textarea
+                        ref={d => {
+                          descriptionRef.current = d
+                        }}
+                        value={description}
+                        onChange={setDescription}
+                        name="description"
+                        placeholder="+ Add a subtitle"
+                        minHeight={28}
+                        className={`leading-relaxed text-lg font-light text-heading-muted italic`}
+                        onEnterPress={() => {
+                          ReactEditor.focus(editor)
+                        }}
+                      />
+                    </div>
+                    <div className="relative" ref={editorContainerRef}>
+                      <Toolbar />
+                      {/* {!isEmpty() && <SectionToolbar />} */}
+                      <EditablePlugins
+                        plugins={plugins}
+                        renderElement={[
+                          ...renderElements,
+                          renderEditableSectionElement(),
+                        ]}
+                        renderLeaf={[...renderLeafs]}
+                        placeholder="Start writing your masterpiece..."
+                        spellCheck
+                        autoFocus
+                      />
+                    </div>
                   </div>
-                  <div className="relative" ref={editorContainerRef}>
-                    <Toolbar />
-                    {/* {!isEmpty() && <SectionToolbar />} */}
-                    <EditablePlugins
-                      plugins={plugins}
-                      renderElement={[
-                        ...renderElements,
-                        renderEditableSectionElement(),
-                      ]}
-                      renderLeaf={[...renderLeafs]}
-                      placeholder="Start writing your masterpiece..."
-                      spellCheck
-                      autoFocus
-                    />
-                  </div>
+                </Slate>
+                <div className="py-16 px-8 flex flex-col items-start">
+                  <button
+                    className="flex items-center bg-transparent text-body-muted transition duration-200 hover:text-body hover:border-body border border-body-muted rounded-md px-2 pl-2 py-2"
+                    onClick={() => MintterEditor.addSection(editor)}
+                  >
+                    <Icons.Plus color="currentColor" />
+                    <span className="px-2 text-sm">add section</span>
+                  </button>
+                  <a className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline">
+                    what are sections and how to use them
+                  </a>
                 </div>
-              </Slate>
-              <div className="py-16 px-8 flex flex-col items-start">
-                <button
-                  className="flex items-center bg-transparent text-body-muted transition duration-200 hover:text-body hover:border-body border border-body-muted rounded-md px-2 pl-2 py-2"
-                  onClick={() => MintterEditor.addSection(editor)}
-                >
-                  <Icons.Plus color="currentColor" />
-                  <span className="px-2 text-sm">add section</span>
-                </button>
-                <a className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline">
-                  what are sections and how to use them
-                </a>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </Layout>
   )
 }

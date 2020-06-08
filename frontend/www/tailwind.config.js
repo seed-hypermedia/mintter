@@ -59,6 +59,7 @@ module.exports = {
       './pages/**/*.{ts,tsx}',
       './components/**/*.{ts,tsx}',
       './plugins/**/*.{ts,tsx}',
+      '../editor/src/**/*.{ts,tsx}',
     ],
   },
 }
