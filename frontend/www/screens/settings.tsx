@@ -6,7 +6,6 @@ import Content from 'components/content'
 import Input from 'components/input'
 import Textarea from 'components/textarea'
 import {ProfileAddress} from 'components/profile-address'
-import {MainLayout} from 'components/main-layout'
 import {ErrorMessage, ErrorInterface} from 'components/errorMessage'
 import {useProfile} from 'shared/profileContext'
 
@@ -192,5 +191,3 @@ export default function Settings() {
     </>
   )
 }
-
-Settings.Layout = MainLayout

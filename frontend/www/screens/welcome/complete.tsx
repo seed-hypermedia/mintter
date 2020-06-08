@@ -1,0 +1,43 @@
+import {useEffect, useState} from 'react'
+
+import Heading from 'components/welcome-heading'
+import Container from 'components/welcome-container'
+import Layout from 'components/welcome-layout'
+import P from 'components/welcome-p'
+import {NextButton} from 'components/welcome-buttons'
+import Footer from 'components/footer'
+import {useRouter} from 'shared/use-router'
+import {useWelcome} from 'shared/welcomeProvider'
+import {useProfile} from 'shared/profileContext'
+
+export default function WelcomeIndex() {
+  const {history} = useRouter()
+  const {dispatch} = useWelcome()
+
+  function handleNext() {
+    dispatch({type: 'reset'})
+    history.push('/library/publications')
+  }
+
+  return (
+    <>
+      <Container className="lg:flex-1">
+        <Heading>Complete!</Heading>
+        <P>
+          you just create your Mintter account!. Please share it with others and
+          the world!!
+        </P>
+      </Container>
+      <Footer className="flex-none">
+        <Container>
+          <NextButton
+            onClick={handleNext}
+            className="text-2xl font-light px-10"
+          >
+            Open the app
+          </NextButton>
+        </Container>
+      </Footer>
+    </>
+  )
+}

@@ -1,5 +1,5 @@
-import {useRouter} from 'next/router'
-import NextLink from 'next/link'
+import {useHistory} from 'react-router-dom'
+import {Link} from 'components/link'
 import {MainNav} from 'components/nav'
 import Logo from './logo_square'
 
@@ -16,13 +16,13 @@ interface NavItemProps {
 }
 
 export default function LibraryHeader(props) {
-  const router = useRouter()
+  const history = useHistory()
   const [input, setInput] = useState<string>('')
   const {connectToPeerById} = useMintter()
 
   async function handleSearch(e) {
     e.preventDefault()
-    router.push(`/p/${input}`)
+    history.push(`/p/${input}`)
   }
 
   async function handlePeerConnection() {
@@ -34,11 +34,9 @@ export default function LibraryHeader(props) {
     <>
       <div className="flex items-center px-8 py-4">
         <span className={`text-primary`}>
-          <NextLink href="/library/publications">
-            <a>
-              <Logo width="50px" className="fill-current" />
-            </a>
-          </NextLink>
+          <Link to="/library">
+            <Logo width="50px" className="fill-current" />
+          </Link>
         </span>
         <MainNav />
         <div className="flex-1" />

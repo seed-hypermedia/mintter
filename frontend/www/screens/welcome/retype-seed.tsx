@@ -1,25 +1,24 @@
 import {useEffect, useState} from 'react'
-import Layout from '../../components/welcome-layout'
-import Container from '../../components/welcome-container'
-import Heading from '../../components/welcome-heading'
-import P from '../../components/welcome-p'
-import {NextButton, BackButton} from '../../components/welcome-buttons'
-import Footer from '../../components/footer'
-import Content from '../../components/content'
-import Input from '../../components/input'
-import {useRouter} from 'next/router'
+import Container from 'components/welcome-container'
+import Heading from 'components/welcome-heading'
+import P from 'components/welcome-p'
+import {NextButton, BackButton} from 'components/welcome-buttons'
+import Footer from 'components/footer'
+import Content from 'components/content'
+import Input from 'components/input'
+import {useHistory} from 'react-router-dom'
 import {useForm} from 'react-hook-form'
 import CheckIcon from '@material-ui/icons/Check'
-import {getRandomElements} from '../../shared/utils'
-import {useWelcome} from '../../shared/welcomeProvider'
-import {useFocus} from '../../shared/hooks'
+import {getRandomElements} from 'shared/utils'
+import {useWelcome} from 'shared/welcomeProvider'
+import {useFocus} from 'shared/hooks'
 
 export default function RetypeSeed() {
   const {register, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
   })
 
-  const router = useRouter()
+  const history = useHistory()
   const {focusFirst} = useFocus()
 
   const {
@@ -33,7 +32,7 @@ export default function RetypeSeed() {
   }, [])
 
   async function onSubmit() {
-    await router.replace('/welcome/create-password')
+    await history.replace('/welcome/create-password')
   }
 
   return (
@@ -123,5 +122,3 @@ export default function RetypeSeed() {
     </>
   )
 }
-
-RetypeSeed.Layout = Layout

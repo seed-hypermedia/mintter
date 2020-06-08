@@ -24,7 +24,8 @@
     "slate-history": "^0.57.1",
     "slate-hyperscript": "^0.58.1",
     "slate-plugins-next": "^0.58.5",
-    "slate-react": "^0.58.1"
+    "slate-react": "^0.58.1",
+    "tailwindcss": "^1.4.6"
   },
   "peerDependencies": {
     "slate": "^0.57.1",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@types/jest": "^25.1.2",
+    "autoprefixer": "^9.8.0",
     "eslint-config-react-app": "^5.2.0",
     "tsdx": "^0.12.3",
     "tslib": "^1.10.0",
