@@ -1,14 +1,5 @@
-import {
-  useContext,
-  createContext,
-  useReducer,
-  useEffect,
-  useRef,
-  useMemo,
-} from 'react'
-import {useProfile} from './profileContext'
-// import Container from '../components/welcome-container'
-import {useRouter} from 'next/router'
+import {useContext, createContext, useReducer, useMemo} from 'react'
+import {useLocation} from 'react-router-dom'
 import Steps from '../components/welcome-steps'
 
 interface WelcomeState {
@@ -53,12 +44,12 @@ export function reducer(state: WelcomeState, action: Action): WelcomeState {
 }
 
 export default function WelcomeProvider(props: WelcomeProviderProps) {
-  const router = useRouter()
+  const location = useLocation()
   const [state, dispatch] = useReducer(reducer, initialState)
 
   const activeStep = useMemo(
-    () => steps.findIndex(s => s.url === router.pathname),
-    [router.pathname],
+    () => steps.findIndex(s => s.url === location.pathname),
+    [location.pathname],
   )
 
   const v = useMemo(() => props.value || {state, dispatch}, [

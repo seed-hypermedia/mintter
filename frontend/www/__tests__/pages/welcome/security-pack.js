@@ -1,12 +1,12 @@
 import {render, fireEvent, waitFor, cleanup} from '@testing-library/react'
 // import user from '@testing-library/user-event'
-import SecurityPack from '../../../pages/welcome/security-pack'
+import SecurityPack from 'pages/welcome/security-pack'
 import {axe} from 'jest-axe'
-import rpc from '../../../shared/rpc'
+import rpc from 'shared/rpc'
 
 const mockGetMnemonicList = jest.fn()
 
-jest.mock('../../../shared/rpc', () => {
+jest.mock('shared/rpc', () => {
   genSeed: () => ({getMnemonicList: mockGetMnemonicList})
 })
 

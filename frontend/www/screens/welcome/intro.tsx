@@ -1,12 +1,11 @@
-import Heading from '../../components/welcome-heading'
+import Heading from 'components/welcome-heading'
 
-import Container from '../../components/welcome-container'
-import Layout from '../../components/welcome-layout'
-import P from '../../components/welcome-p'
-import {NextButton} from '../../components/welcome-buttons'
-import Footer from '../../components/footer'
+import Container from 'components/welcome-container'
+import P from 'components/welcome-p'
+import {NextButton} from 'components/welcome-buttons'
+import Footer from 'components/footer'
 
-export default function WelcomeIndex() {
+export default function WelcomeIntro() {
   return (
     <>
       <Container className="lg:flex-1">
@@ -26,5 +25,3 @@ export default function WelcomeIndex() {
     </>
   )
 }
-
-WelcomeIndex.Layout = Layout

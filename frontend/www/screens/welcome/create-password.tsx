@@ -1,21 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import Layout from '../../components/welcome-layout'
-import Container from '../../components/welcome-container'
-import Heading from '../../components/welcome-heading'
-import P from '../../components/welcome-p'
-import {NextButton, BackButton} from '../../components/welcome-buttons'
-import Footer from '../../components/footer'
-import Content from '../../components/content'
-import Input from '../../components/input'
-import {useRouter} from 'next/router'
+import Container from 'components/welcome-container'
+import Heading from 'components/welcome-heading'
+import P from 'components/welcome-p'
+import {NextButton, BackButton} from 'components/welcome-buttons'
+import Footer from 'components/footer'
+import Content from 'components/content'
+import Input from 'components/input'
+import {useHistory} from 'react-router-dom'
 import {useForm} from 'react-hook-form'
 
-import {useWelcome} from '../../shared/welcomeProvider'
+import {useWelcome} from 'shared/welcomeProvider'
 import {useState} from 'react'
-import {ErrorMessage} from '../../components/errorMessage'
-import {useProfile} from '../../shared/profileContext'
-import {useFocus} from '../../shared/hooks'
-import {useMutation} from 'react-query'
+import {ErrorMessage} from 'components/errorMessage'
+import {useProfile} from 'shared/profileContext'
+import {useFocus} from 'shared/hooks'
 
 export default function CreatePassword() {
   const {register, watch, handleSubmit, errors, formState} = useForm({
@@ -25,7 +22,7 @@ export default function CreatePassword() {
   const [submitError, setSubmitError] = useState(null)
   const {createProfile} = useProfile()
 
-  const router = useRouter()
+  const history = useHistory()
   const {focusFirst} = useFocus()
   const psswd = watch('walletPassword')
 
@@ -36,7 +33,7 @@ export default function CreatePassword() {
   async function onSubmit({walletPassword}) {
     try {
       createProfile({aezeedPassphrase, mnemonicList, walletPassword})
-      router.replace('/welcome/edit-profile')
+      history.replace('/welcome/edit-profile')
     } catch (err) {
       setSubmitError(err)
     }
@@ -126,5 +123,3 @@ export default function CreatePassword() {
     </form>
   )
 }
-
-CreatePassword.Layout = Layout

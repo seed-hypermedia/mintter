@@ -1,16 +1,15 @@
-import Layout from '../../components/welcome-layout'
-import Container from '../../components/welcome-container'
-import Heading from '../../components/welcome-heading'
-import P from '../../components/welcome-p'
-import {NextButton, BackButton} from '../../components/welcome-buttons'
-import Footer from '../../components/footer'
-import Content from '../../components/content'
-import Input from '../../components/input'
-import Textarea from '../../components/textarea'
+import {useHistory} from 'react-router-dom'
+import Container from 'components/welcome-container'
+import Heading from 'components/welcome-heading'
+import P from 'components/welcome-p'
+import {NextButton, BackButton} from 'components/welcome-buttons'
+import Footer from 'components/footer'
+import Content from 'components/content'
+import Input from 'components/input'
+import Textarea from 'components/textarea'
 import {useForm} from 'react-hook-form'
-import {useRouter} from 'next/router'
-import {useProfile} from '../../shared/profileContext'
-import {useFocus} from '../../shared/hooks'
+import {useProfile} from 'shared/profileContext'
+import {useFocus} from 'shared/hooks'
 import {css} from 'emotion'
 
 export default function EditProfile() {
@@ -20,13 +19,13 @@ export default function EditProfile() {
 
   const {focusFirst} = useFocus()
 
-  const router = useRouter()
+  const history = useHistory()
   const {setProfile} = useProfile()
 
   async function onSubmit(data) {
     try {
       setProfile(data)
-      router.replace('/welcome/complete')
+      history.replace('/welcome/complete')
     } catch (err) {
       console.error('Error ==> ', err)
     }
@@ -150,5 +149,3 @@ export default function EditProfile() {
     </form>
   )
 }
-
-EditProfile.Layout = Layout

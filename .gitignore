@@ -20,3 +20,6 @@ build/*
 !.vscode
 
 rice-box.go
+
+# temp files
+frontent/old_pages

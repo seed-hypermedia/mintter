@@ -83,7 +83,7 @@ const Textarea = (
   return (
     <>
       <textarea
-      readOnly={readOnly}
+        readOnly={readOnly}
         {...props}
         className={`resize-none overflow-hidden text-base leading-normal w-full outline-none bg-transparent ${css`
           word-wrap: break-word;

@@ -1,10 +1,15 @@
+import {Link as RouterLink} from 'react-router-dom'
 import NextLink, {LinkProps as NextLinkProps} from 'next/link'
 
 export interface LinkProps
   extends NextLinkProps,
     React.HTMLAttributes<HTMLAnchorElement> {}
 
-export default function Link({href, className = '', ...props}: LinkProps) {
+export default function DefaultLink({
+  href,
+  className = '',
+  ...props
+}: LinkProps) {
   const {
     as,
     replace,
@@ -23,4 +28,8 @@ export default function Link({href, className = '', ...props}: LinkProps) {
       />
     </NextLink>
   )
+}
+
+export function Link(props) {
+  return <RouterLink {...props} />
 }

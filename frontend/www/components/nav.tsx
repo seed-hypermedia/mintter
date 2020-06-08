@@ -1,35 +1,36 @@
-import {useRouter} from 'next/router'
-import Link from 'components/link'
+import {useRouteMatch} from 'react-router-dom'
+import {Link} from 'components/link'
 import {css} from 'emotion'
+import {useMemo} from 'react'
 
 export function MainNav() {
-  const router = useRouter()
   return (
     <div className="mx-4 flex items-center">
-      <NavItem href="/library" active={router.pathname.startsWith('/library/')}>
-        Library
-      </NavItem>
-      <NavItem
-        href="/settings"
-        active={router.pathname.startsWith('/settings')}
-      >
-        Settings
-      </NavItem>
+      <NavItem to="/library">Library</NavItem>
+      <NavItem to="/settings">Settings</NavItem>
     </div>
   )
 }
 
 export function NavItem({
   children,
-  href,
-  active = false,
+  to,
   className = '',
+  onlyActiveWhenExact = false,
   ...props
 }) {
+  const match = useRouteMatch({
+    path: to,
+    exact: onlyActiveWhenExact,
+  })
+  console.log(`match for ${to}`, match)
+
+  const active = useMemo(() => match?.path === to, [match, to])
+
   return (
     <Link
-      href={href}
-      className={`mx-2 text-md font-semibold hover:bg-background-muted hover:text-primary transition duration-200 relative ${className} ${
+      to={to}
+      className={`mx-2 p-2 text-md font-semibold hover:bg-background-muted hover:text-primary transition duration-200 relative ${className} ${
         active ? 'text-primary' : 'text-heading'
       } ${css`
         &:after {

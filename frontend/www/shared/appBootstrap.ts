@@ -1,10 +1,25 @@
 import {queryCache} from 'react-query'
 import {usersClient} from './mintterClient'
-import {InitProfileRequest} from '@mintter/proto/mintter_pb'
+import {
+  InitProfileRequest,
+  GetProfileRequest,
+  Profile,
+} from '@mintter/proto/mintter_pb'
 
-async function profileFetcher() {}
+export interface AppData {
+  profile?: Profile
+}
 
-export async function bootstrapAppData() {
+async function profileFetcher() {
+  try {
+    const req = new GetProfileRequest()
+    return await usersClient.getProfile(req)
+  } catch (err) {
+    throw new Error(err)
+  }
+}
+
+export async function bootstrapAppData(): Promise<AppData> {
   let appData = {profile: null}
 
   // TODO: add a user check

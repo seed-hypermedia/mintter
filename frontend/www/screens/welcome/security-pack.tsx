@@ -1,5 +1,4 @@
 import {useState} from 'react'
-import Layout from 'components/welcome-layout'
 import Container from 'components/welcome-container'
 import Heading from 'components/welcome-heading'
 
@@ -8,7 +7,7 @@ import Content from 'components/content'
 import P from 'components/welcome-p'
 import {css} from 'emotion'
 import {GenSeedRequest} from '@mintter/proto/mintter_pb'
-import {useRouter} from 'next/router'
+import {useHistory} from 'react-router-dom'
 import Input from 'components/input'
 import Button from 'components/button'
 import {NextButton, BackButton} from 'components/welcome-buttons'
@@ -18,14 +17,14 @@ import {useFocus} from 'shared/hooks'
 import {usersClient, MintterPromiseClient} from 'shared/mintterClient'
 
 interface SecurityPackProps {
-  rpc: MintterPromiseClient
+  rpc?: MintterPromiseClient
 }
-
+// TODO: (horacio): refactor rpc to not have it here
 export default function SecurityPack({rpc = usersClient}: SecurityPackProps) {
   const [error, setError] = useState<{code: number; message: string}>()
   const {focusFirst} = useFocus()
   const [mnemonic, setMnemonic] = useState<string[]>([])
-  const router = useRouter()
+  const history = useHistory()
   const {dispatch} = useWelcome()
   const {register, handleSubmit} = useForm({
     mode: 'onChange',
@@ -61,7 +60,7 @@ export default function SecurityPack({rpc = usersClient}: SecurityPackProps) {
     // store seed to the user
     dispatch({type: 'mnemonicList', payload: mnemonic})
     //send the user to next page
-    router.replace('/welcome/retype-seed')
+    history.replace('/welcome/retype-seed')
   }
 
   // mnemonic words separated into lists
@@ -120,8 +119,6 @@ export default function SecurityPack({rpc = usersClient}: SecurityPackProps) {
     </>
   )
 }
-
-SecurityPack.Layout = Layout
 
 export function MnemonicWords({
   lists,

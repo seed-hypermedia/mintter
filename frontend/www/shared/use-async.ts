@@ -1,5 +1,7 @@
 import React from 'react'
 
+export interface UseAzync {}
+
 function useSafeDispatch(dispatch) {
   const mounted = React.useRef(false)
   React.useLayoutEffect(() => {
@@ -12,9 +14,23 @@ function useSafeDispatch(dispatch) {
   )
 }
 
+type Action<S> =
+  | {status: 'pending'}
+  | {status: 'resolved'; data: S}
+  | {status: 'rejected'; error: any}
+
+type StateStatus = 'idle' | 'pending' | 'resolved' | 'rejected'
+interface State<S> {
+  status: StateStatus
+  data?: S
+  error: any
+}
+
+type ReducerType<T> = (s: State<T>, a: Action<T>) => State<T>
+
 const initialState = {status: 'idle', data: null, error: null}
 
-export function useAsync() {
+export function useAsync<T>() {
   const [{status, data, error}, setState] = React.useReducer(
     (s, a) => ({...s, ...a}),
     initialState,

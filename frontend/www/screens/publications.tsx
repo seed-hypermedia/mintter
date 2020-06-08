@@ -1,37 +1,25 @@
-import {useRouter} from 'next/router'
-import Seo from 'components/seo'
+import {useHistory} from 'react-router-dom'
 import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
 import DocumentList from 'components/documentList'
-import Content from 'components/content'
-
 import {MainLayout} from 'components/main-layout'
-import {LibraryHeader} from 'components/library-header'
 import {useMintter} from 'shared/mintterContext'
 
-export default function Library() {
-  const router = useRouter()
+export function Publications() {
   const {allPublications} = useMintter()
+  const history = useHistory()
   const {createDraft} = useMintter()
 
   const {status, error, resolvedData} = allPublications()
 
   async function handleCreateDraft() {
-    // await createDraft(async newDraft => {
-    //   const value = newDraft.toObject()
-    //   router.push({
-    //     pathname: `/editor/${value.documentId}`,
-    //   })
-    // })
     const newDraft = await createDraft().toObject()
-    router.push({
+    history.push({
       pathname: `/editor/${newDraft.documentId}`,
     })
   }
 
   return (
-    <Content>
-      <Seo title="Publications" />
-      <LibraryHeader />
+    <>
       {status === 'success' &&
         resolvedData.toObject().publicationsList.length === 0 && (
           <>
@@ -55,8 +43,6 @@ export default function Library() {
         error={error}
         data={resolvedData?.toObject().publicationsList}
       />
-    </Content>
+    </>
   )
 }
-
-Library.Layout = MainLayout

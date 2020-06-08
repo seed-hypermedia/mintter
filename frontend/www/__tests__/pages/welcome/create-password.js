@@ -1,9 +1,9 @@
 // should <NextButton /> be disabled
 // should form be valid if passwords match
 import {render, waitFor, cleanup, fireEvent} from '@testing-library/react'
-import CreatePassword from '../../../pages/welcome/create-password'
-import WelcomeProvider from '../../../shared/welcomeProvider'
-import ProfileProvider from '../../../shared/profileContext'
+import CreatePassword from 'pages/welcome/create-password'
+import WelcomeProvider from 'shared/welcomeProvider'
+import ProfileProvider from 'shared/profileContext'
 import {Profile} from '@mintter/proto/mintter_pb'
 import {RouterContext} from 'next-server/dist/lib/router-context'
 import * as nextRouter from 'next/router'

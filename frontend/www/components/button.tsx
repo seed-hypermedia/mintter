@@ -1,4 +1,4 @@
-import {useRouter} from 'next/router'
+import {useHistory} from 'react-router-dom'
 
 export interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   disabled?: boolean
@@ -18,7 +18,7 @@ export default function Button({
   onClick,
   ...props
 }: ButtonProps) {
-  const router = useRouter()
+  const history = useHistory()
   return (
     <button
       onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
@@ -29,7 +29,7 @@ export default function Button({
           }
 
           if (to) {
-            replace ? router.replace(to) : router.push(to)
+            replace ? history.replace(to) : history.push(to)
           }
         }
       }}
