@@ -1,15 +1,15 @@
-import {useRouter} from 'next/router'
+import {useHistory} from 'react-router-dom'
 import {useMintter} from 'shared/mintterContext'
 
 export function LibraryHeader() {
-  const router = useRouter()
+  const history = useHistory()
   const {createDraft} = useMintter()
 
   async function handleCreateDraft() {
     const d = await createDraft()
 
     const value = d.toObject()
-    router.push({
+    history.push({
       pathname: `/editor/${value.documentId}`,
     })
   }
