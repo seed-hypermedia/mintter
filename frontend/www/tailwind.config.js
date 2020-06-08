@@ -57,10 +57,12 @@ module.exports = {
 
   purge: {
     content: [
+      './shared/**/*.{ts,tsx}',
       './pages/**/*.{ts,tsx}',
+      './screens/**/*.{ts,tsx}',
       './components/**/*.{ts,tsx}',
       './plugins/**/*.{ts,tsx}',
-      '../editor/src/**/*.{ts,tsx}',
+      '../packages/editor/src/**/*.{ts,tsx}',
     ],
   },
 }
