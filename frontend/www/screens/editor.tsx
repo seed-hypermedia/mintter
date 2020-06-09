@@ -2,7 +2,6 @@ import React, {useReducer, useCallback} from 'react'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
 import {css} from 'emotion'
-import {useRouter} from 'next/router'
 import {EditablePlugins, SoftBreakPlugin} from 'slate-plugins-next'
 import {useMutation, queryCache} from 'react-query'
 import {
