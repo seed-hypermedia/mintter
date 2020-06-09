@@ -345,10 +345,10 @@ export default function Editor(): JSX.Element {
                     onClick={() => MintterEditor.addSection(editor)}
                   >
                     <Icons.Plus color="currentColor" />
-                    <span className="px-2 text-sm">add section</span>
+                    <span className="px-2 text-sm">add Block</span>
                   </button>
                   <a className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline">
-                    what are sections and how to use them
+                    what are Blocks and how to use them
                   </a>
                 </div>
               </div>
