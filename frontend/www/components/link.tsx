@@ -10,15 +10,13 @@ export default function DefaultLink({
   replace = false,
   ...props
 }: LinkProps) {
-  const {as, scroll, shallow, passHref, prefetch, ...otherProps} = props
-  const linkProps = {to, as, scroll, shallow, passHref, prefetch}
   return (
-    <RouterLink to={to} replace={replace} {...linkProps}>
-      <a
-        {...otherProps}
-        className={`p-2 bg-transparent rounded ${className}`}
-      />
-    </RouterLink>
+    <RouterLink
+      to={to}
+      replace={replace}
+      className={`p-2 bg-transparent rounded ${className}`}
+      {...props}
+    />
   )
 }
 

@@ -14,21 +14,21 @@ export default function Library(props) {
   return (
     <Container>
       <Content>
-        <LibraryHeader />
+        {/* <LibraryHeader /> */}
         <div className="flex items-center -mx-2">
-          <NavItem to="/library/publications">Publications</NavItem>
-          <NavItem to="/library/my-publications">My Publications</NavItem>
+          <NavItem to="/library/feed">Your Feed</NavItem>
+          <NavItem to="/library/published">Published</NavItem>
           <NavItem to="/library/drafts">Drafts</NavItem>
           <div className="flex-1" />
         </div>
         <Switch>
           <PrivateRoute exact path={match.url}>
-            <Redirect to={`${match.url}/publications`} />
+            <Redirect to={`${match.url}/feed`} />
           </PrivateRoute>
-          <PrivateRoute path={`${match.url}/publications`}>
+          <PrivateRoute path={`${match.url}/feed`}>
             <Publications />
           </PrivateRoute>
-          <PrivateRoute path={`${match.url}/my-publications`}>
+          <PrivateRoute path={`${match.url}/published`}>
             <MyPublications />
           </PrivateRoute>
           <PrivateRoute path={`${match.url}/drafts`}>
