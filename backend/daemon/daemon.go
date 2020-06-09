@@ -32,6 +32,8 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	}
 	defer log.Sync()
 
+	defer log.Info("GracefulShutdownEnded")
+
 	rpcsrv := grpc.NewServer()
 	{
 		svc, err := server.NewServer(cfg, log)
@@ -120,6 +122,5 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	err = g.Wait()
 
-	log.Info("GracefulShutdownEnded")
 	return
 }
