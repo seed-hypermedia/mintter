@@ -27,6 +27,7 @@ import {useProfile} from 'shared/profileContext'
 import Layout from 'components/layout'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
+import {AuthorLabel} from 'components/author-label'
 
 interface EditorState {
   title: string
@@ -93,7 +94,7 @@ export default function Publication(): JSX.Element {
       <Seo title="Publication" />
       <div className="flex-1 overflow-y-auto pt-4 overflow-y-scroll">
         <div className="flex-1 overflow-y-auto">
-          <EditorHeader />
+          {/* <EditorHeader /> */}
           <div className="flex pt-8 pb-32 relative">
             <DebugValue
               value={state}
@@ -162,7 +163,7 @@ export default function Publication(): JSX.Element {
                       <p className=" text-sm mt-4 text-heading">
                         <span>by </span>
                         <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
-                          {author}
+                          <AuthorLabel author={author} />
                         </span>
                       </p>
                     </div>

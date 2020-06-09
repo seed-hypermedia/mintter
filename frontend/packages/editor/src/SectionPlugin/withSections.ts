@@ -10,7 +10,11 @@ import {nodeTypes} from '../nodeTypes'
 
 export function withSections() {
   return <T extends ReactEditor>(editor: T) => {
-    const {deleteBackward, insertText} = editor
+    const {
+      deleteBackward,
+      insertText,
+      // insertBreak
+    } = editor
 
     editor.deleteBackward = (...args) => {
       const {selection} = editor
@@ -60,6 +64,23 @@ export function withSections() {
 
       insertText(text)
     }
+
+    // editor.insertBreak = () => {
+    //   const {selection} = editor
+    //   console.log('editor.insertBreak -> selection', selection)
+    //   Transforms.insertNodes(
+    //     editor,
+    //     {
+    //       type: nodeTypes.typeSection,
+    //       children: [{type: nodeTypes.typeP, children: [{text: ''}]}],
+    //     },
+    //     {
+    //       at: [selection?.anchor.path[0] || editor.children.length],
+    //     },
+    //   )
+    //   // Transforms.select(editor, [selection?.anchor.path[0]])
+    //   insertBreak()
+    // }
 
     return editor
   }

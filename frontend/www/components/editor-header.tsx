@@ -1,7 +1,7 @@
 import Logo from './logo_square'
 import IconSettings from './icon-settings'
 import IconEye from './icon-eye'
-import Link from 'next/link'
+import {Link} from 'react-router-dom'
 
 interface Props {
   onPublish?: () => void
@@ -11,7 +11,7 @@ export default function EditorHeader({onPublish}: Props) {
   return (
     <div className="flex items-center mx-4">
       <div className="text-primary">
-        <Link href="/library/publications">
+        <Link to="/library/publications">
           <a>
             <Logo width="50px" className="fill-current" />
           </a>

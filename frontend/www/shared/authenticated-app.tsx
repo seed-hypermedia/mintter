@@ -17,31 +17,31 @@ export default function AuthenticatedApp(props) {
 
   return (
     <ErrorBoundary FallbackComponent={FullPageErrorMessage}>
-      <Switch>
-        <PrivateRoute exact path="/editor/:documentId">
-          <Editor />
-        </PrivateRoute>
-        <PrivateRoute exact path="/p/:id">
-          <Publication />
-        </PrivateRoute>
-        <PrivateRoute>
-          <Layout className="flex flex-col">
-            <Topbar />
-            <div className="flex-1 overflow-y-auto">
-              <Container>
-                <Switch>
-                  <PrivateRoute path={`${match.url}library`}>
-                    <Library />
-                  </PrivateRoute>
-                  <PrivateRoute path={`${match.url}settings`}>
-                    <Settings />
-                  </PrivateRoute>
-                </Switch>
-              </Container>
-            </div>
-          </Layout>
-        </PrivateRoute>
-      </Switch>
+      <Layout className="flex flex-col">
+        <Topbar />
+        <div className="flex-1 overflow-y-auto">
+          {/* <Container> */}
+          <Switch>
+            <PrivateRoute exact path="/editor/:documentId">
+              <Editor />
+            </PrivateRoute>
+            <PrivateRoute exact path="/p/:id">
+              <Publication />
+            </PrivateRoute>
+            <PrivateRoute>
+              <Switch>
+                <PrivateRoute path={`${match.url}library`}>
+                  <Library />
+                </PrivateRoute>
+                <PrivateRoute path={`${match.url}settings`}>
+                  <Settings />
+                </PrivateRoute>
+              </Switch>
+            </PrivateRoute>
+          </Switch>
+          {/* </Container> */}
+        </div>
+      </Layout>
     </ErrorBoundary>
   )
 }

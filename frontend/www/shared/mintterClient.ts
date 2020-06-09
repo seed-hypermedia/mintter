@@ -202,7 +202,7 @@ export function getAuthor(authorId: string) {
   if (profile.toObject) {
     let p = profile.toObject()
 
-    author = p.accountId === authorId ? 'me' : `...${authorId.slice(-16)}`
+    author = p.accountId === authorId ? 'me' : authorId
   }
 
   return author
