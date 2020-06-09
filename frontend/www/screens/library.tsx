@@ -6,33 +6,36 @@ import {NavItem} from 'components/nav'
 import {Publications} from 'screens/publications'
 import {MyPublications} from 'screens/my-publications'
 import {Drafts} from './drafts'
+import Container from 'components/container'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library(props) {
   const match = useRouteMatch('/library')
   return (
-    <Content>
-      <LibraryHeader />
-      <div className="flex items-center -mx-2">
-        <NavItem to="/library/publications">Publications</NavItem>
-        <NavItem to="/library/my-publications">My Publications</NavItem>
-        <NavItem to="/library/drafts">Drafts</NavItem>
-        <div className="flex-1" />
-      </div>
-      <Switch>
-        <PrivateRoute exact path={match.url}>
-          <Redirect to={`${match.url}/publications`} />
-        </PrivateRoute>
-        <PrivateRoute path={`${match.url}/publications`}>
-          <Publications />
-        </PrivateRoute>
-        <PrivateRoute path={`${match.url}/my-publications`}>
-          <MyPublications />
-        </PrivateRoute>
-        <PrivateRoute path={`${match.url}/drafts`}>
-          <Drafts />
-        </PrivateRoute>
-      </Switch>
-    </Content>
+    <Container>
+      <Content>
+        {/* <LibraryHeader /> */}
+        <div className="flex items-center -mx-2">
+          <NavItem to="/library/feed">Your Feed</NavItem>
+          <NavItem to="/library/published">Published</NavItem>
+          <NavItem to="/library/drafts">Drafts</NavItem>
+          <div className="flex-1" />
+        </div>
+        <Switch>
+          <PrivateRoute exact path={match.url}>
+            <Redirect to={`${match.url}/feed`} />
+          </PrivateRoute>
+          <PrivateRoute path={`${match.url}/feed`}>
+            <Publications />
+          </PrivateRoute>
+          <PrivateRoute path={`${match.url}/published`}>
+            <MyPublications />
+          </PrivateRoute>
+          <PrivateRoute path={`${match.url}/drafts`}>
+            <Drafts />
+          </PrivateRoute>
+        </Switch>
+      </Content>
+    </Container>
   )
 }
