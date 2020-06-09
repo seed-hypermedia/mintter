@@ -45,7 +45,7 @@ function ListItem({item}) {
     location.pathname,
   ])
 
-  const href = useMemo(
+  const to = useMemo(
     () => (isDraft ? `/editor/${item.documentId}` : `/p/${item.id}`),
     [location.pathname],
   )
@@ -58,7 +58,7 @@ function ListItem({item}) {
   }
 
   return (
-    <Link href={href} className={`block w-full -m-2 first:mt-4`}>
+    <Link to={to} className="block w-full -m-2 first:mt-4">
       <div
         className={`bg-background-muted transition duration-200 hover:shadow-lg flex items-center justify-between`}
         onMouseEnter={handlePrefetch}
