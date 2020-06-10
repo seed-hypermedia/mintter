@@ -12,10 +12,11 @@ import Container from 'components/container'
 export default function Library(props) {
   const match = useRouteMatch('/library')
   return (
-    <Container>
-      <Content>
-        {/* <LibraryHeader /> */}
-        <div className="flex items-center -mx-2">
+    <div className="w-full container mx-auto flex relative px-4">
+      <div className="flex-1"></div>
+      <Container>
+        <LibraryHeader />
+        <div className="flex items-center">
           <NavItem to="/library/feed">Your Feed</NavItem>
           <NavItem to="/library/published">Published</NavItem>
           <NavItem to="/library/drafts">Drafts</NavItem>
@@ -35,7 +36,8 @@ export default function Library(props) {
             <Drafts />
           </PrivateRoute>
         </Switch>
-      </Content>
-    </Container>
+      </Container>
+      <div className="flex-1"></div>
+    </div>
   )
 }
