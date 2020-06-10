@@ -108,7 +108,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	g.Go(func() error {
 		<-ctx.Done()
 		log.Info("GracefulShutdownStarted")
-		log.Debug("Press ctrl+c to force quit, but it's better to wait :)")
+		log.Debug("Press ctrl+c again to force quit, but it's better to wait :)")
 		rpcsrv.GracefulStop()
 		return srv.Shutdown(context.Background())
 	})
@@ -119,6 +119,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	)
 
 	browser.OpenURL("http://localhost:55001")
+	log.Debug("Press ctrl+c to quit")
 
 	err = g.Wait()
 

@@ -8,6 +8,7 @@ import Textarea from 'components/textarea'
 import {ProfileAddress} from 'components/profile-address'
 import {ErrorMessage, ErrorInterface} from 'components/errorMessage'
 import {useProfile} from 'shared/profileContext'
+import Container from 'components/container'
 
 export default function Settings() {
   const {profile, setProfile} = useProfile()
@@ -44,7 +45,7 @@ export default function Settings() {
   }
 
   return (
-    <>
+    <Container>
       <Content>
         <Seo title="Settings" />
         <form
@@ -188,6 +189,6 @@ export default function Settings() {
           height: 200px;
         }
       `}</style>
-    </>
+    </Container>
   )
 }
