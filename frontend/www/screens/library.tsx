@@ -1,21 +1,47 @@
-import {Switch, Route, useRouteMatch, Redirect} from 'react-router-dom'
-import {LibraryHeader} from 'components/library-header'
-import Content from 'components/content'
+import {Switch, useRouteMatch, Redirect} from 'react-router-dom'
 import {PrivateRoute} from 'components/routes'
 import {NavItem} from 'components/nav'
 import {Publications} from 'screens/publications'
 import {MyPublications} from 'screens/my-publications'
+import {useHistory} from 'react-router-dom'
+import {useMintter} from 'shared/mintterContext'
 import {Drafts} from './drafts'
 import Container from 'components/container'
+import Heading from 'components/heading'
+import {useProfile} from 'shared/profileContext'
+import {Profile} from '@mintter/proto/mintter_pb'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library(props) {
   const match = useRouteMatch('/library')
+  const history = useHistory()
+  const {createDraft} = useMintter()
+
+  async function handleCreateDocument() {
+    const d = await createDraft()
+
+    const value = d.toObject()
+    history.push({
+      pathname: `/editor/${value.documentId}`,
+    })
+  }
+
   return (
-    <div className="w-full container mx-auto flex relative px-4">
-      <div className="flex-1"></div>
+    <div className="w-full flex relative px-4">
+      <div className="flex-1">
+        <ProfileInfo />
+        <Connections />
+      </div>
       <Container>
-        <LibraryHeader />
+        <div className="py-5 flex items-baseline justify-between">
+          <div className="flex-1" />
+          <button
+            onClick={handleCreateDocument}
+            className="bg-info hover:bg-info-hover text-white font-bold py-2 px-4 rounded rounded-full flex items-center justify-center transition duration-100"
+          >
+            new Document
+          </button>
+        </div>
         <div className="flex items-center">
           <NavItem to="/library/feed">Your Feed</NavItem>
           <NavItem to="/library/published">Published</NavItem>
@@ -38,6 +64,44 @@ export default function Library(props) {
         </Switch>
       </Container>
       <div className="flex-1"></div>
+    </div>
+  )
+}
+
+function ProfileInfo() {
+  const {profile} = useProfile()
+
+  const values = profile.toObject()
+
+  return (
+    values && (
+      <div className="text-left pt-16 px-4 lg:pl-20 lg:pr-16">
+        <h3 className="font-semibold text-2xl text-heading">
+          {values.username}
+        </h3>
+        <p className="text-body text-sm mt-2">{values.bio}</p>
+      </div>
+    )
+  )
+}
+
+function Connections() {
+  const {connectToPeerById} = useMintter()
+
+  async function handlePeerConnection() {
+    const peer = window.prompt(`enter a peer address`)
+    await connectToPeerById([peer])
+  }
+
+  return (
+    <div className="pt-10 px-4 lg:pl-20 lg:pr-16">
+      <h3 className="font-semibold text-xl text-heading">Connections</h3>
+      <button
+        onClick={handlePeerConnection}
+        className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline"
+      >
+        + add connection
+      </button>
     </div>
   )
 }
