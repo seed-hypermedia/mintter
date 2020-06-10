@@ -63,15 +63,15 @@ function ListItem({item, index = 0}) {
   return (
     <Link
       to={to}
-      className="bg-transparent block w-full first:mt-4 flex p-4 mt-2 first:mt-0 hover:bg-background-muted transition duration-100"
+      className="bg-transparent block w-full first:mt-4 flex p-4 mt-2 first:mt-0 hover:bg-background-muted transition duration-100 box-border"
       onMouseEnter={handlePrefetch}
     >
-      <span className="text-heading font-light leading-loose">
+      <span className="text-heading font-light leading-loose flex-none pr-4">
         {index + 1}.
       </span>
-      <div className="bg-muted rounded w-20 flex-none ml-4"></div>
-      <div className="flex-1 pl-4 w-full">
-        <h3 className="text-heading w-full font-bold truncate leading-loose">
+      <div className="bg-muted rounded w-20 flex-none"></div>
+      <div className="pl-4 flex-1">
+        <h3 className="text-heading leading-loose font-bold truncate">
           {theTitle}
         </h3>
         <div className="flex items-center">
