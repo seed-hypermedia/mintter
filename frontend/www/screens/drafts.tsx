@@ -7,7 +7,7 @@ import {useMintter} from 'shared/mintterContext'
 export function Drafts() {
   const router = useHistory()
 
-  const {createDraft, allDrafts} = useMintter()
+  const {createDraft, allDrafts, deleteDraft} = useMintter()
 
   const {status, error, resolvedData} = allDrafts()
 
@@ -19,15 +19,20 @@ export function Drafts() {
     })
   }
 
+  async function handleDeleteDraft(id: string) {
+    await deleteDraft(id)
+  }
+
   return (
     <>
       <Seo title="Drafts" />
       {status === 'success' && resolvedData.toObject().draftsList.length === 0 && (
         <>
+          <hr className="border-t-2 border-muted border-solid my-8" />
           <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
-            <h2 className="text-3xl font-semibold text-primary">
-              Welcome to Mintter!
-            </h2>
+            <h3 className="text-xl font-semibold text-primary">
+              No Drafts available
+            </h3>
             {/* <p className="text-body font-light mt-5">
                 Some clain sentence that's fun, welcomes user to the community
                 and tells how it works and encourages to get started
@@ -37,10 +42,9 @@ export function Drafts() {
               className="bg-info hover:bg-info-hover text-white font-bold py-3 px-4 rounded rounded-full flex items-center mt-5 justify-center"
             >
               <NoteAddOutlinedIcon />
-              <span className="ml-2">Create your first Draft</span>
+              <span className="ml-2">Start writing your first document</span>
             </button>
           </div>
-          <hr className="border-t-2 border-muted border-solid my-8" />
         </>
       )}
 
@@ -48,6 +52,7 @@ export function Drafts() {
         status={status}
         error={error}
         data={resolvedData?.toObject().draftsList}
+        onDraftDelete={handleDeleteDraft}
       />
     </>
   )

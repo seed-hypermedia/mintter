@@ -1,4 +1,5 @@
 import React, {useMemo, useEffect, useState} from 'react'
+import {Icons} from '@mintter/editor'
 import {useLocation} from 'react-router-dom'
 import Link from './link'
 import {useProfile} from 'shared/profileContext'
@@ -6,7 +7,19 @@ import useLocalStorage from 'shared/localstorage'
 import {ErrorMessage} from './errorMessage'
 import {AuthorLabel} from 'components/author-label'
 
-export default function DocumentList({data, status, error}) {
+interface Props {
+  data: any
+  status: 'loading' | 'error' | 'success'
+  error: any
+  onDraftDelete?: (id: string) => Promise<void>
+}
+
+export default function DocumentList({
+  data,
+  status,
+  error,
+  onDraftDelete,
+}: Props) {
   const [view, setView] = useLocalStorage<'grid' | 'list'>({
     key: 'MINTTER_GRID_VIEW',
     initialValue: 'list',
@@ -24,17 +37,22 @@ export default function DocumentList({data, status, error}) {
     content = <ErrorMessage error={error} />
   } else {
     content = data.map((item, index) => (
-      <ListItem key={item.documentId} item={item} index={index} />
+      <ListItem
+        key={item.documentId}
+        item={item}
+        index={index}
+        onDraftDelete={onDraftDelete}
+      />
     ))
   }
 
   return <div>{content}</div>
 }
 
-function ListItem({item, index = 0}) {
+function ListItem({item, index = 0, onDraftDelete}) {
   const location = useLocation()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
-  const {title, description, author: itemAuthor, createTime, ...rest} = item
+  const {documentId, title, description, author: itemAuthor, createTime} = item
 
   const theTitle = title ? title : 'Untitled Document'
 
@@ -58,12 +76,10 @@ function ListItem({item, index = 0}) {
     }
   }
 
-  console.log('createTime => ', rest)
-
   return (
     <Link
       to={to}
-      className="bg-transparent block w-full first:mt-4 flex p-4 mt-2 first:mt-0 hover:bg-background-muted transition duration-100 box-border"
+      className="bg-transparent group block w-full first:mt-4 flex p-4 mt-2 first:mt-0 hover:bg-background-muted transition duration-100 box-border"
       onMouseEnter={handlePrefetch}
     >
       <span className="text-heading font-light leading-loose flex-none pr-4">
@@ -85,6 +101,22 @@ function ListItem({item, index = 0}) {
           </p>
         </div>
       </div>
+      {onDraftDelete && (
+        <div>
+          <button
+            className="opacity-0 group-hover:opacity-100 text-danger"
+            onClick={e => {
+              e.preventDefault()
+              const resp = window.confirm('are you sure you want to delete it?')
+              if (resp) {
+                onDraftDelete(documentId)
+              }
+            }}
+          >
+            <Icons.Trash />
+          </button>
+        </div>
+      )}
     </Link>
   )
 }
