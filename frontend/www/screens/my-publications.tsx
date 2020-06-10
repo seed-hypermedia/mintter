@@ -34,6 +34,7 @@ export function MyPublications() {
       <Seo title="My Publications" />
       {status === 'success' && myPubs.length === 0 && (
         <>
+          <hr className="border-t-2 border-muted border-solid my-8" />
           <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
             <h2 className="text-3xl font-semibold text-primary">
               No Publications (yet)
@@ -46,7 +47,6 @@ export function MyPublications() {
               <span className="ml-2">Create your first Draft</span>
             </button>
           </div>
-          <hr className="border-t-2 border-muted border-solid my-8" />
         </>
       )}
       <DocumentList status={status} error={error} data={myPubs} />

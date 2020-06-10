@@ -14,6 +14,7 @@ import {
   Draft,
   GetDraftRequest,
   PublishDraftRequest,
+  DeleteDraftRequest,
 } from '@mintter/proto/documents_pb'
 import {
   ConnectToPeerRequest,
@@ -137,6 +138,13 @@ export async function setDraft({
     request.setSectionsList(s)
   }
   return await documentsClient.saveDraft(request)
+}
+
+export async function deleteDraft(id: string) {
+  const req = new DeleteDraftRequest()
+  req.setDocumentId(id)
+
+  return documentsClient.deleteDraft(req)
 }
 
 export async function publishDraft(draftId: string) {
