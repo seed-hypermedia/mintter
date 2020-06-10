@@ -1,3 +1,4 @@
+import React from 'react'
 import {useHistory} from 'react-router-dom'
 import {Link} from 'components/link'
 import Logo from './logo_square'
@@ -8,6 +9,8 @@ import {useMintter} from 'shared/mintterContext'
 import {useEffect, useState} from 'react'
 import Container from './container'
 import Tippy from '@tippyjs/react'
+import {Icons} from '@mintter/editor'
+import {Button} from './button'
 
 interface NavItemProps {
   href: string
@@ -28,6 +31,7 @@ export default function LibraryHeader(props) {
 
   async function handleSearch(e) {
     e.preventDefault()
+    await setInput('')
     history.push(`/p/${input}`)
   }
 
@@ -37,6 +41,7 @@ export default function LibraryHeader(props) {
   }
 
   function toggleFormMetadata() {
+    console.log('toggle!!')
     if (menuVisible) {
       hide()
     } else {
@@ -45,7 +50,7 @@ export default function LibraryHeader(props) {
   }
 
   return (
-    <div className="flex items-center py-4 relative">
+    <div className="flex items-center p-4 relative">
       <div className="flex-1 px-4 flex justify-start">
         <span className={`text-primary`}>
           <Link to="/library">
@@ -76,23 +81,33 @@ export default function LibraryHeader(props) {
           interactive={true}
           content={
             <div
-              className={`${css`
-                padding: 8px 16px;
-                background: white;
+              className={`flex flex-col shadow-md ${css`
+                // background: white;
+
+                opacity: ${menuVisible ? '1' : '0'};
               `}`}
             >
-              <button
+              <Button
                 onClick={() => {
                   hide()
                   history.push('/settings')
                 }}
               >
                 Settings
-              </button>
+              </Button>
             </div>
           }
         >
-          <button onClick={toggleFormMetadata}>menu</button>
+          <span tabIndex={0}>
+            <Button onClick={toggleFormMetadata} className="flex items-center">
+              <span className="mr-2">Menu</span>
+              <Icons.ChevronDown
+                className={`transform transition duration-200 ${
+                  menuVisible ? 'rotate-180' : ''
+                }`}
+              />
+            </Button>
+          </span>
         </Tippy>
       </div>
     </div>

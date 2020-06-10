@@ -12,7 +12,7 @@ export default function Container({
 }: ContainerProps) {
   return (
     <div
-      className={`mx-auto p-4 ${css`
+      className={`w-full mx-auto p-4 ${css`
         max-width: 80ch;
       `} ${className}`}
       {...props}
