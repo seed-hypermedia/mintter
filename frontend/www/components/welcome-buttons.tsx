@@ -1,4 +1,4 @@
-import Button, {ButtonProps} from './button'
+import Button, {ButtonLinkProps} from './button'
 
 export function NextButton({
   to,
@@ -8,7 +8,7 @@ export function NextButton({
   disabled = false,
   type = 'button',
   ...props
-}: ButtonProps) {
+}: ButtonLinkProps) {
   return (
     <Button
       type={type}
@@ -35,7 +35,7 @@ export function BackButton({
   type = 'button',
   disabled = false,
   ...props
-}: ButtonProps) {
+}: ButtonLinkProps) {
   return (
     <Button
       type={type}

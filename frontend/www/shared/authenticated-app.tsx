@@ -20,7 +20,6 @@ export default function AuthenticatedApp(props) {
       <Layout className="flex flex-col">
         <Topbar />
         <div className="flex-1 overflow-y-auto">
-          {/* <Container> */}
           <Switch>
             <PrivateRoute exact path="/editor/:documentId">
               <Editor />
@@ -39,7 +38,6 @@ export default function AuthenticatedApp(props) {
               </Switch>
             </PrivateRoute>
           </Switch>
-          {/* </Container> */}
         </div>
       </Layout>
     </ErrorBoundary>
