@@ -10,6 +10,7 @@ import Container from 'components/container'
 import Heading from 'components/heading'
 import {useProfile} from 'shared/profileContext'
 import {Profile} from '@mintter/proto/mintter_pb'
+import {Link} from 'components/link'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library(props) {
@@ -80,6 +81,12 @@ function ProfileInfo() {
           {values.username}
         </h3>
         <p className="text-body text-sm mt-2">{values.bio}</p>
+        <Link
+          to="/settings"
+          className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline inline-block"
+        >
+          Edit profile
+        </Link>
       </div>
     )
   )
