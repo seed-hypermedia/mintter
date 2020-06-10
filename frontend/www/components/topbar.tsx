@@ -1,15 +1,11 @@
-import React from 'react'
+import {useState} from 'react'
+import {css} from 'emotion'
+import Tippy from '@tippyjs/react'
 import {useHistory} from 'react-router-dom'
+import {Icons} from '@mintter/editor'
 import {Link} from 'components/link'
 import Logo from './logo_square'
-import {css} from 'emotion'
-
 import Input from './input'
-import {useMintter} from 'shared/mintterContext'
-import {useEffect, useState} from 'react'
-import Container from './container'
-import Tippy from '@tippyjs/react'
-import {Icons} from '@mintter/editor'
 import {Button} from './button'
 
 interface NavItemProps {
@@ -24,7 +20,6 @@ export default function LibraryHeader(props) {
   const history = useHistory()
   const [input, setInput] = useState<string>('')
   const [menuVisible, setMenuVisible] = useState<boolean>(false)
-  const {connectToPeerById} = useMintter()
 
   const show = () => setMenuVisible(true)
   const hide = () => setMenuVisible(false)
@@ -33,11 +28,6 @@ export default function LibraryHeader(props) {
     e.preventDefault()
     await setInput('')
     history.push(`/p/${input}`)
-  }
-
-  async function handlePeerConnection() {
-    const peer = window.prompt(`enter a peer address`)
-    await connectToPeerById([peer])
   }
 
   function toggleFormMetadata() {
