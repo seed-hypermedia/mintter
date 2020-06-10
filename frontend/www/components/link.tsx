@@ -1,32 +1,22 @@
-import {Link as RouterLink} from 'react-router-dom'
-import NextLink, {LinkProps as NextLinkProps} from 'next/link'
+import {Link as RouterLink, LinkProps} from 'react-router-dom'
 
 export interface LinkProps
-  extends NextLinkProps,
+  extends LinkProps,
     React.HTMLAttributes<HTMLAnchorElement> {}
 
 export default function DefaultLink({
-  href,
+  to,
   className = '',
+  replace = false,
   ...props
 }: LinkProps) {
-  const {
-    as,
-    replace,
-    scroll,
-    shallow,
-    passHref,
-    prefetch,
-    ...otherProps
-  } = props
-  const linkProps = {href, as, replace, scroll, shallow, passHref, prefetch}
   return (
-    <NextLink href={href} {...linkProps}>
-      <a
-        {...otherProps}
-        className={`p-2 bg-transparent rounded ${className}`}
-      />
-    </NextLink>
+    <RouterLink
+      to={to}
+      replace={replace}
+      className={`p-2 bg-transparent rounded ${className}`}
+      {...props}
+    />
   )
 }
 

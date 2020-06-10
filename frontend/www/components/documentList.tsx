@@ -4,6 +4,7 @@ import Link from './link'
 import {useProfile} from 'shared/profileContext'
 import useLocalStorage from 'shared/localstorage'
 import {ErrorMessage} from './errorMessage'
+import {AuthorLabel} from 'components/author-label'
 
 export default function DocumentList({data, status, error}) {
   const [view, setView] = useLocalStorage<'grid' | 'list'>({
@@ -22,20 +23,20 @@ export default function DocumentList({data, status, error}) {
   } else if (status === 'error') {
     content = <ErrorMessage error={error} />
   } else {
-    content = data.map(item => <ListItem key={item.documentId} item={item} />)
+    content = data.map((item, index) => (
+      <ListItem key={item.documentId} item={item} index={index} />
+    ))
   }
 
   return <div>{content}</div>
 }
 
-function ListItem({item}) {
+function ListItem({item, index = 0}) {
   const location = useLocation()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
-  const {title, description, author: itemAuthor} = item
+  const {title, description, author: itemAuthor, createTime, ...rest} = item
+
   const theTitle = title ? title : 'Untitled Document'
-  const theDescription = description
-    ? description
-    : 'Document with no description'
 
   const {getAuthor} = useProfile()
 
@@ -45,7 +46,7 @@ function ListItem({item}) {
     location.pathname,
   ])
 
-  const href = useMemo(
+  const to = useMemo(
     () => (isDraft ? `/editor/${item.documentId}` : `/p/${item.id}`),
     [location.pathname],
   )
@@ -57,30 +58,32 @@ function ListItem({item}) {
     }
   }
 
+  console.log('createTime => ', rest)
+
   return (
-    <Link href={href} className={`block w-full -m-2 first:mt-4`}>
-      <div
-        className={`bg-background-muted transition duration-200 hover:shadow-lg flex items-center justify-between`}
-        onMouseEnter={handlePrefetch}
-      >
-        <h3 className={`text-heading font-bold truncate flex-1 p-4 `}>
+    <Link
+      to={to}
+      className="bg-transparent block w-full first:mt-4 flex p-4 mt-2 first:mt-0 hover:bg-background-muted transition duration-100"
+      onMouseEnter={handlePrefetch}
+    >
+      <span className="text-heading font-light leading-loose">
+        {index + 1}.
+      </span>
+      <div className="bg-muted rounded w-20 flex-none ml-4"></div>
+      <div className="flex-1 pl-4 w-full">
+        <h3 className="text-heading w-full font-bold truncate leading-loose">
           {theTitle}
         </h3>
-        <p
-          className={`text-body truncate p-4 flex-1 border-0 border-l border-muted`}
-        >
-          {theDescription}
-        </p>
-        {!isDraft && location.pathname !== '/library/my-publications' && (
-          <p
-            className={`text-sm text-heading inline-block p-4 border-0 border-l border-muted`}
-          >
-            <span>by </span>
-            <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed truncate">
-              {author}
-            </span>
+        <div className="flex items-center">
+          {!isDraft && location.pathname !== '/library/my-publications' && (
+            <p className="text-sm text-heading inline-block font-light">
+              <AuthorLabel author={author} />
+            </p>
+          )}
+          <p className="text-sm text-heading font-light">
+            {createTime?.seconds}
           </p>
-        )}
+        </div>
       </div>
     </Link>
   )

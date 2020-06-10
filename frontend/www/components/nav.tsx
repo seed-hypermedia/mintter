@@ -30,19 +30,9 @@ export function NavItem({
   return (
     <Link
       to={to}
-      className={`mx-2 p-2 text-md font-semibold hover:bg-background-muted hover:text-primary transition duration-200 relative ${className} ${
-        active ? 'text-primary' : 'text-heading'
-      } ${css`
-        &:after {
-          content: '';
-          width: 100%;
-          height: 2px;
-          background-color: ${active ? 'var(--color-primary)' : 'transparent'};
-          position: absolute;
-          bottom: 0;
-          left: 0;
-        }
-      `}`}
+      className={`mx-2 p-2 text-md font-light hover:bg-background-muted transition duration-200 relative text-heading ${className} ${
+        active ? 'font-extrabold' : ''
+      }`}
       {...props}
     >
       {children}
