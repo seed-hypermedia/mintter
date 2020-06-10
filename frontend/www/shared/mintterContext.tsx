@@ -15,6 +15,7 @@ import {
   useMutation,
   MutationResult,
   MutationOptions,
+  queryCache,
 } from 'react-query'
 import {
   GetProfileResponse,
@@ -41,6 +42,7 @@ export interface MintterClient {
     documentId: string,
     options?: MutationOptions<Publication, string>,
   ) => MutationResult<Publication>
+  deleteDraft: (id: string) => void
   connectToPeerById: (peerIds: string[]) => any
   getProfile: () => QueryResult<GetProfileResponse>
   setProfile: () => any
@@ -109,6 +111,12 @@ export function MintterProvider(props) {
     [],
   )
 
+  const [deleteDraft] = useMutation((id: string) => apiClient.deleteDraft(id), {
+    onSuccess: p => {
+      queryCache.refetchQueries('AllDrafts')
+    },
+  })
+
   const [publishDraft] = useMutation((id: string) => apiClient.publishDraft(id))
 
   const connectToPeerById = useCallback(
@@ -126,6 +134,7 @@ export function MintterProvider(props) {
       getDraft,
       setDraft,
       publishDraft,
+      deleteDraft,
       connectToPeerById,
     }),
     [
@@ -137,6 +146,7 @@ export function MintterProvider(props) {
       getDraft,
       setDraft,
       publishDraft,
+      deleteDraft,
       connectToPeerById,
     ],
   )
