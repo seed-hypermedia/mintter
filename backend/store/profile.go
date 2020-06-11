@@ -13,6 +13,8 @@ import (
 	"github.com/ipfs/go-datastore/query"
 )
 
+const profileKey = "mtt-profile"
+
 // UpdateProfile updates mutable fields of the current user. It will merge new fields with old ones.
 func (s *Store) UpdateProfile(ctx context.Context, a identity.About) (identity.Profile, error) {
 	// TODO(burdiyan): Check to only update current profile.
@@ -61,7 +63,15 @@ func (s *Store) StoreProfile(ctx context.Context, prof identity.Profile) error {
 		return err
 	}
 
-	return s.db.Put(keyProfiles.ChildString(prof.ID.String()), data)
+	if err := s.db.Put(keyProfiles.ChildString(prof.ID.String()), data); err != nil {
+		return fmt.Errorf("failed to store profile: %w", err)
+	}
+
+	if err := s.ps.Put(prof.Peer.ID, profileKey, prof.ID.String()); err != nil {
+		return fmt.Errorf("failed to store profile id in peer store: %w", err)
+	}
+
+	return nil
 }
 
 // GetProfile from the store by its ID.
