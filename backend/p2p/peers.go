@@ -58,7 +58,6 @@ func (n *Node) savePeerProfile(ctx context.Context, prof identity.Profile) error
 		supportValue = 100
 		// Under this key we store support flag in the peer store.
 		supportKey = "mtt-support"
-		profileKey = "mtt-profile"
 	)
 
 	pid := prof.Peer.ID
@@ -85,10 +84,6 @@ func (n *Node) savePeerProfile(ctx context.Context, prof identity.Profile) error
 
 	if err := n.store.StoreProfile(ctx, prof); err != nil {
 		return fmt.Errorf("failed to store profile: %w", err)
-	}
-
-	if err := n.host.Peerstore().Put(pid, profileKey, prof.ID.String()); err != nil {
-		return fmt.Errorf("failed to store profile id in peer store: %w", err)
 	}
 
 	// tag the connection as more important in the conn manager:
