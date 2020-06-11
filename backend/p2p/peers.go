@@ -24,12 +24,7 @@ func (n *Node) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) error 
 		return fmt.Errorf("failed to extract peer info: %w", err)
 	}
 
-	var connected bool
 	for _, pinfo := range pinfos {
-		if connected {
-			break
-		}
-
 		if swarm, ok := n.host.Network().(*swarm.Swarm); ok {
 			// clear backoff b/c we're explicitly dialing this peer
 			swarm.Backoff().Clear(pinfo.ID)
@@ -50,7 +45,7 @@ func (n *Node) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) error 
 			return err
 		}
 
-		connected = true
+		break
 	}
 
 	return nil
@@ -58,11 +53,17 @@ func (n *Node) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) error 
 
 // savePeerProfile stores another peer's profile and marks it's connection to support mintter protocol.
 func (n *Node) savePeerProfile(ctx context.Context, prof identity.Profile) error {
+	const (
+		// Default value to give for peer connections in connmanager. Stolen from qri.
+		supportValue = 100
+		// Under this key we store support flag in the peer store.
+		supportKey = "mtt-support"
+		profileKey = "mtt-profile"
+	)
+
 	pid := prof.Peer.ID
 
 	// bail early if we have seen this peer before
-	// OKAY
-	// log.Debugf("%s, attempting to upgrading %s to qri connection", n.ID, pid)
 	if v, err := n.host.Peerstore().Get(pid, supportKey); err == nil {
 		support, ok := v.(bool)
 		if !ok {
@@ -73,19 +74,12 @@ func (n *Node) savePeerProfile(ctx context.Context, prof identity.Profile) error
 		}
 	}
 
-	// check if this connection supports the qri protocol
 	support, err := supportsProtocol(n.host, pid)
 	if err != nil {
-		// log.Debugf("error checking for qri support: %s", err)
 		return fmt.Errorf("error checking for protocol support: %w", err)
 	}
 
-	// if it does support the qri protocol
-	// - tag the connection as a qri connection in the ConnManager
-	// - request profile
-	// - request profiles
 	if !support {
-		// log.Debugf("%s could not upgrade %s to Qri connection: %s", n.ID, pid, ErrQriProtocolNotSupported)
 		return ErrUnsupportedProtocol
 	}
 
@@ -97,28 +91,13 @@ func (n *Node) savePeerProfile(ctx context.Context, prof identity.Profile) error
 		return fmt.Errorf("failed to store profile id in peer store: %w", err)
 	}
 
-	// log.Debugf("%s upgraded %s to Qri connection", n.ID, pid)
 	// tag the connection as more important in the conn manager:
 	n.host.ConnManager().TagPeer(pid, supportKey, supportValue)
 
-	// mark whether or not this connection supports the qri protocol:
+	// mark whether or not this connection supports the protocol:
 	if err := n.host.Peerstore().Put(pid, supportKey, support); err != nil {
-		// log.Debugf("error setting qri support flag: %s", err)
 		return err
 	}
-
-	// if _, err := n.RequestProfile(ctx, pid); err != nil {
-	// 	// log.Debug(err.Error())
-	// 	return err
-	// }
-
-	// go func() {
-	// 	ps, err := n.RequestQriPeers(ctx, pid)
-	// 	if err != nil {
-	// 		// log.Debug("error fetching qri peers: %s", err)
-	// 	}
-	// 	n.RequestNewPeers(ctx, ps)
-	// }()
 
 	return nil
 }

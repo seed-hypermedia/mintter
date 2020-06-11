@@ -61,7 +61,7 @@ func (s *Store) StoreProfile(ctx context.Context, prof identity.Profile) error {
 		return err
 	}
 
-	return s.db.Put(s.profilesKey.ChildString(prof.ID.String()), data)
+	return s.db.Put(keyProfiles.ChildString(prof.ID.String()), data)
 }
 
 // GetProfile from the store by its ID.
@@ -70,7 +70,7 @@ func (s *Store) GetProfile(ctx context.Context, pid identity.ProfileID) (identit
 		return s.CurrentProfile(ctx)
 	}
 
-	data, err := s.db.Get(s.profilesKey.ChildString(pid.String()))
+	data, err := s.db.Get(keyProfiles.ChildString(pid.String()))
 	if err != nil {
 		return identity.Profile{}, err
 	}
@@ -86,7 +86,7 @@ func (s *Store) GetProfile(ctx context.Context, pid identity.ProfileID) (identit
 // ListProfiles stored in the store.
 func (s *Store) ListProfiles(ctx context.Context) ([]identity.Profile, error) {
 	res, err := s.db.Query(query.Query{
-		Prefix: s.profilesKey.String(),
+		Prefix: keyProfiles.String(),
 	})
 	if err != nil {
 		return nil, err
@@ -117,7 +117,7 @@ func (s *Store) ListProfiles(ctx context.Context) ([]identity.Profile, error) {
 // ListProfileIDs of known profiles.
 func (s *Store) ListProfileIDs(ctx context.Context) ([]identity.ProfileID, error) {
 	res, err := s.db.Query(query.Query{
-		Prefix:   s.profilesKey.String(),
+		Prefix:   keyProfiles.String(),
 		KeysOnly: true,
 	})
 	if err != nil {

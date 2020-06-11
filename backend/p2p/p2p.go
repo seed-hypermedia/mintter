@@ -15,13 +15,10 @@ import (
 	"mintter/backend/ipfsutil"
 	"mintter/backend/store"
 
-	"github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
-	"github.com/libp2p/go-libp2p-kad-dht/dual"
-	"github.com/libp2p/go-libp2p-peerstore/pstoreds"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -40,14 +37,6 @@ const (
 	ProtocolName    = "mintter"
 
 	ProtocolID protocol.ID = "/" + ProtocolName + "/" + ProtocolVersion
-)
-
-const (
-	// Default value to give for peer connections in connmanager. Stolen from qri.
-	supportValue = 100
-	// Under this key we store support flag in the peer store.
-	supportKey = "mtt-support"
-	profileKey = "mtt-profile"
 )
 
 // userAgent is type & version of the mtt service.
@@ -96,21 +85,30 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 		}
 	}()
 
-	db, err := badger.NewDatastore(filepath.Join(repoPath, "ipfslite"), &badger.DefaultOptions)
-	if err != nil {
-		return nil, err
-	}
-	cleanup = append(cleanup, db)
-
 	prof, err := s.CurrentProfile(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	ps := s.Peerstore()
+
+	// This is borrowed from Qri's makeBasicHost. Not sure if needed.
+	{
+		if err := ps.AddPrivKey(prof.Peer.ID, prof.Peer.PrivKey); err != nil {
+			return nil, err
+		}
+
+		if err := ps.AddPubKey(prof.Peer.ID, prof.Peer.PubKey); err != nil {
+			return nil, err
+		}
 	}
 
 	opts := []libp2p.Option{
 		libp2p.ListenAddrStrings(cfg.Addr),
 		libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute)),
 		ipfsutil.TransportOpts,
+		libp2p.UserAgent(userAgent),
+		libp2p.Peerstore(ps),
 		// TODO(burdiyan): allow to enable this for nodes with public IPs.
 		// libp2p.EnableRelay(relay.OptHop),
 	}
@@ -123,7 +121,13 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 		opts = append(opts, ipfsutil.SecurityOpts)
 	}
 
-	h, dht, err := makeHost(ctx, prof.Peer, db, opts...)
+	db, err := badger.NewDatastore(filepath.Join(repoPath, "ipfslite"), &badger.DefaultOptions)
+	if err != nil {
+		return nil, err
+	}
+	cleanup = append(cleanup, db)
+
+	h, dht, err := ipfsutil.SetupLibp2p(ctx, prof.Peer.PrivKey, nil, db, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -199,47 +203,4 @@ func (n *Node) Account() identity.Account {
 // Addrs return p2p multiaddresses this node is listening on.
 func (n *Node) Addrs() ([]multiaddr.Multiaddr, error) {
 	return peer.AddrInfoToP2pAddrs(host.InfoFromHost(n.host))
-}
-
-// makeHost creates a new libp2p host.
-func makeHost(ctx context.Context, p identity.Peer, db datastore.Batching, opts ...libp2p.Option) (host.Host, *dual.DHT, error) {
-	// TODO(burdiyan): pass the ps and don't forget to close.
-	ps, err := pstoreds.NewPeerstore(ctx, db, pstoreds.DefaultOpts())
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// This is borrowed from Qri's makeBasicHost. Not sure if it's needed.
-	{
-		if err := ps.AddPrivKey(p.ID, p.PrivKey); err != nil {
-			return nil, nil, err
-		}
-
-		if err := ps.AddPubKey(p.ID, p.PubKey); err != nil {
-			return nil, nil, err
-		}
-	}
-
-	o := []libp2p.Option{
-		libp2p.UserAgent(userAgent),
-		libp2p.Peerstore(ps),
-	}
-
-	o = append(o, opts...)
-
-	return ipfsutil.SetupLibp2p(ctx, p.PrivKey, nil, db, o...)
-}
-
-func wrapAddrs(pid peer.ID, addrs ...multiaddr.Multiaddr) ([]multiaddr.Multiaddr, error) {
-	host, err := multiaddr.NewComponent("p2p", pid.String())
-	if err != nil {
-		return nil, err
-	}
-
-	res := make([]multiaddr.Multiaddr, len(addrs))
-	for i, a := range addrs {
-		res[i] = a.Encapsulate(host)
-	}
-
-	return res, nil
 }

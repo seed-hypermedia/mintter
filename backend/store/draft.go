@@ -19,12 +19,12 @@ func (s *Store) StoreDraft(in *pb.Draft) error {
 		return fmt.Errorf("failed to marshal proto: %w", err)
 	}
 
-	return s.db.Put(s.draftsKey.ChildString(in.DocumentId), data)
+	return s.db.Put(keyDrafts.ChildString(in.DocumentId), data)
 }
 
 // GetDraft from the database.
 func (s *Store) GetDraft(docID string) (*pb.Draft, error) {
-	data, err := s.db.Get(s.draftsKey.ChildString(docID))
+	data, err := s.db.Get(keyDrafts.ChildString(docID))
 	if err != nil {
 		return nil, err
 	}
@@ -40,18 +40,18 @@ func (s *Store) GetDraft(docID string) (*pb.Draft, error) {
 
 // DeleteDraft from the database.
 func (s *Store) DeleteDraft(docID string) error {
-	return s.db.Delete(s.draftsKey.ChildString(docID))
+	return s.db.Delete(keyDrafts.ChildString(docID))
 }
 
 // HasDraft checks if there's a draft for given document ID.
 func (s *Store) HasDraft(docID string) (bool, error) {
-	return s.db.Has(s.draftsKey.ChildString(docID))
+	return s.db.Has(keyDrafts.ChildString(docID))
 }
 
 // ListDrafts existing in the database. It will not include content.
 func (s *Store) ListDrafts(offset, limit int) ([]*pb.Draft, error) {
 	res, err := s.db.Query(query.Query{
-		Prefix: s.draftsKey.String(),
+		Prefix: keyDrafts.String(),
 		Offset: offset,
 		Limit:  limit,
 	})
@@ -83,7 +83,7 @@ func (s *Store) ListDrafts(offset, limit int) ([]*pb.Draft, error) {
 
 // AddPublication to for our internal tracking.
 func (s *Store) AddPublication(docID string, cid cid.Cid) error {
-	k := s.pubsKey.ChildString(docID)
+	k := keyPublications.ChildString(docID)
 
 	ok, err := s.db.Has(k)
 	if err != nil {
@@ -101,7 +101,7 @@ func (s *Store) AddPublication(docID string, cid cid.Cid) error {
 // ListPublications stored in the database.
 func (s *Store) ListPublications(offset, limit int) ([]cid.Cid, error) {
 	res, err := s.db.Query(query.Query{
-		Prefix: s.pubsKey.String(),
+		Prefix: keyPublications.String(),
 		Offset: offset,
 		Limit:  limit,
 	})
