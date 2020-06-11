@@ -2,29 +2,39 @@
 package store
 
 import (
+	"context"
 	"fmt"
-	"mintter/backend/identity"
-	"mintter/backend/logbook"
+	"io"
 	"os"
 	"path/filepath"
 
+	"mintter/backend/cleanup"
+	"mintter/backend/identity"
+	"mintter/backend/logbook"
+
 	"github.com/ipfs/go-datastore"
 	badger "github.com/ipfs/go-ds-badger"
+	"github.com/libp2p/go-libp2p-core/peerstore"
+	"github.com/libp2p/go-libp2p-peerstore/pstoreds"
 	"go.uber.org/multierr"
+)
+
+var (
+	keyProfiles     = datastore.NewKey("/mintter/profiles")
+	keyDrafts       = datastore.NewKey("/mintter/drafts")
+	keyPublications = datastore.NewKey("/mintter/publications")
 )
 
 // Store is the persistence layer of the app.
 type Store struct {
 	repoPath string
-	db       datastore.TxnDatastore
-	lb       *logbook.Book
+	prof     identity.Profile
 
-	profilesKey datastore.Key
-	draftsKey   datastore.Key
-	pubsKey     datastore.Key
-
-	pc   profileCache
-	prof identity.Profile
+	ps      peerstore.Peerstore
+	db      datastore.TxnDatastore
+	lb      *logbook.Book
+	pc      profileCache
+	cleanup io.Closer
 }
 
 // Create a new Store.
@@ -51,25 +61,32 @@ func Open(repoPath string) (*Store, error) {
 }
 
 func new(repoPath string, prof identity.Profile) (s *Store, err error) {
+	var cleanup cleanup.Stack
 	db, err := badger.NewDatastore(filepath.Join(repoPath, "store"), &badger.DefaultOptions)
 	if err != nil {
 		return nil, err
 	}
+	cleanup = append(cleanup, db)
 	defer func() {
 		// We have to close the db if store creation failed.
 		// DB is created inline for convenience.
 		if err != nil {
-			err = multierr.Append(err, db.Close())
+			err = multierr.Append(err, cleanup.Close())
 		}
 	}()
 
+	ps, err := pstoreds.NewPeerstore(context.Background(), db, pstoreds.DefaultOpts())
+	if err != nil {
+		return nil, fmt.Errorf("failed to create peer store: %w", err)
+	}
+	cleanup = append(cleanup, ps)
+
 	s = &Store{
-		repoPath:    repoPath,
-		db:          db,
-		prof:        prof,
-		profilesKey: datastore.NewKey("/profiles"),
-		draftsKey:   datastore.NewKey("/drafts"),
-		pubsKey:     datastore.NewKey("/publications"),
+		ps:       ps,
+		repoPath: repoPath,
+		db:       db,
+		prof:     prof,
+		cleanup:  cleanup,
 	}
 
 	s.lb, err = logbook.New(prof.Account, s.db)
@@ -88,7 +105,7 @@ func new(repoPath string, prof identity.Profile) (s *Store, err error) {
 
 // Close the store.
 func (s *Store) Close() error {
-	return s.db.Close()
+	return s.cleanup.Close()
 }
 
 // RepoPath returns the base repo path.
@@ -99,4 +116,9 @@ func (s *Store) RepoPath() string {
 // LogBook retrieves the underlying store log book.
 func (s *Store) LogBook() *logbook.Book {
 	return s.lb
+}
+
+// Peerstore retrieves the underlying peer store.
+func (s *Store) Peerstore() peerstore.Peerstore {
+	return s.ps
 }

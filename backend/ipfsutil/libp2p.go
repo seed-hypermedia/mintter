@@ -35,7 +35,7 @@ func SetupLibp2p(
 	ctx context.Context,
 	hostKey crypto.PrivKey,
 	listenAddrs []multiaddr.Multiaddr,
-	ds datastore.Batching,
+	dsDHT datastore.Batching,
 	opts ...libp2p.Option,
 ) (host.Host, *dualdht.DHT, error) {
 	var (
@@ -47,7 +47,7 @@ func SetupLibp2p(
 		libp2p.Identity(hostKey),
 		libp2p.ListenAddrs(listenAddrs...),
 		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
-			ddht, err = newDHT(ctx, h, ds)
+			ddht, err = newDHT(ctx, h, dsDHT)
 			return ddht, err
 		}),
 	)
