@@ -38,14 +38,70 @@ func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*
 		return nil, err
 	}
 
-	prof, err := s.store.CurrentProfile(ctx)
+	var pid identity.ProfileID
+	if in.ProfileId == "" {
+		pid = s.node.Account().ID
+	} else {
+		id, err := identity.DecodeProfileID(in.ProfileId)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "failed to decode profile ID %s: %v", in.ProfileId, err)
+		}
+		pid = id
+	}
+
+	prof, err := s.store.GetProfile(ctx, pid)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to load profile: %v", err)
 	}
 
+	pbprof := profileToProto(prof)
+	// TODO(burdiyan): OMG this is very bad.
+	status, err := s.store.GetProfileConnectionStatus(ctx, prof.ID)
+	if err != nil {
+		s.log.Warn("NoConnectionStatus", zap.Error(err), zap.String("profile", prof.ID.String()))
+	}
+	pbprof.ConnectionStatus = proto.ConnectionStatus(status)
+
 	return &proto.GetProfileResponse{
-		Profile: profileToProto(prof),
+		Profile: pbprof,
 	}, nil
+}
+
+// ListProfiles implements Mintter rpc.
+func (s *Server) ListProfiles(ctx context.Context, in *proto.ListProfilesRequest) (*proto.ListProfilesResponse, error) {
+	if err := s.checkReady(); err != nil {
+		return nil, err
+	}
+
+	if in.PageSize != 0 || in.PageToken != "" {
+		s.log.Warn("UnimplementedPaginationRequested", zap.String("request", "ListProfiles"))
+	}
+
+	profiles, err := s.store.ListProfiles(ctx, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &proto.ListProfilesResponse{
+		Profiles: make([]*proto.Profile, len(profiles)),
+	}
+
+	for i, p := range profiles {
+		// TODO(burdiyan): this is not pretty.
+		if p.ID == s.node.Account().ID {
+			continue
+		}
+		pbprof := profileToProto(p)
+		conn, err := s.store.GetProfileConnectionStatus(ctx, p.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		pbprof.ConnectionStatus = conn
+		resp.Profiles[i] = pbprof
+	}
+
+	return resp, nil
 }
 
 // UpdateProfile implements Mintter rpc.

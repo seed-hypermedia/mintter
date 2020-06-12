@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"mintter/backend/identity"
 	"mintter/backend/p2p/internal"
+	"mintter/backend/store"
 
 	"github.com/libp2p/go-libp2p-core/host"
 	peer "github.com/libp2p/go-libp2p-core/peer"
@@ -51,6 +52,20 @@ func (n *Node) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) error 
 	return nil
 }
 
+// Disconnect closes connection with a remote node.
+func (n *Node) Disconnect(ctx context.Context, pid identity.ProfileID) error {
+	prof, err := n.store.GetProfile(ctx, pid)
+	if err != nil {
+		return err
+	}
+
+	if err := n.host.Network().ClosePeer(prof.Peer.ID); err != nil {
+		return err
+	}
+
+	return n.store.UpdateProfileConnectionStatus(ctx, pid, store.ConnectionStatus(n.host.Network().Connectedness(prof.Peer.ID)))
+}
+
 // savePeerProfile stores another peer's profile and marks it's connection to support mintter protocol.
 func (n *Node) savePeerProfile(ctx context.Context, prof identity.Profile) error {
 	const (
@@ -91,6 +106,10 @@ func (n *Node) savePeerProfile(ctx context.Context, prof identity.Profile) error
 
 	// mark whether or not this connection supports the protocol:
 	if err := n.host.Peerstore().Put(pid, supportKey, support); err != nil {
+		return err
+	}
+
+	if err := n.store.UpdateProfileConnectionStatus(ctx, prof.ID, store.ConnectionStatus(n.host.Network().Connectedness(pid))); err != nil {
 		return err
 	}
 

@@ -53,6 +53,44 @@ func TestGetProfile(t *testing.T) {
 	require.Equal(t, r1, r2)
 }
 
+func TestListProfiles(t *testing.T) {
+	alice := newSeededServer(t, testMnemonic...)
+	bob := newSeededServer(t, testMnemonic2...)
+	defer func() {
+		require.NoError(t, alice.Close())
+		require.NoError(t, bob.Close())
+	}()
+	ctx := context.Background()
+
+	// Connect alice to bob.
+	{
+		baddrs, err := bob.GetProfileAddrs(ctx, &proto.GetProfileAddrsRequest{})
+		require.NoError(t, err)
+
+		_, err = alice.ConnectToPeer(ctx, &proto.ConnectToPeerRequest{
+			Addrs: baddrs.Addrs,
+		})
+		require.NoError(t, err)
+	}
+
+	var bobID string
+	{
+		resp, err := bob.GetProfile(ctx, &proto.GetProfileRequest{})
+		require.NoError(t, err)
+		bobID = resp.Profile.AccountId
+	}
+
+	bobProf, err := alice.GetProfile(ctx, &proto.GetProfileRequest{
+		ProfileId: bobID,
+	})
+	require.NoError(t, err)
+
+	resp, err := alice.ListProfiles(ctx, &proto.ListProfilesRequest{})
+	require.NoError(t, err)
+	require.Len(t, resp.Profiles, 1)
+	require.Equal(t, bobProf.Profile, resp.Profiles[0])
+}
+
 func TestUpdateProfile(t *testing.T) {
 	srv := newSeededServer(t)
 	defer func() {

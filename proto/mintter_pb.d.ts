@@ -127,6 +127,9 @@ export namespace UpdateProfileResponse {
 }
 
 export class GetProfileRequest extends jspb.Message {
+  getProfileId(): string;
+  setProfileId(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetProfileRequest.AsObject;
   static toObject(includeInstance: boolean, msg: GetProfileRequest): GetProfileRequest.AsObject;
@@ -137,6 +140,7 @@ export class GetProfileRequest extends jspb.Message {
 
 export namespace GetProfileRequest {
   export type AsObject = {
+    profileId: string,
   }
 }
 
@@ -157,6 +161,52 @@ export class GetProfileResponse extends jspb.Message {
 export namespace GetProfileResponse {
   export type AsObject = {
     profile?: Profile.AsObject,
+  }
+}
+
+export class ListProfilesRequest extends jspb.Message {
+  getPageSize(): number;
+  setPageSize(value: number): void;
+
+  getPageToken(): string;
+  setPageToken(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListProfilesRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListProfilesRequest): ListProfilesRequest.AsObject;
+  static serializeBinaryToWriter(message: ListProfilesRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListProfilesRequest;
+  static deserializeBinaryFromReader(message: ListProfilesRequest, reader: jspb.BinaryReader): ListProfilesRequest;
+}
+
+export namespace ListProfilesRequest {
+  export type AsObject = {
+    pageSize: number,
+    pageToken: string,
+  }
+}
+
+export class ListProfilesResponse extends jspb.Message {
+  getProfilesList(): Array<Profile>;
+  setProfilesList(value: Array<Profile>): void;
+  clearProfilesList(): void;
+  addProfiles(value?: Profile, index?: number): Profile;
+
+  getNextPageToken(): string;
+  setNextPageToken(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListProfilesResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListProfilesResponse): ListProfilesResponse.AsObject;
+  static serializeBinaryToWriter(message: ListProfilesResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListProfilesResponse;
+  static deserializeBinaryFromReader(message: ListProfilesResponse, reader: jspb.BinaryReader): ListProfilesResponse;
+}
+
+export namespace ListProfilesResponse {
+  export type AsObject = {
+    profilesList: Array<Profile.AsObject>,
+    nextPageToken: string,
   }
 }
 
@@ -244,6 +294,9 @@ export class Profile extends jspb.Message {
   getBio(): string;
   setBio(value: string): void;
 
+  getConnectionStatus(): ConnectionStatus;
+  setConnectionStatus(value: ConnectionStatus): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Profile.AsObject;
   static toObject(includeInstance: boolean, msg: Profile): Profile.AsObject;
@@ -259,6 +312,13 @@ export namespace Profile {
     username: string,
     email: string,
     bio: string,
+    connectionStatus: ConnectionStatus,
   }
 }
 
+export enum ConnectionStatus { 
+  NOT_CONNECTED = 0,
+  CONNECTED = 1,
+  CAN_CONNECT = 2,
+  CANNOT_CONNECT = 3,
+}

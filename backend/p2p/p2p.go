@@ -17,6 +17,7 @@ import (
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
 	"github.com/multiformats/go-multiaddr"
@@ -133,6 +134,13 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 	}
 	cleanup = append(cleanup, h, dht)
 
+	connWatcher := makeConnectionWatcher(s, log)
+
+	h.Network().Notify(&network.NotifyBundle{
+		ConnectedF:    connWatcher,
+		DisconnectedF: connWatcher,
+	})
+
 	ipfsnode, err := ipfsutil.New(ctx, db, h, dht, nil)
 	if err != nil {
 		return nil, err
@@ -203,4 +211,24 @@ func (n *Node) Account() identity.Account {
 // Addrs return p2p multiaddresses this node is listening on.
 func (n *Node) Addrs() ([]multiaddr.Multiaddr, error) {
 	return peer.AddrInfoToP2pAddrs(host.InfoFromHost(n.host))
+}
+
+func makeConnectionWatcher(s *store.Store, log *zap.Logger) func(net network.Network, conn network.Conn) {
+	return func(net network.Network, conn network.Conn) {
+		pid, err := s.GetProfileForPeer(context.TODO(), conn.RemotePeer())
+		if err != nil {
+			// We don't log this error because it's expected to fail for the first time this is invoked after peer is connected.
+			// The thing is that this is invoked right after connection is established but it can happen that we have
+			// not yet marked it as Mintter connection.
+			return
+		}
+
+		err = s.UpdateProfileConnectionStatus(context.TODO(), pid, store.ConnectionStatus(net.Connectedness(conn.RemotePeer())))
+		if err != nil {
+			log.Warn("FailedToUpdateConnectionStatus",
+				zap.String("peer", conn.RemotePeer().String()),
+				zap.Error(err),
+			)
+		}
+	}
 }
