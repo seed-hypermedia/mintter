@@ -16,12 +16,14 @@ export default function LinkButton({
   children,
   to,
   className = '',
+
   disabled = false,
   replace = false,
   type = 'button',
   onClick,
   ...props
 }: ButtonLinkProps) {
+  console.log('className', className)
   const history = useHistory()
   return (
     <Button
@@ -39,6 +41,7 @@ export default function LinkButton({
       }}
       type={type}
       disabled={disabled}
+      className={className}
       {...props}
     >
       {children}
