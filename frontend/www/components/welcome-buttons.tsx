@@ -9,7 +9,6 @@ export function NextButton({
   type = 'button',
   ...props
 }: ButtonLinkProps) {
-  console.log('next button!')
   return (
     <Button
       type={type}

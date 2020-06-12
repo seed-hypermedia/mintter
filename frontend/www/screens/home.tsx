@@ -16,10 +16,7 @@ export function Home() {
             <Link to="/welcome" className="rounded text-blue-700 text-lg mr-4">
               Welcome
             </Link>
-            <Link
-              to="/library/publications"
-              className="rounded text-blue-700 text-lg"
-            >
+            <Link to="/library/feed" className="rounded text-blue-700 text-lg">
               App
             </Link>
           </div>

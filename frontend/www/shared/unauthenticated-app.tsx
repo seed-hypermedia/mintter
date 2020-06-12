@@ -4,7 +4,7 @@ import Layout, {LayoutProps} from 'components/layout'
 import WelcomeProvider from 'shared/welcomeProvider'
 import ThemeToggle from 'components/themeToggle'
 import WelcomeIntro from 'screens/welcome/intro'
-import {PublicRoute} from 'components/routes'
+import {ProgressRoute} from 'components/routes'
 
 const SecurityPack = React.lazy(() => import('screens/welcome/security-pack'))
 const RetypeSeed = React.lazy(() => import('screens/welcome/retype-seed'))
@@ -30,24 +30,25 @@ export default function WelcomeLayout({
       </div>
       <WelcomeProvider>
         <Switch>
-          <PublicRoute exact path={`${match.url}`}>
+          {/* the first route does not use the ProgressRoute component since this is how I aboid the infinite redirect loop (I'm redirecting from the ProgressRoute to this route) */}
+          <Route exact path={`${match.url}`}>
             <WelcomeIntro />
-          </PublicRoute>
-          <PublicRoute path={`${match.url}/security-pack`}>
+          </Route>
+          <ProgressRoute path={`${match.url}/security-pack`}>
             <SecurityPack />
-          </PublicRoute>
-          <PublicRoute path={`${match.url}/retype-seed`}>
+          </ProgressRoute>
+          <ProgressRoute path={`${match.url}/retype-seed`}>
             <RetypeSeed />
-          </PublicRoute>
-          <PublicRoute path={`${match.url}/create-password`}>
+          </ProgressRoute>
+          <ProgressRoute path={`${match.url}/create-password`}>
             <CreatePassword />
-          </PublicRoute>
-          <PublicRoute path={`${match.url}/edit-profile`}>
+          </ProgressRoute>
+          <ProgressRoute path={`${match.url}/edit-profile`}>
             <EditProfile />
-          </PublicRoute>
-          <PublicRoute path={`${match.url}/complete`}>
+          </ProgressRoute>
+          <ProgressRoute path={`${match.url}/complete`}>
             <Complete />
-          </PublicRoute>
+          </ProgressRoute>
         </Switch>
       </WelcomeProvider>
     </Layout>

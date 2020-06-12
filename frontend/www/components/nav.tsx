@@ -23,7 +23,6 @@ export function NavItem({
     path: to,
     exact: onlyActiveWhenExact,
   })
-  console.log(`match for ${to}`, match)
 
   const active = useMemo(() => match?.path === to, [match, to])
 
