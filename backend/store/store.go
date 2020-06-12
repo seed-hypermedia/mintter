@@ -20,9 +20,10 @@ import (
 )
 
 var (
-	keyProfiles     = datastore.NewKey("/mintter/profiles")
-	keyDrafts       = datastore.NewKey("/mintter/drafts")
-	keyPublications = datastore.NewKey("/mintter/publications")
+	keyProfiles         = datastore.NewKey("/mintter/profiles")
+	keyDrafts           = datastore.NewKey("/mintter/drafts")
+	keyPublications     = datastore.NewKey("/mintter/publications")
+	keyConnectionStatus = datastore.NewKey("/mintter/connectionStatus")
 )
 
 // Store is the persistence layer of the app.
@@ -121,4 +122,13 @@ func (s *Store) LogBook() *logbook.Book {
 // Peerstore retrieves the underlying peer store.
 func (s *Store) Peerstore() peerstore.Peerstore {
 	return s.ps
+}
+
+func (s *Store) get(k datastore.Key) ([]byte, error) {
+	v, err := s.db.Get(k)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get %s: %w", k, err)
+	}
+
+	return v, nil
 }

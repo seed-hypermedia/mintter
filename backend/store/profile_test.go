@@ -2,12 +2,10 @@ package store
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"mintter/backend/identity"
 
@@ -15,10 +13,8 @@ import (
 )
 
 func TestProfileCache(t *testing.T) {
-	repoPath := fmt.Sprintf("test-repo-%d", time.Now().UnixNano())
-	repoPath = filepath.Join(os.TempDir(), repoPath)
-	require.NoError(t, os.MkdirAll(repoPath, 0700))
-
+	repoPath, err := ioutil.TempDir("", t.Name())
+	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, os.RemoveAll(repoPath))
 	})
@@ -27,7 +23,7 @@ func TestProfileCache(t *testing.T) {
 
 	pc := &profileCache{filename: filepath.Join(repoPath, "profile.json")}
 
-	_, err := pc.load()
+	_, err = pc.load()
 	require.Error(t, err, "loading non-existing profile must fail")
 
 	err = pc.store(prof)
@@ -53,26 +49,60 @@ func TestProfileCache(t *testing.T) {
 }
 
 func TestStoreProfile(t *testing.T) {
-	dir, err := ioutil.TempDir("", t.Name())
-	require.NoError(t, err)
-	defer func() {
-		require.NoError(t, os.RemoveAll(dir))
-	}()
-
+	store := testStore(t)
+	prof := store.prof
 	ctx := context.Background()
-	prof := testProfile(t)
-
-	store, err := Create(dir, prof)
-	require.NoError(t, err)
-	defer func() {
-		require.NoError(t, store.Close())
-	}()
 
 	require.NoError(t, store.StoreProfile(ctx, prof))
 
 	pp, err := store.GetProfile(ctx, prof.ID)
 	require.NoError(t, err)
 	require.Equal(t, prof.ID, pp.ID)
+}
+
+func TestListProfiles(t *testing.T) {
+	store := testStore(t)
+	ctx := context.Background()
+	prof := store.prof
+
+	require.NoError(t, store.StoreProfile(ctx, prof))
+
+	list, err := store.ListProfiles(ctx, 0, 0)
+	require.NoError(t, err)
+	require.Len(t, list, 1)
+	require.Equal(t, prof, list[0])
+}
+
+func TestConnectionStatus(t *testing.T) {
+	store := testStore(t)
+	ctx := context.Background()
+	prof := store.prof
+
+	s, err := store.GetProfileConnectionStatus(ctx, prof.ID)
+	require.Error(t, err, "must not exist initially")
+
+	require.NoError(t, store.UpdateProfileConnectionStatus(ctx, prof.ID, ConnectionStatus(1)))
+	s, err = store.GetProfileConnectionStatus(ctx, prof.ID)
+	require.NoError(t, err)
+	require.Equal(t, ConnectionStatus(1), s)
+}
+
+func testStore(t *testing.T) *Store {
+	t.Helper()
+	dir, err := ioutil.TempDir("", t.Name())
+	require.NoError(t, err)
+
+	prof := testProfile(t)
+
+	s, err := Create(dir, prof)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		require.NoError(t, s.Close())
+		require.NoError(t, os.RemoveAll(dir))
+	})
+
+	return s
 }
 
 func testProfile(t *testing.T) identity.Profile {

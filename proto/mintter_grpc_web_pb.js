@@ -310,6 +310,86 @@ proto.com.mintter.MintterPromiseClient.prototype.getProfile =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.mintter.ListProfilesRequest,
+ *   !proto.com.mintter.ListProfilesResponse>}
+ */
+const methodDescriptor_Mintter_ListProfiles = new grpc.web.MethodDescriptor(
+  '/com.mintter.Mintter/ListProfiles',
+  grpc.web.MethodType.UNARY,
+  proto.com.mintter.ListProfilesRequest,
+  proto.com.mintter.ListProfilesResponse,
+  /**
+   * @param {!proto.com.mintter.ListProfilesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.ListProfilesResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.com.mintter.ListProfilesRequest,
+ *   !proto.com.mintter.ListProfilesResponse>}
+ */
+const methodInfo_Mintter_ListProfiles = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.com.mintter.ListProfilesResponse,
+  /**
+   * @param {!proto.com.mintter.ListProfilesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.ListProfilesResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.mintter.ListProfilesRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.ListProfilesResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.ListProfilesResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.mintter.MintterClient.prototype.listProfiles =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.mintter.Mintter/ListProfiles',
+      request,
+      metadata || {},
+      methodDescriptor_Mintter_ListProfiles,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.mintter.ListProfilesRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.mintter.ListProfilesResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.com.mintter.MintterPromiseClient.prototype.listProfiles =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.mintter.Mintter/ListProfiles',
+      request,
+      metadata || {},
+      methodDescriptor_Mintter_ListProfiles);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.com.mintter.GetProfileAddrsRequest,
  *   !proto.com.mintter.GetProfileAddrsResponse>}
  */

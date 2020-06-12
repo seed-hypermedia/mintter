@@ -7,11 +7,16 @@ import (
 	"fmt"
 	"mintter/backend/identity"
 	"mintter/backend/logbook"
+	"mintter/proto"
 	"os"
 	"sync"
 
 	"github.com/ipfs/go-datastore/query"
+	"github.com/libp2p/go-libp2p-core/peer"
 )
+
+// ConnectionStatus shows connection status of a profile.
+type ConnectionStatus = proto.ConnectionStatus
 
 const profileKey = "mtt-profile"
 
@@ -93,62 +98,57 @@ func (s *Store) GetProfile(ctx context.Context, pid identity.ProfileID) (identit
 	return p, nil
 }
 
+// GetProfileForPeer finds profile ID of a given peer. There might be multiple network peers correspnding to the same Mintter profile.
+func (s *Store) GetProfileForPeer(ctx context.Context, p peer.ID) (identity.ProfileID, error) {
+	v, err := s.ps.Get(p, profileKey)
+	if err != nil {
+		return identity.ProfileID{}, fmt.Errorf("can't find profile id for peer %s: %w", p, err)
+	}
+
+	return identity.DecodeProfileID(v.(string))
+}
+
+// UpdateProfileConnectionStatus updates the connection status of a profile.
+func (s *Store) UpdateProfileConnectionStatus(ctx context.Context, pid identity.ProfileID, status ConnectionStatus) error {
+	return s.db.Put(keyConnectionStatus.ChildString(pid.String()), []byte(status.String()))
+}
+
+// GetProfileConnectionStatus retrieves connection status of a given profile.
+func (s *Store) GetProfileConnectionStatus(ctx context.Context, pid identity.ProfileID) (ConnectionStatus, error) {
+	v, err := s.get(keyConnectionStatus.ChildString(pid.String()))
+	if err != nil {
+		return 0, err
+	}
+
+	return proto.ConnectionStatus(proto.ConnectionStatus_value[string(v)]), nil
+}
+
 // ListProfiles stored in the store.
-func (s *Store) ListProfiles(ctx context.Context) ([]identity.Profile, error) {
+func (s *Store) ListProfiles(ctx context.Context, offset, limit int) ([]identity.Profile, error) {
 	res, err := s.db.Query(query.Query{
 		Prefix: keyProfiles.String(),
+		Offset: offset,
+		Limit:  limit,
 	})
 	if err != nil {
 		return nil, err
 	}
 	defer res.Close()
 
-	var out []identity.Profile
-
-	for {
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		case rec, ok := <-res.Next():
-			if !ok {
-				return out, nil
-			}
-
-			var p identity.Profile
-			if err := json.Unmarshal(rec.Value, &p); err != nil {
-				return nil, err
-			}
-
-			out = append(out, p)
-		}
-	}
-}
-
-// ListProfileIDs of known profiles.
-func (s *Store) ListProfileIDs(ctx context.Context) ([]identity.ProfileID, error) {
-	res, err := s.db.Query(query.Query{
-		Prefix:   keyProfiles.String(),
-		KeysOnly: true,
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	entries, err := res.Rest()
 	if err != nil {
 		return nil, err
 	}
 
-	out := make([]identity.ProfileID, len(entries))
-	for i, e := range entries {
-		_ = out
-		_ = i
-		fmt.Println(e.Key)
+	out := make([]identity.Profile, len(entries))
+
+	for i, entry := range entries {
+		if err := json.Unmarshal(entry.Value, &out[i]); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal profile: %w", err)
+		}
 	}
 
-	panic("not implemented")
-
-	return nil, nil
+	return out, nil
 }
 
 // CurrentProfile returns current user's profile.
