@@ -22,8 +22,9 @@ const Input = React.forwardRef(
     ref,
   ) => (
     <input
-      className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body ${error &&
-        'border-danger'} ${disabled && 'opacity-75'} ${className}`}
+      className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body${
+        error ? ' border-danger' : ''
+      } ${disabled ? ' opacity-75' : ''} ${className}`}
       type={type}
       ref={ref}
       disabled={disabled}

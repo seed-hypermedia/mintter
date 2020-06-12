@@ -1,7 +1,8 @@
 module.exports = {
-  collectCoverageFrom: ['+(pages|components|shared)/**/*.+(js|jsx|ts|tsx)'],
+  collectCoverageFrom: ['+(components|shared|screens)/**/*.+(js|jsx|ts|tsx)'],
   testEnvironment: 'jest-environment-jsdom',
-  testPathIgnorePatterns: ['/node_modules/', '/.next/', '/out/'],
+  testPathIgnorePatterns: ['/node_modules/', '/.next/', '/out/', '/pages/'],
+  moduleDirectories: ['node_modules', '.'],
   moduleNameMapper: {
     '\\.css$': require.resolve('./test/style-mock.js'),
     '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
