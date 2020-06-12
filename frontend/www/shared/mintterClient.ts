@@ -37,9 +37,9 @@ import {
 import {fromSlateToMarkdown} from './parseToMarkdown'
 import {parseToMarkdown} from './parseToMarkdown'
 
-const {publicRuntimeConfig} = getConfig()
-const hostname = publicRuntimeConfig.MINTTER_HOSTNAME
-const port = publicRuntimeConfig.MINTTER_PORT
+const config = getConfig()
+const hostname = config?.publicRuntimeConfig.MINTTER_HOSTNAME
+const port = config?.publicRuntimeConfig.MINTTER_PORT
 const path = `${hostname}:${port}`
 
 export const documentsClient = new DocumentsPromiseClient(path)

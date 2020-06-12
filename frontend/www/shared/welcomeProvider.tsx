@@ -1,4 +1,4 @@
-import {useContext, createContext, useReducer, useMemo} from 'react'
+import React, {useContext, createContext, useReducer, useMemo} from 'react'
 import {useLocation} from 'react-router-dom'
 import Steps from '../components/welcome-steps'
 
