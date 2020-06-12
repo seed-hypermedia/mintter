@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useState, useEffect, useMemo} from 'react'
 import Container from 'components/welcome-container'
 import Heading from 'components/welcome-heading'
 
@@ -22,7 +22,7 @@ interface SecurityPackProps {
 // TODO: (horacio): refactor rpc to not have it here
 export default function SecurityPack({rpc = usersClient}: SecurityPackProps) {
   const [error, setError] = useState<{code: number; message: string}>()
-  const {focusFirst} = useFocus()
+  // const {focusFirst} = useFocus()
   const [mnemonic, setMnemonic] = useState<string[]>([])
   const history = useHistory()
   const {dispatch} = useWelcome()
@@ -45,6 +45,10 @@ export default function SecurityPack({rpc = usersClient}: SecurityPackProps) {
     }
   }
 
+  useEffect(() => {
+    handleRPC({passphrase: ''})
+  }, [])
+
   function splitWords(arr: string[]): string[][] {
     const temp = [...arr]
     const res = []
@@ -64,7 +68,7 @@ export default function SecurityPack({rpc = usersClient}: SecurityPackProps) {
   }
 
   // mnemonic words separated into lists
-  const lists = splitWords(mnemonic)
+  const lists = useMemo(() => splitWords(mnemonic), [mnemonic])
   return (
     <>
       <Container>
@@ -74,7 +78,7 @@ export default function SecurityPack({rpc = usersClient}: SecurityPackProps) {
           your account
         </P>
         <Content className="flex-wrap flex w-full">
-          {mnemonic.length === 0 ? (
+          {/* {mnemonic.length === 0 ? (
             <div className="flex-col flex-1 max-w-xs mx-auto">
               <form>
                 <label
@@ -101,9 +105,9 @@ export default function SecurityPack({rpc = usersClient}: SecurityPackProps) {
                 </Button>
               </form>
             </div>
-          ) : (
-            <MnemonicWords lists={lists} error={error} />
-          )}
+          ) : ( */}
+          <MnemonicWords lists={lists} error={error} />
+          {/* )} */}
         </Content>
       </Container>
       <Footer className="flex-none">
@@ -127,52 +131,70 @@ export function MnemonicWords({
   lists?: string[][]
   error?: {code: number; message: string}
 }) {
+  function handleCopy() {
+    alert(
+      lists
+        .flat()
+        .map((w, i) => `${i + 1}. ${w}\n`)
+        .join(''),
+    )
+  }
+
   return (
-    <div className="flex-wrap flex w-full" data-testid="mnemonic-list">
-      {error
-        ? error.message
-        : lists.map((list, list_idx) => (
-            <div
-              key={list_idx}
-              className={`w-1/2 flex-1 flex flex-col md:order-none ${css`
-                min-width: 162px;
-                margin-top: -12px;
-                align-items: start;
-                padding-left: 30%;
+    <>
+      <div className="flex-wrap flex w-full" data-testid="mnemonic-list">
+        {error
+          ? error.message
+          : lists.map((list, list_idx) => (
+              <div
+                key={list_idx}
+                className={`w-1/2 flex-1 flex flex-col md:order-none ${css`
+                  min-width: 162px;
+                  margin-top: -12px;
+                  align-items: start;
+                  padding-left: 30%;
 
-                @media (min-width: 396px) {
-                  min-width: 50%;
-                  order: ${list_idx % 2 == 0 ? '1' : '2'};
-                  margin-top: ${list_idx % 2 == 0 ? '0' : '-12px'};
-                  align-items: center;
-                  padding-left: 0;
-                }
+                  @media (min-width: 396px) {
+                    min-width: 50%;
+                    order: ${list_idx % 2 == 0 ? '1' : '2'};
+                    margin-top: ${list_idx % 2 == 0 ? '0' : '-12px'};
+                    align-items: center;
+                    padding-left: 0;
+                  }
 
-                @media (min-width: 768px) {
-                  min-width: 0;
-                  order: 0;
-                  margin-top: 0;
-                }
-              `}`}
-            >
-              <ol>
-                {list.map((word, word_idx) => (
-                  <li key={word_idx} className="my-3 flex items-baseline">
-                    <span
-                      className={`text-bold text-body-muted ${css`
-                        font-size: 0.65rem;
-                        width: 24px;
-                        display: inline-block;
-                      `}`}
-                    >
-                      {list_idx * 6 + word_idx + 1}.
-                    </span>
-                    <span className="text-body">{word}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          ))}
-    </div>
+                  @media (min-width: 768px) {
+                    min-width: 0;
+                    order: 0;
+                    margin-top: 0;
+                  }
+                `}`}
+              >
+                <ol>
+                  {list.map((word, word_idx) => (
+                    <li key={word_idx} className="my-3 flex items-baseline">
+                      <span
+                        className={`text-bold text-body-muted ${css`
+                          font-size: 0.65rem;
+                          width: 24px;
+                          display: inline-block;
+                        `}`}
+                      >
+                        {list_idx * 6 + word_idx + 1}.
+                      </span>
+                      <span className="text-body">{word}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            ))}
+      </div>
+      <Button
+        className="mx-auto mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white transition-all"
+        type="submit"
+        onClick={handleCopy}
+      >
+        Copy and Save it securely!
+      </Button>
+    </>
   )
 }
