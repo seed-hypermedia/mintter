@@ -36,9 +36,9 @@ export function MyPublications() {
         <>
           <hr className="border-t-2 border-muted border-solid my-8" />
           <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
-            <h2 className="text-3xl font-semibold text-primary">
+            <h3 className="text-xl font-semibold text-primary">
               No Publications (yet)
-            </h2>
+            </h3>
             <button
               onClick={handleCreateDraft}
               className="bg-info hover:bg-info-hover text-white font-bold py-3 px-4 rounded rounded-full flex items-center mt-5 justify-center"
