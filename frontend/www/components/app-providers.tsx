@@ -6,7 +6,6 @@ import {ProfileProvider} from 'shared/profileContext'
 import {MintterProvider} from 'shared/mintterContext'
 
 export function AppProviders({children, ...props}) {
-  console.log('app providers rendered')
   return (
     <>
       <ReactQueryDevtools initialIsOpen={false} />

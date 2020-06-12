@@ -1,14 +1,10 @@
-import {useEffect, useState} from 'react'
-
 import Heading from 'components/welcome-heading'
 import Container from 'components/welcome-container'
-import Layout from 'components/welcome-layout'
 import P from 'components/welcome-p'
 import {NextButton} from 'components/welcome-buttons'
 import Footer from 'components/footer'
 import {useRouter} from 'shared/use-router'
 import {useWelcome} from 'shared/welcomeProvider'
-import {useProfile} from 'shared/profileContext'
 
 export default function WelcomeIndex() {
   const {history} = useRouter()
@@ -16,7 +12,7 @@ export default function WelcomeIndex() {
 
   function handleNext() {
     dispatch({type: 'reset'})
-    history.push('/library/publications')
+    history.push('/library/feed')
   }
 
   return (

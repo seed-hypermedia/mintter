@@ -2,7 +2,6 @@ import React from 'react'
 import {Switch, Route, Redirect} from 'react-router-dom'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {PrivateRoute} from 'components/routes'
-import {Home} from 'screens/home'
 import {NoRoute} from 'screens/no-route'
 
 const AuthenticatedApp = React.lazy(() =>

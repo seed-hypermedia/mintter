@@ -1,19 +1,21 @@
-import {Route, Redirect} from 'react-router-dom'
+import {Route, Redirect, useLocation} from 'react-router-dom'
 import {useProfile} from 'shared/profileContext'
+import {useWelcome} from 'shared/welcomeProvider'
 
-export function PublicRoute({children, ...rest}) {
-  const {profile} = useProfile()
+export function ProgressRoute({children, ...rest}) {
+  const {
+    state: {progress},
+  } = useWelcome()
   return (
     <Route
       {...rest}
-      render={({location}) =>
-        !profile ? (
+      render={() =>
+        progress ? (
           children
         ) : (
           <Redirect
             to={{
-              pathname: '/library/publications',
-              state: {from: location},
+              pathname: '/welcome',
             }}
           />
         )

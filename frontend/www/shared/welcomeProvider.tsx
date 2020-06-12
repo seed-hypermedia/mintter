@@ -5,6 +5,7 @@ import Steps from '../components/welcome-steps'
 interface WelcomeState {
   mnemonicList?: string[]
   aezeedPassphrase?: string
+  progress?: number
 }
 
 type WelcomeValueType = {
@@ -21,6 +22,7 @@ export interface WelcomeProviderProps
 const initialState: WelcomeState = {
   mnemonicList: [''],
   aezeedPassphrase: '',
+  progress: undefined,
 }
 
 export const WelcomeContext = createContext<WelcomeValueType>({
@@ -30,10 +32,13 @@ export const WelcomeContext = createContext<WelcomeValueType>({
 type Action =
   | {type: 'mnemonicList'; payload: string[]}
   | {type: 'aezeedPassphrase'; payload: string}
+  | {type: 'progress'; payload: number}
   | {type: 'reset'}
 
 export function reducer(state: WelcomeState, action: Action): WelcomeState {
   switch (action.type) {
+    case 'progress':
+      return {...state, progress: action.payload}
     case 'mnemonicList':
       return {...state, mnemonicList: action.payload}
     case 'aezeedPassphrase':
