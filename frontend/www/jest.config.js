@@ -1,26 +1,24 @@
 module.exports = {
-  collectCoverageFrom: ['+(components|shared|screens)/**/*.+(js|jsx|ts|tsx)'],
-  testEnvironment: 'jest-environment-jsdom',
-  testPathIgnorePatterns: ['/node_modules/', '/.next/', '/out/', '/pages/'],
-  moduleDirectories: ['node_modules', '.'],
-  moduleNameMapper: {
-    '\\.css$': require.resolve('./test/style-mock.js'),
-    '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
-  },
-  setupFilesAfterEnv: [
-    '@testing-library/jest-dom/extend-expect',
-    'jest-axe/extend-expect',
-    './test/get-selection-mock',
+  roots: ['<rootDir>'],
+  modulePaths: ['<rootDir>'],
+  moduleFileExtensions: ['ts', 'tsx', 'js'],
+  testPathIgnorePatterns: [
+    '<rootDir>[/\\\\](node_modules|.next|out|pages)[/\\\\]',
   ],
+  transformIgnorePatterns: ['[/\\\\]node_modules[/\\\\].+\\.(ts|tsx)$'],
+  transform: {
+    '^.+\\.(ts|tsx)$': 'babel-jest',
+  },
+  watchPlugins: [
+    'jest-watch-typeahead/filename',
+    'jest-watch-typeahead/testname',
+  ],
+  moduleNameMapper: {
+    '\\.(css|less|sass|scss)$': 'identity-obj-proxy',
+    '\\.(gif|ttf|eot|svg|png)$': '<rootDir>/test/file-mock.js',
+  },
+  collectCoverageFrom: ['+(components|shared|screens)/**/*.+(js|jsx|ts|tsx)'],
+
   snapshotSerializers: ['jest-emotion'],
-  // coverageThreshold: {
-  //   statements: 20,
-  //   branches: 30,
-  //   functions: 20,
-  //   lines: 20,
-  // },
-  // transform: {
-  //   '^.+\\.(js|jsx|ts|tsx)$': '<rootDir>/node_modules/babel-jest',
-  //   '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',
-  // },
+  testEnvironment: 'jest-environment-jsdom',
 }
