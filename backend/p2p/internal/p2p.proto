@@ -7,11 +7,11 @@ option go_package = "internal";
 service PeerService {
   // Handshake performs profile exchange for the first time between peers.
   // This should ideally only happen once between a given pair of peers.
-  rpc Handshake(HandshakeRequest) returns (HandshakeResponse) {}
+  rpc Handshake(HandshakeRequest) returns (HandshakeResponse);
 
-  rpc Ping(PingRequest) returns (PingResponse) {}
+  rpc Ping(PingRequest) returns (PingResponse);
 
-  rpc GetProfile(GetProfileRequest) returns (Profile) {}
+  rpc GetProfile(GetProfileRequest) returns (Profile);
 }
 
 message HandshakeRequest {
