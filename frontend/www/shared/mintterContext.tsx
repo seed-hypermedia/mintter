@@ -8,6 +8,7 @@ import {
   ListDraftsResponse,
 } from '@mintter/proto/documents_pb'
 import {
+  useQuery,
   usePaginatedQuery,
   QueryResult,
   PaginatedQueryResult,
@@ -20,7 +21,10 @@ import {
 import {
   GetProfileResponse,
   GetProfileAddrsResponse,
+  ListProfilesResponse,
+  Profile,
 } from '@mintter/proto/mintter_pb'
+import {profile} from 'console'
 
 type QueryParam<T> = T | T[]
 
@@ -46,8 +50,8 @@ export interface MintterClient {
   connectToPeerById: (peerIds: string[]) => any
   getProfile: () => QueryResult<GetProfileResponse>
   setProfile: () => any
-  getAuthor: (authorId: string) => Promise<string>
   getProfileAddrs: () => Promise<GetProfileAddrsResponse>
+  allConnections: () => PaginatedQueryResult<ListProfilesResponse>
 }
 
 const MintterClientContext = createContext<MintterClient>(null)
@@ -72,7 +76,7 @@ export function MintterProvider(props) {
       )
     }
 
-    return apiClient.getPublication(id)
+    return useQuery(['Publication', id], apiClient.getPublication)
   }, [])
 
   const getSections = useCallback(
@@ -101,7 +105,10 @@ export function MintterProvider(props) {
         )
       }
 
-      return apiClient.getDraft(id, options)
+      return useQuery(id && ['Draft', id], apiClient.getDraft, {
+        refetchOnWindowFocus: false,
+        ...options,
+      })
     },
     [],
   )
@@ -124,6 +131,10 @@ export function MintterProvider(props) {
     [],
   )
 
+  function allConnections(page = 0): PaginatedQueryResult<any> {
+    return usePaginatedQuery(['AllConnections', page], apiClient.allConnections)
+  }
+
   const value = useMemo(
     () => ({
       allPublications,
@@ -136,6 +147,7 @@ export function MintterProvider(props) {
       publishDraft,
       deleteDraft,
       connectToPeerById,
+      allConnections,
     }),
     [
       allPublications,
@@ -148,6 +160,7 @@ export function MintterProvider(props) {
       publishDraft,
       deleteDraft,
       connectToPeerById,
+      allConnections,
     ],
   )
 

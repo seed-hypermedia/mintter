@@ -316,7 +316,7 @@ export default function Editor(): JSX.Element {
                     value={description}
                     onChange={setDescription}
                     name="description"
-                    placeholder="+ Add a subtitle"
+                    placeholder="+ document description..."
                     minHeight={28}
                     className={`leading-relaxed text-lg font-light text-heading-muted italic`}
                     onEnterPress={() => {

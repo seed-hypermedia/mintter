@@ -72,12 +72,11 @@ export default function LibraryHeader(props) {
           content={
             <div
               className={`flex flex-col shadow-md ${css`
-                // background: white;
-
                 opacity: ${menuVisible ? '1' : '0'};
               `}`}
             >
               <Button
+                className="text-body"
                 onClick={() => {
                   hide()
                   history.push('/settings')
@@ -90,9 +89,9 @@ export default function LibraryHeader(props) {
         >
           <span tabIndex={0}>
             <Button onClick={toggleFormMetadata} className="flex items-center">
-              <span className="mr-2">Menu</span>
+              <span className="mr-2 text-body">Menu</span>
               <Icons.ChevronDown
-                className={`transform transition duration-200 ${
+                className={`transform transition duration-200 text-body ${
                   menuVisible ? 'rotate-180' : ''
                 }`}
               />

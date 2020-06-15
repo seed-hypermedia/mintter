@@ -18,22 +18,12 @@ import {
 } from '@mintter/proto/documents_pb'
 import {
   ConnectToPeerRequest,
-  GetProfileRequest,
-  Profile,
-  GetProfileResponse,
   UpdateProfileRequest,
   InitProfileRequest,
-  InitProfileResponse,
   GetProfileAddrsRequest,
+  ListProfilesRequest,
+  ListProfilesResponse,
 } from '@mintter/proto/mintter_pb'
-import {
-  useQuery,
-  QueryResult,
-  usePaginatedQuery,
-  PaginatedQueryResult,
-  queryCache,
-  QueryOptions,
-} from 'react-query'
 import {fromSlateToMarkdown} from './parseToMarkdown'
 import {parseToMarkdown} from './parseToMarkdown'
 
@@ -58,13 +48,11 @@ export async function allPublications(
   return await documentsClient.listPublications(req)
 }
 
-export function getPublication(id: string): QueryResult<Publication> {
-  return useQuery(['Publication', id], async (key, id) => {
-    const req = new GetPublicationRequest()
-    req.setPublicationId(id)
+export async function getPublication(key, id: string): Promise<Publication> {
+  const req = new GetPublicationRequest()
+  req.setPublicationId(id)
 
-    return await documentsClient.getPublication(req)
-  })
+  return await documentsClient.getPublication(req)
 }
 
 export async function getSections(sectionsList: any) {
@@ -87,22 +75,10 @@ export async function createDraft() {
   return await documentsClient.createDraft(req)
 }
 
-export function getDraft(
-  id: string,
-  options?: QueryOptions<Draft>,
-): QueryResult<Draft> {
-  return useQuery(
-    id && ['Draft', id],
-    async (key, id) => {
-      const req = new GetDraftRequest()
-      req.setDocumentId(id)
-      return await documentsClient.getDraft(req)
-    },
-    {
-      refetchOnWindowFocus: false,
-      ...options,
-    },
-  )
+export async function getDraft(key, id): Promise<Draft> {
+  const req = new GetDraftRequest()
+  req.setDocumentId(id)
+  return await documentsClient.getDraft(req)
 }
 
 export interface SetDraftRequest {
@@ -172,13 +148,6 @@ export async function createProfile({
   return await usersClient.initProfile(req)
 }
 
-// export function getProfile(): QueryResult<GetProfileResponse> {
-//   return useQuery('Profile', async () => {
-//     const req = new GetProfileRequest()
-//     return await usersClient.getProfile(req)
-//   })
-// }
-
 export async function setProfile(
   profile,
   {
@@ -203,19 +172,6 @@ export async function setProfile(
   }
 }
 
-export function getAuthor(authorId: string) {
-  const profile = queryCache.getQueryData('Profile') as Profile
-  // TODO: (Horacio): FIXME not returning `me`..
-  let author
-  if (profile.toObject) {
-    let p = profile.toObject()
-
-    author = p.accountId === authorId ? 'me' : authorId
-  }
-
-  return author
-}
-
 export async function getProfileAddrs() {
   const req = new GetProfileAddrsRequest()
   return await usersClient.getProfileAddrs(req)
@@ -231,6 +187,15 @@ export function parseSlatetree(slateTree: Node[]) {
       body: children.map(parseToMarkdown).join(''),
     }
   })
+}
+
+export async function allConnections(
+  key,
+  page = 0,
+): Promise<ListProfilesResponse> {
+  const req = new ListProfilesRequest()
+  req.setPageSize(page)
+  return await usersClient.listProfiles(req)
 }
 
 export {MintterPromiseClient}

@@ -65,7 +65,21 @@ export function ProfileProvider(props) {
     },
   )
 
-  const getAuthor = useCallback(authorId => apiClient.getAuthor(authorId), [])
+  const getAuthor = useCallback(
+    (authorId: string) => {
+      const profile = queryCache.getQueryData('Profile') as Profile
+      // TODO: (Horacio): FIXME not returning `me`..
+      let author
+      if (profile.toObject) {
+        let p = profile.toObject()
+
+        author = p.accountId === authorId ? 'me' : authorId
+      }
+
+      return author
+    },
+    [profile],
+  )
 
   function getProfileAddrs() {
     return useQuery(['ProfileAddrs'], apiClient.getProfileAddrs)

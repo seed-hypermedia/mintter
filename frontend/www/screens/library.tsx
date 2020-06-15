@@ -7,10 +7,10 @@ import {useHistory} from 'react-router-dom'
 import {useMintter} from 'shared/mintterContext'
 import {Drafts} from './drafts'
 import Container from 'components/container'
-import Heading from 'components/heading'
 import {useProfile} from 'shared/profileContext'
-import {Profile} from '@mintter/proto/mintter_pb'
 import {Link} from 'components/link'
+import {ErrorMessage} from 'components/errorMessage'
+import {css} from 'emotion'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library(props) {
@@ -93,16 +93,43 @@ function ProfileInfo() {
 }
 
 function Connections() {
-  const {connectToPeerById} = useMintter()
+  const {connectToPeerById, allConnections} = useMintter()
 
   async function handlePeerConnection() {
     const peer = window.prompt(`enter a peer address`)
     await connectToPeerById([peer])
   }
 
+  const {status, error, resolvedData} = allConnections()
+
+  if (status === 'loading') {
+    return <p className="text-body text-sm mt-2">loading...</p>
+  }
+
+  if (status === 'error') {
+    return <ErrorMessage error={error} />
+  }
+
   return (
-    <div className="pt-10 px-4 lg:pl-20 lg:pr-16">
+    <div
+      className={`pt-10 px-4 lg:pl-20 lg:pr-16 ${css`
+        max-width: 300px;
+        width: 100%;
+      `}`}
+    >
       <h3 className="font-semibold text-xl text-heading">Connections</h3>
+      <ul>
+        {resolvedData?.toObject().profilesList.map(c => (
+          <>
+            <li className="text-body text-sm mt-2 flex items-center">
+              <div className="w-6 h-6 bg-body-muted rounded-full mr-2 flex-none" />
+              <a className="text-primary hover:text-primary-hover cursor-pointer text-sm hover:underline hover:cursor-not-allowed truncate">
+                {c.username}
+              </a>
+            </li>
+          </>
+        ))}
+      </ul>
       <button
         onClick={handlePeerConnection}
         className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline"
