@@ -3,9 +3,14 @@ module.exports = {
   testEnvironment: 'jest-environment-jsdom',
   testPathIgnorePatterns: ['/node_modules/', '/.next/', '/out/', '/pages/'],
   moduleDirectories: ['node_modules', '.'],
+  moduleFileExtensions: ['ts', 'tsx', 'js'],
+  testMatch: ['**/__tests__/*.(ts|tsx)'],
   moduleNameMapper: {
     '\\.css$': require.resolve('./test/style-mock.js'),
     '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
+  },
+  transform: {
+    '^.+\\.(ts|tsx)$': 'ts-jest',
   },
   setupFilesAfterEnv: [
     '@testing-library/jest-dom/extend-expect',
@@ -13,6 +18,11 @@ module.exports = {
     './test/get-selection-mock',
   ],
   snapshotSerializers: ['jest-emotion'],
+  globals: {
+    'ts-jest': {
+      tsConfig: 'tsconfig.jest.json',
+    },
+  },
   // coverageThreshold: {
   //   statements: 20,
   //   branches: 30,
