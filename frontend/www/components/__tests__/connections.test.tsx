@@ -1,14 +1,13 @@
 import React from 'react'
 import {render} from '@testing-library/react'
-import {Connections} from 'components/connections'
-import {AppProviders} from 'components/app-providers'
+import {Connections} from '../connections'
+import {AppProviders} from '../app-providers'
 
-xtest('should render the list of connections', () => {
-  // console.log(Connections)
-  // const {debug} = render(
-  //   <AppProviders>
-  //     <Connections />
-  //   </AppProviders>,
-  // )
-  // debug()
+test('should render the list of connections', () => {
+  const {debug} = render(
+    <AppProviders>
+      <Connections />
+    </AppProviders>,
+  )
+  debug()
 })

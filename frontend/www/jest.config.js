@@ -1,36 +1,24 @@
 module.exports = {
-  collectCoverageFrom: ['+(components|shared|screens)/**/*.+(js|jsx|ts|tsx)'],
-  testEnvironment: 'jest-environment-jsdom',
-  testPathIgnorePatterns: ['/node_modules/', '/.next/', '/out/', '/pages/'],
-  moduleDirectories: ['node_modules', '.'],
+  roots: ['<rootDir>'],
+  modulePaths: ['<rootDir>'],
   moduleFileExtensions: ['ts', 'tsx', 'js'],
-  testMatch: ['**/__tests__/*.(ts|tsx)'],
-  moduleNameMapper: {
-    '\\.css$': require.resolve('./test/style-mock.js'),
-    '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
-  },
-  transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
-  },
-  setupFilesAfterEnv: [
-    '@testing-library/jest-dom/extend-expect',
-    'jest-axe/extend-expect',
-    './test/get-selection-mock',
+  testPathIgnorePatterns: [
+    '<rootDir>[/\\\\](node_modules|.next|out|pages)[/\\\\]',
   ],
-  snapshotSerializers: ['jest-emotion'],
-  globals: {
-    'ts-jest': {
-      tsConfig: 'tsconfig.jest.json',
-    },
+  transformIgnorePatterns: ['[/\\\\]node_modules[/\\\\].+\\.(ts|tsx)$'],
+  transform: {
+    '^.+\\.(ts|tsx)$': 'babel-jest',
   },
-  // coverageThreshold: {
-  //   statements: 20,
-  //   branches: 30,
-  //   functions: 20,
-  //   lines: 20,
-  // },
-  // transform: {
-  //   '^.+\\.(js|jsx|ts|tsx)$': '<rootDir>/node_modules/babel-jest',
-  //   '^.+\\.css$': '<rootDir>/config/jest/cssTransform.js',
-  // },
+  watchPlugins: [
+    'jest-watch-typeahead/filename',
+    'jest-watch-typeahead/testname',
+  ],
+  moduleNameMapper: {
+    '\\.(css|less|sass|scss)$': 'identity-obj-proxy',
+    '\\.(gif|ttf|eot|svg|png)$': '<rootDir>/test/file-mock.js',
+  },
+  collectCoverageFrom: ['+(components|shared|screens)/**/*.+(js|jsx|ts|tsx)'],
+
+  snapshotSerializers: ['jest-emotion'],
+  testEnvironment: 'jest-environment-jsdom',
 }
