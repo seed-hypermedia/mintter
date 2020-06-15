@@ -12,8 +12,6 @@ service PeerService {
   rpc Ping(PingRequest) returns (PingResponse) {}
 
   rpc GetProfile(GetProfileRequest) returns (Profile) {}
-
-  rpc GetLogRecords(GetLogRecordsRequest) returns (GetLogRecordsResponse) {}
 }
 
 message HandshakeRequest {
@@ -31,29 +29,6 @@ message PingRequest {}
 message PingResponse {}
 
 message GetProfileRequest {}
-
-message GetLogRecordsRequest {
-  // Log name in form of <account-id>/<log-name>
-  string log_name = 1;
-
-  // Only return records that starts from this sequence number (inclusive).
-  int64 start_seq = 2;
-
-  // Limit number of records to return.
-  int64 limit = 3;
-}
-
-message GetLogRecordsResponse {
-  string log_name = 1;
-
-  repeated LogRecord records = 2;
-}
-
-message LogRecord {
-  int64 seq = 1;
-
-  bytes data = 2;
-}
 
 message Profile {
   // ID of the libp2p peer.
