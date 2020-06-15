@@ -1,5 +1,4 @@
 import {createContext, useContext, useMemo, useCallback} from 'react'
-import {Node} from 'slate'
 import * as apiClient from './mintterClient'
 import {
   Publication,
@@ -22,9 +21,7 @@ import {
   GetProfileResponse,
   GetProfileAddrsResponse,
   ListProfilesResponse,
-  Profile,
 } from '@mintter/proto/mintter_pb'
-import {profile} from 'console'
 
 type QueryParam<T> = T | T[]
 
