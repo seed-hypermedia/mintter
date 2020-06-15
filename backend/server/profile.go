@@ -94,7 +94,8 @@ func (s *Server) ListProfiles(ctx context.Context, in *proto.ListProfilesRequest
 		pbprof := profileToProto(p)
 		conn, err := s.store.GetProfileConnectionStatus(ctx, p.ID)
 		if err != nil {
-			return nil, err
+			// TODO(burdiyan): treat missing connection status and not connected as different.
+			s.log.Warn("UnknownConnectionStatus", zap.Error(err))
 		}
 
 		pbprof.ConnectionStatus = conn
