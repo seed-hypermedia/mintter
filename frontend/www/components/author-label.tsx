@@ -1,7 +1,7 @@
 import Tippy from '@tippyjs/react'
 import {css} from 'emotion'
 
-export function AuthorLabel({author}) {
+export function AuthorLabel({author, children = null}) {
   return (
     <Tippy
       delay={500}
@@ -16,7 +16,13 @@ export function AuthorLabel({author}) {
         </span>
       }
     >
-      <span>{author === 'me' ? author : `...${author.slice(-16)}`}</span>
+      <span>
+        {children
+          ? children
+          : author === 'me'
+          ? author
+          : `...${author.slice(-16)}`}
+      </span>
     </Tippy>
   )
 }
