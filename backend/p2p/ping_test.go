@@ -12,9 +12,7 @@ func TestPing(t *testing.T) {
 	bob := makeTestNode(t, "bob")
 	ctx := context.Background()
 
-	addrs, err := bob.Addrs()
-	require.NoError(t, err)
-	require.NoError(t, alice.Connect(ctx, addrs...))
+	connectPeers(t, ctx, alice, bob)
 
 	dur, err := alice.Ping(ctx, bob.Account().ID)
 	require.NoError(t, err, "alice must be able to ping bob")

@@ -197,7 +197,7 @@ func (s *Server) ListPublications(ctx context.Context, in *proto.ListPublication
 		return nil, status.Error(codes.Unimplemented, "pagination for this request is not implemented yet - make the request without limiting page size and with no page token")
 	}
 
-	cids, err := s.store.ListPublications(0, 0)
+	cids, err := s.store.ListPublications("", 0, 0)
 	if err != nil {
 		return nil, err
 	}

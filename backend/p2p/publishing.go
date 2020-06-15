@@ -7,11 +7,13 @@ import (
 
 	"mintter/backend/identity"
 	"mintter/backend/ipldutil"
+	"mintter/backend/p2p/internal"
 	"mintter/backend/publishing"
 
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/libp2p/go-libp2p-core/peer"
+	"go.uber.org/zap"
 )
 
 // AddSections to the IPLD service.
@@ -55,7 +57,7 @@ func (n *Node) AddPublication(ctx context.Context, pub publishing.Publication) (
 		return cid.Undef, fmt.Errorf("failed to add publication to IPLD service: %w", err)
 	}
 
-	if err := n.store.AddPublication(pub.DocumentID, node.Cid()); err != nil {
+	if err := n.store.AddPublication(pub.Author, pub.DocumentID, node.Cid()); err != nil {
 		return cid.Undef, fmt.Errorf("failed to add publication to store: %w", err)
 	}
 
@@ -159,10 +161,65 @@ func (n *Node) GetPublication(ctx context.Context, cid cid.Cid) (publishing.Publ
 	// If we ended up fetching a remote block from IPFS we have to
 	// create a local reference between document ID and publication CID.
 	if !local {
-		if err := n.store.AddPublication(p.DocumentID, cid); err != nil {
+		if err := n.store.AddPublication(p.Author, p.DocumentID, cid); err != nil {
 			return publishing.Publication{}, fmt.Errorf("can't store doc-cid reference: %w", err)
 		}
 	}
 
 	return p, nil
+}
+
+// SyncPublications will load and try to fetch all publications from a given peer.
+func (n *Node) SyncPublications(ctx context.Context, pid identity.ProfileID) error {
+	conn, err := n.dialProfile(ctx, pid)
+	if err != nil {
+		return err
+	}
+	defer logClose(n.log, conn.Close, "failed closing grpc connection syncing publications")
+
+	resp, err := internal.NewPeerServiceClient(conn).ListPublications(ctx, &internal.ListPublicationsRequest{})
+	if err != nil {
+		return err
+	}
+
+	for _, id := range resp.PublicationIds {
+		cid, err := cid.Decode(id)
+		if err != nil {
+			n.log.Debug("FailedToDecodeCID", zap.Error(err))
+			continue
+		}
+
+		ok, err := n.dag.BlockStore().Has(cid)
+		if err != nil || ok {
+			continue
+		}
+
+		if _, err := n.GetPublication(ctx, cid); err != nil {
+			n.log.Debug("FailedToSyncPublication",
+				zap.String("cid", id),
+				zap.String("remotePeer", pid.String()),
+			)
+			continue
+		}
+	}
+
+	return nil
+}
+
+// ListPublications implements Mintter protocol.
+func (n *rpcHandler) ListPublications(ctx context.Context, in *internal.ListPublicationsRequest) (*internal.ListPublicationsResponse, error) {
+	cids, err := n.store.ListPublications(n.acc.ID.String(), 0, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &internal.ListPublicationsResponse{
+		PublicationIds: make([]string, len(cids)),
+	}
+
+	for i, cid := range cids {
+		resp.PublicationIds[i] = cid.String()
+	}
+
+	return resp, nil
 }
