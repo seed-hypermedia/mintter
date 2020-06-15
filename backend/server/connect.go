@@ -15,7 +15,13 @@ func (s *Server) ConnectToPeer(ctx context.Context, in *proto.ConnectToPeerReque
 	for i, a := range in.Addrs {
 		ma, err := multiaddr.NewMultiaddr(a)
 		if err != nil {
-			return nil, err
+			// We allow passing plain peer IDs to attempt the connection, so when parsing fails
+			// we adapt the peer ID to be the valid multiaddr.
+			a = "/p2p/" + a
+			ma, err = multiaddr.NewMultiaddr(a)
+			if err != nil {
+				return nil, err
+			}
 		}
 		mas[i] = ma
 	}
