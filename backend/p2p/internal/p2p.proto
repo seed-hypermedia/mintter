@@ -12,6 +12,9 @@ service PeerService {
   rpc Ping(PingRequest) returns (PingResponse);
 
   rpc GetProfile(GetProfileRequest) returns (Profile);
+
+  rpc ListPublications(ListPublicationsRequest)
+      returns (ListPublicationsResponse);
 }
 
 message HandshakeRequest {
@@ -29,6 +32,13 @@ message PingRequest {}
 message PingResponse {}
 
 message GetProfileRequest {}
+
+message ListPublicationsRequest {}
+
+message ListPublicationsResponse {
+  // List of all the publications of this author.
+  repeated string publication_ids = 1;
+}
 
 message Profile {
   // ID of the libp2p peer.

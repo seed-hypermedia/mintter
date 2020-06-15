@@ -68,3 +68,11 @@ func makeTestRepoPath(t *testing.T) string {
 
 	return dir
 }
+
+func connectPeers(t *testing.T, ctx context.Context, p1, p2 *p2p.Node) {
+	t.Helper()
+
+	addrs, err := p1.Addrs()
+	require.NoError(t, err)
+	require.NoError(t, p2.Connect(ctx, addrs...))
+}

@@ -82,8 +82,8 @@ func (s *Store) ListDrafts(offset, limit int) ([]*pb.Draft, error) {
 }
 
 // AddPublication to for our internal tracking.
-func (s *Store) AddPublication(docID string, cid cid.Cid) error {
-	k := keyPublications.ChildString(docID)
+func (s *Store) AddPublication(author, docID string, cid cid.Cid) error {
+	k := keyPublications.ChildString(author).ChildString(docID)
 
 	ok, err := s.db.Has(k)
 	if err != nil {
@@ -99,9 +99,9 @@ func (s *Store) AddPublication(docID string, cid cid.Cid) error {
 }
 
 // ListPublications stored in the database.
-func (s *Store) ListPublications(offset, limit int) ([]cid.Cid, error) {
+func (s *Store) ListPublications(author string, offset, limit int) ([]cid.Cid, error) {
 	res, err := s.db.Query(query.Query{
-		Prefix: keyPublications.String(),
+		Prefix: keyPublications.ChildString(author).String(),
 		Offset: offset,
 		Limit:  limit,
 	})
