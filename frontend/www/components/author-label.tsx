@@ -5,15 +5,12 @@ import {GetProfileResponse, Profile} from '@mintter/proto/mintter_pb'
 import {ErrorMessage} from './errorMessage'
 
 interface AuthorLabelProps {
-  author: QueryResult<GetProfileResponse>
+  author: QueryResult<Profile>
 }
 
-export function AuthorLabel({
-  author,
-}: {
-  author: QueryResult<GetProfileResponse>
-}) {
+export function AuthorLabel({author}: {author: QueryResult<Profile>}) {
   const {status, error, data} = author
+  console.log('data', data)
 
   if (status === 'loading') {
     return <span>...</span>
@@ -23,7 +20,13 @@ export function AuthorLabel({
     return <ErrorMessage error={error} />
   }
 
-  const profile: Profile.AsObject = data?.getProfile()?.toObject()
+  const profile: Profile.AsObject = data?.toObject()
+  console.log('profile', profile)
+
+  // const profile = {
+  //   accountId: '',
+  //   username: '',
+  // }
   return profile ? (
     <Tippy
       delay={500}

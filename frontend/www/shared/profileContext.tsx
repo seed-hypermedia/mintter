@@ -37,7 +37,7 @@ interface ProfileContextValue {
   getProfileAddrs: () => QueryResult<GetProfileAddrsResponse>
   genSeed: () => Promise<GenSeedResponse>
   connectToPeerById: (peerIds: string[]) => any
-  getProfile: (profileId?: string) => QueryResult<GetProfileResponse>
+  getProfile: (profileId?: string) => QueryResult<Profile>
   allConnections: () => PaginatedQueryResult<ListProfilesResponse>
 }
 
