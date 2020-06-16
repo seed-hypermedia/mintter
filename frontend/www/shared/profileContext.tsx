@@ -32,23 +32,11 @@ interface ProfileContextValue {
 export const ProfileContext = createContext<ProfileContextValue>(null)
 
 export function ProfileProvider(props) {
-  const {status, error, data} = useQuery(
-    'Profile',
-    async () => {
-      const req = new GetProfileRequest()
-      try {
-        return await (await apiClient.usersClient.getProfile(req)).getProfile()
-      } catch (err) {
-        console.error('err ==> ', err)
-      }
-    },
-    {
-      retry: false,
-    },
-  )
+  const {status, error, data} = useQuery('Profile', apiClient.getProfile, {
+    retry: false,
+  })
 
   function handleOnSuccess(params) {
-    console.log('handleOnSuccess -> params', params)
     queryCache.setQueryData('Profile', params)
   }
 

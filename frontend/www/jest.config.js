@@ -1,3 +1,5 @@
+const fs = require('fs')
+
 module.exports = {
   roots: ['<rootDir>'],
   modulePaths: ['<rootDir>'],
@@ -7,7 +9,7 @@ module.exports = {
   ],
   transformIgnorePatterns: ['[/\\\\]node_modules[/\\\\].+\\.(ts|tsx)$'],
   transform: {
-    '^.+\\.(ts|tsx)$': 'babel-jest',
+    '^.+\\.(ts|tsx|js)$': 'babel-jest',
   },
   watchPlugins: [
     'jest-watch-typeahead/filename',
@@ -21,4 +23,7 @@ module.exports = {
 
   snapshotSerializers: ['jest-emotion'],
   testEnvironment: 'jest-environment-jsdom',
+  setupFilesAfterEnv: fs.existsSync('test/setupTests.js')
+    ? ['<rootDir>/test/setupTests.js']
+    : [],
 }

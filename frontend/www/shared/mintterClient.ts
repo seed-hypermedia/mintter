@@ -17,12 +17,14 @@ import {
   DeleteDraftRequest,
 } from '@mintter/proto/documents_pb'
 import {
+  GetProfileRequest,
   ConnectToPeerRequest,
   UpdateProfileRequest,
   InitProfileRequest,
   GetProfileAddrsRequest,
   ListProfilesRequest,
   ListProfilesResponse,
+  GenSeedRequest,
 } from '@mintter/proto/mintter_pb'
 import {fromSlateToMarkdown} from './parseToMarkdown'
 import {parseToMarkdown} from './parseToMarkdown'
@@ -37,7 +39,10 @@ export const usersClient = new MintterPromiseClient(path)
 
 // ============================
 
-// TODO: horacio: remove useQuery from api client layer
+export async function genSeed() {
+  const req = new GenSeedRequest()
+  return await usersClient.genSeed(req)
+}
 
 export async function allPublications(
   key,
@@ -146,6 +151,15 @@ export async function createProfile({
   req.setMnemonicList(mnemonicList)
   req.setWalletPassword(walletPassword)
   return await usersClient.initProfile(req)
+}
+
+export async function getProfile() {
+  const req = new GetProfileRequest()
+  try {
+    return await (await usersClient.getProfile(req)).getProfile()
+  } catch (err) {
+    console.error('err ==> ', err)
+  }
 }
 
 export async function setProfile(

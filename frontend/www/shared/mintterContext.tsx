@@ -54,14 +54,16 @@ export interface MintterClient {
 const MintterClientContext = createContext<MintterClient>(null)
 
 export function MintterProvider(props) {
-  function allPublications(
-    page = 0,
-  ): PaginatedQueryResult<ListPublicationsResponse> {
+  const genSeed = useCallback(() => useQuery(['Seed'], apiClient.genSeed))
+
+  const allPublications = useCallback((page = 0): PaginatedQueryResult<
+    ListPublicationsResponse
+  > => {
     return usePaginatedQuery(
       ['AllPublications', page],
       apiClient.allPublications,
     )
-  }
+  }, [])
 
   const getPublication = useCallback((id: QueryParam<string>) => {
     // type guard on id
@@ -134,6 +136,7 @@ export function MintterProvider(props) {
 
   const value = useMemo(
     () => ({
+      genSeed,
       allPublications,
       getPublication,
       getSections,
@@ -147,6 +150,7 @@ export function MintterProvider(props) {
       allConnections,
     }),
     [
+      genSeed,
       allPublications,
       getPublication,
       getSections,
