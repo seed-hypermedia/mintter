@@ -16,11 +16,8 @@ import {useWelcome} from 'shared/welcomeProvider'
 import {useFocus} from 'shared/hooks'
 import {usersClient, MintterPromiseClient} from 'shared/mintterClient'
 
-interface SecurityPackProps {
-  rpc?: MintterPromiseClient
-}
 // TODO: (horacio): refactor rpc to not have it here
-export default function SecurityPack({rpc = usersClient}: SecurityPackProps) {
+export default function SecurityPack() {
   const [error, setError] = useState<{code: number; message: string}>()
   // const {focusFirst} = useFocus()
   const [mnemonic, setMnemonic] = useState<string[]>([])
@@ -31,11 +28,7 @@ export default function SecurityPack({rpc = usersClient}: SecurityPackProps) {
   })
 
   async function handleRPC({passphrase}) {
-    const req = new GenSeedRequest()
-    if (passphrase) {
-      dispatch({type: 'aezeedPassphrase', payload: passphrase})
-    }
-    try {
+      
       req.setAezeedPassphrase(passphrase)
       const resp = await rpc.genSeed(req)
       setMnemonic(resp.getMnemonicList())

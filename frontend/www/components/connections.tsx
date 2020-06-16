@@ -5,6 +5,7 @@ import {css} from 'emotion'
 import {AuthorLabel} from './author-label'
 
 export function Connections() {
+  console.log('rendered!!')
   const {connectToPeerById, allConnections} = useMintter()
 
   async function handlePeerConnection() {
@@ -32,16 +33,13 @@ export function Connections() {
       <h3 className="font-semibold text-xl text-heading">Connections</h3>
       <ul>
         {resolvedData?.toObject().profilesList.map(c => (
-          
-            <li key={c.accountId} className="text-body text-sm mt-2 flex items-center">
-              <div className="w-6 h-6 bg-body-muted rounded-full mr-2 flex-none" />
-
-              {/* <a className="text-primary hover:text-primary-hover cursor-pointer text-sm hover:underline hover:cursor-not-allowed truncate">
-                  {c.username}
-                </a> */}
-              <AuthorLabel author={c.accountId}>{c.username}</AuthorLabel>
-            </li>
-          
+          <li
+            key={c.accountId}
+            className="text-body text-sm mt-2 flex items-center"
+          >
+            <div className="w-6 h-6 bg-body-muted rounded-full mr-2 flex-none" />
+            <AuthorLabel author={c.accountId}>{c.username}</AuthorLabel>
+          </li>
         ))}
       </ul>
       <button
