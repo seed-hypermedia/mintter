@@ -16,32 +16,33 @@ func TestStack(t *testing.T) {
 
 	expected := []error{e3, e2, e1}
 
-	c := Stack{
-		funcCloser(func() error {
+	var c Stack
+
+	c.AddErrFunc(
+		func() error {
 			errs = append(errs, e1)
 			return e1
-		}),
-		funcCloser(func() error {
+		},
+		func() error {
 			errs = append(errs, e2)
 			return e2
-		}),
-		funcCloser(func() error {
+		},
+		func() error {
 			return nil
-		}),
-		funcCloser(func() error {
+		},
+		func() error {
 			errs = append(errs, e3)
 			return e3
-		}),
-	}
+		},
+	)
 
 	err := c.Close()
 	require.Error(t, err)
 	require.Equal(t, expected, errs)
 	require.Contains(t, err.Error(), "three; two; one")
-}
 
-type funcCloser func() error
-
-func (f funcCloser) Close() error {
-	return f()
+	err = c.Close()
+	require.Error(t, err)
+	require.Equal(t, expected, errs)
+	require.Contains(t, err.Error(), "three; two; one")
 }

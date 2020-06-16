@@ -19,9 +19,6 @@ import (
 func makeTestNode(t *testing.T, name string) *p2p.Node {
 	t.Helper()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(cancel)
-
 	repoPath := makeTestRepoPath(t)
 	prof := makeTestProfile(t, name)
 	s, err := store.Create(repoPath, prof)
@@ -30,7 +27,7 @@ func makeTestNode(t *testing.T, name string) *p2p.Node {
 		require.NoError(t, s.Close())
 	})
 
-	n, err := p2p.NewNode(ctx, repoPath, s, zap.NewNop(), config.P2P{
+	n, err := p2p.NewNode(repoPath, s, zap.NewNop(), config.P2P{
 		Addr:        "/ip4/127.0.0.1/tcp/0",
 		NoBootstrap: true,
 		NoRelay:     true,

@@ -67,7 +67,7 @@ func new(repoPath string, prof identity.Profile) (s *Store, err error) {
 	if err != nil {
 		return nil, err
 	}
-	cleanup = append(cleanup, db)
+	cleanup.Add(db)
 	defer func() {
 		// We have to close the db if store creation failed.
 		// DB is created inline for convenience.
@@ -80,14 +80,14 @@ func new(repoPath string, prof identity.Profile) (s *Store, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create peer store: %w", err)
 	}
-	cleanup = append(cleanup, ps)
+	cleanup.Add(ps)
 
 	s = &Store{
 		ps:       ps,
 		repoPath: repoPath,
 		db:       db,
 		prof:     prof,
-		cleanup:  cleanup,
+		cleanup:  &cleanup,
 	}
 
 	s.lb, err = logbook.New(prof.Account, s.db)

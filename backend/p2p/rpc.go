@@ -37,7 +37,7 @@ func (n *Node) serveRPC() {
 	})
 
 	n.g.Go(func() error {
-		<-n.quitc
+		<-n.ctx.Done()
 		srv.GracefulStop()
 		return nil
 	})

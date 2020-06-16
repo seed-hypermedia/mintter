@@ -3,9 +3,12 @@ package p2p
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"io"
 	"net"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"mintter/backend"
@@ -26,10 +29,12 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
+	"github.com/ipfs/go-cid"
 	badger "github.com/ipfs/go-ds-badger"
 	ipfsconfig "github.com/ipfs/go-ipfs-config"
 	connmgr "github.com/libp2p/go-libp2p-connmgr"
 	gostream "github.com/libp2p/go-libp2p-gostream"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
 // Prototcol values.
@@ -58,31 +63,38 @@ func (e Error) Error() string {
 
 // Node is a Mintter p2p node.
 type Node struct {
-	store *store.Store
-	log   *zap.Logger
-
-	g errgroup.Group // Background goroutines will be running in this group.
+	store  *store.Store
+	log    *zap.Logger
+	pubsub *pubsub.PubSub
+	g      errgroup.Group // Background goroutines will be running in this group.
 
 	acc      identity.Account
 	peer     identity.Peer
 	host     host.Host
 	dag      *ipfsutil.Node
 	cleanup  io.Closer
-	quitc    chan struct{}     // This channel will be closed to indicate all the goroutines to exit.
-	lis      net.Listener      // Libp2p listener wrapped into net.Listener. Used by the underlying gRPC server.
-	dialOpts []grpc.DialOption // Default dial options for gRPC client. Cached to avoid allocating same options for every call.
+	ctx      context.Context
+	quit     context.CancelFunc // This channel will be closed to indicate all the goroutines to exit.
+	lis      net.Listener       // Libp2p listener wrapped into net.Listener. Used by the underlying gRPC server.
+	dialOpts []grpc.DialOption  // Default dial options for gRPC client. Cached to avoid allocating same options for every call.
+
+	mu   sync.Mutex
+	subs map[identity.ProfileID]*subscription
 }
 
 // NewNode creates a new node. User must call Close() to shutdown the node gracefully.
-func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (n *Node, err error) {
-	var cleanup cleanup.Stack
+func NewNode(repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (n *Node, err error) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	var clean cleanup.Stack
 	defer func() {
 		// We have to close all the dependencies that were initialized until the error happened.
 		// This is for convenience, because otherwise we'd have to accept each dependency in the constructor
 		// and it would be cumbersome to use.
 		// In the happy path scenario the caller would have to call Close on the returned Node struct.
 		if err != nil {
-			err = multierr.Append(err, cleanup.Close())
+			cancel()
+			err = multierr.Append(err, clean.Close())
 		}
 	}()
 
@@ -91,17 +103,21 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 		return nil, err
 	}
 
-	ps := s.Peerstore()
+	peerstore := s.Peerstore()
 
-	// This is borrowed from Qri's makeBasicHost. Not sure if needed.
-	{
-		if err := ps.AddPrivKey(prof.Peer.ID, prof.Peer.PrivKey); err != nil {
-			return nil, err
-		}
+	if err := multierr.Combine(
+		// Adding our own peer's keys is borrowed from Qri codebase. Not sure if actually needed.
+		peerstore.AddPubKey(prof.Peer.ID, prof.Peer.PubKey),
+		peerstore.AddPrivKey(prof.Peer.ID, prof.Peer.PrivKey),
 
-		if err := ps.AddPubKey(prof.Peer.ID, prof.Peer.PubKey); err != nil {
-			return nil, err
-		}
+		// We also add our Profile keys in order to allow pubsub to use our profile ID for message signing.
+		// These keys should not be treated as normal peer keys, since they can be used by multiple network peers.
+		// ps.AddPrivKey(prof.Account.ID.ID, prof.Account.PrivKey),
+		// ps.AddPubKey(prof.Account.ID.ID, prof.Account.PubKey),
+		//
+		// TODO(burdiyan): Commented this out for now since it makes tests to fail. #messageSigning
+	); err != nil {
+		return nil, fmt.Errorf("failed adding keys to peer store: %w", err)
 	}
 
 	opts := []libp2p.Option{
@@ -109,7 +125,7 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 		libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute)),
 		ipfsutil.TransportOpts,
 		libp2p.UserAgent(userAgent),
-		libp2p.Peerstore(ps),
+		libp2p.Peerstore(peerstore),
 		// TODO(burdiyan): allow to enable this for nodes with public IPs.
 		// libp2p.EnableRelay(relay.OptHop),
 	}
@@ -126,32 +142,26 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 	if err != nil {
 		return nil, err
 	}
-	cleanup = append(cleanup, db)
+	clean.Add(db)
 
 	h, dht, err := ipfsutil.SetupLibp2p(ctx, prof.Peer.PrivKey, nil, db, opts...)
 	if err != nil {
 		return nil, err
 	}
-	cleanup = append(cleanup, h, dht)
-
-	connWatcher := makeConnectionWatcher(s, log)
-
-	h.Network().Notify(&network.NotifyBundle{
-		ConnectedF:    connWatcher,
-		DisconnectedF: connWatcher,
-	})
+	clean.Add(h)
+	clean.Add(dht)
 
 	ipfsnode, err := ipfsutil.New(ctx, db, h, dht, nil)
 	if err != nil {
 		return nil, err
 	}
-	cleanup = append(cleanup, ipfsnode)
+	clean.Add(ipfsnode)
 
 	lis, err := gostream.Listen(h, ProtocolID)
 	if err != nil {
 		return nil, err
 	}
-	cleanup = append(cleanup, lis)
+	clean.Add(lis)
 
 	n = &Node{
 		store: s,
@@ -161,13 +171,17 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 		peer:     prof.Peer,
 		host:     h,
 		dag:      ipfsnode,
-		cleanup:  cleanup,
+		cleanup:  &clean,
 		lis:      lis,
-		quitc:    make(chan struct{}),
+		ctx:      ctx,
+		quit:     cancel,
 		dialOpts: dialOpts(h),
 	}
 
-	n.serveRPC()
+	n.watchNetwork()
+	if err := n.setupPubSub(ctx); err != nil {
+		return nil, err
+	}
 
 	if !cfg.NoBootstrap {
 		n.g.Go(func() error {
@@ -182,15 +196,27 @@ func NewNode(ctx context.Context, repoPath string, s *store.Store, log *zap.Logg
 		})
 	}
 
+	n.serveRPC()
+	n.startSyncing()
+
 	return n, nil
 }
 
 // Close the node gracefully.
 func (n *Node) Close() (err error) {
-	// Signal goroutines to return.
-	close(n.quitc)
+	n.quit()
 
-	return multierr.Combine(err, n.g.Wait(), n.cleanup.Close())
+	groupErr := n.g.Wait()
+	if !errors.Is(groupErr, context.Canceled) && !errors.Is(groupErr, context.DeadlineExceeded) {
+		err = multierr.Append(err, groupErr)
+	}
+
+	cleanupErr := n.cleanup.Close()
+	if !errors.Is(cleanupErr, context.Canceled) && !errors.Is(cleanupErr, context.DeadlineExceeded) {
+		err = multierr.Append(err, cleanupErr)
+	}
+
+	return err
 }
 
 // Host of the p2p node.
@@ -231,4 +257,148 @@ func makeConnectionWatcher(s *store.Store, log *zap.Logger) func(net network.Net
 			)
 		}
 	}
+}
+
+func (n *Node) watchNetwork() {
+	connWatcher := makeConnectionWatcher(n.store, n.log)
+
+	n.host.Network().Notify(&network.NotifyBundle{
+		ConnectedF:    connWatcher,
+		DisconnectedF: connWatcher,
+	})
+}
+
+func (n *Node) setupPubSub(ctx context.Context) error {
+	ps, err := pubsub.NewGossipSub(ctx, n.host,
+		// TODO(burdiyan): Enable this after fixing tests for #messageSigning.
+		// pubsub.WithMessageAuthor(prof.Account.ID.ID),
+		pubsub.WithMessageSigning(false),
+		pubsub.WithStrictSignatureVerification(false),
+	)
+	if err != nil {
+		return err
+	}
+	n.subs = make(map[identity.ProfileID]*subscription)
+	n.pubsub = ps
+
+	// Iterate over all profiles and setup listeners.
+	profiles, err := n.store.ListProfiles(ctx, 0, 0)
+	if err != nil {
+		return err
+	}
+
+	for _, prof := range profiles {
+		if err := n.addSubscription(prof.ID); err != nil {
+			n.log.Error("FailedToAddSubscriptionWhenStarting", zap.Error(err), zap.String("profile", prof.ID.String()))
+		}
+	}
+
+	return nil
+}
+
+func (n *Node) startSyncing() {
+	n.g.Go(func() error {
+		t := time.NewTicker(10 * time.Minute)
+		defer t.Stop()
+
+		for {
+			if err := n.syncAll(); err != nil {
+				n.log.Error("FailedSyncingLoop", zap.Error(err))
+			}
+
+			select {
+			case <-n.ctx.Done():
+				return n.ctx.Err()
+			case <-t.C:
+				continue
+			}
+		}
+	})
+}
+
+func (n *Node) syncAll() error {
+	// Iterate over all profiles and setup listeners.
+	profiles, err := n.store.ListProfiles(n.ctx, 0, 0)
+	if err != nil {
+		return err
+	}
+
+	for _, prof := range profiles {
+		if err := n.SyncPublications(n.ctx, prof.ID); err != nil {
+			n.log.Error("FailedToSyncPublications", zap.Error(err), zap.String("profile", prof.ID.String()))
+		}
+	}
+
+	return nil
+}
+
+func (n *Node) addSubscription(pid identity.ProfileID) error {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	handle, ok := n.subs[pid]
+	if ok {
+		return nil
+	}
+
+	// Create new handle
+	topic, err := n.pubsub.Join(pid.String())
+	if err != nil {
+		return err
+	}
+	sub, err := topic.Subscribe()
+	if err != nil {
+		return err
+	}
+
+	handle = &subscription{
+		T: topic,
+		S: sub,
+	}
+	n.subs[pid] = handle
+
+	n.g.Go(func() (err error) {
+		defer func() {
+			err = multierr.Append(err, handle.Close())
+		}()
+
+		for {
+			msg, err := handle.S.Next(n.ctx)
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+				return err
+			}
+			if err != nil {
+				n.log.Error("ErrorGettingPubSubMessage", zap.Error(err), zap.String("subscription", pid.String()))
+				continue
+			}
+
+			if err := n.handlePubSubMessage(msg); err != nil {
+				n.log.Error("ErrorHandlingPubSubMessage", zap.Error(err), zap.String("subscription", pid.String()))
+				continue
+			}
+		}
+	})
+
+	return nil
+}
+
+func (n *Node) handlePubSubMessage(msg *pubsub.Message) error {
+	cid, err := cid.Cast(msg.Message.Data)
+	if err != nil {
+		return err
+	}
+
+	// TODO(burdiyan): we need to sign messages propertly to avoid flood.
+
+	return n.syncPublication(n.ctx, cid)
+}
+
+type subscription struct {
+	T *pubsub.Topic
+	S *pubsub.Subscription
+}
+
+func (s *subscription) Close() error {
+	s.S.Cancel()
+	return s.T.Close()
 }
