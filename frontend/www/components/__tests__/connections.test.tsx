@@ -28,7 +28,7 @@ test('should render the list of connections', async () => {
     </MintterProvider>,
   )
 
-  // await waitFor(() => {
-  //   debug()
-  // })
+  await waitFor(() => {
+    debug()
+  })
 })
