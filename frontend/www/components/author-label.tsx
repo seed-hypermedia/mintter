@@ -40,7 +40,7 @@ export function AuthorLabel({
       }
     >
       <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
-        {profile.username}
+        {`${profile.username} (${profile.accountId.slice(-8)})`}
       </span>
     </Tippy>
   ) : null
