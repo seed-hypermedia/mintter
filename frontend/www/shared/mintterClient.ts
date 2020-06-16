@@ -161,7 +161,7 @@ export async function getProfile(key, profileId?: string) {
   }
 
   try {
-    return await usersClient.getProfile(req)
+    return await (await usersClient.getProfile(req)).getProfile()
   } catch (err) {
     console.error('getProfile error ==> ', err)
   }

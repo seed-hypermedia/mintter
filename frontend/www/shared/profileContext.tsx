@@ -50,7 +50,7 @@ export function ProfileProvider(props) {
   })
 
   function handleOnSuccess(params) {
-    queryCache.setQueryData('Profile', params)
+    queryCache.refetchQueries('Profile')
   }
 
   const profile = data
@@ -63,8 +63,10 @@ export function ProfileProvider(props) {
 
   const getProfile = useCallback(
     (profileId?: string) =>
-      useQuery(['Profile', profileId], apiClient.getProfile),
-    [],
+      useQuery(['Profile', profileId], apiClient.getProfile, {
+        refetchOnWindowFocus: true,
+      }),
+    [profile],
   )
 
   const [setProfile] = useMutation(
