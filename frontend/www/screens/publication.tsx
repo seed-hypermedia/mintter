@@ -46,13 +46,13 @@ export default function Publication(): JSX.Element {
     author: '',
   })
   const {getPublication, getSections} = useMintter()
-  const {getAuthor} = useProfile()
+  const {getProfile} = useProfile()
 
   const {id} = useParams()
 
   const {title, sections, description, author: pubAuthor} = state
 
-  const author = getAuthor(pubAuthor)
+  const author = getProfile(pubAuthor)
 
   const {status, error, data} = getPublication(id)
 
@@ -162,9 +162,8 @@ export default function Publication(): JSX.Element {
                       </p>
                       <p className=" text-sm mt-4 text-heading">
                         <span>by </span>
-                        <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
-                          <AuthorLabel author={author} />
-                        </span>
+
+                        <AuthorLabel author={author} />
                       </p>
                     </div>
                     <div className="relative">

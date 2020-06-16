@@ -28,6 +28,7 @@ import {
 } from '@mintter/proto/mintter_pb'
 import {fromSlateToMarkdown} from './parseToMarkdown'
 import {parseToMarkdown} from './parseToMarkdown'
+import {profile} from 'console'
 
 const config = getConfig()
 const hostname = config?.publicRuntimeConfig.MINTTER_HOSTNAME
@@ -153,12 +154,16 @@ export async function createProfile({
   return await usersClient.initProfile(req)
 }
 
-export async function getProfile() {
+export async function getProfile(key, profileId?: string) {
   const req = new GetProfileRequest()
+  if (profileId) {
+    req.setProfileId(profileId)
+  }
+
   try {
-    return await (await usersClient.getProfile(req)).getProfile()
+    return await usersClient.getProfile(req)
   } catch (err) {
-    console.error('err ==> ', err)
+    console.error('getProfile error ==> ', err)
   }
 }
 
