@@ -26,7 +26,7 @@ export function Connections() {
   return (
     <div
       className={`pt-10 px-4 lg:pl-20 lg:pr-16 ${css`
-        max-width: 300px;
+        max-width: 360px;
         width: 100%;
       `}`}
     >
@@ -52,7 +52,7 @@ export function Connections() {
               }
             >
               <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
-                {c.username}
+                {`${c.username} (${c.accountId.slice(-8)})`}
               </span>
             </Tippy>
           </li>
