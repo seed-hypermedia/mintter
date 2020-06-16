@@ -125,12 +125,13 @@ func New(
 			bswapnet := network.NewFromIpfsHost(host, dht)
 			bswap := bitswap.New(ctx, bswapnet, bs)
 
-			cleanup = append(cleanup, bswap)
+			cleanup.Add(bswap)
 
 			blocksvc = blockservice.New(bs, bswap)
 		}
 	}
-	cleanup = append(cleanup, blocksvc)
+
+	cleanup.Add(blocksvc)
 
 	var reprov provider.System
 	{
@@ -159,7 +160,7 @@ func New(
 			reprov.Run()
 		}
 	}
-	cleanup = append(cleanup, reprov)
+	cleanup.Add(reprov)
 
 	n = &Node{
 		DAGService: merkledag.NewDAGService(blocksvc),
@@ -171,7 +172,7 @@ func New(
 		host:    host,
 		dht:     dht,
 		store:   store,
-		cleanup: cleanup,
+		cleanup: &cleanup,
 	}
 
 	return n, nil

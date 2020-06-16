@@ -213,10 +213,6 @@ func TestGetPublication_Remote(t *testing.T) {
 
 	connectPeers(t, ctx, alice, bob)
 
-	list, err := bob.ListPublications(ctx, &pb.ListPublicationsRequest{})
-	require.NoError(t, err)
-	require.Empty(t, list.Publications, "bob must have no publications initially")
-
 	gotPub, err := bob.GetPublication(ctx, &pb.GetPublicationRequest{
 		PublicationId: publication.Id,
 	})
@@ -229,7 +225,7 @@ func TestGetPublication_Remote(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, len(gotPub.Sections), len(secResp.Sections))
 
-	list, err = bob.ListPublications(ctx, &pb.ListPublicationsRequest{})
+	list, err := bob.ListPublications(ctx, &pb.ListPublicationsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Publications, 1, "bob must now have alice's publication locally")
 }

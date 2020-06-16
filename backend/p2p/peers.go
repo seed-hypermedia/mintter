@@ -11,6 +11,7 @@ import (
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	swarm "github.com/libp2p/go-libp2p-swarm"
 	"github.com/multiformats/go-multiaddr"
+	"go.uber.org/multierr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -25,28 +26,38 @@ func (n *Node) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) error 
 		return fmt.Errorf("failed to extract peer info: %w", err)
 	}
 
+	// It's fine, and we have to stop if we at least
+	// have connected to one of the provided addresses.
 	for _, pinfo := range pinfos {
-		if swarm, ok := n.host.Network().(*swarm.Swarm); ok {
-			// clear backoff b/c we're explicitly dialing this peer
-			swarm.Backoff().Clear(pinfo.ID)
+		connErr := n.connect(ctx, pinfo)
+		if connErr == nil {
+			return nil
 		}
+		err = multierr.Append(err, connErr)
+	}
 
-		if err := n.host.Connect(ctx, pinfo); err != nil {
-			return fmt.Errorf("failed to connect %s: %w", pinfo.ID.Pretty(), err)
-		}
+	return err
+}
 
-		prof, err := n.handshake(ctx, pinfo.ID)
-		if err != nil {
-			return fmt.Errorf("failed invoking handshake to %s: %w", pinfo.ID.Pretty(), err)
-		}
+func (n *Node) connect(ctx context.Context, pinfo peer.AddrInfo) error {
+	if swarm, ok := n.host.Network().(*swarm.Swarm); ok {
+		// clear backoff b/c we're explicitly dialing this peer
+		swarm.Backoff().Clear(pinfo.ID)
+	}
 
-		if err := n.savePeerProfile(ctx, prof); err != nil {
-			// TODO: if the err is ErrQriProtocolNotSupported, let the user know the
-			// connection has been established, but that the Qri Protocol is not supported
-			return err
-		}
+	if err := n.host.Connect(ctx, pinfo); err != nil {
+		return fmt.Errorf("failed to connect %s: %w", pinfo.ID.Pretty(), err)
+	}
 
-		break
+	prof, err := n.handshake(ctx, pinfo.ID)
+	if err != nil {
+		return fmt.Errorf("failed invoking handshake to %s: %w", pinfo.ID.Pretty(), err)
+	}
+
+	if err := n.savePeerProfile(ctx, prof); err != nil {
+		// TODO: if the err is ErrQriProtocolNotSupported, let the user know the
+		// connection has been established, but that the Qri Protocol is not supported
+		return fmt.Errorf("failed to save peer profile: %w", err)
 	}
 
 	return nil
@@ -63,7 +74,7 @@ func (n *Node) Disconnect(ctx context.Context, pid identity.ProfileID) error {
 		return err
 	}
 
-	return n.store.UpdateProfileConnectionStatus(ctx, pid, store.ConnectionStatus(n.host.Network().Connectedness(prof.Peer.ID)))
+	return nil
 }
 
 // savePeerProfile stores another peer's profile and marks it's connection to support mintter protocol.
@@ -99,6 +110,14 @@ func (n *Node) savePeerProfile(ctx context.Context, prof identity.Profile) error
 
 	if err := n.store.StoreProfile(ctx, prof); err != nil {
 		return fmt.Errorf("failed to store profile: %w", err)
+	}
+
+	if err := n.SyncPublications(ctx, prof.ID); err != nil {
+		return fmt.Errorf("failed to sync publications: %w", err)
+	}
+
+	if err := n.addSubscription(prof.ID); err != nil {
+		return fmt.Errorf("failed to add subscription: %w", err)
 	}
 
 	// tag the connection as more important in the conn manager:

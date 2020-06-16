@@ -2,7 +2,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"mintter/backend/config"
@@ -101,7 +100,7 @@ func (s *Server) init(prof identity.Profile) (err error) {
 		}
 	}
 
-	s.node, err = p2p.NewNode(context.Background(), s.cfg.RepoPath, s.store, s.p2pLog, s.cfg.P2P)
+	s.node, err = p2p.NewNode(s.cfg.RepoPath, s.store, s.p2pLog, s.cfg.P2P)
 	if err != nil {
 		return fmt.Errorf("failed to init P2P node: %w", err)
 	}

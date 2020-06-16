@@ -61,7 +61,13 @@ func (n *Node) AddPublication(ctx context.Context, pub publishing.Publication) (
 		return cid.Undef, fmt.Errorf("failed to add publication to store: %w", err)
 	}
 
-	return node.Cid(), nil
+	cid := node.Cid()
+
+	if err := n.pubsub.Publish(pub.Author, cid.Bytes()); err != nil {
+		n.log.Error("FailedToPublishOverPubSub", zap.Error(err), zap.String("cid", cid.String()))
+	}
+
+	return cid, nil
 }
 
 // GetSections from the IPLD service.
@@ -184,23 +190,34 @@ func (n *Node) SyncPublications(ctx context.Context, pid identity.ProfileID) err
 
 	for _, id := range resp.PublicationIds {
 		cid, err := cid.Decode(id)
+		if err == nil {
+			err = n.syncPublication(ctx, cid)
+		}
+
 		if err != nil {
-			n.log.Debug("FailedToDecodeCID", zap.Error(err))
-			continue
-		}
-
-		ok, err := n.dag.BlockStore().Has(cid)
-		if err != nil || ok {
-			continue
-		}
-
-		if _, err := n.GetPublication(ctx, cid); err != nil {
-			n.log.Debug("FailedToSyncPublication",
+			n.log.Error("FailedToSyncPublication",
 				zap.String("cid", id),
 				zap.String("remotePeer", pid.String()),
 			)
 			continue
 		}
+	}
+
+	return nil
+}
+
+func (n *Node) syncPublication(ctx context.Context, cid cid.Cid) error {
+	ok, err := n.dag.BlockStore().Has(cid)
+	if err != nil {
+		return err
+	}
+
+	if ok {
+		return nil
+	}
+
+	if _, err := n.GetPublication(ctx, cid); err != nil {
+		return err
 	}
 
 	return nil
