@@ -1,12 +1,12 @@
 import React from 'react'
-import {useMintter} from 'shared/mintterContext'
+import {useProfile} from 'shared/profileContext'
 import {ErrorMessage} from 'components/errorMessage'
 import {css} from 'emotion'
 import {AuthorLabel} from './author-label'
+import Tippy from '@tippyjs/react'
 
 export function Connections() {
-  console.log('rendered!!')
-  const {connectToPeerById, allConnections} = useMintter()
+  const {connectToPeerById, allConnections} = useProfile()
 
   async function handlePeerConnection() {
     const peer = window.prompt(`enter a peer address`)
@@ -38,7 +38,23 @@ export function Connections() {
             className="text-body text-sm mt-2 flex items-center"
           >
             <div className="w-6 h-6 bg-body-muted rounded-full mr-2 flex-none" />
-            <AuthorLabel author={c.accountId}>{c.username}</AuthorLabel>
+            <Tippy
+              delay={500}
+              content={
+                <span
+                  className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
+                    background-color: #333;
+                    color: #ccc;
+                  `}`}
+                >
+                  {c.accountId}
+                </span>
+              }
+            >
+              <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
+                {c.username}
+              </span>
+            </Tippy>
           </li>
         ))}
       </ul>

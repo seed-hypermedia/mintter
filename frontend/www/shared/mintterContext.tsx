@@ -44,18 +44,11 @@ export interface MintterClient {
     options?: MutationOptions<Publication, string>,
   ) => MutationResult<Publication>
   deleteDraft: (id: string) => void
-  connectToPeerById: (peerIds: string[]) => any
-  getProfile: () => QueryResult<GetProfileResponse>
-  setProfile: () => any
-  getProfileAddrs: () => Promise<GetProfileAddrsResponse>
-  allConnections: () => PaginatedQueryResult<ListProfilesResponse>
 }
 
 const MintterClientContext = createContext<MintterClient>(null)
 
 export function MintterProvider(props) {
-  const genSeed = useCallback(() => useQuery(['Seed'], apiClient.genSeed))
-
   const allPublications = useCallback((page = 0): PaginatedQueryResult<
     ListPublicationsResponse
   > => {
@@ -125,18 +118,8 @@ export function MintterProvider(props) {
 
   const [publishDraft] = useMutation((id: string) => apiClient.publishDraft(id))
 
-  const connectToPeerById = useCallback(
-    peerId => apiClient.connectToPeerById(peerId),
-    [],
-  )
-
-  function allConnections(page = 0): PaginatedQueryResult<any> {
-    return usePaginatedQuery(['AllConnections', page], apiClient.allConnections)
-  }
-
   const value = useMemo(
     () => ({
-      genSeed,
       allPublications,
       getPublication,
       getSections,
@@ -146,11 +129,8 @@ export function MintterProvider(props) {
       setDraft,
       publishDraft,
       deleteDraft,
-      connectToPeerById,
-      allConnections,
     }),
     [
-      genSeed,
       allPublications,
       getPublication,
       getSections,
@@ -160,8 +140,6 @@ export function MintterProvider(props) {
       setDraft,
       publishDraft,
       deleteDraft,
-      connectToPeerById,
-      allConnections,
     ],
   )
 

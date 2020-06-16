@@ -13,19 +13,32 @@ import {
   InitProfileRequest,
   Profile,
   GetProfileAddrsResponse,
+  GetProfileResponse,
+  GenSeedResponse,
+  ListProfilesResponse,
 } from '@mintter/proto/mintter_pb'
 import * as apiClient from './mintterClient'
 import {bootstrapAppData} from './appBootstrap'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
-import {useQuery, useMutation, queryCache, QueryResult} from 'react-query'
+import {
+  useQuery,
+  useMutation,
+  queryCache,
+  QueryResult,
+  PaginatedQueryResult,
+  usePaginatedQuery,
+} from 'react-query'
 
 interface ProfileContextValue {
   readonly profile: Profile | null
   setProfile: (data: Partial<Profile.AsObject>) => void
   createProfile: (form: InitProfileRequest.AsObject) => void
-  getAuthor: (author: string) => string
   getProfileAddrs: () => QueryResult<GetProfileAddrsResponse>
+  genSeed: () => Promise<GenSeedResponse>
+  connectToPeerById: (peerIds: string[]) => any
+  getProfile: (profileId?: string) => QueryResult<GetProfileResponse>
+  allConnections: () => PaginatedQueryResult<ListProfilesResponse>
 }
 
 // TODO: (horacio): Fixme types ☝
@@ -42,9 +55,17 @@ export function ProfileProvider(props) {
 
   const profile = data
 
+  const genSeed = useCallback(() => apiClient.genSeed(), [])
+
   const [createProfile] = useMutation(apiClient.createProfile, {
     onSuccess: handleOnSuccess,
   })
+
+  const getProfile = useCallback(
+    (profileId?: string) =>
+      useQuery(['Profile', profileId], apiClient.getProfile),
+    [],
+  )
 
   const [setProfile] = useMutation(
     formData => apiClient.setProfile(profile, formData),
@@ -53,35 +74,40 @@ export function ProfileProvider(props) {
     },
   )
 
-  const getAuthor = useCallback(
-    (authorId: string) => {
-      const profile = queryCache.getQueryData('Profile') as Profile
-      // TODO: (Horacio): FIXME not returning `me`..
-      let author
-      if (profile.toObject) {
-        let p = profile.toObject()
-
-        author = p.accountId === authorId ? 'me' : authorId
-      }
-
-      return author
-    },
-    [profile],
-  )
-
   function getProfileAddrs() {
     return useQuery(['ProfileAddrs'], apiClient.getProfileAddrs)
+  }
+
+  const connectToPeerById = useCallback(
+    peerId => apiClient.connectToPeerById(peerId),
+    [],
+  )
+
+  function allConnections(page = 0): PaginatedQueryResult<any> {
+    return usePaginatedQuery(['AllConnections', page], apiClient.allConnections)
   }
 
   const value = useMemo(
     () => ({
       profile,
+      getProfile,
       createProfile,
       setProfile,
-      getAuthor,
       getProfileAddrs,
+      genSeed,
+      connectToPeerById,
+      allConnections,
     }),
-    [profile, createProfile, setProfile, getAuthor, getProfileAddrs],
+    [
+      profile,
+      getProfile,
+      createProfile,
+      setProfile,
+      getProfileAddrs,
+      genSeed,
+      connectToPeerById,
+      allConnections,
+    ],
   )
 
   if (status === 'loading') {

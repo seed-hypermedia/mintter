@@ -15,11 +15,13 @@ import {useForm} from 'react-hook-form'
 import {useWelcome} from 'shared/welcomeProvider'
 import {useFocus} from 'shared/hooks'
 import {usersClient, MintterPromiseClient} from 'shared/mintterClient'
+import {useMintter} from 'shared/mintterContext'
+import {useProfile} from 'shared/profileContext'
 
 // TODO: (horacio): refactor rpc to not have it here
 export default function SecurityPack() {
   const [error, setError] = useState<{code: number; message: string}>()
-  // const {focusFirst} = useFocus()
+  const {genSeed} = useProfile()
   const [mnemonic, setMnemonic] = useState<string[]>([])
   const history = useHistory()
   const {dispatch} = useWelcome()
@@ -28,9 +30,8 @@ export default function SecurityPack() {
   })
 
   async function handleRPC({passphrase}) {
-      
-      req.setAezeedPassphrase(passphrase)
-      const resp = await rpc.genSeed(req)
+    try {
+      const resp = await genSeed()
       setMnemonic(resp.getMnemonicList())
     } catch (err) {
       setError(err)
@@ -125,12 +126,14 @@ export function MnemonicWords({
   error?: {code: number; message: string}
 }) {
   function handleCopy() {
-    alert(
-      lists
-        .flat()
-        .map((w, i) => `${i + 1}. ${w}\n`)
-        .join(''),
-    )
+    const words = lists
+      .flat()
+      .map((w, i) => `${i + 1}. ${w}\n`)
+      .join('')
+
+    navigator.clipboard
+      .writeText(words)
+      .then(() => alert('Words copied to your clip board!'))
   }
 
   return (
