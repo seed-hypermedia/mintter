@@ -9,8 +9,8 @@ export function Connections() {
   const {connectToPeerById, allConnections} = useProfile()
 
   async function handlePeerConnection() {
-    const peer = window.prompt(`enter a peer address`)
-    await connectToPeerById([peer])
+    const peer = await window.prompt(`enter a peer address`)
+    await connectToPeerById(peer.split(','))
   }
 
   const {status, error, resolvedData} = allConnections()

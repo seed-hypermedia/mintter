@@ -2,11 +2,15 @@ import Input from 'components/input'
 import Textarea from 'components/textarea'
 import {useProfile} from 'shared/profileContext'
 import {ErrorMessage} from './errorMessage'
+import {useMemo} from 'react'
+import {Button} from './button'
 
 export function ProfileAddress(props) {
   const {getProfileAddrs} = useProfile()
 
   const {status, error, data} = getProfileAddrs()
+
+  const address = useMemo(() => data?.toObject().addrsList, [data])
 
   if (status === 'loading') {
     return <p>...</p>
@@ -16,7 +20,14 @@ export function ProfileAddress(props) {
     return <ErrorMessage error={error} />
   }
 
-  const address = data?.toObject().addrsList
+  function handleCopy(address: string[]) {
+    const value = address.join(',')
+
+    navigator.clipboard
+      .writeText(value)
+      .then(() => alert('Address copied to your clipboard!'))
+  }
+
   return (
     <div {...props}>
       <label
@@ -33,6 +44,13 @@ export function ProfileAddress(props) {
         className="block text-body-muted w-full border bg-background-muted border-muted rounded px-3 py-2"
         value={address && address.join('\n\n')}
       />
+      <Button
+        className="mx-auto mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white transition-all"
+        type="submit"
+        onClick={() => handleCopy(address)}
+      >
+        Copy Address
+      </Button>
     </div>
   )
 }

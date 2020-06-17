@@ -103,11 +103,13 @@ export async function setDraft({
   const request = new Draft()
 
   if (Array.isArray(documentId)) {
-    throw new Error(
+    console.error(
       `Impossible render: You are trying to access the editor passing ${
         documentId.length
       } document IDs => ${documentId.map(q => q).join(', ')}`,
     )
+
+    return null
   }
 
   request.setDocumentId(documentId)
@@ -130,16 +132,25 @@ export async function deleteDraft(id: string) {
 }
 
 export async function publishDraft(draftId: string) {
-  const req = new PublishDraftRequest()
-  req.setDocumentId(draftId)
-  return await documentsClient.publishDraft(req)
+  try {
+    const req = new PublishDraftRequest()
+    req.setDocumentId(draftId)
+    return await documentsClient.publishDraft(req)
+  } catch (err) {
+    console.error(`PublishDraft Error => `, err)
+  }
 }
 
 export async function connectToPeerById(peerIds: string[]) {
-  // TODO: horacio: refactor
-  const req = new ConnectToPeerRequest()
-  req.setAddrsList(peerIds)
-  return await usersClient.connectToPeer(req)
+  try {
+    const req = new ConnectToPeerRequest()
+    req.setAddrsList(peerIds)
+    const result = await usersClient.connectToPeer(req)
+
+    return result
+  } catch (err) {
+    console.error(`ConnectToPeerById error => `, err)
+  }
 }
 
 export async function createProfile({

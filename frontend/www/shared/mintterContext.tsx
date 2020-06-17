@@ -55,6 +55,9 @@ export function MintterProvider(props) {
     return usePaginatedQuery(
       ['AllPublications', page],
       apiClient.allPublications,
+      {
+        refetchOnWindowFocus: true,
+      },
     )
   }, [])
 
