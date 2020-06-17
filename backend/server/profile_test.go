@@ -62,16 +62,7 @@ func TestListProfiles(t *testing.T) {
 	}()
 	ctx := context.Background()
 
-	// Connect alice to bob.
-	{
-		baddrs, err := bob.GetProfileAddrs(ctx, &proto.GetProfileAddrsRequest{})
-		require.NoError(t, err)
-
-		_, err = alice.ConnectToPeer(ctx, &proto.ConnectToPeerRequest{
-			Addrs: baddrs.Addrs,
-		})
-		require.NoError(t, err)
-	}
+	connectPeers(t, ctx, alice, bob)
 
 	var bobID string
 	{

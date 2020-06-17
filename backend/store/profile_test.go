@@ -73,20 +73,6 @@ func TestListProfiles(t *testing.T) {
 	require.Equal(t, prof, list[0])
 }
 
-func TestConnectionStatus(t *testing.T) {
-	store := testStore(t)
-	ctx := context.Background()
-	prof := store.prof
-
-	s, err := store.GetProfileConnectionStatus(ctx, prof.ID)
-	require.Error(t, err, "must not exist initially")
-
-	require.NoError(t, store.UpdateProfileConnectionStatus(ctx, prof.ID, ConnectionStatus(1)))
-	s, err = store.GetProfileConnectionStatus(ctx, prof.ID)
-	require.NoError(t, err)
-	require.Equal(t, ConnectionStatus(1), s)
-}
-
 func testStore(t *testing.T) *Store {
 	t.Helper()
 	dir, err := ioutil.TempDir("", t.Name())
