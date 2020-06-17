@@ -45,11 +45,9 @@ interface ProfileContextValue {
 export const ProfileContext = createContext<ProfileContextValue>(null)
 
 export function ProfileProvider(props) {
-  const {status, error, data} = useQuery('Profile', apiClient.getProfile, {
-    retry: false,
-  })
+  const {status, error, data} = useQuery('Profile', apiClient.getProfile)
 
-  function handleOnSuccess(params) {
+  function refetchProfile(params) {
     queryCache.refetchQueries('Profile')
   }
 
@@ -58,21 +56,19 @@ export function ProfileProvider(props) {
   const genSeed = useCallback(() => apiClient.genSeed(), [])
 
   const [createProfile] = useMutation(apiClient.createProfile, {
-    onSuccess: handleOnSuccess,
+    onSuccess: refetchProfile,
   })
 
   const getProfile = useCallback(
     (profileId?: string) =>
-      useQuery(['Profile', profileId], apiClient.getProfile, {
-        refetchOnWindowFocus: true,
-      }),
+      useQuery(['Profile', profileId], apiClient.getProfile),
     [profile],
   )
 
   const [setProfile] = useMutation(
     formData => apiClient.setProfile(profile, formData),
     {
-      onSuccess: handleOnSuccess,
+      onSuccess: refetchProfile,
     },
   )
 
@@ -80,13 +76,26 @@ export function ProfileProvider(props) {
     return useQuery(['ProfileAddrs'], apiClient.getProfileAddrs)
   }
 
-  const connectToPeerById = useCallback(
-    peerId => apiClient.connectToPeerById(peerId),
-    [],
+  const [connectToPeerById] = useMutation(
+    peerIds => apiClient.connectToPeerById(peerIds),
+    {
+      onSuccess: () => {
+        queryCache.refetchQueries('AllConnections')
+      },
+      onError: params => {
+        throw new Error(`Connection to Peer error -> ${JSON.stringify(params)}`)
+      },
+    },
   )
 
   function allConnections(page = 0): PaginatedQueryResult<any> {
-    return usePaginatedQuery(['AllConnections', page], apiClient.allConnections)
+    return usePaginatedQuery(
+      ['AllConnections', page],
+      apiClient.allConnections,
+      {
+        refetchOnWindowFocus: true,
+      },
+    )
   }
 
   const value = useMemo(
@@ -121,7 +130,9 @@ export function ProfileProvider(props) {
   }
 
   if (status === 'success') {
-    return <ProfileContext.Provider value={value} {...props} />
+    return (
+      <ProfileContext.Provider value={{...value, ...props.value}} {...props} />
+    )
   }
 
   throw new Error(`Unhandled status: ${status}`)

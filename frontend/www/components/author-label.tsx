@@ -10,7 +10,6 @@ interface AuthorLabelProps {
 
 export function AuthorLabel({author}: {author: QueryResult<Profile>}) {
   const {status, error, data} = author
-  console.log('data', data)
 
   if (status === 'loading') {
     return <span>...</span>
@@ -21,7 +20,6 @@ export function AuthorLabel({author}: {author: QueryResult<Profile>}) {
   }
 
   const profile: Profile.AsObject = data?.toObject()
-  console.log('profile', profile)
 
   // const profile = {
   //   accountId: '',

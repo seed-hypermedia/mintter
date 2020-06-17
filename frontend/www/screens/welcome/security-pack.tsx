@@ -133,7 +133,7 @@ export function MnemonicWords({
 
     navigator.clipboard
       .writeText(words)
-      .then(() => alert('Words copied to your clip board!'))
+      .then(() => alert('Words copied to your clipboard!'))
   }
 
   return (
