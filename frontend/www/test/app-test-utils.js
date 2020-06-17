@@ -9,7 +9,17 @@ async function render(
   ui,
   {route = '/library/feed', profile, ...renderOptions} = {},
 ) {
-  window.history.pushState({}, 'Test page', route)
+  const routeConfig =
+    typeof route === 'string'
+      ? {
+          pathname: route,
+          state: {},
+        }
+      : {
+          ...route,
+        }
+
+  window.history.pushState(routeConfig.state, 'Test page', routeConfig.pathname)
 
   const returnValue = {
     ...rtlRender(ui, {
