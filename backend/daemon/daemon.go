@@ -35,18 +35,21 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	defer log.Info("GracefulShutdownEnded")
 
 	rpcsrv := grpc.NewServer()
+	var svc *server.Server
 	{
-		svc, err := server.NewServer(cfg, log)
+		s, err := server.NewServer(cfg, log)
 		if err != nil {
 			return fmt.Errorf("failed to create rpc server: %w", err)
 		}
 		defer func() {
-			err = multierr.Append(err, svc.Close())
+			err = multierr.Append(err, s.Close())
 		}()
 
-		proto.RegisterMintterServer(rpcsrv, svc)
-		proto.RegisterDocumentsServer(rpcsrv, svc)
+		proto.RegisterMintterServer(rpcsrv, s)
+		proto.RegisterDocumentsServer(rpcsrv, s)
 		reflection.Register(rpcsrv)
+
+		svc = s
 	}
 
 	log = log.Named("daemon")
@@ -76,10 +79,14 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		})
 	}
 
+	mux := http.NewServeMux()
+	mux.Handle("/_debug", svc.DebugHandler())
+	mux.Handle("/", handler)
+
 	// TODO(burdiyan): Add timeout configuration.
 	srv := &http.Server{
 		Addr:    ":" + cfg.HTTPPort,
-		Handler: handler,
+		Handler: mux,
 	}
 
 	l, err := net.Listen("tcp", ":"+cfg.GRPCPort)

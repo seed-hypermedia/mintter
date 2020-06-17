@@ -13,6 +13,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
+	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -385,4 +386,14 @@ func storeErrorToProto(err error) error {
 	}
 
 	return status.Error(codes.Internal, err.Error())
+}
+
+func addrSlice(mas ...multiaddr.Multiaddr) []string {
+	out := make([]string, len(mas))
+
+	for i, ma := range mas {
+		out[i] = ma.String()
+	}
+
+	return out
 }

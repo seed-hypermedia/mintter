@@ -324,7 +324,7 @@ func (n *Node) syncAll() error {
 	}
 
 	for _, prof := range profiles {
-		if err := n.SyncPublications(n.ctx, prof.ID); err != nil {
+		if err := n.SyncPublications(n.ctx, prof.ID); err != nil && err != context.Canceled {
 			n.log.Error("FailedToSyncPublications", zap.Error(err), zap.String("profile", prof.ID.String()))
 		}
 	}
