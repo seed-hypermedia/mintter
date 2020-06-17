@@ -3,7 +3,6 @@ package p2p_test
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -27,26 +26,7 @@ func TestConnect(t *testing.T) {
 
 	require.NoError(t, alice.Connect(ctx, addrs...), "connecting more than once must not fail")
 
-	status, err := alice.Store().GetProfileConnectionStatus(ctx, bob.Account().ID)
-	require.NoError(t, err)
-	require.Equal(t, "CONNECTED", status.String())
-
-	status, err = bob.Store().GetProfileConnectionStatus(ctx, alice.Account().ID)
-	require.NoError(t, err)
-	require.Equal(t, "CONNECTED", status.String())
-
 	require.NoError(t, bob.Host().Network().ClosePeer(alice.Host().ID()))
 
 	require.NoError(t, bob.Disconnect(ctx, alice.Account().ID))
-
-	// This is ugly but avoids flaky test results.
-	time.Sleep(500 * time.Millisecond)
-
-	status, err = bob.Store().GetProfileConnectionStatus(ctx, alice.Account().ID)
-	require.NoError(t, err)
-	require.Equal(t, "NOT_CONNECTED", status.String())
-
-	status, err = alice.Store().GetProfileConnectionStatus(ctx, bob.Account().ID)
-	require.NoError(t, err)
-	require.Equal(t, "NOT_CONNECTED", status.String())
 }

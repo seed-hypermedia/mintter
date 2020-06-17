@@ -54,16 +54,8 @@ func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*
 		return nil, status.Errorf(codes.Internal, "failed to load profile: %v", err)
 	}
 
-	pbprof := profileToProto(prof)
-	// TODO(burdiyan): OMG this is very bad.
-	status, err := s.store.GetProfileConnectionStatus(ctx, prof.ID)
-	if err != nil {
-		s.log.Warn("NoConnectionStatus", zap.Error(err), zap.String("profile", prof.ID.String()))
-	}
-	pbprof.ConnectionStatus = proto.ConnectionStatus(status)
-
 	return &proto.GetProfileResponse{
-		Profile: pbprof,
+		Profile: profileToProto(prof, s),
 	}, nil
 }
 
@@ -91,15 +83,8 @@ func (s *Server) ListProfiles(ctx context.Context, in *proto.ListProfilesRequest
 		if p.ID == s.node.Account().ID {
 			continue
 		}
-		pbprof := profileToProto(p)
-		conn, err := s.store.GetProfileConnectionStatus(ctx, p.ID)
-		if err != nil {
-			// TODO(burdiyan): treat missing connection status and not connected as different.
-			s.log.Warn("UnknownConnectionStatus", zap.Error(err))
-		}
 
-		pbprof.ConnectionStatus = conn
-		resp.Profiles[i] = pbprof
+		resp.Profiles[i] = profileToProto(p, s)
 	}
 
 	return resp, nil
@@ -129,7 +114,7 @@ func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileReque
 	}
 
 	return &proto.UpdateProfileResponse{
-		Profile: profileToProto(stored),
+		Profile: profileToProto(stored, s),
 	}, nil
 }
 
@@ -151,13 +136,16 @@ func (s *Server) GetProfileAddrs(ctx context.Context, in *proto.GetProfileAddrsR
 	return resp, nil
 }
 
-func profileToProto(prof identity.Profile) *proto.Profile {
+func profileToProto(prof identity.Profile, s *Server) *proto.Profile {
+	status := s.node.Host().Network().Connectedness(prof.Peer.ID)
+
 	return &proto.Profile{
-		PeerId:    prof.Peer.ID.String(),
-		AccountId: prof.Account.ID.String(),
-		Username:  prof.About.Username,
-		Email:     prof.About.Email,
-		Bio:       prof.About.Bio,
+		PeerId:           prof.Peer.ID.String(),
+		AccountId:        prof.Account.ID.String(),
+		Username:         prof.About.Username,
+		Email:            prof.About.Email,
+		Bio:              prof.About.Bio,
+		ConnectionStatus: proto.ConnectionStatus(status),
 	}
 }
 

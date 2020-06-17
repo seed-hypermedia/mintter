@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"mintter/backend/identity"
 	"mintter/backend/p2p/internal"
-	"mintter/backend/store"
 
 	"github.com/libp2p/go-libp2p-core/host"
 	peer "github.com/libp2p/go-libp2p-core/peer"
@@ -125,10 +124,6 @@ func (n *Node) savePeerProfile(ctx context.Context, prof identity.Profile) error
 
 	// mark whether or not this connection supports the protocol:
 	if err := n.host.Peerstore().Put(pid, supportKey, support); err != nil {
-		return err
-	}
-
-	if err := n.store.UpdateProfileConnectionStatus(ctx, prof.ID, store.ConnectionStatus(n.host.Network().Connectedness(pid))); err != nil {
 		return err
 	}
 

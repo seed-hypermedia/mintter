@@ -7,16 +7,12 @@ import (
 	"fmt"
 	"mintter/backend/identity"
 	"mintter/backend/logbook"
-	"mintter/proto"
 	"os"
 	"sync"
 
 	"github.com/ipfs/go-datastore/query"
 	"github.com/libp2p/go-libp2p-core/peer"
 )
-
-// ConnectionStatus shows connection status of a profile.
-type ConnectionStatus = proto.ConnectionStatus
 
 const profileKey = "mtt-profile"
 
@@ -106,21 +102,6 @@ func (s *Store) GetProfileForPeer(ctx context.Context, p peer.ID) (identity.Prof
 	}
 
 	return identity.DecodeProfileID(v.(string))
-}
-
-// UpdateProfileConnectionStatus updates the connection status of a profile.
-func (s *Store) UpdateProfileConnectionStatus(ctx context.Context, pid identity.ProfileID, status ConnectionStatus) error {
-	return s.db.Put(keyConnectionStatus.ChildString(pid.String()), []byte(status.String()))
-}
-
-// GetProfileConnectionStatus retrieves connection status of a given profile.
-func (s *Store) GetProfileConnectionStatus(ctx context.Context, pid identity.ProfileID) (ConnectionStatus, error) {
-	v, err := s.get(keyConnectionStatus.ChildString(pid.String()))
-	if err != nil {
-		return 0, err
-	}
-
-	return proto.ConnectionStatus(proto.ConnectionStatus_value[string(v)]), nil
 }
 
 // ListProfiles stored in the store.
