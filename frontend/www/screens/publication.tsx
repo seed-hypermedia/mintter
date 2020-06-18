@@ -12,6 +12,8 @@ import {
   initialSectionsValue,
   // SectionToolbar,
   renderLeafs,
+  EditorComponent,
+  renderReadOnlySectionElement,
 } from '@mintter/editor'
 import {EditablePlugins, SoftBreakPlugin} from 'slate-plugins-next'
 import Seo from 'components/seo'
@@ -21,7 +23,6 @@ import {css} from 'emotion'
 import {useParams} from 'react-router-dom'
 import {Section} from '@mintter/proto/documents_pb'
 import {markdownToSlate} from 'shared/markdownToSlate'
-import {renderReadOnlySectionElement} from '@mintter/editor'
 import {useMintter} from 'shared/mintterContext'
 import {useProfile} from 'shared/profileContext'
 import Layout from 'components/layout'
@@ -117,70 +118,53 @@ export default function Publication(): JSX.Element {
                   max-width: 80ch;
                 `} `}
               >
-                <Slate
-                  editor={editor}
-                  value={sections}
-                  onChange={sections => sections}
+                <div
+                  className={`mx-8 pb-6 relative mb-px ${css`
+                    &:after {
+                      content: '';
+                      position: absolute;
+                      bottom: 1px;
+                      left: 0;
+                      width: 50%;
+                      max-width: 360px;
+                      height: 1px;
+                      z-index: 20;
+                      background-color: var(--color-muted-hover);
+                    }
+                  `}`}
                 >
-                  <div
-                    className={`${css`
-                      word-break: break-word;
+                  <h1
+                    className={`text-4xl text-heading font-bold ${css`
+                      word-wrap: break-word;
+                      white-space: pre-wrap;
+                      min-height: 56px;
                     `}`}
                   >
-                    <div
-                      className={`mx-8 pb-6 relative mb-px ${css`
-                        &:after {
-                          content: '';
-                          position: absolute;
-                          bottom: 1px;
-                          left: 0;
-                          width: 50%;
-                          max-width: 360px;
-                          height: 1px;
-                          z-index: 20;
-                          background-color: var(--color-muted-hover);
-                        }
-                      `}`}
-                    >
-                      <h1
-                        className={`text-4xl text-heading font-bold ${css`
-                          word-wrap: break-word;
-                          white-space: pre-wrap;
-                          min-height: 56px;
-                        `}`}
-                      >
-                        {title}
-                      </h1>
-                      <p
-                        className={`leading-relaxed text-lg font-light text-heading-muted italic mt-4 ${css`
-                          word-wrap: break-word;
-                          white-space: pre-wrap;
-                          min-height: 28px;
-                        `}`}
-                      >
-                        {description}
-                      </p>
-                      <p className=" text-sm mt-4 text-heading">
-                        <span>by </span>
+                    {title}
+                  </h1>
+                  <p
+                    className={`leading-relaxed text-lg font-light text-heading-muted italic mt-4 ${css`
+                      word-wrap: break-word;
+                      white-space: pre-wrap;
+                      min-height: 28px;
+                    `}`}
+                  >
+                    {description}
+                  </p>
+                  <p className=" text-sm mt-4 text-heading">
+                    <span>by </span>
 
-                        <AuthorLabel author={author} />
-                      </p>
-                    </div>
-                    <div className="relative">
-                      <EditablePlugins
-                        readOnly
-                        plugins={plugins}
-                        renderElement={[
-                          ...renderElements,
-                          renderReadOnlySectionElement(),
-                        ]}
-                        renderLeaf={[...renderLeafs]}
-                        placeholder="Start writing your masterpiece..."
-                        spellCheck
-                      />
-                    </div>
-                  </div>
-                </Slate>
+                    <AuthorLabel author={author} />
+                  </p>
+                </div>
+                <EditorComponent
+                  readOnly
+                  editor={editor}
+                  plugins={plugins}
+                  value={sections}
+                  onChange={() => {}}
+                  renderElements={[renderReadOnlySectionElement()]}
+                />
               </div>
             </div>
           </div>
