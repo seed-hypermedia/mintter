@@ -79,13 +79,17 @@ export function EditableSectionElement(
               : 'pointer-events-none opacity-0'
           }`}
         >
-          <p className="font-bold border-r px-2 text-body">Section text</p>
-          <p className={`text-body border-r px-2`}>
+          <p className="font-bold border-r px-2 text-body-muted">
+            Section text
+          </p>
+          <p className={`text-body-muted border-r px-2`}>
             <span>Characters:</span>{' '}
             {/* TODO: FIX avoid characters to jump when change chars number */}
-            <span className={`inline-block text-right`}>{sectionChars}</span>
+            <span className={`inline-block text-right text-body-muted`}>
+              {sectionChars}
+            </span>
           </p>
-          <p className=" border-r px-2">Royalties $0.02</p>
+          <p className=" border-r px-2 text-body-muted">Royalties $0.02</p>
           <SettingsButton
             section={element}
             path={path}
