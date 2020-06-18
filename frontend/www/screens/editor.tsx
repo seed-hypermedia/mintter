@@ -285,7 +285,7 @@ export default function Editor(): JSX.Element {
                 minHeight={28}
                 className={`leading-relaxed text-lg font-light text-heading-muted italic`}
                 onEnterPress={() => {
-                  MintterEditor.focus(editor)
+                  // TODO: Horacio: focus Editor here..!
                 }}
               />
             </div>

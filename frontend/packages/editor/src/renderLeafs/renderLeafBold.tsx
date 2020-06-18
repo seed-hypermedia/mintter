@@ -1,5 +1,5 @@
 import React from 'react'
-import {MARK_BOLD} from 'slate-plugins-next'
+import {MARK_BOLD} from '@udecode/slate-plugins'
 import {RenderLeafProps} from 'slate-react'
 
 export function renderLeafBold() {

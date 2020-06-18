@@ -1,10 +1,20 @@
 import React from 'react'
 import {Slate} from 'slate-react'
 import {css} from 'emotion'
-import {EditablePlugins} from 'slate-plugins-next'
+import {EditablePlugins} from '@udecode/slate-plugins'
 import {renderElements as renderDefaultElements} from '../renderElements'
 import {Toolbar} from './toolbar'
 import {renderLeafs as renderDefaultLeafs} from '../renderLeafs'
+
+interface EditorComponentProps {
+  editor: any
+  plugins: any[]
+  value: any
+  onChange: (value: any) => void
+  readOnly?: boolean
+  renderElements?: any[]
+  renderLeafs?: any[]
+}
 
 function Editor(
   {
@@ -15,7 +25,7 @@ function Editor(
     readOnly = false,
     renderElements = [],
     renderLeafs = [],
-  },
+  }: EditorComponentProps,
   ref,
 ): JSX.Element {
   // function isEmpty(): boolean {

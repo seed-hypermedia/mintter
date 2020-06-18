@@ -9,7 +9,9 @@ import {
   ListPlugin,
   ParagraphPlugin,
   UnderlinePlugin,
-} from 'slate-plugins-next'
+  ExitBreakPlugin,
+  SoftBreakPlugin,
+} from '@udecode/slate-plugins'
 import {nodeTypes} from './nodeTypes'
 
 export const plugins = [
@@ -22,6 +24,8 @@ export const plugins = [
   ListPlugin(nodeTypes),
   ParagraphPlugin(nodeTypes),
   UnderlinePlugin(),
+  ExitBreakPlugin(),
+  SoftBreakPlugin(),
 ]
 
 // function InlineCodePlugin() {

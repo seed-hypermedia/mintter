@@ -2,7 +2,7 @@ import React from 'react'
 import {useSlate, ReactEditor} from 'slate-react'
 import {Range, Node, Path} from 'slate'
 import {css} from 'emotion'
-import {BLOCKQUOTE} from 'slate-plugins-next'
+import {BLOCKQUOTE} from '@udecode/slate-plugins'
 import {Icons} from '../components/icons'
 
 export function SectionToolbar() {

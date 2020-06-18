@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-  HoveringToolbar,
+  BalloonToolbar,
   MARK_BOLD,
   MARK_ITALIC,
   toggleMark,
@@ -8,7 +8,7 @@ import {
   insertLink,
   isNodeInSelection,
   toggleList,
-} from 'slate-plugins-next'
+} from '@udecode/slate-plugins'
 import {nodeTypes} from '../nodeTypes'
 import {Icons} from './icons'
 import {useSlate} from 'slate-react'
@@ -153,7 +153,7 @@ export function ToolbarBlockOList() {
 export function Toolbar() {
   // const editor = useSlate()
   return (
-    <HoveringToolbar className="theme-dark">
+    <BalloonToolbar className="theme-dark">
       <ToolbarBoldMark />
       <ToolbarCodeMark />
       <ToolbarMarkItalic />
@@ -164,6 +164,6 @@ export function Toolbar() {
       <ToolbarBlockP />
       <ToolbarBlockH1 />
       <ToolbarBlockH2 />
-    </HoveringToolbar>
+    </BalloonToolbar>
   )
 }
