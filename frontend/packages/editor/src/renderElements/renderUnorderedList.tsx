@@ -1,5 +1,5 @@
 import React from 'react'
-import {getRenderElement} from 'slate-plugins-next'
+import {getRenderElement} from '@udecode/slate-plugins'
 import {nodeTypes} from '../nodeTypes'
 import {css} from 'emotion'
 

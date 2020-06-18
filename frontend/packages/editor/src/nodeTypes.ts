@@ -1,17 +1,17 @@
 import {
   PARAGRAPH,
   BLOCKQUOTE,
-  CODE,
+  CODE_BLOCK,
   LINK,
   IMAGE,
   ListType,
   HeadingType,
-} from 'slate-plugins-next'
+} from '@udecode/slate-plugins'
 
 export const nodeTypes = {
   typeP: PARAGRAPH,
   typeBlockquote: BLOCKQUOTE,
-  typeCode: CODE,
+  typeCode: CODE_BLOCK,
   typeLink: LINK,
   typeImg: IMAGE,
   typeUl: ListType.UL,

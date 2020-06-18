@@ -6,17 +6,16 @@ import {
 } from 'slate'
 import {withReact} from 'slate-react'
 import {
-  withBreakEmptyReset,
-  withDeleteStartReset,
-  withShortcuts,
+  withResetBlockType,
+  withAutoformat,
   withList,
-  withImage,
-  withDeserializeHtml,
+  withImageUpload,
+  withDeserializeHTML,
   withLink,
-  withBlock,
+  withToggleType,
   withDeserializeMd,
   pipe,
-} from 'slate-plugins-next'
+} from '@udecode/slate-plugins'
 import {withSections} from './SectionPlugin'
 import {nodeTypes} from './nodeTypes'
 import {withHistory} from 'slate-history'
@@ -37,16 +36,15 @@ export function useEditor(plugins: any[]): Editor {
   const withPlugins = [
     withReact,
     withHistory,
-    withLink(nodeTypes),
-    withShortcuts(nodeTypes),
-    withBlock(nodeTypes),
+    withLink(),
+    withAutoformat(nodeTypes),
+    withToggleType(),
     withDeserializeMd(plugins),
-    withDeserializeHtml(plugins),
-    withImage(nodeTypes),
+    withDeserializeHTML(),
+    withImageUpload(),
     withSections(),
-    withBreakEmptyReset(resetOptions),
     withList(nodeTypes),
-    withDeleteStartReset(resetOptions),
+    withResetBlockType(resetOptions),
   ] as const
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

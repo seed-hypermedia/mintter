@@ -1,5 +1,5 @@
 import React from 'react'
-import {MARK_CODE} from 'slate-plugins-next'
+import {MARK_CODE} from '@udecode/slate-plugins'
 import {RenderLeafProps} from 'slate-react'
 
 export function renderLeafInlineCode() {

@@ -1,5 +1,5 @@
 import React from 'react'
-import {MARK_ITALIC} from 'slate-plugins-next'
+import {MARK_ITALIC} from '@udecode/slate-plugins'
 import {RenderLeafProps} from 'slate-react'
 
 export function renderLeafItalic() {
