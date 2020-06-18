@@ -1,21 +1,19 @@
 import React, {useReducer, useCallback} from 'react'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
-import {Slate, ReactEditor} from 'slate-react'
 import {css} from 'emotion'
 import {EditablePlugins, SoftBreakPlugin} from 'slate-plugins-next'
 import {useMutation, queryCache} from 'react-query'
 import {
   Icons,
   nodeTypes,
-  renderElements,
   Editor as MintterEditor,
   Toolbar,
   useEditor,
   plugins as editorPlugins,
   initialSectionsValue,
-  // SectionToolbar,
-  renderLeafs,
+  EditorComponent,
   renderEditableSectionElement,
+  slate,
 } from '@mintter/editor'
 import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
@@ -29,7 +27,6 @@ import {useParams, useHistory} from 'react-router-dom'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
 import Layout from 'components/layout'
-import {Container} from '@material-ui/core'
 
 interface EditorState {
   title: string
@@ -117,7 +114,7 @@ function initializeEditorValue() {
 
 export default function Editor(): JSX.Element {
   const plugins = [...editorPlugins, SoftBreakPlugin()]
-  const editor: ReactEditor = useEditor(plugins) as ReactEditor
+  const editor: slate.ReactEditor = useEditor(plugins) as slate.ReactEditor
   const wrapperRef = React.useRef<HTMLDivElement>(null)
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
@@ -191,25 +188,6 @@ export default function Editor(): JSX.Element {
     }
   }, [data])
 
-  // React.useEffect(() => {
-  //   function handler(e) {
-  //     if (
-  //       // TODO: (horacio) if there's an error on this page and the editor has not being loaded properly, this will fail
-  //       !ReactEditor.isFocused(editor) &&
-  //       typeof e.target.value !== 'string'
-  //     ) {
-  //       ReactEditor.focus(editor)
-  //       Transforms.select(editor, Editor.end(editor, []))
-  //     }
-  //   }
-
-  //   wrapperRef.current.addEventListener('click', handler)
-
-  //   return () => {
-  //     wrapperRef.current.removeEventListener('click', handler)
-  //   }
-  // }, [])
-
   async function handlePublish() {
     publishDraft(documentId as string, {
       onSuccess: (publication: Publication) => {
@@ -229,7 +207,6 @@ export default function Editor(): JSX.Element {
 
   return (
     <>
-      {/* <EditorHeader onPublish={handlePublish} /> */}
       <div className="flex px-8 py-2">
         <span className="flex-1"></span>
         <button
@@ -239,7 +216,7 @@ export default function Editor(): JSX.Element {
           Publish
         </button>
       </div>
-      <div className="flex pt-8 pb-32 relative">
+      <Layout>
         <DebugValue
           value={state}
           className="absolute z-10 right-0 top-0 w-full max-w-xs"
@@ -267,80 +244,60 @@ export default function Editor(): JSX.Element {
               max-width: 80ch;
             `} `}
           >
-            <Slate
+            <div
+              className={`mx-8 pb-2 relative ${css`
+                &:after {
+                  content: '';
+                  position: absolute;
+                  bottom: 0;
+                  left: 0;
+                  width: 50%;
+                  max-width: 360px;
+                  height: 1px;
+                  z-index: 20;
+                  background-color: var(--color-muted-hover);
+                }
+              `}`}
+            >
+              <Textarea
+                ref={t => {
+                  titleRef.current = t
+                }}
+                value={title}
+                data-test-id="editor_title"
+                onChange={setTitle}
+                name="title"
+                placeholder="Untitled document"
+                minHeight={56}
+                className={`text-4xl text-heading font-bold`}
+                onEnterPress={() => {
+                  descriptionRef.current.focus()
+                }}
+              />
+              <Textarea
+                ref={d => {
+                  descriptionRef.current = d
+                }}
+                value={description}
+                onChange={setDescription}
+                name="description"
+                placeholder="+ document description..."
+                minHeight={28}
+                className={`leading-relaxed text-lg font-light text-heading-muted italic`}
+                onEnterPress={() => {
+                  MintterEditor.focus(editor)
+                }}
+              />
+            </div>
+            <EditorComponent
               editor={editor}
+              plugins={plugins}
               value={sections}
               onChange={sections => {
                 setSections(sections)
               }}
-            >
-              <div
-                className={`${css`
-                  word-break: break-word;
-                `}`}
-              >
-                <div
-                  className={`mx-8 pb-2 relative ${css`
-                    &:after {
-                      content: '';
-                      position: absolute;
-                      bottom: 0;
-                      left: 0;
-                      width: 50%;
-                      max-width: 360px;
-                      height: 1px;
-                      z-index: 20;
-                      background-color: var(--color-muted-hover);
-                    }
-                  `}`}
-                >
-                  <Textarea
-                    ref={t => {
-                      titleRef.current = t
-                    }}
-                    value={title}
-                    data-test-id="editor_title"
-                    onChange={setTitle}
-                    name="title"
-                    placeholder="Untitled document"
-                    minHeight={56}
-                    className={`text-4xl text-heading font-bold`}
-                    onEnterPress={() => {
-                      descriptionRef.current.focus()
-                    }}
-                  />
-                  <Textarea
-                    ref={d => {
-                      descriptionRef.current = d
-                    }}
-                    value={description}
-                    onChange={setDescription}
-                    name="description"
-                    placeholder="+ document description..."
-                    minHeight={28}
-                    className={`leading-relaxed text-lg font-light text-heading-muted italic`}
-                    onEnterPress={() => {
-                      ReactEditor.focus(editor)
-                    }}
-                  />
-                </div>
-                <div className="relative" ref={editorContainerRef}>
-                  <Toolbar />
-                  {/* {!isEmpty() && <SectionToolbar />} */}
-                  <EditablePlugins
-                    plugins={plugins}
-                    renderElement={[
-                      ...renderElements,
-                      renderEditableSectionElement(),
-                    ]}
-                    renderLeaf={[...renderLeafs]}
-                    placeholder="Start writing your masterpiece..."
-                    spellCheck
-                    autoFocus
-                  />
-                </div>
-              </div>
-            </Slate>
+              renderElements={[renderEditableSectionElement()]}
+            />
             <div className="py-16 px-8 flex flex-col items-start">
               <button
                 className="flex items-center bg-transparent text-body-muted transition duration-200 hover:text-body hover:border-body border border-body-muted rounded-md px-2 pl-2 py-2"
@@ -349,13 +306,13 @@ export default function Editor(): JSX.Element {
                 <Icons.Plus color="currentColor" />
                 <span className="px-2 text-sm">add Block</span>
               </button>
-              <a className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline">
+              <p className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline">
                 what are Blocks and how to use them
-              </a>
+              </p>
             </div>
           </div>
         </div>
-      </div>
+      </Layout>
     </>
   )
 }
