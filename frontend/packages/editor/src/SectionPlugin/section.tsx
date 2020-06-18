@@ -17,11 +17,11 @@ function Section({path, className = '', ...props}) {
           top: 0;
           left: 0;
           width: 100%;
-          height: 2px;
+          height: 1px;
           z-index: 100;
           background-image: linear-gradient(
             to right,
-            var(--color-background-muted) 33%,
+            var(--color-toggle-theme) 33%,
             rgba(255, 255, 255, 0) 0%
           );
           background-position: bottom;
@@ -149,7 +149,7 @@ function SettingsButton({section, path, visible, show, hide}) {
       content={
         <div
           contentEditable={false}
-          className={`theme-light select-none transition duration-200 p-2 rounded bg-gray-300 shadow-md`}
+          className={`theme-light select-none transition duration-200 p-2 rounded bg-gray-400 shadow-md`}
         >
           <div>
             <label
