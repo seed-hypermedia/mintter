@@ -1,8 +1,6 @@
 import React from 'react'
 import {
   BalloonToolbar,
-  MARK_BOLD,
-  MARK_ITALIC,
   toggleMark,
   isMarkActive,
   insertLink,
@@ -14,7 +12,7 @@ import {Icons} from './icons'
 import {useSlate} from 'slate-react'
 
 export function ToolbarBoldMark() {
-  return <ToolbarMark mark={MARK_BOLD} icon="Bold" />
+  return <ToolbarMark mark={nodeTypes.typeBold} icon="Bold" />
 }
 
 export function ToolbarCodeMark() {
@@ -22,7 +20,7 @@ export function ToolbarCodeMark() {
 }
 
 export function ToolbarMarkItalic() {
-  return <ToolbarMark mark={MARK_ITALIC} icon="Italic" />
+  return <ToolbarMark mark={nodeTypes.typeItalic} icon="Italic" />
 }
 
 export function ToolbarBlockLink() {
@@ -61,11 +59,11 @@ export interface ToolbarButtonProps {
 }
 
 export function ToolbarButton({
-  className,
+  className = '',
   icon,
   onClick,
   active = false,
-  size = 24,
+  size = 16,
 }: ToolbarButtonProps) {
   const Icon = Icons[icon]
 
@@ -80,7 +78,7 @@ export function ToolbarButton({
   return (
     <button
       onMouseDown={handleClick}
-      className={`${
+      className={`p-2 ${
         active ? 'text-toolbar-active' : 'text-toolbar'
       } ${className}`}
     >
@@ -153,7 +151,7 @@ export function ToolbarBlockOList() {
 export function Toolbar() {
   // const editor = useSlate()
   return (
-    <BalloonToolbar className="theme-dark">
+    <BalloonToolbar className="theme-dark m-0">
       <ToolbarBoldMark />
       <ToolbarCodeMark />
       <ToolbarMarkItalic />

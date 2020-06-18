@@ -6,12 +6,19 @@ import {
   IMAGE,
   ListType,
   HeadingType,
+  MEDIA_EMBED,
+  TableType,
+  MARK_BOLD,
+  MARK_ITALIC,
+  MARK_UNDERLINE,
+  MARK_STRIKETHROUGH,
+  MARK_CODE,
 } from '@udecode/slate-plugins'
 
 export const nodeTypes = {
   typeP: PARAGRAPH,
   typeBlockquote: BLOCKQUOTE,
-  typeCode: CODE_BLOCK,
+
   typeLink: LINK,
   typeImg: IMAGE,
   typeUl: ListType.UL,
@@ -21,4 +28,16 @@ export const nodeTypes = {
   typeH2: HeadingType.H2,
   typeH3: HeadingType.H3,
   typeSection: 'section',
+  typeCodeBlock: CODE_BLOCK,
+  typeMediaEmbed: MEDIA_EMBED,
+  typeTable: TableType.TABLE,
+  typeTr: TableType.ROW,
+  typeTd: TableType.CELL,
+  typeTh: TableType.HEAD,
+  // marks
+  typeBold: MARK_BOLD,
+  typeItalic: MARK_ITALIC,
+  typeUnderline: MARK_UNDERLINE,
+  typeStrikethrough: MARK_STRIKETHROUGH,
+  typeCode: MARK_CODE,
 }
