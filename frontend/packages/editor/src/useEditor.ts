@@ -15,6 +15,7 @@ import {
   withToggleType,
   withDeserializeMd,
   pipe,
+  withInlineVoid,
 } from '@udecode/slate-plugins'
 import {withSections} from './SectionPlugin'
 import {nodeTypes} from './nodeTypes'
@@ -22,14 +23,8 @@ import {withHistory} from 'slate-history'
 
 // need this object because the plugin required it, I made an issue in the plugin's repo
 const resetOptions = {
-  types: [
-    nodeTypes.typeH1,
-    nodeTypes.typeH2,
-    nodeTypes.typeH3,
-    nodeTypes.typeBlockquote,
-    nodeTypes.typeCode,
-  ],
-  typeP: nodeTypes.typeP,
+  types: [nodeTypes.typeBlockquote, nodeTypes.typeCodeBlock],
+  defaultType: nodeTypes.typeP,
 }
 
 export function useEditor(plugins: any[]): Editor {
@@ -40,11 +35,12 @@ export function useEditor(plugins: any[]): Editor {
     withAutoformat(nodeTypes),
     withToggleType(),
     withDeserializeMd(plugins),
-    withDeserializeHTML(),
+    withDeserializeHTML({plugins}),
     withImageUpload(),
     withSections(),
     withList(nodeTypes),
     withResetBlockType(resetOptions),
+    withInlineVoid({plugins}),
   ] as const
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

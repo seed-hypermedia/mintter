@@ -130,7 +130,7 @@ export default function Settings() {
                 ref={register}
                 minHeight={100}
                 placeholder="A little bit about yourself..."
-                className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body ${errors.bio &&
+                className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body text-base ${errors.bio &&
                   'border-danger'}`}
               />
             </div>
@@ -162,6 +162,11 @@ export default function Settings() {
                 )}
               </AnimatePresence>
             </div>
+            <hr className="border-t-2 border-muted border-solid mt-10" />
+            <p className="block text-white text-xs font-semibold bg-info rounded px-4 py-2 mt-8">
+              All your Mintter content is located in{' '}
+              <code className="mx-1">~/.mtt/</code>
+            </p>
             <div className="flex-1 relative mt-10">
               <label
                 className="block text-body-muted text-xs font-semibold mb-1"

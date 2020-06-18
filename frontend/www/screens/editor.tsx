@@ -269,7 +269,7 @@ export default function Editor(): JSX.Element {
                 name="title"
                 placeholder="Untitled document"
                 minHeight={56}
-                className={`text-4xl text-heading font-bold`}
+                className={`text-4xl text-heading font-bold text-base`}
                 onEnterPress={() => {
                   descriptionRef.current.focus()
                 }}
@@ -283,7 +283,7 @@ export default function Editor(): JSX.Element {
                 name="description"
                 placeholder="+ document description..."
                 minHeight={28}
-                className={`leading-relaxed text-lg font-light text-heading-muted italic`}
+                className={`leading-relaxed text-lg font-light text-heading-muted italic text-base`}
                 onEnterPress={() => {
                   // TODO: Horacio: focus Editor here..!
                 }}
