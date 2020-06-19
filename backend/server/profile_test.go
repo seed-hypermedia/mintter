@@ -13,7 +13,8 @@ import (
 )
 
 func TestInitProfile(t *testing.T) {
-	srv := newSeededServer(t)
+	testMnemonic := []string{"abandon", "impact", "blossom", "roast", "early", "turkey", "oblige", "cry", "citizen", "toilet", "prefer", "sudden", "glad", "luxury", "vehicle", "broom", "view", "front", "office", "rain", "machine", "angle", "humor", "acid"}
+	srv := newSeededServer(t, "alice")
 	defer func() {
 		require.NoError(t, srv.Close())
 	}()
@@ -31,7 +32,7 @@ func TestInitProfile(t *testing.T) {
 }
 
 func TestGetProfile(t *testing.T) {
-	srv := newSeededServer(t)
+	srv := newSeededServer(t, "alice")
 	defer func() {
 		require.NoError(t, srv.Close())
 	}()
@@ -40,7 +41,7 @@ func TestGetProfile(t *testing.T) {
 
 	r1, err := srv.GetProfile(ctx, &proto.GetProfileRequest{})
 	require.NoError(t, err)
-	require.Equal(t, "12D3KooWGkrLHeWFdhFoLqjbxriuHT6Nm1k8HNZmagP8Lj4FLJw4", r1.Profile.PeerId)
+	require.Equal(t, "12D3KooWFMTJanyH3XttUC2AmS9fZnbeYsxbAjSEvyCeHVbHBX3C", r1.Profile.PeerId)
 	require.NotEqual(t, "", r1.Profile.AccountId)
 
 	// Server must be able to load initialized profile after restart.
@@ -54,8 +55,8 @@ func TestGetProfile(t *testing.T) {
 }
 
 func TestListProfiles(t *testing.T) {
-	alice := newSeededServer(t, testMnemonic...)
-	bob := newSeededServer(t, testMnemonic2...)
+	alice := newSeededServer(t, "alice")
+	bob := newSeededServer(t, "bob")
 	defer func() {
 		require.NoError(t, alice.Close())
 		require.NoError(t, bob.Close())
@@ -83,7 +84,7 @@ func TestListProfiles(t *testing.T) {
 }
 
 func TestUpdateProfile(t *testing.T) {
-	srv := newSeededServer(t)
+	srv := newSeededServer(t, "alice")
 	defer func() {
 		require.NoError(t, srv.Close())
 	}()
@@ -100,7 +101,7 @@ func TestUpdateProfile(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	require.Equal(t, "12D3KooWGkrLHeWFdhFoLqjbxriuHT6Nm1k8HNZmagP8Lj4FLJw4", resp.Profile.PeerId)
+	require.Equal(t, "12D3KooWFMTJanyH3XttUC2AmS9fZnbeYsxbAjSEvyCeHVbHBX3C", resp.Profile.PeerId)
 	require.Equal(t, "burdiyan", resp.Profile.Username)
 	require.Equal(t, "foo@example.com", resp.Profile.Email)
 	require.Equal(t, "Fake bio", resp.Profile.Bio)

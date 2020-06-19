@@ -11,7 +11,7 @@ import (
 )
 
 func TestCreateDraft(t *testing.T) {
-	srv := newSeededServer(t)
+	srv := newSeededServer(t, "alice")
 	t.Cleanup(func() {
 		require.NoError(t, srv.Close())
 	})
@@ -28,7 +28,7 @@ func TestCreateDraft(t *testing.T) {
 }
 
 func TestSaveDraft(t *testing.T) {
-	srv := newSeededServer(t)
+	srv := newSeededServer(t, "alice")
 	t.Cleanup(func() {
 		require.NoError(t, srv.Close())
 	})
@@ -61,7 +61,7 @@ func TestSaveDraft(t *testing.T) {
 }
 
 func TestListDrafts(t *testing.T) {
-	srv := newSeededServer(t)
+	srv := newSeededServer(t, "alice")
 	t.Cleanup(func() {
 		require.NoError(t, srv.Close())
 	})
@@ -90,7 +90,7 @@ func TestListDrafts(t *testing.T) {
 }
 
 func TestPublishDraft(t *testing.T) {
-	srv := newSeededServer(t)
+	srv := newSeededServer(t, "alice")
 	t.Cleanup(func() {
 		require.NoError(t, srv.Close())
 	})
@@ -126,7 +126,7 @@ func TestPublishDraft(t *testing.T) {
 }
 
 func TestListPublications(t *testing.T) {
-	srv := newSeededServer(t)
+	srv := newSeededServer(t, "alice")
 	t.Cleanup(func() {
 		require.NoError(t, srv.Close())
 	})
@@ -182,8 +182,8 @@ func TestListPublications(t *testing.T) {
 func TestGetPublication_Remote(t *testing.T) {
 	ctx := context.Background()
 
-	alice := newSeededServer(t, testMnemonic...)
-	bob := newSeededServer(t, testMnemonic2...)
+	alice := newSeededServer(t, "alice")
+	bob := newSeededServer(t, "bob")
 
 	t.Cleanup(func() {
 		require.NoError(t, alice.Close())

@@ -77,6 +77,11 @@ func (s *Server) Close() (err error) {
 	return err
 }
 
+// Seed a server with already created profile. Mainly used for testing.
+func (s *Server) Seed(prof identity.Profile) error {
+	return s.init(prof)
+}
+
 func (s *Server) init(prof identity.Profile) (err error) {
 	if s.ready.Load() {
 		return errors.New("already initialized")

@@ -2,28 +2,21 @@ package store
 
 import (
 	"context"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 	"testing"
 
-	"mintter/backend/identity"
+	"mintter/backend/testutil"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestProfileCache(t *testing.T) {
-	repoPath, err := ioutil.TempDir("", t.Name())
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, os.RemoveAll(repoPath))
-	})
-
-	prof := testProfile(t)
+	repoPath := testutil.MakeRepoPath(t)
+	prof := testutil.MakeProfile(t, "alice")
 
 	pc := &profileCache{filename: filepath.Join(repoPath, "profile.json")}
 
-	_, err = pc.load()
+	_, err := pc.load()
 	require.Error(t, err, "loading non-existing profile must fail")
 
 	err = pc.store(prof)
@@ -75,27 +68,15 @@ func TestListProfiles(t *testing.T) {
 
 func testStore(t *testing.T) *Store {
 	t.Helper()
-	dir, err := ioutil.TempDir("", t.Name())
-	require.NoError(t, err)
-
-	prof := testProfile(t)
+	dir := testutil.MakeRepoPath(t)
+	prof := testutil.MakeProfile(t, "alice")
 
 	s, err := Create(dir, prof)
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
 		require.NoError(t, s.Close())
-		require.NoError(t, os.RemoveAll(dir))
 	})
 
 	return s
-}
-
-func testProfile(t *testing.T) identity.Profile {
-	words := []string{"abandon", "impact", "blossom", "roast", "early", "turkey", "oblige", "cry", "citizen", "toilet", "prefer", "sudden", "glad", "luxury", "vehicle", "broom", "view", "front", "office", "rain", "machine", "angle", "humor", "acid"}
-
-	p, err := identity.FromMnemonic(words, nil, 0)
-	require.NoError(t, err)
-
-	return p
 }

@@ -23,8 +23,8 @@ func connectPeers(t *testing.T, ctx context.Context, a, b *server.Server) {
 
 func TestConnect(t *testing.T) {
 	t.Helper()
-	alice := newSeededServer(t, testMnemonic...)
-	bob := newSeededServer(t, testMnemonic2...)
+	alice := newSeededServer(t, "alice")
+	bob := newSeededServer(t, "bob")
 	defer func() {
 		require.NoError(t, alice.Close())
 		require.NoError(t, bob.Close())
