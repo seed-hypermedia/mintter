@@ -2,16 +2,16 @@
 
 buildGoModule {
   pname = "go-protobuf";
-  version = "1.3.4";
+  version = "1.4.2";
 
   src = fetchFromGitHub {
     owner = "golang";
     repo = "protobuf";
-    rev = "v1.3.4";
-    sha256 = "12dclmj2if8l0069fby4psrpqby7p810dr1dr63nwx93g9jhvkmx";
+    rev = "v1.4.2";
+    sha256 = "0m5z81im4nsyfgarjhppayk4hqnrwswr3nix9mj8pff8x9jvcjqw";
   };
 
-  modSha256 = "0sjjj9z1dhilhpc8pq4154czrb79z9cm044jvn75kxcjv6v5l2m5";
+  modSha256 = "0lnk1zpl6y9vnq6h3l42ssghq6iqvmixd86g2drpa4z8xxk116wf";
   subPackages = ["protoc-gen-go/"];
 
   meta = with lib; {

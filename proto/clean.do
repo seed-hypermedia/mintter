@@ -1,1 +1,1 @@
-. $REDO_BASE/redo/proto-clean.od
+redo clean.protobuf

@@ -1,1 +1,1 @@
-redo-ifchange proto-go
+redo-ifchange go.protobuf

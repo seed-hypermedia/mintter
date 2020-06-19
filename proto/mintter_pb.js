@@ -1,4 +1,4 @@
-// source: mintter.proto
+// source: proto/mintter.proto
 /**
  * @fileoverview
  * @enhanceable

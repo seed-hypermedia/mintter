@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package mintter.p2p;
 
-option go_package = "internal";
+option go_package = "mintter/backend/p2p/internal;internal";
 
 service PeerService {
   // Handshake performs profile exchange for the first time between peers.
