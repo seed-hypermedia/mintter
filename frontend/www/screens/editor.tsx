@@ -307,7 +307,7 @@ export default function Editor(): JSX.Element {
                 <span className="px-2 text-sm">add Block</span>
               </button>
               <p className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline">
-                what are Blocks and how to use them
+                what are Blocks and how to use them?
               </p>
             </div>
           </div>
