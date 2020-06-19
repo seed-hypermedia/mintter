@@ -2,15 +2,12 @@ package p2p_test
 
 import (
 	"context"
-	"encoding/json"
-	"io/ioutil"
-	"os"
 	"testing"
 
 	"mintter/backend/config"
-	"mintter/backend/identity"
 	"mintter/backend/p2p"
 	"mintter/backend/store"
+	"mintter/backend/testutil"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -19,8 +16,8 @@ import (
 func makeTestNode(t *testing.T, name string) *p2p.Node {
 	t.Helper()
 
-	repoPath := makeTestRepoPath(t)
-	prof := makeTestProfile(t, name)
+	repoPath := testutil.MakeRepoPath(t)
+	prof := testutil.MakeProfile(t, name)
 	s, err := store.Create(repoPath, prof)
 	require.NoError(t, err)
 	t.Cleanup(func() {
@@ -39,31 +36,6 @@ func makeTestNode(t *testing.T, name string) *p2p.Node {
 	})
 
 	return n
-}
-
-func makeTestProfile(t *testing.T, name string) identity.Profile {
-	t.Helper()
-
-	data, err := ioutil.ReadFile("testdata/profiles/" + name + ".json")
-	require.NoError(t, err)
-
-	var p identity.Profile
-	require.NoError(t, json.Unmarshal(data, &p))
-
-	return p
-}
-
-func makeTestRepoPath(t *testing.T) string {
-	t.Helper()
-
-	dir, err := ioutil.TempDir(os.TempDir(), "p2p-test-repo")
-	require.NoError(t, err)
-
-	t.Cleanup(func() {
-		os.RemoveAll(dir)
-	})
-
-	return dir
 }
 
 func connectPeers(t *testing.T, ctx context.Context, p1, p2 *p2p.Node) {
