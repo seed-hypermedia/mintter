@@ -5,7 +5,7 @@ package com.mintter;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-option go_package = "proto";
+option go_package = "mintter/proto;proto";
 
 service Documents {
   rpc CreateDraft(CreateDraftRequest) returns (Draft);

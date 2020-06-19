@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package com.mintter;
 
-option go_package = "proto";
+option go_package = "mintter/proto;proto";
 
 service Mintter {
   // Generates cryptographic seed that is used to derive all the cryptographic

@@ -1,1 +1,0 @@
-rm -f `find . -type f -name "*.pb.go" -o -name "*_pb.*"`

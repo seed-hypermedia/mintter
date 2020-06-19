@@ -1,1 +1,0 @@
-. $REDO_BASE/redo/proto-go.od

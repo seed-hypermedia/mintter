@@ -1,9 +1,0 @@
-redo-ifchange proto.list
-
-echo "Executing protoc for JS" >&2
-protoc \
-    --js_out=import_style=commonjs:. \
-    --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:. \
-    *.proto
-
-redo-ifchange `find . -type f -name "*.ts" -o -name "*.js" -o -name "*.proto"`

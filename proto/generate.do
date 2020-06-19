@@ -1,1 +1,1 @@
-redo-ifchange proto-go proto-js
+redo-ifchange go.protobuf js.protobuf
