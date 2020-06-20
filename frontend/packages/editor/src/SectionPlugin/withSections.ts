@@ -4,17 +4,14 @@ import {
   Transforms,
   Range,
   Point,
+  // Path,
 } from 'slate'
 import {ReactEditor} from 'slate-react'
 import {nodeTypes} from '../nodeTypes'
 
 export function withSections() {
   return <T extends ReactEditor>(editor: T) => {
-    const {
-      deleteBackward,
-      insertText,
-      // insertBreak
-    } = editor
+    const {deleteBackward, insertText, insertBreak} = editor
 
     editor.deleteBackward = (...args) => {
       const {selection} = editor
@@ -52,7 +49,7 @@ export function withSections() {
 
         for (const [, path] of Editor.nodes(editor, {
           at: [],
-          match: n => n.type === 'section',
+          match: n => n.type === nodeTypes.typeSection,
         })) {
           Transforms.setNodes(
             editor,
@@ -65,22 +62,43 @@ export function withSections() {
       insertText(text)
     }
 
-    // editor.insertBreak = () => {
-    //   const {selection} = editor
-    //   console.log('editor.insertBreak -> selection', selection)
-    //   Transforms.insertNodes(
-    //     editor,
-    //     {
-    //       type: nodeTypes.typeSection,
-    //       children: [{type: nodeTypes.typeP, children: [{text: ''}]}],
-    //     },
-    //     {
-    //       at: [selection?.anchor.path[0] || editor.children.length],
-    //     },
-    //   )
-    //   // Transforms.select(editor, [selection?.anchor.path[0]])
-    //   insertBreak()
-    // }
+    editor.insertBreak = () => {
+      const {selection} = editor
+
+      if (selection && Range.isCollapsed(selection)) {
+        const parent = Editor.above(editor, {
+          match: n => n.type === nodeTypes.typeSection,
+        })
+
+        if (parent) {
+          const [, parentPath] = parent
+          const parentEnd = Editor.end(editor, parentPath)
+          for (const [, path] of Editor.nodes(editor, {
+            at: [],
+            match: n => n.type === nodeTypes.typeSection,
+          })) {
+            Transforms.setNodes(editor, {active: false}, {at: path})
+          }
+
+          Transforms.insertNodes(
+            editor,
+            {
+              type: nodeTypes.typeSection,
+              active: true,
+              children: [{type: nodeTypes.typeP, children: [{text: ''}]}],
+            },
+            {
+              select: true,
+              at: [parentEnd.path[0] + 1],
+            },
+          )
+
+          return
+        }
+      }
+
+      insertBreak()
+    }
 
     return editor
   }
