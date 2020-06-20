@@ -3,41 +3,11 @@ import {Transforms} from 'slate'
 import {RenderElementProps, ReactEditor, useEditor} from 'slate-react'
 import {Icons} from '../components/icons'
 import {Editor} from '../editor'
-import {css} from 'emotion'
+// import {css} from 'emotion'
 import Tippy from '@tippyjs/react'
 
 function Section({path, className = '', ...props}) {
-  return (
-    <div
-      className={`relative px-8 py-8 ${css`
-        &:after {
-          display: ${path[0] === 0 ? 'none' : 'block'};
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 1px;
-          z-index: 100;
-          background-image: linear-gradient(
-            to right,
-            var(--color-toggle-theme) 33%,
-            rgba(255, 255, 255, 0) 0%
-          );
-          background-position: bottom;
-          background-size: 10px 2px;
-          background-repeat: repeat-x;
-        }
-
-        &:first {
-          &:after {
-            display: none;
-          }
-        }
-      `} ${className}`}
-      {...props}
-    />
-  )
+  return <div className={`relative px-8 first:mt-8 ${className}`} {...props} />
 }
 
 export function EditableSectionElement(
