@@ -7,7 +7,9 @@ import {Editor} from '../editor'
 import Tippy from '@tippyjs/react'
 
 function Section({path, className = '', ...props}) {
-  return <div className={`relative px-8 first:mt-8 ${className}`} {...props} />
+  return (
+    <div className={`relative px-8 py-2 first:mt-8 ${className}`} {...props} />
+  )
 }
 
 export function EditableSectionElement(
