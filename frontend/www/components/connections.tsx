@@ -4,13 +4,31 @@ import {ErrorMessage} from 'components/errorMessage'
 import {css} from 'emotion'
 import {AuthorLabel} from './author-label'
 import Tippy from '@tippyjs/react'
+import {useToasts} from 'react-toast-notifications'
 
 export function Connections() {
   const {connectToPeerById, allConnections} = useProfile()
+  const {addToast, updateToast} = useToasts()
 
   async function handlePeerConnection() {
-    const peer = await window.prompt(`enter a peer address`)
-    await connectToPeerById(peer.split(','))
+    const peer = window.prompt(`enter a peer address`)
+    const toast = addToast('Stablishing connection...', {
+      appearance: 'info',
+      autoDismiss: false,
+    })
+    try {
+      await connectToPeerById(peer.split(','))
+      updateToast(toast, {
+        content: 'Connection established successfuly!',
+        appearance: 'success',
+        autoDismiss: true,
+      })
+    } catch (err) {
+      updateToast(toast, {
+        content: err.message,
+        appearance: 'error',
+      })
+    }
   }
 
   const {status, error, resolvedData} = allConnections()

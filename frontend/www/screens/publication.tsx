@@ -27,7 +27,7 @@ import {useMintter} from 'shared/mintterContext'
 import {useProfile} from 'shared/profileContext'
 import Layout from 'components/layout'
 import {FullPageSpinner} from 'components/fullPageSpinner'
-import {FullPageErrorMessage} from 'components/errorMessage'
+import {ErrorMessage} from 'components/errorMessage'
 import {AuthorLabel} from 'components/author-label'
 
 interface EditorState {
@@ -55,7 +55,14 @@ export default function Publication(): JSX.Element {
 
   const author = getProfile(pubAuthor)
 
-  const {status, error, data} = getPublication(id)
+  const {status, error, data, isFetching, failureCount} = getPublication(id)
+  console.log('{status, error, data}', {
+    status,
+    error,
+    data,
+    isFetching,
+    failureCount,
+  })
 
   React.useEffect(() => {
     if (data) {
@@ -82,12 +89,68 @@ export default function Publication(): JSX.Element {
     }
   }, [data])
 
-  if (status === 'loading') {
-    return <FullPageSpinner />
-  }
+  let content
 
-  if (status === 'error') {
-    return <FullPageErrorMessage error={error} />
+  if (status === 'loading') {
+    content = <FullPageSpinner />
+  } else if (status === 'error') {
+    content = (
+      <div className="mx-8">
+        <ErrorMessage error={error} />
+      </div>
+    )
+  } else {
+    content = (
+      <>
+        <div
+          className={`mx-8 pb-6 relative mb-px ${css`
+            &:after {
+              content: '';
+              position: absolute;
+              bottom: 1px;
+              left: 0;
+              width: 50%;
+              max-width: 360px;
+              height: 1px;
+              z-index: 20;
+              background-color: var(--color-muted-hover);
+            }
+          `}`}
+        >
+          <h1
+            className={`text-4xl text-heading font-bold ${css`
+              word-wrap: break-word;
+              white-space: pre-wrap;
+              min-height: 56px;
+            `}`}
+          >
+            {title}
+          </h1>
+          <p
+            className={`leading-relaxed text-lg font-light text-heading-muted italic mt-4 ${css`
+              word-wrap: break-word;
+              white-space: pre-wrap;
+              min-height: 28px;
+            `}`}
+          >
+            {description}
+          </p>
+          <p className=" text-sm mt-4 text-heading">
+            <span>by </span>
+
+            <AuthorLabel author={author} />
+          </p>
+        </div>
+        <EditorComponent
+          readOnly
+          editor={editor}
+          plugins={plugins}
+          value={sections}
+          onChange={() => {}}
+          renderElements={[renderReadOnlySectionElement()]}
+        />
+      </>
+    )
   }
 
   return (
@@ -101,70 +164,13 @@ export default function Publication(): JSX.Element {
               value={state}
               className="absolute z-10 right-0 top-0 w-full max-w-xs"
             />
-            <div
-              className={`w-full pr-4 absolute xl:sticky left-0 top-0 self-start mx-4 opacity-0 pointer-events-none xl:opacity-100 xl:pointer-events-auto transition duration-200 ${css`
-                max-width: 300px;
-              `}`}
-            ></div>
-            <div
-              className={`flex-1 ${css`
-                @media (min-width: 1280px) {
-                  transform: translateX(-150px);
-                }
-              `}`}
-            >
+            <div className="flex-1">
               <div
                 className={`mx-auto ${css`
                   max-width: 80ch;
                 `} `}
               >
-                <div
-                  className={`mx-8 pb-6 relative mb-px ${css`
-                    &:after {
-                      content: '';
-                      position: absolute;
-                      bottom: 1px;
-                      left: 0;
-                      width: 50%;
-                      max-width: 360px;
-                      height: 1px;
-                      z-index: 20;
-                      background-color: var(--color-muted-hover);
-                    }
-                  `}`}
-                >
-                  <h1
-                    className={`text-4xl text-heading font-bold ${css`
-                      word-wrap: break-word;
-                      white-space: pre-wrap;
-                      min-height: 56px;
-                    `}`}
-                  >
-                    {title}
-                  </h1>
-                  <p
-                    className={`leading-relaxed text-lg font-light text-heading-muted italic mt-4 ${css`
-                      word-wrap: break-word;
-                      white-space: pre-wrap;
-                      min-height: 28px;
-                    `}`}
-                  >
-                    {description}
-                  </p>
-                  <p className=" text-sm mt-4 text-heading">
-                    <span>by </span>
-
-                    <AuthorLabel author={author} />
-                  </p>
-                </div>
-                <EditorComponent
-                  readOnly
-                  editor={editor}
-                  plugins={plugins}
-                  value={sections}
-                  onChange={() => {}}
-                  renderElements={[renderReadOnlySectionElement()]}
-                />
+                {content}
               </div>
             </div>
           </div>
