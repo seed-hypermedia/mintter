@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react'
 import {useForm} from 'react-hook-form'
-import {motion, AnimatePresence} from 'framer-motion'
 import Seo from 'components/seo'
 import Content from 'components/content'
 import Input from 'components/input'
@@ -9,10 +8,11 @@ import {ProfileAddress} from 'components/profile-address'
 import {ErrorMessage, ErrorInterface} from 'components/errorMessage'
 import {useProfile} from 'shared/profileContext'
 import Container from 'components/container'
+import {useToasts} from 'react-toast-notifications'
 
 export default function Settings() {
   const {profile, setProfile} = useProfile()
-  const [success, setSuccess] = React.useState<boolean>(false)
+  const {addToast, updateToast} = useToasts()
   const [submitError, setSubmitError] = React.useState<ErrorInterface>()
   const {register, handleSubmit, errors, formState, setValue} = useForm({
     mode: 'onChange',
@@ -31,16 +31,24 @@ export default function Settings() {
   }, [])
 
   async function onSubmit(data) {
+    const toast = addToast('Updating profile...', {
+      appearance: 'info',
+      autoDismiss: false,
+    })
     try {
       await setProfile(data)
-      setSuccess(true)
-      setTimeout(() => {
-        setSuccess(false)
-      }, 2000)
+      updateToast(toast, {
+        autoDismiss: true,
+        content: 'Update Successfull!',
+        appearance: 'success',
+      })
     } catch (err) {
-      setSuccess(false)
+      updateToast(toast, {
+        autoDismiss: true,
+        content: err.message,
+        appearance: 'error',
+      })
       setSubmitError(err)
-      console.error('Settings::editProfile Error ==> ', err)
     }
   }
 
@@ -146,21 +154,6 @@ export default function Settings() {
               >
                 Save
               </button>
-              <AnimatePresence>
-                {success && (
-                  <motion.div
-                    initial={{opacity: 0, y: 10}}
-                    animate={{opacity: 1, y: 0}}
-                    exit={{
-                      opacity: 0,
-                      y: -10,
-                      transition: {duration: 0.2},
-                    }}
-                  >
-                    <p className="flex-1 mx-4 text-green-500">saved!</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
             <hr className="border-t-2 border-muted border-solid mt-10" />
             <p className="block text-white text-xs font-semibold bg-info rounded px-4 py-2 mt-8">

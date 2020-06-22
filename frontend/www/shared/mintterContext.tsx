@@ -71,7 +71,12 @@ export function MintterProvider(props) {
       )
     }
 
-    return useQuery(['Publication', id], apiClient.getPublication)
+    return useQuery(['Publication', id], apiClient.getPublication, {
+      retry: false,
+      onError: error => {
+        console.log('error!', error)
+      },
+    })
   }, [])
 
   const getSections = useCallback(
