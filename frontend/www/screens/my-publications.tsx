@@ -10,7 +10,7 @@ export function MyPublications() {
   const history = useHistory()
   const {createDraft, allPublications} = useMintter()
   const {status, error, resolvedData} = allPublications()
-  const {profile} = useProfile()
+  const {getProfile} = useProfile()
 
   async function handleCreateDraft() {
     const newDraft = await createDraft().toObject()
@@ -24,7 +24,7 @@ export function MyPublications() {
       resolvedData
         ?.toObject()
         .publicationsList.filter(
-          p => p.author === profile.toObject().accountId,
+          p => p.author === getProfile().toObject().accountId,
         ),
     [resolvedData],
   )

@@ -45,13 +45,11 @@ interface ProfileContextValue {
 export const ProfileContext = createContext<ProfileContextValue>(null)
 
 export function ProfileProvider(props) {
-  const {status, error, data} = useQuery('Profile', apiClient.getProfile)
+  const {status, error} = useQuery('Profile', apiClient.getProfile)
 
   function refetchProfile(params) {
     queryCache.refetchQueries('Profile')
   }
-
-  const profile = data
 
   const genSeed = useCallback(() => apiClient.genSeed(), [])
 
@@ -62,7 +60,7 @@ export function ProfileProvider(props) {
   const getProfile = useCallback(
     (profileId?: string) =>
       useQuery(['Profile', profileId], apiClient.getProfile),
-    [profile],
+    [],
   )
 
   const [setProfile] = useMutation(
@@ -100,7 +98,6 @@ export function ProfileProvider(props) {
 
   const value = useMemo(
     () => ({
-      profile,
       getProfile,
       createProfile,
       setProfile,
@@ -110,7 +107,6 @@ export function ProfileProvider(props) {
       allConnections,
     }),
     [
-      profile,
       getProfile,
       createProfile,
       setProfile,

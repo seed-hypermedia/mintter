@@ -7,7 +7,7 @@ jest.mock('shared/mintterClient')
 
 async function render(
   ui,
-  {route = '/library/feed', profile, ...renderOptions} = {},
+  {route = '/library/feed', profile, timeout, ...renderOptions} = {},
 ) {
   const routeConfig =
     typeof route === 'string'
@@ -27,12 +27,12 @@ async function render(
       ...renderOptions,
     }),
   }
-  await waitForLoadingToFinish()
+  await waitForLoadingToFinish(timeout)
 
   return returnValue
 }
 
-function waitForLoadingToFinish() {
+function waitForLoadingToFinish(timeout = 4000) {
   return waitFor(
     () => {
       if (queryCache.isFetching) {
@@ -45,7 +45,7 @@ function waitForLoadingToFinish() {
         throw new Error('App loading indicators are still running')
       }
     },
-    {timeout: 4000},
+    {timeout},
   )
 }
 
