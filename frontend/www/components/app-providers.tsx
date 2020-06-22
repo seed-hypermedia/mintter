@@ -6,10 +6,12 @@ import {ProfileProvider} from 'shared/profileContext'
 import {MintterProvider} from 'shared/mintterContext'
 import {ToastProvider, DefaultToast} from 'react-toast-notifications'
 
-function Toast(props) {
-  console.log('Toast -> props', {props})
-
-  return <DefaultToast {...props} />
+function Toast({children, ...props}) {
+  return (
+    <DefaultToast {...props}>
+      <div className="break-all">{children}</div>
+    </DefaultToast>
+  )
 }
 
 export function AppProviders({children, ...props}) {

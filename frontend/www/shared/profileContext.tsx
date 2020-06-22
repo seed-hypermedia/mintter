@@ -36,7 +36,7 @@ interface ProfileContextValue {
   createProfile: (form: InitProfileRequest.AsObject) => void
   getProfileAddrs: () => QueryResult<GetProfileAddrsResponse>
   genSeed: () => Promise<GenSeedResponse>
-  connectToPeerById: (peerIds: string[]) => any
+  connectToPeerById: any
   getProfile: (profileId?: string) => QueryResult<Profile>
   allConnections: () => PaginatedQueryResult<ListProfilesResponse>
 }
@@ -82,8 +82,8 @@ export function ProfileProvider(props) {
       onSuccess: () => {
         queryCache.refetchQueries('AllConnections')
       },
-      onError: params => {
-        throw new Error(`Connection to Peer error -> ${JSON.stringify(params)}`)
+      onError: (error: any) => {
+        throw new Error(error.message)
       },
     },
   )
