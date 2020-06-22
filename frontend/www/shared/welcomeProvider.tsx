@@ -57,10 +57,12 @@ export default function WelcomeProvider(props: WelcomeProviderProps) {
     [location.pathname],
   )
 
+  console.log('WelcomeProvider -> props.value', props.value)
   const v = useMemo(() => props.value || {state, dispatch}, [
     props.value,
     state,
   ])
+  console.log('WelcomeProvider -> v', v)
 
   return (
     <>

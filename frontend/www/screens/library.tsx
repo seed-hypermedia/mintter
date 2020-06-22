@@ -69,9 +69,9 @@ export default function Library(props) {
 }
 
 function ProfileInfo() {
-  const {profile} = useProfile()
+  const {getProfile} = useProfile()
 
-  const values = profile.toObject()
+  const values = getProfile().toObject()
 
   return (
     values && (
