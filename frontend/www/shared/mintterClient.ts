@@ -142,15 +142,9 @@ export async function publishDraft(draftId: string) {
 }
 
 export async function connectToPeerById(peerIds: string[]) {
-  try {
-    const req = new ConnectToPeerRequest()
-    req.setAddrsList(peerIds)
-    const result = await usersClient.connectToPeer(req)
-
-    return result
-  } catch (err) {
-    console.error(`ConnectToPeerById error => `, err)
-  }
+  const req = new ConnectToPeerRequest()
+  req.setAddrsList(peerIds)
+  return await usersClient.connectToPeer(req)
 }
 
 export async function createProfile({

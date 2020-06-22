@@ -8,11 +8,11 @@ import {useToasts} from 'react-toast-notifications'
 
 export function Connections() {
   const {connectToPeerById, allConnections} = useProfile()
-  const {addToast, updateToast} = useToasts()
+  const {addToast, updateToast, removeToast} = useToasts()
 
   async function handlePeerConnection() {
     const peer = window.prompt(`enter a peer address`)
-    const toast = addToast('Stablishing connection...', {
+    const toast = addToast('Connecting to peer...', {
       appearance: 'info',
       autoDismiss: false,
     })
@@ -21,12 +21,12 @@ export function Connections() {
       updateToast(toast, {
         content: 'Connection established successfuly!',
         appearance: 'success',
-        autoDismiss: true,
       })
     } catch (err) {
-      updateToast(toast, {
-        content: err.message,
-        appearance: 'error',
+      removeToast(toast, () => {
+        addToast(err.message, {
+          appearance: 'error',
+        })
       })
     }
   }
