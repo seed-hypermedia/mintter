@@ -1,4 +1,4 @@
-import {render as rtlRender, screen, waitFor} from '@testing-library/react'
+import {render as rtlRender, screen, waitFor, fireEvent} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {queryCache} from 'react-query'
 import {AppProviders} from 'components/app-providers'
@@ -32,7 +32,7 @@ async function render(
   return returnValue
 }
 
-function waitForLoadingToFinish(timeout = 4000) {
+function waitForLoadingToFinish(timeout = 4900) {
   return waitFor(
     () => {
       if (queryCache.isFetching) {
@@ -50,4 +50,4 @@ function waitForLoadingToFinish(timeout = 4000) {
 }
 
 export * from '@testing-library/react'
-export {userEvent, render, waitForLoadingToFinish}
+export {userEvent, fireEvent, render, waitForLoadingToFinish}
