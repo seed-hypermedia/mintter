@@ -10,15 +10,16 @@ import {useEffect} from 'react'
 
 export default function WelcomeIntro() {
   const history = useHistory()
-  const {getProfile()} = useProfile()
+  const {profile} = useProfile()
   const {dispatch} = useWelcome()
 
   useEffect(() => {
-    if (getProfile()) {
+    if (profile) {
       // check is profile is available. this is the only place where I'm redirecting to the linrary from within the welcome process
       history.replace('/library/feed')
     }
   }, [])
+
   function handleNext() {
     // set the welcome progress
     dispatch({type: 'progress', payload: 1})

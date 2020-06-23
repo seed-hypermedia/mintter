@@ -56,18 +56,18 @@ export default function WelcomeProvider(props: WelcomeProviderProps) {
     () => steps.findIndex(s => s.url === location.pathname),
     [location.pathname],
   )
-
-  console.log('WelcomeProvider -> props.value', props.value)
-  const v = useMemo(() => props.value || {state, dispatch}, [
-    props.value,
-    state,
-  ])
-  console.log('WelcomeProvider -> v', v)
+  const v = useMemo(
+    () => ({
+      state,
+      dispatch,
+    }),
+    [state],
+  )
 
   return (
     <>
       {activeStep >= 0 ? <Steps steps={steps} active={activeStep} /> : null}
-      <WelcomeContext.Provider value={v} {...props} />
+      <WelcomeContext.Provider value={{...v, ...props.value}} {...props} />
     </>
   )
 }
@@ -86,7 +86,7 @@ const steps = [
     url: '/welcome/security-pack',
   },
   {
-    title: 'Retype your Seed',
+    title: 'Retype your seed',
     url: '/welcome/retype-seed',
   },
   {

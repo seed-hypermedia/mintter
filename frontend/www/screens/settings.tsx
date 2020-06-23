@@ -11,7 +11,7 @@ import Container from 'components/container'
 import {useToasts} from 'react-toast-notifications'
 
 export default function Settings() {
-  const {getProfile, setProfile} = useProfile()
+  const {profile, setProfile} = useProfile()
   const {addToast, updateToast} = useToasts()
   const [submitError, setSubmitError] = React.useState<ErrorInterface>()
   const {register, handleSubmit, errors, formState, setValue} = useForm({
@@ -25,10 +25,12 @@ export default function Settings() {
   })
 
   useEffect(() => {
-    const values = getProfile().toObject()
-    const data = Object.keys(values).map(v => ({[v]: values[v]}))
-    setValue(data)
-  }, [])
+    if (profile) {
+      const values = profile.toObject()
+      const formData = Object.keys(values).map(v => ({[v]: values[v]}))
+      setValue(formData)
+    }
+  }, [profile])
 
   async function onSubmit(data) {
     const toast = addToast('Updating profile...', {
