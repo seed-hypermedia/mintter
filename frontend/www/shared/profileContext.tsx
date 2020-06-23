@@ -16,6 +16,7 @@ import {
   GetProfileResponse,
   GenSeedResponse,
   ListProfilesResponse,
+  ConnectToPeerResponse,
 } from '@mintter/proto/mintter_pb'
 import * as apiClient from './mintterClient'
 import {bootstrapAppData} from './appBootstrap'
@@ -28,6 +29,7 @@ import {
   QueryResult,
   PaginatedQueryResult,
   usePaginatedQuery,
+  MutationResult,
 } from 'react-query'
 
 interface ProfileContextValue {
@@ -36,7 +38,9 @@ interface ProfileContextValue {
   createProfile: (form: InitProfileRequest.AsObject) => void
   getProfileAddrs: () => QueryResult<GetProfileAddrsResponse>
   genSeed: () => Promise<GenSeedResponse>
-  connectToPeerById: any
+  connectToPeerById: (
+    peerIds: string[],
+  ) => MutationResult<ConnectToPeerResponse>
   getProfile: (profileId?: string) => QueryResult<Profile>
   allConnections: () => PaginatedQueryResult<ListProfilesResponse>
 }
@@ -45,11 +49,13 @@ interface ProfileContextValue {
 export const ProfileContext = createContext<ProfileContextValue>(null)
 
 export function ProfileProvider(props) {
-  const {status, error} = useQuery('Profile', apiClient.getProfile)
+  const {status, error, data} = useQuery('Profile', apiClient.getProfile)
 
   function refetchProfile(params) {
     queryCache.refetchQueries('Profile')
   }
+
+  const profile = data
 
   const genSeed = useCallback(() => apiClient.genSeed(), [])
 
@@ -60,7 +66,7 @@ export function ProfileProvider(props) {
   const getProfile = useCallback(
     (profileId?: string) =>
       useQuery(['Profile', profileId], apiClient.getProfile),
-    [],
+    [profile],
   )
 
   const [setProfile] = useMutation(
@@ -80,8 +86,8 @@ export function ProfileProvider(props) {
       onSuccess: () => {
         queryCache.refetchQueries('AllConnections')
       },
-      onError: (error: any) => {
-        throw new Error(error.message)
+      onError: params => {
+        throw new Error(`Connection to Peer error -> ${JSON.stringify(params)}`)
       },
     },
   )
@@ -98,6 +104,7 @@ export function ProfileProvider(props) {
 
   const value = useMemo(
     () => ({
+      profile,
       getProfile,
       createProfile,
       setProfile,
@@ -107,6 +114,7 @@ export function ProfileProvider(props) {
       allConnections,
     }),
     [
+      profile,
       getProfile,
       createProfile,
       setProfile,

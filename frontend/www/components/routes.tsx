@@ -25,13 +25,13 @@ export function ProgressRoute({children, ...rest}) {
 }
 
 export function PrivateRoute({children, ...rest}) {
-  const {getProfile} = useProfile()
+  const {profile} = useProfile()
   // debugger
   return (
     <Route
       {...rest}
       render={({location}) =>
-        getProfile() ? (
+        profile ? (
           children
         ) : (
           <Redirect

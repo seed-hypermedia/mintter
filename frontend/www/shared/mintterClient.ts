@@ -25,6 +25,7 @@ import {
   ListProfilesRequest,
   ListProfilesResponse,
   GenSeedRequest,
+  Profile,
 } from '@mintter/proto/mintter_pb'
 import {fromSlateToMarkdown} from './parseToMarkdown'
 import {parseToMarkdown} from './parseToMarkdown'
@@ -173,7 +174,7 @@ export async function getProfile(key, profileId?: string) {
 }
 
 export async function setProfile(
-  profile,
+  profile: Profile,
   {
     username,
     email,
