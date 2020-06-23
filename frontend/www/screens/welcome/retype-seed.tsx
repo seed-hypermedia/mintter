@@ -14,9 +14,11 @@ import {useWelcome} from 'shared/welcomeProvider'
 import {useFocus} from 'shared/hooks'
 
 export default function RetypeSeed() {
-  const {register, handleSubmit, errors, formState} = useForm({
+  const {register, handleSubmit, errors, formState, watch} = useForm({
     mode: 'onChange',
   })
+
+  // console.log('RetypeSeed -> formState', watch('word-0'))
 
   const history = useHistory()
   const {focusFirst} = useFocus()
@@ -95,7 +97,7 @@ export default function RetypeSeed() {
 
                     <span className="text-success pt-2 pl-2 w-10 h-10">
                       {!errors[key] && formState.dirtyFields.has(key) && (
-                        <CheckIcon color="inherit" />
+                        <CheckIcon color="inherit" data-testid={key} />
                       )}
                     </span>
                   </div>

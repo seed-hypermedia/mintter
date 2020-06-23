@@ -27,7 +27,7 @@ async function renderWelcomeScreen() {
     toObject: (): Profile.AsObject => ({}),
   })
 
-  const utils = await render(<SecurityPack />, {route, timeout: 6000})
+  const utils = await render(<SecurityPack />, {route})
 
   return {
     ...utils,
@@ -35,13 +35,11 @@ async function renderWelcomeScreen() {
 }
 
 test('Welcome - Security Pack Screen', async () => {
-  const {getByText, debug} = await renderWelcomeScreen()
-
-  expect(getByText(/Security Pack/i)).toBeInTheDocument()
-  expect(getByText(/word-2/i)).toBeInTheDocument()
+  await renderWelcomeScreen()
+  expect(screen.getByText(/word-2/i)).toBeInTheDocument()
   expect(clientMock.genSeed).toBeCalledTimes(1)
 
-  const nextBtn = getByText(/Next/i)
+  const nextBtn = screen.getByText(/Next/i)
 
   expect(nextBtn).toBeInTheDocument()
   expect(nextBtn).not.toBeDisabled()
