@@ -13,16 +13,10 @@ import {getRandomElements} from 'shared/utils'
 import {useWelcome} from 'shared/welcomeProvider'
 import {useFocus} from 'shared/hooks'
 
-async function defaultOnSubmit() {
-  await history.replace('/welcome/create-password')
-}
-
-export default function RetypeSeed({onSubmit = defaultOnSubmit}) {
+export default function RetypeSeed({onSubmit}: {onSubmit?: any}) {
   const {register, handleSubmit, errors, formState, watch} = useForm({
     mode: 'onChange',
   })
-
-  // console.log('RetypeSeed -> formState', formState)
 
   const history = useHistory()
   const {focusFirst} = useFocus()
@@ -36,6 +30,14 @@ export default function RetypeSeed({onSubmit = defaultOnSubmit}) {
   useEffect(() => {
     setIdxs(getRandomElements(mnemonicList))
   }, [])
+
+  async function innerOnSubmit(attrs) {
+    if (onSubmit) {
+      onSubmit(attrs)
+      return
+    }
+    await history.replace('/welcome/create-password')
+  }
 
   return (
     <>
@@ -111,7 +113,7 @@ export default function RetypeSeed({onSubmit = defaultOnSubmit}) {
             <div className="flex w-full justify-between flex-row-reverse">
               <NextButton
                 type="submit"
-                onClick={handleSubmit(onSubmit)}
+                onClick={handleSubmit(innerOnSubmit)}
                 disabled={!formState.isValid}
               >
                 Next →
