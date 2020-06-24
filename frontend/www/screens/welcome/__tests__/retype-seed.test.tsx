@@ -34,7 +34,6 @@ async function renderWelcomeScreen({onSubmit}) {
 
   const utils = await render(<RetypeSeed onSubmit={onSubmit} />, {
     route,
-    timeout: 6000,
     wrapper: ({children}) => (
       <Router>
         <WelcomeProvider
@@ -49,8 +48,11 @@ async function renderWelcomeScreen({onSubmit}) {
     ),
   })
 
+  const nextBtn = screen.getByText(/Next →/i)
+
   return {
     ...utils,
+    nextBtn,
   }
 }
 
@@ -58,13 +60,11 @@ const onSubmit = jest.fn()
 
 test('Welcome - Retype Seed Screen', async () => {
   const submitMock = jest.fn()
-  await renderWelcomeScreen({onSubmit: submitMock})
+  const {nextBtn} = await renderWelcomeScreen({onSubmit: submitMock})
 
   const input1 = screen.getByLabelText(/1/i)
   const input2 = screen.getByLabelText(/2/i)
   const input3 = screen.getByLabelText(/3/i)
-
-  const nextBtn = screen.getByText(/Next →/i)
 
   expect(input1).toHaveFocus()
 

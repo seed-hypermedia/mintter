@@ -30,15 +30,16 @@ async function renderWelcomeScreen() {
 
   const utils = await render(<SecurityPack />, {route})
 
+  const nextBtn = screen.getByText(/Next →/i)
+
   return {
     ...utils,
+    nextBtn,
   }
 }
 
 test('Welcome - Security Pack Screen', async () => {
-  await renderWelcomeScreen()
-
-  const nextBtn = screen.getByText(/Next/i)
+  const {nextBtn} = await renderWelcomeScreen()
 
   waitFor(() => {
     expect(clientMock.genSeed).toBeCalledTimes(1)

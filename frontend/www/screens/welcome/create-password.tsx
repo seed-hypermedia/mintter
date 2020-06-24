@@ -14,7 +14,7 @@ import {ErrorMessage} from 'components/errorMessage'
 import {useProfile} from 'shared/profileContext'
 import {useFocus} from 'shared/hooks'
 
-export default function CreatePassword() {
+export default function CreatePassword({onSubmit}: {onSubmit?: any}) {
   const {register, watch, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
   })
@@ -30,7 +30,12 @@ export default function CreatePassword() {
     state: {mnemonicList, aezeedPassphrase},
   } = useWelcome()
 
-  async function onSubmit({walletPassword}) {
+  async function innerOnSubmit({walletPassword}) {
+    if (onSubmit) {
+      onSubmit({walletPassword})
+      return
+    }
+
     try {
       createProfile({aezeedPassphrase, mnemonicList, walletPassword})
       history.replace('/welcome/edit-profile')
@@ -58,7 +63,7 @@ export default function CreatePassword() {
             <Input
               name="walletPassword"
               id="walletPassword"
-              data-testid="first"
+              data-testid="tid-input-password1"
               type="password"
               placeholder="******************"
               ref={(e: HTMLInputElement) => {
@@ -69,6 +74,7 @@ export default function CreatePassword() {
             {errors.walletPassword && (
               <p
                 role="alert"
+                data-testid="tid-error-password1"
                 className="text-danger text-xs absolute left-0 mt-1"
               >
                 Please choose a password with more than 8 characters.
@@ -85,7 +91,7 @@ export default function CreatePassword() {
             <Input
               name="repeat_walletPassword"
               id="repeat_walletPassword"
-              data-testid="second"
+              data-testid="tid-input-password2"
               type="password"
               placeholder="******************"
               ref={register({
@@ -96,6 +102,7 @@ export default function CreatePassword() {
             {errors['repeat_walletPassword'] && (
               <p
                 role="alert"
+                data-testid="tid-error-password2"
                 className="text-danger text-xs absolute left-0 mt-1"
               >
                 Password must match
@@ -110,8 +117,8 @@ export default function CreatePassword() {
           <div className="flex w-full justify-between flex-row-reverse">
             <NextButton
               type="submit"
-              onClick={handleSubmit(onSubmit)}
-              disabled={!formState.isValid}
+              onClick={handleSubmit(innerOnSubmit)}
+              disabled={!formState.isValid || formState.isSubmitting}
               data-testid="next-btn"
             >
               Next →

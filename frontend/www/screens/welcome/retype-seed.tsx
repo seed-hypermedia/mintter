@@ -114,7 +114,7 @@ export default function RetypeSeed({onSubmit}: {onSubmit?: any}) {
               <NextButton
                 type="submit"
                 onClick={handleSubmit(innerOnSubmit)}
-                disabled={!formState.isValid}
+                disabled={!formState.isValid || formState.isSubmitting}
               >
                 Next →
               </NextButton>
