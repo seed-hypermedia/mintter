@@ -133,6 +133,7 @@ export default function EditProfile() {
             <NextButton
               onClick={handleSubmit(onSubmit)}
               disabled={!formState.isValid || formState.isSubmitting}
+              data-testid="next-btn"
             >
               Next →
             </NextButton>
