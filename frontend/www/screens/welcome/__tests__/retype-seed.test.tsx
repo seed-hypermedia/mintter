@@ -82,7 +82,15 @@ test('Welcome - Retype Seed Screen', async () => {
 
   userEvent.click(nextBtn)
 
-  waitFor(() => {
+  await waitFor(() => {
     expect(submitMock).toHaveBeenCalledTimes(1)
+  })
+
+  await waitFor(() => {
+    expect(submitMock).toHaveBeenCalledWith({
+      'word-0': 'word-1',
+      'word-1': 'word-2',
+      'word-2': 'word-3',
+    })
   })
 })
