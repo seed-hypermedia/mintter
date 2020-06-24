@@ -5,6 +5,8 @@ import {
   waitForLoadingToFinish,
   fireEvent,
   waitFor,
+  act,
+  waitForElement,
 } from 'test/app-test-utils'
 import {BrowserRouter as Router} from 'react-router-dom'
 import {ThemeProvider} from 'shared/themeContext'
@@ -19,7 +21,7 @@ import {getRandomElements as mockRandom} from 'shared/utils'
 jest.mock('shared/mintterClient')
 jest.mock('shared/utils')
 
-async function renderWelcomeScreen() {
+async function renderWelcomeScreen({onSubmit}) {
   const route = `/welcome/retype-seed`
 
   const mnemonicList = ['word-1', 'word-2', 'word-3']
@@ -30,7 +32,7 @@ async function renderWelcomeScreen() {
 
   mockRandom.mockReturnValueOnce([0, 1, 2])
 
-  const utils = await render(<RetypeSeed />, {
+  const utils = await render(<RetypeSeed onSubmit={onSubmit} />, {
     route,
     timeout: 6000,
     wrapper: ({children}) => (
@@ -52,8 +54,11 @@ async function renderWelcomeScreen() {
   }
 }
 
+const onSubmit = jest.fn()
+
 test('Welcome - Retype Seed Screen', async () => {
-  await renderWelcomeScreen()
+  const submitMock = jest.fn()
+  await renderWelcomeScreen({onSubmit: submitMock})
 
   const input1 = screen.getByLabelText(/1/i)
   const input2 = screen.getByLabelText(/2/i)
@@ -63,18 +68,21 @@ test('Welcome - Retype Seed Screen', async () => {
 
   expect(input1).toHaveFocus()
 
-  fireEvent.input(input1, {target: {value: 'w'}})
-  // expect(error1).toBeVisible()
+  await act(() => userEvent.type(input1, 'w'))
   const error1 = await screen.findByTestId('tid-error-word-0')
+
+  expect(error1).toBeInTheDocument()
   expect(nextBtn).toBeDisabled()
 
-  fireEvent.input(input1, {target: {value: 'word-1'}})
+  await act(() => userEvent.type(input1, 'ord-1'))
+  await act(() => userEvent.type(input2, 'word-2'))
+  await act(() => userEvent.type(input3, 'word-3'))
 
-  waitFor(() => expect(error1).not.toBeInTheDocument())
+  expect(nextBtn).not.toBeDisabled()
 
-  fireEvent.input(input1, {target: {value: 'word-1'}})
-  fireEvent.input(input1, {target: {value: 'word-2'}})
-  fireEvent.input(input3, {target: {value: 'word-3'}})
+  userEvent.click(nextBtn)
 
-  waitFor(() => expect(nextBtn).not.toBeDisabled())
+  waitFor(() => {
+    expect(submitMock).toHaveBeenCalledTimes(1)
+  })
 })

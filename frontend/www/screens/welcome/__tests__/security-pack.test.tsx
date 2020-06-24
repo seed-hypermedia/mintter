@@ -2,6 +2,7 @@ import {
   render,
   screen,
   userEvent,
+  waitFor,
   waitForLoadingToFinish,
   fireEvent,
 } from 'test/app-test-utils'
@@ -36,10 +37,14 @@ async function renderWelcomeScreen() {
 
 test('Welcome - Security Pack Screen', async () => {
   await renderWelcomeScreen()
-  expect(screen.getByText(/word-2/i)).toBeInTheDocument()
-  expect(clientMock.genSeed).toBeCalledTimes(1)
 
   const nextBtn = screen.getByText(/Next/i)
+
+  waitFor(() => {
+    expect(clientMock.genSeed).toBeCalledTimes(1)
+  })
+
+  expect(screen.getByText(/word-2/i)).toBeInTheDocument()
 
   expect(nextBtn).toBeInTheDocument()
   expect(nextBtn).not.toBeDisabled()
