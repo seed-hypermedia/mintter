@@ -13,12 +13,16 @@ import {getRandomElements} from 'shared/utils'
 import {useWelcome} from 'shared/welcomeProvider'
 import {useFocus} from 'shared/hooks'
 
-export default function RetypeSeed() {
+async function defaultOnSubmit() {
+  await history.replace('/welcome/create-password')
+}
+
+export default function RetypeSeed({onSubmit = defaultOnSubmit}) {
   const {register, handleSubmit, errors, formState, watch} = useForm({
     mode: 'onChange',
   })
 
-  // console.log('RetypeSeed -> formState', watch('word-0'))
+  // console.log('RetypeSeed -> formState', formState)
 
   const history = useHistory()
   const {focusFirst} = useFocus()
@@ -32,10 +36,6 @@ export default function RetypeSeed() {
   useEffect(() => {
     setIdxs(getRandomElements(mnemonicList))
   }, [])
-
-  async function onSubmit() {
-    await history.replace('/welcome/create-password')
-  }
 
   return (
     <>
