@@ -9,10 +9,12 @@ So Nix is the only piece of software needed. It will install the rest of the
 tools, and will make sure we all use the same versions. You don't need `node`,
 `go` or anything else.
 
-Install Nix using official method on the website.
+Install Nix by running `curl -L https://nixos.org/nix/install | sh`.
 
-_IMPORTANT! If you are on macOS Catalina, there're some previous steps needed.
-Run `./scripts/setup-nix.sh` first, and then install Nix_
+_IMPORTANT! If you are on macOS Catalina or above run `./scripts/setup-nix.sh`
+first, and then install Nix._ This will create a virtual volume mounted at
+`/nix`. This is needed because since Catalina you can't create arbitrary
+directories in `/`, and Nix _really_ wants to use `/nix`.
 
 ## Hermetic Toolchains
 
