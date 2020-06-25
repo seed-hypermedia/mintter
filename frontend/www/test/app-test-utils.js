@@ -1,4 +1,9 @@
-import {render as rtlRender, screen, waitFor, fireEvent} from '@testing-library/react'
+import {
+  render as rtlRender,
+  screen,
+  waitFor,
+  fireEvent,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {queryCache} from 'react-query'
 import {AppProviders} from 'components/app-providers'
