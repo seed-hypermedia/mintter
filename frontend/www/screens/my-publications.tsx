@@ -13,7 +13,9 @@ export function MyPublications() {
   const {profile} = useProfile()
 
   async function handleCreateDraft() {
-    const newDraft = await createDraft().toObject()
+    const n = await createDraft()
+    const newDraft = n.toObject()
+
     history.push({
       pathname: `/editor/${newDraft.documentId}`,
     })
