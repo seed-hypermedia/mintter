@@ -216,8 +216,13 @@ func (n *Node) syncPublication(ctx context.Context, cid cid.Cid) error {
 		return nil
 	}
 
-	if _, err := n.GetPublication(ctx, cid); err != nil {
-		return err
+	pub, err := n.GetPublication(ctx, cid)
+	if err != nil {
+		return fmt.Errorf("GetPublication: %w", err)
+	}
+
+	if _, err := n.GetSections(ctx, pub.Sections...); err != nil {
+		return fmt.Errorf("GetSections: %w", err)
 	}
 
 	return nil
