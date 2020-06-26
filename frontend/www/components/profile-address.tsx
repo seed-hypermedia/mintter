@@ -4,11 +4,13 @@ import {useProfile} from 'shared/profileContext'
 import {ErrorMessage} from './errorMessage'
 import {useMemo} from 'react'
 import {Button} from './button'
+import {useToasts} from 'react-toast-notifications'
 
 export function ProfileAddress(props) {
   const {getProfileAddrs} = useProfile()
 
   const {status, error, data} = getProfileAddrs()
+  const {addToast} = useToasts()
 
   const address = useMemo(() => data?.toObject().addrsList, [data])
 
@@ -25,7 +27,9 @@ export function ProfileAddress(props) {
 
     navigator.clipboard
       .writeText(value)
-      .then(() => alert('Address copied to your clipboard!'))
+      .then(() =>
+        addToast('Address copied to your clipboard!', {appearance: 'success'}),
+      )
   }
 
   return (
