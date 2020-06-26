@@ -12,7 +12,9 @@ export function Publications() {
   const {status, error, resolvedData} = allPublications()
 
   async function handleCreateDraft() {
-    const newDraft = await createDraft().toObject()
+    const n = await createDraft()
+    const newDraft = n.toObject()
+
     history.push({
       pathname: `/editor/${newDraft.documentId}`,
     })
@@ -30,7 +32,7 @@ export function Publications() {
               </h3>
               <button
                 onClick={handleCreateDraft}
-                className="bg-info hover:bg-info-hover text-white font-bold py-3 px-4 rounded rounded-full flex items-center mt-5 justify-center"
+                className="bg-info hover:bg-info-hover text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
               >
                 <NoteAddOutlinedIcon />
                 <span className="ml-2">Create writing your first document</span>

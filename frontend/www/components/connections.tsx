@@ -5,6 +5,7 @@ import {css} from 'emotion'
 import {AuthorLabel} from './author-label'
 import Tippy from '@tippyjs/react'
 import {useToasts} from 'react-toast-notifications'
+import {Profile, ConnectionStatus} from '@mintter/proto/mintter_pb'
 
 export function Connections() {
   const {connectToPeerById, allConnections} = useProfile()
@@ -12,22 +13,26 @@ export function Connections() {
 
   async function handlePeerConnection() {
     const peer = window.prompt(`enter a peer address`)
-    const toast = addToast('Connecting to peer...', {
-      appearance: 'info',
-      autoDismiss: false,
-    })
-    try {
-      await connectToPeerById(peer.split(','))
-      updateToast(toast, {
-        content: 'Connection established successfuly!',
-        appearance: 'success',
+    let toast
+
+    if (peer) {
+      const toast = addToast('Connecting to peer...', {
+        appearance: 'info',
+        autoDismiss: false,
       })
-    } catch (err) {
-      removeToast(toast, () => {
-        addToast(err.message, {
-          appearance: 'error',
+      try {
+        await connectToPeerById(peer.split(','))
+        updateToast(toast, {
+          content: 'Connection established successfuly!',
+          appearance: 'success',
         })
-      })
+      } catch (err) {
+        removeToast(toast, () => {
+          addToast(err.message, {
+            appearance: 'error',
+          })
+        })
+      }
     }
   }
 
@@ -50,31 +55,53 @@ export function Connections() {
     >
       <h3 className="font-semibold text-xl text-heading">Connections</h3>
       <ul>
-        {resolvedData?.toObject().profilesList.map(c => (
-          <li
-            key={c.accountId}
-            className="text-body text-sm mt-2 flex items-center"
-          >
-            <div className="w-6 h-6 bg-body-muted rounded-full mr-2 flex-none" />
-            <Tippy
-              delay={500}
-              content={
-                <span
-                  className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
-                    background-color: #333;
-                    color: #ccc;
-                  `}`}
-                >
-                  {c.accountId}
-                </span>
-              }
+        {resolvedData?.toObject().profilesList.map(c => {
+          const isConnected = c.connectionStatus === ConnectionStatus.CONNECTED
+          return (
+            <li
+              key={c.accountId}
+              className={`text-body text-sm mt-2 flex items-center ${
+                isConnected ? 'opacity-100' : 'opacity-50'
+              }`}
             >
-              <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
-                {`${c.username} (${c.accountId.slice(-8)})`}
-              </span>
-            </Tippy>
-          </li>
-        ))}
+              <Tippy
+                content={
+                  <span
+                    className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
+                      background-color: #333;
+                      color: #ccc;
+                    `}`}
+                  >
+                    {isConnected ? 'connected' : 'not connected'}
+                  </span>
+                }
+              >
+                <div
+                  className={`w-2 h-2 rounded-full mr-2 flex-none ${connectionStatusColor(
+                    c,
+                  )}`}
+                />
+              </Tippy>
+              <Tippy
+                delay={500}
+                content={
+                  <span
+                    className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
+                      background-color: #333;
+                      color: #ccc;
+                    `}`}
+                  >
+                    {c.accountId}
+                  </span>
+                }
+              >
+                <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
+                  {`${c.username} (${c.accountId.slice(-8)})`}
+                </span>
+              </Tippy>
+            </li>
+          )
+        })}
       </ul>
       <button
         onClick={handlePeerConnection}
@@ -84,4 +111,12 @@ export function Connections() {
       </button>
     </div>
   )
+}
+
+function connectionStatusColor(
+  connection: Profile.AsObject,
+): 'bg-success' | 'bg-danger' {
+  return connection.connectionStatus === ConnectionStatus.CONNECTED
+    ? 'bg-success'
+    : 'bg-danger'
 }
