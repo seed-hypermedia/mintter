@@ -15,7 +15,7 @@ export function ProfileAddress(props) {
   const address = useMemo(() => data?.toObject().addrsList, [data])
 
   if (status === 'loading') {
-    return <p>...</p>
+    return <p>Loading...</p>
   }
 
   if (status === 'error') {
@@ -49,8 +49,8 @@ export function ProfileAddress(props) {
         value={address && address.join('\n\n')}
       />
       <Button
-        className="mx-auto mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white transition-all"
-        type="submit"
+        className="mx-auto mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white"
+        type="button"
         onClick={() => handleCopy(address)}
       >
         Copy Address

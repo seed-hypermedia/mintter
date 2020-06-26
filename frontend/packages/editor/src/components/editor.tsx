@@ -49,7 +49,9 @@ function Editor(
             plugins={plugins}
             renderElement={[...renderDefaultElements, ...renderElements]}
             renderLeaf={[...renderDefaultLeafs, ...renderLeafs]}
-            placeholder="Start writing your masterpiece..."
+            placeholder={
+              readOnly ? 'no content' : 'Start writing your masterpiece...'
+            }
             spellCheck
             autoFocus
           />

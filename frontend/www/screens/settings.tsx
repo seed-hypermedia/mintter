@@ -189,6 +189,7 @@ export default function Settings() {
           height: 200px;
         }
       `}</style>
+      <div style={{height: 1000}} />
     </Container>
   )
 }

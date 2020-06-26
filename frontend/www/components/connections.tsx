@@ -57,6 +57,7 @@ export function Connections() {
       <ul>
         {resolvedData?.toObject().profilesList.map(c => {
           const isConnected = c.connectionStatus === ConnectionStatus.CONNECTED
+
           return (
             <li
               key={c.accountId}
