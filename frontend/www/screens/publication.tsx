@@ -92,7 +92,7 @@ export default function Publication(): JSX.Element {
   let content
 
   if (status === 'loading') {
-    content = <FullPageSpinner />
+    content = <p>Loading...</p>
   } else if (status === 'error') {
     content = (
       <div className="mx-8">
