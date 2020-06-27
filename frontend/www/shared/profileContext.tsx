@@ -77,7 +77,9 @@ export function ProfileProvider(props) {
   )
 
   function getProfileAddrs() {
-    return useQuery(['ProfileAddrs'], apiClient.getProfileAddrs)
+    return useQuery(['ProfileAddrs'], apiClient.getProfileAddrs, {
+      refetchInterval: 5000,
+    })
   }
 
   const [connectToPeerById] = useMutation(
