@@ -21,6 +21,7 @@ import {
   GetProfileResponse,
   GetProfileAddrsResponse,
   ListProfilesResponse,
+  Profile,
 } from '@mintter/proto/mintter_pb'
 
 type QueryParam<T> = T | T[]
@@ -44,6 +45,7 @@ export interface MintterClient {
     options?: MutationOptions<Publication, string>,
   ) => MutationResult<Publication>
   deleteDraft: (id: string) => void
+  getAuthor: (authorId?: string) => QueryResult<Profile>
 }
 
 const MintterClientContext = createContext<MintterClient>(null)
@@ -57,6 +59,7 @@ export function MintterProvider(props) {
       apiClient.allPublications,
       {
         refetchOnWindowFocus: true,
+        refetchInterval: 5000,
       },
     )
   }, [])
@@ -86,7 +89,9 @@ export function MintterProvider(props) {
   )
 
   function allDrafts(page = 0): PaginatedQueryResult<ListDraftsResponse> {
-    return usePaginatedQuery(['AllDrafts', page], apiClient.allDrafts)
+    return usePaginatedQuery(['AllDrafts', page], apiClient.allDrafts, {
+      refetchInterval: 5000,
+    })
   }
 
   const createDraft = useCallback(
@@ -126,6 +131,11 @@ export function MintterProvider(props) {
 
   const [publishDraft] = useMutation((id: string) => apiClient.publishDraft(id))
 
+  const getAuthor = useCallback(
+    (authorId?: string) => useQuery(['Author', authorId], apiClient.getProfile),
+    [],
+  )
+
   const value = useMemo(
     () => ({
       allPublications,
@@ -137,6 +147,7 @@ export function MintterProvider(props) {
       setDraft,
       publishDraft,
       deleteDraft,
+      getAuthor,
     }),
     [
       allPublications,
@@ -148,6 +159,7 @@ export function MintterProvider(props) {
       setDraft,
       publishDraft,
       deleteDraft,
+      getAuthor,
     ],
   )
 

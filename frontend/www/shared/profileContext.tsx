@@ -100,6 +100,7 @@ export function ProfileProvider(props) {
       apiClient.allConnections,
       {
         refetchOnWindowFocus: true,
+        refetchInterval: 5000,
       },
     )
   }

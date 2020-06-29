@@ -46,6 +46,8 @@ export function Connections() {
     return <ErrorMessage error={error} />
   }
 
+  console.log('connections', resolvedData?.toObject())
+
   return (
     <div
       className={`pt-10 px-4 lg:pl-20 lg:pr-16 ${css`
