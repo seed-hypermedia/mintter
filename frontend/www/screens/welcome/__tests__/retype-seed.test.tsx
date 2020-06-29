@@ -21,7 +21,7 @@ import {getRandomElements as mockRandom} from 'shared/utils'
 jest.mock('shared/mintterClient')
 jest.mock('shared/utils')
 
-async function renderWelcomeScreen({onSubmit}) {
+async function renderWelcomeScreen() {
   const route = `/welcome/retype-seed`
 
   const mnemonicList = ['word-1', 'word-2', 'word-3']
@@ -30,20 +30,24 @@ async function renderWelcomeScreen({onSubmit}) {
     toObject: (): Profile.AsObject => ({}),
   })
 
+  clientMock.createProfile = jest.fn()
+
   mockRandom.mockReturnValueOnce([0, 1, 2])
 
-  const utils = await render(<RetypeSeed onSubmit={onSubmit} />, {
+  const utils = await render(<RetypeSeed />, {
     route,
     wrapper: ({children}) => (
       <Router>
-        <WelcomeProvider
-          value={{
-            state: {mnemonicList, progress: 1},
-            dispatch: jest.fn(),
-          }}
-        >
-          {children}
-        </WelcomeProvider>
+        <ProfileProvider>
+          <WelcomeProvider
+            value={{
+              state: {mnemonicList, progress: 1, aezeedPassphrase: ''},
+              dispatch: jest.fn(),
+            }}
+          >
+            {children}
+          </WelcomeProvider>
+        </ProfileProvider>
       </Router>
     ),
   })
@@ -53,20 +57,22 @@ async function renderWelcomeScreen({onSubmit}) {
   return {
     ...utils,
     nextBtn,
+    mnemonicList,
   }
 }
 
 const onSubmit = jest.fn()
 
 test('Welcome - Retype Seed Screen', async () => {
-  const submitMock = jest.fn()
-  const {nextBtn} = await renderWelcomeScreen({onSubmit: submitMock})
+  const {nextBtn, mnemonicList} = await renderWelcomeScreen()
 
   const input1 = screen.getByLabelText(/1/i)
   const input2 = screen.getByLabelText(/2/i)
   const input3 = screen.getByLabelText(/3/i)
 
-  expect(input1).toHaveFocus()
+  await waitFor(() => {
+    expect(input1).toHaveFocus()
+  })
 
   await act(() => userEvent.type(input1, 'w'))
   const error1 = await screen.findByTestId('tid-error-word-0')
@@ -80,17 +86,17 @@ test('Welcome - Retype Seed Screen', async () => {
 
   expect(nextBtn).not.toBeDisabled()
 
-  userEvent.click(nextBtn)
+  await act(async () => await userEvent.click(nextBtn))
 
   await waitFor(() => {
-    expect(submitMock).toHaveBeenCalledTimes(1)
+    expect(clientMock.createProfile).toHaveBeenCalledTimes(1)
   })
 
   await waitFor(() => {
-    expect(submitMock).toHaveBeenCalledWith({
-      'word-0': 'word-1',
-      'word-1': 'word-2',
-      'word-2': 'word-3',
+    expect(clientMock.createProfile).toHaveBeenCalledWith({
+      walletPassword: '',
+      aezeedPassphrase: '',
+      mnemonicList,
     })
   })
 })

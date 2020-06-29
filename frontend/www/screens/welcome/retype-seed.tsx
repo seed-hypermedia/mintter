@@ -10,14 +10,17 @@ import {useHistory} from 'react-router-dom'
 import {useForm} from 'react-hook-form'
 import CheckIcon from '@material-ui/icons/Check'
 import {getRandomElements} from 'shared/utils'
+import {ErrorMessage} from 'components/errorMessage'
 import {useWelcome} from 'shared/welcomeProvider'
 import {useFocus} from 'shared/hooks'
+import {useProfile} from 'shared/profileContext'
 
-export default function RetypeSeed({onSubmit}: {onSubmit?: any}) {
+export default function RetypeSeed() {
   const {register, handleSubmit, errors, formState, watch} = useForm({
     mode: 'onChange',
   })
-
+  const [submitError, setSubmitError] = useState(null)
+  const {createProfile} = useProfile()
   const history = useHistory()
   const {focusFirst} = useFocus()
 
@@ -31,12 +34,13 @@ export default function RetypeSeed({onSubmit}: {onSubmit?: any}) {
     setIdxs(getRandomElements(mnemonicList))
   }, [])
 
-  async function innerOnSubmit(attrs) {
-    if (onSubmit) {
-      onSubmit(attrs)
-      return
+  async function onSubmit(attrs) {
+    try {
+      createProfile({mnemonicList, walletPassword: '', aezeedPassphrase: ''})
+      history.replace('/welcome/edit-profile')
+    } catch (err) {
+      setSubmitError(err)
     }
-    await history.replace('/welcome/create-password')
   }
 
   return (
@@ -44,6 +48,7 @@ export default function RetypeSeed({onSubmit}: {onSubmit?: any}) {
       <form className="lg:flex-1 flex flex-col">
         <Container>
           <Heading>Retype your seed</Heading>
+          <ErrorMessage error={submitError} />
           <P className="text-center">
             Your seed is important! If you lose your seed you will have no way
             to recover your account. To make sure that you have properly saved
@@ -113,7 +118,7 @@ export default function RetypeSeed({onSubmit}: {onSubmit?: any}) {
             <div className="flex w-full justify-between flex-row-reverse">
               <NextButton
                 type="submit"
-                onClick={handleSubmit(innerOnSubmit)}
+                onClick={handleSubmit(onSubmit)}
                 disabled={!formState.isValid || formState.isSubmitting}
               >
                 Next →

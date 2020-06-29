@@ -14,7 +14,7 @@ import {ErrorMessage} from 'components/errorMessage'
 import {useProfile} from 'shared/profileContext'
 import {useFocus} from 'shared/hooks'
 
-export default function CreatePassword({onSubmit}: {onSubmit?: any}) {
+export default function CreatePassword() {
   const {register, watch, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
   })
@@ -30,12 +30,7 @@ export default function CreatePassword({onSubmit}: {onSubmit?: any}) {
     state: {mnemonicList, aezeedPassphrase},
   } = useWelcome()
 
-  async function innerOnSubmit({walletPassword}) {
-    if (onSubmit) {
-      onSubmit({walletPassword})
-      return
-    }
-
+  async function onSubmit({walletPassword}) {
     try {
       createProfile({aezeedPassphrase, mnemonicList, walletPassword})
       history.replace('/welcome/edit-profile')
@@ -117,7 +112,7 @@ export default function CreatePassword({onSubmit}: {onSubmit?: any}) {
           <div className="flex w-full justify-between flex-row-reverse">
             <NextButton
               type="submit"
-              onClick={handleSubmit(innerOnSubmit)}
+              onClick={handleSubmit(onSubmit)}
               disabled={!formState.isValid || formState.isSubmitting}
               data-testid="next-btn"
             >

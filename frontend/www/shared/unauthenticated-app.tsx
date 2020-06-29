@@ -8,9 +8,6 @@ import {ProgressRoute} from 'components/routes'
 
 const SecurityPack = React.lazy(() => import('screens/welcome/security-pack'))
 const RetypeSeed = React.lazy(() => import('screens/welcome/retype-seed'))
-const CreatePassword = React.lazy(() =>
-  import('screens/welcome/create-password'),
-)
 const EditProfile = React.lazy(() => import('screens/welcome/edit-profile'))
 const Complete = React.lazy(() => import('screens/welcome/complete'))
 
@@ -39,9 +36,6 @@ export default function WelcomeLayout({
           </ProgressRoute>
           <ProgressRoute path={`${match.url}/retype-seed`}>
             <RetypeSeed />
-          </ProgressRoute>
-          <ProgressRoute path={`${match.url}/create-password`}>
-            <CreatePassword />
           </ProgressRoute>
           <ProgressRoute path={`${match.url}/edit-profile`}>
             <EditProfile />

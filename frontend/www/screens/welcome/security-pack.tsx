@@ -17,6 +17,7 @@ import {useFocus} from 'shared/hooks'
 import {usersClient, MintterPromiseClient} from 'shared/mintterClient'
 import {useMintter} from 'shared/mintterContext'
 import {useProfile} from 'shared/profileContext'
+import {useToasts} from 'react-toast-notifications'
 
 // TODO: (horacio): refactor rpc to not have it here
 export default function SecurityPack() {
@@ -125,6 +126,7 @@ export function MnemonicWords({
   lists?: string[][]
   error?: {code: number; message: string}
 }) {
+  const {addToast} = useToasts()
   function handleCopy() {
     const words = lists
       .flat()
@@ -133,7 +135,9 @@ export function MnemonicWords({
 
     navigator.clipboard
       .writeText(words)
-      .then(() => alert('Words copied to your clipboard!'))
+      .then(() =>
+        addToast('Words copied to your clipboard!', {appearance: 'success'}),
+      )
   }
 
   return (
