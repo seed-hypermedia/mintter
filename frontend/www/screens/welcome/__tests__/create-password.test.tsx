@@ -17,8 +17,10 @@ import {ProfileProvider} from 'shared/profileContext'
 
 jest.mock('shared/mintterClient')
 
-async function renderWelcomeScreen({onSubmit}) {
+async function renderWelcomeScreen() {
   const route = `/welcome/create-password`
+
+  const mnemonicList = ['word-1', 'word-2', 'word-3']
 
   clientMock.getProfile.mockResolvedValueOnce({
     toObject: (): Profile.AsObject => ({}),
@@ -26,7 +28,7 @@ async function renderWelcomeScreen({onSubmit}) {
 
   clientMock.createProfile = jest.fn()
 
-  const utils = await render(<CreatePassword onSubmit={onSubmit} />, {
+  const utils = await render(<CreatePassword />, {
     route,
     wrapper: ({children}) => (
       <Router>
@@ -34,7 +36,7 @@ async function renderWelcomeScreen({onSubmit}) {
           <WelcomeProvider
             value={{
               state: {
-                mnemonicList: ['word-1', 'word-2', 'word-3'],
+                mnemonicList,
                 aezeedPassphrase: '',
                 progress: 1,
               },
@@ -53,13 +55,13 @@ async function renderWelcomeScreen({onSubmit}) {
   return {
     ...utils,
     nextBtn,
+    mnemonicList,
   }
 }
 
 test('Welcome - Create Password Screen', async () => {
-  const submitMock = jest.fn()
   const pwrd = 'masterpassword'
-  const {nextBtn} = await renderWelcomeScreen({onSubmit: submitMock})
+  const {nextBtn, mnemonicList} = await renderWelcomeScreen()
 
   const input1 = screen.getByTestId(/tid-input-password1/i)
   const input2 = screen.getByTestId(/tid-input-password2/i)
@@ -83,12 +85,14 @@ test('Welcome - Create Password Screen', async () => {
   await act(async () => await userEvent.click(nextBtn))
 
   await waitFor(() => {
-    expect(submitMock).toHaveBeenCalledTimes(1)
+    expect(clientMock.createProfile).toHaveBeenCalledTimes(1)
   })
 
   await waitFor(() => {
-    expect(submitMock).toHaveBeenCalledWith({
+    expect(clientMock.createProfile).toHaveBeenCalledWith({
       walletPassword: pwrd,
+      mnemonicList,
+      aezeedPassphrase: '',
     })
   })
 })
