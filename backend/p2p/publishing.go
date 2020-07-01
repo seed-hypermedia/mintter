@@ -72,21 +72,22 @@ func (n *Node) AddPublication(ctx context.Context, pub publishing.Publication) (
 
 // GetSections from the IPLD service.
 func (n *Node) GetSections(ctx context.Context, cids ...cid.Cid) ([]publishing.Section, error) {
-	out := make([]publishing.Section, 0, len(cids))
+	out := make([]publishing.Section, len(cids))
 
 	// To avoid calling database for each section to get the profile
 	// we cache them locally. It's probably a good idea to have a global LRU cache or similar.
 	cache := map[string]identity.Profile{}
 
-	for item := range n.dag.GetMany(ctx, cids) {
-		if item.Err != nil {
-			return nil, fmt.Errorf("failed to get block: %w", item.Err)
+	for i, cid := range cids {
+		node, err := n.dag.Get(ctx, cid)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get block: %w", err)
 		}
 
 		var prof identity.Profile
 		{
 			var authorID string
-			v, _, err := item.Node.Resolve([]string{"data", "author"})
+			v, _, err := node.Resolve([]string{"data", "author"})
 			if err != nil {
 				return nil, fmt.Errorf("failed to retrieve author's profile ID: %w", err)
 			}
@@ -111,11 +112,11 @@ func (n *Node) GetSections(ctx context.Context, cids ...cid.Cid) ([]publishing.S
 		}
 
 		var v publishing.Section
-		if err := ipldutil.UnmarshalSigned(item.Node.RawData(), &v, prof.Account.PubKey); err != nil {
+		if err := ipldutil.UnmarshalSigned(node.RawData(), &v, prof.Account.PubKey); err != nil {
 			return nil, fmt.Errorf("failed to verify section signature: %w", err)
 		}
 
-		out = append(out, v)
+		out[i] = v
 	}
 
 	return out, nil
