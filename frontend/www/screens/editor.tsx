@@ -294,7 +294,6 @@ export default function Editor(): JSX.Element {
               plugins={plugins}
               value={sections}
               onChange={sections => {
-                // MintterEditor.toggleBlocksActive(editor)
                 setSections(sections)
               }}
               renderElements={[renderEditableSectionElement()]}

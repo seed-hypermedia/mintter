@@ -8,7 +8,10 @@ import Tippy from '@tippyjs/react'
 
 function Section({path, className = '', ...props}) {
   return (
-    <div className={`relative px-8 py-2 first:mt-8 ${className}`} {...props} />
+    <div
+      className={`relative px-8 py-2 first:mt-8 hover:bg-background-muted transition duration-200 ${className}`}
+      {...props}
+    />
   )
 }
 
@@ -39,7 +42,6 @@ export function EditableSectionElement(
       ref={ref}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={element.active ? 'bg-background-muted' : ''}
       path={path}
       {...rest}
     >
