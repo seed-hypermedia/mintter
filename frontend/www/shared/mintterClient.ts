@@ -161,6 +161,7 @@ export async function createProfile({
 }
 
 export async function getProfile(key, profileId?: string) {
+  console.log('getProfile -> key', key)
   const req = new GetProfileRequest()
   if (profileId) {
     req.setProfileId(profileId)

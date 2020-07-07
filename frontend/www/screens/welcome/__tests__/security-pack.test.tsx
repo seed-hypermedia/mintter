@@ -17,19 +17,17 @@ import * as clientMock from 'shared/mintterClient'
 
 jest.mock('shared/mintterClient')
 
-async function renderWelcomeScreen() {
-  const route = `/welcome/security-pack`
-
+beforeEach(() => {
   clientMock.genSeed.mockResolvedValueOnce({
     getMnemonicList: jest.fn(() => ['word-1', 'word-2', 'word-3']),
   })
 
-  clientMock.getProfile.mockResolvedValueOnce({
-    toObject: (): Profile.AsObject => ({}),
-  })
+  clientMock.getProfile.mockResolvedValueOnce(null)
+})
 
+async function renderWelcomeScreen() {
+  const route = `/welcome/security-pack`
   const utils = await render(<SecurityPack />, {route})
-
   const nextBtn = screen.getByText(/Next →/i)
 
   return {

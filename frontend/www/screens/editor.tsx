@@ -118,6 +118,7 @@ export default function Editor(): JSX.Element {
   const wrapperRef = React.useRef<HTMLDivElement>(null)
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
+  const [showDescription, setShowDescription] = React.useState<boolean>(false)
   const descriptionRef = React.useRef(null)
   const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
   const {
@@ -269,7 +270,7 @@ export default function Editor(): JSX.Element {
                 name="title"
                 placeholder="Untitled document"
                 minHeight={56}
-                className={`text-4xl text-heading font-bold text-base`}
+                className={`text-4xl text-heading font-bold italic`}
                 onEnterPress={() => {
                   descriptionRef.current.focus()
                 }}
@@ -281,9 +282,9 @@ export default function Editor(): JSX.Element {
                 value={description}
                 onChange={setDescription}
                 name="description"
-                placeholder="+ document description..."
+                placeholder="Subtitle"
                 minHeight={28}
-                className={`leading-relaxed text-lg font-light text-heading-muted italic text-base`}
+                className={`leading-relaxed text-lg font-light text-heading-muted`}
                 onEnterPress={() => {
                   // TODO: Horacio: focus Editor here..!
                 }}

@@ -34,16 +34,17 @@ export default function Library(props) {
       </div>
       <Container>
         <div className="py-5 flex items-baseline justify-between">
+          <h1 className="py-5 text-4xl font-bold text-heading">Library</h1>
           <div className="flex-1" />
           <button
             onClick={handleCreateDocument}
-            className="bg-info hover:bg-info-hover text-white font-bold py-2 px-4 rounded rounded-full flex items-center justify-center transition duration-100"
+            className="bg-info hover:bg-info-hover text-white font-bold py-2 px-4 rounded flex items-center justify-center transition duration-100"
           >
             new Document
           </button>
         </div>
         <div className="flex items-center">
-          <NavItem to="/library/feed">Your Feed</NavItem>
+          <NavItem to="/library/feed">Feed</NavItem>
           <NavItem to="/library/published">Published</NavItem>
           <NavItem to="/library/drafts">Drafts</NavItem>
           <div className="flex-1" />
