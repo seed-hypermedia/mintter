@@ -40,7 +40,7 @@ export default function Library(props) {
             onClick={handleCreateDocument}
             className="bg-info hover:bg-info-hover text-white font-bold py-2 px-4 rounded flex items-center justify-center transition duration-100"
           >
-            new Document
+            Compose
           </button>
         </div>
         <div className="flex items-center">
