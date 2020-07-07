@@ -25,6 +25,7 @@ export function Connections() {
         updateToast(toast, {
           content: 'Connection established successfuly!',
           appearance: 'success',
+          autoDismiss: true,
         })
       } catch (err) {
         removeToast(toast, () => {

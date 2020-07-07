@@ -100,6 +100,7 @@ export default function EditProfile() {
               {errors.email && (
                 <p
                   role="alert"
+                  data-testid="email-error"
                   className="text-danger text-xs absolute left-0 mt-1"
                 >
                   {errors.email.message}

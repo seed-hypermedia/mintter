@@ -3,6 +3,7 @@ import {
   screen,
   waitFor,
   fireEvent,
+  waitForElementToBeRemoved,
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {queryCache} from 'react-query'
@@ -37,22 +38,14 @@ async function render(
   return returnValue
 }
 
-function waitForLoadingToFinish(timeout = 4900) {
-  return waitFor(
-    () => {
-      if (queryCache.isFetching) {
-        throw new Error('The react-query queryCache is still fetching')
-      }
-      if (
-        screen.queryByLabelText(/loading.../i) ||
-        screen.queryByText(/loading.../i)
-      ) {
-        throw new Error('App loading indicators are still running')
-      }
-    },
-    {timeout},
+const waitForLoadingToFinish = () =>
+  waitForElementToBeRemoved(
+    () => [
+      ...screen.queryAllByLabelText(/loading/i),
+      ...screen.queryAllByText(/loading/i),
+    ],
+    {timeout: 4000},
   )
-}
 
 export * from '@testing-library/react'
 export {userEvent, fireEvent, render, waitForLoadingToFinish}

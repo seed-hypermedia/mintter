@@ -13,6 +13,7 @@ export function ProfileAddress(props) {
   const {addToast} = useToasts()
 
   const address = useMemo(() => data?.toObject().addrsList, [data])
+  console.log('ProfileAddress -> address', address)
 
   if (status === 'loading') {
     return <p>Loading...</p>
@@ -40,28 +41,25 @@ export function ProfileAddress(props) {
       >
         your Mintter addresses
       </label>
-      {address?.length > 2 ? (
-        <>
-          <Textarea
-            readOnly
-            minHeight={200}
-            id="addresses"
-            className="block text-body-muted w-full border bg-background-muted border-muted rounded px-3 py-2 font-mono text-xs"
-            value={address && address.join('\n\n')}
-          />
-          <Button
-            className="mx-auto mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white"
-            type="button"
-            onClick={() => handleCopy(address)}
-          >
-            Copy Address
-          </Button>
-        </>
-      ) : (
-        <p className="block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body opacity-75">
+      {address?.length < 2 && (
+        <p className="block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body opacity-75 mb-4">
           Establishing connection...
         </p>
       )}
+      <Textarea
+        readOnly
+        minHeight={200}
+        id="addresses"
+        className="block text-body-muted w-full border bg-background-muted border-muted rounded px-3 py-2 font-mono text-xs"
+        value={address && address.join('\n\n')}
+      />
+      <Button
+        className="mx-auto mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white"
+        type="button"
+        onClick={() => handleCopy(address)}
+      >
+        Copy Address
+      </Button>
     </div>
   )
 }
