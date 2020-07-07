@@ -23,7 +23,7 @@ require (
 	github.com/ipfs/go-ds-badger v0.2.4
 	github.com/ipfs/go-ipfs-blockstore v1.0.0
 	github.com/ipfs/go-ipfs-chunker v0.0.5
-	github.com/ipfs/go-ipfs-config v0.7.2
+	github.com/ipfs/go-ipfs-config v0.8.0
 	github.com/ipfs/go-ipfs-exchange-offline v0.0.1
 	github.com/ipfs/go-ipfs-provider v0.4.3
 	github.com/ipfs/go-ipld-cbor v0.0.4
@@ -32,23 +32,23 @@ require (
 	github.com/ipfs/go-log/v2 v2.1.1 // indirect
 	github.com/ipfs/go-merkledag v0.3.2
 	github.com/ipfs/go-unixfs v0.2.4
-	github.com/libp2p/go-libp2p v0.9.6
+	github.com/libp2p/go-libp2p v0.10.0
 	github.com/libp2p/go-libp2p-connmgr v0.2.4
 	github.com/libp2p/go-libp2p-core v0.6.0
 	github.com/libp2p/go-libp2p-gostream v0.2.1
 	github.com/libp2p/go-libp2p-kad-dht v0.8.2
 	github.com/libp2p/go-libp2p-peerstore v0.2.6
 	github.com/libp2p/go-libp2p-pubsub v0.3.2
-	github.com/libp2p/go-libp2p-quic-transport v0.6.0
+	github.com/libp2p/go-libp2p-quic-transport v0.7.0
 	github.com/libp2p/go-libp2p-record v0.1.3
 	github.com/libp2p/go-libp2p-secio v0.2.2
-	github.com/libp2p/go-libp2p-swarm v0.2.7
+	github.com/libp2p/go-libp2p-swarm v0.2.8
 	github.com/libp2p/go-libp2p-tls v0.1.3
 	github.com/libp2p/go-openssl v0.0.6 // indirect
 	github.com/lightningnetwork/lnd v0.9.0-beta
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/multiformats/go-multiaddr v0.2.2
-	github.com/multiformats/go-multihash v0.0.13
+	github.com/multiformats/go-multihash v0.0.14
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/polydawn/refmt v0.0.0-20190807091052-3d65705ee9f1
@@ -57,11 +57,10 @@ require (
 	go.uber.org/atomic v1.6.0
 	go.uber.org/multierr v1.5.0
 	go.uber.org/zap v1.15.0
-	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9 // indirect
-	golang.org/x/net v0.0.0-20200602114024-627f9648deb9 // indirect
-	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
-	golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1 // indirect
-	google.golang.org/genproto v0.0.0-20200615140333-fd031eab31e7 // indirect
-	google.golang.org/grpc v1.29.1
-	google.golang.org/protobuf v1.24.0
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
+	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
+	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
+	google.golang.org/genproto v0.0.0-20200707001353-8e8330bf89df // indirect
+	google.golang.org/grpc v1.30.0
+	google.golang.org/protobuf v1.25.0
 )
