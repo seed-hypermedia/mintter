@@ -22,7 +22,7 @@ import {useToasts} from 'react-toast-notifications'
 // TODO: (horacio): refactor rpc to not have it here
 export default function SecurityPack() {
   const [error, setError] = useState<{code: number; message: string}>()
-  const {genSeed} = useProfile()
+  const {genSeed, createProfile} = useProfile()
   const [mnemonic, setMnemonic] = useState<string[]>([])
   const history = useHistory()
   const {dispatch} = useWelcome()
@@ -55,11 +55,21 @@ export default function SecurityPack() {
     return res
   }
 
-  function handleNext() {
+  async function handleNext() {
     // store seed to the user
     dispatch({type: 'mnemonicList', payload: mnemonic})
     //send the user to next page
-    history.replace('/welcome/retype-seed')
+    // history.replace('/welcome/retype-seed')
+    try {
+      createProfile({
+        mnemonicList: mnemonic,
+        walletPassword: '',
+        aezeedPassphrase: '',
+      })
+      history.replace('/welcome/edit-profile')
+    } catch (err) {
+      throw new Error(err)
+    }
   }
 
   // mnemonic words separated into lists
