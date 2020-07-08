@@ -85,16 +85,20 @@ const steps = [
     title: 'Security Pack',
     url: '/welcome/security-pack',
   },
-  {
-    title: 'Retype your seed',
-    url: '/welcome/retype-seed',
-  },
-  {
-    title: 'Create Password',
-    url: '/welcome/create-password',
-  },
+  // {
+  //   title: 'Retype your seed',
+  //   url: '/welcome/retype-seed',
+  // },
+  // {
+  //   title: 'Create Password',
+  //   url: '/welcome/create-password',
+  // },
   {
     title: 'Edit profile',
     url: '/welcome/edit-profile',
+  },
+  {
+    title: 'Complete',
+    url: '/welcome/complete',
   },
 ]
