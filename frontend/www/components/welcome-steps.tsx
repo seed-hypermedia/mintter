@@ -32,7 +32,7 @@ export default function Steps({steps, active}: Props) {
             left: 0,
             top: 'calc(50% - 2px)',
             transition: '0.5s all ease',
-            width: `${active * 33}%`,
+            width: `${active * 50}%`,
             height: 4,
             backgroundColor: 'var(--color-info-hover)',
             //   zIndex: -1,
