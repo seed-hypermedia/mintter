@@ -7,6 +7,7 @@ import {Link} from 'components/link'
 import Logo from './logo_square'
 import Input from './input'
 import {Button} from './button'
+import Container from './container'
 
 interface NavItemProps {
   href: string
@@ -40,7 +41,7 @@ export default function LibraryHeader(props) {
   }
 
   return (
-    <div className="flex items-center p-4 relative">
+    <div className="flex items-center relative">
       <div className="flex-1 px-4 flex justify-start">
         <span className={`text-primary`}>
           <Link to="/library">
@@ -49,12 +50,8 @@ export default function LibraryHeader(props) {
         </span>
       </div>
 
-      <div
-        className={`w-full mx-auto px-5 ${css`
-          max-width: 80ch;
-        `}`}
-      >
-        <form className="w-full px-4" onSubmit={handleSearch}>
+      <Container>
+        <form className="w-full" onSubmit={handleSearch}>
           <Input
             onChange={(e: any) => setInput(e.target.value)}
             name="hash-search"
@@ -63,7 +60,7 @@ export default function LibraryHeader(props) {
             className="rounded-full"
           />
         </form>
-      </div>
+      </Container>
       <div className="flex-1 px-4 flex justify-end">
         <Tippy
           visible={menuVisible}

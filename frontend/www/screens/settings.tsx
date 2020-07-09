@@ -71,7 +71,7 @@ export default function Settings() {
                 >
                   Avatar
                 </label>
-                <div className="avatar-container overflow-hidden relative bg-background-muted border bg-background-muted border-muted rounded">
+                <div className="avatar-container overflow-hidden relative bg-background-muted border border-muted rounded">
                   <input
                     name="avatar"
                     id="avatar"

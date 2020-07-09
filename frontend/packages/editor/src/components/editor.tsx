@@ -37,7 +37,7 @@ function Editor(
   return (
     <Slate editor={editor} value={value} onChange={onChange}>
       <div
-        className={`${css`
+        className={`-mx-8 ${css`
           word-break: break-word;
         `}`}
       >

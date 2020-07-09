@@ -9,7 +9,7 @@ import {Editor} from '../editor'
 function Section({path, className = '', ...props}) {
   return (
     <div
-      className={`relative px-8 py-2 first:mt-8 hover:bg-background-muted transition duration-200 ${className}`}
+      className={`relative px-8 py-2 first:mt-8 hover:bg-background-muted transition duration-200 rounded ${className}`}
       {...props}
     />
   )
@@ -55,20 +55,20 @@ export function EditableSectionElement(
     >
       <div contentEditable={false} className="theme-invert">
         <div
-          className={`absolute top-0 right-0 select-none mt-4 mr-4 rounded shadow-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-background-toolbar py-2 ${
+          className={`absolute top-0 right-0 select-none -mt-6 -mr-4 rounded shadow-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-black py-2 ${
             isHover
               ? 'pointer-events-auto opacity-100'
               : 'pointer-events-none opacity-0'
           }`}
         >
-          <p className={`text-body-muted border-r px-2`}>
+          <p className={`text-body-muted border-r px-2 text-xs`}>
             <span>Characters:</span>{' '}
             {/* TODO: FIX avoid characters to jump when change chars number */}
             <span className={`inline-block text-right text-body-muted`}>
               {sectionChars}
             </span>
           </p>
-          <p className="px-2 text-body-muted">Royalties: {price}</p>
+          <p className="px-2 text-body-muted text-xs">Royalties: {price}</p>
           {/* <SettingsButton
             section={element}
             path={path}

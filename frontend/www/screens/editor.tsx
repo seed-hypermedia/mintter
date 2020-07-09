@@ -27,6 +27,7 @@ import {useParams, useHistory} from 'react-router-dom'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
 import Layout from 'components/layout'
+import Container from 'components/container'
 
 interface EditorState {
   title: string
@@ -208,7 +209,7 @@ export default function Editor(): JSX.Element {
 
   return (
     <>
-      <div className="flex px-8 py-2">
+      <div className="flex mx-4">
         <span className="flex-1"></span>
         <button
           onClick={handlePublish}
@@ -217,103 +218,80 @@ export default function Editor(): JSX.Element {
           Publish
         </button>
       </div>
-      <Layout>
+      <div>  
         <DebugValue
           value={state}
           className="absolute z-10 right-0 top-0 w-full max-w-xs"
         />
-        <div
-          className={`w-full pr-4 absolute xl:sticky left-0 top-0 self-start mx-4 opacity-0 pointer-events-none xl:opacity-100 xl:pointer-events-auto transition duration-200 ${css`
-            max-width: 300px;
-          `}`}
-        >
-          {/* <div className="">
-                  <p className="font-semibold text-heading text-xl">
-                    {title || 'Untitled document'}
-                  </p>
-                </div> */}
-        </div>
-        <div
-          className={`flex-1 ${css`
-            @media (min-width: 1280px) {
-              transform: translateX(-150px);
-            }
-          `}`}
-        >
+        <Container>
           <div
-            className={`mx-auto ${css`
-              max-width: 80ch;
-            `} `}
+            className={`pb-2 relative ${css`
+              &:after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 50%;
+                max-width: 360px;
+                height: 1px;
+                z-index: 20;
+                background-color: var(--color-muted-hover);
+              }
+            `}`}
           >
-            <div
-              className={`mx-8 pb-2 relative ${css`
-                &:after {
-                  content: '';
-                  position: absolute;
-                  bottom: 0;
-                  left: 0;
-                  width: 50%;
-                  max-width: 360px;
-                  height: 1px;
-                  z-index: 20;
-                  background-color: var(--color-muted-hover);
-                }
-              `}`}
-            >
-              <Textarea
-                ref={t => {
-                  titleRef.current = t
-                }}
-                value={title}
-                data-test-id="editor_title"
-                onChange={setTitle}
-                name="title"
-                placeholder="Untitled document"
-                minHeight={56}
-                className={`text-4xl text-heading font-bold italic`}
-                onEnterPress={() => {
-                  descriptionRef.current.focus()
-                }}
-              />
-              <Textarea
-                ref={d => {
-                  descriptionRef.current = d
-                }}
-                value={description}
-                onChange={setDescription}
-                name="description"
-                placeholder="Subtitle"
-                minHeight={28}
-                className={`leading-relaxed text-lg font-light text-heading-muted`}
-                onEnterPress={() => {
-                  // TODO: Horacio: focus Editor here..!
-                }}
-              />
-            </div>
-            <EditorComponent
-              editor={editor}
-              plugins={plugins}
-              value={sections}
-              onChange={sections => {
-                setSections(sections)
+            <Textarea
+              ref={t => {
+                titleRef.current = t
               }}
-              renderElements={[renderEditableSectionElement()]}
+              value={title}
+              data-test-id="editor_title"
+              onChange={setTitle}
+              name="title"
+              placeholder="Document title"
+              minHeight={56}
+              className={`text-4xl text-heading font-bold italic`}
+              onEnterPress={() => {
+                descriptionRef.current.focus()
+              }}
             />
-            <div className="py-16 px-8 flex flex-col items-start">
-              <button
-                className="flex items-center bg-transparent text-body-muted transition duration-200 hover:text-body hover:border-body border border-body-muted rounded-md px-2 pl-2 py-2"
-                onClick={() => MintterEditor.addSection(editor)}
-              >
-                <Icons.Plus color="currentColor" />
-                <span className="px-2 text-sm">add Block</span>
-              </button>
-              <p className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline">
-                what are Blocks and how to use them?
-              </p>
-            </div>
+            <Textarea
+              ref={d => {
+                descriptionRef.current = d
+              }}
+              value={description}
+              onChange={setDescription}
+              name="description"
+              placeholder="Subtitle"
+              minHeight={28}
+              className={`leading-relaxed text-lg font-light text-heading-muted`}
+              onEnterPress={() => {
+                // TODO: Horacio: focus Editor here..!
+              }}
+            />
           </div>
-        </div>
-      </Layout>
-    </>
+          <EditorComponent
+            editor={editor}
+            plugins={plugins}
+            value={sections}
+            onChange={sections => {
+              setSections(sections)
+            }}
+            renderElements={[renderEditableSectionElement()]}
+          />
+          <div className="py-16 flex flex-col items-start">
+            <button
+              className="flex items-center bg-transparent text-body-muted transition duration-200 hover:text-body hover:border-body border border-body-muted rounded-md px-2 pl-2 py-2"
+              onClick={() => MintterEditor.addSection(editor)}
+            >
+              <Icons.Plus color="currentColor" />
+              <span className="px-2 text-sm">add Block</span>
+            </button>
+            <p className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline">
+              what are Blocks and how to use them?
+            </p>
+          </div>
+        </Container>
+      </div>
+    </> 
   )
 }

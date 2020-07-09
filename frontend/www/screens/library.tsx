@@ -10,6 +10,7 @@ import Container from 'components/container'
 import {useProfile} from 'shared/profileContext'
 import {Link} from 'components/link'
 import {Connections} from 'components/connections'
+import { SuggestedConnections } from 'components/suggested-connections'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library(props) {
@@ -31,6 +32,7 @@ export default function Library(props) {
       <div className="flex-1">
         <ProfileInfo />
         <Connections />
+        {/* <SuggestedConnections /> */}
       </div>
       <Container>
         <div className="py-5 flex items-baseline justify-between">
@@ -38,7 +40,7 @@ export default function Library(props) {
           <div className="flex-1" />
           <button
             onClick={handleCreateDocument}
-            className="bg-info hover:bg-info-hover text-white font-bold py-2 px-4 rounded flex items-center justify-center transition duration-100"
+            className="bg-info hover:bg-info-hover text-white font-bold py-2 px-4 rounded-full flex items-center justify-center transition duration-100"
           >
             Compose
           </button>
@@ -76,7 +78,7 @@ function ProfileInfo() {
 
   return (
     values && (
-      <div className="text-left pt-16 px-4 lg:pl-20 lg:pr-16">
+      <div className="text-left pt-16 px-4">
         <h3 className="font-semibold text-2xl text-heading">
           {values.username}
         </h3>
