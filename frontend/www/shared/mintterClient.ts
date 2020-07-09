@@ -215,13 +215,33 @@ export function parseSlatetree(slateTree: Node[]) {
   })
 }
 
-export async function allConnections(
+export async function listConnections(
   key,
   page = 0,
 ): Promise<ListProfilesResponse> {
   const req = new ListProfilesRequest()
   req.setPageSize(page)
   return await usersClient.listProfiles(req)
+}
+
+export async function listSuggestedConnections(
+  key,
+  page = 0,
+): Promise<any> {
+  // TODO: Implement suggested connections
+  return Promise.resolve({
+    toObject: () => ({
+      profilesList: [{
+        username: 'horacio',
+        accountId: '23456789987654dfghjkjhgfdertyui8765',
+        connectionStatus: 1,
+        addrsList: [
+          "/foo",
+          '/bar'
+        ]
+      }]
+    })
+  })
 }
 
 export {MintterPromiseClient}

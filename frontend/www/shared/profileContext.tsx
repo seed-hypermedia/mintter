@@ -42,7 +42,8 @@ interface ProfileContextValue {
     peerIds: string[],
   ) => MutationResult<ConnectToPeerResponse>
   getProfile: (profileId?: string) => QueryResult<Profile>
-  allConnections: () => PaginatedQueryResult<ListProfilesResponse>
+  listConnections: () => PaginatedQueryResult<ListProfilesResponse>
+  listSuggestedConnections: () => PaginatedQueryResult<any>
 }
 
 // TODO: (horacio): Fixme types ☝
@@ -86,7 +87,7 @@ export function ProfileProvider(props) {
     peerIds => apiClient.connectToPeerById(peerIds),
     {
       onSuccess: () => {
-        queryCache.refetchQueries('AllConnections')
+        queryCache.refetchQueries('ListConnections')
       },
       onError: params => {
         throw new Error(`Connection to Peer error -> ${JSON.stringify(params)}`)
@@ -94,10 +95,21 @@ export function ProfileProvider(props) {
     },
   )
 
-  function allConnections(page = 0): PaginatedQueryResult<any> {
+  function listConnections(page = 0) {
     return usePaginatedQuery(
-      ['AllConnections', page],
-      apiClient.allConnections,
+      ['ListConnections', page],
+      apiClient.listConnections,
+      {
+        refetchOnWindowFocus: true,
+        refetchInterval: 5000,
+      },
+    )
+  }
+
+  function listSuggestedConnections(page = 0) {
+    return usePaginatedQuery(
+      ['ListSuggestedConnections', page],
+      apiClient.listSuggestedConnections,
       {
         refetchOnWindowFocus: true,
         refetchInterval: 5000,
@@ -114,7 +126,8 @@ export function ProfileProvider(props) {
       getProfileAddrs,
       genSeed,
       connectToPeerById,
-      allConnections,
+      listConnections,
+      listSuggestedConnections,
     }),
     [
       profile,
@@ -124,7 +137,8 @@ export function ProfileProvider(props) {
       getProfileAddrs,
       genSeed,
       connectToPeerById,
-      allConnections,
+      listConnections,
+      listSuggestedConnections,
     ],
   )
 

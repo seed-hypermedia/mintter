@@ -7,12 +7,11 @@ import Tippy from '@tippyjs/react'
 import {useToasts} from 'react-toast-notifications'
 import {Profile, ConnectionStatus} from '@mintter/proto/mintter_pb'
 
-export function Connections() {
-  const {connectToPeerById, listConnections} = useProfile()
+export function SuggestedConnections() {
+  const {connectToPeerById, listSuggestedConnections} = useProfile()
   const {addToast, updateToast, removeToast} = useToasts()
 
-  async function handlePeerConnection() {
-    const peer = window.prompt(`enter a peer address`)
+  async function handlePeerConnection(peer) {
     let toast
 
     if (peer) {
@@ -37,7 +36,7 @@ export function Connections() {
     }
   }
 
-  const {status, error, resolvedData} = listConnections()
+  const {status, error, resolvedData} = listSuggestedConnections()
 
   if (status === 'loading') {
     return <p className="text-body text-sm mt-2">loading...</p>
@@ -47,7 +46,7 @@ export function Connections() {
     return <ErrorMessage error={error} />
   }
 
-  console.log('connections', resolvedData?.toObject())
+  
 
   return (
     <div
@@ -56,7 +55,7 @@ export function Connections() {
         width: 100%;
       `}`}
     >
-      <h3 className="font-semibold text-xl text-heading">Connections</h3>
+      <h3 className="font-bold text-heading">Suggested Connections</h3>
       <ul>
         {resolvedData?.toObject().profilesList.map(c => {
           const isConnected = c.connectionStatus === ConnectionStatus.CONNECTED
@@ -87,7 +86,7 @@ export function Connections() {
                 />
               </Tippy>
               <Tippy
-                delay={500}
+                delay={1000}
                 content={
                   <span
                     className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
@@ -99,20 +98,19 @@ export function Connections() {
                   </span>
                 }
               >
-                <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
-                  {`${c.username} (${c.accountId.slice(-8)})`}
-                </span>
+                <div className="flex items-center group">
+                  <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed mr-2">
+                    {`${c.username} (${c.accountId.slice(-8)})`}
+                  </span>
+                  <button onClick={() => handlePeerConnection(c.addrsList)} className="opacity-0 group-hover:opacity-100 transition duration-75 px-2 rounded-full bg-info hover:bg-info-hover text-white">
+                    connect
+                  </button>
+                </div>
               </Tippy>
             </li>
           )
         })}
       </ul>
-      <button
-        onClick={handlePeerConnection}
-        className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline"
-      >
-        + add connection
-      </button>
     </div>
   )
 }

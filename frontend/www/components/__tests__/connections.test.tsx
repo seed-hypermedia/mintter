@@ -6,7 +6,7 @@ import {ListProfilesResponse} from '@mintter/proto/mintter_pb'
 jest.mock('shared/mintterClient')
 
 beforeEach(() => {
-  clientMock.allConnections.mockResolvedValueOnce({
+  clientMock.listConnections.mockResolvedValueOnce({
     toObject: (): ListProfilesResponse.AsObject => ({
       profilesList: [
         {
