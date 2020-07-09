@@ -32,7 +32,7 @@ export default function Library(props) {
       <div className="flex-1">
         <ProfileInfo />
         <Connections />
-        {/* <SuggestedConnections /> */}
+        <SuggestedConnections />
       </div>
       <Container>
         <div className="py-5 flex items-baseline justify-between">
