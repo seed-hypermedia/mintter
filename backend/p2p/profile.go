@@ -18,18 +18,19 @@ func (n *Node) GetProfile(ctx context.Context, pid peer.ID) (identity.Profile, e
 		return n.store.CurrentProfile(ctx)
 	}
 
-	// TODO(burdiyan): Check local cache before dialing.
+	// To avoid making additional request we first
+	// check if the requested peer ID is in our local cache.
+	if profID, err := n.store.GetProfileForPeer(ctx, pid); err == nil {
+		if p, err := n.store.GetProfile(ctx, profID); err == nil {
+			return p, nil
+		}
+	}
 
 	conn, err := n.dial(ctx, pid)
 	if err != nil {
 		return identity.Profile{}, err
 	}
 	defer logClose(n.log, conn.Close, "error closing grpc connection")
-
-	me, err := n.store.CurrentProfile(ctx)
-	if err != nil {
-		return me, err
-	}
 
 	pbprof, err := internal.NewPeerServiceClient(conn).GetProfile(ctx, &internal.GetProfileRequest{})
 	if err != nil {
