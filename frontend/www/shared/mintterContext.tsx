@@ -28,7 +28,7 @@ type QueryParam<T> = T | T[]
 
 // TODO: (Horacio) Fixme Types
 export interface MintterClient {
-  allPublications: (
+  listPublications: (
     page?: number,
   ) => PaginatedQueryResult<ListPublicationsResponse>
   getPublication: (id: QueryParam<string>) => QueryResult<Publication>
@@ -51,12 +51,12 @@ export interface MintterClient {
 const MintterClientContext = createContext<MintterClient>(null)
 
 export function MintterProvider(props) {
-  const allPublications = useCallback((page = 0): PaginatedQueryResult<
+  const listPublications = useCallback((page = 0): PaginatedQueryResult<
     ListPublicationsResponse
   > => {
     return usePaginatedQuery(
-      ['AllPublications', page],
-      apiClient.allPublications,
+      ['ListPublications', page],
+      apiClient.listPublications,
       {
         refetchOnWindowFocus: true,
         refetchInterval: 5000,
@@ -138,7 +138,7 @@ export function MintterProvider(props) {
 
   const value = useMemo(
     () => ({
-      allPublications,
+      listPublications,
       getPublication,
       getSections,
       allDrafts,
@@ -150,7 +150,7 @@ export function MintterProvider(props) {
       getAuthor,
     }),
     [
-      allPublications,
+      listPublications,
       getPublication,
       getSections,
       allDrafts,

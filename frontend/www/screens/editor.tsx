@@ -209,6 +209,7 @@ export default function Editor(): JSX.Element {
 
   return (
     <>
+      <Seo title="Editor" />
       <div className="flex mx-4">
         <span className="flex-1"></span>
         <button
@@ -218,7 +219,7 @@ export default function Editor(): JSX.Element {
           Publish
         </button>
       </div>
-      <div>  
+      <div>
         <DebugValue
           value={state}
           className="absolute z-10 right-0 top-0 w-full max-w-xs"
@@ -263,7 +264,7 @@ export default function Editor(): JSX.Element {
               name="description"
               placeholder="Subtitle"
               minHeight={28}
-              className={`leading-relaxed text-lg font-light text-heading-muted`}
+              className={`leading-relaxed text-lg font-light text-heading-muted italic`}
               onEnterPress={() => {
                 // TODO: Horacio: focus Editor here..!
               }}
@@ -292,6 +293,6 @@ export default function Editor(): JSX.Element {
           </div>
         </Container>
       </div>
-    </> 
+    </>
   )
 }
