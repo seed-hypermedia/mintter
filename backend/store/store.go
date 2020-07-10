@@ -20,9 +20,10 @@ import (
 )
 
 var (
-	keyProfiles     = datastore.NewKey("/mintter/profiles")
-	keyDrafts       = datastore.NewKey("/mintter/drafts")
-	keyPublications = datastore.NewKey("/mintter/publications")
+	keyProfiles          = datastore.NewKey("/mintter/profiles")
+	keySuggestedProfiles = datastore.NewKey("/mintter/suggestedProfiles")
+	keyDrafts            = datastore.NewKey("/mintter/drafts")
+	keyPublications      = datastore.NewKey("/mintter/publications")
 )
 
 // Store is the persistence layer of the app.

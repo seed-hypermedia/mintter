@@ -13,6 +13,8 @@ service PeerService {
 
   rpc GetProfile(GetProfileRequest) returns (Profile);
 
+  rpc ListProfiles(ListProfilesRequest) returns (ListProfilesResponse);
+
   rpc ListPublications(ListPublicationsRequest)
       returns (ListPublicationsResponse);
 }
@@ -32,6 +34,18 @@ message PingRequest {}
 message PingResponse {}
 
 message GetProfileRequest {}
+
+message ListProfilesRequest {
+  int32 page_size = 1;
+
+  string page_token = 2;
+}
+
+message ListProfilesResponse {
+  repeated Profile profiles = 1;
+
+  string next_page_token = 2;
+}
 
 message ListPublicationsRequest {}
 

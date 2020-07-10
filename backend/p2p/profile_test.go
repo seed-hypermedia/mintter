@@ -12,10 +12,7 @@ func TestGetProfile(t *testing.T) {
 	bob := makeTestNode(t, "bob")
 	ctx := context.Background()
 
-	addrs, err := bob.Addrs()
-	require.NoError(t, err)
-
-	require.NoError(t, alice.Connect(ctx, addrs...))
+	connectPeers(t, ctx, alice, bob)
 
 	prof, err := alice.GetProfile(ctx, bob.Host().ID())
 	require.NoError(t, err)

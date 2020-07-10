@@ -210,6 +210,52 @@ export namespace ListProfilesResponse {
   }
 }
 
+export class ListSuggestedProfilesRequest extends jspb.Message {
+  getPageSize(): number;
+  setPageSize(value: number): void;
+
+  getPageToken(): string;
+  setPageToken(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListSuggestedProfilesRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListSuggestedProfilesRequest): ListSuggestedProfilesRequest.AsObject;
+  static serializeBinaryToWriter(message: ListSuggestedProfilesRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListSuggestedProfilesRequest;
+  static deserializeBinaryFromReader(message: ListSuggestedProfilesRequest, reader: jspb.BinaryReader): ListSuggestedProfilesRequest;
+}
+
+export namespace ListSuggestedProfilesRequest {
+  export type AsObject = {
+    pageSize: number,
+    pageToken: string,
+  }
+}
+
+export class ListSuggestedProfilesResponse extends jspb.Message {
+  getProfilesList(): Array<SuggestedProfile>;
+  setProfilesList(value: Array<SuggestedProfile>): void;
+  clearProfilesList(): void;
+  addProfiles(value?: SuggestedProfile, index?: number): SuggestedProfile;
+
+  getNextPageToken(): string;
+  setNextPageToken(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListSuggestedProfilesResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListSuggestedProfilesResponse): ListSuggestedProfilesResponse.AsObject;
+  static serializeBinaryToWriter(message: ListSuggestedProfilesResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListSuggestedProfilesResponse;
+  static deserializeBinaryFromReader(message: ListSuggestedProfilesResponse, reader: jspb.BinaryReader): ListSuggestedProfilesResponse;
+}
+
+export namespace ListSuggestedProfilesResponse {
+  export type AsObject = {
+    profilesList: Array<SuggestedProfile.AsObject>,
+    nextPageToken: string,
+  }
+}
+
 export class GetProfileAddrsRequest extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetProfileAddrsRequest.AsObject;
@@ -313,6 +359,32 @@ export namespace Profile {
     email: string,
     bio: string,
     connectionStatus: ConnectionStatus,
+  }
+}
+
+export class SuggestedProfile extends jspb.Message {
+  getProfile(): Profile | undefined;
+  setProfile(value?: Profile): void;
+  hasProfile(): boolean;
+  clearProfile(): void;
+
+  getAddrsList(): Array<string>;
+  setAddrsList(value: Array<string>): void;
+  clearAddrsList(): void;
+  addAddrs(value: string, index?: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): SuggestedProfile.AsObject;
+  static toObject(includeInstance: boolean, msg: SuggestedProfile): SuggestedProfile.AsObject;
+  static serializeBinaryToWriter(message: SuggestedProfile, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): SuggestedProfile;
+  static deserializeBinaryFromReader(message: SuggestedProfile, reader: jspb.BinaryReader): SuggestedProfile;
+}
+
+export namespace SuggestedProfile {
+  export type AsObject = {
+    profile?: Profile.AsObject,
+    addrsList: Array<string>,
   }
 }
 

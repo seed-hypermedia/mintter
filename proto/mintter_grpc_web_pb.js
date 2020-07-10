@@ -390,6 +390,86 @@ proto.com.mintter.MintterPromiseClient.prototype.listProfiles =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.mintter.ListSuggestedProfilesRequest,
+ *   !proto.com.mintter.ListSuggestedProfilesResponse>}
+ */
+const methodDescriptor_Mintter_ListSuggestedProfiles = new grpc.web.MethodDescriptor(
+  '/com.mintter.Mintter/ListSuggestedProfiles',
+  grpc.web.MethodType.UNARY,
+  proto.com.mintter.ListSuggestedProfilesRequest,
+  proto.com.mintter.ListSuggestedProfilesResponse,
+  /**
+   * @param {!proto.com.mintter.ListSuggestedProfilesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.ListSuggestedProfilesResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.com.mintter.ListSuggestedProfilesRequest,
+ *   !proto.com.mintter.ListSuggestedProfilesResponse>}
+ */
+const methodInfo_Mintter_ListSuggestedProfiles = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.com.mintter.ListSuggestedProfilesResponse,
+  /**
+   * @param {!proto.com.mintter.ListSuggestedProfilesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.ListSuggestedProfilesResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.mintter.ListSuggestedProfilesRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.ListSuggestedProfilesResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.ListSuggestedProfilesResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.mintter.MintterClient.prototype.listSuggestedProfiles =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.mintter.Mintter/ListSuggestedProfiles',
+      request,
+      metadata || {},
+      methodDescriptor_Mintter_ListSuggestedProfiles,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.mintter.ListSuggestedProfilesRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.mintter.ListSuggestedProfilesResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.com.mintter.MintterPromiseClient.prototype.listSuggestedProfiles =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.mintter.Mintter/ListSuggestedProfiles',
+      request,
+      metadata || {},
+      methodDescriptor_Mintter_ListSuggestedProfiles);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.com.mintter.GetProfileAddrsRequest,
  *   !proto.com.mintter.GetProfileAddrsResponse>}
  */

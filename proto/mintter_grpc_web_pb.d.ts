@@ -13,6 +13,8 @@ import {
   InitProfileResponse,
   ListProfilesRequest,
   ListProfilesResponse,
+  ListSuggestedProfilesRequest,
+  ListSuggestedProfilesResponse,
   UpdateProfileRequest,
   UpdateProfileResponse} from './mintter_pb';
 
@@ -48,6 +50,13 @@ export class MintterClient {
     callback: (err: grpcWeb.Error,
                response: ListProfilesResponse) => void
   ): grpcWeb.ClientReadableStream<ListProfilesResponse>;
+
+  listSuggestedProfiles(
+    request: ListSuggestedProfilesRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: ListSuggestedProfilesResponse) => void
+  ): grpcWeb.ClientReadableStream<ListSuggestedProfilesResponse>;
 
   getProfileAddrs(
     request: GetProfileAddrsRequest,
@@ -96,6 +105,11 @@ export class MintterPromiseClient {
     request: ListProfilesRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<ListProfilesResponse>;
+
+  listSuggestedProfiles(
+    request: ListSuggestedProfilesRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<ListSuggestedProfilesResponse>;
 
   getProfileAddrs(
     request: GetProfileAddrsRequest,

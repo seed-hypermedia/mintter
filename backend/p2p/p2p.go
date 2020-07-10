@@ -44,6 +44,8 @@ const (
 	ProtocolID protocol.ID = "/" + ProtocolName + "/" + ProtocolVersion
 )
 
+const defaultSyncPeriod = 10 * time.Minute
+
 // userAgent is type & version of the mtt service.
 var userAgent = "mintter/" + backend.Version
 
@@ -267,7 +269,7 @@ func (n *Node) setupPubSub(ctx context.Context) error {
 
 func (n *Node) startSyncing() {
 	n.g.Go(func() error {
-		t := time.NewTicker(10 * time.Minute)
+		t := time.NewTicker(defaultSyncPeriod)
 		defer t.Stop()
 
 		for {
@@ -295,6 +297,10 @@ func (n *Node) syncAll() error {
 	for _, prof := range profiles {
 		if err := n.SyncPublications(n.ctx, prof.ID); err != nil && err != context.Canceled {
 			n.log.Error("FailedToSyncPublications", zap.Error(err), zap.String("profile", prof.ID.String()))
+		}
+
+		if err := n.SyncProfiles(n.ctx, prof.ID); err != nil && err != context.Canceled {
+			n.log.Error("FailedToSyncProfiles", zap.Error(err), zap.String("profile", prof.ID.String()))
 		}
 	}
 

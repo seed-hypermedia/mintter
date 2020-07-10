@@ -25,6 +25,10 @@ service Mintter {
 
   rpc ListProfiles(ListProfilesRequest) returns (ListProfilesResponse);
 
+  // List profiles of your directly connected profiles.
+  rpc ListSuggestedProfiles(ListSuggestedProfilesRequest)
+      returns (ListSuggestedProfilesResponse);
+
   // Get network multiaddrs of the current node.
   rpc GetProfileAddrs(GetProfileAddrsRequest) returns (GetProfileAddrsResponse);
 
@@ -91,6 +95,18 @@ message ListProfilesResponse {
   string next_page_token = 2;
 }
 
+message ListSuggestedProfilesRequest {
+  int32 page_size = 1;
+
+  string page_token = 2;
+}
+
+message ListSuggestedProfilesResponse {
+  repeated SuggestedProfile profiles = 1;
+
+  string next_page_token = 2;
+}
+
 message GetProfileAddrsRequest {}
 
 message GetProfileAddrsResponse {
@@ -139,4 +155,10 @@ message Profile {
   // Output only. Connection status for the given peer. Not useful when the
   // profile is the one of our own node.
   ConnectionStatus connection_status = 6;
+}
+
+message SuggestedProfile {
+  Profile profile = 1;
+
+  repeated string addrs = 2;
 }

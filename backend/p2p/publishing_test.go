@@ -100,7 +100,6 @@ func TestSyncPublications(t *testing.T) {
 			return false
 		}
 		if len(aliceInBob) != 1 {
-			fmt.Println("not one")
 			return false
 		}
 
