@@ -75,6 +75,62 @@ func (s *Store) StoreProfile(ctx context.Context, prof identity.Profile) error {
 	return nil
 }
 
+// HasProfile will check profile in the store.
+func (s *Store) HasProfile(ctx context.Context, pid identity.ProfileID) (bool, error) {
+	return s.db.Has(keyProfiles.ChildString(pid.String()))
+}
+
+// StoreSuggestedProfile in the database.
+func (s *Store) StoreSuggestedProfile(ctx context.Context, prof identity.Profile) error {
+	data, err := json.Marshal(prof)
+	if err != nil {
+		return err
+	}
+
+	if err := s.db.Put(keySuggestedProfiles.ChildString(prof.ID.String()), data); err != nil {
+		return fmt.Errorf("failed to store profile: %w", err)
+	}
+
+	if err := s.ps.Put(prof.Peer.ID, profileKey, prof.ID.String()); err != nil {
+		return fmt.Errorf("failed to store profile id in peer store: %w", err)
+	}
+
+	return nil
+}
+
+// DeleteSuggestedProfile from the database.
+func (s *Store) DeleteSuggestedProfile(ctx context.Context, pid identity.ProfileID) error {
+	return s.db.Delete(keySuggestedProfiles.ChildString(pid.String()))
+}
+
+// ListSuggestedProfiles in the database.
+func (s *Store) ListSuggestedProfiles(ctx context.Context, offset, limit int) ([]identity.Profile, error) {
+	res, err := s.db.Query(query.Query{
+		Prefix: keySuggestedProfiles.String(),
+		Offset: offset,
+		Limit:  limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer res.Close()
+
+	entries, err := res.Rest()
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]identity.Profile, len(entries))
+
+	for i, entry := range entries {
+		if err := json.Unmarshal(entry.Value, &out[i]); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal profile: %w", err)
+		}
+	}
+
+	return out, nil
+}
+
 // GetProfile from the store by its ID.
 func (s *Store) GetProfile(ctx context.Context, pid identity.ProfileID) (identity.Profile, error) {
 	if pid == s.prof.ID {

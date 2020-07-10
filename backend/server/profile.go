@@ -90,6 +90,49 @@ func (s *Server) ListProfiles(ctx context.Context, in *proto.ListProfilesRequest
 	return resp, nil
 }
 
+// ListSuggestedProfiles implements Mintter rpc.
+func (s *Server) ListSuggestedProfiles(ctx context.Context, in *proto.ListSuggestedProfilesRequest) (*proto.ListSuggestedProfilesResponse, error) {
+	if err := s.checkReady(); err != nil {
+		return nil, err
+	}
+
+	if in.PageSize != 0 || in.PageToken != "" {
+		s.log.Warn("UnimplementedPaginationRequested", zap.String("request", "ListSuggestedProfiles"))
+	}
+
+	profiles, err := s.store.ListSuggestedProfiles(ctx, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &proto.ListSuggestedProfilesResponse{
+		Profiles: make([]*proto.SuggestedProfile, len(profiles)),
+	}
+
+	for i, p := range profiles {
+		// TODO(burdiyan): this is not pretty.
+		// Check if this is still needed.
+		if p.ID == s.node.Account().ID {
+			continue
+		}
+
+		pinfo := s.store.Peerstore().PeerInfo(p.Peer.ID)
+
+		addrs, err := peer.AddrInfoToP2pAddrs(&pinfo)
+		if err != nil {
+			s.log.Warn("FailedToGetAddrsForPeer", zap.Error(err), zap.String("profile", p.ID.String()))
+			continue
+		}
+
+		resp.Profiles[i] = &proto.SuggestedProfile{
+			Profile: profileToProto(p, s),
+			Addrs:   addrSlice(addrs...),
+		}
+	}
+
+	return resp, nil
+}
+
 // UpdateProfile implements Mintter rpc.
 func (s *Server) UpdateProfile(ctx context.Context, in *proto.UpdateProfileRequest) (*proto.UpdateProfileResponse, error) {
 	if err := s.checkReady(); err != nil {

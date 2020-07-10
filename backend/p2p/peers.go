@@ -11,6 +11,7 @@ import (
 	swarm "github.com/libp2p/go-libp2p-swarm"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -52,11 +53,20 @@ func (n *Node) connect(ctx context.Context, pinfo peer.AddrInfo) error {
 	if err != nil {
 		return fmt.Errorf("failed invoking handshake to %s: %w", pinfo.ID.Pretty(), err)
 	}
+	// Best-effort attempt to delete a suggested profile just in case this peer was one of these.
+	defer func() {
+		n.store.DeleteSuggestedProfile(ctx, prof.ID)
+
+	}()
 
 	if err := n.savePeerProfile(ctx, prof); err != nil {
 		// TODO: if the err is ErrQriProtocolNotSupported, let the user know the
 		// connection has been established, but that the Qri Protocol is not supported
 		return fmt.Errorf("failed to save peer profile: %w", err)
+	}
+
+	if err := n.SyncProfiles(ctx, prof.ID); err != nil {
+		n.log.Info("FailedSyncingProfilesAfterConnect", zap.Error(err), zap.String("profile", prof.ID.String()))
 	}
 
 	return nil

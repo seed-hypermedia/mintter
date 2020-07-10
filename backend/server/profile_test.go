@@ -119,3 +119,42 @@ func TestUpdateProfile(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, resp.Profile, get.Profile)
 }
+
+func TestSuggestedProfiles(t *testing.T) {
+	alice := newSeededServer(t, "alice")
+	bob := newSeededServer(t, "bob")
+	carol := newSeededServer(t, "carol")
+	defer func() {
+		require.NoError(t, alice.Close())
+		require.NoError(t, bob.Close())
+		require.NoError(t, carol.Close())
+	}()
+	ctx := context.Background()
+
+	connectPeers(t, ctx, alice, bob)
+	connectPeers(t, ctx, bob, carol)
+
+	resp, err := carol.ListSuggestedProfiles(ctx, &proto.ListSuggestedProfilesRequest{})
+	require.NoError(t, err)
+	require.Len(t, resp.Profiles, 1)
+	resp.Profiles[0].Profile.ConnectionStatus = 0 // This is ugly, but needed to trick the test to pass and avoid this unimportant field here.
+	require.Equal(t, getServerProfile(t, ctx, alice), resp.Profiles[0].Profile, "carol must have alice in her suggested profiles")
+
+	_, err = carol.ConnectToPeer(ctx, &proto.ConnectToPeerRequest{
+		Addrs: resp.Profiles[0].Addrs,
+	})
+	require.NoError(t, err, "carol must be able to connect to alice as a suggested peer")
+
+	resp, err = carol.ListSuggestedProfiles(ctx, &proto.ListSuggestedProfilesRequest{})
+	require.NoError(t, err)
+	require.Len(t, resp.Profiles, 0, "carol must have no suggested peers after connecting to alice")
+}
+
+func getServerProfile(t *testing.T, ctx context.Context, srv *server.Server) *proto.Profile {
+	t.Helper()
+
+	resp, err := srv.GetProfile(ctx, &proto.GetProfileRequest{})
+	require.NoError(t, err)
+
+	return resp.Profile
+}
