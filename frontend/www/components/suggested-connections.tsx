@@ -57,7 +57,9 @@ export function SuggestedConnections() {
     >
       <h3 className="font-bold text-heading">Suggested Connections</h3>
       {list.length === 0 ? (
-        <p className="p-4 mt-4 rounded bg-background-muted text-body">no suggestions available :(</p>
+        <p className="py-2 px-4 mt-4 rounded bg-background-muted text-body text-sm">
+          no suggestions available :(
+        </p>
       ) : (
         <ul>
           {list.map(c => {
@@ -102,7 +104,7 @@ export function SuggestedConnections() {
                     </span>
                   }
                 >
-                  <div className="flex items-center group">
+                  <div className="flex items-start justify-between group">
                     <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed mr-2">
                       {`${c.username} (${c.accountId.slice(-8)})`}
                     </span>

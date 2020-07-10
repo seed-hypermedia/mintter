@@ -46,7 +46,7 @@ export async function genSeed() {
   return await usersClient.genSeed(req)
 }
 
-export async function allPublications(
+export async function listPublications(
   key,
   page = 0,
 ): Promise<ListPublicationsResponse> {
@@ -224,23 +224,21 @@ export async function listConnections(
   return await usersClient.listProfiles(req)
 }
 
-export async function listSuggestedConnections(
-  key,
-  page = 0,
-): Promise<any> {
+export async function listSuggestedConnections(key, page = 0): Promise<any> {
   // TODO: Implement suggested connections
   return Promise.resolve({
     toObject: () => ({
-      profilesList: [{
-        username: 'horacio',
-        accountId: '23456789987654dfghjkjhgfdertyui8765',
-        connectionStatus: 1,
-        addrsList: [
-          "/foo",
-          '/bar'
-        ]
-      }]
-    })
+      // profilesList: [{
+      //   username: 'horacio',
+      //   accountId: '23456789987654dfghjkjhgfdertyui8765',
+      //   connectionStatus: 1,
+      //   addrsList: [
+      //     "/foo",
+      //     '/bar'
+      //   ]
+      // }]
+      profilesList: [],
+    }),
   })
 }
 

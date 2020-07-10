@@ -47,7 +47,7 @@ export function Connections() {
     return <ErrorMessage error={error} />
   }
 
-  console.log('connections', resolvedData?.toObject())
+  console.log('connections', resolvedData?.toObject().profilesList)
 
   return (
     <div

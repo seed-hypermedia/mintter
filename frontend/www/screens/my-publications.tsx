@@ -5,11 +5,12 @@ import {useMintter} from 'shared/mintterContext'
 import {useProfile} from 'shared/profileContext'
 import {useMemo} from 'react'
 import {useHistory} from 'react-router-dom'
+import {ErrorMessage} from 'components/errorMessage'
 
 export function MyPublications() {
   const history = useHistory()
-  const {createDraft, allPublications} = useMintter()
-  const {status, error, resolvedData} = allPublications()
+  const {createDraft, listPublications} = useMintter()
+  const {status, error, resolvedData} = listPublications()
   const {profile} = useProfile()
 
   async function handleCreateDraft() {
@@ -21,7 +22,11 @@ export function MyPublications() {
     })
   }
 
-  const myPubs = useMemo(
+  if (status === 'error') {
+    return <ErrorMessage error={error} />
+  }
+
+  const list = useMemo(
     () =>
       resolvedData
         ?.toObject()
@@ -34,7 +39,7 @@ export function MyPublications() {
   return (
     <>
       <Seo title="My Publications" />
-      {status === 'success' && myPubs.length === 0 && (
+      {status === 'success' && list.length === 0 && (
         <>
           <hr className="border-t-2 border-muted border-solid my-8" />
           <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
@@ -51,7 +56,7 @@ export function MyPublications() {
           </div>
         </>
       )}
-      <DocumentList status={status} error={error} data={myPubs} />
+      <DocumentList status={status} error={error} data={list} />
     </>
   )
 }

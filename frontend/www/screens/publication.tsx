@@ -29,6 +29,7 @@ import Layout from 'components/layout'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {ErrorMessage} from 'components/errorMessage'
 import {AuthorLabel} from 'components/author-label'
+import Container from 'components/container'
 
 interface EditorState {
   title: string
@@ -95,7 +96,7 @@ export default function Publication(): JSX.Element {
     content = (
       <>
         <div
-          className={`mx-8 pb-6 relative mb-px ${css`
+          className={`pb-2 relative ${css`
             &:after {
               content: '';
               position: absolute;
@@ -110,7 +111,7 @@ export default function Publication(): JSX.Element {
           `}`}
         >
           <h1
-            className={`text-4xl text-heading font-bold ${css`
+            className={`text-4xl text-heading font-bold italic ${css`
               word-wrap: break-word;
               white-space: pre-wrap;
               min-height: 56px;
@@ -146,28 +147,15 @@ export default function Publication(): JSX.Element {
   }
 
   return (
-    <Layout>
+    <>
       <Seo title="Publication" />
-      <div className="flex-1 overflow-y-auto pt-4 overflow-y-scroll">
-        <div className="flex-1 overflow-y-auto">
-          {/* <EditorHeader /> */}
-          <div className="flex pt-8 pb-32 relative">
-            <DebugValue
-              value={state}
-              className="absolute z-10 right-0 top-0 w-full max-w-xs"
-            />
-            <div className="flex-1">
-              <div
-                className={`mx-auto ${css`
-                  max-width: 80ch;
-                `} `}
-              >
-                {content}
-              </div>
-            </div>
-          </div>
-        </div>
+      <div>
+        <DebugValue
+          value={state}
+          className="absolute z-10 right-0 top-0 w-full max-w-xs"
+        />
+        <Container className="mt-12">{content}</Container>
       </div>
-    </Layout>
+    </>
   )
 }
