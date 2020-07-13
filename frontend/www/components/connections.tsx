@@ -47,7 +47,8 @@ export function Connections() {
     return <ErrorMessage error={error} />
   }
 
-  console.log('connections', resolvedData?.toObject().profilesList)
+  const list = resolvedData?.toObject().profilesList
+  console.log('Connections -> list', list)
 
   return (
     <div
@@ -58,7 +59,7 @@ export function Connections() {
     >
       <h3 className="font-semibold text-xl text-heading">Connections</h3>
       <ul>
-        {resolvedData?.toObject().profilesList.map(c => {
+        {list.map(c => {
           const isConnected = c.connectionStatus === ConnectionStatus.CONNECTED
 
           return (
