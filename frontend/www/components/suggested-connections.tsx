@@ -12,6 +12,7 @@ export function SuggestedConnections() {
   const {addToast, updateToast, removeToast} = useToasts()
 
   async function handlePeerConnection(peer) {
+    console.log('handlePeerConnection -> peer', peer)
     let toast
 
     if (peer) {
@@ -20,7 +21,7 @@ export function SuggestedConnections() {
         autoDismiss: false,
       })
       try {
-        await connectToPeerById(peer.split(','))
+        await connectToPeerById(peer)
         updateToast(toast, {
           content: 'Connection established successfuly!',
           appearance: 'success',
