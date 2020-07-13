@@ -17,6 +17,7 @@ import {
   GenSeedResponse,
   ListProfilesResponse,
   ConnectToPeerResponse,
+  ListSuggestedProfilesResponse,
 } from '@mintter/proto/mintter_pb'
 import * as apiClient from './mintterClient'
 import {bootstrapAppData} from './appBootstrap'
@@ -43,7 +44,9 @@ interface ProfileContextValue {
   ) => MutationResult<ConnectToPeerResponse>
   getProfile: (profileId?: string) => QueryResult<Profile>
   listConnections: () => PaginatedQueryResult<ListProfilesResponse>
-  listSuggestedConnections: () => PaginatedQueryResult<any>
+  listSuggestedConnections: () => PaginatedQueryResult<
+    ListSuggestedProfilesResponse
+  >
 }
 
 // TODO: (horacio): Fixme types ☝

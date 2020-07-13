@@ -47,6 +47,7 @@ export function SuggestedConnections() {
   }
 
   const list = resolvedData?.toObject().profilesList
+  console.log('SuggestedConnections -> list', list)
 
   return (
     <div
@@ -63,12 +64,13 @@ export function SuggestedConnections() {
       ) : (
         <ul>
           {list.map(c => {
+            const {profile} = c
             const isConnected =
-              c.connectionStatus === ConnectionStatus.CONNECTED
+              profile.connectionStatus === ConnectionStatus.CONNECTED
 
             return (
               <li
-                key={c.accountId}
+                key={profile.accountId}
                 className={`text-body text-sm mt-2 flex items-center ${
                   isConnected ? 'opacity-100' : 'opacity-50'
                 }`}
@@ -87,7 +89,7 @@ export function SuggestedConnections() {
                 >
                   <div
                     className={`w-2 h-2 rounded-full mr-2 flex-none ${connectionStatusColor(
-                      c,
+                      profile,
                     )}`}
                   />
                 </Tippy>
@@ -100,13 +102,13 @@ export function SuggestedConnections() {
                         color: #ccc;
                       `}`}
                     >
-                      {c.accountId}
+                      {profile.accountId}
                     </span>
                   }
                 >
                   <div className="flex items-start justify-between group">
                     <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed mr-2">
-                      {`${c.username} (${c.accountId.slice(-8)})`}
+                      {`${profile.username} (${profile.accountId.slice(-8)})`}
                     </span>
                     <button
                       onClick={() => handlePeerConnection(c.addrsList)}
