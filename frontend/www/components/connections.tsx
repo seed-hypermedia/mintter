@@ -16,6 +16,7 @@ export function Connections() {
     let toast
 
     if (peer) {
+      console.log('handlePeerConnection -> peer', peer)
       const toast = addToast('Connecting to peer...', {
         appearance: 'info',
         autoDismiss: false,
