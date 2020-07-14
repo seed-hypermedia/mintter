@@ -1,4 +1,4 @@
-import React, {useReducer, useCallback} from 'react'
+import React, {useState, useReducer, useCallback} from 'react'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {css} from 'emotion'
 import {EditablePlugins, SoftBreakPlugin} from 'slate-plugins-next'
@@ -15,6 +15,7 @@ import {
   renderEditableSectionElement,
   slate,
 } from '@mintter/editor'
+import Tippy from '@tippyjs/react'
 import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
@@ -281,19 +282,107 @@ export default function Editor(): JSX.Element {
             renderElements={[renderEditableSectionElement()]}
           />
           <div className="py-16 flex flex-col items-start">
-            <button
-              className="flex items-center bg-transparent text-body-muted transition duration-200 hover:text-body hover:border-body border border-body-muted rounded-md px-2 pl-2 py-2"
-              onClick={() => MintterEditor.addSection(editor)}
-            >
-              <Icons.Plus color="currentColor" />
-              <span className="px-2 text-sm">add Block</span>
-            </button>
-            <p className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline">
-              what are Blocks and how to use them?
-            </p>
+            <AddBlockButton editor={editor} />
           </div>
         </Container>
       </div>
     </>
+  )
+}
+
+function AddBlockButton({editor}) {
+  const [visible, setVisible] = useState(false)
+  const show = () => setVisible(true)
+  const hide = () => setVisible(false)
+
+  function toggle() {
+    if (visible) {
+      hide()
+    } else {
+      show()
+    }
+  }
+
+  function handleAddTextBlock() {
+    MintterEditor.addSection(editor)
+    hide()
+  }
+
+  return (
+    <Tippy
+      visible={visible}
+      placement="top-start"
+      interactive
+      onClickOutside={hide}
+      content={
+        <div
+          className={`transition duration-200 rounded-lg shadow-lg overflow-hidden bg-background w-full border px-2 border-background-emphasize ${css`
+            min-width: 402px;
+          `}`}
+        >
+          <p className="font-bold uppercase text-body px-4 pt-4 pb-2 text-xs">
+            Section Types
+          </p>
+          <div
+            className={`flex flex-wrap ${css`
+              min-width: 402px;
+            `}`}
+          >
+            <button
+              className="block p-4 hover:bg-background-muted bg-background text-left rounded-lg"
+              onClick={handleAddTextBlock}
+            >
+              <div
+                className={`bg-blue-200 flex items-center justify-center text-blue-500 ${css`
+                  width: 160px;
+                  height: 80px;
+                `}`}
+              >
+                <Icons.AlignLeft size={40} color="currentColor" />
+              </div>
+              <div className="mt-2">
+                <p className="font-bold text-body">Text block</p>
+              </div>
+            </button>
+            <button
+              className="block p-4 hover:bg-background-muted bg-background text-left rounded-lg"
+              onClick={handleAddTextBlock}
+            >
+              <div
+                className={`bg-blue-200 flex items-center justify-center text-blue-500 ${css`
+                  width: 160px;
+                  height: 80px;
+                `}`}
+              >
+                <Icons.Image size={40} color="currentColor" />
+              </div>
+              <div className="mt-2">
+                <p className="font-bold text-body">Image block</p>
+              </div>
+            </button>
+          </div>
+          <Tippy
+            content={
+              <div className="rounded bg-gray-900 text-gray-200 px-4 py-2">
+                Select one type to playyy!!
+              </div>
+            }
+            placement="auto-start"
+          >
+            <p className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline px-4 pb-4 pt-2">
+              what are Blocks and how to use them?
+            </p>
+          </Tippy>
+        </div>
+      }
+    >
+      <button
+        className="flex items-center bg-transparent text-body-muted transition duration-200 hover:text-body hover:border-body border border-body-muted rounded-md px-2 pl-2 py-2"
+        onClick={toggle}
+      >
+        <Icons.Plus color="currentColor" />
+        <span className="px-2 text-sm">add Block</span>
+      </button>
+    </Tippy>
   )
 }
