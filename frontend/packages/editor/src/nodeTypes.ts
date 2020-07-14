@@ -27,7 +27,7 @@ export const nodeTypes = {
   typeH1: HeadingType.H1,
   typeH2: HeadingType.H2,
   typeH3: HeadingType.H3,
-  typeSection: 'section',
+  typeBlock: 'block',
   typeCodeBlock: CODE_BLOCK,
   typeMediaEmbed: MEDIA_EMBED,
   typeTable: TableType.TABLE,

@@ -4,14 +4,14 @@ import {EditableSection, ReadOnlySection} from './section'
 
 export function renderEditableSectionElement() {
   return getRenderElement({
-    type: nodeTypes.typeSection,
+    type: nodeTypes.typeBlock,
     component: EditableSection,
   })
 }
 
 export function renderReadOnlySectionElement() {
   return getRenderElement({
-    type: nodeTypes.typeSection,
+    type: nodeTypes.typeBlock,
     component: ReadOnlySection,
   })
 }

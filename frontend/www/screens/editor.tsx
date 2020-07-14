@@ -164,6 +164,7 @@ export default function Editor(): JSX.Element {
 
   React.useEffect(() => {
     if (readyToAutosave) {
+      console.log('state', state.sections)
       autosaveDraft({state})
     }
   }, [debouncedValue])
@@ -178,7 +179,7 @@ export default function Editor(): JSX.Element {
           obj.sectionsList.length > 0
             ? obj.sectionsList.map((s: Section.AsObject) => {
                 return {
-                  type: nodeTypes.typeSection,
+                  type: nodeTypes.typeBlock,
                   title: s.title,
                   description: s.description,
                   author: s.author,
