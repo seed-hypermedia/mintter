@@ -159,16 +159,6 @@ export function withSections() {
       insertBreak()
     }
 
-    // const onResetBlockType = () => {
-    //   unwrapNodesByType(editor, nodeTypes.typeBlock, {split: true})
-    // }
-
-    // editor = withResetBlockType({
-    //   types: [nodeTypes.typeBlock],
-    //   defaultType: nodeTypes.typeP,
-    //   onUnwrap: onResetBlockType,
-    // })(editor)
-
     return editor
   }
 }
