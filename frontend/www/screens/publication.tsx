@@ -65,7 +65,7 @@ export default function Publication(): JSX.Element {
           .getSectionsList()
           .map((f: Section) => f.toObject())
           .map((s: Section.AsObject) => ({
-            type: nodeTypes.typeSection,
+            type: nodeTypes.typeBlock,
             title: s.title,
             description: s.description,
             author: s.author,

@@ -13,7 +13,7 @@ export const Editor = {
   // TODO: (Horacio): accept options to add a section in other places
   addSection: (editor: ReactEditor): void => {
     const newNode = {
-      type: nodeTypes.typeSection,
+      type: nodeTypes.typeBlock,
       children: [{type: nodeTypes.typeP, children: [{text: ''}]}],
     }
     // the end of the document
@@ -30,7 +30,7 @@ export const Editor = {
 
 export const initialSectionsValue = [
   {
-    type: 'section',
+    type: nodeTypes.typeBlock,
     children: [
       {
         type: nodeTypes.typeP,

@@ -13,33 +13,33 @@ import {nodeTypes} from '../nodeTypes'
 export function withSections() {
   return <T extends ReactEditor>(editor: T) => {
     const {
-      deleteBackward,
+      // deleteBackward,
       // insertText,
       insertBreak,
     } = editor
 
-    editor.deleteBackward = (...args) => {
-      const {selection} = editor
-      if (selection && Range.isCollapsed(selection)) {
-        const parent = Editor.above(editor, {
-          match: n => n.type === nodeTypes.typeSection,
-        })
+    // editor.deleteBackward = (...args) => {
+    //   const {selection} = editor
+    //   if (selection && Range.isCollapsed(selection)) {
+    //     const parent = Editor.above(editor, {
+    //       match: n => n.type === nodeTypes.typeBlock,
+    //     })
 
-        if (parent) {
-          const [, parentPath] = parent
-          const parentStart = Editor.start(editor, parentPath)
-          if (editor.children.length > 1) {
-            if (Point.equals(selection.anchor, parentStart)) {
-              Transforms.removeNodes(editor, {at: parentPath})
+    //     if (parent) {
+    //       const [, parentPath] = parent
+    //       const parentStart = Editor.start(editor, parentPath)
+    //       if (editor.children.length > 1) {
+    //         if (Point.equals(selection.anchor, parentStart)) {
+    //           Transforms.removeNodes(editor, {at: parentPath})
 
-              return
-            }
-          }
-        }
-      }
+    //           return
+    //         }
+    //       }
+    //     }
+    //   }
 
-      deleteBackward(...args)
-    }
+    //   deleteBackward(...args)
+    // }
 
     // editor.insertText = (text: string) => {
     //   const {selection} = editor
@@ -54,7 +54,7 @@ export function withSections() {
 
     //     for (const [, path] of Editor.nodes(editor, {
     //       at: [],
-    //       match: n => n.type === nodeTypes.typeSection,
+    //       match: n => n.type === nodeTypes.typeBlock,
     //     })) {
     //       Transforms.setNodes(
     //         editor,
@@ -68,24 +68,26 @@ export function withSections() {
     // }
 
     editor.insertBreak = () => {
-      const {selection} = editor
-
-      if (selection && !isRangeAtRoot(selection)) {
-        const [paragraphNode, paragraphPath] = Editor.parent(editor, selection)
+      // debugger
+      if (editor.selection && !isRangeAtRoot(editor.selection)) {
+        const [paragraphNode, paragraphPath] = Editor.parent(
+          editor,
+          editor.selection,
+        )
 
         if (paragraphNode.type === nodeTypes.typeP) {
           const [blockNode, blockPath] = Editor.parent(editor, paragraphPath)
 
-          if (blockNode.type === nodeTypes.typeSection) {
-            if (!Range.isCollapsed(selection)) {
+          if (blockNode.type === nodeTypes.typeBlock) {
+            if (!Range.isCollapsed(editor.selection)) {
               Transforms.delete(editor)
             }
 
             const start = Editor.start(editor, paragraphPath)
             const end = Editor.end(editor, paragraphPath)
 
-            const isStart = Point.equals(selection.anchor, start)
-            const isEnd = Point.equals(selection.anchor, end)
+            const isStart = Point.equals(editor.selection.anchor, start)
+            const isEnd = Point.equals(editor.selection.anchor, end)
 
             const nextParagraphPath = Path.next(paragraphPath)
             const nextBlockPath = Path.next(blockPath)
@@ -97,7 +99,7 @@ export function withSections() {
               Transforms.insertNodes(
                 editor,
                 {
-                  type: nodeTypes.typeSection,
+                  type: nodeTypes.typeBlock,
                   children: [
                     {
                       type: nodeTypes.typeP,
@@ -114,11 +116,11 @@ export function withSections() {
              * If not end, split nodes, wrap a list item on the new paragraph and move it to the next list item
              */
             if (!isEnd) {
-              Transforms.splitNodes(editor, {at: selection})
+              Transforms.splitNodes(editor, {at: editor.selection})
               Transforms.wrapNodes(
                 editor,
                 {
-                  type: nodeTypes.typeSection,
+                  type: nodeTypes.typeBlock,
                   children: [],
                 },
                 {
@@ -136,7 +138,7 @@ export function withSections() {
               Transforms.insertNodes(
                 editor,
                 {
-                  type: nodeTypes.typeSection,
+                  type: nodeTypes.typeBlock,
                   children: [
                     {
                       type: nodeTypes.typeP,
@@ -146,8 +148,8 @@ export function withSections() {
                 },
                 {at: nextBlockPath},
               )
-              Transforms.select(editor, nextBlockPath)
             }
+            Transforms.select(editor, Editor.start(editor, nextBlockPath))
 
             return
           }
@@ -156,6 +158,16 @@ export function withSections() {
 
       insertBreak()
     }
+
+    // const onResetBlockType = () => {
+    //   unwrapNodesByType(editor, nodeTypes.typeBlock, {split: true})
+    // }
+
+    // editor = withResetBlockType({
+    //   types: [nodeTypes.typeBlock],
+    //   defaultType: nodeTypes.typeP,
+    //   onUnwrap: onResetBlockType,
+    // })(editor)
 
     return editor
   }

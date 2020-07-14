@@ -8,6 +8,7 @@ import {renderLink} from './renderLink'
 import {renderListItem} from './renderListItem'
 import {renderParagraph} from './renderParagraph'
 import {renderCodeBlockElement} from './renderCodeBlockElement'
+import {renderImageElement} from './renderImageElement'
 
 export const renderElements = [
   renderHeadingOne(),
@@ -20,4 +21,5 @@ export const renderElements = [
   renderLink(),
   renderParagraph(),
   renderCodeBlockElement(),
+  renderImageElement(),
 ]
