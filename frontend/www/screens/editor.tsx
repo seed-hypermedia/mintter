@@ -14,7 +14,10 @@ import {
   EditorComponent,
   renderEditableSectionElement,
   slate,
+  HelperToolbar,
+  useHelper,
 } from '@mintter/editor'
+import {useEditor as useSlateEditor, ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
 import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
@@ -165,7 +168,6 @@ export default function Editor(): JSX.Element {
 
   React.useEffect(() => {
     if (readyToAutosave) {
-      console.log('state', state.sections)
       autosaveDraft({state})
     }
   }, [debouncedValue])
@@ -304,8 +306,7 @@ function AddBlockButton({editor}) {
   }
 
   function handleAddTextBlock() {
-    MintterEditor.addSection(editor)
-    hide()
+    // ReactEditor.addSection(editor)
   }
 
   return (
@@ -341,7 +342,7 @@ function AddBlockButton({editor}) {
                 <Icons.AlignLeft size={40} color="currentColor" />
               </div>
               <div className="mt-2">
-                <p className="font-bold text-body">Text block</p>
+                <p className="font-bold text-body text-sm">Text block</p>
               </div>
             </button>
             <button
@@ -357,7 +358,7 @@ function AddBlockButton({editor}) {
                 <Icons.Image size={40} color="currentColor" />
               </div>
               <div className="mt-2">
-                <p className="font-bold text-body">Image block</p>
+                <p className="font-bold text-body text-sm">Image block</p>
               </div>
             </button>
           </div>

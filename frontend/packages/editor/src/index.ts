@@ -7,5 +7,6 @@ export * from './SectionPlugin'
 export * from './nodeTypes'
 export * from './renderElements'
 export * from './renderLeafs'
+export * from './HelperPlugin'
 
 export {slate}
