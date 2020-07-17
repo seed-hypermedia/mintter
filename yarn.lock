@@ -2470,12 +2470,18 @@
     semver "^6.3.0"
     tsutils "^3.17.1"
 
-"@udecode/slate-plugins@^0.60.0":
-  version "0.60.0"
-  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins/-/slate-plugins-0.60.0.tgz#edb05e70d97d8fdb33fbfe26cfd6fdeb10f8e512"
-  integrity sha512-1YjJI0q7TNAgBi/NzHGo93nM06QcwcozTv8/gp7GnPxMgk/TzsBjibdRrBzEqgvjRy230NlAS06q5gGQroYAhQ==
+"@udecode/slate-plugins-core@^0.61.1":
+  version "0.61.1"
+  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-core/-/slate-plugins-core-0.61.1.tgz#c222d89b38fbc0e782733c16a0314d0dd0511ac1"
+  integrity sha512-8dELDt+45fjthcE9jyH/N4mBs5KOjIWCUxf50n4zBVYIFD2k9JMZ9BoPGVen1/JbbuaIUIIVm6zPE6dP99Ls7Q==
+
+"@udecode/slate-plugins@^0.61.1":
+  version "0.61.1"
+  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins/-/slate-plugins-0.61.1.tgz#7f0f748cc6fd51a4676940cc7ebc5f546c4bf3a9"
+  integrity sha512-6fHOKyCKUnzJNEmzh8BJ3O2ero4uYjnhj+fROwvQwArTRFklE2ibJqjzwKM28B3CjL7PMysvIMuwkHb0Sv7aVg==
   dependencies:
     "@tippyjs/react" "^4.0.2"
+    "@udecode/slate-plugins-core" "^0.61.1"
     "@uifabric/styling" "^7.12.11"
     "@uifabric/utilities" "^7.19.0"
     image-extensions "^1.1.0"
