@@ -14,7 +14,6 @@ import {
   CodeBlockPlugin,
 } from '@udecode/slate-plugins'
 import {nodeTypes} from './nodeTypes'
-
 export const plugins = [
   BlockquotePlugin(nodeTypes),
   BoldPlugin(),
@@ -24,6 +23,7 @@ export const plugins = [
   ListPlugin(nodeTypes),
   ParagraphPlugin(nodeTypes),
   UnderlinePlugin(),
+
   ExitBreakPlugin({
     rules: [
       {

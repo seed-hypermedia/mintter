@@ -3,8 +3,8 @@ import {
   BalloonToolbar,
   toggleMark,
   isMarkActive,
-  insertLink,
-  isNodeInSelection,
+  upsertLinkAtSelection,
+  isNodeTypeIn,
   toggleList,
 } from '@udecode/slate-plugins'
 import {nodeTypes} from '../nodeTypes'
@@ -27,11 +27,11 @@ export function ToolbarBlockLink() {
   const editor = useSlate()
   return (
     <ToolbarButton
-      active={isNodeInSelection(editor, nodeTypes.typeLink)}
+      active={isNodeTypeIn(editor, nodeTypes.typeLink)}
       onClick={() => {
         const url = window.prompt('Enter the URL of the link:')
         if (!url) return
-        insertLink(editor, url, {typeLink: nodeTypes.typeLink})
+        upsertLinkAtSelection(editor, url, {typeLink: nodeTypes.typeLink})
       }}
       icon="Link"
     />
@@ -115,7 +115,7 @@ export function ToolbarBlock({icon, type}) {
     <ToolbarButton
       icon={icon}
       onClick={handleClick}
-      active={isNodeInSelection(editor, type)}
+      active={isNodeTypeIn(editor, type)}
     />
   )
 }
@@ -133,7 +133,7 @@ export function ToolbarList({
   return (
     <ToolbarButton
       {...props}
-      active={isNodeInSelection(editor, typeList)}
+      active={isNodeTypeIn(editor, typeList)}
       onClick={() => toggleList(editor, {...props, typeList})}
       icon={icon}
     />

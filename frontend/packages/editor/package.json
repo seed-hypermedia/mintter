@@ -18,7 +18,7 @@
   "module": "dist/editor.esm.js",
   "dependencies": {
     "@tippyjs/react": "^4.1.0",
-    "@udecode/slate-plugins": "^0.60.0",
+    "@udecode/slate-plugins": "^0.61.1",
     "emotion": "^10.0.27",
     "framer-motion": "^1.8.4",
     "react-feather": "^2.0.4",

@@ -39,7 +39,7 @@ export const useHelper = () => {
             at: path,
           },
         )
-        // Transforms.delete(editor, {at: path})
+        Transforms.delete(editor, {at: path})
       }
     }
 
