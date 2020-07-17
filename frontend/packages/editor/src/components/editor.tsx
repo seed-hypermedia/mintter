@@ -5,6 +5,7 @@ import {EditablePlugins} from '@udecode/slate-plugins'
 import {renderElements as renderDefaultElements} from '../renderElements'
 import {Toolbar} from './toolbar'
 import {renderLeafs as renderDefaultLeafs} from '../renderLeafs'
+import {HelperToolbar, useHelper} from '../HelperPlugin'
 
 interface EditorComponentProps {
   editor: any
@@ -34,6 +35,8 @@ function Editor(
   //     : false
   // }
 
+  const {target, options, index, onAddBlock, onKeyDownHelper} = useHelper()
+
   return (
     <Slate editor={editor} value={value} onChange={onChange}>
       <div
@@ -54,6 +57,14 @@ function Editor(
             }
             spellCheck
             autoFocus
+            onKeyDown={[onKeyDownHelper]}
+            onKeyDownDeps={[index, target]}
+          />
+          <HelperToolbar
+            at={target}
+            valueIndex={index}
+            options={options}
+            onClickSelection={onAddBlock}
           />
         </div>
       </div>
