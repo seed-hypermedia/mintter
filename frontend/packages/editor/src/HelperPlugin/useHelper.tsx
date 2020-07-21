@@ -1,8 +1,8 @@
 import {useCallback, useState} from 'react'
 
-import {Range, Editor, Transforms} from 'slate'
+import {Range, Editor, Transforms, Path} from 'slate'
 import {nodeTypes} from '../nodeTypes'
-import {getNextIndex, getPreviousIndex} from '@udecode/slate-plugins'
+import {getNextIndex, getPreviousIndex, getText} from '@udecode/slate-plugins'
 
 const options = [
   {
@@ -20,6 +20,31 @@ export const useHelper = () => {
   const [valueIndex, setValueIndex] = useState(0)
 
   const onAddBlock = useCallback((editor: Editor, blockType) => {
+    console.log('onAddBlock -> blockType', blockType)
+    if (editor.selection) {
+      const [paragraphNode, paragraphPath] = Editor.parent(
+        editor,
+        editor.selection,
+      )
+      if (paragraphNode.type === nodeTypes.typeP) {
+        const [blockNode, blockPath] = Editor.parent(editor, paragraphPath)
+
+        if (blockNode.type === nodeTypes.typeBlock) {
+          console.log('onAddBlock -> blockPath', blockPath)
+          Transforms.insertNodes(
+            editor,
+            {type: blockType, url: '', children: [{text: ''}]},
+            {at: blockPath},
+          )
+          console.log('block text => ', getText(editor, blockPath))
+          console.log('next block path', Path.next(blockPath))
+
+          setTargetRange(null)
+        }
+      }
+    }
+
+    /*
     if (blockType !== nodeTypes.typeBlock) {
       const match = Editor.above(editor, {
         match: n => n.type === nodeTypes.typeBlock,
@@ -27,6 +52,8 @@ export const useHelper = () => {
 
       if (match) {
         const [, path] = match
+
+        // Transforms.setNodes(editor, {text: ''}, {at: path})
 
         Transforms.insertNodes(
           editor,
@@ -39,11 +66,10 @@ export const useHelper = () => {
             at: path,
           },
         )
-        Transforms.delete(editor, {at: path})
+        Transforms.move(editor)
       }
     }
-
-    setTargetRange(null)
+    */
   }, [])
 
   const onKeyDownHelper = useCallback(

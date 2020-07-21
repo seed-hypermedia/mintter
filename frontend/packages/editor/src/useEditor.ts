@@ -9,7 +9,6 @@ import {
   withResetBlockType,
   withAutoformat,
   withList,
-  withImageUpload,
   withDeserializeHTML,
   withLink,
   withToggleType,
@@ -19,16 +18,18 @@ import {
   AutoformatRule,
   unwrapList,
   toggleList,
+  // withTransforms,
 } from '@udecode/slate-plugins'
 import {withSections} from './SectionPlugin'
 import {nodeTypes} from './nodeTypes'
 import {withHistory} from 'slate-history'
 import {withImageBlock} from './ImageBlockPlugin'
+import {withHelper} from './HelperPlugin'
 
 // need this object because the plugin required it, I made an issue in the plugin's repo
 const resetOptions = {
   types: [nodeTypes.typeBlockquote, nodeTypes.typeCodeBlock],
-  defaultType: nodeTypes.typeBlock,
+  defaultType: nodeTypes.typeP,
 }
 
 const preFormat = (editor: Editor) => unwrapList(editor, nodeTypes)
@@ -120,18 +121,20 @@ export function useEditor(plugins: any[]): Editor {
     withReact,
     withHistory,
     withLink(),
+    withDeserializeHTML({plugins}),
     withToggleType({defaultType: nodeTypes.typeP}),
+    withList(nodeTypes),
     withAutoformat({
       rules: autoformatRules,
     }),
+    // withTransforms(),
     withDeserializeMd(plugins),
-    withDeserializeHTML({plugins}),
-    withImageUpload(),
-    withSections(),
-    withList(nodeTypes),
     withResetBlockType(resetOptions),
     withInlineVoid({plugins}),
     withImageBlock(),
+    withHelper(),
+    withInlineVoid({plugins}),
+    withSections(),
   ] as const
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
