@@ -283,9 +283,9 @@ export default function Editor(): JSX.Element {
             }}
             renderElements={[renderEditableSectionElement()]}
           />
-          <div className="py-16 flex flex-col items-start">
+          {/* <div className="py-16 flex flex-col items-start">
             <AddBlockButton editor={editor} />
-          </div>
+          </div> */}
         </Container>
       </div>
     </>

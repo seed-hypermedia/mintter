@@ -18,12 +18,12 @@ export function renderImageBlock({
 }
 
 export function ImageBlock({attributes, element}: ImageRenderElementProps) {
-  const {url} = element
   const selected = useSelected()
   console.log('ImageBlock -> selected', selected)
   const focused = useFocused()
+  console.log('ImageBlock -> focused', focused)
   const [error, setError] = useState('')
-  const [, setFile] = useState(null)
+  const [file, setFile] = useState<any>(() => element.url || null)
 
   const type = attributes['data-slate-type']
   delete attributes['data-slate-type']
@@ -40,32 +40,39 @@ export function ImageBlock({attributes, element}: ImageRenderElementProps) {
       setError('file is too big')
       setFile(null)
     } else {
-      setFile(file)
+      const url = URL.createObjectURL(file)
+      console.log('handleOnChange -> url', url)
+      setFile(url)
+      setError('')
     }
   }
 
   return (
-    <div {...attributes}>
+    <div contentEditable={false} {...attributes}>
       <div
         contentEditable={false}
-        className={`relative px-8 py-2 first:mt-8 hover:bg-background-muted transition duration-200 rounded ${
-          focused || selected ? 'bg-background-muted' : 'border-transparent'
+        className={`relative border-2 overflow-hidden rounded ${
+          focused || selected ? 'border-blue-200' : 'border-transparent'
         }`}
       >
-        {url ? (
+        {file ? (
           <img
+            contentEditable={false}
             className="block w-full"
             data-slate-type={type}
-            src={url}
+            src={file}
             alt=""
             // selected={selected}
             // focused={focused}
           />
         ) : (
-          <>
-            <p>choose image here (soon)</p>
-            <input type="file" onChange={handleOnChange} />
-          </>
+          <div className="p-4">
+            <input
+              type="file"
+              accept="image/png, image/jpeg, image/gif"
+              onChange={handleOnChange}
+            />
+          </div>
         )}
       </div>
       {error && (
