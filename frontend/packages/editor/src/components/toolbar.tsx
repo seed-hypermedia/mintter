@@ -11,7 +11,7 @@ import {
 import {nodeTypes} from '../nodeTypes'
 import {Icons} from './icons'
 import {useSlate} from 'slate-react'
-import {PARAGRAPH} from '../paragraph'
+import {PARAGRAPH} from '../elements/paragraph'
 
 export function ToolbarBoldMark() {
   return <ToolbarMark mark={nodeTypes.typeBold} icon="Bold" />
