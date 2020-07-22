@@ -10,5 +10,6 @@ export function renderHeadingThree() {
         {children}
       </h3>
     ),
+    rootProps: {},
   })
 }

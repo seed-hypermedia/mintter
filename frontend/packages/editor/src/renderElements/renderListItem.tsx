@@ -22,5 +22,6 @@ export function renderListItem() {
         {children}
       </li>
     ),
+    rootProps: {},
   })
 }

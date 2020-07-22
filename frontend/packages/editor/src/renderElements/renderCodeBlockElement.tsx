@@ -13,5 +13,6 @@ export function renderCodeBlockElement() {
         <code className="font-mono text-md text-body">{children}</code>
       </pre>
     ),
+    rootProps: {},
   })
 }

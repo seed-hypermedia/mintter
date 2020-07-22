@@ -20,5 +20,6 @@ export function renderLink() {
         {children}
       </a>
     ),
+    rootProps: {},
   })
 }

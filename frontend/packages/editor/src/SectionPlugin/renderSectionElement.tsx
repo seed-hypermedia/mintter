@@ -6,6 +6,7 @@ export function renderEditableSectionElement() {
   return getRenderElement({
     type: nodeTypes.typeBlock,
     component: EditableSection,
+    rootProps: {},
   })
 }
 
@@ -13,5 +14,6 @@ export function renderReadOnlySectionElement() {
   return getRenderElement({
     type: nodeTypes.typeBlock,
     component: ReadOnlySection,
+    rootProps: {},
   })
 }

@@ -15,5 +15,6 @@ export function renderBlockquote() {
         </p>
       </blockquote>
     ),
+    rootProps: {},
   })
 }

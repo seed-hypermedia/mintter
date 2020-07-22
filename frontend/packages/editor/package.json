@@ -18,21 +18,20 @@
   "module": "dist/editor.esm.js",
   "dependencies": {
     "@tippyjs/react": "^4.1.0",
-    "@udecode/slate-plugins": "^0.61.1",
+    "@udecode/slate-plugins": "^0.63.1",
     "emotion": "^10.0.27",
     "framer-motion": "^1.8.4",
     "react-feather": "^2.0.4",
-    "slate": "^0.58.3",
+    "slate": "^0.58.4",
     "slate-history": "^0.57.1",
     "slate-hyperscript": "^0.58.3",
-    "slate-plugins-next": "^0.58.5",
-    "slate-react": "^0.58.3",
+    "slate-react": "^0.58.4",
     "styled-components": "^5.1.1",
     "tailwindcss": "^1.4.6"
   },
   "peerDependencies": {
-    "slate": "^0.57.1",
-    "slate-react": "^0.57.1"
+    "slate": "^0.58.4",
+    "slate-react": "^0.58.4"
   },
   "devDependencies": {
     "@types/jest": "^25.1.2",

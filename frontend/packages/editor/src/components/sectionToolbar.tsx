@@ -2,7 +2,6 @@ import React from 'react'
 import {useSlate, ReactEditor} from 'slate-react'
 import {Range, Node, Path} from 'slate'
 import {css} from 'emotion'
-import {BLOCKQUOTE} from '@udecode/slate-plugins'
 import {Icons} from '../components/icons'
 
 export function SectionToolbar() {
@@ -33,7 +32,7 @@ export function SectionToolbar() {
       if (rect && parentRect) {
         element.style.opacity = '1'
         element.style.top = `${rect.top + rect.height / 2 - parentRect.top}px`
-        const factor = node.type === BLOCKQUOTE ? 24 : 0
+        const factor = node.type === 'blockquote' ? 24 : 0
         // element.style.left = `${rect.left - parentRect.left - factor}px`
         element.style.left = `${-8 - factor}px`
       }

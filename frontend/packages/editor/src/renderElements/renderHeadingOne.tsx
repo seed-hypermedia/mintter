@@ -10,5 +10,6 @@ export function renderHeadingOne() {
         {children}
       </h1>
     ),
+    rootProps: {},
   })
 }

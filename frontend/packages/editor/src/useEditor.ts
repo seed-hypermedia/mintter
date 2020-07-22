@@ -32,7 +32,7 @@ const resetOptions = {
   defaultType: nodeTypes.typeP,
 }
 
-const preFormat = (editor: Editor) => unwrapList(editor, nodeTypes)
+const preFormat = (editor: Editor) => unwrapList(editor)
 
 const autoformatRules: AutoformatRule[] = [
   {
@@ -112,7 +112,7 @@ const autoformatRules: AutoformatRule[] = [
     type: nodeTypes.typeCodeBlock,
     markup: '``',
     mode: 'inline-block',
-    preFormat: editor => unwrapList(editor, nodeTypes),
+    preFormat: editor => unwrapList(editor),
   },
 ]
 
@@ -123,7 +123,7 @@ export function useEditor(plugins: any[]): Editor {
     withLink(),
     withDeserializeHTML({plugins}),
     withToggleType({defaultType: nodeTypes.typeP}),
-    withList(nodeTypes),
+    withList(),
     withAutoformat({
       rules: autoformatRules,
     }),
