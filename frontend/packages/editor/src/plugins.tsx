@@ -17,7 +17,7 @@ import {options} from './options'
 
 export const plugins = [
   BlockquotePlugin(),
-  BoldPlugin(),
+  BoldPlugin(options),
   HeadingPlugin(),
   ItalicPlugin(),
   LinkPlugin(),
