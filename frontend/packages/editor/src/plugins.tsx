@@ -13,6 +13,7 @@ import {
   CodePlugin,
   CodeBlockPlugin,
 } from '@udecode/slate-plugins'
+import {options} from './options'
 
 export const plugins = [
   BlockquotePlugin(),
@@ -21,7 +22,7 @@ export const plugins = [
   ItalicPlugin(),
   LinkPlugin(),
   ListPlugin(),
-  ParagraphPlugin(),
+  ParagraphPlugin(options),
   UnderlinePlugin(),
   CodePlugin(),
   CodeBlockPlugin(),

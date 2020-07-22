@@ -6,7 +6,6 @@ import {renderUnorderedList} from './renderUnorderedList'
 import {renderOrderedList} from './renderOrderedList'
 import {renderLink} from './renderLink'
 import {renderListItem} from './renderListItem'
-import {renderParagraph} from './renderParagraph'
 import {renderCodeBlockElement} from './renderCodeBlockElement'
 import {renderImageBlock} from './renderImageBlock'
 
@@ -19,7 +18,6 @@ export const renderElements = [
   renderOrderedList(),
   renderListItem(),
   renderLink(),
-  renderParagraph(),
   renderCodeBlockElement(),
   renderImageBlock(),
 ]
