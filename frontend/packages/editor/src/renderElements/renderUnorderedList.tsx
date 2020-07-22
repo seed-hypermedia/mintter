@@ -24,5 +24,6 @@ export function renderUnorderedList() {
         {children}
       </ul>
     ),
+    rootProps: {},
   })
 }

@@ -10,5 +10,6 @@ export function renderParagraph() {
         {children}
       </p>
     ),
+    rootProps: {},
   })
 }

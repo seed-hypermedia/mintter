@@ -31,5 +31,6 @@ export function renderOrderedList() {
         {children}
       </ol>
     ),
+    rootProps: {},
   })
 }

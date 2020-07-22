@@ -1,23 +1,20 @@
 import React, {useState} from 'react'
-import {
-  getRenderElement,
-  ImageRenderElementProps,
-  ImageRenderElementOptions,
-} from '@udecode/slate-plugins'
+import {getRenderElement} from '@udecode/slate-plugins'
 import {nodeTypes} from '../nodeTypes'
 import {useFocused, useSelected} from 'slate-react'
 
 export function renderImageBlock({
   typeImg = nodeTypes.typeImg,
   component = ImageBlock,
-}: ImageRenderElementOptions = {}) {
+} = {}) {
   return getRenderElement({
     type: typeImg,
     component,
+    rootProps: {},
   })
 }
 
-export function ImageBlock({attributes, element}: ImageRenderElementProps) {
+export function ImageBlock({attributes, element}) {
   const selected = useSelected()
   console.log('ImageBlock -> selected', selected)
   const focused = useFocused()

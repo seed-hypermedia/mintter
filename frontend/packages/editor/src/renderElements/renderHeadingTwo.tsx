@@ -10,5 +10,6 @@ export function renderHeadingTwo() {
         {children}
       </h2>
     ),
+    rootProps: {},
   })
 }

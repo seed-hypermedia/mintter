@@ -6,10 +6,12 @@ import {
   upsertLinkAtSelection,
   isNodeTypeIn,
   toggleList,
+  ToolbarElement,
 } from '@udecode/slate-plugins'
 import {nodeTypes} from '../nodeTypes'
 import {Icons} from './icons'
 import {useSlate} from 'slate-react'
+import {PARAGRAPH} from '../paragraph'
 
 export function ToolbarBoldMark() {
   return <ToolbarMark mark={nodeTypes.typeBold} icon="Bold" />
@@ -31,7 +33,7 @@ export function ToolbarBlockLink() {
       onClick={() => {
         const url = window.prompt('Enter the URL of the link:')
         if (!url) return
-        upsertLinkAtSelection(editor, url, {typeLink: nodeTypes.typeLink})
+        upsertLinkAtSelection(editor, url)
       }}
       icon="Link"
     />
@@ -39,15 +41,15 @@ export function ToolbarBlockLink() {
 }
 
 export function ToolbarBlockP() {
-  return <ToolbarBlock type={nodeTypes.typeP} icon="P" />
+  return <ToolbarElement type={PARAGRAPH} icon={<Icons.P size={16} />} />
 }
 
 export function ToolbarBlockH1() {
-  return <ToolbarBlock type={nodeTypes.typeH1} icon="H1" />
+  return <ToolbarElement type="h1" icon={<Icons.H1 size={16} />} />
 }
 
 export function ToolbarBlockH2() {
-  return <ToolbarBlock type={nodeTypes.typeH2} icon="H2" />
+  return <ToolbarElement type="h2" icon={<Icons.H2 size={16} />} />
 }
 
 export interface ToolbarButtonProps {
