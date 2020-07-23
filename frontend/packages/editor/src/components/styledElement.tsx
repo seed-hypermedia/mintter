@@ -1,7 +1,7 @@
 import React from 'react'
-import {PARAGRAPH} from '../elements/paragraph'
+import {ELEMENT_PARAGRAPH} from '../elements/paragraph'
 
-export function renderElement({type = PARAGRAPH}) {
+export function renderElement({type = ELEMENT_PARAGRAPH}) {
   return function StyledElement({
     attributes,
     element,

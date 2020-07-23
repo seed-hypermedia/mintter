@@ -5,7 +5,7 @@ import {
   ParagraphPluginOptionsValues,
 } from '@udecode/slate-plugins'
 
-export const PARAGRAPH = 'p'
+export const ELEMENT_PARAGRAPH = 'p'
 
 export const paragraphOption = {}
 
@@ -21,11 +21,11 @@ export const PARAGRAPH_OPTIONS: Record<
       attributes,
       ...rest
     }) => {
-      return element.type === PARAGRAPH ? (
+      return element.type === ELEMENT_PARAGRAPH ? (
         <Component {...attributes} className={className} {...rest} />
       ) : null
     },
-    type: PARAGRAPH,
+    type: ELEMENT_PARAGRAPH,
     rootProps: {
       className: 'text-body text-xl leading-loose',
       as: 'p',
