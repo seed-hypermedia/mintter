@@ -2,6 +2,7 @@ import {
   PARAGRAPH_OPTIONS,
   HEADING_OPTIONS,
   BLOCKQUOTE_OPTIONS,
+  LINK_OPTIONS,
 } from './elements'
 import {
   BOLD_OPTIONS,
@@ -14,6 +15,7 @@ export const options = {
   ...PARAGRAPH_OPTIONS,
   ...HEADING_OPTIONS,
   ...BLOCKQUOTE_OPTIONS,
+  ...LINK_OPTIONS,
   //marks
   ...BOLD_OPTIONS,
   ...ITALIC_OPTIONS,
