@@ -3,7 +3,12 @@ import {
   HEADING_OPTIONS,
   BLOCKQUOTE_OPTIONS,
 } from './elements'
-import {BOLD_OPTIONS, ITALIC_OPTIONS, CODE_OPTIONS} from './marks'
+import {
+  BOLD_OPTIONS,
+  ITALIC_OPTIONS,
+  CODE_OPTIONS,
+  UNDERLINE_OPTIONS,
+} from './marks'
 
 export const options = {
   ...PARAGRAPH_OPTIONS,
@@ -13,4 +18,5 @@ export const options = {
   ...BOLD_OPTIONS,
   ...ITALIC_OPTIONS,
   ...CODE_OPTIONS,
+  ...UNDERLINE_OPTIONS,
 }

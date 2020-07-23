@@ -23,7 +23,7 @@ export const plugins = [
   LinkPlugin(),
   ListPlugin(),
   ParagraphPlugin(options),
-  UnderlinePlugin(),
+  UnderlinePlugin(options),
   CodePlugin(options),
   CodeBlockPlugin(),
 ]

@@ -11,7 +11,6 @@ import {
   plugins as editorPlugins,
   initialSectionsValue,
   // SectionToolbar,
-  renderLeafs,
   EditorComponent,
   renderReadOnlySectionElement,
 } from '@mintter/editor'
