@@ -4,7 +4,6 @@ import {css} from 'emotion'
 import {EditablePlugins} from '@udecode/slate-plugins'
 import {renderElements as renderDefaultElements} from '../renderElements'
 import {Toolbar} from './toolbar'
-import {renderLeafs as renderDefaultLeafs} from '../renderLeafs'
 import {HelperToolbar, useHelper} from '../HelperPlugin'
 
 interface EditorComponentProps {
@@ -14,7 +13,6 @@ interface EditorComponentProps {
   onChange: (value: any) => void
   readOnly?: boolean
   renderElements?: any[]
-  renderLeafs?: any[]
 }
 
 function Editor(
@@ -25,7 +23,6 @@ function Editor(
     onChange,
     readOnly = false,
     renderElements = [],
-    renderLeafs = [],
   }: EditorComponentProps,
   ref,
 ): JSX.Element {
@@ -51,7 +48,6 @@ function Editor(
             readOnly={readOnly}
             plugins={plugins}
             renderElement={[...renderDefaultElements, ...renderElements]}
-            renderLeaf={[...renderDefaultLeafs, ...renderLeafs]}
             placeholder={
               readOnly ? 'no content' : 'Start writing your masterpiece...'
             }
