@@ -39,7 +39,7 @@ export function Drafts() {
               </p> */}
             <button
               onClick={handleCreateDraft}
-              className="bg-info hover:bg-info-hover text-white font-bold py-3 px-4 rounded rounded-full flex items-center mt-5 justify-center"
+              className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
             >
               <NoteAddOutlinedIcon />
               <span className="ml-2">Start writing your first document</span>
