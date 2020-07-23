@@ -26,7 +26,7 @@ export const plugins = [
   ParagraphPlugin(options),
   UnderlinePlugin(options),
   CodePlugin(options),
-  CodeBlockPlugin(options),
+  CodeBlockPlugin(),
   StrikethroughPlugin(options),
 ]
 
