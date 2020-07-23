@@ -9,16 +9,20 @@ import {
   ITALIC_OPTIONS,
   CODE_OPTIONS,
   UNDERLINE_OPTIONS,
+  STRIKETHROUGH_OPTIONS,
 } from './marks'
+import {DEFAULTS_CODE_BLOCK} from '@udecode/slate-plugins'
 
 export const options = {
   ...PARAGRAPH_OPTIONS,
   ...HEADING_OPTIONS,
   ...BLOCKQUOTE_OPTIONS,
   ...LINK_OPTIONS,
+  ...DEFAULTS_CODE_BLOCK,
   //marks
   ...BOLD_OPTIONS,
   ...ITALIC_OPTIONS,
   ...CODE_OPTIONS,
   ...UNDERLINE_OPTIONS,
+  ...STRIKETHROUGH_OPTIONS,
 }
