@@ -10,7 +10,7 @@ import Container from 'components/container'
 import {useProfile} from 'shared/profileContext'
 import {Link} from 'components/link'
 import {Connections} from 'components/connections'
-import { SuggestedConnections } from 'components/suggested-connections'
+import {SuggestedConnections} from 'components/suggested-connections'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library(props) {
@@ -40,7 +40,7 @@ export default function Library(props) {
           <div className="flex-1" />
           <button
             onClick={handleCreateDocument}
-            className="bg-info hover:bg-info-hover text-white font-bold py-2 px-4 rounded-full flex items-center justify-center transition duration-100"
+            className="bg-primary rounded-full px-4 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
           >
             Compose
           </button>
