@@ -1,6 +1,5 @@
 export * from './renderUnorderedList'
 export * from './renderOrderedList'
 export * from './renderListItem'
-export * from './renderLink'
 export * from './renderElements'
 export * from './renderImageBlock'

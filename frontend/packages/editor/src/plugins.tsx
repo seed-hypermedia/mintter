@@ -20,7 +20,7 @@ export const plugins = [
   BoldPlugin(options),
   HeadingPlugin(options),
   ItalicPlugin(options),
-  LinkPlugin(),
+  LinkPlugin(options),
   ListPlugin(),
   ParagraphPlugin(options),
   UnderlinePlugin(options),
