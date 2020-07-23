@@ -16,10 +16,10 @@ import {
 import {options} from './options'
 
 export const plugins = [
-  BlockquotePlugin(),
+  BlockquotePlugin(options),
   BoldPlugin(options),
   HeadingPlugin(options),
-  ItalicPlugin(),
+  ItalicPlugin(options),
   LinkPlugin(),
   ListPlugin(),
   ParagraphPlugin(options),

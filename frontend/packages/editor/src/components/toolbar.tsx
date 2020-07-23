@@ -11,7 +11,7 @@ import {
 import {nodeTypes} from '../nodeTypes'
 import {Icons} from './icons'
 import {useSlate} from 'slate-react'
-import {PARAGRAPH} from '../elements/paragraph'
+import {ELEMENT_PARAGRAPH} from '../elements/paragraph'
 
 export function ToolbarBoldMark() {
   return <ToolbarMark mark={nodeTypes.typeBold} icon="Bold" />
@@ -41,7 +41,9 @@ export function ToolbarBlockLink() {
 }
 
 export function ToolbarBlockP() {
-  return <ToolbarElement type={PARAGRAPH} icon={<Icons.P size={16} />} />
+  return (
+    <ToolbarElement type={ELEMENT_PARAGRAPH} icon={<Icons.P size={16} />} />
+  )
 }
 
 export function ToolbarBlockH1() {
