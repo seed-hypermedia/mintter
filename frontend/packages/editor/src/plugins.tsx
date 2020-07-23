@@ -12,6 +12,7 @@ import {
   // SoftBreakPlugin,
   CodePlugin,
   CodeBlockPlugin,
+  StrikethroughPlugin,
 } from '@udecode/slate-plugins'
 import {options} from './options'
 
@@ -25,7 +26,8 @@ export const plugins = [
   ParagraphPlugin(options),
   UnderlinePlugin(options),
   CodePlugin(options),
-  CodeBlockPlugin(),
+  CodeBlockPlugin(options),
+  StrikethroughPlugin(options),
 ]
 
 // function InlineCodePlugin() {
