@@ -15,9 +15,6 @@ import {
   withDeserializeMd,
   pipe,
   withInlineVoid,
-  AutoformatRule,
-  unwrapList,
-  toggleList,
   // withTransforms,
 } from '@udecode/slate-plugins'
 import {withSections} from './SectionPlugin'
@@ -25,96 +22,13 @@ import {nodeTypes} from './nodeTypes'
 import {withHistory} from 'slate-history'
 import {withImageBlock} from './ImageBlockPlugin'
 import {withHelper} from './HelperPlugin'
+import {autoformatRules} from './autoformatRules'
 
 // need this object because the plugin required it, I made an issue in the plugin's repo
 const resetOptions = {
   types: [nodeTypes.typeBlockquote, nodeTypes.typeCodeBlock],
   defaultType: nodeTypes.typeP,
 }
-
-const preFormat = (editor: Editor) => unwrapList(editor)
-
-const autoformatRules: AutoformatRule[] = [
-  {
-    type: nodeTypes.typeH1,
-    markup: '#',
-    preFormat,
-  },
-  {
-    type: nodeTypes.typeH2,
-    markup: '##',
-    preFormat,
-  },
-  {
-    type: nodeTypes.typeH3,
-    markup: '###',
-    preFormat,
-  },
-  {
-    type: nodeTypes.typeLi,
-    markup: ['*', '-', '+'],
-    preFormat,
-    format: editor => {
-      toggleList(editor, {...nodeTypes, typeList: nodeTypes.typeUl})
-    },
-  },
-  {
-    type: nodeTypes.typeLi,
-    markup: ['1.', '1)'],
-    preFormat,
-    format: editor => {
-      toggleList(editor, {...nodeTypes, typeList: nodeTypes.typeOl})
-    },
-  },
-  {
-    type: nodeTypes.typeBlockquote,
-    markup: ['>'],
-    preFormat,
-  },
-  {
-    type: nodeTypes.typeBold,
-    between: ['**', '**'],
-    mode: 'inline',
-    insertTrigger: true,
-  },
-  {
-    type: nodeTypes.typeBold,
-    between: ['__', '__'],
-    mode: 'inline',
-    insertTrigger: true,
-  },
-  {
-    type: nodeTypes.typeItalic,
-    between: ['*', '*'],
-    mode: 'inline',
-    insertTrigger: true,
-  },
-  {
-    type: nodeTypes.typeItalic,
-    between: ['_', '_'],
-    mode: 'inline',
-    insertTrigger: true,
-  },
-  {
-    type: nodeTypes.typeCode,
-    between: ['`', '`'],
-    mode: 'inline',
-    insertTrigger: true,
-  },
-  {
-    type: nodeTypes.typeStrikethrough,
-    between: ['~~', '~~'],
-    mode: 'inline',
-    insertTrigger: true,
-  },
-  {
-    trigger: '`',
-    type: nodeTypes.typeCodeBlock,
-    markup: '``',
-    mode: 'inline-block',
-    preFormat: editor => unwrapList(editor),
-  },
-]
 
 export function useEditor(plugins: any[]): Editor {
   const withPlugins = [
