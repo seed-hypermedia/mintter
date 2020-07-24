@@ -3,6 +3,9 @@ import {
   HEADING_OPTIONS,
   BLOCKQUOTE_OPTIONS,
   LINK_OPTIONS,
+  IMAGE_OPTIONS,
+  LIST_OPTIONS,
+  BLOCK_OPTIONS,
 } from './elements'
 import {
   BOLD_OPTIONS,
@@ -17,6 +20,9 @@ export const options = {
   ...HEADING_OPTIONS,
   ...BLOCKQUOTE_OPTIONS,
   ...LINK_OPTIONS,
+  ...IMAGE_OPTIONS,
+  ...LIST_OPTIONS,
+  ...BLOCK_OPTIONS,
   //marks
   ...BOLD_OPTIONS,
   ...ITALIC_OPTIONS,

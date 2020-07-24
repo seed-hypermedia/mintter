@@ -15,6 +15,7 @@ import {
   withDeserializeMd,
   pipe,
   withInlineVoid,
+  ELEMENT_CODE_BLOCK,
   // withTransforms,
 } from '@udecode/slate-plugins'
 import {withSections} from './SectionPlugin'
@@ -23,11 +24,12 @@ import {withHistory} from 'slate-history'
 import {withImageBlock} from './ImageBlockPlugin'
 import {withHelper} from './HelperPlugin'
 import {autoformatRules} from './autoformatRules'
+import {options} from './options'
 
 // need this object because the plugin required it, I made an issue in the plugin's repo
 const resetOptions = {
-  types: [nodeTypes.typeBlockquote, nodeTypes.typeCodeBlock],
-  defaultType: nodeTypes.typeP,
+  types: [options.blockquote.type, ELEMENT_CODE_BLOCK],
+  defaultType: options.p.type,
 }
 
 export function useEditor(plugins: any[]): Editor {
