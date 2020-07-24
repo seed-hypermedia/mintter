@@ -17,14 +17,36 @@ export const LIST_OPTIONS: Record<
         <Component
           {...attributes}
           className={`list-inside ${css`
-            list-style-type: disc;
-            ul {
-              list-style-type: circle;
-              padding-left: 2rem;
+            li {
+              div,
+              p {
+                &:before {
+                  content: '::';
+                  font-size: 12px;
+                  font-weight: bold;
+                  position: absolute;
+                  left: 0;
+                  top: 50%;
+                  width: 16px;
+                  transform: translate(-20px, -50%);
+                  color: var(--color-body);
+                  line-height: 1;
+                  font-weight: bold;
+                }
+              }
             }
 
-            ul ul {
-              list-style-type: square;
+            ul {
+              padding-left: 1rem;
+
+              li {
+                div,
+                p {
+                  &:before {
+                    color: var(--color-body-muted);
+                  }
+                }
+              }
             }
           `}`}
         >
@@ -51,6 +73,7 @@ export const LIST_OPTIONS: Record<
               &:before {
                 margin-right: 8px;
                 content: counters(item, '.') '. ';
+                font-size: 12px;
                 display: inline-block;
               }
             }
@@ -74,13 +97,14 @@ export const LIST_OPTIONS: Record<
       element.type === ELEMENT_LI ? (
         <Component
           {...attributes}
-          className={`relative text-body ${css`
+          className={`text-body ${css`
             display: list-item;
             p,
             div {
               display: inline-block;
               margin: 0;
               padding: 0;
+              position: relative;
             }
           `}`}
         >
