@@ -4,7 +4,6 @@ export * from './useEditor'
 export * from './components'
 export * from './SectionPlugin'
 export * from './nodeTypes'
-export * from './renderElements'
 export * from './HelperPlugin'
 export * from './ImageBlockPlugin'
 

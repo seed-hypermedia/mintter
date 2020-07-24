@@ -2,7 +2,6 @@ import React from 'react'
 import {Slate} from 'slate-react'
 import {css} from 'emotion'
 import {EditablePlugins} from '@udecode/slate-plugins'
-import {renderElements as renderDefaultElements} from '../renderElements'
 import {Toolbar} from './toolbar'
 import {HelperToolbar, useHelper} from '../HelperPlugin'
 
@@ -47,7 +46,7 @@ function Editor(
           <EditablePlugins
             readOnly={readOnly}
             plugins={plugins}
-            renderElement={[...renderDefaultElements, ...renderElements]}
+            renderElement={renderElements}
             placeholder={
               readOnly ? 'no content' : 'Start writing your masterpiece...'
             }

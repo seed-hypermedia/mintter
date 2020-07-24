@@ -5,7 +5,6 @@ import {Slate, ReactEditor} from 'slate-react'
 import {
   Icons,
   nodeTypes,
-  renderElements,
   Editor,
   useEditor,
   plugins as editorPlugins,

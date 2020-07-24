@@ -1,17 +1,18 @@
 import React, {useState} from 'react'
-import {getRenderElement} from '@udecode/slate-plugins'
-import {nodeTypes} from '../nodeTypes'
 import {useFocused, useSelected} from 'slate-react'
+import {ImageKeyOption, ImagePluginOptionsValues} from '@udecode/slate-plugins'
 
-export function renderImageBlock({
-  typeImg = nodeTypes.typeImg,
-  component = ImageBlock,
-} = {}) {
-  return getRenderElement({
-    type: typeImg,
-    component,
+export const ELEMENT_IMAGE = 'img'
+
+export const IMAGE_OPTIONS: Record<
+  ImageKeyOption,
+  Required<ImagePluginOptionsValues>
+> = {
+  img: {
+    component: ImageBlock,
+    type: ELEMENT_IMAGE,
     rootProps: {},
-  })
+  },
 }
 
 export function ImageBlock({attributes, element}) {
