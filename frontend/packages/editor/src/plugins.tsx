@@ -8,8 +8,6 @@ import {
   ListPlugin,
   ParagraphPlugin,
   UnderlinePlugin,
-  // ExitBreakPlugin,
-  // SoftBreakPlugin,
   CodePlugin,
   CodeBlockPlugin,
   StrikethroughPlugin,
@@ -17,23 +15,38 @@ import {
   ExitBreakPlugin,
   SoftBreakPlugin,
   ELEMENT_CODE_BLOCK,
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
 } from '@udecode/slate-plugins'
 import {options} from './options'
-import {ELEMENT_BLOCK} from './elements'
+// import {ELEMENT_BLOCK} from './elements'
+
+const headingTypes = [
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
+]
 
 export const plugins = [
+  ParagraphPlugin(options),
   BlockquotePlugin(options),
-  BoldPlugin(options),
   HeadingPlugin(options),
-  ItalicPlugin(options),
+  ImagePlugin(options),
   LinkPlugin(options),
   ListPlugin(options),
-  ParagraphPlugin(options),
-  UnderlinePlugin(options),
-  CodePlugin(options),
   CodeBlockPlugin(),
+  BoldPlugin(options),
+  CodePlugin(options),
+  ItalicPlugin(options),
+  UnderlinePlugin(options),
   StrikethroughPlugin(options),
-  ImagePlugin(options),
   SoftBreakPlugin({
     rules: [
       {hotkey: 'shift+enter'},
@@ -59,12 +72,7 @@ export const plugins = [
         query: {
           start: true,
           end: true,
-          allow: [
-            options.h1.type,
-            options.h2.type,
-            options.h3.type,
-            ELEMENT_BLOCK,
-          ],
+          allow: headingTypes,
         },
       },
     ],

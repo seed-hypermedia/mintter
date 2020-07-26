@@ -16,7 +16,7 @@ export const PARAGRAPH_OPTIONS: Record<
   p: {
     component: ({
       as: Component = 'p',
-      className = '',
+      className,
       element,
       attributes,
       ...rest

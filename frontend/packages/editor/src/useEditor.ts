@@ -12,19 +12,19 @@ import {
   withDeserializeHTML,
   withLink,
   withToggleType,
-  withDeserializeMd,
+  // withDeserializeMd,
   pipe,
   withInlineVoid,
   ELEMENT_CODE_BLOCK,
-  // withTransforms,
+  withTransforms,
 } from '@udecode/slate-plugins'
-import {withSections} from './SectionPlugin'
-import {nodeTypes} from './nodeTypes'
+// import {nodeTypes} from './nodeTypes'
 import {withHistory} from 'slate-history'
 import {withImageBlock} from './ImageBlockPlugin'
 import {withHelper} from './HelperPlugin'
 import {autoformatRules} from './autoformatRules'
 import {options} from './options'
+import {withSections} from './SectionPlugin'
 
 // need this object because the plugin required it, I made an issue in the plugin's repo
 const resetOptions = {
@@ -38,14 +38,14 @@ export function useEditor(plugins: any[]): Editor {
     withHistory,
     withLink(),
     withDeserializeHTML({plugins}),
-    withToggleType({defaultType: nodeTypes.typeP}),
-    withList(),
+    withToggleType({defaultType: options.p.type}),
+    withResetBlockType(resetOptions),
+    withList(options),
     withAutoformat({
       rules: autoformatRules,
     }),
-    // withTransforms(),
-    withDeserializeMd(plugins),
-    withResetBlockType(resetOptions),
+    withTransforms(),
+    // withDeserializeMd(plugins),
     withInlineVoid({plugins}),
     withImageBlock(),
     withHelper(),

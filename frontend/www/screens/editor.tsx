@@ -16,6 +16,7 @@ import {
   slate,
   HelperToolbar,
   useHelper,
+  ELEMENT_BLOCK,
 } from '@mintter/editor'
 import {useEditor as useSlateEditor, ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
@@ -118,7 +119,7 @@ function initializeEditorValue() {
 }
 
 export default function Editor(): JSX.Element {
-  const plugins = [...editorPlugins, SoftBreakPlugin()]
+  const plugins = [...editorPlugins]
   const editor: slate.ReactEditor = useEditor(plugins) as slate.ReactEditor
   const wrapperRef = React.useRef<HTMLDivElement>(null)
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
@@ -175,6 +176,7 @@ export default function Editor(): JSX.Element {
   React.useEffect(() => {
     if (data) {
       const obj = data.toObject()
+      console.log("obj", obj)
       setValue({
         title: obj.title,
         description: obj.description,
@@ -182,7 +184,7 @@ export default function Editor(): JSX.Element {
           obj.sectionsList.length > 0
             ? obj.sectionsList.map((s: Section.AsObject) => {
                 return {
-                  type: nodeTypes.typeBlock,
+                  type: ELEMENT_BLOCK,
                   title: s.title,
                   description: s.description,
                   author: s.author,
