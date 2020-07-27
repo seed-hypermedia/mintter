@@ -11,7 +11,7 @@ import {ReactEditor} from 'slate-react'
 import {ELEMENT_BLOCK, ELEMENT_PARAGRAPH} from '../elements'
 // import {nodeTypes} from '../nodeTypes'
 
-export function withSections() {
+export function withBlocks() {
   return <T extends ReactEditor>(editor: T) => {
     const {
       // deleteBackward,
@@ -46,10 +46,10 @@ export function withSections() {
     //   const {selection} = editor
 
     //   if (selection && Range.isCollapsed(selection)) {
-    //     // check which section has focus
+    //     // check which block has focus
     //     const [, activePath = [0]]: any = Editor.above(editor, {
     //       match: n => {
-    //         return n.type === 'section'
+    //         return n.type === 'block'
     //       },
     //     })
 

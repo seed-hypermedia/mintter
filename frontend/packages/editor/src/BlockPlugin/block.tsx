@@ -6,7 +6,7 @@ import {Editor} from '../editor'
 // import {css} from 'emotion'
 // import Tippy from '@tippyjs/react'
 
-function Section({path, className = '', ...props}) {
+function Block({path, className = '', ...props}) {
   return (
     <div
       className={`relative px-8 py-2 first:mt-8 hover:bg-background-muted transition duration-200 rounded ${className}`}
@@ -15,13 +15,13 @@ function Section({path, className = '', ...props}) {
   )
 }
 
-export function EditableSectionElement(
+export function EditableBlockElement(
   {children, element, ...rest}: RenderElementProps,
   ref: RefObject<HTMLDivElement>,
 ) {
   const editor = useEditor()
   const path = ReactEditor.findPath(editor, element)
-  const sectionChars = Editor.charCount(editor, path)
+  const blockChars = Editor.charCount(editor, path)
   const [isHover, setHover] = React.useState<boolean>(false)
   const [, setVisible] = React.useState<boolean>(true)
   // const show = () => setVisible(true)
@@ -42,10 +42,10 @@ export function EditableSectionElement(
     maximumSignificantDigits: 3,
   })
 
-  const price = formatter.format(sectionChars * 0.0001)
+  const price = formatter.format(blockChars * 0.0001)
 
   return (
-    <Section
+    <Block
       data-slate-type={element.type}
       ref={ref}
       onMouseEnter={handleMouseEnter}
@@ -65,12 +65,12 @@ export function EditableSectionElement(
             <span>Characters:</span>{' '}
             {/* TODO: FIX avoid characters to jump when change chars number */}
             <span className={`inline-block text-right text-body-muted`}>
-              {sectionChars}
+              {blockChars}
             </span>
           </p>
           <p className="px-2 text-body-muted text-xs">Royalties: {price}</p>
           {/* <SettingsButton
-            section={element}
+            block={element}
             path={path}
             visible={visible}
             show={show}
@@ -79,11 +79,11 @@ export function EditableSectionElement(
         </div>
       </div>
       {children}
-    </Section>
+    </Block>
   )
 }
 
-export function ReadonlySection(
+export function ReadonlyBlock(
   {children, element, ...rest}: RenderElementProps,
   ref: RefObject<HTMLDivElement>,
 ) {
@@ -91,18 +91,18 @@ export function ReadonlySection(
   const path = ReactEditor.findPath(editor, element)
 
   return (
-    <Section path={path} data-slate-type={element.type} ref={ref} {...rest}>
+    <Block path={path} data-slate-type={element.type} ref={ref} {...rest}>
       {children}
-    </Section>
+    </Block>
   )
 }
 
 // TODO: (Horacio) Fixme types
-export const EditableSection = React.forwardRef(EditableSectionElement as any)
-export const ReadOnlySection = React.forwardRef(ReadonlySection as any)
+export const EditableBlock = React.forwardRef(EditableBlockElement as any)
+export const ReadOnlyBlock = React.forwardRef(ReadonlyBlock as any)
 
-// function SettingsButton({section, path, visible, show, hide}) {
-//   const {title, description} = section
+// function SettingsButton({block, path, visible, show, hide}) {
+//   const {title, description} = block
 //   const titleRef = React.useRef<HTMLInputElement>(null)
 //   const editor = useEditor()
 //   const [innterTitle, setTitle] = React.useState<string>(() => title || '')
@@ -133,7 +133,7 @@ export const ReadOnlySection = React.forwardRef(ReadonlySection as any)
 //           <div>
 //             <label
 //               className="block text-sm text-heading mb-2"
-//               htmlFor="section-title"
+//               htmlFor="block-title"
 //             >
 //               title:
 //             </label>
@@ -154,7 +154,7 @@ export const ReadOnlySection = React.forwardRef(ReadonlySection as any)
 //           <div className="mt-2">
 //             <label
 //               className="block text-sm text-heading mb-2"
-//               htmlFor="section-title"
+//               htmlFor="block-title"
 //             >
 //               description:
 //             </label>
@@ -162,7 +162,7 @@ export const ReadOnlySection = React.forwardRef(ReadonlySection as any)
 //               className="block w-full px-2 py-1 bg-white rounded-sm border-muted-hover text-body"
 //               name="description"
 //               onClick={e => e.stopPropagation()}
-//               placeholder="section description"
+//               placeholder="block description"
 //               value={innterDescription}
 //               onChange={e => {
 //                 setDescription(e.target.value)
