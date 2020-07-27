@@ -24,7 +24,7 @@ import {withImageBlock} from './ImageBlockPlugin'
 import {withHelper} from './HelperPlugin'
 import {autoformatRules} from './autoformatRules'
 import {options} from './options'
-import {withSections} from './SectionPlugin'
+import {withBlocks} from './BlockPlugin'
 
 // need this object because the plugin required it, I made an issue in the plugin's repo
 const resetOptions = {
@@ -50,7 +50,7 @@ export function useEditor(plugins: any[]): Editor {
     withImageBlock(),
     withHelper(),
     withInlineVoid({plugins}),
-    withSections(),
+    withBlocks(),
   ] as const
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

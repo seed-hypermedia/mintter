@@ -1,19 +1,19 @@
 import {getRenderElement} from '@udecode/slate-plugins'
 import {nodeTypes} from '../nodeTypes'
-import {EditableSection, ReadOnlySection} from './section'
+import {EditableBlock, ReadOnlyBlock} from './block'
 
-export function renderEditableSectionElement() {
+export function renderEditableBlockElement() {
   return getRenderElement({
     type: nodeTypes.typeBlock,
-    component: EditableSection,
+    component: EditableBlock,
     rootProps: {},
   })
 }
 
-export function renderReadOnlySectionElement() {
+export function renderReadOnlyBlockElement() {
   return getRenderElement({
     type: nodeTypes.typeBlock,
-    component: ReadOnlySection,
+    component: ReadOnlyBlock,
     rootProps: {},
   })
 }

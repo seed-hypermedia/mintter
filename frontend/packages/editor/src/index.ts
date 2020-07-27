@@ -2,7 +2,7 @@ import * as slate from 'slate-react'
 
 export * from './useEditor'
 export * from './components'
-export * from './SectionPlugin'
+export * from './BlockPlugin'
 export * from './nodeTypes'
 export * from './HelperPlugin'
 export * from './ImageBlockPlugin'
