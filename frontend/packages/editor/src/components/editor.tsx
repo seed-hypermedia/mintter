@@ -1,9 +1,10 @@
 import React from 'react'
 import {Slate} from 'slate-react'
 import {css} from 'emotion'
-import {EditablePlugins} from '@udecode/slate-plugins'
+import {EditablePlugins, SlateDocument} from '@udecode/slate-plugins'
 import {Toolbar} from './toolbar'
 import {HelperToolbar, useHelper} from '../HelperPlugin'
+import {ELEMENT_BLOCK, ELEMENT_IMAGE} from '../elements'
 
 interface EditorComponentProps {
   editor: any
@@ -12,7 +13,19 @@ interface EditorComponentProps {
   onChange: (value: any) => void
   readOnly?: boolean
   renderElements?: any[]
+  theme?: 'theme-light' | 'theme-dark'
 }
+
+const HELPER_OPTIONS = [
+  {
+    name: 'Text block',
+    type: ELEMENT_BLOCK,
+  },
+  {
+    name: 'Image Block',
+    type: ELEMENT_IMAGE,
+  },
+]
 
 function Editor(
   {
@@ -22,6 +35,7 @@ function Editor(
     onChange,
     readOnly = false,
     renderElements = [],
+    theme = 'theme-light',
   }: EditorComponentProps,
   ref,
 ): JSX.Element {
@@ -31,10 +45,25 @@ function Editor(
   //     : false
   // }
 
-  const {target, options, index, onAddBlock, onKeyDownHelper} = useHelper()
+  const {
+    target,
+    values,
+    index,
+    onAddBlock,
+    onKeyDownHelper,
+    onChangeHelper,
+    setValueIndex,
+  } = useHelper(HELPER_OPTIONS, {trigger: '/'})
 
   return (
-    <Slate editor={editor} value={value} onChange={onChange}>
+    <Slate
+      editor={editor}
+      value={value}
+      onChange={v => {
+        onChange(v as SlateDocument)
+        onChangeHelper(editor)
+      }}
+    >
       <div
         className={`-mx-8 ${css`
           word-break: break-word;
@@ -58,8 +87,10 @@ function Editor(
           <HelperToolbar
             at={target}
             valueIndex={index}
-            options={options}
+            options={values}
             onClickSelection={onAddBlock}
+            setValueIndex={setValueIndex}
+            theme={theme}
           />
         </div>
       </div>

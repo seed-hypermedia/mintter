@@ -11,7 +11,7 @@ import {
   initialSectionsValue,
   // SectionToolbar,
   EditorComponent,
-  renderReadOnlySectionElement,
+  renderReadOnlyBlockElement,
 } from '@mintter/editor'
 import {EditablePlugins, SoftBreakPlugin} from 'slate-plugins-next'
 import Seo from 'components/seo'
@@ -138,7 +138,7 @@ export default function Publication(): JSX.Element {
           plugins={plugins}
           value={sections}
           onChange={() => {}}
-          renderElements={[renderReadOnlySectionElement()]}
+          renderElements={[renderReadOnlyBlockElement()]}
         />
       </>
     )

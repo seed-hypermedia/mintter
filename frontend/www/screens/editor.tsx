@@ -12,7 +12,7 @@ import {
   plugins as editorPlugins,
   initialSectionsValue,
   EditorComponent,
-  renderEditableSectionElement,
+  renderEditableBlockElement,
   slate,
   HelperToolbar,
   useHelper,
@@ -33,6 +33,7 @@ import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
 import Layout from 'components/layout'
 import Container from 'components/container'
+import {useTheme} from 'shared/themeContext'
 
 interface EditorState {
   title: string
@@ -138,6 +139,7 @@ export default function Editor(): JSX.Element {
   const {push} = useHistory()
   const {documentId} = useParams()
   const {getDraft, setDraft, publishDraft} = useMintter()
+  const {theme} = useTheme()
 
   const {title, sections, description} = state
 
@@ -176,7 +178,7 @@ export default function Editor(): JSX.Element {
   React.useEffect(() => {
     if (data) {
       const obj = data.toObject()
-      console.log("obj", obj)
+      console.log('obj', obj)
       setValue({
         title: obj.title,
         description: obj.description,
@@ -283,7 +285,8 @@ export default function Editor(): JSX.Element {
             onChange={sections => {
               setSections(sections)
             }}
-            renderElements={[renderEditableSectionElement()]}
+            renderElements={[renderEditableBlockElement()]}
+            theme={theme}
           />
           {/* <div className="py-16 flex flex-col items-start">
             <AddBlockButton editor={editor} />

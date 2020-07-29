@@ -2,6 +2,7 @@ import React, {useEffect, useRef} from 'react'
 import {Portal} from '../../components/portal'
 import {useSlate, ReactEditor} from 'slate-react'
 import {css} from 'emotion'
+import {Icons} from '../../components/icons'
 
 /**
  * Prevent default and call a handler if defined
@@ -16,9 +17,11 @@ export const getPreventDefaultHandler = <T extends (...args: any) => any>(
 
 export function HelperToolbar({
   at,
+  options,
   valueIndex,
   onClickSelection,
-  options,
+  setValueIndex,
+  theme = 'theme-light',
   ...props
 }) {
   const ref: any = useRef(null)
@@ -30,7 +33,6 @@ export function HelperToolbar({
       const el = ref.current
       const domRange = ReactEditor.toDOMRange(editor, at)
       const rect = domRange.getBoundingClientRect()
-      console.log('rect', rect)
       if (el) {
         el.style.top = `${rect.top + window.pageYOffset + 24}px`
         el.style.left = `${rect.left + window.pageXOffset}px`
@@ -38,35 +40,50 @@ export function HelperToolbar({
     }
   }, [options.length, editor, at])
 
-  if (!at) {
+  if (!at || !options.length) {
     return null
   }
 
   return (
     <Portal>
-      <ul
+      <div
         ref={ref}
-        className={`overflow-hidden rounded shadow-md absolute z-20 ${css`
-          width: 200px;
+        className={`${theme} overflow-hidden rounded shadow-md absolute z-20 ${css`
+          width: 400px;
         `}`}
         {...props}
       >
-        {options.map((option, i) => (
-          <li
-            key={`${i}${option.type}`}
-            className={`px-4 py-2 ${
-              i === valueIndex ? 'bg-blue-200' : 'bg-background'
-            }`}
-            onMouseDown={getPreventDefaultHandler(
-              onClickSelection,
-              editor,
-              option,
-            )}
-          >
-            <p>{option.name}</p>
-          </li>
-        ))}
-      </ul>
+        <ul>
+          {options.map((option, i) => (
+            <li key={`${i}${option.type}`}>
+              <button
+                className={`block text-left w-full px-4 py-2 ${
+                  i === valueIndex ? 'bg-blue-100' : 'bg-background'
+                }`}
+                onMouseEnter={() => setValueIndex(i)}
+                onMouseDown={getPreventDefaultHandler(
+                  onClickSelection,
+                  editor,
+                  option,
+                )}
+              >
+                {option.name}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="bg-background py-4">
+          <p className="px-4 uppercase text-body-muted text-xs font-bold">
+            Actions
+          </p>
+          <ul>
+            <li className="px-4 py-1 flex items-center justify-start text-body hover:bg-blue-100 bg-background">
+              <Icons.Trash size={16} color="currentColor" />
+              <span className="text-body text-sm px-2">Delete</span>
+            </li>
+          </ul>
+        </div>
+      </div>
     </Portal>
   )
 }

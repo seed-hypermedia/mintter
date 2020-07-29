@@ -21,7 +21,6 @@ import {
 // import {nodeTypes} from './nodeTypes'
 import {withHistory} from 'slate-history'
 import {withImageBlock} from './ImageBlockPlugin'
-import {withHelper} from './HelperPlugin'
 import {autoformatRules} from './autoformatRules'
 import {options} from './options'
 import {withBlocks} from './BlockPlugin'
@@ -48,7 +47,6 @@ export function useEditor(plugins: any[]): Editor {
     // withDeserializeMd(plugins),
     withInlineVoid({plugins}),
     withImageBlock(),
-    withHelper(),
     withInlineVoid({plugins}),
     withBlocks(),
   ] as const
