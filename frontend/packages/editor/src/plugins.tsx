@@ -12,9 +12,9 @@ import {
   CodeBlockPlugin,
   StrikethroughPlugin,
   ImagePlugin,
-  ExitBreakPlugin,
   SoftBreakPlugin,
   ELEMENT_CODE_BLOCK,
+  ExitBreakPlugin,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
@@ -23,6 +23,7 @@ import {
   ELEMENT_H6,
 } from '@udecode/slate-plugins'
 import {options} from './options'
+import {HelperPlugin} from './HelperPlugin'
 // import {ELEMENT_BLOCK} from './elements'
 
 const headingTypes = [
@@ -77,6 +78,7 @@ export const plugins = [
       },
     ],
   }),
+  HelperPlugin(),
 ]
 
 // function InlineCodePlugin() {

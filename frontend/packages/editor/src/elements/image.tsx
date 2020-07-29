@@ -16,10 +16,9 @@ export const IMAGE_OPTIONS: Record<
 }
 
 export function ImageBlock({attributes, element}) {
+  console.log('ImageBlock -> element', element)
   const selected = useSelected()
-  console.log('ImageBlock -> selected', selected)
   const focused = useFocused()
-  console.log('ImageBlock -> focused', focused)
   const [error, setError] = useState('')
   const [file, setFile] = useState<any>(() => element.url || null)
 

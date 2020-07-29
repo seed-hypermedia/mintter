@@ -1,12 +1,5 @@
-import {
-  Editor,
-  // Element,
-  Transforms,
-  Range,
-  Point,
-  Path,
-} from 'slate'
-import {isRangeAtRoot} from '@udecode/slate-plugins'
+import {Editor, Element, Transforms, Point, Path, Node} from 'slate'
+import {isRangeAtRoot, isCollapsed} from '@udecode/slate-plugins'
 import {ReactEditor} from 'slate-react'
 import {ELEMENT_BLOCK, ELEMENT_PARAGRAPH} from '../elements'
 // import {nodeTypes} from '../nodeTypes'
@@ -17,118 +10,33 @@ export function withBlocks() {
       // deleteBackward,
       // insertText,
       insertBreak,
+      normalizeNode,
     } = editor
 
-    // editor.deleteBackward = (...args) => {
-    //   const {selection} = editor
-    //   if (selection && Range.isCollapsed(selection)) {
-    //     const parent = Editor.above(editor, {
-    //       match: n => n.type === nodeTypes.typeBlock,
-    //     })
-
-    //     if (parent) {
-    //       const [, parentPath] = parent
-    //       const parentStart = Editor.start(editor, parentPath)
-    //       if (editor.children.length > 1) {
-    //         if (Point.equals(selection.anchor, parentStart)) {
-    //           Transforms.removeNodes(editor, {at: parentPath})
-
-    //           return
-    //         }
-    //       }
-    //     }
-    //   }
-
-    //   deleteBackward(...args)
-    // }
-
-    // editor.insertText = (text: string) => {
-    //   const {selection} = editor
-
-    //   if (selection && Range.isCollapsed(selection)) {
-    //     // check which block has focus
-    //     const [, activePath = [0]]: any = Editor.above(editor, {
-    //       match: n => {
-    //         return n.type === 'block'
-    //       },
-    //     })
-
-    //     for (const [, path] of Editor.nodes(editor, {
-    //       at: [],
-    //       match: n => n.type === nodeTypes.typeBlock,
-    //     })) {
-    //       Transforms.setNodes(
-    //         editor,
-    //         {active: path[0] === activePath[0]},
-    //         {at: path},
-    //       )
-    //     }
-    //   }
-
-    //   insertText(text)
-    // }
-
     editor.insertBreak = () => {
-      // debugger
-      console.log('Section insertBreak!!!')
-      console.log('editor.insertBreak -> editor.selection', editor.selection)
       if (editor.selection && !isRangeAtRoot(editor.selection)) {
         const [parentNode, parentPath] = Editor.parent(editor, editor.selection)
-        console.log(
-          'editor.insertBreak -> parentNode, parentPath',
-          parentNode,
-          parentPath,
-        )
 
         if (parentNode.type !== ELEMENT_BLOCK) {
           const [blockNode, blockPath] = Editor.parent(editor, parentPath)
-          console.log(
-            'editor.insertBreak -> blockNode, blockPath',
-            blockNode,
-            blockPath,
-          )
 
           if (blockNode.type === ELEMENT_BLOCK) {
-            console.log(
-              'editor.insertBreak -> blockNode.type === ELEMENT_BLOCK',
-              blockNode.type === ELEMENT_BLOCK,
-            )
-            if (!Range.isCollapsed(editor.selection)) {
+            if (!isCollapsed(editor.selection)) {
               Transforms.delete(editor)
             }
 
             const blockStart = Editor.start(editor, blockPath)
-            console.log('editor.insertBreak -> blockStart', blockStart)
             const blockEnd = Editor.end(editor, blockPath)
-            console.log('editor.insertBreak -> blockEnd', blockEnd)
-
-            const parentStart = Editor.start(editor, parentPath)
-            console.log('editor.insertBreak -> parentStart', parentStart)
-            const parentEnd = Editor.end(editor, parentPath)
-            console.log('editor.insertBreak -> parentEnd', parentEnd)
-
             const isStart = Point.equals(editor.selection.anchor, blockStart)
-            console.log('editor.insertBreak -> isStart', isStart)
             const isEnd = Point.equals(editor.selection.anchor, blockEnd)
-            console.log('editor.insertBreak -> isEnd', isEnd)
-
             const nextParentPath = Path.next(parentPath)
-            console.log('editor.insertBreak -> nextParentPath', nextParentPath)
             const nextBlockPath = Path.next(blockPath)
-            console.log('editor.insertBreak -> nextBlockPath', nextBlockPath)
-
             const start = Editor.start(editor, parentPath)
-            console.log('editor.insertBreak -> start', start)
             const end = Editor.end(editor, parentPath)
-            console.log('editor.insertBreak -> end', end)
-
             const isParentStart = Point.equals(editor.selection.anchor, start)
-            console.log('editor.insertBreak -> isParentStart', isParentStart)
             const isParentEnd = Point.equals(editor.selection.anchor, end)
-            console.log('editor.insertBreak -> isParentEnd', isParentEnd)
 
             if (isStart && isEnd) {
-              console.log('isStart && isEnd')
               Transforms.wrapNodes(
                 editor,
                 {type: ELEMENT_BLOCK, children: []},
@@ -172,56 +80,27 @@ export function withBlocks() {
                */
 
               if (isParentStart && isParentEnd) {
-                console.log(
-                  'editor.insertBreak -> isParentStart && isParentEnd',
-                )
                 return
               }
 
               if (isParentStart) {
-                console.log('editor.insertBreak -> isStart')
                 Transforms.splitNodes(editor, {at: parentPath})
                 return
               }
 
               if (!isParentEnd) {
-                console.log('editor.insertBreak -> !isParentEnd')
                 Transforms.splitNodes(editor)
                 Transforms.splitNodes(editor, {at: nextParentPath})
                 return
               } else {
-                console.log(
-                  'editor.insertBreak -> isParentEnd else',
-                  isParentEnd,
-                )
                 Transforms.splitNodes(editor, {at: nextParentPath})
                 Transforms.select(editor, Editor.start(editor, nextBlockPath))
                 return
               }
-
-              // Transforms.wrapNodes(
-              //   editor,
-              //   {
-              //     type: ELEMENT_BLOCK,
-              //     children: [],
-              //   },
-              //   {
-              //     at: nextParentPath,
-              //   },
-              // )
-              // Transforms.moveNodes(editor, {
-              //   at: nextParentPath,
-              //   to: nextBlockPath,
-              // })
-              console.log('is NOT END')
-              return
             } else {
               /**
                * If end, insert a list item after and select it
                */
-              // if (Editor.hasTexts(editor, parentNode)) {
-              //   Transforms.splitNodes(editor, {at: parentPath})
-              // } else {
               Transforms.insertNodes(
                 editor,
                 {
@@ -246,6 +125,32 @@ export function withBlocks() {
       }
 
       insertBreak()
+    }
+
+    editor.normalizeNode = entry => {
+      const [node, path] = entry
+
+      // If block has no children with type P, then wrap children with a P
+      if (Element.isElement(node) && node.type === ELEMENT_BLOCK) {
+        for (const [child, childPath] of Node.children(editor, path)) {
+          if (!child.type) {
+            Transforms.wrapNodes(
+              editor,
+              {
+                type: ELEMENT_PARAGRAPH,
+                children: [],
+              },
+              {at: childPath},
+            )
+            return
+          } else if (child.type === ELEMENT_BLOCK) {
+            Transforms.unwrapNodes(editor, {at: childPath})
+          }
+        }
+      }
+
+      // Fall back to the original `normalizeNode` to enforce other constraints.
+      normalizeNode(entry)
     }
 
     return editor
