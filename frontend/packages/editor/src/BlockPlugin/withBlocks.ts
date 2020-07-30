@@ -37,16 +37,22 @@ export function withBlocks() {
             const isParentEnd = Point.equals(editor.selection.anchor, end)
 
             if (isStart && isEnd) {
-              Transforms.wrapNodes(
+              // the node is empty
+              Transforms.insertNodes(
                 editor,
-                {type: ELEMENT_BLOCK, children: []},
-                {at: parentPath},
+                {
+                  type: ELEMENT_BLOCK,
+                  children: [
+                    {
+                      type: ELEMENT_PARAGRAPH,
+                      children: [{text: ''}],
+                    },
+                  ],
+                },
+                {at: nextBlockPath},
               )
-              Transforms.moveNodes(editor, {
-                at: parentPath,
-                to: nextBlockPath,
-              })
 
+              Transforms.select(editor, Editor.start(editor, nextBlockPath))
               return
             }
 
@@ -72,7 +78,7 @@ export function withBlocks() {
             }
 
             /**
-             * If not end, split nodes, wrap a list item on the new paragraph and move it to the next list item
+             * If not end, split nodes, wrap a list item on the new paragraph and move it to the next block item
              */
             if (!isEnd) {
               /**
@@ -99,8 +105,9 @@ export function withBlocks() {
               }
             } else {
               /**
-               * If end, insert a list item after and select it
+               * If end, insert a block item after and select it
                */
+
               Transforms.insertNodes(
                 editor,
                 {
@@ -129,26 +136,25 @@ export function withBlocks() {
 
     editor.normalizeNode = entry => {
       const [node, path] = entry
-
-      // If block has no children with type P, then wrap children with a P
-      if (Element.isElement(node) && node.type === ELEMENT_BLOCK) {
-        for (const [child, childPath] of Node.children(editor, path)) {
-          if (!child.type) {
-            Transforms.wrapNodes(
-              editor,
-              {
-                type: ELEMENT_PARAGRAPH,
-                children: [],
-              },
-              {at: childPath},
-            )
-            return
-          } else if (child.type === ELEMENT_BLOCK) {
-            Transforms.unwrapNodes(editor, {at: childPath})
+      if (!path.length) {
+        if (Element.isElement(node) && node.type === ELEMENT_BLOCK) {
+          for (const [child, childPath] of Node.children(editor, path)) {
+            // If block has no children with type P, then wrap children with a P
+            if (!child.type) {
+              Transforms.wrapNodes(
+                editor,
+                {
+                  type: ELEMENT_PARAGRAPH,
+                  children: [],
+                },
+                {at: childPath},
+              )
+              return
+              // If block has a children of type 'block', then unwraps it
+            }
           }
         }
       }
-
       // Fall back to the original `normalizeNode` to enforce other constraints.
       normalizeNode(entry)
     }

@@ -15,15 +15,15 @@ export const IMAGE_OPTIONS: Record<
   },
 }
 
-export function ImageBlock({attributes, element}) {
+export function ImageBlock({attributes, element, children}) {
   console.log('ImageBlock -> element', element)
   const selected = useSelected()
   const focused = useFocused()
   const [error, setError] = useState('')
   const [file, setFile] = useState<any>(() => element.url || null)
 
-  const type = attributes['data-slate-type']
-  delete attributes['data-slate-type']
+  // const type = attributes['data-slate-type']
+  // delete attributes['data-slate-type']
 
   function handleOnChange(e: any) {
     const [file]: any = Array.from(e.target.files)
@@ -45,7 +45,7 @@ export function ImageBlock({attributes, element}) {
   }
 
   return (
-    <div contentEditable={false} {...attributes}>
+    <div {...attributes}>
       <div
         contentEditable={false}
         className={`relative border-2 overflow-hidden rounded ${
@@ -53,15 +53,7 @@ export function ImageBlock({attributes, element}) {
         }`}
       >
         {file ? (
-          <img
-            contentEditable={false}
-            className="block w-full"
-            data-slate-type={type}
-            src={file}
-            alt=""
-            // selected={selected}
-            // focused={focused}
-          />
+          <img src={file} alt="" className="block w-full" />
         ) : (
           <div className="p-4">
             <input
@@ -77,6 +69,7 @@ export function ImageBlock({attributes, element}) {
           {error}
         </p>
       )}
+      {children}
     </div>
   )
 }
