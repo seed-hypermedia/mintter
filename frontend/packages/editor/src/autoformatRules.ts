@@ -1,9 +1,9 @@
 import {Editor} from 'slate'
-import {nodeTypes} from './nodeTypes'
+// import {nodeTypes} from './nodeTypes'
 import {
   AutoformatRule,
   unwrapList,
-  toggleList,
+  // toggleList,
   ELEMENT_CODE_BLOCK,
 } from '@udecode/slate-plugins'
 import {
@@ -31,22 +31,6 @@ export const autoformatRules: AutoformatRule[] = [
     type: ELEMENT_H3,
     markup: '###',
     preFormat,
-  },
-  {
-    type: nodeTypes.typeLi,
-    markup: ['*', '-', '+'],
-    preFormat,
-    format: editor => {
-      toggleList(editor, {...nodeTypes, typeList: nodeTypes.typeUl})
-    },
-  },
-  {
-    type: nodeTypes.typeLi,
-    markup: ['1.', '1)'],
-    preFormat,
-    format: editor => {
-      toggleList(editor, {...nodeTypes, typeList: nodeTypes.typeOl})
-    },
   },
   {
     type: ELEMENT_BLOCKQUOTE,

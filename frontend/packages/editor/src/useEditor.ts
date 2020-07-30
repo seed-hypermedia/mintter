@@ -8,7 +8,6 @@ import {withReact} from 'slate-react'
 import {
   withResetBlockType,
   withAutoformat,
-  withList,
   withDeserializeHTML,
   withLink,
   withToggleType,
@@ -17,10 +16,10 @@ import {
   withInlineVoid,
   ELEMENT_CODE_BLOCK,
   withTransforms,
+  withImageUpload,
 } from '@udecode/slate-plugins'
 // import {nodeTypes} from './nodeTypes'
 import {withHistory} from 'slate-history'
-import {withImageBlock} from './ImageBlockPlugin'
 import {autoformatRules} from './autoformatRules'
 import {options} from './options'
 import {withBlocks} from './BlockPlugin'
@@ -39,15 +38,13 @@ export function useEditor(plugins: any[]): Editor {
     withDeserializeHTML({plugins}),
     withToggleType({defaultType: options.p.type}),
     withResetBlockType(resetOptions),
-    withList(options),
     withAutoformat({
       rules: autoformatRules,
     }),
     withTransforms(),
     // withDeserializeMd(plugins),
     withInlineVoid({plugins}),
-    withImageBlock(),
-    withInlineVoid({plugins}),
+    withImageUpload(options),
     withBlocks(),
   ] as const
 

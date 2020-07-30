@@ -5,7 +5,6 @@ export * from './components'
 export * from './BlockPlugin'
 export * from './nodeTypes'
 export * from './HelperPlugin'
-export * from './ImageBlockPlugin'
 
 export * from './editor'
 export * from './plugins'

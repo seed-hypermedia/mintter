@@ -20,6 +20,7 @@ import {insertBlock} from './transforms'
 export interface HelperOptionsNodeData {
   name: string
   type: string
+  url?: string
 }
 
 export interface UseHelperOptions {

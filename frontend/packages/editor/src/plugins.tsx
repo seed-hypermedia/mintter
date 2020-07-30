@@ -24,7 +24,7 @@ import {
 } from '@udecode/slate-plugins'
 import {options} from './options'
 import {HelperPlugin} from './HelperPlugin'
-// import {ELEMENT_BLOCK} from './elements'
+// import {ELEMENT_BLOCKQUOTE} from './elements'
 
 const headingTypes = [
   ELEMENT_H1,
@@ -73,24 +73,10 @@ export const plugins = [
         query: {
           start: true,
           end: true,
-          allow: headingTypes,
+          allow: [...headingTypes, options.blockquote.type],
         },
       },
     ],
   }),
   HelperPlugin(),
 ]
-
-// function InlineCodePlugin() {
-//   return {
-//     renderLeaf: ({typeInlineCode = nodeTypes.typeCode} = {}) => ({
-//       children,
-//       leaf,
-//     }: RenderLeafProps) => {
-//       if (leaf[typeInlineCode])
-//         return <code className="IMACODEELEMENT">{children}</code>
-
-//       return children
-//     },
-//   }
-// }
