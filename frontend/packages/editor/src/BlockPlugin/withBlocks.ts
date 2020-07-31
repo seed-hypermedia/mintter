@@ -1,6 +1,7 @@
 import {Editor, Element, Transforms, Point, Path, Node} from 'slate'
 import {isRangeAtRoot, isCollapsed} from '@udecode/slate-plugins'
 import {ReactEditor} from 'slate-react'
+import {v4 as uuid} from 'uuid'
 import {ELEMENT_BLOCK, ELEMENT_PARAGRAPH} from '../elements'
 // import {nodeTypes} from '../nodeTypes'
 
@@ -42,6 +43,7 @@ export function withBlocks() {
                 editor,
                 {
                   type: ELEMENT_BLOCK,
+                  id: uuid(),
                   children: [
                     {
                       type: ELEMENT_PARAGRAPH,
@@ -64,6 +66,7 @@ export function withBlocks() {
                 editor,
                 {
                   type: ELEMENT_BLOCK,
+                  id: uuid(),
                   children: [
                     {
                       type: ELEMENT_PARAGRAPH,
@@ -91,6 +94,11 @@ export function withBlocks() {
 
               if (isParentStart) {
                 Transforms.splitNodes(editor, {at: parentPath})
+                // Transforms.setNodes(
+                //   editor,
+                //   {id: uuid()},
+                //   {at: nextBlockPath},
+                // )
                 return
               }
 
@@ -112,6 +120,7 @@ export function withBlocks() {
                 editor,
                 {
                   type: ELEMENT_BLOCK,
+                  id: uuid(),
                   children: [
                     {
                       type: ELEMENT_PARAGRAPH,

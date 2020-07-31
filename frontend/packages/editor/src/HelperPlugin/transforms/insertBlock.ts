@@ -5,9 +5,10 @@ import {
   Range,
   Transforms,
 } from 'slate'
-import {ELEMENT_BLOCK, ELEMENT_IMAGE, ELEMENT_H1} from '../../elements'
+import {ELEMENT_BLOCK, ELEMENT_IMAGE} from '../../elements'
 // import {isCollapsed} from '@udecode/slate-plugins'
 import {HelperOptionsNodeData} from '../useHelper'
+import {v4 as uuid} from 'uuid'
 
 export const insertBlock = (
   editor: Editor,
@@ -36,6 +37,7 @@ export const insertBlock = (
           editor,
           {
             type: ELEMENT_IMAGE,
+            id: uuid(),
             url,
             children: [text],
           },
@@ -43,10 +45,6 @@ export const insertBlock = (
         )
         return
       case ELEMENT_BLOCK:
-        return
-
-      case ELEMENT_H1:
-        Transforms.setNodes(editor, {type: block.type})
         return
     }
   }

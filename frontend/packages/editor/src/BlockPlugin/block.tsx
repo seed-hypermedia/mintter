@@ -3,7 +3,8 @@ import React, {RefObject} from 'react'
 import {RenderElementProps, ReactEditor, useEditor} from 'slate-react'
 // import {Icons} from '../components/icons'
 import {Editor} from '../editor'
-// import {css} from 'emotion'
+import {Draggable} from 'react-beautiful-dnd'
+import {css} from 'emotion'
 // import Tippy from '@tippyjs/react'
 
 function Block({path, className = '', ...props}) {
@@ -45,41 +46,63 @@ export function EditableBlockElement(
   const price = formatter.format(blockChars * 0.0001)
 
   return (
-    <Block
-      data-slate-type={element.type}
-      ref={ref}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      path={path}
-      {...rest}
-    >
-      <div contentEditable={false} className="theme-invert">
-        <div
-          className={`absolute top-0 right-0 select-none -mt-6 -mr-4 rounded shadow-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-black py-2 ${
-            isHover
-              ? 'pointer-events-auto opacity-100'
-              : 'pointer-events-none opacity-0'
-          }`}
-        >
-          <p className={`text-body-muted border-r px-2 text-xs`}>
-            <span>Characters:</span>{' '}
-            {/* TODO: FIX avoid characters to jump when change chars number */}
-            <span className={`inline-block text-right text-body-muted`}>
-              {blockChars}
-            </span>
-          </p>
-          <p className="px-2 text-body-muted text-xs">Royalties: {price}</p>
-          {/* <SettingsButton
-            block={element}
-            path={path}
-            visible={visible}
-            show={show}
-            hide={hide}
-          /> */}
-        </div>
-      </div>
-      {children}
-    </Block>
+    <Draggable key={element.id} draggableId={element.id} index={path[0]}>
+      {(provided, snapshot) => {
+        console.log('BLOCK: provided', {provided, snapshot})
+
+        return (
+          <div
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            className="group"
+          >
+            <Block
+              data-slate-type={element.type}
+              ref={ref}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              path={path}
+              {...rest}
+            >
+              <div
+                className={`rounded-sm bg-background-muted w-6 h-6 absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition p-1 duration-200 ${css`
+                  transform: translateX(-2rem);
+                `}`}
+                {...provided.dragHandleProps}
+              >
+                <svg width="1em" height="1em" viewBox="0 0 16 16" fill="none">
+                  <path
+                    d="M3 4a1 1 0 100-2 1 1 0 000 2zM9 3a1 1 0 11-2 0 1 1 0 012 0zM9 13a1 1 0 11-2 0 1 1 0 012 0zM8 9a1 1 0 100-2 1 1 0 000 2zM14 3a1 1 0 11-2 0 1 1 0 012 0zM13 14a1 1 0 100-2 1 1 0 000 2zM14 8a1 1 0 11-2 0 1 1 0 012 0zM4 13a1 1 0 11-2 0 1 1 0 012 0zM3 9a1 1 0 100-2 1 1 0 000 2z"
+                    fill="#000"
+                  />
+                </svg>
+              </div>
+              <div contentEditable={false} className="theme-invert">
+                <div
+                  className={`absolute top-0 right-0 select-none -mt-6 -mr-4 rounded shadow-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-black py-2 ${
+                    isHover
+                      ? 'pointer-events-auto opacity-100'
+                      : 'pointer-events-none opacity-0'
+                  }`}
+                >
+                  <p className={`text-body-muted border-r px-2 text-xs`}>
+                    <span>Characters:</span>{' '}
+                    {/* TODO: FIX avoid characters to jump when change chars number */}
+                    <span className={`inline-block text-right text-body-muted`}>
+                      {blockChars}
+                    </span>
+                  </p>
+                  <p className="px-2 text-body-muted text-xs">
+                    Royalties: {price}
+                  </p>
+                </div>
+              </div>
+              {children}
+            </Block>
+          </div>
+        )
+      }}
+    </Draggable>
   )
 }
 

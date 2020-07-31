@@ -48,6 +48,7 @@
     "slate-react": "^0.58.1",
     "styled-components": "^5.1.0",
     "unified": "^9.0.0",
+    "uuid": "^8.3.0",
     "xtend": "^4.0.2"
   },
   "devDependencies": {
