@@ -3,6 +3,7 @@ import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {css} from 'emotion'
 import {EditablePlugins, SoftBreakPlugin} from 'slate-plugins-next'
 import {useMutation, queryCache} from 'react-query'
+import {v4 as uuid} from 'uuid'
 import {
   Icons,
   nodeTypes,
@@ -178,7 +179,7 @@ export default function Editor(): JSX.Element {
   React.useEffect(() => {
     if (data) {
       const obj = data.toObject()
-      console.log('obj', obj)
+      console.log('BLOCK: obj', obj)
       setValue({
         title: obj.title,
         description: obj.description,
@@ -187,8 +188,7 @@ export default function Editor(): JSX.Element {
             ? obj.sectionsList.map((s: Section.AsObject) => {
                 return {
                   type: ELEMENT_BLOCK,
-                  title: s.title,
-                  description: s.description,
+                  id: uuid(),
                   author: s.author,
                   children: markdownToSlate(s.body),
                 }
