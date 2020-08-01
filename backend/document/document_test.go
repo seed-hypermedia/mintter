@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ipfs/go-ipfs/dagutils"
 	format "github.com/ipfs/go-ipld-format"
+	"github.com/ipfs/go-merkledag/dagutils"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/require"
 )
