@@ -33,16 +33,16 @@ import (
 	chunker "github.com/ipfs/go-ipfs-chunker"
 	offline "github.com/ipfs/go-ipfs-exchange-offline"
 	provider "github.com/ipfs/go-ipfs-provider"
-	cbor "github.com/ipfs/go-ipld-cbor"
-	ipld "github.com/ipfs/go-ipld-format"
+	cbornode "github.com/ipfs/go-ipld-cbor"
+	format "github.com/ipfs/go-ipld-format"
 	ufsio "github.com/ipfs/go-unixfs/io"
 	multihash "github.com/multiformats/go-multihash"
 )
 
 func init() {
-	ipld.Register(cid.DagProtobuf, merkledag.DecodeProtobufBlock)
-	ipld.Register(cid.Raw, merkledag.DecodeRawBlock)
-	ipld.Register(cid.DagCBOR, cbor.DecodeBlock) // need to decode CBOR
+	format.Register(cid.DagProtobuf, merkledag.DecodeProtobufBlock)
+	format.Register(cid.Raw, merkledag.DecodeRawBlock)
+	format.Register(cid.DagCBOR, cbornode.DecodeBlock) // need to decode CBOR
 }
 
 var (
@@ -65,7 +65,7 @@ func (cfg *Config) setDefaults() {
 
 // Node is a lightweight IPFS peer.
 type Node struct {
-	ipld.DAGService
+	format.DAGService
 
 	cfg *Config
 
@@ -227,7 +227,7 @@ func (p *Node) Bootstrap(ctx context.Context, peers []peer.AddrInfo) (err error)
 }
 
 // Session returns a session-based NodeGetter.
-func (p *Node) Session(ctx context.Context) (ipld.NodeGetter, error) {
+func (p *Node) Session(ctx context.Context) (format.NodeGetter, error) {
 	ng := merkledag.NewSession(ctx, p.DAGService)
 	if ng == p.DAGService {
 		return nil, errors.New("DAGService doesn't support sessions")
@@ -250,7 +250,7 @@ type AddParams struct {
 // AddFile chunks and adds content to the DAGService from a reader. The content
 // is stored as a UnixFS DAG (default for IPFS). It returns the root
 // ipld.Node.
-func (p *Node) AddFile(ctx context.Context, r io.Reader, params *AddParams) (ipld.Node, error) {
+func (p *Node) AddFile(ctx context.Context, r io.Reader, params *AddParams) (format.Node, error) {
 	if params == nil {
 		params = &AddParams{}
 	}
@@ -287,7 +287,7 @@ func (p *Node) AddFile(ctx context.Context, r io.Reader, params *AddParams) (ipl
 		return nil, err
 	}
 
-	var n ipld.Node
+	var n format.Node
 	switch params.Layout {
 	case "trickle":
 		n, err = trickle.Layout(dbh)
