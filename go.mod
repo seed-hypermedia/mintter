@@ -18,9 +18,10 @@ require (
 	github.com/improbable-eng/grpc-web v0.12.0
 	github.com/ipfs/go-bitswap v0.2.19
 	github.com/ipfs/go-blockservice v0.1.3
-	github.com/ipfs/go-cid v0.0.6
+	github.com/ipfs/go-cid v0.0.7
 	github.com/ipfs/go-datastore v0.4.4
 	github.com/ipfs/go-ds-badger v0.2.4
+	github.com/ipfs/go-ipfs v0.4.22-0.20191002225611-b15edf287df6
 	github.com/ipfs/go-ipfs-blockstore v1.0.0
 	github.com/ipfs/go-ipfs-chunker v0.0.5
 	github.com/ipfs/go-ipfs-config v0.8.0
@@ -49,18 +50,25 @@ require (
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/multiformats/go-multiaddr v0.2.2
 	github.com/multiformats/go-multihash v0.0.14
+	github.com/multiformats/go-varint v0.0.6 // indirect
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/polydawn/refmt v0.0.0-20190807091052-3d65705ee9f1
+	github.com/rs/xid v1.2.1
+	github.com/sergi/go-diff v1.1.0
 	github.com/stretchr/testify v1.6.1
 	github.com/textileio/go-textile v0.7.8
+	github.com/whyrusleeping/cbor-gen v0.0.0-20200723185710-6a3894a6352b // indirect
 	go.uber.org/atomic v1.6.0
 	go.uber.org/multierr v1.5.0
 	go.uber.org/zap v1.15.0
+	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de // indirect
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
+	golang.org/x/sys v0.0.0-20200728102440-3e129f6d46b1 // indirect
+	golang.org/x/tools v0.0.0-20200731060945-b5fad4ed8dd6 // indirect
 	google.golang.org/genproto v0.0.0-20200707001353-8e8330bf89df // indirect
 	google.golang.org/grpc v1.30.0
 	google.golang.org/protobuf v1.25.0
+	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
