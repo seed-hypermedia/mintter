@@ -2,8 +2,10 @@
 package ipldutil
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/fxamacker/cbor/v2"
 	cbornode "github.com/ipfs/go-ipld-cbor"
@@ -76,3 +78,35 @@ func (s signedRaw) VerifySignature(k crypto.PubKey) error {
 
 	return nil
 }
+
+// RawCBOR is a type
+type RawCBOR []byte
+
+// MarshalCBOR returns m as the CBOR encoding of m.
+func (m RawCBOR) MarshalCBOR(w io.Writer) error {
+	if len(m) == 0 {
+		w.Write(cborNil)
+		return nil
+	}
+
+	w.Write(m)
+	return nil
+}
+
+// UnmarshalCBOR sets *m to a copy of data.
+func (m *RawCBOR) UnmarshalCBOR(r io.Reader) error {
+	if m == nil {
+		return errors.New("ipldutil.RawCBOR: UnmarshalCBOR on nil pointer")
+	}
+
+	var b bytes.Buffer
+	if _, err := io.Copy(&b, r); err != nil {
+		return err
+	}
+
+	*m = append((*m)[0:0], b.Bytes()...)
+
+	return nil
+}
+
+var cborNil = []byte{0xf6}
