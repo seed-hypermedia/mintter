@@ -7,17 +7,32 @@ import {Draggable} from 'react-beautiful-dnd'
 import {css} from 'emotion'
 // import Tippy from '@tippyjs/react'
 
+const mergeRefs = (...refs) => {
+  const filteredRefs = refs.filter(Boolean)
+  if (!filteredRefs.length) return null
+  if (filteredRefs.length === 0) return filteredRefs[0]
+  return inst => {
+    for (const ref of filteredRefs) {
+      if (typeof ref === 'function') {
+        ref(inst)
+      } else if (ref) {
+        ref.current = inst
+      }
+    }
+  }
+}
+
 function Block({path, className = '', ...props}) {
   return (
     <div
-      className={`relative px-8 py-2 first:mt-8 hover:bg-background-muted transition duration-200 rounded ${className}`}
+      className={`relative px-8 py-2 hover:bg-background-muted transition duration-200 rounded ${className}`}
       {...props}
     />
   )
 }
 
 export function EditableBlockElement(
-  {children, element, ...rest}: RenderElementProps,
+  {children, element, attributes}: RenderElementProps,
   ref: RefObject<HTMLDivElement>,
 ) {
   const editor = useEditor()
@@ -52,22 +67,22 @@ export function EditableBlockElement(
 
         return (
           <div
-            ref={provided.innerRef}
+            ref={mergeRefs(provided.innerRef, ref, attributes.ref)}
             {...provided.draggableProps}
-            className="group"
+            className="group first:mt-8"
+            data-slate-type={element.type}
+            data-slate-node={attributes['data-slate-node']}
           >
             <Block
-              data-slate-type={element.type}
-              ref={ref}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
               path={path}
-              {...rest}
             >
               <div
                 className={`rounded-sm bg-background-muted w-6 h-6 absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition p-1 duration-200 ${css`
                   transform: translateX(-2rem);
                 `}`}
+                contentEditable={false}
                 {...provided.dragHandleProps}
               >
                 <svg width="1em" height="1em" viewBox="0 0 16 16" fill="none">
