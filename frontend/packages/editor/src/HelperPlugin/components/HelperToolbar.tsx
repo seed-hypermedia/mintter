@@ -24,6 +24,7 @@ export function HelperToolbar({
   theme = 'theme-light',
   ...props
 }) {
+  console.log('HELPER: at', at)
   const ref: any = useRef(null)
   const editor = useSlate()
 
@@ -77,9 +78,11 @@ export function HelperToolbar({
             Actions
           </p>
           <ul>
-            <li className="px-4 py-1 flex items-center justify-start text-body hover:bg-blue-100 bg-background">
-              <Icons.Trash size={16} color="currentColor" />
-              <span className="text-body text-sm px-2">Delete</span>
+            <li>
+              <button className="w-full px-4 py-1 flex items-center justify-start text-body hover:bg-blue-100 bg-background">
+                <Icons.Trash size={16} color="currentColor" />
+                <span className="text-body text-sm px-2">Delete</span>
+              </button>
             </li>
           </ul>
         </div>
