@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"mintter/backend/ipfsutil"
 	"mintter/backend/store"
 	"mintter/backend/testutil"
 
@@ -25,9 +26,7 @@ func TestStore(t *testing.T) {
 
 	cbornode.RegisterCborType(testNode{})
 
-	store := NewSigningStore(profstore, bs)
-
-	cid1, err := store.Put(ctx, testNode{"Alex"})
+	cid1, err := PutSignedRecord(ctx, bs, profstore, testNode{"Alex"})
 	require.NoError(t, err)
 
 	{
@@ -45,9 +44,8 @@ func TestStore(t *testing.T) {
 	}
 
 	var data testNode
-	require.NoError(t, store.Get(ctx, cid1, &data))
+	require.NoError(t, GetSignedRecord(ctx, ipfsutil.BlockGetterFromBlockStore(bs), profstore, cid1, &data))
 	require.Equal(t, "Alex", data.Name)
-
 }
 
 func testStore(t *testing.T) *store.Store {
