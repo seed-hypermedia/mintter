@@ -3,7 +3,6 @@ package document
 import (
 	"context"
 	"fmt"
-	"mintter/backend/ipldutil"
 	"mintter/backend/store"
 	"mintter/backend/testutil"
 	"testing"
@@ -160,9 +159,9 @@ func TestDiffDocs(t *testing.T) {
 
 func TestDocumentService(t *testing.T) {
 	bs := testutil.MakeBlockStore(t)
-	ipldstore := ipldutil.NewSigningStore(testStore(t), bs)
+	profstore := testStore(t)
 
-	svc := NewService(ipldstore, &inmemRevStore{})
+	svc := NewService(bs, profstore, &inmemRevStore{})
 	ctx := context.Background()
 
 	v1 := &State{

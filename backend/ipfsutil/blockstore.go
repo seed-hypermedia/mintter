@@ -6,6 +6,7 @@ import (
 
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
+	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 
 	blocks "github.com/ipfs/go-block-format"
@@ -92,4 +93,67 @@ func (s *NetworkBlockStore) HashOnRead(enabled bool) {
 // Exchange returns the underlying exchange.
 func (s *NetworkBlockStore) Exchange() exchange.Interface {
 	return s.bs.Exchange()
+}
+
+// BlockGetter provides the functionality of the BlockGetter.
+func (s *NetworkBlockStore) BlockGetter() BlockGetter {
+	return s.bs
+}
+
+// Session creates a new blockservice session.
+func (s *NetworkBlockStore) Session(ctx context.Context) BlockGetter {
+	return blockservice.NewSession(ctx, s.bs)
+}
+
+// BlockGetterFromBlockStore wraps block store into the BlockGetter interface for more seamless API
+// across local block store and networked block service.
+func BlockGetterFromBlockStore(bs blockstore.Blockstore) BlockGetter {
+	return &blockStoreGetter{bs}
+}
+
+type blockStoreGetter struct {
+	blockstore.Blockstore
+}
+
+func (b *blockStoreGetter) GetBlock(ctx context.Context, c cid.Cid) (blocks.Block, error) {
+	return b.Get(c)
+}
+
+func (b *blockStoreGetter) GetBlocks(ctx context.Context, cids []cid.Cid) <-chan blocks.Block {
+	ch := make(chan blocks.Block)
+
+	go func() {
+		defer close(ch)
+
+		for _, c := range cids {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				block, err := b.Get(c)
+				if err != nil {
+					// TODO(burdiyan): log or return the error here.
+				}
+				ch <- block
+			}
+		}
+	}()
+
+	return ch
+}
+
+// BlockGetter is a generic interface for blockstore or networked blockservice session.
+type BlockGetter interface {
+	// GetBlock gets a block in the context of a request session
+	GetBlock(context.Context, cid.Cid) (blocks.Block, error)
+
+	// GetBlocks gets blocks in the context of a request session. Blocks can be missing
+	// and channel must be reading until it's closed.
+	GetBlocks(context.Context, []cid.Cid) <-chan blocks.Block
+}
+
+// BlockPutter isolates the put functionality of the blockstore and block service.
+type BlockPutter interface {
+	Put(blocks.Block) error
+	PutMany([]blocks.Block) error
 }

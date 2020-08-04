@@ -7,10 +7,12 @@ import (
 	"sync"
 
 	"mintter/backend/identity"
+	"mintter/backend/ipfsutil"
 	"mintter/backend/ipldutil"
 
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
+	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"github.com/rs/xid"
 )
 
@@ -40,8 +42,9 @@ type Block struct {
 
 // Service for storing and retrieving documents.
 type Service struct {
+	bs        blockstore.Blockstore
 	revstore  docRevStore
-	ipldstore *ipldutil.SigningStore
+	profstore profileStore
 }
 
 // TODO wire in key store and document store.
@@ -75,10 +78,11 @@ func (s *inmemRevStore) Store(docID string, revs []cid.Cid) error {
 }
 
 // NewService creates a new document service.
-func NewService(ipldstore *ipldutil.SigningStore, revstore docRevStore) *Service {
+func NewService(bs blockstore.Blockstore, profstore profileStore, revstore docRevStore) *Service {
 	return &Service{
+		bs:        bs,
 		revstore:  revstore,
-		ipldstore: ipldstore,
+		profstore: profstore,
 	}
 }
 
@@ -94,7 +98,7 @@ func (svc *Service) PublishDocument(ctx context.Context, d *State) (cid.Cid, err
 	for _, rev := range revs {
 		var set opSet
 
-		if err := svc.ipldstore.Get(ctx, rev, &set); err != nil {
+		if err := ipldutil.GetSignedRecord(ctx, ipfsutil.BlockGetterFromBlockStore(svc.bs), svc.profstore, rev, &set); err != nil {
 			return cid.Undef, err
 		}
 
@@ -116,7 +120,7 @@ func (svc *Service) PublishDocument(ctx context.Context, d *State) (cid.Cid, err
 		head.Parent = revs[len(revs)-1]
 	}
 
-	headcid, err := svc.ipldstore.Put(ctx, head)
+	headcid, err := ipldutil.PutSignedRecord(ctx, svc.bs, svc.profstore, head)
 	if err != nil {
 		return cid.Undef, err
 	}
@@ -136,7 +140,7 @@ func (svc *Service) GetDocument(ctx context.Context, id cid.Cid) (*State, error)
 	next := id
 	for next.Defined() {
 		var set opSet
-		if err := svc.ipldstore.Get(ctx, next, &set); err != nil {
+		if err := ipldutil.GetSignedRecord(ctx, ipfsutil.BlockGetterFromBlockStore(svc.bs), svc.profstore, next, &set); err != nil {
 			return nil, err
 		}
 

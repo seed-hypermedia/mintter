@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"mintter/backend/identity"
+	"mintter/backend/ipfsutil"
+	"mintter/backend/ipldutil"
 	"mintter/backend/p2p/internal"
 	"mintter/backend/publishing"
 
@@ -21,7 +23,7 @@ func (n *Node) AddSections(ctx context.Context, sects ...publishing.Section) ([]
 			return nil, fmt.Errorf("can't add sections from other authors (%s)", s.Author)
 		}
 
-		c, err := n.ipldstore.Put(ctx, s)
+		c, err := ipldutil.PutSignedRecord(ctx, n.ipfs.BlockStore(), n.store, s)
 		if err != nil {
 			return nil, fmt.Errorf("failed to put section %d: %w", i, err)
 		}
@@ -38,7 +40,7 @@ func (n *Node) AddPublication(ctx context.Context, pub publishing.Publication) (
 		return cid.Undef, fmt.Errorf("can't add publication from other authors (%s)", pub.Author)
 	}
 
-	c, err := n.ipldstore.Put(ctx, pub)
+	c, err := ipldutil.PutSignedRecord(ctx, n.ipfs.BlockStore(), n.store, pub)
 	if err != nil {
 		return cid.Undef, fmt.Errorf("failed to add publication: %w", err)
 	}
@@ -59,7 +61,7 @@ func (n *Node) GetSections(ctx context.Context, cids ...cid.Cid) ([]publishing.S
 	out := make([]publishing.Section, len(cids))
 
 	for i, cid := range cids {
-		if err := n.ipldstore.Get(ctx, cid, &out[i]); err != nil {
+		if err := ipldutil.GetSignedRecord(ctx, n.ipfs.BlockStore().BlockGetter(), n.store, cid, &out[i]); err != nil {
 			return nil, fmt.Errorf("failed to get section %d: %w", i, err)
 		}
 	}
@@ -69,13 +71,17 @@ func (n *Node) GetSections(ctx context.Context, cids ...cid.Cid) ([]publishing.S
 
 // GetPublication from the IPLD service.
 func (n *Node) GetPublication(ctx context.Context, cid cid.Cid) (publishing.Publication, error) {
+	return n.getPublication(ctx, cid, n.ipfs.BlockStore().BlockGetter())
+}
+
+func (n *Node) getPublication(ctx context.Context, cid cid.Cid, getter ipfsutil.BlockGetter) (publishing.Publication, error) {
 	local, err := n.ipfs.BlockStore().Has(cid)
 	if err != nil {
 		return publishing.Publication{}, err
 	}
 
 	var p publishing.Publication
-	if err := n.ipldstore.Get(ctx, cid, &p); err != nil {
+	if err := ipldutil.GetSignedRecord(ctx, getter, n.store, cid, &p); err != nil {
 		return publishing.Publication{}, err
 	}
 
@@ -131,13 +137,15 @@ func (n *Node) syncPublication(ctx context.Context, cid cid.Cid) error {
 		return nil
 	}
 
-	pub, err := n.GetPublication(ctx, cid)
+	sess := n.ipfs.BlockStore().Session(ctx)
+
+	pub, err := n.getPublication(ctx, cid, sess)
 	if err != nil {
 		return fmt.Errorf("GetPublication: %w", err)
 	}
 
-	if _, err := n.GetSections(ctx, pub.Sections...); err != nil {
-		return fmt.Errorf("GetSections: %w", err)
+	for range sess.GetBlocks(ctx, pub.Sections) {
+		// Drain the channel so it doesn't block.
 	}
 
 	return nil
