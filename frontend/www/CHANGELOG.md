@@ -1,5 +1,33 @@
 # @mintter/site
 
+## 0.3.0
+
+### Minor Changes
+
+- 053ee56: Section => Block
+- 422ffb2: export icons from editor + Drafts WIP
+- 451f378: add button toolbar integration
+- f9859ec: move editor to its own package
+- 9bf6962: edit section metadata
+- 0211d18: publications working
+- 422ffb2: publish phase one
+- 218d858: move editor plugins to package. new editor page features
+- 8383dca: Section component refactor + Grid / List view on documentList
+
+### Patch Changes
+
+- ce05dbe: tailwind setup refactor + other stuff
+- Updated dependencies [053ee56]
+- Updated dependencies [422ffb2]
+- Updated dependencies [451f378]
+- Updated dependencies [f9859ec]
+- Updated dependencies [9bf6962]
+- Updated dependencies [0211d18]
+- Updated dependencies [422ffb2]
+- Updated dependencies [218d858]
+- Updated dependencies [8383dca]
+  - @mintter/editor@0.3.0
+
 ## 0.2.14
 
 ### Patch Changes
