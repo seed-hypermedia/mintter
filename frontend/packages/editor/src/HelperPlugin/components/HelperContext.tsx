@@ -1,4 +1,4 @@
-import {useCallback, useState} from 'react'
+import React, {createContext, useContext, useCallback, useState} from 'react'
 
 import {
   Range,
@@ -15,7 +15,7 @@ import {
   isWordAfterTrigger,
   isPointAtWordEnd,
 } from '@udecode/slate-plugins'
-import {insertBlock} from './transforms'
+import {insertBlock} from '../transforms'
 
 export interface HelperOptionsNodeData {
   name: string
@@ -27,10 +27,15 @@ export interface UseHelperOptions {
   trigger?: string
 }
 
-export const useHelper = (
-  options: HelperOptionsNodeData[],
-  {trigger = '/'}: UseHelperOptions = {},
-) => {
+export const HelperContext: any = createContext<any>({
+  search: '',
+  index: 0,
+  target: null,
+  values: [],
+})
+
+export function HelperProvider({children, options}) {
+  const trigger = '/'
   const [targetRange, setTargetRange] = useState<Range | null>(null)
   const [valueIndex, setValueIndex] = useState(0)
   const [search, setSearch] = useState('')
@@ -47,6 +52,14 @@ export const useHelper = (
       }
     },
     [targetRange],
+  )
+
+  const setTarget = useCallback(
+    (range: any) => {
+      console.log('SETTARGET!! ', range)
+      setTargetRange(null)
+    },
+    [setTargetRange],
   )
 
   const onKeyDownHelper = useCallback(
@@ -121,14 +134,25 @@ export const useHelper = (
     [setTargetRange, setSearch, setValueIndex, trigger],
   )
 
-  return {
-    search,
-    index: valueIndex,
-    target: targetRange,
-    setValueIndex,
-    values,
-    onChangeHelper,
-    onKeyDownHelper,
-    onAddBlock,
-  }
+  return (
+    <HelperContext.Provider
+      value={{
+        search,
+        index: valueIndex,
+        target: targetRange,
+        setTarget,
+        setValueIndex,
+        values,
+        onChangeHelper,
+        onKeyDownHelper,
+        onAddBlock,
+      }}
+    >
+      {children}
+    </HelperContext.Provider>
+  )
+}
+
+export function useHelper(): any {
+  return useContext(HelperContext)
 }

@@ -4,7 +4,7 @@ import {css} from 'emotion'
 import {EditablePlugins, SlateDocument} from '@udecode/slate-plugins'
 import {DragDropContext, Droppable} from 'react-beautiful-dnd'
 import {Toolbar} from './toolbar'
-import {HelperToolbar, useHelper} from '../HelperPlugin'
+import {HelperToolbar, HelperProvider, useHelper} from '../HelperPlugin'
 import {ELEMENT_BLOCK, ELEMENT_IMAGE} from '../elements'
 import {reorderBlocks} from '../BlockPlugin'
 
@@ -55,7 +55,7 @@ function Editor(
     onKeyDownHelper,
     onChangeHelper,
     setValueIndex,
-  } = useHelper(HELPER_OPTIONS, {trigger: '/'})
+  } = useHelper()
 
   function onDragEnd(result) {
     if (!result.destination) {
@@ -118,4 +118,12 @@ function Editor(
   )
 }
 
-export const EditorComponent = React.forwardRef(Editor)
+export const EditorChildren = React.forwardRef(Editor)
+
+export function EditorComponent(props) {
+  return (
+    <HelperProvider options={HELPER_OPTIONS}>
+      <EditorChildren {...props} />
+    </HelperProvider>
+  )
+}

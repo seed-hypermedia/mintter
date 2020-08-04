@@ -1,10 +1,13 @@
 import React, {RefObject} from 'react'
+// import {Path, Transforms} from 'slate'
 // import {Transforms} from 'slate'
 import {RenderElementProps, ReactEditor, useEditor} from 'slate-react'
 // import {Icons} from '../components/icons'
 import {Editor} from '../editor'
 import {Draggable} from 'react-beautiful-dnd'
 import {css} from 'emotion'
+import Tippy from '@tippyjs/react'
+import {useHelper} from '../HelperPlugin'
 // import Tippy from '@tippyjs/react'
 
 const mergeRefs = (...refs) => {
@@ -43,6 +46,8 @@ export function EditableBlockElement(
   // const show = () => setVisible(true)
   const hide = () => setVisible(false)
 
+  const {setTarget} = useHelper()
+
   function handleMouseEnter() {
     setHover(true)
   }
@@ -52,6 +57,12 @@ export function EditableBlockElement(
     hide()
   }
 
+  function onAddClicked(e) {
+    console.log('onAddClicked -> e', e.target)
+    e.preventDefault()
+    setTarget()
+  }
+
   const formatter = new Intl.NumberFormat('en-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -59,6 +70,14 @@ export function EditableBlockElement(
   })
 
   const price = formatter.format(blockChars * 0.0001)
+
+  /*
+
+  - click button
+  - set target range (btn or path??)
+  - listen to keydown events
+  - 
+  */
 
   return (
     <Draggable key={element.id} draggableId={element.id} index={path[0]}>
@@ -79,18 +98,71 @@ export function EditableBlockElement(
               path={path}
             >
               <div
-                className={`rounded-sm bg-background-muted w-6 h-6 absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition p-1 duration-200 ${css`
-                  transform: translateX(-2rem);
+                className={`absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition duration-200 flex items-center mt-3 ${css`
+                  transform: translateX(-4.5rem);
                 `}`}
                 contentEditable={false}
-                {...provided.dragHandleProps}
               >
-                <svg width="1em" height="1em" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M3 4a1 1 0 100-2 1 1 0 000 2zM9 3a1 1 0 11-2 0 1 1 0 012 0zM9 13a1 1 0 11-2 0 1 1 0 012 0zM8 9a1 1 0 100-2 1 1 0 000 2zM14 3a1 1 0 11-2 0 1 1 0 012 0zM13 14a1 1 0 100-2 1 1 0 000 2zM14 8a1 1 0 11-2 0 1 1 0 012 0zM4 13a1 1 0 11-2 0 1 1 0 012 0zM3 9a1 1 0 100-2 1 1 0 000 2z"
-                    fill="#000"
-                  />
-                </svg>
+                <Tippy
+                  delay={300}
+                  content={
+                    <span
+                      className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
+                        background-color: #3f3f3f;
+                        color: #ccc;
+                      `}`}
+                    >
+                      Add or edit block
+                    </span>
+                  }
+                >
+                  <button
+                    onClick={onAddClicked}
+                    className="rounded-sm bg-transparent hover:bg-background-muted w-8 h-8 p-1 mr-2"
+                  >
+                    <svg
+                      width="1.5em"
+                      height="1.5em"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                    >
+                      <path
+                        d="M12.667 8.667h-4v4H7.334v-4h-4V7.334h4v-4h1.333v4h4v1.333z"
+                        fill="#3F3F3F"
+                      />
+                    </svg>
+                  </button>
+                </Tippy>
+                <Tippy
+                  delay={300}
+                  content={
+                    <span
+                      className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
+                        background-color: #3f3f3f;
+                        color: #ccc;
+                      `}`}
+                    >
+                      Drag to move
+                    </span>
+                  }
+                >
+                  <div
+                    className="rounded-sm bg-transparent hover:bg-background-muted w-6 h-8 p-1"
+                    {...provided.dragHandleProps}
+                  >
+                    <svg
+                      width="1em"
+                      height="1.5em"
+                      viewBox="0 0 16 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M3.5 6a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM12.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM5 19.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM3.5 13.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
+                        fill="#3F3F3F"
+                      />
+                    </svg>
+                  </div>
+                </Tippy>
               </div>
               <div contentEditable={false} className="theme-invert">
                 <div
@@ -138,92 +210,3 @@ export function ReadonlyBlock(
 // TODO: (Horacio) Fixme types
 export const EditableBlock = React.forwardRef(EditableBlockElement as any)
 export const ReadOnlyBlock = React.forwardRef(ReadonlyBlock as any)
-
-// function SettingsButton({block, path, visible, show, hide}) {
-//   const {title, description} = block
-//   const titleRef = React.useRef<HTMLInputElement>(null)
-//   const editor = useEditor()
-//   const [innterTitle, setTitle] = React.useState<string>(() => title || '')
-//   const [innterDescription, setDescription] = React.useState<string>(
-//     () => description || '',
-//   )
-
-//   function toggleFormMetadata() {
-//     if (visible) {
-//       hide()
-//     } else {
-//       show()
-//       titleRef.current?.focus()
-//     }
-//   }
-
-//   return (
-//     <Tippy
-//       visible={visible}
-//       placement="bottom-end"
-//       interactive
-//       onClickOutside={hide}
-//       content={
-//         <div
-//           contentEditable={false}
-//           className={`theme-light select-none transition duration-200 p-2 rounded bg-gray-400 shadow-md`}
-//         >
-//           <div>
-//             <label
-//               className="block text-sm text-heading mb-2"
-//               htmlFor="block-title"
-//             >
-//               title:
-//             </label>
-//             <input
-//               className="block w-full px-2 py-1 bg-white rounded-sm border-muted-hover text-body"
-//               name="title"
-//               ref={titleRef}
-//               onClick={e => e.stopPropagation()}
-//               type="text"
-//               placeholder="title"
-//               value={innterTitle}
-//               onChange={e => {
-//                 setTitle(e.target.value)
-//                 Transforms.setNodes(editor, {title: e.target.value}, {at: path})
-//               }}
-//             />
-//           </div>
-//           <div className="mt-2">
-//             <label
-//               className="block text-sm text-heading mb-2"
-//               htmlFor="block-title"
-//             >
-//               description:
-//             </label>
-//             <textarea
-//               className="block w-full px-2 py-1 bg-white rounded-sm border-muted-hover text-body"
-//               name="description"
-//               onClick={e => e.stopPropagation()}
-//               placeholder="block description"
-//               value={innterDescription}
-//               onChange={e => {
-//                 setDescription(e.target.value)
-//                 Transforms.setNodes(
-//                   editor,
-//                   {description: e.target.value},
-//                   {at: path},
-//                 )
-//               }}
-//             />
-//           </div>
-//         </div>
-//       }
-//     >
-//       <button className="px-3 py-2" onClick={toggleFormMetadata}>
-//         <Icons.Settings
-//           // fill="currentColor"
-//           className="text-white"
-//           size={16}
-//           color="currentColor"
-//           strokeWidth="1"
-//         />
-//       </button>
-//     </Tippy>
-//   )
-// }

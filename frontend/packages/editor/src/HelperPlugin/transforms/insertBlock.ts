@@ -2,7 +2,6 @@ import {
   // Transforms,
   Editor,
   // Path,
-  Range,
   Transforms,
 } from 'slate'
 import {ELEMENT_BLOCK, ELEMENT_IMAGE} from '../../elements'
@@ -10,14 +9,7 @@ import {ELEMENT_BLOCK, ELEMENT_IMAGE} from '../../elements'
 import {HelperOptionsNodeData} from '../useHelper'
 import {v4 as uuid} from 'uuid'
 
-export const insertBlock = (
-  editor: Editor,
-  block: HelperOptionsNodeData,
-  targetRange: Range,
-  options?: any,
-) => {
-  console.log('props => ', {options, block, targetRange})
-
+export const insertBlock = (editor: Editor, block: HelperOptionsNodeData) => {
   Transforms.delete(editor, {unit: 'line', reverse: true})
 
   const parentBlock = Editor.above(editor, {
