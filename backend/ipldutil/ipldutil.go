@@ -2,16 +2,24 @@
 package ipldutil
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"io"
 
 	"github.com/fxamacker/cbor/v2"
-	cbornode "github.com/ipfs/go-ipld-cbor"
+	"github.com/ipfs/go-cid"
+	"github.com/ipfs/go-merkledag"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/multiformats/go-multihash"
+
+	cbornode "github.com/ipfs/go-ipld-cbor"
+	format "github.com/ipfs/go-ipld-format"
 )
+
+func init() {
+	format.Register(cid.DagProtobuf, merkledag.DecodeProtobufBlock)
+	format.Register(cid.Raw, merkledag.DecodeRawBlock)
+	format.Register(cid.DagCBOR, cbornode.DecodeBlock)
+}
 
 // MarshalSigned converts v into CBOR IPLD node, signs the resulting bytes and
 // produces another IPLD node containing both data and signature.
@@ -62,10 +70,6 @@ type signedRaw struct {
 	Sig  []byte          `cbor:"signature"`
 }
 
-func (s signedRaw) Signature() []byte {
-	return s.Sig
-}
-
 func (s signedRaw) VerifySignature(k crypto.PubKey) error {
 	ok, err := k.Verify(s.Data, s.Sig)
 	if err != nil {
@@ -78,35 +82,3 @@ func (s signedRaw) VerifySignature(k crypto.PubKey) error {
 
 	return nil
 }
-
-// RawCBOR is a type
-type RawCBOR []byte
-
-// MarshalCBOR returns m as the CBOR encoding of m.
-func (m RawCBOR) MarshalCBOR(w io.Writer) error {
-	if len(m) == 0 {
-		w.Write(cborNil)
-		return nil
-	}
-
-	w.Write(m)
-	return nil
-}
-
-// UnmarshalCBOR sets *m to a copy of data.
-func (m *RawCBOR) UnmarshalCBOR(r io.Reader) error {
-	if m == nil {
-		return errors.New("ipldutil.RawCBOR: UnmarshalCBOR on nil pointer")
-	}
-
-	var b bytes.Buffer
-	if _, err := io.Copy(&b, r); err != nil {
-		return err
-	}
-
-	*m = append((*m)[0:0], b.Bytes()...)
-
-	return nil
-}
-
-var cborNil = []byte{0xf6}
