@@ -2,7 +2,7 @@ import React, {useEffect, useRef} from 'react'
 import {Portal} from '../../components/portal'
 import {useSlate, ReactEditor} from 'slate-react'
 import {css} from 'emotion'
-import {Icons} from '../../components/icons'
+// import {Icons} from '../../components/icons'
 
 /**
  * Prevent default and call a handler if defined
@@ -30,10 +30,15 @@ export function HelperToolbar({
 
   useEffect(() => {
     if (at && options.length > 0) {
-      console.log('enter the useEffect')
       const el = ref.current
-      const domRange = ReactEditor.toDOMRange(editor, at)
-      const rect = domRange.getBoundingClientRect()
+      let rect
+      if (typeof at.getBoundingClientRect === 'function') {
+        rect = at.getBoundingClientRect()
+      } else {
+        const domRange = ReactEditor.toDOMRange(editor, at)
+        rect = domRange.getBoundingClientRect()
+      }
+
       if (el) {
         el.style.top = `${rect.top + window.pageYOffset + 24}px`
         el.style.left = `${rect.left + window.pageXOffset}px`
@@ -73,7 +78,7 @@ export function HelperToolbar({
             </li>
           ))}
         </ul>
-        <div className="bg-background py-4">
+        {/* <div className="bg-background py-4">
           <p className="px-4 uppercase text-body-muted text-xs font-bold">
             Actions
           </p>
@@ -85,7 +90,7 @@ export function HelperToolbar({
               </button>
             </li>
           </ul>
-        </div>
+        </div> */}
       </div>
     </Portal>
   )
