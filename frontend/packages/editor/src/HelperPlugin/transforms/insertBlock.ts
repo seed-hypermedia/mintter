@@ -1,11 +1,6 @@
-import {
-  // Transforms,
-  Editor,
-  // Path,
-  Transforms,
-} from 'slate'
+import {Editor, Transforms} from 'slate'
 import {ELEMENT_BLOCK, ELEMENT_IMAGE} from '../../elements'
-// import {isCollapsed} from '@udecode/slate-plugins'
+
 import {HelperOptionsNodeData} from '../useHelper'
 import {v4 as uuid} from 'uuid'
 

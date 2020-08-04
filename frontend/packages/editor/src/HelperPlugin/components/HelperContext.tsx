@@ -1,12 +1,7 @@
 import React, {createContext, useContext, useCallback, useState} from 'react'
 
-import {
-  Range,
-  Editor,
-  Transforms,
-  // Transforms, Path
-} from 'slate'
-// import {nodeTypes} from '../nodeTypes'
+import {Range, Editor, Transforms} from 'slate'
+
 import {
   getNextIndex,
   getPreviousIndex,
@@ -39,6 +34,7 @@ export function HelperProvider({children, options}) {
   const [targetRange, setTargetRange] = useState<Range | null>(null)
   const [valueIndex, setValueIndex] = useState(0)
   const [search, setSearch] = useState('')
+  const [targetPath, setTargetPath] = useState(null)
   const values = options.filter((o: HelperOptionsNodeData) =>
     o.name.toLowerCase().includes(search.toLowerCase()),
   )
@@ -46,20 +42,22 @@ export function HelperProvider({children, options}) {
   const onAddBlock = useCallback(
     (editor: Editor, block: HelperOptionsNodeData) => {
       if (targetRange !== null) {
-        Transforms.select(editor, targetRange)
+        const pos = targetPath ?? targetRange
+        Transforms.select(editor, pos)
         insertBlock(editor, block)
+        setTargetPath(null)
         return setTargetRange(null)
       }
     },
-    [targetRange],
+    [targetRange, targetPath],
   )
 
   const setTarget = useCallback(
-    (range: any) => {
-      console.log('SETTARGET!! ', range)
-      setTargetRange(null)
+    (target, blockPath) => {
+      setTargetRange(target)
+      setTargetPath(blockPath)
     },
-    [setTargetRange],
+    [setTargetRange, setTargetPath],
   )
 
   const onKeyDownHelper = useCallback(
@@ -78,6 +76,7 @@ export function HelperProvider({children, options}) {
 
         if (e.key === 'Escape') {
           e.preventDefault()
+          setTargetPath(null)
           return setTargetRange(null)
         }
 

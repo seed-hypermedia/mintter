@@ -1,14 +1,10 @@
-import React, {RefObject} from 'react'
-// import {Path, Transforms} from 'slate'
-// import {Transforms} from 'slate'
+import React, {RefObject, useEffect, useCallback} from 'react'
 import {RenderElementProps, ReactEditor, useEditor} from 'slate-react'
-// import {Icons} from '../components/icons'
 import {Editor} from '../editor'
 import {Draggable} from 'react-beautiful-dnd'
 import {css} from 'emotion'
 import Tippy from '@tippyjs/react'
 import {useHelper} from '../HelperPlugin'
-// import Tippy from '@tippyjs/react'
 
 const mergeRefs = (...refs) => {
   const filteredRefs = refs.filter(Boolean)
@@ -43,10 +39,9 @@ export function EditableBlockElement(
   const blockChars = Editor.charCount(editor, path)
   const [isHover, setHover] = React.useState<boolean>(false)
   const [, setVisible] = React.useState<boolean>(true)
-  // const show = () => setVisible(true)
   const hide = () => setVisible(false)
 
-  const {setTarget} = useHelper()
+  const {setTarget, target, onKeyDownHelper} = useHelper()
 
   function handleMouseEnter() {
     setHover(true)
@@ -58,9 +53,10 @@ export function EditableBlockElement(
   }
 
   function onAddClicked(e) {
-    console.log('onAddClicked -> e', e.target)
     e.preventDefault()
-    setTarget()
+    const value = target ? null : e.target
+    // console.log('LEAF: ', true)
+    setTarget(value, path)
   }
 
   const formatter = new Intl.NumberFormat('en-ES', {
@@ -71,13 +67,20 @@ export function EditableBlockElement(
 
   const price = formatter.format(blockChars * 0.0001)
 
-  /*
+  const onKeyDown = useCallback(
+    e => {
+      onKeyDownHelper(e, editor)
+    },
+    [editor, onKeyDownHelper],
+  )
 
-  - click button
-  - set target range (btn or path??)
-  - listen to keydown events
-  - 
-  */
+  useEffect(() => {
+    window.addEventListener('keydown', onKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [onKeyDown])
 
   return (
     <Draggable key={element.id} draggableId={element.id} index={path[0]}>
