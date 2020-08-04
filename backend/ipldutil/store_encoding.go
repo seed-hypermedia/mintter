@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mintter/backend/identity"
 
 	"github.com/fxamacker/cbor/v2"
+	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p-core/crypto"
 
 	typegen "github.com/whyrusleeping/cbor-gen"
@@ -27,6 +29,24 @@ type signedIPLD struct {
 	Data      rawCBOR `cbor:"data"`
 	Signer    string  `cbor:"signer"`
 	Signature []byte  `cbor:"signature"`
+}
+
+func signIPLD(v interface{}, prof identity.Profile) (signedIPLD, error) {
+	data, err := cbornode.DumpObject(v)
+	if err != nil {
+		return signedIPLD{}, err
+	}
+
+	sign, err := prof.Account.PrivKey.Sign(data)
+	if err != nil {
+		return signedIPLD{}, fmt.Errorf("failed to sign object: %w", err)
+	}
+
+	return signedIPLD{
+		Data:      rawCBOR(data),
+		Signature: sign,
+		Signer:    prof.Account.ID.String(),
+	}, nil
 }
 
 func (t signedIPLD) VerifySignature(k crypto.PubKey) error {

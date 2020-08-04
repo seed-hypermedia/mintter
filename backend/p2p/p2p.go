@@ -16,6 +16,7 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/identity"
 	"mintter/backend/ipfsutil"
+	"mintter/backend/ipldutil"
 	"mintter/backend/store"
 
 	"github.com/libp2p/go-libp2p"
@@ -69,15 +70,16 @@ type Node struct {
 	pubsub *pubsub.PubSub
 	g      errgroup.Group // Background goroutines will be running in this group.
 
-	acc      identity.Account
-	peer     identity.Peer
-	host     host.Host
-	dag      *ipfsutil.Node
-	cleanup  io.Closer
-	ctx      context.Context
-	quit     context.CancelFunc // This channel will be closed to indicate all the goroutines to exit.
-	lis      net.Listener       // Libp2p listener wrapped into net.Listener. Used by the underlying gRPC server.
-	dialOpts []grpc.DialOption  // Default dial options for gRPC client. Cached to avoid allocating same options for every call.
+	acc       identity.Account
+	peer      identity.Peer
+	host      host.Host
+	ipfs      *ipfsutil.Node
+	ipldstore *ipldutil.SigningStore
+	cleanup   io.Closer
+	ctx       context.Context
+	quit      context.CancelFunc // This channel will be closed to indicate all the goroutines to exit.
+	lis       net.Listener       // Libp2p listener wrapped into net.Listener. Used by the underlying gRPC server.
+	dialOpts  []grpc.DialOption  // Default dial options for gRPC client. Cached to avoid allocating same options for every call.
 
 	mu   sync.Mutex
 	subs map[identity.ProfileID]*subscription
@@ -168,15 +170,16 @@ func NewNode(repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (
 		store: s,
 		log:   log,
 
-		acc:      prof.Account,
-		peer:     prof.Peer,
-		host:     h,
-		dag:      ipfsnode,
-		cleanup:  &clean,
-		lis:      lis,
-		ctx:      ctx,
-		quit:     cancel,
-		dialOpts: dialOpts(h),
+		acc:       prof.Account,
+		peer:      prof.Peer,
+		host:      h,
+		ipfs:      ipfsnode,
+		ipldstore: ipldutil.NewSigningStore(s, ipfsnode.BlockStore()),
+		cleanup:   &clean,
+		lis:       lis,
+		ctx:       ctx,
+		quit:      cancel,
+		dialOpts:  dialOpts(h),
 	}
 
 	if err := n.setupPubSub(ctx); err != nil {
