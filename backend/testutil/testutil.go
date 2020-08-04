@@ -10,6 +10,9 @@ import (
 
 	"mintter/backend/identity"
 
+	"github.com/ipfs/go-datastore"
+	"github.com/ipfs/go-datastore/sync"
+	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"github.com/stretchr/testify/require"
 )
 
@@ -41,4 +44,9 @@ func MakeRepoPath(t *testing.T) string {
 	})
 
 	return dir
+}
+
+// MakeBlockStore creates a new in-memory block store for tests.
+func MakeBlockStore(t *testing.T) blockstore.Blockstore {
+	return blockstore.NewBlockstore(sync.MutexWrap(datastore.NewMapDatastore()))
 }

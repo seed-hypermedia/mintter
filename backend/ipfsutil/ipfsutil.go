@@ -33,21 +33,12 @@ import (
 	chunker "github.com/ipfs/go-ipfs-chunker"
 	offline "github.com/ipfs/go-ipfs-exchange-offline"
 	provider "github.com/ipfs/go-ipfs-provider"
-	cbornode "github.com/ipfs/go-ipld-cbor"
 	format "github.com/ipfs/go-ipld-format"
 	ufsio "github.com/ipfs/go-unixfs/io"
 	multihash "github.com/multiformats/go-multihash"
 )
 
-func init() {
-	format.Register(cid.DagProtobuf, merkledag.DecodeProtobufBlock)
-	format.Register(cid.Raw, merkledag.DecodeRawBlock)
-	format.Register(cid.DagCBOR, cbornode.DecodeBlock) // need to decode CBOR
-}
-
-var (
-	defaultReprovideInterval = 12 * time.Hour
-)
+const defaultReprovideInterval = 12 * time.Hour
 
 // Config wraps configuration options for the Peer.
 type Config struct {
@@ -73,8 +64,7 @@ type Node struct {
 	dht   routing.Routing
 	store datastore.Batching
 
-	bstore     blockstore.Blockstore
-	bserv      blockservice.BlockService
+	bstore     *NetworkBlockStore
 	reprovider provider.System
 	cleanup    io.Closer
 }
@@ -164,8 +154,7 @@ func New(
 
 	n = &Node{
 		DAGService: merkledag.NewDAGService(blocksvc),
-		bstore:     bs,
-		bserv:      blocksvc,
+		bstore:     NewNetworkBlockStore(blocksvc),
 		reprovider: reprov,
 
 		cfg:     cfg,
@@ -310,6 +299,6 @@ func (p *Node) GetFile(ctx context.Context, c cid.Cid) (ufsio.ReadSeekCloser, er
 }
 
 // BlockStore offers access to the blockstore underlying the Peer's DAGService.
-func (p *Node) BlockStore() blockstore.Blockstore {
+func (p *Node) BlockStore() *NetworkBlockStore {
 	return p.bstore
 }

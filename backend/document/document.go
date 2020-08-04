@@ -4,13 +4,14 @@ package document
 import (
 	"context"
 	"fmt"
+	"sync"
+
+	"mintter/backend/identity"
+	"mintter/backend/ipldutil"
 
 	"github.com/ipfs/go-cid"
-	"github.com/multiformats/go-multihash"
+	"github.com/ipfs/go-datastore"
 	"github.com/rs/xid"
-
-	cbornode "github.com/ipfs/go-ipld-cbor"
-	format "github.com/ipfs/go-ipld-format"
 )
 
 // State of a document.
@@ -39,39 +40,63 @@ type Block struct {
 
 // Service for storing and retrieving documents.
 type Service struct {
-	docs map[string][]cid.Cid
-	dag  format.DAGService
+	revstore  docRevStore
+	ipldstore *ipldutil.SigningStore
 }
 
 // TODO wire in key store and document store.
 
+type docRevStore interface {
+	Get(string) ([]cid.Cid, error)
+	Store(string, []cid.Cid) error
+}
+
+type profileStore interface {
+	GetProfile(context.Context, identity.ProfileID) (identity.Profile, error)
+	CurrentProfile(context.Context) (identity.Profile, error)
+}
+
+type inmemRevStore struct {
+	m sync.Map
+}
+
+func (s *inmemRevStore) Get(docID string) ([]cid.Cid, error) {
+	v, ok := s.m.Load(docID)
+	if !ok {
+		return nil, datastore.ErrNotFound
+	}
+
+	return v.([]cid.Cid), nil
+}
+
+func (s *inmemRevStore) Store(docID string, revs []cid.Cid) error {
+	s.m.Store(docID, revs)
+	return nil
+}
+
 // NewService creates a new document service.
-func NewService(dag format.DAGService) *Service {
+func NewService(ipldstore *ipldutil.SigningStore, revstore docRevStore) *Service {
 	return &Service{
-		docs: make(map[string][]cid.Cid),
-		dag:  dag,
+		revstore:  revstore,
+		ipldstore: ipldstore,
 	}
 }
 
 // PublishDocument on the P2P network.
 func (svc *Service) PublishDocument(ctx context.Context, d *State) (cid.Cid, error) {
-	revs := svc.docs[d.ID]
+	revs, err := svc.revstore.Get(d.ID)
+	if err != nil && err != datastore.ErrNotFound {
+		return cid.Undef, err
+	}
 
 	var cur State
 
 	for _, rev := range revs {
-		node, err := svc.dag.Get(ctx, rev)
-		if err != nil {
-			return cid.Undef, err
-		}
-
 		var set opSet
 
-		if err := cbornode.DecodeInto(node.RawData(), &set); err != nil {
+		if err := svc.ipldstore.Get(ctx, rev, &set); err != nil {
 			return cid.Undef, err
 		}
-
-		// TODO: verify signature
 
 		if err := cur.apply(set.Operations); err != nil {
 			return cid.Undef, err
@@ -91,18 +116,17 @@ func (svc *Service) PublishDocument(ctx context.Context, d *State) (cid.Cid, err
 		head.Parent = revs[len(revs)-1]
 	}
 
-	node, err := cbornode.WrapObject(head, multihash.SHA2_256, -1)
+	headcid, err := svc.ipldstore.Put(ctx, head)
 	if err != nil {
-		return cid.Undef, fmt.Errorf("can't marshal to cbor: %w", err)
-	}
-
-	if err := svc.dag.Add(ctx, node); err != nil {
 		return cid.Undef, err
 	}
 
-	svc.docs[d.ID] = append(revs, node.Cid())
+	revs = append(revs, headcid)
+	if err := svc.revstore.Store(d.ID, revs); err != nil {
+		return cid.Undef, fmt.Errorf("failed to store revisions for document %s: %w", d.ID, err)
+	}
 
-	return node.Cid(), nil
+	return headcid, nil
 }
 
 // GetDocument from local storage or P2P network.
@@ -111,13 +135,8 @@ func (svc *Service) GetDocument(ctx context.Context, id cid.Cid) (*State, error)
 
 	next := id
 	for next.Defined() {
-		node, err := svc.dag.Get(ctx, next)
-		if err != nil {
-			return nil, err
-		}
-
 		var set opSet
-		if err := cbornode.DecodeInto(node.RawData(), &set); err != nil {
+		if err := svc.ipldstore.Get(ctx, next, &set); err != nil {
 			return nil, err
 		}
 

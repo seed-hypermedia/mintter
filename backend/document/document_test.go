@@ -3,10 +3,12 @@ package document
 import (
 	"context"
 	"fmt"
+	"mintter/backend/ipldutil"
+	"mintter/backend/store"
+	"mintter/backend/testutil"
 	"testing"
 
 	format "github.com/ipfs/go-ipld-format"
-	"github.com/ipfs/go-merkledag/dagutils"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/require"
 )
@@ -157,8 +159,10 @@ func TestDiffDocs(t *testing.T) {
 }
 
 func TestDocumentService(t *testing.T) {
-	dag := dagutils.NewMemoryDagService()
-	svc := NewService(dag)
+	bs := testutil.MakeBlockStore(t)
+	ipldstore := ipldutil.NewSigningStore(testStore(t), bs)
+
+	svc := NewService(ipldstore, &inmemRevStore{})
 	ctx := context.Background()
 
 	v1 := &State{
@@ -199,12 +203,17 @@ func TestDocumentService(t *testing.T) {
 	v2cid, err := svc.PublishDocument(ctx, v2)
 	require.NoError(t, err)
 
-	v2node, err := dag.Get(ctx, v2cid)
-	require.NoError(t, err)
+	{
+		blk, err := bs.Get(v2cid)
+		require.NoError(t, err)
 
-	obj, _, err := v2node.Resolve([]string{"parent"})
-	require.NoError(t, err)
-	require.Equal(t, v1cid, obj.(*format.Link).Cid)
+		v2node, err := format.Decode(blk)
+		require.NoError(t, err)
+
+		obj, _, err := v2node.Resolve([]string{"data", "parent"})
+		require.NoError(t, err)
+		require.Equal(t, v1cid, obj.(*format.Link).Cid)
+	}
 
 	v1doc, err := svc.GetDocument(ctx, v1cid)
 	require.NoError(t, err)
@@ -213,4 +222,19 @@ func TestDocumentService(t *testing.T) {
 	v2doc, err := svc.GetDocument(ctx, v2cid)
 	require.NoError(t, err)
 	require.Equal(t, v2, v2doc)
+}
+
+func testStore(t *testing.T) *store.Store {
+	t.Helper()
+	dir := testutil.MakeRepoPath(t)
+	prof := testutil.MakeProfile(t, "alice")
+
+	s, err := store.Create(dir, prof)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		require.NoError(t, s.Close())
+	})
+
+	return s
 }
