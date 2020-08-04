@@ -2,7 +2,6 @@ package ipldutil
 
 import (
 	"context"
-	"fmt"
 
 	"mintter/backend/identity"
 
@@ -69,20 +68,9 @@ func (s *SigningStore) Put(ctx context.Context, v interface{}) (cid.Cid, error) 
 		return cid.Undef, err
 	}
 
-	data, err := cbornode.DumpObject(v)
+	signed, err := signIPLD(v, prof)
 	if err != nil {
 		return cid.Undef, err
-	}
-
-	sign, err := prof.Account.PrivKey.Sign(data)
-	if err != nil {
-		return cid.Undef, fmt.Errorf("failed to sign object: %w", err)
-	}
-
-	signed := signedIPLD{
-		Data:      rawCBOR(data),
-		Signature: sign,
-		Signer:    prof.Account.ID.String(),
 	}
 
 	return s.bs.Put(ctx, signed)

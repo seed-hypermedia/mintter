@@ -2,41 +2,31 @@ package p2p
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"mintter/backend/identity"
-	"mintter/backend/ipldutil"
 	"mintter/backend/p2p/internal"
 	"mintter/backend/publishing"
 
 	"github.com/ipfs/go-cid"
-	format "github.com/ipfs/go-ipld-format"
-	"github.com/libp2p/go-libp2p-core/peer"
 	"go.uber.org/zap"
 )
 
 // AddSections to the IPLD service.
 func (n *Node) AddSections(ctx context.Context, sects ...publishing.Section) ([]cid.Cid, error) {
 	cids := make([]cid.Cid, len(sects))
-	nodes := make([]format.Node, len(sects))
 
 	for i, s := range sects {
 		if s.Author != n.acc.ID.String() {
 			return nil, fmt.Errorf("can't add sections from other authors (%s)", s.Author)
 		}
 
-		node, err := ipldutil.MarshalSigned(s, n.acc.PrivKey)
+		c, err := n.ipldstore.Put(ctx, s)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to put section %d: %w", i, err)
 		}
 
-		nodes[i] = node
-		cids[i] = node.Cid()
-	}
-
-	if err := n.dag.AddMany(ctx, nodes); err != nil {
-		return nil, fmt.Errorf("failed to add sections to IPLD service: %w", err)
+		cids[i] = c
 	}
 
 	return cids, nil
@@ -48,75 +38,30 @@ func (n *Node) AddPublication(ctx context.Context, pub publishing.Publication) (
 		return cid.Undef, fmt.Errorf("can't add publication from other authors (%s)", pub.Author)
 	}
 
-	node, err := ipldutil.MarshalSigned(pub, n.acc.PrivKey)
+	c, err := n.ipldstore.Put(ctx, pub)
 	if err != nil {
-		return cid.Undef, err
+		return cid.Undef, fmt.Errorf("failed to add publication: %w", err)
 	}
 
-	if err := n.dag.Add(ctx, node); err != nil {
-		return cid.Undef, fmt.Errorf("failed to add publication to IPLD service: %w", err)
-	}
-
-	if err := n.store.AddPublication(pub.Author, pub.DocumentID, node.Cid()); err != nil {
+	if err := n.store.AddPublication(pub.Author, pub.DocumentID, c); err != nil {
 		return cid.Undef, fmt.Errorf("failed to add publication to store: %w", err)
 	}
 
-	cid := node.Cid()
-
-	if err := n.pubsub.Publish(pub.Author, cid.Bytes()); err != nil {
-		n.log.Error("FailedToPublishOverPubSub", zap.Error(err), zap.String("cid", cid.String()))
+	if err := n.pubsub.Publish(pub.Author, c.Bytes()); err != nil {
+		n.log.Error("FailedToPublishOverPubSub", zap.Error(err), zap.String("cid", c.String()))
 	}
 
-	return cid, nil
+	return c, nil
 }
 
 // GetSections from the IPLD service.
 func (n *Node) GetSections(ctx context.Context, cids ...cid.Cid) ([]publishing.Section, error) {
 	out := make([]publishing.Section, len(cids))
 
-	// To avoid calling database for each section to get the profile
-	// we cache them locally. It's probably a good idea to have a global LRU cache or similar.
-	cache := map[string]identity.Profile{}
-
 	for i, cid := range cids {
-		node, err := n.dag.Get(ctx, cid)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get block: %w", err)
+		if err := n.ipldstore.Get(ctx, cid, &out[i]); err != nil {
+			return nil, fmt.Errorf("failed to get section %d: %w", i, err)
 		}
-
-		var prof identity.Profile
-		{
-			var authorID string
-			v, _, err := node.Resolve([]string{"data", "author"})
-			if err != nil {
-				return nil, fmt.Errorf("failed to retrieve author's profile ID: %w", err)
-			}
-
-			authorID = v.(string)
-
-			pid, err := identity.DecodeProfileID(authorID)
-			if err != nil {
-				return nil, fmt.Errorf("failed to decode profile ID: %w", err)
-			}
-
-			p, ok := cache[authorID]
-			if !ok {
-				p, err = n.store.GetProfile(ctx, pid)
-				if err != nil {
-					return nil, fmt.Errorf("failed to get profile %s: %w", pid, err)
-				}
-				cache[authorID] = p
-			}
-
-			prof = p
-		}
-
-		var v publishing.Section
-		if err := ipldutil.UnmarshalSigned(node.RawData(), &v, prof.Account.PubKey); err != nil {
-			return nil, fmt.Errorf("failed to verify section signature: %w", err)
-		}
-
-		out[i] = v
 	}
 
 	return out, nil
@@ -124,44 +69,13 @@ func (n *Node) GetSections(ctx context.Context, cids ...cid.Cid) ([]publishing.S
 
 // GetPublication from the IPLD service.
 func (n *Node) GetPublication(ctx context.Context, cid cid.Cid) (publishing.Publication, error) {
-	local, err := n.dag.BlockStore().Has(cid)
-	if err != nil {
-		return publishing.Publication{}, err
-	}
-
-	node, err := n.dag.Get(ctx, cid)
-	if err != nil {
-		return publishing.Publication{}, fmt.Errorf("failed to get IPLD node: %w", err)
-	}
-
-	// TODO(burdiyan): Should we verify signature here?
-
-	var author identity.ProfileID
-	{
-		v, _, err := node.Resolve([]string{"data", "author"})
-		if err != nil {
-			return publishing.Publication{}, err
-		}
-		a := v.(string)
-		if a == "" {
-			return publishing.Publication{}, errors.New("missing author field for signed IPLD")
-		}
-
-		pid, err := peer.Decode(a)
-		if err != nil {
-			return publishing.Publication{}, err
-		}
-
-		author.ID = pid
-	}
-
-	prof, err := n.store.GetProfile(ctx, author)
+	local, err := n.ipfs.BlockStore().Has(cid)
 	if err != nil {
 		return publishing.Publication{}, err
 	}
 
 	var p publishing.Publication
-	if err := ipldutil.UnmarshalSigned(node.RawData(), &p, prof.Account.PubKey); err != nil {
+	if err := n.ipldstore.Get(ctx, cid, &p); err != nil {
 		return publishing.Publication{}, err
 	}
 
@@ -208,7 +122,7 @@ func (n *Node) SyncPublications(ctx context.Context, pid identity.ProfileID) err
 }
 
 func (n *Node) syncPublication(ctx context.Context, cid cid.Cid) error {
-	ok, err := n.dag.BlockStore().Has(cid)
+	ok, err := n.ipfs.BlockStore().Has(cid)
 	if err != nil {
 		return err
 	}
