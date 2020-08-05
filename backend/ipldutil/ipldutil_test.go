@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	"mintter/backend/ipfsutil"
 	"mintter/backend/store"
 	"mintter/backend/testutil"
 
@@ -17,7 +16,6 @@ import (
 
 func TestStore(t *testing.T) {
 	profstore := testStore(t)
-	bs := testutil.MakeBlockStore(t)
 	ctx := context.Background()
 
 	type testNode struct {
@@ -26,14 +24,11 @@ func TestStore(t *testing.T) {
 
 	cbornode.RegisterCborType(testNode{})
 
-	cid1, err := PutSignedRecord(ctx, bs, profstore, testNode{"Alex"})
+	blk, err := CreateSignedBlock(ctx, profstore, testNode{"Alex"})
 	require.NoError(t, err)
 
 	{
-		block, err := bs.Get(cid1)
-		require.NoError(t, err)
-
-		node, err := format.Decode(block)
+		node, err := format.Decode(blk)
 		require.NoError(t, err)
 
 		jsondata, err := json.Marshal(node)
@@ -44,7 +39,8 @@ func TestStore(t *testing.T) {
 	}
 
 	var data testNode
-	require.NoError(t, GetSignedRecord(ctx, ipfsutil.BlockGetterFromBlockStore(bs), profstore, cid1, &data))
+	err = ReadSignedBlock(ctx, profstore, blk, &data)
+	require.NoError(t, err)
 	require.Equal(t, "Alex", data.Name)
 }
 

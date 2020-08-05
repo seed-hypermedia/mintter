@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"mintter/backend/identity"
-	"mintter/backend/ipfsutil"
 	"mintter/backend/ipldutil"
 
 	"github.com/ipfs/go-cid"
@@ -98,7 +97,7 @@ func (svc *Service) PublishDocument(ctx context.Context, d *State) (cid.Cid, err
 	for _, rev := range revs {
 		var set opSet
 
-		if err := ipldutil.GetSignedRecord(ctx, ipfsutil.BlockGetterFromBlockStore(svc.bs), svc.profstore, rev, &set); err != nil {
+		if err := svc.getSignedRecord(ctx, rev, &set); err != nil {
 			return cid.Undef, err
 		}
 
@@ -120,7 +119,7 @@ func (svc *Service) PublishDocument(ctx context.Context, d *State) (cid.Cid, err
 		head.Parent = revs[len(revs)-1]
 	}
 
-	headcid, err := ipldutil.PutSignedRecord(ctx, svc.bs, svc.profstore, head)
+	headcid, err := svc.putSignedRecord(ctx, head)
 	if err != nil {
 		return cid.Undef, err
 	}
@@ -140,7 +139,8 @@ func (svc *Service) GetDocument(ctx context.Context, id cid.Cid) (*State, error)
 	next := id
 	for next.Defined() {
 		var set opSet
-		if err := ipldutil.GetSignedRecord(ctx, ipfsutil.BlockGetterFromBlockStore(svc.bs), svc.profstore, next, &set); err != nil {
+
+		if err := svc.getSignedRecord(ctx, next, &set); err != nil {
 			return nil, err
 		}
 
@@ -160,4 +160,26 @@ func (svc *Service) GetDocument(ctx context.Context, id cid.Cid) (*State, error)
 	}
 
 	return &d, nil
+}
+
+func (svc *Service) getSignedRecord(ctx context.Context, c cid.Cid, v interface{}) error {
+	blk, err := svc.bs.Get(c)
+	if err != nil {
+		return err
+	}
+
+	return ipldutil.ReadSignedBlock(ctx, svc.profstore, blk, v)
+}
+
+func (svc *Service) putSignedRecord(ctx context.Context, v interface{}) (cid.Cid, error) {
+	blk, err := ipldutil.CreateSignedBlock(ctx, svc.profstore, v)
+	if err != nil {
+		return cid.Undef, err
+	}
+
+	if err := svc.bs.Put(blk); err != nil {
+		return cid.Undef, err
+	}
+
+	return blk.Cid(), nil
 }

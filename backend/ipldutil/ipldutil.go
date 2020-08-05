@@ -6,7 +6,6 @@ import (
 	"context"
 
 	"mintter/backend/identity"
-	"mintter/backend/ipfsutil"
 
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-merkledag"
@@ -28,13 +27,7 @@ type profileStore interface {
 	GetProfile(context.Context, identity.ProfileID) (identity.Profile, error)
 }
 
-// GetSignedRecord using the provided block getter. The signature will be verified using the underlying profile store.
-func GetSignedRecord(ctx context.Context, getter ipfsutil.BlockGetter, profstore profileStore, c cid.Cid, v interface{}) error {
-	blk, err := getter.GetBlock(ctx, c)
-	if err != nil {
-		return err
-	}
-
+func ReadSignedBlock(ctx context.Context, profstore profileStore, blk blocks.Block, v interface{}) error {
 	var in signedIPLD
 
 	if err := in.UnmarshalCBOR(bytes.NewReader(blk.RawData())); err != nil {
@@ -58,21 +51,20 @@ func GetSignedRecord(ctx context.Context, getter ipfsutil.BlockGetter, profstore
 	return cbornode.DecodeInto(in.Data, v)
 }
 
-// PutSignedRecord will sign the provided value using the current profile and the provided block putter.
-func PutSignedRecord(ctx context.Context, putter ipfsutil.BlockPutter, profstore profileStore, v interface{}) (cid.Cid, error) {
+func CreateSignedBlock(ctx context.Context, profstore profileStore, v interface{}) (blocks.Block, error) {
 	prof, err := profstore.CurrentProfile(ctx)
 	if err != nil {
-		return cid.Undef, err
+		return nil, err
 	}
 
 	signed, err := signIPLD(v, prof)
 	if err != nil {
-		return cid.Undef, err
+		return nil, err
 	}
 
 	var buf bytes.Buffer
 	if err := signed.MarshalCBOR(&buf); err != nil {
-		return cid.Undef, err
+		return nil, err
 	}
 
 	// Copy from go-ipld-cbor IpldStore.
@@ -91,17 +83,8 @@ func PutSignedRecord(ctx context.Context, putter ipfsutil.BlockPutter, profstore
 
 	c, err := pref.Sum(buf.Bytes())
 	if err != nil {
-		return cid.Undef, err
+		return nil, err
 	}
 
-	blk, err := blocks.NewBlockWithCid(buf.Bytes(), c)
-	if err != nil {
-		return cid.Undef, err
-	}
-
-	if err := putter.Put(blk); err != nil {
-		return cid.Undef, err
-	}
-
-	return blk.Cid(), nil
+	return blocks.NewBlockWithCid(buf.Bytes(), c)
 }

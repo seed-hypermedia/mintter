@@ -12,23 +12,31 @@ import (
 
 	"github.com/ipfs/go-cid"
 	"go.uber.org/zap"
+
+	blocks "github.com/ipfs/go-block-format"
 )
 
 // AddSections to the IPLD service.
 func (n *Node) AddSections(ctx context.Context, sects ...publishing.Section) ([]cid.Cid, error) {
 	cids := make([]cid.Cid, len(sects))
+	blks := make([]blocks.Block, len(sects))
 
 	for i, s := range sects {
 		if s.Author != n.acc.ID.String() {
 			return nil, fmt.Errorf("can't add sections from other authors (%s)", s.Author)
 		}
 
-		c, err := ipldutil.PutSignedRecord(ctx, n.ipfs.BlockStore(), n.store, s)
+		blk, err := ipldutil.CreateSignedBlock(ctx, n.store, s)
 		if err != nil {
-			return nil, fmt.Errorf("failed to put section %d: %w", i, err)
+			return nil, fmt.Errorf("failed to create block for section %d: %w", i, err)
 		}
 
-		cids[i] = c
+		cids[i] = blk.Cid()
+		blks[i] = blk
+	}
+
+	if err := n.ipfs.BlockStore().PutMany(blks); err != nil {
+		return nil, fmt.Errorf("failed to put blocks: %w", err)
 	}
 
 	return cids, nil
@@ -40,20 +48,24 @@ func (n *Node) AddPublication(ctx context.Context, pub publishing.Publication) (
 		return cid.Undef, fmt.Errorf("can't add publication from other authors (%s)", pub.Author)
 	}
 
-	c, err := ipldutil.PutSignedRecord(ctx, n.ipfs.BlockStore(), n.store, pub)
+	blk, err := ipldutil.CreateSignedBlock(ctx, n.store, pub)
 	if err != nil {
-		return cid.Undef, fmt.Errorf("failed to add publication: %w", err)
+		return cid.Undef, fmt.Errorf("failed to create publication block: %w", err)
 	}
 
-	if err := n.store.AddPublication(pub.Author, pub.DocumentID, c); err != nil {
+	if err := n.ipfs.BlockStore().Put(blk); err != nil {
+		return cid.Undef, fmt.Errorf("failed to put publication into block store: %w", err)
+	}
+
+	if err := n.store.AddPublication(pub.Author, pub.DocumentID, blk.Cid()); err != nil {
 		return cid.Undef, fmt.Errorf("failed to add publication to store: %w", err)
 	}
 
-	if err := n.pubsub.Publish(pub.Author, c.Bytes()); err != nil {
-		n.log.Error("FailedToPublishOverPubSub", zap.Error(err), zap.String("cid", c.String()))
+	if err := n.pubsub.Publish(pub.Author, blk.Cid().Bytes()); err != nil {
+		n.log.Error("FailedToPublishOverPubSub", zap.Error(err), zap.String("cid", blk.Cid().String()))
 	}
 
-	return c, nil
+	return blk.Cid(), nil
 }
 
 // GetSections from the IPLD service.
@@ -61,8 +73,13 @@ func (n *Node) GetSections(ctx context.Context, cids ...cid.Cid) ([]publishing.S
 	out := make([]publishing.Section, len(cids))
 
 	for i, cid := range cids {
-		if err := ipldutil.GetSignedRecord(ctx, n.ipfs.BlockStore().BlockGetter(), n.store, cid, &out[i]); err != nil {
-			return nil, fmt.Errorf("failed to get section %d: %w", i, err)
+		blk, err := n.ipfs.BlockStore().Get(cid)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get section: %d: %w", i, err)
+		}
+
+		if err := ipldutil.ReadSignedBlock(ctx, n.store, blk, &out[i]); err != nil {
+			return nil, fmt.Errorf("failed to read signed section %d: %w", i, err)
 		}
 	}
 
@@ -80,8 +97,13 @@ func (n *Node) getPublication(ctx context.Context, cid cid.Cid, getter ipfsutil.
 		return publishing.Publication{}, err
 	}
 
+	blk, err := getter.GetBlock(ctx, cid)
+	if err != nil {
+		return publishing.Publication{}, err
+	}
+
 	var p publishing.Publication
-	if err := ipldutil.GetSignedRecord(ctx, getter, n.store, cid, &p); err != nil {
+	if err := ipldutil.ReadSignedBlock(ctx, n.store, blk, &p); err != nil {
 		return publishing.Publication{}, err
 	}
 
