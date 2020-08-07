@@ -3,7 +3,7 @@ import {Slate} from 'slate-react'
 import {css} from 'emotion'
 import {EditablePlugins, SlateDocument} from '@udecode/slate-plugins'
 import {DragDropContext, Droppable} from 'react-beautiful-dnd'
-import {Toolbar} from './toolbar'
+// import {Toolbar} from './toolbar'
 import {HelperToolbar, HelperProvider, useHelper} from '../HelperPlugin'
 import {ELEMENT_BLOCK, ELEMENT_IMAGE} from '../elements'
 import {reorderBlocks} from '../BlockPlugin'
@@ -81,7 +81,7 @@ function Editor(
           `}`}
         >
           <div className="relative" ref={ref}>
-            <Toolbar />
+            {/* <Toolbar /> */}
             <Droppable droppableId="editor">
               {(provided, snapshot) => (
                 <div ref={provided.innerRef} {...provided.droppableProps}>

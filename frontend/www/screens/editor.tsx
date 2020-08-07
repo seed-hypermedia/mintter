@@ -179,7 +179,6 @@ export default function Editor(): JSX.Element {
   React.useEffect(() => {
     if (data) {
       const obj = data.toObject()
-      console.log('BLOCK: obj', obj)
       setValue({
         title: obj.title,
         description: obj.description,

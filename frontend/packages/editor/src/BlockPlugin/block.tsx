@@ -5,21 +5,7 @@ import {Draggable} from 'react-beautiful-dnd'
 import {css} from 'emotion'
 import Tippy from '@tippyjs/react'
 import {useHelper} from '../HelperPlugin'
-
-const mergeRefs = (...refs) => {
-  const filteredRefs = refs.filter(Boolean)
-  if (!filteredRefs.length) return null
-  if (filteredRefs.length === 0) return filteredRefs[0]
-  return inst => {
-    for (const ref of filteredRefs) {
-      if (typeof ref === 'function') {
-        ref(inst)
-      } else if (ref) {
-        ref.current = inst
-      }
-    }
-  }
-}
+import {mergeRefs} from '../mergeRefs'
 
 function Block({path, className = '', ...props}) {
   return (
@@ -84,9 +70,7 @@ export function EditableBlockElement(
 
   return (
     <Draggable key={element.id} draggableId={element.id} index={path[0]}>
-      {(provided, snapshot) => {
-        console.log('BLOCK: provided', {provided, snapshot})
-
+      {provided => {
         return (
           <div
             ref={mergeRefs(provided.innerRef, ref, attributes.ref)}

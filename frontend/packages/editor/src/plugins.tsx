@@ -48,6 +48,7 @@ export const plugins = [
   ItalicPlugin(options),
   UnderlinePlugin(options),
   StrikethroughPlugin(options),
+
   SoftBreakPlugin({
     rules: [
       {hotkey: 'shift+enter'},

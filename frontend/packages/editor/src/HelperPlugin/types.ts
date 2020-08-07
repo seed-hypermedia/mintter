@@ -1,6 +1,4 @@
-import {RenderElementOptions} from '@udecode/slate-plugins-core'
 import {Element} from 'slate'
-import {RenderElementProps} from 'slate-react'
 
 export interface useHelperOptions {
   trigger?: string
@@ -11,6 +9,19 @@ export interface HelperNodeData {
   [key: string]: any
 }
 
-export HelperNode extends Element, HelperNodeData {}
+export interface HelperOptionsNodeData {
+  name: string
+  type: string
+  url?: string
+}
 
+export interface UseHelperOptions {
+  trigger?: string
+}
 
+export interface InsertBlockOptions {
+  type: ELEMENT_BLOCK | ELEMENT_IMAGE
+  target?: Path | Range
+}
+
+export interface HelperNode extends Element, HelperNodeData {}

@@ -1,7 +1,10 @@
 import React, {createContext, useContext, useCallback, useState} from 'react'
-
-import {Range, Editor, Transforms} from 'slate'
-
+import {
+  Path,
+  Range,
+  Editor,
+  // Transforms, Node
+} from 'slate'
 import {
   getNextIndex,
   getPreviousIndex,
@@ -9,18 +12,10 @@ import {
   isCollapsed,
   isWordAfterTrigger,
   isPointAtWordEnd,
+  // ELEMENT_IMAGE,
 } from '@udecode/slate-plugins'
+import {HelperOptionsNodeData} from '../types'
 import {insertBlock} from '../transforms'
-
-export interface HelperOptionsNodeData {
-  name: string
-  type: string
-  url?: string
-}
-
-export interface UseHelperOptions {
-  trigger?: string
-}
 
 export const HelperContext: any = createContext<any>({
   search: '',
@@ -34,7 +29,7 @@ export function HelperProvider({children, options}) {
   const [targetRange, setTargetRange] = useState<Range | null>(null)
   const [valueIndex, setValueIndex] = useState(0)
   const [search, setSearch] = useState('')
-  const [targetPath, setTargetPath] = useState(null)
+  const [targetPath, setTargetPath] = useState<Path | null>(null)
   const values = options.filter((o: HelperOptionsNodeData) =>
     o.name.toLowerCase().includes(search.toLowerCase()),
   )
@@ -42,11 +37,42 @@ export function HelperProvider({children, options}) {
   const onAddBlock = useCallback(
     (editor: Editor, block: HelperOptionsNodeData) => {
       if (targetRange !== null) {
-        const pos = targetPath ?? targetRange
-        Transforms.select(editor, pos)
-        insertBlock(editor, block)
+        // const pos: any = targetPath ?? targetRange
+        // if (targetPath) {
+        //   // is triggered from the + button
+        //   const node = Node.get(editor, targetPath)
+        //   if (!Node.string(node)) {
+        //     Transforms.setNodes(
+        //       editor,
+        //       {
+        //         type: block.type,
+        //         children:
+        //           block.type === ELEMENT_IMAGE ? {text: ''} : node.children,
+        //       },
+        //       {at: targetPath},
+        //     )
+        //   } else {
+        //     insertBlock(editor, block, targetPath)
+        //   }
+
+        //   setTargetPath(null)
+        //   return setTargetRange(null)
+        // }
+
+        // Transforms.select(editor, pos)
+        // Transforms.delete(editor, {unit: 'line', reverse: true})
+
+        // insertBlock(editor, block, pos.anchor.path)
+
+        // return setTargetRange(null)
+
+        insertBlock(editor, {
+          type: block.type,
+          target: targetPath ?? targetRange,
+        })
+        setTargetRange(null)
         setTargetPath(null)
-        return setTargetRange(null)
+        return
       }
     },
     [targetRange, targetPath],
@@ -64,7 +90,6 @@ export function HelperProvider({children, options}) {
     (e: any, editor: Editor) => {
       if (targetRange) {
         if (e.key === 'ArrowDown') {
-          console.log('DOWN!!')
           e.preventDefault()
           return setValueIndex(getNextIndex(valueIndex, values.length - 1))
         }
