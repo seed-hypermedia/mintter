@@ -24,7 +24,6 @@ export function HelperToolbar({
   theme = 'theme-light',
   ...props
 }) {
-  console.log('HELPER: at', at)
   const ref: any = useRef(null)
   const editor = useSlate()
 

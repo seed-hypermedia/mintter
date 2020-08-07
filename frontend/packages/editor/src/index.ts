@@ -11,5 +11,6 @@ export * from './plugins'
 export * from './options'
 export * from './marks'
 export * from './elements'
+export * from './mergeRefs'
 
 export {slate}
