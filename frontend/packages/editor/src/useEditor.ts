@@ -26,7 +26,14 @@ import {withBlocks} from './BlockPlugin'
 
 // need this object because the plugin required it, I made an issue in the plugin's repo
 const resetOptions = {
-  types: [options.blockquote.type, ELEMENT_CODE_BLOCK],
+  types: [
+    options.blockquote.type,
+    ELEMENT_CODE_BLOCK,
+    options.h1.type,
+    options.h2.type,
+    options.h3.type,
+    options.img.type,
+  ],
   defaultType: options.p.type,
 }
 
