@@ -37,35 +37,6 @@ export function HelperProvider({children, options}) {
   const onAddBlock = useCallback(
     (editor: Editor, block: HelperOptionsNodeData) => {
       if (targetRange !== null) {
-        // const pos: any = targetPath ?? targetRange
-        // if (targetPath) {
-        //   // is triggered from the + button
-        //   const node = Node.get(editor, targetPath)
-        //   if (!Node.string(node)) {
-        //     Transforms.setNodes(
-        //       editor,
-        //       {
-        //         type: block.type,
-        //         children:
-        //           block.type === ELEMENT_IMAGE ? {text: ''} : node.children,
-        //       },
-        //       {at: targetPath},
-        //     )
-        //   } else {
-        //     insertBlock(editor, block, targetPath)
-        //   }
-
-        //   setTargetPath(null)
-        //   return setTargetRange(null)
-        // }
-
-        // Transforms.select(editor, pos)
-        // Transforms.delete(editor, {unit: 'line', reverse: true})
-
-        // insertBlock(editor, block, pos.anchor.path)
-
-        // return setTargetRange(null)
-
         insertBlock(editor, {
           type: block.type,
           target: targetPath ?? targetRange,
