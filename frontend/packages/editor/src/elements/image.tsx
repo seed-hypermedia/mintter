@@ -89,7 +89,7 @@ export function ImageBlock({attributes, element, children}) {
             </div>
 
             {file ? (
-              <img src={file} alt="" className="block w-full" />
+              <img src={file} alt={caption} className="block w-full" />
             ) : (
               <div className="p-4">
                 <input
@@ -97,10 +97,15 @@ export function ImageBlock({attributes, element, children}) {
                   accept="image/png, image/jpeg, image/gif"
                   onChange={handleOnChange}
                 />
-                <input type="text" value={caption} onChange={handleCaption} />
               </div>
             )}
-
+            <input
+              className="bg-transparent text-body text-sm w-full mt-2 border"
+              type="text"
+              placeholder="caption here"
+              value={caption}
+              onChange={handleCaption}
+            />
             {error && (
               <p className="bg-red-500 px-4 py-2 rounded-md border-px border-red-700">
                 {error}
