@@ -1,0 +1,184 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "mintter/proto/v2;v2";
+
+service Documents {
+  rpc CreateDraft(CreateDraftRequest) returns (Document);
+
+  rpc GetDocument(GetDocumentRequest) returns (Document);
+
+  rpc ListDocuments(ListDocumentsRequest) returns (ListDocumentsResponse);
+
+  rpc SaveDraft(Document) returns (Document);
+
+  rpc DeleteDocument(DeleteDocumentRequest) returns (google.protobuf.Empty);
+
+  rpc PublishDocument(PublishDocumentRequest) returns (PublishDocumentResponse);
+}
+
+message CreateDraftRequest {
+  // Optional. To update an already published document, create a new draft
+  // specifying the version of a published version as parent.
+  string parent = 1;
+}
+
+message GetDocumentRequest {
+  // Optional. The ID of the document. Required if version is not specified in
+  // which case latest published version will be returned.
+  string id = 1;
+
+  // Optional. The version of the document. Required if ID is not specified.
+  string version = 2;
+}
+
+message ListDocumentsRequest {
+  // Optional. Used to limit the number of results. The default is up to the
+  // server if not specified.
+  int32 page_size = 1;
+
+  // Optional. Used for pagination.
+  string page_token = 2;
+
+  // Optional. Filter by state of the document.
+  PublishingState publishing_state = 3;
+
+  // Optional. Used to filter the results by author. If empty it
+  // will return current user's document.
+  string author = 4;
+}
+
+message ListDocumentsResponse {
+  // The items in this list will not contain the content itself to make the
+  // response more light-weight. The full document with content can be obtain
+  // using GetDocument method.
+  repeated Document documents = 1;
+
+  string next_page_token = 2;
+}
+
+message DeleteDocumentRequest {
+  //
+  string version = 1;
+}
+
+message PublishDocumentRequest { string version = 1; }
+
+message PublishDocumentResponse {
+  // After publishing a draft the published version will not be the same as the
+  // one of the draft. But the published version will become immutable after
+  // that.
+  string version = 1;
+}
+
+enum PublishingState {
+  UNSPECIFIED = 0;
+
+  DRAFT = 1;
+
+  PUBLISHED = 2;
+}
+
+message Document {
+  // Globally unique ID of the document. CID of the signed document Permanode (a
+  // la Perkeep https://perkeep.org/doc/schema/permanode).
+  string id = 1;
+
+  // Human-friendly title of the document.
+  string title = 2;
+
+  // Subtitle of the document. Can also be a longer description or abstract.
+  string subtitle = 3;
+
+  // ID of the author of the document.
+  string author = 4;
+
+  // Current state of the document.
+  PublishingState publishing_state = 5;
+
+  // Content of the document. Can be missing in List responses to make it more
+  // light-weight.
+  BlockList block_list = 6;
+
+  // Time when the draft of this document was created for the first time.
+  google.protobuf.Timestamp create_time = 7;
+
+  // Last time this document was updated.
+  google.protobuf.Timestamp update_time = 8;
+
+  // Time when this version of the document was published. Empty for drafts.
+  google.protobuf.Timestamp publish_time = 9;
+
+  // Version of the document. For drafts it will not change between edits, but
+  // for published documents it's immutable and represents the state of the
+  // document at a given point in time.
+  string version = 10;
+
+  // Previous version of the document.
+  string parent = 11;
+}
+
+/**
+title: Hello
+author: burdiyan
+block_list:
+  list_style: NONE
+  blocks:
+    - id: block-1
+      text: Hello World
+      block_list:
+        - list_style: ORDERED
+          blocks:
+            - id: block-2
+              text_block:
+                text: Item 1
+            - id: block-3
+              text_block:
+                text: Item 2
+            - id: block-4
+              text_block:
+                text: Item 3
+    - id: block-5
+      image_block:
+        url: https://example.com/image
+*/
+
+message BlockList {
+  enum Style {
+    NONE = 0;
+
+    ORDERED = 1;
+
+    UNORDERED = 2;
+  }
+
+  Style list_style = 1;
+
+  repeated Block blocks = 2;
+}
+
+message Block {
+  string id = 1;
+
+  BlockList block_list = 2;
+
+  oneof content {
+    TextBlock text_block = 3;
+
+    // TODO(burdiyan): uncomment this when start implementing images.
+    // ImageBlock image_block = 4;
+  }
+}
+
+message TextBlock {
+  // TODO(burdiyan): Apply format somehow.
+  string text = 1;
+}
+
+message ImageBlock {
+  // URI for the actual image. Meant to be used as src attribute of the img HTML
+  // tag directly.
+  string uri = 1;
+}
