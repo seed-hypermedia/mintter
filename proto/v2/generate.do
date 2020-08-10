@@ -1,0 +1,1 @@
+redo-ifchange go.protobuf js.protobuf
