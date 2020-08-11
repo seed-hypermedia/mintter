@@ -2183,6 +2183,11 @@
   resolved "https://registry.yarnpkg.com/@types/color-name/-/color-name-1.1.1.tgz#1c1261bbeaa10a8055bbc5d8ab84b7b2afc846a0"
   integrity sha512-rr+OQyAjxze7GgWrSaJwydHStIhHq2lvY3BOC2Mj7KnzI7XK0Uw1TOOdI9lDoajEbSWLiYgoo4f1R51erQfhPQ==
 
+"@types/escape-html@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/escape-html/-/escape-html-1.0.0.tgz#9135124510b0930b664255149e59ed750fc11f65"
+  integrity sha512-Ehe6irbxo5BSYwG03buglLJCmy3JqqtC69UvopsBWYf4hDa+ZODJ7BuZU6y+YE4U6MaoSruTxM2+uePfAHts9Q==
+
 "@types/eslint-visitor-keys@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@types/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#1ee30d79544ca84d68d4b3cdb0af4f205663dd2d"
@@ -5093,7 +5098,7 @@ es6-symbol@^3.1.1, es6-symbol@~3.1.3:
     d "^1.0.1"
     ext "^1.1.2"
 
-escape-html@~1.0.3:
+escape-html@^1.0.3, escape-html@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/escape-html/-/escape-html-1.0.3.tgz#0258eae4d3d0c0974de1c169188ef0051d1d1988"
   integrity sha1-Aljq5NPQwJdN4cFpGI7wBR0dGYg=
@@ -10802,12 +10807,13 @@ remark-parse@^8.0.2:
     vfile-location "^3.0.0"
     xtend "^4.0.1"
 
-remark-slate@^0.8.0:
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/remark-slate/-/remark-slate-0.8.0.tgz#3544dd43b70d0ac4a434e3663f30cbcd9d46d830"
-  integrity sha512-eFXguRiOMx1/Y7PFWQfAl7t0WUhBh/hEmEr85+Qd8x4sKIWOM/EaRDlzuhP6mEig2BZtl9QPXvC/lxFQ9StrxQ==
+remark-slate@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/remark-slate/-/remark-slate-1.1.1.tgz#dec958969f3277569d2d4e643b7d89073b8c40c7"
+  integrity sha512-XSzzY1i4APau55dOaYRoy4G0iM/X4qxQLQsc7T2dFF9v+YS6wZ5VzqWSMaPBYdVwyBLvuQoFHtdwWzHkSB8s2A==
   dependencies:
-    xtend "^4.0.2"
+    "@types/escape-html" "^1.0.0"
+    escape-html "^1.0.3"
 
 remove-accents@0.4.2:
   version "0.4.2"

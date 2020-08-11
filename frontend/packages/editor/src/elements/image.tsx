@@ -43,8 +43,8 @@ export function ImageBlock({attributes, element, children}) {
       setFile(null)
     } else {
       const url = URL.createObjectURL(file)
-      console.log('handleOnChange -> url', url)
       setFile(url)
+      Transforms.setNodes(editor, {url})
       setError('')
     }
   }
@@ -61,7 +61,7 @@ export function ImageBlock({attributes, element, children}) {
           {...attributes}
           {...provided.draggableProps}
           ref={mergeRefs(provided.innerRef, attributes.ref)}
-          className={`group first:mt-8 relative border-2 overflow-hidden rounded ${
+          className={`group first:mt-8 relative border-2 border-background-muted overflow-hidden rounded ${
             focused
               ? 'border-blue-200'
               : selected
@@ -100,14 +100,14 @@ export function ImageBlock({attributes, element, children}) {
               </div>
             )}
             <input
-              className="bg-transparent text-body text-sm w-full mt-2 border"
+              className="bg-transparent text-body text-sm w-full mt-2 border border-transparent rounded-sm"
               type="text"
               placeholder="caption here"
               value={caption}
               onChange={handleCaption}
             />
             {error && (
-              <p className="bg-red-500 px-4 py-2 rounded-md border-px border-red-700">
+              <p className="bg-danger px-4 py-2 rounded-md border-px text-body border-red-700">
                 {error}
               </p>
             )}

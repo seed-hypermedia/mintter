@@ -51,7 +51,7 @@ export function useEditor(plugins: any[]): Editor {
     withTransforms(),
     // withDeserializeMd(plugins),
     withInlineVoid({plugins}),
-    withImageUpload(),
+    withImageUpload(options),
     withBlocks(),
   ] as const
 

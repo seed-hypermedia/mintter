@@ -53,7 +53,7 @@ export function HelperToolbar({
     <Portal>
       <div
         ref={ref}
-        className={`${theme} overflow-hidden rounded shadow-md absolute z-20 ${css`
+        className={`${theme} overflow-hidden rounded shadow-lg absolute z-20 ${css`
           width: 400px;
         `}`}
         {...props}
@@ -62,8 +62,8 @@ export function HelperToolbar({
           {options.map((option, i) => (
             <li key={`${i}${option.type}`}>
               <button
-                className={`block text-left w-full px-4 py-2 ${
-                  i === valueIndex ? 'bg-blue-100' : 'bg-background'
+                className={`block text-left text-body w-full px-4 py-2 ${
+                  i === valueIndex ? 'bg-background-muted' : 'bg-background'
                 }`}
                 onMouseEnter={() => setValueIndex(i)}
                 onMouseDown={getPreventDefaultHandler(
@@ -83,7 +83,7 @@ export function HelperToolbar({
           </p>
           <ul>
             <li>
-              <button className="w-full px-4 py-1 flex items-center justify-start text-body hover:bg-blue-100 bg-background">
+              <button className="w-full px-4 py-1 flex items-center justify-start text-body hover:bg-background-muted bg-background">
                 <Icons.Trash size={16} color="currentColor" />
                 <span className="text-body text-sm px-2">Delete</span>
               </button>

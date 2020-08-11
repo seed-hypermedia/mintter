@@ -30,6 +30,14 @@ export function transform(node: any, opts: Settings) {
   }
 
   switch (node.type) {
+    // case 'image':
+    //   console.log('toSlate: img children => ', children)
+    //   return {
+    //     type: 'img',
+    //     url: node.url,
+    //     caption: node.alt,
+    //     chldren: children,
+    //   }
     case 'heading':
       return {
         type: depthToHeading[node.depth],
