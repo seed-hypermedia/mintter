@@ -5,6 +5,7 @@ import {Draggable} from 'react-beautiful-dnd'
 import {Transforms} from 'slate'
 import {css} from 'emotion'
 import {mergeRefs} from '../mergeRefs'
+import {useHover} from '@react-aria/interactions'
 
 export const ELEMENT_IMAGE = 'img'
 
@@ -89,7 +90,7 @@ export function ImageBlock({attributes, element, children}) {
             </div>
 
             {file ? (
-              <img src={file} alt={caption} className="block w-full" />
+              <Image src={file} alt={caption} />
             ) : (
               <div className="p-4">
                 <input
@@ -116,5 +117,27 @@ export function ImageBlock({attributes, element, children}) {
         </div>
       )}
     </Draggable>
+  )
+}
+
+export function Image({src, alt, ...rest}) {
+  let {hoverProps, isHovered} = useHover({})
+  return (
+    <div className="relative">
+      <div
+        className={`absolute top-0 right-0 m-2 rounded-sm bg-background-toolbar transition duration-100 opacity-0 hover:opacity-100 ${
+          isHovered ? 'opacity-100' : ''
+        }`}
+      >
+        <span className="text-white px-2 py-1">image helper</span>
+      </div>
+      <img
+        {...hoverProps}
+        src={src}
+        alt={alt}
+        className={`block w-full ${isHovered ? 'border-yellow-500' : ''}`}
+        {...rest}
+      />
+    </div>
   )
 }

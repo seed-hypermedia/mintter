@@ -17,6 +17,7 @@
   "author": "Horacio Herrera",
   "module": "dist/editor.esm.js",
   "dependencies": {
+    "@react-aria/interactions": "^3.1.0",
     "@tippyjs/react": "^4.1.0",
     "@udecode/slate-plugins": "^0.63.1",
     "emotion": "^10.0.27",
