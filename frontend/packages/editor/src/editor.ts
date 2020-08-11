@@ -3,7 +3,7 @@ import {ReactEditor} from 'slate-react'
 import {ELEMENT_PARAGRAPH, ELEMENT_BLOCK} from './elements'
 
 export interface MintterEditor extends ReactEditor {
-  addSection: (editor: ReactEditor) => void
+  addBlock: (editor: ReactEditor) => void
   charCount: (editor: ReactEditor, path: Path) => number
 }
 
@@ -11,7 +11,7 @@ export interface MintterEditor extends ReactEditor {
 export const Editor = {
   ...SlateEditor,
   // TODO: (Horacio): accept options to add a section in other places
-  addSection: (editor: ReactEditor): void => {
+  addBlock: (editor: ReactEditor): void => {
     const newNode = {
       type: ELEMENT_BLOCK,
       children: [{type: ELEMENT_PARAGRAPH, children: [{text: ''}]}],
@@ -32,7 +32,7 @@ export const Editor = {
   },
 }
 
-export const initialSectionsValue = [
+export const initialBlocksValue = [
   {
     type: ELEMENT_BLOCK,
     children: [
@@ -47,14 +47,3 @@ export const initialSectionsValue = [
     ],
   },
 ]
-
-// export const initialSectionsValue = [
-//   {
-//     type: ELEMENT_PARAGRAPH,
-//     children: [
-//       {
-//         text: '',
-//       },
-//     ],
-//   },
-// ]

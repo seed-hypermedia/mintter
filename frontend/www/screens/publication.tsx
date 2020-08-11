@@ -8,7 +8,7 @@ import {
   Editor,
   useEditor,
   plugins as editorPlugins,
-  initialSectionsValue,
+  initialBlocksValue,
   // SectionToolbar,
   EditorComponent,
   renderReadOnlyBlockElement,

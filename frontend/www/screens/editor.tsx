@@ -11,7 +11,7 @@ import {
   Toolbar,
   useEditor,
   plugins as editorPlugins,
-  initialSectionsValue,
+  initialBlocksValue,
   EditorComponent,
   renderEditableBlockElement,
   slate,
@@ -112,7 +112,7 @@ function useEditorValue() {
 const initialValue: EditorState = {
   title: '',
   description: '',
-  sections: initialSectionsValue,
+  sections: initialBlocksValue,
 }
 
 function initializeEditorValue() {
@@ -192,7 +192,7 @@ export default function Editor(): JSX.Element {
                   children: markdownToSlate(s.body),
                 }
               })
-            : initialSectionsValue,
+            : initialBlocksValue,
       })
     }
   }, [data])
@@ -272,9 +272,6 @@ export default function Editor(): JSX.Element {
               placeholder="Subtitle"
               minHeight={28}
               className={`leading-relaxed text-lg font-light text-heading-muted italic`}
-              onEnterPress={() => {
-                // TODO: Horacio: focus Editor here..!
-              }}
             />
           </div>
           <EditorComponent

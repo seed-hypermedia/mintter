@@ -2,13 +2,15 @@ import {Editor, Transforms, Point, Path, Node} from 'slate'
 import {
   isRangeAtRoot,
   isCollapsed,
-  ELEMENT_IMAGE,
   isFirstChild,
   getBlockAbove,
+  isImageUrl,
+  onImageLoad,
+  insertImage,
 } from '@udecode/slate-plugins'
 import {ReactEditor} from 'slate-react'
 import {v4 as uuid} from 'uuid'
-import {ELEMENT_BLOCK, ELEMENT_PARAGRAPH} from '../elements'
+import {ELEMENT_BLOCK, ELEMENT_PARAGRAPH, ELEMENT_IMAGE} from '../elements'
 // import {nodeTypes} from '../nodeTypes'
 
 export function withBlocks() {
@@ -16,6 +18,8 @@ export function withBlocks() {
     const {
       // deleteBackward,
       // insertText,
+      // insertNode,
+      insertData,
       insertBreak,
       normalizeNode,
     } = editor
@@ -177,11 +181,45 @@ export function withBlocks() {
       insertBreak()
     }
 
+    editor.insertData = (data: DataTransfer) => {
+      const text = data.getData('text/plain')
+      const {files} = data
+      console.log('insertData -> mime files', {files, data, text})
+      if (files && files.length > 0) {
+        for (const file of files) {
+          const reader = new FileReader()
+          const [mime] = file.type.split('/')
+          console.log('editor.insertData -> mime', mime)
+          if (mime === 'image') {
+            reader.addEventListener('load', () => {
+              console.log('onImageLoad => ', editor.selection)
+              onImageLoad(editor, reader)()
+            })
+            reader.readAsDataURL(file)
+          }
+        }
+      } else if (isImageUrl(text)) {
+        insertImage(editor, text)
+      } else {
+        insertData(data)
+      }
+    }
+
     editor.normalizeNode = entry => {
       const [node, path] = entry
-      /*
-      - 
-      */
+
+      if (node.type === ELEMENT_IMAGE) {
+        console.log('IMAGE HERE!', entry)
+        const block = Editor.above(editor, {
+          match: n => n.type === ELEMENT_BLOCK,
+        })
+        if (block) {
+          const [, blockPath] = block
+          Transforms.unwrapNodes(editor, {at: blockPath})
+        }
+        return
+      }
+
       switch (path.length) {
         case 0:
           // is the editor
@@ -194,7 +232,6 @@ export function withBlocks() {
         case 2:
           // is the second child
           console.log('normalize: SECOND CHILD -> ', node)
-
           // check if element is the second child of a block, if so, move to the next block
           if (!isFirstChild(path)) {
             console.log('SECONDCHILD: not the first child!', {node, path})
@@ -222,7 +259,7 @@ export function withBlocks() {
           break
         default:
           // unhandled node
-          console.log('normalize: UNHANDLED NODE -> ', node)
+          console.log('normalize: UNHANDLED NODE -> ', [node, path])
           break
       }
 

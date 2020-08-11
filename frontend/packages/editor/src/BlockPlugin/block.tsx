@@ -105,7 +105,7 @@ export function EditableBlockElement(
                 >
                   <button
                     onClick={onAddClicked}
-                    className="rounded-sm bg-transparent hover:bg-background-muted w-8 h-8 p-1 mr-2"
+                    className="rounded-sm bg-transparent text-body hover:bg-background-muted w-8 h-8 p-1 mr-2"
                   >
                     <svg
                       width="1.5em"
@@ -115,7 +115,7 @@ export function EditableBlockElement(
                     >
                       <path
                         d="M12.667 8.667h-4v4H7.334v-4h-4V7.334h4v-4h1.333v4h4v1.333z"
-                        fill="#3F3F3F"
+                        fill="currentColor"
                       />
                     </svg>
                   </button>
@@ -134,7 +134,7 @@ export function EditableBlockElement(
                   }
                 >
                   <div
-                    className="rounded-sm bg-transparent hover:bg-background-muted w-6 h-8 p-1"
+                    className="rounded-sm bg-transparent text-body hover:bg-background-muted w-6 h-8 p-1"
                     {...provided.dragHandleProps}
                   >
                     <svg
@@ -145,7 +145,7 @@ export function EditableBlockElement(
                     >
                       <path
                         d="M3.5 6a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM12.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM5 19.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM3.5 13.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-                        fill="#3F3F3F"
+                        fill="currentColor"
                       />
                     </svg>
                   </div>

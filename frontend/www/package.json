@@ -41,7 +41,7 @@
     "react-router-dom": "^5.2.0",
     "react-toast-notifications": "^2.4.0",
     "remark-parse": "^8.0.2",
-    "remark-slate": "^0.8.0",
+    "remark-slate": "^1.1.1",
     "slate": "^0.58.1",
     "slate-hyperscript": "^0.58.1",
     "slate-plugins-next": "0.58",
