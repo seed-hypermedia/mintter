@@ -6,6 +6,7 @@ import {Transforms} from 'slate'
 import {css} from 'emotion'
 import {mergeRefs} from '../mergeRefs'
 import {useHover} from '@react-aria/interactions'
+import {useToggleState} from '@react-stately/toggle'
 
 export const ELEMENT_IMAGE = 'img'
 
@@ -27,6 +28,7 @@ export function ImageBlock({attributes, element, children}) {
   const path = ReactEditor.findPath(editor, element)
   const [error, setError] = useState('')
   const [file, setFile] = useState<any>(() => element.url || null)
+  const {isSelected, setSelected} = useToggleState()
 
   // const type = attributes['data-slate-type']
   // delete attributes['data-slate-type']
@@ -62,13 +64,7 @@ export function ImageBlock({attributes, element, children}) {
           {...attributes}
           {...provided.draggableProps}
           ref={mergeRefs(provided.innerRef, attributes.ref)}
-          className={`group first:mt-8 relative border-2 border-background-muted overflow-hidden rounded ${
-            focused
-              ? 'border-blue-200'
-              : selected
-              ? 'border-blue-400'
-              : 'border-transparent'
-          }`}
+          className={`group first:mt-8 relative overflow-hidden`}
         >
           <div contentEditable={false}>
             <div
@@ -90,7 +86,13 @@ export function ImageBlock({attributes, element, children}) {
             </div>
 
             {file ? (
-              <Image src={file} alt={caption} />
+              <Image
+                src={file}
+                alt={caption}
+                focused={focused}
+                selected={selected}
+                onAddCaption={() => setSelected(!isSelected)}
+              />
             ) : (
               <div className="p-4">
                 <input
@@ -100,13 +102,17 @@ export function ImageBlock({attributes, element, children}) {
                 />
               </div>
             )}
-            <input
-              className="bg-transparent text-body text-sm w-full mt-2 border border-transparent rounded-sm"
-              type="text"
-              placeholder="caption here"
-              value={caption}
-              onChange={handleCaption}
-            />
+
+            {isSelected && (
+              <input
+                className="bg-transparent text-body text-sm w-full mt-2 border border-transparent rounded-sm"
+                type="text"
+                placeholder="caption here"
+                value={caption}
+                onChange={handleCaption}
+              />
+            )}
+
             {error && (
               <p className="bg-danger px-4 py-2 rounded-md border-px text-body border-red-700">
                 {error}
@@ -120,16 +126,29 @@ export function ImageBlock({attributes, element, children}) {
   )
 }
 
-export function Image({src, alt, ...rest}) {
+export function Image({src, alt, onAddCaption, focused, selected, ...rest}) {
   let {hoverProps, isHovered} = useHover({})
   return (
-    <div className="relative">
+    <div
+      className={`relative border-2 border-background-muted ${
+        focused
+          ? 'border-blue-200'
+          : selected
+          ? 'border-blue-400'
+          : 'border-transparent'
+      }`}
+    >
       <div
-        className={`absolute top-0 right-0 m-2 rounded-sm bg-background-toolbar transition duration-100 opacity-0 hover:opacity-100 ${
+        className={`absolute top-0 right-0 m-2 rounded-sm bg-black shadow-sm transition duration-100 opacity-0 hover:opacity-100 ${
           isHovered ? 'opacity-100' : ''
         }`}
       >
-        <span className="text-white px-2 py-1">image helper</span>
+        <button
+          onClick={onAddCaption}
+          className="text-sm p-1 text-white hover:bg-background-toolbar"
+        >
+          caption
+        </button>
       </div>
       <img
         {...hoverProps}
