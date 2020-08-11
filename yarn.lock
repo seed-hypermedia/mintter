@@ -1138,6 +1138,13 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
+"@babel/runtime@^7.6.2":
+  version "7.11.2"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.11.2.tgz#f549c13c754cc40b87644b9fa9f09a6a95fe0736"
+  integrity sha512-TeWkU52so0mPtDcaCTxNBI/IHiz0pZgr8VEFqXFtZWpYD08ZB6FaSwVAS8MKRQAP3bYKiVjwysOJgMFY28o6Tw==
+  dependencies:
+    regenerator-runtime "^0.13.4"
+
 "@babel/runtime@^7.9.6":
   version "7.9.6"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.9.6.tgz#a9102eb5cadedf3f31d08a9ecf294af7827ea29f"
@@ -2004,6 +2011,29 @@
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.4.0.tgz#0e1bdf8d021e7ea58affade33d9d607e11365915"
   integrity sha512-NMrDy6EWh9TPdSRiHmHH2ye1v5U0gBD7pRYwSwJvomx7Bm4GG04vu63dYiVzebLOx2obPpJugew06xVP0Nk7hA==
+
+"@react-aria/interactions@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@react-aria/interactions/-/interactions-3.1.0.tgz#2d9ea4d9751c0bb859f900c1a29aed74bc4b45a9"
+  integrity sha512-iu+O/qsRs7o7J0262eijbgyovNXXGHEZMtpWjJXz0NGKD870iAtuGu3irUewQJkf1t8w+qDGycATTkuV9FKhfw==
+  dependencies:
+    "@babel/runtime" "^7.6.2"
+    "@react-aria/utils" "^3.1.0"
+    "@react-types/shared" "^3.1.0"
+
+"@react-aria/utils@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@react-aria/utils/-/utils-3.1.0.tgz#157864d4c9123061cf7c55848340a318ff461d0d"
+  integrity sha512-DKCT0egALcuoIWe6/U72RTBt21GgJjfIbNz6OX/4So2Y9lnIdWb2Aohvp2EAOu/vi9S0XHiZKtuZmiRzSAe6OA==
+  dependencies:
+    "@babel/runtime" "^7.6.2"
+    "@react-types/shared" "^3.1.0"
+    classnames "^2.2.5"
+
+"@react-types/shared@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@react-types/shared/-/shared-3.1.0.tgz#92b4b5e727d4595247a25f946a98bbcfde71a67e"
+  integrity sha512-UwQBG3QLMx6i/gnQj19BjCvoEtZwsW9QB6lfLpaQb4K1jiEZouYjm+50SvgaJKXb2l0WsibHj9cEj9SABjw5Dg==
 
 "@rollup/plugin-commonjs@^11.0.0":
   version "11.1.0"
@@ -3925,6 +3955,11 @@ class-utils@^0.3.5:
     define-property "^0.2.5"
     isobject "^3.0.0"
     static-extend "^0.1.1"
+
+classnames@^2.2.5:
+  version "2.2.6"
+  resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.2.6.tgz#43935bffdd291f326dad0a205309b38d00f650ce"
+  integrity sha512-JR/iSQOSt+LQIWwrwEzJ9uk0xfN3mTVYMwt1Ir5mUcSN6pU+V4zQFFaJsclJbPuAUQH+yfWef6tm7l1quW3C8Q==
 
 clean-stack@^2.0.0:
   version "2.2.0"
