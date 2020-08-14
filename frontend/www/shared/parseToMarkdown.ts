@@ -20,11 +20,7 @@ export function fromSlateToMarkdown(slateTree: SlateSection[]): Section[] {
     if (s.type === 'img') {
       n.setBody(`![${s.caption ?? 'image'}](${s.url})`)
     } else {
-      n.setBody(
-        children
-          .map(n => parseToMarkdown(n))
-          .join(''),
-      )
+      n.setBody(children.map(n => parseToMarkdown(n)).join(''))
     }
 
     return n
@@ -57,7 +53,6 @@ export function parseToMarkdown(node, options: ParseToMarkdownOptions = {}) {
   const {ignoreParagraphNewline = false, listDepth = 0} = options
 
   let {text = '', type = ''} = node
-  console.log('toSlate: parseToMarkdown -> node', node)
 
   let children = type
     ? node.children
@@ -137,7 +132,6 @@ export function parseToMarkdown(node, options: ParseToMarkdownOptions = {}) {
       return `${spacer}${isOL ? '1.' : '-'} ${children}\n`
     }
     case 'img':
-      console.log('toSlate: parse2MD type switch!!')
       return `\n\n![${node.caption ?? 'image'}](${node.utl})\n\n`
     case 'code':
       return `\n\`\`\`\n${children}\n\`\`\`\n\n`

@@ -10,7 +10,7 @@ import {mergeRefs} from '../mergeRefs'
 function Block({path, className = '', ...props}) {
   return (
     <div
-      className={`relative px-8 py-2 hover:bg-background-muted transition duration-200 rounded ${className}`}
+      className={`relative pl-8 py-2 transition duration-200 rounded hover:bg-background-muted ${className}`}
       {...props}
     />
   )
@@ -75,17 +75,19 @@ export function EditableBlockElement(
           <div
             ref={mergeRefs(provided.innerRef, ref, attributes.ref)}
             {...provided.draggableProps}
-            className="group first:mt-8"
+            className="first:mt-8"
             data-slate-type={element.type}
             data-slate-node={attributes['data-slate-node']}
           >
             <Block
+              path={path}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              path={path}
             >
               <div
-                className={`absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition duration-200 flex items-center mt-3 ${css`
+                className={`absolute top-0 left-0 transition duration-200 flex items-center mt-3 ${
+                  isHover ? 'opacity-100' : 'opacity-0'
+                } ${css`
                   transform: translateX(-4.5rem);
                 `}`}
                 contentEditable={false}
@@ -153,10 +155,8 @@ export function EditableBlockElement(
               </div>
               <div contentEditable={false} className="theme-invert">
                 <div
-                  className={`absolute top-0 right-0 select-none -mt-6 -mr-4 rounded shadow-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-black py-2 ${
-                    isHover
-                      ? 'pointer-events-auto opacity-100'
-                      : 'pointer-events-none opacity-0'
+                  className={`absolute top-0 right-0 select-none -mt-6 -mr-4 rounded shadow-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-black py-2 pointer-events-none ${
+                    isHover ? 'opacity-100' : 'opacity-0'
                   }`}
                 >
                   <p className={`text-body-muted border-r px-2 text-xs`}>
