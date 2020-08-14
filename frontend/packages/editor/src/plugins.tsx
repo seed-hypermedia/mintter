@@ -24,6 +24,7 @@ import {
 } from '@udecode/slate-plugins'
 import {options} from './options'
 import {HelperPlugin} from './HelperPlugin'
+import {HierarchyPlugin} from './HierarchyPlugin'
 // import {ELEMENT_BLOCKQUOTE} from './elements'
 
 const headingTypes = [
@@ -80,4 +81,5 @@ export const plugins = [
     ],
   }),
   HelperPlugin(),
+  HierarchyPlugin(),
 ]
