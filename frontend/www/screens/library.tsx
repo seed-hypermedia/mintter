@@ -1,4 +1,7 @@
+import React from 'react'
+import {css} from 'emotion'
 import {Switch, useRouteMatch, Redirect} from 'react-router-dom'
+
 import {PrivateRoute} from 'components/routes'
 import {NavItem} from 'components/nav'
 import {Publications} from 'screens/publications'
@@ -28,45 +31,58 @@ export default function Library(props) {
   }
 
   return (
-    <div className="w-full flex relative px-4">
-      <div className="flex-1">
+    <div
+      className={`${css`
+        display: grid;
+        grid-template-columns: minmax(250px, 25%) 1fr minmax(150px, 25%);
+        grid-gap: 1rem;
+      `}`}
+    >
+      <div>
         <ProfileInfo />
         <Connections />
         <SuggestedConnections />
       </div>
-      <Container>
-        <div className="py-5 flex items-baseline justify-between">
-          <h1 className="py-5 text-4xl font-bold text-heading">Library</h1>
-          <div className="flex-1" />
-          <button
-            onClick={handleCreateDocument}
-            className="bg-primary rounded-full px-4 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
-          >
-            Compose
-          </button>
+      <div>
+        <div
+          className={`my-0 mx-auto ${css`
+            max-width: 80ch;
+            width: 100%;
+          `}`}
+        >
+          <div className="py-5 flex items-baseline justify-between">
+            <h1 className="py-5 text-4xl font-bold text-heading">Library</h1>
+            <div className="flex-1" />
+            <button
+              onClick={handleCreateDocument}
+              className="bg-primary rounded-full px-4 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
+            >
+              Compose
+            </button>
+          </div>
+          <div className="flex items-center">
+            <NavItem to="/library/feed">Feed</NavItem>
+            <NavItem to="/library/published">Published</NavItem>
+            <NavItem to="/library/drafts">Drafts</NavItem>
+            <div className="flex-1" />
+          </div>
+          <Switch>
+            <PrivateRoute exact path={match.url}>
+              <Redirect to={`${match.url}/feed`} />
+            </PrivateRoute>
+            <PrivateRoute path={`${match.url}/feed`}>
+              <Publications />
+            </PrivateRoute>
+            <PrivateRoute path={`${match.url}/published`}>
+              <MyPublications />
+            </PrivateRoute>
+            <PrivateRoute path={`${match.url}/drafts`}>
+              <Drafts />
+            </PrivateRoute>
+          </Switch>
         </div>
-        <div className="flex items-center">
-          <NavItem to="/library/feed">Feed</NavItem>
-          <NavItem to="/library/published">Published</NavItem>
-          <NavItem to="/library/drafts">Drafts</NavItem>
-          <div className="flex-1" />
-        </div>
-        <Switch>
-          <PrivateRoute exact path={match.url}>
-            <Redirect to={`${match.url}/feed`} />
-          </PrivateRoute>
-          <PrivateRoute path={`${match.url}/feed`}>
-            <Publications />
-          </PrivateRoute>
-          <PrivateRoute path={`${match.url}/published`}>
-            <MyPublications />
-          </PrivateRoute>
-          <PrivateRoute path={`${match.url}/drafts`}>
-            <Drafts />
-          </PrivateRoute>
-        </Switch>
-      </Container>
-      <div className="flex-1"></div>
+      </div>
+      <div />
     </div>
   )
 }

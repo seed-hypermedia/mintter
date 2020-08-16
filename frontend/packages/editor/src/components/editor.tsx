@@ -76,43 +76,42 @@ function Editor(
         }}
       >
         <div
-          className={`-mx-8 ${css`
+          ref={ref}
+          className={`relative -mx-4 ${css`
             word-break: break-word;
           `}`}
         >
-          <div className="relative" ref={ref}>
-            {/* <Toolbar /> */}
-            <Droppable droppableId="editor">
-              {(provided, snapshot) => (
-                <div ref={provided.innerRef} {...provided.droppableProps}>
-                  <EditablePlugins
-                    readOnly={readOnly && !snapshot.isDraggingOver}
-                    plugins={plugins}
-                    renderElement={renderElements}
-                    placeholder={
-                      readOnly
-                        ? 'no content'
-                        : 'Start writing your masterpiece...'
-                    }
-                    spellCheck
-                    autoFocus
-                    onKeyDown={[onKeyDownHelper]}
-                    onKeyDownDeps={[index, target]}
-                  />
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-            <HelperToolbar
-              at={target}
-              valueIndex={index}
-              options={values}
-              onClickSelection={onAddBlock}
-              setValueIndex={setValueIndex}
-              theme={theme}
-            />
-          </div>
+          {/* <Toolbar /> */}
+          <Droppable droppableId="editor">
+            {(provided, snapshot) => (
+              <div ref={provided.innerRef} {...provided.droppableProps}>
+                <EditablePlugins
+                  readOnly={readOnly && !snapshot.isDraggingOver}
+                  plugins={plugins}
+                  renderElement={renderElements}
+                  placeholder={
+                    readOnly
+                      ? 'no content'
+                      : 'Start writing your masterpiece...'
+                  }
+                  spellCheck
+                  autoFocus
+                  onKeyDown={[onKeyDownHelper]}
+                  onKeyDownDeps={[index, target]}
+                />
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
         </div>
+        <HelperToolbar
+          at={target}
+          valueIndex={index}
+          options={values}
+          onClickSelection={onAddBlock}
+          setValueIndex={setValueIndex}
+          theme={theme}
+        />
       </Slate>
     </DragDropContext>
   )

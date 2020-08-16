@@ -147,12 +147,28 @@ export default function Publication(): JSX.Element {
   return (
     <>
       <Seo title="Publication" />
-      <div>
-        <DebugValue
-          value={state}
-          className="absolute z-10 right-0 top-0 w-full max-w-xs"
-        />
-        <Container className="mt-12">{content}</Container>
+      <div
+        className={`${css`
+          display: grid;
+
+          grid-template: auto 1fr / minmax(250px, 20%) 1fr minmax(250px, 20%);
+          grid-gap: 1rem;
+        `}`}
+      >
+        <div
+          className={`p-4 ${css`
+            grid-column: 2/3;
+          `}`}
+        >
+          <div
+            className={`my-0 mx-auto ${css`
+              max-width: 80ch;
+              width: 100%;
+            `}`}
+          >
+            {content}
+          </div>
+        </div>
       </div>
     </>
   )
