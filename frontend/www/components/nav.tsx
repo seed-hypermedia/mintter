@@ -29,7 +29,7 @@ export function NavItem({
   return (
     <Link
       to={to}
-      className={`mx-2 p-2 text-md font-light hover:bg-background-muted transition duration-200 relative text-heading ${className} ${
+      className={`py-2 px-4 text-md font-light hover:bg-background-muted transition duration-200 relative text-heading rounded overflow-hidden ${className} ${
         active ? 'font-extrabold' : ''
       }`}
       {...props}

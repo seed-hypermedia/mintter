@@ -42,13 +42,13 @@ export default function LibraryHeader(props) {
 
   return (
     <div
-      className={`p-4 ${css`
+      className={`p-4 pb-16 ${css`
         display: grid;
         grid-template-columns: minmax(250px, 25%) 1fr minmax(150px, 25%);
         grid-gap: 1rem;
       `}`}
     >
-      <span className={`text-primary`}>
+      <span className="text-primary">
         <Link to="/library">
           <Logo width="50px" className="fill-current" />
         </Link>

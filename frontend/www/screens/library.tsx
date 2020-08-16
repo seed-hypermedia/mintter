@@ -50,8 +50,8 @@ export default function Library(props) {
             width: 100%;
           `}`}
         >
-          <div className="py-5 flex items-baseline justify-between">
-            <h1 className="py-5 text-4xl font-bold text-heading">Library</h1>
+          <div className="flex items-baseline justify-between">
+            <h1 className="text-4xl font-bold text-heading">Library</h1>
             <div className="flex-1" />
             <button
               onClick={handleCreateDocument}
@@ -60,26 +60,28 @@ export default function Library(props) {
               Compose
             </button>
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center mt-4 -mx-4">
             <NavItem to="/library/feed">Feed</NavItem>
             <NavItem to="/library/published">Published</NavItem>
             <NavItem to="/library/drafts">Drafts</NavItem>
             <div className="flex-1" />
           </div>
-          <Switch>
-            <PrivateRoute exact path={match.url}>
-              <Redirect to={`${match.url}/feed`} />
-            </PrivateRoute>
-            <PrivateRoute path={`${match.url}/feed`}>
-              <Publications />
-            </PrivateRoute>
-            <PrivateRoute path={`${match.url}/published`}>
-              <MyPublications />
-            </PrivateRoute>
-            <PrivateRoute path={`${match.url}/drafts`}>
-              <Drafts />
-            </PrivateRoute>
-          </Switch>
+          <div className="-mx-4">
+            <Switch>
+              <PrivateRoute exact path={match.url}>
+                <Redirect to={`${match.url}/feed`} />
+              </PrivateRoute>
+              <PrivateRoute path={`${match.url}/feed`}>
+                <Publications />
+              </PrivateRoute>
+              <PrivateRoute path={`${match.url}/published`}>
+                <MyPublications />
+              </PrivateRoute>
+              <PrivateRoute path={`${match.url}/drafts`}>
+                <Drafts />
+              </PrivateRoute>
+            </Switch>
+          </div>
         </div>
       </div>
       <div />
@@ -94,7 +96,7 @@ function ProfileInfo() {
 
   return (
     values && (
-      <div className="text-left pt-16 px-4">
+      <div className="text-left px-4">
         <h3 className="font-semibold text-2xl text-heading">
           {values.username}
         </h3>

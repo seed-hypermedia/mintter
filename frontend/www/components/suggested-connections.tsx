@@ -51,15 +51,10 @@ export function SuggestedConnections() {
   console.log('SuggestedConnections -> list', list)
 
   return (
-    <div
-      className={`pt-10 px-4 ${css`
-        max-width: 360px;
-        width: 100%;
-      `}`}
-    >
+    <div className={`w-full px-4 pt-12`}>
       <h3 className="font-bold text-heading">Suggested Connections</h3>
       {list.length === 0 ? (
-        <p className="py-2 px-4 mt-4 rounded bg-background-muted text-body text-sm">
+        <p className="py-2 px-4 mt-4 rounded bg-background-muted text-body text-sm inline-block">
           no suggestions available :(
         </p>
       ) : (

@@ -226,7 +226,7 @@ export default function Editor(): JSX.Element {
         `}`}
       >
         <div
-          className={`px-4 flex justify-end ${css`
+          className={`px-4  -mt-8 flex justify-end ${css`
             grid-column: 1/4;
           `}`}
         >
