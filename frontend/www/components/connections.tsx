@@ -52,12 +52,7 @@ export function Connections() {
   console.log('Connections -> list', list)
 
   return (
-    <div
-      className={`pt-10 px-4 ${css`
-        max-width: 360px;
-        width: 100%;
-      `}`}
-    >
+    <div className={`w-full px-4 pt-12`}>
       <h3 className="font-semibold text-xl text-heading">Connections</h3>
       <ul>
         {list.map(c => {
