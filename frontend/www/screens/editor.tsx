@@ -217,74 +217,97 @@ export default function Editor(): JSX.Element {
   return (
     <>
       <Seo title="Editor" />
-      <div className="flex mx-4">
-        <span className="flex-1"></span>
-        <button
-          onClick={handlePublish}
-          className="bg-primary rounded-full px-12 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
+      <div
+        className={`${css`
+          display: grid;
+
+          grid-template: auto 1fr / minmax(250px, 20%) 1fr minmax(250px, 20%);
+          grid-gap: 1rem;
+        `}`}
+      >
+        <div
+          className={`px-4 flex justify-end ${css`
+            grid-column: 1/4;
+          `}`}
         >
-          Publish
-        </button>
-      </div>
-      <div>
-        <DebugValue
-          value={state}
-          className="absolute z-10 right-0 top-0 w-full max-w-xs"
-        />
-        <Container>
+          <button
+            onClick={handlePublish}
+            className="bg-primary rounded-full px-12 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
+          >
+            Publish
+          </button>
+        </div>
+        <div
+          className={`p-4 ${css`
+            grid-column: 2/3;
+          `}`}
+        >
           <div
-            className={`pb-2 relative ${css`
-              &:after {
-                content: '';
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                width: 50%;
-                max-width: 360px;
-                height: 1px;
-                z-index: 20;
-                background-color: var(--color-muted-hover);
-              }
+            className={`my-0 mx-auto ${css`
+              max-width: 80ch;
+              width: 100%;
             `}`}
           >
-            <Textarea
-              ref={t => {
-                titleRef.current = t
+            <div
+              className={`pb-2 relative ${css`
+                &:after {
+                  content: '';
+                  position: absolute;
+                  bottom: 0;
+                  left: 0;
+                  width: 50%;
+                  max-width: 360px;
+                  height: 1px;
+                  z-index: 20;
+                  background-color: var(--color-muted-hover);
+                }
+              `}`}
+            >
+              <Textarea
+                ref={t => {
+                  titleRef.current = t
+                }}
+                value={title}
+                data-test-id="editor_title"
+                onChange={setTitle}
+                name="title"
+                placeholder="Document title"
+                minHeight={56}
+                className={`text-4xl text-heading font-bold italic`}
+                onEnterPress={() => {
+                  descriptionRef.current.focus()
+                }}
+              />
+              <Textarea
+                ref={d => {
+                  descriptionRef.current = d
+                }}
+                value={description}
+                onChange={setDescription}
+                name="description"
+                placeholder="Subtitle"
+                minHeight={28}
+                className={`leading-relaxed text-lg font-light text-heading-muted italic`}
+              />
+            </div>
+            <EditorComponent
+              editor={editor}
+              plugins={plugins}
+              value={sections}
+              onChange={sections => {
+                setSections(sections)
               }}
-              value={title}
-              data-test-id="editor_title"
-              onChange={setTitle}
-              name="title"
-              placeholder="Document title"
-              minHeight={56}
-              className={`text-4xl text-heading font-bold italic`}
-              onEnterPress={() => {
-                descriptionRef.current.focus()
-              }}
-            />
-            <Textarea
-              ref={d => {
-                descriptionRef.current = d
-              }}
-              value={description}
-              onChange={setDescription}
-              name="description"
-              placeholder="Subtitle"
-              minHeight={28}
-              className={`leading-relaxed text-lg font-light text-heading-muted italic`}
+              renderElements={[renderEditableBlockElement()]}
+              theme={theme}
             />
           </div>
-          <EditorComponent
-            editor={editor}
-            plugins={plugins}
-            value={sections}
-            onChange={sections => {
-              setSections(sections)
-            }}
-            renderElements={[renderEditableBlockElement()]}
-            theme={theme}
-          />
-        </Container>
+        </div>
+        <DebugValue
+          value={state}
+          className={`${css`
+            grid-column: 3/4;
+          `}`}
+        />
       </div>
     </>
   )

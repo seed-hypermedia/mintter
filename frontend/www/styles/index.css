@@ -54,8 +54,8 @@ body {
 
 .theme-dark,
 .theme-light .theme-invert {
-  --color-primary: theme('colors.blue.300');
-  --color-primary-hover: theme('colors.blue.200');
+  --color-primary: theme('colors.blue.700');
+  --color-primary-hover: theme('colors.blue.500');
 
   --color-secondary: theme('colors.gray.400');
   --color-secondary-hover: theme('colors.gray.300');

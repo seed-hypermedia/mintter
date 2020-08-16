@@ -12,7 +12,7 @@ export function DebugValue({value, className = ''}: any) {
         >{`${visible ? 'hide' : 'show'} value`}</button>
         {visible && (
           <div className="pt-8">
-            <pre className="text-sm mt-4 whitespace-pre-wrap text-body">
+            <pre className="text-xs mt-4 whitespace-pre-wrap text-body">
               <code>{JSON.stringify(value, null, 2)}</code>
             </pre>
           </div>

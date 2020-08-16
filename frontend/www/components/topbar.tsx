@@ -41,27 +41,37 @@ export default function LibraryHeader(props) {
   }
 
   return (
-    <div className="flex items-center relative">
-      <div className="flex-1 px-4 flex justify-start">
-        <span className={`text-primary`}>
-          <Link to="/library">
-            <Logo width="50px" className="fill-current" />
-          </Link>
-        </span>
+    <div
+      className={`p-4 ${css`
+        display: grid;
+        grid-template-columns: minmax(250px, 25%) 1fr minmax(150px, 25%);
+        grid-gap: 1rem;
+      `}`}
+    >
+      <span className={`text-primary`}>
+        <Link to="/library">
+          <Logo width="50px" className="fill-current" />
+        </Link>
+      </span>
+      <div>
+        <div
+          className={`my-0 mx-auto ${css`
+            max-width: 80ch;
+            width: 100%;
+          `}`}
+        >
+          <form className="w-full" onSubmit={handleSearch}>
+            <Input
+              onChange={(e: any) => setInput(e.target.value)}
+              name="hash-search"
+              type="text"
+              placeholder="Enter a publication CID"
+              className="rounded-full"
+            />
+          </form>
+        </div>
       </div>
-
-      <Container>
-        <form className="w-full" onSubmit={handleSearch}>
-          <Input
-            onChange={(e: any) => setInput(e.target.value)}
-            name="hash-search"
-            type="text"
-            placeholder="Enter a publication CID"
-            className="rounded-full"
-          />
-        </form>
-      </Container>
-      <div className="flex-1 px-4 flex justify-end">
+      <div className="flex justify-end">
         <Tippy
           visible={menuVisible}
           onClickOutside={hide}

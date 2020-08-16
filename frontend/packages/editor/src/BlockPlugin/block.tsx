@@ -10,7 +10,7 @@ import {mergeRefs} from '../mergeRefs'
 function Block({path, className = '', ...props}) {
   return (
     <div
-      className={`relative pl-8 py-2 transition duration-200 rounded hover:bg-background-muted ${className}`}
+      className={`relative px-4 py-2 transition duration-200 rounded hover:bg-background-muted ${className}`}
       {...props}
     />
   )
