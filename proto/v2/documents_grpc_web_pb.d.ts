@@ -8,10 +8,13 @@ import {
   DeleteDocumentRequest,
   Document,
   GetDocumentRequest,
+  GetDocumentResponse,
   ListDocumentsRequest,
   ListDocumentsResponse,
   PublishDocumentRequest,
-  PublishDocumentResponse} from './documents_pb';
+  PublishDocumentResponse,
+  UpdateDocumentRequest,
+  UpdateDocumentResponse} from './documents_pb';
 
 export class DocumentsClient {
   constructor (hostname: string,
@@ -29,8 +32,15 @@ export class DocumentsClient {
     request: GetDocumentRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.Error,
-               response: Document) => void
-  ): grpcWeb.ClientReadableStream<Document>;
+               response: GetDocumentResponse) => void
+  ): grpcWeb.ClientReadableStream<GetDocumentResponse>;
+
+  updateDocument(
+    request: UpdateDocumentRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: UpdateDocumentResponse) => void
+  ): grpcWeb.ClientReadableStream<UpdateDocumentResponse>;
 
   listDocuments(
     request: ListDocumentsRequest,
@@ -38,13 +48,6 @@ export class DocumentsClient {
     callback: (err: grpcWeb.Error,
                response: ListDocumentsResponse) => void
   ): grpcWeb.ClientReadableStream<ListDocumentsResponse>;
-
-  saveDraft(
-    request: Document,
-    metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
-               response: Document) => void
-  ): grpcWeb.ClientReadableStream<Document>;
 
   deleteDocument(
     request: DeleteDocumentRequest,
@@ -75,17 +78,17 @@ export class DocumentsPromiseClient {
   getDocument(
     request: GetDocumentRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<Document>;
+  ): Promise<GetDocumentResponse>;
+
+  updateDocument(
+    request: UpdateDocumentRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<UpdateDocumentResponse>;
 
   listDocuments(
     request: ListDocumentsRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<ListDocumentsResponse>;
-
-  saveDraft(
-    request: Document,
-    metadata?: grpcWeb.Metadata
-  ): Promise<Document>;
 
   deleteDocument(
     request: DeleteDocumentRequest,
