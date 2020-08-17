@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package mintter.v2;
+
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
@@ -8,11 +10,11 @@ option go_package = "mintter/proto/v2;v2";
 service Documents {
   rpc CreateDraft(CreateDraftRequest) returns (Document);
 
-  rpc GetDocument(GetDocumentRequest) returns (Document);
+  rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse);
+
+  rpc UpdateDocument(UpdateDocumentRequest) returns (UpdateDocumentResponse);
 
   rpc ListDocuments(ListDocumentsRequest) returns (ListDocumentsResponse);
-
-  rpc SaveDraft(Document) returns (Document);
 
   rpc DeleteDocument(DeleteDocumentRequest) returns (google.protobuf.Empty);
 
@@ -26,13 +28,37 @@ message CreateDraftRequest {
 }
 
 message GetDocumentRequest {
-  // Optional. The ID of the document. Required if version is not specified in
-  // which case latest published version will be returned.
-  string id = 1;
+  // Globally unique version ID of the document. This is what it's going to be
+  // used most of the time.
+  string version = 1;
 
-  // Optional. The version of the document. Required if ID is not specified.
-  string version = 2;
+  // Optional. The ID of the document. Required if version is not specified in
+  // which case latest published version will be returned if any.
+  string id = 2;
 }
+
+message GetDocumentResponse {
+  // Document metadata and block layout.
+  Document document = 1;
+
+  // Map of block id to blocks that are present in the document.
+  map<string, Block> blocks = 2;
+
+  // This kind of representation may allow us to implement pagination for large
+  // documents in future.
+}
+
+message UpdateDocumentRequest {
+  // Required. Full document object. Doesn't support partial updates.
+  Document document = 1;
+
+  // Optional. List of blocks of the document. Should only include original
+  // blocks without transclusions. May only include the updated blocks only as
+  // an optimization, but sending all of them is fine too.
+  repeated Block blocks = 2;
+}
+
+message UpdateDocumentResponse {}
 
 message ListDocumentsRequest {
   // Optional. Used to limit the number of results. The default is up to the
@@ -60,25 +86,23 @@ message ListDocumentsResponse {
 }
 
 message DeleteDocumentRequest {
-  //
+  // Globally unique version of the document to be deleted from the local
+  // machine. Documents that were already published and consumed by someone
+  // cannot be globally deleted (which is intended).
   string version = 1;
 }
 
-message PublishDocumentRequest { string version = 1; }
+message PublishDocumentRequest {
+  // Version of the draft to be published. Only drafts can be published.
+  // NOTICE: after publishing the draft its version effectively will be
+  // forgotten and will be changed to the content-addressable ID. It will be
+  // returned in the response to this request.
+  string version = 1;
+}
 
 message PublishDocumentResponse {
-  // After publishing a draft the published version will not be the same as the
-  // one of the draft. But the published version will become immutable after
-  // that.
+  // Immutable content-addressable version ID for the newly published document.
   string version = 1;
-}
-
-enum PublishingState {
-  UNSPECIFIED = 0;
-
-  DRAFT = 1;
-
-  PUBLISHED = 2;
 }
 
 message Document {
@@ -95,90 +119,115 @@ message Document {
   // ID of the author of the document.
   string author = 4;
 
-  // Current state of the document.
-  PublishingState publishing_state = 5;
-
-  // Content of the document. Can be missing in List responses to make it more
-  // light-weight.
-  BlockList block_list = 6;
-
-  // Time when the draft of this document was created for the first time.
-  google.protobuf.Timestamp create_time = 7;
-
-  // Last time this document was updated.
-  google.protobuf.Timestamp update_time = 8;
-
-  // Time when this version of the document was published. Empty for drafts.
-  google.protobuf.Timestamp publish_time = 9;
-
   // Version of the document. For drafts it will not change between edits, but
   // for published documents it's immutable and represents the state of the
   // document at a given point in time.
-  string version = 10;
+  string version = 5;
 
   // Previous version of the document.
-  string parent = 11;
+  string parent = 6;
+
+  // Current state of the document.
+  PublishingState publishing_state = 7;
+
+  // Nested list of block references according to the document's block
+  // hierarchy.
+  BlockRefList block_ref_list = 8;
+
+  // Time when the draft of this document was created for the first time.
+  google.protobuf.Timestamp create_time = 9;
+
+  // Last time this document was updated.
+  google.protobuf.Timestamp update_time = 10;
+
+  // Time when this version of the document was published. Empty for drafts.
+  google.protobuf.Timestamp publish_time = 11;
+
+  // next id - 12.
 }
 
-/**
-title: Hello
-author: burdiyan
-block_list:
-  list_style: NONE
-  blocks:
-    - id: block-1
-      text: Hello World
-      block_list:
-        - list_style: ORDERED
-          blocks:
-            - id: block-2
-              text_block:
-                text: Item 1
-            - id: block-3
-              text_block:
-                text: Item 2
-            - id: block-4
-              text_block:
-                text: Item 3
-    - id: block-5
-      image_block:
-        url: https://example.com/image
-*/
+// Publishing state of the document.
+enum PublishingState {
+  UNSPECIFIED = 0;
 
-message BlockList {
+  DRAFT = 1;
+
+  PUBLISHED = 2;
+}
+
+// Nested list of block references.
+message BlockRefList {
   enum Style {
     NONE = 0;
 
-    ORDERED = 1;
+    BULLET = 1;
 
-    UNORDERED = 2;
+    NUMBER = 2;
   }
 
-  Style list_style = 1;
+  // List style to be used for displaying the blocks in a list. Should only
+  // applied to immediate children, not recursively.
+  Style style = 1;
 
-  repeated Block blocks = 2;
+  // List of block references, each of which may include other BlockRefList's
+  // recursively.
+  repeated BlockRef blocks = 2;
 }
 
-message Block {
+// Block reference.
+message BlockRef {
+  // Globally unique block ID.
   string id = 1;
 
-  BlockList block_list = 2;
+  // Optional. List of children block references.
+  BlockRefList block_ref_list = 2;
+}
 
+// Block is the main content element of the document.
+message Block {
+  // ID of the block that must be unique per document.
+  string id = 1;
+
+  // Actual content of the block of different types.
   oneof content {
-    TextBlock text_block = 3;
+    Paragraph paragraph = 3;
 
-    // TODO(burdiyan): uncomment this when start implementing images.
-    // ImageBlock image_block = 4;
+    Image image = 4;
   }
 }
 
-message TextBlock {
-  // TODO(burdiyan): Apply format somehow.
-  string text = 1;
+// Text block with its inline elements.
+message Paragraph {
+  // Inline elements must be displayed on the same logical line. There must be
+  // at least one inline element for a valid paragraph.
+  repeated InlineElement inline_elements = 1;
+
+  // TODO(burdiyan): Here we can add paragraph styling like background colors
+  // and so on.
 }
 
-message ImageBlock {
-  // URI for the actual image. Meant to be used as src attribute of the img HTML
-  // tag directly.
-  string uri = 1;
+message InlineElement {
+  // Actual †ext of the paragraph.
+  string text = 1;
+
+  // Markup to be applied for the inline element.
+  TextStyle text_style = 2;
+
+  // TODO(burdiyan): Implement inline links.
+}
+
+message TextStyle {
+  bool bold = 1;
+
+  bool italic = 2;
+
+  bool underline = 3;
+
+  bool code = 4;
+}
+
+message Image {
+  string url = 1;
+
+  string alt_text = 2;
 }

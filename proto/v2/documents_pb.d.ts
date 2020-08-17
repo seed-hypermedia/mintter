@@ -22,11 +22,11 @@ export namespace CreateDraftRequest {
 }
 
 export class GetDocumentRequest extends jspb.Message {
-  getId(): string;
-  setId(value: string): void;
-
   getVersion(): string;
   setVersion(value: string): void;
+
+  getId(): string;
+  setId(value: string): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetDocumentRequest.AsObject;
@@ -38,8 +38,72 @@ export class GetDocumentRequest extends jspb.Message {
 
 export namespace GetDocumentRequest {
   export type AsObject = {
-    id: string,
     version: string,
+    id: string,
+  }
+}
+
+export class GetDocumentResponse extends jspb.Message {
+  getDocument(): Document | undefined;
+  setDocument(value?: Document): void;
+  hasDocument(): boolean;
+  clearDocument(): void;
+
+  getBlocksMap(): jspb.Map<string, Block>;
+  clearBlocksMap(): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetDocumentResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetDocumentResponse): GetDocumentResponse.AsObject;
+  static serializeBinaryToWriter(message: GetDocumentResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetDocumentResponse;
+  static deserializeBinaryFromReader(message: GetDocumentResponse, reader: jspb.BinaryReader): GetDocumentResponse;
+}
+
+export namespace GetDocumentResponse {
+  export type AsObject = {
+    document?: Document.AsObject,
+    blocksMap: Array<[string, Block.AsObject]>,
+  }
+}
+
+export class UpdateDocumentRequest extends jspb.Message {
+  getDocument(): Document | undefined;
+  setDocument(value?: Document): void;
+  hasDocument(): boolean;
+  clearDocument(): void;
+
+  getBlocksList(): Array<Block>;
+  setBlocksList(value: Array<Block>): void;
+  clearBlocksList(): void;
+  addBlocks(value?: Block, index?: number): Block;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateDocumentRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateDocumentRequest): UpdateDocumentRequest.AsObject;
+  static serializeBinaryToWriter(message: UpdateDocumentRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateDocumentRequest;
+  static deserializeBinaryFromReader(message: UpdateDocumentRequest, reader: jspb.BinaryReader): UpdateDocumentRequest;
+}
+
+export namespace UpdateDocumentRequest {
+  export type AsObject = {
+    document?: Document.AsObject,
+    blocksList: Array<Block.AsObject>,
+  }
+}
+
+export class UpdateDocumentResponse extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateDocumentResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateDocumentResponse): UpdateDocumentResponse.AsObject;
+  static serializeBinaryToWriter(message: UpdateDocumentResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateDocumentResponse;
+  static deserializeBinaryFromReader(message: UpdateDocumentResponse, reader: jspb.BinaryReader): UpdateDocumentResponse;
+}
+
+export namespace UpdateDocumentResponse {
+  export type AsObject = {
   }
 }
 
@@ -164,13 +228,19 @@ export class Document extends jspb.Message {
   getAuthor(): string;
   setAuthor(value: string): void;
 
+  getVersion(): string;
+  setVersion(value: string): void;
+
+  getParent(): string;
+  setParent(value: string): void;
+
   getPublishingState(): PublishingState;
   setPublishingState(value: PublishingState): void;
 
-  getBlockList(): BlockList | undefined;
-  setBlockList(value?: BlockList): void;
-  hasBlockList(): boolean;
-  clearBlockList(): void;
+  getBlockRefList(): BlockRefList | undefined;
+  setBlockRefList(value?: BlockRefList): void;
+  hasBlockRefList(): boolean;
+  clearBlockRefList(): void;
 
   getCreateTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
   setCreateTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
@@ -187,12 +257,6 @@ export class Document extends jspb.Message {
   hasPublishTime(): boolean;
   clearPublishTime(): void;
 
-  getVersion(): string;
-  setVersion(value: string): void;
-
-  getParent(): string;
-  setParent(value: string): void;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Document.AsObject;
   static toObject(includeInstance: boolean, msg: Document): Document.AsObject;
@@ -207,43 +271,67 @@ export namespace Document {
     title: string,
     subtitle: string,
     author: string,
+    version: string,
+    parent: string,
     publishingState: PublishingState,
-    blockList?: BlockList.AsObject,
+    blockRefList?: BlockRefList.AsObject,
     createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     updateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     publishTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    version: string,
-    parent: string,
   }
 }
 
-export class BlockList extends jspb.Message {
-  getListStyle(): BlockList.Style;
-  setListStyle(value: BlockList.Style): void;
+export class BlockRefList extends jspb.Message {
+  getStyle(): BlockRefList.Style;
+  setStyle(value: BlockRefList.Style): void;
 
-  getBlocksList(): Array<Block>;
-  setBlocksList(value: Array<Block>): void;
+  getBlocksList(): Array<BlockRef>;
+  setBlocksList(value: Array<BlockRef>): void;
   clearBlocksList(): void;
-  addBlocks(value?: Block, index?: number): Block;
+  addBlocks(value?: BlockRef, index?: number): BlockRef;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): BlockList.AsObject;
-  static toObject(includeInstance: boolean, msg: BlockList): BlockList.AsObject;
-  static serializeBinaryToWriter(message: BlockList, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): BlockList;
-  static deserializeBinaryFromReader(message: BlockList, reader: jspb.BinaryReader): BlockList;
+  toObject(includeInstance?: boolean): BlockRefList.AsObject;
+  static toObject(includeInstance: boolean, msg: BlockRefList): BlockRefList.AsObject;
+  static serializeBinaryToWriter(message: BlockRefList, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): BlockRefList;
+  static deserializeBinaryFromReader(message: BlockRefList, reader: jspb.BinaryReader): BlockRefList;
 }
 
-export namespace BlockList {
+export namespace BlockRefList {
   export type AsObject = {
-    listStyle: BlockList.Style,
-    blocksList: Array<Block.AsObject>,
+    style: BlockRefList.Style,
+    blocksList: Array<BlockRef.AsObject>,
   }
 
   export enum Style { 
     NONE = 0,
-    ORDERED = 1,
-    UNORDERED = 2,
+    BULLET = 1,
+    NUMBER = 2,
+  }
+}
+
+export class BlockRef extends jspb.Message {
+  getId(): string;
+  setId(value: string): void;
+
+  getBlockRefList(): BlockRefList | undefined;
+  setBlockRefList(value?: BlockRefList): void;
+  hasBlockRefList(): boolean;
+  clearBlockRefList(): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): BlockRef.AsObject;
+  static toObject(includeInstance: boolean, msg: BlockRef): BlockRef.AsObject;
+  static serializeBinaryToWriter(message: BlockRef, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): BlockRef;
+  static deserializeBinaryFromReader(message: BlockRef, reader: jspb.BinaryReader): BlockRef;
+}
+
+export namespace BlockRef {
+  export type AsObject = {
+    id: string,
+    blockRefList?: BlockRefList.AsObject,
   }
 }
 
@@ -251,15 +339,15 @@ export class Block extends jspb.Message {
   getId(): string;
   setId(value: string): void;
 
-  getBlockList(): BlockList | undefined;
-  setBlockList(value?: BlockList): void;
-  hasBlockList(): boolean;
-  clearBlockList(): void;
+  getParagraph(): Paragraph | undefined;
+  setParagraph(value?: Paragraph): void;
+  hasParagraph(): boolean;
+  clearParagraph(): void;
 
-  getTextBlock(): TextBlock | undefined;
-  setTextBlock(value?: TextBlock): void;
-  hasTextBlock(): boolean;
-  clearTextBlock(): void;
+  getImage(): Image | undefined;
+  setImage(value?: Image): void;
+  hasImage(): boolean;
+  clearImage(): void;
 
   getContentCase(): Block.ContentCase;
 
@@ -274,49 +362,110 @@ export class Block extends jspb.Message {
 export namespace Block {
   export type AsObject = {
     id: string,
-    blockList?: BlockList.AsObject,
-    textBlock?: TextBlock.AsObject,
+    paragraph?: Paragraph.AsObject,
+    image?: Image.AsObject,
   }
 
   export enum ContentCase { 
     CONTENT_NOT_SET = 0,
-    TEXT_BLOCK = 3,
+    PARAGRAPH = 3,
+    IMAGE = 4,
   }
 }
 
-export class TextBlock extends jspb.Message {
+export class Paragraph extends jspb.Message {
+  getInlineElementsList(): Array<InlineElement>;
+  setInlineElementsList(value: Array<InlineElement>): void;
+  clearInlineElementsList(): void;
+  addInlineElements(value?: InlineElement, index?: number): InlineElement;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Paragraph.AsObject;
+  static toObject(includeInstance: boolean, msg: Paragraph): Paragraph.AsObject;
+  static serializeBinaryToWriter(message: Paragraph, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Paragraph;
+  static deserializeBinaryFromReader(message: Paragraph, reader: jspb.BinaryReader): Paragraph;
+}
+
+export namespace Paragraph {
+  export type AsObject = {
+    inlineElementsList: Array<InlineElement.AsObject>,
+  }
+}
+
+export class InlineElement extends jspb.Message {
   getText(): string;
   setText(value: string): void;
 
+  getTextStyle(): TextStyle | undefined;
+  setTextStyle(value?: TextStyle): void;
+  hasTextStyle(): boolean;
+  clearTextStyle(): void;
+
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): TextBlock.AsObject;
-  static toObject(includeInstance: boolean, msg: TextBlock): TextBlock.AsObject;
-  static serializeBinaryToWriter(message: TextBlock, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): TextBlock;
-  static deserializeBinaryFromReader(message: TextBlock, reader: jspb.BinaryReader): TextBlock;
+  toObject(includeInstance?: boolean): InlineElement.AsObject;
+  static toObject(includeInstance: boolean, msg: InlineElement): InlineElement.AsObject;
+  static serializeBinaryToWriter(message: InlineElement, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): InlineElement;
+  static deserializeBinaryFromReader(message: InlineElement, reader: jspb.BinaryReader): InlineElement;
 }
 
-export namespace TextBlock {
+export namespace InlineElement {
   export type AsObject = {
     text: string,
+    textStyle?: TextStyle.AsObject,
   }
 }
 
-export class ImageBlock extends jspb.Message {
-  getUri(): string;
-  setUri(value: string): void;
+export class TextStyle extends jspb.Message {
+  getBold(): boolean;
+  setBold(value: boolean): void;
+
+  getItalic(): boolean;
+  setItalic(value: boolean): void;
+
+  getUnderline(): boolean;
+  setUnderline(value: boolean): void;
+
+  getCode(): boolean;
+  setCode(value: boolean): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ImageBlock.AsObject;
-  static toObject(includeInstance: boolean, msg: ImageBlock): ImageBlock.AsObject;
-  static serializeBinaryToWriter(message: ImageBlock, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ImageBlock;
-  static deserializeBinaryFromReader(message: ImageBlock, reader: jspb.BinaryReader): ImageBlock;
+  toObject(includeInstance?: boolean): TextStyle.AsObject;
+  static toObject(includeInstance: boolean, msg: TextStyle): TextStyle.AsObject;
+  static serializeBinaryToWriter(message: TextStyle, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TextStyle;
+  static deserializeBinaryFromReader(message: TextStyle, reader: jspb.BinaryReader): TextStyle;
 }
 
-export namespace ImageBlock {
+export namespace TextStyle {
   export type AsObject = {
-    uri: string,
+    bold: boolean,
+    italic: boolean,
+    underline: boolean,
+    code: boolean,
+  }
+}
+
+export class Image extends jspb.Message {
+  getUrl(): string;
+  setUrl(value: string): void;
+
+  getAltText(): string;
+  setAltText(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Image.AsObject;
+  static toObject(includeInstance: boolean, msg: Image): Image.AsObject;
+  static serializeBinaryToWriter(message: Image, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Image;
+  static deserializeBinaryFromReader(message: Image, reader: jspb.BinaryReader): Image;
+}
+
+export namespace Image {
+  export type AsObject = {
+    url: string,
+    altText: string,
   }
 }
 
