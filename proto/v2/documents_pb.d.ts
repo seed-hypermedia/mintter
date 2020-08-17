@@ -21,6 +21,82 @@ export namespace CreateDraftRequest {
   }
 }
 
+export class UpdateDraftRequest extends jspb.Message {
+  getDocument(): Document | undefined;
+  setDocument(value?: Document): void;
+  hasDocument(): boolean;
+  clearDocument(): void;
+
+  getBlocksList(): Array<Block>;
+  setBlocksList(value: Array<Block>): void;
+  clearBlocksList(): void;
+  addBlocks(value?: Block, index?: number): Block;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateDraftRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateDraftRequest): UpdateDraftRequest.AsObject;
+  static serializeBinaryToWriter(message: UpdateDraftRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateDraftRequest;
+  static deserializeBinaryFromReader(message: UpdateDraftRequest, reader: jspb.BinaryReader): UpdateDraftRequest;
+}
+
+export namespace UpdateDraftRequest {
+  export type AsObject = {
+    document?: Document.AsObject,
+    blocksList: Array<Block.AsObject>,
+  }
+}
+
+export class UpdateDraftResponse extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateDraftResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateDraftResponse): UpdateDraftResponse.AsObject;
+  static serializeBinaryToWriter(message: UpdateDraftResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateDraftResponse;
+  static deserializeBinaryFromReader(message: UpdateDraftResponse, reader: jspb.BinaryReader): UpdateDraftResponse;
+}
+
+export namespace UpdateDraftResponse {
+  export type AsObject = {
+  }
+}
+
+export class PublishDraftRequest extends jspb.Message {
+  getVersion(): string;
+  setVersion(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PublishDraftRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: PublishDraftRequest): PublishDraftRequest.AsObject;
+  static serializeBinaryToWriter(message: PublishDraftRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PublishDraftRequest;
+  static deserializeBinaryFromReader(message: PublishDraftRequest, reader: jspb.BinaryReader): PublishDraftRequest;
+}
+
+export namespace PublishDraftRequest {
+  export type AsObject = {
+    version: string,
+  }
+}
+
+export class PublishDraftResponse extends jspb.Message {
+  getVersion(): string;
+  setVersion(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PublishDraftResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: PublishDraftResponse): PublishDraftResponse.AsObject;
+  static serializeBinaryToWriter(message: PublishDraftResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PublishDraftResponse;
+  static deserializeBinaryFromReader(message: PublishDraftResponse, reader: jspb.BinaryReader): PublishDraftResponse;
+}
+
+export namespace PublishDraftResponse {
+  export type AsObject = {
+    version: string,
+  }
+}
+
 export class GetDocumentRequest extends jspb.Message {
   getVersion(): string;
   setVersion(value: string): void;
@@ -64,46 +140,6 @@ export namespace GetDocumentResponse {
   export type AsObject = {
     document?: Document.AsObject,
     blocksMap: Array<[string, Block.AsObject]>,
-  }
-}
-
-export class UpdateDocumentRequest extends jspb.Message {
-  getDocument(): Document | undefined;
-  setDocument(value?: Document): void;
-  hasDocument(): boolean;
-  clearDocument(): void;
-
-  getBlocksList(): Array<Block>;
-  setBlocksList(value: Array<Block>): void;
-  clearBlocksList(): void;
-  addBlocks(value?: Block, index?: number): Block;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): UpdateDocumentRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: UpdateDocumentRequest): UpdateDocumentRequest.AsObject;
-  static serializeBinaryToWriter(message: UpdateDocumentRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): UpdateDocumentRequest;
-  static deserializeBinaryFromReader(message: UpdateDocumentRequest, reader: jspb.BinaryReader): UpdateDocumentRequest;
-}
-
-export namespace UpdateDocumentRequest {
-  export type AsObject = {
-    document?: Document.AsObject,
-    blocksList: Array<Block.AsObject>,
-  }
-}
-
-export class UpdateDocumentResponse extends jspb.Message {
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): UpdateDocumentResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: UpdateDocumentResponse): UpdateDocumentResponse.AsObject;
-  static serializeBinaryToWriter(message: UpdateDocumentResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): UpdateDocumentResponse;
-  static deserializeBinaryFromReader(message: UpdateDocumentResponse, reader: jspb.BinaryReader): UpdateDocumentResponse;
-}
-
-export namespace UpdateDocumentResponse {
-  export type AsObject = {
   }
 }
 
@@ -174,42 +210,6 @@ export class DeleteDocumentRequest extends jspb.Message {
 }
 
 export namespace DeleteDocumentRequest {
-  export type AsObject = {
-    version: string,
-  }
-}
-
-export class PublishDocumentRequest extends jspb.Message {
-  getVersion(): string;
-  setVersion(value: string): void;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): PublishDocumentRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: PublishDocumentRequest): PublishDocumentRequest.AsObject;
-  static serializeBinaryToWriter(message: PublishDocumentRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): PublishDocumentRequest;
-  static deserializeBinaryFromReader(message: PublishDocumentRequest, reader: jspb.BinaryReader): PublishDocumentRequest;
-}
-
-export namespace PublishDocumentRequest {
-  export type AsObject = {
-    version: string,
-  }
-}
-
-export class PublishDocumentResponse extends jspb.Message {
-  getVersion(): string;
-  setVersion(value: string): void;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): PublishDocumentResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: PublishDocumentResponse): PublishDocumentResponse.AsObject;
-  static serializeBinaryToWriter(message: PublishDocumentResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): PublishDocumentResponse;
-  static deserializeBinaryFromReader(message: PublishDocumentResponse, reader: jspb.BinaryReader): PublishDocumentResponse;
-}
-
-export namespace PublishDocumentResponse {
   export type AsObject = {
     version: string,
   }

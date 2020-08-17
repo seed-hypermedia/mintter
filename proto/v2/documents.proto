@@ -10,21 +10,46 @@ option go_package = "mintter/proto/v2;v2";
 service Documents {
   rpc CreateDraft(CreateDraftRequest) returns (Document);
 
-  rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse);
+  rpc UpdateDraft(UpdateDraftRequest) returns (UpdateDraftResponse);
 
-  rpc UpdateDocument(UpdateDocumentRequest) returns (UpdateDocumentResponse);
+  rpc PublishDraft(PublishDraftRequest) returns (PublishDraftResponse);
+
+  rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse);
 
   rpc ListDocuments(ListDocumentsRequest) returns (ListDocumentsResponse);
 
   rpc DeleteDocument(DeleteDocumentRequest) returns (google.protobuf.Empty);
-
-  rpc PublishDocument(PublishDocumentRequest) returns (PublishDocumentResponse);
 }
 
 message CreateDraftRequest {
   // Optional. To update an already published document, create a new draft
   // specifying the version of a published version as parent.
   string parent = 1;
+}
+
+message UpdateDraftRequest {
+  // Required. Full document object. Doesn't support partial updates.
+  Document document = 1;
+
+  // Optional. List of blocks of the document. Should only include original
+  // blocks without transclusions. May only include the updated blocks only as
+  // an optimization, but sending all of them is fine too.
+  repeated Block blocks = 2;
+}
+
+message UpdateDraftResponse {}
+
+message PublishDraftRequest {
+  // Version of the draft to be published. Only drafts can be published.
+  // NOTICE: after publishing the draft its version effectively will be
+  // forgotten and will be changed to the content-addressable ID. It will be
+  // returned in the response to this request.
+  string version = 1;
+}
+
+message PublishDraftResponse {
+  // Immutable content-addressable version ID for the newly published document.
+  string version = 1;
 }
 
 message GetDocumentRequest {
@@ -47,18 +72,6 @@ message GetDocumentResponse {
   // This kind of representation may allow us to implement pagination for large
   // documents in future.
 }
-
-message UpdateDocumentRequest {
-  // Required. Full document object. Doesn't support partial updates.
-  Document document = 1;
-
-  // Optional. List of blocks of the document. Should only include original
-  // blocks without transclusions. May only include the updated blocks only as
-  // an optimization, but sending all of them is fine too.
-  repeated Block blocks = 2;
-}
-
-message UpdateDocumentResponse {}
 
 message ListDocumentsRequest {
   // Optional. Used to limit the number of results. The default is up to the
@@ -89,19 +102,6 @@ message DeleteDocumentRequest {
   // Globally unique version of the document to be deleted from the local
   // machine. Documents that were already published and consumed by someone
   // cannot be globally deleted (which is intended).
-  string version = 1;
-}
-
-message PublishDocumentRequest {
-  // Version of the draft to be published. Only drafts can be published.
-  // NOTICE: after publishing the draft its version effectively will be
-  // forgotten and will be changed to the content-addressable ID. It will be
-  // returned in the response to this request.
-  string version = 1;
-}
-
-message PublishDocumentResponse {
-  // Immutable content-addressable version ID for the newly published document.
   string version = 1;
 }
 

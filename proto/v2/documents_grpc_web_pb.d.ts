@@ -11,10 +11,10 @@ import {
   GetDocumentResponse,
   ListDocumentsRequest,
   ListDocumentsResponse,
-  PublishDocumentRequest,
-  PublishDocumentResponse,
-  UpdateDocumentRequest,
-  UpdateDocumentResponse} from './documents_pb';
+  PublishDraftRequest,
+  PublishDraftResponse,
+  UpdateDraftRequest,
+  UpdateDraftResponse} from './documents_pb';
 
 export class DocumentsClient {
   constructor (hostname: string,
@@ -28,19 +28,26 @@ export class DocumentsClient {
                response: Document) => void
   ): grpcWeb.ClientReadableStream<Document>;
 
+  updateDraft(
+    request: UpdateDraftRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: UpdateDraftResponse) => void
+  ): grpcWeb.ClientReadableStream<UpdateDraftResponse>;
+
+  publishDraft(
+    request: PublishDraftRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: PublishDraftResponse) => void
+  ): grpcWeb.ClientReadableStream<PublishDraftResponse>;
+
   getDocument(
     request: GetDocumentRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.Error,
                response: GetDocumentResponse) => void
   ): grpcWeb.ClientReadableStream<GetDocumentResponse>;
-
-  updateDocument(
-    request: UpdateDocumentRequest,
-    metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
-               response: UpdateDocumentResponse) => void
-  ): grpcWeb.ClientReadableStream<UpdateDocumentResponse>;
 
   listDocuments(
     request: ListDocumentsRequest,
@@ -56,13 +63,6 @@ export class DocumentsClient {
                response: google_protobuf_empty_pb.Empty) => void
   ): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
 
-  publishDocument(
-    request: PublishDocumentRequest,
-    metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
-               response: PublishDocumentResponse) => void
-  ): grpcWeb.ClientReadableStream<PublishDocumentResponse>;
-
 }
 
 export class DocumentsPromiseClient {
@@ -75,15 +75,20 @@ export class DocumentsPromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<Document>;
 
+  updateDraft(
+    request: UpdateDraftRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<UpdateDraftResponse>;
+
+  publishDraft(
+    request: PublishDraftRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<PublishDraftResponse>;
+
   getDocument(
     request: GetDocumentRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<GetDocumentResponse>;
-
-  updateDocument(
-    request: UpdateDocumentRequest,
-    metadata?: grpcWeb.Metadata
-  ): Promise<UpdateDocumentResponse>;
 
   listDocuments(
     request: ListDocumentsRequest,
@@ -94,11 +99,6 @@ export class DocumentsPromiseClient {
     request: DeleteDocumentRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<google_protobuf_empty_pb.Empty>;
-
-  publishDocument(
-    request: PublishDocumentRequest,
-    metadata?: grpcWeb.Metadata
-  ): Promise<PublishDocumentResponse>;
 
 }
 

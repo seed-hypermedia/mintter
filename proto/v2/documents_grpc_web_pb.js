@@ -154,6 +154,166 @@ proto.mintter.v2.DocumentsPromiseClient.prototype.createDraft =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.mintter.v2.UpdateDraftRequest,
+ *   !proto.mintter.v2.UpdateDraftResponse>}
+ */
+const methodDescriptor_Documents_UpdateDraft = new grpc.web.MethodDescriptor(
+  '/mintter.v2.Documents/UpdateDraft',
+  grpc.web.MethodType.UNARY,
+  proto.mintter.v2.UpdateDraftRequest,
+  proto.mintter.v2.UpdateDraftResponse,
+  /**
+   * @param {!proto.mintter.v2.UpdateDraftRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.mintter.v2.UpdateDraftResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.mintter.v2.UpdateDraftRequest,
+ *   !proto.mintter.v2.UpdateDraftResponse>}
+ */
+const methodInfo_Documents_UpdateDraft = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.mintter.v2.UpdateDraftResponse,
+  /**
+   * @param {!proto.mintter.v2.UpdateDraftRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.mintter.v2.UpdateDraftResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.mintter.v2.UpdateDraftRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.mintter.v2.UpdateDraftResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.mintter.v2.UpdateDraftResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.mintter.v2.DocumentsClient.prototype.updateDraft =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/mintter.v2.Documents/UpdateDraft',
+      request,
+      metadata || {},
+      methodDescriptor_Documents_UpdateDraft,
+      callback);
+};
+
+
+/**
+ * @param {!proto.mintter.v2.UpdateDraftRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.mintter.v2.UpdateDraftResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.mintter.v2.DocumentsPromiseClient.prototype.updateDraft =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/mintter.v2.Documents/UpdateDraft',
+      request,
+      metadata || {},
+      methodDescriptor_Documents_UpdateDraft);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.mintter.v2.PublishDraftRequest,
+ *   !proto.mintter.v2.PublishDraftResponse>}
+ */
+const methodDescriptor_Documents_PublishDraft = new grpc.web.MethodDescriptor(
+  '/mintter.v2.Documents/PublishDraft',
+  grpc.web.MethodType.UNARY,
+  proto.mintter.v2.PublishDraftRequest,
+  proto.mintter.v2.PublishDraftResponse,
+  /**
+   * @param {!proto.mintter.v2.PublishDraftRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.mintter.v2.PublishDraftResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.mintter.v2.PublishDraftRequest,
+ *   !proto.mintter.v2.PublishDraftResponse>}
+ */
+const methodInfo_Documents_PublishDraft = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.mintter.v2.PublishDraftResponse,
+  /**
+   * @param {!proto.mintter.v2.PublishDraftRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.mintter.v2.PublishDraftResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.mintter.v2.PublishDraftRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.mintter.v2.PublishDraftResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.mintter.v2.PublishDraftResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.mintter.v2.DocumentsClient.prototype.publishDraft =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/mintter.v2.Documents/PublishDraft',
+      request,
+      metadata || {},
+      methodDescriptor_Documents_PublishDraft,
+      callback);
+};
+
+
+/**
+ * @param {!proto.mintter.v2.PublishDraftRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.mintter.v2.PublishDraftResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.mintter.v2.DocumentsPromiseClient.prototype.publishDraft =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/mintter.v2.Documents/PublishDraft',
+      request,
+      metadata || {},
+      methodDescriptor_Documents_PublishDraft);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.mintter.v2.GetDocumentRequest,
  *   !proto.mintter.v2.GetDocumentResponse>}
  */
@@ -228,86 +388,6 @@ proto.mintter.v2.DocumentsPromiseClient.prototype.getDocument =
       request,
       metadata || {},
       methodDescriptor_Documents_GetDocument);
-};
-
-
-/**
- * @const
- * @type {!grpc.web.MethodDescriptor<
- *   !proto.mintter.v2.UpdateDocumentRequest,
- *   !proto.mintter.v2.UpdateDocumentResponse>}
- */
-const methodDescriptor_Documents_UpdateDocument = new grpc.web.MethodDescriptor(
-  '/mintter.v2.Documents/UpdateDocument',
-  grpc.web.MethodType.UNARY,
-  proto.mintter.v2.UpdateDocumentRequest,
-  proto.mintter.v2.UpdateDocumentResponse,
-  /**
-   * @param {!proto.mintter.v2.UpdateDocumentRequest} request
-   * @return {!Uint8Array}
-   */
-  function(request) {
-    return request.serializeBinary();
-  },
-  proto.mintter.v2.UpdateDocumentResponse.deserializeBinary
-);
-
-
-/**
- * @const
- * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.mintter.v2.UpdateDocumentRequest,
- *   !proto.mintter.v2.UpdateDocumentResponse>}
- */
-const methodInfo_Documents_UpdateDocument = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.mintter.v2.UpdateDocumentResponse,
-  /**
-   * @param {!proto.mintter.v2.UpdateDocumentRequest} request
-   * @return {!Uint8Array}
-   */
-  function(request) {
-    return request.serializeBinary();
-  },
-  proto.mintter.v2.UpdateDocumentResponse.deserializeBinary
-);
-
-
-/**
- * @param {!proto.mintter.v2.UpdateDocumentRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.Error, ?proto.mintter.v2.UpdateDocumentResponse)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.mintter.v2.UpdateDocumentResponse>|undefined}
- *     The XHR Node Readable Stream
- */
-proto.mintter.v2.DocumentsClient.prototype.updateDocument =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/mintter.v2.Documents/UpdateDocument',
-      request,
-      metadata || {},
-      methodDescriptor_Documents_UpdateDocument,
-      callback);
-};
-
-
-/**
- * @param {!proto.mintter.v2.UpdateDocumentRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @return {!Promise<!proto.mintter.v2.UpdateDocumentResponse>}
- *     A native promise that resolves to the response
- */
-proto.mintter.v2.DocumentsPromiseClient.prototype.updateDocument =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/mintter.v2.Documents/UpdateDocument',
-      request,
-      metadata || {},
-      methodDescriptor_Documents_UpdateDocument);
 };
 
 
@@ -468,86 +548,6 @@ proto.mintter.v2.DocumentsPromiseClient.prototype.deleteDocument =
       request,
       metadata || {},
       methodDescriptor_Documents_DeleteDocument);
-};
-
-
-/**
- * @const
- * @type {!grpc.web.MethodDescriptor<
- *   !proto.mintter.v2.PublishDocumentRequest,
- *   !proto.mintter.v2.PublishDocumentResponse>}
- */
-const methodDescriptor_Documents_PublishDocument = new grpc.web.MethodDescriptor(
-  '/mintter.v2.Documents/PublishDocument',
-  grpc.web.MethodType.UNARY,
-  proto.mintter.v2.PublishDocumentRequest,
-  proto.mintter.v2.PublishDocumentResponse,
-  /**
-   * @param {!proto.mintter.v2.PublishDocumentRequest} request
-   * @return {!Uint8Array}
-   */
-  function(request) {
-    return request.serializeBinary();
-  },
-  proto.mintter.v2.PublishDocumentResponse.deserializeBinary
-);
-
-
-/**
- * @const
- * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.mintter.v2.PublishDocumentRequest,
- *   !proto.mintter.v2.PublishDocumentResponse>}
- */
-const methodInfo_Documents_PublishDocument = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.mintter.v2.PublishDocumentResponse,
-  /**
-   * @param {!proto.mintter.v2.PublishDocumentRequest} request
-   * @return {!Uint8Array}
-   */
-  function(request) {
-    return request.serializeBinary();
-  },
-  proto.mintter.v2.PublishDocumentResponse.deserializeBinary
-);
-
-
-/**
- * @param {!proto.mintter.v2.PublishDocumentRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.Error, ?proto.mintter.v2.PublishDocumentResponse)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.mintter.v2.PublishDocumentResponse>|undefined}
- *     The XHR Node Readable Stream
- */
-proto.mintter.v2.DocumentsClient.prototype.publishDocument =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/mintter.v2.Documents/PublishDocument',
-      request,
-      metadata || {},
-      methodDescriptor_Documents_PublishDocument,
-      callback);
-};
-
-
-/**
- * @param {!proto.mintter.v2.PublishDocumentRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @return {!Promise<!proto.mintter.v2.PublishDocumentResponse>}
- *     A native promise that resolves to the response
- */
-proto.mintter.v2.DocumentsPromiseClient.prototype.publishDocument =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/mintter.v2.Documents/PublishDocument',
-      request,
-      metadata || {},
-      methodDescriptor_Documents_PublishDocument);
 };
 
 
