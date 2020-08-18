@@ -10,6 +10,7 @@
     "start": "tsdx watch",
     "build": "tsdx build",
     "test": "tsdx test",
+    "test:watch": "tsdx test --watch",
     "lint": "tsdx lint src",
     "prepare": "tsdx build"
   },
