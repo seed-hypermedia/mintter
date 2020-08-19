@@ -1,31 +1,20 @@
-import {Editor as SlateEditor, Transforms, Path} from 'slate'
+import {Editor as SlateEditor, Path, Node} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {ELEMENT_PARAGRAPH, ELEMENT_BLOCK} from './elements'
 
 export interface MintterEditor extends ReactEditor {
-  addBlock: (editor: ReactEditor) => void
   charCount: (editor: ReactEditor, path: Path) => number
+}
+
+export interface EditorState {
+  title: string
+  description: string
+  sections: Node[]
 }
 
 // TODO: fix types here
 export const Editor = {
   ...SlateEditor,
-  // TODO: (Horacio): accept options to add a section in other places
-  addBlock: (editor: ReactEditor): void => {
-    const newNode = {
-      type: ELEMENT_BLOCK,
-      children: [{type: ELEMENT_PARAGRAPH, children: [{text: ''}]}],
-    }
-    // const newNode = {
-    //   type: ELEMENT_PARAGRAPH,
-    //   children: [{text: ''}],
-    // }
-    // the end of the document
-    const at = [editor.children.length]
-    Transforms.insertNodes(editor, newNode, {at})
-    ReactEditor.focus(editor)
-    Transforms.select(editor, SlateEditor.end(editor, []))
-  },
   charCount: (editor: ReactEditor, path: Path): number => {
     const txt = SlateEditor.string(editor, path)
     return txt.trim().length
@@ -47,3 +36,9 @@ export const initialBlocksValue = [
     ],
   },
 ]
+
+export const initialValue: EditorState = {
+  title: '',
+  description: '',
+  sections: initialBlocksValue,
+}

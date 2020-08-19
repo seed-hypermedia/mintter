@@ -59,22 +59,20 @@ export default function Publication(): JSX.Element {
     if (data) {
       const obj = data.toObject()
       getSections(obj.sectionsList).then(res => {
-        const sections = res
-          .getSectionsList()
-          .map((f: Section) => f.toObject())
-          .map((s: Section.AsObject) => ({
+        const sections = res.getSectionsList().map((s: Section) => {
+          const b = s.toObject()
+          return {
             type: nodeTypes.typeBlock,
-            title: s.title,
-            description: s.description,
-            author: s.author,
-            children: markdownToSlate(s.body),
-          }))
+            author: b.author,
+            children: markdownToSlate(b.body),
+          }
+        })
 
         setValue({
           title: obj.title,
           description: obj.description,
-          sections,
           author: obj.author,
+          sections,
         })
       })
     }

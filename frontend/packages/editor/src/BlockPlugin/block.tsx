@@ -16,7 +16,7 @@ function BlockControls({
   isHovered = false,
   hoverProps,
   onAddClicked,
-  dragHandleProps,
+  dragHandleProps = {},
   path,
 }) {
   return (
@@ -130,7 +130,40 @@ export function EditableBlockElement(
     }
   }, [onKeyDown])
 
-  return (
+  return path.length > 1 ? (
+    <div
+      ref={mergeRefs(ref, attributes.ref)}
+      className="first:mt-8"
+      data-slate-type={element.type}
+      data-slate-node={attributes['data-slate-node']}
+    >
+      <Block path={path}>
+        <BlockControls
+          path={path}
+          isHovered={isHovered}
+          hoverProps={hoverProps}
+          onAddClicked={onAddClicked}
+        />
+        <div contentEditable={false} className="theme-invert">
+          <div
+            className={`absolute top-0 right-0 select-none -mt-6 -mr-4 rounded shadow-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-black py-2 pointer-events-none ${
+              isHovered ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <p className={`text-body-muted border-r px-2 text-xs`}>
+              <span>Characters:</span>{' '}
+              {/* TODO: FIX avoid characters to jump when change chars number */}
+              <span className={`inline-block text-right text-body-muted`}>
+                {blockChars}
+              </span>
+            </p>
+            <p className="px-2 text-body-muted text-xs">Royalties: {price}</p>
+          </div>
+        </div>
+        {children}
+      </Block>
+    </div>
+  ) : (
     <Draggable key={element.id} draggableId={element.id} index={path[0]}>
       {provided => {
         return (
