@@ -6,13 +6,14 @@ import {ELEMENT_IMAGE, ELEMENT_BLOCK, ELEMENT_PARAGRAPH} from '../../elements'
 import {ReactEditor} from 'slate-react'
 
 export function insert(editor, {type, location}) {
+  const id = uuid()
   switch (type) {
     case ELEMENT_IMAGE:
       Transforms.insertNodes(
         editor,
         {
           type,
-          id: uuid(),
+          id,
           url: '',
           children: [{text: ''}],
         },
@@ -24,7 +25,7 @@ export function insert(editor, {type, location}) {
         editor,
         {
           type,
-          id: uuid(),
+          id,
           children: [
             {
               type: ELEMENT_PARAGRAPH,
