@@ -12,5 +12,6 @@ export * from './options'
 export * from './marks'
 export * from './elements'
 export * from './mergeRefs'
+export * from './hooks'
 
 export {slate}

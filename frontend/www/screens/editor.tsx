@@ -18,6 +18,8 @@ import {
   HelperToolbar,
   useHelper,
   ELEMENT_BLOCK,
+  useEditorValue,
+  EditorState,
 } from '@mintter/editor'
 import {useEditor as useSlateEditor, ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
@@ -36,90 +38,6 @@ import Layout from 'components/layout'
 import Container from 'components/container'
 import {useTheme} from 'shared/themeContext'
 
-interface EditorState {
-  title: string
-  description: string
-  sections: Node[]
-}
-
-function draftReducer(state: EditorState, action) {
-  const {type, payload} = action
-
-  switch (type) {
-    case 'TITLE':
-      return {
-        ...state,
-        title: payload,
-      }
-    case 'DESCRIPTION': {
-      return {
-        ...state,
-        description: payload,
-      }
-    }
-    case 'SECTIONS': {
-      return {
-        ...state,
-        sections: payload,
-      }
-    }
-
-    case 'VALUE': {
-      return {
-        ...state,
-        ...payload,
-      }
-    }
-
-    default: {
-      return state
-    }
-  }
-}
-
-function useEditorValue() {
-  const [state, dispatch] = useReducer(
-    draftReducer,
-    initialValue,
-    initializeEditorValue,
-  )
-
-  const setTitle = useCallback(payload => {
-    dispatch({type: 'TITLE', payload})
-  }, [])
-
-  const setDescription = useCallback(payload => {
-    dispatch({type: 'DESCRIPTION', payload})
-  }, [])
-
-  const setSections = useCallback(payload => {
-    dispatch({type: 'SECTIONS', payload})
-  }, [])
-
-  const setValue = useCallback(payload => {
-    dispatch({type: 'VALUE', payload})
-  }, [])
-
-  return {
-    state,
-    setTitle,
-    setDescription,
-    setSections,
-    setValue,
-  }
-}
-
-const initialValue: EditorState = {
-  title: '',
-  description: '',
-  sections: initialBlocksValue,
-}
-
-function initializeEditorValue() {
-  // TODO: change this to a lazy initialization function later
-  return initialValue
-}
-
 export default function Editor(): JSX.Element {
   const plugins = [...editorPlugins]
   const editor: slate.ReactEditor = useEditor(plugins) as slate.ReactEditor
@@ -133,7 +51,7 @@ export default function Editor(): JSX.Element {
     state,
     setTitle,
     setDescription,
-    setSections,
+    setBlocks,
     setValue,
   } = useEditorValue()
 
@@ -143,12 +61,6 @@ export default function Editor(): JSX.Element {
   const {theme} = useTheme()
 
   const {title, sections, description} = state
-
-  function isEmpty(): boolean {
-    return sections
-      ? sections.length === 1 && Node.string(sections[0]) === ''
-      : false
-  }
 
   const {status, error, data} = getDraft(documentId, {
     onSuccess: () => {
@@ -187,7 +99,7 @@ export default function Editor(): JSX.Element {
             ? obj.sectionsList.map((s: Section.AsObject) => {
                 return {
                   type: ELEMENT_BLOCK,
-                  id: uuid(),
+                  id: s.documentId,
                   author: s.author,
                   children: markdownToSlate(s.body),
                 }
@@ -294,8 +206,8 @@ export default function Editor(): JSX.Element {
               editor={editor}
               plugins={plugins}
               value={sections}
-              onChange={sections => {
-                setSections(sections)
+              onChange={blocks => {
+                setBlocks(blocks)
               }}
               renderElements={[renderEditableBlockElement()]}
               theme={theme}

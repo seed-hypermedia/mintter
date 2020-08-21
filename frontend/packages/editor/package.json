@@ -10,6 +10,7 @@
     "start": "tsdx watch",
     "build": "tsdx build",
     "test": "tsdx test",
+    "test:watch": "tsdx test --watch",
     "lint": "tsdx lint src",
     "prepare": "tsdx build"
   },
@@ -39,6 +40,7 @@
     "slate-react": "^0.58.4"
   },
   "devDependencies": {
+    "@testing-library/react": "^10.4.8",
     "@types/jest": "^25.1.2",
     "autoprefixer": "^9.8.0",
     "eslint-config-react-app": "^5.2.0",
