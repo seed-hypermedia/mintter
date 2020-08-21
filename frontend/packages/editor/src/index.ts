@@ -13,5 +13,6 @@ export * from './marks'
 export * from './elements'
 export * from './mergeRefs'
 export * from './hooks'
+export * from './transformers'
 
 export {slate}

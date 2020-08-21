@@ -33,6 +33,7 @@
     "slate-react": "^0.58.4",
     "styled-components": "^5.1.1",
     "tailwindcss": "^1.4.6",
+    "unist-util-visit": "^2.0.3",
     "uuid": "^8.3.0"
   },
   "peerDependencies": {
@@ -40,6 +41,7 @@
     "slate-react": "^0.58.4"
   },
   "devDependencies": {
+    "@mintter/proto": "*",
     "@testing-library/react": "^10.4.8",
     "@types/jest": "^25.1.2",
     "autoprefixer": "^9.8.0",
