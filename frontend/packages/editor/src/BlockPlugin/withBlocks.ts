@@ -25,6 +25,7 @@ export function withBlocks() {
     } = editor
 
     editor.insertBreak = () => {
+      console.log('blocks => ', editor.children)
       if (editor.selection) {
         if (!isRangeAtRoot(editor.selection)) {
           const [parentNode, parentPath] = Editor.parent(
@@ -101,31 +102,33 @@ export function withBlocks() {
                * If not end, split nodes, wrap a list item on the new paragraph and move it to the next block item
                */
               if (!isEnd) {
-                /**
-                 * TODO: Horacio: Take all nodes below selection and move it to a new block below the current one
-                 */
-
                 if (isParentStart && isParentEnd) {
                   return
                 }
 
                 if (isParentStart) {
                   Transforms.splitNodes(editor, {at: parentPath})
-                  // Transforms.setNodes(
-                  //   editor,
-                  //   {id: uuid()},
-                  //   {at: nextBlockPath},
-                  // )
+                  Transforms.setNodes(
+                    editor,
+                    {id: uuid()},
+                    {at: Path.next(parentPath)},
+                  )
                   return
                 }
 
                 if (!isParentEnd) {
                   Transforms.splitNodes(editor)
                   Transforms.splitNodes(editor, {at: nextParentPath})
+                  Transforms.setNodes(
+                    editor,
+                    {id: uuid()},
+                    {at: Path.next(Path.parent(nextParentPath))},
+                  )
                   return
                 } else {
                   Transforms.splitNodes(editor, {at: nextParentPath})
                   Transforms.select(editor, Editor.start(editor, nextBlockPath))
+                  Transforms.setNodes(editor, {id: uuid()}, {at: nextBlockPath})
                   return
                 }
               } else {
