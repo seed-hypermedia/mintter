@@ -6,6 +6,7 @@ import {
   IMAGE_OPTIONS,
   LIST_OPTIONS,
   BLOCK_OPTIONS,
+  BLOCK_LIST_OPTIONS,
 } from './elements'
 import {
   BOLD_OPTIONS,
@@ -23,6 +24,7 @@ export const options = {
   ...IMAGE_OPTIONS,
   ...LIST_OPTIONS,
   ...BLOCK_OPTIONS,
+  ...BLOCK_LIST_OPTIONS,
   //marks
   ...BOLD_OPTIONS,
   ...ITALIC_OPTIONS,
