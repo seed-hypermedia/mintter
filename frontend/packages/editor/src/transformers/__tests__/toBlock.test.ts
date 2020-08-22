@@ -6,7 +6,7 @@ import {
   TextStyle,
 } from '@mintter/proto/v2/documents_pb'
 
-test('should transform Slate blocks to Mintter Blocks', () => {
+test('toBlock: simple text block', () => {
   const slateNode = {
     type: 'block',
     id: 'test-1',
@@ -45,3 +45,5 @@ test('should transform Slate blocks to Mintter Blocks', () => {
 
   expect(toBlock(slateNode)).toEqual(expected)
 })
+
+// test('toBlock: block with image', () => {})
