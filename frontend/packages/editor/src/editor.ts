@@ -12,6 +12,12 @@ export interface EditorState {
   sections: Node[]
 }
 
+export interface SlateBlock {
+  id: string
+  type: string
+  children: Node[]
+}
+
 // TODO: fix types here
 export const Editor = {
   ...SlateEditor,
