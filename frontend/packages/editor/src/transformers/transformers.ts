@@ -12,6 +12,12 @@ import {
 } from '@mintter/proto/v2/documents_pb'
 import {SlateBlock} from '../editor'
 import {Node, Text} from 'slate'
+import {
+  ELEMENT_BLOCK_LIST,
+  ELEMENT_BLOCK,
+  ELEMENT_PARAGRAPH,
+  ELEMENT_IMAGE,
+} from '../elements'
 
 export function toBlock(node: SlateBlock): Block {
   const pNode: Node = node.children.filter(n => n.type === 'p')[0]
@@ -37,7 +43,7 @@ export function toInlineElement({text, ...textStyles}: Text): InlineElement {
 }
 
 export function toBlockRefList(blockList) {
-  if (blockList.type !== 'block_list') {
+  if (blockList.type !== ELEMENT_BLOCK_LIST) {
     throw new Error(
       `toBlockRefList: the node passed should be of type "block_list" but got ${blockList.type}`,
     )
@@ -112,7 +118,7 @@ export function toDocument({
 // assuming these two inconveniences.
 export function makeProto<T extends jspb.Message>(msg: T, data: {}): T {
   for (const [key, value] of Object.entries(data)) {
-    let setter = 'set' + key.charAt(0).toUpperCase() + key.slice(1)
+    let setter = `set${key.charAt(0).toUpperCase() + key.slice(1)}`
 
     if (Array.isArray(value)) {
       setter += 'List'
@@ -122,4 +128,84 @@ export function makeProto<T extends jspb.Message>(msg: T, data: {}): T {
   }
 
   return msg
+}
+
+export function toSlateBlock(block: Block): SlateBlock {
+  const {id, paragraph, image}: Block.AsObject = block.toObject()
+
+  let slateBlock = {
+    id,
+    type: ELEMENT_BLOCK,
+  }
+
+  if (image) {
+    return {
+      ...slateBlock,
+      children: [
+        {
+          type: ELEMENT_IMAGE,
+          url: image.url,
+          alt: image.altText,
+          children: [{text: ''}],
+        },
+      ],
+    }
+  }
+
+  return {
+    ...slateBlock,
+    children: [
+      {
+        type: ELEMENT_PARAGRAPH,
+        children: paragraph
+          ? paragraph.inlineElementsList.map(({text, textStyle = {}}) => ({
+              text,
+              ...textStyle,
+            }))
+          : [{text: ''}],
+      },
+    ],
+  }
+}
+
+export interface ToSlateTreeRequest {
+  blockRefList: BlockRefList.AsObject
+  blocks: Block[]
+}
+
+export function toSlateTree({blockRefList, blocks}: ToSlateTreeRequest) {
+  const dictionary = toSlateBlocksDictionary(blocks)
+  return {
+    type: ELEMENT_BLOCK_LIST,
+    listType: blockRefList.style,
+    children: blockRefList.blocksList.map(child => {
+      const block = dictionary[child.id]
+
+      if (child.blockRefList) {
+        block.children.push(
+          toSlateTree({blockRefList: child.blockRefList, blocks}),
+        )
+      }
+
+      return block
+    }),
+  }
+}
+
+export interface ToSlateBlocksDictionaryResponse {
+  [key: string]: SlateBlock
+}
+
+export function toSlateBlocksDictionary(
+  blocks: Block[],
+): ToSlateBlocksDictionaryResponse {
+  return blocks.reduce((acc, item) => {
+    const block = item.toObject()
+
+    // TODO: Guard for dulplicates?
+    // TODO: Guard for transclusions?
+    acc[block.id] = toSlateBlock(item)
+
+    return acc
+  }, {})
 }

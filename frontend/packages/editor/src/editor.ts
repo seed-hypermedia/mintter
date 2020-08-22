@@ -15,7 +15,7 @@ export interface EditorState {
 export interface SlateBlock {
   id: string
   type: string
-  children: Node[]
+  children: any[]
 }
 
 // TODO: fix types here
