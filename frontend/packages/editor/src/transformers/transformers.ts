@@ -66,8 +66,15 @@ export function toBlockRef(block: SlateBlock) {
   return makeProto(new BlockRef(), ref)
 }
 
+export interface EditorDocument {
+  id?: string
+  title: string
+  subtitle?: string
+  blocks: any[]
+}
+
 export interface ToDocumentRequestProp {
-  editorDocument: any // TODO: slate blocks (SlateBlockList[])
+  editorDocument: EditorDocument
   author: string
   blockList: any // TODO: SlateBlock[]
 }
@@ -82,7 +89,7 @@ export function toDocument({
   blockList,
   author,
 }: ToDocumentRequestProp): ToDocumentResponse {
-  const {blocks: tree, title, id} = editorDocument
+  const {blocks: tree, title, subtitle = '', id} = editorDocument
   // check if document has only one child
   if (tree.length > 1) {
     throw new Error(
@@ -102,6 +109,7 @@ export function toDocument({
     document: makeProto(new Document(), {
       id: id ?? uuid(),
       title,
+      subtitle,
       author,
       blockRefList,
     }),
