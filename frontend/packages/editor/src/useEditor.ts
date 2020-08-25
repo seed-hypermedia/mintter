@@ -6,7 +6,6 @@ import {
 } from 'slate'
 import {withReact} from 'slate-react'
 import {
-  withResetBlockType,
   withAutoformat,
   withDeserializeHTML,
   withLink,
@@ -14,7 +13,6 @@ import {
   // withDeserializeMd,
   pipe,
   withInlineVoid,
-  ELEMENT_CODE_BLOCK,
   withTransforms,
   withImageUpload,
 } from '@udecode/slate-plugins'
@@ -22,20 +20,20 @@ import {
 import {withHistory} from 'slate-history'
 import {autoformatRules} from './autoformatRules'
 import {options} from './options'
-import {withBlocks} from './BlockPlugin'
+import {withMintter} from './MintterPlugin'
 
 // need this object because the plugin required it, I made an issue in the plugin's repo
-const resetOptions = {
-  types: [
-    options.blockquote.type,
-    ELEMENT_CODE_BLOCK,
-    options.h1.type,
-    options.h2.type,
-    options.h3.type,
-    options.img.type,
-  ],
-  defaultType: options.p.type,
-}
+// const resetOptions = {
+//   types: [
+//     options.blockquote.type,
+//     ELEMENT_CODE_BLOCK,
+//     options.h1.type,
+//     options.h2.type,
+//     options.h3.type,
+//     options.img.type,
+//   ],
+//   defaultType: options.p.type,
+// }
 
 export function useEditor(plugins: any[]): Editor {
   const withPlugins = [
@@ -44,7 +42,6 @@ export function useEditor(plugins: any[]): Editor {
     withLink(),
     withDeserializeHTML({plugins}),
     withToggleType({defaultType: options.p.type}),
-    withResetBlockType(resetOptions),
     withAutoformat({
       rules: autoformatRules,
     }),
@@ -52,7 +49,7 @@ export function useEditor(plugins: any[]): Editor {
     // withDeserializeMd(plugins),
     withInlineVoid({plugins}),
     withImageUpload(options),
-    withBlocks(),
+    withMintter(options),
   ] as const
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
