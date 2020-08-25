@@ -1,5 +1,9 @@
 import React from 'react'
-import {LinkKeyOption, LinkPluginOptionsValues} from '@udecode/slate-plugins'
+import {
+  LinkKeyOption,
+  LinkPluginOptionsValues,
+  isUrl,
+} from '@udecode/slate-plugins'
 import {css} from 'emotion'
 
 export const ELEMENT_LINK = 'a'
@@ -32,5 +36,6 @@ export const LINK_OPTIONS: Record<
     rootProps: {
       as: 'a',
     },
+    isUrl,
   },
 }

@@ -22,7 +22,7 @@
     "@react-stately/menu": "^3.1.0",
     "@react-stately/toggle": "^3.1.0",
     "@tippyjs/react": "^4.1.0",
-    "@udecode/slate-plugins": "^0.63.1",
+    "@udecode/slate-plugins": "^0.66.4",
     "emotion": "^10.0.27",
     "framer-motion": "^1.8.4",
     "react-beautiful-dnd": "^13.0.0",

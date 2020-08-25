@@ -81,5 +81,5 @@ export const plugins = [
     ],
   }),
   HelperPlugin(),
-  HierarchyPlugin(),
+  HierarchyPlugin(options),
 ]
