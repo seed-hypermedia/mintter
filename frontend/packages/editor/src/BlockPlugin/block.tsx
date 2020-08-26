@@ -133,7 +133,6 @@ export function EditableBlockElement(
   return path.length > 1 ? (
     <div
       ref={mergeRefs(ref, attributes.ref)}
-      className="first:mt-8"
       data-slate-type={element.type}
       data-slate-node={attributes['data-slate-node']}
     >
@@ -170,7 +169,6 @@ export function EditableBlockElement(
           <div
             ref={mergeRefs(provided.innerRef, ref, attributes.ref)}
             {...provided.draggableProps}
-            className="first:mt-8"
             data-slate-type={element.type}
             data-slate-node={attributes['data-slate-node']}
           >
