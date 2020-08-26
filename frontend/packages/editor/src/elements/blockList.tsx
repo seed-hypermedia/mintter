@@ -6,7 +6,7 @@ export const BLOCK_LIST_OPTIONS = {
     type: ELEMENT_BLOCK_LIST,
     component: ({element, attributes, children, as: Component}) =>
       element.type === ELEMENT_BLOCK_LIST ? (
-        <Component {...attributes} className="">
+        <Component {...attributes} className="first:mt-8">
           {children}
         </Component>
       ) : null,

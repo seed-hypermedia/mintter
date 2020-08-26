@@ -18,6 +18,7 @@ import {
   HelperToolbar,
   useHelper,
   ELEMENT_BLOCK,
+  ELEMENT_BLOCK_LIST,
   useEditorValue,
   EditorState,
 } from '@mintter/editor'
@@ -37,6 +38,7 @@ import {FullPageErrorMessage} from 'components/errorMessage'
 import Layout from 'components/layout'
 import Container from 'components/container'
 import {useTheme} from 'shared/themeContext'
+import {BlockRefList} from '@mintter/proto/v2/documents_pb'
 
 export default function Editor(): JSX.Element {
   const plugins = [...editorPlugins]
@@ -94,17 +96,24 @@ export default function Editor(): JSX.Element {
       setValue({
         title: obj.title,
         description: obj.description,
-        sections:
-          obj.sectionsList.length > 0
-            ? obj.sectionsList.map((s: Section.AsObject) => {
-                return {
-                  type: ELEMENT_BLOCK,
-                  id: s.documentId,
-                  author: s.author,
-                  children: markdownToSlate(s.body),
-                }
-              })
-            : initialBlocksValue,
+        // TODO: refactor this with new API
+        sections: [
+          {
+            type: ELEMENT_BLOCK_LIST,
+            listType: BlockRefList.Style.NONE,
+            children:
+              obj.sectionsList.length > 0
+                ? obj.sectionsList.map((s: Section.AsObject) => {
+                    return {
+                      type: ELEMENT_BLOCK,
+                      id: s.documentId,
+                      author: s.author,
+                      children: markdownToSlate(s.body),
+                    }
+                  })
+                : initialBlocksValue,
+          },
+        ],
       })
     }
   }, [data])
