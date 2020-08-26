@@ -30,5 +30,5 @@ export const isSelectionInBlockItem = (editor: Editor, options?: any) => {
     }
   }
 
-  return null
+  return
 }

@@ -93,7 +93,7 @@ export async function setDraft({
       } document IDs => ${id.map(q => q).join(', ')}`,
     )
 
-    return null
+    return
   }
 
   const blockList = [] // TODO: add blockList transformer

@@ -84,10 +84,7 @@ const resolveDescendants = (children: any[]): Descendant[] => {
  * Create an anchor token.
  */
 
-export function createAnchor(
-  tagName: string,
-  attributes: {[key: string]: any},
-): AnchorToken {
+export function createAnchor(attributes: {[key: string]: any}): AnchorToken {
   return new AnchorToken(attributes)
 }
 
@@ -95,10 +92,7 @@ export function createAnchor(
  * Create an anchor and a focus token.
  */
 
-export function createCursor(
-  tagName: string,
-  attributes: {[key: string]: any},
-): Token[] {
+export function createCursor(attributes: {[key: string]: any}): Token[] {
   return [new AnchorToken(attributes), new FocusToken(attributes)]
 }
 
@@ -107,7 +101,6 @@ export function createCursor(
  */
 
 export function createElement(
-  tagName: string,
   attributes: {[key: string]: any},
   children: any[],
 ): Element {
@@ -118,10 +111,7 @@ export function createElement(
  * Create a focus token.
  */
 
-export function createFocus(
-  tagName: string,
-  attributes: {[key: string]: any},
-): FocusToken {
+export function createFocus(attributes: {[key: string]: any}): FocusToken {
   return new FocusToken(attributes)
 }
 
@@ -130,8 +120,7 @@ export function createFocus(
  */
 
 export function createFragment(
-  tagName: string,
-  attributes: {[key: string]: any},
+  // attributes: {[key: string]: any},
   children: any[],
 ): Descendant[] {
   return resolveDescendants(children)
@@ -142,7 +131,6 @@ export function createFragment(
  */
 
 export function createSelection(
-  tagName: string,
   attributes: {[key: string]: any},
   children: any[],
 ): Range {
@@ -184,7 +172,7 @@ export function createText(
   children: any[],
 ): Text {
   const nodes = resolveDescendants(children)
-
+  console.log({tagName})
   if (nodes.length > 1) {
     throw new Error(
       `The <text> hyperscript tag must only contain a single node's worth of children.`,
@@ -215,7 +203,6 @@ export function createText(
  */
 
 export function createEditor(
-  tagName: string,
   attributes: {[key: string]: any},
   children: any[],
 ): Editor {

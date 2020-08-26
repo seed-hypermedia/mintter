@@ -48,7 +48,6 @@ export function SuggestedConnections() {
   }
 
   const list = resolvedData?.toObject().profilesList
-  console.log('SuggestedConnections -> list', list)
 
   return (
     <div className={`w-full px-4 pt-12`}>

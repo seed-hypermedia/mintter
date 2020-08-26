@@ -1,3 +1,6 @@
+/** @jsx jsx */
+import {jsx} from '../../../test/jsx'
+import {Editor} from 'slate'
 import {toBlock, makeProto} from '../transformers'
 import {
   Block,
@@ -7,24 +10,17 @@ import {
 } from '@mintter/proto/v2/documents_pb'
 
 test('toBlock: simple text block', () => {
-  const slateNode = {
-    type: 'block',
-    id: 'test-1',
-    children: [
-      {
-        type: 'p',
-        children: [
-          {
-            text: 'Hello ',
-          },
-          {
-            text: 'World!',
-            bold: true,
-          },
-        ],
-      },
-    ],
-  }
+  const input = ((
+    <editor>
+      <block id="test-1">
+        <hp>
+          Hello <htext bold>World!</htext>
+        </hp>
+      </block>
+    </editor>
+  ) as any) as Editor
+
+  const blockNode = input.children[0]
 
   const expected = makeProto(new Block(), {
     id: 'test-1',
@@ -43,7 +39,7 @@ test('toBlock: simple text block', () => {
     }),
   })
 
-  expect(toBlock(slateNode)).toEqual(expected)
+  expect(toBlock(blockNode as any)).toEqual(expected) // TODO: fix types
 })
 
 // test('toBlock: block with image', () => {})

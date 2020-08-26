@@ -75,7 +75,7 @@ export const moveBlockListDown = (
 }
 
 export const isBlockList = (options?: any) => (n: any) => {
-  const {blockList} = options
+  const {block_list} = options
 
-  return [blockList.type].includes(n.type as string)
+  return [block_list.type].includes(n.type as string)
 }

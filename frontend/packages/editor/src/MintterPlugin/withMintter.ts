@@ -11,11 +11,11 @@ import {moveBlockItemUp} from './moveBlockItemUp'
 import {isSelectionInBlockItem} from './isSelectionInBlockItem'
 
 export const withMintter = options => <T extends ReactEditor>(editor: T) => {
-  const {p, blockList} = options
+  const {p, block_list} = options
   const {insertBreak, deleteBackward} = editor
 
   const resetBlockTypesListRule = {
-    types: [blockList.type],
+    types: [block_list.type],
     defaultType: p.type,
     onReset: (_editor: Editor) => unwrapList(_editor, options),
   }
