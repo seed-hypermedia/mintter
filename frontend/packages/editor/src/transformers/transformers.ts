@@ -76,7 +76,7 @@ export interface EditorDocument {
 export interface ToDocumentRequestProp {
   editorDocument: EditorDocument
   author: string
-  blockList: any // TODO: SlateBlock[]
+  blockList: SlateBlock[] // TODO: SlateBlock[]
 }
 
 export interface ToDocumentResponse {

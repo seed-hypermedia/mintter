@@ -13,6 +13,7 @@ test('toDocument', () => {
     document: makeProto(new Document(), {
       id: 'document-test',
       title: 'Demo Test Document',
+      subtitle: '',
       author: 'horacio',
       blockRefList: makeProto(new BlockRefList(), {
         style: BlockRefList.Style.NONE,

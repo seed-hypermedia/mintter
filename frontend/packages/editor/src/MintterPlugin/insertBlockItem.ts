@@ -93,5 +93,5 @@ export const insertBlockItem = (editor: Editor, options: any) => {
     return true
   }
 
-  return null
+  return
 }
