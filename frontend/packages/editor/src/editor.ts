@@ -2,6 +2,7 @@ import {Editor as SlateEditor, Path, Node} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {ELEMENT_PARAGRAPH, ELEMENT_BLOCK, ELEMENT_BLOCK_LIST} from './elements'
 import {BlockRefList} from '@mintter/proto/v2/documents_pb'
+import {v4 as uuid} from 'uuid'
 
 export interface MintterEditor extends ReactEditor {
   charCount: (editor: ReactEditor, path: Path) => number
@@ -31,10 +32,12 @@ export const Editor = {
 export const initialBlocksValue = [
   {
     type: ELEMENT_BLOCK_LIST,
+    id: uuid(),
     listType: BlockRefList.Style.NONE,
     children: [
       {
         type: ELEMENT_BLOCK,
+        id: uuid(),
         children: [
           {
             type: ELEMENT_PARAGRAPH,

@@ -4,6 +4,7 @@ import {
   isBlockTextEmptyAfterSelection,
   isRangeAtRoot,
 } from '@udecode/slate-plugins'
+import {v4 as uuid} from 'uuid'
 
 /**
  * Insert list item if selection in li>p.
@@ -41,6 +42,7 @@ export const insertBlockItem = (editor: Editor, options: any) => {
         editor,
         {
           type: block.type,
+          id: uuid(),
           children: [{type: p.type, children: [{text: ''}]}],
         },
         {at: blockPath},
@@ -57,6 +59,7 @@ export const insertBlockItem = (editor: Editor, options: any) => {
         editor,
         {
           type: block.type,
+          id: uuid(),
           children: [],
         },
         {at: nextParagraphPath},
@@ -73,6 +76,7 @@ export const insertBlockItem = (editor: Editor, options: any) => {
         editor,
         {
           type: block.type,
+          id: uuid(),
           children: [{type: p.type, children: [{text: ''}]}],
         },
         {at: nextblockPath},
