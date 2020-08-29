@@ -2,6 +2,7 @@ import {Editor, Element, Ancestor, Path, NodeEntry, Transforms} from 'slate'
 import {isFirstChild} from '@udecode/slate-plugins'
 import {isSelectionInBlockItem} from '../MintterPlugin/isSelectionInBlockItem'
 import {moveBlockItemUp} from '../MintterPlugin/moveBlockItemUp'
+import {v4 as uuid} from 'uuid'
 
 export const onKeyDownHierarchy = options => (
   e: KeyboardEvent,
@@ -61,7 +62,7 @@ export const moveBlockListDown = (
       // Create new sublist
       Transforms.wrapNodes(
         editor,
-        {type: blockListNode.type, children: []},
+        {type: blockListNode.type, id: uuid(), children: []},
         {at: blockPath},
       )
     }

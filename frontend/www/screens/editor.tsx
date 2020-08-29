@@ -93,27 +93,22 @@ export default function Editor(): JSX.Element {
   React.useEffect(() => {
     if (data) {
       const obj = data.toObject()
+      console.log('EDITOR: obj', obj)
       setValue({
         title: obj.title,
         description: obj.description,
         // TODO: refactor this with new API
-        sections: [
-          {
-            type: ELEMENT_BLOCK_LIST,
-            listType: BlockRefList.Style.NONE,
-            children:
-              obj.sectionsList.length > 0
-                ? obj.sectionsList.map((s: Section.AsObject) => {
-                    return {
-                      type: ELEMENT_BLOCK,
-                      id: s.documentId,
-                      author: s.author,
-                      children: markdownToSlate(s.body),
-                    }
-                  })
-                : initialBlocksValue,
-          },
-        ],
+        sections:
+          obj.sectionsList.length > 0
+            ? obj.sectionsList.map((s: Section.AsObject) => {
+                return {
+                  type: ELEMENT_BLOCK,
+                  id: s.documentId,
+                  author: s.author,
+                  children: markdownToSlate(s.body),
+                }
+              })
+            : initialBlocksValue,
       })
     }
   }, [data])
