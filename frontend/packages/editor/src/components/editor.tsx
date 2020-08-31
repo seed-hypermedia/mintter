@@ -2,11 +2,10 @@ import React from 'react'
 import {Slate} from 'slate-react'
 import {css} from 'emotion'
 import {EditablePlugins, SlateDocument} from '@udecode/slate-plugins'
-import {DragDropContext, Droppable} from 'react-beautiful-dnd'
+import {Droppable} from 'react-beautiful-dnd'
 // import {Toolbar} from './toolbar'
 import {HelperToolbar, HelperProvider, useHelper} from '../HelperPlugin'
 import {ELEMENT_BLOCK, ELEMENT_IMAGE} from '../elements'
-import {reorderBlocks} from '../BlockPlugin'
 
 interface EditorComponentProps {
   editor: any
@@ -57,63 +56,51 @@ function Editor(
     setValueIndex,
   } = useHelper()
 
-  function onDragEnd(result) {
-    if (!result.destination) {
-      return
-    }
-
-    reorderBlocks(editor, result)
-  }
-
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={v => {
-          onChange(v as SlateDocument)
-          onChangeHelper(editor)
-        }}
+    <Slate
+      editor={editor}
+      value={value}
+      onChange={v => {
+        onChange(v as SlateDocument)
+        onChangeHelper(editor)
+      }}
+    >
+      <div
+        ref={ref}
+        className={`relative -mx-4 ${css`
+          word-break: break-word;
+        `}`}
       >
-        <div
-          ref={ref}
-          className={`relative -mx-4 ${css`
-            word-break: break-word;
-          `}`}
-        >
-          {/* <Toolbar /> */}
-          <Droppable droppableId="editor">
-            {(provided, snapshot) => (
-              <div ref={provided.innerRef} {...provided.droppableProps}>
-                <EditablePlugins
-                  readOnly={readOnly && !snapshot.isDraggingOver}
-                  plugins={plugins}
-                  renderElement={renderElements}
-                  placeholder={
-                    readOnly
-                      ? 'no content'
-                      : 'Start writing your masterpiece...'
-                  }
-                  spellCheck
-                  autoFocus
-                  onKeyDown={[onKeyDownHelper]}
-                  onKeyDownDeps={[index, target]}
-                />
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </div>
-        <HelperToolbar
-          at={target}
-          valueIndex={index}
-          options={values}
-          onClickSelection={onAddBlock}
-          setValueIndex={setValueIndex}
-          theme={theme}
-        />
-      </Slate>
-    </DragDropContext>
+        {/* <Toolbar /> */}
+        <Droppable droppableId="editor" type="block_list">
+          {(provided, snapshot) => (
+            <div ref={provided.innerRef} {...provided.droppableProps}>
+              <EditablePlugins
+                readOnly={readOnly && !snapshot.isDraggingOver}
+                plugins={plugins}
+                renderElement={renderElements}
+                placeholder={
+                  readOnly ? 'no content' : 'Start writing your masterpiece...'
+                }
+                spellCheck
+                autoFocus
+                onKeyDown={[onKeyDownHelper]}
+                onKeyDownDeps={[index, target]}
+              />
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </div>
+      <HelperToolbar
+        at={target}
+        valueIndex={index}
+        options={values}
+        onClickSelection={onAddBlock}
+        setValueIndex={setValueIndex}
+        theme={theme}
+      />
+    </Slate>
   )
 }
 

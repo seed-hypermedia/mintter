@@ -5,6 +5,8 @@ import {ThemeProvider} from 'shared/themeContext'
 import {ProfileProvider} from 'shared/profileContext'
 import {MintterProvider} from 'shared/mintterContext'
 import {ToastProvider, DefaultToast} from 'react-toast-notifications'
+import {DragDropContext} from 'react-beautiful-dnd'
+import {onDragEnd, onDragStart} from '@mintter/editor'
 
 function Toast({children, ...props}) {
   return (
@@ -23,7 +25,12 @@ export function AppProviders({children, ...props}) {
           <ProfileProvider>
             <MintterProvider>
               <ToastProvider autoDismiss={true} components={{Toast}}>
-                {children}
+                <DragDropContext
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                >
+                  {children}
+                </DragDropContext>
               </ToastProvider>
             </MintterProvider>
           </ProfileProvider>
