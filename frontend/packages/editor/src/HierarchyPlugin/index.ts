@@ -1,3 +1,5 @@
 export * from './HierarchyPlugin'
 export * from './onKeyDownHierarchy'
 export * from './renderElementBlockList'
+export * from './onDragEnd'
+export * from './onDragStart'

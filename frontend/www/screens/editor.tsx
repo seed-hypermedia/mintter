@@ -84,11 +84,11 @@ export default function Editor(): JSX.Element {
 
   const debouncedValue = useDebounce(state, 1000)
 
-  React.useEffect(() => {
-    if (readyToAutosave) {
-      autosaveDraft({state})
-    }
-  }, [debouncedValue])
+  // React.useEffect(() => {
+  //   if (readyToAutosave) {
+  //     autosaveDraft({state})
+  //   }
+  // }, [debouncedValue])
 
   React.useEffect(() => {
     if (data) {
