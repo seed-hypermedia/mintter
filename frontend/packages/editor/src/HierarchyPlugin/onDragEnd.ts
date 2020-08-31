@@ -1,3 +1,3 @@
-export function onDragEnd(result) {
-  console.log('onDragEnd: ', result)
+export const onDragEnd = editor => result => {
+  console.log({editor, result})
 }

@@ -4,6 +4,7 @@ import {css} from 'emotion'
 import {EditablePlugins, SoftBreakPlugin} from 'slate-plugins-next'
 import {useMutation, queryCache} from 'react-query'
 import {v4 as uuid} from 'uuid'
+import {DragDropContext} from 'react-beautiful-dnd'
 import {
   Icons,
   nodeTypes,
@@ -21,6 +22,8 @@ import {
   ELEMENT_BLOCK_LIST,
   useEditorValue,
   EditorState,
+  onDragStart,
+  onDragEnd,
 } from '@mintter/editor'
 import {useEditor as useSlateEditor, ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
@@ -133,98 +136,103 @@ export default function Editor(): JSX.Element {
   return (
     <>
       <Seo title="Editor" />
-      <div
-        className={`${css`
-          display: grid;
-
-          grid-template: auto 1fr / minmax(250px, 20%) 1fr minmax(250px, 20%);
-          grid-gap: 1rem;
-        `}`}
+      <DragDropContext
+        onDragStart={onDragStart(editor)}
+        onDragEnd={onDragEnd(editor)}
       >
         <div
-          className={`px-4  -mt-8 flex justify-end ${css`
-            grid-column: 1/4;
-          `}`}
-        >
-          <button
-            onClick={handlePublish}
-            className="bg-primary rounded-full px-12 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
-          >
-            Publish
-          </button>
-        </div>
-        <div
-          className={`p-4 ${css`
-            grid-column: 2/3;
+          className={`${css`
+            display: grid;
+
+            grid-template: auto 1fr / minmax(250px, 20%) 1fr minmax(250px, 20%);
+            grid-gap: 1rem;
           `}`}
         >
           <div
-            className={`my-0 mx-auto ${css`
-              max-width: 80ch;
-              width: 100%;
+            className={`px-4  -mt-8 flex justify-end ${css`
+              grid-column: 1/4;
+            `}`}
+          >
+            <button
+              onClick={handlePublish}
+              className="bg-primary rounded-full px-12 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
+            >
+              Publish
+            </button>
+          </div>
+          <div
+            className={`p-4 ${css`
+              grid-column: 2/3;
             `}`}
           >
             <div
-              className={`pb-2 relative ${css`
-                &:after {
-                  content: '';
-                  position: absolute;
-                  bottom: 0;
-                  left: 0;
-                  width: 50%;
-                  max-width: 360px;
-                  height: 1px;
-                  z-index: 20;
-                  background-color: var(--color-muted-hover);
-                }
+              className={`my-0 mx-auto ${css`
+                max-width: 80ch;
+                width: 100%;
               `}`}
             >
-              <Textarea
-                ref={t => {
-                  titleRef.current = t
+              <div
+                className={`pb-2 relative ${css`
+                  &:after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    width: 50%;
+                    max-width: 360px;
+                    height: 1px;
+                    z-index: 20;
+                    background-color: var(--color-muted-hover);
+                  }
+                `}`}
+              >
+                <Textarea
+                  ref={t => {
+                    titleRef.current = t
+                  }}
+                  value={title}
+                  data-test-id="editor_title"
+                  onChange={setTitle}
+                  name="title"
+                  placeholder="Document title"
+                  minHeight={56}
+                  className={`text-4xl text-heading font-bold italic`}
+                  onEnterPress={() => {
+                    descriptionRef.current.focus()
+                  }}
+                />
+                <Textarea
+                  ref={d => {
+                    descriptionRef.current = d
+                  }}
+                  value={description}
+                  onChange={setDescription}
+                  name="description"
+                  placeholder="Subtitle"
+                  minHeight={28}
+                  className={`leading-relaxed text-lg font-light text-heading-muted italic`}
+                />
+              </div>
+              <EditorComponent
+                editor={editor}
+                plugins={plugins}
+                value={sections}
+                onChange={blocks => {
+                  setBlocks(blocks)
                 }}
-                value={title}
-                data-test-id="editor_title"
-                onChange={setTitle}
-                name="title"
-                placeholder="Document title"
-                minHeight={56}
-                className={`text-4xl text-heading font-bold italic`}
-                onEnterPress={() => {
-                  descriptionRef.current.focus()
-                }}
-              />
-              <Textarea
-                ref={d => {
-                  descriptionRef.current = d
-                }}
-                value={description}
-                onChange={setDescription}
-                name="description"
-                placeholder="Subtitle"
-                minHeight={28}
-                className={`leading-relaxed text-lg font-light text-heading-muted italic`}
+                renderElements={[renderEditableBlockElement()]}
+                theme={theme}
               />
             </div>
-            <EditorComponent
-              editor={editor}
-              plugins={plugins}
-              value={sections}
-              onChange={blocks => {
-                setBlocks(blocks)
-              }}
-              renderElements={[renderEditableBlockElement()]}
-              theme={theme}
-            />
           </div>
+          <DebugValue
+            value={state}
+            className={`${css`
+              grid-column: 3/4;
+            `}`}
+          />
         </div>
-        <DebugValue
-          value={state}
-          className={`${css`
-            grid-column: 3/4;
-          `}`}
-        />
-      </div>
+      </DragDropContext>
     </>
   )
 }
