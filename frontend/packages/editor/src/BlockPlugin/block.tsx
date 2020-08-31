@@ -3,10 +3,9 @@ import {RenderElementProps, ReactEditor, useEditor} from 'slate-react'
 import {Editor} from '../editor'
 import {Draggable} from 'react-beautiful-dnd'
 import {css} from 'emotion'
-import Tippy from '@tippyjs/react'
 import {useHelper} from '../HelperPlugin'
 import {mergeRefs} from '../mergeRefs'
-import {useHover} from '@react-aria/interactions'
+import {useBlockTools} from './blockToolsContext'
 
 function Block({className = '', ...props}) {
   return <div className={`relative pl-4 pr-0 py-2 ${className}`} {...props} />
@@ -14,13 +13,11 @@ function Block({className = '', ...props}) {
 
 function BlockControls({
   isHovered = false,
-  id,
   onAddClicked,
   dragHandleProps = {},
 }) {
   return (
     <div
-      onMouseEnter={() => console.log(`enter ${id}`)}
       className={`absolute top-0 left-0 transition duration-200 flex items-center justify-end mt-3 ${
         isHovered ? 'opacity-100' : 'opacity-0'
       } ${css`
@@ -28,56 +25,28 @@ function BlockControls({
       `}`}
       contentEditable={false}
     >
-      <Tippy
-        delay={300}
-        content={
-          <span
-            className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
-              background-color: #3f3f3f;
-              color: #ccc;
-            `}`}
-          >
-            Drag to move
-          </span>
-        }
+      <div
+        className="rounded-sm bg-transparent text-body hover:bg-background-muted w-6 h-8 p-1 mx-1"
+        {...dragHandleProps}
       >
-        <div
-          className="rounded-sm bg-transparent text-body hover:bg-background-muted w-6 h-8 p-1 mx-1"
-          {...dragHandleProps}
-        >
-          <svg width="1em" height="1.5em" viewBox="0 0 16 24" fill="none">
-            <path
-              d="M3.5 6a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM12.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM5 19.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM3.5 13.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-              fill="currentColor"
-            />
-          </svg>
-        </div>
-      </Tippy>
-      <Tippy
-        delay={300}
-        content={
-          <span
-            className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
-              background-color: #3f3f3f;
-              color: #ccc;
-            `}`}
-          >
-            Add or edit block
-          </span>
-        }
+        <svg width="1em" height="1.5em" viewBox="0 0 16 24" fill="none">
+          <path
+            d="M3.5 6a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM12.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM5 19.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM3.5 13.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
+      <button
+        onClick={onAddClicked}
+        className="rounded-sm bg-transparent text-body hover:bg-background-muted w-8 h-8 p-1 mx-1"
       >
-        <button
-          onClick={onAddClicked}
-          className="rounded-sm bg-transparent text-body hover:bg-background-muted w-8 h-8 p-1 mx-1"
-        >
-          <svg width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="none">
-            <path
-              d="M12.667 8.667h-4v4H7.334v-4h-4V7.334h4v-4h1.333v4h4v1.333z"
-              fill="currentColor"
-            />
-          </svg>
-        </button>
-      </Tippy>
+        <svg width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M12.667 8.667h-4v4H7.334v-4h-4V7.334h4v-4h1.333v4h4v1.333z"
+            fill="currentColor"
+          />
+        </svg>
+      </button>
     </div>
   )
 }
@@ -89,11 +58,7 @@ export function EditableBlockElement(
   const editor = useEditor()
   const path = ReactEditor.findPath(editor, element)
   const blockChars = Editor.charCount(editor, path)
-  let {hoverProps, isHovered} = useHover({
-    onHoverEnd: () => hide(),
-  })
-  const [, setVisible] = React.useState<boolean>(true)
-  const hide = () => setVisible(false)
+  const {id: blockId, setBlockId} = useBlockTools()
 
   const {setTarget, target, onKeyDownHelper} = useHelper()
 
@@ -141,18 +106,19 @@ export function EditableBlockElement(
             data-slate-type={element.type}
             data-slate-node={attributes['data-slate-node']}
             className={snapshot.isDragging ? 'bg-red-500' : ''}
+            onMouseLeave={() => setBlockId(null)}
+            onMouseEnter={() => setBlockId(element.id)}
           >
-            <Block {...hoverProps}>
+            <Block>
               <BlockControls
-                id={element.id}
-                isHovered={isHovered}
+                isHovered={blockId === element.id}
                 onAddClicked={onAddClicked}
                 dragHandleProps={provided.dragHandleProps}
               />
               <div contentEditable={false} className="theme-invert">
                 <div
                   className={`absolute top-0 right-0 select-none -mt-6 -mr-4 rounded shadow-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-black py-2 pointer-events-none ${
-                    isHovered ? 'opacity-100' : 'opacity-0'
+                    blockId === element.id ? 'opacity-100' : 'opacity-0'
                   }`}
                 >
                   <p className={`text-body-muted border-r px-2 text-xs`}>
@@ -184,7 +150,12 @@ export function ReadonlyBlock(
   const path = ReactEditor.findPath(editor, element)
 
   return (
-    <Block path={path} data-slate-type={element.type} ref={ref} {...rest}>
+    <Block
+      path={path}
+      data-slate-type={element.type}
+      innerRef={ref as any}
+      {...rest}
+    >
       {children}
     </Block>
   )

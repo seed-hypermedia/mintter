@@ -24,6 +24,7 @@ import {
   EditorState,
   onDragStart,
   onDragEnd,
+  BlockToolsProvider,
 } from '@mintter/editor'
 import {useEditor as useSlateEditor, ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
@@ -213,16 +214,18 @@ export default function Editor(): JSX.Element {
                   className={`leading-relaxed text-lg font-light text-heading-muted italic`}
                 />
               </div>
-              <EditorComponent
-                editor={editor}
-                plugins={plugins}
-                value={sections}
-                onChange={blocks => {
-                  setBlocks(blocks)
-                }}
-                renderElements={[renderEditableBlockElement()]}
-                theme={theme}
-              />
+              <BlockToolsProvider>
+                <EditorComponent
+                  editor={editor}
+                  plugins={plugins}
+                  value={sections}
+                  onChange={blocks => {
+                    setBlocks(blocks)
+                  }}
+                  renderElements={[renderEditableBlockElement()]}
+                  theme={theme}
+                />
+              </BlockToolsProvider>
             </div>
           </div>
           <DebugValue
