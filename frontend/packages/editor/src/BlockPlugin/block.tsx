@@ -9,18 +9,18 @@ import {mergeRefs} from '../mergeRefs'
 import {useHover} from '@react-aria/interactions'
 
 function Block({className = '', ...props}) {
-  return <div className={`relative px-4 py-2 ${className}`} {...props} />
+  return <div className={`relative pl-4 pr-0 py-2 ${className}`} {...props} />
 }
 
 function BlockControls({
   isHovered = false,
-  hoverProps,
+  id,
   onAddClicked,
   dragHandleProps = {},
 }) {
   return (
     <div
-      {...hoverProps}
+      onMouseEnter={() => console.log(`enter ${id}`)}
       className={`absolute top-0 left-0 transition duration-200 flex items-center justify-end mt-3 ${
         isHovered ? 'opacity-100' : 'opacity-0'
       } ${css`
@@ -142,10 +142,10 @@ export function EditableBlockElement(
             data-slate-node={attributes['data-slate-node']}
             className={snapshot.isDragging ? 'bg-red-500' : ''}
           >
-            <Block>
+            <Block {...hoverProps}>
               <BlockControls
+                id={element.id}
                 isHovered={isHovered}
-                hoverProps={hoverProps}
                 onAddClicked={onAddClicked}
                 dragHandleProps={provided.dragHandleProps}
               />
