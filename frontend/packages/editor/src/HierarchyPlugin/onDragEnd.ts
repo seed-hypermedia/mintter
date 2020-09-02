@@ -11,37 +11,32 @@ export const onDragEnd = editor => result => {
 
   const {destination, draggableId} = result
 
-  // const [sourceNode, sourcePath] = Array.from(
-  //   Editor.nodes(editor, {
-  //     match: n => n.id === source.droppableId,
-  //   }),
-  // )[0]
-
-  const [, destinationPath] = Array.from(
+  const [destinationEntry] = Array.from(
     Editor.nodes(editor, {
       match: n => n.id === destination.droppableId,
     }),
-  )[0]
-
-  const entry = Array.from(
-    Editor.nodes(editor, {
-      match: n => n.type === ELEMENT_BLOCK && n.id === draggableId,
-    }),
   )
-  console.log('entry', entry)
 
-  if (entry.length) {
-    const [, draggedPath] = entry[0]
-    console.log({
-      entry,
-      draggedPath,
-      destinationPath,
-      to: destinationPath.concat(destination.index),
-    })
+  if (destinationEntry) {
+    const [, destinationPath] = destinationEntry
 
-    Transforms.moveNodes(editor, {
-      at: draggedPath,
-      to: destinationPath.concat(destination.index),
-    })
+    const [entry] = Array.from(
+      Editor.nodes(editor, {
+        match: n => n.type === ELEMENT_BLOCK && n.id === draggableId,
+      }),
+    )
+
+    if (entry) {
+      console.log('entry', entry)
+
+      if (entry.length) {
+        const [, draggedPath] = entry
+
+        Transforms.moveNodes(editor, {
+          at: draggedPath,
+          to: destinationPath.concat(destination.index),
+        })
+      }
+    }
   }
 }

@@ -110,7 +110,7 @@ export async function setDraft({
   })
 
   req.setDocument(document)
-  req.setBlocksList(blocks)
+  // req.setBlocksList(blocks)
   return await docsV2.updateDraft(req)
 }
 
