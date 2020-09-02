@@ -69,7 +69,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.mintter.v2.UpdateDraftRequest = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.mintter.v2.UpdateDraftRequest.repeatedFields_, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.mintter.v2.UpdateDraftRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -546,13 +546,6 @@ proto.mintter.v2.CreateDraftRequest.prototype.setParent = function(value) {
 
 
 
-/**
- * List of repeated fields within this message type.
- * @private {!Array<number>}
- * @const
- */
-proto.mintter.v2.UpdateDraftRequest.repeatedFields_ = [2];
-
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -585,8 +578,7 @@ proto.mintter.v2.UpdateDraftRequest.prototype.toObject = function(opt_includeIns
 proto.mintter.v2.UpdateDraftRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     document: (f = msg.getDocument()) && proto.mintter.v2.Document.toObject(includeInstance, f),
-    blocksList: jspb.Message.toObjectList(msg.getBlocksList(),
-    proto.mintter.v2.Block.toObject, includeInstance)
+    blocksMap: (f = msg.getBlocksMap()) ? f.toObject(includeInstance, proto.mintter.v2.Block.toObject) : []
   };
 
   if (includeInstance) {
@@ -629,9 +621,10 @@ proto.mintter.v2.UpdateDraftRequest.deserializeBinaryFromReader = function(msg, 
       msg.setDocument(value);
       break;
     case 2:
-      var value = new proto.mintter.v2.Block;
-      reader.readMessage(value,proto.mintter.v2.Block.deserializeBinaryFromReader);
-      msg.addBlocks(value);
+      var value = msg.getBlocksMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.mintter.v2.Block.deserializeBinaryFromReader, "", new proto.mintter.v2.Block());
+         });
       break;
     default:
       reader.skipField();
@@ -670,13 +663,9 @@ proto.mintter.v2.UpdateDraftRequest.serializeBinaryToWriter = function(message, 
       proto.mintter.v2.Document.serializeBinaryToWriter
     );
   }
-  f = message.getBlocksList();
-  if (f.length > 0) {
-    writer.writeRepeatedMessage(
-      2,
-      f,
-      proto.mintter.v2.Block.serializeBinaryToWriter
-    );
+  f = message.getBlocksMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(2, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.mintter.v2.Block.serializeBinaryToWriter);
   }
 };
 
@@ -719,41 +708,25 @@ proto.mintter.v2.UpdateDraftRequest.prototype.hasDocument = function() {
 
 
 /**
- * repeated Block blocks = 2;
- * @return {!Array<!proto.mintter.v2.Block>}
+ * map<string, Block> blocks = 2;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,!proto.mintter.v2.Block>}
  */
-proto.mintter.v2.UpdateDraftRequest.prototype.getBlocksList = function() {
-  return /** @type{!Array<!proto.mintter.v2.Block>} */ (
-    jspb.Message.getRepeatedWrapperField(this, proto.mintter.v2.Block, 2));
+proto.mintter.v2.UpdateDraftRequest.prototype.getBlocksMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,!proto.mintter.v2.Block>} */ (
+      jspb.Message.getMapField(this, 2, opt_noLazyCreate,
+      proto.mintter.v2.Block));
 };
 
 
 /**
- * @param {!Array<!proto.mintter.v2.Block>} value
- * @return {!proto.mintter.v2.UpdateDraftRequest} returns this
-*/
-proto.mintter.v2.UpdateDraftRequest.prototype.setBlocksList = function(value) {
-  return jspb.Message.setRepeatedWrapperField(this, 2, value);
-};
-
-
-/**
- * @param {!proto.mintter.v2.Block=} opt_value
- * @param {number=} opt_index
- * @return {!proto.mintter.v2.Block}
- */
-proto.mintter.v2.UpdateDraftRequest.prototype.addBlocks = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 2, opt_value, proto.mintter.v2.Block, opt_index);
-};
-
-
-/**
- * Clears the list making it empty but non-null.
+ * Clears values from the map. The map will be non-null.
  * @return {!proto.mintter.v2.UpdateDraftRequest} returns this
  */
-proto.mintter.v2.UpdateDraftRequest.prototype.clearBlocksList = function() {
-  return this.setBlocksList([]);
-};
+proto.mintter.v2.UpdateDraftRequest.prototype.clearBlocksMap = function() {
+  this.getBlocksMap().clear();
+  return this;};
 
 
 
@@ -2788,7 +2761,7 @@ proto.mintter.v2.BlockRef.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {string} */ (reader.readString());
       msg.setId(value);
       break;
-    case 2:
+    case 3:
       var value = new proto.mintter.v2.BlockRefList;
       reader.readMessage(value,proto.mintter.v2.BlockRefList.deserializeBinaryFromReader);
       msg.setBlockRefList(value);
@@ -2832,7 +2805,7 @@ proto.mintter.v2.BlockRef.serializeBinaryToWriter = function(message, writer) {
   f = message.getBlockRefList();
   if (f != null) {
     writer.writeMessage(
-      2,
+      3,
       f,
       proto.mintter.v2.BlockRefList.serializeBinaryToWriter
     );
@@ -2859,12 +2832,12 @@ proto.mintter.v2.BlockRef.prototype.setId = function(value) {
 
 
 /**
- * optional BlockRefList block_ref_list = 2;
+ * optional BlockRefList block_ref_list = 3;
  * @return {?proto.mintter.v2.BlockRefList}
  */
 proto.mintter.v2.BlockRef.prototype.getBlockRefList = function() {
   return /** @type{?proto.mintter.v2.BlockRefList} */ (
-    jspb.Message.getWrapperField(this, proto.mintter.v2.BlockRefList, 2));
+    jspb.Message.getWrapperField(this, proto.mintter.v2.BlockRefList, 3));
 };
 
 
@@ -2873,7 +2846,7 @@ proto.mintter.v2.BlockRef.prototype.getBlockRefList = function() {
  * @return {!proto.mintter.v2.BlockRef} returns this
 */
 proto.mintter.v2.BlockRef.prototype.setBlockRefList = function(value) {
-  return jspb.Message.setWrapperField(this, 2, value);
+  return jspb.Message.setWrapperField(this, 3, value);
 };
 
 
@@ -2891,7 +2864,7 @@ proto.mintter.v2.BlockRef.prototype.clearBlockRefList = function() {
  * @return {boolean}
  */
 proto.mintter.v2.BlockRef.prototype.hasBlockRefList = function() {
-  return jspb.Message.getField(this, 2) != null;
+  return jspb.Message.getField(this, 3) != null;
 };
 
 
@@ -2954,6 +2927,7 @@ proto.mintter.v2.Block.prototype.toObject = function(opt_includeInstance) {
 proto.mintter.v2.Block.toObject = function(includeInstance, msg) {
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    version: jspb.Message.getFieldWithDefault(msg, 2, ""),
     paragraph: (f = msg.getParagraph()) && proto.mintter.v2.Paragraph.toObject(includeInstance, f),
     image: (f = msg.getImage()) && proto.mintter.v2.Image.toObject(includeInstance, f)
   };
@@ -2995,6 +2969,10 @@ proto.mintter.v2.Block.deserializeBinaryFromReader = function(msg, reader) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
       msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setVersion(value);
       break;
     case 3:
       var value = new proto.mintter.v2.Paragraph;
@@ -3042,6 +3020,13 @@ proto.mintter.v2.Block.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getVersion();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
   f = message.getParagraph();
   if (f != null) {
     writer.writeMessage(
@@ -3076,6 +3061,24 @@ proto.mintter.v2.Block.prototype.getId = function() {
  */
 proto.mintter.v2.Block.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string version = 2;
+ * @return {string}
+ */
+proto.mintter.v2.Block.prototype.getVersion = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.mintter.v2.Block} returns this
+ */
+proto.mintter.v2.Block.prototype.setVersion = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -3878,9 +3881,8 @@ proto.mintter.v2.Image.prototype.setAltText = function(value) {
  * @enum {number}
  */
 proto.mintter.v2.PublishingState = {
-  UNSPECIFIED: 0,
-  DRAFT: 1,
-  PUBLISHED: 2
+  DRAFT: 0,
+  PUBLISHED: 1
 };
 
 goog.object.extend(exports, proto.mintter.v2);

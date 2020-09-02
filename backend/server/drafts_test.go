@@ -6,8 +6,8 @@ import (
 
 	pb "mintter/proto"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestCreateDraft(t *testing.T) {
