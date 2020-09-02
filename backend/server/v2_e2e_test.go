@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestV2EndToEnd(t *testing.T) {
+func TestTransclusionEndToEnd(t *testing.T) {
 	srv, _, ctx := makeV2Server(t, "alice")
 
 	draft1, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
