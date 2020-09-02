@@ -15,6 +15,7 @@ import {
   UNDERLINE_OPTIONS,
   STRIKETHROUGH_OPTIONS,
 } from './marks'
+import {TRANSCLUSION_OPTIONS} from './TransclusionPlugin'
 
 export const options = {
   ...PARAGRAPH_OPTIONS,
@@ -25,6 +26,7 @@ export const options = {
   ...LIST_OPTIONS,
   ...BLOCK_OPTIONS,
   ...BLOCK_LIST_OPTIONS,
+  ...TRANSCLUSION_OPTIONS,
   //marks
   ...BOLD_OPTIONS,
   ...ITALIC_OPTIONS,

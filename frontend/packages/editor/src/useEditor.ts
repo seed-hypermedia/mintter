@@ -21,6 +21,7 @@ import {withHistory} from 'slate-history'
 import {autoformatRules} from './autoformatRules'
 import {options} from './options'
 import {withMintter} from './MintterPlugin'
+import {withTransclusion} from './TransclusionPlugin'
 
 // need this object because the plugin required it, I made an issue in the plugin's repo
 // const resetOptions = {
@@ -49,6 +50,7 @@ export function useEditor(plugins: any[]): Editor {
     // withDeserializeMd(plugins),
     withInlineVoid({plugins}),
     withImageUpload(options),
+    withTransclusion(options),
     withMintter(options),
   ] as const
 
