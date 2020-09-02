@@ -98,14 +98,13 @@ export function EditableBlockElement(
       draggableId={element.id}
       index={path[path.length - 1]}
     >
-      {(provided, snapshot) => {
+      {provided => {
         return (
           <div
             ref={mergeRefs(provided.innerRef, ref, attributes.ref)}
             {...provided.draggableProps}
             data-slate-type={element.type}
             data-slate-node={attributes['data-slate-node']}
-            className={snapshot.isDragging ? 'bg-red-500' : ''}
             onMouseLeave={() => setBlockId(null)}
             onMouseEnter={() => setBlockId(element.id)}
           >
