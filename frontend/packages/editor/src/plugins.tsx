@@ -25,6 +25,7 @@ import {
 import {options} from './options'
 import {HelperPlugin} from './HelperPlugin'
 import {HierarchyPlugin} from './HierarchyPlugin'
+import {TransclusionPlugin} from './TransclusionPlugin'
 // import {ELEMENT_BLOCKQUOTE} from './elements'
 
 const headingTypes = [
@@ -82,4 +83,5 @@ export const plugins = [
   }),
   HelperPlugin(),
   HierarchyPlugin(options),
+  TransclusionPlugin(options),
 ]

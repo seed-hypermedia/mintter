@@ -32,3 +32,26 @@ export const isSelectionInBlockItem = (editor: Editor, options?: any) => {
 
   return
 }
+
+export const isSelectionInTransclusion = (editor: Editor, options?: any) => {
+  const {transclusion} = options
+
+  if (
+    editor.selection &&
+    isNodeTypeIn(editor, transclusion.type) &&
+    !isRangeAtRoot(editor.selection)
+  ) {
+    const [tNode, tPath] = Editor.parent(editor, editor.selection)
+    if (tNode.type !== transclusion.type) return
+    const [blockListNode, blockListPath] = Editor.parent(editor, tPath)
+
+    return {
+      blockListNode,
+      blockListPath,
+      blockNode: tNode,
+      blockPath: tPath,
+    }
+  }
+
+  return
+}
