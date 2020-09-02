@@ -2,7 +2,6 @@ package server_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"mintter/backend/server"
@@ -11,9 +10,7 @@ import (
 	v2 "mintter/proto/v2"
 
 	"github.com/ipfs/go-cid"
-	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
-	libproto "google.golang.org/protobuf/proto"
 )
 
 func TestV2CreateDraft(t *testing.T) {
@@ -90,15 +87,7 @@ func TestV2UpdateDraft(t *testing.T) {
 	require.NotNil(t, updated)
 
 	for k, b := range blocksMap {
-		ok := libproto.Equal(b, updated.Blocks[k])
-		if !ok {
-			fmt.Println("Want:")
-			litter.Dump(b)
-			fmt.Println("Got:")
-			litter.Dump(updated.Blocks[k])
-
-			t.Fatalf("block %s doesn't match", k)
-		}
+		testutil.ProtoEqual(t, b, updated.Blocks[k], "block %s doesn't match", k)
 	}
 }
 
@@ -129,14 +118,7 @@ func TestListDocuments_Draft(t *testing.T) {
 	}
 
 	for id, wantDoc := range expected {
-		ok := libproto.Equal(wantDoc, respMap[id])
-		if !ok {
-			fmt.Println("Want:")
-			litter.Dump(wantDoc)
-			fmt.Println("Got:")
-			litter.Dump(respMap[id])
-			t.Fatalf("document with id %s doesn't match", id)
-		}
+		testutil.ProtoEqual(t, wantDoc, respMap[id], "document with id %s doesn't match", id)
 	}
 }
 
@@ -213,16 +195,7 @@ func TestPublishDraft_v2(t *testing.T) {
 	})
 	require.NoError(t, err, "must list documents")
 	require.NotNil(t, list.Documents, "must return the list of documents")
-	want := doc.Document
-	got := list.Documents[0]
-	ok := libproto.Equal(doc.Document, list.Documents[0])
-	if !ok {
-		fmt.Println("Want:")
-		litter.Dump(want)
-		fmt.Println("Got:")
-		litter.Dump(got)
-		t.Fatal("listed document must be the same as retrieved")
-	}
+	testutil.ProtoEqual(t, doc.Document, list.Documents[0], "listed document must be the same as retrieved")
 }
 
 func makeV2Server(t *testing.T, name string) (v2.DocumentsServer, *proto.Profile, context.Context) {
