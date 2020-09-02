@@ -2,6 +2,7 @@ package server_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"mintter/backend/server"
@@ -10,6 +11,7 @@ import (
 	v2 "mintter/proto/v2"
 
 	"github.com/ipfs/go-cid"
+	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -91,7 +93,7 @@ func TestV2UpdateDraft(t *testing.T) {
 	}
 }
 
-func TestListDocuments_Draft(t *testing.T) {
+func TestListDocuments(t *testing.T) {
 	srv, _, ctx := makeV2Server(t, "alice")
 
 	d1, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
@@ -120,6 +122,40 @@ func TestListDocuments_Draft(t *testing.T) {
 	for id, wantDoc := range expected {
 		testutil.ProtoEqual(t, wantDoc, respMap[id], "document with id %s doesn't match", id)
 	}
+
+	d1pub, err := srv.PublishDraft(ctx, &v2.PublishDraftRequest{
+		Version: d1.Version,
+	})
+	require.NoError(t, err, "must publish first draft")
+	d2pub, err := srv.PublishDraft(ctx, &v2.PublishDraftRequest{
+		Version: d2.Version,
+	})
+	require.NoError(t, err, "must publish second draft")
+	d3pub, err := srv.PublishDraft(ctx, &v2.PublishDraftRequest{
+		Version: d3.Version,
+	})
+	require.NoError(t, err, "must publish third draft")
+
+	resp, err = srv.ListDocuments(ctx, &v2.ListDocumentsRequest{
+		PublishingState: v2.PublishingState_PUBLISHED,
+	})
+	require.NoError(t, err, "must list publications")
+
+Loop:
+	for _, version := range []string{d1pub.Version, d2pub.Version, d3pub.Version} {
+		for _, d := range resp.Documents {
+			if version == d.Version {
+				continue Loop
+			}
+		}
+		fmt.Println("Response:")
+		litter.Dump(resp)
+		t.Fatalf("must find version %s in response", version)
+	}
+
+	resp, err = srv.ListDocuments(ctx, &v2.ListDocumentsRequest{})
+	require.NoError(t, err)
+	require.Nil(t, resp.Documents, "drafts must be deleted after being published")
 }
 
 func TestDeleteDocument(t *testing.T) {

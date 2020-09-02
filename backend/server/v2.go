@@ -260,6 +260,10 @@ func (s *V2Server) ListDocuments(ctx context.Context, in *v2.ListDocumentsReques
 		return nil, err
 	}
 
+	if len(docs) == 0 {
+		return &v2.ListDocumentsResponse{}, nil
+	}
+
 	resp := &v2.ListDocumentsResponse{
 		Documents: make([]*v2.Document, len(docs)),
 	}
