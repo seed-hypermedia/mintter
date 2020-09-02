@@ -7,7 +7,7 @@ import {v4 as uuid} from 'uuid'
 export const moveBlockItemUp = (
   editor: Editor,
   blockListNode: Ancestor,
-  blockLiatPath: number[],
+  blockListPath: number[],
   blockPath: number[],
   options: any,
 ) => {
@@ -15,9 +15,10 @@ export const moveBlockItemUp = (
 
   const [blockListParentNode, blockListParentPath] = Editor.parent(
     editor,
-    blockLiatPath,
+    blockListPath,
   )
-  if (blockListParentNode.type !== block.type) return
+
+  if (blockListParentNode.type !== block.type) return // is not a subList
 
   const newBlockItemPath = Path.next(blockListParentPath)
 
@@ -31,9 +32,13 @@ export const moveBlockItemUp = (
    * Move the next siblings to a new list
    */
   const blockItemIndex = blockPath[blockPath.length - 1]
+
   const siblingPath = [...blockPath]
+
   const newBlockListPath = newBlockItemPath.concat(1)
+
   let siblingFound = false
+
   let newSiblingIdx = 0
   blockListNode.children.forEach((n, idx) => {
     console.log('n', n)
@@ -65,7 +70,7 @@ export const moveBlockItemUp = (
   // Remove sublist if it was the first list item
   if (!blockItemIndex) {
     Transforms.removeNodes(editor, {
-      at: blockLiatPath,
+      at: blockListPath,
     })
   }
 
