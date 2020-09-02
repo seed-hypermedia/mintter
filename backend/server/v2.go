@@ -271,44 +271,6 @@ func (s *V2Server) ListDocuments(ctx context.Context, in *v2.ListDocumentsReques
 	return resp, nil
 }
 
-func (s *V2Server) listDrafts(ctx context.Context, txn datastore.Txn) ([]query.Entry, error) {
-	res, err := txn.Query(query.Query{
-		Prefix: keyDrafts.String(),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return res.Rest()
-}
-
-func (s *V2Server) listDocuments(ctx context.Context, txn datastore.Txn, author string) ([]query.Entry, error) {
-	res, err := txn.Query(query.Query{
-		Prefix: keyDocs.ChildString(author).String(),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	entries, err := res.Rest()
-	if err != nil {
-		return nil, err
-	}
-
-	docMap := map[string]struct{}{}
-	var out []query.Entry
-	for _, e := range entries {
-		parts := strings.Split(e.Key, "/")
-		docid := parts[len(parts)-3]
-		if _, ok := docMap[docid]; !ok {
-			docMap[docid] = struct{}{}
-			out = append(out, e)
-		}
-	}
-
-	return out, nil
-}
-
 // DeleteDocument implements v2 Documents server.
 func (s *V2Server) DeleteDocument(ctx context.Context, in *v2.DeleteDocumentRequest) (*emptypb.Empty, error) {
 	vid, err := cid.Decode(in.Version)

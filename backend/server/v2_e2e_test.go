@@ -1,13 +1,11 @@
 package server_test
 
 import (
-	"fmt"
+	"mintter/backend/testutil"
 	v2 "mintter/proto/v2"
 	"testing"
 
-	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/proto"
 )
 
 func TestV2EndToEnd(t *testing.T) {
@@ -46,14 +44,7 @@ func TestV2EndToEnd(t *testing.T) {
 		want := pubDoc.Blocks[reusedID]
 		want.Id = pub1.Version + "/" + want.Id
 		got := draftDoc.Blocks[pub1.Version+"/"+reusedID]
-		ok := proto.Equal(want, got)
-		if !ok {
-			fmt.Println("Want:")
-			litter.Dump(want)
-			fmt.Println("Got:")
-			litter.Dump(got)
-			t.Fatalf("block %s doesn't match", reusedID)
-		}
+		testutil.ProtoEqual(t, want, got, "block %s doesn't match", reusedID)
 	}
 }
 
