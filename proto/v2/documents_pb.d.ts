@@ -27,10 +27,8 @@ export class UpdateDraftRequest extends jspb.Message {
   hasDocument(): boolean;
   clearDocument(): void;
 
-  getBlocksList(): Array<Block>;
-  setBlocksList(value: Array<Block>): void;
-  clearBlocksList(): void;
-  addBlocks(value?: Block, index?: number): Block;
+  getBlocksMap(): jspb.Map<string, Block>;
+  clearBlocksMap(): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UpdateDraftRequest.AsObject;
@@ -43,7 +41,7 @@ export class UpdateDraftRequest extends jspb.Message {
 export namespace UpdateDraftRequest {
   export type AsObject = {
     document?: Document.AsObject,
-    blocksList: Array<Block.AsObject>,
+    blocksMap: Array<[string, Block.AsObject]>,
   }
 }
 
@@ -339,6 +337,9 @@ export class Block extends jspb.Message {
   getId(): string;
   setId(value: string): void;
 
+  getVersion(): string;
+  setVersion(value: string): void;
+
   getParagraph(): Paragraph | undefined;
   setParagraph(value?: Paragraph): void;
   hasParagraph(): boolean;
@@ -362,6 +363,7 @@ export class Block extends jspb.Message {
 export namespace Block {
   export type AsObject = {
     id: string,
+    version: string,
     paragraph?: Paragraph.AsObject,
     image?: Image.AsObject,
   }
@@ -470,7 +472,6 @@ export namespace Image {
 }
 
 export enum PublishingState { 
-  UNSPECIFIED = 0,
-  DRAFT = 1,
-  PUBLISHED = 2,
+  DRAFT = 0,
+  PUBLISHED = 1,
 }

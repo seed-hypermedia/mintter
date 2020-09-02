@@ -48,5 +48,33 @@ func MakeRepoPath(t *testing.T) string {
 
 // MakeBlockStore creates a new in-memory block store for tests.
 func MakeBlockStore(t *testing.T) blockstore.Blockstore {
-	return blockstore.NewBlockstore(sync.MutexWrap(datastore.NewMapDatastore()))
+	return blockstore.NewBlockstore(MakeDatastore(t))
+}
+
+// MakeDatastore creates a new in-memory datastore
+func MakeDatastore(t *testing.T) *FakeTxnDatastore {
+	t.Helper()
+	return &FakeTxnDatastore{sync.MutexWrap(datastore.NewMapDatastore())}
+}
+
+// FakeTxnDatastore implements wraps a datastore with fake transactions.
+type FakeTxnDatastore struct {
+	datastore.Batching
+}
+
+// NewTransaction implements TxnDatastore.
+func (ds *FakeTxnDatastore) NewTransaction(readOnly bool) (datastore.Txn, error) {
+	return &fakeTxn{ds}, nil
+}
+
+type fakeTxn struct {
+	datastore.Datastore
+}
+
+func (txn *fakeTxn) Commit() error {
+	return nil
+}
+
+func (txn *fakeTxn) Discard() {
+	return
 }

@@ -14,8 +14,9 @@ require (
 	github.com/fxamacker/cbor/v2 v2.2.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.4.2
+	github.com/google/go-cmp v0.5.0
 	github.com/google/uuid v1.1.1
-	github.com/imdario/mergo v0.3.10
+	github.com/imdario/mergo v0.3.11
 	github.com/improbable-eng/grpc-web v0.12.0
 	github.com/ipfs/go-bitswap v0.2.19
 	github.com/ipfs/go-block-format v0.0.2
@@ -35,6 +36,7 @@ require (
 	github.com/ipfs/go-ipns v0.0.2
 	github.com/ipfs/go-merkledag v0.3.2
 	github.com/ipfs/go-unixfs v0.2.4
+	github.com/kr/text v0.2.0 // indirect
 	github.com/libp2p/go-libp2p v0.10.3
 	github.com/libp2p/go-libp2p-connmgr v0.2.4
 	github.com/libp2p/go-libp2p-core v0.6.1
@@ -51,9 +53,11 @@ require (
 	github.com/multiformats/go-multiaddr v0.2.2
 	github.com/multiformats/go-multihash v0.0.14
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
+	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/polydawn/refmt v0.0.0-20190807091052-3d65705ee9f1
 	github.com/rs/xid v1.2.1
+	github.com/sanity-io/litter v1.3.0
 	github.com/sergi/go-diff v1.1.0
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.6.1
@@ -62,13 +66,14 @@ require (
 	go.uber.org/atomic v1.6.0
 	go.uber.org/multierr v1.5.0
 	go.uber.org/zap v1.15.0
-	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de // indirect
+	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
-	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
+	golang.org/x/net v0.0.0-20200813134508-3edf25e44fcc // indirect
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	golang.org/x/sys v0.0.0-20200803210538-64077c9b5642 // indirect
+	golang.org/x/sys v0.0.0-20200820212457-1fb795427249 // indirect
 	golang.org/x/tools v0.0.0-20200804011535-6c149bb5ef0d // indirect
 	google.golang.org/genproto v0.0.0-20200731012542-8145dea6a485 // indirect
 	google.golang.org/grpc v1.31.0
 	google.golang.org/protobuf v1.25.0
+	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 )
