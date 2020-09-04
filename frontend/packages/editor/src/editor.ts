@@ -37,11 +37,6 @@ export const initialBlocksValue = [
     listType: BlockRefList.Style.NONE,
     children: [
       {
-        type: ELEMENT_TRANSCLUSION,
-        id: 'transclusion-12345',
-        children: [{text: ''}],
-      },
-      {
         type: ELEMENT_BLOCK,
         id: uuid(),
         children: [
@@ -54,6 +49,11 @@ export const initialBlocksValue = [
             ],
           },
         ],
+      },
+      {
+        type: ELEMENT_TRANSCLUSION,
+        id: 'transclusion-12345',
+        children: [{text: 's'}],
       },
     ],
   },

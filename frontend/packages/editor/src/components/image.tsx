@@ -1,34 +1,22 @@
 import React, {useState, useMemo} from 'react'
-import {useFocused, useSelected, useEditor, ReactEditor} from 'slate-react'
-import {ImageKeyOption, ImagePluginOptionsValues} from '@udecode/slate-plugins'
+import {useSelected, useEditor, ReactEditor} from 'slate-react'
 import {Draggable} from 'react-beautiful-dnd'
 import {Transforms} from 'slate'
-import {css} from 'emotion'
+
 import {mergeRefs} from '../mergeRefs'
 import {useHover} from '@react-aria/interactions'
 import {useToggleState} from '@react-stately/toggle'
-
-export const ELEMENT_IMAGE = 'img'
-
-export const IMAGE_OPTIONS: Record<
-  ImageKeyOption,
-  Required<ImagePluginOptionsValues>
-> = {
-  img: {
-    component: ImageBlock,
-    type: ELEMENT_IMAGE,
-    rootProps: {},
-  },
-}
+import {useBlockTools} from '../BlockPlugin/blockToolsContext'
+import {BlockControls} from '../components/blockControls'
 
 export function ImageBlock({attributes, element, children}) {
   const selected = useSelected()
-  const focused = useFocused()
   const editor = useEditor()
   const path = ReactEditor.findPath(editor, element)
   const [error, setError] = useState('')
   const [file, setFile] = useState<any>(() => element.url || null)
   const {isSelected, setSelected} = useToggleState()
+  const {id: blockId, setBlockId} = useBlockTools()
 
   // const type = attributes['data-slate-type']
   // delete attributes['data-slate-type']
@@ -58,39 +46,33 @@ export function ImageBlock({attributes, element, children}) {
 
   const caption = useMemo<string>(() => element.caption ?? '', [element])
   return (
-    <Draggable key={element.id} draggableId={element.id} index={path[0]}>
+    <Draggable
+      key={element.id}
+      draggableId={element.id}
+      index={path[path.length - 1]}
+    >
       {provided => (
         <div
           {...attributes}
           {...provided.draggableProps}
           ref={mergeRefs(provided.innerRef, attributes.ref)}
-          className={`group first:mt-8 relative overflow-hidden`}
+          className={`group first:mt-8 relative overflow-hidden bg-red-500 p-4 ${
+            selected ? 'border-info' : 'border-transparent'
+          }`}
+          onMouseLeave={() => setBlockId(null)}
+          onMouseEnter={() => setBlockId(element.id)}
         >
           <div contentEditable={false}>
-            <div
-              className={`absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition duration-200 flex items-center mt-3 ${css`
-                transform: translateX(-2rem);
-              `}`}
-            >
-              <div
-                className="rounded-sm bg-transparent hover:bg-background-muted w-6 h-8 p-1"
-                {...provided.dragHandleProps}
-              >
-                <svg width="1em" height="1.5em" viewBox="0 0 16 24" fill="none">
-                  <path
-                    d="M3.5 6a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM12.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM5 19.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM3.5 13.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-                    fill="#3F3F3F"
-                  />
-                </svg>
-              </div>
-            </div>
+            <BlockControls
+              isHovered={blockId === element.id}
+              path={path}
+              dragHandleProps={provided.dragHandleProps}
+            />
 
             {file ? (
               <Image
                 src={file}
                 alt={caption}
-                focused={focused}
-                selected={selected}
                 onAddCaption={() => setSelected(!isSelected)}
               />
             ) : (
@@ -126,18 +108,10 @@ export function ImageBlock({attributes, element, children}) {
   )
 }
 
-export function Image({src, alt, onAddCaption, focused, selected, ...rest}) {
+export function Image({src, alt, onAddCaption, ...rest}) {
   let {hoverProps, isHovered} = useHover({})
   return (
-    <div
-      className={`relative border-2 border-background-muted ${
-        focused
-          ? 'border-blue-200'
-          : selected
-          ? 'border-blue-400'
-          : 'border-transparent'
-      }`}
-    >
+    <div className={`relative border-2 border-background-muted`}>
       <div
         className={`absolute top-0 right-0 m-2 rounded-sm bg-black shadow-sm transition duration-100 opacity-0 hover:opacity-100 ${
           isHovered ? 'opacity-100' : ''

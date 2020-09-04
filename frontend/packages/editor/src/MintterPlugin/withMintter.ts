@@ -7,7 +7,10 @@ import {
 } from '@udecode/slate-plugins'
 import {insertBlockItem} from './insertBlockItem'
 import {moveBlockItemUp} from './moveBlockItemUp'
-import {isSelectionInBlockItem} from './isSelectionInBlockItem'
+import {
+  isSelectionInBlockItem,
+  isSelectionInTransclusion,
+} from './isSelectionInBlockItem'
 import {unwrapBlockList} from './unwrapBlockList'
 
 export const withMintter = options => <T extends ReactEditor>(editor: T) => {
@@ -21,7 +24,7 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
   }
 
   editor.insertBreak = () => {
-    const res = isSelectionInBlockItem(editor, options)
+    let res = isSelectionInBlockItem(editor, options)
 
     let moved: boolean | undefined
     if (res && isBlockAboveEmpty(editor)) {
@@ -33,6 +36,7 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
         blockPath,
         options,
       )
+      console.log('editor.insertBreak -> moved', moved)
 
       if (moved) return
 
@@ -56,6 +60,7 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
      * Add a new list item if selection is in a LIST_ITEM > p.type.
      */
     if (!moved) {
+      console.log('moved  IS VALID')
       const inserted = insertBlockItem(editor, options)
       if (inserted) return
     }
@@ -64,7 +69,11 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
   }
 
   editor.deleteBackward = unit => {
-    const res = isSelectionInBlockItem(editor, options)
+    let res = isSelectionInBlockItem(editor, options)
+
+    if (!res) {
+      res = isSelectionInTransclusion(editor, options)
+    }
 
     let moved: boolean | undefined
     if (res && isSelectionAtBlockStart(editor)) {

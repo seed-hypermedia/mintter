@@ -1,6 +1,9 @@
 import * as React from 'react'
 import {getRenderElement} from '@udecode/slate-plugins'
-import {useSelected} from 'slate-react'
+import {Draggable} from 'react-beautiful-dnd'
+import {useSelected, ReactEditor, useEditor} from 'slate-react'
+import {useBlockTools} from '../BlockPlugin/blockToolsContext'
+import {BlockControls} from '../components/blockControls'
 
 export const ELEMENT_TRANSCLUSION = 'transclusion'
 
@@ -12,16 +15,36 @@ export const TransclusionElement = ({
 }) => {
   const {id} = element
   const selected = useSelected()
+  const editor = useEditor()
+  const path = ReactEditor.findPath(editor, element)
+  const {id: blockId, setBlockId} = useBlockTools()
   return (
-    <div
-      {...attributes}
-      className={`p-4 border-2 ${
-        selected ? 'border-info' : 'border-transparent'
-      }${className ? className : ''}`}
+    <Draggable
+      key={element.id}
+      draggableId={element.id}
+      index={path[path.length - 1]}
     >
-      <div contentEditable={false}>Transclusions: {id}</div>
-      {children}
-    </div>
+      {provided => (
+        <div
+          {...attributes}
+          {...provided.draggableProps}
+          ref={provided.innerRef}
+          className={`p-4 border-2 relative ${
+            selected ? 'border-info' : 'border-transparent'
+          }${className ? className : ''}`}
+          onMouseLeave={() => setBlockId(null)}
+          onMouseEnter={() => setBlockId(element.id)}
+        >
+          <BlockControls
+            isHovered={blockId === element.id}
+            path={path}
+            dragHandleProps={provided.dragHandleProps}
+          />
+          <div contentEditable={false}>Transclusions: {id}</div>
+          {children}
+        </div>
+      )}
+    </Draggable>
   )
 }
 

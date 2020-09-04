@@ -17,6 +17,10 @@ export const moveBlockItemUp = (
     editor,
     blockListPath,
   )
+  console.log('[blockListParentNode, blockListParentPath]', [
+    blockListParentNode,
+    blockListParentPath,
+  ])
 
   if (blockListParentNode.type !== block.type) return // is not a subList
 

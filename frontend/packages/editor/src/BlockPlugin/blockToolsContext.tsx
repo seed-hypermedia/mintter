@@ -7,6 +7,7 @@ export const BlockToolsContext = createContext<{
 
 export function BlockToolsProvider({children}) {
   const [id, setBlockId] = useState<string>()
+  console.log('BlockToolsProvider -> id', id)
 
   const value = useMemo(
     () => ({

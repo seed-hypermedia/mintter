@@ -15,7 +15,7 @@ import {
   // ELEMENT_IMAGE,
 } from '@udecode/slate-plugins'
 import {HelperOptionsNodeData} from '../types'
-import {insertBlock} from '../transforms'
+import {insertBlock} from '../transforms/insertBlock'
 
 export const HelperContext: any = createContext<any>({
   search: '',

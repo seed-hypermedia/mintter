@@ -11,16 +11,13 @@ export const withTransclusion = options => <T extends ReactEditor>(
   const {insertBreak} = editor
 
   editor.insertBreak = () => {
-    console.log('break here!')
-
     const {selection} = editor
-
+    console.log('transclusion plugin!')
     if (selection) {
       const [tNode, tPath] = Editor.parent(editor, selection)
-      console.log('editor.insertBreak -> pNode, pPath', tNode, tPath)
       if (tNode.type === ELEMENT_TRANSCLUSION) {
+        console.log('ENTER EN TRANSCLUSION!', selection)
         const nextBlock = Path.next(tPath)
-        console.log('editor.insertBreak -> nextBlock', nextBlock)
         Transforms.insertNodes(
           editor,
           {
@@ -33,8 +30,7 @@ export const withTransclusion = options => <T extends ReactEditor>(
           },
         )
         Transforms.select(editor, Editor.start(editor, nextBlock))
-      } else {
-        console.log('no es transclusion')
+        return
       }
     }
 
