@@ -4,15 +4,14 @@ import {Draggable} from 'react-beautiful-dnd'
 import {useSelected, ReactEditor, useEditor} from 'slate-react'
 import {useBlockTools} from '../BlockPlugin/blockToolsContext'
 import {BlockControls} from '../components/blockControls'
+import {mergeRefs} from '../mergeRefs'
 
 export const ELEMENT_TRANSCLUSION = 'transclusion'
 
-export const TransclusionElement = ({
-  attributes,
-  children,
-  element,
-  className,
-}) => {
+export const Transclusion = (
+  {attributes, children, element, className},
+  ref,
+) => {
   const {id} = element
   const selected = useSelected()
   const editor = useEditor()
@@ -28,7 +27,7 @@ export const TransclusionElement = ({
         <div
           {...attributes}
           {...provided.draggableProps}
-          ref={provided.innerRef}
+          ref={mergeRefs(provided.innerRef, ref, attributes.ref)}
           className={`p-4 border-2 relative ${
             selected ? 'border-info' : 'border-transparent'
           }${className ? className : ''}`}
@@ -47,6 +46,8 @@ export const TransclusionElement = ({
     </Draggable>
   )
 }
+
+export const TransclusionElement = React.forwardRef(Transclusion)
 
 export const TRANSCLUSION_OPTIONS = {
   transclusion: {
