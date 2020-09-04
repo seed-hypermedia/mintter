@@ -43,15 +43,35 @@ func (ds *store) Get(ctx context.Context, version cid.Cid) (versionedDoc, error)
 		}
 		return versionedDoc{document: d, Version: version}, nil
 	case cid.DagCBOR:
+		local, err := ds.bs.Has(version)
+		if err != nil {
+			return versionedDoc{}, err
+		}
+
 		blk, err := ds.bs.Get(version)
 		if err != nil {
 			return versionedDoc{}, err
 		}
-		var doc document
-		return versionedDoc{document: doc, Version: version}, ipldutil.ReadSignedBlock(ctx, ds.profstore, blk, &doc)
+
+		vdoc := versionedDoc{Version: version}
+		if err := ipldutil.ReadSignedBlock(ctx, ds.profstore, blk, &vdoc.document); err != nil {
+			return versionedDoc{}, err
+		}
+
+		if !local {
+			if err := ds.indexPublication(vdoc); err != nil {
+				return versionedDoc{}, fmt.Errorf("failed to index remote publication: %w", err)
+			}
+		}
+
+		return vdoc, nil
 	default:
 		return versionedDoc{}, fmt.Errorf("unknown version code: %s(%d)", cid.CodecToStr[codec], codec)
 	}
+}
+
+func (ds *store) Has(ctx context.Context, version cid.Cid) (bool, error) {
+	return ds.bs.Has(version)
 }
 
 func (ds *store) Store(ctx context.Context, doc document) (cid.Cid, error) {
@@ -60,16 +80,19 @@ func (ds *store) Store(ctx context.Context, doc document) (cid.Cid, error) {
 		return cid.Undef, err
 	}
 
-	data, err := cbornode.DumpObject(doc)
-	if err != nil {
+	if err := ds.bs.Put(blk); err != nil {
 		return cid.Undef, err
 	}
 
-	if err := ds.db.Put(makeDocsKey(doc.Author, doc.ID, doc.PublishTime, blk.Cid()), data); err != nil {
-		return cid.Undef, err
-	}
+	vdoc := versionedDoc{document: doc, Version: blk.Cid()}
 
-	return blk.Cid(), ds.bs.Put(blk)
+	ds.indexPublication(vdoc)
+
+	return vdoc.Version, nil
+}
+
+func (ds *store) indexPublication(vdoc versionedDoc) error {
+	return ds.db.Put(makeDocsKey(vdoc.Author, vdoc.ID, vdoc.PublishTime, vdoc.Version), nil)
 }
 
 func (ds *store) CreateDraft(ctx context.Context) (versionedDoc, error) {
@@ -179,7 +202,8 @@ func (ds *store) ListDocuments(ctx context.Context, author identity.ProfileID, s
 		return out, nil
 	case v2.PublishingState_PUBLISHED:
 		res, err := ds.db.Query(query.Query{
-			Prefix: makeDocsPrefix(author).String(),
+			Prefix:   makeDocsPrefix(author).String(),
+			KeysOnly: true,
 		})
 		if err != nil {
 			return nil, err
@@ -205,11 +229,12 @@ func (ds *store) ListDocuments(ctx context.Context, author identity.ProfileID, s
 				return nil, err
 			}
 
-			var d document
-			if err := cbornode.DecodeInto(e.Value, &d); err != nil {
+			d, err := ds.Get(ctx, version)
+			if err != nil {
 				return nil, err
 			}
-			out = append(out, versionedDoc{document: d, Version: version})
+
+			out = append(out, d)
 		}
 
 		return out, nil
