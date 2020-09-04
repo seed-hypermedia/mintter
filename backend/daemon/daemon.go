@@ -8,13 +8,19 @@ import (
 	"mintter"
 	"net"
 	"net/http"
+	"sync"
 
 	"mintter/backend/config"
+	"mintter/backend/document"
+	"mintter/backend/p2p"
 	"mintter/backend/server"
 	"mintter/proto"
+	v2 "mintter/proto/v2"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/pkg/browser"
+	"go.uber.org/atomic"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -35,9 +41,18 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	defer log.Info("GracefulShutdownEnded")
 
 	rpcsrv := grpc.NewServer()
+	docserver := &lazyDocumentsServer{
+		srv: &v2.UnimplementedDocumentsServer{},
+	}
 	var svc *server.Server
 	{
-		s, err := server.NewServer(cfg, log)
+		s, err := server.NewServer(cfg, log, server.WithInitFunc(server.InitFunc(func(n *p2p.Node) error {
+			// TODO: this is messy and creepy. Due to our lazy initialization thing we have to do this
+			// in order to be able to register the RPC hander before calling serve, because this is a requirement.
+			ds := document.NewServer(n.Store(), n.IPFS().BlockStore(), n.Store().DB())
+			docserver.Swap(ds)
+			return nil
+		})))
 		if err != nil {
 			return fmt.Errorf("failed to create rpc server: %w", err)
 		}
@@ -47,6 +62,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 		proto.RegisterMintterServer(rpcsrv, s)
 		proto.RegisterDocumentsServer(rpcsrv, s)
+		v2.RegisterDocumentsServer(rpcsrv, docserver)
 		reflection.Register(rpcsrv)
 
 		svc = s
@@ -131,4 +147,52 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	err = g.Wait()
 
 	return
+}
+
+type lazyDocumentsServer struct {
+	done atomic.Bool
+	mu   sync.RWMutex
+	srv  v2.DocumentsServer
+}
+
+func (l *lazyDocumentsServer) CreateDraft(ctx context.Context, in *v2.CreateDraftRequest) (*v2.Document, error) {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
+	return l.srv.CreateDraft(ctx, in)
+}
+
+func (l *lazyDocumentsServer) UpdateDraft(ctx context.Context, in *v2.UpdateDraftRequest) (*v2.UpdateDraftResponse, error) {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
+	return l.srv.UpdateDraft(ctx, in)
+}
+
+func (l *lazyDocumentsServer) PublishDraft(ctx context.Context, in *v2.PublishDraftRequest) (*v2.PublishDraftResponse, error) {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
+	return l.srv.PublishDraft(ctx, in)
+}
+
+func (l *lazyDocumentsServer) GetDocument(ctx context.Context, in *v2.GetDocumentRequest) (*v2.GetDocumentResponse, error) {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
+	return l.srv.GetDocument(ctx, in)
+}
+
+func (l *lazyDocumentsServer) ListDocuments(ctx context.Context, in *v2.ListDocumentsRequest) (*v2.ListDocumentsResponse, error) {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
+	return l.srv.ListDocuments(ctx, in)
+}
+
+func (l *lazyDocumentsServer) DeleteDocument(ctx context.Context, in *v2.DeleteDocumentRequest) (*empty.Empty, error) {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
+	return l.srv.DeleteDocument(ctx, in)
+}
+
+func (l *lazyDocumentsServer) Swap(srv v2.DocumentsServer) {
+	l.mu.Lock()
+	l.srv = srv
+	l.mu.Unlock()
 }

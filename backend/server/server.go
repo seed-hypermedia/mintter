@@ -24,6 +24,8 @@ type Server struct {
 	log    *zap.Logger
 	p2pLog *zap.Logger
 
+	opts options
+
 	// We are doing a kind of lazy init for these within InitProfile handler
 	// and we recover the state in the constructor if profile was previously initialized.
 	ready atomic.Bool
@@ -31,8 +33,25 @@ type Server struct {
 	node  *p2p.Node
 }
 
+// Option is a type for functional options.
+type Option func(*options)
+
+type options struct {
+	initFunc InitFunc
+}
+
+// InitFunc is a callback that will be invoked when profile is initialized.
+type InitFunc func(*p2p.Node) error
+
+// WithInitFunc provied and option for init callback.
+func WithInitFunc(fn InitFunc) Option {
+	return func(opts *options) {
+		opts.initFunc = fn
+	}
+}
+
 // NewServer creates a new Server.
-func NewServer(cfg config.Config, log *zap.Logger) (*Server, error) {
+func NewServer(cfg config.Config, log *zap.Logger, opts ...Option) (*Server, error) {
 	if strings.HasPrefix(cfg.RepoPath, "~") {
 		homedir, err := os.UserHomeDir()
 		if err != nil {
@@ -50,6 +69,10 @@ func NewServer(cfg config.Config, log *zap.Logger) (*Server, error) {
 		log:    log.Named("rpc"),
 		p2pLog: log.Named("p2p"),
 		cfg:    cfg,
+	}
+
+	for _, o := range opts {
+		o(&s.opts)
 	}
 
 	if err := s.init(identity.Profile{}); err != nil {
@@ -108,6 +131,12 @@ func (s *Server) init(prof identity.Profile) (err error) {
 	s.node, err = p2p.NewNode(s.cfg.RepoPath, s.store, s.p2pLog, s.cfg.P2P)
 	if err != nil {
 		return fmt.Errorf("failed to init P2P node: %w", err)
+	}
+
+	if s.opts.initFunc != nil {
+		if err := s.opts.initFunc(s.node); err != nil {
+			return fmt.Errorf("init callback failed: %w", err)
+		}
 	}
 
 	s.ready.CAS(false, true)

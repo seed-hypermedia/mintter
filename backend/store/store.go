@@ -114,6 +114,11 @@ func (s *Store) RepoPath() string {
 	return s.repoPath
 }
 
+// DB returns the underlying database.
+func (s *Store) DB() datastore.TxnDatastore {
+	return s.db
+}
+
 // LogBook retrieves the underlying store log book.
 func (s *Store) LogBook() *logbook.Book {
 	return s.lb

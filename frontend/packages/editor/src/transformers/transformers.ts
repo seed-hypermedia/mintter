@@ -186,8 +186,8 @@ export function toSlateTree({blockRefList, blocks}: ToSlateTreeRequest) {
   return {
     type: ELEMENT_BLOCK_LIST,
     listType: blockRefList.style,
-    children: blockRefList.blocksList.map(child => {
-      const block = dictionary[child.id]
+    children: blockRefList.refsList.map(child => {
+      const block = dictionary[child.ref]
 
       if (child.blockRefList) {
         block.children.push(
