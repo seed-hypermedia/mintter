@@ -1,4 +1,4 @@
-package server
+package document
 
 import (
 	"context"
@@ -42,14 +42,14 @@ func TestFlattenBlockRefList(t *testing.T) {
 func TestBlocksFromProto(t *testing.T) {
 	var expected document
 
-	expected.RefList = &RefList{
-		Refs: []BlockRef{
+	expected.RefList = &refList{
+		Refs: []blockRef{
 			{Pointer: "#/blocks/block-1"},
 			{
 				Pointer: "#/blocks/block-list-parent",
-				RefList: &RefList{
+				RefList: &refList{
 					ListStyle: v2.BlockRefList_BULLET,
-					Refs: []BlockRef{
+					Refs: []blockRef{
 						{Pointer: "#/blocks/block-list-child-1"},
 						{Pointer: "#/blocks/block-list-child-2"},
 					},
@@ -58,7 +58,7 @@ func TestBlocksFromProto(t *testing.T) {
 			{Pointer: "#/blocks/block-2"},
 		},
 	}
-	expected.Blocks = map[string]Block{
+	expected.Blocks = map[string]block{
 		"block-1": {
 			ID:   "block-1",
 			Text: "I'm just a line of text.",
@@ -78,10 +78,10 @@ func TestBlocksFromProto(t *testing.T) {
 		"block-2": {
 			ID:   "block-2",
 			Text: "I'm just a line of text with some formatting!",
-			StyleRanges: []StyleRange{
-				{Offset: 24, Length: 4, Style: StyleBold},
-				{Offset: 29, Length: 4, Style: StyleItalic},
-				{Offset: 34, Length: 10, Style: StyleBold | StyleUnderline},
+			StyleRanges: []styleRange{
+				{Offset: 24, Length: 4, Style: styleBold},
+				{Offset: 29, Length: 4, Style: styleItalic},
+				{Offset: 34, Length: 10, Style: styleBold | styleUnderline},
 			},
 		},
 	}
@@ -97,7 +97,7 @@ func TestBlocksFromProto(t *testing.T) {
 func TestBlockProtoEncoding(t *testing.T) {
 	tests := []struct {
 		Proto  *v2.Block
-		Struct Block
+		Struct block
 	}{
 		{
 			Proto: &v2.Block{
@@ -110,7 +110,7 @@ func TestBlockProtoEncoding(t *testing.T) {
 					},
 				},
 			},
-			Struct: Block{
+			Struct: block{
 				ID:   "block-1",
 				Text: "Hello World!",
 			},
@@ -128,14 +128,14 @@ func TestBlockProtoEncoding(t *testing.T) {
 					},
 				},
 			},
-			Struct: Block{
+			Struct: block{
 				ID:   "block-2",
 				Text: "Hello World!",
-				StyleRanges: []StyleRange{
+				StyleRanges: []styleRange{
 					{
 						Offset: 6,
 						Length: 5,
-						Style:  StyleBold | StyleItalic,
+						Style:  styleBold | styleItalic,
 					},
 				},
 			},
@@ -154,12 +154,12 @@ func TestBlockProtoEncoding(t *testing.T) {
 					},
 				},
 			},
-			Struct: Block{
+			Struct: block{
 				ID:   "block-3",
 				Text: "Hello World!",
-				StyleRanges: []StyleRange{
-					{Offset: 6, Length: 1, Style: StyleBold | StyleItalic},
-					{Offset: 7, Length: 4, Style: StyleBold | StyleUnderline},
+				StyleRanges: []styleRange{
+					{Offset: 6, Length: 1, Style: styleBold | styleItalic},
+					{Offset: 7, Length: 4, Style: styleBold | styleUnderline},
 				},
 			},
 		},
@@ -180,13 +180,13 @@ func TestBlockProtoEncoding(t *testing.T) {
 					},
 				},
 			},
-			Struct: Block{
+			Struct: block{
 				ID:   "block-formatting",
 				Text: "I'm just a line of text with some formatting!",
-				StyleRanges: []StyleRange{
-					{Offset: 24, Length: 4, Style: StyleBold},
-					{Offset: 29, Length: 4, Style: StyleItalic},
-					{Offset: 34, Length: 10, Style: StyleBold | StyleUnderline},
+				StyleRanges: []styleRange{
+					{Offset: 24, Length: 4, Style: styleBold},
+					{Offset: 29, Length: 4, Style: styleItalic},
+					{Offset: 34, Length: 10, Style: styleBold | styleUnderline},
 				},
 			},
 		},
@@ -285,11 +285,11 @@ func testBlockMap() map[string]*v2.Block {
 }
 
 func TestResolveDocument(t *testing.T) {
-	var docstore *docStore
+	var docstore *store
 	{
 		alice := testutil.MakeProfile(t, "alice")
 		bob := testutil.MakeProfile(t, "bob")
-		docstore = &docStore{
+		docstore = &store{
 			bs: testutil.MakeBlockStore(t),
 			db: testutil.MakeDatastore(t),
 			profstore: &mockProfileStore{
@@ -321,7 +321,7 @@ func TestResolveDocument(t *testing.T) {
 	litter.Dump(blockMap)
 }
 
-func testDoc1(t *testing.T, docstore *docStore) document {
+func testDoc1(t *testing.T, docstore *store) document {
 	t.Helper()
 	permanode := permanode{
 		Random: xid.New().Bytes(),
@@ -344,15 +344,15 @@ func testDoc1(t *testing.T, docstore *docStore) document {
 		Title:    "First Mintter document",
 		Subtitle: "This is the first mintter document",
 		Author:   prof.ID,
-		RefList: &RefList{
+		RefList: &refList{
 			ListStyle: v2.BlockRefList_NONE,
-			Refs: []BlockRef{
+			Refs: []blockRef{
 				{Pointer: "#/blocks/block-1"},
 				{
 					Pointer: "#/blocks/block-list-parent",
-					RefList: &RefList{
+					RefList: &refList{
 						ListStyle: v2.BlockRefList_BULLET,
-						Refs: []BlockRef{
+						Refs: []blockRef{
 							{Pointer: "#/blocks/block-list-child-1"},
 							{Pointer: "#/blocks/block-list-child-2"},
 						},
@@ -360,7 +360,7 @@ func testDoc1(t *testing.T, docstore *docStore) document {
 				},
 			},
 		},
-		Blocks: map[string]Block{
+		Blocks: map[string]block{
 			"block-1": {
 				ID:   "block-1",
 				Text: "I'm just a line.",
@@ -384,7 +384,7 @@ func testDoc1(t *testing.T, docstore *docStore) document {
 	}
 }
 
-func testDoc2(t *testing.T, docstore *docStore, source cid.Cid) document {
+func testDoc2(t *testing.T, docstore *store, source cid.Cid) document {
 	t.Helper()
 	permanode := permanode{
 		Random: xid.New().Bytes(),
@@ -405,15 +405,15 @@ func testDoc2(t *testing.T, docstore *docStore, source cid.Cid) document {
 		Title:    "Second Mintter document",
 		Subtitle: "This is where we reuse the block",
 		Author:   prof.ID,
-		RefList: &RefList{
+		RefList: &refList{
 			ListStyle: v2.BlockRefList_NONE,
-			Refs: []BlockRef{
+			Refs: []blockRef{
 				{Pointer: "#/blocks/block-1"},
 				{
 					Pointer: "#/sources/src-1/blocks/block-list-parent",
-					RefList: &RefList{
+					RefList: &refList{
 						ListStyle: v2.BlockRefList_BULLET,
-						Refs: []BlockRef{
+						Refs: []blockRef{
 							{Pointer: "#/sources/src-1/blocks/block-list-child-1"},
 							{Pointer: "#/sources/src-1/blocks/block-list-child-2"},
 						},
@@ -421,7 +421,7 @@ func testDoc2(t *testing.T, docstore *docStore, source cid.Cid) document {
 				},
 			},
 		},
-		Blocks: map[string]Block{
+		Blocks: map[string]block{
 			"block-1": {
 				ID:   "block-1",
 				Text: "I'm just a line. Again!",

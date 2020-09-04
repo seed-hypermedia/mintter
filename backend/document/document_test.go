@@ -1,12 +1,12 @@
-package server_test
+package document_test
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
+	"mintter/backend/document"
 	"mintter/backend/identity"
-	"mintter/backend/server"
 	"mintter/backend/store"
 	"mintter/backend/testutil"
 	v2 "mintter/proto/v2"
@@ -246,7 +246,7 @@ func makeV2Server(t *testing.T, name string) (v2.DocumentsServer, identity.Profi
 	})
 	require.NoError(t, err)
 
-	return server.NewV2Server(store, testutil.MakeBlockStore(t), testutil.MakeDatastore(t)), prof, ctx
+	return document.NewServer(store, testutil.MakeBlockStore(t), testutil.MakeDatastore(t)), prof, ctx
 }
 
 func makeTestBlocks() map[string]*v2.Block {
