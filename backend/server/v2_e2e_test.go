@@ -42,7 +42,6 @@ func TestTransclusionEndToEnd(t *testing.T) {
 
 	for _, reusedID := range []string{"block-list-parent", "block-list-child-1", "block-list-child-2"} {
 		want := pubDoc.Blocks[reusedID]
-		want.Id = pub1.Version + "/" + want.Id
 		got := draftDoc.Blocks[pub1.Version+"/"+reusedID]
 		testutil.ProtoEqual(t, want, got, "block %s doesn't match", reusedID)
 	}
@@ -59,19 +58,19 @@ func testDoc2(d *v2.Document, sourceVersion string) *v2.UpdateDraftRequest {
 	d.Subtitle = "This is the first Mintter document that will reuse a block."
 	d.BlockRefList = &v2.BlockRefList{
 		Style: v2.BlockRefList_NONE,
-		Blocks: []*v2.BlockRef{
-			{Id: "block-1"},
+		Refs: []*v2.BlockRef{
+			{Ref: "block-1"},
 			{
-				Id: sourceVersion + "/block-list-parent",
+				Ref: sourceVersion + "/block-list-parent",
 				BlockRefList: &v2.BlockRefList{
 					Style: v2.BlockRefList_BULLET,
-					Blocks: []*v2.BlockRef{
-						{Id: sourceVersion + "/block-list-child-1"},
-						{Id: sourceVersion + "/block-list-child-2"},
+					Refs: []*v2.BlockRef{
+						{Ref: sourceVersion + "/block-list-child-1"},
+						{Ref: sourceVersion + "/block-list-child-2"},
 					},
 				},
 			},
-			{Id: "block-2"},
+			{Ref: "block-2"},
 		},
 	}
 
@@ -109,19 +108,19 @@ func testDoc1(d *v2.Document) *v2.UpdateDraftRequest {
 	d.Subtitle = "The first Mintter document from which a block will be reused."
 	d.BlockRefList = &v2.BlockRefList{
 		Style: v2.BlockRefList_NONE,
-		Blocks: []*v2.BlockRef{
-			{Id: "block-1"},
+		Refs: []*v2.BlockRef{
+			{Ref: "block-1"},
 			{
-				Id: "block-list-parent",
+				Ref: "block-list-parent",
 				BlockRefList: &v2.BlockRefList{
 					Style: v2.BlockRefList_BULLET,
-					Blocks: []*v2.BlockRef{
-						{Id: "block-list-child-1"},
-						{Id: "block-list-child-2"},
+					Refs: []*v2.BlockRef{
+						{Ref: "block-list-child-1"},
+						{Ref: "block-list-child-2"},
 					},
 				},
 			},
-			{Id: "block-2"},
+			{Ref: "block-2"},
 		},
 	}
 

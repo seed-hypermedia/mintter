@@ -283,10 +283,10 @@ export class BlockRefList extends jspb.Message {
   getStyle(): BlockRefList.Style;
   setStyle(value: BlockRefList.Style): void;
 
-  getBlocksList(): Array<BlockRef>;
-  setBlocksList(value: Array<BlockRef>): void;
-  clearBlocksList(): void;
-  addBlocks(value?: BlockRef, index?: number): BlockRef;
+  getRefsList(): Array<BlockRef>;
+  setRefsList(value: Array<BlockRef>): void;
+  clearRefsList(): void;
+  addRefs(value?: BlockRef, index?: number): BlockRef;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): BlockRefList.AsObject;
@@ -299,7 +299,7 @@ export class BlockRefList extends jspb.Message {
 export namespace BlockRefList {
   export type AsObject = {
     style: BlockRefList.Style,
-    blocksList: Array<BlockRef.AsObject>,
+    refsList: Array<BlockRef.AsObject>,
   }
 
   export enum Style { 
@@ -310,8 +310,8 @@ export namespace BlockRefList {
 }
 
 export class BlockRef extends jspb.Message {
-  getId(): string;
-  setId(value: string): void;
+  getRef(): string;
+  setRef(value: string): void;
 
   getBlockRefList(): BlockRefList | undefined;
   setBlockRefList(value?: BlockRefList): void;
@@ -328,7 +328,7 @@ export class BlockRef extends jspb.Message {
 
 export namespace BlockRef {
   export type AsObject = {
-    id: string,
+    ref: string,
     blockRefList?: BlockRefList.AsObject,
   }
 }
@@ -336,9 +336,6 @@ export namespace BlockRef {
 export class Block extends jspb.Message {
   getId(): string;
   setId(value: string): void;
-
-  getVersion(): string;
-  setVersion(value: string): void;
 
   getParagraph(): Paragraph | undefined;
   setParagraph(value?: Paragraph): void;
@@ -363,7 +360,6 @@ export class Block extends jspb.Message {
 export namespace Block {
   export type AsObject = {
     id: string,
-    version: string,
     paragraph?: Paragraph.AsObject,
     image?: Image.AsObject,
   }

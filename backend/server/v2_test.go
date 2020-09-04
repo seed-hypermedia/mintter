@@ -52,18 +52,18 @@ func TestV2UpdateDraft(t *testing.T) {
 	draft.Title = "Blocks in Mintter"
 	draft.Subtitle = "This is how Mintter works with blocks as units of content"
 	draft.BlockRefList = &v2.BlockRefList{
-		Blocks: []*v2.BlockRef{
-			{Id: "block-1"},
+		Refs: []*v2.BlockRef{
+			{Ref: "block-1"},
 			{
-				Id: "block-list-parent",
+				Ref: "block-list-parent",
 				BlockRefList: &v2.BlockRefList{
-					Blocks: []*v2.BlockRef{
-						{Id: "block-list-child-1"},
-						{Id: "block-list-child-2"},
+					Refs: []*v2.BlockRef{
+						{Ref: "block-list-child-1"},
+						{Ref: "block-list-child-2"},
 					},
 				},
 			},
-			{Id: "block-2"},
+			{Ref: "block-2"},
 		},
 	}
 

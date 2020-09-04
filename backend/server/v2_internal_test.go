@@ -20,18 +20,18 @@ import (
 
 func TestFlattenBlockRefList(t *testing.T) {
 	l := &v2.BlockRefList{
-		Blocks: []*v2.BlockRef{
-			{Id: "block-1"},
+		Refs: []*v2.BlockRef{
+			{Ref: "block-1"},
 			{
-				Id: "block-list-parent",
+				Ref: "block-list-parent",
 				BlockRefList: &v2.BlockRefList{
-					Blocks: []*v2.BlockRef{
-						{Id: "block-list-child-1"},
-						{Id: "block-list-child-2"},
+					Refs: []*v2.BlockRef{
+						{Ref: "block-list-child-1"},
+						{Ref: "block-list-child-2"},
 					},
 				},
 			},
-			{Id: "block-2"},
+			{Ref: "block-2"},
 		},
 	}
 
@@ -44,18 +44,18 @@ func TestBlocksFromProto(t *testing.T) {
 
 	expected.RefList = &RefList{
 		Refs: []BlockRef{
-			{Ref: "#/blocks/block-1"},
+			{Pointer: "#/blocks/block-1"},
 			{
-				Ref: "#/blocks/block-list-parent",
+				Pointer: "#/blocks/block-list-parent",
 				RefList: &RefList{
 					ListStyle: v2.BlockRefList_BULLET,
 					Refs: []BlockRef{
-						{Ref: "#/blocks/block-list-child-1"},
-						{Ref: "#/blocks/block-list-child-2"},
+						{Pointer: "#/blocks/block-list-child-1"},
+						{Pointer: "#/blocks/block-list-child-2"},
 					},
 				},
 			},
-			{Ref: "#/blocks/block-2"},
+			{Pointer: "#/blocks/block-2"},
 		},
 	}
 	expected.Blocks = map[string]Block{
@@ -206,19 +206,19 @@ func TestBlockProtoEncoding(t *testing.T) {
 
 func testRefList() *v2.BlockRefList {
 	return &v2.BlockRefList{
-		Blocks: []*v2.BlockRef{
-			{Id: "block-1"},
+		Refs: []*v2.BlockRef{
+			{Ref: "block-1"},
 			{
-				Id: "block-list-parent",
+				Ref: "block-list-parent",
 				BlockRefList: &v2.BlockRefList{
 					Style: v2.BlockRefList_BULLET,
-					Blocks: []*v2.BlockRef{
-						{Id: "block-list-child-1"},
-						{Id: "block-list-child-2"},
+					Refs: []*v2.BlockRef{
+						{Ref: "block-list-child-1"},
+						{Ref: "block-list-child-2"},
 					},
 				},
 			},
-			{Id: "block-2"},
+			{Ref: "block-2"},
 		},
 	}
 }
@@ -347,14 +347,14 @@ func testDoc1(t *testing.T, docstore *docStore) document {
 		RefList: &RefList{
 			ListStyle: v2.BlockRefList_NONE,
 			Refs: []BlockRef{
-				{Ref: "#/blocks/block-1"},
+				{Pointer: "#/blocks/block-1"},
 				{
-					Ref: "#/blocks/block-list-parent",
+					Pointer: "#/blocks/block-list-parent",
 					RefList: &RefList{
 						ListStyle: v2.BlockRefList_BULLET,
 						Refs: []BlockRef{
-							{Ref: "#/blocks/block-list-child-1"},
-							{Ref: "#/blocks/block-list-child-2"},
+							{Pointer: "#/blocks/block-list-child-1"},
+							{Pointer: "#/blocks/block-list-child-2"},
 						},
 					},
 				},
@@ -408,14 +408,14 @@ func testDoc2(t *testing.T, docstore *docStore, source cid.Cid) document {
 		RefList: &RefList{
 			ListStyle: v2.BlockRefList_NONE,
 			Refs: []BlockRef{
-				{Ref: "#/blocks/block-1"},
+				{Pointer: "#/blocks/block-1"},
 				{
-					Ref: "#/sources/src-1/blocks/block-list-parent",
+					Pointer: "#/sources/src-1/blocks/block-list-parent",
 					RefList: &RefList{
 						ListStyle: v2.BlockRefList_BULLET,
 						Refs: []BlockRef{
-							{Ref: "#/sources/src-1/blocks/block-list-child-1"},
-							{Ref: "#/sources/src-1/blocks/block-list-child-2"},
+							{Pointer: "#/sources/src-1/blocks/block-list-child-1"},
+							{Pointer: "#/sources/src-1/blocks/block-list-child-2"},
 						},
 					},
 				},

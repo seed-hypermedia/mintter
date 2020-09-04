@@ -301,13 +301,13 @@ func flattenBlockRefs(l *v2.BlockRefList) []string {
 	for len(stack) > 0 {
 		ll := stack[0]
 		stack = stack[1:]
-		for _, b := range ll.Blocks {
+		for _, b := range ll.Refs {
 			if b.BlockRefList != nil {
 				stack = append(stack, b.BlockRefList)
 			}
 
 			// TODO: ignore transcluded blocks.
-			blocks = append(blocks, b.Id)
+			blocks = append(blocks, b.Ref)
 		}
 	}
 
@@ -557,19 +557,21 @@ func resolveBlocks(ctx context.Context, doc document, store *docStore, blockMap 
 	}
 
 	for _, ref := range refList.Refs {
-		parts := strings.Split(ref.Ref, "/")
+		parts := strings.Split(ref.Pointer, "/")
 		if parts[0] != "#" {
-			return nil, fmt.Errorf("invalid ref '%s': first segment must be '#'", ref.Ref)
+			return nil, fmt.Errorf("invalid ref '%s': first segment must be '#'", ref.Pointer)
 		}
 
 		space := parts[1]
 
 		var blk Block
+		var blockRef string
 
 		switch space {
 		case "blocks":
 			key := parts[2]
 			blk = doc.Blocks[key]
+			blockRef = blk.ID
 		case "sources":
 			key := parts[2]
 			srcid := doc.Sources[key]
@@ -580,24 +582,24 @@ func resolveBlocks(ctx context.Context, doc document, store *docStore, blockMap 
 			}
 
 			if parts[3] != "blocks" {
-				return nil, fmt.Errorf("invalid ref '%s': can only resolve 'blocks' after 'sources'", ref.Ref)
+				return nil, fmt.Errorf("invalid ref '%s': can only resolve 'blocks' after 'sources'", ref.Pointer)
 			}
 
 			blk = source.Blocks[parts[4]]
-			// Rewrite the ID to be version/<block-id>
-			blk.ID = srcid.String() + "/" + blk.ID
+
+			blockRef = srcid.String() + "/" + blk.ID
 		default:
-			return nil, fmt.Errorf("invalid ref '%s': space '%s' is unknown: must be either 'blocks' or 'sources'", ref.Ref, space)
+			return nil, fmt.Errorf("invalid ref '%s': space '%s' is unknown: must be either 'blocks' or 'sources'", ref.Pointer, space)
 		}
 
 		blockpb := blockToProto(blk)
-		blockMap[blockpb.Id] = blockpb
+		blockMap[blockRef] = blockpb
 
 		refpb := &v2.BlockRef{
-			Id: blk.ID,
+			Ref: blk.ID,
 		}
 
-		refListPb.Blocks = append(refListPb.Blocks, refpb)
+		refListPb.Refs = append(refListPb.Refs, refpb)
 
 		if !ref.RefList.IsEmpty() {
 			children, err := resolveBlocks(ctx, doc, store, blockMap, ref.RefList)
@@ -774,11 +776,11 @@ func documentFromProto(docpb *v2.Document, blockmap map[string]*v2.Block) (docum
 
 func blocksFromProto(d *document, lpb *v2.BlockRefList, blockmap map[string]*v2.Block) (*RefList, error) {
 	list := &RefList{}
-	for _, refpb := range lpb.Blocks {
+	for _, refpb := range lpb.Refs {
 		var newRef BlockRef
 
 		// If ref is a transclusion - store reference to the remote block
-		refParts := strings.Split(refpb.Id, "/")
+		refParts := strings.Split(refpb.Ref, "/")
 		if len(refParts) == 2 {
 			vstr := refParts[0]
 			version, err := cid.Decode(vstr)
@@ -798,18 +800,18 @@ func blocksFromProto(d *document, lpb *v2.BlockRefList, blockmap map[string]*v2.
 			d.Sources[vkey] = version
 
 			newRef = BlockRef{
-				Ref: "#/sources/" + vkey + "/blocks/" + refParts[1],
+				Pointer: "#/sources/" + vkey + "/blocks/" + refParts[1],
 			}
 		} else {
 			newRef = BlockRef{
-				Ref: "#/blocks/" + refpb.Id,
+				Pointer: "#/blocks/" + refpb.Ref,
 			}
 
 			if d.Blocks == nil {
 				d.Blocks = map[string]Block{}
 			}
 
-			d.Blocks[refpb.Id] = blockFromProto(blockmap[refpb.Id])
+			d.Blocks[refpb.Ref] = blockFromProto(blockmap[refpb.Ref])
 		}
 
 		list.ListStyle = lpb.Style
@@ -854,7 +856,7 @@ func (bl *RefList) IsEmpty() bool {
 }
 
 type BlockRef struct {
-	Ref     string
+	Pointer string
 	RefList *RefList `refmt:",omitempty"`
 }
 
