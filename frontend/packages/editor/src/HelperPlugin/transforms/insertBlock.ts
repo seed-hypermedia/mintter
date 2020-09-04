@@ -2,13 +2,14 @@ import {Editor, Transforms, Range, Path} from 'slate'
 
 import {v4 as uuid} from 'uuid'
 import {InsertBlockOptions} from '../types'
-import {ELEMENT_IMAGE, ELEMENT_BLOCK, ELEMENT_PARAGRAPH} from '../../elements'
+import {ELEMENT_BLOCK} from '../../elements/block'
+import {ELEMENT_PARAGRAPH} from '../../elements/paragraph'
 import {ReactEditor} from 'slate-react'
 
 export function insert(editor, {type, location}) {
   const id = uuid()
   switch (type) {
-    case ELEMENT_IMAGE:
+    case 'img':
       Transforms.insertNodes(
         editor,
         {
@@ -51,7 +52,7 @@ export const insertBlock = (editor: Editor, options: InsertBlockOptions) => {
       const [, parentBlockPath] = parent
       // const nextBlockPath = Path.next(parentBlockPath)
 
-      if (options.type === ELEMENT_IMAGE) {
+      if (options.type === 'img') {
         insert(editor, {type: options.type, location: parentBlockPath})
       }
     }
@@ -69,7 +70,7 @@ export const insertBlock = (editor: Editor, options: InsertBlockOptions) => {
         return
       }
 
-      if (options.type === ELEMENT_IMAGE) {
+      if (options.type === 'img') {
         // content + image = insert bellow + a new block below image
         console.log('insertBlock => content + image')
         insert(editor, {type: ELEMENT_BLOCK, location: nextPath})
@@ -83,7 +84,7 @@ export const insertBlock = (editor: Editor, options: InsertBlockOptions) => {
         return
       }
 
-      if (options.type === ELEMENT_IMAGE) {
+      if (options.type === 'img') {
         console.log('insertBlock => blank + image')
         // blank + image = insert image in the same path
         insert(editor, {type: options.type, location: options.target})
