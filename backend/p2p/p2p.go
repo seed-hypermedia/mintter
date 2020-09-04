@@ -219,6 +219,11 @@ func (n *Node) Close() (err error) {
 	return err
 }
 
+// IPFS returns the underlying IPFS node.
+func (n *Node) IPFS() *ipfsutil.Node {
+	return n.ipfs
+}
+
 // Host of the p2p node.
 func (n *Node) Host() host.Host {
 	return n.host
