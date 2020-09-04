@@ -86,7 +86,9 @@ func (ds *store) Store(ctx context.Context, doc document) (cid.Cid, error) {
 
 	vdoc := versionedDoc{document: doc, Version: blk.Cid()}
 
-	ds.indexPublication(vdoc)
+	if err := ds.indexPublication(vdoc); err != nil {
+		return cid.Undef, err
+	}
 
 	return vdoc.Version, nil
 }
