@@ -1,4 +1,4 @@
-package server_test
+package document_test
 
 import (
 	"mintter/backend/testutil"
@@ -44,12 +44,6 @@ func TestTransclusionEndToEnd(t *testing.T) {
 		want := pubDoc.Blocks[reusedID]
 		got := draftDoc.Blocks[pub1.Version+"/"+reusedID]
 		testutil.ProtoEqual(t, want, got, "block %s doesn't match", reusedID)
-	}
-}
-
-func testDoc2Expected() *v2.Document {
-	return &v2.Document{
-		Title: "Second document",
 	}
 }
 
