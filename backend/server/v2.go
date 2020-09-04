@@ -30,6 +30,12 @@ var (
 	keyDocs   = datastore.NewKey("/mintter/v2/documents")
 )
 
+var nowFunc = func() time.Time {
+	now := time.Now().UTC()
+	now = now.Add(time.Duration(now.Nanosecond()) * -1)
+	return now
+}
+
 // /documents/author:<author>/<docid>
 
 func makeDraftKey(docID string) datastore.Key {
@@ -38,22 +44,20 @@ func makeDraftKey(docID string) datastore.Key {
 
 // V2Server implements documents v2 API.
 type V2Server struct {
-	*Server
-	bs       blockstore.Blockstore
-	ds       datastore.Datastore
-	docStore *docStore
+	ds        datastore.Datastore
+	docStore  *docStore
+	profStore profileStore
 }
 
-func NewV2Server(srv *Server, bs blockstore.Blockstore, ds datastore.TxnDatastore) *V2Server {
+func NewV2Server(ps profileStore, bs blockstore.Blockstore, ds datastore.TxnDatastore) *V2Server {
 	return &V2Server{
-		Server: srv,
-		bs:     bs,
-		ds:     ds,
+		ds: ds,
 		docStore: &docStore{
 			bs:        bs,
-			profstore: srv.store,
+			profstore: ps,
 			db:        ds,
 		},
+		profStore: ps,
 	}
 }
 
@@ -64,48 +68,12 @@ func (s *V2Server) CreateDraft(ctx context.Context, in *v2.CreateDraftRequest) (
 		return nil, status.Error(codes.Unimplemented, "updating published documents is not implemented yet")
 	}
 
-	now := time.Now()
-	now = now.Add(time.Duration(now.Nanosecond()) * -1)
-
-	// Create and store the permanode.
-	var docID cid.Cid
-	{
-		perma := permanode{
-			Random:     xid.New().Bytes(),
-			CreateTime: now.String(),
-		}
-
-		permablock, err := ipldutil.CreateSignedBlock(ctx, s.store, perma)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create permablock: %w", err)
-		}
-
-		if err := s.bs.Put(permablock); err != nil {
-			return nil, fmt.Errorf("failed to store permablock: %w", err)
-		}
-
-		docID = permablock.Cid()
-	}
-
-	prof, err := s.store.CurrentProfile(ctx)
+	doc, err := s.docStore.CreateDraft(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	doc := &v2.Document{
-		Id:              docID.String(),
-		Author:          prof.Account.ID.String(),
-		PublishingState: v2.PublishingState_DRAFT,
-		CreateTime:      timestamppb.New(now),
-		UpdateTime:      timestamppb.New(now),
-		Version:         cid.NewCidV1(DraftCode, docID.Hash()).String(),
-	}
-
-	if err := s.saveDocument(ctx, doc, nil); err != nil {
-		return nil, err
-	}
-
-	return doc, nil
+	return documentToProto(doc), nil
 }
 
 // UpdateDraft implements v2 Documents server.
@@ -122,7 +90,7 @@ func (s *V2Server) UpdateDraft(ctx context.Context, in *v2.UpdateDraftRequest) (
 		return nil, status.Error(codes.InvalidArgument, "document must have an ID")
 	}
 
-	prof, err := s.store.CurrentProfile(ctx)
+	prof, err := s.profStore.CurrentProfile(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -131,22 +99,34 @@ func (s *V2Server) UpdateDraft(ctx context.Context, in *v2.UpdateDraftRequest) (
 		return nil, status.Error(codes.InvalidArgument, "you can only update your own documents")
 	}
 
-	existing, _, err := s.getDocument(ctx, in.Document.Version)
+	version, err := cid.Decode(in.Document.Version)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode version %s: %w", in.Document.Version, err)
+	}
+
+	existing, err := s.docStore.Get(ctx, version)
 	if err != nil {
 		return nil, err
 	}
 
-	if in.Document.Author != existing.Author {
+	if in.Document.Author != existing.Author.String() {
 		return nil, status.Errorf(codes.InvalidArgument, "field 'author': want = '%s', got = '%s'", existing.Author, in.Document.Author)
 	}
 
-	existing.Title = in.Document.Title
-	existing.Subtitle = in.Document.Subtitle
-	existing.UpdateTime = timestamppb.Now()
-	existing.BlockRefList = in.Document.BlockRefList
-
-	if err := s.saveDocument(ctx, existing, in.Blocks); err != nil {
+	indoc, err := documentFromProto(in.Document, in.Blocks)
+	if err != nil {
 		return nil, err
+	}
+
+	existing.Title = indoc.Title
+	existing.Subtitle = indoc.Subtitle
+	existing.Blocks = indoc.Blocks
+	existing.Sources = indoc.Sources
+	existing.RefList = indoc.RefList
+	existing.UpdateTime = nowFunc()
+
+	if _, err := s.docStore.StoreDraft(ctx, existing.document); err != nil {
+		return nil, fmt.Errorf("failed to store draft: %w", err)
 	}
 
 	return &v2.UpdateDraftResponse{}, nil
@@ -163,31 +143,19 @@ func (s *V2Server) PublishDraft(ctx context.Context, in *v2.PublishDraftRequest)
 		return nil, fmt.Errorf("only drafts can be published")
 	}
 
-	docpb, blocks, err := s.getDocument(ctx, in.Version)
+	existing, err := s.docStore.Get(ctx, vid)
 	if err != nil {
 		return nil, err
 	}
 
-	docpb.PublishTime = timestamppb.Now()
-	docpb.PublishTime.Nanos = 0
-	docpb.PublishingState = v2.PublishingState_PUBLISHED
+	existing.PublishTime = nowFunc()
 
-	doc, err := documentFromProto(docpb, blocks)
+	pubVersion, err := s.docStore.Store(ctx, existing.document)
 	if err != nil {
 		return nil, err
 	}
 
-	pubVersion, err := s.docStore.Store(ctx, doc)
-	if err != nil {
-		return nil, err
-	}
-
-	draftVersion, err := cid.Decode(docpb.Version)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.docStore.Delete(ctx, draftVersion); err != nil {
+	if err := s.docStore.Delete(ctx, existing.Version); err != nil {
 		return nil, err
 	}
 
@@ -232,7 +200,7 @@ func (s *V2Server) GetDocument(ctx context.Context, in *v2.GetDocumentRequest) (
 func (s *V2Server) ListDocuments(ctx context.Context, in *v2.ListDocumentsRequest) (*v2.ListDocumentsResponse, error) {
 	var author identity.ProfileID
 	{
-		me, err := s.store.CurrentProfile(ctx)
+		me, err := s.profStore.CurrentProfile(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -320,41 +288,6 @@ func pubStateFromVersion(v cid.Cid) v2.PublishingState {
 type versionedDoc struct {
 	document
 	Version cid.Cid
-}
-
-func (s *V2Server) saveDocument(ctx context.Context, docpb *v2.Document, blockmap map[string]*v2.Block) error {
-	if docpb.PublishingState != v2.PublishingState_DRAFT {
-		panic("bug: not implemented yet " + docpb.PublishingState.String())
-	}
-
-	doc, err := documentFromProto(docpb, blockmap)
-	if err != nil {
-		return err
-	}
-
-	switch docpb.PublishingState {
-	case v2.PublishingState_DRAFT:
-		if _, err := s.docStore.StoreDraft(ctx, doc); err != nil {
-			return fmt.Errorf("failed to store draft: %w", err)
-		}
-	case v2.PublishingState_PUBLISHED:
-		if _, err := s.docStore.Store(ctx, doc); err != nil {
-			return fmt.Errorf("failed to store publication: %w", err)
-		}
-	default:
-		return fmt.Errorf("unknown publishing state: %d", docpb.PublishingState)
-	}
-
-	return nil
-}
-
-func (s *V2Server) getDocument(ctx context.Context, version string) (*v2.Document, map[string]*v2.Block, error) {
-	vcid, err := cid.Decode(version)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to decode version cid %s: %w", version, err)
-	}
-
-	return resolveDocument(ctx, vcid, s.docStore)
 }
 
 func flattenBlockRefs(l *v2.BlockRefList) []string {
@@ -448,10 +381,53 @@ func (ds *docStore) Store(ctx context.Context, doc document) (cid.Cid, error) {
 	return blk.Cid(), ds.bs.Put(blk)
 }
 
+func (ds *docStore) CreateDraft(ctx context.Context) (versionedDoc, error) {
+	now := nowFunc()
+
+	var docID cid.Cid
+	{
+		perma := permanode{
+			Random:     xid.New().Bytes(),
+			CreateTime: now,
+		}
+
+		permablock, err := ipldutil.CreateSignedBlock(ctx, ds.profstore, perma)
+		if err != nil {
+			return versionedDoc{}, fmt.Errorf("failed to create permablock: %w", err)
+		}
+
+		if err := ds.bs.Put(permablock); err != nil {
+			return versionedDoc{}, fmt.Errorf("failed to store permablock: %w", err)
+		}
+
+		docID = permablock.Cid()
+	}
+
+	prof, err := ds.profstore.CurrentProfile(ctx)
+	if err != nil {
+		return versionedDoc{}, err
+	}
+
+	doc := document{
+		ID:         docID,
+		Author:     prof.Account.ID,
+		CreateTime: now,
+		UpdateTime: now,
+	}
+
+	version, err := ds.StoreDraft(ctx, doc)
+	if err != nil {
+		return versionedDoc{}, err
+	}
+
+	return versionedDoc{Version: version, document: doc}, nil
+}
+
 const DraftCode = 0xdd
 
 func (ds *docStore) StoreDraft(ctx context.Context, doc document) (cid.Cid, error) {
 	version := cid.NewCidV1(DraftCode, doc.ID.Hash())
+	doc.UpdateTime = time.Now()
 
 	data, err := cbornode.DumpObject(doc)
 	if err != nil {
@@ -470,6 +446,14 @@ func (ds *docStore) Delete(ctx context.Context, version cid.Cid) error {
 
 	switch codec {
 	case DraftCode:
+		doc, err := ds.Get(ctx, version)
+		if err != nil {
+			return err
+		}
+		if err := ds.bs.DeleteBlock(doc.ID); err != nil {
+			return err
+		}
+
 		return ds.db.Delete(makeDraftKey(version.String()))
 	case cid.DagCBOR:
 		return ds.bs.DeleteBlock(version)
@@ -925,5 +909,5 @@ func textStyleToFlag(s *v2.TextStyle) Style {
 
 type permanode struct {
 	Random     []byte
-	CreateTime string
+	CreateTime time.Time
 }
