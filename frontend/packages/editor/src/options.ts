@@ -3,10 +3,7 @@ import {
   HEADING_OPTIONS,
   BLOCKQUOTE_OPTIONS,
   LINK_OPTIONS,
-  IMAGE_OPTIONS,
   LIST_OPTIONS,
-  BLOCK_OPTIONS,
-  BLOCK_LIST_OPTIONS,
 } from './elements'
 import {
   BOLD_OPTIONS,
@@ -16,6 +13,9 @@ import {
   STRIKETHROUGH_OPTIONS,
 } from './marks'
 import {TRANSCLUSION_OPTIONS} from './TransclusionPlugin'
+import {IMAGE_OPTIONS} from './ImagePlugin'
+import {BLOCK_OPTIONS} from './BlockPlugin'
+import {BLOCK_LIST_OPTIONS} from './HierarchyPlugin'
 
 export const options = {
   ...PARAGRAPH_OPTIONS,

@@ -1,5 +1,5 @@
 import {Editor, Transforms} from 'slate'
-import {ELEMENT_BLOCK} from '../elements'
+import {ELEMENT_BLOCK} from '../BlockPlugin'
 
 export const onDragEnd = editor => result => {
   console.log('result', result)

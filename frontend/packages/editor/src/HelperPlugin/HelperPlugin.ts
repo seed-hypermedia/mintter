@@ -1,8 +1,6 @@
 import {SlatePlugin} from '@udecode/slate-plugins'
-import {onKeyDownHelper} from './onKeyDownHelper'
-import {ELEMENT_IMAGE} from '../elements'
+import {ELEMENT_IMAGE} from '../ImagePlugin'
 
 export const HelperPlugin = (): SlatePlugin => ({
-  onKeyDown: onKeyDownHelper(),
   voidTypes: [ELEMENT_IMAGE],
 })

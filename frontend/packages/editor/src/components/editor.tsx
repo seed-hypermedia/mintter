@@ -5,7 +5,8 @@ import {EditablePlugins, SlateDocument} from '@udecode/slate-plugins'
 import {Droppable} from 'react-beautiful-dnd'
 // import {Toolbar} from './toolbar'
 import {HelperToolbar, HelperProvider, useHelper} from '../HelperPlugin'
-import {ELEMENT_BLOCK, ELEMENT_IMAGE} from '../elements'
+import {ELEMENT_BLOCK} from '../BlockPlugin'
+import {ELEMENT_IMAGE} from '../ImagePlugin'
 
 interface EditorComponentProps {
   editor: any

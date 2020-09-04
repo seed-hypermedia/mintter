@@ -1,14 +1,11 @@
 import React from 'react'
 import {RenderElementProps, ReactEditor, useEditor} from 'slate-react'
-import {Editor} from '../editor'
+import {Editor} from '../../editor'
 import {Draggable} from 'react-beautiful-dnd'
-import {mergeRefs} from '../mergeRefs'
-import {useBlockTools} from './blockToolsContext'
-import {BlockControls} from '../components/blockControls'
-
-function Block({className = '', ...props}) {
-  return <div className={`relative pl-4 pr-0 py-2 ${className}`} {...props} />
-}
+import {mergeRefs} from '../../mergeRefs'
+import {useBlockTools} from '../blockToolsContext'
+import {BlockControls} from '../../components/blockControls'
+import {Block} from './block'
 
 export function EditableBlockElement(
   {children, element, attributes}: RenderElementProps,
@@ -76,25 +73,5 @@ export function EditableBlockElement(
   )
 }
 
-export function ReadonlyBlock(
-  {children, element, ...rest}: RenderElementProps,
-  ref: React.RefObject<HTMLDivElement>,
-) {
-  const editor = useEditor()
-  const path = ReactEditor.findPath(editor, element)
-
-  return (
-    <Block
-      path={path}
-      data-slate-type={element.type}
-      innerRef={ref as any}
-      {...rest}
-    >
-      {children}
-    </Block>
-  )
-}
-
 // TODO: (Horacio) Fixme types
 export const EditableBlock = React.forwardRef(EditableBlockElement as any)
-export const ReadOnlyBlock = React.forwardRef(ReadonlyBlock as any)

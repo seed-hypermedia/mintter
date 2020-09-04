@@ -3,11 +3,11 @@ import {useSelected, useEditor, ReactEditor} from 'slate-react'
 import {Draggable} from 'react-beautiful-dnd'
 import {Transforms} from 'slate'
 
-import {mergeRefs} from '../mergeRefs'
+import {mergeRefs} from '../../mergeRefs'
 import {useHover} from '@react-aria/interactions'
 import {useToggleState} from '@react-stately/toggle'
-import {useBlockTools} from '../BlockPlugin/blockToolsContext'
-import {BlockControls} from '../components/blockControls'
+import {useBlockTools} from '../../BlockPlugin/blockToolsContext'
+import {BlockControls} from '../../components/blockControls'
 
 export function ImageBlock({attributes, element, children}) {
   const selected = useSelected()
