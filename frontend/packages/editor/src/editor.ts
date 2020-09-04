@@ -1,9 +1,11 @@
 import {Editor as SlateEditor, Path, Node} from 'slate'
 import {ReactEditor} from 'slate-react'
-import {ELEMENT_PARAGRAPH, ELEMENT_BLOCK, ELEMENT_BLOCK_LIST} from './elements'
+import {ELEMENT_PARAGRAPH} from './elements'
 import {BlockRefList} from '@mintter/proto/v2/documents_pb'
 import {v4 as uuid} from 'uuid'
 import {ELEMENT_TRANSCLUSION} from './TransclusionPlugin'
+import {ELEMENT_BLOCK} from './BlockPlugin'
+import {ELEMENT_BLOCK_LIST} from './HierarchyPlugin'
 
 export interface MintterEditor extends ReactEditor {
   charCount: (editor: ReactEditor, path: Path) => number

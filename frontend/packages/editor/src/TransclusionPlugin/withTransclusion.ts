@@ -1,6 +1,7 @@
 import {ReactEditor} from 'slate-react'
 import {Editor, Transforms, Path} from 'slate'
-import {ELEMENT_BLOCK, ELEMENT_PARAGRAPH} from '../elements'
+import {ELEMENT_PARAGRAPH} from '../elements'
+import {ELEMENT_BLOCK} from '../BlockPlugin/block'
 import {ELEMENT_TRANSCLUSION} from './transclusion'
 import {v4 as uuid} from 'uuid'
 

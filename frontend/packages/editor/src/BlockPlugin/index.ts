@@ -1,5 +1,5 @@
 export * from './withBlocks'
-export * from './renderBlockElement'
 export * from './reorderBlocks'
-export * from './block'
 export * from './blockToolsContext'
+export * from './components'
+export * from './block'

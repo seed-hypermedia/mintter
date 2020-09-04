@@ -1,5 +1,4 @@
 import * as React from 'react'
-import {getRenderElement} from '@udecode/slate-plugins'
 import {Draggable} from 'react-beautiful-dnd'
 import {useSelected, ReactEditor, useEditor} from 'slate-react'
 import {useBlockTools} from '../BlockPlugin/blockToolsContext'
@@ -55,10 +54,4 @@ export const TRANSCLUSION_OPTIONS = {
     type: ELEMENT_TRANSCLUSION,
     rootProps: {},
   },
-}
-
-export const renderElementTransclusion = (options?: any) => {
-  const {transclusion} = options
-
-  return getRenderElement(transclusion)
 }

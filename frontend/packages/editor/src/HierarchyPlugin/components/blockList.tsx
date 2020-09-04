@@ -1,20 +1,9 @@
 import React from 'react'
 import {Droppable} from 'react-beautiful-dnd'
-import {mergeRefs} from '../mergeRefs'
+import {mergeRefs} from '../../mergeRefs'
+import {ELEMENT_BLOCK_LIST} from '../blockList'
 
-export const ELEMENT_BLOCK_LIST = 'block_list'
-
-export const BLOCK_LIST_OPTIONS = {
-  block_list: {
-    type: ELEMENT_BLOCK_LIST,
-    component: BlockList,
-    rootProps: {
-      as: 'div',
-    },
-  },
-}
-
-function BlockList({element, attributes, children}) {
+export function BlockList({element, attributes, children}) {
   return element.type === ELEMENT_BLOCK_LIST ? (
     <Droppable droppableId={element.id} type="block">
       {(provided, snapshot) => (

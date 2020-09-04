@@ -1,5 +1,5 @@
 import {SlatePlugin} from '@udecode/slate-plugins'
-import {renderElementTransclusion} from './transclusion'
+import {renderElementTransclusion} from './renderElementTransclusion'
 
 export function TransclusionPlugin(options?: any): SlatePlugin {
   const {transclusion} = options

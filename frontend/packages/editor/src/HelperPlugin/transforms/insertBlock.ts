@@ -2,7 +2,7 @@ import {Editor, Transforms, Range, Path} from 'slate'
 
 import {v4 as uuid} from 'uuid'
 import {InsertBlockOptions} from '../types'
-import {ELEMENT_BLOCK} from '../../elements/block'
+import {ELEMENT_BLOCK} from '../../BlockPlugin/block'
 import {ELEMENT_PARAGRAPH} from '../../elements/paragraph'
 import {ReactEditor} from 'slate-react'
 
