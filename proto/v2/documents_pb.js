@@ -2528,7 +2528,7 @@ proto.mintter.v2.BlockRefList.prototype.toObject = function(opt_includeInstance)
 proto.mintter.v2.BlockRefList.toObject = function(includeInstance, msg) {
   var f, obj = {
     style: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    blocksList: jspb.Message.toObjectList(msg.getBlocksList(),
+    refsList: jspb.Message.toObjectList(msg.getRefsList(),
     proto.mintter.v2.BlockRef.toObject, includeInstance)
   };
 
@@ -2573,7 +2573,7 @@ proto.mintter.v2.BlockRefList.deserializeBinaryFromReader = function(msg, reader
     case 2:
       var value = new proto.mintter.v2.BlockRef;
       reader.readMessage(value,proto.mintter.v2.BlockRef.deserializeBinaryFromReader);
-      msg.addBlocks(value);
+      msg.addRefs(value);
       break;
     default:
       reader.skipField();
@@ -2611,7 +2611,7 @@ proto.mintter.v2.BlockRefList.serializeBinaryToWriter = function(message, writer
       f
     );
   }
-  f = message.getBlocksList();
+  f = message.getRefsList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
       2,
@@ -2650,10 +2650,10 @@ proto.mintter.v2.BlockRefList.prototype.setStyle = function(value) {
 
 
 /**
- * repeated BlockRef blocks = 2;
+ * repeated BlockRef refs = 2;
  * @return {!Array<!proto.mintter.v2.BlockRef>}
  */
-proto.mintter.v2.BlockRefList.prototype.getBlocksList = function() {
+proto.mintter.v2.BlockRefList.prototype.getRefsList = function() {
   return /** @type{!Array<!proto.mintter.v2.BlockRef>} */ (
     jspb.Message.getRepeatedWrapperField(this, proto.mintter.v2.BlockRef, 2));
 };
@@ -2663,7 +2663,7 @@ proto.mintter.v2.BlockRefList.prototype.getBlocksList = function() {
  * @param {!Array<!proto.mintter.v2.BlockRef>} value
  * @return {!proto.mintter.v2.BlockRefList} returns this
 */
-proto.mintter.v2.BlockRefList.prototype.setBlocksList = function(value) {
+proto.mintter.v2.BlockRefList.prototype.setRefsList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 2, value);
 };
 
@@ -2673,7 +2673,7 @@ proto.mintter.v2.BlockRefList.prototype.setBlocksList = function(value) {
  * @param {number=} opt_index
  * @return {!proto.mintter.v2.BlockRef}
  */
-proto.mintter.v2.BlockRefList.prototype.addBlocks = function(opt_value, opt_index) {
+proto.mintter.v2.BlockRefList.prototype.addRefs = function(opt_value, opt_index) {
   return jspb.Message.addToRepeatedWrapperField(this, 2, opt_value, proto.mintter.v2.BlockRef, opt_index);
 };
 
@@ -2682,8 +2682,8 @@ proto.mintter.v2.BlockRefList.prototype.addBlocks = function(opt_value, opt_inde
  * Clears the list making it empty but non-null.
  * @return {!proto.mintter.v2.BlockRefList} returns this
  */
-proto.mintter.v2.BlockRefList.prototype.clearBlocksList = function() {
-  return this.setBlocksList([]);
+proto.mintter.v2.BlockRefList.prototype.clearRefsList = function() {
+  return this.setRefsList([]);
 };
 
 
@@ -2719,7 +2719,7 @@ proto.mintter.v2.BlockRef.prototype.toObject = function(opt_includeInstance) {
  */
 proto.mintter.v2.BlockRef.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    ref: jspb.Message.getFieldWithDefault(msg, 1, ""),
     blockRefList: (f = msg.getBlockRefList()) && proto.mintter.v2.BlockRefList.toObject(includeInstance, f)
   };
 
@@ -2759,9 +2759,9 @@ proto.mintter.v2.BlockRef.deserializeBinaryFromReader = function(msg, reader) {
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setId(value);
+      msg.setRef(value);
       break;
-    case 3:
+    case 2:
       var value = new proto.mintter.v2.BlockRefList;
       reader.readMessage(value,proto.mintter.v2.BlockRefList.deserializeBinaryFromReader);
       msg.setBlockRefList(value);
@@ -2795,7 +2795,7 @@ proto.mintter.v2.BlockRef.prototype.serializeBinary = function() {
  */
 proto.mintter.v2.BlockRef.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getId();
+  f = message.getRef();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -2805,7 +2805,7 @@ proto.mintter.v2.BlockRef.serializeBinaryToWriter = function(message, writer) {
   f = message.getBlockRefList();
   if (f != null) {
     writer.writeMessage(
-      3,
+      2,
       f,
       proto.mintter.v2.BlockRefList.serializeBinaryToWriter
     );
@@ -2814,10 +2814,10 @@ proto.mintter.v2.BlockRef.serializeBinaryToWriter = function(message, writer) {
 
 
 /**
- * optional string id = 1;
+ * optional string ref = 1;
  * @return {string}
  */
-proto.mintter.v2.BlockRef.prototype.getId = function() {
+proto.mintter.v2.BlockRef.prototype.getRef = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -2826,18 +2826,18 @@ proto.mintter.v2.BlockRef.prototype.getId = function() {
  * @param {string} value
  * @return {!proto.mintter.v2.BlockRef} returns this
  */
-proto.mintter.v2.BlockRef.prototype.setId = function(value) {
+proto.mintter.v2.BlockRef.prototype.setRef = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
 /**
- * optional BlockRefList block_ref_list = 3;
+ * optional BlockRefList block_ref_list = 2;
  * @return {?proto.mintter.v2.BlockRefList}
  */
 proto.mintter.v2.BlockRef.prototype.getBlockRefList = function() {
   return /** @type{?proto.mintter.v2.BlockRefList} */ (
-    jspb.Message.getWrapperField(this, proto.mintter.v2.BlockRefList, 3));
+    jspb.Message.getWrapperField(this, proto.mintter.v2.BlockRefList, 2));
 };
 
 
@@ -2846,7 +2846,7 @@ proto.mintter.v2.BlockRef.prototype.getBlockRefList = function() {
  * @return {!proto.mintter.v2.BlockRef} returns this
 */
 proto.mintter.v2.BlockRef.prototype.setBlockRefList = function(value) {
-  return jspb.Message.setWrapperField(this, 3, value);
+  return jspb.Message.setWrapperField(this, 2, value);
 };
 
 
@@ -2864,7 +2864,7 @@ proto.mintter.v2.BlockRef.prototype.clearBlockRefList = function() {
  * @return {boolean}
  */
 proto.mintter.v2.BlockRef.prototype.hasBlockRefList = function() {
-  return jspb.Message.getField(this, 3) != null;
+  return jspb.Message.getField(this, 2) != null;
 };
 
 
@@ -2927,7 +2927,6 @@ proto.mintter.v2.Block.prototype.toObject = function(opt_includeInstance) {
 proto.mintter.v2.Block.toObject = function(includeInstance, msg) {
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    version: jspb.Message.getFieldWithDefault(msg, 2, ""),
     paragraph: (f = msg.getParagraph()) && proto.mintter.v2.Paragraph.toObject(includeInstance, f),
     image: (f = msg.getImage()) && proto.mintter.v2.Image.toObject(includeInstance, f)
   };
@@ -2969,10 +2968,6 @@ proto.mintter.v2.Block.deserializeBinaryFromReader = function(msg, reader) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
       msg.setId(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setVersion(value);
       break;
     case 3:
       var value = new proto.mintter.v2.Paragraph;
@@ -3020,13 +3015,6 @@ proto.mintter.v2.Block.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getVersion();
-  if (f.length > 0) {
-    writer.writeString(
-      2,
-      f
-    );
-  }
   f = message.getParagraph();
   if (f != null) {
     writer.writeMessage(
@@ -3061,24 +3049,6 @@ proto.mintter.v2.Block.prototype.getId = function() {
  */
 proto.mintter.v2.Block.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional string version = 2;
- * @return {string}
- */
-proto.mintter.v2.Block.prototype.getVersion = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.mintter.v2.Block} returns this
- */
-proto.mintter.v2.Block.prototype.setVersion = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
