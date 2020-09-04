@@ -58,7 +58,6 @@ require (
 	github.com/polydawn/refmt v0.0.0-20190807091052-3d65705ee9f1
 	github.com/rs/xid v1.2.1
 	github.com/sanity-io/litter v1.3.0
-	github.com/sergi/go-diff v1.1.0
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/textileio/go-textile v0.7.8
