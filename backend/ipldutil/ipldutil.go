@@ -27,6 +27,7 @@ type profileStore interface {
 	GetProfile(context.Context, identity.ProfileID) (identity.Profile, error)
 }
 
+// ReadSignedBlock decodes signed IPLD block.
 func ReadSignedBlock(ctx context.Context, profstore profileStore, blk blocks.Block, v interface{}) error {
 	var in signedIPLD
 
@@ -51,7 +52,10 @@ func ReadSignedBlock(ctx context.Context, profstore profileStore, blk blocks.Blo
 	return cbornode.DecodeInto(in.Data, v)
 }
 
+// CreateSignedBlock creates a signed IPLD block.
 func CreateSignedBlock(ctx context.Context, profstore profileStore, v interface{}) (blocks.Block, error) {
+	const megabyte = 1048576
+
 	prof, err := profstore.CurrentProfile(ctx)
 	if err != nil {
 		return nil, err
@@ -65,6 +69,11 @@ func CreateSignedBlock(ctx context.Context, profstore profileStore, v interface{
 	var buf bytes.Buffer
 	if err := signed.MarshalCBOR(&buf); err != nil {
 		return nil, err
+	}
+
+	if buf.Len() > megabyte {
+		// TODO: we hope to tackle this usecase before our end users hit this.
+		panic("time has come, we have a block of more than 1 megabyte and we need to implement splitting it")
 	}
 
 	// Copy from go-ipld-cbor IpldStore.

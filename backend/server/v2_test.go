@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"testing"
 
+	"mintter/backend/identity"
 	"mintter/backend/server"
+	"mintter/backend/store"
 	"mintter/backend/testutil"
-	"mintter/proto"
 	v2 "mintter/proto/v2"
 
 	"github.com/ipfs/go-cid"
@@ -29,7 +30,7 @@ func TestV2CreateDraft(t *testing.T) {
 	_, err = cid.Decode(doc.Id)
 	require.NoError(t, err, "document ID must be a valid CID")
 
-	require.Equal(t, prof.AccountId, doc.Author, "document author must be the current user")
+	require.Equal(t, prof.ID.String(), doc.Author, "document author must be the current user")
 	require.NotNil(t, doc.CreateTime, "document must have create time")
 	require.NotNil(t, doc.UpdateTime, "document must have create time")
 	require.Equal(t, doc.CreateTime, doc.UpdateTime, "document create time and update time must be the same")
@@ -234,17 +235,18 @@ func TestPublishDraft_v2(t *testing.T) {
 	testutil.ProtoEqual(t, doc.Document, list.Documents[0], "listed document must be the same as retrieved")
 }
 
-func makeV2Server(t *testing.T, name string) (v2.DocumentsServer, *proto.Profile, context.Context) {
+func makeV2Server(t *testing.T, name string) (v2.DocumentsServer, identity.Profile, context.Context) {
 	t.Helper()
-	srv := newSeededServer(t, name)
-	t.Cleanup(func() {
-		require.NoError(t, srv.Close())
-	})
 	ctx := context.Background()
 
-	prof := getServerProfile(t, context.Background(), srv)
+	prof := testutil.MakeProfile(t, name)
+	store, err := store.Create(testutil.MakeRepoPath(t), prof)
+	t.Cleanup(func() {
+		require.NoError(t, store.Close())
+	})
+	require.NoError(t, err)
 
-	return server.NewV2Server(srv, testutil.MakeBlockStore(t), testutil.MakeDatastore(t)), prof, ctx
+	return server.NewV2Server(store, testutil.MakeBlockStore(t), testutil.MakeDatastore(t)), prof, ctx
 }
 
 func makeTestBlocks() map[string]*v2.Block {

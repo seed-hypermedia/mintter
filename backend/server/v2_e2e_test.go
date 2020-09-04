@@ -48,6 +48,12 @@ func TestTransclusionEndToEnd(t *testing.T) {
 	}
 }
 
+func testDoc2Expected() *v2.Document {
+	return &v2.Document{
+		Title: "Second document",
+	}
+}
+
 func testDoc2(d *v2.Document, sourceVersion string) *v2.UpdateDraftRequest {
 	d.Title = "Second document"
 	d.Subtitle = "This is the first Mintter document that will reuse a block."
