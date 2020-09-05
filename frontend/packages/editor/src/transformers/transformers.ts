@@ -12,9 +12,10 @@ import {
 } from '@mintter/proto/v2/documents_pb'
 import {SlateBlock} from '../editor'
 import {Node, Text} from 'slate'
-import {ELEMENT_BLOCK_LIST, ELEMENT_PARAGRAPH} from '../elements'
+import {ELEMENT_PARAGRAPH} from '../elements'
 import {ELEMENT_BLOCK} from '../BlockPlugin'
 import {ELEMENT_IMAGE} from '../ImagePlugin'
+import {ELEMENT_BLOCK_LIST} from '../HierarchyPlugin'
 
 export function toBlock(node: SlateBlock): Block {
   const pNode: Node = node.children.filter(n => n.type === 'p')[0]

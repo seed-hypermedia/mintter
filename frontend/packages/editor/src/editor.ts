@@ -3,7 +3,7 @@ import {ReactEditor} from 'slate-react'
 import {ELEMENT_PARAGRAPH} from './elements'
 import {BlockRefList} from '@mintter/proto/v2/documents_pb'
 import {v4 as uuid} from 'uuid'
-import {ELEMENT_TRANSCLUSION} from './TransclusionPlugin'
+import {ELEMENT_TRANSCLUSION} from './TransclusionPlugin/transclusion'
 import {ELEMENT_BLOCK} from './BlockPlugin'
 import {ELEMENT_BLOCK_LIST} from './HierarchyPlugin'
 
