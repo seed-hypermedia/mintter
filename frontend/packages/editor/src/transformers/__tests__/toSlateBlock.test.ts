@@ -1,4 +1,5 @@
-import {toSlateBlock, makeProto} from '../transformers'
+import {toSlateBlock} from '../transformers'
+import {makeProto} from '../makeProto'
 import {
   Block,
   Paragraph,

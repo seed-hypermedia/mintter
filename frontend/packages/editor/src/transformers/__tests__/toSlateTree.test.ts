@@ -1,4 +1,5 @@
-import {toSlateTree, makeProto} from '../transformers'
+import {toSlateTree} from '../transformers'
+import {makeProto} from '../makeProto'
 import {
   BlockRefList,
   Block,

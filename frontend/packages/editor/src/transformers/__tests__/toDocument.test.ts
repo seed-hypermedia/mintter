@@ -6,7 +6,8 @@ import {
   Paragraph,
   InlineElement,
 } from '@mintter/proto/v2/documents_pb'
-import {makeProto, toDocument} from '../transformers'
+import {toDocument} from '../transformers'
+import {makeProto} from '../makeProto'
 
 test('toDocument', () => {
   const expected = {
