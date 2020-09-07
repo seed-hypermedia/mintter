@@ -24,7 +24,11 @@ import {
   ListProfilesResponse,
   Profile,
 } from '@mintter/proto/mintter_pb'
-import {ListDocumentsResponse} from '@mintter/proto/v2/documents_pb'
+import {
+  ListDocumentsResponse,
+  GetDocumentRequest,
+  Document,
+} from '@mintter/proto/v2/documents_pb'
 
 type QueryParam<T> = T | T[]
 
@@ -36,7 +40,7 @@ export interface MintterClient {
   getPublication: (id: QueryParam<string>) => QueryResult<Publication>
   getSections: (sections: any[]) => any
   listDrafts: (page?: number) => PaginatedQueryResult<ListDraftsResponse>
-  createDraft: () => Draft
+  createDraft: () => Document
   getDraft: (
     id: QueryParam<string>,
     options?: QueryOptions<Draft>,
@@ -96,28 +100,29 @@ export function MintterProvider(props) {
   }
 
   const createDraft = useCallback(
-    () => oldAPI.createDraft().catch(err => console.error(err)),
+    () => apiClient.createDraft().catch(err => console.error(err)),
     [],
   )
 
-  const getDraft = useCallback(
-    (id: QueryParam<string>, options?: QueryOptions<Draft>) => {
-      // type guard on id
-      if (Array.isArray(id)) {
-        throw new Error(
-          `Impossible render: You are trying to access a draft passing ${
-            id.length
-          } document IDs => ${id.map(q => q).join(', ')}`,
-        )
-      }
+  const getDraft = useCallback((id, options) => {
+    // type guard on id
+    if (!id) {
+      throw new Error(`getDraft: parameter "id" is required`)
+    }
 
-      return useQuery(id && ['Draft', id], oldAPI.getDraft, {
-        refetchOnWindowFocus: false,
-        ...options,
-      })
-    },
-    [],
-  )
+    if (Array.isArray(id)) {
+      throw new Error(
+        `Impossible render: You are trying to access a draft passing ${
+          id.length
+        } document IDs => ${id.map(q => q).join(', ')}`,
+      )
+    }
+
+    return useQuery(['Draft', id], apiClient.getDocument, {
+      refetchOnWindowFocus: false,
+      ...options,
+    })
+  }, [])
 
   const setDraft = useCallback(
     (draft: oldAPI.SetDraftRequest) => oldAPI.setDraft(draft),

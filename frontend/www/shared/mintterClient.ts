@@ -3,7 +3,6 @@ import {Node} from 'slate'
 import {MintterPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
 import {DocumentsPromiseClient} from '@mintter/proto/documents_grpc_web_pb'
 import {DocumentsPromiseClient as v2DocumentsClient} from '@mintter/proto/v2/documents_grpc_web_pb'
-import {Draft} from '@mintter/proto/documents_pb'
 import {
   ListDocumentsRequest,
   ListDocumentsResponse,
@@ -16,6 +15,7 @@ import {
   DeleteDocumentRequest,
   PublishDraftRequest,
   PublishDraftResponse,
+  Document,
 } from '@mintter/proto/v2/documents_pb'
 import {
   GetProfileRequest,
@@ -58,18 +58,20 @@ export async function listDocuments(
 }
 
 export async function getDocument(
-  key,
+  key: string,
   id: string,
 ): Promise<GetDocumentResponse> {
   const req = new GetDocumentRequest()
   req.setId(id)
 
-  return await await docsV2.getDocument(req)
+  const result = await docsV2.getDocument(req)
+  console.log('result', result)
+  return result
 }
 
-export async function createDraft(): Promise<Draft> {
+export async function createDraft(): Promise<Document> {
   const req = new CreateDraftRequest()
-  return await documentsClient.createDraft(req)
+  return await docsV2.createDraft(req)
 }
 
 export interface SetDraftProps extends EditorDocument {

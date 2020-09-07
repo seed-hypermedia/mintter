@@ -67,8 +67,7 @@ export default function Editor(): JSX.Element {
   const {theme} = useTheme()
 
   const {title, sections, description} = state
-
-  const {status, error, data} = getDraft(documentId, {
+  const {status, error, data} = getDraft(documentId as string, {
     onSuccess: () => {
       setReadyToAutosave(true)
     },
@@ -96,22 +95,31 @@ export default function Editor(): JSX.Element {
 
   React.useEffect(() => {
     if (data) {
+      console.log('data', data)
       const obj = data.toObject()
+      console.log('obj', obj)
+      // setValue({
+      //   title: obj.title,
+      //   description: obj.description,
+      //   // TODO: refactor this with new API
+      //   sections:
+      //     obj.sectionsList.length > 0
+      //       ? obj.sectionsList.map((s: Section.AsObject) => {
+      //           return {
+      //             type: ELEMENT_BLOCK,
+      //             id: s.id,
+      //             author: s.author,
+      //             children: markdownToSlate(s.body),
+      //           }
+      //         })
+      //       : initialBlocksValue,
+      // })
+
       setValue({
         title: obj.title,
         description: obj.description,
         // TODO: refactor this with new API
-        sections:
-          obj.sectionsList.length > 0
-            ? obj.sectionsList.map((s: Section.AsObject) => {
-                return {
-                  type: ELEMENT_BLOCK,
-                  id: s.documentId,
-                  author: s.author,
-                  children: markdownToSlate(s.body),
-                }
-              })
-            : initialBlocksValue,
+        sections: initialBlocksValue,
       })
     }
   }, [data])

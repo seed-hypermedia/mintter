@@ -22,7 +22,7 @@ export function Publications() {
     const newDraft = n.toObject()
 
     history.push({
-      pathname: `/editor/${newDraft.documentId}`,
+      pathname: `/editor/${newDraft.id}`,
     })
   }
 
