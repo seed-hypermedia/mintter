@@ -6,7 +6,7 @@ import {Transforms} from 'slate'
 import {mergeRefs} from '../../mergeRefs'
 import {useHover} from '@react-aria/interactions'
 import {useToggleState} from '@react-stately/toggle'
-import {useBlockTools} from '../../BlockPlugin/blockToolsContext'
+import {useBlockTools} from '../../BlockPlugin/components/blockToolsContext'
 import {BlockControls} from '../../components/blockControls'
 
 export function ImageBlock({attributes, element, children}) {

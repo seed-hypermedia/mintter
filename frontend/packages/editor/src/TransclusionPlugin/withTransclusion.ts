@@ -1,8 +1,8 @@
 import {ReactEditor} from 'slate-react'
 import {Editor, Transforms, Path} from 'slate'
 import {ELEMENT_PARAGRAPH} from '../elements'
-import {ELEMENT_BLOCK} from '../BlockPlugin/block'
-import {ELEMENT_TRANSCLUSION} from './transclusion'
+import {ELEMENT_BLOCK} from '../BlockPlugin/defaults'
+import {ELEMENT_TRANSCLUSION} from './defaults'
 import {v4 as uuid} from 'uuid'
 
 export const withTransclusion = options => <T extends ReactEditor>(

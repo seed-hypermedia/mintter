@@ -10,9 +10,9 @@ import {
 } from '@udecode/slate-plugins'
 import {ReactEditor} from 'slate-react'
 import {v4 as uuid} from 'uuid'
-import {ELEMENT_PARAGRAPH} from '../elements'
-import {ELEMENT_BLOCK} from './block'
-import {ELEMENT_IMAGE} from '../ImagePlugin'
+import {ELEMENT_PARAGRAPH} from '../elements/paragraph'
+import {ELEMENT_BLOCK} from './defaults'
+import {ELEMENT_IMAGE} from '../ImagePlugin/defaults'
 // import {nodeTypes} from '../nodeTypes'
 
 export function withBlocks() {

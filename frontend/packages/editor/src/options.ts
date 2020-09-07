@@ -12,21 +12,21 @@ import {
   UNDERLINE_OPTIONS,
   STRIKETHROUGH_OPTIONS,
 } from './marks'
-import {TRANSCLUSION_OPTIONS} from './TransclusionPlugin'
-import {IMAGE_OPTIONS} from './ImagePlugin'
-import {BLOCK_OPTIONS} from './BlockPlugin'
-import {BLOCK_LIST_OPTIONS} from './HierarchyPlugin'
+import {DEFAULTS_TRANSCLUSION} from './TransclusionPlugin'
+import {DEFAULTS_IMAGE} from './ImagePlugin'
+import {DEFAULTS_BLOCK} from './BlockPlugin'
+import {DEFAULTS_BLOCKLIST} from './HierarchyPlugin'
 
 export const options = {
   ...PARAGRAPH_OPTIONS,
   ...HEADING_OPTIONS,
   ...BLOCKQUOTE_OPTIONS,
   ...LINK_OPTIONS,
-  ...IMAGE_OPTIONS,
+  ...DEFAULTS_IMAGE,
   ...LIST_OPTIONS,
-  ...BLOCK_OPTIONS,
-  ...BLOCK_LIST_OPTIONS,
-  ...TRANSCLUSION_OPTIONS,
+  ...DEFAULTS_BLOCK,
+  ...DEFAULTS_BLOCKLIST,
+  ...DEFAULTS_TRANSCLUSION,
   //marks
   ...BOLD_OPTIONS,
   ...ITALIC_OPTIONS,

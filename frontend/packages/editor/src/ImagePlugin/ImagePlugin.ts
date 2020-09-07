@@ -1,8 +1,9 @@
-import {SlatePlugin} from '@udecode/slate-plugins'
-import {renderElementImage} from './image'
+import {SlatePlugin, setDefaults} from '@udecode/slate-plugins'
+import {renderElementImage} from './renderElementImage'
+import { DEFAULTS_IMAGE } from './defaults'
 
 export function ImagePlugin(options?: any): SlatePlugin {
-  const {img} = options
+  const {img} = setDefaults(options, DEFAULTS_IMAGE)
 
   return {
     renderElement: renderElementImage(options),
