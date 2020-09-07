@@ -95,7 +95,6 @@ export default function Editor(): JSX.Element {
 
   React.useEffect(() => {
     if (data) {
-      console.log('data', data)
       const obj = data.toObject()
       console.log('obj', obj)
       // setValue({

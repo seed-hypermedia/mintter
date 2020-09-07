@@ -116,7 +116,7 @@ export async function setDraft({
   return await docsV2.updateDraft(req)
 }
 
-export async function deleteDraft(version: string) {
+export async function deleteDocument(version: string) {
   const req = new DeleteDocumentRequest()
 
   req.setVersion(version)

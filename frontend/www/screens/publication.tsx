@@ -45,7 +45,7 @@ export default function Publication(): JSX.Element {
     sections: [],
     author: '',
   })
-  const {getPublication, getSections, getAuthor} = useMintter()
+  const {getDocument, getSections, getAuthor} = useMintter()
 
   const {id} = useParams()
 
@@ -53,28 +53,29 @@ export default function Publication(): JSX.Element {
 
   const author = getAuthor(pubAuthor)
 
-  const {status, error, data, isFetching, failureCount} = getPublication(id)
+  const {status, error, data, isFetching, failureCount} = getDocument(id)
 
   React.useEffect(() => {
     if (data) {
       const obj = data.toObject()
-      getSections(obj.sectionsList).then(res => {
-        const sections = res.getSectionsList().map((s: Section) => {
-          const b = s.toObject()
-          return {
-            type: nodeTypes.typeBlock,
-            author: b.author,
-            children: markdownToSlate(b.body),
-          }
-        })
+      console.log({obj})
+      // getSections(obj.sectionsList).then(res => {
+      //   const sections = res.getSectionsList().map((s: Section) => {
+      //     const b = s.toObject()
+      //     return {
+      //       type: nodeTypes.typeBlock,
+      //       author: b.author,
+      //       children: markdownToSlate(b.body),
+      //     }
+      //   })
 
-        setValue({
-          title: obj.title,
-          description: obj.description,
-          author: obj.author,
-          sections,
-        })
-      })
+      //   setValue({
+      //     title: obj.title,
+      //     description: obj.description,
+      //     author: obj.author,
+      //     sections,
+      //   })
+      // })
     }
   }, [data])
 

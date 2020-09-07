@@ -28,6 +28,7 @@ import {
   ListDocumentsResponse,
   GetDocumentRequest,
   Document,
+  PublishingState,
 } from '@mintter/proto/v2/documents_pb'
 
 type QueryParam<T> = T | T[]
@@ -37,9 +38,9 @@ export interface MintterClient {
   listPublications: (
     page?: number,
   ) => PaginatedQueryResult<ListDocumentsResponse>
-  getPublication: (id: QueryParam<string>) => QueryResult<Publication>
+  getDocument: (id: string) => QueryResult<Document>
   getSections: (sections: any[]) => any
-  listDrafts: (page?: number) => PaginatedQueryResult<ListDraftsResponse>
+  listDrafts: (page?: number) => PaginatedQueryResult<ListDocumentsResponse>
   createDraft: () => Document
   getDraft: (
     id: QueryParam<string>,
@@ -50,7 +51,7 @@ export interface MintterClient {
     documentId: string,
     options?: MutationOptions<Publication, string>,
   ) => MutationResult<Publication>
-  deleteDraft: (id: string) => void
+  deleteDocument: (id: string) => void
   getAuthor: (authorId?: string) => QueryResult<Profile>
 }
 
@@ -70,7 +71,7 @@ export function MintterProvider(props) {
     )
   }, [])
 
-  const getPublication = useCallback((id: QueryParam<string>) => {
+  const getDocument = useCallback((id: QueryParam<string>) => {
     // type guard on id
     if (Array.isArray(id)) {
       throw new Error(
@@ -80,7 +81,7 @@ export function MintterProvider(props) {
       )
     }
 
-    return useQuery(['Publication', id], oldAPI.getPublication, {
+    return useQuery(['Document', id], apiClient.getDocument, {
       retry: false,
       onError: error => {
         console.log('error!', error)
@@ -93,10 +94,14 @@ export function MintterProvider(props) {
     [],
   )
 
-  function listDrafts(page = 0): PaginatedQueryResult<ListDraftsResponse> {
-    return usePaginatedQuery(['AllDrafts', page], oldAPI.listDrafts, {
-      refetchInterval: 5000,
-    })
+  function listDrafts(page = 0): PaginatedQueryResult<ListDocumentsResponse> {
+    return usePaginatedQuery(
+      ['ListDrafts', PublishingState.DRAFT, page],
+      apiClient.listDocuments,
+      {
+        refetchInterval: 5000,
+      },
+    )
   }
 
   const createDraft = useCallback(
@@ -129,11 +134,14 @@ export function MintterProvider(props) {
     [],
   )
 
-  const [deleteDraft] = useMutation((id: string) => oldAPI.deleteDraft(id), {
-    onSuccess: p => {
-      queryCache.refetchQueries('AllDrafts')
+  const [deleteDocument] = useMutation(
+    (version: string) => apiClient.deleteDocument(version),
+    {
+      onSuccess: p => {
+        queryCache.refetchQueries('ListDrafts')
+      },
     },
-  })
+  )
 
   const [publishDraft] = useMutation((id: string) => oldAPI.publishDraft(id))
 
@@ -145,26 +153,26 @@ export function MintterProvider(props) {
   const value = useMemo(
     () => ({
       listPublications,
-      getPublication,
+      getDocument,
       getSections,
       listDrafts,
       createDraft,
       getDraft,
       setDraft,
       publishDraft,
-      deleteDraft,
+      deleteDocument,
       getAuthor,
     }),
     [
       listPublications,
-      getPublication,
+      getDocument,
       getSections,
       listDrafts,
       createDraft,
       getDraft,
       setDraft,
       publishDraft,
-      deleteDraft,
+      deleteDocument,
       getAuthor,
     ],
   )

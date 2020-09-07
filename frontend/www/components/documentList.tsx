@@ -6,9 +6,10 @@ import {useProfile} from 'shared/profileContext'
 import useLocalStorage from 'shared/localstorage'
 import {ErrorMessage} from './errorMessage'
 import {AuthorLabel} from 'components/author-label'
+import {Document} from '@mintter/proto/v2/documents_pb'
 
 interface Props {
-  data: any
+  data: Document.AsObject[]
   status: 'loading' | 'error' | 'success'
   error: any
   onDraftDelete?: (id: string) => Promise<void>
@@ -38,7 +39,7 @@ export default function DocumentList({
   } else {
     content = data.map((item, index) => (
       <ListItem
-        key={item.id}
+        key={item.version}
         item={item}
         index={index}
         onDraftDelete={onDraftDelete}
@@ -49,10 +50,16 @@ export default function DocumentList({
   return <div>{content}</div>
 }
 
-function ListItem({item, index = 0, onDraftDelete}) {
+interface ItemProps {
+  item: Document.AsObject
+  index: number
+  onDraftDelete?: (version: string) => void
+}
+
+function ListItem({item, index = 0, onDraftDelete}: ItemProps) {
   const location = useLocation()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
-  const {documentId, title, description, author: itemAuthor, createTime} = item
+  const {version, title, subtitle, author: itemAuthor, createTime} = item
 
   const theTitle = title ? title : 'Untitled Document'
 
@@ -64,7 +71,7 @@ function ListItem({item, index = 0, onDraftDelete}) {
     location.pathname,
   ])
 
-  const to = useMemo(() => (isDraft ? `/editor/${item.id}` : `/p/${item.id}`), [
+  const to = useMemo(() => (isDraft ? `/editor/${version}` : `/p/${version}`), [
     location.pathname,
   ])
   function handlePrefetch() {
@@ -78,7 +85,7 @@ function ListItem({item, index = 0, onDraftDelete}) {
   return (
     <Link
       to={to}
-      className="bg-transparent group block w-full first:mt-4 flex p-4 mt-2 first:mt-0 hover:bg-background-muted transition duration-100 box-border"
+      className="bg-transparent group w-full flex p-4 mt-2 first:mt-4 hover:bg-background-muted transition duration-100 box-border"
       onMouseEnter={handlePrefetch}
     >
       <span className="text-heading font-light leading-loose flex-none pr-4">
@@ -108,7 +115,7 @@ function ListItem({item, index = 0, onDraftDelete}) {
               e.preventDefault()
               const resp = window.confirm('are you sure you want to delete it?')
               if (resp) {
-                onDraftDelete(documentId)
+                onDraftDelete(version)
               }
             }}
           >
