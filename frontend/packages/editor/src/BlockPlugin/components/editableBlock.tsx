@@ -3,7 +3,7 @@ import {RenderElementProps, ReactEditor, useEditor} from 'slate-react'
 import {Editor} from '../../editor'
 import {Draggable} from 'react-beautiful-dnd'
 import {mergeRefs} from '../../mergeRefs'
-import {useBlockTools} from '../blockToolsContext'
+import {useBlockTools} from './blockToolsContext'
 import {BlockControls} from '../../components/blockControls'
 import {Block} from './block'
 

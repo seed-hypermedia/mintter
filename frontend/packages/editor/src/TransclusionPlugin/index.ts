@@ -1,4 +1,6 @@
+export * from './components'
+export * from './defaults'
+export * from './renderElementTransclusion'
 export * from './TransclusionPlugin'
 export * from './types'
-export * from './transclusion'
 export * from './withTransclusion'
