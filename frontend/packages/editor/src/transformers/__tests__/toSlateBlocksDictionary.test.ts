@@ -1,11 +1,7 @@
 import {toSlateBlocksDictionary, makeProto} from '../transformers'
-import {
-  Block,
-  Paragraph,
-  InlineElement,
-  //   BlockRefList,
-} from '@mintter/proto/v2/documents_pb'
-import {ELEMENT_BLOCK, ELEMENT_PARAGRAPH} from '../../elements'
+import {Block, Paragraph, InlineElement} from '@mintter/proto/v2/documents_pb'
+import {ELEMENT_PARAGRAPH} from '../../elements'
+import {ELEMENT_BLOCK} from '../../BlockPlugin/defaults'
 
 test('toSlateBlocksDictionary', () => {
   const blocks = [

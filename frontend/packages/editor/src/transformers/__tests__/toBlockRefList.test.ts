@@ -29,9 +29,9 @@ test('toBlockRefList: simple text block', () => {
 
   const expected = makeProto(new BlockRefList(), {
     style: BlockRefList.Style.NONE,
-    blocks: [
+    refs: [
       makeProto(new BlockRef(), {
-        id: 'block-test-id',
+        ref: 'block-test-id',
       }),
     ],
   })
@@ -87,14 +87,14 @@ test('toBlockRefList: nested blocks', () => {
 
   const expected = makeProto(new BlockRefList(), {
     style: BlockRefList.Style.NONE,
-    blocks: [
+    refs: [
       makeProto(new BlockRef(), {
-        id: 'block-test-id',
+        ref: 'block-test-id',
         blockRefList: makeProto(new BlockRefList(), {
           style: BlockRefList.Style.BULLET,
-          blocks: [
+          refs: [
             makeProto(new BlockRef(), {
-              id: 'nested-block-test-id',
+              ref: 'nested-block-test-id',
             }),
           ],
         }),

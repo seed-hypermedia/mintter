@@ -5,7 +5,9 @@ import {
   InlineElement,
   Image,
 } from '@mintter/proto/v2/documents_pb'
-import {ELEMENT_BLOCK, ELEMENT_PARAGRAPH, ELEMENT_IMAGE} from '../../elements'
+import {ELEMENT_PARAGRAPH} from '../../elements'
+import {ELEMENT_IMAGE} from '../../ImagePlugin/defaults'
+import {ELEMENT_BLOCK} from '../../BlockPlugin/defaults'
 
 test('toSlateBlock: paragraph', () => {
   const block = makeProto(new Block(), {
