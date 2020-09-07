@@ -1,4 +1,5 @@
-import {toBlockRef, makeProto} from '../transformers'
+import {toBlockRef} from '../transformers'
+import {makeProto} from '../makeProto'
 import {BlockRef, BlockRefList} from '@mintter/proto/v2/documents_pb'
 
 test('toBlockRef: simple block', () => {

@@ -1,7 +1,8 @@
 /** @jsx jsx */
 import {jsx} from '../../../test/jsx'
 import {Editor} from 'slate'
-import {toBlock, makeProto} from '../transformers'
+import {toBlock} from '../transformers'
+import {makeProto} from '../makeProto'
 import {
   Block,
   Paragraph,
