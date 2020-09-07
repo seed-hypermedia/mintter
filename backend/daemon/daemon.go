@@ -8,7 +8,6 @@ import (
 	"mintter"
 	"net"
 	"net/http"
-	"sync"
 
 	"mintter/backend/config"
 	"mintter/backend/document"
@@ -17,7 +16,6 @@ import (
 	"mintter/proto"
 	v2 "mintter/proto/v2"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/pkg/browser"
 	"go.uber.org/atomic"
@@ -25,7 +23,10 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Run the daemon.
@@ -41,16 +42,14 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	defer log.Info("GracefulShutdownEnded")
 
 	rpcsrv := grpc.NewServer()
-	docserver := &lazyDocumentsServer{
-		srv: &v2.UnimplementedDocumentsServer{},
-	}
+	docserver := &lazyDocumentsServer{}
 	var svc *server.Server
 	{
 		s, err := server.NewServer(cfg, log, server.WithInitFunc(server.InitFunc(func(n *p2p.Node) error {
 			// TODO: this is messy and creepy. Due to our lazy initialization thing we have to do this
 			// in order to be able to register the RPC hander before calling serve, because this is a requirement.
 			ds := document.NewServer(n.Store(), n.IPFS().BlockStore(), n.Store().DB())
-			docserver.Swap(ds)
+			docserver.Init(ds)
 			return nil
 		})))
 		if err != nil {
@@ -141,7 +140,10 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		zap.String("grpcURL", "grpc://localhost:"+cfg.GRPCPort),
 	)
 
-	browser.OpenURL("http://localhost:55001")
+	if !cfg.NoOpenBrowser {
+		browser.OpenURL("http://localhost:55001")
+	}
+
 	log.Debug("Press ctrl+c to quit")
 
 	err = g.Wait()
@@ -149,50 +151,56 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	return
 }
 
+var errInit = status.Error(codes.Unimplemented, "server is not initialized yet")
+
 type lazyDocumentsServer struct {
-	done atomic.Bool
-	mu   sync.RWMutex
-	srv  v2.DocumentsServer
+	ready atomic.Bool
+	srv   v2.DocumentsServer
 }
 
 func (l *lazyDocumentsServer) CreateDraft(ctx context.Context, in *v2.CreateDraftRequest) (*v2.Document, error) {
-	l.mu.RLock()
-	defer l.mu.RUnlock()
-	return l.srv.CreateDraft(ctx, in)
+	if l.ready.Load() {
+		return l.srv.CreateDraft(ctx, in)
+	}
+	return nil, errInit
 }
 
 func (l *lazyDocumentsServer) UpdateDraft(ctx context.Context, in *v2.UpdateDraftRequest) (*v2.UpdateDraftResponse, error) {
-	l.mu.RLock()
-	defer l.mu.RUnlock()
-	return l.srv.UpdateDraft(ctx, in)
+	if l.ready.Load() {
+		return l.srv.UpdateDraft(ctx, in)
+	}
+	return nil, errInit
 }
 
 func (l *lazyDocumentsServer) PublishDraft(ctx context.Context, in *v2.PublishDraftRequest) (*v2.PublishDraftResponse, error) {
-	l.mu.RLock()
-	defer l.mu.RUnlock()
-	return l.srv.PublishDraft(ctx, in)
+	if l.ready.Load() {
+		return l.srv.PublishDraft(ctx, in)
+	}
+	return nil, errInit
 }
 
 func (l *lazyDocumentsServer) GetDocument(ctx context.Context, in *v2.GetDocumentRequest) (*v2.GetDocumentResponse, error) {
-	l.mu.RLock()
-	defer l.mu.RUnlock()
-	return l.srv.GetDocument(ctx, in)
+	if l.ready.Load() {
+		return l.srv.GetDocument(ctx, in)
+	}
+	return nil, errInit
 }
 
 func (l *lazyDocumentsServer) ListDocuments(ctx context.Context, in *v2.ListDocumentsRequest) (*v2.ListDocumentsResponse, error) {
-	l.mu.RLock()
-	defer l.mu.RUnlock()
-	return l.srv.ListDocuments(ctx, in)
+	if l.ready.Load() {
+		return l.srv.ListDocuments(ctx, in)
+	}
+	return nil, errInit
 }
 
-func (l *lazyDocumentsServer) DeleteDocument(ctx context.Context, in *v2.DeleteDocumentRequest) (*empty.Empty, error) {
-	l.mu.RLock()
-	defer l.mu.RUnlock()
-	return l.srv.DeleteDocument(ctx, in)
+func (l *lazyDocumentsServer) DeleteDocument(ctx context.Context, in *v2.DeleteDocumentRequest) (*emptypb.Empty, error) {
+	if l.ready.Load() {
+		return l.srv.DeleteDocument(ctx, in)
+	}
+	return nil, errInit
 }
 
-func (l *lazyDocumentsServer) Swap(srv v2.DocumentsServer) {
-	l.mu.Lock()
+func (l *lazyDocumentsServer) Init(srv v2.DocumentsServer) {
 	l.srv = srv
-	l.mu.Unlock()
+	l.ready.Store(true)
 }
