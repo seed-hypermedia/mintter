@@ -15,9 +15,9 @@ import {ToastProvider} from 'react-toast-notifications'
 import WelcomeProvider from 'shared/welcomeProvider'
 import SecurityPack from '../security-pack'
 import {GenSeedResponse, Profile} from '@mintter/proto/mintter_pb'
-import * as clientMock from 'shared/mintterClient'
+import * as clientMock from 'shared/V1mintterClient'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/V1mintterClient')
 
 const mnemonicList = ['word-1', 'word-2', 'word-3']
 

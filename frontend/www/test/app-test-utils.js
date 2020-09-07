@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event'
 import {queryCache} from 'react-query'
 import {AppProviders} from 'components/app-providers'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/V1mintterClient')
 
 async function render(
   ui,

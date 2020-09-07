@@ -15,9 +15,9 @@ import {MintterProvider} from 'shared/mintterContext'
 import WelcomeProvider from 'shared/welcomeProvider'
 import EditProfile from '../edit-profile'
 import {GenSeedResponse, Profile} from '@mintter/proto/mintter_pb'
-import * as clientMock from 'shared/mintterClient'
+import * as clientMock from 'shared/V1mintterClient'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/V1mintterClient')
 
 beforeEach(() => {
   clientMock.setProfile = jest.fn()

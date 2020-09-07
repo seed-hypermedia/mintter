@@ -19,7 +19,7 @@ import {
   ConnectToPeerResponse,
   ListSuggestedProfilesResponse,
 } from '@mintter/proto/mintter_pb'
-import * as apiClient from './mintterClient'
+import * as apiClient from './V1mintterClient'
 import {bootstrapAppData} from './appBootstrap'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
