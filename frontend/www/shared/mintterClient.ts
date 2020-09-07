@@ -72,7 +72,7 @@ export async function getSections(sectionsList: any) {
   return await documentsClient.batchGetSections(req)
 }
 
-export async function allDrafts(key, page = 0): Promise<ListDraftsResponse> {
+export async function listDrafts(key, page = 0): Promise<ListDraftsResponse> {
   const req = new ListDraftsRequest()
   req.setPageSize(page)
   return await documentsClient.listDrafts(req)

@@ -80,7 +80,7 @@ export async function setDraft({
   id,
   title,
   subtitle,
-  blocks: entryBlocks,
+  refs: entryBlocks,
   author,
 }: SetDraftProps): Promise<UpdateDraftResponse> {
   const req = new UpdateDraftRequest()
@@ -103,7 +103,7 @@ export async function setDraft({
       title,
       id,
       subtitle,
-      blocks: entryBlocks,
+      refs: entryBlocks,
     },
     author,
     blockList,

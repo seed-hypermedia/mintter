@@ -1,5 +1,6 @@
 import {createContext, useContext, useMemo, useCallback} from 'react'
-import * as apiClient from './mintterClient'
+import * as oldAPI from './mintterClient'
+import * as apiClient from './mintterClientv2'
 import {
   Publication,
   Draft,
@@ -23,6 +24,7 @@ import {
   ListProfilesResponse,
   Profile,
 } from '@mintter/proto/mintter_pb'
+import {ListDocumentsResponse} from '@mintter/proto/v2/documents_pb'
 
 type QueryParam<T> = T | T[]
 
@@ -30,16 +32,16 @@ type QueryParam<T> = T | T[]
 export interface MintterClient {
   listPublications: (
     page?: number,
-  ) => PaginatedQueryResult<ListPublicationsResponse>
+  ) => PaginatedQueryResult<ListDocumentsResponse>
   getPublication: (id: QueryParam<string>) => QueryResult<Publication>
   getSections: (sections: any[]) => any
-  allDrafts: (page?: number) => PaginatedQueryResult<ListDraftsResponse>
+  listDrafts: (page?: number) => PaginatedQueryResult<ListDraftsResponse>
   createDraft: () => Draft
   getDraft: (
     id: QueryParam<string>,
     options?: QueryOptions<Draft>,
   ) => QueryResult<Draft>
-  setDraft: (draft: apiClient.SetDraftRequest) => Draft
+  setDraft: (draft: oldAPI.SetDraftRequest) => Draft
   publishDraft: (
     documentId: string,
     options?: MutationOptions<Publication, string>,
@@ -52,11 +54,11 @@ const MintterClientContext = createContext<MintterClient>(null)
 
 export function MintterProvider(props) {
   const listPublications = useCallback((page = 0): PaginatedQueryResult<
-    ListPublicationsResponse
+    ListDocumentsResponse
   > => {
     return usePaginatedQuery(
       ['ListPublications', page],
-      apiClient.listPublications,
+      apiClient.listDocuments,
       {
         refetchOnWindowFocus: true,
         refetchInterval: 5000,
@@ -74,7 +76,7 @@ export function MintterProvider(props) {
       )
     }
 
-    return useQuery(['Publication', id], apiClient.getPublication, {
+    return useQuery(['Publication', id], oldAPI.getPublication, {
       retry: false,
       onError: error => {
         console.log('error!', error)
@@ -83,19 +85,18 @@ export function MintterProvider(props) {
   }, [])
 
   const getSections = useCallback(
-    sections =>
-      apiClient.getSections(sections).catch(err => console.error(err)),
+    sections => oldAPI.getSections(sections).catch(err => console.error(err)),
     [],
   )
 
-  function allDrafts(page = 0): PaginatedQueryResult<ListDraftsResponse> {
-    return usePaginatedQuery(['AllDrafts', page], apiClient.allDrafts, {
+  function listDrafts(page = 0): PaginatedQueryResult<ListDraftsResponse> {
+    return usePaginatedQuery(['AllDrafts', page], oldAPI.listDrafts, {
       refetchInterval: 5000,
     })
   }
 
   const createDraft = useCallback(
-    () => apiClient.createDraft().catch(err => console.error(err)),
+    () => oldAPI.createDraft().catch(err => console.error(err)),
     [],
   )
 
@@ -110,7 +111,7 @@ export function MintterProvider(props) {
         )
       }
 
-      return useQuery(id && ['Draft', id], apiClient.getDraft, {
+      return useQuery(id && ['Draft', id], oldAPI.getDraft, {
         refetchOnWindowFocus: false,
         ...options,
       })
@@ -119,20 +120,20 @@ export function MintterProvider(props) {
   )
 
   const setDraft = useCallback(
-    (draft: apiClient.SetDraftRequest) => apiClient.setDraft(draft),
+    (draft: oldAPI.SetDraftRequest) => oldAPI.setDraft(draft),
     [],
   )
 
-  const [deleteDraft] = useMutation((id: string) => apiClient.deleteDraft(id), {
+  const [deleteDraft] = useMutation((id: string) => oldAPI.deleteDraft(id), {
     onSuccess: p => {
       queryCache.refetchQueries('AllDrafts')
     },
   })
 
-  const [publishDraft] = useMutation((id: string) => apiClient.publishDraft(id))
+  const [publishDraft] = useMutation((id: string) => oldAPI.publishDraft(id))
 
   const getAuthor = useCallback(
-    (authorId?: string) => useQuery(['Author', authorId], apiClient.getProfile),
+    (authorId?: string) => useQuery(['Author', authorId], oldAPI.getProfile),
     [],
   )
 
@@ -141,7 +142,7 @@ export function MintterProvider(props) {
       listPublications,
       getPublication,
       getSections,
-      allDrafts,
+      listDrafts,
       createDraft,
       getDraft,
       setDraft,
@@ -153,7 +154,7 @@ export function MintterProvider(props) {
       listPublications,
       getPublication,
       getSections,
-      allDrafts,
+      listDrafts,
       createDraft,
       getDraft,
       setDraft,
