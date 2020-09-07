@@ -45,6 +45,24 @@ func TestTransclusionEndToEnd(t *testing.T) {
 		got := draftDoc.Blocks[pub1.Version+"/"+reusedID]
 		testutil.ProtoEqual(t, want, got, "block %s doesn't match", reusedID)
 	}
+
+	wantRootList := &v2.BlockRefList{
+		Refs: []*v2.BlockRef{
+			{Ref: "block-1"},
+			{
+				Ref: pub1.Version + "/" + "block-list-parent",
+				BlockRefList: &v2.BlockRefList{
+					Style: v2.BlockRefList_BULLET,
+					Refs: []*v2.BlockRef{
+						{Ref: pub1.Version + "/" + "block-list-child-1"},
+						{Ref: pub1.Version + "/" + "block-list-child-2"},
+					},
+				},
+			},
+			{Ref: "block-2"},
+		},
+	}
+	testutil.ProtoEqual(t, wantRootList, draftDoc.Document.BlockRefList, "ref list doesn't match")
 }
 
 func testDoc2(d *v2.Document, sourceVersion string) *v2.UpdateDraftRequest {

@@ -355,7 +355,7 @@ func resolveBlocks(ctx context.Context, doc document, docStore *store, blockMap 
 		blockMap[blockRef] = blockpb
 
 		refpb := &v2.BlockRef{
-			Ref: blk.ID,
+			Ref: blockRef,
 		}
 
 		refListPb.Refs = append(refListPb.Refs, refpb)
