@@ -13,8 +13,8 @@ export interface MintterEditor extends ReactEditor {
 
 export interface EditorState {
   title: string
-  description: string
-  sections: Node[]
+  subtitle: string
+  blocks: Node[]
 }
 
 export interface SlateBlock {
@@ -63,6 +63,6 @@ export const initialBlocksValue = [
 
 export const initialValue: EditorState = {
   title: '',
-  description: '',
-  sections: initialBlocksValue,
+  subtitle: '',
+  blocks: initialBlocksValue,
 }

@@ -1,6 +1,6 @@
 // single paragraph block
 const demo1 = {
-  documentId: 'doc1234asdf',
+  id: 'doc1234asdf',
   author: 'test-user1234',
   blocks: [
     {
@@ -19,7 +19,7 @@ const demo1 = {
 
 // 1 nested block list
 const demo2 = {
-  documentId: 'doc1234asdf',
+  id: 'doc1234asdf',
   author: 'test-user1234',
   blocks: [
     {
@@ -52,7 +52,7 @@ const demo2 = {
 }
 
 const demo2 = {
-  documentId: 'doc1234asdf',
+  id: 'doc1234asdf',
   author: 'test-user1234',
   blocks: [
     {
