@@ -7,9 +7,9 @@ import {useMintter} from 'shared/mintterContext'
 export function Drafts() {
   const router = useHistory()
 
-  const {createDraft, allDrafts, deleteDraft} = useMintter()
+  const {createDraft, listDrafts, deleteDraft} = useMintter()
 
-  const {status, error, resolvedData} = allDrafts()
+  const {status, error, resolvedData} = listDrafts()
 
   async function handleCreateDraft() {
     const p = await createDraft()

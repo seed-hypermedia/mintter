@@ -30,13 +30,13 @@ export function Publications() {
     return <ErrorMessage error={error} />
   }
 
+  console.log({data: resolvedData?.toObject()})
+
   const list = useMemo(
     () =>
       resolvedData
         ?.toObject()
-        .publicationsList.filter(
-          p => p.author !== profile.toObject().accountId,
-        ),
+        .documentsList.filter(p => p.author !== profile.toObject().accountId),
     [resolvedData],
   )
   return (

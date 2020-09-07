@@ -30,9 +30,7 @@ export function MyPublications() {
     () =>
       resolvedData
         ?.toObject()
-        .publicationsList.filter(
-          p => p.author === profile.toObject().accountId,
-        ),
+        .documentsList.filter(p => p.author === profile.toObject().accountId),
     [resolvedData],
   )
 
