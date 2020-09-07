@@ -84,7 +84,7 @@ export async function createDraft() {
   return await documentsClient.createDraft(req)
 }
 
-export async function getDraft(key, id): Promise<Draft> {
+export async function getDraft(key: string, id: string): Promise<Draft> {
   const req = new GetDraftRequest()
   req.setDocumentId(id)
   return await documentsClient.getDraft(req)

@@ -38,7 +38,7 @@ export default function DocumentList({
   } else {
     content = data.map((item, index) => (
       <ListItem
-        key={item.documentId}
+        key={item.id}
         item={item}
         index={index}
         onDraftDelete={onDraftDelete}
@@ -64,14 +64,13 @@ function ListItem({item, index = 0, onDraftDelete}) {
     location.pathname,
   ])
 
-  const to = useMemo(
-    () => (isDraft ? `/editor/${item.documentId}` : `/p/${item.id}`),
-    [location.pathname],
-  )
+  const to = useMemo(() => (isDraft ? `/editor/${item.id}` : `/p/${item.id}`), [
+    location.pathname,
+  ])
   function handlePrefetch() {
     if (!prefetched) {
       // TODO: prefetch on hover
-      // console.log(`prefetch draft with id ${draft.documentId}`)
+      // console.log(`prefetch draft with id ${draft.id}`)
       setPrefetch(true)
     }
   }

@@ -15,7 +15,7 @@ export function Drafts() {
     const p = await createDraft()
     const draft = p.toObject()
     router.push({
-      pathname: `/editor/${draft.documentId}`,
+      pathname: `/editor/${draft.id}`,
     })
   }
 
