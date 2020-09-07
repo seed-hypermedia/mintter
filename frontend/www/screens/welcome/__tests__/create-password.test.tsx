@@ -12,10 +12,10 @@ import {BrowserRouter as Router} from 'react-router-dom'
 import WelcomeProvider from 'shared/welcomeProvider'
 import CreatePassword from '../create-password'
 import {GenSeedResponse, Profile} from '@mintter/proto/mintter_pb'
-import * as clientMock from 'shared/mintterClient'
+import * as clientMock from 'shared/V1mintterClient'
 import {ProfileProvider} from 'shared/profileContext'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/V1mintterClient')
 
 async function renderWelcomeScreen() {
   const route = `/welcome/create-password`

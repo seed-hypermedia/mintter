@@ -2,20 +2,21 @@ import getConfig from 'next/config'
 import {Node} from 'slate'
 import {MintterPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
 import {DocumentsPromiseClient} from '@mintter/proto/documents_grpc_web_pb'
+import {DocumentsPromiseClient as v2DocumentsClient} from '@mintter/proto/v2/documents_grpc_web_pb'
+import {Draft} from '@mintter/proto/documents_pb'
 import {
-  ListPublicationsRequest,
-  ListPublicationsResponse,
-  Publication,
-  GetPublicationRequest,
-  BatchGetSectionsRequest,
+  ListDocumentsRequest,
+  ListDocumentsResponse,
+  PublishingState,
+  GetDocumentRequest,
+  GetDocumentResponse,
+  UpdateDraftRequest,
+  UpdateDraftResponse,
   CreateDraftRequest,
-  ListDraftsResponse,
-  ListDraftsRequest,
-  Draft,
-  GetDraftRequest,
+  DeleteDocumentRequest,
   PublishDraftRequest,
-  DeleteDraftRequest,
-} from '@mintter/proto/documents_pb'
+  PublishDraftResponse,
+} from '@mintter/proto/v2/documents_pb'
 import {
   GetProfileRequest,
   ConnectToPeerRequest,
@@ -32,6 +33,7 @@ import {
 import {fromSlateToMarkdown} from './parseToMarkdown'
 import {parseToMarkdown} from './parseToMarkdown'
 import {profile} from 'console'
+import {toDocument, EditorDocument} from '@mintter/editor'
 
 const config = getConfig()
 const hostname = config?.publicRuntimeConfig.MINTTER_HOSTNAME
@@ -39,115 +41,93 @@ const port = config?.publicRuntimeConfig.MINTTER_PORT
 const path = `${hostname}:${port}`
 
 export const documentsClient = new DocumentsPromiseClient(path)
+export const docsV2 = new v2DocumentsClient(path)
 export const usersClient = new MintterPromiseClient(path)
 
 // ============================
 
-export async function genSeed() {
-  const req = new GenSeedRequest()
-  return await usersClient.genSeed(req)
-}
-
-export async function listPublications(
+export async function listDocuments(
   key,
+  publishingState = PublishingState.PUBLISHED,
   page = 0,
-): Promise<ListPublicationsResponse> {
-  const req = new ListPublicationsRequest()
+): Promise<ListDocumentsResponse> {
+  const req = new ListDocumentsRequest()
   req.setPageSize(page)
-  return await documentsClient.listPublications(req)
+  req.setPublishingState(publishingState)
+  return await docsV2.listDocuments(req)
 }
 
-export async function getPublication(key, id: string): Promise<Publication> {
-  const req = new GetPublicationRequest()
-  req.setPublicationId(id)
+export async function getDocument(
+  key,
+  id: string,
+): Promise<GetDocumentResponse> {
+  const req = new GetDocumentRequest()
+  req.setId(id)
 
-  return await documentsClient.getPublication(req)
+  return await await docsV2.getDocument(req)
 }
 
-export async function getSections(sectionsList: any) {
-  // TODO: horacio: refactor
-  const req = new BatchGetSectionsRequest()
-  req.setSectionIdsList(sectionsList)
-
-  return await documentsClient.batchGetSections(req)
-}
-
-export async function listDrafts(key, page = 0): Promise<ListDraftsResponse> {
-  const req = new ListDraftsRequest()
-  req.setPageSize(page)
-  return await documentsClient.listDrafts(req)
-}
-
-export async function createDraft() {
-  // TODO: horacio: refactor
+export async function createDraft(): Promise<Draft> {
   const req = new CreateDraftRequest()
   return await documentsClient.createDraft(req)
 }
 
-export async function getDraft(key, id): Promise<Draft> {
-  const req = new GetDraftRequest()
-  req.setDocumentId(id)
-  return await documentsClient.getDraft(req)
-}
-
-export interface SetDraftRequest {
-  documentId: string | string[]
-  title: string
-  description: string
-  sections: any[]
+export interface SetDraftProps extends EditorDocument {
+  author: any
 }
 
 export async function setDraft({
-  documentId,
+  id,
   title,
-  description,
-  sections,
-}: SetDraftRequest) {
-  const request = new Draft()
+  subtitle,
+  refs: entryBlocks,
+  author,
+}: SetDraftProps): Promise<UpdateDraftResponse> {
+  const req = new UpdateDraftRequest()
 
-  if (Array.isArray(documentId)) {
+  //  do I still need this guard?
+  if (Array.isArray(id)) {
     console.error(
       `Impossible render: You are trying to access the editor passing ${
-        documentId.length
-      } document IDs => ${documentId.map(q => q).join(', ')}`,
+        id.length
+      } document IDs => ${id.map(q => q).join(', ')}`,
     )
 
-    return null
+    return
   }
 
-  request.setDocumentId(documentId)
-  title && request.setTitle(title)
-  description && request.setDescription(description)
+  const blockList = [] // TODO: add blockList transformer
 
-  if (sections.length > 0) {
-    const s = fromSlateToMarkdown(sections)
+  const {document, blocks} = toDocument({
+    editorDocument: {
+      title,
+      id,
+      subtitle,
+      refs: entryBlocks,
+    },
+    author,
+    blockList,
+  })
 
-    request.setSectionsList(s)
-  }
-  return await documentsClient.saveDraft(request)
+  req.setDocument(document)
+  // req.setBlocksList(blocks)
+  return await docsV2.updateDraft(req)
 }
 
-export async function deleteDraft(id: string) {
-  const req = new DeleteDraftRequest()
-  req.setDocumentId(id)
+export async function deleteDraft(version: string) {
+  const req = new DeleteDocumentRequest()
 
-  return documentsClient.deleteDraft(req)
+  req.setVersion(version)
+  return await docsV2.deleteDocument(req)
 }
 
-export async function publishDraft(draftId: string) {
-  try {
-    const req = new PublishDraftRequest()
-    req.setDocumentId(draftId)
-    return await documentsClient.publishDraft(req)
-  } catch (err) {
-    console.error(`PublishDraft Error => `, err)
-  }
-}
+export async function publishDraft(
+  version: string,
+): Promise<PublishDraftResponse> {
+  const req = new PublishDraftRequest()
+  req.setVersion(version)
 
-export async function connectToPeerById(peerIds: string[]) {
-  const req = new ConnectToPeerRequest()
-  req.setAddrsList(peerIds)
-  return await usersClient.connectToPeer(req)
+  return await docsV2.publishDraft(req)
 }
 
 export async function createProfile({
@@ -199,6 +179,17 @@ export async function setProfile(
   }
 }
 
+export async function genSeed() {
+  const req = new GenSeedRequest()
+  return await usersClient.genSeed(req)
+}
+
+export async function connectToPeerById(peerIds: string[]) {
+  const req = new ConnectToPeerRequest()
+  req.setAddrsList(peerIds)
+  return await usersClient.connectToPeer(req)
+}
+
 export async function getProfileAddrs() {
   const req = new GetProfileAddrsRequest()
   return await usersClient.getProfileAddrs(req)
@@ -233,5 +224,3 @@ export async function listSuggestedConnections(
   req.setPageSize(page)
   return await usersClient.listSuggestedProfiles(req)
 }
-
-export {MintterPromiseClient}

@@ -15,10 +15,10 @@ import {MintterProvider} from 'shared/mintterContext'
 import WelcomeProvider from 'shared/welcomeProvider'
 import RetypeSeed from '../retype-seed'
 import {GenSeedResponse, Profile} from '@mintter/proto/mintter_pb'
-import * as clientMock from 'shared/mintterClient'
+import * as clientMock from 'shared/V1mintterClient'
 import {getRandomElements as mockRandom} from 'shared/utils'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/V1mintterClient')
 jest.mock('shared/utils')
 
 async function renderWelcomeScreen() {

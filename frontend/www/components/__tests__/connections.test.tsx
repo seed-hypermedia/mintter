@@ -1,9 +1,9 @@
 import {render, screen, userEvent, act} from 'test/app-test-utils'
 import {Connections} from '../connections'
-import * as clientMock from 'shared/mintterClient'
+import * as clientMock from 'shared/V1mintterClient'
 import {ListProfilesResponse} from '@mintter/proto/mintter_pb'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/V1mintterClient')
 
 beforeEach(() => {
   clientMock.listConnections.mockResolvedValueOnce({

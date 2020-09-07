@@ -1,11 +1,11 @@
 import {Publications} from '../publications'
 import {render} from 'test/app-test-utils'
 import {AppProviders} from '../../components/app-providers'
-import * as clientMock from 'shared/mintterClient'
+import * as clientMock from 'shared/V1mintterClient'
 import {Profile} from '@mintter/proto/mintter_pb'
 import {ListPublicationsResponse} from '@mintter/proto/documents_pb'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/V1mintterClient')
 
 beforeEach(() => {
   clientMock.getProfile.mockResolvedValueOnce({

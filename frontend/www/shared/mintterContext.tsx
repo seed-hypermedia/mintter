@@ -1,6 +1,6 @@
 import {createContext, useContext, useMemo, useCallback} from 'react'
-import * as oldAPI from './mintterClient'
-import * as apiClient from './mintterClientv2'
+import * as oldAPI from './V1mintterClient'
+import * as apiClient from './mintterClient'
 import {
   Publication,
   Draft,

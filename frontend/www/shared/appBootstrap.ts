@@ -1,5 +1,5 @@
 import {queryCache} from 'react-query'
-import {usersClient} from './mintterClient'
+import {usersClient} from './V1mintterClient'
 import {
   InitProfileRequest,
   GetProfileRequest,
