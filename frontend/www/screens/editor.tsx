@@ -53,21 +53,16 @@ export default function Editor(): JSX.Element {
   const [showDescription, setShowDescription] = React.useState<boolean>(false)
   const descriptionRef = React.useRef(null)
   const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
-  const {
-    state,
-    setTitle,
-    setDescription,
-    setBlocks,
-    setValue,
-  } = useEditorValue()
+  const {state, setTitle, setSubtitle, setBlocks, setValue} = useEditorValue()
 
   const {push} = useHistory()
-  const {documentId} = useParams()
+  const {documentVersion} = useParams()
   const {getDraft, setDraft, publishDraft} = useMintter()
   const {theme} = useTheme()
+  console.log({documentVersion})
 
-  const {title, sections, description} = state
-  const {status, error, data} = getDraft(documentId as string, {
+  const {title, blocks, subtitle} = state
+  const {status, error, data} = getDraft(documentVersion as string, {
     onSuccess: () => {
       setReadyToAutosave(true)
     },
@@ -75,12 +70,12 @@ export default function Editor(): JSX.Element {
 
   const [autosaveDraft] = useMutation(
     async ({state}: {state: EditorState}) => {
-      const {title, description, sections} = state
-      setDraft({documentId, title, description, sections})
+      const {title, subtitle, blocks} = state
+      setDraft({documentVersion, title, subtitle, blocks})
     },
     {
       onSuccess: () => {
-        queryCache.setQueryData(['Draft', documentId], data)
+        queryCache.setQueryData(['Draft', documentVersion], data)
       },
     },
   )
@@ -96,14 +91,13 @@ export default function Editor(): JSX.Element {
   React.useEffect(() => {
     if (data) {
       const obj = data.toObject()
-      console.log('obj', obj)
       // setValue({
       //   title: obj.title,
       //   description: obj.description,
       //   // TODO: refactor this with new API
-      //   sections:
-      //     obj.sectionsList.length > 0
-      //       ? obj.sectionsList.map((s: Section.AsObject) => {
+      //   blocks:
+      //     obj.blocksList.length > 0
+      //       ? obj.blocksList.map((s: Section.AsObject) => {
       //           return {
       //             type: ELEMENT_BLOCK,
       //             id: s.id,
@@ -116,15 +110,21 @@ export default function Editor(): JSX.Element {
 
       setValue({
         title: obj.title,
-        description: obj.description,
+        subtitle: obj.subtitle,
         // TODO: refactor this with new API
-        sections: initialBlocksValue,
+        blocks: initialBlocksValue,
+      })
+      console.log({
+        title: obj.title,
+        subtitle: obj.subtitle,
+        // TODO: refactor this with new API
+        blocks: initialBlocksValue,
       })
     }
   }, [data])
 
   async function handlePublish() {
-    publishDraft(documentId as string, {
+    publishDraft(documentVersion as string, {
       onSuccess: (publication: Publication) => {
         const doc = publication.toObject()
         push(`/p/${doc.id}`)
@@ -212,9 +212,9 @@ export default function Editor(): JSX.Element {
                   ref={d => {
                     descriptionRef.current = d
                   }}
-                  value={description}
-                  onChange={setDescription}
-                  name="description"
+                  value={subtitle}
+                  onChange={setSubtitle}
+                  name="subtitle"
                   placeholder="Subtitle"
                   minHeight={28}
                   className={`leading-relaxed text-lg font-light text-heading-muted italic`}
@@ -224,7 +224,7 @@ export default function Editor(): JSX.Element {
                 <EditorComponent
                   editor={editor}
                   plugins={plugins}
-                  value={sections}
+                  value={blocks}
                   onChange={blocks => {
                     setBlocks(blocks)
                   }}

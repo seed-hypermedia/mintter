@@ -33,6 +33,13 @@ import {
 
 type QueryParam<T> = T | T[]
 
+export interface SetDocumentRequest {
+  documentVersion: string | string[]
+  title: string
+  subtitle: string
+  blocks: any[]
+}
+
 // TODO: (Horacio) Fixme Types
 export interface MintterClient {
   listPublications: (
@@ -44,11 +51,11 @@ export interface MintterClient {
   createDraft: () => Document
   getDraft: (
     id: QueryParam<string>,
-    options?: QueryOptions<Draft>,
-  ) => QueryResult<Draft>
-  setDraft: (draft: oldAPI.SetDraftRequest) => Draft
+    options?: QueryOptions<Document>,
+  ) => QueryResult<Document>
+  setDraft: (draft: SetDocumentRequest) => Document
   publishDraft: (
-    documentId: string,
+    documentVersion: string,
     options?: MutationOptions<Publication, string>,
   ) => MutationResult<Publication>
   deleteDocument: (id: string) => void
@@ -62,8 +69,8 @@ export function MintterProvider(props) {
     ListDocumentsResponse
   > => {
     return usePaginatedQuery(
-      ['ListPublications', page],
-      apiClient.listDocuments,
+      ['ListPublications', PublishingState.PUBLISHED, page],
+      apiClient.listPublications,
       {
         refetchOnWindowFocus: true,
         refetchInterval: 5000,
@@ -95,13 +102,9 @@ export function MintterProvider(props) {
   )
 
   function listDrafts(page = 0): PaginatedQueryResult<ListDocumentsResponse> {
-    return usePaginatedQuery(
-      ['ListDrafts', PublishingState.DRAFT, page],
-      apiClient.listDocuments,
-      {
-        refetchInterval: 5000,
-      },
-    )
+    return usePaginatedQuery(['ListDrafts', page], apiClient.listDrafts, {
+      refetchInterval: 5000,
+    })
   }
 
   const createDraft = useCallback(

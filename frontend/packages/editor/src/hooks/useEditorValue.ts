@@ -15,16 +15,16 @@ export function draftReducer(state: EditorState, action) {
         ...state,
         title: payload,
       }
-    case 'DESCRIPTION': {
+    case 'SUBTITLE': {
       return {
         ...state,
-        description: payload,
+        subtitle: payload,
       }
     }
     case 'BLOCKS': {
       return {
         ...state,
-        sections: payload,
+        blocks: payload,
       }
     }
 
@@ -52,8 +52,8 @@ export function useEditorValue() {
     dispatch({type: 'TITLE', payload})
   }, [])
 
-  const setDescription = useCallback(payload => {
-    dispatch({type: 'DESCRIPTION', payload})
+  const setSubtitle = useCallback(payload => {
+    dispatch({type: 'SUBTITLE', payload})
   }, [])
 
   const setBlocks = useCallback(payload => {
@@ -67,7 +67,7 @@ export function useEditorValue() {
   return {
     state,
     setTitle,
-    setDescription,
+    setSubtitle,
     setBlocks,
     setValue,
   }

@@ -46,7 +46,7 @@ export const usersClient = new MintterPromiseClient(path)
 
 // ============================
 
-export async function listDocuments(
+async function listDocuments(
   key,
   publishingState = PublishingState.PUBLISHED,
   page = 0,
@@ -55,6 +55,14 @@ export async function listDocuments(
   req.setPageSize(page)
   req.setPublishingState(publishingState)
   return await docsV2.listDocuments(req)
+}
+
+export function listPublications(key, page = 0) {
+  return listDocuments(key, PublishingState.PUBLISHED, page)
+}
+
+export function listDrafts(key, page = 0) {
+  return listDocuments(key, PublishingState.DRAFT, page)
 }
 
 export async function getDocument(
@@ -82,7 +90,7 @@ export async function setDraft({
   id,
   title,
   subtitle,
-  refs: entryBlocks,
+  refs,
   author,
 }: SetDraftProps): Promise<UpdateDraftResponse> {
   const req = new UpdateDraftRequest()
@@ -105,7 +113,7 @@ export async function setDraft({
       title,
       id,
       subtitle,
-      refs: entryBlocks,
+      refs,
     },
     author,
     blockList,
@@ -113,10 +121,12 @@ export async function setDraft({
 
   req.setDocument(document)
   // req.setBlocksList(blocks)
-  return await docsV2.updateDraft(req)
+  const result = await docsV2.updateDraft(req)
+  console.log('setDraft => result', result)
+  return result
 }
 
-export async function deleteDocument(version: string) {
+export async function deleteDocument(version: string): Promise<any> {
   const req = new DeleteDocumentRequest()
 
   req.setVersion(version)
