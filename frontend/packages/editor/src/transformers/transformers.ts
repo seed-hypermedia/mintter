@@ -49,14 +49,14 @@ export function toBlockRefList(blockList) {
 
   return makeProto(new BlockRefList(), {
     style: blockList.listType,
-    blocks: blockList.children.map(toBlockRef),
+    refs: blockList.children.map(toBlockRef),
   })
 }
 
 export function toBlockRef(block: SlateBlock) {
   let ref: any = {}
 
-  ref.id = block.id
+  ref.ref = block.id
 
   if (block.children.length > 1) {
     ref.blockRefList = toBlockRefList(block.children[1])
@@ -68,7 +68,7 @@ export interface EditorDocument {
   id?: string
   title: string
   subtitle?: string
-  blocks: any[]
+  refs: any[]
 }
 
 export interface ToDocumentRequestProp {
@@ -87,7 +87,7 @@ export function toDocument({
   blockList,
   author,
 }: ToDocumentRequestProp): ToDocumentResponse {
-  const {blocks: tree, title, subtitle = '', id} = editorDocument
+  const {refs: tree, title, subtitle = '', id} = editorDocument
   // check if document has only one child
   if (tree.length > 1) {
     throw new Error(

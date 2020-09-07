@@ -5,11 +5,9 @@ import {
   Paragraph,
   InlineElement,
 } from '@mintter/proto/v2/documents_pb'
-import {
-  ELEMENT_BLOCK_LIST,
-  ELEMENT_PARAGRAPH,
-  ELEMENT_BLOCK,
-} from '../../elements'
+import {ELEMENT_PARAGRAPH} from '../../elements'
+import {ELEMENT_BLOCK_LIST} from '../../HierarchyPlugin/defaults'
+import {ELEMENT_BLOCK} from '../../BlockPlugin/defaults'
 
 test('toSlateTree: one level', () => {
   const blocks = [
@@ -27,9 +25,9 @@ test('toSlateTree: one level', () => {
 
   const blockRefList: BlockRefList.AsObject = {
     style: BlockRefList.Style.NONE,
-    blocksList: [
+    refsList: [
       {
-        id: 'block-test-id',
+        ref: 'block-test-id',
       },
     ],
   }
@@ -86,14 +84,14 @@ test('toSlateTree: two levels', () => {
 
   const blockRefList: BlockRefList.AsObject = {
     style: BlockRefList.Style.NONE,
-    blocksList: [
+    refsList: [
       {
-        id: 'block-test-id',
+        ref: 'block-test-id',
         blockRefList: {
           style: BlockRefList.Style.NONE,
-          blocksList: [
+          refsList: [
             {
-              id: 'nested-block-test-id',
+              ref: 'nested-block-test-id',
             },
           ],
         },

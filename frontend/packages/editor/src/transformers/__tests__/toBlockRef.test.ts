@@ -14,7 +14,7 @@ test('toBlockRef: simple block', () => {
   }
 
   const expected = makeProto(new BlockRef(), {
-    id: 'test-block-id',
+    ref: 'test-block-id',
   })
 
   expect(toBlockRef(slateBlock)).toEqual(expected)
@@ -49,12 +49,12 @@ test('toBlockRef: nested blocks', () => {
   }
 
   const expected = makeProto(new BlockRef(), {
-    id: 'test-block-id',
+    ref: 'test-block-id',
     blockRefList: makeProto(new BlockRefList(), {
       style: BlockRefList.Style.NONE,
-      blocks: [
+      refs: [
         makeProto(new BlockRef(), {
-          id: 'test-nested-block-id',
+          ref: 'test-nested-block-id',
         }),
       ],
     }),

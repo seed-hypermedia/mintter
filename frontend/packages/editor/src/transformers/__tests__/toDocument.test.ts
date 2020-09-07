@@ -17,9 +17,9 @@ test('toDocument', () => {
       author: 'horacio',
       blockRefList: makeProto(new BlockRefList(), {
         style: BlockRefList.Style.NONE,
-        blocks: [
+        refs: [
           makeProto(new BlockRef(), {
-            id: 'test-id',
+            ref: 'test-id',
           }),
         ],
       }),
@@ -42,7 +42,7 @@ test('toDocument', () => {
     editorDocument: {
       id: 'document-test',
       title: 'Demo Test Document',
-      blocks: [
+      refs: [
         {
           type: 'block_list',
           listType: BlockRefList.Style.NONE,
