@@ -47,13 +47,13 @@ export default function Publication(): JSX.Element {
   })
   const {getDocument, getSections, getAuthor} = useMintter()
 
-  const {id} = useParams()
+  const {version} = useParams()
 
   const {title, sections, description, author: pubAuthor} = state
 
   const author = getAuthor(pubAuthor)
 
-  const {status, error, data, isFetching, failureCount} = getDocument(id)
+  const {status, error, data, isFetching, failureCount} = getDocument(version)
 
   React.useEffect(() => {
     if (data) {

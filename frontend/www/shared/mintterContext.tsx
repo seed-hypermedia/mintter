@@ -34,7 +34,7 @@ import {
 type QueryParam<T> = T | T[]
 
 export interface SetDocumentRequest {
-  documentVersion: string | string[]
+  version: string | string[]
   title: string
   subtitle: string
   blocks: any[]
@@ -45,19 +45,18 @@ export interface MintterClient {
   listPublications: (
     page?: number,
   ) => PaginatedQueryResult<ListDocumentsResponse>
-  getDocument: (id: string) => QueryResult<Document>
   getSections: (sections: any[]) => any
   listDrafts: (page?: number) => PaginatedQueryResult<ListDocumentsResponse>
   createDraft: () => Document
-  getDraft: (
-    id: QueryParam<string>,
+  getDocument: (
+    version: QueryParam<string>,
     options?: QueryOptions<Document>,
   ) => QueryResult<Document>
   setDraft: (draft: SetDocumentRequest) => Document
   publishDraft: (
-    documentVersion: string,
-    options?: MutationOptions<Publication, string>,
-  ) => MutationResult<Publication>
+    version: string,
+    options?: MutationOptions<Document, string>,
+  ) => MutationResult<Document>
   deleteDocument: (id: string) => void
   getAuthor: (authorId?: string) => QueryResult<Profile>
 }
@@ -78,24 +77,6 @@ export function MintterProvider(props) {
     )
   }, [])
 
-  const getDocument = useCallback((id: QueryParam<string>) => {
-    // type guard on id
-    if (Array.isArray(id)) {
-      throw new Error(
-        `Impossible render: You are trying to access a publication passing ${
-          id.length
-        } publication IDs => ${id.map(q => q).join(', ')}`,
-      )
-    }
-
-    return useQuery(['Document', id], apiClient.getDocument, {
-      retry: false,
-      onError: error => {
-        console.log('error!', error)
-      },
-    })
-  }, [])
-
   const getSections = useCallback(
     sections => oldAPI.getSections(sections).catch(err => console.error(err)),
     [],
@@ -112,21 +93,21 @@ export function MintterProvider(props) {
     [],
   )
 
-  const getDraft = useCallback((id, options) => {
-    // type guard on id
-    if (!id) {
-      throw new Error(`getDraft: parameter "id" is required`)
+  const getDocument = useCallback((version, options) => {
+    // type guard on version
+    if (!version) {
+      throw new Error(`getDocument: parameter "version" is required`)
     }
 
-    if (Array.isArray(id)) {
+    if (Array.isArray(version)) {
       throw new Error(
-        `Impossible render: You are trying to access a draft passing ${
-          id.length
-        } document IDs => ${id.map(q => q).join(', ')}`,
+        `Impossible render: You are trying to access a document passing ${
+          version.length
+        } document versions => ${version.map(q => q).join(', ')}`,
       )
     }
 
-    return useQuery(['Draft', id], apiClient.getDocument, {
+    return useQuery(['Document', version], apiClient.getDocument, {
       refetchOnWindowFocus: false,
       ...options,
     })
@@ -156,11 +137,10 @@ export function MintterProvider(props) {
   const value = useMemo(
     () => ({
       listPublications,
-      getDocument,
       getSections,
       listDrafts,
       createDraft,
-      getDraft,
+      getDocument,
       setDraft,
       publishDraft,
       deleteDocument,
@@ -168,11 +148,10 @@ export function MintterProvider(props) {
     }),
     [
       listPublications,
-      getDocument,
       getSections,
       listDrafts,
       createDraft,
-      getDraft,
+      getDocument,
       setDraft,
       publishDraft,
       deleteDocument,

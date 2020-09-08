@@ -22,10 +22,10 @@ export default function AuthenticatedApp(props) {
       <AppLayout>
         <Topbar />
         <Switch>
-          <PrivateRoute exact path="/editor/:documentVersion">
+          <PrivateRoute exact path="/editor/:version">
             <Editor />
           </PrivateRoute>
-          <PrivateRoute exact path="/p/:id">
+          <PrivateRoute exact path="/p/:version">
             <Publication />
           </PrivateRoute>
           <PrivateRoute>
