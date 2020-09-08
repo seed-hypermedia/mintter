@@ -32,7 +32,8 @@ import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
 import Textarea from 'components/textarea'
-import {Section, Publication} from '@mintter/proto/documents_pb'
+import {Section} from '@mintter/proto/documents_pb'
+import {Document} from '@mintter/proto/v2/documents_pb'
 import {markdownToSlate} from 'shared/markdownToSlate'
 import {useDebounce} from 'shared/hooks'
 import {useMintter} from 'shared/mintterContext'
@@ -56,13 +57,12 @@ export default function Editor(): JSX.Element {
   const {state, setTitle, setSubtitle, setBlocks, setValue} = useEditorValue()
 
   const {push} = useHistory()
-  const {documentVersion} = useParams()
-  const {getDraft, setDraft, publishDraft} = useMintter()
+  const {version} = useParams()
   const {theme} = useTheme()
-  console.log({documentVersion})
+  const {getDocument, setDraft, publishDraft} = useMintter()
 
   const {title, blocks, subtitle} = state
-  const {status, error, data} = getDraft(documentVersion as string, {
+  const {status, error, data} = getDocument(version, {
     onSuccess: () => {
       setReadyToAutosave(true)
     },
@@ -71,11 +71,11 @@ export default function Editor(): JSX.Element {
   const [autosaveDraft] = useMutation(
     async ({state}: {state: EditorState}) => {
       const {title, subtitle, blocks} = state
-      setDraft({documentVersion, title, subtitle, blocks})
+      setDraft({version, title, subtitle, blocks})
     },
     {
       onSuccess: () => {
-        queryCache.setQueryData(['Draft', documentVersion], data)
+        queryCache.setQueryData(['Document', version], data)
       },
     },
   )
@@ -124,10 +124,10 @@ export default function Editor(): JSX.Element {
   }, [data])
 
   async function handlePublish() {
-    publishDraft(documentVersion as string, {
-      onSuccess: (publication: Publication) => {
+    publishDraft(version as string, {
+      onSuccess: (publication: Document) => {
         const doc = publication.toObject()
-        push(`/p/${doc.id}`)
+        push(`/p/${doc.version}`)
       },
     })
   }

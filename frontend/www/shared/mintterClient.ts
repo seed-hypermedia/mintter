@@ -67,14 +67,12 @@ export function listDrafts(key, page = 0) {
 
 export async function getDocument(
   key: string,
-  id: string,
+  version?: string,
 ): Promise<GetDocumentResponse> {
   const req = new GetDocumentRequest()
-  req.setId(id)
+  req.setVersion(version)
 
-  const result = await docsV2.getDocument(req)
-  console.log('result', result)
-  return result
+  return await docsV2.getDocument(req)
 }
 
 export async function createDraft(): Promise<Document> {
@@ -82,12 +80,16 @@ export async function createDraft(): Promise<Document> {
   return await docsV2.createDraft(req)
 }
 
-export interface SetDraftProps extends EditorDocument {
+export interface SetDraftProps {
+  version: string
+  title: string
+  subtitle: string
+  refs: any
   author: any
 }
 
 export async function setDraft({
-  id,
+  version,
   title,
   subtitle,
   refs,
@@ -96,11 +98,11 @@ export async function setDraft({
   const req = new UpdateDraftRequest()
 
   //  do I still need this guard?
-  if (Array.isArray(id)) {
+  if (Array.isArray(version)) {
     console.error(
       `Impossible render: You are trying to access the editor passing ${
-        id.length
-      } document IDs => ${id.map(q => q).join(', ')}`,
+        version.length
+      } document versions => ${version.map(q => q).join(', ')}`,
     )
 
     return
@@ -111,7 +113,7 @@ export async function setDraft({
   const {document, blocks} = toDocument({
     editorDocument: {
       title,
-      id,
+      version,
       subtitle,
       refs,
     },

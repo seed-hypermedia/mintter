@@ -54,7 +54,7 @@ export function Publications() {
               className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
             >
               <NoteAddOutlinedIcon />
-              <span className="ml-2">Create writing your first document</span>
+              <span className="ml-2">Start your first document</span>
             </button>
           </div>
         </>
