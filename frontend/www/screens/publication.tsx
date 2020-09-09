@@ -12,8 +12,8 @@ import {
   // SectionToolbar,
   EditorComponent,
   renderReadOnlyBlockElement,
+  useEditorValue,
 } from '@mintter/editor'
-import {EditablePlugins, SoftBreakPlugin} from 'slate-plugins-next'
 import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
@@ -29,27 +29,15 @@ import {ErrorMessage} from 'components/errorMessage'
 import {AuthorLabel} from 'components/author-label'
 import Container from 'components/container'
 
-interface EditorState {
-  title: string
-  description: string
-  sections: Node[]
-  author: string
-}
-
 export default function Publication(): JSX.Element {
-  const plugins = [...editorPlugins, SoftBreakPlugin()]
+  const plugins = [...editorPlugins]
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
-  const [state, setValue] = useState<EditorState>({
-    title: '',
-    description: '',
-    sections: [],
-    author: '',
-  })
+  const {state, setValue} = useEditorValue()
   const {getDocument, getSections, getAuthor} = useMintter()
 
   const {version} = useParams()
 
-  const {title, sections, description, author: pubAuthor} = state
+  const {title, blocks, subtitle, author: pubAuthor} = state
 
   const author = getAuthor(pubAuthor)
 
@@ -71,7 +59,7 @@ export default function Publication(): JSX.Element {
 
       //   setValue({
       //     title: obj.title,
-      //     description: obj.description,
+      //     subtitle: obj.subtitle,
       //     author: obj.author,
       //     sections,
       //   })
@@ -123,7 +111,7 @@ export default function Publication(): JSX.Element {
               min-height: 28px;
             `}`}
           >
-            {description}
+            {subtitle}
           </p>
           <p className=" text-sm mt-4 text-heading">
             <span>by </span>
@@ -135,7 +123,7 @@ export default function Publication(): JSX.Element {
           readOnly
           editor={editor}
           plugins={plugins}
-          value={sections}
+          value={blocks}
           onChange={() => {}}
           renderElements={[renderReadOnlyBlockElement()]}
         />

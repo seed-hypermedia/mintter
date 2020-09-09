@@ -3,7 +3,6 @@ import {ReactEditor} from 'slate-react'
 import {ELEMENT_PARAGRAPH} from './elements'
 import {BlockRefList} from '@mintter/proto/v2/documents_pb'
 import {v4 as uuid} from 'uuid'
-import {ELEMENT_TRANSCLUSION} from './TransclusionPlugin/defaults'
 import {ELEMENT_BLOCK} from './BlockPlugin/defaults'
 import {ELEMENT_BLOCK_LIST} from './HierarchyPlugin/defaults'
 
@@ -46,16 +45,11 @@ export const initialBlocksValue = [
             type: ELEMENT_PARAGRAPH,
             children: [
               {
-                text: '',
+                text: 'Hello World',
               },
             ],
           },
         ],
-      },
-      {
-        type: ELEMENT_TRANSCLUSION,
-        id: 'transclusion-12345',
-        children: [{text: 's'}],
       },
     ],
   },

@@ -1,10 +1,9 @@
-import {v4 as uuid} from 'uuid'
 import {
   Block,
   Paragraph,
   InlineElement,
   TextStyle,
-  Document,
+  // Document,
   // BlockRefList,
   BlockRef,
   BlockRefList,
@@ -54,64 +53,67 @@ export function toBlockRefList(blockList) {
 }
 
 export function toBlockRef(block: SlateBlock) {
-  let ref: any = {}
+  let newRef: any = {}
 
-  ref.ref = block.id
+  newRef.ref = block.id
 
   if (block.children.length > 1) {
-    ref.blockRefList = toBlockRefList(block.children[1])
+    newRef.blockRefList = toBlockRefList(block.children[1])
   }
-  return makeProto(new BlockRef(), ref)
+  return makeProto(new BlockRef(), newRef)
 }
 
 export interface EditorDocument {
-  id?: string
+  version: string
   title: string
-  subtitle?: string
-  refs: any[]
+  subtitle: string
+  blocks: any[]
 }
 
 export interface ToDocumentRequestProp {
-  editorDocument: EditorDocument
-  author: string
-  blockList: SlateBlock[] // TODO: SlateBlock[]
+  document: {
+    id: string
+    version: string | string[]
+    author: string
+  }
+  state: {
+    title: string
+    subtitle: string
+    blocks: SlateBlock[]
+  }
 }
 
 export interface ToDocumentResponse {
-  document: Document
-  blocks: Block[]
+  document: any
+  blocks: any
 }
 
-export function toDocument({
-  editorDocument,
-  blockList,
-  author,
-}: ToDocumentRequestProp): ToDocumentResponse {
-  const {refs: tree, title, subtitle = '', id} = editorDocument
+export function toDocument({document, state}: ToDocumentRequestProp) {
   // check if document has only one child
-  if (tree.length > 1) {
+  if (state.blocks.length > 1) {
     throw new Error(
-      `toDocument: Invalid blocks lenght. it expects one child only and got ${tree.length}`,
+      `toDocument: Invalid blocks lenght. it expects one child only and got ${state.blocks.length}`,
     )
   }
 
-  const rootBlockList = tree[0]
+  const {title, subtitle, blocks: editorTree} = state
+  const {id, version, author} = document
+
+  const rootBlockList = editorTree[0]
   // create blockRefList
   const blockRefList = toBlockRefList(rootBlockList)
 
-  // create blocks
-  const blocks = blockList.map(toBlock)
-
   // mix all together
   return {
-    document: makeProto(new Document(), {
-      id: id ?? uuid(),
+    document: {
+      id,
+      version,
       title,
       subtitle,
       author,
       blockRefList,
-    }),
-    blocks,
+    },
+    blocksMap: {},
   }
 }
 

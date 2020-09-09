@@ -1,6 +1,8 @@
 import {createContext, useContext, useMemo, useCallback} from 'react'
+import {ReactEditor} from 'slate-react'
 import * as oldAPI from './V1mintterClient'
 import * as apiClient from './mintterClient'
+import {SlateBlock} from '@mintter/editor'
 import {
   Publication,
   Draft,
@@ -17,6 +19,7 @@ import {
   MutationResult,
   MutationOptions,
   queryCache,
+  AnyQueryKey,
 } from 'react-query'
 import {
   GetProfileResponse,
@@ -29,15 +32,23 @@ import {
   GetDocumentRequest,
   Document,
   PublishingState,
+  GetDocumentResponse,
+  UpdateDraftResponse,
 } from '@mintter/proto/v2/documents_pb'
 
 type QueryParam<T> = T | T[]
 
 export interface SetDocumentRequest {
-  version: string | string[]
-  title: string
-  subtitle: string
-  blocks: any[]
+  document: {
+    id: string
+    version: string | string[]
+    author: string
+  }
+  state: {
+    title: string
+    subtitle: string
+    blocks: SlateBlock[]
+  }
 }
 
 // TODO: (Horacio) Fixme Types
@@ -50,9 +61,11 @@ export interface MintterClient {
   createDraft: () => Document
   getDocument: (
     version: QueryParam<string>,
-    options?: QueryOptions<Document>,
-  ) => QueryResult<Document>
-  setDraft: (draft: SetDocumentRequest) => Document
+    options?: QueryOptions<GetDocumentResponse>,
+  ) => QueryResult<GetDocumentResponse>
+  setDocument: (
+    editor: ReactEditor,
+  ) => (input: SetDocumentRequest) => UpdateDraftResponse
   publishDraft: (
     version: string,
     options?: MutationOptions<Document, string>,
@@ -113,24 +126,18 @@ export function MintterProvider(props) {
     })
   }, [])
 
-  const setDraft = useCallback(
-    (draft: oldAPI.SetDraftRequest) => oldAPI.setDraft(draft),
-    [],
-  )
+  const setDocument = useCallback(apiClient.setDocument, [])
 
-  const [deleteDocument] = useMutation(
-    (version: string) => apiClient.deleteDocument(version),
-    {
-      onSuccess: p => {
-        queryCache.refetchQueries('ListDrafts')
-      },
+  const [deleteDocument] = useMutation(apiClient.deleteDocument, {
+    onSuccess: p => {
+      queryCache.refetchQueries('ListDrafts')
     },
-  )
+  })
 
-  const [publishDraft] = useMutation((id: string) => oldAPI.publishDraft(id))
+  const [publishDraft] = useMutation(oldAPI.publishDraft)
 
   const getAuthor = useCallback(
-    (authorId?: string) => useQuery(['Author', authorId], oldAPI.getProfile),
+    (authorId?: string) => useQuery(['Author', authorId], apiClient.getProfile),
     [],
   )
 
@@ -141,7 +148,7 @@ export function MintterProvider(props) {
       listDrafts,
       createDraft,
       getDocument,
-      setDraft,
+      setDocument,
       publishDraft,
       deleteDocument,
       getAuthor,
@@ -152,7 +159,7 @@ export function MintterProvider(props) {
       listDrafts,
       createDraft,
       getDocument,
-      setDraft,
+      setDocument,
       publishDraft,
       deleteDocument,
       getAuthor,

@@ -1,7 +1,6 @@
 import React, {useState, useReducer, useCallback} from 'react'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {css} from 'emotion'
-import {EditablePlugins, SoftBreakPlugin} from 'slate-plugins-next'
 import {useMutation, queryCache} from 'react-query'
 import {v4 as uuid} from 'uuid'
 import {DragDropContext} from 'react-beautiful-dnd'
@@ -15,7 +14,6 @@ import {
   initialBlocksValue,
   EditorComponent,
   renderEditableBlockElement,
-  slate,
   HelperToolbar,
   useHelper,
   ELEMENT_BLOCK,
@@ -47,7 +45,7 @@ import {BlockRefList} from '@mintter/proto/v2/documents_pb'
 
 export default function Editor(): JSX.Element {
   const plugins = [...editorPlugins]
-  const editor: slate.ReactEditor = useEditor(plugins) as slate.ReactEditor
+  const editor: ReactEditor = useEditor(plugins) as ReactEditor
   const wrapperRef = React.useRef<HTMLDivElement>(null)
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
@@ -59,7 +57,7 @@ export default function Editor(): JSX.Element {
   const {push} = useHistory()
   const {version} = useParams()
   const {theme} = useTheme()
-  const {getDocument, setDraft, publishDraft} = useMintter()
+  const {getDocument, setDocument, publishDraft, getAuthor} = useMintter()
 
   const {title, blocks, subtitle} = state
   const {status, error, data} = getDocument(version, {
@@ -68,19 +66,21 @@ export default function Editor(): JSX.Element {
     },
   })
 
-  const [autosaveDraft] = useMutation(
-    async ({state}: {state: EditorState}) => {
-      const {title, subtitle, blocks} = state
-      setDraft({version, title, subtitle, blocks})
-    },
-    {
-      onSuccess: () => {
-        queryCache.setQueryData(['Document', version], data)
-      },
-    },
-  )
+  // const [autosaveDraft] = useMutation(
+  //   async ({state}: {state: EditorState}) => {
+  //     const {title = '', subtitle = '', blocks} = state
+  //     const {document} = data.toObject()
+  //     const {id, author} = document
+  //     setDocument({version, title, subtitle, blocks, id, author})
+  //   },
+  //   {
+  //     onSuccess: () => {
+  //       queryCache.setQueryData(['Document', version], data)
+  //     },
+  //   },
+  // )
 
-  const debouncedValue = useDebounce(state, 1000)
+  // const debouncedValue = useDebounce(state, 1000)
 
   // React.useEffect(() => {
   //   if (readyToAutosave) {
@@ -90,7 +90,8 @@ export default function Editor(): JSX.Element {
 
   React.useEffect(() => {
     if (data) {
-      const obj = data.toObject()
+      const {document} = data.toObject()
+      console.log('data useEffect!')
       // setValue({
       //   title: obj.title,
       //   description: obj.description,
@@ -109,14 +110,8 @@ export default function Editor(): JSX.Element {
       // })
 
       setValue({
-        title: obj.title,
-        subtitle: obj.subtitle,
-        // TODO: refactor this with new API
-        blocks: initialBlocksValue,
-      })
-      console.log({
-        title: obj.title,
-        subtitle: obj.subtitle,
+        title: 'Hello World v2',
+        subtitle: 'First document created with API v2',
         // TODO: refactor this with new API
         blocks: initialBlocksValue,
       })
@@ -138,6 +133,18 @@ export default function Editor(): JSX.Element {
 
   if (status === 'error') {
     return <FullPageErrorMessage error={error} />
+  }
+
+  function handleSave(e) {
+    e.preventDefault()
+    const {document} = data.toObject()
+    const {id, version, author} = document
+    if (editor) {
+      const blocks = SlateEditor.nodes(editor as any, {
+        match: n => n.type === ELEMENT_BLOCK,
+      })
+    }
+    setDocument(editor)({document: {id, version, author}, state})
   }
 
   return (
@@ -219,6 +226,7 @@ export default function Editor(): JSX.Element {
                   minHeight={28}
                   className={`leading-relaxed text-lg font-light text-heading-muted italic`}
                 />
+                <button onClick={handleSave}>save</button>
               </div>
               <BlockToolsProvider>
                 <EditorComponent

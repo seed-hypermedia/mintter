@@ -16,6 +16,9 @@ import {
   PublishDraftRequest,
   PublishDraftResponse,
   Document,
+  Block,
+  Paragraph,
+  InlineElement,
 } from '@mintter/proto/v2/documents_pb'
 import {
   GetProfileRequest,
@@ -33,7 +36,8 @@ import {
 import {fromSlateToMarkdown} from './parseToMarkdown'
 import {parseToMarkdown} from './parseToMarkdown'
 import {profile} from 'console'
-import {toDocument, EditorDocument} from '@mintter/editor'
+import {toDocument, EditorDocument, makeProto} from '@mintter/editor'
+import {v4 as uuid} from 'uuid'
 
 const config = getConfig()
 const hostname = config?.publicRuntimeConfig.MINTTER_HOSTNAME
@@ -88,43 +92,29 @@ export interface SetDraftProps {
   author: any
 }
 
-export async function setDraft({
-  version,
-  title,
-  subtitle,
-  refs,
-  author,
-}: SetDraftProps): Promise<UpdateDraftResponse> {
-  const req = new UpdateDraftRequest()
-
+export async function setDocument({document, state}): Promise<any> {
   //  do I still need this guard?
-  if (Array.isArray(version)) {
+  if (Array.isArray(document.version)) {
     console.error(
       `Impossible render: You are trying to access the editor passing ${
-        version.length
-      } document versions => ${version.map(q => q).join(', ')}`,
+        document.version.length
+      } document versions => ${document.version.map(q => q).join(', ')}`,
     )
 
     return
   }
 
-  const blockList = [] // TODO: add blockList transformer
+  const {document: genDocument, blocksMap} = toDocument({document, state})
+  const req = new UpdateDraftRequest()
+  const map: any = req.getBlocksMap()
+  console.log('map', map)
 
-  const {document, blocks} = toDocument({
-    editorDocument: {
-      title,
-      version,
-      subtitle,
-      refs,
-    },
-    author,
-    blockList,
-  })
-
+  console.log({genDocument})
+  debugger
   req.setDocument(document)
   // req.setBlocksList(blocks)
   const result = await docsV2.updateDraft(req)
-  console.log('setDraft => result', result)
+  console.log('setDocument => result', result)
   return result
 }
 
