@@ -24,7 +24,8 @@ func TestDaemon(t *testing.T) {
 		HTTPPort:      "55001",
 		GRPCPort:      "55002",
 		NoOpenBrowser: true,
-		RepoPath:      testutil.MakeRepoPath(t),
+		// RepoPath:      "~/.mtt",
+		RepoPath: testutil.MakeRepoPath(t),
 		P2P: config.P2P{
 			Addr:        "/ip4/0.0.0.0/tcp/0",
 			NoBootstrap: true,
