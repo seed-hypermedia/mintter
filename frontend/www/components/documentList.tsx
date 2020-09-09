@@ -71,6 +71,8 @@ function ListItem({item, index = 0, onDraftDelete}: ItemProps) {
     location.pathname,
   ])
 
+  console.log('item => ', version)
+
   const to = useMemo(() => (isDraft ? `/editor/${version}` : `/p/${version}`), [
     location.pathname,
   ])

@@ -34,6 +34,7 @@ import {
   PublishingState,
   GetDocumentResponse,
   UpdateDraftResponse,
+  PublishDraftResponse,
 } from '@mintter/proto/v2/documents_pb'
 
 type QueryParam<T> = T | T[]
@@ -66,7 +67,7 @@ export interface MintterClient {
   setDocument: (editor: ReactEditor) => (input: SetDocumentRequest) => void
   publishDraft: (
     version: string,
-    options?: MutationOptions<Document, string>,
+    options?: MutationOptions<PublishDraftResponse, string>,
   ) => MutationResult<Document>
   deleteDocument: (id: string) => void
   getAuthor: (authorId?: string) => QueryResult<Profile>
@@ -132,7 +133,7 @@ export function MintterProvider(props) {
     },
   })
 
-  const [publishDraft] = useMutation(oldAPI.publishDraft)
+  const [publishDraft] = useMutation(apiClient.publishDraft)
 
   const getAuthor = useCallback(
     (authorId?: string) => useQuery(['Author', authorId], apiClient.getProfile),

@@ -105,10 +105,12 @@ export default function Editor(): JSX.Element {
   }, [data])
 
   async function handlePublish() {
+    console.log('version to publish => ', version)
     publishDraft(version as string, {
-      onSuccess: (publication: Document) => {
-        const doc = publication.toObject()
-        push(`/p/${doc.version}`)
+      onSuccess: publication => {
+        // const doc = publication.toObject()
+        // push(`/p/${doc.version}`)
+        console.log('published!! => ', publication.toObject())
       },
     })
   }
