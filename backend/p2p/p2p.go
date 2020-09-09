@@ -14,6 +14,7 @@ import (
 	"mintter/backend"
 	"mintter/backend/cleanup"
 	"mintter/backend/config"
+	"mintter/backend/document"
 	"mintter/backend/identity"
 	"mintter/backend/ipfsutil"
 	"mintter/backend/store"
@@ -78,6 +79,7 @@ type Node struct {
 	quit     context.CancelFunc // This channel will be closed to indicate all the goroutines to exit.
 	lis      net.Listener       // Libp2p listener wrapped into net.Listener. Used by the underlying gRPC server.
 	dialOpts []grpc.DialOption  // Default dial options for gRPC client. Cached to avoid allocating same options for every call.
+	docsrv   *document.Server
 
 	mu   sync.Mutex
 	subs map[identity.ProfileID]*subscription
@@ -165,8 +167,9 @@ func NewNode(repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (
 	clean.Add(lis)
 
 	n = &Node{
-		store: s,
-		log:   log,
+		store:  s,
+		log:    log,
+		docsrv: document.NewServer(s, ipfsnode.BlockStore(), s.DB()),
 
 		acc:      prof.Account,
 		peer:     prof.Peer,
@@ -217,6 +220,11 @@ func (n *Node) Close() (err error) {
 	}
 
 	return err
+}
+
+// DocServer returns the underlying documents server.
+func (n *Node) DocServer() *document.Server {
+	return n.docsrv
 }
 
 // IPFS returns the underlying IPFS node.

@@ -10,9 +10,10 @@ import (
 	"net/http"
 
 	"mintter/backend/config"
-	"mintter/backend/document"
+	"mintter/backend/identity"
 	"mintter/backend/p2p"
 	"mintter/backend/server"
+	"mintter/backend/store"
 	"mintter/proto"
 	v2 "mintter/proto/v2"
 
@@ -43,15 +44,24 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	rpcsrv := grpc.NewServer()
 	docserver := &lazyDocumentsServer{}
+
+	// TODO: this is messy and creepy. Due to our lazy initialization process we have to do this
+	// in order to be able to register the RPC hander before calling serve, because this is a requirement.
+	initFunc := server.InitFunc(func(prof identity.Profile) (*store.Store, *p2p.Node, error) {
+		s, n, err := server.InitFuncFromConfig(cfg, log)(prof)
+		if err != nil {
+			return s, n, err
+		}
+
+		log.Debug("ServerInitialized", zap.String("repoPath", cfg.RepoPath))
+
+		docserver.Init(n.DocServer())
+		return s, n, nil
+	})
+
 	var svc *server.Server
 	{
-		s, err := server.NewServer(cfg, log, server.WithInitFunc(server.InitFunc(func(n *p2p.Node) error {
-			// TODO: this is messy and creepy. Due to our lazy initialization thing we have to do this
-			// in order to be able to register the RPC hander before calling serve, because this is a requirement.
-			ds := document.NewServer(n.Store(), n.IPFS().BlockStore(), n.Store().DB())
-			docserver.Init(ds)
-			return nil
-		})))
+		s, err := server.NewServer(initFunc, log.Named("rpc"))
 		if err != nil {
 			return fmt.Errorf("failed to create rpc server: %w", err)
 		}

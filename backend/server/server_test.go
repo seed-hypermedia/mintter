@@ -31,7 +31,8 @@ func testConfig(t *testing.T) config.Config {
 func newServer(t *testing.T) *server.Server {
 	t.Helper()
 
-	srv, err := server.NewServer(testConfig(t), zap.NewNop())
+	init := server.InitFuncFromConfig(testConfig(t), zap.NewNop())
+	srv, err := server.NewServer(init, zap.NewNop())
 	require.NoError(t, err)
 
 	return srv

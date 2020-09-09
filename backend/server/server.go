@@ -20,11 +20,8 @@ import (
 
 // Server implements Mintter rpc.
 type Server struct {
-	cfg    config.Config
-	log    *zap.Logger
-	p2pLog *zap.Logger
-
-	opts options
+	log      *zap.Logger
+	initFunc InitFunc
 
 	// We are doing a kind of lazy init for these within InitProfile handler
 	// and we recover the state in the constructor if profile was previously initialized.
@@ -33,60 +30,73 @@ type Server struct {
 	node  *p2p.Node
 }
 
-// Option is a type for functional options.
-type Option func(*options)
+var errLater = errors.New("will initialize later")
 
-type options struct {
-	initFunc InitFunc
-}
+// InitFunc is a factory for dependencies of the Server. They are initialized lazily.
+type InitFunc func(prof identity.Profile) (*store.Store, *p2p.Node, error)
 
-// InitFunc is a callback that will be invoked when profile is initialized.
-type InitFunc func(*p2p.Node) error
+// InitFuncFromConfig creates a default InitFunc from the given config.
+//
+// TODO(burdiyan): clean this up when we remove the v1 documents server. Now this is messy as hell.
+func InitFuncFromConfig(cfg config.Config, log *zap.Logger) InitFunc {
+	return InitFunc(func(prof identity.Profile) (st *store.Store, n *p2p.Node, err error) {
+		if strings.HasPrefix(cfg.RepoPath, "~") {
+			homedir, err := os.UserHomeDir()
+			if err != nil {
+				return nil, nil, fmt.Errorf("failed to detect home directory: %w", err)
+			}
 
-// WithInitFunc provied and option for init callback.
-func WithInitFunc(fn InitFunc) Option {
-	return func(opts *options) {
-		opts.initFunc = fn
-	}
+			cfg.RepoPath = strings.Replace(cfg.RepoPath, "~", homedir, 1)
+		}
+
+		if err := os.MkdirAll(cfg.RepoPath, 0700); err != nil {
+			return nil, nil, fmt.Errorf("failed to initialize local repo in %s: %w", cfg.RepoPath, err)
+		}
+
+		// We have to attempt to load profile from the repo in case in was already initialized before.
+		// Initializing with a new profile in this case should fail. Otherwise we can safely create a new profile.
+		st, err = store.Open(cfg.RepoPath)
+		if err != nil {
+			if prof.ID.ID == "" {
+				return st, n, errLater
+			}
+
+			st, err = store.Create(cfg.RepoPath, prof)
+			if err != nil {
+				return st, n, fmt.Errorf("failed to create a store: %w", err)
+			}
+		} else {
+			if prof.ID.ID != "" {
+				return st, n, errors.New("remove existing profile before initializing a new one")
+			}
+		}
+
+		n, err = p2p.NewNode(cfg.RepoPath, st, log.Named("p2p"), cfg.P2P)
+		if err != nil {
+			return st, n, fmt.Errorf("failed to init P2P node: %w", err)
+		}
+
+		return
+	})
 }
 
 // NewServer creates a new Server.
-func NewServer(cfg config.Config, log *zap.Logger, opts ...Option) (*Server, error) {
-	if strings.HasPrefix(cfg.RepoPath, "~") {
-		homedir, err := os.UserHomeDir()
-		if err != nil {
-			return nil, fmt.Errorf("failed to detect home directory: %w", err)
-		}
-
-		cfg.RepoPath = strings.Replace(cfg.RepoPath, "~", homedir, 1)
-	}
-
-	if err := os.MkdirAll(cfg.RepoPath, 0700); err != nil {
-		return nil, fmt.Errorf("failed to initialize local repo in %s: %w", cfg.RepoPath, err)
-	}
-
+func NewServer(init InitFunc, log *zap.Logger) (*Server, error) {
 	s := &Server{
-		log:    log.Named("rpc"),
-		p2pLog: log.Named("p2p"),
-		cfg:    cfg,
-	}
-
-	for _, o := range opts {
-		o(&s.opts)
+		log:      log,
+		initFunc: init,
 	}
 
 	if err := s.init(identity.Profile{}); err != nil {
 		return nil, fmt.Errorf("failed to init node: %w", err)
 	}
 
-	s.log.Debug("ServerInitialized", zap.String("repoPath", cfg.RepoPath))
-
 	return s, nil
 }
 
-// Config returns underlying config for tests.
-func (s *Server) Config() config.Config {
-	return s.cfg
+// InitFunc returns the underlying init func. Used only for tests.
+func (s *Server) InitFunc() InitFunc {
+	return s.initFunc
 }
 
 // Close the server.
@@ -110,33 +120,12 @@ func (s *Server) init(prof identity.Profile) (err error) {
 		return errors.New("already initialized")
 	}
 
-	// We have to attempt to load profile from the repo in case in was already initialized before.
-	// Initializing with a new profile in this case should fail. Otherwise we can safely create a new profile.
-	s.store, err = store.Open(s.cfg.RepoPath)
+	s.store, s.node, err = s.initFunc(prof)
 	if err != nil {
-		if prof.ID.ID == "" {
+		if err == errLater {
 			return nil
 		}
-
-		s.store, err = store.Create(s.cfg.RepoPath, prof)
-		if err != nil {
-			return fmt.Errorf("failed to create a store: %w", err)
-		}
-	} else {
-		if prof.ID.ID != "" {
-			return errors.New("remove existing profile before initializing a new one")
-		}
-	}
-
-	s.node, err = p2p.NewNode(s.cfg.RepoPath, s.store, s.p2pLog, s.cfg.P2P)
-	if err != nil {
-		return fmt.Errorf("failed to init P2P node: %w", err)
-	}
-
-	if s.opts.initFunc != nil {
-		if err := s.opts.initFunc(s.node); err != nil {
-			return fmt.Errorf("init callback failed: %w", err)
-		}
+		return err
 	}
 
 	s.ready.CAS(false, true)
