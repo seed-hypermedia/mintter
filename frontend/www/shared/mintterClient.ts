@@ -145,10 +145,13 @@ export async function deleteDocument(version: string): Promise<any> {
 export async function publishDraft(
   version: string,
 ): Promise<PublishDraftResponse> {
+  console.log('hello!!')
   const req = new PublishDraftRequest()
   req.setVersion(version)
-
-  return await docsV2.publishDraft(req)
+  console.log('version received => ', req)
+  const result = await docsV2.publishDraft(req)
+  console.log('result', result)
+  return result
 }
 
 export async function createProfile({
