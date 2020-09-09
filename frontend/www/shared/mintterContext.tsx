@@ -63,9 +63,7 @@ export interface MintterClient {
     version: QueryParam<string>,
     options?: QueryOptions<GetDocumentResponse>,
   ) => QueryResult<GetDocumentResponse>
-  setDocument: (
-    editor: ReactEditor,
-  ) => (input: SetDocumentRequest) => UpdateDraftResponse
+  setDocument: (editor: ReactEditor) => (input: SetDocumentRequest) => void
   publishDraft: (
     version: string,
     options?: MutationOptions<Document, string>,

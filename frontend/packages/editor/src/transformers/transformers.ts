@@ -7,6 +7,7 @@ import {
   // BlockRefList,
   BlockRef,
   BlockRefList,
+  Document,
 } from '@mintter/proto/v2/documents_pb'
 import {SlateBlock} from '../editor'
 import {Node, Text} from 'slate'
@@ -15,6 +16,7 @@ import {ELEMENT_BLOCK} from '../BlockPlugin'
 import {ELEMENT_IMAGE} from '../ImagePlugin'
 import {ELEMENT_BLOCK_LIST} from '../HierarchyPlugin'
 import {makeProto} from './makeProto'
+import {v4 as uuid} from 'uuid'
 
 export function toBlock(node: SlateBlock): Block {
   const pNode: Node = node.children.filter(n => n.type === 'p')[0]
@@ -83,12 +85,7 @@ export interface ToDocumentRequestProp {
   }
 }
 
-export interface ToDocumentResponse {
-  document: any
-  blocks: any
-}
-
-export function toDocument({document, state}: ToDocumentRequestProp) {
+export function toDocument({document, state}: ToDocumentRequestProp): Document {
   // check if document has only one child
   if (state.blocks.length > 1) {
     throw new Error(
@@ -96,6 +93,7 @@ export function toDocument({document, state}: ToDocumentRequestProp) {
     )
   }
 
+  // const {title, subtitle, blocks: editorTree} = state
   const {title, subtitle, blocks: editorTree} = state
   const {id, version, author} = document
 
@@ -104,22 +102,22 @@ export function toDocument({document, state}: ToDocumentRequestProp) {
   const blockRefList = toBlockRefList(rootBlockList)
 
   // mix all together
-  return {
-    document: {
-      id,
-      version,
-      title,
-      subtitle,
-      author,
-      blockRefList,
-    },
-    blocksMap: {},
-  }
+
+  return makeProto(new Document(), {
+    id,
+    version,
+    title,
+    subtitle,
+    author,
+    blockRefList,
+  })
 }
 
-export function toSlateBlock(block: Block): SlateBlock {
-  const {id, paragraph, image}: Block.AsObject = block.toObject()
-
+export function toSlateBlock({
+  id,
+  paragraph,
+  image,
+}: Block.AsObject): SlateBlock {
   let slateBlock = {
     id,
     type: ELEMENT_BLOCK,
@@ -157,20 +155,22 @@ export function toSlateBlock(block: Block): SlateBlock {
 
 export interface ToSlateTreeRequest {
   blockRefList: BlockRefList.AsObject
-  blocks: Block[]
+  blocksMap: Array<[string, Block.AsObject]>
 }
 
-export function toSlateTree({blockRefList, blocks}: ToSlateTreeRequest) {
-  const dictionary = toSlateBlocksDictionary(blocks)
+export function toSlateTree({blockRefList, blocksMap}: ToSlateTreeRequest) {
+  console.log('toSlateTree -> blockRefList', blockRefList)
+  const dictionary = toSlateBlocksDictionary(blocksMap)
   return {
     type: ELEMENT_BLOCK_LIST,
+    id: uuid(),
     listType: blockRefList.style,
     children: blockRefList.refsList.map(child => {
       const block = dictionary[child.ref]
 
       if (child.blockRefList) {
         block.children.push(
-          toSlateTree({blockRefList: child.blockRefList, blocks}),
+          toSlateTree({blockRefList: child.blockRefList, blocksMap}),
         )
       }
 
@@ -184,15 +184,23 @@ export interface ToSlateBlocksDictionaryResponse {
 }
 
 export function toSlateBlocksDictionary(
-  blocks: Block[],
+  blocksMap: Array<[string, Block.AsObject]>,
 ): ToSlateBlocksDictionaryResponse {
-  return blocks.reduce((acc, item) => {
-    const block = item.toObject()
+  let blocks = {}
 
-    // TODO: Guard for dulplicates?
-    // TODO: Guard for transclusions?
-    acc[block.id] = toSlateBlock(item)
+  for (let [id, block] of blocksMap) {
+    blocks[id] = toSlateBlock(block)
+  }
 
-    return acc
-  }, {})
+  console.log('toSlateBlocksDictionary', blocks)
+  return blocks
+  // return blocksMap.reduce((acc, item) => {
+  //   const block = item.toObject()
+
+  //   // TODO: Guard for dulplicates?
+  //   // TODO: Guard for transclusions?
+  //   acc[block.id] = toSlateBlock(item)
+
+  //   return acc
+  // }, {})
 }
