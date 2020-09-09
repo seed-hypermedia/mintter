@@ -13,6 +13,7 @@ test('toDocument', () => {
   const expected = {
     document: makeProto(new Document(), {
       id: 'document-test',
+      version: 'document-version',
       title: 'Demo Test Document',
       subtitle: '',
       author: 'horacio',
@@ -42,8 +43,9 @@ test('toDocument', () => {
   const result = toDocument({
     editorDocument: {
       id: 'document-test',
+      version: 'document-version',
       title: 'Demo Test Document',
-      refs: [
+      blocks: [
         {
           type: 'block_list',
           listType: BlockRefList.Style.NONE,

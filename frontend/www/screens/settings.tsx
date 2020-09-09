@@ -65,7 +65,7 @@ export default function Settings() {
           grid-gap: 1rem;
         `}`}
       >
-        <div>hello</div>
+        <div />
         <div>
           <div
             className={`my-0 mx-auto ${css`
@@ -180,7 +180,7 @@ export default function Settings() {
             </form>
           </div>
         </div>
-        <div>hello</div>
+        <div />
       </div>
 
       <style jsx>{`
