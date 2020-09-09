@@ -23,6 +23,8 @@ import {
   onDragStart,
   onDragEnd,
   BlockToolsProvider,
+  toSlateTree,
+  toSlateBlocksDictionary,
 } from '@mintter/editor'
 import {useEditor as useSlateEditor, ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
@@ -58,7 +60,7 @@ export default function Editor(): JSX.Element {
   const {version} = useParams()
   const {theme} = useTheme()
   const {getDocument, setDocument, publishDraft, getAuthor} = useMintter()
-
+  const saveDocument = React.useMemo(() => setDocument(editor), [editor])
   const {title, blocks, subtitle} = state
   const {status, error, data} = getDocument(version, {
     onSuccess: () => {
@@ -66,54 +68,38 @@ export default function Editor(): JSX.Element {
     },
   })
 
-  // const [autosaveDraft] = useMutation(
-  //   async ({state}: {state: EditorState}) => {
-  //     const {title = '', subtitle = '', blocks} = state
-  //     const {document} = data.toObject()
-  //     const {id, author} = document
-  //     setDocument({version, title, subtitle, blocks, id, author})
-  //   },
-  //   {
-  //     onSuccess: () => {
-  //       queryCache.setQueryData(['Document', version], data)
-  //     },
-  //   },
-  // )
+  const [autosaveDraft] = useMutation(
+    async state => {
+      const {document} = data.toObject()
+      const {id, version, author} = document
+      saveDocument({document: {id, version, author}, state})
+    },
+    {
+      onSuccess: () => {
+        queryCache.setQueryData(['Document', version], data)
+      },
+    },
+  )
 
-  // const debouncedValue = useDebounce(state, 1000)
+  const debouncedValue = useDebounce(state, 1000)
 
-  // React.useEffect(() => {
-  //   if (readyToAutosave) {
-  //     autosaveDraft({state})
-  //   }
-  // }, [debouncedValue])
+  React.useEffect(() => {
+    if (readyToAutosave) {
+      autosaveDraft(state)
+    }
+  }, [debouncedValue])
 
   React.useEffect(() => {
     if (data) {
-      const {document} = data.toObject()
-      console.log('data useEffect!')
-      // setValue({
-      //   title: obj.title,
-      //   description: obj.description,
-      //   // TODO: refactor this with new API
-      //   blocks:
-      //     obj.blocksList.length > 0
-      //       ? obj.blocksList.map((s: Section.AsObject) => {
-      //           return {
-      //             type: ELEMENT_BLOCK,
-      //             id: s.id,
-      //             author: s.author,
-      //             children: markdownToSlate(s.body),
-      //           }
-      //         })
-      //       : initialBlocksValue,
-      // })
+      const {document, blocksMap} = data.toObject()
+
+      const {title, subtitle, blockRefList} = document
+      const blocks = toSlateTree({blockRefList, blocksMap})
 
       setValue({
-        title: 'Hello World v2',
-        subtitle: 'First document created with API v2',
-        // TODO: refactor this with new API
-        blocks: initialBlocksValue,
+        title,
+        subtitle,
+        blocks: [blocks] || initialBlocksValue,
       })
     }
   }, [data])
@@ -133,18 +119,6 @@ export default function Editor(): JSX.Element {
 
   if (status === 'error') {
     return <FullPageErrorMessage error={error} />
-  }
-
-  function handleSave(e) {
-    e.preventDefault()
-    const {document} = data.toObject()
-    const {id, version, author} = document
-    if (editor) {
-      const blocks = SlateEditor.nodes(editor as any, {
-        match: n => n.type === ELEMENT_BLOCK,
-      })
-    }
-    setDocument(editor)({document: {id, version, author}, state})
   }
 
   return (
@@ -226,7 +200,6 @@ export default function Editor(): JSX.Element {
                   minHeight={28}
                   className={`leading-relaxed text-lg font-light text-heading-muted italic`}
                 />
-                <button onClick={handleSave}>save</button>
               </div>
               <BlockToolsProvider>
                 <EditorComponent

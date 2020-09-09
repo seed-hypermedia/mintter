@@ -23,6 +23,7 @@
     "@mintter/editor": "*",
     "@mintter/proto": "*",
     "@tippyjs/react": "^4.0.2",
+    "@udecode/slate-plugins": "^0.66.7",
     "@zeit/next-css": "^1.0.1",
     "emotion": "^10.0.27",
     "formik": "^2.1.4",

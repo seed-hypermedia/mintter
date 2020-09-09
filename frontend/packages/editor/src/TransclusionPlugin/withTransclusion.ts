@@ -1,14 +1,10 @@
 import {ReactEditor} from 'slate-react'
 import {Editor, Transforms, Path} from 'slate'
-import {ELEMENT_PARAGRAPH} from '../elements'
-import {ELEMENT_BLOCK} from '../BlockPlugin/defaults'
-import {ELEMENT_TRANSCLUSION} from './defaults'
 import {v4 as uuid} from 'uuid'
 
 export const withTransclusion = options => <T extends ReactEditor>(
   editor: T,
 ) => {
-  console.log(options)
   const {insertBreak} = editor
 
   editor.insertBreak = () => {
@@ -16,15 +12,15 @@ export const withTransclusion = options => <T extends ReactEditor>(
     console.log('transclusion plugin!')
     if (selection) {
       const [tNode, tPath] = Editor.parent(editor, selection)
-      if (tNode.type === ELEMENT_TRANSCLUSION) {
+      if (tNode.type === options.transclusion.type) {
         console.log('ENTER EN TRANSCLUSION!', selection)
         const nextBlock = Path.next(tPath)
         Transforms.insertNodes(
           editor,
           {
-            type: ELEMENT_BLOCK,
+            type: options.block.type,
             id: uuid(),
-            children: [{type: ELEMENT_PARAGRAPH, children: [{text: ''}]}],
+            children: [{type: options.p.type, children: [{text: ''}]}],
           },
           {
             at: nextBlock,

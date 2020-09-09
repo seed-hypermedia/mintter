@@ -1,5 +1,5 @@
 import getConfig from 'next/config'
-import {Node} from 'slate'
+import {Node, NodeEntry} from 'slate'
 import {MintterPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
 import {DocumentsPromiseClient} from '@mintter/proto/documents_grpc_web_pb'
 import {DocumentsPromiseClient as v2DocumentsClient} from '@mintter/proto/v2/documents_grpc_web_pb'
@@ -36,8 +36,17 @@ import {
 import {fromSlateToMarkdown} from './parseToMarkdown'
 import {parseToMarkdown} from './parseToMarkdown'
 import {profile} from 'console'
-import {toDocument, EditorDocument, makeProto} from '@mintter/editor'
+import {
+  toDocument,
+  EditorDocument,
+  makeProto,
+  Editor,
+  toBlock,
+  ELEMENT_BLOCK,
+  SlateBlock,
+} from '@mintter/editor'
 import {v4 as uuid} from 'uuid'
+import {getNodesByType} from '@udecode/slate-plugins'
 
 const config = getConfig()
 const hostname = config?.publicRuntimeConfig.MINTTER_HOSTNAME
@@ -76,7 +85,9 @@ export async function getDocument(
   const req = new GetDocumentRequest()
   req.setVersion(version)
 
-  return await docsV2.getDocument(req)
+  const document = await docsV2.getDocument(req)
+  console.log('getDocument => ', document)
+  return document
 }
 
 export async function createDraft(): Promise<Document> {
@@ -92,30 +103,36 @@ export interface SetDraftProps {
   author: any
 }
 
-export async function setDocument({document, state}): Promise<any> {
-  //  do I still need this guard?
-  if (Array.isArray(document.version)) {
-    console.error(
-      `Impossible render: You are trying to access the editor passing ${
-        document.version.length
-      } document versions => ${document.version.map(q => q).join(', ')}`,
-    )
+export function setDocument(editor) {
+  return async function({document, state}): Promise<any> {
+    //  do I still need this guard?
+    if (Array.isArray(document.version)) {
+      console.error(
+        `Impossible render: You are trying to access the editor passing ${
+          document.version.length
+        } document versions => ${document.version.map(q => q).join(', ')}`,
+      )
 
-    return
+      return
+    }
+
+    const genDocument = toDocument({document, state})
+    const req = new UpdateDraftRequest()
+    const nodes: any = getNodesByType(editor, ELEMENT_BLOCK, {
+      at: [],
+    }) // Iterable<NodeEntry<SlateBlock>>
+
+    if (nodes) {
+      const map: Map<string, Block> = req.getBlocksMap()
+      for (let [node] of nodes) {
+        let block: Block = toBlock(node)
+        map.set(node.id, block)
+      }
+    }
+
+    req.setDocument(genDocument)
+    await docsV2.updateDraft(req)
   }
-
-  const {document: genDocument, blocksMap} = toDocument({document, state})
-  const req = new UpdateDraftRequest()
-  const map: any = req.getBlocksMap()
-  console.log('map', map)
-
-  console.log({genDocument})
-  debugger
-  req.setDocument(document)
-  // req.setBlocksList(blocks)
-  const result = await docsV2.updateDraft(req)
-  console.log('setDocument => result', result)
-  return result
 }
 
 export async function deleteDocument(version: string): Promise<any> {

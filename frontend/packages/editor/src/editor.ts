@@ -45,7 +45,7 @@ export const initialBlocksValue = [
             type: ELEMENT_PARAGRAPH,
             children: [
               {
-                text: 'Hello World',
+                text: '',
               },
             ],
           },
