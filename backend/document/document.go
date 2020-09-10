@@ -268,16 +268,15 @@ func (s *Server) ListDocuments(ctx context.Context, in *v2.ListDocumentsRequest)
 		if err != nil {
 			return nil, err
 		}
-		author = me.ID
 
-		if in.PublishingState == v2.PublishingState_DRAFT && in.Author != "" && in.Author != me.ID.String() {
-			return nil, fmt.Errorf("when listing drafts use empty author or the ID of the current user, got: %s", in.Author)
-		}
-
-		if in.PublishingState == v2.PublishingState_PUBLISHED {
-			if in.Author == "" {
-				in.Author = me.ID.String()
-			} else {
+		switch in.PublishingState {
+		case v2.PublishingState_DRAFT:
+			if in.Author != "" && in.Author != me.ID.String() {
+				return nil, fmt.Errorf("when listing drafts use empty author or the ID of the current user, got: %s", in.Author)
+			}
+			author = me.ID
+		case v2.PublishingState_PUBLISHED:
+			if in.Author != "" {
 				a, err := identity.DecodeProfileID(in.Author)
 				if err != nil {
 					return nil, err
