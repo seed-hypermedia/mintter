@@ -21,3 +21,11 @@ export function BlockList({element, attributes, children}) {
     </Droppable>
   )
 }
+
+export function ReadOnlyBlockList({attributes, children}) {
+  return (
+    <div {...attributes} className={`first:mt-4`}>
+      {children}
+    </div>
+  )
+}

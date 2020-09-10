@@ -72,26 +72,42 @@ function Editor(
           word-break: break-word;
         `}`}
       >
-        {/* <Toolbar /> */}
-        <Droppable droppableId="editor" type="block_list">
-          {(provided, snapshot) => (
-            <div ref={provided.innerRef} {...provided.droppableProps}>
-              <EditablePlugins
-                readOnly={readOnly && !snapshot.isDraggingOver}
-                plugins={plugins}
-                renderElement={renderElements}
-                placeholder={
-                  readOnly ? 'no content' : 'Start writing your masterpiece...'
-                }
-                spellCheck
-                autoFocus
-                onKeyDown={[onKeyDownHelper]}
-                onKeyDownDeps={[index, target]}
-              />
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
+        {readOnly ? (
+          <EditablePlugins
+            readOnly={true}
+            plugins={plugins}
+            renderElement={renderElements}
+            placeholder={
+              readOnly ? 'no content' : 'Start writing your masterpiece...'
+            }
+            spellCheck
+            autoFocus
+            onKeyDown={[onKeyDownHelper]}
+            onKeyDownDeps={[index, target]}
+          />
+        ) : (
+          <Droppable droppableId="editor" type="block_list">
+            {(provided, snapshot) => (
+              <div ref={provided.innerRef} {...provided.droppableProps}>
+                <EditablePlugins
+                  readOnly={readOnly && !snapshot.isDraggingOver}
+                  plugins={plugins}
+                  renderElement={renderElements}
+                  placeholder={
+                    readOnly
+                      ? 'no content'
+                      : 'Start writing your masterpiece...'
+                  }
+                  spellCheck
+                  autoFocus
+                  onKeyDown={[onKeyDownHelper]}
+                  onKeyDownDeps={[index, target]}
+                />
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        )}
       </div>
       <HelperToolbar
         at={target}
