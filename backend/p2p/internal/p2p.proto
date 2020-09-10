@@ -14,9 +14,6 @@ service PeerService {
   rpc GetProfile(GetProfileRequest) returns (Profile);
 
   rpc ListProfiles(ListProfilesRequest) returns (ListProfilesResponse);
-
-  rpc ListPublications(ListPublicationsRequest)
-      returns (ListPublicationsResponse);
 }
 
 message HandshakeRequest {
@@ -45,13 +42,6 @@ message ListProfilesResponse {
   repeated Profile profiles = 1;
 
   string next_page_token = 2;
-}
-
-message ListPublicationsRequest {}
-
-message ListPublicationsResponse {
-  // List of all the publications of this author.
-  repeated string publication_ids = 1;
 }
 
 message Profile {

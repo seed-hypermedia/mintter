@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ipfs/go-cid"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -82,10 +81,6 @@ func (n *Node) syncAll() error {
 	}
 
 	for _, prof := range profiles {
-		if err := n.SyncPublications(n.ctx, prof.ID); err != nil && err != context.Canceled {
-			n.log.Error("SyncPublicationsFailed", zap.Error(err), zap.String("profile", prof.ID.String()))
-		}
-
 		if err := n.SyncProfiles(n.ctx, prof.ID); err != nil && err != context.Canceled {
 			n.log.Error("SyncProfilesFailed", zap.Error(err), zap.String("profile", prof.ID.String()))
 		}
@@ -168,16 +163,9 @@ func (n *Node) handlePubSubMessage(msg *pubsub.Message) error {
 	parts := strings.Split(string(msg.Message.Data), ":")
 	kind, version := parts[0], parts[1]
 
-	cid, err := cid.Decode(version)
-	if err != nil {
-		return err
-	}
-
 	// TODO(burdiyan): we need to sign messages propertly to avoid flood.
 
 	switch kind {
-	case "publication":
-		return n.syncPublication(n.ctx, cid)
 	case "document":
 		if _, err := n.docsrv.GetDocument(document.AdminContext(n.ctx), &v2.GetDocumentRequest{
 			Version: version,
