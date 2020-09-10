@@ -8,6 +8,7 @@ import (
 
 	"mintter/backend/identity"
 	"mintter/backend/p2p/internal"
+	v2 "mintter/proto/v2"
 
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -27,6 +28,7 @@ func (n *Node) serveRPC() {
 
 	rpc := &rpcHandler{n}
 	internal.RegisterPeerServiceServer(srv, rpc)
+	v2.RegisterDocumentsServer(srv, n.docsrv)
 
 	n.g.Go(func() error {
 		err := srv.Serve(n.lis)

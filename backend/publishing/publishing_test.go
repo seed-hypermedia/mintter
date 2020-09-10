@@ -11,8 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type RawCBOR []byte
-
 func init() {
 	cbornode.RegisterCborType(signedNode{})
 

@@ -78,9 +78,7 @@ func (txn *fakeTxn) Commit() error {
 	return nil
 }
 
-func (txn *fakeTxn) Discard() {
-	return
-}
+func (txn *fakeTxn) Discard() {}
 
 // ProtoEqual will check if want and got are equal Protobuf messages.
 // For some weird reason they made Messages uncomparable using normal mechanisms.

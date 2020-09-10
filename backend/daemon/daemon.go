@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"mintter/backend/config"
+	"mintter/backend/document"
 	"mintter/backend/identity"
 	"mintter/backend/p2p"
 	"mintter/backend/server"
@@ -30,6 +31,12 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+func contextInterceptor(fn func(context.Context) context.Context) grpc.ServerOption {
+	return grpc.UnaryInterceptor(func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		return handler(fn(ctx), req)
+	})
+}
+
 // Run the daemon.
 func Run(ctx context.Context, cfg config.Config) (err error) {
 	g, ctx := errgroup.WithContext(ctx)
@@ -42,7 +49,9 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	defer log.Info("GracefulShutdownEnded")
 
-	rpcsrv := grpc.NewServer()
+	rpcsrv := grpc.NewServer(
+		contextInterceptor(document.AdminContext),
+	)
 	docserver := &lazyDocumentsServer{}
 
 	// TODO: this is messy and creepy. Due to our lazy initialization process we have to do this

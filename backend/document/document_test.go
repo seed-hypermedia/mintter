@@ -14,6 +14,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestV2CreateDraft(t *testing.T) {
@@ -235,9 +236,38 @@ func TestPublishDraft_v2(t *testing.T) {
 	testutil.ProtoEqual(t, doc.Document, list.Documents[0], "listed document must be the same as retrieved")
 }
 
+func TestSubscription(t *testing.T) {
+	srv, _, ctx := makeV2Server(t, "alice")
+
+	ch := make(chan proto.Message)
+	srv.(*document.Server).Subscribe(ch)
+
+	d1, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
+	require.NoError(t, err, "must create draft")
+	require.NotNil(t, d1)
+
+	d1.Title = "My published document"
+
+	updateResp, err := srv.UpdateDraft(ctx, &v2.UpdateDraftRequest{
+		Document: d1,
+		Blocks:   makeTestBlocks(),
+	})
+	require.NoError(t, err, "must update draft")
+	require.NotNil(t, updateResp)
+
+	published, err := srv.PublishDraft(ctx, &v2.PublishDraftRequest{
+		Version: d1.Version,
+	})
+	require.NoError(t, err, "must publish draft")
+	require.NotNil(t, published)
+
+	evt := <-ch
+	testutil.ProtoEqual(t, published, evt, "published events don't match")
+}
+
 func makeV2Server(t *testing.T, name string) (v2.DocumentsServer, identity.Profile, context.Context) {
 	t.Helper()
-	ctx := context.Background()
+	ctx := document.AdminContext(context.Background())
 
 	prof := testutil.MakeProfile(t, name)
 	store, err := store.Create(testutil.MakeRepoPath(t), prof)
