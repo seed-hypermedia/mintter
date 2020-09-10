@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// SyncDocuments from another peer.
 func (n *Node) SyncDocuments(ctx context.Context, pid identity.ProfileID) error {
 	conn, err := n.dialProfile(ctx, pid)
 	if err != nil {

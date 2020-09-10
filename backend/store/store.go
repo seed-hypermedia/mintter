@@ -3,6 +3,7 @@ package store
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -22,8 +23,6 @@ import (
 var (
 	keyProfiles          = datastore.NewKey("/mintter/profiles")
 	keySuggestedProfiles = datastore.NewKey("/mintter/suggestedProfiles")
-	keyDrafts            = datastore.NewKey("/mintter/drafts")
-	keyPublications      = datastore.NewKey("/mintter/publications")
 )
 
 // Store is the persistence layer of the app.
@@ -129,11 +128,7 @@ func (s *Store) Peerstore() peerstore.Peerstore {
 	return s.ps
 }
 
-func (s *Store) get(k datastore.Key) ([]byte, error) {
-	v, err := s.db.Get(k)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get %s: %w", k, err)
-	}
-
-	return v, nil
+// IsNotFound is used to check if error because of not found item.
+func IsNotFound(err error) bool {
+	return errors.Is(err, datastore.ErrNotFound)
 }

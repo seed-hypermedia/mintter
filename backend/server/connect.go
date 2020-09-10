@@ -32,3 +32,13 @@ func (s *Server) ConnectToPeer(ctx context.Context, in *proto.ConnectToPeerReque
 
 	return &proto.ConnectToPeerResponse{}, nil
 }
+
+func addrSlice(mas ...multiaddr.Multiaddr) []string {
+	out := make([]string, len(mas))
+
+	for i, ma := range mas {
+		out[i] = ma.String()
+	}
+
+	return out
+}

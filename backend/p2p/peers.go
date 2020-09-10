@@ -121,10 +121,6 @@ func (n *Node) savePeerProfile(ctx context.Context, prof identity.Profile) error
 		return fmt.Errorf("failed to store profile: %w", err)
 	}
 
-	if err := n.SyncPublications(ctx, prof.ID); err != nil {
-		return fmt.Errorf("failed to sync publications: %w", err)
-	}
-
 	if err := n.addSubscription(prof.ID); err != nil {
 		return fmt.Errorf("failed to add subscription: %w", err)
 	}

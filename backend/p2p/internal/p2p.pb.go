@@ -349,92 +349,6 @@ func (x *ListProfilesResponse) GetNextPageToken() string {
 	return ""
 }
 
-type ListPublicationsRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *ListPublicationsRequest) Reset() {
-	*x = ListPublicationsRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_backend_p2p_internal_p2p_proto_msgTypes[7]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ListPublicationsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListPublicationsRequest) ProtoMessage() {}
-
-func (x *ListPublicationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_backend_p2p_internal_p2p_proto_msgTypes[7]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListPublicationsRequest.ProtoReflect.Descriptor instead.
-func (*ListPublicationsRequest) Descriptor() ([]byte, []int) {
-	return file_backend_p2p_internal_p2p_proto_rawDescGZIP(), []int{7}
-}
-
-type ListPublicationsResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// List of all the publications of this author.
-	PublicationIds []string `protobuf:"bytes,1,rep,name=publication_ids,json=publicationIds,proto3" json:"publication_ids,omitempty"`
-}
-
-func (x *ListPublicationsResponse) Reset() {
-	*x = ListPublicationsResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_backend_p2p_internal_p2p_proto_msgTypes[8]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ListPublicationsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListPublicationsResponse) ProtoMessage() {}
-
-func (x *ListPublicationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_backend_p2p_internal_p2p_proto_msgTypes[8]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListPublicationsResponse.ProtoReflect.Descriptor instead.
-func (*ListPublicationsResponse) Descriptor() ([]byte, []int) {
-	return file_backend_p2p_internal_p2p_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *ListPublicationsResponse) GetPublicationIds() []string {
-	if x != nil {
-		return x.PublicationIds
-	}
-	return nil
-}
-
 type Profile struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -457,7 +371,7 @@ type Profile struct {
 func (x *Profile) Reset() {
 	*x = Profile{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_backend_p2p_internal_p2p_proto_msgTypes[9]
+		mi := &file_backend_p2p_internal_p2p_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -470,7 +384,7 @@ func (x *Profile) String() string {
 func (*Profile) ProtoMessage() {}
 
 func (x *Profile) ProtoReflect() protoreflect.Message {
-	mi := &file_backend_p2p_internal_p2p_proto_msgTypes[9]
+	mi := &file_backend_p2p_internal_p2p_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -483,7 +397,7 @@ func (x *Profile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Profile.ProtoReflect.Descriptor instead.
 func (*Profile) Descriptor() ([]byte, []int) {
-	return file_backend_p2p_internal_p2p_proto_rawDescGZIP(), []int{9}
+	return file_backend_p2p_internal_p2p_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Profile) GetPeerId() string {
@@ -558,12 +472,6 @@ var file_backend_p2p_internal_p2p_proto_rawDesc = []byte{
 	0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x12, 0x26, 0x0a, 0x0f, 0x6e, 0x65, 0x78, 0x74, 0x5f,
 	0x70, 0x61, 0x67, 0x65, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
 	0x52, 0x0d, 0x6e, 0x65, 0x78, 0x74, 0x50, 0x61, 0x67, 0x65, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x22,
-	0x19, 0x0a, 0x17, 0x4c, 0x69, 0x73, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x43, 0x0a, 0x18, 0x4c, 0x69,
-	0x73, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x27, 0x0a, 0x0f, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52,
-	0x0e, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x73, 0x22,
 	0xad, 0x01, 0x0a, 0x07, 0x50, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x12, 0x17, 0x0a, 0x07, 0x70,
 	0x65, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x70, 0x65,
 	0x65, 0x72, 0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x5f,
@@ -575,7 +483,7 @@ var file_backend_p2p_internal_p2p_proto_rawDesc = []byte{
 	0x28, 0x09, 0x52, 0x03, 0x62, 0x69, 0x6f, 0x12, 0x26, 0x0a, 0x0f, 0x61, 0x63, 0x63, 0x6f, 0x75,
 	0x6e, 0x74, 0x5f, 0x70, 0x75, 0x62, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0c,
 	0x52, 0x0d, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x50, 0x75, 0x62, 0x4b, 0x65, 0x79, 0x32,
-	0x90, 0x03, 0x0a, 0x0b, 0x50, 0x65, 0x65, 0x72, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12,
+	0xaf, 0x02, 0x0a, 0x0b, 0x50, 0x65, 0x65, 0x72, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12,
 	0x4a, 0x0a, 0x09, 0x48, 0x61, 0x6e, 0x64, 0x73, 0x68, 0x61, 0x6b, 0x65, 0x12, 0x1d, 0x2e, 0x6d,
 	0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x48, 0x61, 0x6e, 0x64, 0x73,
 	0x68, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x6d, 0x69,
@@ -594,16 +502,10 @@ var file_backend_p2p_internal_p2p_proto_rawDesc = []byte{
 	0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x21,
 	0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x4c, 0x69, 0x73,
 	0x74, 0x50, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x5f, 0x0a, 0x10, 0x4c, 0x69, 0x73, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x24, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e,
-	0x70, 0x32, 0x70, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x25, 0x2e, 0x6d, 0x69,
-	0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x50, 0x75,
-	0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x42, 0x27, 0x5a, 0x25, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2f, 0x62, 0x61,
-	0x63, 0x6b, 0x65, 0x6e, 0x64, 0x2f, 0x70, 0x32, 0x70, 0x2f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e,
-	0x61, 0x6c, 0x3b, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x65, 0x42, 0x27, 0x5a, 0x25, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2f, 0x62, 0x61, 0x63,
+	0x6b, 0x65, 0x6e, 0x64, 0x2f, 0x70, 0x32, 0x70, 0x2f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61,
+	0x6c, 0x3b, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x33,
 }
 
 var (
@@ -618,35 +520,31 @@ func file_backend_p2p_internal_p2p_proto_rawDescGZIP() []byte {
 	return file_backend_p2p_internal_p2p_proto_rawDescData
 }
 
-var file_backend_p2p_internal_p2p_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_backend_p2p_internal_p2p_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_backend_p2p_internal_p2p_proto_goTypes = []interface{}{
-	(*HandshakeRequest)(nil),         // 0: mintter.p2p.HandshakeRequest
-	(*HandshakeResponse)(nil),        // 1: mintter.p2p.HandshakeResponse
-	(*PingRequest)(nil),              // 2: mintter.p2p.PingRequest
-	(*PingResponse)(nil),             // 3: mintter.p2p.PingResponse
-	(*GetProfileRequest)(nil),        // 4: mintter.p2p.GetProfileRequest
-	(*ListProfilesRequest)(nil),      // 5: mintter.p2p.ListProfilesRequest
-	(*ListProfilesResponse)(nil),     // 6: mintter.p2p.ListProfilesResponse
-	(*ListPublicationsRequest)(nil),  // 7: mintter.p2p.ListPublicationsRequest
-	(*ListPublicationsResponse)(nil), // 8: mintter.p2p.ListPublicationsResponse
-	(*Profile)(nil),                  // 9: mintter.p2p.Profile
+	(*HandshakeRequest)(nil),     // 0: mintter.p2p.HandshakeRequest
+	(*HandshakeResponse)(nil),    // 1: mintter.p2p.HandshakeResponse
+	(*PingRequest)(nil),          // 2: mintter.p2p.PingRequest
+	(*PingResponse)(nil),         // 3: mintter.p2p.PingResponse
+	(*GetProfileRequest)(nil),    // 4: mintter.p2p.GetProfileRequest
+	(*ListProfilesRequest)(nil),  // 5: mintter.p2p.ListProfilesRequest
+	(*ListProfilesResponse)(nil), // 6: mintter.p2p.ListProfilesResponse
+	(*Profile)(nil),              // 7: mintter.p2p.Profile
 }
 var file_backend_p2p_internal_p2p_proto_depIdxs = []int32{
-	9, // 0: mintter.p2p.HandshakeRequest.profile:type_name -> mintter.p2p.Profile
-	9, // 1: mintter.p2p.HandshakeResponse.profile:type_name -> mintter.p2p.Profile
-	9, // 2: mintter.p2p.ListProfilesResponse.profiles:type_name -> mintter.p2p.Profile
+	7, // 0: mintter.p2p.HandshakeRequest.profile:type_name -> mintter.p2p.Profile
+	7, // 1: mintter.p2p.HandshakeResponse.profile:type_name -> mintter.p2p.Profile
+	7, // 2: mintter.p2p.ListProfilesResponse.profiles:type_name -> mintter.p2p.Profile
 	0, // 3: mintter.p2p.PeerService.Handshake:input_type -> mintter.p2p.HandshakeRequest
 	2, // 4: mintter.p2p.PeerService.Ping:input_type -> mintter.p2p.PingRequest
 	4, // 5: mintter.p2p.PeerService.GetProfile:input_type -> mintter.p2p.GetProfileRequest
 	5, // 6: mintter.p2p.PeerService.ListProfiles:input_type -> mintter.p2p.ListProfilesRequest
-	7, // 7: mintter.p2p.PeerService.ListPublications:input_type -> mintter.p2p.ListPublicationsRequest
-	1, // 8: mintter.p2p.PeerService.Handshake:output_type -> mintter.p2p.HandshakeResponse
-	3, // 9: mintter.p2p.PeerService.Ping:output_type -> mintter.p2p.PingResponse
-	9, // 10: mintter.p2p.PeerService.GetProfile:output_type -> mintter.p2p.Profile
-	6, // 11: mintter.p2p.PeerService.ListProfiles:output_type -> mintter.p2p.ListProfilesResponse
-	8, // 12: mintter.p2p.PeerService.ListPublications:output_type -> mintter.p2p.ListPublicationsResponse
-	8, // [8:13] is the sub-list for method output_type
-	3, // [3:8] is the sub-list for method input_type
+	1, // 7: mintter.p2p.PeerService.Handshake:output_type -> mintter.p2p.HandshakeResponse
+	3, // 8: mintter.p2p.PeerService.Ping:output_type -> mintter.p2p.PingResponse
+	7, // 9: mintter.p2p.PeerService.GetProfile:output_type -> mintter.p2p.Profile
+	6, // 10: mintter.p2p.PeerService.ListProfiles:output_type -> mintter.p2p.ListProfilesResponse
+	7, // [7:11] is the sub-list for method output_type
+	3, // [3:7] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name
 	3, // [3:3] is the sub-list for extension extendee
 	0, // [0:3] is the sub-list for field type_name
@@ -743,30 +641,6 @@ func file_backend_p2p_internal_p2p_proto_init() {
 			}
 		}
 		file_backend_p2p_internal_p2p_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListPublicationsRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_backend_p2p_internal_p2p_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListPublicationsResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_backend_p2p_internal_p2p_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Profile); i {
 			case 0:
 				return &v.state
@@ -785,7 +659,7 @@ func file_backend_p2p_internal_p2p_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_backend_p2p_internal_p2p_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -817,7 +691,6 @@ type PeerServiceClient interface {
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*Profile, error)
 	ListProfiles(ctx context.Context, in *ListProfilesRequest, opts ...grpc.CallOption) (*ListProfilesResponse, error)
-	ListPublications(ctx context.Context, in *ListPublicationsRequest, opts ...grpc.CallOption) (*ListPublicationsResponse, error)
 }
 
 type peerServiceClient struct {
@@ -864,15 +737,6 @@ func (c *peerServiceClient) ListProfiles(ctx context.Context, in *ListProfilesRe
 	return out, nil
 }
 
-func (c *peerServiceClient) ListPublications(ctx context.Context, in *ListPublicationsRequest, opts ...grpc.CallOption) (*ListPublicationsResponse, error) {
-	out := new(ListPublicationsResponse)
-	err := c.cc.Invoke(ctx, "/mintter.p2p.PeerService/ListPublications", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // PeerServiceServer is the server API for PeerService service.
 type PeerServiceServer interface {
 	// Handshake performs profile exchange for the first time between peers.
@@ -881,7 +745,6 @@ type PeerServiceServer interface {
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	GetProfile(context.Context, *GetProfileRequest) (*Profile, error)
 	ListProfiles(context.Context, *ListProfilesRequest) (*ListProfilesResponse, error)
-	ListPublications(context.Context, *ListPublicationsRequest) (*ListPublicationsResponse, error)
 }
 
 // UnimplementedPeerServiceServer can be embedded to have forward compatible implementations.
@@ -899,9 +762,6 @@ func (*UnimplementedPeerServiceServer) GetProfile(context.Context, *GetProfileRe
 }
 func (*UnimplementedPeerServiceServer) ListProfiles(context.Context, *ListProfilesRequest) (*ListProfilesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListProfiles not implemented")
-}
-func (*UnimplementedPeerServiceServer) ListPublications(context.Context, *ListPublicationsRequest) (*ListPublicationsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListPublications not implemented")
 }
 
 func RegisterPeerServiceServer(s *grpc.Server, srv PeerServiceServer) {
@@ -980,24 +840,6 @@ func _PeerService_ListProfiles_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PeerService_ListPublications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListPublicationsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PeerServiceServer).ListPublications(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/mintter.p2p.PeerService/ListPublications",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PeerServiceServer).ListPublications(ctx, req.(*ListPublicationsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 var _PeerService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "mintter.p2p.PeerService",
 	HandlerType: (*PeerServiceServer)(nil),
@@ -1017,10 +859,6 @@ var _PeerService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListProfiles",
 			Handler:    _PeerService_ListProfiles_Handler,
-		},
-		{
-			MethodName: "ListPublications",
-			Handler:    _PeerService_ListPublications_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
