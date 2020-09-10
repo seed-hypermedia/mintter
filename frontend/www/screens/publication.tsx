@@ -12,7 +12,9 @@ import {
   // SectionToolbar,
   EditorComponent,
   renderReadOnlyBlockElement,
+  renderElementReadOnlyBlockList,
   useEditorValue,
+  toSlateTree,
 } from '@mintter/editor'
 import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
@@ -45,25 +47,16 @@ export default function Publication(): JSX.Element {
 
   React.useEffect(() => {
     if (data) {
-      const obj = data.toObject()
-      console.log({obj})
-      // getSections(obj.sectionsList).then(res => {
-      //   const sections = res.getSectionsList().map((s: Section) => {
-      //     const b = s.toObject()
-      //     return {
-      //       type: nodeTypes.typeBlock,
-      //       author: b.author,
-      //       children: markdownToSlate(b.body),
-      //     }
-      //   })
+      const {document, blocksMap} = data.toObject()
 
-      //   setValue({
-      //     title: obj.title,
-      //     subtitle: obj.subtitle,
-      //     author: obj.author,
-      //     sections,
-      //   })
-      // })
+      const {title, subtitle, blockRefList} = document
+      const blocks = toSlateTree({blockRefList, blocksMap})
+
+      setValue({
+        title,
+        subtitle,
+        blocks: [blocks] || initialBlocksValue,
+      })
     }
   }, [data])
 
@@ -125,7 +118,10 @@ export default function Publication(): JSX.Element {
           plugins={plugins}
           value={blocks}
           onChange={() => {}}
-          renderElements={[renderReadOnlyBlockElement()]}
+          renderElements={[
+            renderReadOnlyBlockElement(),
+            renderElementReadOnlyBlockList(),
+          ]}
         />
       </>
     )

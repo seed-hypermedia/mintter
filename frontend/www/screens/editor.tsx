@@ -14,6 +14,7 @@ import {
   initialBlocksValue,
   EditorComponent,
   renderEditableBlockElement,
+  renderElementBlockList,
   HelperToolbar,
   useHelper,
   ELEMENT_BLOCK,
@@ -211,7 +212,10 @@ export default function Editor(): JSX.Element {
                   onChange={blocks => {
                     setBlocks(blocks)
                   }}
-                  renderElements={[renderEditableBlockElement()]}
+                  renderElements={[
+                    renderEditableBlockElement(),
+                    renderElementBlockList(),
+                  ]}
                   theme={theme}
                 />
               </BlockToolsProvider>

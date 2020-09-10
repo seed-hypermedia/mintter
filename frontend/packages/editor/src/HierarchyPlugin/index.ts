@@ -1,6 +1,7 @@
 export * from './HierarchyPlugin'
 export * from './onKeyDownHierarchy'
 export * from './renderElementBlockList'
+export * from './renderElementReadOnlyBlockList'
 export * from './onDragEnd'
 export * from './onDragStart'
 export * from './components'
