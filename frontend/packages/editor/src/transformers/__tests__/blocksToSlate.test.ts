@@ -4,7 +4,7 @@ import {
   InlineElement,
   TextStyle,
 } from '@mintter/proto/v2/documents_pb'
-import {toBlocks, makeProto} from '../transformers'
+import {toBlock, makeProto} from '../transformers'
 
 test('should return the proper result', () => {
   const slateBlocks = [
@@ -48,5 +48,5 @@ test('should return the proper result', () => {
     }),
   ]
 
-  expect(toBlocks(slateBlocks)).toEqual(expected)
+  expect(toBlock(slateBlocks)).toEqual(expected)
 })

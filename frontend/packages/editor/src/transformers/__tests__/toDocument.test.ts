@@ -41,10 +41,15 @@ test('toDocument', () => {
   }
 
   const result = toDocument({
-    editorDocument: {
+    document: {
       id: 'document-test',
       version: 'document-version',
+      author: 'horacio',
+      random: null,
+    },
+    state: {
       title: 'Demo Test Document',
+      subtitle: 'Subtitle demo',
       blocks: [
         {
           type: 'block_list',
@@ -68,23 +73,6 @@ test('toDocument', () => {
         },
       ],
     },
-    blockList: [
-      {
-        type: 'block',
-        id: 'test-id',
-        children: [
-          {
-            type: 'p',
-            children: [
-              {
-                text: 'Test block',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-    author: 'horacio',
   })
 
   expect(result).toEqual(expected)

@@ -113,11 +113,8 @@ export function toDocument({document, state}: ToDocumentRequestProp): Document {
   })
 }
 
-export function toSlateBlock({
-  id,
-  paragraph,
-  image,
-}: Block.AsObject): SlateBlock {
+export function toSlateBlock(block: Block.AsObject): SlateBlock {
+  const {id, paragraph, image} = block
   let slateBlock = {
     id,
     type: ELEMENT_BLOCK,
@@ -198,16 +195,5 @@ export function toSlateBlocksDictionary(
   for (let [id, block] of blocksMap) {
     blocks[id] = toSlateBlock(block)
   }
-
-  console.log('toSlateBlocksDictionary', blocks)
   return blocks
-  // return blocksMap.reduce((acc, item) => {
-  //   const block = item.toObject()
-
-  //   // TODO: Guard for dulplicates?
-  //   // TODO: Guard for transclusions?
-  //   acc[block.id] = toSlateBlock(item)
-
-  //   return acc
-  // }, {})
 }

@@ -11,8 +11,14 @@ import {ELEMENT_IMAGE} from '../../ImagePlugin/defaults'
 import {ELEMENT_BLOCK} from '../../BlockPlugin/defaults'
 
 test('toSlateBlock: paragraph', () => {
-  const block = makeProto(new Block(), {
+  const block: Block.AsObject = {
     id: 'block-test-id',
+    paragraph: {
+      inlineElementsList: [{text: 'Test block'}],
+    },
+  }
+
+  makeProto(new Block(), {
     paragraph: makeProto(new Paragraph(), {
       inlineElements: [
         makeProto(new InlineElement(), {
@@ -41,13 +47,13 @@ test('toSlateBlock: paragraph', () => {
 })
 
 test('toSlateBlock: image', () => {
-  const block = makeProto(new Block(), {
+  const block: Block.AsObject = {
     id: 'block-test-id',
-    image: makeProto(new Image(), {
+    image: {
       url: 'some-url.jpg',
       altText: 'test alt text',
-    }),
-  })
+    },
+  }
 
   const expected = {
     type: ELEMENT_BLOCK,
