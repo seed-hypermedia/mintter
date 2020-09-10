@@ -60,7 +60,6 @@ function ListItem({item, index = 0, onDraftDelete}: ItemProps) {
   const location = useLocation()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
   const {version, title, subtitle, author: itemAuthor, createTime} = item
-
   const theTitle = title ? title : 'Untitled Document'
 
   const {getProfile} = useProfile()
