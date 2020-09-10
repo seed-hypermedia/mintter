@@ -1,6 +1,5 @@
 import {createContext, useContext, useMemo, useCallback} from 'react'
 import {ReactEditor} from 'slate-react'
-import * as oldAPI from './V1mintterClient'
 import * as apiClient from './mintterClient'
 import {SlateBlock} from '@mintter/editor'
 import {
@@ -57,7 +56,6 @@ export interface MintterClient {
   listPublications: (
     page?: number,
   ) => PaginatedQueryResult<ListDocumentsResponse>
-  getSections: (sections: any[]) => any
   listDrafts: (page?: number) => PaginatedQueryResult<ListDocumentsResponse>
   createDraft: () => Document
   getDocument: (
@@ -88,11 +86,6 @@ export function MintterProvider(props) {
       },
     )
   }, [])
-
-  const getSections = useCallback(
-    sections => oldAPI.getSections(sections).catch(err => console.error(err)),
-    [],
-  )
 
   function listDrafts(page = 0): PaginatedQueryResult<ListDocumentsResponse> {
     return usePaginatedQuery(['ListDrafts', page], apiClient.listDrafts, {
@@ -143,7 +136,6 @@ export function MintterProvider(props) {
   const value = useMemo(
     () => ({
       listPublications,
-      getSections,
       listDrafts,
       createDraft,
       getDocument,
@@ -154,7 +146,6 @@ export function MintterProvider(props) {
     }),
     [
       listPublications,
-      getSections,
       listDrafts,
       createDraft,
       getDocument,

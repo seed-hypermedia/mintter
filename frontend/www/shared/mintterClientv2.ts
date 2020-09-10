@@ -20,8 +20,6 @@ import {
   ListSuggestedProfilesResponse,
   ListSuggestedProfilesRequest,
 } from '@mintter/proto/mintter_pb'
-import {fromSlateToMarkdown} from './parseToMarkdown'
-import {parseToMarkdown} from './parseToMarkdown'
 
 const config = getConfig()
 const hostname = config?.publicRuntimeConfig.MINTTER_HOSTNAME
@@ -191,18 +189,6 @@ export async function setProfile(
 export async function getProfileAddrs() {
   const req = new GetProfileAddrsRequest()
   return await usersClient.getProfileAddrs(req)
-}
-
-export function parseSlatetree(slateTree: Node[]) {
-  // TODO: (horacio) Fixme types
-  return slateTree.map((section: any) => {
-    const {children, ...rest} = section
-
-    return {
-      ...rest,
-      body: children.map(parseToMarkdown).join(''),
-    }
-  })
 }
 
 export async function listConnections(
