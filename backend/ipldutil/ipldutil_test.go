@@ -14,15 +14,17 @@ import (
 	format "github.com/ipfs/go-ipld-format"
 )
 
+type testNode struct {
+	Name string
+}
+
+func init() {
+	cbornode.RegisterCborType(testNode{})
+}
+
 func TestStore(t *testing.T) {
 	profstore := testStore(t)
 	ctx := context.Background()
-
-	type testNode struct {
-		Name string
-	}
-
-	cbornode.RegisterCborType(testNode{})
 
 	blk, err := CreateSignedBlock(ctx, profstore, testNode{"Alex"})
 	require.NoError(t, err)

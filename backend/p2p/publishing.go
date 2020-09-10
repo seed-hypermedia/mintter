@@ -61,7 +61,8 @@ func (n *Node) AddPublication(ctx context.Context, pub publishing.Publication) (
 		return cid.Undef, fmt.Errorf("failed to add publication to store: %w", err)
 	}
 
-	if err := n.pubsub.Publish(pub.Author, blk.Cid().Bytes()); err != nil {
+	msg := "publication:" + blk.Cid().String()
+	if err := n.pubsub.Publish(pub.Author, []byte(msg)); err != nil {
 		n.log.Error("FailedToPublishOverPubSub", zap.Error(err), zap.String("cid", blk.Cid().String()))
 	}
 

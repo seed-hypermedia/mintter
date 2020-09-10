@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"mintter/backend/identity"
@@ -14,17 +15,39 @@ import (
 	"github.com/ipfs/go-datastore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 )
 
+type ctxKey struct{}
+
+var adminCtxKey ctxKey
+
+// AdminContext çreates marks context as admin user.
+func AdminContext(ctx context.Context) context.Context {
+	return context.WithValue(ctx, adminCtxKey, true)
+}
+
+func isAdmin(ctx context.Context) bool {
+	v := ctx.Value(adminCtxKey)
+	if v == nil {
+		return false
+	}
+
+	return v.(bool)
+}
+
 // Server implements documents v2 API.
 type Server struct {
 	ds        datastore.Datastore
 	repo      *store
 	profStore profileStore
+
+	mu   sync.RWMutex
+	subs map[chan<- proto.Message]struct{}
 }
 
 // NewServer creates a new server that implements Mintter Documents API v2.
@@ -37,11 +60,32 @@ func NewServer(ps profileStore, bs blockstore.Blockstore, ds datastore.TxnDatast
 			db:        ds,
 		},
 		profStore: ps,
+		subs:      make(map[chan<- proto.Message]struct{}),
 	}
+}
+
+// Subscribe to internal events on the provided channel.
+// Use buffered channels to avoid blocking other subscribers.
+// Slow consumers are not dropped.
+func (s *Server) Subscribe(c chan<- proto.Message) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.subs[c] = struct{}{}
+}
+
+// Unsubscribe channel from internal events.
+func (s *Server) Unsubscribe(c chan<- proto.Message) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.subs, c)
 }
 
 // CreateDraft implements v2 Documents server.
 func (s *Server) CreateDraft(ctx context.Context, in *v2.CreateDraftRequest) (*v2.Document, error) {
+	if !isAdmin(ctx) {
+		return nil, status.Error(codes.PermissionDenied, "only admin can create drafts")
+	}
+
 	if in.Parent != "" {
 		// TODO(burdiyan): retrieve parent publication and create a draft with the same blocks.
 		return nil, status.Error(codes.Unimplemented, "updating published documents is not implemented yet")
@@ -57,6 +101,10 @@ func (s *Server) CreateDraft(ctx context.Context, in *v2.CreateDraftRequest) (*v
 
 // UpdateDraft implements v2 Documents server.
 func (s *Server) UpdateDraft(ctx context.Context, in *v2.UpdateDraftRequest) (*v2.UpdateDraftResponse, error) {
+	if !isAdmin(ctx) {
+		return nil, status.Error(codes.PermissionDenied, "only admin can update drafts")
+	}
+
 	if in.Document == nil {
 		return nil, status.Error(codes.InvalidArgument, "document is required")
 	}
@@ -113,6 +161,10 @@ func (s *Server) UpdateDraft(ctx context.Context, in *v2.UpdateDraftRequest) (*v
 
 // PublishDraft implements v2 Documents server.
 func (s *Server) PublishDraft(ctx context.Context, in *v2.PublishDraftRequest) (*v2.PublishDraftResponse, error) {
+	if !isAdmin(ctx) {
+		return nil, status.Error(codes.PermissionDenied, "only admin can publish drafts")
+	}
+
 	vid, err := cid.Decode(in.Version)
 	if err != nil {
 		return nil, err
@@ -138,9 +190,27 @@ func (s *Server) PublishDraft(ctx context.Context, in *v2.PublishDraftRequest) (
 		return nil, err
 	}
 
-	return &v2.PublishDraftResponse{
+	resp := &v2.PublishDraftResponse{
 		Version: pubVersion.String(),
-	}, nil
+	}
+
+	go s.publishEvent(ctx, resp)
+
+	return resp, nil
+}
+
+func (s *Server) publishEvent(ctx context.Context, msg proto.Message) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	for c := range s.subs {
+		select {
+		case c <- msg:
+			// Sent
+		case <-ctx.Done():
+			return
+		}
+	}
 }
 
 // GetDocument implements v2 Documents server.
@@ -162,6 +232,21 @@ func (s *Server) GetDocument(ctx context.Context, in *v2.GetDocumentRequest) (*v
 			return nil, err
 		}
 		version = cid.NewCidV1(draftMultiCodec, did.Hash())
+	}
+
+	if version.Prefix().Codec == draftMultiCodec && !isAdmin(ctx) {
+		return nil, status.Error(codes.PermissionDenied, "only admin can get drafts")
+	}
+
+	local, err := s.repo.Has(ctx, version)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO(burdiyan): Since we expose this method to all of the untrusted peers we should
+	// protect our node from fetching random remote blocks unless we really want it ourselves.
+	if !isAdmin(ctx) && !local {
+		return nil, status.Error(codes.PermissionDenied, "only admin can request remote IPFS blocks")
 	}
 
 	doc, blocks, err := resolveDocument(ctx, version, s.repo)
@@ -202,6 +287,10 @@ func (s *Server) ListDocuments(ctx context.Context, in *v2.ListDocumentsRequest)
 		}
 	}
 
+	if in.PublishingState == v2.PublishingState_DRAFT && !isAdmin(ctx) {
+		return nil, status.Error(codes.PermissionDenied, "only admin can list drafts")
+	}
+
 	docs, err := s.repo.ListDocuments(ctx, author, in.PublishingState)
 	if err != nil {
 		return nil, err
@@ -224,6 +313,10 @@ func (s *Server) ListDocuments(ctx context.Context, in *v2.ListDocumentsRequest)
 
 // DeleteDocument implements v2 Documents server.
 func (s *Server) DeleteDocument(ctx context.Context, in *v2.DeleteDocumentRequest) (*emptypb.Empty, error) {
+	if !isAdmin(ctx) {
+		return nil, status.Error(codes.PermissionDenied, "only admin can create drafts")
+	}
+
 	vid, err := cid.Decode(in.Version)
 	if err != nil {
 		return nil, err

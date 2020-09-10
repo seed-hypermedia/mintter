@@ -24,4 +24,5 @@ func TestPing(t *testing.T) {
 
 	dur, err = bob.Ping(ctx, bob.Account().ID)
 	require.Error(t, err, "pinging youself must fail")
+	require.Equal(t, 0, int(dur))
 }

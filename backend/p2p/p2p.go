@@ -29,7 +29,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
-	"github.com/ipfs/go-cid"
 	badger "github.com/ipfs/go-ds-badger"
 	ipfsconfig "github.com/ipfs/go-ipfs-config"
 	connmgr "github.com/libp2p/go-libp2p-connmgr"
@@ -68,7 +67,7 @@ type Node struct {
 	store  *store.Store
 	log    *zap.Logger
 	pubsub *pubsub.PubSub
-	g      errgroup.Group // Background goroutines will be running in this group.
+	g      *errgroup.Group // Background goroutines will be running in this group.
 
 	acc      identity.Account
 	peer     identity.Peer
@@ -88,6 +87,9 @@ type Node struct {
 // NewNode creates a new node. User must call Close() to shutdown the node gracefully.
 func NewNode(repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (n *Node, err error) {
 	ctx, cancel := context.WithCancel(context.Background())
+	var g *errgroup.Group
+
+	g, ctx = errgroup.WithContext(ctx)
 
 	var clean cleanup.Stack
 	defer func() {
@@ -166,10 +168,22 @@ func NewNode(repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (
 	}
 	clean.Add(lis)
 
+	ps, err := pubsub.NewGossipSub(ctx, h,
+		// TODO(burdiyan): Enable this after fixing tests for #messageSigning.
+		// pubsub.WithMessageAuthor(prof.Account.ID.ID),
+		pubsub.WithMessageSigning(false),
+		pubsub.WithStrictSignatureVerification(false),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	n = &Node{
 		store:  s,
 		log:    log,
 		docsrv: document.NewServer(s, ipfsnode.BlockStore(), s.DB()),
+		subs:   make(map[identity.ProfileID]*subscription),
+		pubsub: ps,
 
 		acc:      prof.Account,
 		peer:     prof.Peer,
@@ -177,12 +191,13 @@ func NewNode(repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (
 		ipfs:     ipfsnode,
 		cleanup:  &clean,
 		lis:      lis,
+		g:        g,
 		ctx:      ctx,
 		quit:     cancel,
 		dialOpts: dialOpts(h),
 	}
 
-	if err := n.setupPubSub(ctx); err != nil {
+	if err := n.subscribeToKnownProfiles(ctx); err != nil {
 		return nil, err
 	}
 
@@ -250,143 +265,4 @@ func (n *Node) Account() identity.Account {
 // Addrs return p2p multiaddresses this node is listening on.
 func (n *Node) Addrs() ([]multiaddr.Multiaddr, error) {
 	return peer.AddrInfoToP2pAddrs(host.InfoFromHost(n.host))
-}
-
-func (n *Node) setupPubSub(ctx context.Context) error {
-	ps, err := pubsub.NewGossipSub(ctx, n.host,
-		// TODO(burdiyan): Enable this after fixing tests for #messageSigning.
-		// pubsub.WithMessageAuthor(prof.Account.ID.ID),
-		pubsub.WithMessageSigning(false),
-		pubsub.WithStrictSignatureVerification(false),
-	)
-	if err != nil {
-		return err
-	}
-	n.subs = make(map[identity.ProfileID]*subscription)
-	n.pubsub = ps
-
-	// Iterate over all profiles and setup listeners.
-	profiles, err := n.store.ListProfiles(ctx, 0, 0)
-	if err != nil {
-		return err
-	}
-
-	for _, prof := range profiles {
-		if err := n.addSubscription(prof.ID); err != nil {
-			n.log.Error("FailedToAddSubscriptionWhenStarting", zap.Error(err), zap.String("profile", prof.ID.String()))
-		}
-	}
-
-	return nil
-}
-
-func (n *Node) startSyncing() {
-	n.g.Go(func() error {
-		t := time.NewTicker(defaultSyncPeriod)
-		defer t.Stop()
-
-		for {
-			if err := n.syncAll(); err != nil {
-				n.log.Error("FailedSyncingLoop", zap.Error(err))
-			}
-
-			select {
-			case <-n.ctx.Done():
-				return n.ctx.Err()
-			case <-t.C:
-				continue
-			}
-		}
-	})
-}
-
-func (n *Node) syncAll() error {
-	// Iterate over all profiles and setup listeners.
-	profiles, err := n.store.ListProfiles(n.ctx, 0, 0)
-	if err != nil {
-		return err
-	}
-
-	for _, prof := range profiles {
-		if err := n.SyncPublications(n.ctx, prof.ID); err != nil && err != context.Canceled {
-			n.log.Error("FailedToSyncPublications", zap.Error(err), zap.String("profile", prof.ID.String()))
-		}
-
-		if err := n.SyncProfiles(n.ctx, prof.ID); err != nil && err != context.Canceled {
-			n.log.Error("FailedToSyncProfiles", zap.Error(err), zap.String("profile", prof.ID.String()))
-		}
-	}
-
-	return nil
-}
-
-func (n *Node) addSubscription(pid identity.ProfileID) error {
-	n.mu.Lock()
-	defer n.mu.Unlock()
-
-	handle, ok := n.subs[pid]
-	if ok {
-		return nil
-	}
-
-	// Create new handle
-	topic, err := n.pubsub.Join(pid.String())
-	if err != nil {
-		return err
-	}
-	sub, err := topic.Subscribe()
-	if err != nil {
-		return err
-	}
-
-	handle = &subscription{
-		T: topic,
-		S: sub,
-	}
-	n.subs[pid] = handle
-
-	n.g.Go(func() (err error) {
-		defer func() {
-			err = multierr.Append(err, handle.Close())
-		}()
-
-		for {
-			msg, err := handle.S.Next(n.ctx)
-			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-				return err
-			}
-			if err != nil {
-				n.log.Error("ErrorGettingPubSubMessage", zap.Error(err), zap.String("subscription", pid.String()))
-				continue
-			}
-
-			if err := n.handlePubSubMessage(msg); err != nil {
-				n.log.Error("ErrorHandlingPubSubMessage", zap.Error(err), zap.String("subscription", pid.String()))
-				continue
-			}
-		}
-	})
-
-	return nil
-}
-
-func (n *Node) handlePubSubMessage(msg *pubsub.Message) error {
-	cid, err := cid.Cast(msg.Message.Data)
-	if err != nil {
-		return err
-	}
-
-	// TODO(burdiyan): we need to sign messages propertly to avoid flood.
-
-	return n.syncPublication(n.ctx, cid)
-}
-
-type subscription struct {
-	T *pubsub.Topic
-	S *pubsub.Subscription
-}
-
-func (s *subscription) Close() error {
-	s.S.Cancel()
-	return s.T.Close()
 }
