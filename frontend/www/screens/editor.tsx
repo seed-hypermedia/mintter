@@ -95,13 +95,12 @@ export default function Editor(): JSX.Element {
       const {document, blocksMap} = data.toObject()
 
       const {title, subtitle, blockRefList} = document
-      const blocks = toSlateTree({blockRefList, blocksMap})
-      console.log('data effect blocks', blocks)
+      const blocks = toSlateTree({blockRefList, blocksMap, isRoot: true})
 
       setValue({
         title,
         subtitle,
-        blocks: blocks ? [blocks] : initialBlocksValue,
+        blocks: blocks ? blocks : initialBlocksValue,
       })
     }
   }, [data])

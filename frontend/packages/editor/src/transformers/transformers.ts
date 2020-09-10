@@ -156,13 +156,18 @@ export function toSlateBlock({
 export interface ToSlateTreeRequest {
   blockRefList: BlockRefList.AsObject
   blocksMap: Array<[string, Block.AsObject]>
+  isRoot?: boolean
 }
 
-export function toSlateTree({blockRefList, blocksMap}: ToSlateTreeRequest) {
+export function toSlateTree({
+  blockRefList,
+  blocksMap,
+  isRoot = false,
+}: ToSlateTreeRequest) {
   if (!blockRefList) return
   console.log('toSlateTree -> blockRefList', blockRefList)
   const dictionary = toSlateBlocksDictionary(blocksMap)
-  return {
+  const blocks = {
     type: ELEMENT_BLOCK_LIST,
     id: uuid(),
     listType: blockRefList.style,
@@ -178,6 +183,7 @@ export function toSlateTree({blockRefList, blocksMap}: ToSlateTreeRequest) {
       return block
     }),
   }
+  return isRoot ? [blocks] : blocks
 }
 
 export interface ToSlateBlocksDictionaryResponse {
