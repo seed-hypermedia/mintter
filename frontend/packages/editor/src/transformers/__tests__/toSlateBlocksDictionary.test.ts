@@ -5,17 +5,16 @@ import {ELEMENT_PARAGRAPH} from '../../elements'
 import {ELEMENT_BLOCK} from '../../BlockPlugin/defaults'
 
 test('toSlateBlocksDictionary', () => {
-  const blocks = [
-    makeProto(new Block(), {
-      id: 'block-test-id',
-      paragraph: makeProto(new Paragraph(), {
-        inlineElements: [
-          makeProto(new InlineElement(), {
-            text: 'Test block',
-          }),
-        ],
-      }),
-    }),
+  const blocks: Array<[string, Block.AsObject]> = [
+    [
+      'block-test-id',
+      {
+        id: 'block-test-id',
+        paragraph: {
+          inlineElementsList: [{text: 'Test block'}],
+        },
+      },
+    ],
   ]
 
   const expected = {
