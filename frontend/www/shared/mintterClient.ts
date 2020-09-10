@@ -1,8 +1,7 @@
 import getConfig from 'next/config'
 import {Node, NodeEntry} from 'slate'
 import {MintterPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
-import {DocumentsPromiseClient} from '@mintter/proto/documents_grpc_web_pb'
-import {DocumentsPromiseClient as v2DocumentsClient} from '@mintter/proto/v2/documents_grpc_web_pb'
+import {DocumentsPromiseClient} from '@mintter/proto/v2/documents_grpc_web_pb'
 import {
   ListDocumentsRequest,
   ListDocumentsResponse,
@@ -33,9 +32,6 @@ import {
   ListSuggestedProfilesResponse,
   ListSuggestedProfilesRequest,
 } from '@mintter/proto/mintter_pb'
-import {fromSlateToMarkdown} from './parseToMarkdown'
-import {parseToMarkdown} from './parseToMarkdown'
-import {profile} from 'console'
 import {
   toDocument,
   EditorDocument,
@@ -54,7 +50,6 @@ const port = config?.publicRuntimeConfig.MINTTER_PORT
 const path = `${hostname}:${port}`
 
 export const documentsClient = new DocumentsPromiseClient(path)
-export const docsV2 = new v2DocumentsClient(path)
 export const usersClient = new MintterPromiseClient(path)
 
 // ============================
@@ -67,7 +62,7 @@ async function listDocuments(
   const req = new ListDocumentsRequest()
   req.setPageSize(page)
   req.setPublishingState(publishingState)
-  return await docsV2.listDocuments(req)
+  return await documentsClient.listDocuments(req)
 }
 
 export function listPublications(key, page = 0) {
@@ -85,14 +80,14 @@ export async function getDocument(
   const req = new GetDocumentRequest()
   req.setVersion(version)
 
-  const document = await docsV2.getDocument(req)
+  const document = await documentsClient.getDocument(req)
   console.log('getDocument => ', document)
   return document
 }
 
 export async function createDraft(): Promise<Document> {
   const req = new CreateDraftRequest()
-  return await docsV2.createDraft(req)
+  return await documentsClient.createDraft(req)
 }
 
 export interface SetDraftProps {
@@ -131,7 +126,7 @@ export function setDocument(editor) {
     }
 
     req.setDocument(genDocument)
-    await docsV2.updateDraft(req)
+    await documentsClient.updateDraft(req)
   }
 }
 
@@ -139,7 +134,7 @@ export async function deleteDocument(version: string): Promise<any> {
   const req = new DeleteDocumentRequest()
 
   req.setVersion(version)
-  return await docsV2.deleteDocument(req)
+  return await documentsClient.deleteDocument(req)
 }
 
 export async function publishDraft(
@@ -149,7 +144,7 @@ export async function publishDraft(
   const req = new PublishDraftRequest()
   req.setVersion(version)
   console.log('version received => ', req)
-  const result = await docsV2.publishDraft(req)
+  const result = await documentsClient.publishDraft(req)
   console.log('result', result)
   return result
 }
@@ -217,18 +212,6 @@ export async function connectToPeerById(peerIds: string[]) {
 export async function getProfileAddrs() {
   const req = new GetProfileAddrsRequest()
   return await usersClient.getProfileAddrs(req)
-}
-
-export function parseSlatetree(slateTree: Node[]) {
-  // TODO: (horacio) Fixme types
-  return slateTree.map((section: any) => {
-    const {children, ...rest} = section
-
-    return {
-      ...rest,
-      body: children.map(parseToMarkdown).join(''),
-    }
-  })
 }
 
 export async function listConnections(
