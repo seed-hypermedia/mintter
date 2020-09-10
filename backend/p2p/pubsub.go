@@ -64,8 +64,11 @@ func (n *Node) startSyncing() {
 				msg := "document:" + published.Version
 
 				err := n.pubsub.Publish(n.acc.ID.String(), []byte(msg))
-
-				n.log.Error("PublicationBroadcastFailed", zap.Error(err), zap.String("cid", published.Version))
+				if err != nil {
+					n.log.Error("PublicationBroadcastFailed", zap.Error(err), zap.String("cid", published.Version))
+				} else {
+					n.log.Debug("PublicationBroadcastSuccess", zap.String("cid", published.Version))
+				}
 			}
 		}
 	})
