@@ -159,6 +159,7 @@ export interface ToSlateTreeRequest {
 }
 
 export function toSlateTree({blockRefList, blocksMap}: ToSlateTreeRequest) {
+  if (!blockRefList) return
   console.log('toSlateTree -> blockRefList', blockRefList)
   const dictionary = toSlateBlocksDictionary(blocksMap)
   return {
