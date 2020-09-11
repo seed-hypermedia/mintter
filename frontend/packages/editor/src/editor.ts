@@ -19,6 +19,7 @@ export interface EditorState {
 export interface SlateBlock {
   id: string
   type: string
+  listType?: BlockRefList.Style
   children: any[]
 }
 

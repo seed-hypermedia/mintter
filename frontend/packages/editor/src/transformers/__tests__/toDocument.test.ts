@@ -1,51 +1,29 @@
-import {
-  Document,
-  BlockRefList,
-  BlockRef,
-  Block,
-  Paragraph,
-  InlineElement,
-} from '@mintter/proto/v2/documents_pb'
+import {Document, BlockRefList, BlockRef} from '@mintter/proto/v2/documents_pb'
 import {toDocument} from '../transformers'
 import {makeProto} from '../makeProto'
 
 test('toDocument', () => {
-  const expected = {
-    document: makeProto(new Document(), {
-      id: 'document-test',
-      version: 'document-version',
-      title: 'Demo Test Document',
-      subtitle: '',
-      author: 'horacio',
-      blockRefList: makeProto(new BlockRefList(), {
-        style: BlockRefList.Style.NONE,
-        refs: [
-          makeProto(new BlockRef(), {
-            ref: 'test-id',
-          }),
-        ],
-      }),
-    }),
-    blocks: [
-      makeProto(new Block(), {
-        id: 'test-id',
-        paragraph: makeProto(new Paragraph(), {
-          inlineElements: [
-            makeProto(new InlineElement(), {
-              text: 'Test block',
-            }),
-          ],
+  const expected = makeProto(new Document(), {
+    id: 'document-test',
+    version: 'document-version',
+    title: 'Demo Test Document',
+    subtitle: 'Subtitle demo',
+    author: 'horacio',
+    blockRefList: makeProto(new BlockRefList(), {
+      style: BlockRefList.Style.NONE,
+      refs: [
+        makeProto(new BlockRef(), {
+          ref: 'test-id',
         }),
-      }),
-    ],
-  }
+      ],
+    }),
+  })
 
   const result = toDocument({
     document: {
       id: 'document-test',
       version: 'document-version',
       author: 'horacio',
-      random: null,
     },
     state: {
       title: 'Demo Test Document',
@@ -53,6 +31,7 @@ test('toDocument', () => {
       blocks: [
         {
           type: 'block_list',
+          id: 'block_list_id',
           listType: BlockRefList.Style.NONE,
           children: [
             {
