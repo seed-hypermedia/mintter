@@ -10,7 +10,6 @@ export function BlockControls({isHovered = false, dragHandleProps = {}, path}) {
   function onAddClicked(e) {
     e.preventDefault()
     const value = target ? null : e.target
-    // console.log('LEAF: ', true)
     setTarget(value, path)
   }
   const onKeyDown = useCallback(

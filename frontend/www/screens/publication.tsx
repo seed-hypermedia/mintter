@@ -1,7 +1,6 @@
 import React, {useReducer, useCallback, useState} from 'react'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
-
 import {
   Icons,
   nodeTypes,
@@ -15,12 +14,20 @@ import {
   renderElementReadOnlyBlockList,
   useEditorValue,
   toSlateTree,
+  options,
+  ELEMENT_BLOCK,
+  ELEMENT_BLOCK_LIST,
+  ELEMENT_TRANSCLUSION,
+  ELEMENT_PARAGRAPH,
+  toBlock,
+  toDocument,
+  SlateBlock,
 } from '@mintter/editor'
 import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
 import {css} from 'emotion'
-import {useParams} from 'react-router-dom'
+import {useParams, useHistory} from 'react-router-dom'
 import {Section} from '@mintter/proto/documents_pb'
 import {markdownToSlate} from 'shared/markdownToSlate'
 import {useMintter} from 'shared/mintterContext'
@@ -30,13 +37,16 @@ import {FullPageSpinner} from 'components/fullPageSpinner'
 import {ErrorMessage} from 'components/errorMessage'
 import {AuthorLabel} from 'components/author-label'
 import Container from 'components/container'
+import {UpdateDraftRequest, BlockRefList} from '@mintter/proto/v2/documents_pb'
+import {v4 as uuid} from 'uuid'
+import {tempUpdateDraft} from 'shared/mintterClient'
 
 export default function Publication(): JSX.Element {
   const plugins = [...editorPlugins]
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
   const {state, setValue} = useEditorValue()
-  const {getDocument, getSections, getAuthor} = useMintter()
-
+  const {getDocument, getSections, getAuthor, createDraft} = useMintter()
+  const {push} = useHistory()
   const {version} = useParams()
 
   const {title, blocks, subtitle, author: pubAuthor} = state
@@ -59,6 +69,72 @@ export default function Publication(): JSX.Element {
       })
     }
   }, [data])
+
+  async function createTransclusion(block: SlateBlock) {
+    console.log('create transclusion called!!', block)
+    const n = await createDraft()
+    const newDraft = n.toObject()
+
+    const transclusionId = `${version}/${block.id}`
+
+    const req = new UpdateDraftRequest()
+    const map: Map<string, Block> = req.getBlocksMap()
+
+    const emptyBlockId = uuid()
+    const emptyBlock = {
+      type: ELEMENT_BLOCK,
+      id: emptyBlockId,
+      children: [
+        {
+          type: ELEMENT_PARAGRAPH,
+          children: [
+            {
+              text: '',
+            },
+          ],
+        },
+      ],
+    }
+
+    map.set(emptyBlockId, toBlock(emptyBlock))
+
+    const update = toDocument({
+      document: {
+        id: newDraft.id,
+        author: newDraft.author,
+        version: newDraft.version,
+      },
+      state: {
+        title: '',
+        subtitle: '',
+        blocks: [
+          {
+            type: ELEMENT_BLOCK_LIST,
+            id: uuid(),
+            listType: BlockRefList.Style.NONE,
+            children: [
+              {
+                type: ELEMENT_TRANSCLUSION,
+                id: transclusionId,
+                children: block.children,
+              },
+              {
+                ...emptyBlock,
+              },
+            ],
+          },
+        ],
+      },
+    })
+
+    req.setDocument(update)
+
+    await tempUpdateDraft(req)
+
+    push({
+      pathname: `/editor/${newDraft.version}`,
+    })
+  }
 
   let content
 
@@ -119,7 +195,7 @@ export default function Publication(): JSX.Element {
           value={blocks}
           onChange={() => {}}
           renderElements={[
-            renderReadOnlyBlockElement(),
+            renderReadOnlyBlockElement(options, {createTransclusion}),
             renderElementReadOnlyBlockList(),
           ]}
         />

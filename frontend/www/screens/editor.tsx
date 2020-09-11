@@ -60,7 +60,7 @@ export default function Editor(): JSX.Element {
   const {push} = useHistory()
   const {version} = useParams()
   const {theme} = useTheme()
-  const {getDocument, setDocument, publishDraft, getAuthor} = useMintter()
+  const {getDocument, setDocument, publishDraft} = useMintter()
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])
   const {title, blocks, subtitle} = state
   const {status, error, data} = getDocument(version, {

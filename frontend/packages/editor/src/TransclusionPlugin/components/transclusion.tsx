@@ -11,6 +11,7 @@ const Transclusion = ({attributes, children, element, className}, ref) => {
   const editor = useEditor()
   const path = ReactEditor.findPath(editor, element)
   const {id: blockId, setBlockId} = useBlockTools()
+  console.log('transclusion attrs => ', attributes)
   return (
     <Draggable
       key={element.id}
@@ -27,6 +28,7 @@ const Transclusion = ({attributes, children, element, className}, ref) => {
           }${className ? className : ''}`}
           onMouseLeave={() => setBlockId(null)}
           onMouseEnter={() => setBlockId(element.id)}
+          contentEditable={false}
         >
           <BlockControls
             isHovered={blockId === element.id}

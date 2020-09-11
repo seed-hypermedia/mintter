@@ -6,6 +6,5 @@ export const DEFAULTS_TRANSCLUSION = {
   transclusion: {
     component: TransclusionElement,
     type: ELEMENT_TRANSCLUSION,
-    rootProps: {},
   },
 }
