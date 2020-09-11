@@ -98,8 +98,17 @@ export interface SetDraftProps {
   author: any
 }
 
+interface SetDocumentRequest {
+  document: Document.AsObject
+  state: {
+    title: string
+    subtitle: string
+    blocks: SlateBlock[]
+  }
+}
+
 export function setDocument(editor) {
-  return async function({document, state}): Promise<any> {
+  return async function({document, state}: SetDocumentRequest): Promise<any> {
     //  do I still need this guard?
     if (Array.isArray(document.version)) {
       console.error(
@@ -130,6 +139,10 @@ export function setDocument(editor) {
   }
 }
 
+export async function tempUpdateDraft(req) {
+  return await documentsClient.updateDraft(req)
+}
+
 export async function deleteDocument(version: string): Promise<any> {
   const req = new DeleteDocumentRequest()
 
@@ -140,13 +153,10 @@ export async function deleteDocument(version: string): Promise<any> {
 export async function publishDraft(
   version: string,
 ): Promise<PublishDraftResponse> {
-  console.log('hello!!')
   const req = new PublishDraftRequest()
   req.setVersion(version)
-  console.log('version received => ', req)
-  const result = await documentsClient.publishDraft(req)
-  console.log('result', result)
-  return result
+
+  return await documentsClient.publishDraft(req)
 }
 
 export async function createProfile({

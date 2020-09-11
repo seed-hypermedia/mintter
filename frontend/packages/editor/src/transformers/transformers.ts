@@ -17,6 +17,7 @@ import {ELEMENT_IMAGE} from '../ImagePlugin'
 import {ELEMENT_BLOCK_LIST} from '../HierarchyPlugin'
 import {makeProto} from './makeProto'
 import {v4 as uuid} from 'uuid'
+import {ELEMENT_TRANSCLUSION} from '../TransclusionPlugin'
 
 export function toBlock(node: SlateBlock): Block {
   const pNode: Node = node.children.filter(n => n.type === 'p')[0]
@@ -115,14 +116,36 @@ export function toDocument({document, state}: ToDocumentRequestProp): Document {
 
 export function toSlateBlock(block: Block.AsObject): SlateBlock {
   const {id, paragraph, image} = block
+
   let slateBlock = {
     id,
-    type: ELEMENT_BLOCK,
+  }
+
+  if (id.includes('/')) {
+    // is a transclusion
+    console.log('========= TRANSCLUSION!!!', block)
+    return {
+      ...slateBlock,
+      type: ELEMENT_TRANSCLUSION,
+      // FIXME: handle transcluded images too!!
+      children: [
+        {
+          type: ELEMENT_PARAGRAPH,
+          children: paragraph
+            ? paragraph.inlineElementsList.map(({text, textStyle = {}}) => ({
+                text,
+                ...textStyle,
+              }))
+            : [{text: ''}],
+        },
+      ],
+    }
   }
 
   if (image) {
     return {
       ...slateBlock,
+      type: ELEMENT_BLOCK,
       children: [
         {
           type: ELEMENT_IMAGE,
@@ -136,6 +159,7 @@ export function toSlateBlock(block: Block.AsObject): SlateBlock {
 
   return {
     ...slateBlock,
+    type: ELEMENT_BLOCK,
     children: [
       {
         type: ELEMENT_PARAGRAPH,
@@ -161,14 +185,17 @@ export function toSlateTree({
   blocksMap,
   isRoot = false,
 }: ToSlateTreeRequest) {
+  console.log('toSlateTree', {blockRefList, blocksMap})
   if (!blockRefList) return
   const dictionary = toSlateBlocksDictionary(blocksMap)
+  console.log('dictionary', dictionary)
   const blocks = {
     type: ELEMENT_BLOCK_LIST,
     id: uuid(),
     listType: blockRefList.style,
     children: blockRefList.refsList.map(child => {
-      const block = dictionary[child.ref]
+      console.log('blockRefList child => ', child)
+      let block = dictionary[child.ref]
 
       if (child.blockRefList) {
         block.children.push(
@@ -191,8 +218,11 @@ export function toSlateBlocksDictionary(
 ): ToSlateBlocksDictionaryResponse {
   let blocks = {}
 
-  for (let [id, block] of blocksMap) {
-    blocks[id] = toSlateBlock(block)
+  for (let [ref, block] of blocksMap) {
+    blocks[ref] = toSlateBlock({
+      ...block,
+      id: ref,
+    })
   }
   return blocks
 }
