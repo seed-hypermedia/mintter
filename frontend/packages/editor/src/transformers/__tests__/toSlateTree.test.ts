@@ -1,27 +1,27 @@
 import {toSlateTree} from '../transformers'
-import {makeProto} from '../makeProto'
-import {
-  BlockRefList,
-  Block,
-  Paragraph,
-  InlineElement,
-} from '@mintter/proto/v2/documents_pb'
+import {BlockRefList, Block} from '@mintter/proto/v2/documents_pb'
 import {ELEMENT_PARAGRAPH} from '../../elements'
 import {ELEMENT_BLOCK_LIST} from '../../HierarchyPlugin/defaults'
 import {ELEMENT_BLOCK} from '../../BlockPlugin/defaults'
+// import {v4 as uuidMock} from 'uuid'
+
+const block_list_mock_id = 'block_list_mock_id'
+
+jest.mock('uuid', () => ({
+  v4: () => block_list_mock_id,
+}))
 
 test('toSlateTree: one level', () => {
-  const blocks = [
-    makeProto(new Block(), {
-      id: 'block-test-id',
-      paragraph: makeProto(new Paragraph(), {
-        inlineElements: [
-          makeProto(new InlineElement(), {
-            text: 'Test block',
-          }),
-        ],
-      }),
-    }),
+  const blocksMap: [string, Block.AsObject][] = [
+    [
+      'block-test-id',
+      {
+        id: 'block-test-id',
+        paragraph: {
+          inlineElementsList: [{text: 'Test block'}],
+        },
+      },
+    ],
   ]
 
   const blockRefList: BlockRefList.AsObject = {
@@ -36,6 +36,7 @@ test('toSlateTree: one level', () => {
   const expected = {
     type: ELEMENT_BLOCK_LIST,
     listType: BlockRefList.Style.NONE,
+    id: block_list_mock_id,
     children: [
       {
         type: ELEMENT_BLOCK,
@@ -54,33 +55,31 @@ test('toSlateTree: one level', () => {
     ],
   }
 
-  const result = toSlateTree({blockRefList, blocks})
+  const result = toSlateTree({blockRefList, blocksMap})
 
   expect(result).toEqual(expected)
 })
 
 test('toSlateTree: two levels', () => {
-  const blocks = [
-    makeProto(new Block(), {
-      id: 'block-test-id',
-      paragraph: makeProto(new Paragraph(), {
-        inlineElements: [
-          makeProto(new InlineElement(), {
-            text: 'Test block',
-          }),
-        ],
-      }),
-    }),
-    makeProto(new Block(), {
-      id: 'nested-block-test-id',
-      paragraph: makeProto(new Paragraph(), {
-        inlineElements: [
-          makeProto(new InlineElement(), {
-            text: 'Nested Test block',
-          }),
-        ],
-      }),
-    }),
+  const blocksMap: [string, Block.AsObject][] = [
+    [
+      'block-test-id',
+      {
+        id: 'block-test-id',
+        paragraph: {
+          inlineElementsList: [{text: 'Test block'}],
+        },
+      },
+    ],
+    [
+      'nested-block-test-id',
+      {
+        id: 'nested-block-test-id',
+        paragraph: {
+          inlineElementsList: [{text: 'Nested Test block'}],
+        },
+      },
+    ],
   ]
 
   const blockRefList: BlockRefList.AsObject = {
@@ -102,6 +101,7 @@ test('toSlateTree: two levels', () => {
 
   const expected = {
     type: ELEMENT_BLOCK_LIST,
+    id: block_list_mock_id,
     listType: BlockRefList.Style.NONE,
     children: [
       {
@@ -118,6 +118,7 @@ test('toSlateTree: two levels', () => {
           },
           {
             type: ELEMENT_BLOCK_LIST,
+            id: block_list_mock_id,
             listType: BlockRefList.Style.NONE,
             children: [
               {
@@ -141,7 +142,7 @@ test('toSlateTree: two levels', () => {
     ],
   }
 
-  const result = toSlateTree({blockRefList, blocks})
+  const result = toSlateTree({blockRefList, blocksMap})
 
   expect(result).toEqual(expected)
 })

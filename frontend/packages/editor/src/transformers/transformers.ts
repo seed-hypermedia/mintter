@@ -162,7 +162,6 @@ export function toSlateTree({
   isRoot = false,
 }: ToSlateTreeRequest) {
   if (!blockRefList) return
-  console.log('toSlateTree -> blockRefList', blockRefList)
   const dictionary = toSlateBlocksDictionary(blocksMap)
   const blocks = {
     type: ELEMENT_BLOCK_LIST,

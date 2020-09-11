@@ -1,11 +1,6 @@
 import {toSlateBlock} from '../transformers'
 import {makeProto} from '../makeProto'
-import {
-  Block,
-  Paragraph,
-  InlineElement,
-  Image,
-} from '@mintter/proto/v2/documents_pb'
+import {Block, Paragraph, InlineElement} from '@mintter/proto/v2/documents_pb'
 import {ELEMENT_PARAGRAPH} from '../../elements'
 import {ELEMENT_IMAGE} from '../../ImagePlugin/defaults'
 import {ELEMENT_BLOCK} from '../../BlockPlugin/defaults'

@@ -1,52 +1,42 @@
-import {
-  Block,
-  Paragraph,
-  InlineElement,
-  TextStyle,
-} from '@mintter/proto/v2/documents_pb'
-import {toBlock, makeProto} from '../transformers'
+import {Block} from '@mintter/proto/v2/documents_pb'
+import {toSlateBlock} from '../transformers'
+import {ELEMENT_BLOCK} from '../../BlockPlugin'
 
-test('should return the proper result', () => {
-  const slateBlocks = [
-    {
-      type: 'block',
-      id: 'block-test-id',
-      author: '',
-      children: [
+test('blocksToSlate: from block to Slate blocks', () => {
+  const block: Block.AsObject = {
+    id: 'block-test-id',
+    paragraph: {
+      inlineElementsList: [
+        {text: 'Hello '},
         {
-          type: 'p',
-          children: [
-            {
-              text: 'Hello ',
-            },
-            {
-              text: 'World!',
-              bold: true,
-            },
-          ],
+          text: 'World!',
+          textStyle: {bold: true, italic: false, underline: false, code: false},
         },
       ],
     },
-  ]
+  }
 
-  const expected: Block[] = [
-    makeProto(new Block(), {
-      id: 'block-2',
-      paragraph: makeProto(new Paragraph(), {
-        inlineElements: [
-          makeProto(new InlineElement(), {
+  const expected = {
+    id: 'block-test-id',
+    type: ELEMENT_BLOCK,
+    children: [
+      {
+        type: 'p',
+        children: [
+          {
             text: 'Hello ',
-          }),
-          makeProto(new InlineElement(), {
+          },
+          {
             text: 'World!',
-            textStyle: makeProto(new TextStyle(), {
-              bold: true,
-            }),
-          }),
+            bold: true,
+            italic: false,
+            underline: false,
+            code: false,
+          },
         ],
-      }),
-    }),
-  ]
+      },
+    ],
+  }
 
-  expect(toBlock(slateBlocks)).toEqual(expected)
+  expect(toSlateBlock(block)).toEqual(expected)
 })
