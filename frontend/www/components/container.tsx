@@ -13,7 +13,7 @@ export default function Container({
   return (
     <div
       className={`w-full mx-auto p-4 ${css`
-        max-width: 80ch;
+        max-width: 64ch;
       `} ${className}`}
       {...props}
     >
