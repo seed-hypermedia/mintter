@@ -56,7 +56,7 @@ export default function LibraryHeader(props) {
       <div>
         <div
           className={`my-0 mx-auto ${css`
-            max-width: 80ch;
+            max-width: 64ch;
             width: 100%;
           `}`}
         >
