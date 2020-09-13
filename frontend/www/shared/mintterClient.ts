@@ -81,7 +81,6 @@ export async function getDocument(
   req.setVersion(version)
 
   const document = await documentsClient.getDocument(req)
-  console.log('getDocument => ', document)
   return document
 }
 
