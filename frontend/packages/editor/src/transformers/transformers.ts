@@ -123,7 +123,7 @@ export function toSlateBlock(block: Block.AsObject): SlateBlock {
 
   if (id.includes('/')) {
     // is a transclusion
-    console.log('========= TRANSCLUSION!!!', block)
+
     return {
       ...slateBlock,
       type: ELEMENT_TRANSCLUSION,
@@ -185,16 +185,13 @@ export function toSlateTree({
   blocksMap,
   isRoot = false,
 }: ToSlateTreeRequest) {
-  console.log('toSlateTree', {blockRefList, blocksMap})
   if (!blockRefList) return
   const dictionary = toSlateBlocksDictionary(blocksMap)
-  console.log('dictionary', dictionary)
   const blocks = {
     type: ELEMENT_BLOCK_LIST,
     id: uuid(),
     listType: blockRefList.style,
     children: blockRefList.refsList.map(child => {
-      console.log('blockRefList child => ', child)
       let block = dictionary[child.ref]
 
       if (child.blockRefList) {
