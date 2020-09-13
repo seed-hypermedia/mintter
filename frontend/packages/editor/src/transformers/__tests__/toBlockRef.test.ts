@@ -21,7 +21,7 @@ test('toBlockRef: simple block', () => {
   expect(toBlockRef(slateBlock)).toEqual(expected)
 })
 
-test('toBlockRef: nested blocks', () => {
+test('toBlockRef: nested blocks!', () => {
   const slateBlock = {
     type: 'block',
     id: 'test-block-id',

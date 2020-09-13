@@ -52,8 +52,7 @@ export default function Editor(): JSX.Element {
   const wrapperRef = React.useRef<HTMLDivElement>(null)
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
-  const [showDescription, setShowDescription] = React.useState<boolean>(false)
-  const descriptionRef = React.useRef(null)
+  const subtitleRef = React.useRef(null)
   const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
   const {state, setTitle, setSubtitle, setBlocks, setValue} = useEditorValue()
 
@@ -187,12 +186,12 @@ export default function Editor(): JSX.Element {
                   minHeight={56}
                   className={`text-4xl text-heading font-bold italic`}
                   onEnterPress={() => {
-                    descriptionRef.current.focus()
+                    subtitleRef.current.focus()
                   }}
                 />
                 <Textarea
                   ref={d => {
-                    descriptionRef.current = d
+                    subtitleRef.current = d
                   }}
                   value={subtitle}
                   onChange={setSubtitle}
