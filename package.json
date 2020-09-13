@@ -58,7 +58,7 @@
     }
   },
   "lint-staged": {
-    "./frontend/**/*.+(js|jsx|ts|tsx|json|css)": [
+    "./frontent/**/*.{js,jsx,ts,tsx,json,css}": [
       "yarn format",
       "yarn editor:build",
       "yarn site:test:precommit --findRelatedTests"
