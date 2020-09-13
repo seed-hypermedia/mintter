@@ -53,7 +53,7 @@ export default function Editor(): JSX.Element {
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
   const subtitleRef = React.useRef(null)
-  const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
+  // const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
   const {state, setTitle, setSubtitle, setBlocks, setValue} = useEditorValue()
 
   const {push} = useHistory()
@@ -83,11 +83,11 @@ export default function Editor(): JSX.Element {
 
   const debouncedValue = useDebounce(state, 1000)
 
-  React.useEffect(() => {
-    if (readyToAutosave) {
-      autosaveDraft(state)
-    }
-  }, [debouncedValue])
+  // React.useEffect(() => {
+  //   if (readyToAutosave) {
+  //     autosaveDraft(state)
+  //   }
+  // }, [debouncedValue])
 
   React.useEffect(() => {
     if (data) {
