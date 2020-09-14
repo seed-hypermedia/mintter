@@ -1,5 +1,19 @@
 # @mintter/site
 
+## 0.4.0
+
+### Minor Changes
+
+- 12b3ba4: refactor + testing in place
+
+### Patch Changes
+
+- 87a3689: update validate script
+- Updated dependencies [87a3689]
+- Updated dependencies [12b3ba4]
+  - @mintter/editor@0.4.0
+  - @mintter/proto@0.2.0
+
 ## 0.3.0
 
 ### Minor Changes
