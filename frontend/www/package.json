@@ -1,6 +1,6 @@
 {
   "name": "@mintter/site",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Mintter project packages and frontend code",
   "main": "index.js",
   "repository": "https://github.com/mintterteam/frontend",
