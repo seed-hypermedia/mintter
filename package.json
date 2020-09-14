@@ -28,7 +28,7 @@
     "editor:test:coverage": "yarn workspace @mintter/editor test --coverage",
     "editor:watch": "yarn workspace @mintter/editor start",
     "release": "yarn build",
-    "validate": "npm-run-all --parallel check-format test build"
+    "validate": "npm-run-all --sequential check-format site:test editor:test editor:build site:build"
   },
   "workspaces": [
     "frontend/www",
