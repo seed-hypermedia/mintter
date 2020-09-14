@@ -119,7 +119,6 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
         },
       ],
     })(null, editor)
-    console.log('didReset ==>', didReset)
     if (didReset) return
 
     deleteBackward(unit)

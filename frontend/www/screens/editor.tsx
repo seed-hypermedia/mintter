@@ -53,19 +53,21 @@ export default function Editor(): JSX.Element {
   const titleRef = React.useRef(null)
   const subtitleRef = React.useRef(null)
   const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
-  const {state, setTitle, setSubtitle, setBlocks, setValue} = useEditorValue()
-
   const {push} = useHistory()
   const {version} = useParams()
   const {theme} = useTheme()
   const {getDocument, setDocument, publishDraft} = useMintter()
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])
-  const {title, blocks, subtitle} = state
+  useGenericModal()
   const {status, error, data} = getDocument(version, {
     onSuccess: () => {
       setReadyToAutosave(true)
     },
   })
+  const {state, setTitle, setSubtitle, setBlocks, setValue} = useEditorValue({
+    document: data,
+  })
+  const {title, blocks, subtitle} = state
 
   const [autosaveDraft] = useMutation(
     async state => {
@@ -88,21 +90,6 @@ export default function Editor(): JSX.Element {
     }
   }, [debouncedValue])
 
-  React.useEffect(() => {
-    if (data) {
-      const {document, blocksMap} = data.toObject()
-
-      const {title, subtitle, blockRefList} = document
-      const blocks = toSlateTree({blockRefList, blocksMap, isRoot: true})
-
-      setValue({
-        title,
-        subtitle,
-        blocks: blocks ? blocks : initialBlocksValue,
-      })
-    }
-  }, [data])
-
   async function handlePublish() {
     publishDraft(version as string, {
       onSuccess: publication => {
@@ -123,6 +110,7 @@ export default function Editor(): JSX.Element {
   return (
     <>
       <Seo title="Editor" />
+
       <DragDropContext
         onDragStart={onDragStart(editor)}
         onDragEnd={onDragEnd(editor)}
