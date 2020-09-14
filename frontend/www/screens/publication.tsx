@@ -46,31 +46,18 @@ import {tempUpdateDraft} from 'shared/mintterClient'
 export default function Publication(): JSX.Element {
   const plugins = [...editorPlugins]
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
-  const {state, setValue} = useEditorValue()
+
   const {getDocument, getAuthor, createDraft} = useMintter()
   const {push} = useHistory()
   const {version} = useParams()
 
-  const {title, blocks, subtitle, author: pubAuthor} = state
-
   const author = getAuthor(pubAuthor)
 
   const {status, error, data, isFetching, failureCount} = getDocument(version)
-
-  React.useEffect(() => {
-    if (data) {
-      const {document, blocksMap} = data.toObject()
-
-      const {title, subtitle, blockRefList} = document
-      const blocks = toSlateTree({blockRefList, blocksMap})
-
-      setValue({
-        title,
-        subtitle,
-        blocks: [blocks] || initialBlocksValue,
-      })
-    }
-  }, [data])
+  const {state, setValue} = useEditorValue({
+    document: data,
+  })
+  const {title, blocks, subtitle, author: pubAuthor} = state
 
   async function createTransclusion(block: SlateBlock) {
     console.log('create transclusion called!!', block)

@@ -1,5 +1,6 @@
-import {useReducer, useCallback} from 'react'
-import {initialValue, EditorState} from '../editor'
+import {useEffect, useReducer, useCallback} from 'react'
+import {initialValue, EditorState, initialBlocksValue} from '../editor'
+import {toSlateTree} from '../transformers'
 
 export function initializeEditorValue() {
   // TODO: change this to a lazy initialization function later
@@ -41,7 +42,7 @@ export function draftReducer(state: EditorState, action) {
   }
 }
 
-export function useEditorValue() {
+export function useEditorValue({document}) {
   const [state, dispatch] = useReducer(
     draftReducer,
     initialValue,
@@ -61,8 +62,24 @@ export function useEditorValue() {
   }, [])
 
   const setValue = useCallback(payload => {
+    console.log('llamo a setValue!')
     dispatch({type: 'VALUE', payload})
   }, [])
+
+  useEffect(() => {
+    if (document) {
+      const {document: doc, blocksMap} = document.toObject()
+      console.log('effect called!')
+      const {title, subtitle, blockRefList} = doc
+      const blocks = toSlateTree({blockRefList, blocksMap, isRoot: true})
+
+      setValue({
+        title,
+        subtitle,
+        blocks: blocks ? blocks : initialBlocksValue,
+      })
+    }
+  }, [document, setValue])
 
   return {
     state,

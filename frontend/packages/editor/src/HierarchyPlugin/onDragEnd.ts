@@ -5,7 +5,6 @@ export const onDragEnd = editor => result => {
   console.log('result', result)
 
   if (!result.destination) {
-    console.log('no hay destination?????')
     return
   }
 
