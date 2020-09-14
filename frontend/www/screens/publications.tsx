@@ -30,8 +30,6 @@ export function Publications() {
     return <ErrorMessage error={error} />
   }
 
-  console.log({data: resolvedData?.toObject()})
-
   const list = useMemo(
     () =>
       resolvedData

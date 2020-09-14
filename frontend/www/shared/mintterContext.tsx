@@ -3,12 +3,6 @@ import {ReactEditor} from 'slate-react'
 import * as apiClient from './mintterClient'
 import {SlateBlock} from '@mintter/editor'
 import {
-  Publication,
-  Draft,
-  ListPublicationsResponse,
-  ListDraftsResponse,
-} from '@mintter/proto/documents_pb'
-import {
   useQuery,
   usePaginatedQuery,
   QueryResult,
