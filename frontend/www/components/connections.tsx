@@ -95,7 +95,10 @@ export function Connections() {
                   </span>
                 }
               >
-                <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
+                <span
+                  data-testid="connection-username"
+                  className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed"
+                >
                   {`${c.username} (${c.accountId.slice(-8)})`}
                 </span>
               </Tippy>

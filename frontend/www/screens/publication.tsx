@@ -8,7 +8,6 @@ import {
   useEditor,
   plugins as editorPlugins,
   initialBlocksValue,
-  // SectionToolbar,
   EditorComponent,
   renderReadOnlyBlockElement,
   renderElementReadOnlyBlockList,
@@ -28,7 +27,6 @@ import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
 import {css} from 'emotion'
 import {useParams, useHistory} from 'react-router-dom'
-import {Section} from '@mintter/proto/documents_pb'
 import {markdownToSlate} from 'shared/markdownToSlate'
 import {useMintter} from 'shared/mintterContext'
 import {useProfile} from 'shared/profileContext'
@@ -37,7 +35,7 @@ import {FullPageSpinner} from 'components/fullPageSpinner'
 import {ErrorMessage} from 'components/errorMessage'
 import {AuthorLabel} from 'components/author-label'
 import Container from 'components/container'
-import {UpdateDraftRequest, BlockRefList} from '@mintter/proto/v2/documents_pb'
+import {UpdateDraftRequest, BlockRefList, Block} from '@mintter/proto/v2/documents_pb'
 import {v4 as uuid} from 'uuid'
 import {tempUpdateDraft} from 'shared/mintterClient'
 
@@ -45,7 +43,7 @@ export default function Publication(): JSX.Element {
   const plugins = [...editorPlugins]
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
   const {state, setValue} = useEditorValue()
-  const {getDocument, getSections, getAuthor, createDraft} = useMintter()
+  const {getDocument, getAuthor, createDraft} = useMintter()
   const {push} = useHistory()
   const {version} = useParams()
 

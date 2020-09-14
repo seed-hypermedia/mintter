@@ -8,13 +8,13 @@
   "private": true,
   "scripts": {
     "changeset": "changeset",
-    "lint": "yarn workspaces run lint",
     "build": "yarn workspaces run build",
     "test": "yarn workspaces run test",
     "prettier": "prettier -c --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\"",
     "format": "yarn prettier --write",
     "check-format": "yarn prettier",
     "clean": "redo clean -j20",
+    "dev": "yarn workspace @mintter/site dev",
     "site:test": "is-ci \"site:test:coverage\" \"site:test:watch\"",
     "site:build": "yarn workspace @mintter/site build",
     "site:export": "yarn workspace @mintter/site export",
@@ -28,7 +28,7 @@
     "editor:test:coverage": "yarn workspace @mintter/editor test --coverage",
     "editor:watch": "yarn workspace @mintter/editor start",
     "release": "yarn build",
-    "validate": "npm-run-all --parallel check-format lint test build"
+    "validate": "npm-run-all --parallel check-format test build"
   },
   "workspaces": [
     "frontend/www",
@@ -61,7 +61,7 @@
     "./frontent/**/*.{js,jsx,ts,tsx,json,css}": [
       "yarn format",
       "yarn editor:build",
-      "yarn site:test:precommit --findRelatedTests"
+      "yarn site:test:precommit --bail —-findRelatedTests"
     ]
   }
 }

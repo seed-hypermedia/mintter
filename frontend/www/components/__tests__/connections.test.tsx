@@ -1,3 +1,4 @@
+import React from 'react'
 import {render, screen, userEvent, act} from 'test/app-test-utils'
 import {Connections} from '../connections'
 import * as clientMock from 'shared/V1mintterClient'
@@ -18,13 +19,9 @@ beforeEach(() => {
     }),
   })
 })
-test('<Connections />', async () => {
+test('<Connections />: renders the users', async () => {
   await render(<Connections />)
 
   screen.getByText(/connections/i)
-  const username = screen.getByText(/testuser1/i)
-
-  await act(() => userEvent.hover(username))
-
-  expect(screen.getByText(/reallylongaccountidabcd1234/i)).toBeInTheDocument()
+  screen.getByText(/testuser1/i)
 })

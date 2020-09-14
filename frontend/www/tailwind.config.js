@@ -1,5 +1,3 @@
-// const {colors} = require('tailwindcss/defaultTheme')
-
 module.exports = {
   theme: {
     extend: {
@@ -54,15 +52,9 @@ module.exports = {
     'disabled',
   ],
   plugins: [],
-
-  purge: {
-    content: [
-      './shared/**/*.{ts,tsx}',
-      './pages/**/*.{ts,tsx}',
-      './screens/**/*.{ts,tsx}',
-      './components/**/*.{ts,tsx}',
-      './plugins/**/*.{ts,tsx}',
-      '../packages/editor/src/**/*.{ts,tsx}',
-    ],
+  purge: false,
+  future: {
+    removeDeprecatedGapUtilities: true,
+    purgeLayersByDefault: true,
   },
 }
