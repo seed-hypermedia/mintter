@@ -35,7 +35,11 @@ import {FullPageSpinner} from 'components/fullPageSpinner'
 import {ErrorMessage} from 'components/errorMessage'
 import {AuthorLabel} from 'components/author-label'
 import Container from 'components/container'
-import {UpdateDraftRequest, BlockRefList, Block} from '@mintter/proto/v2/documents_pb'
+import {
+  UpdateDraftRequest,
+  BlockRefList,
+  Block,
+} from '@mintter/proto/v2/documents_pb'
 import {v4 as uuid} from 'uuid'
 import {tempUpdateDraft} from 'shared/mintterClient'
 
