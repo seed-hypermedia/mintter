@@ -15,6 +15,12 @@ import {css} from 'emotion'
 export default function EditProfile() {
   const {register, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
+    defaultValues: {
+      username: '',
+      email: '',
+      bio: '',
+      accountId: '',
+    },
   })
 
   const {focusFirst} = useFocus()
@@ -47,7 +53,7 @@ export default function EditProfile() {
             >
               Avatar
             </label>
-            <div className="avatar-container overflow-hidden relative bg-background-muted border bg-background-muted border-muted rounded">
+            <div className="avatar-container overflow-hidden relative bg-background-muted border bg-background-muted border-muted  rounded">
               <input
                 name="avatar"
                 id="avatar"

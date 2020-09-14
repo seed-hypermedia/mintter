@@ -19,11 +19,15 @@ import * as clientMock from 'shared/V1mintterClient'
 
 jest.mock('shared/V1mintterClient')
 
+const currentUser = {
+  toObject: (): Profile.AsObject => ({}),
+}
+
+const bio = 'test bio'
+
 beforeEach(() => {
   clientMock.setProfile = jest.fn()
-  clientMock.getProfile.mockResolvedValueOnce({
-    toObject: (): Profile.AsObject => ({}),
-  })
+  clientMock.getProfile.mockResolvedValueOnce(currentUser)
 })
 
 async function renderWelcomeScreen() {
@@ -39,7 +43,7 @@ async function renderWelcomeScreen() {
     data: {
       username: 'testusername',
       email: 'email@test.com',
-      bio: 'test bio',
+      bio,
     },
   }
 }
@@ -66,7 +70,6 @@ test('Welcome - Edit Profile Screen', async () => {
   await act(() => userEvent.type(email, data.email.substr(1)))
   await act(() => userEvent.type(username, data.username))
   await act(() => userEvent.type(bio, data.bio))
-
   expect(nextBtn).not.toBeDisabled()
 
   await act(async () => await userEvent.click(nextBtn))
@@ -76,7 +79,6 @@ test('Welcome - Edit Profile Screen', async () => {
   })
 
   await waitFor(() => {
-    // TODO: (horacio) need to check why I have to pass undefined as profile
-    expect(clientMock.setProfile).toHaveBeenCalledWith(undefined, data)
+    expect(clientMock.setProfile).toHaveBeenCalledWith(currentUser, data)
   })
 })
