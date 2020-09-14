@@ -182,7 +182,6 @@ export default function Editor(): JSX.Element {
                   onChange={setTitle}
                   name="title"
                   placeholder="Document title"
-                  minHeight={56}
                   className={`text-4xl text-heading font-bold italic`}
                   onEnterPress={() => {
                     subtitleRef.current.focus()
@@ -196,8 +195,10 @@ export default function Editor(): JSX.Element {
                   onChange={setSubtitle}
                   name="subtitle"
                   placeholder="Subtitle"
-                  minHeight={28}
                   className={`leading-relaxed text-lg font-light text-heading-muted italic`}
+                  onEnterPress={() => {
+                    ReactEditor.focus(editor)
+                  }}
                 />
               </div>
               <BlockToolsProvider>

@@ -1,124 +1,44 @@
-import React, {forwardRef} from 'react'
+import React from 'react'
 import {css} from 'emotion'
+import ExpandingTextarea from 'react-expanding-textarea'
 
-interface TextareaProps {
-  id?: string
-  value?: string
-  name?: string
-  onChange?: (textValue: string) => void
-  minHeight?: number
-  className?: string
-  readOnly?: boolean
-  placeholder?: string
-  onEnterPress?: (e: any) => void
-}
-
-// eslint-disable-next-line react/display-name
-const Textarea = (
+function TextareaComponent(
   {
-    value: valueFromProps,
-    name,
+    value,
     onChange,
-    minHeight,
     className,
     onEnterPress,
+    rows = 1,
     readOnly = false,
+
     ...props
-  }: TextareaProps,
-  ref: any,
-) => {
-  const [value, setInnerValue] = React.useState(() =>
-    valueFromProps
-      ? valueFromProps
-      : typeof ref === 'function'
-      ? undefined
-      : '',
-  )
-  const innerRef = React.useRef(null)
-  const divRef = React.useRef(null)
-  const lh = React.useMemo(
-    () => innerRef.current && getComputedStyle(innerRef.current)['line-height'],
-    [],
-  )
-  React.useEffect(() => {
-    update()
-  })
-
-  React.useEffect(() => {
-    setInnerValue(valueFromProps)
-  }, [valueFromProps])
-
-  function handleChange(e) {
+  },
+  ref,
+) {
+  const handleChange = React.useCallback(e => {
     if (onChange) {
       onChange(e.target.value)
-      return
-    } else {
-      setInnerValue(e.target.value)
     }
-  }
+  }, [])
 
-  function update() {
-    const txt = innerRef.current
-    if (txt) {
-      const div = divRef.current
-      // const content = txt.value
-      div.style.visibility = 'hidden'
-      div.style.display = 'block'
-      txt.style.height = `${div.offsetHeight ? div.offsetHeight : lh}px`
-      div.style.visibility = 'visible'
-      div.style.display = 'none'
-    }
-  }
-
-  function handleKeyDown(e) {
+  const handleKeyDown = React.useCallback(e => {
     if (e.keyCode === 13 && onEnterPress) {
       e.preventDefault()
       onEnterPress(e)
       return false
     }
-  }
-
-  const divValue = innerRef?.current?.value || ''
-
+  }, [])
   return (
-    <>
-      <textarea
-        readOnly={readOnly}
-        {...props}
-        className={`resize-none overflow-hidden leading-normal w-full outline-none bg-transparent ${css`
-          word-wrap: break-word;
-          white-space: pre-wrap;
-        `} ${className}`}
-        value={value}
-        name={name}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        ref={r => {
-          innerRef.current = r
-          if (ref) {
-            if (typeof ref === 'function') {
-              ref(r)
-            } else {
-              ref.current = r
-            }
-          }
-        }}
-      />
-      <div
-        ref={divRef}
-        className={`leading-normal ${className} ${css`
-          word-wrap: break-word;
-          white-space: pre-wrap;
-          min-height: ${minHeight ? minHeight : lh}px;
-          // line-height: ${minHeight}px;
-        `}`}
-      >
-        {divValue}
-        {/* this empty space is to let the textarea aware of it to change its size, thanks to trevorblades! */}
-        {divValue[divValue.length - 1] === '\n' && '\n'}
-      </div>
-    </>
+    <ExpandingTextarea
+      {...props}
+      ref={ref}
+      onKeyDown={handleKeyDown}
+      value={value}
+      className={`resize-none overflow-hidden leading-normal w-full outline-none bg-transparent ${className}`}
+      rows={rows}
+      onChange={handleChange}
+    />
   )
 }
 
-export default forwardRef(Textarea)
+export default React.forwardRef(TextareaComponent)
