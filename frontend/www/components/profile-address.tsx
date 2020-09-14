@@ -48,7 +48,7 @@ export function ProfileAddress(props) {
       )}
       <Textarea
         readOnly
-        minHeight={200}
+        rows={4}
         id="addresses"
         className="block text-body-muted w-full border bg-background-muted border-muted rounded px-3 py-2 font-mono text-xs"
         value={address && address.join('\n\n')}
