@@ -26,6 +26,7 @@ import {
   BlockToolsProvider,
   toSlateTree,
   toSlateBlocksDictionary,
+  TransclusionHelperProvider,
 } from '@mintter/editor'
 import {useEditor as useSlateEditor, ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
@@ -56,13 +57,17 @@ export default function Editor(): JSX.Element {
   const {push} = useHistory()
   const {version} = useParams()
   const {theme} = useTheme()
-  const {getDocument, setDocument, publishDraft} = useMintter()
+
+  const [transclusionOptions, setTrOptions] = React.useState([])
+
+  const {getDocument, setDocument, publishDraft, listDrafts} = useMintter()
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])
   const {status, error, data} = getDocument(version, {
     onSuccess: () => {
       setReadyToAutosave(true)
     },
   })
+
   const {state, setTitle, setSubtitle, setBlocks, setValue} = useEditorValue({
     document: data,
   })
@@ -88,6 +93,14 @@ export default function Editor(): JSX.Element {
       autosaveDraft(state)
     }
   }, [debouncedValue])
+
+  const {status: draftsStatus, resolvedData: drafts} = listDrafts()
+
+  React.useEffect(() => {
+    if (draftsStatus === 'success') {
+      setTrOptions(drafts.toObject().documentsList)
+    }
+  }, [draftsStatus, drafts])
 
   async function handlePublish() {
     publishDraft(version as string, {
@@ -188,21 +201,23 @@ export default function Editor(): JSX.Element {
                   }}
                 />
               </div>
-              <BlockToolsProvider>
-                <EditorComponent
-                  editor={editor}
-                  plugins={plugins}
-                  value={blocks}
-                  onChange={blocks => {
-                    setBlocks(blocks)
-                  }}
-                  renderElements={[
-                    renderEditableBlockElement(),
-                    renderElementBlockList(),
-                  ]}
-                  theme={theme}
-                />
-              </BlockToolsProvider>
+              <TransclusionHelperProvider options={transclusionOptions}>
+                <BlockToolsProvider>
+                  <EditorComponent
+                    editor={editor}
+                    plugins={plugins}
+                    value={blocks}
+                    onChange={blocks => {
+                      setBlocks(blocks)
+                    }}
+                    renderElements={[
+                      renderEditableBlockElement(),
+                      renderElementBlockList(),
+                    ]}
+                    theme={theme}
+                  />
+                </BlockToolsProvider>
+              </TransclusionHelperProvider>
             </div>
           </div>
           <DebugValue
