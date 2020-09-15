@@ -7,6 +7,7 @@ import {Droppable} from 'react-beautiful-dnd'
 import {HelperToolbar, HelperProvider, useHelper} from '../HelperPlugin'
 import {ELEMENT_BLOCK} from '../BlockPlugin'
 import {ELEMENT_IMAGE} from '../ImagePlugin'
+import {getPreventDefaultHandler} from '../BlockPlugin/utils/getPreventDefaultHandler'
 
 interface EditorComponentProps {
   editor: any
@@ -109,14 +110,40 @@ function Editor(
           </Droppable>
         )}
       </div>
-      <HelperToolbar
-        at={target}
-        valueIndex={index}
-        options={values}
-        onClickSelection={onAddBlock}
-        setValueIndex={setValueIndex}
-        theme={theme}
-      />
+      <HelperToolbar at={target} options={values} theme={theme}>
+        <ul>
+          {values.map((option, i) => (
+            <li key={`${i}${option.type}`}>
+              <button
+                className={`block text-left text-body w-full px-4 py-2 ${
+                  i === index ? 'bg-background-muted' : 'bg-background'
+                }`}
+                onMouseEnter={() => setValueIndex(i)}
+                onMouseDown={getPreventDefaultHandler(
+                  onAddBlock,
+                  editor,
+                  option,
+                )}
+              >
+                {option.name}
+              </button>
+            </li>
+          ))}
+        </ul>
+        {/* <div className="bg-background py-4">
+          <p className="px-4 uppercase text-body-muted text-xs font-bold">
+            Actions
+          </p>
+          <ul>
+            <li>
+              <button className="w-full px-4 py-1 flex items-center justify-start text-body hover:bg-background-muted bg-background">
+                <Icons.Trash size={16} color="currentColor" />
+                <span className="text-body text-sm px-2">Delete</span>
+              </button>
+            </li>
+          </ul>
+        </div> */}
+      </HelperToolbar>
     </Slate>
   )
 }
