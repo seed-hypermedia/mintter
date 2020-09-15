@@ -1,17 +1,5 @@
 import {SlateBlock} from '../editor'
 
-export const createTransclusion = ({push, currentVersion, editor}) => async ({
-  destination,
-  block,
-}) => {
-  console.log('create transclusion called!!', {
-    currentVersion,
-    editor,
-    destination,
-    block,
-  })
-}
-
 export interface CreateTransclusionRequest {
   source: string // source publication version
   destination?: string // destination draft version (undefined if needs to create a new one)
@@ -75,7 +63,7 @@ export async function createTransclusions({
   //   },
   // })
   // req.setDocument(update)
-  // await tempUpdateDraft(req)
+  // await updateDraftWithRequest(req)
   // push({
   //   pathname: `/editor/${newDraft.version}`,
   // })

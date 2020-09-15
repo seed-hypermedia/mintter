@@ -68,7 +68,6 @@ export function useEditorValue({document}) {
   useEffect(() => {
     if (document) {
       const {document: doc, blocksMap} = document.toObject()
-      console.log('useEditorValue -> doc', doc)
       const {title, subtitle, blockRefList} = doc
 
       const blocks = toSlateTree({blockRefList, blocksMap, isRoot: true})

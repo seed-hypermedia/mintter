@@ -24,7 +24,6 @@ import {
   TransclusionHelperProvider,
 } from '@mintter/editor'
 import {Document} from '@mintter/proto/v2/documents_pb'
-import {createDraft, getDocument} from 'shared/mintterClient'
 import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
@@ -38,13 +37,13 @@ import {FullPageSpinner} from 'components/fullPageSpinner'
 import {ErrorMessage} from 'components/errorMessage'
 import {AuthorLabel} from 'components/author-label'
 import Container from 'components/container'
+import {useTransclusion} from 'shared/useTransclusion'
 import {
   UpdateDraftRequest,
   BlockRefList,
   Block,
 } from '@mintter/proto/v2/documents_pb'
 import {v4 as uuid} from 'uuid'
-import {tempUpdateDraft} from 'shared/mintterClient'
 
 function useDraftsSelection() {
   const [drafts, setOptions] = React.useState([])
@@ -65,38 +64,6 @@ function useDraftsSelection() {
   }
 }
 
-function useTransclusion() {
-  const editor = useEditor()
-  async function createTransclusion({
-    source,
-    destination,
-    destinationPath,
-    block,
-  }) {
-    console.log('useTransclusion -> ', {
-      source,
-      destination,
-      destinationPath,
-      block,
-    })
-    let draft: Document
-    let transclusionId: string = `${destination}/${block.id}`
-    if (destination) {
-      // no destination provided, create a new Draft
-      draft = await getDocument('key', destination)
-    } else {
-      draft = await createDraft()
-    }
-
-    const draftObject = draft.toObject()
-    console.log('useTransclusion -> draftObject', draftObject)
-  }
-
-  return {
-    createTransclusion,
-  }
-}
-
 export default function Publication(): JSX.Element {
   const plugins = [...editorPlugins]
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
@@ -113,7 +80,7 @@ export default function Publication(): JSX.Element {
   const author = getAuthor(pubAuthor)
 
   const {drafts} = useDraftsSelection()
-  const {createTransclusion} = useTransclusion()
+  const {createTransclusion} = useTransclusion({editor})
 
   async function handleTransclusion({destination, block}) {
     const draftUrl = await createTransclusion({
