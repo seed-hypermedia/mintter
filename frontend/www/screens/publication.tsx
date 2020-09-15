@@ -51,13 +51,12 @@ export default function Publication(): JSX.Element {
   const {push} = useHistory()
   const {version} = useParams()
 
-  const author = getAuthor(pubAuthor)
-
   const {status, error, data, isFetching, failureCount} = getDocument(version)
   const {state, setValue} = useEditorValue({
     document: data,
   })
   const {title, blocks, subtitle, author: pubAuthor} = state
+  const author = getAuthor(pubAuthor)
 
   async function createTransclusion(block: SlateBlock) {
     console.log('create transclusion called!!', block)

@@ -58,7 +58,6 @@ export default function Editor(): JSX.Element {
   const {theme} = useTheme()
   const {getDocument, setDocument, publishDraft} = useMintter()
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])
-  useGenericModal()
   const {status, error, data} = getDocument(version, {
     onSuccess: () => {
       setReadyToAutosave(true)
