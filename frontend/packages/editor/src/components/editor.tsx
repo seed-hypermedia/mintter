@@ -173,19 +173,6 @@ function Editor(
               </button>
             </li>
           ))}
-          <li>
-            <button
-              className={`block text-left text-body w-full px-4 py-2 bg-background hover:bg-background-muted`}
-              onMouseEnter={() => tValueIndex(-1)}
-              onMouseDown={getPreventDefaultHandler(
-                onTranscludeBlock,
-                editor,
-                null,
-              )}
-            >
-              Transclude to New Draft
-            </button>
-          </li>
         </ul>
       </HelperToolbar>
     </Slate>

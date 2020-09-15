@@ -21,6 +21,7 @@ import {
   toBlock,
   toDocument,
   SlateBlock,
+  TransclusionHelperProvider,
 } from '@mintter/editor'
 import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
@@ -43,6 +44,25 @@ import {
 import {v4 as uuid} from 'uuid'
 import {tempUpdateDraft} from 'shared/mintterClient'
 
+function useDraftsSelection() {
+  const [drafts, setOptions] = React.useState([])
+  const {listDrafts} = useMintter()
+  const {status, resolvedData} = listDrafts()
+
+  React.useEffect(() => {
+    if (status === 'success') {
+      setOptions([
+        ...resolvedData.toObject().documentsList,
+        {id: 'new-draft', isNew: true, title: 'New Draft'},
+      ])
+    }
+  }, [status, resolvedData])
+
+  return {
+    drafts,
+  }
+}
+
 export default function Publication(): JSX.Element {
   const plugins = [...editorPlugins]
   const editor: ReactEditor = useEditor(plugins) as ReactEditor
@@ -57,6 +77,8 @@ export default function Publication(): JSX.Element {
   })
   const {title, blocks, subtitle, author: pubAuthor} = state
   const author = getAuthor(pubAuthor)
+
+  const {drafts} = useDraftsSelection()
 
   async function createTransclusion(block: SlateBlock) {
     console.log('create transclusion called!!', block)
@@ -213,7 +235,9 @@ export default function Publication(): JSX.Element {
               width: 100%;
             `}`}
           >
-            {content}
+            <TransclusionHelperProvider options={drafts} destination={version}>
+              {content}
+            </TransclusionHelperProvider>
           </div>
         </div>
       </div>
