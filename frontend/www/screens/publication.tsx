@@ -23,6 +23,8 @@ import {
   SlateBlock,
   TransclusionHelperProvider,
 } from '@mintter/editor'
+import {Document} from '@mintter/proto/v2/documents_pb'
+import {createDraft, getDocument} from 'shared/mintterClient'
 import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
@@ -53,13 +55,45 @@ function useDraftsSelection() {
     if (status === 'success') {
       setOptions([
         ...resolvedData.toObject().documentsList,
-        {id: 'new-draft', isNew: true, title: 'New Draft'},
+        {version: undefined, title: 'New Draft'},
       ])
     }
   }, [status, resolvedData])
 
   return {
     drafts,
+  }
+}
+
+function useTransclusion() {
+  const editor = useEditor()
+  async function createTransclusion({
+    source,
+    destination,
+    destinationPath,
+    block,
+  }) {
+    console.log('useTransclusion -> ', {
+      source,
+      destination,
+      destinationPath,
+      block,
+    })
+    let draft: Document
+    let transclusionId: string = `${destination}/${block.id}`
+    if (destination) {
+      // no destination provided, create a new Draft
+      draft = await getDocument('key', destination)
+    } else {
+      draft = await createDraft()
+    }
+
+    const draftObject = draft.toObject()
+    console.log('useTransclusion -> draftObject', draftObject)
+  }
+
+  return {
+    createTransclusion,
   }
 }
 
@@ -79,70 +113,13 @@ export default function Publication(): JSX.Element {
   const author = getAuthor(pubAuthor)
 
   const {drafts} = useDraftsSelection()
+  const {createTransclusion} = useTransclusion()
 
-  async function createTransclusion(block: SlateBlock) {
-    console.log('create transclusion called!!', block)
-    const n = await createDraft()
-    const newDraft = n.toObject()
-
-    const transclusionId = `${version}/${block.id}`
-
-    const req = new UpdateDraftRequest()
-    const map: Map<string, Block> = req.getBlocksMap()
-
-    const emptyBlockId = uuid()
-    const emptyBlock = {
-      type: ELEMENT_BLOCK,
-      id: emptyBlockId,
-      children: [
-        {
-          type: ELEMENT_PARAGRAPH,
-          children: [
-            {
-              text: '',
-            },
-          ],
-        },
-      ],
-    }
-
-    map.set(emptyBlockId, toBlock(emptyBlock))
-
-    const update = toDocument({
-      document: {
-        id: newDraft.id,
-        author: newDraft.author,
-        version: newDraft.version,
-      },
-      state: {
-        title: '',
-        subtitle: '',
-        blocks: [
-          {
-            type: ELEMENT_BLOCK_LIST,
-            id: uuid(),
-            listType: BlockRefList.Style.NONE,
-            children: [
-              {
-                type: ELEMENT_TRANSCLUSION,
-                id: transclusionId,
-                children: block.children,
-              },
-              {
-                ...emptyBlock,
-              },
-            ],
-          },
-        ],
-      },
-    })
-
-    req.setDocument(update)
-
-    await tempUpdateDraft(req)
-
-    push({
-      pathname: `/editor/${newDraft.version}`,
+  async function handleTransclusion({destination, block}) {
+    const draftUrl = await createTransclusion({
+      source: version,
+      destination: destination.version,
+      block: block,
     })
   }
 
@@ -205,7 +182,7 @@ export default function Publication(): JSX.Element {
           value={blocks}
           onChange={() => {}}
           renderElements={[
-            renderReadOnlyBlockElement(options, {createTransclusion}),
+            renderReadOnlyBlockElement(options),
             renderElementReadOnlyBlockList(),
           ]}
         />
@@ -235,7 +212,10 @@ export default function Publication(): JSX.Element {
               width: 100%;
             `}`}
           >
-            <TransclusionHelperProvider options={drafts} destination={version}>
+            <TransclusionHelperProvider
+              options={drafts}
+              handleTransclusion={handleTransclusion}
+            >
               {content}
             </TransclusionHelperProvider>
           </div>

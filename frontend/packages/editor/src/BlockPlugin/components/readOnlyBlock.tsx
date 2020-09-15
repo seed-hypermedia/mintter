@@ -36,7 +36,7 @@ function ReadonlyBlockElement(
     <Block
       path={path}
       data-slate-type={element.type}
-      innerRef={ref as any}
+      ref={ref as any}
       {...rest}
     >
       <div className="right-0 top-0 absolute" contentEditable={false}>

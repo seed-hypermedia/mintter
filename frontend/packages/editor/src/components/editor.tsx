@@ -84,97 +84,100 @@ function Editor(
         `}`}
       >
         {readOnly ? (
-          <EditablePlugins
-            readOnly={true}
-            plugins={plugins}
-            renderElement={renderElements}
-            placeholder={
-              readOnly ? 'no content' : 'Start writing your masterpiece...'
-            }
-            spellCheck
-            autoFocus
-            onKeyDown={[onKeyDownHelper, tKeyDownHelper]}
-            onKeyDownDeps={[index, target, tIndex, tTarget]}
-          />
+          <>
+            <EditablePlugins
+              readOnly={true}
+              plugins={plugins}
+              renderElement={renderElements}
+              placeholder={
+                readOnly ? 'no content' : 'Start writing your masterpiece...'
+              }
+              spellCheck
+              autoFocus
+              onKeyDown={[tKeyDownHelper]}
+              onKeyDownDeps={[tIndex, tTarget]}
+            />
+            <HelperToolbar at={tTarget} options={drafts} theme={theme}>
+              <ul>
+                {drafts.map((doc, i) => (
+                  <li key={`${i}${doc.version}`}>
+                    <button
+                      className={`block text-left text-body w-full px-4 py-2 ${
+                        i === tIndex ? 'bg-background-muted' : 'bg-background'
+                      }`}
+                      onMouseEnter={() => tValueIndex(i)}
+                      onMouseDown={getPreventDefaultHandler(
+                        onTranscludeBlock,
+                        doc,
+                      )}
+                    >
+                      {doc.title || 'Untitled Document'}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </HelperToolbar>
+          </>
         ) : (
-          <Droppable droppableId="editor" type="block_list">
-            {(provided, snapshot) => (
-              <div ref={provided.innerRef} {...provided.droppableProps}>
-                <EditablePlugins
-                  readOnly={readOnly && !snapshot.isDraggingOver}
-                  plugins={plugins}
-                  renderElement={renderElements}
-                  placeholder={
-                    readOnly
-                      ? 'no content'
-                      : 'Start writing your masterpiece...'
-                  }
-                  spellCheck
-                  autoFocus
-                  onKeyDown={[onKeyDownHelper, tKeyDownHelper]}
-                  onKeyDownDeps={[index, target, tIndex, tTarget]}
-                />
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
+          <>
+            <Droppable droppableId="editor" type="block_list">
+              {(provided, snapshot) => (
+                <div ref={provided.innerRef} {...provided.droppableProps}>
+                  <EditablePlugins
+                    readOnly={readOnly && !snapshot.isDraggingOver}
+                    plugins={plugins}
+                    renderElement={renderElements}
+                    placeholder={
+                      readOnly
+                        ? 'no content'
+                        : 'Start writing your masterpiece...'
+                    }
+                    spellCheck
+                    autoFocus
+                    onKeyDown={[onKeyDownHelper]}
+                    onKeyDownDeps={[index, target]}
+                  />
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+            <HelperToolbar at={target} options={values} theme={theme}>
+              <ul>
+                {values.map((option, i) => (
+                  <li key={`${i}${option.type}`}>
+                    <button
+                      className={`block text-left text-body w-full px-4 py-2 ${
+                        i === index ? 'bg-background-muted' : 'bg-background'
+                      }`}
+                      onMouseEnter={() => setValueIndex(i)}
+                      onMouseDown={getPreventDefaultHandler(
+                        onAddBlock,
+                        editor,
+                        option,
+                      )}
+                    >
+                      {option.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {/* <div className="bg-background py-4">
+            <p className="px-4 uppercase text-body-muted text-xs font-bold">
+              Actions
+            </p>
+            <ul>
+              <li>
+                <button className="w-full px-4 py-1 flex items-center justify-start text-body hover:bg-background-muted bg-background">
+                  <Icons.Trash size={16} color="currentColor" />
+                  <span className="text-body text-sm px-2">Delete</span>
+                </button>
+              </li>
+            </ul>
+          </div> */}
+            </HelperToolbar>
+          </>
         )}
       </div>
-      <HelperToolbar at={target} options={values} theme={theme}>
-        <ul>
-          {values.map((option, i) => (
-            <li key={`${i}${option.type}`}>
-              <button
-                className={`block text-left text-body w-full px-4 py-2 ${
-                  i === index ? 'bg-background-muted' : 'bg-background'
-                }`}
-                onMouseEnter={() => setValueIndex(i)}
-                onMouseDown={getPreventDefaultHandler(
-                  onAddBlock,
-                  editor,
-                  option,
-                )}
-              >
-                {option.name}
-              </button>
-            </li>
-          ))}
-        </ul>
-        {/* <div className="bg-background py-4">
-          <p className="px-4 uppercase text-body-muted text-xs font-bold">
-            Actions
-          </p>
-          <ul>
-            <li>
-              <button className="w-full px-4 py-1 flex items-center justify-start text-body hover:bg-background-muted bg-background">
-                <Icons.Trash size={16} color="currentColor" />
-                <span className="text-body text-sm px-2">Delete</span>
-              </button>
-            </li>
-          </ul>
-        </div> */}
-      </HelperToolbar>
-      <HelperToolbar at={tTarget} options={drafts} theme={theme}>
-        <ul>
-          {drafts.map((doc, i) => (
-            <li key={doc.version}>
-              <button
-                className={`block text-left text-body w-full px-4 py-2 ${
-                  i === tIndex ? 'bg-background-muted' : 'bg-background'
-                }`}
-                onMouseEnter={() => tValueIndex(i)}
-                onMouseDown={getPreventDefaultHandler(
-                  onTranscludeBlock,
-                  editor,
-                  doc,
-                )}
-              >
-                {doc.title || 'Untitled Document'}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </HelperToolbar>
     </Slate>
   )
 }
