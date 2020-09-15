@@ -138,7 +138,7 @@ export function setDocument(editor) {
   }
 }
 
-export async function tempUpdateDraft(req) {
+export async function updateDraftWithRequest(req) {
   return await documentsClient.updateDraft(req)
 }
 
