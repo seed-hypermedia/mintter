@@ -1,5 +1,6 @@
 import {Element} from 'slate'
-
+import {ELEMENT_BLOCK} from '../BlockPlugin/defaults'
+import {ELEMENT_IMAGE} from '../ImagePlugin/defaults'
 export interface useHelperOptions {
   trigger?: string
 }
