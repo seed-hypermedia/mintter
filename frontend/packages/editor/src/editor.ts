@@ -23,7 +23,6 @@ export interface SlateBlock {
   children: any[]
 }
 
-// TODO: fix types here
 export const Editor = {
   ...SlateEditor,
   charCount: (editor: ReactEditor, path: Path): number => {
@@ -31,7 +30,6 @@ export const Editor = {
     return txt.trim().length
   },
 }
-
 export const initialBlocksValue = [
   {
     type: ELEMENT_BLOCK_LIST,
