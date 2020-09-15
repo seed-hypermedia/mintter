@@ -2,7 +2,6 @@ import React, {createContext, useContext, useCallback, useState} from 'react'
 import {
   Path,
   Range,
-  Editor,
   // Transforms, Node
 } from 'slate'
 import {
@@ -21,8 +20,11 @@ export const TransclusionHelperContext: any = createContext<any>({
   values: [],
 })
 
-export function TransclusionHelperProvider({children, options, destination}) {
-  console.log({destination})
+export function TransclusionHelperProvider({
+  children,
+  options,
+  handleTransclusion,
+}) {
   const [targetRange, setTargetRange] = useState<Range | null>(null)
   const [valueIndex, setValueIndex] = useState(0)
   // FIXME: add types to element
@@ -35,19 +37,19 @@ export function TransclusionHelperProvider({children, options, destination}) {
   const values = options
 
   const onTranscludeBlock = useCallback(
-    (editor: Editor, draft) => {
+    destination => {
       if (targetRange !== null) {
-        console.log('transclude block!', {editor, draft, element})
-        if (draft.isNew) {
-          // create a new Draft with Transclusion
-        }
+        handleTransclusion({
+          destination,
+          block: element,
+        })
         setTargetRange(null)
         setTargetPath(null)
         setElement(null)
         return
       }
     },
-    [targetRange, element],
+    [targetRange, element, handleTransclusion],
   )
 
   const setTarget = useCallback(
@@ -60,7 +62,7 @@ export function TransclusionHelperProvider({children, options, destination}) {
   )
 
   const onKeyDownHelper = useCallback(
-    (e: any, editor: Editor) => {
+    (e: any) => {
       if (targetRange) {
         if (e.key === 'ArrowDown') {
           e.preventDefault()
@@ -80,7 +82,7 @@ export function TransclusionHelperProvider({children, options, destination}) {
 
         if (['Tab', 'Enter'].includes(e.key)) {
           e.preventDefault()
-          return onTranscludeBlock(editor, values[valueIndex])
+          return onTranscludeBlock(values[valueIndex])
         }
       }
     },
