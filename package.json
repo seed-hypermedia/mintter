@@ -10,7 +10,7 @@
     "changeset": "changeset",
     "build": "yarn workspaces run build",
     "test": "yarn workspaces run test",
-    "prettier": "prettier -c --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\"",
+    "prettier": "prettier -c --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\" --write",
     "format": "yarn prettier --write",
     "check-format": "yarn prettier",
     "clean": "redo clean -j20",
@@ -58,7 +58,7 @@
     }
   },
   "lint-staged": {
-    "./frontent/**/*.{js,jsx,ts,tsx,json,css}": [
+    "*.{js,jsx,ts,tsx,json,css}": [
       "yarn format",
       "yarn editor:build",
       "yarn site:test:precommit --bail —-findRelatedTests"
