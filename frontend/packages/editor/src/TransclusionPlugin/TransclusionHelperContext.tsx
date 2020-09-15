@@ -21,9 +21,12 @@ export const TransclusionHelperContext: any = createContext<any>({
   values: [],
 })
 
-export function TransclusionHelperProvider({children, options}) {
+export function TransclusionHelperProvider({children, options, destination}) {
+  console.log({destination})
   const [targetRange, setTargetRange] = useState<Range | null>(null)
   const [valueIndex, setValueIndex] = useState(0)
+  // FIXME: add types to element
+  const [element, setElement] = useState<any>(null)
   //   const [search, setSearch] = useState('')
   const [, setTargetPath] = useState<Path | null>(null)
   //   const values = options?.filter(o =>
@@ -32,23 +35,28 @@ export function TransclusionHelperProvider({children, options}) {
   const values = options
 
   const onTranscludeBlock = useCallback(
-    (editor: Editor, block) => {
+    (editor: Editor, draft) => {
       if (targetRange !== null) {
-        console.log('transclude block!', {editor, block})
+        console.log('transclude block!', {editor, draft, element})
+        if (draft.isNew) {
+          // create a new Draft with Transclusion
+        }
         setTargetRange(null)
         setTargetPath(null)
+        setElement(null)
         return
       }
     },
-    [targetRange],
+    [targetRange, element],
   )
 
   const setTarget = useCallback(
-    (target, blockPath) => {
+    (target, blockPath, element) => {
       setTargetRange(target)
       setTargetPath(blockPath)
+      setElement(element)
     },
-    [setTargetRange, setTargetPath],
+    [setTargetRange, setTargetPath, setElement],
   )
 
   const onKeyDownHelper = useCallback(

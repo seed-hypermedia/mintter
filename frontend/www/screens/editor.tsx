@@ -58,8 +58,6 @@ export default function Editor(): JSX.Element {
   const {version} = useParams()
   const {theme} = useTheme()
 
-  const [transclusionOptions, setTrOptions] = React.useState([])
-
   const {getDocument, setDocument, publishDraft, listDrafts} = useMintter()
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])
   const {status, error, data} = getDocument(version, {
@@ -93,14 +91,6 @@ export default function Editor(): JSX.Element {
       autosaveDraft(state)
     }
   }, [debouncedValue])
-
-  const {status: draftsStatus, resolvedData: drafts} = listDrafts()
-
-  React.useEffect(() => {
-    if (draftsStatus === 'success') {
-      setTrOptions(drafts.toObject().documentsList)
-    }
-  }, [draftsStatus, drafts])
 
   async function handlePublish() {
     publishDraft(version as string, {
@@ -201,23 +191,22 @@ export default function Editor(): JSX.Element {
                   }}
                 />
               </div>
-              <TransclusionHelperProvider options={transclusionOptions}>
-                <BlockToolsProvider>
-                  <EditorComponent
-                    editor={editor}
-                    plugins={plugins}
-                    value={blocks}
-                    onChange={blocks => {
-                      setBlocks(blocks)
-                    }}
-                    renderElements={[
-                      renderEditableBlockElement(),
-                      renderElementBlockList(),
-                    ]}
-                    theme={theme}
-                  />
-                </BlockToolsProvider>
-              </TransclusionHelperProvider>
+
+              <BlockToolsProvider>
+                <EditorComponent
+                  editor={editor}
+                  plugins={plugins}
+                  value={blocks}
+                  onChange={blocks => {
+                    setBlocks(blocks)
+                  }}
+                  renderElements={[
+                    renderEditableBlockElement(),
+                    renderElementBlockList(),
+                  ]}
+                  theme={theme}
+                />
+              </BlockToolsProvider>
             </div>
           </div>
           <DebugValue

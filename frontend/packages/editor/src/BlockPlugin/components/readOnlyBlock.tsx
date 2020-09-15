@@ -1,7 +1,7 @@
 import React from 'react'
 import {ReactEditor, useEditor} from 'slate-react'
 import {Block} from './block'
-import Tippy from '@tippyjs/react'
+import {useTransclusionHelper} from '../../TransclusionPlugin/TransclusionHelperContext'
 
 function ReadonlyBlockElement(
   {children, element, createTransclusion, ...rest},
@@ -9,13 +9,28 @@ function ReadonlyBlockElement(
 ) {
   const editor = useEditor()
   const path = ReactEditor.findPath(editor, element)
-  const [menuVisible, setMenuVisible] = React.useState<boolean>(false)
+  const {setTarget, target, onKeyDownHelper} = useTransclusionHelper()
 
-  // const show = React.useCallback(() => setMenuVisible(true), [setMenuVisible])
-  const hide = React.useCallback(() => setMenuVisible(false), [setMenuVisible])
-  const toggle = React.useCallback(() => setMenuVisible(value => !value), [
-    setMenuVisible,
-  ])
+  function onTranscludeClicked(e) {
+    e.preventDefault()
+    const value = target ? null : e.target
+    setTarget(value, path, element)
+  }
+
+  const onKeyDown = React.useCallback(
+    e => {
+      onKeyDownHelper(e, editor)
+    },
+    [editor, onKeyDownHelper],
+  )
+
+  React.useEffect(() => {
+    window.addEventListener('keydown', onKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [onKeyDown])
 
   return (
     <Block
@@ -25,21 +40,7 @@ function ReadonlyBlockElement(
       {...rest}
     >
       <div className="right-0 top-0 absolute" contentEditable={false}>
-        <Tippy
-          interactive={true}
-          onClickOutside={hide}
-          visible={menuVisible}
-          content={<TransclusionModal blockId={element.id} />}
-        >
-          <button
-            onClick={() => {
-              toggle()
-              createTransclusion(element)
-            }}
-          >
-            Transclude
-          </button>
-        </Tippy>
+        <button onClick={onTranscludeClicked}>Transclude</button>
       </div>
       {children}
     </Block>
@@ -48,10 +49,3 @@ function ReadonlyBlockElement(
 
 // TODO: (Horacio) Fixme types
 export const ReadOnlyBlock = React.forwardRef(ReadonlyBlockElement as any)
-
-function TransclusionModal({blockId}) {
-  React.useEffect(() => {
-    console.log('execute Effect', blockId)
-  }, [blockId])
-  return <div className="bg-white p-4 rounded">MENU HERE</div>
-}
