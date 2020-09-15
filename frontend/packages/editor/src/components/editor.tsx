@@ -8,6 +8,7 @@ import {HelperToolbar, HelperProvider, useHelper} from '../HelperPlugin'
 import {ELEMENT_BLOCK} from '../BlockPlugin'
 import {ELEMENT_IMAGE} from '../ImagePlugin'
 import {getPreventDefaultHandler} from '../BlockPlugin/utils/getPreventDefaultHandler'
+import {useTransclusionHelper} from '../TransclusionPlugin/TransclusionHelperContext'
 
 interface EditorComponentProps {
   editor: any
@@ -58,6 +59,15 @@ function Editor(
     setValueIndex,
   } = useHelper()
 
+  const {
+    values: drafts,
+    target: tTarget,
+    index: tIndex,
+    onTranscludeBlock,
+    onKeyDownHelper: tKeyDownHelper,
+    setValueIndex: tValueIndex,
+  } = useTransclusionHelper()
+
   return (
     <Slate
       editor={editor}
@@ -83,8 +93,8 @@ function Editor(
             }
             spellCheck
             autoFocus
-            onKeyDown={[onKeyDownHelper]}
-            onKeyDownDeps={[index, target]}
+            onKeyDown={[onKeyDownHelper, tKeyDownHelper]}
+            onKeyDownDeps={[index, target, tIndex, tTarget]}
           />
         ) : (
           <Droppable droppableId="editor" type="block_list">
@@ -101,8 +111,8 @@ function Editor(
                   }
                   spellCheck
                   autoFocus
-                  onKeyDown={[onKeyDownHelper]}
-                  onKeyDownDeps={[index, target]}
+                  onKeyDown={[onKeyDownHelper, tKeyDownHelper]}
+                  onKeyDownDeps={[index, target, tIndex, tTarget]}
                 />
                 {provided.placeholder}
               </div>
@@ -143,6 +153,40 @@ function Editor(
             </li>
           </ul>
         </div> */}
+      </HelperToolbar>
+      <HelperToolbar at={tTarget} options={drafts} theme={theme}>
+        <ul>
+          {drafts.map((doc, i) => (
+            <li key={doc.version}>
+              <button
+                className={`block text-left text-body w-full px-4 py-2 ${
+                  i === tIndex ? 'bg-background-muted' : 'bg-background'
+                }`}
+                onMouseEnter={() => tValueIndex(i)}
+                onMouseDown={getPreventDefaultHandler(
+                  onTranscludeBlock,
+                  editor,
+                  doc,
+                )}
+              >
+                {doc.title || 'Untitled Document'}
+              </button>
+            </li>
+          ))}
+          <li>
+            <button
+              className={`block text-left text-body w-full px-4 py-2 bg-background hover:bg-background-muted`}
+              onMouseEnter={() => tValueIndex(-1)}
+              onMouseDown={getPreventDefaultHandler(
+                onTranscludeBlock,
+                editor,
+                null,
+              )}
+            >
+              Transclude to New Draft
+            </button>
+          </li>
+        </ul>
       </HelperToolbar>
     </Slate>
   )

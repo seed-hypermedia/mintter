@@ -2,9 +2,16 @@ import React, {useEffect, useCallback} from 'react'
 import {css} from 'emotion'
 import {useEditor} from 'slate-react'
 import {useHelper} from '../HelperPlugin/components/HelperContext'
+import {useTransclusionHelper} from '../TransclusionPlugin/TransclusionHelperContext'
 
 export function BlockControls({isHovered = false, dragHandleProps = {}, path}) {
   const {setTarget, target, onKeyDownHelper} = useHelper()
+  const {
+    setTarget: tSetTarget,
+    target: tTarget,
+    onKeyDownHelper: tOnKeyDownHelper,
+  } = useTransclusionHelper()
+
   const editor = useEditor()
 
   function onAddClicked(e) {
@@ -12,11 +19,19 @@ export function BlockControls({isHovered = false, dragHandleProps = {}, path}) {
     const value = target ? null : e.target
     setTarget(value, path)
   }
+
+  function onTranscludeClicked(e) {
+    e.preventDefault()
+    const value = tTarget ? null : e.target
+    tSetTarget(value, path)
+  }
+
   const onKeyDown = useCallback(
     e => {
       onKeyDownHelper(e, editor)
+      tOnKeyDownHelper(e, editor)
     },
-    [editor, onKeyDownHelper],
+    [editor, onKeyDownHelper, tOnKeyDownHelper],
   )
 
   useEffect(() => {
@@ -35,7 +50,8 @@ export function BlockControls({isHovered = false, dragHandleProps = {}, path}) {
       `}`}
       contentEditable={false}
     >
-      <div
+      <button
+        onClick={onTranscludeClicked}
         className="rounded-sm bg-transparent text-body hover:bg-background-muted w-6 h-8 p-1 mx-1"
         {...dragHandleProps}
       >
@@ -45,7 +61,7 @@ export function BlockControls({isHovered = false, dragHandleProps = {}, path}) {
             fill="currentColor"
           />
         </svg>
-      </div>
+      </button>
       <button
         onClick={onAddClicked}
         className="rounded-sm bg-transparent text-body hover:bg-background-muted w-8 h-8 p-1 mx-1"
