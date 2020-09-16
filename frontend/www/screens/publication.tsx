@@ -88,6 +88,8 @@ export default function Publication(): JSX.Element {
       destination: destination.version,
       block: block,
     })
+
+    push(`/editor/${draftUrl}`)
   }
 
   let content
