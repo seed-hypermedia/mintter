@@ -1,6 +1,6 @@
 window.getSelection = function() {
   return {
-    addRange: function() {},
-    removeAllRanges: function() {},
+    addRange: jest.fn(),
+    removeAllRanges: jest.fn(),
   }
 }

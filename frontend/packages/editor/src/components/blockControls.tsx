@@ -5,6 +5,7 @@ import {useHelper} from '../HelperPlugin/components/HelperContext'
 
 export function BlockControls({isHovered = false, dragHandleProps = {}, path}) {
   const {setTarget, target, onKeyDownHelper} = useHelper()
+
   const editor = useEditor()
 
   function onAddClicked(e) {
@@ -12,6 +13,7 @@ export function BlockControls({isHovered = false, dragHandleProps = {}, path}) {
     const value = target ? null : e.target
     setTarget(value, path)
   }
+
   const onKeyDown = useCallback(
     e => {
       onKeyDownHelper(e, editor)

@@ -10,9 +10,9 @@
     "changeset": "changeset",
     "build": "yarn workspaces run build",
     "test": "yarn workspaces run test",
-    "prettier": "prettier -c --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\"",
+    "prettier": "prettier --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\"",
     "format": "yarn prettier --write",
-    "check-format": "yarn prettier",
+    "check-format": "yarn prettier -c",
     "clean": "redo clean -j20",
     "dev": "yarn workspace @mintter/site dev",
     "site:test": "is-ci \"site:test:coverage\" \"site:test:watch\"",
@@ -41,8 +41,8 @@
     "@typescript-eslint/eslint-plugin": "^2.22.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
-    "husky": "^4.2.3",
-    "lint-staged": "^10.0.8",
+    "husky": "^4.3.0",
+    "lint-staged": "^10.3.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^1.19.1",
     "tsdx": "^0.12.3",
@@ -54,11 +54,12 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-push": "lint-staged",
+      "pre-commit": "yarn check-format"
     }
   },
   "lint-staged": {
-    "./frontend/**/*.{js,jsx,ts,tsx,json,css}": [
+    "frontend/**/*.+(js|jsx|ts|tsx|json|css)": [
       "yarn format",
       "yarn editor:build",
       "yarn site:test:precommit --bail —-findRelatedTests"
