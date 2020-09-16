@@ -55,6 +55,7 @@ export function useTransclusion({editor}) {
         console.log('useTransclusion -> res', JSON.stringify(res.toObject()))
 
         console.log('Draft updated!!')
+        return destination
       } else {
         // no destination provided, create a new Draft
         draft = await createDraft()
@@ -84,9 +85,8 @@ export function useTransclusion({editor}) {
         req.setDocument(draft)
 
         const res = await updateDraftWithRequest(req)
-        console.log('useTransclusion -> res', JSON.stringify(res.toObject()))
-
         console.log('create a new draft with transclusion!')
+        return draft.getVersion()
       }
     },
     [],
