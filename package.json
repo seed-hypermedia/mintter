@@ -10,9 +10,9 @@
     "changeset": "changeset",
     "build": "yarn workspaces run build",
     "test": "yarn workspaces run test",
-    "prettier": "prettier -c --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\" --write",
+    "prettier": "prettier --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\"",
     "format": "yarn prettier --write",
-    "check-format": "yarn prettier",
+    "check-format": "yarn prettier -c",
     "clean": "redo clean -j20",
     "dev": "yarn workspace @mintter/site dev",
     "site:test": "is-ci \"site:test:coverage\" \"site:test:watch\"",
@@ -55,7 +55,7 @@
   "husky": {
     "hooks": {
       "pre-push": "lint-staged",
-      "pre-commit": "yarn format"
+      "pre-commit": "yarn check-format"
     }
   },
   "lint-staged": {
