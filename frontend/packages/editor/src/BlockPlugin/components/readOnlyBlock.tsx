@@ -4,7 +4,7 @@ import {Block} from './block'
 import {useTransclusionHelper} from '../../TransclusionPlugin/TransclusionHelperContext'
 
 function ReadonlyBlockElement(
-  {children, element, createTransclusion, ...rest},
+  {children, element, ...rest},
   ref: React.RefObject<HTMLDivElement>,
 ) {
   const editor = useEditor()

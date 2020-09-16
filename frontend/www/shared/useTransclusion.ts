@@ -9,12 +9,14 @@ import {
   UpdateDraftRequest,
   BlockRefList,
   BlockRef,
+  GetDocumentResponse,
 } from '@mintter/proto/v2/documents_pb'
 import {
   createDraft,
   getDocument,
   updateDraftWithRequest,
 } from 'shared/mintterClient'
+import {v4 as uuid} from 'uuid'
 
 export interface CreateTransclusionRequest {
   source: string // source publication version
@@ -30,46 +32,58 @@ export function useTransclusion({editor}) {
       destination,
       destinationPath,
       block,
-    }: CreateTransclusionRequest): Promise<string> => {
-      let draft: Document
-      let transclusionId: string = `${destination}/${block.id}`
+    }: CreateTransclusionRequest) => {
+      let draft: GetDocumentResponse | Document
+      let transclusionId: string = `${source}/${block.id}`
+      console.log('useTransclusion -> transclusionId', transclusionId)
       if (destination) {
         draft = await getDocument('key', destination)
-        const {document, blocksMap: originalBlocksMap} = draft.toObject()
+        console.log('useTransclusion -> draft', draft)
 
-        const req = new UpdateDraftRequest()
-        const map: Map<string, Block> = req.getBlocksMap()
+        // Create block reference for the block being transcluded:
+        let transclusionRef = new BlockRef()
+        transclusionRef.setRef(transclusionId)
+        console.log('useTransclusion -> transclusionRef', transclusionRef)
 
-        for (let [nodeId, node] of originalBlocksMap) {
-          console.log({node})
-          let block: Block = createBlock(node)
-          map.set(nodeId, block)
-        }
+        let document = draft.getDocument()
+        document.getBlockRefList().addRefs(transclusionRef)
 
-        addTransclusionToMap(block, transclusionId, map)
-        const blockRefList = updateBlockRefList(document, transclusionId)
-        console.log('useTransclusion -> blockRefList', blockRefList)
+        // const req = new UpdateDraftRequest()
+        // req.setDocument(document)
 
-        const {id, version, title, subtitle, author} = document
-        const docWithTransclusion = makeProto(new Document(), {
-          id,
-          version,
-          title,
-          subtitle,
-          author,
-          blockRefList,
-        })
-
-        req.setDocument(docWithTransclusion)
-        console.log({docWithTransclusion: docWithTransclusion.toObject()})
-        await updateDraftWithRequest(req)
-        console.log('Draft Updated!!')
-
-        // TODO: creating 2 transclusions without blockId
-        // TODO: rendering transclusion without content
+        // await updateDraftWithRequest(req)
+        console.log("Update Draft Here!, waiting for Burdi's update")
       } else {
         // no destination provided, create a new Draft
         draft = await createDraft()
+
+        // main blockRefList
+        let blockRefList = new BlockRefList()
+        blockRefList.setStyle(BlockRefList.Style.NONE)
+
+        // transclusion blockRef
+        let transclusionRef = new BlockRef()
+        transclusionRef.setRef(transclusionId)
+
+        // empty blockRef
+        let emptyBlockRef = new BlockRef()
+        emptyBlockRef.setRef(uuid())
+
+        // add refs to blockRefList
+        blockRefList.addRefs(transclusionRef, 0)
+        blockRefList.addRefs(emptyBlockRef, 1)
+
+        // set blockRef to document
+        draft.setBlockRefList(blockRefList)
+
+        // update new draft
+        const req = new UpdateDraftRequest()
+
+        req.setDocument(draft)
+        console.log(JSON.stringify(req.toObject(), null, 4))
+
+        // await updateDraftWithRequest(req)
+
         console.log('create a new draft with transclusion')
       }
     },
@@ -145,7 +159,7 @@ function createBlockRefList(blockRefList: BlockRefList.AsObject) {
 }
 
 function createBlockRef(sourceRef: BlockRef.AsObject) {
-  let blockRef = {
+  let blockRef: any = {
     ref: sourceRef.ref,
   }
 
