@@ -26,6 +26,7 @@ import {
   BlockToolsProvider,
   toSlateTree,
   toSlateBlocksDictionary,
+  TransclusionHelperProvider,
 } from '@mintter/editor'
 import {useEditor as useSlateEditor, ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
@@ -56,13 +57,16 @@ export default function Editor(): JSX.Element {
   const {push} = useHistory()
   const {version} = useParams()
   const {theme} = useTheme()
-  const {getDocument, setDocument, publishDraft} = useMintter()
+
+  const {getDocument, setDocument, publishDraft, listDrafts} = useMintter()
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])
   const {status, error, data} = getDocument(version, {
     onSuccess: () => {
+      console.log('doc => ', JSON.stringify(data.toObject(), null, 4))
       setReadyToAutosave(true)
     },
   })
+
   const {state, setTitle, setSubtitle, setBlocks, setValue} = useEditorValue({
     document: data,
   })
@@ -188,6 +192,7 @@ export default function Editor(): JSX.Element {
                   }}
                 />
               </div>
+
               <BlockToolsProvider>
                 <EditorComponent
                   editor={editor}

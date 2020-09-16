@@ -75,13 +75,12 @@ export function listDrafts(key, page = 0) {
 
 export async function getDocument(
   key: string,
-  version?: string,
+  version: string,
 ): Promise<GetDocumentResponse> {
   const req = new GetDocumentRequest()
   req.setVersion(version)
 
-  const document = await documentsClient.getDocument(req)
-  return document
+  return await documentsClient.getDocument(req)
 }
 
 export async function createDraft(): Promise<Document> {
@@ -138,7 +137,7 @@ export function setDocument(editor) {
   }
 }
 
-export async function tempUpdateDraft(req) {
+export async function updateDraftWithRequest(req) {
   return await documentsClient.updateDraft(req)
 }
 

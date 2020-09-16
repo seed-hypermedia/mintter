@@ -21,7 +21,9 @@ import {
   toBlock,
   toDocument,
   SlateBlock,
+  TransclusionHelperProvider,
 } from '@mintter/editor'
+import {Document} from '@mintter/proto/v2/documents_pb'
 import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
@@ -35,13 +37,32 @@ import {FullPageSpinner} from 'components/fullPageSpinner'
 import {ErrorMessage} from 'components/errorMessage'
 import {AuthorLabel} from 'components/author-label'
 import Container from 'components/container'
+import {useTransclusion} from 'shared/useTransclusion'
 import {
   UpdateDraftRequest,
   BlockRefList,
   Block,
 } from '@mintter/proto/v2/documents_pb'
 import {v4 as uuid} from 'uuid'
-import {tempUpdateDraft} from 'shared/mintterClient'
+
+function useDraftsSelection() {
+  const [drafts, setOptions] = React.useState([])
+  const {listDrafts} = useMintter()
+  const {status, resolvedData} = listDrafts()
+
+  React.useEffect(() => {
+    if (status === 'success') {
+      setOptions([
+        ...resolvedData.toObject().documentsList,
+        {version: undefined, title: 'New Draft'},
+      ])
+    }
+  }, [status, resolvedData])
+
+  return {
+    drafts,
+  }
+}
 
 export default function Publication(): JSX.Element {
   const plugins = [...editorPlugins]
@@ -58,70 +79,17 @@ export default function Publication(): JSX.Element {
   const {title, blocks, subtitle, author: pubAuthor} = state
   const author = getAuthor(pubAuthor)
 
-  async function createTransclusion(block: SlateBlock) {
-    console.log('create transclusion called!!', block)
-    const n = await createDraft()
-    const newDraft = n.toObject()
+  const {drafts} = useDraftsSelection()
+  const {createTransclusion} = useTransclusion({editor})
 
-    const transclusionId = `${version}/${block.id}`
-
-    const req = new UpdateDraftRequest()
-    const map: Map<string, Block> = req.getBlocksMap()
-
-    const emptyBlockId = uuid()
-    const emptyBlock = {
-      type: ELEMENT_BLOCK,
-      id: emptyBlockId,
-      children: [
-        {
-          type: ELEMENT_PARAGRAPH,
-          children: [
-            {
-              text: '',
-            },
-          ],
-        },
-      ],
-    }
-
-    map.set(emptyBlockId, toBlock(emptyBlock))
-
-    const update = toDocument({
-      document: {
-        id: newDraft.id,
-        author: newDraft.author,
-        version: newDraft.version,
-      },
-      state: {
-        title: '',
-        subtitle: '',
-        blocks: [
-          {
-            type: ELEMENT_BLOCK_LIST,
-            id: uuid(),
-            listType: BlockRefList.Style.NONE,
-            children: [
-              {
-                type: ELEMENT_TRANSCLUSION,
-                id: transclusionId,
-                children: block.children,
-              },
-              {
-                ...emptyBlock,
-              },
-            ],
-          },
-        ],
-      },
+  async function handleTransclusion({destination, block}) {
+    const draftUrl = await createTransclusion({
+      source: version,
+      destination: destination.version,
+      block: block,
     })
 
-    req.setDocument(update)
-
-    await tempUpdateDraft(req)
-
-    push({
-      pathname: `/editor/${newDraft.version}`,
-    })
+    push(`/editor/${draftUrl}`)
   }
 
   let content
@@ -183,7 +151,7 @@ export default function Publication(): JSX.Element {
           value={blocks}
           onChange={() => {}}
           renderElements={[
-            renderReadOnlyBlockElement(options, {createTransclusion}),
+            renderReadOnlyBlockElement(options),
             renderElementReadOnlyBlockList(),
           ]}
         />
@@ -213,7 +181,12 @@ export default function Publication(): JSX.Element {
               width: 100%;
             `}`}
           >
-            {content}
+            <TransclusionHelperProvider
+              options={drafts}
+              handleTransclusion={handleTransclusion}
+            >
+              {content}
+            </TransclusionHelperProvider>
           </div>
         </div>
       </div>

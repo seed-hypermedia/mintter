@@ -62,15 +62,14 @@ export function useEditorValue({document}) {
   }, [])
 
   const setValue = useCallback(payload => {
-    console.log('llamo a setValue!')
     dispatch({type: 'VALUE', payload})
   }, [])
 
   useEffect(() => {
     if (document) {
       const {document: doc, blocksMap} = document.toObject()
-      console.log('effect called!')
       const {title, subtitle, blockRefList} = doc
+
       const blocks = toSlateTree({blockRefList, blocksMap, isRoot: true})
 
       setValue({
