@@ -122,6 +122,12 @@ func (s *Server) UpdateDraft(ctx context.Context, in *v2.UpdateDraftRequest) (*v
 		return nil, err
 	}
 
+	// As a special case we support the way to delete all the content, for example when users
+	// selects everything in the editor and deletes it. For this to happend to send a non-nil
+	// block ref list but it has no refs. Sending nil refList should be possible to allow
+	// only updating document metadata partially without touching the content.
+	deleteContent := in.Document.BlockRefList != nil && in.Document.BlockRefList.Refs == nil
+
 	if in.Document.Author != prof.Account.ID.String() {
 		return nil, status.Error(codes.InvalidArgument, "you can only update your own documents")
 	}
@@ -147,10 +153,25 @@ func (s *Server) UpdateDraft(ctx context.Context, in *v2.UpdateDraftRequest) (*v
 
 	existing.Title = indoc.Title
 	existing.Subtitle = indoc.Subtitle
-	existing.Blocks = indoc.Blocks
-	existing.Sources = indoc.Sources
-	existing.RefList = indoc.RefList
 	existing.UpdateTime = nowFunc()
+
+	if indoc.Blocks != nil {
+		existing.Blocks = indoc.Blocks
+	}
+
+	if indoc.Sources != nil {
+		existing.Sources = indoc.Sources
+	}
+
+	if indoc.RefList != nil {
+		existing.RefList = indoc.RefList
+	}
+
+	if deleteContent {
+		existing.RefList = nil
+		existing.Blocks = nil
+		existing.Sources = nil
+	}
 
 	if _, err := s.repo.StoreDraft(ctx, existing.document); err != nil {
 		return nil, fmt.Errorf("failed to store draft: %w", err)
@@ -582,7 +603,7 @@ func documentFromProto(docpb *v2.Document, blockmap map[string]*v2.Block) (docum
 		d.PublishTime = docpb.PublishTime.AsTime()
 	}
 
-	if docpb.BlockRefList == nil {
+	if docpb.BlockRefList == nil || blockmap == nil || len(blockmap) == 0 {
 		return d, nil
 	}
 

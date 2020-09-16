@@ -176,6 +176,11 @@ func (x *CreateDraftRequest) GetParent() string {
 	return ""
 }
 
+// Request to update an existing draft. The blocks map is optional so that only
+// document can be updated. Although we also want allow to delete all the
+// content if the users selects everything and removes it. For this to work we
+// have a special case of sending a non-nil blockRefList, but with no refs
+// inside.
 type UpdateDraftRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

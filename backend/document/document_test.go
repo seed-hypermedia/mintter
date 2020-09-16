@@ -17,8 +17,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func TestV2CreateDraft(t *testing.T) {
-	srv, prof, ctx := makeV2Server(t, "alice")
+func TestCreateDraft(t *testing.T) {
+	srv, prof, ctx := makeServer(t, "alice")
 
 	_, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{
 		Parent: "fake-publicattion",
@@ -44,8 +44,8 @@ func TestV2CreateDraft(t *testing.T) {
 
 // TODO(burdiyan): test create draft with parent
 
-func TestV2UpdateDraft(t *testing.T) {
-	srv, _, ctx := makeV2Server(t, "alice")
+func TestUpdateDraft(t *testing.T) {
+	srv, _, ctx := makeServer(t, "alice")
 
 	draft, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
 	require.NoError(t, err)
@@ -84,6 +84,12 @@ func TestV2UpdateDraft(t *testing.T) {
 	require.NoError(t, err, "updating draft must not fail")
 	require.NotNil(t, resp, "response must not be nil")
 
+	// Regression test: updating document without touching blocks map:
+	draft.Title = "Blocks in Mintter Updated"
+	resp, err = srv.UpdateDraft(ctx, &v2.UpdateDraftRequest{Document: draft})
+	require.NoError(t, err, "must be able to update draft without sending the blocks")
+	require.NotNil(t, resp)
+
 	updated, err := srv.GetDocument(ctx, &v2.GetDocumentRequest{
 		Id: draft.Id,
 	})
@@ -95,8 +101,102 @@ func TestV2UpdateDraft(t *testing.T) {
 	}
 }
 
+func TestUpdateDraft_Partial(t *testing.T) {
+	// UpdateDraft must work with only the document even if previously there were some blocks before.
+	srv, _, ctx := makeServer(t, "alice")
+
+	draft, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
+	require.NoError(t, err)
+	draft.Title = "My new document"
+	draft.BlockRefList = &v2.BlockRefList{
+		Refs: []*v2.BlockRef{
+			{Ref: "block-1"},
+			{
+				Ref: "block-list-parent",
+				BlockRefList: &v2.BlockRefList{
+					Refs: []*v2.BlockRef{
+						{Ref: "block-list-child-1"},
+						{Ref: "block-list-child-2"},
+					},
+				},
+			},
+			{Ref: "block-2"},
+		},
+	}
+	blocksMap := makeTestBlocks()
+
+	updated, err := srv.UpdateDraft(ctx, &v2.UpdateDraftRequest{
+		Document: draft,
+		Blocks:   blocksMap,
+	})
+	require.NoError(t, err, "must store draft with blocks")
+	require.NotNil(t, updated)
+
+	draft.Title = "Updated title"
+	updated, err = srv.UpdateDraft(ctx, &v2.UpdateDraftRequest{
+		Document: draft,
+	})
+	require.NoError(t, err, "must update title without touching the blocks")
+	require.NotNil(t, updated)
+
+	get, err := srv.GetDocument(ctx, &v2.GetDocumentRequest{Version: draft.Version})
+	require.NoError(t, err, "must get draft")
+
+	for k, b := range blocksMap {
+		testutil.ProtoEqual(t, b, get.Blocks[k], "block %s doesn't match", k)
+	}
+}
+
+// TODO: test update draft with extraneous refs must fail.
+
+func TestUpdateDraft_DeleteContent(t *testing.T) {
+	srv, _, ctx := makeServer(t, "alice")
+
+	draft, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
+	require.NoError(t, err)
+	draft.Title = "My new document"
+	draft.BlockRefList = &v2.BlockRefList{
+		Refs: []*v2.BlockRef{
+			{Ref: "block-1"},
+			{
+				Ref: "block-list-parent",
+				BlockRefList: &v2.BlockRefList{
+					Refs: []*v2.BlockRef{
+						{Ref: "block-list-child-1"},
+						{Ref: "block-list-child-2"},
+					},
+				},
+			},
+			{Ref: "block-2"},
+		},
+	}
+	blocksMap := makeTestBlocks()
+
+	updated, err := srv.UpdateDraft(ctx, &v2.UpdateDraftRequest{
+		Document: draft,
+		Blocks:   blocksMap,
+	})
+	require.NoError(t, err, "must store draft with blocks")
+	require.NotNil(t, updated)
+
+	draft.Title = "Now it's an empty draft"
+	draft.BlockRefList = &v2.BlockRefList{}
+
+	updated, err = srv.UpdateDraft(ctx, &v2.UpdateDraftRequest{
+		Document: draft,
+	})
+	require.NoError(t, err, "must be able to remove content")
+	require.NotNil(t, updated)
+
+	get, err := srv.GetDocument(ctx, &v2.GetDocumentRequest{Version: draft.Version})
+	require.NoError(t, err, "must get draft")
+	require.Nil(t, get.Blocks, "must have no blocks after deleting")
+	require.Nil(t, get.Document.BlockRefList, "must have no block ref list after deleting")
+	require.Equal(t, draft.Title, get.Document.Title, "title must match")
+}
+
 func TestListDocuments(t *testing.T) {
-	srv, _, ctx := makeV2Server(t, "alice")
+	srv, _, ctx := makeServer(t, "alice")
 
 	d1, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
 	require.NoError(t, err)
@@ -161,7 +261,7 @@ Loop:
 }
 
 func TestDeleteDocument(t *testing.T) {
-	srv, _, ctx := makeV2Server(t, "alice")
+	srv, _, ctx := makeServer(t, "alice")
 
 	d1, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
 	require.NoError(t, err, "must create draft")
@@ -187,8 +287,8 @@ func TestDeleteDocument(t *testing.T) {
 	require.Nil(t, doc)
 }
 
-func TestPublishDraft_v2(t *testing.T) {
-	srv, _, ctx := makeV2Server(t, "alice")
+func TestPublishDraft(t *testing.T) {
+	srv, _, ctx := makeServer(t, "alice")
 
 	d1, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
 	require.NoError(t, err, "must create draft")
@@ -237,7 +337,7 @@ func TestPublishDraft_v2(t *testing.T) {
 }
 
 func TestSubscription(t *testing.T) {
-	srv, _, ctx := makeV2Server(t, "alice")
+	srv, _, ctx := makeServer(t, "alice")
 
 	ch := make(chan proto.Message)
 	srv.(*document.Server).Subscribe(ch)
@@ -265,7 +365,7 @@ func TestSubscription(t *testing.T) {
 	testutil.ProtoEqual(t, published, evt, "published events don't match")
 }
 
-func makeV2Server(t *testing.T, name string) (v2.DocumentsServer, identity.Profile, context.Context) {
+func makeServer(t *testing.T, name string) (v2.DocumentsServer, identity.Profile, context.Context) {
 	t.Helper()
 	ctx := document.AdminContext(context.Background())
 

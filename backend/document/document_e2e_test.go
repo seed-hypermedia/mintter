@@ -9,7 +9,7 @@ import (
 )
 
 func TestTransclusionEndToEnd(t *testing.T) {
-	srv, _, ctx := makeV2Server(t, "alice")
+	srv, _, ctx := makeServer(t, "alice")
 
 	draft1, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
 	require.NoError(t, err, "must create draft 1")
