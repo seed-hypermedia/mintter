@@ -146,6 +146,15 @@ func (s *Server) UpdateDraft(ctx context.Context, in *v2.UpdateDraftRequest) (*v
 		return nil, status.Errorf(codes.InvalidArgument, "field 'author': want = '%s', got = '%s'", existing.Author, in.Document.Author)
 	}
 
+	// To support updates without sending blocks map all the time, resolve the existing blocks.
+	if !deleteContent && in.Blocks == nil {
+		_, inblocks, err := resolveDocument(ctx, version, s.repo)
+		if err != nil {
+			return nil, err
+		}
+		in.Blocks = inblocks
+	}
+
 	indoc, err := documentFromProto(in.Document, in.Blocks)
 	if err != nil {
 		return nil, err
