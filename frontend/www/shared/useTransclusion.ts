@@ -43,7 +43,6 @@ export function useTransclusion({editor}) {
         // Create block reference for the block being transcluded:
         let transclusionRef = new BlockRef()
         transclusionRef.setRef(transclusionId)
-        console.log('useTransclusion -> transclusionRef', transclusionRef)
 
         let document = draft.getDocument()
         document.getBlockRefList().addRefs(transclusionRef)
