@@ -13,7 +13,8 @@
     "export": "yarn build && next export",
     "build": "next build",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "lint": "eslint --ignore-path .gitignore ."
   },
   "dependencies": {
     "@material-ui/core": "^4.9.2",
