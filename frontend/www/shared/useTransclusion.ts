@@ -48,11 +48,13 @@ export function useTransclusion({editor}) {
         let document = draft.getDocument()
         document.getBlockRefList().addRefs(transclusionRef)
 
-        // const req = new UpdateDraftRequest()
-        // req.setDocument(document)
+        const req = new UpdateDraftRequest()
+        req.setDocument(document)
 
-        // await updateDraftWithRequest(req)
-        console.log("Update Draft Here!, waiting for Burdi's update")
+        const res = await updateDraftWithRequest(req)
+        console.log('useTransclusion -> res', JSON.stringify(res.toObject()))
+
+        console.log('Draft updated!!')
       } else {
         // no destination provided, create a new Draft
         draft = await createDraft()
@@ -80,11 +82,11 @@ export function useTransclusion({editor}) {
         const req = new UpdateDraftRequest()
 
         req.setDocument(draft)
-        console.log(JSON.stringify(req.toObject(), null, 4))
 
-        // await updateDraftWithRequest(req)
+        const res = await updateDraftWithRequest(req)
+        console.log('useTransclusion -> res', JSON.stringify(res.toObject()))
 
-        console.log('create a new draft with transclusion')
+        console.log('create a new draft with transclusion!')
       }
     },
     [],
