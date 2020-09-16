@@ -25,8 +25,24 @@ func TestTransclusionEndToEnd(t *testing.T) {
 
 	draft2, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
 	require.NoError(t, err, "must create draft 2")
-	updateReq2 := testDoc2(draft2, pub1.Version)
+	updateReq2 := testDoc2(draft2)
 	updateResp2, err := srv.UpdateDraft(ctx, updateReq2)
+	require.NoError(t, err, "must update draft 2")
+	require.NotNil(t, updateResp2)
+
+	updateReq2.Document.BlockRefList.Refs = append(draft2.BlockRefList.Refs, &v2.BlockRef{
+		Ref: pub1.Version + "/block-list-parent",
+		BlockRefList: &v2.BlockRefList{
+			Style: v2.BlockRefList_BULLET,
+			Refs: []*v2.BlockRef{
+				{Ref: pub1.Version + "/block-list-child-1"},
+				{Ref: pub1.Version + "/block-list-child-2"},
+			},
+		},
+	})
+	updateReq2.Blocks = nil
+
+	updateResp2, err = srv.UpdateDraft(ctx, updateReq2)
 	require.NoError(t, err, "must update draft 2")
 	require.NotNil(t, updateResp2)
 
@@ -49,6 +65,7 @@ func TestTransclusionEndToEnd(t *testing.T) {
 	wantRootList := &v2.BlockRefList{
 		Refs: []*v2.BlockRef{
 			{Ref: "block-1"},
+			{Ref: "block-2"},
 			{
 				Ref: pub1.Version + "/" + "block-list-parent",
 				BlockRefList: &v2.BlockRefList{
@@ -59,29 +76,18 @@ func TestTransclusionEndToEnd(t *testing.T) {
 					},
 				},
 			},
-			{Ref: "block-2"},
 		},
 	}
 	testutil.ProtoEqual(t, wantRootList, draftDoc.Document.BlockRefList, "ref list doesn't match")
 }
 
-func testDoc2(d *v2.Document, sourceVersion string) *v2.UpdateDraftRequest {
+func testDoc2(d *v2.Document) *v2.UpdateDraftRequest {
 	d.Title = "Second document"
 	d.Subtitle = "This is the first Mintter document that will reuse a block."
 	d.BlockRefList = &v2.BlockRefList{
 		Style: v2.BlockRefList_NONE,
 		Refs: []*v2.BlockRef{
 			{Ref: "block-1"},
-			{
-				Ref: sourceVersion + "/block-list-parent",
-				BlockRefList: &v2.BlockRefList{
-					Style: v2.BlockRefList_BULLET,
-					Refs: []*v2.BlockRef{
-						{Ref: sourceVersion + "/block-list-child-1"},
-						{Ref: sourceVersion + "/block-list-child-2"},
-					},
-				},
-			},
 			{Ref: "block-2"},
 		},
 	}
