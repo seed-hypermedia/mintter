@@ -17,6 +17,7 @@
     "eslint-config-prettier",
     "eslint-config-prettier/@typescript-eslint"
   ],
+  "ignorePatterns": ["./out", "./test", "./postcss.config.js"],
   "rules": {
     "strict": ["error", "never"],
     "react/react-in-jsx-scope": "off",
@@ -25,7 +26,8 @@
     "@typescript-eslint/camelcase": "off"
   },
   "env": {
-    "browser": true
+    "browser": true,
+    "node": true
   },
   "globals": {
     "React": "writable"

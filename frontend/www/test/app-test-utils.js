@@ -1,19 +1,17 @@
 import {
   render as rtlRender,
   screen,
-  waitFor,
   fireEvent,
   waitForElementToBeRemoved,
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import {queryCache} from 'react-query'
 import {AppProviders} from 'components/app-providers'
 
 jest.mock('shared/V1mintterClient')
 
 async function render(
   ui,
-  {route = '/library/feed', profile, timeout, ...renderOptions} = {},
+  {route = '/library/feed', timeout, ...renderOptions} = {},
 ) {
   const routeConfig =
     typeof route === 'string'
