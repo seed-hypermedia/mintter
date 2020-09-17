@@ -1,17 +1,15 @@
+import {mergeRefs} from '../../mergeRefs'
 import * as React from 'react'
-import {Draggable} from 'react-beautiful-dnd'
 import {useSelected, ReactEditor, useEditor} from 'slate-react'
 // import {Editor} from 'slate'
 import {useBlockTools} from '../../BlockPlugin/components/blockToolsContext'
 import {BlockControls} from '../../components/blockControls'
-import {mergeRefs} from '../../mergeRefs'
 
 const Transclusion = ({attributes, children, element, className}, ref) => {
   const selected = useSelected()
   const editor = useEditor()
   const path = ReactEditor.findPath(editor, element)
   const {id: blockId, setBlockId} = useBlockTools()
-  const {ref: refAttrs, ...restAttrs} = attributes
 
   // TODO: add Transclusion markers
 
@@ -35,23 +33,16 @@ const Transclusion = ({attributes, children, element, className}, ref) => {
   // }, [editor, path])
 
   return (
-    <Draggable
-      key={element.id}
-      draggableId={element.id}
-      index={path[path.length - 1]}
+    <div
+      {...attributes}
+      ref={mergeRefs(ref, attributes.ref)}
+      className={`pl-4 pr-0 py-2 border-2 relative bg-yellow-100 rounded ${
+        selected ? 'border-info' : 'border-transparent'
+      }${className ? className : ''}`}
+      onMouseLeave={() => setBlockId(null)}
+      onMouseEnter={() => setBlockId(element.id)}
     >
-      {provided => (
-        <div
-          {...restAttrs}
-          {...provided.draggableProps}
-          ref={mergeRefs(provided.innerRef, ref, refAttrs)}
-          className={`pl-4 pr-0 py-2 border-2 relative bg-yellow-100 rounded ${
-            selected ? 'border-info' : 'border-transparent'
-          }${className ? className : ''}`}
-          onMouseLeave={() => setBlockId(null)}
-          onMouseEnter={() => setBlockId(element.id)}
-        >
-          {/* <div
+      {/* <div
             className="fixed"
             style={
               endRect
@@ -65,15 +56,9 @@ const Transclusion = ({attributes, children, element, className}, ref) => {
                 : {}
             }
           /> */}
-          <BlockControls
-            isHovered={blockId === element.id}
-            path={path}
-            dragHandleProps={provided.dragHandleProps}
-          />
-          <div contentEditable={false}>{children}</div>
-        </div>
-      )}
-    </Draggable>
+      <BlockControls isHovered={blockId === element.id} path={path} />
+      <div contentEditable={false}>{children}</div>
+    </div>
   )
 }
 

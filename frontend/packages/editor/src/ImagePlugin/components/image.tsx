@@ -1,9 +1,6 @@
 import React, {useState, useMemo} from 'react'
 import {useSelected, useEditor, ReactEditor} from 'slate-react'
-import {Draggable} from 'react-beautiful-dnd'
 import {Transforms} from 'slate'
-
-import {mergeRefs} from '../../mergeRefs'
 import {useHover} from '@react-aria/interactions'
 import {useToggleState} from '@react-stately/toggle'
 import {useBlockTools} from '../../BlockPlugin/components/blockToolsContext'
@@ -46,65 +43,51 @@ export function ImageBlock({attributes, element, children}) {
 
   const caption = useMemo<string>(() => element.caption ?? '', [element])
   return (
-    <Draggable
-      key={element.id}
-      draggableId={element.id}
-      index={path[path.length - 1]}
+    <div
+      {...attributes}
+      className={`group first:mt-8 relative overflow-hidden bg-red-500 p-4 ${
+        selected ? 'border-info' : 'border-transparent'
+      }`}
+      onMouseLeave={() => setBlockId(null)}
+      onMouseEnter={() => setBlockId(element.id)}
     >
-      {provided => (
-        <div
-          {...attributes}
-          {...provided.draggableProps}
-          ref={mergeRefs(provided.innerRef, attributes.ref)}
-          className={`group first:mt-8 relative overflow-hidden bg-red-500 p-4 ${
-            selected ? 'border-info' : 'border-transparent'
-          }`}
-          onMouseLeave={() => setBlockId(null)}
-          onMouseEnter={() => setBlockId(element.id)}
-        >
-          <div contentEditable={false}>
-            <BlockControls
-              isHovered={blockId === element.id}
-              path={path}
-              dragHandleProps={provided.dragHandleProps}
+      <div contentEditable={false}>
+        <BlockControls isHovered={blockId === element.id} path={path} />
+
+        {file ? (
+          <Image
+            src={file}
+            alt={caption}
+            onAddCaption={() => setSelected(!isSelected)}
+          />
+        ) : (
+          <div className="p-4">
+            <input
+              type="file"
+              accept="image/png, image/jpeg, image/gif"
+              onChange={handleOnChange}
             />
-
-            {file ? (
-              <Image
-                src={file}
-                alt={caption}
-                onAddCaption={() => setSelected(!isSelected)}
-              />
-            ) : (
-              <div className="p-4">
-                <input
-                  type="file"
-                  accept="image/png, image/jpeg, image/gif"
-                  onChange={handleOnChange}
-                />
-              </div>
-            )}
-
-            {isSelected && (
-              <input
-                className="bg-transparent text-body text-sm w-full mt-2 border border-transparent rounded-sm"
-                type="text"
-                placeholder="caption here"
-                value={caption}
-                onChange={handleCaption}
-              />
-            )}
-
-            {error && (
-              <p className="bg-danger px-4 py-2 rounded-md border-px text-body border-red-700">
-                {error}
-              </p>
-            )}
-            {children}
           </div>
-        </div>
-      )}
-    </Draggable>
+        )}
+
+        {isSelected && (
+          <input
+            className="bg-transparent text-body text-sm w-full mt-2 border border-transparent rounded-sm"
+            type="text"
+            placeholder="caption here"
+            value={caption}
+            onChange={handleCaption}
+          />
+        )}
+
+        {error && (
+          <p className="bg-danger px-4 py-2 rounded-md border-px text-body border-red-700">
+            {error}
+          </p>
+        )}
+        {children}
+      </div>
+    </div>
   )
 }
 

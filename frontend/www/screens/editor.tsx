@@ -3,7 +3,6 @@ import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {css} from 'emotion'
 import {useMutation, queryCache} from 'react-query'
 import {v4 as uuid} from 'uuid'
-import {DragDropContext} from 'react-beautiful-dnd'
 import {
   Icons,
   nodeTypes,
@@ -21,8 +20,6 @@ import {
   ELEMENT_BLOCK_LIST,
   useEditorValue,
   EditorState,
-  onDragStart,
-  onDragEnd,
   BlockToolsProvider,
   toSlateTree,
   toSlateBlocksDictionary,
@@ -114,110 +111,105 @@ export default function Editor(): JSX.Element {
     <>
       <Seo title="Editor" />
 
-      <DragDropContext
-        onDragStart={onDragStart(editor)}
-        onDragEnd={onDragEnd(editor)}
+      <div
+        className={`${css`
+          display: grid;
+
+          grid-template: auto 1fr / minmax(250px, 20%) 1fr minmax(250px, 20%);
+          grid-gap: 1rem;
+        `}`}
       >
         <div
-          className={`${css`
-            display: grid;
-
-            grid-template: auto 1fr / minmax(250px, 20%) 1fr minmax(250px, 20%);
-            grid-gap: 1rem;
+          className={`px-4  -mt-8 flex justify-end ${css`
+            grid-column: 1/4;
+          `}`}
+        >
+          <button
+            onClick={handlePublish}
+            className="bg-primary rounded-full px-12 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
+          >
+            Publish
+          </button>
+        </div>
+        <div
+          className={`p-4 ${css`
+            grid-column: 2/3;
           `}`}
         >
           <div
-            className={`px-4  -mt-8 flex justify-end ${css`
-              grid-column: 1/4;
-            `}`}
-          >
-            <button
-              onClick={handlePublish}
-              className="bg-primary rounded-full px-12 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
-            >
-              Publish
-            </button>
-          </div>
-          <div
-            className={`p-4 ${css`
-              grid-column: 2/3;
+            className={`my-0 mx-auto ${css`
+              max-width: 64ch;
+              width: 100%;
             `}`}
           >
             <div
-              className={`my-0 mx-auto ${css`
-                max-width: 64ch;
-                width: 100%;
+              className={`pb-2 relative ${css`
+                &:after {
+                  content: '';
+                  position: absolute;
+                  bottom: 0;
+                  left: 0;
+                  width: 50%;
+                  max-width: 360px;
+                  height: 1px;
+                  z-index: 20;
+                  background-color: var(--color-muted-hover);
+                }
               `}`}
             >
-              <div
-                className={`pb-2 relative ${css`
-                  &:after {
-                    content: '';
-                    position: absolute;
-                    bottom: 0;
-                    left: 0;
-                    width: 50%;
-                    max-width: 360px;
-                    height: 1px;
-                    z-index: 20;
-                    background-color: var(--color-muted-hover);
-                  }
-                `}`}
-              >
-                <Textarea
-                  ref={t => {
-                    titleRef.current = t
-                  }}
-                  value={title}
-                  data-test-id="editor_title"
-                  onChange={setTitle}
-                  name="title"
-                  placeholder="Document title"
-                  className={`text-4xl text-heading font-bold italic`}
-                  onEnterPress={() => {
-                    subtitleRef.current.focus()
-                  }}
-                />
-                <Textarea
-                  ref={d => {
-                    subtitleRef.current = d
-                  }}
-                  value={subtitle}
-                  onChange={setSubtitle}
-                  name="subtitle"
-                  placeholder="Subtitle"
-                  className={`leading-relaxed text-lg font-light text-heading-muted italic`}
-                  onEnterPress={() => {
-                    ReactEditor.focus(editor)
-                  }}
-                />
-              </div>
-
-              <BlockToolsProvider>
-                <EditorComponent
-                  editor={editor}
-                  plugins={plugins}
-                  value={blocks}
-                  onChange={blocks => {
-                    setBlocks(blocks)
-                  }}
-                  renderElements={[
-                    renderEditableBlockElement(),
-                    renderElementBlockList(),
-                  ]}
-                  theme={theme}
-                />
-              </BlockToolsProvider>
+              <Textarea
+                ref={t => {
+                  titleRef.current = t
+                }}
+                value={title}
+                data-test-id="editor_title"
+                onChange={setTitle}
+                name="title"
+                placeholder="Document title"
+                className={`text-4xl text-heading font-bold italic`}
+                onEnterPress={() => {
+                  subtitleRef.current.focus()
+                }}
+              />
+              <Textarea
+                ref={d => {
+                  subtitleRef.current = d
+                }}
+                value={subtitle}
+                onChange={setSubtitle}
+                name="subtitle"
+                placeholder="Subtitle"
+                className={`leading-relaxed text-lg font-light text-heading-muted italic`}
+                onEnterPress={() => {
+                  ReactEditor.focus(editor)
+                }}
+              />
             </div>
+
+            <BlockToolsProvider>
+              <EditorComponent
+                editor={editor}
+                plugins={plugins}
+                value={blocks}
+                onChange={blocks => {
+                  setBlocks(blocks)
+                }}
+                renderElements={[
+                  renderEditableBlockElement(),
+                  renderElementBlockList(),
+                ]}
+                theme={theme}
+              />
+            </BlockToolsProvider>
           </div>
-          <DebugValue
-            value={state}
-            className={`${css`
-              grid-column: 3/4;
-            `}`}
-          />
         </div>
-      </DragDropContext>
+        <DebugValue
+          value={state}
+          className={`${css`
+            grid-column: 3/4;
+          `}`}
+        />
+      </div>
     </>
   )
 }

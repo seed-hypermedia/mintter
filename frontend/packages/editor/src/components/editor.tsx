@@ -2,7 +2,6 @@ import React from 'react'
 import {Slate} from 'slate-react'
 import {css} from 'emotion'
 import {EditablePlugins, SlateDocument} from '@udecode/slate-plugins'
-import {Droppable} from 'react-beautiful-dnd'
 // import {Toolbar} from './toolbar'
 import {HelperToolbar, HelperProvider, useHelper} from '../HelperPlugin'
 import {ELEMENT_BLOCK} from '../BlockPlugin'
@@ -120,27 +119,18 @@ function Editor(
           </>
         ) : (
           <>
-            <Droppable droppableId="editor" type="block_list">
-              {(provided, snapshot) => (
-                <div ref={provided.innerRef} {...provided.droppableProps}>
-                  <EditablePlugins
-                    readOnly={readOnly && !snapshot.isDraggingOver}
-                    plugins={plugins}
-                    renderElement={renderElements}
-                    placeholder={
-                      readOnly
-                        ? 'no content'
-                        : 'Start writing your masterpiece...'
-                    }
-                    spellCheck
-                    autoFocus
-                    onKeyDown={[onKeyDownHelper]}
-                    onKeyDownDeps={[index, target]}
-                  />
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
+            <EditablePlugins
+              readOnly={readOnly}
+              plugins={plugins}
+              renderElement={renderElements}
+              placeholder={
+                readOnly ? 'no content' : 'Start writing your masterpiece...'
+              }
+              spellCheck
+              autoFocus
+              onKeyDown={[onKeyDownHelper]}
+              onKeyDownDeps={[index, target]}
+            />
             <HelperToolbar at={target} options={values} theme={theme}>
               <ul>
                 {values.map((option, i) => (

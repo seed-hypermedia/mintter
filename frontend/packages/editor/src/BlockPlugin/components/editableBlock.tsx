@@ -1,7 +1,6 @@
 import React from 'react'
 import {RenderElementProps, ReactEditor, useEditor} from 'slate-react'
 import {Editor} from '../../editor'
-import {Draggable} from 'react-beautiful-dnd'
 import {mergeRefs} from '../../mergeRefs'
 import {useBlockTools} from './blockToolsContext'
 import {BlockControls} from '../../components/blockControls'
@@ -25,51 +24,34 @@ export function EditableBlockElement(
   const price = formatter.format(blockChars * 0.0001)
 
   return (
-    <Draggable
-      key={element.id}
-      draggableId={element.id}
-      index={path[path.length - 1]}
+    <div
+      ref={mergeRefs(ref, attributes.ref)}
+      data-slate-type={element.type}
+      data-slate-node={attributes['data-slate-node']}
+      onMouseLeave={() => setBlockId(null)}
+      onMouseEnter={() => setBlockId(element.id)}
     >
-      {provided => {
-        return (
+      <Block>
+        <BlockControls isHovered={blockId === element.id} path={path} />
+        <div contentEditable={false} className="theme-invert">
           <div
-            ref={mergeRefs(provided.innerRef, ref, attributes.ref)}
-            {...provided.draggableProps}
-            data-slate-type={element.type}
-            data-slate-node={attributes['data-slate-node']}
-            onMouseLeave={() => setBlockId(null)}
-            onMouseEnter={() => setBlockId(element.id)}
+            className={`absolute top-0 right-0 select-none -mt-6 -mr-4 rounded shadow-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-black py-2 pointer-events-none ${
+              blockId === element.id ? 'opacity-100' : 'opacity-0'
+            }`}
           >
-            <Block>
-              <BlockControls
-                isHovered={blockId === element.id}
-                path={path}
-                dragHandleProps={provided.dragHandleProps}
-              />
-              <div contentEditable={false} className="theme-invert">
-                <div
-                  className={`absolute top-0 right-0 select-none -mt-6 -mr-4 rounded shadow-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-black py-2 pointer-events-none ${
-                    blockId === element.id ? 'opacity-100' : 'opacity-0'
-                  }`}
-                >
-                  <p className={`text-body-muted border-r px-2 text-xs`}>
-                    <span>Characters:</span>{' '}
-                    {/* TODO: FIX avoid characters to jump when change chars number */}
-                    <span className={`inline-block text-right text-body-muted`}>
-                      {blockChars}
-                    </span>
-                  </p>
-                  <p className="px-2 text-body-muted text-xs">
-                    Royalties: {price}
-                  </p>
-                </div>
-              </div>
-              {children}
-            </Block>
+            <p className={`text-body-muted border-r px-2 text-xs`}>
+              <span>Characters:</span>{' '}
+              {/* TODO: FIX avoid characters to jump when change chars number */}
+              <span className={`inline-block text-right text-body-muted`}>
+                {blockChars}
+              </span>
+            </p>
+            <p className="px-2 text-body-muted text-xs">Royalties: {price}</p>
           </div>
-        )
-      }}
-    </Draggable>
+        </div>
+        {children}
+      </Block>
+    </div>
   )
 }
 
