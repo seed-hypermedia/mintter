@@ -612,7 +612,7 @@ func documentFromProto(docpb *v2.Document, blockmap map[string]*v2.Block) (docum
 		d.PublishTime = docpb.PublishTime.AsTime()
 	}
 
-	if docpb.BlockRefList == nil || blockmap == nil || len(blockmap) == 0 {
+	if docpb.BlockRefList == nil {
 		return d, nil
 	}
 
@@ -662,7 +662,12 @@ func blocksFromProto(d *document, lpb *v2.BlockRefList, blockmap map[string]*v2.
 				d.Blocks = map[string]block{}
 			}
 
-			d.Blocks[refpb.Ref] = blockFromProto(blockmap[refpb.Ref])
+			blockpb, ok := blockmap[refpb.Ref]
+			if !ok {
+				return nil, fmt.Errorf("block ref %s is not found in the blocks map", refpb.Ref)
+			}
+
+			d.Blocks[refpb.Ref] = blockFromProto(blockpb)
 		}
 
 		list.ListStyle = lpb.Style
