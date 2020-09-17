@@ -69,7 +69,8 @@ export function useTransclusion({editor}) {
 
         // empty blockRef
         let emptyBlockRef = new BlockRef()
-        emptyBlockRef.setRef(uuid())
+        const emptyBlockId = uuid()
+        emptyBlockRef.setRef(emptyBlockId)
 
         // add refs to blockRefList
         blockRefList.addRefs(transclusionRef, 0)
@@ -80,6 +81,21 @@ export function useTransclusion({editor}) {
 
         // update new draft
         const req = new UpdateDraftRequest()
+        const map: Map<string, Block> = req.getBlocksMap()
+
+        map.set(
+          emptyBlockId,
+          createBlock({
+            id: emptyBlockId,
+            paragraph: {
+              inlineElementsList: [
+                {
+                  text: '',
+                },
+              ],
+            },
+          }),
+        )
 
         req.setDocument(draft)
 
