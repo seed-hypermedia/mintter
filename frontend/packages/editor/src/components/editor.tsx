@@ -4,7 +4,7 @@ import {css} from 'emotion'
 import {EditablePlugins, SlateDocument} from '@udecode/slate-plugins'
 // import {Toolbar} from './toolbar'
 import {HelperToolbar, HelperProvider, useHelper} from '../HelperPlugin'
-import {ELEMENT_BLOCK} from '../BlockPlugin'
+import {BlockToolsProvider, ELEMENT_BLOCK} from '../BlockPlugin'
 import {ELEMENT_IMAGE} from '../ImagePlugin'
 import {getPreventDefaultHandler} from '../BlockPlugin/utils/getPreventDefaultHandler'
 import {useTransclusionHelper} from '../TransclusionPlugin/TransclusionHelperContext'
@@ -177,7 +177,9 @@ export const EditorChildren = React.forwardRef(Editor)
 export function EditorComponent(props) {
   return (
     <HelperProvider options={HELPER_OPTIONS}>
-      <EditorChildren {...props} />
+      <BlockToolsProvider>
+        <EditorChildren {...props} />
+      </BlockToolsProvider>
     </HelperProvider>
   )
 }
