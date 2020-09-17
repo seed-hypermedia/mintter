@@ -25,7 +25,6 @@
     "@udecode/slate-plugins": "^0.66.4",
     "emotion": "^10.0.27",
     "framer-motion": "^1.8.4",
-    "react-beautiful-dnd": "^13.0.0",
     "react-feather": "^2.0.4",
     "slate": "^0.58.4",
     "slate-history": "^0.57.1",
