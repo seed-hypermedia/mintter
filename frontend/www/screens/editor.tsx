@@ -186,21 +186,19 @@ export default function Editor(): JSX.Element {
               />
             </div>
 
-            <BlockToolsProvider>
-              <EditorComponent
-                editor={editor}
-                plugins={plugins}
-                value={blocks}
-                onChange={blocks => {
-                  setBlocks(blocks)
-                }}
-                renderElements={[
-                  renderEditableBlockElement(),
-                  renderElementBlockList(),
-                ]}
-                theme={theme}
-              />
-            </BlockToolsProvider>
+            <EditorComponent
+              editor={editor}
+              plugins={plugins}
+              value={blocks}
+              onChange={blocks => {
+                setBlocks(blocks)
+              }}
+              renderElements={[
+                renderEditableBlockElement(),
+                renderElementBlockList(),
+              ]}
+              theme={theme}
+            />
           </div>
         </div>
         <DebugValue
