@@ -8,7 +8,7 @@ import {css} from 'emotion'
 
 export const ELEMENT_LINK = 'a'
 
-export const LINK_OPTIONS: Record<
+export const DEFAULTS_LINK: Record<
   LinkKeyOption,
   Required<LinkPluginOptionsValues>
 > = {

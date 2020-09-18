@@ -12,8 +12,6 @@ import {
   plugins as editorPlugins,
   initialBlocksValue,
   EditorComponent,
-  renderEditableBlockElement,
-  renderElementBlockList,
   HelperToolbar,
   useHelper,
   ELEMENT_BLOCK,
@@ -24,6 +22,7 @@ import {
   toSlateTree,
   toSlateBlocksDictionary,
   TransclusionHelperProvider,
+  options,
 } from '@mintter/editor'
 import {useEditor as useSlateEditor, ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
@@ -193,10 +192,6 @@ export default function Editor(): JSX.Element {
               onChange={blocks => {
                 setBlocks(blocks)
               }}
-              renderElements={[
-                renderEditableBlockElement(),
-                renderElementBlockList(),
-              ]}
               theme={theme}
             />
           </div>

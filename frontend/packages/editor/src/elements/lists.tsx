@@ -7,7 +7,7 @@ export const ELEMENT_UL = 'ul'
 export const ELEMENT_OL = 'ol'
 export const ELEMENT_LI = 'li'
 
-export const LIST_OPTIONS: Record<
+export const DEFAULTS_LIST: Record<
   ListKeyOption,
   Required<ListPluginOptionsValues>
 > = {
