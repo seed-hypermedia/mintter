@@ -1,7 +1,11 @@
 import React from 'react'
 import {Slate} from 'slate-react'
 import {css} from 'emotion'
-import {EditablePlugins, SlateDocument} from '@udecode/slate-plugins'
+import {
+  EditablePlugins,
+  RenderElement,
+  SlateDocument,
+} from '@udecode/slate-plugins'
 // import {Toolbar} from './toolbar'
 import {HelperToolbar, HelperProvider, useHelper} from '../HelperPlugin'
 import {BlockToolsProvider, ELEMENT_BLOCK} from '../BlockPlugin'
@@ -15,7 +19,7 @@ interface EditorComponentProps {
   value: any
   onChange: (value: any) => void
   readOnly?: boolean
-  renderElements?: any[]
+  renderElement?: RenderElement[]
   theme?: 'theme-light' | 'theme-dark'
 }
 
@@ -37,7 +41,7 @@ function Editor(
     value,
     onChange,
     readOnly = false,
-    renderElements = [],
+    renderElement = [],
     theme = 'theme-light',
   }: EditorComponentProps,
   ref,
@@ -87,7 +91,7 @@ function Editor(
             <EditablePlugins
               readOnly={true}
               plugins={plugins}
-              renderElement={renderElements}
+              renderElement={renderElement}
               placeholder={
                 readOnly ? 'no content' : 'Start writing your masterpiece...'
               }
@@ -122,7 +126,7 @@ function Editor(
             <EditablePlugins
               readOnly={readOnly}
               plugins={plugins}
-              renderElement={renderElements}
+              renderElement={renderElement}
               placeholder={
                 readOnly ? 'no content' : 'Start writing your masterpiece...'
               }
