@@ -12,6 +12,8 @@ import {BlockToolsProvider, ELEMENT_BLOCK} from '../BlockPlugin'
 import {ELEMENT_IMAGE} from '../ImagePlugin'
 import {getPreventDefaultHandler} from '../BlockPlugin/utils/getPreventDefaultHandler'
 import {useTransclusionHelper} from '../TransclusionPlugin/TransclusionHelperContext'
+import {DndProvider} from 'react-dnd'
+import {HTML5Backend} from 'react-dnd-html5-backend'
 
 interface EditorComponentProps {
   editor: any
@@ -180,10 +182,12 @@ export const EditorChildren = React.forwardRef(Editor)
 
 export function EditorComponent(props) {
   return (
-    <HelperProvider options={HELPER_OPTIONS}>
-      <BlockToolsProvider>
-        <EditorChildren {...props} />
-      </BlockToolsProvider>
-    </HelperProvider>
+    <DndProvider backend={HTML5Backend}>
+      <HelperProvider options={HELPER_OPTIONS}>
+        <BlockToolsProvider>
+          <EditorChildren {...props} />
+        </BlockToolsProvider>
+      </HelperProvider>
+    </DndProvider>
   )
 }

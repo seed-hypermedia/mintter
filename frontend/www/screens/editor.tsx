@@ -58,7 +58,6 @@ export default function Editor(): JSX.Element {
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])
   const {status, error, data} = getDocument(version, {
     onSuccess: () => {
-      console.log('doc => ', JSON.stringify(data.toObject(), null, 4))
       setReadyToAutosave(true)
     },
   })
