@@ -1,15 +1,10 @@
-import {mergeRefs} from '../../mergeRefs'
-import * as React from 'react'
-import {useSelected, ReactEditor, useEditor} from 'slate-react'
+import React from 'react'
+import {useSelected} from 'slate-react'
 // import {Editor} from 'slate'
-import {useBlockTools} from '../../BlockPlugin/components/blockToolsContext'
-import {BlockControls} from '../../components/blockControls'
+import {DragDrop} from '../../BlockPlugin/components/DragDrop'
 
 const Transclusion = ({attributes, children, element, className}, ref) => {
   const selected = useSelected()
-  const editor = useEditor()
-  const path = ReactEditor.findPath(editor, element)
-  const {id: blockId, setBlockId} = useBlockTools()
 
   // TODO: add Transclusion markers
 
@@ -33,16 +28,13 @@ const Transclusion = ({attributes, children, element, className}, ref) => {
   // }, [editor, path])
 
   return (
-    <div
-      {...attributes}
-      ref={mergeRefs(ref, attributes.ref)}
-      className={`pl-4 pr-0 py-2 border-2 relative bg-yellow-100 rounded ${
-        selected ? 'border-info' : 'border-transparent'
-      }${className ? className : ''}`}
-      onMouseLeave={() => setBlockId(null)}
-      onMouseEnter={() => setBlockId(element.id)}
-    >
-      {/* <div
+    <DragDrop attributes={attributes} element={element} componentRef={ref}>
+      <div
+        className={`pl-4 pr-0 py-2 border-2 relative bg-background-muted rounded my-1 ${
+          selected ? 'border-info' : 'border-transparent'
+        }${className ? className : ''}`}
+      >
+        {/* <div
             className="fixed"
             style={
               endRect
@@ -56,9 +48,9 @@ const Transclusion = ({attributes, children, element, className}, ref) => {
                 : {}
             }
           /> */}
-      <BlockControls isHovered={blockId === element.id} path={path} />
-      <div contentEditable={false}>{children}</div>
-    </div>
+        <div contentEditable={false}>{children}</div>
+      </div>
+    </DragDrop>
   )
 }
 

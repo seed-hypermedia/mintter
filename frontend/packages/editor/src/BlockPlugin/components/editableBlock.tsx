@@ -3,7 +3,6 @@ import {RenderElementProps, ReactEditor, useEditor} from 'slate-react'
 import {Editor} from '../../editor'
 import {mergeRefs} from '../../mergeRefs'
 import {useBlockTools} from './blockToolsContext'
-import {BlockControls} from '../../components/blockControls'
 import {Block} from './block'
 
 export function EditableBlockElement(
@@ -13,7 +12,7 @@ export function EditableBlockElement(
   const editor = useEditor()
   const path = ReactEditor.findPath(editor, element)
   const blockChars = Editor.charCount(editor, path)
-  const {id: blockId, setBlockId} = useBlockTools()
+  const {id: blockId} = useBlockTools()
 
   const formatter = new Intl.NumberFormat('en-ES', {
     style: 'currency',
@@ -28,11 +27,8 @@ export function EditableBlockElement(
       ref={mergeRefs(ref, attributes.ref)}
       data-slate-type={element.type}
       data-slate-node={attributes['data-slate-node']}
-      onMouseLeave={() => setBlockId(null)}
-      onMouseEnter={() => setBlockId(element.id)}
     >
       <Block>
-        <BlockControls isHovered={blockId === element.id} path={path} />
         <div contentEditable={false} className="theme-invert">
           <div
             className={`absolute top-0 right-0 select-none -mt-6 -mr-4 rounded shadow-md transition duration-200 flex items-center pl-2 text-xs leading-none text-body bg-black py-2 pointer-events-none ${
