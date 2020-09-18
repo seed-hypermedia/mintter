@@ -20,7 +20,6 @@ export function DragDrop({element, componentRef, children}: any) {
   const multiDragRef = mergeRefs(dragRef, dragWrapperRef)
 
   const {id: blockId, setBlockId} = useBlockTools()
-  console.log({dropLine})
 
   return (
     <div ref={multiRef}>
@@ -31,6 +30,7 @@ export function DragDrop({element, componentRef, children}: any) {
         onMouseEnter={() => setBlockId(element.id)}
       >
         <BlockControls
+          element={element}
           path={path}
           show={blockId === element.id}
           dragRef={multiDragRef}

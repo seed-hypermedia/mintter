@@ -2,12 +2,24 @@ import React, {useEffect, useCallback} from 'react'
 import {css} from 'emotion'
 import {useEditor, useReadOnly} from 'slate-react'
 import {useHelper} from '../HelperPlugin/components/HelperContext'
+import {useTransclusionHelper} from '../TransclusionPlugin/TransclusionHelperContext'
 
-export function BlockControls({show, path, dragRef}) {
+export function BlockControls({element, show, path, dragRef}) {
   const {setTarget, target, onKeyDownHelper} = useHelper()
   const readOnly = useReadOnly()
 
   const editor = useEditor()
+  const {
+    setTarget: setTranscludeTarget,
+    target: transcludeTarget,
+    onKeyDownHelper: onKeyDownTranscludeHelper,
+  } = useTransclusionHelper()
+
+  function onTranscludeClicked(e) {
+    e.preventDefault()
+    const value = transcludeTarget ? null : e.target
+    setTranscludeTarget(value, path, element)
+  }
 
   function onAddClicked(e) {
     e.preventDefault()
@@ -18,8 +30,9 @@ export function BlockControls({show, path, dragRef}) {
   const onKeyDown = useCallback(
     e => {
       onKeyDownHelper(e, editor)
+      readOnly && onKeyDownTranscludeHelper(e, editor)
     },
-    [editor, onKeyDownHelper],
+    [editor, onKeyDownHelper, onKeyDownTranscludeHelper, readOnly],
   )
 
   useEffect(() => {
@@ -38,9 +51,10 @@ export function BlockControls({show, path, dragRef}) {
       `}`}
       contentEditable={false}
     >
-      <div
+      <button
+        onClick={readOnly ? onTranscludeClicked : undefined}
         className="rounded-sm bg-transparent text-body hover:bg-background-muted w-6 h-8 p-1 mx-1"
-        ref={dragRef}
+        ref={readOnly ? null : dragRef}
       >
         <svg width="1em" height="1.5em" viewBox="0 0 16 24" fill="none">
           <path
@@ -48,7 +62,7 @@ export function BlockControls({show, path, dragRef}) {
             fill="currentColor"
           />
         </svg>
-      </div>
+      </button>
       {!readOnly && (
         <button
           onClick={onAddClicked}

@@ -30,7 +30,7 @@ const Transclusion = ({attributes, children, element, className}, ref) => {
   return (
     <DragDrop attributes={attributes} element={element} componentRef={ref}>
       <div
-        className={`pl-4 pr-0 py-2 border-2 relative bg-yellow-100 rounded my- ${
+        className={`pl-4 pr-0 py-2 border-2 relative bg-background-muted rounded my-1 ${
           selected ? 'border-info' : 'border-transparent'
         }${className ? className : ''}`}
       >
