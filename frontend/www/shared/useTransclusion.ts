@@ -38,7 +38,6 @@ export function useTransclusion({editor}) {
       console.log('useTransclusion -> transclusionId', transclusionId)
       if (destination) {
         draft = await getDocument('key', destination)
-        console.log('useTransclusion -> draft', draft)
 
         // Create block reference for the block being transcluded:
         let transclusionRef = new BlockRef()
