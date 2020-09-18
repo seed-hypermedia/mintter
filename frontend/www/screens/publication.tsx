@@ -9,8 +9,6 @@ import {
   plugins as editorPlugins,
   initialBlocksValue,
   EditorComponent,
-  renderReadOnlyBlockElement,
-  renderElementReadOnlyBlockList,
   useEditorValue,
   toSlateTree,
   options,
@@ -150,10 +148,6 @@ export default function Publication(): JSX.Element {
           plugins={plugins}
           value={blocks}
           onChange={() => {}}
-          renderElements={[
-            renderReadOnlyBlockElement(options),
-            renderElementReadOnlyBlockList(),
-          ]}
         />
       </>
     )
