@@ -1,12 +1,19 @@
 import React from 'react'
+import {DragDrop} from './DragDrop'
 
-export function BlockBase({className = '', ...props}, ref) {
+export function BlockBase(
+  {attributes, element, className = '', ...props},
+  ref,
+) {
   return (
-    <div
-      ref={ref}
-      className={`relative pl-4 pr-0 py-2 ${className}`}
+    <DragDrop
+      attributes={attributes}
+      element={element}
+      componentRef={ref}
       {...props}
-    />
+    >
+      <div className={`relative pl-4 pr-0 py-2 ${className}`} {...props} />
+    </DragDrop>
   )
 }
 

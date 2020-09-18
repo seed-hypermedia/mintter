@@ -1,19 +1,15 @@
 import React, {useState, useMemo} from 'react'
-import {useSelected, useEditor, ReactEditor} from 'slate-react'
+import {useSelected, useEditor} from 'slate-react'
 import {Transforms} from 'slate'
 import {useHover} from '@react-aria/interactions'
 import {useToggleState} from '@react-stately/toggle'
-import {useBlockTools} from '../../BlockPlugin/components/blockToolsContext'
-import {BlockControls} from '../../components/blockControls'
 
 export function ImageBlock({attributes, element, children}) {
   const selected = useSelected()
   const editor = useEditor()
-  const path = ReactEditor.findPath(editor, element)
   const [error, setError] = useState('')
   const [file, setFile] = useState<any>(() => element.url || null)
   const {isSelected, setSelected} = useToggleState()
-  const {id: blockId, setBlockId} = useBlockTools()
 
   // const type = attributes['data-slate-type']
   // delete attributes['data-slate-type']
@@ -48,12 +44,8 @@ export function ImageBlock({attributes, element, children}) {
       className={`group first:mt-8 relative overflow-hidden bg-red-500 p-4 ${
         selected ? 'border-info' : 'border-transparent'
       }`}
-      onMouseLeave={() => setBlockId(null)}
-      onMouseEnter={() => setBlockId(element.id)}
     >
       <div contentEditable={false}>
-        <BlockControls isHovered={blockId === element.id} path={path} />
-
         {file ? (
           <Image
             src={file}
