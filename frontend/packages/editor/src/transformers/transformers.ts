@@ -90,7 +90,7 @@ export function toDocument({document, state}: ToDocumentRequestProp): Document {
   // check if document has only one child
   if (state.blocks.length > 1) {
     throw new Error(
-      `toDocument: Invalid blocks lenght. it expects one child only and got ${state.blocks.length}`,
+      `toDocument: Invalid blocks length. it expects one child only and got ${state.blocks.length}`,
     )
   }
 

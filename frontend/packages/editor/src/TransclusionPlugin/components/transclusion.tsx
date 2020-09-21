@@ -1,10 +1,20 @@
 import React from 'react'
-import {useSelected} from 'slate-react'
+// import {ReactEditor, useEditor, useSelected} from 'slate-react'
 // import {Editor} from 'slate'
 import {DragDrop} from '../../BlockPlugin/components/DragDrop'
 
-const Transclusion = ({attributes, children, element, className}, ref) => {
-  const selected = useSelected()
+const Transclusion = (
+  {
+    attributes,
+    children,
+    element,
+    // className
+  },
+  ref,
+) => {
+  // const selected = useSelected()
+  // const editor = useEditor()
+  // const path = ReactEditor.findPath(editor, element)
 
   // TODO: add Transclusion markers
 
@@ -29,7 +39,9 @@ const Transclusion = ({attributes, children, element, className}, ref) => {
 
   return (
     <DragDrop attributes={attributes} element={element} componentRef={ref}>
-      <div
+      {/* <div
+        contentEditable={false}
+        onClick={() => Transforms.select(editor, path)}
         className={`pl-4 pr-0 py-2 border-2 relative bg-background-muted rounded my-1 ${
           selected ? 'border-info' : 'border-transparent'
         }${className ? className : ''}`}
@@ -48,7 +60,13 @@ const Transclusion = ({attributes, children, element, className}, ref) => {
                 : {}
             }
           /> */}
-        <div contentEditable={false}>{children}</div>
+      {/* {children} */}
+      {/* </div> */}
+      <div {...attributes}>
+        <div contentEditable={false}>
+          <img data-testid="ImageElementImage" alt="" />
+        </div>
+        {children}
       </div>
     </DragDrop>
   )

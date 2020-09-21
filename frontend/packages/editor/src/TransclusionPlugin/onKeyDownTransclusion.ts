@@ -6,7 +6,6 @@ export const onKeyDownTransclusion = options => (
   editor: Editor,
 ) => {
   if (e.key === 'Enter') {
-    console.log('enter clicked')
     let res = isSelectionInTransclusion(editor, options)
     console.log('keyDown transclusion', {res, selection: editor.selection})
 

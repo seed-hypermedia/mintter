@@ -1,7 +1,8 @@
-import {Editor, Transforms} from 'slate'
+import {Editor, Element, Node, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {
   isBlockAboveEmpty,
+  isFirstChild,
   isSelectionAtBlockStart,
   onKeyDownResetBlockType,
 } from '@udecode/slate-plugins'
@@ -12,10 +13,13 @@ import {
   isSelectionInTransclusion,
 } from './isSelectionInBlockItem'
 import {unwrapBlockList} from './unwrapBlockList'
+import {avoidMultipleChilds} from './utils/avoidMultipleChilds'
+import {ELEMENT_BLOCK} from '../BlockPlugin/defaults'
+import {v4 as uuid} from 'uuid'
 
 export const withMintter = options => <T extends ReactEditor>(editor: T) => {
   const {p, block} = options
-  const {insertBreak, deleteBackward} = editor
+  const {insertBreak, deleteBackward, normalizeNode} = editor
 
   const resetBlockTypesListRule = {
     types: [block.type],
@@ -103,7 +107,19 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
           // block has no childs, delete!!
           if (blockListNode.children.length > 1) {
             // block is not the first Child
-            Transforms.removeNodes(editor, {at: blockPath})
+
+            if (Node.string(blockNode)) {
+              console.log('remove: TIENE contenido!')
+              if (isFirstChild(blockPath)) {
+                console.log('remove: ES el primer hijo!')
+              } else {
+                console.log('remove: NO es el primer hijo!')
+                moveContentToAboveBlock(editor, blockPath)
+              }
+            } else {
+              console.log('remove: NO tiene contenido!')
+              Transforms.removeNodes(editor, {at: blockPath})
+            }
           }
         }
 
@@ -124,5 +140,39 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
     deleteBackward(unit)
   }
 
+  editor.normalizeNode = entry => {
+    if (avoidMultipleChilds(editor)) return
+    if (isNotInsideBlock(editor, entry)) return
+
+    return normalizeNode(entry)
+  }
+
   return editor
+}
+
+function isNotInsideBlock(editor, entry) {
+  const [node, path] = entry
+
+  if (path.length === 2) {
+    if (Element.isElement(node) && node.type !== ELEMENT_BLOCK) {
+      Transforms.wrapNodes(
+        editor,
+        {
+          type: ELEMENT_BLOCK,
+          id: uuid(),
+          children: [],
+        },
+        {
+          at: path,
+        },
+      )
+      return true
+    }
+  }
+
+  return
+}
+
+function moveContentToAboveBlock(editor, path) {
+  console.log('MUEVE EL CONTENIDO!!!', {editor, path})
 }
