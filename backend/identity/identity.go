@@ -8,12 +8,13 @@ import (
 	"io"
 	"time"
 
+	"mintter/backend/wallet"
+
 	"github.com/imdario/mergo"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/lightningnetwork/lnd/aezeed"
 	"github.com/lightningnetwork/lnd/keychain"
-	"github.com/textileio/go-textile/wallet"
 )
 
 // ProfileID is the main identity of the Mintter profile. Its semantics are the

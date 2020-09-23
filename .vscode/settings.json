@@ -7,5 +7,5 @@
     "**/.DS_Store": true,
     "**/*.env": true
   },
-  "go.goroot": "/nix/store/216xqy610r0c3wm2zcf0hh9wsz6nhimv-go-1.14/share/go"
+  "go.goroot": "/nix/store/awcfxdikx1n0734hamj830ynhxbrk48b-go-1.15.2/share/go"
 }
