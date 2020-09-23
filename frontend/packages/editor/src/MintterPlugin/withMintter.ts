@@ -1,5 +1,5 @@
-import {Editor, Element, Node, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
+import {Editor, Element, Node, Path, Transforms} from 'slate'
 import {
   isBlockAboveEmpty,
   isFirstChild,
@@ -44,10 +44,7 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
 
       if (moved) return
 
-      if (blockListPath.length === 1) {
-        // blockList is first level
-        return
-      }
+      if (blockListPath.length === 1) return
     }
 
     const didReset = onKeyDownResetBlockType({
@@ -106,13 +103,11 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
         } else {
           // block has no childs, delete!!
           if (blockListNode.children.length > 1) {
-            // block is not the first Child
+            // block is not the only Child
 
             if (Node.string(blockNode)) {
               console.log('remove: TIENE contenido!')
-              if (isFirstChild(blockPath)) {
-                console.log('remove: ES el primer hijo!')
-              } else {
+              if (!isFirstChild(blockPath)) {
                 console.log('remove: NO es el primer hijo!')
                 moveContentToAboveBlock(editor, blockPath)
               }
@@ -174,5 +169,11 @@ function isNotInsideBlock(editor, entry) {
 }
 
 function moveContentToAboveBlock(editor, path) {
-  console.log('MUEVE EL CONTENIDO!!!', {editor, path})
+  let blockPathAbove = Path.previous(path)
+  let pPathDestination = blockPathAbove.concat(1)
+
+  // TODO: check if both children are the same type to really merge it.
+
+  Transforms.mergeNodes(editor, {at: path})
+  Transforms.mergeNodes(editor, {at: pPathDestination})
 }
