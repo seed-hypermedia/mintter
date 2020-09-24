@@ -9,6 +9,7 @@ require (
 	github.com/burdiyan/go/kongcli v0.0.0-20200124222818-6f87e0e684b6
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
+	github.com/dgraph-io/badger v1.6.1
 	github.com/fxamacker/cbor/v2 v2.2.0
 	github.com/golang/protobuf v1.4.2
 	github.com/google/go-cmp v0.5.2
