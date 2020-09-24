@@ -133,6 +133,7 @@ func (b *blockStoreGetter) GetBlocks(ctx context.Context, cids []cid.Cid) <-chan
 				block, err := b.Get(c)
 				if err != nil {
 					// TODO(burdiyan): log or return the error here.
+					_ = err
 				}
 				ch <- block
 			}
