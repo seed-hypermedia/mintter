@@ -45,7 +45,11 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	if err != nil {
 		return err
 	}
-	defer log.Sync()
+	defer func() {
+		if err := log.Sync(); err != nil {
+			_ = err
+		}
+	}()
 
 	defer log.Info("GracefulShutdownEnded")
 
@@ -159,7 +163,9 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	)
 
 	if !cfg.NoOpenBrowser {
-		browser.OpenURL("http://localhost:55001")
+		if err := browser.OpenURL("http://localhost:55001"); err != nil {
+			_ = err
+		}
 	}
 
 	log.Debug("Press ctrl+c to quit")

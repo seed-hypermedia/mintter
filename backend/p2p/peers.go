@@ -55,8 +55,9 @@ func (n *Node) connect(ctx context.Context, pinfo peer.AddrInfo) error {
 	}
 	// Best-effort attempt to delete a suggested profile just in case this peer was one of these.
 	defer func() {
-		n.store.DeleteSuggestedProfile(ctx, prof.ID)
-
+		if err := n.store.DeleteSuggestedProfile(ctx, prof.ID); err != nil {
+			_ = err
+		}
 	}()
 
 	if err := n.savePeerProfile(ctx, prof); err != nil {
