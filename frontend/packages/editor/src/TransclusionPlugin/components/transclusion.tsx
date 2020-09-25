@@ -1,18 +1,17 @@
 import React from 'react'
-// import {ReactEditor, useEditor, useSelected} from 'slate-react'
-// import {Editor} from 'slate'
+import {
+  // ReactEditor, useEditor,
+  useFocused,
+  useSelected,
+} from 'slate-react'
 import {DragDrop} from '../../BlockPlugin/components/DragDrop'
 
 const Transclusion = (
-  {
-    attributes,
-    children,
-    element,
-    // className
-  },
+  {attributes, children, element, className, push},
   ref,
 ) => {
-  // const selected = useSelected()
+  const selected = useSelected()
+  const focus = useFocused()
   // const editor = useEditor()
   // const path = ReactEditor.findPath(editor, element)
 
@@ -37,15 +36,30 @@ const Transclusion = (
   //   setEndRect(getPointRect(editor, end))
   // }, [editor, path])
 
+  function handlePush(e) {
+    e.preventDefault()
+    console.log('go to parent document', element.id)
+    push && push(`/p/${element.id.split('/')[0]}`)
+  }
+
   return (
     <DragDrop attributes={attributes} element={element} componentRef={ref}>
-      {/* <div
-        contentEditable={false}
-        onClick={() => Transforms.select(editor, path)}
-        className={`pl-4 pr-0 py-2 border-2 relative bg-background-muted rounded my-1 ${
-          selected ? 'border-info' : 'border-transparent'
+      <div
+        className={`pl-4 pr-0 py-2 border-2 relative bg-background-muted rounded my-1 outline-none ${
+          focus && selected ? 'shadow-outline' : ''
         }${className ? className : ''}`}
       >
+        <div
+          contentEditable={false}
+          className="absolute top-0 right-0 transform translate-x-full pl-2"
+        >
+          <button
+            onClick={handlePush}
+            className="text-xs text-body-muted hover:text-body transition duration-100"
+          >
+            Go to Document
+          </button>
+        </div>
         {/* <div
             className="fixed"
             style={
@@ -60,12 +74,7 @@ const Transclusion = (
                 : {}
             }
           /> */}
-      {/* {children} */}
-      {/* </div> */}
-      <div {...attributes}>
-        <div contentEditable={false}>
-          <img data-testid="ImageElementImage" alt="" />
-        </div>
+        {/* {renderTransclusionContent()} */}
         {children}
       </div>
     </DragDrop>

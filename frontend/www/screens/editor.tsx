@@ -23,6 +23,7 @@ import {
   toSlateBlocksDictionary,
   TransclusionHelperProvider,
   options,
+  createPlugins,
 } from '@mintter/editor'
 import {useEditor as useSlateEditor, ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
@@ -43,16 +44,23 @@ import {useTheme} from 'shared/themeContext'
 import {BlockRefList} from '@mintter/proto/v2/documents_pb'
 
 export default function Editor(): JSX.Element {
-  const plugins = [...editorPlugins]
-  const editor: ReactEditor = useEditor(plugins) as ReactEditor
+  const {push} = useHistory()
+  const {version} = useParams()
+  const {theme} = useTheme()
+  const editorOptions = {
+    ...options,
+    transclusion: {
+      ...options.transclusion,
+      push,
+    },
+  }
+  const plugins = createPlugins(editorOptions)
+  const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
   const wrapperRef = React.useRef<HTMLDivElement>(null)
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
   const subtitleRef = React.useRef(null)
   const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
-  const {push} = useHistory()
-  const {version} = useParams()
-  const {theme} = useTheme()
 
   const {getDocument, setDocument, publishDraft, listDrafts} = useMintter()
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])

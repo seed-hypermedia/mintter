@@ -1,11 +1,13 @@
 import {ReactEditor} from 'slate-react'
 import {Editor, Transforms, Path} from 'slate'
 import {v4 as uuid} from 'uuid'
+import {ELEMENT_PARAGRAPH} from '../elements'
+import {ELEMENT_TRANSCLUSION} from './defaults'
 
 export const withTransclusion = options => <T extends ReactEditor>(
   editor: T,
 ) => {
-  const {insertBreak} = editor
+  const {insertBreak, deleteBackward} = editor
 
   editor.insertBreak = () => {
     const {selection} = editor
@@ -32,6 +34,27 @@ export const withTransclusion = options => <T extends ReactEditor>(
     }
 
     insertBreak()
+  }
+
+  editor.deleteBackward = unit => {
+    console.log('deleteBackward:')
+    const {selection} = editor
+
+    if (selection) {
+      const [pNode, pPath] = Editor.parent(editor, selection)
+      if (pNode.type === ELEMENT_PARAGRAPH) {
+        const [blockNode, blockPath] = Editor.parent(editor, pPath)
+        if (blockNode.type === ELEMENT_TRANSCLUSION) {
+          Transforms.select(
+            editor,
+            Editor.end(editor, Path.previous(blockPath)),
+          )
+          return
+        }
+      }
+    }
+
+    deleteBackward(unit)
   }
 
   return editor

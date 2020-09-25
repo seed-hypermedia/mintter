@@ -6,6 +6,6 @@ export function TransclusionPlugin(options?: any): SlatePlugin {
   return {
     renderElement: renderElementTransclusion(options),
     onKeyDown: onKeyDownTransclusion(options),
-    // voidTypes: [transclusion.type],
+    // voidTypes: [options.transclusion.type],
   }
 }

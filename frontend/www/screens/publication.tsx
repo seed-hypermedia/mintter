@@ -6,7 +6,7 @@ import {
   nodeTypes,
   Editor,
   useEditor,
-  plugins as editorPlugins,
+  createPlugins,
   initialBlocksValue,
   EditorComponent,
   useEditorValue,
@@ -63,12 +63,20 @@ function useDraftsSelection() {
 }
 
 export default function Publication(): JSX.Element {
-  const plugins = [...editorPlugins]
-  const editor: ReactEditor = useEditor(plugins) as ReactEditor
-
-  const {getDocument, getAuthor, createDraft} = useMintter()
   const {push} = useHistory()
   const {version} = useParams()
+  const editorOptions = {
+    ...options,
+    transclusion: {
+      ...options.transclusion,
+      push,
+    },
+  }
+  const plugins = createPlugins(editorOptions)
+
+  const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
+
+  const {getDocument, getAuthor, createDraft} = useMintter()
 
   const {status, error, data, isFetching, failureCount} = getDocument(version)
   const {state, setValue} = useEditorValue({
@@ -148,6 +156,7 @@ export default function Publication(): JSX.Element {
           plugins={plugins}
           value={blocks}
           onChange={() => {}}
+          push={push}
         />
       </>
     )
