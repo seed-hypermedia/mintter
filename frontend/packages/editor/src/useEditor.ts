@@ -19,7 +19,6 @@ import {
 // import {nodeTypes} from './nodeTypes'
 import {withHistory} from 'slate-history'
 import {autoformatRules} from './autoformatRules'
-import {options} from './options'
 import {withMintter} from './MintterPlugin'
 import {withTransclusion} from './TransclusionPlugin'
 
@@ -36,7 +35,7 @@ import {withTransclusion} from './TransclusionPlugin'
 //   defaultType: options.p.type,
 // }
 
-export function useEditor(plugins: any[]): Editor {
+export function useEditor(plugins: any[], options): Editor {
   const withPlugins = [
     withReact,
     withHistory,

@@ -13,6 +13,7 @@ export const onKeyDownHierarchy = options => (
 ) => {
   let moved: boolean | undefined = false
   if (e.key === 'Tab') {
+    console.log('tab clicked!')
     let res = isSelectionInBlockItem(editor, options)
     if (!res) {
       res = isSelectionInTransclusion(editor, options)
@@ -33,11 +34,13 @@ export const onKeyDownHierarchy = options => (
         blockPath,
         options,
       )
+      console.log('move blockItem up??', {moved})
       if (moved) e.preventDefault()
     }
 
     const tab = !e.shiftKey
     if (tab && !isFirstChild(blockPath)) {
+      console.log('move blockList down??')
       moveBlockListDown(editor, blockListNode, blockPath, options)
     }
   }

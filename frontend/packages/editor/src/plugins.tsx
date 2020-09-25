@@ -38,6 +38,58 @@ const headingTypes = [
   ELEMENT_H6,
 ]
 
+export function createPlugins(options) {
+  return [
+    ParagraphPlugin(options),
+    BlockquotePlugin(options),
+    HeadingPlugin(options),
+    ImagePlugin(options),
+    LinkPlugin(options),
+    ListPlugin(options),
+    CodeBlockPlugin(),
+    BoldPlugin(options),
+    CodePlugin(options),
+    ItalicPlugin(options),
+    UnderlinePlugin(options),
+    StrikethroughPlugin(options),
+
+    SoftBreakPlugin({
+      rules: [
+        {hotkey: 'shift+enter'},
+        {
+          hotkey: 'enter',
+          query: {
+            allow: [ELEMENT_CODE_BLOCK, options.blockquote.type],
+          },
+        },
+      ],
+    }),
+    ExitBreakPlugin({
+      rules: [
+        {
+          hotkey: 'mod+enter',
+        },
+        {
+          hotkey: 'mod+shift+enter',
+          before: true,
+        },
+        {
+          hotkey: 'enter',
+          query: {
+            start: true,
+            end: true,
+            allow: [...headingTypes, options.blockquote.type],
+          },
+        },
+      ],
+    }),
+    HelperPlugin(),
+    HierarchyPlugin(options),
+    TransclusionPlugin(options),
+    BlockPlugin(options),
+  ]
+}
+
 export const plugins = [
   ParagraphPlugin(options),
   BlockquotePlugin(options),
