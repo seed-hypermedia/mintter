@@ -1,9 +1,9 @@
 /** @jsx jsx */
 import {jsx} from '../../../../test/jsx'
 import {Editor} from 'slate'
-import {avoidMultipleChilds} from '../avoidMultipleChilds'
+import {avoidMultipleRootChilds} from '../avoidMultipleRootChilds'
 
-test('avoidMultipleChilds: move top block to main blockList', () => {
+test('avoidMultipleRootChilds: move top block to main blockList', () => {
   const input = ((
     <editor>
       <block id="block-1">
@@ -38,7 +38,7 @@ test('avoidMultipleChilds: move top block to main blockList', () => {
     </editor>
   ) as any) as Editor
 
-  avoidMultipleChilds(input)
+  avoidMultipleRootChilds(input)
 
   expect(input.children).toEqual(output.children) // TODO: fix types
 })

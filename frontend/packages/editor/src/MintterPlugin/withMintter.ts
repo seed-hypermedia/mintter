@@ -1,5 +1,11 @@
 import {ReactEditor} from 'slate-react'
-import {Editor, Element, Node, Path, Transforms} from 'slate'
+import {
+  Editor,
+  //  Element,
+  Node,
+  Path,
+  Transforms,
+} from 'slate'
 import {
   isBlockAboveEmpty,
   isFirstChild,
@@ -13,9 +19,10 @@ import {
   isSelectionInTransclusion,
 } from './isSelectionInBlockItem'
 import {unwrapBlockList} from './unwrapBlockList'
-import {avoidMultipleChilds} from './utils/avoidMultipleChilds'
-import {ELEMENT_BLOCK} from '../BlockPlugin/defaults'
-import {v4 as uuid} from 'uuid'
+import {avoidMultipleRootChilds} from './utils/avoidMultipleRootChilds'
+// import {ELEMENT_BLOCK} from '../BlockPlugin/defaults'
+// import {ELEMENT_BLOCK_LIST} from '../HierarchyPlugin/defaults'
+// import {v4 as uuid} from 'uuid'
 
 export const withMintter = options => <T extends ReactEditor>(editor: T) => {
   const {p, block} = options
@@ -136,8 +143,8 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
   }
 
   editor.normalizeNode = entry => {
-    if (avoidMultipleChilds(editor)) return
-    if (isNotInsideBlock(editor, entry)) return
+    if (avoidMultipleRootChilds(editor)) return
+    // if (isNotInsideBlock(editor, entry)) return
 
     return normalizeNode(entry)
   }
@@ -145,28 +152,35 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
   return editor
 }
 
-function isNotInsideBlock(editor, entry) {
-  const [node, path] = entry
+// TODO: Horacio: remember for what was this rule!
+// function isNotInsideBlock(editor, entry) {
+//   console.log({editor})
+//   const [node, path] = entry
 
-  if (path.length === 2) {
-    if (Element.isElement(node) && node.type !== ELEMENT_BLOCK) {
-      Transforms.wrapNodes(
-        editor,
-        {
-          type: ELEMENT_BLOCK,
-          id: uuid(),
-          children: [],
-        },
-        {
-          at: path,
-        },
-      )
-      return true
-    }
-  }
+//   if (path.length === 2) {
+//     if (
+//       Element.isElement(node) &&
+//       node.type !== ELEMENT_BLOCK &&
+//       node.type !== ELEMENT_BLOCK_LIST
+//     ) {
+//       // console.log('wrap this node!', {node, path})
+//       Transforms.wrapNodes(
+//         editor,
+//         {
+//           type: ELEMENT_BLOCK,
+//           id: uuid(),
+//           children: [],
+//         },
+//         {
+//           at: path,
+//         },
+//       )
+//       return true
+//     }
+//   }
 
-  return
-}
+//   return
+// }
 
 function moveContentToAboveBlock(editor, path) {
   let blockPathAbove = Path.previous(path)
