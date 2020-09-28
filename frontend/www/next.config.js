@@ -8,4 +8,12 @@ module.exports = {
     MINTTER_HOSTNAME: hostname,
     MINTTER_PORT: port,
   },
+  async rewrites() {
+    return [
+      {
+        source: '/:any*',
+        destination: '/',
+      },
+    ]
+  },
 }
