@@ -1,7 +1,7 @@
 import {ReactEditor} from 'slate-react'
 import {Editor, Transforms, Path} from 'slate'
 import {v4 as uuid} from 'uuid'
-import {ELEMENT_PARAGRAPH} from '../elements'
+import {ELEMENT_PARAGRAPH} from '../elements/defaults'
 import {ELEMENT_TRANSCLUSION} from './defaults'
 
 export const withTransclusion = options => <T extends ReactEditor>(
@@ -37,7 +37,7 @@ export const withTransclusion = options => <T extends ReactEditor>(
   }
 
   editor.deleteBackward = unit => {
-    console.log('deleteBackward:')
+    console.log('deleteBackward:', {unit})
     const {selection} = editor
 
     if (selection) {

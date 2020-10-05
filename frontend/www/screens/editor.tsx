@@ -149,7 +149,7 @@ export default function Editor(): JSX.Element {
             `}`}
           >
             <div
-              className={`pb-2 relative ${css`
+              className={`pb-2 mb-4 relative ${css`
                 &:after {
                   content: '';
                   position: absolute;

@@ -4,39 +4,39 @@ import {
   AutoformatRule,
   unwrapList,
   // toggleList,
-  ELEMENT_CODE_BLOCK,
+  // ELEMENT_CODE_BLOCK,
 } from '@udecode/slate-plugins'
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_BLOCKQUOTE,
-} from './elements'
+// import {
+//   ELEMENT_H1,
+//   ELEMENT_H2,
+//   ELEMENT_H3,
+//   ELEMENT_BLOCKQUOTE,
+// } from './elements'
 import {MARK_BOLD, MARK_ITALIC, MARK_CODE, MARK_STRIKETHROUGH} from './marks'
 
 export const preFormat = (editor: Editor) => unwrapList(editor)
 
 export const autoformatRules: AutoformatRule[] = [
-  {
-    type: ELEMENT_H1,
-    markup: '#',
-    preFormat,
-  },
-  {
-    type: ELEMENT_H2,
-    markup: '##',
-    preFormat,
-  },
-  {
-    type: ELEMENT_H3,
-    markup: '###',
-    preFormat,
-  },
-  {
-    type: ELEMENT_BLOCKQUOTE,
-    markup: ['>'],
-    preFormat,
-  },
+  // {
+  //   type: ELEMENT_H1,
+  //   markup: '#',
+  //   preFormat,
+  // },
+  // {
+  //   type: ELEMENT_H2,
+  //   markup: '##',
+  //   preFormat,
+  // },
+  // {
+  //   type: ELEMENT_H3,
+  //   markup: '###',
+  //   preFormat,
+  // },
+  // {
+  //   type: ELEMENT_BLOCKQUOTE,
+  //   markup: ['>'],
+  //   preFormat,
+  // },
   {
     type: MARK_BOLD,
     between: ['**', '**'],
@@ -73,11 +73,11 @@ export const autoformatRules: AutoformatRule[] = [
     mode: 'inline',
     insertTrigger: true,
   },
-  {
-    trigger: '`',
-    type: ELEMENT_CODE_BLOCK,
-    markup: '``',
-    mode: 'inline-block',
-    preFormat: editor => unwrapList(editor),
-  },
+  // {
+  //   trigger: '`',
+  //   type: ELEMENT_CODE_BLOCK,
+  //   markup: '``',
+  //   mode: 'inline-block',
+  //   preFormat: editor => unwrapList(editor),
+  // },
 ]
