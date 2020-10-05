@@ -82,6 +82,7 @@ export default function Publication(): JSX.Element {
   const {state, setValue} = useEditorValue({
     document: data,
   })
+  console.log('data', data)
   const {title, blocks, subtitle, author: pubAuthor} = state
   const author = getAuthor(pubAuthor)
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import {ELEMENT_PARAGRAPH} from '../elements/paragraph'
+import {ELEMENT_PARAGRAPH} from '../elements/defaults'
 
 export function renderElement({type = ELEMENT_PARAGRAPH}) {
   return function StyledElement({

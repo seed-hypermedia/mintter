@@ -4,7 +4,7 @@ import {ReactEditor} from 'slate-react'
 import {v4 as uuid} from 'uuid'
 import {InsertBlockOptions} from '../types'
 import {ELEMENT_BLOCK} from '../../BlockPlugin/defaults'
-import {ELEMENT_PARAGRAPH} from '../../elements/paragraph'
+import {ELEMENT_PARAGRAPH} from '../../elements/defaults'
 
 export function insert(editor, {type, location}) {
   const id = uuid()
