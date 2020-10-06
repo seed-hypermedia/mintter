@@ -1,12 +1,8 @@
 import React from 'react'
-import {Node} from 'slate'
-
 import {
   ParagraphKeyOption,
   ParagraphPluginOptionsValues,
 } from '@udecode/slate-plugins'
-import {ReactEditor, useEditor} from 'slate-react'
-import {ELEMENT_TRANSCLUSION} from '../TransclusionPlugin/defaults'
 import {ELEMENT_PARAGRAPH} from './defaults'
 
 export const paragraphOption = {}
@@ -32,23 +28,7 @@ function Paragraph({
   attributes,
   ...rest
 }) {
-  const editor = useEditor()
-  const path = ReactEditor.findPath(editor, element)
-  const [isInsideTransclusion, setValue] = React.useState(false)
-
-  React.useEffect(() => {
-    const parent = Node.parent(editor, path)
-    setValue(parent.type === ELEMENT_TRANSCLUSION)
-  }, [element, editor, path])
-
   return element.type === ELEMENT_PARAGRAPH ? (
-    <Component
-      {...attributes}
-      contentEditable={!isInsideTransclusion}
-      className={`${className} ${
-        isInsideTransclusion ? 'border-2 bg-background-muted rounded' : ''
-      }`}
-      {...rest}
-    />
+    <Component {...attributes} className={className} {...rest} />
   ) : null
 }

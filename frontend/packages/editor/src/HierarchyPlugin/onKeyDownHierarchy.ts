@@ -34,13 +34,11 @@ export const onKeyDownHierarchy = options => (
         blockPath,
         options,
       )
-      console.log('move blockItem up??', {moved})
       if (moved) e.preventDefault()
     }
 
     const tab = !e.shiftKey
     if (tab && !isFirstChild(blockPath)) {
-      console.log('move blockList down??')
       moveBlockListDown(editor, blockListNode, blockPath, options)
     }
   }
