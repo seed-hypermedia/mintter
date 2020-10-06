@@ -36,6 +36,7 @@ export function DragDrop({element, componentRef, children}: any) {
           dragRef={multiDragRef}
         />
         {children}
+
         {!!dropLine && (
           <div
             className={`h-1 w-full bg-blue-300 absolute`}

@@ -84,7 +84,7 @@ function Editor(
     >
       <div
         ref={ref}
-        className={`relative -mx-4 ${css`
+        className={`relative -mx-6 ${css`
           word-break: break-word;
         `}`}
       >

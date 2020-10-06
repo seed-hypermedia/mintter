@@ -12,7 +12,7 @@ export function BlockBase(
       componentRef={ref}
       {...props}
     >
-      <div className={`relative pl-2 pr-0 ${className}`} {...props} />
+      <div className={`relative pl-4 pr-0 ${className}`} {...props} />
     </DragDrop>
   )
 }

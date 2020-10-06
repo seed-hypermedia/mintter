@@ -8,10 +8,7 @@ import * as jspb from 'google-protobuf'
 // assuming these two inconveniences.
 export function makeProto<T extends jspb.Message>(msg: T, data: {}): T {
   for (const [key, value] of Object.entries(data)) {
-    console.log({msg})
     let setter = `set${key.charAt(0).toUpperCase() + key.slice(1)}`
-    console.log('setter', setter)
-
     if (Array.isArray(value)) {
       setter += 'List'
     }
