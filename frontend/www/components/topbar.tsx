@@ -22,8 +22,8 @@ export default function LibraryHeader(props) {
   const [input, setInput] = useState<string>('')
   const [menuVisible, setMenuVisible] = useState<boolean>(false)
 
-  const show = () => setMenuVisible(true)
-  const hide = () => setMenuVisible(false)
+  const show = React.useCallback(() => setMenuVisible(true), [setMenuVisible])
+  const hide = React.useCallback(() => setMenuVisible(false), [setMenuVisible])
 
   async function handleSearch(e) {
     e.preventDefault()
@@ -42,7 +42,7 @@ export default function LibraryHeader(props) {
 
   return (
     <div
-      className={`p-4 pb-16 ${css`
+      className={`p-4 border-b ${css`
         display: grid;
         grid-template-columns: minmax(250px, 25%) 1fr minmax(150px, 25%);
         grid-gap: 1rem;
@@ -50,7 +50,7 @@ export default function LibraryHeader(props) {
     >
       <span className="text-primary">
         <Link to="/library">
-          <Logo width="50px" className="fill-current" />
+          <Logo width="42px" className="fill-current" />
         </Link>
       </span>
       <div>
