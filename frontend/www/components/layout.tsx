@@ -16,7 +16,7 @@ export default function Layout({
   const {theme} = useTheme()
   return (
     <div
-      className={`fixed overflow-y-scroll w-screen h-screen flex bg-background content-transition ${theme} ${className}`}
+      className={`fixed w-screen h-screen flex bg-background content-transition ${theme} ${className}`}
     >
       {children}
     </div>

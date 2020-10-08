@@ -42,6 +42,8 @@ import {
   Block,
 } from '@mintter/proto/v2/documents_pb'
 import {v4 as uuid} from 'uuid'
+import {Page} from 'components/page'
+import {MainColumn} from 'components/main-column'
 
 function useDraftsSelection() {
   const [drafts, setOptions] = React.useState([])
@@ -166,34 +168,16 @@ export default function Publication(): JSX.Element {
   return (
     <>
       <Seo title="Publication" />
-      <div
-        className={`${css`
-          display: grid;
-
-          grid-template: auto 1fr / minmax(250px, 20%) 1fr minmax(250px, 20%);
-          grid-gap: 1rem;
-        `}`}
-      >
-        <div
-          className={`p-4 ${css`
-            grid-column: 2/3;
-          `}`}
-        >
-          <div
-            className={`my-0 mx-auto ${css`
-              max-width: 64ch;
-              width: 100%;
-            `}`}
+      <Page>
+        <MainColumn>
+          <TransclusionHelperProvider
+            options={drafts}
+            handleTransclusion={handleTransclusion}
           >
-            <TransclusionHelperProvider
-              options={drafts}
-              handleTransclusion={handleTransclusion}
-            >
-              {content}
-            </TransclusionHelperProvider>
-          </div>
-        </div>
-      </div>
+            {content}
+          </TransclusionHelperProvider>
+        </MainColumn>
+      </Page>
     </>
   )
 }

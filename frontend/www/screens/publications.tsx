@@ -9,7 +9,7 @@ import {useMemo} from 'react'
 import Seo from 'components/seo'
 import {ErrorMessage} from 'components/errorMessage'
 
-export function Publications() {
+export default function Publications() {
   const {listPublications} = useMintter()
   const {profile} = useProfile()
   const history = useHistory()

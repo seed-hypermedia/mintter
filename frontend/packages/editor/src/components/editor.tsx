@@ -48,12 +48,6 @@ function Editor(
   }: EditorComponentProps,
   ref,
 ): JSX.Element {
-  // function isEmpty(): boolean {
-  //   return sections
-  //     ? sections.length === 1 && Node.string(sections[0]) === ''
-  //     : false
-  // }
-
   const {
     target,
     values,
@@ -84,7 +78,7 @@ function Editor(
     >
       <div
         ref={ref}
-        className={`relative -mx-6 ${css`
+        className={`relative -mx-4 ${css`
           word-break: break-word;
         `}`}
       >
