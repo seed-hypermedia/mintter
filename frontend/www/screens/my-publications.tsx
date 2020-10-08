@@ -7,7 +7,7 @@ import {useMemo} from 'react'
 import {useHistory} from 'react-router-dom'
 import {ErrorMessage} from 'components/errorMessage'
 
-export function MyPublications() {
+export default function MyPublications() {
   const history = useHistory()
   const {createDraft, listPublications} = useMintter()
   const {status, error, resolvedData} = listPublications()

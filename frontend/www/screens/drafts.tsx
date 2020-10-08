@@ -4,7 +4,7 @@ import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
 import DocumentList from 'components/documentList'
 import {useMintter} from 'shared/mintterContext'
 
-export function Drafts() {
+export default function Drafts() {
   const router = useHistory()
 
   const {createDraft, listDrafts, deleteDocument} = useMintter()

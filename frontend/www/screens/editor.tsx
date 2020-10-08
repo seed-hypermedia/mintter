@@ -42,6 +42,8 @@ import Layout from 'components/layout'
 import Container from 'components/container'
 import {useTheme} from 'shared/themeContext'
 import {BlockRefList} from '@mintter/proto/v2/documents_pb'
+import {Page} from 'components/page'
+import {MainColumn} from 'components/main-column'
 
 export default function Editor(): JSX.Element {
   const {push} = useHistory()
@@ -117,19 +119,8 @@ export default function Editor(): JSX.Element {
     <>
       <Seo title="Editor" />
 
-      <div
-        className={`${css`
-          display: grid;
-
-          grid-template: auto 1fr / minmax(250px, 20%) 1fr minmax(250px, 20%);
-          grid-gap: 1rem;
-        `}`}
-      >
-        <div
-          className={`px-4  -mt-8 flex justify-end ${css`
-            grid-column: 1/4;
-          `}`}
-        >
+      <Page>
+        <div className="px-4 flex justify-end ">
           <button
             onClick={handlePublish}
             className="bg-primary rounded-full px-12 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
@@ -137,79 +128,70 @@ export default function Editor(): JSX.Element {
             Publish
           </button>
         </div>
-        <div
-          className={`p-4 ${css`
-            grid-column: 2/3;
-          `}`}
-        >
+
+        <MainColumn>
           <div
-            className={`my-0 mx-auto ${css`
-              max-width: 64ch;
-              width: 100%;
+            className={`pb-2 mb-4 relative ${css`
+              &:after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 50%;
+                max-width: 360px;
+                height: 1px;
+                z-index: 20;
+                background-color: var(--color-muted-hover);
+              }
             `}`}
           >
-            <div
-              className={`pb-2 mb-4 relative ${css`
-                &:after {
-                  content: '';
-                  position: absolute;
-                  bottom: 0;
-                  left: 0;
-                  width: 50%;
-                  max-width: 360px;
-                  height: 1px;
-                  z-index: 20;
-                  background-color: var(--color-muted-hover);
-                }
-              `}`}
-            >
-              <Textarea
-                ref={t => {
-                  titleRef.current = t
-                }}
-                value={title}
-                data-test-id="editor_title"
-                onChange={setTitle}
-                name="title"
-                placeholder="Document title"
-                className={`text-4xl text-heading font-bold italic`}
-                onEnterPress={() => {
-                  subtitleRef.current.focus()
-                }}
-              />
-              <Textarea
-                ref={d => {
-                  subtitleRef.current = d
-                }}
-                value={subtitle}
-                onChange={setSubtitle}
-                name="subtitle"
-                placeholder="Subtitle"
-                className={`leading-relaxed text-lg font-light text-heading-muted italic`}
-                onEnterPress={() => {
-                  ReactEditor.focus(editor)
-                }}
-              />
-            </div>
-
-            <EditorComponent
-              editor={editor}
-              plugins={plugins}
-              value={blocks}
-              onChange={blocks => {
-                setBlocks(blocks)
+            <Textarea
+              ref={t => {
+                titleRef.current = t
               }}
-              theme={theme}
+              value={title}
+              data-test-id="editor_title"
+              onChange={setTitle}
+              name="title"
+              placeholder="Document title"
+              className={`text-4xl text-heading font-bold italic`}
+              onEnterPress={() => {
+                subtitleRef.current.focus()
+              }}
+            />
+            <Textarea
+              ref={d => {
+                subtitleRef.current = d
+              }}
+              value={subtitle}
+              onChange={setSubtitle}
+              name="subtitle"
+              placeholder="Subtitle"
+              className={`leading-relaxed text-lg font-light text-heading-muted italic`}
+              onEnterPress={() => {
+                ReactEditor.focus(editor)
+              }}
             />
           </div>
-        </div>
-        <DebugValue
+
+          <EditorComponent
+            editor={editor}
+            plugins={plugins}
+            value={blocks}
+            onChange={blocks => {
+              setBlocks(blocks)
+            }}
+            theme={theme}
+          />
+        </MainColumn>
+
+        {/* <DebugValue
           value={state}
           className={`${css`
             grid-column: 3/4;
           `}`}
-        />
-      </div>
+        /> */}
+      </Page>
     </>
   )
 }

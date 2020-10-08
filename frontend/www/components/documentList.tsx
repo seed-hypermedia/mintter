@@ -84,44 +84,48 @@ function ListItem({item, index = 0, onDraftDelete}: ItemProps) {
   return (
     <Link
       to={to}
-      className="bg-transparent group w-full flex p-4 mt-2 first:mt-4 hover:bg-background-muted transition duration-100 box-border"
+      className="bg-transparent group w-full p-4 mt-2 first:mt-4 hover:bg-background-muted transition duration-100 box-border flex"
       onMouseEnter={handlePrefetch}
     >
       <span className="text-heading font-light leading-loose flex-none pr-4">
         {index + 1}.
       </span>
-      <div className="bg-muted rounded w-20 flex-none"></div>
-      <div className="pl-4 flex-1">
-        <h3 className="text-heading leading-loose font-bold truncate">
-          {theTitle}
-        </h3>
-        <div className="flex items-center">
-          {!isDraft && location.pathname !== '/library/my-publications' && (
-            <p className="text-sm text-heading inline-block font-light">
-              <AuthorLabel author={author} />
+      <div className=" flex-1 grid grid-cols-12 gap-4">
+        <div className="bg-muted rounded col-span-2"></div>
+        <div className={onDraftDelete ? 'col-span-9' : 'col-span-10'}>
+          <h3 className="text-heading leading-loose font-bold truncate">
+            {theTitle}
+          </h3>
+          <div className="flex items-center">
+            {!isDraft && location.pathname !== '/library/my-publications' && (
+              <p className="text-sm text-heading inline-block font-light">
+                <AuthorLabel author={author} />
+              </p>
+            )}
+            <p className="text-sm text-heading font-light">
+              {createTime?.seconds}
             </p>
-          )}
-          <p className="text-sm text-heading font-light">
-            {createTime?.seconds}
-          </p>
+          </div>
         </div>
+        {onDraftDelete && (
+          <div className="col-span-1">
+            <button
+              className="opacity-0 group-hover:opacity-100 text-danger"
+              onClick={e => {
+                e.preventDefault()
+                const resp = window.confirm(
+                  'are you sure you want to delete it?',
+                )
+                if (resp) {
+                  onDraftDelete(version)
+                }
+              }}
+            >
+              <Icons.Trash />
+            </button>
+          </div>
+        )}
       </div>
-      {onDraftDelete && (
-        <div>
-          <button
-            className="opacity-0 group-hover:opacity-100 text-danger"
-            onClick={e => {
-              e.preventDefault()
-              const resp = window.confirm('are you sure you want to delete it?')
-              if (resp) {
-                onDraftDelete(version)
-              }
-            }}
-          >
-            <Icons.Trash />
-          </button>
-        </div>
-      )}
     </Link>
   )
 }

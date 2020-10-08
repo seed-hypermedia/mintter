@@ -42,10 +42,8 @@ export default function LibraryHeader(props) {
 
   return (
     <div
-      className={`p-4 border-b ${css`
-        display: grid;
-        grid-template-columns: minmax(250px, 25%) 1fr minmax(150px, 25%);
-        grid-gap: 1rem;
+      className={`p-4 border-b grid grid-flow-col gap-4 ${css`
+        grid-template-columns: minmax(250px, 25%) 1fr minmax(250px, 25%);
       `}`}
     >
       <span className="text-primary">
