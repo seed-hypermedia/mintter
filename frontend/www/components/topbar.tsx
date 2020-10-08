@@ -1,3 +1,4 @@
+import {useCallback} from 'react'
 import {useState} from 'react'
 import {css} from 'emotion'
 import Tippy from '@tippyjs/react'
@@ -22,8 +23,8 @@ export default function LibraryHeader(props) {
   const [input, setInput] = useState<string>('')
   const [menuVisible, setMenuVisible] = useState<boolean>(false)
 
-  const show = React.useCallback(() => setMenuVisible(true), [setMenuVisible])
-  const hide = React.useCallback(() => setMenuVisible(false), [setMenuVisible])
+  const show = useCallback(() => setMenuVisible(true), [setMenuVisible])
+  const hide = useCallback(() => setMenuVisible(false), [setMenuVisible])
 
   async function handleSearch(e) {
     e.preventDefault()
