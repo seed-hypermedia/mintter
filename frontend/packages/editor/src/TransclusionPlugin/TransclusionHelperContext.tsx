@@ -133,25 +133,30 @@ export function TransclusionHelperProvider({
   //     [setTargetRange, setSearch, setValueIndex, trigger],
   //   )
 
+  const value = {
+    // search,
+    index: valueIndex,
+    target: targetRange,
+    setTarget,
+    setValueIndex,
+    values,
+    // onChangeHelper,
+    onKeyDownHelper,
+    onTranscludeBlock,
+  }
+
   return (
-    <TransclusionHelperContext.Provider
-      value={{
-        // search,
-        index: valueIndex,
-        target: targetRange,
-        setTarget,
-        setValueIndex,
-        values,
-        // onChangeHelper,
-        onKeyDownHelper,
-        onTranscludeBlock,
-      }}
-    >
+    <TransclusionHelperContext.Provider value={value}>
       {children}
     </TransclusionHelperContext.Provider>
   )
 }
 
 export function useTransclusionHelper(): any {
-  return useContext(TransclusionHelperContext)
+  const context = useContext(TransclusionHelperContext)
+  if (context === undefined) {
+    throw new Error(`useMintter must be used within a MintterProvider`)
+  }
+
+  return context
 }
