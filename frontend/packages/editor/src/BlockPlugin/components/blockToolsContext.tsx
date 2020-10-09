@@ -8,13 +8,11 @@ export const BlockToolsContext = createContext<{
 export function BlockToolsProvider({children}) {
   const [id, setBlockId] = useState<string>()
 
-  const value = useMemo(
-    () => ({
-      id,
-      setBlockId,
-    }),
-    [id, setBlockId],
-  )
+  const value = {
+    id,
+    setBlockId,
+  }
+
   return (
     <BlockToolsContext.Provider value={value}>
       {children}
@@ -23,5 +21,13 @@ export function BlockToolsProvider({children}) {
 }
 
 export function useBlockTools() {
-  return useContext(BlockToolsContext)
+  const context = useContext(BlockToolsContext)
+
+  if (context === undefined) {
+    throw new Error(
+      `\`useBlockTools\` must be used within a \`BlockToolsProvider\``,
+    )
+  }
+
+  return context
 }

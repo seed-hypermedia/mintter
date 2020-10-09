@@ -120,30 +120,17 @@ export function ProfileProvider(props) {
     )
   }
 
-  const value = useMemo(
-    () => ({
-      profile,
-      getProfile,
-      createProfile,
-      setProfile,
-      getProfileAddrs,
-      genSeed,
-      connectToPeerById,
-      listConnections,
-      listSuggestedConnections,
-    }),
-    [
-      profile,
-      getProfile,
-      createProfile,
-      setProfile,
-      getProfileAddrs,
-      genSeed,
-      connectToPeerById,
-      listConnections,
-      listSuggestedConnections,
-    ],
-  )
+  const value = {
+    profile,
+    getProfile,
+    createProfile,
+    setProfile,
+    getProfileAddrs,
+    genSeed,
+    connectToPeerById,
+    listConnections,
+    listSuggestedConnections,
+  }
 
   if (status === 'loading') {
     return <FullPageSpinner />
@@ -165,7 +152,7 @@ export function ProfileProvider(props) {
 export function useProfile() {
   const context = useContext(ProfileContext)
   if (context === undefined) {
-    throw new Error(`useProfile must be used within a ProfileProvider`)
+    throw new Error(`"useProfile" must be used within a "ProfileProvider"`)
   }
 
   return context

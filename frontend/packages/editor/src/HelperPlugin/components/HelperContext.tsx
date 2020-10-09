@@ -129,25 +129,28 @@ export function HelperProvider({children, options}) {
     [setTargetRange, setSearch, setValueIndex, trigger],
   )
 
+  const value = {
+    search,
+    index: valueIndex,
+    target: targetRange,
+    setTarget,
+    setValueIndex,
+    values,
+    onChangeHelper,
+    onKeyDownHelper,
+    onAddBlock,
+  }
+
   return (
-    <HelperContext.Provider
-      value={{
-        search,
-        index: valueIndex,
-        target: targetRange,
-        setTarget,
-        setValueIndex,
-        values,
-        onChangeHelper,
-        onKeyDownHelper,
-        onAddBlock,
-      }}
-    >
-      {children}
-    </HelperContext.Provider>
+    <HelperContext.Provider value={value}>{children}</HelperContext.Provider>
   )
 }
 
 export function useHelper(): any {
-  return useContext(HelperContext)
+  const context = useContext(HelperContext)
+  if (context === undefined) {
+    throw new Error(`useHelper must be used within a HelperProvider`)
+  }
+
+  return context
 }

@@ -127,28 +127,16 @@ export function MintterProvider(props) {
     [],
   )
 
-  const value = useMemo(
-    () => ({
-      listPublications,
-      listDrafts,
-      createDraft,
-      getDocument,
-      setDocument,
-      publishDraft,
-      deleteDocument,
-      getAuthor,
-    }),
-    [
-      listPublications,
-      listDrafts,
-      createDraft,
-      getDocument,
-      setDocument,
-      publishDraft,
-      deleteDocument,
-      getAuthor,
-    ],
-  )
+  const value = {
+    listPublications,
+    listDrafts,
+    createDraft,
+    getDocument,
+    setDocument,
+    publishDraft,
+    deleteDocument,
+    getAuthor,
+  }
 
   return <MintterClientContext.Provider value={value} {...props} />
 }
