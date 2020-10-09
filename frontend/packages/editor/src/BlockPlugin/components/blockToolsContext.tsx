@@ -1,4 +1,4 @@
-import React, {createContext, useState, useMemo, useContext} from 'react'
+import React, {createContext, useState, useContext} from 'react'
 
 export const BlockToolsContext = createContext<{
   id: any
