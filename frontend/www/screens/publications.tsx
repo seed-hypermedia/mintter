@@ -1,7 +1,6 @@
 import {useHistory} from 'react-router-dom'
 import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
 import DocumentList from 'components/documentList'
-import {MainLayout} from 'components/main-layout'
 import {useMintter} from 'shared/mintterContext'
 import {useProfile} from 'shared/profileContext'
 import {FullPageSpinner} from 'components/fullPageSpinner'
