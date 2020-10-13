@@ -21,6 +21,7 @@ import {
 import {unwrapBlockList} from './unwrapBlockList'
 import {avoidMultipleRootChilds} from './utils/avoidMultipleRootChilds'
 import {avoidMultipleBlockChilds} from './utils/avoidMultipleBlockChilds'
+import {ELEMENT_TRANSCLUSION} from '../TransclusionPlugin'
 
 export const withMintter = options => <T extends ReactEditor>(editor: T) => {
   const {p, block} = options
@@ -33,6 +34,7 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
   }
 
   editor.insertBreak = () => {
+    console.log(editor)
     let res = isSelectionInBlockItem(editor, options)
 
     let moved: boolean | undefined
@@ -114,6 +116,17 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
               console.log('remove: TIENE contenido!')
               if (!isFirstChild(blockPath)) {
                 console.log('remove: NO es el primer hijo!')
+                const previousEntry = Editor.previous(editor, {
+                  at: blockPath,
+                })
+                if (previousEntry) {
+                  const [prevNode, prevPath] = previousEntry
+                  if (prevNode.type === ELEMENT_TRANSCLUSION) {
+                    console.log('PREVIOUS ES TRANSCLUSION')
+                    Transforms.select(editor, prevPath)
+                    return
+                  }
+                }
                 moveContentToAboveBlock(editor, blockPath)
               }
             } else {

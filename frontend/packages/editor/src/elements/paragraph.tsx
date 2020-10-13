@@ -21,9 +21,9 @@ export const PARAGRAPH_OPTIONS: Record<
   },
 }
 
-function Paragraph({
+export function Paragraph({
   as: Component = 'p',
-  className,
+  className = '',
   element,
   attributes,
   ...rest

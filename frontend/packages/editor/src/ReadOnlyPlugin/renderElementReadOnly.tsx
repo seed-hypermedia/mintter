@@ -1,7 +1,9 @@
 import React from 'react'
+import {useFocused, useSelected} from 'slate-react'
 import {getRenderElement, setDefaults} from '@udecode/slate-plugins'
 import {DEFAULTS_READ_ONLY} from './defaults'
 import {SlateReactPresentation} from 'slate-react-presentation'
+import {ELEMENT_PARAGRAPH} from '../elements/defaults'
 
 export const renderElementReadOnly = (options?: any) => {
   const {read_only} = setDefaults(options, DEFAULTS_READ_ONLY)
@@ -12,34 +14,57 @@ export const renderElementReadOnly = (options?: any) => {
   })
 }
 
-function RenderElement({attributes, children, element}) {
-  const renderElement = React.useCallback(({children, element}) => {
+function RenderElement(props) {
+  const selected = useSelected()
+  const focus = useFocused()
+  console.log({props})
+  const renderElement = React.useCallback(({attributes, children, element}) => {
     switch (element.type) {
-      case 'p':
-        return <p className="bg-red-500">{children}</p>
+      case ELEMENT_PARAGRAPH:
+        return (
+          <p
+            {...attributes}
+            className="px-2 py-1 text-body text-xl leading-loose"
+          >
+            {children}
+          </p>
+        )
       default:
-        return <p>{children}</p>
+        return (
+          <p {...attributes} className="bg-teal-300 px-2 py-1 text-xl relative">
+            <span
+              contentEditable={false}
+              className="absolute top-0 left-0 text-xs text-teal-600 uppercase"
+            >
+              Element not supported
+            </span>
+            {children}
+          </p>
+        )
     }
   }, [])
 
-  const renderLeaf = React.useCallback(({children, leaf}) => {
+  const renderLeaf = React.useCallback(({attributes, children, leaf}) => {
     if (leaf.bold) {
-      children = <b className="BOLD LEAF font-bold">{children}</b>
+      children = <strong className="font-bold">{children}</strong>
     }
 
-    return <span>{children}</span>
+    return <span {...attributes}>{children}</span>
   }, [])
 
   return (
-    <div {...attributes}>
-      <div contentEditable={false} style={{userSelect: 'none'}}>
+    <div {...props.attributes}>
+      <div
+        contentEditable={false}
+        className={`bg-muted ${focus && selected ? 'shadow-outline' : ''}`}
+      >
         <SlateReactPresentation
-          value={element.children}
+          value={props.element.children}
           renderElement={renderElement}
           renderLeaf={renderLeaf}
         />
       </div>
-      {children}
+      {props.children}
     </div>
   )
 }

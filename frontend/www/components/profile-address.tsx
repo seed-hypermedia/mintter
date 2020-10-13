@@ -47,6 +47,7 @@ export function ProfileAddress(props) {
         </p>
       )}
       <Textarea
+        style={{userSelect: 'none'}}
         readOnly
         rows={4}
         id="addresses"
