@@ -84,7 +84,6 @@ export default function Publication(): JSX.Element {
   const {state, setValue} = useEditorValue({
     document: data,
   })
-  console.log('data', data)
   const {title, blocks, subtitle, author: pubAuthor} = state
   const author = getAuthor(pubAuthor)
 
@@ -104,7 +103,7 @@ export default function Publication(): JSX.Element {
   let content
 
   if (status === 'loading') {
-    content = <p>Loading...</p>
+    content = <p>Loading..</p>
   } else if (status === 'error') {
     content = (
       <div className="mx-8">

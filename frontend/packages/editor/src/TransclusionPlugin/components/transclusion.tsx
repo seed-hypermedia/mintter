@@ -1,18 +1,10 @@
 import React from 'react'
-import {
-  // ReactEditor, useEditor,
-  useFocused,
-  useSelected,
-} from 'slate-react'
 import {DragDrop} from '../../BlockPlugin/components/DragDrop'
 
 const Transclusion = (
   {attributes, children, element, className, ...rest},
   ref,
 ) => {
-  const selected = useSelected()
-  const focus = useFocused()
-
   function handlePush(e) {
     e.preventDefault()
     rest.dispatch?.({type: 'open_transclusion', payload: element.id})
@@ -22,8 +14,8 @@ const Transclusion = (
     <DragDrop attributes={attributes} element={element} componentRef={ref}>
       <div
         className={`pl-4 pr-0 relative rounded my-1 outline-none ${
-          focus && selected ? 'shadow-outline' : ''
-        }${className ? className : ''}`}
+          className ? className : ''
+        }`}
       >
         <div
           contentEditable={false}

@@ -1,51 +1,51 @@
+import {useDndBlock} from '@udecode/slate-plugins'
+import {mergeRefs} from '../../mergeRefs'
 import React from 'react'
+import {BlockControls} from '../../components/blockControls'
+import {useBlockTools} from './blockToolsContext'
 import {ReactEditor, useEditor} from 'slate-react'
-import {Block} from './block'
-import {useTransclusionHelper} from '../../TransclusionPlugin/TransclusionHelperContext'
 
-function ReadonlyBlockElement(
-  {children, element, ...rest},
-  ref: React.RefObject<HTMLDivElement>,
-) {
-  const editor = useEditor()
-  const path = ReactEditor.findPath(editor, element)
-  const {setTarget, target, onKeyDownHelper} = useTransclusionHelper()
+export function DragDrop({element, componentRef, children}: any) {
+  const blockRef = React.useRef<HTMLDivElement>(null)
+  const rootRef = React.useRef<HTMLDivElement>(null)
+  const multiRef = mergeRefs(componentRef, rootRef)
+  const {dropLine, dragRef} = useDndBlock({
+    id: element.id,
+    blockRef,
+  })
 
-  function onTranscludeClicked(e) {
-    e.preventDefault()
-    const value = target ? null : e.target
-    setTarget(value, path, element)
-  }
+  const dragWrapperRef = React.useRef(null)
+  const multiDragRef = mergeRefs(dragRef, dragWrapperRef)
 
-  const onKeyDown = React.useCallback(
-    e => {
-      onKeyDownHelper(e, editor)
-    },
-    [editor, onKeyDownHelper],
-  )
-
-  React.useEffect(() => {
-    window.addEventListener('keydown', onKeyDown)
-
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-    }
-  }, [onKeyDown])
+  const {id: blockId, setBlockId} = useBlockTools()
 
   return (
-    <Block
-      path={path}
-      data-slate-type={element.type}
-      ref={ref as any}
-      {...rest}
-    >
-      <div className="right-0 top-0 absolute" contentEditable={false}>
-        <button onClick={onTranscludeClicked}>Transclude</button>
+    <div ref={multiRef}>
+      <div
+        className="relative"
+        ref={blockRef}
+        onMouseLeave={() => setBlockId(null)}
+        onMouseEnter={() => setBlockId(element.id)}
+      >
+        <BlockControls
+          element={element}
+          path={path}
+          show={blockId === element.id}
+          dragRef={multiDragRef}
+        />
+        {children}
+
+        {!!dropLine && (
+          <div
+            className={`h-1 w-full bg-blue-300 absolute`}
+            style={{
+              top: dropLine === 'top' ? -1 : undefined,
+              bottom: dropLine === 'bottom' ? -1 : undefined,
+            }}
+            contentEditable={false}
+          />
+        )}
       </div>
-      {children}
-    </Block>
+    </div>
   )
 }
-
-// TODO: (Horacio) Fixme types
-export const ReadOnlyBlock = React.forwardRef(ReadonlyBlockElement as any)
