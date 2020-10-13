@@ -7,6 +7,7 @@ export * from './nodeTypes'
 export * from './HelperPlugin'
 export * from './HierarchyPlugin'
 export * from './TransclusionPlugin'
+export * from './ReadOnlyPlugin'
 
 export * from './editor'
 export * from './plugins'

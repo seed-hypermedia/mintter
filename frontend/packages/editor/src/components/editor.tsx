@@ -23,6 +23,7 @@ interface EditorComponentProps {
   readOnly?: boolean
   renderElement?: RenderElement[]
   theme?: 'theme-light' | 'theme-dark'
+  push?: any // TODO: FIXME Types
 }
 
 const HELPER_OPTIONS = [

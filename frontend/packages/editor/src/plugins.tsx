@@ -27,6 +27,7 @@ import {HelperPlugin} from './HelperPlugin'
 import {HierarchyPlugin} from './HierarchyPlugin'
 import {TransclusionPlugin} from './TransclusionPlugin'
 import {BlockPlugin} from './BlockPlugin'
+import {ReadOnlyPlugin} from './ReadOnlyPlugin'
 // import {ELEMENT_BLOCKQUOTE} from './elements'
 
 const headingTypes = [
@@ -87,6 +88,7 @@ export function createPlugins(options) {
     HierarchyPlugin(options),
     TransclusionPlugin(options),
     BlockPlugin(options),
+    ReadOnlyPlugin(options),
   ]
 }
 
@@ -138,4 +140,5 @@ export const plugins = [
   HierarchyPlugin(options),
   TransclusionPlugin(options),
   BlockPlugin(options),
+  ReadOnlyPlugin(options),
 ]

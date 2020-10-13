@@ -1,7 +1,5 @@
 export * from './components'
 export * from './utils'
 export * from './defaults'
-export * from './renderEditableBLockElement'
-export * from './renderReadOnlyBLockElement'
 export * from './BlockPlugin'
 export * from './renderElementBlock'

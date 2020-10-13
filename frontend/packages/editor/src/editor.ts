@@ -29,6 +29,9 @@ export const Editor = {
     const txt = SlateEditor.string(editor, path)
     return txt.trim().length
   },
+  handlePush: pushFn => route => {
+    pushFn(route)
+  },
 }
 export const initialBlocksValue = [
   {

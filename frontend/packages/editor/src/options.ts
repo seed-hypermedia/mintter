@@ -16,6 +16,7 @@ import {DEFAULTS_TRANSCLUSION} from './TransclusionPlugin'
 import {DEFAULTS_IMAGE} from './ImagePlugin'
 import {DEFAULTS_BLOCK} from './BlockPlugin'
 import {DEFAULTS_BLOCKLIST} from './HierarchyPlugin'
+import {DEFAULTS_READ_ONLY} from './ReadOnlyPlugin'
 
 export const options = {
   ...PARAGRAPH_OPTIONS,
@@ -27,6 +28,7 @@ export const options = {
   ...DEFAULTS_BLOCK,
   ...DEFAULTS_BLOCKLIST,
   ...DEFAULTS_TRANSCLUSION,
+  ...DEFAULTS_READ_ONLY,
   //marks
   ...BOLD_OPTIONS,
   ...ITALIC_OPTIONS,

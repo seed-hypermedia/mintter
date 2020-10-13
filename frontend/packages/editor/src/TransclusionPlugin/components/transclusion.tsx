@@ -7,7 +7,7 @@ import {
 import {DragDrop} from '../../BlockPlugin/components/DragDrop'
 
 const Transclusion = (
-  {attributes, children, element, className, push},
+  {attributes, children, element, className, ...rest},
   ref,
 ) => {
   const selected = useSelected()
@@ -15,8 +15,7 @@ const Transclusion = (
 
   function handlePush(e) {
     e.preventDefault()
-    console.log('go to parent document', element.id)
-    push && push(`/p/${element.id.split('/')[0]}`)
+    rest.dispatch?.({type: 'open_transclusion', payload: element.id})
   }
 
   return (
@@ -34,7 +33,7 @@ const Transclusion = (
             onClick={handlePush}
             className="text-xs text-body-muted hover:text-body transition duration-100"
           >
-            Go to Document
+            Open Document
           </button>
         </div>
         {children}
