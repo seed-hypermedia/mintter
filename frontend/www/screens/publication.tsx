@@ -159,7 +159,6 @@ export default function Publication(): JSX.Element {
           plugins={plugins}
           value={blocks}
           onChange={() => {}}
-          push={push}
         />
       </>
     )

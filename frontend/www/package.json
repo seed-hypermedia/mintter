@@ -48,6 +48,7 @@
     "slate-history": "^0.57.1",
     "slate-hyperscript": "^0.58.3",
     "slate-react": "^0.58.4",
+    "slate-react-presentation": "^0.1.0",
     "unified": "^9.0.0",
     "uuid": "^8.3.0",
     "xtend": "^4.0.2"

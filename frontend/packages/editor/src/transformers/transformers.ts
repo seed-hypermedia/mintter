@@ -130,13 +130,20 @@ export function toSlateBlock(block: Block.AsObject): SlateBlock {
       // FIXME: handle transcluded images too!!
       children: [
         {
-          type: ELEMENT_PARAGRAPH,
-          children: paragraph
-            ? paragraph.inlineElementsList.map(({text, textStyle = {}}) => ({
-                text,
-                ...textStyle,
-              }))
-            : [{text: ''}],
+          type: 'read_only',
+          children: [
+            {
+              type: ELEMENT_PARAGRAPH,
+              children: paragraph
+                ? paragraph.inlineElementsList.map(
+                    ({text, textStyle = {}}) => ({
+                      text,
+                      ...textStyle,
+                    }),
+                  )
+                : [{text: ''}],
+            },
+          ],
         },
       ],
     }

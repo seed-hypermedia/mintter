@@ -11789,6 +11789,11 @@ slate-hyperscript@^0.58.3:
   dependencies:
     is-plain-object "^3.0.0"
 
+slate-react-presentation@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/slate-react-presentation/-/slate-react-presentation-0.1.0.tgz#6fd533b8f489e8f66aa5955173c928c7082862e0"
+  integrity sha512-+qD7dgx+J/h+IXykF2+nTolwMV50qtz8HwrRJMmCOaw5bNYcB3uLRkChZHTFHfgLVlqsl6FaNy9+LEtMISJVxQ==
+
 slate-react@^0.58.4:
   version "0.58.4"
   resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.58.4.tgz#ecde34dd322af8413c2f23f0f0a577fed2422f46"

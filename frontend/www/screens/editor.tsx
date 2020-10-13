@@ -47,15 +47,40 @@ import {BlockRefList} from '@mintter/proto/v2/documents_pb'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 
+const createReducer = sidepanel => (state, action) => {
+  if (action.type === 'open_transclusion') {
+    sidepanel.toggle(true)
+    return [...state, action.payload.split('/')[0]]
+  }
+
+  return state
+}
+
+function useTransclusionActions({push, sidepanel, initialState = []}) {
+  const {current: initialSidePanelState} = React.useRef(initialState)
+  return React.useReducer(createReducer(sidepanel), initialSidePanelState)
+}
+
 export default function Editor(): JSX.Element {
   const {push} = useHistory()
   const {version} = useParams()
   const {theme} = useTheme()
+
+  const [isSidePanelVisible, toggleSidePanelVisibility] = React.useState(false)
+  const [sidePanelState, dispatch] = useTransclusionActions({
+    sidepanel: {
+      visible: isSidePanelVisible,
+      toggle: toggleSidePanelVisibility,
+    },
+  })
+
   const editorOptions = {
     ...options,
     transclusion: {
       ...options.transclusion,
-      push,
+      customProps: {
+        dispatch,
+      },
     },
   }
   const plugins = createPlugins(editorOptions)
@@ -65,7 +90,6 @@ export default function Editor(): JSX.Element {
   const titleRef = React.useRef(null)
   const subtitleRef = React.useRef(null)
   const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
-  const [isSidePanelVisible, toggleSidePanelVisibility] = React.useState(false)
 
   const {getDocument, setDocument, publishDraft, listDrafts} = useMintter()
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])
@@ -84,7 +108,7 @@ export default function Editor(): JSX.Element {
     async state => {
       const {document} = data.toObject()
       const {id, version, author} = document
-      saveDocument({document: {id, version, author}, state})
+      saveDocument({document, state})
     },
     {
       onSuccess: () => {
@@ -222,12 +246,7 @@ export default function Editor(): JSX.Element {
               />
             </MainColumn>
 
-            {/* <DebugValue
-          value={state}
-          className={`${css`
-            grid-column: 3/4;
-          `}`}
-        /> */}
+            <DebugValue value={state} className="absolute right-0 top-0 m-6" />
           </div>
           {isSidePanelVisible ? (
             <div
@@ -241,7 +260,9 @@ export default function Editor(): JSX.Element {
                 overflow: 'auto',
                 zIndex: 0,
               }}
-            ></div>
+            >
+              {JSON.stringify(sidePanelState, null, 4)}
+            </div>
           ) : (
             <div />
           )}
