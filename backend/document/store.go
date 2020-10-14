@@ -2,12 +2,15 @@ package document
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"sort"
+	"strings"
+	"time"
+
 	"mintter/backend/identity"
 	"mintter/backend/ipldutil"
 	v2 "mintter/proto/v2"
-	"strings"
-	"time"
 
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
@@ -18,9 +21,14 @@ import (
 )
 
 var (
-	keyDrafts = datastore.NewKey("/mintter/v2/drafts")
-	keyDocs   = datastore.NewKey("/mintter/v2/documents")
+	keyDrafts           = datastore.NewKey("/mintter/v2/drafts")
+	keyDocs             = datastore.NewKey("/mintter/v2/documents")
+	keyIndexBlockQuotes = datastore.NewKey("/mintter/v2/indexes/blockQuotes")
 )
+
+func makeBlockQuoteKey(version cid.Cid, blockID string) datastore.Key {
+	return keyIndexBlockQuotes.ChildString(version.String()).ChildString(blockID)
+}
 
 type store struct {
 	bs        blockstore.Blockstore
@@ -59,7 +67,7 @@ func (ds *store) Get(ctx context.Context, version cid.Cid) (versionedDoc, error)
 		}
 
 		if !local {
-			if err := ds.indexPublication(vdoc); err != nil {
+			if err := ds.indexPublication(ctx, vdoc); err != nil {
 				return versionedDoc{}, fmt.Errorf("failed to index remote publication: %w", err)
 			}
 		}
@@ -86,15 +94,11 @@ func (ds *store) Store(ctx context.Context, doc document) (cid.Cid, error) {
 
 	vdoc := versionedDoc{document: doc, Version: blk.Cid()}
 
-	if err := ds.indexPublication(vdoc); err != nil {
+	if err := ds.indexPublication(ctx, vdoc); err != nil {
 		return cid.Undef, err
 	}
 
 	return vdoc.Version, nil
-}
-
-func (ds *store) indexPublication(vdoc versionedDoc) error {
-	return ds.db.Put(makeDocsKey(vdoc.Author, vdoc.ID, vdoc.PublishTime, vdoc.Version), nil)
 }
 
 func (ds *store) CreateDraft(ctx context.Context) (versionedDoc, error) {
@@ -125,10 +129,12 @@ func (ds *store) CreateDraft(ctx context.Context) (versionedDoc, error) {
 	}
 
 	doc := document{
-		ID:         docID,
-		Author:     prof.Account.ID,
-		CreateTime: now,
-		UpdateTime: now,
+		documentMeta: documentMeta{
+			ID:         docID,
+			Author:     prof.Account.ID,
+			CreateTime: now,
+			UpdateTime: now,
+		},
 	}
 
 	version, err := ds.StoreDraft(ctx, doc)
@@ -148,7 +154,16 @@ func (ds *store) StoreDraft(ctx context.Context, doc document) (cid.Cid, error) 
 		return cid.Undef, err
 	}
 
+	old, err := ds.Get(ctx, version)
+	if err != nil && !errors.Is(err, datastore.ErrNotFound) {
+		return cid.Undef, err
+	}
+
 	if err := ds.db.Put(makeDraftKey(version.String()), data); err != nil {
+		return cid.Undef, err
+	}
+
+	if err := ds.buildIndex(ctx, old, versionedDoc{Version: version, document: doc}); err != nil {
 		return cid.Undef, err
 	}
 
@@ -157,6 +172,49 @@ func (ds *store) StoreDraft(ctx context.Context, doc document) (cid.Cid, error) 
 
 func (ds *store) Delete(ctx context.Context, version cid.Cid) error {
 	codec := version.Prefix().Codec
+
+	// TODO: cleanup indexes.
+	vdoc, err := ds.Get(ctx, version)
+	if err != nil {
+		return err
+	}
+
+	// We have to remove this document's version from all the inverted indexes for blocks
+	// that this document might quote.
+	// E.g. If A quotes blocks from B, when A is deleted indexes for B must be updated to remove A from them.
+	err = vdoc.RefList.ForEachRef(func(ref blockRef) error {
+		parsed, err := vdoc.parseRefPointer(ref.Pointer)
+		if err != nil {
+			return err
+		}
+
+		if !parsed.IsTransclusion {
+			return nil
+		}
+
+		k := makeBlockQuoteKey(parsed.Version, parsed.BlockID)
+		old, err := ds.db.Get(k)
+		if err != nil && err != datastore.ErrNotFound {
+			return err
+		}
+
+		var set smallStringSet
+		if old != nil {
+			set = smallStringSet(strings.Split(string(old), ","))
+		}
+
+		set = set.Remove(vdoc.Version.String())
+		data := []byte(strings.Join(set, ","))
+
+		if err := ds.db.Put(k, data); err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
 
 	switch codec {
 	case draftMultiCodec:
@@ -243,6 +301,157 @@ func (ds *store) ListDocuments(ctx context.Context, author identity.ProfileID, s
 	default:
 		return nil, fmt.Errorf("invalid publishing state %d", state)
 	}
+}
+
+func (ds *store) indexPublication(ctx context.Context, vdoc versionedDoc) error {
+	if vdoc.Version.Prefix().Codec == draftMultiCodec {
+		return fmt.Errorf("must not index draft documents")
+	}
+
+	old, err := ds.Get(ctx, vdoc.Version)
+	if err != nil {
+		return err
+	}
+
+	if err := ds.db.Put(makeDocsKey(vdoc.Author, vdoc.ID, vdoc.PublishTime, vdoc.Version), nil); err != nil {
+		return err
+	}
+
+	return ds.buildIndex(ctx, old, vdoc)
+}
+
+func (ds *store) GetBlockQuoters(ctx context.Context, version cid.Cid, blockID string) (smallStringSet, error) {
+	k := makeBlockQuoteKey(version, blockID)
+
+	data, err := ds.db.Get(k)
+	if err != nil && err != datastore.ErrNotFound {
+		return nil, err
+	}
+
+	if err == datastore.ErrNotFound {
+		return nil, nil
+	}
+
+	return strings.Split(string(data), ","), nil
+}
+
+func (ds *store) buildIndex(ctx context.Context, old, new versionedDoc) error {
+	visited := map[fullBlockRef]struct{}{}
+	err := new.RefList.ForEachRef(func(ref blockRef) error {
+		parsed, err := new.parseRefPointer(ref.Pointer)
+		if err != nil {
+			return err
+		}
+
+		if !parsed.IsTransclusion {
+			return nil
+		}
+
+		visited[parsed] = struct{}{}
+
+		k := makeBlockQuoteKey(parsed.Version, parsed.BlockID)
+		old, err := ds.db.Get(k)
+		if err != nil && err != datastore.ErrNotFound {
+			return err
+		}
+
+		var set smallStringSet
+		if old != nil {
+			set = smallStringSet(strings.Split(string(old), ","))
+		}
+
+		set = set.Add(new.Version.String())
+		if len(set) > 0 {
+			data := []byte(strings.Join(set, ","))
+			if err := ds.db.Put(k, data); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	// We have to update and remove indexes for blocks that were previously quoted but not anymore.
+	err = old.RefList.ForEachRef(func(ref blockRef) error {
+		parsed, err := new.parseRefPointer(ref.Pointer)
+		if err != nil {
+			return err
+		}
+
+		if !parsed.IsTransclusion {
+			return nil
+		}
+
+		if _, ok := visited[parsed]; ok {
+			return nil
+		}
+
+		k := makeBlockQuoteKey(parsed.Version, parsed.BlockID)
+		old, err := ds.db.Get(k)
+		if err != nil && err != datastore.ErrNotFound {
+			return err
+		}
+
+		var set smallStringSet
+		if old != nil {
+			set = smallStringSet(strings.Split(string(old), ","))
+		}
+
+		set = set.Remove(new.Version.String())
+		if len(set) == 0 {
+			return ds.db.Delete(k)
+		}
+
+		data := []byte(strings.Join(set, ","))
+
+		if err := ds.db.Put(k, data); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return nil
+}
+
+// Using a slice for small sets should be more efficient that using a map.
+//
+// See: https://go-talks.appspot.com/github.com/dgryski/talks/dotgo-2016/slices.slide#13
+type smallStringSet []string
+
+func (set smallStringSet) Add(v string) smallStringSet {
+	if i := set.Search(v); i < len(set) {
+		if set[i] == v {
+			return set
+		}
+		set = append(set[:i+1], set[i:]...)
+		set[i] = v
+	} else {
+		set = append(set, v)
+	}
+	return set
+}
+
+func (set smallStringSet) Remove(v string) smallStringSet {
+	if i := set.Search(v); i < len(set) && set[i] == v {
+		set = append(set[:i], set[i+1:]...)
+	}
+
+	return set
+}
+
+// Search returns the index of the first element of es that is greater than or
+// equal to e.
+//
+// In other words, if e is an element of es, then es[es.Search(e)] == e.
+// However, if all elements in es are less than e, then es.Search(e) == len(e).
+//
+// If es is not sorted, the results are undefined.
+func (set smallStringSet) Search(v string) int {
+	return sort.Search(len(set), func(i int) bool { return set[i] >= v })
 }
 
 func makeDraftKey(docID string) datastore.Key {

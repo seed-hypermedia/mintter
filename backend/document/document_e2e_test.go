@@ -58,6 +58,7 @@ func TestTransclusionEndToEnd(t *testing.T) {
 
 	for _, reusedID := range []string{"block-list-parent", "block-list-child-1", "block-list-child-2"} {
 		want := pubDoc.Blocks[reusedID]
+		want.Quoters = nil // This is ugly but necessary, coz quoted block will not return the quoters.
 		got := draftDoc.Blocks[pub1.Version+"/"+reusedID]
 		testutil.ProtoEqual(t, want, got, "block %s doesn't match", reusedID)
 	}
@@ -131,6 +132,7 @@ func TestTransclusionEmptyDraft(t *testing.T) {
 
 	for _, reusedID := range []string{"block-list-parent", "block-list-child-1", "block-list-child-2"} {
 		want := pubDoc.Blocks[reusedID]
+		want.Quoters = nil // This is ugly but necessary.
 		got := draftDoc.Blocks[pub1.Version+"/"+reusedID]
 		testutil.ProtoEqual(t, want, got, "block %s doesn't match", reusedID)
 	}
@@ -150,6 +152,66 @@ func TestTransclusionEmptyDraft(t *testing.T) {
 		},
 	}
 	testutil.ProtoEqual(t, wantRootList, draftDoc.Document.BlockRefList, "ref list doesn't match")
+}
+
+func TestQuotersE2E(t *testing.T) {
+	srv, _, ctx := makeServer(t, "alice")
+
+	draft1, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
+	require.NoError(t, err, "must create draft 1")
+	updateReq1 := testDoc1(draft1)
+	updateResp1, err := srv.UpdateDraft(ctx, updateReq1)
+	require.NoError(t, err, "must update draft 1")
+	require.NotNil(t, updateResp1)
+	pub1, err := srv.PublishDraft(ctx, &v2.PublishDraftRequest{
+		Version: draft1.Version,
+	})
+	require.NoError(t, err, "must publish draft 1")
+	require.NotNil(t, pub1)
+
+	draft2, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
+	require.NoError(t, err, "must create draft 2")
+	updateReq2 := testDoc2(draft2)
+	updateResp2, err := srv.UpdateDraft(ctx, updateReq2)
+	require.NoError(t, err, "must update draft 2")
+	require.NotNil(t, updateResp2)
+
+	updateReq2.Document.BlockRefList.Refs = append(draft2.BlockRefList.Refs, &v2.BlockRef{
+		Ref: pub1.Version + "/block-list-parent",
+		BlockRefList: &v2.BlockRefList{
+			Style: v2.BlockRefList_BULLET,
+			Refs: []*v2.BlockRef{
+				{Ref: pub1.Version + "/block-list-child-1"},
+				{Ref: pub1.Version + "/block-list-child-2"},
+			},
+		},
+	})
+	updateResp2, err = srv.UpdateDraft(ctx, updateReq2)
+	require.NoError(t, err, "must update draft 2")
+	require.NotNil(t, updateResp2)
+
+	pubResp, err := srv.GetDocument(ctx, &v2.GetDocumentRequest{
+		Version: pub1.Version,
+	})
+	require.NoError(t, err, "must get published version")
+	require.Equal(t, []string{draft2.Version}, pubResp.Blocks["block-list-parent"].Quoters)
+	require.Equal(t, []string{draft2.Version}, pubResp.Blocks["block-list-child-1"].Quoters)
+	require.Equal(t, []string{draft2.Version}, pubResp.Blocks["block-list-child-2"].Quoters)
+
+	// Remove quoted children.
+	updateReq2.Document.BlockRefList.Refs[2].BlockRefList = nil
+
+	updateResp2, err = srv.UpdateDraft(ctx, updateReq2)
+	require.NoError(t, err, "must update draft 2")
+	require.NotNil(t, updateResp2)
+
+	pubResp, err = srv.GetDocument(ctx, &v2.GetDocumentRequest{
+		Version: pub1.Version,
+	})
+	require.NoError(t, err, "must get published version")
+	require.Equal(t, []string{draft2.Version}, pubResp.Blocks["block-list-parent"].Quoters)
+	require.Nil(t, pubResp.Blocks["block-list-child-1"].Quoters)
+	require.Nil(t, pubResp.Blocks["block-list-child-2"].Quoters)
 }
 
 func testDoc2(d *v2.Document) *v2.UpdateDraftRequest {

@@ -321,7 +321,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.mintter.v2.Block = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, proto.mintter.v2.Block.oneofGroups_);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.mintter.v2.Block.repeatedFields_, proto.mintter.v2.Block.oneofGroups_);
 };
 goog.inherits(proto.mintter.v2.Block, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -2870,6 +2870,13 @@ proto.mintter.v2.BlockRef.prototype.hasBlockRefList = function() {
 
 
 /**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.mintter.v2.Block.repeatedFields_ = [2];
+
+/**
  * Oneof group definitions for this message. Each group defines the field
  * numbers belonging to that group. When of these fields' value is set, all
  * other fields in the group are cleared. During deserialization, if multiple
@@ -2927,6 +2934,7 @@ proto.mintter.v2.Block.prototype.toObject = function(opt_includeInstance) {
 proto.mintter.v2.Block.toObject = function(includeInstance, msg) {
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    quotersList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
     paragraph: (f = msg.getParagraph()) && proto.mintter.v2.Paragraph.toObject(includeInstance, f),
     image: (f = msg.getImage()) && proto.mintter.v2.Image.toObject(includeInstance, f)
   };
@@ -2968,6 +2976,10 @@ proto.mintter.v2.Block.deserializeBinaryFromReader = function(msg, reader) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
       msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addQuoters(value);
       break;
     case 3:
       var value = new proto.mintter.v2.Paragraph;
@@ -3015,6 +3027,13 @@ proto.mintter.v2.Block.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getQuotersList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      2,
+      f
+    );
+  }
   f = message.getParagraph();
   if (f != null) {
     writer.writeMessage(
@@ -3049,6 +3068,43 @@ proto.mintter.v2.Block.prototype.getId = function() {
  */
 proto.mintter.v2.Block.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * repeated string quoters = 2;
+ * @return {!Array<string>}
+ */
+proto.mintter.v2.Block.prototype.getQuotersList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 2));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.mintter.v2.Block} returns this
+ */
+proto.mintter.v2.Block.prototype.setQuotersList = function(value) {
+  return jspb.Message.setField(this, 2, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.mintter.v2.Block} returns this
+ */
+proto.mintter.v2.Block.prototype.addQuoters = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 2, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.mintter.v2.Block} returns this
+ */
+proto.mintter.v2.Block.prototype.clearQuotersList = function() {
+  return this.setQuotersList([]);
 };
 
 

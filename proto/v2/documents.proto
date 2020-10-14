@@ -189,10 +189,13 @@ message BlockRef {
 
 // Block is the main content element of the document.
 message Block {
-  // ID of the block that must be unique within its origin document.
+  // Required. ID of the block that must be unique within its origin document.
   string id = 1;
 
-  // Actual content of the block of different types.
+  // Output only. Sorted list of versions that quote this block.
+  repeated string quoters = 2;
+
+  // Required. Actual content of the block of different types.
   oneof content {
     Paragraph paragraph = 3;
 

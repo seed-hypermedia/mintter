@@ -1,6 +1,9 @@
 package document
 
 import (
+	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"mintter/backend/identity"
@@ -50,17 +53,96 @@ type versionedDoc struct {
 }
 
 type document struct {
+	documentMeta
+	RefList *refList
+	Blocks  map[string]block   `refmt:",omitempty"`
+	Sources map[string]cid.Cid `refmt:",omitempty"`
+}
+
+type documentMeta struct {
 	ID          cid.Cid
 	Title       string
 	Subtitle    string
 	Author      identity.ProfileID
 	Parent      cid.Cid `refmt:",omitempty"`
-	RefList     *refList
-	Blocks      map[string]block   `refmt:",omitempty"`
-	Sources     map[string]cid.Cid `refmt:",omitempty"`
 	CreateTime  time.Time
 	UpdateTime  time.Time
 	PublishTime time.Time
+}
+
+func (doc document) resolveBlock(ctx context.Context, store *store, ref fullBlockRef) (block, error) {
+	if ref.IsTransclusion {
+		src, err := store.Get(ctx, ref.Version)
+		if err != nil {
+			return block{}, err
+		}
+
+		blk, ok := src.Blocks[ref.BlockID]
+		if !ok {
+			return block{}, fmt.Errorf("no block with ID '%s' in the source doc blocks map", ref.BlockID)
+		}
+
+		return blk, nil
+	}
+
+	blk, ok := doc.Blocks[ref.MapKey]
+	if !ok {
+		return block{}, fmt.Errorf("no block with ID '%s' in the local blocks map", ref.BlockID)
+	}
+
+	return blk, nil
+}
+
+func (doc document) parseRefPointer(p string) (fullBlockRef, error) {
+	parts := strings.Split(p, "/")
+
+	if parts[0] != "#" {
+		return fullBlockRef{}, fmt.Errorf("invalid ref '%s': first segment must be '#'", p)
+	}
+
+	space := parts[1]
+
+	switch space {
+	case "blocks": // #/blocks/<block-id>
+		if len(parts) != 3 {
+			return fullBlockRef{}, fmt.Errorf("invalid ref pointer '%s': local pointers must follow this patter '#/blocks/<block-id>'", p)
+		}
+		key := parts[2]
+		blk, ok := doc.Blocks[key]
+		if !ok {
+			return fullBlockRef{}, fmt.Errorf("failed to resolve ref pointer '%s': no such key in the blocks map '%s'", p, key)
+		}
+
+		return fullBlockRef{
+			Version: cid.Undef,
+			BlockID: blk.ID,
+			MapKey:  key,
+		}, nil
+	case "sources": // #/sources/<version>/blocks/<block-id>
+		if len(parts) != 5 {
+			return fullBlockRef{}, fmt.Errorf("invalid ref pointer '%s': sources must follow this pattern '#/sources/<version>/blocks/<block-id>'", p)
+		}
+		key := parts[2]
+		srcid, ok := doc.Sources[key]
+		if !ok {
+			return fullBlockRef{}, fmt.Errorf("failed to resolve ref pointer '%s': no such key in the sources map '%s", p, key)
+		}
+
+		if parts[3] != "blocks" {
+			return fullBlockRef{}, fmt.Errorf("invalid ref '%s': can only resolve 'blocks' after 'sources'", p)
+		}
+
+		blkID := parts[4]
+
+		return fullBlockRef{
+			Version:        srcid,
+			BlockID:        blkID,
+			IsTransclusion: true,
+			MapKey:         key,
+		}, nil
+	default:
+		return fullBlockRef{}, fmt.Errorf("invalid ref '%s': space '%s' is unknown: must be either 'blocks' or 'sources'", p, space)
+	}
 }
 
 type refList struct {
@@ -68,8 +150,26 @@ type refList struct {
 	Refs      []blockRef
 }
 
-func (bl *refList) IsEmpty() bool {
-	return bl == nil || len(bl.Refs) == 0
+func (rl *refList) ForEachRef(fn func(ref blockRef) error) error {
+	if rl == nil {
+		return nil
+	}
+
+	for _, ref := range rl.Refs {
+		if err := fn(ref); err != nil {
+			return err
+		}
+
+		if err := ref.RefList.ForEachRef(fn); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (rl *refList) IsEmpty() bool {
+	return rl == nil || len(rl.Refs) == 0
 }
 
 type blockRef struct {
@@ -102,4 +202,19 @@ type styleRange struct {
 type permanode struct {
 	Random     []byte
 	CreateTime time.Time
+}
+
+type fullBlockRef struct {
+	Version        cid.Cid
+	BlockID        string
+	IsTransclusion bool
+	MapKey         string
+}
+
+func (fbr fullBlockRef) String() string {
+	if fbr.Version.Defined() {
+		return fbr.Version.String() + "/" + fbr.BlockID
+	}
+
+	return fbr.BlockID
 }
