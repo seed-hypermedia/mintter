@@ -35,7 +35,7 @@ func TestFlattenBlockRefList(t *testing.T) {
 		},
 	}
 
-	expected := []string{"block-1", "block-list-parent", "block-2", "block-list-child-1", "block-list-child-2"}
+	expected := []string{"block-1", "block-list-parent", "block-list-child-1", "block-list-child-2", "block-2"}
 	require.Equal(t, expected, flattenBlockRefs(l))
 }
 
@@ -340,10 +340,15 @@ func testDoc1(t *testing.T, docstore *store) document {
 	timestamp.Add(1 * time.Hour)
 
 	return document{
-		ID:       perma.Cid(),
-		Title:    "First Mintter document",
-		Subtitle: "This is the first mintter document",
-		Author:   prof.ID,
+		documentMeta: documentMeta{
+			ID:          perma.Cid(),
+			Title:       "First Mintter document",
+			Subtitle:    "This is the first mintter document",
+			Author:      prof.ID,
+			CreateTime:  timestamp,
+			UpdateTime:  timestamp,
+			PublishTime: timestamp,
+		},
 		RefList: &refList{
 			ListStyle: v2.BlockRefList_NONE,
 			Refs: []blockRef{
@@ -378,9 +383,6 @@ func testDoc1(t *testing.T, docstore *store) document {
 				Text: "I'm the second child.",
 			},
 		},
-		CreateTime:  timestamp,
-		UpdateTime:  timestamp,
-		PublishTime: timestamp,
 	}
 }
 
@@ -401,10 +403,15 @@ func testDoc2(t *testing.T, docstore *store, source cid.Cid) document {
 	timestamp.Add(1 * time.Hour)
 
 	return document{
-		ID:       perma.Cid(),
-		Title:    "Second Mintter document",
-		Subtitle: "This is where we reuse the block",
-		Author:   prof.ID,
+		documentMeta: documentMeta{
+			ID:          perma.Cid(),
+			Title:       "Second Mintter document",
+			Subtitle:    "This is where we reuse the block",
+			Author:      prof.ID,
+			CreateTime:  timestamp,
+			UpdateTime:  timestamp,
+			PublishTime: timestamp,
+		},
 		RefList: &refList{
 			ListStyle: v2.BlockRefList_NONE,
 			Refs: []blockRef{
@@ -430,9 +437,6 @@ func testDoc2(t *testing.T, docstore *store, source cid.Cid) document {
 		Sources: map[string]cid.Cid{
 			"src-1": source,
 		},
-		CreateTime:  timestamp,
-		UpdateTime:  timestamp,
-		PublishTime: timestamp,
 	}
 }
 

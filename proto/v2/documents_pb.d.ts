@@ -337,6 +337,11 @@ export class Block extends jspb.Message {
   getId(): string;
   setId(value: string): void;
 
+  getQuotersList(): Array<string>;
+  setQuotersList(value: Array<string>): void;
+  clearQuotersList(): void;
+  addQuoters(value: string, index?: number): void;
+
   getParagraph(): Paragraph | undefined;
   setParagraph(value?: Paragraph): void;
   hasParagraph(): boolean;
@@ -360,6 +365,7 @@ export class Block extends jspb.Message {
 export namespace Block {
   export type AsObject = {
     id: string,
+    quotersList: Array<string>,
     paragraph?: Paragraph.AsObject,
     image?: Image.AsObject,
   }

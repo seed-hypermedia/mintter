@@ -392,19 +392,10 @@ func flattenBlockRefs(l *v2.BlockRefList) []string {
 	}
 
 	var blocks []string
-	stack := []*v2.BlockRefList{l}
 
-	for len(stack) > 0 {
-		ll := stack[0]
-		stack = stack[1:]
-		for _, b := range ll.Refs {
-			if b.BlockRefList != nil {
-				stack = append(stack, b.BlockRefList)
-			}
-
-			// TODO: ignore transcluded blocks.
-			blocks = append(blocks, b.Ref)
-		}
+	for _, b := range l.Refs {
+		blocks = append(blocks, b.Ref)
+		blocks = append(blocks, flattenBlockRefs(b.BlockRefList)...)
 	}
 
 	return blocks
@@ -423,7 +414,7 @@ func resolveDocument(ctx context.Context, version cid.Cid, docStore *store) (*v2
 
 	blockMap := map[string]*v2.Block{}
 
-	listpb, err := resolveBlocks(ctx, doc.document, docStore, blockMap, doc.RefList)
+	listpb, err := resolveBlocks(ctx, doc, docStore, blockMap, doc.RefList)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -432,48 +423,29 @@ func resolveDocument(ctx context.Context, version cid.Cid, docStore *store) (*v2
 	return docpb, blockMap, nil
 }
 
-func resolveBlocks(ctx context.Context, doc document, docStore *store, blockMap map[string]*v2.Block, rl *refList) (*v2.BlockRefList, error) {
+func resolveBlocks(ctx context.Context, doc versionedDoc, docStore *store, blockMap map[string]*v2.Block, rl *refList) (*v2.BlockRefList, error) {
 	refListPb := &v2.BlockRefList{
 		Style: v2.BlockRefList_Style(rl.ListStyle),
 	}
 
 	for _, ref := range rl.Refs {
-		parts := strings.Split(ref.Pointer, "/")
-		if parts[0] != "#" {
-			return nil, fmt.Errorf("invalid ref '%s': first segment must be '#'", ref.Pointer)
+		parsed, err := doc.parseRefPointer(ref.Pointer)
+		if err != nil {
+			return nil, err
 		}
 
-		space := parts[1]
-
-		var blk block
-		var blockRef string
-
-		switch space {
-		case "blocks":
-			key := parts[2]
-			blk = doc.Blocks[key]
-			blockRef = blk.ID
-		case "sources":
-			key := parts[2]
-			srcid := doc.Sources[key]
-
-			source, err := docStore.Get(ctx, srcid)
-			if err != nil {
-				return nil, fmt.Errorf("failed to resolve source %s", srcid)
-			}
-
-			if parts[3] != "blocks" {
-				return nil, fmt.Errorf("invalid ref '%s': can only resolve 'blocks' after 'sources'", ref.Pointer)
-			}
-
-			blk = source.Blocks[parts[4]]
-
-			blockRef = srcid.String() + "/" + blk.ID
-		default:
-			return nil, fmt.Errorf("invalid ref '%s': space '%s' is unknown: must be either 'blocks' or 'sources'", ref.Pointer, space)
+		blockRef := parsed.String()
+		blk, err := doc.resolveBlock(ctx, docStore, parsed)
+		if err != nil {
+			return nil, err
 		}
 
 		blockpb := blockToProto(blk)
+		quoters, err := docStore.GetBlockQuoters(ctx, doc.Version, parsed.BlockID)
+		if err != nil {
+			return nil, err
+		}
+		blockpb.Quoters = quoters
 		blockMap[blockRef] = blockpb
 
 		refpb := &v2.BlockRef{
