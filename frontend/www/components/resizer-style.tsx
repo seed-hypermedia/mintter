@@ -1,6 +1,6 @@
 export default function ResizerStyle() {
   return (
-    <style jsx="true">{`
+    <style jsx>{`
       .Resizer {
         background: #000;
         opacity: 0.2;

@@ -56,7 +56,7 @@ const createReducer = sidepanel => (state, action) => {
   return state
 }
 
-function useTransclusionActions({push, sidepanel, initialState = []}) {
+function useTransclusionActions({sidepanel, initialState = []}) {
   const {current: initialSidePanelState} = React.useRef(initialState)
   return React.useReducer(createReducer(sidepanel), initialSidePanelState)
 }
