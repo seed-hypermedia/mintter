@@ -145,6 +145,7 @@ export default function Editor(): JSX.Element {
   return (
     <>
       <Seo title="Editor" />
+      <DebugValue value={state} />
       <ResizerStyle />
       <Page>
         <SplitPane
@@ -245,8 +246,6 @@ export default function Editor(): JSX.Element {
                 theme={theme}
               />
             </MainColumn>
-
-            <DebugValue value={state} className="absolute right-0 top-0 m-6" />
           </div>
           {isSidePanelVisible ? (
             <div

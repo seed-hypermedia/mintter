@@ -53,6 +53,7 @@ function moveToNextBlock(editor, path) {
   let blockPath = Path.parent(path)
   let nextBlockPath = Path.next(blockPath)
 
+  console.log('MOVE TO NEXT BLOCK!')
   Transforms.wrapNodes(
     editor,
     {

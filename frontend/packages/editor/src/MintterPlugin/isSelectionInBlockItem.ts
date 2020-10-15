@@ -34,7 +34,6 @@ export const isSelectionInBlockItem = (editor: Editor, options?: any) => {
 }
 
 export const isSelectionInTransclusion = (editor: Editor, options?: any) => {
-  console.log('isSelectionInTransclusion!')
   const {transclusion} = options
 
   if (

@@ -15,7 +15,7 @@ export const PARAGRAPH_OPTIONS: Record<
     component: Paragraph,
     type: ELEMENT_PARAGRAPH,
     rootProps: {
-      className: 'px-2 py-1 text-body text-xl leading-loose',
+      className: 'p-1 text-body text-xl leading-loose',
       as: 'p',
     },
   },

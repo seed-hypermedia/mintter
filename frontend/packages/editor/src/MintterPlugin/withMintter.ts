@@ -122,7 +122,7 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
                 if (previousEntry) {
                   const [prevNode, prevPath] = previousEntry
                   if (prevNode.type === ELEMENT_TRANSCLUSION) {
-                    console.log('PREVIOUS ES TRANSCLUSION')
+                    console.log('PREVIOUS IS TRANSCLUSION')
                     Transforms.select(editor, prevPath)
                     return
                   }
