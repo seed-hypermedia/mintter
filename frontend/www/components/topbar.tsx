@@ -54,8 +54,8 @@ export default function LibraryHeader(props) {
       </span>
       <div>
         <div
-          className={`my-0 mx-auto ${css`
-            max-width: 64ch;
+          className={`my-0 mx-16 ${css`
+            max-width: 50ch;
             width: 100%;
           `}`}
         >

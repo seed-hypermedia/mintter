@@ -12,8 +12,8 @@ export default function Container({
 }: ContainerProps) {
   return (
     <div
-      className={`w-full mx-auto p-4 ${css`
-        max-width: 64ch;
+      className={`w-full mx-16 p-4 ${css`
+        max-width: 50ch;
       `} ${className}`}
       {...props}
     >
