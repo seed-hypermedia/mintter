@@ -45,6 +45,7 @@ import {useTheme} from 'shared/themeContext'
 import {BlockRefList} from '@mintter/proto/v2/documents_pb'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
+import {InteractionPanelObject} from 'components/interactionPanelObject'
 
 interface InteractionPanelAction {
   type: string
@@ -307,14 +308,5 @@ export default function Editor(): JSX.Element {
         </SplitPane>
       </Page>
     </>
-  )
-}
-
-function InteractionPanelObject({id}) {
-  const foo = true
-  return (
-    <div className="p-4 border rounded m-4 break-words whitespace-pre-wrap">
-      {id}
-    </div>
   )
 }
