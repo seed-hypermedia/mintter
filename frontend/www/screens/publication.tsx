@@ -79,14 +79,14 @@ export default function Publication(): JSX.Element {
 
   const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
 
-  const {createDraft, getAuthor} = useMintter()
+  const {createDraft} = useMintter()
 
   const {status, error, data, isFetching, failureCount} = useDocument(version)
   const {state, setValue} = useEditorValue({
     document: data,
   })
   const {title, blocks, subtitle, author: pubAuthor} = state
-  const author = getAuthor(pubAuthor)
+  const {data: author} = useProfile(pubAuthor)
 
   const {drafts} = useDraftsSelection()
   const {createTransclusion} = useTransclusion({editor})

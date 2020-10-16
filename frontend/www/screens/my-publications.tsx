@@ -2,7 +2,6 @@ import Seo from 'components/seo'
 import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
 import DocumentList from 'components/documentList'
 import {useMintter, useMyPublications} from 'shared/mintterContext'
-import {useProfileContext} from 'shared/profileContext'
 import {useMemo} from 'react'
 import {useHistory} from 'react-router-dom'
 import {ErrorMessage} from 'components/errorMessage'
@@ -11,7 +10,6 @@ export default function MyPublications() {
   const history = useHistory()
   const {createDraft} = useMintter()
   const {status, error, data} = useMyPublications()
-  const {profile} = useProfileContext()
 
   async function handleCreateDraft() {
     const n = await createDraft()

@@ -49,6 +49,25 @@ interface ProfileContextValue {
   >
 }
 
+export function useProfile(accountId, options = {}) {
+  let queryKey = ['Profile']
+
+  if (accountId) {
+    queryKey.push(accountId)
+  }
+
+  const profileQuery = useQuery(queryKey, apiClient.getProfile, options)
+
+  const data = React.useMemo(() => profileQuery.data?.toObject?.(), [
+    profileQuery.data,
+  ])
+
+  return {
+    ...profileQuery,
+    data,
+  }
+}
+
 // TODO: (horacio): Fixme types ☝
 export const ProfileContext = createContext<ProfileContextValue>(null)
 
