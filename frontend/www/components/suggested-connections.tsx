@@ -1,5 +1,5 @@
 import React from 'react'
-import {useProfile} from 'shared/profileContext'
+import {useProfileContext} from 'shared/profileContext'
 import {ErrorMessage} from 'components/errorMessage'
 import {css} from 'emotion'
 import {AuthorLabel} from './author-label'
@@ -8,7 +8,7 @@ import {useToasts} from 'react-toast-notifications'
 import {Profile, ConnectionStatus} from '@mintter/proto/mintter_pb'
 
 export function SuggestedConnections() {
-  const {connectToPeerById, listSuggestedConnections} = useProfile()
+  const {connectToPeerById, listSuggestedConnections} = useProfileContext()
   const {addToast, updateToast, removeToast} = useToasts()
 
   async function handlePeerConnection(peer) {

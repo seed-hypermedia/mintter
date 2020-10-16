@@ -54,7 +54,7 @@ export const usersClient = new MintterPromiseClient(path)
 
 // ============================
 
-async function listDocuments(
+export async function listDocuments(
   key,
   publishingState = PublishingState.PUBLISHED,
   page = 0,

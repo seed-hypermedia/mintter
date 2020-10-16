@@ -6,7 +6,7 @@ import Input from 'components/input'
 import Textarea from 'components/textarea'
 import {ProfileAddress} from 'components/profile-address'
 import {ErrorMessage, ErrorInterface} from 'components/errorMessage'
-import {useProfile} from 'shared/profileContext'
+import {useProfile, useProfileContext} from 'shared/profileContext'
 import Container from 'components/container'
 import {useToasts} from 'react-toast-notifications'
 import {css} from 'emotion'
@@ -14,7 +14,8 @@ import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 
 export default function Settings() {
-  const {profile, setProfile} = useProfile()
+  const {setProfile} = useProfileContext()
+  const {data: profile} = useProfile()
   const {addToast, updateToast} = useToasts()
   const [submitError, setSubmitError] = React.useState<ErrorInterface>()
   const {register, handleSubmit, errors, formState, setValue} = useForm({
@@ -29,8 +30,7 @@ export default function Settings() {
 
   useEffect(() => {
     if (profile) {
-      const values = profile.toObject()
-      const formData = Object.keys(values).map(v => ({[v]: values[v]}))
+      const formData = Object.keys(profile).map(v => ({[v]: profile[v]}))
       setValue(formData)
     }
   }, [profile])

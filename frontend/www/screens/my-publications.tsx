@@ -1,17 +1,15 @@
 import Seo from 'components/seo'
 import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
 import DocumentList from 'components/documentList'
-import {useMintter} from 'shared/mintterContext'
-import {useProfile} from 'shared/profileContext'
+import {useMintter, useMyPublications} from 'shared/mintterContext'
 import {useMemo} from 'react'
 import {useHistory} from 'react-router-dom'
 import {ErrorMessage} from 'components/errorMessage'
 
 export default function MyPublications() {
   const history = useHistory()
-  const {createDraft, listPublications} = useMintter()
-  const {status, error, resolvedData} = listPublications()
-  const {profile} = useProfile()
+  const {createDraft} = useMintter()
+  const {status, error, data} = useMyPublications()
 
   async function handleCreateDraft() {
     const n = await createDraft()
@@ -26,18 +24,10 @@ export default function MyPublications() {
     return <ErrorMessage error={error} />
   }
 
-  const list = useMemo(
-    () =>
-      resolvedData
-        ?.toObject()
-        .documentsList.filter(p => p.author === profile.toObject().accountId),
-    [resolvedData],
-  )
-
   return (
     <>
       <Seo title="My Publications" />
-      {status === 'success' && list.length === 0 && (
+      {status === 'success' && data.length === 0 && (
         <>
           <hr className="border-t-2 border-muted border-solid my-8" />
           <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
@@ -54,7 +44,7 @@ export default function MyPublications() {
           </div>
         </>
       )}
-      <DocumentList status={status} error={error} data={list} />
+      <DocumentList status={status} error={error} data={data} />
     </>
   )
 }

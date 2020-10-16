@@ -1,4 +1,4 @@
-import {createContext, useContext, useMemo, useCallback} from 'react'
+import React from 'react'
 import {ReactEditor} from 'slate-react'
 import * as apiClient from './mintterClient'
 import {SlateBlock} from '@mintter/editor'
@@ -29,6 +29,7 @@ import {
   UpdateDraftResponse,
   PublishDraftResponse,
 } from '@mintter/proto/v2/documents_pb'
+import {useProfile} from './profileContext'
 
 type QueryParam<T> = T | T[]
 
@@ -47,15 +48,7 @@ export interface SetDocumentRequest {
 
 // TODO: (Horacio) Fixme Types
 export interface MintterClient {
-  listPublications: (
-    page?: number,
-  ) => PaginatedQueryResult<ListDocumentsResponse>
-  listDrafts: (page?: number) => PaginatedQueryResult<ListDocumentsResponse>
   createDraft: () => Document
-  getDocument: (
-    version: QueryParam<string>,
-    options?: QueryOptions<GetDocumentResponse>,
-  ) => QueryResult<GetDocumentResponse>
   setDocument: (editor: ReactEditor) => (input: SetDocumentRequest) => void
   publishDraft: (
     version: string,
@@ -65,54 +58,121 @@ export interface MintterClient {
   getAuthor: (authorId?: string) => QueryResult<Profile>
 }
 
-const MintterClientContext = createContext<MintterClient>(null)
+const MintterClientContext = React.createContext<MintterClient>(null)
 
-export function MintterProvider(props) {
-  const listPublications = useCallback((page = 0): PaginatedQueryResult<
-    ListDocumentsResponse
-  > => {
-    return usePaginatedQuery(
-      ['ListPublications', PublishingState.PUBLISHED, page],
-      apiClient.listPublications,
-      {
-        refetchOnWindowFocus: true,
-        refetchInterval: 5000,
-      },
-    )
-  }, [])
+export const useDocuments = (options = {}) => {}
 
-  function listDrafts(page = 0): PaginatedQueryResult<ListDocumentsResponse> {
-    return usePaginatedQuery(['ListDrafts', page], apiClient.listDrafts, {
-      refetchInterval: 5000,
-    })
+export function usePublications(options = {}) {
+  const docsQuery = useQuery('Documents', apiClient.listDocuments, {
+    ...options,
+    refetchOnWindowFocus: true,
+    refetchInterval: 10000,
+  })
+
+  const data = React.useMemo(() => docsQuery.data?.toObject().documentsList, [
+    docsQuery.data,
+  ])
+
+  return {
+    ...docsQuery,
+    data,
+  }
+}
+
+export function useMyPublications(options = {}) {
+  const docsQuery = usePublications(options)
+  const {data: profile} = useProfile()
+
+  const userId = React.useMemo(() => profile?.accountId, [profile])
+
+  const data = React.useMemo(
+    () =>
+      docsQuery.data?.filter(doc => {
+        return doc.author === userId
+      }),
+    [docsQuery.data, userId],
+  )
+
+  return {
+    ...docsQuery,
+    data,
+  }
+}
+
+export function useOthersPublications(options = {}) {
+  const docsQuery = usePublications(options)
+  const {data: profile} = useProfile()
+
+  const userId = React.useMemo(() => profile?.accountId, [profile])
+
+  const data = React.useMemo(
+    () =>
+      docsQuery.data?.filter(doc => {
+        return doc.author !== userId
+      }),
+    [docsQuery.data, userId],
+  )
+
+  return {
+    ...docsQuery,
+    data,
+  }
+}
+
+export function useDrafts(options = {}) {
+  const docsQuery = useQuery(
+    'Drafts',
+    () => apiClient.listDocuments('Drafts', PublishingState.DRAFT),
+    {
+      ...options,
+      refetchOnWindowFocus: true,
+      refetchInterval: 10000,
+    },
+  )
+
+  const data = React.useMemo(() => docsQuery.data?.toObject().documentsList, [
+    docsQuery.data,
+  ])
+
+  return {
+    ...docsQuery,
+    data,
+  }
+}
+
+export function useDocument(version, options = {}) {
+  if (!version) {
+    throw new Error(`useDocument: parameter "version" is required`)
   }
 
-  const createDraft = useCallback(
+  if (Array.isArray(version)) {
+    throw new Error(
+      `Impossible render: You are trying to access a document passing ${
+        version.length
+      } document versions => ${version.map(q => q).join(', ')}`,
+    )
+  }
+
+  const docQuery = useQuery(['Document', version], apiClient.getDocument, {
+    refetchOnWindowFocus: false,
+    ...options,
+  })
+
+  const data = React.useMemo(() => docQuery.data?.toObject?.(), [docQuery.data])
+
+  return {
+    ...docQuery,
+    data,
+  }
+}
+
+export function MintterProvider(props) {
+  const createDraft = React.useCallback(
     () => apiClient.createDraft().catch(err => console.error(err)),
     [],
   )
 
-  const getDocument = useCallback((version, options) => {
-    // type guard on version
-    if (!version) {
-      throw new Error(`getDocument: parameter "version" is required`)
-    }
-
-    if (Array.isArray(version)) {
-      throw new Error(
-        `Impossible render: You are trying to access a document passing ${
-          version.length
-        } document versions => ${version.map(q => q).join(', ')}`,
-      )
-    }
-
-    return useQuery(['Document', version], apiClient.getDocument, {
-      refetchOnWindowFocus: false,
-      ...options,
-    })
-  }, [])
-
-  const setDocument = useCallback(apiClient.setDocument, [])
+  const setDocument = React.useCallback(apiClient.setDocument, [])
 
   const [deleteDocument] = useMutation(apiClient.deleteDocument, {
     onSuccess: p => {
@@ -122,16 +182,12 @@ export function MintterProvider(props) {
 
   const [publishDraft] = useMutation(apiClient.publishDraft)
 
-  const getAuthor = useCallback(
+  const getAuthor = React.useCallback(
     (authorId?: string) => useQuery(['Author', authorId], apiClient.getProfile),
     [],
   )
-
   const value = {
-    listPublications,
-    listDrafts,
     createDraft,
-    getDocument,
     setDocument,
     publishDraft,
     deleteDocument,
@@ -142,7 +198,7 @@ export function MintterProvider(props) {
 }
 
 export function useMintter() {
-  const context = useContext(MintterClientContext)
+  const context = React.useContext(MintterClientContext)
 
   if (context === undefined) {
     throw new Error(`useMintter must be used within a MintterProvider`)

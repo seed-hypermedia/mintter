@@ -3,7 +3,6 @@ import {mergeRefs} from '../../mergeRefs'
 import React from 'react'
 import {BlockControls} from '../../components/blockControls'
 import {useBlockTools} from './blockToolsContext'
-import {ReactEditor, useEditor} from 'slate-react'
 
 export function DragDrop({element, componentRef, children}: any) {
   const blockRef = React.useRef<HTMLDivElement>(null)
