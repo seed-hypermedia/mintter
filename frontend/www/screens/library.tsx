@@ -4,7 +4,7 @@ import {Switch, useRouteMatch, Redirect} from 'react-router-dom'
 import {PrivateRoute} from 'components/routes'
 import {NavItem} from 'components/nav'
 import {useHistory} from 'react-router-dom'
-import {useMintter} from 'shared/mintterContext'
+import {useMintter, useDocuments} from 'shared/mintterContext'
 import Container from 'components/container'
 import {useProfile} from 'shared/profileContext'
 import {Link} from 'components/link'
@@ -13,9 +13,13 @@ import {SuggestedConnections} from 'components/suggested-connections'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 
-const Publications = React.lazy(() => import('./publications'))
-const MyPublications = React.lazy(() => import('./my-publications'))
-const Drafts = React.lazy(() => import('./drafts'))
+const Publications = React.lazy(() =>
+  import(/* webpackPrefetch: true */ './publications'),
+)
+const MyPublications = React.lazy(() =>
+  import(/* webpackPrefetch: true */ './my-publications'),
+)
+const Drafts = React.lazy(() => import(/* webpackPrefetch: true */ './drafts'))
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library(props) {
@@ -87,17 +91,15 @@ export default function Library(props) {
 }
 
 function ProfileInfo() {
-  const {profile} = useProfile()
-
-  const values = profile?.toObject()
+  const {data: profile} = useProfile()
 
   return (
-    values && (
+    profile && (
       <div className="text-left px-4">
         <h3 className="font-semibold text-2xl text-heading">
-          {values.username}
+          {profile.username}
         </h3>
-        <p className="text-body text-sm mt-2">{values.bio}</p>
+        <p className="text-body text-sm mt-2">{profile.bio}</p>
         <Link
           to="/settings"
           className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline inline-block"

@@ -17,7 +17,6 @@ export const renderElementReadOnly = (options?: any) => {
 function RenderElement(props) {
   const selected = useSelected()
   const focus = useFocused()
-  console.log({props})
   const renderElement = React.useCallback(({attributes, children, element}) => {
     switch (element.type) {
       case ELEMENT_PARAGRAPH:

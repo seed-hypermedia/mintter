@@ -10,7 +10,7 @@ import {useEffect} from 'react'
 
 export default function WelcomeIntro() {
   const history = useHistory()
-  const {profile} = useProfile()
+  const {data: profile} = useProfile()
   const {dispatch} = useWelcome()
 
   useEffect(() => {

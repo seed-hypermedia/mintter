@@ -49,6 +49,25 @@ interface ProfileContextValue {
   >
 }
 
+export function useProfile(accountId?: string, options = {}) {
+  let queryKey = ['Profile']
+
+  if (accountId) {
+    queryKey.push(accountId)
+  }
+
+  const profileQuery = useQuery(queryKey, apiClient.getProfile, options)
+
+  const data = useMemo(() => profileQuery.data?.toObject?.(), [
+    profileQuery.data,
+  ])
+
+  return {
+    ...profileQuery,
+    data,
+  }
+}
+
 // TODO: (horacio): Fixme types ☝
 export const ProfileContext = createContext<ProfileContextValue>(null)
 
@@ -149,7 +168,7 @@ export function ProfileProvider(props) {
   throw new Error(`Unhandled status: ${status}`)
 }
 
-export function useProfile() {
+export function useProfileContext() {
   const context = useContext(ProfileContext)
   if (context === undefined) {
     throw new Error(`"useProfile" must be used within a "ProfileProvider"`)

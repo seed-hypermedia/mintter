@@ -16,13 +16,13 @@ import {useWelcome} from 'shared/welcomeProvider'
 import {useFocus} from 'shared/hooks'
 import {usersClient, MintterPromiseClient} from 'shared/V1mintterClient'
 import {useMintter} from 'shared/mintterContext'
-import {useProfile} from 'shared/profileContext'
+import {useProfileContext} from 'shared/profileContext'
 import {useToasts} from 'react-toast-notifications'
 
 // TODO: (horacio): refactor rpc to not have it here
 export default function SecurityPack() {
   const [error, setError] = useState<{code: number; message: string}>()
-  const {genSeed, createProfile} = useProfile()
+  const {genSeed, createProfile} = useProfileContext()
   const [mnemonic, setMnemonic] = useState<string[]>([])
   const history = useHistory()
   const {dispatch} = useWelcome()

@@ -27,8 +27,7 @@ import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
 import {css} from 'emotion'
 import {useParams, useHistory} from 'react-router-dom'
-import {markdownToSlate} from 'shared/markdownToSlate'
-import {useMintter} from 'shared/mintterContext'
+import {useDocument, useDrafts, useMintter} from 'shared/mintterContext'
 import {useProfile} from 'shared/profileContext'
 import Layout from 'components/layout'
 import {FullPageSpinner} from 'components/fullPageSpinner'
@@ -47,17 +46,13 @@ import {MainColumn} from 'components/main-column'
 
 function useDraftsSelection() {
   const [drafts, setOptions] = React.useState([])
-  const {listDrafts} = useMintter()
-  const {status, resolvedData} = listDrafts()
+  const {status, data} = useDrafts()
 
   React.useEffect(() => {
     if (status === 'success') {
-      setOptions([
-        ...resolvedData.toObject().documentsList,
-        {version: undefined, title: 'New Draft'},
-      ])
+      setOptions([...data, {version: undefined, title: 'New Draft'}])
     }
-  }, [status, resolvedData])
+  }, [status, data])
 
   return {
     drafts,
@@ -78,14 +73,14 @@ export default function Publication(): JSX.Element {
 
   const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
 
-  const {getDocument, getAuthor, createDraft} = useMintter()
+  const {createDraft} = useMintter()
 
-  const {status, error, data, isFetching, failureCount} = getDocument(version)
+  const {status, error, data, isFetching, failureCount} = useDocument(version)
   const {state, setValue} = useEditorValue({
     document: data,
   })
   const {title, blocks, subtitle, author: pubAuthor} = state
-  const author = getAuthor(pubAuthor)
+  const {data: author} = useProfile(pubAuthor)
 
   const {drafts} = useDraftsSelection()
   const {createTransclusion} = useTransclusion({editor})

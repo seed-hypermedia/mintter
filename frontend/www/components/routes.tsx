@@ -25,7 +25,7 @@ export function ProgressRoute({children, ...rest}) {
 }
 
 export function PrivateRoute({children, ...rest}) {
-  const {profile} = useProfile()
+  const {data: profile} = useProfile()
   // debugger
   return (
     <Route

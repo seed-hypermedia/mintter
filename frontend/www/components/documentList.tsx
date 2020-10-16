@@ -62,9 +62,7 @@ function ListItem({item, index = 0, onDraftDelete}: ItemProps) {
   const {version, title, subtitle, author: itemAuthor, createTime} = item
   const theTitle = title ? title : 'Untitled Document'
 
-  const {getProfile} = useProfile()
-
-  const author = getProfile(itemAuthor)
+  const {data: author} = useProfile(itemAuthor)
 
   const isDraft = useMemo(() => location.pathname === '/library/drafts', [
     location.pathname,
