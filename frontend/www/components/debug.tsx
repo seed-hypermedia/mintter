@@ -1,8 +1,10 @@
+import React from 'react'
+import {SlateBlock} from '@mintter/editor'
 import {useState} from 'react'
 
 function simplifyBlocks(blocks) {
   return blocks.map(block => {
-    let simpleBlock = {}
+    let simpleBlock: Partial<SlateBlock> = {}
 
     if (block.type) {
       simpleBlock.type = block.type

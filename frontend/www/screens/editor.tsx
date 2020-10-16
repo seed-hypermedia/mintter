@@ -49,7 +49,7 @@ import {MainColumn} from 'components/main-column'
 
 interface InteractionPanelAction {
   type: string
-  payload: string
+  payload?: string
 }
 
 interface InteractionPanelState {
