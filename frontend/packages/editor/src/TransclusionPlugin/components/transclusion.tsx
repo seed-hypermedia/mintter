@@ -7,13 +7,13 @@ const Transclusion = (
 ) => {
   function handlePush(e) {
     e.preventDefault()
-    rest.dispatch?.({type: 'open_transclusion', payload: element.id})
+    rest.dispatch?.({type: 'add_object', payload: element.id})
   }
 
   return (
     <DragDrop attributes={attributes} element={element} componentRef={ref}>
       <div
-        className={`pl-4 pr-0 relative rounded my-1 outline-none ${
+        className={`pr-0 relative rounded my-1 outline-none ${
           className ? className : ''
         }`}
       >
