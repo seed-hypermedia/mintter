@@ -9,8 +9,6 @@ interface AuthorLabelProps {
 }
 
 export function AuthorLabel({author}: AuthorLabelProps) {
-  console.log('AuthorLabel -> author', author)
-
   if (!author) {
     return <span>...</span>
   }

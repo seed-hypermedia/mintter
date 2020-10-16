@@ -2,14 +2,14 @@ import {useHistory} from 'react-router-dom'
 import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
 import DocumentList from 'components/documentList'
 import {useMintter, useOthersPublications} from 'shared/mintterContext'
-import {useProfileContext} from 'shared/profileContext'
+import {useProfile} from 'shared/profileContext'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {useMemo} from 'react'
 import Seo from 'components/seo'
 import {ErrorMessage} from 'components/errorMessage'
 
 export default function Publications() {
-  const {profile} = useProfileContext()
+  const {data: profile} = useProfile()
   const history = useHistory()
   const {createDraft} = useMintter()
 

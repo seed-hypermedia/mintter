@@ -29,7 +29,7 @@ import {
   UpdateDraftResponse,
   PublishDraftResponse,
 } from '@mintter/proto/v2/documents_pb'
-import {useProfileContext} from './profileContext'
+import {useProfile} from './profileContext'
 
 type QueryParam<T> = T | T[]
 
@@ -81,9 +81,9 @@ export function usePublications(options = {}) {
 
 export function useMyPublications(options = {}) {
   const docsQuery = usePublications(options)
-  const {profile} = useProfileContext()
+  const {data: profile} = useProfile()
 
-  const userId = React.useMemo(() => profile.toObject().accountId, [profile])
+  const userId = React.useMemo(() => profile?.accountId, [profile])
 
   const data = React.useMemo(
     () =>
@@ -101,9 +101,9 @@ export function useMyPublications(options = {}) {
 
 export function useOthersPublications(options = {}) {
   const docsQuery = usePublications(options)
-  const {profile} = useProfileContext()
+  const {profile} = useProfile()
 
-  const userId = React.useMemo(() => profile.toObject().accountId, [profile])
+  const userId = React.useMemo(() => profile?.accountId, [profile])
 
   const data = React.useMemo(
     () =>
