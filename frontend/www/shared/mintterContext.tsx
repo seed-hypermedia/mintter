@@ -1,4 +1,4 @@
-import {createContext, useContext, useMemo, useCallback} from 'react'
+import React from 'react'
 import {ReactEditor} from 'slate-react'
 import * as apiClient from './mintterClient'
 import {SlateBlock} from '@mintter/editor'
@@ -62,7 +62,7 @@ export interface MintterClient {
   getAuthor: (authorId?: string) => QueryResult<Profile>
 }
 
-const MintterClientContext = createContext<MintterClient>(null)
+const MintterClientContext = React.createContext<MintterClient>(null)
 
 export const useDocuments = (options = {}) => {}
 
@@ -89,10 +89,12 @@ export function useMyPublications(options = {}) {
 
   const userId = React.useMemo(() => profile.toObject().accountId, [profile])
 
-  const data = React.useMemo(() =>
-    docsQuery.data?.filter(doc => {
-      return doc.author === userId
-    }),
+  const data = React.useMemo(
+    () =>
+      docsQuery.data?.filter(doc => {
+        return doc.author === userId
+      }),
+    [docsQuery.data, userId],
   )
 
   return {
@@ -107,10 +109,12 @@ export function useOthersPublications(options = {}) {
 
   const userId = React.useMemo(() => profile.toObject().accountId, [profile])
 
-  const data = React.useMemo(() =>
-    docsQuery.data.filter(doc => {
-      return doc.author !== userId
-    }),
+  const data = React.useMemo(
+    () =>
+      docsQuery.data?.filter(doc => {
+        return doc.author !== userId
+      }),
+    [docsQuery.data, userId],
   )
 
   return {
@@ -140,33 +144,59 @@ export function useDrafts(options = {}) {
   }
 }
 
+export function useDocument(version, options = {}) {
+  if (!version) {
+    throw new Error(`useDocument: parameter "version" is required`)
+  }
+
+  if (Array.isArray(version)) {
+    throw new Error(
+      `Impossible render: You are trying to access a document passing ${
+        version.length
+      } document versions => ${version.map(q => q).join(', ')}`,
+    )
+  }
+
+  const docQuery = useQuery(['Document', version], apiClient.getDocument, {
+    refetchOnWindowFocus: false,
+    ...options,
+  })
+
+  const data = React.useMemo(() => docQuery.data?.toObject?.(), [docQuery.data])
+
+  return {
+    ...docQuery,
+    data,
+  }
+}
+
+export function useAuthor(authorId, options = {}) {
+  let key = ['Author']
+  if (authorId) {
+    key.push(authorId)
+  }
+
+  const authorQuery = useQuery(key, apiClient.getProfile)
+
+  const data = React.useMemo(() => authorQuery.data?.toObject(), [
+    authorQuery.data,
+  ])
+
+  return {
+    ...authorQuery,
+    data,
+  }
+}
+
 export function MintterProvider(props) {
-  const createDraft = useCallback(
+  const createDraft = React.useCallback(
     () => apiClient.createDraft().catch(err => console.error(err)),
     [],
   )
 
-  const getDocument = useCallback((version, options) => {
-    // type guard on version
-    if (!version) {
-      throw new Error(`getDocument: parameter "version" is required`)
-    }
+  const getDocument = React.useCallback((version, options) => {}, [])
 
-    if (Array.isArray(version)) {
-      throw new Error(
-        `Impossible render: You are trying to access a document passing ${
-          version.length
-        } document versions => ${version.map(q => q).join(', ')}`,
-      )
-    }
-
-    return useQuery(['Document', version], apiClient.getDocument, {
-      refetchOnWindowFocus: false,
-      ...options,
-    })
-  }, [])
-
-  const setDocument = useCallback(apiClient.setDocument, [])
+  const setDocument = React.useCallback(apiClient.setDocument, [])
 
   const [deleteDocument] = useMutation(apiClient.deleteDocument, {
     onSuccess: p => {
@@ -176,7 +206,7 @@ export function MintterProvider(props) {
 
   const [publishDraft] = useMutation(apiClient.publishDraft)
 
-  const getAuthor = useCallback(
+  const getAuthor = React.useCallback(
     (authorId?: string) => useQuery(['Author', authorId], apiClient.getProfile),
     [],
   )
@@ -194,7 +224,7 @@ export function MintterProvider(props) {
 }
 
 export function useMintter() {
-  const context = useContext(MintterClientContext)
+  const context = React.useContext(MintterClientContext)
 
   if (context === undefined) {
     throw new Error(`useMintter must be used within a MintterProvider`)

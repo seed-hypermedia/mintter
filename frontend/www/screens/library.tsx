@@ -13,9 +13,13 @@ import {SuggestedConnections} from 'components/suggested-connections'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 
-const Publications = React.lazy(() => import('./publications'))
-const MyPublications = React.lazy(() => import('./my-publications'))
-const Drafts = React.lazy(() => import('./drafts'))
+const Publications = React.lazy(() =>
+  import(/* webpackPrefetch: true */ './publications'),
+)
+const MyPublications = React.lazy(() =>
+  import(/* webpackPrefetch: true */ './my-publications'),
+)
+const Drafts = React.lazy(() => import(/* webpackPrefetch: true */ './drafts'))
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library(props) {

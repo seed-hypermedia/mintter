@@ -1,7 +1,7 @@
 import {useHistory} from 'react-router-dom'
 import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
 import DocumentList from 'components/documentList'
-import {useMintter, usePublications} from 'shared/mintterContext'
+import {useMintter, useOthersPublications} from 'shared/mintterContext'
 import {useProfile} from 'shared/profileContext'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {useMemo} from 'react'
@@ -13,7 +13,7 @@ export default function Publications() {
   const history = useHistory()
   const {createDraft} = useMintter()
 
-  const {status, error, data} = usePublications()
+  const {status, error, data} = useOthersPublications()
 
   async function handleCreateDraft() {
     const n = await createDraft()

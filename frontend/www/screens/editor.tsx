@@ -36,7 +36,7 @@ import Textarea from 'components/textarea'
 import {Document} from '@mintter/proto/v2/documents_pb'
 import {markdownToSlate} from 'shared/markdownToSlate'
 import {useDebounce} from 'shared/hooks'
-import {useMintter} from 'shared/mintterContext'
+import {useDocument, useMintter} from 'shared/mintterContext'
 import {useParams, useHistory} from 'react-router-dom'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
@@ -129,9 +129,9 @@ export default function Editor(): JSX.Element {
   const subtitleRef = React.useRef(null)
   const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
 
-  const {getDocument, setDocument, publishDraft, listDrafts} = useMintter()
+  const {setDocument, publishDraft} = useMintter()
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])
-  const {status, error, data} = getDocument(version, {
+  const {status, error, data} = useDocument(version, {
     onSuccess: () => {
       setReadyToAutosave(true)
     },
@@ -144,7 +144,7 @@ export default function Editor(): JSX.Element {
 
   const [autosaveDraft] = useMutation(
     async state => {
-      const {document} = data.toObject()
+      const {document} = data
       const {id, version, author} = document
       saveDocument({document, state})
     },

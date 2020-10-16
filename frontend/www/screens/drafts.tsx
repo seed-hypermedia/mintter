@@ -7,7 +7,7 @@ import {useDrafts, useMintter} from 'shared/mintterContext'
 export default function Drafts() {
   const router = useHistory()
 
-  const {createDraft, listDrafts, deleteDocument} = useMintter()
+  const {createDraft, deleteDocument} = useMintter()
 
   const {status, error, data} = useDrafts()
 
