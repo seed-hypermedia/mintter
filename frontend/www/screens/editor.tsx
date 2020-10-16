@@ -47,18 +47,56 @@ import {BlockRefList} from '@mintter/proto/v2/documents_pb'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 
-const createReducer = sidepanel => (state, action) => {
-  if (action.type === 'open_transclusion') {
-    sidepanel.toggle(true)
-    return [...state, action.payload.split('/')[0]]
+interface InteractionPanelAction {
+  type: string
+  payload: string
+}
+
+interface InteractionPanelState {
+  visible: boolean
+  objects: string[]
+}
+
+function objectsReducer(
+  state: InteractionPanelState,
+  {type, payload}: InteractionPanelAction,
+): InteractionPanelState {
+  if (type === 'add_object') {
+    if (state.objects.includes(payload)) {
+      return {
+        ...state,
+        visible: true,
+      }
+    }
+
+    return {
+      visible: true,
+      objects: [...state.objects, payload],
+    }
+  }
+
+  if (type === 'toggle_panel') {
+    return {
+      ...state,
+      visible: !state.visible,
+    }
+  }
+
+  if (type === 'open_panel') {
+    return {
+      ...state,
+      visible: true,
+    }
+  }
+
+  if (type === 'close_panel') {
+    return {
+      ...state,
+      visible: false,
+    }
   }
 
   return state
-}
-
-function useTransclusionActions({sidepanel, initialState = []}) {
-  const {current: initialSidePanelState} = React.useRef(initialState)
-  return React.useReducer(createReducer(sidepanel), initialSidePanelState)
 }
 
 export default function Editor(): JSX.Element {
@@ -66,20 +104,20 @@ export default function Editor(): JSX.Element {
   const {version} = useParams()
   const {theme} = useTheme()
 
-  const [isSidePanelVisible, toggleSidePanelVisibility] = React.useState(false)
-  const [sidePanelState, dispatch] = useTransclusionActions({
-    sidepanel: {
-      visible: isSidePanelVisible,
-      toggle: toggleSidePanelVisibility,
+  const [interactionPanel, interactionPanelDispatch] = React.useReducer(
+    objectsReducer,
+    {
+      visible: false,
+      objects: [],
     },
-  })
+  )
 
   const editorOptions = {
     ...options,
     transclusion: {
       ...options.transclusion,
       customProps: {
-        dispatch,
+        dispatch: interactionPanelDispatch,
       },
     },
   }
@@ -158,7 +196,7 @@ export default function Editor(): JSX.Element {
           defaultSize="66%"
           minSize={300}
           pane1Style={
-            isSidePanelVisible
+            interactionPanel.visible
               ? {
                   minWidth: 600,
                   overflow: 'auto',
@@ -184,7 +222,7 @@ export default function Editor(): JSX.Element {
                 Publish
               </button>
               <button
-                onClick={() => toggleSidePanelVisibility(val => !val)}
+                onClick={() => interactionPanelDispatch({type: 'toggle_panel'})}
                 className="ml-4 px-4 py-2 text-sm"
               >
                 toggle sidepanel
@@ -247,20 +285,22 @@ export default function Editor(): JSX.Element {
               />
             </MainColumn>
           </div>
-          {isSidePanelVisible ? (
+          {interactionPanel.visible ? (
             <div
               className="pt-4"
               style={{
-                visibility: isSidePanelVisible ? 'visible' : 'hidden',
-                maxWidth: isSidePanelVisible ? '100%' : 0,
-                width: isSidePanelVisible ? '100%' : 0,
+                visibility: interactionPanel.visible ? 'visible' : 'hidden',
+                maxWidth: interactionPanel.visible ? '100%' : 0,
+                width: interactionPanel.visible ? '100%' : 0,
                 height: '100%',
                 minHeight: '100%',
                 overflow: 'auto',
                 zIndex: 0,
               }}
             >
-              {JSON.stringify(sidePanelState, null, 4)}
+              {interactionPanel.objects.map(object => (
+                <InteractionPanelObject id={object} />
+              ))}
             </div>
           ) : (
             <div />
@@ -268,5 +308,14 @@ export default function Editor(): JSX.Element {
         </SplitPane>
       </Page>
     </>
+  )
+}
+
+function InteractionPanelObject({id}) {
+  const foo = true
+  return (
+    <div className="p-4 border rounded m-4 break-words whitespace-pre-wrap">
+      {id}
+    </div>
   )
 }
