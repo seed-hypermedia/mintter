@@ -49,14 +49,25 @@ interface ProfileContextValue {
   >
 }
 
-export function useProfile(accountId?: string, options = {}) {
-  let queryKey = ['Profile']
+export function useProfile(options = {}) {
+  const profileQuery = useQuery(['Profile'], apiClient.getProfile, options)
 
-  if (accountId) {
-    queryKey.push(accountId)
+  const data = useMemo(() => profileQuery.data?.toObject?.(), [
+    profileQuery.data,
+  ])
+
+  return {
+    ...profileQuery,
+    data,
   }
+}
 
-  const profileQuery = useQuery(queryKey, apiClient.getProfile, options)
+export function useAuthor(accountId, options = {}) {
+  const profileQuery = useQuery(
+    accountId && ['Author', accountId],
+    apiClient.getProfile,
+    options,
+  )
 
   const data = useMemo(() => profileQuery.data?.toObject?.(), [
     profileQuery.data,

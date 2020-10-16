@@ -2,7 +2,7 @@ import React, {useMemo, useEffect, useState} from 'react'
 import {Icons} from '@mintter/editor'
 import {useLocation} from 'react-router-dom'
 import Link from './link'
-import {useProfile} from 'shared/profileContext'
+import {useAuthor} from 'shared/profileContext'
 import useLocalStorage from 'shared/localstorage'
 import {ErrorMessage} from './errorMessage'
 import {AuthorLabel} from 'components/author-label'
@@ -62,7 +62,7 @@ function ListItem({item, index = 0, onDraftDelete}: ItemProps) {
   const {version, title, subtitle, author: itemAuthor, createTime} = item
   const theTitle = title ? title : 'Untitled Document'
 
-  const {data: author} = useProfile(itemAuthor)
+  const {data: author} = useAuthor(itemAuthor)
 
   const isDraft = useMemo(() => location.pathname === '/library/drafts', [
     location.pathname,

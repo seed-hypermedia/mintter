@@ -36,8 +36,8 @@ body {
   --color-danger-hover: theme('colors.red.700');
   --color-danger-background: theme('colors.red.500');
 
-  --color-body: theme('colors.gray.700');
-  --color-body-muted: theme('colors.gray.500');
+  --color-body: theme('colors.gray.900');
+  --color-body-muted: theme('colors.gray.700');
 
   --color-heading: theme('colors.gray.900');
   --color-heading-muted: theme('colors.gray.600');
@@ -79,8 +79,8 @@ body {
   --color-danger-hover: theme('colors.red.500');
   --color-danger-background: theme('colors.red.900');
 
-  --color-body: theme('colors.gray.300');
-  --color-body-muted: theme('colors.gray.500');
+  --color-body: theme('colors.gray.100');
+  --color-body-muted: theme('colors.gray.400');
 
   --color-heading: theme('colors.gray.200');
   --color-heading-muted: theme('colors.gray.400');
