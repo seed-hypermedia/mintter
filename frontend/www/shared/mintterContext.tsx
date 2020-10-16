@@ -29,6 +29,7 @@ import {
   UpdateDraftResponse,
   PublishDraftResponse,
 } from '@mintter/proto/v2/documents_pb'
+import {useProfile} from './profileContext'
 
 type QueryParam<T> = T | T[]
 
@@ -47,10 +48,6 @@ export interface SetDocumentRequest {
 
 // TODO: (Horacio) Fixme Types
 export interface MintterClient {
-  listPublications: (
-    page?: number,
-  ) => PaginatedQueryResult<ListDocumentsResponse>
-  listDrafts: (page?: number) => PaginatedQueryResult<ListDocumentsResponse>
   createDraft: () => Document
   getDocument: (
     version: QueryParam<string>,
@@ -67,26 +64,83 @@ export interface MintterClient {
 
 const MintterClientContext = createContext<MintterClient>(null)
 
-export function MintterProvider(props) {
-  const listPublications = useCallback((page = 0): PaginatedQueryResult<
-    ListDocumentsResponse
-  > => {
-    return usePaginatedQuery(
-      ['ListPublications', PublishingState.PUBLISHED, page],
-      apiClient.listPublications,
-      {
-        refetchOnWindowFocus: true,
-        refetchInterval: 5000,
-      },
-    )
-  }, [])
+export const useDocuments = (options = {}) => {}
 
-  function listDrafts(page = 0): PaginatedQueryResult<ListDocumentsResponse> {
-    return usePaginatedQuery(['ListDrafts', page], apiClient.listDrafts, {
-      refetchInterval: 5000,
-    })
+export function usePublications(options = {}) {
+  const docsQuery = useQuery('Documents', apiClient.listDocuments, {
+    ...options,
+    refetchOnWindowFocus: true,
+    refetchInterval: 10000,
+  })
+
+  const data = React.useMemo(() => docsQuery.data?.toObject().documentsList, [
+    docsQuery.data,
+  ])
+
+  return {
+    ...docsQuery,
+    data,
   }
+}
 
+export function useMyPublications(options = {}) {
+  const docsQuery = usePublications(options)
+  const {profile} = useProfile()
+
+  const userId = React.useMemo(() => profile.toObject().accountId, [profile])
+
+  const data = React.useMemo(() =>
+    docsQuery.data?.filter(doc => {
+      return doc.author === userId
+    }),
+  )
+
+  return {
+    ...docsQuery,
+    data,
+  }
+}
+
+export function useOthersPublications(options = {}) {
+  const docsQuery = usePublications(options)
+  const {profile} = useProfile()
+
+  const userId = React.useMemo(() => profile.toObject().accountId, [profile])
+
+  const data = React.useMemo(() =>
+    docsQuery.data.filter(doc => {
+      return doc.author !== userId
+    }),
+  )
+
+  return {
+    ...docsQuery,
+    data,
+  }
+}
+
+export function useDrafts(options = {}) {
+  const docsQuery = useQuery(
+    'Drafts',
+    () => apiClient.listDocuments('Drafts', PublishingState.DRAFT),
+    {
+      ...options,
+      refetchOnWindowFocus: true,
+      refetchInterval: 10000,
+    },
+  )
+
+  const data = React.useMemo(() => docsQuery.data?.toObject().documentsList, [
+    docsQuery.data,
+  ])
+
+  return {
+    ...docsQuery,
+    data,
+  }
+}
+
+export function MintterProvider(props) {
   const createDraft = useCallback(
     () => apiClient.createDraft().catch(err => console.error(err)),
     [],
@@ -128,8 +182,6 @@ export function MintterProvider(props) {
   )
 
   const value = {
-    listPublications,
-    listDrafts,
     createDraft,
     getDocument,
     setDocument,
