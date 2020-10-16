@@ -1,5 +1,9 @@
 import React from 'react'
 
-export function Page({children}) {
-  return <div className="relative overflow-auto row-start-2">{children}</div>
+export function Page({children, className = ''}) {
+  return (
+    <div className={`relative overflow-auto row-start-2 ${className}`}>
+      {children}
+    </div>
+  )
 }
