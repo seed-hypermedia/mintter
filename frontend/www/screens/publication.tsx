@@ -28,7 +28,7 @@ import {DebugValue} from 'components/debug'
 import {css} from 'emotion'
 import {useParams, useHistory} from 'react-router-dom'
 import {useDocument, useDrafts, useMintter} from 'shared/mintterContext'
-import {useProfile} from 'shared/profileContext'
+import {useAuthor} from 'shared/profileContext'
 import Layout from 'components/layout'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {ErrorMessage} from 'components/errorMessage'
@@ -80,7 +80,7 @@ export default function Publication(): JSX.Element {
     document: data,
   })
   const {title, blocks, subtitle, author: pubAuthor} = state
-  const {data: author} = useProfile(pubAuthor)
+  const {data: author} = useAuthor(pubAuthor)
 
   const {drafts} = useDraftsSelection()
   const {createTransclusion} = useTransclusion({editor})
