@@ -93,6 +93,7 @@ export function useTransclusion({editor}) {
                 },
               ],
             },
+            quotersList: [],
           }),
         )
 
@@ -145,6 +146,7 @@ function addTransclusionToMap(
   const transclusion = createBlock({
     ...blockSource,
     id: transclusionId,
+    quotersList: [],
   })
   map.set(transclusionId, transclusion)
   console.log('transclusion', transclusion.toObject())
