@@ -175,8 +175,8 @@ export default function Editor(): JSX.Element {
             overflow: 'auto',
           }}
         >
-          <div className="overflow-auto pt-4">
-            <div className="px-4 flex justify-end ">
+          <div className="overflow-auto">
+            <div className="px-4 flex justify-end pt-4">
               <button
                 onClick={handlePublish}
                 className="bg-primary rounded-full px-12 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"

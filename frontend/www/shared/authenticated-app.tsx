@@ -48,7 +48,7 @@ function AppLayout({children}) {
   const {theme} = useTheme()
   return (
     <div
-      className={`bg-background w-screen h-screen grid grid-flow-row ${css`
+      className={`bg-background w-screen h-screen grid grid-flow-row overflow-hidden ${css`
         grid-template-rows: auto 1fr;
       `} ${theme}`}
     >
