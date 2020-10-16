@@ -101,7 +101,7 @@ export function useMyPublications(options = {}) {
 
 export function useOthersPublications(options = {}) {
   const docsQuery = usePublications(options)
-  const {profile} = useProfile()
+  const {data: profile} = useProfile()
 
   const userId = React.useMemo(() => profile?.accountId, [profile])
 

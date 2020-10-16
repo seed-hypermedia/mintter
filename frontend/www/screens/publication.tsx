@@ -27,14 +27,8 @@ import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
 import {css} from 'emotion'
 import {useParams, useHistory} from 'react-router-dom'
-import {markdownToSlate} from 'shared/markdownToSlate'
-import {
-  useAuthor,
-  useDocument,
-  useDrafts,
-  useMintter,
-} from 'shared/mintterContext'
-import {useAccount, useProfile} from 'shared/profileContext'
+import {useDocument, useDrafts, useMintter} from 'shared/mintterContext'
+import {useProfile} from 'shared/profileContext'
 import Layout from 'components/layout'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {ErrorMessage} from 'components/errorMessage'

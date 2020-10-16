@@ -49,7 +49,7 @@ interface ProfileContextValue {
   >
 }
 
-export function useProfile(accountId, options = {}) {
+export function useProfile(accountId?: string, options = {}) {
   let queryKey = ['Profile']
 
   if (accountId) {
@@ -58,7 +58,7 @@ export function useProfile(accountId, options = {}) {
 
   const profileQuery = useQuery(queryKey, apiClient.getProfile, options)
 
-  const data = React.useMemo(() => profileQuery.data?.toObject?.(), [
+  const data = useMemo(() => profileQuery.data?.toObject?.(), [
     profileQuery.data,
   ])
 
