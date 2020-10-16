@@ -149,7 +149,7 @@ export function ProfileProvider(props) {
   throw new Error(`Unhandled status: ${status}`)
 }
 
-export function useProfile() {
+export function useProfileContext() {
   const context = useContext(ProfileContext)
   if (context === undefined) {
     throw new Error(`"useProfile" must be used within a "ProfileProvider"`)

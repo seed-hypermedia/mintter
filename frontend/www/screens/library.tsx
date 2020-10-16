@@ -6,7 +6,7 @@ import {NavItem} from 'components/nav'
 import {useHistory} from 'react-router-dom'
 import {useMintter, useDocuments} from 'shared/mintterContext'
 import Container from 'components/container'
-import {useProfile} from 'shared/profileContext'
+import {useProfileContext} from 'shared/profileContext'
 import {Link} from 'components/link'
 import {Connections} from 'components/connections'
 import {SuggestedConnections} from 'components/suggested-connections'
@@ -91,7 +91,7 @@ export default function Library(props) {
 }
 
 function ProfileInfo() {
-  const {profile} = useProfile()
+  const {profile} = useProfileContext()
 
   const values = profile?.toObject()
 

@@ -28,8 +28,13 @@ import {DebugValue} from 'components/debug'
 import {css} from 'emotion'
 import {useParams, useHistory} from 'react-router-dom'
 import {markdownToSlate} from 'shared/markdownToSlate'
-import {useDocument, useDrafts, useMintter} from 'shared/mintterContext'
-import {useProfile} from 'shared/profileContext'
+import {
+  useAuthor,
+  useDocument,
+  useDrafts,
+  useMintter,
+} from 'shared/mintterContext'
+import {useAccount, useProfile} from 'shared/profileContext'
 import Layout from 'components/layout'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {ErrorMessage} from 'components/errorMessage'
@@ -74,7 +79,7 @@ export default function Publication(): JSX.Element {
 
   const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
 
-  const {getAuthor, createDraft} = useMintter()
+  const {createDraft, getAuthor} = useMintter()
 
   const {status, error, data, isFetching, failureCount} = useDocument(version)
   const {state, setValue} = useEditorValue({

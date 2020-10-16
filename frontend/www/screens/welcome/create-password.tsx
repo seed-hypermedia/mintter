@@ -11,7 +11,7 @@ import {useForm} from 'react-hook-form'
 import {useWelcome} from 'shared/welcomeProvider'
 import {useState} from 'react'
 import {ErrorMessage} from 'components/errorMessage'
-import {useProfile} from 'shared/profileContext'
+import {useProfileContext} from 'shared/profileContext'
 import {useFocus} from 'shared/hooks'
 
 export default function CreatePassword() {
@@ -20,7 +20,7 @@ export default function CreatePassword() {
   })
 
   const [submitError, setSubmitError] = useState(null)
-  const {createProfile} = useProfile()
+  const {createProfile} = useProfileContext()
 
   const history = useHistory()
   const {focusFirst} = useFocus()

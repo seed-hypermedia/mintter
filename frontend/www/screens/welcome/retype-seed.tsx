@@ -13,14 +13,14 @@ import {getRandomElements} from 'shared/utils'
 import {ErrorMessage} from 'components/errorMessage'
 import {useWelcome} from 'shared/welcomeProvider'
 import {useFocus} from 'shared/hooks'
-import {useProfile} from 'shared/profileContext'
+import {useProfileContext} from 'shared/profileContext'
 
 export default function RetypeSeed() {
   const {register, handleSubmit, errors, formState, watch} = useForm({
     mode: 'onChange',
   })
   const [submitError, setSubmitError] = useState(null)
-  const {createProfile} = useProfile()
+  const {createProfile} = useProfileContext()
   const history = useHistory()
   const {focusFirst} = useFocus()
 

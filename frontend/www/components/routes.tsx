@@ -1,5 +1,5 @@
 import {Route, Redirect, useLocation} from 'react-router-dom'
-import {useProfile} from 'shared/profileContext'
+import {useProfileContext} from 'shared/profileContext'
 import {useWelcome} from 'shared/welcomeProvider'
 
 export function ProgressRoute({children, ...rest}) {
@@ -25,7 +25,7 @@ export function ProgressRoute({children, ...rest}) {
 }
 
 export function PrivateRoute({children, ...rest}) {
-  const {profile} = useProfile()
+  const {profile} = useProfileContext()
   // debugger
   return (
     <Route

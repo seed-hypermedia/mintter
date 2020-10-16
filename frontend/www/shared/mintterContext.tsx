@@ -29,7 +29,7 @@ import {
   UpdateDraftResponse,
   PublishDraftResponse,
 } from '@mintter/proto/v2/documents_pb'
-import {useProfile} from './profileContext'
+import {useProfileContext} from './profileContext'
 
 type QueryParam<T> = T | T[]
 
@@ -49,10 +49,6 @@ export interface SetDocumentRequest {
 // TODO: (Horacio) Fixme Types
 export interface MintterClient {
   createDraft: () => Document
-  getDocument: (
-    version: QueryParam<string>,
-    options?: QueryOptions<GetDocumentResponse>,
-  ) => QueryResult<GetDocumentResponse>
   setDocument: (editor: ReactEditor) => (input: SetDocumentRequest) => void
   publishDraft: (
     version: string,
@@ -85,7 +81,7 @@ export function usePublications(options = {}) {
 
 export function useMyPublications(options = {}) {
   const docsQuery = usePublications(options)
-  const {profile} = useProfile()
+  const {profile} = useProfileContext()
 
   const userId = React.useMemo(() => profile.toObject().accountId, [profile])
 
@@ -105,7 +101,7 @@ export function useMyPublications(options = {}) {
 
 export function useOthersPublications(options = {}) {
   const docsQuery = usePublications(options)
-  const {profile} = useProfile()
+  const {profile} = useProfileContext()
 
   const userId = React.useMemo(() => profile.toObject().accountId, [profile])
 
@@ -170,31 +166,11 @@ export function useDocument(version, options = {}) {
   }
 }
 
-export function useAuthor(authorId, options = {}) {
-  let key = ['Author']
-  if (authorId) {
-    key.push(authorId)
-  }
-
-  const authorQuery = useQuery(key, apiClient.getProfile)
-
-  const data = React.useMemo(() => authorQuery.data?.toObject(), [
-    authorQuery.data,
-  ])
-
-  return {
-    ...authorQuery,
-    data,
-  }
-}
-
 export function MintterProvider(props) {
   const createDraft = React.useCallback(
     () => apiClient.createDraft().catch(err => console.error(err)),
     [],
   )
-
-  const getDocument = React.useCallback((version, options) => {}, [])
 
   const setDocument = React.useCallback(apiClient.setDocument, [])
 
@@ -210,10 +186,8 @@ export function MintterProvider(props) {
     (authorId?: string) => useQuery(['Author', authorId], apiClient.getProfile),
     [],
   )
-
   const value = {
     createDraft,
-    getDocument,
     setDocument,
     publishDraft,
     deleteDocument,

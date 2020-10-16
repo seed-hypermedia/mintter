@@ -5,12 +5,12 @@ import P from 'components/welcome-p'
 import {NextButton} from 'components/welcome-buttons'
 import Footer from 'components/footer'
 import {useWelcome} from 'shared/welcomeProvider'
-import {useProfile} from 'shared/profileContext'
+import {useProfileContext} from 'shared/profileContext'
 import {useEffect} from 'react'
 
 export default function WelcomeIntro() {
   const history = useHistory()
-  const {profile} = useProfile()
+  const {profile} = useProfileContext()
   const {dispatch} = useWelcome()
 
   useEffect(() => {

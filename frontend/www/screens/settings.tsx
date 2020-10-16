@@ -6,7 +6,7 @@ import Input from 'components/input'
 import Textarea from 'components/textarea'
 import {ProfileAddress} from 'components/profile-address'
 import {ErrorMessage, ErrorInterface} from 'components/errorMessage'
-import {useProfile} from 'shared/profileContext'
+import {useProfileContext} from 'shared/profileContext'
 import Container from 'components/container'
 import {useToasts} from 'react-toast-notifications'
 import {css} from 'emotion'
@@ -14,7 +14,7 @@ import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 
 export default function Settings() {
-  const {profile, setProfile} = useProfile()
+  const {profile, setProfile} = useProfileContext()
   const {addToast, updateToast} = useToasts()
   const [submitError, setSubmitError] = React.useState<ErrorInterface>()
   const {register, handleSubmit, errors, formState, setValue} = useForm({

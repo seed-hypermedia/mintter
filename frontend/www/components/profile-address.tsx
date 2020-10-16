@@ -1,13 +1,13 @@
 import Input from 'components/input'
 import Textarea from 'components/textarea'
-import {useProfile} from 'shared/profileContext'
+import {useProfileContext} from 'shared/profileContext'
 import {ErrorMessage} from './errorMessage'
 import {useMemo} from 'react'
 import {Button} from './button'
 import {useToasts} from 'react-toast-notifications'
 
 export function ProfileAddress(props) {
-  const {getProfileAddrs} = useProfile()
+  const {getProfileAddrs} = useProfileContext()
 
   const {status, error, data} = getProfileAddrs()
   const {addToast} = useToasts()

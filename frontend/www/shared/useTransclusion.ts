@@ -35,7 +35,6 @@ export function useTransclusion({editor}) {
     }: CreateTransclusionRequest) => {
       let draft: GetDocumentResponse | Document
       let transclusionId: string = `${source}/${block.id}`
-      console.log('useTransclusion -> transclusionId', transclusionId)
       if (destination) {
         draft = await getDocument('key', destination)
 
