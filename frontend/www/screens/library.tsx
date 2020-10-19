@@ -93,20 +93,19 @@ export default function Library(props) {
 function ProfileInfo() {
   const {data: profile} = useProfile()
 
-  return (
-    profile && (
-      <div className="text-left px-4">
-        <h3 className="font-semibold text-2xl text-heading">
-          {profile.username}
-        </h3>
-        <p className="text-body text-sm mt-2">{profile.bio}</p>
-        <Link
-          to="/private/settings"
-          className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline inline-block"
-        >
-          Edit profile
-        </Link>
-      </div>
-    )
-  )
+  return
+  profile ? (
+    <div className="text-left px-4">
+      <h3 className="font-semibold text-2xl text-heading">
+        {profile.username}
+      </h3>
+      <p className="text-body text-sm mt-2">{profile.bio}</p>
+      <Link
+        to="/private/settings"
+        className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline inline-block"
+      >
+        Edit profile
+      </Link>
+    </div>
+  ) : null
 }

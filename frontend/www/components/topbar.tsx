@@ -41,83 +41,88 @@ export default function LibraryHeader({isPublic = false}) {
     }
   }
 
-  return (
+  return isPublic ? (
+    <div className="p-4 w-full border-b">
+      <div
+        className={`mx-16 ${css`
+          max-width: 50ch;
+        `}`}
+      >
+        <Link to="/">
+          <span className="text-primary">
+            <Logo width="42px" className="fill-current" />
+          </span>
+        </Link>
+      </div>
+    </div>
+  ) : (
     <div
       className={`p-4 border-b grid grid-flow-col gap-4 ${css`
         grid-template-columns: minmax(250px, 25%) 1fr minmax(250px, 25%);
       `}`}
     >
       <span className="text-primary flex items-center">
-        <Link to={isPublic ? '/' : '/private/'}>
+        <Link to="/private/">
           <Logo width="42px" className="fill-current" />
         </Link>
-        {!isPublic && (
-          <Link to="/">
-            <span className="mx-4 px-2 text-xs">Go to Public page</span>
-          </Link>
-        )}
+        <Link to="/">
+          <span className="mx-4 px-2 text-xs">Go to Public page</span>
+        </Link>
       </span>
-      {!isPublic && (
-        <>
-          <div>
+      <div>
+        <div
+          className={`my-0 mx-16 ${css`
+            max-width: 50ch;
+            width: 100%;
+          `}`}
+        >
+          <form className="w-full" onSubmit={handleSearch}>
+            <Input
+              onChange={(e: any) => setInput(e.target.value)}
+              name="hash-search"
+              type="text"
+              placeholder="Enter a publication CID"
+              className="rounded-full"
+            />
+          </form>
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <Tippy
+          visible={menuVisible}
+          onClickOutside={hide}
+          interactive={true}
+          content={
             <div
-              className={`my-0 mx-16 ${css`
-                max-width: 50ch;
-                width: 100%;
+              className={`flex flex-col shadow-md ${css`
+                opacity: ${menuVisible ? '1' : '0'};
               `}`}
             >
-              <form className="w-full" onSubmit={handleSearch}>
-                <Input
-                  onChange={(e: any) => setInput(e.target.value)}
-                  name="hash-search"
-                  type="text"
-                  placeholder="Enter a publication CID"
-                  className="rounded-full"
-                />
-              </form>
+              <Button
+                className="text-body"
+                onClick={() => {
+                  hide()
+                  history.push('/settings')
+                }}
+              >
+                Settings
+              </Button>
             </div>
-          </div>
-
-          <div className="flex justify-end">
-            <Tippy
-              visible={menuVisible}
-              onClickOutside={hide}
-              interactive={true}
-              content={
-                <div
-                  className={`flex flex-col shadow-md ${css`
-                    opacity: ${menuVisible ? '1' : '0'};
-                  `}`}
-                >
-                  <Button
-                    className="text-body"
-                    onClick={() => {
-                      hide()
-                      history.push('/settings')
-                    }}
-                  >
-                    Settings
-                  </Button>
-                </div>
-              }
-            >
-              <span tabIndex={0}>
-                <Button
-                  onClick={toggleFormMetadata}
-                  className="flex items-center"
-                >
-                  <span className="mr-2 text-body">Menu</span>
-                  <Icons.ChevronDown
-                    className={`transform transition duration-200 text-body ${
-                      menuVisible ? 'rotate-180' : ''
-                    }`}
-                  />
-                </Button>
-              </span>
-            </Tippy>
-          </div>
-        </>
-      )}
+          }
+        >
+          <span tabIndex={0}>
+            <Button onClick={toggleFormMetadata} className="flex items-center">
+              <span className="mr-2 text-body">Menu</span>
+              <Icons.ChevronDown
+                className={`transform transition duration-200 text-body ${
+                  menuVisible ? 'rotate-180' : ''
+                }`}
+              />
+            </Button>
+          </span>
+        </Tippy>
+      </div>
     </div>
   )
 }
