@@ -12,7 +12,6 @@ export function InteractionPanelObject(props) {
   const {status, data} = useDocument(version)
   const {data: author} = useAuthor(data?.document?.author)
 
-  console.log('InteractionPanelObject -> data', data)
   if (status === 'success') {
     const {title, subtitle, blockRefList} = data.document
 

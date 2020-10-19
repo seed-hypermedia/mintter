@@ -23,7 +23,6 @@ export default function AuthenticatedApp(props) {
         <Topbar />
         <Switch>
           <PrivateRoute exact path={match.url}>
-            {console.log('redirect!!')}
             <Redirect to={`${match.url}/library`} />
           </PrivateRoute>
           <PrivateRoute exact path={`${match.url}/editor/:version`}>
@@ -32,7 +31,6 @@ export default function AuthenticatedApp(props) {
           <PrivateRoute>
             <Switch>
               <PrivateRoute path={`${match.url}/library`}>
-                {console.log('rendering Library!')}
                 <Library />
               </PrivateRoute>
               <PrivateRoute path={`${match.url}/settings`}>

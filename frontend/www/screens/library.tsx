@@ -92,9 +92,9 @@ export default function Library(props) {
 
 function ProfileInfo() {
   const {data: profile} = useProfile()
+  console.log('PRIVATE ProfileInfo -> profile', profile)
 
-  return
-  profile ? (
+  return profile ? (
     <div className="text-left px-4">
       <h3 className="font-semibold text-2xl text-heading">
         {profile.username}
