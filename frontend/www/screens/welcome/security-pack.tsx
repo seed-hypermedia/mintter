@@ -66,7 +66,7 @@ export default function SecurityPack() {
         walletPassword: '',
         aezeedPassphrase: '',
       })
-      history.replace('/welcome/edit-profile')
+      history.replace('/private/welcome/edit-profile')
     } catch (err) {
       throw new Error(err)
     }
@@ -121,7 +121,7 @@ export default function SecurityPack() {
             <NextButton disabled={mnemonic.length === 0} onClick={handleNext}>
               Next →
             </NextButton>
-            <BackButton to="/welcome">← start over</BackButton>
+            <BackButton to="/private/welcome">← start over</BackButton>
           </div>
         </Container>
       </Footer>

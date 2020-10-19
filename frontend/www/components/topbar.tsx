@@ -18,7 +18,7 @@ interface NavItemProps {
   className?: string
 }
 
-export default function LibraryHeader(props) {
+export default function LibraryHeader({isPublic = false}) {
   const history = useHistory()
   const [input, setInput] = useState<string>('')
   const [menuVisible, setMenuVisible] = useState<boolean>(false)
@@ -47,11 +47,17 @@ export default function LibraryHeader(props) {
         grid-template-columns: minmax(250px, 25%) 1fr minmax(250px, 25%);
       `}`}
     >
-      <span className="text-primary">
-        <Link to="/library">
+      <span className="text-primary flex items-center">
+        <Link to={isPublic ? '/' : '/private'}>
           <Logo width="42px" className="fill-current" />
         </Link>
+        {!isPublic && (
+          <Link to="/">
+            <span className="mx-4 px-2 text-xs">Go to Public page</span>
+          </Link>
+        )}
       </span>
+
       <div>
         <div
           className={`my-0 mx-16 ${css`
@@ -70,41 +76,46 @@ export default function LibraryHeader(props) {
           </form>
         </div>
       </div>
-      <div className="flex justify-end">
-        <Tippy
-          visible={menuVisible}
-          onClickOutside={hide}
-          interactive={true}
-          content={
-            <div
-              className={`flex flex-col shadow-md ${css`
-                opacity: ${menuVisible ? '1' : '0'};
-              `}`}
-            >
-              <Button
-                className="text-body"
-                onClick={() => {
-                  hide()
-                  history.push('/settings')
-                }}
+      {!isPublic && (
+        <div className="flex justify-end">
+          <Tippy
+            visible={menuVisible}
+            onClickOutside={hide}
+            interactive={true}
+            content={
+              <div
+                className={`flex flex-col shadow-md ${css`
+                  opacity: ${menuVisible ? '1' : '0'};
+                `}`}
               >
-                Settings
+                <Button
+                  className="text-body"
+                  onClick={() => {
+                    hide()
+                    history.push('/settings')
+                  }}
+                >
+                  Settings
+                </Button>
+              </div>
+            }
+          >
+            <span tabIndex={0}>
+              <Button
+                onClick={toggleFormMetadata}
+                className="flex items-center"
+              >
+                <span className="mr-2 text-body">Menu</span>
+                <Icons.ChevronDown
+                  className={`transform transition duration-200 text-body ${
+                    menuVisible ? 'rotate-180' : ''
+                  }`}
+                />
               </Button>
-            </div>
-          }
-        >
-          <span tabIndex={0}>
-            <Button onClick={toggleFormMetadata} className="flex items-center">
-              <span className="mr-2 text-body">Menu</span>
-              <Icons.ChevronDown
-                className={`transform transition duration-200 text-body ${
-                  menuVisible ? 'rotate-180' : ''
-                }`}
-              />
-            </Button>
-          </span>
-        </Tippy>
-      </div>
+            </span>
+          </Tippy>
+        </div>
+      )}
     </div>
   )
 }

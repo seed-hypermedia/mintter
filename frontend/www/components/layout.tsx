@@ -1,3 +1,5 @@
+import React from 'react'
+import {css} from 'emotion'
 import {useTheme} from 'shared/themeContext'
 
 export interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -17,6 +19,19 @@ export default function Layout({
   return (
     <div
       className={`fixed w-screen h-screen flex bg-background content-transition ${theme} ${className}`}
+    >
+      {children}
+    </div>
+  )
+}
+
+export function AppLayout({children}) {
+  const {theme} = useTheme()
+  return (
+    <div
+      className={`bg-background w-screen h-screen grid grid-flow-row overflow-hidden ${css`
+        grid-template-rows: auto 1fr;
+      `} ${theme}`}
     >
       {children}
     </div>

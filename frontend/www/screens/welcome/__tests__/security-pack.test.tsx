@@ -32,7 +32,7 @@ beforeEach(() => {
 })
 
 async function renderWelcomeScreen() {
-  const route = `/welcome/security-pack`
+  const route = `/private/welcome/security-pack`
   const utils = await render(<SecurityPack />, {
     route,
     wrapper: ({children}) => (

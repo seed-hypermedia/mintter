@@ -6,7 +6,7 @@ import {useMemo} from 'react'
 import {useHistory} from 'react-router-dom'
 import {ErrorMessage} from 'components/errorMessage'
 
-export default function MyPublications() {
+export default function MyPublications({noSeo = false}) {
   const history = useHistory()
   const {createDraft} = useMintter()
   const {status, error, data} = useMyPublications()
@@ -26,7 +26,7 @@ export default function MyPublications() {
 
   return (
     <>
-      <Seo title="My Publications" />
+      {!noSeo && <Seo title="My Publications" />}
       {status === 'success' && data.length === 0 && (
         <>
           <hr className="border-t-2 border-muted border-solid my-8" />

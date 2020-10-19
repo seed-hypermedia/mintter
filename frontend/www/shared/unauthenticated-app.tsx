@@ -16,7 +16,7 @@ export default function WelcomeLayout({
   className = '',
   ...props
 }: LayoutProps) {
-  const match = useRouteMatch('/welcome')
+  const match = useRouteMatch('/private/welcome')
   return (
     <Layout
       {...props}
@@ -27,8 +27,8 @@ export default function WelcomeLayout({
       </div>
       <WelcomeProvider>
         <Switch>
-          {/* the first route does not use the ProgressRoute component since this is how I aboid the infinite redirect loop (I'm redirecting from the ProgressRoute to this route) */}
-          <Route exact path={`${match.url}`}>
+          {/* the first route does not use the ProgressRoute component since this is how I avoid the infinite redirect loop (I'm redirecting from the ProgressRoute to this route) */}
+          <Route exact path={match.url}>
             <WelcomeIntro />
           </Route>
           <ProgressRoute path={`${match.url}/security-pack`}>

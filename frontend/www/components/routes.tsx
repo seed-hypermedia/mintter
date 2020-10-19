@@ -15,7 +15,7 @@ export function ProgressRoute({children, ...rest}) {
         ) : (
           <Redirect
             to={{
-              pathname: '/welcome',
+              pathname: '/private/welcome',
             }}
           />
         )
@@ -36,7 +36,7 @@ export function PrivateRoute({children, ...rest}) {
         ) : (
           <Redirect
             to={{
-              pathname: '/welcome',
+              pathname: '/private/welcome',
               state: {from: location},
             }}
           />

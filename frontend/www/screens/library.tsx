@@ -23,7 +23,7 @@ const Drafts = React.lazy(() => import(/* webpackPrefetch: true */ './drafts'))
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library(props) {
-  const match = useRouteMatch('/library')
+  const match = useRouteMatch('/private/library')
   const history = useHistory()
   const {createDraft} = useMintter()
 
@@ -32,7 +32,7 @@ export default function Library(props) {
 
     const value = d.toObject()
     history.push({
-      pathname: `/editor/${value.version}`,
+      pathname: `/private/editor/${value.version}`,
     })
   }
 
@@ -61,9 +61,9 @@ export default function Library(props) {
               </button>
             </div>
             <div className="flex items-center mt-4 -mx-4">
-              <NavItem to="/library/feed">Feed</NavItem>
-              <NavItem to="/library/published">Published</NavItem>
-              <NavItem to="/library/drafts">Drafts</NavItem>
+              <NavItem to="/private/library/feed">Feed</NavItem>
+              <NavItem to="/private/library/published">Published</NavItem>
+              <NavItem to="/private/library/drafts">Drafts</NavItem>
               <div className="flex-1" />
             </div>
             <div className="-mx-4">
@@ -101,7 +101,7 @@ function ProfileInfo() {
         </h3>
         <p className="text-body text-sm mt-2">{profile.bio}</p>
         <Link
-          to="/settings"
+          to="/private/settings"
           className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline inline-block"
         >
           Edit profile
