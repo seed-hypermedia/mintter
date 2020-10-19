@@ -7,10 +7,11 @@ import {useHistory} from 'react-router-dom'
 import {useMintter, useDocuments} from 'shared/mintterContext'
 import Container from 'components/container'
 import {useProfile} from 'shared/profileContext'
-import Layout from 'components/layout'
+import {AppLayout} from 'components/layout'
 import {Link} from 'components/link'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
+import Topbar from 'components/topbar'
 import Logo from 'components/logo_square'
 import Seo from 'components/seo'
 
@@ -34,13 +35,11 @@ export default function Library(props) {
   }
 
   return (
-    <Layout>
+    <AppLayout>
+      <Topbar isPublic />
       <Seo title="Homepage" />
       <Page>
         <MainColumn>
-          <div className="text-primary my-4">
-            <Logo width="42px" className="fill-current" />
-          </div>
           <ProfileInfo />
 
           <div className="flex items-baseline justify-between">
@@ -52,7 +51,7 @@ export default function Library(props) {
           </div>
         </MainColumn>
       </Page>
-    </Layout>
+    </AppLayout>
   )
 }
 

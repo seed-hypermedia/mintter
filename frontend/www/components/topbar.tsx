@@ -48,7 +48,7 @@ export default function LibraryHeader({isPublic = false}) {
       `}`}
     >
       <span className="text-primary flex items-center">
-        <Link to={isPublic ? '/' : '/private'}>
+        <Link to={isPublic ? '/' : '/private/'}>
           <Logo width="42px" className="fill-current" />
         </Link>
         {!isPublic && (
@@ -57,64 +57,66 @@ export default function LibraryHeader({isPublic = false}) {
           </Link>
         )}
       </span>
-
-      <div>
-        <div
-          className={`my-0 mx-16 ${css`
-            max-width: 50ch;
-            width: 100%;
-          `}`}
-        >
-          <form className="w-full" onSubmit={handleSearch}>
-            <Input
-              onChange={(e: any) => setInput(e.target.value)}
-              name="hash-search"
-              type="text"
-              placeholder="Enter a publication CID"
-              className="rounded-full"
-            />
-          </form>
-        </div>
-      </div>
       {!isPublic && (
-        <div className="flex justify-end">
-          <Tippy
-            visible={menuVisible}
-            onClickOutside={hide}
-            interactive={true}
-            content={
-              <div
-                className={`flex flex-col shadow-md ${css`
-                  opacity: ${menuVisible ? '1' : '0'};
-                `}`}
-              >
-                <Button
-                  className="text-body"
-                  onClick={() => {
-                    hide()
-                    history.push('/settings')
-                  }}
-                >
-                  Settings
-                </Button>
-              </div>
-            }
-          >
-            <span tabIndex={0}>
-              <Button
-                onClick={toggleFormMetadata}
-                className="flex items-center"
-              >
-                <span className="mr-2 text-body">Menu</span>
-                <Icons.ChevronDown
-                  className={`transform transition duration-200 text-body ${
-                    menuVisible ? 'rotate-180' : ''
-                  }`}
+        <>
+          <div>
+            <div
+              className={`my-0 mx-16 ${css`
+                max-width: 50ch;
+                width: 100%;
+              `}`}
+            >
+              <form className="w-full" onSubmit={handleSearch}>
+                <Input
+                  onChange={(e: any) => setInput(e.target.value)}
+                  name="hash-search"
+                  type="text"
+                  placeholder="Enter a publication CID"
+                  className="rounded-full"
                 />
-              </Button>
-            </span>
-          </Tippy>
-        </div>
+              </form>
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <Tippy
+              visible={menuVisible}
+              onClickOutside={hide}
+              interactive={true}
+              content={
+                <div
+                  className={`flex flex-col shadow-md ${css`
+                    opacity: ${menuVisible ? '1' : '0'};
+                  `}`}
+                >
+                  <Button
+                    className="text-body"
+                    onClick={() => {
+                      hide()
+                      history.push('/settings')
+                    }}
+                  >
+                    Settings
+                  </Button>
+                </div>
+              }
+            >
+              <span tabIndex={0}>
+                <Button
+                  onClick={toggleFormMetadata}
+                  className="flex items-center"
+                >
+                  <span className="mr-2 text-body">Menu</span>
+                  <Icons.ChevronDown
+                    className={`transform transition duration-200 text-body ${
+                      menuVisible ? 'rotate-180' : ''
+                    }`}
+                  />
+                </Button>
+              </span>
+            </Tippy>
+          </div>
+        </>
       )}
     </div>
   )
