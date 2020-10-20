@@ -81,7 +81,7 @@ export default function Publication(): JSX.Element {
   const {state, setValue} = useEditorValue({
     document: data,
   })
-  const {title, blocks, subtitle, author: pubAuthor} = state
+  const {title, blocks, subtitle, author: pubAuthor, mentions} = state
   const {data: author} = useAuthor(pubAuthor)
 
   const {drafts} = useDraftsSelection()
@@ -94,7 +94,7 @@ export default function Publication(): JSX.Element {
       block: block,
     })
 
-    push(`/editor/${draftUrl}`)
+    push(`/private/editor/${draftUrl}`)
   }
 
   let content

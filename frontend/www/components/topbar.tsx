@@ -62,7 +62,7 @@ export default function LibraryHeader({isPublic = false}) {
       `}`}
     >
       <span className="text-primary flex items-center">
-        <Link to="/private/">
+        <Link to="/private">
           <Logo width="42px" className="fill-current" />
         </Link>
         <Link to="/">
