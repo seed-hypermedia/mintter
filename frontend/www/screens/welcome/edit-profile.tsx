@@ -8,7 +8,7 @@ import Content from 'components/content'
 import Input from 'components/input'
 import Textarea from 'components/textarea'
 import {useForm} from 'react-hook-form'
-import {useProfileContext} from 'shared/profileContext'
+import {useProfile, useProfileContext} from 'shared/profileContext'
 import {useFocus} from 'shared/hooks'
 import {css} from 'emotion'
 
@@ -27,6 +27,7 @@ export default function EditProfile() {
 
   const history = useHistory()
   const {setProfile} = useProfileContext()
+  const {data: profile} = useProfile()
 
   async function onSubmit(data) {
     try {

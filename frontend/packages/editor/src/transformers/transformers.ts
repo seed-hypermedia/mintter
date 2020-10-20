@@ -115,10 +115,11 @@ export function toDocument({document, state}: ToDocumentRequestProp): Document {
 }
 
 export function toSlateBlock(block: Block.AsObject): SlateBlock {
-  const {id, paragraph, image} = block
+  const {id, paragraph, image, quotersList} = block
 
   let slateBlock = {
     id,
+    quotersList,
   }
 
   if (id.includes('/')) {

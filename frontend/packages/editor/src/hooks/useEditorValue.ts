@@ -1,3 +1,4 @@
+import {Block} from '@mintter/proto/v2/documents_pb'
 import {useEffect, useReducer, useCallback} from 'react'
 import {initialValue, EditorState, initialBlocksValue} from '../editor'
 import {toSlateTree} from '../transformers'
@@ -69,13 +70,15 @@ export function useEditorValue({document}) {
     if (document) {
       const {document: doc, blocksMap} = document
       const {title, subtitle, blockRefList, author} = doc
-
+      const mentions = getMentions(blocksMap)
+      console.log('useEditorValue -> blocksMap', blocksMap)
       const blocks = toSlateTree({blockRefList, blocksMap, isRoot: true})
 
       setValue({
         title,
         author,
         subtitle,
+        mentions,
         blocks: blocks ? blocks : initialBlocksValue,
       })
     }
@@ -88,4 +91,17 @@ export function useEditorValue({document}) {
     setBlocks,
     setValue,
   }
+}
+
+function getMentions(blocksMap) {
+  const mentions = blocksMap.reduce((acc, entry) => {
+    const block: Block.AsObject = entry[1]
+    if (block.quotersList.length) {
+      acc.push(...block.quotersList)
+    }
+
+    return acc
+  }, [])
+
+  return mentions
 }

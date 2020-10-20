@@ -43,6 +43,70 @@ import {
 import {v4 as uuid} from 'uuid'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
+import SplitPane from 'react-split-pane'
+import ResizerStyle from 'components/resizer-style'
+import {InteractionPanelObject} from 'components/interactionPanelObject'
+
+interface InteractionPanelAction {
+  type: string
+  payload?: any
+}
+
+interface InteractionPanelState {
+  visible: boolean
+  objects: string[]
+}
+
+function objectsReducer(
+  state: InteractionPanelState,
+  {type, payload}: InteractionPanelAction,
+): InteractionPanelState {
+  if (type === 'add_object') {
+    if (state.objects.includes(payload)) {
+      return {
+        ...state,
+        visible: true,
+      }
+    }
+
+    return {
+      visible: true,
+      objects: [...state.objects, payload],
+    }
+  }
+
+  if (type === 'add_mentions') {
+    let newObjects = payload.filter(version => !state.objects.includes(version))
+    return {
+      ...state,
+      visible: false,
+      objects: [...state.objects, ...newObjects],
+    }
+  }
+
+  if (type === 'toggle_panel') {
+    return {
+      ...state,
+      visible: !state.visible,
+    }
+  }
+
+  if (type === 'open_panel') {
+    return {
+      ...state,
+      visible: true,
+    }
+  }
+
+  if (type === 'close_panel') {
+    return {
+      ...state,
+      visible: false,
+    }
+  }
+
+  return state
+}
 
 function useDraftsSelection() {
   const [drafts, setOptions] = React.useState([])
@@ -62,12 +126,21 @@ function useDraftsSelection() {
 export default function Publication(): JSX.Element {
   const {push} = useHistory()
   const {version} = useParams()
+
+  const [interactionPanel, interactionPanelDispatch] = React.useReducer(
+    objectsReducer,
+    {
+      visible: false,
+      objects: [],
+    },
+  )
+
   const editorOptions = {
     ...options,
     transclusion: {
       ...options.transclusion,
       customProps: {
-        push,
+        dispatch: interactionPanelDispatch,
       },
     },
   }
@@ -81,8 +154,15 @@ export default function Publication(): JSX.Element {
   const {state, setValue} = useEditorValue({
     document: data,
   })
-  const {title, blocks, subtitle, author: pubAuthor} = state
+  const {title, blocks, subtitle, author: pubAuthor, mentions} = state
+  console.log('mentions!', mentions)
   const {data: author} = useAuthor(pubAuthor)
+
+  React.useEffect(() => {
+    if (mentions.length) {
+      interactionPanelDispatch({type: 'add_mentions', payload: mentions})
+    }
+  }, [mentions])
 
   const {drafts} = useDraftsSelection()
   const {createTransclusion} = useTransclusion({editor})
@@ -94,7 +174,7 @@ export default function Publication(): JSX.Element {
       block: block,
     })
 
-    push(`/editor/${draftUrl}`)
+    push(`/private/editor/${draftUrl}`)
   }
 
   let content
@@ -163,15 +243,74 @@ export default function Publication(): JSX.Element {
   return (
     <>
       <Seo title="Publication" />
+      <ResizerStyle />
       <Page>
-        <MainColumn>
-          <TransclusionHelperProvider
-            options={drafts}
-            handleTransclusion={handleTransclusion}
-          >
-            {content}
-          </TransclusionHelperProvider>
-        </MainColumn>
+        <SplitPane
+          style={{
+            height: '100%',
+            width: '100%',
+          }}
+          split="vertical"
+          maxSize={-100}
+          defaultSize="66%"
+          minSize={300}
+          pane1Style={
+            interactionPanel.visible
+              ? {
+                  minWidth: 600,
+                  overflow: 'auto',
+                }
+              : {
+                  width: '100%',
+                  minWidth: '100%',
+                  height: '100%',
+                  minHeight: '100%',
+                  overflow: 'auto',
+                }
+          }
+          pane2Style={{
+            overflow: 'auto',
+          }}
+        >
+          <div className="overflow-auto">
+            <div className="px-4 flex justify-end pt-4">
+              <button
+                onClick={() => interactionPanelDispatch({type: 'toggle_panel'})}
+                className="ml-4 px-4 py-2 text-sm"
+              >
+                toggle sidepanel
+              </button>
+            </div>
+            <MainColumn>
+              <TransclusionHelperProvider
+                options={drafts}
+                handleTransclusion={handleTransclusion}
+              >
+                {content}
+              </TransclusionHelperProvider>
+            </MainColumn>
+          </div>
+          {interactionPanel.visible ? (
+            <div
+              className="bg-background-muted"
+              style={{
+                visibility: interactionPanel.visible ? 'visible' : 'hidden',
+                maxWidth: interactionPanel.visible ? '100%' : 0,
+                width: interactionPanel.visible ? '100%' : 0,
+                height: '100%',
+                minHeight: '100%',
+                overflow: 'auto',
+                zIndex: 0,
+              }}
+            >
+              {interactionPanel.objects.map(object => (
+                <InteractionPanelObject id={object} />
+              ))}
+            </div>
+          ) : (
+            <div />
+          )}
+        </SplitPane>
       </Page>
     </>
   )
