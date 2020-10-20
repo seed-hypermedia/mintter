@@ -20,6 +20,7 @@ import {
   ListSuggestedProfilesResponse,
 } from '@mintter/proto/mintter_pb'
 import * as apiClient from './V1mintterClient'
+import * as apiV2 from './mintterClient'
 import {bootstrapAppData} from './appBootstrap'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
@@ -92,10 +93,7 @@ export function ProfileProvider(props) {
   })
 
   const [setProfile] = useMutation(
-    async formData => {
-      const profile = await apiClient.getProfile('')
-      return apiClient.setProfile(profile, formData)
-    },
+    async formData => apiV2.setProfile(formData),
     {
       onSuccess: refetchProfile,
     },

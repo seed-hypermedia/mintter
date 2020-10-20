@@ -55,7 +55,9 @@ function RenderElement(props) {
     <div {...props.attributes}>
       <div
         contentEditable={false}
-        className={`bg-muted ${focus && selected ? 'shadow-outline' : ''}`}
+        className={`bg-muted rounded ${
+          focus && selected ? 'shadow-outline' : ''
+        }`}
       >
         <SlateReactPresentation
           value={props.element.children}

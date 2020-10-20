@@ -14,6 +14,7 @@ export interface EditorState {
   title: string
   subtitle: string
   blocks: Node[]
+  mentions: string[]
 }
 
 export interface SlateBlock {
@@ -61,4 +62,5 @@ export const initialValue: EditorState = {
   title: '',
   subtitle: '',
   blocks: initialBlocksValue,
+  mentions: [],
 }

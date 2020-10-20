@@ -182,18 +182,18 @@ export async function getProfile(key, profileId?: string) {
   }
 }
 
-export async function setProfile(
-  profile: Profile,
-  {
-    username,
-    email,
-    bio,
-  }: {
-    username: string
-    email: string
-    bio: string
-  },
-) {
+export async function setProfile({
+  username,
+  email,
+  bio,
+  accountId,
+}: {
+  username: string
+  email: string
+  bio: string
+  accountId: string
+}) {
+  const profile = await getProfile('key', accountId)
   username.length > 1 && profile.setUsername(username)
   email.length > 1 && profile.setEmail(email)
   bio.length > 1 && profile.setBio(bio)
