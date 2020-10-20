@@ -92,7 +92,10 @@ export function ProfileProvider(props) {
   })
 
   const [setProfile] = useMutation(
-    formData => apiClient.setProfile(profile, formData),
+    async formData => {
+      const profile = await apiClient.getProfile('')
+      return apiClient.setProfile(profile, formData)
+    },
     {
       onSuccess: refetchProfile,
     },
