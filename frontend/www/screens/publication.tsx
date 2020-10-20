@@ -66,7 +66,9 @@ export default function Publication(): JSX.Element {
     ...options,
     transclusion: {
       ...options.transclusion,
-      push,
+      customProps: {
+        push,
+      },
     },
   }
   const plugins = createPlugins(editorOptions)

@@ -83,22 +83,22 @@ export function useWelcome(): WelcomeValueType {
 const steps = [
   {
     title: 'Security Pack',
-    url: '/welcome/security-pack',
+    url: '/private/welcome/security-pack',
   },
   // {
   //   title: 'Retype your seed',
-  //   url: '/welcome/retype-seed',
+  //   url: '/private/welcome/retype-seed',
   // },
   // {
   //   title: 'Create Password',
-  //   url: '/welcome/create-password',
+  //   url: '/private/welcome/create-password',
   // },
   {
     title: 'Edit profile',
-    url: '/welcome/edit-profile',
+    url: '/private/welcome/edit-profile',
   },
   {
     title: 'Complete',
-    url: '/welcome/complete',
+    url: '/private/welcome/complete',
   },
 ]

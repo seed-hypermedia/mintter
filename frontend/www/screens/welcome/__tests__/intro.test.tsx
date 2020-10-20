@@ -2,7 +2,7 @@ import {render, screen, userEvent} from 'test/app-test-utils'
 import {App} from 'shared/app'
 
 async function renderWelcomeScreen() {
-  const route = `/welcome`
+  const route = `/private/welcome`
 
   const utils = await render(<App />, {route})
 

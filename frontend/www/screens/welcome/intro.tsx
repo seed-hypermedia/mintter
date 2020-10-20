@@ -24,7 +24,7 @@ export default function WelcomeIntro() {
     // set the welcome progress
     dispatch({type: 'progress', payload: 1})
     //send the user to next page
-    history.replace('/welcome/security-pack')
+    history.replace('/private/welcome/security-pack')
   }
   return (
     <>

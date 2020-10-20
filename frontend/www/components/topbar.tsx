@@ -18,7 +18,7 @@ interface NavItemProps {
   className?: string
 }
 
-export default function LibraryHeader(props) {
+export default function LibraryHeader({isPublic = false}) {
   const history = useHistory()
   const [input, setInput] = useState<string>('')
   const [menuVisible, setMenuVisible] = useState<boolean>(false)
@@ -41,15 +41,32 @@ export default function LibraryHeader(props) {
     }
   }
 
-  return (
+  return isPublic ? (
+    <div className="p-4 w-full border-b">
+      <div
+        className={`mx-16 ${css`
+          max-width: 50ch;
+        `}`}
+      >
+        <Link to="/">
+          <span className="text-primary">
+            <Logo width="42px" className="fill-current" />
+          </span>
+        </Link>
+      </div>
+    </div>
+  ) : (
     <div
       className={`p-4 border-b grid grid-flow-col gap-4 ${css`
         grid-template-columns: minmax(250px, 25%) 1fr minmax(250px, 25%);
       `}`}
     >
-      <span className="text-primary">
-        <Link to="/library">
+      <span className="text-primary flex items-center">
+        <Link to="/private/">
           <Logo width="42px" className="fill-current" />
+        </Link>
+        <Link to="/">
+          <span className="mx-4 px-2 text-xs">Go to Public page</span>
         </Link>
       </span>
       <div>
@@ -70,6 +87,7 @@ export default function LibraryHeader(props) {
           </form>
         </div>
       </div>
+
       <div className="flex justify-end">
         <Tippy
           visible={menuVisible}
