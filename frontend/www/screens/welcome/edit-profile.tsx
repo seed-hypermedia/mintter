@@ -31,7 +31,7 @@ export default function EditProfile() {
   async function onSubmit(data) {
     try {
       setProfile(data)
-      history.replace('/welcome/complete')
+      history.replace('/private/welcome/complete')
     } catch (err) {
       console.error('Error ==> ', err)
     }
@@ -145,7 +145,7 @@ export default function EditProfile() {
             >
               Next →
             </NextButton>
-            <BackButton to="/welcome">← start over</BackButton>
+            <BackButton to="/private/welcome">← start over</BackButton>
           </div>
         </Container>
       </Footer>

@@ -127,12 +127,14 @@ export default function Editor(): JSX.Element {
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
   const subtitleRef = React.useRef(null)
+  const documentRef = React.useRef(null)
   const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
 
   const {setDocument, publishDraft} = useMintter()
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])
   const {status, error, data} = useDocument(version, {
     onSuccess: () => {
+      documentRef.current = data
       setReadyToAutosave(true)
     },
   })
@@ -144,8 +146,7 @@ export default function Editor(): JSX.Element {
 
   const [autosaveDraft] = useMutation(
     async state => {
-      const {document} = data
-      const {id, version, author} = document
+      const {document} = documentRef.current
       saveDocument({document, state})
     },
     {

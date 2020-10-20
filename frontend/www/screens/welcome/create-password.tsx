@@ -33,7 +33,7 @@ export default function CreatePassword() {
   async function onSubmit({walletPassword}) {
     try {
       createProfile({aezeedPassphrase, mnemonicList, walletPassword})
-      history.replace('/welcome/edit-profile')
+      history.replace('/private/welcome/edit-profile')
     } catch (err) {
       setSubmitError(err)
     }
@@ -118,7 +118,7 @@ export default function CreatePassword() {
             >
               Next →
             </NextButton>
-            <BackButton to="/welcome">← start over</BackButton>
+            <BackButton to="/private/welcome">← start over</BackButton>
           </div>
         </Container>
       </Footer>

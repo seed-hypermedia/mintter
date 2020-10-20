@@ -13,7 +13,10 @@ export function Home() {
           {/* TODO: remove this soon */}
           <h4>flows:</h4>
           <div className="flex p-4">
-            <Link to="/welcome" className="rounded text-blue-700 text-lg mr-4">
+            <Link
+              to="/private/welcome"
+              className="rounded text-blue-700 text-lg mr-4"
+            >
               Welcome
             </Link>
             <Link to="/library/feed" className="rounded text-blue-700 text-lg">

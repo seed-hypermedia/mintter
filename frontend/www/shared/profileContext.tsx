@@ -34,7 +34,6 @@ import {
 } from 'react-query'
 
 interface ProfileContextValue {
-  readonly profile: Profile | null
   setProfile: (data: Partial<Profile.AsObject>) => void
   createProfile: (form: InitProfileRequest.AsObject) => void
   getProfileAddrs: () => QueryResult<GetProfileAddrsResponse>
@@ -42,7 +41,6 @@ interface ProfileContextValue {
   connectToPeerById: (
     peerIds: string[],
   ) => MutationResult<ConnectToPeerResponse>
-  getProfile: (profileId?: string) => QueryResult<Profile>
   listConnections: () => PaginatedQueryResult<ListProfilesResponse>
   listSuggestedConnections: () => PaginatedQueryResult<
     ListSuggestedProfilesResponse
@@ -83,13 +81,9 @@ export function useAuthor(accountId, options = {}) {
 export const ProfileContext = createContext<ProfileContextValue>(null)
 
 export function ProfileProvider(props) {
-  const {status, error, data} = useQuery('Profile', apiClient.getProfile)
-
   function refetchProfile(params) {
     queryCache.refetchQueries('Profile')
   }
-
-  const profile = data
 
   const genSeed = useCallback(() => apiClient.genSeed(), [])
 
@@ -97,14 +91,11 @@ export function ProfileProvider(props) {
     onSuccess: refetchProfile,
   })
 
-  const getProfile = useCallback(
-    (profileId?: string) =>
-      useQuery(['Profile', profileId], apiClient.getProfile),
-    [profile],
-  )
-
   const [setProfile] = useMutation(
-    formData => apiClient.setProfile(profile, formData),
+    async formData => {
+      const profile = await apiClient.getProfile('')
+      return apiClient.setProfile(profile, formData)
+    },
     {
       onSuccess: refetchProfile,
     },
@@ -151,8 +142,6 @@ export function ProfileProvider(props) {
   }
 
   const value = {
-    profile,
-    getProfile,
     createProfile,
     setProfile,
     getProfileAddrs,
@@ -162,21 +151,9 @@ export function ProfileProvider(props) {
     listSuggestedConnections,
   }
 
-  if (status === 'loading') {
-    return <FullPageSpinner />
-  }
-
-  if (status === 'error') {
-    return <FullPageErrorMessage error={error} />
-  }
-
-  if (status === 'success') {
-    return (
-      <ProfileContext.Provider value={{...value, ...props.value}} {...props} />
-    )
-  }
-
-  throw new Error(`Unhandled status: ${status}`)
+  return (
+    <ProfileContext.Provider value={{...value, ...props.value}} {...props} />
+  )
 }
 
 export function useProfileContext() {

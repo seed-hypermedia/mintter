@@ -7,7 +7,13 @@ const Transclusion = (
 ) => {
   function handlePush(e) {
     e.preventDefault()
-    rest.dispatch?.({type: 'add_object', payload: element.id})
+    if (rest.push) {
+      rest.push(`/p/${element.id.split('/')[0]}`)
+      return
+    } else {
+      rest.dispatch?.({type: 'add_object', payload: element.id})
+      return
+    }
   }
 
   return (

@@ -1,6 +1,7 @@
 import {Route, Redirect, useLocation} from 'react-router-dom'
 import {useProfile} from 'shared/profileContext'
 import {useWelcome} from 'shared/welcomeProvider'
+import {FullPageSpinner} from 'components/fullPageSpinner'
 
 export function ProgressRoute({children, ...rest}) {
   const {
@@ -15,7 +16,7 @@ export function ProgressRoute({children, ...rest}) {
         ) : (
           <Redirect
             to={{
-              pathname: '/welcome',
+              pathname: '/private/welcome',
             }}
           />
         )
@@ -25,23 +26,27 @@ export function ProgressRoute({children, ...rest}) {
 }
 
 export function PrivateRoute({children, ...rest}) {
-  const {data: profile} = useProfile()
-  // debugger
-  return (
-    <Route
-      {...rest}
-      render={({location}) =>
-        profile ? (
-          children
-        ) : (
-          <Redirect
-            to={{
-              pathname: '/welcome',
-              state: {from: location},
-            }}
-          />
-        )
-      }
-    />
-  )
+  const {status, data: profile} = useProfile()
+
+  if (status === 'success') {
+    return (
+      <Route
+        {...rest}
+        render={({location}) =>
+          profile ? (
+            children
+          ) : (
+            <Redirect
+              to={{
+                pathname: '/private/welcome',
+                state: {from: location},
+              }}
+            />
+          )
+        }
+      />
+    )
+  } else {
+    return <FullPageSpinner />
+  }
 }

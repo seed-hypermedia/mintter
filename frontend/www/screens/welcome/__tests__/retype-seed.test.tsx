@@ -22,7 +22,7 @@ jest.mock('shared/V1mintterClient')
 jest.mock('shared/utils')
 
 async function renderWelcomeScreen() {
-  const route = `/welcome/retype-seed`
+  const route = `/private/welcome/retype-seed`
 
   const mnemonicList = ['word-1', 'word-2', 'word-3']
 

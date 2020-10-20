@@ -6,7 +6,6 @@ export function NoRoute() {
   return (
     <Layout>
       <h2>No route match :(</h2>
-      <Link to="/">go home</Link>
     </Layout>
   )
 }

@@ -37,7 +37,7 @@ export default function RetypeSeed() {
   async function onSubmit(attrs) {
     try {
       createProfile({mnemonicList, walletPassword: '', aezeedPassphrase: ''})
-      history.replace('/welcome/edit-profile')
+      history.replace('/private/welcome/edit-profile')
     } catch (err) {
       setSubmitError(err)
     }
@@ -123,7 +123,7 @@ export default function RetypeSeed() {
               >
                 Next →
               </NextButton>
-              <BackButton to="/welcome">← start over</BackButton>
+              <BackButton to="/private/welcome">← start over</BackButton>
             </div>
           </Container>
         </Footer>

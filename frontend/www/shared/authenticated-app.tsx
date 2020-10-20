@@ -1,11 +1,11 @@
 import React from 'react'
-import {Switch, useRouteMatch} from 'react-router-dom'
+import {Switch, useRouteMatch, Redirect} from 'react-router-dom'
 import {ErrorBoundary} from 'react-error-boundary'
 import {css} from 'emotion'
 import {FullPageErrorMessage} from 'components/errorMessage'
 import {PrivateRoute} from 'components/routes'
+import {AppLayout} from 'components/layout'
 import Topbar from 'components/topbar'
-import Layout from 'components/layout'
 import Container from 'components/container'
 import {useTheme} from './themeContext'
 
@@ -15,25 +15,25 @@ const Editor = React.lazy(() => import('screens/editor'))
 const Publication = React.lazy(() => import('screens/publication'))
 
 export default function AuthenticatedApp(props) {
-  const match = useRouteMatch('/')
+  const match = useRouteMatch('/private')
 
   return (
     <ErrorBoundary FallbackComponent={FullPageErrorMessage}>
       <AppLayout>
         <Topbar />
         <Switch>
-          <PrivateRoute exact path="/editor/:version">
-            <Editor />
+          <PrivateRoute exact path={match.url}>
+            <Redirect to={`${match.url}/library`} />
           </PrivateRoute>
-          <PrivateRoute exact path="/p/:version">
-            <Publication />
+          <PrivateRoute exact path={`${match.url}/editor/:version`}>
+            <Editor />
           </PrivateRoute>
           <PrivateRoute>
             <Switch>
-              <PrivateRoute path={`${match.url}library`}>
+              <PrivateRoute path={`${match.url}/library`}>
                 <Library />
               </PrivateRoute>
-              <PrivateRoute path={`${match.url}settings`}>
+              <PrivateRoute path={`${match.url}/settings`}>
                 <Settings />
               </PrivateRoute>
             </Switch>
@@ -41,18 +41,5 @@ export default function AuthenticatedApp(props) {
         </Switch>
       </AppLayout>
     </ErrorBoundary>
-  )
-}
-
-function AppLayout({children}) {
-  const {theme} = useTheme()
-  return (
-    <div
-      className={`bg-background w-screen h-screen grid grid-flow-row overflow-hidden ${css`
-        grid-template-rows: auto 1fr;
-      `} ${theme}`}
-    >
-      {children}
-    </div>
   )
 }
