@@ -31,7 +31,7 @@ export default function EditProfile() {
 
   async function onSubmit(data) {
     try {
-      setProfile(profile.accountId, data)
+      setProfile(data)
       history.replace('/private/welcome/complete')
     } catch (err) {
       console.error('Error ==> ', err)

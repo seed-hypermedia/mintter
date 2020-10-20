@@ -1,5 +1,8 @@
+import {Icons} from '../../components/icons'
 import React from 'react'
 import {DragDrop} from '../../BlockPlugin/components/DragDrop'
+import Tippy from '@tippyjs/react'
+import {css} from 'emotion'
 
 const Transclusion = (
   {attributes, children, element, className, ...rest},
@@ -25,14 +28,29 @@ const Transclusion = (
       >
         <div
           contentEditable={false}
-          className="absolute top-0 right-0 transform translate-x-full pl-2"
+          className={`absolute right-0 transform translate-x-full pl-1 ${css`
+            top: -2px;
+          `}`}
         >
-          <button
-            onClick={handlePush}
-            className="text-xs text-body-muted hover:text-body transition duration-100"
+          <Tippy
+            content={
+              <span
+                className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
+                  background-color: #333;
+                  color: #ccc;
+                `}`}
+              >
+                Open in Interaction Panel
+              </span>
+            }
           >
-            Open Document
-          </button>
+            <button
+              onClick={handlePush}
+              className="text-xs text-body-muted p-1 rounded-sm hover:bg-muted transition duration-100"
+            >
+              <Icons.CornerUpRight size={12} />
+            </button>
+          </Tippy>
         </div>
         {children}
       </div>

@@ -5,6 +5,8 @@ export function BlockBase(
   {attributes, element, className = '', ...props},
   ref,
 ) {
+  console.log({element})
+
   return (
     <DragDrop
       attributes={attributes}
