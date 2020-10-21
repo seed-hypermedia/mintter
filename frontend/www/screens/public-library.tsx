@@ -46,7 +46,7 @@ export default function Library(props) {
             <h3 className="text-2xl font-semibold text-heading">Articles</h3>
             <div className="flex-1" />
           </div>
-          <div className="-mx-4">
+          <div className="-mx-4 mt-4">
             <MyPublications noSeo />
           </div>
         </MainColumn>
