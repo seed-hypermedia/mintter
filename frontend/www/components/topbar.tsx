@@ -2,7 +2,7 @@ import {useCallback} from 'react'
 import {useState} from 'react'
 import {css} from 'emotion'
 import Tippy from '@tippyjs/react'
-import {useHistory} from 'react-router-dom'
+import {useHistory, useLocation} from 'react-router-dom'
 import {Icons} from '@mintter/editor'
 import {Link} from 'components/link'
 import Logo from './logo_square'
@@ -18,10 +18,12 @@ interface NavItemProps {
   className?: string
 }
 
-export default function LibraryHeader({isPublic = false}) {
+export default function Topbar({isPublic = false}) {
   const history = useHistory()
   const [input, setInput] = useState<string>('')
   const [menuVisible, setMenuVisible] = useState<boolean>(false)
+  const isLocalhost = window.location.hostname.includes('localhost')
+  console.log('Topbar -> isLocalhost', isLocalhost)
 
   const show = useCallback(() => setMenuVisible(true), [setMenuVisible])
   const hide = useCallback(() => setMenuVisible(false), [setMenuVisible])
@@ -33,7 +35,6 @@ export default function LibraryHeader({isPublic = false}) {
   }
 
   function toggleFormMetadata() {
-    console.log('toggle!!')
     if (menuVisible) {
       hide()
     } else {
@@ -48,11 +49,18 @@ export default function LibraryHeader({isPublic = false}) {
           max-width: 50ch;
         `}`}
       >
-        <Link to="/">
-          <span className="text-primary">
-            <Logo width="42px" className="fill-current" />
-          </span>
-        </Link>
+        <span className="text-primary flex items-center">
+          <Link to="/">
+            <span className="text-primary">
+              <Logo width="42px" className="fill-current" />
+            </span>
+          </Link>
+          {isLocalhost && (
+            <Link to="/private">
+              <span className="mx-4 px-2 text-xs">Go to Private page</span>
+            </Link>
+          )}
+        </span>
       </div>
     </div>
   ) : (
