@@ -18,7 +18,7 @@ export default function Publications() {
     const newDraft = n.toObject()
 
     history.push({
-      pathname: `/editor/${newDraft.version}`,
+      pathname: `/private/editor/${newDraft.version}`,
     })
   }
 

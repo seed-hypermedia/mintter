@@ -30,7 +30,7 @@ export default function Library(props) {
 
     const value = d.toObject()
     history.push({
-      pathname: `/editor/${value.version}`,
+      pathname: `/private/editor/${value.version}`,
     })
   }
 
