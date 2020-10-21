@@ -15,7 +15,7 @@ export default function Drafts() {
     const p = await createDraft()
     const draft = p.toObject()
     router.push({
-      pathname: `/editor/${draft.version}`,
+      pathname: `/private/editor/${draft.version}`,
     })
   }
 

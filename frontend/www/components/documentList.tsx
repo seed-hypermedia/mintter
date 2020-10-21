@@ -64,13 +64,15 @@ function ListItem({item, index = 0, onDraftDelete}: ItemProps) {
 
   const {data: author} = useAuthor(itemAuthor)
 
-  const isDraft = useMemo(() => location.pathname === '/library/drafts', [
-    location.pathname,
-  ])
+  const isDraft = useMemo(
+    () => location.pathname === '/private/library/drafts',
+    [location.pathname],
+  )
 
-  const to = useMemo(() => (isDraft ? `/editor/${version}` : `/p/${version}`), [
-    location.pathname,
-  ])
+  const to = useMemo(
+    () => (isDraft ? `/private/editor/${version}` : `/p/${version}`),
+    [location.pathname],
+  )
   function handlePrefetch() {
     if (!prefetched) {
       // TODO: prefetch on hover
