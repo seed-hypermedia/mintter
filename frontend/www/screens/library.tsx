@@ -66,7 +66,7 @@ export default function Library(props) {
               <NavItem to="/private/library/drafts">Drafts</NavItem>
               <div className="flex-1" />
             </div>
-            <div className="-mx-4">
+            <div className="-mx-4 mt-4">
               <Switch>
                 <PrivateRoute exact path={match.url}>
                   <Redirect to={`${match.url}/feed`} />
