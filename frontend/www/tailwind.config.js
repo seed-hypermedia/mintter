@@ -51,8 +51,10 @@ module.exports = {
     'visited',
     'disabled',
   ],
-  plugins: [],
-  purge: false,
+  plugins: [require('@tailwindcss/typography')],
+  purge: ['components', 'pages', 'screens', 'shared'].map(
+    folder => `./${folder}/**/*.tsx`,
+  ),
   future: {
     removeDeprecatedGapUtilities: true,
     purgeLayersByDefault: true,
