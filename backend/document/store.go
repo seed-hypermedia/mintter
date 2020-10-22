@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
+	v2 "mintter/api/go/v2"
 	"mintter/backend/identity"
 	"mintter/backend/ipldutil"
-	v2 "mintter/proto/v2"
 
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"

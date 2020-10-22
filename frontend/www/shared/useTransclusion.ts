@@ -10,7 +10,7 @@ import {
   BlockRefList,
   BlockRef,
   GetDocumentResponse,
-} from '@mintter/proto/v2/documents_pb'
+} from '@mintter/api/v2/documents_pb'
 import {
   createDraft,
   getDocument,

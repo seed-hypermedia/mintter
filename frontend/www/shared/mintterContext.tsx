@@ -19,7 +19,7 @@ import {
   GetProfileAddrsResponse,
   ListProfilesResponse,
   Profile,
-} from '@mintter/proto/mintter_pb'
+} from '@mintter/api/v2/mintter_pb'
 import {
   ListDocumentsResponse,
   GetDocumentRequest,
@@ -28,7 +28,7 @@ import {
   GetDocumentResponse,
   UpdateDraftResponse,
   PublishDraftResponse,
-} from '@mintter/proto/v2/documents_pb'
+} from '@mintter/api/v2/documents_pb'
 import {useProfile} from './profileContext'
 
 type QueryParam<T> = T | T[]

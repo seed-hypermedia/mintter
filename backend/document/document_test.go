@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"testing"
 
+	v2 "mintter/api/go/v2"
 	"mintter/backend/document"
 	"mintter/backend/identity"
 	"mintter/backend/store"
 	"mintter/backend/testutil"
-	v2 "mintter/proto/v2"
 
 	"github.com/ipfs/go-cid"
 	"github.com/sanity-io/litter"

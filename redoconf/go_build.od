@@ -1,0 +1,18 @@
+rc_include _all.rc
+
+cat >$3 <<EOF
+#!/bin/sh -e
+GOOS=$(shquote "$GOOS")
+GOARCH=$(shquote "$GOARCH")
+CGO_ENABLED=$(shquote "$CGO_ENABLED")
+
+TARGET_SOURCE_DIR="\$(dirname $S/\$1)"
+
+redo-ifchange ../native/all-sources.go.list
+cat ../native/all-sources.go.list | xargs redo-ifchange
+echo "Building Go binary for \$GOOS/\$GOARCH..." >&2
+GOOS=$GOOS GOARCH=$GOARCH CGO_ENABLED=$CGO_ENABLED go build -o \$3 \$TARGET_SOURCE_DIR/
+redo-stamp <\$3
+EOF
+chmod a+x $3
+redo-stamp <$3

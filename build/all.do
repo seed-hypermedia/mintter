@@ -1,1 +1,0 @@
-redo-ifchange darwin/mintterd linux/mintterd windows/mintterd.exe

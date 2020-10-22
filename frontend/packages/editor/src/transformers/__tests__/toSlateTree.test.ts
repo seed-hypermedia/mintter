@@ -1,5 +1,5 @@
 import {toSlateTree} from '../transformers'
-import {BlockRefList, Block} from '@mintter/proto/v2/documents_pb'
+import {BlockRefList, Block} from '@mintter/api/v2/documents_pb'
 import {ELEMENT_PARAGRAPH} from '../../elements/defaults'
 import {ELEMENT_BLOCK_LIST} from '../../HierarchyPlugin/defaults'
 import {ELEMENT_BLOCK} from '../../BlockPlugin/defaults'

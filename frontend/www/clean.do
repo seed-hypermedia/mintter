@@ -1,1 +1,1 @@
-rm -rf .next out deps.list
+rm -rf .next out *.list

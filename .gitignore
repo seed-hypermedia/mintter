@@ -16,10 +16,12 @@ build/*
 !build/*.do
 !build/*.od
 .redo
+out
 
 !.vscode
 
 rice-box.go
+ui-assets.gen.go
 
 # temp files
 frontent/old_pages

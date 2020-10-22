@@ -20,7 +20,7 @@
     "@material-ui/core": "^4.9.2",
     "@material-ui/icons": "^4.9.1",
     "@mintter/editor": "*",
-    "@mintter/proto": "*",
+    "@mintter/api": "*",
     "@tippyjs/react": "^4.0.2",
     "@udecode/slate-plugins": "^0.66.9",
     "@zeit/next-css": "^1.0.1",

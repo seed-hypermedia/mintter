@@ -1,1 +1,2 @@
-redo build/clean frontend/clean
+rm -rf out
+redo frontend/packages/clean

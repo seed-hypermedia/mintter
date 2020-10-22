@@ -6,7 +6,7 @@ import {useAuthor} from 'shared/profileContext'
 import useLocalStorage from 'shared/localstorage'
 import {ErrorMessage} from './errorMessage'
 import {AuthorLabel} from 'components/author-label'
-import {Document} from '@mintter/proto/v2/documents_pb'
+import {Document} from '@mintter/api/v2/documents_pb'
 
 interface Props {
   data: Document.AsObject[]

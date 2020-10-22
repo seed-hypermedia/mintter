@@ -31,7 +31,7 @@ jobs:
       - name: Install Nix shell tools
         if: steps.cache-nix-store.outputs.cache-hit != 'true'
         run: |
-          nix-env -f shell.nix -iA buildInputs
+          nix-env -fi shell.nix
       # Go steps.
       - name: Cache Go dependencies
         uses: actions/cache@v1

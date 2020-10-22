@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	v2 "mintter/api/go/v2"
 	"mintter/backend/identity"
 	"mintter/backend/ipldutil"
 	"mintter/backend/testutil"
-	v2 "mintter/proto/v2"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/ipfs/go-cid"

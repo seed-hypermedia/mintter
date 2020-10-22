@@ -2,8 +2,8 @@ package server
 
 import (
 	"context"
+	proto "mintter/api/go/v2"
 	"mintter/backend/identity"
-	"mintter/proto"
 )
 
 // GenSeed implements GenSeed rpc.

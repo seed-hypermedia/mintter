@@ -1,7 +1,7 @@
 import getConfig from 'next/config'
 import {Node, NodeEntry} from 'slate'
-import {MintterPromiseClient} from '@mintter/proto/mintter_grpc_web_pb'
-import {DocumentsPromiseClient} from '@mintter/proto/v2/documents_grpc_web_pb'
+import {MintterPromiseClient} from '@mintter/api/v2/mintter_grpc_web_pb'
+import {DocumentsPromiseClient} from '@mintter/api/v2/documents_grpc_web_pb'
 import {
   ListDocumentsRequest,
   ListDocumentsResponse,
@@ -18,7 +18,7 @@ import {
   Block,
   Paragraph,
   InlineElement,
-} from '@mintter/proto/v2/documents_pb'
+} from '@mintter/api/v2/documents_pb'
 import {
   GetProfileRequest,
   ConnectToPeerRequest,
@@ -31,7 +31,7 @@ import {
   Profile,
   ListSuggestedProfilesResponse,
   ListSuggestedProfilesRequest,
-} from '@mintter/proto/mintter_pb'
+} from '@mintter/api/v2/mintter_pb'
 import {
   toDocument,
   EditorDocument,

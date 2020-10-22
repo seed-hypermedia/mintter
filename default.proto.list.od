@@ -1,0 +1,4 @@
+redo-always
+SOURCE_DIR="$(dirname $S/$1)"
+find $SOURCE_DIR -type f -name "*.proto" | sort > $3
+redo-stamp <$3

@@ -1,0 +1,8 @@
+rc_include
+rc_helpmsg GOOS "Go: Target operating system (default: host OS)"
+rc_helpmsg GOARCH "Go: Target architecture (default: host architecture)"
+rc_helpmsg CGO_ENABLED "Go: Enable CGO (default: 0)"
+rc_replaceln GOOS "${GOOS:-`go env GOHOSTOS`}"
+rc_replaceln GOARCH "${GOARCH:-`go env GOHOSTARCH`}"
+rc_replaceln CGO_ENABLED "${CGO_ENABLED:-0}"
+rc_save
