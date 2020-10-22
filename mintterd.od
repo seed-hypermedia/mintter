@@ -1,0 +1,4 @@
+redo-ifchange all-sources.go.list go_build
+cat all-sources.go.list | xargs redo-ifchange
+./go_build -o $3 $S/backend/cmd/mintterd/...
+redo-stamp <$3

@@ -5,4 +5,4 @@
 set -e
 
 redo -j20
-exec out/native/backend/cmd/mintterd/mintterd $@
+exec out/native/mintterd $@
