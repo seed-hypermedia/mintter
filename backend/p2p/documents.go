@@ -3,9 +3,9 @@ package p2p
 import (
 	"context"
 	"fmt"
+	v2 "mintter/api/go/v2"
 	"mintter/backend/document"
 	"mintter/backend/identity"
-	v2 "mintter/proto/v2"
 
 	"go.uber.org/zap"
 )

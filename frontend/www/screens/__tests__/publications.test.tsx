@@ -2,7 +2,7 @@ import {Publications} from '../publications'
 import {render} from 'test/app-test-utils'
 import {AppProviders} from '../../components/app-providers'
 import * as clientMock from 'shared/mintterClient'
-import {Profile} from '@mintter/proto/mintter_pb'
+import {Profile} from '@mintter/api/v2/mintter_pb'
 
 jest.mock('shared/mintterClient')
 

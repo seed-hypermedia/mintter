@@ -14,7 +14,7 @@ import {ProfileProvider} from 'shared/profileContext'
 import {MintterProvider} from 'shared/mintterContext'
 import WelcomeProvider from 'shared/welcomeProvider'
 import EditProfile from '../edit-profile'
-import {GenSeedResponse, Profile} from '@mintter/proto/mintter_pb'
+import {GenSeedResponse, Profile} from '@mintter/api/v2/mintter_pb'
 import * as clientMock from 'shared/V1mintterClient'
 
 jest.mock('shared/V1mintterClient')

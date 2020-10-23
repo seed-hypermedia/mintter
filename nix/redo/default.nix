@@ -11,11 +11,14 @@ in stdenv.mkDerivation rec {
   version = "0.42";
 
   src = fetchFromGitHub rec {
-    owner = "apenwarr";
+    # Fork of redo with experimental implementation of redo-output command.
+    owner = "burdiyan";
     repo = "redo";
-    rev = "${repo}-${version}";
-    sha256 = "1060yb7hrxm8c7bfvb0y4j0acpxsj6hbykw1d9549zpkxxr9nsgm";
+    rev = "redo-output";
+    sha256 = "sha256:0ddh356sjxvdphf09mn39kms2svwmqahalfy9j0wqd8gbxsd5f7h";
   };
+
+  preInstall = "";
 
   inherit doCheck;
 

@@ -2,7 +2,7 @@ import React from 'react'
 import {render, screen, userEvent, act} from 'test/app-test-utils'
 import {Connections} from '../connections'
 import * as clientMock from 'shared/V1mintterClient'
-import {ListProfilesResponse} from '@mintter/proto/mintter_pb'
+import {ListProfilesResponse} from '@mintter/api/v2/mintter_pb'
 
 jest.mock('shared/V1mintterClient')
 

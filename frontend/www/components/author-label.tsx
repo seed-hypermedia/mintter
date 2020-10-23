@@ -1,7 +1,7 @@
 import Tippy from '@tippyjs/react'
 import {css} from 'emotion'
 import {QueryResult} from 'react-query'
-import {GetProfileResponse, Profile} from '@mintter/proto/mintter_pb'
+import {GetProfileResponse, Profile} from '@mintter/api/v2/mintter_pb'
 import {ErrorMessage} from './errorMessage'
 
 interface AuthorLabelProps {

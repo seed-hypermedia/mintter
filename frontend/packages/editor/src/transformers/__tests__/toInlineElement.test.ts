@@ -1,7 +1,7 @@
-import {TextStyle} from '@mintter/proto/v2/documents_pb'
+import {TextStyle} from '@mintter/api/v2/documents_pb'
 import {toInlineElement} from '../transformers'
 import {makeProto} from '../makeProto'
-import {InlineElement} from '@mintter/proto/v2/documents_pb'
+import {InlineElement} from '@mintter/api/v2/documents_pb'
 
 test('toInlineElement: should return the correct proto', () => {
   expect(toInlineElement({text: 'bold inline test', bold: true})).toEqual(

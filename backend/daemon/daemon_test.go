@@ -2,9 +2,9 @@ package daemon
 
 import (
 	"context"
+	v2 "mintter/api/go/v2"
 	"mintter/backend/config"
 	"mintter/backend/testutil"
-	v2 "mintter/proto/v2"
 	"testing"
 	"time"
 

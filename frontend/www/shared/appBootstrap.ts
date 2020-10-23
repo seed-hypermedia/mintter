@@ -4,7 +4,7 @@ import {
   InitProfileRequest,
   GetProfileRequest,
   Profile,
-} from '@mintter/proto/mintter_pb'
+} from '@mintter/api/v2/mintter_pb'
 
 export interface AppData {
   profile?: Profile

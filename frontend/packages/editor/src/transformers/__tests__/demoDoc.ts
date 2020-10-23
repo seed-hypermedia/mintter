@@ -1,4 +1,4 @@
-import * as v2 from '@mintter/proto/v2/documents_pb'
+import * as v2 from '@mintter/api/v2/documents_pb'
 
 // For some unreasonable reason protobuf compiler for JavaScript
 // only exposes setters for each field, and no way to just pass an object.

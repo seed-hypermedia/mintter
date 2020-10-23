@@ -1,1 +1,2 @@
-redo build/clean frontend/clean
+rm -rf out ui-assets.gen.go
+redo frontend/packages/clean

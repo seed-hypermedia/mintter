@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
+	v2 "mintter/api/go/v2"
 	"mintter/backend/identity"
-	v2 "mintter/proto/v2"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/ipfs/go-cid"

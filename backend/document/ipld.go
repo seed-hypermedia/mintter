@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
+	v2 "mintter/api/go/v2"
 	"mintter/backend/identity"
-	v2 "mintter/proto/v2"
 
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
