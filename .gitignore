@@ -11,10 +11,6 @@ yarn-error.log*
 tmp
 
 # Redo
-!build
-build/*
-!build/*.do
-!build/*.od
 .redo
 out
 
