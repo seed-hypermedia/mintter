@@ -8,7 +8,7 @@ import {
   BlockRef,
   BlockRefList,
   Document,
-} from '@mintter/proto/v2/documents_pb'
+} from '@mintter/api/v2/documents_pb'
 import {SlateBlock} from '../editor'
 import {Node, Text} from 'slate'
 import {ELEMENT_PARAGRAPH} from '../elements/defaults'

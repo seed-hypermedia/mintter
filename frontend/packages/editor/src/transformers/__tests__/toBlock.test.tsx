@@ -8,7 +8,7 @@ import {
   Paragraph,
   InlineElement,
   TextStyle,
-} from '@mintter/proto/v2/documents_pb'
+} from '@mintter/api/v2/documents_pb'
 
 test('toBlock: simple text block', () => {
   const input = ((

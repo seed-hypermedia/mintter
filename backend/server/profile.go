@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	proto "mintter/api/go/v2"
 	"mintter/backend/identity"
-	"mintter/proto"
 
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	"go.uber.org/zap"

@@ -11,7 +11,7 @@ import {
 import {BrowserRouter as Router} from 'react-router-dom'
 import WelcomeProvider from 'shared/welcomeProvider'
 import CreatePassword from '../create-password'
-import {GenSeedResponse, Profile} from '@mintter/proto/mintter_pb'
+import {GenSeedResponse, Profile} from '@mintter/api/v2/mintter_pb'
 import * as clientMock from 'shared/V1mintterClient'
 import {ProfileProvider} from 'shared/profileContext'
 

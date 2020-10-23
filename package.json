@@ -33,7 +33,7 @@
   "workspaces": [
     "frontend/www",
     "frontend/packages/*",
-    "proto"
+    "api/js"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.5.2",

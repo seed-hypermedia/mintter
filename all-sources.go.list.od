@@ -1,0 +1,9 @@
+# Create a list of all Go sources. Only one of these is needed for all platforms.
+redo-always
+redo-ifchange ../native/proto/v2/go.protobuf ../native/proto/p2p/go.protobuf $S/ui-assets.gen.go
+cat | sort > $3 <<EOF
+`find $S -type f -name "*.go"`
+$S/go.mod
+$S/go.sum
+EOF
+redo-stamp <$3

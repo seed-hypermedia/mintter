@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
+	internal "mintter/api/go/p2p"
 	"mintter/backend/identity"
-	"mintter/backend/p2p/internal"
 )
 
 // Ping another peer to check the connectivity.

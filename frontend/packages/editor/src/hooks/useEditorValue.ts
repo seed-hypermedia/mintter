@@ -1,4 +1,4 @@
-import {Block} from '@mintter/proto/v2/documents_pb'
+import {Block} from '@mintter/api/v2/documents_pb'
 import {useEffect, useReducer, useCallback} from 'react'
 import {initialValue, EditorState, initialBlocksValue} from '../editor'
 import {toSlateTree} from '../transformers'

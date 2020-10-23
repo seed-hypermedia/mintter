@@ -21,7 +21,7 @@ import {
   SlateBlock,
   TransclusionHelperProvider,
 } from '@mintter/editor'
-import {Document} from '@mintter/proto/v2/documents_pb'
+import {Document} from '@mintter/api/v2/documents_pb'
 import Seo from 'components/seo'
 import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
@@ -39,7 +39,7 @@ import {
   UpdateDraftRequest,
   BlockRefList,
   Block,
-} from '@mintter/proto/v2/documents_pb'
+} from '@mintter/api/v2/documents_pb'
 import {v4 as uuid} from 'uuid'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'

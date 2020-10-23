@@ -3,10 +3,10 @@ package server_test
 import (
 	"testing"
 
+	proto "mintter/api/go/v2"
 	"mintter/backend/config"
 	"mintter/backend/server"
 	"mintter/backend/testutil"
-	"mintter/proto"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"

@@ -1,1 +1,2 @@
-redo-ifchange generate frontend/all build/all
+redo-ifchange configured
+redo-ifchange out/native/all

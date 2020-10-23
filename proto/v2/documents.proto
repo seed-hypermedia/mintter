@@ -5,20 +5,20 @@ package mintter.v2;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-option go_package = "mintter/proto/v2;v2";
+option go_package = "mintter/api/go/v2;v2";
 
 service Documents {
-  rpc CreateDraft(CreateDraftRequest) returns (Document);
+  rpc CreateDraft(CreateDraftRequest) returns(Document);
 
-  rpc UpdateDraft(UpdateDraftRequest) returns (UpdateDraftResponse);
+  rpc UpdateDraft(UpdateDraftRequest) returns(UpdateDraftResponse);
 
-  rpc PublishDraft(PublishDraftRequest) returns (PublishDraftResponse);
+  rpc PublishDraft(PublishDraftRequest) returns(PublishDraftResponse);
 
-  rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse);
+  rpc GetDocument(GetDocumentRequest) returns(GetDocumentResponse);
 
-  rpc ListDocuments(ListDocumentsRequest) returns (ListDocumentsResponse);
+  rpc ListDocuments(ListDocumentsRequest) returns(ListDocumentsResponse);
 
-  rpc DeleteDocument(DeleteDocumentRequest) returns (google.protobuf.Empty);
+  rpc DeleteDocument(DeleteDocumentRequest) returns(google.protobuf.Empty);
 }
 
 message CreateDraftRequest {

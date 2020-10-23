@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	internal "mintter/api/go/p2p"
 	"mintter/backend/identity"
-	"mintter/backend/p2p/internal"
 
 	"github.com/libp2p/go-libp2p-core/crypto"
 	peer "github.com/libp2p/go-libp2p-core/peer"

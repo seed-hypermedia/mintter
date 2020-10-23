@@ -1,6 +1,6 @@
 import {toBlockRef} from '../transformers'
 import {makeProto} from '../makeProto'
-import {BlockRef, BlockRefList} from '@mintter/proto/v2/documents_pb'
+import {BlockRef, BlockRefList} from '@mintter/api/v2/documents_pb'
 
 test('toBlockRef: simple block', () => {
   const slateBlock = {

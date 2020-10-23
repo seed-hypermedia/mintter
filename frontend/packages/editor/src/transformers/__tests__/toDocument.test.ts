@@ -1,4 +1,4 @@
-import {Document, BlockRefList, BlockRef} from '@mintter/proto/v2/documents_pb'
+import {Document, BlockRefList, BlockRef} from '@mintter/api/v2/documents_pb'
 import {toDocument} from '../transformers'
 import {makeProto} from '../makeProto'
 

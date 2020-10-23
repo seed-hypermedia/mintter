@@ -18,7 +18,7 @@ import {
   ListProfilesResponse,
   ConnectToPeerResponse,
   ListSuggestedProfilesResponse,
-} from '@mintter/proto/mintter_pb'
+} from '@mintter/api/v2/mintter_pb'
 import * as apiClient from './V1mintterClient'
 import * as apiV2 from './mintterClient'
 import {bootstrapAppData} from './appBootstrap'

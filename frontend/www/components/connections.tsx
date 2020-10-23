@@ -5,7 +5,7 @@ import {css} from 'emotion'
 import {AuthorLabel} from './author-label'
 import Tippy from '@tippyjs/react'
 import {useToasts} from 'react-toast-notifications'
-import {Profile, ConnectionStatus} from '@mintter/proto/mintter_pb'
+import {Profile, ConnectionStatus} from '@mintter/api/v2/mintter_pb'
 
 export function Connections() {
   const {connectToPeerById, listConnections} = useProfileContext()

@@ -2,9 +2,9 @@ package p2p_test
 
 import (
 	"context"
+	v2 "mintter/api/go/v2"
 	"mintter/backend/document"
 	"mintter/backend/testutil"
-	v2 "mintter/proto/v2"
 	"testing"
 	"time"
 

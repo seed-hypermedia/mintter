@@ -42,7 +42,7 @@
     "slate-react": "^0.58.4"
   },
   "devDependencies": {
-    "@mintter/proto": "*",
+    "@mintter/api": "*",
     "@testing-library/react": "^10.4.8",
     "@types/jest": "^25.1.2",
     "autoprefixer": "^9.8.0",

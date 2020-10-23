@@ -14,7 +14,7 @@ import {MintterProvider} from 'shared/mintterContext'
 import {ToastProvider} from 'react-toast-notifications'
 import WelcomeProvider from 'shared/welcomeProvider'
 import SecurityPack from '../security-pack'
-import {GenSeedResponse, Profile} from '@mintter/proto/mintter_pb'
+import {GenSeedResponse, Profile} from '@mintter/api/v2/mintter_pb'
 import * as clientMock from 'shared/V1mintterClient'
 
 jest.mock('shared/V1mintterClient')

@@ -9,14 +9,14 @@ import (
 	"net"
 	"net/http"
 
+	proto "mintter/api/go/v2"
+	v2 "mintter/api/go/v2"
 	"mintter/backend/config"
 	"mintter/backend/document"
 	"mintter/backend/identity"
 	"mintter/backend/p2p"
 	"mintter/backend/server"
 	"mintter/backend/store"
-	"mintter/proto"
-	v2 "mintter/proto/v2"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/pkg/browser"
