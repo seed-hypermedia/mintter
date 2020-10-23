@@ -155,7 +155,6 @@ export default function Publication(): JSX.Element {
     document: data,
   })
   const {title, blocks, subtitle, author: pubAuthor, mentions} = state
-  console.log('mentions!', mentions)
   const {data: author} = useAuthor(pubAuthor)
 
   React.useEffect(() => {
@@ -308,7 +307,7 @@ export default function Publication(): JSX.Element {
               }}
             >
               {interactionPanel.objects.map(object => (
-                <InteractionPanelObject id={object} />
+                <InteractionPanelObject id={object} editor={editor} />
               ))}
             </div>
           ) : (

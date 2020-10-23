@@ -301,7 +301,7 @@ export default function Editor(): JSX.Element {
               }}
             >
               {interactionPanel.objects.map(object => (
-                <InteractionPanelObject id={object} />
+                <InteractionPanelObject isEditor id={object} />
               ))}
             </div>
           ) : (

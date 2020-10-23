@@ -1,4 +1,5 @@
 import {
+  ELEMENT_BLOCK,
   ELEMENT_BLOCK_LIST,
   ELEMENT_READ_ONLY,
   ELEMENT_TRANSCLUSION,
@@ -12,6 +13,9 @@ import {AuthorLabel} from './author-label'
 import {SlateReactPresentation} from 'slate-react-presentation'
 import {ELEMENT_PARAGRAPH} from '@mintter/editor'
 import {Link} from './link'
+import {ReactEditor, useSlate} from 'slate-react'
+import Tippy from '@tippyjs/react'
+import {css} from 'emotion'
 
 export function InteractionPanelObject(props) {
   const [version] = React.useState(() => props.id.split('/')[0])
@@ -52,7 +56,7 @@ export function InteractionPanelObject(props) {
         </div>
         {open && (
           <div className="px-4 py-2 border-t">
-            <ContentRenderer value={doc} />
+            <ContentRenderer isEditor={props.isEditor} value={doc} />
           </div>
         )}
         <div className="border-t ">
@@ -74,23 +78,23 @@ export function InteractionPanelObject(props) {
   )
 }
 
-function ContentRenderer({value}) {
-  const renderElement = React.useCallback(({attributes, children, element}) => {
-    switch (element.type) {
-      case ELEMENT_BLOCK_LIST:
+function ContentRenderer({value, isEditor = false}) {
+  const renderElement = React.useCallback(({children, ...props}) => {
+    switch (props.element.type) {
+      case ELEMENT_BLOCK:
         return (
-          <div {...attributes} className="pl-4">
+          <IPWrapper isEditor={isEditor} {...props}>
             {children}
-          </div>
+          </IPWrapper>
         )
       case ELEMENT_TRANSCLUSION:
         return (
-          <div {...attributes} className="bg-teal-200">
-            {children}
-          </div>
+          <IPWrapper isEditor={isEditor} {...props}>
+            <div className="bg-teal-200">{children}</div>
+          </IPWrapper>
         )
       case ELEMENT_PARAGRAPH:
-        return <p {...attributes}>{children}</p>
+        return <p {...props}>{children}</p>
       default:
         return children
     }
@@ -114,6 +118,36 @@ function ContentRenderer({value}) {
         renderElement={renderElement}
         renderLeaf={renderLeaf}
       />
+    </div>
+  )
+}
+
+function IPWrapper({attributes, children, element, isEditor}) {
+  return (
+    <div className="flex items-start relative" {...attributes}>
+      {isEditor && (
+        <Tippy
+          delay={400}
+          content={
+            <span
+              className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
+                background-color: #333;
+                color: #ccc;
+              `}`}
+            >
+              Transclude to current document
+            </span>
+          }
+        >
+          <button
+            className={`text-xs text-body-muted p-1 rounded-sm hover:bg-muted transition duration-100 mt-3 mr-2`}
+            onClick={() => console.log({element})}
+          >
+            <Icons.CornerDownLeft size={12} color="currentColor" />
+          </button>
+        </Tippy>
+      )}
+      <div className={!isEditor ? 'pl-4' : ''}>{children}</div>
     </div>
   )
 }
