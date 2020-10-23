@@ -1,7 +1,7 @@
 import {Editor as SlateEditor, Path, Node} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {ELEMENT_PARAGRAPH} from './elements/defaults'
-import {BlockRefList} from '@mintter/api'
+import {BlockRefList} from '@mintter/api/v2/documents_pb'
 import {v4 as uuid} from 'uuid'
 import {ELEMENT_BLOCK} from './BlockPlugin/defaults'
 import {ELEMENT_BLOCK_LIST} from './HierarchyPlugin/defaults'
