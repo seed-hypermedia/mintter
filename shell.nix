@@ -3,7 +3,6 @@ let
     python2 = pkgs.python2;
     redo = pkgs.callPackage ./nix/redo {
         python27 = python2;
-        doCheck = false;
     };
     protoc-gen-grpc-web = pkgs.callPackage ./nix/protoc-gen-grpc-web {};
     go = pkgs.go_1_15;

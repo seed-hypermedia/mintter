@@ -1,4 +1,4 @@
-{ stdenv, lib, python27, fetchFromGitHub, which, findutils, doCheck ? true}: let
+{ stdenv, lib, python27, fetchFromGitHub, which, findutils }: let
 
   # copy from 
   # pkgs/applications/networking/pyload/beautifulsoup.nix
@@ -19,10 +19,6 @@ in stdenv.mkDerivation rec {
   };
 
   preInstall = "";
-
-  inherit doCheck;
-
-  checkTarget = "test";
 
   outputs = [ "out" "man" ];
 
