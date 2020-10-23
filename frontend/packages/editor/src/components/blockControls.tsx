@@ -1,10 +1,9 @@
 import React, {useEffect, useCallback} from 'react'
-import {css} from 'emotion'
 import {useEditor, useReadOnly} from 'slate-react'
 import {useHelper} from '../HelperPlugin/components/HelperContext'
 import {useTransclusionHelper} from '../TransclusionPlugin/TransclusionHelperContext'
 
-export function BlockControls({element, show, path, dragRef}) {
+export function BlockControls({element, show, path, dragRef, className = ''}) {
   const {setTarget, target, onKeyDownHelper} = useHelper()
   const readOnly = useReadOnly()
 
@@ -44,19 +43,19 @@ export function BlockControls({element, show, path, dragRef}) {
   }, [onKeyDown])
   return (
     <div
-      className={`absolute top-0 left-0 transition duration-200 flex items-center justify-end mt-3 ${
+      className={`absolute left-0 transform -translate-x-full pr-2 ${
+        readOnly ? '' : 'grid-flow-col-dense grid gap-2 grid-cols-2'
+      } transition duration-200 ${
         show ? 'opacity-100' : 'opacity-0'
-      } ${css`
-        transform: translateX(-100%);
-      `}`}
+      } ${className}`}
       contentEditable={false}
     >
       <button
         onClick={readOnly ? onTranscludeClicked : undefined}
-        className="rounded-sm bg-transparent text-body hover:bg-background-muted w-6 h-8 p-1 mx-1"
+        className="rounded-sm text-body hover:bg-background-muted flex p-1 mt-1 items-center justify-center"
         ref={readOnly ? null : dragRef}
       >
-        <svg width="1em" height="1.5em" viewBox="0 0 16 24" fill="none">
+        <svg viewBox="0 0 16 24" width="16px" fill="blue">
           <path
             d="M3.5 6a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM12.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM5 19.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM3.5 13.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
             fill="currentColor"
@@ -66,9 +65,9 @@ export function BlockControls({element, show, path, dragRef}) {
       {!readOnly && (
         <button
           onClick={onAddClicked}
-          className="rounded-sm bg-transparent text-body hover:bg-background-muted w-8 h-8 p-1 mx-1"
+          className="rounded-sm text-body hover:bg-background-muted flex p-1 mt-1 items-center justify-center"
         >
-          <svg width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="none">
+          <svg viewBox="0 0 16 16" width="16px" fill="none">
             <path
               d="M12.667 8.667h-4v4H7.334v-4h-4V7.334h4v-4h1.333v4h4v1.333z"
               fill="currentColor"

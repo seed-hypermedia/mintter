@@ -1,6 +1,7 @@
 import {
   ELEMENT_BLOCK_LIST,
   ELEMENT_READ_ONLY,
+  ELEMENT_TRANSCLUSION,
   Icons,
   toSlateTree,
 } from '@mintter/editor'
@@ -82,12 +83,14 @@ function ContentRenderer({value}) {
             {children}
           </div>
         )
-      case ELEMENT_PARAGRAPH:
+      case ELEMENT_TRANSCLUSION:
         return (
-          <p {...attributes} className="py-1 text-body text-xl leading-loose">
+          <div {...attributes} className="bg-teal-200">
             {children}
-          </p>
+          </div>
         )
+      case ELEMENT_PARAGRAPH:
+        return <p {...attributes}>{children}</p>
       default:
         return children
     }
@@ -95,14 +98,17 @@ function ContentRenderer({value}) {
 
   const renderLeaf = React.useCallback(({attributes, children, leaf}) => {
     if (leaf.bold) {
-      children = <strong className="font-bold">{children}</strong>
+      children = <strong>{children}</strong>
     }
 
     return <span {...attributes}>{children}</span>
   }, [])
 
   return (
-    <div contentEditable={false} className="mt-2">
+    <div
+      contentEditable={false}
+      className="mt-2 prose xs:prose-xl lg:prose-2xl 2xl:prose-3xl"
+    >
       <SlateReactPresentation
         value={value}
         renderElement={renderElement}

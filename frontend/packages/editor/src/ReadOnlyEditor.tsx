@@ -18,11 +18,7 @@ export function ReadOnlyEditor({value}) {
   const renderElement = React.useCallback(({element, children}) => {
     switch (element.type) {
       case ELEMENT_PARAGRAPH:
-        return (
-          <p className="px-2 py-1 text-body text-xl leading-loose">
-            {children}
-          </p>
-        )
+        return <p>{children}</p>
       default:
         return (
           <div>
@@ -46,21 +42,17 @@ export function ReadOnlyEditor({value}) {
 
     if (leaf.bold) {
       Component = 'strong'
-      className = 'font-bold'
     }
 
     if (leaf.italic) {
       Component = 'em'
-      className = 'italic'
     }
 
     if (leaf.code) {
       Component = 'code'
-      className = 'bg-muted text-body text-sm py-1 px-2 rounded-sm border-none'
     }
 
     if (leaf.underline) {
-      className = 'underline'
     }
 
     if (leaf.strikethrough) {

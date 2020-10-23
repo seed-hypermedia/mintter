@@ -214,28 +214,32 @@ export default function Publication(): JSX.Element {
           >
             {title}
           </h1>
-          <p
-            className={`leading-relaxed text-lg font-light text-heading-muted italic mt-4 ${css`
-              word-wrap: break-word;
-              white-space: pre-wrap;
-              min-height: 28px;
-            `}`}
-          >
-            {subtitle}
-          </p>
+          {subtitle && (
+            <p
+              className={`leading-relaxed text-lg font-light text-heading-muted italic mt-4 ${css`
+                word-wrap: break-word;
+                white-space: pre-wrap;
+                min-height: 28px;
+              `}`}
+            >
+              {subtitle}
+            </p>
+          )}
           <p className=" text-sm mt-4 text-heading">
             <span>by </span>
 
             <AuthorLabel author={author} />
           </p>
         </div>
-        <EditorComponent
-          readOnly
-          editor={editor}
-          plugins={plugins}
-          value={blocks}
-          onChange={() => {}}
-        />
+        <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-3xl">
+          <EditorComponent
+            readOnly
+            editor={editor}
+            plugins={plugins}
+            value={blocks}
+            onChange={() => {}}
+          />
+        </div>
       </>
     )
   }

@@ -183,7 +183,7 @@ export default function Editor(): JSX.Element {
 
   return (
     <>
-      <Seo title="Editor" />
+      <Seo title="Compose" />
       <DebugValue value={state} />
       <ResizerStyle />
       <Page>
@@ -274,16 +274,17 @@ export default function Editor(): JSX.Element {
                   }}
                 />
               </div>
-
-              <EditorComponent
-                editor={editor}
-                plugins={plugins}
-                value={blocks}
-                onChange={blocks => {
-                  setBlocks(blocks)
-                }}
-                theme={theme}
-              />
+              <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-3xl">
+                <EditorComponent
+                  editor={editor}
+                  plugins={plugins}
+                  value={blocks}
+                  onChange={blocks => {
+                    setBlocks(blocks)
+                  }}
+                  theme={theme}
+                />
+              </div>
             </MainColumn>
           </div>
           {interactionPanel.visible ? (

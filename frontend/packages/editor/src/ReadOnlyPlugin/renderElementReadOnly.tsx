@@ -20,17 +20,10 @@ function RenderElement(props) {
   const renderElement = React.useCallback(({attributes, children, element}) => {
     switch (element.type) {
       case ELEMENT_PARAGRAPH:
-        return (
-          <p
-            {...attributes}
-            className="px-2 py-1 text-body text-xl leading-loose"
-          >
-            {children}
-          </p>
-        )
+        return <p {...attributes}>{children}</p>
       default:
         return (
-          <p {...attributes} className="bg-teal-300 px-2 py-1 text-xl relative">
+          <p {...attributes} className="bg-teal-300 relative">
             <span
               contentEditable={false}
               className="absolute top-0 left-0 text-xs text-teal-600 uppercase"
