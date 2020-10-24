@@ -10,6 +10,7 @@ const Transclusion = (
 ) => {
   function handlePush(e) {
     e.preventDefault()
+    console.log({element})
     if (rest.push) {
       rest.push(`/p/${element.id.split('/')[0]}`)
       return
@@ -40,7 +41,7 @@ const Transclusion = (
                   color: #ccc;
                 `}`}
               >
-                Open in Interaction Panel
+                Open in Interaction Panel {element.id.split('/')[0]}
               </span>
             }
           >

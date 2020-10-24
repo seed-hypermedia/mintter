@@ -23,7 +23,6 @@ export default function Topbar({isPublic = false}) {
   const [input, setInput] = useState<string>('')
   const [menuVisible, setMenuVisible] = useState<boolean>(false)
   const isLocalhost = window.location.hostname.includes('localhost')
-  console.log('Topbar -> isLocalhost', isLocalhost)
 
   const show = useCallback(() => setMenuVisible(true), [setMenuVisible])
   const hide = useCallback(() => setMenuVisible(false), [setMenuVisible])

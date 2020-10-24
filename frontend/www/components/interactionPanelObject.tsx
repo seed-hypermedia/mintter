@@ -16,13 +16,24 @@ import {Link} from './link'
 import {ReactEditor, useSlate} from 'slate-react'
 import Tippy from '@tippyjs/react'
 import {css} from 'emotion'
+import {useParams} from 'react-router-dom'
+import {useTransclusion} from 'shared/useTransclusion'
 
 export function InteractionPanelObject(props) {
-  const [version] = React.useState(() => props.id.split('/')[0])
-  const [objectId] = React.useState(() => props.id.split('/')[1])
+  const {version: draftVersion} = useParams()
+  const [version] = React.useState(props.id.split('/')[0])
+  const [objectId] = React.useState(props.id.split('/')[1])
   const {status, data} = useDocument(version)
   const {data: author} = useAuthor(data?.document?.author)
   const [open, setOpen] = React.useState(true)
+
+  async function onTransclude(blockId) {
+    props.createTransclusion({
+      source: version,
+      destination: draftVersion,
+      block: blockId,
+    })
+  }
 
   if (status === 'success') {
     const {title, subtitle, blockRefList, version} = data.document
@@ -56,7 +67,11 @@ export function InteractionPanelObject(props) {
         </div>
         {open && (
           <div className="px-4 py-2 border-t">
-            <ContentRenderer isEditor={props.isEditor} value={doc} />
+            <ContentRenderer
+              isEditor={props.isEditor}
+              value={doc}
+              onTransclude={onTransclude}
+            />
           </div>
         )}
         <div className="border-t ">
@@ -78,19 +93,21 @@ export function InteractionPanelObject(props) {
   )
 }
 
-function ContentRenderer({value, isEditor = false}) {
+function ContentRenderer({value, isEditor = false, onTransclude}) {
   const renderElement = React.useCallback(({children, ...props}) => {
     switch (props.element.type) {
       case ELEMENT_BLOCK:
         return (
-          <IPWrapper isEditor={isEditor} {...props}>
+          <IPWrapper isEditor={isEditor} onTransclude={onTransclude} {...props}>
             {children}
           </IPWrapper>
         )
       case ELEMENT_TRANSCLUSION:
         return (
           <IPWrapper isEditor={isEditor} {...props}>
-            <div className="bg-teal-200">{children}</div>
+            <div className="bg-background-muted -mx-2 px-2 rounded">
+              {children}
+            </div>
           </IPWrapper>
         )
       case ELEMENT_PARAGRAPH:
@@ -122,7 +139,7 @@ function ContentRenderer({value, isEditor = false}) {
   )
 }
 
-function IPWrapper({attributes, children, element, isEditor}) {
+function IPWrapper({attributes, children, element, isEditor, onTransclude}) {
   return (
     <div className="flex items-start relative" {...attributes}>
       {isEditor && (
@@ -141,7 +158,7 @@ function IPWrapper({attributes, children, element, isEditor}) {
         >
           <button
             className={`text-xs text-body-muted p-1 rounded-sm hover:bg-muted transition duration-100 mt-3 mr-2`}
-            onClick={() => console.log({element})}
+            onClick={() => onTransclude(element.id)}
           >
             <Icons.CornerDownLeft size={12} color="currentColor" />
           </button>

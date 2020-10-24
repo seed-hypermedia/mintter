@@ -47,7 +47,7 @@ body {
   --color-toggle-theme: theme('colors.gray.800');
 
   --color-toolbar: theme('colors.gray.500');
-  --color-toolbar-active: theme('colors.black');
+  --color-toolbar-active: theme('colors.gray.900');
 }
 
 .theme-dark,
@@ -90,7 +90,7 @@ body {
   --color-toggle-theme: theme('colors.gray.400');
 
   --color-toolbar: theme('colors.gray.500');
-  --color-toolbar-active: theme('colors.white');
+  --color-toolbar-active: theme('colors.gray.100');
 }
 
 .content-transition {

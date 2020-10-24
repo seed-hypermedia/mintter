@@ -1,4 +1,5 @@
 import React, {useReducer, useCallback, useState} from 'react'
+import Tippy from '@tippyjs/react'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
 import {
@@ -134,6 +135,7 @@ export default function Publication(): JSX.Element {
       objects: [],
     },
   )
+  console.log('interactionPanel', interactionPanel)
 
   const editorOptions = {
     ...options,
@@ -145,12 +147,10 @@ export default function Publication(): JSX.Element {
     },
   }
   const plugins = createPlugins(editorOptions)
-
   const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
-
   const {createDraft} = useMintter()
-
   const {status, error, data, isFetching, failureCount} = useDocument(version)
+  console.log('data =>', data)
   const {state, setValue} = useEditorValue({
     document: data,
   })
@@ -158,6 +158,7 @@ export default function Publication(): JSX.Element {
   const {data: author} = useAuthor(pubAuthor)
 
   React.useEffect(() => {
+    console.log('mentions =>', mentions)
     if (mentions.length) {
       interactionPanelDispatch({type: 'add_mentions', payload: mentions})
     }
@@ -174,6 +175,13 @@ export default function Publication(): JSX.Element {
     })
 
     push(`/private/editor/${draftUrl}`)
+  }
+
+  async function handleRespond() {
+    const d = await createDraft()
+
+    const value = d.toObject()
+    push(`/private/editor/${value.version}?object=${version}`)
   }
 
   let content
@@ -278,11 +286,32 @@ export default function Publication(): JSX.Element {
           <div className="overflow-auto">
             <div className="px-4 flex justify-end pt-4">
               <button
-                onClick={() => interactionPanelDispatch({type: 'toggle_panel'})}
-                className="ml-4 px-4 py-2 text-sm"
+                onClick={handleRespond}
+                className="px-4 py-2 text-primary font-bold transition duration-200 hover:text-primary-hover ml-4"
               >
-                toggle sidepanel
+                Respond
               </button>
+              <Tippy
+                content={
+                  <span
+                    className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
+                      background-color: #333;
+                      color: #ccc;
+                    `}`}
+                  >
+                    Open Interaction Panel
+                  </span>
+                }
+              >
+                <button
+                  onClick={() =>
+                    interactionPanelDispatch({type: 'toggle_panel'})
+                  }
+                  className="ml-4 text-sm text-muted-hover hover:text-toolbar transform -rotate-180 transition duration-200 outline-none"
+                >
+                  <Icons.Sidebar color="currentColor" />
+                </button>
+              </Tippy>
             </div>
             <MainColumn>
               <TransclusionHelperProvider
@@ -307,7 +336,7 @@ export default function Publication(): JSX.Element {
               }}
             >
               {interactionPanel.objects.map(object => (
-                <InteractionPanelObject id={object} editor={editor} />
+                <InteractionPanelObject id={object} />
               ))}
             </div>
           ) : (
