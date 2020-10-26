@@ -19,6 +19,7 @@ import {css} from 'emotion'
 import {useParams} from 'react-router-dom'
 import {useTransclusion} from 'shared/useTransclusion'
 import {queryCache} from 'react-query'
+import {useInteractionPanel} from './interactionPanel'
 
 export function InteractionPanelObject(props) {
   const {version: draftVersion} = useParams()
@@ -27,6 +28,7 @@ export function InteractionPanelObject(props) {
   const {status, data} = useDocument(version)
   const {data: author} = useAuthor(data?.document?.author)
   const [open, setOpen] = React.useState(true)
+  const {dispatch} = useInteractionPanel()
 
   async function onTransclude(block) {
     const updatedDraft = await props.createTransclusion({
@@ -38,7 +40,7 @@ export function InteractionPanelObject(props) {
   }
 
   if (status === 'success') {
-    const {title, subtitle, blockRefList, version} = data.document
+    const {id, title, subtitle, blockRefList, version} = data.document
 
     const doc = toSlateTree({
       blockRefList,
@@ -47,22 +49,34 @@ export function InteractionPanelObject(props) {
     })
 
     return (
-      <div className="border rounded-lg m-4 break-words whitespace-pre-wrap relative bg-background">
+      <div
+        className={`border rounded-lg m-4 break-words whitespace-pre-wrap relative bg-background`}
+      >
         <div className="p-4">
           <div className="flex justify-between items-center text-muted-hover">
             <p className="text-muted-hover font-extrabold text-xs uppercase">
               Document
             </p>
-            <button
-              onClick={() => setOpen(val => !val)}
-              className="rounded hover:bg-muted p-1 hover:text-body-muted transition duration-100"
-            >
-              {open ? (
-                <Icons.ChevronUp size={16} color="currentColor" />
-              ) : (
-                <Icons.ChevronDown size={16} color="currentColor" />
-              )}
-            </button>
+            <div>
+              <button
+                onClick={() => setOpen(val => !val)}
+                className="rounded hover:bg-muted p-1 hover:text-body-muted transition duration-100"
+              >
+                {open ? (
+                  <Icons.ChevronUp size={16} color="currentColor" />
+                ) : (
+                  <Icons.ChevronDown size={16} color="currentColor" />
+                )}
+              </button>
+              <button
+                onClick={() =>
+                  dispatch({type: 'remove_object', payload: props.id})
+                }
+                className="rounded hover:bg-muted p-1 hover:text-body-muted transition duration-100"
+              >
+                <Icons.X size={16} color="currentColor" />
+              </button>
+            </div>
           </div>
           <h2 className="font-bold text-2xl mt-2">{title}</h2>
           <AuthorLabel author={author} />
