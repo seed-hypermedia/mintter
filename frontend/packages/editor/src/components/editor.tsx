@@ -86,6 +86,7 @@ function Editor(
         {readOnly ? (
           <>
             <EditablePlugins
+              style={{}}
               readOnly={true}
               plugins={plugins}
               renderElement={renderElement}
@@ -121,6 +122,7 @@ function Editor(
         ) : (
           <>
             <EditablePlugins
+              style={{}}
               readOnly={readOnly}
               plugins={plugins}
               renderElement={renderElement}

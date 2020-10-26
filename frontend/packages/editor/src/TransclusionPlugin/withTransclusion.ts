@@ -1,8 +1,9 @@
 import {ReactEditor} from 'slate-react'
 import {Editor, Transforms, Path} from 'slate'
 import {v4 as uuid} from 'uuid'
-import {ELEMENT_PARAGRAPH} from '../elements/defaults'
+// import {ELEMENT_PARAGRAPH} from '../elements/defaults'
 import {ELEMENT_TRANSCLUSION} from './defaults'
+import {ELEMENT_READ_ONLY} from '../ReadOnlyPlugin'
 
 export const withTransclusion = options => <T extends ReactEditor>(
   editor: T,
@@ -36,18 +37,16 @@ export const withTransclusion = options => <T extends ReactEditor>(
   }
 
   editor.deleteBackward = unit => {
-    console.log('deleteBackward:', {unit})
     const {selection} = editor
 
     if (selection) {
+      console.log('DELETE THIS', selection)
+
       const [pNode, pPath] = Editor.parent(editor, selection)
-      if (pNode.type === ELEMENT_PARAGRAPH) {
+      if (pNode.type === ELEMENT_READ_ONLY) {
         const [blockNode, blockPath] = Editor.parent(editor, pPath)
         if (blockNode.type === ELEMENT_TRANSCLUSION) {
-          Transforms.select(
-            editor,
-            Editor.end(editor, Path.previous(blockPath)),
-          )
+          Transforms.delete(editor, {at: blockPath})
           return
         }
       }

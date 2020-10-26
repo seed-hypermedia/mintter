@@ -36,7 +36,7 @@ import Textarea from 'components/textarea'
 import {Document} from '@mintter/api/v2/documents_pb'
 import {useDebounce} from 'shared/hooks'
 import {useDocument, useMintter} from 'shared/mintterContext'
-import {useParams, useHistory} from 'react-router-dom'
+import {useParams, useHistory, useLocation} from 'react-router-dom'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
 import Layout from 'components/layout'
@@ -46,10 +46,11 @@ import {BlockRefList} from '@mintter/api/v2/documents_pb'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 import {InteractionPanelObject} from 'components/interactionPanelObject'
+import {useTransclusion} from 'shared/useTransclusion'
 
 interface InteractionPanelAction {
   type: string
-  payload?: string
+  payload?: any
 }
 
 interface InteractionPanelState {
@@ -72,6 +73,15 @@ function objectsReducer(
     return {
       visible: true,
       objects: [...state.objects, payload],
+    }
+  }
+
+  if (type === 'add_mentions') {
+    let newObjects = payload.filter(version => !state.objects.includes(version))
+    return {
+      ...state,
+      visible: false,
+      objects: [...state.objects, ...newObjects],
     }
   }
 
@@ -99,10 +109,15 @@ function objectsReducer(
   return state
 }
 
+function useQuery() {
+  return new URLSearchParams(useLocation().search)
+}
+
 export default function Editor(): JSX.Element {
   const {push} = useHistory()
   const {version} = useParams()
   const {theme} = useTheme()
+  const query = useQuery()
 
   const [interactionPanel, interactionPanelDispatch] = React.useReducer(
     objectsReducer,
@@ -139,10 +154,25 @@ export default function Editor(): JSX.Element {
     },
   })
 
+  console.log('editor document', data)
+
+  const {createTransclusion} = useTransclusion({editor})
+
   const {state, setTitle, setSubtitle, setBlocks, setValue} = useEditorValue({
     document: data,
   })
-  const {title, blocks, subtitle} = state
+  const {title, blocks, subtitle, mentions} = state
+
+  React.useEffect(() => {
+    if (mentions.length) {
+      interactionPanelDispatch({type: 'add_mentions', payload: mentions})
+    }
+
+    let object = query.get('object')
+    if (object) {
+      interactionPanelDispatch({type: 'add_object', payload: object})
+    }
+  }, [])
 
   const [autosaveDraft] = useMutation(
     async state => {
@@ -183,7 +213,7 @@ export default function Editor(): JSX.Element {
 
   return (
     <>
-      <Seo title="Editor" />
+      <Seo title="Compose" />
       <DebugValue value={state} />
       <ResizerStyle />
       <Page>
@@ -222,12 +252,27 @@ export default function Editor(): JSX.Element {
               >
                 Publish
               </button>
-              <button
-                onClick={() => interactionPanelDispatch({type: 'toggle_panel'})}
-                className="ml-4 px-4 py-2 text-sm"
+              <Tippy
+                content={
+                  <span
+                    className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
+                      background-color: #333;
+                      color: #ccc;
+                    `}`}
+                  >
+                    Open Interaction Panel
+                  </span>
+                }
               >
-                toggle sidepanel
-              </button>
+                <button
+                  onClick={() =>
+                    interactionPanelDispatch({type: 'toggle_panel'})
+                  }
+                  className="ml-4 text-sm text-muted-hover hover:text-toolbar transform -rotate-180 transition duration-200 outline-none"
+                >
+                  <Icons.Sidebar color="currentColor" />
+                </button>
+              </Tippy>
             </div>
 
             <MainColumn>
@@ -274,21 +319,22 @@ export default function Editor(): JSX.Element {
                   }}
                 />
               </div>
-
-              <EditorComponent
-                editor={editor}
-                plugins={plugins}
-                value={blocks}
-                onChange={blocks => {
-                  setBlocks(blocks)
-                }}
-                theme={theme}
-              />
+              <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-3xl">
+                <EditorComponent
+                  editor={editor}
+                  plugins={plugins}
+                  value={blocks}
+                  onChange={blocks => {
+                    setBlocks(blocks)
+                  }}
+                  theme={theme}
+                />
+              </div>
             </MainColumn>
           </div>
           {interactionPanel.visible ? (
             <div
-              className="pt-4"
+              className="bg-background-muted"
               style={{
                 visibility: interactionPanel.visible ? 'visible' : 'hidden',
                 maxWidth: interactionPanel.visible ? '100%' : 0,
@@ -300,7 +346,11 @@ export default function Editor(): JSX.Element {
               }}
             >
               {interactionPanel.objects.map(object => (
-                <InteractionPanelObject id={object} />
+                <InteractionPanelObject
+                  isEditor
+                  id={object}
+                  createTransclusion={createTransclusion}
+                />
               ))}
             </div>
           ) : (

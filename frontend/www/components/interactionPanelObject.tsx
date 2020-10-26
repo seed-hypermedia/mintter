@@ -1,6 +1,8 @@
 import {
+  ELEMENT_BLOCK,
   ELEMENT_BLOCK_LIST,
   ELEMENT_READ_ONLY,
+  ELEMENT_TRANSCLUSION,
   Icons,
   toSlateTree,
 } from '@mintter/editor'
@@ -11,13 +13,29 @@ import {AuthorLabel} from './author-label'
 import {SlateReactPresentation} from 'slate-react-presentation'
 import {ELEMENT_PARAGRAPH} from '@mintter/editor'
 import {Link} from './link'
+import {ReactEditor, useSlate} from 'slate-react'
+import Tippy from '@tippyjs/react'
+import {css} from 'emotion'
+import {useParams} from 'react-router-dom'
+import {useTransclusion} from 'shared/useTransclusion'
+import {queryCache} from 'react-query'
 
 export function InteractionPanelObject(props) {
-  const [version] = React.useState(() => props.id.split('/')[0])
-  const [objectId] = React.useState(() => props.id.split('/')[1])
+  const {version: draftVersion} = useParams()
+  const [version] = React.useState(props.id.split('/')[0])
+  const [objectId] = React.useState(props.id.split('/')[1])
   const {status, data} = useDocument(version)
   const {data: author} = useAuthor(data?.document?.author)
   const [open, setOpen] = React.useState(true)
+
+  async function onTransclude(block) {
+    const updatedDraft = await props.createTransclusion({
+      source: version,
+      destination: draftVersion,
+      block,
+    })
+    queryCache.refetchQueries(['Document', updatedDraft])
+  }
 
   if (status === 'success') {
     const {title, subtitle, blockRefList, version} = data.document
@@ -51,7 +69,11 @@ export function InteractionPanelObject(props) {
         </div>
         {open && (
           <div className="px-4 py-2 border-t">
-            <ContentRenderer value={doc} />
+            <ContentRenderer
+              isEditor={props.isEditor}
+              value={doc}
+              onTransclude={onTransclude}
+            />
           </div>
         )}
         <div className="border-t ">
@@ -73,21 +95,29 @@ export function InteractionPanelObject(props) {
   )
 }
 
-function ContentRenderer({value}) {
-  const renderElement = React.useCallback(({attributes, children, element}) => {
-    switch (element.type) {
-      case ELEMENT_BLOCK_LIST:
+function ContentRenderer({value, isEditor = false, onTransclude}) {
+  const renderElement = React.useCallback(({children, ...props}) => {
+    switch (props.element.type) {
+      case ELEMENT_BLOCK:
         return (
-          <div {...attributes} className="pl-4">
+          <IPWrapper isEditor={isEditor} onTransclude={onTransclude} {...props}>
+            {children}
+          </IPWrapper>
+        )
+      case ELEMENT_TRANSCLUSION:
+        return (
+          <IPWrapper isEditor={isEditor} onTransclude={onTransclude} {...props}>
+            {children}
+          </IPWrapper>
+        )
+      case ELEMENT_READ_ONLY:
+        return (
+          <div className="bg-background-muted -mx-2 px-2 rounded" {...props}>
             {children}
           </div>
         )
       case ELEMENT_PARAGRAPH:
-        return (
-          <p {...attributes} className="py-1 text-body text-xl leading-loose">
-            {children}
-          </p>
-        )
+        return <p {...props}>{children}</p>
       default:
         return children
     }
@@ -95,19 +125,52 @@ function ContentRenderer({value}) {
 
   const renderLeaf = React.useCallback(({attributes, children, leaf}) => {
     if (leaf.bold) {
-      children = <strong className="font-bold">{children}</strong>
+      children = <strong>{children}</strong>
     }
 
     return <span {...attributes}>{children}</span>
   }, [])
 
   return (
-    <div contentEditable={false} className="mt-2">
+    <div
+      contentEditable={false}
+      className="mt-2 prose xs:prose-xl lg:prose-2xl 2xl:prose-3xl"
+    >
       <SlateReactPresentation
         value={value}
         renderElement={renderElement}
         renderLeaf={renderLeaf}
       />
+    </div>
+  )
+}
+
+function IPWrapper({attributes, children, element, isEditor, onTransclude}) {
+  return (
+    <div className="flex items-start relative" {...attributes}>
+      {isEditor && (
+        <Tippy
+          delay={400}
+          content={
+            <span
+              className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
+                background-color: #333;
+                color: #ccc;
+              `}`}
+            >
+              Transclude to current document
+            </span>
+          }
+        >
+          <button
+            className={`text-xs text-body-muted p-1 rounded-sm hover:bg-muted transition duration-100 mt-3 mr-2`}
+            onClick={() => onTransclude(element)}
+          >
+            <Icons.CornerDownLeft size={12} color="currentColor" />
+          </button>
+        </Tippy>
+      )}
+      <div className={!isEditor ? 'pl-4' : ''}>{children}</div>
     </div>
   )
 }
