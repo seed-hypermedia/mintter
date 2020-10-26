@@ -18,6 +18,7 @@ import Tippy from '@tippyjs/react'
 import {css} from 'emotion'
 import {useParams} from 'react-router-dom'
 import {useTransclusion} from 'shared/useTransclusion'
+import {queryCache} from 'react-query'
 
 export function InteractionPanelObject(props) {
   const {version: draftVersion} = useParams()
@@ -27,12 +28,13 @@ export function InteractionPanelObject(props) {
   const {data: author} = useAuthor(data?.document?.author)
   const [open, setOpen] = React.useState(true)
 
-  async function onTransclude(blockId) {
-    props.createTransclusion({
+  async function onTransclude(block) {
+    const updatedDraft = await props.createTransclusion({
       source: version,
       destination: draftVersion,
-      block: blockId,
+      block,
     })
+    queryCache.refetchQueries(['Document', updatedDraft])
   }
 
   if (status === 'success') {
@@ -104,11 +106,15 @@ function ContentRenderer({value, isEditor = false, onTransclude}) {
         )
       case ELEMENT_TRANSCLUSION:
         return (
-          <IPWrapper isEditor={isEditor} {...props}>
-            <div className="bg-background-muted -mx-2 px-2 rounded">
-              {children}
-            </div>
+          <IPWrapper isEditor={isEditor} onTransclude={onTransclude} {...props}>
+            {children}
           </IPWrapper>
+        )
+      case ELEMENT_READ_ONLY:
+        return (
+          <div className="bg-background-muted -mx-2 px-2 rounded" {...props}>
+            {children}
+          </div>
         )
       case ELEMENT_PARAGRAPH:
         return <p {...props}>{children}</p>
@@ -158,7 +164,7 @@ function IPWrapper({attributes, children, element, isEditor, onTransclude}) {
         >
           <button
             className={`text-xs text-body-muted p-1 rounded-sm hover:bg-muted transition duration-100 mt-3 mr-2`}
-            onClick={() => onTransclude(element.id)}
+            onClick={() => onTransclude(element)}
           >
             <Icons.CornerDownLeft size={12} color="currentColor" />
           </button>

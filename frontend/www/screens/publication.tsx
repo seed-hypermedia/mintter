@@ -150,7 +150,6 @@ export default function Publication(): JSX.Element {
   const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
   const {createDraft} = useMintter()
   const {status, error, data, isFetching, failureCount} = useDocument(version)
-  console.log('data =>', data)
   const {state, setValue} = useEditorValue({
     document: data,
   })
@@ -307,9 +306,14 @@ export default function Publication(): JSX.Element {
                   onClick={() =>
                     interactionPanelDispatch({type: 'toggle_panel'})
                   }
-                  className="ml-4 text-sm text-muted-hover hover:text-toolbar transform -rotate-180 transition duration-200 outline-none"
+                  className="ml-4 text-sm text-muted-hover hover:text-toolbar  outline-none relative"
                 >
-                  <Icons.Sidebar color="currentColor" />
+                  {interactionPanel.objects.length > 0 && (
+                    <div className="bg-primary w-2 h-2 rounded-full absolute top-0 right-0" />
+                  )}
+                  <div className="block transform -rotate-180 transition duration-200">
+                    <Icons.Sidebar color="currentColor" />
+                  </div>
                 </button>
               </Tippy>
             </div>

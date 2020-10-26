@@ -40,6 +40,8 @@ export const withTransclusion = options => <T extends ReactEditor>(
     const {selection} = editor
 
     if (selection) {
+      console.log('DELETE THIS', selection)
+
       const [pNode, pPath] = Editor.parent(editor, selection)
       if (pNode.type === ELEMENT_READ_ONLY) {
         const [blockNode, blockPath] = Editor.parent(editor, pPath)

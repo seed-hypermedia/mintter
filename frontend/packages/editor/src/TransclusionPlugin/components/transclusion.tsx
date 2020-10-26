@@ -41,7 +41,7 @@ const Transclusion = (
                   color: #ccc;
                 `}`}
               >
-                Open in Interaction Panel {element.id.split('/')[0]}
+                Open in Interaction Panel
               </span>
             }
           >

@@ -50,7 +50,7 @@ import {useTransclusion} from 'shared/useTransclusion'
 
 interface InteractionPanelAction {
   type: string
-  payload?: string
+  payload?: any
 }
 
 interface InteractionPanelState {
@@ -153,6 +153,8 @@ export default function Editor(): JSX.Element {
       setReadyToAutosave(true)
     },
   })
+
+  console.log('editor document', data)
 
   const {createTransclusion} = useTransclusion({editor})
 
