@@ -92,7 +92,6 @@ export default function Library(props) {
 
 function ProfileInfo() {
   const {data: profile} = useProfile()
-  console.log('PRIVATE ProfileInfo -> profile', profile)
 
   return profile ? (
     <div className="text-left px-4">

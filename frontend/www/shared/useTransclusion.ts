@@ -34,9 +34,17 @@ export function useTransclusion({editor}) {
       block,
     }: CreateTransclusionRequest) => {
       let draft: GetDocumentResponse | Document
-      let transclusionId: string = `${source}/${block.id}`
+      let transclusionId: string
+      if (block.id.includes('/')) {
+        // is a transclusion, do not create a new id
+        transclusionId = block.id
+      } else {
+        transclusionId = `${source}/${block.id}`
+      }
+
       if (destination) {
         draft = await getDocument('key', destination)
+        console.log('useTransclusion -> draft', draft)
 
         // Create block reference for the block being transcluded:
         let transclusionRef = new BlockRef()

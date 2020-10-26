@@ -15,7 +15,6 @@ export const PARAGRAPH_OPTIONS: Record<
     component: Paragraph,
     type: ELEMENT_PARAGRAPH,
     rootProps: {
-      className: 'p-1 text-body text-xl',
       as: 'p',
     },
   },
@@ -29,6 +28,6 @@ export function Paragraph({
   ...rest
 }) {
   return element.type === ELEMENT_PARAGRAPH ? (
-    <Component {...attributes} className={className} {...rest} />
+    <Component {...attributes} {...rest} />
   ) : null
 }

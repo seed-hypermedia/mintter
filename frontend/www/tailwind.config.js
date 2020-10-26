@@ -1,5 +1,57 @@
 module.exports = {
   theme: {
+    typography: theme => ({
+      default: {
+        css: {
+          fontSize: '1.125rem',
+          color: theme('colors.gray.900'),
+          marginTop: 0,
+          marginBottom: 0,
+          strong: {
+            color: theme('colors.gray.900'),
+          },
+          a: {
+            color: theme('colors.blue.700'),
+          },
+          p: {
+            marginTop: 0,
+            marginBottom: 0,
+          },
+        },
+      },
+      xl: {
+        css: {
+          p: {
+            marginTop: 0,
+            marginBottom: 0,
+          },
+        },
+      },
+      '2xl': {
+        css: {
+          p: {
+            marginTop: 0,
+            marginBottom: 0,
+          },
+        },
+      },
+      '3xl': {
+        css: {
+          p: {
+            marginTop: 0,
+            marginBottom: 0,
+          },
+        },
+      },
+    }),
+    screens: {
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1440px',
+      '3xl': '1920px',
+    },
     extend: {
       colors: {
         muted: 'var(--color-muted)',
@@ -51,8 +103,13 @@ module.exports = {
     'visited',
     'disabled',
   ],
-  plugins: [],
-  purge: false,
+  plugins: [require('@tailwindcss/typography')],
+  purge: {
+    mode: 'all',
+    content: ['components', 'pages', 'screens', 'shared'].map(
+      folder => `./${folder}/**/*.tsx`,
+    ),
+  },
   future: {
     removeDeprecatedGapUtilities: true,
     purgeLayersByDefault: true,

@@ -1,15 +1,11 @@
-import {Link as RouterLink, LinkProps} from 'react-router-dom'
-
-export interface LinkProps
-  extends LinkProps,
-    React.HTMLAttributes<HTMLAnchorElement> {}
+import {Link as RouterLink} from 'react-router-dom'
 
 export default function DefaultLink({
   to,
   className = '',
   replace = false,
   ...props
-}: LinkProps) {
+}) {
   return (
     <RouterLink
       to={to}
