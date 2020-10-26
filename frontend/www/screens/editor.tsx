@@ -47,67 +47,7 @@ import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 import {InteractionPanelObject} from 'components/interactionPanelObject'
 import {useTransclusion} from 'shared/useTransclusion'
-
-interface InteractionPanelAction {
-  type: string
-  payload?: any
-}
-
-interface InteractionPanelState {
-  visible: boolean
-  objects: string[]
-}
-
-function objectsReducer(
-  state: InteractionPanelState,
-  {type, payload}: InteractionPanelAction,
-): InteractionPanelState {
-  if (type === 'add_object') {
-    if (state.objects.includes(payload)) {
-      return {
-        ...state,
-        visible: true,
-      }
-    }
-
-    return {
-      visible: true,
-      objects: [...state.objects, payload],
-    }
-  }
-
-  if (type === 'add_mentions') {
-    let newObjects = payload.filter(version => !state.objects.includes(version))
-    return {
-      ...state,
-      visible: false,
-      objects: [...state.objects, ...newObjects],
-    }
-  }
-
-  if (type === 'toggle_panel') {
-    return {
-      ...state,
-      visible: !state.visible,
-    }
-  }
-
-  if (type === 'open_panel') {
-    return {
-      ...state,
-      visible: true,
-    }
-  }
-
-  if (type === 'close_panel') {
-    return {
-      ...state,
-      visible: false,
-    }
-  }
-
-  return state
-}
+import {useInteractionPanel} from 'components/interactionPanel'
 
 function useQuery() {
   return new URLSearchParams(useLocation().search)
@@ -118,19 +58,21 @@ export default function Editor(): JSX.Element {
   const {version} = useParams()
   const {theme} = useTheme()
   const query = useQuery()
-
-  const [interactionPanel, interactionPanelDispatch] = React.useReducer(
-    objectsReducer,
-    {
-      visible: false,
-      objects: [],
-    },
-  )
+  const {
+    state: interactionPanel,
+    dispatch: interactionPanelDispatch,
+  } = useInteractionPanel()
 
   const editorOptions = {
     ...options,
     transclusion: {
       ...options.transclusion,
+      customProps: {
+        dispatch: interactionPanelDispatch,
+      },
+    },
+    block: {
+      ...options.block,
       customProps: {
         dispatch: interactionPanelDispatch,
       },
@@ -153,8 +95,6 @@ export default function Editor(): JSX.Element {
       setReadyToAutosave(true)
     },
   })
-
-  console.log('editor document', data)
 
   const {createTransclusion} = useTransclusion({editor})
 

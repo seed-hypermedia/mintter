@@ -5,6 +5,7 @@ import {ThemeProvider} from 'shared/themeContext'
 import {ProfileProvider} from 'shared/profileContext'
 import {MintterProvider} from 'shared/mintterContext'
 import {ToastProvider, DefaultToast} from 'react-toast-notifications'
+import {InteractionPanelProvider} from './interactionPanel'
 
 function Toast({children, ...props}) {
   return (
@@ -23,7 +24,7 @@ export function AppProviders({children, ...props}) {
           <ProfileProvider>
             <MintterProvider>
               <ToastProvider autoDismiss={true} components={{Toast}}>
-                {children}
+                <InteractionPanelProvider>{children}</InteractionPanelProvider>
               </ToastProvider>
             </MintterProvider>
           </ProfileProvider>

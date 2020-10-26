@@ -3,7 +3,7 @@ import {DragDrop} from './DragDrop'
 import {css} from 'emotion'
 
 export function BlockBase(
-  {attributes, element, className = '', children},
+  {attributes, element, className = '', children, ...rest},
   ref,
 ) {
   let quoters = element.quotersList?.length
@@ -18,7 +18,20 @@ export function BlockBase(
               top: -2px;
             `}`}
           >
-            <button className="text-xs text-info hover:text-info-hover">
+            <button
+              onClick={() =>
+                rest.dispatch?.({
+                  type: 'add_mentions',
+                  payload: {
+                    visible: true,
+                    objects: element.quotersList.map(
+                      version => `${version}/${element.id}`,
+                    ),
+                  },
+                })
+              }
+              className="text-xs text-info hover:text-info-hover"
+            >
               {quoters}
             </button>
           </div>
