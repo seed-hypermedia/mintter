@@ -47,67 +47,7 @@ import {MainColumn} from 'components/main-column'
 import SplitPane from 'react-split-pane'
 import ResizerStyle from 'components/resizer-style'
 import {InteractionPanelObject} from 'components/interactionPanelObject'
-
-interface InteractionPanelAction {
-  type: string
-  payload?: any
-}
-
-interface InteractionPanelState {
-  visible: boolean
-  objects: string[]
-}
-
-function objectsReducer(
-  state: InteractionPanelState,
-  {type, payload}: InteractionPanelAction,
-): InteractionPanelState {
-  if (type === 'add_object') {
-    if (state.objects.includes(payload)) {
-      return {
-        ...state,
-        visible: true,
-      }
-    }
-
-    return {
-      visible: true,
-      objects: [...state.objects, payload],
-    }
-  }
-
-  if (type === 'add_mentions') {
-    let newObjects = payload.filter(version => !state.objects.includes(version))
-    return {
-      ...state,
-      visible: false,
-      objects: [...state.objects, ...newObjects],
-    }
-  }
-
-  if (type === 'toggle_panel') {
-    return {
-      ...state,
-      visible: !state.visible,
-    }
-  }
-
-  if (type === 'open_panel') {
-    return {
-      ...state,
-      visible: true,
-    }
-  }
-
-  if (type === 'close_panel') {
-    return {
-      ...state,
-      visible: false,
-    }
-  }
-
-  return state
-}
+import {useInteractionPanel} from 'components/interactionPanel'
 
 function useDraftsSelection() {
   const [drafts, setOptions] = React.useState([])
@@ -127,20 +67,21 @@ function useDraftsSelection() {
 export default function Publication(): JSX.Element {
   const {push} = useHistory()
   const {version} = useParams()
-
-  const [interactionPanel, interactionPanelDispatch] = React.useReducer(
-    objectsReducer,
-    {
-      visible: false,
-      objects: [],
-    },
-  )
-  console.log('interactionPanel', interactionPanel)
+  const {
+    state: interactionPanel,
+    dispatch: interactionPanelDispatch,
+  } = useInteractionPanel()
 
   const editorOptions = {
     ...options,
     transclusion: {
       ...options.transclusion,
+      customProps: {
+        dispatch: interactionPanelDispatch,
+      },
+    },
+    block: {
+      ...options.block,
       customProps: {
         dispatch: interactionPanelDispatch,
       },
@@ -157,9 +98,11 @@ export default function Publication(): JSX.Element {
   const {data: author} = useAuthor(pubAuthor)
 
   React.useEffect(() => {
-    console.log('mentions =>', mentions)
     if (mentions.length) {
-      interactionPanelDispatch({type: 'add_mentions', payload: mentions})
+      interactionPanelDispatch({
+        type: 'add_mentions',
+        payload: {objects: mentions},
+      })
     }
   }, [mentions])
 
