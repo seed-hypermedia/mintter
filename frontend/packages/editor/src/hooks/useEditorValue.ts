@@ -71,7 +71,6 @@ export function useEditorValue({document}) {
       const {document: doc, blocksMap} = document
       const {title, subtitle, blockRefList, author} = doc
       const mentions = getMentions(blocksMap)
-      console.log('useEditorValue -> blocksMap', blocksMap)
       const blocks = toSlateTree({blockRefList, blocksMap, isRoot: true})
 
       setValue({
@@ -97,7 +96,7 @@ function getMentions(blocksMap) {
   const mentions = blocksMap.reduce((acc, entry) => {
     const block: Block.AsObject = entry[1]
     if (block.quotersList.length) {
-      acc.push(...block.quotersList)
+      acc.push(...block.quotersList.map(version => `${version}/${entry[0]}`))
     }
 
     return acc
