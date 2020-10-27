@@ -9,6 +9,7 @@ import Logo from './logo_square'
 import Input from './input'
 import {Button} from './button'
 import Container from './container'
+import {isLocalhost} from './isLocalhost'
 
 interface NavItemProps {
   href: string
@@ -22,8 +23,7 @@ export default function Topbar({isPublic = false}) {
   const history = useHistory()
   const [input, setInput] = useState<string>('')
   const [menuVisible, setMenuVisible] = useState<boolean>(false)
-  const isLocalhost = window.location.hostname.includes('localhost')
-
+  const isLocal = isLocalhost(window.location.hostname)
   const show = useCallback(() => setMenuVisible(true), [setMenuVisible])
   const hide = useCallback(() => setMenuVisible(false), [setMenuVisible])
 
@@ -54,7 +54,7 @@ export default function Topbar({isPublic = false}) {
               <Logo width="42px" className="fill-current" />
             </span>
           </Link>
-          {isLocalhost && (
+          {isLocal && (
             <Link to="/private">
               <span className="mx-4 px-2 text-xs">Go to Private page</span>
             </Link>

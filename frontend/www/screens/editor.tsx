@@ -200,7 +200,7 @@ export default function Editor(): JSX.Element {
                       color: #ccc;
                     `}`}
                   >
-                    Open Interaction Panel
+                    Interact with this document
                   </span>
                 }
               >

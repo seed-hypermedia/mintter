@@ -6,12 +6,18 @@ import {NavItem} from 'components/nav'
 import {useHistory} from 'react-router-dom'
 import {useMintter, useDocuments} from 'shared/mintterContext'
 import Container from 'components/container'
-import {useProfile} from 'shared/profileContext'
+import {
+  useConnectionList,
+  useConnectionCreate,
+  useProfile,
+} from 'shared/profileContext'
 import {Link} from 'components/link'
 import {Connections} from 'components/connections'
 import {SuggestedConnections} from 'components/suggested-connections'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
+import {Icons} from '@mintter/editor'
+import {useToasts} from 'react-toast-notifications'
 
 const Publications = React.lazy(() =>
   import(/* webpackPrefetch: true */ './publications'),
@@ -26,6 +32,12 @@ export default function Library(props) {
   const match = useRouteMatch('/private/library')
   const history = useHistory()
   const {createDraft} = useMintter()
+  const {
+    data: connections,
+    isLoading: isConnectionsLoading,
+  } = useConnectionList()
+  const {connectToPeer} = useConnectionCreate()
+  const {addToast, updateToast, removeToast} = useToasts()
 
   async function handleCreateDocument() {
     const d = await createDraft()
@@ -34,6 +46,36 @@ export default function Library(props) {
     history.push({
       pathname: `/private/editor/${value.version}`,
     })
+  }
+
+  async function handleConnectToPeer() {
+    const peer = window.prompt(`enter a peer address`)
+    let toast
+
+    if (peer) {
+      const toast = addToast('Connecting to peer...', {
+        appearance: 'info',
+        autoDismiss: false,
+      })
+      try {
+        await connectToPeer(peer.split(','))
+        updateToast(toast, {
+          content: 'Connection established successfuly!',
+          appearance: 'success',
+          autoDismiss: true,
+        })
+      } catch (err) {
+        removeToast(toast, () => {
+          addToast(err.message, {
+            appearance: 'error',
+          })
+        })
+      }
+    }
+  }
+
+  if (isConnectionsLoading) {
+    return null
   }
 
   return (
@@ -45,8 +87,12 @@ export default function Library(props) {
       >
         <div className="pt-16">
           <ProfileInfo />
-          <Connections />
-          <SuggestedConnections />
+          <Connections
+            handleConnectToPeer={handleConnectToPeer}
+            connections={connections}
+            isLoading={isConnectionsLoading}
+          />
+          <SuggestedConnections handleConnectToPeer={handleConnectToPeer} />
         </div>
         <div>
           <MainColumn>
@@ -66,6 +112,27 @@ export default function Library(props) {
               <NavItem to="/private/library/drafts">Drafts</NavItem>
               <div className="flex-1" />
             </div>
+            {connections.length === 0 && (
+              <>
+                <hr className="border-t-2 border-muted border-solid my-8" />
+                <div className="bg-background-muted border-muted border-solid border-2 rounded px-4 py-4 mb-4 text-center flex flex-col items-center">
+                  <h3 className="text-xl font-bold text-primary">
+                    Connect to Others
+                  </h3>
+                  {/* <p className="text-body font-light mt-5">
+                    Some clain sentence that's fun, welcomes user to the community
+                    and tells how it works and encourages to get started
+                  </p> */}
+                  <button
+                    onClick={handleConnectToPeer}
+                    className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
+                  >
+                    <Icons.Plus />
+                    <span className="ml-2">Add your First Connection</span>
+                  </button>
+                </div>
+              </>
+            )}
             <div className="-mx-4 mt-4">
               <Switch>
                 <PrivateRoute exact path={match.url}>
