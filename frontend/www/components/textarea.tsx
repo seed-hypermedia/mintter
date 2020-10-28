@@ -1,6 +1,6 @@
 import React from 'react'
 import {css} from 'emotion'
-import ExpandingTextarea from 'react-expanding-textarea'
+import {mergeRefs} from '@mintter/editor'
 
 function TextareaComponent(
   {
@@ -15,6 +15,18 @@ function TextareaComponent(
   },
   ref,
 ) {
+  const innerRef = React.useRef(null)
+  const mergedRef = mergeRefs(ref, innerRef)
+  React.useLayoutEffect(autosize, [value])
+
+  function autosize() {
+    const tEl = innerRef.current
+    if (tEl) {
+      tEl.style.height = 'auto'
+      tEl.style.height = `${tEl.scrollHeight}px`
+    }
+  }
+
   const handleChange = React.useCallback(e => {
     if (onChange) {
       onChange(e.target.value)
@@ -29,14 +41,19 @@ function TextareaComponent(
     }
   }, [])
   return (
-    <ExpandingTextarea
+    <textarea
       {...props}
-      ref={ref}
-      onKeyDown={handleKeyDown}
+      ref={mergedRef}
       value={value}
-      className={`resize-none overflow-hidden leading-normal w-full outline-none bg-transparent ${className}`}
-      rows={rows}
+      onKeyDown={handleKeyDown}
       onChange={handleChange}
+      className={`resize-none overflow-hidden leading-normal w-full outline-none bg-transparent ${className}`}
+      rows="1"
+      style={{
+        width: '100%',
+        position: 'relative',
+        display: 'block',
+      }}
     />
   )
 }
