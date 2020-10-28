@@ -23,7 +23,7 @@ export function App() {
         <Route path="/private">
           <PrivateRoutes />
         </Route>
-        <PrivateRoute exact path="/p/:version">
+        <PrivateRoute exact path="/p/:slug">
           <AppLayout>
             <Topbar isPublic />
             <Publication />
