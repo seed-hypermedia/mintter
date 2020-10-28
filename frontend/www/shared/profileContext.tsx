@@ -39,10 +39,6 @@ interface ProfileContextValue {
   createProfile: (form: InitProfileRequest.AsObject) => void
   getProfileAddrs: () => QueryResult<GetProfileAddrsResponse>
   genSeed: () => Promise<GenSeedResponse>
-  connectToPeerById: (
-    peerIds: string[],
-  ) => MutationResult<ConnectToPeerResponse>
-  listConnections: () => PaginatedQueryResult<ListProfilesResponse>
   listSuggestedConnections: () => PaginatedQueryResult<
     ListSuggestedProfilesResponse
   >
@@ -105,7 +101,63 @@ export function ProfileProvider(props) {
     })
   }
 
-  const [connectToPeerById] = useMutation(
+  const value = {
+    createProfile,
+    setProfile,
+    getProfileAddrs,
+    genSeed,
+  }
+
+  return (
+    <ProfileContext.Provider value={{...value, ...props.value}} {...props} />
+  )
+}
+
+export function useConnectionList({page} = {page: 0}, options = {}) {
+  const connectionsQuery = usePaginatedQuery(
+    ['ListConnections', page],
+    apiClient.listConnections,
+    {
+      refetchOnWindowFocus: true,
+      refetchInterval: 5000,
+      ...options,
+    },
+  )
+
+  const data = useMemo(() => connectionsQuery.data?.toObject().profilesList, [
+    connectionsQuery.data,
+  ])
+
+  return {
+    ...connectionsQuery,
+    data,
+  }
+}
+
+export function useSuggestedConnections({page} = {page: 0}, options = {}) {
+  const suggestionsQuery = usePaginatedQuery(
+    ['ListSuggestedConnections', page],
+    apiClient.listSuggestedConnections,
+    {
+      refetchOnWindowFocus: true,
+      refetchInterval: 5000,
+      ...options,
+    },
+  )
+
+  const resolvedData = useMemo(
+    () => suggestionsQuery.resolvedData?.toObject().profilesList,
+    [suggestionsQuery.data],
+  )
+
+  return {
+    ...suggestionsQuery,
+    resolvedData,
+  }
+}
+
+export function useConnectionCreate() {
+  const [connectToPeer, mutationOptions] = useMutation(
     peerIds => apiClient.connectToPeerById(peerIds),
     {
       onSuccess: () => {
@@ -117,41 +169,9 @@ export function ProfileProvider(props) {
     },
   )
 
-  function listConnections(page = 0) {
-    return usePaginatedQuery(
-      ['ListConnections', page],
-      apiClient.listConnections,
-      {
-        refetchOnWindowFocus: true,
-        refetchInterval: 5000,
-      },
-    )
+  return {
+    connectToPeer,
   }
-
-  function listSuggestedConnections(page = 0) {
-    return usePaginatedQuery(
-      ['ListSuggestedConnections', page],
-      apiClient.listSuggestedConnections,
-      {
-        refetchOnWindowFocus: true,
-        refetchInterval: 5000,
-      },
-    )
-  }
-
-  const value = {
-    createProfile,
-    setProfile,
-    getProfileAddrs,
-    genSeed,
-    connectToPeerById,
-    listConnections,
-    listSuggestedConnections,
-  }
-
-  return (
-    <ProfileContext.Provider value={{...value, ...props.value}} {...props} />
-  )
 }
 
 export function useProfileContext() {

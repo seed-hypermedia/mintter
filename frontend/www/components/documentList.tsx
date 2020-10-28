@@ -7,10 +7,11 @@ import useLocalStorage from 'shared/localstorage'
 import {ErrorMessage} from './errorMessage'
 import {AuthorLabel} from 'components/author-label'
 import {Document} from '@mintter/api/v2/documents_pb'
+import {QueryStatus} from 'react-query'
 
 interface Props {
   data: Document.AsObject[]
-  status: 'loading' | 'error' | 'success'
+  status: QueryStatus
   error: any
   onDraftDelete?: (id: string) => Promise<void>
 }
