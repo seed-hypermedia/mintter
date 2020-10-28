@@ -10,7 +10,6 @@ import {
   useMutation,
   MutationResult,
   queryCache,
-  AnyQueryKey,
   QueryConfig,
 } from 'react-query'
 import {
