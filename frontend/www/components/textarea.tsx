@@ -48,7 +48,7 @@ function TextareaComponent(
       onKeyDown={handleKeyDown}
       onChange={handleChange}
       className={`resize-none overflow-hidden leading-normal w-full outline-none bg-transparent ${className}`}
-      rows="1"
+      rows={1}
       style={{
         width: '100%',
         position: 'relative',
