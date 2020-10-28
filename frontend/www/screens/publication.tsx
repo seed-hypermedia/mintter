@@ -238,10 +238,10 @@ export default function Publication(): JSX.Element {
                   <span
                     className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
                       background-color: #333;
-                      color: #ccc;
+                      color: white;
                     `}`}
                   >
-                    Open Interaction Panel
+                    Interact with this document
                   </span>
                 }
               >
@@ -283,7 +283,7 @@ export default function Publication(): JSX.Element {
               }}
             >
               {interactionPanel.objects.map(object => (
-                <InteractionPanelObject id={object} />
+                <InteractionPanelObject key={object} id={object} />
               ))}
             </div>
           ) : (

@@ -4,57 +4,18 @@ import {ErrorMessage} from 'components/errorMessage'
 import {css} from 'emotion'
 import {AuthorLabel} from './author-label'
 import Tippy from '@tippyjs/react'
-import {useToasts} from 'react-toast-notifications'
 import {Profile, ConnectionStatus} from '@mintter/api/v2/mintter_pb'
 
-export function Connections() {
-  const {connectToPeerById, listConnections} = useProfileContext()
-  const {addToast, updateToast, removeToast} = useToasts()
-
-  async function handlePeerConnection() {
-    const peer = window.prompt(`enter a peer address`)
-    let toast
-
-    if (peer) {
-      console.log('handlePeerConnection -> peer', peer)
-      const toast = addToast('Connecting to peer...', {
-        appearance: 'info',
-        autoDismiss: false,
-      })
-      try {
-        await connectToPeerById(peer.split(','))
-        updateToast(toast, {
-          content: 'Connection established successfuly!',
-          appearance: 'success',
-          autoDismiss: true,
-        })
-      } catch (err) {
-        removeToast(toast, () => {
-          addToast(err.message, {
-            appearance: 'error',
-          })
-        })
-      }
-    }
-  }
-
-  const {status, error, resolvedData} = listConnections()
-
-  if (status === 'loading') {
+export function Connections({handleConnectToPeer, isLoading, connections}) {
+  if (isLoading) {
     return <p className="text-body text-sm mt-2">loading...</p>
   }
-
-  if (status === 'error') {
-    return <ErrorMessage error={error} />
-  }
-
-  const list = resolvedData?.toObject().profilesList
 
   return (
     <div className={`w-full px-4 pt-12`}>
       <h3 className="font-semibold text-xl text-heading">Connections</h3>
       <ul>
-        {list.map(c => {
+        {connections.map(c => {
           const isConnected = c.connectionStatus === ConnectionStatus.CONNECTED
 
           return (
@@ -107,7 +68,7 @@ export function Connections() {
         })}
       </ul>
       <button
-        onClick={handlePeerConnection}
+        onClick={handleConnectToPeer}
         className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline"
       >
         + add connection
