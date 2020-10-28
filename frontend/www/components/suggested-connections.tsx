@@ -1,5 +1,5 @@
 import React from 'react'
-import {useProfileContext} from 'shared/profileContext'
+import {useProfileContext, useSuggestedConnections} from 'shared/profileContext'
 import {ErrorMessage} from 'components/errorMessage'
 import {css} from 'emotion'
 import {AuthorLabel} from './author-label'
@@ -7,58 +7,24 @@ import Tippy from '@tippyjs/react'
 import {useToasts} from 'react-toast-notifications'
 import {Profile, ConnectionStatus} from '@mintter/api/v2/mintter_pb'
 
-export function SuggestedConnections() {
-  const {connectToPeerById, listSuggestedConnections} = useProfileContext()
+export function SuggestedConnections({handleConnectToPeer}) {
+  const {resolvedData, isLoading} = useSuggestedConnections()
   const {addToast, updateToast, removeToast} = useToasts()
 
-  async function handlePeerConnection(peer) {
-    console.log('handlePeerConnection -> peer', peer)
-    let toast
-
-    if (peer) {
-      const toast = addToast('Connecting to peer...', {
-        appearance: 'info',
-        autoDismiss: false,
-      })
-      try {
-        await connectToPeerById(peer)
-        updateToast(toast, {
-          content: 'Connection established successfuly!',
-          appearance: 'success',
-          autoDismiss: true,
-        })
-      } catch (err) {
-        removeToast(toast, () => {
-          addToast(err.message, {
-            appearance: 'error',
-          })
-        })
-      }
-    }
-  }
-
-  const {status, error, resolvedData} = listSuggestedConnections()
-
-  if (status === 'loading') {
+  if (isLoading) {
     return <p className="text-body text-sm mt-2">loading...</p>
   }
-
-  if (status === 'error') {
-    return <ErrorMessage error={error} />
-  }
-
-  const list = resolvedData?.toObject().profilesList
 
   return (
     <div className={`w-full px-4 pt-12`}>
       <h3 className="font-bold text-heading">Suggested Connections</h3>
-      {list.length === 0 ? (
+      {resolvedData.length === 0 ? (
         <p className="py-2 px-4 mt-4 rounded bg-background-muted text-body text-sm inline-block">
           no suggestions available :(
         </p>
       ) : (
         <ul>
-          {list.map(c => {
+          {resolvedData.map(c => {
             const {profile} = c
             const isConnected =
               profile.connectionStatus === ConnectionStatus.CONNECTED
@@ -106,7 +72,7 @@ export function SuggestedConnections() {
                       {`${profile.username} (${profile.accountId.slice(-8)})`}
                     </span>
                     <button
-                      onClick={() => handlePeerConnection(c.addrsList)}
+                      onClick={() => handleConnectToPeer(c.addrsList)}
                       className="opacity-0 group-hover:opacity-100 transition duration-75 px-2 rounded-full bg-info hover:bg-info-hover text-white"
                     >
                       connect

@@ -7,12 +7,10 @@ import {
   usePaginatedQuery,
   QueryResult,
   PaginatedQueryResult,
-  QueryOptions,
   useMutation,
   MutationResult,
-  MutationOptions,
   queryCache,
-  AnyQueryKey,
+  QueryConfig,
 } from 'react-query'
 import {
   GetProfileResponse,
@@ -50,10 +48,7 @@ export interface SetDocumentRequest {
 export interface MintterClient {
   createDraft: () => Document
   setDocument: (editor: ReactEditor) => (input: SetDocumentRequest) => void
-  publishDraft: (
-    version: string,
-    options?: MutationOptions<PublishDraftResponse, string>,
-  ) => MutationResult<Document>
+  publishDraft: (version: string, options?: any) => MutationResult<Document>
   deleteDocument: (id: string) => void
   getAuthor: (authorId?: string) => QueryResult<Profile>
 }
@@ -180,7 +175,10 @@ export function MintterProvider(props) {
     },
   })
 
-  const [publishDraft] = useMutation(apiClient.publishDraft)
+  const publishDraft = () => (version: string, options?: any) => {
+    console.log({version, options})
+    return useMutation(() => apiClient.publishDraft(version), options)
+  }
 
   const getAuthor = React.useCallback(
     (authorId?: string) => useQuery(['Author', authorId], apiClient.getProfile),

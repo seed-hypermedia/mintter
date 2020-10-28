@@ -40,7 +40,7 @@ function objectsReducer(
 
     return {
       visible: true,
-      objects: [payload, ...state.objects],
+      objects: [...state.objects, payload],
     }
   }
 
@@ -51,7 +51,7 @@ function objectsReducer(
     return {
       ...state,
       ...payload,
-      objects: [...newObjects, ...state.objects],
+      objects: [...state.objects, ...newObjects],
     }
   }
 

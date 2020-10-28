@@ -8,7 +8,7 @@ import {
 } from '@mintter/editor'
 import React from 'react'
 import {useDocument} from 'shared/mintterContext'
-import {useAuthor} from 'shared/profileContext'
+import {useAuthor, useProfile} from 'shared/profileContext'
 import {AuthorLabel} from './author-label'
 import {SlateReactPresentation} from 'slate-react-presentation'
 import {ELEMENT_PARAGRAPH} from '@mintter/editor'
@@ -20,6 +20,7 @@ import {useParams} from 'react-router-dom'
 import {useTransclusion} from 'shared/useTransclusion'
 import {queryCache} from 'react-query'
 import {useInteractionPanel} from './interactionPanel'
+import {isLocalhost} from './isLocalhost'
 
 export function InteractionPanelObject(props) {
   const {version: draftVersion} = useParams()
@@ -29,6 +30,11 @@ export function InteractionPanelObject(props) {
   const {data: author} = useAuthor(data?.document?.author)
   const [open, setOpen] = React.useState(true)
   const {dispatch} = useInteractionPanel()
+  const {data: user, isSuccess: isProfileSuccess} = useProfile()
+  const isLocal = isLocalhost(window.location.hostname)
+  const isAuthor = React.useMemo(() => {
+    return user.accountId === data?.document?.author
+  }, [user, data])
 
   async function onTransclude(block) {
     const updatedDraft = await props.createTransclusion({
@@ -90,14 +96,9 @@ export function InteractionPanelObject(props) {
             />
           </div>
         )}
-        <div className="border-t ">
-          <Link to={`/p/${version}`}>
-            <a className="flex items-center p-4 text-primary text-sm font-bold hover:bg-background-muted">
-              <Icons.CornerDownLeft size={16} color="currentColor" />
-              <span className="mx-2">Open in main panel</span>
-            </a>
-          </Link>
-        </div>
+        {!isLocal || (isProfileSuccess && isAuthor) ? (
+          <ObjectFooter version={version} />
+        ) : null}
       </div>
     )
   }
@@ -105,6 +106,19 @@ export function InteractionPanelObject(props) {
   return (
     <div className="p-4 border rounded m-4 break-words whitespace-pre-wrap">
       <p>loading...</p>
+    </div>
+  )
+}
+
+function ObjectFooter({version}) {
+  return (
+    <div className="border-t">
+      <Link to={`/p/${version}`}>
+        <a className="flex items-center p-4 text-primary text-sm font-bold hover:bg-background-muted">
+          <Icons.CornerDownLeft size={16} color="currentColor" />
+          <span className="mx-2">Open in main panel</span>
+        </a>
+      </Link>
     </div>
   )
 }
