@@ -6,8 +6,8 @@ import {useMemo} from 'react'
 export function MainNav() {
   return (
     <div className="mx-4 flex items-center">
-      <NavItem to="/library">Library</NavItem>
-      <NavItem to="/settings">Settings</NavItem>
+      <NavItem to="/private/library">Library</NavItem>
+      <NavItem to="/private/settings">Settings</NavItem>
     </div>
   )
 }

@@ -6,10 +6,6 @@ import {AppProviders} from 'components/app-providers'
 
 import 'styles/index.css'
 
-export function reportWebVitals(metric) {
-  console.log('METRIC => ', metric)
-}
-
 const NoSSR: React.FC = ({children}) => {
   return <React.Fragment>{children}</React.Fragment>
 }

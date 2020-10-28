@@ -8,9 +8,7 @@ import {useToasts} from 'react-toast-notifications'
 import {Profile, ConnectionStatus} from '@mintter/api/v2/mintter_pb'
 
 export function SuggestedConnections({handleConnectToPeer}) {
-  const {connectToPeerById} = useProfileContext()
   const {resolvedData, isLoading} = useSuggestedConnections()
-  console.log('SuggestedConnections -> resolvedData', resolvedData)
   const {addToast, updateToast, removeToast} = useToasts()
 
   if (isLoading) {
@@ -74,7 +72,7 @@ export function SuggestedConnections({handleConnectToPeer}) {
                       {`${profile.username} (${profile.accountId.slice(-8)})`}
                     </span>
                     <button
-                      onClick={() => handlePeerConnection(c.addrsList)}
+                      onClick={() => handleConnectToPeer(c.addrsList)}
                       className="opacity-0 group-hover:opacity-100 transition duration-75 px-2 rounded-full bg-info hover:bg-info-hover text-white"
                     >
                       connect

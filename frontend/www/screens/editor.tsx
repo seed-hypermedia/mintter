@@ -36,6 +36,7 @@ import Textarea from 'components/textarea'
 import {Document} from '@mintter/api/v2/documents_pb'
 import {useDebounce} from 'shared/hooks'
 import {useDocument, useMintter} from 'shared/mintterContext'
+import {publishDraft} from 'shared/mintterClient'
 import {useParams, useHistory, useLocation} from 'react-router-dom'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
@@ -84,15 +85,22 @@ export default function Editor(): JSX.Element {
   const editorContainerRef = React.useRef<HTMLDivElement>(null)
   const titleRef = React.useRef(null)
   const subtitleRef = React.useRef(null)
-  const documentRef = React.useRef(null)
   const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
 
-  const {setDocument, publishDraft} = useMintter()
+  const {setDocument} = useMintter()
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])
-  const {status, error, data} = useDocument(version, {
+  const {isSuccess, isLoading, isError, error, data} = useDocument(version, {
     onSuccess: () => {
-      documentRef.current = data
       setReadyToAutosave(true)
+    },
+  })
+  // TODO: add autosave again
+
+  const [publish] = useMutation(publishDraft, {
+    onSuccess: publication => {
+      const {version} = publication.toObject()
+
+      push(`/p/${version}`)
     },
   })
 
@@ -114,17 +122,15 @@ export default function Editor(): JSX.Element {
     }
   }, [])
 
-  const [autosaveDraft] = useMutation(
-    async state => {
-      const {document} = documentRef.current
-      saveDocument({document, state})
-    },
-    {
-      onSuccess: () => {
-        queryCache.setQueryData(['Document', version], data)
-      },
-    },
-  )
+  const [autosaveDraft] = useMutation(async state => {
+    if (data.document) {
+      console.log('autosafe called!')
+
+      saveDocument({document: data.document, state})
+    } else {
+      console.error('no document???')
+    }
+  })
 
   const debouncedValue = useDebounce(state, 1000)
 
@@ -135,19 +141,15 @@ export default function Editor(): JSX.Element {
   }, [debouncedValue])
 
   async function handlePublish() {
-    publishDraft(version as string, {
-      onSuccess: publication => {
-        const doc = publication.toObject()
-        push(`/p/${doc.version}`)
-      },
-    })
+    await saveDocument({document: data.document, state})
+    publish(version as string)
   }
 
-  if (status === 'loading') {
+  if (isLoading) {
     return <FullPageSpinner />
   }
 
-  if (status === 'error') {
+  if (isError) {
     return <FullPageErrorMessage error={error} />
   }
 

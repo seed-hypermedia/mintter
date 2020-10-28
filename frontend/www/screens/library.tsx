@@ -49,7 +49,7 @@ export default function Library(props) {
   }
 
   async function handleConnectToPeer() {
-    const peer = window.prompt(`enter a peer address`)
+    const peer: any = window.prompt(`enter a peer address`)
     let toast
 
     if (peer) {

@@ -110,7 +110,7 @@ export default function Topbar({isPublic = false}) {
                 className="text-body"
                 onClick={() => {
                   hide()
-                  history.push('/settings')
+                  history.push('/private/settings')
                 }}
               >
                 Settings
