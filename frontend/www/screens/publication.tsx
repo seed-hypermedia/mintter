@@ -2,6 +2,7 @@ import React, {useReducer, useCallback, useState} from 'react'
 import Tippy from '@tippyjs/react'
 import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
 import {Slate, ReactEditor} from 'slate-react'
+import slugify from 'slugify'
 import {
   Icons,
   nodeTypes,
@@ -65,12 +66,14 @@ function useDraftsSelection() {
 }
 
 export default function Publication(): JSX.Element {
-  const {push} = useHistory()
-  const {version} = useParams()
+  const {push, replace} = useHistory()
+  const {slug} = useParams()
   const {
     state: interactionPanel,
     dispatch: interactionPanelDispatch,
   } = useInteractionPanel()
+
+  let version = React.useMemo(() => slug.split('-').slice(-1)[0], [slug])
 
   const editorOptions = {
     ...options,
@@ -95,6 +98,13 @@ export default function Publication(): JSX.Element {
     document: data,
   })
   const {title, blocks, subtitle, author: pubAuthor, mentions} = state
+  React.useEffect(() => {
+    if (!slug.includes('-') && title) {
+      console.log('no incluye!', title)
+      const titleSlug = slugify(title, {lower: true, remove: /[*+~.()'"!:@]/g})
+      replace(`${titleSlug}-${version}`)
+    }
+  }, [title])
   const {data: author} = useAuthor(pubAuthor)
 
   React.useEffect(() => {
