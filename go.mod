@@ -11,8 +11,9 @@ require (
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/dgraph-io/badger v1.6.1
 	github.com/fxamacker/cbor/v2 v2.2.0
-	github.com/golang/protobuf v1.4.2
+	github.com/golang/protobuf v1.4.3
 	github.com/google/go-cmp v0.5.2
+	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
 	github.com/imdario/mergo v0.3.11
 	github.com/improbable-eng/grpc-web v0.13.0
 	github.com/ipfs/go-bitswap v0.2.20
@@ -62,7 +63,13 @@ require (
 	go.uber.org/multierr v1.6.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
+	golang.org/x/mod v0.1.1-0.20191107180719-034126e5016b // indirect
+	golang.org/x/net v0.0.0-20201027133719-8eef5233e2a1 // indirect
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	google.golang.org/grpc v1.32.0
+	golang.org/x/sys v0.0.0-20201028094953-708e7fb298ac // indirect
+	golang.org/x/text v0.3.4 // indirect
+	golang.org/x/tools v0.0.0-20200207183749-b753a1ba74fa // indirect
+	google.golang.org/genproto v0.0.0-20201028140639-c77dae4b0522 // indirect
+	google.golang.org/grpc v1.33.1
 	google.golang.org/protobuf v1.25.0
 )

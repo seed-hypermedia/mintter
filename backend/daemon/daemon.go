@@ -18,6 +18,7 @@ import (
 	"mintter/backend/server"
 	"mintter/backend/store"
 
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/pkg/browser"
 	"go.uber.org/atomic"
@@ -31,10 +32,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func contextInterceptor(fn func(context.Context) context.Context) grpc.ServerOption {
-	return grpc.UnaryInterceptor(func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-		return handler(fn(ctx), req)
-	})
+func authFunc(ctx context.Context) (context.Context, error) {
+	return document.AdminContext(ctx), nil
 }
 
 // Run the daemon.
@@ -54,7 +53,8 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	defer log.Info("GracefulShutdownEnded")
 
 	rpcsrv := grpc.NewServer(
-		contextInterceptor(document.AdminContext),
+		grpc.UnaryInterceptor(grpc_auth.UnaryServerInterceptor(authFunc)),
+		grpc.StreamInterceptor(grpc_auth.StreamServerInterceptor(authFunc)),
 	)
 	docserver := &lazyDocumentsServer{}
 
@@ -72,7 +72,6 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		return s, n, nil
 	})
 
-	var svc *server.Server
 	{
 		s, err := server.NewServer(initFunc, log.Named("rpc"))
 		if err != nil {
@@ -85,29 +84,20 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		proto.RegisterMintterServer(rpcsrv, s)
 		v2.RegisterDocumentsServer(rpcsrv, docserver)
 		reflection.Register(rpcsrv)
-
-		svc = s
 	}
 
 	log = log.Named("daemon")
 
 	var handler http.Handler
 	{
-		grpcWebHandler := grpcweb.WrapServer(rpcsrv,
-			grpcweb.WithOriginFunc(func(origin string) bool {
-				return true
-			}),
-		)
+		grpcWebHandler := grpcweb.WrapServer(rpcsrv, grpcweb.WithOriginFunc(func(origin string) bool {
+			return true
+		}))
 
 		ui := mintter.UIHandler()
 
 		handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if grpcWebHandler.IsAcceptableGrpcCorsRequest(r) {
-				grpcWebHandler.ServeHTTP(w, r)
-				return
-			}
-
-			if grpcWebHandler.IsGrpcWebRequest(r) {
+			if grpcWebHandler.IsAcceptableGrpcCorsRequest(r) || grpcWebHandler.IsGrpcWebRequest(r) {
 				grpcWebHandler.ServeHTTP(w, r)
 				return
 			}
@@ -117,7 +107,6 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle("/_debug", svc.DebugHandler())
 	mux.Handle("/", handler)
 
 	// TODO(burdiyan): Add timeout configuration.
