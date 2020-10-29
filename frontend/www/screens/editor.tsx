@@ -138,6 +138,11 @@ export default function Editor(): JSX.Element {
     if (readyToAutosave) {
       autosaveDraft(state)
     }
+
+    return () => {
+      // unmount screen, autosave.
+      autosaveDraft(state)
+    }
   }, [debouncedValue])
 
   async function handlePublish() {

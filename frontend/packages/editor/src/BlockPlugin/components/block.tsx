@@ -14,8 +14,9 @@ export function BlockBase(
           <div
             contentEditable={false}
             style={{userSelect: 'none'}}
-            className={`absolute right-0 transform translate-x-full pl-1 ${css`
+            className={`absolute right-0 pl-1 ${css`
               top: -2px;
+              transform: translateX(100%);
             `}`}
           >
             <button

@@ -1,11 +1,8 @@
+/* purgecss start ignore */
 @tailwind base;
 @tailwind components;
+/* purgecss end ignore */
 @tailwind utilities;
-
-html,
-body {
-  @apply bg-background;
-}
 
 .theme-light,
 .theme-dark .theme-invert {
