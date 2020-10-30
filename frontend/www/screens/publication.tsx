@@ -73,7 +73,18 @@ export default function Publication(): JSX.Element {
     dispatch: interactionPanelDispatch,
   } = useInteractionPanel()
 
+  const [showReactions, toggleReactions] = React.useState(false)
+
   let version = React.useMemo(() => slug.split('-').slice(-1)[0], [slug])
+
+  const {createDraft} = useMintter()
+
+  async function handleInteract() {
+    const d = await createDraft()
+
+    const value = d.toObject()
+    push(`/private/editor/${value.version}?object=${version}`)
+  }
 
   const editorOptions = {
     ...options,
@@ -92,8 +103,8 @@ export default function Publication(): JSX.Element {
   }
   const plugins = createPlugins(editorOptions)
   const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
-  const {createDraft} = useMintter()
   const {status, error, data, isFetching, failureCount} = useDocument(version)
+  console.log('data', data)
   const {state, setValue} = useEditorValue({
     document: data,
   })
@@ -127,13 +138,6 @@ export default function Publication(): JSX.Element {
     })
 
     push(`/private/editor/${draftUrl}`)
-  }
-
-  async function handleRespond() {
-    const d = await createDraft()
-
-    const value = d.toObject()
-    push(`/private/editor/${value.version}?object=${version}`)
   }
 
   let content
@@ -190,7 +194,7 @@ export default function Publication(): JSX.Element {
             <AuthorLabel author={author} />
           </p>
         </div>
-        <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-3xl">
+        <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-3xl pt-4">
           <EditorComponent
             readOnly
             editor={editor}
@@ -236,13 +240,7 @@ export default function Publication(): JSX.Element {
           }}
         >
           <div className="overflow-auto">
-            <div className="px-4 flex justify-end pt-4">
-              <button
-                onClick={handleRespond}
-                className="px-4 py-2 text-primary font-bold transition duration-200 hover:text-primary-hover ml-4"
-              >
-                Respond
-              </button>
+            {/* <div className="px-4 flex justify-end pt-4">
               <Tippy
                 content={
                   <span
@@ -262,14 +260,23 @@ export default function Publication(): JSX.Element {
                   className="ml-4 text-sm text-muted-hover hover:text-toolbar  outline-none relative"
                 >
                   {interactionPanel.objects.length > 0 && (
-                    <div className="bg-primary w-2 h-2 rounded-full absolute top-0 right-0" />
+                    <div className={`bg-primary z-10 border-2 border-white w-3 h-3 rounded-full absolute ${css`
+                      top: -4px;
+                      right: -4px;
+                    `}`} />
                   )}
                   <div className="block transform -rotate-180 transition duration-200">
                     <Icons.Sidebar color="currentColor" />
                   </div>
                 </button>
               </Tippy>
-            </div>
+            </div> */}
+            <PublicationCTA
+              visible={interactionPanel.visible}
+              handleInteract={() => {
+                interactionPanelDispatch({type: 'toggle_panel'})
+              }}
+            />
             <MainColumn>
               <TransclusionHelperProvider
                 options={drafts}
@@ -281,7 +288,6 @@ export default function Publication(): JSX.Element {
           </div>
           {interactionPanel.visible ? (
             <div
-              className="bg-background-muted"
               style={{
                 visibility: interactionPanel.visible ? 'visible' : 'hidden',
                 maxWidth: interactionPanel.visible ? '100%' : 0,
@@ -292,9 +298,44 @@ export default function Publication(): JSX.Element {
                 zIndex: 0,
               }}
             >
-              {interactionPanel.objects.map(object => (
-                <InteractionPanelObject key={object} id={object} />
-              ))}
+              <div className="mx-4 flex items-center justify-between mt-4">
+                <MintterIcon size="1.5em" />
+                <button
+                  className="text-primary text-base font-bold flex items-center w-full justify-end group"
+                  onClick={() =>
+                    interactionPanelDispatch({type: 'close_panel'})
+                  }
+                >
+                  <span className="text-sm mx-2">Close Interaction Panel</span>
+                  <span className="w-4 h-4 rounded-full bg-background-muted text-primary flex items-center justify-center group-hover:bg-muted transform duration-200">
+                    <Icons.ChevronRight size={14} color="currentColor" />
+                  </span>
+                </button>
+              </div>
+              <div className="py-6 border-t border-muted mx-4 mt-2">
+                <p className="text-muted-hover font-bold text-xs">Reactions</p>
+                <div className="flex items-center mt-4">
+                  <p className="text-sm">
+                    {interactionPanel.objects.length === 0
+                      ? 'No Reactions'
+                      : interactionPanel.objects.length === 1
+                      ? '1 Reaction'
+                      : `${interactionPanel.objects.length} Reactions`}{' '}
+                  </p>
+                  <button
+                    className="font-bold text-primary mx-2 text-sm"
+                    onClick={() => toggleReactions(val => !val)}
+                  >
+                    {showReactions ? 'Hide ' : 'Show '}Reactions
+                  </button>
+                </div>
+              </div>
+
+              {showReactions &&
+                interactionPanel.objects.map(object => (
+                  <InteractionPanelObject key={object} id={object} />
+                ))}
+              <InteractionPanelCTA handleInteract={handleInteract} />
             </div>
           ) : (
             <div />
@@ -302,5 +343,69 @@ export default function Publication(): JSX.Element {
         </SplitPane>
       </Page>
     </>
+  )
+}
+
+function MintterIcon({size = '1em'}) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <rect width={32} height={32} rx={4} fill="#5200FF" />
+      <path
+        d="M14.74 15.995v4.002c0 .55-.44 1.003-.976 1.003-.537 0-.968-.452-.968-1.003v-4.002c0-.55-.44-1.003-.977-1.003-.536 0-.977.452-.977 1.003v4.002c0 .55-.44 1.003-.977 1.003-.536 0-.967-.452-.967-1.003v-4.002c0-.55-.44-1.003-.977-1.003-.536 0-.977.452-.977 1.003v4.002c0 .55-.44 1.003-.977 1.003C5.431 21 5 20.548 5 19.997v-4.002c0-1.652 1.312-2.999 2.921-2.999a2.88 2.88 0 011.944.767 2.834 2.834 0 011.945-.767c1.618 0 2.93 1.347 2.93 3zm5.01-2.645c-.537 0-.977.452-.977 1.003 0 .55.44 1.003.977 1.003.536 0 .977-.452.977-1.003a.988.988 0 00-.977-1.003zm.977 7.247c.469-.276.622-.885.354-1.367a.957.957 0 00-1.331-.364.967.967 0 01-.489.138c-.536 0-.977-.452-.977-1.003v-5.998c0-.55-.44-1.003-.977-1.003-.536 0-.977.452-.977 1.003V18c0 1.652 1.313 2.999 2.922 2.999.526 0 1.034-.138 1.475-.403zm4.817-7.945c-.536 0-.977.452-.977 1.003 0 .55.44 1.003.977 1.003.537 0 .977-.452.977-1.003 0-.55-.44-1.003-.977-1.003zm.968 7.945c.469-.276.622-.885.354-1.367a.957.957 0 00-1.331-.364.967.967 0 01-.489.138c-.536 0-.977-.452-.977-1.003v-5.998A.98.98 0 0023.102 11c-.537 0-.977.452-.977 1.003V18c0 1.652 1.312 2.999 2.921 2.999a2.84 2.84 0 001.466-.403z"
+        fill="#fff"
+      />
+    </svg>
+  )
+}
+
+function PublicationCTA({handleInteract, visible}) {
+  return (
+    <div
+      className={`absolute right-0 p-12 pt-0 w-full max-w-sm text-right transform duration-200 ${
+        visible
+          ? 'opacity-0 pointer-events-none'
+          : 'opacity-100 pointer-events-auto'
+      }`}
+    >
+      <p className="text-gray-800 font-light text-sm pt-4">
+        Document created via <strong className="font-bold">Mintter App.</strong>
+      </p>
+      <p className="text-gray-800 text-sm pt-4 font-light">
+        Mintter is a distributed content publisher, that guarantees Your
+        Content’s{' '}
+        <strong className="font-bold">Ownership, Authorship, Atribution</strong>{' '}
+        and <strong className="font-bold">Traceability.</strong>
+      </p>
+      <button
+        className="mt-4 text-primary text-base font-bold flex items-center w-full justify-end group"
+        onClick={handleInteract}
+      >
+        <span className="w-6 h-6 rounded-full bg-background-muted mr-2 text-primary flex items-center justify-center group-hover:bg-muted transform duration-200 ">
+          <Icons.ChevronLeft size={16} color="currentColor" />
+        </span>
+        <span className="font-bold">Interact with this document</span>
+      </button>
+    </div>
+  )
+}
+
+function InteractionPanelCTA({handleInteract}) {
+  const {push} = useHistory()
+  return (
+    <div className="border-t border-muted mt-4 py-8 px-4 mb-20">
+      <h3 className="font-bold text-2xl">
+        Want to add your thougts to this subject?
+      </h3>
+      <p className="mt-4">
+        <strong>Reply, develop</strong> or <strong>refute</strong> on the
+        Mintter app now.
+      </p>
+      <button
+        className="bg-primary rounded-full mt-4 px-8 py-2 text-white font-bold shadow transition duration-200 text-sm"
+        onClick={handleInteract}
+      >
+        Write a reply
+      </button>
+    </div>
   )
 }

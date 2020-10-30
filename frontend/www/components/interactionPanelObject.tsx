@@ -25,7 +25,7 @@ import {isLocalhost} from './isLocalhost'
 export function InteractionPanelObject(props) {
   const {version: draftVersion} = useParams()
   const [version] = React.useState(props.id.split('/')[0])
-  const [objectId] = React.useState(props.id.split('/')[1])
+  // const [objectId] = React.useState(props.id.split('/')[1])
   const {status, data} = useDocument(version)
   const {data: author} = useAuthor(data?.document?.author)
   const [open, setOpen] = React.useState(true)
@@ -55,9 +55,7 @@ export function InteractionPanelObject(props) {
     })
 
     return (
-      <div
-        className={`border rounded-lg m-4 break-words whitespace-pre-wrap relative bg-background`}
-      >
+      <div className="border border-muted rounded-lg m-4 break-words whitespace-pre-wrap relative bg-background">
         <div className="p-4">
           <div className="flex justify-between items-center text-muted-hover">
             <p className="text-muted-hover font-extrabold text-xs uppercase">

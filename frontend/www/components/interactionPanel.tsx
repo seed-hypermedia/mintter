@@ -45,9 +45,9 @@ function objectsReducer(
   }
 
   if (type === 'add_mentions') {
-    let newObjects = payload.objects.filter(
-      version => !state.objects.includes(version),
-    )
+    let newObjects = payload.objects
+      .filter(str => str.split('/').length === 2)
+      .filter(version => !state.objects.includes(version))
     return {
       ...state,
       ...payload,
