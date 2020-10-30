@@ -23,8 +23,9 @@ const Transclusion = (
       >
         <div
           contentEditable={false}
-          className={`absolute right-0 pl-1 ${css`
+          className={`absolute ${css`
             top: -2px;
+            right: -14px;
             transform: translateX(100%);
           `}`}
         >

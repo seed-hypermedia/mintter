@@ -44,8 +44,9 @@ export function BlockControls({element, show, path, dragRef, className = ''}) {
   }, [onKeyDown])
   return (
     <div
-      className={`absolute left-0 pr-2 ${css`
+      className={`absolute ${css`
         transform: translateX(-100%);
+        left: -14px;
       `} ${
         readOnly ? '' : 'grid-flow-col-dense grid gap-2 grid-cols-2'
       } transition duration-200 ${
@@ -55,7 +56,7 @@ export function BlockControls({element, show, path, dragRef, className = ''}) {
     >
       <button
         onClick={readOnly ? onTranscludeClicked : undefined}
-        className="rounded-sm text-body hover:bg-background-muted flex p-1 mt-1 items-center justify-center"
+        className="rounded-sm text-body hover:bg-muted flex p-1 mt-1 items-center justify-center"
         ref={readOnly ? null : dragRef}
       >
         <svg viewBox="0 0 16 24" width="12px">

@@ -14,8 +14,9 @@ export function BlockBase(
           <div
             contentEditable={false}
             style={{userSelect: 'none'}}
-            className={`absolute right-0 pl-1 ${css`
+            className={`absolute ${css`
               top: -2px;
+              right: -14px;
               transform: translateX(100%);
             `}`}
           >
@@ -25,9 +26,11 @@ export function BlockBase(
                   type: 'add_mentions',
                   payload: {
                     visible: true,
-                    objects: element.quotersList.map(
-                      version => `${version}/${element.id}`,
-                    ),
+                    objects: element.quotersList.map(version => {
+                      console.log('version', version)
+
+                      return `${version}/${element.id}`
+                    }),
                   },
                 })
               }
