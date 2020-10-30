@@ -26,7 +26,7 @@ function RenderElement(props) {
           <p {...attributes} className="bg-teal-300 relative">
             <span
               contentEditable={false}
-              className="absolute top-0 left-0 text-xs text-teal-600 uppercase"
+              className="absolute top-0 left-0 text-xs text-info uppercase"
             >
               Element not supported
             </span>
@@ -48,7 +48,7 @@ function RenderElement(props) {
     <div {...props.attributes}>
       <div
         contentEditable={false}
-        className={`bg-muted rounded ${
+        className={`bg-background-muted rounded -mx-2 px-2 mt-1 ${
           focus && selected ? 'shadow-outline' : ''
         }`}
       >
