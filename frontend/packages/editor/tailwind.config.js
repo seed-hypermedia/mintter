@@ -5,7 +5,7 @@ module.exports = {
   },
   purge: {
     mode: 'all',
-    content: [`./src/**/*.tsx`],
+    content: [`./**/*.tsx`],
   },
   theme: {
     extend: {},

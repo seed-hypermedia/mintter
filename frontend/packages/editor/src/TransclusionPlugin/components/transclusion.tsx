@@ -23,8 +23,10 @@ const Transclusion = (
       >
         <div
           contentEditable={false}
-          className={`absolute right-0 transform translate-x-full pl-1 ${css`
+          className={`absolute ${css`
             top: -2px;
+            right: -14px;
+            transform: translateX(100%);
           `}`}
         >
           <Tippy
