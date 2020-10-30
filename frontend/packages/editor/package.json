@@ -9,11 +9,13 @@
   "scripts": {
     "start": "tsdx watch",
     "build": "tsdx build",
-    "postbuild": "NODE_ENV=production tailwindcss build src/index.css -o dist/editor.css",
+    "postbuild": "npm run tailwind:build",
+    "prestart": "npm run tailwind:build",
     "test": "tsdx test",
     "test:watch": "tsdx test --watch",
     "lint": "tsdx lint src",
-    "prepare": "tsdx build"
+    "prepare": "tsdx build",
+    "tailwind:build": "NODE_ENV=production tailwindcss build src/index.css -o dist/editor.css"
   },
   "name": "@mintter/editor",
   "author": "Horacio Herrera",
