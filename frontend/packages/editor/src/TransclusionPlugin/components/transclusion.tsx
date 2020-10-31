@@ -8,8 +8,20 @@ const Transclusion = (
   {attributes, children, element, className, ...rest},
   ref,
 ) => {
+  const [transclusionData, setData] = React.useState<any>(null)
+
+  React.useEffect(() => {
+    async function init() {
+      const res = await rest.getData(element.id)
+      setData(res)
+    }
+
+    init()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  const transcData = rest.getData(element.id)
+  console.log('transcData', transcData)
   function handlePush(e) {
-    console.log(element.id)
     e.preventDefault()
     rest.dispatch?.({type: 'add_object', payload: element.id})
   }
@@ -30,15 +42,23 @@ const Transclusion = (
           `}`}
         >
           <Tippy
+            placement="right-end"
             content={
-              <span
-                className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
-                  background-color: #333;
-                  color: #ccc;
-                `}`}
-              >
-                Open in Interaction Panel
-              </span>
+              transclusionData ? (
+                <div className="p-2 rounded-sm shadow bg-white">
+                  <p className="text-xs font-bold">
+                    {transclusionData?.document.title}
+                  </p>
+                  <p className="text-xs font-light">
+                    {transclusionData?.author.username}
+                  </p>
+                  <p className="text-xs text-blue-700 font-bold mt-2">
+                    Open in Interaction Panel →
+                  </p>
+                </div>
+              ) : (
+                <div className="p-2 rounded-sm shadow bg-white">...</div>
+              )
             }
           >
             <button
@@ -49,6 +69,7 @@ const Transclusion = (
             </button>
           </Tippy>
         </div>
+
         {children}
       </div>
     </DragDrop>
