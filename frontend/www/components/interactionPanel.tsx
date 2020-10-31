@@ -40,18 +40,19 @@ function objectsReducer(
 
     return {
       visible: true,
-      objects: [...state.objects, payload],
+      objects: [payload, ...state.objects],
     }
   }
 
   if (type === 'add_mentions') {
     let newObjects = payload.objects
-      .filter(str => str.split('/').length === 2)
+      .filter(str => str.split('/')[0])
       .filter(version => !state.objects.includes(version))
+    console.log('newObjects', newObjects)
     return {
       ...state,
       ...payload,
-      objects: [...state.objects, ...newObjects],
+      objects: [...newObjects, ...state.objects],
     }
   }
 

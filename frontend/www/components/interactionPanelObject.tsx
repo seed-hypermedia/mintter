@@ -26,7 +26,23 @@ export function InteractionPanelObject(props) {
   const {version: draftVersion} = useParams()
   const [version] = React.useState(props.id.split('/')[0])
   // const [objectId] = React.useState(props.id.split('/')[1])
-  const {status, data} = useDocument(version)
+  const {status, data} = version
+    ? useDocument(version)
+    : {
+        status: 'success',
+        data: {
+          document: {
+            id: props.id,
+            title: 'wrong reference',
+            subtitle: null,
+            author: null,
+            version: null,
+            parent: null,
+            publishingState: null,
+            blockRefList: null,
+          },
+        },
+      }
   const {data: author} = useAuthor(data?.document?.author)
   const [open, setOpen] = React.useState(true)
   const {dispatch} = useInteractionPanel()
@@ -138,7 +154,10 @@ function ContentRenderer({value, isEditor = false, onTransclude}) {
         )
       case ELEMENT_READ_ONLY:
         return (
-          <div className="bg-background-muted -mx-2 px-2 rounded" {...props}>
+          <div
+            className="bg-background-muted -mx-2 px-2 rounded mt-1"
+            {...props}
+          >
             {children}
           </div>
         )
