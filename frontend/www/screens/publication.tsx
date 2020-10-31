@@ -25,6 +25,7 @@ import {
 } from '@mintter/editor'
 import {Document} from '@mintter/api/v2/documents_pb'
 import Seo from 'components/seo'
+import {getDocument, getProfile} from 'shared/mintterClient'
 import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
 import {css} from 'emotion'
@@ -92,6 +93,7 @@ export default function Publication(): JSX.Element {
       ...options.transclusion,
       customProps: {
         dispatch: interactionPanelDispatch,
+        getData: getTransclusionData,
       },
     },
     block: {
@@ -104,14 +106,12 @@ export default function Publication(): JSX.Element {
   const plugins = createPlugins(editorOptions)
   const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
   const {status, error, data, isFetching, failureCount} = useDocument(version)
-  console.log('data', data)
   const {state, setValue} = useEditorValue({
     document: data,
   })
   const {title, blocks, subtitle, author: pubAuthor, mentions} = state
   React.useEffect(() => {
     if (!slug.includes('-') && title) {
-      console.log('no incluye!', title)
       const titleSlug = slugify(title, {lower: true, remove: /[*+~.()'"!:@]/g})
       replace(`${titleSlug}-${version}`)
     }
@@ -129,6 +129,21 @@ export default function Publication(): JSX.Element {
 
   const {drafts} = useDraftsSelection()
   const {createTransclusion} = useTransclusion({editor})
+
+  async function getTransclusionData(transclusionId) {
+    const version = transclusionId.split('/')[0]
+    const res = await getDocument('', version)
+    const data = res.toObject()
+    const {document} = data
+    const authorId = data.document.author
+    const authorData = await getProfile(authorId)
+    const author = authorData.toObject()
+
+    return {
+      document,
+      author,
+    }
+  }
 
   async function handleTransclusion({destination, block}) {
     const draftUrl = await createTransclusion({
