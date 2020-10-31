@@ -57,7 +57,6 @@ export default function Library(props) {
 
 function ProfileInfo() {
   const {data: profile} = useProfile()
-  console.log('PUBLIC ProfileInfo -> profile', profile)
 
   return profile ? (
     <div className="text-left border-b mb-8 pb-8">
