@@ -169,8 +169,10 @@ export async function createProfile({
   return await usersClient.initProfile(req)
 }
 
-export async function getProfile(key, profileId?: string) {
+export async function getProfile(key: string, profileId?: string): Profile {
   const req = new GetProfileRequest()
+
+  console.log('getProfile -> profileId', profileId)
   if (profileId) {
     req.setProfileId(profileId)
   }
