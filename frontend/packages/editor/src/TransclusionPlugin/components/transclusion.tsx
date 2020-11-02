@@ -32,8 +32,7 @@ const Transclusion = (
       >
         <div
           contentEditable={false}
-          className={`absolute flex items-start ${css`
-            top: -2px;
+          className={`absolute -my-2 flex items-start top-0 ${css`
             right: -14px;
             transform: translateX(100%);
           `}`}
@@ -57,7 +56,11 @@ const Transclusion = (
             >
               {transclusionData ? (
                 <div>
-                  <p className="text-xs font-bold">
+                  <p
+                    className={`text-xs font-bold truncate ${css`
+                      max-width: 180px;
+                    `}`}
+                  >
                     {transclusionData?.document.title}
                   </p>
                   <p className="text-xs font-light">

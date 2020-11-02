@@ -1,6 +1,5 @@
 import {Element} from 'slate'
 import {ELEMENT_BLOCK} from '../BlockPlugin/defaults'
-import {ELEMENT_IMAGE} from '../ImagePlugin/defaults'
 export interface useHelperOptions {
   trigger?: string
 }
@@ -21,7 +20,7 @@ export interface UseHelperOptions {
 }
 
 export interface InsertBlockOptions {
-  type: ELEMENT_BLOCK | ELEMENT_IMAGE
+  type: ELEMENT_BLOCK
   target?: Path | Range
 }
 

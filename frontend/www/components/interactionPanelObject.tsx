@@ -87,7 +87,7 @@ export function InteractionPanelObject(props) {
           <AuthorLabel author={author} />
         </div>
         {open && (
-          <div className="px-4 py-2 border-t">
+          <div className=" pb-2 border-t">
             <ContentRenderer
               isEditor={props.isEditor}
               value={doc}
@@ -177,7 +177,7 @@ function ContentRenderer({value, isEditor = false, onTransclude}) {
 
 function IPWrapper({attributes, children, element, isEditor, onTransclude}) {
   return (
-    <div className="flex items-start relative pt-4" {...attributes}>
+    <div className="flex items-start relative px-4 pt-4" {...attributes}>
       {isEditor && (
         <Tippy
           delay={400}

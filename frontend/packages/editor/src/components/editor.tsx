@@ -9,7 +9,6 @@ import {
 // import {Toolbar} from './toolbar'
 import {HelperToolbar, HelperProvider, useHelper} from '../HelperPlugin'
 import {BlockToolsProvider, ELEMENT_BLOCK} from '../BlockPlugin'
-import {ELEMENT_IMAGE} from '../ImagePlugin'
 import {getPreventDefaultHandler} from '../BlockPlugin/utils/getPreventDefaultHandler'
 import {useTransclusionHelper} from '../TransclusionPlugin/TransclusionHelperContext'
 import {DndProvider} from 'react-dnd'
@@ -30,10 +29,6 @@ const HELPER_OPTIONS = [
   {
     name: 'Text block',
     type: ELEMENT_BLOCK,
-  },
-  {
-    name: 'Image Block',
-    type: ELEMENT_IMAGE,
   },
 ]
 

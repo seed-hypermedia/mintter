@@ -13,7 +13,6 @@ import {SlateBlock} from '../editor'
 import {Node, Text} from 'slate'
 import {ELEMENT_PARAGRAPH} from '../elements/defaults'
 import {ELEMENT_BLOCK} from '../BlockPlugin'
-import {ELEMENT_IMAGE} from '../ImagePlugin'
 import {ELEMENT_BLOCK_LIST} from '../HierarchyPlugin'
 import {makeProto} from './makeProto'
 import {v4 as uuid} from 'uuid'
@@ -115,7 +114,7 @@ export function toDocument({document, state}: ToDocumentRequestProp): Document {
 }
 
 export function toSlateBlock(block: Block.AsObject): SlateBlock {
-  const {id, paragraph, image, quotersList} = block
+  const {id, paragraph, quotersList} = block
 
   let slateBlock = {
     id,
@@ -150,20 +149,20 @@ export function toSlateBlock(block: Block.AsObject): SlateBlock {
     }
   }
 
-  if (image) {
-    return {
-      ...slateBlock,
-      type: ELEMENT_BLOCK,
-      children: [
-        {
-          type: ELEMENT_IMAGE,
-          url: image.url,
-          alt: image.altText,
-          children: [{text: ''}],
-        },
-      ],
-    }
-  }
+  // if (image) {
+  //   return {
+  //     ...slateBlock,
+  //     type: ELEMENT_BLOCK,
+  //     children: [
+  //       {
+  //         type: ELEMENT_IMAGE,
+  //         url: image.url,
+  //         alt: image.altText,
+  //         children: [{text: ''}],
+  //       },
+  //     ],
+  //   }
+  // }
 
   return {
     ...slateBlock,
