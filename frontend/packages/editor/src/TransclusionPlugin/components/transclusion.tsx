@@ -27,7 +27,7 @@ const Transclusion = (
   return (
     <DragDrop attributes={attributes} element={element} componentRef={ref}>
       <div
-        className={`pr-0 relative rounded my-1 outline-none ${
+        className={`pr-0 relative rounded mt-6 outline-none ${
           className ? className : ''
         }`}
       >

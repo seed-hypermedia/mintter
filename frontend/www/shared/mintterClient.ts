@@ -169,7 +169,10 @@ export async function createProfile({
   return await usersClient.initProfile(req)
 }
 
-export async function getProfile(key: string, profileId?: string): Profile {
+export async function getProfile(
+  key: string,
+  profileId?: string,
+): Promise<Profile> {
   const req = new GetProfileRequest()
 
   console.log('getProfile -> profileId', profileId)

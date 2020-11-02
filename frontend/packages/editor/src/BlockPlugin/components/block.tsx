@@ -9,7 +9,7 @@ export function BlockBase(
   let quoters = element.quotersList?.length
   return (
     <DragDrop attributes={attributes} element={element} componentRef={ref}>
-      <div className={`relative ${className}`}>
+      <div className={`relative mt-6 ${className}`}>
         {quoters !== 0 && (
           <div
             contentEditable={false}
