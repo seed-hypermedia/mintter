@@ -177,7 +177,7 @@ function ContentRenderer({value, isEditor = false, onTransclude}) {
 
 function IPWrapper({attributes, children, element, isEditor, onTransclude}) {
   return (
-    <div className="flex items-start relative" {...attributes}>
+    <div className="flex items-start relative pt-4" {...attributes}>
       {isEditor && (
         <Tippy
           delay={400}
