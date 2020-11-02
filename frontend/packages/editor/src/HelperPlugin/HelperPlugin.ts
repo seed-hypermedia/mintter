@@ -1,7 +1,6 @@
 import {SlatePlugin} from '@udecode/slate-plugins'
-import {ELEMENT_IMAGE} from '../ImagePlugin/defaults'
-// import {ELEMENT_TRANSCLUSION} from '../TransclusionPlugin/defaults'
+import {ELEMENT_READ_ONLY} from '../ReadOnlyPlugin/defaults'
 
 export const HelperPlugin = (): SlatePlugin => ({
-  voidTypes: [ELEMENT_IMAGE],
+  voidTypes: [ELEMENT_READ_ONLY],
 })

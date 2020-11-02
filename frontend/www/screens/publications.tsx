@@ -1,5 +1,5 @@
 import {useHistory} from 'react-router-dom'
-import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
+import {Icons} from '@mintter/editor'
 import DocumentList from 'components/documentList'
 import {useMintter, useOthersPublications} from 'shared/mintterContext'
 import {FullPageSpinner} from 'components/fullPageSpinner'
@@ -40,7 +40,7 @@ export default function Publications() {
               onClick={handleCreateDraft}
               className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
             >
-              <NoteAddOutlinedIcon />
+              <Icons.FilePlus color="currentColor" />
               <span className="ml-2">Start your first document</span>
             </button>
           </div>

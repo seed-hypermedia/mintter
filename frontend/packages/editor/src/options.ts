@@ -13,7 +13,6 @@ import {
   STRIKETHROUGH_OPTIONS,
 } from './marks'
 import {DEFAULTS_TRANSCLUSION} from './TransclusionPlugin'
-import {DEFAULTS_IMAGE} from './ImagePlugin'
 import {DEFAULTS_BLOCK} from './BlockPlugin'
 import {DEFAULTS_BLOCKLIST} from './HierarchyPlugin'
 import {DEFAULTS_READ_ONLY} from './ReadOnlyPlugin'
@@ -23,7 +22,6 @@ export const options = {
   ...HEADING_OPTIONS,
   ...BLOCKQUOTE_OPTIONS,
   ...DEFAULTS_LINK,
-  ...DEFAULTS_IMAGE,
   ...DEFAULTS_LIST,
   ...DEFAULTS_BLOCK,
   ...DEFAULTS_BLOCKLIST,

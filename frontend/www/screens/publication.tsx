@@ -75,7 +75,7 @@ export default function Publication(): JSX.Element {
     dispatch: interactionPanelDispatch,
   } = useInteractionPanel()
 
-  const [showReactions, toggleReactions] = React.useState(false)
+  const [showReactions, toggleReactions] = React.useState(true)
 
   let version = React.useMemo(() => slug.split('-').slice(-1)[0], [slug])
 
@@ -317,7 +317,7 @@ export default function Publication(): JSX.Element {
               <div className="mx-4 flex items-center justify-between mt-4">
                 <MintterIcon size="1.5em" />
                 <button
-                  className="text-primary text-base font-bold flex items-center w-full justify-end group"
+                  className="text-primary text-base flex items-center w-full justify-end group"
                   onClick={() =>
                     interactionPanelDispatch({type: 'close_panel'})
                   }

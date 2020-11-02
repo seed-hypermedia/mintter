@@ -8,12 +8,12 @@ import Content from 'components/content'
 import Input from 'components/input'
 import {useHistory} from 'react-router-dom'
 import {useForm} from 'react-hook-form'
-import CheckIcon from '@material-ui/icons/Check'
 import {getRandomElements} from 'shared/utils'
 import {ErrorMessage} from 'components/errorMessage'
 import {useWelcome} from 'shared/welcomeProvider'
 import {useFocus} from 'shared/hooks'
 import {useProfileContext} from 'shared/profileContext'
+import {Icons} from '@mintter/editor'
 
 export default function RetypeSeed() {
   const {register, handleSubmit, errors, formState, watch} = useForm({
@@ -104,7 +104,7 @@ export default function RetypeSeed() {
 
                     <span className="text-success pt-2 pl-2 w-10 h-10">
                       {!errors[key] && formState.dirtyFields.has(key) && (
-                        <CheckIcon color="inherit" data-testid={key} />
+                        <Icons.Check color="currentColor" />
                       )}
                     </span>
                   </div>

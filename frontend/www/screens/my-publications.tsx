@@ -1,10 +1,10 @@
 import Seo from 'components/seo'
-import NoteAddOutlinedIcon from '@material-ui/icons/NoteAddOutlined'
 import DocumentList from 'components/documentList'
 import {useMintter, useMyPublications} from 'shared/mintterContext'
 import {useMemo} from 'react'
 import {useHistory} from 'react-router-dom'
 import {ErrorMessage} from 'components/errorMessage'
+import {Icons} from '@mintter/editor'
 
 export default function MyPublications({noSeo = false}) {
   const history = useHistory()
@@ -38,7 +38,7 @@ export default function MyPublications({noSeo = false}) {
               onClick={handleCreateDraft}
               className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
             >
-              <NoteAddOutlinedIcon />
+              <Icons.FilePlus color="currentColor" />
               <span className="ml-2">Start your first document</span>
             </button>
           </div>
