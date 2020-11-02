@@ -36,6 +36,7 @@ import Textarea from 'components/textarea'
 import {Document} from '@mintter/api/v2/documents_pb'
 import {useDebounce} from 'shared/hooks'
 import {useDocument, useMintter} from 'shared/mintterContext'
+import {getDocument, getProfile} from 'shared/mintterClient'
 import {publishDraft} from 'shared/mintterClient'
 import {useParams, useHistory, useLocation} from 'react-router-dom'
 import {FullPageSpinner} from 'components/fullPageSpinner'
@@ -70,6 +71,7 @@ export default function Editor(): JSX.Element {
       ...options.transclusion,
       customProps: {
         dispatch: interactionPanelDispatch,
+        getData: getTransclusionData,
       },
     },
     block: {
@@ -144,6 +146,21 @@ export default function Editor(): JSX.Element {
       autosaveDraft(state)
     }
   }, [debouncedValue])
+
+  async function getTransclusionData(transclusionId) {
+    const version = transclusionId.split('/')[0]
+    const res = await getDocument('', version)
+    const data = res.toObject()
+    const {document} = data
+    const authorId = data.document.author
+    const authorData = await getProfile(authorId)
+    const author = authorData.toObject()
+
+    return {
+      document,
+      author,
+    }
+  }
 
   async function handlePublish() {
     await saveDocument({document: data.document, state})
