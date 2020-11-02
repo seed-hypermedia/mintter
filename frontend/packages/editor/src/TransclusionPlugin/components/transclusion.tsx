@@ -1,4 +1,3 @@
-import {Icons} from '../../components/icons'
 import React from 'react'
 import {DragDrop} from '../../BlockPlugin/components/DragDrop'
 import Tippy from '@tippyjs/react'
@@ -33,37 +32,43 @@ const Transclusion = (
       >
         <div
           contentEditable={false}
-          className={`absolute ${css`
+          className={`absolute flex items-start ${css`
             top: -2px;
             right: -14px;
             transform: translateX(100%);
           `}`}
         >
           <Tippy
-            placement="right-end"
+            placement="right-start"
             content={
-              transclusionData ? (
-                <div className="p-2 rounded-sm shadow bg-white">
+              <span
+                className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
+                  background-color: #333;
+                  color: #ccc;
+                `}`}
+              >
+                Open in Interaction Panel →
+              </span>
+            }
+          >
+            <button
+              onClick={handlePush}
+              className="text-xs text-left text-body-muted py-1 px-2 rounded-sm hover:bg-muted transition duration-100"
+            >
+              {transclusionData ? (
+                <div>
                   <p className="text-xs font-bold">
                     {transclusionData?.document.title}
                   </p>
                   <p className="text-xs font-light">
                     {transclusionData?.author.username}
                   </p>
-                  <p className="text-xs text-blue-700 font-bold mt-2">
-                    Open in Interaction Panel →
-                  </p>
                 </div>
               ) : (
-                <div className="p-2 rounded-sm shadow bg-white">...</div>
-              )
-            }
-          >
-            <button
-              onClick={handlePush}
-              className="text-xs text-body-muted p-1 rounded-sm hover:bg-muted transition duration-100"
-            >
-              <Icons.CornerUpRight size={12} />
+                <div className="mx-2">
+                  <p className="text-xs font-light">...</p>
+                </div>
+              )}
             </button>
           </Tippy>
         </div>
