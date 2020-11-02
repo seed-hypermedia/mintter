@@ -9,13 +9,10 @@
   "scripts": {
     "start": "tsdx watch",
     "build": "tsdx build",
-    "postbuild": "npm run tailwind:build",
-    "prestart": "npm run tailwind:build",
     "test": "tsdx test",
     "test:watch": "tsdx test --watch",
     "lint": "tsdx lint src",
-    "prepare": "tsdx build",
-    "tailwind:build": "NODE_ENV=production tailwindcss build src/index.css -o dist/editor.css"
+    "prepare": "tsdx build"
   },
   "name": "@mintter/editor",
   "author": "Horacio Herrera",
@@ -39,7 +36,6 @@
     "slate-hyperscript": "^0.58.3",
     "slate-react": "^0.58.4",
     "slate-react-presentation": "^0.1.0",
-    "tailwindcss": "^1.9.6",
     "unist-util-visit": "^2.0.3",
     "uuid": "^8.3.0"
   },
