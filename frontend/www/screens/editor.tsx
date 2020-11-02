@@ -50,6 +50,7 @@ import {MainColumn} from 'components/main-column'
 import {InteractionPanelObject} from 'components/interactionPanelObject'
 import {useTransclusion} from 'shared/useTransclusion'
 import {useInteractionPanel} from 'components/interactionPanel'
+import {Profile} from '@mintter/api/v2/mintter_pb'
 
 function useQuery() {
   return new URLSearchParams(useLocation().search)
@@ -153,8 +154,8 @@ export default function Editor(): JSX.Element {
     const data = res.toObject()
     const {document} = data
     const authorId = data.document.author
-    const authorData = await getProfile(authorId)
-    const author = authorData.toObject()
+    const authorData = await getProfile('', authorId)
+    const author: Profile.AsObject = authorData.toObject()
 
     return {
       document,

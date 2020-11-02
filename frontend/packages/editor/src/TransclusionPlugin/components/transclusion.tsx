@@ -19,8 +19,6 @@ const Transclusion = (
     init()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  const transcData = rest.getData(element.id)
-  console.log('transcData', transcData)
   function handlePush(e) {
     e.preventDefault()
     rest.dispatch?.({type: 'add_object', payload: element.id})

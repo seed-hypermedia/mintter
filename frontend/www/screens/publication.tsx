@@ -50,6 +50,7 @@ import SplitPane from 'react-split-pane'
 import ResizerStyle from 'components/resizer-style'
 import {InteractionPanelObject} from 'components/interactionPanelObject'
 import {useInteractionPanel} from 'components/interactionPanel'
+import {Profile} from '@mintter/api/v2/mintter_pb'
 
 function useDraftsSelection() {
   const [drafts, setOptions] = React.useState([])
@@ -136,8 +137,8 @@ export default function Publication(): JSX.Element {
     const data = res.toObject()
     const {document} = data
     const authorId = data.document.author
-    const authorData = await getProfile(authorId)
-    const author = authorData.toObject()
+    const authorData = await getProfile('', authorId)
+    const author: Profile.AsObject = authorData.toObject()
 
     return {
       document,
