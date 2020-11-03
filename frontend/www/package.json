@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
-    "dev2": "export MINTTER_PORT=56001 && next dev -p 3001",
+    "dev2": "export MINTTER_API_URL=http://localhost:56001 && next dev -p 3001",
     "start": "next start",
     "export": "yarn build && next export",
     "build": "next build",

@@ -1,29 +1,18 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
   useCallback,
   useMemo,
-  useLayoutEffect,
 } from 'react'
 import {
-  UpdateProfileRequest,
-  GetProfileRequest,
   InitProfileRequest,
   Profile,
   GetProfileAddrsResponse,
-  GetProfileResponse,
   GenSeedResponse,
-  ListProfilesResponse,
-  ConnectToPeerResponse,
   ListSuggestedProfilesResponse,
 } from '@mintter/api/v2/mintter_pb'
 import * as apiClient from './V1mintterClient'
 import * as apiV2 from './mintterClient'
-import {bootstrapAppData} from './appBootstrap'
-import {FullPageSpinner} from 'components/fullPageSpinner'
-import {FullPageErrorMessage} from 'components/errorMessage'
 import {
   useQuery,
   useMutation,
@@ -31,7 +20,6 @@ import {
   QueryResult,
   PaginatedQueryResult,
   usePaginatedQuery,
-  MutationResult,
 } from 'react-query'
 
 interface ProfileContextValue {

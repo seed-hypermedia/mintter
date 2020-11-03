@@ -8,6 +8,7 @@ import (
 	"mintter"
 	"net"
 	"net/http"
+	"os"
 
 	proto "mintter/api/go/v2"
 	v2 "mintter/api/go/v2"
@@ -20,6 +21,7 @@ import (
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/mattn/go-isatty"
 	"github.com/pkg/browser"
 	"go.uber.org/atomic"
 	"go.uber.org/multierr"
@@ -151,8 +153,8 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		zap.String("grpcURL", "grpc://localhost:"+cfg.GRPCPort),
 	)
 
-	if !cfg.NoOpenBrowser {
-		if err := browser.OpenURL("http://localhost:55001"); err != nil {
+	if isatty.IsTerminal(os.Stdout.Fd()) && !cfg.NoOpenBrowser {
+		if err := browser.OpenURL("http://localhost:" + cfg.HTTPPort); err != nil {
 			_ = err
 		}
 	}

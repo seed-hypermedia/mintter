@@ -4,4 +4,4 @@ set -e
 
 redo-ifchange third_party/all
 
-go run ./backend/cmd/mintterd $@
+exec go run ./backend/cmd/mintterd $@
