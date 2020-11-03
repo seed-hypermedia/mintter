@@ -29,15 +29,16 @@ import {getDocument, getProfile} from 'shared/mintterClient'
 import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
 import {css} from 'emotion'
-import {useParams, useHistory} from 'react-router-dom'
+import {useParams, useHistory, useLocation} from 'react-router-dom'
 import {useDocument, useDrafts, useMintter} from 'shared/mintterContext'
-import {useAuthor} from 'shared/profileContext'
+import {useAuthor, useProfileAddrs} from 'shared/profileContext'
 import Layout from 'components/layout'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {ErrorMessage} from 'components/errorMessage'
 import {AuthorLabel} from 'components/author-label'
 import Container from 'components/container'
 import {useTransclusion} from 'shared/useTransclusion'
+import {isLocalhost} from 'shared/isLocalhost'
 import {
   UpdateDraftRequest,
   BlockRefList,
@@ -51,6 +52,11 @@ import ResizerStyle from 'components/resizer-style'
 import {InteractionPanelObject} from 'components/interactionPanelObject'
 import {useInteractionPanel} from 'components/interactionPanel'
 import {Profile} from '@mintter/api/v2/mintter_pb'
+import Modal from 'react-modal'
+import {useToasts} from 'react-toast-notifications'
+import {useTheme} from 'shared/themeContext'
+
+Modal.setAppElement('#__next')
 
 function useDraftsSelection() {
   const [drafts, setOptions] = React.useState([])
@@ -68,6 +74,13 @@ function useDraftsSelection() {
 }
 
 export default function Publication(): JSX.Element {
+  const location = useLocation()
+  let query = new URLSearchParams(location.search)
+  const isModalOpen = query.get('modal')
+  const {data: profileAddress} = useProfileAddrs()
+  const {addToast} = useToasts()
+  const {theme} = useTheme()
+
   const {push, replace} = useHistory()
   const {slug} = useParams()
   const {
@@ -82,10 +95,19 @@ export default function Publication(): JSX.Element {
   const {createDraft} = useMintter()
 
   async function handleInteract() {
-    const d = await createDraft()
+    if (isLocalhost(window.location.hostname)) {
+      const d = await createDraft()
 
-    const value = d.toObject()
-    push(`/private/editor/${value.version}?object=${version}`)
+      const value = d.toObject()
+      push(`/private/editor/${value.version}?object=${version}`)
+      return
+    } else {
+      push(
+        `${location.pathname}${
+          location.search ? `${location.search}&modal=show` : '?modal=show'
+        }`,
+      )
+    }
   }
 
   const editorOptions = {
@@ -226,6 +248,81 @@ export default function Publication(): JSX.Element {
   return (
     <>
       <Seo title="Publication" />
+      <Modal
+        isOpen={!!isModalOpen}
+        shouldCloseOnOverlayClick={true}
+        shouldCloseOnEsc={true}
+        className={`${theme} absolute top-0 mx-auto my-8 max-w-2xl transform -translate-x-1/2 z-50 ${css`
+          left: 50%;
+        `}`}
+        onRequestClose={() => {
+          push(location.pathname)
+        }}
+        contentLabel="Onboarding Modal"
+      >
+        <div className="bg-background p-8 rounded-2xl shadow-lg outline-none focus:shadow-outline">
+          <div className="flex items-center justify-between">
+            <MintterIcon size="1.5em" />
+            <button
+              onClick={() => push(location.pathname)}
+              className="text-gray-500 outline-none focus:shadow-outline p-1 w-6 h-6 rounded-full hover:bg-muted transition duration-150 flex items-center justify-center"
+            >
+              <Icons.X size={15} />
+            </button>
+          </div>
+          <div className="mt-8">
+            <h1 className="font-bold text-2xl">
+              Mintter App download should launch automatically
+            </h1>
+            {/* <p className="text-sm font-light">
+              If it doesn't, <a className="underline">click here</a>
+            </p> */}
+          </div>
+          <div className="mt-8 border-t pt-8">
+            <h2 className="text-2xl font-light">
+              Keep this information handy, in order to access Alice’s document
+              in the Mintter App.
+            </h2>
+            <div className="mt-6 flex items-center">
+              <button
+                className="outline-none focus:shadow-outline text-primary pl-2 pr-4 py-1 font-bold flex items-center rounded-full border-2 border-primary hover:bg-primary hover:text-white transition duration-100"
+                onClick={() => {
+                  const value = profileAddress.join(',')
+
+                  navigator.clipboard.writeText(value).then(() =>
+                    addToast(
+                      `${author.username}’s Address copied to your clipboard!`,
+                      {
+                        appearance: 'success',
+                      },
+                    ),
+                  )
+                }}
+              >
+                <Icons.Copy size={14} color="currentColor" />
+                <span className="ml-2">{`Copy ${
+                  author ? author.username : 'user'
+                }’s user ID`}</span>
+              </button>
+              <button
+                className="outline-none focus:shadow-outline text-primary pl-2 pr-4 py-1 ml-4 font-bold flex items-center rounded-full border-2 border-primary hover:bg-primary hover:text-white transition duration-100"
+                onClick={() => {
+                  const value = profileAddress.join(',')
+
+                  navigator.clipboard.writeText(value).then(() =>
+                    addToast(`Document's UUID copied to your clipboard!`, {
+                      appearance: 'success',
+                    }),
+                  )
+                }}
+              >
+                <Icons.Copy size={14} color="currentColor" />
+                <span className="ml-2">Copy Document's UUID</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
       <ResizerStyle />
       <Page>
         <SplitPane
@@ -256,37 +353,6 @@ export default function Publication(): JSX.Element {
           }}
         >
           <div className="overflow-auto">
-            {/* <div className="px-4 flex justify-end pt-4">
-              <Tippy
-                content={
-                  <span
-                    className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
-                      background-color: #333;
-                      color: white;
-                    `}`}
-                  >
-                    Interact with this document
-                  </span>
-                }
-              >
-                <button
-                  onClick={() =>
-                    interactionPanelDispatch({type: 'toggle_panel'})
-                  }
-                  className="ml-4 text-sm text-muted-hover hover:text-toolbar  outline-none relative"
-                >
-                  {interactionPanel.objects.length > 0 && (
-                    <div className={`bg-primary z-10 border-2 border-white w-3 h-3 rounded-full absolute ${css`
-                      top: -4px;
-                      right: -4px;
-                    `}`} />
-                  )}
-                  <div className="block transform -rotate-180 transition duration-200">
-                    <Icons.Sidebar color="currentColor" />
-                  </div>
-                </button>
-              </Tippy>
-            </div> */}
             <PublicationCTA
               visible={interactionPanel.visible}
               handleInteract={() => {
@@ -387,8 +453,7 @@ function PublicationCTA({handleInteract, visible}) {
         Document created via <strong className="font-bold">Mintter App.</strong>
       </p>
       <p className="text-gray-800 text-sm pt-4 font-light">
-        Mintter is a distributed content publisher, that guarantees Your
-        Content’s{' '}
+        Mintter is a distributed publishing platform that brings to your content{' '}
         <strong className="font-bold">Ownership, Authorship, Atribution</strong>{' '}
         and <strong className="font-bold">Traceability.</strong>
       </p>
@@ -406,7 +471,6 @@ function PublicationCTA({handleInteract, visible}) {
 }
 
 function InteractionPanelCTA({handleInteract}) {
-  const {push} = useHistory()
   return (
     <div className="border-t border-muted mt-4 py-8 px-4 mb-20">
       <h3 className="font-bold text-2xl">
