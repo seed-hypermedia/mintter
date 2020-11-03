@@ -49,6 +49,7 @@ require (
 	github.com/libp2p/go-libp2p-yamux v0.3.0 // indirect
 	github.com/libp2p/go-yamux v1.4.0 // indirect
 	github.com/lightningnetwork/lnd v0.11.0-beta
+	github.com/mattn/go-isatty v0.0.12
 	github.com/multiformats/go-multiaddr v0.3.1
 	github.com/multiformats/go-multihash v0.0.14
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
@@ -66,7 +67,7 @@ require (
 	golang.org/x/mod v0.1.1-0.20191107180719-034126e5016b // indirect
 	golang.org/x/net v0.0.0-20201027133719-8eef5233e2a1 // indirect
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	golang.org/x/sys v0.0.0-20201028094953-708e7fb298ac // indirect
+	golang.org/x/sys v0.0.0-20201101102859-da207088b7d1 // indirect
 	golang.org/x/text v0.3.4 // indirect
 	golang.org/x/tools v0.0.0-20200207183749-b753a1ba74fa // indirect
 	google.golang.org/genproto v0.0.0-20201028140639-c77dae4b0522 // indirect

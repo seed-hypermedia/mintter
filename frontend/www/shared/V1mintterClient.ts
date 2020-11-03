@@ -1,5 +1,3 @@
-import getConfig from 'next/config'
-import {Node} from 'slate'
 import {MintterPromiseClient} from '@mintter/api/v2/mintter_grpc_web_pb'
 import {
   GetProfileRequest,
@@ -14,25 +12,19 @@ import {
   ListSuggestedProfilesResponse,
   ListSuggestedProfilesRequest,
 } from '@mintter/api/v2/mintter_pb'
-
-const config = getConfig()
-const hostname = config?.publicRuntimeConfig.MINTTER_HOSTNAME
-const port = config?.publicRuntimeConfig.MINTTER_PORT
-const path = `${hostname}:${port}`
-
-export const usersClient = new MintterPromiseClient(path)
+import {usersClient} from './mintterClient'
 
 // ============================
 
 export async function genSeed() {
   const req = new GenSeedRequest()
-  return await usersClient.genSeed(req)
+  return await usersClient().genSeed(req)
 }
 
 export async function connectToPeerById(peerIds: string[]) {
   const req = new ConnectToPeerRequest()
   req.setAddrsList(peerIds)
-  return await usersClient.connectToPeer(req)
+  return await usersClient().connectToPeer(req)
 }
 
 export async function createProfile({
@@ -44,7 +36,7 @@ export async function createProfile({
   req.setAezeedPassphrase(aezeedPassphrase)
   req.setMnemonicList(mnemonicList)
   req.setWalletPassword(walletPassword)
-  return await usersClient.initProfile(req)
+  return await usersClient().initProfile(req)
 }
 
 export async function getProfile(key, profileId?: string) {
@@ -54,7 +46,7 @@ export async function getProfile(key, profileId?: string) {
   }
 
   try {
-    return await (await usersClient.getProfile(req)).getProfile()
+    return await (await usersClient().getProfile(req)).getProfile()
   } catch (err) {
     console.error('getProfile error ==> ', err)
   }
@@ -78,7 +70,7 @@ export async function setProfile(
   const req = new UpdateProfileRequest()
   req.setProfile(profile)
   try {
-    return await usersClient.updateProfile(req)
+    return await usersClient().updateProfile(req)
   } catch (err) {
     console.error('setProfileError ===> ', err)
   }
@@ -86,7 +78,7 @@ export async function setProfile(
 
 export async function getProfileAddrs() {
   const req = new GetProfileAddrsRequest()
-  return await usersClient.getProfileAddrs(req)
+  return await usersClient().getProfileAddrs(req)
 }
 
 export async function listConnections(
@@ -95,7 +87,7 @@ export async function listConnections(
 ): Promise<ListProfilesResponse> {
   const req = new ListProfilesRequest()
   req.setPageSize(page)
-  return await usersClient.listProfiles(req)
+  return await usersClient().listProfiles(req)
 }
 
 export async function listSuggestedConnections(
@@ -104,7 +96,7 @@ export async function listSuggestedConnections(
 ): Promise<ListSuggestedProfilesResponse> {
   const req = new ListSuggestedProfilesRequest()
   req.setPageSize(page)
-  return await usersClient.listSuggestedProfiles(req)
+  return await usersClient().listSuggestedProfiles(req)
 }
 
 export {MintterPromiseClient}
