@@ -280,8 +280,10 @@ export default function Publication(): JSX.Element {
           </div>
           <div className="mt-8 border-t pt-8">
             <h2 className="text-2xl font-light">
-              Keep this information handy, in order to access Alice’s document
-              in the Mintter App.
+              {`Keep this information handy, in order to access ${
+                author ? author.username : 'user'
+              }’s document
+              in the Mintter App.`}
             </h2>
             <div className="mt-6 flex items-center">
               <button
