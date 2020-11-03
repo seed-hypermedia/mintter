@@ -13,6 +13,10 @@ export default function ResizerStyle() {
         background-clip: padding-box;
       }
 
+      .ReactModal__Body--open .Resizer {
+        display: none;
+      }
+
       .Resizer:hover {
         -webkit-transition: all 0.5s ease;
         transition: all 0.5s ease;
