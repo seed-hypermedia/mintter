@@ -41,7 +41,6 @@ export default function Settings() {
       autoDismiss: false,
     })
     try {
-      console.log('settings profile', {profile, data})
       await setProfile(data)
       updateToast(toast, {
         autoDismiss: true,

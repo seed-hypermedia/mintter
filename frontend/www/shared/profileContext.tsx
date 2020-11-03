@@ -63,7 +63,6 @@ export function useAuthor(accountId, options = {}) {
     apiClient.getProfile,
     options,
   )
-
   const data = useMemo(() => profileQuery.data?.toObject?.(), [
     profileQuery.data,
   ])
@@ -111,6 +110,25 @@ export function ProfileProvider(props) {
   return (
     <ProfileContext.Provider value={{...value, ...props.value}} {...props} />
   )
+}
+
+export function useProfileAddrs() {
+  let profileAddrsQuery = useQuery(
+    ['ProfileAddrs'],
+    apiClient.getProfileAddrs,
+    {
+      refetchInterval: 5000,
+    },
+  )
+
+  const data = useMemo(() => profileAddrsQuery.data?.toObject().addrsList, [
+    profileAddrsQuery.data,
+  ])
+
+  return {
+    ...profileAddrsQuery,
+    data,
+  }
 }
 
 export function useConnectionList({page} = {page: 0}, options = {}) {

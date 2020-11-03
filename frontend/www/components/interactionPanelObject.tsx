@@ -20,7 +20,7 @@ import {useParams} from 'react-router-dom'
 import {useTransclusion} from 'shared/useTransclusion'
 import {queryCache} from 'react-query'
 import {useInteractionPanel} from './interactionPanel'
-import {isLocalhost} from './isLocalhost'
+import {isLocalhost} from 'shared/isLocalhost'
 
 export function InteractionPanelObject(props) {
   const {version: draftVersion} = useParams()
@@ -200,7 +200,7 @@ function IPWrapper({attributes, children, element, isEditor, onTransclude}) {
           </button>
         </Tippy>
       )}
-      <div className={!isEditor ? 'pl-4' : ''}>{children}</div>
+      <div className={`${!isEditor ? 'pl-4' : ''} w-full`}>{children}</div>
     </div>
   )
 }
