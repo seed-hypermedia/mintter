@@ -1,6 +1,7 @@
 import React from 'react'
 import {DragDrop} from './DragDrop'
 import {css} from 'emotion'
+import Tippy from '@tippyjs/react'
 
 export function BlockBase(
   {attributes, element, className = '', children, ...rest},
@@ -20,24 +21,37 @@ export function BlockBase(
               transform: translateX(100%);
             `}`}
           >
-            <button
-              onClick={() =>
-                rest.dispatch?.({
-                  type: 'add_mentions',
-                  payload: {
-                    visible: true,
-                    objects: element.quotersList.map(version => {
-                      console.log('version', version)
-
-                      return `${version}/${element.id}`
-                    }),
-                  },
-                })
+            <Tippy
+              content={
+                <span
+                  className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
+                    background-color: #333;
+                    color: #ccc;
+                  `}`}
+                >
+                  Open Mention in Interaction Panel
+                </span>
               }
-              className="text-xs text-info hover:text-info-hover"
             >
-              {quoters}
-            </button>
+              <button
+                onClick={() =>
+                  rest.dispatch?.({
+                    type: 'add_mentions',
+                    payload: {
+                      visible: true,
+                      objects: element.quotersList.map(version => {
+                        console.log('version', version)
+
+                        return `${version}/${element.id}`
+                      }),
+                    },
+                  })
+                }
+                className="text-xs font-bold text-info rounded-full hover:bg-muted transition duration-200 leading-none flex items-center justify-center w-6 h-6 text-center"
+              >
+                {quoters}
+              </button>
+            </Tippy>
           </div>
         )}
         {children}

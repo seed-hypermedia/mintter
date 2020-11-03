@@ -200,7 +200,7 @@ function IPWrapper({attributes, children, element, isEditor, onTransclude}) {
           </button>
         </Tippy>
       )}
-      <div className={!isEditor ? 'pl-4' : ''}>{children}</div>
+      <div className={`${!isEditor ? 'pl-4' : ''} w-full`}>{children}</div>
     </div>
   )
 }
