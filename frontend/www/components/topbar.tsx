@@ -9,7 +9,7 @@ import Logo from './logo_square'
 import Input from './input'
 import {Button} from './button'
 import Container from './container'
-import {isLocalhost} from './isLocalhost'
+import {isLocalhost} from 'shared/isLocalhost'
 
 interface NavItemProps {
   href: string

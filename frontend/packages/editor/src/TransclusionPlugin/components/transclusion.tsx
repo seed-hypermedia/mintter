@@ -36,29 +36,29 @@ const Transclusion = (
             transform: translateX(100%);
           `}`}
         >
-          {transclusionData ? (
-            <>
-              <p
-                className={`text-xs font-bold truncate ${css`
-                  max-width: 180px;
-                `}`}
-              >
-                {transclusionData?.document.title}
-              </p>
-              <p className="text-xs font-light">
-                {transclusionData?.author.username}
-              </p>
-            </>
-          ) : (
-            <div className="mx-2">
-              <p className="text-xs font-light">...</p>
-            </div>
-          )}
-          <button
-            onClick={handlePush}
-            className="transition duration-100 group-hover:opacity-100 group-hover:visible invisible opacity-0 font-bold text-primary"
-          >
-            Open in Interaction Panel →
+          <button className="text-left" onClick={handlePush}>
+            {transclusionData ? (
+              <>
+                <p
+                  className={`text-xs font-bold truncate ${css`
+                    max-width: 180px;
+                  `}`}
+                >
+                  {transclusionData?.document.title}
+                </p>
+                <p className="text-xs font-light">
+                  {transclusionData?.author.username}
+                </p>
+              </>
+            ) : (
+              <div className="mx-2">
+                <p className="text-xs font-light">...</p>
+              </div>
+            )}
+
+            <span className="transition duration-100 group-hover:opacity-100 group-hover:visible invisible opacity-0 font-bold text-primary">
+              Open in Interaction Panel →
+            </span>
           </button>
         </div>
 

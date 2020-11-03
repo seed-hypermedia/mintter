@@ -13,7 +13,6 @@ export function ProfileAddress(props) {
   const {addToast} = useToasts()
 
   const address = useMemo(() => data?.toObject().addrsList, [data])
-  // console.log('ProfileAddress -> address', address)
 
   if (status === 'loading') {
     return <p>Loading...</p>
