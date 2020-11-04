@@ -1,5 +1,3 @@
-import getConfig from 'next/config'
-import {Node, NodeEntry} from 'slate'
 import {MintterPromiseClient} from '@mintter/api/v2/mintter_grpc_web_pb'
 import {DocumentsPromiseClient} from '@mintter/api/v2/documents_grpc_web_pb'
 import {
@@ -9,15 +7,12 @@ import {
   GetDocumentRequest,
   GetDocumentResponse,
   UpdateDraftRequest,
-  UpdateDraftResponse,
   CreateDraftRequest,
   DeleteDocumentRequest,
   PublishDraftRequest,
   PublishDraftResponse,
   Document,
   Block,
-  Paragraph,
-  InlineElement,
 } from '@mintter/api/v2/documents_pb'
 import {
   GetProfileRequest,
@@ -32,25 +27,49 @@ import {
   ListSuggestedProfilesResponse,
   ListSuggestedProfilesRequest,
 } from '@mintter/api/v2/mintter_pb'
-import {
-  toDocument,
-  EditorDocument,
-  makeProto,
-  Editor,
-  toBlock,
-  ELEMENT_BLOCK,
-  SlateBlock,
-} from '@mintter/editor'
-import {v4 as uuid} from 'uuid'
+import {toDocument, toBlock, ELEMENT_BLOCK, SlateBlock} from '@mintter/editor'
 import {getNodesByType} from '@udecode/slate-plugins'
+import getConfig from 'next/config'
 
 const config = getConfig()
-const hostname = config?.publicRuntimeConfig.MINTTER_HOSTNAME
-const port = config?.publicRuntimeConfig.MINTTER_PORT
-const path = `${hostname}:${port}`
 
-export const documentsClient = new DocumentsPromiseClient(path)
-export const usersClient = new MintterPromiseClient(path)
+/**
+ * Detect which API url to use depending on the environment the app is being served from.
+ * For production we bundle our app inside our Go binary, and it's being served on the same port
+ * as the API. So for production we detect the URL from the browser and use the same URL to access the API.
+ */
+export function getApiUrl(): string {
+  if (process.env.NODE_ENV === 'production') {
+    return window.location.origin
+  }
+
+  return config?.publicRuntimeConfig.MINTTER_API_URL
+}
+
+// This trick is required because we used to use API clients as globals,
+// and Webpack would optimize API URL detection and it would hardcode the variable
+// with the default URL without allowing it to change dynamically depending on the environment.
+// See this for more details: https://www.notion.so/mintter/Global-state-in-code-is-considered-harmful-f75eda6d3f7842308d7745cdfd6c38b9
+//
+// TODO: avoid using global state.
+let docClientInstance: DocumentsPromiseClient
+let usersClientInstance: MintterPromiseClient
+
+export function documentsClient() {
+  if (!docClientInstance) {
+    docClientInstance = new DocumentsPromiseClient(getApiUrl())
+  }
+
+  return docClientInstance
+}
+
+export function usersClient() {
+  if (!usersClientInstance) {
+    usersClientInstance = new MintterPromiseClient(getApiUrl())
+  }
+
+  return usersClientInstance
+}
 
 // ============================
 
@@ -62,7 +81,7 @@ export async function listDocuments(
   const req = new ListDocumentsRequest()
   req.setPageSize(page)
   req.setPublishingState(publishingState)
-  return await documentsClient.listDocuments(req)
+  return await documentsClient().listDocuments(req)
 }
 
 export function listPublications(key, page = 0) {
@@ -80,12 +99,12 @@ export async function getDocument(
   const req = new GetDocumentRequest()
   req.setVersion(version)
 
-  return await documentsClient.getDocument(req)
+  return await documentsClient().getDocument(req)
 }
 
 export async function createDraft(): Promise<Document> {
   const req = new CreateDraftRequest()
-  return await documentsClient.createDraft(req)
+  return await documentsClient().createDraft(req)
 }
 
 export interface SetDraftProps {
@@ -133,19 +152,19 @@ export function setDocument(editor) {
     }
 
     req.setDocument(genDocument)
-    await documentsClient.updateDraft(req)
+    await documentsClient().updateDraft(req)
   }
 }
 
 export async function updateDraftWithRequest(req) {
-  return await documentsClient.updateDraft(req)
+  return await documentsClient().updateDraft(req)
 }
 
 export async function deleteDocument(version: string): Promise<any> {
   const req = new DeleteDocumentRequest()
 
   req.setVersion(version)
-  return await documentsClient.deleteDocument(req)
+  return await documentsClient().deleteDocument(req)
 }
 
 export async function publishDraft(
@@ -154,7 +173,7 @@ export async function publishDraft(
   const req = new PublishDraftRequest()
   req.setVersion(version)
 
-  return await documentsClient.publishDraft(req)
+  return await documentsClient().publishDraft(req)
 }
 
 export async function createProfile({
@@ -166,7 +185,7 @@ export async function createProfile({
   req.setAezeedPassphrase(aezeedPassphrase)
   req.setMnemonicList(mnemonicList)
   req.setWalletPassword(walletPassword)
-  return await usersClient.initProfile(req)
+  return await usersClient().initProfile(req)
 }
 
 export async function getProfile(
@@ -181,7 +200,7 @@ export async function getProfile(
   }
 
   try {
-    return await (await usersClient.getProfile(req)).getProfile()
+    return await (await usersClient().getProfile(req)).getProfile()
   } catch (err) {
     console.error('getProfile error ==> ', err)
   }
@@ -205,7 +224,7 @@ export async function setProfile({
   const req = new UpdateProfileRequest()
   req.setProfile(profile)
   try {
-    return await usersClient.updateProfile(req)
+    return await usersClient().updateProfile(req)
   } catch (err) {
     console.error('setProfileError ===> ', err)
   }
@@ -213,18 +232,18 @@ export async function setProfile({
 
 export async function genSeed() {
   const req = new GenSeedRequest()
-  return await usersClient.genSeed(req)
+  return await usersClient().genSeed(req)
 }
 
 export async function connectToPeerById(peerIds: string[]) {
   const req = new ConnectToPeerRequest()
   req.setAddrsList(peerIds)
-  return await usersClient.connectToPeer(req)
+  return await usersClient().connectToPeer(req)
 }
 
 export async function getProfileAddrs() {
   const req = new GetProfileAddrsRequest()
-  return await usersClient.getProfileAddrs(req)
+  return await usersClient().getProfileAddrs(req)
 }
 
 export async function listConnections(
@@ -233,7 +252,7 @@ export async function listConnections(
 ): Promise<ListProfilesResponse> {
   const req = new ListProfilesRequest()
   req.setPageSize(page)
-  return await usersClient.listProfiles(req)
+  return await usersClient().listProfiles(req)
 }
 
 export async function listSuggestedConnections(
@@ -242,5 +261,5 @@ export async function listSuggestedConnections(
 ): Promise<ListSuggestedProfilesResponse> {
   const req = new ListSuggestedProfilesRequest()
   req.setPageSize(page)
-  return await usersClient.listSuggestedProfiles(req)
+  return await usersClient().listSuggestedProfiles(req)
 }

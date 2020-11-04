@@ -1,12 +1,9 @@
-const port = process.env.MINTTER_PORT || `55001`
-const hostname = process.env.MINTTER_HOSTNAME || `http://localhost`
+const apiUrl = process.env.MINTTER_API_URL || 'http://localhost:55001'
 
 module.exports = {
-  /* config options here */
+  // Will be available on both server and client
   publicRuntimeConfig: {
-    // Will be available on both server and client
-    MINTTER_HOSTNAME: hostname,
-    MINTTER_PORT: port,
+    MINTTER_API_URL: apiUrl,
   },
   async rewrites() {
     return [
