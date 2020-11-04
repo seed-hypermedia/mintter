@@ -4,32 +4,19 @@ import * as apiClient from './mintterClient'
 import {SlateBlock} from '@mintter/editor'
 import {
   useQuery,
-  usePaginatedQuery,
   QueryResult,
-  PaginatedQueryResult,
   useMutation,
   MutationResult,
   queryCache,
-  QueryConfig,
 } from 'react-query'
 import {
-  GetProfileResponse,
-  GetProfileAddrsResponse,
-  ListProfilesResponse,
   Profile,
 } from '@mintter/api/v2/mintter_pb'
 import {
-  ListDocumentsResponse,
-  GetDocumentRequest,
   Document,
   PublishingState,
-  GetDocumentResponse,
-  UpdateDraftResponse,
-  PublishDraftResponse,
 } from '@mintter/api/v2/documents_pb'
 import {useProfile} from './profileContext'
-
-type QueryParam<T> = T | T[]
 
 export interface SetDocumentRequest {
   document: {
