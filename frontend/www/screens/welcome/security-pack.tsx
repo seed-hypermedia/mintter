@@ -9,7 +9,6 @@ import {css} from 'emotion'
 import {useHistory} from 'react-router-dom'
 import Button from 'components/button'
 import {NextButton, BackButton} from 'components/welcome-buttons'
-import {useForm} from 'react-hook-form'
 import {useWelcome} from 'shared/welcomeProvider'
 import {useProfileContext} from 'shared/profileContext'
 import {useToasts} from 'react-toast-notifications'
@@ -21,11 +20,8 @@ export default function SecurityPack() {
   const [mnemonic, setMnemonic] = useState<string[]>([])
   const history = useHistory()
   const {dispatch} = useWelcome()
-  const {register, handleSubmit} = useForm({
-    mode: 'onChange',
-  })
 
-  async function handleRPC({passphrase}) {
+  async function handleRPC() {
     try {
       const resp = await genSeed()
       setMnemonic(resp.getMnemonicList())
@@ -36,7 +32,7 @@ export default function SecurityPack() {
   }
 
   useEffect(() => {
-    handleRPC({passphrase: ''})
+    handleRPC()
   }, [])
 
   function splitWords(arr: string[]): string[][] {
@@ -97,7 +93,7 @@ export default function SecurityPack() {
                   }}
                 />
                 <Button
-                  className="w-full mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white transition-all"
+                  className="w-full mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white"
                   type="submit"
                   onClick={handleSubmit(handleRPC)}
                 >
