@@ -125,7 +125,7 @@ interface SetDocumentRequest {
 }
 
 export function setDocument(editor) {
-  return async function({document, state}: SetDocumentRequest): Promise<any> {
+  return async function ({document, state}: SetDocumentRequest): Promise<any> {
     //  do I still need this guard?
     if (Array.isArray(document.version)) {
       console.error(
@@ -145,8 +145,8 @@ export function setDocument(editor) {
 
     if (nodes) {
       const map: Map<string, Block> = req.getBlocksMap()
-      for (let [node] of nodes) {
-        let block: Block = toBlock(node)
+      for (const [node] of nodes) {
+        const block: Block = toBlock(node)
         map.set(node.id, block)
       }
     }

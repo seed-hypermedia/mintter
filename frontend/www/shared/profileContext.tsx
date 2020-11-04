@@ -60,7 +60,7 @@ export function useAuthor(accountId, options = {}) {
 export const ProfileContext = createContext<ProfileContextValue>(null)
 
 export function ProfileProvider(props) {
-  function refetchProfile(params) {
+  function refetchProfile() {
     queryCache.refetchQueries('Profile')
   }
 
@@ -96,7 +96,7 @@ export function ProfileProvider(props) {
 }
 
 export function useProfileAddrs() {
-  let profileAddrsQuery = useQuery(
+  const profileAddrsQuery = useQuery(
     ['ProfileAddrs'],
     apiClient.getProfileAddrs,
     {
