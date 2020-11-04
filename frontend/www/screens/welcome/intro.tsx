@@ -1,3 +1,4 @@
+import React from 'react'
 import {useHistory} from 'react-router-dom'
 import Heading from 'components/welcome-heading'
 import Container from 'components/welcome-container'
@@ -6,14 +7,13 @@ import {NextButton} from 'components/welcome-buttons'
 import Footer from 'components/footer'
 import {useWelcome} from 'shared/welcomeProvider'
 import {useProfile} from 'shared/profileContext'
-import {useEffect} from 'react'
 
 export default function WelcomeIntro() {
   const history = useHistory()
   const {data: profile} = useProfile()
   const {dispatch} = useWelcome()
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (profile) {
       // check is profile is available. this is the only place where I'm redirecting to the linrary from within the welcome process
       history.replace('/library/feed')
@@ -28,12 +28,12 @@ export default function WelcomeIntro() {
   }
   return (
     <>
-      <Container className="lg:flex-1">
+      <Container className="mx-auto">
         <Heading>Welcome to Mintter!</Heading>
         <P>some kind words here</P>
       </Container>
       <Footer className="flex-none">
-        <Container>
+        <Container className="mx-auto">
           <NextButton
             onClick={handleNext}
             className="text-2xl font-light px-10"

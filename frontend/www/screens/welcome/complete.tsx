@@ -12,12 +12,12 @@ export default function WelcomeIndex() {
 
   function handleNext() {
     dispatch({type: 'reset'})
-    history.push('/library/feed')
+    history.push('/private/library/feed')
   }
 
   return (
     <>
-      <Container className="lg:flex-1">
+      <Container className="mx-auto">
         <Heading>Complete!</Heading>
         <P>
           you just create your Mintter account!. Please share it with others and
@@ -25,7 +25,7 @@ export default function WelcomeIndex() {
         </P>
       </Container>
       <Footer className="flex-none">
-        <Container>
+        <Container className="mx-auto">
           <NextButton
             onClick={handleNext}
             className="text-2xl font-light px-10"

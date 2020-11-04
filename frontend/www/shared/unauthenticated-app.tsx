@@ -18,10 +18,7 @@ export default function WelcomeLayout({
 }: LayoutProps) {
   const match = useRouteMatch('/private/welcome')
   return (
-    <Layout
-      {...props}
-      className={`bg-background flex flex-col py-8 ${className}`}
-    >
+    <Layout {...props} className={`bg-red-300 flex flex-col py-8 ${className}`}>
       <div className="absolute right-0 top-0 p-4">
         <ThemeToggle />
       </div>

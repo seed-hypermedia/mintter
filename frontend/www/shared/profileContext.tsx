@@ -1,9 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useCallback,
-  useMemo,
-} from 'react'
+import {createContext, useContext, useCallback, useMemo} from 'react'
 import {
   InitProfileRequest,
   Profile,

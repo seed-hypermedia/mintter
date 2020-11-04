@@ -9,13 +9,8 @@ import {
   MutationResult,
   queryCache,
 } from 'react-query'
-import {
-  Profile,
-} from '@mintter/api/v2/mintter_pb'
-import {
-  Document,
-  PublishingState,
-} from '@mintter/api/v2/documents_pb'
+import {Profile} from '@mintter/api/v2/mintter_pb'
+import {Document, PublishingState} from '@mintter/api/v2/documents_pb'
 import {useProfile} from './profileContext'
 
 export interface SetDocumentRequest {

@@ -40,7 +40,7 @@ export default function EditProfile() {
 
   return (
     <form className="lg:flex-1 flex flex-col">
-      <Container>
+      <Container className="mx-auto">
         <Heading>Edit your profile</Heading>
         <P className="text-center">
           Link your personal data with your new account
@@ -137,7 +137,7 @@ export default function EditProfile() {
         </Content>
       </Container>
       <Footer className="flex-none">
-        <Container>
+        <Container className="mx-auto">
           <div className="flex w-full justify-between flex-row-reverse">
             <NextButton
               onClick={handleSubmit(onSubmit)}

@@ -71,7 +71,7 @@ export default function SecurityPack() {
   const lists = useMemo(() => splitWords(mnemonic), [mnemonic])
   return (
     <>
-      <Container>
+      <Container className="mx-auto">
         <Heading>Security Pack</Heading>
         <P className="text-center">
           Please save these 24 words securely! This will allow you to recreate
@@ -111,7 +111,7 @@ export default function SecurityPack() {
         </Content>
       </Container>
       <Footer className="flex-none">
-        <Container>
+        <Container className="mx-auto">
           <div className="flex w-full justify-between flex-row-reverse">
             <NextButton disabled={mnemonic.length === 0} onClick={handleNext}>
               Next →
