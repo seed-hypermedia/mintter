@@ -3,7 +3,7 @@ const fs = require('fs')
 module.exports = {
   roots: ['<rootDir>'],
   modulePaths: ['<rootDir>'],
-  moduleFileExtensions: ['ts', 'tsx', 'js'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'json'],
   testPathIgnorePatterns: [
     '<rootDir>[/\\\\](node_modules|.next|out|pages)[/\\\\]',
   ],

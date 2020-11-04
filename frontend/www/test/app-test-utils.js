@@ -9,6 +9,14 @@ import {AppProviders} from 'components/app-providers'
 
 jest.mock('shared/V1mintterClient')
 
+function AppWrapper({children}) {
+  return (
+    <div id="#__next">
+      <AppProviders>{children}</AppProviders>
+    </div>
+  )
+}
+
 async function render(
   ui,
   {route = '/library/feed', timeout, ...renderOptions} = {},
@@ -27,7 +35,7 @@ async function render(
 
   const returnValue = {
     ...rtlRender(ui, {
-      wrapper: AppProviders,
+      wrapper: AppWrapper,
       ...renderOptions,
     }),
   }

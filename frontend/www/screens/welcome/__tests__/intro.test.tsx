@@ -1,4 +1,4 @@
-import {render, screen, userEvent} from 'test/app-test-utils'
+import {render, screen} from 'test/app-test-utils'
 import {App} from 'shared/app'
 
 async function renderWelcomeScreen() {

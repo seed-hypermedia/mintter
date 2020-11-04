@@ -1,50 +1,26 @@
-import React, {useReducer, useCallback, useState} from 'react'
-import Tippy from '@tippyjs/react'
-import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
-import {Slate, ReactEditor} from 'slate-react'
+import React from 'react'
+import {ReactEditor} from 'slate-react'
 import slugify from 'slugify'
 import {
   Icons,
-  nodeTypes,
-  Editor,
   useEditor,
   createPlugins,
-  initialBlocksValue,
   EditorComponent,
   useEditorValue,
-  toSlateTree,
   options,
-  ELEMENT_BLOCK,
-  ELEMENT_BLOCK_LIST,
-  ELEMENT_TRANSCLUSION,
-  ELEMENT_PARAGRAPH,
-  toBlock,
-  toDocument,
-  SlateBlock,
   TransclusionHelperProvider,
 } from '@mintter/editor'
-import {Document} from '@mintter/api/v2/documents_pb'
 import Seo from 'components/seo'
 import {getDocument, getProfile} from 'shared/mintterClient'
-import EditorHeader from 'components/editor-header'
-import {DebugValue} from 'components/debug'
+
 import {css} from 'emotion'
 import {useParams, useHistory, useLocation} from 'react-router-dom'
 import {useDocument, useDrafts, useMintter} from 'shared/mintterContext'
 import {useAuthor, useProfileAddrs} from 'shared/profileContext'
-import Layout from 'components/layout'
-import {FullPageSpinner} from 'components/fullPageSpinner'
 import {ErrorMessage} from 'components/errorMessage'
 import {AuthorLabel} from 'components/author-label'
-import Container from 'components/container'
 import {useTransclusion} from 'shared/useTransclusion'
 import {isLocalhost} from 'shared/isLocalhost'
-import {
-  UpdateDraftRequest,
-  BlockRefList,
-  Block,
-} from '@mintter/api/v2/documents_pb'
-import {v4 as uuid} from 'uuid'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 import SplitPane from 'react-split-pane'
@@ -75,7 +51,7 @@ function useDraftsSelection() {
 
 export default function Publication(): JSX.Element {
   const location = useLocation()
-  let query = new URLSearchParams(location.search)
+  const query = new URLSearchParams(location.search)
   const isModalOpen = query.get('modal')
   const {data: profileAddress} = useProfileAddrs()
   const {addToast} = useToasts()
@@ -90,7 +66,7 @@ export default function Publication(): JSX.Element {
 
   const [showReactions, toggleReactions] = React.useState(true)
 
-  let version = React.useMemo(() => slug.split('-').slice(-1)[0], [slug])
+  const version = React.useMemo(() => slug.split('-').slice(-1)[0], [slug])
 
   const {createDraft} = useMintter()
 

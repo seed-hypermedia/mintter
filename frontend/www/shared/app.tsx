@@ -1,24 +1,17 @@
 import React from 'react'
-import {
-  Switch,
-  Route,
-  Redirect,
-  useRouteMatch,
-  useLocation,
-  useHistory,
-} from 'react-router-dom'
+import {Switch, Route, Redirect, useRouteMatch} from 'react-router-dom'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {AppLayout} from 'components/layout'
 import Topbar from 'components/topbar'
 import {PrivateRoute} from 'components/routes'
 import {NoRoute} from 'screens/no-route'
-import Publication from 'screens/publication'
 
-const AuthenticatedApp = React.lazy(() =>
-  import(/* webpackPrefetch: true */ './authenticated-app'),
+const AuthenticatedApp = React.lazy(
+  () => import(/* webpackPrefetch: true */ './authenticated-app'),
 )
 const UnAuthenticatedApp = React.lazy(() => import('./unauthenticated-app'))
 const PublicLibrary = React.lazy(() => import('../screens/public-library'))
+const Publication = React.lazy(() => import('../screens/publication'))
 
 export function App() {
   return (
