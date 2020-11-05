@@ -8,6 +8,7 @@ import {
   useMutation,
   MutationResult,
   queryCache,
+  QueryConfig,
 } from 'react-query'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 import {Document, PublishingState} from '@mintter/api/v2/documents_pb'
@@ -115,7 +116,7 @@ export function useDrafts(options = {}) {
   }
 }
 
-export function useDocument(version, options = {}) {
+export function useDocument(version: string, options: QueryConfig = {}) {
   if (!version) {
     throw new Error(`useDocument: parameter "version" is required`)
   }

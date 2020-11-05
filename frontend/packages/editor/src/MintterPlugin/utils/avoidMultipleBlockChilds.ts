@@ -5,6 +5,7 @@ import {ELEMENT_BLOCK_LIST} from '../../HierarchyPlugin/defaults'
 import {v4 as uuid} from 'uuid'
 
 export function avoidMultipleBlockChilds(editor, entry): boolean {
+  console.log('avoidMultipleBlockChilds -> editor, entry', {editor, entry})
   const [node, path] = entry
 
   if (path.length === 3) {

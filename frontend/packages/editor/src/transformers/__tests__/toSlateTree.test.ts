@@ -20,6 +20,7 @@ test('toSlateTree: one level', () => {
         paragraph: {
           inlineElementsList: [{text: 'Test block'}],
         },
+        quotersList: [],
       },
     ],
   ]
@@ -51,6 +52,7 @@ test('toSlateTree: one level', () => {
             ],
           },
         ],
+        quotersList: [],
       },
     ],
   }
@@ -69,6 +71,7 @@ test('toSlateTree: two levels', () => {
         paragraph: {
           inlineElementsList: [{text: 'Test block'}],
         },
+        quotersList: [],
       },
     ],
     [
@@ -78,6 +81,7 @@ test('toSlateTree: two levels', () => {
         paragraph: {
           inlineElementsList: [{text: 'Nested Test block'}],
         },
+        quotersList: [],
       },
     ],
   ]
@@ -107,6 +111,7 @@ test('toSlateTree: two levels', () => {
       {
         type: ELEMENT_BLOCK,
         id: 'block-test-id',
+        quotersList: [],
         children: [
           {
             type: ELEMENT_PARAGRAPH,
@@ -124,6 +129,7 @@ test('toSlateTree: two levels', () => {
               {
                 type: ELEMENT_BLOCK,
                 id: 'nested-block-test-id',
+                quotersList: [],
                 children: [
                   {
                     type: ELEMENT_PARAGRAPH,
@@ -143,6 +149,5 @@ test('toSlateTree: two levels', () => {
   }
 
   const result = toSlateTree({blockRefList, blocksMap})
-
   expect(result).toEqual(expected)
 })

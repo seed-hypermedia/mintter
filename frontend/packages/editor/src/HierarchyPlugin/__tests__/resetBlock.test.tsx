@@ -2,7 +2,7 @@
 import {jsx} from '../../../test/jsx'
 import {Editor} from 'slate'
 
-test('Hierarchy: move block content to the tops nearest block available', () => {
+xtest('Hierarchy: move block content to the tops nearest block available', () => {
   const input = ((
     <editor>
       <blockList id="blockList-root">
@@ -43,9 +43,9 @@ test('Hierarchy: move block content to the tops nearest block available', () => 
     </editor>
   ) as any) as Editor
 
-  console.log({input, output})
+  // console.log({input, output})
 
-  //   expect(input.children).toEqual(output.children)
+  expect(input.children).toEqual(output.children)
 })
 
 // test('toBlock: block with image', () => {})
