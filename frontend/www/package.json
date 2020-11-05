@@ -17,7 +17,7 @@
     "lint": "eslint --ignore-path .gitignore . --ext ts --ext tsx --ext js",
     "type-check": "tsc --pretty --noEmit",
     "format": "prettier --write **/*.{js,ts,tsx}",
-    "test-all": "yarn lint && yarn type-check && yarn test"
+    "test-all": "yarn lint --fix && yarn type-check && yarn test"
   },
   "dependencies": {
     "@mintter/api": "*",

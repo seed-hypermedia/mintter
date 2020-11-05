@@ -119,7 +119,7 @@ export default function Editor(): JSX.Element {
       interactionPanelDispatch({type: 'add_object', payload: mentions})
     }
 
-    let object = query.get('object')
+    const object = query.get('object')
     if (object) {
       interactionPanelDispatch({type: 'add_object', payload: object})
     }

@@ -4,7 +4,7 @@ import {useState} from 'react'
 
 function simplifyBlocks(blocks) {
   return blocks.map(block => {
-    let simpleBlock: Partial<SlateBlock> = {}
+    const simpleBlock: Partial<SlateBlock> = {}
 
     if (block.type) {
       simpleBlock.type = block.type

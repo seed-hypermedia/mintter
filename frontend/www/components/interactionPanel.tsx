@@ -45,10 +45,10 @@ function objectsReducer(
   }
 
   if (type === 'add_mentions') {
-    let newObjects = payload.objects
+    const newObjects = payload.objects
       .filter(str => str.split('/')[0])
       .filter(version => !state.objects.includes(version))
-    console.log('newObjects', newObjects)
+
     return {
       ...state,
       ...payload,
@@ -102,7 +102,7 @@ export function InteractionPanelProvider({children}) {
 }
 
 export function useInteractionPanel() {
-  let context = React.useContext(InteractionPanelContext)
+  const context = React.useContext(InteractionPanelContext)
 
   if (!context) {
     throw new Error(

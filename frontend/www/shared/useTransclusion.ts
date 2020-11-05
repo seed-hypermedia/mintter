@@ -44,13 +44,12 @@ export function useTransclusion({editor}) {
 
       if (destination) {
         draft = await getDocument('key', destination)
-        console.log('useTransclusion -> draft', draft)
 
         // Create block reference for the block being transcluded:
-        let transclusionRef = new BlockRef()
+        const transclusionRef = new BlockRef()
         transclusionRef.setRef(transclusionId)
 
-        let document = draft.getDocument()
+        const document = draft.getDocument()
         document.getBlockRefList().addRefs(transclusionRef)
 
         const req = new UpdateDraftRequest()
@@ -66,15 +65,15 @@ export function useTransclusion({editor}) {
         draft = await createDraft()
 
         // main blockRefList
-        let blockRefList = new BlockRefList()
+        const blockRefList = new BlockRefList()
         blockRefList.setStyle(BlockRefList.Style.NONE)
 
         // transclusion blockRef
-        let transclusionRef = new BlockRef()
+        const transclusionRef = new BlockRef()
         transclusionRef.setRef(transclusionId)
 
         // empty blockRef
-        let emptyBlockRef = new BlockRef()
+        const emptyBlockRef = new BlockRef()
         const emptyBlockId = uuid()
         emptyBlockRef.setRef(emptyBlockId)
 
@@ -184,7 +183,7 @@ function createBlockRefList(blockRefList: BlockRefList.AsObject) {
 }
 
 function createBlockRef(sourceRef: BlockRef.AsObject) {
-  let blockRef: any = {
+  const blockRef: any = {
     ref: sourceRef.ref,
   }
 
