@@ -93,7 +93,7 @@ export function listDrafts(key, page = 0) {
 }
 
 export async function getDocument(
-  key: string,
+  _,
   version: string,
 ): Promise<GetDocumentResponse> {
   const req = new GetDocumentRequest()
@@ -125,7 +125,7 @@ interface SetDocumentRequest {
 }
 
 export function setDocument(editor) {
-  return async function({document, state}: SetDocumentRequest): Promise<any> {
+  return async function ({document, state}: SetDocumentRequest): Promise<any> {
     //  do I still need this guard?
     if (Array.isArray(document.version)) {
       console.error(
@@ -137,11 +137,15 @@ export function setDocument(editor) {
       return
     }
 
-    const genDocument = toDocument({document, state})
+    const genDocument: Document = toDocument({document, state})
     const req = new UpdateDraftRequest()
-    const nodes: any = getNodesByType(editor, ELEMENT_BLOCK, {
-      at: [],
-    }) // Iterable<NodeEntry<SlateBlock>>
+    const nodes: Iterable<NodeEntry<SlateBlock>> = getNodesByType(
+      editor,
+      ELEMENT_BLOCK,
+      {
+        at: [],
+      },
+    )
 
     if (nodes) {
       const map: Map<string, Block> = req.getBlocksMap()
