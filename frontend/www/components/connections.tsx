@@ -1,8 +1,5 @@
 import React from 'react'
-import {useProfileContext} from 'shared/profileContext'
-import {ErrorMessage} from 'components/errorMessage'
 import {css} from 'emotion'
-import {AuthorLabel} from './author-label'
 import Tippy from '@tippyjs/react'
 import {Profile, ConnectionStatus} from '@mintter/api/v2/mintter_pb'
 
