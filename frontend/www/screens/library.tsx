@@ -4,8 +4,7 @@ import {Switch, useRouteMatch, Redirect} from 'react-router-dom'
 import {PrivateRoute} from 'components/routes'
 import {NavItem} from 'components/nav'
 import {useHistory} from 'react-router-dom'
-import {useMintter, useDocuments} from 'shared/mintterContext'
-import Container from 'components/container'
+import {useMintter} from 'shared/mintterContext'
 import {
   useConnectionList,
   useConnectionCreate,
@@ -19,16 +18,16 @@ import {MainColumn} from 'components/main-column'
 import {Icons} from '@mintter/editor'
 import {useToasts} from 'react-toast-notifications'
 
-const Publications = React.lazy(() =>
-  import(/* webpackPrefetch: true */ './publications'),
+const Publications = React.lazy(
+  () => import(/* webpackPrefetch: true */ './publications'),
 )
-const MyPublications = React.lazy(() =>
-  import(/* webpackPrefetch: true */ './my-publications'),
+const MyPublications = React.lazy(
+  () => import(/* webpackPrefetch: true */ './my-publications'),
 )
 const Drafts = React.lazy(() => import(/* webpackPrefetch: true */ './drafts'))
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
-export default function Library(props) {
+export default function Library() {
   const match = useRouteMatch('/private/library')
   const history = useHistory()
   const {createDraft} = useMintter()
@@ -50,7 +49,6 @@ export default function Library(props) {
 
   async function handleConnectToPeer() {
     const peer: any = window.prompt(`enter a peer address`)
-    let toast
 
     if (peer) {
       const toast = addToast('Connecting to peer...', {

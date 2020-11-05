@@ -1,18 +1,8 @@
 import React from 'react'
-import {css} from 'emotion'
 import {mergeRefs} from '@mintter/editor'
 
 function TextareaComponent(
-  {
-    value,
-    onChange,
-    className,
-    onEnterPress,
-    rows = 1,
-    readOnly = false,
-
-    ...props
-  },
+  {value, onChange, className, onEnterPress, ...props},
   ref,
 ) {
   const innerRef = React.useRef(null)

@@ -146,9 +146,9 @@ export function MnemonicWords({
       <div className="flex-wrap flex w-full" data-testid="mnemonic-list">
         {error
           ? error.message
-          : lists.map((list, list_idx) => (
+          : lists.map((list, listIdx) => (
               <div
-                key={list_idx}
+                key={listIdx}
                 className={`w-1/2 flex-1 flex flex-col md:order-none ${css`
                   min-width: 162px;
                   margin-top: -12px;
@@ -157,8 +157,8 @@ export function MnemonicWords({
 
                   @media (min-width: 396px) {
                     min-width: 50%;
-                    order: ${list_idx % 2 == 0 ? '1' : '2'};
-                    margin-top: ${list_idx % 2 == 0 ? '0' : '-12px'};
+                    order: ${listIdx % 2 == 0 ? '1' : '2'};
+                    margin-top: ${listIdx % 2 == 0 ? '0' : '-12px'};
                     align-items: center;
                     padding-left: 0;
                   }
@@ -171,8 +171,8 @@ export function MnemonicWords({
                 `}`}
               >
                 <ol>
-                  {list.map((word, word_idx) => (
-                    <li key={word_idx} className="my-3 flex items-baseline">
+                  {list.map((word, wordIdx) => (
+                    <li key={wordIdx} className="my-3 flex items-baseline">
                       <span
                         className={`text-bold text-body-muted ${css`
                           font-size: 0.65rem;
@@ -180,7 +180,7 @@ export function MnemonicWords({
                           display: inline-block;
                         `}`}
                       >
-                        {list_idx * 6 + word_idx + 1}.
+                        {listIdx * 6 + wordIdx + 1}.
                       </span>
                       <span className="text-body">{word}</span>
                     </li>

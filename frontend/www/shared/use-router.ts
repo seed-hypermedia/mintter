@@ -1,10 +1,5 @@
 import React from 'react'
-import {
-  useLocation,
-  useHistory,
-  useRouteMatch,
-  useParams,
-} from 'react-router-dom'
+import {useLocation, useHistory, useRouteMatch} from 'react-router-dom'
 
 export function useRouter() {
   const history = useHistory()

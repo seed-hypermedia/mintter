@@ -167,6 +167,7 @@ export function useConnectionCreate() {
 
   return {
     connectToPeer,
+    ...mutationOptions,
   }
 }
 

@@ -104,8 +104,8 @@ export default function Publication(): JSX.Element {
   }
   const plugins = createPlugins(editorOptions)
   const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
-  const {status, error, data, isFetching, failureCount} = useDocument(version)
-  const {state, setValue} = useEditorValue({
+  const {status, error, data} = useDocument(version)
+  const {state} = useEditorValue({
     document: data,
   })
   const {title, blocks, subtitle, author: pubAuthor, mentions} = state
@@ -214,7 +214,6 @@ export default function Publication(): JSX.Element {
             editor={editor}
             plugins={plugins}
             value={blocks}
-            onChange={() => {}}
           />
         </div>
       </>
@@ -295,7 +294,7 @@ export default function Publication(): JSX.Element {
                 }}
               >
                 <Icons.Copy size={14} color="currentColor" />
-                <span className="ml-2">Copy Document's UUID</span>
+                <span className="ml-2">Copy Document UUID</span>
               </button>
             </div>
           </div>

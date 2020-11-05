@@ -43,8 +43,6 @@ async function renderWelcomeScreen() {
   }
 }
 
-const onSubmit = jest.fn()
-
 test('Welcome - Edit Profile Screen', async () => {
   const {nextBtn, data} = await renderWelcomeScreen()
 

@@ -1,4 +1,4 @@
-import Input from 'components/input'
+import React from 'react'
 import Textarea from 'components/textarea'
 import {useProfileContext} from 'shared/profileContext'
 import {ErrorMessage} from './errorMessage'

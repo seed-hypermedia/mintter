@@ -1,20 +1,16 @@
 import React from 'react'
 import {Switch, useRouteMatch, Redirect} from 'react-router-dom'
 import {ErrorBoundary} from 'react-error-boundary'
-import {css} from 'emotion'
 import {FullPageErrorMessage} from 'components/errorMessage'
 import {PrivateRoute} from 'components/routes'
 import {AppLayout} from 'components/layout'
 import Topbar from 'components/topbar'
-import Container from 'components/container'
-import {useTheme} from './themeContext'
 
 const Library = React.lazy(() => import('screens/library'))
 const Settings = React.lazy(() => import('screens/settings'))
 const Editor = React.lazy(() => import('screens/editor'))
-const Publication = React.lazy(() => import('screens/publication'))
 
-export default function AuthenticatedApp(props) {
+export default function AuthenticatedApp() {
   const match = useRouteMatch('/private')
 
   return (

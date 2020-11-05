@@ -16,7 +16,7 @@ import {useProfileContext} from 'shared/profileContext'
 import {Icons} from '@mintter/editor'
 
 export default function RetypeSeed() {
-  const {register, handleSubmit, errors, formState, watch} = useForm({
+  const {register, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
   })
   const [submitError, setSubmitError] = useState(null)
@@ -34,7 +34,7 @@ export default function RetypeSeed() {
     setIdxs(getRandomElements(mnemonicList))
   }, [])
 
-  async function onSubmit(attrs) {
+  async function onSubmit() {
     try {
       createProfile({mnemonicList, walletPassword: '', aezeedPassphrase: ''})
       history.replace('/private/welcome/edit-profile')
@@ -54,8 +54,9 @@ export default function RetypeSeed() {
             to recover your account. To make sure that you have properly saved
             your seed, please retype the words
           </P>
-          <P className="text-center font-bold">{`${idxs[0] + 1}, ${idxs[1] +
-            1} & ${idxs[2] + 1}`}</P>
+          <P className="text-center font-bold">{`${idxs[0] + 1}, ${
+            idxs[1] + 1
+          } & ${idxs[2] + 1}`}</P>
           {process.env.NODE_ENV === 'development' && (
             <P className="text-center">{`(${mnemonicList[idxs[0]]}, ${
               mnemonicList[idxs[1]]

@@ -8,13 +8,7 @@ export interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
   exit?: string
 }
 
-export default function Layout({
-  children,
-  className = '',
-  initial = 'exit',
-  animate = 'enter',
-  exit = 'exit',
-}: LayoutProps) {
+export default function Layout({children, className = ''}: LayoutProps) {
   const {theme} = useTheme()
   return (
     <div

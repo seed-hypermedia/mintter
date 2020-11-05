@@ -1,21 +1,12 @@
-import {
-  render,
-  screen,
-  userEvent,
-  waitForLoadingToFinish,
-  fireEvent,
-  waitFor,
-  act,
-  waitForElement,
-} from 'test/app-test-utils'
+import {render, screen, userEvent, waitFor, act} from 'test/app-test-utils'
 import {BrowserRouter as Router} from 'react-router-dom'
 import WelcomeProvider from 'shared/welcomeProvider'
 import CreatePassword from '../create-password'
-import {GenSeedResponse, Profile} from '@mintter/api/v2/mintter_pb'
-import * as clientMock from 'shared/V1mintterClient'
+import {Profile} from '@mintter/api/v2/mintter_pb'
+import * as clientMock from 'shared/mintterClient'
 import {ProfileProvider} from 'shared/profileContext'
 
-jest.mock('shared/V1mintterClient')
+jest.mock('shared/mintterClient')
 
 async function renderWelcomeScreen() {
   const route = `/private/welcome/create-password`

@@ -1,16 +1,13 @@
 import React from 'react'
-import {useProfileContext, useSuggestedConnections} from 'shared/profileContext'
-import {ErrorMessage} from 'components/errorMessage'
+import {useSuggestedConnections} from 'shared/profileContext'
+
 import {css} from 'emotion'
-import {AuthorLabel} from './author-label'
+
 import Tippy from '@tippyjs/react'
-import {useToasts} from 'react-toast-notifications'
 import {Profile, ConnectionStatus} from '@mintter/api/v2/mintter_pb'
 
 export function SuggestedConnections({handleConnectToPeer}) {
   const {resolvedData, isLoading} = useSuggestedConnections()
-  const {addToast, updateToast, removeToast} = useToasts()
-
   if (isLoading) {
     return <p className="text-body text-sm mt-2">loading...</p>
   }

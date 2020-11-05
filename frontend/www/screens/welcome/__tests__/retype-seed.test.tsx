@@ -49,8 +49,6 @@ async function renderWelcomeScreen() {
   }
 }
 
-const onSubmit = jest.fn()
-
 xtest('Welcome - Retype Seed Screen', async () => {
   const {nextBtn, mnemonicList} = await renderWelcomeScreen()
 

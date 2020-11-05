@@ -1,1 +1,3 @@
-export default function Index() {}
+export default function Index() {
+  return null
+}

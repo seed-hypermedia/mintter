@@ -1,6 +1,4 @@
 import Logo from './logo_square'
-import IconSettings from './icon-settings'
-import IconEye from './icon-eye'
 import {Link} from 'react-router-dom'
 
 interface Props {
@@ -18,12 +16,6 @@ export default function EditorHeader({onPublish}: Props) {
         </Link>
       </div>
       <div className="flex-1"></div>
-      {/* <button className="text-muted-hover bg-transparent hover:shadow-lg hover:text-muted-hover p-2 rounded-full shadow transition duration-200">
-        <IconEye width="24px" />
-      </button>
-      <button className="text-muted-hover bg-transparent hover:shadow-lg hover:text-muted-hover p-2 rounded-full shadow transition duration-200 ml-4">
-        <IconSettings width="24px" />
-      </button> */}
       {onPublish && (
         <button
           onClick={onPublish}

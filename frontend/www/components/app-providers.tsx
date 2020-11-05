@@ -14,7 +14,7 @@ function Toast({children, ...props}) {
   )
 }
 
-export function AppProviders({children, ...props}) {
+export function AppProviders({children}) {
   return (
     <>
       <ReactQueryDevtools initialIsOpen={false} />
