@@ -14,11 +14,13 @@ test('blocksToSlate: from block to Slate blocks', () => {
         },
       ],
     },
+    quotersList: [],
   }
 
   const expected = {
     id: 'block-test-id',
     type: ELEMENT_BLOCK,
+    quotersList: [],
     children: [
       {
         type: 'p',

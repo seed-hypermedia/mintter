@@ -221,7 +221,7 @@ export default function Publication(): JSX.Element {
   }
 
   return (
-    <>
+    <Page>
       <Seo title="Publication" />
       <Modal
         isOpen={!!isModalOpen}
@@ -301,107 +301,103 @@ export default function Publication(): JSX.Element {
         </div>
       </Modal>
       <ResizerStyle />
-      <Page>
-        <SplitPane
-          style={{
-            height: '100%',
-            width: '100%',
-          }}
-          split="vertical"
-          maxSize={-100}
-          defaultSize="66%"
-          minSize={300}
-          pane1Style={
-            interactionPanel.visible
-              ? {
-                  minWidth: 600,
-                  overflow: 'auto',
-                }
-              : {
-                  width: '100%',
-                  minWidth: '100%',
-                  height: '100%',
-                  minHeight: '100%',
-                  overflow: 'auto',
-                }
-          }
-          pane2Style={{
-            overflow: 'auto',
-          }}
-        >
-          <div className="overflow-auto">
-            <PublicationCTA
-              visible={interactionPanel.visible}
-              handleInteract={() => {
-                interactionPanelDispatch({type: 'toggle_panel'})
-              }}
-            />
-            <MainColumn>
-              <TransclusionHelperProvider
-                options={drafts}
-                handleTransclusion={handleTransclusion}
-              >
-                {content}
-              </TransclusionHelperProvider>
-            </MainColumn>
-          </div>
-          {interactionPanel.visible ? (
-            <div
-              style={{
-                visibility: interactionPanel.visible ? 'visible' : 'hidden',
-                maxWidth: interactionPanel.visible ? '100%' : 0,
-                width: interactionPanel.visible ? '100%' : 0,
+      <SplitPane
+        style={{
+          height: '100%',
+          width: '100%',
+        }}
+        split="vertical"
+        maxSize={-100}
+        defaultSize="66%"
+        minSize={300}
+        pane1Style={
+          interactionPanel.visible
+            ? {
+                minWidth: 600,
+                overflow: 'auto',
+              }
+            : {
+                width: '100%',
+                minWidth: '100%',
                 height: '100%',
                 minHeight: '100%',
                 overflow: 'auto',
-                zIndex: 0,
-              }}
+              }
+        }
+        pane2Style={{
+          overflow: 'auto',
+        }}
+      >
+        <div className="overflow-auto">
+          <PublicationCTA
+            visible={interactionPanel.visible}
+            handleInteract={() => {
+              interactionPanelDispatch({type: 'toggle_panel'})
+            }}
+          />
+          <MainColumn>
+            <TransclusionHelperProvider
+              options={drafts}
+              handleTransclusion={handleTransclusion}
             >
-              <div className="mx-4 flex items-center justify-between mt-4">
-                <MintterIcon size="1.5em" />
+              {content}
+            </TransclusionHelperProvider>
+          </MainColumn>
+        </div>
+        {interactionPanel.visible ? (
+          <div
+            style={{
+              visibility: interactionPanel.visible ? 'visible' : 'hidden',
+              maxWidth: interactionPanel.visible ? '100%' : 0,
+              width: interactionPanel.visible ? '100%' : 0,
+              height: '100%',
+              minHeight: '100%',
+              overflow: 'auto',
+              zIndex: 0,
+            }}
+          >
+            <div className="mx-4 flex items-center justify-between mt-4">
+              <MintterIcon size="1.5em" />
+              <button
+                className="text-primary text-base flex items-center w-full justify-end group"
+                onClick={() => interactionPanelDispatch({type: 'close_panel'})}
+              >
+                <span className="text-sm mx-2">Close Interaction Panel</span>
+                <span className="w-4 h-4 rounded-full bg-background-muted text-primary flex items-center justify-center group-hover:bg-muted transform duration-200">
+                  <Icons.ChevronRight size={14} color="currentColor" />
+                </span>
+              </button>
+            </div>
+            <div className="py-6 border-t border-muted mx-4 mt-2">
+              <p className="text-muted-hover font-bold text-xs">Reactions</p>
+              <div className="flex items-center mt-4">
+                <p className="text-sm">
+                  {interactionPanel.objects.length === 0
+                    ? 'No Reactions'
+                    : interactionPanel.objects.length === 1
+                    ? '1 Reaction'
+                    : `${interactionPanel.objects.length} Reactions`}{' '}
+                </p>
                 <button
-                  className="text-primary text-base flex items-center w-full justify-end group"
-                  onClick={() =>
-                    interactionPanelDispatch({type: 'close_panel'})
-                  }
+                  className="font-bold text-primary mx-2 text-sm"
+                  onClick={() => toggleReactions(val => !val)}
                 >
-                  <span className="text-sm mx-2">Close Interaction Panel</span>
-                  <span className="w-4 h-4 rounded-full bg-background-muted text-primary flex items-center justify-center group-hover:bg-muted transform duration-200">
-                    <Icons.ChevronRight size={14} color="currentColor" />
-                  </span>
+                  {showReactions ? 'Hide ' : 'Show '}Reactions
                 </button>
               </div>
-              <div className="py-6 border-t border-muted mx-4 mt-2">
-                <p className="text-muted-hover font-bold text-xs">Reactions</p>
-                <div className="flex items-center mt-4">
-                  <p className="text-sm">
-                    {interactionPanel.objects.length === 0
-                      ? 'No Reactions'
-                      : interactionPanel.objects.length === 1
-                      ? '1 Reaction'
-                      : `${interactionPanel.objects.length} Reactions`}{' '}
-                  </p>
-                  <button
-                    className="font-bold text-primary mx-2 text-sm"
-                    onClick={() => toggleReactions(val => !val)}
-                  >
-                    {showReactions ? 'Hide ' : 'Show '}Reactions
-                  </button>
-                </div>
-              </div>
-
-              {showReactions &&
-                interactionPanel.objects.map(object => (
-                  <InteractionPanelObject key={object} id={object} />
-                ))}
-              <InteractionPanelCTA handleInteract={handleInteract} />
             </div>
-          ) : (
-            <div />
-          )}
-        </SplitPane>
-      </Page>
-    </>
+
+            {showReactions &&
+              interactionPanel.objects.map(object => (
+                <InteractionPanelObject key={object} id={object} />
+              ))}
+            <InteractionPanelCTA handleInteract={handleInteract} />
+          </div>
+        ) : (
+          <div />
+        )}
+      </SplitPane>
+    </Page>
   )
 }
 

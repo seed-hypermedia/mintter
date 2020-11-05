@@ -71,7 +71,11 @@ export function useEditorValue({document}) {
       const {document: doc, blocksMap} = document
       const {title, subtitle, blockRefList, author} = doc
       const mentions = getMentions(blocksMap)
-      const blocks = toSlateTree({blockRefList, blocksMap, isRoot: true})
+      const blocks = toSlateTree({
+        blockRefList,
+        blocksMap,
+        isRoot: true,
+      })
 
       setValue({
         title,

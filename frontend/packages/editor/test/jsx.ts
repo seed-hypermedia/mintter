@@ -19,7 +19,6 @@ export const jsx = createHyperscript({
     hblockquote: {type: options.blockquote.type},
     hcode: {type: options.code.type},
     ha: {type: options.link.type},
-    himg: {type: options.img.type},
     hul: {type: options.ul.type},
     hol: {type: options.ol.type},
     hli: {type: options.li.type},

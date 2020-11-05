@@ -153,153 +153,149 @@ export default function Editor(): JSX.Element {
   }
 
   return (
-    <>
+    <Page>
       <Seo title="Compose" />
       <DebugValue value={state} />
       <ResizerStyle />
-      <Page>
-        <SplitPane
-          style={{
-            height: '100%',
-            width: '100%',
-          }}
-          split="vertical"
-          maxSize={-100}
-          defaultSize="66%"
-          minSize={300}
-          pane1Style={
-            interactionPanel.visible
-              ? {
-                  minWidth: 600,
-                  overflow: 'auto',
-                }
-              : {
-                  width: '100%',
-                  minWidth: '100%',
-                  height: '100%',
-                  minHeight: '100%',
-                  overflow: 'auto',
-                }
-          }
-          pane2Style={{
-            overflow: 'auto',
-          }}
-        >
-          <div className="overflow-auto">
-            <div className="px-4 flex justify-end pt-4">
-              <button
-                onClick={handlePublish}
-                className="bg-primary rounded-full px-12 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
-              >
-                Publish
-              </button>
-              <Tippy
-                content={
-                  <span
-                    className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
-                      background-color: #333;
-                      color: #ccc;
-                    `}`}
-                  >
-                    Interact with this document
-                  </span>
-                }
-              >
-                <button
-                  onClick={() =>
-                    interactionPanelDispatch({type: 'toggle_panel'})
-                  }
-                  className="ml-4 text-sm text-muted-hover hover:text-toolbar transform -rotate-180 transition duration-200 outline-none"
-                >
-                  <Icons.Sidebar color="currentColor" />
-                </button>
-              </Tippy>
-            </div>
-
-            <MainColumn>
-              <div
-                className={`pb-2 mb-4 relative ${css`
-                  &:after {
-                    content: '';
-                    position: absolute;
-                    bottom: 0;
-                    left: 0;
-                    width: 50%;
-                    max-width: 360px;
-                    height: 1px;
-                    z-index: 20;
-                    background-color: var(--color-muted-hover);
-                  }
-                `}`}
-              >
-                <Textarea
-                  ref={t => {
-                    titleRef.current = t
-                  }}
-                  value={title}
-                  data-test-id="editor_title"
-                  onChange={setTitle}
-                  name="title"
-                  placeholder="Document title"
-                  className={`text-4xl text-heading font-bold italic`}
-                  onEnterPress={() => {
-                    subtitleRef.current.focus()
-                  }}
-                />
-                <Textarea
-                  ref={d => {
-                    subtitleRef.current = d
-                  }}
-                  value={subtitle}
-                  onChange={setSubtitle}
-                  name="subtitle"
-                  placeholder="Subtitle"
-                  className={`leading-relaxed text-lg font-light text-heading-muted italic`}
-                  onEnterPress={() => {
-                    ReactEditor.focus(editor)
-                  }}
-                />
-              </div>
-              <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-3xl">
-                <EditorComponent
-                  editor={editor}
-                  plugins={plugins}
-                  value={blocks}
-                  onChange={blocks => {
-                    setBlocks(blocks)
-                  }}
-                  theme={theme}
-                />
-              </div>
-            </MainColumn>
-          </div>
-          {interactionPanel.visible ? (
-            <div
-              className="bg-background-muted"
-              style={{
-                visibility: interactionPanel.visible ? 'visible' : 'hidden',
-                maxWidth: interactionPanel.visible ? '100%' : 0,
-                width: interactionPanel.visible ? '100%' : 0,
+      <SplitPane
+        style={{
+          height: '100%',
+          width: '100%',
+        }}
+        split="vertical"
+        maxSize={-100}
+        defaultSize="66%"
+        minSize={300}
+        pane1Style={
+          interactionPanel.visible
+            ? {
+                minWidth: 600,
+                overflow: 'auto',
+              }
+            : {
+                width: '100%',
+                minWidth: '100%',
                 height: '100%',
                 minHeight: '100%',
                 overflow: 'auto',
-                zIndex: 0,
-              }}
+              }
+        }
+        pane2Style={{
+          overflow: 'auto',
+        }}
+      >
+        <div className="overflow-auto">
+          <div className="px-4 flex justify-end pt-4">
+            <button
+              onClick={handlePublish}
+              className="bg-primary rounded-full px-12 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
             >
-              {interactionPanel.objects.map(object => (
-                <InteractionPanelObject
-                  key={object}
-                  isEditor
-                  id={object}
-                  createTransclusion={createTransclusion}
-                />
-              ))}
+              Publish
+            </button>
+            <Tippy
+              content={
+                <span
+                  className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
+                    background-color: #333;
+                    color: #ccc;
+                  `}`}
+                >
+                  Interact with this document
+                </span>
+              }
+            >
+              <button
+                onClick={() => interactionPanelDispatch({type: 'toggle_panel'})}
+                className="ml-4 text-sm text-muted-hover hover:text-toolbar transform -rotate-180 transition duration-200 outline-none"
+              >
+                <Icons.Sidebar color="currentColor" />
+              </button>
+            </Tippy>
+          </div>
+
+          <MainColumn>
+            <div
+              className={`pb-2 mb-4 relative ${css`
+                &:after {
+                  content: '';
+                  position: absolute;
+                  bottom: 0;
+                  left: 0;
+                  width: 50%;
+                  max-width: 360px;
+                  height: 1px;
+                  z-index: 20;
+                  background-color: var(--color-muted-hover);
+                }
+              `}`}
+            >
+              <Textarea
+                ref={t => {
+                  titleRef.current = t
+                }}
+                value={title}
+                data-test-id="editor_title"
+                onChange={setTitle}
+                name="title"
+                placeholder="Document title"
+                className={`text-4xl text-heading font-bold italic`}
+                onEnterPress={() => {
+                  subtitleRef.current.focus()
+                }}
+              />
+              <Textarea
+                ref={d => {
+                  subtitleRef.current = d
+                }}
+                value={subtitle}
+                onChange={setSubtitle}
+                name="subtitle"
+                placeholder="Subtitle"
+                className={`leading-relaxed text-lg font-light text-heading-muted italic`}
+                onEnterPress={() => {
+                  ReactEditor.focus(editor)
+                }}
+              />
             </div>
-          ) : (
-            <div />
-          )}
-        </SplitPane>
-      </Page>
-    </>
+            <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-3xl">
+              <EditorComponent
+                editor={editor}
+                plugins={plugins}
+                value={blocks}
+                onChange={blocks => {
+                  setBlocks(blocks)
+                }}
+                theme={theme}
+              />
+            </div>
+          </MainColumn>
+        </div>
+        {interactionPanel.visible ? (
+          <div
+            className="bg-background-muted"
+            style={{
+              visibility: interactionPanel.visible ? 'visible' : 'hidden',
+              maxWidth: interactionPanel.visible ? '100%' : 0,
+              width: interactionPanel.visible ? '100%' : 0,
+              height: '100%',
+              minHeight: '100%',
+              overflow: 'auto',
+              zIndex: 0,
+            }}
+          >
+            {interactionPanel.objects.map(object => (
+              <InteractionPanelObject
+                key={object}
+                isEditor
+                id={object}
+                createTransclusion={createTransclusion}
+              />
+            ))}
+          </div>
+        ) : (
+          <div />
+        )}
+      </SplitPane>
+    </Page>
   )
 }

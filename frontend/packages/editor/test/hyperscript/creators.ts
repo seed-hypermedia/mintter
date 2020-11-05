@@ -167,12 +167,11 @@ export function createSelection(
  */
 
 export function createText(
-  tagName: string,
+  _,
   attributes: {[key: string]: any},
   children: any[],
 ): Text {
   const nodes = resolveDescendants(children)
-  console.log({tagName})
   if (nodes.length > 1) {
     throw new Error(
       `The <text> hyperscript tag must only contain a single node's worth of children.`,

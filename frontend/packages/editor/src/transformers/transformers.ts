@@ -191,42 +191,27 @@ export function toSlateTree({
   blockRefList,
   blocksMap,
   isRoot = false,
-}: ToSlateTreeRequest) {
-  if (!blockRefList) return
-  const dictionary = toSlateBlocksDictionary(blocksMap)
-  const blocks = {
+}: ToSlateTreeRequest): SlateBlock | SlateBlock[] {
+  const dictionary = new Map(blocksMap)
+
+  const blocks: SlateBlock = {
     type: ELEMENT_BLOCK_LIST,
     id: uuid(),
     listType: blockRefList.style,
-    children: blockRefList.refsList.map(child => {
-      let block = dictionary[child.ref]
+    children: blockRefList.refsList.map(blockRef => {
+      let block: SlateBlock = toSlateBlock(
+        dictionary.get(blockRef.ref) as Block.AsObject,
+      )
 
-      if (child.blockRefList) {
+      if (blockRef.blockRefList) {
         block.children.push(
-          toSlateTree({blockRefList: child.blockRefList, blocksMap}),
+          toSlateTree({blockRefList: blockRef.blockRefList, blocksMap}),
         )
       }
 
       return block
     }),
   }
+
   return isRoot ? [blocks] : blocks
-}
-
-export interface ToSlateBlocksDictionaryResponse {
-  [key: string]: SlateBlock
-}
-
-export function toSlateBlocksDictionary(
-  blocksMap: Array<[string, Block.AsObject]>,
-): ToSlateBlocksDictionaryResponse {
-  let blocks = {}
-
-  for (let [ref, block] of blocksMap) {
-    blocks[ref] = toSlateBlock({
-      ...block,
-      id: ref,
-    })
-  }
-  return blocks
 }

@@ -10,6 +10,7 @@ test('toSlateBlock: paragraph', () => {
     paragraph: {
       inlineElementsList: [{text: 'Test block'}],
     },
+    quotersList: [],
   }
 
   makeProto(new Block(), {
@@ -25,6 +26,7 @@ test('toSlateBlock: paragraph', () => {
   const expected = {
     type: ELEMENT_BLOCK,
     id: 'block-test-id',
+    quotersList: [],
     children: [
       {
         type: ELEMENT_PARAGRAPH,
