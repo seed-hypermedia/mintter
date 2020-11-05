@@ -7,7 +7,7 @@ jest.mock('shared/mintterClient')
 
 beforeEach(() => {
   clientMock.getProfile.mockResolvedValueOnce({
-    toObject: (): Profile.AsObject => ({
+    toObject: (): Partial<Profile.AsObject> => ({
       peerId: '1234asdf',
       username: 'test-user',
     }),

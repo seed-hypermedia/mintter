@@ -10,8 +10,6 @@ jest.mock('shared/mintterClient')
 jest.mock('shared/utils')
 
 async function renderWelcomeScreen() {
-  const route = `/private/welcome/retype-seed`
-
   const mnemonicList = ['word-1', 'word-2', 'word-3']
 
   clientMock.getProfile.mockResolvedValueOnce({
@@ -23,7 +21,6 @@ async function renderWelcomeScreen() {
   mockRandom.mockReturnValueOnce([0, 1, 2])
 
   const utils = await render(<RetypeSeed />, {
-    route,
     wrapper: ({children}) => (
       <Router>
         <ProfileProvider>

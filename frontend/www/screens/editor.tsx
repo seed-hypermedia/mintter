@@ -85,7 +85,7 @@ export default function Editor(): JSX.Element {
     },
   })
 
-  const {createTransclusion} = useTransclusion({editor})
+  const {createTransclusion} = useTransclusion()
 
   const {state, setTitle, setSubtitle, setBlocks} = useEditorValue({
     document: data,

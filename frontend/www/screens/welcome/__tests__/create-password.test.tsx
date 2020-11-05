@@ -14,7 +14,7 @@ async function renderWelcomeScreen() {
   const mnemonicList = ['word-1', 'word-2', 'word-3']
 
   clientMock.getProfile.mockResolvedValueOnce({
-    toObject: (): Profile.AsObject => ({}),
+    toObject: (): Partial<Profile.AsObject> => ({}),
   })
 
   clientMock.createProfile = jest.fn()

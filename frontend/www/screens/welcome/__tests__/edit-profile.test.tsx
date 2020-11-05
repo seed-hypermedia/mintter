@@ -26,9 +26,8 @@ async function renderWelcomeScreen() {
         <EditProfile />
       </ProfileProvider>
     </Router>,
-    {
-      route,
-    },
+
+    {route},
   )
   const nextBtn = screen.getByText(/Next →/i)
 

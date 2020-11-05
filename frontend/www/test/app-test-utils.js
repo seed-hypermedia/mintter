@@ -19,7 +19,12 @@ function AppWrapper({children}) {
 
 async function render(
   ui,
-  {route = '/library/feed', timeout, ...renderOptions} = {},
+  {
+    route = '/library/feed',
+    timeout,
+    wrapper = AppWrapper,
+    ...renderOptions
+  } = {},
 ) {
   const routeConfig =
     typeof route === 'string'
@@ -35,7 +40,7 @@ async function render(
 
   const returnValue = {
     ...rtlRender(ui, {
-      wrapper: AppWrapper,
+      wrapper,
       ...renderOptions,
     }),
   }

@@ -16,15 +16,14 @@ beforeEach(() => {
     getMnemonicList: jest.fn(() => mnemonicList),
   })
 
-  clientMock.getProfile.mockResolvedValueOnce(null)
-
-  clientMock.createProfile = jest.fn()
+  Object.assign({}, clientMock, {
+    createProfile: jest.fn(),
+    getProfile: jest.fn().mockImplementationOnce(() => Promise.resolve(null)),
+  })
 })
 
 async function renderWelcomeScreen() {
-  const route = `/private/welcome/security-pack`
   const utils = await render(<SecurityPack />, {
-    route,
     wrapper: ({children}) => (
       <Router>
         <ProfileProvider>

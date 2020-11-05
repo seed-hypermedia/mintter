@@ -127,7 +127,7 @@ export default function Publication(): JSX.Element {
   }, [mentions])
 
   const {drafts} = useDraftsSelection()
-  const {createTransclusion} = useTransclusion({editor})
+  const {createTransclusion} = useTransclusion()
 
   async function getTransclusionData(transclusionId) {
     const version = transclusionId.split('/')[0]

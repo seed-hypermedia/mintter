@@ -128,7 +128,7 @@ function createParagraph(paragraph: Paragraph.AsObject): Paragraph {
   return
 }
 
-function createImage(image: Image.AsObject): Image {
+function createImage(image: Image.AsObject) {
   return image
 }
 

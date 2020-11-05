@@ -5,6 +5,7 @@ import {Connections} from '../connections'
 test('<Connections />: renders loading', async () => {
   await render(
     <Connections
+      handleConnectToPeer={() => null}
       isLoading={true}
       connections={[
         {
@@ -21,6 +22,7 @@ test('<Connections />: renders loading', async () => {
 test('<Connections />: renders the users', async () => {
   await render(
     <Connections
+      handleConnectToPeer={() => null}
       connections={[
         {
           connectionStatus: 0,
