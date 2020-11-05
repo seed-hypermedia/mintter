@@ -194,7 +194,6 @@ export async function getProfile(
 ): Promise<Profile> {
   const req = new GetProfileRequest()
 
-  console.log('getProfile -> profileId', profileId)
   if (profileId) {
     req.setProfileId(profileId)
   }

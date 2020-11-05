@@ -5,9 +5,9 @@ import {ProfileProvider} from 'shared/profileContext'
 import {ToastProvider} from 'react-toast-notifications'
 import WelcomeProvider from 'shared/welcomeProvider'
 import SecurityPack from '../security-pack'
-import * as clientMock from 'shared/V1mintterClient'
+import * as clientMock from 'shared/mintterClient'
 
-jest.mock('shared/V1mintterClient')
+jest.mock('shared/mintterClient')
 
 const mnemonicList = ['word-1', 'word-2', 'word-3']
 

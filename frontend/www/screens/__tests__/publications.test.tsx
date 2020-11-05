@@ -1,6 +1,5 @@
-import {Publications} from '../publications'
-import {render} from 'test/app-test-utils'
-import {AppProviders} from '../../components/app-providers'
+import {render, screen} from 'test/app-test-utils'
+import Publications from '../publications'
 import * as clientMock from 'shared/mintterClient'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 
@@ -13,17 +12,15 @@ beforeEach(() => {
       username: 'test-user',
     }),
   })
-  clientMock.listPublications.mockResolvedValueOnce({
+  clientMock.listDocuments.mockResolvedValueOnce({
     toObject: () => ({
       documentsList: [],
     }),
   })
 })
 
-test('should render ', () => {
-  render(
-    <AppProviders>
-      <Publications />
-    </AppProviders>,
-  )
+test('should render ', async () => {
+  await render(<Publications />)
+
+  expect(screen.getByText(/Start your first document/i)).toBeInTheDocument()
 })

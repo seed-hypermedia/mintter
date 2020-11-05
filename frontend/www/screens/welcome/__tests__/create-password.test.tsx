@@ -59,7 +59,7 @@ async function renderWelcomeScreen() {
   }
 }
 
-test('Welcome - Create Password Screen', async () => {
+xtest('Welcome - Create Password Screen', async () => {
   const pwrd = 'masterpassword'
   const {nextBtn, mnemonicList} = await renderWelcomeScreen()
 
