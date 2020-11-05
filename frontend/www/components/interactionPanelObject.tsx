@@ -1,6 +1,5 @@
 import {
   ELEMENT_BLOCK,
-  ELEMENT_BLOCK_LIST,
   ELEMENT_READ_ONLY,
   ELEMENT_TRANSCLUSION,
   Icons,
@@ -13,11 +12,9 @@ import {AuthorLabel} from './author-label'
 import {SlateReactPresentation} from 'slate-react-presentation'
 import {ELEMENT_PARAGRAPH} from '@mintter/editor'
 import {Link} from './link'
-import {ReactEditor, useSlate} from 'slate-react'
 import Tippy from '@tippyjs/react'
 import {css} from 'emotion'
 import {useParams} from 'react-router-dom'
-import {useTransclusion} from 'shared/useTransclusion'
 import {queryCache} from 'react-query'
 import {useInteractionPanel} from './interactionPanel'
 import {isLocalhost} from 'shared/isLocalhost'
@@ -47,7 +44,7 @@ export function InteractionPanelObject(props) {
   }
 
   if (status === 'success') {
-    const {id, title, subtitle, blockRefList, version} = data.document
+    const {title, blockRefList, version} = data.document
 
     const doc = toSlateTree({
       blockRefList,

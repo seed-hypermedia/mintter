@@ -1,10 +1,9 @@
-import {render, screen, userEvent} from 'test/app-test-utils'
-import {App} from 'shared/app'
+import {screen} from 'test/app-test-utils'
+import {render} from '@testing-library/react'
+import WelcomeIntro from '../intro'
 
 async function renderWelcomeScreen() {
-  const route = `/private/welcome`
-
-  const utils = await render(<App />, {route})
+  const utils = await render(<WelcomeIntro />)
 
   return {
     ...utils,

@@ -2,8 +2,6 @@ import {useHistory} from 'react-router-dom'
 import {Icons} from '@mintter/editor'
 import DocumentList from 'components/documentList'
 import {useMintter, useOthersPublications} from 'shared/mintterContext'
-import {FullPageSpinner} from 'components/fullPageSpinner'
-import {useMemo} from 'react'
 import Seo from 'components/seo'
 import {ErrorMessage} from 'components/errorMessage'
 
@@ -49,6 +47,4 @@ export default function Publications() {
       <DocumentList status={status} error={error} data={data} />
     </>
   )
-
-  return
 }

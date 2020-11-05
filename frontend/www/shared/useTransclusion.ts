@@ -1,5 +1,5 @@
 import {useCallback} from 'react'
-import {makeProto, SlateBlock, toBlock} from '@mintter/editor'
+import {makeProto, SlateBlock} from '@mintter/editor'
 import {
   Block,
   Image,
@@ -22,17 +22,11 @@ export interface CreateTransclusionRequest {
   source: string // source publication version
   destination?: string // destination draft version (undefined if needs to create a new one)
   block: SlateBlock // publication block that will be transclude
-  destinationPath?: number[] // destination path in which will be transclude to (draft destination path)
 }
 
-export function useTransclusion({editor}) {
+export function useTransclusion() {
   const createTransclusion = useCallback(
-    async ({
-      source,
-      destination,
-      destinationPath,
-      block,
-    }: CreateTransclusionRequest) => {
+    async ({source, destination, block}: CreateTransclusionRequest) => {
       let draft: GetDocumentResponse | Document
       let transclusionId: string
       if (block.id.includes('/')) {
@@ -44,37 +38,34 @@ export function useTransclusion({editor}) {
 
       if (destination) {
         draft = await getDocument('key', destination)
-        console.log('useTransclusion -> draft', draft)
 
         // Create block reference for the block being transcluded:
-        let transclusionRef = new BlockRef()
+        const transclusionRef = new BlockRef()
         transclusionRef.setRef(transclusionId)
 
-        let document = draft.getDocument()
+        const document = draft.getDocument()
         document.getBlockRefList().addRefs(transclusionRef)
 
         const req = new UpdateDraftRequest()
         req.setDocument(document)
 
-        const res = await updateDraftWithRequest(req)
-        console.log('useTransclusion -> res', JSON.stringify(res.toObject()))
+        await updateDraftWithRequest(req)
 
-        console.log('Draft updated!!')
         return destination
       } else {
         // no destination provided, create a new Draft
         draft = await createDraft()
 
         // main blockRefList
-        let blockRefList = new BlockRefList()
+        const blockRefList = new BlockRefList()
         blockRefList.setStyle(BlockRefList.Style.NONE)
 
         // transclusion blockRef
-        let transclusionRef = new BlockRef()
+        const transclusionRef = new BlockRef()
         transclusionRef.setRef(transclusionId)
 
         // empty blockRef
-        let emptyBlockRef = new BlockRef()
+        const emptyBlockRef = new BlockRef()
         const emptyBlockId = uuid()
         emptyBlockRef.setRef(emptyBlockId)
 
@@ -106,8 +97,8 @@ export function useTransclusion({editor}) {
 
         req.setDocument(draft)
 
-        const res = await updateDraftWithRequest(req)
-        console.log('create a new draft with transclusion!')
+        await updateDraftWithRequest(req)
+
         return draft.getVersion()
       }
     },
@@ -137,43 +128,12 @@ function createParagraph(paragraph: Paragraph.AsObject): Paragraph {
   return
 }
 
-function createImage(image: Image.AsObject): Image {
-  return
+function createImage(image: Image.AsObject) {
+  return image
 }
 
 function createInlineElement(inlineElement) {
   return makeProto(new InlineElement(), inlineElement)
-}
-
-function addTransclusionToMap(
-  blockSource: SlateBlock,
-  transclusionId: string,
-  map: Map<string, Block>,
-) {
-  const transclusion = createBlock({
-    ...blockSource,
-    id: transclusionId,
-    quotersList: [],
-  })
-  map.set(transclusionId, transclusion)
-  console.log('transclusion', transclusion.toObject())
-  console.log({map})
-}
-
-function updateBlockRefList(
-  document: Document.AsObject,
-  transclusionId,
-): BlockRefList {
-  return createBlockRefList({
-    style: document.blockRefList.style,
-    refsList: [
-      ...document.blockRefList.refsList,
-      {
-        ref: transclusionId,
-        blockRefList: undefined, // possible blockRefList
-      },
-    ],
-  })
 }
 
 function createBlockRefList(blockRefList: BlockRefList.AsObject) {
@@ -184,7 +144,7 @@ function createBlockRefList(blockRefList: BlockRefList.AsObject) {
 }
 
 function createBlockRef(sourceRef: BlockRef.AsObject) {
-  let blockRef: any = {
+  const blockRef: any = {
     ref: sourceRef.ref,
   }
 

@@ -1,26 +1,14 @@
-import {
-  render,
-  screen,
-  userEvent,
-  waitForLoadingToFinish,
-  fireEvent,
-  waitFor,
-  act,
-  waitForElement,
-} from 'test/app-test-utils'
-import {BrowserRouter as Router} from 'react-router-dom'
-import {ThemeProvider} from 'shared/themeContext'
-import {ProfileProvider} from 'shared/profileContext'
-import {MintterProvider} from 'shared/mintterContext'
-import WelcomeProvider from 'shared/welcomeProvider'
+import {screen, userEvent, waitFor, act} from 'test/app-test-utils'
+import {render} from '@testing-library/react'
 import EditProfile from '../edit-profile'
-import {GenSeedResponse, Profile} from '@mintter/api/v2/mintter_pb'
-import * as clientMock from 'shared/V1mintterClient'
+import * as clientMock from 'shared/mintterClient'
+import {BrowserRouter as Router} from 'react-router-dom'
+import {ProfileProvider} from 'shared/profileContext'
 
-jest.mock('shared/V1mintterClient')
+jest.mock('shared/mintterClient')
 
 const currentUser = {
-  toObject: (): Profile.AsObject => ({}),
+  toObject: () => ({}),
 }
 
 const bio = 'test bio'
@@ -32,9 +20,15 @@ beforeEach(() => {
 
 async function renderWelcomeScreen() {
   const route = `/private/welcome/edit-profile`
-  const utils = await render(<EditProfile />, {
-    route,
-  })
+  const utils = await render(
+    <Router>
+      <ProfileProvider>
+        <EditProfile />
+      </ProfileProvider>
+    </Router>,
+
+    {route},
+  )
   const nextBtn = screen.getByText(/Next →/i)
 
   return {
@@ -47,8 +41,6 @@ async function renderWelcomeScreen() {
     },
   }
 }
-
-const onSubmit = jest.fn()
 
 test('Welcome - Edit Profile Screen', async () => {
   const {nextBtn, data} = await renderWelcomeScreen()
@@ -79,6 +71,6 @@ test('Welcome - Edit Profile Screen', async () => {
   })
 
   await waitFor(() => {
-    expect(clientMock.setProfile).toHaveBeenCalledWith(currentUser, data)
+    expect(clientMock.setProfile).toHaveBeenCalledWith(data)
   })
 })

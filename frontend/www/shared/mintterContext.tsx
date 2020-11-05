@@ -9,13 +9,8 @@ import {
   MutationResult,
   queryCache,
 } from 'react-query'
-import {
-  Profile,
-} from '@mintter/api/v2/mintter_pb'
-import {
-  Document,
-  PublishingState,
-} from '@mintter/api/v2/documents_pb'
+import {Profile} from '@mintter/api/v2/mintter_pb'
+import {Document, PublishingState} from '@mintter/api/v2/documents_pb'
 import {useProfile} from './profileContext'
 
 export interface SetDocumentRequest {
@@ -41,8 +36,6 @@ export interface MintterClient {
 }
 
 const MintterClientContext = React.createContext<MintterClient>(null)
-
-export const useDocuments = (options = {}) => {}
 
 export function usePublications(options = {}) {
   const docsQuery = useQuery('Documents', apiClient.listDocuments, {
@@ -157,13 +150,12 @@ export function MintterProvider(props) {
   const setDocument = React.useCallback(apiClient.setDocument, [])
 
   const [deleteDocument] = useMutation(apiClient.deleteDocument, {
-    onSuccess: p => {
+    onSuccess: () => {
       queryCache.refetchQueries('ListDrafts')
     },
   })
 
   const publishDraft = () => (version: string, options?: any) => {
-    console.log({version, options})
     return useMutation(() => apiClient.publishDraft(version), options)
   }
 

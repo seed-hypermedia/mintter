@@ -9,7 +9,6 @@ import {css} from 'emotion'
 import {useHistory} from 'react-router-dom'
 import Button from 'components/button'
 import {NextButton, BackButton} from 'components/welcome-buttons'
-import {useForm} from 'react-hook-form'
 import {useWelcome} from 'shared/welcomeProvider'
 import {useProfileContext} from 'shared/profileContext'
 import {useToasts} from 'react-toast-notifications'
@@ -21,11 +20,8 @@ export default function SecurityPack() {
   const [mnemonic, setMnemonic] = useState<string[]>([])
   const history = useHistory()
   const {dispatch} = useWelcome()
-  const {register, handleSubmit} = useForm({
-    mode: 'onChange',
-  })
 
-  async function handleRPC({passphrase}) {
+  async function handleRPC() {
     try {
       const resp = await genSeed()
       setMnemonic(resp.getMnemonicList())
@@ -36,7 +32,7 @@ export default function SecurityPack() {
   }
 
   useEffect(() => {
-    handleRPC({passphrase: ''})
+    handleRPC()
   }, [])
 
   function splitWords(arr: string[]): string[][] {
@@ -71,7 +67,7 @@ export default function SecurityPack() {
   const lists = useMemo(() => splitWords(mnemonic), [mnemonic])
   return (
     <>
-      <Container>
+      <Container className="mx-auto">
         <Heading>Security Pack</Heading>
         <P className="text-center">
           Please save these 24 words securely! This will allow you to recreate
@@ -97,7 +93,7 @@ export default function SecurityPack() {
                   }}
                 />
                 <Button
-                  className="w-full mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white transition-all"
+                  className="w-full mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white"
                   type="submit"
                   onClick={handleSubmit(handleRPC)}
                 >
@@ -111,7 +107,7 @@ export default function SecurityPack() {
         </Content>
       </Container>
       <Footer className="flex-none">
-        <Container>
+        <Container className="mx-auto">
           <div className="flex w-full justify-between flex-row-reverse">
             <NextButton disabled={mnemonic.length === 0} onClick={handleNext}>
               Next →
@@ -150,9 +146,9 @@ export function MnemonicWords({
       <div className="flex-wrap flex w-full" data-testid="mnemonic-list">
         {error
           ? error.message
-          : lists.map((list, list_idx) => (
+          : lists.map((list, listIdx) => (
               <div
-                key={list_idx}
+                key={listIdx}
                 className={`w-1/2 flex-1 flex flex-col md:order-none ${css`
                   min-width: 162px;
                   margin-top: -12px;
@@ -161,8 +157,8 @@ export function MnemonicWords({
 
                   @media (min-width: 396px) {
                     min-width: 50%;
-                    order: ${list_idx % 2 == 0 ? '1' : '2'};
-                    margin-top: ${list_idx % 2 == 0 ? '0' : '-12px'};
+                    order: ${listIdx % 2 == 0 ? '1' : '2'};
+                    margin-top: ${listIdx % 2 == 0 ? '0' : '-12px'};
                     align-items: center;
                     padding-left: 0;
                   }
@@ -175,8 +171,8 @@ export function MnemonicWords({
                 `}`}
               >
                 <ol>
-                  {list.map((word, word_idx) => (
-                    <li key={word_idx} className="my-3 flex items-baseline">
+                  {list.map((word, wordIdx) => (
+                    <li key={wordIdx} className="my-3 flex items-baseline">
                       <span
                         className={`text-bold text-body-muted ${css`
                           font-size: 0.65rem;
@@ -184,7 +180,7 @@ export function MnemonicWords({
                           display: inline-block;
                         `}`}
                       >
-                        {list_idx * 6 + word_idx + 1}.
+                        {listIdx * 6 + wordIdx + 1}.
                       </span>
                       <span className="text-body">{word}</span>
                     </li>

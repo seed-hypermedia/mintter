@@ -145,8 +145,8 @@ export function setDocument(editor) {
 
     if (nodes) {
       const map: Map<string, Block> = req.getBlocksMap()
-      for (let [node] of nodes) {
-        let block: Block = toBlock(node)
+      for (const [node] of nodes) {
+        const block: Block = toBlock(node)
         map.set(node.id, block)
       }
     }
@@ -194,7 +194,6 @@ export async function getProfile(
 ): Promise<Profile> {
   const req = new GetProfileRequest()
 
-  console.log('getProfile -> profileId', profileId)
   if (profileId) {
     req.setProfileId(profileId)
   }

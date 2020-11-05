@@ -1,6 +1,5 @@
 import {useRouteMatch} from 'react-router-dom'
 import {Link} from 'components/link'
-import {css} from 'emotion'
 import {useMemo} from 'react'
 
 export function MainNav() {

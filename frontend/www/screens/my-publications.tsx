@@ -1,7 +1,6 @@
 import Seo from 'components/seo'
 import DocumentList from 'components/documentList'
 import {useMintter, useMyPublications} from 'shared/mintterContext'
-import {useMemo} from 'react'
 import {useHistory} from 'react-router-dom'
 import {ErrorMessage} from 'components/errorMessage'
 import {Icons} from '@mintter/editor'

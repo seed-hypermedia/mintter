@@ -1,7 +1,5 @@
 import React from 'react'
 
-export interface UseAzync {}
-
 function useSafeDispatch(dispatch) {
   const mounted = React.useRef(false)
   React.useLayoutEffect(() => {
