@@ -1,4 +1,4 @@
-import {createContext, useContext, useCallback, useMemo, ReactNode} from 'react'
+import {createContext, useContext, useCallback, ReactNode} from 'react'
 import useLocalStorage from './localstorage'
 
 export const THEME_DARK: THEME = 'theme-dark'

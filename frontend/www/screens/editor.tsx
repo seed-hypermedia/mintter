@@ -1,39 +1,21 @@
-import React, {useState, useReducer, useCallback} from 'react'
-import {Editor as SlateEditor, Transforms, Node, Range} from 'slate'
+import React from 'react'
 import {css} from 'emotion'
-import {useMutation, queryCache} from 'react-query'
-import {v4 as uuid} from 'uuid'
+import {useMutation} from 'react-query'
 import {
   Icons,
-  nodeTypes,
-  Editor as MintterEditor,
-  Toolbar,
   useEditor,
-  plugins as editorPlugins,
-  initialBlocksValue,
   EditorComponent,
-  HelperToolbar,
-  useHelper,
-  ELEMENT_BLOCK,
-  ELEMENT_BLOCK_LIST,
   useEditorValue,
-  EditorState,
-  BlockToolsProvider,
-  toSlateTree,
-  toSlateBlocksDictionary,
-  TransclusionHelperProvider,
   options,
   createPlugins,
 } from '@mintter/editor'
 import ResizerStyle from '../components/resizer-style'
-import {useEditor as useSlateEditor, ReactEditor} from 'slate-react'
+import {ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
 import SplitPane from 'react-split-pane'
 import Seo from 'components/seo'
-import EditorHeader from 'components/editor-header'
 import {DebugValue} from 'components/debug'
 import Textarea from 'components/textarea'
-import {Document} from '@mintter/api/v2/documents_pb'
 import {useDebounce} from 'shared/hooks'
 import {useDocument, useMintter} from 'shared/mintterContext'
 import {getDocument, getProfile} from 'shared/mintterClient'
@@ -41,10 +23,7 @@ import {publishDraft} from 'shared/mintterClient'
 import {useParams, useHistory, useLocation} from 'react-router-dom'
 import {FullPageSpinner} from 'components/fullPageSpinner'
 import {FullPageErrorMessage} from 'components/errorMessage'
-import Layout from 'components/layout'
-import Container from 'components/container'
 import {useTheme} from 'shared/themeContext'
-import {BlockRefList} from '@mintter/api/v2/documents_pb'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 import {InteractionPanelObject} from 'components/interactionPanelObject'
@@ -84,15 +63,14 @@ export default function Editor(): JSX.Element {
   }
   const plugins = createPlugins(editorOptions)
   const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
-  const wrapperRef = React.useRef<HTMLDivElement>(null)
-  const editorContainerRef = React.useRef<HTMLDivElement>(null)
+
   const titleRef = React.useRef(null)
   const subtitleRef = React.useRef(null)
   const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
 
   const {setDocument} = useMintter()
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])
-  const {isSuccess, isLoading, isError, error, data} = useDocument(version, {
+  const {isLoading, isError, error, data} = useDocument(version, {
     onSuccess: () => {
       setReadyToAutosave(true)
     },
@@ -107,9 +85,9 @@ export default function Editor(): JSX.Element {
     },
   })
 
-  const {createTransclusion} = useTransclusion({editor})
+  const {createTransclusion} = useTransclusion()
 
-  const {state, setTitle, setSubtitle, setBlocks, setValue} = useEditorValue({
+  const {state, setTitle, setSubtitle, setBlocks} = useEditorValue({
     document: data,
   })
   const {title, blocks, subtitle, mentions} = state
@@ -119,7 +97,7 @@ export default function Editor(): JSX.Element {
       interactionPanelDispatch({type: 'add_object', payload: mentions})
     }
 
-    let object = query.get('object')
+    const object = query.get('object')
     if (object) {
       interactionPanelDispatch({type: 'add_object', payload: object})
     }
@@ -127,8 +105,6 @@ export default function Editor(): JSX.Element {
 
   const [autosaveDraft] = useMutation(async state => {
     if (data.document) {
-      console.log('autosafe called!')
-
       saveDocument({document: data.document, state})
     } else {
       console.error('no document???')
@@ -312,6 +288,7 @@ export default function Editor(): JSX.Element {
             >
               {interactionPanel.objects.map(object => (
                 <InteractionPanelObject
+                  key={object}
                   isEditor
                   id={object}
                   createTransclusion={createTransclusion}

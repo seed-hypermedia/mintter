@@ -1,9 +1,8 @@
-import React, {useMemo, useEffect, useState} from 'react'
+import React from 'react'
 import {Icons} from '@mintter/editor'
 import {useLocation} from 'react-router-dom'
 import Link from './link'
 import {useAuthor} from 'shared/profileContext'
-import useLocalStorage from 'shared/localstorage'
 import {ErrorMessage} from './errorMessage'
 import {AuthorLabel} from 'components/author-label'
 import {Document} from '@mintter/api/v2/documents_pb'
@@ -22,11 +21,6 @@ export default function DocumentList({
   error,
   onDraftDelete,
 }: Props) {
-  const [view, setView] = useLocalStorage<'grid' | 'list'>({
-    key: 'MINTTER_GRID_VIEW',
-    initialValue: 'list',
-  })
-
   let content
 
   if (status === 'loading') {
@@ -60,17 +54,17 @@ interface ItemProps {
 function ListItem({item, index = 0, onDraftDelete}: ItemProps) {
   const location = useLocation()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
-  const {version, title, subtitle, author: itemAuthor, createTime} = item
+  const {version, title, author: itemAuthor, createTime} = item
   const theTitle = title ? title : 'Untitled Document'
 
   const {data: author} = useAuthor(itemAuthor)
 
-  const isDraft = useMemo(
+  const isDraft = React.useMemo(
     () => location.pathname === '/private/library/drafts',
     [location.pathname],
   )
 
-  const to = useMemo(
+  const to = React.useMemo(
     () => (isDraft ? `/private/editor/${version}` : `/p/${version}`),
     [location.pathname],
   )

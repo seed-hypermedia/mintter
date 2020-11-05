@@ -8,7 +8,7 @@ import Content from 'components/content'
 import Input from 'components/input'
 import Textarea from 'components/textarea'
 import {useForm} from 'react-hook-form'
-import {useProfile, useProfileContext} from 'shared/profileContext'
+import {useProfileContext} from 'shared/profileContext'
 import {useFocus} from 'shared/hooks'
 import {css} from 'emotion'
 
@@ -27,7 +27,6 @@ export default function EditProfile() {
 
   const history = useHistory()
   const {setProfile} = useProfileContext()
-  const {data: profile} = useProfile()
 
   async function onSubmit(data) {
     try {
@@ -40,7 +39,7 @@ export default function EditProfile() {
 
   return (
     <form className="lg:flex-1 flex flex-col">
-      <Container>
+      <Container className="mx-auto">
         <Heading>Edit your profile</Heading>
         <P className="text-center">
           Link your personal data with your new account
@@ -54,7 +53,7 @@ export default function EditProfile() {
             >
               Avatar
             </label>
-            <div className="avatar-container overflow-hidden relative bg-background-muted border bg-background-muted border-muted  rounded">
+            <div className="avatar-container overflow-hidden relative bg-background-muted border border-muted  rounded">
               <input
                 name="avatar"
                 id="avatar"
@@ -95,6 +94,7 @@ export default function EditProfile() {
                 name="email"
                 ref={register({
                   pattern: {
+                    // eslint-disable-next-line no-control-regex
                     value: /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/,
                     message: 'Please type a valid email.',
                   },
@@ -137,7 +137,7 @@ export default function EditProfile() {
         </Content>
       </Container>
       <Footer className="flex-none">
-        <Container>
+        <Container className="mx-auto">
           <div className="flex w-full justify-between flex-row-reverse">
             <NextButton
               onClick={handleSubmit(onSubmit)}

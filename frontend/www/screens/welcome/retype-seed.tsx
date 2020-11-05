@@ -16,7 +16,7 @@ import {useProfileContext} from 'shared/profileContext'
 import {Icons} from '@mintter/editor'
 
 export default function RetypeSeed() {
-  const {register, handleSubmit, errors, formState, watch} = useForm({
+  const {register, handleSubmit, errors, formState} = useForm({
     mode: 'onChange',
   })
   const [submitError, setSubmitError] = useState(null)
@@ -34,7 +34,7 @@ export default function RetypeSeed() {
     setIdxs(getRandomElements(mnemonicList))
   }, [])
 
-  async function onSubmit(attrs) {
+  async function onSubmit() {
     try {
       createProfile({mnemonicList, walletPassword: '', aezeedPassphrase: ''})
       history.replace('/private/welcome/edit-profile')

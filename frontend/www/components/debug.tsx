@@ -4,7 +4,7 @@ import {useState} from 'react'
 
 function simplifyBlocks(blocks) {
   return blocks.map(block => {
-    let simpleBlock: Partial<SlateBlock> = {}
+    const simpleBlock: Partial<SlateBlock> = {}
 
     if (block.type) {
       simpleBlock.type = block.type
@@ -31,7 +31,7 @@ export function DebugValue({value, className = ''}: any) {
       <div
         className={`fixed right-0 top-0 flex items-end flex-col p-2 overflow-auto mb-8 z-10 ${
           visible ? 'h-screen' : ''
-        }`}
+        } ${className}`}
       >
         <button
           className="px-2 py-1 bg-warning rounded text-sm mr-4"
