@@ -49,7 +49,11 @@ export default function Topbar({isPublic = false}) {
       >
         <span className="text-primary flex items-center">
           <Link to="/">
-            <AliceLogo />
+            {isLocal ? (
+              <Logo width="42px" className="fill-current" />
+            ) : (
+              <AliceLogo />
+            )}
           </Link>
           {isLocal && (
             <Link to="/private">

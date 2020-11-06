@@ -161,6 +161,7 @@ export async function updateDraftWithRequest(req) {
 }
 
 export async function deleteDocument(version: string): Promise<any> {
+  console.log('delete document => ', version)
   const req = new DeleteDocumentRequest()
 
   req.setVersion(version)
