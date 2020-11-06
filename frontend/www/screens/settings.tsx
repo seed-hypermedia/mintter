@@ -125,9 +125,8 @@ export default function Settings() {
                   ref={register}
                   rows={4}
                   placeholder="A little bit about yourself..."
-                  className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body text-base ${
-                    errors.bio && 'border-danger'
-                  } ${css`
+                  className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body text-base ${errors.bio &&
+                    'border-danger'} ${css`
                     min-height: 100px;
                   `}`}
                 />
