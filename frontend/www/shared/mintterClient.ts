@@ -139,19 +139,15 @@ export function setDocument(editor) {
 
     const genDocument: Document = toDocument({document, state})
     const req = new UpdateDraftRequest()
-    const nodes: Iterable<NodeEntry<SlateBlock>> = getNodesByType(
-      editor,
-      ELEMENT_BLOCK,
-      {
-        at: [],
-      },
-    )
+    const nodes = getNodesByType(editor, ELEMENT_BLOCK, {
+      at: [],
+    })
 
     if (nodes) {
       const map: Map<string, Block> = req.getBlocksMap()
       for (const [node] of nodes) {
         const block: Block = toBlock(node)
-        map.set(node.id, block)
+        map.set(node.id as string, block)
       }
     }
 

@@ -116,7 +116,7 @@ export function useDrafts(options = {}) {
   }
 }
 
-export function useDocument(version: string, options: QueryConfig = {}) {
+export function useDocument(version: string, options = {}) {
   if (!version) {
     throw new Error(`useDocument: parameter "version" is required`)
   }
