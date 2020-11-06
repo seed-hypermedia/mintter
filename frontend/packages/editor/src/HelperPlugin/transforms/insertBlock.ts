@@ -64,7 +64,6 @@ export const insertBlock = (editor: Editor, options: InsertBlockOptions) => {
       // if has content
       if (options.type === ELEMENT_BLOCK) {
         // content + block = insert below
-        console.log('insertBlock => content + block')
         insert(editor, {type: options.type, location: nextPath})
         Transforms.select(editor, nextPath)
         return

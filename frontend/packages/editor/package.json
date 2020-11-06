@@ -18,6 +18,7 @@
   "author": "Horacio Herrera",
   "module": "dist/editor.esm.js",
   "dependencies": {
+    "@mintter/api": "*",
     "@tippyjs/react": "^4.1.0",
     "@udecode/slate-plugins": "^0.66.9",
     "emotion": "^10.0.27",
@@ -25,7 +26,6 @@
     "react-dnd": "^11.1.3",
     "react-dnd-html5-backend": "^11.1.3",
     "react-feather": "^2.0.4",
-    "@mintter/api": "*",
     "slate": "^0.58.4",
     "slate-history": "^0.57.1",
     "slate-hyperscript": "^0.58.3",
@@ -34,18 +34,19 @@
     "uuid": "^8.3.0"
   },
   "peerDependencies": {
+    "eslint-plugin-import": "2.x",
     "slate": "^0.58.4",
     "slate-react": "^0.58.4"
   },
   "devDependencies": {
-    "postcss": "^8.1.4",
-    "rollup-plugin-postcss": "^3.1.8",
+    "@tailwindcss/typography": "^0.2.0",
     "@testing-library/react": "^10.4.8",
     "@types/jest": "^25.1.2",
     "eslint-config-react-app": "^5.2.0",
+    "postcss": "^8.1.4",
+    "rollup-plugin-postcss": "^3.1.8",
     "tsdx": "^0.12.3",
     "tslib": "^1.10.0",
-    "typescript": "^3.7.5",
-    "@tailwindcss/typography": "^0.2.0"
+    "typescript": "^3.7.5"
   }
 }
