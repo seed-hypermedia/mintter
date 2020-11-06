@@ -18,7 +18,7 @@ import {makeProto} from './makeProto'
 import {v4 as uuid} from 'uuid'
 import {ELEMENT_TRANSCLUSION} from '../TransclusionPlugin'
 
-export function toBlock(node: SlateBlock): Block {
+export function toBlock(node): Block {
   const pNode: Node = node.children.filter(n => n.type === 'p')[0]
   const pChildren = pNode.children as any
   return makeProto(new Block(), {
