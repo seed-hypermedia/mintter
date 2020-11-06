@@ -19,7 +19,7 @@ export default function Drafts() {
     })
   }
 
-  async function handleDeleteDraft(version: string) {
+  async function handleDeleteDocument(version: string) {
     await deleteDocument(version)
   }
 
@@ -52,7 +52,7 @@ export default function Drafts() {
         status={status}
         error={error}
         data={data}
-        onDraftDelete={handleDeleteDraft}
+        onDeleteDocument={handleDeleteDocument}
       />
     </>
   )
