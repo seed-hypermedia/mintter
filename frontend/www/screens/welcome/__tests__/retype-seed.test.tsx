@@ -3,7 +3,7 @@ import {BrowserRouter as Router} from 'react-router-dom'
 import {ProfileProvider} from 'shared/profileContext'
 import WelcomeProvider from 'shared/welcomeProvider'
 import RetypeSeed from '../retype-seed'
-import * as clientMock from 'shared/V1mintterClient'
+import * as clientMock from 'shared/mintterClient'
 import {getRandomElements as mockRandom} from 'shared/utils'
 
 jest.mock('shared/mintterClient')

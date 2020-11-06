@@ -6,9 +6,7 @@ import {Icons} from '@mintter/editor'
 
 export default function Drafts() {
   const router = useHistory()
-
   const {createDraft, deleteDocument} = useMintter()
-
   const {status, error, data} = useDrafts()
 
   async function handleCreateDraft() {
