@@ -12,14 +12,14 @@ interface Props {
   data: Document.AsObject[]
   status: QueryStatus
   error: any
-  onDraftDelete?: (id: string) => Promise<void>
+  onDeleteDocument?: (id: string) => Promise<void>
 }
 
 export default function DocumentList({
   data,
   status,
   error,
-  onDraftDelete,
+  onDeleteDocument,
 }: Props) {
   let content
 
@@ -37,7 +37,7 @@ export default function DocumentList({
         key={item.version}
         item={item}
         index={index}
-        onDraftDelete={onDraftDelete}
+        onDeleteDocument={onDeleteDocument}
       />
     ))
   }
@@ -48,10 +48,10 @@ export default function DocumentList({
 interface ItemProps {
   item: Document.AsObject
   index: number
-  onDraftDelete?: (version: string) => void
+  onDeleteDocument?: (version: string) => void
 }
 
-function ListItem({item, index = 0, onDraftDelete}: ItemProps) {
+function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
   const location = useLocation()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
   const {version, title, author: itemAuthor, createTime} = item
@@ -87,7 +87,7 @@ function ListItem({item, index = 0, onDraftDelete}: ItemProps) {
       </span>
       <div className=" flex-1 grid grid-cols-12 gap-4">
         <div className="bg-muted rounded col-span-2"></div>
-        <div className={onDraftDelete ? 'col-span-9' : 'col-span-10'}>
+        <div className={onDeleteDocument ? 'col-span-9' : 'col-span-10'}>
           <h3 className="text-heading leading-loose font-bold truncate">
             {theTitle}
           </h3>
@@ -102,7 +102,7 @@ function ListItem({item, index = 0, onDraftDelete}: ItemProps) {
             </p>
           </div>
         </div>
-        {onDraftDelete && (
+        {onDeleteDocument && (
           <div className="col-span-1">
             <button
               className="opacity-0 group-hover:opacity-100 text-danger"
@@ -112,7 +112,7 @@ function ListItem({item, index = 0, onDraftDelete}: ItemProps) {
                   'are you sure you want to delete it?',
                 )
                 if (resp) {
-                  onDraftDelete(version)
+                  onDeleteDocument(version)
                 }
               }}
             >
