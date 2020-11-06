@@ -46,9 +46,8 @@ export default function Steps({steps, active}: Props) {
                 className={`relative w-5 h-5 rounded-full flex items-center justify-center text-muted ${
                   active === index
                     ? 'active text-info-muted'
-                    : `bg-transparent ${
-                        active > index && 'complete text-info-muted'
-                      }`
+                    : `bg-transparent ${active > index &&
+                        'complete text-info-muted'}`
                 } ${css({
                   fontSize: '0.6rem',
                   transition: '0.25s all ease',
