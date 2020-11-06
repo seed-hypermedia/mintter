@@ -40,7 +40,6 @@ export default function Library() {
 
   async function handleCreateDocument() {
     const d = await createDraft()
-
     const value = d.toObject()
     history.push({
       pathname: `/private/editor/${value.version}`,

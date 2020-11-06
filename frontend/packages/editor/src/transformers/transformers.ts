@@ -191,9 +191,9 @@ export function toSlateTree({
   blockRefList,
   blocksMap,
   isRoot = false,
-}: ToSlateTreeRequest): SlateBlock | SlateBlock[] {
+}: ToSlateTreeRequest): SlateBlock | SlateBlock[] | undefined {
+  if (!blockRefList) return
   const dictionary = new Map(blocksMap)
-
   const blocks: SlateBlock = {
     type: ELEMENT_BLOCK_LIST,
     id: uuid(),
