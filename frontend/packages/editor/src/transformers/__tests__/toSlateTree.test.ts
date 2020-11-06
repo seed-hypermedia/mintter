@@ -3,7 +3,6 @@ import {BlockRefList, Block} from '@mintter/api/v2/documents_pb'
 import {ELEMENT_PARAGRAPH} from '../../elements/defaults'
 import {ELEMENT_BLOCK_LIST} from '../../HierarchyPlugin/defaults'
 import {ELEMENT_BLOCK} from '../../BlockPlugin/defaults'
-// import {v4 as uuidMock} from 'uuid'
 
 const block_list_mock_id = 'block_list_mock_id'
 

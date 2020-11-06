@@ -20,7 +20,8 @@ export interface UseHelperOptions {
 
 export interface InsertBlockOptions {
   type: string
-  target?: Path | Range
+  // TODO: target?: Path | Range
+  target?: any
 }
 
 export interface HelperNode extends Element, HelperNodeData {}

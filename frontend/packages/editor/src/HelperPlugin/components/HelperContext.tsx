@@ -39,7 +39,7 @@ export function HelperProvider({children, options}) {
       if (targetRange !== null) {
         insertBlock(editor, {
           type: block.type,
-          target: targetPath ?? targetRange,
+          target: targetPath ?? (targetRange as any),
         })
         setTargetRange(null)
         setTargetPath(null)
