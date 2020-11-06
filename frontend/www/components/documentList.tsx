@@ -105,6 +105,7 @@ function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
         {onDeleteDocument && (
           <div className="col-span-1">
             <button
+              data-testid="delete-button"
               className="opacity-0 group-hover:opacity-100 text-danger"
               onClick={e => {
                 e.preventDefault()

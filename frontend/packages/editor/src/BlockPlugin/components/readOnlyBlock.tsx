@@ -3,11 +3,14 @@ import {mergeRefs} from '../../mergeRefs'
 import React from 'react'
 import {BlockControls} from '../../components/blockControls'
 import {useBlockTools} from './blockToolsContext'
+import {ReactEditor, useEditor} from 'slate-react'
 
 export function DragDrop({element, componentRef, children}: any) {
   const blockRef = React.useRef<HTMLDivElement>(null)
   const rootRef = React.useRef<HTMLDivElement>(null)
   const multiRef = mergeRefs(componentRef, rootRef)
+  const editor = useEditor()
+  const path = ReactEditor.findPath(editor, element)
   const {dropLine, dragRef} = useDndBlock({
     id: element.id,
     blockRef,

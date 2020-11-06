@@ -416,7 +416,7 @@ function MintterIcon({size = '1em'}) {
 function PublicationCTA({handleInteract, visible}) {
   return (
     <div
-      className={`absolute right-0 p-12 pt-0 w-full max-w-sm text-right transform duration-200 ${
+      className={`hidden md:block absolute right-0 p-12 pt-0 w-full max-w-sm text-right transform duration-200 ${
         visible
           ? 'opacity-0 pointer-events-none'
           : 'opacity-100 pointer-events-auto'
