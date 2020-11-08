@@ -22,3 +22,6 @@ ui-assets.gen.go
 # temp files
 frontent/old_pages
 out
+
+# frontend v2 test
+frontendv2
