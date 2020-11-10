@@ -199,9 +199,11 @@ export function toSlateTree({
     id: uuid(),
     listType: blockRefList.style,
     children: blockRefList.refsList.map(blockRef => {
-      let block: SlateBlock = toSlateBlock(
-        dictionary.get(blockRef.ref) as Block.AsObject,
-      )
+      const currentBlock = dictionary.get(blockRef.ref) as Block.AsObject
+      let block: SlateBlock = toSlateBlock({
+        ...currentBlock,
+        id: blockRef.ref,
+      })
 
       if (blockRef.blockRefList) {
         block.children.push(
