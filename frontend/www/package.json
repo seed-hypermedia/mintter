@@ -37,6 +37,7 @@
     "react-router-dom": "^5.2.0",
     "react-split-pane": "^0.1.92",
     "react-toast-notifications": "^2.4.0",
+    "reakit": "^1.2.5",
     "remark-slate": "^1.1.1",
     "slate": "^0.58.4",
     "slate-history": "^0.57.1",

@@ -2,7 +2,7 @@ import {useDndBlock} from '@udecode/slate-plugins'
 import {mergeRefs} from '../../mergeRefs'
 import React from 'react'
 import {BlockControls} from '../../components/blockControls'
-import {useBlockTools} from './blockToolsContext'
+import {useBlockMenu} from './blockMenuContext'
 import {ReactEditor, useEditor} from 'slate-react'
 
 export function DragDrop({element, componentRef, children}: any) {
@@ -19,15 +19,18 @@ export function DragDrop({element, componentRef, children}: any) {
   const dragWrapperRef = React.useRef(null)
   const multiDragRef = mergeRefs(dragRef, dragWrapperRef)
 
-  const {id: blockId, setBlockId} = useBlockTools()
+  const {state, dispatch} = useBlockMenu()
+  const {blockId} = state
 
   return (
     <div ref={multiRef}>
       <div
         className="relative"
         ref={blockRef}
-        onMouseLeave={() => setBlockId(null)}
-        onMouseEnter={() => setBlockId(element.id)}
+        onMouseLeave={() => dispatch({type: 'set_block_id', payload: null})}
+        onMouseEnter={() =>
+          dispatch({type: 'set_block_id', payload: element.id})
+        }
       >
         <BlockControls
           element={element}

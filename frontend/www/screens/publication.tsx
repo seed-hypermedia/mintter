@@ -8,7 +8,6 @@ import {
   EditorComponent,
   useEditorValue,
   options,
-  TransclusionHelperProvider,
 } from '@mintter/editor'
 import Seo from 'components/seo'
 import {getDocument, getProfile} from 'shared/mintterClient'
@@ -335,14 +334,7 @@ export default function Publication(): JSX.Element {
               interactionPanelDispatch({type: 'toggle_panel'})
             }}
           />
-          <MainColumn>
-            <TransclusionHelperProvider
-              options={drafts}
-              handleTransclusion={handleTransclusion}
-            >
-              {content}
-            </TransclusionHelperProvider>
-          </MainColumn>
+          <MainColumn>{content}</MainColumn>
         </div>
         {interactionPanel.visible ? (
           <div
