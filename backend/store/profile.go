@@ -10,6 +10,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/query"
 	"github.com/libp2p/go-libp2p-core/peer"
 )
@@ -120,11 +121,27 @@ func (s *Store) ListSuggestedProfiles(ctx context.Context, offset, limit int) ([
 		return nil, err
 	}
 
-	out := make([]identity.Profile, len(entries))
-
-	for i, entry := range entries {
-		if err := json.Unmarshal(entry.Value, &out[i]); err != nil {
+	var out []identity.Profile
+	for _, entry := range entries {
+		var p identity.Profile
+		if err := json.Unmarshal(entry.Value, &p); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal profile: %w", err)
+		}
+
+		// TODO: sometimes suggested connections are not cleared correctly, so
+		// we check here once again to remove the ones that were finally connected.
+		// Need to find a better way.
+		ok, err := s.HasProfile(ctx, p.ID)
+		if err != nil {
+			return nil, fmt.Errorf("failed HasProfile: %w", err)
+		}
+		if !ok {
+			out = append(out, p)
+			continue
+		}
+
+		if err := s.db.Delete(datastore.NewKey(entry.Key)); err != nil {
+			return nil, fmt.Errorf("failed to delete suggested profile that was connected: %w", err)
 		}
 	}
 
