@@ -28,6 +28,10 @@ export function Paragraph({
   ...rest
 }) {
   return element.type === ELEMENT_PARAGRAPH ? (
-    <Component {...attributes} {...rest} />
+    <Component
+      className={`hover:bg-teal-200 pt-4 px-3 -mx-3 rounded ${className}`}
+      {...attributes}
+      {...rest}
+    />
   ) : null
 }
