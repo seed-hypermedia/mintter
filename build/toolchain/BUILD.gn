@@ -1,0 +1,4 @@
+import("//build/toolchain/basic_toolchain.gni")
+
+basic_toolchain("default") {
+}

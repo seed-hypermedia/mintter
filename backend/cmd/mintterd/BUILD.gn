@@ -1,0 +1,6 @@
+import("//build/go/go.gni")
+
+go_binary("mintterd") {
+  deps = [ "//:go_sources($default_toolchain)" ]
+  package = "."
+}

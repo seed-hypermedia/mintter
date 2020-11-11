@@ -1,0 +1,32 @@
+import("//build/sources/sources.gni")
+import("//build/yarn/yarn.gni")
+
+group("default") {
+  deps = [ "//backend/cmd/mintterd($current_go_toolchain)" ]
+}
+
+group("cross_compile") {
+  deps = [
+    "//backend/cmd/mintterd(//build/toolchain/go:darwin_amd64)",
+    "//backend/cmd/mintterd(//build/toolchain/go:linux_amd64)",
+    "//backend/cmd/mintterd(//build/toolchain/go:windows_amd64)",
+  ]
+}
+
+stamped_sources("go_sources") {
+  deps = [
+    "//backend/ui:ui",
+    "//proto:go",
+  ]
+  sources = [
+    "api/**/*.go",
+    "backend/**/*.go",
+    "go.mod",
+    "go.sum",
+  ]
+}
+
+yarn_install("yarn") {
+  package_json = "//package.json"
+  yarn_lock = "//yarn.lock"
+}

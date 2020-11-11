@@ -1,31 +1,26 @@
 let
-    pkgs = import ./nix/nixpkgs.nix;
+    pkgs = import ./build/nix/nixpkgs.nix;
     python2 = pkgs.python2;
-    redo = pkgs.callPackage ./nix/redo {
-        python27 = python2;
-    };
-    protoc-gen-grpc-web = pkgs.callPackage ./nix/protoc-gen-grpc-web {};
-    go = pkgs.go_1_15;
-    go-protobuf = pkgs.go-protobuf;
+    protoc-gen-grpc-web = pkgs.callPackage ./build/nix/protoc-gen-grpc-web {};
     node = pkgs.nodejs-12_x;
     yarn = (pkgs.yarn.override { nodejs = node; });
-    protobuf = pkgs.protobuf3_11;
-    coreutils = pkgs.coreutils;
-    findutils = pkgs.findutils;
+    gn = pkgs.callPackage ./build/nix/gn {};
     
     tools = pkgs.buildEnv rec {
-        name = "tools";
+        name = "mintter-tools";
         paths = [
-            coreutils
-            findutils
+            pkgs.bash
+            pkgs.coreutils
+            pkgs.findutils
+            pkgs.protobuf3_11
+            pkgs.go-protobuf
+            pkgs.go_1_15
+            pkgs.ninja
+            python2
             protoc-gen-grpc-web
             node
-            redo
             yarn
-            go
-            go-protobuf
-            python2
-            protobuf
+            gn
         ];
     };
 in

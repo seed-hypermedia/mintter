@@ -1,2 +1,0 @@
-# This rule should collect everything we need to build within our output directory.
-redo-ifchange mintterd

@@ -1,0 +1,18 @@
+template("proto_library") {
+  forward_variables_from(invoker,
+                         default_forward_vars + [
+                               "language",
+                               "outputs",
+                             ])
+
+  relative_source_dir = rebase_path(".", root_build_dir)
+
+  action(target_name) {
+    script = "//build/protobuf/protoc_wrapper.sh"
+    args = [
+      relative_source_dir,
+      language,
+    ]
+    deps += [ "//build:environment" ]
+  }
+}

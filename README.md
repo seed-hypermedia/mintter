@@ -8,18 +8,25 @@ For more info about the architecture see [this](/docs/architecture/README.md).
 
 ## Prerequisites
 
-You need to have [Nix](https://nixos.org/nix) package manager installed on your
+You MUST have [Nix](https://nixos.org/nix) package manager installed on your
 machine to work with this repository.
 
 To setup Nix see [this](/docs/nix.md).
 
-## Building And Running
+## Building System
 
 This project's build system is pretty complex, but the final output is a single
 static `mintterd` binary - that's the only you need to run.
 
-We are using the [redo](https://github.com/apenwarr/redo) build system to make
-building everything faster and easier.
+We use [Ninja](https://ninja-build.org) build system with support of
+[GN](http://gn.googlesource.com) templates to make the build easier to reason
+about. It also helps us to run only the required things avoiding to do the work
+if nothing has changed.
+
+Most of the developer activities are wrapped into the `./dev` script in the root
+of the repo. Run `./dev` with no argument to see the help information.
+
+## Overview
 
 The binary depends on a single-page NextJS application that's built and exported
 separately and then included into the binary itself.
@@ -34,8 +41,8 @@ Brief overview of the directory structure:
 - `backend` - backend Go code.
 - `frontend/packages` - frontend TS and JS code which are separate packages.
 - `frontend/www` - frontend TS and JS code for our NextJS SPA.
-- `proto` - Protobuf definitions shared between frontend and backend.
-- `redoconf` - build files from the redoconf toolkit.
+- `proto` - definitions in Protobuf shared between frontend and backend.
+- `build` - tooling and configuration for the build system.
 - `out` - build outputs are stored here in separate directories for each
   platform.
 
@@ -45,21 +52,17 @@ Assuming you have the prerequisites:
 
 1. Clone the repo.
 2. Make sure Nix and Direnv are installed (see above).
-3. Run `redo -j20` to build everything. Or `./scripts/run-build.sh` to build and
-   run immediately.
+3. Run `./dev run` to make a production build and run it locally.
 
-During development it might be easier to run frontend and backend separately.
+During development it might be easier to run frontend and backend separately
+though.
 
-Use `./scripts/run-frontend.sh` to run frontend dev server, and
-`./scripts/run-backend.sh` to start the backend. Open frontend dev server URL in
-the browser instead of the one that will be opened by the backend, so that you
-can see UI updates while coding.
+Run `./dev` with no argument to see available commands.
 
 ## Cross Compilation
 
-We support cross compilation for Linux, Windows, and macOS. Use
-`./scripts/cross-compile.sh` to cross-compile for all the supported
-architectures.
+We support cross compilation for Linux, Windows, and macOS at the moment. Run
+`./dev build-cross` to cross-compile for all the platforms in parallel.
 
 ### gRPC
 

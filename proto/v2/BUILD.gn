@@ -1,0 +1,18 @@
+import("//build/protobuf/protobuf.gni")
+import("//build/sources/sources.gni")
+
+stamped_sources("proto_sources") {
+  sources = [ "*.proto" ]
+}
+
+proto_library("go_proto") {
+  deps = [ ":proto_sources" ]
+  outputs = [ "$root_build_dir/../api/go/v2/README.md" ]
+  language = "go"
+}
+
+proto_library("js_proto") {
+  deps = [ ":proto_sources" ]
+  outputs = [ "$root_build_dir/../api/js/v2/README.md" ]
+  language = "js"
+}
