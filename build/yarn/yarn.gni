@@ -1,0 +1,51 @@
+import("//build/sources/sources.gni")
+
+template("yarn_install") {
+  stamped_sources("_yarn_sources") {
+    sources = rebase_path([
+                            invoker.package_json,
+                            invoker.yarn_lock,
+                          ],
+                          ".")
+  }
+
+  forward_variables_from(invoker, default_forward_vars)
+
+  action(target_name) {
+    script = "/usr/bin/env"
+    args = [
+      "yarn",
+      "install",
+    ]
+    deps = [
+      ":_yarn_sources",
+      "//build:environment",
+    ]
+    outputs = [ "$root_build_dir/../node_modules/.yarn-integrity" ]
+  }
+}
+
+template("yarn_action") {
+  forward_variables_from(invoker,
+                         default_forward_vars + [
+                               "command",
+                               "outputs",
+                               "env_vars",
+                             ])
+
+  if (defined(env_vars)) {
+    vars = string_join(" ", env_vars)
+  } else {
+    vars = ""
+  }
+
+  action(target_name) {
+    relative_source_dir = rebase_path(".", root_build_dir)
+    script = "/usr/bin/env"
+    args = [
+      "bash",
+      "-c",
+      "cd $relative_source_dir && $vars yarn $command",
+    ]
+  }
+}

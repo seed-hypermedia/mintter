@@ -1,5 +1,11 @@
 ## Install
 
+**UPDATE 2020-11-11:** Nix has improved installations for Catalina since we
+started using it. Check the official installation guide if you're running macOS
+Catalina or older.
+
+---
+
 Nix is a really nice _cross-platform_ package manager. Think `brew` but
 supporting multiple versions at the same time, and ability to create hermetic
 and isolated environments for any software. It will not mess around with your

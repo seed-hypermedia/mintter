@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"mintter"
 	"net"
 	"net/http"
 	"os"
@@ -18,6 +17,7 @@ import (
 	"mintter/backend/p2p"
 	"mintter/backend/server"
 	"mintter/backend/store"
+	"mintter/backend/ui"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -96,7 +96,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 			return true
 		}))
 
-		ui := mintter.UIHandler()
+		ui := ui.Handler()
 
 		handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if grpcWebHandler.IsAcceptableGrpcCorsRequest(r) || grpcWebHandler.IsGrpcWebRequest(r) {

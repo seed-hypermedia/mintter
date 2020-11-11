@@ -1,0 +1,42 @@
+declare_args() {
+  go_os = ""
+  go_arch = ""
+}
+
+template("go_binary") {
+  forward_variables_from(invoker, default_forward_vars + [ "package" ])
+
+  assert(defined(package), "Must define package for go_binary.")
+
+  if (go_os == "") {
+    assert(false, "Must define go_os argument in the toolchain.")
+  }
+
+  if (go_arch == "") {
+    assert(false, "Must define go_arch argument in the toolchain.")
+  }
+
+  if (!defined(deps)) {
+    deps = []
+  }
+
+  action(target_name) {
+    out_file = "$root_out_dir/$target_name"
+    if (is_win) {
+      out_file += ".exe"
+    }
+
+    abs_out_file = rebase_path(out_file)
+
+    relative_package = rebase_path(package, root_build_dir)
+
+    script = "/usr/bin/env"
+    args = [
+      "bash",
+      "-c",
+      "GOOS=$go_os GOARCH=$go_arch go build -tags bindata -o $abs_out_file $relative_package",
+    ]
+    deps += [ "//build:environment($default_toolchain)" ]
+    outputs = [ out_file ]
+  }
+}

@@ -1,0 +1,61 @@
+import("//build/sources/sources.gni")
+import("//build/yarn/yarn.gni")
+
+stamped_sources("build_sources") {
+  sources = [
+    # We inlude editor checksum so that it can affect our build id.
+    # Important that editor is also in `deps`.
+    "$root_build_dir/frontend/packages/editor/editor.sum",
+    "*.js",
+    "*.json",
+    "*.ts",
+    "components/**",
+    "pages/**",
+    "public/**",
+    "screens/**",
+    "shared/**",
+    "styles/**",
+  ]
+
+  deps = [ "//frontend/packages/editor" ]
+}
+
+# These are grouped here to be executed separately by `dev` CLI.
+group("deps") {
+  deps = [
+    "//:yarn",
+    "//frontend/packages/editor",
+    "//proto:js",
+  ]
+}
+
+build_id_file = rebase_path("$target_out_dir/build_sources.sum")
+
+yarn_action("build") {
+  relative_source_dir = rebase_path(".", root_build_dir)
+  deps = [
+    ":build_sources",
+    ":deps",
+  ]
+  env_vars = [ "NEXT_BUILD_ID=`cat $build_id_file`" ]
+  command = "build"
+  outputs = [ "$root_build_dir/$relative_source_dir/.next.prod/BUILD_ID" ]
+}
+
+# Next build is not reproducible and for the same sources writes
+# different prerender-manifest.json file every time. But this is not used in any way
+# for export, so to avoid exporting the same thing every time we use the BUILD_ID as
+# a dependency for the export rule. The BUILD_ID is actually a stamp of the sources,
+# So it stays the same for the same inputs.
+stamped_sources("export_sources") {
+  sources = [ ".next.prod/BUILD_ID" ]
+  deps = [ ":build" ]
+}
+
+yarn_action("export") {
+  relative_source_dir = rebase_path(".", root_build_dir)
+  env_vars = [ "NEXT_BUILD_ID=`cat $build_id_file`" ]
+  deps = [ ":export_sources" ]
+  command = "export"
+  outputs = [ "$root_build_dir/$relative_source_dir/out/index.html" ]
+}

@@ -1,0 +1,17 @@
+template("go_bindata") {
+  assert(defined(invoker.package_name),
+         "Must define package_name for go_bindata.")
+
+  action(target_name) {
+    forward_variables_from(invoker, default_forward_vars + [ "package_name" ])
+
+    relative_source_dir = rebase_path(".", root_build_dir)
+
+    script = "//build/go/bindata.sh"
+    args = [
+      relative_source_dir,
+      package_name,
+    ]
+    outputs = [ "$root_build_dir/$relative_source_dir/rice-box.go" ]
+  }
+}

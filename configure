@@ -1,3 +1,0 @@
-#!/bin/sh
-S="$(dirname "$0")"
-. "$S/redoconf/configure.sh"

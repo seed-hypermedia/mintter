@@ -1,0 +1,12 @@
+import("//build/always/always.gni")
+import("//build/sources/sources.gni")
+
+always("always") {
+}
+
+stamped_sources("environment") {
+  sources = [
+    "//shell.nix",
+    "nix/**/*.nix",
+  ]
+}

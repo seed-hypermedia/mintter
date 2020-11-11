@@ -1,0 +1,10 @@
+template("basic_toolchain") {
+  forward_variables_from(invoker, "*")
+
+  toolchain(target_name) {
+    # tool("stamp") {
+    #   command = "touch {{output}}"
+    #   description = "STAMP {{output}}"
+    # }
+  }
+}

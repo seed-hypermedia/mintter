@@ -1,8 +1,0 @@
-if [ -e _flags ]; then
-	redo-ifchange _flags
-	cat _flags >$3
-	redo-stamp <_flags
-else
-	redo-ifcreate _flags
-	redo-stamp </dev/null
-fi

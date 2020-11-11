@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+# This script is an entrypoint for all developer activities in this project.
+
+set -e
+
+[ -z "$DIRENV_DIR" ] && echo "Direnv is not enabled. Fix it first! See README.md for instructions." && exit 1
+
+export WORKDIR=$(cd $(dirname $0) && pwd)
+
+
+# Command build is a wrapper for ninja that will enter into the outdir correctly.
+# The GN_OUT_DIR variable is supposed to come from direnv's .envrc file.
+build() {
+    exec ninja -C $GN_OUT_DIR $@
+}
+
+# Command build-cross builds for all the supported platforms in parallel.
+build-cross() {
+    build cross_compile
+}
+
+# Command run-backend will run the backend for development.
+run-backend() {
+    echo "Please run the frontend in a separate terminal and use it's URL in the browser!"
+    exec go run ./backend/cmd/mintterd --no-open-browser $@
+}
+
+# Command run-frontend will prepare all the dependencies and run frontend for development.
+run-frontend() {
+    (build frontend/www:deps)
+    exec yarn dev $@
+}
+
+# Command run will do a production build for the current platform and run the resulting binary.
+run() {
+    (build)
+    # Env variables are supposed to come from direnv.
+    exec $GN_OUT_DIR/$CURRENT_PLATFORM/mintterd $@
+}
+
+help() {
+    cli_name=${0##*/}
+    echo "Mintter Dev CLI
+
+Usage: $cli_name [command] [flags...]
+
+Commands:
+  build           Build production mintterd binary. It will install the dependencies and do everything required.
+  build-cross     Cross-compile for all the suppored platforms. Check '$GN_OUT_DIR/<platform>' for the outputs.
+  run-backend     Run the backend for development.
+  run-frontend    Run the frontend for development.
+  run             Prepare a production build and run it locally.
+"
+}
+
+# When no arguments given show help.
+[ -z "$1" ] && help && exit 1
+
+# Treat the first argument as command and pass the rest of the args to the command.
+$1 ${@:2}

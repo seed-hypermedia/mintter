@@ -1,0 +1,18 @@
+action("cachehash") {
+  out_file = "$target_out_dir/cachehash"
+  abs_out_file = rebase_path(out_file)
+  rel_source_dir = rebase_path("./cachehash", root_build_dir)
+
+  script = "/usr/bin/env"
+  args = [
+    "bash",
+    "-c",
+    "cd $rel_source_dir && go build -o=$abs_out_file ./",
+  ]
+  sources = [
+    "cachehash/go.mod",
+    "cachehash/go.sum",
+    "cachehash/main.go",
+  ]
+  outputs = [ out_file ]
+}
