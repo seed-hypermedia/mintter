@@ -207,6 +207,21 @@ func NewNode(repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (
 			if err != nil {
 				return err
 			}
+
+			alice, err := multiaddr.NewMultiaddr("/ip4/159.89.8.72/tcp/55000/p2p/12D3KooWD5bEARZFzPZ95gLU7qzntarozZpq9ieKQRyqDFMLSeSm")
+			if err != nil {
+				return fmt.Errorf("failed to parse alice addr: %w", err)
+			}
+
+			// Adding alicearticles.com as a bootstrap peer to improve connectivity.
+			// TODO: clean this up a little bit.
+			aliceInfo, err := peer.AddrInfoFromP2pAddr(alice)
+			if err != nil {
+				return fmt.Errorf("failed to parse peer info for alice: %w", err)
+			}
+
+			peers = append(peers, *aliceInfo)
+
 			log.Debug("IPFSBootstrapStarted")
 			err = ipfsnode.Bootstrap(ctx, peers)
 			log.Debug("IPFSBootstrapEnded", zap.Error(err))
