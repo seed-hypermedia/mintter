@@ -7,10 +7,22 @@ group("default") {
 
 group("cross_compile") {
   deps = [
-    "//backend/cmd/mintterd(//build/toolchain/go:darwin_amd64)",
-    "//backend/cmd/mintterd(//build/toolchain/go:linux_amd64)",
-    "//backend/cmd/mintterd(//build/toolchain/go:windows_amd64)",
+    ":darwin",
+    ":linux",
+    ":windows",
   ]
+}
+
+group("linux") {
+  deps = [ "//backend/cmd/mintterd(//build/toolchain/go:linux_amd64)" ]
+}
+
+group("darwin") {
+  deps = [ "//backend/cmd/mintterd(//build/toolchain/go:darwin_amd64)" ]
+}
+
+group("windows") {
+  deps = [ "//backend/cmd/mintterd(//build/toolchain/go:windows_amd64)" ]
 }
 
 stamped_sources("go_sources") {
