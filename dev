@@ -39,6 +39,11 @@ run() {
     exec $GN_OUT_DIR/$CURRENT_PLATFORM/mintterd $@
 }
 
+deploy-alice() {
+    (build linux)
+    . ./infra/deploy-alice.sh
+}
+
 help() {
     cli_name=${0##*/}
     echo "Mintter Dev CLI
@@ -51,6 +56,9 @@ Commands:
   run-backend     Run the backend for development.
   run-frontend    Run the frontend for development.
   run             Prepare a production build and run it locally.
+
+Extra commands:
+  deploy-alice    Build and deploy to alicearticles.com. You must have your SSH key in there.
 "
 }
 
