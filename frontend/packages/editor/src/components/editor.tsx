@@ -3,16 +3,9 @@ import {Slate, ReactEditor} from 'slate-react'
 import {css} from 'emotion'
 import {
   EditablePlugins,
-  // getPreventDefaultHandler,
   RenderElement,
   SlateDocument,
 } from '@udecode/slate-plugins'
-// import {Toolbar} from './toolbar'
-import {BlockToolsProvider} from '../BlockPlugin'
-// import {getPreventDefaultHandler} from '../BlockPlugin/utils/getPreventDefaultHandler'
-// import {useTransclusionHelper} from '../TransclusionPlugin/TransclusionHelperContext'
-import {DndProvider} from 'react-dnd'
-import {HTML5Backend} from 'react-dnd-html5-backend'
 
 interface EditorComponentProps {
   editor: any
@@ -110,11 +103,5 @@ function Editor(
 export const EditorChildren = React.forwardRef(Editor)
 
 export function EditorComponent(props) {
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <BlockToolsProvider>
-        <EditorChildren {...props} />
-      </BlockToolsProvider>
-    </DndProvider>
-  )
+  return <EditorChildren {...props} />
 }

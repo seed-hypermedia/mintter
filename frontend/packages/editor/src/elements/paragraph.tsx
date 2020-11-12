@@ -29,7 +29,7 @@ export function Paragraph({
 }) {
   return element.type === ELEMENT_PARAGRAPH ? (
     <Component
-      className={`hover:bg-teal-200 pt-4 px-3 -mx-3 rounded ${className}`}
+      className={`hover:bg-muted pt-4 px-3 -mx-3 rounded ${className}`}
       {...attributes}
       {...rest}
     />

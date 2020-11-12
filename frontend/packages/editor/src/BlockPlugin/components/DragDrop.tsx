@@ -2,8 +2,10 @@ import React from 'react'
 import {css} from 'emotion'
 import {BlockControls} from '../../components/blockControls'
 import {useBlockMenu} from './blockMenuContext'
+import {mergeRefs} from '../../mergeRefs'
 
-export function DragDrop({element, children}: any) {
+export function DragDrop({element, children, componentRef, ...props}: any) {
+  const ref = mergeRefs(props.ref, componentRef)
   const {
     dispatch,
     state: {blockId},
@@ -11,7 +13,7 @@ export function DragDrop({element, children}: any) {
 
   let show = React.useMemo(() => blockId === element.id, [blockId, element.id])
   return (
-    <div>
+    <div {...props} ref={ref}>
       <div
         className="relative"
         onMouseLeave={() => {
@@ -26,10 +28,10 @@ export function DragDrop({element, children}: any) {
           className={`absolute m-0 p-0 leading-none transition duration-200 ${css`
             top: 2px;
             right: -9px;
-          `} ${show ? 'opacity-100' : 'opacity-0'} focus:opacity-100`}
+          `} ${show ? 'opacity-100' : 'opacity-0'}`}
           contentEditable={false}
         >
-          <BlockControls show={show} />
+          <BlockControls show={show} element={element} />
         </div>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import {SlateBlock} from 'editor'
 import React, {createContext, useContext} from 'react'
 
 export interface BlockMenuContextType {
@@ -7,13 +8,17 @@ export interface BlockMenuContextType {
 
 export interface MenuItemProps {
   label: string
-  onClick?: () => void
+  onClick?: (block: SlateBlock) => void
   menu?: MenuItemProps[]
+  icon?: any
 }
 
 export interface BlockMenuContextState {
   blockId: string | null
-  menu: MenuItemProps[]
+  menu: {
+    block: MenuItemProps[]
+    transclusion: MenuItemProps[]
+  }
 }
 
 export interface BlockMenuProviderProps {
@@ -25,17 +30,10 @@ export interface BlockMenuProviderProps {
 
 const defaultState: BlockMenuContextState = {
   blockId: null,
-  menu: [
-    {
-      label: 'item from State 1',
-    },
-    {
-      label: 'item from State 2',
-    },
-    {
-      label: 'item from State 3',
-    },
-  ],
+  menu: {
+    block: [],
+    transclusion: [],
+  },
 }
 
 function defaultReducer(state, {type, payload}) {
@@ -46,6 +44,12 @@ function defaultReducer(state, {type, payload}) {
         blockId: payload,
       }
 
+    case 'set_menu':
+      console.log(`blockId on "set_menu" = `, state.blockId)
+      return {
+        ...state,
+        menu: payload,
+      }
     default:
       return state
   }
@@ -56,7 +60,7 @@ export const BlockMenuContext = createContext<BlockMenuContextType>({
   dispatch: defaultReducer,
 })
 
-export function BlockToolsProvider({
+export function BlockMenuProvider({
   children,
   reducer = defaultReducer,
   initialState = defaultState,
@@ -75,7 +79,7 @@ export function useBlockMenu() {
 
   if (context === undefined) {
     throw new Error(
-      `\`useBlockMenu\` must be used within a \`BlockToolsProvider\``,
+      `\`useBlockMenu\` must be used within a \`BlockMenuProvider\``,
     )
   }
 

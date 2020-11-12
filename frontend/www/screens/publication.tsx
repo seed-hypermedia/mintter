@@ -8,6 +8,7 @@ import {
   EditorComponent,
   useEditorValue,
   options,
+  useBlockMenu,
 } from '@mintter/editor'
 import Seo from 'components/seo'
 import {getDocument, getProfile} from 'shared/mintterClient'
@@ -33,21 +34,6 @@ import {useTheme} from 'shared/themeContext'
 
 Modal.setAppElement('#__next')
 
-function useDraftsSelection() {
-  const [drafts, setOptions] = React.useState([])
-  const {status, data} = useDrafts()
-
-  React.useEffect(() => {
-    if (status === 'success') {
-      setOptions([...data, {version: undefined, title: 'New Draft'}])
-    }
-  }, [status, data])
-
-  return {
-    drafts,
-  }
-}
-
 export default function Publication(): JSX.Element {
   const location = useLocation()
   const query = new URLSearchParams(location.search)
@@ -55,6 +41,7 @@ export default function Publication(): JSX.Element {
   const {data: profileAddress} = useProfileAddrs()
   const {addToast} = useToasts()
   const {theme} = useTheme()
+  const {dispatch} = useBlockMenu()
 
   const {push, replace} = useHistory()
   const {slug} = useParams()
@@ -108,13 +95,16 @@ export default function Publication(): JSX.Element {
     document: data,
   })
   const {title, blocks, subtitle, author: pubAuthor, mentions} = state
+  const {data: author} = useAuthor(pubAuthor)
+  const {createTransclusion} = useTransclusion()
+  const {data: drafts = []} = useDrafts()
+
   React.useEffect(() => {
     if (!slug.includes('-') && title) {
       const titleSlug = slugify(title, {lower: true, remove: /[*+~.()'"!:@]/g})
       replace(`${titleSlug}-${version}`)
     }
   }, [title])
-  const {data: author} = useAuthor(pubAuthor)
 
   React.useEffect(() => {
     if (mentions.length) {
@@ -125,8 +115,67 @@ export default function Publication(): JSX.Element {
     }
   }, [mentions])
 
-  const {drafts} = useDraftsSelection()
-  const {createTransclusion} = useTransclusion()
+  const menuItems = React.useMemo(
+    () => ({
+      block: [
+        {
+          label: 'Write about this block',
+          onClick: block => {
+            handleTransclusion({block})
+          },
+          icon: Icons.CornerDownLeft,
+        },
+        {
+          label: 'Quote this Block',
+          menu: [
+            {
+              label: 'Quote in New Draft',
+              icon: Icons.PlusCircle,
+              onClick: block => {
+                handleTransclusion({block})
+              },
+            },
+            {
+              label: 'separator',
+            },
+            ...drafts.map(draft => ({
+              label: draft.title || 'Untitled Document',
+              onClick: block => {
+                handleTransclusion({block, destination: draft})
+              },
+            })),
+          ],
+        },
+      ],
+      transclusion: [
+        {
+          label: 'Open in Interaction Panel',
+          onClick: block => {
+            interactionPanelDispatch({
+              type: 'add_object',
+              payload: block.id,
+            })
+          },
+          icon: Icons.ArrowUpRight,
+        },
+        {
+          label: 'Write about this Document',
+          onClick: block => {
+            handleTransclusion({block})
+          },
+          icon: Icons.CornerDownLeft,
+        },
+      ],
+    }),
+    [drafts],
+  )
+
+  React.useEffect(() => {
+    dispatch({
+      type: 'set_menu',
+      payload: menuItems,
+    })
+  }, [menuItems])
 
   async function getTransclusionData(transclusionId) {
     const version = transclusionId.split('/')[0]
@@ -146,7 +195,7 @@ export default function Publication(): JSX.Element {
   async function handleTransclusion({destination, block}) {
     const draftUrl = await createTransclusion({
       source: version,
-      destination: destination.version,
+      destination: destination ? destination.version : undefined,
       block: block,
     })
 
