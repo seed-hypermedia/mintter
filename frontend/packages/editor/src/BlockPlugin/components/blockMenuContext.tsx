@@ -1,3 +1,4 @@
+import {Document} from '@mintter/api/v2/documents_pb'
 import {SlateBlock} from 'editor'
 import React, {createContext, useContext} from 'react'
 
@@ -13,12 +14,16 @@ export interface MenuItemProps {
   icon?: any
 }
 
+export interface OnQuoteOptions {
+  block: SlateBlock
+  destination?: Document.AsObject
+}
+
 export interface BlockMenuContextState {
   blockId: string | null
-  menu: {
-    block: MenuItemProps[]
-    transclusion: MenuItemProps[]
-  }
+  onQuote?: (data: OnQuoteOptions) => void
+  onInteractionPanel?: (block: SlateBlock) => void
+  drafts?: Document.AsObject[]
 }
 
 export interface BlockMenuProviderProps {
@@ -30,28 +35,15 @@ export interface BlockMenuProviderProps {
 
 const defaultState: BlockMenuContextState = {
   blockId: null,
-  menu: {
-    block: [],
-    transclusion: [],
-  },
+  onInteractionPanel: () => console.log('Implement me!'),
+  onQuote: () => console.log('Implement me!'),
+  drafts: [],
 }
 
-function defaultReducer(state, {type, payload}) {
-  switch (type) {
-    case 'set_block_id':
-      return {
-        ...state,
-        blockId: payload,
-      }
-
-    case 'set_menu':
-      console.log(`blockId on "set_menu" = `, state.blockId)
-      return {
-        ...state,
-        menu: payload,
-      }
-    default:
-      return state
+function defaultReducer(state, {payload}) {
+  return {
+    ...state,
+    ...payload,
   }
 }
 

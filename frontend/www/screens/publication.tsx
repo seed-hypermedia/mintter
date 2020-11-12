@@ -9,6 +9,7 @@ import {
   useEditorValue,
   options,
   useBlockMenu,
+  SlateBlock,
 } from '@mintter/editor'
 import Seo from 'components/seo'
 import {getDocument, getProfile} from 'shared/mintterClient'
@@ -28,6 +29,7 @@ import ResizerStyle from 'components/resizer-style'
 import {InteractionPanelObject} from 'components/interactionPanelObject'
 import {useInteractionPanel} from 'components/interactionPanel'
 import {Profile} from '@mintter/api/v2/mintter_pb'
+import {Document} from '@mintter/api/v2/documents_pb'
 import Modal from 'react-modal'
 import {useToasts} from 'react-toast-notifications'
 import {useTheme} from 'shared/themeContext'
@@ -78,7 +80,7 @@ export default function Publication(): JSX.Element {
       ...options.transclusion,
       customProps: {
         dispatch: interactionPanelDispatch,
-        getData: getTransclusionData,
+        getData: getQuotationData,
       },
     },
     block: {
@@ -115,70 +117,19 @@ export default function Publication(): JSX.Element {
     }
   }, [mentions])
 
-  const menuItems = React.useMemo(
-    () => ({
-      block: [
-        {
-          label: 'Write about this block',
-          onClick: block => {
-            handleTransclusion({block})
-          },
-          icon: Icons.CornerDownLeft,
-        },
-        {
-          label: 'Quote this Block',
-          menu: [
-            {
-              label: 'Quote in New Draft',
-              icon: Icons.PlusCircle,
-              onClick: block => {
-                handleTransclusion({block})
-              },
-            },
-            {
-              label: 'separator',
-            },
-            ...drafts.map(draft => ({
-              label: draft.title || 'Untitled Document',
-              onClick: block => {
-                handleTransclusion({block, destination: draft})
-              },
-            })),
-          ],
-        },
-      ],
-      transclusion: [
-        {
-          label: 'Open in Interaction Panel',
-          onClick: block => {
-            interactionPanelDispatch({
-              type: 'add_object',
-              payload: block.id,
-            })
-          },
-          icon: Icons.ArrowUpRight,
-        },
-        {
-          label: 'Write about this Document',
-          onClick: block => {
-            handleTransclusion({block})
-          },
-          icon: Icons.CornerDownLeft,
-        },
-      ],
-    }),
-    [drafts],
-  )
-
   React.useEffect(() => {
     dispatch({
-      type: 'set_menu',
-      payload: menuItems,
+      type: 'set_actions',
+      payload: {
+        onQuote: handleQuotation,
+        onInteractionPanel: handleInteractionPanel,
+        drafts,
+      },
     })
-  }, [menuItems])
+  }, [drafts])
 
-  async function getTransclusionData(transclusionId) {
-    const version = transclusionId.split('/')[0]
+  async function getQuotationData(quoteId) {
+    const version = quoteId.split('/')[0]
     const res = await getDocument('', version)
     const data = res.toObject()
     const {document} = data
@@ -192,7 +143,13 @@ export default function Publication(): JSX.Element {
     }
   }
 
-  async function handleTransclusion({destination, block}) {
+  async function handleQuotation({
+    block,
+    destination,
+  }: {
+    block: SlateBlock
+    destination?: Document.AsObject
+  }) {
     const draftUrl = await createTransclusion({
       source: version,
       destination: destination ? destination.version : undefined,
@@ -200,6 +157,13 @@ export default function Publication(): JSX.Element {
     })
 
     push(`/private/editor/${draftUrl}`)
+  }
+
+  function handleInteractionPanel(block: SlateBlock) {
+    interactionPanelDispatch({
+      type: 'add_object',
+      payload: block.id,
+    })
   }
 
   let content
