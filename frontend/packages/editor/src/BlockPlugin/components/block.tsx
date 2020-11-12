@@ -15,10 +15,9 @@ export function BlockBase(
           <div
             contentEditable={false}
             style={{userSelect: 'none'}}
-            className={`absolute ${css`
-              top: -2px;
+            className={`hidden md:block absolute ${css`
+              9top: -2px;
               right: -14px;
-              transform: translateX(100%);
             `}`}
           >
             <Tippy
@@ -47,7 +46,7 @@ export function BlockBase(
                     },
                   })
                 }
-                className="text-xs font-bold text-info rounded-full hover:bg-muted transition duration-200 leading-none flex items-center justify-center w-6 h-6 text-center"
+                className="absolute text-xs font-bold text-info rounded-full hover:bg-muted transition duration-200 leading-none flex items-center justify-center w-6 h-6 text-center"
               >
                 {quoters}
               </button>

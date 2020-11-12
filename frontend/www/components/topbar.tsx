@@ -43,7 +43,7 @@ export default function Topbar({isPublic = false}) {
   return isPublic ? (
     <div className="p-4 w-full border-b">
       <div
-        className={`mx-16 ${css`
+        className={`w-full mx-0 md:mx-16 ${css`
           max-width: 50ch;
         `}`}
       >

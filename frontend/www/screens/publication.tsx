@@ -183,7 +183,7 @@ export default function Publication(): JSX.Element {
           `}`}
         >
           <h1
-            className={`text-4xl text-heading font-bold italic ${css`
+            className={`text-2xl md:text-4xl text-heading font-bold italic ${css`
               word-wrap: break-word;
               white-space: pre-wrap;
               min-height: 56px;
@@ -193,7 +193,7 @@ export default function Publication(): JSX.Element {
           </h1>
           {subtitle && (
             <p
-              className={`leading-relaxed text-lg font-light text-heading-muted italic mt-4 ${css`
+              className={`leading-relaxed text-md md:text-lg font-light text-heading-muted italic mt-4 ${css`
                 word-wrap: break-word;
                 white-space: pre-wrap;
                 min-height: 28px;

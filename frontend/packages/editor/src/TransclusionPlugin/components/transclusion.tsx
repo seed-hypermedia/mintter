@@ -31,7 +31,7 @@ const Transclusion = (
       >
         <div
           contentEditable={false}
-          className={`absolute text-xs text-left text-body-muted px-2 top-0 group ${css`
+          className={`absolute hidden md:block text-xs text-left text-body-muted px-2 top-0 group ${css`
             right: -14px;
             transform: translateX(100%);
           `}`}
