@@ -3,7 +3,7 @@ import {DragDrop} from '../../BlockPlugin/components/DragDrop'
 import {css} from 'emotion'
 
 const Transclusion = (
-  {attributes, children, element, className, ...rest},
+  {attributes, children, element, className = '', ...rest},
   ref,
 ) => {
   const [transclusionData, setData] = React.useState<any>(null)
@@ -24,15 +24,18 @@ const Transclusion = (
 
   return (
     <DragDrop attributes={attributes} element={element} componentRef={ref}>
+      {children}
       <div
-        className={`pr-0 relative rounded mt-6 outline-none ${
-          className ? className : ''
-        }`}
+        contentEditable={false}
+        className={`absolute text-xs text-left text-body-muted px-2 top-0 group ${css`
+          right: -14px;
+          transform: translateX(100%);
+        `}`}
       >
         <div
           contentEditable={false}
-          className={`absolute hidden md:block text-xs text-left text-body-muted px-2 top-0 group ${css`
-            right: -14px;
+          className={`absolute hidden md:block text-xs text-left text-body-muted px-2 top-0 right-0 group ${css`
+            width: 200px;
             transform: translateX(100%);
           `}`}
         >
@@ -61,8 +64,6 @@ const Transclusion = (
             </span>
           </button>
         </div>
-
-        {children}
       </div>
     </DragDrop>
   )

@@ -1,84 +1,143 @@
-import React, {useEffect, useCallback} from 'react'
-import {useEditor, useReadOnly} from 'slate-react'
-import {useHelper} from '../HelperPlugin/components/HelperContext'
-import {useTransclusionHelper} from '../TransclusionPlugin/TransclusionHelperContext'
-import {css} from 'emotion'
+import {SlateBlock} from '../editor'
+import React from 'react'
+import {
+  MenuButton,
+  MenuItem as ReakitMenuItem,
+  Menu,
+  useMenuState,
+  MenuSeparator,
+} from 'reakit/Menu'
+import {useBlockMenu} from '../BlockPlugin/components/blockMenuContext'
+import {Icons} from './icons'
+import {isTransclusion} from '../TransclusionPlugin/utils/isTransclusion'
+// import {Document} from '@mintter/api/v2/documents_pb'
 
-export function BlockControls({element, show, path, dragRef, className = ''}) {
-  const {setTarget, target, onKeyDownHelper} = useHelper()
-  const readOnly = useReadOnly()
-
-  const editor = useEditor()
+export const BlockControls = ({disclosure, element, ...props}: any) => {
+  const menu = useMenuState({loop: true})
   const {
-    setTarget: setTranscludeTarget,
-    target: transcludeTarget,
-    onKeyDownHelper: onKeyDownTranscludeHelper,
-  } = useTransclusionHelper()
-
-  function onTranscludeClicked(e) {
-    e.preventDefault()
-    const value = transcludeTarget ? null : e.target
-    setTranscludeTarget(value, path, element)
-  }
-
-  function onAddClicked(e) {
-    e.preventDefault()
-    const value = target ? null : e.target
-    setTarget(value, path)
-  }
-
-  const onKeyDown = useCallback(
-    e => {
-      onKeyDownHelper(e, editor)
-      readOnly && onKeyDownTranscludeHelper(e, editor)
-    },
-    [editor, onKeyDownHelper, onKeyDownTranscludeHelper, readOnly],
-  )
-
-  useEffect(() => {
-    window.addEventListener('keydown', onKeyDown)
-
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-    }
-  }, [onKeyDown])
+    state: {onInteractionPanel, onQuote},
+  } = useBlockMenu()
+  const isQuote = React.useMemo(() => isTransclusion(element), [element])
   return (
-    <div
-      className={`absolute ${css`
-        transform: translateX(-100%);
-        left: -14px;
-      `} ${
-        readOnly ? '' : 'grid-flow-col-dense grid gap-2 grid-cols-2'
-      } transition duration-200 ${
-        show ? 'opacity-100' : 'opacity-0'
-      } ${className}`}
-      contentEditable={false}
-    >
-      <button
-        onClick={readOnly ? onTranscludeClicked : undefined}
-        className="rounded-sm text-body hover:bg-muted flex p-1 mt-1 items-center justify-center"
-        ref={readOnly ? null : dragRef}
+    <>
+      <MenuButton
+        {...menu}
+        ref={disclosure.ref}
+        {...disclosure.props}
+        className="rounded bg-white shadow-sm p-1 block"
       >
-        <svg viewBox="0 0 16 24" width="12px">
-          <path
-            d="M3.5 6a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM12.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM14 12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM5 19.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM3.5 13.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-            fill="currentColor"
-          />
-        </svg>
-      </button>
-      {!readOnly && (
-        <button
-          onClick={onAddClicked}
-          className="rounded-sm text-body hover:bg-background-muted flex p-1 mt-1 items-center justify-center"
+        {disclosureProps => React.cloneElement(disclosure, disclosureProps)}
+      </MenuButton>
+      <Menu
+        {...menu}
+        aria-label="Block Menu"
+        style={{width: 320, zIndex: 100, backgroundColor: 'white'}}
+        hideOnClickOutside
+        {...props}
+      >
+        <MenuItem
+          {...menu}
+          onClick={() => onInteractionPanel?.(element)}
+          disabled={!isQuote}
         >
-          <svg viewBox="0 0 16 16" width="16px" fill="none">
-            <path
-              d="M12.667 8.667h-4v4H7.334v-4h-4V7.334h4v-4h1.333v4h4v1.333z"
-              fill="currentColor"
-            />
-          </svg>
-        </button>
-      )}
-    </div>
+          <Icons.ArrowUpRight size={16} color="currentColor" />
+          <span className="flex-1 mx-2">Open in Interaction Panel</span>
+        </MenuItem>
+        <MenuItem
+          {...menu}
+          as={DraftsMenu}
+          label="Quote this Block"
+          icon={Icons.CornerDownLeft}
+          element={element}
+        />
+        <MenuItem
+          {...menu}
+          disabled={isQuote}
+          onClick={() => {
+            menu.hide()
+            onQuote?.({block: element})
+          }}
+        >
+          <Icons.CornerDownLeft size={16} color="currentColor" />
+          <span className="flex-1 mx-2">Write About this Block</span>
+        </MenuItem>
+      </Menu>
+    </>
   )
 }
+
+const MenuItem = ({className = '', ...props}: any) => {
+  return (
+    <ReakitMenuItem
+      {...props}
+      className={`w-full px-2 py-2 focus:bg-info text-sm text-left disabled:opacity-50 flex items-center ${className}`}
+    />
+  )
+}
+
+const DraftsMenu = React.forwardRef<
+  HTMLDivElement,
+  {
+    element: SlateBlock
+    label: string
+    icon: any
+  }
+>(({element, label, icon, ...props}, ref) => {
+  const menu = useMenuState({loop: true})
+  const LeftIcon = icon ? icon : null
+  const {
+    state: {drafts = [], onQuote},
+  } = useBlockMenu()
+  return (
+    <>
+      <MenuButton
+        {...menu}
+        {...props}
+        className="w-full px-2 py-2 focus:bg-teal-200 text-sm text-left disabled:opacity-50 flex items-center"
+        as="div"
+        ref={ref}
+      >
+        {icon && <LeftIcon color="currentColor" size={16} />}
+        <span className="flex-1 mx-2">{label}</span>
+        <Icons.ChevronRight
+          size={14}
+          color="currentColor"
+          className="opacity-75"
+        />
+      </MenuButton>
+      <Menu
+        {...menu}
+        aria-label="Drafts List selection"
+        style={{width: 320, zIndex: 101, backgroundColor: 'white'}}
+      >
+        <MenuItem
+          {...menu}
+          onClick={() => {
+            menu.hide()
+            onQuote?.({block: element})
+          }}
+        >
+          <Icons.PlusCircle size={16} color="currentColor" />
+          <span className="flex-1 mx-2">Quote in New Draft</span>
+        </MenuItem>
+        <MenuSeparator {...menu} style={{margin: 0, padding: 0}} />
+        {drafts.map(item => {
+          return (
+            <MenuItem
+              key={item.version}
+              {...menu}
+              onClick={() => {
+                menu.hide()
+                onQuote?.({block: element, destination: item})
+              }}
+            >
+              <span className="flex-1 w-full text-left text-primary mx-2">
+                {item.title || 'Untitled Document'}
+              </span>
+            </MenuItem>
+          )
+        })}
+      </Menu>
+    </>
+  )
+})

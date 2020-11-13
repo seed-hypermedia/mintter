@@ -5,6 +5,9 @@ node_modules
 .pnp.js
 coverage
 .next/
+www/.next/
+.next.prod/
+www/.next.prod/
 out/
 dist/
 build

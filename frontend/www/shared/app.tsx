@@ -6,8 +6,8 @@ import Topbar from 'components/topbar'
 import {PrivateRoute} from 'components/routes'
 import {NoRoute} from 'screens/no-route'
 
-const AuthenticatedApp = React.lazy(
-  () => import(/* webpackPrefetch: true */ './authenticated-app'),
+const AuthenticatedApp = React.lazy(() =>
+  import(/* webpackPrefetch: true */ './authenticated-app'),
 )
 const UnAuthenticatedApp = React.lazy(() => import('./unauthenticated-app'))
 const PublicLibrary = React.lazy(() => import('../screens/public-library'))
