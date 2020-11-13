@@ -169,7 +169,7 @@ export default function Publication(): JSX.Element {
   let content
 
   if (status === 'loading') {
-    content = <p>Loading..</p>
+    content = <p>Loading...</p>
   } else if (status === 'error') {
     content = (
       <div className="mx-8">
@@ -462,7 +462,7 @@ function InteractionPanelCTA({handleInteract}) {
         className="bg-primary rounded-full mt-4 px-8 py-2 text-white font-bold shadow transition duration-200 text-sm"
         onClick={handleInteract}
       >
-        Write a reply
+        Write about this Article
       </button>
     </div>
   )

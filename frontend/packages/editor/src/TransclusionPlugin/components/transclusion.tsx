@@ -34,8 +34,8 @@ const Transclusion = (
       >
         <div
           contentEditable={false}
-          className={`absolute hidden md:block text-xs text-left text-body-muted px-2 top-0 group ${css`
-            right: -14px;
+          className={`absolute hidden md:block text-xs text-left text-body-muted px-2 top-0 right-0 group ${css`
+            width: 200px;
             transform: translateX(100%);
           `}`}
         >
@@ -59,10 +59,11 @@ const Transclusion = (
               </div>
             )}
 
-          <span className="transition duration-100 group-hover:opacity-100 group-hover:visible invisible opacity-0 font-bold text-primary">
-            Open in Interaction Panel →
-          </span>
-        </button>
+            <span className="transition duration-100 group-hover:opacity-100 group-hover:visible invisible opacity-0 font-bold text-primary">
+              Open in Interaction Panel →
+            </span>
+          </button>
+        </div>
       </div>
     </DragDrop>
   )
