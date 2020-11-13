@@ -8,7 +8,8 @@ import {
   EditorComponent,
   useEditorValue,
   options,
-  TransclusionHelperProvider,
+  useBlockMenu,
+  SlateBlock,
 } from '@mintter/editor'
 import Seo from 'components/seo'
 import {getDocument, getProfile} from 'shared/mintterClient'
@@ -28,26 +29,12 @@ import ResizerStyle from 'components/resizer-style'
 import {InteractionPanelObject} from 'components/interactionPanelObject'
 import {useInteractionPanel} from 'components/interactionPanel'
 import {Profile} from '@mintter/api/v2/mintter_pb'
+import {Document} from '@mintter/api/v2/documents_pb'
 import Modal from 'react-modal'
 import {useToasts} from 'react-toast-notifications'
 import {useTheme} from 'shared/themeContext'
 
 Modal.setAppElement('#__next')
-
-function useDraftsSelection() {
-  const [drafts, setOptions] = React.useState([])
-  const {status, data} = useDrafts()
-
-  React.useEffect(() => {
-    if (status === 'success') {
-      setOptions([...data, {version: undefined, title: 'New Draft'}])
-    }
-  }, [status, data])
-
-  return {
-    drafts,
-  }
-}
 
 export default function Publication(): JSX.Element {
   const location = useLocation()
@@ -56,6 +43,7 @@ export default function Publication(): JSX.Element {
   const {data: profileAddress} = useProfileAddrs()
   const {addToast} = useToasts()
   const {theme} = useTheme()
+  const {dispatch} = useBlockMenu()
 
   const {push, replace} = useHistory()
   const {slug} = useParams()
@@ -92,7 +80,7 @@ export default function Publication(): JSX.Element {
       ...options.transclusion,
       customProps: {
         dispatch: interactionPanelDispatch,
-        getData: getTransclusionData,
+        getData: getQuotationData,
       },
     },
     block: {
@@ -109,13 +97,16 @@ export default function Publication(): JSX.Element {
     document: data,
   })
   const {title, blocks, subtitle, author: pubAuthor, mentions} = state
+  const {data: author} = useAuthor(pubAuthor)
+  const {createTransclusion} = useTransclusion()
+  const {data: drafts = []} = useDrafts()
+
   React.useEffect(() => {
     if (!slug.includes('-') && title) {
       const titleSlug = slugify(title, {lower: true, remove: /[*+~.()'"!:@]/g})
       replace(`${titleSlug}-${version}`)
     }
   }, [title])
-  const {data: author} = useAuthor(pubAuthor)
 
   React.useEffect(() => {
     if (mentions.length) {
@@ -126,11 +117,19 @@ export default function Publication(): JSX.Element {
     }
   }, [mentions])
 
-  const {drafts} = useDraftsSelection()
-  const {createTransclusion} = useTransclusion()
+  React.useEffect(() => {
+    dispatch({
+      type: 'set_actions',
+      payload: {
+        onQuote: handleQuotation,
+        onInteractionPanel: handleInteractionPanel,
+        drafts,
+      },
+    })
+  }, [drafts])
 
-  async function getTransclusionData(transclusionId) {
-    const version = transclusionId.split('/')[0]
+  async function getQuotationData(quoteId) {
+    const version = quoteId.split('/')[0]
     const res = await getDocument('', version)
     const data = res.toObject()
     const {document} = data
@@ -144,20 +143,33 @@ export default function Publication(): JSX.Element {
     }
   }
 
-  async function handleTransclusion({destination, block}) {
+  async function handleQuotation({
+    block,
+    destination,
+  }: {
+    block: SlateBlock
+    destination?: Document.AsObject
+  }) {
     const draftUrl = await createTransclusion({
       source: version,
-      destination: destination.version,
+      destination: destination ? destination.version : undefined,
       block: block,
     })
 
     push(`/private/editor/${draftUrl}`)
   }
 
+  function handleInteractionPanel(block: SlateBlock) {
+    interactionPanelDispatch({
+      type: 'add_object',
+      payload: block.id,
+    })
+  }
+
   let content
 
   if (status === 'loading') {
-    content = <p>Loading..</p>
+    content = <p>Loading...</p>
   } else if (status === 'error') {
     content = (
       <div className="mx-8">
@@ -335,14 +347,7 @@ export default function Publication(): JSX.Element {
               interactionPanelDispatch({type: 'toggle_panel'})
             }}
           />
-          <MainColumn>
-            <TransclusionHelperProvider
-              options={drafts}
-              handleTransclusion={handleTransclusion}
-            >
-              {content}
-            </TransclusionHelperProvider>
-          </MainColumn>
+          <MainColumn>{content}</MainColumn>
         </div>
         {interactionPanel.visible ? (
           <div
@@ -457,7 +462,7 @@ function InteractionPanelCTA({handleInteract}) {
         className="bg-primary rounded-full mt-4 px-8 py-2 text-white font-bold shadow transition duration-200 text-sm"
         onClick={handleInteract}
       >
-        Write a reply
+        Write about this Article
       </button>
     </div>
   )

@@ -1,52 +1,47 @@
-import {useDndBlock} from '@udecode/slate-plugins'
-import {mergeRefs} from '../../mergeRefs'
 import React from 'react'
+import {css} from 'emotion'
 import {BlockControls} from '../../components/blockControls'
-import {useBlockTools} from './blockToolsContext'
-import {ReactEditor, useEditor} from 'slate-react'
+import {useBlockMenu} from './blockMenuContext'
+import {mergeRefs} from '../../mergeRefs'
+import {Icons} from '../../components/icons'
 
-export function DragDrop({element, componentRef, children}: any) {
-  const editor = useEditor()
-  const path = ReactEditor.findPath(editor, element)
-  const blockRef = React.useRef<HTMLDivElement>(null)
-  const rootRef = React.useRef<HTMLDivElement>(null)
-  const multiRef = mergeRefs(componentRef, rootRef)
-  const {dropLine, dragRef} = useDndBlock({
-    id: element.id,
-    blockRef,
-  })
+export const DragDrop = ({element, children, componentRef, ...props}: any) => {
+  const ref = mergeRefs(props.ref, componentRef)
+  const {
+    dispatch,
+    state: {blockId},
+  } = useBlockMenu()
 
-  const dragWrapperRef = React.useRef(null)
-  const multiDragRef = mergeRefs(dragRef, dragWrapperRef)
-
-  const {id: blockId, setBlockId} = useBlockTools()
-
+  let show = React.useMemo(() => blockId === element.id, [blockId, element.id])
   return (
-    <div ref={multiRef}>
+    <div {...props} ref={ref}>
       <div
-        className="relative"
-        ref={blockRef}
-        onMouseLeave={() => setBlockId(null)}
-        onMouseEnter={() => setBlockId(element.id)}
+        className="relative mt-6"
+        // onMouseLeave={() => {
+        //   dispatch({type: 'set_block_id', payload: {blockId: null}})
+        // }}
+        onMouseEnter={() =>
+          dispatch({type: 'set_block_id', payload: {blockId: element.id}})
+        }
       >
-        <BlockControls
-          element={element}
-          path={path}
-          show={blockId === element.id}
-          dragRef={multiDragRef}
-        />
         {children}
 
-        {!!dropLine && (
-          <div
-            className={`h-1 w-full bg-blue-300 absolute`}
-            style={{
-              top: dropLine === 'top' ? -1 : undefined,
-              bottom: dropLine === 'bottom' ? -1 : undefined,
-            }}
-            contentEditable={false}
+        <div
+          className={`absolute m-0 p-0 leading-none transition duration-200 ${css`
+            top: 2px;
+            right: ${element.type === 'transclusion' ? '-5px' : '-9px'};
+          `} ${show ? 'opacity-100' : 'opacity-100'}`}
+          contentEditable={false}
+        >
+          <BlockControls
+            disclosure={
+              <span className="block m-0 p-0">
+                <Icons.MoreHorizontal size={16} />
+              </span>
+            }
+            element={element}
           />
-        )}
+        </div>
       </div>
     </div>
   )
