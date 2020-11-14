@@ -4,6 +4,7 @@ import {BlockControls} from '../../components/blockControls'
 import {useBlockMenu} from './blockMenuContext'
 import {mergeRefs} from '../../mergeRefs'
 import {Icons} from '../../components/icons'
+import {useReadOnly} from 'slate-react'
 
 export const DragDrop = ({element, children, componentRef, ...props}: any) => {
   const ref = mergeRefs(props.ref, componentRef)
@@ -11,6 +12,7 @@ export const DragDrop = ({element, children, componentRef, ...props}: any) => {
     dispatch,
     state: {blockId},
   } = useBlockMenu()
+  const readonly = useReadOnly()
 
   let show = React.useMemo(() => blockId === element.id, [blockId, element.id])
   return (
@@ -26,22 +28,24 @@ export const DragDrop = ({element, children, componentRef, ...props}: any) => {
       >
         {children}
 
-        <div
-          className={`absolute m-0 p-0 leading-none transition duration-200 ${css`
-            top: 2px;
-            right: ${element.type === 'transclusion' ? '-5px' : '-9px'};
-          `} ${show ? 'opacity-100' : 'opacity-100'}`}
-          contentEditable={false}
-        >
-          <BlockControls
-            disclosure={
-              <span className="block m-0 p-0">
-                <Icons.MoreHorizontal size={16} />
-              </span>
-            }
-            element={element}
-          />
-        </div>
+        {readonly && (
+          <div
+            className={`absolute m-0 p-0 leading-none transition duration-200 ${css`
+              top: 2px;
+              right: ${element.type === 'transclusion' ? '-5px' : '-9px'};
+            `} ${show ? 'opacity-100' : 'opacity-100'}`}
+            contentEditable={false}
+          >
+            <BlockControls
+              disclosure={
+                <span className="block m-0 p-0">
+                  <Icons.MoreHorizontal size={16} />
+                </span>
+              }
+              element={element}
+            />
+          </div>
+        )}
       </div>
     </div>
   )
