@@ -1,10 +1,4 @@
-import {
-  PARAGRAPH_OPTIONS,
-  HEADING_OPTIONS,
-  BLOCKQUOTE_OPTIONS,
-  DEFAULTS_LINK,
-  DEFAULTS_LIST,
-} from './elements'
+import {PARAGRAPH_OPTIONS} from './elements'
 import {
   BOLD_OPTIONS,
   ITALIC_OPTIONS,
@@ -19,10 +13,6 @@ import {DEFAULTS_READ_ONLY} from './ReadOnlyPlugin'
 
 export const options = {
   ...PARAGRAPH_OPTIONS,
-  ...HEADING_OPTIONS,
-  ...BLOCKQUOTE_OPTIONS,
-  ...DEFAULTS_LINK,
-  ...DEFAULTS_LIST,
   ...DEFAULTS_BLOCK,
   ...DEFAULTS_BLOCKLIST,
   ...DEFAULTS_TRANSCLUSION,
