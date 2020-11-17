@@ -92,7 +92,7 @@ export function InteractionPanelObject(props) {
             />
           </div>
         )}
-        {!isLocal || (isProfileSuccess && isAuthor) ? (
+        {isLocal || (isProfileSuccess && isAuthor) ? (
           <ObjectFooter version={version} />
         ) : null}
       </div>

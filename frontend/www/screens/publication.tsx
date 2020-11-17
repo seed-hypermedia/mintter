@@ -52,8 +52,6 @@ export default function Publication(): JSX.Element {
     dispatch: interactionPanelDispatch,
   } = useInteractionPanel()
 
-  const [showReactions, toggleReactions] = React.useState(true)
-
   const version = React.useMemo(() => slug.split('-').slice(-1)[0], [slug])
 
   const {createDraft} = useMintter()
@@ -369,30 +367,13 @@ export default function Publication(): JSX.Element {
                 </span>
               </button>
             </div>
-            <div className="py-6 border-t border-muted mx-4 mt-2">
-              <p className="text-muted-hover font-bold text-xs">Reactions</p>
-              <div className="flex items-center mt-4">
-                <p className="text-sm">
-                  {interactionPanel.objects.length === 0
-                    ? 'No Reactions'
-                    : interactionPanel.objects.length === 1
-                    ? '1 Reaction'
-                    : `${interactionPanel.objects.length} Reactions`}{' '}
-                </p>
-                <button
-                  className="font-bold text-primary mx-2 text-sm"
-                  onClick={() => toggleReactions(val => !val)}
-                >
-                  {showReactions ? 'Hide ' : 'Show '}Reactions
-                </button>
-              </div>
-            </div>
 
-            {showReactions &&
-              interactionPanel.objects.map(object => (
-                <InteractionPanelObject key={object} id={object} />
-              ))}
-            <InteractionPanelCTA handleInteract={handleInteract} />
+            {interactionPanel.objects.map(object => (
+              <InteractionPanelObject key={object} id={object} />
+            ))}
+            {interactionPanel.objects.length === 0 && (
+              <InteractionPanelCTA handleInteract={handleInteract} />
+            )}
           </div>
         ) : (
           <div />
