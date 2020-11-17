@@ -23,6 +23,7 @@ export interface BlockMenuContextState {
   blockId: string | null
   onQuote?: (data: OnQuoteOptions) => void
   onInteractionPanel?: (block: SlateBlock) => void
+  useDocument?: any
   drafts?: Document.AsObject[]
 }
 
@@ -37,6 +38,7 @@ const defaultState: BlockMenuContextState = {
   blockId: null,
   onInteractionPanel: () => console.log('Implement me!'),
   onQuote: () => console.log('Implement me!'),
+  useDocument: () => console.log('Implement me!'),
   drafts: [],
 }
 
@@ -59,8 +61,9 @@ export function BlockMenuProvider({
 }: BlockMenuProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, initialState)
 
+  const value = React.useMemo(() => ({state, dispatch}), [state])
   return (
-    <BlockMenuContext.Provider value={{state, dispatch}}>
+    <BlockMenuContext.Provider value={value}>
       {children}
     </BlockMenuContext.Provider>
   )
@@ -68,7 +71,6 @@ export function BlockMenuProvider({
 
 export function useBlockMenu() {
   const context = useContext(BlockMenuContext)
-
   if (context === undefined) {
     throw new Error(
       `\`useBlockMenu\` must be used within a \`BlockMenuProvider\``,

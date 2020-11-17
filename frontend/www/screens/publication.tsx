@@ -87,6 +87,7 @@ export default function Publication(): JSX.Element {
       ...options.block,
       customProps: {
         dispatch: interactionPanelDispatch,
+        getData: getQuotationData,
       },
     },
   }
@@ -96,52 +97,10 @@ export default function Publication(): JSX.Element {
   const {state} = useEditorValue({
     document: data,
   })
-  const {title, blocks, subtitle, author: pubAuthor, mentions} = state
+  const {title, blocks, subtitle, author: pubAuthor} = state
   const {data: author} = useAuthor(pubAuthor)
   const {createTransclusion} = useTransclusion()
   const {data: drafts = []} = useDrafts()
-
-  React.useEffect(() => {
-    if (!slug.includes('-') && title) {
-      const titleSlug = slugify(title, {lower: true, remove: /[*+~.()'"!:@]/g})
-      replace(`${titleSlug}-${version}`)
-    }
-  }, [title])
-
-  React.useEffect(() => {
-    if (mentions.length) {
-      interactionPanelDispatch({
-        type: 'add_mentions',
-        payload: {objects: mentions},
-      })
-    }
-  }, [mentions])
-
-  React.useEffect(() => {
-    dispatch({
-      type: 'set_actions',
-      payload: {
-        onQuote: handleQuotation,
-        onInteractionPanel: handleInteractionPanel,
-        drafts,
-      },
-    })
-  }, [drafts])
-
-  async function getQuotationData(quoteId) {
-    const version = quoteId.split('/')[0]
-    const res = await getDocument('', version)
-    const data = res.toObject()
-    const {document} = data
-    const authorId = data.document.author
-    const authorData = await getProfile('', authorId)
-    const author: Profile.AsObject = authorData.toObject()
-
-    return {
-      document,
-      author,
-    }
-  }
 
   async function handleQuotation({
     block,
@@ -165,6 +124,43 @@ export default function Publication(): JSX.Element {
       payload: block.id,
     })
   }
+
+  const onQuote = React.useCallback(handleQuotation, [])
+  const onInteractionPanel = React.useCallback(handleInteractionPanel, [])
+
+  React.useEffect(() => {
+    if (!slug.includes('-') && title) {
+      const titleSlug = slugify(title, {lower: true, remove: /[*+~.()'"!:@]/g})
+      replace(`${titleSlug}-${version}`)
+    }
+  }, [title])
+
+  async function getQuotationData(quoteId) {
+    const version = quoteId.split('/')[0]
+    const res = await getDocument('', version)
+    const data = res.toObject()
+    const {document} = data
+    const authorId = data.document.author
+    const authorData = await getProfile('', authorId)
+    const author: Profile.AsObject = authorData.toObject()
+
+    return {
+      document,
+      author,
+    }
+  }
+
+  React.useEffect(() => {
+    dispatch({
+      type: 'set_actions',
+      payload: {
+        onQuote,
+        onInteractionPanel,
+        useDocument,
+        drafts,
+      },
+    })
+  }, [drafts])
 
   let content
 

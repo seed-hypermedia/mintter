@@ -141,14 +141,13 @@ export function useSuggestedConnections({page} = {page: 0}, options = {}) {
     },
   )
 
-  const resolvedData = useMemo(
-    () => suggestionsQuery.resolvedData?.toObject().profilesList,
-    [suggestionsQuery.data],
-  )
+  const data = useMemo(() => suggestionsQuery.data?.toObject().profilesList, [
+    suggestionsQuery.data,
+  ])
 
   return {
     ...suggestionsQuery,
-    resolvedData,
+    data,
   }
 }
 

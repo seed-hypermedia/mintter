@@ -4,25 +4,35 @@ import {useSuggestedConnections} from 'shared/profileContext'
 import {css} from 'emotion'
 
 import Tippy from '@tippyjs/react'
-import {Profile, ConnectionStatus} from '@mintter/api/v2/mintter_pb'
+import {
+  Profile,
+  ConnectionStatus,
+  SuggestedProfile,
+} from '@mintter/api/v2/mintter_pb'
+import {ErrorMessage} from './errorMessage'
 
 export function SuggestedConnections({handleConnectToPeer}) {
-  const {resolvedData, isLoading} = useSuggestedConnections()
+  const {data, isLoading, isError, error} = useSuggestedConnections()
+
   if (isLoading) {
     return <p className="text-body text-sm mt-2">loading...</p>
+  }
+
+  if (isError) {
+    return <ErrorMessage error={error} />
   }
 
   return (
     <div className={`w-full px-4 pt-12`}>
       <h3 className="font-bold text-heading">Suggested Connections</h3>
-      {resolvedData.length === 0 ? (
+      {data.length === 0 ? (
         <p className="py-2 px-4 mt-4 rounded bg-background-muted text-body text-sm inline-block">
           no suggestions available :(
         </p>
       ) : (
         <ul>
-          {resolvedData.map(c => {
-            const {profile} = c
+          {data.map((c: SuggestedProfile.AsObject) => {
+            const {profile, addrsList} = c
             const isConnected =
               profile.connectionStatus === ConnectionStatus.CONNECTED
 
@@ -69,7 +79,7 @@ export function SuggestedConnections({handleConnectToPeer}) {
                       {`${profile.username} (${profile.accountId.slice(-8)})`}
                     </span>
                     <button
-                      onClick={() => handleConnectToPeer(c.addrsList)}
+                      onClick={() => handleConnectToPeer(addrsList)}
                       className="opacity-0 group-hover:opacity-100 transition duration-75 px-2 rounded-full bg-info hover:bg-info-hover text-white"
                     >
                       connect

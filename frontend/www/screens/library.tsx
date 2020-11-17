@@ -18,11 +18,11 @@ import {MainColumn} from 'components/main-column'
 import {Icons} from '@mintter/editor'
 import {useToasts} from 'react-toast-notifications'
 
-const Publications = React.lazy(() =>
-  import(/* webpackPrefetch: true */ './publications'),
+const Publications = React.lazy(
+  () => import(/* webpackPrefetch: true */ './publications'),
 )
-const MyPublications = React.lazy(() =>
-  import(/* webpackPrefetch: true */ './my-publications'),
+const MyPublications = React.lazy(
+  () => import(/* webpackPrefetch: true */ './my-publications'),
 )
 const Drafts = React.lazy(() => import(/* webpackPrefetch: true */ './drafts'))
 
@@ -46,16 +46,14 @@ export default function Library() {
     })
   }
 
-  async function handleConnectToPeer() {
-    const peer: any = window.prompt(`enter a peer address`)
-
-    if (peer) {
+  async function handleConnectToPeer(addressList?: string[]) {
+    if (addressList) {
       const toast = addToast('Connecting to peer...', {
         appearance: 'info',
         autoDismiss: false,
       })
       try {
-        await connectToPeer(peer.split(','))
+        await connectToPeer(addressList)
         updateToast(toast, {
           content: 'Connection established successfuly!',
           appearance: 'success',
@@ -67,6 +65,28 @@ export default function Library() {
             appearance: 'error',
           })
         })
+      }
+    } else {
+      const peer = addressList ?? window.prompt(`enter a peer address`)
+      if (peer) {
+        const toast = addToast('Connecting to peer...', {
+          appearance: 'info',
+          autoDismiss: false,
+        })
+        try {
+          await connectToPeer(peer.split(','))
+          updateToast(toast, {
+            content: 'Connection established successfuly!',
+            appearance: 'success',
+            autoDismiss: true,
+          })
+        } catch (err) {
+          removeToast(toast, () => {
+            addToast(err.message, {
+              appearance: 'error',
+            })
+          })
+        }
       }
     }
   }
