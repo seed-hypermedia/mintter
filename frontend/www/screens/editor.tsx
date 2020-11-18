@@ -257,7 +257,7 @@ export default function Editor(): JSX.Element {
                 }}
               />
             </div>
-            <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-3xl">
+            <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-2xl">
               <EditorComponent
                 editor={editor}
                 plugins={plugins}

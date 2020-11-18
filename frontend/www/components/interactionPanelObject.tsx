@@ -161,7 +161,7 @@ function ContentRenderer({value, isEditor = false, onTransclude}) {
   return (
     <div
       contentEditable={false}
-      className="mt-2 prose xs:prose-xl lg:prose-2xl 2xl:prose-3xl"
+      className="mt-2 prose xs:prose-xl lg:prose-2xl 2xl:prose-2xl"
     >
       <SlateReactPresentation
         value={value}

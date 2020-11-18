@@ -6,8 +6,8 @@ import {NavItem} from 'components/nav'
 import {useHistory} from 'react-router-dom'
 import {useMintter} from 'shared/mintterContext'
 import {
-  useConnectionList,
   useConnectionCreate,
+  useConnectionList,
   useProfile,
 } from 'shared/profileContext'
 import {Link} from 'components/link'
@@ -18,11 +18,11 @@ import {MainColumn} from 'components/main-column'
 import {Icons} from '@mintter/editor'
 import {useToasts} from 'react-toast-notifications'
 
-const Publications = React.lazy(() =>
-  import(/* webpackPrefetch: true */ './publications'),
+const Publications = React.lazy(
+  () => import(/* webpackPrefetch: true */ './publications'),
 )
-const MyPublications = React.lazy(() =>
-  import(/* webpackPrefetch: true */ './my-publications'),
+const MyPublications = React.lazy(
+  () => import(/* webpackPrefetch: true */ './my-publications'),
 )
 const Drafts = React.lazy(() => import(/* webpackPrefetch: true */ './drafts'))
 
@@ -31,14 +31,10 @@ export default function Library() {
   const match = useRouteMatch('/private/library')
   const history = useHistory()
   const {createDraft} = useMintter()
-  const {
-    data: connections,
-    isLoading: isConnectionsLoading,
-  } = useConnectionList()
   const {connectToPeer} = useConnectionCreate()
   const {addToast, updateToast, removeToast} = useToasts()
 
-  async function handleCreateDocument() {
+  async function onCreateDocument() {
     const d = await createDraft()
     const value = d.toObject()
     history.push({
@@ -46,7 +42,7 @@ export default function Library() {
     })
   }
 
-  async function handleConnectToPeer(addressList?: string[]) {
+  async function onConnect(addressList?: string[]) {
     if (addressList) {
       const toast = addToast('Connecting to peer...', {
         appearance: 'info',
@@ -67,7 +63,7 @@ export default function Library() {
         })
       }
     } else {
-      const peer = addressList ?? window.prompt(`enter a peer address`)
+      const peer: string = window.prompt(`enter a peer address`)
       if (peer) {
         const toast = addToast('Connecting to peer...', {
           appearance: 'info',
@@ -91,10 +87,6 @@ export default function Library() {
     }
   }
 
-  if (isConnectionsLoading) {
-    return null
-  }
-
   return (
     <Page>
       <div
@@ -104,12 +96,8 @@ export default function Library() {
       >
         <div className="pt-16">
           <ProfileInfo />
-          <Connections
-            handleConnectToPeer={handleConnectToPeer}
-            connections={connections}
-            isLoading={isConnectionsLoading}
-          />
-          <SuggestedConnections handleConnectToPeer={handleConnectToPeer} />
+          <Connections onConnect={onConnect} />
+          <SuggestedConnections onConnect={onConnect} />
         </div>
         <div>
           <MainColumn>
@@ -117,7 +105,7 @@ export default function Library() {
               <h1 className="text-4xl font-bold text-heading">Library</h1>
               <div className="flex-1" />
               <button
-                onClick={handleCreateDocument}
+                onClick={onCreateDocument}
                 className="bg-primary rounded-full px-4 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
               >
                 Compose
@@ -129,27 +117,7 @@ export default function Library() {
               <NavItem to="/private/library/drafts">Drafts</NavItem>
               <div className="flex-1" />
             </div>
-            {connections.length === 0 && (
-              <>
-                <hr className="border-t-2 border-muted border-solid my-8" />
-                <div className="bg-background-muted border-muted border-solid border-2 rounded px-4 py-4 mb-4 text-center flex flex-col items-center">
-                  <h3 className="text-xl font-bold text-primary">
-                    Connect to Others
-                  </h3>
-                  {/* <p className="text-body font-light mt-5">
-                    Some clain sentence that's fun, welcomes user to the community
-                    and tells how it works and encourages to get started
-                  </p> */}
-                  <button
-                    onClick={handleConnectToPeer}
-                    className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
-                  >
-                    <Icons.Plus />
-                    <span className="ml-2">Add your First Connection</span>
-                  </button>
-                </div>
-              </>
-            )}
+            <NoConnectionsBox onConnect={onConnect} />
             <div className="-mx-4 mt-4">
               <Switch>
                 <PrivateRoute exact path={match.url}>
@@ -190,5 +158,28 @@ function ProfileInfo() {
         Edit profile
       </Link>
     </div>
+  ) : null
+}
+
+function NoConnectionsBox({onConnect}) {
+  const {data = []} = useConnectionList()
+  return data.length === 0 ? (
+    <>
+      <hr className="border-t-2 border-muted border-solid my-8" />
+      <div className="bg-background-muted border-muted border-solid border-2 rounded px-4 py-4 mb-4 text-center flex flex-col items-center">
+        <h3 className="text-xl font-bold text-primary">Connect to Others</h3>
+        {/* <p className="text-body font-light mt-5">
+          Some clain sentence that's fun, welcomes user to the community
+          and tells how it works and encourages to get started
+        </p> */}
+        <button
+          onClick={() => onConnect()}
+          className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
+        >
+          <Icons.Plus />
+          <span className="ml-2">Add your First Connection</span>
+        </button>
+      </div>
+    </>
   ) : null
 }

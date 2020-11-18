@@ -214,7 +214,7 @@ export default function Publication(): JSX.Element {
             <AuthorLabel author={author} />
           </p>
         </div>
-        <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-3xl pt-4">
+        <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-2xl pt-4">
           <EditorComponent
             readOnly
             editor={editor}

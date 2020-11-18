@@ -27,7 +27,6 @@ export function ProgressRoute({children, ...rest}) {
 
 export function PrivateRoute({children, ...rest}) {
   const {status, data: profile} = useProfile()
-
   if (status === 'success') {
     return (
       <Route

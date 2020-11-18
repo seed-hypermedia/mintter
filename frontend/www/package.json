@@ -82,6 +82,7 @@
     "prettier": "^2.0.2",
     "react-query-devtools": "^2.6.1",
     "tailwindcss": "^1.9.5",
+    "test-data-bot": "^0.8.0",
     "ts-jest": "^26.1.0",
     "typescript": "^3.8.3"
   },

@@ -7,7 +7,7 @@ import {ToastProvider, DefaultToast} from 'react-toast-notifications'
 import {InteractionPanelProvider} from './interactionPanel'
 import {BlockMenuProvider} from '@mintter/editor'
 
-function Toast({children, ...props}) {
+export function Toast({children, ...props}) {
   return (
     <DefaultToast {...props}>
       <div className="break-all">{children}</div>
