@@ -16,10 +16,10 @@ import Tippy from '@tippyjs/react'
 import {css} from 'emotion'
 import {useParams} from 'react-router-dom'
 import {queryCache} from 'react-query'
-import {useInteractionPanel} from './interactionPanel'
+import {useSidePanel} from './sidePanel'
 import {isLocalhost} from 'shared/isLocalhost'
 
-export function InteractionPanelObject(props) {
+export function sidePanelObject(props) {
   const {version: draftVersion} = useParams()
   const [version] = React.useState(props.id.split('/')[0])
   // const [objectId] = React.useState(props.id.split('/')[1])
@@ -27,7 +27,7 @@ export function InteractionPanelObject(props) {
 
   const {data: author} = useAuthor(data?.document?.author)
   const [open, setOpen] = React.useState(true)
-  const {dispatch} = useInteractionPanel()
+  const {dispatch} = useSidePanel()
   const {data: user, isSuccess: isProfileSuccess} = useProfile()
   const isLocal = isLocalhost(window.location.hostname)
   const isAuthor = React.useMemo(() => {
@@ -159,10 +159,7 @@ function ContentRenderer({value, isEditor = false, onTransclude}) {
   }, [])
 
   return (
-    <div
-      contentEditable={false}
-      className="mt-2 prose xs:prose-xl lg:prose-2xl 2xl:prose-2xl"
-    >
+    <div contentEditable={false} className="mt-2 prose prose-xl">
       <SlateReactPresentation
         value={value}
         renderElement={renderElement}

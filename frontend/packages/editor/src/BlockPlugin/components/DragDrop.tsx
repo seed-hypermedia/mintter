@@ -22,7 +22,7 @@ export const DragDrop = ({element, children, componentRef, ...props}: any) => {
   return (
     <div {...props} ref={ref}>
       <div
-        className="relative mt-6"
+        className="relative mt-2"
         onMouseLeave={() => {
           dispatch({type: 'set_block_id', payload: {blockId: null}})
         }}
@@ -34,9 +34,9 @@ export const DragDrop = ({element, children, componentRef, ...props}: any) => {
 
         {match && (
           <div
-            className={`absolute m-0 p-0 leading-none transition duration-200  ${css`
+            className={`absolute m-0 p-0 leading-none transition duration-200 shadow-sm ${css`
               top: 2px;
-              right: 0;
+              right: -9px;
             `}`}
             contentEditable={false}
           >

@@ -4,7 +4,7 @@ import {ThemeProvider} from 'shared/themeContext'
 import {ProfileProvider} from 'shared/profileContext'
 import {MintterProvider} from 'shared/mintterContext'
 import {ToastProvider, DefaultToast} from 'react-toast-notifications'
-import {InteractionPanelProvider} from './interactionPanel'
+import {SidePanelProvider} from './sidePanel'
 import {BlockMenuProvider} from '@mintter/editor'
 
 export function Toast({children, ...props}) {
@@ -25,9 +25,7 @@ export function AppProviders({children}) {
             <MintterProvider>
               <ToastProvider autoDismiss={true} components={{Toast}}>
                 <BlockMenuProvider>
-                  <InteractionPanelProvider>
-                    {children}
-                  </InteractionPanelProvider>
+                  <SidePanelProvider>{children}</SidePanelProvider>
                 </BlockMenuProvider>
               </ToastProvider>
             </MintterProvider>

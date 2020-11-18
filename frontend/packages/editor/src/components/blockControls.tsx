@@ -19,7 +19,7 @@ const BlockControlsComp = ({
 }: any) => {
   const menu = useMenuState({loop: true})
   const {
-    state: {onInteractionPanel, onQuote},
+    state: {onsidePanel, onQuote},
   } = useBlockMenu()
   const isQuote = React.useMemo(() => isTransclusion(element), [element])
   return index === highlightedIndex ? (
@@ -40,11 +40,11 @@ const BlockControlsComp = ({
       >
         <MenuItem
           {...menu}
-          onClick={() => onInteractionPanel?.(element)}
+          onClick={() => onsidePanel?.(element)}
           disabled={!isQuote}
         >
           <Icons.ArrowUpRight size={16} color="currentColor" />
-          <span className="flex-1 mx-2">Open in Interaction Panel</span>
+          <span className="flex-1 mx-2">Open in Sidepanel</span>
         </MenuItem>
         <MenuItem
           {...menu}
@@ -113,7 +113,7 @@ const DraftsMenuComp = React.forwardRef<
       <MenuButton
         {...menu}
         {...props}
-        className="w-full px-2 py-2 focus:bg-teal-200 text-sm text-left disabled:opacity-50 flex items-center"
+        className="w-full px-2 py-2 focus:bg-muted text-sm text-left disabled:opacity-50 flex items-center"
         as="div"
         ref={ref}
       >

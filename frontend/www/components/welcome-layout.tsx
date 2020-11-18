@@ -8,10 +8,7 @@ export default function WelcomeLayout({
   ...props
 }: LayoutProps) {
   return (
-    <Layout
-      {...props}
-      className={`bg-background flex flex-col py-8 ${className}`}
-    >
+    <Layout {...props} className={`flex flex-col py-8 ${className}`}>
       <div className="absolute right-0 top-0 p-4">
         <ThemeToggle />
       </div>

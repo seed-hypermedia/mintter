@@ -1,35 +1,33 @@
 import React from 'react'
 
-export interface InteractionPanelAction {
+export interface sidePanelAction {
   type: string
   payload?: any
 }
 
-export interface InteractionPanelState {
+export interface sidePanelState {
   visible: boolean
   objects: string[]
 }
 
-export interface InteractionPanelContextValue {
-  state: InteractionPanelState
+export interface sidePanelContextValue {
+  state: sidePanelState
   dispatch?: any
 }
 
-const interactionPanelInitialState: InteractionPanelState = {
+const sidePanelInitialState: sidePanelState = {
   visible: false,
   objects: [],
 }
 
-export const InteractionPanelContext = React.createContext<
-  InteractionPanelContextValue
->({
-  state: interactionPanelInitialState,
+export const sidePanelContext = React.createContext<sidePanelContextValue>({
+  state: sidePanelInitialState,
 })
 
 function objectsReducer(
-  state: InteractionPanelState,
-  {type, payload}: InteractionPanelAction,
-): InteractionPanelState {
+  state: sidePanelState,
+  {type, payload}: sidePanelAction,
+): sidePanelState {
   if (type === 'add_object') {
     if (state.objects.includes(payload)) {
       return {
@@ -89,24 +87,24 @@ function objectsReducer(
   return state
 }
 
-export function InteractionPanelProvider({children}) {
+export function SidePanelProvider({children}) {
   const [state, dispatch] = React.useReducer(
     objectsReducer,
-    interactionPanelInitialState,
+    sidePanelInitialState,
   )
   return (
-    <InteractionPanelContext.Provider value={{state, dispatch}}>
+    <sidePanelContext.Provider value={{state, dispatch}}>
       {children}
-    </InteractionPanelContext.Provider>
+    </sidePanelContext.Provider>
   )
 }
 
-export function useInteractionPanel() {
-  const context = React.useContext(InteractionPanelContext)
+export function useSidePanel() {
+  const context = React.useContext(sidePanelContext)
 
   if (!context) {
     throw new Error(
-      `"useInteractionPanel" must be called within a "<InteractionPanelProvider />" component`,
+      `"useSidePanel" must be called within a "<SidePanelProvider />" component`,
     )
   }
 

@@ -38,7 +38,7 @@ export function BlockBase({attributes, element, children, getData}, ref) {
                   color: #ccc;
                 `}`}
               >
-                Open Mention in Interaction Panel
+                Open Mention in Sidepanel
               </span>
             }
           >

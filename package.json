@@ -63,5 +63,8 @@
       "yarn editor:build",
       "yarn site:test:precommit --bail —-findRelatedTests"
     ]
+  },
+  "resolutions": {
+    "styled-components": "^5.2.1"
   }
 }

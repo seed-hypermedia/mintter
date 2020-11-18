@@ -26,8 +26,8 @@ import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 import SplitPane from 'react-split-pane'
 import ResizerStyle from 'components/resizer-style'
-import {InteractionPanelObject} from 'components/interactionPanelObject'
-import {useInteractionPanel} from 'components/interactionPanel'
+import {sidePanelObject} from 'components/sidePanelObject'
+import {useSidePanel} from 'components/sidePanel'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 import {Document} from '@mintter/api/v2/documents_pb'
 import Modal from 'react-modal'
@@ -47,10 +47,7 @@ export default function Publication(): JSX.Element {
 
   const {push, replace} = useHistory()
   const {slug} = useParams()
-  const {
-    state: interactionPanel,
-    dispatch: interactionPanelDispatch,
-  } = useInteractionPanel()
+  const {state: sidePanel, dispatch: sidePanelDispatch} = useSidePanel()
 
   const version = React.useMemo(() => slug.split('-').slice(-1)[0], [slug])
 
@@ -77,14 +74,14 @@ export default function Publication(): JSX.Element {
     transclusion: {
       ...options.transclusion,
       customProps: {
-        dispatch: interactionPanelDispatch,
+        dispatch: sidePanelDispatch,
         getData: getQuotationData,
       },
     },
     block: {
       ...options.block,
       customProps: {
-        dispatch: interactionPanelDispatch,
+        dispatch: sidePanelDispatch,
         getData: getQuotationData,
       },
     },
@@ -116,15 +113,15 @@ export default function Publication(): JSX.Element {
     push(`/private/editor/${draftUrl}`)
   }
 
-  function handleInteractionPanel(block: SlateBlock) {
-    interactionPanelDispatch({
+  function handlesidePanel(block: SlateBlock) {
+    sidePanelDispatch({
       type: 'add_object',
       payload: block.id,
     })
   }
 
   const onQuote = React.useCallback(handleQuotation, [])
-  const onInteractionPanel = React.useCallback(handleInteractionPanel, [])
+  const onsidePanel = React.useCallback(handlesidePanel, [])
 
   React.useEffect(() => {
     if (!slug.includes('-') && title) {
@@ -153,7 +150,7 @@ export default function Publication(): JSX.Element {
       type: 'set_actions',
       payload: {
         onQuote,
-        onInteractionPanel,
+        onsidePanel,
         useDocument,
         drafts,
       },
@@ -214,7 +211,7 @@ export default function Publication(): JSX.Element {
             <AuthorLabel author={author} />
           </p>
         </div>
-        <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-2xl pt-4">
+        <div className="prose prose-xl pt-4">
           <EditorComponent
             readOnly
             editor={editor}
@@ -317,7 +314,7 @@ export default function Publication(): JSX.Element {
         defaultSize="66%"
         minSize={300}
         pane1Style={
-          interactionPanel.visible
+          sidePanel.visible
             ? {
                 minWidth: 600,
                 overflow: 'auto',
@@ -336,19 +333,19 @@ export default function Publication(): JSX.Element {
       >
         <div className="overflow-auto">
           <PublicationCTA
-            visible={interactionPanel.visible}
+            visible={sidePanel.visible}
             handleInteract={() => {
-              interactionPanelDispatch({type: 'toggle_panel'})
+              sidePanelDispatch({type: 'toggle_panel'})
             }}
           />
           <MainColumn>{content}</MainColumn>
         </div>
-        {interactionPanel.visible ? (
+        {sidePanel.visible ? (
           <div
             style={{
-              visibility: interactionPanel.visible ? 'visible' : 'hidden',
-              maxWidth: interactionPanel.visible ? '100%' : 0,
-              width: interactionPanel.visible ? '100%' : 0,
+              visibility: sidePanel.visible ? 'visible' : 'hidden',
+              maxWidth: sidePanel.visible ? '100%' : 0,
+              width: sidePanel.visible ? '100%' : 0,
               height: '100%',
               minHeight: '100%',
               overflow: 'auto',
@@ -359,20 +356,20 @@ export default function Publication(): JSX.Element {
               <MintterIcon size="1.5em" />
               <button
                 className="text-primary text-base flex items-center w-full justify-end group"
-                onClick={() => interactionPanelDispatch({type: 'close_panel'})}
+                onClick={() => sidePanelDispatch({type: 'close_panel'})}
               >
-                <span className="text-sm mx-2">Close Interaction Panel</span>
+                <span className="text-sm mx-2">Close Sidepanel</span>
                 <span className="w-4 h-4 rounded-full bg-background-muted text-primary flex items-center justify-center group-hover:bg-muted transform duration-200">
                   <Icons.ChevronRight size={14} color="currentColor" />
                 </span>
               </button>
             </div>
 
-            {interactionPanel.objects.map(object => (
-              <InteractionPanelObject key={object} id={object} />
+            {sidePanel.objects.map(object => (
+              <sidePanelObject key={object} id={object} />
             ))}
-            {interactionPanel.objects.length === 0 && (
-              <InteractionPanelCTA handleInteract={handleInteract} />
+            {sidePanel.objects.length === 0 && (
+              <sidePanelCTA handleInteract={handleInteract} />
             )}
           </div>
         ) : (
@@ -425,7 +422,7 @@ function PublicationCTA({handleInteract, visible}) {
   )
 }
 
-function InteractionPanelCTA({handleInteract}) {
+function sidePanelCTA({handleInteract}) {
   return (
     <div className="border-t border-muted mt-4 py-8 px-4 mb-20">
       <h3 className="font-bold text-2xl">
