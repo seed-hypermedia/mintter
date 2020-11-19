@@ -45,24 +45,6 @@ export default function EditProfile() {
           Link your personal data with your new account
         </P>
         <Content className="flex-wrap flex w-full flex-col md:flex-row">
-          {/* // TODO: render avatar when the API is ready to accept images
-          <div className="pr-8 order-12 md:order-none flex mt-6 md:mt-0 flex-col">
-            <label
-              className="block text-body-muted text-xs font-semibold mb-1"
-              htmlFor="avatar"
-            >
-              Avatar
-            </label>
-            <div className="avatar-container overflow-hidden relative bg-background-muted border border-muted  rounded">
-              <input
-                name="avatar"
-                id="avatar"
-                ref={register}
-                className="absolute bottom-0 left-0 opacity-0 hover:opacity-100 transition-opacity ease-in-out duration-300 m-4"
-                type="file"
-              />
-            </div>
-          </div> */}
           <div className="flex-col flex flex-1">
             <div className="flex-1 relative">
               <label
@@ -127,8 +109,9 @@ export default function EditProfile() {
                 ref={register}
                 rows={4}
                 placeholder="A little bit about yourself..."
-                className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body text-base ${errors.bio &&
-                  'border-danger'} ${css`
+                className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body text-base ${
+                  errors.bio && 'border-danger'
+                } ${css`
                   min-height: 100px;
                 `}`}
               />

@@ -16,18 +16,19 @@ import Tippy from '@tippyjs/react'
 import {css} from 'emotion'
 import {useParams} from 'react-router-dom'
 import {queryCache} from 'react-query'
-import {useInteractionPanel} from './interactionPanel'
+import {useSidePanel} from './sidePanel'
 import {isLocalhost} from 'shared/isLocalhost'
+import {ErrorMessage} from './errorMessage'
 
-export function InteractionPanelObject(props) {
+export function SidePanelObject(props) {
   const {version: draftVersion} = useParams()
   const [version] = React.useState(props.id.split('/')[0])
   // const [objectId] = React.useState(props.id.split('/')[1])
-  const {status, data} = useDocument(version)
+  const {isLoading, isError, error, data} = useDocument(version)
 
   const {data: author} = useAuthor(data?.document?.author)
   const [open, setOpen] = React.useState(true)
-  const {dispatch} = useInteractionPanel()
+  const {dispatch} = useSidePanel()
   const {data: user, isSuccess: isProfileSuccess} = useProfile()
   const isLocal = isLocalhost(window.location.hostname)
   const isAuthor = React.useMemo(() => {
@@ -43,65 +44,68 @@ export function InteractionPanelObject(props) {
     queryCache.refetchQueries(['Document', updatedDraft])
   }
 
-  if (status === 'success') {
-    const {title, blockRefList, version} = data.document
-
-    const doc = toSlateTree({
-      blockRefList,
-      blocksMap: data.blocksMap,
-      isRoot: true,
-    })
-
+  if (isLoading) {
     return (
-      <div className="border border-muted rounded-lg m-4 break-words whitespace-pre-wrap relative bg-background">
-        <div className="p-4">
-          <div className="flex justify-between items-center text-muted-hover">
-            <p className="text-muted-hover font-extrabold text-xs uppercase">
-              Document
-            </p>
-            <div>
-              <button
-                onClick={() => setOpen(val => !val)}
-                className="rounded hover:bg-muted p-1 hover:text-body-muted transition duration-100"
-              >
-                {open ? (
-                  <Icons.ChevronUp size={16} color="currentColor" />
-                ) : (
-                  <Icons.ChevronDown size={16} color="currentColor" />
-                )}
-              </button>
-              <button
-                onClick={() =>
-                  dispatch({type: 'remove_object', payload: props.id})
-                }
-                className="rounded hover:bg-muted p-1 hover:text-body-muted transition duration-100"
-              >
-                <Icons.X size={16} color="currentColor" />
-              </button>
-            </div>
-          </div>
-          <h2 className="font-bold text-2xl mt-2">{title}</h2>
-          <AuthorLabel author={author} />
-        </div>
-        {open && (
-          <div className=" pb-2 border-t">
-            <ContentRenderer
-              isEditor={props.isEditor}
-              value={doc}
-              onTransclude={onTransclude}
-            />
-          </div>
-        )}
-        {!isLocal || (isProfileSuccess && isAuthor) ? (
-          <ObjectFooter version={version} />
-        ) : null}
+      <div className="p-4 border rounded m-4 break-words whitespace-pre-wrap">
+        <p>loading...</p>
       </div>
     )
   }
 
+  if (isError) {
+    return <ErrorMessage error={error} />
+  }
+
+  const {title, blockRefList} = data.document
+
+  const doc = toSlateTree({
+    blockRefList,
+    blocksMap: data.blocksMap,
+    isRoot: true,
+  })
+
   return (
-    <div className="p-4 border rounded m-4 break-words whitespace-pre-wrap">
-      <p>loading...</p>
+    <div className="border border-muted rounded-lg m-4 break-words whitespace-pre-wrap relative bg-white">
+      <div className="p-4">
+        <div className="flex justify-between items-center text-muted-hover">
+          <p className="text-muted-hover text-xs uppercase">Document</p>
+          <div>
+            <button
+              onClick={() => setOpen(val => !val)}
+              className="rounded hover:bg-background p-1 hover:text-body-muted transition duration-100"
+            >
+              {open ? (
+                <Icons.ChevronUp size={16} color="currentColor" />
+              ) : (
+                <Icons.ChevronDown size={16} color="currentColor" />
+              )}
+            </button>
+            <button
+              onClick={() =>
+                dispatch({type: 'remove_object', payload: props.id})
+              }
+              className="rounded hover:bg-background p-1 hover:text-body-muted transition duration-100"
+            >
+              <Icons.X size={16} color="currentColor" />
+            </button>
+          </div>
+        </div>
+        <h2 className="font-bold mt-2">{title}</h2>
+
+        <AuthorLabel author={author} className="text-sm" />
+      </div>
+      {open && (
+        <div className=" pb-2 border-t">
+          <ContentRenderer
+            isEditor={props.isEditor}
+            value={doc}
+            onTransclude={onTransclude}
+          />
+        </div>
+      )}
+      {isLocal || (isProfileSuccess && isAuthor) ? (
+        <ObjectFooter version={version} />
+      ) : null}
     </div>
   )
 }
@@ -144,7 +148,11 @@ function ContentRenderer({value, isEditor = false, onTransclude}) {
           </div>
         )
       case ELEMENT_PARAGRAPH:
-        return <p {...props}>{children}</p>
+        return (
+          <p {...props} style={{margin: 0}}>
+            {children}
+          </p>
+        )
       default:
         return children
     }
@@ -159,10 +167,7 @@ function ContentRenderer({value, isEditor = false, onTransclude}) {
   }, [])
 
   return (
-    <div
-      contentEditable={false}
-      className="mt-2 prose xs:prose-xl lg:prose-2xl 2xl:prose-3xl"
-    >
+    <div contentEditable={false} className="prose prose-lg">
       <SlateReactPresentation
         value={value}
         renderElement={renderElement}
@@ -174,7 +179,12 @@ function ContentRenderer({value, isEditor = false, onTransclude}) {
 
 function IPWrapper({attributes, children, element, isEditor, onTransclude}) {
   return (
-    <div className="flex items-start relative px-4 pt-4" {...attributes}>
+    <div
+      {...attributes}
+      className={`flex items-start relative px-4 pt-4 ${
+        !isEditor ? 'pl-0' : ''
+      }`}
+    >
       {isEditor && (
         <Tippy
           delay={400}
@@ -189,12 +199,14 @@ function IPWrapper({attributes, children, element, isEditor, onTransclude}) {
             </span>
           }
         >
-          <button
-            className={`text-xs text-body-muted p-1 rounded-sm hover:bg-muted transition duration-100 mt-3 mr-2`}
-            onClick={() => onTransclude(element)}
-          >
-            <Icons.CornerDownLeft size={12} color="currentColor" />
-          </button>
+          <p style={{margin: 0}}>
+            <button
+              className={`text-body-muted p-1 rounded-sm hover:bg-background transition duration-100 mr-2`}
+              onClick={() => onTransclude(element)}
+            >
+              <Icons.CornerDownLeft size={12} color="currentColor" />
+            </button>
+          </p>
         </Tippy>
       )}
       <div className={`${!isEditor ? 'pl-4' : ''} w-full`}>{children}</div>

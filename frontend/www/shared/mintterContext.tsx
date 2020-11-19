@@ -10,8 +10,13 @@ import {
   queryCache,
 } from 'react-query'
 import {Profile} from '@mintter/api/v2/mintter_pb'
-import {Document, PublishingState} from '@mintter/api/v2/documents_pb'
+import {
+  Document,
+  ListDocumentsResponse,
+  PublishingState,
+} from '@mintter/api/v2/documents_pb'
 import {useProfile} from './profileContext'
+import {isDocumentVisible} from 'react-query/types/core/utils'
 
 export interface SetDocumentRequest {
   document: {
@@ -129,6 +134,13 @@ export function useDocument(version: string, options = {}) {
   }
 
   const docQuery = useQuery(['Document', version], apiClient.getDocument, {
+    // initialData: () =>
+    // queryCache
+    //   .getQueryData<ListDocumentsResponse>('Documents')
+    //   ?.toObject()
+    //   ?.documentsList.find(doc => doc.version === version),
+
+    initialStale: true,
     refetchOnWindowFocus: false,
     ...options,
   })

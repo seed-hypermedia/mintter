@@ -6,7 +6,7 @@ import {
   GenSeedResponse,
   ListSuggestedProfilesResponse,
 } from '@mintter/api/v2/mintter_pb'
-import * as apiV2 from './mintterClient'
+import * as apiClient from './mintterClient'
 import {
   useQuery,
   useMutation,
@@ -27,7 +27,7 @@ interface ProfileContextValue {
 }
 
 export function useProfile(options = {}) {
-  const profileQuery = useQuery(['Profile'], apiV2.getProfile, options)
+  const profileQuery = useQuery(['Profile'], apiClient.getProfile, options)
 
   const data = useMemo(() => profileQuery.data?.toObject?.(), [
     profileQuery.data,
@@ -42,7 +42,7 @@ export function useProfile(options = {}) {
 export function useAuthor(accountId, options = {}) {
   const profileQuery = useQuery(
     accountId && ['Author', accountId],
-    apiV2.getProfile,
+    apiClient.getProfile,
     options,
   )
   const data = useMemo(() => profileQuery.data?.toObject?.(), [
@@ -63,21 +63,21 @@ export function ProfileProvider(props) {
     queryCache.refetchQueries('Profile')
   }
 
-  const genSeed = useCallback(() => apiV2.genSeed(), [])
+  const genSeed = useCallback(() => apiClient.genSeed(), [])
 
-  const [createProfile] = useMutation(apiV2.createProfile, {
+  const [createProfile] = useMutation(apiClient.createProfile, {
     onSuccess: refetchProfile,
   })
 
   const [setProfile] = useMutation(
-    async formData => apiV2.setProfile(formData),
+    async formData => apiClient.setProfile(formData),
     {
       onSuccess: refetchProfile,
     },
   )
 
   function getProfileAddrs() {
-    return useQuery(['ProfileAddrs'], apiV2.getProfileAddrs, {
+    return useQuery(['ProfileAddrs'], apiClient.getProfileAddrs, {
       refetchInterval: 5000,
     })
   }
@@ -95,9 +95,13 @@ export function ProfileProvider(props) {
 }
 
 export function useProfileAddrs() {
-  const profileAddrsQuery = useQuery(['ProfileAddrs'], apiV2.getProfileAddrs, {
-    refetchInterval: 5000,
-  })
+  const profileAddrsQuery = useQuery(
+    ['ProfileAddrs'],
+    apiClient.getProfileAddrs,
+    {
+      refetchInterval: 5000,
+    },
+  )
 
   const data = useMemo(() => profileAddrsQuery.data?.toObject().addrsList, [
     profileAddrsQuery.data,
@@ -112,7 +116,7 @@ export function useProfileAddrs() {
 export function useConnectionList({page} = {page: 0}, options = {}) {
   const connectionsQuery = usePaginatedQuery(
     ['ListConnections', page],
-    apiV2.listConnections,
+    apiClient.listConnections,
     {
       refetchOnWindowFocus: true,
       refetchInterval: 5000,
@@ -133,7 +137,7 @@ export function useConnectionList({page} = {page: 0}, options = {}) {
 export function useSuggestedConnections({page} = {page: 0}, options = {}) {
   const suggestionsQuery = usePaginatedQuery(
     ['ListSuggestedConnections', page],
-    apiV2.listSuggestedConnections,
+    apiClient.listSuggestedConnections,
     {
       refetchOnWindowFocus: true,
       refetchInterval: 5000,
@@ -141,20 +145,19 @@ export function useSuggestedConnections({page} = {page: 0}, options = {}) {
     },
   )
 
-  const resolvedData = useMemo(
-    () => suggestionsQuery.resolvedData?.toObject().profilesList,
-    [suggestionsQuery.data],
-  )
+  const data = useMemo(() => suggestionsQuery.data?.toObject().profilesList, [
+    suggestionsQuery.data,
+  ])
 
   return {
     ...suggestionsQuery,
-    resolvedData,
+    data,
   }
 }
 
 export function useConnectionCreate() {
   const [connectToPeer, mutationOptions] = useMutation(
-    peerIds => apiV2.connectToPeerById(peerIds),
+    (peerIds?: string[]) => apiClient.connectToPeerById(peerIds),
     {
       onSuccess: () => {
         queryCache.refetchQueries('ListConnections')

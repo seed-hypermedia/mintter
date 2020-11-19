@@ -26,8 +26,8 @@ import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 import SplitPane from 'react-split-pane'
 import ResizerStyle from 'components/resizer-style'
-import {InteractionPanelObject} from 'components/interactionPanelObject'
-import {useInteractionPanel} from 'components/interactionPanel'
+import {SidePanelObject} from 'components/sidePanelObject'
+import {useSidePanel} from 'components/sidePanel'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 import {Document} from '@mintter/api/v2/documents_pb'
 import Modal from 'react-modal'
@@ -47,12 +47,7 @@ export default function Publication(): JSX.Element {
 
   const {push, replace} = useHistory()
   const {slug} = useParams()
-  const {
-    state: interactionPanel,
-    dispatch: interactionPanelDispatch,
-  } = useInteractionPanel()
-
-  const [showReactions, toggleReactions] = React.useState(true)
+  const {state: sidePanel, dispatch: sidePanelDispatch} = useSidePanel()
 
   const version = React.useMemo(() => slug.split('-').slice(-1)[0], [slug])
 
@@ -74,74 +69,50 @@ export default function Publication(): JSX.Element {
     }
   }
 
+  function handleMainPanel(mentionId: string) {
+    push(`/p/${mentionId}`)
+  }
+
+  function handlesidePanel(blockId: string) {
+    sidePanelDispatch({
+      type: 'add_object',
+      payload: blockId,
+    })
+  }
+
+  const onQuote = React.useCallback(handleQuotation, [])
+  const onSidePanel = React.useCallback(handlesidePanel, [])
+  const onMainPanel = React.useCallback(handleMainPanel, [])
+
   const editorOptions = {
     ...options,
     transclusion: {
       ...options.transclusion,
       customProps: {
-        dispatch: interactionPanelDispatch,
+        dispatch: sidePanelDispatch,
         getData: getQuotationData,
       },
     },
     block: {
       ...options.block,
       customProps: {
-        dispatch: interactionPanelDispatch,
+        dispatch: sidePanelDispatch,
+        getData: getQuotationData,
+        onMainPanel,
+        onSidePanel,
       },
     },
   }
   const plugins = createPlugins(editorOptions)
   const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
-  const {status, error, data} = useDocument(version)
+  const {error, data, isLoading, isError} = useDocument(version)
   const {state} = useEditorValue({
     document: data,
   })
-  const {title, blocks, subtitle, author: pubAuthor, mentions} = state
+  const {title, blocks, subtitle, author: pubAuthor} = state
   const {data: author} = useAuthor(pubAuthor)
   const {createTransclusion} = useTransclusion()
   const {data: drafts = []} = useDrafts()
-
-  React.useEffect(() => {
-    if (!slug.includes('-') && title) {
-      const titleSlug = slugify(title, {lower: true, remove: /[*+~.()'"!:@]/g})
-      replace(`${titleSlug}-${version}`)
-    }
-  }, [title])
-
-  React.useEffect(() => {
-    if (mentions.length) {
-      interactionPanelDispatch({
-        type: 'add_mentions',
-        payload: {objects: mentions},
-      })
-    }
-  }, [mentions])
-
-  React.useEffect(() => {
-    dispatch({
-      type: 'set_actions',
-      payload: {
-        onQuote: handleQuotation,
-        onInteractionPanel: handleInteractionPanel,
-        drafts,
-      },
-    })
-  }, [drafts])
-
-  async function getQuotationData(quoteId) {
-    const version = quoteId.split('/')[0]
-    const res = await getDocument('', version)
-    const data = res.toObject()
-    const {document} = data
-    const authorId = data.document.author
-    const authorData = await getProfile('', authorId)
-    const author: Profile.AsObject = authorData.toObject()
-
-    return {
-      document,
-      author,
-    }
-  }
 
   async function handleQuotation({
     block,
@@ -159,18 +130,45 @@ export default function Publication(): JSX.Element {
     push(`/private/editor/${draftUrl}`)
   }
 
-  function handleInteractionPanel(block: SlateBlock) {
-    interactionPanelDispatch({
-      type: 'add_object',
-      payload: block.id,
-    })
+  React.useEffect(() => {
+    if (!slug.includes('-') && title) {
+      const titleSlug = slugify(title, {lower: true, remove: /[*+~.()'"!:@]/g})
+      replace(`${titleSlug}-${version}`)
+    }
+  }, [title])
+
+  async function getQuotationData(quoteId) {
+    const version = quoteId.split('/')[0]
+    const res = await getDocument('', version)
+    const data = res.toObject()
+    const {document} = data
+    const authorId = data.document.author
+    const authorData = await getProfile('', authorId)
+    const author: Profile.AsObject = authorData.toObject()
+
+    return {
+      document,
+      author,
+    }
   }
+
+  React.useEffect(() => {
+    dispatch({
+      type: 'set_actions',
+      payload: {
+        onQuote,
+        onSidePanel,
+        useDocument,
+        drafts,
+      },
+    })
+  }, [drafts])
 
   let content
 
-  if (status === 'loading') {
+  if (isLoading) {
     content = <p>Loading...</p>
-  } else if (status === 'error') {
+  } else if (isError) {
     content = (
       <div className="mx-8">
         <ErrorMessage error={error} />
@@ -214,13 +212,13 @@ export default function Publication(): JSX.Element {
               {subtitle}
             </p>
           )}
-          <p className=" text-sm mt-4 text-heading">
+          <p className="text-sm mt-4 text-heading">
             <span>by </span>
 
             <AuthorLabel author={author} />
           </p>
         </div>
-        <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-3xl pt-4">
+        <div className="prose prose-xl pt-4">
           <EditorComponent
             readOnly
             editor={editor}
@@ -252,7 +250,7 @@ export default function Publication(): JSX.Element {
             <MintterIcon size="1.5em" />
             <button
               onClick={() => push(location.pathname)}
-              className="text-gray-500 outline-none focus:shadow-outline p-1 w-6 h-6 rounded-full hover:bg-muted transition duration-150 flex items-center justify-center"
+              className="text-gray-500 outline-none focus:shadow-outline p-1 w-6 h-6 rounded-full hover:bg-background transition duration-150 flex items-center justify-center"
             >
               <Icons.X size={15} />
             </button>
@@ -323,7 +321,7 @@ export default function Publication(): JSX.Element {
         defaultSize="66%"
         minSize={300}
         pane1Style={
-          interactionPanel.visible
+          sidePanel.visible
             ? {
                 minWidth: 600,
                 overflow: 'auto',
@@ -342,19 +340,19 @@ export default function Publication(): JSX.Element {
       >
         <div className="overflow-auto">
           <PublicationCTA
-            visible={interactionPanel.visible}
+            visible={sidePanel.visible}
             handleInteract={() => {
-              interactionPanelDispatch({type: 'toggle_panel'})
+              sidePanelDispatch({type: 'toggle_panel'})
             }}
           />
           <MainColumn>{content}</MainColumn>
         </div>
-        {interactionPanel.visible ? (
+        {sidePanel.visible ? (
           <div
             style={{
-              visibility: interactionPanel.visible ? 'visible' : 'hidden',
-              maxWidth: interactionPanel.visible ? '100%' : 0,
-              width: interactionPanel.visible ? '100%' : 0,
+              visibility: sidePanel.visible ? 'visible' : 'hidden',
+              maxWidth: sidePanel.visible ? '100%' : 0,
+              width: sidePanel.visible ? '100%' : 0,
               height: '100%',
               minHeight: '100%',
               overflow: 'auto',
@@ -365,38 +363,21 @@ export default function Publication(): JSX.Element {
               <MintterIcon size="1.5em" />
               <button
                 className="text-primary text-base flex items-center w-full justify-end group"
-                onClick={() => interactionPanelDispatch({type: 'close_panel'})}
+                onClick={() => sidePanelDispatch({type: 'close_panel'})}
               >
-                <span className="text-sm mx-2">Close Interaction Panel</span>
-                <span className="w-4 h-4 rounded-full bg-background-muted text-primary flex items-center justify-center group-hover:bg-muted transform duration-200">
+                <span className="text-sm mx-2">Close Sidepanel</span>
+                <span className="w-4 h-4 rounded-full bg-background-muted text-primary flex items-center justify-center group-hover:bg-background transform duration-200">
                   <Icons.ChevronRight size={14} color="currentColor" />
                 </span>
               </button>
             </div>
-            <div className="py-6 border-t border-muted mx-4 mt-2">
-              <p className="text-muted-hover font-bold text-xs">Reactions</p>
-              <div className="flex items-center mt-4">
-                <p className="text-sm">
-                  {interactionPanel.objects.length === 0
-                    ? 'No Reactions'
-                    : interactionPanel.objects.length === 1
-                    ? '1 Reaction'
-                    : `${interactionPanel.objects.length} Reactions`}{' '}
-                </p>
-                <button
-                  className="font-bold text-primary mx-2 text-sm"
-                  onClick={() => toggleReactions(val => !val)}
-                >
-                  {showReactions ? 'Hide ' : 'Show '}Reactions
-                </button>
-              </div>
-            </div>
 
-            {showReactions &&
-              interactionPanel.objects.map(object => (
-                <InteractionPanelObject key={object} id={object} />
-              ))}
-            <InteractionPanelCTA handleInteract={handleInteract} />
+            {sidePanel.objects.map(object => (
+              <SidePanelObject key={object} id={object} />
+            ))}
+            {sidePanel.objects.length === 0 && (
+              <SidePanelCTA handleInteract={handleInteract} />
+            )}
           </div>
         ) : (
           <div />
@@ -439,7 +420,7 @@ function PublicationCTA({handleInteract, visible}) {
         className="mt-4 text-primary text-base font-bold flex items-center w-full justify-end group"
         onClick={handleInteract}
       >
-        <span className="w-6 h-6 rounded-full bg-background-muted mr-2 text-primary flex items-center justify-center group-hover:bg-muted transform duration-200 ">
+        <span className="w-6 h-6 rounded-full bg-background-muted mr-2 text-primary flex items-center justify-center group-hover:bg-background transform duration-200 ">
           <Icons.ChevronLeft size={16} color="currentColor" />
         </span>
         <span className="font-bold">Interact with this document</span>
@@ -448,7 +429,7 @@ function PublicationCTA({handleInteract, visible}) {
   )
 }
 
-function InteractionPanelCTA({handleInteract}) {
+function SidePanelCTA({handleInteract}) {
   return (
     <div className="border-t border-muted mt-4 py-8 px-4 mb-20">
       <h3 className="font-bold text-2xl">

@@ -10,15 +10,19 @@ import {
 import {useBlockMenu} from '../BlockPlugin/components/blockMenuContext'
 import {Icons} from './icons'
 import {isTransclusion} from '../TransclusionPlugin/utils/isTransclusion'
-// import {Document} from '@mintter/api/v2/documents_pb'
 
-export const BlockControls = ({disclosure, element, ...props}: any) => {
+const BlockControlsComp = ({
+  disclosure,
+  element,
+  index,
+  highlightedIndex,
+}: any) => {
   const menu = useMenuState({loop: true})
   const {
-    state: {onInteractionPanel, onQuote},
+    state: {onSidePanel, onQuote},
   } = useBlockMenu()
   const isQuote = React.useMemo(() => isTransclusion(element), [element])
-  return (
+  return index === highlightedIndex ? (
     <>
       <MenuButton
         {...menu}
@@ -33,15 +37,14 @@ export const BlockControls = ({disclosure, element, ...props}: any) => {
         aria-label="Block Menu"
         style={{width: 320, zIndex: 100, backgroundColor: 'white'}}
         hideOnClickOutside
-        {...props}
       >
         <MenuItem
           {...menu}
-          onClick={() => onInteractionPanel?.(element)}
+          onClick={() => onSidePanel?.(element.id)}
           disabled={!isQuote}
         >
           <Icons.ArrowUpRight size={16} color="currentColor" />
-          <span className="flex-1 mx-2">Open in Interaction Panel</span>
+          <span className="flex-1 mx-2">Open in Sidepanel</span>
         </MenuItem>
         <MenuItem
           {...menu}
@@ -63,19 +66,36 @@ export const BlockControls = ({disclosure, element, ...props}: any) => {
         </MenuItem>
       </Menu>
     </>
-  )
+  ) : null
 }
 
-const MenuItem = ({className = '', ...props}: any) => {
+export const BlockControls = React.memo<any>(
+  BlockControlsComp,
+  (prevProps, nextProps) => {
+    if (prevProps.disclosure !== nextProps.disclosure) return false
+    if (prevProps.element !== nextProps.element) return false
+    if (prevProps.index !== nextProps.index) return false
+
+    if (prevProps.highlightedIndex !== nextProps.highlightedIndex) {
+      const wasPrevHighlighted = prevProps.highlightedIndex === prevProps.index
+      const isNowHighlighted = nextProps.highlightedIndex === nextProps.index
+      return wasPrevHighlighted === isNowHighlighted
+    }
+
+    return true
+  },
+)
+
+const MenuItem = React.memo(({className = '', ...props}: any) => {
   return (
     <ReakitMenuItem
       {...props}
       className={`w-full px-2 py-2 focus:bg-info text-sm text-left disabled:opacity-50 flex items-center ${className}`}
     />
   )
-}
+})
 
-const DraftsMenu = React.forwardRef<
+const DraftsMenuComp = React.forwardRef<
   HTMLDivElement,
   {
     element: SlateBlock
@@ -93,7 +113,7 @@ const DraftsMenu = React.forwardRef<
       <MenuButton
         {...menu}
         {...props}
-        className="w-full px-2 py-2 focus:bg-teal-200 text-sm text-left disabled:opacity-50 flex items-center"
+        className="w-full px-2 py-2 focus:bg-muted text-sm text-left disabled:opacity-50 flex items-center"
         as="div"
         ref={ref}
       >
@@ -141,3 +161,5 @@ const DraftsMenu = React.forwardRef<
     </>
   )
 })
+
+export const DraftsMenu = React.memo(DraftsMenuComp)
