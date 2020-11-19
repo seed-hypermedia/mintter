@@ -4,6 +4,7 @@ module.exports = {
       default: {
         css: {
           fontSize: '1.125rem',
+          lineHeight: 1.6,
           color: theme('colors.gray.900'),
           marginTop: 0,
           marginBottom: 0,
@@ -21,6 +22,7 @@ module.exports = {
       },
       xl: {
         css: {
+          lineHeight: 1.6,
           p: {
             marginTop: 0,
             marginBottom: 0,
@@ -28,6 +30,7 @@ module.exports = {
         },
       },
       '2xl': {
+        lineHeight: 1.6,
         css: {
           p: {
             marginTop: 0,
@@ -36,6 +39,7 @@ module.exports = {
         },
       },
       '3xl': {
+        lineHeight: 1.6,
         css: {
           p: {
             marginTop: 0,

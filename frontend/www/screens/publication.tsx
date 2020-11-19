@@ -176,57 +176,14 @@ export default function Publication(): JSX.Element {
     )
   } else {
     content = (
-      <>
-        <div
-          className={`pb-2 relative ${css`
-            &:after {
-              content: '';
-              position: absolute;
-              bottom: 1px;
-              left: 0;
-              width: 50%;
-              max-width: 360px;
-              height: 1px;
-              z-index: 20;
-              background-color: var(--color-muted-hover);
-            }
-          `}`}
-        >
-          <h1
-            className={`text-2xl md:text-4xl text-heading font-bold italic ${css`
-              word-wrap: break-word;
-              white-space: pre-wrap;
-              min-height: 56px;
-            `}`}
-          >
-            {title}
-          </h1>
-          {subtitle && (
-            <p
-              className={`leading-relaxed text-md md:text-lg font-light text-heading-muted italic mt-4 ${css`
-                word-wrap: break-word;
-                white-space: pre-wrap;
-                min-height: 28px;
-              `}`}
-            >
-              {subtitle}
-            </p>
-          )}
-          <p className="text-sm mt-4 text-heading">
-            <span>by </span>
-
-            <AuthorLabel author={author} />
-          </p>
-        </div>
-        <div className="prose prose-xl pt-4">
-          <EditorComponent
-            readOnly
-            editor={editor}
-            plugins={plugins}
-            value={blocks}
-          />
-        </div>
-      </>
+      <div className="prose prose-xl pt-4">
+        <EditorComponent
+          readOnly
+          editor={editor}
+          plugins={plugins}
+          value={blocks}
+        />
+      </div>
     )
   }
 
@@ -259,9 +216,6 @@ export default function Publication(): JSX.Element {
             <h1 className="font-bold text-2xl">
               Mintter App download should launch automatically
             </h1>
-            {/* <p className="text-sm font-light">
-              If it doesn't, <a className="underline">click here</a>
-            </p> */}
           </div>
           <div className="mt-8 border-t pt-8">
             <h2 className="text-2xl font-light">
@@ -345,7 +299,50 @@ export default function Publication(): JSX.Element {
               sidePanelDispatch({type: 'toggle_panel'})
             }}
           />
-          <MainColumn>{content}</MainColumn>
+          <MainColumn>
+            <div
+              className={`pb-2 relative mt-6 ${css`
+                &:after {
+                  content: '';
+                  position: absolute;
+                  bottom: 1px;
+                  left: 0;
+                  width: 50%;
+                  max-width: 360px;
+                  height: 1px;
+                  z-index: 20;
+                  background-color: var(--color-muted-hover);
+                }
+              `}`}
+            >
+              <h1
+                className={`text-2xl md:text-4xl text-heading font-bold italic leading-tight ${css`
+                  word-wrap: break-word;
+                  white-space: pre-wrap;
+                  min-height: 56px;
+                `}`}
+              >
+                {title}
+              </h1>
+              {subtitle && (
+                <p
+                  className={`text-md md:text-lg font-light text-heading-muted italic mt-4 leading-tight ${css`
+                    word-wrap: break-word;
+                    white-space: pre-wrap;
+                    min-height: 28px;
+                  `}`}
+                >
+                  {subtitle}
+                </p>
+              )}
+              <p className="text-sm mt-4 text-heading">
+                <span>by </span>
+
+                <AuthorLabel author={author} />
+              </p>
+            </div>
+            {content}
+          </MainColumn>
         </div>
         {sidePanel.visible ? (
           <div
