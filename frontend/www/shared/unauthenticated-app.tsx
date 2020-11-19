@@ -14,7 +14,7 @@ const Complete = React.lazy(() => import('screens/welcome/complete'))
 export default function Welcome({className = '', ...props}: LayoutProps) {
   const match = useRouteMatch('/private/welcome')
   return (
-    <Layout {...props} className={`bg-red-300 flex flex-col py-8 ${className}`}>
+    <Layout {...props} className={`flex flex-col py-8 ${className}`}>
       <div className="absolute right-0 top-0 p-4">
         <ThemeToggle />
       </div>

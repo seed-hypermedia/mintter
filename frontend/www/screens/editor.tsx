@@ -26,9 +26,9 @@ import {FullPageErrorMessage} from 'components/errorMessage'
 import {useTheme} from 'shared/themeContext'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
-import {InteractionPanelObject} from 'components/interactionPanelObject'
+import {SidePanelObject} from 'components/sidePanelObject'
 import {useTransclusion} from 'shared/useTransclusion'
-import {useInteractionPanel} from 'components/interactionPanel'
+import {useSidePanel} from 'components/sidePanel'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 
 function useQuery() {
@@ -40,24 +40,21 @@ export default function Editor(): JSX.Element {
   const {version} = useParams()
   const {theme} = useTheme()
   const query = useQuery()
-  const {
-    state: interactionPanel,
-    dispatch: interactionPanelDispatch,
-  } = useInteractionPanel()
+  const {state: sidePanel, dispatch: sidePanelDispatch} = useSidePanel()
 
   const editorOptions = {
     ...options,
     transclusion: {
       ...options.transclusion,
       customProps: {
-        dispatch: interactionPanelDispatch,
+        dispatch: sidePanelDispatch,
         getData: getTransclusionData,
       },
     },
     block: {
       ...options.block,
       customProps: {
-        dispatch: interactionPanelDispatch,
+        dispatch: sidePanelDispatch,
       },
     },
   }
@@ -94,12 +91,12 @@ export default function Editor(): JSX.Element {
 
   React.useEffect(() => {
     if (mentions.length) {
-      interactionPanelDispatch({type: 'add_object', payload: mentions})
+      sidePanelDispatch({type: 'add_object', payload: mentions})
     }
 
     const object = query.get('object')
     if (object) {
-      interactionPanelDispatch({type: 'add_object', payload: object})
+      sidePanelDispatch({type: 'add_object', payload: object})
     }
   }, [])
 
@@ -167,7 +164,7 @@ export default function Editor(): JSX.Element {
         defaultSize="66%"
         minSize={300}
         pane1Style={
-          interactionPanel.visible
+          sidePanel.visible
             ? {
                 minWidth: 600,
                 overflow: 'auto',
@@ -205,7 +202,7 @@ export default function Editor(): JSX.Element {
               }
             >
               <button
-                onClick={() => interactionPanelDispatch({type: 'toggle_panel'})}
+                onClick={() => sidePanelDispatch({type: 'toggle_panel'})}
                 className="ml-4 text-sm text-muted-hover hover:text-toolbar transform -rotate-180 transition duration-200 outline-none"
               >
                 <Icons.Sidebar color="currentColor" />
@@ -257,7 +254,7 @@ export default function Editor(): JSX.Element {
                 }}
               />
             </div>
-            <div className="prose xs:prose-xl md:prose-xl lg:prose-2xl 2xl:prose-3xl">
+            <div className="prose prose-xl">
               <EditorComponent
                 editor={editor}
                 plugins={plugins}
@@ -270,21 +267,21 @@ export default function Editor(): JSX.Element {
             </div>
           </MainColumn>
         </div>
-        {interactionPanel.visible ? (
+        {sidePanel.visible ? (
           <div
             className="bg-background-muted"
             style={{
-              visibility: interactionPanel.visible ? 'visible' : 'hidden',
-              maxWidth: interactionPanel.visible ? '100%' : 0,
-              width: interactionPanel.visible ? '100%' : 0,
+              visibility: sidePanel.visible ? 'visible' : 'hidden',
+              maxWidth: sidePanel.visible ? '100%' : 0,
+              width: sidePanel.visible ? '100%' : 0,
               height: '100%',
               minHeight: '100%',
               overflow: 'auto',
               zIndex: 0,
             }}
           >
-            {interactionPanel.objects.map(object => (
-              <InteractionPanelObject
+            {sidePanel.objects.map(object => (
+              <SidePanelObject
                 key={object}
                 isEditor
                 id={object}

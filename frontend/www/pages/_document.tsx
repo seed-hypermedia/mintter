@@ -8,9 +8,9 @@ class MyDocument extends Document {
 
   render() {
     return (
-      <Html className="bg-background">
+      <Html>
         <Head />
-        <body className="bg-background">
+        <body>
           <Main />
           <NextScript />
         </body>

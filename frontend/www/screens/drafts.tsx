@@ -7,7 +7,7 @@ import {Icons} from '@mintter/editor'
 export default function Drafts() {
   const router = useHistory()
   const {createDraft, deleteDocument} = useMintter()
-  const {status, error, data} = useDrafts()
+  const {isLoading, isError, isSuccess, error, data} = useDrafts()
 
   async function handleCreateDraft() {
     const p = await createDraft()
@@ -24,7 +24,7 @@ export default function Drafts() {
   return (
     <>
       <Seo title="Drafts" />
-      {status === 'success' && data.length === 0 && (
+      {isSuccess && data.length === 0 && (
         <>
           <hr className="border-t-2 border-muted border-solid my-8" />
           <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
@@ -47,7 +47,8 @@ export default function Drafts() {
       )}
 
       <DocumentList
-        status={status}
+        isLoading={isLoading}
+        isError={isError}
         error={error}
         data={data}
         onDeleteDocument={handleDeleteDocument}

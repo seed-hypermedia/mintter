@@ -4,6 +4,8 @@ import {
   ParagraphPluginOptionsValues,
 } from '@udecode/slate-plugins'
 import {ELEMENT_PARAGRAPH} from './defaults'
+// import {Editor} from 'slate'
+// import {ReactEditor, useEditor} from 'slate-react'
 
 export const paragraphOption = {}
 
@@ -27,11 +29,14 @@ export function Paragraph({
   attributes,
   ...rest
 }) {
-  return element.type === ELEMENT_PARAGRAPH ? (
+  // const editor = useEditor()
+  // const path = ReactEditor.findPath(editor, element)
+  // console.log(Editor.parent(editor, path))
+  return (
     <Component
-      className={`hover:bg-muted pt-6 px-2 md:px-3 mx-0 md:-mx-3 rounded ${className}`}
+      className={`hover:bg-background pt-2 px-2 md:px-3 mx-0 md:-mx-3 rounded ${className}`}
       {...attributes}
       {...rest}
     />
-  ) : null
+  )
 }
