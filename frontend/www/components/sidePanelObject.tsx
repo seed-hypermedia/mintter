@@ -46,48 +46,8 @@ export function SidePanelObject(props) {
 
   if (isLoading) {
     return (
-      <div className="border border-muted rounded-lg m-4 break-words whitespace-pre-wrap relative bg-background">
-        <div className="p-4">
-          <div className="flex justify-between items-center text-muted-hover">
-            <p className="text-muted-hover font-extrabold text-xs uppercase">
-              Document
-            </p>
-            <div>
-              <button
-                onClick={() => setOpen(val => !val)}
-                className="rounded hover:bg-muted p-1 hover:text-body-muted transition duration-100"
-              >
-                {open ? (
-                  <Icons.ChevronUp size={16} color="currentColor" />
-                ) : (
-                  <Icons.ChevronDown size={16} color="currentColor" />
-                )}
-              </button>
-              <button
-                onClick={() =>
-                  dispatch({type: 'remove_object', payload: props.id})
-                }
-                className="rounded hover:bg-muted p-1 hover:text-body-muted transition duration-100"
-              >
-                <Icons.X size={16} color="currentColor" />
-              </button>
-            </div>
-          </div>
-          <h2 className="font-bold text-2xl mt-2">{title}</h2>
-          <AuthorLabel author={author} />
-        </div>
-        {open && (
-          <div className=" pb-2 border-t">
-            <ContentRenderer
-              isEditor={props.isEditor}
-              value={doc}
-              onTransclude={onTransclude}
-            />
-          </div>
-        )}
-        {isLocal || (isProfileSuccess && isAuthor) ? (
-          <ObjectFooter version={version} />
-        ) : null}
+      <div className="p-4 border rounded m-4 break-words whitespace-pre-wrap">
+        <p>loading...</p>
       </div>
     )
   }
