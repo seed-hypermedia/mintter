@@ -235,7 +235,11 @@ export default function Editor(): JSX.Element {
                 onChange={setTitle}
                 name="title"
                 placeholder="Document title"
-                className={`text-4xl text-heading font-bold italic`}
+                className={`text-2xl md:text-4xl text-heading font-bold italic leading-tight ${css`
+                  word-wrap: break-word;
+                  white-space: pre-wrap;
+                  min-height: 56px;
+                `}`}
                 onEnterPress={() => {
                   subtitleRef.current.focus()
                 }}
@@ -248,7 +252,11 @@ export default function Editor(): JSX.Element {
                 onChange={setSubtitle}
                 name="subtitle"
                 placeholder="Subtitle"
-                className={`leading-relaxed text-lg font-light text-heading-muted italic`}
+                className={`text-md md:text-lg font-light text-heading-muted italic mt-4 leading-tight ${css`
+                  word-wrap: break-word;
+                  white-space: pre-wrap;
+                  min-height: 28px;
+                `}`}
                 onEnterPress={() => {
                   ReactEditor.focus(editor)
                 }}

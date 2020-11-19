@@ -113,11 +113,12 @@ export function SidePanelObject(props) {
 function ObjectFooter({version}) {
   return (
     <div className="border-t">
-      <Link to={`/p/${version}`}>
-        <a className="flex items-center p-4 text-primary text-sm font-bold hover:bg-background-muted">
-          <Icons.CornerDownLeft size={16} color="currentColor" />
-          <span className="mx-2">Open in main panel</span>
-        </a>
+      <Link
+        to={`/p/${version}`}
+        className="flex items-center p-4 text-primary text-sm font-bold hover:bg-background-muted"
+      >
+        <Icons.CornerDownLeft size={16} color="currentColor" />
+        <span className="mx-2">Open in main panel</span>
       </Link>
     </div>
   )
@@ -140,10 +141,7 @@ function ContentRenderer({value, isEditor = false, onTransclude}) {
         )
       case ELEMENT_READ_ONLY:
         return (
-          <div
-            className="bg-background-muted -mx-2 px-2 rounded mt-1"
-            {...props}
-          >
+          <div className="bg-background -mx-2 px-2 rounded mt-1" {...props}>
             {children}
           </div>
         )
