@@ -10,7 +10,7 @@ export interface sidePanelState {
   objects: string[]
 }
 
-export interface sidePanelContextValue {
+export interface SidePanelContextValue {
   state: sidePanelState
   dispatch?: any
 }
@@ -20,7 +20,7 @@ const sidePanelInitialState: sidePanelState = {
   objects: [],
 }
 
-export const sidePanelContext = React.createContext<sidePanelContextValue>({
+export const SidePanelContext = React.createContext<SidePanelContextValue>({
   state: sidePanelInitialState,
 })
 
@@ -39,18 +39,6 @@ function objectsReducer(
     return {
       visible: true,
       objects: [payload, ...state.objects],
-    }
-  }
-
-  if (type === 'add_mentions') {
-    const newObjects = payload.objects
-      .filter(str => str.split('/')[0])
-      .filter(version => !state.objects.includes(version))
-
-    return {
-      ...state,
-      ...payload,
-      objects: [...newObjects, ...state.objects],
     }
   }
 
@@ -93,14 +81,14 @@ export function SidePanelProvider({children}) {
     sidePanelInitialState,
   )
   return (
-    <sidePanelContext.Provider value={{state, dispatch}}>
+    <SidePanelContext.Provider value={{state, dispatch}}>
       {children}
-    </sidePanelContext.Provider>
+    </SidePanelContext.Provider>
   )
 }
 
 export function useSidePanel() {
-  const context = React.useContext(sidePanelContext)
+  const context = React.useContext(SidePanelContext)
 
   if (!context) {
     throw new Error(

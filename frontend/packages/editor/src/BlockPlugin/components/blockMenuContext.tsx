@@ -22,7 +22,7 @@ export interface OnQuoteOptions {
 export interface BlockMenuContextState {
   blockId: string | null
   onQuote?: (data: OnQuoteOptions) => void
-  onsidePanel?: (block: SlateBlock) => void
+  onSidePanel?: (blockId: string) => void
   useDocument?: any
   drafts?: Document.AsObject[]
 }
@@ -36,7 +36,7 @@ export interface BlockMenuProviderProps {
 
 const defaultState: BlockMenuContextState = {
   blockId: null,
-  onsidePanel: () => console.log('Implement me!'),
+  onSidePanel: () => console.log('Implement me!'),
   onQuote: () => console.log('Implement me!'),
   useDocument: () => console.log('Implement me!'),
   drafts: [],

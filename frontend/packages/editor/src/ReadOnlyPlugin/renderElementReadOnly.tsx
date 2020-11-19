@@ -23,7 +23,7 @@ function RenderElement(props) {
         return <p {...attributes}>{children}</p>
       default:
         return (
-          <p {...attributes} className="bg-teal-300 relative">
+          <p {...attributes} className="bg-muted relative">
             <span
               contentEditable={false}
               className="absolute top-0 left-0 text-xs text-info uppercase"

@@ -10,39 +10,42 @@ import {QueryStatus} from 'react-query'
 
 interface Props {
   data: Document.AsObject[]
-  status: QueryStatus
+  isLoading: boolean
+  isError: boolean
   error: any
   onDeleteDocument?: (id: string) => Promise<void>
 }
 
 export default function DocumentList({
   data,
-  status,
+  isLoading,
+  isError,
   error,
   onDeleteDocument,
 }: Props) {
-  let content
-
-  if (status === 'loading') {
-    content = (
+  if (isLoading) {
+    return (
       <div className="flex items-center -mx-4 p-12 bg-background-muted rounded">
         <p>Loading...</p>
       </div>
     )
-  } else if (status === 'error') {
-    content = <ErrorMessage error={error} />
-  } else {
-    content = data.map((item, index) => (
-      <ListItem
-        key={item.version}
-        item={item}
-        index={index}
-        onDeleteDocument={onDeleteDocument}
-      />
-    ))
+  }
+  if (isError) {
+    return <ErrorMessage error={error} />
   }
 
-  return <div>{content}</div>
+  return (
+    <div>
+      {data.map((item, index) => (
+        <ListItem
+          key={item.version}
+          item={item}
+          index={index}
+          onDeleteDocument={onDeleteDocument}
+        />
+      ))}
+    </div>
+  )
 }
 
 interface ItemProps {

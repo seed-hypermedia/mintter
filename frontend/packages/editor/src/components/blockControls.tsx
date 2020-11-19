@@ -19,7 +19,7 @@ const BlockControlsComp = ({
 }: any) => {
   const menu = useMenuState({loop: true})
   const {
-    state: {onsidePanel, onQuote},
+    state: {onSidePanel, onQuote},
   } = useBlockMenu()
   const isQuote = React.useMemo(() => isTransclusion(element), [element])
   return index === highlightedIndex ? (
@@ -40,7 +40,7 @@ const BlockControlsComp = ({
       >
         <MenuItem
           {...menu}
-          onClick={() => onsidePanel?.(element)}
+          onClick={() => onSidePanel?.(element.id)}
           disabled={!isQuote}
         >
           <Icons.ArrowUpRight size={16} color="currentColor" />

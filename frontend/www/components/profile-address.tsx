@@ -9,16 +9,16 @@ import {useToasts} from 'react-toast-notifications'
 export function ProfileAddress(props) {
   const {getProfileAddrs} = useProfileContext()
 
-  const {status, error, data} = getProfileAddrs()
+  const {isLoading, isError, error, data} = getProfileAddrs()
   const {addToast} = useToasts()
 
   const address = useMemo(() => data?.toObject().addrsList, [data])
 
-  if (status === 'loading') {
+  if (isLoading) {
     return <p>Loading...</p>
   }
 
-  if (status === 'error') {
+  if (isError) {
     return <ErrorMessage error={error} />
   }
 

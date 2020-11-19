@@ -26,7 +26,7 @@ import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 import SplitPane from 'react-split-pane'
 import ResizerStyle from 'components/resizer-style'
-import {sidePanelObject} from 'components/sidePanelObject'
+import {SidePanelObject} from 'components/sidePanelObject'
 import {useSidePanel} from 'components/sidePanel'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 import {Document} from '@mintter/api/v2/documents_pb'
@@ -69,6 +69,21 @@ export default function Publication(): JSX.Element {
     }
   }
 
+  function handleMainPanel(mentionId: string) {
+    push(`/p/${mentionId}`)
+  }
+
+  function handlesidePanel(blockId: string) {
+    sidePanelDispatch({
+      type: 'add_object',
+      payload: blockId,
+    })
+  }
+
+  const onQuote = React.useCallback(handleQuotation, [])
+  const onSidePanel = React.useCallback(handlesidePanel, [])
+  const onMainPanel = React.useCallback(handleMainPanel, [])
+
   const editorOptions = {
     ...options,
     transclusion: {
@@ -83,12 +98,14 @@ export default function Publication(): JSX.Element {
       customProps: {
         dispatch: sidePanelDispatch,
         getData: getQuotationData,
+        onMainPanel,
+        onSidePanel,
       },
     },
   }
   const plugins = createPlugins(editorOptions)
   const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
-  const {status, error, data} = useDocument(version)
+  const {error, data, isLoading, isError} = useDocument(version)
   const {state} = useEditorValue({
     document: data,
   })
@@ -112,16 +129,6 @@ export default function Publication(): JSX.Element {
 
     push(`/private/editor/${draftUrl}`)
   }
-
-  function handlesidePanel(block: SlateBlock) {
-    sidePanelDispatch({
-      type: 'add_object',
-      payload: block.id,
-    })
-  }
-
-  const onQuote = React.useCallback(handleQuotation, [])
-  const onsidePanel = React.useCallback(handlesidePanel, [])
 
   React.useEffect(() => {
     if (!slug.includes('-') && title) {
@@ -150,7 +157,7 @@ export default function Publication(): JSX.Element {
       type: 'set_actions',
       payload: {
         onQuote,
-        onsidePanel,
+        onSidePanel,
         useDocument,
         drafts,
       },
@@ -159,9 +166,9 @@ export default function Publication(): JSX.Element {
 
   let content
 
-  if (status === 'loading') {
+  if (isLoading) {
     content = <p>Loading...</p>
-  } else if (status === 'error') {
+  } else if (isError) {
     content = (
       <div className="mx-8">
         <ErrorMessage error={error} />
@@ -205,7 +212,7 @@ export default function Publication(): JSX.Element {
               {subtitle}
             </p>
           )}
-          <p className=" text-sm mt-4 text-heading">
+          <p className="text-sm mt-4 text-heading">
             <span>by </span>
 
             <AuthorLabel author={author} />
@@ -243,7 +250,7 @@ export default function Publication(): JSX.Element {
             <MintterIcon size="1.5em" />
             <button
               onClick={() => push(location.pathname)}
-              className="text-gray-500 outline-none focus:shadow-outline p-1 w-6 h-6 rounded-full hover:bg-muted transition duration-150 flex items-center justify-center"
+              className="text-gray-500 outline-none focus:shadow-outline p-1 w-6 h-6 rounded-full hover:bg-background transition duration-150 flex items-center justify-center"
             >
               <Icons.X size={15} />
             </button>
@@ -359,17 +366,17 @@ export default function Publication(): JSX.Element {
                 onClick={() => sidePanelDispatch({type: 'close_panel'})}
               >
                 <span className="text-sm mx-2">Close Sidepanel</span>
-                <span className="w-4 h-4 rounded-full bg-background-muted text-primary flex items-center justify-center group-hover:bg-muted transform duration-200">
+                <span className="w-4 h-4 rounded-full bg-background-muted text-primary flex items-center justify-center group-hover:bg-background transform duration-200">
                   <Icons.ChevronRight size={14} color="currentColor" />
                 </span>
               </button>
             </div>
 
             {sidePanel.objects.map(object => (
-              <sidePanelObject key={object} id={object} />
+              <SidePanelObject key={object} id={object} />
             ))}
             {sidePanel.objects.length === 0 && (
-              <sidePanelCTA handleInteract={handleInteract} />
+              <SidePanelCTA handleInteract={handleInteract} />
             )}
           </div>
         ) : (
@@ -413,7 +420,7 @@ function PublicationCTA({handleInteract, visible}) {
         className="mt-4 text-primary text-base font-bold flex items-center w-full justify-end group"
         onClick={handleInteract}
       >
-        <span className="w-6 h-6 rounded-full bg-background-muted mr-2 text-primary flex items-center justify-center group-hover:bg-muted transform duration-200 ">
+        <span className="w-6 h-6 rounded-full bg-background-muted mr-2 text-primary flex items-center justify-center group-hover:bg-background transform duration-200 ">
           <Icons.ChevronLeft size={16} color="currentColor" />
         </span>
         <span className="font-bold">Interact with this document</span>
@@ -422,7 +429,7 @@ function PublicationCTA({handleInteract, visible}) {
   )
 }
 
-function sidePanelCTA({handleInteract}) {
+function SidePanelCTA({handleInteract}) {
   return (
     <div className="border-t border-muted mt-4 py-8 px-4 mb-20">
       <h3 className="font-bold text-2xl">

@@ -2,18 +2,33 @@ import React from 'react'
 import {DragDrop} from './DragDrop'
 import {css} from 'emotion'
 import Tippy from '@tippyjs/react'
+import {Icons} from '../../components/icons'
+import {Tooltip} from '../../components/tooltip'
 
-export function BlockBase({attributes, element, children, getData}, ref) {
-  const [isQuotesVisible, toggleQuotes] = React.useState<boolean>(false)
+export function BlockBase(
+  {attributes, element, children, getData, onMainPanel, onSidePanel},
+  ref,
+) {
+  const [isQuotesVisible, setVisibility] = React.useState<boolean>(false)
   let quoters = element.quotersList?.length
+
+  function toggleQuotes() {
+    setVisibility(val => !val)
+  }
   return (
     <DragDrop attributes={attributes} element={element} componentRef={ref}>
       {children}
       {isQuotesVisible ? (
-        <div contentEditable={false}>
+        <div contentEditable={false} className="overflow-hidden pl-4">
           {quoters ? (
             element.quotersList.map(quote => (
-              <BlockMention key={quote} quote={quote} getData={getData} />
+              <BlockMention
+                key={quote}
+                quote={quote}
+                getData={getData}
+                onMainPanel={onMainPanel}
+                onSidePanel={onSidePanel}
+              />
             ))
           ) : (
             <p>...</p>
@@ -38,13 +53,13 @@ export function BlockBase({attributes, element, children, getData}, ref) {
                   color: #ccc;
                 `}`}
               >
-                Open Mention in Sidepanel
+                Toggle Mentions
               </span>
             }
           >
             <button
-              onClick={() => toggleQuotes(val => !val)}
-              className="text-xs font-bold text-info rounded-full hover:bg-muted transition duration-200 leading-none flex items-center justify-center w-6 h-6 text-center"
+              onClick={() => toggleQuotes()}
+              className="text-xs font-bold text-info rounded-full hover:bg-background transition duration-200 leading-none flex items-center justify-center w-6 h-6 text-center"
             >
               {quoters}
             </button>
@@ -57,9 +72,10 @@ export function BlockBase({attributes, element, children, getData}, ref) {
 
 export const Block = React.forwardRef(BlockBase)
 
-function BlockMention({quote, getData}) {
+function BlockMentionComponent({quote, getData, onMainPanel, onSidePanel}) {
   const [docData, setData] = React.useState<any>(null)
-
+  const title = docData?.document?.title || 'Untitled Document'
+  const author = docData?.author?.username || 'No-name author'
   React.useEffect(() => {
     async function init() {
       const res = await getData(quote)
@@ -70,18 +86,58 @@ function BlockMention({quote, getData}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return docData ? (
-    <div className="px-4 py-2 bg-muted rounded mt-4">
-      <p className="font-bold text-heading text-sm leading-tight">
-        {docData.document.title}
-      </p>
-      <p className="text-xs text-body-muted leading-tight">
-        {docData.author.username}
-      </p>
+    <div className="relative pt-4">
+      <div
+        className={`w-4 border-l border-b border-b-background border-l-background rounded-bl absolute top-0 left-0 ${css`
+          height: calc(100% + 10px);
+          z-index: 0;
+          transform: translateY(-44%);
+        `}`}
+      />
+      <div className="bg-background transition duration-150 hover:shadow-sm rounded ml-4 flex items-center group">
+        <div className="px-4 py-2 flex-1">
+          <p className="font-bold text-heading text-sm leading-tight">
+            {title}
+          </p>
+          <p className="text-xs text-body-muted leading-tight">{author}</p>
+        </div>
+        <div className="px-4 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-150">
+          <Tooltip content="Open in Main Panel">
+            <button
+              className="bg-background hover:bg-muted transition duration-150 rounded-sm p-1"
+              onClick={() => onMainPanel?.(quote)}
+            >
+              <Icons.ArrowUpRight size={14} color="currentColor" />
+            </button>
+          </Tooltip>
+          <Tooltip content="Open in Side Panel">
+            <button
+              className="bg-background hover:bg-muted transition duration-150 rounded-sm p-1"
+              onClick={() => onSidePanel?.(quote)}
+            >
+              <Icons.CornerDownRight size={14} color="currentColor" />
+            </button>
+          </Tooltip>
+        </div>
+      </div>
     </div>
   ) : (
-    <div className="px-4 py-2 bg-muted rounded mt-4">
-      <p className="font-bold text-heading text-sm leading-tight">...</p>
-      <p className="text-xs text-body-muted leading-tight">...</p>
+    <div className="relative pt-4">
+      <div
+        className={`w-4 border-l border-b border-b-background border-l-background rounded-bl absolute top-0 left-0 ${css`
+          height: calc(100% + 10px);
+          z-index: 0;
+          transform: translateY(-44%);
+        `}`}
+      />
+      <div className="bg-background transition duration-150 hover:shadow-sm rounded ml-4 flex items-center group">
+        <div className="px-4 py-2 flex-1">
+          <p className="font-bold text-heading text-sm leading-tight">...</p>
+          <p className="text-xs text-body-muted leading-tight">...</p>
+        </div>
+      </div>
     </div>
   )
 }
+
+const BlockMention = React.memo(BlockMentionComponent)

@@ -26,7 +26,7 @@ import {FullPageErrorMessage} from 'components/errorMessage'
 import {useTheme} from 'shared/themeContext'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
-import {sidePanelObject} from 'components/sidePanelObject'
+import {SidePanelObject} from 'components/sidePanelObject'
 import {useTransclusion} from 'shared/useTransclusion'
 import {useSidePanel} from 'components/sidePanel'
 import {Profile} from '@mintter/api/v2/mintter_pb'
@@ -281,7 +281,7 @@ export default function Editor(): JSX.Element {
             }}
           >
             {sidePanel.objects.map(object => (
-              <sidePanelObject
+              <SidePanelObject
                 key={object}
                 isEditor
                 id={object}

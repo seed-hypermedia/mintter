@@ -48,7 +48,12 @@ export default function Publications() {
           </div>
         </>
       )}
-      <DocumentList status={status} error={error} data={data} />
+      <DocumentList
+        isLoading={isLoading}
+        isError={isError}
+        error={error}
+        data={data}
+      />
     </>
   )
 }

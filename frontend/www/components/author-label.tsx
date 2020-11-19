@@ -4,9 +4,10 @@ import {Profile} from '@mintter/api/v2/mintter_pb'
 
 interface AuthorLabelProps {
   author: Profile.AsObject
+  className?: string
 }
 
-export function AuthorLabel({author}: AuthorLabelProps) {
+export function AuthorLabel({author, className = ''}: AuthorLabelProps) {
   if (!author) {
     return <span>...</span>
   }
@@ -27,7 +28,9 @@ export function AuthorLabel({author}: AuthorLabelProps) {
         </span>
       }
     >
-      <span className="text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed">
+      <span
+        className={`text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed ${className}`}
+      >
         {`${username} (${accountId.slice(-8)})`}
       </span>
     </Tippy>
