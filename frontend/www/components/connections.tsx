@@ -15,10 +15,6 @@ export function Connections({onConnect}) {
     return <ErrorMessage error={error} />
   }
 
-  if (data.length === 0) {
-    return
-  }
-
   return (
     <div className={`w-full px-4 pt-12`} data-testid="connections">
       <h3 className="font-semibold text-xl text-heading">Connections</h3>

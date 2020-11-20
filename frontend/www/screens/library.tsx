@@ -118,7 +118,7 @@ export default function Library() {
               <div className="flex-1" />
             </div>
             <NoConnectionsBox onConnect={onConnect} />
-            <div className="-mx-4 mt-4">
+            <div>
               <Switch>
                 <PrivateRoute exact path={match.url}>
                   <Redirect to={`${match.url}/feed`} />
