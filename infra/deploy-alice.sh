@@ -14,4 +14,4 @@ echo "Transferring the binary..."
 scp $BIN $ALICE_ADDR:/usr/local/bin/mintterd.new
 
 echo "Restarting the systemd service..."
-ssh $ALICE_ADDR "mv /usr/local/bin/mintterd.new /usr/local/bin/mintter && systemctl restart mintterd.service"
+ssh $ALICE_ADDR "mv /usr/local/bin/mintterd.new /usr/local/bin/mintterd && systemctl restart mintterd.service"
