@@ -21,7 +21,7 @@ export default function PublisherNode() {
         </AppLayout>
       </PrivateRoute>
       <PrivateRoute path="/admin">
-        <AuthorNode />
+        <AuthorNode path="/admin" />
       </PrivateRoute>
       <Route>
         <div>Setup your node first</div>

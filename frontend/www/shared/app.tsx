@@ -20,7 +20,7 @@ export function App() {
   return (
     <React.Suspense fallback={<FullPageSpinner />}>
       {isLocalhost(window.location.hostname) ? (
-        <AuthorNode />
+        <AuthorNode path="/" />
       ) : (
         <PublisherNode />
       )}
