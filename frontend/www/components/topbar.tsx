@@ -55,11 +55,6 @@ export default function Topbar({isPublic = false}) {
               <AliceLogo />
             )}
           </Link>
-          {isLocal && (
-            <Link to="/private">
-              <span className="mx-4 px-2 text-xs">Go to Private page</span>
-            </Link>
-          )}
         </span>
       </div>
     </div>
@@ -72,9 +67,6 @@ export default function Topbar({isPublic = false}) {
       <span className="text-primary flex items-center">
         <Link to="/private">
           <Logo width="42px" className="fill-current" />
-        </Link>
-        <Link to="/">
-          <span className="mx-4 px-2 text-xs">Go to Public page</span>
         </Link>
       </span>
       <div>

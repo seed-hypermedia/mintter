@@ -84,7 +84,7 @@ export function Connections({onConnect}) {
       )}
       <div className="mt-4">
         <button
-          onClick={onConnect}
+          onClick={() => onConnect()}
           className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline"
         >
           + add connection

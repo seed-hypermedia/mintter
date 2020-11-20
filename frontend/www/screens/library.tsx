@@ -18,11 +18,11 @@ import {MainColumn} from 'components/main-column'
 import {Icons} from '@mintter/editor'
 import {useToasts} from 'react-toast-notifications'
 
-const Publications = React.lazy(() =>
-  import(/* webpackPrefetch: true */ './publications'),
+const Publications = React.lazy(
+  () => import(/* webpackPrefetch: true */ './publications'),
 )
-const MyPublications = React.lazy(() =>
-  import(/* webpackPrefetch: true */ './my-publications'),
+const MyPublications = React.lazy(
+  () => import(/* webpackPrefetch: true */ './my-publications'),
 )
 const Drafts = React.lazy(() => import(/* webpackPrefetch: true */ './drafts'))
 
