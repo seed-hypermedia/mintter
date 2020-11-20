@@ -1,5 +1,6 @@
 import React from 'react'
 
-export function AuthorNode() {
+export default function AuthorNode() {
+  console.log('AuthorNode')
   return <div>Author Node</div>
 }

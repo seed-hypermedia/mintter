@@ -5,6 +5,7 @@ import {AppLayout} from 'components/layout'
 import Topbar from 'components/topbar'
 import {PrivateRoute} from 'components/routes'
 import {NoRoute} from 'screens/no-route'
+import {isLocalhost} from './isLocalhost'
 
 const AuthenticatedApp = React.lazy(
   () => import(/* webpackPrefetch: true */ './authenticated-app'),
@@ -16,6 +17,18 @@ const PublisherNode = React.lazy(() => import('./publisher-node'))
 const AuthorNode = React.lazy(() => import('./author-node'))
 
 export function App() {
+  return (
+    <React.Suspense fallback={<FullPageSpinner />}>
+      {isLocalhost(window.location.hostname) ? (
+        <AuthorNode />
+      ) : (
+        <PublisherNode />
+      )}
+    </React.Suspense>
+  )
+}
+
+export function OldApp() {
   return (
     <React.Suspense fallback={<FullPageSpinner />}>
       <Switch>

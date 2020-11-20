@@ -25,7 +25,11 @@ export function ProgressRoute({children, ...rest}) {
   )
 }
 
-export function PrivateRoute({children, ...rest}) {
+export function PrivateRoute({
+  children,
+  pathname = '/private/welcome',
+  ...rest
+}) {
   const {isSuccess, data: profile} = useProfile()
   if (isSuccess) {
     return (
@@ -37,7 +41,7 @@ export function PrivateRoute({children, ...rest}) {
           ) : (
             <Redirect
               to={{
-                pathname: '/private/welcome',
+                pathname,
                 state: {from: location},
               }}
             />
