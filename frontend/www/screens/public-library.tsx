@@ -17,9 +17,8 @@ export default function Library() {
       <Topbar isPublic />
       <Seo title="Homepage" />
       <Page>
-        <MainColumn>
+        <MainColumn className="md:mx-16 max-w-xl">
           <ProfileInfo />
-
           <div className="flex items-baseline justify-between">
             <h3 className="text-2xl font-semibold text-heading">Articles</h3>
             <div className="flex-1" />

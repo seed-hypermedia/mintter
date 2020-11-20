@@ -90,17 +90,17 @@ export default function Library() {
   return (
     <Page>
       <div
-        className={`grid gap-4 ${css`
+        className={`grid gap-4 grid-flow-col ${css`
           grid-template-columns: minmax(250px, 25%) 1fr minmax(250px, 25%);
         `}`}
       >
-        <div className="pt-16">
+        <div className="pt-16 px-4 md:pl-16">
           <ProfileInfo />
           <Connections onConnect={onConnect} />
           <SuggestedConnections onConnect={onConnect} />
         </div>
         <div>
-          <MainColumn>
+          <MainColumn className="pt-12">
             <div className="flex items-baseline justify-between">
               <h1 className="text-4xl font-bold text-heading">Library</h1>
               <div className="flex-1" />
@@ -146,7 +146,7 @@ function ProfileInfo() {
   const {data: profile} = useProfile()
 
   return profile ? (
-    <div className="text-left px-4">
+    <div className="text-left">
       <h3 className="font-semibold text-2xl text-heading">
         {profile.username}
       </h3>

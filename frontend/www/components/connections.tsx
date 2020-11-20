@@ -16,8 +16,8 @@ export function Connections({onConnect}) {
   }
 
   return (
-    <div className={`w-full px-4 pt-12`} data-testid="connections">
-      <h3 className="font-semibold text-xl text-heading">Connections</h3>
+    <div className={`w-full pt-12`} data-testid="connections">
+      <h3 className="font-semibold text-heading">Connections</h3>
       {data.length === 0 ? (
         <p className="py-2 px-4 mt-4 rounded bg-background-muted text-body text-sm inline-block">
           no connections available :(

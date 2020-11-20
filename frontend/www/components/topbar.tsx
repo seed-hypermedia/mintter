@@ -9,6 +9,7 @@ import Logo from './logo_square'
 import Input from './input'
 import {Button} from './button'
 import {isLocalhost} from 'shared/isLocalhost'
+import {MainColumn} from './main-column'
 
 interface NavItemProps {
   href: string
@@ -43,7 +44,7 @@ export default function Topbar({isPublic = false}) {
   return isPublic ? (
     <div className="p-4 w-full border-b">
       <div
-        className={`w-full mx-0 md:mx-16 ${css`
+        className={`w-full mx-4 md:mx-16 ${css`
           max-width: 50ch;
         `}`}
       >
@@ -60,22 +61,17 @@ export default function Topbar({isPublic = false}) {
     </div>
   ) : (
     <div
-      className={`p-4 border-b grid grid-flow-col gap-4 ${css`
+      className={`border-b grid grid-flow-col gap-4 ${css`
         grid-template-columns: minmax(250px, 25%) 1fr minmax(250px, 25%);
       `}`}
     >
-      <span className="text-primary flex items-center">
+      <span className="text-primary flex items-center py-4 px-4 md:pl-16">
         <Link to="/private">
           <Logo width="42px" className="fill-current" />
         </Link>
       </span>
-      <div>
-        <div
-          className={`my-0 mx-16 ${css`
-            max-width: 50ch;
-            width: 100%;
-          `}`}
-        >
+      <div className="py-4">
+        <div className={`w-full px-4 md:px-6`}>
           <form className="w-full" onSubmit={handleSearch}>
             <Input
               onChange={(e: any) => setInput(e.target.value)}
@@ -88,7 +84,7 @@ export default function Topbar({isPublic = false}) {
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end p-4">
         <Tippy
           visible={menuVisible}
           onClickOutside={hide}

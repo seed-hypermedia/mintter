@@ -89,8 +89,7 @@ function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
         {index + 1}.
       </span>
       <div className=" flex-1 grid grid-cols-12 gap-4">
-        <div className="bg-muted rounded col-span-2"></div>
-        <div className={onDeleteDocument ? 'col-span-9' : 'col-span-10'}>
+        <div className={onDeleteDocument ? 'col-span-11' : 'col-span-12'}>
           <h3 className="text-heading leading-loose font-bold truncate">
             {theTitle}
           </h3>
@@ -106,7 +105,7 @@ function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
           </div>
         </div>
         {onDeleteDocument && (
-          <div className="col-span-1">
+          <div className="col-span-1 flex items-center justify-end">
             <button
               data-testid="delete-button"
               className="opacity-0 group-hover:opacity-100 text-danger"

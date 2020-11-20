@@ -299,7 +299,11 @@ export default function Publication(): JSX.Element {
               sidePanelDispatch({type: 'toggle_panel'})
             }}
           />
-          <MainColumn>
+          <MainColumn
+            className={`md:mx-16 ${css`
+              max-width: 50ch;
+            `}`}
+          >
             <div
               className={`pb-2 relative mt-6 ${css`
                 &:after {
