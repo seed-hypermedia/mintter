@@ -11,6 +11,7 @@ import (
 
 	proto "mintter/api/go/v2"
 	v2 "mintter/api/go/v2"
+	"mintter/backend"
 	"mintter/backend/config"
 	"mintter/backend/document"
 	"mintter/backend/identity"
@@ -109,6 +110,9 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	}
 
 	mux := http.NewServeMux()
+	mux.Handle("/_debug/build-info", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Version: %s\n", backend.Version)
+	}))
 	mux.Handle("/", handler)
 
 	// TODO(burdiyan): Add timeout configuration.

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"mintter/backend"
 	"mintter/backend/config"
 	"mintter/backend/daemon"
 
@@ -15,6 +16,7 @@ func main() {
 	kong.Parse(&cfg,
 		kong.Name("mintterd"),
 		kong.Resolvers(kongcli.EnvResolver("")),
+		kong.Description("Version: "+backend.Version),
 	)
 
 	ctx := mainutil.TrapSignals()
