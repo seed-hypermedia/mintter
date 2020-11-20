@@ -1,5 +1,5 @@
 import React from 'react'
-import {Switch, Route, Redirect, useRouteMatch} from 'react-router-dom'
+import {Switch, Route} from 'react-router-dom'
 import {PrivateRoute} from 'components/routes'
 import {AppLayout} from 'components/layout'
 
@@ -11,9 +11,9 @@ const AuthorNode = React.lazy(() => import('./author-node'))
 export default function PublisherNode() {
   return (
     <Switch>
-      <Route exact path="/">
+      <PrivateRoute exact path="/" pathname="/no-profile">
         <PublicLibrary />
-      </Route>
+      </PrivateRoute>
       <PrivateRoute exact path="/p/:slug" pathname="/no-profile">
         <AppLayout>
           <Topbar isPublic />
@@ -24,7 +24,9 @@ export default function PublisherNode() {
         <AuthorNode path="/admin" />
       </PrivateRoute>
       <Route>
-        <div>Setup your node first</div>
+        <div className="p-4 mx-auto max-w-sm w-full text-center font-bold text-gray-500">
+          Setup your node first
+        </div>
       </Route>
     </Switch>
   )

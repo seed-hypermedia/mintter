@@ -5,14 +5,15 @@ import {NextButton} from 'components/welcome-buttons'
 import Footer from 'components/footer'
 import {useRouter} from 'shared/use-router'
 import {useWelcome} from 'shared/welcomeProvider'
+import {getPath} from 'components/routes'
 
 export default function WelcomeIndex() {
-  const {history} = useRouter()
+  const {history, match} = useRouter()
   const {dispatch} = useWelcome()
 
   function handleNext() {
     dispatch({type: 'reset'})
-    history.push('/private/library/feed')
+    history.push(`${getPath(match)}/library/feed`)
   }
 
   return (

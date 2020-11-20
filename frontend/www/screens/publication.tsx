@@ -33,19 +33,23 @@ import {Document} from '@mintter/api/v2/documents_pb'
 import Modal from 'react-modal'
 import {useToasts} from 'react-toast-notifications'
 import {useTheme} from 'shared/themeContext'
+import {useRouter} from 'shared/use-router'
+import {getPath} from 'components/routes'
 
 Modal.setAppElement('#__next')
 
 export default function Publication(): JSX.Element {
-  const location = useLocation()
+  const {
+    location,
+    history: {push, replace},
+    match,
+  } = useRouter()
   const query = new URLSearchParams(location.search)
   const isModalOpen = query.get('modal')
   const {data: profileAddress} = useProfileAddrs()
   const {addToast} = useToasts()
   const {theme} = useTheme()
   const {dispatch} = useBlockMenu()
-
-  const {push, replace} = useHistory()
   const {slug} = useParams()
   const {state: sidePanel, dispatch: sidePanelDispatch} = useSidePanel()
 
@@ -58,7 +62,7 @@ export default function Publication(): JSX.Element {
       const d = await createDraft()
 
       const value = d.toObject()
-      push(`/private/editor/${value.version}?object=${version}`)
+      push(`${getPath(match)}/editor/${value.version}?object=${version}`)
       return
     } else {
       push(
@@ -70,7 +74,7 @@ export default function Publication(): JSX.Element {
   }
 
   function handleMainPanel(mentionId: string) {
-    push(`/p/${mentionId}`)
+    push(`${getPath(match)}/p/${mentionId}`)
   }
 
   function handlesidePanel(blockId: string) {
@@ -127,7 +131,7 @@ export default function Publication(): JSX.Element {
       block: block,
     })
 
-    push(`/private/editor/${draftUrl}`)
+    push(`${getPath(match)}/editor/${draftUrl}`)
   }
 
   React.useEffect(() => {

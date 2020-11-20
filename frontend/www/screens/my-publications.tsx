@@ -1,21 +1,21 @@
 import Seo from 'components/seo'
 import DocumentList from 'components/documentList'
 import {useMintter, useMyPublications} from 'shared/mintterContext'
-import {useHistory} from 'react-router-dom'
+import {useRouteMatch} from 'react-router-dom'
 import {ErrorMessage} from 'components/errorMessage'
 import {Icons} from '@mintter/editor'
+import {getPath} from 'components/routes'
 
 export default function MyPublications({noSeo = false, isPublic = false}) {
-  const history = useHistory()
+  const match = useRouteMatch()
   const {createDraft} = useMintter()
   const {isError, isLoading, isSuccess, error, data} = useMyPublications()
 
-  async function handleCreateDraft() {
-    const n = await createDraft()
-    const newDraft = n.toObject()
-
+  async function onCreateDocument() {
+    const d = await createDraft()
+    const value = d.toObject()
     history.push({
-      pathname: `/private/editor/${newDraft.version}`,
+      pathname: `${getPath(match)}/editor/${value.version}`,
     })
   }
 
@@ -39,7 +39,7 @@ export default function MyPublications({noSeo = false, isPublic = false}) {
             </h3>
             {!isPublic && (
               <button
-                onClick={handleCreateDraft}
+                onClick={() => onCreateDocument()}
                 className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
               >
                 <Icons.FilePlus color="currentColor" />

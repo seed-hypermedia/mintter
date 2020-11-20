@@ -1,7 +1,7 @@
 import React from 'react'
 import {css} from 'emotion'
 import {Switch, useRouteMatch, Redirect} from 'react-router-dom'
-import {PrivateRoute} from 'components/routes'
+import {PrivateRoute, getPath} from 'components/routes'
 import {NavItem} from 'components/nav'
 import {useHistory} from 'react-router-dom'
 import {useMintter} from 'shared/mintterContext'
@@ -17,18 +17,13 @@ import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 import {Icons} from '@mintter/editor'
 import {useToasts} from 'react-toast-notifications'
-
-const Publications = React.lazy(
-  () => import(/* webpackPrefetch: true */ './publications'),
-)
-const MyPublications = React.lazy(
-  () => import(/* webpackPrefetch: true */ './my-publications'),
-)
-const Drafts = React.lazy(() => import(/* webpackPrefetch: true */ './drafts'))
+import Publications from './publications'
+import MyPublications from './my-publications'
+import Drafts from './drafts'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
-  const match = useRouteMatch('/private/library')
+  const match = useRouteMatch()
   const history = useHistory()
   const {createDraft} = useMintter()
   const {connectToPeer} = useConnectionCreate()
@@ -38,7 +33,7 @@ export default function Library() {
     const d = await createDraft()
     const value = d.toObject()
     history.push({
-      pathname: `/private/editor/${value.version}`,
+      pathname: `${getPath(match)}/editor/${value.version}`,
     })
   }
 
@@ -112,9 +107,9 @@ export default function Library() {
               </button>
             </div>
             <div className="flex items-center mt-4 -mx-4">
-              <NavItem to="/private/library/feed">Feed</NavItem>
-              <NavItem to="/private/library/published">Published</NavItem>
-              <NavItem to="/private/library/drafts">Drafts</NavItem>
+              <NavItem to={`${match.url}/feed`}>Feed</NavItem>
+              <NavItem to={`${match.url}/published`}>Published</NavItem>
+              <NavItem to={`${match.url}/drafts`}>Drafts</NavItem>
               <div className="flex-1" />
             </div>
             <NoConnectionsBox onConnect={onConnect} />
@@ -143,6 +138,7 @@ export default function Library() {
 }
 
 function ProfileInfo() {
+  const match = useRouteMatch()
   const {data: profile} = useProfile()
 
   return profile ? (
@@ -152,7 +148,7 @@ function ProfileInfo() {
       </h3>
       <p className="text-body text-sm mt-2">{profile.bio}</p>
       <Link
-        to="/private/settings"
+        to={`${getPath(match)}/settings`}
         className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline inline-block"
       >
         Edit profile

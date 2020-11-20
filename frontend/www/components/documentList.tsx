@@ -1,12 +1,12 @@
 import React from 'react'
 import {Icons} from '@mintter/editor'
-import {useLocation} from 'react-router-dom'
+import {useLocation, useRouteMatch, match as Match} from 'react-router-dom'
 import Link from './link'
 import {useAuthor} from 'shared/profileContext'
 import {ErrorMessage} from './errorMessage'
 import {AuthorLabel} from 'components/author-label'
 import {Document} from '@mintter/api/v2/documents_pb'
-import {QueryStatus} from 'react-query'
+import {getPath} from 'components/routes'
 
 interface Props {
   data: Document.AsObject[]
@@ -55,6 +55,7 @@ interface ItemProps {
 }
 
 function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
+  const match = useRouteMatch()
   const location = useLocation()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
   const {version, title, author: itemAuthor, createTime} = item
@@ -62,15 +63,15 @@ function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
 
   const {data: author} = useAuthor(itemAuthor)
 
-  const isDraft = React.useMemo(
-    () => location.pathname === '/private/library/drafts',
-    [location.pathname],
-  )
+  const isDraft = React.useMemo(() => location.pathname.includes('drafts'), [
+    location.pathname,
+  ])
 
-  const to = React.useMemo(
-    () => (isDraft ? `/private/editor/${version}` : `/p/${version}`),
-    [location.pathname],
-  )
+  const to = React.useMemo(() => {
+    const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${version}`
+    console.log('ListItem -> path', path)
+    return path
+  }, [location.pathname])
   function handlePrefetch() {
     if (!prefetched) {
       // TODO: prefetch on hover

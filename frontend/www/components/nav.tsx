@@ -2,15 +2,6 @@ import {useRouteMatch} from 'react-router-dom'
 import {Link} from 'components/link'
 import {useMemo} from 'react'
 
-export function MainNav() {
-  return (
-    <div className="mx-4 flex items-center">
-      <NavItem to="/private/library">Library</NavItem>
-      <NavItem to="/private/settings">Settings</NavItem>
-    </div>
-  )
-}
-
 export function NavItem({
   children,
   to,

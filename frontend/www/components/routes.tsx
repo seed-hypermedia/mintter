@@ -10,13 +10,13 @@ export function ProgressRoute({children, ...rest}) {
   return (
     <Route
       {...rest}
-      render={() =>
+      render={({match}) =>
         progress ? (
           children
         ) : (
           <Redirect
             to={{
-              pathname: '/private/welcome',
+              pathname: `${getPath(match)}/welcome`,
             }}
           />
         )
@@ -25,23 +25,19 @@ export function ProgressRoute({children, ...rest}) {
   )
 }
 
-export function PrivateRoute({
-  children,
-  pathname = '/private/welcome',
-  ...rest
-}) {
+export function PrivateRoute({children, pathname = '/welcome', ...rest}) {
   const {isSuccess, data: profile} = useProfile()
   if (isSuccess) {
     return (
       <Route
         {...rest}
-        render={({location}) =>
+        render={({location, match}) =>
           profile ? (
             children
           ) : (
             <Redirect
               to={{
-                pathname,
+                pathname: `${getPath(match)}${pathname}`,
                 state: {from: location},
               }}
             />
@@ -52,4 +48,17 @@ export function PrivateRoute({
   } else {
     return <FullPageSpinner />
   }
+}
+
+export function getPath(match: Match<{}>) {
+  return match.path.includes('admin') ? '/admin' : ''
+}
+
+export function createPath(match, path: string) {
+  if (path.split('')[0] === '/') {
+    throw new Error(
+      `"createPath function Error => The path passed cannot have '/' at the beginning: check ${path}`,
+    )
+  }
+  return `${match.url}${match.url === '/' ? '' : '/'}${path}`
 }

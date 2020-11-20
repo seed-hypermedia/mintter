@@ -9,7 +9,7 @@ import {ProfileProvider} from 'shared/profileContext'
 jest.mock('shared/mintterClient')
 
 async function renderWelcomeScreen() {
-  const route = `/private/welcome/create-password`
+  const route = `/welcome/create-password`
 
   const mnemonicList = ['word-1', 'word-2', 'word-3']
 
