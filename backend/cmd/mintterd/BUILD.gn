@@ -1,6 +1,18 @@
 import("//build/go/go.gni")
 
 go_binary("mintterd") {
-  deps = [ "//:go_sources($default_toolchain)" ]
+  deps = [
+    "//:go_sources($default_toolchain)",
+    "//build:stamped_info($default_toolchain)",
+  ]
+  dir = get_label_info("//build:stamped_info($default_toolchain)",
+                       "target_out_dir")
+
+  build_info_file = rebase_path("$dir/build.info", root_build_dir)
+
   package = "."
+  build_flags = [
+    "-tags=bindata",
+    "-ldflags=\"-X 'mintter/backend.Version=`cat $build_info_file`'\"",
+  ]
 }

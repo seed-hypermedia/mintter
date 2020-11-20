@@ -4,7 +4,11 @@ declare_args() {
 }
 
 template("go_binary") {
-  forward_variables_from(invoker, default_forward_vars + [ "package" ])
+  forward_variables_from(invoker,
+                         default_forward_vars + [
+                               "package",
+                               "build_flags",
+                             ])
 
   assert(defined(package), "Must define package for go_binary.")
 
@@ -20,6 +24,12 @@ template("go_binary") {
     deps = []
   }
 
+  if (!defined(build_flags)) {
+    build_flags = []
+  }
+
+  build_flags_string = string_join(" ", build_flags)
+
   action(target_name) {
     out_file = "$root_out_dir/$target_name"
     if (is_win) {
@@ -34,7 +44,7 @@ template("go_binary") {
     args = [
       "bash",
       "-c",
-      "GOOS=$go_os GOARCH=$go_arch go build -tags bindata -o $abs_out_file $relative_package",
+      "GOOS=$go_os GOARCH=$go_arch go build $build_flags_string -o $abs_out_file $relative_package",
     ]
     deps += [ "//build:environment($default_toolchain)" ]
     outputs = [ out_file ]

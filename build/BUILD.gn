@@ -10,3 +10,21 @@ stamped_sources("environment") {
     "nix/**/*.nix",
   ]
 }
+
+action("info") {
+  out_file = "$target_out_dir/build.info"
+  rel_out_file = rebase_path(out_file, root_build_dir)
+  script = "/usr/bin/env"
+  args = [
+    "bash",
+    "-c",
+    "TZ=UTC git show -s --format='%T:%ad' --date=format-local:'%Y-%m-%dT%H:%M%S%z' > $rel_out_file",
+  ]
+  outputs = [ out_file ]
+  deps = [ ":always" ]
+}
+
+stamped_sources("stamped_info") {
+  deps = [ ":info" ]
+  sources = [ "$target_out_dir/build.info" ]
+}
