@@ -11,22 +11,17 @@ const AuthorNode = React.lazy(() => import('./author-node'))
 export default function PublisherNode() {
   return (
     <Switch>
-      <PrivateRoute exact path="/" pathname="/no-profile">
+      <PrivateRoute exact path="/" pathname="/admin/welcome">
         <PublicLibrary />
       </PrivateRoute>
-      <PrivateRoute exact path="/p/:slug" pathname="/no-profile">
+      <PrivateRoute exact path="/p/:slug">
         <AppLayout>
           <Topbar isPublic />
           <Publication />
         </AppLayout>
       </PrivateRoute>
-      <PrivateRoute path="/admin">
+      <Route path="/admin">
         <AuthorNode path="/admin" />
-      </PrivateRoute>
-      <Route>
-        <div className="p-4 mx-auto max-w-sm w-full text-center font-bold text-gray-500">
-          Setup your node first
-        </div>
       </Route>
     </Switch>
   )

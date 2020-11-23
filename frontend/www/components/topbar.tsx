@@ -43,7 +43,7 @@ export default function Topbar({isPublic = false}) {
   }
 
   return isPublic ? (
-    <div className="p-4 w-full border-b">
+    <div className="p-4 w-full border-b border-background-muted">
       <div
         className={`w-full mx-4 md:mx-16 ${css`
           max-width: 50ch;
@@ -62,7 +62,7 @@ export default function Topbar({isPublic = false}) {
     </div>
   ) : (
     <div
-      className={`border-b grid grid-flow-col gap-4 ${css`
+      className={`border-b border-background-muted grid grid-flow-col gap-4 ${css`
         grid-template-columns: minmax(250px, 25%) 1fr minmax(250px, 25%);
       `}`}
     >
@@ -85,7 +85,7 @@ export default function Topbar({isPublic = false}) {
         </div>
       </div>
 
-      <div className="flex justify-end pr-4">
+      <div className="flex justify-end pr-4 py-4">
         <Tippy
           visible={menuVisible}
           onClickOutside={hide}

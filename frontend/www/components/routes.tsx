@@ -25,7 +25,7 @@ export function ProgressRoute({children, ...rest}) {
   )
 }
 
-export function PrivateRoute({children, pathname = '/welcome', ...rest}) {
+export function PrivateRoute({children, pathname, ...rest}) {
   const {isSuccess, data: profile} = useProfile()
   if (isSuccess) {
     return (
@@ -37,7 +37,7 @@ export function PrivateRoute({children, pathname = '/welcome', ...rest}) {
           ) : (
             <Redirect
               to={{
-                pathname: `${getPath(match)}${pathname}`,
+                pathname: pathname ? pathname : `${getPath(match)}/welcome`,
                 state: {from: location},
               }}
             />

@@ -49,13 +49,13 @@ async function render(
   return returnValue
 }
 
-const waitForLoadingToFinish = () =>
+const waitForLoadingToFinish = (timeout = 4000) =>
   waitForElementToBeRemoved(
     () => [
       ...screen.queryAllByLabelText(/loading/i),
       ...screen.queryAllByText(/loading/i),
     ],
-    {timeout: 4000},
+    {timeout},
   )
 
 export * from '@testing-library/react'
