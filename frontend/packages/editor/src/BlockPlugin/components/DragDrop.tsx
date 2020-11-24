@@ -22,7 +22,7 @@ export const DragDrop = ({element, children, componentRef, ...props}: any) => {
   return (
     <div {...props} ref={ref}>
       <div
-        className="relative mt-2"
+        className="relative mt-4"
         onMouseLeave={() => {
           dispatch({type: 'set_block_id', payload: {blockId: null}})
         }}

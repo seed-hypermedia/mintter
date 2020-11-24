@@ -210,7 +210,11 @@ export default function Editor(): JSX.Element {
             </Tippy>
           </div>
 
-          <MainColumn>
+          <MainColumn
+            className={`mx-4 md:mx-16 ${css`
+              max-width: 50ch;
+            `}`}
+          >
             <div
               className={`pb-2 mb-4 relative ${css`
                 &:after {

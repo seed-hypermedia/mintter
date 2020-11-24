@@ -2,13 +2,14 @@ import {useCallback} from 'react'
 import {useState} from 'react'
 import {css} from 'emotion'
 import Tippy from '@tippyjs/react'
-import {useHistory} from 'react-router-dom'
+import {useHistory, useRouteMatch} from 'react-router-dom'
 import {Icons} from '@mintter/editor'
 import {Link} from 'components/link'
 import Logo from './logo_square'
 import Input from './input'
 import {Button} from './button'
 import {isLocalhost} from 'shared/isLocalhost'
+import {getPath} from 'components/routes'
 
 interface NavItemProps {
   href: string
@@ -20,6 +21,7 @@ interface NavItemProps {
 
 export default function Topbar({isPublic = false}) {
   const history = useHistory()
+  const match = useRouteMatch()
   const [input, setInput] = useState<string>('')
   const [menuVisible, setMenuVisible] = useState<boolean>(false)
   const isLocal = isLocalhost(window.location.hostname)
@@ -29,7 +31,7 @@ export default function Topbar({isPublic = false}) {
   async function handleSearch(e) {
     e.preventDefault()
     await setInput('')
-    history.push(`/p/${input}`)
+    history.push(`${getPath(match)}/p/${input}`)
   }
 
   function toggleFormMetadata() {
@@ -41,9 +43,9 @@ export default function Topbar({isPublic = false}) {
   }
 
   return isPublic ? (
-    <div className="p-4 w-full border-b">
+    <div className="p-4 w-full border-b border-background-muted">
       <div
-        className={`w-full mx-0 md:mx-16 ${css`
+        className={`w-full mx-4 md:mx-16 ${css`
           max-width: 50ch;
         `}`}
       >
@@ -55,35 +57,22 @@ export default function Topbar({isPublic = false}) {
               <AliceLogo />
             )}
           </Link>
-          {isLocal && (
-            <Link to="/private">
-              <span className="mx-4 px-2 text-xs">Go to Private page</span>
-            </Link>
-          )}
         </span>
       </div>
     </div>
   ) : (
     <div
-      className={`p-4 border-b grid grid-flow-col gap-4 ${css`
+      className={`border-b border-background-muted grid grid-flow-col gap-4 ${css`
         grid-template-columns: minmax(250px, 25%) 1fr minmax(250px, 25%);
       `}`}
     >
-      <span className="text-primary flex items-center">
-        <Link to="/private">
+      <span className="text-primary flex items-center py-4 pl-4 md:pl-16">
+        <Link to={getPath(match)}>
           <Logo width="42px" className="fill-current" />
         </Link>
-        <Link to="/">
-          <span className="mx-4 px-2 text-xs">Go to Public page</span>
-        </Link>
       </span>
-      <div>
-        <div
-          className={`my-0 mx-16 ${css`
-            max-width: 50ch;
-            width: 100%;
-          `}`}
-        >
+      <div className="py-4">
+        <div className={`w-full px-4 md:px-6`}>
           <form className="w-full" onSubmit={handleSearch}>
             <Input
               onChange={(e: any) => setInput(e.target.value)}
@@ -96,7 +85,7 @@ export default function Topbar({isPublic = false}) {
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end pr-4 py-4">
         <Tippy
           visible={menuVisible}
           onClickOutside={hide}
@@ -111,7 +100,7 @@ export default function Topbar({isPublic = false}) {
                 className="text-body"
                 onClick={() => {
                   hide()
-                  history.push('/private/settings')
+                  history.push(`${getPath(match)}/settings`)
                 }}
               >
                 Settings

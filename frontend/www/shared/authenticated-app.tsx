@@ -11,7 +11,7 @@ const Settings = React.lazy(() => import('screens/settings'))
 const Editor = React.lazy(() => import('screens/editor'))
 
 export default function AuthenticatedApp() {
-  const match = useRouteMatch('/private')
+  const match = useRouteMatch()
 
   return (
     <ErrorBoundary FallbackComponent={FullPageErrorMessage}>
@@ -24,15 +24,11 @@ export default function AuthenticatedApp() {
           <PrivateRoute exact path={`${match.url}/editor/:version`}>
             <Editor />
           </PrivateRoute>
-          <PrivateRoute>
-            <Switch>
-              <PrivateRoute path={`${match.url}/library`}>
-                <Library />
-              </PrivateRoute>
-              <PrivateRoute path={`${match.url}/settings`}>
-                <Settings />
-              </PrivateRoute>
-            </Switch>
+          <PrivateRoute path={`${match.url}/library`}>
+            <Library />
+          </PrivateRoute>
+          <PrivateRoute path={`${match.url}/settings`}>
+            <Settings />
           </PrivateRoute>
         </Switch>
       </AppLayout>

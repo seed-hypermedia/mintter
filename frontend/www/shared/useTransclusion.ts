@@ -207,5 +207,5 @@ function createBlockRef(sourceRef: BlockRef.AsObject) {
 // req.setDocument(update)
 // await updateDraftWithRequest(req)
 // push({
-//   pathname: `/private/editor/${newDraft.version}`,
+//   pathname: `/editor/${newDraft.version}`,
 // })

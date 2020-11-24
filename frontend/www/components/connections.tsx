@@ -15,13 +15,9 @@ export function Connections({onConnect}) {
     return <ErrorMessage error={error} />
   }
 
-  if (data.length === 0) {
-    return
-  }
-
   return (
-    <div className={`w-full px-4 pt-12`} data-testid="connections">
-      <h3 className="font-semibold text-xl text-heading">Connections</h3>
+    <div className={`w-full pt-12`} data-testid="connections">
+      <h3 className="font-semibold text-heading">Connections</h3>
       {data.length === 0 ? (
         <p className="py-2 px-4 mt-4 rounded bg-background-muted text-body text-sm inline-block">
           no connections available :(
@@ -84,7 +80,7 @@ export function Connections({onConnect}) {
       )}
       <div className="mt-4">
         <button
-          onClick={onConnect}
+          onClick={() => onConnect()}
           className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline"
         >
           + add connection

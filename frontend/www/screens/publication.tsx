@@ -15,7 +15,12 @@ import Seo from 'components/seo'
 import {getDocument, getProfile} from 'shared/mintterClient'
 
 import {css} from 'emotion'
-import {useParams, useHistory, useLocation} from 'react-router-dom'
+import {
+  useParams,
+  useHistory,
+  useLocation,
+  useRouteMatch,
+} from 'react-router-dom'
 import {useDocument, useDrafts, useMintter} from 'shared/mintterContext'
 import {useAuthor, useProfileAddrs} from 'shared/profileContext'
 import {ErrorMessage} from 'components/errorMessage'
@@ -33,22 +38,22 @@ import {Document} from '@mintter/api/v2/documents_pb'
 import Modal from 'react-modal'
 import {useToasts} from 'react-toast-notifications'
 import {useTheme} from 'shared/themeContext'
+import {getPath} from 'components/routes'
 
 Modal.setAppElement('#__next')
 
 export default function Publication(): JSX.Element {
   const location = useLocation()
+  const {push, replace} = useHistory()
+  const match = useRouteMatch()
+  const {slug} = useParams()
   const query = new URLSearchParams(location.search)
   const isModalOpen = query.get('modal')
   const {data: profileAddress} = useProfileAddrs()
   const {addToast} = useToasts()
   const {theme} = useTheme()
   const {dispatch} = useBlockMenu()
-
-  const {push, replace} = useHistory()
-  const {slug} = useParams()
   const {state: sidePanel, dispatch: sidePanelDispatch} = useSidePanel()
-
   const version = React.useMemo(() => slug.split('-').slice(-1)[0], [slug])
 
   const {createDraft} = useMintter()
@@ -58,7 +63,7 @@ export default function Publication(): JSX.Element {
       const d = await createDraft()
 
       const value = d.toObject()
-      push(`/private/editor/${value.version}?object=${version}`)
+      push(`${getPath(match)}/editor/${value.version}?object=${version}`)
       return
     } else {
       push(
@@ -70,7 +75,7 @@ export default function Publication(): JSX.Element {
   }
 
   function handleMainPanel(mentionId: string) {
-    push(`/p/${mentionId}`)
+    push(`${getPath(match)}/p/${mentionId}`)
   }
 
   function handlesidePanel(blockId: string) {
@@ -127,7 +132,7 @@ export default function Publication(): JSX.Element {
       block: block,
     })
 
-    push(`/private/editor/${draftUrl}`)
+    push(`${getPath(match)}/editor/${draftUrl}`)
   }
 
   React.useEffect(() => {
@@ -153,15 +158,17 @@ export default function Publication(): JSX.Element {
   }
 
   React.useEffect(() => {
-    dispatch({
-      type: 'set_actions',
-      payload: {
-        onQuote,
-        onSidePanel,
-        useDocument,
-        drafts,
-      },
-    })
+    if (drafts.length) {
+      dispatch({
+        type: 'set_actions',
+        payload: {
+          onQuote,
+          onSidePanel,
+          useDocument,
+          drafts,
+        },
+      })
+    }
   }, [drafts])
 
   let content
@@ -207,7 +214,7 @@ export default function Publication(): JSX.Element {
             <MintterIcon size="1.5em" />
             <button
               onClick={() => push(location.pathname)}
-              className="text-gray-500 outline-none focus:shadow-outline p-1 w-6 h-6 rounded-full hover:bg-background transition duration-150 flex items-center justify-center"
+              className="text-gray-500 outline-none focus:shadow-outline p-1 w-6 h-6 rounded-full hover:bg-background-muted transition duration-150 flex items-center justify-center"
             >
               <Icons.X size={15} />
             </button>
@@ -299,7 +306,11 @@ export default function Publication(): JSX.Element {
               sidePanelDispatch({type: 'toggle_panel'})
             }}
           />
-          <MainColumn>
+          <MainColumn
+            className={`md:mx-16 ${css`
+              max-width: 50ch;
+            `}`}
+          >
             <div
               className={`pb-2 relative mt-6 ${css`
                 &:after {
@@ -363,7 +374,7 @@ export default function Publication(): JSX.Element {
                 onClick={() => sidePanelDispatch({type: 'close_panel'})}
               >
                 <span className="text-sm mx-2">Close Sidepanel</span>
-                <span className="w-4 h-4 rounded-full bg-background-muted text-primary flex items-center justify-center group-hover:bg-background transform duration-200">
+                <span className="w-4 h-4 rounded-full bg-background-muted text-primary flex items-center justify-center group-hover:bg-background-muted transform duration-200">
                   <Icons.ChevronRight size={14} color="currentColor" />
                 </span>
               </button>
@@ -405,10 +416,10 @@ function PublicationCTA({handleInteract, visible}) {
           : 'opacity-100 pointer-events-auto'
       }`}
     >
-      <p className="text-gray-800 font-light text-sm pt-4">
+      <p className="text-gray-800 font-light text-sm pt-4 text-body">
         Document created via <strong className="font-bold">Mintter App.</strong>
       </p>
-      <p className="text-gray-800 text-sm pt-4 font-light">
+      <p className="text-gray-800 text-sm pt-4 font-light text-body">
         Mintter is a distributed publishing platform that brings to your content{' '}
         <strong className="font-bold">Ownership, Authorship, Atribution</strong>{' '}
         and <strong className="font-bold">Traceability.</strong>
@@ -417,7 +428,7 @@ function PublicationCTA({handleInteract, visible}) {
         className="mt-4 text-primary text-base font-bold flex items-center w-full justify-end group"
         onClick={handleInteract}
       >
-        <span className="w-6 h-6 rounded-full bg-background-muted mr-2 text-primary flex items-center justify-center group-hover:bg-background transform duration-200 ">
+        <span className="w-6 h-6 rounded-full bg-background-muted mr-2 text-primary flex items-center justify-center group-hover:bg-background-muted transform duration-200 ">
           <Icons.ChevronLeft size={16} color="currentColor" />
         </span>
         <span className="font-bold">Interact with this document</span>
@@ -429,10 +440,10 @@ function PublicationCTA({handleInteract, visible}) {
 function SidePanelCTA({handleInteract}) {
   return (
     <div className="border-t border-muted mt-4 py-8 px-4 mb-20">
-      <h3 className="font-bold text-2xl">
+      <h3 className="font-bold text-2xl text-heading">
         Want to add your thougts to this subject?
       </h3>
-      <p className="mt-4">
+      <p className="mt-4 text-body">
         <strong>Reply, develop</strong> or <strong>refute</strong> on the
         Mintter app now.
       </p>
