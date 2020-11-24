@@ -1,21 +1,21 @@
 import Seo from 'components/seo'
 import DocumentList from 'components/documentList'
 import {useMintter, useMyPublications} from 'shared/mintterContext'
-import {useHistory} from 'react-router-dom'
 import {ErrorMessage} from 'components/errorMessage'
 import {Icons} from '@mintter/editor'
+import {getPath} from 'components/routes'
+import {useRouter} from 'shared/use-router'
 
-export default function MyPublications({noSeo = false}) {
-  const history = useHistory()
+export default function MyPublications({noSeo = false, isPublic = false}) {
+  const {history, match} = useRouter()
   const {createDraft} = useMintter()
   const {isError, isLoading, isSuccess, error, data} = useMyPublications()
 
-  async function handleCreateDraft() {
-    const n = await createDraft()
-    const newDraft = n.toObject()
-
+  async function onCreateDocument() {
+    const d = await createDraft()
+    const value = d.toObject()
     history.push({
-      pathname: `/private/editor/${newDraft.version}`,
+      pathname: `${getPath(match)}/editor/${value.version}`,
     })
   }
 
@@ -33,17 +33,19 @@ export default function MyPublications({noSeo = false}) {
       {isSuccess && data.length === 0 && (
         <>
           <hr className="border-t-2 border-muted border-solid my-8" />
-          <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
+          <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 py-6 mb-4 text-center flex flex-col items-center">
             <h3 className="text-xl font-semibold text-primary">
               No Publications (yet)
             </h3>
-            <button
-              onClick={handleCreateDraft}
-              className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
-            >
-              <Icons.FilePlus color="currentColor" />
-              <span className="ml-2">Start your first document</span>
-            </button>
+            {!isPublic && (
+              <button
+                onClick={() => onCreateDocument()}
+                className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
+              >
+                <Icons.FilePlus color="currentColor" />
+                <span className="ml-2">Start your first document</span>
+              </button>
+            )}
           </div>
         </>
       )}

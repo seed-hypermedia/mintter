@@ -1,12 +1,13 @@
-import {useHistory} from 'react-router-dom'
 import {Icons} from '@mintter/editor'
 import DocumentList from 'components/documentList'
 import {useMintter, useOthersPublications} from 'shared/mintterContext'
 import Seo from 'components/seo'
 import {ErrorMessage} from 'components/errorMessage'
+import {useRouter} from 'shared/use-router'
+import {getPath} from 'components/routes'
 
 export default function Publications() {
-  const history = useHistory()
+  const {history, match} = useRouter()
   const {createDraft} = useMintter()
 
   const {isLoading, isError, error, data} = useOthersPublications()
@@ -16,7 +17,7 @@ export default function Publications() {
     const newDraft = n.toObject()
 
     history.push({
-      pathname: `/private/editor/${newDraft.version}`,
+      pathname: `${getPath(match)}/editor/${newDraft.version}`,
     })
   }
 

@@ -1,21 +1,22 @@
-import {screen} from 'test/app-test-utils'
-import {render} from '@testing-library/react'
-import WelcomeIntro from '../intro'
+import {screen, render} from 'test/app-test-utils'
+import {App} from 'shared/app'
+import * as clientMock from 'shared/mintterClient'
+
+jest.mock('shared/mintterClient')
 
 async function renderWelcomeScreen() {
-  const utils = await render(<WelcomeIntro />)
-
-  return {
-    ...utils,
-  }
+  return await render(<App />, {
+    route: '/welcome',
+  })
 }
 
 test('Welcome Intro screen', async () => {
+  clientMock.getProfile.mockImplementation({
+    toObject: (): Partial<Profile.AsObject> => ({}),
+  })
   await renderWelcomeScreen()
 
-  const startButton = screen.getByText(/start/i)
-
-  expect(screen.getByText(/Welcome to Mintter!/i)).toBeInTheDocument()
-  expect(startButton).toBeInTheDocument()
-  expect(startButton).not.toBeDisabled()
+  expect(screen.getByText(/Welcome to Mintter/i)).toBeInTheDocument()
+  expect(await screen.findByText(/start/i)).toBeInTheDocument()
+  expect(await screen.findByText(/start/i)).not.toBeDisabled()
 })

@@ -1,19 +1,21 @@
-import {useHistory} from 'react-router-dom'
+import * as React from 'react'
 import Seo from 'components/seo'
 import DocumentList from 'components/documentList'
 import {useDrafts, useMintter} from 'shared/mintterContext'
+import {getPath} from 'components/routes'
 import {Icons} from '@mintter/editor'
+import {useRouter} from 'shared/use-router'
 
 export default function Drafts() {
-  const router = useHistory()
+  const {history, match} = useRouter()
   const {createDraft, deleteDocument} = useMintter()
   const {isLoading, isError, isSuccess, error, data} = useDrafts()
 
-  async function handleCreateDraft() {
-    const p = await createDraft()
-    const draft = p.toObject()
-    router.push({
-      pathname: `/private/editor/${draft.version}`,
+  async function onCreateDocument() {
+    const d = await createDraft()
+    const value = d.toObject()
+    history.push({
+      pathname: `${getPath(match)}/editor/${value.version}`,
     })
   }
 
@@ -36,7 +38,7 @@ export default function Drafts() {
                 and tells how it works and encourages to get started
               </p> */}
             <button
-              onClick={handleCreateDraft}
+              onClick={() => onCreateDocument()}
               className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
             >
               <Icons.FilePlus color="currentColor" />

@@ -23,7 +23,7 @@ export function SuggestedConnections({onConnect}) {
   }
 
   return (
-    <div className={`w-full px-4 pt-12`}>
+    <div className={`w-full pt-12`}>
       <h3 className="font-bold text-heading">Suggested Connections</h3>
       {data.length === 0 ? (
         <p className="py-2 px-4 mt-4 rounded bg-background-muted text-body text-sm inline-block">

@@ -1,4 +1,4 @@
-import {useHistory} from 'react-router-dom'
+import React from 'react'
 import Container from 'components/welcome-container'
 import Heading from 'components/welcome-heading'
 import P from 'components/welcome-p'
@@ -11,6 +11,8 @@ import {useForm} from 'react-hook-form'
 import {useProfileContext} from 'shared/profileContext'
 import {useFocus} from 'shared/hooks'
 import {css} from 'emotion'
+import {useRouter} from 'shared/use-router'
+import {getPath} from 'components/routes'
 
 export default function EditProfile() {
   const {register, handleSubmit, errors, formState} = useForm({
@@ -25,13 +27,13 @@ export default function EditProfile() {
 
   const {focusFirst} = useFocus()
 
-  const history = useHistory()
+  const {history, match} = useRouter()
   const {setProfile} = useProfileContext()
 
   async function onSubmit(data) {
     try {
       setProfile(data)
-      history.replace('/private/welcome/complete')
+      history.replace(`${getPath(match)}/welcome/complete`)
     } catch (err) {
       console.error('Error ==> ', err)
     }
@@ -129,7 +131,9 @@ export default function EditProfile() {
             >
               Next →
             </NextButton>
-            <BackButton to="/private/welcome">← start over</BackButton>
+            <BackButton to={`${getPath(match)}/welcome`}>
+              ← start over
+            </BackButton>
           </div>
         </Container>
       </Footer>

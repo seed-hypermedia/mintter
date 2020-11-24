@@ -34,7 +34,7 @@ beforeEach(() => {
 
 test('renders no suggested connections', async () => {
   await render(<App />, {
-    route: '/private/library/feed',
+    route: '/library/feed',
   })
 
   screen.getByText(/no suggestions available :\(/i)
@@ -56,7 +56,7 @@ test('renders with Connections', async () => {
   })
 
   await render(<App />, {
-    route: '/private/library/feed',
+    route: '/library/feed',
   })
 
   await waitFor(() => {
