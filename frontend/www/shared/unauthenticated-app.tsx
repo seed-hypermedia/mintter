@@ -1,10 +1,11 @@
 import React from 'react'
-import {Switch, Route, useRouteMatch} from 'react-router-dom'
+import {Switch, Route, useRouteMatch, Redirect} from 'react-router-dom'
 import Layout, {LayoutProps} from 'components/layout'
 import WelcomeProvider from 'shared/welcomeProvider'
 import ThemeToggle from 'components/themeToggle'
 import WelcomeIntro from 'screens/welcome/intro'
-import {ProgressRoute} from 'components/routes'
+import {ProgressRoute, createPath, getPath} from 'components/routes'
+import {useProfile} from './profileContext'
 
 const SecurityPack = React.lazy(() => import('screens/welcome/security-pack'))
 const RetypeSeed = React.lazy(() => import('screens/welcome/retype-seed'))
@@ -12,8 +13,19 @@ const EditProfile = React.lazy(() => import('screens/welcome/edit-profile'))
 const Complete = React.lazy(() => import('screens/welcome/complete'))
 
 export default function Welcome({className = '', ...props}: LayoutProps) {
-  const match = useRouteMatch('/private/welcome')
-  return (
+  const match = useRouteMatch()
+  const [redirect, setRedirect] = React.useState(false)
+  const {isSuccess, data} = useProfile()
+
+  React.useEffect(() => {
+    if (isSuccess && data?.accountId) {
+      setRedirect(true)
+    }
+  }, [data])
+
+  return redirect ? (
+    <Redirect to={`${getPath(match)}/library`} />
+  ) : (
     <Layout {...props} className={`flex flex-col py-8 ${className}`}>
       <div className="absolute right-0 top-0 p-4">
         <ThemeToggle />
@@ -24,16 +36,16 @@ export default function Welcome({className = '', ...props}: LayoutProps) {
           <Route exact path={match.url}>
             <WelcomeIntro />
           </Route>
-          <ProgressRoute path={`${match.url}/security-pack`}>
+          <ProgressRoute path={createPath(match, 'security-pack')}>
             <SecurityPack />
           </ProgressRoute>
-          <ProgressRoute path={`${match.url}/retype-seed`}>
+          <ProgressRoute path={createPath(match, 'retype-seed')}>
             <RetypeSeed />
           </ProgressRoute>
-          <ProgressRoute path={`${match.url}/edit-profile`}>
+          <ProgressRoute path={createPath(match, 'edit-profile')}>
             <EditProfile />
           </ProgressRoute>
-          <ProgressRoute path={`${match.url}/complete`}>
+          <ProgressRoute path={createPath(match, 'complete')}>
             <Complete />
           </ProgressRoute>
         </Switch>

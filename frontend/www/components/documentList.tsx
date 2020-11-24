@@ -1,12 +1,12 @@
 import React from 'react'
 import {Icons} from '@mintter/editor'
-import {useLocation} from 'react-router-dom'
+import {useLocation, useRouteMatch, match as Match} from 'react-router-dom'
 import Link from './link'
 import {useAuthor} from 'shared/profileContext'
 import {ErrorMessage} from './errorMessage'
 import {AuthorLabel} from 'components/author-label'
 import {Document} from '@mintter/api/v2/documents_pb'
-import {QueryStatus} from 'react-query'
+import {getPath} from 'components/routes'
 
 interface Props {
   data: Document.AsObject[]
@@ -55,6 +55,7 @@ interface ItemProps {
 }
 
 function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
+  const match = useRouteMatch()
   const location = useLocation()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
   const {version, title, author: itemAuthor, createTime} = item
@@ -62,15 +63,14 @@ function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
 
   const {data: author} = useAuthor(itemAuthor)
 
-  const isDraft = React.useMemo(
-    () => location.pathname === '/private/library/drafts',
-    [location.pathname],
-  )
+  const isDraft = React.useMemo(() => location.pathname.includes('drafts'), [
+    location.pathname,
+  ])
 
-  const to = React.useMemo(
-    () => (isDraft ? `/private/editor/${version}` : `/p/${version}`),
-    [location.pathname],
-  )
+  const to = React.useMemo(() => {
+    const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${version}`
+    return path
+  }, [location.pathname])
   function handlePrefetch() {
     if (!prefetched) {
       // TODO: prefetch on hover
@@ -89,8 +89,7 @@ function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
         {index + 1}.
       </span>
       <div className=" flex-1 grid grid-cols-12 gap-4">
-        <div className="bg-muted rounded col-span-2"></div>
-        <div className={onDeleteDocument ? 'col-span-9' : 'col-span-10'}>
+        <div className={onDeleteDocument ? 'col-span-11' : 'col-span-12'}>
           <h3 className="text-heading leading-loose font-bold truncate">
             {theTitle}
           </h3>
@@ -106,7 +105,7 @@ function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
           </div>
         </div>
         {onDeleteDocument && (
-          <div className="col-span-1">
+          <div className="col-span-1 flex items-center justify-end">
             <button
               data-testid="delete-button"
               className="opacity-0 group-hover:opacity-100 text-danger"

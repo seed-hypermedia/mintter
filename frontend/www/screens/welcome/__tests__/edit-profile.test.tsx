@@ -19,7 +19,7 @@ beforeEach(() => {
 })
 
 async function renderWelcomeScreen() {
-  const route = `/private/welcome/edit-profile`
+  const route = `/welcome/edit-profile`
   const utils = await render(
     <Router>
       <ProfileProvider>
