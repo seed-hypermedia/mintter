@@ -62,9 +62,7 @@ export default function Topbar({isPublic = false}) {
     </div>
   ) : (
     <div
-      className={`border-b border-background-muted grid grid-flow-col gap-4 ${css`
-        grid-template-columns: minmax(250px, 25%) 1fr minmax(250px, 25%);
-      `}`}
+      className={`border-b border-background-muted grid grid-flow-col gap-4`}
     >
       <span className="text-primary flex items-center py-4 pl-4 md:pl-16">
         <Link to={getPath(match)}>
