@@ -5,7 +5,6 @@ import {NextButton, BackButton} from 'components/welcome-buttons'
 import Footer from 'components/footer'
 import Content from 'components/content'
 import Input from 'components/input'
-import {useHistory} from 'react-router-dom'
 import {useForm} from 'react-hook-form'
 
 import {useWelcome} from 'shared/welcomeProvider'
@@ -13,6 +12,8 @@ import {useState} from 'react'
 import {ErrorMessage} from 'components/errorMessage'
 import {useProfileContext} from 'shared/profileContext'
 import {useFocus} from 'shared/hooks'
+import {useRouter} from 'shared/use-router'
+import {getPath} from 'components/routes'
 
 export default function CreatePassword() {
   const {register, watch, handleSubmit, errors, formState} = useForm({
@@ -22,7 +23,7 @@ export default function CreatePassword() {
   const [submitError, setSubmitError] = useState(null)
   const {createProfile} = useProfileContext()
 
-  const history = useHistory()
+  const {history, match} = useRouter()
   const {focusFirst} = useFocus()
   const psswd = watch('walletPassword')
 
@@ -33,7 +34,7 @@ export default function CreatePassword() {
   async function onSubmit({walletPassword}) {
     try {
       createProfile({aezeedPassphrase, mnemonicList, walletPassword})
-      history.replace('/private/welcome/edit-profile')
+      history.replace(`${getPath(match)}/welcome/edit-profile`)
     } catch (err) {
       setSubmitError(err)
     }
@@ -118,7 +119,9 @@ export default function CreatePassword() {
             >
               Next →
             </NextButton>
-            <BackButton to="/private/welcome">← start over</BackButton>
+            <BackButton to={`${getPath(match)}/welcome`}>
+              ← start over
+            </BackButton>
           </div>
         </Container>
       </Footer>

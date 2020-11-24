@@ -34,7 +34,7 @@ export function Paragraph({
   // console.log(Editor.parent(editor, path))
   return (
     <Component
-      className={`hover:bg-background pt-2 px-2 md:px-3 mx-0 md:-mx-3 rounded ${className}`}
+      className={`hover:bg-background-muted pt-2 px-2 md:px-3 mx-0 md:-mx-3 text-body rounded ${className}`}
       {...attributes}
       {...rest}
     />

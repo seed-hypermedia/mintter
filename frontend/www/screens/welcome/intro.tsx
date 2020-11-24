@@ -1,5 +1,4 @@
 import React from 'react'
-import {useHistory} from 'react-router-dom'
 import Heading from 'components/welcome-heading'
 import Container from 'components/welcome-container'
 import P from 'components/welcome-p'
@@ -7,16 +6,18 @@ import {NextButton} from 'components/welcome-buttons'
 import Footer from 'components/footer'
 import {useWelcome} from 'shared/welcomeProvider'
 import {useProfile} from 'shared/profileContext'
+import {useRouter} from 'shared/use-router'
+import {getPath} from 'components/routes'
 
 export default function WelcomeIntro() {
-  const history = useHistory()
+  const {history, match} = useRouter()
   const {data: profile} = useProfile()
   const {dispatch} = useWelcome()
 
   React.useEffect(() => {
     if (profile) {
       // check is profile is available. this is the only place where I'm redirecting to the linrary from within the welcome process
-      history.replace('/library/feed')
+      history.replace(`${getPath(match)}/library/feed`)
     }
   }, [])
 
@@ -24,7 +25,7 @@ export default function WelcomeIntro() {
     // set the welcome progress
     dispatch({type: 'progress', payload: 1})
     //send the user to next page
-    history.replace('/private/welcome/security-pack')
+    history.replace(`${getPath(match)}/welcome/security-pack`)
   }
   return (
     <>

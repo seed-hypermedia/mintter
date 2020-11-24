@@ -6,19 +6,20 @@ import Footer from 'components/footer'
 import Content from 'components/content'
 import P from 'components/welcome-p'
 import {css} from 'emotion'
-import {useHistory} from 'react-router-dom'
 import Button from 'components/button'
 import {NextButton, BackButton} from 'components/welcome-buttons'
 import {useWelcome} from 'shared/welcomeProvider'
 import {useProfileContext} from 'shared/profileContext'
 import {useToasts} from 'react-toast-notifications'
+import {useRouter} from 'shared/use-router'
+import {getPath} from 'components/routes'
 
 // TODO: (horacio): refactor rpc to not have it here
 export default function SecurityPack() {
   const [error, setError] = useState<{code: number; message: string}>()
   const {genSeed, createProfile} = useProfileContext()
   const [mnemonic, setMnemonic] = useState<string[]>([])
-  const history = useHistory()
+  const {history, match} = useRouter()
   const {dispatch} = useWelcome()
 
   async function handleRPC() {
@@ -57,7 +58,7 @@ export default function SecurityPack() {
         walletPassword: '',
         aezeedPassphrase: '',
       })
-      history.replace('/private/welcome/edit-profile')
+      history.replace(`${getPath(match)}/welcome/edit-profile`)
     } catch (err) {
       throw new Error(err)
     }
@@ -112,7 +113,9 @@ export default function SecurityPack() {
             <NextButton disabled={mnemonic.length === 0} onClick={handleNext}>
               Next →
             </NextButton>
-            <BackButton to="/private/welcome">← start over</BackButton>
+            <BackButton to={`${getPath(match)}/welcome`}>
+              ← start over
+            </BackButton>
           </div>
         </Container>
       </Footer>

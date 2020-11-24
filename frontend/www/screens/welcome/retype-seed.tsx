@@ -6,7 +6,6 @@ import {NextButton, BackButton} from 'components/welcome-buttons'
 import Footer from 'components/footer'
 import Content from 'components/content'
 import Input from 'components/input'
-import {useHistory} from 'react-router-dom'
 import {useForm} from 'react-hook-form'
 import {getRandomElements} from 'shared/utils'
 import {ErrorMessage} from 'components/errorMessage'
@@ -14,6 +13,8 @@ import {useWelcome} from 'shared/welcomeProvider'
 import {useFocus} from 'shared/hooks'
 import {useProfileContext} from 'shared/profileContext'
 import {Icons} from '@mintter/editor'
+import {useRouter} from 'shared/use-router'
+import {getPath} from 'components/routes'
 
 export default function RetypeSeed() {
   const {register, handleSubmit, errors, formState} = useForm({
@@ -21,7 +22,7 @@ export default function RetypeSeed() {
   })
   const [submitError, setSubmitError] = useState(null)
   const {createProfile} = useProfileContext()
-  const history = useHistory()
+  const {history, match} = useRouter()
   const {focusFirst} = useFocus()
 
   const {
@@ -37,7 +38,7 @@ export default function RetypeSeed() {
   async function onSubmit() {
     try {
       createProfile({mnemonicList, walletPassword: '', aezeedPassphrase: ''})
-      history.replace('/private/welcome/edit-profile')
+      history.replace(`${getPath(match)}/welcome/edit-profile`)
     } catch (err) {
       setSubmitError(err)
     }
@@ -54,8 +55,9 @@ export default function RetypeSeed() {
             to recover your account. To make sure that you have properly saved
             your seed, please retype the words
           </P>
-          <P className="text-center font-bold">{`${idxs[0] + 1}, ${idxs[1] +
-            1} & ${idxs[2] + 1}`}</P>
+          <P className="text-center font-bold">{`${idxs[0] + 1}, ${
+            idxs[1] + 1
+          } & ${idxs[2] + 1}`}</P>
           {process.env.NODE_ENV === 'development' && (
             <P className="text-center">{`(${mnemonicList[idxs[0]]}, ${
               mnemonicList[idxs[1]]
@@ -123,7 +125,9 @@ export default function RetypeSeed() {
               >
                 Next →
               </NextButton>
-              <BackButton to="/private/welcome">← start over</BackButton>
+              <BackButton to={`${getPath(match)}/welcome`}>
+                ← start over
+              </BackButton>
             </div>
           </Container>
         </Footer>

@@ -59,7 +59,7 @@ export function BlockBase(
           >
             <button
               onClick={() => toggleQuotes()}
-              className="text-xs font-bold text-info rounded-full hover:bg-background transition duration-200 leading-none flex items-center justify-center w-6 h-6 text-center"
+              className="text-xs font-bold text-info rounded-full hover:bg-background-muted transition duration-200 leading-none flex items-center justify-center w-6 h-6 text-center"
             >
               {quoters}
             </button>
@@ -94,7 +94,7 @@ function BlockMentionComponent({quote, getData, onMainPanel, onSidePanel}) {
           transform: translateY(-44%);
         `}`}
       />
-      <div className="bg-background transition duration-150 hover:shadow-sm rounded ml-4 flex items-center group">
+      <div className="bg-background-muted transition duration-150 hover:shadow-sm rounded ml-4 flex items-center group">
         <div className="px-4 py-2 flex-1">
           <p className="font-bold text-heading text-sm leading-tight">
             {title}
