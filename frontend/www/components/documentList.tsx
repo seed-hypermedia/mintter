@@ -16,6 +16,12 @@ interface Props {
   onDeleteDocument?: (id: string) => Promise<void>
 }
 
+interface ItemProps {
+  item: Document.AsObject
+  index: number
+  onDeleteDocument?: (version: string) => void
+}
+
 export default function DocumentList({
   data,
   isLoading,
@@ -46,12 +52,6 @@ export default function DocumentList({
       ))}
     </div>
   )
-}
-
-interface ItemProps {
-  item: Document.AsObject
-  index: number
-  onDeleteDocument?: (version: string) => void
 }
 
 function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {

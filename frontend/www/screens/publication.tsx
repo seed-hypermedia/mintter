@@ -174,7 +174,11 @@ export default function Publication(): JSX.Element {
   let content
 
   if (isLoading) {
-    content = <p>Loading...</p>
+    content = (
+      <div className="prose prose-xl pt-4">
+        <p className="text-body">Loading...</p>
+      </div>
+    )
   } else if (isError) {
     content = (
       <div className="mx-8">
