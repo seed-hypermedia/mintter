@@ -59,11 +59,7 @@ export default function Settings() {
     <>
       <Seo title="Settings" />
       <Page>
-        <div
-          className={`grid gap-4 grid-flow-col ${css`
-            grid-template-columns: minmax(250px, 25%) 1fr minmax(250px, 25%);
-          `}`}
-        >
+        <div className={`grid gap-4 grid-flow-col`}>
           <div />
           <MainColumn>
             <form

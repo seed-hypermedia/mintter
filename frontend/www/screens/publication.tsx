@@ -174,7 +174,11 @@ export default function Publication(): JSX.Element {
   let content
 
   if (isLoading) {
-    content = <p>Loading...</p>
+    content = (
+      <div className="prose prose-xl pt-4">
+        <p className="text-body">Loading...</p>
+      </div>
+    )
   } else if (isError) {
     content = (
       <div className="mx-8">
@@ -307,7 +311,7 @@ export default function Publication(): JSX.Element {
             }}
           />
           <MainColumn
-            className={`md:mx-16 ${css`
+            className={`pr-16 md:pr-4 md:mx-16 ${css`
               max-width: 50ch;
             `}`}
           >
