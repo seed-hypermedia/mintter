@@ -2,6 +2,7 @@ import React from 'react'
 import {Switch, Route} from 'react-router-dom'
 import {PrivateRoute} from 'components/routes'
 import {AppLayout} from 'components/layout'
+import {NoRoute} from 'screens/no-route'
 
 const PublicLibrary = React.lazy(() => import('../screens/public-library'))
 const Publication = React.lazy(() => import('../screens/publication'))
@@ -22,6 +23,9 @@ export default function PublisherNode() {
       </PrivateRoute>
       <Route path="/admin">
         <AuthorNode path="/admin" />
+      </Route>
+      <Route>
+        <NoRoute />
       </Route>
     </Switch>
   )

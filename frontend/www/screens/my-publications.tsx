@@ -1,13 +1,13 @@
 import Seo from 'components/seo'
 import DocumentList from 'components/documentList'
 import {useMintter, useMyPublications} from 'shared/mintterContext'
-import {useRouteMatch} from 'react-router-dom'
 import {ErrorMessage} from 'components/errorMessage'
 import {Icons} from '@mintter/editor'
 import {getPath} from 'components/routes'
+import {useRouter} from 'shared/use-router'
 
 export default function MyPublications({noSeo = false, isPublic = false}) {
-  const match = useRouteMatch()
+  const {history, match} = useRouter()
   const {createDraft} = useMintter()
   const {isError, isLoading, isSuccess, error, data} = useMyPublications()
 

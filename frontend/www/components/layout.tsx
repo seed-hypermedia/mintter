@@ -12,7 +12,8 @@ export default function Layout({children, className = ''}: LayoutProps) {
   const {theme} = useTheme()
   return (
     <div
-      className={`bg-background fixed w-screen h-screen flex content-transition ${theme} ${className}`}
+      data-testid="app-layout"
+      className={`bg-background fixed w-screen h-screen flex ${theme} ${className}`}
     >
       {children}
     </div>
@@ -23,6 +24,7 @@ export function AppLayout({children}) {
   const {theme} = useTheme()
   return (
     <div
+      data-testid="app-layout"
       className={`bg-background w-screen h-screen grid grid-flow-row overflow-hidden ${css`
         grid-template-rows: auto 1fr;
       `} ${theme}`}

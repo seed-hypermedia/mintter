@@ -1,12 +1,13 @@
-import {useHistory, useRouteMatch} from 'react-router-dom'
+import * as React from 'react'
 import Seo from 'components/seo'
 import DocumentList from 'components/documentList'
 import {useDrafts, useMintter} from 'shared/mintterContext'
 import {getPath} from 'components/routes'
 import {Icons} from '@mintter/editor'
+import {useRouter} from 'shared/use-router'
 
 export default function Drafts() {
-  const match = useRouteMatch()
+  const {history, match} = useRouter()
   const {createDraft, deleteDocument} = useMintter()
   const {isLoading, isError, isSuccess, error, data} = useDrafts()
 

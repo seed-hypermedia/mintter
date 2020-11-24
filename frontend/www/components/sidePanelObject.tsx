@@ -72,7 +72,7 @@ export function SidePanelObject(props) {
           <div>
             <button
               onClick={() => setOpen(val => !val)}
-              className="rounded hover:bg-background p-1 hover:text-body-muted transition duration-100"
+              className="rounded hover:bg-background-muted p-1 hover:text-body-muted transition duration-100"
             >
               {open ? (
                 <Icons.ChevronUp size={16} color="currentColor" />
@@ -84,7 +84,7 @@ export function SidePanelObject(props) {
               onClick={() =>
                 dispatch({type: 'remove_object', payload: props.id})
               }
-              className="rounded hover:bg-background p-1 hover:text-body-muted transition duration-100"
+              className="rounded hover:bg-background-muted p-1 hover:text-body-muted transition duration-100"
             >
               <Icons.X size={16} color="currentColor" />
             </button>
@@ -199,7 +199,7 @@ function IPWrapper({attributes, children, element, isEditor, onTransclude}) {
         >
           <p style={{margin: 0}}>
             <button
-              className={`text-body-muted p-1 rounded-sm hover:bg-background transition duration-100 mr-2`}
+              className={`text-body-muted p-1 rounded-sm hover:bg-background-muted transition duration-100 mr-2`}
               onClick={() => onTransclude(element)}
             >
               <Icons.CornerDownLeft size={12} color="currentColor" />

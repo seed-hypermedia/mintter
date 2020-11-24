@@ -2,27 +2,21 @@ import {screen, render} from 'test/app-test-utils'
 import {App} from 'shared/app'
 import * as clientMock from 'shared/mintterClient'
 
-async function renderWelcomeScreen() {
-  const utils = await render(<App />, {
-    timeout: 10,
-  })
+jest.mock('shared/mintterClient')
 
-  return {
-    ...utils,
-  }
+async function renderWelcomeScreen() {
+  return await render(<App />, {
+    route: '/welcome',
+  })
 }
 
 test('Welcome Intro screen', async () => {
-  clientMock.getProfile.mockResolvedValue({
+  clientMock.getProfile.mockImplementation({
     toObject: (): Partial<Profile.AsObject> => ({}),
   })
   await renderWelcomeScreen()
 
-  const startButton = await screen.findByText(/start/i)
-
-  expect(screen.getByText(/Welcome to Mintter!/i)).toBeInTheDocument()
-  expect(startButton).toBeInTheDocument()
-  expect(startButton).not.toBeDisabled()
-
-  screen.debug()
+  expect(screen.getByText(/Welcome to Mintter/i)).toBeInTheDocument()
+  expect(await screen.findByText(/start/i)).toBeInTheDocument()
+  expect(await screen.findByText(/start/i)).not.toBeDisabled()
 })

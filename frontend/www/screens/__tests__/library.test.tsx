@@ -63,15 +63,3 @@ test('renders with Connections', async () => {
     expect(screen.getByText(/testuser/i)).toBeInTheDocument()
   })
 })
-
-test('should redirect to welcome if no profile is available', async () => {
-  clientMock.getProfile.mockResolvedValue(null)
-
-  await render(<App />, {
-    route: '/library/feed',
-  })
-
-  await waitFor(() => {
-    expect(screen.getByText(/Welcome to Mintter!/i)).toBeInTheDocument()
-  })
-})

@@ -69,7 +69,6 @@ function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
 
   const to = React.useMemo(() => {
     const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${version}`
-    console.log('ListItem -> path', path)
     return path
   }, [location.pathname])
   function handlePrefetch() {

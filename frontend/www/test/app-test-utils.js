@@ -20,9 +20,10 @@ function AppWrapper({children}) {
 async function render(
   ui,
   {
-    route = '/library/feed',
-    timeout,
+    route = '/',
+    timeout = 4000,
     wrapper = AppWrapper,
+    wait = true,
     ...renderOptions
   } = {},
 ) {
@@ -32,9 +33,7 @@ async function render(
           pathname: route,
           state: {},
         }
-      : {
-          ...route,
-        }
+      : route
 
   window.history.pushState(routeConfig.state, 'Test page', routeConfig.pathname)
 
@@ -44,7 +43,10 @@ async function render(
       ...renderOptions,
     }),
   }
-  await waitForLoadingToFinish(timeout)
+
+  if (wait) {
+    await waitForLoadingToFinish(timeout)
+  }
 
   return returnValue
 }

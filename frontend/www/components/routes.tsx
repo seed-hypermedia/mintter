@@ -1,4 +1,5 @@
 import {Route, Redirect} from 'react-router-dom'
+import {match as Match} from 'react-router'
 import {useProfile} from 'shared/profileContext'
 import {useWelcome} from 'shared/welcomeProvider'
 import {FullPageSpinner} from 'components/fullPageSpinner'
@@ -10,13 +11,13 @@ export function ProgressRoute({children, ...rest}) {
   return (
     <Route
       {...rest}
-      render={({match}) =>
+      render={props =>
         progress ? (
           children
         ) : (
           <Redirect
             to={{
-              pathname: `${getPath(match)}/welcome`,
+              pathname: `${getPath(props.match)}/welcome`,
             }}
           />
         )
@@ -25,11 +26,17 @@ export function ProgressRoute({children, ...rest}) {
   )
 }
 
-export function PrivateRoute({children, pathname, ...rest}) {
+export function PrivateRoute({
+  children,
+  pathname = '/',
+  exact = false,
+  ...rest
+}) {
   const {isSuccess, data: profile} = useProfile()
   if (isSuccess) {
     return (
       <Route
+        exact={exact}
         {...rest}
         render={({location, match}) =>
           profile ? (

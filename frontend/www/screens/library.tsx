@@ -94,7 +94,7 @@ export default function Library() {
           <Connections onConnect={onConnect} />
           <SuggestedConnections onConnect={onConnect} />
         </div>
-        <div>
+        <div data-testid="library-test">
           <MainColumn className="pt-12">
             <div className="flex items-baseline justify-between">
               <h1 className="text-4xl font-bold text-heading">Library</h1>
