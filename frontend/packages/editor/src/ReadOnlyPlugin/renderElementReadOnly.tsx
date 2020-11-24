@@ -20,10 +20,14 @@ function RenderElement(props) {
   const renderElement = React.useCallback(({attributes, children, element}) => {
     switch (element.type) {
       case ELEMENT_PARAGRAPH:
-        return <p {...attributes}>{children}</p>
+        return (
+          <p className="text-body" {...attributes}>
+            {children}
+          </p>
+        )
       default:
         return (
-          <p {...attributes} className="bg-muted relative">
+          <p {...attributes} className="text-body bg-muted relative">
             <span
               contentEditable={false}
               className="absolute top-0 left-0 text-xs text-info uppercase"
@@ -41,7 +45,19 @@ function RenderElement(props) {
       children = <strong className="font-bold">{children}</strong>
     }
 
-    return <span {...attributes}>{children}</span>
+    if (leaf.italic) {
+      children = <em className="italic">{children}</em>
+    }
+
+    if (leaf.underline) {
+      children = <span className="underline">{children}</span>
+    }
+
+    return (
+      <span className="text-body" {...attributes}>
+        {children}
+      </span>
+    )
   }, [])
 
   return (
