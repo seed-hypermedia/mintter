@@ -5,6 +5,7 @@ import {ErrorMessage} from './errorMessage'
 import {useMemo} from 'react'
 import {Button} from './button'
 import {useToasts} from 'react-toast-notifications'
+import {CopyToClipboard} from 'react-copy-to-clipboard'
 
 export function ProfileAddress(props) {
   const {getProfileAddrs} = useProfileContext()
@@ -13,6 +14,7 @@ export function ProfileAddress(props) {
   const {addToast} = useToasts()
 
   const address = useMemo(() => data?.toObject().addrsList, [data])
+  const copyText = React.useMemo(() => address?.join(','), [address])
 
   if (isLoading) {
     return <p>Loading...</p>
@@ -20,16 +22,6 @@ export function ProfileAddress(props) {
 
   if (isError) {
     return <ErrorMessage error={error} />
-  }
-
-  function handleCopy(address: string[]) {
-    const value = address.join(',')
-
-    navigator.clipboard
-      .writeText(value)
-      .then(() =>
-        addToast('Address copied to your clipboard!', {appearance: 'success'}),
-      )
   }
 
   return (
@@ -53,13 +45,27 @@ export function ProfileAddress(props) {
         className="block text-body-muted w-full border bg-background-muted border-muted rounded px-3 py-2 font-mono text-xs"
         value={address && address.join('\n\n')}
       />
-      <Button
-        className="mx-auto mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white"
-        type="button"
-        onClick={() => handleCopy(address)}
+      <CopyToClipboard
+        text={copyText}
+        onCopy={(_, result) => {
+          if (result) {
+            addToast('Address copied to your clipboard!', {
+              appearance: 'success',
+            })
+          } else {
+            addToast('Error while copying to Clipboard!', {
+              appearance: 'error',
+            })
+          }
+        }}
       >
-        Copy Address
-      </Button>
+        <Button
+          className="mx-auto mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white"
+          type="button"
+        >
+          Copy Address
+        </Button>
+      </CopyToClipboard>
     </div>
   )
 }
