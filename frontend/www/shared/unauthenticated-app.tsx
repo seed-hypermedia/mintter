@@ -14,18 +14,8 @@ const Complete = React.lazy(() => import('screens/welcome/complete'))
 
 export default function Welcome({className = '', ...props}: LayoutProps) {
   const match = useRouteMatch()
-  const [redirect, setRedirect] = React.useState(false)
-  const {isSuccess, data} = useProfile()
 
-  React.useEffect(() => {
-    if (isSuccess && data?.accountId) {
-      setRedirect(true)
-    }
-  }, [data])
-
-  return redirect ? (
-    <Redirect to={`${getPath(match)}/library`} />
-  ) : (
+  return (
     <Layout {...props} className={`flex flex-col py-8 ${className}`}>
       <div className="absolute right-0 top-0 p-4">
         <ThemeToggle />
