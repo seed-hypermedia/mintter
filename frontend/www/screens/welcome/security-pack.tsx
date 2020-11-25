@@ -13,6 +13,7 @@ import {useProfileContext} from 'shared/profileContext'
 import {useToasts} from 'react-toast-notifications'
 import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
+import {CopyToClipboard} from 'react-copy-to-clipboard'
 
 // TODO: (horacio): refactor rpc to not have it here
 export default function SecurityPack() {
@@ -131,19 +132,15 @@ export function MnemonicWords({
   error?: {code: number; message: string}
 }) {
   const {addToast} = useToasts()
-  function handleCopy() {
-    const words = lists
-      .flat()
-      .map((w, i) => `${i + 1}. ${w}\n`)
-      .join('')
 
-    navigator.clipboard
-      .writeText(words)
-      .then(() =>
-        addToast('Words copied to your clipboard!', {appearance: 'success'}),
-      )
-  }
-
+  const words = useMemo(
+    () =>
+      lists
+        .flat()
+        .map((w, i) => `${i + 1}. ${w}\n`)
+        .join(''),
+    [lists],
+  )
   return (
     <>
       <div className="flex-wrap flex w-full" data-testid="mnemonic-list">
@@ -192,13 +189,27 @@ export function MnemonicWords({
               </div>
             ))}
       </div>
-      <Button
-        className="mx-auto mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white transition-all"
-        type="submit"
-        onClick={handleCopy}
+      <CopyToClipboard
+        text={words}
+        onCopy={(_, result) => {
+          if (result) {
+            addToast('Address copied to your clipboard!', {
+              appearance: 'success',
+            })
+          } else {
+            addToast('Error while copying to Clipboard!', {
+              appearance: 'error',
+            })
+          }
+        }}
       >
-        Copy and Save it securely!
-      </Button>
+        <Button
+          className="mx-auto mt-4 text-success duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white transition-all"
+          type="submit"
+        >
+          Copy and Save it securely!
+        </Button>
+      </CopyToClipboard>
     </>
   )
 }
