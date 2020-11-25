@@ -8,11 +8,15 @@ export function ProgressRoute({children, ...rest}) {
   const {
     state: {progress},
   } = useWelcome()
+  console.log(
+    '🚀 ~ file: routes.tsx ~ line 10 ~ ProgressRoute ~ progress',
+    progress,
+  )
   return (
     <Route
       {...rest}
-      render={props =>
-        progress ? (
+      render={props => {
+        return progress ? (
           children
         ) : (
           <Redirect
@@ -21,7 +25,7 @@ export function ProgressRoute({children, ...rest}) {
             }}
           />
         )
-      }
+      }}
     />
   )
 }
@@ -33,6 +37,7 @@ export function PrivateRoute({
   ...rest
 }) {
   const {isSuccess, data: profile} = useProfile()
+  console.log('🚀 ~ file: routes.tsx ~ line 40 ~ profile', profile)
   if (isSuccess) {
     return (
       <Route
@@ -44,7 +49,7 @@ export function PrivateRoute({
           ) : (
             <Redirect
               to={{
-                pathname: pathname ? pathname : `${getPath(match)}/welcome`,
+                pathname: `${getPath(match)}/welcome`,
                 state: {from: location},
               }}
             />

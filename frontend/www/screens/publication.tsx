@@ -39,6 +39,7 @@ import Modal from 'react-modal'
 import {useToasts} from 'react-toast-notifications'
 import {useTheme} from 'shared/themeContext'
 import {getPath} from 'components/routes'
+import {CopyToClipboard} from 'react-copy-to-clipboard'
 
 Modal.setAppElement('#__next')
 
@@ -171,6 +172,10 @@ export default function Publication(): JSX.Element {
     }
   }, [drafts])
 
+  const copyText = React.useMemo(() => profileAddress?.join(','), [
+    profileAddress,
+  ])
+
   let content
 
   if (isLoading) {
@@ -236,41 +241,50 @@ export default function Publication(): JSX.Element {
               in the Mintter App.`}
             </h2>
             <div className="mt-6 flex items-center">
-              <button
-                className="outline-none focus:shadow-outline text-primary pl-2 pr-4 py-1 font-bold flex items-center rounded-full border-2 border-primary hover:bg-primary hover:text-white transition duration-100"
-                onClick={() => {
-                  const value = profileAddress.join(',')
-
-                  navigator.clipboard.writeText(value).then(() =>
+              <CopyToClipboard
+                text={copyText}
+                onCopy={(_, result) => {
+                  if (result) {
                     addToast(
                       `${author.username}’s Address copied to your clipboard!`,
                       {
                         appearance: 'success',
                       },
-                    ),
-                  )
+                    )
+                  } else {
+                    addToast('Error while copying to Clipboard', {
+                      appearance: 'error',
+                    })
+                  }
                 }}
               >
-                <Icons.Copy size={14} color="currentColor" />
-                <span className="ml-2">{`Copy ${
-                  author ? author.username : 'user'
-                }’s user ID`}</span>
-              </button>
-              <button
-                className="outline-none focus:shadow-outline text-primary pl-2 pr-4 py-1 ml-4 font-bold flex items-center rounded-full border-2 border-primary hover:bg-primary hover:text-white transition duration-100"
-                onClick={() => {
-                  const value = profileAddress.join(',')
+                <button className="outline-none focus:shadow-outline text-primary pl-2 pr-4 py-1 font-bold flex items-center rounded-full border-2 border-primary hover:bg-primary hover:text-white transition duration-100">
+                  <Icons.Copy size={14} color="currentColor" />
+                  <span className="ml-2">{`Copy ${
+                    author ? author.username : 'user'
+                  }’s user ID`}</span>
+                </button>
+              </CopyToClipboard>
 
-                  navigator.clipboard.writeText(value).then(() =>
+              <CopyToClipboard
+                text={version}
+                onCopy={(_, result) => {
+                  if (result) {
                     addToast(`Document's UUID copied to your clipboard!`, {
                       appearance: 'success',
-                    }),
-                  )
+                    })
+                  } else {
+                    addToast('Error while copying to Clipboard', {
+                      appearance: 'error',
+                    })
+                  }
                 }}
               >
-                <Icons.Copy size={14} color="currentColor" />
-                <span className="ml-2">Copy Document UUID</span>
-              </button>
+                <button className="outline-none focus:shadow-outline text-primary pl-2 pr-4 py-1 ml-4 font-bold flex items-center rounded-full border-2 border-primary hover:bg-primary hover:text-white transition duration-100">
+                  <Icons.Copy size={14} color="currentColor" />
+                  <span className="ml-2">Copy Document UUID</span>
+                </button>
+              </CopyToClipboard>
             </div>
           </div>
         </div>
