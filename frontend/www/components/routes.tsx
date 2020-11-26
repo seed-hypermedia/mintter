@@ -8,10 +8,6 @@ export function ProgressRoute({children, ...rest}) {
   const {
     state: {progress},
   } = useWelcome()
-  console.log(
-    '🚀 ~ file: routes.tsx ~ line 10 ~ ProgressRoute ~ progress',
-    progress,
-  )
   return (
     <Route
       {...rest}
@@ -37,7 +33,6 @@ export function PrivateRoute({
   ...rest
 }) {
   const {isSuccess, data: profile} = useProfile()
-  console.log('🚀 ~ file: routes.tsx ~ line 40 ~ profile', profile)
   if (isSuccess) {
     return (
       <Route

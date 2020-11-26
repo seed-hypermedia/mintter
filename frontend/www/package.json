@@ -25,6 +25,7 @@
     "@tippyjs/react": "^4.1.0",
     "@udecode/slate-plugins": "^0.66.9",
     "emotion": "^10.0.27",
+    "faker": "^5.1.0",
     "lodash.debounce": "^4.0.8",
     "next": "^9.3.0",
     "react": "^17.0.1",
