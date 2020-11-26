@@ -23,7 +23,7 @@ export function Connections({onConnect}) {
           no connections available :(
         </p>
       ) : (
-        <ul>
+        <ul aria-label="connections">
           {data.map(c => {
             const isConnected =
               c.connectionStatus === ConnectionStatus.CONNECTED
