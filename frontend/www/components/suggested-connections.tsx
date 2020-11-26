@@ -30,7 +30,7 @@ export function SuggestedConnections({onConnect}) {
           no suggestions available :(
         </p>
       ) : (
-        <ul>
+        <ul aria-label="suggested connections">
           {data.map((c: SuggestedProfile.AsObject) => {
             const {profile, addrsList} = c
             const isConnected =

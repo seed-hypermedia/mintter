@@ -48,6 +48,7 @@ export default function Publication(): JSX.Element {
   const {push, replace} = useHistory()
   const match = useRouteMatch()
   const {slug} = useParams()
+  console.log('🚀 ~ file: publication.tsx ~ line 51 ~ Publication ~ slug', slug)
   const query = new URLSearchParams(location.search)
   const isModalOpen = query.get('modal')
   const {data: profileAddress} = useProfileAddrs()
@@ -115,7 +116,12 @@ export default function Publication(): JSX.Element {
   const {state} = useEditorValue({
     document: data,
   })
+  console.log(
+    '🚀 ~ file: publication.tsx ~ line 119 ~ Publication ~ state',
+    state,
+  )
   const {title, blocks, subtitle, author: pubAuthor} = state
+
   const {data: author} = useAuthor(pubAuthor)
   const {createTransclusion} = useTransclusion()
   const {data: drafts = []} = useDrafts()
