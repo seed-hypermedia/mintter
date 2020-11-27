@@ -1,11 +1,26 @@
-import {render, screen, waitFor, within} from 'test/app-test-utils'
+import {
+  render,
+  screen,
+  within,
+  userEvent,
+  waitFor,
+  waitForElementToBeRemoved,
+} from 'test/app-test-utils'
 import * as clientMock from 'shared/mintterClient'
 import {App} from 'shared/app'
 import {Profile, SuggestedProfile} from '@mintter/api/v2/mintter_pb'
-import {buildUser, buildSuggestedConnection} from 'test/generate'
+import {
+  buildUser,
+  buildSuggestedConnection,
+  buildAddrsList,
+} from 'test/generate'
 // import {Profile} from '@mintter/api/v2/mintter_pb'
 
 jest.mock('shared/mintterClient')
+
+beforeEach(() => {
+  jest.clearAllMocks()
+})
 
 async function renderLibrary({
   user,
@@ -68,21 +83,24 @@ beforeEach(() => {
   })
 })
 
-test('render empty connections and suggested connections message', async () => {
-  await renderLibrary({suggestedConnections: [], connections: []})
+test('render <Connections /> empty message', async () => {
+  await renderLibrary({connections: []})
 
-  expect(screen.getByText(/no suggestions available :\(/i)).toBeInTheDocument()
   expect(screen.getByText(/no connections available :\(/i)).toBeInTheDocument()
 })
 
-test('render connections and suggested connections', async () => {
+test('render <SuggestedConnections /> empty message', async () => {
+  await renderLibrary({suggestedConnections: []})
+
+  expect(screen.getByText(/no suggestions available :\(/i)).toBeInTheDocument()
+})
+
+test('<Connections /> and <SuggestedConnections />', async () => {
   const {connections, suggestedConnections} = await renderLibrary()
 
   const connectionsList = screen.getByRole('list', {
     name: 'connections',
   })
-
-  screen.debug(connectionsList)
 
   const list1 = within(connectionsList)
   const items1 = list1.getAllByRole('listitem')
@@ -103,4 +121,41 @@ test('render connections and suggested connections', async () => {
   expect(
     screen.getByText(suggestedConnections[0].profile.username, {exact: false}),
   ).toBeInTheDocument()
+})
+
+test('<Connections /> Connect to Peer', async () => {
+  clientMock.connectToPeerById = jest.fn().mockResolvedValue(() => true)
+  global.prompt = jest.fn().mockImplementation(() => buildAddrsList().join(','))
+
+  const {connections} = await renderLibrary()
+  expect(clientMock.listConnections).toBeCalledTimes(1)
+
+  clientMock.listConnections.mockResolvedValueOnce({
+    toObject: (): {profilesList: Profile.AsObject[]} => ({
+      profilesList: [...connections, buildUser()],
+    }),
+  })
+  userEvent.click(screen.getByText(/add connection/i))
+
+  await waitForElementToBeRemoved(() => [
+    ...screen.queryAllByText(/Connecting to peer/i),
+  ])
+
+  expect(
+    screen.queryByText(/Connection established successfuly/i),
+  ).toBeInTheDocument()
+
+  expect(clientMock.listConnections).toBeCalledTimes(2)
+
+  const connectionsList = screen.getByRole('list', {
+    name: 'connections',
+  })
+
+  const list = within(connectionsList)
+  const items = list.getAllByRole('listitem')
+  expect(items.length).toBe(4)
+})
+
+test('<SuggestedConnections /> Connect to Peer', async () => {
+  await renderLibrary()
 })
