@@ -66,6 +66,7 @@ export default function Library() {
         })
         try {
           await connectToPeer(peer.split(','))
+
           updateToast(toast, {
             content: 'Connection established successfuly!',
             appearance: 'success',
