@@ -26,7 +26,11 @@ export interface CreateTransclusionRequest {
 
 export function useTransclusion() {
   const createTransclusion = useCallback(
-    async ({source, destination, block}: CreateTransclusionRequest) => {
+    async ({
+      source,
+      destination,
+      block,
+    }: CreateTransclusionRequest): Promise<string> => {
       let draft: GetDocumentResponse | Document
       let transclusionId: string
       if (block.id.includes('/')) {
@@ -36,23 +40,7 @@ export function useTransclusion() {
         transclusionId = `${source}/${block.id}`
       }
 
-      if (destination) {
-        draft = await getDocument('key', destination)
-
-        // Create block reference for the block being transcluded:
-        const transclusionRef = new BlockRef()
-        transclusionRef.setRef(transclusionId)
-
-        const document = draft.getDocument()
-        document.getBlockRefList().addRefs(transclusionRef)
-
-        const req = new UpdateDraftRequest()
-        req.setDocument(document)
-
-        await updateDraftWithRequest(req)
-
-        return destination
-      } else {
+      if (destination === undefined) {
         // no destination provided, create a new Draft
         draft = await createDraft()
 
@@ -100,6 +88,22 @@ export function useTransclusion() {
         await updateDraftWithRequest(req)
 
         return draft.getVersion()
+      } else {
+        draft = await getDocument('key', destination)
+
+        // Create block reference for the block being transcluded:
+        const transclusionRef = new BlockRef()
+        transclusionRef.setRef(transclusionId)
+
+        const document = draft.getDocument()
+        document.getBlockRefList().addRefs(transclusionRef)
+
+        const req = new UpdateDraftRequest()
+        req.setDocument(document)
+
+        await updateDraftWithRequest(req)
+
+        return destination
       }
     },
     [],
@@ -154,58 +158,3 @@ function createBlockRef(sourceRef: BlockRef.AsObject) {
 
   return makeProto(new BlockRef(), blockRef)
 }
-
-// const n = await createDraft()
-// const newDraft = n.toObject()
-// const transclusionId = `${version}/${block.id}`
-// const req = new UpdateDraftRequest()
-// const map: Map<string, Block> = req.getBlocksMap()
-// const emptyBlockId = uuid()
-// const emptyBlock = {
-//   type: ELEMENT_BLOCK,
-//   id: emptyBlockId,
-//   children: [
-//     {
-//       type: ELEMENT_PARAGRAPH,
-//       children: [
-//         {
-//           text: '',
-//         },
-//       ],
-//     },
-//   ],
-// }
-// map.set(emptyBlockId, toBlock(emptyBlock))
-// const update = toDocument({
-//   document: {
-//     id: newDraft.id,
-//     author: newDraft.author,
-//     version: newDraft.version,
-//   },
-//   state: {
-//     title: '',
-//     subtitle: '',
-//     blocks: [
-//       {
-//         type: ELEMENT_BLOCK_LIST,
-//         id: uuid(),
-//         listType: BlockRefList.Style.NONE,
-//         children: [
-//           {
-//             type: ELEMENT_TRANSCLUSION,
-//             id: transclusionId,
-//             children: block.children,
-//           },
-//           {
-//             ...emptyBlock,
-//           },
-//         ],
-//       },
-//     ],
-//   },
-// })
-// req.setDocument(update)
-// await updateDraftWithRequest(req)
-// push({
-//   pathname: `/editor/${newDraft.version}`,
-// })
