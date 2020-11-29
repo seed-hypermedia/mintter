@@ -131,7 +131,7 @@ export default function Publication(): JSX.Element {
   }) {
     const draftUrl = await createTransclusion({
       source: version,
-      destination: destination ? destination.version : undefined,
+      destination,
       block: block,
     })
 

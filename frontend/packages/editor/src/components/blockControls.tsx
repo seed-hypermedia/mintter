@@ -19,7 +19,7 @@ const BlockControlsComp = ({
 }: any) => {
   const menu = useMenuState({loop: true})
   const {
-    state: {onSidePanel, onQuote},
+    state: {onSidePanel},
   } = useBlockMenu()
   const isQuote = React.useMemo(() => isTransclusion(element), [element])
   return index === highlightedIndex ? (
@@ -38,14 +38,19 @@ const BlockControlsComp = ({
         style={{width: 320, zIndex: 100, backgroundColor: 'white'}}
         hideOnClickOutside
       >
-        <MenuItem
-          {...menu}
-          onClick={() => onSidePanel?.(element.id)}
-          disabled={!isQuote}
-        >
-          <Icons.ArrowUpRight size={16} color="currentColor" />
-          <span className="flex-1 mx-2">Open in Sidepanel</span>
-        </MenuItem>
+        {onSidePanel && (
+          <MenuItem
+            {...menu}
+            onClick={() => {
+              onSidePanel(element.id)
+              console.log('onSidePanel!', onSidePanel, element.id)
+            }}
+            disabled={!isQuote}
+          >
+            <Icons.ArrowUpRight size={16} color="currentColor" />
+            <span className="flex-1 mx-2">Open in Sidepanel</span>
+          </MenuItem>
+        )}
         <MenuItem
           {...menu}
           as={DraftsMenu}
@@ -53,7 +58,7 @@ const BlockControlsComp = ({
           icon={Icons.CornerDownLeft}
           element={element}
         />
-        <MenuItem
+        {/* <MenuItem
           {...menu}
           disabled={isQuote}
           onClick={() => {
@@ -63,7 +68,7 @@ const BlockControlsComp = ({
         >
           <Icons.CornerDownLeft size={16} color="currentColor" />
           <span className="flex-1 mx-2">Write About this Block</span>
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </>
   ) : null
@@ -135,6 +140,7 @@ const DraftsMenuComp = React.forwardRef<
           onClick={() => {
             menu.hide()
             onQuote?.({block: element})
+            console.log(`onQuote to New Draft = `, onQuote, element)
           }}
         >
           <Icons.PlusCircle size={16} color="currentColor" />
@@ -148,7 +154,8 @@ const DraftsMenuComp = React.forwardRef<
               {...menu}
               onClick={() => {
                 menu.hide()
-                onQuote?.({block: element, destination: item})
+                onQuote?.({block: element, destination: item.version})
+                console.log(`onQuote to ${item.title} = `, onQuote, element)
               }}
             >
               <span className="flex-1 w-full text-left text-primary mx-2">
