@@ -56,11 +56,11 @@ export default function Publication(): JSX.Element {
   const {dispatch} = useBlockMenu()
   const {state: sidePanel, dispatch: sidePanelDispatch} = useSidePanel()
   const version = React.useMemo(() => slug.split('-').slice(-1)[0], [slug])
-
+  const isLocal = isLocalhost(window.location.hostname)
   const {createDraft} = useMintter()
 
   async function handleInteract() {
-    if (isLocalhost(window.location.hostname)) {
+    if (isLocal) {
       const d = await createDraft()
 
       const value = d.toObject()
@@ -94,19 +94,31 @@ export default function Publication(): JSX.Element {
     ...options,
     transclusion: {
       ...options.transclusion,
-      customProps: {
-        dispatch: sidePanelDispatch,
-        getData: getQuotationData,
-      },
+      customProps: Object.assign(
+        {},
+        {
+          dispatch: sidePanelDispatch,
+          getData: getQuotationData,
+        },
+        isLocal && {
+          onMainPanel,
+          onSidePanel,
+        },
+      ),
     },
     block: {
       ...options.block,
-      customProps: {
-        dispatch: sidePanelDispatch,
-        getData: getQuotationData,
-        onMainPanel,
-        onSidePanel,
-      },
+      customProps: Object.assign(
+        {},
+        {
+          dispatch: sidePanelDispatch,
+          getData: getQuotationData,
+        },
+        isLocal && {
+          onMainPanel,
+          onSidePanel,
+        },
+      ),
     },
   }
   const plugins = createPlugins(editorOptions)
@@ -127,14 +139,13 @@ export default function Publication(): JSX.Element {
     destination,
   }: {
     block: SlateBlock
-    destination?: Document.AsObject
+    destination?: string
   }) {
     const draftUrl = await createTransclusion({
       source: version,
       destination,
       block: block,
     })
-
     push(`${getPath(match)}/editor/${draftUrl}`)
   }
 
@@ -161,17 +172,15 @@ export default function Publication(): JSX.Element {
   }
 
   React.useEffect(() => {
-    if (drafts.length) {
-      dispatch({
-        type: 'set_actions',
-        payload: {
-          onQuote,
-          onSidePanel,
-          useDocument,
-          drafts,
-        },
-      })
-    }
+    dispatch({
+      type: 'set_actions',
+      payload: {
+        onQuote,
+        onSidePanel,
+        useDocument,
+        drafts,
+      },
+    })
   }, [drafts])
 
   const copyText = React.useMemo(() => profileAddress?.join(','), [

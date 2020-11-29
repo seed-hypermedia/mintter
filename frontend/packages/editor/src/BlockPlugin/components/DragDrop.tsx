@@ -10,10 +10,13 @@ import {useBlockMenu} from './blockMenuContext'
 export const DragDrop = ({element, children, componentRef, ...props}: any) => {
   const ref = mergeRefs(props.ref, componentRef)
   const match = useRouteMatch({
-    path: '/p/:slug',
+    path: [`/p/:slug`, `/admin/p/:slug`],
     strict: true,
   })
-
+  const isLocalhost = React.useMemo(
+    () => window?.location?.hostname?.includes('localhost'),
+    [],
+  )
   const {
     dispatch,
     state: {blockId},
@@ -32,7 +35,7 @@ export const DragDrop = ({element, children, componentRef, ...props}: any) => {
       >
         {children}
 
-        {match && (
+        {match && isLocalhost && (
           <div
             className={`absolute m-0 p-0 leading-none transition duration-200 shadow-sm ${css`
               top: 2px;
