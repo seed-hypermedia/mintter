@@ -22,7 +22,7 @@ describe(`Publisher Node`, () => {
   })
 
   test(`if user lands in "/p/{versionId}" and there's no profile, redirect to the welcome process`, async () => {
-    await renderPublisherNode('/p/hello-world-123456789098765432')
+    await renderPublisherNode({route: '/p/hello-world-123456789098765432'})
     expect(screen.getByText(/Welcome to Mintter/i)).toBeInTheDocument()
   })
 
