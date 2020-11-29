@@ -26,6 +26,7 @@ import {
   Profile,
   ListSuggestedProfilesResponse,
   ListSuggestedProfilesRequest,
+  ConnectToPeerResponse,
 } from '@mintter/api/v2/mintter_pb'
 import {toDocument, toBlock, ELEMENT_BLOCK, SlateBlock} from '@mintter/editor'
 import {getNodesByType} from '@udecode/slate-plugins'
@@ -125,7 +126,7 @@ interface SetDocumentRequest {
 }
 
 export function setDocument(editor) {
-  return async function({document, state}: SetDocumentRequest): Promise<any> {
+  return async function ({document, state}: SetDocumentRequest): Promise<any> {
     //  do I still need this guard?
     if (Array.isArray(document.version)) {
       console.error(
@@ -235,7 +236,9 @@ export async function genSeed() {
   return await usersClient().genSeed(req)
 }
 
-export async function connectToPeerById(peerIds: string[]) {
+export async function connectToPeerById(
+  peerIds: string[],
+): Promise<ConnectToPeerResponse> {
   const req = new ConnectToPeerRequest()
   req.setAddrsList(peerIds)
   return await usersClient().connectToPeer(req)

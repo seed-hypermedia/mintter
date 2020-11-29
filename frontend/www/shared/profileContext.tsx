@@ -160,7 +160,8 @@ export function useConnectionCreate() {
     (peerIds?: string[]) => apiClient.connectToPeerById(peerIds),
     {
       onSuccess: () => {
-        queryCache.refetchQueries('ListConnections')
+        queryCache.refetchQueries(['ListConnections'])
+        queryCache.refetchQueries(['ListSuggestedConnections'])
       },
       onError: params => {
         throw new Error(`Connection to Peer error -> ${JSON.stringify(params)}`)
