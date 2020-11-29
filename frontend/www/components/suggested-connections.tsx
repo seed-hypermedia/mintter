@@ -79,7 +79,9 @@ export function SuggestedConnections({onConnect}) {
                       {`${profile.username} (${profile.accountId.slice(-8)})`}
                     </span>
                     <button
-                      onClick={() => onConnect(addrsList)}
+                      onClick={() => {
+                        onConnect(addrsList)
+                      }}
                       className="opacity-0 group-hover:opacity-100 transition duration-75 px-2 rounded-full bg-info hover:bg-info-hover text-white"
                     >
                       connect
