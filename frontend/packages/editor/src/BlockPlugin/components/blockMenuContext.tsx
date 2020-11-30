@@ -1,12 +1,6 @@
 import {Document} from '@mintter/api/v2/documents_pb'
 import {SlateBlock} from 'editor'
 import React, {createContext, useContext} from 'react'
-
-export interface BlockMenuContextType {
-  state: BlockMenuContextState
-  dispatch: any
-}
-
 export interface MenuItemProps {
   label: string
   onClick?: (block: SlateBlock) => void
@@ -19,7 +13,7 @@ export interface OnQuoteOptions {
   destination?: string
 }
 
-export interface BlockMenuContextState {
+export interface BlockMenuContextType {
   blockId: string | null
   onQuote?: (data: OnQuoteOptions) => void
   onSidePanel?: (blockId: string) => void
@@ -29,12 +23,12 @@ export interface BlockMenuContextState {
 
 export interface BlockMenuProviderProps {
   children: any
-  reducer?: (state: BlockMenuContextState, action: any) => BlockMenuContextState
-  initialState?: BlockMenuContextState
-  stateInitializer?: () => BlockMenuContextState
+  reducer?: (state: BlockMenuContextType, action: any) => BlockMenuContextType
+  initialState?: BlockMenuContextType
+  stateInitializer?: () => BlockMenuContextType
 }
 
-const defaultState: BlockMenuContextState = {
+const defaultState: BlockMenuContextType = {
   blockId: null,
   onSidePanel: () => console.log('Implement me!'),
   onQuote: () => console.log('Implement me!'),
@@ -49,10 +43,11 @@ function defaultReducer(state, {payload}) {
   }
 }
 
-export const BlockMenuContext = createContext<BlockMenuContextType>({
-  state: defaultState,
-  dispatch: defaultReducer,
-})
+export const BlockMenuContext = createContext<BlockMenuContextType>(
+  defaultState,
+)
+
+export const BlockMenuDispatchContext = createContext<any>(defaultReducer)
 
 export function BlockMenuProvider({
   children,
@@ -61,11 +56,12 @@ export function BlockMenuProvider({
 }: BlockMenuProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, initialState)
 
-  const value = React.useMemo(() => ({state, dispatch}), [state])
   return (
-    <BlockMenuContext.Provider value={value}>
-      {children}
-    </BlockMenuContext.Provider>
+    <BlockMenuDispatchContext.Provider value={dispatch}>
+      <BlockMenuContext.Provider value={state}>
+        {children}
+      </BlockMenuContext.Provider>
+    </BlockMenuDispatchContext.Provider>
   )
 }
 
@@ -74,6 +70,17 @@ export function useBlockMenu() {
   if (context === undefined) {
     throw new Error(
       `\`useBlockMenu\` must be used within a \`BlockMenuProvider\``,
+    )
+  }
+
+  return context
+}
+
+export function useBlockMenuDispatch() {
+  const context = useContext(BlockMenuDispatchContext)
+  if (context === undefined) {
+    throw new Error(
+      `\`useBlockMenuDispatch\` must be used within a \`BlockMenuProvider\``,
     )
   }
 
