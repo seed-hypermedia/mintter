@@ -1,121 +1,105 @@
-import {render, screen, waitFor} from '../../test/app-test-utils'
-import PublisherNode from '../publisher-node'
+import {render, screen} from 'test/app-test-utils'
+import {buildDocument, buildProfile} from 'test/generate'
+import * as mockedIsLocalhost from 'shared/isLocalhost'
 import * as clientMock from 'shared/mintterClient'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 import {
   ListDocumentsResponse,
   GetDocumentResponse,
-  BlockRefList,
 } from '@mintter/api/v2/documents_pb'
+import {App} from 'shared/app'
 
+jest.mock('shared/isLocalhost')
 jest.mock('shared/mintterClient')
 jest.mock('react-modal')
 
-async function renderPublisherNode({route = '/', ...restConfig} = {}) {
-  return await render(<PublisherNode />, {route, ...restConfig})
-}
+async function renderApp({
+  profile,
+  listDocuments,
+  document,
+  isLocalhost,
+  route = '/',
+  ...renderOptions
+} = {}) {
+  if (isLocalhost === undefined) {
+    isLocalhost = true
+  }
 
-describe(`Publisher Node`, () => {
-  test('should render the welcome screen when no profile is available', async () => {
-    await renderPublisherNode()
-    expect(screen.getByText(/Welcome to Mintter/i)).toBeInTheDocument()
-  })
+  mockedIsLocalhost.isLocalhost.mockReturnValue(isLocalhost)
 
-  test(`if user lands in "/p/{versionId}" and there's no profile, redirect to the welcome process`, async () => {
-    await renderPublisherNode({route: '/p/hello-world-123456789098765432'})
-    expect(screen.getByText(/Welcome to Mintter/i)).toBeInTheDocument()
-  })
+  if (profile === undefined) {
+    profile = buildProfile()
+  }
 
-  test('should render the public library when profile is available', async () => {
+  if (listDocuments === undefined) {
+    listDocuments = [buildDocument({author: profile ? profile.accountId : ''})]
+  }
+
+  if (document === undefined) {
+    document = buildDocument({author: profile ? profile.accountId : ''})
+  }
+
+  if (profile !== null) {
     clientMock.getProfile.mockResolvedValue({
-      toObject: (): Partial<Profile.AsObject> => ({
-        peerId: '1234asdf',
-        username: 'test-user',
-        accountId: '123456789098765432',
-      }),
+      toObject: (): Partial<Profile.AsObject> => profile,
     })
+
     clientMock.listDocuments.mockResolvedValue({
       toObject: (): ListDocumentsResponse.AsObject => ({
-        documentsList: [
-          {
-            version: '12345678',
-            title: 'Test Document Title',
-            subtitle: 'Test Document Subtitle',
-            author: '12345678909876543',
-          },
-        ],
-      }),
-    })
-    await renderPublisherNode()
-    expect(screen.getByText(/Articles/i)).toBeInTheDocument()
-  })
-
-  test('should render a publication', async () => {
-    clientMock.getProfile.mockResolvedValue({
-      toObject: (): Partial<Profile.AsObject> => ({
-        peerId: '1234asdf',
-        username: 'test-user',
-        accountId: '123456789098765432',
-      }),
-    })
-    clientMock.listDocuments.mockResolvedValue({
-      toObject: (): ListDocumentsResponse.AsObject => ({
-        documentsList: [
-          {
-            version: '123456780987654321',
-            title: 'Test Document Title',
-            subtitle: 'Test Document Subtitle',
-            author: '123456789098765432',
-          },
-        ],
+        documentsList: listDocuments,
       }),
     })
 
     clientMock.getDocument.mockResolvedValue({
-      toObject: (): GetDocumentResponse.AsObject => ({
-        document: {
-          version: '123456780987654321',
-          title: 'Test Document Title',
-          subtitle: 'Test Document Subtitle',
-          author: '123456789098765432',
-          blockRefList: {
-            style: BlockRefList.Style.NONE,
-            refsList: [{ref: 'block-1'}],
-          },
-        },
-        blocksMap: [
-          [
-            'block-1',
-            {
-              id: 'block-1',
-              quotersList: [],
-              paragraph: {
-                inlineElementsList: [
-                  {
-                    text: 'Hello World',
-                    textStyle: {
-                      bold: false,
-                      italic: false,
-                      code: false,
-                      underline: false,
-                    },
-                  },
-                ],
-              },
-            },
-          ],
-        ],
-      }),
+      toObject: (): GetDocumentResponse.AsObject => document,
     })
+  }
 
-    await renderPublisherNode({route: '/p/123456780987654321'})
+  const utils = await render(<App />, {route, ...renderOptions})
 
-    expect(screen.getByText(/Test Document Title/i)).toBeInTheDocument()
-    expect(screen.getByText(/Test Document Subtitle/i)).toBeInTheDocument()
-    expect(screen.getByText(/hello world/i)).toBeInTheDocument()
+  return {
+    ...utils,
+    profile,
+    listDocuments,
+    isLocalhost,
+  }
+}
+
+describe(`Publisher Node`, () => {
+  test('should render the welcome screen when no profile is available', async () => {
+    await renderApp({profile: null, listDocuments: null})
+    expect(screen.getByText(/Welcome to Mintter/i)).toBeInTheDocument()
   })
 
-  test('should not render the settings page', async () => {
+  test(`if user lands in "/p/{versionId}" and there's no profile, redirect to the welcome process`, async () => {
+    await renderApp({
+      profile: null,
+      listDocuments: null,
+      route: '/p/hello-world-123456789098765432',
+    })
+    expect(screen.getByText(/Welcome to Mintter/i)).toBeInTheDocument()
+  })
+
+  test('should render the public library when profile is available', async () => {
+    await renderApp({isLocalhost: false})
+    expect(screen.getByText(/Articles/i)).toBeInTheDocument()
+  })
+
+  test.only('should render a publication', async () => {
+    const {version, title, subtitle} = buildDocument()
+    await renderApp({document, route: `/p/${document.version}`})
+
+    // screen.debug(screen.getByTestId('page'))
+    // expect(screen.getByText(/Test Document Title/i)).toBeInTheDocument()
+    // expect(screen.getByText(/Test Document Subtitle/i)).toBeInTheDocument()
+    // expect(screen.getByText(/hello world/i)).toBeInTheDocument()
+    console.log(
+      '🚀 ~ file: publisher-node.test.tsx ~ line 100 ~ test.only ~ {version, title, subtitle}',
+      {version, title, subtitle},
+    )
+  })
+
+  xtest('should not render the settings page', async () => {
     clientMock.getProfile.mockResolvedValue({
       toObject: (): Partial<Profile.AsObject> => ({
         peerId: '1234asdf',
@@ -140,7 +124,7 @@ describe(`Publisher Node`, () => {
     expect(screen.getByText(/no route match/i)).toBeInTheDocument()
   })
 
-  test('should render the Author Node', async () => {
+  xtest('should render the Author Node', async () => {
     clientMock.getProfile.mockResolvedValue({
       toObject: (): Partial<Profile.AsObject> => ({
         peerId: '1234asdf',

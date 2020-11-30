@@ -18,9 +18,7 @@ const BlockControlsComp = ({
   highlightedIndex,
 }: any) => {
   const menu = useMenuState({loop: true})
-  const {
-    state: {onSidePanel},
-  } = useBlockMenu()
+  const blockMenuState = useBlockMenu()
   const isQuote = React.useMemo(() => isTransclusion(element), [element])
   return index === highlightedIndex ? (
     <>
@@ -38,12 +36,11 @@ const BlockControlsComp = ({
         style={{width: 320, zIndex: 100, backgroundColor: 'white'}}
         hideOnClickOutside
       >
-        {onSidePanel && (
+        {blockMenuState.onSidePanel && (
           <MenuItem
             {...menu}
             onClick={() => {
-              onSidePanel(element.id)
-              console.log('onSidePanel!', onSidePanel, element.id)
+              blockMenuState.onSidePanel?.(element.id)
             }}
             disabled={!isQuote}
           >
@@ -110,9 +107,7 @@ const DraftsMenuComp = React.forwardRef<
 >(({element, label, icon, ...props}, ref) => {
   const menu = useMenuState({loop: true})
   const LeftIcon = icon ? icon : null
-  const {
-    state: {drafts = [], onQuote},
-  } = useBlockMenu()
+  const {drafts = [], onQuote} = useBlockMenu()
   return (
     <>
       <MenuButton
@@ -148,6 +143,7 @@ const DraftsMenuComp = React.forwardRef<
         </MenuItem>
         <MenuSeparator {...menu} style={{margin: 0, padding: 0}} />
         {drafts.map(item => {
+          console.log('🚀 ~ file: blockControls.tsx ~ line 146 ~ item', item)
           return (
             <MenuItem
               key={item.version}
