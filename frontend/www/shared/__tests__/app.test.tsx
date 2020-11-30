@@ -1,40 +1,57 @@
-import {render, screen} from 'test/app-test-utils'
 import {App} from '../app'
+import {render, screen} from 'test/app-test-utils'
+import {buildDocument, buildProfile} from 'test/generate'
 import * as mockedIsLocalhost from 'shared/isLocalhost'
 import * as clientMock from 'shared/mintterClient'
+import {Profile} from '@mintter/api/v2/mintter_pb'
 
 jest.mock('shared/isLocalhost')
 jest.mock('shared/mintterClient')
 
-describe('Main App', () => {
+async function renderApp({profile, listDocuments, isLocalhost}) {
+  if (profile === undefined) {
+    profile = buildProfile()
+  }
+
   clientMock.getProfile.mockResolvedValue({
-    toObject: (): Partial<Profile.AsObject> => ({
-      peerId: '1234asdf',
-      username: 'test-user',
-      accountId: '123456789098765432',
-    }),
+    toObject: (): Partial<Profile.AsObject> => profile,
   })
+
+  if (listDocuments === undefined) {
+    listDocuments = [buildDocument({author: profile ? profile.accountId : ''})]
+  }
+
   clientMock.listDocuments.mockResolvedValue({
     toObject: (): ListDocumentsResponse.AsObject => ({
-      documentsList: [
-        {
-          version: '123456780987654321',
-          title: 'Test Document Title',
-          subtitle: 'Test Document Subtitle',
-          author: '123456789098765432',
-        },
-      ],
+      documentsList: listDocuments,
     }),
   })
+
+  if (isLocalhost === undefined) {
+    isLocalhost = true
+  }
+
+  mockedIsLocalhost.isLocalhost.mockReturnValue(isLocalhost)
+
+  const utils = await render(<App />, {route: '/'})
+
+  return {
+    ...utils,
+    profile,
+    listDocuments,
+    isLocalhost,
+  }
+}
+
+describe('Main App', () => {
   test(`should render the Author's Library (AuthorNode's main screen) when the user is at localhost`, async () => {
     mockedIsLocalhost.isLocalhost.mockReturnValue(true)
-    await render(<App />)
+    await renderApp({isLocalhost: true})
     expect(screen.getByText(/library/i)).toBeInTheDocument()
   })
 
   test('should render the Public Library (Publisher Node main screen) when the user is NOT at localhost', async () => {
-    mockedIsLocalhost.isLocalhost.mockReturnValue(false)
-    await render(<App />)
+    await renderApp({isLocalhost: false})
     expect(screen.getByText(/articles/i)).toBeInTheDocument()
   })
 })

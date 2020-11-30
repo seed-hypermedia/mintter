@@ -8,7 +8,7 @@ import {
   EditorComponent,
   useEditorValue,
   options,
-  useBlockMenu,
+  useBlockMenuDispatch,
   SlateBlock,
 } from '@mintter/editor'
 import Seo from 'components/seo'
@@ -34,7 +34,6 @@ import ResizerStyle from 'components/resizer-style'
 import {SidePanelObject} from 'components/sidePanelObject'
 import {useSidePanel} from 'components/sidePanel'
 import {Profile} from '@mintter/api/v2/mintter_pb'
-import {Document} from '@mintter/api/v2/documents_pb'
 import Modal from 'react-modal'
 import {useToasts} from 'react-toast-notifications'
 import {useTheme} from 'shared/themeContext'
@@ -53,7 +52,7 @@ export default function Publication(): JSX.Element {
   const {data: profileAddress} = useProfileAddrs()
   const {addToast} = useToasts()
   const {theme} = useTheme()
-  const {dispatch} = useBlockMenu()
+  const dispatch = useBlockMenuDispatch()
   const {state: sidePanel, dispatch: sidePanelDispatch} = useSidePanel()
   const version = React.useMemo(() => slug.split('-').slice(-1)[0], [slug])
   const isLocal = isLocalhost(window.location.hostname)
@@ -124,15 +123,15 @@ export default function Publication(): JSX.Element {
   const plugins = createPlugins(editorOptions)
   const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
   const {error, data, isLoading, isError} = useDocument(version)
+  const {createTransclusion} = useTransclusion()
+  const {data: drafts = []} = useDrafts()
   const {state} = useEditorValue({
     document: data,
   })
 
-  const {title, blocks, subtitle, author: pubAuthor} = state
+  // const {title = '', blocks, subtitle, author: pubAuthor} = state
 
-  const {data: author} = useAuthor(pubAuthor)
-  const {createTransclusion} = useTransclusion()
-  const {data: drafts = []} = useDrafts()
+  const {data: author} = useAuthor(state?.author)
 
   async function handleQuotation({
     block,
@@ -150,11 +149,14 @@ export default function Publication(): JSX.Element {
   }
 
   React.useEffect(() => {
-    if (!slug.includes('-') && title) {
-      const titleSlug = slugify(title, {lower: true, remove: /[*+~.()'"!:@]/g})
+    if (!slug.includes('-') && state && state.title) {
+      const titleSlug = slugify(state.title, {
+        lower: true,
+        remove: /[*+~.()'"!:@]/g,
+      })
       replace(`${titleSlug}-${version}`)
     }
-  }, [title])
+  }, [state.title])
 
   async function getQuotationData(quoteId) {
     const version = quoteId.split('/')[0]
@@ -208,7 +210,7 @@ export default function Publication(): JSX.Element {
           readOnly
           editor={editor}
           plugins={plugins}
-          value={blocks}
+          value={state.blocks}
         />
       </div>
     )
@@ -362,9 +364,9 @@ export default function Publication(): JSX.Element {
                   min-height: 56px;
                 `}`}
               >
-                {title}
+                {state.title}
               </h1>
-              {subtitle && (
+              {state.subtitle && (
                 <p
                   className={`text-md md:text-lg font-light text-heading-muted italic mt-4 leading-tight ${css`
                     word-wrap: break-word;
@@ -372,7 +374,7 @@ export default function Publication(): JSX.Element {
                     min-height: 28px;
                   `}`}
                 >
-                  {subtitle}
+                  {state.subtitle}
                 </p>
               )}
               <p className="text-sm mt-4 text-heading">

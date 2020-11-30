@@ -11,7 +11,6 @@ export function BlockBase(
 ) {
   const [isQuotesVisible, setVisibility] = React.useState<boolean>(false)
   let quoters = element.quotersList?.length
-  console.log('🚀 ~ quoters', quoters)
 
   function toggleQuotes() {
     setVisibility(val => !val)

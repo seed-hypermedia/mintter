@@ -10,7 +10,7 @@ import * as clientMock from 'shared/mintterClient'
 import {App} from 'shared/app'
 import {Profile, SuggestedProfile} from '@mintter/api/v2/mintter_pb'
 import {
-  buildUser,
+  buildProfile,
   buildSuggestedConnection,
   buildAddrsList,
 } from 'test/generate'
@@ -23,24 +23,24 @@ beforeEach(() => {
 })
 
 async function renderLibrary({
-  user,
+  profile,
   connections,
   suggestedConnections,
 }: {
-  user: Partial<Profile.AsObject>
+  profile: Partial<Profile.AsObject>
   connections: Profile.AsObject[]
   suggestedConnections: SuggestedProfile.AsObject[]
 } = {}) {
-  if (user === undefined) {
-    user = buildUser()
+  if (profile === undefined) {
+    profile = buildProfile()
   }
 
   clientMock.getProfile.mockResolvedValue({
-    toObject: (): Partial<Profile.AsObject> => user,
+    toObject: (): Partial<Profile.AsObject> => profile,
   })
 
   if (connections === undefined) {
-    connections = [buildUser(), buildUser(), buildUser()]
+    connections = [buildProfile(), buildProfile(), buildProfile()]
   }
 
   clientMock.listConnections.mockResolvedValueOnce({
@@ -65,11 +65,11 @@ async function renderLibrary({
 
   const route = '/library/feed'
 
-  const utils = await render(<App />, {route, user})
+  const utils = await render(<App />, {route, profile})
 
   return {
     ...utils,
-    user,
+    profile,
     connections,
     suggestedConnections,
   }
@@ -135,7 +135,7 @@ test('<Connections /> Connect to Peer', async () => {
   // mock of connection after adding one
   clientMock.listConnections.mockResolvedValueOnce({
     toObject: (): {profilesList: Profile.AsObject[]} => ({
-      profilesList: [...connections, buildUser()],
+      profilesList: [...connections, buildProfile()],
     }),
   })
 

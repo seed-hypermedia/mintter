@@ -69,7 +69,7 @@ export function useEditorValue({document}) {
   useEffect(() => {
     if (document) {
       const {document: doc, blocksMap} = document
-      const {title, subtitle, blockRefList, author} = doc
+      const {title = '', subtitle, blockRefList, author} = doc
       const mentions = getMentions(blocksMap)
       const blocks = toSlateTree({
         blockRefList,
