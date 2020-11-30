@@ -2,7 +2,7 @@ import {useDndBlock} from '@udecode/slate-plugins'
 import {mergeRefs} from '../../mergeRefs'
 import React from 'react'
 import {BlockControls} from '../../components/blockControls'
-import {useBlockMenu} from './blockMenuContext'
+import {useBlockMenu, useBlockMenuDispatch} from './blockMenuContext'
 import {ReactEditor, useEditor} from 'slate-react'
 
 export function DragDrop({element, componentRef, children}: any) {
@@ -19,7 +19,8 @@ export function DragDrop({element, componentRef, children}: any) {
   const dragWrapperRef = React.useRef(null)
   const multiDragRef = mergeRefs(dragRef, dragWrapperRef)
 
-  const {state, dispatch} = useBlockMenu()
+  const state = useBlockMenu()
+  const dispatch = useBlockMenuDispatch()
 
   return (
     <div ref={multiRef}>

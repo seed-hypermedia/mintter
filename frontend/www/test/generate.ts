@@ -10,7 +10,7 @@ import {
 } from '@mintter/api/v2/mintter_pb'
 import * as faker from 'faker'
 
-export function buildUser(): Profile.AsObject {
+export function buildProfile(): Profile.AsObject {
   return {
     accountId: faker.finance.bitcoinAddress(),
     peerId: faker.finance.bitcoinAddress(),
@@ -24,7 +24,7 @@ export function buildUser(): Profile.AsObject {
 export function buildDocument({
   author = faker.finance.bitcoinAddress(),
   publishingState = PublishingState.PUBLISHED,
-}): Document.AsObject {
+} = {}): Document.AsObject {
   return {
     id: faker.finance.bitcoinAddress(),
     version: faker.finance.bitcoinAddress(),
@@ -50,7 +50,7 @@ export function bluidBlockRefList(): BlockRefList.AsObject {
 
 export function buildSuggestedConnection(): SuggestedProfile.AsObject {
   return {
-    profile: buildUser(),
+    profile: buildProfile(),
     addrsList: buildAddrsList(),
   }
 }

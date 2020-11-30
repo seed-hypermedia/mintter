@@ -6,7 +6,7 @@ import {
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {AppProviders} from 'components/app-providers'
-import {buildUser} from './generate'
+import {buildProfile} from './generate'
 
 jest.mock('shared/V1mintterClient')
 
@@ -25,7 +25,7 @@ async function render(
     timeout = 4000,
     wrapper = AppWrapper,
     wait = true,
-    user,
+    profile,
     ...renderOptions
   } = {},
 ) {
@@ -39,13 +39,14 @@ async function render(
 
   window.history.pushState(routeConfig.state, 'Test page', routeConfig.pathname)
 
-  user = typeof user === 'undefined' ? buildUser() : user
+  profile = typeof profile === 'undefined' ? buildProfile() : profile
+
   const returnValue = {
     ...rtlRender(ui, {
       wrapper,
       ...renderOptions,
     }),
-    user,
+    profile,
   }
 
   if (wait) {

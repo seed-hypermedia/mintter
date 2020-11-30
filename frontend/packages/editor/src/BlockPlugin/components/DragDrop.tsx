@@ -4,7 +4,7 @@ import {css} from 'emotion'
 import {BlockControls} from '../../components/blockControls'
 import {mergeRefs} from '../../mergeRefs'
 import {Icons} from '../../components/icons'
-import {useBlockMenu} from './blockMenuContext'
+import {useBlockMenu, useBlockMenuDispatch} from './blockMenuContext'
 // import {useReadOnly} from 'slate-react'
 
 export const DragDrop = ({element, children, componentRef, ...props}: any) => {
@@ -17,10 +17,8 @@ export const DragDrop = ({element, children, componentRef, ...props}: any) => {
     () => window?.location?.hostname?.includes('localhost'),
     [],
   )
-  const {
-    dispatch,
-    state: {blockId},
-  } = useBlockMenu()
+  const {blockId} = useBlockMenu()
+  const dispatch = useBlockMenuDispatch()
 
   return (
     <div {...props} ref={ref}>
