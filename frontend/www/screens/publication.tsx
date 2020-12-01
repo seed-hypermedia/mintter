@@ -11,6 +11,7 @@ import {
   toSlateTree,
   useEditor,
   Icons,
+  SlateBlock,
   useBlockMenuDispatch,
 } from '@mintter/editor'
 import {Document} from '@mintter/api/v2/documents_pb'
@@ -31,6 +32,7 @@ import {queryCache, useMutation} from 'react-query'
 import {isLocalhost} from 'shared/isLocalhost'
 import {getPath} from 'components/routes'
 import {useTransclusion} from 'shared/useTransclusion'
+import { Profile } from '@mintter/api/v2/mintter_pb'
 
 export default function Publication() {
   const match = useRouteMatch()
@@ -259,8 +261,9 @@ export default function Publication() {
         )}
       </SplitPane>
       <Seo
-        title={`${data.document &&
-          `${data?.document?.title} | `}Mintter Publication`}
+        title={`${
+          data.document && `${data?.document?.title} | `
+        }Mintter Publication`}
       />
       <PublicationModal document={data.document} />
       <ResizerStyle />
