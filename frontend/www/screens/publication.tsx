@@ -1,72 +1,75 @@
 import React from 'react'
+import {css} from 'emotion'
+import SplitPane from 'react-split-pane'
+import {useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import {ReactEditor} from 'slate-react'
 import slugify from 'slugify'
 import {
-  Icons,
-  useEditor,
   createPlugins,
   EditorComponent,
-  useEditorValue,
   options,
+  toSlateTree,
+  useEditor,
+  Icons,
   useBlockMenuDispatch,
-  SlateBlock,
 } from '@mintter/editor'
-import Seo from 'components/seo'
-import {getDocument, getProfile} from 'shared/mintterClient'
-
-import {css} from 'emotion'
-import {
-  useParams,
-  useHistory,
-  useLocation,
-  useRouteMatch,
-} from 'react-router-dom'
-import {useDocument, useDrafts, useMintter} from 'shared/mintterContext'
-import {useAuthor, useProfileAddrs} from 'shared/profileContext'
-import {ErrorMessage} from 'components/errorMessage'
-import {AuthorLabel} from 'components/author-label'
-import {useTransclusion} from 'shared/useTransclusion'
-import {isLocalhost} from 'shared/isLocalhost'
-import {Page} from 'components/page'
-import {MainColumn} from 'components/main-column'
-import SplitPane from 'react-split-pane'
-import ResizerStyle from 'components/resizer-style'
+import {Document} from '@mintter/api/v2/documents_pb'
 import {SidePanelObject} from 'components/sidePanelObject'
+import {AuthorLabel} from 'components/author-label'
+import {PublicationModal} from 'components/publication-modal'
+import {useDocument, useDrafts} from 'shared/mintterContext'
+import {useAuthor} from 'shared/profileContext'
+import {ErrorMessage} from 'components/errorMessage'
+import {MainColumn} from 'components/main-column'
+import {Page} from 'components/page'
+import ResizerStyle from 'components/resizer-style'
+import Seo from 'components/seo'
 import {useSidePanel} from 'components/sidePanel'
-import {Profile} from '@mintter/api/v2/mintter_pb'
-import Modal from 'react-modal'
-import {useToasts} from 'react-toast-notifications'
-import {useTheme} from 'shared/themeContext'
+import {MintterIcon} from 'components/mintter-icon'
+import * as apiClient from 'shared/mintterClient'
+import {queryCache, useMutation} from 'react-query'
+import {isLocalhost} from 'shared/isLocalhost'
 import {getPath} from 'components/routes'
-import {CopyToClipboard} from 'react-copy-to-clipboard'
+import {useTransclusion} from 'shared/useTransclusion'
 
-Modal.setAppElement('#__next')
-
-export default function Publication(): JSX.Element {
-  const location = useLocation()
-  const {push, replace} = useHistory()
+export default function Publication() {
   const match = useRouteMatch()
-  const {slug} = useParams()
-  const query = new URLSearchParams(location.search)
-  const isModalOpen = query.get('modal')
-  const {data: profileAddress} = useProfileAddrs()
-  const {addToast} = useToasts()
-  const {theme} = useTheme()
-  const dispatch = useBlockMenuDispatch()
+  const history = useHistory()
+
+  // request document
+  const {isLoading, isError, error, data, value} = usePublication()
+
+  //sidepanel state
   const {state: sidePanel, dispatch: sidePanelDispatch} = useSidePanel()
-  const version = React.useMemo(() => slug.split('-').slice(-1)[0], [slug])
-  const isLocal = isLocalhost(window.location.hostname)
-  const {createDraft} = useMintter()
+
+  // get Drafts for editorOptions
+  const {data: drafts = []} = useDrafts()
+
+  // draftCreation
+  const [createDraft] = useMutation(apiClient.createDraft, {
+    onSuccess: () => {
+      queryCache.refetchQueries('Drafts')
+    },
+  })
+
+  // block menu dispatch
+  const blockMenuDispatch = useBlockMenuDispatch()
+
+  // transclusions
+  const {createTransclusion} = useTransclusion()
 
   async function handleInteract() {
-    if (isLocal) {
+    if (isLocalhost(window.location.hostname)) {
       const d = await createDraft()
 
       const value = d.toObject()
-      push(`${getPath(match)}/editor/${value.version}?object=${version}`)
-      return
+      history.push(
+        `${getPath(match)}/editor/${value.version}?object=${
+          data.document?.version
+        }`,
+      )
     } else {
-      push(
+      history.push(
         `${location.pathname}${
           location.search ? `${location.search}&modal=show` : '?modal=show'
         }`,
@@ -74,97 +77,40 @@ export default function Publication(): JSX.Element {
     }
   }
 
-  function handleMainPanel(mentionId: string) {
-    push(`${getPath(match)}/p/${mentionId}`)
+  const handleQuotation = (document: Document.AsObject) => async ({
+    block,
+    destination,
+  }: {
+    block: SlateBlock
+    destination?: Document.AsObject
+  }) => {
+    const draftUrl = await createTransclusion({
+      source: document.version,
+      destination: destination ? destination.version : undefined,
+      block: block,
+    })
+
+    history.push(`${getPath(match)}/editor/${draftUrl}`)
   }
 
-  function handlesidePanel(blockId: string) {
+  function handleMainpanel(mentionId: string) {
+    history.push(`${getPath(match)}/p/${mentionId}`)
+  }
+
+  function handleSidepanel(blockId: string) {
     sidePanelDispatch({
       type: 'add_object',
       payload: blockId,
     })
   }
 
-  const onQuote = React.useCallback(handleQuotation, [])
-  const onSidePanel = React.useCallback(handlesidePanel, [])
-  const onMainPanel = React.useCallback(handleMainPanel, [])
-
-  const editorOptions = {
-    ...options,
-    transclusion: {
-      ...options.transclusion,
-      customProps: Object.assign(
-        {},
-        {
-          dispatch: sidePanelDispatch,
-          getData: getQuotationData,
-        },
-        isLocal && {
-          onMainPanel,
-          onSidePanel,
-        },
-      ),
-    },
-    block: {
-      ...options.block,
-      customProps: Object.assign(
-        {},
-        {
-          dispatch: sidePanelDispatch,
-          getData: getQuotationData,
-        },
-        isLocal && {
-          onMainPanel,
-          onSidePanel,
-        },
-      ),
-    },
-  }
-  const plugins = createPlugins(editorOptions)
-  const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
-  const {error, data, isLoading, isError} = useDocument(version)
-  const {createTransclusion} = useTransclusion()
-  const {data: drafts = []} = useDrafts()
-  const {state} = useEditorValue({
-    document: data,
-  })
-
-  // const {title = '', blocks, subtitle, author: pubAuthor} = state
-
-  const {data: author} = useAuthor(state?.author)
-
-  async function handleQuotation({
-    block,
-    destination,
-  }: {
-    block: SlateBlock
-    destination?: string
-  }) {
-    const draftUrl = await createTransclusion({
-      source: version,
-      destination,
-      block: block,
-    })
-    push(`${getPath(match)}/editor/${draftUrl}`)
-  }
-
-  React.useEffect(() => {
-    if (!slug.includes('-') && state && state.title) {
-      const titleSlug = slugify(state.title, {
-        lower: true,
-        remove: /[*+~.()'"!:@]/g,
-      })
-      replace(`${titleSlug}-${version}`)
-    }
-  }, [state.title])
-
   async function getQuotationData(quoteId) {
     const version = quoteId.split('/')[0]
-    const res = await getDocument('', version)
+    const res = await apiClient.getDocument('', version)
     const data = res.toObject()
     const {document} = data
     const authorId = data.document.author
-    const authorData = await getProfile('', authorId)
+    const authorData = await apiClient.getProfile('', authorId)
     const author: Profile.AsObject = authorData.toObject()
 
     return {
@@ -173,8 +119,36 @@ export default function Publication(): JSX.Element {
     }
   }
 
+  const onQuote = React.useCallback(handleQuotation(data?.document), [data])
+  const onSidePanel = React.useCallback(handleSidepanel, [])
+  const onMainPanel = React.useCallback(handleMainpanel, [])
+
+  const editorOptions = {
+    ...options,
+    transclusion: {
+      ...options.transclusion,
+      customProps: {
+        dispatch: sidePanelDispatch,
+        getData: getQuotationData,
+      },
+    },
+    block: {
+      ...options.block,
+      customProps: {
+        dispatch: sidePanelDispatch,
+        getData: getQuotationData,
+        onMainPanel,
+        onSidePanel,
+      },
+    },
+  }
+
+  // create editor
+  const plugins = createPlugins(editorOptions)
+  const editor = useEditor(plugins, options) as ReactEditor
+
   React.useEffect(() => {
-    dispatch({
+    blockMenuDispatch({
       type: 'set_actions',
       payload: {
         onQuote,
@@ -183,126 +157,19 @@ export default function Publication(): JSX.Element {
         drafts,
       },
     })
-  }, [drafts])
+  }, [onQuote, onSidePanel, useDocument, drafts])
 
-  const copyText = React.useMemo(() => profileAddress?.join(','), [
-    profileAddress,
-  ])
-
-  let content
-
+  // start rendering
   if (isLoading) {
-    content = (
-      <div className="prose prose-xl pt-4">
-        <p className="text-body">Loading...</p>
-      </div>
-    )
-  } else if (isError) {
-    content = (
-      <div className="mx-8">
-        <ErrorMessage error={error} />
-      </div>
-    )
-  } else {
-    content = (
-      <div className="prose prose-xl pt-4">
-        <EditorComponent
-          readOnly
-          editor={editor}
-          plugins={plugins}
-          value={state.blocks}
-        />
-      </div>
-    )
+    return <p className="text-body">Loading...</p>
+  }
+
+  if (isError) {
+    return <ErrorMessage error={error} />
   }
 
   return (
     <Page>
-      <Seo title="Publication" />
-      <Modal
-        isOpen={!!isModalOpen}
-        shouldCloseOnOverlayClick={true}
-        shouldCloseOnEsc={true}
-        className={`${theme} absolute top-0 mx-auto my-8 max-w-2xl transform -translate-x-1/2 z-50 ${css`
-          left: 50%;
-        `}`}
-        onRequestClose={() => {
-          push(location.pathname)
-        }}
-        contentLabel="Onboarding Modal"
-      >
-        <div className="bg-background p-8 rounded-2xl shadow-lg outline-none focus:shadow-outline">
-          <div className="flex items-center justify-between">
-            <MintterIcon size="1.5em" />
-            <button
-              onClick={() => push(location.pathname)}
-              className="text-gray-500 outline-none focus:shadow-outline p-1 w-6 h-6 rounded-full hover:bg-background-muted transition duration-150 flex items-center justify-center"
-            >
-              <Icons.X size={15} />
-            </button>
-          </div>
-          <div className="mt-8">
-            <h1 className="font-bold text-2xl">
-              Mintter App download should launch automatically
-            </h1>
-          </div>
-          <div className="mt-8 border-t pt-8">
-            <h2 className="text-2xl font-light">
-              {`Keep this information handy, in order to access ${
-                author ? author.username : 'user'
-              }’s document
-              in the Mintter App.`}
-            </h2>
-            <div className="mt-6 flex items-center">
-              <CopyToClipboard
-                text={copyText}
-                onCopy={(_, result) => {
-                  if (result) {
-                    addToast(
-                      `${author.username}’s Address copied to your clipboard!`,
-                      {
-                        appearance: 'success',
-                      },
-                    )
-                  } else {
-                    addToast('Error while copying to Clipboard', {
-                      appearance: 'error',
-                    })
-                  }
-                }}
-              >
-                <button className="outline-none focus:shadow-outline text-primary pl-2 pr-4 py-1 font-bold flex items-center rounded-full border-2 border-primary hover:bg-primary hover:text-white transition duration-100">
-                  <Icons.Copy size={14} color="currentColor" />
-                  <span className="ml-2">{`Copy ${
-                    author ? author.username : 'user'
-                  }’s user ID`}</span>
-                </button>
-              </CopyToClipboard>
-
-              <CopyToClipboard
-                text={version}
-                onCopy={(_, result) => {
-                  if (result) {
-                    addToast(`Document's UUID copied to your clipboard!`, {
-                      appearance: 'success',
-                    })
-                  } else {
-                    addToast('Error while copying to Clipboard', {
-                      appearance: 'error',
-                    })
-                  }
-                }}
-              >
-                <button className="outline-none focus:shadow-outline text-primary pl-2 pr-4 py-1 ml-4 font-bold flex items-center rounded-full border-2 border-primary hover:bg-primary hover:text-white transition duration-100">
-                  <Icons.Copy size={14} color="currentColor" />
-                  <span className="ml-2">Copy Document UUID</span>
-                </button>
-              </CopyToClipboard>
-            </div>
-          </div>
-        </div>
-      </Modal>
-      <ResizerStyle />
       <SplitPane
         style={{
           height: '100%',
@@ -342,48 +209,17 @@ export default function Publication(): JSX.Element {
               max-width: 50ch;
             `}`}
           >
-            <div
-              className={`pb-2 relative mt-6 ${css`
-                &:after {
-                  content: '';
-                  position: absolute;
-                  bottom: 1px;
-                  left: 0;
-                  width: 50%;
-                  max-width: 360px;
-                  height: 1px;
-                  z-index: 20;
-                  background-color: var(--color-muted-hover);
-                }
-              `}`}
-            >
-              <h1
-                className={`text-2xl md:text-4xl text-heading font-bold italic leading-tight ${css`
-                  word-wrap: break-word;
-                  white-space: pre-wrap;
-                  min-height: 56px;
-                `}`}
-              >
-                {state.title}
-              </h1>
-              {state.subtitle && (
-                <p
-                  className={`text-md md:text-lg font-light text-heading-muted italic mt-4 leading-tight ${css`
-                    word-wrap: break-word;
-                    white-space: pre-wrap;
-                    min-height: 28px;
-                  `}`}
-                >
-                  {state.subtitle}
-                </p>
+            <PublicationHeader document={data.document} />
+            <div className="prose prose-xl pt-4">
+              {value && (
+                <EditorComponent
+                  readOnly
+                  editor={editor}
+                  plugins={plugins}
+                  value={value}
+                />
               )}
-              <p className="text-sm mt-4 text-heading">
-                <span>by </span>
-
-                <AuthorLabel author={author} />
-              </p>
             </div>
-            {content}
           </MainColumn>
         </div>
         {sidePanel.visible ? (
@@ -422,20 +258,49 @@ export default function Publication(): JSX.Element {
           <div />
         )}
       </SplitPane>
+      <Seo
+        title={`${data.document &&
+          `${data?.document?.title} | `}Mintter Publication`}
+      />
+      <PublicationModal document={data.document} />
+      <ResizerStyle />
     </Page>
   )
 }
 
-function MintterIcon({size = '1em'}) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <rect width={32} height={32} rx={4} fill="#5200FF" />
-      <path
-        d="M14.74 15.995v4.002c0 .55-.44 1.003-.976 1.003-.537 0-.968-.452-.968-1.003v-4.002c0-.55-.44-1.003-.977-1.003-.536 0-.977.452-.977 1.003v4.002c0 .55-.44 1.003-.977 1.003-.536 0-.967-.452-.967-1.003v-4.002c0-.55-.44-1.003-.977-1.003-.536 0-.977.452-.977 1.003v4.002c0 .55-.44 1.003-.977 1.003C5.431 21 5 20.548 5 19.997v-4.002c0-1.652 1.312-2.999 2.921-2.999a2.88 2.88 0 011.944.767 2.834 2.834 0 011.945-.767c1.618 0 2.93 1.347 2.93 3zm5.01-2.645c-.537 0-.977.452-.977 1.003 0 .55.44 1.003.977 1.003.536 0 .977-.452.977-1.003a.988.988 0 00-.977-1.003zm.977 7.247c.469-.276.622-.885.354-1.367a.957.957 0 00-1.331-.364.967.967 0 01-.489.138c-.536 0-.977-.452-.977-1.003v-5.998c0-.55-.44-1.003-.977-1.003-.536 0-.977.452-.977 1.003V18c0 1.652 1.313 2.999 2.922 2.999.526 0 1.034-.138 1.475-.403zm4.817-7.945c-.536 0-.977.452-.977 1.003 0 .55.44 1.003.977 1.003.537 0 .977-.452.977-1.003 0-.55-.44-1.003-.977-1.003zm.968 7.945c.469-.276.622-.885.354-1.367a.957.957 0 00-1.331-.364.967.967 0 01-.489.138c-.536 0-.977-.452-.977-1.003v-5.998A.98.98 0 0023.102 11c-.537 0-.977.452-.977 1.003V18c0 1.652 1.312 2.999 2.921 2.999a2.84 2.84 0 001.466-.403z"
-        fill="#fff"
-      />
-    </svg>
-  )
+function usePublication() {
+  // get document version
+  const {slug} = useParams()
+  const history = useHistory()
+  const version = React.useMemo(() => slug.split('-').slice(-1)[0], [slug])
+  const {data, isSuccess, ...document} = useDocument(version)
+  // add slug to URL
+  React.useEffect(() => {
+    if (isSuccess && data.document) {
+      const {title} = data.document
+      if (title && !slug.includes('-')) {
+        const titleSlug = slugify(title, {
+          lower: true,
+          remove: /[*+~.()'"!:@]/g,
+        })
+        history.replace(`${titleSlug}-${version}`)
+      }
+    }
+  }, [data])
+
+  return {
+    ...document,
+    isSuccess,
+    data,
+    value:
+      data && data.document
+        ? toSlateTree({
+            blockRefList: data.document.blockRefList,
+            blocksMap: data?.blocksMap,
+            isRoot: true,
+          })
+        : null,
+  }
 }
 
 function PublicationCTA({handleInteract, visible}) {
@@ -486,4 +351,51 @@ function SidePanelCTA({handleInteract}) {
       </button>
     </div>
   )
+}
+
+function PublicationHeader({document}: {document: Document.AsObject}) {
+  const {data: author} = useAuthor(document?.author)
+  return document ? (
+    <div
+      className={`pb-2 relative mt-6 ${css`
+        &:after {
+          content: '';
+          position: absolute;
+          bottom: 1px;
+          left: 0;
+          width: 50%;
+          max-width: 360px;
+          height: 1px;
+          z-index: 20;
+          background-color: var(--color-muted-hover);
+        }
+      `}`}
+    >
+      <h1
+        className={`text-2xl md:text-4xl text-heading font-bold italic leading-tight ${css`
+          word-wrap: break-word;
+          white-space: pre-wrap;
+          min-height: 56px;
+        `}`}
+      >
+        {document.title}
+      </h1>
+      {document.subtitle && (
+        <p
+          className={`text-md md:text-lg font-light text-heading-muted italic mt-4 leading-tight ${css`
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            min-height: 28px;
+          `}`}
+        >
+          {document.subtitle}
+        </p>
+      )}
+      <p className="text-sm mt-4 text-heading">
+        <span>by </span>
+
+        <AuthorLabel author={author} />
+      </p>
+    </div>
+  ) : null
 }

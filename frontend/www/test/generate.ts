@@ -1,6 +1,8 @@
 import {
+  Block,
   BlockRefList,
   Document,
+  GetDocumentResponse,
   PublishingState,
 } from '@mintter/api/v2/documents_pb'
 import {
@@ -24,16 +26,44 @@ export function buildProfile(): Profile.AsObject {
 export function buildDocument({
   author = faker.finance.bitcoinAddress(),
   publishingState = PublishingState.PUBLISHED,
+  blockRefList = bluidBlockRefList(),
 } = {}): Document.AsObject {
   return {
     id: faker.finance.bitcoinAddress(),
     version: faker.finance.bitcoinAddress(),
-    title: faker.random.words(),
-    subtitle: faker.random.words(),
+    title: faker.lorem.sentence(),
+    subtitle: faker.lorem.sentence(),
     author,
     parent: '',
     publishingState,
-    blockRefList: bluidBlockRefList(),
+    blockRefList,
+  }
+}
+
+export function buildGetDocument({
+  author = faker.finance.bitcoinAddress(),
+  publishingState = PublishingState.PUBLISHED,
+} = {}): GetDocumentResponse.AsObject {
+  const blockRefList = bluidBlockRefList()
+  const blocksMap: [string, Block.AsObject][] = [
+    [
+      blockRefList.refsList[0].ref,
+      {
+        id: blockRefList.refsList[0].ref,
+        paragraph: {
+          inlineElementsList: [
+            {
+              text: faker.lorem.sentence(),
+            },
+          ],
+        },
+      },
+    ],
+  ]
+
+  return {
+    document: buildDocument({blockRefList, author, publishingState}),
+    blocksMap,
   }
 }
 
