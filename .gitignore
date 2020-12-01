@@ -24,3 +24,6 @@ out
 
 # frontend v2 test
 frontendv2
+
+# Bazel
+bazel-*
