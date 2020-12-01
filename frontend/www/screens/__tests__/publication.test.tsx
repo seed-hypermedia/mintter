@@ -1,10 +1,10 @@
 import React from 'react'
-import {render, screen} from 'test/app-test-utils'
+import {render, screen, waitFor} from 'test/app-test-utils'
 import {App} from 'shared/app'
 import * as clientMock from 'shared/mintterClient'
-import {buildDocument, buildProfile} from 'test/generate'
+import {buildDocument, buildGetDocument, buildProfile} from 'test/generate'
 import {Profile} from '@mintter/api/v2/mintter_pb'
-import {Document} from '@mintter/api/v2/documents_pb'
+import {Document, GetDocumentResponse} from '@mintter/api/v2/documents_pb'
 
 jest.mock('shared/mintterClient')
 
@@ -13,7 +13,7 @@ async function renderPublication({
   document,
 }: {
   profile: Profile.AsObject
-  document: Document.AsObject
+  document: GetDocumentResponse.AsObject
 } = {}) {
   if (profile === undefined) {
     profile = buildProfile()
@@ -24,21 +24,15 @@ async function renderPublication({
   })
 
   if (document === undefined) {
-    document = buildDocument({author: profile ? profile.accountId : ''})
+    document = buildGetDocument()
   }
 
-  clientMock.listDocuments.mockResolvedValue({
-    toObject: (): ListDocumentsResponse.AsObject => ({
-      documentsList: [document],
-    }),
-  })
-
   clientMock.getDocument.mockResolvedValue({
-    toObject: (): Document.AsObject => document,
+    toObject: (): GetDocumentResponse.AsObject => document,
   })
 
   const route = `/p/${document.version}`
-  const utils = await render(<App />, {profile, route})
+  const utils = await render(<App />, {profile, route, timeout: 5000})
 
   return {
     ...utils,
@@ -48,7 +42,14 @@ async function renderPublication({
 }
 
 describe('Publication Context menu', () => {
-  xtest('should render', async () => {
-    await renderPublication()
+  test('should render a publication', async () => {
+    const {document} = await renderPublication()
+    // screen.debug(screen.getByTestId('page'))
+
+    expect(screen.getByText(document.document.title)).toBeInTheDocument()
+    expect(screen.getByText(document.document.subtitle)).toBeInTheDocument()
+    const blockContent =
+      document.blocksMap[0][1].paragraph.inlineElementsList[0].text
+    expect(screen.getByText(blockContent)).toBeInTheDocument()
   })
 })

@@ -142,24 +142,21 @@ const DraftsMenuComp = React.forwardRef<
           <span className="flex-1 mx-2">Quote in New Draft</span>
         </MenuItem>
         <MenuSeparator {...menu} style={{margin: 0, padding: 0}} />
-        {drafts.map(item => {
-          console.log('🚀 ~ file: blockControls.tsx ~ line 146 ~ item', item)
-          return (
-            <MenuItem
-              key={item.version}
-              {...menu}
-              onClick={() => {
-                menu.hide()
-                onQuote?.({block: element, destination: item.version})
-                console.log(`onQuote to ${item.title} = `, onQuote, element)
-              }}
-            >
-              <span className="flex-1 w-full text-left text-primary mx-2">
-                {item.title || 'Untitled Document'}
-              </span>
-            </MenuItem>
-          )
-        })}
+        {drafts.map(item => (
+          <MenuItem
+            key={item.version}
+            {...menu}
+            onClick={() => {
+              menu.hide()
+              onQuote?.({block: element, destination: item.version})
+              console.log(`onQuote to ${item.title} = `, onQuote, element)
+            }}
+          >
+            <span className="flex-1 w-full text-left text-primary mx-2">
+              {item.title || 'Untitled Document'}
+            </span>
+          </MenuItem>
+        ))}
       </Menu>
     </>
   )
