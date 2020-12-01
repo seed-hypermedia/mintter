@@ -55,7 +55,6 @@ export function BlockMenuProvider({
   initialState = defaultState,
 }: BlockMenuProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, initialState)
-
   return (
     <BlockMenuDispatchContext.Provider value={dispatch}>
       <BlockMenuContext.Provider value={state}>
