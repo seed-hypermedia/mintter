@@ -57,6 +57,7 @@ export function buildGetDocument({
             },
           ],
         },
+        quotersList: [],
       },
     ],
   ]
