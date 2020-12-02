@@ -292,14 +292,16 @@ export default function Editor(): JSX.Element {
               zIndex: 0,
             }}
           >
-            {sidePanel.objects.map(object => (
-              <SidePanelObject
-                key={object}
-                isEditor
-                id={object}
-                createTransclusion={createTransclusion}
-              />
-            ))}
+            <ul aria-label="sidepanel list">
+              {sidePanel.objects.map(object => (
+                <SidePanelObject
+                  key={object}
+                  isEditor
+                  id={object}
+                  createTransclusion={createTransclusion}
+                />
+              ))}
+            </ul>
           </div>
         ) : (
           <div />
