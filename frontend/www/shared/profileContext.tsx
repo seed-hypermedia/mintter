@@ -162,6 +162,7 @@ export function useConnectionCreate() {
       onSuccess: () => {
         queryCache.refetchQueries(['ListConnections'])
         queryCache.refetchQueries(['ListSuggestedConnections'])
+        queryCache.refetchQueries(['Documents'])
       },
       onError: params => {
         throw new Error(`Connection to Peer error -> ${JSON.stringify(params)}`)

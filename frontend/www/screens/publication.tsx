@@ -32,7 +32,7 @@ import {queryCache, useMutation} from 'react-query'
 import {isLocalhost} from 'shared/isLocalhost'
 import {getPath} from 'components/routes'
 import {useTransclusion} from 'shared/useTransclusion'
-import { Profile } from '@mintter/api/v2/mintter_pb'
+import {Profile} from '@mintter/api/v2/mintter_pb'
 
 export default function Publication() {
   const match = useRouteMatch()
@@ -61,7 +61,10 @@ export default function Publication() {
   const {createTransclusion} = useTransclusion()
 
   async function handleInteract() {
-    if (isLocalhost(window.location.hostname)) {
+    if (
+      getPath(match).includes('admin') ||
+      isLocalhost(window.location.hostname)
+    ) {
       const d = await createDraft()
 
       const value = d.toObject()
@@ -248,10 +251,11 @@ export default function Publication() {
                 </span>
               </button>
             </div>
-
-            {sidePanel.objects.map(object => (
-              <SidePanelObject key={object} id={object} />
-            ))}
+            <ul aria-label="sidepanel list">
+              {sidePanel.objects.map(object => (
+                <SidePanelObject key={object} id={object} />
+              ))}
+            </ul>
             {sidePanel.objects.length === 0 && (
               <SidePanelCTA handleInteract={handleInteract} />
             )}

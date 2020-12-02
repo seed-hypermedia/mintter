@@ -43,7 +43,8 @@ export function PublicationModal({document}: {document: Document.AsObject}) {
       onRequestClose={() => {
         history.push(location.pathname)
       }}
-      contentLabel="Onboarding Modal"
+      data-testid="modal"
+      contentLabel="Publication Modal"
     >
       <div className="bg-background p-8 rounded-2xl shadow-lg outline-none focus:shadow-outline">
         <div className="flex items-center justify-between">

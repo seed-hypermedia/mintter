@@ -41,7 +41,7 @@ export function usePublications(options = {}) {
   const docsQuery = useQuery('Documents', apiClient.listDocuments, {
     ...options,
     refetchOnWindowFocus: true,
-    refetchInterval: 10000,
+    refetchInterval: 5000,
   })
 
   const data = React.useMemo(() => docsQuery.data?.toObject().documentsList, [
