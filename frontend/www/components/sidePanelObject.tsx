@@ -46,14 +46,18 @@ export function SidePanelObject(props) {
 
   if (isLoading) {
     return (
-      <div className="p-4 border rounded m-4 break-words whitespace-pre-wrap">
+      <li className="p-4 border rounded m-4 break-words whitespace-pre-wrap">
         <p>loading...</p>
-      </div>
+      </li>
     )
   }
 
   if (isError) {
-    return <ErrorMessage error={error} />
+    return (
+      <li>
+        <ErrorMessage error={error} />
+      </li>
+    )
   }
 
   const {title, blockRefList} = data.document
@@ -65,7 +69,10 @@ export function SidePanelObject(props) {
   })
 
   return (
-    <div className="border border-muted rounded-lg m-4 break-words whitespace-pre-wrap relative bg-white">
+    <li
+      aria-label="document card"
+      className="border border-muted rounded-lg m-4 break-words whitespace-pre-wrap relative bg-white"
+    >
       <div className="p-4">
         <div className="flex justify-between items-center text-muted-hover">
           <p className="text-muted-hover text-xs uppercase">Document</p>
@@ -106,7 +113,7 @@ export function SidePanelObject(props) {
       {isLocal || (isProfileSuccess && isAuthor) ? (
         <ObjectFooter version={version} />
       ) : null}
-    </div>
+    </li>
   )
 }
 

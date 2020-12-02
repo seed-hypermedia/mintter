@@ -89,3 +89,11 @@ export function buildSuggestedConnection(): SuggestedProfile.AsObject {
 export function buildAddrsList(): string[] {
   return [faker.internet.ip(), faker.internet.ip(), faker.internet.ip()]
 }
+
+export function buildDraft({
+  author = faker.finance.bitcoinAddress(),
+  publishingState = PublishingState.DRAFT,
+  blockRefList = bluidBlockRefList(),
+} = {}) {
+  return buildDocument({author, publishingState, blockRefList})
+}

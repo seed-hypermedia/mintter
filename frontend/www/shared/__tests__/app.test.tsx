@@ -4,11 +4,20 @@ import {buildDocument, buildProfile} from 'test/generate'
 import * as mockedIsLocalhost from 'shared/isLocalhost'
 import * as clientMock from 'shared/mintterClient'
 import {Profile} from '@mintter/api/v2/mintter_pb'
+import {Document} from '@mintter/api/v2/documents_pb'
 
 jest.mock('shared/isLocalhost')
 jest.mock('shared/mintterClient')
 
-async function renderApp({profile, listDocuments, isLocalhost}) {
+async function renderApp({
+  profile,
+  listDocuments,
+  isLocalhost,
+}: {
+  profile: Profile.AsObject
+  listDocuments: Document.AsObject[]
+  isLocalhost: boolean
+} = {}) {
   if (profile === undefined) {
     profile = buildProfile()
   }
