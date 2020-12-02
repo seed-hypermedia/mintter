@@ -1,5 +1,5 @@
 import {render, screen} from 'test/app-test-utils'
-import {buildDocument, buildProfile} from 'test/generate'
+import {buildDocument, buildGetDocument, buildProfile} from 'test/generate'
 import * as mockedIsLocalhost from 'shared/isLocalhost'
 import * as clientMock from 'shared/mintterClient'
 import {Profile} from '@mintter/api/v2/mintter_pb'
@@ -85,67 +85,28 @@ describe(`Publisher Node`, () => {
     expect(screen.getByText(/Articles/i)).toBeInTheDocument()
   })
 
-  test.only('should render a publication', async () => {
-    const {version, title, subtitle} = buildDocument()
-    await renderApp({document, route: `/p/${document.version}`})
-
+  test('should render a publication', async () => {
+    const document = buildGetDocument()
+    await renderApp({document, route: `/p/${document.document.version}`})
+    const {
+      document: {title, subtitle},
+      blocksMap,
+    } = document
+    const blockContent = blocksMap[0][1].paragraph.inlineElementsList[0].text
     // screen.debug(screen.getByTestId('page'))
-    // expect(screen.getByText(/Test Document Title/i)).toBeInTheDocument()
-    // expect(screen.getByText(/Test Document Subtitle/i)).toBeInTheDocument()
-    // expect(screen.getByText(/hello world/i)).toBeInTheDocument()
-    console.log(
-      '🚀 ~ file: publisher-node.test.tsx ~ line 100 ~ test.only ~ {version, title, subtitle}',
-      {version, title, subtitle},
-    )
+    expect(screen.getByText(title)).toBeInTheDocument()
+    expect(screen.getByText(subtitle)).toBeInTheDocument()
+    expect(screen.getByText(blockContent)).toBeInTheDocument()
   })
 
-  xtest('should not render the settings page', async () => {
-    clientMock.getProfile.mockResolvedValue({
-      toObject: (): Partial<Profile.AsObject> => ({
-        peerId: '1234asdf',
-        username: 'test-user',
-        accountId: '123456789098765432',
-      }),
-    })
-    clientMock.listDocuments.mockResolvedValue({
-      toObject: (): ListDocumentsResponse.AsObject => ({
-        documentsList: [
-          {
-            version: '123456780987654321',
-            title: 'Test Document Title',
-            subtitle: 'Test Document Subtitle',
-            author: '123456789098765432',
-          },
-        ],
-      }),
-    })
+  test('server: should not render the settings page', async () => {
+    await renderApp({route: '/settings', isLocalhost: false, wait: false})
 
-    await renderPublisherNode({route: '/settings', timeout: 5000, wait: false})
     expect(screen.getByText(/no route match/i)).toBeInTheDocument()
   })
 
-  xtest('should render the Author Node', async () => {
-    clientMock.getProfile.mockResolvedValue({
-      toObject: (): Partial<Profile.AsObject> => ({
-        peerId: '1234asdf',
-        username: 'test-user',
-        accountId: '123456789098765432',
-      }),
-    })
-    clientMock.listDocuments.mockResolvedValue({
-      toObject: (): ListDocumentsResponse.AsObject => ({
-        documentsList: [
-          {
-            version: '123456780987654321',
-            title: 'Test Document Title',
-            subtitle: 'Test Document Subtitle',
-            author: '123456789098765432',
-          },
-        ],
-      }),
-    })
-
-    await renderPublisherNode({route: '/admin'})
+  test('server: should render the User Node', async () => {
+    await renderApp({route: '/admin', isLocalhost: false})
     expect(screen.getByText(/library/i)).toBeInTheDocument()
     // screen.debug(screen.getByTestId('app-layout'))
   })
