@@ -1,9 +1,10 @@
-import {screen, userEvent, waitFor, act} from 'test/app-test-utils'
-import {render} from '@testing-library/react'
+import {screen, act, waitFor, userEvent, render} from 'test/app-test-utils'
 import EditProfile from '../edit-profile'
 import * as clientMock from 'shared/mintterClient'
 import {BrowserRouter as Router} from 'react-router-dom'
 import {ProfileProvider} from 'shared/profileContext'
+import {buildEditProfile} from 'test/generate'
+import {Profile} from '@mintter/api/v2/mintter_pb'
 
 jest.mock('shared/mintterClient')
 
@@ -11,66 +12,85 @@ const currentUser = {
   toObject: () => ({}),
 }
 
-const bio = 'test bio'
-
 beforeEach(() => {
   clientMock.setProfile = jest.fn()
   clientMock.getProfile.mockResolvedValueOnce(currentUser)
 })
 
-async function renderWelcomeScreen() {
-  const route = `/welcome/edit-profile`
-  const utils = await render(
-    <Router>
-      <ProfileProvider>
-        <EditProfile />
-      </ProfileProvider>
-    </Router>,
+async function renderWelcomeScreen({
+  profile,
+}: {profile: Pick<Profile.AsObject, 'bio' | 'email' | 'username'>} = {}) {
+  if (profile === undefined) {
+    profile = buildEditProfile()
+  }
 
-    {route},
-  )
-  const nextBtn = screen.getByText(/Next →/i)
+  const utils = await render(<EditProfile />, {
+    wrapper: ({children}) => (
+      <Router>
+        <ProfileProvider>{children}</ProfileProvider>
+      </Router>
+    ),
+    wait: false,
+  })
 
   return {
     ...utils,
-    nextBtn,
-    data: {
-      username: 'testusername',
-      email: 'email@test.com',
-      bio,
-    },
+    profile,
   }
 }
 
 test('Welcome - Edit Profile Screen', async () => {
-  const {nextBtn, data} = await renderWelcomeScreen()
-
-  const username = screen.getByLabelText(/username/i)
-  const email = screen.getByLabelText(/email/i)
-  const bio = screen.getByLabelText(/bio/i)
-
+  // const {nextBtn, data} = await renderWelcomeScreen()
+  const {profile} = await renderWelcomeScreen()
+  // const bio = screen.getByLabelText(/bio/i)
   await waitFor(() => {
-    expect(username).toHaveFocus()
+    expect(screen.getByText(/Edit your profile/i)).toBeInTheDocument()
   })
 
-  userEvent.type(email, 'e')
-  const emailError = await screen.findByTestId('email-error')
+  await act(() =>
+    userEvent.type(screen.getByLabelText(/email/i), profile.email[0]),
+  )
 
-  expect(emailError).toBeInTheDocument()
-  expect(nextBtn).toBeDisabled()
+  expect(await screen.findByTestId('email-error')).toBeInTheDocument()
+  expect(
+    screen.getByRole('button', {name: /next/i, exact: false}),
+  ).toBeDisabled()
 
-  await act(() => userEvent.type(email, data.email.substr(1)))
-  await act(() => userEvent.type(username, data.username))
-  await act(() => userEvent.type(bio, data.bio))
-  expect(nextBtn).not.toBeDisabled()
+  await act(
+    async () =>
+      await userEvent.type(
+        screen.getByLabelText(/email/i),
+        profile.email.substr(1),
+      ),
+  )
+  await act(
+    async () =>
+      await userEvent.type(
+        screen.getByLabelText(/username/i),
+        profile.username,
+      ),
+  )
+  await act(
+    async () =>
+      await userEvent.type(screen.getByLabelText(/bio/i), profile.bio),
+  )
 
-  await act(async () => await userEvent.click(nextBtn))
+  expect(
+    screen.getByRole('button', {name: /next/i, exact: false}),
+  ).not.toBeDisabled()
+
+  await act(
+    async () =>
+      await userEvent.click(
+        screen.getByRole('button', {name: /next/i, exact: false}),
+      ),
+  )
 
   await waitFor(() => {
     expect(clientMock.setProfile).toHaveBeenCalledTimes(1)
   })
 
   await waitFor(() => {
-    expect(clientMock.setProfile).toHaveBeenCalledWith(data)
+    expect(clientMock.setProfile).toHaveBeenCalledWith(profile)
   })
 })

@@ -63,7 +63,7 @@ export function ProfileProvider(props) {
     queryCache.refetchQueries('Profile')
   }
 
-  const genSeed = useCallback(() => apiClient.genSeed(), [])
+  const genSeed = useCallback(apiClient.genSeed, [])
 
   const [createProfile] = useMutation(apiClient.createProfile, {
     onSuccess: refetchProfile,
