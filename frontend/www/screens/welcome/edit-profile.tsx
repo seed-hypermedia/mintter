@@ -8,11 +8,11 @@ import Content from 'components/content'
 import Input from 'components/input'
 import Textarea from 'components/textarea'
 import {useForm} from 'react-hook-form'
-import {useProfileContext} from 'shared/profileContext'
-import {useFocus} from 'shared/hooks'
 import {css} from 'emotion'
 import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
+import {useMutation} from 'react-query'
+import * as apiClient from 'shared/mintterClient'
 
 export default function EditProfile() {
   const {register, handleSubmit, errors, formState} = useForm({
@@ -25,14 +25,13 @@ export default function EditProfile() {
     },
   })
 
-  const {focusFirst} = useFocus()
-
   const {history, match} = useRouter()
-  const {setProfile} = useProfileContext()
+
+  const [setProfile] = useMutation(apiClient.setProfile)
 
   async function onSubmit(data) {
     try {
-      setProfile(data)
+      await setProfile(data)
       history.replace(`${getPath(match)}/welcome/complete`)
     } catch (err) {
       console.error('Error ==> ', err)
@@ -58,10 +57,7 @@ export default function EditProfile() {
               <Input
                 id="username"
                 name="username"
-                ref={e => {
-                  register(e)
-                  focusFirst(e)
-                }}
+                ref={register}
                 type="text"
                 placeholder="Readable username or alias. Doesn't have to be unique."
               />

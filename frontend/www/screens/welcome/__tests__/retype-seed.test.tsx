@@ -35,6 +35,7 @@ async function renderWelcomeScreen() {
         </ProfileProvider>
       </Router>
     ),
+    wait: false,
   })
 
   const nextBtn = screen.getByText(/Next →/i)
@@ -46,7 +47,7 @@ async function renderWelcomeScreen() {
   }
 }
 
-xtest('Welcome - Retype Seed Screen', async () => {
+test('Welcome - Retype Seed Screen', async () => {
   const {nextBtn, mnemonicList} = await renderWelcomeScreen()
 
   const input1 = screen.getByLabelText(/1/i)

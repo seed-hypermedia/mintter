@@ -4,8 +4,8 @@ import {BrowserRouter as Router} from 'react-router-dom'
 import {ProfileProvider} from 'shared/profileContext'
 import {ToastProvider} from 'react-toast-notifications'
 import WelcomeProvider from 'shared/welcomeProvider'
-import SecurityPack from '../security-pack'
 import * as clientMock from 'shared/mintterClient'
+import SecurityPack from '../security-pack'
 
 jest.mock('shared/mintterClient')
 
@@ -16,14 +16,27 @@ beforeEach(() => {
     getMnemonicList: jest.fn(() => mnemonicList),
   })
 
-  Object.assign({}, clientMock, {
-    createProfile: jest.fn(),
-    getProfile: jest.fn().mockImplementationOnce(() => Promise.resolve(null)),
-  })
+  clientMock.createProfile = jest.fn()
 })
 
-async function renderWelcomeScreen() {
+async function renderWelcomeScreen({
+  mnemonicList,
+  ...renderOptions
+}: {
+  mnemonicList: string[]
+} = {}) {
+  if (mnemonicList === undefined) {
+    mnemonicList = ['word-1', 'word-2', 'word-3']
+  }
+
+  clientMock.genSeed.mockResolvedValueOnce({
+    getMnemonicList: jest.fn(() => mnemonicList),
+  })
+
+  const route = '/welcome/security-pack'
+
   const utils = await render(<SecurityPack />, {
+    route,
     wrapper: ({children}) => (
       <Router>
         <ProfileProvider>
@@ -38,11 +51,13 @@ async function renderWelcomeScreen() {
         </ProfileProvider>
       </Router>
     ),
+    ...renderOptions,
   })
   const nextBtn = screen.getByText(/Next →/i)
 
   return {
     ...utils,
+    route,
     nextBtn,
     mnemonicList,
   }
@@ -50,22 +65,21 @@ async function renderWelcomeScreen() {
 
 test('Welcome - Security Pack Screen', async () => {
   const {nextBtn, mnemonicList} = await renderWelcomeScreen()
-
-  await act(async () => {
+  await waitFor(() => {
     expect(clientMock.genSeed).toBeCalledTimes(1)
   })
+
   expect(screen.getByText(/word-2/i)).toBeInTheDocument()
   expect(nextBtn).toBeInTheDocument()
   expect(nextBtn).not.toBeDisabled()
-  await act(async () => await userEvent.click(nextBtn))
+  userEvent.click(nextBtn)
   await waitFor(() => {
     expect(clientMock.createProfile).toHaveBeenCalledTimes(1)
   })
-  await waitFor(() => {
-    expect(clientMock.createProfile).toHaveBeenCalledWith({
-      walletPassword: '',
-      aezeedPassphrase: '',
-      mnemonicList,
-    })
+
+  expect(clientMock.createProfile).toHaveBeenCalledWith({
+    walletPassword: '',
+    aezeedPassphrase: '',
+    mnemonicList,
   })
 })
