@@ -32,25 +32,23 @@ export function Toast({children, ...props}) {
 
 export function AppProviders({children}) {
   return (
-    <>
-      <React.Suspense fallback={<FullPageSpinner />}>
-        <ReactQueryConfigProvider config={queryConfig}>
-          <ReactQueryDevtools initialIsOpen={false} />
-          <Router>
-            <ThemeProvider>
-              <ProfileProvider>
-                <MintterProvider>
-                  <ToastProvider autoDismiss={true} components={{Toast}}>
-                    <BlockMenuProvider>
-                      <SidePanelProvider>{children}</SidePanelProvider>
-                    </BlockMenuProvider>
-                  </ToastProvider>
-                </MintterProvider>
-              </ProfileProvider>
-            </ThemeProvider>
-          </Router>
-        </ReactQueryConfigProvider>
-      </React.Suspense>
-    </>
+    <React.Suspense fallback={<FullPageSpinner />}>
+      <ReactQueryConfigProvider config={queryConfig}>
+        <ReactQueryDevtools initialIsOpen={false} />
+        <Router>
+          <ThemeProvider>
+            <ProfileProvider>
+              <MintterProvider>
+                <ToastProvider autoDismiss={true} components={{Toast}}>
+                  <BlockMenuProvider>
+                    <SidePanelProvider>{children}</SidePanelProvider>
+                  </BlockMenuProvider>
+                </ToastProvider>
+              </MintterProvider>
+            </ProfileProvider>
+          </ThemeProvider>
+        </Router>
+      </ReactQueryConfigProvider>
+    </React.Suspense>
   )
 }
