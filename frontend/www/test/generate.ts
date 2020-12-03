@@ -97,3 +97,14 @@ export function buildDraft({
 } = {}) {
   return buildDocument({author, publishingState, blockRefList})
 }
+
+export function buildEditProfile(): Pick<
+  Profile.AsObject,
+  'username' | 'bio' | 'email'
+> {
+  return {
+    username: faker.internet.userName(),
+    email: faker.internet.email(),
+    bio: faker.lorem.paragraph(),
+  }
+}
