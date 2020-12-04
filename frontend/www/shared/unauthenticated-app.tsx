@@ -4,8 +4,7 @@ import Layout, {LayoutProps} from 'components/layout'
 import WelcomeProvider from 'shared/welcomeProvider'
 import ThemeToggle from 'components/themeToggle'
 import WelcomeIntro from 'screens/welcome/intro'
-import {ProgressRoute, createPath, getPath} from 'components/routes'
-import {useProfile} from './profileContext'
+import {ProgressRoute, createPath} from 'components/routes'
 
 const SecurityPack = React.lazy(() => import('screens/welcome/security-pack'))
 const RetypeSeed = React.lazy(() => import('screens/welcome/retype-seed'))
