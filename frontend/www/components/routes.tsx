@@ -8,11 +8,24 @@ export function ProgressRoute({children, ...rest}) {
   const {
     state: {progress},
   } = useWelcome()
+  const {data, isLoading} = useProfile()
+
+  if (isLoading) {
+    return <FullPageSpinner />
+  }
+  console.log({data})
+
   return (
     <Route
       {...rest}
       render={props => {
-        return progress ? (
+        return data ? (
+          <Redirect
+            to={{
+              pathname: `${getPath(props.match)}/library`,
+            }}
+          />
+        ) : progress ? (
           children
         ) : (
           <Redirect
@@ -26,12 +39,7 @@ export function ProgressRoute({children, ...rest}) {
   )
 }
 
-export function PrivateRoute({
-  children,
-  pathname = '/',
-  exact = false,
-  ...rest
-}) {
+export function PrivateRoute({children, exact = false, ...rest}) {
   const {isSuccess, data: profile} = useProfile()
   if (isSuccess) {
     return (
