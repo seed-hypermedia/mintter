@@ -1,14 +1,14 @@
 import {
   ItalicKeyOption,
   ItalicPluginOptionsValues,
-  MarkOnKeyDownOptions,
+  GetOnHotkeyToggleMarkOptions,
 } from '@udecode/slate-plugins'
 
 export const MARK_ITALIC = 'italic'
 
 export const ITALIC_OPTIONS: Record<
   ItalicKeyOption,
-  ItalicPluginOptionsValues & MarkOnKeyDownOptions
+  ItalicPluginOptionsValues & GetOnHotkeyToggleMarkOptions
 > = {
   italic: {
     type: MARK_ITALIC,

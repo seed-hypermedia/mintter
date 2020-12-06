@@ -1,5 +1,55 @@
-import {Editor} from 'slate'
-import {isNodeTypeIn, isRangeAtRoot} from '@udecode/slate-plugins'
+import {Editor, Location} from 'slate'
+import {
+  getAboveByType,
+  getParent,
+  isNodeTypeIn,
+  setDefaults,
+} from '@udecode/slate-plugins'
+import {isRangeAtRoot} from '../isRangeAtRoot'
+import {DEFAULTS_BLOCK} from '../BlockPlugin/defaults'
+
+type LocationOptions = {
+  at?: Location | null
+}
+
+type EntryTypes = {
+  editor: Editor
+  locationOptions?: LocationOptions
+  options?: any
+}
+
+export const getBlockItemEntry = ({
+  editor,
+  locationOptions: {at = editor.selection} = {},
+  options,
+}: EntryTypes) => {
+  const {block} = setDefaults(options, DEFAULTS_BLOCK)
+
+  if (at && isNodeTypeIn(editor, block.type, {at})) {
+    const selectionParent = getParent(editor, at)
+    if (!selectionParent) return
+    const [, paragraphPath] = selectionParent
+
+    const blockItem =
+      getAboveByType(editor, block.type, {at}) ||
+      getParent(editor, paragraphPath)
+
+    if (!blockItem) return
+    const [blockItemNode, blockItemPath] = blockItem
+
+    if (blockItemNode.type !== block.type) return
+
+    const blockList = getParent(editor, blockItemPath)
+    if (!blockList) return
+
+    return {
+      blockList,
+      blockItem,
+    }
+  }
+
+  return null
+}
 
 /**
  * Is the selection in block>p.

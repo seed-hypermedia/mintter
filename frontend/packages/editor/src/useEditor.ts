@@ -10,7 +10,7 @@ import {
   withDeserializeHTML,
   pipe,
   withInlineVoid,
-  withTransforms,
+  withDeserializeMd,
 } from '@udecode/slate-plugins'
 import {withHistory} from 'slate-history'
 import {autoformatRules} from './autoformatRules'
@@ -21,12 +21,11 @@ export function useEditor(plugins: any[], options): Editor {
   const withPlugins = [
     withReact,
     withHistory,
-    withDeserializeHTML({plugins}),
     withAutoformat({
       rules: autoformatRules,
     }),
-    withTransforms(),
-    // withDeserializeMd(plugins),
+    withDeserializeMd(plugins),
+    withDeserializeHTML({plugins}),
     withInlineVoid({plugins}),
     withTransclusion(options),
     withMintter(options),

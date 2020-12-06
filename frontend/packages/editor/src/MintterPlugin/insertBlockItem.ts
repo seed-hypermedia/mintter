@@ -2,9 +2,9 @@ import {Editor, Path, Range, Transforms} from 'slate'
 import {
   getAboveByType,
   isBlockTextEmptyAfterSelection,
-  isRangeAtRoot,
 } from '@udecode/slate-plugins'
 import {v4 as uuid} from 'uuid'
+import {isRangeAtRoot} from '../isRangeAtRoot'
 
 /**
  * Insert list item if selection in li>p.

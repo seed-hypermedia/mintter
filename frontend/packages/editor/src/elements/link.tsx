@@ -8,10 +8,7 @@ import {css} from 'emotion'
 
 export const ELEMENT_LINK = 'a'
 
-export const DEFAULTS_LINK: Record<
-  LinkKeyOption,
-  Required<LinkPluginOptionsValues>
-> = {
+export const DEFAULTS_LINK: Record<LinkKeyOption, LinkPluginOptionsValues> = {
   link: {
     component: ({element, attributes, children, as: Component = 'a'}) =>
       element.type === ELEMENT_LINK ? (
