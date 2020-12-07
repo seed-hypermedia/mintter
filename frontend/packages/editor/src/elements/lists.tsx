@@ -7,10 +7,7 @@ export const ELEMENT_UL = 'ul'
 export const ELEMENT_OL = 'ol'
 export const ELEMENT_LI = 'li'
 
-export const DEFAULTS_LIST: Record<
-  ListKeyOption,
-  Required<ListPluginOptionsValues>
-> = {
+export const DEFAULTS_LIST: Record<ListKeyOption, ListPluginOptionsValues> = {
   ul: {
     component: ({attributes, element, as: Component, children}) =>
       element.type === ELEMENT_UL ? (
