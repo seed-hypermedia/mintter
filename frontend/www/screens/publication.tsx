@@ -33,6 +33,7 @@ import {isLocalhost} from 'shared/isLocalhost'
 import {getPath} from 'components/routes'
 import {useTransclusion} from 'shared/useTransclusion'
 import {Profile} from '@mintter/api/v2/mintter_pb'
+import {version} from 'os'
 
 export default function Publication() {
   const match = useRouteMatch()
@@ -40,6 +41,7 @@ export default function Publication() {
 
   // request document
   const {isLoading, isError, error, data, value} = usePublication()
+  console.log('🚀 ~ Publication ~ ', data)
 
   //sidepanel state
   const {state: sidePanel, dispatch: sidePanelDispatch} = useSidePanel()
@@ -89,8 +91,6 @@ export default function Publication() {
     block: SlateBlock
     destination?: Document.AsObject
   }) => {
-    console.log({block, destination})
-
     const draftUrl = await createTransclusion({
       source: document.version,
       destination: destination ? destination.version : undefined,
@@ -104,10 +104,16 @@ export default function Publication() {
     history.push(`${getPath(match)}/p/${mentionId}`)
   }
 
-  function handleSidepanel(blockId: string) {
+  const handleSidepanel = (document: Document.AsObject) => (
+    blockId: string,
+  ) => {
+    const objectId = blockId.includes('/')
+      ? blockId
+      : `${document.version}/${blockId}`
+
     sidePanelDispatch({
       type: 'add_object',
-      payload: blockId,
+      payload: objectId,
     })
   }
 
@@ -127,7 +133,7 @@ export default function Publication() {
   }
 
   const onQuote = React.useCallback(handleQuotation(data?.document), [data])
-  const onSidePanel = React.useCallback(handleSidepanel, [])
+  const onSidePanel = React.useCallback(handleSidepanel(data?.document), [data])
   const onMainPanel = React.useCallback(handleMainpanel, [])
 
   const editorOptions = {
