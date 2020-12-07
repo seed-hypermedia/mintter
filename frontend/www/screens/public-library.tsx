@@ -6,8 +6,8 @@ import {MainColumn} from 'components/main-column'
 import Topbar from 'components/topbar'
 import Seo from 'components/seo'
 
-const MyPublications = React.lazy(() =>
-  import(/* webpackPrefetch: true */ './my-publications'),
+const MyPublications = React.lazy(
+  () => import(/* webpackPrefetch: true */ './my-publications'),
 )
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
