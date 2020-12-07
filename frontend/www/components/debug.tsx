@@ -22,7 +22,7 @@ export function DebugValue({value, className = ''}: any) {
     () => ({
       ...value,
 
-      blocks: simplifyBlocks(value.blocks),
+      // blocks: simplifyBlocks(value.blocks),
     }),
     [value],
   )

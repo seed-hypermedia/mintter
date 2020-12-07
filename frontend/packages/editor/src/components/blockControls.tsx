@@ -9,7 +9,7 @@ import {
 } from 'reakit/Menu'
 import {useBlockMenu} from '../BlockPlugin/components/blockMenuContext'
 import {Icons} from './icons'
-import {isTransclusion} from '../TransclusionPlugin/utils/isTransclusion'
+// import {isTransclusion} from '../TransclusionPlugin/utils/isTransclusion'
 
 const BlockControlsComp = ({
   disclosure,
@@ -19,7 +19,7 @@ const BlockControlsComp = ({
 }: any) => {
   const menu = useMenuState({loop: true})
   const blockMenuState = useBlockMenu()
-  const isQuote = React.useMemo(() => isTransclusion(element), [element])
+  // const isQuote = React.useMemo(() => isTransclusion(element), [element])
   return index === highlightedIndex ? (
     <>
       <MenuButton
@@ -42,7 +42,6 @@ const BlockControlsComp = ({
             onClick={() => {
               blockMenuState.onSidePanel?.(element.id)
             }}
-            disabled={!isQuote}
           >
             <Icons.ArrowUpRight size={16} color="currentColor" />
             <span className="flex-1 mx-2">Open in Sidepanel</span>

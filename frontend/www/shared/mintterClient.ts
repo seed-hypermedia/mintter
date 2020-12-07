@@ -138,7 +138,13 @@ export function setDocument(editor) {
       return
     }
 
-    const genDocument: Document = toDocument({document, state})
+    const genDocument: Document = toDocument({
+      document,
+      state: {
+        ...state,
+        blocks: editor.children,
+      },
+    })
     const req = new UpdateDraftRequest()
     const nodes = getNodesByType(editor, ELEMENT_BLOCK, {
       at: [],

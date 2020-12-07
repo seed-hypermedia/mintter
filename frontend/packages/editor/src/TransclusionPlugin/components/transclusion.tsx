@@ -23,7 +23,7 @@ const Transclusion = (
   }
 
   return (
-    <DragDrop attributes={attributes} element={element} componentRef={ref}>
+    <DragDrop {...attributes} element={element} componentRef={ref}>
       {children}
       <div
         contentEditable={false}
