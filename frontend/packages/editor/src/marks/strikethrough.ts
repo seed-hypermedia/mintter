@@ -1,5 +1,5 @@
 import {
-  MarkOnKeyDownOptions,
+  GetOnHotkeyToggleMarkOptions,
   StrikethroughKeyOption,
   StrikethroughPluginOptionsValues,
 } from '@udecode/slate-plugins'
@@ -8,7 +8,7 @@ export const MARK_STRIKETHROUGH = 'strikethrough'
 
 export const STRIKETHROUGH_OPTIONS: Record<
   StrikethroughKeyOption,
-  StrikethroughPluginOptionsValues & MarkOnKeyDownOptions
+  StrikethroughPluginOptionsValues & GetOnHotkeyToggleMarkOptions
 > = {
   strikethrough: {
     type: MARK_STRIKETHROUGH,

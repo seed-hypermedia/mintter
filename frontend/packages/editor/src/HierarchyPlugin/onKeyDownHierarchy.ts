@@ -1,6 +1,7 @@
 import {Editor, Element, Ancestor, Path, NodeEntry, Transforms} from 'slate'
 import {isFirstChild} from '@udecode/slate-plugins'
 import {
+  getBlockItemEntry,
   isSelectionInBlockItem,
   isSelectionInTransclusion,
 } from '../MintterPlugin/isSelectionInBlockItem'
@@ -13,7 +14,11 @@ export const onKeyDownHierarchy = options => (
 ) => {
   let moved: boolean | undefined = false
   if (e.key === 'Tab') {
-    console.log('tab clicked!')
+    console.log(
+      'getBlockItemEntry',
+      getBlockItemEntry({editor, locationOptions: {}, options}),
+    )
+
     let res = isSelectionInBlockItem(editor, options)
     if (!res) {
       res = isSelectionInTransclusion(editor, options)

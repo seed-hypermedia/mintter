@@ -1,14 +1,14 @@
 import {
   CodeKeyOption,
   CodePluginOptionsValues,
-  MarkOnKeyDownOptions,
+  GetOnHotkeyToggleMarkOptions,
 } from '@udecode/slate-plugins'
 
 export const MARK_CODE = 'code'
 
 export const CODE_OPTIONS: Record<
   CodeKeyOption,
-  CodePluginOptionsValues & MarkOnKeyDownOptions
+  CodePluginOptionsValues & GetOnHotkeyToggleMarkOptions
 > = {
   code: {
     type: MARK_CODE,

@@ -126,7 +126,7 @@ interface SetDocumentRequest {
 }
 
 export function setDocument(editor) {
-  return async function({document, state}: SetDocumentRequest): Promise<any> {
+  return async function ({document, state}: SetDocumentRequest): Promise<any> {
     //  do I still need this guard?
     if (Array.isArray(document.version)) {
       console.error(
