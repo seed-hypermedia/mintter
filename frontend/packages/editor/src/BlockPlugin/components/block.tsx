@@ -16,7 +16,7 @@ export function BlockBase(
     setVisibility(val => !val)
   }
   return (
-    <DragDrop attributes={attributes} element={element} componentRef={ref}>
+    <DragDrop {...attributes} element={element} componentRef={ref}>
       {children}
       {isQuotesVisible ? (
         <div contentEditable={false} className="overflow-hidden pl-4">
