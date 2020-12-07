@@ -1,5 +1,55 @@
-import {Editor} from 'slate'
-import {isNodeTypeIn, isRangeAtRoot} from '@udecode/slate-plugins'
+import {Editor, Location} from 'slate'
+import {
+  getAboveByType,
+  getParent,
+  isNodeTypeIn,
+  setDefaults,
+} from '@udecode/slate-plugins'
+import {isRangeAtRoot} from '../isRangeAtRoot'
+import {DEFAULTS_BLOCK} from '../BlockPlugin/defaults'
+
+type LocationOptions = {
+  at?: Location | null
+}
+
+type EntryTypes = {
+  editor: Editor
+  locationOptions?: LocationOptions
+  options?: any
+}
+
+export const getBlockItemEntry = ({
+  editor,
+  locationOptions: {at = editor.selection} = {},
+  options,
+}: EntryTypes) => {
+  const {block} = setDefaults(options, DEFAULTS_BLOCK)
+
+  if (at && isNodeTypeIn(editor, block.type, {at})) {
+    const selectionParent = getParent(editor, at)
+    if (!selectionParent) return
+    const [, paragraphPath] = selectionParent
+
+    const blockItem =
+      getAboveByType(editor, block.type, {at}) ||
+      getParent(editor, paragraphPath)
+
+    if (!blockItem) return
+    const [blockItemNode, blockItemPath] = blockItem
+
+    if (blockItemNode.type !== block.type) return
+
+    const blockList = getParent(editor, blockItemPath)
+    if (!blockList) return
+
+    return {
+      blockList,
+      blockItem,
+    }
+  }
+
+  return null
+}
 
 /**
  * Is the selection in block>p.
@@ -34,22 +84,33 @@ export const isSelectionInBlockItem = (editor: Editor, options?: any) => {
 }
 
 export const isSelectionInTransclusion = (editor: Editor, options?: any) => {
-  const {transclusion} = options
+  const {transclusion, read_only} = options
 
   if (
     editor.selection &&
     isNodeTypeIn(editor, transclusion.type) &&
     !isRangeAtRoot(editor.selection)
   ) {
-    const [tNode, tPath] = Editor.parent(editor, editor.selection)
-    if (tNode.type !== transclusion.type) return
-    const [blockListNode, blockListPath] = Editor.parent(editor, tPath)
+    const [readOnlyNode, readOnlyPath] = Editor.parent(editor, editor.selection)
+
+    if (readOnlyNode.type !== read_only.type) return
+    const [transclusionNode, transclusionPath] = Editor.parent(
+      editor,
+      readOnlyPath,
+    )
+
+    if (transclusionNode.type !== transclusion.type) return
+
+    const [blockListNode, blockListPath] = Editor.parent(
+      editor,
+      transclusionPath,
+    )
 
     return {
       blockListNode,
       blockListPath,
-      blockNode: tNode,
-      blockPath: tPath,
+      blockNode: transclusionNode,
+      blockPath: transclusionPath,
     }
   }
 

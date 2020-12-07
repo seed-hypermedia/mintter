@@ -64,7 +64,7 @@ function RenderElement(props) {
     <div {...props.attributes}>
       <div
         contentEditable={false}
-        className={`bg-background-muted rounded m-0 p-0 md:-mx-2 md:px-2 mt-6 ${
+        className={`bg-background-muted rounded m-0 px-2 md:-mx-2 mt-6 ${
           focus && selected ? 'shadow-outline' : ''
         }`}
       >

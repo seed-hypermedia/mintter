@@ -148,7 +148,7 @@ const DraftsMenuComp = React.forwardRef<
             {...menu}
             onClick={() => {
               menu.hide()
-              onQuote?.({block: element, destination: item.version})
+              onQuote?.({block: element, destination: item})
               console.log(`onQuote to ${item.title} = `, onQuote, element)
             }}
           >

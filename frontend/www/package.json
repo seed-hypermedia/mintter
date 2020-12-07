@@ -23,7 +23,7 @@
     "@mintter/api": "*",
     "@mintter/editor": "*",
     "@tippyjs/react": "^4.1.0",
-    "@udecode/slate-plugins": "^0.66.9",
+    "@udecode/slate-plugins": "^0.71.2",
     "emotion": "^10.0.27",
     "faker": "^5.1.0",
     "lodash.debounce": "^4.0.8",

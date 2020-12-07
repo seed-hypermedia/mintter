@@ -11,7 +11,7 @@ export const paragraphOption = {}
 
 export const PARAGRAPH_OPTIONS: Record<
   ParagraphKeyOption,
-  Required<ParagraphPluginOptionsValues>
+  ParagraphPluginOptionsValues
 > = {
   p: {
     component: Paragraph,
