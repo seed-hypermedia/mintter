@@ -1,4 +1,4 @@
-import {Element, Path} from 'slate'
+import {Element} from 'slate'
 export interface useHelperOptions {
   trigger?: string
 }

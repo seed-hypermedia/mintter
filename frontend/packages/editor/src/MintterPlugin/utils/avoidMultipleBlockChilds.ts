@@ -1,4 +1,4 @@
-import {Path, Transforms} from 'slate'
+import {Editor, Path, Transforms} from 'slate'
 import {ELEMENT_PARAGRAPH} from '../../elements/defaults'
 import {ELEMENT_BLOCK} from '../../BlockPlugin/defaults'
 import {ELEMENT_BLOCK_LIST} from '../../HierarchyPlugin/defaults'
@@ -27,22 +27,23 @@ export function avoidMultipleBlockChilds(editor, entry): boolean {
 
       let blockPath = Path.parent(path)
       let nextBlockPath = Path.next(blockPath)
-
-      Transforms.moveNodes(editor, {
-        at: path,
-        to: nextBlockPath,
+      Editor.withoutNormalizing(editor, () => {
+        Transforms.moveNodes(editor, {
+          at: path,
+          to: nextBlockPath,
+        })
+        Transforms.wrapNodes(
+          editor,
+          {
+            type: ELEMENT_BLOCK,
+            id: uuid(),
+            children: [],
+          },
+          {
+            at: nextBlockPath,
+          },
+        )
       })
-      Transforms.wrapNodes(
-        editor,
-        {
-          type: ELEMENT_BLOCK,
-          id: uuid(),
-          children: [],
-        },
-        {
-          at: nextBlockPath,
-        },
-      )
     }
     return true
   }

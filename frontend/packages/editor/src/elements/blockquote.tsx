@@ -8,7 +8,7 @@ export const ELEMENT_BLOCKQUOTE = 'blockquote'
 
 export const BLOCKQUOTE_OPTIONS: Record<
   BlockquoteKeyOption,
-  Required<BlockquotePluginOptionsValues>
+  BlockquotePluginOptionsValues
 > = {
   blockquote: {
     type: ELEMENT_BLOCKQUOTE,
