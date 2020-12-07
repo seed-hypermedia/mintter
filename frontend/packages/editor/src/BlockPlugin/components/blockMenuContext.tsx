@@ -10,7 +10,7 @@ export interface MenuItemProps {
 
 export interface OnQuoteOptions {
   block: SlateBlock
-  destination?: string
+  destination?: Document.AsObject
 }
 
 export interface BlockMenuContextType {

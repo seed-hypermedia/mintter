@@ -54,34 +54,38 @@ export const insertBlockItem = (editor: Editor, options: any) => {
      * If not end, split nodes, wrap a list item on the new paragraph and move it to the next list item
      */
     if (!isEnd) {
-      Transforms.splitNodes(editor, {at: editor.selection})
-      Transforms.wrapNodes(
-        editor,
-        {
-          type: block.type,
-          id: uuid(),
-          children: [],
-        },
-        {at: nextParagraphPath},
-      )
-      Transforms.moveNodes(editor, {
-        at: nextParagraphPath,
-        to: nextblockPath,
+      Editor.withoutNormalizing(editor, () => {
+        Transforms.splitNodes(editor, {at: editor.selection as Range})
+        Transforms.wrapNodes(
+          editor,
+          {
+            type: block.type,
+            id: uuid(),
+            children: [],
+          },
+          {at: nextParagraphPath},
+        )
+        Transforms.moveNodes(editor, {
+          at: nextParagraphPath,
+          to: nextblockPath,
+        })
       })
     } else {
       /**
        * If end, insert a list item after and select it
        */
-      Transforms.insertNodes(
-        editor,
-        {
-          type: block.type,
-          id: uuid(),
-          children: [{type: p.type, children: [{text: ''}]}],
-        },
-        {at: nextblockPath},
-      )
-      Transforms.select(editor, nextblockPath)
+      Editor.withoutNormalizing(editor, () => {
+        Transforms.insertNodes(
+          editor,
+          {
+            type: block.type,
+            id: uuid(),
+            children: [{type: p.type, children: [{text: ''}]}],
+          },
+          {at: nextblockPath},
+        )
+        Transforms.select(editor, nextblockPath)
+      })
     }
 
     /**

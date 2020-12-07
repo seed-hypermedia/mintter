@@ -29,7 +29,7 @@ export function DebugValue({value, className = ''}: any) {
   return (
     process.env.NODE_ENV === 'development' && (
       <div
-        className={`fixed right-0 top-0 flex items-end flex-col p-2 overflow-auto mb-8 z-10 ${
+        className={`fixed right-0 top-0 flex items-end flex-col p-2 overflow-auto mb-8 z-10 max-w-xl ${
           visible ? 'h-screen' : ''
         } ${className}`}
       >

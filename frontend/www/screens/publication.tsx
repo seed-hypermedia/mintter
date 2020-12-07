@@ -89,6 +89,8 @@ export default function Publication() {
     block: SlateBlock
     destination?: Document.AsObject
   }) => {
+    console.log({block, destination})
+
     const draftUrl = await createTransclusion({
       source: document.version,
       destination: destination ? destination.version : undefined,
@@ -265,8 +267,9 @@ export default function Publication() {
         )}
       </SplitPane>
       <Seo
-        title={`${data.document &&
-          `${data?.document?.title} | `}Mintter Publication`}
+        title={`${
+          data.document && `${data?.document?.title} | `
+        }Mintter Publication`}
       />
       <PublicationModal document={data.document} />
       <ResizerStyle />
@@ -287,7 +290,7 @@ function usePublication() {
       if (title && !slug.includes('-')) {
         const titleSlug = slugify(title, {
           lower: true,
-          remove: /[*+~.()'"!:@]/g,
+          remove: /[*+~.?()'"!:@]/g,
         })
         history.replace(`${titleSlug}-${version}`)
       }

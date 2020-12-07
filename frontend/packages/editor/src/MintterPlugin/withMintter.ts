@@ -34,7 +34,7 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
   }
 
   editor.insertBreak = () => {
-    console.log(editor)
+    console.log('withMintter => insertBreak')
     let res = isSelectionInBlockItem(editor, options)
 
     let moved: boolean | undefined
@@ -47,7 +47,6 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
         blockPath,
         options,
       )
-      console.log('editor.insertBreak -> moved', moved)
 
       if (moved) return
 
@@ -68,7 +67,6 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
      * Add a new list item if selection is in a LIST_ITEM > p.type.
      */
     if (!moved) {
-      console.log('moved  IS VALID')
       const inserted = insertBlockItem(editor, options)
       if (inserted) return
     }
