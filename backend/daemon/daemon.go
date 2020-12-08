@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 
 	proto "mintter/api/go/v2"
 	v2 "mintter/api/go/v2"
@@ -40,6 +41,8 @@ func authFunc(ctx context.Context) (context.Context, error) {
 }
 
 // Run the daemon.
+//
+// TODO: refactor this to create a Daemon struct that will be easy to interact with in tests.
 func Run(ctx context.Context, cfg config.Config) (err error) {
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -117,26 +120,31 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	// TODO(burdiyan): Add timeout configuration.
 	srv := &http.Server{
-		Addr:    ":" + cfg.HTTPPort,
 		Handler: mux,
 	}
 
-	l, err := net.Listen("tcp", ":"+cfg.GRPCPort)
+	grpcListener, err := net.Listen("tcp", ":"+cfg.GRPCPort)
 	if err != nil {
 		return fmt.Errorf("failed to bind grpc listener: %w", err)
 	}
+	defer grpcListener.Close()
 	// No need to close l because grpc server closes it during shutdown.
 
 	// Start gRPC server with graceful shutdown.
 
 	g.Go(func() error {
-		return rpcsrv.Serve(l)
+		return rpcsrv.Serve(grpcListener)
 	})
 
 	// Start HTTP server with graceful shutdown.
+	httpListener, err := net.Listen("tcp", ":"+cfg.HTTPPort)
+	if err != nil {
+		return fmt.Errorf("failed to bind http listener: %w", err)
+	}
+	defer httpListener.Close()
 
 	g.Go(func() error {
-		err := srv.ListenAndServe()
+		err := srv.Serve(httpListener)
 		if errors.Is(err, http.ErrServerClosed) {
 			return nil
 		}
@@ -152,13 +160,16 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		return srv.Shutdown(context.Background())
 	})
 
+	httpURL := "http://" + formatAddr(httpListener.Addr())
+	grpcURL := "grpc://" + formatAddr(grpcListener.Addr())
+
 	log.Info("ServerStarted",
-		zap.String("httpURL", "http://localhost:"+cfg.HTTPPort),
-		zap.String("grpcURL", "grpc://localhost:"+cfg.GRPCPort),
+		zap.String("httpURL", httpURL),
+		zap.String("grpcURL", grpcURL),
 	)
 
 	if isatty.IsTerminal(os.Stdout.Fd()) && !cfg.NoOpenBrowser {
-		if err := browser.OpenURL("http://localhost:" + cfg.HTTPPort); err != nil {
+		if err := browser.OpenURL(httpURL); err != nil {
 			_ = err
 		}
 	}
@@ -168,6 +179,11 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	err = g.Wait()
 
 	return
+}
+
+func formatAddr(a net.Addr) string {
+	port := a.(*net.TCPAddr).Port
+	return "localhost:" + strconv.Itoa(port)
 }
 
 var errInit = status.Error(codes.Unimplemented, "server is not initialized yet")
