@@ -24,7 +24,10 @@ func makeTestNode(t *testing.T, name string) *p2p.Node {
 		require.NoError(t, s.Close())
 	})
 
-	n, err := p2p.NewNode(repoPath, s, zap.NewNop(), config.P2P{
+	log, err := zap.NewDevelopment()
+	require.NoError(t, err)
+
+	n, err := p2p.NewNode(repoPath, s, log.Named(name), config.P2P{
 		Addr:        "/ip4/127.0.0.1/tcp/0",
 		NoBootstrap: true,
 		NoRelay:     true,
