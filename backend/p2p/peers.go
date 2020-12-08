@@ -66,10 +66,6 @@ func (n *Node) connect(ctx context.Context, pinfo peer.AddrInfo) error {
 		return fmt.Errorf("failed to save peer profile: %w", err)
 	}
 
-	if err := n.SyncProfiles(ctx, prof.ID); err != nil {
-		n.log.Info("FailedSyncingProfilesAfterConnect", zap.Error(err), zap.String("profile", prof.ID.String()))
-	}
-
 	return nil
 }
 
@@ -133,6 +129,18 @@ func (n *Node) savePeerProfile(ctx context.Context, prof identity.Profile) error
 	if err := n.host.Peerstore().Put(pid, supportKey, support); err != nil {
 		return err
 	}
+
+	go func() {
+		if err := n.SyncProfiles(context.Background(), prof.ID); err != nil {
+			n.log.Warn("FailedSyncingProfilesUponConnect", zap.Error(err), zap.String("profile", prof.ID.String()))
+		}
+	}()
+
+	go func() {
+		if err := n.SyncDocuments(context.Background(), prof.ID); err != nil {
+			n.log.Warn("FailedSyncingDocumentsUponConnect", zap.Error(err), zap.String("profile", prof.ID.String()))
+		}
+	}()
 
 	return nil
 }

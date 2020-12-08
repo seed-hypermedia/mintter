@@ -3,6 +3,7 @@ package p2p_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -13,6 +14,8 @@ func TestGetProfile(t *testing.T) {
 	ctx := context.Background()
 
 	connectPeers(t, ctx, alice, bob)
+
+	time.Sleep(1 * time.Second)
 
 	prof, err := alice.GetProfile(ctx, bob.Host().ID())
 	require.NoError(t, err)
