@@ -13,20 +13,19 @@ export function ProgressRoute({children, ...rest}) {
   if (isLoading) {
     return <FullPageSpinner />
   }
-  console.log({data})
 
   return (
     <Route
       {...rest}
       render={props => {
-        return data ? (
+        return progress ? (
+          children
+        ) : data ? (
           <Redirect
             to={{
               pathname: `${getPath(props.match)}/library`,
             }}
           />
-        ) : progress ? (
-          children
         ) : (
           <Redirect
             to={{
