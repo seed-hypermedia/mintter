@@ -5,6 +5,7 @@ import (
 	proto "mintter/api/go/v2"
 	"mintter/backend/server"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -133,6 +134,8 @@ func TestSuggestedProfiles(t *testing.T) {
 
 	connectPeers(t, ctx, alice, bob)
 	connectPeers(t, ctx, bob, carol)
+
+	time.Sleep(1 * time.Second)
 
 	resp, err := carol.ListSuggestedProfiles(ctx, &proto.ListSuggestedProfilesRequest{})
 	require.NoError(t, err)
