@@ -32,18 +32,13 @@ export function ProfileAddress(props) {
       >
         your Mintter addresses
       </label>
-      {address?.length <= 2 && (
-        <p className="block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body opacity-75 mb-4">
-          Establishing connection...
-        </p>
-      )}
       <Textarea
         style={{userSelect: 'none'}}
         readOnly
         rows={4}
         id="addresses"
         className="block text-body-muted w-full border bg-background-muted border-muted rounded px-3 py-2 font-mono text-xs"
-        value={address && address.join('\n\n')}
+        value={address?.join('\n\n')}
       />
       <CopyToClipboard
         text={copyText}
