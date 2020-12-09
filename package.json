@@ -28,7 +28,8 @@
     "editor:watch": "yarn workspace @mintter/editor start",
     "release": "yarn build",
     "validate": "npm-run-all --sequential format editor:test editor:build site:test site:build",
-    "validate:local": "npm-run-all --sequential format editor:test:coverage editor:build site:test:coverage site:build"
+    "validate:local": "npm-run-all --sequential format editor:test:coverage editor:build site:test:coverage site:build",
+    "clean": "gn gen out"
   },
   "workspaces": [
     "frontend/www",
