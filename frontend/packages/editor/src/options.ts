@@ -1,4 +1,4 @@
-import {PARAGRAPH_OPTIONS} from './elements'
+import {DEFAULTS_PARAGRAPH} from './elements'
 import {
   BOLD_OPTIONS,
   ITALIC_OPTIONS,
@@ -6,17 +6,21 @@ import {
   UNDERLINE_OPTIONS,
   STRIKETHROUGH_OPTIONS,
 } from './marks'
-import {DEFAULTS_TRANSCLUSION} from './TransclusionPlugin'
-import {DEFAULTS_BLOCK} from './BlockPlugin'
-import {DEFAULTS_BLOCKLIST} from './HierarchyPlugin'
-import {DEFAULTS_READ_ONLY} from './ReadOnlyPlugin'
+import {DEFAULTS_HEADINGS} from './HeadingPlugin/defaults'
+import {DEFAULTS_TRANSCLUSION} from './TransclusionPlugin/defaults'
+import {DEFAULTS_BLOCK} from './BlockPlugin/defaults'
+import {DEFAULTS_BLOCKLIST} from './HierarchyPlugin/defaults'
+import {DEFAULTS_READ_ONLY} from './ReadOnlyPlugin/defaults'
+import {DEFAULTS_LIST} from './ListPlugin/defaults'
 
 export const options = {
-  ...PARAGRAPH_OPTIONS,
+  ...DEFAULTS_HEADINGS,
+  ...DEFAULTS_PARAGRAPH,
   ...DEFAULTS_BLOCK,
   ...DEFAULTS_BLOCKLIST,
   ...DEFAULTS_TRANSCLUSION,
   ...DEFAULTS_READ_ONLY,
+  ...DEFAULTS_LIST,
   //marks
   ...BOLD_OPTIONS,
   ...ITALIC_OPTIONS,

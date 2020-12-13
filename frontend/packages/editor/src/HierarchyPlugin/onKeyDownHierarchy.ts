@@ -71,19 +71,20 @@ export const moveBlockListDown = (
       sublist ? [1, sublist.children.length] : [1],
     )
 
-    if (!sublist) {
-      // Create new sublist
-      Transforms.wrapNodes(
-        editor,
-        {type: blockListNode.type, id: uuid(), children: []},
-        {at: blockPath},
-      )
-    }
+    Editor.withoutNormalizing(editor, () => {
+      if (!sublist) {
+        // Create new sublist
+        Transforms.wrapNodes(
+          editor,
+          {type: blockListNode.type, id: uuid(), children: []},
+          {at: blockPath},
+        )
+      }
 
-    // Move the current item to the sublist
-    Transforms.moveNodes(editor, {
-      at: blockPath,
-      to: newPath,
+      Transforms.moveNodes(editor, {
+        at: blockPath,
+        to: newPath,
+      })
     })
   }
 }

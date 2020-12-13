@@ -11,7 +11,7 @@ import {
   // withDeserializeHTML,
   pipe,
   withInlineVoid,
-  withDeserializeMd,
+  // withDeserializeHTML,
   WithDeserializeHTMLOptions,
   deserializeHTMLToDocumentFragment,
   SlateDocumentDescendant,
@@ -28,7 +28,7 @@ export function useEditor(plugins: any[], options): Editor {
     withAutoformat({
       rules: autoformatRules,
     }),
-    withDeserializeMd(plugins),
+    // withDeserializeMd(plugins),
     withDeserializeHTML({plugins}),
     withInlineVoid({plugins}),
     withTransclusion(options),
@@ -39,7 +39,7 @@ export function useEditor(plugins: any[], options): Editor {
   return React.useMemo(() => pipe(createEditor(), ...withPlugins), [])
 }
 
-const withDeserializeHTML = ({
+export const withDeserializeHTML = ({
   plugins = [],
 }: WithDeserializeHTMLOptions = {}) => <T extends ReactEditor>(editor: T) => {
   const {insertData} = editor
@@ -54,11 +54,15 @@ const withDeserializeHTML = ({
 
     if (html) {
       const {body} = new DOMParser().parseFromString(html, 'text/html')
+      console.log('🚀 ~ body', body)
 
-      const fragment = deserializeHTMLToDocumentFragment({
+      const prefragment = deserializeHTMLToDocumentFragment({
         plugins,
         element: body,
-      }).map(orphanTextNodesToBlock())
+      })
+      console.log('🚀 ~ prefragment', prefragment)
+
+      const fragment = prefragment.map(orphanTextNodesToBlock())
 
       const firstNodeType = fragment[0].type as string | undefined
 
@@ -66,8 +70,8 @@ const withDeserializeHTML = ({
       if (firstNodeType && !inlineTypes.includes(firstNodeType)) {
         Transforms.setNodes(editor, {type: fragment[0].type})
       }
-
       Transforms.insertFragment(editor, fragment)
+      // Editor.normalize(editor, {force: true})
       return
     }
 

@@ -23,6 +23,7 @@ export const moveBlockItemUp = (
   const newBlockItemPath = Path.next(blockListParentPath)
 
   // Move item one level up
+
   Transforms.moveNodes(editor, {
     at: blockPath,
     to: newBlockItemPath,
@@ -32,13 +33,9 @@ export const moveBlockItemUp = (
    * Move the next siblings to a new list
    */
   const blockItemIndex = blockPath[blockPath.length - 1]
-
   const siblingPath = [...blockPath]
-
   const newBlockListPath = newBlockItemPath.concat(1)
-
   let siblingFound = false
-
   let newSiblingIdx = 0
   blockListNode.children.forEach((n, idx) => {
     console.log('n', n)
