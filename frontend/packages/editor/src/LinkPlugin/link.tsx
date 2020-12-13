@@ -5,8 +5,7 @@ import {
   isUrl,
 } from '@udecode/slate-plugins'
 import {css} from 'emotion'
-
-export const ELEMENT_LINK = 'a'
+import {ELEMENT_LINK} from './defaults'
 
 export const DEFAULTS_LINK: Record<LinkKeyOption, LinkPluginOptionsValues> = {
   link: {

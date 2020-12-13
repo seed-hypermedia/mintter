@@ -11,7 +11,6 @@ export function BlockBase(
 ) {
   const [isQuotesVisible, setVisibility] = React.useState<boolean>(false)
   let quoters = element.quotersList?.length
-
   function toggleQuotes() {
     setVisibility(val => !val)
   }
@@ -35,7 +34,7 @@ export function BlockBase(
           )}
         </div>
       ) : null}
-      {quoters !== 0 && (
+      {quoters > 0 && (
         <div
           contentEditable={false}
           style={{userSelect: 'none'}}
