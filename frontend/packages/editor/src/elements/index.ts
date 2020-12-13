@@ -1,6 +1,2 @@
 export * from './paragraph'
-export * from './headings'
-export * from './blockquote'
-export * from './link'
-export * from './lists'
 export * from './defaults'

@@ -28,18 +28,17 @@ export const onKeyDownTransclusion = options => (
 
 function createEmptyBlock(editor: Editor, options, after) {
   const nextPath = Path.next(after)
-  Editor.withoutNormalizing(editor, () => {
-    Transforms.insertNodes(
-      editor,
-      {
-        type: options.block.type,
-        id: uuid(),
-        children: [{type: options.p.type, children: [{text: ''}]}],
-      },
-      {
-        at: nextPath,
-      },
-    )
-    Transforms.select(editor, Editor.start(editor, nextPath))
-  })
+
+  Transforms.insertNodes(
+    editor,
+    {
+      type: options.block.type,
+      id: uuid(),
+      children: [{type: options.p.type, children: [{text: ''}]}],
+    },
+    {
+      at: nextPath,
+    },
+  )
+  Transforms.select(editor, Editor.start(editor, nextPath))
 }

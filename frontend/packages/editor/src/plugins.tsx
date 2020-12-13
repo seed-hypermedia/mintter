@@ -13,9 +13,13 @@ import {HierarchyPlugin} from './HierarchyPlugin'
 import {TransclusionPlugin} from './TransclusionPlugin'
 import {BlockPlugin} from './BlockPlugin'
 import {ReadOnlyPlugin} from './ReadOnlyPlugin'
+import {HeadingPlugin} from './HeadingPlugin/HeadingPlugin'
+import {LinkPlugin} from './LinkPlugin/LinkPlugin'
+import {ListPlugin} from './ListPlugin/ListPlugin'
 
 export const plugins = [
   ParagraphPlugin(options),
+  LinkPlugin(),
   BoldPlugin(options),
   CodePlugin(options),
   ItalicPlugin(options),
@@ -26,6 +30,8 @@ export const plugins = [
   TransclusionPlugin(options),
   BlockPlugin(options),
   ReadOnlyPlugin(options),
+  HeadingPlugin(options),
+  ListPlugin(options),
 ]
 
 export function createPlugins(options) {
@@ -41,5 +47,8 @@ export function createPlugins(options) {
     TransclusionPlugin(options),
     BlockPlugin(options),
     ReadOnlyPlugin(options),
+    HeadingPlugin(options),
+    ListPlugin(options),
+    LinkPlugin(),
   ]
 }

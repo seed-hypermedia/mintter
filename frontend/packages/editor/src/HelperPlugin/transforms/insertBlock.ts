@@ -64,20 +64,17 @@ export const insertBlock = (editor: Editor, options: InsertBlockOptions) => {
       // if has content
       if (options.type === ELEMENT_BLOCK) {
         // content + block = insert below
-        Editor.withoutNormalizing(editor, () => {
-          insert(editor, {type: options.type, location: nextPath})
-          Transforms.select(editor, nextPath)
-        })
+        insert(editor, {type: options.type, location: nextPath})
+        Transforms.select(editor, nextPath)
+
         return
       }
 
       if (options.type === 'img') {
         // content + image = insert bellow + a new block below image
         console.log('insertBlock => content + image')
-        Editor.withoutNormalizing(editor, () => {
-          insert(editor, {type: ELEMENT_BLOCK, location: nextPath})
-          insert(editor, {type: options.type, location: nextPath})
-        })
+        insert(editor, {type: ELEMENT_BLOCK, location: nextPath})
+        insert(editor, {type: options.type, location: nextPath})
       }
     } else {
       if (options.type === ELEMENT_BLOCK) {
@@ -90,10 +87,8 @@ export const insertBlock = (editor: Editor, options: InsertBlockOptions) => {
       if (options.type === 'img') {
         console.log('insertBlock => blank + image')
         // blank + image = insert image in the same path
-        Editor.withoutNormalizing(editor, () => {
-          insert(editor, {type: options.type, location: options.target})
-          Transforms.select(editor, nextPath)
-        })
+        insert(editor, {type: options.type, location: options.target})
+        Transforms.select(editor, nextPath)
       }
     }
   }

@@ -1,31 +1,33 @@
 import {ReactEditor} from 'slate-react'
-import {
-  Editor,
-  //  Element,
-  Node,
-  Path,
-  Transforms,
-} from 'slate'
+import {Editor, Element, Node, Path, Transforms} from 'slate'
 import {
   isBlockAboveEmpty,
-  isFirstChild,
   isSelectionAtBlockStart,
   onKeyDownResetBlockType,
+  isCollapsed,
 } from '@udecode/slate-plugins'
+import {v4 as uuid} from 'uuid'
 import {insertBlockItem} from './insertBlockItem'
 import {moveBlockItemUp} from './moveBlockItemUp'
 import {
+  getBlockItemEntry,
   isSelectionInBlockItem,
-  isSelectionInTransclusion,
 } from './isSelectionInBlockItem'
 import {unwrapBlockList} from './unwrapBlockList'
 import {avoidMultipleRootChilds} from './utils/avoidMultipleRootChilds'
-import {avoidMultipleBlockChilds} from './utils/avoidMultipleBlockChilds'
-import {ELEMENT_TRANSCLUSION} from '../TransclusionPlugin'
+// import {avoidMultipleBlockChilds} from './utils/avoidMultipleBlockChilds'
+import {ELEMENT_PARAGRAPH} from '../elements/defaults'
+import {ELEMENT_BLOCK} from '../BlockPlugin/defaults'
+import {ELEMENT_BLOCK_LIST} from '../HierarchyPlugin/defaults'
+import {BlockRefList} from '@mintter/api/v2/documents_pb'
+import {removeRootListItem} from './utils/removeRootBlockItem'
+import {hasListInBlockItem} from './utils/hasListInBlockItem'
+import {removeFirstBlockItem} from './utils/removeFirstBlockItem'
+import {deleteListFragment} from './utils/deleteListFragment'
 
 export const withMintter = options => <T extends ReactEditor>(editor: T) => {
   const {p, block} = options
-  const {insertBreak, deleteBackward, normalizeNode} = editor
+  const {insertBreak, deleteBackward, normalizeNode, deleteFragment} = editor
 
   const resetBlockTypesListRule = {
     types: [block.type],
@@ -34,7 +36,6 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
   }
 
   editor.insertBreak = () => {
-    console.log('withMintter => insertBreak')
     let res = isSelectionInBlockItem(editor, options)
 
     let moved: boolean | undefined
@@ -75,66 +76,33 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
   }
 
   editor.deleteBackward = unit => {
-    let res = isSelectionInBlockItem(editor, options)
-
-    if (!res) {
-      res = isSelectionInTransclusion(editor, options)
-    }
+    const res = getBlockItemEntry({editor, locationOptions: {}, options})
 
     let moved: boolean | undefined
-    if (res && isSelectionAtBlockStart(editor)) {
-      const {blockListNode, blockListPath, blockNode, blockPath} = res
 
-      moved = moveBlockItemUp(
-        editor,
-        blockListNode,
-        blockListPath,
-        blockPath,
-        options,
-      )
-      if (moved) return
+    if (res) {
+      const {blockList, blockItem} = res
+      const [blockItemNode] = blockItem
 
-      // if blockList is length 1
-      if (blockListPath.length === 1) {
-        // blockListPath is first level
+      if (isSelectionAtBlockStart(editor)) {
+        moved = removeFirstBlockItem(editor, {blockList, blockItem}, options)
+        if (moved) return
 
-        if (blockNode.children.length > 1) {
-          // block has a blockList as child
-          // move childs to the outer list
-          Transforms.moveNodes(editor, {at: blockPath.concat(1), to: blockPath})
-          Transforms.unwrapNodes(editor, {at: blockPath})
+        moved = removeRootListItem(editor, {blockList, blockItem}, options)
+        if (moved) return
 
-          Transforms.select(editor, Editor.start(editor, blockPath))
-        } else {
-          // block has no childs, delete!!
-          if (blockListNode.children.length > 1) {
-            // block is not the only Child
+        moved = moveBlockItemUp(
+          editor,
+          blockList[0],
+          blockList[1],
+          blockItem[1],
+          options,
+        )
+        if (moved) return
+      }
 
-            if (Node.string(blockNode)) {
-              console.log('remove: TIENE contenido!')
-              if (!isFirstChild(blockPath)) {
-                console.log('remove: NO es el primer hijo!')
-                const previousEntry = Editor.previous(editor, {
-                  at: blockPath,
-                })
-                if (previousEntry) {
-                  const [prevNode, prevPath] = previousEntry
-                  if (prevNode.type === ELEMENT_TRANSCLUSION) {
-                    console.log('PREVIOUS IS TRANSCLUSION')
-                    Transforms.select(editor, prevPath)
-                    return
-                  }
-                }
-                moveContentToAboveBlock(editor, blockPath)
-              }
-            } else {
-              console.log('remove: NO tiene contenido!')
-              Transforms.removeNodes(editor, {at: blockPath})
-            }
-          }
-        }
-
-        return
+      if (hasListInBlockItem(blockItemNode) && isCollapsed(editor.selection)) {
+        return deleteBackward(unit)
       }
     }
 
@@ -142,7 +110,7 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
       rules: [
         {
           ...resetBlockTypesListRule,
-          predicate: () => !moved && isSelectionAtBlockStart(editor),
+          predicate: () => !moved && isBlockAboveEmpty(editor),
         },
       ],
     })(null, editor)
@@ -152,21 +120,159 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
   }
 
   editor.normalizeNode = entry => {
-    if (avoidMultipleRootChilds(editor)) return
-    if (avoidMultipleBlockChilds(editor, entry)) return
+    const [node, path] = entry
 
-    return normalizeNode(entry)
+    if (avoidMultipleRootChilds(editor)) return
+
+    // if (node.type === undefined) {
+    //   const parent = getParent(editor, path)
+    // }
+
+    // If the element is a paragraph, ensure its children are valid.
+    if (Element.isElement(node)) {
+      if (node.type === ELEMENT_PARAGRAPH) {
+        for (const [child, childPath] of Node.children(editor, path)) {
+          if (Element.isElement(child) && !editor.isInline(child)) {
+            Transforms.unwrapNodes(editor, {at: childPath})
+            return
+          }
+        }
+      }
+
+      if (node.type === ELEMENT_BLOCK) {
+        // check if first child is a paragraph
+        if (node.children.length === 1) {
+          console.log('=== BLOCK -> ONLY 1 CHILD', {node, path})
+        } else {
+          for (const [child, childPath] of Node.children(editor, path)) {
+            // console.log('=== BLOCK -> CHILDS', {node, path, child, childPath})
+
+            if (child.type === ELEMENT_PARAGRAPH) {
+              if (childPath[childPath.length - 1] !== 0) {
+                // console.log('=== BLOCK -> PARAGRAPH -> IS ANOTHER PARAGRAPH', {
+                //   node,
+                //   path,
+                //   child,
+                //   childPath,
+                // })
+                Editor.withoutNormalizing(editor, () => {
+                  Transforms.liftNodes(editor, {at: childPath})
+                })
+                return
+              }
+            }
+
+            if (child.type === ELEMENT_BLOCK_LIST) {
+              // console.log('=== BLOCK -> BLOCK_LIST', {
+              //   node,
+              //   path,
+              //   child,
+              //   childPath,
+              // })
+              if (childPath[childPath.length - 1] !== 1) {
+                // console.log(
+                //   '=== BLOCK -> BLOCK_LIST -> IS NOT THE SECOND CHILD',
+                //   {
+                //     node,
+                //     path,
+                //     child,
+                //     childPath,
+                //   },
+                // )
+                // const blockListIndex = childPath[childPath.length - 1]
+
+                // const prevBlock = Node.get(editor, Path.previous(path))
+
+                // console.log('=== BLOCK_LIST -> BLOCK_LIST -> index=', {
+                //   child,
+                //   childPath,
+                //   blockListIndex,
+                //   node,
+                //   path,
+                //   prevBlock,
+                // })
+                Editor.withoutNormalizing(editor, () => {
+                  Transforms.unwrapNodes(editor, {at: path})
+                })
+                return
+              }
+            }
+          }
+        }
+      }
+
+      if (node.type === ELEMENT_BLOCK_LIST) {
+        if (path.length === 1) {
+          console.log('=== BLOCK_LIST -> ROOT')
+        } else {
+          // console.log('=== BLOCK_LIST -> ANOTHER BLOCK_LIST', {node, path})
+          Editor.withoutNormalizing(editor, () => {
+            Transforms.setNodes(
+              editor,
+              {listType: BlockRefList.Style.BULLET},
+              {at: path},
+            )
+          })
+        }
+
+        // childs are type block
+        for (const [child, childPath] of Node.children(editor, path)) {
+          if (Element.isElement(child)) {
+            // console.log('BLOCKLIST CHILD -> ', {child, childPath})
+            if (child.type === ELEMENT_PARAGRAPH) {
+              Editor.withoutNormalizing(editor, () => {
+                Transforms.wrapNodes(
+                  editor,
+                  {
+                    type: ELEMENT_BLOCK,
+                    id: uuid(),
+                    children: [],
+                  },
+                  {at: childPath},
+                )
+              })
+              return
+            } else if (child.type === ELEMENT_BLOCK_LIST) {
+              const prevChildPath = Path.previous(childPath)
+              const prevChild: any = Node.get(editor, prevChildPath)
+              // console.log('=== BLOCK_LIST -> BLOCK_LIST', {
+              //   childs: node.children.length,
+              //   prevChildPath,
+              //   prevChild,
+              // })
+              if (!prevChild) return
+              if (prevChild.type === ELEMENT_BLOCK) {
+                Editor.withoutNormalizing(editor, () => {
+                  Transforms.moveNodes(editor, {
+                    at: childPath,
+                    to: prevChildPath.concat(1),
+                  })
+                })
+                return
+              }
+            } else {
+              // console.log('=== BLOCK_LIST -> ANOTHER TYPE', {
+              //   node,
+              //   path,
+              //   child,
+              //   childPath,
+              // })
+            }
+          }
+        }
+      }
+    }
+
+    normalizeNode(entry)
+  }
+
+  editor.deleteFragment = () => {
+    const {selection} = editor
+
+    if (selection && deleteListFragment(editor, selection, options)) return
+
+    deleteFragment()
   }
 
   return editor
-}
-
-function moveContentToAboveBlock(editor, path) {
-  let blockPathAbove = Path.previous(path)
-  let pPathDestination = blockPathAbove.concat(1)
-
-  // TODO: check if both children are the same type to really merge it.
-
-  Transforms.mergeNodes(editor, {at: path})
-  Transforms.mergeNodes(editor, {at: pPathDestination})
 }
