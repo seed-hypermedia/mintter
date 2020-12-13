@@ -9,7 +9,7 @@ import {ELEMENT_PARAGRAPH} from './defaults'
 
 export const paragraphOption = {}
 
-export const PARAGRAPH_OPTIONS: Record<
+export const DEFAULTS_PARAGRAPH: Record<
   ParagraphKeyOption,
   ParagraphPluginOptionsValues
 > = {
@@ -18,6 +18,7 @@ export const PARAGRAPH_OPTIONS: Record<
     type: ELEMENT_PARAGRAPH,
     rootProps: {
       as: 'p',
+      className: 'FOO',
     },
   },
 }

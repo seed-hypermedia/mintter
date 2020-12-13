@@ -1,0 +1,15 @@
+import {Editor, Path} from 'slate'
+import {setDefaults} from '@udecode/slate-plugins'
+import {DEFAULTS_BLOCK} from '../../BlockPlugin/defaults'
+
+export const isBlockListNested = (
+  editor: Editor,
+  listPath: Path,
+  options?: any,
+) => {
+  const {block} = setDefaults(options, DEFAULTS_BLOCK)
+
+  const [listParentNode] = Editor.parent(editor, listPath)
+
+  return listParentNode.type === block.type
+}

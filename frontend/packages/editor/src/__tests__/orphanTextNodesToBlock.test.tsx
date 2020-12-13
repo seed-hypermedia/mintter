@@ -27,17 +27,22 @@ test('should wrap texts with paragraphs', () => {
       <hp>
         <htext>paragraph</htext>
       </hp>
-      <hp>
-        <htext>unordered list item</htext>
-      </hp>
-      <hp>
-        <htext>ordered list item</htext>
-      </hp>
+      <blockList>
+        <hp>
+          <htext>unordered list item</htext>
+        </hp>
+      </blockList>
+      <blockList>
+        <hp>
+          <htext>ordered list item</htext>
+        </hp>
+      </blockList>
+
       <hp>
         <htext>blockquote</htext>
       </hp>
       <hp>
-        <htext>link</htext>
+        <htext underline={true}>link</htext>
       </hp>
     </editor>
   ) as any) as Editor
