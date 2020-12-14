@@ -63,13 +63,13 @@ export default function Editor(): JSX.Element {
 
   const titleRef = React.useRef(null)
   const subtitleRef = React.useRef(null)
-  // const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
+  const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false)
 
   const {setDocument} = useMintter()
   const saveDocument = React.useMemo(() => setDocument(editor), [editor])
   const {isLoading, isError, error, data} = useDocument(version, {
     onSuccess: () => {
-      // setReadyToAutosave(true)
+      setReadyToAutosave(true)
     },
   })
   // TODO: add autosave again
@@ -100,26 +100,26 @@ export default function Editor(): JSX.Element {
     }
   }, [])
 
-  // const [autosaveDraft] = useMutation(async state => {
-  //   if (data.document) {
-  //     saveDocument({document: data.document, state})
-  //   } else {
-  //     console.error('no document???')
-  //   }
-  // })
+  const [autosaveDraft] = useMutation(async state => {
+    if (data.document) {
+      saveDocument({document: data.document, state})
+    } else {
+      console.error('no document???')
+    }
+  })
 
-  // const debouncedValue = useDebounce(state, 1000)
+  const debouncedValue = useDebounce(state, 1000)
 
-  // React.useEffect(() => {
-  //   if (readyToAutosave) {
-  //     autosaveDraft(state)
-  //   }
+  React.useEffect(() => {
+    if (readyToAutosave) {
+      autosaveDraft(state)
+    }
 
-  //   return () => {
-  //     // unmount screen, autosave.
-  //     autosaveDraft(state)
-  //   }
-  // }, [debouncedValue])
+    return () => {
+      // unmount screen, autosave.
+      autosaveDraft(state)
+    }
+  }, [debouncedValue])
 
   async function getTransclusionData(transclusionId) {
     const version = transclusionId.split('/')[0]
