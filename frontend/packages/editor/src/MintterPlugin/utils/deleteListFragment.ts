@@ -14,7 +14,6 @@ export const deleteListFragment = (
   options: any = {},
 ): number | undefined => {
   const [startSelection, endSelection] = Range.edges(selection)
-
   // Selection should contain multiple blocks.
   if (Path.equals(startSelection.path, endSelection.path)) return
 
@@ -43,7 +42,6 @@ export const deleteListFragment = (
     if (Path.isBefore(startSelection.path, rootPath)) {
       // If start selection is before the root list.
       next = Path.next(rootPath)
-
       // Copy the root list after it.
       Transforms.insertNodes(
         editor,
@@ -82,7 +80,6 @@ export const deleteListFragment = (
         fromBlockItem: blockItemEnd,
         toBlockItem: blockItemStart,
       })
-
       next = listItemSublist
         ? Path.next(getLastChildPath(listItemSublist))
         : blockItemStart[1].concat([1, 0])
@@ -92,7 +89,6 @@ export const deleteListFragment = (
     let cursorPath = endSelection.path
     let siblingsMoved = 0
     next = [...next.slice(0, -1), next[next.length - 1] + childrenMoved]
-
     while (Path.isAfter(cursorPath, startSelection.path)) {
       const node = Node.get(editor, cursorPath)
       if (node.type === block.type) {

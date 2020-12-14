@@ -14,7 +14,7 @@ type LocationOptions = {
 
 type EntryTypes = {
   editor: Editor
-  locationOptions?: LocationOptions
+  locationOptions: LocationOptions
   options?: any
 }
 
