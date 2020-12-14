@@ -94,15 +94,11 @@ export function useTransclusion() {
         // Create block reference for the block being transcluded:
         const transclusionRef = new BlockRef()
         transclusionRef.setRef(transclusionId)
-
         const document = draft.getDocument()
         document.getBlockRefList().addRefs(transclusionRef)
-
         const req = new UpdateDraftRequest()
         req.setDocument(document)
-
         await updateDraftWithRequest(req)
-
         return destination
       }
     },

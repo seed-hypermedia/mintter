@@ -124,11 +124,6 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
 
     if (avoidMultipleRootChilds(editor)) return
 
-    // if (node.type === undefined) {
-    //   const parent = getParent(editor, path)
-    // }
-
-    // If the element is a paragraph, ensure its children are valid.
     if (Element.isElement(node)) {
       if (node.type === ELEMENT_PARAGRAPH) {
         for (const [child, childPath] of Node.children(editor, path)) {
@@ -145,16 +140,8 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
           console.log('=== BLOCK -> ONLY 1 CHILD', {node, path})
         } else {
           for (const [child, childPath] of Node.children(editor, path)) {
-            // console.log('=== BLOCK -> CHILDS', {node, path, child, childPath})
-
             if (child.type === ELEMENT_PARAGRAPH) {
               if (childPath[childPath.length - 1] !== 0) {
-                // console.log('=== BLOCK -> PARAGRAPH -> IS ANOTHER PARAGRAPH', {
-                //   node,
-                //   path,
-                //   child,
-                //   childPath,
-                // })
                 Editor.withoutNormalizing(editor, () => {
                   Transforms.liftNodes(editor, {at: childPath})
                 })
@@ -163,34 +150,7 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
             }
 
             if (child.type === ELEMENT_BLOCK_LIST) {
-              // console.log('=== BLOCK -> BLOCK_LIST', {
-              //   node,
-              //   path,
-              //   child,
-              //   childPath,
-              // })
               if (childPath[childPath.length - 1] !== 1) {
-                // console.log(
-                //   '=== BLOCK -> BLOCK_LIST -> IS NOT THE SECOND CHILD',
-                //   {
-                //     node,
-                //     path,
-                //     child,
-                //     childPath,
-                //   },
-                // )
-                // const blockListIndex = childPath[childPath.length - 1]
-
-                // const prevBlock = Node.get(editor, Path.previous(path))
-
-                // console.log('=== BLOCK_LIST -> BLOCK_LIST -> index=', {
-                //   child,
-                //   childPath,
-                //   blockListIndex,
-                //   node,
-                //   path,
-                //   prevBlock,
-                // })
                 Editor.withoutNormalizing(editor, () => {
                   Transforms.unwrapNodes(editor, {at: path})
                 })
@@ -205,7 +165,6 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
         if (path.length === 1) {
           console.log('=== BLOCK_LIST -> ROOT')
         } else {
-          // console.log('=== BLOCK_LIST -> ANOTHER BLOCK_LIST', {node, path})
           Editor.withoutNormalizing(editor, () => {
             Transforms.setNodes(
               editor,
@@ -215,10 +174,8 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
           })
         }
 
-        // childs are type block
         for (const [child, childPath] of Node.children(editor, path)) {
           if (Element.isElement(child)) {
-            // console.log('BLOCKLIST CHILD -> ', {child, childPath})
             if (child.type === ELEMENT_PARAGRAPH) {
               Editor.withoutNormalizing(editor, () => {
                 Transforms.wrapNodes(
@@ -235,11 +192,6 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
             } else if (child.type === ELEMENT_BLOCK_LIST) {
               const prevChildPath = Path.previous(childPath)
               const prevChild: any = Node.get(editor, prevChildPath)
-              // console.log('=== BLOCK_LIST -> BLOCK_LIST', {
-              //   childs: node.children.length,
-              //   prevChildPath,
-              //   prevChild,
-              // })
               if (!prevChild) return
               if (prevChild.type === ELEMENT_BLOCK) {
                 Editor.withoutNormalizing(editor, () => {
@@ -250,13 +202,6 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
                 })
                 return
               }
-            } else {
-              // console.log('=== BLOCK_LIST -> ANOTHER TYPE', {
-              //   node,
-              //   path,
-              //   child,
-              //   childPath,
-              // })
             }
           }
         }

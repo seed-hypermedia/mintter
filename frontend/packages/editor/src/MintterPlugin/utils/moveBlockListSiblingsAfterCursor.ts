@@ -1,5 +1,5 @@
-import {Editor, Node, NodeEntry, Path} from 'slate'
-import {moveChildren} from '@udecode/slate-plugins'
+import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
+import {MoveChildrenOptions, getNode} from '@udecode/slate-plugins'
 import {isNodeTypeBlockList} from './isNodeTypeBlockList'
 
 export const moveBlockListSiblingsAfterCursor = (
@@ -30,4 +30,27 @@ export const moveBlockListSiblingsAfterCursor = (
     to,
     start: offset + 1,
   })
+}
+
+const moveChildren = (
+  editor: Editor,
+  {at, to, match, start = 0}: MoveChildrenOptions,
+) => {
+  let moved = 0
+  const parentPath = Path.isPath(at) ? at : at[1]
+  const parentNode = Path.isPath(at) ? Node.get(editor, parentPath) : at[0]
+
+  if (!Editor.isBlock(editor, parentNode)) return moved
+
+  for (let i = parentNode.children.length - 1; i >= start; i--) {
+    const childPath = [...parentPath, i]
+    const childNode = getNode(editor, childPath)
+
+    if (!match || (childNode && match([childNode, childPath]))) {
+      Transforms.moveNodes(editor, {at: childPath, to})
+      moved++
+    }
+  }
+
+  return moved
 }
