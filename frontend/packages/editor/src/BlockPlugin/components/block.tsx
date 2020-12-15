@@ -109,7 +109,7 @@ function BlockMentionComponent({quote, getData, onMainPanel, onSidePanel}) {
               <Icons.ArrowUpRight size={14} color="currentColor" />
             </button>
           </Tooltip>
-          <Tooltip content="Open in Side Panel">
+          <Tooltip content="Show in Sidepanel">
             <button
               className="bg-background hover:bg-muted transition duration-150 rounded-sm p-1"
               onClick={() => onSidePanel?.(quote)}

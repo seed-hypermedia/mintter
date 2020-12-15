@@ -44,7 +44,7 @@ const BlockControlsComp = ({
             }}
           >
             <Icons.ArrowUpRight size={16} color="currentColor" />
-            <span className="flex-1 mx-2">Open in Sidepanel</span>
+            <span className="flex-1 mx-2">Show in Sidepanel</span>
           </MenuItem>
         )}
         <MenuItem
