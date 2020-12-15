@@ -53,7 +53,7 @@ const Transclusion = (
           )}
 
           <span className="transition duration-100 group-hover:opacity-100 group-hover:visible invisible opacity-0 font-bold text-primary">
-            Open in Sidepanel →
+            Show in Sidepanel →
           </span>
         </button>
       </div>
