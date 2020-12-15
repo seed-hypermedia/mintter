@@ -21,9 +21,20 @@ export const DragDrop = ({element, children, componentRef, ...props}: any) => {
   const dispatch = useBlockMenuDispatch()
 
   return (
-    <div {...props} ref={ref}>
+    <li
+      {...props}
+      ref={ref}
+      className={`relative ${css`
+        &:before {
+          margin-top: 0.25em;
+          margin-bottom: 0.25em;
+        }
+        .list-none > &:before {
+          opacity: 0;
+        }
+      `}`}
+    >
       <div
-        className="relative mt-4"
         onMouseLeave={() => {
           dispatch({type: 'set_block_id', payload: {blockId: null}})
         }}
@@ -54,6 +65,6 @@ export const DragDrop = ({element, children, componentRef, ...props}: any) => {
           </div>
         )}
       </div>
-    </div>
+    </li>
   )
 }
