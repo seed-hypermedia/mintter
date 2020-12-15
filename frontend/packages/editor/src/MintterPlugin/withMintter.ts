@@ -106,15 +106,15 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
       }
     }
 
-    const didReset = onKeyDownResetBlockType({
-      rules: [
-        {
-          ...resetBlockTypesListRule,
-          predicate: () => !moved && isBlockAboveEmpty(editor),
-        },
-      ],
-    })(null, editor)
-    if (didReset) return
+    // const didReset = onKeyDownResetBlockType({
+    //   rules: [
+    //     {
+    //       ...resetBlockTypesListRule,
+    //       predicate: () => !moved && isBlockAboveEmpty(editor),
+    //     },
+    //   ],
+    // })(null, editor)
+    // if (didReset) return
 
     deleteBackward(unit)
   }
