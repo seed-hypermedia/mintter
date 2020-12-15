@@ -1,19 +1,16 @@
-import {BlockRefList} from '@mintter/api/v2/documents_pb'
 import React from 'react'
+import {BlockRefList} from '@mintter/api/v2/documents_pb'
 
 export function BlockList({attributes, children, element}) {
+  const Component = element.listType === BlockRefList.Style.NUMBER ? 'ol' : 'ul'
   return (
-    <div
-      className={`pl-2 md:pl-4 list-inside ${
-        element.listType === BlockRefList.Style.BULLET
-          ? 'list-disc'
-          : element.listType === BlockRefList.Style.NUMBER
-          ? 'list-decimal'
-          : 'list-none'
-      }`}
+    <Component
       {...attributes}
+      className={`${
+        element.listType === BlockRefList.Style.NONE ? 'list-none' : ''
+      }`}
     >
       {children}
-    </div>
+    </Component>
   )
 }
