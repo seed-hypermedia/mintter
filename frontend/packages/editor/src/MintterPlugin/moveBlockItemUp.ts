@@ -1,5 +1,5 @@
 import {Ancestor, Editor, Path, Transforms} from 'slate'
-import {v4 as uuid} from 'uuid'
+import {id} from '../id'
 /**
  * Move a block next to its parent.
  * The parent should be a block list.
@@ -47,7 +47,7 @@ export const moveBlockItemUp = (
           editor,
           {
             type: blockListNode.type,
-            id: uuid(),
+            id: id(),
             children: [],
           },
           {at: newBlockListPath},

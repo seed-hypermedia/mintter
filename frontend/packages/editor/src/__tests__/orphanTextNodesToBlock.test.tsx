@@ -37,7 +37,6 @@ test('should wrap texts with paragraphs', () => {
           <htext>ordered list item</htext>
         </hp>
       </blockList>
-
       <hp>
         <htext>blockquote</htext>
       </hp>
