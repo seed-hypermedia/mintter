@@ -26,13 +26,14 @@ const BlockControlsComp = ({
         {...menu}
         ref={disclosure.ref}
         {...disclosure.props}
+        aria-label={`Toggle Menu for Block ${element.id}`}
         className="rounded bg-white shadow-sm p-1 block"
       >
         {disclosureProps => React.cloneElement(disclosure, disclosureProps)}
       </MenuButton>
       <Menu
         {...menu}
-        aria-label="Block Menu"
+        aria-label={`Block ${element.id} Menu`}
         style={{width: 320, zIndex: 100, backgroundColor: 'white'}}
         hideOnClickOutside
       >
@@ -54,6 +55,15 @@ const BlockControlsComp = ({
           icon={Icons.CornerDownLeft}
           element={element}
         />
+        <MenuItem
+          {...menu}
+          onClick={() => {
+            blockMenuState.onCopyBlockId?.(element.id)
+          }}
+        >
+          <Icons.Copy size={16} color="currentColor" />
+          <span className="flex-1 mx-2">Copy Block Ref</span>
+        </MenuItem>
         {/* <MenuItem
           {...menu}
           disabled={isQuote}
@@ -126,7 +136,7 @@ const DraftsMenuComp = React.forwardRef<
       </MenuButton>
       <Menu
         {...menu}
-        aria-label="Drafts List selection"
+        aria-label="Drafts List Menu"
         style={{width: 320, zIndex: 101, backgroundColor: 'white'}}
       >
         <MenuItem

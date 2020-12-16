@@ -15,6 +15,7 @@ import {
   useBlockMenuDispatch,
 } from '@mintter/editor'
 import {Document} from '@mintter/api/v2/documents_pb'
+import {useToasts} from 'react-toast-notifications'
 import {SidePanelObject} from 'components/sidePanelObject'
 import {AuthorLabel} from 'components/author-label'
 import {PublicationModal} from 'components/publication-modal'
@@ -33,15 +34,14 @@ import {isLocalhost} from 'shared/isLocalhost'
 import {getPath} from 'components/routes'
 import {useTransclusion} from 'shared/useTransclusion'
 import {Profile} from '@mintter/api/v2/mintter_pb'
-import {version} from 'os'
 
 export default function Publication() {
   const match = useRouteMatch()
   const history = useHistory()
+  const {addToast} = useToasts()
 
   // request document
   const {isLoading, isError, error, data, value} = usePublication()
-  console.log('🚀 ~ Publication ~ ', data)
 
   //sidepanel state
   const {state: sidePanel, dispatch: sidePanelDispatch} = useSidePanel()
@@ -117,7 +117,7 @@ export default function Publication() {
     })
   }
 
-  async function getQuotationData(quoteId) {
+  async function getQuoteData(quoteId) {
     const version = quoteId.split('/')[0]
     const res = await apiClient.getDocument('', version)
     const data = res.toObject()
@@ -132,6 +132,22 @@ export default function Publication() {
     }
   }
 
+  function onCopyBlockId(blockId: string) {
+    const id = blockId.includes('/')
+      ? blockId
+      : `${data.document?.version}/${blockId}`
+    const res = copyTextToClipboard(id)
+    if (res) {
+      addToast('Block Ref copied to your clipboard!', {
+        appearance: 'success',
+      })
+    } else {
+      addToast('Error while copying to Clipboard!', {
+        appearance: 'error',
+      })
+    }
+  }
+
   const onQuote = React.useCallback(handleQuotation(data?.document), [data])
   const onSidePanel = React.useCallback(handleSidepanel(data?.document), [data])
   const onMainPanel = React.useCallback(handleMainpanel, [])
@@ -142,14 +158,14 @@ export default function Publication() {
       ...options.transclusion,
       customProps: {
         dispatch: sidePanelDispatch,
-        getData: getQuotationData,
+        getData: getQuoteData,
       },
     },
     block: {
       ...options.block,
       customProps: {
         dispatch: sidePanelDispatch,
-        getData: getQuotationData,
+        getData: getQuoteData,
         onMainPanel,
         onSidePanel,
       },
@@ -165,6 +181,7 @@ export default function Publication() {
       type: 'set_actions',
       payload: {
         onQuote,
+        onCopyBlockId,
         onSidePanel,
         useDocument,
         drafts,
@@ -273,8 +290,9 @@ export default function Publication() {
         )}
       </SplitPane>
       <Seo
-        title={`${data.document &&
-          `${data?.document?.title} | `}Mintter Publication`}
+        title={`${
+          data.document && `${data?.document?.title} | `
+        }Mintter Publication`}
       />
       <PublicationModal document={data.document} />
       <ResizerStyle />
@@ -412,4 +430,48 @@ function PublicationHeader({document}: {document: Document.AsObject}) {
       </p>
     </div>
   ) : null
+}
+
+function fallbackCopyTextToClipboard(text) {
+  const textArea = document.createElement('textarea')
+  textArea.value = text
+
+  // Avoid scrolling to bottom
+  textArea.style.top = '0'
+  textArea.style.left = '0'
+  textArea.style.position = 'fixed'
+  textArea.style.opacity = '0'
+
+  document.body.appendChild(textArea)
+  textArea.focus()
+  textArea.select()
+  let result
+
+  try {
+    const successful = document.execCommand('copy')
+    const msg = successful ? 'successful' : 'unsuccessful'
+    // console.log('Fallback: Copying text command was ' + msg)
+    result = true
+  } catch (err) {
+    console.error('Fallback: Oops, unable to copy', err)
+    result = false
+  }
+
+  document.body.removeChild(textArea)
+  return result
+}
+function copyTextToClipboard(text) {
+  if (!navigator.clipboard) {
+    return fallbackCopyTextToClipboard(text)
+  }
+  return navigator.clipboard.writeText(text).then(
+    () => {
+      // console.log('Async: Copying to clipboard was successful!!')
+      return true
+    },
+    err => {
+      console.error('Async: Could not copy text: ', err)
+      return false
+    },
+  )
 }

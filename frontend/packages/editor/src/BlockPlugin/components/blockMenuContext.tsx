@@ -16,6 +16,7 @@ export interface OnQuoteOptions {
 export interface BlockMenuContextType {
   blockId: string | null
   onQuote?: (data: OnQuoteOptions) => void
+  onCopyBlockId?: (id?: string) => boolean
   onSidePanel?: (blockId: string) => void
   useDocument?: any
   drafts?: Document.AsObject[]

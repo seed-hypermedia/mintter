@@ -24,7 +24,7 @@ const queryConfig = {
 
 export function Toast({children, ...props}) {
   return (
-    <DefaultToast {...props}>
+    <DefaultToast {...props} role="alert">
       <div className="break-all">{children}</div>
     </DefaultToast>
   )

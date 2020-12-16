@@ -25,6 +25,8 @@ export function Paragraph({
   className = '',
   element,
   attributes,
+  children,
+  htmlAttributes = {},
   ...rest
 }) {
   return (
@@ -32,7 +34,10 @@ export function Paragraph({
       data-element={element.type}
       className={`text-body rounded hover:bg-background-muted py-1 px-2 md:px-3 mx-0 md:-mx-3  ${className}`}
       {...attributes}
+      {...htmlAttributes}
       {...rest}
-    />
+    >
+      {children}
+    </Component>
   )
 }

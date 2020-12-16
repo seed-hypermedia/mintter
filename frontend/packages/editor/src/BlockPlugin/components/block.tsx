@@ -5,17 +5,22 @@ import Tippy from '@tippyjs/react'
 import {Icons} from '../../components/icons'
 import {Tooltip} from '../../components/tooltip'
 
-export function BlockBase(
-  {attributes, element, children, getData, onMainPanel, onSidePanel},
-  ref,
-) {
+export function Block({
+  attributes,
+  element,
+  children,
+  getData,
+  onMainPanel,
+  onSidePanel,
+  ...rest
+}) {
   const [isQuotesVisible, setVisibility] = React.useState<boolean>(false)
   let quoters = element.quotersList?.length
   function toggleQuotes() {
     setVisibility(val => !val)
   }
   return (
-    <DragDrop {...attributes} element={element} componentRef={ref}>
+    <DragDrop {...attributes} element={element} {...rest}>
       {children}
       {isQuotesVisible ? (
         <div contentEditable={false} className="overflow-hidden pl-4">
@@ -68,8 +73,6 @@ export function BlockBase(
     </DragDrop>
   )
 }
-
-export const Block = React.forwardRef(BlockBase)
 
 function BlockMentionComponent({quote, getData, onMainPanel, onSidePanel}) {
   const [docData, setData] = React.useState<any>(null)
