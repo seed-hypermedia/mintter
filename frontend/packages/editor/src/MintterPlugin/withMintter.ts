@@ -6,7 +6,7 @@ import {
   onKeyDownResetBlockType,
   isCollapsed,
 } from '@udecode/slate-plugins'
-import {v4 as uuid} from 'uuid'
+import {id} from '../id'
 import {insertBlockItem} from './insertBlockItem'
 import {moveBlockItemUp} from './moveBlockItemUp'
 import {
@@ -182,7 +182,7 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
                   editor,
                   {
                     type: ELEMENT_BLOCK,
-                    id: uuid(),
+                    id: id(),
                     children: [],
                   },
                   {at: childPath},

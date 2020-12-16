@@ -1,7 +1,7 @@
 import {isSelectionInTransclusion} from '../MintterPlugin/isSelectionInBlockItem'
 import {Editor, Path, Transforms} from 'slate'
 import {getBlockAbove, getNextSiblingNodes} from '@udecode/slate-plugins'
-import {v4 as uuid} from 'uuid'
+import {id} from '../id'
 
 export const onKeyDownTransclusion = options => (
   e: KeyboardEvent,
@@ -33,7 +33,7 @@ function createEmptyBlock(editor: Editor, options, after) {
     editor,
     {
       type: options.block.type,
-      id: uuid(),
+      id: id(),
       children: [{type: options.p.type, children: [{text: ''}]}],
     },
     {

@@ -15,7 +15,7 @@ import {ELEMENT_PARAGRAPH} from '../elements/defaults'
 import {ELEMENT_BLOCK} from '../BlockPlugin'
 import {ELEMENT_BLOCK_LIST} from '../HierarchyPlugin'
 import {makeProto} from './makeProto'
-import {v4 as uuid} from 'uuid'
+import {id} from '../id'
 import {ELEMENT_TRANSCLUSION} from '../TransclusionPlugin'
 
 export function toBlock(node): Block {
@@ -196,7 +196,7 @@ export function toSlateTree({
   const dictionary = new Map(blocksMap)
   const blocks: SlateBlock = {
     type: ELEMENT_BLOCK_LIST,
-    id: uuid(),
+    id: id(),
     listType: blockRefList.style,
     children: blockRefList.refsList.map(blockRef => {
       const currentBlock = dictionary.get(blockRef.ref) as Block.AsObject

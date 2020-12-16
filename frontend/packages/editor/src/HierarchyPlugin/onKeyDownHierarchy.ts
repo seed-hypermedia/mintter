@@ -6,7 +6,7 @@ import {
   isSelectionInTransclusion,
 } from '../MintterPlugin/isSelectionInBlockItem'
 import {moveBlockItemUp} from '../MintterPlugin/moveBlockItemUp'
-import {v4 as uuid} from 'uuid'
+import {id} from '../id'
 
 export const onKeyDownHierarchy = options => (
   e: KeyboardEvent,
@@ -76,7 +76,7 @@ export const moveBlockListDown = (
         // Create new sublist
         Transforms.wrapNodes(
           editor,
-          {type: blockListNode.type, id: uuid(), children: []},
+          {type: blockListNode.type, id: id(), children: []},
           {at: blockPath},
         )
       }

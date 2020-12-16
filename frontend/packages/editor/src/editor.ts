@@ -2,7 +2,7 @@ import {Editor as SlateEditor, Path, Node} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {ELEMENT_PARAGRAPH} from './elements/defaults'
 import {BlockRefList} from '@mintter/api/v2/documents_pb'
-import {v4 as uuid} from 'uuid'
+import {id} from './id'
 import {ELEMENT_BLOCK} from './BlockPlugin/defaults'
 import {ELEMENT_BLOCK_LIST} from './HierarchyPlugin/defaults'
 
@@ -37,12 +37,12 @@ export const Editor = {
 export const initialBlocksValue = [
   {
     type: ELEMENT_BLOCK_LIST,
-    id: uuid(),
+    id: id(),
     listType: BlockRefList.Style.NONE,
     children: [
       {
         type: ELEMENT_BLOCK,
-        id: uuid(),
+        id: id(),
         children: [
           {
             type: ELEMENT_PARAGRAPH,
