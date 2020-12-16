@@ -3,12 +3,7 @@ import {render, screen, waitFor, userEvent, within} from 'test/app-test-utils'
 import {App} from 'shared/app'
 import * as mockedIsLocalhost from 'shared/isLocalhost'
 import * as clientMock from 'shared/mintterClient'
-import {
-  buildDocument,
-  buildDraft,
-  buildGetDocument,
-  buildProfile,
-} from 'test/generate'
+import {buildDraft, buildGetDocument, buildProfile} from 'test/generate'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 import {Document, GetDocumentResponse} from '@mintter/api/v2/documents_pb'
 
@@ -148,5 +143,53 @@ describe('Publication', () => {
 
     // check that the previous document is loadded in the sidepanel
     expect(sidePanel.getByText(document.document.title)).toBeVisible()
+  })
+
+  test('Publication: Block Context Menu', async () => {
+    const writeText = jest.fn().mockResolvedValue(true)
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {
+        writeText,
+      },
+    })
+    const saveDocument = jest.fn()
+    clientMock.setDocument = () => saveDocument
+    const document = buildGetDocument()
+    const newDraft = buildDraft()
+
+    await renderPublication({
+      newDraft,
+      document,
+      route: `/p/${document.document.version}`,
+    })
+
+    const blockId = document.blocksMap[0][0]
+
+    userEvent.hover(
+      screen.getByText(
+        document.blocksMap[0][1].paragraph.inlineElementsList[0].text,
+      ),
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText(/Copy Block Ref/i)).not.toBeVisible()
+    })
+    const block = within(screen.getByRole('listitem'))
+
+    // screen.debug(screen.getByTestId('page'))
+    userEvent.click(
+      block.getByRole('button', {name: `Toggle Menu for Block ${blockId}`}),
+    )
+
+    expect(block.getByText(/Copy Block Ref/i)).toBeVisible()
+
+    userEvent.click(block.getByText(/Copy Block Ref/i))
+    // await waitFor(() => {
+    expect(writeText).toBeCalledTimes(1)
+    // })
+
+    expect(writeText).toBeCalledWith(`${document.document.version}/${blockId}`)
+
+    // screen.debug(screen.getByTestId('page'))
   })
 })
