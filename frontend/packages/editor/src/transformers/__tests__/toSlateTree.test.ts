@@ -6,8 +6,8 @@ import {ELEMENT_BLOCK} from '../../BlockPlugin/defaults'
 
 const block_list_mock_id = 'block_list_mock_id'
 
-jest.mock('uuid', () => ({
-  v4: () => block_list_mock_id,
+jest.mock('nanoid', () => ({
+  nanoid: () => block_list_mock_id,
 }))
 
 test('toSlateTree: one level', () => {
