@@ -94,7 +94,7 @@ export function PublicationModal({document}: {document: Document.AsObject}) {
               text={document.version}
               onCopy={(_, result) => {
                 if (result) {
-                  addToast(`Document's UUID copied to your clipboard!`, {
+                  addToast(`Document's ID copied to your clipboard!`, {
                     appearance: 'success',
                   })
                 } else {
@@ -106,7 +106,7 @@ export function PublicationModal({document}: {document: Document.AsObject}) {
             >
               <button className="outline-none focus:shadow-outline text-primary pl-2 pr-4 py-1 ml-4 font-bold flex items-center rounded-full border-2 border-primary hover:bg-primary hover:text-white transition duration-100">
                 <Icons.Copy size={14} color="currentColor" />
-                <span className="ml-2">Copy Document UUID</span>
+                <span className="ml-2">Copy Document ID</span>
               </button>
             </CopyToClipboard>
           </div>
