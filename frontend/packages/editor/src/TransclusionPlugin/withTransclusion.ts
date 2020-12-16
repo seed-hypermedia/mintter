@@ -4,7 +4,7 @@ import {
   Transforms,
   // Path
 } from 'slate'
-import {v4 as uuid} from 'uuid'
+import {id} from '../id'
 // import {ELEMENT_PARAGRAPH} from '../elements/defaults'
 import {ELEMENT_TRANSCLUSION} from './defaults'
 import {ELEMENT_READ_ONLY} from '../ReadOnlyPlugin'
@@ -27,7 +27,7 @@ export const withTransclusion = options => <T extends ReactEditor>(
             editor,
             {
               type: options.block.type,
-              id: uuid(),
+              id: id(),
               children: [{type: options.p.type, children: [{text: ''}]}],
             },
             {at: blockPath},

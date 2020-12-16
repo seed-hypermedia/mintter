@@ -3,7 +3,7 @@ import {
   getAboveByType,
   isBlockTextEmptyAfterSelection,
 } from '@udecode/slate-plugins'
-import {v4 as uuid} from 'uuid'
+import {id} from '../id'
 import {isRangeAtRoot} from '../isRangeAtRoot'
 
 /**
@@ -42,7 +42,7 @@ export const insertBlockItem = (editor: Editor, options: any) => {
         editor,
         {
           type: block.type,
-          id: uuid(),
+          id: id(),
           children: [{type: p.type, children: [{text: ''}]}],
         },
         {at: blockPath},
@@ -60,7 +60,7 @@ export const insertBlockItem = (editor: Editor, options: any) => {
           editor,
           {
             type: block.type,
-            id: uuid(),
+            id: id(),
             children: [],
           },
           {at: nextParagraphPath},
@@ -79,7 +79,7 @@ export const insertBlockItem = (editor: Editor, options: any) => {
           editor,
           {
             type: block.type,
-            id: uuid(),
+            id: id(),
             children: [{type: p.type, children: [{text: ''}]}],
           },
           {at: nextblockPath},

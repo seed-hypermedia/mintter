@@ -19,4 +19,6 @@ export * from './hooks'
 export * from './transformers'
 export * from './ReadOnlyEditor'
 
+export * from './id'
+
 export {slate}

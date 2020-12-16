@@ -1,20 +1,20 @@
 import {Editor, Transforms, Range, Path} from 'slate'
 import {ReactEditor} from 'slate-react'
 
-import {v4 as uuid} from 'uuid'
+import {id} from '../../id'
 import {InsertBlockOptions} from '../types'
 import {ELEMENT_BLOCK} from '../../BlockPlugin/defaults'
 import {ELEMENT_PARAGRAPH} from '../../elements/defaults'
 
 export function insert(editor, {type, location}) {
-  const id = uuid()
+  const blockId = id()
   switch (type) {
     case 'img':
       Transforms.insertNodes(
         editor,
         {
           type,
-          id,
+          id: blockId,
           url: '',
           children: [{text: ''}],
         },
@@ -26,7 +26,7 @@ export function insert(editor, {type, location}) {
         editor,
         {
           type,
-          id,
+          id: blockId,
           children: [
             {
               type: ELEMENT_PARAGRAPH,

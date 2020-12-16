@@ -1,5 +1,5 @@
 import {useCallback} from 'react'
-import {makeProto, SlateBlock} from '@mintter/editor'
+import {makeProto, SlateBlock, id} from '@mintter/editor'
 import {
   Block,
   Image,
@@ -16,7 +16,6 @@ import {
   getDocument,
   updateDraftWithRequest,
 } from 'shared/mintterClient'
-import {v4 as uuid} from 'uuid'
 
 export interface CreateTransclusionRequest {
   source: string // source publication version
@@ -54,7 +53,7 @@ export function useTransclusion() {
 
         // empty blockRef
         const emptyBlockRef = new BlockRef()
-        const emptyBlockId = uuid()
+        const emptyBlockId = id()
         emptyBlockRef.setRef(emptyBlockId)
 
         // add refs to blockRefList
