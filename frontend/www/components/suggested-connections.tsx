@@ -80,7 +80,6 @@ export function SuggestedConnections({onConnect}) {
                     </span>
                     <button
                       onClick={() => {
-                        console.log('🚀 ~ addrsList', addrsList)
                         onConnect(addrsList)
                       }}
                       className="opacity-0 group-hover:opacity-100 transition duration-75 px-2 rounded-full bg-info hover:bg-info-hover text-white"
