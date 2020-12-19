@@ -2,13 +2,17 @@ import React from 'react'
 import {useRouteMatch} from 'react-router-dom'
 import {css} from 'emotion'
 import {BlockControls} from '../../components/blockControls'
-import {mergeRefs} from '../../mergeRefs'
 import {Icons} from '../../components/icons'
 import {useBlockMenu, useBlockMenuDispatch} from './blockMenuContext'
 // import {useReadOnly} from 'slate-react'
 
-export const DragDrop = ({element, children, componentRef, ...props}: any) => {
-  const ref = mergeRefs(props.ref, componentRef)
+export const DragDrop = ({
+  element,
+  children,
+  htmlAttributes,
+  dispatch,
+  ...props
+}: any) => {
   const match = useRouteMatch({
     path: [`/p/:slug`, `/admin/p/:slug`],
     strict: true,
@@ -18,12 +22,10 @@ export const DragDrop = ({element, children, componentRef, ...props}: any) => {
     [],
   )
   const {blockId} = useBlockMenu()
-  const dispatch = useBlockMenuDispatch()
-
+  const blockDispatch = useBlockMenuDispatch()
   return (
     <li
       {...props}
-      ref={ref}
       className={`relative ${css`
         &:before {
           margin-top: 0.25em;
@@ -33,13 +35,17 @@ export const DragDrop = ({element, children, componentRef, ...props}: any) => {
           opacity: 0;
         }
       `}`}
+      {...htmlAttributes}
     >
       <div
         onMouseLeave={() => {
-          dispatch({type: 'set_block_id', payload: {blockId: null}})
+          blockDispatch({type: 'set_block_id', payload: {blockId: null}})
         }}
         onMouseEnter={() =>
-          dispatch({type: 'set_block_id', payload: {blockId: element.id}})
+          blockDispatch({
+            type: 'set_block_id',
+            payload: {blockId: element.id},
+          })
         }
       >
         {children}

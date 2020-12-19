@@ -18,17 +18,14 @@ interface EditorComponentProps {
   push?: any // TODO: FIXME Types
 }
 
-function Editor(
-  {
-    editor,
-    plugins,
-    value,
-    onChange,
-    readOnly = false,
-    renderElement = [],
-  }: EditorComponentProps,
-  ref,
-): JSX.Element {
+function Editor({
+  editor,
+  plugins,
+  value,
+  onChange,
+  readOnly = false,
+  renderElement = [],
+}: EditorComponentProps): JSX.Element {
   return (
     <Slate
       editor={editor}
@@ -38,7 +35,6 @@ function Editor(
       }}
     >
       <div
-        ref={ref}
         className={`relative mb-48 -mx-8 ${css`
           word-break: break-word;
         `}`}
@@ -100,8 +96,6 @@ function Editor(
   )
 }
 
-export const EditorChildren = React.forwardRef(Editor)
-
 export function EditorComponent(props) {
-  return <EditorChildren {...props} />
+  return <Editor {...props} />
 }

@@ -1,10 +1,10 @@
-import {TransclusionElement} from './components/transclusion'
+import {Transclusion} from './components/transclusion'
 
 export const ELEMENT_TRANSCLUSION = 'transclusion'
 
 export const DEFAULTS_TRANSCLUSION = {
   transclusion: {
-    component: TransclusionElement,
+    component: Transclusion,
     type: ELEMENT_TRANSCLUSION,
   },
 }

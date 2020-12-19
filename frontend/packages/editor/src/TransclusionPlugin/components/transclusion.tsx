@@ -2,15 +2,18 @@ import React from 'react'
 import {DragDrop} from '../../BlockPlugin/components/DragDrop'
 import {css} from 'emotion'
 
-const Transclusion = (
-  {attributes, children, element, className = '', ...rest},
-  ref,
-) => {
+export const Transclusion = ({
+  attributes,
+  children,
+  element,
+  getData,
+  dispatch,
+}) => {
   const [transclusionData, setData] = React.useState<any>(null)
 
   React.useEffect(() => {
     async function init() {
-      const res = await rest.getData(element.id)
+      const res = await getData(element.id)
       setData(res)
     }
 
@@ -19,11 +22,11 @@ const Transclusion = (
   }, [])
   function handlePush(e) {
     e.preventDefault()
-    rest.dispatch?.({type: 'add_object', payload: element.id})
+    dispatch?.({type: 'add_object', payload: element.id})
   }
 
   return (
-    <DragDrop {...attributes} element={element} componentRef={ref}>
+    <DragDrop {...attributes} element={element}>
       {children}
       <div
         contentEditable={false}
@@ -60,5 +63,3 @@ const Transclusion = (
     </DragDrop>
   )
 }
-
-export const TransclusionElement = React.forwardRef(Transclusion)

@@ -54,16 +54,11 @@ export const withDeserializeHTML = ({
 
     if (html) {
       const {body} = new DOMParser().parseFromString(html, 'text/html')
-      console.log('🚀 ~ body', body)
-
       const prefragment = deserializeHTMLToDocumentFragment({
         plugins,
         element: body,
       })
-      console.log('🚀 ~ prefragment', prefragment)
-
       const fragment = prefragment.map(orphanTextNodesToBlock())
-
       const firstNodeType = fragment[0].type as string | undefined
 
       // replace the selected node type by the first block type
