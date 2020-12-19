@@ -75,7 +75,7 @@ describe('Welcome Redirects', () => {
 
   test('should redirect from any welcome step to the library', async () => {
     const {profile} = await renderApp({route: '/welcome/security-pack'})
-    screen.debug(screen.getByTestId('page'))
+    // screen.debug(screen.getByTestId('page'))
     expect(screen.getByText(profile.bio)).toBeInTheDocument()
   })
 })

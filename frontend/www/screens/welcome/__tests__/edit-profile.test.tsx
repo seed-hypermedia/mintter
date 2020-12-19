@@ -1,4 +1,4 @@
-import {screen, act, waitFor, userEvent, render} from 'test/app-test-utils'
+import {screen, waitFor, userEvent, render} from 'test/app-test-utils'
 import EditProfile from '../edit-profile'
 import * as clientMock from 'shared/mintterClient'
 import {BrowserRouter as Router} from 'react-router-dom'
@@ -39,58 +39,34 @@ async function renderWelcomeScreen({
   }
 }
 
-test('Welcome - Edit Profile Screen', async () => {
+test.only('Welcome - Edit Profile Screen', async () => {
   // const {nextBtn, data} = await renderWelcomeScreen()
   const {profile} = await renderWelcomeScreen()
   // const bio = screen.getByLabelText(/bio/i)
-  await waitFor(() => {
-    expect(screen.getByText(/Edit your profile/i)).toBeInTheDocument()
-  })
 
-  await act(() =>
-    userEvent.type(screen.getByLabelText(/email/i), profile.email[0]),
+  expect(screen.getByText(/Edit your profile/i)).toBeInTheDocument()
+
+  userEvent.type(screen.getByLabelText(/email/i), profile.email[0])
+  await waitFor(async () =>
+    expect(await screen.getByTestId('email-error')).toBeInTheDocument(),
   )
-
-  expect(await screen.findByTestId('email-error')).toBeInTheDocument()
   expect(
     screen.getByRole('button', {name: /next/i, exact: false}),
   ).toBeDisabled()
 
-  await act(
-    async () =>
-      await userEvent.type(
-        screen.getByLabelText(/email/i),
-        profile.email.substr(1),
-      ),
-  )
-  await act(
-    async () =>
-      await userEvent.type(
-        screen.getByLabelText(/username/i),
-        profile.username,
-      ),
-  )
-  await act(
-    async () =>
-      await userEvent.type(screen.getByLabelText(/bio/i), profile.bio),
-  )
+  userEvent.type(screen.getByLabelText(/email/i), profile.email.substr(1))
+  userEvent.type(screen.getByLabelText(/username/i), profile.username)
+  userEvent.type(screen.getByLabelText(/bio/i), profile.bio)
+  await waitFor(() => {
+    expect(
+      screen.getByRole('button', {name: /next/i, exact: false}),
+    ).not.toBeDisabled()
+  })
 
-  expect(
-    screen.getByRole('button', {name: /next/i, exact: false}),
-  ).not.toBeDisabled()
-
-  await act(
-    async () =>
-      await userEvent.click(
-        screen.getByRole('button', {name: /next/i, exact: false}),
-      ),
-  )
-
+  userEvent.click(screen.getByRole('button', {name: /next/i, exact: false}))
   await waitFor(() => {
     expect(clientMock.setProfile).toHaveBeenCalledTimes(1)
   })
 
-  await waitFor(() => {
-    expect(clientMock.setProfile).toHaveBeenCalledWith(profile)
-  })
+  expect(clientMock.setProfile).toHaveBeenCalledWith(profile)
 })

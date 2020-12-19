@@ -9,7 +9,6 @@ import {
   options,
   createPlugins,
 } from '@mintter/editor'
-import ResizerStyle from '../components/resizer-style'
 import {ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
 import SplitPane from 'react-split-pane'
@@ -72,8 +71,6 @@ export default function Editor(): JSX.Element {
       setReadyToAutosave(true)
     },
   })
-  // TODO: add autosave again
-
   const [publish] = useMutation(publishDraft, {
     onSuccess: publication => {
       const {version} = publication.toObject()
@@ -153,7 +150,6 @@ export default function Editor(): JSX.Element {
     <Page>
       <Seo title="Compose" />
       <DebugValue value={state} />
-      <ResizerStyle />
       <SplitPane
         style={{
           height: '100%',

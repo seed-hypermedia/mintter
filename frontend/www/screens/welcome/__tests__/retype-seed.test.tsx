@@ -58,29 +58,29 @@ test('Welcome - Retype Seed Screen', async () => {
     expect(input1).toHaveFocus()
   })
 
-  await act(() => userEvent.type(input1, 'w'))
+  userEvent.type(input1, 'w')
   const error1 = await screen.findByTestId('tid-error-word-0')
 
   expect(error1).toBeInTheDocument()
   expect(nextBtn).toBeDisabled()
 
-  await act(() => userEvent.type(input1, 'ord-1'))
-  await act(() => userEvent.type(input2, 'word-2'))
-  await act(() => userEvent.type(input3, 'word-3'))
+  userEvent.type(input1, 'ord-1')
+  userEvent.type(input2, 'word-2')
+  userEvent.type(input3, 'word-3')
 
-  expect(nextBtn).not.toBeDisabled()
+  await waitFor(() => {
+    expect(nextBtn).not.toBeDisabled()
+  })
 
-  await act(async () => await userEvent.click(nextBtn))
+  userEvent.click(nextBtn)
 
   await waitFor(() => {
     expect(clientMock.createProfile).toHaveBeenCalledTimes(1)
   })
 
-  await waitFor(() => {
-    expect(clientMock.createProfile).toHaveBeenCalledWith({
-      walletPassword: '',
-      aezeedPassphrase: '',
-      mnemonicList,
-    })
+  expect(clientMock.createProfile).toHaveBeenCalledWith({
+    walletPassword: '',
+    aezeedPassphrase: '',
+    mnemonicList,
   })
 })

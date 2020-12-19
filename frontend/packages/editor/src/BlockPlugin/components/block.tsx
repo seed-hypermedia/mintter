@@ -5,7 +5,7 @@ import Tippy from '@tippyjs/react'
 import {Icons} from '../../components/icons'
 import {Tooltip} from '../../components/tooltip'
 
-export function Block({
+export const Block = ({
   attributes,
   element,
   children,
@@ -13,7 +13,7 @@ export function Block({
   onMainPanel,
   onSidePanel,
   ...rest
-}) {
+}: any) => {
   const [isQuotesVisible, setVisibility] = React.useState<boolean>(false)
   let quoters = element.quotersList?.length
   function toggleQuotes() {
@@ -104,14 +104,17 @@ function BlockMentionComponent({quote, getData, onMainPanel, onSidePanel}) {
           <p className="text-xs text-body-muted leading-tight">{author}</p>
         </div>
         <div className="px-4 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-150">
-          <Tooltip content="Open in Main Panel">
-            <button
-              className="bg-background hover:bg-muted transition duration-150 rounded-sm p-1"
-              onClick={() => onMainPanel?.(quote)}
-            >
-              <Icons.ArrowUpRight size={14} color="currentColor" />
-            </button>
-          </Tooltip>
+          {docData.isVisibleInMainPanel ? (
+            <Tooltip content="Open in Main Panel">
+              <button
+                className="bg-background hover:bg-muted transition duration-150 rounded-sm p-1"
+                onClick={() => onMainPanel?.(quote)}
+              >
+                <Icons.ArrowUpRight size={14} color="currentColor" />
+              </button>
+            </Tooltip>
+          ) : null}
+
           <Tooltip content="Show in Sidepanel">
             <button
               className="bg-background hover:bg-muted transition duration-150 rounded-sm p-1"

@@ -99,7 +99,8 @@ export function useEditorValue({document}) {
 function getMentions(blocksMap) {
   const mentions = blocksMap.reduce((acc, entry) => {
     const block: Block.AsObject = entry[1]
-    if (block.quotersList.length) {
+
+    if (block.quotersList && block.quotersList.length) {
       acc.push(...block.quotersList.map(version => `${version}/${entry[0]}`))
     }
 

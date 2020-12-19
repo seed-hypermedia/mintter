@@ -43,6 +43,7 @@ export function buildDocument({
 export function buildGetDocument({
   author = faker.finance.bitcoinAddress(),
   publishingState = PublishingState.PUBLISHED,
+  quotersList = [],
 } = {}): GetDocumentResponse.AsObject {
   const blockRefList = bluidBlockRefList()
   const blocksMap: [string, Block.AsObject][] = [
@@ -57,7 +58,7 @@ export function buildGetDocument({
             },
           ],
         },
-        quotersList: [],
+        quotersList,
       },
     ],
   ]

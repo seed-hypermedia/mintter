@@ -20,11 +20,10 @@ import {SidePanelObject} from 'components/sidePanelObject'
 import {AuthorLabel} from 'components/author-label'
 import {PublicationModal} from 'components/publication-modal'
 import {useDocument, useDrafts} from 'shared/mintterContext'
-import {useAuthor} from 'shared/profileContext'
+import {useAuthor, useProfile} from 'shared/profileContext'
 import {ErrorMessage} from 'components/errorMessage'
 import {MainColumn} from 'components/main-column'
 import {Page} from 'components/page'
-import ResizerStyle from 'components/resizer-style'
 import Seo from 'components/seo'
 import {useSidePanel} from 'components/sidePanel'
 import {MintterIcon} from 'components/mintter-icon'
@@ -117,9 +116,15 @@ export default function Publication() {
     })
   }
 
+  const {data: user, isSuccess: isProfileSuccess} = useProfile()
+  const isAuthor = React.useCallback(author => user.accountId === author, [
+    data,
+  ])
+
   async function getQuoteData(quoteId) {
+    const isLocal = isLocalhost(window.location.hostname)
     const version = quoteId.split('/')[0]
-    const res = await apiClient.getDocument('', version)
+    const res = await apiClient.getDocument('Document', version)
     const data = res.toObject()
     const {document} = data
     const authorId = data.document.author
@@ -129,6 +134,8 @@ export default function Publication() {
     return {
       document,
       author,
+      isVisibleInMainPanel:
+        isLocal || (isProfileSuccess && isAuthor(author.accountId)),
     }
   }
 
@@ -157,14 +164,14 @@ export default function Publication() {
     transclusion: {
       ...options.transclusion,
       customProps: {
-        dispatch: sidePanelDispatch,
+        // dispatch: sidePanelDispatch,
         getData: getQuoteData,
       },
     },
     block: {
       ...options.block,
       customProps: {
-        dispatch: sidePanelDispatch,
+        // dispatch: sidePanelDispatch,
         getData: getQuoteData,
         onMainPanel,
         onSidePanel,
@@ -294,7 +301,6 @@ export default function Publication() {
           `${data?.document?.title} | `}Mintter Publication`}
       />
       <PublicationModal document={data.document} />
-      <ResizerStyle />
     </Page>
   )
 }
@@ -449,7 +455,6 @@ function fallbackCopyTextToClipboard(text) {
   try {
     const successful = document.execCommand('copy')
     const msg = successful ? 'successful' : 'unsuccessful'
-    // console.log('Fallback: Copying text command was ' + msg)
     result = true
   } catch (err) {
     console.error('Fallback: Oops, unable to copy', err)
