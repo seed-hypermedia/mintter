@@ -6,6 +6,7 @@ import * as clientMock from 'shared/mintterClient'
 import {buildDraft, buildGetDocument, buildProfile} from 'test/generate'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 import {Document, GetDocumentResponse} from '@mintter/api/v2/documents_pb'
+import {queryCache} from 'react-query'
 
 jest.mock('shared/mintterClient')
 jest.mock('shared/isLocalhost')
@@ -14,6 +15,7 @@ async function renderPublication({
   profile,
   document,
   newDraft,
+  quoteDocuments,
   isLocalhost,
   ...renderOptions
 }: {
@@ -32,6 +34,19 @@ async function renderPublication({
 
   if (document === undefined) {
     document = buildGetDocument()
+  }
+
+  if (quoteDocuments !== undefined) {
+    // queryCache.setQueryData(['Document', document.document.version], document)
+    clientMock.getDocument.mockResolvedValueOnce({
+      toObject: (): GetDocumentResponse.AsObject => document,
+    })
+    quoteDocuments.map(doc => {
+      // queryCache.setQueryData(['Document', doc.document.version], doc)
+      clientMock.getDocument.mockResolvedValueOnce({
+        toObject: (): GetDocumentResponse.AsObject => doc,
+      })
+    })
   }
 
   clientMock.getDocument.mockResolvedValue({
@@ -117,7 +132,6 @@ describe('Publication', () => {
     clientMock.setDocument = () => saveDocument
     const document = buildGetDocument()
     const newDraft = buildDraft()
-
     await renderPublication({
       newDraft,
       document,
@@ -126,26 +140,27 @@ describe('Publication', () => {
     })
     // open sidepanel
     userEvent.click(screen.getByText(/interact with this document/i))
-
+    await waitFor(() => {
+      expect(screen.getByText(/write about this article/i)).toBeInTheDocument()
+    })
     // create a new draft
     userEvent.click(screen.getByText(/write about this article/i))
-
     await waitFor(() => {
       // the user is in the editor screen
       expect(screen.getByRole('button', {name: /publish/i})).toBeInTheDocument()
       // screen.debug(screen.getByRole('button', {name: /publish/i}))
     })
 
-    // screen.debug(screen.getByTestId('page'))
-    const sidePanel = within(
-      screen.getByRole('list', {name: 'sidepanel list', exact: false}),
-    )
+    // // screen.debug(screen.getByTestId('page'))
+    // const sidePanel = within(
+    //   screen.getByRole('list', {name: 'sidepanel list', exact: false}),
+    // )
 
-    // check that the previous document is loadded in the sidepanel
-    expect(sidePanel.getByText(document.document.title)).toBeVisible()
+    // // check that the previous document is loadded in the sidepanel
+    // expect(sidePanel.getByText(document.document.title)).toBeVisible()
   })
 
-  test('Publication: Block Context Menu', async () => {
+  test('Publication: Copy Block Ref in Context Menu', async () => {
     const writeText = jest.fn().mockResolvedValue(true)
     Object.defineProperty(navigator, 'clipboard', {
       value: {
@@ -189,6 +204,28 @@ describe('Publication', () => {
     // })
 
     expect(writeText).toBeCalledWith(`${document.document.version}/${blockId}`)
+
+    // screen.debug(screen.getByTestId('page'))
+  })
+
+  test('Publication: Open Block Mentions', async () => {
+    const saveDocument = jest.fn()
+    clientMock.setDocument = () => saveDocument
+    const quoteDocument = buildGetDocument()
+    const document = buildGetDocument({
+      quotersList: [quoteDocument.document.version],
+    })
+    await renderPublication({
+      document,
+      quoteDocuments: [quoteDocument],
+      route: `/p/${document.document.version}`,
+    })
+    const quoteButton = screen.getByRole('button', {name: '1'})
+    expect(quoteButton).toBeVisible()
+    userEvent.click(quoteButton)
+    await waitFor(() => {
+      expect(screen.getByText(quoteDocument.document.title)).toBeInTheDocument()
+    })
 
     // screen.debug(screen.getByTestId('page'))
   })

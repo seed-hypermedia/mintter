@@ -25,7 +25,6 @@ export function SidePanelObject(props) {
   const [version] = React.useState(props.id.split('/')[0])
   // const [objectId] = React.useState(props.id.split('/')[1])
   const {isLoading, isError, error, data} = useDocument(version)
-
   const {data: author} = useAuthor(data?.document?.author)
   const [open, setOpen] = React.useState(true)
   const {dispatch} = useSidePanel()
