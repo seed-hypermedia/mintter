@@ -113,9 +113,12 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle("/_debug/build-info", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "User-agent: *\nDisallow: /\n")
+	})
+	mux.HandleFunc("/_debug/build-info", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Version: %s\n", backend.Version)
-	}))
+	})
 	mux.Handle("/", handler)
 
 	// TODO(burdiyan): Add timeout configuration.
@@ -128,7 +131,6 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		return fmt.Errorf("failed to bind grpc listener: %w", err)
 	}
 	defer grpcListener.Close()
-	// No need to close l because grpc server closes it during shutdown.
 
 	// Start gRPC server with graceful shutdown.
 
