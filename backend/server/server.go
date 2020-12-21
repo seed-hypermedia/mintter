@@ -80,6 +80,16 @@ func InitFuncFromConfig(cfg config.Config, log *zap.Logger) InitFunc {
 	})
 }
 
+var uicfg config.UI
+
+// SetUIConfig globally.
+//
+// TODO: this is a quick hack to avoid changing signature for NewServer,
+// as all of this is being refactored.
+func SetUIConfig(cfg config.UI) {
+	uicfg = cfg
+}
+
 // NewServer creates a new Server.
 func NewServer(init InitFunc, log *zap.Logger) (*Server, error) {
 	s := &Server{
