@@ -81,6 +81,9 @@ message GetProfileRequest {
 message GetProfileResponse {
   // Retrieved profile data.
   Profile profile = 1;
+
+  // Configuration parameters that are set for this node.
+  Config config = 2;
 }
 
 message ListProfilesRequest {
@@ -161,4 +164,12 @@ message SuggestedProfile {
   Profile profile = 1;
 
   repeated string addrs = 2;
+}
+
+message Config {
+  // The URI of the primary logo image.
+  string logo_uri = 1;
+
+  // The URI of the home page.
+  string home_page_uri = 2;
 }

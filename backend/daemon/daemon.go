@@ -46,6 +46,8 @@ func authFunc(ctx context.Context) (context.Context, error) {
 func Run(ctx context.Context, cfg config.Config) (err error) {
 	g, ctx := errgroup.WithContext(ctx)
 
+	server.SetUIConfig(cfg.UI)
+
 	log, err := zap.NewDevelopment(zap.WithCaller(false))
 	if err != nil {
 		return err

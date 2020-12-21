@@ -56,6 +56,10 @@ func (s *Server) GetProfile(ctx context.Context, in *proto.GetProfileRequest) (*
 
 	return &proto.GetProfileResponse{
 		Profile: profileToProto(prof, s),
+		Config: &proto.Config{
+			LogoUri:     uicfg.LogoURI,
+			HomePageUri: uicfg.HomePageURI,
+		},
 	}, nil
 }
 
