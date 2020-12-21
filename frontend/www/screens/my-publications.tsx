@@ -58,7 +58,7 @@ export default function MyPublications({noSeo = false, isPublic = false}) {
         isError={isError}
         error={error}
         data={data}
-        onDeleteDocument={handleDeleteDocument}
+        onDeleteDocument={!isPublic && handleDeleteDocument}
       />
     </>
   )
