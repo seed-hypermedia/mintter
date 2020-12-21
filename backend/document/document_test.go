@@ -260,7 +260,7 @@ Loop:
 	require.Nil(t, resp.Documents, "drafts must be deleted after being published")
 }
 
-func TestDeleteDocument(t *testing.T) {
+func TestDeleteDraft(t *testing.T) {
 	srv, _, ctx := makeServer(t, "alice")
 
 	d1, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
@@ -274,11 +274,67 @@ func TestDeleteDocument(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, updateResp)
 
+	listresp, err := srv.ListDocuments(ctx, &v2.ListDocumentsRequest{
+		PublishingState: v2.PublishingState_DRAFT,
+	})
+	require.NoError(t, err)
+	require.Equal(t, 1, len(listresp.Documents), "published doc must be present in the list")
+
 	resp, err := srv.DeleteDocument(ctx, &v2.DeleteDocumentRequest{
 		Version: d1.Version,
 	})
 	require.NoError(t, err, "deleting draft must not fail")
 	require.NotNil(t, resp, "must return a response when deleting a document")
+
+	listresp, err = srv.ListDocuments(ctx, &v2.ListDocumentsRequest{
+		PublishingState: v2.PublishingState_DRAFT,
+	})
+	require.NoError(t, err, "listing documents must not fail")
+	require.Equal(t, 0, len(listresp.Documents), "deleted document must not be in the list")
+
+	doc, err := srv.GetDocument(ctx, &v2.GetDocumentRequest{
+		Id: d1.Id,
+	})
+	require.Error(t, err, "retriving a deleted document must fail")
+	require.Nil(t, doc)
+}
+
+func TestDeletePublication(t *testing.T) {
+	srv, _, ctx := makeServer(t, "alice")
+
+	d1, err := srv.CreateDraft(ctx, &v2.CreateDraftRequest{})
+	require.NoError(t, err, "must create draft")
+	require.NotNil(t, d1)
+
+	updateResp, err := srv.UpdateDraft(ctx, &v2.UpdateDraftRequest{
+		Document: d1,
+		Blocks:   makeTestBlocks(),
+	})
+	require.NoError(t, err)
+	require.NotNil(t, updateResp)
+
+	pubresp, err := srv.PublishDraft(ctx, &v2.PublishDraftRequest{
+		Version: d1.Version,
+	})
+	require.NoError(t, err)
+
+	listresp, err := srv.ListDocuments(ctx, &v2.ListDocumentsRequest{
+		PublishingState: v2.PublishingState_PUBLISHED,
+	})
+	require.NoError(t, err)
+	require.Equal(t, 1, len(listresp.Documents), "published doc must be present in the list")
+
+	resp, err := srv.DeleteDocument(ctx, &v2.DeleteDocumentRequest{
+		Version: pubresp.Version,
+	})
+	require.NoError(t, err, "deleting draft must not fail")
+	require.NotNil(t, resp, "must return a response when deleting a document")
+
+	listresp, err = srv.ListDocuments(ctx, &v2.ListDocumentsRequest{
+		PublishingState: v2.PublishingState_PUBLISHED,
+	})
+	require.NoError(t, err, "listing documents must not fail")
+	require.Equal(t, 0, len(listresp.Documents), "deleted document must not be in the list")
 
 	doc, err := srv.GetDocument(ctx, &v2.GetDocumentRequest{
 		Id: d1.Id,
