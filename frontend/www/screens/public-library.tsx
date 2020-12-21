@@ -3,26 +3,22 @@ import {useProfile} from 'shared/profileContext'
 import {AppLayout} from 'components/layout'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
-import Topbar from 'components/topbar'
 import Seo from 'components/seo'
+import {CustomLogo} from 'components/custom-logo'
+import {Link} from 'components/link'
 
-const MyPublications = React.lazy(() =>
-  import(/* webpackPrefetch: true */ './my-publications'),
+const MyPublications = React.lazy(
+  () => import(/* webpackPrefetch: true */ './my-publications'),
 )
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
   return (
     <AppLayout>
-      <Topbar isPublic />
       <Seo title="Homepage" />
+      <MainHeader />
       <Page>
         <MainColumn className="md:mx-16 max-w-xl">
-          <ProfileInfo />
-          <div className="flex items-baseline justify-between">
-            <h3 className="text-2xl font-semibold text-heading">Articles</h3>
-            <div className="flex-1" />
-          </div>
           <div className="mx-0 mt-4">
             <MyPublications noSeo isPublic />
           </div>
@@ -32,24 +28,23 @@ export default function Library() {
   )
 }
 
-function ProfileInfo() {
+function MainHeader() {
   const {data: profile} = useProfile()
 
   return profile ? (
-    <div className="text-left border-b mb-8 pb-8">
-      <h1 className="font-bold text-4xl text-heading">{profile.username}</h1>
-      <p className="text-body text-sm mt-2">{profile.bio}</p>
-    </div>
-  ) : (
-    <div className="text-left border-b mb-8 pb-8">
-      <h1 className="font-bold text-4xl text-heading bg-gray-300 w-1/2">
-        &nbsp;
-      </h1>
-      <div className="mt-4">
-        <div className="bg-gray-300 h-4 w-56" />
-        <div className="bg-gray-300 h-4 w-48 mt-2" />
-        <div className="bg-gray-300 h-4 w-48 mt-2" />
+    <div className="px-4 md:px-16 pt-4 pb-20 bg-brand-primary">
+      <div className="flex flex-col max-w-xl w-full px-4 box-content">
+        <a
+          href="https://ethosfera.org"
+          className="text-sm font-medium hover:underline text-brand-secondary inline-block"
+        >
+          Go to Ethosfera&apos;s website →
+        </a>
+        <Link>
+          <CustomLogo className="mt-16" />
+        </Link>
+        <p className="text-brand-secondary mt-6 w-3/4">{profile.bio}</p>
       </div>
     </div>
-  )
+  ) : null
 }
