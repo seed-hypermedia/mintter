@@ -17,7 +17,7 @@ interface Props {
 }
 
 interface ItemProps {
-  item: any
+  item: any // TODO: fix types (Document.AsObject + Document)
   onDeleteDocument?: (version: string) => void
 }
 
@@ -69,7 +69,6 @@ function ListItem({item, onDeleteDocument}: ItemProps) {
     const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${version}`
     return path
   }, [location.pathname])
-
   // function handlePrefetch() {
   // if (!prefetched) {
   // TODO: prefetch on hover
@@ -87,7 +86,7 @@ function ListItem({item, onDeleteDocument}: ItemProps) {
       // onMouseEnter={handlePrefetch}
     >
       <div className="flex-1 grid grid-cols-12 gap-4">
-        <div className="col-span-11">
+        <div className={onDeleteDocument ? 'col-span-11' : 'col-span-12'}>
           {!isDraft && location.pathname !== '/library/my-publications' && (
             <div className="flex items-center">
               <div className="w-6 h-6 rounded-full bg-gray-400" />
@@ -105,22 +104,25 @@ function ListItem({item, onDeleteDocument}: ItemProps) {
             {format(new Date(date), 'MMMM d, yyyy')}
           </p>
         </div>
-
-        <div className="col-span-1 flex items-center justify-end">
-          <button
-            data-testid="delete-button"
-            className="opacity-0 group-hover:opacity-100 text-danger"
-            onClick={e => {
-              e.preventDefault()
-              const resp = window.confirm('are you sure you want to delete it?')
-              if (resp) {
-                onDeleteDocument(version)
-              }
-            }}
-          >
-            <Icons.Trash />
-          </button>
-        </div>
+        {onDeleteDocument && (
+          <div className="col-span-1 flex items-center justify-end">
+            <button
+              data-testid="delete-button"
+              className="opacity-0 group-hover:opacity-100 text-danger"
+              onClick={e => {
+                e.preventDefault()
+                const resp = window.confirm(
+                  'are you sure you want to delete it?',
+                )
+                if (resp) {
+                  onDeleteDocument(version)
+                }
+              }}
+            >
+              <Icons.Trash />
+            </button>
+          </div>
+        )}
       </div>
     </Link>
   )
