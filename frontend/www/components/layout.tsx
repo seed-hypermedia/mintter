@@ -33,3 +33,12 @@ export function AppLayout({children}) {
     </div>
   )
 }
+
+export function PublicLayout({children}) {
+  const {theme} = useTheme()
+  return (
+    <div data-testid="app-layout" className={`bg-background ${theme}`}>
+      {children}
+    </div>
+  )
+}
