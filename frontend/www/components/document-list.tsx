@@ -4,9 +4,9 @@ import {useLocation, useRouteMatch, match as Match} from 'react-router-dom'
 import Link from './link'
 import {useAuthor} from 'shared/profileContext'
 import {ErrorMessage} from './errorMessage'
-import {AuthorLabel} from 'components/author-label'
 import {Document} from '@mintter/api/v2/documents_pb'
 import {getPath} from 'components/routes'
+import {format} from 'date-fns'
 
 interface Props {
   data: Document.AsObject[]
@@ -17,7 +17,7 @@ interface Props {
 }
 
 interface ItemProps {
-  item: Document.AsObject
+  item: Document.AsObject & {doc: Document}
   index: number
   onDeleteDocument?: (version: string) => void
 }
@@ -58,7 +58,7 @@ function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
   const match = useRouteMatch()
   const location = useLocation()
   const [prefetched, setPrefetch] = React.useState<boolean>(false)
-  const {version, title, author: itemAuthor, createTime} = item
+  const {version, title, subtitle, author: itemAuthor, createTime} = item
   const theTitle = title ? title : 'Untitled Document'
 
   const {data: author} = useAuthor(itemAuthor)
@@ -79,30 +79,32 @@ function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
     }
   }
 
+  const date = React.useMemo(() => item.doc.getCreateTime().toDate(), [item])
+
   return (
     <Link
       to={to}
-      className="bg-transparent group w-full p-4 mt-2 first:mt-4 hover:bg-background-muted transition duration-100 box-border flex"
+      className="bg-transparent group w-full p-4 -mx-4 mt-2 first:mt-4 hover:bg-background-muted transition duration-100 box-border flex flex-col"
       onMouseEnter={handlePrefetch}
     >
-      <span className="text-heading font-light leading-loose flex-none pr-4">
-        {index + 1}.
-      </span>
-      <div className=" flex-1 grid grid-cols-12 gap-4">
+      <div className="flex-1 grid grid-cols-12 gap-4">
         <div className={onDeleteDocument ? 'col-span-11' : 'col-span-12'}>
-          <h3 className="text-heading leading-loose font-bold truncate">
+          {!isDraft && location.pathname !== '/library/my-publications' && (
+            <div className="flex items-center">
+              <div className="w-6 h-6 rounded-full bg-gray-400" />
+              <p className="text-sm text-heading inline-block font-light mx-2">
+                {author?.username}
+              </p>
+            </div>
+          )}
+          <h3 className="text-heading text-xl leading-5 font-bold truncate mt-2">
             {theTitle}
           </h3>
-          <div className="flex items-center">
-            {!isDraft && location.pathname !== '/library/my-publications' && (
-              <p className="text-sm text-heading inline-block font-light">
-                <AuthorLabel author={author} />
-              </p>
-            )}
-            <p className="text-sm text-heading font-light">
-              {createTime?.seconds}
-            </p>
-          </div>
+          {subtitle ? <p className="mt-2 font-serif">{subtitle}</p> : null}
+
+          <p className="text-xs mt-2 text-heading font-light">
+            {format(new Date(date), 'MMMM d, yyyy')}
+          </p>
         </div>
         {onDeleteDocument && (
           <div className="col-span-1 flex items-center justify-end">
