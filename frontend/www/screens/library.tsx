@@ -90,7 +90,7 @@ export default function Library() {
           grid-template-columns: minmax(250px, 25%) 1fr minmax(250px, 25%);
         `}`}
       >
-        <div className="pt-16 px-4 md:pl-16">
+        <div className="pt-16 px-4 md:pl-16 mb-20">
           <ProfileInfo />
           <Connections onConnect={onConnect} />
           <SuggestedConnections onConnect={onConnect} />

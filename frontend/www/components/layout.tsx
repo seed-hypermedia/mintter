@@ -37,7 +37,10 @@ export function AppLayout({children}) {
 export function PublicLayout({children}) {
   const {theme} = useTheme()
   return (
-    <div data-testid="app-layout" className={`bg-background ${theme}`}>
+    <div
+      data-testid="app-layout"
+      className={`min-h-screen bg-background ${theme}`}
+    >
       {children}
     </div>
   )

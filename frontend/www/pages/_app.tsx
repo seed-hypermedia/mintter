@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic'
 import {App} from 'shared/app'
 import {AppProviders} from 'components/app-providers'
 
-import 'styles/index.css'
+import '../styles/index.css'
 
 const NoSSR: React.FC = ({children}) => {
   return <React.Fragment>{children}</React.Fragment>

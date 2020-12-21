@@ -8,7 +8,7 @@ import {getPath} from 'components/routes'
 
 export default function Publications() {
   const {history, match} = useRouter()
-  const {createDraft} = useMintter()
+  const {createDraft, deleteDocument} = useMintter()
 
   const {isLoading, isError, error, data} = useOthersPublications()
 
@@ -19,6 +19,10 @@ export default function Publications() {
     history.push({
       pathname: `${getPath(match)}/editor/${newDraft.version}`,
     })
+  }
+
+  async function handleDeleteDocument(version: string) {
+    await deleteDocument(version)
   }
 
   if (isError) {
@@ -54,6 +58,7 @@ export default function Publications() {
         isError={isError}
         error={error}
         data={data}
+        onDeleteDocument={handleDeleteDocument}
       />
     </>
   )
