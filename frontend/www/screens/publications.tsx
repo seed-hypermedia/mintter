@@ -1,5 +1,5 @@
 import {Icons} from '@mintter/editor'
-import DocumentList from 'components/documentList'
+import DocumentList from 'components/document-list'
 import {useMintter, useOthersPublications} from 'shared/mintterContext'
 import Seo from 'components/seo'
 import {ErrorMessage} from 'components/errorMessage'

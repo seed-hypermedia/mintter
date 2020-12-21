@@ -1,6 +1,6 @@
 import React from 'react'
 import {useProfile} from 'shared/profileContext'
-import {AppLayout} from 'components/layout'
+import {PublicLayout} from 'components/layout'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
 import Seo from 'components/seo'
@@ -14,7 +14,7 @@ const MyPublications = React.lazy(
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
   return (
-    <AppLayout>
+    <PublicLayout>
       <Seo title="Homepage" />
       <MainHeader />
       <Page>
@@ -24,7 +24,7 @@ export default function Library() {
           </div>
         </MainColumn>
       </Page>
-    </AppLayout>
+    </PublicLayout>
   )
 }
 

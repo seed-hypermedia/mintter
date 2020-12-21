@@ -1,3 +1,3 @@
 export function isLocalhost(hostname: string): boolean {
-  return hostname.includes('localhost')
+  return !hostname.includes('localhost')
 }

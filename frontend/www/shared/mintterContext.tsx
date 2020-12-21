@@ -44,9 +44,22 @@ export function usePublications(options = {}) {
     // refetchInterval: 5000,
   })
 
-  const data = React.useMemo(() => docsQuery.data?.toObject().documentsList, [
-    docsQuery.data,
-  ])
+  const data = React.useMemo(
+    () =>
+      docsQuery.data?.getDocumentsList().map(doc => {
+        const data = doc.toObject()
+
+        return {
+          doc,
+          ...data,
+        }
+      }),
+    [docsQuery.data],
+  )
+  console.log(
+    '🚀 ~ file: mintterContext.tsx ~ line 50 ~ usePublications ~ data',
+    data,
+  )
 
   return {
     ...docsQuery,
@@ -105,9 +118,18 @@ export function useDrafts(options = {}) {
     },
   )
 
-  const data = React.useMemo(() => docsQuery.data?.toObject().documentsList, [
-    docsQuery.data,
-  ])
+  const data = React.useMemo(
+    () =>
+      docsQuery.data?.getDocumentsList().map(doc => {
+        const data = doc.toObject()
+
+        return {
+          doc,
+          ...data,
+        }
+      }),
+    [docsQuery.data],
+  )
 
   return {
     ...docsQuery,
