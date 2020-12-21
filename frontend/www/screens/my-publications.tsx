@@ -8,7 +8,7 @@ import {useRouter} from 'shared/use-router'
 
 export default function MyPublications({noSeo = false, isPublic = false}) {
   const {history, match} = useRouter()
-  const {createDraft} = useMintter()
+  const {createDraft, deleteDocument} = useMintter()
   const {isError, isLoading, isSuccess, error, data} = useMyPublications()
 
   async function onCreateDocument() {
@@ -17,6 +17,10 @@ export default function MyPublications({noSeo = false, isPublic = false}) {
     history.push({
       pathname: `${getPath(match)}/editor/${value.version}`,
     })
+  }
+
+  async function handleDeleteDocument(version: string) {
+    await deleteDocument(version)
   }
 
   if (isLoading) {
@@ -54,6 +58,7 @@ export default function MyPublications({noSeo = false, isPublic = false}) {
         isError={isError}
         error={error}
         data={data}
+        onDeleteDocument={handleDeleteDocument}
       />
     </>
   )

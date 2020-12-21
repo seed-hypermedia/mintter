@@ -18,7 +18,6 @@ interface Props {
 
 interface ItemProps {
   item: any
-  index: number
   onDeleteDocument?: (version: string) => void
 }
 
@@ -54,11 +53,11 @@ export default function DocumentList({
   )
 }
 
-function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
+function ListItem({item, onDeleteDocument}: ItemProps) {
   const match = useRouteMatch()
   const location = useLocation()
-  const [prefetched, setPrefetch] = React.useState<boolean>(false)
-  const {version, title, subtitle, author: itemAuthor, createTime} = item
+  // const [prefetched, setPrefetch] = React.useState<boolean>(false)
+  const {version, title, subtitle, author: itemAuthor} = item
   const theTitle = title ? title : 'Untitled Document'
 
   const {data: author} = useAuthor(itemAuthor)
@@ -71,13 +70,14 @@ function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
     const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${version}`
     return path
   }, [location.pathname])
-  function handlePrefetch() {
-    if (!prefetched) {
-      // TODO: prefetch on hover
-      // console.log(`prefetch draft with id ${draft.id}`)
-      setPrefetch(true)
-    }
-  }
+
+  // function handlePrefetch() {
+  // if (!prefetched) {
+  // TODO: prefetch on hover
+  // console.log(`prefetch draft with id ${draft.id}`)
+  // setPrefetch(true)
+  // }
+  // }
 
   const date = React.useMemo(() => item.doc.getCreateTime().toDate(), [item])
 
@@ -85,10 +85,10 @@ function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
     <Link
       to={to}
       className="bg-transparent group w-full p-4 -mx-4 mt-2 first:mt-4 hover:bg-background-muted transition duration-100 box-border flex flex-col"
-      onMouseEnter={handlePrefetch}
+      // onMouseEnter={handlePrefetch}
     >
       <div className="flex-1 grid grid-cols-12 gap-4">
-        <div className={onDeleteDocument ? 'col-span-11' : 'col-span-12'}>
+        <div className="col-span-11">
           {!isDraft && location.pathname !== '/library/my-publications' && (
             <div className="flex items-center">
               <div className="w-6 h-6 rounded-full bg-gray-400" />
@@ -106,25 +106,22 @@ function ListItem({item, index = 0, onDeleteDocument}: ItemProps) {
             {format(new Date(date), 'MMMM d, yyyy')}
           </p>
         </div>
-        {onDeleteDocument && (
-          <div className="col-span-1 flex items-center justify-end">
-            <button
-              data-testid="delete-button"
-              className="opacity-0 group-hover:opacity-100 text-danger"
-              onClick={e => {
-                e.preventDefault()
-                const resp = window.confirm(
-                  'are you sure you want to delete it?',
-                )
-                if (resp) {
-                  onDeleteDocument(version)
-                }
-              }}
-            >
-              <Icons.Trash />
-            </button>
-          </div>
-        )}
+
+        <div className="col-span-1 flex items-center justify-end">
+          <button
+            data-testid="delete-button"
+            className="opacity-0 group-hover:opacity-100 text-danger"
+            onClick={e => {
+              e.preventDefault()
+              const resp = window.confirm('are you sure you want to delete it?')
+              if (resp) {
+                onDeleteDocument(version)
+              }
+            }}
+          >
+            <Icons.Trash />
+          </button>
+        </div>
       </div>
     </Link>
   )
