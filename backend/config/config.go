@@ -9,6 +9,7 @@ type Config struct {
 	NoOpenBrowser bool   `help:"If true - do not open the browser to access the UI"`
 
 	P2P P2P `help:"P2P configuration" prefix:"p2p." embed:""`
+	UI  UI  `help:"ui configuration" prefix:"ui." embed:""`
 }
 
 // P2P configuration.
@@ -17,4 +18,10 @@ type P2P struct {
 	NoTLS       bool   `help:"disable TLS in libp2p"`
 	NoRelay     bool   `help:"disable libp2p circuit relay"`
 	NoBootstrap bool   `help:"disable IPFS bootstrapping"`
+}
+
+// UI configuration for the node.
+type UI struct {
+	LogoURI     string `help:"uri of the primary logo image"`
+	HomePageURI string `help:"uri of the home page"`
 }
