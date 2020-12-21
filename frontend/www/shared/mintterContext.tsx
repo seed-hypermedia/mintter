@@ -181,6 +181,7 @@ export function MintterProvider(props) {
   const [deleteDocument] = useMutation(apiClient.deleteDocument, {
     onSuccess: () => {
       queryCache.refetchQueries('ListDrafts')
+      queryCache.refetchQueries(['Documents'])
     },
   })
 
