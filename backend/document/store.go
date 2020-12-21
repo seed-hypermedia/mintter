@@ -18,6 +18,7 @@ import (
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/rs/xid"
+	"go.uber.org/multierr"
 )
 
 var (
@@ -170,7 +171,7 @@ func (ds *store) StoreDraft(ctx context.Context, doc document) (cid.Cid, error) 
 	return version, nil
 }
 
-func (ds *store) Delete(ctx context.Context, version cid.Cid) error {
+func (ds *store) Delete(ctx context.Context, version cid.Cid) (err error) {
 	codec := version.Prefix().Codec
 
 	// TODO: cleanup indexes.
@@ -216,16 +217,17 @@ func (ds *store) Delete(ctx context.Context, version cid.Cid) error {
 		return err
 	}
 
+	// Delete the permanode and the reference in our own database.
+	defer func() {
+		err = multierr.Combine(err,
+			ignoreNotFound(ds.bs.DeleteBlock(vdoc.ID)),
+			ignoreNotFound(ds.db.Delete(makeDocsKey(vdoc.Author, vdoc.ID, vdoc.PublishTime, vdoc.Version))),
+		)
+	}()
+
+	// Delete the actual content.
 	switch codec {
 	case draftMultiCodec:
-		doc, err := ds.Get(ctx, version)
-		if err != nil {
-			return err
-		}
-		if err := ds.bs.DeleteBlock(doc.ID); err != nil {
-			return err
-		}
-
 		return ds.db.Delete(makeDraftKey(version.String()))
 	case cid.DagCBOR:
 		return ds.bs.DeleteBlock(version)
@@ -468,4 +470,11 @@ func makeDocsKey(author identity.ProfileID, docid cid.Cid, pubTime time.Time, ve
 
 func makeDocsPrefix(author identity.ProfileID) datastore.Key {
 	return keyDocs.ChildString(author.String())
+}
+
+func ignoreNotFound(err error) error {
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil
+	}
+	return err
 }
