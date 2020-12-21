@@ -4,6 +4,11 @@
 /* purgecss end ignore */
 @tailwind utilities;
 
+:root {
+  --color-brand-primary: #f4ead3;
+  --color-brand-secondary: #9d7a6b;
+}
+
 .theme-light,
 .theme-dark .theme-invert {
   --color-primary: theme('colors.blue.700');
