@@ -17,7 +17,7 @@ interface Props {
 }
 
 interface ItemProps {
-  item: Document.AsObject & {doc: Document}
+  item: any
   index: number
   onDeleteDocument?: (version: string) => void
 }

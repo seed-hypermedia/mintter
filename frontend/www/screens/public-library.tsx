@@ -40,7 +40,7 @@ function MainHeader() {
         >
           Go to Ethosfera&apos;s website →
         </a>
-        <Link>
+        <Link to="/">
           <CustomLogo className="mt-16" />
         </Link>
         <p className="text-brand-secondary mt-6 w-3/4">{profile.bio}</p>
