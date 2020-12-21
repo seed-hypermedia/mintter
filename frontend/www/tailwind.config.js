@@ -86,6 +86,8 @@ module.exports = {
         'toggle-theme': 'var(--color-toggle-theme)',
         toolbar: 'var(--color-toolbar)',
         'toolbar-active': 'var(--color-toolbar-active)',
+        'brand-primary': 'var(--color-brand-primary)',
+        'brand-secondary': 'var(--color-brand-secondary)',
       },
       gridTemplateColumns: {
         'document-grid': 'repeat(auto-fill, minmax(300px, 1fr))',
