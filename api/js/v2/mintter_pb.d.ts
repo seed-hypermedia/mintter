@@ -150,6 +150,11 @@ export class GetProfileResponse extends jspb.Message {
   hasProfile(): boolean;
   clearProfile(): void;
 
+  getConfig(): Config | undefined;
+  setConfig(value?: Config): void;
+  hasConfig(): boolean;
+  clearConfig(): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetProfileResponse.AsObject;
   static toObject(includeInstance: boolean, msg: GetProfileResponse): GetProfileResponse.AsObject;
@@ -161,6 +166,7 @@ export class GetProfileResponse extends jspb.Message {
 export namespace GetProfileResponse {
   export type AsObject = {
     profile?: Profile.AsObject,
+    config?: Config.AsObject,
   }
 }
 
@@ -385,6 +391,28 @@ export namespace SuggestedProfile {
   export type AsObject = {
     profile?: Profile.AsObject,
     addrsList: Array<string>,
+  }
+}
+
+export class Config extends jspb.Message {
+  getLogoUri(): string;
+  setLogoUri(value: string): void;
+
+  getHomePageUri(): string;
+  setHomePageUri(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Config.AsObject;
+  static toObject(includeInstance: boolean, msg: Config): Config.AsObject;
+  static serializeBinaryToWriter(message: Config, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Config;
+  static deserializeBinaryFromReader(message: Config, reader: jspb.BinaryReader): Config;
+}
+
+export namespace Config {
+  export type AsObject = {
+    logoUri: string,
+    homePageUri: string,
   }
 }
 
