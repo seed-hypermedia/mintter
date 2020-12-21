@@ -41,11 +41,10 @@ export default function DocumentList({
 
   return (
     <div>
-      {data.map((item, index) => (
+      {data.map(item => (
         <ListItem
           key={item.version}
           item={item}
-          index={index}
           onDeleteDocument={onDeleteDocument}
         />
       ))}
