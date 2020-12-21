@@ -4,6 +4,7 @@ export default function DefaultLink({
   to,
   className = '',
   replace = false,
+  children,
   ...props
 }) {
   return (
@@ -12,10 +13,12 @@ export default function DefaultLink({
       replace={replace}
       className={`p-2 bg-transparent rounded ${className}`}
       {...props}
-    />
+    >
+      {children}
+    </RouterLink>
   )
 }
 
-export function Link(props) {
-  return <RouterLink {...props} />
+export function Link({children, ...props}) {
+  return <RouterLink {...props}>{children}</RouterLink>
 }
