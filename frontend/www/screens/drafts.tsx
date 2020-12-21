@@ -1,6 +1,6 @@
 import * as React from 'react'
 import Seo from 'components/seo'
-import DocumentList from 'components/documentList'
+import DocumentList from 'components/document-list'
 import {useDrafts, useMintter} from 'shared/mintterContext'
 import {getPath} from 'components/routes'
 import {Icons} from '@mintter/editor'

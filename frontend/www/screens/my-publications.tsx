@@ -1,5 +1,5 @@
 import Seo from 'components/seo'
-import DocumentList from 'components/documentList'
+import DocumentList from 'components/document-list'
 import {useMintter, useMyPublications} from 'shared/mintterContext'
 import {ErrorMessage} from 'components/errorMessage'
 import {Icons} from '@mintter/editor'

@@ -10,6 +10,7 @@ import Input from './input'
 import {Button} from './button'
 import {isLocalhost} from 'shared/isLocalhost'
 import {getPath} from 'components/routes'
+import {CustomLogo} from './custom-logo'
 
 interface NavItemProps {
   href: string
@@ -43,9 +44,9 @@ export default function Topbar({isPublic = false}) {
   }
 
   return isPublic ? (
-    <div className="p-4 w-full border-b border-background-muted">
+    <div className="p-4 w-full border-b bg-brand-primary">
       <div
-        className={`w-full mx-4 md:mx-16 ${css`
+        className={`w-full mx-4 md:mx-16 flex items-end justify-between ${css`
           max-width: 50ch;
         `}`}
       >
@@ -54,10 +55,16 @@ export default function Topbar({isPublic = false}) {
             {isLocal ? (
               <Logo width="42px" className="fill-current" />
             ) : (
-              <AliceLogo />
+              <CustomLogo />
             )}
           </Link>
         </span>
+        <Link
+          to="/"
+          className="text-sm font-medium hover:underline text-brand-secondary inline-block"
+        >
+          ← Back to Home
+        </Link>
       </div>
     </div>
   ) : (
