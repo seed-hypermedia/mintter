@@ -1,0 +1,9 @@
+[Unit]
+Description=Mintter daemon service.
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/mintterd --repo-path /root/.mtt --http-port=80
+
+[Install]
+WantedBy=multi-user.target
