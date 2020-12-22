@@ -44,7 +44,7 @@ export function toInlineElement({text, ...textStyles}: Text): InlineElement {
 export function toBlockRefList(blockList) {
   if (blockList.type !== ELEMENT_BLOCK_LIST) {
     throw new Error(
-      `toBlockRefList: the node passed should be of type "block_list" but got ${blockList.type}`,
+      `toBlockRefList: the node passed should be of type ${ELEMENT_BLOCK_LIST} but got ${blockList.type}`,
     )
   }
 
@@ -86,6 +86,10 @@ export interface ToDocumentRequestProp {
 }
 
 export function toDocument({document, state}: ToDocumentRequestProp): Document {
+  console.log(
+    '🚀 ~ file: transformers.ts ~ line 89 ~ toDocument ~ {document, state}',
+    {document, state},
+  )
   // check if document has only one child
   if (state.blocks.length > 1) {
     throw new Error(
@@ -192,6 +196,11 @@ export function toSlateTree({
   blocksMap,
   isRoot = false,
 }: ToSlateTreeRequest): SlateBlock | SlateBlock[] | undefined {
+  console.log('🚀 ~ file: transformers.ts ~ line 195 ~ toSlateTree', {
+    blockRefList,
+    blocksMap,
+    isRoot,
+  })
   if (!blockRefList) return
   const dictionary = new Map(blocksMap)
   const blocks: SlateBlock = {
