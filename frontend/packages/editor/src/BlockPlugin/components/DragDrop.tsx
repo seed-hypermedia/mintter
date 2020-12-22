@@ -35,42 +35,39 @@ export const DragDrop = ({
           opacity: 0;
         }
       `}`}
+      onMouseLeave={() => {
+        blockDispatch({type: 'set_block_id', payload: {blockId: null}})
+      }}
+      onMouseEnter={() =>
+        blockDispatch({
+          type: 'set_block_id',
+          payload: {blockId: element.id},
+        })
+      }
       {...htmlAttributes}
     >
-      <div
-        onMouseLeave={() => {
-          blockDispatch({type: 'set_block_id', payload: {blockId: null}})
-        }}
-        onMouseEnter={() =>
-          blockDispatch({
-            type: 'set_block_id',
-            payload: {blockId: element.id},
-          })
-        }
-      >
-        {children}
+      {children}
 
-        {match && isLocalhost && (
-          <div
-            className={`absolute m-0 p-0 leading-none transition duration-200 shadow-sm ${css`
-              top: 2px;
-              right: -9px;
-            `}`}
-            contentEditable={false}
-          >
-            <BlockControls
-              highlightedIndex={blockId}
-              index={element.id}
-              disclosure={
-                <span>
-                  <Icons.MoreHorizontal size={16} />
-                </span>
-              }
-              element={element}
-            />
-          </div>
-        )}
-      </div>
+      {match && isLocalhost && (
+        <div
+          className={`absolute m-0 p-0 leading-none transition duration-200 shadow-sm ${css`
+            top: 2px;
+            right: -9px;
+          `}`}
+          contentEditable={false}
+        >
+          <BlockControls
+            highlightedIndex={blockId}
+            index={element.id}
+            disclosure={
+              <span>
+                <Icons.MoreHorizontal size={16} />
+              </span>
+            }
+            element={element}
+          />
+        </div>
+      )}
     </li>
   )
 }
