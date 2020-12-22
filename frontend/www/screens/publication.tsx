@@ -297,8 +297,9 @@ export default function Publication() {
         )}
       </SplitPane>
       <Seo
-        title={`${data.document &&
-          `${data?.document?.title} | `}Mintter Publication`}
+        title={`${
+          data.document && `${data?.document?.title} | `
+        }Mintter Publication`}
       />
       <PublicationModal document={data.document} />
     </Page>
