@@ -139,11 +139,22 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
         if (node.children.length === 1) {
           console.log('=== BLOCK -> ONLY 1 CHILD', {node, path})
         } else {
+          console.log('=== BLOCK -> MORE CHILDSSS', {node, path})
           for (const [child, childPath] of Node.children(editor, path)) {
             if (child.type === ELEMENT_PARAGRAPH) {
+              console.log('=== BLOCK -> PARAGRAPH CHILD ', {
+                child,
+                childPath,
+                length: childPath[childPath.length - 1] !== 0,
+              })
               if (childPath[childPath.length - 1] !== 0) {
                 Editor.withoutNormalizing(editor, () => {
-                  Transforms.liftNodes(editor, {at: childPath})
+                  Transforms.insertNodes(
+                    editor,
+                    {type: ELEMENT_BLOCK, id: id(), children: [child]},
+                    {at: Path.next(path)},
+                  )
+                  Transforms.removeNodes(editor, {at: childPath})
                 })
                 return
               }
