@@ -1,14 +1,9 @@
-import {Editor as SlateEditor, Path, Node} from 'slate'
-import {ReactEditor} from 'slate-react'
+import {Editor as SlateEditor, Node} from 'slate'
 import {ELEMENT_PARAGRAPH} from './elements/defaults'
 import {BlockRefList} from '@mintter/api/v2/documents_pb'
 import {id} from './id'
 import {ELEMENT_BLOCK} from './BlockPlugin/defaults'
 import {ELEMENT_BLOCK_LIST} from './HierarchyPlugin/defaults'
-
-export interface MintterEditor extends ReactEditor {
-  charCount: (editor: ReactEditor, path: Path) => number
-}
 
 export interface EditorState {
   title: string
@@ -24,16 +19,8 @@ export interface SlateBlock {
   children: any[]
 }
 
-export const Editor = {
-  ...SlateEditor,
-  charCount: (editor: ReactEditor, path: Path): number => {
-    const txt = SlateEditor.string(editor, path)
-    return txt.trim().length
-  },
-  handlePush: pushFn => route => {
-    pushFn(route)
-  },
-}
+export const Editor = SlateEditor
+
 export const initialBlocksValue = [
   {
     type: ELEMENT_BLOCK_LIST,
