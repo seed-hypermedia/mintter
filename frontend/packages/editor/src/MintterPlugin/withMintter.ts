@@ -1,5 +1,5 @@
 import {ReactEditor} from 'slate-react'
-import {Editor, Element, Node, Path, Transforms} from 'slate'
+import {Editor, Element, Node, Operation, Path, Transforms} from 'slate'
 import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
@@ -25,9 +25,12 @@ import {hasListInBlockItem} from './utils/hasListInBlockItem'
 import {removeFirstBlockItem} from './utils/removeFirstBlockItem'
 import {deleteListFragment} from './utils/deleteListFragment'
 
-export const withMintter = options => <T extends ReactEditor>(editor: T) => {
+interface MintterEditor {}
+
+export const withMintter = options => <T extends Editor>(editor: T) => {
+  const e = editor as T & ReactEditor & MintterEditor
   const {p, block} = options
-  const {insertBreak, deleteBackward, normalizeNode, deleteFragment} = editor
+  const {insertBreak, deleteBackward, normalizeNode, deleteFragment} = e
 
   const resetBlockTypesListRule = {
     types: [block.type],
@@ -35,14 +38,14 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
     onReset: (_editor: Editor) => unwrapBlockList(_editor, options),
   }
 
-  editor.insertBreak = () => {
-    let res = isSelectionInBlockItem(editor, options)
+  e.insertBreak = () => {
+    let res = isSelectionInBlockItem(e, options)
 
     let moved: boolean | undefined
-    if (res && isBlockAboveEmpty(editor)) {
+    if (res && isBlockAboveEmpty(e)) {
       const {blockListNode, blockListPath, blockPath} = res
       moved = moveBlockItemUp(
-        editor,
+        e,
         blockListNode,
         blockListPath,
         blockPath,
@@ -58,25 +61,25 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
       rules: [
         {
           ...resetBlockTypesListRule,
-          predicate: () => !moved && isBlockAboveEmpty(editor),
+          predicate: () => !moved && isBlockAboveEmpty(e),
         },
       ],
-    })(null, editor)
+    })(null, e)
     if (didReset) return
 
     /**
      * Add a new list item if selection is in a LIST_ITEM > p.type.
      */
     if (!moved) {
-      const inserted = insertBlockItem(editor, options)
+      const inserted = insertBlockItem(e, options)
       if (inserted) return
     }
 
     insertBreak()
   }
 
-  editor.deleteBackward = unit => {
-    const res = getBlockItemEntry({editor, locationOptions: {}, options})
+  e.deleteBackward = unit => {
+    const res = getBlockItemEntry({editor: e, locationOptions: {}, options})
 
     let moved: boolean | undefined
 
@@ -84,15 +87,15 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
       const {blockList, blockItem} = res
       const [blockItemNode] = blockItem
 
-      if (isSelectionAtBlockStart(editor)) {
-        moved = removeFirstBlockItem(editor, {blockList, blockItem}, options)
+      if (isSelectionAtBlockStart(e)) {
+        moved = removeFirstBlockItem(e, {blockList, blockItem}, options)
         if (moved) return
 
-        moved = removeRootListItem(editor, {blockList, blockItem}, options)
+        moved = removeRootListItem(e, {blockList, blockItem}, options)
         if (moved) return
 
         moved = moveBlockItemUp(
-          editor,
+          e,
           blockList[0],
           blockList[1],
           blockItem[1],
@@ -101,7 +104,7 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
         if (moved) return
       }
 
-      if (hasListInBlockItem(blockItemNode) && isCollapsed(editor.selection)) {
+      if (hasListInBlockItem(blockItemNode) && isCollapsed(e.selection)) {
         return deleteBackward(unit)
       }
     }
@@ -110,7 +113,7 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
     //   rules: [
     //     {
     //       ...resetBlockTypesListRule,
-    //       predicate: () => !moved && isBlockAboveEmpty(editor),
+    //       predicate: () => !moved && isBlockAboveEmpty(e),
     //     },
     //   ],
     // })(null, editor)
@@ -119,16 +122,16 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
     deleteBackward(unit)
   }
 
-  editor.normalizeNode = entry => {
+  e.normalizeNode = entry => {
     const [node, path] = entry
 
-    if (avoidMultipleRootChilds(editor)) return
+    if (avoidMultipleRootChilds(e)) return
 
     if (Element.isElement(node)) {
       if (node.type === ELEMENT_PARAGRAPH) {
-        for (const [child, childPath] of Node.children(editor, path)) {
-          if (Element.isElement(child) && !editor.isInline(child)) {
-            Transforms.unwrapNodes(editor, {at: childPath})
+        for (const [child, childPath] of Node.children(e, path)) {
+          if (Element.isElement(child) && !e.isInline(child)) {
+            Transforms.unwrapNodes(e, {at: childPath})
             return
           }
         }
@@ -140,7 +143,7 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
           console.log('=== BLOCK -> ONLY 1 CHILD', {node, path})
         } else {
           console.log('=== BLOCK -> MORE CHILDSSS', {node, path})
-          for (const [child, childPath] of Node.children(editor, path)) {
+          for (const [child, childPath] of Node.children(e, path)) {
             if (child.type === ELEMENT_PARAGRAPH) {
               console.log('=== BLOCK -> PARAGRAPH CHILD ', {
                 child,
@@ -148,13 +151,13 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
                 length: childPath[childPath.length - 1] !== 0,
               })
               if (childPath[childPath.length - 1] !== 0) {
-                Editor.withoutNormalizing(editor, () => {
+                Editor.withoutNormalizing(e, () => {
                   Transforms.insertNodes(
-                    editor,
+                    e,
                     {type: ELEMENT_BLOCK, id: id(), children: [child]},
                     {at: Path.next(path)},
                   )
-                  Transforms.removeNodes(editor, {at: childPath})
+                  Transforms.removeNodes(e, {at: childPath})
                 })
                 return
               }
@@ -162,8 +165,8 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
 
             if (child.type === ELEMENT_BLOCK_LIST) {
               if (childPath[childPath.length - 1] !== 1) {
-                Editor.withoutNormalizing(editor, () => {
-                  Transforms.unwrapNodes(editor, {at: path})
+                Editor.withoutNormalizing(e, () => {
+                  Transforms.unwrapNodes(e, {at: path})
                 })
                 return
               }
@@ -176,21 +179,21 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
         if (path.length === 1) {
           console.log('=== BLOCK_LIST -> ROOT')
         } else {
-          Editor.withoutNormalizing(editor, () => {
+          Editor.withoutNormalizing(e, () => {
             Transforms.setNodes(
-              editor,
+              e,
               {listType: BlockRefList.Style.BULLET},
               {at: path},
             )
           })
         }
 
-        for (const [child, childPath] of Node.children(editor, path)) {
+        for (const [child, childPath] of Node.children(e, path)) {
           if (Element.isElement(child)) {
             if (child.type === ELEMENT_PARAGRAPH) {
-              Editor.withoutNormalizing(editor, () => {
+              Editor.withoutNormalizing(e, () => {
                 Transforms.wrapNodes(
-                  editor,
+                  e,
                   {
                     type: ELEMENT_BLOCK,
                     id: id(),
@@ -202,11 +205,11 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
               return
             } else if (child.type === ELEMENT_BLOCK_LIST) {
               const prevChildPath = Path.previous(childPath)
-              const prevChild: any = Node.get(editor, prevChildPath)
+              const prevChild: any = Node.get(e, prevChildPath)
               if (!prevChild) return
               if (prevChild.type === ELEMENT_BLOCK) {
-                Editor.withoutNormalizing(editor, () => {
-                  Transforms.moveNodes(editor, {
+                Editor.withoutNormalizing(e, () => {
+                  Transforms.moveNodes(e, {
                     at: childPath,
                     to: prevChildPath.concat(1),
                   })
@@ -222,13 +225,13 @@ export const withMintter = options => <T extends ReactEditor>(editor: T) => {
     normalizeNode(entry)
   }
 
-  editor.deleteFragment = () => {
-    const {selection} = editor
+  e.deleteFragment = () => {
+    const {selection} = e
 
-    if (selection && deleteListFragment(editor, selection, options)) return
+    if (selection && deleteListFragment(e, selection, options)) return
 
     deleteFragment()
   }
 
-  return editor
+  return e
 }

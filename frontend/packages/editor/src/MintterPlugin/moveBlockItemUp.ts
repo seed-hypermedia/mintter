@@ -37,8 +37,7 @@ export const moveBlockItemUp = (
   const newBlockListPath = newBlockItemPath.concat(1)
   let siblingFound = false
   let newSiblingIdx = 0
-  blockListNode.children.forEach((n, idx) => {
-    console.log('n', n)
+  blockListNode.children.forEach((_n, idx) => {
     if (blockItemIndex < idx) {
       if (!siblingFound) {
         siblingFound = true
