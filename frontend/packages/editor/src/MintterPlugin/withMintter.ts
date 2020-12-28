@@ -1,5 +1,5 @@
 import {ReactEditor} from 'slate-react'
-import {Editor, Element, Node, Operation, Path, Transforms} from 'slate'
+import {Editor, Element, Node, Path, Transforms} from 'slate'
 import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
