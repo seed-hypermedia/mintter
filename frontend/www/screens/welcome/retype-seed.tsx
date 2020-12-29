@@ -12,7 +12,7 @@ import {ErrorMessage} from 'components/errorMessage'
 import {useWelcome} from 'shared/welcomeProvider'
 import {useFocus} from 'shared/hooks'
 import {useProfileContext} from 'shared/profileContext'
-import {Icons} from '@mintter/editor'
+import {Icons} from 'editor/components/icons'
 import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
 

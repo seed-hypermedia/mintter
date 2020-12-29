@@ -28,7 +28,9 @@ import {
   ListSuggestedProfilesRequest,
   ConnectToPeerResponse,
 } from '@mintter/api/v2/mintter_pb'
-import {toDocument, toBlock, ELEMENT_BLOCK, SlateBlock} from '@mintter/editor'
+import {toDocument, toBlock} from 'editor/transformers'
+import {ELEMENT_BLOCK} from 'editor/BlockPlugin/defaults'
+import {SlateBlock} from 'editor/editor'
 import {getNodesByType} from '@udecode/slate-plugins'
 import getConfig from 'next/config'
 

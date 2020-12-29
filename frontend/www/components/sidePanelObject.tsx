@@ -1,16 +1,14 @@
-import {
-  ELEMENT_BLOCK,
-  ELEMENT_READ_ONLY,
-  ELEMENT_TRANSCLUSION,
-  Icons,
-  toSlateTree,
-} from '@mintter/editor'
+import {toSlateTree} from 'editor/transformers'
+import {ELEMENT_BLOCK} from 'editor/BlockPlugin/defaults'
+import {ELEMENT_READ_ONLY} from 'editor/ReadOnlyPlugin/defaults'
+import {ELEMENT_TRANSCLUSION} from 'editor/TransclusionPlugin/defaults'
+import {Icons} from 'editor/components/icons'
 import React from 'react'
 import {useDocument} from 'shared/mintterContext'
 import {useAuthor, useProfile} from 'shared/profileContext'
 import {AuthorLabel} from './author-label'
 import {SlateReactPresentation} from 'slate-react-presentation'
-import {ELEMENT_PARAGRAPH} from '@mintter/editor'
+import {ELEMENT_PARAGRAPH} from 'editor/elements/defaults'
 import {Link} from './link'
 import Tippy from '@tippyjs/react'
 import {css} from 'emotion'

@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@mintter/api": "*",
-    "@mintter/editor": "*",
     "@tippyjs/react": "^4.1.0",
     "@udecode/slate-plugins": "^0.71.2",
     "date-fns": "^2.16.1",
@@ -47,7 +46,10 @@
     "slate-hyperscript": "^0.58.3",
     "slate-react": "^0.58.4",
     "slate-react-presentation": "^0.1.0",
-    "slugify": "^1.4.5"
+    "slugify": "^1.4.5",
+    "framer-motion": "^1.8.4",
+    "react-dnd": "^11.1.3",
+    "react-dnd-html5-backend": "^11.1.3"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.12.1",
@@ -79,14 +81,14 @@
     "jest-watch-typeahead": "^0.5.0",
     "lint-staged": "^10.0.10",
     "next-server": "^9.0.5",
-    "postcss": "^8.1.2",
     "postcss-preset-env": "^6.7.0",
     "prettier": "^2.0.2",
     "react-query-devtools": "^2.6.1",
     "tailwindcss": "^1.9.5",
     "test-data-bot": "^0.8.0",
     "ts-jest": "^26.1.0",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "@tailwindcss/typography": "^0.2.0"
   },
   "jest": {
     "verbose": true

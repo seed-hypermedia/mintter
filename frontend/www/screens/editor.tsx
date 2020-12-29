@@ -1,14 +1,12 @@
 import React from 'react'
 import {css} from 'emotion'
 import {useMutation} from 'react-query'
-import {
-  Icons,
-  useEditor,
-  EditorComponent,
-  useEditorValue,
-  options,
-  createPlugins,
-} from '@mintter/editor'
+import {Icons} from 'editor/components/icons'
+import {useEditor} from 'editor/useEditor'
+import {EditorComponent} from 'editor/components/editor'
+import {useEditorValue} from 'editor/hooks/useEditorValue'
+import {createPlugins} from 'editor/plugins'
+import {options} from 'editor/options'
 import {ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
 import SplitPane from 'react-split-pane'

@@ -3,7 +3,7 @@ import Seo from 'components/seo'
 import DocumentList from 'components/document-list'
 import {useDrafts, useMintter} from 'shared/mintterContext'
 import {getPath} from 'components/routes'
-import {Icons} from '@mintter/editor'
+import {Icons} from 'editor/components/icons'
 import {useRouter} from 'shared/use-router'
 
 export default function Drafts() {

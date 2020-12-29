@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import {jsx} from '../../test/jsx'
+import {jsx} from 'test/jsx'
 import {Editor} from 'slate'
 import {orphanTextNodesToBlock} from '../useEditor'
 import {createPlugins} from '../plugins'

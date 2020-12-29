@@ -4,16 +4,13 @@ import SplitPane from 'react-split-pane'
 import {useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import {ReactEditor} from 'slate-react'
 import slugify from 'slugify'
-import {
-  createPlugins,
-  EditorComponent,
-  options,
-  toSlateTree,
-  useEditor,
-  Icons,
-  SlateBlock,
-  useBlockMenuDispatch,
-} from '@mintter/editor'
+import {createPlugins} from 'editor/plugins'
+import {EditorComponent} from 'editor/components/editor'
+import {options} from 'editor/options'
+import {toSlateTree} from 'editor/transformers'
+import {useEditor} from 'editor/useEditor'
+import {useBlockMenuDispatch} from 'editor/BlockPlugin/components/blockMenuContext'
+import {Icons} from 'editor/components/icons'
 import {Document} from '@mintter/api/v2/documents_pb'
 import {useToasts} from 'react-toast-notifications'
 import {SidePanelObject} from 'components/sidePanelObject'
@@ -33,6 +30,7 @@ import {isLocalhost} from 'shared/isLocalhost'
 import {getPath} from 'components/routes'
 import {useTransclusion} from 'shared/useTransclusion'
 import {Profile} from '@mintter/api/v2/mintter_pb'
+import {SlateBlock} from 'editor/editor'
 
 export default function Publication() {
   const match = useRouteMatch()

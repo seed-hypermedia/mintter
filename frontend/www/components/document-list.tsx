@@ -1,6 +1,6 @@
 import React from 'react'
-import {Icons} from '@mintter/editor'
-import {useLocation, useRouteMatch, match as Match} from 'react-router-dom'
+import {Icons} from 'editor/components/icons'
+import {useLocation, useRouteMatch} from 'react-router-dom'
 import Link from './link'
 import {useAuthor} from 'shared/profileContext'
 import {ErrorMessage} from './errorMessage'

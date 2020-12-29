@@ -1,5 +1,7 @@
 import {useCallback} from 'react'
-import {makeProto, SlateBlock, id} from '@mintter/editor'
+import {SlateBlock} from 'editor/editor'
+import {id} from 'editor/id'
+import {makeProto} from 'editor/transformers'
 import {
   Block,
   Image,

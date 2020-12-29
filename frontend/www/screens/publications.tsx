@@ -1,4 +1,4 @@
-import {Icons} from '@mintter/editor'
+import {Icons} from 'editor/components/icons'
 import DocumentList from 'components/document-list'
 import {useMintter, useOthersPublications} from 'shared/mintterContext'
 import Seo from 'components/seo'

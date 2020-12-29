@@ -1,7 +1,7 @@
 import React from 'react'
 import {ReactEditor} from 'slate-react'
 import * as apiClient from './mintterClient'
-import {SlateBlock} from '@mintter/editor'
+import {SlateBlock} from 'editor/editor'
 import {
   useQuery,
   QueryResult,

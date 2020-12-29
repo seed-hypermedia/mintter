@@ -1,5 +1,5 @@
 import {createHyperscript} from 'slate-hyperscript'
-import {options} from '../src/options'
+import {options} from '../editor/options'
 import {createText} from './hyperscript/creators'
 
 declare global {

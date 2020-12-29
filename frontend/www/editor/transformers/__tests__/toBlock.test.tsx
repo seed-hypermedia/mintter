@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import {jsx} from '../../../test/jsx'
+import {jsx} from 'test/jsx'
 import {Editor} from 'slate'
 import {toBlock} from '../transformers'
 import {makeProto} from '../makeProto'

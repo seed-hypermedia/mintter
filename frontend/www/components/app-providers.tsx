@@ -7,7 +7,7 @@ import {ProfileProvider} from 'shared/profileContext'
 import {MintterProvider} from 'shared/mintterContext'
 import {ToastProvider, DefaultToast} from 'react-toast-notifications'
 import {SidePanelProvider} from './sidePanel'
-import {BlockMenuProvider} from '@mintter/editor'
+import {BlockMenuProvider} from '../editor/BlockPlugin/components/blockMenuContext'
 import {ReactQueryConfigProvider} from 'react-query'
 
 const queryConfig = {

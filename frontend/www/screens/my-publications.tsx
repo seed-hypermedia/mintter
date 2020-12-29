@@ -2,7 +2,7 @@ import Seo from 'components/seo'
 import DocumentList from 'components/document-list'
 import {useMintter, useMyPublications} from 'shared/mintterContext'
 import {ErrorMessage} from 'components/errorMessage'
-import {Icons} from '@mintter/editor'
+import {Icons} from 'editor/components/icons'
 import {getPath} from 'components/routes'
 import {useRouter} from 'shared/use-router'
 

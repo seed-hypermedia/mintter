@@ -21,19 +21,13 @@
     "site:test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch",
     "site:test:precommit": "yarn workspace @mintter/site test",
     "site:test:coverage": "yarn workspace @mintter/site test --coverage",
-    "editor:build": "yarn workspace @mintter/editor build",
-    "editor:test": "is-ci \"editor:test:coverage\" \"editor:test:watch\"",
-    "editor:test:watch": "yarn workspace @mintter/editor test:watch",
-    "editor:test:coverage": "yarn workspace @mintter/editor test --coverage",
-    "editor:watch": "yarn workspace @mintter/editor start",
     "release": "yarn build",
-    "validate": "npm-run-all --sequential format editor:test editor:build site:test site:build",
-    "validate:local": "npm-run-all --sequential format editor:test:coverage editor:build site:test:coverage site:build",
+    "validate": "npm-run-all --sequential format site:test site:build",
+    "validate:local": "npm-run-all --sequential format site:test:coverage site:build",
     "clean": "gn gen out"
   },
   "workspaces": [
     "frontend/www",
-    "frontend/packages/*",
     "api/js"
   ],
   "devDependencies": {
@@ -46,7 +40,6 @@
     "lint-staged": "^10.3.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^1.19.1",
-    "tsdx": "^0.12.3",
     "tslib": "^1.11.1",
     "typescript": "^3.8.3"
   },
