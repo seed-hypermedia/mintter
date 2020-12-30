@@ -116,7 +116,6 @@ module.exports = {
       ...['components', 'pages', 'screens', 'shared'].map(
         folder => `./${folder}/**/*.tsx`,
       ),
-      '../packages/editor/**/*.tsx',
     ],
   },
   future: {
