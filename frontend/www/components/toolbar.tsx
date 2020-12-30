@@ -8,10 +8,10 @@ import {
   toggleList,
   ToolbarElement,
 } from '@udecode/slate-plugins'
-import {nodeTypes} from '../nodeTypes'
+import {nodeTypes} from '../editor/node-types'
 import {Icons} from './icons'
 import {useSlate} from 'slate-react'
-import {ELEMENT_PARAGRAPH} from '../elements/defaults'
+import {ELEMENT_PARAGRAPH} from '../editor/elements/defaults'
 
 export function ToolbarBoldMark() {
   return <ToolbarMark mark={nodeTypes.typeBold} icon="Bold" />

@@ -1,13 +1,13 @@
 import {toSlateTree} from '../transformers'
 import {BlockRefList, Block} from '@mintter/api/v2/documents_pb'
 import {ELEMENT_PARAGRAPH} from '../../elements/defaults'
-import {ELEMENT_BLOCK_LIST} from '../../HierarchyPlugin/defaults'
+import {ELEMENT_BLOCK_LIST} from '../../hierarchy-plugin/defaults'
 import {ELEMENT_BLOCK} from '../../block-plugin/defaults'
 
-const block_list_mock_id = 'block_list_mock_id'
+const id = 'block_list_mock_id'
 
 jest.mock('nanoid', () => ({
-  nanoid: () => block_list_mock_id,
+  nanoid: () => id,
 }))
 
 test('toSlateTree: one level', () => {

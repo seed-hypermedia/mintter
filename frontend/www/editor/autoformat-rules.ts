@@ -1,42 +1,14 @@
 import {Editor} from 'slate'
 // import {nodeTypes} from './nodeTypes'
-import {
-  AutoformatRule,
-  unwrapList,
-  // toggleList,
-  // ELEMENT_CODE_BLOCK,
-} from '@udecode/slate-plugins'
-// import {
-//   ELEMENT_H1,
-//   ELEMENT_H2,
-//   ELEMENT_H3,
-//   ELEMENT_BLOCKQUOTE,
-// } from './elements'
-import {MARK_BOLD, MARK_ITALIC, MARK_CODE, MARK_STRIKETHROUGH} from './marks'
+import {AutoformatRule, unwrapList} from '@udecode/slate-plugins'
+import {MARK_BOLD} from './marks/bold'
+import {MARK_ITALIC} from './marks/italic'
+import {MARK_CODE} from './marks/code'
+import {MARK_STRIKETHROUGH} from './marks/strikethrough'
 
 export const preFormat = (editor: Editor) => unwrapList(editor)
 
 export const autoformatRules: AutoformatRule[] = [
-  // {
-  //   type: ELEMENT_H1,
-  //   markup: '#',
-  //   preFormat,
-  // },
-  // {
-  //   type: ELEMENT_H2,
-  //   markup: '##',
-  //   preFormat,
-  // },
-  // {
-  //   type: ELEMENT_H3,
-  //   markup: '###',
-  //   preFormat,
-  // },
-  // {
-  //   type: ELEMENT_BLOCKQUOTE,
-  //   markup: ['>'],
-  //   preFormat,
-  // },
   {
     type: MARK_BOLD,
     between: ['**', '**'],

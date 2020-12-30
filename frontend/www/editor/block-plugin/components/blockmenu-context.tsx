@@ -1,5 +1,5 @@
 import {Document} from '@mintter/api/v2/documents_pb'
-import {SlateBlock} from 'editor'
+import {SlateBlock} from 'editor/editor'
 import React, {createContext, useContext} from 'react'
 export interface MenuItemProps {
   label: string

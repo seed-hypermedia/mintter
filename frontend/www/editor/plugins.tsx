@@ -8,14 +8,14 @@ import {
   StrikethroughPlugin,
 } from '@udecode/slate-plugins'
 import {options} from './options'
-import {HelperPlugin} from './HelperPlugin'
-import {HierarchyPlugin} from './HierarchyPlugin'
-import {TransclusionPlugin} from './TransclusionPlugin'
-import {BlockPlugin} from './block-plugin'
-import {ReadOnlyPlugin} from './ReadOnlyPlugin'
-import {HeadingPlugin} from './HeadingPlugin/heading-plugin'
-import {LinkPlugin} from './LinkPlugin/link-plugin'
-import {ListPlugin} from './ListPlugin/list-plugin'
+import {HelperPlugin} from './helper-plugin/helper-plugin'
+import {HierarchyPlugin} from './hierarchy-plugin/hierarchy-plugin'
+import {TransclusionPlugin} from './transclusion-plugin/transclusion-plugin'
+import {BlockPlugin} from './block-plugin/block-plugin'
+import {ReadOnlyPlugin} from './readonly-plugin/readonly-plugin'
+import {HeadingPlugin} from './heading-plugin/heading-plugin'
+import {LinkPlugin} from './link-plugin/link-plugin'
+import {ListPlugin} from './list-plugin/list-plugin'
 
 export const plugins = [
   ParagraphPlugin(options),

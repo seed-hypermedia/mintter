@@ -28,7 +28,7 @@ import {
   ListSuggestedProfilesRequest,
   ConnectToPeerResponse,
 } from '@mintter/api/v2/mintter_pb'
-import {toDocument, toBlock} from 'editor/transformers'
+import {toDocument, toBlock} from 'editor/transformers/transformers'
 import {ELEMENT_BLOCK} from 'editor/block-plugin/defaults'
 import {SlateBlock} from 'editor/editor'
 import {getNodesByType} from '@udecode/slate-plugins'

@@ -12,11 +12,11 @@ import {
 import {SlateBlock} from '../editor'
 import {Node, Text} from 'slate'
 import {ELEMENT_PARAGRAPH} from '../elements/defaults'
-import {ELEMENT_BLOCK} from '../block-plugin'
-import {ELEMENT_BLOCK_LIST} from '../HierarchyPlugin'
+import {ELEMENT_BLOCK} from '../block-plugin/defaults'
+import {ELEMENT_BLOCK_LIST} from '../hierarchy-plugin/defaults'
 import {makeProto} from './make-proto'
 import {id} from '../id'
-import {ELEMENT_TRANSCLUSION} from '../TransclusionPlugin'
+import {ELEMENT_TRANSCLUSION} from '../transclusion-plugin/defaults'
 
 export function toBlock(node): Block {
   const pNode: Node = node.children.filter(n => n.type === 'p')[0]
@@ -192,11 +192,6 @@ export function toSlateTree({
   blocksMap,
   isRoot = false,
 }: ToSlateTreeRequest): SlateBlock | SlateBlock[] | undefined {
-  console.log('🚀 ~ file: transformers.ts ~ line 195 ~ toSlateTree', {
-    blockRefList,
-    blocksMap,
-    isRoot,
-  })
   if (!blockRefList) return
   const dictionary = new Map(blocksMap)
   const blocks: SlateBlock = {

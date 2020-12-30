@@ -1,7 +1,7 @@
 import {useCallback} from 'react'
 import {SlateBlock} from 'editor/editor'
 import {id} from 'editor/id'
-import {makeProto} from 'editor/transformers'
+import {makeProto} from 'editor/transformers/make-proto'
 import {
   Block,
   Image,
