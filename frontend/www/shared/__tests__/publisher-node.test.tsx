@@ -1,7 +1,7 @@
 import {render, screen} from 'test/app-test-utils'
 import {buildDocument, buildGetDocument, buildProfile} from 'test/generate'
-import * as mockedIsLocalhost from 'shared/isLocalhost'
-import * as clientMock from 'shared/mintterClient'
+import * as mockedIsLocalhost from 'shared/is-localhost'
+import * as clientMock from 'shared/mintter-client'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 import {
   ListDocumentsResponse,

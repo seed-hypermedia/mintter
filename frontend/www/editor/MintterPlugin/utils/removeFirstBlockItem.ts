@@ -1,7 +1,7 @@
 import {NodeEntry, Ancestor, Editor, Transforms, Path} from 'slate'
 import {isFirstChild, moveChildren} from '@udecode/slate-plugins'
-import {hasListInBlockItem} from './hasListInBlockItem'
-import {isBlockListNested} from './isBlockListNested'
+import {hasListInBlockItem} from './has-list-in-block-item'
+import {isBlockListNested} from './is-blocklist-nested'
 
 export const removeFirstBlockItem = (
   editor: Editor,

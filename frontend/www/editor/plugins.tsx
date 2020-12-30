@@ -11,11 +11,11 @@ import {options} from './options'
 import {HelperPlugin} from './HelperPlugin'
 import {HierarchyPlugin} from './HierarchyPlugin'
 import {TransclusionPlugin} from './TransclusionPlugin'
-import {BlockPlugin} from './BlockPlugin'
+import {BlockPlugin} from './block-plugin'
 import {ReadOnlyPlugin} from './ReadOnlyPlugin'
-import {HeadingPlugin} from './HeadingPlugin/HeadingPlugin'
-import {LinkPlugin} from './LinkPlugin/LinkPlugin'
-import {ListPlugin} from './ListPlugin/ListPlugin'
+import {HeadingPlugin} from './HeadingPlugin/heading-plugin'
+import {LinkPlugin} from './LinkPlugin/link-plugin'
+import {ListPlugin} from './ListPlugin/list-plugin'
 
 export const plugins = [
   ParagraphPlugin(options),

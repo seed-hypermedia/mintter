@@ -1,8 +1,8 @@
-import {Icons} from 'editor/components/icons'
+import {Icons} from 'components/icons'
 import DocumentList from 'components/document-list'
-import {useMintter, useOthersPublications} from 'shared/mintterContext'
+import {useMintter, useOthersPublications} from 'shared/mintter-context'
 import Seo from 'components/seo'
-import {ErrorMessage} from 'components/errorMessage'
+import {ErrorMessage} from 'components/error-message'
 import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
 

@@ -1,6 +1,6 @@
 import React from 'react'
 import {css} from 'emotion'
-import {useTheme} from 'shared/themeContext'
+import {useTheme} from 'shared/theme-context'
 
 export interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
   initial?: string

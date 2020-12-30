@@ -1,6 +1,6 @@
 import Layout, {LayoutProps} from './layout'
-import WelcomeProvider from '../shared/welcomeProvider'
-import ThemeToggle from './themeToggle'
+import WelcomeProvider from '../shared/welcome-provider'
+import ThemeToggle from './theme-toggle'
 
 export default function WelcomeLayout({
   children,

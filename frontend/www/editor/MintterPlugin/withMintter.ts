@@ -7,23 +7,23 @@ import {
   isCollapsed,
 } from '@udecode/slate-plugins'
 import {id} from '../id'
-import {insertBlockItem} from './insertBlockItem'
+import {insertBlockItem} from './insert-block-item'
 import {moveBlockItemUp} from './moveBlockItemUp'
 import {
   getBlockItemEntry,
   isSelectionInBlockItem,
 } from './isSelectionInBlockItem'
 import {unwrapBlockList} from './unwrapBlockList'
-import {avoidMultipleRootChilds} from './utils/avoidMultipleRootChilds'
+import {avoidMultipleRootChilds} from './utils/avoid-multiple-rootchilds'
 // import {avoidMultipleBlockChilds} from './utils/avoidMultipleBlockChilds'
 import {ELEMENT_PARAGRAPH} from '../elements/defaults'
-import {ELEMENT_BLOCK} from '../BlockPlugin/defaults'
+import {ELEMENT_BLOCK} from '../block-plugin/defaults'
 import {ELEMENT_BLOCK_LIST} from '../HierarchyPlugin/defaults'
 import {BlockRefList} from '@mintter/api/v2/documents_pb'
 import {removeRootListItem} from './utils/removeRootBlockItem'
-import {hasListInBlockItem} from './utils/hasListInBlockItem'
+import {hasListInBlockItem} from './utils/has-list-in-block-item'
 import {removeFirstBlockItem} from './utils/removeFirstBlockItem'
-import {deleteListFragment} from './utils/deleteListFragment'
+import {deleteListFragment} from './utils/delete-list-fragment'
 
 interface MintterEditor {}
 
@@ -39,7 +39,7 @@ export const withMintter = options => <T extends Editor>(editor: T) => {
   }
 
   e.insertBreak = () => {
-    let res = isSelectionInBlockItem(e, options)
+    const res = isSelectionInBlockItem(e, options)
 
     let moved: boolean | undefined
     if (res && isBlockAboveEmpty(e)) {

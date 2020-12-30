@@ -1,5 +1,5 @@
 import React from 'react'
-import {mergeRefs} from 'editor/mergeRefs'
+import {mergeRefs} from 'editor/merge-refs'
 
 function TextareaComponent(
   {value, onChange, className, onEnterPress, ...props},

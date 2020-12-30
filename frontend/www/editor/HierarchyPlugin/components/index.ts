@@ -1,1 +1,1 @@
-export * from './blockList'
+export * from './blocklist'

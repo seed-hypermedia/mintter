@@ -1,8 +1,8 @@
 import React from 'react'
 import {Switch, Route, useRouteMatch, Redirect} from 'react-router-dom'
 import Layout, {LayoutProps} from 'components/layout'
-import WelcomeProvider from 'shared/welcomeProvider'
-import ThemeToggle from 'components/themeToggle'
+import WelcomeProvider from 'shared/welcome-provider'
+import ThemeToggle from 'components/theme-toggle'
 import WelcomeIntro from 'screens/welcome/intro'
 import {ProgressRoute, createPath} from 'components/routes'
 

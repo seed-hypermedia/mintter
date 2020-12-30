@@ -12,7 +12,7 @@ import {css} from 'emotion'
 import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
 import {useMutation} from 'react-query'
-import * as apiClient from 'shared/mintterClient'
+import * as apiClient from 'shared/mintter-client'
 
 export default function EditProfile() {
   const {register, handleSubmit, errors, formState} = useForm({
@@ -107,8 +107,9 @@ export default function EditProfile() {
                 ref={register}
                 rows={4}
                 placeholder="A little bit about yourself..."
-                className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body text-base ${errors.bio &&
-                  'border-danger'} ${css`
+                className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body text-base ${
+                  errors.bio && 'border-danger'
+                } ${css`
                   min-height: 100px;
                 `}`}
               />

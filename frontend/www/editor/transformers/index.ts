@@ -1,2 +1,2 @@
 export * from './transformers'
-export * from './makeProto'
+export * from './make-proto'

@@ -1,6 +1,6 @@
 import {Ancestor, Editor, NodeEntry, Transforms} from 'slate'
 import {getPreviousPath, isExpanded, ListOptions} from '@udecode/slate-plugins'
-import {hasListInBlockItem} from './hasListInBlockItem'
+import {hasListInBlockItem} from './has-list-in-block-item'
 import {moveBlockItemSublistItemsToBlockItemSublist} from './moveBlockItemSublistItemsToBlockItemSublist'
 import {moveBlockItemSublistItemsToList} from './moveBlockItemSublistItemsToList'
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import {DragDrop} from '../../BlockPlugin/components/DragDrop'
+import {DragDrop} from '../../block-plugin/components/drag-drop'
 import {css} from 'emotion'
 
 export const Transclusion = ({
@@ -22,6 +22,7 @@ export const Transclusion = ({
   }, [])
   function handlePush(e) {
     e.preventDefault()
+
     dispatch?.({type: 'add_object', payload: element.id})
   }
 

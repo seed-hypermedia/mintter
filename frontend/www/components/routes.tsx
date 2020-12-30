@@ -1,8 +1,8 @@
 import {Route, Redirect} from 'react-router-dom'
 import {match as Match} from 'react-router'
-import {useProfile} from 'shared/profileContext'
-import {useWelcome} from 'shared/welcomeProvider'
-import {FullPageSpinner} from 'components/fullPageSpinner'
+import {useProfile} from 'shared/profile-context'
+import {useWelcome} from 'shared/welcome-provider'
+import {FullPageSpinner} from 'components/fullpage-spinner'
 
 export function ProgressRoute({children, ...rest}) {
   const {

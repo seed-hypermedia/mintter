@@ -12,9 +12,9 @@ import {
 import {SlateBlock} from '../editor'
 import {Node, Text} from 'slate'
 import {ELEMENT_PARAGRAPH} from '../elements/defaults'
-import {ELEMENT_BLOCK} from '../BlockPlugin'
+import {ELEMENT_BLOCK} from '../block-plugin'
 import {ELEMENT_BLOCK_LIST} from '../HierarchyPlugin'
-import {makeProto} from './makeProto'
+import {makeProto} from './make-proto'
 import {id} from '../id'
 import {ELEMENT_TRANSCLUSION} from '../TransclusionPlugin'
 
@@ -30,7 +30,7 @@ export function toBlock(node): Block {
 }
 
 export function toInlineElement({text, ...textStyles}: Text): InlineElement {
-  let newInlineElement: any = {
+  const newInlineElement: any = {
     text,
   }
 
@@ -55,7 +55,7 @@ export function toBlockRefList(blockList) {
 }
 
 export function toBlockRef(block: SlateBlock) {
-  let newRef: any = {}
+  const newRef: any = {}
 
   newRef.ref = block.id
 
@@ -86,10 +86,6 @@ export interface ToDocumentRequestProp {
 }
 
 export function toDocument({document, state}: ToDocumentRequestProp): Document {
-  console.log(
-    '🚀 ~ file: transformers.ts ~ line 89 ~ toDocument ~ {document, state}',
-    {document, state},
-  )
   // check if document has only one child
   if (state.blocks.length > 1) {
     throw new Error(
@@ -120,7 +116,7 @@ export function toDocument({document, state}: ToDocumentRequestProp): Document {
 export function toSlateBlock(block: Block.AsObject): SlateBlock {
   const {id, paragraph, quotersList} = block
 
-  let slateBlock = {
+  const slateBlock = {
     id,
     quotersList,
   }
@@ -209,7 +205,7 @@ export function toSlateTree({
     listType: blockRefList.style,
     children: blockRefList.refsList.map(blockRef => {
       const currentBlock = dictionary.get(blockRef.ref) as Block.AsObject
-      let block: SlateBlock = toSlateBlock({
+      const block: SlateBlock = toSlateBlock({
         ...currentBlock,
         id: blockRef.ref,
       })

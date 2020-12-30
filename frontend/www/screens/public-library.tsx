@@ -1,5 +1,5 @@
 import React from 'react'
-import {useProfile} from 'shared/profileContext'
+import {useProfile} from 'shared/profile-context'
 import {PublicLayout} from 'components/layout'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
@@ -7,8 +7,8 @@ import Seo from 'components/seo'
 import {CustomLogo} from 'components/custom-logo'
 import {Link} from 'components/link'
 
-const MyPublications = React.lazy(() =>
-  import(/* webpackPrefetch: true */ './my-publications'),
+const MyPublications = React.lazy(
+  () => import(/* webpackPrefetch: true */ './my-publications'),
 )
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.

@@ -1,6 +1,6 @@
 import {render, screen} from 'test/app-test-utils'
 import AuthorNode from '../author-node'
-import * as clientMock from 'shared/mintterClient'
+import * as clientMock from 'shared/mintter-client'
 
 jest.mock('shared/mintterClient')
 

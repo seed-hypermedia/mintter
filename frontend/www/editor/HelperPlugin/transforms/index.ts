@@ -1,1 +1,1 @@
-export * from './insertBlock'
+export * from './insert-block'

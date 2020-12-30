@@ -8,11 +8,11 @@ import Content from 'components/content'
 import Input from 'components/input'
 import {useForm} from 'react-hook-form'
 import {getRandomElements} from 'shared/utils'
-import {ErrorMessage} from 'components/errorMessage'
-import {useWelcome} from 'shared/welcomeProvider'
+import {ErrorMessage} from 'components/error-message'
+import {useWelcome} from 'shared/welcome-provider'
 import {useFocus} from 'shared/hooks'
-import {useProfileContext} from 'shared/profileContext'
-import {Icons} from 'editor/components/icons'
+import {useProfileContext} from 'shared/profile-context'
+import {Icons} from 'components/icons'
 import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
 
@@ -55,8 +55,9 @@ export default function RetypeSeed() {
             to recover your account. To make sure that you have properly saved
             your seed, please retype the words
           </P>
-          <P className="text-center font-bold">{`${idxs[0] + 1}, ${idxs[1] +
-            1} & ${idxs[2] + 1}`}</P>
+          <P className="text-center font-bold">{`${idxs[0] + 1}, ${
+            idxs[1] + 1
+          } & ${idxs[2] + 1}`}</P>
           {process.env.NODE_ENV === 'development' && (
             <P className="text-center">{`(${mnemonicList[idxs[0]]}, ${
               mnemonicList[idxs[1]]

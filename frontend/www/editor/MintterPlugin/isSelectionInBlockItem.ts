@@ -5,8 +5,8 @@ import {
   isNodeTypeIn,
   setDefaults,
 } from '@udecode/slate-plugins'
-import {isRangeAtRoot} from '../isRangeAtRoot'
-import {DEFAULTS_BLOCK} from '../BlockPlugin/defaults'
+import {isRangeAtRoot} from '../is-range-at-root'
+import {DEFAULTS_BLOCK} from '../block-plugin/defaults'
 
 type LocationOptions = {
   at?: Location | null

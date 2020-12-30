@@ -1,5 +1,5 @@
 export * from './withMintter'
-export * from './insertBlockItem'
+export * from './insert-block-item'
 export * from './isSelectionInBlockItem'
 export * from './withMintter'
 export * from './unwrapBlockList'

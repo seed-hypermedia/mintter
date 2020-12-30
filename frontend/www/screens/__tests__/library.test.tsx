@@ -6,7 +6,7 @@ import {
   waitFor,
   waitForElementToBeRemoved,
 } from 'test/app-test-utils'
-import * as clientMock from 'shared/mintterClient'
+import * as clientMock from 'shared/mintter-client'
 import {App} from 'shared/app'
 import {Profile, SuggestedProfile} from '@mintter/api/v2/mintter_pb'
 import {

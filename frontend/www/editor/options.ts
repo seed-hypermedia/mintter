@@ -8,7 +8,7 @@ import {
 } from './marks'
 import {DEFAULTS_HEADINGS} from './HeadingPlugin/defaults'
 import {DEFAULTS_TRANSCLUSION} from './TransclusionPlugin/defaults'
-import {DEFAULTS_BLOCK} from './BlockPlugin/defaults'
+import {DEFAULTS_BLOCK} from './block-plugin/defaults'
 import {DEFAULTS_BLOCKLIST} from './HierarchyPlugin/defaults'
 import {DEFAULTS_READ_ONLY} from './ReadOnlyPlugin/defaults'
 import {DEFAULTS_LIST} from './ListPlugin/defaults'

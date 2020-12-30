@@ -1,1 +1,1 @@
-export * from './useEditorValue'
+export * from './use-editor-value'

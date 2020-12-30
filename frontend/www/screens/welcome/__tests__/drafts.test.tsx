@@ -1,6 +1,6 @@
 import {screen, render, userEvent, act, waitFor} from 'test/app-test-utils'
 import Drafts from 'screens/drafts'
-import * as clientMock from 'shared/mintterClient'
+import * as clientMock from 'shared/mintter-client'
 import {ListDocumentsResponse} from '@mintter/api/v2/documents_pb'
 
 jest.mock('shared/mintterClient')
