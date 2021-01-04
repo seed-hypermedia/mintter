@@ -4,18 +4,18 @@ import {Switch, useRouteMatch, Redirect} from 'react-router-dom'
 import {PrivateRoute, getPath} from 'components/routes'
 import {NavItem} from 'components/nav'
 import {useHistory} from 'react-router-dom'
-import {useMintter} from 'shared/mintterContext'
+import {useMintter} from 'shared/mintter-context'
 import {
   useConnectionCreate,
   useConnectionList,
   useProfile,
-} from 'shared/profileContext'
+} from 'shared/profile-context'
 import {Link} from 'components/link'
 import {Connections} from 'components/connections'
 import {SuggestedConnections} from 'components/suggested-connections'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
-import {Icons} from '@mintter/editor'
+import {Icons} from 'components/icons'
 import {useToasts} from 'react-toast-notifications'
 import Publications from './publications'
 import MyPublications from './my-publications'

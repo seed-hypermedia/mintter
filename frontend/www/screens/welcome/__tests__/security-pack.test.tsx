@@ -1,13 +1,13 @@
 import {screen, userEvent, waitFor, act} from 'test/app-test-utils'
 import {render} from '@testing-library/react'
 import {BrowserRouter as Router} from 'react-router-dom'
-import {ProfileProvider} from 'shared/profileContext'
+import {ProfileProvider} from 'shared/profile-context'
 import {ToastProvider} from 'react-toast-notifications'
-import WelcomeProvider from 'shared/welcomeProvider'
-import * as clientMock from 'shared/mintterClient'
+import WelcomeProvider from 'shared/welcome-provider'
+import * as clientMock from 'shared/mintter-client'
 import SecurityPack from '../security-pack'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/mintter-client')
 
 const mnemonicList = ['word-1', 'word-2', 'word-3']
 

@@ -1,12 +1,12 @@
 import {screen, waitFor, userEvent, render} from 'test/app-test-utils'
 import EditProfile from '../edit-profile'
-import * as clientMock from 'shared/mintterClient'
+import * as clientMock from 'shared/mintter-client'
 import {BrowserRouter as Router} from 'react-router-dom'
-import {ProfileProvider} from 'shared/profileContext'
+import {ProfileProvider} from 'shared/profile-context'
 import {buildEditProfile} from 'test/generate'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/mintter-client')
 
 const currentUser = {
   toObject: () => ({}),

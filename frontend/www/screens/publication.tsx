@@ -4,35 +4,33 @@ import SplitPane from 'react-split-pane'
 import {useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import {ReactEditor} from 'slate-react'
 import slugify from 'slugify'
-import {
-  createPlugins,
-  EditorComponent,
-  options,
-  toSlateTree,
-  useEditor,
-  Icons,
-  SlateBlock,
-  useBlockMenuDispatch,
-} from '@mintter/editor'
+import {createPlugins} from 'editor/plugins'
+import {EditorComponent} from 'components/editor'
+import {options} from 'editor/options'
+import {toSlateTree} from 'editor/transformers/transformers'
+import {useEditor} from 'shared/use-editor'
+import {useBlockMenuDispatch} from 'editor/block-plugin/components/blockmenu-context'
+import {Icons} from 'components/icons'
 import {Document} from '@mintter/api/v2/documents_pb'
 import {useToasts} from 'react-toast-notifications'
-import {SidePanelObject} from 'components/sidePanelObject'
+import {SidePanelObject} from 'components/sidepanel-object'
 import {AuthorLabel} from 'components/author-label'
 import {PublicationModal} from 'components/publication-modal'
-import {useDocument, useDrafts} from 'shared/mintterContext'
-import {useAuthor, useProfile} from 'shared/profileContext'
-import {ErrorMessage} from 'components/errorMessage'
+import {useDocument, useDrafts} from 'shared/mintter-context'
+import {useAuthor, useProfile} from 'shared/profile-context'
+import {ErrorMessage} from 'components/error-message'
 import {MainColumn} from 'components/main-column'
 import {Page} from 'components/page'
 import Seo from 'components/seo'
-import {useSidePanel} from 'components/sidePanel'
+import {useSidePanel} from 'components/sidepanel'
 import {MintterIcon} from 'components/mintter-icon'
-import * as apiClient from 'shared/mintterClient'
+import * as apiClient from 'shared/mintter-client'
 import {queryCache, useMutation} from 'react-query'
-import {isLocalhost} from 'shared/isLocalhost'
+import {isLocalhost} from 'shared/is-localhost'
 import {getPath} from 'components/routes'
-import {useTransclusion} from 'shared/useTransclusion'
+import {useTransclusion} from 'shared/use-transclusion'
 import {Profile} from '@mintter/api/v2/mintter_pb'
+import {SlateBlock} from 'editor/editor'
 
 export default function Publication() {
   const match = useRouteMatch()
@@ -164,14 +162,14 @@ export default function Publication() {
     transclusion: {
       ...options.transclusion,
       customProps: {
-        // dispatch: sidePanelDispatch,
+        dispatch: sidePanelDispatch,
         getData: getQuoteData,
       },
     },
     block: {
       ...options.block,
       customProps: {
-        // dispatch: sidePanelDispatch,
+        dispatch: sidePanelDispatch,
         getData: getQuoteData,
         onMainPanel,
         onSidePanel,
@@ -297,9 +295,8 @@ export default function Publication() {
         )}
       </SplitPane>
       <Seo
-        title={`${
-          data.document && `${data?.document?.title} | `
-        }Mintter Publication`}
+        title={`${data.document &&
+          `${data?.document?.title} | `}Mintter Publication`}
       />
       <PublicationModal document={data.document} />
     </Page>
