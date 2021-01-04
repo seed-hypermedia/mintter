@@ -12,7 +12,7 @@ import {css} from 'emotion'
 import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
 import {useMutation} from 'react-query'
-import * as apiClient from 'shared/mintterClient'
+import * as apiClient from 'shared/mintter-client'
 
 export default function EditProfile() {
   const {register, handleSubmit, errors, formState} = useForm({

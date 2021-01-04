@@ -3,10 +3,9 @@ import {
   screen,
   within,
   userEvent,
-  waitFor,
   waitForElementToBeRemoved,
 } from 'test/app-test-utils'
-import * as clientMock from 'shared/mintterClient'
+import * as clientMock from 'shared/mintter-client'
 import {App} from 'shared/app'
 import {Profile, SuggestedProfile} from '@mintter/api/v2/mintter_pb'
 import {
@@ -16,7 +15,7 @@ import {
 } from 'test/generate'
 // import {Profile} from '@mintter/api/v2/mintter_pb'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/mintter-client')
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -77,15 +76,13 @@ async function renderLibrary({
 
 beforeEach(() => {
   clientMock.listDocuments.mockResolvedValue({
-    toObject: () => ({
-      documentsList: [],
-    }),
+    getDocumentsList: () => [],
   })
 })
 
 test('render <Connections /> empty message', async () => {
   await renderLibrary({connections: []})
-
+  screen.debug()
   expect(screen.getByText(/no connections available :\(/i)).toBeInTheDocument()
 })
 

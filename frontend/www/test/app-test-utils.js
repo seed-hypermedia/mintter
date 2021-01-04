@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event'
 import {AppProviders} from 'components/app-providers'
 import {buildProfile} from './generate'
 
-jest.mock('shared/V1mintterClient')
+jest.mock('shared/mintter-client')
 
 function AppWrapper({children}) {
   return (

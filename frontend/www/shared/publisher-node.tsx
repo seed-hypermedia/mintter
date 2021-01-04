@@ -4,8 +4,8 @@ import {PrivateRoute} from 'components/routes'
 import {NoRoute} from 'screens/no-route'
 
 const PublicLibrary = React.lazy(() => import('../screens/public-library'))
-const PublicPublication = React.lazy(
-  () => import('../screens/public-publication'),
+const PublicPublication = React.lazy(() =>
+  import('../screens/public-publication'),
 )
 const AuthorNode = React.lazy(() => import('./author-node'))
 
