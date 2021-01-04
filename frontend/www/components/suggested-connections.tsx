@@ -1,5 +1,5 @@
 import React from 'react'
-import {useSuggestedConnections} from 'shared/profileContext'
+import {useSuggestedConnections} from 'shared/profile-context'
 
 import {css} from 'emotion'
 
@@ -9,7 +9,7 @@ import {
   ConnectionStatus,
   SuggestedProfile,
 } from '@mintter/api/v2/mintter_pb'
-import {ErrorMessage} from './errorMessage'
+import {ErrorMessage} from './error-message'
 
 export function SuggestedConnections({onConnect}) {
   const {data = [], isLoading, isError, error} = useSuggestedConnections()

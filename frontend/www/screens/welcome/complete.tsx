@@ -4,7 +4,7 @@ import P from 'components/welcome-p'
 import {NextButton} from 'components/welcome-buttons'
 import Footer from 'components/footer'
 import {useRouter} from 'shared/use-router'
-import {useWelcome} from 'shared/welcomeProvider'
+import {useWelcome} from 'shared/welcome-provider'
 import {getPath} from 'components/routes'
 
 export default function WelcomeIndex() {

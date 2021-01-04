@@ -1,14 +1,12 @@
 import React from 'react'
 import {css} from 'emotion'
 import {useMutation} from 'react-query'
-import {
-  Icons,
-  useEditor,
-  EditorComponent,
-  useEditorValue,
-  options,
-  createPlugins,
-} from '@mintter/editor'
+import {Icons} from 'components/icons'
+import {useEditor} from 'shared/use-editor'
+import {EditorComponent} from 'components/editor'
+import {useEditorValue} from 'shared/use-editor-value'
+import {createPlugins} from 'editor/plugins'
+import {options} from 'editor/options'
 import {ReactEditor} from 'slate-react'
 import Tippy from '@tippyjs/react'
 import SplitPane from 'react-split-pane'
@@ -16,18 +14,18 @@ import Seo from 'components/seo'
 import {DebugValue} from 'components/debug'
 import Textarea from 'components/textarea'
 import {useDebounce} from 'shared/hooks'
-import {useDocument, useMintter} from 'shared/mintterContext'
-import {getDocument, getProfile} from 'shared/mintterClient'
-import {publishDraft} from 'shared/mintterClient'
+import {useDocument, useMintter} from 'shared/mintter-context'
+import {getDocument, getProfile} from 'shared/mintter-client'
+import {publishDraft} from 'shared/mintter-client'
 import {useParams, useHistory, useLocation} from 'react-router-dom'
-import {FullPageSpinner} from 'components/fullPageSpinner'
-import {FullPageErrorMessage} from 'components/errorMessage'
-import {useTheme} from 'shared/themeContext'
+import {FullPageSpinner} from 'components/fullpage-spinner'
+import {FullPageErrorMessage} from 'components/error-message'
+import {useTheme} from 'shared/theme-context'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
-import {SidePanelObject} from 'components/sidePanelObject'
-import {useTransclusion} from 'shared/useTransclusion'
-import {useSidePanel} from 'components/sidePanel'
+import {SidePanelObject} from 'components/sidepanel-object'
+import {useTransclusion} from 'shared/use-transclusion'
+import {useSidePanel} from 'components/sidepanel'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 
 function useQuery() {

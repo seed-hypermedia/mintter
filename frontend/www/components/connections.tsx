@@ -2,8 +2,8 @@ import React from 'react'
 import {css} from 'emotion'
 import Tippy from '@tippyjs/react'
 import {Profile, ConnectionStatus} from '@mintter/api/v2/mintter_pb'
-import {useConnectionList} from 'shared/profileContext'
-import {ErrorMessage} from './errorMessage'
+import {useConnectionList} from 'shared/profile-context'
+import {ErrorMessage} from './error-message'
 
 export function Connections({onConnect}) {
   const {data = [], isLoading, isError, error} = useConnectionList()

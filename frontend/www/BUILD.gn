@@ -5,26 +5,23 @@ stamped_sources("build_sources") {
   sources = [
     # We inlude editor checksum so that it can affect our build id.
     # Important that editor is also in `deps`.
-    "$root_build_dir/frontend/packages/editor/editor.sum",
     "*.js",
     "*.json",
     "*.ts",
     "components/**",
+    "editor/**",
     "pages/**",
     "public/**",
     "screens/**",
     "shared/**",
     "styles/**",
   ]
-
-  deps = [ "//frontend/packages/editor" ]
 }
 
 # These are grouped here to be executed separately by `dev` CLI.
 group("deps") {
   deps = [
     "//:yarn",
-    "//frontend/packages/editor",
     "//proto:js",
   ]
 }

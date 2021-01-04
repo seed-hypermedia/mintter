@@ -1,3 +1,0 @@
-# `@mintter/editor`
-
----
