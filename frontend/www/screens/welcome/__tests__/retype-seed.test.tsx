@@ -6,7 +6,7 @@ import RetypeSeed from '../retype-seed'
 import * as clientMock from 'shared/mintter-client'
 import {getRandomElements as mockRandom} from 'shared/utils'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/mintter-client')
 jest.mock('shared/utils')
 
 async function renderWelcomeScreen() {

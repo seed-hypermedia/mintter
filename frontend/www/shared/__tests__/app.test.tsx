@@ -6,16 +6,16 @@ import * as clientMock from 'shared/mintter-client'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 import {Document} from '@mintter/api/v2/documents_pb'
 
-jest.mock('shared/isLocalhost')
-jest.mock('shared/mintterClient')
+jest.mock('shared/is-localhost.ts')
+jest.mock('shared/mintter-client')
 
 async function renderApp({
   profile,
-  listDocuments,
+  documentsList,
   isLocalhost,
 }: {
   profile: Profile.AsObject
-  listDocuments: Document.AsObject[]
+  documentsList: Document.AsObject[]
   isLocalhost: boolean
 } = {}) {
   if (profile === undefined) {
@@ -26,14 +26,23 @@ async function renderApp({
     toObject: (): Partial<Profile.AsObject> => profile,
   })
 
-  if (listDocuments === undefined) {
-    listDocuments = [buildDocument({author: profile ? profile.accountId : ''})]
+  if (documentsList === undefined) {
+    documentsList = [
+      buildDocument({author: profile ? profile.accountId : ''}),
+      buildDocument(),
+    ]
   }
 
   clientMock.listDocuments.mockResolvedValue({
-    toObject: (): ListDocumentsResponse.AsObject => ({
-      documentsList: listDocuments,
-    }),
+    getDocumentsList: () =>
+      documentsList.map(
+        (doc: Document.AsObject): Document => ({
+          getCreateTime: () => ({
+            toDate: () => 12345,
+          }),
+          toObject: () => doc,
+        }),
+      ),
   })
 
   if (isLocalhost === undefined) {
@@ -47,7 +56,7 @@ async function renderApp({
   return {
     ...utils,
     profile,
-    listDocuments,
+    documentsList,
     isLocalhost,
   }
 }
@@ -60,7 +69,7 @@ describe('Main App', () => {
   })
 
   test('should render the Public Library (Publisher Node main screen) when the user is NOT at localhost', async () => {
-    await renderApp({isLocalhost: false})
-    expect(screen.getByText(/articles/i)).toBeInTheDocument()
+    const {documentsList} = await renderApp({isLocalhost: false})
+    expect(screen.getByText(documentsList[0].title)).toBeInTheDocument()
   })
 })

@@ -3,6 +3,7 @@ import {options} from '../editor/options'
 import {createText} from './hyperscript/creators'
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
       [key: string]: any

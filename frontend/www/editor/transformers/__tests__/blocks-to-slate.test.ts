@@ -1,6 +1,5 @@
 import {Block} from '@mintter/api/v2/documents_pb'
 import {toSlateBlock} from '../transformers'
-import {ELEMENT_BLOCK} from '../../block-plugin'
 
 test('blocksToSlate: from block to Slate blocks', () => {
   const block: Block.AsObject = {
@@ -17,28 +16,28 @@ test('blocksToSlate: from block to Slate blocks', () => {
     quotersList: [],
   }
 
-  const expected = {
-    id: 'block-test-id',
-    type: ELEMENT_BLOCK,
-    quotersList: [],
-    children: [
-      {
-        type: 'p',
-        children: [
-          {
-            text: 'Hello ',
-          },
-          {
-            text: 'World!',
-            bold: true,
-            italic: false,
-            underline: false,
-            code: false,
-          },
-        ],
-      },
-    ],
-  }
-
-  expect(toSlateBlock(block)).toEqual(expected)
+  expect(toSlateBlock(block)).toMatchInlineSnapshot(`
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "text": "Hello ",
+            },
+            Object {
+              "bold": true,
+              "code": false,
+              "italic": false,
+              "text": "World!",
+              "underline": false,
+            },
+          ],
+          "type": "p",
+        },
+      ],
+      "id": "block-test-id",
+      "quotersList": Array [],
+      "type": "block",
+    }
+  `)
 })

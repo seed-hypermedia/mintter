@@ -7,7 +7,7 @@ import WelcomeProvider from 'shared/welcome-provider'
 import * as clientMock from 'shared/mintter-client'
 import SecurityPack from '../security-pack'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/mintter-client')
 
 const mnemonicList = ['word-1', 'word-2', 'word-3']
 

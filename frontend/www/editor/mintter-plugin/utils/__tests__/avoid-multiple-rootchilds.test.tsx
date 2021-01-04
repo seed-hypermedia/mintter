@@ -1,10 +1,11 @@
 /** @jsx jsx */
 import {jsx} from 'test/jsx'
 import {Editor} from 'slate'
+import {cleanNode} from 'test/hyperscript/clean-node'
 import {avoidMultipleRootChilds} from '../avoid-multiple-rootchilds'
 
 test('avoidMultipleRootChilds: move top block to main blockList', () => {
-  const input = ((
+  const inputEditor = ((
     <editor>
       <block id="block-1">
         <hp>
@@ -21,7 +22,7 @@ test('avoidMultipleRootChilds: move top block to main blockList', () => {
     </editor>
   ) as any) as Editor
 
-  const output = ((
+  const outputEditor = ((
     <editor>
       <blockList id="blockList-1">
         <block id="block-1">
@@ -38,9 +39,10 @@ test('avoidMultipleRootChilds: move top block to main blockList', () => {
     </editor>
   ) as any) as Editor
 
+  const input = cleanNode(inputEditor)
+  const output = cleanNode(outputEditor)
   avoidMultipleRootChilds(input)
-
-  expect(input.children).toEqual(output.children) // TODO: fix types
+  expect(input.children).toEqual(output.children)
 })
 
 // test('toBlock: block with image', () => {})

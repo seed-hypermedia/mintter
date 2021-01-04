@@ -2,16 +2,10 @@
 import {jsx} from 'test/jsx'
 import {Editor} from 'slate'
 import {toBlock} from '../transformers'
-import {makeProto} from '../make-proto'
-import {
-  Block,
-  Paragraph,
-  InlineElement,
-  TextStyle,
-} from '@mintter/api/v2/documents_pb'
+import {cleanNode} from 'test/hyperscript/clean-node'
 
 test('toBlock: simple text block', () => {
-  const input = ((
+  const inputEditor = ((
     <editor>
       <block id="test-1">
         <hp>
@@ -21,26 +15,93 @@ test('toBlock: simple text block', () => {
     </editor>
   ) as any) as Editor
 
+  const input = cleanNode(inputEditor)
   const blockNode = input.children[0]
 
-  const expected = makeProto(new Block(), {
-    id: 'test-1',
-    paragraph: makeProto(new Paragraph(), {
-      inlineElements: [
-        makeProto(new InlineElement(), {
-          text: 'Hello ',
-        }),
-        makeProto(new InlineElement(), {
-          text: 'World!',
-          textStyle: makeProto(new TextStyle(), {
-            bold: true,
-          }),
-        }),
+  expect(toBlock(blockNode as any)).toMatchInlineSnapshot(`
+    Object {
+      "array": Array [
+        "test-1",
+        Array [],
+        Array [
+          Array [
+            Array [
+              "Hello ",
+            ],
+            Array [
+              "World!",
+              Array [
+                true,
+              ],
+            ],
+          ],
+        ],
       ],
-    }),
-  })
-
-  expect(toBlock(blockNode as any)).toEqual(expected) // TODO: fix types
+      "arrayIndexOffset_": -1,
+      "convertedPrimitiveFields_": Object {},
+      "messageId_": undefined,
+      "pivot_": 1.7976931348623157e+308,
+      "wrappers_": Object {
+        "3": Object {
+          "array": Array [
+            Array [
+              Array [
+                "Hello ",
+              ],
+              Array [
+                "World!",
+                Array [
+                  true,
+                ],
+              ],
+            ],
+          ],
+          "arrayIndexOffset_": -1,
+          "convertedPrimitiveFields_": Object {},
+          "messageId_": undefined,
+          "pivot_": 1.7976931348623157e+308,
+          "wrappers_": Object {
+            "1": Array [
+              Object {
+                "array": Array [
+                  "Hello ",
+                ],
+                "arrayIndexOffset_": -1,
+                "convertedPrimitiveFields_": Object {},
+                "messageId_": undefined,
+                "pivot_": 1.7976931348623157e+308,
+                "wrappers_": null,
+              },
+              Object {
+                "array": Array [
+                  "World!",
+                  Array [
+                    true,
+                  ],
+                ],
+                "arrayIndexOffset_": -1,
+                "convertedPrimitiveFields_": Object {},
+                "messageId_": undefined,
+                "pivot_": 1.7976931348623157e+308,
+                "wrappers_": Object {
+                  "2": Object {
+                    "array": Array [
+                      true,
+                    ],
+                    "arrayIndexOffset_": -1,
+                    "convertedPrimitiveFields_": Object {},
+                    "messageId_": undefined,
+                    "pivot_": 1.7976931348623157e+308,
+                    "wrappers_": null,
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    }
+  `) // TODO: fix types
 })
 
 // test('toBlock: block with image', () => {})

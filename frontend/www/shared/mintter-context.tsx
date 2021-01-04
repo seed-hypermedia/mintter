@@ -56,10 +56,6 @@ export function usePublications(options = {}) {
       }),
     [docsQuery.data],
   )
-  console.log(
-    '🚀 ~ file: mintterContext.tsx ~ line 50 ~ usePublications ~ data',
-    data,
-  )
 
   return {
     ...docsQuery,

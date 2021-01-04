@@ -6,7 +6,7 @@ import {ProfileProvider} from 'shared/profile-context'
 import {buildEditProfile} from 'test/generate'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/mintter-client')
 
 const currentUser = {
   toObject: () => ({}),

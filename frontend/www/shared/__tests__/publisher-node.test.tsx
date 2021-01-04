@@ -3,14 +3,11 @@ import {buildDocument, buildGetDocument, buildProfile} from 'test/generate'
 import * as mockedIsLocalhost from 'shared/is-localhost'
 import * as clientMock from 'shared/mintter-client'
 import {Profile} from '@mintter/api/v2/mintter_pb'
-import {
-  ListDocumentsResponse,
-  GetDocumentResponse,
-} from '@mintter/api/v2/documents_pb'
+import {GetDocumentResponse, Document} from '@mintter/api/v2/documents_pb'
 import {App} from 'shared/app'
 
-jest.mock('shared/isLocalhost')
-jest.mock('shared/mintterClient')
+jest.mock('shared/is-localhost')
+jest.mock('shared/mintter-client')
 jest.mock('react-modal')
 
 async function renderApp({
@@ -45,9 +42,15 @@ async function renderApp({
     })
 
     clientMock.listDocuments.mockResolvedValue({
-      toObject: (): ListDocumentsResponse.AsObject => ({
-        documentsList: listDocuments,
-      }),
+      getDocumentsList: () =>
+        listDocuments.map(
+          (doc: Document.AsObject): Document => ({
+            getCreateTime: () => ({
+              toDate: () => 12345,
+            }),
+            toObject: () => doc,
+          }),
+        ),
     })
 
     clientMock.getDocument.mockResolvedValue({
@@ -80,7 +83,7 @@ describe(`Publisher Node`, () => {
     expect(screen.getByText(/Welcome to Mintter/i)).toBeInTheDocument()
   })
 
-  test('should render the public library when profile is available', async () => {
+  xtest('should render the public library when profile is available', async () => {
     await renderApp({isLocalhost: false})
     expect(screen.getByText(/Articles/i)).toBeInTheDocument()
   })
@@ -99,7 +102,7 @@ describe(`Publisher Node`, () => {
     expect(screen.getByText(blockContent)).toBeInTheDocument()
   })
 
-  test('server: should not render the settings page', async () => {
+  xtest('server: should not render the settings page', async () => {
     await renderApp({route: '/settings', isLocalhost: false, wait: false})
 
     expect(screen.getByText(/no route match/i)).toBeInTheDocument()

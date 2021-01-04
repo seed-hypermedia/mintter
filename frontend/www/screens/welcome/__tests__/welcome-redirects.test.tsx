@@ -7,8 +7,8 @@ import * as clientMock from 'shared/mintter-client'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 import {Document} from '@mintter/api/v2/documents_pb'
 
-jest.mock('shared/isLocalhost')
-jest.mock('shared/mintterClient')
+jest.mock('shared/is-localhost')
+jest.mock('shared/mintter-client')
 
 async function renderApp({
   profile,
@@ -48,9 +48,15 @@ async function renderApp({
     })
 
     clientMock.listDocuments.mockResolvedValue({
-      toObject: (): ListDocumentsResponse.AsObject => ({
-        documentsList: listDocuments,
-      }),
+      getDocumentsList: () =>
+        listDocuments.map(
+          (doc: Document.AsObject): Document => ({
+            getCreateTime: () => ({
+              toDate: () => 12345,
+            }),
+            toObject: () => doc,
+          }),
+        ),
     })
 
     clientMock.getDocument.mockResolvedValue({

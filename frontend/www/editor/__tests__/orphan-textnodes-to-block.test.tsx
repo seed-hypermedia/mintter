@@ -1,5 +1,6 @@
 /** @jsx jsx */
 import {jsx} from 'test/jsx'
+import {cleanNode} from 'test/hyperscript/clean-node'
 import {Editor} from 'slate'
 import {orphanTextNodesToBlock} from '../../shared/use-editor'
 import {createPlugins} from '../plugins'
@@ -12,6 +13,10 @@ test('should wrap texts with paragraphs', () => {
     plugins,
     element: `<h1>heading 1</h1><h2>heading 2</h2><h3>heading 3</h3><p>paragraph</p><ul><li>unordered list item</li></ul><ol><li>ordered list item</li></ol><blockquote>blockquote</blockquote><a href="https://mintter.com">link</a>`,
   })
+  // console.log(
+  //   '🚀 ~ file: orphan-textnodes-to-block.test.tsx ~ line 15 ~ test ~ input',
+  //   input,
+  // )
 
   const output = ((
     <editor>
@@ -46,5 +51,6 @@ test('should wrap texts with paragraphs', () => {
     </editor>
   ) as any) as Editor
 
-  expect(input.map(orphanTextNodesToBlock())).toEqual(output.children)
+  const result = output.children.map(cleanNode)
+  expect(input.map(orphanTextNodesToBlock())).toEqual(result)
 })

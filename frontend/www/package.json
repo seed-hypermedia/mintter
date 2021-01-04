@@ -26,10 +26,13 @@
     "date-fns": "^2.16.1",
     "emotion": "^10.0.27",
     "faker": "^5.1.0",
+    "framer-motion": "^1.8.4",
     "lodash.debounce": "^4.0.8",
     "next": "^10.0.4",
     "react": "^17.0.1",
     "react-copy-to-clipboard": "^5.0.2",
+    "react-dnd": "^11.1.3",
+    "react-dnd-html5-backend": "^11.1.3",
     "react-dom": "^17.0.1",
     "react-error-boundary": "^2.2.1",
     "react-feather": "^2.0.8",
@@ -41,15 +44,12 @@
     "react-toast-notifications": "^2.4.0",
     "reakit": "^1.3.0",
     "remark-slate": "^1.1.1",
-    "slate": "^0.58.4",
-    "slate-history": "^0.57.1",
-    "slate-hyperscript": "^0.58.3",
-    "slate-react": "^0.58.4",
+    "slate": "^0.59.0",
+    "slate-history": "^0.59.0",
+    "slate-hyperscript": "^0.59.0",
+    "slate-react": "^0.59.0",
     "slate-react-presentation": "^0.1.0",
-    "slugify": "^1.4.5",
-    "framer-motion": "^1.8.4",
-    "react-dnd": "^11.1.3",
-    "react-dnd-html5-backend": "^11.1.3"
+    "slugify": "^1.4.5"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.12.1",
@@ -58,6 +58,7 @@
     "@changesets/cli": "^2.5.1",
     "@emotion/babel-preset-css-prop": "^10.1.0",
     "@fullhuman/postcss-purgecss": "^2.0.6",
+    "@tailwindcss/typography": "^0.2.0",
     "@testing-library/dom": "^7.20.0",
     "@testing-library/jest-dom": "^5.3.0",
     "@testing-library/react": "^10.0.1",
@@ -87,8 +88,7 @@
     "tailwindcss": "^1.9.5",
     "test-data-bot": "^0.8.0",
     "ts-jest": "^26.1.0",
-    "typescript": "^3.8.3",
-    "@tailwindcss/typography": "^0.2.0"
+    "typescript": "^3.8.3"
   },
   "jest": {
     "verbose": true

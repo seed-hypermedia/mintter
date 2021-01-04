@@ -84,7 +84,10 @@ const resolveDescendants = (children: any[]): Descendant[] => {
  * Create an anchor token.
  */
 
-export function createAnchor(attributes: {[key: string]: any}): AnchorToken {
+export function createAnchor(
+  tagName: string,
+  attributes: {[key: string]: any},
+): AnchorToken {
   return new AnchorToken(attributes)
 }
 
@@ -92,7 +95,10 @@ export function createAnchor(attributes: {[key: string]: any}): AnchorToken {
  * Create an anchor and a focus token.
  */
 
-export function createCursor(attributes: {[key: string]: any}): Token[] {
+export function createCursor(
+  tagName: string,
+  attributes: {[key: string]: any},
+): Token[] {
   return [new AnchorToken(attributes), new FocusToken(attributes)]
 }
 
@@ -101,6 +107,7 @@ export function createCursor(attributes: {[key: string]: any}): Token[] {
  */
 
 export function createElement(
+  tagName: string,
   attributes: {[key: string]: any},
   children: any[],
 ): Element {
@@ -111,7 +118,10 @@ export function createElement(
  * Create a focus token.
  */
 
-export function createFocus(attributes: {[key: string]: any}): FocusToken {
+export function createFocus(
+  tagName: string,
+  attributes: {[key: string]: any},
+): FocusToken {
   return new FocusToken(attributes)
 }
 
@@ -120,7 +130,8 @@ export function createFocus(attributes: {[key: string]: any}): FocusToken {
  */
 
 export function createFragment(
-  // attributes: {[key: string]: any},
+  tagName: string,
+  attributes: {[key: string]: any},
   children: any[],
 ): Descendant[] {
   return resolveDescendants(children)
@@ -131,6 +142,7 @@ export function createFragment(
  */
 
 export function createSelection(
+  tagName: string,
   attributes: {[key: string]: any},
   children: any[],
 ): Range {
@@ -167,11 +179,12 @@ export function createSelection(
  */
 
 export function createText(
-  _,
+  tagName: string,
   attributes: {[key: string]: any},
   children: any[],
 ): Text {
   const nodes = resolveDescendants(children)
+
   if (nodes.length > 1) {
     throw new Error(
       `The <text> hyperscript tag must only contain a single node's worth of children.`,
@@ -186,7 +199,7 @@ export function createText(
 
   if (!Text.isText(node)) {
     throw new Error(`
-      The <text> hyperscript tag can only contain text content as children.`)
+    The <text> hyperscript tag can only contain text content as children.`)
   }
 
   // COMPAT: If they used the <text> tag we want to guarantee that it won't be
@@ -202,6 +215,7 @@ export function createText(
  */
 
 export function createEditor(
+  tagName: string,
   attributes: {[key: string]: any},
   children: any[],
 ): Editor {
