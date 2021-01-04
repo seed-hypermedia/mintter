@@ -1,5 +1,5 @@
 import React from 'react'
-import {SlateBlock} from '@mintter/editor'
+import {SlateBlock} from 'editor/editor'
 import {useState} from 'react'
 
 function simplifyBlocks(blocks) {

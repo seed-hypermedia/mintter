@@ -1,7 +1,7 @@
 import React from 'react'
 import {Switch, useRouteMatch, Redirect} from 'react-router-dom'
 import {ErrorBoundary} from 'react-error-boundary'
-import {FullPageErrorMessage} from 'components/errorMessage'
+import {FullPageErrorMessage} from 'components/error-message'
 import {PrivateRoute} from 'components/routes'
 import {AppLayout} from 'components/layout'
 import Topbar from 'components/topbar'

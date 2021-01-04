@@ -1,5 +1,5 @@
 import React from 'react'
-import {isLocalhost} from './isLocalhost'
+import {isLocalhost} from './is-localhost'
 
 const PublisherNode = React.lazy(() => import('./publisher-node'))
 const AuthorNode = React.lazy(() => import('./author-node'))

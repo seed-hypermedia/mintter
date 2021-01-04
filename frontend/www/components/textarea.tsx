@@ -1,5 +1,5 @@
 import React from 'react'
-import {mergeRefs} from '@mintter/editor'
+import {mergeRefs} from 'editor/merge-refs'
 
 function TextareaComponent(
   {value, onChange, className, onEnterPress, ...props},

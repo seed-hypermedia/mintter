@@ -1,15 +1,14 @@
 import React from 'react'
 import {render, screen, waitFor, userEvent, within} from 'test/app-test-utils'
 import {App} from 'shared/app'
-import * as mockedIsLocalhost from 'shared/isLocalhost'
-import * as clientMock from 'shared/mintterClient'
+import * as mockedIsLocalhost from 'shared/is-localhost'
+import * as clientMock from 'shared/mintter-client'
 import {buildDraft, buildGetDocument, buildProfile} from 'test/generate'
 import {Profile} from '@mintter/api/v2/mintter_pb'
 import {Document, GetDocumentResponse} from '@mintter/api/v2/documents_pb'
-import {queryCache} from 'react-query'
 
-jest.mock('shared/mintterClient')
-jest.mock('shared/isLocalhost')
+jest.mock('shared/mintter-client')
+jest.mock('shared/is-localhost')
 
 async function renderPublication({
   profile,

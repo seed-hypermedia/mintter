@@ -19,11 +19,11 @@ module.exports = {
     '\\.(css|less|sass|scss)$': 'identity-obj-proxy',
     '\\.(gif|ttf|eot|svg|png)$': '<rootDir>/test/file-mock.js',
   },
-  collectCoverageFrom: ['+(components|shared|screens)/**/*.+(js|jsx|ts|tsx)'],
+  collectCoverageFrom: [
+    '+(components|shared|screens|editor)/**/*.+(js|jsx|ts|tsx)',
+  ],
 
   snapshotSerializers: ['jest-emotion'],
   testEnvironment: 'jest-environment-jsdom',
-  setupFilesAfterEnv: fs.existsSync('test/setupTests.js')
-    ? ['<rootDir>/test/setupTests.js']
-    : [],
+  setupFilesAfterEnv: ['<rootDir>/test/setupTests.js'],
 }

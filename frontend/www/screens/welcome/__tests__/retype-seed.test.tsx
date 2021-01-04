@@ -1,12 +1,12 @@
 import {render, screen, userEvent, waitFor, act} from 'test/app-test-utils'
 import {BrowserRouter as Router} from 'react-router-dom'
-import {ProfileProvider} from 'shared/profileContext'
-import WelcomeProvider from 'shared/welcomeProvider'
+import {ProfileProvider} from 'shared/profile-context'
+import WelcomeProvider from 'shared/welcome-provider'
 import RetypeSeed from '../retype-seed'
-import * as clientMock from 'shared/mintterClient'
+import * as clientMock from 'shared/mintter-client'
 import {getRandomElements as mockRandom} from 'shared/utils'
 
-jest.mock('shared/mintterClient')
+jest.mock('shared/mintter-client')
 jest.mock('shared/utils')
 
 async function renderWelcomeScreen() {

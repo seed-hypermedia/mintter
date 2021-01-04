@@ -1,4 +1,4 @@
-import Logo from './logo_square'
+import Logo from './logo-square'
 import {Link} from 'react-router-dom'
 
 interface Props {
