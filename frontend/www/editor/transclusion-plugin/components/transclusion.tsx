@@ -1,30 +1,31 @@
 import React from 'react'
 import {DragDrop} from '../../block-plugin/components/drag-drop'
 import {css} from 'emotion'
+import {useDocument} from 'shared/mintter-context'
+import {useAuthor} from 'shared/profile-context'
+import {useSidePanel} from 'components/sidepanel'
 
-export const Transclusion = ({
-  attributes,
-  children,
-  element,
-  getData,
-  dispatch,
-}) => {
-  const [transclusionData, setData] = React.useState<any>(null)
+export const Transclusion = ({attributes, children, element}) => {
+  const version = element.id.split('/')[0]
+  const {isLoading, isError, error, data} = useDocument(version)
+  const {data: author} = useAuthor(data ? data.document?.author : undefined)
+  const {dispatch} = useSidePanel()
 
-  React.useEffect(() => {
-    async function init() {
-      const res = await getData(element.id)
-      setData(res)
-    }
-
-    init()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
   function handlePush(e) {
     e.preventDefault()
-
-    dispatch?.({type: 'add_object', payload: element.id})
+    dispatch({type: 'add_object', payload: element.id})
   }
+
+  if (isError) {
+    console.error('transclusion error', element.id, error)
+    return <div>Error loading transclusion</div>
+  }
+
+  if (isLoading) {
+    return <div>...</div>
+  }
+
+  const {document} = data
 
   return (
     <DragDrop {...attributes} element={element}>
@@ -37,17 +38,17 @@ export const Transclusion = ({
         `}`}
       >
         <button className="text-left" onClick={handlePush}>
-          {transclusionData ? (
+          {document ? (
             <>
               <p
                 className={`text-xs font-bold truncate ${css`
                   max-width: 180px;
                 `}`}
               >
-                {transclusionData?.document.title}
+                {document.title}
               </p>
               <p className="text-xs font-light">
-                {transclusionData?.author.username}
+                {author ? author.username : '...'}
               </p>
             </>
           ) : (

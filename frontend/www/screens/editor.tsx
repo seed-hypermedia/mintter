@@ -15,7 +15,6 @@ import {DebugValue} from 'components/debug'
 import Textarea from 'components/textarea'
 import {useDebounce} from 'shared/hooks'
 import {useDocument, useMintter} from 'shared/mintter-context'
-import {getDocument, getProfile} from 'shared/mintter-client'
 import {publishDraft} from 'shared/mintter-client'
 import {useParams, useHistory, useLocation} from 'react-router-dom'
 import {FullPageSpinner} from 'components/fullpage-spinner'
@@ -39,24 +38,8 @@ export default function Editor(): JSX.Element {
   const query = useQuery()
   const {state: sidePanel, dispatch: sidePanelDispatch} = useSidePanel()
 
-  const editorOptions = {
-    ...options,
-    transclusion: {
-      ...options.transclusion,
-      customProps: {
-        dispatch: sidePanelDispatch,
-        getData: getTransclusionData,
-      },
-    },
-    block: {
-      ...options.block,
-      customProps: {
-        dispatch: sidePanelDispatch,
-      },
-    },
-  }
-  const plugins = createPlugins(editorOptions)
-  const editor: ReactEditor = useEditor(plugins, editorOptions) as ReactEditor
+  const plugins = createPlugins(options)
+  const editor: ReactEditor = useEditor(plugins, options) as ReactEditor
 
   const titleRef = React.useRef(null)
   const subtitleRef = React.useRef(null)
@@ -115,21 +98,6 @@ export default function Editor(): JSX.Element {
       autosaveDraft(state)
     }
   }, [debouncedValue])
-
-  async function getTransclusionData(transclusionId) {
-    const version = transclusionId.split('/')[0]
-    const res = await getDocument('', version)
-    const data = res.toObject()
-    const {document} = data
-    const authorId = data.document.author
-    const authorData = await getProfile('', authorId)
-    const author: Profile.AsObject = authorData.toObject()
-
-    return {
-      document,
-      author,
-    }
-  }
 
   async function handlePublish() {
     await saveDocument({document: data.document, state})

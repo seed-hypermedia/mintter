@@ -14,7 +14,7 @@ export default function Heading({
   return (
     <Elm
       {...props}
-      className={`font-semibold text-3xl text-center text-heading ${className}`}
+      className={`text-heading ${className}`}
     >
       {children}
     </Elm>
