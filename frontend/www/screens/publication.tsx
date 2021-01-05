@@ -17,7 +17,7 @@ import {SidePanelObject} from 'components/sidepanel-object'
 import {AuthorLabel} from 'components/author-label'
 import {PublicationModal} from 'components/publication-modal'
 import {useDocument, useDrafts} from 'shared/mintter-context'
-import {useAuthor, useProfile} from 'shared/profile-context'
+import {useAuthor} from 'shared/profile-context'
 import {ErrorMessage} from 'components/error-message'
 import {MainColumn} from 'components/main-column'
 import {Page} from 'components/page'
@@ -29,7 +29,6 @@ import {queryCache, useMutation} from 'react-query'
 import {isLocalhost} from 'shared/is-localhost'
 import {getPath} from 'components/routes'
 import {useTransclusion} from 'shared/use-transclusion'
-import {Profile} from '@mintter/api/v2/mintter_pb'
 import {SlateBlock} from 'editor/editor'
 
 export default function Publication() {
@@ -97,10 +96,6 @@ export default function Publication() {
     history.push(`${getPath(match)}/editor/${draftUrl}`)
   }
 
-  function handleMainpanel(mentionId: string) {
-    history.push(`${getPath(match)}/p/${mentionId}`)
-  }
-
   const handleSidepanel = (document: Document.AsObject) => (
     blockId: string,
   ) => {
@@ -112,29 +107,6 @@ export default function Publication() {
       type: 'add_object',
       payload: objectId,
     })
-  }
-
-  const {data: user, isSuccess: isProfileSuccess} = useProfile()
-  const isAuthor = React.useCallback(author => user.accountId === author, [
-    data,
-  ])
-
-  async function getQuoteData(quoteId) {
-    const isLocal = isLocalhost(window.location.hostname)
-    const version = quoteId.split('/')[0]
-    const res = await apiClient.getDocument('Document', version)
-    const data = res.toObject()
-    const {document} = data
-    const authorId = data.document.author
-    const authorData = await apiClient.getProfile('', authorId)
-    const author: Profile.AsObject = authorData.toObject()
-
-    return {
-      document,
-      author,
-      isVisibleInMainPanel:
-        isLocal || (isProfileSuccess && isAuthor(author.accountId)),
-    }
   }
 
   function onCopyBlockId(blockId: string) {
@@ -155,30 +127,9 @@ export default function Publication() {
 
   const onQuote = React.useCallback(handleQuotation(data?.document), [data])
   const onSidePanel = React.useCallback(handleSidepanel(data?.document), [data])
-  const onMainPanel = React.useCallback(handleMainpanel, [])
-
-  const editorOptions = {
-    ...options,
-    transclusion: {
-      ...options.transclusion,
-      customProps: {
-        dispatch: sidePanelDispatch,
-        getData: getQuoteData,
-      },
-    },
-    block: {
-      ...options.block,
-      customProps: {
-        dispatch: sidePanelDispatch,
-        getData: getQuoteData,
-        onMainPanel,
-        onSidePanel,
-      },
-    },
-  }
 
   // create editor
-  const plugins = createPlugins(editorOptions)
+  const plugins = createPlugins(options)
   const editor = useEditor(plugins, options) as ReactEditor
 
   React.useEffect(() => {
@@ -295,8 +246,9 @@ export default function Publication() {
         )}
       </SplitPane>
       <Seo
-        title={`${data.document &&
-          `${data?.document?.title} | `}Mintter Publication`}
+        title={`${
+          data.document && `${data?.document?.title} | `
+        }Mintter Publication`}
       />
       <PublicationModal document={data.document} />
     </Page>
@@ -451,8 +403,7 @@ function fallbackCopyTextToClipboard(text) {
   let result
 
   try {
-    const successful = document.execCommand('copy')
-    const msg = successful ? 'successful' : 'unsuccessful'
+    document.execCommand('copy')
     result = true
   } catch (err) {
     console.error('Fallback: Oops, unable to copy', err)
