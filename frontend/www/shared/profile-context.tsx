@@ -45,6 +45,7 @@ export function useAuthor(accountId, options = {}) {
     apiClient.getProfile,
     options,
   )
+
   const data = useMemo(() => profileQuery.data?.toObject?.(), [
     profileQuery.data,
   ])

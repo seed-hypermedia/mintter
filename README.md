@@ -78,3 +78,13 @@ served from the backend.
 Backend is a long-running program that lives on user's local machine. It handles
 all the p2p networking, IPFS and Lightning Network stuff. It exposes the gRPC
 API for frontend to use.
+
+### Frontend code conventions
+
+- files and folders are all `snake-case`
+- variables are `camelCase`
+- components and editor plugins are `PascalCase`
+- avoid creating abstractions
+- avoid creating folders, better to have files as flat as possible
+- avoid default exports, only default exports for page components (to use
+  dynamic import)

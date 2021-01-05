@@ -199,7 +199,7 @@ export async function createProfile({
 }
 
 export async function getProfile(
-  key: string,
+  _key: string,
   profileId?: string,
 ): Promise<Profile> {
   const req = new GetProfileRequest()
