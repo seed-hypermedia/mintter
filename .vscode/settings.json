@@ -7,4 +7,8 @@
     "**/.DS_Store": true,
     "**/*.env": true
   },
+  "clang-format.style": "{ IndentWidth: 2, ColumnLimit: 0, BasedOnStyle: google }",
+  "protoc": {
+    "options": ["-I=${workspaceRoot}/proto"]
+  }
 }
