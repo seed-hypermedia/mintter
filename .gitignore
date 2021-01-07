@@ -26,4 +26,5 @@ out
 frontendv2
 
 # Bazel
+user.bazelrc
 bazel-*
