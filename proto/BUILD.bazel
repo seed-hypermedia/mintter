@@ -1,0 +1,18 @@
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "go",
+    srcs = [
+        "//proto/documents/v1alpha:go",
+        "//proto/p2p:go",
+        "//proto/v2:go",
+    ],
+)
+
+filegroup(
+    name = "js",
+    srcs = [
+        "//proto/documents/v1alpha:js",
+        "//proto/v2:js",
+    ],
+)
