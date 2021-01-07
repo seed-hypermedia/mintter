@@ -1,0 +1,102 @@
+load("//build:rules.bzl", "executable", "local_action")
+
+exports_files([
+    "go.mod",
+    "go.sum",
+    "WORKSPACE",
+])
+
+local_action(
+    name = "yarn",
+    srcs = [
+        "package.json",
+        "yarn.lock",
+    ],
+    outs = ["node_modules/.yarn-integrity"],
+    cmd = """
+yarn install
+ln -s $(pwd)/node_modules/.yarn-integrity $TARGET_OUT_DIR/node_modules/.yarn-integrity
+""",
+    visibility = ["//frontend:__subpackages__"],
+)
+
+filegroup(
+    name = "go_sources",
+    srcs = [
+        "go.mod",
+        "go.sum",
+    ] + glob(
+        ["backend/**/*.go"],
+        exclude = [
+            "**/rice-box.go",
+            "**/*_test.go",
+        ],
+    ),
+)
+
+config_setting(
+    name = "darwin_amd64",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:macos",
+    ],
+)
+
+config_setting(
+    name = "linux_amd64",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ],
+)
+
+config_setting(
+    name = "windows_amd64",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:windows",
+    ],
+)
+
+TARGET_PLATFORMS = [
+    ("darwin", "amd64"),
+    ("linux", "amd64"),
+    ("windows", "amd64"),
+]
+
+[
+    executable(
+        name = "mintterd_{}_{}".format(os, arch),
+        srcs = [":go_sources"],
+        out = "{}_{}/mintterd".format(os, arch),
+        cmd = """
+export GOOS={os}
+export GOARCH={arch}
+go build -tags=bindata -o $TARGET_OUT_DIR/{os}_{arch}/mintterd ./backend/cmd/mintterd
+""".format(
+            os = os,
+            arch = arch,
+        ),
+        tags = ["manual"],
+        deps = [
+            "//backend/ui:bindata",
+            "//proto:go",
+        ],
+    )
+    for os, arch in TARGET_PLATFORMS
+]
+
+alias(
+    name = "mintterd",
+    actual = select({
+        ":darwin_amd64": ":mintterd_darwin_amd64",
+        ":linux_amd64": ":mintterd_linux_amd64",
+        ":windows_amd64": ":mintterd_windows_amd64",
+    }),
+)
+
+filegroup(
+    name = "cross_compile",
+    srcs = ["mintterd_{}_{}".format(os, arch) for os, arch in TARGET_PLATFORMS],
+    tags = ["manual"],
+)

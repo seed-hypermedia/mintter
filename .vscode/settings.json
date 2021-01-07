@@ -10,5 +10,16 @@
   "clang-format.style": "{ IndentWidth: 2, ColumnLimit: 0, BasedOnStyle: google }",
   "protoc": {
     "options": ["-I=${workspaceRoot}/proto"]
+  },
+  "gopls": {
+    "directoryFilters": [
+      "-node_modules",
+      "-bazel-bin",
+      "-bazel-mintter",
+      "-bazel-out",
+      "-bazel-testlogs",
+      "-out",
+      "-.git"
+    ]
   }
 }

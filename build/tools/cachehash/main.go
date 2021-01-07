@@ -51,7 +51,7 @@ func main() {
 
 func run() error {
 	flag.Usage = func() {
-		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [FLAGS...] PATTERNS...\n", os.Args[0])
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: cachehash [FLAGS...] PATTERNS...\n")
 		flag.PrintDefaults()
 	}
 

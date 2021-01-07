@@ -7,6 +7,6 @@ stamped_sources("proto_sources") {
 
 proto_library("go_proto") {
   deps = [ ":proto_sources" ]
-  outputs = [ "$root_build_dir/../api/go/p2p/README.md" ]
+  outputs = [ "$root_build_dir/../api/go/p2p/p2p.pb.go" ]
   language = "go"
 }
