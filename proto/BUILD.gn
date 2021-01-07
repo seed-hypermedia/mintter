@@ -1,10 +1,14 @@
 group("go") {
   deps = [
+    "//proto/documents/v1alpha:go_proto",
     "//proto/p2p:go_proto",
     "//proto/v2:go_proto",
   ]
 }
 
 group("js") {
-  deps = [ "//proto/v2:js_proto" ]
+  deps = [
+    "//proto/documents/v1alpha:js_proto",
+    "//proto/v2:js_proto",
+  ]
 }
