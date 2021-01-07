@@ -7,12 +7,12 @@ stamped_sources("proto_sources") {
 
 proto_library("go_proto") {
   deps = [ ":proto_sources" ]
-  outputs = [ "$root_build_dir/../api/go/v2/README.md" ]
+  outputs = [ "$root_build_dir/../api/go/v2/mintter.pb.go" ]
   language = "go"
 }
 
 proto_library("js_proto") {
   deps = [ ":proto_sources" ]
-  outputs = [ "$root_build_dir/../api/js/v2/README.md" ]
+  outputs = [ "$root_build_dir/../api/js/v2/mintter_pb.js" ]
   language = "js"
 }
