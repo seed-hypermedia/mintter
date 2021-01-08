@@ -1,22 +1,23 @@
 import * as grpcWeb from 'grpc-web';
 
+import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
 import * as google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb';
-import * as documents_v1alpha_resources_pb from '../../documents/v1alpha/resources_pb';
 
 import {
   CreateDraftRequest,
   DeleteDraftRequest,
   DeletePublicationRequest,
+  Document,
   GetDraftRequest,
   GetPublicationRequest,
   ListDraftsRequest,
   ListDraftsResponse,
   ListPublicationsRequest,
   ListPublicationsResponse,
+  Publication,
   PublishDraftRequest,
   PublishDraftResponse,
-  UpdateDraftRequest,
-  UpdateDraftResponse} from './services_pb';
+  UpdateDraftRequest} from './documents_pb';
 
 export class DraftsClient {
   constructor (hostname: string,
@@ -27,8 +28,8 @@ export class DraftsClient {
     request: CreateDraftRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.Error,
-               response: documents_v1alpha_resources_pb.Document) => void
-  ): grpcWeb.ClientReadableStream<documents_v1alpha_resources_pb.Document>;
+               response: Document) => void
+  ): grpcWeb.ClientReadableStream<Document>;
 
   deleteDraft(
     request: DeleteDraftRequest,
@@ -41,15 +42,15 @@ export class DraftsClient {
     request: GetDraftRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.Error,
-               response: documents_v1alpha_resources_pb.Document) => void
-  ): grpcWeb.ClientReadableStream<documents_v1alpha_resources_pb.Document>;
+               response: Document) => void
+  ): grpcWeb.ClientReadableStream<Document>;
 
   updateDraft(
     request: UpdateDraftRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.Error,
-               response: UpdateDraftResponse) => void
-  ): grpcWeb.ClientReadableStream<UpdateDraftResponse>;
+               response: Document) => void
+  ): grpcWeb.ClientReadableStream<Document>;
 
   listDrafts(
     request: ListDraftsRequest,
@@ -76,8 +77,8 @@ export class PublicationsClient {
     request: GetPublicationRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.Error,
-               response: documents_v1alpha_resources_pb.Publication) => void
-  ): grpcWeb.ClientReadableStream<documents_v1alpha_resources_pb.Publication>;
+               response: Publication) => void
+  ): grpcWeb.ClientReadableStream<Publication>;
 
   deletePublication(
     request: DeletePublicationRequest,
@@ -103,7 +104,7 @@ export class DraftsPromiseClient {
   createDraft(
     request: CreateDraftRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<documents_v1alpha_resources_pb.Document>;
+  ): Promise<Document>;
 
   deleteDraft(
     request: DeleteDraftRequest,
@@ -113,12 +114,12 @@ export class DraftsPromiseClient {
   getDraft(
     request: GetDraftRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<documents_v1alpha_resources_pb.Document>;
+  ): Promise<Document>;
 
   updateDraft(
     request: UpdateDraftRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<UpdateDraftResponse>;
+  ): Promise<Document>;
 
   listDrafts(
     request: ListDraftsRequest,
@@ -140,7 +141,7 @@ export class PublicationsPromiseClient {
   getPublication(
     request: GetPublicationRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<documents_v1alpha_resources_pb.Publication>;
+  ): Promise<Publication>;
 
   deletePublication(
     request: DeletePublicationRequest,
