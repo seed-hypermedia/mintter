@@ -13,10 +13,4 @@ mtt_go_proto(
 mtt_js_proto(
     name = "js",
     srcs = [":protos"],
-    skip_outputs = [
-        "resources_grpc_web_pb.js",
-        "resources_grpc_web_pb.d.ts",
-    ],
 )
-
-# TODO: fix this build file. Doesn't compile.
