@@ -12,14 +12,14 @@ const grpc = {};
 grpc.web = require('grpc-web');
 
 
-var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js')
+var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js')
 
-var documents_v1alpha_resources_pb = require('../../documents/v1alpha/resources_pb.js')
+var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js')
 const proto = {};
 proto.com = {};
 proto.com.mintter = {};
 proto.com.mintter.documents = {};
-proto.com.mintter.documents.v1alpha = require('./services_pb.js');
+proto.com.mintter.documents.v1alpha = require('./documents_pb.js');
 
 /**
  * @param {string} hostname
@@ -83,7 +83,7 @@ const methodDescriptor_Drafts_CreateDraft = new grpc.web.MethodDescriptor(
   '/com.mintter.documents.v1alpha.Drafts/CreateDraft',
   grpc.web.MethodType.UNARY,
   proto.com.mintter.documents.v1alpha.CreateDraftRequest,
-  documents_v1alpha_resources_pb.Document,
+  proto.com.mintter.documents.v1alpha.Document,
   /**
    * @param {!proto.com.mintter.documents.v1alpha.CreateDraftRequest} request
    * @return {!Uint8Array}
@@ -91,7 +91,7 @@ const methodDescriptor_Drafts_CreateDraft = new grpc.web.MethodDescriptor(
   function(request) {
     return request.serializeBinary();
   },
-  documents_v1alpha_resources_pb.Document.deserializeBinary
+  proto.com.mintter.documents.v1alpha.Document.deserializeBinary
 );
 
 
@@ -102,7 +102,7 @@ const methodDescriptor_Drafts_CreateDraft = new grpc.web.MethodDescriptor(
  *   !proto.com.mintter.documents.v1alpha.Document>}
  */
 const methodInfo_Drafts_CreateDraft = new grpc.web.AbstractClientBase.MethodInfo(
-  documents_v1alpha_resources_pb.Document,
+  proto.com.mintter.documents.v1alpha.Document,
   /**
    * @param {!proto.com.mintter.documents.v1alpha.CreateDraftRequest} request
    * @return {!Uint8Array}
@@ -110,7 +110,7 @@ const methodInfo_Drafts_CreateDraft = new grpc.web.AbstractClientBase.MethodInfo
   function(request) {
     return request.serializeBinary();
   },
-  documents_v1alpha_resources_pb.Document.deserializeBinary
+  proto.com.mintter.documents.v1alpha.Document.deserializeBinary
 );
 
 
@@ -243,7 +243,7 @@ const methodDescriptor_Drafts_GetDraft = new grpc.web.MethodDescriptor(
   '/com.mintter.documents.v1alpha.Drafts/GetDraft',
   grpc.web.MethodType.UNARY,
   proto.com.mintter.documents.v1alpha.GetDraftRequest,
-  documents_v1alpha_resources_pb.Document,
+  proto.com.mintter.documents.v1alpha.Document,
   /**
    * @param {!proto.com.mintter.documents.v1alpha.GetDraftRequest} request
    * @return {!Uint8Array}
@@ -251,7 +251,7 @@ const methodDescriptor_Drafts_GetDraft = new grpc.web.MethodDescriptor(
   function(request) {
     return request.serializeBinary();
   },
-  documents_v1alpha_resources_pb.Document.deserializeBinary
+  proto.com.mintter.documents.v1alpha.Document.deserializeBinary
 );
 
 
@@ -262,7 +262,7 @@ const methodDescriptor_Drafts_GetDraft = new grpc.web.MethodDescriptor(
  *   !proto.com.mintter.documents.v1alpha.Document>}
  */
 const methodInfo_Drafts_GetDraft = new grpc.web.AbstractClientBase.MethodInfo(
-  documents_v1alpha_resources_pb.Document,
+  proto.com.mintter.documents.v1alpha.Document,
   /**
    * @param {!proto.com.mintter.documents.v1alpha.GetDraftRequest} request
    * @return {!Uint8Array}
@@ -270,7 +270,7 @@ const methodInfo_Drafts_GetDraft = new grpc.web.AbstractClientBase.MethodInfo(
   function(request) {
     return request.serializeBinary();
   },
-  documents_v1alpha_resources_pb.Document.deserializeBinary
+  proto.com.mintter.documents.v1alpha.Document.deserializeBinary
 );
 
 
@@ -317,13 +317,13 @@ proto.com.mintter.documents.v1alpha.DraftsPromiseClient.prototype.getDraft =
  * @const
  * @type {!grpc.web.MethodDescriptor<
  *   !proto.com.mintter.documents.v1alpha.UpdateDraftRequest,
- *   !proto.com.mintter.documents.v1alpha.UpdateDraftResponse>}
+ *   !proto.com.mintter.documents.v1alpha.Document>}
  */
 const methodDescriptor_Drafts_UpdateDraft = new grpc.web.MethodDescriptor(
   '/com.mintter.documents.v1alpha.Drafts/UpdateDraft',
   grpc.web.MethodType.UNARY,
   proto.com.mintter.documents.v1alpha.UpdateDraftRequest,
-  proto.com.mintter.documents.v1alpha.UpdateDraftResponse,
+  proto.com.mintter.documents.v1alpha.Document,
   /**
    * @param {!proto.com.mintter.documents.v1alpha.UpdateDraftRequest} request
    * @return {!Uint8Array}
@@ -331,7 +331,7 @@ const methodDescriptor_Drafts_UpdateDraft = new grpc.web.MethodDescriptor(
   function(request) {
     return request.serializeBinary();
   },
-  proto.com.mintter.documents.v1alpha.UpdateDraftResponse.deserializeBinary
+  proto.com.mintter.documents.v1alpha.Document.deserializeBinary
 );
 
 
@@ -339,10 +339,10 @@ const methodDescriptor_Drafts_UpdateDraft = new grpc.web.MethodDescriptor(
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
  *   !proto.com.mintter.documents.v1alpha.UpdateDraftRequest,
- *   !proto.com.mintter.documents.v1alpha.UpdateDraftResponse>}
+ *   !proto.com.mintter.documents.v1alpha.Document>}
  */
 const methodInfo_Drafts_UpdateDraft = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.com.mintter.documents.v1alpha.UpdateDraftResponse,
+  proto.com.mintter.documents.v1alpha.Document,
   /**
    * @param {!proto.com.mintter.documents.v1alpha.UpdateDraftRequest} request
    * @return {!Uint8Array}
@@ -350,7 +350,7 @@ const methodInfo_Drafts_UpdateDraft = new grpc.web.AbstractClientBase.MethodInfo
   function(request) {
     return request.serializeBinary();
   },
-  proto.com.mintter.documents.v1alpha.UpdateDraftResponse.deserializeBinary
+  proto.com.mintter.documents.v1alpha.Document.deserializeBinary
 );
 
 
@@ -359,9 +359,9 @@ const methodInfo_Drafts_UpdateDraft = new grpc.web.AbstractClientBase.MethodInfo
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.com.mintter.documents.v1alpha.UpdateDraftResponse)}
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.documents.v1alpha.Document)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.documents.v1alpha.UpdateDraftResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.documents.v1alpha.Document>|undefined}
  *     The XHR Node Readable Stream
  */
 proto.com.mintter.documents.v1alpha.DraftsClient.prototype.updateDraft =
@@ -380,7 +380,7 @@ proto.com.mintter.documents.v1alpha.DraftsClient.prototype.updateDraft =
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.com.mintter.documents.v1alpha.UpdateDraftResponse>}
+ * @return {!Promise<!proto.com.mintter.documents.v1alpha.Document>}
  *     A native promise that resolves to the response
  */
 proto.com.mintter.documents.v1alpha.DraftsPromiseClient.prototype.updateDraft =
@@ -615,7 +615,7 @@ const methodDescriptor_Publications_GetPublication = new grpc.web.MethodDescript
   '/com.mintter.documents.v1alpha.Publications/GetPublication',
   grpc.web.MethodType.UNARY,
   proto.com.mintter.documents.v1alpha.GetPublicationRequest,
-  documents_v1alpha_resources_pb.Publication,
+  proto.com.mintter.documents.v1alpha.Publication,
   /**
    * @param {!proto.com.mintter.documents.v1alpha.GetPublicationRequest} request
    * @return {!Uint8Array}
@@ -623,7 +623,7 @@ const methodDescriptor_Publications_GetPublication = new grpc.web.MethodDescript
   function(request) {
     return request.serializeBinary();
   },
-  documents_v1alpha_resources_pb.Publication.deserializeBinary
+  proto.com.mintter.documents.v1alpha.Publication.deserializeBinary
 );
 
 
@@ -634,7 +634,7 @@ const methodDescriptor_Publications_GetPublication = new grpc.web.MethodDescript
  *   !proto.com.mintter.documents.v1alpha.Publication>}
  */
 const methodInfo_Publications_GetPublication = new grpc.web.AbstractClientBase.MethodInfo(
-  documents_v1alpha_resources_pb.Publication,
+  proto.com.mintter.documents.v1alpha.Publication,
   /**
    * @param {!proto.com.mintter.documents.v1alpha.GetPublicationRequest} request
    * @return {!Uint8Array}
@@ -642,7 +642,7 @@ const methodInfo_Publications_GetPublication = new grpc.web.AbstractClientBase.M
   function(request) {
     return request.serializeBinary();
   },
-  documents_v1alpha_resources_pb.Publication.deserializeBinary
+  proto.com.mintter.documents.v1alpha.Publication.deserializeBinary
 );
 
 

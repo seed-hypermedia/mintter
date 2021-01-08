@@ -1,0 +1,286 @@
+syntax = "proto3";
+
+package com.mintter.documents.v1alpha;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "mintter/api/go/documents/v1alpha;documents";
+
+// Drafts service is separate from Publications for the access-control purposes,
+// but overall there're not many differences between the two.
+service Drafts {
+  // Creates a new draft with a new permanent document ID.
+  rpc CreateDraft(CreateDraftRequest) returns (Document);
+
+  // Deletes a draft by its document ID.
+  rpc DeleteDraft(DeleteDraftRequest) returns (google.protobuf.Empty);
+
+  // Gets a single draft if exists.
+  rpc GetDraft(GetDraftRequest) returns (Document);
+
+  // Updates a draft instance. Supports partial updates.
+  rpc UpdateDraft(UpdateDraftRequest) returns (Document);
+
+  // List currently stored drafts.
+  rpc ListDrafts(ListDraftsRequest) returns (ListDraftsResponse);
+
+  // Publishes a draft. I.e. draft will become a publication, and will no longer appear in drafts section.
+  rpc PublishDraft(PublishDraftRequest) returns (PublishDraftResponse);
+}
+
+// Request to create a new draft.
+message CreateDraftRequest {}
+
+// Request to delete an existing draft.
+message DeleteDraftRequest {
+  // ID of the document whose draft needs to be deleted.
+  string document_id = 1;
+}
+
+// Request to get a single draft.
+message GetDraftRequest {
+  // ID of the document for which draft was previously created.
+  string document_id = 1;
+}
+
+// Request to update an existing draft.
+message UpdateDraftRequest {
+  // Instance of the document.
+  Document document = 1;
+}
+
+// Request to list stored drafts.
+message ListDraftsRequest {
+  // Defines if the documents being returned should be displayed in full or only basic information.
+  enum View {
+    // Default value. Same as BASIC.
+    VIEW_UNSPECIFIED = 0;
+
+    // Basic view. Do not display content nor links.
+    BASIC = 1;
+
+    // Full view. Return every field of the underlying resource.
+    FULL = 2;
+  }
+
+  // Number of results per page.
+  int32 page_size = 1;
+
+  // Token for the page to return.
+  string page_token = 2;
+}
+
+// Response for listing drafts.
+message ListDraftsResponse {
+  // Documents being matched by the list request.
+  repeated Document documents = 1;
+
+  // Token for the next page if there're any.
+  string next_page_token = 2;
+}
+
+// Request to publish a draft.
+message PublishDraftRequest {
+  // ID of the document which current draft needs to be published.
+  string document_id = 1;
+}
+
+// Response from publishing a draft.
+message PublishDraftResponse {
+  // Content-addressable version ID of the newly published document.
+  string version = 1;
+}
+
+// Publications service provides access to the publications.
+service Publications {
+  rpc GetPublication(GetPublicationRequest) returns (Publication);
+
+  rpc DeletePublication(DeletePublicationRequest) returns (google.protobuf.Empty);
+
+  rpc ListPublications(ListPublicationsRequest) returns (ListPublicationsResponse);
+
+  // Eventually we may have ListVersions rpc for listing multiple versions of the same document.
+}
+
+message GetPublicationRequest {}
+
+message DeletePublicationRequest {}
+
+message ListPublicationsRequest {}
+
+message ListPublicationsResponse {}
+
+// A published document with a content-addressable version ID.
+message Publication {
+  // Output only. Content-addressable version of this publication.
+  string version = 1;
+
+  // Output only. The actual document itself.
+  Document document = 2;
+}
+
+// State of the Mintter document.
+message Document {
+  // Output only. Permanent ID of the document.
+  string id = 1;
+
+  // Required. Title of the document.
+  string title = 2;
+
+  // Required. Subtitle/abstract of the document.
+  string subtitle = 3;
+
+  // Output only. ID of the author of the document.
+  string author = 4;
+
+  // Optional. List style for displaying top-level document blocks.
+  ListStyle children_list_style = 5;
+
+  // Required. List of top-level content blocks.
+  repeated string children = 6;
+
+  // Required. Lookup map of all the content blocks of this document.
+  map<string, Block> blocks = 7;
+
+  // Lookup map of all the links used in this document.
+  map<string, Link> links = 8;
+
+  // Output only. Time when first draft of this document was created.
+  google.protobuf.Timestamp create_time = 9;
+
+  // Output only. Time when this document was updated.
+  google.protobuf.Timestamp update_time = 10;
+
+  // Output only. Only set if this document is already published. Time when this
+  // document was published.
+  google.protobuf.Timestamp publish_time = 11;
+}
+
+// Link to another resource.
+message Link {
+  // Required. URI this link points to.
+  string uri = 1;
+
+  // Optional. Content type for the content this URI points to.
+  string content_type = 2;
+}
+
+// List style for a list of blocks.
+enum ListStyle {
+  // Use no marker to display the block.
+  NONE = 0;
+
+  // Use a bullet marker to display the block.
+  BULLET = 1;
+
+  // Use an ordered number to display the block.
+  NUMBER = 2;
+}
+
+// Block of content.
+message Block {
+  // Block type. This is an enum to support future types, even though we only have defined a single heading type.
+  enum Type {
+    // Basic blocks.
+    BASIC = 0;
+
+    // Heading is used for blocks that are headings.
+    //
+    // Heading blocks should contain the enclosed content as children, unlike HTML and others where headings are
+    // detached from their content. We also don't have explicit heading levels to avoid common mistakes when authors
+    // would incorrectly use them. Instead we infer the level of the current heading by inspecting its parent blocks.
+    //
+    // Heading blocks must contain a single text run inline element, as headings can't be embedded objects, or support
+    // other rich text formatting.
+    HEADING = 1;
+  }
+
+  // Required. ID of the block. Must be unique within the document.
+  string id = 1;
+
+  // Required. ID of the parent block. Empty if this is a top-level block. The
+  // ID must be present in the blocks map of the document.
+  string parent = 2;
+
+  // Required. Type of this block.
+  Type type = 3;
+
+  // Required. List of inline elements/spans of this block. This is the actual
+  // content of the block.
+  repeated InlineElement elements = 4;
+
+  // Optional. Defines which list style must be applied to the children of this
+  // block if there're any.
+  ListStyle child_list_style = 5;
+
+  // Optional. List of IDs of child content blocks. The ID must be present in
+  // the blocks map of the document.
+  repeated string children = 6;
+}
+
+// Element of a content block.
+message InlineElement {
+  // Content of the inline element. Union type. Only one can be set.
+  oneof content {
+    // Text run with support for attributes. If multiple text inline elements
+    // have the same attributes, they are expected to be merged together by the
+    // client.
+    TextRun text_run = 1;
+
+    // Multimedia image.
+    Image image = 2;
+
+    // Quote from another Mintter document. The content is supposed to be
+    // resolved and brought-in by the client.
+    Quote quote = 3;
+  }
+}
+
+// Run of text with attributes.
+message TextRun {
+  // Actual string of text.
+  string text = 1;
+
+  // Bold formatting attribute.
+  bool bold = 2;
+
+  // Underline formatting attribute.
+  bool underline = 3;
+
+  // Strikethrough formatting attribute.
+  bool strikethrough = 4;
+
+  // Code formatting attribute.
+  bool code = 5;
+
+  // Blockquote formatting attribute. This is available for content that can't be reused with Mintter Quotes.
+  bool blockquote = 6;
+
+  // If text is an anchor for a link - this must be a map key from the document's links lookup map that corresponds to
+  // the link.
+  string link_key = 7;
+}
+
+// Image embedded object.
+message Image {
+  // Alt text of the image. Useful for accessibility purposes. Supposed to
+  // describe the content of the image with words.
+  string alt_text = 1;
+
+  // Key to the link that points to the image. The key must be present in the
+  // top-level links map of the document.
+  string link_key = 2;
+}
+
+// Embedded object for Mintter Quote.
+message Quote {
+  // Required. Key from the document's links lookup map. Must be a link to a Mintter Block.
+  string link_key = 1;
+
+  // Optional. Offset from which quoted fragment starts.
+  int32 start_offset = 2;
+
+  // Optional. Offset where quoted fragment ends.
+  int32 end_offset = 3;
+}
