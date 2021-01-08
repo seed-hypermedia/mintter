@@ -52,23 +52,14 @@ message UpdateDraftRequest {
 
 // Request to list stored drafts.
 message ListDraftsRequest {
-  // Defines if the documents being returned should be displayed in full or only basic information.
-  enum View {
-    // Default value. Same as BASIC.
-    VIEW_UNSPECIFIED = 0;
-
-    // Basic view. Do not display content nor links.
-    BASIC = 1;
-
-    // Full view. Return every field of the underlying resource.
-    FULL = 2;
-  }
-
-  // Number of results per page.
+  // Optional. Number of results per page.
   int32 page_size = 1;
 
-  // Token for the page to return.
+  // Optional. Token for the page to return.
   string page_token = 2;
+
+  // Optional. View of the each document instance to return.
+  DocumentView view = 3;
 }
 
 // Response for listing drafts.
@@ -94,22 +85,53 @@ message PublishDraftResponse {
 
 // Publications service provides access to the publications.
 service Publications {
+  // Gets a single publication.
   rpc GetPublication(GetPublicationRequest) returns (Publication);
 
+  // Deletes a publication from the local node.
   rpc DeletePublication(DeletePublicationRequest) returns (google.protobuf.Empty);
 
+  // Lists stored publications.
   rpc ListPublications(ListPublicationsRequest) returns (ListPublicationsResponse);
 
   // Eventually we may have ListVersions rpc for listing multiple versions of the same document.
 }
 
-message GetPublicationRequest {}
+// Request for getting a single publication.
+message GetPublicationRequest {
+  // Required. ID of the published document.
+  string document_id = 1;
 
-message DeletePublicationRequest {}
+  // Optional. Specific version of the published document. By default latest is returned.
+  string version = 2;
+}
 
-message ListPublicationsRequest {}
+// Request for deleting a publication.
+message DeletePublicationRequest {
+  // Content-addressable version of the document to delete.
+  string version = 1;
+}
 
-message ListPublicationsResponse {}
+// Request for listing publications.
+message ListPublicationsRequest {
+  // Optional. Number of results per page. Default is defined by the server.
+  int32 page_size = 1;
+
+  // Optional. Token of the page if obtained from the previous request.
+  string page_token = 2;
+
+  // Optional. View of each document instance in the list.
+  DocumentView view = 3;
+}
+
+// Response with list of publications.
+message ListPublicationsResponse {
+  // List of publications matching the request.
+  repeated Publication publications = 1;
+
+  // Token for the next page if there're more results.
+  string next_page_token = 2;
+}
 
 // A published document with a content-addressable version ID.
 message Publication {
@@ -118,6 +140,18 @@ message Publication {
 
   // Output only. The actual document itself.
   Document document = 2;
+}
+
+// Defines if the documents being returned should be displayed in full or only basic information.
+enum DocumentView {
+  // Default value. Same as BASIC.
+  VIEW_UNSPECIFIED = 0;
+
+  // Basic view. Do not display content nor links.
+  BASIC = 1;
+
+  // Full view. Return every field of the underlying resource.
+  FULL = 2;
 }
 
 // State of the Mintter document.

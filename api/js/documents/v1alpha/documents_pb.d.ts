@@ -80,6 +80,9 @@ export class ListDraftsRequest extends jspb.Message {
   getPageToken(): string;
   setPageToken(value: string): void;
 
+  getView(): DocumentView;
+  setView(value: DocumentView): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListDraftsRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListDraftsRequest): ListDraftsRequest.AsObject;
@@ -92,12 +95,7 @@ export namespace ListDraftsRequest {
   export type AsObject = {
     pageSize: number,
     pageToken: string,
-  }
-
-  export enum View { 
-    VIEW_UNSPECIFIED = 0,
-    BASIC = 1,
-    FULL = 2,
+    view: DocumentView,
   }
 }
 
@@ -162,6 +160,12 @@ export namespace PublishDraftResponse {
 }
 
 export class GetPublicationRequest extends jspb.Message {
+  getDocumentId(): string;
+  setDocumentId(value: string): void;
+
+  getVersion(): string;
+  setVersion(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetPublicationRequest.AsObject;
   static toObject(includeInstance: boolean, msg: GetPublicationRequest): GetPublicationRequest.AsObject;
@@ -172,10 +176,15 @@ export class GetPublicationRequest extends jspb.Message {
 
 export namespace GetPublicationRequest {
   export type AsObject = {
+    documentId: string,
+    version: string,
   }
 }
 
 export class DeletePublicationRequest extends jspb.Message {
+  getVersion(): string;
+  setVersion(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeletePublicationRequest.AsObject;
   static toObject(includeInstance: boolean, msg: DeletePublicationRequest): DeletePublicationRequest.AsObject;
@@ -186,10 +195,20 @@ export class DeletePublicationRequest extends jspb.Message {
 
 export namespace DeletePublicationRequest {
   export type AsObject = {
+    version: string,
   }
 }
 
 export class ListPublicationsRequest extends jspb.Message {
+  getPageSize(): number;
+  setPageSize(value: number): void;
+
+  getPageToken(): string;
+  setPageToken(value: string): void;
+
+  getView(): DocumentView;
+  setView(value: DocumentView): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListPublicationsRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListPublicationsRequest): ListPublicationsRequest.AsObject;
@@ -200,10 +219,21 @@ export class ListPublicationsRequest extends jspb.Message {
 
 export namespace ListPublicationsRequest {
   export type AsObject = {
+    pageSize: number,
+    pageToken: string,
+    view: DocumentView,
   }
 }
 
 export class ListPublicationsResponse extends jspb.Message {
+  getPublicationsList(): Array<Publication>;
+  setPublicationsList(value: Array<Publication>): void;
+  clearPublicationsList(): void;
+  addPublications(value?: Publication, index?: number): Publication;
+
+  getNextPageToken(): string;
+  setNextPageToken(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListPublicationsResponse.AsObject;
   static toObject(includeInstance: boolean, msg: ListPublicationsResponse): ListPublicationsResponse.AsObject;
@@ -214,6 +244,8 @@ export class ListPublicationsResponse extends jspb.Message {
 
 export namespace ListPublicationsResponse {
   export type AsObject = {
+    publicationsList: Array<Publication.AsObject>,
+    nextPageToken: string,
   }
 }
 
@@ -507,6 +539,11 @@ export namespace Quote {
   }
 }
 
+export enum DocumentView { 
+  VIEW_UNSPECIFIED = 0,
+  BASIC = 1,
+  FULL = 2,
+}
 export enum ListStyle { 
   NONE = 0,
   BULLET = 1,
