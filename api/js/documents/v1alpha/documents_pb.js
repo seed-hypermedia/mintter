@@ -22,6 +22,7 @@ goog.exportSymbol('proto.com.mintter.documents.v1alpha.CreateDraftRequest', null
 goog.exportSymbol('proto.com.mintter.documents.v1alpha.DeleteDraftRequest', null, global);
 goog.exportSymbol('proto.com.mintter.documents.v1alpha.DeletePublicationRequest', null, global);
 goog.exportSymbol('proto.com.mintter.documents.v1alpha.Document', null, global);
+goog.exportSymbol('proto.com.mintter.documents.v1alpha.DocumentView', null, global);
 goog.exportSymbol('proto.com.mintter.documents.v1alpha.GetDraftRequest', null, global);
 goog.exportSymbol('proto.com.mintter.documents.v1alpha.GetPublicationRequest', null, global);
 goog.exportSymbol('proto.com.mintter.documents.v1alpha.Image', null, global);
@@ -29,7 +30,6 @@ goog.exportSymbol('proto.com.mintter.documents.v1alpha.InlineElement', null, glo
 goog.exportSymbol('proto.com.mintter.documents.v1alpha.InlineElement.ContentCase', null, global);
 goog.exportSymbol('proto.com.mintter.documents.v1alpha.Link', null, global);
 goog.exportSymbol('proto.com.mintter.documents.v1alpha.ListDraftsRequest', null, global);
-goog.exportSymbol('proto.com.mintter.documents.v1alpha.ListDraftsRequest.View', null, global);
 goog.exportSymbol('proto.com.mintter.documents.v1alpha.ListDraftsResponse', null, global);
 goog.exportSymbol('proto.com.mintter.documents.v1alpha.ListPublicationsRequest', null, global);
 goog.exportSymbol('proto.com.mintter.documents.v1alpha.ListPublicationsResponse', null, global);
@@ -282,7 +282,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.com.mintter.documents.v1alpha.ListPublicationsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.com.mintter.documents.v1alpha.ListPublicationsResponse.repeatedFields_, null);
 };
 goog.inherits(proto.com.mintter.documents.v1alpha.ListPublicationsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -1005,7 +1005,8 @@ proto.com.mintter.documents.v1alpha.ListDraftsRequest.prototype.toObject = funct
 proto.com.mintter.documents.v1alpha.ListDraftsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     pageSize: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    pageToken: jspb.Message.getFieldWithDefault(msg, 2, "")
+    pageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    view: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -1050,6 +1051,10 @@ proto.com.mintter.documents.v1alpha.ListDraftsRequest.deserializeBinaryFromReade
       var value = /** @type {string} */ (reader.readString());
       msg.setPageToken(value);
       break;
+    case 3:
+      var value = /** @type {!proto.com.mintter.documents.v1alpha.DocumentView} */ (reader.readEnum());
+      msg.setView(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1093,17 +1098,15 @@ proto.com.mintter.documents.v1alpha.ListDraftsRequest.serializeBinaryToWriter = 
       f
     );
   }
+  f = message.getView();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      3,
+      f
+    );
+  }
 };
 
-
-/**
- * @enum {number}
- */
-proto.com.mintter.documents.v1alpha.ListDraftsRequest.View = {
-  VIEW_UNSPECIFIED: 0,
-  BASIC: 1,
-  FULL: 2
-};
 
 /**
  * optional int32 page_size = 1;
@@ -1138,6 +1141,24 @@ proto.com.mintter.documents.v1alpha.ListDraftsRequest.prototype.getPageToken = f
  */
 proto.com.mintter.documents.v1alpha.ListDraftsRequest.prototype.setPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional DocumentView view = 3;
+ * @return {!proto.com.mintter.documents.v1alpha.DocumentView}
+ */
+proto.com.mintter.documents.v1alpha.ListDraftsRequest.prototype.getView = function() {
+  return /** @type {!proto.com.mintter.documents.v1alpha.DocumentView} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {!proto.com.mintter.documents.v1alpha.DocumentView} value
+ * @return {!proto.com.mintter.documents.v1alpha.ListDraftsRequest} returns this
+ */
+proto.com.mintter.documents.v1alpha.ListDraftsRequest.prototype.setView = function(value) {
+  return jspb.Message.setProto3EnumField(this, 3, value);
 };
 
 
@@ -1623,7 +1644,8 @@ proto.com.mintter.documents.v1alpha.GetPublicationRequest.prototype.toObject = f
  */
 proto.com.mintter.documents.v1alpha.GetPublicationRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    documentId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    version: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -1660,6 +1682,14 @@ proto.com.mintter.documents.v1alpha.GetPublicationRequest.deserializeBinaryFromR
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDocumentId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setVersion(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1689,6 +1719,56 @@ proto.com.mintter.documents.v1alpha.GetPublicationRequest.prototype.serializeBin
  */
 proto.com.mintter.documents.v1alpha.GetPublicationRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getDocumentId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getVersion();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string document_id = 1;
+ * @return {string}
+ */
+proto.com.mintter.documents.v1alpha.GetPublicationRequest.prototype.getDocumentId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.mintter.documents.v1alpha.GetPublicationRequest} returns this
+ */
+proto.com.mintter.documents.v1alpha.GetPublicationRequest.prototype.setDocumentId = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string version = 2;
+ * @return {string}
+ */
+proto.com.mintter.documents.v1alpha.GetPublicationRequest.prototype.getVersion = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.mintter.documents.v1alpha.GetPublicationRequest} returns this
+ */
+proto.com.mintter.documents.v1alpha.GetPublicationRequest.prototype.setVersion = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -1724,7 +1804,7 @@ proto.com.mintter.documents.v1alpha.DeletePublicationRequest.prototype.toObject 
  */
 proto.com.mintter.documents.v1alpha.DeletePublicationRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    version: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -1761,6 +1841,10 @@ proto.com.mintter.documents.v1alpha.DeletePublicationRequest.deserializeBinaryFr
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setVersion(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1790,6 +1874,31 @@ proto.com.mintter.documents.v1alpha.DeletePublicationRequest.prototype.serialize
  */
 proto.com.mintter.documents.v1alpha.DeletePublicationRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getVersion();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string version = 1;
+ * @return {string}
+ */
+proto.com.mintter.documents.v1alpha.DeletePublicationRequest.prototype.getVersion = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.mintter.documents.v1alpha.DeletePublicationRequest} returns this
+ */
+proto.com.mintter.documents.v1alpha.DeletePublicationRequest.prototype.setVersion = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1825,7 +1934,9 @@ proto.com.mintter.documents.v1alpha.ListPublicationsRequest.prototype.toObject =
  */
 proto.com.mintter.documents.v1alpha.ListPublicationsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    pageSize: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    pageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    view: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -1862,6 +1973,18 @@ proto.com.mintter.documents.v1alpha.ListPublicationsRequest.deserializeBinaryFro
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setPageSize(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPageToken(value);
+      break;
+    case 3:
+      var value = /** @type {!proto.com.mintter.documents.v1alpha.DocumentView} */ (reader.readEnum());
+      msg.setView(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1891,9 +2014,91 @@ proto.com.mintter.documents.v1alpha.ListPublicationsRequest.prototype.serializeB
  */
 proto.com.mintter.documents.v1alpha.ListPublicationsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getPageSize();
+  if (f !== 0) {
+    writer.writeInt32(
+      1,
+      f
+    );
+  }
+  f = message.getPageToken();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+  f = message.getView();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      3,
+      f
+    );
+  }
 };
 
 
+/**
+ * optional int32 page_size = 1;
+ * @return {number}
+ */
+proto.com.mintter.documents.v1alpha.ListPublicationsRequest.prototype.getPageSize = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.com.mintter.documents.v1alpha.ListPublicationsRequest} returns this
+ */
+proto.com.mintter.documents.v1alpha.ListPublicationsRequest.prototype.setPageSize = function(value) {
+  return jspb.Message.setProto3IntField(this, 1, value);
+};
+
+
+/**
+ * optional string page_token = 2;
+ * @return {string}
+ */
+proto.com.mintter.documents.v1alpha.ListPublicationsRequest.prototype.getPageToken = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.mintter.documents.v1alpha.ListPublicationsRequest} returns this
+ */
+proto.com.mintter.documents.v1alpha.ListPublicationsRequest.prototype.setPageToken = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional DocumentView view = 3;
+ * @return {!proto.com.mintter.documents.v1alpha.DocumentView}
+ */
+proto.com.mintter.documents.v1alpha.ListPublicationsRequest.prototype.getView = function() {
+  return /** @type {!proto.com.mintter.documents.v1alpha.DocumentView} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {!proto.com.mintter.documents.v1alpha.DocumentView} value
+ * @return {!proto.com.mintter.documents.v1alpha.ListPublicationsRequest} returns this
+ */
+proto.com.mintter.documents.v1alpha.ListPublicationsRequest.prototype.setView = function(value) {
+  return jspb.Message.setProto3EnumField(this, 3, value);
+};
+
+
+
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.com.mintter.documents.v1alpha.ListPublicationsResponse.repeatedFields_ = [1];
 
 
 
@@ -1926,7 +2131,9 @@ proto.com.mintter.documents.v1alpha.ListPublicationsResponse.prototype.toObject 
  */
 proto.com.mintter.documents.v1alpha.ListPublicationsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    publicationsList: jspb.Message.toObjectList(msg.getPublicationsList(),
+    proto.com.mintter.documents.v1alpha.Publication.toObject, includeInstance),
+    nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -1963,6 +2170,15 @@ proto.com.mintter.documents.v1alpha.ListPublicationsResponse.deserializeBinaryFr
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = new proto.com.mintter.documents.v1alpha.Publication;
+      reader.readMessage(value,proto.com.mintter.documents.v1alpha.Publication.deserializeBinaryFromReader);
+      msg.addPublications(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setNextPageToken(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1992,6 +2208,77 @@ proto.com.mintter.documents.v1alpha.ListPublicationsResponse.prototype.serialize
  */
 proto.com.mintter.documents.v1alpha.ListPublicationsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getPublicationsList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
+      1,
+      f,
+      proto.com.mintter.documents.v1alpha.Publication.serializeBinaryToWriter
+    );
+  }
+  f = message.getNextPageToken();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+};
+
+
+/**
+ * repeated Publication publications = 1;
+ * @return {!Array<!proto.com.mintter.documents.v1alpha.Publication>}
+ */
+proto.com.mintter.documents.v1alpha.ListPublicationsResponse.prototype.getPublicationsList = function() {
+  return /** @type{!Array<!proto.com.mintter.documents.v1alpha.Publication>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.com.mintter.documents.v1alpha.Publication, 1));
+};
+
+
+/**
+ * @param {!Array<!proto.com.mintter.documents.v1alpha.Publication>} value
+ * @return {!proto.com.mintter.documents.v1alpha.ListPublicationsResponse} returns this
+*/
+proto.com.mintter.documents.v1alpha.ListPublicationsResponse.prototype.setPublicationsList = function(value) {
+  return jspb.Message.setRepeatedWrapperField(this, 1, value);
+};
+
+
+/**
+ * @param {!proto.com.mintter.documents.v1alpha.Publication=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.com.mintter.documents.v1alpha.Publication}
+ */
+proto.com.mintter.documents.v1alpha.ListPublicationsResponse.prototype.addPublications = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.com.mintter.documents.v1alpha.Publication, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.com.mintter.documents.v1alpha.ListPublicationsResponse} returns this
+ */
+proto.com.mintter.documents.v1alpha.ListPublicationsResponse.prototype.clearPublicationsList = function() {
+  return this.setPublicationsList([]);
+};
+
+
+/**
+ * optional string next_page_token = 2;
+ * @return {string}
+ */
+proto.com.mintter.documents.v1alpha.ListPublicationsResponse.prototype.getNextPageToken = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.mintter.documents.v1alpha.ListPublicationsResponse} returns this
+ */
+proto.com.mintter.documents.v1alpha.ListPublicationsResponse.prototype.setNextPageToken = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -4137,6 +4424,15 @@ proto.com.mintter.documents.v1alpha.Quote.prototype.setEndOffset = function(valu
   return jspb.Message.setProto3IntField(this, 3, value);
 };
 
+
+/**
+ * @enum {number}
+ */
+proto.com.mintter.documents.v1alpha.DocumentView = {
+  VIEW_UNSPECIFIED: 0,
+  BASIC: 1,
+  FULL: 2
+};
 
 /**
  * @enum {number}
