@@ -5,7 +5,10 @@ import {
   isSelectionAtBlockStart,
   onKeyDownResetBlockType,
   isCollapsed,
+  deserializeHTMLToDocumentFragment,
+  SlateDocumentDescendant,
 } from '@udecode/slate-plugins'
+import {getInlineTypes} from '@udecode/slate-plugins-core'
 import {id} from '../id'
 import {insertBlockItem} from './insert-block-item'
 import {moveBlockItemUp} from './move-block-item-up'
@@ -27,10 +30,18 @@ import {deleteListFragment} from './utils/delete-list-fragment'
 
 interface MintterEditor {}
 
-export const withMintter = options => <T extends Editor>(editor: T) => {
+export const withMintter = ({plugins = [], options}) => <T extends ReactEditor>(
+  editor: T,
+) => {
   const e = editor as T & ReactEditor & MintterEditor
   const {p, block} = options
-  const {insertBreak, deleteBackward, normalizeNode, deleteFragment} = e
+  const {
+    insertBreak,
+    deleteBackward,
+    normalizeNode,
+    deleteFragment,
+    insertData,
+  } = e
 
   const resetBlockTypesListRule = {
     types: [block.type],
@@ -151,14 +162,7 @@ export const withMintter = options => <T extends Editor>(editor: T) => {
                 length: childPath[childPath.length - 1] !== 0,
               })
               if (childPath[childPath.length - 1] !== 0) {
-                Editor.withoutNormalizing(e, () => {
-                  Transforms.insertNodes(
-                    e,
-                    {type: ELEMENT_BLOCK, id: id(), children: [child]},
-                    {at: Path.next(path)},
-                  )
-                  Transforms.removeNodes(e, {at: childPath})
-                })
+                Transforms.liftNodes(editor, {at: path.concat(0)})
                 return
               }
             }
@@ -191,28 +195,25 @@ export const withMintter = options => <T extends Editor>(editor: T) => {
         for (const [child, childPath] of Node.children(e, path)) {
           if (Element.isElement(child)) {
             if (child.type === ELEMENT_PARAGRAPH) {
-              Editor.withoutNormalizing(e, () => {
-                Transforms.wrapNodes(
-                  e,
-                  {
-                    type: ELEMENT_BLOCK,
-                    id: id(),
-                    children: [],
-                  },
-                  {at: childPath},
-                )
-              })
+              Transforms.wrapNodes(
+                e,
+                {
+                  type: ELEMENT_BLOCK,
+                  id: id(),
+                  children: [],
+                },
+                {at: childPath},
+              )
+
               return
             } else if (child.type === ELEMENT_BLOCK_LIST) {
               const prevChildPath = Path.previous(childPath)
               const prevChild: any = Node.get(e, prevChildPath)
               if (!prevChild) return
               if (prevChild.type === ELEMENT_BLOCK) {
-                Editor.withoutNormalizing(e, () => {
-                  Transforms.moveNodes(e, {
-                    at: childPath,
-                    to: prevChildPath.concat(1),
-                  })
+                Transforms.moveNodes(e, {
+                  at: childPath,
+                  to: prevChildPath.concat(1),
                 })
                 return
               }
@@ -225,6 +226,48 @@ export const withMintter = options => <T extends Editor>(editor: T) => {
     normalizeNode(entry)
   }
 
+  const {
+    preInsert = fragment => {
+      const inlineTypes = getInlineTypes(plugins)
+
+      const firstNodeType = fragment[0].type as string | undefined
+
+      // replace the selected node type by the first block type
+      if (
+        isBlockAboveEmpty(editor) &&
+        firstNodeType &&
+        !inlineTypes.includes(firstNodeType)
+      ) {
+        Transforms.setNodes(editor, {type: fragment[0].type})
+      }
+
+      return fragment
+    },
+
+    insert = fragment => {
+      Transforms.insertFragment(editor, fragment)
+    },
+  } = options
+
+  e.insertData = (data: DataTransfer) => {
+    const html = data.getData('text/html')
+
+    if (html) {
+      const {body} = new DOMParser().parseFromString(html, 'text/html')
+      let fragment = deserializeHTMLToDocumentFragment({
+        plugins,
+        element: body,
+      })
+
+      fragment = preInsert(fragment).map(orphanTextNodesToBlock())
+
+      insert(fragment)
+      return
+    }
+
+    insertData(data)
+  }
+
   e.deleteFragment = () => {
     const {selection} = e
 
@@ -234,4 +277,17 @@ export const withMintter = options => <T extends Editor>(editor: T) => {
   }
 
   return e
+}
+
+export const orphanTextNodesToBlock = (defaultType = 'p') => (
+  node: SlateDocumentDescendant,
+) => {
+  if (node.type === undefined) {
+    return {
+      type: defaultType,
+      children: [node],
+    }
+  }
+
+  return node
 }
