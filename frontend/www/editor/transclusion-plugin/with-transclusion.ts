@@ -19,21 +19,37 @@ export const withTransclusion = options => <T extends ReactEditor>(
     const {selection} = editor
 
     if (selection) {
-      const [pNode, pPath] = Editor.parent(editor, selection)
-      if (pNode.type === ELEMENT_READ_ONLY) {
-        const [blockNode, blockPath] = Editor.parent(editor, pPath)
+      const [parentNode, parentPath] = Editor.parent(editor, selection)
+      // console.log('=== TRANSCLUSION -> SELECTION PARENT', {
+      //   unit,
+      //   selection,
+      //   parentNode,
+      //   parentPath,
+      // })
+      if (parentNode.type === ELEMENT_READ_ONLY) {
+        const [blockNode, blockPath] = Editor.parent(editor, parentPath)
+        // console.log('=== TRANSCLUSION -> READ ONLY PARENT', {
+        //   blockNode,
+        //   blockPath,
+        // })
         if (blockNode.type === ELEMENT_TRANSCLUSION) {
-          Transforms.delete(editor, {at: blockPath})
-          Transforms.insertNodes(
-            editor,
-            {
-              type: options.block.type,
-              id: id(),
-              children: [{type: options.p.type, children: [{text: ''}]}],
-            },
-            {at: blockPath},
-          )
-          Transforms.select(editor, blockPath)
+          const [blockListNode] = Editor.parent(editor, blockPath)
+
+          Editor.withoutNormalizing(editor, () => {
+            Transforms.delete(editor, {at: blockPath})
+            if (blockListNode.children.length === 0) {
+              Transforms.insertNodes(
+                editor,
+                {
+                  type: options.block.type,
+                  id: id(),
+                  children: [{type: options.p.type, children: [{text: ''}]}],
+                },
+                {at: blockPath},
+              )
+              Transforms.select(editor, blockPath)
+            }
+          })
 
           return
         }

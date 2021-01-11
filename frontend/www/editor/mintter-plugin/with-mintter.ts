@@ -90,6 +90,8 @@ export const withMintter = ({plugins = [], options}) => <T extends ReactEditor>(
   }
 
   e.deleteBackward = unit => {
+    console.log('=== WITH MINTTER -> DELETE BACKWARD', editor)
+
     const res = getBlockItemEntry({editor: e, locationOptions: {}, options})
 
     let moved: boolean | undefined
