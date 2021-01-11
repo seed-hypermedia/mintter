@@ -16,5 +16,15 @@ export const BOLD_OPTIONS: Record<
       className: 'font-bold',
       as: 'strong',
     },
+    deserialize: {
+      rules: [
+        {nodeNames: ['STRONG', 'B']},
+        {
+          style: {
+            fontWeight: ['600', '700', 'bold'],
+          },
+        },
+      ],
+    },
   },
 }

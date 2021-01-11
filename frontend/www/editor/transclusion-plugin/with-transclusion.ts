@@ -12,9 +12,10 @@ import {ELEMENT_READ_ONLY} from '../readonly-plugin/defaults'
 export const withTransclusion = options => <T extends ReactEditor>(
   editor: T,
 ) => {
-  const {deleteBackward} = editor
+  const e = editor as T & ReactEditor
+  const {deleteBackward, deleteFragment} = e
 
-  editor.deleteBackward = unit => {
+  e.deleteBackward = unit => {
     const {selection} = editor
 
     if (selection) {
@@ -42,5 +43,12 @@ export const withTransclusion = options => <T extends ReactEditor>(
     deleteBackward(unit)
   }
 
-  return editor
+  e.deleteFragment = () => {
+    const {selection} = e
+    console.log('withTransclusion => deleteFragment', selection)
+
+    deleteFragment()
+  }
+
+  return e
 }

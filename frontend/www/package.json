@@ -22,7 +22,7 @@
   "dependencies": {
     "@mintter/api": "*",
     "@tippyjs/react": "^4.1.0",
-    "@udecode/slate-plugins": "^0.71.2",
+    "@udecode/slate-plugins": "^0.71.11",
     "date-fns": "^2.16.1",
     "emotion": "^10.0.27",
     "faker": "^5.1.0",

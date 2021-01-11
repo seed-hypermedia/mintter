@@ -2,10 +2,16 @@ import React from 'react'
 import {Slate, ReactEditor} from 'slate-react'
 import {css} from 'emotion'
 import {
+  // BalloonToolbar,
   EditablePlugins,
   RenderElement,
   SlateDocument,
+  // ToolbarMark,
 } from '@udecode/slate-plugins'
+import {useTheme} from 'shared/theme-context'
+// import {MARK_BOLD} from 'editor/marks/bold'
+// import {Icons} from './icons'
+import {TippyProps} from '@tippyjs/react'
 
 interface EditorComponentProps {
   editor: any
@@ -26,6 +32,15 @@ function Editor({
   readOnly = false,
   renderElement = [],
 }: EditorComponentProps): JSX.Element {
+  const {theme} = useTheme()
+  const tooltip: TippyProps = {
+    arrow: true,
+    delay: 0,
+    duration: [200, 0],
+    hideOnClick: false,
+    offset: [0, 18],
+    placement: 'top',
+  }
   return (
     <Slate
       editor={editor}
@@ -34,6 +49,17 @@ function Editor({
         onChange(v as SlateDocument)
       }}
     >
+      {/* <BalloonToolbar
+        direction="top"
+        theme={theme.includes('dark') ? 'light' : 'dark'}
+        arrow
+      >
+        <ToolbarMark
+          type={MARK_BOLD}
+          icon={<Icons.Bold />}
+          tooltip={{content: 'Bold (⌘B)', ...tooltip}}
+        />
+      </BalloonToolbar> */}
       <div
         className={`relative mb-48 -mx-8 ${css`
           word-break: break-word;
