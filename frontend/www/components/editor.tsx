@@ -8,10 +8,10 @@ import {
   SlateDocument,
   // ToolbarMark,
 } from '@udecode/slate-plugins'
-import {useTheme} from 'shared/theme-context'
+// import {useTheme} from 'shared/theme-context'
 // import {MARK_BOLD} from 'editor/marks/bold'
 // import {Icons} from './icons'
-import {TippyProps} from '@tippyjs/react'
+// import {TippyProps} from '@tippyjs/react'
 
 interface EditorComponentProps {
   editor: any
@@ -32,15 +32,15 @@ function Editor({
   readOnly = false,
   renderElement = [],
 }: EditorComponentProps): JSX.Element {
-  const {theme} = useTheme()
-  const tooltip: TippyProps = {
-    arrow: true,
-    delay: 0,
-    duration: [200, 0],
-    hideOnClick: false,
-    offset: [0, 18],
-    placement: 'top',
-  }
+  // const {theme} = useTheme()
+  // const tooltip: TippyProps = {
+  //   arrow: true,
+  //   delay: 0,
+  //   duration: [200, 0],
+  //   hideOnClick: false,
+  //   offset: [0, 18],
+  //   placement: 'top',
+  // }
   return (
     <Slate
       editor={editor}
