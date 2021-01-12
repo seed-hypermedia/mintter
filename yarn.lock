@@ -475,7 +475,7 @@
     core-js-pure "^3.0.0"
     regenerator-runtime "^0.13.4"
 
-"@babel/runtime@7.12.5", "@babel/runtime@^7.1.2", "@babel/runtime@^7.10.2", "@babel/runtime@^7.10.3", "@babel/runtime@^7.10.4", "@babel/runtime@^7.10.5", "@babel/runtime@^7.11.2", "@babel/runtime@^7.12.1", "@babel/runtime@^7.4.4", "@babel/runtime@^7.5.5", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
+"@babel/runtime@7.12.5", "@babel/runtime@^7.1.2", "@babel/runtime@^7.10.2", "@babel/runtime@^7.10.3", "@babel/runtime@^7.10.4", "@babel/runtime@^7.10.5", "@babel/runtime@^7.11.2", "@babel/runtime@^7.12.1", "@babel/runtime@^7.12.5", "@babel/runtime@^7.4.4", "@babel/runtime@^7.5.5", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
   version "7.12.5"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.12.5.tgz#410e7e487441e1b360c29be715d870d9b985882e"
   integrity sha512-plcc+hbExy3McchJCEQG3knOsuh3HH+Prx1P6cLIkET/0dLuQDEnrT+s27Axgc9bqfsmNUNHfscgMUdBpC9xfg==
@@ -1348,6 +1348,15 @@
     lodash "^4.17.15"
     redent "^3.0.0"
 
+"@testing-library/react-hooks@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@testing-library/react-hooks/-/react-hooks-4.0.0.tgz#5bb4caa5814690cfc3e385ffaaf2ca4d54a8d08e"
+  integrity sha512-AWIR4M1Fz4dYzuKytkWtabcrwpevq7zj9dImuBOcmrpl3VkjOBDa7Q/62fwK/M30ae5XI25mDSpQ29vzC7A5Lw==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+    "@types/react" ">=16.9.0"
+    "@types/react-test-renderer" ">=16.9.0"
+
 "@testing-library/react@*":
   version "11.1.1"
   resolved "https://registry.yarnpkg.com/@testing-library/react/-/react-11.1.1.tgz#226d8dc7491b702fcaac2d7d88d42892e655893a"
@@ -1578,10 +1587,25 @@
     "@types/history" "*"
     "@types/react" "*"
 
+"@types/react-test-renderer@>=16.9.0":
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/@types/react-test-renderer/-/react-test-renderer-17.0.0.tgz#9be47b375eeb906fced37049e67284a438d56620"
+  integrity sha512-nvw+F81OmyzpyIE1S0xWpLonLUZCMewslPuA8BtjSKc5XEbn8zEQBXS7KuOLHTNnSOEM2Pum50gHOoZ62tqTRg==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react@*", "@types/react@^16.9.27":
   version "16.9.55"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-16.9.55.tgz#47078587f5bfe028a23b6b46c7b94ac0d436acff"
   integrity sha512-6KLe6lkILeRwyyy7yG9rULKJ0sXplUsl98MGoCfpteXf9sPWFWWMknDcsvubcpaTdBuxtsLF6HDUwdApZL/xIg==
+  dependencies:
+    "@types/prop-types" "*"
+    csstype "^3.0.2"
+
+"@types/react@>=16.9.0":
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-17.0.0.tgz#5af3eb7fad2807092f0046a1302b7823e27919b8"
+  integrity sha512-aj/L7RIMsRlWML3YB6KZiXB3fV2t41+5RBGYF8z+tAKU43Px8C3cYUZsDvf1/+Bm4FK21QWBrDutu8ZJ/70qOw==
   dependencies:
     "@types/prop-types" "*"
     csstype "^3.0.2"
@@ -8516,7 +8540,7 @@ react-hook-form@^5.0.3:
   resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-5.7.2.tgz#a84e259e5d37dd30949af4f79c4dac31101b79ac"
   integrity sha512-bJvY348vayIvEUmSK7Fvea/NgqbT2racA2IbnJz/aPlQ3GBtaTeDITH6rtCa6y++obZzG6E3Q8VuoXPir7QYUg==
 
-react-is@16.13.1, react-is@^16.12.0, react-is@^16.6.0, react-is@^16.7.0, react-is@^16.8.1:
+react-is@16.13.1, react-is@^16.12.0, react-is@^16.6.0, react-is@^16.7.0, react-is@^16.8.1, react-is@^16.8.6:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
@@ -8609,6 +8633,16 @@ react-style-proptype@^3.2.2:
   integrity sha512-ywYLSjNkxKHiZOqNlso9PZByNEY+FTyh3C+7uuziK0xFXu9xzdyfHwg4S9iyiRRoPCR4k2LqaBBsWVmSBwCWYQ==
   dependencies:
     prop-types "^15.5.4"
+
+react-test-renderer@^16.9.0:
+  version "16.14.0"
+  resolved "https://registry.yarnpkg.com/react-test-renderer/-/react-test-renderer-16.14.0.tgz#e98360087348e260c56d4fe2315e970480c228ae"
+  integrity sha512-L8yPjqPE5CZO6rKsKXRO/rVPiaCOy0tQQJbC+UjPNlobl5mad59lvPjwFsQHTvL03caVDIVr9x9/OSgDe6I5Eg==
+  dependencies:
+    object-assign "^4.1.1"
+    prop-types "^15.6.2"
+    react-is "^16.8.6"
+    scheduler "^0.19.1"
 
 react-toast-notifications@^2.4.0:
   version "2.4.0"
@@ -9143,6 +9177,14 @@ saxes@^5.0.0:
   integrity sha512-5LBh1Tls8c9xgGjw3QrMwETmTMVk0oFgvrFSvWx62llR2hcEInrKNZ2GZCCuuy2lvWrdl5jhbpeqc5hRYKFOcw==
   dependencies:
     xmlchars "^2.2.0"
+
+scheduler@^0.19.1:
+  version "0.19.1"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.19.1.tgz#4f3e2ed2c1a7d65681f4c854fa8c5a1ccb40f196"
+  integrity sha512-n/zwRWRYSUj0/3g/otKDRPMh6qv2SYMWNq85IEa8iZyAv8od9zDYpGSnpBEjNgcMNq6Scbu5KfIPxNF72R/2EA==
+  dependencies:
+    loose-envify "^1.1.0"
+    object-assign "^4.1.1"
 
 scheduler@^0.20.1:
   version "0.20.1"

@@ -1,19 +1,7 @@
 import React from 'react'
-import {
-  createEditor,
-  Editor,
-  Transforms,
-  // Node, Element, Path
-} from 'slate'
-import {withReact, ReactEditor} from 'slate-react'
-import {
-  withAutoformat,
-  // withDeserializeHTML,
-  pipe,
-  withInlineVoid,
-  // WithDeserializeHTMLOptions,
-  // deserializeHTMLToDocumentFragment,
-} from '@udecode/slate-plugins'
+import {createEditor, Editor} from 'slate'
+import {withReact} from 'slate-react'
+import {withAutoformat, pipe, withInlineVoid} from '@udecode/slate-plugins'
 import {withHistory} from 'slate-history'
 import {autoformatRules} from '../editor/autoformat-rules'
 import {withMintter} from '../editor/mintter-plugin/with-mintter'
