@@ -20,9 +20,9 @@ jobs:
         uses: actions/cache@v1
         with:
           path: /nix
-          key: ${{ runner.os }}-nix-v3-${{ hashFiles('**/*/*.nix') }}
+          key: ${{ runner.os }}-nix-v4-${{ hashFiles('**/*/*.nix') }}
           restore-keys: |
-            ${{ runner.os }}-nix-v3-
+            ${{ runner.os }}-nix-v4-
       - name: Setup Nix
         run: |
           nix-channel --update
