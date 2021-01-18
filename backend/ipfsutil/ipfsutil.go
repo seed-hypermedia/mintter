@@ -302,3 +302,8 @@ func (p *Node) GetFile(ctx context.Context, c cid.Cid) (ufsio.ReadSeekCloser, er
 func (p *Node) BlockStore() *NetworkBlockStore {
 	return p.bstore
 }
+
+// Provider returns the underlying provider system backed by the DHT.
+func (p *Node) Provider() provider.System {
+	return p.reprovider
+}
