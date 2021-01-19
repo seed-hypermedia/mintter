@@ -4,6 +4,9 @@ Description=Mintter daemon service.
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/mintterd --repo-path /root/.mtt --http-port=80
+Restart=on-failure
+OOMScoreAdjust=-900
+OOMPolicy=continue
 
 [Install]
 WantedBy=multi-user.target
