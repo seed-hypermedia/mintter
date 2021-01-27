@@ -111,7 +111,6 @@ export default function Editor(): JSX.Element {
   if (isError) {
     return <FullPageErrorMessage error={error} />
   }
-
   return (
     <Page>
       <Seo title="Compose" />

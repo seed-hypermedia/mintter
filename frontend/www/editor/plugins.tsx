@@ -8,7 +8,6 @@ import {
   StrikethroughPlugin,
 } from '@udecode/slate-plugins'
 import {options} from './options'
-import {HelperPlugin} from './helper-plugin/helper-plugin'
 import {HierarchyPlugin} from './hierarchy-plugin/hierarchy-plugin'
 import {TransclusionPlugin} from './transclusion-plugin/transclusion-plugin'
 import {BlockPlugin} from './block-plugin/block-plugin'
@@ -25,7 +24,6 @@ export const plugins = [
   ItalicPlugin(options),
   UnderlinePlugin(options),
   StrikethroughPlugin(options),
-  HelperPlugin(),
   HierarchyPlugin(options),
   TransclusionPlugin(options),
   BlockPlugin(options),
@@ -42,7 +40,6 @@ export function createPlugins(options) {
     ItalicPlugin(options),
     UnderlinePlugin(options),
     StrikethroughPlugin(options),
-    HelperPlugin(),
     HierarchyPlugin(options),
     TransclusionPlugin(options),
     BlockPlugin(options),
