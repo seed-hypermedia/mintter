@@ -12,10 +12,7 @@ export default function Heading({
 }: HeadingProps) {
   const Elm = as
   return (
-    <Elm
-      {...props}
-      className={`text-heading ${className}`}
-    >
+    <Elm {...props} className={`text-heading ${className}`}>
       {children}
     </Elm>
   )
