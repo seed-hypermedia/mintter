@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/ipfs/go-ipld-cbor
+	branch = master
+	commit = f689d2bb3874cf3fafb71721cafb2c945234e781
+	parent = 1bee208c112babbe1f38a15f2758cc250a7fb633
+	method = merge
+	cmdver = 0.4.3
