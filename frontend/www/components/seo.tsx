@@ -28,9 +28,9 @@ const dataTags: {[name: string]: SiteTags} = {
     localeAlternate: 'en_GB',
   },
   'alicearticles.com': {
-    title: 'Ethosfera',
+    title: 'Alice Articles at Mintter',
     description:
-      '“El humano perfecto es el mejor de los animales, así también, apartado de la ley y la justicia, es el peor de todos.”Aristóteles Somos un think tank español creado en 2020 con un propósito: Catalizar la virtud privada al servicio del interés público y combatir los riesgos que amenazan nuestra democracia en la era digital [&hellip;]',
+      'Alice Articles. This is a Demo Node for the new Publishing platform Mintter. learn more at https://mintter.com',
     twitterCard: 'summary_large_image',
     locale: 'es_ES',
     localeAlternate: 'en_GB',
