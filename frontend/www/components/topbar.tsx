@@ -1,4 +1,4 @@
-import {useCallback} from 'react'
+import React from 'react'
 import {useState} from 'react'
 import {css} from 'emotion'
 import Tippy from '@tippyjs/react'
@@ -23,17 +23,10 @@ interface NavItemProps {
 export default function Topbar({isPublic = false}) {
   const history = useHistory()
   const match = useRouteMatch()
-  const [input, setInput] = useState<string>('')
   const [menuVisible, setMenuVisible] = useState<boolean>(false)
   const isLocal = isLocalhost(window.location.hostname)
-  const show = useCallback(() => setMenuVisible(true), [setMenuVisible])
-  const hide = useCallback(() => setMenuVisible(false), [setMenuVisible])
-
-  async function handleSearch(e) {
-    e.preventDefault()
-    await setInput('')
-    history.push(`${getPath(match)}/p/${input}`)
-  }
+  const show = React.useCallback(() => setMenuVisible(true), [setMenuVisible])
+  const hide = React.useCallback(() => setMenuVisible(false), [setMenuVisible])
 
   function toggleFormMetadata() {
     if (menuVisible) {
@@ -78,15 +71,7 @@ export default function Topbar({isPublic = false}) {
       </span>
       <div className="py-4">
         <div className={`w-full px-4 md:px-6`}>
-          <form className="w-full" onSubmit={handleSearch}>
-            <Input
-              onChange={(e: any) => setInput(e.target.value)}
-              name="hash-search"
-              type="text"
-              placeholder="Enter a publication CID"
-              className="rounded-full"
-            />
-          </form>
+          <MintterSearch />
         </div>
       </div>
 
@@ -126,5 +111,35 @@ export default function Topbar({isPublic = false}) {
         </Tippy>
       </div>
     </div>
+  )
+}
+
+function MintterSearch() {
+  const ref = React.useRef<HTMLInputElement>(null)
+  const history = useHistory()
+  const match = useRouteMatch()
+  async function handleSearch(e) {
+    e.preventDefault()
+    let to = ref.current.value
+    if (to.includes('mintter://')) {
+      to = to.split('/')[2]
+    }
+    // console.log('input value', {to, original: ref.current.value})
+
+    ref.current.value = ''
+
+    history.push(`${getPath(match)}/p/${to}`)
+  }
+
+  return (
+    <form className="w-full" onSubmit={handleSearch}>
+      <Input
+        ref={ref}
+        name="hash-search"
+        type="text"
+        placeholder="Enter a publication CID"
+        className="rounded-full"
+      />
+    </form>
   )
 }

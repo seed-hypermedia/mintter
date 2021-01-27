@@ -113,7 +113,7 @@ export default function Publication() {
     const id = blockId.includes('/')
       ? blockId
       : `${data.document?.version}/${blockId}`
-    const res = copyTextToClipboard(id)
+    const res = copyTextToClipboard(`mintter://${id}`)
     if (res) {
       addToast('Block Ref copied to your clipboard!', {
         appearance: 'success',
@@ -153,9 +153,9 @@ export default function Publication() {
   if (isError) {
     return <ErrorMessage error={error} />
   }
-
   return (
     <Page>
+      <Seo title={data.document?.title} description={data.document?.subtitle} />
       <SplitPane
         style={{
           height: '100%',
@@ -245,14 +245,16 @@ export default function Publication() {
           <div />
         )}
       </SplitPane>
-      <Seo
-        title={`${data.document &&
-          `${data?.document?.title} | `}Mintter Publication`}
-      />
       <PublicationModal document={data.document} />
     </Page>
   )
 }
+
+// function PublicationError(props) {
+//   return props.error ? (
+//     <div className="bg-white p-4 text-red-800">ERROR IN PUBLICATION</div>
+//   ) : null
+// }
 
 function usePublication() {
   // get document version
