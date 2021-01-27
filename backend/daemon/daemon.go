@@ -115,9 +115,9 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "User-agent: *\nDisallow: /\n")
-	})
+	// mux.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+	// 	fmt.Fprintf(w, "User-agent: *\nDisallow: /\n")
+	// })
 	mux.HandleFunc("/_debug/build-info", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Version: %s\n", backend.Version)
 	})
