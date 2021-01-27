@@ -1,10 +1,12 @@
 import React from 'react'
-import Head from 'next/head'
+import {Helmet} from 'react-helmet'
 
 interface SeoProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string
   description?: string
   image?: string
+  locale?: string
+  localeAlternate?: string
   children?: any
 }
 
@@ -52,8 +54,8 @@ export default function Seo({children, ...props}: SeoProps) {
     localeAlternate = meta.localeAlternate,
   } = props
   return (
-    <Head>
-      <title>{`${title} | ${meta.title}`}</title>
+    <Helmet>
+      <title>{`${title ? title : meta.title} | ${meta.title}`}</title>
       <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0, viewport-fit=cover"
@@ -62,10 +64,14 @@ export default function Seo({children, ...props}: SeoProps) {
       <link rel="icon" href="/favicon.ico" key="favicon" />
       <meta
         property="og:title"
-        content={`${title} | ${meta.title}`}
+        content={`${title ? title : meta.title} | ${meta.title}`}
         key="title"
       />
-      <meta property="og:description" content={description} key="description" />
+      <meta
+        property="og:description"
+        content={description ? description : meta.description}
+        key="description"
+      />
       <meta property="og:locale" content={locale} key="locale" />
       <meta
         property="og:locale:alternate"
@@ -81,6 +87,6 @@ export default function Seo({children, ...props}: SeoProps) {
 
       <meta property="og:site_name" content={meta.title} />
       {children}
-    </Head>
+    </Helmet>
   )
 }
