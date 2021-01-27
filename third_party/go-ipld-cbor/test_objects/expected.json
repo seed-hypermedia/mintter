@@ -1,0 +1,9 @@
+{
+	"array-link": {"/":"bafyreidj7kdv2gkmhycdq5bagiloawte5z6egwztbwovsk6v3xookbpyuu"},
+	"empty-array": {"/":"bafyreidwx2fvfdiaox32v2mnn6sxu3j4qoxeqcuenhtgrv5qv6litfnmoe"},
+	"empty-obj": {"/":"bafyreigbtj4x7ip5legnfznufuopl4sg4knzc2cof6duas4b3q2fy6swua"},
+	"foo": {"/":"bafyreid56m6jpnmimcltiqpdaujthpqfl722vd4kr2xjp6rpuhx66iri64"},
+	"foo2": {"/":"bafyreid56m6jpnmimcltiqpdaujthpqfl722vd4kr2xjp6rpuhx66iri64"},
+	"obj-with-link": {"/":"bafyreibvjvcv745gig4mvqs4hctx4zfkono4rjejm2ta6gtyzkqxfjeily"},
+	"obj-no-link": {"/":"bafyreiduyr3p3ppndxmoc4q2it3vmezjx2ndt5oakudtplfgyyfb2k7swm"}
+}
