@@ -5,6 +5,7 @@ import {FullPageErrorMessage} from 'components/error-message'
 import {PrivateRoute} from 'components/routes'
 import {AppLayout} from 'components/layout'
 import Topbar from 'components/topbar'
+import Seo from 'components/seo'
 
 const Library = React.lazy(() => import('screens/library'))
 const Settings = React.lazy(() => import('screens/settings'))
@@ -15,6 +16,9 @@ export default function AuthenticatedApp() {
 
   return (
     <ErrorBoundary FallbackComponent={FullPageErrorMessage}>
+      <Seo>
+        <meta name="robots" content="noindex, nofollow" />
+      </Seo>
       <AppLayout>
         <Topbar />
         <Switch>
