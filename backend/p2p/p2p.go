@@ -80,6 +80,8 @@ type Node struct {
 	dialOpts []grpc.DialOption  // Default dial options for gRPC client. Cached to avoid allocating same options for every call.
 	docsrv   *document.Server
 
+	bootstrapped chan bool
+
 	mu   sync.Mutex
 	subs map[identity.ProfileID]*subscription
 }
@@ -195,6 +197,8 @@ func NewNode(repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (
 		ctx:      ctx,
 		quit:     cancel,
 		dialOpts: dialOpts(h),
+
+		bootstrapped: make(chan bool, 1),
 	}
 
 	if err := n.subscribeToKnownProfiles(ctx); err != nil {
@@ -225,8 +229,13 @@ func NewNode(repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (
 			log.Debug("IPFSBootstrapStarted")
 			err = ipfsnode.Bootstrap(ctx, peers)
 			log.Debug("IPFSBootstrapEnded", zap.Error(err))
+			n.bootstrapped <- true
+			close(n.bootstrapped)
 			return err
 		})
+	} else {
+		n.bootstrapped <- false
+		close(n.bootstrapped)
 	}
 
 	n.serveRPC()
@@ -280,4 +289,9 @@ func (n *Node) Account() identity.Account {
 // Addrs return p2p multiaddresses this node is listening on.
 func (n *Node) Addrs() ([]multiaddr.Multiaddr, error) {
 	return peer.AddrInfoToP2pAddrs(host.InfoFromHost(n.host))
+}
+
+// Bootstrapped returns a channel to wait for the node bootstrapping.
+func (n *Node) Bootstrapped() <-chan bool {
+	return n.bootstrapped
 }
