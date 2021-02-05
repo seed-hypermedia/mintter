@@ -343,8 +343,8 @@ export class Link extends jspb.Message {
   getUri(): string;
   setUri(value: string): void;
 
-  getContentType(): string;
-  setContentType(value: string): void;
+  getMimeType(): string;
+  setMimeType(value: string): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Link.AsObject;
@@ -357,7 +357,7 @@ export class Link extends jspb.Message {
 export namespace Link {
   export type AsObject = {
     uri: string,
-    contentType: string,
+    mimeType: string,
   }
 }
 
@@ -456,6 +456,9 @@ export class TextRun extends jspb.Message {
   getBold(): boolean;
   setBold(value: boolean): void;
 
+  getItalic(): boolean;
+  setItalic(value: boolean): void;
+
   getUnderline(): boolean;
   setUnderline(value: boolean): void;
 
@@ -483,6 +486,7 @@ export namespace TextRun {
   export type AsObject = {
     text: string,
     bold: boolean,
+    italic: boolean,
     underline: boolean,
     strikethrough: boolean,
     code: boolean,
