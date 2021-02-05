@@ -3021,7 +3021,7 @@ proto.com.mintter.documents.v1alpha.Link.prototype.toObject = function(opt_inclu
 proto.com.mintter.documents.v1alpha.Link.toObject = function(includeInstance, msg) {
   var f, obj = {
     uri: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    contentType: jspb.Message.getFieldWithDefault(msg, 2, "")
+    mimeType: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -3064,7 +3064,7 @@ proto.com.mintter.documents.v1alpha.Link.deserializeBinaryFromReader = function(
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.setContentType(value);
+      msg.setMimeType(value);
       break;
     default:
       reader.skipField();
@@ -3102,7 +3102,7 @@ proto.com.mintter.documents.v1alpha.Link.serializeBinaryToWriter = function(mess
       f
     );
   }
-  f = message.getContentType();
+  f = message.getMimeType();
   if (f.length > 0) {
     writer.writeString(
       2,
@@ -3131,10 +3131,10 @@ proto.com.mintter.documents.v1alpha.Link.prototype.setUri = function(value) {
 
 
 /**
- * optional string content_type = 2;
+ * optional string mime_type = 2;
  * @return {string}
  */
-proto.com.mintter.documents.v1alpha.Link.prototype.getContentType = function() {
+proto.com.mintter.documents.v1alpha.Link.prototype.getMimeType = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -3143,7 +3143,7 @@ proto.com.mintter.documents.v1alpha.Link.prototype.getContentType = function() {
  * @param {string} value
  * @return {!proto.com.mintter.documents.v1alpha.Link} returns this
  */
-proto.com.mintter.documents.v1alpha.Link.prototype.setContentType = function(value) {
+proto.com.mintter.documents.v1alpha.Link.prototype.setMimeType = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -3799,11 +3799,12 @@ proto.com.mintter.documents.v1alpha.TextRun.toObject = function(includeInstance,
   var f, obj = {
     text: jspb.Message.getFieldWithDefault(msg, 1, ""),
     bold: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
-    underline: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
-    strikethrough: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
-    code: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
-    blockquote: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
-    linkKey: jspb.Message.getFieldWithDefault(msg, 7, "")
+    italic: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
+    underline: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
+    strikethrough: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
+    code: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
+    blockquote: jspb.Message.getBooleanFieldWithDefault(msg, 7, false),
+    linkKey: jspb.Message.getFieldWithDefault(msg, 8, "")
   };
 
   if (includeInstance) {
@@ -3850,21 +3851,25 @@ proto.com.mintter.documents.v1alpha.TextRun.deserializeBinaryFromReader = functi
       break;
     case 3:
       var value = /** @type {boolean} */ (reader.readBool());
-      msg.setUnderline(value);
+      msg.setItalic(value);
       break;
     case 4:
       var value = /** @type {boolean} */ (reader.readBool());
-      msg.setStrikethrough(value);
+      msg.setUnderline(value);
       break;
     case 5:
       var value = /** @type {boolean} */ (reader.readBool());
-      msg.setCode(value);
+      msg.setStrikethrough(value);
       break;
     case 6:
       var value = /** @type {boolean} */ (reader.readBool());
-      msg.setBlockquote(value);
+      msg.setCode(value);
       break;
     case 7:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setBlockquote(value);
+      break;
+    case 8:
       var value = /** @type {string} */ (reader.readString());
       msg.setLinkKey(value);
       break;
@@ -3911,38 +3916,45 @@ proto.com.mintter.documents.v1alpha.TextRun.serializeBinaryToWriter = function(m
       f
     );
   }
-  f = message.getUnderline();
+  f = message.getItalic();
   if (f) {
     writer.writeBool(
       3,
       f
     );
   }
-  f = message.getStrikethrough();
+  f = message.getUnderline();
   if (f) {
     writer.writeBool(
       4,
       f
     );
   }
-  f = message.getCode();
+  f = message.getStrikethrough();
   if (f) {
     writer.writeBool(
       5,
       f
     );
   }
-  f = message.getBlockquote();
+  f = message.getCode();
   if (f) {
     writer.writeBool(
       6,
       f
     );
   }
+  f = message.getBlockquote();
+  if (f) {
+    writer.writeBool(
+      7,
+      f
+    );
+  }
   f = message.getLinkKey();
   if (f.length > 0) {
     writer.writeString(
-      7,
+      8,
       f
     );
   }
@@ -3986,10 +3998,10 @@ proto.com.mintter.documents.v1alpha.TextRun.prototype.setBold = function(value) 
 
 
 /**
- * optional bool underline = 3;
+ * optional bool italic = 3;
  * @return {boolean}
  */
-proto.com.mintter.documents.v1alpha.TextRun.prototype.getUnderline = function() {
+proto.com.mintter.documents.v1alpha.TextRun.prototype.getItalic = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 3, false));
 };
 
@@ -3998,16 +4010,16 @@ proto.com.mintter.documents.v1alpha.TextRun.prototype.getUnderline = function() 
  * @param {boolean} value
  * @return {!proto.com.mintter.documents.v1alpha.TextRun} returns this
  */
-proto.com.mintter.documents.v1alpha.TextRun.prototype.setUnderline = function(value) {
+proto.com.mintter.documents.v1alpha.TextRun.prototype.setItalic = function(value) {
   return jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 
 /**
- * optional bool strikethrough = 4;
+ * optional bool underline = 4;
  * @return {boolean}
  */
-proto.com.mintter.documents.v1alpha.TextRun.prototype.getStrikethrough = function() {
+proto.com.mintter.documents.v1alpha.TextRun.prototype.getUnderline = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 4, false));
 };
 
@@ -4016,16 +4028,16 @@ proto.com.mintter.documents.v1alpha.TextRun.prototype.getStrikethrough = functio
  * @param {boolean} value
  * @return {!proto.com.mintter.documents.v1alpha.TextRun} returns this
  */
-proto.com.mintter.documents.v1alpha.TextRun.prototype.setStrikethrough = function(value) {
+proto.com.mintter.documents.v1alpha.TextRun.prototype.setUnderline = function(value) {
   return jspb.Message.setProto3BooleanField(this, 4, value);
 };
 
 
 /**
- * optional bool code = 5;
+ * optional bool strikethrough = 5;
  * @return {boolean}
  */
-proto.com.mintter.documents.v1alpha.TextRun.prototype.getCode = function() {
+proto.com.mintter.documents.v1alpha.TextRun.prototype.getStrikethrough = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 5, false));
 };
 
@@ -4034,16 +4046,16 @@ proto.com.mintter.documents.v1alpha.TextRun.prototype.getCode = function() {
  * @param {boolean} value
  * @return {!proto.com.mintter.documents.v1alpha.TextRun} returns this
  */
-proto.com.mintter.documents.v1alpha.TextRun.prototype.setCode = function(value) {
+proto.com.mintter.documents.v1alpha.TextRun.prototype.setStrikethrough = function(value) {
   return jspb.Message.setProto3BooleanField(this, 5, value);
 };
 
 
 /**
- * optional bool blockquote = 6;
+ * optional bool code = 6;
  * @return {boolean}
  */
-proto.com.mintter.documents.v1alpha.TextRun.prototype.getBlockquote = function() {
+proto.com.mintter.documents.v1alpha.TextRun.prototype.getCode = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 6, false));
 };
 
@@ -4052,17 +4064,35 @@ proto.com.mintter.documents.v1alpha.TextRun.prototype.getBlockquote = function()
  * @param {boolean} value
  * @return {!proto.com.mintter.documents.v1alpha.TextRun} returns this
  */
-proto.com.mintter.documents.v1alpha.TextRun.prototype.setBlockquote = function(value) {
+proto.com.mintter.documents.v1alpha.TextRun.prototype.setCode = function(value) {
   return jspb.Message.setProto3BooleanField(this, 6, value);
 };
 
 
 /**
- * optional string link_key = 7;
+ * optional bool blockquote = 7;
+ * @return {boolean}
+ */
+proto.com.mintter.documents.v1alpha.TextRun.prototype.getBlockquote = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 7, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.com.mintter.documents.v1alpha.TextRun} returns this
+ */
+proto.com.mintter.documents.v1alpha.TextRun.prototype.setBlockquote = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 7, value);
+};
+
+
+/**
+ * optional string link_key = 8;
  * @return {string}
  */
 proto.com.mintter.documents.v1alpha.TextRun.prototype.getLinkKey = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
 };
 
 
@@ -4071,7 +4101,7 @@ proto.com.mintter.documents.v1alpha.TextRun.prototype.getLinkKey = function() {
  * @return {!proto.com.mintter.documents.v1alpha.TextRun} returns this
  */
 proto.com.mintter.documents.v1alpha.TextRun.prototype.setLinkKey = function(value) {
-  return jspb.Message.setProto3StringField(this, 7, value);
+  return jspb.Message.setProto3StringField(this, 8, value);
 };
 
 

@@ -197,7 +197,7 @@ message Link {
   string uri = 1;
 
   // Optional. Content type for the content this URI points to.
-  string content_type = 2;
+  string mime_type = 2;
 }
 
 // List style for a list of blocks.
@@ -279,21 +279,24 @@ message TextRun {
   // Bold formatting attribute.
   bool bold = 2;
 
+  // Italic formatting attribute.
+  bool italic = 3;
+
   // Underline formatting attribute.
-  bool underline = 3;
+  bool underline = 4;
 
   // Strikethrough formatting attribute.
-  bool strikethrough = 4;
+  bool strikethrough = 5;
 
   // Code formatting attribute.
-  bool code = 5;
+  bool code = 6;
 
   // Blockquote formatting attribute. This is available for content that can't be reused with Mintter Quotes.
-  bool blockquote = 6;
+  bool blockquote = 7;
 
   // If text is an anchor for a link - this must be a map key from the document's links lookup map that corresponds to
   // the link.
-  string link_key = 7;
+  string link_key = 8;
 }
 
 // Image embedded object.
