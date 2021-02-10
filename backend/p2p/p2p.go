@@ -82,6 +82,8 @@ type Node struct {
 
 	bootstrapped chan bool
 
+	connCache connCache
+
 	mu   sync.Mutex
 	subs map[identity.ProfileID]*subscription
 }
@@ -245,20 +247,14 @@ func NewNode(repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (
 }
 
 // Close the node gracefully.
-func (n *Node) Close() (err error) {
+func (n *Node) Close() error {
 	n.quit()
 
-	groupErr := n.g.Wait()
-	if !errors.Is(groupErr, context.Canceled) && !errors.Is(groupErr, context.DeadlineExceeded) {
-		err = multierr.Append(err, groupErr)
-	}
-
-	cleanupErr := n.cleanup.Close()
-	if !errors.Is(cleanupErr, context.Canceled) && !errors.Is(cleanupErr, context.DeadlineExceeded) {
-		err = multierr.Append(err, cleanupErr)
-	}
-
-	return err
+	return multierr.Combine(
+		realError(n.g.Wait()),
+		realError(n.connCache.Close()),
+		realError(n.cleanup.Close()),
+	)
 }
 
 // DocServer returns the underlying documents server.
@@ -274,6 +270,11 @@ func (n *Node) IPFS() *ipfsutil.Node {
 // Host of the p2p node.
 func (n *Node) Host() host.Host {
 	return n.host
+}
+
+// PubSub instance of the p2p node.
+func (n *Node) PubSub() *pubsub.PubSub {
+	return n.pubsub
 }
 
 // Store of the node.
@@ -294,4 +295,32 @@ func (n *Node) Addrs() ([]multiaddr.Multiaddr, error) {
 // Bootstrapped returns a channel to wait for the node bootstrapping.
 func (n *Node) Bootstrapped() <-chan bool {
 	return n.bootstrapped
+}
+
+type connCache struct {
+	sync.Mutex
+	conns map[peer.ID]*grpc.ClientConn
+}
+
+func (c *connCache) Close() (err error) {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.conns == nil {
+		return nil
+	}
+
+	for _, conn := range c.conns {
+		err = multierr.Append(err, conn.Close())
+	}
+
+	return err
+}
+
+func realError(err error) error {
+	if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
+		return err
+	}
+
+	return nil
 }

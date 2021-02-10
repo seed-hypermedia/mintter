@@ -150,7 +150,6 @@ func (n *Node) handshake(ctx context.Context, pid peer.ID) (identity.Profile, er
 	if err != nil {
 		return identity.Profile{}, err
 	}
-	defer logClose(n.log, conn.Close, "failed closing grpc connection")
 
 	me, err := n.store.CurrentProfile(ctx)
 	if err != nil {
