@@ -16,7 +16,6 @@ func (n *Node) SyncDocuments(ctx context.Context, pid identity.ProfileID) error 
 	if err != nil {
 		return err
 	}
-	defer logClose(n.log, conn.Close, "failed closing grpc connection syncing documents")
 
 	resp, err := v2.NewDocumentsClient(conn).ListDocuments(ctx, &v2.ListDocumentsRequest{
 		Author:          pid.String(),

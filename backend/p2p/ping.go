@@ -20,7 +20,6 @@ func (n *Node) Ping(ctx context.Context, pid identity.ProfileID) (time.Duration,
 	if err != nil {
 		return 0, err
 	}
-	defer logClose(n.log, conn.Close, "failed closing grpc connection")
 
 	start := time.Now()
 	if _, err = internal.NewPeerServiceClient(conn).Ping(ctx, &internal.PingRequest{}); err != nil {
