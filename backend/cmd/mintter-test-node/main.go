@@ -8,26 +8,36 @@ import (
 	"mintter/backend/store"
 	"time"
 
+	namesys "github.com/libp2p/go-libp2p-pubsub-router"
+
 	"github.com/burdiyan/go/mainutil"
-	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
 	"net/http"
 	_ "net/http/pprof"
-
-	"github.com/rakyll/autopprof"
 )
 
+var topic = namesys.KeyToTopic("mintter/author1")
+
+type validator struct{}
+
+func (v *validator) Validate(key string, value []byte) error {
+	return nil
+}
+
+func (v *validator) Select(key string, values [][]byte) (int, error) {
+	return -1, nil
+}
+
 func main() {
-	mainutil.Run(run)
+	if err := run(); err != nil {
+		panic(err)
+	}
 }
 
 func run() error {
-	autopprof.Capture(autopprof.CPUProfile{
-		Duration: 30 * time.Second,
-	})
 	g, ctx := errgroup.WithContext(mainutil.TrapSignals())
 
 	go func() {
@@ -48,68 +58,100 @@ func run() error {
 		Addr:        "/ip4/0.0.0.0/tcp/33001",
 		NoBootstrap: true,
 	})
+	if err != nil {
+		return err
+	}
 	defer bob.Close()
+
+	carol, err := makeNode("carol", config.P2P{
+		Addr:        "/ip4/0.0.0.0/tcp/33002",
+		NoBootstrap: true,
+	})
+	if err != nil {
+		return err
+	}
+	defer carol.Close()
 
 	<-alice.Bootstrapped()
 	<-bob.Bootstrapped()
+	<-carol.Bootstrapped()
 
-	aps, err := pubsub.NewGossipSub(ctx, alice.Host())
-	if err != nil {
+	m := map[string]string{
+		alice.Host().ID().String(): "alice",
+		bob.Host().ID().String():   "bob",
+		carol.Host().ID().String(): "carol",
+	}
+
+	if err := carol.Connect(ctx, mustAddrs(alice.Addrs())...); err != nil {
 		return err
 	}
 
-	bps, err := pubsub.NewGossipSub(ctx, bob.Host())
-	if err != nil {
+	if err := carol.Connect(ctx, mustAddrs(bob.Addrs())...); err != nil {
 		return err
 	}
-
-	atopic, err := aps.Join("mintter/doc-1")
-	if err != nil {
-		return err
-	}
-	defer atopic.Close()
-
-	asub, err := atopic.Subscribe()
-	if err != nil {
-		return err
-	}
-	defer asub.Cancel()
-
-	btopic, err := bps.Join("mintter/doc-1")
-	if err != nil {
-		return err
-	}
-	defer btopic.Close()
-
-	bsub, err := btopic.Subscribe()
-	if err != nil {
-		return err
-	}
-	defer bsub.Cancel()
 
 	g.Go(func() error {
+		t, err := carol.PubSub().Join(namesys.KeyToTopic("foo"))
+		if err != nil {
+			return err
+		}
+		defer t.Close()
+
+		sub, err := t.Subscribe()
+		if err != nil {
+			return err
+		}
+		defer sub.Cancel()
+
 		for {
-			msg, err := bsub.Next(ctx)
+			msg, err := sub.Next(ctx)
 			if err != nil {
 				return err
 			}
-			fmt.Println(msg.Seqno, string(msg.Data))
+
+			fmt.Println(time.Now(), "From:", m[msg.ReceivedFrom.String()], "Msg:", string(msg.Data))
 		}
 	})
+
+	astore, err := namesys.NewPubsubValueStore(ctx, alice.Host(), alice.PubSub(), &validator{})
+	if err != nil {
+		return err
+	}
+
+	bstore, err := namesys.NewPubsubValueStore(ctx, bob.Host(), bob.PubSub(), &validator{})
+	if err != nil {
+		return err
+	}
+
+	v, err := bstore.GetValue(ctx, "foo")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(v))
 
 	if err := alice.Connect(ctx, mustAddrs(bob.Addrs())...); err != nil {
 		return err
 	}
 
-	fmt.Println("Now we're ready")
-	fmt.Println(atopic.ListPeers())
-	time.AfterFunc(10*time.Second, func() {
-		fmt.Println(atopic.ListPeers())
-	})
-
-	if err := atopic.Publish(ctx, []byte("hello")); err != nil {
+	if err := astore.PutValue(ctx, "foo", []byte("bar")); err != nil {
 		return err
 	}
+
+	g.Go(func() error {
+		for {
+			select {
+			case <-time.Tick(10 * time.Second):
+				v, err := bstore.GetValue(ctx, "foo")
+				if err != nil {
+					fmt.Println(err)
+				} else {
+					fmt.Println(string(v))
+				}
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		}
+	})
 
 	return g.Wait()
 }
