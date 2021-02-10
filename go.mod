@@ -51,6 +51,7 @@ require (
 	github.com/libp2p/go-libp2p-noise v0.1.2 // indirect
 	github.com/libp2p/go-libp2p-peerstore v0.2.6
 	github.com/libp2p/go-libp2p-pubsub v0.4.1
+	github.com/libp2p/go-libp2p-pubsub-router v0.4.0
 	github.com/libp2p/go-libp2p-quic-transport v0.10.0
 	github.com/libp2p/go-libp2p-record v0.1.3
 	github.com/libp2p/go-libp2p-secio v0.2.2
@@ -64,7 +65,6 @@ require (
 	github.com/multiformats/go-multihash v0.0.14
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/polydawn/refmt v0.0.0-20190807091052-3d65705ee9f1
-	github.com/rakyll/autopprof v0.1.0
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/rs/xid v1.2.1
 	github.com/sanity-io/litter v1.3.0

@@ -31,7 +31,6 @@ func (n *Node) GetProfile(ctx context.Context, pid peer.ID) (identity.Profile, e
 	if err != nil {
 		return identity.Profile{}, err
 	}
-	defer logClose(n.log, conn.Close, "error closing grpc connection")
 
 	pbprof, err := internal.NewPeerServiceClient(conn).GetProfile(ctx, &internal.GetProfileRequest{})
 	if err != nil {
@@ -47,7 +46,6 @@ func (n *Node) SyncProfiles(ctx context.Context, pid identity.ProfileID) error {
 	if err != nil {
 		return err
 	}
-	defer logClose(n.log, conn.Close, "error closing grpc connection")
 
 	resp, err := internal.NewPeerServiceClient(conn).ListProfiles(ctx, &internal.ListProfilesRequest{})
 	if err != nil {

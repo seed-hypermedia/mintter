@@ -15,6 +15,7 @@ import (
 	gostream "github.com/libp2p/go-libp2p-gostream"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
 )
 
 // rpcHandler wraps p2p Node implementing grpc server interface.
@@ -55,10 +56,38 @@ func (n *Node) dialProfile(ctx context.Context, pid identity.ProfileID, opts ...
 	return n.dial(ctx, prof.Peer.ID, opts...)
 }
 
+// dial opens and caches the GRPC connection per peer. Callers MUST NOT close the GRPC connection after it's used.
 func (n *Node) dial(ctx context.Context, pid peer.ID, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-	opts = append(opts, n.dialOpts...)
+	n.connCache.Lock()
+	defer n.connCache.Unlock()
 
-	return grpc.DialContext(ctx, pid.String(), opts...)
+	if n.connCache.conns == nil {
+		n.connCache.conns = make(map[peer.ID]*grpc.ClientConn)
+	}
+
+	if conn := n.connCache.conns[pid]; conn != nil {
+		if conn.GetState() != connectivity.Shutdown {
+			return conn, nil
+		}
+
+		if err := conn.Close(); err != nil {
+			n.log.Error("FailedClosingGRPCConnection", zap.Error(err), zap.String("peer", pid.String()))
+		}
+		delete(n.connCache.conns, pid)
+	}
+
+	conn, err := grpc.DialContext(ctx, pid.String(), append(opts, n.dialOpts...)...)
+	if err != nil {
+		return nil, err
+	}
+
+	if n.connCache.conns[pid] != nil {
+		panic("BUG: adding connection while there's another open")
+	}
+
+	n.connCache.conns[pid] = conn
+
+	return conn, nil
 }
 
 func dialOpts(host host.Host) []grpc.DialOption {
@@ -73,11 +102,5 @@ func dialOpts(host host.Host) []grpc.DialOption {
 		}),
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
-	}
-}
-
-func logClose(l *zap.Logger, fn func() error, errmsg string) {
-	if err := fn(); err != nil {
-		l.Warn("CloseError", zap.Error(err), zap.String("details", errmsg))
 	}
 }
