@@ -7,13 +7,13 @@ option go_package = "mintter/api/go/p2p;p2p";
 service PeerService {
   // Handshake performs profile exchange for the first time between peers.
   // This should ideally only happen once between a given pair of peers.
-  rpc Handshake(HandshakeRequest) returns(HandshakeResponse);
+  rpc Handshake(HandshakeRequest) returns (HandshakeResponse);
 
-  rpc Ping(PingRequest) returns(PingResponse);
+  rpc Ping(PingRequest) returns (PingResponse);
 
-  rpc GetProfile(GetProfileRequest) returns(Profile);
+  rpc GetProfile(GetProfileRequest) returns (Profile);
 
-  rpc ListProfiles(ListProfilesRequest) returns(ListProfilesResponse);
+  rpc ListProfiles(ListProfilesRequest) returns (ListProfilesResponse);
 }
 
 message HandshakeRequest {
