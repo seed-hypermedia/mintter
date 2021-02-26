@@ -2,8 +2,6 @@
 
 This is main repository for the Mintter project.
 
-![Deploy Frontend & Publish](https://github.com/mintterteam/mintter/workflows/Deploy%20Frontend%20&%20Publish/badge.svg?branch=master)
-
 For more info about the architecture see [this](/docs/architecture/README.md).
 
 ## Prerequisites
