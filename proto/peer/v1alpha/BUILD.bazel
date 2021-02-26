@@ -1,0 +1,16 @@
+load("//build/protobuf:rules.bzl", "mtt_go_proto", "mtt_js_proto")
+
+filegroup(
+    name = "protos",
+    srcs = glob(["*.proto"]),
+)
+
+mtt_go_proto(
+    name = "go",
+    srcs = [":protos"],
+)
+
+mtt_js_proto(
+    name = "js",
+    srcs = [":protos"],
+)
