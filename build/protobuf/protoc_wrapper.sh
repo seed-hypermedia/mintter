@@ -1,4 +1,5 @@
-#!/usr/bin/env bash -e
+#!/usr/bin/env bash
+set -e
 
 SOURCE_DIR="$1"
 LANGUAGE="$2"

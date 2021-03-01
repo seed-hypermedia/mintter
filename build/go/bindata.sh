@@ -1,4 +1,5 @@
-#!/usr/bin/env bash -e
+#!/usr/bin/env bash
+set -e
 
 SOURCE_DIR="$1"
 PACKAGE_NAME="$2"
@@ -14,4 +15,4 @@ REPLACEMENT="\/\/ +build bindata\\
 \\
 package $PACKAGE_NAME"
 
-sed -i '' -e "s/package $PACKAGE_NAME/$REPLACEMENT/" ./rice-box.go
+sed -i'' -e "s/package $PACKAGE_NAME/$REPLACEMENT/" ./rice-box.go
