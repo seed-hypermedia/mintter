@@ -8,6 +8,7 @@ import {useWelcome} from 'shared/welcome-provider'
 import {useProfile} from 'shared/profile-context'
 import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
+import {Button} from 'components/button'
 
 export default function WelcomeIntro() {
   const {history, match} = useRouter()
@@ -35,12 +36,15 @@ export default function WelcomeIntro() {
       </Container>
       <Footer className="flex-none">
         <Container className="mx-auto">
-          <NextButton
+          <Button
+            size="3"
+            appearance="pill"
+            variant="success"
+            css={{minWidth: '$9'}}
             onClick={handleNext}
-            className="text-2xl font-light px-10"
           >
-            start
-          </NextButton>
+            Start
+          </Button>
         </Container>
       </Footer>
     </>

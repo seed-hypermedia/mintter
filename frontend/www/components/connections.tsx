@@ -4,6 +4,7 @@ import Tippy from '@tippyjs/react'
 import {Profile, ConnectionStatus} from '@mintter/api/v2/mintter_pb'
 import {useConnectionList} from 'shared/profile-context'
 import {ErrorMessage} from './error-message'
+import {Button} from './button'
 
 export function Connections({onConnect}) {
   const {data = [], isLoading, isError, error} = useConnectionList()
@@ -79,6 +80,9 @@ export function Connections({onConnect}) {
         </ul>
       )}
       <div className="mt-4">
+        <Button variant="transparent" onClick={() => onConnect()}>
+          + add connection
+        </Button>
         <button
           onClick={() => onConnect()}
           className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline"

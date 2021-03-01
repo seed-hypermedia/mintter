@@ -20,6 +20,7 @@ import {useToasts} from 'react-toast-notifications'
 import Publications from './publications'
 import MyPublications from './my-publications'
 import Drafts from './drafts'
+import {Button} from 'components/button'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
@@ -100,12 +101,14 @@ export default function Library() {
             <div className="flex items-baseline justify-between">
               <h1 className="text-4xl font-bold text-heading">Library</h1>
               <div className="flex-1" />
-              <button
+              <Button
+                variant="primary"
+                size="2"
+                appearance="pill"
                 onClick={onCreateDocument}
-                className="bg-primary rounded-full px-4 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
               >
                 Compose
-              </button>
+              </Button>
             </div>
             <div className="flex items-center mt-4 -mx-4">
               <NavItem to={`${match.url}/feed`}>Feed</NavItem>
