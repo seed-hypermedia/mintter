@@ -79,7 +79,7 @@ API for frontend to use.
 
 ### Frontend code conventions
 
-- files and folders are all `snake-case`
+- files and folders are all `kebab-case`
 - variables are `camelCase`
 - components and editor plugins are `PascalCase`
 - avoid creating abstractions
