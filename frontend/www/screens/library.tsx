@@ -10,6 +10,7 @@ import {
   useConnectionList,
   useProfile,
 } from 'shared/profile-context'
+import {Box} from 'components/box'
 import {Link} from 'components/link'
 import {Connections} from 'components/connections'
 import {SuggestedConnections} from 'components/suggested-connections'
@@ -98,9 +99,9 @@ export default function Library() {
         </div>
         <div>
           <MainColumn className="pt-12">
-            <div className="flex items-baseline justify-between">
+            <div className="flex items-center justify-between">
               <h1 className="text-4xl font-bold text-heading">Library</h1>
-              <div className="flex-1" />
+              {/* <div className="flex-1" /> */}
               <Button
                 variant="primary"
                 size="2"
@@ -110,12 +111,18 @@ export default function Library() {
                 Compose
               </Button>
             </div>
-            <div className="flex items-center mt-4 -mx-4">
+            <Box
+              css={{
+                mx: '-$3',
+                marginTop: '$2',
+                display: 'inline-flex',
+                gap: '$1',
+              }}
+            >
               <NavItem to={`${match.url}/feed`}>Feed</NavItem>
               <NavItem to={`${match.url}/published`}>Published</NavItem>
               <NavItem to={`${match.url}/drafts`}>Drafts</NavItem>
-              <div className="flex-1" />
-            </div>
+            </Box>
             <NoConnectionsBox onConnect={onConnect} />
             <div>
               <Switch>
@@ -151,12 +158,17 @@ function ProfileInfo() {
         {profile.username}
       </h3>
       <p className="text-body text-sm mt-2">{profile.bio}</p>
-      <Link
-        to={`${getPath(match)}/settings`}
-        className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline inline-block"
-      >
-        Edit profile
-      </Link>
+      <Box css={{marginTop: '$4', mx: '-$2'}}>
+        <Button
+          as={Link}
+          variant="primary"
+          appearance="plain"
+          to={`${getPath(match)}/settings`}
+          css={{height: '$5'}}
+        >
+          edit profile
+        </Button>
+      </Box>
     </div>
   ) : null
 }

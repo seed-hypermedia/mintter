@@ -178,7 +178,14 @@ export const globalStyles = global({
       fontFamily: 'Basier Circle',
       src:
         "url('/fonts/basiercircle-medium-webfont.eot'), url('/fonts/basiercircle-medium-webfont.eot?#iefix') format('embedded-opentype'), url('/fonts/basiercircle-medium-webfont.woff2') format('woff2'), url('/fonts/basiercircle-medium-webfont.woff') format('woff'), url('/fonts/basiercircle-medium-webfont.ttf') format('truetype')",
-      fontWeight: 'normal',
+      fontWeight: '$2',
+      fontStyle: 'normal',
+    },
+    {
+      fontFamily: 'Basier Circle',
+      src:
+        "url('/fonts/basiercircle-bold-webfont.eot'), url('/fonts/basiercircle-bold-webfont.eot?#iefix') format('embedded-opentype'), url('/fonts/basiercircle-bold-webfont.woff2') format('woff2'), url('/fonts/basiercircle-bold-webfont.woff') format('woff'), url('/fonts/basiercircle-bold-webfont.ttf') format('truetype')",
+      fontWeight: '$4',
       fontStyle: 'normal',
     },
   ],

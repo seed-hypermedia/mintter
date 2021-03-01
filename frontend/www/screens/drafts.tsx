@@ -5,6 +5,7 @@ import {useDrafts, useMintter} from 'shared/mintter-context'
 import {getPath} from 'components/routes'
 import {Icons} from 'components/icons'
 import {useRouter} from 'shared/use-router'
+import {Button} from 'components/button'
 
 export default function Drafts() {
   const {history, match} = useRouter()
@@ -37,13 +38,20 @@ export default function Drafts() {
                 Some clain sentence that's fun, welcomes user to the community
                 and tells how it works and encourages to get started
               </p> */}
-            <button
-              onClick={() => onCreateDocument()}
-              className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
+            <Button
+              onClick={onCreateDocument}
+              appearance="pill"
+              variant="primary"
+              css={{
+                height: '$7',
+                fontSize: '$3',
+                marginTop: '$4',
+                px: '$4',
+              }}
             >
               <Icons.FilePlus color="currentColor" />
-              <span className="ml-2">Start your first document</span>
-            </button>
+              <span>Start your first document</span>
+            </Button>
           </div>
         </>
       )}

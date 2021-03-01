@@ -5,6 +5,7 @@ import Seo from 'components/seo'
 import {ErrorMessage} from 'components/error-message'
 import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
+import {Button} from 'components/button'
 
 export default function Publications() {
   const {history, match} = useRouter()
@@ -43,13 +44,24 @@ export default function Publications() {
             <h3 className="text-xl font-semibold text-primary">
               No Publications (yet)
             </h3>
-            <button
+            <Button
               onClick={handleCreateDraft}
-              className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
+              appearance="pill"
+              variant="primary"
+              css={{
+                height: '$7',
+                fontSize: '$3',
+                marginTop: '$4',
+                display: 'inline-flex',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '$2',
+                px: '$4',
+              }}
             >
               <Icons.FilePlus color="currentColor" />
               <span className="ml-2">Start your first document</span>
-            </button>
+            </Button>
           </div>
         </>
       )}

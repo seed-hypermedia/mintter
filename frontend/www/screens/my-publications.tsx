@@ -5,6 +5,7 @@ import {ErrorMessage} from 'components/error-message'
 import {Icons} from 'components/icons'
 import {getPath} from 'components/routes'
 import {useRouter} from 'shared/use-router'
+import {Button} from 'components/button'
 
 export default function MyPublications({noSeo = false, isPublic = false}) {
   const {history, match} = useRouter()
@@ -42,13 +43,20 @@ export default function MyPublications({noSeo = false, isPublic = false}) {
               No Publications (yet)
             </h3>
             {!isPublic && (
-              <button
+              <Button
                 onClick={() => onCreateDocument()}
-                className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
+                appearance="pill"
+                variant="primary"
+                css={{
+                  height: '$7',
+                  fontSize: '$3',
+                  marginTop: '$4',
+                  px: '$4',
+                }}
               >
                 <Icons.FilePlus color="currentColor" />
-                <span className="ml-2">Start your first document</span>
-              </button>
+                <span>Start your first document</span>
+              </Button>
             )}
           </div>
         </>

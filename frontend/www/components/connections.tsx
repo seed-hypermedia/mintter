@@ -5,6 +5,7 @@ import {Profile, ConnectionStatus} from '@mintter/api/v2/mintter_pb'
 import {useConnectionList} from 'shared/profile-context'
 import {ErrorMessage} from './error-message'
 import {Button} from './button'
+import {Box} from './box'
 
 export function Connections({onConnect}) {
   const {data = [], isLoading, isError, error} = useConnectionList()
@@ -79,17 +80,15 @@ export function Connections({onConnect}) {
           })}
         </ul>
       )}
-      <div className="mt-4">
-        <Button variant="transparent" onClick={() => onConnect()}>
-          + add connection
-        </Button>
-        <button
+      <Box css={{marginTop: '$4', mx: '-$2'}}>
+        <Button
           onClick={() => onConnect()}
-          className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline"
+          variant="primary"
+          appearance="plain"
         >
           + add connection
-        </button>
-      </div>
+        </Button>
+      </Box>
     </div>
   )
 }
