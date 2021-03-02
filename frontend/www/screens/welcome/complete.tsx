@@ -1,7 +1,7 @@
-import Heading from 'components/welcome-heading'
-import Container from 'components/welcome-container'
+import {Heading} from 'components/heading'
+import {Container} from 'components/container'
 import P from 'components/welcome-p'
-import {NextButton} from 'components/welcome-buttons'
+import {Button} from 'components/button'
 import Footer from 'components/footer'
 import {useRouter} from 'shared/use-router'
 import {useWelcome} from 'shared/welcome-provider'
@@ -27,12 +27,14 @@ export default function WelcomeIndex() {
       </Container>
       <Footer className="flex-none">
         <Container className="mx-auto">
-          <NextButton
+          <Button
             onClick={handleNext}
-            className="text-2xl font-light px-10"
+            size="3"
+            variant="success"
+            appearance="outline"
           >
             Open the app
-          </NextButton>
+          </Button>
         </Container>
       </Footer>
     </>

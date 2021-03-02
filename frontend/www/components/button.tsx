@@ -69,6 +69,7 @@ export const Button = styled('button', {
   WebkitTapHighlightColor: 'rgba(0,0,0,0)',
   display: 'inline-flex',
   alignItems: 'center',
+  justifyContent: 'center',
   flexWrap: 'wrap',
   gap: '$2',
   px: '$2',
@@ -100,7 +101,7 @@ export const Button = styled('button', {
   '&:disabled': {
     bc: '$gray100',
     boxShadow: 'inset 0 0 0 1px $colors$gray600',
-    color: '$gray700',
+    color: '$text',
     pointerEvents: 'none',
   },
   variants: {
@@ -235,8 +236,6 @@ export const Button = styled('button', {
       outline: {
         bc: 'transparent',
         borderRadius: '$pill',
-        borderWidth: '1px',
-        borderStyle: 'solid',
       },
       plain: {
         borderColor: 'transparent',
@@ -259,14 +258,14 @@ export const Button = styled('button', {
       css: {
         color: '$muted',
         bc: 'transparent',
-        borderColor: '$muted',
+        boxShadow: 'inset 0 0 0 1px $colors$muted',
         '&:hover, &:active, &:focus': {
-          bc: 'transparent',
-          borderColor: '$mutedHover',
+          bc: '$muted',
+          boxShadow: 'inset 0 0 0 1px transparent, 0 0 0 1px transparent',
         },
         '&:disabled': {
           bc: 'transparent',
-          borderColor: '$mutedHover',
+          boxShadow: 'inset 0 0 0 1px $muted',
           opacity: 0.5,
         },
       },
@@ -277,15 +276,16 @@ export const Button = styled('button', {
       css: {
         color: '$brandPrimary',
         bc: 'transparent',
-        borderColor: '$brandPrimary',
+        boxShadow: 'inset 0 0 0 1px $colors$brandPrimary',
         '&:hover, &:active, &:focus': {
           bc: '$brandPrimary',
-          borderColor: '$brandPrimary',
+          boxShadow:
+            'inset 0 0 0 1px $colors$brandPrimary, 0 0 0 1px $colors$brandPrimary',
           color: 'white',
         },
         '&:disabled': {
           bc: 'transparent',
-          borderColor: '$brandPrimaryHover',
+          boxShadow: 'inset 0 0 0 1px $colors$brandPrimary',
           opacity: 0.5,
         },
       },
@@ -296,15 +296,15 @@ export const Button = styled('button', {
       css: {
         color: '$accentSuccess',
         bc: 'transparent',
-        borderColor: '$accentSuccess',
+        boxShadow: 'inset 0 0 0 1px $colors$accentSuccess',
         '&:hover, &:active, &:focus': {
           bc: '$accentSuccess',
-          borderColor: '$accentSuccess',
           color: 'white',
+          // boxShadow: 'inset 0 0 0 1px $accentSuccess, 0 0 0 1px $accentSuccess',
         },
         '&:disabled': {
+          boxShadow: 'inset 0 0 0 1px $colors$accentSuccess',
           bc: 'transparent',
-          borderColor: '$accentSuccessHover',
           opacity: 0.5,
         },
       },
@@ -379,7 +379,6 @@ export function NextButton({
   to,
   onClick,
   children,
-  className = '',
   disabled = false,
   type = 'button',
   ...props
@@ -390,17 +389,16 @@ export function NextButton({
       to={to}
       onClick={onClick}
       disabled={disabled}
+      variant="success"
+      appearance="outline"
+      size="2"
       css={{
         '&:disabled': {
           border: 'transparent',
           opacity: 0.5,
         },
+        opacity: disabled ? 0.5 : 1,
       }}
-      className={`text-success border  ${
-        disabled
-          ? 'border-transparent opacity-50 hover:bg-transparent cursor-not-allowed'
-          : 'border-success opacity-100 hover:bg-success hover:text-white'
-      } ${className}`}
       {...props}
     >
       {children}
@@ -412,7 +410,6 @@ export function BackButton({
   to,
   onClick,
   children,
-  className = '',
   type = 'button',
   disabled = false,
   ...props
@@ -423,10 +420,8 @@ export function BackButton({
       to={to}
       onClick={onClick}
       disabled={disabled}
-      className={`text-secondary hover:bg-transparent hover:opacity-100 ${
-        disabled ? 'opacity-25' : 'opacity-50'
-      } ${className}`}
-      {...props}
+      appearance="plain"
+      variant="muted"
     >
       {children}
     </Button>

@@ -1,11 +1,12 @@
 import {createCss, StitchesCss} from '@stitches/react'
-import {darken, invert} from 'polished'
+import {darken} from 'polished'
+export * from '@stitches/react'
 
 const designSystem = createCss({
   prefix: '',
   theme: {
     colors: {
-      text: 'hsl(0,0%,13%)',
+      text: 'hsl(200, 12%, 5%)',
       textSecondary: 'hsl(0,0%,47%)',
       textPlaceholder: 'hsl(0,0%,73%)',
       muted: '$gray400',

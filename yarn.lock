@@ -1209,7 +1209,7 @@
     "@radix-ui/react-primitive" "0.0.4"
     "@radix-ui/utils" "0.0.3"
 
-"@radix-ui/react-polymorphic@0.0.5":
+"@radix-ui/react-polymorphic@0.0.5", "@radix-ui/react-polymorphic@^0.0.5":
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/@radix-ui/react-polymorphic/-/react-polymorphic-0.0.5.tgz#7742695d5a47c732b3c5f627dfcd037c03f07f5b"
   integrity sha512-XjAsBfFaa4FFYXZNPa9icHjDEqzvH+TVxQQwYJU2iY+6Ne1DhHXMLrGt/Vk0+BojMSPzg99NhjXROjQ4Fw30Hw==

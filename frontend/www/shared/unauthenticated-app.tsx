@@ -5,20 +5,18 @@ import WelcomeProvider from 'shared/welcome-provider'
 import ThemeToggle from 'components/theme-toggle'
 import WelcomeIntro from 'screens/welcome/intro'
 import {ProgressRoute, createPath} from 'components/routes'
+import {Box} from 'components/box'
 
 const SecurityPack = React.lazy(() => import('screens/welcome/security-pack'))
 const RetypeSeed = React.lazy(() => import('screens/welcome/retype-seed'))
 const EditProfile = React.lazy(() => import('screens/welcome/edit-profile'))
 const Complete = React.lazy(() => import('screens/welcome/complete'))
 
-export default function Welcome({className = '', ...props}: LayoutProps) {
+export default function UnAuthenticatedApp() {
   const match = useRouteMatch()
 
   return (
-    <Layout {...props} className={`flex flex-col py-8 ${className}`}>
-      <div className="absolute right-0 top-0 p-4">
-        <ThemeToggle />
-      </div>
+    <Box css={{width: '100vw', height: '100vh'}}>
       <WelcomeProvider>
         <Switch>
           {/* the first route does not use the ProgressRoute component since this is how I avoid the infinite redirect loop (I'm redirecting from the ProgressRoute to this route) */}
@@ -39,6 +37,6 @@ export default function Welcome({className = '', ...props}: LayoutProps) {
           </ProgressRoute>
         </Switch>
       </WelcomeProvider>
-    </Layout>
+    </Box>
   )
 }

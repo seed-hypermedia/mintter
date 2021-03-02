@@ -184,13 +184,20 @@ function NoConnectionsBox({onConnect}) {
           Some clain sentence that's fun, welcomes user to the community
           and tells how it works and encourages to get started
         </p> */}
-        <button
+        <Button
           onClick={() => onConnect()}
-          className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
+          appearance="pill"
+          variant="primary"
+          css={{
+            height: '$7',
+            fontSize: '$3',
+            marginTop: '$4',
+            px: '$4',
+          }}
         >
           <Icons.Plus />
           <span className="ml-2">Add your First Connection</span>
-        </button>
+        </Button>
       </div>
     </>
   ) : null

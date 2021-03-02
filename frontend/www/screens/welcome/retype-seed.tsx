@@ -1,8 +1,8 @@
 import {useEffect, useState} from 'react'
-import Container from 'components/welcome-container'
-import Heading from 'components/welcome-heading'
+import {Container} from 'components/container'
+import {Heading} from 'components/heading'
 import P from 'components/welcome-p'
-import {NextButton, BackButton} from 'components/welcome-buttons'
+import {NextButton, BackButton} from 'components/button'
 import Footer from 'components/footer'
 import Content from 'components/content'
 import Input from 'components/input'
@@ -55,8 +55,9 @@ export default function RetypeSeed() {
             to recover your account. To make sure that you have properly saved
             your seed, please retype the words
           </P>
-          <P className="text-center font-bold">{`${idxs[0] + 1}, ${idxs[1] +
-            1} & ${idxs[2] + 1}`}</P>
+          <P className="text-center font-bold">{`${idxs[0] + 1}, ${
+            idxs[1] + 1
+          } & ${idxs[2] + 1}`}</P>
           {process.env.NODE_ENV === 'development' && (
             <P className="text-center">{`(${mnemonicList[idxs[0]]}, ${
               mnemonicList[idxs[1]]

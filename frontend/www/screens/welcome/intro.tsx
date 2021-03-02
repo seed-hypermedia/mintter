@@ -1,14 +1,22 @@
 import React from 'react'
-import Heading from 'components/welcome-heading'
-import Container from 'components/welcome-container'
-import P from 'components/welcome-p'
-import {NextButton} from 'components/welcome-buttons'
-import Footer from 'components/footer'
+import {Heading} from 'components/heading'
+import {Container} from 'components/container'
 import {useWelcome} from 'shared/welcome-provider'
 import {useProfile} from 'shared/profile-context'
 import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
 import {Button} from 'components/button'
+import {Grid} from 'components/grid'
+import {css} from 'shared/stitches.config'
+import {Text} from 'components/Text'
+
+export const welcomeGrid = css({
+  width: '100%',
+  height: '100%',
+  gridTemplateColumns: '1fr',
+  gridRowStart: '2',
+  gridTemplateRows: '[welcome-body] 1fr [welcome-footer] 100px',
+})
 
 export default function WelcomeIntro() {
   const {history, match} = useRouter()
@@ -30,23 +38,30 @@ export default function WelcomeIntro() {
   }
   return (
     <>
-      <Container className="mx-auto">
-        <Heading>Welcome to Mintter!</Heading>
-        <P>some kind words here</P>
-      </Container>
-      <Footer className="flex-none">
-        <Container className="mx-auto">
+      <Grid className={welcomeGrid}>
+        <Container
+          css={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '$4',
+          }}
+        >
+          <Heading>Welcome to Mintter!</Heading>
+          <Text>some kind words here</Text>
+        </Container>
+        <Container css={{display: 'flex', justifyContent: 'center'}}>
           <Button
             size="3"
             appearance="pill"
             variant="success"
-            css={{minWidth: '$9'}}
+            css={{minWidth: '9'}}
             onClick={handleNext}
           >
             Start
           </Button>
         </Container>
-      </Footer>
+      </Grid>
     </>
   )
 }

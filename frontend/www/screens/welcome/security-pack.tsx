@@ -1,19 +1,19 @@
 import {useState, useEffect, useMemo} from 'react'
-import Container from 'components/welcome-container'
-import Heading from 'components/welcome-heading'
-
-import Footer from 'components/footer'
-import Content from 'components/content'
-import P from 'components/welcome-p'
 import {css} from 'emotion'
-import Button from 'components/button'
-import {NextButton, BackButton} from 'components/welcome-buttons'
+import {Container} from 'components/container'
+import {Heading} from 'components/heading'
+import {NextButton, BackButton} from 'components/button'
 import {useWelcome} from 'shared/welcome-provider'
 import {useProfileContext} from 'shared/profile-context'
 import {useToasts} from 'react-toast-notifications'
 import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
 import {CopyToClipboard} from 'react-copy-to-clipboard'
+import {Button} from 'components/button'
+import {Box} from 'components/box'
+import {Grid} from 'components/grid'
+import {welcomeGrid} from './intro'
+import {Text} from 'components/Text'
 
 // TODO: (horacio): refactor rpc to not have it here
 export default function SecurityPack() {
@@ -68,59 +68,29 @@ export default function SecurityPack() {
   // mnemonic words separated into lists
   const lists = useMemo(() => splitWords(mnemonic), [mnemonic])
   return (
-    <>
-      <Container className="mx-auto">
+    <Grid className={welcomeGrid}>
+      <Container
+        css={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '$4',
+        }}
+      >
         <Heading>Security Pack</Heading>
-        <P className="text-center">
+        <Text>
           Please save these 24 words securely! This will allow you to recreate
           your account
-        </P>
-        <Content className="flex-wrap flex w-full">
-          {/* {mnemonic.length === 0 ? (
-            <div className="flex-col flex-1 max-w-xs mx-auto">
-              <form>
-                <label
-                  className="block text-gray-500 text-xs font-semibold mb-1"
-                  htmlFor="passphrase"
-                >
-                  Passphrase?
-                </label>
-                <Input
-                  id="passphrase"
-                  type="password"
-                  name="passphrase"
-                  ref={e => {
-                    focusFirst(e)
-                    register(e)
-                  }}
-                />
-                <Button
-                  className="w-full mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white"
-                  type="submit"
-                  onClick={handleSubmit(handleRPC)}
-                >
-                  Generate security pack
-                </Button>
-              </form>
-            </div>
-          ) : ( */}
-          <MnemonicWords lists={lists} error={error} />
-          {/* )} */}
-        </Content>
+        </Text>
+        <MnemonicWords lists={lists} error={error} />
       </Container>
-      <Footer className="flex-none">
-        <Container className="mx-auto">
-          <div className="flex w-full justify-between flex-row-reverse">
-            <NextButton disabled={mnemonic.length === 0} onClick={handleNext}>
-              Next →
-            </NextButton>
-            <BackButton to={`${getPath(match)}/welcome`}>
-              ← start over
-            </BackButton>
-          </div>
-        </Container>
-      </Footer>
-    </>
+      <Container>
+        <NextButton disabled={mnemonic.length === 0} onClick={handleNext}>
+          Next →
+        </NextButton>
+        <BackButton to={`${getPath(match)}/welcome`}>← start over</BackButton>
+      </Container>
+    </Grid>
   )
 }
 
@@ -189,27 +159,26 @@ export function MnemonicWords({
               </div>
             ))}
       </div>
-      <CopyToClipboard
-        text={words}
-        onCopy={(_, result) => {
-          if (result) {
-            addToast('Address copied to your clipboard!', {
-              appearance: 'success',
-            })
-          } else {
-            addToast('Error while copying to Clipboard!', {
-              appearance: 'error',
-            })
-          }
-        }}
-      >
-        <Button
-          className="mx-auto mt-4 text-success duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white transition-all"
-          type="submit"
+      <Box css={{display: 'flex', justifyContent: 'center', p: '$4'}}>
+        <CopyToClipboard
+          text={words}
+          onCopy={(_, result) => {
+            if (result) {
+              addToast('Address copied to your clipboard!', {
+                appearance: 'success',
+              })
+            } else {
+              addToast('Error while copying to Clipboard!', {
+                appearance: 'error',
+              })
+            }
+          }}
         >
-          Copy and Save it securely!
-        </Button>
-      </CopyToClipboard>
+          <Button variant="success" appearance="outline" size="2" type="submit">
+            Copy and Save it securely!
+          </Button>
+        </CopyToClipboard>
+      </Box>
     </>
   )
 }
