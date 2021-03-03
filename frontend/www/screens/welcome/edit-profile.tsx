@@ -1,18 +1,19 @@
 import React from 'react'
 import {Container} from 'components/container'
 import {Heading} from 'components/heading'
-import P from 'components/welcome-p'
+import {Box} from 'components/box'
 import {NextButton, BackButton} from 'components/button'
-import Footer from 'components/footer'
-import Content from 'components/content'
-import Input from 'components/input'
-import Textarea from 'components/textarea'
+import {Input} from 'components/input'
+import {Textarea} from 'components/textarea'
 import {useForm} from 'react-hook-form'
-import {css} from 'emotion'
 import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
 import {useMutation} from 'react-query'
 import * as apiClient from 'shared/mintter-client'
+import {Grid} from 'components/grid'
+import {welcomeGrid} from './intro'
+import {Text} from 'components/text'
+import {Label} from '@radix-ui/react-label'
 
 export default function EditProfile() {
   const {register, handleSubmit, errors, formState} = useForm({
@@ -39,21 +40,28 @@ export default function EditProfile() {
   }
 
   return (
-    <form className="lg:flex-1 flex flex-col">
-      <Container className="mx-auto">
-        <Heading>Edit your profile</Heading>
-        <P className="text-center">
-          Link your personal data with your new account
-        </P>
-        <Content className="flex-wrap flex w-full flex-col md:flex-row">
-          <div className="flex-col flex flex-1">
-            <div className="flex-1 relative">
-              <label
-                className="block text-body-muted text-xs font-semibold mb-1"
-                htmlFor="username"
-              >
-                Username
-              </label>
+    <form>
+      <Grid className={welcomeGrid}>
+        <Container
+          css={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '$4',
+          }}
+        >
+          <Heading>Edit your profile</Heading>
+          <Text>Link your personal data with your new account</Text>
+          <Box
+            css={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '$6',
+            }}
+          >
+            <Box>
+              <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
                 name="username"
@@ -61,14 +69,11 @@ export default function EditProfile() {
                 type="text"
                 placeholder="Readable username or alias. Doesn't have to be unique."
               />
-            </div>
-            <div className="flex-1 relative mt-10">
-              <label
-                className="block text-body-muted text-xs font-semibold mb-1"
-                htmlFor="email"
-              >
+            </Box>
+            <Box css={{position: 'relative'}}>
+              <Label htmlFor="email" error={!!errors.email} css={{bc: 'red'}}>
                 Email
-              </label>
+              </Label>
               <Input
                 id="email"
                 name="email"
@@ -79,66 +84,57 @@ export default function EditProfile() {
                     message: 'Please type a valid email.',
                   },
                 })}
-                error={!!errors.email}
+                variant={errors.email ? 'danger' : ''}
                 type="email"
                 placeholder="Real email that could be publically shared"
               />
 
               {errors.email && (
-                <p
+                <Text
                   role="alert"
                   data-testid="email-error"
-                  className="text-danger text-xs absolute left-0 mt-1"
+                  color="danger"
+                  size="2"
+                  css={{
+                    display: 'block',
+                    position: 'absolute',
+                    py: '$1',
+                  }}
                 >
                   {errors.email.message}
-                </p>
+                </Text>
               )}
-            </div>
-            <div className="flex-1 relative mt-10">
-              <label
-                className="block text-body-muted text-xs font-semibold mb-1"
-                htmlFor="bio"
-              >
-                Bio
-              </label>
+            </Box>
+            <Box>
+              <Label htmlFor="bio">Bio</Label>
               <Textarea
                 id="bio"
                 name="bio"
                 ref={register}
                 rows={4}
                 placeholder="A little bit about yourself..."
-                className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body text-base ${
-                  errors.bio && 'border-danger'
-                } ${css`
-                  min-height: 100px;
-                `}`}
               />
-            </div>
-          </div>
-        </Content>
-      </Container>
-      <Footer className="flex-none">
-        <Container className="mx-auto">
-          <div className="flex w-full justify-between flex-row-reverse">
-            <NextButton
-              onClick={handleSubmit(onSubmit)}
-              disabled={!formState.isValid || formState.isSubmitting}
-              data-testid="next-btn"
-            >
-              Next →
-            </NextButton>
-            <BackButton to={`${getPath(match)}/welcome`}>
-              ← start over
-            </BackButton>
-          </div>
+            </Box>
+          </Box>
         </Container>
-      </Footer>
-      <style jsx>{`
-        .avatar-container {
-          width: 200px;
-          height: 200px;
-        }
-      `}</style>
+        <Container
+          css={{
+            display: 'flex',
+            flexDirection: 'row-reverse',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <NextButton
+            onClick={handleSubmit(onSubmit)}
+            disabled={!formState.isValid || formState.isSubmitting}
+            data-testid="next-btn"
+          >
+            Next →
+          </NextButton>
+          <BackButton to={`${getPath(match)}/welcome`}>← start over</BackButton>
+        </Container>
+      </Grid>
     </form>
   )
 }

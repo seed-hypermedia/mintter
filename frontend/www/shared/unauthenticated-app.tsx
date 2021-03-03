@@ -1,8 +1,6 @@
 import React from 'react'
-import {Switch, Route, useRouteMatch, Redirect} from 'react-router-dom'
-import Layout, {LayoutProps} from 'components/layout'
+import {Switch, Route, useRouteMatch} from 'react-router-dom'
 import WelcomeProvider from 'shared/welcome-provider'
-import ThemeToggle from 'components/theme-toggle'
 import WelcomeIntro from 'screens/welcome/intro'
 import {ProgressRoute, createPath} from 'components/routes'
 import {Box} from 'components/box'
@@ -23,12 +21,12 @@ export default function UnAuthenticatedApp() {
           <Route exact path={match.url}>
             <WelcomeIntro />
           </Route>
-          <ProgressRoute path={createPath(match, 'security-pack')}>
+          <Route path={createPath(match, 'security-pack')}>
             <SecurityPack />
-          </ProgressRoute>
-          <ProgressRoute path={createPath(match, 'retype-seed')}>
+          </Route>
+          {/* <ProgressRoute path={createPath(match, 'retype-seed')}>
             <RetypeSeed />
-          </ProgressRoute>
+          </ProgressRoute> */}
           <ProgressRoute path={createPath(match, 'edit-profile')}>
             <EditProfile />
           </ProgressRoute>

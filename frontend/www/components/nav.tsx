@@ -17,7 +17,7 @@ export function NavItem({children, to, onlyActiveWhenExact = false, ...props}) {
       as={Link}
       size="2"
       appearance="plain"
-      variant={active ? 'primary' : 'muted'}
+      variant={active ? 'primary' : ''}
       css={{
         mx: 0,
       }}

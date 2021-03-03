@@ -6,6 +6,9 @@ import {getPath} from 'components/routes'
 import {Icons} from 'components/icons'
 import {useRouter} from 'shared/use-router'
 import {Button} from 'components/button'
+import {Separator} from 'components/separator'
+import {Text} from 'components/text'
+import {Box} from 'components/box'
 
 export default function Drafts() {
   const {history, match} = useRouter()
@@ -29,8 +32,19 @@ export default function Drafts() {
       <Seo title="Drafts" />
       {isSuccess && data.length === 0 && (
         <>
-          <hr className="border-t-2 border-muted border-solid my-8" />
-          <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
+          <Separator />
+          <Box
+            css={{
+              bc: '$gray200',
+              p: '$6',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              borderRadius: '$3',
+              boxShadow:
+                'inset 0 0 0 1px $colors$gray400, 0 0 0 1px $colors$gray400',
+            }}
+          >
             <h3 className="text-xl font-semibold text-primary">
               No Drafts available
             </h3>
@@ -50,9 +64,11 @@ export default function Drafts() {
               }}
             >
               <Icons.FilePlus color="currentColor" />
-              <span>Start your first document</span>
+              <Text size="3" color="white">
+                Start your first document
+              </Text>
             </Button>
-          </div>
+          </Box>
         </>
       )}
 

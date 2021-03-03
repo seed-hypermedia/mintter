@@ -1,11 +1,12 @@
 import React from 'react'
-import {styled, StitchesProps, StitchesVariants} from 'shared/stitches.config'
+import {StitchesVariants} from '@stitches/core'
+import {styled, CSS} from 'shared/stitches.config'
 
 import type * as Polymorphic from '@radix-ui/react-polymorphic'
 
 const DEFAULT_TAG = 'div'
 
-type ContainerCSSProp = Pick<StitchesProps<typeof StyledContainer>, 'css'>
+type ContainerCSSProp = Pick<CSS<typeof StyledContainer>, 'css'>
 type ContainerVariants = StitchesVariants<typeof StyledContainer>
 type ContainerOwnProps = ContainerCSSProp & ContainerVariants
 

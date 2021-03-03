@@ -21,7 +21,9 @@
   },
   "dependencies": {
     "@mintter/api": "*",
+    "@radix-ui/react-label": "^0.0.5",
     "@radix-ui/react-polymorphic": "^0.0.5",
+    "@radix-ui/react-separator": "^0.0.5",
     "@radix-ui/react-tooltip": "^0.0.7",
     "@stitches/react": "0.1.0-canary.12",
     "@tippyjs/react": "^4.1.0",

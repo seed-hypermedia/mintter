@@ -6,6 +6,8 @@ import {Icons} from 'components/icons'
 import {getPath} from 'components/routes'
 import {useRouter} from 'shared/use-router'
 import {Button} from 'components/button'
+import {Separator} from 'components/separator'
+import {Box} from 'components/box'
 
 export default function MyPublications({noSeo = false, isPublic = false}) {
   const {history, match} = useRouter()
@@ -37,8 +39,19 @@ export default function MyPublications({noSeo = false, isPublic = false}) {
       {!noSeo && <Seo title="My Publications" />}
       {isSuccess && data.length === 0 && (
         <>
-          <hr className="border-t-2 border-muted border-solid my-8" />
-          <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 py-6 mb-4 text-center flex flex-col items-center">
+          <Separator />
+          <Box
+            css={{
+              bc: '$gray200',
+              p: '$6',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              borderRadius: '$3',
+              boxShadow:
+                'inset 0 0 0 1px $colors$gray400, 0 0 0 1px $colors$gray400',
+            }}
+          >
             <h3 className="text-xl font-semibold text-primary">
               No Publications (yet)
             </h3>
@@ -58,7 +71,7 @@ export default function MyPublications({noSeo = false, isPublic = false}) {
                 <span>Start your first document</span>
               </Button>
             )}
-          </div>
+          </Box>
         </>
       )}
       <DocumentList

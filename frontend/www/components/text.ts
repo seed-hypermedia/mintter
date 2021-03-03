@@ -1,6 +1,8 @@
 import {styled} from 'shared/stitches.config'
 
-export const Text = styled('span', {
+const DEFAULT_TAG = 'span'
+
+export const Text = styled(DEFAULT_TAG, {
   // Reset
   lineHeight: '1',
   margin: '0',
@@ -41,9 +43,13 @@ export const Text = styled('span', {
       white: {
         color: 'white',
       },
+      danger: {
+        color: '$accentDanger',
+      },
     },
   },
   defaultVariants: {
     color: 'text',
+    size: '3',
   },
 })

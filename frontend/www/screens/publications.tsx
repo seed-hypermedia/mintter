@@ -1,3 +1,4 @@
+import * as React from 'react'
 import {Icons} from 'components/icons'
 import DocumentList from 'components/document-list'
 import {useMintter, useOthersPublications} from 'shared/mintter-context'
@@ -6,6 +7,8 @@ import {ErrorMessage} from 'components/error-message'
 import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
 import {Button} from 'components/button'
+import {Box} from 'components/box'
+import {Separator} from 'components/separator'
 
 export default function Publications() {
   const {history, match} = useRouter()
@@ -39,8 +42,19 @@ export default function Publications() {
       <Seo title="Feed" />
       {data.length === 0 && (
         <>
-          <hr className="border-t-2 border-muted border-solid my-8" />
-          <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
+          <Separator />
+          <Box
+            css={{
+              bc: '$gray200',
+              p: '$6',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              borderRadius: '$3',
+              boxShadow:
+                'inset 0 0 0 1px $colors$gray400, 0 0 0 1px $colors$gray400',
+            }}
+          >
             <h3 className="text-xl font-semibold text-primary">
               No Publications (yet)
             </h3>
@@ -60,9 +74,9 @@ export default function Publications() {
               }}
             >
               <Icons.FilePlus color="currentColor" />
-              <span className="ml-2">Start your first document</span>
+              <span>Start your first document</span>
             </Button>
-          </div>
+          </Box>
         </>
       )}
       <DocumentList

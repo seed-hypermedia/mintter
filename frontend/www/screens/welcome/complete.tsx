@@ -1,11 +1,12 @@
 import {Heading} from 'components/heading'
 import {Container} from 'components/container'
-import P from 'components/welcome-p'
 import {Button} from 'components/button'
-import Footer from 'components/footer'
+import {Text} from 'components/text'
 import {useRouter} from 'shared/use-router'
 import {useWelcome} from 'shared/welcome-provider'
 import {getPath} from 'components/routes'
+import {Grid} from 'components/grid'
+import {welcomeGrid} from './intro'
 
 export default function WelcomeIndex() {
   const {history, match} = useRouter()
@@ -17,26 +18,31 @@ export default function WelcomeIndex() {
   }
 
   return (
-    <>
-      <Container className="mx-auto">
+    <Grid className={welcomeGrid}>
+      <Container
+        css={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '$6',
+        }}
+      >
         <Heading>Complete!</Heading>
-        <P>
+        <Text>
           you just create your Mintter account!. Please share it with others and
           the world!!
-        </P>
+        </Text>
       </Container>
-      <Footer className="flex-none">
-        <Container className="mx-auto">
-          <Button
-            onClick={handleNext}
-            size="3"
-            variant="success"
-            appearance="outline"
-          >
-            Open the app
-          </Button>
-        </Container>
-      </Footer>
-    </>
+      <Container css={{display: 'flex', justifyContent: 'center'}}>
+        <Button
+          onClick={handleNext}
+          size="3"
+          variant="success"
+          appearance="outline"
+        >
+          Open the app
+        </Button>
+      </Container>
+    </Grid>
   )
 }

@@ -4,7 +4,7 @@ import P from 'components/welcome-p'
 import {NextButton, BackButton} from 'components/welcome-buttons'
 import Footer from 'components/footer'
 import Content from 'components/content'
-import Input from 'components/input'
+import {Input} from 'components/input'
 import {useForm} from 'react-hook-form'
 
 import {useWelcome} from 'shared/welcome-provider'

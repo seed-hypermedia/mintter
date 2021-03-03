@@ -10,6 +10,7 @@ import {
   useConnectionList,
   useProfile,
 } from 'shared/profile-context'
+import {Text} from 'components/text'
 import {Box} from 'components/box'
 import {Link} from 'components/link'
 import {Connections} from 'components/connections'
@@ -22,6 +23,8 @@ import Publications from './publications'
 import MyPublications from './my-publications'
 import Drafts from './drafts'
 import {Button} from 'components/button'
+import {Heading} from 'components/heading'
+import {Separator} from 'components/separator'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
@@ -99,8 +102,14 @@ export default function Library() {
         </div>
         <div>
           <MainColumn className="pt-12">
-            <div className="flex items-center justify-between">
-              <h1 className="text-4xl font-bold text-heading">Library</h1>
+            <Box
+              css={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Heading as="h1">Library</Heading>
               {/* <div className="flex-1" /> */}
               <Button
                 variant="primary"
@@ -110,7 +119,7 @@ export default function Library() {
               >
                 Compose
               </Button>
-            </div>
+            </Box>
             <Box
               css={{
                 mx: '-$3',
@@ -177,8 +186,19 @@ function NoConnectionsBox({onConnect}) {
   const {data = []} = useConnectionList()
   return data.length === 0 ? (
     <>
-      <hr className="border-t-2 border-muted border-solid my-8" />
-      <div className="bg-background-muted border-muted border-solid border-2 rounded px-4 py-4 mb-4 text-center flex flex-col items-center">
+      <Separator />
+      <Box
+        css={{
+          bc: '$gray200',
+          p: '$6',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          borderRadius: '$3',
+          boxShadow:
+            'inset 0 0 0 1px $colors$gray400, 0 0 0 1px $colors$gray400',
+        }}
+      >
         <h3 className="text-xl font-bold text-primary">Connect to Others</h3>
         {/* <p className="text-body font-light mt-5">
           Some clain sentence that's fun, welcomes user to the community
@@ -196,9 +216,11 @@ function NoConnectionsBox({onConnect}) {
           }}
         >
           <Icons.Plus />
-          <span className="ml-2">Add your First Connection</span>
+          <Text color="white" size="3">
+            Add your First Connection
+          </Text>
         </Button>
-      </div>
+      </Box>
     </>
   ) : null
 }

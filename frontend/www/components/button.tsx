@@ -1,4 +1,4 @@
-import {useHistory} from 'react-router-dom'
+import {useHistory, Link} from 'react-router-dom'
 import {styled} from 'shared/stitches.config'
 export interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   disabled?: boolean
@@ -44,15 +44,6 @@ export default function LinkButton({
     >
       {children}
     </Button>
-  )
-}
-
-export function Button2({className = '', ...props}: any) {
-  return (
-    <button
-      className={`px-4 py-2 bg-transparent rounded transition duration-200 hover:bg-muted ${className}`}
-      {...props}
-    />
   )
 }
 
@@ -300,12 +291,14 @@ export const Button = styled('button', {
         '&:hover, &:active, &:focus': {
           bc: '$accentSuccess',
           color: 'white',
-          // boxShadow: 'inset 0 0 0 1px $accentSuccess, 0 0 0 1px $accentSuccess',
+          boxShadow: 'inset 0 0 0 1px $accentSuccess, 0 0 0 1px $accentSuccess',
         },
         '&:disabled': {
           boxShadow: 'inset 0 0 0 1px $colors$accentSuccess',
           bc: 'transparent',
           opacity: 0.5,
+          color: '$accentSuccess',
+          cursor: 'no-drop',
         },
       },
     },
@@ -336,15 +329,15 @@ export const Button = styled('button', {
       variant: 'muted',
       appearance: 'plain',
       css: {
-        color: '$text',
+        color: '$mutedHover',
         bc: 'transparent',
         borderColor: 'transparent',
         boxShadow: 'inset 0 0 0 1px transparent',
         '&:hover, &:active, &:focus': {
           bc: 'transparent',
-          color: '$text',
+          color: '$mutedHover',
           boxShadow:
-            'inset 0 0 0 1px $colors$mutedHover, 0 0 0 1px $colors$brandPrimaryHover',
+            'inset 0 0 0 1px $colors$mutedHover, 0 0 0 1px $colors$mutedHover',
         },
         '&:disabled': {
           bc: 'transparent',
@@ -416,12 +409,15 @@ export function BackButton({
 }: ButtonLinkProps) {
   return (
     <Button
+      as={Link}
       type={type}
       to={to}
       onClick={onClick}
       disabled={disabled}
       appearance="plain"
       variant="muted"
+      size="2"
+      {...props}
     >
       {children}
     </Button>
