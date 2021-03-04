@@ -8,7 +8,7 @@ import (
 	"io"
 	"time"
 
-	"mintter/backend/wallet"
+	"mintter/backend/slip10"
 
 	"github.com/imdario/mergo"
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -129,22 +129,23 @@ func newIdentity(src io.Reader) (identity, error) {
 
 // FromSeed generates a profile based on seed.
 func FromSeed(seed []byte, idx uint32) (Profile, error) {
-	masterKey, err := wallet.DeriveForPath(wallet.TextilePrimaryAccountPath, seed)
+	const primaryAccountPath = "m/44'/406'/0'"
+	masterKey, err := slip10.DeriveForPath(primaryAccountPath, seed)
 	if err != nil {
 		return Profile{}, err
 	}
 
-	account, err := newIdentity(bytes.NewReader(masterKey.Key))
+	account, err := newIdentity(bytes.NewReader(masterKey.RawSeed()))
 	if err != nil {
 		return Profile{}, fmt.Errorf("failed to create account: %w", err)
 	}
 
-	k, err := masterKey.Derive(wallet.FirstHardenedIndex + idx)
+	k, err := masterKey.Derive(slip10.FirstHardenedIndex + idx)
 	if err != nil {
 		return Profile{}, fmt.Errorf("failed to derive child key: %w", err)
 	}
 
-	peer, err := newIdentity(bytes.NewReader(k.Key))
+	peer, err := newIdentity(bytes.NewReader(k.RawSeed()))
 	if err != nil {
 		return Profile{}, fmt.Errorf("failed to create peer: %w", err)
 	}
