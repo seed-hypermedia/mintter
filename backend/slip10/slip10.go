@@ -55,24 +55,6 @@ func DeriveForPath(path string, seed []byte) (Node, error) {
 	return key, nil
 }
 
-// newMasterNode generates a new master key from seed.
-func newMasterNode(seed []byte) (Node, error) {
-	// As in https://github.com/satoshilabs/slips/blob/master/slip-0010.md
-	const seedModifier = "ed25519 seed"
-
-	hash := hmac.New(sha512.New, []byte(seedModifier))
-	_, err := hash.Write(seed)
-	if err != nil {
-		return Node{}, err
-	}
-	sum := hash.Sum(nil)
-	key := Node{
-		seed:      sum[:32],
-		chainCode: sum[32:],
-	}
-	return key, nil
-}
-
 // Derive child node from the parent node.
 func (k *Node) Derive(i uint32) (Node, error) {
 	// no public derivation for ed25519
@@ -98,8 +80,8 @@ func (k *Node) Derive(i uint32) (Node, error) {
 	return newKey, nil
 }
 
-// RawSeed returns raw seed bytes
-func (k *Node) RawSeed() []byte {
+// Seed bytes of the underlying node.
+func (k *Node) Seed() []byte {
 	return k.seed
 }
 
@@ -124,6 +106,24 @@ func (k *Node) privateKey() []byte {
 func (k *Node) publicKeyWithPrefix() []byte {
 	pub, _ := k.keypair()
 	return append([]byte{0x00}, pub...)
+}
+
+// newMasterNode generates a new master key from seed.
+func newMasterNode(seed []byte) (Node, error) {
+	// As in https://github.com/satoshilabs/slips/blob/master/slip-0010.md
+	const seedModifier = "ed25519 seed"
+
+	hash := hmac.New(sha512.New, []byte(seedModifier))
+	_, err := hash.Write(seed)
+	if err != nil {
+		return Node{}, err
+	}
+	sum := hash.Sum(nil)
+	key := Node{
+		seed:      sum[:32],
+		chainCode: sum[32:],
+	}
+	return key, nil
 }
 
 // isValidPath check whether or not the path has valid segments.

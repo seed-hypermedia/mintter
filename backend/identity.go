@@ -56,7 +56,7 @@ func NewAccountFromSeed(seed []byte) (Account, error) {
 		return Account{}, err
 	}
 
-	priv, pub, err := crypto.GenerateEd25519Key(bytes.NewReader(mttSeed.RawSeed()))
+	priv, pub, err := crypto.GenerateEd25519Key(bytes.NewReader(mttSeed.Seed()))
 	if err != nil {
 		return Account{}, err
 	}
