@@ -72,6 +72,7 @@ TARGET_PLATFORMS = [
         cmd = """
 export GOOS={os}
 export GOARCH={arch}
+export CGO_ENABLED="0"
 go build -tags=bindata -o $TARGET_OUT_DIR/{os}_{arch}/mintterd ./backend/cmd/mintterd
 """.format(
             os = os,
