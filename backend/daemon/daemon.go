@@ -3,6 +3,7 @@ package daemon
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
@@ -28,6 +29,7 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -124,7 +126,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	mux.Handle("/", handler)
 
 	// TODO(burdiyan): Add timeout configuration.
-	srv := &http.Server{
+	httpSrv := &http.Server{
 		Handler: mux,
 	}
 
@@ -148,7 +150,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	defer httpListener.Close()
 
 	g.Go(func() error {
-		err := srv.Serve(httpListener)
+		err := httpSrv.Serve(httpListener)
 		if errors.Is(err, http.ErrServerClosed) {
 			return nil
 		}
@@ -156,12 +158,40 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		return err
 	})
 
+	// Start HTTPS server and generate Let's Encrypt certificate
+	httpsSrv := http.Server{}
+	if cfg.EnableSSL {
+		certManager := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(cfg.Domain),
+			Cache:      autocert.DirCache(config.MintterCertsDir),
+		}
+
+		httpsSrv = http.Server{
+			Addr:      ":443",
+			Handler:   mux,
+			TLSConfig: &tls.Config{GetCertificate: certManager.GetCertificate},
+		}
+		httpSrv.Handler = certManager.HTTPHandler(httpSrv.Handler)
+
+		g.Go(func() error {
+			err := httpsSrv.ListenAndServeTLS("", "")
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+
+	}
+
 	g.Go(func() error {
 		<-ctx.Done()
 		log.Info("GracefulShutdownStarted")
 		log.Debug("Press ctrl+c again to force quit, but it's better to wait :)")
 		rpcsrv.GracefulStop()
-		return srv.Shutdown(context.Background())
+		// :?
+		httpsSrv.Shutdown(context.Background())
+		return httpSrv.Shutdown(context.Background())
 	})
 
 	httpURL := "http://" + formatAddr(httpListener.Addr())

@@ -1,12 +1,21 @@
 // Package config provides global configuration.
 package config
 
+import (
+	"path"
+
+	"github.com/adrg/xdg"
+)
+
 // Config for Mintter daemon.
 type Config struct {
 	HTTPPort      string `help:"Port to expose HTTP server (including grpc-web)" default:"55001"`
 	GRPCPort      string `help:"Port to expose gRPC server" default:"55002"`
 	RepoPath      string `help:"Path to where to store node data" default:"~/.mtt"`
 	NoOpenBrowser bool   `help:"If true - do not open the browser to access the UI"`
+
+	EnableSSL bool   `help:"Listen on port 443 and automatically generate Let's Encrypt certificate"`
+	Domain    string `help:"Domain that Let's Encrypt will generate the certificate for"`
 
 	P2P P2P `help:"P2P configuration" prefix:"p2p." embed:""`
 	UI  UI  `help:"ui configuration" prefix:"ui." embed:""`
@@ -25,3 +34,7 @@ type UI struct {
 	LogoURI     string `help:"uri of the primary logo image"`
 	HomePageURI string `help:"uri of the home page"`
 }
+
+// MintterConfigDir points to the config directory
+var MintterConfigDir = path.Join(xdg.ConfigHome, "mintter")
+var MintterCertsDir = path.Join(MintterConfigDir, "certs")
