@@ -135,7 +135,7 @@ func FromSeed(seed []byte, idx uint32) (Profile, error) {
 		return Profile{}, err
 	}
 
-	account, err := newIdentity(bytes.NewReader(masterKey.RawSeed()))
+	account, err := newIdentity(bytes.NewReader(masterKey.Seed()))
 	if err != nil {
 		return Profile{}, fmt.Errorf("failed to create account: %w", err)
 	}
@@ -145,7 +145,7 @@ func FromSeed(seed []byte, idx uint32) (Profile, error) {
 		return Profile{}, fmt.Errorf("failed to derive child key: %w", err)
 	}
 
-	peer, err := newIdentity(bytes.NewReader(k.RawSeed()))
+	peer, err := newIdentity(bytes.NewReader(k.Seed()))
 	if err != nil {
 		return Profile{}, fmt.Errorf("failed to create peer: %w", err)
 	}
