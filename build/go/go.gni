@@ -44,7 +44,7 @@ template("go_binary") {
     args = [
       "bash",
       "-c",
-      "GOOS=$go_os GOARCH=$go_arch go build $build_flags_string -o $abs_out_file $relative_package",
+      "GOOS=$go_os GOARCH=$go_arch CGO_ENABLED=0 go build $build_flags_string -o $abs_out_file $relative_package",
     ]
     deps += [ "//build:environment($default_toolchain)" ]
     outputs = [ out_file ]
