@@ -2,7 +2,7 @@ import {forwardRef} from 'react'
 import * as RadixLabel from '@radix-ui/react-label'
 import {StitchesVariants} from '@stitches/core'
 import type * as Polymorphic from '@radix-ui/react-polymorphic'
-import {CSS, styled} from 'shared/stitches.config'
+import {styled, StitchesCss} from 'shared/stitches.config'
 
 const DEFAULT_TAG = RadixLabel.DEFAULT_TAG
 
@@ -17,7 +17,7 @@ const StyledLabel = styled(RadixLabel.Root, {
   },
 })
 
-type LabelCSSProp = Pick<CSS<typeof StyledLabel>, 'css'>
+type LabelCSSProp = Pick<StitchesCss<typeof StyledLabel>, 'css'>
 type LabelVariants = StitchesVariants<typeof StyledLabel>
 type LabelOwnProps = LabelCSSProp & LabelVariants & {error: boolean}
 

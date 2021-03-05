@@ -1,11 +1,12 @@
 import * as React from 'react'
 import {StitchesVariants} from '@stitches/core'
+import {StitchesCss} from 'shared/stitches.config'
 import {FormControl} from './form-control'
 import {mergeRefs} from 'editor/merge-refs'
 
 const TEXTAREA_TAG = 'textarea'
 
-type TextAreaCSSProp = Pick<CSS<typeof FormControl>, 'css'>
+type TextAreaCSSProp = Pick<StitchesCss<typeof FormControl>, 'css'>
 type TextAreaVariants = StitchesVariants<typeof FormControl>
 type TextAreaOwnProps = TextAreaCSSProp & TextAreaVariants
 

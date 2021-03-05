@@ -8,7 +8,7 @@ import {getPath} from 'components/routes'
 import {Button} from 'components/button'
 import {Grid} from 'components/grid'
 import {css} from 'shared/stitches.config'
-import {Text} from 'components/Text'
+import {Text} from 'components/text'
 
 export const welcomeGrid = css({
   width: '100%',

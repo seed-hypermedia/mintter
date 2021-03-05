@@ -1,4 +1,5 @@
-import {createCss, StitchesCss} from '@stitches/react'
+import {createCss} from '@stitches/react'
+import {StitchesCss} from '@stitches/core'
 import {darken} from 'polished'
 export * from '@stitches/react'
 
@@ -48,26 +49,26 @@ const designSystem = createCss({
       6: '32px',
     },
     space: {
-      1: '5px',
-      2: '10px',
-      3: '15px',
-      4: '20px',
-      5: '25px',
-      6: '35px',
-      7: '45px',
-      8: '65px',
-      9: '80px',
+      1: '4px',
+      2: '8px',
+      3: '12px',
+      4: '16px',
+      5: '20px',
+      6: '24px',
+      7: '32px',
+      8: '40px',
+      9: '48px',
     },
     sizes: {
-      1: '5px',
-      2: '10px',
-      3: '15px',
-      4: '20px',
-      5: '25px',
-      6: '35px',
-      7: '45px',
-      8: '65px',
-      9: '80px',
+      1: '4px',
+      2: '8px',
+      3: '12px',
+      4: '16px',
+      5: '20px',
+      6: '24px',
+      7: '32px',
+      8: '40px',
+      9: '48px',
     },
     fontWeights: {
       1: 300,
@@ -161,8 +162,6 @@ const designSystem = createCss({
   },
 })
 
-export type CSS = StitchesCss<typeof designSystem>
-
 export const {
   styled,
   css,
@@ -170,8 +169,9 @@ export const {
   getCssString,
   global,
   keyframes,
-  config,
 } = designSystem
+
+export type CSS = StitchesCss<typeof designSystem>
 
 export const globalStyles = global({
   '@font-face': [
@@ -190,4 +190,36 @@ export const globalStyles = global({
       fontStyle: 'normal',
     },
   ],
+})
+
+const darkTheme = css({
+  colors: {
+    text: 'hsl(200, 12%, 5%)',
+    textSecondary: 'hsl(0,0%,47%)',
+    textPlaceholder: 'hsl(0,0%,73%)',
+    muted: '$gray500',
+    mutedHover: '$gray700',
+    white: 'hsl(0,0%,100%)',
+    brandPrimary: 'hsl(254,100%,50%)',
+    brandPrimaryHover: darken(0.2, 'hsl(254,100%,50%)'),
+    brandSecondary: 'hsl(43,100%,53%)',
+    brandSecondaryHover: darken(0.2, 'hsl(43,100%,53%)'),
+    brandTerciary: 'hsl(328,83%,48%)',
+    brandTerciaryHover: darken(0.2, 'hsl(328,83%,48%)'),
+    accentDanger: 'hsl(355,69%,51%)',
+    accentDangerHover: darken(0.1, 'hsl(355,69%,51%)'),
+    accentSuccess: 'hsl(96,93%,30%)',
+    accentSuccessHover: darken(0.1, 'hsl(96,93%,30%)'),
+    accentWarning: 'hsl(37,83%,52%)',
+    accentWarningHover: darken(0.1, 'hsl(37,83%,52%)'),
+    gray100: 'hsl(206,20%,98.8%)',
+    gray200: 'hsl(206,14%,96.0%)',
+    gray300: 'hsl(206,13%,93.7%)',
+    gray400: 'hsl(206,12%,92.0%)',
+    gray500: 'hsl(206,12%,89.5%)',
+    gray600: 'hsl(206,11%,85.2%)',
+    gray700: 'hsl(206,10%,80.0%)',
+    gray800: 'hsl(206,6%,56.1%)',
+    gray900: 'hsl(206,6%,43.9%)',
+  },
 })

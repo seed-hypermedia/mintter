@@ -1,9 +1,9 @@
 import React from 'react'
 import type * as Polymorphic from '@radix-ui/react-polymorphic'
-import {StitchesVariants} from 'shared/stitches.config'
+import {StitchesVariants, StitchesCss} from 'shared/stitches.config'
 import {FormControl, FORMCONTROL_TAG} from './form-control'
 
-type InputCSSProp = Pick<CSS<typeof FormControl>, 'css'>
+type InputCSSProp = Pick<StitchesCss<typeof FormControl>, 'css'>
 type InputVariants = StitchesVariants<typeof FormControl>
 type InputOwnProps = InputCSSProp &
   InputVariants & {

@@ -50,7 +50,7 @@ export default function LinkButton({
 export const Button = styled('button', {
   all: 'unset',
   lineHeight: '1',
-  height: '$5',
+  height: '$6',
   margin: '0',
   outline: 'none',
   padding: '0',
@@ -98,19 +98,19 @@ export const Button = styled('button', {
   variants: {
     size: {
       1: {
-        height: '$5',
-        px: '$2',
-        fontSize: '$2',
-      },
-      2: {
         height: '$6',
         px: '$3',
         fontSize: '$3',
       },
-      3: {
+      2: {
         height: '$7',
-        px: '$5',
-        fontSize: '$5',
+        px: '$4',
+        fontSize: '$3',
+      },
+      3: {
+        height: '$8',
+        px: '$6',
+        fontSize: '$6',
       },
     },
     variant: {

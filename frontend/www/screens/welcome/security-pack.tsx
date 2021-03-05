@@ -12,7 +12,7 @@ import {getPath} from 'components/routes'
 import {Button} from 'components/button'
 import {Box} from 'components/box'
 import {Grid} from 'components/grid'
-import {Text} from 'components/Text'
+import {Text} from 'components/text'
 
 // TODO: (horacio): refactor rpc to not have it here
 export default function SecurityPack() {
@@ -60,7 +60,7 @@ export default function SecurityPack() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '$4',
+          gap: '$7',
         }}
       >
         <Heading>Security Pack</Heading>
@@ -101,21 +101,24 @@ export function MnemonicWords({
         {error ? (
           error.message
         ) : (
-          <Grid
+          <Box
             as="ol"
             css={{
-              grid: 'repeat(8, 24px) / repeat(3, 1fr)',
-              gap: '$2',
-              gridAutoFlow: 'column',
+              height: 'calc($7 * 9)',
+              columns: '3',
+              columnGap: '$4',
             }}
           >
             {words.map((word, wordIdx) => (
-              <Box
+              <Grid
                 as="li"
                 css={{
                   display: 'flex',
+                  height: '$7',
+                  placeItems: 'center',
                   alignItems: 'baseline',
                   justifyContent: 'center',
+                  marginBottom: '$1',
 
                   gap: '$1',
                   alignSelf: 'center',
@@ -124,9 +127,9 @@ export function MnemonicWords({
               >
                 <Text size="1">{wordIdx + 1}.</Text>
                 <Text size="3">{word}</Text>
-              </Box>
+              </Grid>
             ))}
-          </Grid>
+          </Box>
         )}
       </Box>
       <Box css={{display: 'flex', justifyContent: 'center', p: '$4'}}>

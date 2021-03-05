@@ -1,5 +1,5 @@
 import React from 'react'
-import {Text} from './Text'
+import {Text} from './text'
 
 import * as Polymorphic from '@radix-ui/react-polymorphic'
 
@@ -38,5 +38,5 @@ export const Heading = React.forwardRef((props, forwardedRef) => {
         },
       }}
     />
-  ) as HeadingComponent
-})
+  )
+}) as HeadingComponent

@@ -24,7 +24,6 @@ import MyPublications from './my-publications'
 import Drafts from './drafts'
 import {Button} from 'components/button'
 import {Heading} from 'components/heading'
-import {Separator} from 'components/separator'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
@@ -185,42 +184,39 @@ function ProfileInfo() {
 function NoConnectionsBox({onConnect}) {
   const {data = []} = useConnectionList()
   return data.length === 0 ? (
-    <>
-      <Separator />
-      <Box
-        css={{
-          bc: '$gray200',
-          p: '$6',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          borderRadius: '$3',
-          boxShadow:
-            'inset 0 0 0 1px $colors$gray400, 0 0 0 1px $colors$gray400',
-        }}
-      >
-        <h3 className="text-xl font-bold text-primary">Connect to Others</h3>
-        {/* <p className="text-body font-light mt-5">
+    <Box
+      css={{
+        bc: '$gray200',
+        p: '$6',
+        marginTop: '$4',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        borderRadius: '$3',
+        boxShadow: 'inset 0 0 0 1px $colors$gray400, 0 0 0 1px $colors$gray400',
+      }}
+    >
+      <h3 className="text-xl font-bold text-primary">Connect to Others</h3>
+      {/* <p className="text-body font-light mt-5">
           Some clain sentence that's fun, welcomes user to the community
           and tells how it works and encourages to get started
         </p> */}
-        <Button
-          onClick={() => onConnect()}
-          appearance="pill"
-          variant="primary"
-          css={{
-            height: '$7',
-            fontSize: '$3',
-            marginTop: '$4',
-            px: '$4',
-          }}
-        >
-          <Icons.Plus />
-          <Text color="white" size="3">
-            Add your First Connection
-          </Text>
-        </Button>
-      </Box>
-    </>
+      <Button
+        onClick={() => onConnect()}
+        appearance="pill"
+        variant="primary"
+        css={{
+          height: '$7',
+          fontSize: '$3',
+          marginTop: '$4',
+          px: '$4',
+        }}
+      >
+        <Icons.Plus />
+        <Text color="white" size="3">
+          Add your First Connection
+        </Text>
+      </Button>
+    </Box>
   ) : null
 }

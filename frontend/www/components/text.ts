@@ -8,10 +8,10 @@ export const Text = styled(DEFAULT_TAG, {
   margin: '0',
   fontWeight: '',
   fontVariantNumeric: 'tabular-nums',
-  display: 'block',
+  display: 'inline-block',
 
   // Custom
-  // color: '$text',
+  color: 'inherit',
 
   variants: {
     size: {
@@ -39,6 +39,9 @@ export const Text = styled(DEFAULT_TAG, {
     color: {
       text: {
         color: '$text',
+      },
+      muted: {
+        color: '$muted',
       },
       white: {
         color: 'white',
