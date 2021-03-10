@@ -13,7 +13,7 @@
     "prettier": "prettier --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\"",
     "format": "yarn prettier --write",
     "check-format": "yarn prettier -c",
-    "dev": "yarn workspace @mintter/site dev",
+    "dev": "yarn workspace @mintter/app dev",
     "site:test": "is-ci \"site:test:coverage\" \"site:test:watch\"",
     "site:build": "yarn workspace @mintter/site build",
     "site:export": "yarn workspace @mintter/site export",
@@ -28,7 +28,9 @@
   },
   "workspaces": [
     "frontend/www",
-    "api/js"
+    "api/js",
+    "frontend/app",
+    "frontend/new-dir"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.5.2",
