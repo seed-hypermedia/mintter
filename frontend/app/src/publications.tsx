@@ -12,6 +12,7 @@ export function Publications() {
   const match = useRouteMatch();
 
   const { isLoading, isError, error, data } = useOthersPublications();
+  console.log("🚀 ~ file: publications.tsx ~ line 15 ~ Publications ~ data", data)
 
   async function handleCreateDraft() {
     const newDraft = await createDraft();

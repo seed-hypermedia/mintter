@@ -51,6 +51,10 @@ import { ADMIN_ROUTE } from './constants';
 
 export function PrivateRoute({ children, exact = false, ...rest }: RouteProps) {
   const { isSuccess, data: profile } = useProfile();
+  console.log(
+    '🚀 ~ file: routes.tsx ~ line 54 ~ PrivateRoute ~ profile',
+    profile,
+  );
   if (isSuccess) {
     return (
       <Route
