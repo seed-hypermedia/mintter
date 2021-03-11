@@ -30,6 +30,7 @@ import {isLocalhost} from 'shared/is-localhost'
 import {getPath} from 'components/routes'
 import {useTransclusion} from 'shared/use-transclusion'
 import {SlateBlock} from 'editor/editor'
+import {Text} from 'components/text'
 
 export default function Publication() {
   const match = useRouteMatch()
@@ -379,11 +380,10 @@ function PublicationHeader({document}: {document: Document.AsObject}) {
           {document.subtitle}
         </p>
       )}
-      <p className="text-sm mt-4 text-heading">
-        <span>by </span>
-
+      <Text color="muted" size="2" css={{display: 'inline-flex', gap: '$1'}}>
+        <Text>by</Text>
         <AuthorLabel author={author} />
-      </p>
+      </Text>
     </div>
   ) : null
 }

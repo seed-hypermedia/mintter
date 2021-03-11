@@ -1,4 +1,7 @@
-import {css} from 'emotion'
+import * as React from 'react'
+import {Box} from './box'
+import {Text} from './text'
+import {Container} from './container'
 
 type Step = {
   title: string
@@ -10,23 +13,25 @@ type Props = {
   active: number
 }
 
-export default function Steps({steps, active}: Props) {
+export function Steps({steps, active}: Props) {
   return (
-    <div className="w-full max-w-3xl mx-auto mt-8 sm:mb-8 py-8 px-16">
-      <ol
-        className={`flex w-full items-center justify-between relative ${css({
-          '&::before': {
-            content: '""',
+    <Container css={{p: '$8'}}>
+      <Box
+        as="ol"
+        css={{
+          display: 'grid',
+          gridTemplateRows: '1fr',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          '&:before': {
+            content: '',
             position: 'absolute',
             width: '100%',
-            height: 4,
-            backgroundColor: 'var(--color-muted)',
+            height: '$4',
             top: 'calc(50% - 2px)',
             left: 0,
-            //   zIndex: -1,
           },
-          '&::after': {
-            content: '""',
+          '&:after': {
+            content: '',
             display: 'block',
             position: 'absolute',
             left: 0,
@@ -34,20 +39,70 @@ export default function Steps({steps, active}: Props) {
             transition: '0.5s all ease',
             width: `${active * 50}%`,
             height: 4,
-            backgroundColor: 'var(--color-info-hover)',
-            //   zIndex: -1,
+            bc: '$hover',
           },
-        })}`}
+        }}
       >
         {steps &&
           steps.map((step, index) => (
-            <li key={step.title} className="flex flex-col relative">
-              <span
+            <Box
+              as="li"
+              key={step.title}
+              css={{
+                position: 'relative',
+                display: 'grid',
+                placeItems: 'center',
+              }}
+            >
+              <Box
+                css={{
+                  position: 'relative',
+                  width: '$4',
+                  height: '$4',
+                  bc: active >= index ? '$brandPrimary' : '$muted',
+                  borderRadius: '$pill',
+                  display: 'grid',
+                  placeItems: 'center',
+                }}
+              >
+                <Text size="1" color={active === index ? 'white' : 'text'}>
+                  {active > index ? (
+                    <svg
+                      width="1em"
+                      height="1em"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  ) : (
+                    index + 1
+                  )}
+                </Text>
+              </Box>
+              <Text
+                size="1"
+                css={{
+                  position: 'absolute',
+                  top: 28,
+                  width: '100%',
+                  textAlign: 'center',
+                }}
+              >
+                {step.title}
+              </Text>
+
+              {/* <span
                 className={`relative w-5 h-5 rounded-full flex items-center justify-center text-muted ${
                   active === index
                     ? 'active text-info-muted'
-                    : `bg-transparent ${active > index &&
-                        'complete text-info-muted'}`
+                    : `bg-transparent ${
+                        active > index && 'complete text-info-muted'
+                      }`
                 } ${css({
                   fontSize: '0.6rem',
                   transition: '0.25s all ease',
@@ -96,30 +151,15 @@ export default function Steps({steps, active}: Props) {
                   )}
                 </span>
               </span>
-              <span
-                className={`absolute w-full text-center whitespace-no-wrap text-xs opacity-0 sm:opacity-100 ${css`
-                  @media (min-width: 480px) {
-                    transform: translateX(-40px);
-                    width: 100px;
-                    top: 28px;
-                    left: 0;
-                    transition: 0.25s all ease;
-                  }
-                  color: ${active === index
-                    ? 'var(--color-info-hover)'
-                    : 'var(--color-body-muted)'};
-                `}`}
-              >
-                {step.title}
-              </span>
-            </li>
+              */}
+            </Box>
           ))}
-      </ol>
+      </Box>
       {/* {
         <p className="text-info-hover text-center mt-4 text-xs">
           {steps[active].title}
         </p>
       } */}
-    </div>
+    </Container>
   )
 }

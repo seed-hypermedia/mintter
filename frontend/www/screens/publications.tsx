@@ -1,10 +1,13 @@
+import * as React from 'react'
 import {Icons} from 'components/icons'
 import DocumentList from 'components/document-list'
 import {useMintter, useOthersPublications} from 'shared/mintter-context'
 import Seo from 'components/seo'
 import {ErrorMessage} from 'components/error-message'
 import {getPath} from 'components/routes'
-import {useHistory, useRouteMatch} from 'react-router'
+import {Button} from 'components/button'
+import {Box} from 'components/box'
+import {Separator} from 'components/separator'
 
 export default function Publications() {
   const history = useHistory()
@@ -39,19 +42,41 @@ export default function Publications() {
       <Seo title="Feed" />
       {data.length === 0 && (
         <>
-          <hr className="border-t-2 border-muted border-solid my-8" />
-          <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
+          <Separator />
+          <Box
+            css={{
+              bc: '$gray200',
+              p: '$6',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              borderRadius: '$3',
+              boxShadow:
+                'inset 0 0 0 1px $colors$gray400, 0 0 0 1px $colors$gray400',
+            }}
+          >
             <h3 className="text-xl font-semibold text-primary">
               No Publications (yet)
             </h3>
-            <button
+            <Button
               onClick={handleCreateDraft}
-              className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
+              appearance="pill"
+              variant="primary"
+              css={{
+                height: '$7',
+                fontSize: '$3',
+                marginTop: '$4',
+                display: 'inline-flex',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '$2',
+                px: '$4',
+              }}
             >
               <Icons.FilePlus color="currentColor" />
-              <span className="ml-2">Start your first document</span>
-            </button>
-          </div>
+              <span>Start your first document</span>
+            </Button>
+          </Box>
         </>
       )}
       <DocumentList

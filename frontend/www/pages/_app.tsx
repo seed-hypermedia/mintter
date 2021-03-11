@@ -3,8 +3,11 @@ import {AppProps} from 'next/app'
 import dynamic from 'next/dynamic'
 import {App} from 'shared/app'
 import {AppProviders} from 'components/app-providers'
+import {globalStyles} from 'shared/stitches.config'
 
 import '../styles/index.css'
+
+globalStyles()
 
 const NoSSR: React.FC = ({children}) => {
   return <React.Fragment>{children}</React.Fragment>

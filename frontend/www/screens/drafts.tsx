@@ -5,6 +5,10 @@ import {useDrafts, useMintter} from 'shared/mintter-context'
 import {getPath} from 'components/routes'
 import {Icons} from 'components/icons'
 import {useRouter} from 'shared/use-router'
+import {Button} from 'components/button'
+import {Separator} from 'components/separator'
+import {Text} from 'components/text'
+import {Box} from 'components/box'
 
 export default function Drafts() {
   const {history, match} = useRouter()
@@ -28,8 +32,19 @@ export default function Drafts() {
       <Seo title="Drafts" />
       {isSuccess && data.length === 0 && (
         <>
-          <hr className="border-t-2 border-muted border-solid my-8" />
-          <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
+          <Separator />
+          <Box
+            css={{
+              bc: '$gray200',
+              p: '$6',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              borderRadius: '$3',
+              boxShadow:
+                'inset 0 0 0 1px $colors$gray400, 0 0 0 1px $colors$gray400',
+            }}
+          >
             <h3 className="text-xl font-semibold text-primary">
               No Drafts available
             </h3>
@@ -37,14 +52,23 @@ export default function Drafts() {
                 Some clain sentence that's fun, welcomes user to the community
                 and tells how it works and encourages to get started
               </p> */}
-            <button
-              onClick={() => onCreateDocument()}
-              className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
+            <Button
+              onClick={onCreateDocument}
+              appearance="pill"
+              variant="primary"
+              css={{
+                height: '$7',
+                fontSize: '$3',
+                marginTop: '$4',
+                px: '$4',
+              }}
             >
               <Icons.FilePlus color="currentColor" />
-              <span className="ml-2">Start your first document</span>
-            </button>
-          </div>
+              <Text size="3" color="white">
+                Start your first document
+              </Text>
+            </Button>
+          </Box>
         </>
       )}
 

@@ -1,16 +1,15 @@
 import React from 'react'
 import {useState} from 'react'
-import {css} from 'emotion'
-import Tippy from '@tippyjs/react'
 import {useHistory, useRouteMatch} from 'react-router-dom'
-import {Icons} from 'components/icons'
 import {Link} from 'components/link'
 import Logo from './logo-square'
-import Input from './input'
-import {Button} from './button'
+import {Input} from './input'
 import {isLocalhost} from 'shared/is-localhost'
 import {getPath} from 'components/routes'
 import {CustomLogo} from './custom-logo'
+import {Grid} from './grid'
+import {Container} from './container'
+import * as DropdownMenu from './dropdown-menu'
 
 interface NavItemProps {
   href: string
@@ -23,94 +22,65 @@ interface NavItemProps {
 export default function Topbar({isPublic = false}) {
   const history = useHistory()
   const match = useRouteMatch()
-  const [menuVisible, setMenuVisible] = useState<boolean>(false)
   const isLocal = isLocalhost(window.location.hostname)
-  const show = React.useCallback(() => setMenuVisible(true), [setMenuVisible])
-  const hide = React.useCallback(() => setMenuVisible(false), [setMenuVisible])
-
-  function toggleFormMetadata() {
-    if (menuVisible) {
-      hide()
-    } else {
-      show()
-    }
-  }
 
   return isPublic ? (
-    <div className="p-4 w-full border-b bg-brand-primary">
-      <div
-        className={`w-full mx-4 md:mx-16 flex items-end justify-between ${css`
-          max-width: 50ch;
-        `}`}
+    <Grid css={{bc: '$brandPrimary', borderBottom: '1px solid $colors$muted'}}>
+      <Container
+        css={{
+          mx: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          py: '$2',
+          px: '$3',
+        }}
       >
-        <span className="text-primary flex items-center">
-          <Link to="/">
-            {isLocal ? (
-              <Logo width="42px" className="fill-current" />
-            ) : (
-              <CustomLogo />
-            )}
-          </Link>
-        </span>
+        <Link to="/">
+          {isLocal ? (
+            <Logo css={{color: 'white'}} width="42px" />
+          ) : (
+            <CustomLogo />
+          )}
+        </Link>
         <Link
           to="/"
           className="text-sm font-medium hover:underline text-brand-secondary inline-block"
         >
           ← Back to Home
         </Link>
-      </div>
-    </div>
+      </Container>
+    </Grid>
   ) : (
-    <div
-      className={`border-b border-background-muted grid grid-flow-col gap-4`}
+    <Grid
+      css={{
+        gridAutoFlow: 'column',
+        gridTemplateColumns: '100px 1fr 100px',
+        py: '$2',
+        px: '$3',
+        borderBottom: '1px solid $colors$muted',
+        alignItems: 'center',
+      }}
     >
-      <span className="text-primary flex items-center py-4 pl-4 md:pl-16">
-        <Link to={getPath(match)}>
-          <Logo width="42px" className="fill-current" />
-        </Link>
-      </span>
-      <div className="py-4">
-        <div className={`w-full px-4 md:px-6`}>
-          <MintterSearch />
-        </div>
-      </div>
-
-      <div className="flex justify-end pr-4 py-4">
-        <Tippy
-          visible={menuVisible}
-          onClickOutside={hide}
-          interactive={true}
-          content={
-            <div
-              className={`flex flex-col shadow-md ${css`
-                opacity: ${menuVisible ? '1' : '0'};
-              `}`}
-            >
-              <Button
-                className="text-body bg-background"
-                onClick={() => {
-                  hide()
-                  history.push(`${getPath(match)}/settings`)
-                }}
-              >
-                Settings
-              </Button>
-            </div>
-          }
-        >
-          <span tabIndex={0}>
-            <Button onClick={toggleFormMetadata} className="flex items-center">
-              <span className="mr-2 text-body">Menu</span>
-              <Icons.ChevronDown
-                className={`transform transition duration-200 text-body ${
-                  menuVisible ? 'rotate-180' : ''
-                }`}
-              />
-            </Button>
-          </span>
-        </Tippy>
-      </div>
-    </div>
+      <Link to={getPath(match)}>
+        <Logo css={{color: '$brandPrimary'}} width="42px" />
+      </Link>
+      <Container>
+        <MintterSearch />
+      </Container>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger>Menu</DropdownMenu.Trigger>
+        <DropdownMenu.Content>
+          <DropdownMenu.Item
+            onSelect={() => {
+              history.push(`${getPath(match)}/settings`)
+            }}
+          >
+            Settings
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
+    </Grid>
   )
 }
 
