@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Route, Redirect } from 'react-router-dom';
 import type { RouteProps } from 'react-router-dom';
 import type { match as Match } from 'react-router';
-import { useProfile } from './use-profile';
+import { useProfile } from './mintter-hooks';
 // import { useWelcome } from 'shared/welcome-provider';
 import { AppSpinner } from './app-spinner';
 import { ADMIN_ROUTE } from './constants';

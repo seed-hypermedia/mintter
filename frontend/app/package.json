@@ -10,7 +10,11 @@
   },
   "dependencies": {
     "@mintter/api": "*",
+    "@tailwindcss/typography": "^0.4.0",
     "@udecode/slate-plugins": "^0.75.1",
+    "autoprefixer": "^10.2.5",
+    "date-fns": "^2.19.0",
+    "postcss": "^8.2.8",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "react-error-boundary": "^3.1.1",
@@ -20,10 +24,12 @@
     "slate-history": "^0.59.0",
     "slate-hyperscript": "^0.59.0",
     "slate-react": "^0.59.0",
-    "slate-react-presentation": "^0.1.0"
+    "slate-react-presentation": "^0.1.0",
+    "tailwindcss": "^2.0.3"
   },
   "devDependencies": {
     "@snowpack/plugin-dotenv": "^2.0.5",
+    "@snowpack/plugin-postcss": "^1.1.0",
     "@snowpack/plugin-react-refresh": "^2.4.0",
     "@snowpack/plugin-typescript": "^1.2.0",
     "@snowpack/web-test-runner-plugin": "^0.2.0",
@@ -35,6 +41,8 @@
     "@types/snowpack-env": "^2.3.2",
     "@web/test-runner": "^0.12.0",
     "chai": "^4.2.0",
+    "postcss": "^8.2.8",
+    "postcss-cli": "^8.3.1",
     "prettier": "^2.0.5",
     "snowpack": "^3.0.1",
     "typescript": "^4.0.0"

@@ -69,7 +69,7 @@ export function mintterClient() {
 
 export function createDraft(): Promise<documents.Document> {
   let request = new documents.CreateDraftRequest();
-  return draftsClient().createDraft();
+  return draftsClient().createDraft(request);
 }
 
 export function deleteDraft(documentId: string): Promise<any> {
@@ -94,7 +94,7 @@ export function updateDraft(
 
 export function listDrafts(
   pageSize?: number,
-  pateToken?: string,
+  pageToken?: string,
   view?: documents.DocumentView,
 ): Promise<documents.ListDraftsResponse> {
   let request = new documents.ListDraftsRequest();
@@ -103,7 +103,7 @@ export function listDrafts(
   }
 
   if (pageToken) {
-    request.getPageToken(pageToken);
+    request.setPageToken(pageToken);
   }
   if (view) {
     request.setView(view);
@@ -138,7 +138,7 @@ export function getPublication(
   return publicationsClient().getPublication(request);
 }
 
-export function deletePublication(version: string): void {
+export function deletePublication(version: string): Promise<any> {
   let request = new documents.DeletePublicationRequest();
   request.setVersion(version);
   return publicationsClient().deletePublication(request);
@@ -155,7 +155,7 @@ export function listPublications(
   }
 
   if (pageToken) {
-    request.getPageToken(pageToken);
+    request.setPageToken(pageToken);
   }
   if (view) {
     request.setView(view);
@@ -177,15 +177,15 @@ export function genSeed(aezeedPassphrase?: string) {
 
 //TODO: type initProfile parameters
 export function initProfile(
-  aezeedPassphrase,
-  mnemonicList,
-  walletPassword,
+  aezeedPassphrase: any,
+  mnemonicList: any,
+  walletPassword: any,
 ): Promise<mintter.InitProfileResponse> {
   let request = new mintter.InitProfileRequest();
   request.setAezeedPassphrase(aezeedPassphrase);
   request.setMnemonicList(mnemonicList);
   request.setWalletPassword(walletPassword);
-  return mintterClient().initProfile(req);
+  return mintterClient().initProfile(request);
 }
 
 export function getProfile(
@@ -241,7 +241,7 @@ export function getProfileAddress(): Promise<mintter.GetProfileAddrsResponse> {
 }
 
 export function connectToPeer(
-  addresses: string,
+  addresses: string[],
 ): Promise<mintter.ConnectToPeerResponse> {
   let request = new mintter.ConnectToPeerRequest();
   request.setAddrsList(addresses);

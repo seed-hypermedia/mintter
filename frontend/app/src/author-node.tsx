@@ -8,6 +8,8 @@ import {
 } from 'react-router-dom';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { createPath, PrivateRoute } from './routes';
+import { AppLayout } from './layouts';
+import { Topbar } from './topbar';
 
 function AuthorNodeErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
   return (
@@ -39,16 +41,19 @@ export default function AuthorNode({ path = '/' }: AuthorNodeProps) {
         <Route path={createPath(match, 'welcome')}>
           <WelcomeWizard />
         </Route>
-        <Route path="/">
-          {/* TODO: add app layout */}
-          <Switch>
-            <PrivateRoute exact path={match.url}>
-              <Redirect to={createPath(match, 'library')} />
-            </PrivateRoute>
-            <PrivateRoute path={createPath(match, 'library')}>
-              <Library />
-            </PrivateRoute>
-          </Switch>
+        <Route>
+          <AppLayout>
+            <Topbar />
+            {/* TODO: add app layout */}
+            <Switch>
+              <PrivateRoute exact path={match.url}>
+                <Redirect to={createPath(match, 'library')} />
+              </PrivateRoute>
+              <PrivateRoute path={createPath(match, 'library')}>
+                <Library />
+              </PrivateRoute>
+            </Switch>
+          </AppLayout>
         </Route>
       </Switch>
     </ErrorBoundary>

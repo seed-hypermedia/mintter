@@ -3,11 +3,12 @@ import DocumentList from 'components/document-list'
 import {useMintter, useOthersPublications} from 'shared/mintter-context'
 import Seo from 'components/seo'
 import {ErrorMessage} from 'components/error-message'
-import {useRouter} from 'shared/use-router'
 import {getPath} from 'components/routes'
+import {useHistory, useRouteMatch} from 'react-router'
 
 export default function Publications() {
-  const {history, match} = useRouter()
+  const history = useHistory()
+  const match = useRouteMatch()
   const {createDraft, deleteDocument} = useMintter()
 
   const {isLoading, isError, error, data} = useOthersPublications()
