@@ -1,4 +1,6 @@
-import DocumentsClient from '@mintter/api/documents/v1alpha/documents_grpc_web_pb';
+import DocumentsClient, {
+  DraftsClient,
+} from '@mintter/api/documents/v1alpha/documents_grpc_web_pb';
 import documents from '@mintter/api/documents/v1alpha/documents_pb';
 import MintterClient from '@mintter/api/v2/mintter_grpc_web_pb';
 import mintter from '@mintter/api/v2/mintter_pb';
@@ -57,20 +59,191 @@ export function mintterClient() {
   return mintterClientInstance;
 }
 
-export async function getProfile(
+// =================
+
+/**
+ *
+ * Drafts
+ *
+ */
+
+export function createDraft(): Promise<documents.Document> {
+  let request = new documents.CreateDraftRequest();
+  return draftsClient().createDraft();
+}
+
+export function deleteDraft(documentId: string): Promise<any> {
+  let request = new documents.DeleteDraftRequest();
+  request.setDocumentId(documentId);
+  return draftsClient().deleteDraft(request);
+}
+
+export function getDraft(documentId: string): Promise<documents.Document> {
+  let request = new documents.GetDraftRequest();
+  request.setDocumentId(documentId);
+  return draftsClient().getDraft(request);
+}
+
+export function updateDraft(
+  document: documents.Document,
+): Promise<documents.Document> {
+  let request = new documents.UpdateDraftRequest();
+  request.setDocument(document);
+  return draftsClient().updateDraft(request);
+}
+
+export function listDrafts(
+  pageSize?: number,
+  pateToken?: string,
+  view?: documents.DocumentView,
+): Promise<documents.ListDraftsResponse> {
+  let request = new documents.ListDraftsRequest();
+  if (pageSize) {
+    request.setPageSize(pageSize);
+  }
+
+  if (pageToken) {
+    request.getPageToken(pageToken);
+  }
+  if (view) {
+    request.setView(view);
+  }
+  return draftsClient().listDrafts(request);
+}
+
+export function publishDraft(
+  documentId: string,
+): Promise<documents.PublishDraftResponse> {
+  let request = new documents.PublishDraftRequest();
+  request.setDocumentId(documentId);
+  return draftsClient().publishDraft(request);
+}
+
+/**
+ *
+ * Publications
+ *
+ */
+
+export function getPublication(
+  documentId: string,
+  version?: string,
+): Promise<documents.Publication> {
+  let request = new documents.GetPublicationRequest();
+  request.setDocumentId(documentId);
+  if (version) {
+    request.setVersion(version);
+  }
+
+  return publicationsClient().getPublication(request);
+}
+
+export function deletePublication(version: string): void {
+  let request = new documents.DeletePublicationRequest();
+  request.setVersion(version);
+  return publicationsClient().deletePublication(request);
+}
+
+export function listPublications(
+  pageSize?: number,
+  pageToken?: string,
+  view?: documents.DocumentView,
+): Promise<documents.ListPublicationsResponse> {
+  let request = new documents.ListPublicationsRequest();
+  if (pageSize) {
+    request.setPageSize(pageSize);
+  }
+
+  if (pageToken) {
+    request.getPageToken(pageToken);
+  }
+  if (view) {
+    request.setView(view);
+  }
+  return publicationsClient().listPublications(request);
+}
+
+/**
+ *
+ * Profile
+ *
+ */
+
+export function genSeed(aezeedPassphrase?: string) {
+  let request = new mintter.GenSeedRequest();
+  // TODO: add aezeedPassphrase?
+  return mintterClient().genSeed(request);
+}
+
+//TODO: type initProfile parameters
+export function initProfile(
+  aezeedPassphrase,
+  mnemonicList,
+  walletPassword,
+): Promise<mintter.InitProfileResponse> {
+  let request = new mintter.InitProfileRequest();
+  request.setAezeedPassphrase(aezeedPassphrase);
+  request.setMnemonicList(mnemonicList);
+  request.setWalletPassword(walletPassword);
+  return mintterClient().initProfile(req);
+}
+
+export function getProfile(
   profileId?: string,
-): Promise<mintter.Profile | undefined> {
-  const request = new mintter.GetProfileRequest();
+): Promise<mintter.GetProfileResponse> {
+  let request = new mintter.GetProfileRequest();
   if (profileId) {
     request.setProfileId(profileId);
   }
-  return await (await mintterClient().getProfile(request)).getProfile();
+  return mintterClient().getProfile(request);
 }
 
-export async function listDocuments(
-  page = 0,
-): Promise<documents.ListPublicationsResponse> {
-  const request = new documents.ListPublicationsRequest();
-  request.setPageSize(page);
-  return await publicationsClient().listPublications(request);
+export function updateProfile(
+  profile: mintter.Profile,
+): Promise<mintter.UpdateProfileResponse> {
+  let request = new mintter.UpdateProfileRequest();
+  request.setProfile(profile);
+  return mintterClient().updateProfile(request);
+}
+
+export function listProfiles(
+  pageSize?: number,
+  pageToken?: string,
+): Promise<mintter.ListProfilesResponse> {
+  let request = new mintter.ListProfilesRequest();
+  if (pageSize) {
+    request.setPageSize(pageSize);
+  }
+  if (pageToken) {
+    request.setPageToken(pageToken);
+  }
+  return mintterClient().listProfiles(request);
+}
+
+export function listSuggestedProfiles(
+  pageSize?: number,
+  pageToken?: string,
+): Promise<mintter.ListSuggestedProfilesResponse> {
+  let request = new mintter.ListSuggestedProfilesRequest();
+  if (pageSize) {
+    request.setPageSize(pageSize);
+  }
+  if (pageToken) {
+    request.setPageToken(pageToken);
+  }
+
+  return mintterClient().listSuggestedProfiles(request);
+}
+
+export function getProfileAddress(): Promise<mintter.GetProfileAddrsResponse> {
+  let request = new mintter.GetProfileAddrsRequest();
+  return mintterClient().getProfileAddrs(request);
+}
+
+export function connectToPeer(
+  addresses: string,
+): Promise<mintter.ConnectToPeerResponse> {
+  let request = new mintter.ConnectToPeerRequest();
+  request.setAddrsList(addresses);
+  return mintterClient().connectToPeer(request);
 }
