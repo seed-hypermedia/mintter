@@ -1,7 +1,6 @@
-import {createCss} from '@stitches/react'
-import {StitchesCss} from '@stitches/core'
-import {darken} from 'polished'
-export * from '@stitches/react'
+import { createCss } from '@stitches/react';
+import type { StitchesCss } from '@stitches/core';
+import { darken } from 'polished';
 
 const designSystem = createCss({
   prefix: '',
@@ -124,9 +123,7 @@ const designSystem = createCss({
       paddingRight: value,
     }),
 
-    px: <T extends {theme: {space: any}}>(_: T) => (
-      value: keyof typeof config['theme']['spaces'] | (string & number),
-    ) => ({
+    px: () => (value: any) => ({
       paddingLeft: value,
       paddingRight: value,
     }),
@@ -148,19 +145,19 @@ const designSystem = createCss({
       marginTop: value,
       marginBottom: value,
     }),
-    bc: config => (
+    bc: (config) => (
       value: keyof typeof config['theme']['colors'] | (string & {}),
     ) => ({
       backgroundColor: value,
     }),
 
-    br: config => (
+    br: (config) => (
       value: keyof typeof config['theme']['radii'] | (string & {}),
     ) => ({
       borderRadius: value,
     }),
   },
-})
+});
 
 export const {
   styled,
@@ -169,9 +166,9 @@ export const {
   getCssString,
   global,
   keyframes,
-} = designSystem
+} = designSystem;
 
-export type CSS = StitchesCss<typeof designSystem>
+export type CSS = StitchesCss<typeof designSystem>;
 
 export const globalStyles = global({
   '@font-face': [
@@ -190,7 +187,7 @@ export const globalStyles = global({
       fontStyle: 'normal',
     },
   ],
-})
+});
 
 const darkTheme = css({
   colors: {
@@ -222,4 +219,4 @@ const darkTheme = css({
     gray800: 'hsl(206,6%,56.1%)',
     gray900: 'hsl(206,6%,43.9%)',
   },
-})
+});

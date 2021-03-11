@@ -1,6 +1,7 @@
-import React, { useContext, createContext, useReducer, useMemo } from 'react';
+import * as React from 'react';
 import { useLocation } from 'react-router-dom';
-import Steps from './welcome-steps';
+import { Steps } from './welcome-steps';
+import { Grid } from '@mintter/ui/grid';
 
 interface WelcomeState {
   mnemonicList?: string[];
@@ -25,7 +26,7 @@ const initialState: WelcomeState = {
   progress: undefined,
 };
 
-export const WelcomeContext = createContext<WelcomeValueType>({
+export const WelcomeContext = React.createContext<WelcomeValueType>({
   state: initialState,
 });
 
@@ -50,13 +51,13 @@ export function reducer(state: WelcomeState, action: Action): WelcomeState {
 
 export function WelcomeProvider(props: WelcomeProviderProps) {
   const location = useLocation();
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = React.useReducer(reducer, initialState);
 
-  const activeStep = useMemo(
+  const activeStep = React.useMemo(
     () => steps.findIndex((s) => s.url === location.pathname),
     [location.pathname],
   );
-  const v = useMemo(
+  const v = React.useMemo(
     () => ({
       state,
       dispatch,
@@ -65,15 +66,21 @@ export function WelcomeProvider(props: WelcomeProviderProps) {
   );
 
   return (
-    <>
-      {activeStep >= 0 ? <Steps steps={steps} active={activeStep} /> : null}
+    <Grid
+      css={{
+        width: '100vw',
+        height: '100vh',
+        gridTemplateRows: '[welcome-steps] 150px [welcome-content] 1fr',
+      }}
+    >
+      <Steps steps={steps} active={activeStep} />
       <WelcomeContext.Provider value={{ ...v, ...props.value }} {...props} />
-    </>
+    </Grid>
   );
 }
 
 export function useWelcome(): WelcomeValueType {
-  const context = useContext<WelcomeValueType>(WelcomeContext);
+  const context = React.useContext<WelcomeValueType>(WelcomeContext);
   if (context === undefined) {
     throw new Error(`useWelcome must be used within a WelcomeProvider`);
   }

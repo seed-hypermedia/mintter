@@ -177,14 +177,18 @@ export function genSeed(aezeedPassphrase?: string) {
 
 //TODO: type initProfile parameters
 export function initProfile(
-  aezeedPassphrase: any,
   mnemonicList: any,
-  walletPassword: any,
+  aezeedPassphrase?: any,
+  walletPassword?: any,
 ): Promise<mintter.InitProfileResponse> {
   let request = new mintter.InitProfileRequest();
-  request.setAezeedPassphrase(aezeedPassphrase);
   request.setMnemonicList(mnemonicList);
-  request.setWalletPassword(walletPassword);
+  if (aezeedPassphrase) {
+    request.setAezeedPassphrase(aezeedPassphrase);
+  }
+  if (walletPassword) {
+    request.setWalletPassword(walletPassword);
+  }
   return mintterClient().initProfile(request);
 }
 
@@ -198,9 +202,20 @@ export function getProfile(
   return mintterClient().getProfile(request);
 }
 
-export function updateProfile(
-  profile: mintter.Profile,
+type UpdateProfileParams = {
+  username?: string;
+  email?: string;
+  bio?: string;
+};
+
+export async function updateProfile(
+  params: UpdateProfileParams,
 ): Promise<mintter.UpdateProfileResponse> {
+  const { username = '', email = '', bio = '' } = params;
+  let profile = (await (await getProfile()).getProfile()) as mintter.Profile;
+  profile.setUsername(username);
+  profile.setEmail(email);
+  profile.setBio(bio);
   let request = new mintter.UpdateProfileRequest();
   request.setProfile(profile);
   return mintterClient().updateProfile(request);

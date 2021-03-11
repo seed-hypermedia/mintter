@@ -27,4 +27,8 @@ module.exports = {
   buildOptions: {
     /* ... */
   },
+
+  alias: {
+    '@mintter/ui': './src/lib',
+  },
 };

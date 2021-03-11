@@ -1,25 +1,42 @@
-import * as React from 'react';
+import React from 'react';
+import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import { WelcomeProvider } from './welcome-provider';
+import WelcomeIntro from './welcome-intro';
+import { ProgressRoute, createPath } from './routes';
+import { Box } from '@mintter/ui/box';
 
-export default function WelcomeWizard() {
+const SecurityPack = React.lazy(() => import('./security-pack'));
+// const RetypeSeed = React.lazy(() => import('screens/welcome/retype-seed'));
+const EditProfile = React.lazy(() => import('./edit-profile'));
+const Complete = React.lazy(() => import('./welcome-complete'));
+
+export default function UnAuthenticatedApp() {
+  const match = useRouteMatch();
+
   return (
-    <div>
+    <Box css={{ width: '100vw', height: '100vh' }}>
       <WelcomeProvider>
-        <WelcomeIntro />
-      </WelcomeProvider>
-    </div>
-  );
-}
+        <Switch>
+          {/* the first route does not use the ProgressRoute component since this is how I avoid the infinite redirect loop (I'm redirecting from the ProgressRoute to this route) */}
+          <Route exact path={match.url}>
+            <WelcomeIntro />
+          </Route>
+          <Route path={createPath(match, 'security-pack')}>
+            <SecurityPack />
+          </Route>
 
-function WelcomeIntro() {
-  //TODO: add profile check
-  function handleNext() {
-    //
-  }
-  return (
-    <div>
-      <h1>Welcome to mintter</h1>
-      <button onClick={handleNext}>next</button>
-    </div>
+          {/* <ProgressRoute path={createPath(match, 'retype-seed')}>
+            <RetypeSeed />
+          </ProgressRoute> */}
+
+          <ProgressRoute path={createPath(match, 'edit-profile')}>
+            <EditProfile />
+          </ProgressRoute>
+          <ProgressRoute path={createPath(match, 'complete')}>
+            <Complete />
+          </ProgressRoute>
+        </Switch>
+      </WelcomeProvider>
+    </Box>
   );
 }

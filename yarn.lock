@@ -1384,7 +1384,7 @@
   resolved "https://registry.yarnpkg.com/@radix-ui/react-polymorphic/-/react-polymorphic-0.0.5.tgz#7742695d5a47c732b3c5f627dfcd037c03f07f5b"
   integrity sha512-XjAsBfFaa4FFYXZNPa9icHjDEqzvH+TVxQQwYJU2iY+6Ne1DhHXMLrGt/Vk0+BojMSPzg99NhjXROjQ4Fw30Hw==
 
-"@radix-ui/react-polymorphic@0.0.6":
+"@radix-ui/react-polymorphic@0.0.6", "@radix-ui/react-polymorphic@^0.0.6":
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/@radix-ui/react-polymorphic/-/react-polymorphic-0.0.6.tgz#7cbadb346925d459984f540bab32403913f60ef0"
   integrity sha512-M6VVxOLII8bdnKIYK9qDH8kO8/sYJXunA0VcNKlGJvD95GuolwypXGi3gLIHCqlAozHMFJ5hzy/Vsy/rCU8Glw==
@@ -1702,7 +1702,7 @@
   resolved "https://registry.yarnpkg.com/@snowpack/web-test-runner-plugin/-/web-test-runner-plugin-0.2.1.tgz#bc05c7e99b8c44f696a918e19a7ac663b49ff507"
   integrity sha512-NaltAArVffxcLGX1/aN03wG8cZAS/gd7LqoU9YaZkSv4a9ygA0UeMK03+GdtqekHnwZ1uyboNByNPpPrBAMMdQ==
 
-"@stitches/core@0.1.0-canary.17", "@stitches/core@^0.1.0-canary.17":
+"@stitches/core@0.1.0-canary.17":
   version "0.1.0-canary.17"
   resolved "https://registry.yarnpkg.com/@stitches/core/-/core-0.1.0-canary.17.tgz#9c6514668196a7b92d1dfdfbef756464b4a7dd66"
   integrity sha512-KWNdHgk8hflXCLLZTnIVqwY7jGHQtGF0yQMrOBGrleOF/rU3t1bSPIjKpW1YH9iRzVFP0p6X9KVlEhh5qCbxJg==
@@ -1712,6 +1712,11 @@
   resolved "https://registry.yarnpkg.com/@stitches/core/-/core-0.1.0-canary.12.tgz#9254f5372607e57c2563d813907b972c5c411dcd"
   integrity sha512-JP2OVj1yU3TijCkOr9pg0lHeLzJd7LnOeUsSOmp+H9R/LTFCrYKDuFufI71S7zlupJNBQnq76SrJXdov0pdPNA==
 
+"@stitches/core@^0.1.0-canary.18":
+  version "0.1.0-canary.18"
+  resolved "https://registry.yarnpkg.com/@stitches/core/-/core-0.1.0-canary.18.tgz#e1c225835e7e141e9dec817cb806f76aa51e3d94"
+  integrity sha512-SDLzhMRKnTgECRt7javU8z6aiB4nh8aYVHsASF8plMFomuyhfa5sMdHYbR6nO9SQ5ClpqaBw237cs5IMokxMwQ==
+
 "@stitches/react@0.1.0-canary.12":
   version "0.1.0-canary.12"
   resolved "https://registry.yarnpkg.com/@stitches/react/-/react-0.1.0-canary.12.tgz#ef38e0ecfa037ff7d7f3f21d5cdbbdd87ad6044a"
@@ -1719,12 +1724,12 @@
   dependencies:
     "@stitches/core" "^0.1.0-canary.12"
 
-"@stitches/react@0.1.0-canary.17":
-  version "0.1.0-canary.17"
-  resolved "https://registry.yarnpkg.com/@stitches/react/-/react-0.1.0-canary.17.tgz#051a191709ba7acf9381b1ad50bb53c15535037d"
-  integrity sha512-KkfbUvLQ5iVG54fZdBd89r4Hr5gCcZ6xcgrlDs0KRsMQ06OU6OCFcOItrpx0v5o+EutIlvSy501Z/oBsaC/Qyg==
+"@stitches/react@0.1.0-canary.18":
+  version "0.1.0-canary.18"
+  resolved "https://registry.yarnpkg.com/@stitches/react/-/react-0.1.0-canary.18.tgz#60f27cd8d74342ff1d453d821ca444597e9bea0f"
+  integrity sha512-78em5zB2544rEp7hDzo/qvjQixdi+xggJ/Bbp4gxU6SQCKLchn2yMsA7wjiZxugHE5Ln0sQuq6PNqacjreyDig==
   dependencies:
-    "@stitches/core" "^0.1.0-canary.17"
+    "@stitches/core" "^0.1.0-canary.18"
 
 "@tailwindcss/typography@^0.2.0":
   version "0.2.0"
@@ -2154,6 +2159,13 @@
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/@types/range-parser/-/range-parser-1.2.3.tgz#7ee330ba7caafb98090bece86a5ee44115904c2c"
   integrity sha512-ewFXqrQHlFsgc09MK5jP5iR7vumV/BYayNC6PgJO2LPe8vrnNFyjQjSppfEngITi0qvfKtzFvgKymGheFM9UOA==
+
+"@types/react-copy-to-clipboard@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@types/react-copy-to-clipboard/-/react-copy-to-clipboard-5.0.0.tgz#38b035ca0c28334d3e0efaf3f319b81eea9690cd"
+  integrity sha512-faUg6Kx3Dfv0MBIcs+xzIptlRtjEVSaNjqyC14YAp4UwSiTHghnKtBOt9ERRTZZJfoJgnw10tomVaqG86GzdAw==
+  dependencies:
+    "@types/react" "*"
 
 "@types/react-dom@^17.0.0":
   version "17.0.2"
@@ -9351,7 +9363,7 @@ rc@^1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-copy-to-clipboard@^5.0.2:
+react-copy-to-clipboard@^5.0.2, react-copy-to-clipboard@^5.0.3:
   version "5.0.3"
   resolved "https://registry.yarnpkg.com/react-copy-to-clipboard/-/react-copy-to-clipboard-5.0.3.tgz#2a0623b1115a1d8c84144e9434d3342b5af41ab4"
   integrity sha512-9S3j+m+UxDZOM0Qb8mhnT/rMR0NGSrj9A/073yz2DSxPMYhmYFBMYIdI2X4o8AjOjyFsSNxDRnCX6s/gRxpriw==
@@ -9442,6 +9454,11 @@ react-hook-form@^5.0.3:
   version "5.7.2"
   resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-5.7.2.tgz#a84e259e5d37dd30949af4f79c4dac31101b79ac"
   integrity sha512-bJvY348vayIvEUmSK7Fvea/NgqbT2racA2IbnJz/aPlQ3GBtaTeDITH6rtCa6y++obZzG6E3Q8VuoXPir7QYUg==
+
+react-hook-form@^6.15.4:
+  version "6.15.4"
+  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-6.15.4.tgz#328003e1ccc096cd158899ffe7e3b33735a9b024"
+  integrity sha512-K+Sw33DtTMengs8OdqFJI3glzNl1wBzSefD/ksQw/hJf9CnOHQAU6qy82eOrh0IRNt2G53sjr7qnnw1JDjvx1w==
 
 react-is@16.13.1, react-is@^16.12.0, react-is@^16.6.0, react-is@^16.7.0, react-is@^16.8.1, react-is@^16.8.6:
   version "16.13.1"
