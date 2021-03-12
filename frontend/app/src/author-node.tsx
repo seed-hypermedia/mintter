@@ -27,6 +27,7 @@ type AuthorNodeProps = {
 
 const Library = React.lazy(() => import('./library'));
 const WelcomeWizard = React.lazy(() => import('./welcome-wizard'));
+const Settings = React.lazy(() => import('./settings'));
 
 export default function AuthorNode({ path = '/' }: AuthorNodeProps) {
   const match = useRouteMatch(path) as Match;
@@ -52,6 +53,12 @@ export default function AuthorNode({ path = '/' }: AuthorNodeProps) {
               <PrivateRoute path={createPath(match, 'library')}>
                 <Library />
               </PrivateRoute>
+              <PrivateRoute path={createPath(match, 'settings')}>
+                <Settings />
+              </PrivateRoute>
+              <Route>
+                <p>No route match :(</p>
+              </Route>
             </Switch>
           </AppLayout>
         </Route>
