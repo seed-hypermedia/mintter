@@ -223,8 +223,11 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		log.Info("GracefulShutdownStarted")
 		log.Debug("Press ctrl+c again to force quit, but it's better to wait :)")
 		rpcsrv.GracefulStop()
-		httpsSrv.Shutdown(context.Background())
-		return httpSrv.Shutdown(context.Background())
+		err := multierr.Combine(
+			httpsSrv.Shutdown(context.Background()),
+			httpSrv.Shutdown(context.Background()),
+		)
+		return err
 	})
 
 	if isatty.IsTerminal(os.Stdout.Fd()) && !cfg.NoOpenBrowser {
