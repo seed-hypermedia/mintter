@@ -29,6 +29,7 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -40,6 +41,26 @@ import (
 
 func authFunc(ctx context.Context) (context.Context, error) {
 	return document.AdminContext(ctx), nil
+}
+
+func stripPort(hostport string) string {
+	host, _, err := net.SplitHostPort(hostport)
+	if err != nil {
+		return hostport
+	}
+	// TODO: Retrieve HTTPSPort from config
+	return net.JoinHostPort(host, "55003")
+}
+
+// Somehow we need to pass an extra parameter cfg
+// https://stackoverflow.com/questions/23773322/passing-in-parameters-to-a-http-handlerfunc
+func handleHTTPRedirect(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" && r.Method != "HEAD" {
+		http.Error(w, "Use HTTPS", http.StatusBadRequest)
+		return
+	}
+	target := "https://" + stripPort(r.Host) + r.URL.RequestURI()
+	http.Redirect(w, r, target, http.StatusFound)
 }
 
 // Run the daemon.
@@ -135,9 +156,9 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		return fmt.Errorf("failed to bind grpc listener: %w", err)
 	}
 	defer grpcListener.Close()
+	grpcURL := "grpc://" + formatAddr(grpcListener.Addr())
 
 	// Start gRPC server with graceful shutdown.
-
 	g.Go(func() error {
 		return rpcsrv.Serve(grpcListener)
 	})
@@ -148,6 +169,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		return fmt.Errorf("failed to bind http listener: %w", err)
 	}
 	defer httpListener.Close()
+	httpURL := "http://" + formatAddr(httpListener.Addr())
 
 	g.Go(func() error {
 		err := httpSrv.Serve(httpListener)
@@ -158,21 +180,29 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		return err
 	})
 
+	var logParams []zapcore.Field = []zapcore.Field{
+		zap.String("httpURL", httpURL),
+		zap.String("grpcURL", grpcURL),
+	}
+
 	// Start HTTPS server and generate Let's Encrypt certificate
 	httpsSrv := http.Server{}
 	if cfg.EnableSSL {
 		certManager := autocert.Manager{
-			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(cfg.Domain),
-			Cache:      autocert.DirCache(config.MintterCertsDir),
+			Prompt: autocert.AcceptTOS,
+			//HostPolicy: autocert.HostWhitelist(cfg.Domain),
+			// HostPolicy: autocert.HostWhitelist(cfg.Domain + ":" + cfg.HTTPPort),
+			Cache: autocert.DirCache(cfg.RepoPath + "/certs"),
 		}
 
 		httpsSrv = http.Server{
-			Addr:      ":443",
+			Addr:      ":" + cfg.HTTPSPort,
 			Handler:   mux,
 			TLSConfig: &tls.Config{GetCertificate: certManager.GetCertificate},
 		}
-		httpSrv.Handler = certManager.HTTPHandler(httpSrv.Handler)
+		// httpSrv.Handler = certManager.HTTPHandler(httpSrv.Handler)
+		// redirect from http to https
+		httpSrv.Handler = certManager.HTTPHandler(http.HandlerFunc(handleHTTPRedirect))
 
 		g.Go(func() error {
 			err := httpsSrv.ListenAndServeTLS("", "")
@@ -182,25 +212,20 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 			return nil
 		})
 
+		httpsURL := "https://localhost" + httpsSrv.Addr
+		logParams = append(logParams, zap.String("httpsURL", httpsURL))
 	}
+
+	log.Info("ServerStarted", logParams...)
 
 	g.Go(func() error {
 		<-ctx.Done()
 		log.Info("GracefulShutdownStarted")
 		log.Debug("Press ctrl+c again to force quit, but it's better to wait :)")
 		rpcsrv.GracefulStop()
-		// :?
 		httpsSrv.Shutdown(context.Background())
 		return httpSrv.Shutdown(context.Background())
 	})
-
-	httpURL := "http://" + formatAddr(httpListener.Addr())
-	grpcURL := "grpc://" + formatAddr(grpcListener.Addr())
-
-	log.Info("ServerStarted",
-		zap.String("httpURL", httpURL),
-		zap.String("grpcURL", grpcURL),
-	)
 
 	if isatty.IsTerminal(os.Stdout.Fd()) && !cfg.NoOpenBrowser {
 		if err := browser.OpenURL(httpURL); err != nil {

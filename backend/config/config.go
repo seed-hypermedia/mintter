@@ -1,15 +1,10 @@
 // Package config provides global configuration.
 package config
 
-import (
-	"path"
-
-	"github.com/adrg/xdg"
-)
-
 // Config for Mintter daemon.
 type Config struct {
 	HTTPPort      string `help:"Port to expose HTTP server (including grpc-web)" default:"55001"`
+	HTTPSPort     string `help:"Port to expose HTTPS server" default:"443"`
 	GRPCPort      string `help:"Port to expose gRPC server" default:"55002"`
 	RepoPath      string `help:"Path to where to store node data" default:"~/.mtt"`
 	NoOpenBrowser bool   `help:"If true - do not open the browser to access the UI"`
@@ -34,7 +29,3 @@ type UI struct {
 	LogoURI     string `help:"uri of the primary logo image"`
 	HomePageURI string `help:"uri of the home page"`
 }
-
-// MintterConfigDir points to the config directory
-var MintterConfigDir = path.Join(xdg.ConfigHome, "mintter")
-var MintterCertsDir = path.Join(MintterConfigDir, "certs")

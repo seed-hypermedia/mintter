@@ -5,7 +5,6 @@ go 1.13
 require (
 	github.com/AndreasBriese/bbloom v0.0.0-20190823232136-616930265c33 // indirect
 	github.com/GeertJohan/go.rice v1.0.0
-	github.com/adrg/xdg v0.3.1
 	github.com/alecthomas/kong v0.2.11
 	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/btcsuite/btcd v0.21.0-beta // indirect
