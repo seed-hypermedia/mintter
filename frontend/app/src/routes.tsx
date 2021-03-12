@@ -16,11 +16,6 @@ export function ProgressRoute({ children, ...rest }: ProgressRouteProps) {
     state: { progress },
   } = useWelcome();
   const { data, isLoading } = useProfile();
-  console.log(
-    '🚀 ~ file: routes.tsx ~ line 15 ~ ProgressRoute ~ data, isLoading',
-    data,
-    isLoading,
-  );
 
   if (isLoading) {
     return <AppSpinner />;

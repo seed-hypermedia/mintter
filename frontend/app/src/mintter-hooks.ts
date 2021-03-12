@@ -141,13 +141,9 @@ export function useConnectionCreate() {
   };
 }
 
-export async function useCreateDraft() {
-  return await apiClient.createDraft();
-}
-
 export function usePublications(options = {}) {
   const docsQuery = useQuery(
-    'Documents',
+    'Publications',
     async () => await apiClient.listPublications(),
     {
       ...options,
@@ -155,12 +151,16 @@ export function usePublications(options = {}) {
       // refetchInterval: 5000,
     },
   );
+  console.log(
+    '🚀 ~ file: mintter-hooks.ts ~ line 158 ~ usePublications ~ docsQuery',
+    docsQuery,
+  );
 
   const data = React.useMemo(
     () =>
       docsQuery.data?.getPublicationsList().map((doc) => {
         const data = doc.toObject();
-
+        console.log({ data });
         return {
           doc,
           ...data,
@@ -211,6 +211,23 @@ export function useMyPublications(options = {}) {
 
   return {
     ...docsQuery,
+    data,
+  };
+}
+
+export function useDrafts(options = {}) {
+  const draftsQuery = useQuery(
+    'Drafts',
+    async () => apiClient.listDrafts(),
+    options,
+  );
+
+  const data = React.useMemo(() => draftsQuery.data?.getDocumentsList(), [
+    draftsQuery.data,
+  ]);
+
+  return {
+    ...draftsQuery,
     data,
   };
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import {css} from 'emotion'
 import Tippy from '@tippyjs/react'
-import {Profile, ConnectionStatus} from '@mintter/api/v2/mintter_pb'
+import mintter from '@mintter/api/v2/mintter_pb'
 import {useConnectionList} from 'shared/profile-context'
 import {ErrorMessage} from './error-message'
 import {Button} from './button'
@@ -28,7 +28,7 @@ export function Connections({onConnect}) {
         <ul aria-label="connections">
           {data.map(c => {
             const isConnected =
-              c.connectionStatus === ConnectionStatus.CONNECTED
+              c.connectionStatus === mintter.ConnectionStatus.CONNECTED
 
             return (
               <li

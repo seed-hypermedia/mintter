@@ -12,7 +12,6 @@ export function Publications() {
   const match = useRouteMatch();
 
   const { isLoading, isError, error, data } = useOthersPublications();
-  console.log("🚀 ~ file: publications.tsx ~ line 15 ~ Publications ~ data", data)
 
   async function handleCreateDraft() {
     const newDraft = await createDraft();
@@ -31,7 +30,7 @@ export function Publications() {
   }
 
   if (isLoading) {
-    return <p className="text-body text-sm mt-2">loading...</p>;
+    return <p>loading...</p>;
   }
 
   return (

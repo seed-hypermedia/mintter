@@ -150,16 +150,9 @@ export function listPublications(
   view?: documents.DocumentView,
 ): Promise<documents.ListPublicationsResponse> {
   let request = new documents.ListPublicationsRequest();
-  if (pageSize) {
-    request.setPageSize(pageSize);
-  }
-
-  if (pageToken) {
-    request.setPageToken(pageToken);
-  }
-  if (view) {
-    request.setView(view);
-  }
+  if (pageSize) request.setPageSize(pageSize);
+  if (pageToken) request.setPageToken(pageToken);
+  if (view) request.setView(view);
   return publicationsClient().listPublications(request);
 }
 

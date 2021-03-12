@@ -15,13 +15,13 @@ import {
 } from './mintter-hooks';
 import { createDraft } from './mintter-client';
 import { Link } from './link';
-// import { Connections } from 'components/connections';
-// import { SuggestedConnections } from 'components/suggested-connections';
+import { Connections } from './connections';
+import { SuggestedConnections } from './suggested-connections';
 import { MainColumn } from './main-column';
 // import { Icons } from 'components/icons';
 import { Publications } from './publications';
-// import MyPublications from './my-publications';
-// import Drafts from './drafts';
+import { MyPublications } from './my-publications';
+import { Drafts } from './drafts';
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
@@ -92,9 +92,9 @@ export default function Library() {
         `}`}
       >
         <div className="pt-16 px-4 md:pl-16 mb-20">
-          {/* <ProfileInfo /> */}
-          {/* <Connections onConnect={onConnect} /> */}
-          {/* <SuggestedConnections onConnect={onConnect} /> */}
+          <ProfileInfo />
+          <Connections onConnect={onConnect} />
+          <SuggestedConnections onConnect={onConnect} />
         </div>
         <div>
           <MainColumn className="pt-12">
@@ -124,10 +124,10 @@ export default function Library() {
                   <Publications />
                 </PrivateRoute>
                 <PrivateRoute path={`${match.url}/published`}>
-                  {/* <MyPublications /> */}
+                  <MyPublications />
                 </PrivateRoute>
                 <PrivateRoute path={`${match.url}/drafts`}>
-                  {/* <Drafts /> */}
+                  <Drafts />
                 </PrivateRoute>
               </Switch>
             </div>

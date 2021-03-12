@@ -5,10 +5,12 @@ import { Link } from './link';
 import { useAuthor } from './mintter-hooks';
 import { getPath } from './routes';
 import { format } from 'date-fns';
-import type { Document } from '@mintter/api/documents/v1alpha/documents_pb';
+import type documents from '@mintter/api/documents/v1alpha/documents_pb';
 
 interface Props {
-  data: Document.AsObject[];
+  // TODO: fix types
+  // data: documents.Document.AsObject[];
+  data: any;
   isLoading: boolean;
   isError: boolean;
   error: any;
@@ -28,11 +30,7 @@ export function DocumentList({
   onDeleteDocument,
 }: Props) {
   if (isLoading) {
-    return (
-      <div className="flex items-center -mx-4 p-12 bg-background-muted rounded">
-        <p>Loading...</p>
-      </div>
-    );
+    return <p>Loading...</p>;
   }
   if (isError) {
     return <p>ERROR</p>;
@@ -40,7 +38,8 @@ export function DocumentList({
 
   return (
     <div>
-      {data.map((item) => (
+      {/* // TODO: fix types */}
+      {data.map((item: any) => (
         <ListItem
           key={item.id}
           item={item}
