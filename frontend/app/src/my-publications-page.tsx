@@ -2,7 +2,7 @@ import * as React from 'react';
 // import Seo from 'components/seo'
 import { useHistory, useRouteMatch } from 'react-router';
 import { DocumentList } from './document-list';
-import { useMyPublications } from './mintter-hooks';
+import { useMyPublicationsList } from './mintter-hooks';
 import { createDraft, deletePublication } from './mintter-client';
 // import {ErrorMessage} from 'components/error-message'
 // import {Icons} from 'components/icons'
@@ -14,7 +14,13 @@ import { Box } from '@mintter/ui/box';
 export function MyPublications({ noSeo = false, isPublic = false }) {
   const history = useHistory();
   const match = useRouteMatch();
-  const { isError, isLoading, isSuccess, error, data } = useMyPublications();
+  const {
+    isError,
+    isLoading,
+    isSuccess,
+    error,
+    data,
+  } = useMyPublicationsList();
 
   async function onCreateDocument() {
     const d = await createDraft();

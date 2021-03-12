@@ -1,14 +1,14 @@
 import React from 'react';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import { WelcomeProvider } from './welcome-provider';
-import WelcomeIntro from './welcome-intro';
+import WelcomeIntro from './intro-page';
 import { ProgressRoute, createPath } from './routes';
 import { Box } from '@mintter/ui/box';
 
-const SecurityPack = React.lazy(() => import('./security-pack'));
+const SecurityPack = React.lazy(() => import('./security-pack-page'));
 // const RetypeSeed = React.lazy(() => import('screens/welcome/retype-seed'));
-const EditProfile = React.lazy(() => import('./edit-profile'));
-const Complete = React.lazy(() => import('./welcome-complete'));
+const EditProfile = React.lazy(() => import('./edit-profile-page'));
+const Complete = React.lazy(() => import('./complete-page'));
 
 export default function UnAuthenticatedApp() {
   const match = useRouteMatch();

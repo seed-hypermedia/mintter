@@ -6,8 +6,10 @@ import {
   UseQueryResult,
   useInfiniteQuery,
   UseInfiniteQueryResult,
+  QueryFunctionContext,
 } from 'react-query';
-import type { Profile } from '@mintter/api/v2/mintter_pb';
+import type mintter from '@mintter/api/v2/mintter_pb';
+import type documents from '@mintter/api/documents/v1alpha/documents_pb';
 
 export function useProfile(options = {}) {
   const profileQuery = useQuery(
@@ -141,7 +143,7 @@ export function useConnectionCreate() {
   };
 }
 
-export function usePublications(options = {}) {
+export function usePublicationsList(options = {}) {
   const docsQuery = useQuery(
     'Publications',
     async () => await apiClient.listPublications(),
@@ -152,7 +154,7 @@ export function usePublications(options = {}) {
     },
   );
   console.log(
-    '🚀 ~ file: mintter-hooks.ts ~ line 158 ~ usePublications ~ docsQuery',
+    '🚀 ~ file: mintter-hooks.ts ~ line 158 ~ usePublicationsList ~ docsQuery',
     docsQuery,
   );
 
@@ -175,8 +177,8 @@ export function usePublications(options = {}) {
   };
 }
 
-export function useOthersPublications(options = {}) {
-  const docsQuery = usePublications(options);
+export function useOthersPublicationsList(options = {}) {
+  const docsQuery = usePublicationsList(options);
   const { data: profile } = useProfile();
 
   const userId = React.useMemo(() => profile?.accountId, [profile]);
@@ -195,8 +197,8 @@ export function useOthersPublications(options = {}) {
   };
 }
 
-export function useMyPublications(options = {}) {
-  const docsQuery = usePublications(options);
+export function useMyPublicationsList(options = {}) {
+  const docsQuery = usePublicationsList(options);
   const { data: profile } = useProfile();
 
   const userId = React.useMemo(() => profile?.accountId, [profile]);
@@ -215,7 +217,7 @@ export function useMyPublications(options = {}) {
   };
 }
 
-export function useDrafts(options = {}) {
+export function useDraftsList(options = {}) {
   const draftsQuery = useQuery(
     'Drafts',
     async () => apiClient.listDrafts(),
@@ -228,6 +230,56 @@ export function useDrafts(options = {}) {
 
   return {
     ...draftsQuery,
+    data,
+  };
+}
+
+export function usePublication(
+  documentId: string,
+  version?: string,
+  options = {},
+) {
+  if (!documentId) {
+    throw new Error(`usePublication: parameter "documentId" is required`);
+  }
+
+  if (Array.isArray(documentId)) {
+    throw new Error(
+      `Impossible render: You are trying to access a document passing ${
+        documentId.length
+      } document Ids => ${documentId.map((q) => q).join(', ')}`,
+    );
+  }
+
+  const pubQuery = useQuery(
+    ['Publication', documentId, version],
+    async ({ queryKey }) => {
+      const [_key, documentId, version] = queryKey;
+      console.log(
+        '🚀 ~ file: mintter-hooks.ts ~ line 258 ~ queryKey',
+        queryKey,
+      );
+      return apiClient.getPublication(documentId, version);
+    },
+    {
+      // initialData: () =>
+      // queryCache
+      //   .getQueryData<ListDocumentsResponse>('Documents')
+      //   ?.toObject()
+      //   ?.documentsList.find(doc => doc.version === version),
+
+      initialStale: true,
+      refetchOnWindowFocus: false,
+      ...options,
+    },
+  );
+
+  const data = React.useMemo(() => pubQuery.data?.toObject?.(), [
+    pubQuery.data,
+  ]);
+
+  return {
+    ...pubQuery,
     data,
   };
 }

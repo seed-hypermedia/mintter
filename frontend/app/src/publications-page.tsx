@@ -4,14 +4,14 @@ import { useHistory, useRouteMatch } from 'react-router';
 import { DocumentList } from './document-list';
 import { getPath } from './routes';
 import { createDraft, deletePublication } from './mintter-client';
-import { useOthersPublications } from './mintter-hooks';
+import { useOthersPublicationsList } from './mintter-hooks';
 import type { Document } from '@mintter/api/documents/v1alpha/documents_pb';
 
 export function Publications() {
   const history = useHistory();
   const match = useRouteMatch();
 
-  const { isLoading, isError, error, data } = useOthersPublications();
+  const { isLoading, isError, error, data } = useOthersPublicationsList();
 
   async function handleCreateDraft() {
     const newDraft = await createDraft();

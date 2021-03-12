@@ -10,7 +10,7 @@ import { getPath } from './routes';
 import { useMutation } from 'react-query';
 import * as apiClient from './mintter-client';
 import { Grid } from '@mintter/ui/grid';
-import { welcomeGrid } from './welcome-intro';
+import { welcomeGrid } from './intro-page';
 import { Text } from '@mintter/ui/text';
 import { Label } from '@radix-ui/react-label';
 import { useHistory, useRouteMatch } from 'react-router';

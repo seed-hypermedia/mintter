@@ -1,7 +1,7 @@
 import * as React from 'react';
 // import Seo from 'components/seo'
 import { DocumentList } from './document-list';
-import { useDrafts } from './mintter-hooks';
+import { useDraftsList } from './mintter-hooks';
 import { createDraft, deleteDraft } from './mintter-client';
 import { getPath } from './routes';
 // import { Icons } from 'components/icons';
@@ -14,7 +14,7 @@ import { useHistory, useRouteMatch } from 'react-router';
 export function Drafts() {
   const history = useHistory();
   const match = useRouteMatch();
-  const { isLoading, isError, isSuccess, error, data } = useDrafts();
+  const { isLoading, isError, isSuccess, error, data } = useDraftsList();
 
   async function onCreateDocument() {
     const d = await createDraft();

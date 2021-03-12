@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {Icons} from 'components/icons'
 import DocumentList from 'components/document-list'
-import {useMintter, useOthersPublications} from 'shared/mintter-context'
+import {useMintter, useOthersPublicationsList} from 'shared/mintter-context'
 import Seo from 'components/seo'
 import {ErrorMessage} from 'components/error-message'
 import {getPath} from 'components/routes'
@@ -14,7 +14,7 @@ export default function Publications() {
   const match = useRouteMatch()
   const {createDraft, deleteDocument} = useMintter()
 
-  const {isLoading, isError, error, data} = useOthersPublications()
+  const {isLoading, isError, error, data} = useOthersPublicationsList()
 
   async function handleCreateDraft() {
     const n = await createDraft()

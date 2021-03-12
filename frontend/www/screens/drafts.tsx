@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Seo from 'components/seo'
 import DocumentList from 'components/document-list'
-import {useDrafts, useMintter} from 'shared/mintter-context'
+import {useDraftsList, useMintter} from 'shared/mintter-context'
 import {getPath} from 'components/routes'
 import {Icons} from 'components/icons'
 import {useRouter} from 'shared/use-router'
@@ -13,7 +13,7 @@ import {Box} from 'components/box'
 export default function Drafts() {
   const {history, match} = useRouter()
   const {createDraft, deleteDocument} = useMintter()
-  const {isLoading, isError, isSuccess, error, data} = useDrafts()
+  const {isLoading, isError, isSuccess, error, data} = useDraftsList()
 
   async function onCreateDocument() {
     const d = await createDraft()

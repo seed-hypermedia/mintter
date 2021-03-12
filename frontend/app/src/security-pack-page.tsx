@@ -2,7 +2,7 @@ import * as React from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import { useWelcome } from './welcome-provider';
 import { genSeed, initProfile } from './mintter-client';
-import { welcomeGrid } from './welcome-intro';
+import { welcomeGrid } from './intro-page';
 import { Container } from '@mintter/ui/container';
 import { Heading } from '@mintter/ui/heading';
 import { NextButton, BackButton } from '@mintter/ui/button';

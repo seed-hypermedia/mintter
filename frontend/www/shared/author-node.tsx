@@ -31,11 +31,11 @@ export default function AuthorNode({path = '/'}) {
               <PrivateRoute exact path={createPath(match, 'editor/:version')}>
                 <Editor />
               </PrivateRoute>
-              <PrivateRoute path={createPath(match, 'library')}>
-                <Library />
-              </PrivateRoute>
               <PrivateRoute exact path={createPath(match, 'p/:slug')}>
                 <Publication />
+              </PrivateRoute>
+              <PrivateRoute path={createPath(match, 'library')}>
+                <Library />
               </PrivateRoute>
               <PrivateRoute path={createPath(match, 'settings')}>
                 <Settings />

@@ -16,7 +16,7 @@ import {useToasts} from 'react-toast-notifications'
 import {SidePanelObject} from 'components/sidepanel-object'
 import {AuthorLabel} from 'components/author-label'
 import {PublicationModal} from 'components/publication-modal'
-import {useDocument, useDrafts} from 'shared/mintter-context'
+import {useDocument, useDraftsList} from 'shared/mintter-context'
 import {useAuthor} from 'shared/profile-context'
 import {ErrorMessage} from 'components/error-message'
 import {MainColumn} from 'components/main-column'
@@ -44,7 +44,7 @@ export default function Publication() {
   const {state: sidePanel, dispatch: sidePanelDispatch} = useSidePanel()
 
   // get Drafts for editorOptions
-  const {data: drafts = []} = useDrafts()
+  const {data: drafts = []} = useDraftsList()
 
   // draftCreation
   const [createDraft] = useMutation(apiClient.createDraft, {

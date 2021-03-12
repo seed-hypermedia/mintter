@@ -6,7 +6,7 @@ import { Text } from '@mintter/ui/text';
 import { useWelcome } from './welcome-provider';
 import { getPath } from './routes';
 import { Grid } from '@mintter/ui/grid';
-import { welcomeGrid } from './welcome-intro';
+import { welcomeGrid } from './intro-page';
 import { useHistory, useRouteMatch } from 'react-router';
 
 export default function WelcomeIndex() {

@@ -25,9 +25,10 @@ type AuthorNodeProps = {
   path?: string;
 };
 
-const Library = React.lazy(() => import('./library'));
+const Library = React.lazy(() => import('./library-page'));
 const WelcomeWizard = React.lazy(() => import('./welcome-wizard'));
-const Settings = React.lazy(() => import('./settings'));
+const Settings = React.lazy(() => import('./settings-page'));
+const Editor = React.lazy(() => import('./editor-page'));
 
 export default function AuthorNode({ path = '/' }: AuthorNodeProps) {
   const match = useRouteMatch(path) as Match;
@@ -50,6 +51,12 @@ export default function AuthorNode({ path = '/' }: AuthorNodeProps) {
               <PrivateRoute exact path={match.url}>
                 <Redirect to={createPath(match, 'library')} />
               </PrivateRoute>
+              <PrivateRoute exact path={createPath(match, 'editor/:documentId')}>
+                <Editor />
+              </PrivateRoute>
+              {/* <PrivateRoute exact path={createPath(match, 'p/:slug')}>
+                <Publication />
+              </PrivateRoute> */}
               <PrivateRoute path={createPath(match, 'library')}>
                 <Library />
               </PrivateRoute>

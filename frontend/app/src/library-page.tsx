@@ -19,9 +19,9 @@ import { Connections } from './connections';
 import { SuggestedConnections } from './suggested-connections';
 import { MainColumn } from './main-column';
 // import { Icons } from 'components/icons';
-import { Publications } from './publications';
-import { MyPublications } from './my-publications';
-import { Drafts } from './drafts';
+import { Publications } from './publications-page';
+import { MyPublications } from './my-publications-page';
+import { Drafts } from './drafts-page';
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {

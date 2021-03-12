@@ -1,6 +1,6 @@
 import Seo from 'components/seo'
 import DocumentList from 'components/document-list'
-import {useMintter, useMyPublications} from 'shared/mintter-context'
+import {useMintter, useMyPublicationsList} from 'shared/mintter-context'
 import {ErrorMessage} from 'components/error-message'
 import {Icons} from 'components/icons'
 import {getPath} from 'components/routes'
@@ -12,7 +12,7 @@ import {Box} from 'components/box'
 export default function MyPublications({noSeo = false, isPublic = false}) {
   const {history, match} = useRouter()
   const {createDraft, deleteDocument} = useMintter()
-  const {isError, isLoading, isSuccess, error, data} = useMyPublications()
+  const {isError, isLoading, isSuccess, error, data} = useMyPublicationsList()
 
   async function onCreateDocument() {
     const d = await createDraft()
