@@ -75,23 +75,23 @@ export function createDraft(): Promise<documents.Document> {
 }
 
 export function deleteDraft(documentId: string): Promise<any> {
-  let request = new documents.DeleteDraftRequest();
-  request.setDocumentId(documentId);
-  return draftsClient().deleteDraft(request);
+  // noop
+  return Promise.resolve();
 }
 
-export function getDraft(documentId: string): Promise<documents.Document> {
-  let request = new documents.GetDraftRequest();
-  request.setDocumentId(documentId);
-  return draftsClient().getDraft(request);
+export function getDraft(draftId: string): Promise<documents.Document> {
+  let document = new documents.Document();
+  document.setId(draftId);
+
+  return Promise.resolve(document);
 }
 
 export function updateDraft(
   document: documents.Document,
 ): Promise<documents.Document> {
-  let request = new documents.UpdateDraftRequest();
-  request.setDocument(document);
-  return draftsClient().updateDraft(request);
+  // noop
+  console.log('updateDraft done for', document.toObject());
+  return Promise.resolve(document);
 }
 
 export function listDrafts(
@@ -99,18 +99,12 @@ export function listDrafts(
   pageToken?: string,
   view?: documents.DocumentView,
 ): Promise<documents.ListDraftsResponse> {
-  let request = new documents.ListDraftsRequest();
-  if (pageSize) {
-    request.setPageSize(pageSize);
-  }
+  let result = new documents.ListDraftsResponse().toObject();
 
-  if (pageToken) {
-    request.setPageToken(pageToken);
-  }
-  if (view) {
-    request.setView(view);
-  }
-  return draftsClient().listDrafts(request);
+  return Promise.resolve({
+    ...result,
+    documentsList: [...result.documentsList, [...new documents.Document()]],
+  });
 }
 
 export function publishDraft(
@@ -131,13 +125,10 @@ export function getPublication(
   documentId: string,
   version?: string,
 ): Promise<documents.Publication> {
-  let request = new documents.GetPublicationRequest();
-  request.setDocumentId(documentId);
-  if (version) {
-    request.setVersion(version);
-  }
+  let pub = new documents.Document();
+  pub.setId(documentId);
 
-  return publicationsClient().getPublication(request);
+  return Promise.resolve(pub);
 }
 
 export function deletePublication(version: string): Promise<any> {

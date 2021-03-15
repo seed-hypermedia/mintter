@@ -80,6 +80,11 @@ export const SidePanelProvider: React.FC = ({ children }) => {
     objectsReducer,
     sidePanelInitialState,
   );
+  console.log(
+    '🚀 ~ file: sidepanel.tsx ~ line 83 ~ state, dispatch',
+    state,
+    dispatch,
+  );
   return (
     <SidePanelContext.Provider value={{ state, dispatch }}>
       {children}

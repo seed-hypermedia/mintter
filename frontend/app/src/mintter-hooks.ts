@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as apiClient from './mintter-client';
 import {
   useQuery,
   useMutation,
@@ -10,6 +9,7 @@ import {
 } from 'react-query';
 import type mintter from '@mintter/api/v2/mintter_pb';
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
+import * as apiClient from './mintter-client';
 
 export function useProfile(options = {}) {
   const profileQuery = useQuery(
@@ -256,10 +256,6 @@ export function usePublication(
     ['Publication', documentId, version],
     async ({ queryKey }) => {
       const [_key, documentId, version] = queryKey;
-      console.log(
-        '🚀 ~ file: mintter-hooks.ts ~ line 258 ~ queryKey',
-        queryKey,
-      );
       return apiClient.getPublication(documentId, version);
     },
     {
@@ -280,6 +276,48 @@ export function usePublication(
 
   return {
     ...pubQuery,
+    data,
+  };
+}
+
+export function useDraft(draftId: string, options = {}) {
+  if (!draftId) {
+    throw new Error(`useDraft: parameter "draftId" is required`);
+  }
+
+  if (Array.isArray(draftId)) {
+    throw new Error(
+      `Impossible render: You are trying to access a draft passing ${
+        draftId.length
+      } draft Ids => ${draftId.map((q) => q).join(', ')}`,
+    );
+  }
+
+  const draftQuery = useQuery(
+    ['Draft', draftId],
+    async ({ queryKey }) => {
+      const [_key, draftId] = queryKey;
+      console.log('🚀 ~ useDraft: ', queryKey);
+      return apiClient.getDraft(draftId);
+    },
+    {
+      // initialData: () =>
+      // queryCache
+      //   .getQueryData<ListDocumentsResponse>('Documents')
+      //   ?.toObject()
+      //   ?.documentsList.find(doc => doc.version === version),
+      // initialStale: true,
+      refetchOnWindowFocus: false,
+      ...options,
+    },
+  );
+
+  const data = React.useMemo(() => draftQuery.data?.toObject?.(), [
+    draftQuery.data,
+  ]);
+
+  return {
+    ...draftQuery,
     data,
   };
 }

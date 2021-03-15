@@ -178,7 +178,7 @@ const NoConnectionsBox: React.FC<{ onConnect: () => void }> = ({
         Connect to Others
       </Text>
       <Button
-        onClick={onConnect}
+        onClick={() => onConnect()}
         appearance="pill"
         variant="primary"
         css={{
@@ -192,7 +192,7 @@ const NoConnectionsBox: React.FC<{ onConnect: () => void }> = ({
           // TODO: enable Icons
           <Icons.Plus /> */}
         <Text size="3" color="white">
-          Add your First Connection
+          Add your first connection
         </Text>
       </Button>
     </MessageBox>

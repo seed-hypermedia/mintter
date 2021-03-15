@@ -47,14 +47,6 @@ export function ProgressRoute({ children, ...rest }: ProgressRouteProps) {
 
 export function PrivateRoute({ children, exact = false, ...rest }: RouteProps) {
   const { isSuccess, data: profile, isLoading, isError } = useProfile();
-  console.log(
-    '🚀 ~ file: routes.tsx ~ line 54 ~ PrivateRoute ~ profile',
-    profile,
-  );
-
-  if (isLoading) {
-    return <p>route loading...</p>;
-  }
 
   if (isError) {
     return (
@@ -71,6 +63,10 @@ export function PrivateRoute({ children, exact = false, ...rest }: RouteProps) {
         )}
       />
     );
+  }
+
+  if (isLoading) {
+    return <p>route loading...</p>;
   }
 
   if (isSuccess) {

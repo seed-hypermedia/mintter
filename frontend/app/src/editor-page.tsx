@@ -12,7 +12,7 @@ import SplitPane from 'react-split-pane';
 // import { DebugValue } from 'components/debug';
 import { Textarea } from '@mintter/ui/textarea';
 import { useDebounce } from './hooks';
-import { usePublication } from './mintter-hooks';
+import { useDraft, usePublication } from './mintter-hooks';
 import { publishDraft, updateDraft } from './mintter-client';
 import { useParams, useHistory, useLocation } from 'react-router-dom';
 // import { FullPageSpinner } from 'components/fullpage-spinner';
@@ -32,7 +32,13 @@ export default function Editor(): JSX.Element {
   const { documentId } = useParams<{ documentId: string }>();
   const { theme } = useTheme();
   const query = useQuery();
-  const { state: sidePanel, dispatch: sidePanelDispatch } = useSidePanel();
+  // const { state: sidePanel, dispatch: sidePanelDispatch } = useSidePanel();
+  const sidePanel = {
+    visible: false,
+    objects: [],
+  };
+
+  const sidePanelDispatch = () => true;
 
   const plugins = createPlugins(options);
   const editor: ReactEditor = useEditor(plugins, options) as ReactEditor;
@@ -42,18 +48,14 @@ export default function Editor(): JSX.Element {
   const [readyToAutosave, setReadyToAutosave] = React.useState<boolean>(false);
 
   // const saveDocument = React.useMemo(() => updateDraft(editor), [editor]);
-  const { isLoading, isError, error, data } = usePublication(
-    documentId,
-    undefined,
-    {
-      onSuccess: () => {
-        setReadyToAutosave(true);
-      },
+  const { isLoading, isError, error, data } = useDraft(documentId, {
+    onSuccess: () => {
+      setReadyToAutosave(true);
     },
-  );
+  });
   const { mutateAsync: publish } = useMutation(publishDraft, {
     onSuccess: (publication) => {
-      const { version } = publication.toObject();
+      const {} = publication.toObject();
 
       push(`/p/${version}`);
     },
@@ -66,16 +68,16 @@ export default function Editor(): JSX.Element {
   });
   const { title, blocks, subtitle, mentions } = state;
 
-  React.useEffect(() => {
-    if (mentions.length) {
-      sidePanelDispatch({ type: 'add_object', payload: mentions });
-    }
+  // React.useEffect(() => {
+  //   if (mentions.length) {
+  //     sidePanelDispatch({ type: 'add_object', payload: mentions });
+  //   }
 
-    const object = query.get('object');
-    if (object) {
-      sidePanelDispatch({ type: 'add_object', payload: object });
-    }
-  }, []);
+  //   const object = query.get('object');
+  //   if (object) {
+  //     sidePanelDispatch({ type: 'add_object', payload: object });
+  //   }
+  // }, []);
 
   const { mutateAsync: autosaveDraft } = useMutation(async (state) => {
     if (data?.document) {
@@ -87,29 +89,32 @@ export default function Editor(): JSX.Element {
 
   const debouncedValue = useDebounce(state, 1000);
 
-  React.useEffect(() => {
-    if (readyToAutosave) {
-      autosaveDraft(state);
-    }
+  // React.useEffect(() => {
+  //   if (readyToAutosave) {
+  //     autosaveDraft(state);
+  //   }
 
-    return () => {
-      // unmount screen, autosave.
-      autosaveDraft(state);
-    };
-  }, [debouncedValue]);
+  //   return () => {
+  //     // unmount screen, autosave.
+  //     autosaveDraft(state);
+  //   };
+  // }, [debouncedValue]);
 
   async function handlePublish() {
     // await saveDocument({ document: data.document, state });
-    publish(documentId);
+    // publish(documentId);
+    console.log('PUBLISH!');
+  }
+
+  if (isError) {
+    console.error('editor error', error);
+    return <p>Editor ERROR</p>;
   }
 
   if (isLoading) {
     return <p>loading editor...</p>;
   }
 
-  if (isError) {
-    return <p>Editor ERROR</p>;
-  }
   return (
     <div>
       {/* <Seo title="Compose" /> */}
@@ -161,10 +166,7 @@ export default function Editor(): JSX.Element {
                 </span>
               }
             > */}
-            <button
-              onClick={() => sidePanelDispatch({ type: 'toggle_panel' })}
-              className="ml-4 text-sm text-muted-hover hover:text-toolbar transform -rotate-180 transition duration-200 outline-none"
-            >
+            <button onClick={() => sidePanelDispatch({ type: 'toggle_panel' })}>
               {/* <Icons.Sidebar color="currentColor" /> */}
               icon sidebar
             </button>
