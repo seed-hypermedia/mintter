@@ -10,8 +10,20 @@ import { getPath } from './routes';
 import { Button } from '@mintter/ui/button';
 import { Separator } from '@mintter/ui/separator';
 import { Box } from '@mintter/ui/box';
+import { Text } from '@mintter/ui/text';
+import type { WithCreateDraft } from './library-page';
+import { MessageBox } from './message-box';
 
-export function MyPublications({ noSeo = false, isPublic = false }) {
+type MyPublicationProps = {
+  noSeo?: boolean;
+  isPublic?: boolean;
+};
+
+export const MyPublications: React.FC<MyPublicationProps & WithCreateDraft> = ({
+  noSeo = false,
+  isPublic = false,
+  onCreateDraft,
+}) => {
   const history = useHistory();
   const match = useRouteMatch();
   const {
@@ -19,15 +31,8 @@ export function MyPublications({ noSeo = false, isPublic = false }) {
     isLoading,
     isSuccess,
     error,
-    data,
+    data = [],
   } = useMyPublicationsList();
-
-  async function onCreateDocument() {
-    const d = await createDraft();
-    history.push({
-      pathname: `${getPath(match)}/editor/${d.getId()}`,
-    });
-  }
 
   async function handleDeleteDocument(version: string) {
     await deletePublication(version);
@@ -45,41 +50,29 @@ export function MyPublications({ noSeo = false, isPublic = false }) {
     <>
       {/* {!noSeo && <Seo title="My Publications" />} */}
       {isSuccess && data?.length === 0 && (
-        <>
-          <Separator />
-          <Box
-            css={{
-              bc: '$gray200',
-              p: '$6',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              borderRadius: '$3',
-              boxShadow:
-                'inset 0 0 0 1px $colors$gray400, 0 0 0 1px $colors$gray400',
-            }}
-          >
-            <h3 className="text-xl font-semibold text-primary">
-              No Publications (yet)
-            </h3>
-            {!isPublic && (
-              <Button
-                onClick={() => onCreateDocument()}
-                appearance="pill"
-                variant="primary"
-                css={{
-                  height: '$7',
-                  fontSize: '$3',
-                  marginTop: '$4',
-                  px: '$4',
-                }}
-              >
-                {/* <Icons.FilePlus color="currentColor" /> */}
-                <span>Start your first document</span>
-              </Button>
-            )}
-          </Box>
-        </>
+        <MessageBox>
+          <Text as="h2" size="5" css={{ fontWeight: '$3' }}>
+            No Publications (yet)
+          </Text>
+          {!isPublic && (
+            <Button
+              onClick={onCreateDraft}
+              appearance="pill"
+              variant="primary"
+              css={{
+                height: '$7',
+                fontSize: '$3',
+                marginTop: '$4',
+                px: '$4',
+              }}
+            >
+              {/* <Icons.FilePlus color="currentColor" /> */}
+              <Text size="3" color="white">
+                Start your first document
+              </Text>
+            </Button>
+          )}
+        </MessageBox>
       )}
       <DocumentList
         isLoading={isLoading}
@@ -90,4 +83,4 @@ export function MyPublications({ noSeo = false, isPublic = false }) {
       />
     </>
   );
-}
+};

@@ -1,18 +1,14 @@
-import { Block } from '@mintter/api/documents/v1alpha/documents_pb';
+import type documents from '@mintter/api/documents/v1alpha/documents_pb';
 import { useEffect, useReducer, useCallback } from 'react';
-import {
-  initialValue,
-  EditorState,
-  initialBlocksValue,
-} from './editor-component';
-import { toSlateTree } from '../editor/transformers/transformers';
+import { initialValue, EditorState, initialBlocksValue } from './editor';
 
 export function initializeEditorValue() {
   // TODO: change this to a lazy initialization function later
   return initialValue;
 }
 
-export function draftReducer(state: EditorState, action) {
+// TODO: fix types
+export function draftReducer(state: EditorState, action: any) {
   const { type, payload } = action;
 
   switch (type) {
@@ -47,7 +43,8 @@ export function draftReducer(state: EditorState, action) {
   }
 }
 
-export function useEditorValue({ document }) {
+// TODO: fix types
+export function useEditorValue({ document }: any) {
   const [state, dispatch] = useReducer(
     draftReducer,
     initialValue,
@@ -70,26 +67,26 @@ export function useEditorValue({ document }) {
     dispatch({ type: 'VALUE', payload });
   }, []);
 
-  useEffect(() => {
-    if (document) {
-      const { document: doc, blocksMap } = document;
-      const { title = '', subtitle, blockRefList, author } = doc;
-      const mentions = getMentions(blocksMap);
-      const blocks = toSlateTree({
-        blockRefList,
-        blocksMap,
-        isRoot: true,
-      });
+  // useEffect(() => {
+  //   if (document) {
+  //     const { document: doc, blocksMap } = document;
+  //     const { title = '', subtitle, blockRefList, author } = doc;
+  //     const mentions = getMentions(blocksMap);
+  //     const blocks = toSlateTree({
+  //       blockRefList,
+  //       blocksMap,
+  //       isRoot: true,
+  //     });
 
-      setValue({
-        title,
-        author,
-        subtitle,
-        mentions,
-        blocks: blocks ? blocks : initialBlocksValue,
-      });
-    }
-  }, [document, setValue]);
+  //     setValue({
+  //       title,
+  //       author,
+  //       subtitle,
+  //       mentions,
+  //       blocks: blocks ? blocks : initialBlocksValue,
+  //     });
+  //   }
+  // }, [document, setValue]);
 
   return {
     state,
@@ -100,13 +97,14 @@ export function useEditorValue({ document }) {
   };
 }
 
-function getMentions(blocksMap) {
-  const mentions = blocksMap.reduce((acc, entry) => {
-    const block: Block.AsObject = entry[1];
+// TODO: fix types
+function getMentions(blocksMap: documents.Block.AsObject[]) {
+  const mentions = blocksMap.reduce((acc: any, entry: any) => {
+    const block: documents.Block.AsObject = entry[1];
 
-    if (block.quotersList && block.quotersList.length) {
-      acc.push(...block.quotersList.map((version) => `${version}/${entry[0]}`));
-    }
+    // if (block.quotersList && block.quotersList.length) {
+    //   acc.push(...block.quotersList.map((version) => `${version}/${entry[0]}`));
+    // }
 
     return acc;
   }, []);

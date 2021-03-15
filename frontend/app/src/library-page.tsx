@@ -22,6 +22,14 @@ import { MainColumn } from './main-column';
 import { Publications } from './publications-page';
 import { MyPublications } from './my-publications-page';
 import { Drafts } from './drafts-page';
+import { Box } from '@mintter/ui/box';
+import { Button } from '@mintter/ui/button';
+import { Text } from '@mintter/ui/text';
+import { Separator } from '@mintter/ui/separator';
+import { MessageBox } from './message-box';
+export type WithCreateDraft = {
+  onCreateDraft: () => void;
+};
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
@@ -30,7 +38,7 @@ export default function Library() {
   const { connectToPeer } = useConnectionCreate();
   // const { addToast, updateToast, removeToast } = useToasts();
 
-  async function onCreateDocument() {
+  async function onCreateDraft() {
     const d = await createDraft();
     history.push({
       pathname: `${getPath(match)}/editor/${d.getId()}`,
@@ -101,12 +109,14 @@ export default function Library() {
             <div className="flex items-baseline justify-between">
               <h1 className="text-4xl font-bold text-heading">Library</h1>
               <div className="flex-1" />
-              <button
-                onClick={onCreateDocument}
-                className="bg-primary rounded-full px-4 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
+              <Button
+                variant="primary"
+                size="2"
+                appearance="pill"
+                onClick={onCreateDraft}
               >
                 Compose
-              </button>
+              </Button>
             </div>
             <div className="flex items-center mt-4 -mx-4">
               <NavItem to={`${match.url}/feed`}>Feed</NavItem>
@@ -121,13 +131,13 @@ export default function Library() {
                   <Redirect to={`${match.url}/feed`} />
                 </PrivateRoute>
                 <PrivateRoute path={`${match.url}/feed`}>
-                  <Publications />
+                  <Publications onCreateDraft={onCreateDraft} />
                 </PrivateRoute>
                 <PrivateRoute path={`${match.url}/published`}>
-                  <MyPublications />
+                  <MyPublications onCreateDraft={onCreateDraft} />
                 </PrivateRoute>
                 <PrivateRoute path={`${match.url}/drafts`}>
-                  <Drafts />
+                  <Drafts onCreateDraft={onCreateDraft} />
                 </PrivateRoute>
               </Switch>
             </div>
@@ -158,31 +168,36 @@ function ProfileInfo() {
   ) : null;
 }
 
-// TODO: fix types
-function NoConnectionsBox({ onConnect }: any) {
+const NoConnectionsBox: React.FC<{ onConnect: () => void }> = ({
+  onConnect,
+}: any) => {
   const { data = [] } = useConnectionList();
   return data.length === 0 ? (
-    <>
-      <hr className="border-t-2 border-muted border-solid my-8" />
-      <div className="bg-background-muted border-muted border-solid border-2 rounded px-4 py-4 mb-4 text-center flex flex-col items-center">
-        <h3 className="text-xl font-bold text-primary">Connect to Others</h3>
-        {/* <p className="text-body font-light mt-5">
-          Some clain sentence that's fun, welcomes user to the community
-          and tells how it works and encourages to get started
-        </p> */}
-        <button
-          onClick={() => onConnect()}
-          className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
-        >
-          {/* 
+    <MessageBox>
+      <Text as="h2" size="5" css={{ fontWeight: '$3' }}>
+        Connect to Others
+      </Text>
+      <Button
+        onClick={onConnect}
+        appearance="pill"
+        variant="primary"
+        css={{
+          height: '$7',
+          fontSize: '$3',
+          marginTop: '$4',
+          px: '$4',
+        }}
+      >
+        {/* 
           // TODO: enable Icons
           <Icons.Plus /> */}
-          <span className="ml-2">Add your First Connection</span>
-        </button>
-      </div>
-    </>
+        <Text size="3" color="white">
+          Add your First Connection
+        </Text>
+      </Button>
+    </MessageBox>
   ) : null;
-}
+};
 
 // TODO: fix types
 function NavItem({

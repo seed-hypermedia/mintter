@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { DragDrop } from '../../block-plugin/components/drag-drop';
 
-import { usePublication, useAuthor } from 'src/mintter-hooks';
-import { useSidePanel } from 'src/sidepanel';
+import { usePublication, useAuthor } from '../../../mintter-hooks';
+import { useSidePanel } from '../../../sidepanel';
 
 // TODO: fix types
 export const Transclusion = ({ attributes, children, element }: any) => {
@@ -26,8 +26,6 @@ export const Transclusion = ({ attributes, children, element }: any) => {
     return <div>...</div>;
   }
 
-  const { document } = data;
-
   return (
     <DragDrop {...attributes} element={element}>
       {children}
@@ -39,14 +37,14 @@ export const Transclusion = ({ attributes, children, element }: any) => {
         // `}`}
       >
         <button className="text-left" onClick={handlePush}>
-          {document ? (
+          {data?.document ? (
             <>
               <p
               // className={`text-xs font-bold truncate ${css`
               //   max-width: 180px;
               // `}`}
               >
-                {document.title}
+                {data?.document?.title}
               </p>
               <p className="text-xs font-light">
                 {author ? author.username : '...'}

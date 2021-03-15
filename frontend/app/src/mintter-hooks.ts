@@ -30,7 +30,8 @@ export function useProfile(options = {}) {
   };
 }
 
-export function useAuthor(accountId: string, options = {}) {
+export function useAuthor(accountId?: string, options = {}) {
+  if (!accountId) return useProfile(options);
   const profileQuery = useQuery(
     accountId && ['Author', accountId],
     async ({ queryKey }) => {
@@ -267,8 +268,7 @@ export function usePublication(
       //   .getQueryData<ListDocumentsResponse>('Documents')
       //   ?.toObject()
       //   ?.documentsList.find(doc => doc.version === version),
-
-      initialStale: true,
+      // initialStale: true,
       refetchOnWindowFocus: false,
       ...options,
     },

@@ -3,59 +3,57 @@ import { useHistory, useRouteMatch } from 'react-router';
 // import {Icons} from 'components/icons'
 import { DocumentList } from './document-list';
 import { getPath } from './routes';
+import type { WithCreateDraft } from './library-page';
 import { createDraft, deletePublication } from './mintter-client';
 import { useOthersPublicationsList } from './mintter-hooks';
 import type { Document } from '@mintter/api/documents/v1alpha/documents_pb';
+import { Button } from '@mintter/ui/button';
+import { Text } from '@mintter/ui/text';
+import { MessageBox } from './message-box';
 
-export function Publications() {
+export const Publications: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {
   const history = useHistory();
   const match = useRouteMatch();
 
-  const { isLoading, isError, error, data } = useOthersPublicationsList();
-
-  async function handleCreateDraft() {
-    const newDraft = await createDraft();
-
-    history.push({
-      pathname: `${getPath(match)}/editor/${newDraft.getId()}`,
-    });
-  }
+  const { isLoading, isError, error, data = [] } = useOthersPublicationsList();
 
   async function handleDeleteDocument(version: string) {
     await deletePublication(version);
   }
 
   if (isError) {
-    return <p>ERROR</p>;
+    return <p>feed ERROR</p>;
   }
 
   if (isLoading) {
-    return <p>loading...</p>;
+    return <p>loading feed...</p>;
   }
 
   return (
     <>
-      {/*
-      // TODO: implement Seo with hoofd
-      <Seo title="Feed" /> */}
+      {/* <Seo title="Feed" /> */}
       {data?.length === 0 && (
-        <>
-          <hr className="border-t-2 border-muted border-solid my-8" />
-          <div className="bg-background-muted border-muted border-solid border-2 rounded px-8 pt-6 pb-8 mb-4 text-center flex flex-col items-center">
-            <h3 className="text-xl font-semibold text-primary">
-              No Publications (yet)
-            </h3>
-            <button
-              onClick={handleCreateDraft}
-              className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
-            >
-              {/*
-              //TODO: add icons
-              <Icons.FilePlus color="currentColor" /> */}
-              <span className="ml-2">Start your first document</span>
-            </button>
-          </div>
-        </>
+        <MessageBox>
+          <Text as="h2" size="5" css={{ fontWeight: '$3' }}>
+            No Publications (yet)
+          </Text>
+          <Button
+            onClick={onCreateDraft}
+            appearance="pill"
+            variant="primary"
+            css={{
+              height: '$7',
+              fontSize: '$3',
+              marginTop: '$4',
+              px: '$4',
+            }}
+          >
+            {/* <Icons.FilePlus color="currentColor" /> */}
+            <Text size="3" color="white">
+              Start your first document
+            </Text>
+          </Button>
+        </MessageBox>
       )}
       {/* TODO: fix data type */}
       <DocumentList
@@ -67,4 +65,4 @@ export function Publications() {
       />
     </>
   );
-}
+};

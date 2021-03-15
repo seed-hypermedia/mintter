@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { BlockControls } from './block-controls';
 import { useRouteMatch } from 'react-router-dom';
-import { isLocalNode } from 'src/constants';
+// TODO: reference of something in app from the editor package. how can we do this?
+import { isLocalNode } from '../../../constants';
 // import { Icons } from 'components/icons';
 import { useBlockMenu, useBlockMenuDispatch } from './blockmenu-context';
 // import {useReadOnly} from 'slate-react'

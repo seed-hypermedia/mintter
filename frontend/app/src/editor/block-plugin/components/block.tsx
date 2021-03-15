@@ -3,16 +3,17 @@ import { DragDrop } from './drag-drop';
 // import {css} from 'emotion'
 // import Tippy from '@tippyjs/react'
 // import {Icons} from 'components/icons'
-import { Tooltip } from 'src/tooltip';
+import { Tooltip } from '../../../tooltip';
 // TODO: decouple this from the editor component
-import { usePublication, useAuthor } from 'src/mintter-hooks';
+import { usePublication, useAuthor } from '../../../mintter-hooks';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 // TODO: decouple this from the editor component
-import { getPath } from 'src/routes';
+import { getPath } from '../../../routes';
 // TODO: decouple this from the editor component
-import { useSidePanel } from 'src/sidepanel';
+import { useSidePanel } from '../../../sidepanel';
 import type mintter from '@mintter/api/v2/mintter_pb';
-import { isLocalNode } from 'src/constants';
+// TODO: reference of something in app from the editor package. how can we do this?
+import { isLocalNode } from '../../../constants';
 
 export const Block = ({ attributes, element, children, ...rest }: any) => {
   const [isQuotesVisible, setVisibility] = React.useState<boolean>(false);
@@ -109,8 +110,7 @@ function BlockMentionComponent({ quote }: any) {
     );
   }
 
-  const { document } = data;
-  const canOpenInMainPanel = isLocal || isAuthor(data.document?.author);
+  const canOpenInMainPanel = isLocal || isAuthor(data?.document?.author);
 
   return (
     <div className="relative pt-4">
@@ -124,7 +124,7 @@ function BlockMentionComponent({ quote }: any) {
       <div className="bg-background-muted transition duration-150 hover:shadow-sm rounded ml-4 flex items-center group">
         <div className="px-4 py-2 flex-1">
           <p className="font-bold text-heading text-sm leading-tight">
-            {document.title || 'Untitled Document'}
+            {data?.document?.title || 'Untitled Document'}
           </p>
           <p className="text-xs text-body-muted leading-tight">
             {author?.username || '...'}
@@ -135,7 +135,7 @@ function BlockMentionComponent({ quote }: any) {
             <Tooltip content="Open in Main Panel">
               <button
                 className="bg-background hover:bg-muted transition duration-150 rounded-sm p-1"
-                onClick={() => openInMainPanel(document.version)}
+                onClick={() => openInMainPanel(data?.document?.id as string)}
               >
                 {/* <Icons.ArrowUpRight size={14} color="currentColor" /> */}
                 arrow right

@@ -31,16 +31,9 @@ export default function Settings() {
 
   React.useEffect(() => {
     if (profile) {
-      // TODO: fix types
-      const formData: any = Object.keys(profile).map(
-        (v: any) =>
-          ({
-            [v]: profile[v],
-          } as any),
-      ) as any;
-      setValue('username', formData.username);
-      setValue('email', formData.email);
-      setValue('bio', formData.bio);
+      setValue('username', profile.username);
+      setValue('email', profile.email);
+      setValue('bio', profile.bio);
     }
   }, [profile]);
 

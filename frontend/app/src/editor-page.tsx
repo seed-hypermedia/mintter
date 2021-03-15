@@ -21,7 +21,6 @@ import { useTheme } from './theme-context';
 // import { Page } from 'components/page';
 import { MainColumn } from './main-column';
 import { SidePanelObject } from './sidepanel-object';
-import { useTransclusion } from './use-transclusion';
 import { useSidePanel } from './sidepanel';
 
 function useQuery() {
@@ -60,7 +59,7 @@ export default function Editor(): JSX.Element {
     },
   });
 
-  const { createTransclusion } = useTransclusion();
+  // const { createTransclusion } = useTransclusion();
 
   const { state, setTitle, setSubtitle, setBlocks } = useEditorValue({
     document: data,
@@ -79,7 +78,7 @@ export default function Editor(): JSX.Element {
   }, []);
 
   const { mutateAsync: autosaveDraft } = useMutation(async (state) => {
-    if (data.document) {
+    if (data?.document) {
       // saveDocument({ document: data.document, state });
     } else {
       console.error('no document???');
@@ -259,12 +258,7 @@ export default function Editor(): JSX.Element {
           >
             <ul aria-label="sidepanel list">
               {sidePanel.objects.map((object) => (
-                <SidePanelObject
-                  key={object}
-                  isEditor
-                  id={object}
-                  createTransclusion={createTransclusion}
-                />
+                <SidePanelObject key={object} isEditor id={object} />
               ))}
             </ul>
           </div>
