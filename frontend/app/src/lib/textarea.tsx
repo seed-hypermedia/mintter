@@ -64,7 +64,6 @@ export const Textarea = React.forwardRef(
         value={value}
         onKeyDown={handleKeyDown}
         onChange={handleChange}
-        className={`resize-none overflow-hidden leading-normal w-full outline-none bg-transparent ${className}`}
         rows={rows}
         css={{
           resize: 'none',

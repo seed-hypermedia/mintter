@@ -6,6 +6,7 @@ import { AppSpinner } from './app-spinner';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { ThemeProvider } from './theme-context';
 import { SidePanelProvider } from './sidepanel';
+import { BlockMenuProvider } from './editor/block-plugin/components/blockmenu-context';
 
 export const queryClient = new QueryClient();
 
@@ -18,9 +19,11 @@ export function AppProviders({ children }: AppProvidersProps) {
     <React.Suspense fallback={<AppSpinner />}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <SidePanelProvider>
-            <Router>{children}</Router>
-          </SidePanelProvider>
+          <BlockMenuProvider>
+            <SidePanelProvider>
+              <Router>{children}</Router>
+            </SidePanelProvider>
+          </BlockMenuProvider>
         </ThemeProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>

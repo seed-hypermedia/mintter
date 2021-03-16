@@ -8,6 +8,7 @@ import {
   SlateDocument,
   // ToolbarMark,
 } from '@udecode/slate-plugins';
+import { Box } from '@mintter/ui/box';
 // import {useTheme} from 'shared/theme-context'
 // import {MARK_BOLD} from 'editor/marks/bold'
 // import {Icons} from './icons'
@@ -60,11 +61,7 @@ function Editor({
           tooltip={{content: 'Bold (⌘B)', ...tooltip}}
         />
       </BalloonToolbar> */}
-      <div
-        className={`relative mb-48 -mx-8 ${css`
-          word-break: break-word;
-        `}`}
-      >
+      <Box>
         {readOnly ? (
           <EditablePlugins
             style={{}}
@@ -120,7 +117,7 @@ function Editor({
             }}
           />
         )}
-      </div>
+      </Box>
     </Slate>
   );
 }

@@ -3,6 +3,8 @@ import { styled } from './stitches.config';
 export const FORMCONTROL_TAG = 'input';
 
 export const FormControl = styled(FORMCONTROL_TAG, {
+  $$borderColor: '$colors$muted',
+  $$borderColorHover: '$colors$mutedHover',
   all: 'unset',
   lineHeight: '1',
   // height: '$5',
@@ -14,7 +16,7 @@ export const FormControl = styled(FORMCONTROL_TAG, {
   fontFamily: '$paragraph',
   width: '100%',
   boxSizing: 'border-box',
-  boxShadow: 'inset 0 0 0 1px $colors$muted',
+  boxShadow: 'inset 0 0 0 1px $$borderColor',
   outline: 'none',
   border: 'none',
   '&:before': {
@@ -24,20 +26,20 @@ export const FormControl = styled(FORMCONTROL_TAG, {
     boxSizing: 'border-box',
   },
   '&:hover': {
-    boxShadow: 'inset 0 0 0 1px $colors$mutedHover',
+    boxShadow: 'inset 0 0 0 1px $$borderColorHover',
   },
   '&:active': {
-    bc: '$gray100',
-    boxShadow: 'inset 0 0 0 1px $colors$mutedHover',
+    // bc: '$gray100',
+    boxShadow: 'inset 0 0 0 1px $$borderColorHover',
   },
   '&:focus': {
     outline: 'none',
     boxShadow:
-      'inset 0 0 0 1px $colors$mutedHover, 0 0 0 1px $colors$mutedHover',
+      'inset 0 0 0 1px $$borderColorHover, 0 0 0 1px $$borderColorHover',
   },
   '&:disabled': {
-    bc: '$gray200',
-    boxShadow: 'inset 0 0 0 1px $colors$muted',
+    // bc: '$gray200',
+    boxShadow: 'inset 0 0 0 1px $$borderColor',
     pointerEvents: 'none',
     cursor: 'no-drop',
     opacity: 0.5,
@@ -45,13 +47,14 @@ export const FormControl = styled(FORMCONTROL_TAG, {
   variants: {
     variant: {
       danger: {
+        $$borderColorHover: '$colors$accentDanger',
         color: '$accentDanger',
         bc: '$gray100',
         boxShadow:
-          'inset 0 0 0 1px $colors$accentDanger, 0 0 0 1px $colors$accentDanger',
+          'inset 0 0 0 1px $$borderColorHover, 0 0 0 1px $$borderColorHover',
         '&:hover, &:active, &:focus, &:disabled': {
           boxShadow:
-            'inset 0 0 0 1px $colors$accentDanger, 0 0 0 1px $colors$accentDanger',
+            'inset 0 0 0 1px $$borderColorHover, 0 0 0 1px $$borderColorHover',
         },
       },
     },

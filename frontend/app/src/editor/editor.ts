@@ -8,7 +8,7 @@ import { ELEMENT_BLOCK_LIST } from './hierarchy-plugin/defaults';
 export interface EditorState {
   title: string;
   subtitle: string;
-  blocks: Node[];
+  editorValue: Node[];
   mentions: string[];
 }
 
@@ -48,6 +48,6 @@ export const initialBlocksValue = [
 export const initialValue: EditorState = {
   title: '',
   subtitle: '',
-  blocks: initialBlocksValue,
+  editorValue: initialBlocksValue,
   mentions: [],
 };

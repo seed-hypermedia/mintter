@@ -10,7 +10,7 @@ export function initializeEditorValue() {
 type EditorAction =
   | { type: 'TITLE'; payload: string }
   | { type: 'SUBTITLE'; payload: string }
-  | { type: 'BLOCKS'; payload: number }
+  | { type: 'EDITOR_CONTENT'; payload: number }
   | { type: 'VALUE'; payload: Partial<EditorState> };
 
 // TODO: fix types
@@ -32,10 +32,10 @@ export function draftReducer(
         subtitle: payload as string,
       };
     }
-    case 'BLOCKS': {
+    case 'EDITOR_CONTENT': {
       return {
         ...state,
-        blocks: payload as any,
+        editorValue: payload as any,
       };
     }
 
@@ -68,8 +68,8 @@ export function useEditorValue({
   }, []);
 
   // TODO: fix types
-  const setBlocks = useCallback((payload: any) => {
-    dispatch({ type: 'BLOCKS', payload });
+  const onEditorChange = useCallback((payload: any) => {
+    dispatch({ type: 'EDITOR_CONTENT', payload });
   }, []);
 
   const setValue = useCallback((payload: Partial<EditorState>) => {
@@ -101,7 +101,7 @@ export function useEditorValue({
     state,
     setTitle,
     setSubtitle,
-    setBlocks,
+    onEditorChange,
     setValue,
   };
 }
