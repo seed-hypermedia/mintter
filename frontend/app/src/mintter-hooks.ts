@@ -297,7 +297,6 @@ export function useDraft(draftId: string, options = {}) {
     ['Draft', draftId],
     async ({ queryKey }) => {
       const [_key, draftId] = queryKey;
-      console.log('🚀 ~ useDraft: ', queryKey);
       return apiClient.getDraft(draftId);
     },
     {

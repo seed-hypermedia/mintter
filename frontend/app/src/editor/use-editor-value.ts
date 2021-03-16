@@ -7,33 +7,42 @@ export function initializeEditorValue() {
   return initialValue;
 }
 
+type EditorAction =
+  | { type: 'TITLE'; payload: string }
+  | { type: 'SUBTITLE'; payload: string }
+  | { type: 'BLOCKS'; payload: number }
+  | { type: 'VALUE'; payload: Partial<EditorState> };
+
 // TODO: fix types
-export function draftReducer(state: EditorState, action: any) {
+export function draftReducer(
+  state: EditorState,
+  action: EditorAction,
+): EditorState {
   const { type, payload } = action;
 
   switch (type) {
     case 'TITLE':
       return {
         ...state,
-        title: payload,
+        title: payload as string,
       };
     case 'SUBTITLE': {
       return {
         ...state,
-        subtitle: payload,
+        subtitle: payload as string,
       };
     }
     case 'BLOCKS': {
       return {
         ...state,
-        blocks: payload,
+        blocks: payload as any,
       };
     }
 
     case 'VALUE': {
       return {
         ...state,
-        ...payload,
+        ...(payload as any),
       };
     }
 
@@ -43,27 +52,27 @@ export function draftReducer(state: EditorState, action: any) {
   }
 }
 
-// TODO: fix types
-export function useEditorValue({ document }: any) {
-  const [state, dispatch] = useReducer(
-    draftReducer,
-    initialValue,
-    initializeEditorValue,
-  );
+export function useEditorValue({
+  document,
+}: {
+  document?: documents.Document.AsObject;
+}) {
+  const [state, dispatch] = useReducer(draftReducer, initialValue);
 
-  const setTitle = useCallback((payload) => {
+  const setTitle = useCallback((payload: string) => {
     dispatch({ type: 'TITLE', payload });
   }, []);
 
-  const setSubtitle = useCallback((payload) => {
+  const setSubtitle = useCallback((payload: string) => {
     dispatch({ type: 'SUBTITLE', payload });
   }, []);
 
-  const setBlocks = useCallback((payload) => {
+  // TODO: fix types
+  const setBlocks = useCallback((payload: any) => {
     dispatch({ type: 'BLOCKS', payload });
   }, []);
 
-  const setValue = useCallback((payload) => {
+  const setValue = useCallback((payload: Partial<EditorState>) => {
     dispatch({ type: 'VALUE', payload });
   }, []);
 

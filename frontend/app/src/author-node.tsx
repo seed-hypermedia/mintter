@@ -46,21 +46,25 @@ export default function AuthorNode({ path = '/' }: AuthorNodeProps) {
         <Route>
           <AppLayout>
             <Topbar />
-            {/* TODO: add app layout */}
             <Switch>
               <PrivateRoute exact path={match.url}>
                 <Redirect to={createPath(match, 'library')} />
               </PrivateRoute>
-              <PrivateRoute exact path={createPath(match, 'editor/:documentId')}>
+              <PrivateRoute
+                exact
+                path={['/editor/:documentId', '/admin/editor/:documentId']}
+              >
                 <Editor />
               </PrivateRoute>
-              {/* <PrivateRoute exact path={createPath(match, 'p/:slug')}>
-                <Publication />
-              </PrivateRoute> */}
-              <PrivateRoute path={createPath(match, 'library')}>
+              <PrivateRoute path={['/library', '/admin/library']}>
                 <Library />
               </PrivateRoute>
-              <PrivateRoute path={createPath(match, 'settings')}>
+              {/* <PrivateRoute
+                exact
+                path={['/p/:slug', '/admin/p/:slug']}
+                component={Publication}
+              /> */}
+              <PrivateRoute path={['/settings', '/admin/settings']}>
                 <Settings />
               </PrivateRoute>
               <Route>

@@ -68,7 +68,7 @@ function BlockMentionComponent({ quote }: any) {
   const profile = React.useRef<mintter.Profile.AsObject>(null);
   const { isLoading, isError, error, data } = usePublication(quote);
   const { data: author } = useAuthor(data ? data.document?.author : undefined);
-  const { dispatch } = useSidePanel();
+  const { sidepanelSend } = useSidePanel();
 
   const isAuthor = React.useCallback(
     (author) => profile.current?.accountId === author,
@@ -146,7 +146,12 @@ function BlockMentionComponent({ quote }: any) {
           <Tooltip content="Show in Sidepanel">
             <button
               className="bg-background hover:bg-muted transition duration-150 rounded-sm p-1"
-              onClick={() => dispatch({ type: 'add_object', payload: quote })}
+              onClick={() =>
+                sidepanelSend?.({
+                  type: 'SIDEPANEL_ADD_OBJECT',
+                  payload: quote,
+                })
+              }
             >
               {/* <Icons.CornerDownRight size={14} color="currentColor" /> */}
               corner right

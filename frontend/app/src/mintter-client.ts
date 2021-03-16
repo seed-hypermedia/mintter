@@ -99,12 +99,9 @@ export function listDrafts(
   pageToken?: string,
   view?: documents.DocumentView,
 ): Promise<documents.ListDraftsResponse> {
-  let result = new documents.ListDraftsResponse().toObject();
+  let result = new documents.ListDraftsResponse();
 
-  return Promise.resolve({
-    ...result,
-    documentsList: [...result.documentsList, [...new documents.Document()]],
-  });
+  return Promise.resolve(result);
 }
 
 export function publishDraft(
@@ -125,8 +122,10 @@ export function getPublication(
   documentId: string,
   version?: string,
 ): Promise<documents.Publication> {
-  let pub = new documents.Document();
-  pub.setId(documentId);
+  let doc = new documents.Document();
+  doc.setId(documentId);
+  let pub = new documents.Publication();
+  pub.setDocument(doc);
 
   return Promise.resolve(pub);
 }

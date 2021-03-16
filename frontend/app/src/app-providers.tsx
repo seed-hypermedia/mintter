@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from 'react-query/devtools';
 import { AppSpinner } from './app-spinner';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { ThemeProvider } from './theme-context';
+import { SidePanelProvider } from './sidepanel';
 
 export const queryClient = new QueryClient();
 
@@ -17,7 +18,9 @@ export function AppProviders({ children }: AppProvidersProps) {
     <React.Suspense fallback={<AppSpinner />}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <Router>{children}</Router>
+          <SidePanelProvider>
+            <Router>{children}</Router>
+          </SidePanelProvider>
         </ThemeProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>

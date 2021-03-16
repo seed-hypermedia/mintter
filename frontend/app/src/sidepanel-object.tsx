@@ -22,7 +22,7 @@ export function SidePanelObject(props: any) {
   const { isLoading, isError, error, data } = usePublication(documentId);
   const { data: author } = useAuthor(data?.document?.author);
   const [open, setOpen] = React.useState(true);
-  const { dispatch } = useSidePanel();
+  const { sidepanelSend } = useSidePanel();
   const { data: user, isSuccess: isProfileSuccess } = useProfile();
   const isAuthor = React.useMemo(() => {
     return user?.accountId === data?.document?.author;
@@ -85,7 +85,7 @@ export function SidePanelObject(props: any) {
             </button>
             <button
               onClick={() =>
-                dispatch({ type: 'remove_object', payload: props.id })
+                sidepanelSend?.({ type: 'SIDEPANEL_REMOVE_OBJECT', payload: props.id })
               }
               className="rounded hover:bg-background-muted p-1 hover:text-body-muted transition duration-100"
             >

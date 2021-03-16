@@ -9,12 +9,12 @@ export const Transclusion = ({ attributes, children, element }: any) => {
   const version = element.id.split('/')[0];
   const { isLoading, isError, error, data } = usePublication(version);
   const { data: author } = useAuthor(data ? data.document?.author : undefined);
-  const { dispatch } = useSidePanel();
+  const { sidepanelSend } = useSidePanel();
 
   // TODO: fix types
   function handlePush(e: any) {
     e.preventDefault();
-    dispatch({ type: 'add_object', payload: element.id });
+    sidepanelSend?.({ type: 'SIDEPANEL_ADD_OBJECT', payload: element.id });
   }
 
   if (isError) {
