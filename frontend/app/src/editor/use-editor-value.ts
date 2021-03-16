@@ -1,6 +1,6 @@
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
 import { useEffect, useReducer, useCallback } from 'react';
-import { initialValue, EditorState, initialBlocksValue } from './editor';
+import { initialValue, EditorState, editorInitialValue } from './editor';
 
 export function initializeEditorValue() {
   // TODO: change this to a lazy initialization function later
@@ -92,7 +92,7 @@ export function useEditorValue({
   //       author,
   //       subtitle,
   //       mentions,
-  //       blocks: blocks ? blocks : initialBlocksValue,
+  //       blocks: blocks ? blocks : editorInitialValue,
   //     });
   //   }
   // }, [document, setValue]);

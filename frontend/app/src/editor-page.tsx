@@ -17,6 +17,7 @@ import { Textarea } from '@mintter/ui/textarea';
 import { useEditorValue } from '@mintter/editor/use-editor-value';
 import { EditorComponent } from '@mintter/editor/editor-component';
 import { FormControl } from '@mintter/ui/form-control';
+import { Separator } from '@mintter/ui/separator';
 
 const Editor: React.FC = () => {
   const { theme } = useTheme();
@@ -59,18 +60,37 @@ const Editor: React.FC = () => {
   return (
     <Grid
       css={{
-        //   gridTemplateAreas: `"controls"
-        // "maincontent"`,
-        gridTemplateRows: '[controls] 50px [maincontent] auto',
+        gridTemplateAreas: isSidepanelOpen
+          ? `"controls controls"
+        "maincontent sidepanel"`
+          : `"controls controls"
+        "maincontent maincontent"`,
+        gridTemplateColumns: '2fr 1fr',
+        gridTemplateRows: '50px 1fr',
       }}
     >
-      <Box css={{ bc: '$gray600' }}>
-        <Button>Publish</Button>
-        <button onClick={() => sidepanelSend?.({ type: 'SIDEPANEL_TOOGLE' })}>
-          toggle sidepanel {isSidepanelOpen ? 'open' : 'close'}
-        </button>
+      <Box
+        css={{
+          display: 'flex',
+          gridArea: 'controls',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: '$2',
+        }}
+      >
+        <Button variant="primary" appearance="pill" size="2">
+          Publish
+        </Button>
+        <Button
+          variant="muted"
+          appearance="pill"
+          size="1"
+          onClick={() => sidepanelSend?.({ type: 'SIDEPANEL_TOOGLE' })}
+        >
+          sidepanel
+        </Button>
       </Box>
-      <Container css={{ bc: '$gray400' }}>
+      <Container css={{ gridArea: 'maincontent' }}>
         <Textarea
           value={title}
           onChange={setTitle}
@@ -81,8 +101,8 @@ const Editor: React.FC = () => {
             $$borderColor: 'transparent',
             $$borderColorHover: 'transparent',
             fontSize: '$6',
-            fontWeight: '$4',
             lineHeight: '1.25',
+            gontWeight: '$4',
             fontFamily: '$heading',
             marginTop: '$6',
             px: '0',
@@ -104,8 +124,8 @@ const Editor: React.FC = () => {
             px: '0',
           }}
         />
-
-        <Box>
+        <Separator />
+        <Box css={{ mx: '-$4', width: 'calc(100% + $7)' }}>
           <EditorComponent
             editor={editor}
             plugins={plugins}
@@ -116,7 +136,17 @@ const Editor: React.FC = () => {
         </Box>
       </Container>
       {isSidepanelOpen ? (
-        <Box css={{ bc: '$gray700' }}>sidepanel here</Box>
+        <Box css={{ bc: '$gray700', overflow: 'auto', gridArea: 'sidepanel' }}>
+          <pre>
+            <code>{JSON.stringify(editorState, null, 4)}</code>
+          </pre>
+          <pre>
+            <code>{JSON.stringify(editorState, null, 4)}</code>
+          </pre>
+          <pre>
+            <code>{JSON.stringify(editorState, null, 4)}</code>
+          </pre>
+        </Box>
       ) : null}
     </Grid>
   );

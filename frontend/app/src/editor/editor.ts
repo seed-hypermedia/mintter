@@ -21,7 +21,7 @@ export interface SlateBlock {
 
 export const Editor = SlateEditor;
 
-export const initialBlocksValue = [
+export const editorInitialValue = [
   {
     type: ELEMENT_BLOCK_LIST,
     id: id(),
@@ -48,6 +48,6 @@ export const initialBlocksValue = [
 export const initialValue: EditorState = {
   title: '',
   subtitle: '',
-  editorValue: initialBlocksValue,
+  editorValue: editorInitialValue,
   mentions: [],
 };
