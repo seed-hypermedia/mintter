@@ -21,6 +21,7 @@
     "site:test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch",
     "site:test:precommit": "yarn workspace @mintter/site test",
     "site:test:coverage": "yarn workspace @mintter/site test --coverage",
+    "ui": "yarn workspace @mintter/ui",
     "release": "yarn build",
     "validate": "npm-run-all --sequential format site:test site:build",
     "validate:local": "npm-run-all --sequential format site:test:coverage site:build",
@@ -30,7 +31,7 @@
     "frontend/www",
     "api/js",
     "frontend/app",
-    "frontend/new-dir"
+    "frontend/ui"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.5.2",
@@ -46,7 +47,7 @@
     "typescript": "^4.2.2"
   },
   "engines": {
-    "yarn": "^1.22.0"
+    "yarn": "^1.18.0"
   },
   "husky": {
     "hooks": {
