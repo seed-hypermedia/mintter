@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 // import Seo from 'components/seo'
-import { Input } from '@mintter/ui/input';
-import { Textarea } from '@mintter/ui/textarea';
+import { Input } from '@mintter/ui-legacy/input';
+import { Textarea } from '@mintter/ui-legacy/textarea';
 import { ProfileAddress } from './profile-address';
 // import {ErrorMessage, ErrorInterface} from 'components/error-message'
 import { useProfile } from './mintter-hooks';
@@ -11,9 +11,9 @@ import * as apiClient from './mintter-client';
 import { useToasts } from 'react-toast-notifications';
 import { useMutation } from 'react-query';
 import { MainColumn } from './main-column';
-import { Button } from '@mintter/ui/button';
-import { Box } from '@mintter/ui/box';
-import { Heading } from '@mintter/ui/heading';
+import { Button } from '@mintter/ui-legacy/button';
+import { Box } from '@mintter/ui-legacy/box';
+import { Heading } from '@mintter/ui-legacy/heading';
 
 export default function Settings() {
   const { data: profile } = useProfile();

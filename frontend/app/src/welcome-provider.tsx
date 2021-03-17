@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useLocation } from 'react-router-dom';
 import { Steps } from './welcome-steps';
-import { Grid } from '@mintter/ui/grid';
+import { Grid } from '@mintter/ui-legacy/grid';
 
 interface WelcomeState {
   mnemonicList?: string[];

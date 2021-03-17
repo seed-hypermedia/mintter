@@ -22,10 +22,10 @@ import { MainColumn } from './main-column';
 import { Publications } from './publications-page';
 import { MyPublications } from './my-publications-page';
 import { Drafts } from './drafts-page';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Text } from '@mintter/ui/text';
-import { Separator } from '@mintter/ui/separator';
+import { Box } from '@mintter/ui-legacy/box';
+import { Button } from '@mintter/ui-legacy/button';
+import { Text } from '@mintter/ui-legacy/text';
+import { Separator } from '@mintter/ui-legacy/separator';
 import { MessageBox } from './message-box';
 export type WithCreateDraft = {
   onCreateDraft: () => void;

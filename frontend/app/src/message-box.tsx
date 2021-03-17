@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Separator } from '@mintter/ui/separator';
-import { Box } from '@mintter/ui/box';
+import { Separator } from '@mintter/ui-legacy/separator';
+import { Box } from '@mintter/ui-legacy/box';
 
 export const MessageBox: React.FC = ({ children }) => (
   <>

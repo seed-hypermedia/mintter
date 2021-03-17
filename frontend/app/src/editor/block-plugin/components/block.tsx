@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Box } from '@mintter/ui/box';
-import { styled } from '@mintter/ui/stitches.config';
+import { Box } from '@mintter/ui-legacy/box';
+import { styled } from '@mintter/ui-legacy/stitches.config';
 
 const StyledBlock = styled(Box, {
   px: '$4',

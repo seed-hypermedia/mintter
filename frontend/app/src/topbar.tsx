@@ -2,12 +2,12 @@ import * as React from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { Link } from './link';
 import { LogoSquare } from './logo-square';
-import { Input } from '@mintter/ui/input';
+import { Input } from '@mintter/ui-legacy/input';
 import { getPath } from './routes';
 // import { CustomLogo } from './custom-logo';
-import { Grid } from '@mintter/ui/grid';
-import { Container } from '@mintter/ui/container';
-import * as DropdownMenu from '@mintter/ui/dropdown-menu';
+import { Grid } from '@mintter/ui-legacy/grid';
+import { Container } from '@mintter/ui-legacy/container';
+import * as DropdownMenu from '@mintter/ui-legacy/dropdown-menu';
 
 interface NavItemProps {
   href: string;

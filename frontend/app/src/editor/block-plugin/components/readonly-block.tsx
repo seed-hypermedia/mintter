@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useDndBlock } from '@udecode/slate-plugins';
 import { ReactEditor, useEditor } from 'slate-react';
-import { mergeRefs } from '@mintter/ui/merge-refs';
+import { mergeRefs } from '@mintter/ui-legacy/merge-refs';
 import { BlockControls } from './block-controls';
 import { useBlockMenu, useBlockMenuDispatch } from './blockmenu-context';
 

@@ -30,7 +30,7 @@ module.exports = {
   },
 
   alias: {
-    '@mintter/ui': './src/lib',
+    '@mintter/ui-legacy': './src/lib',
     '@mintter/editor': './src/editor',
     test: './test',
   },

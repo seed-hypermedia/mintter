@@ -8,7 +8,7 @@
     "baseUrl": "./",
     /* paths - import rewriting/resolving */
     "paths": {
-      "@mintter/ui/*": ["./src/lib/*"],
+      "@mintter/ui-legacy/*": ["./src/lib/*"],
       "@mintter/editor/*": ["./src/editor/*"],
       "test/*": ["./test/*"]
       // If you configured any Snowpack aliases, add them here.

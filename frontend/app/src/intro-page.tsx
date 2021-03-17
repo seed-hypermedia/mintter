@@ -1,10 +1,10 @@
 import React from 'react';
-import { Heading } from '@mintter/ui/heading';
-import { Container } from '@mintter/ui/container';
-import { Button } from '@mintter/ui/button';
-import { Grid } from '@mintter/ui/grid';
-import { css } from '@mintter/ui/stitches.config';
-import { Text } from '@mintter/ui/text';
+import { Heading } from '@mintter/ui-legacy/heading';
+import { Container } from '@mintter/ui-legacy/container';
+import { Button } from '@mintter/ui-legacy/button';
+import { Grid } from '@mintter/ui-legacy/grid';
+import { css } from '@mintter/ui-legacy/stitches.config';
+import { Text } from '@mintter/ui-legacy/text';
 import { useWelcome } from './welcome-provider';
 import { useProfile } from './mintter-hooks';
 

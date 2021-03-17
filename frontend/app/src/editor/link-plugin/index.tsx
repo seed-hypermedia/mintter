@@ -23,7 +23,7 @@
 //   getSelectionText,
 //   upsertLinkAtSelection,
 // } from '@udecode/slate-plugins';
-// import { Box } from '@mintter/ui/box';
+// import { Box } from '@mintter/ui-legacy/box';
 // import { isNodeTypeIn } from '../mintter-plugin/is-node-type-in';
 
 // export const ELEMENT_LINK = 'a';

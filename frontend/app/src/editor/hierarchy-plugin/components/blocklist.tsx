@@ -1,6 +1,6 @@
 import * as React from 'react';
 import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { Box } from '@mintter/ui/box';
+import { Box } from '@mintter/ui-legacy/box';
 
 // TODO: fix types
 export function BlockList({ attributes, children, element }: any) {

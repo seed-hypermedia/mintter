@@ -24,6 +24,7 @@ type AppLayoutProps = {
   children: React.ReactNode;
 };
 
+// TODO:
 export function AppLayout({ children }: AppLayoutProps) {
   const { theme } = useTheme();
   return (

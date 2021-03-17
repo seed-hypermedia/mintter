@@ -1,17 +1,17 @@
 import * as React from 'react';
-import { Container } from '@mintter/ui/container';
-import { Heading } from '@mintter/ui/heading';
-import { Box } from '@mintter/ui/box';
-import { NextButton, BackButton } from '@mintter/ui/button';
-import { Input } from '@mintter/ui/input';
-import { Textarea } from '@mintter/ui/textarea';
+import { Container } from '@mintter/ui-legacy/container';
+import { Heading } from '@mintter/ui-legacy/heading';
+import { Box } from '@mintter/ui-legacy/box';
+import { NextButton, BackButton } from '@mintter/ui-legacy/button';
+import { Input } from '@mintter/ui-legacy/input';
+import { Textarea } from '@mintter/ui-legacy/textarea';
 import { useForm } from 'react-hook-form';
 import { getPath } from './routes';
 import { useMutation } from 'react-query';
 import * as apiClient from './mintter-client';
-import { Grid } from '@mintter/ui/grid';
+import { Grid } from '@mintter/ui-legacy/grid';
 import { welcomeGrid } from './intro-page';
-import { Text } from '@mintter/ui/text';
+import { Text } from '@mintter/ui-legacy/text';
 import { Label } from '@radix-ui/react-label';
 import { useHistory, useRouteMatch } from 'react-router';
 

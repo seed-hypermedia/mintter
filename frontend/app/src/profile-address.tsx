@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Textarea } from '@mintter/ui/textarea';
-import { Button } from '@mintter/ui/button';
+import { Textarea } from '@mintter/ui-legacy/textarea';
+import { Button } from '@mintter/ui-legacy/button';
 import { useProfileAddrs } from './mintter-hooks';
 // import {useToasts} from 'react-toast-notifications'
 import CopyToClipboard from 'react-copy-to-clipboard';

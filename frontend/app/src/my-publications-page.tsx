@@ -7,10 +7,10 @@ import { createDraft, deletePublication } from './mintter-client';
 // import {ErrorMessage} from 'components/error-message'
 // import {Icons} from 'components/icons'
 import { getPath } from './routes';
-import { Button } from '@mintter/ui/button';
-import { Separator } from '@mintter/ui/separator';
-import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
+import { Button } from '@mintter/ui-legacy/button';
+import { Separator } from '@mintter/ui-legacy/separator';
+import { Box } from '@mintter/ui-legacy/box';
+import { Text } from '@mintter/ui-legacy/text';
 import type { WithCreateDraft } from './library-page';
 import { MessageBox } from './message-box';
 

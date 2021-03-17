@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { Heading } from '@mintter/ui/heading';
-import { Container } from '@mintter/ui/container';
-import { Button } from '@mintter/ui/button';
-import { Text } from '@mintter/ui/text';
+import { Heading } from '@mintter/ui-legacy/heading';
+import { Container } from '@mintter/ui-legacy/container';
+import { Button } from '@mintter/ui-legacy/button';
+import { Text } from '@mintter/ui-legacy/text';
 import { useWelcome } from './welcome-provider';
 import { getPath } from './routes';
-import { Grid } from '@mintter/ui/grid';
+import { Grid } from '@mintter/ui-legacy/grid';
 import { welcomeGrid } from './intro-page';
 import { useHistory, useRouteMatch } from 'react-router';
 

@@ -3,7 +3,7 @@ import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import { WelcomeProvider } from './welcome-provider';
 import WelcomeIntro from './intro-page';
 import { ProgressRoute, createPath } from './routes';
-import { Box } from '@mintter/ui/box';
+import { Box } from '@mintter/ui-legacy/box';
 
 const SecurityPack = React.lazy(() => import('./security-pack-page'));
 // const RetypeSeed = React.lazy(() => import('screens/welcome/retype-seed'));

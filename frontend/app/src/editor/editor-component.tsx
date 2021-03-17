@@ -8,7 +8,7 @@ import {
   SlateDocument,
   // ToolbarMark,
 } from '@udecode/slate-plugins';
-import { Box } from '@mintter/ui/box';
+import { Box } from '@mintter/ui-legacy/box';
 // import {useTheme} from 'shared/theme-context'
 // import {MARK_BOLD} from 'editor/marks/bold'
 // import {Icons} from './icons'

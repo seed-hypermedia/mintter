@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
-import { Container } from '@mintter/ui/container';
+import { Box } from '@mintter/ui-legacy/box';
+import { Text } from '@mintter/ui-legacy/text';
+import { Container } from '@mintter/ui-legacy/container';
 
 type Step = {
   title: string;

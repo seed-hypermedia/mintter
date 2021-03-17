@@ -4,7 +4,7 @@ import type {
   ParagraphPluginOptionsValues,
 } from '@udecode/slate-plugins';
 import { ELEMENT_PARAGRAPH } from './defaults';
-import { Box } from '@mintter/ui/box';
+import { Box } from '@mintter/ui-legacy/box';
 
 // TODO: fix types
 export const Paragraph: React.FC<any> = ({

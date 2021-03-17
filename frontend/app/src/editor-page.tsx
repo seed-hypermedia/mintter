@@ -1,23 +1,23 @@
 import * as React from 'react';
+import type { ReactEditor } from 'slate-react';
 import { useHistory, useParams } from 'react-router';
-import { Container } from '@mintter/ui/container';
-import { Grid } from '@mintter/ui/grid';
+import { Container } from '@mintter/ui-legacy/container';
+import { Grid } from '@mintter/ui-legacy/grid';
 import { useTheme } from './theme-context';
 import { useSidePanel } from './sidepanel';
 import { useDraft } from './mintter-hooks';
 import { createPlugins } from '@mintter/editor/plugins';
 import { options } from '@mintter/editor/options';
-import type { ReactEditor } from 'slate-react';
 import { useEditor } from '@mintter/editor/use-editor';
 import { useMutation } from 'react-query';
 import { publishDraft } from './mintter-client';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Textarea } from '@mintter/ui/textarea';
+import { Box } from '@mintter/ui-legacy/box';
+import { Button } from '@mintter/ui-legacy/button';
+import { Textarea } from '@mintter/ui-legacy/textarea';
 import { useEditorValue } from '@mintter/editor/use-editor-value';
 import { EditorComponent } from '@mintter/editor/editor-component';
-import { FormControl } from '@mintter/ui/form-control';
-import { Separator } from '@mintter/ui/separator';
+import { FormControl } from '@mintter/ui-legacy/form-control';
+import { Separator } from '@mintter/ui-legacy/separator';
 
 const Editor: React.FC = () => {
   const { theme } = useTheme();

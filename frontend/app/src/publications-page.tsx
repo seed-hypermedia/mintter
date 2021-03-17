@@ -7,8 +7,8 @@ import type { WithCreateDraft } from './library-page';
 import { createDraft, deletePublication } from './mintter-client';
 import { useOthersPublicationsList } from './mintter-hooks';
 import type { Document } from '@mintter/api/documents/v1alpha/documents_pb';
-import { Button } from '@mintter/ui/button';
-import { Text } from '@mintter/ui/text';
+import { Button } from '@mintter/ui-legacy/button';
+import { Text } from '@mintter/ui-legacy/text';
 import { MessageBox } from './message-box';
 
 export const Publications: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {

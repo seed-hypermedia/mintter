@@ -3,14 +3,14 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 import { useWelcome } from './welcome-provider';
 import { genSeed, initProfile } from './mintter-client';
 import { welcomeGrid } from './intro-page';
-import { Container } from '@mintter/ui/container';
-import { Heading } from '@mintter/ui/heading';
-import { NextButton, BackButton } from '@mintter/ui/button';
+import { Container } from '@mintter/ui-legacy/container';
+import { Heading } from '@mintter/ui-legacy/heading';
+import { NextButton, BackButton } from '@mintter/ui-legacy/button';
 import { getPath } from './routes';
-import { Button } from '@mintter/ui/button';
-import { Box } from '@mintter/ui/box';
-import { Grid } from '@mintter/ui/grid';
-import { Text } from '@mintter/ui/text';
+import { Button } from '@mintter/ui-legacy/button';
+import { Box } from '@mintter/ui-legacy/box';
+import { Grid } from '@mintter/ui-legacy/grid';
+import { Text } from '@mintter/ui-legacy/text';
 import { useHistory, useRouteMatch } from 'react-router';
 
 // TODO: (horacio): refactor rpc to not have it here
