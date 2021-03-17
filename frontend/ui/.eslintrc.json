@@ -79,6 +79,9 @@
     "react/self-closing-comp": "error"
   },
   "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
     "import/resolver": {
       "typescript": {
         "project": "./tsconfig.json"

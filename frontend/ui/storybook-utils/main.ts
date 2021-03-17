@@ -6,7 +6,7 @@ const config: StorybookConfig = {
     "./stories/**/*.stories.@(mdx|js|jsx|ts|tsx)",
     "../src/**/*.stories.@(mdx|js|jsx|ts|tsx)",
   ],
-  addons: ["@storybook/addon-links", "@storybook/addon-essentials"],
+  addons: ["@storybook/addon-essentials", "./addon-theme/register.tsx"],
   webpackFinal: (config) => {
     if (!config.resolve) return config
     config.resolve.plugins = [new TsconfigPathsPlugin({ extensions: config.resolve.extensions })]

@@ -1,5 +1,160 @@
-import {Meta} from '@storybook/addon-docs/blocks'
+import {Box} from '@src/box'
+import {Text} from '@src/text'
+import {Demo, DemoItem} from '@storybook-utils/components/demo'
+import {ArgsTable, Meta} from '@storybook/addon-docs/blocks'
 
-<Meta title="Components/Data Display/Text" />
+<Meta title="Components/Text" />
 
 # Text
+
+The `Text` component is one of our most basic primitives, use it and combine it
+with other components to build more complex UI patterns.
+
+**Usage:**
+
+1. Import it from `@mintter/ui`.
+
+```tsx
+import {Text} from '@mintter/ui/text'
+```
+
+2. Use it in your components.
+
+```tsx
+<Text>This is my Text!</Text>
+```
+
+## Variants
+
+While you can leverage and combine the theme tokens to create any text style you
+want, we have some pre-built combinations that are used across the UI, to avoid
+repeating the pattern on each implementation.
+
+`Text` variants are split in two groups: `ui` (for User Interface texts) and
+`doc` (for Document texts).
+
+**Usage:**
+
+```tsx
+<Text variant="ui-h1">The Jedi Master trained the young Padawan</Text>
+<Text variant="doc-h1">The Jedi Master trained the young Padawan</Text>
+```
+
+> The default `Text` variant is `ui-medium`.
+
+<Box css={{display: 'flex', gap: '$m'}}>
+  <Demo css={{flex: 1}}>
+    <DemoItem title="ui-huge">
+      <Text variant="ui-huge">The Jedi Master trained the young Padawan</Text>
+    </DemoItem>
+    <DemoItem title="ui-h1">
+      <Text variant="ui-h1">The Jedi Master trained the young Padawan</Text>
+    </DemoItem>
+    <DemoItem title="ui-h2">
+      <Text variant="ui-h2">The Jedi Master trained the young Padawan</Text>
+    </DemoItem>
+    <DemoItem title="ui-h3">
+      <Text variant="ui-h3">The Jedi Master trained the young Padawan</Text>
+    </DemoItem>
+    <DemoItem title="ui-h4">
+      <Text variant="ui-h4">The Jedi Master trained the young Padawan</Text>
+    </DemoItem>
+  </Demo>
+  <Demo css={{flex: 1}}>
+    <DemoItem title="ui-large">
+      <Text variant="ui-large">The Jedi Master trained the young Padawan</Text>
+    </DemoItem>
+    <DemoItem title="ui-medium">
+      <Text variant="ui-medium">The Jedi Master trained the young Padawan</Text>
+    </DemoItem>
+    <DemoItem title="ui-small">
+      <Text variant="ui-small">The Jedi Master trained the young Padawan</Text>
+    </DemoItem>
+    <DemoItem title="ui-tiny">
+      <Text variant="ui-tiny">The Jedi Master trained the young Padawan</Text>
+    </DemoItem>
+  </Demo>
+</Box>
+
+<Box css={{display: 'flex', gap: '$m'}}>
+  <Demo css={{flex: 1}}>
+    <DemoItem title="doc-huge">
+      <Text variant="doc-huge">The Jedi Master trained the young Padawan</Text>
+    </DemoItem>
+    <DemoItem title="doc-h1">
+      <Text variant="doc-h1">The Jedi Master trained the young Padawan</Text>
+    </DemoItem>
+    <DemoItem title="doc-h2">
+      <Text variant="doc-h2">The Jedi Master trained the young Padawan</Text>
+    </DemoItem>
+    <DemoItem title="doc-h3">
+      <Text variant="doc-h3">The Jedi Master trained the young Padawan</Text>
+    </DemoItem>
+  </Demo>
+  <Demo css={{flex: 1}}>
+    <DemoItem title="doc-large">
+      <Text variant="doc-large">
+        Lucas ipsum dolor sit amet hutt alderaan ponda darth thrawn yavin jar
+        dantooine solo mandalorians. Mon gamorrean droid lars skywalker kit.
+        Luuke chewbacca darth darth. Jango kessel chewbacca darth sidious. Naboo
+        tatooine chewbacca hutt chewbacca jango endor droid palpatine. Darth
+        antilles obi-wan luke darth sith mustafar moff yoda. Alderaan darth
+        organa kit darth bespin mara tatooine solo. Ventress skywalker secura
+        fett mandalore. Lando luke darth mace jinn antilles organa moff hutt.
+        K-3po darth antilles yavin.
+      </Text>
+    </DemoItem>
+    <DemoItem title="doc-small">
+      <Text variant="doc-small">
+        Lucas ipsum dolor sit amet hutt alderaan ponda darth thrawn yavin jar
+        dantooine solo mandalorians. Mon gamorrean droid lars skywalker kit.
+        Luuke chewbacca darth darth. Jango kessel chewbacca darth sidious. Naboo
+        tatooine chewbacca hutt chewbacca jango endor droid palpatine. Darth
+        antilles obi-wan luke darth sith mustafar moff yoda. Alderaan darth
+        organa kit darth bespin mara tatooine solo. Ventress skywalker secura
+        fett mandalore. Lando luke darth mace jinn antilles organa moff hutt.
+        K-3po darth antilles yavin.
+      </Text>
+    </DemoItem>
+  </Demo>
+</Box>
+
+## Colors
+
+Just as with the variants; while you can virtually attach any color from the
+Theme to a `Text` component via the `css` prop, we took all the colors that
+start with `$text-` and added a shorthand prop for calling them. For instance,
+if there is a color named `$text-contrast`, the `color` prop you need to pass to
+the `Text` component is `contrast`.
+
+**Usage:**
+
+```tsx
+<Text color="alt">Alternative Text</Text>
+```
+
+> The default `Text` color is `default`
+
+<Demo>
+  <DemoItem title="default">
+    <Text color="default">The Jedi Master trained the young Padawan</Text>
+  </DemoItem>
+  <DemoItem title="alt">
+    <Text color="alt">The Jedi Master trained the young Padawan</Text>
+  </DemoItem>
+  <DemoItem title="mutted">
+    <Text color="mutted">The Jedi Master trained the young Padawan</Text>
+  </DemoItem>
+  <DemoItem title="opposite">
+    <Text color="opposite" css={{backgroundColor: '$background-opposite'}}>
+      The Jedi Master trained the young Padawan
+    </Text>
+  </DemoItem>
+  <DemoItem title="contrast">
+    <Text color="contrast">The Jedi Master trained the young Padawan</Text>
+  </DemoItem>
+</Demo>
+
+## Props Table
+
+<ArgsTable of={Text} />

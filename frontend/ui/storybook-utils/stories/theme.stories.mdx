@@ -1,11 +1,35 @@
-import * as Colors from '@storybook-utils/components/colors'
+import * as Theme from '@storybook-utils/components/theme'
 import {Meta} from '@storybook/addon-docs/blocks'
 
-<Meta title="Overview/Theme" />
+<Meta title="Theme" />
 
 # Theme
 
+On this document, you will find all our Design Tokens. By using Design Tokens,
+we can achieve creating a consistent design, and easily switching between dark
+and light mode.
+
 ## Typography
+
+While there is a `Text` component that comes with pre-defined text styles, you
+can still leverage this typography-related tokens to create more complex
+elements, or overwrite properties on the pre-defined text styles.
+
+### Font Families
+
+<Theme.FontFamilies />
+
+### Font Sizes
+
+<Theme.FontSizes />
+
+### Font Weights
+
+<Theme.FontWeights />
+
+### Line Heights
+
+<Theme.LineHeights />
 
 ## Colors
 
@@ -19,18 +43,24 @@ of the color palette.
 
 ### Color Palette
 
-<Colors.Palette />
+<Theme.Palette />
 
 ### Light Theme
 
-<Colors.LightTheme />
+<Theme.LightTheme />
 
 ### Dark Theme
 
-<Colors.DarkTheme />
+<Theme.DarkTheme />
 
-## Spacing
+## Spaces
 
-## Radius
+<Theme.Spaces />
 
-## Shadows
+## Sizes
+
+<Theme.Sizes />
+
+<!-- ## Radius
+
+## Shadows -->

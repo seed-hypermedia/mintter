@@ -1,0 +1,26 @@
+import {Theme} from '@src/theme'
+import {Meta} from '@storybook/addon-docs/blocks'
+
+<Meta title="Components/Theme" />
+
+# Theme
+
+The `Theme` component **must** wrap your application and should be the unique of
+its kind in your component tree. The purpose of this component, is to apply some
+global styles to your application, and managing light / dark mode theme changes.
+
+**Usage:**
+
+1. Import it from `@mintter/ui/theme`.
+
+```tsx
+import {Theme} from '@mintter/ui/theme'
+```
+
+2. Wrap your application with it.
+
+```tsx
+<Theme>
+  <MyApp />
+</Theme>
+```

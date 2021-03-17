@@ -80,33 +80,34 @@ const stitches = createCss({
       'palette-yellow-900': '#ffffff',
       'palette-yellow-1000': '#4d3400',
 
-      // Semantic colors.
-      'text-default': '$palette-gray-1000',
-      'text-alt': '$palette-gray-800',
-      'text-mutted': '$palette-gray-700',
-      'text-opposite': '$palette-common-white',
-      'text-contrast': '$palette-gray-400',
-      'background-opposite': '$palette-gray-1000',
-      'background-contrast-strong': '$palette-gray-900',
-      'background-contrast': '$palette-gray-800',
-      'background-contrast-soft': '$palette-gray-700',
-      'background-neutral-strong': '$palette-gray-400',
-      'background-neutral': '$palette-gray-300',
-      'background-neutral-soft': '$palette-gray-200',
-      'background-default': '$palette-gray-100',
-      'background-alt': '$common-white',
+      // Semantic placeholders.
+      'text-default': '',
+      'text-alt': '',
+      'text-mutted': '',
+      'text-opposite': '',
+      'text-contrast': '',
+      'background-opposite': '',
+      'background-contrast-strong': '',
+      'background-contrast': '',
+      'background-contrast-soft': '',
+      'background-neutral-strong': '',
+      'background-neutral': '',
+      'background-neutral-soft': '',
+      'background-default': '',
+      'background-alt': '',
     },
     fonts: {
-      default: "'Basier Circle', apple-system, sans-serif",
-      alt: 'Lora, serif',
+      default: '"Basier Circle", apple-system, sans-serif',
+      alt: '"Lora", serif',
     },
     fontSizes: {
       xs: '12px',
-      sm: '14px',
-      md: '16px',
-      lg: '20px',
+      s: '14px',
+      m: '16px',
+      l: '20px',
       xl: '24px',
-      xxl: '32px',
+      '2xl': '32px',
+      '3xl': '48px',
     },
     fontWeights: {
       regular: 400,
@@ -114,31 +115,50 @@ const stitches = createCss({
       bold: 700,
     },
     letterSpacings: {},
-    lineHeights: {},
+    lineHeights: {
+      none: '1em',
+      s: '1.2em',
+      m: '1.4em',
+      l: '1.6em',
+    },
     radii: {},
     shadows: {},
-    sizes: {},
+    sizes: {
+      none: '0px',
+      'one-quarter': '25%',
+      'one-third': '33.333%',
+      half: '50%',
+      'two-thirds': '66.6666%',
+      'three-quarters': '75%',
+      full: '100%',
+    },
     space: {
       none: '0px',
-      xxxs: '2px',
-      xxs: '4px',
+      '3xs': '2px',
+      '2xs': '4px',
       xs: '8px',
-      sm: '12px',
-      md: '16px',
-      lg: '20px',
+      s: '12px',
+      m: '16px',
+      l: '20px',
       xl: '32px',
-      xxl: '64px',
+      '2xl': '64px',
     },
     transitions: {},
     zIndices: {},
   },
   conditions: {},
   utils: {
-    marginHorizontal: () => value => ({marginLeft: value, marginRight: value}),
+    marginHorizontal: () => val => ({marginLeft: val, marginRight: val}),
+    marginVertical: () => val => ({marginTop: val, marginBottom: val}),
+    paddingHorizontal: () => val => ({paddingLeft: val, paddingRight: val}),
+    paddingVertical: () => val => ({paddingTop: val, paddingBottom: val}),
   },
   themeMap: {
     ...defaultThemeMap,
     marginHorizontal: 'space' as const,
+    marginVertical: 'space' as const,
+    paddingHorizontal: 'space' as const,
+    paddingVertical: 'space' as const,
   },
 })
 
@@ -198,32 +218,63 @@ export const globalStyles = global({
       fontWeight: '700',
       fontStyle: 'italic',
     },
+    {
+      fontFamily: 'Lora',
+      src: "url('/fonts/lora/regular.ttf') format('truetype')",
+      fontWeight: '400',
+      fontStyle: 'normal',
+    },
+    {
+      fontFamily: 'Lora',
+      src: "url('/fonts/lora/regular-italic.ttf') format('truetype')",
+      fontWeight: '400',
+      fontStyle: 'italic',
+    },
+    {
+      fontFamily: 'Lora',
+      src: "url('/fonts/lora/medium.ttf') format('truetype')",
+      fontWeight: '500',
+      fontStyle: 'normal',
+    },
+    {
+      fontFamily: 'Lora',
+      src: "url('/fonts/lora/medium-italic.ttf') format('truetype')",
+      fontWeight: '500',
+      fontStyle: 'italic',
+    },
+    {
+      fontFamily: 'Lora',
+      src: "url('/fonts/lora/bold.ttf') format('truetype')",
+      fontWeight: '700',
+      fontStyle: 'normal',
+    },
+    {
+      fontFamily: 'Lora',
+      src: "url('/fonts/lora/bold-italic.ttf') format('truetype')",
+      fontWeight: '700',
+      fontStyle: 'italic',
+    },
   ],
 })
 
-export const generateVariantsForScale = <
-  TScale extends keyof Theme,
-  TCSSProperty extends keyof {
-    [CSSProperty in keyof typeof config.themeMap as typeof config.themeMap[CSSProperty] extends TScale
-      ? CSSProperty
-      : never]: typeof config.themeMap[CSSProperty]
-  }
->(
-  scaleName: TScale,
-  cssProperty: TCSSProperty,
-) => {
-  return Object.entries(theme[scaleName]).reduce(
-    (acc, [tokenName, token]) => ({
-      ...acc,
-      [tokenName]: {[cssProperty]: token},
-    }),
-    {},
-  ) as {
-    [key in keyof Theme[TScale]]: {
-      [key in TCSSProperty]: Theme[TScale][keyof Theme[TScale]]
-    }
-  }
-}
+export const lightTheme = theme('light-theme', {
+  colors: {
+    'text-default': '$palette-gray-1000',
+    'text-alt': '$palette-gray-800',
+    'text-mutted': '$palette-gray-700',
+    'text-opposite': '$palette-common-white',
+    'text-contrast': '$palette-gray-400',
+    'background-opposite': '$palette-gray-1000',
+    'background-contrast-strong': '$palette-gray-900',
+    'background-contrast': '$palette-gray-800',
+    'background-contrast-soft': '$palette-gray-700',
+    'background-neutral-strong': '$palette-gray-400',
+    'background-neutral': '$palette-gray-300',
+    'background-neutral-soft': '$palette-gray-200',
+    'background-default': '$palette-gray-100',
+    'background-alt': '$palette-common-white',
+  },
+})
 
 export const darkTheme = theme('dark-theme', {
   colors: {

@@ -32,13 +32,16 @@
     "storybook:build": "build-storybook -c storybook-utils -s ../app/public -o \"./out/\""
   },
   "dependencies": {
-    "@stitches/react": "^0.1.0-canary.17"
+    "@stitches/react": "^0.1.0-canary.17",
+    "use-dark-mode": "^2.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",
+    "@storybook/addons": "^6.1.21",
     "@storybook/addon-actions": "^6.1.21",
     "@storybook/addon-essentials": "^6.1.21",
     "@storybook/addon-links": "^6.1.21",
+    "@storybook/components": "^6.1.21",
     "@storybook/core": "^6.1.21",
     "@storybook/react": "^6.1.21",
     "@testing-library/jest-dom": "^5.11.9",
