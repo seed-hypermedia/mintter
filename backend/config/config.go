@@ -9,8 +9,7 @@ type Config struct {
 	RepoPath      string `help:"Path to where to store node data" default:"~/.mtt"`
 	NoOpenBrowser bool   `help:"If true - do not open the browser to access the UI"`
 
-	EnableSSL bool   `help:"Listen on port 443 and automatically generate Let's Encrypt certificate"`
-	Domain    string `help:"Domain that Let's Encrypt will generate the certificate for"`
+	Domain string `help:"Domain that Let's Encrypt will generate the certificate for (required for SSL support)"`
 
 	P2P P2P `help:"P2P configuration" prefix:"p2p." embed:""`
 	UI  UI  `help:"ui configuration" prefix:"ui." embed:""`

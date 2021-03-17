@@ -43,24 +43,26 @@ func authFunc(ctx context.Context) (context.Context, error) {
 	return document.AdminContext(ctx), nil
 }
 
-func stripPort(hostport string) string {
+func stripPort(hostport, sslPort string) string {
 	host, _, err := net.SplitHostPort(hostport)
 	if err != nil {
-		return hostport
+		return net.JoinHostPort(hostport, sslPort)
 	}
-	// TODO: Retrieve HTTPSPort from config
-	return net.JoinHostPort(host, "55003")
+	return net.JoinHostPort(host, sslPort)
 }
 
-// Somehow we need to pass an extra parameter cfg
-// https://stackoverflow.com/questions/23773322/passing-in-parameters-to-a-http-handlerfunc
-func handleHTTPRedirect(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" && r.Method != "HEAD" {
-		http.Error(w, "Use HTTPS", http.StatusBadRequest)
-		return
-	}
-	target := "https://" + stripPort(r.Host) + r.URL.RequestURI()
-	http.Redirect(w, r, target, http.StatusFound)
+// createRedirectHandler returns a http.Handler that will redirect
+// http to https taking into account HTTPSPort
+func createRedirectHandler(sslPort string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" && r.Method != "HEAD" {
+			http.Error(w, "Use HTTPS", http.StatusBadRequest)
+			return
+		}
+
+		target := "https://" + stripPort(r.Host, sslPort) + r.URL.RequestURI()
+		http.Redirect(w, r, target, http.StatusFound)
+	})
 }
 
 // Run the daemon.
@@ -187,12 +189,11 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	// Start HTTPS server and generate Let's Encrypt certificate
 	httpsSrv := http.Server{}
-	if cfg.EnableSSL {
+	if cfg.Domain != "" {
 		certManager := autocert.Manager{
-			Prompt: autocert.AcceptTOS,
-			//HostPolicy: autocert.HostWhitelist(cfg.Domain),
-			// HostPolicy: autocert.HostWhitelist(cfg.Domain + ":" + cfg.HTTPPort),
-			Cache: autocert.DirCache(cfg.RepoPath + "/certs"),
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(cfg.Domain),
+			Cache:      autocert.DirCache(cfg.RepoPath + "/certs"),
 		}
 
 		httpsSrv = http.Server{
@@ -200,9 +201,9 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 			Handler:   mux,
 			TLSConfig: &tls.Config{GetCertificate: certManager.GetCertificate},
 		}
-		// httpSrv.Handler = certManager.HTTPHandler(httpSrv.Handler)
 		// redirect from http to https
-		httpSrv.Handler = certManager.HTTPHandler(http.HandlerFunc(handleHTTPRedirect))
+		fallback := createRedirectHandler(cfg.HTTPSPort)
+		httpSrv.Handler = certManager.HTTPHandler(fallback)
 
 		g.Go(func() error {
 			err := httpsSrv.ListenAndServeTLS("", "")
@@ -212,7 +213,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 			return nil
 		})
 
-		httpsURL := "https://localhost" + httpsSrv.Addr
+		httpsURL := "https://" + cfg.Domain + httpsSrv.Addr
 		logParams = append(logParams, zap.String("httpsURL", httpsURL))
 	}
 
