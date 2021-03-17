@@ -46,7 +46,7 @@ const dataTags: {[name: string]: SiteTags} = {
 }
 
 export default function Seo({children, ...props}: SeoProps) {
-  const meta = dataTags[window.location.hostname]
+  const meta = dataTags[window.location.hostname] || dataTags.localhost
   const {
     title,
     description = meta.description,
