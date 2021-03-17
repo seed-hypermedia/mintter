@@ -8,14 +8,20 @@ const StyledBlock = styled(Box, {
   borderRadius: '$2',
   '&:hover': {
     // TODO: we need color with opacity
-    bc: 'rgba(0,0,0,0.05)',
+    bc: 'rgba(0,0,0,0.03)',
   },
 });
 
 export const Block = ({ attributes, element, children, ...rest }: any) => {
+  console.log(
+    '🚀 ~ file: block.tsx ~ line 16 ~ Block ~ attributes, element',
+    attributes,
+  );
   return (
-    <StyledBlock as="li" {...attributes} {...rest}>
-      {children}
-    </StyledBlock>
+    <>
+      <StyledBlock as="li" {...attributes} {...rest}>
+        {children}
+      </StyledBlock>
+    </>
   );
 };

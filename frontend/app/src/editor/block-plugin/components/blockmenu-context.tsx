@@ -49,20 +49,20 @@ export const BlockMenuContext = createContext<BlockMenuContextType>(
   defaultState,
 );
 
-export const BlockMenuDispatchContext = createContext<any>(defaultReducer);
+export const BlockmenuSendContext = createContext<any>(defaultReducer);
 
 export function BlockMenuProvider({
   children,
   reducer = defaultReducer,
   initialState = defaultState,
 }: BlockMenuProviderProps) {
-  const [state, dispatch] = React.useReducer(reducer, initialState);
+  const [state, send] = React.useReducer(reducer, initialState);
   return (
-    <BlockMenuDispatchContext.Provider value={dispatch}>
+    <BlockmenuSendContext.Provider value={send}>
       <BlockMenuContext.Provider value={state}>
         {children}
       </BlockMenuContext.Provider>
-    </BlockMenuDispatchContext.Provider>
+    </BlockmenuSendContext.Provider>
   );
 }
 
@@ -77,11 +77,11 @@ export function useBlockMenu() {
   return context;
 }
 
-export function useBlockMenuDispatch() {
-  const context = useContext(BlockMenuDispatchContext);
+export function useBlockmenuSend() {
+  const context = useContext(BlockmenuSendContext);
   if (context === undefined) {
     throw new Error(
-      `\`useBlockMenuDispatch\` must be used within a \`BlockMenuProvider\``,
+      `\`useBlockmenuSend\` must be used within a \`BlockMenuProvider\``,
     );
   }
 

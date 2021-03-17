@@ -1,6 +1,8 @@
 import * as React from 'react';
 import type { ReactEditor } from 'slate-react';
 import { useHistory, useParams } from 'react-router';
+import { setDefaults } from '@udecode/slate-plugins';
+import { useMenuState } from 'reakit/Menu';
 import { Container } from '@mintter/ui-legacy/container';
 import { Grid } from '@mintter/ui-legacy/grid';
 import { useTheme } from './theme-context';
@@ -25,13 +27,23 @@ const Editor: React.FC = () => {
   const query = new URLSearchParams(window.location.search);
   const { documentId } = useParams<{ documentId: string }>();
   const { isLoading, isError, error, data } = useDraft(documentId);
-
   const titleRef = React.useRef<HTMLInputElement>(null);
+  const linkMenu = useMenuState({ loop: true, wrap: true });
   const subtitleRef = React.useRef<HTMLInputElement>(null);
 
+  // modify options
+  const customOptions = setDefaults(
+    {
+      link: {
+        menu: linkMenu,
+      },
+    },
+    options,
+  );
+
   // editor
-  const plugins = createPlugins(options);
-  const editor: ReactEditor = useEditor(plugins, options) as ReactEditor;
+  const plugins = createPlugins(customOptions);
+  const editor: ReactEditor = useEditor(plugins, customOptions) as ReactEditor;
 
   const {
     state: editorState,
@@ -129,9 +141,11 @@ const Editor: React.FC = () => {
           <EditorComponent
             editor={editor}
             plugins={plugins}
+            options={customOptions}
             value={editorValue}
             onChange={onEditorChange}
             readOnly={false}
+            linkMenu={linkMenu}
           />
         </Box>
       </Container>

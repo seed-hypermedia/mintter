@@ -5,19 +5,19 @@ import { withAutoformat, pipe, withInlineVoid } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
 import { autoformatRules } from '../editor/autoformat-rules';
 import { withMintter } from '../editor/mintter-plugin/with-mintter';
-import { withTransclusion } from '../editor/transclusion-plugin/with-transclusion';
+import { withLinks } from './link-plugin';
 
 // TODO: fix types
 export function useEditor(plugins: any[], options: any): Editor {
   const withPlugins = [
     withReact,
     withHistory,
+    withLinks(options),
     withAutoformat({
       rules: autoformatRules,
     }),
     // withDeserializeMd(plugins),
     withInlineVoid({ plugins }),
-    withTransclusion(options),
     withMintter({ plugins, options }),
   ] as const;
 

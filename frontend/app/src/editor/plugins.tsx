@@ -9,43 +9,40 @@ import {
 } from '@udecode/slate-plugins';
 import { options } from './options';
 import { HierarchyPlugin } from './hierarchy-plugin/hierarchy-plugin';
-import { TransclusionPlugin } from './transclusion-plugin/transclusion-plugin';
 import { BlockPlugin } from './block-plugin/block-plugin';
 import { ReadOnlyPlugin } from './readonly-plugin/readonly-plugin';
 import { HeadingPlugin } from './heading-plugin/heading-plugin';
-import { LinkPlugin } from './link-plugin/link-plugin';
 import { ListPlugin } from './list-plugin/list-plugin';
+import { LinkPlugin } from './link-plugin';
 
 export const plugins = [
   ParagraphPlugin(options),
-  LinkPlugin(),
+  HeadingPlugin(options),
+  BlockPlugin(options),
+  HierarchyPlugin(options),
+  ReadOnlyPlugin(options),
+  ListPlugin(options),
+  LinkPlugin(options),
   BoldPlugin(options),
-  CodePlugin(options),
   ItalicPlugin(options),
+  CodePlugin(options),
   UnderlinePlugin(options),
   StrikethroughPlugin(options),
-  HierarchyPlugin(options),
-  TransclusionPlugin(options),
-  BlockPlugin(options),
-  ReadOnlyPlugin(options),
-  HeadingPlugin(options),
-  ListPlugin(options),
 ];
 // TODO: fix types
 export function createPlugins(options: any) {
   return [
     ParagraphPlugin(options),
+    HeadingPlugin(options),
+    BlockPlugin(options),
+    HierarchyPlugin(options),
+    ReadOnlyPlugin(options),
+    ListPlugin(options),
+    LinkPlugin(options),
     BoldPlugin(options),
-    CodePlugin(options),
     ItalicPlugin(options),
+    CodePlugin(options),
     UnderlinePlugin(options),
     StrikethroughPlugin(options),
-    HierarchyPlugin(options),
-    TransclusionPlugin(options),
-    BlockPlugin(options),
-    ReadOnlyPlugin(options),
-    HeadingPlugin(options),
-    ListPlugin(options),
-    LinkPlugin(),
   ];
 }

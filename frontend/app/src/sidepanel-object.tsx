@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom';
 import type mintter from '@mintter/api/v2/mintter_pb';
 import { ELEMENT_BLOCK } from '@mintter/editor/block-plugin/defaults';
 import { ELEMENT_READ_ONLY } from '@mintter/editor/readonly-plugin/defaults';
-import { ELEMENT_TRANSCLUSION } from '@mintter/editor/transclusion-plugin/defaults';
 // import { Icons } from 'components/icons';
 import { useAuthor, useProfile, usePublication } from './mintter-hooks';
 import { AuthorLabel } from './author-label';
@@ -85,7 +84,10 @@ export function SidePanelObject(props: any) {
             </button>
             <button
               onClick={() =>
-                sidepanelSend?.({ type: 'SIDEPANEL_REMOVE_OBJECT', payload: props.id })
+                sidepanelSend?.({
+                  type: 'SIDEPANEL_REMOVE_OBJECT',
+                  payload: props.id,
+                })
               }
               className="rounded hover:bg-background-muted p-1 hover:text-body-muted transition duration-100"
             >
@@ -139,12 +141,6 @@ function ContentRenderer({ value, isEditor = false, onTransclude }: any) {
   const renderElement = React.useCallback(({ children, ...props }) => {
     switch (props.element.type) {
       case ELEMENT_BLOCK:
-        return (
-          <IPWrapper isEditor={isEditor} onTransclude={onTransclude} {...props}>
-            {children}
-          </IPWrapper>
-        );
-      case ELEMENT_TRANSCLUSION:
         return (
           <IPWrapper isEditor={isEditor} onTransclude={onTransclude} {...props}>
             {children}

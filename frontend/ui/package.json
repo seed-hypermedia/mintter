@@ -28,7 +28,8 @@
     "lint": "eslint --ignore-path .eslintignore --ext .js,.jsx,.ts,.tsx,.mdx . && prettier --ignore-path ./.eslintignore --check .",
     "test": "jest",
     "validate": "npm run build && npm run lint && npm run test",
-    "storybook": "start-storybook -c storybook-utils -s ../app/public -p 6006"
+    "storybook": "start-storybook -c storybook-utils -s ../app/public -p 6006",
+    "storybook:build": "build-storybook -c storybook-utils -s ../app/public -o \"./out/\""
   },
   "dependencies": {
     "@stitches/react": "^0.1.0-canary.17"

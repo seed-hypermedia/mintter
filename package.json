@@ -22,6 +22,7 @@
     "site:test:precommit": "yarn workspace @mintter/site test",
     "site:test:coverage": "yarn workspace @mintter/site test --coverage",
     "ui": "yarn workspace @mintter/ui",
+    "app": "yarn workspace @mintter/app",
     "release": "yarn build",
     "validate": "npm-run-all --sequential format site:test site:build",
     "validate:local": "npm-run-all --sequential format site:test:coverage site:build",

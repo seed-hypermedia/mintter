@@ -9,14 +9,16 @@ import {
   // ToolbarMark,
 } from '@udecode/slate-plugins';
 import { Box } from '@mintter/ui-legacy/box';
-// import {useTheme} from 'shared/theme-context'
-// import {MARK_BOLD} from 'editor/marks/bold'
-// import {Icons} from './icons'
-// import {TippyProps} from '@tippyjs/react'
+import { BalloonToolbar, setDefaults } from '@udecode/slate-plugins';
+import { LinkPlugin, ToolbarLink } from './link-plugin';
+import { LinkMenu } from './link-plugin/link-menu';
+import type { MenuStateReturn } from 'reakit/ts';
 
 interface EditorComponentProps {
   editor: any;
   plugins: any[];
+  options: any;
+  linkMenu: MenuStateReturn;
   value: any;
   onChange: (value: any) => void;
   readOnly?: boolean;
@@ -28,20 +30,13 @@ interface EditorComponentProps {
 function Editor({
   editor,
   plugins,
+  options,
   value,
   onChange,
   readOnly = false,
   renderElement = [],
+  linkMenu,
 }: EditorComponentProps): JSX.Element {
-  // const {theme} = useTheme()
-  // const tooltip: TippyProps = {
-  //   arrow: true,
-  //   delay: 0,
-  //   duration: [200, 0],
-  //   hideOnClick: false,
-  //   offset: [0, 18],
-  //   placement: 'top',
-  // }
   return (
     <Slate
       editor={editor}
@@ -75,47 +70,53 @@ function Editor({
             autoFocus
           />
         ) : (
-          <EditablePlugins
-            style={{}}
-            readOnly={readOnly}
-            plugins={plugins}
-            renderElement={renderElement}
-            placeholder={
-              readOnly ? 'no content' : 'Start writing your masterpiece...'
-            }
-            spellCheck
-            autoFocus
-            onSelect={() => {
-              /**
-               * Chrome doesn't scroll at bottom of the page. This fixes that.
-               */
-              if (!(window as any).chrome) return;
-              if (editor.selection == null) return;
-              try {
-                /**
-                 * Need a try/catch because sometimes you get an error like:
-                 *
-                 * Error: Cannot resolve a DOM node from Slate node: {"type":"p","children":[{"text":"","by":-1,"at":-1}]}
-                 */
-                const domPoint = ReactEditor.toDOMPoint(
-                  editor,
-                  editor.selection.focus,
-                );
-                const node = domPoint[0];
-                if (node == null) return;
-                const element = node.parentElement;
-                if (element == null) return;
-                element.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'nearest',
-                });
-              } catch (e) {
-                /**
-                 * Empty catch. Do nothing if there is an error.
-                 */
+          <>
+            <EditablePlugins
+              style={{}}
+              readOnly={readOnly}
+              plugins={plugins}
+              renderElement={renderElement}
+              placeholder={
+                readOnly ? 'no content' : 'Start writing your masterpiece...'
               }
-            }}
-          />
+              spellCheck
+              autoFocus
+              onSelect={() => {
+                /**
+                 * Chrome doesn't scroll at bottom of the page. This fixes that.
+                 */
+                if (!(window as any).chrome) return;
+                if (editor.selection == null) return;
+                try {
+                  /**
+                   * Need a try/catch because sometimes you get an error like:
+                   *
+                   * Error: Cannot resolve a DOM node from Slate node: {"type":"p","children":[{"text":"","by":-1,"at":-1}]}
+                   */
+                  const domPoint = ReactEditor.toDOMPoint(
+                    editor,
+                    editor.selection.focus,
+                  );
+                  const node = domPoint[0];
+                  if (node == null) return;
+                  const element = node.parentElement;
+                  if (element == null) return;
+                  element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                  });
+                } catch (e) {
+                  /**
+                   * Empty catch. Do nothing if there is an error.
+                   */
+                }
+              }}
+            />
+            <BalloonToolbar>
+              <ToolbarLink {...options} />
+            </BalloonToolbar>
+            <LinkMenu menu={linkMenu} />
+          </>
         )}
       </Box>
     </Slate>
