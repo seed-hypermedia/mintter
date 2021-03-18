@@ -7,6 +7,8 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { ThemeProvider } from './theme-context';
 import { SidePanelProvider } from './sidepanel';
 import { BlockMenuProvider } from './editor/block-plugin/components/blockmenu-context';
+import * as stitches from '@mintter/ui/stitches.config';
+console.log('stitches -', stitches);
 
 export const queryClient = new QueryClient();
 

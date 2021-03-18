@@ -3,6 +3,8 @@
   "compilerOptions": {
     "declaration": true,
     "declarationMap": true,
+    "jsx": "react-jsx",
+    "module": "esnext",
     "noEmit": false,
     "outDir": "dist",
     "rootDir": "src",

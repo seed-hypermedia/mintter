@@ -10,13 +10,29 @@
   "license": "MIT",
   "repository": "mintterteam/mintter-ui",
   "exports": {
-    "./": "./dist/",
+    "./stitches.config": "./dist/stitches.config.js",
+    "./box": "./dist/box/index.js",
+    "./text": "./dist/text/index.js",
+    "./theme": "./dist/theme/index.js",
+    "./use-theme": "./dist/use-theme/index.js",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
-      "*": [
-        "dist/*"
+      "stitches.config": [
+        "dist/stitches.config.d.ts"
+      ],
+      "box": [
+        "dist/box/index.d.ts"
+      ],
+      "text": [
+        "dist/text/index.d.ts"
+      ],
+      "theme": [
+        "dist/theme/index.d.ts"
+      ],
+      "use-theme": [
+        "dist/use-theme/index.d.ts"
       ]
     }
   },
