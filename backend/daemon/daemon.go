@@ -3,6 +3,7 @@ package daemon
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
@@ -28,6 +29,8 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -38,6 +41,28 @@ import (
 
 func authFunc(ctx context.Context) (context.Context, error) {
 	return document.AdminContext(ctx), nil
+}
+
+func stripPort(hostport, sslPort string) string {
+	host, _, err := net.SplitHostPort(hostport)
+	if err != nil {
+		return net.JoinHostPort(hostport, sslPort)
+	}
+	return net.JoinHostPort(host, sslPort)
+}
+
+// createRedirectHandler returns a http.Handler that will redirect
+// http to https taking into account HTTPSPort
+func createRedirectHandler(sslPort string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" && r.Method != "HEAD" {
+			http.Error(w, "Use HTTPS", http.StatusBadRequest)
+			return
+		}
+
+		target := "https://" + stripPort(r.Host, sslPort) + r.URL.RequestURI()
+		http.Redirect(w, r, target, http.StatusFound)
+	})
 }
 
 // Run the daemon.
@@ -124,7 +149,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	mux.Handle("/", handler)
 
 	// TODO(burdiyan): Add timeout configuration.
-	srv := &http.Server{
+	httpSrv := &http.Server{
 		Handler: mux,
 	}
 
@@ -133,9 +158,9 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		return fmt.Errorf("failed to bind grpc listener: %w", err)
 	}
 	defer grpcListener.Close()
+	grpcURL := "grpc://" + formatAddr(grpcListener.Addr())
 
 	// Start gRPC server with graceful shutdown.
-
 	g.Go(func() error {
 		return rpcsrv.Serve(grpcListener)
 	})
@@ -146,9 +171,10 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		return fmt.Errorf("failed to bind http listener: %w", err)
 	}
 	defer httpListener.Close()
+	httpURL := "http://" + formatAddr(httpListener.Addr())
 
 	g.Go(func() error {
-		err := srv.Serve(httpListener)
+		err := httpSrv.Serve(httpListener)
 		if errors.Is(err, http.ErrServerClosed) {
 			return nil
 		}
@@ -156,21 +182,54 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		return err
 	})
 
+	var logParams []zapcore.Field = []zapcore.Field{
+		zap.String("httpURL", httpURL),
+		zap.String("grpcURL", grpcURL),
+	}
+
+	// Start HTTPS server and generate Let's Encrypt certificate
+	httpsSrv := http.Server{}
+	if cfg.Domain != "" {
+		certManager := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(cfg.Domain),
+			Cache:      autocert.DirCache(cfg.RepoPath + "/certs"),
+		}
+
+		httpsSrv = http.Server{
+			Addr:      ":" + cfg.HTTPSPort,
+			Handler:   mux,
+			TLSConfig: &tls.Config{GetCertificate: certManager.GetCertificate},
+		}
+		// redirect from http to https
+		fallback := createRedirectHandler(cfg.HTTPSPort)
+		httpSrv.Handler = certManager.HTTPHandler(fallback)
+
+		g.Go(func() error {
+			err := httpsSrv.ListenAndServeTLS("", "")
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+
+		httpsURL := "https://" + cfg.Domain + httpsSrv.Addr
+		logParams = append(logParams, zap.String("httpsURL", httpsURL))
+	}
+
+	log.Info("ServerStarted", logParams...)
+
 	g.Go(func() error {
 		<-ctx.Done()
 		log.Info("GracefulShutdownStarted")
 		log.Debug("Press ctrl+c again to force quit, but it's better to wait :)")
 		rpcsrv.GracefulStop()
-		return srv.Shutdown(context.Background())
+		err := multierr.Combine(
+			httpsSrv.Shutdown(context.Background()),
+			httpSrv.Shutdown(context.Background()),
+		)
+		return err
 	})
-
-	httpURL := "http://" + formatAddr(httpListener.Addr())
-	grpcURL := "grpc://" + formatAddr(grpcListener.Addr())
-
-	log.Info("ServerStarted",
-		zap.String("httpURL", httpURL),
-		zap.String("grpcURL", grpcURL),
-	)
 
 	if isatty.IsTerminal(os.Stdout.Fd()) && !cfg.NoOpenBrowser {
 		if err := browser.OpenURL(httpURL); err != nil {
