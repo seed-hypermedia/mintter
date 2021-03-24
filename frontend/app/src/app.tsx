@@ -20,8 +20,6 @@ export const App: React.FC = () => {
 };
 
 const AppError: React.FC<FallbackProps> = ({ error, resetErrorBoundary }) => {
-  console.log('ERROR!!');
-
   return (
     <div role="alert">
       <p>Something went wrong loading the App:</p>
