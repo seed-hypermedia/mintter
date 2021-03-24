@@ -1,10 +1,9 @@
-import * as React from 'react';
+import { lazily } from 'react-lazily';
 import { isLocalNode } from './constants';
+const { AuthorNode } = lazily(() => import('./author-node'));
+const { PublisherNode } = lazily(() => import('./publisher-node'));
 
-const PublisherNode = React.lazy(() => import('./publisher-node'));
-const AuthorNode = React.lazy(() => import('./author-node'));
-
-export function App() {
+export const App: React.FC = () => {
   // Create the count state.
   return isLocalNode ? <AuthorNode path="/" /> : <PublisherNode />;
-}
+};

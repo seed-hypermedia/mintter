@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Switch, Route } from 'react-router-dom';
 
-export default function PublisherNode() {
+export const PublisherNode: React.FC = () => {
   return (
     <Switch>
       <Route exact path="/">
@@ -9,4 +9,4 @@ export default function PublisherNode() {
       </Route>
     </Switch>
   );
-}
+};
