@@ -1,15 +1,15 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import { StrictMode } from 'react';
+import { render } from 'react-dom';
 import { App } from './app';
 import { AppProviders } from './app-providers';
 import './index.css';
 
-ReactDOM.render(
-  <React.StrictMode>
+render(
+  <StrictMode>
     <AppProviders>
       <App />
     </AppProviders>
-  </React.StrictMode>,
+  </StrictMode>,
   document.getElementById('root'),
 );
 
