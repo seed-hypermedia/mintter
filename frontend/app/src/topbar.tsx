@@ -3,11 +3,11 @@ import { useHistory, useRouteMatch } from 'react-router-dom';
 import { Link } from './link';
 import { LogoSquare } from './logo-square';
 import { Input } from '@mintter/ui-legacy/input';
-import { getPath } from './routes';
 // import { CustomLogo } from './custom-logo';
 import { Grid } from '@mintter/ui-legacy/grid';
 import { Container } from '@mintter/ui-legacy/container';
 import * as DropdownMenu from '@mintter/ui-legacy/dropdown-menu';
+import { getPath } from '@utils/routes';
 
 interface NavItemProps {
   href: string;
@@ -46,7 +46,7 @@ export function Topbar({ isPublic = false }) {
         </Link>
         <Link
           to="/"
-          className="text-sm font-medium hover:underline text-brand-secondary inline-block"
+          className="inline-block text-sm font-medium hover:underline text-brand-secondary"
         >
           ← Back to Home
         </Link>

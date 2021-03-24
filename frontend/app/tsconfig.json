@@ -8,6 +8,9 @@
     "baseUrl": "./",
     /* paths - import rewriting/resolving */
     "paths": {
+      "@components/*": ["./src/components/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@utils/*": ["./src/utils/*"],
       "@mintter/ui-legacy/*": ["./src/lib/*"],
       "@mintter/editor/*": ["./src/editor/*"],
       "test/*": ["./test/*"]

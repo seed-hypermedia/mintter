@@ -135,9 +135,4 @@ export const Text = styled('span', {
       },
     },
   },
-
-  defaultVariants: {
-    variant: 'ui-medium',
-    color: 'default',
-  },
 })

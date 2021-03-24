@@ -1,74 +1,82 @@
 import { lazy } from 'react';
 import { Switch, Route, useRouteMatch, Redirect } from 'react-router-dom';
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
+import { lazily } from 'react-lazily';
 
-import { createPath, PrivateRoute } from './routes';
+import { createPath, getPath } from '@utils/routes';
+import { AppSpinner } from '@components/app-spinner';
+
 import { AppLayout } from './layouts';
 import { Topbar } from './topbar';
+import { useProfile } from './mintter-hooks';
 
-const WelcomeWizard = lazy(() => import('./welcome-wizard'));
-const Editor = lazy(() => import('./editor-page'));
+const { OnboardingPage } = lazily(() => import('@pages/onboarding'));
 const Library = lazy(() => import('./library-page'));
+const Editor = lazy(() => import('./editor-page'));
 const Settings = lazy(() => import('./settings-page'));
 
 export const AuthorNode: React.FC<{ path?: string }> = ({ path = '/' }) => {
   const match = useRouteMatch(path)!;
 
-  return (
-    <ErrorBoundary
-      FallbackComponent={AuthorNodeErrorFallback}
-      onReset={() => {
-        console.log('TODO: reload app');
-      }}
-    >
-      <Switch>
-        <Route path={createPath(match, 'welcome')}>
-          <WelcomeWizard />
-        </Route>
-        <Route>
-          <AppLayout>
-            <Topbar />
-            <Switch>
-              <PrivateRoute exact path={match.url}>
-                <Redirect to={createPath(match, 'library')} />
-              </PrivateRoute>
-              <PrivateRoute
-                exact
-                path={['/editor/:documentId', '/admin/editor/:documentId']}
-              >
-                <Editor />
-              </PrivateRoute>
-              <PrivateRoute path={['/library', '/admin/library']}>
-                <Library />
-              </PrivateRoute>
-              {/* <PrivateRoute
-                exact
-                path={['/p/:slug', '/admin/p/:slug']}
-                component={Publication}
-              /> */}
-              <PrivateRoute path={['/settings', '/admin/settings']}>
-                <Settings />
-              </PrivateRoute>
-              <Route>
-                <p>No route match :(</p>
-              </Route>
-            </Switch>
-          </AppLayout>
-        </Route>
-      </Switch>
-    </ErrorBoundary>
-  );
-};
+  const profile = useProfile({
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+  });
 
-const AuthorNodeErrorFallback: React.FC<FallbackProps> = ({
-  error,
-  resetErrorBoundary,
-}) => {
-  return (
-    <div role="alert">
-      <p>Something went wrong in the Author Node:</p>
-      <pre>{error.message}</pre>
-      <button onClick={resetErrorBoundary}>Try again</button>
-    </div>
-  );
+  if (profile.isLoading) {
+    return <AppSpinner />;
+  }
+
+  if (profile.isError || (profile.isSuccess && !profile.data)) {
+    return (
+      <Switch>
+        <Route exact path={createPath(match, 'onboarding')}>
+          <OnboardingPage />
+        </Route>
+        <Route
+          render={(route) => (
+            <Redirect
+              to={{
+                pathname: `${getPath(route.match)}/onboarding`,
+                state: { from: route.location },
+              }}
+            />
+          )}
+        />
+      </Switch>
+    );
+  }
+
+  if (profile.isSuccess && profile.data) {
+    return (
+      <AppLayout>
+        <Topbar />
+        <Switch>
+          <Route path={['/library', '/admin/library']}>
+            <Library />
+          </Route>
+          <Route exact path={match.url}></Route>
+          <Route
+            exact
+            path={['/editor/:documentId', '/admin/editor/:documentId']}
+          >
+            <Editor />
+          </Route>
+          {/* <Route
+               exact
+               path={['/p/:slug', '/admin/p/:slug']}
+               component={Publication}
+             /> */}
+          <Route path={['/settings', '/admin/settings']}>
+            <Settings />
+          </Route>
+          <Route>
+            <Redirect to={createPath(match, 'library')} />
+          </Route>
+        </Switch>
+      </AppLayout>
+    );
+  }
+
+  throw new Error();
 };

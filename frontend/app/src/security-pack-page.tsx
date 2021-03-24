@@ -6,12 +6,12 @@ import { welcomeGrid } from './intro-page';
 import { Container } from '@mintter/ui-legacy/container';
 import { Heading } from '@mintter/ui-legacy/heading';
 import { NextButton, BackButton } from '@mintter/ui-legacy/button';
-import { getPath } from './routes';
 import { Button } from '@mintter/ui-legacy/button';
 import { Box } from '@mintter/ui-legacy/box';
 import { Grid } from '@mintter/ui-legacy/grid';
 import { Text } from '@mintter/ui-legacy/text';
 import { useHistory, useRouteMatch } from 'react-router';
+import { getPath } from '@utils/routes';
 
 // TODO: (horacio): refactor rpc to not have it here
 export default function SecurityPack() {

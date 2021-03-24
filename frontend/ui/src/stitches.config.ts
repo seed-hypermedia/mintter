@@ -255,6 +255,16 @@ export const globalStyles = global({
       fontStyle: 'italic',
     },
   ],
+  body: {
+    backgroundColor: '$background-default',
+    color: '$text-default',
+    fontFamily: '$default',
+    fontSize: '$m',
+    fontWeight: '$medium',
+    letterSpacing: '0.01em',
+    lineHeight: '$m',
+    margin: '$none',
+  },
 })
 
 export const lightTheme = theme('light-theme', {

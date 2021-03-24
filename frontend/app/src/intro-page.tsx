@@ -8,8 +8,8 @@ import { Text } from '@mintter/ui-legacy/text';
 import { useWelcome } from './welcome-provider';
 import { useProfile } from './mintter-hooks';
 
-import { getPath } from './routes';
 import { useHistory, useRouteMatch } from 'react-router';
+import { getPath } from '@utils/routes';
 
 export const welcomeGrid = css({
   width: '100%',
