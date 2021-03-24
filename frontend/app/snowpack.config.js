@@ -1,5 +1,8 @@
+const path = require('path');
+
 /** @type {import("snowpack").SnowpackUserConfig } */
 module.exports = {
+  workspaceRoot: path.join(__dirname, '..', '..'),
   mount: {
     public: { url: '/', static: true },
     src: { url: '/dist' },
