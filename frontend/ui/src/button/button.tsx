@@ -9,6 +9,12 @@ export const Button = styled('button', {
   cursor: 'pointer',
   fontFamily: '$default',
   fontWeight: '$medium',
+  textAlign: 'center',
+
+  '&:disabled': {
+    opacity: 0.5,
+    pointerEvents: 'none',
+  },
 
   variants: {
     variant: {
@@ -23,6 +29,7 @@ export const Button = styled('button', {
         },
       },
       outlined: {
+        backgroundColor: 'transparent',
         boxShadow:
           'inset 0px 0px 0px $$outlined-border-size $$outlined-border-color',
         color: '$$outlined-text-color',

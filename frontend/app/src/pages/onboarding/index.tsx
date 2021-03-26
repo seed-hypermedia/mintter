@@ -1,0 +1,103 @@
+import { useEffect, useMemo, Fragment } from 'react';
+import { Machine } from 'xstate';
+
+import { Box } from '@mintter/ui/box';
+
+import { AppSpinner } from '@components/app-spinner';
+
+import { useMachine } from '@xstate/react';
+import type { OnboardingStepPropsType } from './common';
+import { Welcome } from './welcome';
+import { SecurityPack } from './security-pack';
+import { ProfileInformation } from './profile-information';
+import { Complete } from './complete';
+
+const onboardingMachine = Machine({
+  id: 'onboarding',
+  initial: 'loading',
+  states: {
+    loading: {
+      on: {
+        NEXT: 'welcome',
+      },
+    },
+    welcome: {
+      on: {
+        NEXT: 'securityPack',
+      },
+    },
+    securityPack: {
+      on: {
+        PREV: 'welcome',
+        NEXT: 'profileInformation',
+      },
+    },
+    profileInformation: {
+      on: {
+        PREV: 'securityPack',
+        NEXT: 'complete',
+      },
+    },
+    complete: {
+      type: 'final',
+    },
+  },
+});
+
+export const OnboardingPage: React.FC = () => {
+  const [onboardingMachineState, sendToOnboardingMachine] = useMachine(
+    onboardingMachine,
+  );
+
+  const onboardingStepProps: OnboardingStepPropsType = useMemo(
+    () => ({
+      prev: () => sendToOnboardingMachine('PREV'),
+      next: () => sendToOnboardingMachine('NEXT'),
+    }),
+    [sendToOnboardingMachine],
+  );
+
+  useEffect(() => {
+    setTimeout(() => {
+      onboardingStepProps.next();
+    }, 1000);
+  }, [onboardingStepProps]);
+
+  return (
+    <Box
+      css={{
+        alignItems: 'center',
+        display: 'flex',
+        justifyContent: 'center',
+        minHeight: '100vh',
+      }}
+    >
+      <Box
+        css={{
+          backgroundColor: '$background-alt',
+          borderRadius: '24px',
+          boxShadow: '$l',
+          display: 'flex',
+          maxWidth: 800,
+          minHeight: 745,
+          padding: '$2xl',
+          width: '100%',
+        }}
+      >
+        {onboardingMachineState.matches('loading') ? (
+          <AppSpinner isCentered />
+        ) : null}
+        {onboardingMachineState.matches('welcome') ? (
+          <Welcome {...onboardingStepProps} />
+        ) : null}
+        {onboardingMachineState.matches('securityPack') ? (
+          <SecurityPack {...onboardingStepProps} />
+        ) : null}
+        {onboardingMachineState.matches('profileInformation') ? (
+          <ProfileInformation {...onboardingStepProps} />
+        ) : null}
+        {onboardingMachineState.matches('complete') ? <Complete /> : null}
+      </Box>
+    </Box>
+  );
+};

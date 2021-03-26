@@ -12,6 +12,7 @@
   "exports": {
     "./stitches.config": "./dist/stitches.config.js",
     "./box": "./dist/box/index.js",
+    "./button": "./dist/button/index.js",
     "./text": "./dist/text/index.js",
     "./theme": "./dist/theme/index.js",
     "./package.json": "./package.json"
@@ -23,6 +24,9 @@
       ],
       "box": [
         "dist/box/index.d.ts"
+      ],
+      "button": [
+        "dist/button/index.d.ts"
       ],
       "text": [
         "dist/text/index.d.ts"

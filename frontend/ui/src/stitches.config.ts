@@ -91,7 +91,7 @@ const stitches = createCss({
     lineHeights: {
       none: '1em',
       s: '1.2em',
-      m: '1.4em',
+      m: '1.5em',
       l: '1.6em',
     },
     radii: {},
@@ -257,8 +257,5 @@ export const darkTheme = theme('dark-theme', {
     'text-muted': '#E5E5E5',
     'text-opposite': '#1A1A1A',
     'text-contrast': '#737373',
-  },
-  shadows: {
-    l: '0px 4px 8px rgba(255, 255, 255, 0.15);',
   },
 })

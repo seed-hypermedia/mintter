@@ -21,24 +21,25 @@ export const AuthorNode: React.FC<{ path?: string }> = ({ path = '/' }) => {
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
+    retry: false,
   });
 
   if (profile.isLoading) {
-    return <AppSpinner />;
+    return <AppSpinner isFullScreen />;
   }
 
   if (profile.isError || (profile.isSuccess && !profile.data)) {
     return (
       <Switch>
-        <Route exact path={createPath(match, 'onboarding')}>
+        <Route exact path={createPath(match, 'welcome')}>
           <OnboardingPage />
         </Route>
         <Route
           render={(route) => (
             <Redirect
               to={{
-                pathname: `${getPath(route.match)}/onboarding`,
-                state: { from: route.location },
+                pathname: `${getPath(route.match)}/welcome`,
+                state: { from: route.location.pathname },
               }}
             />
           )}

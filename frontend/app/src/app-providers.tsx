@@ -5,6 +5,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 
 import { Theme } from '@mintter/ui/theme';
 import { AppSpinner } from '@components/app-spinner';
+import { DarkModeToggle } from '@components/dark-mode-toggle';
 
 import { SidePanelProvider } from './sidepanel';
 import { BlockMenuProvider } from './editor/block-plugin/components/blockmenu-context';
@@ -13,17 +14,18 @@ export const queryClient = new QueryClient();
 
 export const AppProviders: React.FC = ({ children }) => {
   return (
-    <Suspense fallback={<AppSpinner />}>
-      <QueryClientProvider client={queryClient}>
-        <Theme>
+    <Theme>
+      <Suspense fallback={<AppSpinner isFullScreen />}>
+        <QueryClientProvider client={queryClient}>
           <BlockMenuProvider>
             <SidePanelProvider>
               <Router>{children}</Router>
             </SidePanelProvider>
           </BlockMenuProvider>
-        </Theme>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </Suspense>
+          <DarkModeToggle />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </Suspense>
+    </Theme>
   );
 };
