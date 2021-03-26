@@ -2,7 +2,6 @@ import * as React from 'react';
 import { useHistory, useRouteMatch } from 'react-router';
 // import {Icons} from 'components/icons'
 import { DocumentList } from './document-list';
-import { getPath } from './routes';
 import type { WithCreateDraft } from './library-page';
 import { createDraft, deletePublication } from './mintter-client';
 import { useOthersPublicationsList } from './mintter-hooks';

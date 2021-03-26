@@ -1,34 +1,31 @@
-import * as React from 'react';
-
+import { Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
-import { AppSpinner } from './app-spinner';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { ThemeProvider } from './theme-context';
+
+import { Theme } from '@mintter/ui/theme';
+import { AppSpinner } from '@components/app-spinner';
+import { DarkModeToggle } from '@components/dark-mode-toggle';
+
 import { SidePanelProvider } from './sidepanel';
 import { BlockMenuProvider } from './editor/block-plugin/components/blockmenu-context';
-import * as stitches from '@mintter/ui/stitches.config';
-console.log('stitches -', stitches);
 
 export const queryClient = new QueryClient();
 
-type AppProvidersProps = {
-  children: React.ReactNode;
-};
-
-export function AppProviders({ children }: AppProvidersProps) {
+export const AppProviders: React.FC = ({ children }) => {
   return (
-    <React.Suspense fallback={<AppSpinner />}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
+    <Theme>
+      <Suspense fallback={<AppSpinner isFullScreen />}>
+        <QueryClientProvider client={queryClient}>
           <BlockMenuProvider>
             <SidePanelProvider>
               <Router>{children}</Router>
             </SidePanelProvider>
           </BlockMenuProvider>
-        </ThemeProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </React.Suspense>
+          <DarkModeToggle />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </Suspense>
+    </Theme>
   );
-}
+};

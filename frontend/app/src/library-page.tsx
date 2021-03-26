@@ -5,9 +5,8 @@ import {
   useRouteMatch,
   Redirect,
   useHistory,
-  LinkProps,
+  Route,
 } from 'react-router-dom';
-import { PrivateRoute, getPath } from './routes';
 import {
   useConnectionCreate,
   useConnectionList,
@@ -27,6 +26,7 @@ import { Button } from '@mintter/ui-legacy/button';
 import { Text } from '@mintter/ui-legacy/text';
 import { Separator } from '@mintter/ui-legacy/separator';
 import { MessageBox } from './message-box';
+import { getPath } from '@utils/routes';
 export type WithCreateDraft = {
   onCreateDraft: () => void;
 };
@@ -93,13 +93,13 @@ export default function Library() {
   }
 
   return (
-    <div className="relative overflow-auto row-start-2" data-testid="page">
+    <div className="relative row-start-2 overflow-auto" data-testid="page">
       <div
         className={`grid gap-4 grid-flow-col ${css`
           grid-template-columns: minmax(250px, 25%) 1fr minmax(250px, 25%);
         `}`}
       >
-        <div className="pt-16 px-4 md:pl-16 mb-20">
+        <div className="px-4 pt-16 mb-20 md:pl-16">
           <ProfileInfo />
           <Connections onConnect={onConnect} />
           <SuggestedConnections onConnect={onConnect} />
@@ -127,18 +127,18 @@ export default function Library() {
             <NoConnectionsBox onConnect={onConnect} />
             <div>
               <Switch>
-                <PrivateRoute exact path={match.url}>
+                <Route exact path={match.url}>
                   <Redirect to={`${match.url}/feed`} />
-                </PrivateRoute>
-                <PrivateRoute path={`${match.url}/feed`}>
+                </Route>
+                <Route path={`${match.url}/feed`}>
                   <Publications onCreateDraft={onCreateDraft} />
-                </PrivateRoute>
-                <PrivateRoute path={`${match.url}/published`}>
+                </Route>
+                <Route path={`${match.url}/published`}>
                   <MyPublications onCreateDraft={onCreateDraft} />
-                </PrivateRoute>
-                <PrivateRoute path={`${match.url}/drafts`}>
+                </Route>
+                <Route path={`${match.url}/drafts`}>
                   <Drafts onCreateDraft={onCreateDraft} />
-                </PrivateRoute>
+                </Route>
               </Switch>
             </div>
           </MainColumn>
@@ -154,13 +154,13 @@ function ProfileInfo() {
   const { data: profile } = useProfile();
   return profile ? (
     <div className="text-left">
-      <h3 className="font-semibold text-2xl text-heading">
+      <h3 className="text-2xl font-semibold text-heading">
         {profile.username}
       </h3>
-      <p className="text-body text-sm mt-2">{profile.bio}</p>
+      <p className="mt-2 text-sm text-body">{profile.bio}</p>
       <Link
         to={`${getPath(match)}/settings`}
-        className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline inline-block"
+        className="inline-block mt-4 text-sm underline cursor-pointer text-primary hover:text-primary-hover"
       >
         Edit profile
       </Link>

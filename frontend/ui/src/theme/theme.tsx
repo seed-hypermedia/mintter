@@ -1,7 +1,7 @@
 import {Fragment} from 'react'
 
 import {globalStyles} from '../stitches.config'
-import {useTheme} from '../use-theme'
+import {useTheme} from './use-theme'
 
 export type ThemeProps = React.ComponentProps<typeof Theme>
 

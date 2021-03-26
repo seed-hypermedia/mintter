@@ -1,7 +1,8 @@
-import {Box, BoxProps} from '@src/box'
-import {darkTheme, lightTheme, theme} from '@src/stitches.config'
+import {Box} from '@src/box'
+import {theme} from '@src/stitches.config'
 import {Text, TextProps} from '@src/text'
-import {useMemo} from 'react'
+import {useTheme} from '@src/theme'
+import {useMemo, useState, useEffect} from 'react'
 
 import {Demo, DemoItem} from './demo'
 
@@ -65,44 +66,20 @@ export const LineHeights: React.FC = () => {
   )
 }
 
-type Color = typeof theme.colors[keyof typeof theme.colors]
-
-type SwatchesProps = BoxProps & {
-  colors: Record<string, Color>
-}
-
-const ColorsDemo: React.FC<SwatchesProps> = ({colors, ...props}) => {
-  const groups = useMemo(
+export const Colors: React.FC<{groups: string[]}> = ({groups}) => {
+  const filteredGroups = useMemo(
     () =>
-      Object.entries(
-        Object.entries(colors).reduce<Record<string, Record<string, Color>>>(
-          (acc, [name, token]) => {
-            const [group, ...shade] = name.split('-')
-            acc[group] ||= {}
-            acc[group][shade.join('-')] = token
-            return acc
-          },
-          {},
-        ),
-      ).reduce<{name: string; swatches: {name: string; token: Color}[]}[]>(
-        (allGroups, [group, swatchesMap]) => [
-          ...allGroups,
-          {
-            name: group,
-            swatches: Object.entries(swatchesMap).reduce<
-              {name: string; token: Color}[]
-            >(
-              (siblingSwatches, [swatch, token]) => [
-                ...siblingSwatches,
-                {name: swatch, token},
-              ],
-              [],
-            ),
-          },
-        ],
-        [],
+      Object.keys(theme.colors).reduce<Record<string, string[]>>(
+        (allGroups, color) => {
+          const [group] = color.split('-')
+          if (!groups.includes(group)) return allGroups
+
+          allGroups[group] ||= []
+          return {...allGroups, [group]: [...allGroups[group], `$${color}`]}
+        },
+        {},
       ),
-    [colors],
+    [groups],
   )
 
   return (
@@ -110,74 +87,55 @@ const ColorsDemo: React.FC<SwatchesProps> = ({colors, ...props}) => {
       css={{
         display: 'grid',
         gap: '$m',
-        gridTemplateColumns: 'repeat(2, 1fr)',
+        gridTemplateColumns: 'repeat(3, 1fr)',
         marginVertical: '$l',
       }}
-      {...props}
     >
-      {groups.map(group => (
-        <Demo key={group.name} css={{margin: '$none'}}>
-          {group.swatches.map(swatch => (
-            <Box
-              key={swatch.name}
-              css={{alignItems: 'center', display: 'flex', gap: '$m'}}
-            >
-              <Box
-                css={{
-                  backgroundColor: swatch.token,
-                  borderRadius: 8,
-                  boxShadow:
-                    'rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;',
-                  flexShrink: 0,
-                  height: 40,
-                  width: 40,
-                }}
-              />
-              <Box
-                css={{display: 'flex', flexDirection: 'column', gap: '$3xs'}}
-              >
-                <Text variant="ui-tiny">${swatch.token.token}</Text>
-                <Text variant="ui-tiny" color="mutted">
-                  {swatch.token.value}
-                </Text>
-              </Box>
-            </Box>
-          ))}
+      {Object.entries(filteredGroups).map(([group, colors]) => (
+        <Demo key={group}>
+          <Text>{group}</Text>
+          <Box css={{display: 'flex', flexDirection: 'column', gap: '$s'}}>
+            {colors.map(color => (
+              <Color key={color} name={color} />
+            ))}
+          </Box>
         </Demo>
       ))}
     </Box>
   )
 }
 
-export const Palette: React.FC = () => {
-  return (
-    <ColorsDemo
-      colors={Object.entries(theme.colors).reduce(
-        (acc, [name, token]) =>
-          name.startsWith('palette')
-            ? {...acc, [name.replace('palette-', '')]: token}
-            : acc,
-        {},
-      )}
-    />
-  )
-}
+const Color: React.FC<{name: string}> = ({name}) => {
+  const {currentTheme} = useTheme()
+  const [colorValue, setColorValue] = useState<string>()
 
-export const LightTheme: React.FC = () => {
-  return (
-    <ColorsDemo
-      className={lightTheme}
-      colors={((lightTheme as unknown) as typeof theme).colors}
-    />
-  )
-}
+  useEffect(() => {
+    setColorValue(
+      getComputedStyle(document.body).getPropertyValue(
+        `--colors-${name.substr(1)}`,
+      ),
+    )
+  }, [name, currentTheme])
 
-export const DarkTheme: React.FC = () => {
   return (
-    <ColorsDemo
-      className={darkTheme}
-      colors={((darkTheme as unknown) as typeof theme).colors}
-    />
+    <Box css={{alignItems: 'center', display: 'flex', gap: '$m'}}>
+      <Box
+        css={{
+          backgroundColor: name,
+          borderRadius: 8,
+          boxShadow: '$l',
+          flexShrink: 0,
+          height: 40,
+          width: 40,
+        }}
+      />
+      <Box css={{display: 'flex', flexDirection: 'column', gap: '$3xs'}}>
+        <Text variant="tiny">{name}</Text>
+        <Text variant="tiny" color="muted">
+          {colorValue}
+        </Text>
+      </Box>
+    </Box>
   )
 }
 
@@ -197,11 +155,11 @@ const SpacedDemoItem: React.FC<SpacedDemoItemProps> = ({
         gridTemplateColumns: '100px 1fr 100px',
       }}
     >
-      <Text variant="ui-tiny" color="mutted">
+      <Text variant="tiny" color="muted">
         ${token}
       </Text>
       {children}
-      <Text variant="ui-tiny" color="mutted">
+      <Text variant="tiny" color="muted">
         {value}
       </Text>
     </Box>

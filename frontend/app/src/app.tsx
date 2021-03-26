@@ -1,10 +1,30 @@
-import * as React from 'react';
+import { lazily } from 'react-lazily';
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
+
 import { isLocalNode } from './constants';
 
-const PublisherNode = React.lazy(() => import('./publisher-node'));
-const AuthorNode = React.lazy(() => import('./author-node'));
+const { AuthorNode } = lazily(() => import('./author-node'));
+const { PublisherNode } = lazily(() => import('./publisher-node'));
 
-export function App() {
-  // Create the count state.
-  return isLocalNode ? <AuthorNode path="/" /> : <PublisherNode />;
-}
+export const App: React.FC = () => {
+  return (
+    <ErrorBoundary
+      FallbackComponent={AppError}
+      onReset={() => {
+        console.log('TODO: reload app');
+      }}
+    >
+      {isLocalNode ? <AuthorNode path="/" /> : <PublisherNode />}
+    </ErrorBoundary>
+  );
+};
+
+const AppError: React.FC<FallbackProps> = ({ error, resetErrorBoundary }) => {
+  return (
+    <div role="alert">
+      <p>Something went wrong loading the App:</p>
+      <pre>{error.message}</pre>
+      <button onClick={resetErrorBoundary}>Try again</button>
+    </div>
+  );
+};

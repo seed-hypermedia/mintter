@@ -1,5 +1,8 @@
+const path = require('path');
+
 /** @type {import("snowpack").SnowpackUserConfig } */
 module.exports = {
+  workspaceRoot: false,
   mount: {
     public: { url: '/', static: true },
     src: { url: '/dist' },
@@ -30,6 +33,9 @@ module.exports = {
   },
 
   alias: {
+    '@components': './src/components',
+    '@pages': './src/pages',
+    '@utils': './src/utils',
     '@mintter/ui-legacy': './src/lib',
     '@mintter/editor': './src/editor',
     test: './test',

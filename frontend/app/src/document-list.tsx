@@ -3,9 +3,9 @@ import * as React from 'react';
 import { useLocation, useRouteMatch } from 'react-router-dom';
 import { Link } from './link';
 import { useAuthor } from './mintter-hooks';
-import { getPath } from './routes';
 import { format } from 'date-fns';
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
+import { getPath } from '@utils/routes';
 
 interface Props {
   // TODO: fix types
@@ -80,30 +80,30 @@ function ListItem({ item, onDeleteDocument }: ItemProps) {
   return (
     <Link
       to={to}
-      className="bg-transparent group w-full p-4 -mx-4 mt-2 first:mt-4 hover:bg-background-muted transition duration-100 box-border flex flex-col"
+      className="box-border flex flex-col w-full p-4 mt-2 -mx-4 transition duration-100 bg-transparent group first:mt-4 hover:bg-background-muted"
       // onMouseEnter={handlePrefetch}
     >
-      <div className="flex-1 grid grid-cols-12 gap-4">
+      <div className="grid flex-1 grid-cols-12 gap-4">
         <div className={onDeleteDocument ? 'col-span-11' : 'col-span-12'}>
           {!isDraft && location.pathname !== '/library/my-publications' && (
             <div className="flex items-center">
-              <div className="w-6 h-6 rounded-full bg-gray-400" />
-              <p className="text-sm text-heading inline-block font-light mx-2">
+              <div className="w-6 h-6 bg-gray-400 rounded-full" />
+              <p className="inline-block mx-2 text-sm font-light text-heading">
                 {author?.username}
               </p>
             </div>
           )}
-          <h3 className="text-heading text-xl leading-5 font-bold truncate mt-2">
+          <h3 className="mt-2 text-xl font-bold leading-5 truncate text-heading">
             {theTitle}
           </h3>
           {subtitle ? <p className="mt-2 font-serif">{subtitle}</p> : null}
 
-          <p className="text-xs mt-2 text-heading font-light">
+          <p className="mt-2 text-xs font-light text-heading">
             {format(new Date(date), 'MMMM d, yyyy')}
           </p>
         </div>
         {onDeleteDocument && (
-          <div className="col-span-1 flex items-center justify-end">
+          <div className="flex items-center justify-end col-span-1">
             <button
               data-testid="delete-button"
               className="opacity-0 group-hover:opacity-100 text-danger"

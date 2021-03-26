@@ -3,7 +3,6 @@ import * as React from 'react';
 import { DocumentList } from './document-list';
 import { useDraftsList } from './mintter-hooks';
 import { deleteDraft } from './mintter-client';
-import { getPath } from './routes';
 // import { Icons } from 'components/icons';
 import { Button } from '@mintter/ui-legacy/button';
 import { Separator } from '@mintter/ui-legacy/separator';

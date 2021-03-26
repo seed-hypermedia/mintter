@@ -6,7 +6,6 @@ import { useMyPublicationsList } from './mintter-hooks';
 import { createDraft, deletePublication } from './mintter-client';
 // import {ErrorMessage} from 'components/error-message'
 // import {Icons} from 'components/icons'
-import { getPath } from './routes';
 import { Button } from '@mintter/ui-legacy/button';
 import { Separator } from '@mintter/ui-legacy/separator';
 import { Box } from '@mintter/ui-legacy/box';

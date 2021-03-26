@@ -6,7 +6,7 @@ import {Theme} from '@src/theme'
 const DemoContainer = styled(Box, {
   backgroundColor: '$background-alt',
   borderRadius: 4,
-  boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px',
+  boxShadow: '$l',
   display: 'flex',
   gap: '$l',
   marginVertical: '$l',
@@ -18,6 +18,7 @@ const DemoContainer = styled(Box, {
         flexDirection: 'column',
       },
       horizontal: {
+        alignItems: 'center',
         flexDirection: 'row',
       },
     },
@@ -41,8 +42,8 @@ export const Demo: React.FC<React.ComponentProps<typeof DemoContainer>> = ({
 
 export const DemoItem: React.FC<{title: string}> = ({title, children}) => {
   return (
-    <Box css={{display: 'flex', flexDirection: 'column', gap: '$2xs'}}>
-      <Text variant="ui-tiny" color="mutted">
+    <Box css={{display: 'flex', flexDirection: 'column', gap: '$xs'}}>
+      <Text variant="tiny" color="muted">
         {title}
       </Text>
       {children}
