@@ -1,0 +1,169 @@
+import {Button} from '@src/button'
+import {ArgsTable, Canvas, Meta} from '@storybook/addon-docs/blocks'
+
+<Meta title="Components/Button" />
+
+# Button
+
+The `Button` component can be used to initiate an action, like can be submitting
+a form or anything you want.
+
+## Usage
+
+```tsx
+import {Button} from '@mintter/ui/button'
+```
+
+<Canvas isExpanded>
+  <Button>This is my Button!</Button>
+</Canvas>
+
+### Button Variant
+
+Pass a `variant` prop to the `Button` component to change their appearance.
+
+<!-- prettier-ignore-start -->
+
+<Canvas>
+  <Button variant="solid">Solid Button</Button>
+  <Button variant="outlined">Outlined Button</Button>
+</Canvas>
+
+<!-- prettier-ignore-end -->
+
+> The default `Button` variant is `solid`.
+
+### Button Size
+
+Pass a `size` prop to the `Button` component to change their size.
+
+<!-- prettier-ignore-start -->
+
+<Canvas>
+  <Button size="small">Small Button</Button>
+  <Button size="medium">Medium Button</Button>
+  <Button size="large">Large Button</Button>
+</Canvas>
+
+<!-- prettier-ignore-end -->
+
+> The default `Button` size is `medium`.
+
+### Button Color
+
+The `Button` component has various color schemes based in the Theme brand and
+status colors.
+
+#### Primary
+
+<!-- prettier-ignore-start -->
+
+<Canvas>
+  <Button variant="solid" size="small" color="primary">Primary Button</Button>
+  <Button variant="solid" size="medium" color="primary">Primary Button</Button>
+  <Button variant="solid" size="large" color="primary">Primary Button</Button>
+</Canvas>
+
+<Canvas>
+  <Button variant="outlined" size="small" color="primary">Primary Button</Button>
+  <Button variant="outlined" size="medium" color="primary">Primary Button</Button>
+  <Button variant="outlined" size="large" color="primary">Primary Button</Button>
+</Canvas>
+
+<!-- prettier-ignore-end -->
+
+#### Secondary
+
+<!-- prettier-ignore-start -->
+
+<Canvas>
+  <Button variant="solid" size="small" color="secondary">Secondary Button</Button>
+  <Button variant="solid" size="medium" color="secondary">Secondary Button</Button>
+  <Button variant="solid" size="large" color="secondary">Secondary Button</Button>
+</Canvas>
+
+<Canvas>
+  <Button variant="outlined" size="small" color="secondary">Secondary Button</Button>
+  <Button variant="outlined" size="medium" color="secondary">Secondary Button</Button>
+  <Button variant="outlined" size="large" color="secondary">Secondary Button</Button>
+</Canvas>
+
+<!-- prettier-ignore-end -->
+
+#### Terciary
+
+<!-- prettier-ignore-start -->
+
+<Canvas>
+  <Button variant="solid" size="small" color="terciary">Terciary Button</Button>
+  <Button variant="solid" size="medium" color="terciary">Terciary Button</Button>
+  <Button variant="solid" size="large" color="terciary">Terciary Button</Button>
+</Canvas>
+
+<Canvas>
+  <Button variant="outlined" size="small" color="terciary">Terciary Button</Button>
+  <Button variant="outlined" size="medium" color="terciary">Terciary Button</Button>
+  <Button variant="outlined" size="large" color="terciary">Terciary Button</Button>
+</Canvas>
+
+<!-- prettier-ignore-end -->
+
+#### Success
+
+<!-- prettier-ignore-start -->
+
+<Canvas>
+  <Button variant="solid" size="small" color="success">Success Button</Button>
+  <Button variant="solid" size="medium" color="success">Success Button</Button>
+  <Button variant="solid" size="large" color="success">Success Button</Button>
+</Canvas>
+
+<Canvas>
+  <Button variant="outlined" size="small" color="success">Success Button</Button>
+  <Button variant="outlined" size="medium" color="success">Success Button</Button>
+  <Button variant="outlined" size="large" color="success">Success Button</Button>
+</Canvas>
+
+<!-- prettier-ignore-end -->
+
+#### Warning
+
+<!-- prettier-ignore-start -->
+
+<Canvas>
+  <Button variant="solid" size="small" color="warning">Warning Button</Button>
+  <Button variant="solid" size="medium" color="warning">Warning Button</Button>
+  <Button variant="solid" size="large" color="warning">Warning Button</Button>
+</Canvas>
+
+<Canvas>
+  <Button variant="outlined" size="small" color="warning">Warning Button</Button>
+  <Button variant="outlined" size="medium" color="warning">Warning Button</Button>
+  <Button variant="outlined" size="large" color="warning">Warning Button</Button>
+</Canvas>
+
+<!-- prettier-ignore-end -->
+
+#### Danger
+
+<!-- prettier-ignore-start -->
+
+<Canvas>
+  <Button variant="solid" size="small" color="danger">Danger Button</Button>
+  <Button variant="solid" size="medium" color="danger">Danger Button</Button>
+  <Button variant="solid" size="large" color="danger">Danger Button</Button>
+</Canvas>
+
+<Canvas>
+  <Button variant="outlined" size="small" color="danger">Danger Button</Button>
+  <Button variant="outlined" size="medium" color="danger">Danger Button</Button>
+  <Button variant="outlined" size="large" color="danger">Danger Button</Button>
+</Canvas>
+
+<!-- prettier-ignore-end -->
+
+> The default `Button` color is `primary`.
+
+## Props Table
+
+<ArgsTable of={Button} />

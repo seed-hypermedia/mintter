@@ -6,7 +6,7 @@ export const parameters = {
         'Getting Started',
         'Theme',
         'Components',
-        ['Theme', 'Box', 'Text'],
+        ['Theme', 'Box', 'Text', 'Button'],
       ],
     },
   },
