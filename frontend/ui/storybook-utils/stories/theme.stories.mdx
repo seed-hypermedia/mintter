@@ -33,25 +33,21 @@ elements, or overwrite properties on the pre-defined text styles.
 
 ## Colors
 
-There is two types of colors: **color palette** and **semantic colors**. The
-color palette defines the color value, and a semtic color is a relation of a
-color within the color palette.
+We semantically name our colors in order to keep consistency between light and
+dark mode. Try toggling the `Dark Mode` checkbox to see how values change
+according to current theme.
 
-While the color palette is the same between dark and light theme, the semantic
-color value changes depending on the theme, and can point to a different color
-of the color palette.
+### Base Colors
 
-### Color Palette
+<Theme.Colors groups={['background', 'text']} />
 
-<Theme.Palette />
+### Brand Colors
 
-### Light Theme
+<Theme.Colors groups={['primary', 'secondary', 'terciary']} />
 
-<Theme.LightTheme />
+### Status Colors
 
-### Dark Theme
-
-<Theme.DarkTheme />
+<Theme.Colors groups={['success', 'warning', 'danger']} />
 
 ## Spaces
 

@@ -4,117 +4,70 @@ export type TextProps = React.ComponentProps<typeof Text>
 
 export const Text = styled('span', {
   display: 'block',
+  fontFamily: '$default',
   fontVariantNumeric: 'tabular-nums',
   margin: 0,
-  '-webkit-font-smoothing': 'antialiased',
-  '-moz-osx-font-smoothing': 'grayscale',
 
   variants: {
     variant: {
-      'ui-huge': {
-        fontFamily: '$default',
+      huge: {
         fontSize: '$3xl',
         fontWeight: '$bold',
         letterSpacing: '0.01em',
         lineHeight: '$s',
       },
-      'ui-h1': {
-        fontFamily: '$default',
+      h1: {
         fontSize: '$2xl',
         fontWeight: '$medium',
         letterSpacing: '0.01em',
         lineHeight: '$s',
       },
-      'ui-h2': {
-        fontFamily: '$default',
+      h2: {
         fontSize: '$xl',
         fontWeight: '$medium',
         letterSpacing: '0.01em',
         lineHeight: '$s',
       },
-      'ui-h3': {
-        fontFamily: '$default',
+      h3: {
         fontSize: '$l',
         fontWeight: '$medium',
         letterSpacing: '0.02em',
         lineHeight: '$m',
       },
-      'ui-h4': {
-        fontFamily: '$default',
+      h4: {
         fontSize: '$m',
         fontWeight: '$medium',
         letterSpacing: '0.03em',
         lineHeight: '$m',
       },
-      'ui-large': {
-        fontFamily: '$default',
+      large: {
         fontSize: '$l',
         fontWeight: '$regular',
         letterSpacing: '0.02em',
         lineHeight: '$l',
       },
-      'ui-medium': {
-        fontFamily: '$default',
+      medium: {
         fontSize: '$m',
         fontWeight: '$medium',
         letterSpacing: '0.01em',
         lineHeight: '$m',
       },
-      'ui-small': {
-        fontFamily: '$default',
+      small: {
         fontSize: '$s',
         fontWeight: '$medium',
         letterSpacing: '0.01em',
         lineHeight: '$m',
       },
-      'ui-tiny': {
-        fontFamily: '$default',
+      tiny: {
         fontSize: '$xs',
         fontWeight: '$medium',
         letterSpacing: '0.01em',
         lineHeight: '$s',
       },
-      'doc-huge': {
+    },
+    alt: {
+      true: {
         fontFamily: '$alt',
-        fontSize: '$3xl',
-        fontWeight: '$bold',
-        letterSpacing: '-0.01em',
-        lineHeight: '$s',
-      },
-      'doc-h1': {
-        fontFamily: '$alt',
-        fontSize: '$2xl',
-        fontWeight: '$bold',
-        letterSpacing: '-0.02em',
-        lineHeight: '$s',
-      },
-      'doc-h2': {
-        fontFamily: '$alt',
-        fontSize: '$xl',
-        fontWeight: '$bold',
-        letterSpacing: '-0.02em',
-        lineHeight: '$s',
-      },
-      'doc-h3': {
-        fontFamily: '$alt',
-        fontSize: '$l',
-        fontWeight: '$bold',
-        letterSpacing: '-0.01em',
-        lineHeight: '$m',
-      },
-      'doc-large': {
-        fontFamily: '$alt',
-        fontSize: '$l',
-        fontWeight: '$regular',
-        letterSpacing: '0.02em',
-        lineHeight: '$l',
-      },
-      'doc-small': {
-        fontFamily: '$alt',
-        fontSize: '$m',
-        fontWeight: '$regular',
-        letterSpacing: '0.01em',
-        lineHeight: '$m',
       },
     },
     color: {
@@ -124,8 +77,8 @@ export const Text = styled('span', {
       alt: {
         color: '$text-alt',
       },
-      mutted: {
-        color: '$text-mutted',
+      muted: {
+        color: '$text-muted',
       },
       opposite: {
         color: '$text-opposite',
@@ -135,4 +88,71 @@ export const Text = styled('span', {
       },
     },
   },
+
+  defaultVariants: {
+    variant: 'medium',
+    color: 'default',
+  },
+
+  compoundVariants: [
+    {
+      alt: true,
+      variant: 'huge',
+      css: {
+        letterSpacing: '-0.01em',
+      },
+    },
+    {
+      alt: true,
+      variant: 'h1',
+      css: {
+        fontWeight: '$bold',
+        letterSpacing: '-0.02em',
+      },
+    },
+    {
+      alt: true,
+      variant: 'h2',
+      css: {
+        fontWeight: '$bold',
+        letterSpacing: '-0.02em',
+      },
+    },
+    {
+      alt: true,
+      variant: 'h3',
+      css: {
+        fontWeight: '$bold',
+        letterSpacing: '-0.01em',
+      },
+    },
+    {
+      alt: true,
+      variant: 'h4',
+      css: {
+        fontWeight: '$bold',
+        letterSpacing: '-0.01em',
+      },
+    },
+    {
+      alt: true,
+      variant: 'large',
+      css: {},
+    },
+    {
+      alt: true,
+      variant: 'medium',
+      css: {},
+    },
+    {
+      alt: true,
+      variant: 'small',
+      css: {},
+    },
+    {
+      alt: true,
+      variant: 'tiny',
+      css: {},
+    },
+  ],
 })
