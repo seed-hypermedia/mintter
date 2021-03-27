@@ -1,7 +1,5 @@
 import {styled} from '../stitches.config'
 
-export type ButtonProps = React.ComponentProps<typeof Button>
-
 export const Button = styled('button', {
   all: 'unset',
   borderRadius: 9999,
@@ -42,27 +40,27 @@ export const Button = styled('button', {
       },
     },
     size: {
-      small: {
+      1: {
         '$$outlined-border-size': '1px',
-        fontSize: '$s',
-        lineHeight: '$s',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
+        fontSize: '$2',
+        lineHeight: '$1',
+        paddingHorizontal: '$3',
+        paddingVertical: '$2',
       },
-      medium: {
+      2: {
         '$$outlined-border-size': '1.5px',
-        fontSize: '$m',
-        lineHeight: '$m',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
+        fontSize: '$3',
+        lineHeight: '$2',
+        paddingHorizontal: '$5',
+        paddingVertical: '$3',
       },
-      large: {
+      3: {
         '$$outlined-border-size': '2px',
-        fontSize: '$l',
+        fontSize: '$4',
         fontWeight: '$bold',
-        lineHeight: '$m',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
+        lineHeight: '$2',
+        paddingHorizontal: '$6',
+        paddingVertical: '$4',
       },
     },
     color: {
@@ -131,7 +129,9 @@ export const Button = styled('button', {
 
   defaultVariants: {
     variant: 'solid',
-    size: 'medium',
+    size: '2',
     color: 'primary',
   },
 })
+
+export type ButtonProps = React.ComponentProps<typeof Button>

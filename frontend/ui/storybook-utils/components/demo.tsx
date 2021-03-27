@@ -5,12 +5,12 @@ import {Theme} from '@src/theme'
 
 const DemoContainer = styled(Box, {
   backgroundColor: '$background-alt',
-  borderRadius: 4,
-  boxShadow: '$l',
+  borderRadius: 8,
+  boxShadow: '$3',
   display: 'flex',
-  gap: '$l',
-  marginVertical: '$l',
-  padding: '$l',
+  gap: '$6',
+  marginVertical: '$6',
+  padding: '$6',
 
   variants: {
     direction: {
@@ -42,7 +42,7 @@ export const Demo: React.FC<React.ComponentProps<typeof DemoContainer>> = ({
 
 export const DemoItem: React.FC<{title: string}> = ({title, children}) => {
   return (
-    <Box css={{display: 'flex', flexDirection: 'column', gap: '$xs'}}>
+    <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>
       <Text variant="tiny" color="muted">
         {title}
       </Text>

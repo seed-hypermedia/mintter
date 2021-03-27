@@ -1,31 +1,25 @@
 import {Box} from '@src/box'
 import {theme} from '@src/stitches.config'
-import {Text, TextProps} from '@src/text'
+import {Text} from '@src/text'
 import {useTheme} from '@src/theme'
 import {useMemo, useState, useEffect} from 'react'
 
 import {Demo, DemoItem} from './demo'
 
-type TypographyDemoProps = TextProps & {
+const TypographyDemo: React.FC<{
   scale: keyof typeof theme
   cssProp: string
-  text?: string
-}
-
-const TypographyDemo: React.FC<TypographyDemoProps> = ({
+  children?: string
+}> = ({
   scale,
   cssProp,
-  css,
-  text = 'The Jedi Master trained the young Padawan',
-  ...props
+  children = 'The Jedi Master trained the young Padawan',
 }) => {
   return (
     <Demo>
       {Object.entries(theme[scale]).map(([name, token]) => (
         <DemoItem key={name} title={`$${token.token} (${token.value})`}>
-          <Text css={{[cssProp]: token, ...css}} {...props}>
-            {text}
-          </Text>
+          <Text css={{[cssProp]: token}}>{children}</Text>
         </DemoItem>
       ))}
     </Demo>
@@ -33,13 +27,7 @@ const TypographyDemo: React.FC<TypographyDemoProps> = ({
 }
 
 export const FontFamilies: React.FC = () => {
-  return (
-    <TypographyDemo
-      scale="fonts"
-      cssProp="fontFamily"
-      css={{fontSize: '$2xl', fontWeight: '$medium'}}
-    />
-  )
+  return <TypographyDemo scale="fonts" cssProp="fontFamily" />
 }
 
 export const FontSizes: React.FC = () => {
@@ -51,18 +39,50 @@ export const FontWeights: React.FC = () => {
 }
 export const LineHeights: React.FC = () => {
   return (
-    <TypographyDemo
-      scale="lineHeights"
-      cssProp="lineHeight"
-      text="Lucas ipsum dolor sit amet hutt alderaan ponda darth thrawn yavin jar
-          dantooine solo mandalorians. Mon gamorrean droid lars skywalker kit.
-          Luuke chewbacca darth darth. Jango kessel chewbacca darth sidious.
-          Naboo tatooine chewbacca hutt chewbacca jango endor droid palpatine.
-          Darth antilles obi-wan luke darth sith mustafar moff yoda. Alderaan
-          darth organa kit darth bespin mara tatooine solo. Ventress skywalker
-          secura fett mandalore. Lando luke darth mace jinn antilles organa moff
-          hutt. K-3po darth antilles yavin."
-    />
+    <TypographyDemo scale="lineHeights" cssProp="lineHeight">
+      Lucas ipsum dolor sit amet hutt alderaan ponda darth thrawn yavin jar
+      dantooine solo mandalorians. Mon gamorrean droid lars skywalker kit. Luuke
+      chewbacca darth darth. Jango kessel chewbacca darth sidious. Naboo
+      tatooine chewbacca hutt chewbacca jango endor droid palpatine. Darth
+      antilles obi-wan luke darth sith mustafar moff yoda. Alderaan darth organa
+      kit darth bespin mara tatooine solo. Ventress skywalker secura fett
+      mandalore. Lando luke darth mace jinn antilles organa moff hutt. K-3po
+      darth antilles yavin.
+    </TypographyDemo>
+  )
+}
+
+const Color: React.FC<{name: string}> = ({name}) => {
+  const {currentTheme} = useTheme()
+  const [colorValue, setColorValue] = useState<string>()
+
+  useEffect(() => {
+    setColorValue(
+      getComputedStyle(document.body).getPropertyValue(
+        `--colors-${name.substr(1)}`,
+      ),
+    )
+  }, [name, currentTheme])
+
+  return (
+    <Box css={{alignItems: 'center', display: 'flex', gap: '$5'}}>
+      <Box
+        css={{
+          backgroundColor: name,
+          borderRadius: 8,
+          boxShadow: '$3',
+          flexShrink: 0,
+          height: 40,
+          width: 40,
+        }}
+      />
+      <Box css={{display: 'flex', flexDirection: 'column', gap: '$1'}}>
+        <Text variant="tiny">{name}</Text>
+        <Text variant="tiny" color="muted">
+          {colorValue}
+        </Text>
+      </Box>
+    </Box>
   )
 }
 
@@ -86,15 +106,15 @@ export const Colors: React.FC<{groups: string[]}> = ({groups}) => {
     <Box
       css={{
         display: 'grid',
-        gap: '$m',
+        gap: '$5',
         gridTemplateColumns: 'repeat(3, 1fr)',
-        marginVertical: '$l',
+        marginVertical: '$6',
       }}
     >
       {Object.entries(filteredGroups).map(([group, colors]) => (
         <Demo key={group}>
           <Text>{group}</Text>
-          <Box css={{display: 'flex', flexDirection: 'column', gap: '$s'}}>
+          <Box css={{display: 'flex', flexDirection: 'column', gap: '$4'}}>
             {colors.map(color => (
               <Color key={color} name={color} />
             ))}
@@ -105,43 +125,7 @@ export const Colors: React.FC<{groups: string[]}> = ({groups}) => {
   )
 }
 
-const Color: React.FC<{name: string}> = ({name}) => {
-  const {currentTheme} = useTheme()
-  const [colorValue, setColorValue] = useState<string>()
-
-  useEffect(() => {
-    setColorValue(
-      getComputedStyle(document.body).getPropertyValue(
-        `--colors-${name.substr(1)}`,
-      ),
-    )
-  }, [name, currentTheme])
-
-  return (
-    <Box css={{alignItems: 'center', display: 'flex', gap: '$m'}}>
-      <Box
-        css={{
-          backgroundColor: name,
-          borderRadius: 8,
-          boxShadow: '$l',
-          flexShrink: 0,
-          height: 40,
-          width: 40,
-        }}
-      />
-      <Box css={{display: 'flex', flexDirection: 'column', gap: '$3xs'}}>
-        <Text variant="tiny">{name}</Text>
-        <Text variant="tiny" color="muted">
-          {colorValue}
-        </Text>
-      </Box>
-    </Box>
-  )
-}
-
-type SpacedDemoItemProps = {token: string; value: string}
-
-const SpacedDemoItem: React.FC<SpacedDemoItemProps> = ({
+const SpacedDemoItem: React.FC<{token: string; value: string}> = ({
   token,
   value,
   children,
@@ -151,7 +135,7 @@ const SpacedDemoItem: React.FC<SpacedDemoItemProps> = ({
       css={{
         alignItems: 'center',
         display: 'grid',
-        gap: '$m',
+        gap: '$5',
         gridTemplateColumns: '100px 1fr 100px',
       }}
     >

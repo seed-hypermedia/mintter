@@ -1,68 +1,64 @@
 import {styled} from '../stitches.config'
 
-export type TextProps = React.ComponentProps<typeof Text>
-
 export const Text = styled('span', {
   display: 'block',
-  fontFamily: '$default',
-  fontVariantNumeric: 'tabular-nums',
   margin: 0,
 
   variants: {
     variant: {
       huge: {
-        fontSize: '$3xl',
+        fontSize: '$7',
         fontWeight: '$bold',
         letterSpacing: '0.01em',
-        lineHeight: '$s',
+        lineHeight: '$1',
       },
       h1: {
-        fontSize: '$2xl',
+        fontSize: '$6',
         fontWeight: '$medium',
         letterSpacing: '0.01em',
-        lineHeight: '$s',
+        lineHeight: '$1',
       },
       h2: {
-        fontSize: '$xl',
+        fontSize: '$5',
         fontWeight: '$medium',
         letterSpacing: '0.01em',
-        lineHeight: '$s',
+        lineHeight: '$1',
       },
       h3: {
-        fontSize: '$l',
+        fontSize: '$4',
         fontWeight: '$medium',
         letterSpacing: '0.02em',
-        lineHeight: '$m',
+        lineHeight: '$2',
       },
       h4: {
-        fontSize: '$m',
+        fontSize: '$3',
         fontWeight: '$medium',
         letterSpacing: '0.03em',
-        lineHeight: '$m',
+        lineHeight: '$2',
       },
       large: {
-        fontSize: '$l',
+        fontSize: '$4',
         fontWeight: '$regular',
         letterSpacing: '0.02em',
-        lineHeight: '$l',
+        lineHeight: '$3',
       },
       medium: {
-        fontSize: '$m',
+        fontSize: '$3',
         fontWeight: '$medium',
         letterSpacing: '0.01em',
-        lineHeight: '$m',
+        lineHeight: '$2',
       },
       small: {
-        fontSize: '$s',
+        fontSize: '$2',
         fontWeight: '$medium',
         letterSpacing: '0.01em',
-        lineHeight: '$m',
+        lineHeight: '$2',
       },
       tiny: {
-        fontSize: '$xs',
+        fontSize: '$1',
         fontWeight: '$medium',
         letterSpacing: '0.01em',
-        lineHeight: '$s',
+        lineHeight: '$1',
       },
     },
     alt: {
@@ -156,3 +152,5 @@ export const Text = styled('span', {
     },
   ],
 })
+
+export type TextProps = React.ComponentProps<typeof Text>
