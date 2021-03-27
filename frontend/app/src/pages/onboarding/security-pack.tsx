@@ -1,10 +1,9 @@
 import { useCallback } from 'react';
 
-import { Button } from '@mintter/ui/button';
-
 import {
   OnboardingStep,
   OnboardingStepActions,
+  OnboardingStepButton,
   OnboardingStepDescription,
   OnboardingStepPropsType,
   OnboardingStepTitle,
@@ -29,12 +28,10 @@ export const SecurityPack: React.FC<OnboardingStepPropsType> = ({
         your account:
       </OnboardingStepDescription>
       <OnboardingStepActions>
-        <Button size="large" variant="outlined" onClick={prev}>
+        <OnboardingStepButton variant="outlined" onClick={prev}>
           Back
-        </Button>
-        <Button size="large" onClick={handleSubmit}>
-          Next
-        </Button>
+        </OnboardingStepButton>
+        <OnboardingStepButton onClick={handleSubmit}>Next</OnboardingStepButton>
       </OnboardingStepActions>
     </OnboardingStep>
   );

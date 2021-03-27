@@ -1,11 +1,11 @@
 import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
-import { Button } from '@mintter/ui/button';
 
 import {
   OnboardingStep,
   OnboardingStepActions,
   OnboardingStepBody,
+  OnboardingStepButton,
   OnboardingStepDescription,
   OnboardingStepPropsType,
   OnboardingStepTitle,
@@ -41,9 +41,7 @@ export const Welcome: React.FC<OnboardingStepPropsType> = ({ next }) => {
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
-        <Button size="large" onClick={next}>
-          Start
-        </Button>
+        <OnboardingStepButton onClick={next}>Start</OnboardingStepButton>
       </OnboardingStepActions>
     </OnboardingStep>
   );
@@ -76,10 +74,10 @@ const WelcomeStep: React.FC<{
       >
         {icon}
       </Box>
-      <Text alt variant="h2" css={{ marginTop: '$xl' }}>
+      <Text alt variant="h2" css={{ marginTop: '$6' }}>
         {title}
       </Text>
-      <Text css={{ marginTop: '$s', maxWidth: 228 }}>{description}</Text>
+      <Text css={{ marginTop: '$4', maxWidth: 228 }}>{description}</Text>
     </Box>
   );
 };

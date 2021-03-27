@@ -76,11 +76,13 @@ export const OnboardingPage: React.FC = () => {
         css={{
           backgroundColor: '$background-alt',
           borderRadius: '24px',
-          boxShadow: '$l',
+          boxShadow: '$3',
           display: 'flex',
           maxWidth: 800,
           minHeight: 745,
-          padding: '$2xl',
+          paddingBottom: 56,
+          paddingHorizontal: 80,
+          paddingTop: 112,
           width: '100%',
         }}
       >

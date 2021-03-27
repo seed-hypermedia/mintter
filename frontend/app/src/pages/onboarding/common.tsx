@@ -2,7 +2,7 @@ import { motion, Variants } from 'framer-motion';
 
 import { Box, BoxProps } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
-import { Button } from '@mintter/ui/button';
+import { Button, ButtonProps } from '@mintter/ui/button';
 
 export type OnboardingStepPropsType = {
   prev: () => void;
@@ -68,7 +68,7 @@ export const OnboardingStep: React.FC<BoxProps> = ({ css, children }) => {
         display: 'flex',
         flex: 'auto',
         flexDirection: 'column',
-        gap: '$xl',
+        gap: '$7',
         justifyContent: 'center',
         ...css,
       }}
@@ -89,7 +89,7 @@ export const OnboardingStepTitle: React.FC<
         alignItems: 'center',
         display: 'flex',
         flexDirection: 'column',
-        gap: '$l',
+        gap: '$5',
         ...css,
       }}
     >
@@ -156,6 +156,10 @@ export const OnboardingStepActions: React.FC<BoxProps> = ({
       {children}
     </Box>
   );
+};
+
+export const OnboardingStepButton: React.FC<ButtonProps> = (props) => {
+  return <Button size="3" {...props} />;
 };
 
 export const SecurityPackIcon: React.FC = () => {

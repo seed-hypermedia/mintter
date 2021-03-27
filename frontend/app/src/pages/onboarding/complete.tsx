@@ -1,11 +1,10 @@
 import { useCallback } from 'react';
 import { useLocation } from 'react-router';
 
-import { Button } from '@mintter/ui/button';
-
 import {
   OnboardingStep,
   OnboardingStepActions,
+  OnboardingStepButton,
   OnboardingStepDescription,
   OnboardingStepTitle,
 } from './common';
@@ -27,9 +26,9 @@ export const Complete: React.FC = () => {
         help us spread the word.
       </OnboardingStepDescription>
       <OnboardingStepActions>
-        <Button color="success" size="large" onClick={handleSubmit}>
+        <OnboardingStepButton color="success" onClick={handleSubmit}>
           Open Mintter App
-        </Button>
+        </OnboardingStepButton>
       </OnboardingStepActions>
     </OnboardingStep>
   );
