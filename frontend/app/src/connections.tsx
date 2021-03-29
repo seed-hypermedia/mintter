@@ -20,7 +20,9 @@ export function Connections({ onConnect }: any) {
 
   return (
     <Box data-testid="connections">
-      <Text as="h3">Connections</Text>
+      <Text as="h3" size="6">
+        Connections
+      </Text>
       {data.length === 0 ? (
         <Text size="2">no connections available :(</Text>
       ) : (

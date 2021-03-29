@@ -3,9 +3,9 @@ import { useForm } from 'react-hook-form';
 // import Seo from 'components/seo'
 import { Input } from '@components/input';
 import { Textarea } from '@components/textarea';
-import { ProfileAddress } from './profile-address';
-import { useProfile } from './mintter-hooks';
-import * as apiClient from './mintter-client';
+import { ProfileAddress } from '../profile-address';
+import { useProfile } from '../mintter-hooks';
+import * as apiClient from '../mintter-client';
 import { useToasts } from 'react-toast-notifications';
 import { useMutation } from 'react-query';
 import { Button } from '@mintter/ui/button';

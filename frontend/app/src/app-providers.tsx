@@ -12,12 +12,6 @@ import { global } from '@mintter/ui/stitches.config';
 
 export const queryClient = new QueryClient();
 
-const globalStyles = global({
-  'html, body': {
-    background: 'red',
-  },
-});
-
 export const AppProviders: React.FC = ({ children }) => {
   return (
     <Theme>

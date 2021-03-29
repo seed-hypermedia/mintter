@@ -10,16 +10,16 @@ import {
   useConnectionCreate,
   useConnectionList,
   useProfile,
-} from './mintter-hooks';
-import { createDraft } from './mintter-client';
-import { Link } from './link';
-import { Connections } from './connections';
-import { SuggestedConnections } from './suggested-connections';
-import { MainColumn } from './main-column';
+} from '../mintter-hooks';
+import { createDraft } from '../mintter-client';
+import { Link } from '../link';
+import { Connections } from '../connections';
+import { SuggestedConnections } from '../suggested-connections';
+import { MainColumn } from '../main-column';
 // import { Icons } from 'components/icons';
-import { Publications } from './publications-page';
-import { MyPublications } from './my-publications-page';
-import { Drafts } from './drafts-page';
+import { Publications } from './publications';
+import { MyPublications } from './my-publications';
+import { Drafts } from './drafts';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
@@ -112,9 +112,9 @@ export default function Library() {
         css={{
           gridArea: 'leftCol',
           paddingLeft: '$5',
-          display: 'grid',
-          gridAutoFlow: 'row',
-          gap: '$7',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '$8',
         }}
       >
         <ProfileInfo />

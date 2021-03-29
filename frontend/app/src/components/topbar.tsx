@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { Slot } from '@radix-ui/react-slot';
-import { Link } from './link';
-import { LogoSquare } from './logo-square';
+import { Link } from '../link';
+import { LogoSquare } from '../logo-square';
 import { Input } from '@components/input';
 // import { CustomLogo } from './custom-logo';
 import { Container } from '@components/container';

@@ -3,14 +3,14 @@ import { Switch, Route, useRouteMatch, Redirect } from 'react-router-dom';
 import { lazily } from 'react-lazily';
 import { createPath, getPath } from '@utils/routes';
 import { AppSpinner } from '@components/app-spinner';
-import { Topbar } from './topbar';
+import { Topbar } from '@components/topbar';
 import { useProfile } from './mintter-hooks';
 import { Box } from '@mintter/ui/box';
 
 const { OnboardingPage } = lazily(() => import('@pages/onboarding'));
-const Library = lazy(() => import('./library-page'));
-const Editor = lazy(() => import('./editor-page'));
-const Settings = lazy(() => import('./settings-page'));
+const Library = lazy(() => import('./pages/library'));
+const Editor = lazy(() => import('./pages/editor'));
+const Settings = lazy(() => import('./pages/settings'));
 
 export const AuthorNode: React.FC<{ path?: string }> = ({ path = '/' }) => {
   const match = useRouteMatch(path)!;
@@ -48,7 +48,13 @@ export const AuthorNode: React.FC<{ path?: string }> = ({ path = '/' }) => {
 
   if (profile.isSuccess && profile.data) {
     return (
-      <Box css={{ minHeight: '100vh' }}>
+      <Box
+        css={{
+          minHeight: '100vh',
+          display: 'grid',
+          gridTemplateRows: '64px 1fr',
+        }}
+      >
         <Topbar />
         <Switch>
           <Route path={['/library', '/admin/library']}>
