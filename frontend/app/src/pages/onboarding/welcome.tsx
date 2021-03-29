@@ -74,7 +74,7 @@ const WelcomeStep: React.FC<{
       >
         {icon}
       </Box>
-      <Text alt variant="h2" css={{ marginTop: '$6' }}>
+      <Text alt size="5" css={{ marginTop: '$6' }}>
         {title}
       </Text>
       <Text css={{ marginTop: '$4', maxWidth: 228 }}>{description}</Text>

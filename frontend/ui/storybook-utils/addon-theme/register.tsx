@@ -15,7 +15,7 @@ addons.register('mintter/theme', () => {
 
       return (
         <Box css={{display: 'flex', alignItems: 'center'}}>
-          <Text variant="tiny" css={{color: '$palette-gray-900'}}>
+          <Text size="1" css={{color: '$palette-gray-900'}}>
             Dark Mode
           </Text>
           <input

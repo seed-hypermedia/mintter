@@ -6,10 +6,10 @@ import { useMyPublicationsList } from './mintter-hooks';
 import { createDraft, deletePublication } from './mintter-client';
 // import {ErrorMessage} from 'components/error-message'
 // import {Icons} from 'components/icons'
-import { Button } from '@mintter/ui-legacy/button';
+import { Button } from '@mintter/ui/button';
 import { Separator } from '@mintter/ui-legacy/separator';
-import { Box } from '@mintter/ui-legacy/box';
-import { Text } from '@mintter/ui-legacy/text';
+import { Box } from '@mintter/ui/box';
+import { Text } from '@mintter/ui/text';
 import type { WithCreateDraft } from './library-page';
 import { MessageBox } from './message-box';
 
@@ -64,9 +64,7 @@ export const MyPublications: React.FC<MyPublicationProps & WithCreateDraft> = ({
               }}
             >
               {/* <Icons.FilePlus color="currentColor" /> */}
-              <Text size="3" color="white">
-                Start your first document
-              </Text>
+              <Text size="3">Start your first document</Text>
             </Button>
           )}
         </MessageBox>

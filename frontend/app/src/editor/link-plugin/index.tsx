@@ -303,7 +303,7 @@ export function ToolbarLink({ link: linkOptions }: any) {
           gap: '$4',
         }}
       >
-        <Text variant="h3">Link Information</Text>
+        <Text size="4">Link Information</Text>
         <Box
           as="form"
           css={{

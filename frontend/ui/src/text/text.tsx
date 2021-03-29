@@ -5,58 +5,58 @@ export const Text = styled('span', {
   margin: 0,
 
   variants: {
-    variant: {
-      huge: {
-        fontSize: '$7',
-        fontWeight: '$bold',
-        letterSpacing: '0.01em',
-        lineHeight: '$1',
-      },
-      h1: {
-        fontSize: '$6',
+    size: {
+      1: {
+        fontSize: '$1',
         fontWeight: '$medium',
         letterSpacing: '0.01em',
         lineHeight: '$1',
       },
-      h2: {
-        fontSize: '$5',
-        fontWeight: '$medium',
-        letterSpacing: '0.01em',
-        lineHeight: '$1',
-      },
-      h3: {
-        fontSize: '$4',
-        fontWeight: '$medium',
-        letterSpacing: '0.02em',
-        lineHeight: '$2',
-      },
-      h4: {
-        fontSize: '$3',
-        fontWeight: '$medium',
-        letterSpacing: '0.03em',
-        lineHeight: '$2',
-      },
-      large: {
-        fontSize: '$4',
-        fontWeight: '$regular',
-        letterSpacing: '0.02em',
-        lineHeight: '$3',
-      },
-      medium: {
-        fontSize: '$3',
-        fontWeight: '$medium',
-        letterSpacing: '0.01em',
-        lineHeight: '$2',
-      },
-      small: {
+      2: {
         fontSize: '$2',
         fontWeight: '$medium',
         letterSpacing: '0.01em',
         lineHeight: '$2',
       },
-      tiny: {
-        fontSize: '$1',
+      3: {
+        fontSize: '$3',
         fontWeight: '$medium',
+        letterSpacing: '0.01em',
+        lineHeight: '$2',
+      },
+      4: {
+        fontSize: '$4',
+        fontWeight: '$regular',
+        letterSpacing: '0.02em',
+        lineHeight: '$3',
+      },
+      5: {
+        fontSize: '$3',
+        fontWeight: '$medium',
+        letterSpacing: '0.03em',
+        lineHeight: '$2',
+      },
+      6: {
+        fontSize: '$4',
+        fontWeight: '$medium',
+        letterSpacing: '0.02em',
+        lineHeight: '$2',
+      },
+      7: {
+        fontSize: '$5',
+        fontWeight: '$medium',
+        letterSpacing: '0.01em',
+        lineHeight: '$1',
+      },
+      8: {
+        fontSize: '$6',
+        fontWeight: '$medium',
+        letterSpacing: '0.01em',
+        lineHeight: '$1',
+      },
+      9: {
+        fontSize: '$7',
+        fontWeight: '$bold',
         letterSpacing: '0.01em',
         lineHeight: '$1',
       },
@@ -86,21 +86,21 @@ export const Text = styled('span', {
   },
 
   defaultVariants: {
-    variant: 'medium',
+    size: '3',
     color: 'default',
   },
 
   compoundVariants: [
     {
       alt: true,
-      variant: 'huge',
+      size: '9',
       css: {
         letterSpacing: '-0.01em',
       },
     },
     {
       alt: true,
-      variant: 'h1',
+      size: '8',
       css: {
         fontWeight: '$bold',
         letterSpacing: '-0.02em',
@@ -108,7 +108,7 @@ export const Text = styled('span', {
     },
     {
       alt: true,
-      variant: 'h2',
+      size: '7',
       css: {
         fontWeight: '$bold',
         letterSpacing: '-0.02em',
@@ -116,7 +116,7 @@ export const Text = styled('span', {
     },
     {
       alt: true,
-      variant: 'h3',
+      size: '6',
       css: {
         fontWeight: '$bold',
         letterSpacing: '-0.01em',
@@ -124,31 +124,11 @@ export const Text = styled('span', {
     },
     {
       alt: true,
-      variant: 'h4',
+      size: '5',
       css: {
         fontWeight: '$bold',
         letterSpacing: '-0.01em',
       },
-    },
-    {
-      alt: true,
-      variant: 'large',
-      css: {},
-    },
-    {
-      alt: true,
-      variant: 'medium',
-      css: {},
-    },
-    {
-      alt: true,
-      variant: 'small',
-      css: {},
-    },
-    {
-      alt: true,
-      variant: 'tiny',
-      css: {},
     },
   ],
 })

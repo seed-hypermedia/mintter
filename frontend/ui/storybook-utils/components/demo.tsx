@@ -43,7 +43,7 @@ export const Demo: React.FC<React.ComponentProps<typeof DemoContainer>> = ({
 export const DemoItem: React.FC<{title: string}> = ({title, children}) => {
   return (
     <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>
-      <Text variant="tiny" color="muted">
+      <Text size="1" color="muted">
         {title}
       </Text>
       {children}

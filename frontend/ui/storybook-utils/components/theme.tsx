@@ -77,8 +77,8 @@ const Color: React.FC<{name: string}> = ({name}) => {
         }}
       />
       <Box css={{display: 'flex', flexDirection: 'column', gap: '$1'}}>
-        <Text variant="tiny">{name}</Text>
-        <Text variant="tiny" color="muted">
+        <Text size="1">{name}</Text>
+        <Text size="1" color="muted">
           {colorValue}
         </Text>
       </Box>
@@ -139,11 +139,11 @@ const SpacedDemoItem: React.FC<{token: string; value: string}> = ({
         gridTemplateColumns: '100px 1fr 100px',
       }}
     >
-      <Text variant="tiny" color="muted">
+      <Text size="1" color="muted">
         ${token}
       </Text>
       {children}
-      <Text variant="tiny" color="muted">
+      <Text size="1" color="muted">
         {value}
       </Text>
     </Box>
