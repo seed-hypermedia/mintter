@@ -19,7 +19,7 @@ import { Textarea } from '@mintter/ui-legacy/textarea';
 import { useEditorValue } from '@mintter/editor/use-editor-value';
 import { EditorComponent } from '@mintter/editor/editor-component';
 import { FormControl } from '@components/form-control';
-import { Separator } from '@mintter/ui-legacy/separator';
+import { Separator } from '@components/separator';
 
 const Editor: React.FC = () => {
   const { theme } = useTheme();

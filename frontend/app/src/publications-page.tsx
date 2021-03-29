@@ -8,7 +8,7 @@ import { useOthersPublicationsList } from './mintter-hooks';
 import type { Document } from '@mintter/api/documents/v1alpha/documents_pb';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
-import { MessageBox } from './message-box';
+import * as MessageBox from './components/message-box';
 
 export const Publications: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {
   const history = useHistory();
@@ -32,12 +32,12 @@ export const Publications: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {
     <>
       {/* <Seo title="Feed" /> */}
       {data?.length === 0 && (
-        <MessageBox>
-          <Text>No Publications (yet)</Text>
-          <Button onClick={onCreateDraft} appearance="pill" color="primary">
+        <MessageBox.Root>
+          <MessageBox.Title>No Publications (yet)</MessageBox.Title>
+          <MessageBox.Button onClick={onCreateDraft}>
             <Text>Start your first document</Text>
-          </Button>
-        </MessageBox>
+          </MessageBox.Button>
+        </MessageBox.Root>
       )}
       {/* TODO: fix data type */}
       <DocumentList

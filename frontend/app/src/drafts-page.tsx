@@ -4,13 +4,14 @@ import { DocumentList } from './document-list';
 import { useDraftsList } from './mintter-hooks';
 import { deleteDraft } from './mintter-client';
 // import { Icons } from 'components/icons';
-import { Button } from '@mintter/ui-legacy/button';
-import { Separator } from '@mintter/ui-legacy/separator';
+import { Button } from '@mintter/ui/button';
+import { Separator } from '@components/separator';
 import { Text } from '@mintter/ui/text';
 import { Box } from '@mintter/ui/box';
+import { SettingsIcon } from '@mintter/ui/icons';
 import { useHistory, useRouteMatch } from 'react-router';
 import type { WithCreateDraft } from './library-page';
-import { MessageBox } from './message-box';
+import * as MessageBox from './components/message-box';
 
 export const Drafts: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {
   const history = useHistory();
@@ -33,23 +34,12 @@ export const Drafts: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {
     <>
       {/* <Seo title="Drafts" /> */}
       {isSuccess && data?.length === 0 && (
-        <MessageBox>
-          <Text>No Drafts available</Text>
-          <Button
-            onClick={onCreateDraft}
-            appearance="pill"
-            variant="primary"
-            css={{
-              height: '$7',
-              fontSize: '$3',
-              marginTop: '$4',
-              px: '$4',
-            }}
-          >
-            {/* <Icons.FilePlus color="currentColor" /> */}
-            <Text>Start your first document</Text>
-          </Button>
-        </MessageBox>
+        <MessageBox.Root>
+          <MessageBox.Title>No Drafts available</MessageBox.Title>
+          <MessageBox.Button onClick={onCreateDraft}>
+            <span>Start your first document</span>
+          </MessageBox.Button>
+        </MessageBox.Root>
       )}
 
       <DocumentList

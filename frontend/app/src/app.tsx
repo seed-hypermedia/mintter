@@ -2,11 +2,18 @@ import { lazily } from 'react-lazily';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
 import { isLocalNode } from './constants';
-
+import { global } from '@mintter/ui/stitches.config';
 const { AuthorNode } = lazily(() => import('./author-node'));
 const { PublisherNode } = lazily(() => import('./publisher-node'));
 
+const globalStyles = global({
+  body: {
+    backgroundColor: '$background-alt',
+    color: '$text-default',
+  },
+});
 export const App: React.FC = () => {
+  globalStyles();
   return (
     <ErrorBoundary
       FallbackComponent={AppError}

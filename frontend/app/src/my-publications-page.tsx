@@ -7,11 +7,11 @@ import { createDraft, deletePublication } from './mintter-client';
 // import {ErrorMessage} from 'components/error-message'
 // import {Icons} from 'components/icons'
 import { Button } from '@mintter/ui/button';
-import { Separator } from '@mintter/ui-legacy/separator';
+import { Separator } from '@components/separator';
 import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
 import type { WithCreateDraft } from './library-page';
-import { MessageBox } from './message-box';
+import * as MessageBox from './components/message-box';
 
 type MyPublicationProps = {
   noSeo?: boolean;
@@ -49,25 +49,15 @@ export const MyPublications: React.FC<MyPublicationProps & WithCreateDraft> = ({
     <>
       {/* {!noSeo && <Seo title="My Publications" />} */}
       {isSuccess && data?.length === 0 && (
-        <MessageBox>
-          <Text>No Publications (yet)</Text>
+        <MessageBox.Root>
+          <MessageBox.Title>No Publications (yet)</MessageBox.Title>
           {!isPublic && (
-            <Button
-              onClick={onCreateDraft}
-              appearance="pill"
-              color="primary"
-              css={{
-                height: '$7',
-                fontSize: '$3',
-                marginTop: '$4',
-                px: '$4',
-              }}
-            >
+            <MessageBox.Button onClick={onCreateDraft}>
               {/* <Icons.FilePlus color="currentColor" /> */}
               <Text size="3">Start your first document</Text>
-            </Button>
+            </MessageBox.Button>
           )}
-        </MessageBox>
+        </MessageBox.Root>
       )}
       <DocumentList
         isLoading={isLoading}

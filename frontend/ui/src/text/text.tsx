@@ -3,7 +3,7 @@ import {styled} from '../stitches.config'
 export const Text = styled('span', {
   display: 'block',
   margin: 0,
-
+  color: 'inherit',
   variants: {
     size: {
       1: {
@@ -81,6 +81,21 @@ export const Text = styled('span', {
       },
       contrast: {
         color: '$text-contrast',
+      },
+      primary: {
+        color: '$primary-default',
+      },
+      secondary: {
+        color: '$secondary-default',
+      },
+      terciary: {
+        color: '$terciary-default',
+      },
+      danger: {
+        color: '$danger-default',
+      },
+      warning: {
+        color: '$warning-default',
       },
     },
   },

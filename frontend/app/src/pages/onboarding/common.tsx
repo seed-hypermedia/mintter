@@ -1,5 +1,4 @@
 import { motion, Variants, Orchestration } from 'framer-motion';
-
 import { Box, BoxProps } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
 import { Button } from '@mintter/ui/button';
@@ -94,12 +93,7 @@ export const OnboardingStepTitle: React.FC<
       }}
     >
       {icon}
-      <Text
-        alt
-        as="h1"
-        size="9"
-        css={{ textAlign: 'center', letterSpacing: '-0.96px' }}
-      >
+      <Text alt as="h1" size="9" css={{ textAlign: 'center' }}>
         {children}
       </Text>
     </Box>

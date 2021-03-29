@@ -154,3 +154,5 @@ export const Button = styled('button', {
     appearance: 'pill',
   },
 })
+
+export type ButtonProps = React.ComponentProps<typeof Button>

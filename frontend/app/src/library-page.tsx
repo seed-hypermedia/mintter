@@ -23,8 +23,8 @@ import { Drafts } from './drafts-page';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
-import { Separator } from '@mintter/ui-legacy/separator';
-import { MessageBox } from './message-box';
+import { Separator } from '@components/separator';
+import * as MessageBox from '@components/message-box';
 import { getPath } from '@utils/routes';
 import { Container } from '@components/container';
 import type { CSS } from '@mintter/ui/stitches.config';
@@ -108,7 +108,15 @@ export default function Library() {
         paddingTop: '$8',
       }}
     >
-      <Box css={{ gridArea: 'leftCol', paddingLeft: '$5' }}>
+      <Box
+        css={{
+          gridArea: 'leftCol',
+          paddingLeft: '$5',
+          display: 'grid',
+          gridAutoFlow: 'row',
+          gap: '$7',
+        }}
+      >
         <ProfileInfo />
         <Connections onConnect={onConnect} />
         <SuggestedConnections onConnect={onConnect} />
@@ -170,18 +178,28 @@ function ProfileInfo() {
   const match = useRouteMatch();
   const { data: profile } = useProfile();
   return profile ? (
-    <div className="text-left">
-      <h3 className="text-2xl font-semibold text-heading">
+    <Box
+      css={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '$5',
+        alignItems: 'flex-start',
+      }}
+    >
+      <Text as="h3" size="7" css={{ fontWeight: '$bold' }}>
         {profile.username}
-      </h3>
-      <p className="mt-2 text-sm text-body">{profile.bio}</p>
-      <Link
+      </Text>
+      <Text>{profile.bio}</Text>
+      <Button
+        as={Link}
+        variant="outlined"
+        color="primary"
+        size="1"
         to={`${getPath(match)}/settings`}
-        className="inline-block mt-4 text-sm underline cursor-pointer text-primary hover:text-primary-hover"
       >
         Edit profile
-      </Link>
-    </div>
+      </Button>
+    </Box>
   ) : null;
 }
 
@@ -190,27 +208,12 @@ const NoConnectionsBox: React.FC<{ onConnect: () => void }> = ({
 }: any) => {
   const { data = [] } = useConnectionList();
   return data.length === 0 ? (
-    <MessageBox>
-      <Text>Connect to Others</Text>
-      <Button
-        onClick={() => onConnect()}
-        appearance="pill"
-        variant="primary"
-        css={{
-          height: '$7',
-          fontSize: '$3',
-          marginTop: '$4',
-          px: '$4',
-        }}
-      >
-        {/* 
-          // TODO: enable Icons
-          <Icons.Plus /> */}
-        <Text size="3" color="white">
-          Add your first connection
-        </Text>
-      </Button>
-    </MessageBox>
+    <MessageBox.Root>
+      <MessageBox.Title>Connect to Others</MessageBox.Title>
+      <MessageBox.Button onClick={() => onConnect()}>
+        <span>Add your first connection</span>
+      </MessageBox.Button>
+    </MessageBox.Root>
   ) : null;
 };
 
@@ -239,7 +242,7 @@ function NavItem({
   return (
     <Text
       as={Link}
-      size="6"
+      size="5"
       to={to}
       css={{
         textDecoration: 'none',

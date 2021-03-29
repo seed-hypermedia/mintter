@@ -241,7 +241,7 @@ export const globalStyles = global({
     },
   ],
   body: {
-    backgroundColor: '$background-default',
+    backgroundColor: '$background-alt',
     color: '$text-default',
     fontFamily: '$default',
     fontSize: '$3',
