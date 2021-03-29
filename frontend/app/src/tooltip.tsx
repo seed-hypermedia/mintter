@@ -7,7 +7,7 @@ const StyledContent = styled(TooltipPrimitive.Content, {
   borderRadius: 3,
   padding: '5px 10px',
   fontSize: 14,
-  bc: '$text',
+  backgroundColor: '$text',
   color: 'white',
 });
 const StyledArrow = styled(TooltipPrimitive.Arrow, {

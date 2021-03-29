@@ -1,6 +1,6 @@
 import React from 'react';
 import { Heading } from '@mintter/ui-legacy/heading';
-import { Container } from '@mintter/ui-legacy/container';
+import { Container } from '@components/container';
 import { Button } from '@mintter/ui-legacy/button';
 import { Grid } from '@mintter/ui-legacy/grid';
 import { css } from '@mintter/ui-legacy/stitches.config';

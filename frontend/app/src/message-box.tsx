@@ -7,7 +7,7 @@ export const MessageBox: React.FC = ({ children }) => (
     <Separator />
     <Box
       css={{
-        bc: '$gray500',
+        backgroundColor: '$gray500',
         p: '$6',
         display: 'flex',
         flexDirection: 'column',

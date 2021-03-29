@@ -1,22 +1,24 @@
-import { styled } from './stitches.config';
+import { styled } from '../lib/stitches.config';
 
 export const FORMCONTROL_TAG = 'input';
 
 export const FormControl = styled(FORMCONTROL_TAG, {
-  $$borderColor: '$colors$muted',
-  $$borderColorHover: '$colors$mutedHover',
+  $$borderColor: '$colors$background-neutral',
+  $$borderColorHover: '$colors$background-neutral-strong',
+  $$backgroundColor: '$colors$background-default',
   all: 'unset',
   lineHeight: '1',
-  // height: '$5',
-  px: '$3',
-  py: '$2',
+  height: '$5',
+  paddingHorizontal: '$4',
+  paddingVertical: '$3',
   fontSize: '$3',
-  borderRadius: '$1',
+  borderRadius: '$2',
   display: 'block',
-  fontFamily: '$paragraph',
+  fontFamily: '$default',
   width: '100%',
   boxSizing: 'border-box',
   boxShadow: 'inset 0 0 0 1px $$borderColor',
+  backgroundColor: '$$backgroundColor',
   outline: 'none',
   border: 'none',
   '&:before': {
@@ -29,7 +31,7 @@ export const FormControl = styled(FORMCONTROL_TAG, {
     boxShadow: 'inset 0 0 0 1px $$borderColorHover',
   },
   '&:active': {
-    // bc: '$gray100',
+    // backgroundColor: '$gray100',
     boxShadow: 'inset 0 0 0 1px $$borderColorHover',
   },
   '&:focus': {
@@ -38,7 +40,7 @@ export const FormControl = styled(FORMCONTROL_TAG, {
       'inset 0 0 0 1px $$borderColorHover, 0 0 0 1px $$borderColorHover',
   },
   '&:disabled': {
-    // bc: '$gray200',
+    // backgroundColor: '$gray200',
     boxShadow: 'inset 0 0 0 1px $$borderColor',
     pointerEvents: 'none',
     cursor: 'no-drop',
@@ -47,9 +49,9 @@ export const FormControl = styled(FORMCONTROL_TAG, {
   variants: {
     variant: {
       danger: {
-        $$borderColorHover: '$colors$accentDanger',
-        color: '$accentDanger',
-        bc: '$gray100',
+        $$borderColorHover: '$colors$danger-default',
+        color: '$danger-default',
+        backgroundColor: '$background-default',
         boxShadow:
           'inset 0 0 0 1px $$borderColorHover, 0 0 0 1px $$borderColorHover',
         '&:hover, &:active, &:focus, &:disabled': {

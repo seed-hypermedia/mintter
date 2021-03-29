@@ -20,7 +20,7 @@ function MintterLink({ element, attributes, children, ...props }: any) {
   return (
     <Tooltip
       content={
-        <Box css={{ maxWidth: '400px', p: '$3', bc: 'red' }}>
+        <Box css={{ maxWidth: '400px', p: '$3' }}>
           <Text css={{ wordBreak: 'break-all' }}>{documentId}</Text>
         </Box>
       }

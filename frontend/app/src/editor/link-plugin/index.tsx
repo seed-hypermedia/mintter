@@ -33,7 +33,7 @@ import { Text } from '@mintter/ui/text';
 import { Popover } from './popover';
 import { Tooltip } from '../../tooltip';
 import { LinkElement } from './link-element';
-import { Input } from '@mintter/ui-legacy/input';
+import { Input } from '@components/input';
 import { LinkIcon } from '@mintter/ui/icons';
 
 export const ELEMENT_LINK = 'a';

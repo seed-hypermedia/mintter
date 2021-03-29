@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 // import Seo from 'components/seo'
-import { Input } from '@mintter/ui-legacy/input';
+import { Input } from '@components/input';
 import { Textarea } from '@mintter/ui-legacy/textarea';
 import { ProfileAddress } from './profile-address';
 // import {ErrorMessage, ErrorInterface} from 'components/error-message'

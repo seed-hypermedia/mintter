@@ -25,7 +25,12 @@ export default function Topbar({isPublic = false}) {
   const isLocal = isLocalhost(window.location.hostname)
 
   return isPublic ? (
-    <Grid css={{bc: '$brandPrimary', borderBottom: '1px solid $colors$muted'}}>
+    <Grid
+      css={{
+        backgroundColor: '$brandPrimary',
+        borderBottom: '1px solid $colors$muted',
+      }}
+    >
       <Container
         css={{
           mx: 0,

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Heading } from '@mintter/ui-legacy/heading';
-import { Container } from '@mintter/ui-legacy/container';
+import { Container } from '@components/container';
 import { Button } from '@mintter/ui-legacy/button';
 import { Text } from '@mintter/ui-legacy/text';
 import { useWelcome } from './welcome-provider';

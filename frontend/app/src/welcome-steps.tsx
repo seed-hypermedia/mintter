@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Box } from '@mintter/ui-legacy/box';
 import { Text } from '@mintter/ui-legacy/text';
-import { Container } from '@mintter/ui-legacy/container';
+import { Container } from '@components/container';
 
 type Step = {
   title: string;
@@ -39,7 +39,7 @@ export function Steps({ steps, active }: Props) {
             transition: '0.5s all ease',
             width: `${active * 50}%`,
             height: 4,
-            bc: '$hover',
+            backgroundColor: '$hover',
           },
         }}
       >
@@ -59,7 +59,7 @@ export function Steps({ steps, active }: Props) {
                   position: 'relative',
                   width: '$4',
                   height: '$4',
-                  bc: active >= index ? '$brandPrimary' : '$muted',
+                  backgroundColor: active >= index ? '$brandPrimary' : '$muted',
                   borderRadius: '$pill',
                   display: 'grid',
                   placeItems: 'center',

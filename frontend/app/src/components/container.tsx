@@ -1,6 +1,6 @@
 import React from 'react';
 import type { StitchesVariants, StitchesCss } from '@stitches/core';
-import { styled } from './stitches.config';
+import { styled } from '@mintter/ui/stitches.config';
 
 import type * as Polymorphic from '@radix-ui/react-polymorphic';
 
@@ -17,8 +17,8 @@ const StyledContainer: any = styled(DEFAULT_TAG, {
 
   // Custom
   width: '90%',
-  mx: 'auto',
-  px: '$5',
+  marginHorizontal: 'auto',
+  paddingHorizontal: '$5',
 
   variants: {
     size: {

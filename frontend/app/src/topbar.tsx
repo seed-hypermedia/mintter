@@ -2,10 +2,10 @@ import * as React from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { Link } from './link';
 import { LogoSquare } from './logo-square';
-import { Input } from '@mintter/ui-legacy/input';
+import { Input } from '@components/input';
 // import { CustomLogo } from './custom-logo';
-import { Grid } from '@mintter/ui-legacy/grid';
-import { Container } from '@mintter/ui-legacy/container';
+import { Container } from '@components/container';
+import { Box } from '@mintter/ui/box';
 import * as DropdownMenu from '@mintter/ui-legacy/dropdown-menu';
 import { getPath } from '@utils/routes';
 
@@ -22,55 +22,35 @@ export function Topbar({ isPublic = false }) {
   const match = useRouteMatch();
 
   return isPublic ? (
-    <Grid
-      css={{ bc: '$brandPrimary', borderBottom: '1px solid $colors$muted' }}
-    >
-      <Container
-        css={{
-          mx: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          py: '$2',
-          px: '$3',
-        }}
-      >
-        <Link to="/">
-          {/*
-          // TODO: add logos
-          {isLocal ? (
-            <Logo css={{ color: 'white' }} width="42px" />
-          ) : (
-            <CustomLogo />
-          )} */}
-        </Link>
-        <Link
-          to="/"
-          className="inline-block text-sm font-medium hover:underline text-brand-secondary"
-        >
-          ← Back to Home
-        </Link>
-      </Container>
-    </Grid>
+    <Box>public topbar here</Box>
   ) : (
-    <Grid
+    <Box
       css={{
+        display: 'grid',
         gridAutoFlow: 'column',
         gridTemplateColumns: '100px 1fr 100px',
-        py: '$2',
-        px: '$3',
-        borderBottom: '1px solid $colors$muted',
+        paddingHorizontal: '$3',
+        height: 64,
+        gap: '$4',
+        borderBottom: '1px solid $colors$background-neutral',
         alignItems: 'center',
       }}
     >
       <Link to={getPath(match)}>
         <LogoSquare css={{ color: '$brandPrimary' }} width="42px" />
       </Link>
-      <Container>
+      <Container
+        css={{
+          marginHorizontal: 'auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         <MintterSearch />
       </Container>
       <DropdownMenu.Root>
-        <DropdownMenu.Trigger>Menu</DropdownMenu.Trigger>
+        <DropdownMenu.Trigger></DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item
             onSelect={() => {
@@ -81,7 +61,7 @@ export function Topbar({ isPublic = false }) {
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
-    </Grid>
+    </Box>
   );
 }
 
@@ -106,14 +86,14 @@ function MintterSearch() {
   }
 
   return (
-    <form className="w-full" onSubmit={handleSearch}>
+    <Box as="form" css={{ width: '100%' }} onSubmit={handleSearch}>
       <Input
         ref={ref}
         name="hash-search"
         type="text"
         placeholder="Enter a publication CID"
-        className="rounded-full"
+        css={{ borderRadius: '$pill', paddingHorizontal: '$6' }}
       />
-    </form>
+    </Box>
   );
 }

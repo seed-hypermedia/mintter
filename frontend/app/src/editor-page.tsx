@@ -3,7 +3,7 @@ import type { ReactEditor } from 'slate-react';
 import { useHistory, useParams } from 'react-router';
 import { setDefaults } from '@udecode/slate-plugins';
 import { useMenuState } from 'reakit/Menu';
-import { Container } from '@mintter/ui-legacy/container';
+import { Container } from '@components/container';
 import { Grid } from '@mintter/ui-legacy/grid';
 import { useTheme } from './theme-context';
 import { useSidePanel } from './sidepanel';
@@ -18,7 +18,7 @@ import { Button } from '@mintter/ui-legacy/button';
 import { Textarea } from '@mintter/ui-legacy/textarea';
 import { useEditorValue } from '@mintter/editor/use-editor-value';
 import { EditorComponent } from '@mintter/editor/editor-component';
-import { FormControl } from '@mintter/ui-legacy/form-control';
+import { FormControl } from '@components/form-control';
 import { Separator } from '@mintter/ui-legacy/separator';
 
 const Editor: React.FC = () => {
@@ -150,7 +150,13 @@ const Editor: React.FC = () => {
         </Box>
       </Container>
       {isSidepanelOpen ? (
-        <Box css={{ bc: '$gray700', overflow: 'auto', gridArea: 'sidepanel' }}>
+        <Box
+          css={{
+            backgroundColor: '$gray700',
+            overflow: 'auto',
+            gridArea: 'sidepanel',
+          }}
+        >
           <pre>
             <code>{JSON.stringify(editorState, null, 4)}</code>
           </pre>

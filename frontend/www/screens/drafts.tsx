@@ -35,7 +35,7 @@ export default function Drafts() {
           <Separator />
           <Box
             css={{
-              bc: '$gray200',
+              backgroundColor: '$gray200',
               p: '$6',
               display: 'flex',
               flexDirection: 'column',

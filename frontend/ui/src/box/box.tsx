@@ -5,4 +5,4 @@ export const Box = styled('div', {
 })
 
 // export type BoxProps = React.ComponentProps<typeof Box>
-export type BoxProps = React.ComponentProps<any>
+export type BoxProps = React.ComponentProps<typeof Box>

@@ -3,7 +3,7 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 import { useWelcome } from './welcome-provider';
 import { genSeed, initProfile } from './mintter-client';
 import { welcomeGrid } from './intro-page';
-import { Container } from '@mintter/ui-legacy/container';
+import { Container } from '@components/container';
 import { Heading } from '@mintter/ui-legacy/heading';
 import { NextButton, BackButton } from '@mintter/ui-legacy/button';
 import { Button } from '@mintter/ui-legacy/button';

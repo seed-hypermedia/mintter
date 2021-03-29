@@ -8,7 +8,7 @@ const StyledBlock = styled(Box, {
   borderRadius: '$2',
   '&:hover': {
     // TODO: we need color with opacity
-    bc: 'rgba(0,0,0,0.03)',
+    backgroundColor: 'rgba(0,0,0,0.03)',
   },
 });
 

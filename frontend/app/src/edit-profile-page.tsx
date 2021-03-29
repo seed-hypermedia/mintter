@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Container } from '@mintter/ui-legacy/container';
+import { Container } from '@components/container';
 import { Heading } from '@mintter/ui-legacy/heading';
 import { Box } from '@mintter/ui-legacy/box';
 import { NextButton, BackButton } from '@mintter/ui-legacy/button';
-import { Input } from '@mintter/ui-legacy/input';
+import { Input } from '@components/input';
 import { Textarea } from '@mintter/ui-legacy/textarea';
 import { useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';

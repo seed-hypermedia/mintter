@@ -55,7 +55,7 @@ export const MyPublications: React.FC<MyPublicationProps & WithCreateDraft> = ({
             <Button
               onClick={onCreateDraft}
               appearance="pill"
-              variant="primary"
+              color="primary"
               css={{
                 height: '$7',
                 fontSize: '$3',

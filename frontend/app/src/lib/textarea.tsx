@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { StitchesVariants, StitchesCss } from '@stitches/core';
-import { FormControl } from './form-control';
+import { FormControl } from '../components/form-control';
 import { mergeRefs } from './merge-refs';
 import type * as Polymorphic from '@radix-ui/react-polymorphic';
 

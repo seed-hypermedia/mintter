@@ -1,4 +1,4 @@
-import { motion, Variants } from 'framer-motion';
+import { motion, Variants, Orchestration } from 'framer-motion';
 
 import { Box, BoxProps } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
@@ -55,7 +55,7 @@ export const slideUpAnimationVariants: Variants = {
   },
 };
 
-export const OnboardingStep = ({ css, children }) => {
+export const OnboardingStep = ({ css, children }: any) => {
   return (
     <Box
       as={motion.div}
