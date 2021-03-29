@@ -186,7 +186,7 @@ function NoConnectionsBox({onConnect}) {
   return data.length === 0 ? (
     <Box
       css={{
-        backgroundColor: '$gray200',
+        bc: '$gray200',
         p: '$6',
         marginTop: '$4',
         display: 'flex',

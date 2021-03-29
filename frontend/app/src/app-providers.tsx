@@ -5,12 +5,18 @@ import { BrowserRouter as Router } from 'react-router-dom';
 
 import { Theme } from '@mintter/ui/theme';
 import { AppSpinner } from '@components/app-spinner';
-import { DarkModeToggle } from '@components/dark-mode-toggle';
 
 import { SidePanelProvider } from './sidepanel';
 import { BlockMenuProvider } from './editor/block-plugin/components/blockmenu-context';
+import { global } from '@mintter/ui/stitches.config';
 
 export const queryClient = new QueryClient();
+
+const globalStyles = global({
+  'html, body': {
+    background: 'red',
+  },
+});
 
 export const AppProviders: React.FC = ({ children }) => {
   return (
@@ -22,7 +28,6 @@ export const AppProviders: React.FC = ({ children }) => {
               <Router>{children}</Router>
             </SidePanelProvider>
           </BlockMenuProvider>
-          <DarkModeToggle />
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
       </Suspense>

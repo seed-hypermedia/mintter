@@ -1,13 +1,11 @@
 import { lazy } from 'react';
 import { Switch, Route, useRouteMatch, Redirect } from 'react-router-dom';
 import { lazily } from 'react-lazily';
-
 import { createPath, getPath } from '@utils/routes';
 import { AppSpinner } from '@components/app-spinner';
-
-import { AppLayout } from './layouts';
 import { Topbar } from './topbar';
 import { useProfile } from './mintter-hooks';
+import { Box } from '@mintter/ui/box';
 
 const { OnboardingPage } = lazily(() => import('@pages/onboarding'));
 const Library = lazy(() => import('./library-page'));
@@ -49,9 +47,8 @@ export const AuthorNode: React.FC<{ path?: string }> = ({ path = '/' }) => {
   }
 
   if (profile.isSuccess && profile.data) {
-    console.log('render app!');
     return (
-      <AppLayout>
+      <Box css={{ minHeight: '100vh' }}>
         <Topbar />
         <Switch>
           <Route path={['/library', '/admin/library']}>
@@ -75,7 +72,7 @@ export const AuthorNode: React.FC<{ path?: string }> = ({ path = '/' }) => {
             <Redirect to={createPath(match, 'library')} />
           </Route>
         </Switch>
-      </AppLayout>
+      </Box>
     );
   }
 

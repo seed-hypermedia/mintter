@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { css } from 'emotion';
 import { useTheme } from './theme-context';
+import { Box } from '@mintter/ui/box';
 
 export interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
   initial?: string;
@@ -10,14 +10,7 @@ export interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export default function Layout({ children, className = '' }: LayoutProps) {
   const { theme } = useTheme();
-  return (
-    <div
-      data-testid="app-layout"
-      className={`bg-background fixed w-screen h-screen flex ${theme} ${className}`}
-    >
-      {children}
-    </div>
-  );
+  return <Box data-testid="app-layout">{children}</Box>;
 }
 
 type AppLayoutProps = {
@@ -27,16 +20,7 @@ type AppLayoutProps = {
 // TODO:
 export function AppLayout({ children }: AppLayoutProps) {
   const { theme } = useTheme();
-  return (
-    <div
-      data-testid="app-layout"
-      className={`bg-background w-screen h-screen grid grid-flow-row overflow-hidden ${css`
-        grid-template-rows: auto 1fr;
-      `} ${theme}`}
-    >
-      {children}
-    </div>
-  );
+  return <Box data-testid="app-layout">{children}</Box>;
 }
 
 type PublicLayoutProps = {
@@ -45,12 +29,5 @@ type PublicLayoutProps = {
 
 export function PublicLayout({ children }: PublicLayoutProps) {
   const { theme } = useTheme();
-  return (
-    <div
-      data-testid="app-layout"
-      className={`min-h-screen bg-background ${theme}`}
-    >
-      {children}
-    </div>
-  );
+  return <Box data-testid="app-layout">{children}</Box>;
 }
