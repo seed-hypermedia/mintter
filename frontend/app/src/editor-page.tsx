@@ -15,7 +15,7 @@ import { useMutation } from 'react-query';
 import { publishDraft } from './mintter-client';
 import { Box } from '@mintter/ui-legacy/box';
 import { Button } from '@mintter/ui-legacy/button';
-import { Textarea } from '@mintter/ui-legacy/textarea';
+import { Textarea } from '@components/textarea';
 import { useEditorValue } from '@mintter/editor/use-editor-value';
 import { EditorComponent } from '@mintter/editor/editor-component';
 import { FormControl } from '@components/form-control';

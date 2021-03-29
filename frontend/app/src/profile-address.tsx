@@ -1,9 +1,11 @@
 import * as React from 'react';
-import { Textarea } from '@mintter/ui-legacy/textarea';
-import { Button } from '@mintter/ui-legacy/button';
+import { Textarea } from '@components/textarea';
+import { Button } from '@mintter/ui/button';
 import { useProfileAddrs } from './mintter-hooks';
 // import {useToasts} from 'react-toast-notifications'
 import CopyToClipboard from 'react-copy-to-clipboard';
+import { Label } from '@radix-ui/react-label';
+import { Box } from '@mintter/ui/box';
 
 // TODO: fix types
 export function ProfileAddress(props: any) {
@@ -22,29 +24,30 @@ export function ProfileAddress(props: any) {
   }
 
   return (
-    <div {...props}>
-      <label
-        className="block text-body-muted text-xs font-semibold mb-1"
-        htmlFor="addresses"
-      >
-        your Mintter addresses
-      </label>
+    <Box {...props}>
+      <Label htmlFor="addresses">your Mintter addresses</Label>
       <Textarea
         style={{ userSelect: 'none' }}
         readOnly
         rows={4}
         id="addresses"
-        className="block text-body-muted w-full border bg-background-muted border-muted rounded px-3 py-2 font-mono text-xs"
         value={address?.join('\n\n')}
+        css={{
+          marginTop: '$2',
+        }}
       />
       <CopyToClipboard
         text={copyText as string}
         onCopy={(_, result) => {
           if (result) {
+            console.log('Address copied to your clipboard!');
+
             // addToast('Address copied to your clipboard!', {
             //   appearance: 'success',
             // });
           } else {
+            console.log('Error while copying to Clipboard!');
+
             // addToast('Error while copying to Clipboard!', {
             //   appearance: 'error',
             // });
@@ -52,12 +55,17 @@ export function ProfileAddress(props: any) {
         }}
       >
         <Button
-          className="mx-auto mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white"
+          variant="outlined"
+          color="success"
+          size="1"
           type="button"
+          css={{
+            marginTop: '$5',
+          }}
         >
           Copy Address
         </Button>
       </CopyToClipboard>
-    </div>
+    </Box>
   );
 }

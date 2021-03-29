@@ -32,7 +32,8 @@ export function Title({ children }: any) {
   return <Text size="7">{children}</Text>;
 }
 
-export function Button({ children, ...props }: ButtonProps) {
+// TODO: fix types
+export function Button({ children, ...props }: any) {
   return (
     <UIButton variant="outlined" color="primary" {...props}>
       {children}

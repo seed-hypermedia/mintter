@@ -1,7 +1,9 @@
 import { motion, Variants, Orchestration } from 'framer-motion';
 import { Box, BoxProps } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
-import { Button } from '@mintter/ui/button';
+import { Button, ButtonProps } from '@mintter/ui/button';
+import type React from 'react';
+import type { CSS } from '@mintter/ui-legacy/stitches.config';
 
 export type OnboardingStepPropsType = {
   prev: () => void;
@@ -54,7 +56,7 @@ export const slideUpAnimationVariants: Variants = {
   },
 };
 
-export const OnboardingStep = ({ css, children }: any) => {
+export function OnboardingStep({ css, children }: BoxProps) {
   return (
     <Box
       as={motion.div}
@@ -75,11 +77,13 @@ export const OnboardingStep = ({ css, children }: any) => {
       {children}
     </Box>
   );
-};
+}
 
-export const OnboardingStepTitle: React.FC<
-  BoxProps & { icon?: JSX.Element }
-> = ({ css, icon, children }) => {
+export function OnboardingStepTitle({
+  css,
+  icon,
+  children,
+}: BoxProps & { icon?: JSX.Element }) {
   return (
     <Box
       as={motion.header}
@@ -98,12 +102,9 @@ export const OnboardingStepTitle: React.FC<
       </Text>
     </Box>
   );
-};
+}
 
-export const OnboardingStepDescription: React.FC<BoxProps> = ({
-  css,
-  children,
-}) => {
+export function OnboardingStepDescription({ css, children }: BoxProps) {
   return (
     <Text
       as={motion.p}
@@ -117,9 +118,9 @@ export const OnboardingStepDescription: React.FC<BoxProps> = ({
       {children}
     </Text>
   );
-};
+}
 
-export const OnboardingStepBody: React.FC<BoxProps> = ({ css, children }) => {
+export function OnboardingStepBody({ css, children }: BoxProps) {
   return (
     <Box
       as={motion.main}
@@ -129,12 +130,9 @@ export const OnboardingStepBody: React.FC<BoxProps> = ({ css, children }) => {
       {children}
     </Box>
   );
-};
+}
 
-export const OnboardingStepActions: React.FC<BoxProps> = ({
-  css,
-  children,
-}) => {
+export function OnboardingStepActions({ css, children }: BoxProps) {
   return (
     <Box
       as={motion.footer}
@@ -154,14 +152,14 @@ export const OnboardingStepActions: React.FC<BoxProps> = ({
       {children}
     </Box>
   );
-};
+}
 
 // TODO: fix types
-export const OnboardingStepButton = (props: any) => {
+export function OnboardingStepButton(props: ButtonProps) {
   return <Button size="3" {...props} />;
-};
+}
 
-export const SecurityPackIcon: React.FC = () => {
+export function SecurityPackIcon() {
   return (
     <IconContainer>
       <svg
@@ -181,9 +179,9 @@ export const SecurityPackIcon: React.FC = () => {
       </svg>
     </IconContainer>
   );
-};
+}
 
-export const ProfileInformationIcon: React.FC = () => {
+export function ProfileInformationIcon() {
   return (
     <IconContainer>
       <svg
@@ -210,9 +208,9 @@ export const ProfileInformationIcon: React.FC = () => {
       </svg>
     </IconContainer>
   );
-};
+}
 
-const IconContainer: React.FC = ({ children }) => {
+function IconContainer({ children }: { children: React.ReactNode }) {
   return (
     <Box
       css={{
@@ -228,4 +226,4 @@ const IconContainer: React.FC = ({ children }) => {
       {children}
     </Box>
   );
-};
+}

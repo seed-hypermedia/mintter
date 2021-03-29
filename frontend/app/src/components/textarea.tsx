@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { StitchesVariants, StitchesCss } from '@stitches/core';
-import { FormControl } from '../components/form-control';
-import { mergeRefs } from './merge-refs';
+import { FormControl } from './form-control';
+import { mergeRefs } from '../utils/merge-refs';
 import type * as Polymorphic from '@radix-ui/react-polymorphic';
 
 const TEXTAREA_TAG = 'textarea';

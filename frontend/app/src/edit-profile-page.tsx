@@ -4,7 +4,7 @@ import { Heading } from '@mintter/ui-legacy/heading';
 import { Box } from '@mintter/ui-legacy/box';
 import { NextButton, BackButton } from '@mintter/ui-legacy/button';
 import { Input } from '@components/input';
-import { Textarea } from '@mintter/ui-legacy/textarea';
+import { Textarea } from '@components/textarea';
 import { useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 import * as apiClient from './mintter-client';
