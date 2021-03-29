@@ -6,8 +6,8 @@ import { deleteDraft } from './mintter-client';
 // import { Icons } from 'components/icons';
 import { Button } from '@mintter/ui-legacy/button';
 import { Separator } from '@mintter/ui-legacy/separator';
-import { Text } from '@mintter/ui-legacy/text';
-import { Box } from '@mintter/ui-legacy/box';
+import { Text } from '@mintter/ui/text';
+import { Box } from '@mintter/ui/box';
 import { useHistory, useRouteMatch } from 'react-router';
 import type { WithCreateDraft } from './library-page';
 import { MessageBox } from './message-box';
@@ -34,9 +34,7 @@ export const Drafts: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {
       {/* <Seo title="Drafts" /> */}
       {isSuccess && data?.length === 0 && (
         <MessageBox>
-          <Text as="h2" size="5" css={{ fontWeight: '$3' }}>
-            No Drafts available
-          </Text>
+          <Text>No Drafts available</Text>
           <Button
             onClick={onCreateDraft}
             appearance="pill"
@@ -49,9 +47,7 @@ export const Drafts: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {
             }}
           >
             {/* <Icons.FilePlus color="currentColor" /> */}
-            <Text size="3" color="white">
-              Start your first document
-            </Text>
+            <Text>Start your first document</Text>
           </Button>
         </MessageBox>
       )}

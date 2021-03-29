@@ -368,7 +368,8 @@ export const Button = styled('button', {
       },
     },
   ],
-});
+  // TODO: fix types
+}) as any;
 
 export function NextButton({
   to,

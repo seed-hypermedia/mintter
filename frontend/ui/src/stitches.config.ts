@@ -93,7 +93,13 @@ const stitches = createCss({
       2: '1.4',
       3: '1.6',
     },
-    radii: {},
+    radii: {
+      1: '3px',
+      2: '5px',
+      3: '7px',
+      round: '50%',
+      pill: '9999px',
+    },
     shadows: {
       3: '0px 4px 8px rgba(0, 0, 0, 0.15);',
     },
@@ -117,7 +123,13 @@ const stitches = createCss({
       8: '64px',
     },
     transitions: {},
-    zIndices: {},
+    zIndices: {
+      1: '100',
+      2: '200',
+      3: '300',
+      4: '400',
+      max: '999',
+    },
   },
   conditions: {},
   utils: {

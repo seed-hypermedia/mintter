@@ -15,6 +15,7 @@
     "./button": "./dist/button/index.js",
     "./text": "./dist/text/index.js",
     "./theme": "./dist/theme/index.js",
+    "./icons": "./dist/icons/index.js",
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -33,6 +34,9 @@
       ],
       "theme": [
         "dist/theme/index.d.ts"
+      ],
+      "icons": [
+        "dist/icons/index.d.ts"
       ]
     }
   },
@@ -48,15 +52,17 @@
     "storybook:build": "build-storybook -c storybook-utils -s ../app/public -o \"./out/\""
   },
   "dependencies": {
+    "@modulz/radix-icons": "^4.0.0",
+    "@radix-ui/react-accessible-icon": "^0.0.12",
     "@stitches/react": "^0.1.0-canary.17",
     "use-dark-mode": "^2.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",
-    "@storybook/addons": "^6.1.21",
     "@storybook/addon-actions": "^6.1.21",
     "@storybook/addon-essentials": "^6.1.21",
     "@storybook/addon-links": "^6.1.21",
+    "@storybook/addons": "^6.1.21",
     "@storybook/components": "^6.1.21",
     "@storybook/core": "^6.1.21",
     "@storybook/react": "^6.1.21",

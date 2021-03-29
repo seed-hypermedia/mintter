@@ -50,9 +50,7 @@ export const MyPublications: React.FC<MyPublicationProps & WithCreateDraft> = ({
       {/* {!noSeo && <Seo title="My Publications" />} */}
       {isSuccess && data?.length === 0 && (
         <MessageBox>
-          <Text as="h2" size="5" css={{ fontWeight: '$3' }}>
-            No Publications (yet)
-          </Text>
+          <Text>No Publications (yet)</Text>
           {!isPublic && (
             <Button
               onClick={onCreateDraft}

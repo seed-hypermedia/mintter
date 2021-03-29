@@ -40,7 +40,6 @@ export function LinkMenu({ menu }: { menu: MenuProps }) {
   const ref = React.useRef<HTMLDivElement>(null);
   const initialFocus = React.useRef<HTMLButtonElement>(null);
   const editor = useSlate();
-  console.log('render Linkmenu!!');
   React.useEffect(() => {
     if (ref.current && menu.visible) {
       console.log('linkmenu is visible');

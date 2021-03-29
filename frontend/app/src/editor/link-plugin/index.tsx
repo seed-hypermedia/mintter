@@ -24,32 +24,19 @@ import {
   upsertLinkAtSelection,
   getAbove,
 } from '@udecode/slate-plugins';
+import { Label } from '@radix-ui/react-label';
 import { usePopoverState } from 'reakit/Popover';
-import { Box } from '@mintter/ui-legacy/box';
-import { Button } from '@mintter/ui-legacy/button';
+import { Box } from '@mintter/ui/box';
+import { Button } from '@mintter/ui/button';
 import { isNodeTypeIn } from '../mintter-plugin/is-node-type-in';
+import { Text } from '@mintter/ui/text';
 import { Popover } from './popover';
+import { Tooltip } from '../../tooltip';
+import { LinkElement } from './link-element';
+import { Input } from '@mintter/ui-legacy/input';
+import { LinkIcon } from '@mintter/ui/icons';
 
 export const ELEMENT_LINK = 'a';
-
-// TODO: fix types
-export const LinkComponent: React.FC<any> = ({
-  element,
-  attributes,
-  children,
-  as = 'a',
-}) => {
-  return (
-    <Box
-      as={as}
-      {...attributes}
-      onClick={() => window.open(element.url as string, '_blank')}
-      href={element.url as string}
-    >
-      {children}
-    </Box>
-  );
-};
 
 /**
  * This is needed so the popover with a form works.
@@ -63,7 +50,7 @@ function renderLink(options?: any) {
   const { link } = setDefaults(options, {});
   return getRenderElement({
     ...link,
-    component: LinkComponent,
+    component: LinkElement,
   });
 }
 
@@ -77,7 +64,7 @@ export function LinkPlugin(options?: any): SlatePlugin {
 
 export const DEFAULTS_LINK: Record<LinkKeyOption, LinkPluginOptionsValues> = {
   link: {
-    component: LinkComponent,
+    component: LinkElement,
     isUrl,
     type: ELEMENT_LINK,
     rootProps: {
@@ -229,10 +216,6 @@ export function ToolbarLink({ link: linkOptions }: any) {
   const options = setDefaults({ link: linkOptions }, DEFAULTS_LINK);
   const editor = useSlate();
   const popover = usePopoverState();
-  console.log(
-    '🚀 ~ file: index.tsx ~ line 231 ~ ToolbarLink ~ popover',
-    popover,
-  );
   const [selection] = useLastEditorSelection(editor);
   const [link, setLink] = React.useState<string>('');
   const [anchor, setAnchor] = React.useState<string>(() =>
@@ -287,68 +270,87 @@ export function ToolbarLink({ link: linkOptions }: any) {
       aria-label="Link Popover"
       onHide={() => {
         Transforms.select(editor, selection as any);
+        Transforms.collapse(editor, {
+          edge: 'end',
+        });
       }}
       tooltip={{
         content: isLink ? 'modify Link' : 'Add Link',
       }}
       disclosure={
-        <Button>
-          link
-          {/* <IconLink /> */}
+        <Button
+          color="transparent"
+          css={{
+            color: 'white',
+            padding: '0',
+            lineHeight: '1',
+            width: 24,
+            height: 24,
+          }}
+        >
+          <LinkIcon />
         </Button>
       }
     >
-      <div
+      <Box
         contentEditable={false}
-        className="p-4 pt-2 rounded shadow-lg bg-white w-80 border border-gray-200"
+        css={{
+          padding: '$4',
+          width: '300px',
+          backgroundColor: 'white',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '$4',
+        }}
       >
-        <p className="font-bold text-black">Link Information</p>
-        <form className="block" onSubmit={handleSubmit}>
-          <div className="mt-2">
-            <label className="block text-xs text-gray-500" htmlFor="address">
-              Link Address
-            </label>
-            <input
+        <Text variant="h3">Link Information</Text>
+        <Box
+          as="form"
+          css={{
+            width: '$full',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '$3',
+          }}
+          onSubmit={handleSubmit}
+        >
+          <Box>
+            <Label htmlFor="address">Link Address</Label>
+            <Input
               value={link}
-              onChange={(e) => setLink(e.target.value)}
-              className="block border border-gray-200 focus:outline-none focus:ring-1 focus:ring-purple-600 focus:border-transparent text-sm text-black px-2 py-1 rounded-sm w-full"
+              onChange={(e: any) => setLink(e.target.value)}
               id="address"
               type="url"
             />
-          </div>
-          <div className="mt-2">
-            <label className="block text-xs text-gray-500" htmlFor="anchor">
-              Link Anchor
-            </label>
-            <input
-              disabled
-              className="block border border-gray-200 text-sm text-black px-2 py-1 rounded-sm w-full"
-              id="anchor"
-              value={anchor}
-              // onChange={(e) => setAnchor(e.target.value)}
-              type="text"
-            />
-          </div>
-          <div className="mt-2 w-full flex items-center justify-between">
-            <button
-              type="submit"
-              className="text-purple-600 px-2 py-1 rounded text-sm focus:bg-gray-100"
-            >
+          </Box>
+          <Box>
+            <Label htmlFor="anchor">Link Anchor</Label>
+            <Input disabled id="anchor" value={anchor} type="text" />
+          </Box>
+          <Box
+            css={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Button type="submit" color="primary" size="1" appearance="rounded">
               Save
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={getPreventDefaultHandler(handleRemove)}
               disabled={!isLink}
-              className={`text-red-600 px-2 py-1 text-sm focus:bg-gray-100 ${
-                !isLink ? 'opacity-50' : 'opacity-100'
-              }`}
+              variant="outlined"
+              color="danger"
+              size="1"
+              appearance="rounded"
             >
-              remove link
-            </button>
-          </div>
-        </form>
-      </div>
+              <span>remove link</span>
+            </Button>
+          </Box>
+        </Box>
+      </Box>
     </Popover>
   );
 }

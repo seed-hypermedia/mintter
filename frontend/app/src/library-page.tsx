@@ -93,18 +93,19 @@ export default function Library() {
   }
 
   return (
-    <div className="relative row-start-2 overflow-auto" data-testid="page">
-      <div
-        className={`grid gap-4 grid-flow-col ${css`
-          grid-template-columns: minmax(250px, 25%) 1fr minmax(250px, 25%);
-        `}`}
+    <Box data-testid="page">
+      <Box
+        css={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(250px, 25%) 1fr minmax(250px, 25%)',
+        }}
       >
-        <div className="px-4 pt-16 mb-20 md:pl-16">
+        <Box>
           <ProfileInfo />
           <Connections onConnect={onConnect} />
           <SuggestedConnections onConnect={onConnect} />
-        </div>
-        <div>
+        </Box>
+        <Box>
           <MainColumn className="pt-12">
             <div className="flex items-baseline justify-between">
               <h1 className="text-4xl font-bold text-heading">Library</h1>
@@ -142,10 +143,10 @@ export default function Library() {
               </Switch>
             </div>
           </MainColumn>
-        </div>
+        </Box>
         <div />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
@@ -174,9 +175,7 @@ const NoConnectionsBox: React.FC<{ onConnect: () => void }> = ({
   const { data = [] } = useConnectionList();
   return data.length === 0 ? (
     <MessageBox>
-      <Text as="h2" size="5" css={{ fontWeight: '$3' }}>
-        Connect to Others
-      </Text>
+      <Text>Connect to Others</Text>
       <Button
         onClick={() => onConnect()}
         appearance="pill"

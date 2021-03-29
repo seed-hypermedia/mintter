@@ -2,7 +2,6 @@ import {styled} from '../stitches.config'
 
 export const Button = styled('button', {
   all: 'unset',
-  borderRadius: 9999,
   boxSizing: 'border-box',
   cursor: 'pointer',
   fontFamily: '$default',
@@ -124,6 +123,27 @@ export const Button = styled('button', {
         '$$outlined-hovered-background-color': '$colors$danger-muted',
         '$$outlined-active-background-color': '$colors$danger-softer',
       },
+      transparent: {
+        '$$solid-background-color': 'transparent',
+        '$$solid-text-color': 'currentColor',
+        '$$solid-hovered-background-color': 'transparent',
+        '$$solid-active-background-color': 'transparent',
+        '$$outlined-border-color': 'transparent',
+        '$$outlined-text-color': 'currentColor',
+        '$$outlined-hovered-background-color': 'transparent',
+        '$$outlined-active-background-color': 'transparent',
+      },
+    },
+    appearance: {
+      pill: {
+        borderRadius: '$pill',
+      },
+      rounded: {
+        borderRadius: '$1',
+      },
+      square: {
+        borderRadius: '0',
+      },
     },
   },
 
@@ -131,7 +151,6 @@ export const Button = styled('button', {
     variant: 'solid',
     size: '2',
     color: 'primary',
+    appearance: 'pill',
   },
 })
-
-export type ButtonProps = React.ComponentProps<typeof Button>

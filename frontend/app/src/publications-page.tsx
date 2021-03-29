@@ -6,8 +6,8 @@ import type { WithCreateDraft } from './library-page';
 import { createDraft, deletePublication } from './mintter-client';
 import { useOthersPublicationsList } from './mintter-hooks';
 import type { Document } from '@mintter/api/documents/v1alpha/documents_pb';
-import { Button } from '@mintter/ui-legacy/button';
-import { Text } from '@mintter/ui-legacy/text';
+import { Button } from '@mintter/ui/button';
+import { Text } from '@mintter/ui/text';
 import { MessageBox } from './message-box';
 
 export const Publications: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {
@@ -33,24 +33,9 @@ export const Publications: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {
       {/* <Seo title="Feed" /> */}
       {data?.length === 0 && (
         <MessageBox>
-          <Text as="h2" size="5" css={{ fontWeight: '$3' }}>
-            No Publications (yet)
-          </Text>
-          <Button
-            onClick={onCreateDraft}
-            appearance="pill"
-            variant="primary"
-            css={{
-              height: '$7',
-              fontSize: '$3',
-              marginTop: '$4',
-              px: '$4',
-            }}
-          >
-            {/* <Icons.FilePlus color="currentColor" /> */}
-            <Text size="3" color="white">
-              Start your first document
-            </Text>
+          <Text>No Publications (yet)</Text>
+          <Button onClick={onCreateDraft} appearance="pill" color="primary">
+            <Text>Start your first document</Text>
           </Button>
         </MessageBox>
       )}

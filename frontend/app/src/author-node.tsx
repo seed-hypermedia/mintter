@@ -49,6 +49,7 @@ export const AuthorNode: React.FC<{ path?: string }> = ({ path = '/' }) => {
   }
 
   if (profile.isSuccess && profile.data) {
+    console.log('render app!');
     return (
       <AppLayout>
         <Topbar />
@@ -56,7 +57,6 @@ export const AuthorNode: React.FC<{ path?: string }> = ({ path = '/' }) => {
           <Route path={['/library', '/admin/library']}>
             <Library />
           </Route>
-          <Route exact path={match.url}></Route>
           <Route
             exact
             path={['/editor/:documentId', '/admin/editor/:documentId']}

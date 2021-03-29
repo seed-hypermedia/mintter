@@ -2,7 +2,7 @@ import { motion, Variants } from 'framer-motion';
 
 import { Box, BoxProps } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
-import { Button, ButtonProps } from '@mintter/ui/button';
+import { Button } from '@mintter/ui/button';
 
 export type OnboardingStepPropsType = {
   prev: () => void;
@@ -63,15 +63,15 @@ export const OnboardingStep: React.FC<BoxProps> = ({ css, children }) => {
       initial="hidden"
       animate="visible"
       exit="hidden"
-      css={{
-        alignItems: 'center',
-        display: 'flex',
-        flex: 'auto',
-        flexDirection: 'column',
-        gap: '$7',
-        justifyContent: 'center',
-        ...css,
-      }}
+      // css={{
+      //   alignItems: 'center',
+      //   display: 'flex',
+      //   flex: 'auto',
+      //   flexDirection: 'column',
+      //   gap: '$7',
+      //   justifyContent: 'center',
+      //   ...css,
+      // }}
     >
       {children}
     </Box>
@@ -85,13 +85,13 @@ export const OnboardingStepTitle: React.FC<
     <Box
       as={motion.header}
       variants={slideDownAnimationVariants}
-      css={{
-        alignItems: 'center',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$5',
-        ...css,
-      }}
+      // css={{
+      //   alignItems: 'center',
+      //   display: 'flex',
+      //   flexDirection: 'column',
+      //   gap: '$5',
+      //   ...css,
+      // }}
     >
       {icon}
       <Text
@@ -114,7 +114,7 @@ export const OnboardingStepDescription: React.FC<BoxProps> = ({
     <Text
       as={motion.p}
       variants={fadeAnimationVariants}
-      css={{ textAlign: 'center', maxWidth: 376, ...css }}
+      // css={{ textAlign: 'center', maxWidth: '$one-third', ...css }}
     >
       {children}
     </Text>
@@ -126,7 +126,7 @@ export const OnboardingStepBody: React.FC<BoxProps> = ({ css, children }) => {
     <Box
       as={motion.main}
       variants={fadeAnimationVariants}
-      css={{ marginTop: 'auto', ...css }}
+      // css={{ marginTop: 'auto', ...css }}
     >
       {children}
     </Box>
@@ -141,24 +141,25 @@ export const OnboardingStepActions: React.FC<BoxProps> = ({
     <Box
       as={motion.footer}
       variants={slideUpAnimationVariants}
-      css={{
-        display: 'flex',
-        justifyContent: 'space-evenly',
-        marginTop: 'auto',
-        width: '100%',
-        [`& > ${Button}`]: {
-          maxWidth: 240,
-          width: '100%',
-        },
-        ...css,
-      }}
+      // css={{
+      //   display: 'flex',
+      //   justifyContent: 'space-evenly',
+      //   marginTop: 'auto',
+      //   width: '100%',
+      //   [`& > ${Button}`]: {
+      //     maxWidth: 240,
+      //     width: '100%',
+      //   },
+      //   ...css,
+      // }}
     >
       {children}
     </Box>
   );
 };
 
-export const OnboardingStepButton: React.FC<ButtonProps> = (props) => {
+// TODO: fix types
+export const OnboardingStepButton = (props: any) => {
   return <Button size="3" {...props} />;
 };
 
