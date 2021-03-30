@@ -144,7 +144,8 @@ export function listPublications(
   if (pageSize) request.setPageSize(pageSize);
   if (pageToken) request.setPageToken(pageToken);
   if (view) request.setView(view);
-  return publicationsClient().listPublications(request);
+  // return publicationsClient().listPublications(request);
+  return Promise.resolve([]);
 }
 
 /**
