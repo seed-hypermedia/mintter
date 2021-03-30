@@ -5,6 +5,8 @@ import documents from '@mintter/api/documents/v1alpha/documents_pb';
 import MintterClient from '@mintter/api/v2/mintter_grpc_web_pb';
 import mintter from '@mintter/api/v2/mintter_pb';
 import { id } from '@mintter/editor/id';
+import { buildDocument } from '@utils/generate';
+import { makeProto } from '@mintter/editor/transformers/make-proto';
 
 const MINTTER_API_URL =
   import.meta.env.MINTTER_API_URL || 'http://localhost:55001';
@@ -122,10 +124,7 @@ export function getPublication(
   documentId: string,
   version?: string,
 ): Promise<documents.Publication> {
-  let doc = new documents.Document();
-  doc.setId(documentId);
   let pub = new documents.Publication();
-  pub.setDocument(doc);
 
   return Promise.resolve(pub);
 }

@@ -11,6 +11,7 @@ const { OnboardingPage } = lazily(() => import('@pages/onboarding'));
 const Library = lazy(() => import('./pages/library'));
 const Editor = lazy(() => import('./pages/editor'));
 const Settings = lazy(() => import('./pages/settings'));
+const Publication = lazy(() => import('./pages/publication'));
 
 export const AuthorNode: React.FC<{ path?: string }> = ({ path = '/' }) => {
   const match = useRouteMatch(path)!;
@@ -66,11 +67,11 @@ export const AuthorNode: React.FC<{ path?: string }> = ({ path = '/' }) => {
           >
             <Editor />
           </Route>
-          {/* <Route
-               exact
-               path={['/p/:slug', '/admin/p/:slug']}
-               component={Publication}
-             /> */}
+          <Route
+            path={['/p/:docId/:docVersion', '/admin/p/:docId/:docVersion']}
+          >
+            <Publication />
+          </Route>
           <Route path={['/settings', '/admin/settings']}>
             <Settings />
           </Route>

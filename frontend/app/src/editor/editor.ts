@@ -16,7 +16,7 @@ export interface SlateBlock {
   id: string;
   type: string;
   listStyle?: documents.ListStyle;
-  children: any[];
+  children: Node[];
 }
 
 export const Editor = SlateEditor;

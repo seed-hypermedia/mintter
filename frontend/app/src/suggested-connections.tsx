@@ -50,7 +50,7 @@ export function SuggestedConnections({ onConnect }: any) {
                     backgroundColor:
                       connectionStatusColor(
                         profile as mintter.Profile.AsObject,
-                      ) === 'danger'
+                      ) === 'bg-danger'
                         ? '$danger-default'
                         : '$success-default',
                   }}

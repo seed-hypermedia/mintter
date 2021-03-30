@@ -1,8 +1,7 @@
-import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
-import * as mintter from '@mintter/api/v2/mintter_pb';
+import documents from '@mintter/api/documents/v1alpha/documents_pb';
+import mintter from '@mintter/api/v2/mintter_pb';
 import { id as getId } from '@mintter/editor/id';
 import faker from 'faker';
-import { identity } from 'lodash';
 
 export function buildProfile(): mintter.Profile.AsObject {
   return {

@@ -269,6 +269,7 @@ export function usePublication(
       ...options,
     },
   );
+  console.log('🚀 ~ file: mintter-hooks.ts ~ line 272 ~ pubQuery', pubQuery);
 
   const data = React.useMemo(() => pubQuery.data?.toObject?.(), [
     pubQuery.data,

@@ -1,5 +1,5 @@
 import React from 'react'
-import {css} from 'emotion'
+
 import SplitPane from 'react-split-pane'
 import {useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import {ReactEditor} from 'slate-react'
