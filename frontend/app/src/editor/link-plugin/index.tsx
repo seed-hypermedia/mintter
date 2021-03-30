@@ -301,9 +301,12 @@ export function ToolbarLink({ link: linkOptions }: any) {
           display: 'flex',
           flexDirection: 'column',
           gap: '$4',
+          boxShadow: '$3',
         }}
       >
-        <Text size="4">Link Information</Text>
+        <Text size="3" css={{ fontWeight: '$bold' }}>
+          Link Information
+        </Text>
         <Box
           as="form"
           css={{

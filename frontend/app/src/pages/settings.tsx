@@ -31,10 +31,6 @@ export default function Settings() {
 
   React.useEffect(() => {
     if (profile) {
-      console.log(
-        '🚀 ~ file: settings-page.tsx ~ line 34 ~ React.useEffect ~ profile',
-        profile,
-      );
       setValue('username', profile.username);
       setValue('email', profile.email);
       setValue('bio', profile.bio);
@@ -75,16 +71,15 @@ export default function Settings() {
       data-testid="page"
       css={{
         display: 'grid',
-        height: '$full',
-        gridTemplateAreas: `"leftCol mainCol rightCol"
-        "leftCol mainCol rightCol"`,
+        minHeight: '$full',
+        gridTemplateAreas: `"controls controls controls"
+        "maincontent maincontent maincontent"`,
         gridTemplateColumns: 'minmax(300px, 25%) 1fr minmax(300px, 25%)',
-        gridTemplateRows: '160px 1fr',
+        gridTemplateRows: '64px 1fr',
         gap: '$5',
-        paddingTop: '$8',
       }}
     >
-      <Container css={{ gridArea: 'mainCol', marginBottom: 300 }}>
+      <Container css={{ gridArea: 'maincontent', marginBottom: 300 }}>
         <Box
           as="form"
           css={{ width: '$full' }}
@@ -98,6 +93,7 @@ export default function Settings() {
               display: 'grid',
               gridAutoFlow: 'row',
               gap: '$5',
+              marginTop: '$7',
             }}
           >
             <Box>

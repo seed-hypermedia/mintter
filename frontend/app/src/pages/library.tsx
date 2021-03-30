@@ -100,17 +100,16 @@ export default function Library() {
       css={{
         display: 'grid',
         height: '$full',
-        gridTemplateAreas: `"leftCol mainCol rightCol"
-        "leftCol mainCol rightCol"`,
+        gridTemplateAreas: `"controls controls controls"
+        "leftside maincontent rightside"`,
         gridTemplateColumns: 'minmax(300px, 25%) 1fr minmax(300px, 25%)',
-        gridTemplateRows: '160px 1fr',
+        gridTemplateRows: '64px 1fr',
         gap: '$5',
-        paddingTop: '$8',
       }}
     >
       <Box
         css={{
-          gridArea: 'leftCol',
+          gridArea: 'leftside',
           paddingLeft: '$5',
           display: 'flex',
           flexDirection: 'column',
@@ -122,7 +121,7 @@ export default function Library() {
         <SuggestedConnections onConnect={onConnect} />
       </Box>
 
-      <Container css={{ gridArea: 'mainCol' }}>
+      <Container css={{ gridArea: 'maincontent' }}>
         <Box
           css={{
             display: 'flex',
@@ -242,7 +241,7 @@ function NavItem({
   return (
     <Text
       as={Link}
-      size="5"
+      size="6"
       to={to}
       css={{
         textDecoration: 'none',

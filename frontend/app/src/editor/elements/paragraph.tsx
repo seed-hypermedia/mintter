@@ -4,7 +4,7 @@ import type {
   ParagraphPluginOptionsValues,
 } from '@udecode/slate-plugins';
 import { ELEMENT_PARAGRAPH } from './defaults';
-import { Box } from '@mintter/ui-legacy/box';
+import { Text } from '@mintter/ui/text';
 
 // TODO: fix types
 export const Paragraph: React.FC<any> = ({
@@ -16,11 +16,14 @@ export const Paragraph: React.FC<any> = ({
   ...rest
 }) => {
   return (
-    <Box
+    <Text
       as={as}
+      alt
       css={{
         fontSize: '$4',
         lineHeight: '$2',
+        margin: 0,
+        padding: 0,
       }}
       data-element={element.type}
       {...attributes}
@@ -28,7 +31,7 @@ export const Paragraph: React.FC<any> = ({
       {...rest}
     >
       {children}
-    </Box>
+    </Text>
   );
 };
 

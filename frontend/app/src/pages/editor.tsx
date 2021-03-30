@@ -1,28 +1,26 @@
 import * as React from 'react';
 import type { ReactEditor } from 'slate-react';
 import { useHistory, useParams } from 'react-router';
+import { useMutation } from 'react-query';
 import { setDefaults } from '@udecode/slate-plugins';
 import { useMenuState } from 'reakit/Menu';
-import { Container } from '@components/container';
-import { Grid } from '@mintter/ui-legacy/grid';
-import { useTheme } from '../theme-context';
 import { useSidePanel } from '../sidepanel';
 import { useDraft } from '../mintter-hooks';
+import { publishDraft } from '../mintter-client';
+import { Text } from '@mintter/ui/text';
+import { Box } from '@mintter/ui/box';
+import { Button } from '@mintter/ui/button';
 import { createPlugins } from '@mintter/editor/plugins';
 import { options } from '@mintter/editor/options';
 import { useEditor } from '@mintter/editor/use-editor';
-import { useMutation } from 'react-query';
-import { publishDraft } from '../mintter-client';
-import { Box } from '@mintter/ui-legacy/box';
-import { Button } from '@mintter/ui-legacy/button';
-import { Textarea } from '@components/textarea';
 import { useEditorValue } from '@mintter/editor/use-editor-value';
 import { EditorComponent } from '@mintter/editor/editor-component';
+import { Textarea } from '@components/textarea';
 import { FormControl } from '@components/form-control';
 import { Separator } from '@components/separator';
+import { Container } from '@components/container';
 
 const Editor: React.FC = () => {
-  const { theme } = useTheme();
   const history = useHistory();
   const query = new URLSearchParams(window.location.search);
   const { documentId } = useParams<{ documentId: string }>();
@@ -62,23 +60,26 @@ const Editor: React.FC = () => {
 
   if (isError) {
     console.error('useDraft error: ', error);
-    return <p>Editor ERROR</p>;
+    return <Text>Editor ERROR</Text>;
   }
 
   if (isLoading) {
-    return <p>loading draft...</p>;
+    return <Text>loading draft...</Text>;
   }
 
   return (
-    <Grid
+    <Box
       css={{
+        display: 'grid',
+        minHeight: '$full',
         gridTemplateAreas: isSidepanelOpen
-          ? `"controls controls"
-        "maincontent sidepanel"`
-          : `"controls controls"
-        "maincontent maincontent"`,
-        gridTemplateColumns: '2fr 1fr',
-        gridTemplateRows: '50px 1fr',
+          ? `"controls controls controls"
+        "maincontent maincontent rightside"`
+          : `"controls controls controls"
+        "maincontent maincontent maincontent"`,
+        gridTemplateColumns: 'minmax(300px, 25%) 1fr minmax(300px, 25%)',
+        gridTemplateRows: '64px 1fr',
+        gap: '$5',
       }}
     >
       <Box
@@ -88,21 +89,20 @@ const Editor: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'flex-end',
           gap: '$2',
+          paddingHorizontal: '$5',
         }}
       >
-        <Button variant="primary" appearance="pill" size="2">
-          Publish
+        <Button color="primary" appearance="pill" size="2">
+          PUBLISH
         </Button>
         <Button
-          variant="muted"
-          appearance="pill"
+          color="transparent"
+          appearance="square"
           size="1"
           onClick={() => sidepanelSend?.({ type: 'SIDEPANEL_TOOGLE' })}
-        >
-          sidepanel
-        </Button>
+        ></Button>
       </Box>
-      <Container css={{ gridArea: 'maincontent' }}>
+      <Container css={{ gridArea: 'maincontent', marginBottom: 300 }}>
         <Textarea
           value={title}
           onChange={setTitle}
@@ -112,12 +112,11 @@ const Editor: React.FC = () => {
           css={{
             $$borderColor: 'transparent',
             $$borderColorHover: 'transparent',
-            fontSize: '$6',
-            lineHeight: '1.25',
-            gontWeight: '$4',
-            fontFamily: '$heading',
-            marginTop: '$6',
-            px: '0',
+            $$backgroundColor: '$colors$background-alt',
+            fontSize: '$7',
+            fontWeight: '$bold',
+            letterSpacing: '0.01em',
+            lineHeight: '$1',
           }}
         />
 
@@ -130,10 +129,9 @@ const Editor: React.FC = () => {
           css={{
             $$borderColor: 'transparent',
             $$borderColorHover: 'transparent',
-            fontSize: '$4',
+            $$backgroundColor: '$colors$background-alt',
+            fontSize: '$5',
             lineHeight: '1.25',
-            marginTop: '$4',
-            px: '0',
           }}
         />
         <Separator />
@@ -152,23 +150,19 @@ const Editor: React.FC = () => {
       {isSidepanelOpen ? (
         <Box
           css={{
-            backgroundColor: '$gray700',
+            backgroundColor: '$background-contrast',
             overflow: 'auto',
-            gridArea: 'sidepanel',
+            gridArea: 'rightside',
+            color: '$text-opposite',
+            padding: '$4',
           }}
         >
           <pre>
             <code>{JSON.stringify(editorState, null, 4)}</code>
           </pre>
-          <pre>
-            <code>{JSON.stringify(editorState, null, 4)}</code>
-          </pre>
-          <pre>
-            <code>{JSON.stringify(editorState, null, 4)}</code>
-          </pre>
         </Box>
       ) : null}
-    </Grid>
+    </Box>
   );
 };
 
