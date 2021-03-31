@@ -2,6 +2,10 @@ import documents from '@mintter/api/documents/v1alpha/documents_pb';
 import mintter from '@mintter/api/v2/mintter_pb';
 import { id as getId } from '@mintter/editor/id';
 import { makeProto } from '@mintter/editor/transformers/make-proto';
+import {
+  focusBlockStartById,
+  normalizeDescendantsToDocumentFragment,
+} from '@udecode/slate-plugins';
 
 import faker from 'faker';
 
@@ -18,7 +22,7 @@ export function buildProfile(): mintter.Profile.AsObject {
 
 export function buildBlocksMap(
   blocks: documents.Block[],
-): Array<[string, Block.AsObject]> {
+): Array<[string, documents.Block.AsObject]> {
   return blocks.map((b) => {
     let block = b.toObject();
 
@@ -30,6 +34,19 @@ export function buildChildrensList(blocks: documents.Block[]): string[] {
   return blocks.map((b) => b.getId());
 }
 
+export function buildPublication(): documents.Publication {
+  let pub = new documents.Publication();
+
+  pub.setDocument(buildDocument());
+  pub.setVersion(getId());
+
+  return pub;
+}
+
+type BuildDocumentOptions = Partial<documents.Document.AsObject> & {
+  blocks?: documents.Block[];
+};
+
 export function buildDocument({
   author = faker.finance.bitcoinAddress(),
   blocks,
@@ -37,10 +54,9 @@ export function buildDocument({
   title = faker.lorem.sentence(),
   subtitle = faker.lorem.sentence(),
   id = getId(),
-  linksMap = [],
-}: Partial<documents.Document.AsObject> & {
-  blocks: documents.Block[];
-}): documents.Document.AsObject {
+}: BuildDocumentOptions = {}): documents.Document {
+  console.log('author', author);
+
   let block1: documents.Block;
   let block2: documents.Block;
   let block3: documents.Block;
@@ -51,38 +67,48 @@ export function buildDocument({
     blocks = [block1, block2, block3];
   }
 
-  return {
-    id,
-    title,
-    subtitle,
-    author,
-    childrenListStyle,
-    childrenList: buildChildrensList(blocks),
-    blocksMap: buildBlocksMap(blocks),
-    linksMap,
-  };
+  let doc = new documents.Document();
+  doc.setId(id);
+  doc.setTitle(title);
+  doc.setSubtitle(subtitle);
+  doc.setAuthor(author);
+  doc.setChildrenListStyle(childrenListStyle);
+  doc.setChildrenList(buildChildrensList(blocks));
+  let blocksMap = doc.getBlocksMap();
+  blocks.forEach((b) => {
+    blocksMap.set(b.getId(), b);
+  });
+  let linksMap = doc.getLinksMap();
+  // set links map when needed
+  return doc;
 }
+
+type BuildBlockOptions = Partial<documents.Block.AsObject> & {
+  elementsList?: documents.InlineElement[];
+};
 
 export function buildBlock({
   elementsList,
   id = getId(),
   childListStyle = documents.ListStyle.NONE,
-  parent,
+  parent = '',
   type = documents.Block.Type.BASIC,
   childrenList = [],
-}: Partial<documents.Block.AsObject>): documents.Block {
+}: BuildBlockOptions = {}): documents.Block {
   let inlineElements: documents.InlineElement[];
   if (elementsList === undefined) {
     elementsList = [
-      buildTextInlineElement().toObject(),
-      buildTextInlineElement().toObject(),
-      buildTextInlineElement().toObject(),
+      buildTextInlineElement(),
+      buildTextInlineElement(),
+      buildTextInlineElement(),
     ];
+  } else {
+    elementsList.map((n) => buildTextInlineElement(n.textRun));
   }
 
   let block = new documents.Block();
   block.setId(id);
-  block.setElementsList(elementsList);
+  block.setElementsList(elementsList as documents.InlineElement[]);
   block.setChildListStyle(childListStyle);
   block.setParent(parent);
   block.setChildrenList(childrenList);
@@ -92,54 +118,67 @@ export function buildBlock({
 }
 
 export function buildTextInlineElement(
-  elm?: documents.InlineElement.AsObject,
+  textRun?: documents.TextRun.AsObject,
 ): documents.InlineElement {
-  if (elm === undefined) {
-    elm = {
-      textRun: faker.lorem.sentence(),
+  if (textRun === undefined) {
+    textRun = {
+      text: faker.lorem.sentence(),
+      bold: false,
+      italic: false,
+      underline: false,
+      strikethrough: false,
+      code: false,
+      linkKey: '',
+      blockquote: false,
     };
   }
-  let element = makeProto(
-    new documents.InlineElement(),
-    elm as documents.InlineElement.AsObject,
-  );
+
+  let node = new documents.InlineElement();
+  let text = makeProto<documents.TextRun>(new documents.TextRun(), textRun);
+
+  node.setTextRun(text);
+
+  return node;
 }
 
 export function buildImageInlineElement(
-  elm?: documents.InlineElement.AsObject,
-  linkKey: string,
+  image?: documents.Image.AsObject,
+  linkKey?: string,
 ): documents.InlineElement {
-  if (elm === undefined) {
-    elm = {
-      image: {
-        altText: faker.lorem.sentence(),
-        linkKey,
-      },
+  if (linkKey === undefined) {
+    linkKey = getId();
+  }
+  if (image === undefined) {
+    image = {
+      altText: faker.lorem.sentence(),
+      linkKey,
     };
   }
-  let element = makeProto(
-    new documents.InlineElement(),
-    elm as documents.InlineElement.AsObject,
-  );
+  let node = new documents.InlineElement();
+  let element = makeProto<documents.Image>(new documents.Image(), image);
+  node.setImage(element);
+
+  return node;
 }
 
 export function buildQuoteInlineElement(
-  elm?: documents.InlineElement.AsObject,
-  linkKey: string,
+  quote?: documents.Quote.AsObject,
+  linkKey?: string,
 ): documents.InlineElement {
-  if (elm === undefined) {
-    elm = {
-      quote: {
-        linkKey,
-        startOffset: 0,
-        endOffset: 0,
-      },
+  if (linkKey === undefined) {
+    linkKey = getId();
+  }
+  if (quote === undefined) {
+    quote = {
+      linkKey,
+      startOffset: 0,
+      endOffset: 0,
     };
   }
-  let element = makeProto(
-    new documents.InlineElement(),
-    elm as documents.InlineElement.AsObject,
-  );
+  let node = new documents.InlineElement();
+  let element = makeProto<documents.Quote>(new documents.Quote(), quote);
+  node.setQuote(element);
+  return node;
 }
 // export function buildGetDocument({
 //   author = faker.finance.bitcoinAddress(),

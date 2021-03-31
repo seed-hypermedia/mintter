@@ -249,7 +249,7 @@ function usePublication() {
   );
 
   const data: documents.Publication.AsObject = {
-    document: React.useMemo(() => buildDocument(), []),
+    document: React.useMemo(() => buildDocument().toObject(), []),
     version: docVersion,
   };
 
@@ -273,7 +273,7 @@ function usePublication() {
     ...document,
     isSuccess,
     data,
-    value: publicationToEditor(data?.document),
+    value: [],
   };
   // return {
   //   ...document,

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { styled } from './stitches.config';
+import { styled } from '@mintter/ui/stitches.config';
 
 export const Root = DropdownMenuPrimitive.Root;
 export const Trigger = DropdownMenuPrimitive.Trigger;

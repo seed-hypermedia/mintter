@@ -4,12 +4,9 @@ import { useWelcome } from './welcome-provider';
 import { genSeed, initProfile } from './mintter-client';
 import { welcomeGrid } from './intro-page';
 import { Container } from '@components/container';
-import { Heading } from '@mintter/ui-legacy/heading';
-import { NextButton, BackButton } from '@mintter/ui-legacy/button';
-import { Button } from '@mintter/ui-legacy/button';
-import { Box } from '@mintter/ui-legacy/box';
-import { Grid } from '@mintter/ui-legacy/grid';
-import { Text } from '@mintter/ui-legacy/text';
+import { Button } from '@mintter/ui/button';
+import { Box } from '@mintter/ui/box';
+import { Text } from '@mintter/ui/text';
 import { useHistory, useRouteMatch } from 'react-router';
 import { getPath } from '@utils/routes';
 
@@ -49,38 +46,37 @@ export default function SecurityPack() {
     }
   }
 
-  return (
-    <Grid className={welcomeGrid} css={{ gridRowStart: '2' }}>
-      <Container
-        css={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '$7',
-        }}
-      >
-        <Heading>Security Pack</Heading>
-        <Text>
-          Please save these 24 words securely! This will allow you to recreate
-          your account
-        </Text>
-        <MnemonicWords words={words} error={error} />
-      </Container>
-      <Container
-        css={{
-          display: 'flex',
-          flexDirection: 'row-reverse',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <NextButton disabled={words.length === 0} onClick={handleNext}>
-          Next →
-        </NextButton>
-        <BackButton to={`${getPath(match)}/welcome`}>← start over</BackButton>
-      </Container>
-    </Grid>
-  );
+  return null;
+  // <Grid className={welcomeGrid} css={{ gridRowStart: '2' }}>
+  //   <Container
+  //     css={{
+  //       display: 'flex',
+  //       flexDirection: 'column',
+  //       alignItems: 'center',
+  //       gap: '$7',
+  //     }}
+  //   >
+  //     <Heading>Security Pack</Heading>
+  //     <Text>
+  //       Please save these 24 words securely! This will allow you to recreate
+  //       your account
+  //     </Text>
+  //     <MnemonicWords words={words} error={error} />
+  //   </Container>
+  //   <Container
+  //     css={{
+  //       display: 'flex',
+  //       flexDirection: 'row-reverse',
+  //       justifyContent: 'space-between',
+  //       alignItems: 'center',
+  //     }}
+  //   >
+  //     <NextButton disabled={words.length === 0} onClick={handleNext}>
+  //       Next →
+  //     </NextButton>
+  //     <BackButton to={`${getPath(match)}/welcome`}>← start over</BackButton>
+  //   </Container>
+  // </Grid>
 }
 
 export function MnemonicWords({
@@ -91,64 +87,63 @@ export function MnemonicWords({
   error?: { code: number; message: string };
 }) {
   // const { addToast } = useToasts();
-  return (
-    <>
-      <Box data-testid="mnemonic-list">
-        {error ? (
-          error.message
-        ) : (
-          <Box
-            as="ol"
-            css={{
-              height: 'calc($7 * 9)',
-              columns: '3',
-              columnGap: '$4',
-            }}
-          >
-            {words?.map((word, wordIdx) => (
-              <Grid
-                as="li"
-                css={{
-                  display: 'flex',
-                  height: '$7',
-                  placeItems: 'center',
-                  alignItems: 'baseline',
-                  justifyContent: 'center',
-                  marginBottom: '$1',
+  return null;
+  // <>
+  //   <Box data-testid="mnemonic-list">
+  //     {error ? (
+  //       error.message
+  //     ) : (
+  //       <Box
+  //         as="ol"
+  //         css={{
+  //           height: 'calc($7 * 9)',
+  //           columns: '3',
+  //           columnGap: '$4',
+  //         }}
+  //       >
+  //         {words?.map((word, wordIdx) => (
+  //           <Grid
+  //             as="li"
+  //             css={{
+  //               display: 'flex',
+  //               height: '$7',
+  //               placeItems: 'center',
+  //               alignItems: 'baseline',
+  //               justifyContent: 'center',
+  //               marginBottom: '$1',
 
-                  gap: '$1',
-                  alignSelf: 'center',
-                }}
-                key={wordIdx}
-              >
-                <Text size="1">{wordIdx + 1}.</Text>
-                <Text size="3">{word}</Text>
-              </Grid>
-            ))}
-          </Box>
-        )}
-      </Box>
-      <Box css={{ display: 'flex', justifyContent: 'center', p: '$4' }}>
-        <CopyToClipboard
-          // TODO: fix types
-          text={words?.join(' ') as string}
-          onCopy={(_, result) => {
-            if (result) {
-              // addToast('Address copied to your clipboard!', {
-              //   appearance: 'success',
-              // });
-            } else {
-              // addToast('Error while copying to Clipboard!', {
-              //   appearance: 'error',
-              // });
-            }
-          }}
-        >
-          <Button variant="success" appearance="outline" size="2" type="submit">
-            Copy and Save it securely!
-          </Button>
-        </CopyToClipboard>
-      </Box>
-    </>
-  );
+  //               gap: '$1',
+  //               alignSelf: 'center',
+  //             }}
+  //             key={wordIdx}
+  //           >
+  //             <Text size="1">{wordIdx + 1}.</Text>
+  //             <Text size="3">{word}</Text>
+  //           </Grid>
+  //         ))}
+  //       </Box>
+  //     )}
+  //   </Box>
+  //   <Box css={{ display: 'flex', justifyContent: 'center', p: '$4' }}>
+  //     <CopyToClipboard
+  //       // TODO: fix types
+  //       text={words?.join(' ') as string}
+  //       onCopy={(_, result) => {
+  //         if (result) {
+  //           // addToast('Address copied to your clipboard!', {
+  //           //   appearance: 'success',
+  //           // });
+  //         } else {
+  //           // addToast('Error while copying to Clipboard!', {
+  //           //   appearance: 'error',
+  //           // });
+  //         }
+  //       }}
+  //     >
+  //       <Button variant="success" appearance="outline" size="2" type="submit">
+  //         Copy and Save it securely!
+  //       </Button>
+  //     </CopyToClipboard>
+  //   </Box>
+  // </>
 }

@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Box } from '@mintter/ui-legacy/box';
-import type { CSS } from '@mintter/ui-legacy/stitches.config';
+import { Box } from '@mintter/ui/box';
+import type { CSS } from '@mintter/ui/stitches.config';
 
 type LogoProps = React.SVGProps<SVGSVGElement> & { css: CSS };
 

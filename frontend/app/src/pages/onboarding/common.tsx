@@ -3,7 +3,7 @@ import { Box, BoxProps } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
 import { Button, ButtonProps } from '@mintter/ui/button';
 import type React from 'react';
-import type { CSS } from '@mintter/ui-legacy/stitches.config';
+import type { CSS } from '@mintter/ui/stitches.config';
 
 export type OnboardingStepPropsType = {
   prev: () => void;

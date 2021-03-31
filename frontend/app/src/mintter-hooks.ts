@@ -154,21 +154,17 @@ export function usePublicationsList(options = {}) {
       // refetchInterval: 5000,
     },
   );
-  console.log(
-    '🚀 ~ file: mintter-hooks.ts ~ line 158 ~ usePublicationsList ~ docsQuery',
-    docsQuery,
-  );
 
   const data = React.useMemo(
     () =>
-      docsQuery.data?.getPublicationsList().map((doc) => {
-        const data = doc.toObject();
-        console.log({ data });
-        return {
-          doc,
-          ...data,
-        };
-      }),
+      docsQuery.data
+        ?.getPublicationsList()
+        .map((publication: documents.Publication) => {
+          return {
+            ...publication.toObject(),
+            publication,
+          };
+        }),
     [docsQuery.data],
   );
 
@@ -269,7 +265,6 @@ export function usePublication(
       ...options,
     },
   );
-  console.log('🚀 ~ file: mintter-hooks.ts ~ line 272 ~ pubQuery', pubQuery);
 
   const data = React.useMemo(() => pubQuery.data?.toObject?.(), [
     pubQuery.data,

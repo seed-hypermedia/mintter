@@ -1,13 +1,10 @@
 import React from 'react';
-import { Heading } from '@mintter/ui-legacy/heading';
 import { Container } from '@components/container';
-import { Button } from '@mintter/ui-legacy/button';
-import { Grid } from '@mintter/ui-legacy/grid';
-import { css } from '@mintter/ui-legacy/stitches.config';
-import { Text } from '@mintter/ui-legacy/text';
+import { Button } from '@mintter/ui/button';
+import { css } from '@mintter/ui/stitches.config';
+import { Text } from '@mintter/ui/text';
 import { useWelcome } from './welcome-provider';
 import { useProfile } from './mintter-hooks';
-
 import { useHistory, useRouteMatch } from 'react-router';
 import { getPath } from '@utils/routes';
 
@@ -38,31 +35,30 @@ export default function WelcomeIntro() {
     //send the user to next page
     history.replace(`${getPath(match)}/welcome/security-pack`);
   }
-  return (
-    <Grid className={welcomeGrid}>
-      <Container
-        css={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '$4',
-        }}
-      >
-        <Heading>Welcome to Mintter!</Heading>
-        <Text>some kind words here</Text>
-      </Container>
+  return null;
+  // <Grid className={welcomeGrid}>
+  //   <Container
+  //     css={{
+  //       display: 'flex',
+  //       flexDirection: 'column',
+  //       alignItems: 'center',
+  //       gap: '$4',
+  //     }}
+  //   >
+  //     <Heading>Welcome to Mintter!</Heading>
+  //     <Text>some kind words here</Text>
+  //   </Container>
 
-      <Container css={{ display: 'flex', justifyContent: 'center' }}>
-        <Button
-          size="3"
-          appearance="pill"
-          variant="success"
-          css={{ minWidth: '9' }}
-          onClick={handleNext}
-        >
-          Start
-        </Button>
-      </Container>
-    </Grid>
-  );
+  //   <Container css={{ display: 'flex', justifyContent: 'center' }}>
+  //     <Button
+  //       size="3"
+  //       appearance="pill"
+  //       variant="success"
+  //       css={{ minWidth: '9' }}
+  //       onClick={handleNext}
+  //     >
+  //       Start
+  //     </Button>
+  //   </Container>
+  // </Grid>
 }

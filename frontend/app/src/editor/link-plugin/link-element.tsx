@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Box } from '@mintter/ui-legacy/box';
-import { Text } from '@mintter/ui-legacy/text';
+import { Box } from '@mintter/ui/box';
+import { Text } from '@mintter/ui/text';
 import { ExternalLinkIcon } from '@mintter/ui/icons';
 import { Tooltip } from '../../tooltip';
 import { Link } from '../../link';

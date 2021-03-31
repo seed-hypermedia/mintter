@@ -3,7 +3,7 @@ import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import { WelcomeProvider } from './welcome-provider';
 import WelcomeIntro from './intro-page';
 import { ProgressRoute } from './routes';
-import { Box } from '@mintter/ui-legacy/box';
+import { Box } from '@mintter/ui/box';
 import { createPath } from '@utils/routes';
 
 const SecurityPack = React.lazy(() => import('./security-pack-page'));

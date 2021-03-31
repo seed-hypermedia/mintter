@@ -8,7 +8,7 @@ import {
   SlateDocument,
   // ToolbarMark,
 } from '@udecode/slate-plugins';
-import { Box } from '@mintter/ui-legacy/box';
+import { Box } from '@mintter/ui/box';
 import { BalloonToolbar, setDefaults } from '@udecode/slate-plugins';
 import { LinkPlugin, ToolbarLink } from './link-plugin';
 import { LinkMenu } from './link-plugin/link-menu';

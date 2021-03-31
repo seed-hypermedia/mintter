@@ -5,7 +5,7 @@ import documents from '@mintter/api/documents/v1alpha/documents_pb';
 import MintterClient from '@mintter/api/v2/mintter_grpc_web_pb';
 import mintter from '@mintter/api/v2/mintter_pb';
 import { id } from '@mintter/editor/id';
-import { buildDocument } from '@utils/generate';
+import { buildDocument, buildPublication } from '@utils/generate';
 import { makeProto } from '@mintter/editor/transformers/make-proto';
 
 const MINTTER_API_URL =
@@ -140,12 +140,18 @@ export function listPublications(
   pageToken?: string,
   view?: documents.DocumentView,
 ): Promise<documents.ListPublicationsResponse> {
-  let request = new documents.ListPublicationsRequest();
-  if (pageSize) request.setPageSize(pageSize);
-  if (pageToken) request.setPageToken(pageToken);
-  if (view) request.setView(view);
+  // let request = new documents.ListPublicationsRequest();
+  // if (pageSize) request.setPageSize(pageSize);
+  // if (pageToken) request.setPageToken(pageToken);
+  // if (view) request.setView(view);
   // return publicationsClient().listPublications(request);
-  return Promise.resolve([]);
+  let res = new documents.ListPublicationsResponse();
+  res.setPublicationsList([
+    buildPublication(),
+    buildPublication(),
+    buildPublication(),
+  ]);
+  return Promise.resolve(res);
 }
 
 /**

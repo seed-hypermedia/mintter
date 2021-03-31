@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useLocation } from 'react-router-dom';
 import { Steps } from './welcome-steps';
-import { Grid } from '@mintter/ui-legacy/grid';
 
 interface WelcomeState {
   mnemonicList?: string[];
@@ -66,7 +65,7 @@ export function WelcomeProvider(props: WelcomeProviderProps) {
   );
 
   return (
-    <Grid
+    <div
       css={{
         width: '100vw',
         height: '100vh',
@@ -75,7 +74,7 @@ export function WelcomeProvider(props: WelcomeProviderProps) {
     >
       <Steps steps={steps} active={activeStep} />
       <WelcomeContext.Provider value={{ ...v, ...props.value }} {...props} />
-    </Grid>
+    </div>
   );
 }
 

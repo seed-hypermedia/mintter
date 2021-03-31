@@ -1,4 +1,4 @@
-import { styled } from '../lib/stitches.config';
+import { styled } from '@mintter/ui/stitches.config';
 
 export const FORMCONTROL_TAG = 'input';
 

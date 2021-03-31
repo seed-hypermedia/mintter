@@ -155,4 +155,5 @@ export const Button = styled('button', {
   },
 })
 
+// TODO: when passing `as` to component it complains
 export type ButtonProps = React.ComponentProps<typeof Button>

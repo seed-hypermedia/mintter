@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type mintter from '@mintter/api/v2/mintter_pb';
 import { Tooltip } from './tooltip';
-import { Text } from '@mintter/ui-legacy/text';
+import { Text } from '@mintter/ui/text';
 
 interface AuthorLabelProps {
   author: mintter.Profile.AsObject;

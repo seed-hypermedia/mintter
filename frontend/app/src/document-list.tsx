@@ -6,6 +6,10 @@ import { useAuthor } from './mintter-hooks';
 import { format } from 'date-fns';
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
 import { getPath } from '@utils/routes';
+import { Box } from '@mintter/ui/box';
+import { Text } from '@mintter/ui/text';
+import { Button } from '@mintter/ui/button';
+import { Avatar } from '@components/avatar';
 
 interface Props {
   // TODO: fix types
@@ -18,7 +22,11 @@ interface Props {
 }
 
 interface ItemProps {
-  item: any; // TODO: fix types (Document.AsObject + Document)
+  item: {
+    publication: documents.Publication;
+    version: string;
+    document?: documents.Document.AsObject;
+  }; // TODO: fix types (Document.AsObject + Document)
   onDeleteDocument?: (version: string) => void;
 }
 
@@ -54,7 +62,15 @@ function ListItem({ item, onDeleteDocument }: ItemProps) {
   const match = useRouteMatch();
   const location = useLocation();
   // const [prefetched, setPrefetch] = React.useState<boolean>(false)
-  const { version, title, subtitle, author: itemAuthor } = item;
+  const { publication, version, document } = item;
+
+  const {
+    id,
+    title,
+    subtitle,
+    author: itemAuthor,
+  } = document as documents.Document.AsObject;
+
   const theTitle = title ? title : 'Untitled Document';
 
   const { data: author } = useAuthor(itemAuthor);
@@ -64,7 +80,9 @@ function ListItem({ item, onDeleteDocument }: ItemProps) {
   ]);
 
   const to = React.useMemo(() => {
-    const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${version}`;
+    const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${id}${
+      version ? `/${version}` : ''
+    }`;
     return path;
   }, [location.pathname]);
   // function handlePrefetch() {
@@ -75,55 +93,68 @@ function ListItem({ item, onDeleteDocument }: ItemProps) {
   // }
   // }
 
-  const date = React.useMemo(() => item.doc.getCreateTime().toDate(), [item]);
+  const date = React.useMemo(
+    () => publication?.getDocument()?.getCreateTime()?.toDate() || new Date(),
+    [publication],
+  );
 
   return (
-    <Link
+    <Box
+      as={Link}
       to={to}
-      className="box-border flex flex-col w-full p-4 mt-2 -mx-4 transition duration-100 bg-transparent group first:mt-4 hover:bg-background-muted"
-      // onMouseEnter={handlePrefetch}
+      css={{
+        padding: '$5',
+        borderRadius: '$2',
+        display: 'flex',
+        gap: '$5',
+        '&:hover': {
+          background: '$background-neutral-soft',
+        },
+      }}
     >
-      <div className="grid flex-1 grid-cols-12 gap-4">
-        <div className={onDeleteDocument ? 'col-span-11' : 'col-span-12'}>
-          {!isDraft && location.pathname !== '/library/my-publications' && (
-            <div className="flex items-center">
-              <div className="w-6 h-6 bg-gray-400 rounded-full" />
-              <p className="inline-block mx-2 text-sm font-light text-heading">
-                {author?.username}
-              </p>
-            </div>
-          )}
-          <h3 className="mt-2 text-xl font-bold leading-5 truncate text-heading">
-            {theTitle}
-          </h3>
-          {subtitle ? <p className="mt-2 font-serif">{subtitle}</p> : null}
-
-          <p className="mt-2 text-xs font-light text-heading">
-            {format(new Date(date), 'MMMM d, yyyy')}
-          </p>
-        </div>
-        {onDeleteDocument && (
-          <div className="flex items-center justify-end col-span-1">
-            <button
-              data-testid="delete-button"
-              className="opacity-0 group-hover:opacity-100 text-danger"
-              onClick={(e) => {
-                e.preventDefault();
-                const resp = window.confirm(
-                  'are you sure you want to delete it?',
-                );
-                if (resp) {
-                  onDeleteDocument(version);
-                }
-              }}
-            >
-              {/* //TODO: add Icons
-              <Icons.Trash /> */}
-              trash
-            </button>
-          </div>
+      <Box
+        css={{
+          flex: 'none',
+          background: '$primary-muted',
+          width: 220,
+          height: 140,
+        }}
+      />
+      <Box
+        css={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '$2' }}
+      >
+        {!isDraft && location.pathname !== '/library/my-publications' && (
+          <Box css={{ display: 'flex', gap: '$3', alignItems: 'center' }}>
+            <Avatar />
+            {/* <Text>{author?.username}</Text> */}
+            <Text>HELLO HERE</Text>
+          </Box>
         )}
-      </div>
-    </Link>
+        <Text>{theTitle}</Text>
+        {subtitle && <Text>{subtitle}</Text>}
+
+        <Text>{format(new Date(date), 'MMMM d, yyyy')}</Text>
+      </Box>
+      {onDeleteDocument && (
+        <Box css={{ flex: 'none' }}>
+          <Button
+            data-testid="delete-button"
+            onClick={(e) => {
+              e.preventDefault();
+              const resp = window.confirm(
+                'are you sure you want to delete it?',
+              );
+              if (resp) {
+                onDeleteDocument(version);
+              }
+            }}
+          >
+            {/* //TODO: add Icons
+              <Icons.Trash /> */}
+            trash
+          </Button>
+        </Box>
+      )}
+    </Box>
   );
 }
