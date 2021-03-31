@@ -1,169 +1,106 @@
 import {Button} from '@src/button'
-import {ArgsTable, Canvas, Meta} from '@storybook/addon-docs/blocks'
+import {Playground} from '@storybook-utils/components/code'
+import {Meta} from '@storybook/addon-docs/blocks'
 
-<Meta title="Components/Button" />
+<Meta title="Forms/Button" />
 
 # Button
 
 The `Button` component can be used to initiate an action, like can be submitting
 a form or anything you want.
 
-## Usage
+## Import
 
 ```tsx
 import {Button} from '@mintter/ui/button'
 ```
 
-<Canvas isExpanded>
-  <Button>This is my Button!</Button>
-</Canvas>
+## Usage
 
-### Button Variant
+```jsx
+<Button>This is my Button!</Button>
+```
 
-Pass a `variant` prop to the `Button` component to change their appearance.
-
-<!-- prettier-ignore-start -->
-
-<Canvas>
-  <Button variant="solid">Solid Button</Button>
-  <Button variant="outlined">Outlined Button</Button>
-</Canvas>
-
-<!-- prettier-ignore-end -->
-
-> The default `Button` variant is `solid`.
-
-### Button Size
+### Size
 
 Pass a `size` prop to the `Button` component to change their size.
 
-<!-- prettier-ignore-start -->
-
-<Canvas>
-  <Button size="1">Small Button</Button>
-  <Button size="2">Medium Button</Button>
-  <Button size="3">Large Button</Button>
-</Canvas>
-
-<!-- prettier-ignore-end -->
+```jsx columns
+<Button size="1">Small Button</Button>
+<Button size="2">Medium Button</Button>
+<Button size="3">Large Button</Button>
+```
 
 > The default `Button` size is `medium`.
 
-### Button Color
+### Variant
+
+Pass a `variant` prop to the `Button` component to change their appearance.
+
+```jsx columns
+<Button variant="solid">Solid Button</Button>
+<Button variant="outlined">Outlined Button</Button>
+```
+
+> The default `Button` variant is `solid`.
+
+### Color
 
 The `Button` component has various color schemes based in the Theme brand and
 status colors.
 
-#### Primary
-
-<!-- prettier-ignore-start -->
-
-<Canvas>
-  <Button variant="solid" size="1" color="primary">Primary Button</Button>
-  <Button variant="solid" size="2" color="primary">Primary Button</Button>
-  <Button variant="solid" size="3" color="primary">Primary Button</Button>
-</Canvas>
-
-<Canvas>
-  <Button variant="outlined" size="1" color="primary">Primary Button</Button>
-  <Button variant="outlined" size="2" color="primary">Primary Button</Button>
-  <Button variant="outlined" size="3" color="primary">Primary Button</Button>
-</Canvas>
-
-<!-- prettier-ignore-end -->
-
-#### Secondary
-
-<!-- prettier-ignore-start -->
-
-<Canvas>
-  <Button variant="solid" size="1" color="secondary">Secondary Button</Button>
-  <Button variant="solid" size="2" color="secondary">Secondary Button</Button>
-  <Button variant="solid" size="3" color="secondary">Secondary Button</Button>
-</Canvas>
-
-<Canvas>
-  <Button variant="outlined" size="1" color="secondary">Secondary Button</Button>
-  <Button variant="outlined" size="2" color="secondary">Secondary Button</Button>
-  <Button variant="outlined" size="3" color="secondary">Secondary Button</Button>
-</Canvas>
-
-<!-- prettier-ignore-end -->
-
-#### Terciary
-
-<!-- prettier-ignore-start -->
-
-<Canvas>
-  <Button variant="solid" size="1" color="terciary">Terciary Button</Button>
-  <Button variant="solid" size="2" color="terciary">Terciary Button</Button>
-  <Button variant="solid" size="3" color="terciary">Terciary Button</Button>
-</Canvas>
-
-<Canvas>
-  <Button variant="outlined" size="1" color="terciary">Terciary Button</Button>
-  <Button variant="outlined" size="2" color="terciary">Terciary Button</Button>
-  <Button variant="outlined" size="3" color="terciary">Terciary Button</Button>
-</Canvas>
-
-<!-- prettier-ignore-end -->
-
-#### Success
-
-<!-- prettier-ignore-start -->
-
-<Canvas>
-  <Button variant="solid" size="1" color="success">Success Button</Button>
-  <Button variant="solid" size="2" color="success">Success Button</Button>
-  <Button variant="solid" size="3" color="success">Success Button</Button>
-</Canvas>
-
-<Canvas>
-  <Button variant="outlined" size="1" color="success">Success Button</Button>
-  <Button variant="outlined" size="2" color="success">Success Button</Button>
-  <Button variant="outlined" size="3" color="success">Success Button</Button>
-</Canvas>
-
-<!-- prettier-ignore-end -->
-
-#### Warning
-
-<!-- prettier-ignore-start -->
-
-<Canvas>
-  <Button variant="solid" size="1" color="warning">Warning Button</Button>
-  <Button variant="solid" size="2" color="warning">Warning Button</Button>
-  <Button variant="solid" size="3" color="warning">Warning Button</Button>
-</Canvas>
-
-<Canvas>
-  <Button variant="outlined" size="1" color="warning">Warning Button</Button>
-  <Button variant="outlined" size="2" color="warning">Warning Button</Button>
-  <Button variant="outlined" size="3" color="warning">Warning Button</Button>
-</Canvas>
-
-<!-- prettier-ignore-end -->
-
-#### Danger
-
-<!-- prettier-ignore-start -->
-
-<Canvas>
-  <Button variant="solid" size="1" color="danger">Danger Button</Button>
-  <Button variant="solid" size="2" color="danger">Danger Button</Button>
-  <Button variant="solid" size="3" color="danger">Danger Button</Button>
-</Canvas>
-
-<Canvas>
-  <Button variant="outlined" size="1" color="danger">Danger Button</Button>
-  <Button variant="outlined" size="2" color="danger">Danger Button</Button>
-  <Button variant="outlined" size="3" color="danger">Danger Button</Button>
-</Canvas>
-
-<!-- prettier-ignore-end -->
+```jsx columns
+<Button color="primary">Primary button</Button>
+<Button color="secondary">Secondary button</Button>
+<Button color="terciary">Terciary button</Button>
+<Button color="success">Success button</Button>
+<Button color="warning">Warning button</Button>
+<Button color="danger">Danger button</Button>
+```
 
 > The default `Button` color is `primary`.
 
-## Props Table
+## Playground
 
-<ArgsTable of={Button} />
+Combine `Button` props to preview your component.
+
+<Playground
+  component={Button}
+  options={[
+    {
+      type: 'select',
+      name: 'size',
+      label: 'Size',
+      options: ['1', '2', '3'],
+      defaultValue: '2',
+    },
+    {
+      type: 'select',
+      name: 'variant',
+      label: 'Variant',
+      options: ['solid', 'outlined'],
+      defaultValue: 'solid',
+    },
+    {
+      type: 'select',
+      name: 'color',
+      label: 'Color',
+      options: [
+        'primary',
+        'secondary',
+        'terciary',
+        'success',
+        'warning',
+        'danger',
+      ],
+      defaultValue: 'primary',
+    },
+    {
+      type: 'string',
+      name: 'children',
+      label: 'Text',
+      defaultValue: 'Click me',
+      computePropsFromValue: children => ({children}),
+    },
+  ]}
+/>

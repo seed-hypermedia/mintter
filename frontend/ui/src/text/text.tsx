@@ -1,9 +1,11 @@
 import {styled} from '../stitches.config'
 
 export const Text = styled('span', {
-  display: 'block',
-  margin: 0,
   color: 'inherit',
+  display: 'block',
+  fontFamily: '$default',
+  margin: 0,
+
   variants: {
     size: {
       1: {
@@ -91,18 +93,20 @@ export const Text = styled('span', {
       terciary: {
         color: '$terciary-default',
       },
-      danger: {
-        color: '$danger-default',
+      success: {
+        color: '$success-default',
       },
       warning: {
         color: '$warning-default',
+      },
+      danger: {
+        color: '$danger-default',
       },
     },
   },
 
   defaultVariants: {
     size: '3',
-    color: 'default',
   },
 
   compoundVariants: [
