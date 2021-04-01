@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type mintter from '@mintter/api/v2/mintter_pb';
-import { Tooltip } from './tooltip';
+import { Tooltip } from './components/tooltip';
 import { Text } from '@mintter/ui/text';
 
 interface AuthorLabelProps {

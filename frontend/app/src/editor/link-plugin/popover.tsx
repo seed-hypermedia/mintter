@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Tooltip, TooltipProps } from '../../tooltip';
+import { Tooltip, TooltipProps } from '../../components/tooltip';
 import {
   Popover as BasePopover,
   PopoverDisclosure,

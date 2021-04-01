@@ -31,7 +31,7 @@ import { Button } from '@mintter/ui/button';
 import { isNodeTypeIn } from '../mintter-plugin/is-node-type-in';
 import { Text } from '@mintter/ui/text';
 import { Popover } from './popover';
-import { Tooltip } from '../../tooltip';
+import { Tooltip } from '../../components/tooltip';
 import { LinkElement } from './link-element';
 import { Input } from '@components/input';
 import { LinkIcon } from '@mintter/ui/icons';

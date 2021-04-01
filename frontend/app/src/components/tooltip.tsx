@@ -4,15 +4,15 @@ import { Slot } from '@radix-ui/react-slot';
 import { styled } from '@mintter/ui/stitches.config';
 
 const StyledContent = styled(TooltipPrimitive.Content, {
-  borderRadius: 3,
+  borderRadius: '$2',
   paddingVertical: '$3',
   paddingHorizontal: '$4',
-  fontSize: 14,
+  fontSize: '$2',
   backgroundColor: '$background-opposite',
   color: '$text-opposite',
 });
 const StyledArrow = styled(TooltipPrimitive.Arrow, {
-  fill: '$text',
+  fill: '$background-opposite',
 });
 
 export type TooltipProps = {

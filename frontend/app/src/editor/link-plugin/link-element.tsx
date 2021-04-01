@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
 import { ExternalLinkIcon } from '@mintter/ui/icons';
-import { Tooltip } from '../../tooltip';
+import { Tooltip } from '../../components/tooltip';
 import { Link } from '../../link';
 
 // TODO: fix types
@@ -20,8 +20,8 @@ function MintterLink({ element, attributes, children, ...props }: any) {
   return (
     <Tooltip
       content={
-        <Box css={{ maxWidth: '400px', p: '$3' }}>
-          <Text css={{ wordBreak: 'break-all' }}>{documentId}</Text>
+        <Box css={{ maxWidth: '400px', wordBreak: 'break-all' }}>
+          {documentId}
         </Box>
       }
     >
@@ -34,6 +34,8 @@ function MintterLink({ element, attributes, children, ...props }: any) {
           appearance: 'unset !important',
           textDecoration: 'underline',
           wordBreak: 'break-all',
+          color: '$text-default',
+
           '&:hover': {
             cursor: 'pointer',
           },
@@ -53,12 +55,11 @@ function ExternalLink({ element, attributes, children, ...props }: any) {
           css={{
             display: 'flex',
             alignItems: 'center',
-            gap: '$1',
-            py: '$1',
+            gap: '$2',
           }}
         >
           <ExternalLinkIcon />
-          <Text>{element.url}</Text>
+          {element.url}
         </Box>
       }
     >
@@ -70,6 +71,7 @@ function ExternalLink({ element, attributes, children, ...props }: any) {
         css={{
           textDecoration: 'underline',
           display: 'inline',
+          color: '$text-default',
           width: 'auto',
           wordBreak: 'break-all',
           '&:hover': {

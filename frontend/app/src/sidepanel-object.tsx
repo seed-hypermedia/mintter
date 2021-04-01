@@ -11,7 +11,7 @@ import { ELEMENT_PARAGRAPH } from '@mintter/editor/elements/defaults';
 import { Link } from './link';
 import { useSidePanel } from './sidepanel';
 import { isLocalNode } from './constants';
-import { Tooltip } from './tooltip';
+import { Tooltip } from './components/tooltip';
 
 // TODO: fix types
 export function SidePanelObject(props: any) {
