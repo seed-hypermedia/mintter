@@ -54,7 +54,8 @@
   "dependencies": {
     "@modulz/radix-icons": "^4.0.0",
     "@radix-ui/react-accessible-icon": "^0.0.12",
-    "@stitches/react": "^0.1.4",
+    "@stitches/core": "0.1.4",
+    "@stitches/react": "0.1.4",
     "use-dark-mode": "^2.3.1"
   },
   "devDependencies": {

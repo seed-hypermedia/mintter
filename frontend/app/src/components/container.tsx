@@ -1,6 +1,10 @@
 import React from 'react';
-import type { StitchesVariants, StitchesCss } from '@stitches/core';
-import { styled } from '@mintter/ui/stitches.config';
+
+import {
+  styled,
+  StitchesCss,
+  StitchesVariants,
+} from '@mintter/ui/stitches.config';
 
 import type * as Polymorphic from '@radix-ui/react-polymorphic';
 

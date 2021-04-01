@@ -64,6 +64,8 @@ export function OnboardingStep({ css, children }: BoxProps) {
       initial="hidden"
       animate="visible"
       exit="hidden"
+      // TODO: fix types
+      // @ts-ignore
       css={{
         alignItems: 'center',
         display: 'flex',
@@ -88,6 +90,8 @@ export function OnboardingStepTitle({
     <Box
       as={motion.header}
       variants={slideDownAnimationVariants}
+      // TODO: fix types
+      // @ts-ignore
       css={{
         alignItems: 'center',
         display: 'flex',
@@ -97,7 +101,14 @@ export function OnboardingStepTitle({
       }}
     >
       {icon}
-      <Text alt as="h1" size="9" css={{ textAlign: 'center' }}>
+      <Text
+        alt
+        as="h1"
+        size="9"
+        // TODO: fix types
+        // @ts-ignore
+        css={{ textAlign: 'center' }}
+      >
         {children}
       </Text>
     </Box>
@@ -109,6 +120,8 @@ export function OnboardingStepDescription({ css, children }: BoxProps) {
     <Text
       as={motion.p}
       variants={fadeAnimationVariants}
+      // TODO: fix types
+      // @ts-ignore
       css={{
         textAlign: 'center',
         maxWidth: '$three-quarters',
@@ -125,6 +138,8 @@ export function OnboardingStepBody({ css, children }: BoxProps) {
     <Box
       as={motion.main}
       variants={fadeAnimationVariants}
+      // TODO: fix types
+      // @ts-ignore
       css={{ marginTop: 'auto', ...css }}
     >
       {children}
@@ -137,6 +152,8 @@ export function OnboardingStepActions({ css, children }: BoxProps) {
     <Box
       as={motion.footer}
       variants={slideUpAnimationVariants}
+      // TODO: fix types
+      // @ts-ignore
       css={{
         display: 'flex',
         justifyContent: 'space-evenly',
@@ -156,6 +173,8 @@ export function OnboardingStepActions({ css, children }: BoxProps) {
 
 // TODO: fix types
 export function OnboardingStepButton(props: ButtonProps) {
+  // TODO: fix types
+  // @ts-ignore
   return <Button size="3" {...props} />;
 }
 
@@ -213,6 +232,8 @@ export function ProfileInformationIcon() {
 function IconContainer({ children }: { children: React.ReactNode }) {
   return (
     <Box
+      // TODO: fix types
+      // @ts-ignore
       css={{
         alignItems: 'center',
         backgroundColor: '$primary-muted',

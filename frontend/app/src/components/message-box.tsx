@@ -6,25 +6,23 @@ import { Button as UIButton, ButtonProps } from '@mintter/ui/button';
 
 export function Root({ children }: any) {
   return (
-    <>
-      <Separator />
-      <Box
-        css={{
-          backgroundColor: '$background-default',
-          padding: '$6',
-          display: 'grid',
-          gridAutoFlow: 'row',
-          alignItems: 'center',
-          borderRadius: '$3',
-          boxShadow:
-            'inset 0 0 0 1px $colors$background-neutral, 0 0 0 1px $colors$background-neutral',
-          textAlign: 'center',
-          gap: '$5',
-        }}
-      >
-        {children}
-      </Box>
-    </>
+    <Box
+      css={{
+        backgroundColor: '$background-muted',
+        padding: '$6',
+        marginVertical: '$6',
+        display: 'grid',
+        gridAutoFlow: 'row',
+        alignItems: 'center',
+        borderRadius: '$3',
+        boxShadow:
+          'inset 0 0 0 1px $colors$background-neutral-soft, 0 0 0 1px $colors$background-neutral-soft',
+        textAlign: 'center',
+        gap: '$5',
+      }}
+    >
+      {children}
+    </Box>
   );
 }
 

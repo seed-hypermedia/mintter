@@ -5,7 +5,7 @@ import documents from '@mintter/api/documents/v1alpha/documents_pb';
 import MintterClient from '@mintter/api/v2/mintter_grpc_web_pb';
 import mintter from '@mintter/api/v2/mintter_pb';
 import { id } from '@mintter/editor/id';
-import { buildDocument, buildPublication } from '@utils/generate';
+import { buildDocument, buildProfile, buildPublication } from '@utils/generate';
 import { makeProto } from '@mintter/editor/transformers/make-proto';
 
 const MINTTER_API_URL =
@@ -186,11 +186,11 @@ export function initProfile(
 export function getProfile(
   profileId?: string,
 ): Promise<mintter.GetProfileResponse> {
-  let request = new mintter.GetProfileRequest();
-  if (profileId) {
-    request.setProfileId(profileId);
-  }
-  return mintterClient().getProfile(request);
+  let response = new mintter.GetProfileResponse();
+  let profile = makeProto(new mintter.Profile(), buildProfile());
+  response.setProfile(profile);
+
+  return Promise.resolve(response);
 }
 
 type UpdateProfileParams = {

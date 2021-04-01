@@ -1,5 +1,8 @@
 import * as React from 'react';
-import type { StitchesVariants, StitchesCss } from '@stitches/core';
+import type {
+  StitchesVariants,
+  StitchesCss,
+} from '@mintter/ui/stitches.config';
 import { FormControl } from './form-control';
 import { mergeRefs } from '../utils/merge-refs';
 import type * as Polymorphic from '@radix-ui/react-polymorphic';

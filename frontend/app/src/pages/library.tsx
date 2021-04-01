@@ -153,7 +153,9 @@ export default function Library() {
           <NavItem to={`${match.url}/published`}>Published</NavItem>
           <NavItem to={`${match.url}/drafts`}>Drafts</NavItem>
         </Box>
+        <Separator />
         <NoConnectionsBox onConnect={onConnect} />
+
         <Switch>
           <Route exact path={match.url}>
             <Redirect to={`${match.url}/feed`} />
@@ -185,11 +187,19 @@ function ProfileInfo() {
         alignItems: 'flex-start',
       }}
     >
-      <Text as="h3" size="7" css={{ fontWeight: '$bold' }}>
+      <Text
+        as="h3"
+        size="7"
+        // TODO: fix types
+        // @ts-ignore
+        css={{ fontWeight: '$bold' }}
+      >
         {profile.username}
       </Text>
       <Text>{profile.bio}</Text>
       <Button
+        // TODO: fix types
+        // @ts-ignore
         as={Link}
         variant="outlined"
         color="primary"
@@ -241,8 +251,10 @@ function NavItem({
   return (
     <Text
       as={Link}
-      size="6"
+      size="5"
       to={to}
+      // TODO: fix types
+      // @ts-ignore
       css={{
         textDecoration: 'none',
         color: active ? '$primary-default' : '$text-default',

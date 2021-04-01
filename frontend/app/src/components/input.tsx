@@ -1,6 +1,9 @@
 import React from 'react';
 import type * as Polymorphic from '@radix-ui/react-polymorphic';
-import type { StitchesVariants, StitchesCss } from '@stitches/core';
+import type {
+  StitchesVariants,
+  StitchesCss,
+} from '@mintter/ui/stitches.config';
 import { FormControl, FORMCONTROL_TAG } from './form-control';
 
 type InputCSSProp = Pick<StitchesCss<typeof FormControl>, 'css'>;

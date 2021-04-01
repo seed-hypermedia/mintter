@@ -203,7 +203,9 @@ export function useMyPublicationsList(options = {}) {
   const data = React.useMemo(
     () =>
       docsQuery.data?.filter(({ document }) => {
-        return document?.author === userId;
+        // TODO: remove when API is ready
+        // return document?.author === userId;
+        return true;
       }),
     [docsQuery.data, userId],
   );

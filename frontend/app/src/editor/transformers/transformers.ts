@@ -4,10 +4,12 @@ import type { SlateBlock } from '@mintter/editor/editor';
 import { ELEMENT_BLOCK_LIST } from '../hierarchy-plugin/defaults';
 import { ELEMENT_BLOCK } from '../block-plugin/defaults';
 import { ELEMENT_PARAGRAPH } from '../elements/defaults';
+import { id as getId } from '@mintter/editor/id';
 
 export function publicationToEditor(document = buildDocument()): SlateBlock[] {
   return [
     {
+      id: getId(),
       type: ELEMENT_BLOCK_LIST,
       listStyle: documents.ListStyle.NONE,
       children: [

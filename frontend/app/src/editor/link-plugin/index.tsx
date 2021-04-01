@@ -304,9 +304,6 @@ export function ToolbarLink({ link: linkOptions }: any) {
           boxShadow: '$3',
         }}
       >
-        <Text size="3" css={{ fontWeight: '$bold' }}>
-          Link Information
-        </Text>
         <Box
           as="form"
           css={{
@@ -317,6 +314,7 @@ export function ToolbarLink({ link: linkOptions }: any) {
           }}
           onSubmit={handleSubmit}
         >
+          <Text size="3">Link Information</Text>
           <Box>
             <Label htmlFor="address">Link Address</Label>
             <Input

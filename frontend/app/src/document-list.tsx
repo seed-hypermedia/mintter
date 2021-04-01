@@ -9,6 +9,7 @@ import { getPath } from '@utils/routes';
 import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
 import { Button } from '@mintter/ui/button';
+// import {TrashIcon} from '@mintter/ui/icons'
 import { Avatar } from '@components/avatar';
 
 interface Props {
@@ -100,6 +101,8 @@ function ListItem({ item, onDeleteDocument }: ItemProps) {
 
   return (
     <Box
+      // TODO: fix types
+      // @ts-ignore
       as={Link}
       to={to}
       css={{
@@ -107,8 +110,10 @@ function ListItem({ item, onDeleteDocument }: ItemProps) {
         borderRadius: '$2',
         display: 'flex',
         gap: '$5',
+        textDecoration: 'none',
+        transition: 'background 0.25s ease-in-out',
         '&:hover': {
-          background: '$background-neutral-soft',
+          backgroundColor: '$background-muted',
         },
       }}
     >
@@ -121,40 +126,96 @@ function ListItem({ item, onDeleteDocument }: ItemProps) {
         }}
       />
       <Box
-        css={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '$2' }}
+        css={{
+          flex: 1,
+          display: 'grid',
+          gridTemplateAreas: `"avatar author price"
+        "content content icon"
+        "footer footer footer"`,
+          gridTemplateColumns: '24px 1fr auto',
+          gridTemplateRows: '24px auto auto',
+          gap: '$2',
+        }}
       >
-        {!isDraft && location.pathname !== '/library/my-publications' && (
-          <Box css={{ display: 'flex', gap: '$3', alignItems: 'center' }}>
-            <Avatar />
-            {/* <Text>{author?.username}</Text> */}
-            <Text>HELLO HERE</Text>
-          </Box>
-        )}
-        <Text>{theTitle}</Text>
-        {subtitle && <Text>{subtitle}</Text>}
+        {/* {!isDraft && location.pathname !== '/library/my-publications' && ( */}
 
-        <Text>{format(new Date(date), 'MMMM d, yyyy')}</Text>
-      </Box>
-      {onDeleteDocument && (
-        <Box css={{ flex: 'none' }}>
-          <Button
-            data-testid="delete-button"
-            onClick={(e) => {
-              e.preventDefault();
-              const resp = window.confirm(
-                'are you sure you want to delete it?',
-              );
-              if (resp) {
-                onDeleteDocument(version);
-              }
+        <Avatar css={{ gridArea: 'avatar' }} />
+        <Text size="1" css={{ gridArea: 'author', alignSelf: 'center' }}>
+          {author?.username}
+        </Text>
+        <Box css={{ gridArea: 'price' }}>
+          <Text
+            size="1"
+            css={{
+              background: '$background-contrast-strong',
+              paddingVertical: '$2',
+              paddingHorizontal: '$3',
+              borderRadius: '$1',
+              display: 'inline-block',
+            }}
+            color="opposite"
+          >
+            0.09$
+          </Text>
+        </Box>
+        <Box css={{ gridArea: 'content' }}>
+          <Text
+            size="7"
+            // TODO: fix types
+            // @ts-ignore
+            css={{
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              display: 'box',
+              lineClamp: '2',
             }}
           >
-            {/* //TODO: add Icons
-              <Icons.Trash /> */}
-            trash
-          </Button>
+            {theTitle}
+          </Text>
+          {subtitle && (
+            <Text size="5" color="muted">
+              {subtitle}
+            </Text>
+          )}
         </Box>
-      )}
+        <Box css={{ gridArea: 'footer' }}>
+          <Text size="1" color="muted">
+            {format(new Date(date), 'MMMM d, yyyy')}
+          </Text>
+        </Box>
+
+        {onDeleteDocument && (
+          <Box
+            css={{
+              gridArea: 'icon',
+              display: 'flex',
+
+              alignItems: 'center',
+            }}
+          >
+            <Button
+              data-testid="delete-button"
+              color="danger"
+              size="1"
+              onClick={(e) => {
+                e.preventDefault();
+                const resp = window.confirm(
+                  'are you sure you want to delete it?',
+                );
+                if (resp) {
+                  onDeleteDocument(version);
+                }
+              }}
+            >
+              {/* //TODO: add Icons
+              <TrashIcon />
+              */}
+              trash
+            </Button>
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 }

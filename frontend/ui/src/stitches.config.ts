@@ -1,5 +1,7 @@
 import createCss, {defaultThemeMap, StitchesCss} from '@stitches/react'
 
+export * from '@stitches/core'
+
 const stitches = createCss({
   prefix: 'mtt-',
   theme: {
@@ -15,6 +17,7 @@ const stitches = createCss({
       'background-neutral-soft': '#E5E5E5',
       'background-default': '#F2F2F2',
       'background-alt': '#FFFFFF',
+      'background-muted': '#f5f5f5',
       'text-default': '#1A1A1A',
       'text-alt': '#4C4C4C',
       'text-muted': '#737373',
@@ -122,7 +125,6 @@ const stitches = createCss({
       7: '32px',
       8: '64px',
     },
-    transitions: {},
     zIndices: {
       1: '100',
       2: '200',
@@ -131,7 +133,7 @@ const stitches = createCss({
       max: '999',
     },
   },
-  conditions: {},
+  media: {},
   utils: {
     marginHorizontal: () => val => ({marginLeft: val, marginRight: val}),
     marginVertical: () => val => ({marginTop: val, marginBottom: val}),
@@ -263,6 +265,7 @@ export const darkTheme = theme('dark-theme', {
     'background-neutral-soft': '#333333',
     'background-default': '#1A1A1A',
     'background-alt': '#000000',
+    'background-muted': '#1D1D1D',
     'text-default': '#FFFFFF',
     'text-alt': '#E5E5E5',
     'text-muted': '#E5E5E5',
