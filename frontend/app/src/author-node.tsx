@@ -13,7 +13,7 @@ const Editor = lazy(() => import('./pages/editor'));
 const Settings = lazy(() => import('./pages/settings'));
 const Publication = lazy(() => import('./pages/publication'));
 
-export const AuthorNode: React.FC<{ path?: string }> = ({ path = '/' }) => {
+export function AuthorNode({ path = '/' }: { path?: string }) {
   const match = useRouteMatch(path)!;
 
   const profile = useProfile({
@@ -83,5 +83,5 @@ export const AuthorNode: React.FC<{ path?: string }> = ({ path = '/' }) => {
     );
   }
 
-  throw new Error();
-};
+  return null;
+}

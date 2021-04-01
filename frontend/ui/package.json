@@ -10,33 +10,37 @@
   "license": "MIT",
   "repository": "mintterteam/mintter-ui",
   "exports": {
-    "./stitches.config": "./dist/stitches.config.js",
     "./box": "./dist/box/index.js",
     "./button": "./dist/button/index.js",
-    "./text": "./dist/text/index.js",
-    "./theme": "./dist/theme/index.js",
     "./icons": "./dist/icons/index.js",
+    "./text": "./dist/text/index.js",
+    "./text-field": "./dist/text-field/index.js",
+    "./theme": "./dist/theme/index.js",
+    "./stitches.config": "./dist/stitches.config.js",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
-      "stitches.config": [
-        "dist/stitches.config.d.ts"
-      ],
       "box": [
         "dist/box/index.d.ts"
       ],
       "button": [
         "dist/button/index.d.ts"
       ],
+      "icons": [
+        "dist/icons/index.d.ts"
+      ],
       "text": [
         "dist/text/index.d.ts"
+      ],
+      "text-field": [
+        "dist/text-field/index.d.ts"
       ],
       "theme": [
         "dist/theme/index.d.ts"
       ],
-      "icons": [
-        "dist/icons/index.d.ts"
+      "stitches.config": [
+        "dist/stitches.config.d.ts"
       ]
     }
   },
@@ -54,9 +58,14 @@
   "dependencies": {
     "@modulz/radix-icons": "^4.0.0",
     "@radix-ui/react-accessible-icon": "^0.0.12",
+    "@radix-ui/react-label": "^0.0.11",
+    "@radix-ui/react-polymorphic": "^0.0.10",
     "@stitches/core": "0.1.4",
     "@stitches/react": "0.1.4",
-    "use-dark-mode": "^2.3.1"
+    "autosize": "^4.0.2",
+    "react-merge-refs": "^1.1.0",
+    "use-dark-mode": "^2.3.1",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",
@@ -69,6 +78,7 @@
     "@storybook/react": "^6.1.21",
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",
+    "@types/autosize": "^3.0.7",
     "@types/jest": "^26.0.20",
     "@typescript-eslint/eslint-plugin": "^4.17.0",
     "@typescript-eslint/parser": "^4.17.0",
@@ -83,8 +93,10 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "jest": "^26.6.3",
     "prettier": "^2.2.1",
+    "prism-react-renderer": "^1.2.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "react-live": "^2.2.3",
     "ts-jest": "^26.5.3",
     "ts-node": "^9.1.1",
     "tsconfig-paths-jest": "^0.0.1",

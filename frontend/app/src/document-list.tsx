@@ -163,12 +163,11 @@ function ListItem({ item, onDeleteDocument }: ItemProps) {
             size="7"
             // TODO: fix types
             // @ts-ignore
+            color="default"
             css={{
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
-              display: 'box',
-              lineClamp: '2',
             }}
           >
             {theTitle}

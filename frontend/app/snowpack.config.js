@@ -2,6 +2,7 @@ const path = require('path');
 
 /** @type {import("snowpack").SnowpackUserConfig } */
 module.exports = {
+  // TODO: fix hot-reloading of workspace dependencies.
   workspaceRoot: false,
   mount: {
     public: { url: '/', static: true },
@@ -38,6 +39,8 @@ module.exports = {
     '@utils': './src/utils',
     '@mintter/ui-legacy': './src/lib',
     '@mintter/editor': './src/editor',
+    '@mintter/client': './src/mintter-client',
+    '@mintter/hooks': './src/mintter-hooks',
     test: './test',
   },
 };

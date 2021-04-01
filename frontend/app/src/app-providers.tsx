@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { BrowserRouter as Router } from 'react-router-dom';
@@ -8,7 +9,6 @@ import { AppSpinner } from '@components/app-spinner';
 
 import { SidePanelProvider } from './sidepanel';
 import { BlockMenuProvider } from './editor/block-plugin/components/blockmenu-context';
-import { global } from '@mintter/ui/stitches.config';
 
 export const queryClient = new QueryClient();
 
@@ -22,6 +22,7 @@ export const AppProviders: React.FC = ({ children }) => {
               <Router>{children}</Router>
             </SidePanelProvider>
           </BlockMenuProvider>
+          <Toaster position="bottom-right" />
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
       </Suspense>

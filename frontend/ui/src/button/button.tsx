@@ -14,6 +14,30 @@ export const Button = styled('button', {
   },
 
   variants: {
+    size: {
+      1: {
+        '$$outlined-border-size': '1px',
+        fontSize: '$2',
+        lineHeight: '$1',
+        paddingHorizontal: '$3',
+        paddingVertical: '$2',
+      },
+      2: {
+        '$$outlined-border-size': '1.5px',
+        fontSize: '$3',
+        lineHeight: '$2',
+        paddingHorizontal: '$5',
+        paddingVertical: '$3',
+      },
+      3: {
+        '$$outlined-border-size': '2px',
+        fontSize: '$4',
+        fontWeight: '$bold',
+        lineHeight: '$2',
+        paddingHorizontal: '$6',
+        paddingVertical: '$4',
+      },
+    },
     variant: {
       solid: {
         backgroundColor: '$$solid-background-color',
@@ -37,29 +61,23 @@ export const Button = styled('button', {
           backgroundColor: '$$outlined-active-background-color',
         },
       },
+      ghost: {
+        backgroundColor: 'transparent',
+        color: '$$outlined-text-color',
+        '&:hover': {
+          backgroundColor: '$$outlined-hovered-background-color',
+        },
+        '&:active': {
+          backgroundColor: '$$outlined-active-background-color',
+        },
+      },
     },
-    size: {
-      1: {
-        '$$outlined-border-size': '1px',
-        fontSize: '$2',
-        lineHeight: '$1',
-        paddingHorizontal: '$3',
-        paddingVertical: '$2',
+    shape: {
+      rounded: {
+        borderRadius: '$2',
       },
-      2: {
-        '$$outlined-border-size': '1.5px',
-        fontSize: '$3',
-        lineHeight: '$2',
-        paddingHorizontal: '$5',
-        paddingVertical: '$3',
-      },
-      3: {
-        '$$outlined-border-size': '2px',
-        fontSize: '$4',
-        fontWeight: '$bold',
-        lineHeight: '$2',
-        paddingHorizontal: '$6',
-        paddingVertical: '$4',
+      pill: {
+        borderRadius: '$pill',
       },
     },
     color: {
@@ -123,27 +141,6 @@ export const Button = styled('button', {
         '$$outlined-hovered-background-color': '$colors$danger-muted',
         '$$outlined-active-background-color': '$colors$danger-softer',
       },
-      transparent: {
-        '$$solid-background-color': 'transparent',
-        '$$solid-text-color': 'currentColor',
-        '$$solid-hovered-background-color': 'transparent',
-        '$$solid-active-background-color': 'transparent',
-        '$$outlined-border-color': 'transparent',
-        '$$outlined-text-color': 'currentColor',
-        '$$outlined-hovered-background-color': 'transparent',
-        '$$outlined-active-background-color': 'transparent',
-      },
-    },
-    appearance: {
-      pill: {
-        borderRadius: '$pill',
-      },
-      rounded: {
-        borderRadius: '$1',
-      },
-      square: {
-        borderRadius: '0',
-      },
     },
   },
 
@@ -151,7 +148,7 @@ export const Button = styled('button', {
     variant: 'solid',
     size: '2',
     color: 'primary',
-    appearance: 'pill',
+    shape: 'rounded',
   },
 })
 
