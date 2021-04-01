@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useLocation } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 
 import {
   OnboardingStep,
@@ -8,13 +8,16 @@ import {
   OnboardingStepDescription,
   OnboardingStepTitle,
 } from './common';
+import { queryClient } from '../../app-providers';
 
 export const Complete: React.FC = () => {
+  const history = useHistory();
   const location = useLocation<{ from?: string }>();
 
-  const handleSubmit = useCallback(() => {
-    alert(`Redirect to ${location.state.from}`);
-  }, []);
+  const handleSubmit = useCallback(async () => {
+    await queryClient.invalidateQueries('Profile');
+    history.replace(location.state.from ?? '/library');
+  }, [history, location]);
 
   return (
     <OnboardingStep>

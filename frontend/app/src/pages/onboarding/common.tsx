@@ -1,9 +1,9 @@
 import { motion, Variants, Orchestration } from 'framer-motion';
+
 import { Box, BoxProps } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
 import { Button, ButtonProps } from '@mintter/ui/button';
-import type React from 'react';
 import type { CSS } from '@mintter/ui/stitches.config';
+import { Text, TextProps } from '@mintter/ui/text';
 
 export type OnboardingStepPropsType = {
   prev: () => void;
@@ -56,10 +56,10 @@ export const slideUpAnimationVariants: Variants = {
   },
 };
 
-export function OnboardingStep({ css, children }: BoxProps) {
+export function OnboardingStep({ css, ...props }: BoxProps) {
   return (
     <Box
-      as={motion.div}
+      as={motion.form}
       variants={containerAnimationVariants}
       initial="hidden"
       animate="visible"
@@ -75,9 +75,8 @@ export function OnboardingStep({ css, children }: BoxProps) {
         justifyContent: 'center',
         ...css,
       }}
-    >
-      {children}
-    </Box>
+      {...props}
+    />
   );
 }
 
@@ -115,7 +114,7 @@ export function OnboardingStepTitle({
   );
 }
 
-export function OnboardingStepDescription({ css, children }: BoxProps) {
+export function OnboardingStepDescription({ css, ...props }: TextProps) {
   return (
     <Text
       as={motion.p}
@@ -127,9 +126,8 @@ export function OnboardingStepDescription({ css, children }: BoxProps) {
         maxWidth: '$three-quarters',
         ...css,
       }}
-    >
-      {children}
-    </Text>
+      {...props}
+    />
   );
 }
 
@@ -140,7 +138,7 @@ export function OnboardingStepBody({ css, children }: BoxProps) {
       variants={fadeAnimationVariants}
       // TODO: fix types
       // @ts-ignore
-      css={{ marginTop: 'auto', ...css }}
+      css={{ marginTop: 'auto', width: '100%', ...css }}
     >
       {children}
     </Box>
@@ -171,11 +169,10 @@ export function OnboardingStepActions({ css, children }: BoxProps) {
   );
 }
 
-// TODO: fix types
 export function OnboardingStepButton(props: ButtonProps) {
   // TODO: fix types
   // @ts-ignore
-  return <Button size="3" {...props} />;
+  return <Button type="button" shape="pill" size="3" {...props} />;
 }
 
 export function SecurityPackIcon() {
