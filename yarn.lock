@@ -3203,7 +3203,7 @@
     "@types/react" ">=16.9.0"
     "@types/react-test-renderer" ">=16.9.0"
 
-"@testing-library/react@*", "@testing-library/react@^11.0.0", "@testing-library/react@^11.2.5":
+"@testing-library/react@*", "@testing-library/react@^11.2.5":
   version "11.2.5"
   resolved "https://registry.yarnpkg.com/@testing-library/react/-/react-11.2.5.tgz#ae1c36a66c7790ddb6662c416c27863d87818eb9"
   integrity sha512-yEx7oIa/UWLe2F2dqK0FtMF9sJWNXD+2PPtp39BvE0Kh9MJ9Kl0HrZAgEuhUJR+Lx8Di6Xz+rKwSdEPY2UV8ZQ==
@@ -3218,6 +3218,14 @@
   dependencies:
     "@babel/runtime" "^7.10.3"
     "@testing-library/dom" "^7.22.3"
+
+"@testing-library/react@^11.2.6":
+  version "11.2.6"
+  resolved "https://registry.yarnpkg.com/@testing-library/react/-/react-11.2.6.tgz#586a23adc63615985d85be0c903f374dab19200b"
+  integrity sha512-TXMCg0jT8xmuU8BkKMtp8l7Z50Ykew5WNX8UoIKTaLFwKkP2+1YDhOLA2Ga3wY4x29jyntk7EWfum0kjlYiSjQ==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+    "@testing-library/dom" "^7.28.1"
 
 "@testing-library/user-event@^12.0.11":
   version "12.8.3"
@@ -4238,7 +4246,7 @@
     "@types/mocha" "^8.2.0"
     "@web/test-runner-core" "^0.10.8"
 
-"@web/test-runner@^0.12.0":
+"@web/test-runner@^0.12.17":
   version "0.12.17"
   resolved "https://registry.yarnpkg.com/@web/test-runner/-/test-runner-0.12.17.tgz#37994ddc53e0dab8c282f1d595826ac309db89fe"
   integrity sha512-wTpczsz+GLh6QRGWNLDTYhXtcj/lr8rsEVHSXvFUDmVzhoGrt0AZJktnPiNJHplgFJ/LbSIiQvXKWk48ogZY5g==
@@ -5952,7 +5960,7 @@ ccount@^1.0.0:
   resolved "https://registry.yarnpkg.com/ccount/-/ccount-1.1.0.tgz#246687debb6014735131be8abab2d93898f8d043"
   integrity sha512-vlNK021QdI7PNeiUh/lKkC/mNHHfV0m/Ad5JoI0TYtlBnJAslM/JIkm/tGC88bkLIwO6OQ5uV6ztS6kVAtCDlg==
 
-chai@^4.2.0:
+chai@^4.3.4:
   version "4.3.4"
   resolved "https://registry.yarnpkg.com/chai/-/chai-4.3.4.tgz#b55e655b31e1eac7099be4c08c21964fce2e6c49"
   integrity sha512-yS5H68VYOCtN1cjfwumDSuzn/9c+yza4f3reKXlE5rUg7SFcCEy90gJvydNgOYtblyf4Zi6jIWRnXOgErta0KA==

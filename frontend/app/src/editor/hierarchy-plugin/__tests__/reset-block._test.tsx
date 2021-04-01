@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from 'test/jsx';
+import { jsx } from '../../../../test/jsx';
 import type { Editor } from 'slate';
 
 xtest('Hierarchy: move block content to the tops nearest block available', () => {
