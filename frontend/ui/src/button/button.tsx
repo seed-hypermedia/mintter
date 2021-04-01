@@ -14,6 +14,30 @@ export const Button = styled('button', {
   },
 
   variants: {
+    size: {
+      1: {
+        '$$outlined-border-size': '1px',
+        fontSize: '$2',
+        lineHeight: '$1',
+        paddingHorizontal: '$3',
+        paddingVertical: '$2',
+      },
+      2: {
+        '$$outlined-border-size': '1.5px',
+        fontSize: '$3',
+        lineHeight: '$2',
+        paddingHorizontal: '$5',
+        paddingVertical: '$3',
+      },
+      3: {
+        '$$outlined-border-size': '2px',
+        fontSize: '$4',
+        fontWeight: '$bold',
+        lineHeight: '$2',
+        paddingHorizontal: '$6',
+        paddingVertical: '$4',
+      },
+    },
     variant: {
       solid: {
         backgroundColor: '$$solid-background-color',
@@ -38,28 +62,12 @@ export const Button = styled('button', {
         },
       },
     },
-    size: {
-      1: {
-        '$$outlined-border-size': '1px',
-        fontSize: '$2',
-        lineHeight: '$1',
-        paddingHorizontal: '$3',
-        paddingVertical: '$2',
+    shape: {
+      rounded: {
+        borderRadius: '$2',
       },
-      2: {
-        '$$outlined-border-size': '1.5px',
-        fontSize: '$3',
-        lineHeight: '$2',
-        paddingHorizontal: '$5',
-        paddingVertical: '$3',
-      },
-      3: {
-        '$$outlined-border-size': '2px',
-        fontSize: '$4',
-        fontWeight: '$bold',
-        lineHeight: '$2',
-        paddingHorizontal: '$6',
-        paddingVertical: '$4',
+      pill: {
+        borderRadius: '$pill',
       },
     },
     color: {
@@ -134,24 +142,13 @@ export const Button = styled('button', {
         '$$outlined-active-background-color': 'transparent',
       },
     },
-    appearance: {
-      pill: {
-        borderRadius: '$pill',
-      },
-      rounded: {
-        borderRadius: '$1',
-      },
-      square: {
-        borderRadius: '0',
-      },
-    },
   },
 
   defaultVariants: {
     variant: 'solid',
     size: '2',
     color: 'primary',
-    appearance: 'pill',
+    shape: 'rounded',
   },
 })
 

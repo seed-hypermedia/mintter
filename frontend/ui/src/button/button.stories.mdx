@@ -44,6 +44,17 @@ Pass a `variant` prop to the `Button` component to change their appearance.
 
 > The default `Button` variant is `solid`.
 
+### Shape
+
+Pass a `shape` prop to the `Button` component to change its shape.
+
+```jsx columns
+<Button shape="rounded">Rounded Button</Button>
+<Button shape="pill">Pill Button</Button>
+```
+
+> The default `Button` `shape` is `rounded`.
+
 ### Color
 
 The `Button` component has various color schemes based in the Theme brand and
@@ -80,6 +91,13 @@ Combine `Button` props to preview your component.
       label: 'Variant',
       options: ['solid', 'outlined'],
       defaultValue: 'solid',
+    },
+    {
+      type: 'select',
+      name: 'shape',
+      label: 'Shape',
+      options: ['rounded', 'pill'],
+      defaultValue: 'rounded',
     },
     {
       type: 'select',
