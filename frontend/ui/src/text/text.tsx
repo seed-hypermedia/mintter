@@ -107,6 +107,7 @@ export const Text = styled('span', {
 
   defaultVariants: {
     size: '3',
+    color: 'default',
   },
 
   compoundVariants: [
