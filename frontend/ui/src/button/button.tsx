@@ -61,6 +61,16 @@ export const Button = styled('button', {
           backgroundColor: '$$outlined-active-background-color',
         },
       },
+      ghost: {
+        backgroundColor: 'transparent',
+        color: '$$outlined-text-color',
+        '&:hover': {
+          backgroundColor: '$$outlined-hovered-background-color',
+        },
+        '&:active': {
+          backgroundColor: '$$outlined-active-background-color',
+        },
+      },
     },
     shape: {
       rounded: {
@@ -130,16 +140,6 @@ export const Button = styled('button', {
         '$$outlined-text-color': '$colors$danger-default',
         '$$outlined-hovered-background-color': '$colors$danger-muted',
         '$$outlined-active-background-color': '$colors$danger-softer',
-      },
-      transparent: {
-        '$$solid-background-color': 'transparent',
-        '$$solid-text-color': 'currentColor',
-        '$$solid-hovered-background-color': 'transparent',
-        '$$solid-active-background-color': 'transparent',
-        '$$outlined-border-color': 'transparent',
-        '$$outlined-text-color': 'currentColor',
-        '$$outlined-hovered-background-color': 'transparent',
-        '$$outlined-active-background-color': 'transparent',
       },
     },
   },
