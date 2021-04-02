@@ -10,8 +10,8 @@ import {
   useConnectionCreate,
   useConnectionList,
   useProfile,
-} from '../mintter-hooks';
-import { createDraft } from '../mintter-client';
+} from '@mintter/hooks';
+import { createDraft } from '@mintter/client';
 import { Link } from '../link';
 import { Connections } from '../connections';
 import { SuggestedConnections } from '../suggested-connections';

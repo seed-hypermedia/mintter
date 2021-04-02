@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useSuggestedConnections } from './mintter-hooks';
+import { useSuggestedConnections } from '@mintter/hooks';
 import { Text } from '@mintter/ui/text';
 import mintter from '@mintter/api/v2/mintter_pb';
 import { Box } from '@mintter/ui/box';

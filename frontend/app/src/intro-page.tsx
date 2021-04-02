@@ -4,7 +4,7 @@ import { Button } from '@mintter/ui/button';
 import { css } from '@mintter/ui/stitches.config';
 import { Text } from '@mintter/ui/text';
 import { useWelcome } from './welcome-provider';
-import { useProfile } from './mintter-hooks';
+import { useProfile } from '@mintter/hooks';
 import { useHistory, useRouteMatch } from 'react-router';
 import { getPath } from '@utils/routes';
 

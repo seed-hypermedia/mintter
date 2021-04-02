@@ -2,7 +2,7 @@ import * as React from 'react';
 // import {Icons} from 'components/icons'
 import { useLocation, useRouteMatch } from 'react-router-dom';
 import { Link } from './link';
-import { useAuthor } from './mintter-hooks';
+import { useAuthor } from '@mintter/hooks';
 import { format } from 'date-fns';
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
 import { getPath } from '@utils/routes';

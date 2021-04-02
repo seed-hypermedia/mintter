@@ -9,7 +9,7 @@ import {
 } from 'react-query';
 import type mintter from '@mintter/api/v2/mintter_pb';
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
-import * as apiClient from './mintter-client';
+import * as apiClient from '@mintter/client';
 
 export function useProfile(options = {}) {
   const profileQuery = useQuery(

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Textarea } from '@components/textarea';
 import { Button } from '@mintter/ui/button';
-import { useProfileAddrs } from './mintter-hooks';
+import { useProfileAddrs } from '@mintter/hooks';
 // import {useToasts} from 'react-toast-notifications'
 import CopyToClipboard from 'react-copy-to-clipboard';
 import { Label } from '@radix-ui/react-label';

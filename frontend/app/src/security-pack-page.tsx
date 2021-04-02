@@ -1,7 +1,7 @@
 import * as React from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import { useWelcome } from './welcome-provider';
-import { genSeed, initProfile } from './mintter-client';
+import { genSeed, initProfile } from '@mintter/client';
 import { welcomeGrid } from './intro-page';
 import { Container } from '@components/container';
 import { Button } from '@mintter/ui/button';

@@ -1,8 +1,8 @@
 import * as React from 'react';
 // import Seo from 'components/seo'
 import { DocumentList } from '../document-list';
-import { useDraftsList } from '../mintter-hooks';
-import { deleteDraft } from '../mintter-client';
+import { useDraftsList } from '@mintter/hooks';
+import { deleteDraft } from '@mintter/client';
 // import { Icons } from 'components/icons';
 import { Button } from '@mintter/ui/button';
 import { Separator } from '@components/separator';

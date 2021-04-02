@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Route, Redirect } from 'react-router-dom';
-import { useProfile } from './mintter-hooks';
+import { useProfile } from '@mintter/hooks';
 import { useWelcome } from './welcome-provider';
 import { AppSpinner } from '@components/app-spinner';
 import { getPath } from '@utils/routes';

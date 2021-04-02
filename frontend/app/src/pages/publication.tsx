@@ -15,9 +15,9 @@ import {
   useDraftsList,
   usePublication as usePublicationQuery,
   useAuthor,
-} from '../mintter-hooks';
+} from '@mintter/hooks';
 import { useSidePanel } from '../sidepanel';
-import * as apiClient from '../mintter-client';
+import * as apiClient from '@mintter/client';
 import { useMutation } from 'react-query';
 // import { SlateBlock } from 'editor/editor';
 import { Text } from '@mintter/ui/text';

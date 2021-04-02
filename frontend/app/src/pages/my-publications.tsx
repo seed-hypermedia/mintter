@@ -2,8 +2,8 @@ import * as React from 'react';
 // import Seo from 'components/seo'
 import { useHistory, useRouteMatch } from 'react-router';
 import { DocumentList } from '../document-list';
-import { useMyPublicationsList } from '../mintter-hooks';
-import { createDraft, deletePublication } from '../mintter-client';
+import { useMyPublicationsList } from '@mintter/hooks';
+import { createDraft, deletePublication } from '@mintter/client';
 // import {ErrorMessage} from 'components/error-message'
 // import {Icons} from 'components/icons'
 import { Button } from '@mintter/ui/button';

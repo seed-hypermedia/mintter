@@ -3,19 +3,19 @@ import {
   screen,
   fireEvent,
   waitForElementToBeRemoved,
-} from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import {AppProviders} from 'components/app-providers'
-import {buildProfile} from './generate'
+} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { AppProviders } from '../src/app-providers';
+import { buildProfile } from '../src/utils/generate';
 
-jest.mock('shared/mintter-client')
+jest.mock('../src/mintter-client.ts');
 
-function AppWrapper({children}) {
+function AppWrapper({ children }) {
   return (
-    <div id="__next">
+    <div>
       <AppProviders>{children}</AppProviders>
     </div>
-  )
+  );
 }
 
 async function render(
@@ -35,11 +35,15 @@ async function render(
           pathname: route,
           state: {},
         }
-      : route
+      : route;
 
-  window.history.pushState(routeConfig.state, 'Test page', routeConfig.pathname)
+  window.history.pushState(
+    routeConfig.state,
+    'Test page',
+    routeConfig.pathname,
+  );
 
-  profile = typeof profile === 'undefined' ? buildProfile() : profile
+  profile = typeof profile === 'undefined' ? buildProfile() : profile;
 
   const returnValue = {
     ...rtlRender(ui, {
@@ -47,13 +51,13 @@ async function render(
       ...renderOptions,
     }),
     profile,
-  }
+  };
 
   if (wait) {
-    await waitForLoadingToFinish(timeout)
+    await waitForLoadingToFinish(timeout);
   }
 
-  return returnValue
+  return returnValue;
 }
 
 const waitForLoadingToFinish = (timeout = 4000) =>
@@ -62,8 +66,8 @@ const waitForLoadingToFinish = (timeout = 4000) =>
       ...screen.queryAllByLabelText(/loading/i),
       ...screen.queryAllByText(/loading/i),
     ],
-    {timeout},
-  )
+    { timeout },
+  );
 
-export * from '@testing-library/react'
-export {userEvent, fireEvent, render, waitForLoadingToFinish}
+export * from '@testing-library/react';
+export { userEvent, fireEvent, render, waitForLoadingToFinish };

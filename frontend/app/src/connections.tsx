@@ -1,6 +1,6 @@
 import * as React from 'react';
 import mintter from '@mintter/api/v2/mintter_pb';
-import { useConnectionList } from './mintter-hooks';
+import { useConnectionList } from '@mintter/hooks';
 // import {ErrorMessage} from './error-message'
 import { Button } from '@mintter/ui/button';
 import { Box } from '@mintter/ui/box';

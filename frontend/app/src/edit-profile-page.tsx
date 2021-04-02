@@ -6,7 +6,7 @@ import { Input } from '@components/input';
 import { Textarea } from '@components/textarea';
 import { useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
-import * as apiClient from './mintter-client';
+import * as apiClient from '@mintter/client';
 import { welcomeGrid } from './intro-page';
 import { Text } from '@mintter/ui/text';
 import { Label } from '@radix-ui/react-label';

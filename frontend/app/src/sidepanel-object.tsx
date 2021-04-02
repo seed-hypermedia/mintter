@@ -5,7 +5,7 @@ import type mintter from '@mintter/api/v2/mintter_pb';
 import { ELEMENT_BLOCK } from '@mintter/editor/block-plugin/defaults';
 import { ELEMENT_READ_ONLY } from '@mintter/editor/readonly-plugin/defaults';
 // import { Icons } from 'components/icons';
-import { useAuthor, useProfile, usePublication } from './mintter-hooks';
+import { useAuthor, useProfile, usePublication } from '@mintter/hooks';
 import { AuthorLabel } from './author-label';
 import { ELEMENT_PARAGRAPH } from '@mintter/editor/elements/defaults';
 import { Link } from './link';
