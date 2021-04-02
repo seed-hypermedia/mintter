@@ -193,6 +193,16 @@ export function getProfile(
   return Promise.resolve(response);
 }
 
+// export function getProfile(
+//   profileId?: string,
+// ): Promise<mintter.GetProfileResponse> {
+//   let request = new mintter.GetProfileRequest();
+//   if (profileId) {
+//     request.setProfileId(profileId);
+//   }
+//   return mintterClient().getProfile(request);
+// }
+
 type UpdateProfileParams = {
   username?: string;
   email?: string;

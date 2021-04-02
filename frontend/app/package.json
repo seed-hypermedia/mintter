@@ -2,7 +2,7 @@
   "name": "@mintter/app",
   "version": "0.1.0",
   "scripts": {
-    "dev": "snowpack dev",
+    "dev": "snowpack dev --port 4000",
     "build": "snowpack build",
     "test": "web-test-runner \"src/**/*.test.tsx\" --node-resolve",
     "test:watch": "yarn test --watch",
@@ -70,6 +70,7 @@
     "@types/snowpack-env": "^2.3.2",
     "@web/test-runner": "^0.12.17",
     "chai": "^4.3.4",
+    "cypress": "^6.8.0",
     "postcss": "^8.2.8",
     "postcss-cli": "^8.3.1",
     "prettier": "^2.0.5",
