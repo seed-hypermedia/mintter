@@ -54,6 +54,7 @@
     "xstate": "^4.17.0"
   },
   "devDependencies": {
+    "@esm-bundle/chai": "^4.3.4",
     "@snowpack/plugin-dotenv": "^2.0.5",
     "@snowpack/plugin-postcss": "^1.1.0",
     "@snowpack/plugin-react-refresh": "^2.4.0",
