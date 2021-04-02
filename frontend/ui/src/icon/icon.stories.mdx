@@ -1,0 +1,101 @@
+import {Icon} from '@src/icon'
+import {Playground} from '@storybook-utils/components/code'
+import {Meta} from '@storybook/addon-docs/blocks'
+
+<Meta title="Data Display/Icon" />
+
+# Icon
+
+Renders an
+[accessible icon](https://radix-ui.com/primitives/docs/utilities/accessible-icon).
+
+## Import
+
+```tsx
+import {Icon} from '@mintter/ui/icon'
+```
+
+## Usage
+
+```jsx
+<Icon name="Mintter" />
+```
+
+### Size
+
+Pass a `size` prop to the `Icon` component to change its size.
+
+```jsx columns
+<Icon name="Mintter" size="1" />
+<Icon name="Mintter" size="2" />
+<Icon name="Mintter" size="3" />
+```
+
+> The default `Icon` `size` is `2`.
+
+### Color
+
+Pass a `color` prop to the `Icon` component to change its color.
+
+```jsx columns
+<Icon name="Mintter" color="default" />
+<Icon name="Mintter" color="alt" />
+<Icon name="Mintter" color="muted" />
+<Icon name="Mintter" color="opposite" />
+<Icon name="Mintter" color="contrast" />
+<Icon name="Mintter" color="primary" />
+<Icon name="Mintter" color="secondary" />
+<Icon name="Mintter" color="terciary" />
+<Icon name="Mintter" color="success" />
+<Icon name="Mintter" color="warning" />
+<Icon name="Mintter" color="danger" />
+```
+
+> The default `Icon` `color` is `default`.
+
+### All icons
+
+```jsx columns
+<Icon name="Mintter" />
+```
+
+## Playground
+
+<Playground
+  component={Icon}
+  options={[
+    {
+      type: 'select',
+      name: 'name',
+      label: 'Name',
+      options: ['Mintter', 'ArrowLeft'],
+      defaultValue: 'Mintter',
+    },
+    {
+      type: 'select',
+      name: 'size',
+      label: 'Size',
+      options: ['1', '2', '3'],
+      defaultValue: '2',
+    },
+    {
+      type: 'select',
+      name: 'color',
+      label: 'Color',
+      options: [
+        'default',
+        'alt',
+        'muted',
+        'opposite',
+        'contrast',
+        'primary',
+        'secondary',
+        'terciary',
+        'success',
+        'warning',
+        'danger',
+      ],
+      defaultValue: 'default',
+    },
+  ]}
+/>
