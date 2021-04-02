@@ -295,9 +295,9 @@ export function ToolbarLink({ link: linkOptions }: any) {
       <Box
         contentEditable={false}
         css={{
-          padding: '$4',
+          padding: '$5',
           width: '300px',
-          backgroundColor: 'white',
+          backgroundColor: '$background-muted',
           display: 'flex',
           flexDirection: 'column',
           gap: '$4',

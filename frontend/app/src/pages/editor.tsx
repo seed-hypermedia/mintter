@@ -108,7 +108,7 @@ const Editor: React.FC = () => {
           onChange={setTitle}
           data-testid="editor_title"
           name="title"
-          placeholder="document title"
+          placeholder="Document title"
           css={{
             $$borderColor: 'transparent',
             $$borderColorHover: 'transparent',
@@ -125,7 +125,7 @@ const Editor: React.FC = () => {
           onChange={setSubtitle}
           data-testid="editor_subtitle"
           name="subtitle"
-          placeholder="subtitle"
+          placeholder="about this publication..."
           css={{
             $$borderColor: 'transparent',
             $$borderColorHover: 'transparent',
