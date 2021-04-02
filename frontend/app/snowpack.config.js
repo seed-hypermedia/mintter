@@ -41,6 +41,6 @@ module.exports = {
     '@mintter/editor': './src/editor',
     '@mintter/client': './src/mintter-client',
     '@mintter/hooks': './src/mintter-hooks',
-    test: './test',
+    test: './src/test',
   },
 };

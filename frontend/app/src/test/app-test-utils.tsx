@@ -5,10 +5,10 @@ import {
   waitForElementToBeRemoved,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AppProviders } from '../src/app-providers';
-import { buildProfile } from '../src/utils/generate';
+import { AppProviders } from '../app-providers';
+import { buildProfile } from '@utils/generate';
 
-jest.mock('../src/mintter-client.ts');
+// jest.mock('../src/mintter-client.ts');
 
 function AppWrapper({ children }) {
   return (
@@ -24,7 +24,7 @@ async function render(
     route = '/',
     timeout = 4000,
     wrapper = AppWrapper,
-    wait = true,
+    wait = false,
     profile,
     ...renderOptions
   } = {},

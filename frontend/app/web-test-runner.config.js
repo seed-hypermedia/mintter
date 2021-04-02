@@ -9,6 +9,9 @@ module.exports = {
   nodeResolve: true,
   testRunnerHtml: (testFramework) => `<html>
     <body>
+      <script>
+        global = globalThis;
+      </script>
       <script>window.process = { env: { NODE_ENV: "development" } }</script>
       <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
