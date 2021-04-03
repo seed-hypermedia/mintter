@@ -21,6 +21,7 @@ import (
 	"mintter/backend/server"
 	"mintter/backend/store"
 	"mintter/backend/ui"
+	"mintter/metrics"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -73,7 +74,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	server.SetUIConfig(cfg.UI)
 
-	log, err := zap.NewDevelopment(zap.WithCaller(false))
+	log, err := metrics.NewPrometheus(zap.WithCaller(false))
 	if err != nil {
 		return err
 	}
@@ -99,7 +100,12 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 			return s, n, err
 		}
 
-		log.Debug("ServerInitialized", zap.String("repoPath", cfg.RepoPath))
+		var logParams []zapcore.Field
+		logParams = append(logParams, zap.String("repoPath", cfg.RepoPath))
+		logParams = append(logParams, zap.String("domain", cfg.Domain))
+		hostname, _ := os.Hostname()
+		logParams = append(logParams, zap.String("hostname", hostname))
+		log.Debug("ServerInitialized", logParams...)
 
 		docserver.Init(n.DocServer())
 		return s, n, nil
