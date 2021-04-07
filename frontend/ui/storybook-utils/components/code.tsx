@@ -1,5 +1,6 @@
 import {Box} from '@src/box'
 import {Button} from '@src/button'
+import {Icon} from '@src/icon'
 import {styled} from '@src/stitches.config'
 import {Text} from '@src/text'
 import {TextField} from '@src/text-field'
@@ -13,6 +14,7 @@ import {LivePreview, LiveProvider} from 'react-live'
 const liveScope = {
   Box,
   Button,
+  Icon,
   Text,
   TextField,
 }
@@ -45,14 +47,11 @@ export function Code({
   className,
   columns,
   children,
-  ...other
 }: {
   className: string
   columns?: boolean
   children: string
 }) {
-  console.log('other', other)
-
   const commonProps = useMemo(
     () => ({
       language: className.replace('language-', '') as Language,
