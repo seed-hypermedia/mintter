@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
-import { ExternalLinkIcon } from '@mintter/ui/icons';
+import { Icon } from '@mintter/ui/icon';
 import { Tooltip } from '../../components/tooltip';
 import { Link } from '../../link';
 
@@ -58,7 +57,7 @@ function ExternalLink({ element, attributes, children, ...props }: any) {
             gap: '$2',
           }}
         >
-          <ExternalLinkIcon />
+          <Icon name="ExternalLink" color="opposite" size="1" />
           {element.url}
         </Box>
       }

@@ -34,7 +34,7 @@ import { Popover } from './popover';
 import { Tooltip } from '../../components/tooltip';
 import { LinkElement } from './link-element';
 import { Input } from '@components/input';
-import { LinkIcon } from '@mintter/ui/icons';
+import { Icon } from '@mintter/ui/icon';
 
 export const ELEMENT_LINK = 'a';
 
@@ -288,7 +288,7 @@ export function ToolbarLink({ link: linkOptions }: any) {
             height: 24,
           }}
         >
-          <LinkIcon />
+          <Icon name="Link" size="1" />
         </Button>
       }
     >

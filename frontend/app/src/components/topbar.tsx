@@ -9,7 +9,7 @@ import { Container } from '@components/container';
 import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
 import { Button } from '@mintter/ui/button';
-import { SettingsIcon } from '@mintter/ui/icons';
+import { Icon } from '@mintter/ui/icon';
 import * as DropdownMenu from '@mintter/ui-legacy/dropdown-menu';
 import { getPath } from '@utils/routes';
 
@@ -57,7 +57,7 @@ export function Topbar({ isPublic = false }) {
         <DropdownMenu.Root>
           <DropdownMenu.Trigger as={Slot}>
             <Button color="transparent" variant="solid" css={{ padding: '$2' }}>
-              <SettingsIcon />
+              <Icon name="GearOutlined" size="1" />
             </Button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>

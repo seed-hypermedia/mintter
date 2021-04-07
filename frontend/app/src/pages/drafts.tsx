@@ -8,7 +8,6 @@ import { Button } from '@mintter/ui/button';
 import { Separator } from '@components/separator';
 import { Text } from '@mintter/ui/text';
 import { Box } from '@mintter/ui/box';
-import { SettingsIcon } from '@mintter/ui/icons';
 import { useHistory, useRouteMatch } from 'react-router';
 import type { WithCreateDraft } from './library';
 import * as MessageBox from '@components/message-box';
