@@ -74,10 +74,17 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	server.SetUIConfig(cfg.UI)
 
-	log, err := metrics.NewPrometheus(zap.WithCaller(false))
+	var log *zap.Logger
+	if isatty.IsTerminal(os.Stdout.Fd()) {
+		log, err = zap.NewDevelopment(zap.WithCaller(false))
+	} else {
+		log, err = metrics.NewLokiLogger(zap.WithCaller(false))
+	}
+
 	if err != nil {
 		return err
 	}
+
 	defer func() {
 		if err := log.Sync(); err != nil {
 			_ = err
@@ -100,12 +107,8 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 			return s, n, err
 		}
 
-		var logParams []zapcore.Field
-		logParams = append(logParams, zap.String("repoPath", cfg.RepoPath))
-		logParams = append(logParams, zap.String("domain", cfg.Domain))
 		hostname, _ := os.Hostname()
-		logParams = append(logParams, zap.String("hostname", hostname))
-		log.Debug("ServerInitialized", logParams...)
+		log.Debug("ServerInitialized", zap.String("repoPath", cfg.RepoPath), zap.String("domain", cfg.Domain), zap.String("hostname", hostname))
 
 		docserver.Init(n.DocServer())
 		return s, n, nil

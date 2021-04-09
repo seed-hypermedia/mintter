@@ -11,16 +11,14 @@ import (
 	"go.uber.org/zap"
 )
 
-type prometheusSink struct {
+type lokiSink struct {
 	httpClient *http.Client
 	URL        string
 	labels     map[string]string
 }
 
-// InitPrometheusSink init prometheus sink
-func InitPrometheusSink(u *url.URL) (zap.Sink, error) {
-	// TODO: parse URL and warn if some URL parameter is incorrect
-
+// InitLokiSink init loki sink
+func InitLokiSink(u *url.URL) (zap.Sink, error) {
 	client := http.DefaultClient
 	rt := WithHeader(client.Transport)
 	rt.Set("Content-Type", "application/json")
@@ -37,21 +35,21 @@ func InitPrometheusSink(u *url.URL) (zap.Sink, error) {
 		u.Path = "api/prom/push"
 	}
 
-	sink := prometheusSink{
+	sink := lokiSink{
 		httpClient: client,
-		URL:        strings.Replace(u.String(), "prometheus://", "https://", 1),
+		URL:        strings.Replace(u.String(), "loki://", "https://", 1),
 	}
 
 	return sink, nil
 }
 
 // Close implement zap.Sink func Close
-func (p prometheusSink) Close() error {
+func (p lokiSink) Close() error {
 	return nil
 }
 
 // Write implement zap.Sink func Write
-func (p prometheusSink) Write(b []byte) (n int, err error) {
+func (p lokiSink) Write(b []byte) (n int, err error) {
 	jsonStr, err := NewLokiDataStream(p.labels, b)
 	if err != nil {
 		return 0, err
@@ -75,6 +73,6 @@ func (p prometheusSink) Write(b []byte) (n int, err error) {
 }
 
 // Sync implement zap.Sink func Sync
-func (p prometheusSink) Sync() error {
+func (p lokiSink) Sync() error {
 	return nil
 }
