@@ -3,10 +3,14 @@ package monitoring
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -41,6 +45,72 @@ func InitLokiSink(u *url.URL) (zap.Sink, error) {
 	}
 
 	return sink, nil
+}
+
+type LokiEntry struct {
+	TS   string `json:"ts"`
+	Line string `json:"line"`
+}
+
+func NewLokiLabels(labels map[string]string) string {
+
+	if labels == nil {
+		return "null"
+	}
+
+	var buf strings.Builder
+
+	buf.WriteString("{")
+	for key, value := range labels {
+		fmt.Fprintf(&buf, "%s=\"%s\",", key, value)
+	}
+	buf.WriteString("{")
+
+	final := buf.String()
+	final = final[:len(final)-1] + "}"
+	return final
+}
+
+type LokiStream struct {
+	Labels  string      `json:"labels"`
+	Entries []LokiEntry `json:"entries"`
+}
+
+type LokiData struct {
+	Streams []LokiStream `json:"streams"`
+}
+
+func NewLokiStream(labels map[string]string) LokiStream {
+	stream := LokiStream{}
+	stream.Labels = NewLokiLabels(labels)
+	return stream
+}
+
+func (l *LokiData) AddStream(stream LokiStream) {
+	l.Streams = append(l.Streams, stream)
+}
+
+func (s *LokiStream) AddEntry(line string) {
+	entry := LokiEntry{
+		TS:   time.Now().Format(time.RFC3339Nano),
+		Line: string(line),
+	}
+	s.Entries = append(s.Entries, entry)
+}
+
+func NewLokiDataStream(labels map[string]string, line []byte) ([]byte, error) {
+	hostname, _ := os.Hostname()
+	env := "dev"
+
+	stream := NewLokiStream(map[string]string{"app": "mintter", "hostname": hostname, "env": env})
+	stream.AddEntry(string(line))
+	jsonStr2 := LokiData{}
+	jsonStr2.AddStream(stream)
+	b, err := json.Marshal(jsonStr2)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
 }
 
 // Close implement zap.Sink func Close

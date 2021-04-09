@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewLokiLogger(t *testing.T) {
-	log, err := NewLokiLogger()
+	log, err := monitoring.NewLokiLogger()
 	if err != nil {
 		panic(err)
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"mintter/backend/config"
 	"mintter/backend/identity"
+	"mintter/backend/logging"
 	"mintter/backend/p2p"
 	"mintter/backend/store"
 	"time"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/burdiyan/go/mainutil"
 	"github.com/multiformats/go-multiaddr"
-	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
 	"net/http"
@@ -179,10 +179,12 @@ func makeNode(name string, cfg config.P2P) (*p2p.Node, error) {
 		return nil, err
 	}
 
-	log, err := zap.NewDevelopment()
-	if err != nil {
-		return nil, err
-	}
+	log := logging.Logger("test-node")
+	// No devolver err???
+	//log, err := zap.NewDevelopment()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	return p2p.NewNode("tmp/"+name, st, log.Named(name), cfg)
+	return p2p.NewNode("tmp/"+name, st, logging.Logger(name), cfg)
 }

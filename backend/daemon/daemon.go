@@ -17,11 +17,11 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/document"
 	"mintter/backend/identity"
+	"mintter/backend/logging"
 	"mintter/backend/p2p"
 	"mintter/backend/server"
 	"mintter/backend/store"
 	"mintter/backend/ui"
-	"mintter/monitoring"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -30,7 +30,6 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -39,6 +38,8 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+var log *logging.ZapEventLogger
 
 func authFunc(ctx context.Context) (context.Context, error) {
 	return document.AdminContext(ctx), nil
@@ -74,16 +75,12 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	server.SetUIConfig(cfg.UI)
 
-	var log *zap.Logger
+	logging.DisabledTelemetry = cfg.DisableTelemetry
 	if isatty.IsTerminal(os.Stdout.Fd()) {
-		log, err = zap.NewDevelopment(zap.WithCaller(false))
-	} else {
-		log, err = monitoring.NewLokiLogger(zap.WithCaller(false))
+		logging.SetAllLoggers(logging.LevelDebug)
 	}
 
-	if err != nil {
-		return err
-	}
+	log = logging.Logger("daemon")
 
 	defer func() {
 		if err := log.Sync(); err != nil {
@@ -108,14 +105,14 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		}
 
 		hostname, _ := os.Hostname()
-		log.Debug("ServerInitialized", zap.String("repoPath", cfg.RepoPath), zap.String("domain", cfg.Domain), zap.String("hostname", hostname))
+		log.Debug("ServerInitialized", zap.String("repoPath", cfg.RepoPath), zap.String("domain", cfg.Domain), zap.Bool("DisableTelemetry", cfg.DisableTelemetry), zap.String("hostname", hostname))
 
 		docserver.Init(n.DocServer())
 		return s, n, nil
 	})
 
 	{
-		s, err := server.NewServer(initFunc, log.Named("rpc"))
+		s, err := server.NewServer(initFunc, logging.Logger("rpc"))
 		if err != nil {
 			return fmt.Errorf("failed to create rpc server: %w", err)
 		}
@@ -128,7 +125,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		reflection.Register(rpcsrv)
 	}
 
-	log = log.Named("daemon")
+	log = logging.Logger("daemon")
 
 	var handler http.Handler
 	{
@@ -191,10 +188,9 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		return err
 	})
 
-	var logParams []zapcore.Field = []zapcore.Field{
-		zap.String("httpURL", httpURL),
-		zap.String("grpcURL", grpcURL),
-	}
+	var logParams []zap.Field
+	logParams = append(logParams, zap.String("httpURL", httpURL))
+	logParams = append(logParams, zap.String("grpcURL", grpcURL))
 
 	// Start HTTPS server and generate Let's Encrypt certificate
 	httpsSrv := http.Server{}
@@ -227,7 +223,6 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	}
 
 	log.Info("ServerStarted", logParams...)
-
 	g.Go(func() error {
 		<-ctx.Done()
 		log.Info("GracefulShutdownStarted")

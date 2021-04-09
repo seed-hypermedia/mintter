@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mintter/backend/config"
 	"mintter/backend/identity"
+	"mintter/backend/logging"
 	"mintter/backend/p2p"
 	"mintter/backend/store"
 	"os"
@@ -13,14 +14,13 @@ import (
 
 	"go.uber.org/atomic"
 	"go.uber.org/multierr"
-	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 // Server implements Mintter rpc.
 type Server struct {
-	log      *zap.Logger
+	log      *logging.ZapEventLogger
 	initFunc InitFunc
 
 	// We are doing a kind of lazy init for these within InitProfile handler
@@ -38,7 +38,7 @@ type InitFunc func(prof identity.Profile) (*store.Store, *p2p.Node, error)
 // InitFuncFromConfig creates a default InitFunc from the given config.
 //
 // TODO(burdiyan): clean this up when we remove the v1 documents server. Now this is messy as hell.
-func InitFuncFromConfig(cfg config.Config, log *zap.Logger) InitFunc {
+func InitFuncFromConfig(cfg config.Config, log *logging.ZapEventLogger) InitFunc {
 	return InitFunc(func(prof identity.Profile) (st *store.Store, n *p2p.Node, err error) {
 		if strings.HasPrefix(cfg.RepoPath, "~") {
 			homedir, err := os.UserHomeDir()
@@ -71,7 +71,7 @@ func InitFuncFromConfig(cfg config.Config, log *zap.Logger) InitFunc {
 			}
 		}
 
-		n, err = p2p.NewNode(cfg.RepoPath, st, log.Named("p2p"), cfg.P2P)
+		n, err = p2p.NewNode(cfg.RepoPath, st, logging.Logger("p2p"), cfg.P2P)
 		if err != nil {
 			return st, n, fmt.Errorf("failed to init P2P node: %w", err)
 		}
@@ -91,7 +91,7 @@ func SetUIConfig(cfg config.UI) {
 }
 
 // NewServer creates a new Server.
-func NewServer(init InitFunc, log *zap.Logger) (*Server, error) {
+func NewServer(init InitFunc, log *logging.ZapEventLogger) (*Server, error) {
 	s := &Server{
 		log:      log,
 		initFunc: init,

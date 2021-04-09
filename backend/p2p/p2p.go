@@ -17,6 +17,7 @@ import (
 	"mintter/backend/document"
 	"mintter/backend/identity"
 	"mintter/backend/ipfsutil"
+	"mintter/backend/logging"
 	"mintter/backend/store"
 
 	"github.com/libp2p/go-libp2p"
@@ -65,7 +66,7 @@ func (e Error) Error() string {
 // Node is a Mintter p2p node.
 type Node struct {
 	store  *store.Store
-	log    *zap.Logger
+	log    *logging.ZapEventLogger
 	pubsub *pubsub.PubSub
 	g      *errgroup.Group // Background goroutines will be running in this group.
 
@@ -89,7 +90,7 @@ type Node struct {
 }
 
 // NewNode creates a new node. User must call Close() to shutdown the node gracefully.
-func NewNode(repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (n *Node, err error) {
+func NewNode(repoPath string, s *store.Store, log *logging.ZapEventLogger, cfg config.P2P) (n *Node, err error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	var g *errgroup.Group
 

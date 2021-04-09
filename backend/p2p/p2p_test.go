@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"mintter/backend/config"
+	"mintter/backend/logging"
 	"mintter/backend/p2p"
 	"mintter/backend/store"
 	"mintter/backend/testutil"
@@ -14,7 +15,6 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/multiformats/go-multihash"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 func TestTransitiveFetch(t *testing.T) {
@@ -53,10 +53,7 @@ func makeTestNode(t *testing.T, name string) *p2p.Node {
 		require.NoError(t, s.Close())
 	})
 
-	log, err := zap.NewDevelopment()
-	require.NoError(t, err)
-
-	n, err := p2p.NewNode(repoPath, s, log.Named(name), config.P2P{
+	n, err := p2p.NewNode(repoPath, s, logging.Logger(name), config.P2P{
 		Addr:        "/ip4/127.0.0.1/tcp/0",
 		NoBootstrap: true,
 		NoRelay:     true,
