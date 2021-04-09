@@ -1,7 +1,7 @@
-package metrics_test
+package monitoring_test
 
 import (
-	"mintter/metrics"
+	"mintter/monitoring"
 	"net/url"
 	"testing"
 
@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewLokiLogger(t *testing.T) {
-	log, err := metrics.NewLokiLogger()
+	log, err := NewLokiLogger()
 	if err != nil {
 		panic(err)
 	}
@@ -18,7 +18,7 @@ func TestNewLokiLogger(t *testing.T) {
 }
 
 func TestLokiSink(t *testing.T) {
-	sinkURL := url.URL{Scheme: "loki", Host: metrics.LokiHost, User: url.UserPassword(metrics.LokiUser, metrics.LokiPass)}
+	sinkURL := url.URL{Scheme: "loki", Host: monitoring.LokiHost, User: url.UserPassword(monitoring.LokiUser, monitoring.LokiPass)}
 	ws, _, err := zap.Open(sinkURL.String())
 	if err != nil {
 		panic(err)

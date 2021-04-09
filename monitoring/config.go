@@ -1,4 +1,4 @@
-package metrics
+package monitoring
 
 import (
 	"go.uber.org/zap"

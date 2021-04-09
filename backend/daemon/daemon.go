@@ -21,7 +21,7 @@ import (
 	"mintter/backend/server"
 	"mintter/backend/store"
 	"mintter/backend/ui"
-	"mintter/metrics"
+	"mintter/monitoring"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -78,7 +78,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	if isatty.IsTerminal(os.Stdout.Fd()) {
 		log, err = zap.NewDevelopment(zap.WithCaller(false))
 	} else {
-		log, err = metrics.NewLokiLogger(zap.WithCaller(false))
+		log, err = monitoring.NewLokiLogger(zap.WithCaller(false))
 	}
 
 	if err != nil {
