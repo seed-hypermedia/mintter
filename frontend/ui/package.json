@@ -12,7 +12,7 @@
   "exports": {
     "./box": "./dist/box/index.js",
     "./button": "./dist/button/index.js",
-    "./icons": "./dist/icons/index.js",
+    "./icon": "./dist/icon/index.js",
     "./text": "./dist/text/index.js",
     "./text-field": "./dist/text-field/index.js",
     "./theme": "./dist/theme/index.js",
@@ -27,8 +27,8 @@
       "button": [
         "dist/button/index.d.ts"
       ],
-      "icons": [
-        "dist/icons/index.d.ts"
+      "icon": [
+        "dist/icon/index.d.ts"
       ],
       "text": [
         "dist/text/index.d.ts"

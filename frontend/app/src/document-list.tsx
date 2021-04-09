@@ -9,7 +9,6 @@ import { getPath } from '@utils/routes';
 import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
 import { Button } from '@mintter/ui/button';
-// import {TrashIcon} from '@mintter/ui/icons'
 import { Avatar } from '@components/avatar';
 
 interface Props {
@@ -207,9 +206,6 @@ function ListItem({ item, onDeleteDocument }: ItemProps) {
                 }
               }}
             >
-              {/* //TODO: add Icons
-              <TrashIcon />
-              */}
               trash
             </Button>
           </Box>
