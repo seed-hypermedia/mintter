@@ -99,7 +99,7 @@ func NewLokiConfig() zap.Config {
 	sinkURL := url.URL{Scheme: "loki", Host: LokiHost, User: url.UserPassword(LokiUser, LokiPass)}
 
 	return zap.Config{
-		Level:       zap.NewAtomicLevelAt(zap.DebugLevel),
+		Level:       zap.NewAtomicLevelAt(zap.WarnLevel),
 		Development: true,
 		Sampling: &zap.SamplingConfig{
 			Initial:    100,
