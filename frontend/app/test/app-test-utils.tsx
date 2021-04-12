@@ -5,7 +5,7 @@ import {
   waitForElementToBeRemoved,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AppProviders } from '../app-providers';
+import { AppProviders } from '../src/app-providers';
 import { buildProfile } from '@utils/generate';
 
 // jest.mock('../src/mintter-client.ts');

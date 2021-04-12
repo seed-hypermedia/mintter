@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from 'test/app-test-utils';
+import { render, screen, waitFor } from '../../../test/app-test-utils';
 import { expect } from '@esm-bundle/chai';
 import { Welcome } from './welcome';
 
