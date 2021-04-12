@@ -1,12 +1,22 @@
 name: 🚀 Build Storybook
 on:
   push:
+    paths: ['frontend/ui/**']
     branches:
-      - hc/snowpack
+      - hc/build-storybook
 jobs:
   build-and-test:
-    name: Build UI
+    name: Build UI Storybook
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Install and Build 🔧
+        run: |
+          yarn install
+          yarn ui build
+      - name: Deploy to Github Pages 🚀
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./frontend/ui/out
