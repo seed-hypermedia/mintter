@@ -162,7 +162,6 @@ export function listPublications(
 
 export function genSeed(aezeedPassphrase?: string) {
   let response = new mintter.GenSeedResponse();
-  console.log('GEN SEED CALLED!!!');
   response.setMnemonicList(['foo', 'bar', 'baz']);
   return Promise.resolve(response);
 }
