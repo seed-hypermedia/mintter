@@ -160,11 +160,11 @@ export function listPublications(
  *
  */
 
-export function genSeed(aezeedPassphrase?: string) {
+export async function genSeed(aezeedPassphrase?: string) {
+  console.log('GEN SEED MOCK CALLED!!!');
   let response = new mintter.GenSeedResponse();
-  console.log('GEN SEED CALLED!!!');
   response.setMnemonicList(['foo', 'bar', 'baz']);
-  return Promise.resolve(response);
+  return await Promise.resolve(response);
 }
 
 //TODO: type initProfile parameters
@@ -188,7 +188,11 @@ export function getProfile(
   profileId?: string,
 ): Promise<mintter.GetProfileResponse> {
   let response = new mintter.GetProfileResponse();
-  let profile = makeProto(new mintter.Profile(), buildProfile());
+  let profile = makeProto(new mintter.Profile(), {
+    ...buildProfile(),
+    username: 'HORACIOOOO',
+  });
+  console.log('SE HA EJECUTADO EL MOCK!!');
   response.setProfile(profile);
 
   return Promise.resolve(response);

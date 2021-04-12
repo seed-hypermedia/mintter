@@ -1,0 +1,12 @@
+name: 🚀 Build Storybook
+on:
+  push:
+    branches:
+      - hc/snowpack
+jobs:
+  build-and-test:
+    name: Build UI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2

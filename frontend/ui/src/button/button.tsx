@@ -150,7 +150,7 @@ export const Button = styled('button', {
     color: 'primary',
     shape: 'rounded',
   },
-})
+}) as any
 
 // TODO: when passing `as` to component it complains
 export type ButtonProps = React.ComponentProps<typeof Button>

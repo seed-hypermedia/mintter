@@ -12,8 +12,15 @@ module.exports = {
   plugins: [
     '@snowpack/plugin-react-refresh',
     '@snowpack/plugin-dotenv',
-    '@snowpack/plugin-typescript',
+    [
+      '@snowpack/plugin-typescript',
+      {
+        /* Yarn PnP workaround: see https://www.npmjs.com/package/@snowpack/plugin-typescript */
+        ...(process.versions.pnp ? { tsc: 'yarn pnpify tsc' } : {}),
+      },
+    ],
     '@snowpack/plugin-postcss',
+    '@snowpack/plugin-webpack',
   ],
   routes: [
     /* Enable an SPA Fallback in development: */
@@ -21,7 +28,6 @@ module.exports = {
   ],
   optimize: {
     /* Example: Bundle your final build: */
-    // "bundle": true,
   },
   packageOptions: {
     /* ... */
@@ -31,8 +37,8 @@ module.exports = {
   },
   buildOptions: {
     /* ... */
+    jsxInject: "import React from 'react'",
   },
-
   alias: {
     '@components': './src/components',
     '@pages': './src/pages',

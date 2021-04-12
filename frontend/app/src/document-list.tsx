@@ -196,7 +196,7 @@ function ListItem({ item, onDeleteDocument }: ItemProps) {
               data-testid="delete-button"
               color="danger"
               size="1"
-              onClick={(e) => {
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                 e.preventDefault();
                 const resp = window.confirm(
                   'are you sure you want to delete it?',
