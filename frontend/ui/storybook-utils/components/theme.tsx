@@ -17,11 +17,14 @@ const TypographyDemo: React.FC<{
 }) => {
   return (
     <Demo>
-      {Object.entries(theme[scale]).map(([name, token]) => (
-        <DemoItem key={name} title={`$${token.token} (${token.value})`}>
-          <Text css={{[cssProp]: token}}>{children}</Text>
-        </DemoItem>
-      ))}
+      {Object.entries(theme[scale]).map(([name, token]) => {
+        console.log('🚀 ~ file: theme.tsx', name, token)
+        return (
+          <DemoItem key={name} title={`$${token.token} (${token.value})`}>
+            <Text css={{[cssProp]: token.value}}>{children}</Text>
+          </DemoItem>
+        )
+      })}
     </Demo>
   )
 }
@@ -160,7 +163,7 @@ export const Spaces: React.FC = () => {
               backgroundColor: '$background-neutral',
               display: 'flex',
               height: 25,
-              paddingLeft: token,
+              paddingLeft: token.value,
             }}
           >
             <Box
@@ -187,7 +190,7 @@ export const Sizes: React.FC = () => {
                 backgroundColor: '$background-neutral',
                 display: 'flex',
                 height: 25,
-                width: token,
+                width: token.value,
               }}
             />
           </Box>
