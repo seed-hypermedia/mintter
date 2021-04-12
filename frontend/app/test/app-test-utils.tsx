@@ -5,12 +5,12 @@ import {
   waitForElementToBeRemoved,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AppProviders } from '../app-providers';
+import { AppProviders } from '../src/app-providers';
 import { buildProfile } from '@utils/generate';
 
 // jest.mock('../src/mintter-client.ts');
 
-function AppWrapper({ children }) {
+function AppWrapper({ children }: any) {
   return (
     <div>
       <AppProviders>{children}</AppProviders>
@@ -19,7 +19,7 @@ function AppWrapper({ children }) {
 }
 
 async function render(
-  ui,
+  ui: any,
   {
     route = '/',
     timeout = 4000,
@@ -27,7 +27,7 @@ async function render(
     wait = false,
     profile,
     ...renderOptions
-  } = {},
+  } = {} as any,
 ) {
   const routeConfig =
     typeof route === 'string'
@@ -43,7 +43,9 @@ async function render(
     routeConfig.pathname,
   );
 
-  profile = typeof profile === 'undefined' ? buildProfile() : profile;
+  if (typeof profile === 'undefined') {
+    profile = buildProfile();
+  }
 
   const returnValue = {
     ...rtlRender(ui, {

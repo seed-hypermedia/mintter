@@ -62,6 +62,7 @@ export function OnboardingStep({ css, ...props }: BoxProps) {
       as={motion.form}
       variants={containerAnimationVariants}
       initial="hidden"
+      data-testid="onboarding-wrapper"
       animate="visible"
       exit="hidden"
       // TODO: fix types
@@ -134,6 +135,7 @@ export function OnboardingStepDescription({ css, ...props }: TextProps) {
 export function OnboardingStepBody({ css, children }: BoxProps) {
   return (
     <Box
+      data-testid="onboarding-body"
       as={motion.main}
       variants={fadeAnimationVariants}
       // TODO: fix types

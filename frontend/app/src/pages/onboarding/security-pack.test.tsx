@@ -1,11 +1,11 @@
-import { render, screen } from 'test/app-test-utils';
+import { render, screen, waitFor } from '../../../test/app-test-utils';
 import { expect } from '@esm-bundle/chai';
 import { SecurityPack } from './security-pack';
-import clientMock from '@mintter/client';
+import { AppProviders } from '../../app-providers';
 describe('Onboarding screens', () => {
   it('<SecurityPack />', async () => {
-    await render(<SecurityPack />);
-    // expect(screen.getByText(/Welcome to Mintter/i));
-    // expect(screen.getByText(/Start/i));
+    await render(<SecurityPack prev={() => {}} next={() => {}} />);
+    screen.debug(screen.getByText(/next/i));
+    expect(document.body.contains(screen.getByText(/Security Pack/i)));
   });
 });
