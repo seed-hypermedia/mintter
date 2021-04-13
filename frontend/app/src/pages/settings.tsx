@@ -108,7 +108,7 @@ export default function Settings() {
             </Box>
             <Box>
               <Label
-                className="block text-body-muted text-xs font-semibold mb-1"
+                className="block mb-1 text-xs font-semibold text-body-muted"
                 htmlFor="email"
               >
                 Email
@@ -136,7 +136,7 @@ export default function Settings() {
             </Box>
             <Box>
               <Label
-                className="block text-body-muted text-xs font-semibold mb-1"
+                className="block mb-1 text-xs font-semibold text-body-muted"
                 htmlFor="bio"
               >
                 Bio
@@ -178,7 +178,7 @@ export default function Settings() {
             </Text>
             <Box>
               <Label
-                className="block text-body-muted text-xs font-semibold mb-1"
+                className="block mb-1 text-xs font-semibold text-body-muted"
                 htmlFor="accountId"
               >
                 Account Id
