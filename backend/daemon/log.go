@@ -11,19 +11,12 @@ import (
 	"github.com/mattn/go-isatty"
 )
 
-// DeveloperConfig returns a Config with defaults populated using environment variables.
 func developerConfig() logging.Config {
 	cfg := logging.Config{
 		Format: logging.ColorizedOutput,
 		Stdout: true,
 		Level:  logging.LevelDebug,
 		Labels: map[string]string{},
-	}
-
-	var err error
-	cfg.Level, err = logging.LevelFromString("debug")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error setting log levels: %s\n", err)
 	}
 	return cfg
 }
@@ -34,13 +27,6 @@ func productionConfig() logging.Config {
 		Stdout: true,
 		Level:  logging.LevelInfo,
 		Labels: map[string]string{},
-	}
-
-	cfg.Format = logging.JSONOutput
-	var err error
-	cfg.Level, err = logging.LevelFromString("debug")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error setting log levels: %s\n", err)
 	}
 	return cfg
 }
