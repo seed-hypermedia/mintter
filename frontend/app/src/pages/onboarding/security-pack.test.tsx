@@ -5,7 +5,6 @@ import { SecurityPack } from './security-pack';
 describe('Onboarding screens', () => {
   it('<SecurityPack />', async () => {
     await render(<SecurityPack prev={() => {}} next={() => {}} />);
-    screen.debug(screen.getByText(/next/i));
     expect(document.body.contains(screen.getByText(/Security Pack/i)));
   });
 });

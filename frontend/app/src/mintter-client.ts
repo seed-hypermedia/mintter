@@ -1,3 +1,4 @@
+import faker from 'faker';
 import DocumentsClient, {
   DraftsClient,
 } from '@mintter/api/documents/v1alpha/documents_grpc_web_pb';
@@ -162,7 +163,9 @@ export function listPublications(
 
 export function genSeed(aezeedPassphrase?: string) {
   let response = new mintter.GenSeedResponse();
-  response.setMnemonicList(['foo', 'bar', 'baz']);
+  const seed = Array(24);
+  seed.map(() => faker.lorem.word());
+  response.setMnemonicList(seed);
   return Promise.resolve(response);
 }
 
