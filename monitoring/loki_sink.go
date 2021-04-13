@@ -5,10 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -134,10 +134,11 @@ func (p lokiSink) Write(b []byte) (n int, err error) {
 	if err != nil {
 		return 0, nil
 	}
+	defer resp.Body.Close()
 
-	// TODO: panic is too much, what to do when status != 204?
 	if resp.StatusCode != http.StatusNoContent {
-		panic("Status code: " + strconv.Itoa(resp.StatusCode))
+		body, _ := ioutil.ReadAll(resp.Body)
+		fmt.Fprintf(os.Stderr, "error sending logs to Loki: StatusCode: %d, Body: %s\n", resp.StatusCode, string(body))
 	}
 	return len(b), nil
 }
