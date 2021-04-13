@@ -10,6 +10,7 @@ type Config struct {
 	NoOpenBrowser bool   `help:"If true - do not open the browser to access the UI"`
 	NoTelemetry   bool   `help:"Opt-out Telemetry (this actually helps Mintter developers)"`
 	Domain        string `help:"Domain that Let's Encrypt will generate the certificate for (required for SSL support)"`
+	LogLevel      string `help:"Verbosity level. Valid values are: debug, info, warn, error, dpanic, panic, fatal"`
 
 	P2P P2P `help:"P2P configuration" prefix:"p2p." embed:""`
 	UI  UI  `help:"ui configuration" prefix:"ui." embed:""`

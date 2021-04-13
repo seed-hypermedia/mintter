@@ -68,6 +68,27 @@ func createRedirectHandler(sslPort string) http.Handler {
 	})
 }
 
+// setLogLevels initializes sane logging levels
+func setLogLevels(cfg config.Config) {
+	var lvl logging.LogLevel
+
+	if cfg.LogLevel != "" {
+		var err error
+		lvl, err = logging.LevelFromString(cfg.LogLevel)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		// No logging level specified
+		if isatty.IsTerminal(os.Stdout.Fd()) {
+			lvl = logging.LevelDebug
+		} else {
+			lvl = logging.LevelInfo
+		}
+	}
+	logging.SetAllLoggers(lvl)
+}
+
 // Run the daemon.
 //
 // TODO: refactor this to create a Daemon struct that will be easy to interact with in tests.
@@ -77,9 +98,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	server.SetUIConfig(cfg.UI)
 
 	logging.DisabledTelemetry = cfg.NoTelemetry
-	if isatty.IsTerminal(os.Stdout.Fd()) {
-		logging.SetAllLoggers(logging.LevelDebug)
-	}
+	setLogLevels(cfg)
 
 	log = logging.Logger("daemon")
 
@@ -106,7 +125,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		}
 
 		hostname, _ := os.Hostname()
-		log.Debug("ServerInitialized", zap.String("repoPath", cfg.RepoPath), zap.String("domain", cfg.Domain), zap.Bool("NoTelemetry", cfg.NoTelemetry), zap.String("hostname", hostname))
+		log.Debug("ServerInitialized", zap.String("repoPath", cfg.RepoPath), zap.String("domain", cfg.Domain), zap.Bool("NoTelemetry", cfg.NoTelemetry), zap.String("hostname", hostname), zap.String("LogLevel", cfg.LogLevel))
 
 		docserver.Init(n.DocServer())
 		return s, n, nil
