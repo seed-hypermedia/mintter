@@ -11,9 +11,9 @@ type Config struct {
 	NoTelemetry   bool   `help:"Opt-out Telemetry (this actually helps Mintter developers)"`
 	Domain        string `help:"Domain that Let's Encrypt will generate the certificate for (required for SSL support)"`
 	LogLevel      string `help:"Verbosity level. Valid values are: debug, info, warn, error, dpanic, panic, fatal"`
-
-	P2P P2P `help:"P2P configuration" prefix:"p2p." embed:""`
-	UI  UI  `help:"ui configuration" prefix:"ui." embed:""`
+	IPFSLogLevel  string `help:"IPFS verbosity level. Valid values are: debug, info, warn, error, dpanic, panic, fatal" default:"info"`
+	P2P           P2P    `help:"P2P configuration" prefix:"p2p." embed:""`
+	UI            UI     `help:"ui configuration" prefix:"ui." embed:""`
 }
 
 // P2P configuration.

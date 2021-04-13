@@ -68,27 +68,6 @@ func createRedirectHandler(sslPort string) http.Handler {
 	})
 }
 
-// setLogLevels initializes sane logging levels
-func setLogLevels(cfg config.Config) {
-	var lvl logging.LogLevel
-
-	if cfg.LogLevel != "" {
-		var err error
-		lvl, err = logging.LevelFromString(cfg.LogLevel)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		// No logging level specified
-		if isatty.IsTerminal(os.Stdout.Fd()) {
-			lvl = logging.LevelDebug
-		} else {
-			lvl = logging.LevelInfo
-		}
-	}
-	logging.SetAllLoggers(lvl)
-}
-
 // Run the daemon.
 //
 // TODO: refactor this to create a Daemon struct that will be easy to interact with in tests.
@@ -97,10 +76,9 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	server.SetUIConfig(cfg.UI)
 
-	logging.DisabledTelemetry = cfg.NoTelemetry
-	setLogLevels(cfg)
-
 	log = logging.Logger("daemon")
+
+	setupLogging(cfg)
 
 	defer func() {
 		if err := log.Sync(); err != nil {

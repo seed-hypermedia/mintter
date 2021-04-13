@@ -1,8 +1,6 @@
 package monitoring
 
 import (
-	"net/url"
-
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -24,7 +22,7 @@ func NewLokiEncoderConfig() zapcore.EncoderConfig {
 }
 
 func NewLokiConfig() zap.Config {
-	sinkURL := url.URL{Scheme: "loki", Host: LokiHost, User: url.UserPassword(LokiUser, LokiPass)}
+	sinkURL := GetLokiURL()
 
 	return zap.Config{
 		Level:       zap.NewAtomicLevelAt(zap.DebugLevel),

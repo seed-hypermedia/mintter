@@ -1,6 +1,8 @@
 package monitoring
 
 import (
+	"net/url"
+
 	"go.uber.org/zap"
 )
 
@@ -12,4 +14,13 @@ const (
 
 func init() {
 	zap.RegisterSink("loki", InitLokiSink)
+}
+
+func GetLokiURL() url.URL {
+	return url.URL{Scheme: "loki", Host: LokiHost, User: url.UserPassword(LokiUser, LokiPass)}
+}
+
+func GetLokiURLString() string {
+	url := GetLokiURL()
+	return url.String()
 }

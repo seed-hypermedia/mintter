@@ -71,7 +71,9 @@ func InitFuncFromConfig(cfg config.Config, log *logging.ZapEventLogger) InitFunc
 			}
 		}
 
-		n, err = p2p.NewNode(cfg.RepoPath, st, logging.Logger("p2p"), cfg.P2P)
+		// QUESTION: Should we use a package-scoped log variable?
+		log := logging.Logger("p2p")
+		n, err = p2p.NewNode(cfg.RepoPath, st, log, cfg.P2P)
 		if err != nil {
 			return st, n, fmt.Errorf("failed to init P2P node: %w", err)
 		}

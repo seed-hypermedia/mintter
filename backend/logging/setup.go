@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"regexp"
-	"strings"
 	"sync"
 
 	"go.uber.org/zap"
@@ -13,24 +11,8 @@ import (
 )
 
 func init() {
-	SetupLogging(configFromEnv())
+	// SetupLogging(configFromEnv())
 }
-
-// Logging environment variables
-const (
-	// GOLOG_* env vars take precedences over MINTTER_* env vars.
-	envMintterLogging    = "MINTTER_LOGGING"
-	envMintterLoggingFmt = "MINTTER_LOGGING_FMT"
-
-	envLogging    = "GOLOG_LOG_LEVEL"
-	envLoggingFmt = "GOLOG_LOG_FMT"
-
-	envLoggingFile = "GOLOG_FILE" // /path/to/file
-	envLoggingURL  = "GOLOG_URL"  // url that will be processed by sink in the zap
-
-	envLoggingOutput = "GOLOG_OUTPUT"     // possible values: stdout|stderr|file combine multiple values with '+'
-	envLoggingLabels = "GOLOG_LOG_LABELS" // comma-separated key-value pairs, i.e. "app=example_app,dc=sjc-1"
-)
 
 type LogFormat int
 
@@ -183,29 +165,6 @@ func SetLogLevel(name, level string) error {
 	return nil
 }
 
-// SetLogLevelRegex sets all loggers to level `l` that match expression `e`.
-// An error is returned if `e` fails to compile.
-func SetLogLevelRegex(e, l string) error {
-	lvl, err := LevelFromString(l)
-	if err != nil {
-		return err
-	}
-
-	rem, err := regexp.Compile(e)
-	if err != nil {
-		return err
-	}
-
-	loggerMutex.Lock()
-	defer loggerMutex.Unlock()
-	for name := range loggers {
-		if rem.MatchString(name) {
-			levels[name].SetLevel(zapcore.Level(lvl))
-		}
-	}
-	return nil
-}
-
 // GetSubsystems returns a slice containing the
 // names of the current loggers
 func GetSubsystems() []string {
@@ -224,84 +183,15 @@ func getLogger(name string) *zap.Logger {
 	defer loggerMutex.Unlock()
 	log, ok := loggers[name]
 	if !ok {
-		lvl := zap.NewAtomicLevelAt(zapcore.Level(defaultLevel))
-		log, _ = zap.NewDevelopment(zap.WithCaller(false), zap.IncreaseLevel(lvl))
-		// fix err
-		//log, _ = zap.NewDevelopment(zap.WithCaller(false))
-		loggers[name] = log.Named(name)
+		levels[name] = zap.NewAtomicLevelAt(zapcore.Level(defaultLevel))
+		log = zap.New(loggerCore).
+			WithOptions(
+				zap.IncreaseLevel(levels[name]),
+				zap.AddCaller(),
+			).
+			Named(name)
+		loggers[name] = log
 	}
 
 	return log
-}
-
-// configFromEnv returns a Config with defaults populated using environment variables.
-func configFromEnv() Config {
-	cfg := Config{
-		Format: ColorizedOutput,
-		Stderr: true,
-		Level:  LevelDebug,
-		Labels: map[string]string{},
-	}
-
-	format := os.Getenv(envLoggingFmt)
-	if format == "" {
-		format = os.Getenv(envMintterLoggingFmt)
-	}
-
-	switch format {
-	case "nocolor":
-		cfg.Format = PlaintextOutput
-	case "json":
-		cfg.Format = JSONOutput
-	}
-
-	lvl := os.Getenv(envLogging)
-	if lvl == "" {
-		lvl = os.Getenv(envMintterLogging)
-	}
-	if lvl != "" {
-		var err error
-		cfg.Level, err = LevelFromString(lvl)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error setting log levels: %s\n", err)
-		}
-	}
-
-	cfg.File = os.Getenv(envLoggingFile)
-	// Disable stderr logging when a file is specified
-	// https://github.com/ipfs/go-log/issues/83
-	if cfg.File != "" {
-		cfg.Stderr = false
-	}
-
-	cfg.URL = os.Getenv(envLoggingURL)
-	output := os.Getenv(envLoggingOutput)
-	outputOptions := strings.Split(output, "+")
-	for _, opt := range outputOptions {
-		switch opt {
-		case "stdout":
-			cfg.Stdout = true
-		case "stderr":
-			cfg.Stderr = true
-		case "file":
-			if cfg.File == "" {
-				fmt.Fprint(os.Stderr, "please specify a GOLOG_FILE value to write to")
-			}
-		case "url":
-			if cfg.URL == "" {
-				fmt.Fprint(os.Stderr, "please specify a GOLOG_URL value to write to")
-			}
-		}
-	}
-
-	labels := os.Getenv(envLoggingLabels)
-	if labels != "" {
-		labelKVs := strings.Split(labels, ",")
-		for _, label := range labelKVs {
-			kv := strings.Split(label, "=")
-			cfg.Labels[kv[0]] = kv[1]
-		}
-	}
-
-	return cfg
 }
