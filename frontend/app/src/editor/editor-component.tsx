@@ -112,9 +112,14 @@ function Editor({
                 }
               }}
             />
-            <BalloonToolbar>
+            <Box
+              // TODO: Fix types
+              // @ts-ignore
+              as={BalloonToolbar}
+              css={{ backgroundColor: '$background-opposite' }}
+            >
               <ToolbarLink {...options} />
-            </BalloonToolbar>
+            </Box>
             <LinkMenu menu={linkMenu} />
           </>
         )}
