@@ -11,9 +11,8 @@ import { TextField } from '@mintter/ui/text-field';
 import { useTheme } from '@mintter/ui/theme';
 
 import { Container } from '@components/container';
+import { ProfileAddress } from '@components/profile-address';
 import { Separator } from '@components/separator';
-
-import { ProfileAddress } from '../profile-address';
 
 type ProfileInformationDataType = {
   username: string;
@@ -150,7 +149,7 @@ export function Settings() {
             All your Mintter content is located in <code>~/.mtt/</code>
           </Text>
           <TextField
-            disabled
+            readOnly
             type="text"
             label="Account ID"
             id="accountId"

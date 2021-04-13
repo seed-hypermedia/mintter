@@ -1,17 +1,18 @@
-import * as React from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 import { Slot } from '@radix-ui/react-slot';
-import { Link } from '../link';
-import { LogoSquare } from '../logo-square';
-import { Input } from '@components/input';
-// import { CustomLogo } from './custom-logo';
-import { Container } from '@components/container';
+import { useRef } from 'react';
+import { useHistory, useRouteMatch } from 'react-router-dom';
+
 import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
 import { Button } from '@mintter/ui/button';
 import { Icon } from '@mintter/ui/icon';
+import { Text } from '@mintter/ui/text';
+import { TextField } from '@mintter/ui/text-field';
 import * as DropdownMenu from '@mintter/ui-legacy/dropdown-menu';
+
+import { Container } from '@components/container';
 import { getPath } from '@utils/routes';
+
+import { Link } from '../link';
 
 interface NavItemProps {
   href: string;
@@ -41,7 +42,7 @@ export function Topbar({ isPublic = false }) {
       }}
     >
       <Link to={getPath(match)}>
-        <LogoSquare css={{ color: '$primary-default' }} width="42px" />
+        <Icon name="Mintter" size="2" color="primary" />
       </Link>
       <Container
         css={{
@@ -56,7 +57,7 @@ export function Topbar({ isPublic = false }) {
       <Box css={{ display: 'flex', justifyContent: 'flex-end' }}>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger as={Slot}>
-            <Button color="transparent" variant="solid" css={{ padding: '$2' }}>
+            <Button variant="ghost" size="1">
               <Icon name="GearOutlined" size="1" />
             </Button>
           </DropdownMenu.Trigger>
@@ -81,9 +82,10 @@ export function Topbar({ isPublic = false }) {
 }
 
 function MintterSearch() {
-  const ref = React.useRef<HTMLInputElement>(null);
+  const ref = useRef<HTMLInputElement>(null);
   const history = useHistory();
   const match = useRouteMatch();
+
   // TODO: fix types
   async function handleSearch(e: any) {
     e.preventDefault();
@@ -102,12 +104,12 @@ function MintterSearch() {
 
   return (
     <Box as="form" css={{ width: '100%' }} onSubmit={handleSearch}>
-      <Input
+      <TextField
         ref={ref}
-        name="hash-search"
         type="text"
+        name="hash-search"
         placeholder="Enter a publication CID"
-        css={{ borderRadius: '$pill', paddingHorizontal: '$6' }}
+        shape="pill"
       />
     </Box>
   );
