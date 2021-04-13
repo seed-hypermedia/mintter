@@ -76,7 +76,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 
 	server.SetUIConfig(cfg.UI)
 
-	logging.DisabledTelemetry = cfg.DisableTelemetry
+	logging.DisabledTelemetry = cfg.NoTelemetry
 	if isatty.IsTerminal(os.Stdout.Fd()) {
 		logging.SetAllLoggers(logging.LevelDebug)
 	}
@@ -106,7 +106,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		}
 
 		hostname, _ := os.Hostname()
-		log.Debug("ServerInitialized", zap.String("repoPath", cfg.RepoPath), zap.String("domain", cfg.Domain), zap.Bool("DisableTelemetry", cfg.DisableTelemetry), zap.String("hostname", hostname))
+		log.Debug("ServerInitialized", zap.String("repoPath", cfg.RepoPath), zap.String("domain", cfg.Domain), zap.Bool("NoTelemetry", cfg.NoTelemetry), zap.String("hostname", hostname))
 
 		docserver.Init(n.DocServer())
 		return s, n, nil
