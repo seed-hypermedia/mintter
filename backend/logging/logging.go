@@ -36,7 +36,6 @@ type EventLogger interface {
 }
 
 // Logger retrieves an event logger by name
-// TODO: Should we return error?
 func Logger(system string) *ZapEventLogger {
 	if len(system) == 0 {
 		setuplog := getLogger("setup-logger")
@@ -57,14 +56,11 @@ func Logger(system string) *ZapEventLogger {
 	}
 
 	logger := getLogger(system)
-	// unused?
-	//skipLogger := logger.Desugar().WithOptions(zap.AddCallerSkip(1)).Sugar()
 
 	return &ZapEventLogger{
 		system:     system,
 		Logger:     *logger,
 		LokiLogger: lokiLogger,
-		//skipLogger:    *skipLogger,
 	}
 }
 
@@ -72,16 +68,14 @@ func Logger(system string) *ZapEventLogger {
 type ZapEventLogger struct {
 	zap.Logger
 	LokiLogger *zap.Logger
-	// used to fix the caller location when calling Warning and Warningf.
-	// skipLogger zap.SugaredLogger
-	system string
+	system     string
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 // Add more functions if wanted, pick them from
 // https://github.com/uber-go/zap/blob/89e382035d3a984a01e6c9c8be5462f11efac844/sugar.go#L106
 
-// Meter en LokiLogger directamente
+// TODO: Review this function, shouldn't be needed since NewLokiDataStream already adds it
 func appendHostname(fields []zap.Field) []zap.Field {
 	hostname, _ := os.Hostname()
 	fields = append(fields, zap.String("hostname", hostname))
@@ -120,7 +114,6 @@ func (logger *ZapEventLogger) Error(msg string, fields ...zap.Field) {
 	}
 }
 
-// TODO: This enables ipfs logs, but we still have to forward them to loki
 func init() {
 	/*
 		IPFS Subsystems:
@@ -132,10 +125,13 @@ func init() {
 		addrutil routing/record table badger provider.queue peerstore bitswap_network net/identify
 		secio pubsub eventlog common]
 	*/
-	//var Logger = ipfslog.Logger("common")
 
 	ipfslog.SetAllLoggers(ipfslog.LevelInfo)
-	//_ = ipfslog.SetLogLevel("common", "info")
+
+	// We can enable log subsystems one by one:
+	//
+	// var Logger = ipfslog.Logger("common")
+	// _ = ipfslog.SetLogLevel("common", "info")
 }
 
 // FormatRFC3339 returns the given time in UTC with RFC3999Nano format.

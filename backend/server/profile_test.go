@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -47,7 +46,7 @@ func TestGetProfile(t *testing.T) {
 
 	// Server must be able to load initialized profile after restart.
 	require.NoError(t, srv.Close())
-	srv, err = server.NewServer(srv.InitFunc(), zap.NewNop())
+	srv, err = server.NewServer(srv.InitFunc(), log)
 	require.NoError(t, err)
 
 	r2, err := srv.GetProfile(ctx, &proto.GetProfileRequest{})
@@ -113,7 +112,7 @@ func TestUpdateProfile(t *testing.T) {
 
 	// It must return the same profile when server restarts.
 	require.NoError(t, srv.Close())
-	srv, err = server.NewServer(srv.InitFunc(), zap.NewNop())
+	srv, err = server.NewServer(srv.InitFunc(), log)
 	require.NoError(t, err)
 
 	get, err = srv.GetProfile(ctx, &proto.GetProfileRequest{})

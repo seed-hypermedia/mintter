@@ -180,11 +180,5 @@ func makeNode(name string, cfg config.P2P) (*p2p.Node, error) {
 	}
 
 	log := logging.Logger("test-node")
-	// No devolver err???
-	//log, err := zap.NewDevelopment()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	return p2p.NewNode("tmp/"+name, st, logging.Logger(name), cfg)
+	return p2p.NewNode("tmp/"+name, st, log, cfg)
 }

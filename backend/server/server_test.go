@@ -5,14 +5,15 @@ import (
 
 	proto "mintter/api/go/v2"
 	"mintter/backend/config"
+	"mintter/backend/logging"
 	"mintter/backend/server"
 	"mintter/backend/testutil"
 
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 var _ proto.MintterServer = (*server.Server)(nil)
+var log = logging.Logger("server_test")
 
 func testConfig(t *testing.T) config.Config {
 	t.Helper()
@@ -31,8 +32,8 @@ func testConfig(t *testing.T) config.Config {
 func newServer(t *testing.T) *server.Server {
 	t.Helper()
 
-	init := server.InitFuncFromConfig(testConfig(t), zap.NewNop())
-	srv, err := server.NewServer(init, zap.NewNop())
+	init := server.InitFuncFromConfig(testConfig(t), log)
+	srv, err := server.NewServer(init, log)
 	require.NoError(t, err)
 
 	return srv

@@ -14,3 +14,5 @@ Mintter outputs logs to the console, which are visible to the developers or capt
 
 By default, logs are also sent to the Mintter Loki instance. Personal information is not sent, however
 you can opt-out using the `-NoTelemetry` flag.
+
+The logging package (`backend/logging`) takes inspiration from `ipfs/go-log`.

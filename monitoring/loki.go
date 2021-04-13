@@ -8,7 +8,7 @@ import (
 )
 
 // NewLokiEncoderConfig is similar to zap.NewProductionEncoderConfig except that
-// it does not include timestamp (ts key)
+// it does not include timestamp nor caller
 func NewLokiEncoderConfig() zapcore.EncoderConfig {
 	return zapcore.EncoderConfig{
 		LevelKey:       "level",
@@ -43,5 +43,3 @@ func NewLokiConfig() zap.Config {
 func NewLokiLogger(options ...zap.Option) (*zap.Logger, error) {
 	return NewLokiConfig().Build(options...)
 }
-
-// FUTURE?: .WithLoki(...)
