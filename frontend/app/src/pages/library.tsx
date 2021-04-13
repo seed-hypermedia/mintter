@@ -132,12 +132,7 @@ export default function Library() {
           <Text as="h1" size="9">
             Library
           </Text>
-          <Button
-            color="primary"
-            size="2"
-            appearance="pill"
-            onClick={onCreateDraft}
-          >
+          <Button color="primary" size="2" shape="pill" onClick={onCreateDraft}>
             Compose
           </Button>
         </Box>

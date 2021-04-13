@@ -85,7 +85,6 @@ export const ProfileInformation: React.FC<OnboardingStepPropsType> = ({
           placeholder="Real email that could be publically shared"
           hint={errors.email?.message}
         />
-
         <TextField
           // TODO: Fix types
           // @ts-ignore

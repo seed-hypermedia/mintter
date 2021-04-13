@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
+import toast from 'react-hot-toast';
 import { useQuery } from 'react-query';
 
 import { genSeed, initProfile } from '../../mintter-client';
@@ -17,7 +18,6 @@ import {
   OnboardingStepTitle,
   SecurityPackIcon,
 } from './common';
-import toast from 'react-hot-toast';
 
 export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
   const mnemonics = useQuery<string[], Error>(

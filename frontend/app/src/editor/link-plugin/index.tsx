@@ -33,8 +33,8 @@ import { Text } from '@mintter/ui/text';
 import { Popover } from './popover';
 import { Tooltip } from '../../components/tooltip';
 import { LinkElement } from './link-element';
-import { Input } from '@components/input';
 import { Icon } from '@mintter/ui/icon';
+import { TextField } from '@mintter/ui/text-field';
 
 export const ELEMENT_LINK = 'a';
 
@@ -279,16 +279,11 @@ export function ToolbarLink({ link: linkOptions }: any) {
       }}
       disclosure={
         <Button
-          color="transparent"
-          css={{
-            color: 'white',
-            padding: '0',
-            lineHeight: '1',
-            width: 24,
-            height: 24,
-          }}
+          variant="ghost"
+          size="1"
+          css={{ '$$outlined-hovered-background-color': 'transparent' }}
         >
-          <Icon name="Link" size="1" />
+          <Icon name="Link" size="1" color="opposite" />
         </Button>
       }
     >
@@ -310,24 +305,29 @@ export function ToolbarLink({ link: linkOptions }: any) {
             width: '$full',
             display: 'flex',
             flexDirection: 'column',
-            gap: '$3',
+            gap: '$5',
           }}
           onSubmit={handleSubmit}
         >
           <Text size="3">Link Information</Text>
-          <Box>
-            <Label htmlFor="address">Link Address</Label>
-            <Input
-              value={link}
-              onChange={(e: any) => setLink(e.target.value)}
-              id="address"
-              type="url"
-            />
-          </Box>
-          <Box>
-            <Label htmlFor="anchor">Link Anchor</Label>
-            <Input disabled id="anchor" value={anchor} type="text" />
-          </Box>
+          <TextField
+            type="url"
+            id="address"
+            name="address"
+            label="Link Address"
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            size="1"
+          />
+          <TextField
+            disabled
+            type="text"
+            id="anchor"
+            name="anchor"
+            label="Link Anchor"
+            value={anchor}
+            size="1"
+          />
           <Box
             css={{
               display: 'flex',
@@ -335,7 +335,7 @@ export function ToolbarLink({ link: linkOptions }: any) {
               justifyContent: 'space-between',
             }}
           >
-            <Button type="submit" color="primary" size="1" appearance="rounded">
+            <Button type="submit" color="primary" size="1">
               Save
             </Button>
             <Button
@@ -345,7 +345,6 @@ export function ToolbarLink({ link: linkOptions }: any) {
               variant="outlined"
               color="danger"
               size="1"
-              appearance="rounded"
             >
               <span>remove link</span>
             </Button>

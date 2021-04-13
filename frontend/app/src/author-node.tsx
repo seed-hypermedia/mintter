@@ -10,7 +10,7 @@ import { Box } from '@mintter/ui/box';
 const { OnboardingPage } = lazily(() => import('@pages/onboarding'));
 const Library = lazy(() => import('./pages/library'));
 const Editor = lazy(() => import('./pages/editor'));
-const Settings = lazy(() => import('./pages/settings'));
+const { Settings } = lazily(() => import('./pages/settings'));
 const Publication = lazy(() => import('./pages/publication'));
 
 export function AuthorNode({ path = '/' }: { path?: string }) {

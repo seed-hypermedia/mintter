@@ -1,33 +1,35 @@
-import * as React from 'react';
-import type { ReactEditor } from 'slate-react';
+import { setDefaults } from '@udecode/slate-plugins';
+import { useRef } from 'react';
 import { useHistory, useParams } from 'react-router';
 import { useMutation } from 'react-query';
-import { setDefaults } from '@udecode/slate-plugins';
 import { useMenuState } from 'reakit/Menu';
-import { useSidePanel } from '../sidepanel';
-import { useDraft } from '@mintter/hooks';
+import type { ReactEditor } from 'slate-react';
+
 import { publishDraft } from '@mintter/client';
-import { Text } from '@mintter/ui/text';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { createPlugins } from '@mintter/editor/plugins';
+import { useDraft } from '@mintter/hooks';
+import { EditorComponent } from '@mintter/editor/editor-component';
 import { options } from '@mintter/editor/options';
+import { createPlugins } from '@mintter/editor/plugins';
 import { useEditor } from '@mintter/editor/use-editor';
 import { useEditorValue } from '@mintter/editor/use-editor-value';
-import { EditorComponent } from '@mintter/editor/editor-component';
-import { Textarea } from '@components/textarea';
-import { FormControl } from '@components/form-control';
-import { Separator } from '@components/separator';
+import { Box } from '@mintter/ui/box';
+import { Button } from '@mintter/ui/button';
+import { Text } from '@mintter/ui/text';
+import { TextField } from '@mintter/ui/text-field';
+
 import { Container } from '@components/container';
+import { Separator } from '@components/separator';
+
+import { useSidePanel } from '../sidepanel';
 
 const Editor: React.FC = () => {
   const history = useHistory();
   const query = new URLSearchParams(window.location.search);
   const { documentId } = useParams<{ documentId: string }>();
   const { isLoading, isError, error, data } = useDraft(documentId);
-  const titleRef = React.useRef<HTMLInputElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
   const linkMenu = useMenuState({ loop: true, wrap: true });
-  const subtitleRef = React.useRef<HTMLInputElement>(null);
+  const subtitleRef = useRef<HTMLInputElement>(null);
 
   // modify options
   const customOptions = setDefaults(
@@ -92,27 +94,31 @@ const Editor: React.FC = () => {
           paddingHorizontal: '$5',
         }}
       >
-        <Button color="primary" appearance="pill" size="2">
+        <Button color="primary" shape="pill" size="2">
           PUBLISH
         </Button>
-        <Button
-          color="transparent"
-          appearance="square"
+        {/* <Button
           size="1"
           onClick={() => sidepanelSend?.({ type: 'SIDEPANEL_TOOGLE' })}
-        ></Button>
+        ></Button> */}
       </Box>
       <Container css={{ gridArea: 'maincontent', marginBottom: 300 }}>
-        <Textarea
-          value={title}
-          onChange={setTitle}
+        <TextField
+          // TODO: Fix types
+          // @ts-ignore
+          as="textarea"
           data-testid="editor_title"
           name="title"
           placeholder="Document title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          rows={1}
+          // TODO: Fix types
+          // @ts-ignore
           css={{
-            $$borderColor: 'transparent',
-            $$borderColorHover: 'transparent',
             $$backgroundColor: '$colors$background-alt',
+            $$borderColor: 'transparent',
+            $$hoveredBorderColor: 'transparent',
             fontSize: '$7',
             fontWeight: '$bold',
             letterSpacing: '0.01em',
@@ -120,16 +126,22 @@ const Editor: React.FC = () => {
           }}
         />
 
-        <Textarea
-          value={subtitle}
-          onChange={setSubtitle}
+        <TextField
+          // TODO: Fix types
+          // @ts-ignore
+          as="textarea"
           data-testid="editor_subtitle"
           name="subtitle"
           placeholder="about this publication..."
+          value={subtitle}
+          onChange={(e) => setSubtitle(e.target.value)}
+          rows={1}
+          // TODO: Fix types
+          // @ts-ignore
           css={{
-            $$borderColor: 'transparent',
-            $$borderColorHover: 'transparent',
             $$backgroundColor: '$colors$background-alt',
+            $$borderColor: 'transparent',
+            $$hoveredBorderColor: 'transparent',
             fontSize: '$5',
             lineHeight: '1.25',
           }}
