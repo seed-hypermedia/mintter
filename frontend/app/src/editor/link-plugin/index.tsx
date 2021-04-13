@@ -279,14 +279,9 @@ export function ToolbarLink({ link: linkOptions }: any) {
       }}
       disclosure={
         <Button
-          color="transparent"
-          css={{
-            color: 'white',
-            padding: '0',
-            lineHeight: '1',
-            width: 24,
-            height: 24,
-          }}
+          variant="ghost"
+          size="1"
+          css={{ '$$outlined-hovered-background-color': 'transparent' }}
         >
           <Icon name="Link" size="1" color="opposite" />
         </Button>
@@ -340,7 +335,7 @@ export function ToolbarLink({ link: linkOptions }: any) {
               justifyContent: 'space-between',
             }}
           >
-            <Button type="submit" color="primary" size="1" appearance="rounded">
+            <Button type="submit" color="primary" size="1">
               Save
             </Button>
             <Button
@@ -350,7 +345,6 @@ export function ToolbarLink({ link: linkOptions }: any) {
               variant="outlined"
               color="danger"
               size="1"
-              appearance="rounded"
             >
               <span>remove link</span>
             </Button>

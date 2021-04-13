@@ -94,15 +94,13 @@ const Editor: React.FC = () => {
           paddingHorizontal: '$5',
         }}
       >
-        <Button color="primary" appearance="pill" size="2">
+        <Button color="primary" shape="pill" size="2">
           PUBLISH
         </Button>
-        <Button
-          color="transparent"
-          appearance="square"
+        {/* <Button
           size="1"
           onClick={() => sidepanelSend?.({ type: 'SIDEPANEL_TOOGLE' })}
-        ></Button>
+        ></Button> */}
       </Box>
       <Container css={{ gridArea: 'maincontent', marginBottom: 300 }}>
         <TextField
