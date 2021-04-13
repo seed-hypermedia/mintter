@@ -46,7 +46,7 @@ require (
 	github.com/libp2p/go-libp2p v0.13.0
 	github.com/libp2p/go-libp2p-asn-util v0.0.0-20201026210036-4f868c957324 // indirect
 	github.com/libp2p/go-libp2p-connmgr v0.2.4
-	github.com/libp2p/go-libp2p-core v0.8.0
+	github.com/libp2p/go-libp2p-core v0.8.5
 	github.com/libp2p/go-libp2p-gostream v0.3.1
 	github.com/libp2p/go-libp2p-kad-dht v0.11.1
 	github.com/libp2p/go-libp2p-noise v0.1.2 // indirect
@@ -66,6 +66,7 @@ require (
 	github.com/multiformats/go-multihash v0.0.14
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/polydawn/refmt v0.0.0-20190807091052-3d65705ee9f1
+	github.com/prometheus/client_golang v0.9.3
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/rs/xid v1.2.1
 	github.com/sanity-io/litter v1.3.0

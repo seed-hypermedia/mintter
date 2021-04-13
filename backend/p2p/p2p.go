@@ -241,6 +241,7 @@ func NewNode(repoPath string, s *store.Store, log *logging.ZapEventLogger, cfg c
 		close(n.bootstrapped)
 	}
 
+	n.StartMetrics()
 	n.serveRPC()
 	n.startSyncing()
 
@@ -296,6 +297,14 @@ func (n *Node) Addrs() ([]multiaddr.Multiaddr, error) {
 // Bootstrapped returns a channel to wait for the node bootstrapping.
 func (n *Node) Bootstrapped() <-chan bool {
 	return n.bootstrapped
+}
+
+func (n *Node) GetNetworkPeers() []peer.ID {
+	return n.host.Network().Peers()
+}
+
+func (n *Node) GetStorePeers() []peer.ID {
+	return n.host.Peerstore().Peers()
 }
 
 type connCache struct {

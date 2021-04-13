@@ -27,6 +27,7 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/mattn/go-isatty"
 	"github.com/pkg/browser"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/atomic"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -152,6 +153,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	mux.HandleFunc("/_debug/build-info", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Version: %s\n", backend.Version)
 	})
+	mux.Handle("/metrics", promhttp.Handler())
 	mux.Handle("/", handler)
 
 	// TODO(burdiyan): Add timeout configuration.
