@@ -13,6 +13,8 @@ import {
   PartialTextRun,
   blockSerialize,
   BlockNode,
+  linkSerialize,
+  LinkNode,
 } from './transformers';
 
 describe('Transformers: TextRun Serialize', () => {
@@ -81,6 +83,31 @@ describe('Transformer: InlineElement Serializer', () => {
     expect(result).to.deep.equal(expected);
   });
 
+  it('empty TextNode', () => {
+    const node: PartialTextRun = {
+      text: '',
+    };
+
+    const result = inlineElementSerialize(node);
+
+    // console.log({ result, expected });
+
+    expect(result).to.equal(undefined);
+  });
+
+  it('empty TextNode with formatting should be ignored', () => {
+    const node: PartialTextRun = {
+      text: '',
+      bold: true,
+    };
+
+    const result = inlineElementSerialize(node);
+
+    // console.log({ result, expected });
+
+    expect(result).to.equal(undefined);
+  });
+
   it('Quote', () => {
     const node: QuoteNode = {
       id: getId(),
@@ -96,6 +123,69 @@ describe('Transformer: InlineElement Serializer', () => {
       quote: quoteSerialize(node),
     });
 
+    expect(result).to.deep.equal(expected);
+  });
+
+  it('Link', () => {
+    const node: LinkNode = {
+      id: getId(),
+      type: 'link',
+      url: 'https://mintter.com',
+      children: [
+        {
+          text: 'Hello ',
+        },
+        {
+          text: 'World',
+          bold: true,
+        },
+      ],
+    };
+
+    const result = inlineElementSerialize(node);
+    const expected = [
+      makeProto(new documents.InlineElement(), {
+        textRun: textRunSerialize(
+          createTextRun({
+            text: 'Hello ',
+            linkKey: node.id,
+          }),
+        ),
+      }),
+      makeProto(new documents.InlineElement(), {
+        textRun: textRunSerialize(
+          createTextRun({
+            text: 'World',
+            bold: true,
+            linkKey: node.id,
+          }),
+        ),
+      }),
+    ];
+
+    expect(result).to.deep.equal(expected);
+  });
+});
+
+describe('Transformers: Link Serializer', () => {
+  it('default', () => {
+    const link: LinkNode = {
+      id: getId(),
+      type: 'link',
+      url: 'https://mintter.com',
+      children: [
+        {
+          text: 'Web link',
+        },
+      ],
+    };
+    const result = linkSerialize(link);
+
+    const expected = makeProto(new documents.Link(), {
+      uri: 'https://mintter.com',
+    } as documents.Link.AsObject);
+
+    // console.log({ result, expected });
     expect(result).to.deep.equal(expected);
   });
 });
@@ -135,7 +225,7 @@ describe('Tranformers: Block Serializer', () => {
     expect(result).to.deep.equal(expected);
   });
 
-  it('with BlockList', () => {
+  it('with BlockList (just checking children addition)', () => {
     const blockId = getId();
     const nestedBlockId = getId();
     const block: BlockNode = {
@@ -187,15 +277,77 @@ describe('Tranformers: Block Serializer', () => {
         }),
       ],
       childListStyle: documents.ListStyle.NONE,
-      // children: [nestedBlockId],
+      children: [nestedBlockId],
     });
 
-    expected.addChildren(nestedBlockId);
+    expect(result).to.deep.equal(expected);
+  });
 
-    // console.log({
-    //   result: JSON.stringify(result.toObject()),
-    //   expected: JSON.stringify(expected.toObject()),
-    // });
+  it('Block with Link (multiple InlineElements)', () => {
+    const blockId = getId();
+    const linkId = getId();
+    const block: BlockNode = {
+      id: blockId,
+      type: 'block',
+      style: documents.Block.Type.BASIC,
+      children: [
+        {
+          type: 'p',
+          children: [
+            {
+              text: 'Hello ',
+            },
+            {
+              id: linkId,
+              type: 'link',
+              url: 'https://mintter.com',
+              children: [
+                {
+                  text: 'link with ',
+                },
+                {
+                  text: 'multiple childs',
+                  bold: true,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = blockSerialize(block);
+
+    const expected = makeProto(new documents.Block(), {
+      type: documents.Block.Type.BASIC,
+      id: blockId,
+      elements: [
+        makeProto(new documents.InlineElement(), {
+          textRun: textRunSerialize(
+            createTextRun({
+              text: 'Hello ',
+            }),
+          ),
+        }),
+        makeProto(new documents.InlineElement(), {
+          textRun: textRunSerialize(
+            createTextRun({
+              text: 'link with ',
+              linkKey: linkId,
+            }),
+          ),
+        }),
+        makeProto(new documents.InlineElement(), {
+          textRun: textRunSerialize(
+            createTextRun({
+              text: 'multiple childs',
+              bold: true,
+              linkKey: linkId,
+            }),
+          ),
+        }),
+      ],
+    });
     expect(result).to.deep.equal(expected);
   });
 });

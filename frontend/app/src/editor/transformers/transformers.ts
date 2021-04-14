@@ -7,6 +7,7 @@ import { ELEMENT_PARAGRAPH } from '../elements/defaults';
 import { id as getId } from '@mintter/editor/id';
 import type { Node, Text } from 'slate';
 import { makeProto } from './make-proto';
+import { Block } from '../block-plugin/components/block';
 
 export function publicationToEditor(document = buildDocument()): SlateBlock[] {
   return [
@@ -46,14 +47,23 @@ export function publicationToEditor(document = buildDocument()): SlateBlock[] {
 
 // export function documentSerialize(entry: SlateBlock[]): documents.Document {}
 // export function documentDeserialize(entry: documents.Document): SlateBlock[] {}
-
-// export function linkSerialize(entry: any): documents.Link {}
+export type LinkNode = {
+  id: string;
+  type: string;
+  url: string;
+  children: PartialTextRun[];
+};
+export function linkSerialize(entry: LinkNode): documents.Link {
+  return makeProto(new documents.Link(), {
+    uri: entry.url,
+  } as documents.Link.AsObject);
+}
 // export function linkDeserialize(entry: documents.Link): any {}
 export type BlockNode = {
   type: string;
   id: string;
   style: documents.Block.Type;
-  children: any[]; // TODO: create a blockChildrenType
+  children: Node[] | BlockListNode[]; // TODO: create a blockChildrenType
 };
 
 export type BlockListNode = {
@@ -75,9 +85,19 @@ export function blockSerialize(
   }
   children.map((child: any) => {
     if (child.type === 'p') {
-      child.children.map((c: any) =>
-        block.addElements(inlineElementSerialize(c)),
-      );
+      child.children.map((c: any, parentIndex: number) => {
+        const inlineElements = inlineElementSerialize(c);
+
+        if (Array.isArray(inlineElements)) {
+          inlineElements.forEach(
+            (elm: documents.InlineElement, childIndex: number) => {
+              block.addElements(elm, parentIndex + childIndex);
+            },
+          );
+        } else {
+          block.addElements(inlineElements, parentIndex);
+        }
+      });
     }
     if (child.type === 'block_list') {
       // TODO: transform blockList
@@ -114,12 +134,24 @@ export function createTextRun(
 }
 
 export function inlineElementSerialize(
-  entry: PartialTextRun | QuoteNode,
-): documents.InlineElement {
+  entry: PartialTextRun | QuoteNode | LinkNode,
+  // TODO: fix types (documents.InlineElement | documents.InlineElement[])
+): documents.InlineElement | documents.InlineElement[] {
   if ((entry as QuoteNode).type === 'quote') {
     return makeProto(new documents.InlineElement(), {
       quote: quoteSerialize(entry as QuoteNode),
     });
+  }
+
+  if ((entry as LinkNode).type === 'link') {
+    // TODO: create link and add it to the linkMap
+    // const link = linkSerialize(entry);
+    return (entry as LinkNode).children.map((linkChild: PartialTextRun) =>
+      inlineElementSerialize({
+        ...linkChild,
+        linkKey: (entry as LinkNode).id,
+      }),
+    ) as documents.InlineElement[];
   }
 
   // textRun
