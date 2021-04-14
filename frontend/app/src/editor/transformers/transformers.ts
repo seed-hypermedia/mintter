@@ -55,21 +55,41 @@ export type BlockNode = {
   style: documents.Block.Type;
   children: any[]; // TODO: create a blockChildrenType
 };
-export function blockSerialize(entry: BlockNode): documents.Block {
+
+export type BlockListNode = {
+  id?: string;
+  type: string;
+  children: BlockNode[];
+  listStyle: documents.ListStyle;
+};
+export function blockSerialize(
+  entry: BlockNode,
+  parentId?: string,
+): documents.Block {
   const children = entry.children;
   const block = new documents.Block();
   block.setId(entry.id);
   block.setType(entry.style);
-  let elementsList: documents.InlineElement[] = [];
+  if (parentId) {
+    block.setParent(parentId);
+  }
   children.map((child: any) => {
     if (child.type === 'p') {
       child.children.map((c: any) =>
-        elementsList.push(inlineElementSerialize(c)),
+        block.addElements(inlineElementSerialize(c)),
       );
-      block.setElementsList(elementsList);
     }
     if (child.type === 'block_list') {
       // TODO: transform blockList
+      // create a block passing the current id as parentId
+      // add blockId to childrens list
+      block.setChildListStyle(documents.ListStyle.NONE);
+      (child as BlockListNode).children.map(
+        (blockChild: BlockNode, index: number) => {
+          // blockSerialize(block, child.id))
+          block.addChildren(blockChild.id, index);
+        },
+      );
     }
   });
 

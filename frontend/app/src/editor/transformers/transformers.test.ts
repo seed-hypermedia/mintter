@@ -134,4 +134,68 @@ describe('Tranformers: Block Serializer', () => {
     // console.log({ result, expected });
     expect(result).to.deep.equal(expected);
   });
+
+  it('with BlockList', () => {
+    const blockId = getId();
+    const nestedBlockId = getId();
+    const block: BlockNode = {
+      id: blockId,
+      type: 'block',
+      style: documents.Block.Type.BASIC,
+      children: [
+        {
+          type: 'p',
+          children: [
+            {
+              text: 'Hello Block',
+            },
+          ],
+        },
+        {
+          type: 'block_list',
+          listStyle: documents.ListStyle.NONE,
+          id: getId(),
+          children: [
+            {
+              type: 'block',
+              id: nestedBlockId,
+              style: documents.Block.Type.BASIC,
+              children: [
+                {
+                  type: 'p',
+                  children: [
+                    {
+                      text: 'Nested block',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = blockSerialize(block);
+
+    const expected = makeProto(new documents.Block(), {
+      type: documents.Block.Type.BASIC,
+      id: blockId,
+      elements: [
+        makeProto(new documents.InlineElement(), {
+          textRun: textRunSerialize(createTextRun({ text: 'Hello Block' })),
+        }),
+      ],
+      childListStyle: documents.ListStyle.NONE,
+      // children: [nestedBlockId],
+    });
+
+    expected.addChildren(nestedBlockId);
+
+    // console.log({
+    //   result: JSON.stringify(result.toObject()),
+    //   expected: JSON.stringify(expected.toObject()),
+    // });
+    expect(result).to.deep.equal(expected);
+  });
 });
