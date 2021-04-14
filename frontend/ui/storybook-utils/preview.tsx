@@ -16,6 +16,8 @@ export const parameters = {
         ['Text'],
         'Forms',
         ['Text Field', 'Button'],
+        'Feedback',
+        ['Alert'],
         'Other',
         ['Theme'],
       ],
