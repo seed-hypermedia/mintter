@@ -34,7 +34,7 @@ func NewLokiConfig() zap.Config {
 		Encoding:         "json",
 		EncoderConfig:    NewLokiEncoderConfig(),
 		OutputPaths:      []string{"stderr", sinkURL.String()},
-		ErrorOutputPaths: []string{"stderr", sinkURL.String()}, // TODO: should we have a different sink for errors?
+		ErrorOutputPaths: []string{"stderr", sinkURL.String()},
 	}
 }
 
