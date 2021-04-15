@@ -2,7 +2,6 @@ package monitoring_test
 
 import (
 	"mintter/backend/monitoring"
-	"net/url"
 	"testing"
 
 	"go.uber.org/zap"
@@ -18,8 +17,8 @@ func TestNewLokiLogger(t *testing.T) {
 }
 
 func TestLokiSink(t *testing.T) {
-	sinkURL := url.URL{Scheme: "loki", Host: monitoring.LokiHost, User: url.UserPassword(monitoring.LokiUser, monitoring.LokiPass)}
-	ws, _, err := zap.Open(sinkURL.String())
+	sinkURL := monitoring.GetLokiURLString()
+	ws, _, err := zap.Open(sinkURL)
 	if err != nil {
 		panic(err)
 	}

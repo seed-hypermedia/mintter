@@ -8,9 +8,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// TODO: Comprobar que envía a loki y borrar esto
-//var DisabledTelemetry = false
-
 // StandardLogger provides API compatibility with standard printf loggers
 // eg. go-logging
 type StandardLogger interface {
@@ -42,33 +39,17 @@ func Logger(system string) *ZapEventLogger {
 		system = "undefined"
 	}
 
-	/*
-		var lokiLogger *zap.Logger
-
-		if !DisabledTelemetry {
-			var err error
-			lokiLogger, err = monitoring.NewLokiLogger()
-			if err != nil {
-				setuplog := getLogger("setup-logger")
-				setuplog.Error("Loki logger failed to create")
-				system = "undefined"
-			}
-		}
-	*/
-
 	logger := getLogger(system)
 
 	return &ZapEventLogger{
 		system: system,
 		Logger: *logger,
-		//LokiLogger: lokiLogger,
 	}
 }
 
 // ZapEventLogger implements the EventLogger and wraps a go-logging Logger
 type ZapEventLogger struct {
 	zap.Logger
-	//LokiLogger *zap.Logger
 	system string
 }
 
@@ -76,53 +57,20 @@ type ZapEventLogger struct {
 // Add more functions if wanted, pick them from
 // https://github.com/uber-go/zap/blob/89e382035d3a984a01e6c9c8be5462f11efac844/sugar.go#L106
 
-// TODO: Review this function, shouldn't be needed since NewLokiDataStream already adds it
-/*
-func appendHostname(fields []zap.Field) []zap.Field {
-	hostname, _ := os.Hostname()
-	fields = append(fields, zap.String("hostname", hostname))
-	return fields
-}
-*/
-
 func (logger *ZapEventLogger) Debug(msg string, fields ...zap.Field) {
 	logger.Logger.Debug(msg, fields...)
-	/*
-		if logger.LokiLogger != nil {
-			fields = appendHostname(fields)
-			logger.LokiLogger.Debug(msg, fields...)
-		}
-	*/
 }
 
 func (logger *ZapEventLogger) Info(msg string, fields ...zap.Field) {
 	logger.Logger.Info(msg, fields...)
-	/*
-		if logger.LokiLogger != nil {
-			fields = appendHostname(fields)
-			logger.LokiLogger.Info(msg, fields...)
-		}
-	*/
 }
 
 func (logger *ZapEventLogger) Warn(msg string, fields ...zap.Field) {
 	logger.Logger.Warn(msg, fields...)
-	/*
-		if logger.LokiLogger != nil {
-			fields = appendHostname(fields)
-			logger.LokiLogger.Warn(msg, fields...)
-		}
-	*/
 }
 
 func (logger *ZapEventLogger) Error(msg string, fields ...zap.Field) {
 	logger.Logger.Error(msg, fields...)
-	/*
-		if logger.LokiLogger != nil {
-			fields = appendHostname(fields)
-			logger.LokiLogger.Warn(msg, fields...)
-		}
-	*/
 }
 
 func init() {
