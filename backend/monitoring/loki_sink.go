@@ -35,10 +35,6 @@ func InitLokiSink(u *url.URL) (zap.Sink, error) {
 	}
 	client.Transport = rt
 
-	if u.Path == "" {
-		u.Path = "api/prom/push"
-	}
-
 	sink := lokiSink{
 		httpClient: client,
 		URL:        strings.Replace(u.String(), "loki://", "https://", 1),

@@ -21,7 +21,7 @@ func init() {
 }
 
 func GetLokiURL() url.URL {
-	return url.URL{Scheme: "loki", Host: LokiHost, User: url.UserPassword(LokiUser, LokiPass)}
+	return url.URL{Scheme: "loki", Host: LokiHost, User: url.UserPassword(LokiUser, LokiPass), Path: "api/prom/push"}
 }
 
 func GetLokiURLString() string {
