@@ -94,6 +94,7 @@ func SetupLogging(cfg Config) {
 			outputPaths = append(outputPaths, path)
 		}
 	}
+
 	if len(cfg.URL) > 0 {
 		outputPaths = append(outputPaths, cfg.URL)
 	}

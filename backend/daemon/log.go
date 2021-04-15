@@ -7,11 +7,31 @@ import (
 	"mintter/backend/monitoring"
 	"os"
 
-	ipfslog "github.com/ipfs/go-log"
+	ipfslog "github.com/ipfs/go-log/v2"
 	"github.com/mattn/go-isatty"
 )
 
-func developerConfig() logging.Config {
+func developmentConfigIPFS() ipfslog.Config {
+	cfg := ipfslog.Config{
+		Format: ipfslog.ColorizedOutput,
+		Stdout: true,
+		Stderr: true,
+		Level:  ipfslog.LevelInfo,
+	}
+	return cfg
+}
+
+func productionConfigIPFS() ipfslog.Config {
+	cfg := ipfslog.Config{
+		Format: ipfslog.JSONOutput,
+		Stdout: true,
+		Stderr: true,
+		Level:  ipfslog.LevelInfo,
+	}
+	return cfg
+}
+
+func developmentConfig() logging.Config {
 	cfg := logging.Config{
 		Format: logging.ColorizedOutput,
 		Stdout: true,
@@ -34,18 +54,23 @@ func productionConfig() logging.Config {
 // setupLogging sets up the logging system
 func setupLogging(cfg config.Config) {
 	var loggingConfig logging.Config
+	var ipfsConfig ipfslog.Config
 
 	if isatty.IsTerminal(os.Stdout.Fd()) {
-		loggingConfig = developerConfig()
+		loggingConfig = developmentConfig()
+		ipfsConfig = developmentConfigIPFS()
 	} else {
 		loggingConfig = productionConfig()
+		ipfsConfig = productionConfigIPFS()
 	}
 
 	if !cfg.NoTelemetry {
 		loggingConfig.URL = monitoring.GetLokiURLString()
+		ipfsConfig.URL = monitoring.GetLokiURLString()
 	}
 
 	logging.SetupLogging(loggingConfig)
+	logging.SetupIPFSLogging(ipfsConfig)
 
 	// Logging level is specified
 	if cfg.LogLevel != "" {
@@ -60,6 +85,5 @@ func setupLogging(cfg config.Config) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error setting IPFS log level: %s\n", err)
 	}
-
 	ipfslog.SetAllLoggers(lvl)
 }

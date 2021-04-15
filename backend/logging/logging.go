@@ -4,7 +4,7 @@ package logging
 import (
 	"time"
 
-	ipfslog "github.com/ipfs/go-log"
+	ipfslog "github.com/ipfs/go-log/v2"
 	"go.uber.org/zap"
 )
 
@@ -73,7 +73,9 @@ func (logger *ZapEventLogger) Error(msg string, fields ...zap.Field) {
 	logger.Logger.Error(msg, fields...)
 }
 
-func init() {
+func SetupIPFSLogging(cfg ipfslog.Config) {
+	ipfslog.SetupLogging(cfg)
+
 	/*
 		IPFS Subsystems:
 
@@ -85,8 +87,7 @@ func init() {
 		secio pubsub eventlog common]
 	*/
 
-	ipfslog.SetAllLoggers(ipfslog.LevelInfo)
-
+	//ipfslog.SetAllLoggers(lvl)
 	// We can enable log subsystems one by one:
 	//
 	// var Logger = ipfslog.Logger("common")

@@ -102,8 +102,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 			return s, n, err
 		}
 
-		hostname, _ := os.Hostname()
-		log.Debug("ServerInitialized", zap.String("repoPath", cfg.RepoPath), zap.String("domain", cfg.Domain), zap.Bool("NoTelemetry", cfg.NoTelemetry), zap.String("hostname", hostname), zap.String("LogLevel", cfg.LogLevel))
+		log.Debug("ServerInitialized", zap.String("repoPath", cfg.RepoPath), zap.String("domain", cfg.Domain), zap.Bool("NoTelemetry", cfg.NoTelemetry), zap.String("LogLevel", cfg.LogLevel))
 
 		docserver.Init(n.DocServer())
 		return s, n, nil
