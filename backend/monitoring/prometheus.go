@@ -26,28 +26,30 @@ func init() {
 	}
 }
 
-func SendMetric(name string, value float64) {
+func SendMetrics(metrics map[string]float64) {
 	var tsList []promremote.TimeSeries
 
 	hostname, _ := os.Hostname()
 	timestamp := time.Now()
 
-	tsList = append(tsList, promremote.TimeSeries{
-		Labels: []promremote.Label{
-			{
-				Name:  "__name__",
-				Value: name,
+	for name, value := range metrics {
+		tsList = append(tsList, promremote.TimeSeries{
+			Labels: []promremote.Label{
+				{
+					Name:  "__name__",
+					Value: name,
+				},
+				{
+					Name:  "hostname",
+					Value: hostname,
+				},
 			},
-			{
-				Name:  "hostname",
-				Value: hostname,
+			Datapoint: promremote.Datapoint{
+				Timestamp: timestamp,
+				Value:     value,
 			},
-		},
-		Datapoint: promremote.Datapoint{
-			Timestamp: timestamp,
-			Value:     value,
-		},
-	})
+		})
+	}
 
 	_, writeErr := prometheusClient.WriteTimeSeries(context.Background(), tsList, promremote.WriteOptions{})
 	if err := error(writeErr); err != nil {

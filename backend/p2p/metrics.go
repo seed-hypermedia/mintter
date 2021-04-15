@@ -59,13 +59,15 @@ func (n *Node) StartMetrics() {
 			bandwidthRateIn.Set(stats.RateIn)
 			bandwidthRateOut.Set(stats.RateOut)
 
-			// TODO(pablo): Send all in one single request
-			monitoring.SendMetric("libp2p_network_peers_total", float64(totalNetworkPeers))
-			monitoring.SendMetric("libp2p_store_peers_total", float64(totalStorePeers))
-			monitoring.SendMetric("libp2p_bandwidth_total_in", float64(stats.TotalIn))
-			monitoring.SendMetric("libp2p_bandwidth_total_out", float64(stats.TotalOut))
-			monitoring.SendMetric("libp2p_bandwidth_rate_in", stats.RateIn)
-			monitoring.SendMetric("libp2p_bandwidth_rate_out", stats.RateOut)
+			metrics := map[string]float64{
+				"libp2p_network_peers_total": float64(totalNetworkPeers),
+				"libp2p_store_peers_total":   float64(totalStorePeers),
+				"libp2p_bandwidth_total_in":  float64(stats.TotalIn),
+				"libp2p_bandwidth_total_out": float64(stats.TotalOut),
+				"libp2p_bandwidth_rate_in":   stats.RateIn,
+				"libp2p_bandwidth_rate_out":  stats.RateOut,
+			}
+			monitoring.SendMetrics(metrics)
 
 			// Can we Read() or Get() the last value of the metric?
 			// for proto, stat := range bwc.GetBandwidthByProtocol() { ... }
