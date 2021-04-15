@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"mintter/backend/config"
 	"mintter/backend/logging"
-	"mintter/monitoring"
+	"mintter/backend/monitoring"
 	"os"
 
 	ipfslog "github.com/ipfs/go-log"

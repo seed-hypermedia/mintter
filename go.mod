@@ -14,7 +14,6 @@ require (
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/dgraph-io/badger v1.6.1
 	github.com/fxamacker/cbor/v2 v2.2.0
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.4.3
 	github.com/google/go-cmp v0.5.2
 	github.com/google/gopacket v1.1.19 // indirect
@@ -61,12 +60,13 @@ require (
 	github.com/libp2p/go-netroute v0.1.4 // indirect
 	github.com/libp2p/go-sockaddr v0.1.0 // indirect
 	github.com/lightningnetwork/lnd v0.11.0-beta
+	github.com/m3db/prometheus_remote_client_golang v0.4.4
 	github.com/mattn/go-isatty v0.0.12
 	github.com/multiformats/go-multiaddr v0.3.1
 	github.com/multiformats/go-multihash v0.0.14
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/polydawn/refmt v0.0.0-20190807091052-3d65705ee9f1
-	github.com/prometheus/client_golang v0.9.3
+	github.com/prometheus/client_golang v1.1.0
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/rs/xid v1.2.1
 	github.com/sanity-io/litter v1.3.0

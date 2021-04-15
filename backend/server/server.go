@@ -78,6 +78,10 @@ func InitFuncFromConfig(cfg config.Config, log *logging.ZapEventLogger) InitFunc
 			return st, n, fmt.Errorf("failed to init P2P node: %w", err)
 		}
 
+		if !cfg.NoTelemetry {
+			n.StartMetrics()
+		}
+
 		return
 	})
 }

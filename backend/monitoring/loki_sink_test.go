@@ -1,7 +1,7 @@
 package monitoring_test
 
 import (
-	"mintter/monitoring"
+	"mintter/backend/monitoring"
 	"net/url"
 	"testing"
 

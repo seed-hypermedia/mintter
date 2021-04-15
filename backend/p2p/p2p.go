@@ -241,7 +241,6 @@ func NewNode(repoPath string, s *store.Store, log *logging.ZapEventLogger, cfg c
 		close(n.bootstrapped)
 	}
 
-	n.StartMetrics()
 	n.serveRPC()
 	n.startSyncing()
 

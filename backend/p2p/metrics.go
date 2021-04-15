@@ -1,6 +1,7 @@
 package p2p
 
 import (
+	"mintter/backend/monitoring"
 	"time"
 
 	"github.com/libp2p/go-libp2p-core/metrics"
@@ -41,17 +42,16 @@ func (n *Node) StartMetrics() {
 	bwc := metrics.NewBandwidthCounter()
 	go func() {
 		var peers []peer.ID
-		var total int
 		for {
 			time.Sleep(updateInterval)
 
 			peers = n.GetNetworkPeers()
-			total = len(peers)
-			networkPeers.Set(float64(total))
+			totalNetworkPeers := len(peers)
+			networkPeers.Set(float64(totalNetworkPeers))
 
 			peers = n.GetStorePeers()
-			total = len(peers)
-			storePeers.Set(float64(total))
+			totalStorePeers := len(peers)
+			storePeers.Set(float64(totalStorePeers))
 
 			stats := bwc.GetBandwidthTotals()
 			bandwidthTotalIn.Set(float64(stats.TotalIn))
@@ -59,16 +59,16 @@ func (n *Node) StartMetrics() {
 			bandwidthRateIn.Set(stats.RateIn)
 			bandwidthRateOut.Set(stats.RateOut)
 
-			/*
-				fmt.Println("##")
+			// TODO(pablo): Send all in one single request
+			monitoring.SendMetric("libp2p_network_peers_total", float64(totalNetworkPeers))
+			monitoring.SendMetric("libp2p_store_peers_total", float64(totalStorePeers))
+			monitoring.SendMetric("libp2p_bandwidth_total_in", float64(stats.TotalIn))
+			monitoring.SendMetric("libp2p_bandwidth_total_out", float64(stats.TotalOut))
+			monitoring.SendMetric("libp2p_bandwidth_rate_in", stats.RateIn)
+			monitoring.SendMetric("libp2p_bandwidth_rate_out", stats.RateOut)
 
-				for proto, stat := range bwc.GetBandwidthByProtocol() {
-					fmt.Println(proto)
-					fmt.Println(stat)
-					fmt.Println("---")
-				}
-			*/
-
+			// Can we Read() or Get() the last value of the metric?
+			// for proto, stat := range bwc.GetBandwidthByProtocol() { ... }
 		}
 	}()
 }
