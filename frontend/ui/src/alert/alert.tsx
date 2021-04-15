@@ -20,8 +20,6 @@ function Root({
   children,
   ...props
 }: ComponentProps<typeof AlertDialogPrimitive.Root>) {
-  console.log('root')
-
   return (
     <AlertDialogPrimitive.Root {...props}>
       <AlertDialogPrimitive.Overlay
