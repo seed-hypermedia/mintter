@@ -4,9 +4,30 @@ import {forwardRef, useLayoutEffect, useRef} from 'react'
 import mergeRefs from 'react-merge-refs'
 import {v4} from 'uuid'
 
-import {Box, BoxProps} from '../box'
+import {Box} from '../box'
 import {styled} from '../stitches.config'
 import {Text} from '../text'
+
+const InputContainer = styled(Box, {
+  display: 'flex',
+  flexDirection: 'column',
+  width: '100%',
+
+  variants: {
+    size: {
+      1: {
+        gap: '$2',
+      },
+      2: {
+        gap: '$3',
+      },
+    },
+  },
+
+  defaultVariants: {
+    size: '2',
+  },
+})
 
 const Input = styled('input', {
   $$backgroundColor: '$colors$background-default',
@@ -55,17 +76,11 @@ const Input = styled('input', {
       1: {
         fontSize: '$2',
         lineHeight: '$1',
-        paddingHorizontal: '$4',
-        paddingVertical: '$3',
+        paddingHorizontal: '$3',
+        paddingVertical: '$2',
       },
       2: {
         fontSize: '$3',
-        lineHeight: '$2',
-        paddingHorizontal: '$4',
-        paddingVertical: '$3',
-      },
-      3: {
-        fontSize: '$4',
         lineHeight: '$2',
         paddingHorizontal: '$4',
         paddingVertical: '$3',
@@ -127,6 +142,10 @@ const TextFieldHint = styled(Text, {
       },
     },
   },
+
+  defaultVariants: {
+    status: 'neutral',
+  },
 })
 
 export const TextField = forwardRef<
@@ -134,7 +153,7 @@ export const TextField = forwardRef<
   React.ComponentProps<typeof Input> & {
     label?: string
     hint?: string
-    containerCss?: BoxProps['css']
+    containerCss?: React.ComponentProps<typeof InputContainer>['css']
   }
 >(
   (
@@ -152,19 +171,15 @@ export const TextField = forwardRef<
     return (
       // TODO: Fix types
       // @ts-ignore
-      <Box
-        // TODO: Fix types
-        // @ts-ignore
-        css={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '$2',
-          width: '100%',
-          ...containerCss,
-        }}
-      >
+      <InputContainer size={props.size} css={containerCss}>
         {label ? (
-          <Label.Root as={Text} htmlFor={id} css={{marginBottom: '$3'}}>
+          <Label.Root
+            as={Text}
+            htmlFor={id}
+            size={
+              props.size === '1' ? '2' : props.size === '2' ? '3' : undefined
+            }
+          >
             {label}
           </Label.Root>
         ) : null}
@@ -180,13 +195,14 @@ export const TextField = forwardRef<
         {hint ? (
           <TextFieldHint
             status={status}
-            size="2"
-            css={{marginHorizontal: '$2'}}
+            size={
+              props.size === '1' ? '1' : props.size === '2' ? '2' : undefined
+            }
           >
             {hint}
           </TextFieldHint>
         ) : null}
-      </Box>
+      </InputContainer>
     )
   },
 )

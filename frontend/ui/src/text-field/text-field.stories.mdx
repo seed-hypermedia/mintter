@@ -27,7 +27,6 @@ Pass a `size` prop to the `TextField` component to change its size.
 ```jsx
 <TextField size="1" placeholder="Small" />
 <TextField size="2" placeholder="Medium" />
-<TextField size="3" placeholder="Large" />
 ```
 
 > The default `TextField` `size` is `2`.
@@ -77,6 +76,12 @@ your `TextField` has a label associated, its color will change accordingly.
 ```jsx
 <TextField
   type="password"
+  status="neutral"
+  defaultValue="p@$$w0Rd"
+  hint="Your password should be secure"
+/>
+<TextField
+  type="password"
   status="success"
   defaultValue="p@$$w0Rd"
   hint="Your password was changed successfuly"
@@ -93,6 +98,8 @@ your `TextField` has a label associated, its color will change accordingly.
   hint="Please enter a valid email"
 />
 ```
+
+> The default `TextField` `status` is `neutral`.
 
 ### Disabled
 
@@ -151,7 +158,7 @@ Combine `TextField` props to preview your component.
       type: 'select',
       name: 'size',
       label: 'Size',
-      options: ['1', '2', '3'],
+      options: ['1', '2'],
       defaultValue: '2',
     },
     {
@@ -165,8 +172,8 @@ Combine `TextField` props to preview your component.
       type: 'select',
       name: 'status',
       label: 'Status',
-      options: ['', 'success', 'warning', 'danger'],
-      defaultValue: '',
+      options: ['neutral', 'success', 'warning', 'danger'],
+      defaultValue: 'neutral',
     },
     {
       type: 'string',
