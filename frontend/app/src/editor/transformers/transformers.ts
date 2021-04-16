@@ -44,9 +44,81 @@ export function publicationToEditor(document = buildDocument()): SlateBlock[] {
  * - Image
  * - Quote
  */
+export type SlateDocument = {
+  id: string;
+  title: string;
+  subtitle: string;
+  author: string;
+  blocks: BlockListNode[];
+};
 
-// export function documentSerialize(entry: SlateBlock[]): documents.Document {}
+export type DocumentSerializeEntry = {
+  document: SlateDocument;
+  blocks: Map<string, documents.Block>;
+  links?: [string, LinkNode | QuoteNode][];
+};
+
+// TODO: create a function that returns a Map with all the blocks in the document (with the parents set and so on)
+export function documentSerialize({
+  document,
+  blocks,
+  links,
+}: DocumentSerializeEntry): documents.Document {
+  // possible improvement: we can receive a `Document` so we don't have to create a new document all the time?
+
+  const { title, subtitle, author } = document;
+
+  // 1. create a document (makeProto with title, subtitle, author, listStyle)
+  const result = makeProto(new documents.Document(), {
+    title,
+    subtitle,
+    author,
+    childrenListStyle: document.blocks[0].listStyle,
+  } as documents.Document.AsObject);
+
+  // 2. set the blocksMap
+  const blocksMap = result.getBlocksMap();
+  setBlocksMap(blocksMap, blocks);
+
+  // 3. set the linksMap
+  // const linksMap = result.getLinksMap();
+
+  // TODO: make sure links are both links and quotes
+  // if (links?.length) {
+  //   links.forEach(([id, link]: [string, BlockNode]) => {
+  //     blocksMap.set(id, linkSerialize(link));
+  //   });
+  // }
+
+  // 4. set childrenList (by filtering blocksMap (parent === ''))
+  result.setChildrenList(createChildrenList(blocks));
+
+  return result;
+}
 // export function documentDeserialize(entry: documents.Document): SlateBlock[] {}
+
+function setBlocksMap(map: any, blocks: Map<string, documents.Block>): void {
+  for (const [key, value] of blocks) {
+    map.set(key, value);
+  }
+}
+
+function createChildrenList(
+  map: Map<string, documents.Block>,
+  parentId?: string,
+) {
+  let children: string[] = [];
+
+  for (const [id, block] of map) {
+    const parent: string = parentId === undefined ? '' : parentId;
+    if (block.getParent() === parent) {
+      children.push(id);
+    }
+  }
+
+  return children;
+}
+
 export type LinkNode = {
   id: string;
   type: string;
@@ -136,29 +208,35 @@ export function createTextRun(
 export function inlineElementSerialize(
   entry: PartialTextRun | QuoteNode | LinkNode,
   // TODO: fix types (documents.InlineElement | documents.InlineElement[])
-): documents.InlineElement | documents.InlineElement[] {
-  if ((entry as QuoteNode).type === 'quote') {
-    return makeProto(new documents.InlineElement(), {
-      quote: quoteSerialize(entry as QuoteNode),
-    });
-  }
+): documents.InlineElement | documents.InlineElement[] | undefined {
+  if ('type' in entry) {
+    if (entry.type === 'quote') {
+      return makeProto(new documents.InlineElement(), {
+        quote: quoteSerialize(entry as QuoteNode),
+      });
+    }
 
-  if ((entry as LinkNode).type === 'link') {
-    // TODO: create link and add it to the linkMap
-    // const link = linkSerialize(entry);
-    return (entry as LinkNode).children.map((linkChild: PartialTextRun) =>
-      inlineElementSerialize({
-        ...linkChild,
-        linkKey: (entry as LinkNode).id,
-      }),
-    ) as documents.InlineElement[];
+    if (entry.type === 'link') {
+      // TODO: create link and add it to the linkMap
+      // const link = linkSerialize(entry);
+      return entry.children.map((linkChild: PartialTextRun) =>
+        inlineElementSerialize({
+          ...linkChild,
+          linkKey: entry.id,
+        }),
+      ) as documents.InlineElement[];
+    }
   }
 
   // textRun
-  if (typeof (entry as PartialTextRun).text === 'string') {
-    return makeProto(new documents.InlineElement(), {
-      textRun: textRunSerialize(createTextRun(entry as PartialTextRun)),
-    });
+  if ('text' in entry && typeof entry.text === 'string') {
+    if (entry.text !== '') {
+      return makeProto(new documents.InlineElement(), {
+        textRun: textRunSerialize(createTextRun(entry)),
+      });
+    } else {
+      return undefined;
+    }
   }
 
   // TODO: images

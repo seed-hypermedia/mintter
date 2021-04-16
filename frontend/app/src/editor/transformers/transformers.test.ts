@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import type { Text } from 'slate';
+import { Editor, Text, createEditor } from 'slate';
 import faker from 'faker';
 import { id as getId } from '../id';
 import { makeProto } from './make-proto';
@@ -15,6 +15,8 @@ import {
   BlockNode,
   linkSerialize,
   LinkNode,
+  SlateDocument,
+  documentSerialize,
 } from './transformers';
 
 describe('Transformers: TextRun Serialize', () => {
@@ -90,7 +92,7 @@ describe('Transformer: InlineElement Serializer', () => {
 
     const result = inlineElementSerialize(node);
 
-    // console.log({ result, expected });
+    // console.log({ result });
 
     expect(result).to.equal(undefined);
   });
@@ -348,6 +350,58 @@ describe('Tranformers: Block Serializer', () => {
         }),
       ],
     });
+    expect(result).to.deep.equal(expected);
+  });
+});
+
+describe('Transformer: Document Serializer', () => {
+  it('default document (one block)', () => {
+    const editor = createEditor();
+    const docId = getId();
+    const blockId = getId();
+    const document: SlateDocument = {
+      id: docId,
+      title: 'Simple Document Test',
+      subtitle: 'test document subtitle',
+      author: faker.finance.bitcoinAddress(),
+      blocks: [
+        {
+          type: 'block_list',
+          id: getId(),
+          listStyle: documents.ListStyle.NONE,
+          children: [
+            {
+              type: 'block',
+              id: blockId,
+              style: documents.Block.Type.BASIC,
+              children: [
+                {
+                  text: 'Hello World',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const blocks = new Map();
+    blocks.set(blockId, blockSerialize(document.blocks[0].children[0]));
+
+    const result = documentSerialize({ document, blocks });
+
+    const expected = makeProto(new documents.Document(), {
+      title: document.title,
+      subtitle: document.subtitle,
+      author: document.author,
+      children: [blockId],
+      childrenListStyle: document.blocks[0].listStyle,
+    });
+
+    const blocksMap = expected.getBlocksMap();
+
+    blocksMap.set(blockId, blockSerialize(document.blocks[0].children[0]));
+
     expect(result).to.deep.equal(expected);
   });
 });
