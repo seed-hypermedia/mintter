@@ -1,12 +1,13 @@
 import { expect } from '@esm-bundle/chai';
 import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { Text } from 'slate';
+import type { Text } from 'slate';
 import faker from 'faker';
 import { makeProto } from '../make-proto';
 import {
   textRunSerialize,
   createTextRun,
   PartialTextRun,
+  textRunDeserialize,
 } from '../transformers';
 
 describe('TextRun: Serialize', () => {
@@ -35,4 +36,33 @@ describe('TextRun: Serialize', () => {
   });
 });
 
-describe('TextRun: Deserialize', () => {});
+describe('TextRun: Deserialize', () => {
+  const text = faker.lorem.sentence();
+  it('default', () => {
+    const textNode: documents.TextRun = makeProto(new documents.TextRun(), {
+      text,
+    });
+
+    const result = textRunDeserialize(textNode);
+    const expected = createTextRun({ text });
+
+    expect(result).to.deep.equal(expected);
+  });
+
+  it('with attributes', () => {
+    const textNode: documents.TextRun = makeProto(new documents.TextRun(), {
+      text,
+      bold: true,
+      underline: true,
+    });
+
+    const result = textRunDeserialize(textNode);
+    const expected = createTextRun({
+      text,
+      bold: true,
+      underline: true,
+    });
+
+    expect(result).to.deep.equal(expected);
+  });
+});
