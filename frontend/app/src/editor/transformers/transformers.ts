@@ -4,7 +4,7 @@ import type { SlateBlock } from '@mintter/editor/editor';
 import { ELEMENT_BLOCK_LIST } from '../hierarchy-plugin/defaults';
 import { ELEMENT_BLOCK } from '../block-plugin/defaults';
 import { ELEMENT_PARAGRAPH } from '../elements/defaults';
-import { id as getId } from '@mintter/editor/id';
+import { id as getId } from '../id';
 import type { Node, Text } from 'slate';
 import { makeProto } from './make-proto';
 import { Block } from '../block-plugin/components/block';
@@ -54,7 +54,7 @@ export type SlateDocument = {
 
 export type DocumentSerializeEntry = {
   document: SlateDocument;
-  blocks: Map<string, documents.Block>;
+  blocks: [string, documents.Block][];
   links?: [string, LinkNode | QuoteNode][];
 };
 
@@ -83,13 +83,6 @@ export function documentSerialize({
   // 3. set the linksMap
   // const linksMap = result.getLinksMap();
 
-  // TODO: make sure links are both links and quotes
-  // if (links?.length) {
-  //   links.forEach(([id, link]: [string, BlockNode]) => {
-  //     blocksMap.set(id, linkSerialize(link));
-  //   });
-  // }
-
   // 4. set childrenList (by filtering blocksMap (parent === ''))
   result.setChildrenList(createChildrenList(blocks));
 
@@ -97,24 +90,27 @@ export function documentSerialize({
 }
 // export function documentDeserialize(entry: documents.Document): SlateBlock[] {}
 
-function setBlocksMap(map: any, blocks: Map<string, documents.Block>): void {
-  for (const [key, value] of blocks) {
-    map.set(key, value);
-  }
+function setBlocksMap(map: any, blocks: [string, documents.Block][]): void {
+  blocks.forEach(([id, block]: [string, documents.Block]) => {
+    // map.set(id, block);
+    map.set(id, block);
+  });
 }
 
 function createChildrenList(
-  map: Map<string, documents.Block>,
+  blocks: [string, documents.Block][],
   parentId?: string,
 ) {
   let children: string[] = [];
 
-  for (const [id, block] of map) {
+  blocks.forEach(([id, block]: [string, documents.Block]) => {
     const parent: string = parentId === undefined ? '' : parentId;
-    if (block.getParent() === parent) {
+    const blockParent = block.getParent();
+
+    if (parent === blockParent) {
       children.push(id);
     }
-  }
+  });
 
   return children;
 }
