@@ -60,7 +60,7 @@ describe('InlineElement: Serializers', () => {
     const node: QuoteNode = {
       id: getId(),
       type: 'quote',
-      linkKey: `mintter://${faker.git.commitSha()}`,
+      url: `mintter://${faker.git.commitSha()}`,
       startOffset: 0,
       endOffset: 0,
       children: [{ text: '' }],

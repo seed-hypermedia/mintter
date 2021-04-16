@@ -17,27 +17,36 @@ import {
   LinkNode,
   SlateDocument,
   documentSerialize,
+  quoteDeserialize,
 } from '../transformers';
 
-describe('Quote: Serialize', () => {
-  it('default', () => {
-    const quote: QuoteNode = {
-      id: getId(),
-      type: 'quote',
-      linkKey: `mintter://${faker.finance.bitcoinAddress()}`,
-      startOffset: 0,
-      endOffset: 0,
-      children: [{ text: '' }],
-    };
+describe('Quote', () => {
+  const url = `mintter://${faker.finance.bitcoinAddress()}`;
+  const linkKey = getId();
+  const slateQuote: QuoteNode = {
+    id: linkKey,
+    type: 'quote',
+    url,
+    startOffset: 0,
+    endOffset: 0,
+    children: [{ text: '' }],
+  };
 
-    const result = quoteSerialize(quote);
-    const expected = new documents.Quote();
-    expected.setLinkKey(quote.linkKey);
-    expected.setStartOffset(quote.startOffset as number);
-    expected.setEndOffset(quote.endOffset as number);
+  const mintterQuote: documents.Quote = makeProto(new documents.Quote(), {
+    linkKey,
+    startOffset: 0,
+    endOffset: 0,
+  });
+  const link: documents.Link = makeProto(new documents.Link(), {
+    uri: url,
+  } as documents.Link.AsObject);
+  it('quoteSerialize()', () => {
+    const result = quoteSerialize(slateQuote);
+    expect(result).to.deep.equal(mintterQuote);
+  });
 
-    expect(result).to.deep.equal(expected);
+  it('quoteDeserialize()', () => {
+    const result = quoteDeserialize(mintterQuote, link);
+    expect(result).to.deep.equal(slateQuote);
   });
 });
-
-describe('Quote: Deserialize', () => {});

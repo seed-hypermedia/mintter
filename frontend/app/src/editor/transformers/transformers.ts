@@ -88,7 +88,9 @@ export function documentSerialize({
 
   return result;
 }
-// export function documentDeserialize(entry: documents.Document): SlateBlock[] {}
+// export function documentDeserialize(entry: documents.Document): SlateDocument {
+//   // TODO: merge sibling links
+// }
 
 function setBlocksMap(map: any, blocks: [string, documents.Block][]): void {
   blocks.forEach(([id, block]: [string, documents.Block]) => {
@@ -121,12 +123,43 @@ export type LinkNode = {
   url: string;
   children: PartialTextRun[];
 };
-export function linkSerialize(entry: LinkNode): documents.Link {
+export function linkSerialize(entry: LinkNode | QuoteNode): documents.Link {
   return makeProto(new documents.Link(), {
     uri: entry.url,
   } as documents.Link.AsObject);
 }
-// export function linkDeserialize(entry: documents.Link): any {}
+/**
+ * trimTextRun
+ *
+ * remove all the false attributes from the text
+ */
+
+function trimTextRun(entry: PartialTextRun): PartialTextRun {
+  const copy = { ...entry };
+
+  Object.entries(copy).forEach(([key, value]) => {
+    if (!value) delete copy[key as keyof TextRun];
+  });
+
+  return copy;
+}
+export function linkDeserialize(
+  entry: documents.TextRun,
+  link: documents.Link,
+): LinkNode {
+  const { linkKey, ...textProps } = entry.toObject();
+  return {
+    id: linkKey,
+    type: 'link',
+    url: link.getUri(),
+    children: [
+      {
+        text: '',
+        ...trimTextRun(textProps),
+      },
+    ],
+  };
+}
 export type BlockNode = {
   type: string;
   id: string;
@@ -259,16 +292,31 @@ export function textRunDeserialize(entry: documents.TextRun): Text {
 export type QuoteNode = {
   id: string;
   type: string;
-  linkKey: string;
+  url: string;
   startOffset?: number;
   endOffset?: number;
-  children: any;
+  children: Text[];
 };
 export function quoteSerialize(entry: QuoteNode): documents.Quote {
   return makeProto(new documents.Quote(), {
-    linkKey: entry.linkKey,
+    linkKey: entry.id,
     startOffset: entry.startOffset,
     endOffset: entry.endOffset,
   });
+
+  // TODO: create link too
 }
-// export function quoteDeserialize(entry: documents.Quote): any {}
+export function quoteDeserialize(
+  entry: documents.Quote,
+  link: documents.Link,
+): QuoteNode {
+  const { linkKey, startOffset, endOffset } = entry.toObject();
+  return {
+    id: linkKey,
+    type: 'quote',
+    url: link.getUri(),
+    startOffset,
+    endOffset,
+    children: [{ text: '' }],
+  };
+}

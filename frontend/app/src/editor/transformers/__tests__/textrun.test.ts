@@ -10,59 +10,22 @@ import {
   textRunDeserialize,
 } from '../transformers';
 
-describe('TextRun: Serialize', () => {
-  it('default: no attributes', () => {
-    const textNode: Text = {
-      text: faker.lorem.sentence(),
-    };
-    const result = textRunSerialize(textNode);
-    const expected = makeProto(new documents.TextRun(), {
-      text: textNode.text,
-    });
+describe('TextRun', () => {
+  const slateNode: Text = {
+    text: faker.lorem.sentence(),
+    bold: true,
+    underline: true,
+  };
 
-    expect(result).to.deep.equal(expected);
+  const mintterNode = makeProto(new documents.TextRun(), slateNode);
+
+  it('textRunSerialize()', () => {
+    const result = textRunSerialize(slateNode);
+    expect(result).to.deep.equal(mintterNode);
   });
 
-  it('with attributes', () => {
-    const textNode: Text = {
-      text: faker.lorem.sentence(),
-      bold: true,
-      underline: true,
-    };
-
-    const result = textRunSerialize(textNode);
-    const expected = makeProto(new documents.TextRun(), textNode);
-    expect(result).to.deep.equal(expected);
-  });
-});
-
-describe('TextRun: Deserialize', () => {
-  const text = faker.lorem.sentence();
-  it('default', () => {
-    const textNode: documents.TextRun = makeProto(new documents.TextRun(), {
-      text,
-    });
-
-    const result = textRunDeserialize(textNode);
-    const expected = createTextRun({ text });
-
-    expect(result).to.deep.equal(expected);
-  });
-
-  it('with attributes', () => {
-    const textNode: documents.TextRun = makeProto(new documents.TextRun(), {
-      text,
-      bold: true,
-      underline: true,
-    });
-
-    const result = textRunDeserialize(textNode);
-    const expected = createTextRun({
-      text,
-      bold: true,
-      underline: true,
-    });
-
-    expect(result).to.deep.equal(expected);
+  it('textRunDeserialize()', () => {
+    const result = textRunDeserialize(mintterNode);
+    expect(result).to.deep.equal(createTextRun(slateNode));
   });
 });
