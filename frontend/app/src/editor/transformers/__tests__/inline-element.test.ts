@@ -8,13 +8,14 @@ import {
   quoteSerialize,
   textRunSerialize,
   inlineElementSerialize,
+  inlineElementDeserialize,
   createTextRun,
   PartialTextRun,
   LinkNode,
 } from '../transformers';
 
-describe('InlineElement: Serializers', () => {
-  it('TextRun', () => {
+describe('InlineElement', () => {
+  it('inlineElementSerialize() > TextRun', () => {
     const node: PartialTextRun = {
       text: 'Hello World',
       bold: true,
@@ -23,27 +24,34 @@ describe('InlineElement: Serializers', () => {
     const expected = makeProto(new documents.InlineElement(), {
       textRun: textRunSerialize(createTextRun(node)),
     });
-
     const result = inlineElementSerialize(node);
-
-    // console.log({ result, expected });
-
     expect(result).to.deep.equal(expected);
   });
 
-  it('TextRun: empty', () => {
+  it('inlineElementDeserialize() > TextRun', () => {
+    const node: PartialTextRun = {
+      text: 'Hello World',
+      bold: true,
+    };
+
+    const mintterNode = new documents.InlineElement();
+    mintterNode.setTextRun(makeProto(new documents.TextRun(), node));
+
+    const result = inlineElementDeserialize(mintterNode);
+    expect(result).to.deep.equal(node);
+  });
+
+  it('inlineElementSerialize() > TextRun: empty', () => {
     const node: PartialTextRun = {
       text: '',
     };
 
     const result = inlineElementSerialize(node);
 
-    // console.log({ result });
-
     expect(result).to.equal(undefined);
   });
 
-  it('TextNode: should be ignored if `text` is empty', () => {
+  it('inlineElementSerialize() > TextRun: should be ignored if `text` is empty', () => {
     const node: PartialTextRun = {
       text: '',
       bold: true,
@@ -56,7 +64,7 @@ describe('InlineElement: Serializers', () => {
     expect(result).to.equal(undefined);
   });
 
-  it('Quote', () => {
+  it('inlineElementSerialize() > Quote', () => {
     const node: QuoteNode = {
       id: getId(),
       type: 'quote',
@@ -74,7 +82,9 @@ describe('InlineElement: Serializers', () => {
     expect(result).to.deep.equal(expected);
   });
 
-  it('Link', () => {
+  it('inlineElementDeserialize() > Quote', () => {});
+
+  it('inlineElementSerialize() > Link', () => {
     const node: LinkNode = {
       id: getId(),
       type: 'link',
@@ -113,4 +123,6 @@ describe('InlineElement: Serializers', () => {
 
     expect(result).to.deep.equal(expected);
   });
+
+  it('inlineElementDeserialize() > Link', () => {});
 });

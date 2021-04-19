@@ -6,13 +6,19 @@ import {
   EditablePlugins,
   RenderElement,
   SlateDocument,
-  // ToolbarMark,
+  ToolbarElement,
+  ToolbarMark,
 } from '@udecode/slate-plugins';
 import { Box } from '@mintter/ui/box';
 import { BalloonToolbar, setDefaults } from '@udecode/slate-plugins';
 import { LinkPlugin, ToolbarLink } from './link-plugin';
 import { LinkMenu } from './link-plugin/link-menu';
 import type { MenuStateReturn } from 'reakit/ts';
+import { Button } from '@mintter/ui/button';
+import { BOLD_OPTIONS, MARK_BOLD } from './marks/bold';
+import { Icon } from '@mintter/ui/icon';
+import { MARK_ITALIC } from './marks/italic';
+import { ELEMENT_PARAGRAPH } from './elements/defaults';
 
 interface EditorComponentProps {
   editor: any;
@@ -118,7 +124,39 @@ function Editor({
               as={BalloonToolbar}
               css={{ backgroundColor: '$background-opposite' }}
             >
+              <Button
+                as={ToolbarMark}
+                type={MARK_BOLD}
+                variant="ghost"
+                size="1"
+                css={{ '$$outlined-hovered-background-color': 'transparent' }}
+                icon={<Icon name="Bold" size="2" color="opposite" />}
+              />
+              <Button
+                as={ToolbarMark}
+                type={MARK_ITALIC}
+                variant="ghost"
+                size="1"
+                css={{ '$$outlined-hovered-background-color': 'transparent' }}
+                icon={<Icon name="Italic" size="2" color="opposite" />}
+              />
               <ToolbarLink {...options} />
+              <Button
+                as={ToolbarElement}
+                type={ELEMENT_PARAGRAPH}
+                variant="ghost"
+                size="1"
+                css={{ '$$outlined-hovered-background-color': 'transparent' }}
+                icon={<Icon name="Paragraph" size="2" color="opposite" />}
+              />
+              <Button
+                as={ToolbarElement}
+                type="h2"
+                variant="ghost"
+                size="1"
+                css={{ '$$outlined-hovered-background-color': 'transparent' }}
+                icon={<Icon name="Heading" size="2" color="opposite" />}
+              />
             </Box>
             <LinkMenu menu={linkMenu} />
           </>

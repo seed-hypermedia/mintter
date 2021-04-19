@@ -8,6 +8,7 @@ import { id as getId } from '../id';
 import type { Node, Text } from 'slate';
 import { makeProto } from './make-proto';
 import { Block } from '../block-plugin/components/block';
+import { ELEMENT_LINK } from '../link-plugin';
 
 export function publicationToEditor(document = buildDocument()): SlateBlock[] {
   return [
@@ -94,7 +95,6 @@ export function documentSerialize({
 
 function setBlocksMap(map: any, blocks: [string, documents.Block][]): void {
   blocks.forEach(([id, block]: [string, documents.Block]) => {
-    // map.set(id, block);
     map.set(id, block);
   });
 }
@@ -134,15 +134,30 @@ export function linkSerialize(entry: LinkNode | QuoteNode): documents.Link {
  * remove all the false attributes from the text
  */
 
-function trimTextRun(entry: PartialTextRun): PartialTextRun {
-  const copy = { ...entry };
+// function trimTextRun(entry: PartialTextRun): PartialTextRun {
+//   const copy = { ...entry };
 
-  Object.entries(copy).forEach(([key, value]) => {
-    if (!value) delete copy[key as keyof TextRun];
-  });
+//   Object.entries(copy).forEach(([key, value = false]) => {
+//     console.log({ key, value });
+//     if (!value) delete copy[key as keyof documents.TextRun];
+//   });
 
-  return copy;
+//   return copy;
+// }
+
+function trimTextRun(
+  entry: Partial<documents.TextRun.AsObject>,
+): Partial<documents.TextRun.AsObject> {
+  return Object.keys(entry).reduce((acc, current) => {
+    const key = current as keyof documents.TextRun.AsObject;
+    if (entry[key]) {
+      acc[key] = entry[key] as any;
+    }
+
+    return acc;
+  }, {} as Partial<documents.TextRun.AsObject>);
 }
+
 export function linkDeserialize(
   entry: documents.TextRun,
   link: documents.Link,
@@ -216,7 +231,7 @@ export function blockSerialize(
 
   return block;
 }
-// export function blockDeserialize(entry: documents.Block): any {}
+export function blockDeserialize(entry: documents.Block): any {}
 export type PartialTextRun = Partial<documents.TextRun.AsObject>;
 export function createTextRun(
   entry: PartialTextRun,
@@ -245,7 +260,7 @@ export function inlineElementSerialize(
       });
     }
 
-    if (entry.type === 'link') {
+    if (entry.type === ELEMENT_LINK) {
       // TODO: create link and add it to the linkMap
       // const link = linkSerialize(entry);
       return entry.children.map((linkChild: PartialTextRun) =>
@@ -271,11 +286,46 @@ export function inlineElementSerialize(
   // TODO: images
 
   // no valid inlineElement
-  throw new Error('== inlineElementSerialize: Not a valid entry value');
+  throw new Error(
+    `== inlineElementSerialize: Not a valid entry value: ${JSON.stringify(
+      entry,
+      null,
+      2,
+    )}`,
+  );
 }
-// export function inlineElementDeserialize(
-//   entry: documents.InlineElement,
-// ): Node {}
+export function inlineElementDeserialize(
+  entry: documents.InlineElement,
+  linksMap?: Map<string, documents.Link | documents.Quote>,
+): any {
+  const obj = entry.toObject();
+  if (obj.textRun) {
+    const node = trimTextRun(obj.textRun);
+    const textValue = { ...node };
+    delete textValue.linkKey;
+    if (node.linkKey) {
+      const link = linksMap?.get(node.linkKey)?.toObject();
+      // return link
+      if (link) {
+        return {
+          type: 'link',
+          id: node.linkKey,
+          url: (link as documents.Link.AsObject).uri,
+          children: [textValue],
+        };
+      } else {
+        throw new Error(
+          'inlineElementDeserialize textRun Error: Could not find link in linksMap',
+        );
+      }
+    }
+
+    return node;
+  }
+
+  if (obj.quote) {
+  }
+}
 
 export function textRunSerialize(
   entry: Partial<documents.TextRun.AsObject>,
@@ -308,13 +358,13 @@ export function quoteSerialize(entry: QuoteNode): documents.Quote {
 }
 export function quoteDeserialize(
   entry: documents.Quote,
-  link: documents.Link,
+  block: documents.Block,
 ): QuoteNode {
   const { linkKey, startOffset, endOffset } = entry.toObject();
   return {
     id: linkKey,
     type: 'quote',
-    url: link.getUri(),
+    url: block.getId(),
     startOffset,
     endOffset,
     children: [{ text: '' }],

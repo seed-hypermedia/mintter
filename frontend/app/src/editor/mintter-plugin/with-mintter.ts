@@ -93,7 +93,7 @@ export const withMintter = ({ plugins = [], options }: any) => <
   };
 
   e.deleteBackward = (unit) => {
-    console.log('=== WITH MINTTER -> DELETE BACKWARD', editor);
+    // console.log('=== WITH MINTTER -> DELETE BACKWARD', editor);
 
     const res = getBlockItemEntry({ editor: e, locationOptions: {}, options });
 
@@ -156,16 +156,16 @@ export const withMintter = ({ plugins = [], options }: any) => <
       if (node.type === ELEMENT_BLOCK) {
         // check if first child is a paragraph
         if (node.children.length === 1) {
-          console.log('=== BLOCK -> ONLY 1 CHILD', { node, path });
+          // // console.log('=== BLOCK -> ONLY 1 CHILD', { node, path });
         } else {
-          console.log('=== BLOCK -> MORE CHILDSSS', { node, path });
+          // // console.log('=== BLOCK -> MORE CHILDSSS', { node, path });
           for (const [child, childPath] of Node.children(e, path)) {
             if (child.type === ELEMENT_PARAGRAPH) {
-              console.log('=== BLOCK -> PARAGRAPH CHILD ', {
-                child,
-                childPath,
-                length: childPath[childPath.length - 1] !== 0,
-              });
+              // // console.log('=== BLOCK -> PARAGRAPH CHILD ', {
+              //   child,
+              //   childPath,
+              //   length: childPath[childPath.length - 1] !== 0,
+              // });
               if (childPath[childPath.length - 1] !== 0) {
                 Transforms.liftNodes(editor, { at: path.concat(0) });
                 return;
@@ -186,7 +186,7 @@ export const withMintter = ({ plugins = [], options }: any) => <
 
       if (node.type === ELEMENT_BLOCK_LIST) {
         if (path.length === 1) {
-          console.log('=== BLOCK_LIST -> ROOT');
+          // console.log('=== BLOCK_LIST -> ROOT');
         } else {
           Editor.withoutNormalizing(e, () => {
             Transforms.setNodes(

@@ -37,16 +37,16 @@ describe('Quote', () => {
     startOffset: 0,
     endOffset: 0,
   });
-  const link: documents.Link = makeProto(new documents.Link(), {
-    uri: url,
-  } as documents.Link.AsObject);
   it('quoteSerialize()', () => {
     const result = quoteSerialize(slateQuote);
     expect(result).to.deep.equal(mintterQuote);
   });
 
   it('quoteDeserialize()', () => {
-    const result = quoteDeserialize(mintterQuote, link);
+    const block: documents.Block = makeProto(new documents.Block(), {
+      id: url,
+    });
+    const result = quoteDeserialize(mintterQuote, block);
     expect(result).to.deep.equal(slateQuote);
   });
 });
