@@ -1,3 +1,4 @@
+import {Alert} from '@src/alert'
 import {Box} from '@src/box'
 import {Button} from '@src/button'
 import {Icon} from '@src/icon'
@@ -12,6 +13,7 @@ import {useCallback, useMemo, useState} from 'react'
 import {LivePreview, LiveProvider} from 'react-live'
 
 const liveScope = {
+  Alert,
   Box,
   Button,
   Icon,

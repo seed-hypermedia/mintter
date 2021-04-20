@@ -1,34 +1,17 @@
-import * as React from 'react';
-// import {Icons} from 'components/icons'
-import { useLocation, useRouteMatch } from 'react-router-dom';
-import { Link } from './link';
-import { useAuthor } from '@mintter/hooks';
 import { format } from 'date-fns';
+import { useMemo, useState } from 'react';
+import { useLocation, useRouteMatch } from 'react-router-dom';
+
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { getPath } from '@utils/routes';
+import { useAuthor } from '@mintter/hooks';
+import { Alert } from '@mintter/ui/alert';
 import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
-import { Button } from '@mintter/ui/button';
+
 import { Avatar } from '@components/avatar';
+import { getPath } from '@utils/routes';
 
-interface Props {
-  // TODO: fix types
-  // data: documents.Document.AsObject[];
-  data: any;
-  isLoading: boolean;
-  isError: boolean;
-  error: any;
-  onDeleteDocument?: (id: string) => Promise<void>;
-}
-
-interface ItemProps {
-  item: {
-    publication: documents.Publication;
-    version: string;
-    document?: documents.Document.AsObject;
-  }; // TODO: fix types (Document.AsObject + Document)
-  onDeleteDocument?: (version: string) => void;
-}
+import { Link } from './link';
 
 export function DocumentList({
   data,
@@ -36,7 +19,15 @@ export function DocumentList({
   isError,
   error,
   onDeleteDocument,
-}: Props) {
+}: {
+  // TODO: fix types
+  // data: documents.Document.AsObject[];
+  data: any;
+  isLoading: boolean;
+  isError: boolean;
+  error: any;
+  onDeleteDocument?: (id: string) => Promise<void>;
+}) {
   if (isLoading) {
     return <p>Loading...</p>;
   }
@@ -58,7 +49,19 @@ export function DocumentList({
   );
 }
 
-function ListItem({ item, onDeleteDocument }: ItemProps) {
+function ListItem({
+  item,
+  onDeleteDocument,
+}: {
+  item: {
+    publication: documents.Publication;
+    version: string;
+    document?: documents.Document.AsObject;
+  }; // TODO: fix types (Document.AsObject + Document)
+  onDeleteDocument?: (version: string) => void;
+}) {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
+
   const match = useRouteMatch();
   const location = useLocation();
   // const [prefetched, setPrefetch] = React.useState<boolean>(false)
@@ -75,11 +78,11 @@ function ListItem({ item, onDeleteDocument }: ItemProps) {
 
   const { data: author } = useAuthor(itemAuthor);
 
-  const isDraft = React.useMemo(() => location.pathname.includes('drafts'), [
+  const isDraft = useMemo(() => location.pathname.includes('drafts'), [
     location.pathname,
   ]);
 
-  const to = React.useMemo(() => {
+  const to = useMemo(() => {
     const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${id}${
       version ? `/${version}` : ''
     }`;
@@ -93,123 +96,140 @@ function ListItem({ item, onDeleteDocument }: ItemProps) {
   // }
   // }
 
-  const date = React.useMemo(
+  const date = useMemo(
     () => publication?.getDocument()?.getCreateTime()?.toDate() || new Date(),
     [publication],
   );
 
   return (
-    <Box
-      // TODO: fix types
-      // @ts-ignore
-      as={Link}
-      to={to}
-      css={{
-        padding: '$5',
-        borderRadius: '$2',
-        display: 'flex',
-        gap: '$5',
-        textDecoration: 'none',
-        transition: 'background 0.25s ease-in-out',
-        '&:hover': {
-          backgroundColor: '$background-muted',
-        },
-      }}
-    >
+    <Box css={{ position: 'relative' }}>
       <Box
+        // TODO: fix types
+        // @ts-ignore
+        as={Link}
+        to={to}
         css={{
-          flex: 'none',
-          background: '$primary-muted',
-          width: 220,
-          height: 140,
-        }}
-      />
-      <Box
-        css={{
-          flex: 1,
-          display: 'grid',
-          gridTemplateAreas: `"avatar author price"
-        "content content icon"
-        "footer footer footer"`,
-          gridTemplateColumns: '24px 1fr auto',
-          gridTemplateRows: '24px auto auto',
-          gap: '$2',
+          padding: '$5',
+          borderRadius: '$2',
+          display: 'flex',
+          gap: '$5',
+          textDecoration: 'none',
+          transition: 'background 0.25s ease-in-out',
+          '&:hover': {
+            backgroundColor: '$background-muted',
+          },
         }}
       >
-        {/* {!isDraft && location.pathname !== '/library/my-publications' && ( */}
+        <Box
+          css={{
+            flex: 'none',
+            background: '$primary-muted',
+            width: 220,
+            height: 140,
+          }}
+        />
+        <Box
+          css={{
+            flex: 1,
+            display: 'grid',
+            gridTemplateAreas: `"avatar author price"
+        "content content icon"
+        "footer footer footer"`,
+            gridTemplateColumns: '24px 1fr auto',
+            gridTemplateRows: '24px auto auto',
+            gap: '$2',
+          }}
+        >
+          {/* {!isDraft && location.pathname !== '/library/my-publications' && ( */}
 
-        <Avatar css={{ gridArea: 'avatar' }} />
-        <Text size="1" css={{ gridArea: 'author', alignSelf: 'center' }}>
-          {author?.username}
-        </Text>
-        <Box css={{ gridArea: 'price' }}>
-          <Text
-            size="1"
-            css={{
-              background: '$background-contrast-strong',
-              paddingVertical: '$2',
-              paddingHorizontal: '$3',
-              borderRadius: '$1',
-              display: 'inline-block',
-            }}
-            color="opposite"
-          >
-            0.09$
+          <Avatar css={{ gridArea: 'avatar' }} />
+          <Text size="1" css={{ gridArea: 'author', alignSelf: 'center' }}>
+            {author?.username}
           </Text>
-        </Box>
-        <Box css={{ gridArea: 'content' }}>
-          <Text
-            size="7"
-            // TODO: fix types
-            // @ts-ignore
-            color="default"
-            css={{
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-            }}
-          >
-            {theTitle}
-          </Text>
-          {subtitle && (
-            <Text size="5" color="muted">
-              {subtitle}
-            </Text>
-          )}
-        </Box>
-        <Box css={{ gridArea: 'footer' }}>
-          <Text size="1" color="muted">
-            {format(new Date(date), 'MMMM d, yyyy')}
-          </Text>
-        </Box>
-
-        {onDeleteDocument && (
-          <Box
-            css={{
-              gridArea: 'icon',
-              display: 'flex',
-
-              alignItems: 'center',
-            }}
-          >
-            <Button
-              data-testid="delete-button"
-              color="danger"
+          <Box css={{ gridArea: 'price' }}>
+            <Text
               size="1"
-              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                e.preventDefault();
-                const resp = window.confirm(
-                  'are you sure you want to delete it?',
-                );
-                if (resp) {
-                  onDeleteDocument(version);
-                }
+              css={{
+                background: '$background-contrast-strong',
+                paddingVertical: '$2',
+                paddingHorizontal: '$3',
+                borderRadius: '$1',
+                display: 'inline-block',
+              }}
+              color="opposite"
+            >
+              0.09$
+            </Text>
+          </Box>
+          <Box css={{ gridArea: 'content' }}>
+            <Text
+              size="7"
+              // TODO: fix types
+              // @ts-ignore
+              color="default"
+              css={{
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
               }}
             >
-              trash
-            </Button>
+              {theTitle}
+            </Text>
+            {subtitle && (
+              <Text size="5" color="muted">
+                {subtitle}
+              </Text>
+            )}
           </Box>
-        )}
+          <Box css={{ gridArea: 'footer' }}>
+            <Text size="1" color="muted">
+              {format(new Date(date), 'MMMM d, yyyy')}
+            </Text>
+          </Box>
+
+          {onDeleteDocument && (
+            <Box
+              css={{
+                gridArea: 'icon',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <Alert.Root
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+              >
+                <Alert.Trigger
+                  data-testid="delete-button"
+                  size="1"
+                  color="danger"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsDeleteDialogOpen(true);
+                  }}
+                >
+                  trash
+                </Alert.Trigger>
+                <Alert.Content onClick={(e) => e.stopPropagation()}>
+                  <Alert.Title color="danger">Delete document</Alert.Title>
+                  <Alert.Description>
+                    Are you sure you want to delete this document? This action
+                    is not reversible.
+                  </Alert.Description>
+                  <Alert.Actions>
+                    <Alert.Cancel>Cancel</Alert.Cancel>
+                    <Alert.Action
+                      color="danger"
+                      onClick={() => onDeleteDocument(version)}
+                    >
+                      Delete
+                    </Alert.Action>
+                  </Alert.Actions>
+                </Alert.Content>
+              </Alert.Root>
+            </Box>
+          )}
+        </Box>
       </Box>
     </Box>
   );

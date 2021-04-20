@@ -10,6 +10,7 @@
   "license": "MIT",
   "repository": "mintterteam/mintter-ui",
   "exports": {
+    "./alert": "./dist/alert/index.js",
     "./box": "./dist/box/index.js",
     "./button": "./dist/button/index.js",
     "./icon": "./dist/icon/index.js",
@@ -21,6 +22,9 @@
   },
   "typesVersions": {
     "*": {
+      "alert": [
+        "dist/alert/index.d.ts"
+      ],
       "box": [
         "dist/box/index.d.ts"
       ],
@@ -58,8 +62,10 @@
   "dependencies": {
     "@modulz/radix-icons": "^4.0.0",
     "@radix-ui/react-accessible-icon": "^0.0.12",
+    "@radix-ui/react-alert-dialog": "^0.0.15",
     "@radix-ui/react-label": "^0.0.11",
     "@radix-ui/react-polymorphic": "^0.0.10",
+    "@radix-ui/react-slot": "^0.0.9",
     "@stitches/core": "0.1.4",
     "@stitches/react": "0.1.4",
     "autosize": "^4.0.2",
