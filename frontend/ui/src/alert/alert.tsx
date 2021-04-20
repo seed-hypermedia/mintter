@@ -75,6 +75,7 @@ function Content({
     // @ts-ignore
     <AlertDialogPrimitive.Content
       {...props}
+      onPointerDownOutside={e => e.preventDefault()}
       as={Box}
       css={{
         position: 'fixed',
