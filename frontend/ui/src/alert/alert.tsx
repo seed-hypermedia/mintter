@@ -75,8 +75,6 @@ function Content({
     <AlertDialogPrimitive.Content
       {...props}
       as={Box}
-      onEscapeKeyDown={e => e.preventDefault()}
-      onPointerDownOutside={e => e.preventDefault()}
       css={{
         position: 'fixed',
         top: '50%',
