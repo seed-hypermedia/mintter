@@ -1,6 +1,7 @@
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 import {ComponentProps} from 'react'
 
+// TODO: import components directly from its component file.
 import {Box} from '../box'
 import {Button} from '../button'
 import {keyframes} from '../stitches.config'
