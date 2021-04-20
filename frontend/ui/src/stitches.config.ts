@@ -1,3 +1,4 @@
+/* eslint-disable import/export */
 import createCss, {defaultThemeMap, StitchesCss} from '@stitches/react'
 
 export * from '@stitches/core'

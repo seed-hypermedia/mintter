@@ -29,17 +29,14 @@
     "clean": "gn gen out"
   },
   "workspaces": [
-    "frontend/www",
     "api/js",
     "frontend/app",
-    "frontend/ui"
+    "frontend/ui",
+    "devtools/*"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.5.2",
     "@types/jest": "^25.1.3",
-    "@typescript-eslint/eslint-plugin": "^2.22.0",
-    "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.10.0",
     "husky": "^4.3.0",
     "lint-staged": "^10.3.0",
     "npm-run-all": "^4.1.5",

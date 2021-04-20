@@ -1,8 +1,9 @@
+import {useMemo, useState, useEffect} from 'react'
+
 import {Box} from '@src/box'
 import {theme} from '@src/stitches.config'
 import {Text} from '@src/text'
 import {useTheme} from '@src/theme'
-import {useMemo, useState, useEffect} from 'react'
 
 import {Demo, DemoItem} from './demo'
 

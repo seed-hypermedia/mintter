@@ -1,3 +1,9 @@
+import Prism, {defaultProps, Language} from 'prism-react-renderer'
+import highlightThemeDark from 'prism-react-renderer/themes/nightOwl'
+import highlightThemeLight from 'prism-react-renderer/themes/nightOwlLight'
+import {useCallback, useMemo, useState} from 'react'
+import {LivePreview, LiveProvider} from 'react-live'
+
 import {Box} from '@src/box'
 import {Button} from '@src/button'
 import {Icon} from '@src/icon'
@@ -5,11 +11,6 @@ import {styled} from '@src/stitches.config'
 import {Text} from '@src/text'
 import {TextField} from '@src/text-field'
 import {Theme, useTheme} from '@src/theme'
-import Prism, {defaultProps, Language} from 'prism-react-renderer'
-import highlightThemeDark from 'prism-react-renderer/themes/nightOwl'
-import highlightThemeLight from 'prism-react-renderer/themes/nightOwlLight'
-import {useCallback, useMemo, useState} from 'react'
-import {LivePreview, LiveProvider} from 'react-live'
 
 const liveScope = {
   Box,

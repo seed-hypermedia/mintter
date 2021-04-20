@@ -10,7 +10,7 @@ addons.register('mintter/theme', () => {
     title: 'Mintter Theme',
     type: types.TOOL,
     match: ({viewMode}) => !!(viewMode && viewMode.match(/^(story|docs)$/)),
-    render: () => {
+    render: function Toolbar() {
       const {currentTheme, toggle} = useTheme()
 
       return (

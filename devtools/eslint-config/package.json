@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "version": "0.1.0",
+  "name": "@mintter/eslint-config-react",
+  "main": ".eslintrc.json",
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
+    "eslint": "^7.24.0",
+    "eslint-config-prettier": "^8.2.0",
+    "eslint-import-resolver-typescript": "^2.4.0",
+    "eslint-plugin-import": "^2.22.1",
+    "prettier": "^2.2.1"
+  }
+}
