@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { Slate, ReactEditor } from 'slate-react';
 import { css } from 'emotion';
@@ -51,17 +52,6 @@ function Editor({
         onChange(v as SlateDocument);
       }}
     >
-      {/* <BalloonToolbar
-        direction="top"
-        theme={theme.includes('dark') ? 'light' : 'dark'}
-        arrow
-      >
-        <ToolbarMark
-          type={MARK_BOLD}
-          icon={<Icons.Bold />}
-          tooltip={{content: 'Bold (⌘B)', ...tooltip}}
-        />
-      </BalloonToolbar> */}
       <Box>
         {readOnly ? (
           <EditablePlugins

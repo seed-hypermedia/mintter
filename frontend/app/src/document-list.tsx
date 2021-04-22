@@ -203,14 +203,14 @@ function ListItem({
                   data-testid="delete-button"
                   size="1"
                   color="danger"
-                  onClick={(e) => {
+                  onClick={(e: any) => {
                     e.preventDefault();
                     setIsDeleteDialogOpen(true);
                   }}
                 >
                   trash
                 </Alert.Trigger>
-                <Alert.Content onClick={(e) => e.stopPropagation()}>
+                <Alert.Content onClick={(e: any) => e.stopPropagation()}>
                   <Alert.Title color="danger">Delete document</Alert.Title>
                   <Alert.Description>
                     Are you sure you want to delete this document? This action
