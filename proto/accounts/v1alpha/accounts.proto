@@ -36,7 +36,7 @@ message Account {
   Profile profile = 2;
 
   // List of known devices of this Account.
-  repeated Device devices = 3;
+  map<string, Device> devices = 3;
 
   // List of known peer IDs that provide information about this account.
   // Account information can be retrieved even without being connect directly.
@@ -61,4 +61,20 @@ message Device {
   string peer_id = 1;
 
   repeated string addrs = 2;
+}
+
+message AccountEvent {
+  oneof data {
+    DeviceRegistered device_registered = 4;
+
+    ProfileUpdated profiled_updated = 5;
+  }
+}
+
+message DeviceRegistered {
+  bytes proof = 1;
+}
+
+message ProfileUpdated {
+  Profile profile = 2;
 }

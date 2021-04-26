@@ -29,10 +29,8 @@ export class Account extends jspb.Message {
   hasProfile(): boolean;
   clearProfile(): void;
 
-  getDevicesList(): Array<Device>;
-  setDevicesList(value: Array<Device>): void;
-  clearDevicesList(): void;
-  addDevices(value?: Device, index?: number): Device;
+  getDevicesMap(): jspb.Map<string, Device>;
+  clearDevicesMap(): void;
 
   getPeersList(): Array<string>;
   setPeersList(value: Array<string>): void;
@@ -61,7 +59,7 @@ export namespace Account {
   export type AsObject = {
     id: string,
     profile?: Profile.AsObject,
-    devicesList: Array<Device.AsObject>,
+    devicesMap: Array<[string, Device.AsObject]>,
     peersList: Array<string>,
     followTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     updateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
@@ -115,6 +113,80 @@ export namespace Device {
   export type AsObject = {
     peerId: string,
     addrsList: Array<string>,
+  }
+}
+
+export class AccountEvent extends jspb.Message {
+  getDeviceRegistered(): DeviceRegistered | undefined;
+  setDeviceRegistered(value?: DeviceRegistered): void;
+  hasDeviceRegistered(): boolean;
+  clearDeviceRegistered(): void;
+
+  getProfiledUpdated(): ProfileUpdated | undefined;
+  setProfiledUpdated(value?: ProfileUpdated): void;
+  hasProfiledUpdated(): boolean;
+  clearProfiledUpdated(): void;
+
+  getDataCase(): AccountEvent.DataCase;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AccountEvent.AsObject;
+  static toObject(includeInstance: boolean, msg: AccountEvent): AccountEvent.AsObject;
+  static serializeBinaryToWriter(message: AccountEvent, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AccountEvent;
+  static deserializeBinaryFromReader(message: AccountEvent, reader: jspb.BinaryReader): AccountEvent;
+}
+
+export namespace AccountEvent {
+  export type AsObject = {
+    deviceRegistered?: DeviceRegistered.AsObject,
+    profiledUpdated?: ProfileUpdated.AsObject,
+  }
+
+  export enum DataCase { 
+    DATA_NOT_SET = 0,
+    DEVICE_REGISTERED = 4,
+    PROFILED_UPDATED = 5,
+  }
+}
+
+export class DeviceRegistered extends jspb.Message {
+  getProof(): Uint8Array | string;
+  getProof_asU8(): Uint8Array;
+  getProof_asB64(): string;
+  setProof(value: Uint8Array | string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DeviceRegistered.AsObject;
+  static toObject(includeInstance: boolean, msg: DeviceRegistered): DeviceRegistered.AsObject;
+  static serializeBinaryToWriter(message: DeviceRegistered, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeviceRegistered;
+  static deserializeBinaryFromReader(message: DeviceRegistered, reader: jspb.BinaryReader): DeviceRegistered;
+}
+
+export namespace DeviceRegistered {
+  export type AsObject = {
+    proof: Uint8Array | string,
+  }
+}
+
+export class ProfileUpdated extends jspb.Message {
+  getProfile(): Profile | undefined;
+  setProfile(value?: Profile): void;
+  hasProfile(): boolean;
+  clearProfile(): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ProfileUpdated.AsObject;
+  static toObject(includeInstance: boolean, msg: ProfileUpdated): ProfileUpdated.AsObject;
+  static serializeBinaryToWriter(message: ProfileUpdated, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ProfileUpdated;
+  static deserializeBinaryFromReader(message: ProfileUpdated, reader: jspb.BinaryReader): ProfileUpdated;
+}
+
+export namespace ProfileUpdated {
+  export type AsObject = {
+    profile?: Profile.AsObject,
   }
 }
 

@@ -55,17 +55,6 @@ func makeTestRepo(t *testing.T) *repo {
 	return repo
 }
 
-func makeTestRepoReady(t *testing.T, name string) *repo {
-	t.Helper()
-
-	repo := makeTestRepo(t)
-
-	tester := makeTester(t, name)
-	require.NoError(t, repo.CommitAccount(tester.Account.pub))
-
-	return repo
-}
-
 type Tester struct {
 	Account Account
 	Device  Device
