@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type * as React from 'react';
 import { useTheme } from './theme-context';
 import { Box } from '@mintter/ui/box';
 

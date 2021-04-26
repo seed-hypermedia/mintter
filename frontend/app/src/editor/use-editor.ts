@@ -3,8 +3,8 @@ import { createEditor, Editor } from 'slate';
 import { withReact } from 'slate-react';
 import { withAutoformat, pipe, withInlineVoid } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
-import { autoformatRules } from '../editor/autoformat-rules';
-import { withMintter } from '../editor/mintter-plugin/with-mintter';
+import { autoformatRules } from './autoformat-rules';
+import { withMintter } from './mintter-plugin/with-mintter';
 import { withLinks } from './link-plugin';
 
 // TODO: fix types

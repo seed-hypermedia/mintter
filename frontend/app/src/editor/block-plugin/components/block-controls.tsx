@@ -7,7 +7,7 @@ import {
   useMenuState,
   MenuSeparator,
 } from 'reakit/Menu';
-import { useBlockMenu } from '../../block-plugin/components/blockmenu-context';
+import { useBlockMenu } from './blockmenu-context';
 // import { Icons } from './icons';
 // import {isTransclusion} from '../TransclusionPlugin/utils/isTransclusion'
 

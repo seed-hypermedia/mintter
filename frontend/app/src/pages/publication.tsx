@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { ReactEditor } from 'slate-react';
 import { useHistory, useParams } from 'react-router-dom';
-import slugify from 'slugify';
+import slugify from '@sindresorhus/slugify';
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
 import { createPlugins } from '@mintter/editor/plugins';
 import { EditorComponent } from '@mintter/editor/editor-component';
@@ -259,8 +259,7 @@ function usePublication() {
       const { title } = data?.document;
       if (title && !docId.includes('-')) {
         const titleSlug = slugify(title, {
-          lower: true,
-          remove: /[*+~.?()'"!:@]/g,
+          lowercase: true,
         });
         history.replace(
           `/p/${titleSlug}-${documentId}${docVersion ? `/${docVersion}` : ''}`,

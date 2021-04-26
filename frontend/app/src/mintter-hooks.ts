@@ -254,7 +254,7 @@ export function usePublication(
     ['Publication', documentId, version],
     async ({ queryKey }) => {
       const [_key, documentId, version] = queryKey;
-      return apiClient.getPublication(documentId, version);
+      return apiClient.getPublication(documentId as string, version);
     },
     {
       // initialData: () =>

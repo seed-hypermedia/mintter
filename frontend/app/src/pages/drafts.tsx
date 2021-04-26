@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type * as React from 'react';
 // import Seo from 'components/seo'
 import { DocumentList } from '../document-list';
 import { useDraftsList } from '@mintter/hooks';

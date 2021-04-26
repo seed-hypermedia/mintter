@@ -1,4 +1,5 @@
 const path = require('path');
+const isProd = process.env.NODE_ENV === 'production';
 
 /** @type {import("snowpack").SnowpackUserConfig } */
 module.exports = {
@@ -16,19 +17,12 @@ module.exports = {
       '@snowpack/plugin-typescript',
       {
         /* Yarn PnP workaround: see https://www.npmjs.com/package/@snowpack/plugin-typescript */
-        ...(process.versions.pnp ? { tsc: 'yarn pnpify tsc' } : {}),
+        // ...(process.versions.pnp ? { tsc: 'yarn pnpify tsc' } : {}),
+        // ...(isProd ? { args: '--project ./tsconfig.build.json' } : {}),
       },
     ],
     '@snowpack/plugin-postcss',
-    [
-      '@snowpack/plugin-webpack',
-      {
-        extendConfig: (config) => {
-          console.log({ config });
-          return config;
-        },
-      },
-    ],
+    '@snowpack/plugin-webpack',
   ],
   routes: [
     /* Enable an SPA Fallback in development: */
@@ -45,7 +39,6 @@ module.exports = {
   },
   buildOptions: {
     /* ... */
-    jsxInject: "import React from 'react'",
   },
   alias: {
     '@components': './src/components',
