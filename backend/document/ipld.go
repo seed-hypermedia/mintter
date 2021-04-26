@@ -24,18 +24,8 @@ var pidAtlas = atlas.BuildEntry(identity.ProfileID{}).Transform().
 	})).
 	Complete()
 
-var timeAtlas = atlas.BuildEntry(time.Time{}).Transform().
-	TransformMarshal(atlas.MakeMarshalTransformFunc(func(t time.Time) (string, error) {
-		return t.UTC().Format(time.RFC3339), nil
-	})).
-	TransformUnmarshal(atlas.MakeUnmarshalTransformFunc(func(in string) (time.Time, error) {
-		return time.ParseInLocation(time.RFC3339, in, time.UTC)
-	})).
-	Complete()
-
 func init() {
 	cbornode.RegisterCborType(pidAtlas)
-	cbornode.RegisterCborType(timeAtlas)
 
 	cbornode.RegisterCborType(document{})
 	cbornode.RegisterCborType(block{})
