@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	PatchKindV1 PatchKind = "mintter/v1"
+	PatchKindV1           PatchKind = "mintter/v1"
+	PatchKindAccountEvent PatchKind = "com.mintter.accounts.v1alpha/AccountEvent"
 )
 
 type PatchStore struct {
