@@ -7,12 +7,12 @@ package com.mintter.backend.v1alpha;
 
 option go_package = "mintter/api/go/backend/v1alpha;backend";
 
+// Backend API encapsulates main functionality of the Mintter daemon.
 service Backend {
-  // Generates cryptographic seed that is used to derive all the cryptographic
-  // keys necessary for Mintter to work. It's currenly supposed to be using
-  // LND's Aezeed implementation, that solves some of the issues with BIP-39.
-  // The seed is encoded as a mnemonic of N human readable words. The seed could
-  // be reconstructed given these words and the passphrase.
+  // Generates cryptographic seed that is used to derive Mintter Account Key.
+  // It's currenly supposed to be using LND's Aezeed implementation, which solves some
+  // of the issues with BIP-39. The seed is encoded as a mnemonic of 24 human-readable words.
+  // The seed could be reconstructed given these words and the passphrase.
   //
   // See: https://github.com/lightningnetwork/lnd/tree/master/aezeed.
   rpc GenSeed(GenSeedRequest) returns (GenSeedResponse);

@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package com.mintter.accounts.v1alpha;
+
+import "google/protobuf/timestamp.proto";
+// import "google/protobuf/empty.proto";
+
+option go_package = "mintter/api/go/accounts/v1alpha;accounts";
+
+// Accounts API service.
+service Accounts {
+  // Lookup an Account information across the already known accounts.
+  // Can also be used to retrieve our own account.
+  rpc GetAccount(GetAccountRequest) returns (Account);
+
+  // Update Profile information of our own Account.
+  rpc UpdateProfile(Profile) returns (Account);
+
+  // rpc StartDiscovery(StartDiscoveryRequest) returns (StartDiscoveryResponse);
+  // rpc ListAccounts
+  // rpc UpdateProfile
+  // rpc FollowAccount - given an account ID discover peers that might know the profile information about it.
+  // rpc UnfollowAccount
+}
+
+message GetAccountRequest {
+  // ID of the Account to be looked up. If empty - our own account will be returned.
+  string id = 1;
+}
+
+message Account {
+  // Mintter Account ID.
+  string id = 1;
+
+  // Profile information of this account.
+  Profile profile = 2;
+
+  // List of known devices of this Account.
+  repeated Device devices = 3;
+
+  // List of known peer IDs that provide information about this account.
+  // Account information can be retrieved even without being connect directly.
+  repeated string peers = 4;
+
+  // Time where we started following this account.
+  google.protobuf.Timestamp follow_time = 5;
+
+  // Last time this account was updated.
+  google.protobuf.Timestamp update_time = 6;
+}
+
+message Profile {
+  string alias = 1;
+
+  string bio = 2;
+
+  string email = 3;
+}
+
+message Device {
+  string peer_id = 1;
+
+  repeated string addrs = 2;
+}
