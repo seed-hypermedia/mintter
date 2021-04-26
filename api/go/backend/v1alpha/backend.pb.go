@@ -514,11 +514,10 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type BackendClient interface {
-	// Generates cryptographic seed that is used to derive all the cryptographic
-	// keys necessary for Mintter to work. It's currenly supposed to be using
-	// LND's Aezeed implementation, that solves some of the issues with BIP-39.
-	// The seed is encoded as a mnemonic of N human readable words. The seed could
-	// be reconstructed given these words and the passphrase.
+	// Generates cryptographic seed that is used to derive Mintter Account Key.
+	// It's currenly supposed to be using LND's Aezeed implementation, which solves some
+	// of the issues with BIP-39. The seed is encoded as a mnemonic of 24 human-readable words.
+	// The seed could be reconstructed given these words and the passphrase.
 	//
 	// See: https://github.com/lightningnetwork/lnd/tree/master/aezeed.
 	GenSeed(ctx context.Context, in *GenSeedRequest, opts ...grpc.CallOption) (*GenSeedResponse, error)
@@ -565,11 +564,10 @@ func (c *backendClient) DialPeer(ctx context.Context, in *DialPeerRequest, opts 
 
 // BackendServer is the server API for Backend service.
 type BackendServer interface {
-	// Generates cryptographic seed that is used to derive all the cryptographic
-	// keys necessary for Mintter to work. It's currenly supposed to be using
-	// LND's Aezeed implementation, that solves some of the issues with BIP-39.
-	// The seed is encoded as a mnemonic of N human readable words. The seed could
-	// be reconstructed given these words and the passphrase.
+	// Generates cryptographic seed that is used to derive Mintter Account Key.
+	// It's currenly supposed to be using LND's Aezeed implementation, which solves some
+	// of the issues with BIP-39. The seed is encoded as a mnemonic of 24 human-readable words.
+	// The seed could be reconstructed given these words and the passphrase.
 	//
 	// See: https://github.com/lightningnetwork/lnd/tree/master/aezeed.
 	GenSeed(context.Context, *GenSeedRequest) (*GenSeedResponse, error)
