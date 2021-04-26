@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"github.com/libp2p/go-libp2p-core/event"
 	"github.com/lightningnetwork/lnd/aezeed"
@@ -136,12 +137,7 @@ func (tt *testBackendServer) Addrs(t *testing.T) []string {
 func makeTestBackendServer(t *testing.T, name string, ready bool) *testBackendServer {
 	t.Helper()
 
-	var repo *repo
-	if ready {
-		repo = makeTestRepoReady(t, name)
-	} else {
-		repo = makeTestRepo(t)
-	}
+	repo := makeTestRepo(t)
 
 	ds := testutil.MakeDatastore(t)
 	p2p, err := newP2PNode(config.P2P{
@@ -162,6 +158,15 @@ func makeTestBackendServer(t *testing.T, name string, ready bool) *testBackendSe
 	patchStore, err := newPatchStore(repo.Device().priv, bs, db)
 	require.NoError(t, err)
 	srv := newBackendServer(repo, p2p, patchStore)
+
+	if ready {
+		tester := makeTester(t, name)
+		require.NoError(t, repo.CommitAccount(tester.Account.pub))
+		acc, err := repo.Account()
+		require.NoError(t, err)
+
+		require.NoError(t, srv.register(context.Background(), newState(cid.Cid(acc.id), nil), tester.Binding))
+	}
 
 	return &testBackendServer{
 		backend: srv,

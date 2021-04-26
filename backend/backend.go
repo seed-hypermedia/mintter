@@ -2,7 +2,6 @@ package backend
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 
@@ -11,7 +10,9 @@ import (
 	"github.com/multiformats/go-multiaddr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 
+	accounts "mintter/api/go/accounts/v1alpha"
 	backend "mintter/api/go/backend/v1alpha"
 )
 
@@ -36,6 +37,9 @@ type backendServer struct {
 
 	// Paranoia Mode: we want only one BindAccount call at the time.
 	bindAccountMu sync.Mutex
+
+	// List of API services
+	accounts *accountsServer
 }
 
 func newBackendServer(r *repo, p2p *p2pNode, store *patchStore) *backendServer {
@@ -45,6 +49,12 @@ func newBackendServer(r *repo, p2p *p2pNode, store *patchStore) *backendServer {
 		repo:  r,
 		p2p:   makeLazyP2PNode(p2p, r.Ready()),
 		store: store,
+
+		accounts: &accountsServer{
+			repo:    r,
+			p2p:     makeLazyP2PNode(p2p, r.Ready()),
+			patches: store,
+		},
 	}
 
 	return srv
@@ -105,18 +115,8 @@ func (srv *backendServer) BindAccount(ctx context.Context, req *backend.BindAcco
 			return nil, fmt.Errorf("failed to create account binding: %w", err)
 		}
 
-		data, err := json.Marshal(binding)
-		if err != nil {
-			return nil, err
-		}
-
-		sp, err := state.NewPatch(aid, srv.repo.Device().priv, PatchKindV1, data)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create a patch: %w", err)
-		}
-
-		if err := srv.store.AddPatch(ctx, sp); err != nil {
-			return nil, fmt.Errorf("failed to add patch: %w", err)
+		if err := srv.register(ctx, state, binding); err != nil {
+			return nil, fmt.Errorf("failed to register account: %w", err)
 		}
 
 		if err := srv.repo.CommitAccount(acc.pub); err != nil {
@@ -133,6 +133,30 @@ func (srv *backendServer) BindAccount(ctx context.Context, req *backend.BindAcco
 			AccountId: aid.String(),
 		}, nil
 	}
+}
+
+func (srv *backendServer) register(ctx context.Context, state *state, binding AccountBinding) error {
+	data, err := proto.Marshal(&accounts.AccountEvent{
+		Data: &accounts.AccountEvent_DeviceRegistered{
+			DeviceRegistered: &accounts.DeviceRegistered{
+				Proof: binding.AccountProof,
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	sp, err := state.NewPatch(binding.Account, srv.repo.Device().priv, PatchKindAccountEvent, data)
+	if err != nil {
+		return fmt.Errorf("failed to create a patch: %w", err)
+	}
+
+	if err := srv.store.AddPatch(ctx, sp); err != nil {
+		return fmt.Errorf("failed to add patch: %w", err)
+	}
+
+	return nil
 }
 
 func (srv *backendServer) DialPeer(ctx context.Context, req *backend.DialPeerRequest) (*backend.DialPeerResponse, error) {
