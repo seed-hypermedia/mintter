@@ -39,4 +39,6 @@ func TestConnect(t *testing.T) {
 	alicebob, err := alice.GetProfile(ctx, &proto.GetProfileRequest{ProfileId: bobprof.Profile.AccountId})
 	require.NoError(t, err)
 	require.Equal(t, proto.ConnectionStatus_CONNECTED, alicebob.Profile.ConnectionStatus)
+
+	// TODO: check if profile fetched correctly.
 }

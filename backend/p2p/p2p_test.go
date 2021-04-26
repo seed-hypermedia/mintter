@@ -28,9 +28,17 @@ func TestTransitiveFetch(t *testing.T) {
 	blkalice := newBlock(t, []byte("This is Alice!"))
 	require.NoError(t, alice.IPFS().BlockStore().Put(blkalice))
 
+	ok, err := bob.IPFS().BlockStore().Has(blkalice.Cid())
+	require.False(t, ok)
+	require.NoError(t, err)
+
 	blkbob, err := bob.IPFS().BlockStore().Get(blkalice.Cid())
 	require.NoError(t, err, "bob must be able to fetch block from alice")
 	require.NotNil(t, blkbob)
+
+	ok, err = bob.IPFS().BlockStore().Has(blkalice.Cid())
+	require.True(t, ok)
+	require.NoError(t, err)
 
 	connectLibp2p(t, ctx, bob, carol)
 
