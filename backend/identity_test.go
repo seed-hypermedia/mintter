@@ -8,11 +8,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFoo(t *testing.T) {
+func TestSLIP10Derivation(t *testing.T) {
 	seed, err := hex.DecodeString("000102030405060708090a0b0c0d0e0f")
 	require.NoError(t, err)
 
 	k, err := slip10.DeriveForPath(mttSLIP10Path, seed)
 	require.NoError(t, err)
-	_ = k
+
+	require.Equal(t, "6dba7f7e7d2e1e51072c601e2e35cdd7025cea3978c4ecc54068b84f0f666a40", hex.EncodeToString(k.Seed()))
+}
+
+func TestInviteDevice(t *testing.T) {
+	tester := makeTester(t, "alice")
+
+	binding, err := InviteDevice(tester.Account, tester.Device)
+	require.NoError(t, err)
+
+	require.NoError(t, binding.Verify(tester.Device.pub, tester.Account.pub))
 }

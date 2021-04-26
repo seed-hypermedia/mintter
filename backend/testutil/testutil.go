@@ -9,11 +9,17 @@ import (
 	"runtime"
 	"testing"
 
+	"mintter/backend/badger3ds"
 	"mintter/backend/identity"
+	"mintter/backend/ipfsutil"
 
+	"github.com/dgraph-io/badger/v3"
+	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/sync"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
+	"github.com/ipfs/go-log/v2"
+	"github.com/multiformats/go-multihash"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -33,6 +39,30 @@ func MakeProfile(t *testing.T, name string) identity.Profile {
 	require.NoError(t, json.Unmarshal(data, &p))
 
 	return p
+}
+
+// MakeCID with specified data.
+func MakeCID(t *testing.T, data string) cid.Cid {
+	t.Helper()
+	pid, err := ipfsutil.NewCID(cid.Raw, multihash.IDENTITY, []byte(data))
+	require.NoError(t, err)
+	return pid
+}
+
+// MakeBadgerV3 creates an in-memory instance of Badger v3.
+func MakeBadgerV3(t *testing.T) *badger.DB {
+	opts := badger3ds.DefaultOptions("")
+	opts.InMemory = true
+	log.SetLogLevel("badger", "ERROR")
+	ds, err := badger3ds.NewDatastore(opts)
+	require.NoError(t, err)
+
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, ds.Close())
+	})
+
+	return ds.DB
 }
 
 // MakeRepoPath for testing..
