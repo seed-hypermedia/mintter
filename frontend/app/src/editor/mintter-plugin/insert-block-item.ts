@@ -1,8 +1,9 @@
-import { Editor, Path, Range, Transforms } from 'slate';
 import {
   getAbove,
   isBlockTextEmptyAfterSelection,
 } from '@udecode/slate-plugins';
+import { Editor, Path, Range, Transforms } from 'slate';
+
 import { id } from '../id';
 import { isRangeAtRoot } from '../is-range-at-root';
 

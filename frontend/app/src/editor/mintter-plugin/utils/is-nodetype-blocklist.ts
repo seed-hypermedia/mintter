@@ -1,5 +1,6 @@
-import type { Node } from 'slate';
 import { setDefaults } from '@udecode/slate-plugins';
+import type { Node } from 'slate';
+
 import { DEFAULTS_BLOCKLIST } from '../../hierarchy-plugin/defaults';
 
 export const isNodeTypeBlockList = (node: Node, options?: any) => {

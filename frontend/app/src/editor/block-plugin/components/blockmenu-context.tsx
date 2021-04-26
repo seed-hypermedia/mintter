@@ -1,6 +1,8 @@
+import React, { createContext, useContext } from 'react';
+
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
 import type { SlateBlock } from '@mintter/editor/editor';
-import React, { createContext, useContext } from 'react';
+
 export interface MenuItemProps {
   label: string;
   onClick?: (block: SlateBlock) => void;

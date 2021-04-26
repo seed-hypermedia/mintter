@@ -1,5 +1,6 @@
-import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
 import { MoveChildrenOptions, getNode } from '@udecode/slate-plugins';
+import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
+
 import { isNodeTypeBlockList } from './is-nodetype-blocklist';
 
 export const moveBlockListSiblingsAfterCursor = (

@@ -1,13 +1,18 @@
 import faker from 'faker';
-import DocumentsClient, {
+
+import DocumentsClient /* , {
   DraftsClient,
-} from '@mintter/api/documents/v1alpha/documents_grpc_web_pb';
+} */ from '@mintter/api/documents/v1alpha/documents_grpc_web_pb';
 import documents from '@mintter/api/documents/v1alpha/documents_pb';
 import MintterClient from '@mintter/api/v2/mintter_grpc_web_pb';
 import mintter from '@mintter/api/v2/mintter_pb';
 import { id } from '@mintter/editor/id';
-import { buildDocument, buildProfile, buildPublication } from '@utils/generate';
 import { makeProto } from '@mintter/editor/transformers/make-proto';
+
+import {
+  /* buildDocument, */ buildProfile,
+  buildPublication,
+} from '@utils/generate';
 
 const MINTTER_API_URL =
   import.meta.env.MINTTER_API_URL || 'http://localhost:55001';
@@ -77,13 +82,13 @@ export function createDraft(): Promise<documents.Document> {
   return Promise.resolve(draft);
 }
 
-export function deleteDraft(documentId: string): Promise<any> {
+export function deleteDraft(/* documentId: string */): Promise<any> {
   // noop
   return Promise.resolve();
 }
 
 export function getDraft(draftId: string): Promise<documents.Document> {
-  let document = new documents.Document();
+  const document = new documents.Document();
   document.setId(draftId);
 
   return Promise.resolve(document);
@@ -97,12 +102,11 @@ export function updateDraft(
   return Promise.resolve(document);
 }
 
-export function listDrafts(
-  pageSize?: number,
+export function listDrafts(): Promise<documents.ListDraftsResponse> {
+  /* pageSize?: number,
   pageToken?: string,
-  view?: documents.DocumentView,
-): Promise<documents.ListDraftsResponse> {
-  let result = new documents.ListDraftsResponse();
+  view?: documents.DocumentView, */
+  const result = new documents.ListDraftsResponse();
 
   return Promise.resolve(result);
 }
@@ -110,7 +114,7 @@ export function listDrafts(
 export function publishDraft(
   documentId: string,
 ): Promise<documents.PublishDraftResponse> {
-  let request = new documents.PublishDraftRequest();
+  const request = new documents.PublishDraftRequest();
   request.setDocumentId(documentId);
   return draftsClient().publishDraft(request);
 }
@@ -121,32 +125,30 @@ export function publishDraft(
  *
  */
 
-export function getPublication(
-  documentId: string,
-  version?: string,
-): Promise<documents.Publication> {
-  let pub = new documents.Publication();
+export function getPublication(): Promise<documents.Publication> {
+  /* documentId: string,
+  version?: string, */
+  const pub = new documents.Publication();
 
   return Promise.resolve(pub);
 }
 
 export function deletePublication(version: string): Promise<any> {
-  let request = new documents.DeletePublicationRequest();
+  const request = new documents.DeletePublicationRequest();
   request.setVersion(version);
   return publicationsClient().deletePublication(request);
 }
 
-export function listPublications(
-  pageSize?: number,
+export function listPublications(): Promise<documents.ListPublicationsResponse> {
+  /* pageSize?: number,
   pageToken?: string,
-  view?: documents.DocumentView,
-): Promise<documents.ListPublicationsResponse> {
+  view?: documents.DocumentView, */
   // let request = new documents.ListPublicationsRequest();
   // if (pageSize) request.setPageSize(pageSize);
   // if (pageToken) request.setPageToken(pageToken);
   // if (view) request.setView(view);
   // return publicationsClient().listPublications(request);
-  let res = new documents.ListPublicationsResponse();
+  const res = new documents.ListPublicationsResponse();
   res.setPublicationsList([
     buildPublication(),
     buildPublication(),
@@ -161,8 +163,8 @@ export function listPublications(
  *
  */
 
-export function genSeed(aezeedPassphrase?: string) {
-  let response = new mintter.GenSeedResponse();
+export function genSeed(/* aezeedPassphrase?: string */) {
+  const response = new mintter.GenSeedResponse();
   const seed = Array(24);
   seed.map(() => faker.lorem.word());
   response.setMnemonicList(seed);
@@ -175,7 +177,7 @@ export function initProfile(
   aezeedPassphrase?: any,
   walletPassword?: any,
 ): Promise<mintter.InitProfileResponse> {
-  let request = new mintter.InitProfileRequest();
+  const request = new mintter.InitProfileRequest();
   request.setMnemonicList(mnemonicList);
   if (aezeedPassphrase) {
     request.setAezeedPassphrase(aezeedPassphrase);
@@ -186,11 +188,11 @@ export function initProfile(
   return mintterClient().initProfile(request);
 }
 
-export function getProfile(
+export function getProfile(/* 
   profileId?: string,
-): Promise<mintter.GetProfileResponse> {
-  let response = new mintter.GetProfileResponse();
-  let profile = makeProto(new mintter.Profile(), buildProfile());
+ */): Promise<mintter.GetProfileResponse> {
+  const response = new mintter.GetProfileResponse();
+  const profile = makeProto(new mintter.Profile(), buildProfile());
   response.setProfile(profile);
 
   return Promise.resolve(response);
@@ -216,11 +218,11 @@ export async function updateProfile(
   params: UpdateProfileParams,
 ): Promise<mintter.UpdateProfileResponse> {
   const { username = '', email = '', bio = '' } = params;
-  let profile = (await (await getProfile()).getProfile()) as mintter.Profile;
+  const profile = (await (await getProfile()).getProfile()) as mintter.Profile;
   profile.setUsername(username);
   profile.setEmail(email);
   profile.setBio(bio);
-  let request = new mintter.UpdateProfileRequest();
+  const request = new mintter.UpdateProfileRequest();
   request.setProfile(profile);
   return mintterClient().updateProfile(request);
 }
@@ -229,7 +231,7 @@ export function listProfiles(
   pageSize?: number,
   pageToken?: string,
 ): Promise<mintter.ListProfilesResponse> {
-  let request = new mintter.ListProfilesRequest();
+  const request = new mintter.ListProfilesRequest();
   if (pageSize) {
     request.setPageSize(pageSize);
   }
@@ -243,7 +245,7 @@ export function listSuggestedProfiles(
   pageSize?: number,
   pageToken?: string,
 ): Promise<mintter.ListSuggestedProfilesResponse> {
-  let request = new mintter.ListSuggestedProfilesRequest();
+  const request = new mintter.ListSuggestedProfilesRequest();
   if (pageSize) {
     request.setPageSize(pageSize);
   }
@@ -255,14 +257,14 @@ export function listSuggestedProfiles(
 }
 
 export function getProfileAddress(): Promise<mintter.GetProfileAddrsResponse> {
-  let request = new mintter.GetProfileAddrsRequest();
+  const request = new mintter.GetProfileAddrsRequest();
   return mintterClient().getProfileAddrs(request);
 }
 
 export function connectToPeer(
   addresses: string[],
 ): Promise<mintter.ConnectToPeerResponse> {
-  let request = new mintter.ConnectToPeerRequest();
+  const request = new mintter.ConnectToPeerRequest();
   request.setAddrsList(addresses);
   return mintterClient().connectToPeer(request);
 }

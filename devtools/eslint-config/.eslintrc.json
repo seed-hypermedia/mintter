@@ -44,6 +44,7 @@
     "import/newline-after-import": "error",
     "import/no-named-as-default": "off",
     "import/no-named-as-default-member": "off",
+    "import/no-unresolved": "off",
     "import/order": [
       "error",
       {
@@ -69,9 +70,6 @@
     ]
   },
   "settings": {
-    "import/parsers": {
-      "@typescript-eslint/parser": [".ts", ".tsx"]
-    },
     "import/resolver": {
       "typescript": {}
     }

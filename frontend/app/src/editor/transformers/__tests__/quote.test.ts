@@ -1,22 +1,24 @@
 import { expect } from '@esm-bundle/chai';
-import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { Editor, Text, createEditor } from 'slate';
 import faker from 'faker';
+// import { Editor, Text, createEditor } from 'slate';
+
+import documents from '@mintter/api/documents/v1alpha/documents_pb';
+
 import { id as getId } from '../../id';
 import { makeProto } from '../make-proto';
 import {
   QuoteNode,
   quoteSerialize,
-  textRunSerialize,
-  inlineElementSerialize,
-  createTextRun,
-  PartialTextRun,
-  blockSerialize,
-  BlockNode,
-  linkSerialize,
-  LinkNode,
-  SlateDocument,
-  documentSerialize,
+  // textRunSerialize,
+  // inlineElementSerialize,
+  // createTextRun,
+  // PartialTextRun,
+  // blockSerialize,
+  // BlockNode,
+  // linkSerialize,
+  // LinkNode,
+  // SlateDocument,
+  // documentSerialize,
   quoteDeserialize,
 } from '../transformers';
 

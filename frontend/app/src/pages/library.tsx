@@ -6,28 +6,31 @@ import {
   useHistory,
   Route,
 } from 'react-router-dom';
+
+import { createDraft } from '@mintter/client';
 import {
   useConnectionCreate,
   useConnectionList,
   useProfile,
 } from '@mintter/hooks';
-import { createDraft } from '@mintter/client';
-import { Link } from '../link';
-import { Connections } from '../connections';
-import { SuggestedConnections } from '../suggested-connections';
-import { MainColumn } from '../main-column';
-// import { Icons } from 'components/icons';
-import { Publications } from './publications';
-import { MyPublications } from './my-publications';
-import { Drafts } from './drafts';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
-import { Text } from '@mintter/ui/text';
-import { Separator } from '@components/separator';
-import * as MessageBox from '@components/message-box';
-import { getPath } from '@utils/routes';
-import { Container } from '@components/container';
 import type { CSS } from '@mintter/ui/stitches.config';
+import { Text } from '@mintter/ui/text';
+
+import { Container } from '@components/container';
+import * as MessageBox from '@components/message-box';
+import { Separator } from '@components/separator';
+import { getPath } from '@utils/routes';
+
+import { Connections } from '../connections';
+import { Link } from '../link';
+// import { MainColumn } from '../main-column';
+import { SuggestedConnections } from '../suggested-connections';
+// import { Icons } from 'components/icons';
+import { Drafts } from './drafts';
+import { MyPublications } from './my-publications';
+import { Publications } from './publications';
 
 export type WithCreateDraft = {
   onCreateDraft: () => void;

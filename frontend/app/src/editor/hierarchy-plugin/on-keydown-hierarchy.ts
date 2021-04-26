@@ -1,12 +1,13 @@
-import { Editor, Element, Ancestor, Path, NodeEntry, Transforms } from 'slate';
 import { isFirstChild } from '@udecode/slate-plugins';
+import { Editor, Element, Ancestor, Path, NodeEntry, Transforms } from 'slate';
+
+import { id } from '../id';
 import {
   getBlockItemEntry,
   isSelectionInBlockItem,
   isSelectionInTransclusion,
 } from '../mintter-plugin/is-selection-in-block-item';
 import { moveBlockItemUp } from '../mintter-plugin/move-block-item-up';
-import { id } from '../id';
 
 // TODO: fix types
 export const onKeyDownHierarchy = (options: any) => (

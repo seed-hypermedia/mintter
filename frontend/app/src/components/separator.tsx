@@ -1,5 +1,5 @@
-import * as React from 'react';
 import * as RadixSeparator from '@radix-ui/react-separator';
+
 import { styled } from '@mintter/ui/stitches.config';
 
 export const Separator = styled(RadixSeparator.Root, {

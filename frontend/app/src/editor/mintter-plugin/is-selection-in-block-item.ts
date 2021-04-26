@@ -1,8 +1,9 @@
-import { Editor, Location } from 'slate';
 import { getAbove, getParent, setDefaults } from '@udecode/slate-plugins';
-import { isNodeTypeIn } from './is-node-type-in';
-import { isRangeAtRoot } from '../is-range-at-root';
+import { Editor, Location } from 'slate';
+
 import { DEFAULTS_BLOCK } from '../block-plugin/defaults';
+import { isRangeAtRoot } from '../is-range-at-root';
+import { isNodeTypeIn } from './is-node-type-in';
 
 type LocationOptions = {
   at?: Location | null;

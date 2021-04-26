@@ -1,5 +1,6 @@
-import type { Editor } from 'slate';
 import type { EditorNodesOptions } from '@udecode/slate-plugins';
+import type { Editor } from 'slate';
+
 import { getNodesByType } from './get-nodes-by-type';
 
 /**

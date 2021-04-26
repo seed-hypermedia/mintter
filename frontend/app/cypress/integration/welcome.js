@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 describe('Onboarding Process', () => {
   beforeEach(() => {
     cy.visit('/welcome');

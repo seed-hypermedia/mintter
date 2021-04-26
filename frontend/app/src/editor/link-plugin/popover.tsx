@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { Tooltip, TooltipProps } from '../../components/tooltip';
 import {
   Popover as BasePopover,
   PopoverDisclosure,
   PopoverStateReturn,
 } from 'reakit/Popover';
+
+import { Tooltip, TooltipProps } from '../../components/tooltip';
 
 export function Popover({
   popover: defaultPopover,
@@ -39,7 +40,7 @@ export function Popover({
         {...disclosure.props}
       >
         {(disclosureProps) => {
-          let button = React.cloneElement(disclosure, disclosureProps);
+          const button = React.cloneElement(disclosure, disclosureProps);
           return tooltip ? <Tooltip {...tooltip}>{button}</Tooltip> : button;
         }}
       </PopoverDisclosure>

@@ -5,10 +5,11 @@ import { ReactQueryDevtools } from 'react-query/devtools';
 import { BrowserRouter as Router } from 'react-router-dom';
 
 import { Theme } from '@mintter/ui/theme';
+
 import { AppSpinner } from '@components/app-spinner';
 
-import { SidePanelProvider } from './sidepanel';
 import { BlockMenuProvider } from './editor/block-plugin/components/blockmenu-context';
+import { SidePanelProvider } from './sidepanel';
 
 export const queryClient = new QueryClient();
 

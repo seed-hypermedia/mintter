@@ -7,13 +7,14 @@ import {
   CodePlugin,
   StrikethroughPlugin,
 } from '@udecode/slate-plugins';
-import { options } from './options';
-import { HierarchyPlugin } from './hierarchy-plugin/hierarchy-plugin';
+
 import { BlockPlugin } from './block-plugin/block-plugin';
-import { ReadOnlyPlugin } from './readonly-plugin/readonly-plugin';
 import { HeadingPlugin } from './heading-plugin/heading-plugin';
-import { ListPlugin } from './list-plugin/list-plugin';
+import { HierarchyPlugin } from './hierarchy-plugin/hierarchy-plugin';
 import { LinkPlugin } from './link-plugin';
+import { ListPlugin } from './list-plugin/list-plugin';
+import { options } from './options';
+import { ReadOnlyPlugin } from './readonly-plugin/readonly-plugin';
 
 export const plugins = [
   ParagraphPlugin(options),

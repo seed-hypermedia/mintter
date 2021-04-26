@@ -1,9 +1,10 @@
-import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
 import {
   getLastChildPath,
   getParent,
   moveChildren,
 } from '@udecode/slate-plugins';
+import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+
 import { getBlockItemSublist } from './get-block-item-sublist';
 
 export interface MoveBlockItemSublistItemsToBlockItemSublistOptions {

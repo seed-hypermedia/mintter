@@ -1,4 +1,5 @@
 import type { Ancestor, NodeEntry } from 'slate';
+
 import { hasListInBlockItem } from './has-list-in-block-item';
 
 /**

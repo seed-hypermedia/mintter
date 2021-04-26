@@ -1,7 +1,7 @@
-import * as React from 'react'
+import * as React from 'react';
 
 interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
-  as?: 'h1' | 'h2' | 'h3'
+  as?: 'h1' | 'h2' | 'h3';
 }
 
 export default function Heading({
@@ -10,10 +10,10 @@ export default function Heading({
   as = 'h2',
   ...props
 }: HeadingProps) {
-  const Elm = as
+  const Elm = as;
   return (
     <Elm {...props} className={`text-heading ${className}`}>
       {children}
     </Elm>
-  )
+  );
 }

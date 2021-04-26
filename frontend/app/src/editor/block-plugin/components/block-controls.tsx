@@ -1,5 +1,4 @@
 import * as React from 'react';
-import type { SlateBlock } from '../../editor';
 import {
   MenuButton,
   MenuItem as ReakitMenuItem,
@@ -7,7 +6,9 @@ import {
   useMenuState,
   MenuSeparator,
 } from 'reakit/Menu';
+
 import { useBlockMenu } from '../../block-plugin/components/blockmenu-context';
+import type { SlateBlock } from '../../editor';
 // import { Icons } from './icons';
 // import {isTransclusion} from '../TransclusionPlugin/utils/isTransclusion'
 

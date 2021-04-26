@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 
 export function useFocus() {
   const ref = useRef(null);
-  const [set, setSet] = useState(false);
+  const [, /* set */ setSet] = useState(false);
 
   // useEffect(() => {
   //  TODO: fix types
@@ -11,7 +11,7 @@ export function useFocus() {
 
   useEffect(() => {
     ref && setSet(true);
-  });
+  }, []);
 
   // TODO: fix types
   function focusFirst(elm: any) {

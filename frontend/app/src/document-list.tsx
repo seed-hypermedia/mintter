@@ -1,15 +1,18 @@
-import * as React from 'react';
 // import {Icons} from 'components/icons'
-import { useLocation, useRouteMatch } from 'react-router-dom';
-import { Link } from './link';
-import { useAuthor } from '@mintter/hooks';
 import { format } from 'date-fns';
+import * as React from 'react';
+import { useLocation, useRouteMatch } from 'react-router-dom';
+
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { getPath } from '@utils/routes';
+import { useAuthor } from '@mintter/hooks';
 import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
 import { Button } from '@mintter/ui/button';
+import { Text } from '@mintter/ui/text';
+
 import { Avatar } from '@components/avatar';
+import { getPath } from '@utils/routes';
+
+import { Link } from './link';
 
 interface Props {
   // TODO: fix types
@@ -34,7 +37,7 @@ export function DocumentList({
   data,
   isLoading,
   isError,
-  error,
+  // error,
   onDeleteDocument,
 }: Props) {
   if (isLoading) {
@@ -84,7 +87,7 @@ function ListItem({ item, onDeleteDocument }: ItemProps) {
       version ? `/${version}` : ''
     }`;
     return path;
-  }, [location.pathname]);
+  }, [id, isDraft, match, version]);
   // function handlePrefetch() {
   // if (!prefetched) {
   // TODO: prefetch on hover

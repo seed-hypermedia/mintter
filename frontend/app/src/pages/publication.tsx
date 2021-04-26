@@ -1,34 +1,38 @@
 import * as React from 'react';
-import type { ReactEditor } from 'slate-react';
+// import { useMutation } from 'react-query';
 import { useHistory, useParams } from 'react-router-dom';
+import type { ReactEditor } from 'slate-react';
+// @ts-ignore
 import slugify from 'slugify';
+
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { createPlugins } from '@mintter/editor/plugins';
+// import * as apiClient from '@mintter/client';
 import { EditorComponent } from '@mintter/editor/editor-component';
 import { options } from '@mintter/editor/options';
+import { createPlugins } from '@mintter/editor/plugins';
 import { useEditor } from '@mintter/editor/use-editor';
+// import { publicationToEditor } from '@mintter/editor/transformers/transformers';
 // import { toSlateTree } from 'editor/transformers/transformers';
 // import { useToasts } from 'react-toast-notifications';
 // import { AuthorLabel } from 'components/author-label';
 // import { PublicationModal } from 'components/publication-modal';
 import {
-  useDraftsList,
+  // useDraftsList,
   usePublication as usePublicationQuery,
-  useAuthor,
+  // useAuthor,
 } from '@mintter/hooks';
-import { useSidePanel } from '../sidepanel';
-import * as apiClient from '@mintter/client';
-import { useMutation } from 'react-query';
 // import { SlateBlock } from 'editor/editor';
-import { Text } from '@mintter/ui/text';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
+import { Text } from '@mintter/ui/text';
+
 import { Container } from '@components/container';
-import { publicationToEditor } from '@mintter/editor/transformers/transformers';
 import { buildDocument } from '@utils/generate';
 
+import { useSidePanel } from '../sidepanel';
+
 export default function Publication() {
-  const history = useHistory();
+  // const history = useHistory();
   // const { addToast } = useToasts();
 
   // request document
@@ -38,7 +42,7 @@ export default function Publication() {
   const { isSidepanelOpen, sidepanelObjects, sidepanelSend } = useSidePanel();
 
   // get Drafts for editorOptions
-  const { data: drafts = [] } = useDraftsList();
+  // const { data: drafts = [] } = useDraftsList();
 
   // draftCreation
   // const [createDraft] = useMutation(apiClient.createDraft, {
@@ -210,10 +214,10 @@ export default function Publication() {
             </Button>
           </Box>
           <Box as="ul" aria-label="sidepanel list">
-            {sidepanelObjects.map((object) => (
+            {/* {sidepanelObjects.map((object) => (
               // <SidePanelObject key={object} id={object} />
               <Box />
-            ))}
+            ))} */}
           </Box>
           {sidepanelObjects.length === 0 && (
             <SidePanelCTA handleInteract={handleInteract} />
@@ -227,7 +231,7 @@ export default function Publication() {
 
 // function PublicationError(props) {
 //   return props.error ? (
-//     <div className="bg-white p-4 text-red-800">ERROR IN PUBLICATION</div>
+//     <div className="p-4 text-red-800 bg-white">ERROR IN PUBLICATION</div>
 //   ) : null
 // }
 
@@ -267,7 +271,7 @@ function usePublication() {
         );
       }
     }
-  }, []);
+  }, [data?.document, docId, docVersion, documentId, history, isSuccess]);
 
   return {
     ...document,
@@ -290,24 +294,24 @@ function usePublication() {
   // };
 }
 
-function PublicationCTA({ handleInteract, visible }: any) {
-  return (
-    <Box>
-      <Text>
-        Document created via <Text as="strong">Mintter App.</Text>
-      </Text>
-      <Text>
-        Mintter is a distributed publishing platform that brings to your content{' '}
-        <Text as="strong">Ownership, Authorship, Atribution</Text> and{' '}
-        <Text as="strong">Traceability.</Text>
-      </Text>
-      <Button onClick={handleInteract}>
-        {/* <Icons.ChevronLeft size={16} color="currentColor" /> */}
-        Interact with this document
-      </Button>
-    </Box>
-  );
-}
+// function PublicationCTA({ handleInteract, visible }: any) {
+//   return (
+//     <Box>
+//       <Text>
+//         Document created via <Text as="strong">Mintter App.</Text>
+//       </Text>
+//       <Text>
+//         Mintter is a distributed publishing platform that brings to your content{' '}
+//         <Text as="strong">Ownership, Authorship, Atribution</Text> and{' '}
+//         <Text as="strong">Traceability.</Text>
+//       </Text>
+//       <Button onClick={handleInteract}>
+//         {/* <Icons.ChevronLeft size={16} color="currentColor" /> */}
+//         Interact with this document
+//       </Button>
+//     </Box>
+//   );
+// }
 
 function SidePanelCTA({ handleInteract }: any) {
   return (
@@ -318,7 +322,7 @@ function SidePanelCTA({ handleInteract }: any) {
         <Text as="strong">refute</Text> on the Mintter app now.
       </Text>
       <button
-        className="bg-primary rounded-full mt-4 px-8 py-2 text-white font-bold shadow transition duration-200 text-sm"
+        className="px-8 py-2 mt-4 text-sm font-bold text-white transition duration-200 rounded-full shadow bg-primary"
         onClick={handleInteract}
       >
         Write about this Article
@@ -332,7 +336,7 @@ function PublicationHeader({
 }: {
   document: documents.Document.AsObject | undefined;
 }) {
-  const { data: author } = useAuthor(document?.author);
+  // const { data: author } = useAuthor(document?.author);
   return document ? (
     <Box
       css={{
@@ -378,44 +382,44 @@ function PublicationHeader({
   ) : null;
 }
 
-function fallbackCopyTextToClipboard(text: string) {
-  const textArea = document.createElement('textarea');
-  textArea.value = text;
+// function fallbackCopyTextToClipboard(text: string) {
+//   const textArea = document.createElement('textarea');
+//   textArea.value = text;
 
-  // Avoid scrolling to bottom
-  textArea.style.top = '0';
-  textArea.style.left = '0';
-  textArea.style.position = 'fixed';
-  textArea.style.opacity = '0';
+//   // Avoid scrolling to bottom
+//   textArea.style.top = '0';
+//   textArea.style.left = '0';
+//   textArea.style.position = 'fixed';
+//   textArea.style.opacity = '0';
 
-  document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
-  let result;
+//   document.body.appendChild(textArea);
+//   textArea.focus();
+//   textArea.select();
+//   let result;
 
-  try {
-    document.execCommand('copy');
-    result = true;
-  } catch (err) {
-    console.error('Fallback: Oops, unable to copy', err);
-    result = false;
-  }
+//   try {
+//     document.execCommand('copy');
+//     result = true;
+//   } catch (err) {
+//     console.error('Fallback: Oops, unable to copy', err);
+//     result = false;
+//   }
 
-  document.body.removeChild(textArea);
-  return result;
-}
-function copyTextToClipboard(text: string) {
-  if (!navigator.clipboard) {
-    return fallbackCopyTextToClipboard(text);
-  }
-  return navigator.clipboard.writeText(text).then(
-    () => {
-      // console.log('Async: Copying to clipboard was successful!!')
-      return true;
-    },
-    (err) => {
-      console.error('Async: Could not copy text: ', err);
-      return false;
-    },
-  );
-}
+//   document.body.removeChild(textArea);
+//   return result;
+// }
+// function copyTextToClipboard(text: string) {
+//   if (!navigator.clipboard) {
+//     return fallbackCopyTextToClipboard(text);
+//   }
+//   return navigator.clipboard.writeText(text).then(
+//     () => {
+//       // console.log('Async: Copying to clipboard was successful!!')
+//       return true;
+//     },
+//     (err) => {
+//       console.error('Async: Could not copy text: ', err);
+//       return false;
+//     },
+//   );
+// }

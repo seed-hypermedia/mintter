@@ -1,27 +1,29 @@
 import { expect } from '@esm-bundle/chai';
-import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { createEditor } from 'slate';
 import faker from 'faker';
+// import { createEditor } from 'slate';
+
+import documents from '@mintter/api/documents/v1alpha/documents_pb';
+
 import { id as getId } from '../../id';
 import { makeProto } from '../make-proto';
 import {
-  QuoteNode,
-  quoteSerialize,
-  textRunSerialize,
-  inlineElementSerialize,
-  createTextRun,
-  PartialTextRun,
+  // QuoteNode,
+  // quoteSerialize,
+  // textRunSerialize,
+  // inlineElementSerialize,
+  // createTextRun,
+  // PartialTextRun,
   blockSerialize,
   BlockNode,
-  linkSerialize,
-  LinkNode,
+  // linkSerialize,
+  // LinkNode,
   SlateDocument,
   documentSerialize,
 } from '../transformers';
 
 describe('Document Serializer', () => {
   it('default (one block)', () => {
-    const editor = createEditor();
+    // const editor = createEditor();
     const docId = getId();
     const blockId = getId();
     const block: BlockNode = {
@@ -71,7 +73,7 @@ describe('Document Serializer', () => {
   });
 
   it('nested blocks', () => {
-    const editor = createEditor();
+    // const editor = createEditor();
     const nestedBlock: BlockNode = {
       type: 'block',
       id: getId(),

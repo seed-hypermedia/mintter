@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import toast from 'react-hot-toast';
 
+import { useProfileAddrs } from '@mintter/hooks';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { TextField } from '@mintter/ui/text-field';
-import { useProfileAddrs } from '@mintter/hooks';
 
 export function ProfileAddress() {
   const profileAddress = useProfileAddrs();

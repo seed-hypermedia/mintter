@@ -1,18 +1,38 @@
-import * as client from './mintter-client';
 import { expect } from '@esm-bundle/chai';
+
+import * as client from './mintter-client';
+
 describe('Mintter Client: Drafts', () => {
-  it.skip('createDraft()', () => {});
-  it.skip('deleteDraft()', () => {});
-  it.skip('getDraft()', () => {});
-  it.skip('updateDraft()', () => {});
-  it.skip('listDrafts()', () => {});
-  it.skip('publishDraft()', () => {});
+  it.skip('createDraft()', () => {
+    return;
+  });
+  it.skip('deleteDraft()', () => {
+    return;
+  });
+  it.skip('getDraft()', () => {
+    return;
+  });
+  it.skip('updateDraft()', () => {
+    return;
+  });
+  it.skip('listDrafts()', () => {
+    return;
+  });
+  it.skip('publishDraft()', () => {
+    return;
+  });
 });
 
 describe('Mintter Client: Publications', () => {
-  it.skip('getPublication()', () => {});
-  it.skip('deletePublication()', () => {});
-  it.skip('listPublications()', () => {});
+  it.skip('getPublication()', () => {
+    return;
+  });
+  it.skip('deletePublication()', () => {
+    return;
+  });
+  it.skip('listPublications()', () => {
+    return;
+  });
 });
 
 describe('Mintter Client: Profile', () => {
@@ -21,11 +41,25 @@ describe('Mintter Client: Profile', () => {
     expect(res.getMnemonicList()).to.have.length(24);
   });
 
-  it.skip('initProfile()', () => {});
-  it.skip('getProfile()', () => {});
-  it.skip('updateProfile()', () => {});
-  it.skip('listProfiles()', () => {});
-  it.skip('listSuggestedProfiles()', () => {});
-  it.skip('getProfileAddress()', () => {});
-  it.skip('connectTuPeer()', () => {});
+  it.skip('initProfile()', () => {
+    return;
+  });
+  it.skip('getProfile()', () => {
+    return;
+  });
+  it.skip('updateProfile()', () => {
+    return;
+  });
+  it.skip('listProfiles()', () => {
+    return;
+  });
+  it.skip('listSuggestedProfiles()', () => {
+    return;
+  });
+  it.skip('getProfileAddress()', () => {
+    return;
+  });
+  it.skip('connectTuPeer()', () => {
+    return;
+  });
 });

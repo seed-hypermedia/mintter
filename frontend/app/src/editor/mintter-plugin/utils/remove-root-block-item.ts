@@ -1,12 +1,17 @@
-import {Ancestor, Editor, NodeEntry, Transforms} from 'slate'
-import {getPreviousPath, isExpanded, ListOptions} from '@udecode/slate-plugins'
-import {hasListInBlockItem} from './has-list-in-block-item'
-import {moveBlockItemSublistItemsToBlockItemSublist} from './move-block-item-sublist-items-to-block-item-sublist'
-import {moveBlockItemSublistItemsToList} from './move-block-item-sublist-items-toList'
+import {
+  getPreviousPath,
+  isExpanded,
+  ListOptions,
+} from '@udecode/slate-plugins';
+import { Ancestor, Editor, NodeEntry, Transforms } from 'slate';
+
+import { hasListInBlockItem } from './has-list-in-block-item';
+import { moveBlockItemSublistItemsToBlockItemSublist } from './move-block-item-sublist-items-to-block-item-sublist';
+import { moveBlockItemSublistItemsToList } from './move-block-item-sublist-items-toList';
 
 export interface RemoveListItemOptions {
-  blockList: NodeEntry<Ancestor>
-  blockItem: NodeEntry<Ancestor>
+  blockList: NodeEntry<Ancestor>;
+  blockItem: NodeEntry<Ancestor>;
 }
 
 /**
@@ -16,38 +21,38 @@ export interface RemoveListItemOptions {
  */
 export const removeRootListItem = (
   editor: Editor,
-  {blockList, blockItem}: RemoveListItemOptions,
+  { blockList, blockItem }: RemoveListItemOptions,
   options?: ListOptions,
 ) => {
-  const [blockItemNode, blockItemPath] = blockItem
+  const [blockItemNode, blockItemPath] = blockItem;
 
   if (!hasListInBlockItem(blockItemNode, options)) {
     // No sub-lists to move over
-    return false
+    return false;
   }
 
   if (isExpanded(editor.selection)) {
-    return false
+    return false;
   }
 
-  const blockItemPathRef = Editor.pathRef(editor, blockItemPath)
-  const previousBlockItemPath = getPreviousPath(blockItemPath)
+  const blockItemPathRef = Editor.pathRef(editor, blockItemPath);
+  const previousBlockItemPath = getPreviousPath(blockItemPath);
 
   if (previousBlockItemPath) {
-    const [previousBlockItemNode] = Editor.node(editor, previousBlockItemPath)
+    const [previousBlockItemNode] = Editor.node(editor, previousBlockItemPath);
 
     // We may have a trailing sub-list
     // that we need to merge backwards
     moveBlockItemSublistItemsToBlockItemSublist(editor, {
       fromBlockItem: blockItem,
       toBlockItem: [previousBlockItemNode as Ancestor, previousBlockItemPath],
-    })
+    });
 
     // Select the P tag at the previous list item
     Transforms.select(
       editor,
       Editor.end(editor, previousBlockItemPath.concat([0])),
-    )
+    );
   } else {
     // We may have a trailing sub-list that we
     // need to move into the root list
@@ -55,14 +60,14 @@ export const removeRootListItem = (
       fromBlockItem: blockItem,
       toList: blockList,
       // start: true,
-    })
+    });
   }
 
   // Remove the list-item
-  const blockItemPathUnref = blockItemPathRef.unref()
+  const blockItemPathUnref = blockItemPathRef.unref();
   if (blockItemPathUnref) {
-    Transforms.removeNodes(editor, {at: blockItemPathUnref})
+    Transforms.removeNodes(editor, { at: blockItemPathUnref });
   }
 
-  return true
-}
+  return true;
+};

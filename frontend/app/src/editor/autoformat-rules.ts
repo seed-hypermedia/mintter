@@ -1,9 +1,10 @@
-import type { Editor } from 'slate';
-// import {nodeTypes} from './nodeTypes'
 import { AutoformatRule, unwrapList } from '@udecode/slate-plugins';
+import type { Editor } from 'slate';
+
+// import {nodeTypes} from './nodeTypes'
 import { MARK_BOLD } from './marks/bold';
-import { MARK_ITALIC } from './marks/italic';
 import { MARK_CODE } from './marks/code';
+import { MARK_ITALIC } from './marks/italic';
 import { MARK_STRIKETHROUGH } from './marks/strikethrough';
 
 export const preFormat = (editor: Editor) => unwrapList(editor);

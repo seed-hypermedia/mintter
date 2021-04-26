@@ -1,17 +1,20 @@
 import * as React from 'react';
 // import Seo from 'components/seo'
-import { useHistory, useRouteMatch } from 'react-router';
-import { DocumentList } from '../document-list';
+// import { useHistory, useRouteMatch } from 'react-router';
+
+import { /* createDraft, */ deletePublication } from '@mintter/client';
 import { useMyPublicationsList } from '@mintter/hooks';
-import { createDraft, deletePublication } from '@mintter/client';
 // import {ErrorMessage} from 'components/error-message'
 // import {Icons} from 'components/icons'
-import { Button } from '@mintter/ui/button';
-import { Separator } from '@components/separator';
-import { Box } from '@mintter/ui/box';
+// import { Box } from '@mintter/ui/box';
+// import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
-import type { WithCreateDraft } from './library';
+
 import * as MessageBox from '@components/message-box';
+// import { Separator } from '@components/separator';
+
+import { DocumentList } from '../document-list';
+import type { WithCreateDraft } from './library';
 
 type MyPublicationProps = {
   noSeo?: boolean;
@@ -19,12 +22,12 @@ type MyPublicationProps = {
 };
 
 export const MyPublications: React.FC<MyPublicationProps & WithCreateDraft> = ({
-  noSeo = false,
+  // noSeo = false,
   isPublic = false,
   onCreateDraft,
 }) => {
-  const history = useHistory();
-  const match = useRouteMatch();
+  // const history = useHistory();
+  // const match = useRouteMatch();
   const {
     isError,
     isLoading,

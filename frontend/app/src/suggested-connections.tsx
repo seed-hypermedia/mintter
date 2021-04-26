@@ -1,13 +1,18 @@
 import * as React from 'react';
-import { useSuggestedConnections } from '@mintter/hooks';
-import { Text } from '@mintter/ui/text';
+
 import mintter from '@mintter/api/v2/mintter_pb';
+import { useSuggestedConnections } from '@mintter/hooks';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
+import { Text } from '@mintter/ui/text';
 
 // TODO: fix types
 export function SuggestedConnections({ onConnect }: any) {
-  const { data = [], isLoading, isError, error } = useSuggestedConnections();
+  const {
+    data = [],
+    isLoading,
+    isError /*, error */,
+  } = useSuggestedConnections();
 
   if (isLoading) {
     return <Text>loading...</Text>;

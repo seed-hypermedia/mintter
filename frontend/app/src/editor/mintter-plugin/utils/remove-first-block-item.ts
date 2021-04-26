@@ -1,5 +1,6 @@
-import { NodeEntry, Ancestor, Editor, Transforms, Path } from 'slate';
 import { isFirstChild, moveChildren } from '@udecode/slate-plugins';
+import { NodeEntry, Ancestor, Editor, Transforms, Path } from 'slate';
+
 import { hasListInBlockItem } from './has-list-in-block-item';
 import { isBlockListNested } from './is-blocklist-nested';
 

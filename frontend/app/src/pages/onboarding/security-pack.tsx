@@ -3,11 +3,11 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 import toast from 'react-hot-toast';
 import { useQuery } from 'react-query';
 
-import { genSeed, initProfile } from '../../mintter-client';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
 
+import { genSeed, initProfile } from '../../mintter-client';
 import {
   OnboardingStep,
   OnboardingStepActions,

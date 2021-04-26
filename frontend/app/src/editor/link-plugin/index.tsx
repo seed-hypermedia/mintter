@@ -1,10 +1,6 @@
-import * as React from 'react';
-import get from 'lodash/get';
-import isEqual from 'lodash.isequal';
-import { Transforms, Editor } from 'slate';
-import { ReactEditor, useSlate } from 'slate-react';
+// import { Label } from '@radix-ui/react-label';
 import {
-  LinkOptions,
+  // LinkOptions,
   LinkKeyOption,
   LinkPluginOptionsValues,
   isUrl,
@@ -24,17 +20,23 @@ import {
   upsertLinkAtSelection,
   getAbove,
 } from '@udecode/slate-plugins';
-import { Label } from '@radix-ui/react-label';
+import isEqual from 'lodash.isequal';
+import get from 'lodash/get';
+import * as React from 'react';
 import { usePopoverState } from 'reakit/Popover';
+import { Transforms, Editor } from 'slate';
+import { ReactEditor, useSlate } from 'slate-react';
+
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
-import { isNodeTypeIn } from '../mintter-plugin/is-node-type-in';
-import { Text } from '@mintter/ui/text';
-import { Popover } from './popover';
-import { Tooltip } from '../../components/tooltip';
-import { LinkElement } from './link-element';
 import { Icon } from '@mintter/ui/icon';
+import { Text } from '@mintter/ui/text';
 import { TextField } from '@mintter/ui/text-field';
+
+// import { Tooltip } from '../../components/tooltip';
+import { isNodeTypeIn } from '../mintter-plugin/is-node-type-in';
+import { LinkElement } from './link-element';
+import { Popover } from './popover';
 
 export const ELEMENT_LINK = 'a';
 
@@ -43,7 +45,9 @@ export const ELEMENT_LINK = 'a';
  * this prevents the editor to unset the selection
  * when the popover with an input opens
  */
-Transforms.deselect = () => {};
+Transforms.deselect = () => {
+  // noop
+};
 
 // TODO: fix types
 function renderLink(options?: any) {
@@ -206,7 +210,7 @@ export function useLastEditorSelection(editor: ReactEditor, nullable = false) {
 
   React.useEffect(() => {
     setSelection(editor.selection as any);
-  }, [editor.selection]);
+  }, [editor.selection, setSelection]);
 
   return [selection, setSelection];
 }
@@ -263,7 +267,7 @@ export function ToolbarLink({ link: linkOptions }: any) {
     }
     setAnchor(getSelectionText(editor));
     setLink(link);
-  }, [editor.selection]);
+  }, [editor, editor.selection, options.link.type]);
   return (
     <Popover
       popover={popover}

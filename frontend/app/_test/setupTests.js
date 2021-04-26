@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import '@testing-library/jest-dom/extend-expect';
 
 // make debug output for TestingLibrary Errors larger

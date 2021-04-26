@@ -1,8 +1,8 @@
 import { StrictMode } from 'react';
 import { render } from 'react-dom';
 
-import { AppProviders } from './app-providers';
 import { App } from './app';
+import { AppProviders } from './app-providers';
 
 render(
   <StrictMode>

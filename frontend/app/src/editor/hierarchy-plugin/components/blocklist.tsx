@@ -1,4 +1,5 @@
 import * as React from 'react';
+
 import documents from '@mintter/api/documents/v1alpha/documents_pb';
 import { Box } from '@mintter/ui/box';
 

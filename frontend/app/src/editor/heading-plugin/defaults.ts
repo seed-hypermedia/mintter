@@ -1,5 +1,5 @@
-import { Paragraph } from '../elements/paragraph';
 import { ELEMENT_PARAGRAPH } from '../elements/defaults';
+import { Paragraph } from '../elements/paragraph';
 
 export const ELEMENT_H1 = 'h1';
 export const ELEMENT_H2 = 'h2';

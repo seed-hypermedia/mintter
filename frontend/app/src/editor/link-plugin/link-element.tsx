@@ -1,6 +1,8 @@
 import * as React from 'react';
+
 import { Box } from '@mintter/ui/box';
 import { Icon } from '@mintter/ui/icon';
+
 import { Tooltip } from '../../components/tooltip';
 import { Link } from '../../link';
 
@@ -14,8 +16,8 @@ export const LinkElement = (props: any) => {
   );
 };
 
-function MintterLink({ element, attributes, children, ...props }: any) {
-  const { documentId, blockId } = getMintterLinkData(element.url);
+function MintterLink({ element, attributes, children }: any) {
+  const { documentId /* , blockId */ } = getMintterLinkData(element.url);
   return (
     <Tooltip
       content={
@@ -46,7 +48,7 @@ function MintterLink({ element, attributes, children, ...props }: any) {
   );
 }
 
-function ExternalLink({ element, attributes, children, ...props }: any) {
+function ExternalLink({ element, attributes, children }: any) {
   return (
     <Tooltip
       content={

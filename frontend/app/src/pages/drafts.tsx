@@ -1,20 +1,23 @@
 import * as React from 'react';
+// import { useHistory, useRouteMatch } from 'react-router';
+
 // import Seo from 'components/seo'
-import { DocumentList } from '../document-list';
-import { useDraftsList } from '@mintter/hooks';
 import { deleteDraft } from '@mintter/client';
-// import { Icons } from 'components/icons';
-import { Button } from '@mintter/ui/button';
-import { Separator } from '@components/separator';
-import { Text } from '@mintter/ui/text';
-import { Box } from '@mintter/ui/box';
-import { useHistory, useRouteMatch } from 'react-router';
-import type { WithCreateDraft } from './library';
+import { useDraftsList } from '@mintter/hooks';
+// import { Box } from '@mintter/ui/box';
+// import { Button } from '@mintter/ui/button';
+// import { Text } from '@mintter/ui/text';
+
 import * as MessageBox from '@components/message-box';
+// import { Icons } from 'components/icons';
+// import { Separator } from '@components/separator';
+
+import { DocumentList } from '../document-list';
+import type { WithCreateDraft } from './library';
 
 export const Drafts: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {
-  const history = useHistory();
-  const match = useRouteMatch();
+  // const history = useHistory();
+  // const match = useRouteMatch();
   const { isLoading, isError, isSuccess, error, data } = useDraftsList();
 
   async function handleDeleteDocument(version: string) {

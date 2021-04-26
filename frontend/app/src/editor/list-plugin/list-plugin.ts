@@ -5,7 +5,7 @@ import {
   renderElementList,
   // getElementDeserializer,
   // onKeyDownList,
-} from '@udecode/slate-plugins'
+} from '@udecode/slate-plugins';
 
 /**
  * Enables support for bulleted, numbered and to-do lists.
@@ -21,4 +21,4 @@ export const ListPlugin = (options?: ListPluginOptions): SlatePlugin => ({
   // },
   deserialize: deserializeList(options),
   //   onKeyDown: onKeyDownList(options),
-})
+});

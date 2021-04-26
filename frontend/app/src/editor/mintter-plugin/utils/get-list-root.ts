@@ -1,5 +1,6 @@
-import type { Ancestor, Editor, NodeEntry, Path, Point, Range } from 'slate';
 import { getAbove, setDefaults } from '@udecode/slate-plugins';
+import type { Ancestor, Editor, NodeEntry, Path, Point, Range } from 'slate';
+
 import { DEFAULTS_BLOCKLIST } from '../../hierarchy-plugin/defaults';
 
 /**

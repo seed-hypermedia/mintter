@@ -83,7 +83,7 @@ const initialReducerState: SidepanelReducerState = {
   objects: [],
 };
 
-export const SidePanelProvider: React.FC<{}> = ({ children }) => {
+export const SidePanelProvider: React.FC = ({ children }) => {
   const [state, dispatch] = React.useReducer(
     sidepanelReducer,
     initialReducerState,

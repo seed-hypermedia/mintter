@@ -1,7 +1,9 @@
-import * as React from 'react';
 import { getRenderElement, setDefaults } from '@udecode/slate-plugins';
-import { DEFAULTS_BLOCK } from './defaults';
+import * as React from 'react';
+
 import { Block } from './components/block';
+import { DEFAULTS_BLOCK } from './defaults';
+
 export const renderElementBlock = (options?: any) => {
   const { block } = setDefaults(options, DEFAULTS_BLOCK);
   const { customProps = {} } = block;

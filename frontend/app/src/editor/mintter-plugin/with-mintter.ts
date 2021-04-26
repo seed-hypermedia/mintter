@@ -1,5 +1,3 @@
-import type { ReactEditor } from 'slate-react';
-import { Editor, Element, Node, Path, Transforms } from 'slate';
 import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
@@ -9,25 +7,30 @@ import {
   SlateDocumentDescendant,
 } from '@udecode/slate-plugins';
 import { getInlineTypes } from '@udecode/slate-plugins-core';
+import { Editor, Element, Node, Path, Transforms } from 'slate';
+import type { ReactEditor } from 'slate-react';
+
+import documents from '@mintter/api/documents/v1alpha/documents_pb';
+
+import { ELEMENT_BLOCK } from '../block-plugin/defaults';
+import { ELEMENT_PARAGRAPH } from '../elements/defaults';
+import { ELEMENT_BLOCK_LIST } from '../hierarchy-plugin/defaults';
 import { id } from '../id';
 import { insertBlockItem } from './insert-block-item';
-import { moveBlockItemUp } from './move-block-item-up';
 import {
   getBlockItemEntry,
   isSelectionInBlockItem,
 } from './is-selection-in-block-item';
+import { moveBlockItemUp } from './move-block-item-up';
 import { unwrapBlockList } from './unwrap-blocklist';
 import { avoidMultipleRootChilds } from './utils/avoid-multiple-rootchilds';
 // import {avoidMultipleBlockChilds} from './utils/avoidMultipleBlockChilds'
-import { ELEMENT_PARAGRAPH } from '../elements/defaults';
-import { ELEMENT_BLOCK } from '../block-plugin/defaults';
-import { ELEMENT_BLOCK_LIST } from '../hierarchy-plugin/defaults';
-import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { removeRootListItem } from './utils/remove-root-block-item';
+import { deleteListFragment } from './utils/delete-list-fragment';
 import { hasListInBlockItem } from './utils/has-list-in-block-item';
 import { removeFirstBlockItem } from './utils/remove-first-block-item';
-import { deleteListFragment } from './utils/delete-list-fragment';
+import { removeRootListItem } from './utils/remove-root-block-item';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface MintterEditor {}
 
 // TODO: fix types

@@ -1,6 +1,8 @@
 import { expect } from '@esm-bundle/chai';
+// import faker from 'faker';
+
 import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import faker from 'faker';
+
 import { id as getId } from '../../id';
 import { makeProto } from '../make-proto';
 import {

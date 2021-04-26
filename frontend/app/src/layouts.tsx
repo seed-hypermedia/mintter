@@ -1,6 +1,8 @@
 import * as React from 'react';
-import { useTheme } from './theme-context';
+
 import { Box } from '@mintter/ui/box';
+
+// import { useTheme } from './theme-context';
 
 export interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
   initial?: string;
@@ -8,8 +10,10 @@ export interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
   exit?: string;
 }
 
-export default function Layout({ children, className = '' }: LayoutProps) {
-  const { theme } = useTheme();
+export default function Layout({
+  children /* , className = '' */,
+}: LayoutProps) {
+  // const { theme } = useTheme();
   return <Box data-testid="app-layout">{children}</Box>;
 }
 
@@ -19,7 +23,7 @@ type AppLayoutProps = {
 
 // TODO:
 export function AppLayout({ children }: AppLayoutProps) {
-  const { theme } = useTheme();
+  // const { theme } = useTheme();
   return <Box data-testid="app-layout">{children}</Box>;
 }
 
@@ -28,6 +32,6 @@ type PublicLayoutProps = {
 };
 
 export function PublicLayout({ children }: PublicLayoutProps) {
-  const { theme } = useTheme();
+  // const { theme } = useTheme();
   return <Box data-testid="app-layout">{children}</Box>;
 }

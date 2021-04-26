@@ -1,16 +1,16 @@
-import { useEffect, useMemo, Fragment } from 'react';
+import { useMachine } from '@xstate/react';
+import { useEffect, useMemo /* , Fragment */ } from 'react';
 import { Machine } from 'xstate';
 
 import { Box } from '@mintter/ui/box';
 
 import { AppSpinner } from '@components/app-spinner';
 
-import { useMachine } from '@xstate/react';
 import type { OnboardingStepPropsType } from './common';
-import { Welcome } from './welcome';
-import { SecurityPack } from './security-pack';
-import { ProfileInformation } from './profile-information';
 import { Complete } from './complete';
+import { ProfileInformation } from './profile-information';
+import { SecurityPack } from './security-pack';
+import { Welcome } from './welcome';
 
 const onboardingMachine = Machine({
   id: 'onboarding',

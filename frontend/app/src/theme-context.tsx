@@ -1,4 +1,5 @@
 import * as React from 'react';
+
 import useLocalStorage from './localstorage';
 
 export const THEME_DARK: THEME = 'theme-dark';

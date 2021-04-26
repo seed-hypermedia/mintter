@@ -1,13 +1,13 @@
+// import {
+//   focusBlockStartById,
+//   normalizeDescendantsToDocumentFragment,
+// } from '@udecode/slate-plugins';
+import faker from 'faker';
+
 import documents from '@mintter/api/documents/v1alpha/documents_pb';
 import mintter from '@mintter/api/v2/mintter_pb';
 import { id as getId } from '@mintter/editor/id';
 import { makeProto } from '@mintter/editor/transformers/make-proto';
-import {
-  focusBlockStartById,
-  normalizeDescendantsToDocumentFragment,
-} from '@udecode/slate-plugins';
-
-import faker from 'faker';
 
 export function buildProfile(): mintter.Profile.AsObject {
   return {
@@ -24,7 +24,7 @@ export function buildBlocksMap(
   blocks: documents.Block[],
 ): Array<[string, documents.Block.AsObject]> {
   return blocks.map((b) => {
-    let block = b.toObject();
+    const block = b.toObject();
 
     return [block.id, block];
   });
@@ -35,7 +35,7 @@ export function buildChildrensList(blocks: documents.Block[]): string[] {
 }
 
 export function buildPublication(): documents.Publication {
-  let pub = new documents.Publication();
+  const pub = new documents.Publication();
 
   pub.setDocument(buildDocument());
   pub.setVersion(getId());
@@ -67,18 +67,18 @@ export function buildDocument({
     blocks = [block1, block2, block3];
   }
 
-  let doc = new documents.Document();
+  const doc = new documents.Document();
   doc.setId(id);
   doc.setTitle(title);
   doc.setSubtitle(subtitle);
   doc.setAuthor(author);
   doc.setChildrenListStyle(childrenListStyle);
   doc.setChildrenList(buildChildrensList(blocks));
-  let blocksMap = doc.getBlocksMap();
+  const blocksMap = doc.getBlocksMap();
   blocks.forEach((b) => {
     blocksMap.set(b.getId(), b);
   });
-  let linksMap = doc.getLinksMap();
+  // const linksMap = doc.getLinksMap();
   // set links map when needed
   return doc;
 }
@@ -95,7 +95,7 @@ export function buildBlock({
   type = documents.Block.Type.BASIC,
   childrenList = [],
 }: BuildBlockOptions = {}): documents.Block {
-  let inlineElements: documents.InlineElement[];
+  // let inlineElements: documents.InlineElement[];
   if (elementsList === undefined) {
     elementsList = [
       buildTextInlineElement(),
@@ -106,7 +106,7 @@ export function buildBlock({
     elementsList.map((n) => buildTextInlineElement(n.textRun));
   }
 
-  let block = new documents.Block();
+  const block = new documents.Block();
   block.setId(id);
   block.setElementsList(elementsList as documents.InlineElement[]);
   block.setChildListStyle(childListStyle);
@@ -133,8 +133,8 @@ export function buildTextInlineElement(
     };
   }
 
-  let node = new documents.InlineElement();
-  let text = makeProto<documents.TextRun>(new documents.TextRun(), textRun);
+  const node = new documents.InlineElement();
+  const text = makeProto<documents.TextRun>(new documents.TextRun(), textRun);
 
   node.setTextRun(text);
 
@@ -154,8 +154,8 @@ export function buildImageInlineElement(
       linkKey,
     };
   }
-  let node = new documents.InlineElement();
-  let element = makeProto<documents.Image>(new documents.Image(), image);
+  const node = new documents.InlineElement();
+  const element = makeProto<documents.Image>(new documents.Image(), image);
   node.setImage(element);
 
   return node;
@@ -175,8 +175,8 @@ export function buildQuoteInlineElement(
       endOffset: 0,
     };
   }
-  let node = new documents.InlineElement();
-  let element = makeProto<documents.Quote>(new documents.Quote(), quote);
+  const node = new documents.InlineElement();
+  const element = makeProto<documents.Quote>(new documents.Quote(), quote);
   node.setQuote(element);
   return node;
 }

@@ -2,25 +2,25 @@ import { Slot } from '@radix-ui/react-slot';
 import { useRef } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 
+import * as DropdownMenu from '@mintter/ui-legacy/dropdown-menu';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Icon } from '@mintter/ui/icon';
 import { Text } from '@mintter/ui/text';
 import { TextField } from '@mintter/ui/text-field';
-import * as DropdownMenu from '@mintter/ui-legacy/dropdown-menu';
 
 import { Container } from '@components/container';
 import { getPath } from '@utils/routes';
 
 import { Link } from '../link';
 
-interface NavItemProps {
-  href: string;
-  onClick: () => void;
-  isActive: boolean;
-  title: string;
-  className?: string;
-}
+// interface NavItemProps {
+//   href: string;
+//   onClick: () => void;
+//   isActive: boolean;
+//   title: string;
+//   className?: string;
+// }
 
 export function Topbar({ isPublic = false }) {
   const history = useHistory();

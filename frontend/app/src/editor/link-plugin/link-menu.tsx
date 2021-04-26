@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Portal } from 'reakit/Portal';
 import { Menu, MenuItem as ReakitMenuItem, MenuProps } from 'reakit/Menu';
+import { Portal } from 'reakit/Portal';
 import { useSlate } from 'slate-react';
 
 /**

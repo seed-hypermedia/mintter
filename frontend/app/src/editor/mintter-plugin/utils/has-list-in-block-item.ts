@@ -1,4 +1,5 @@
 import type { Ancestor } from 'slate';
+
 import { isNodeTypeBlockList } from './is-nodetype-blocklist';
 
 export const hasListInBlockItem = (blockItemNode: Ancestor, options?: any) =>

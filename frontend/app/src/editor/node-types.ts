@@ -18,4 +18,4 @@ export const nodeTypes = {
   typeUnderline: 'underline',
   typeStrikethrough: 'strikethrough',
   typeCode: 'code',
-}
+};

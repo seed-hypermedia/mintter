@@ -1,9 +1,11 @@
 import { Editor as SlateEditor, Node } from 'slate';
-import { ELEMENT_PARAGRAPH } from './elements/defaults';
+
 import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { id } from './id';
+
 import { ELEMENT_BLOCK } from './block-plugin/defaults';
+import { ELEMENT_PARAGRAPH } from './elements/defaults';
 import { ELEMENT_BLOCK_LIST } from './hierarchy-plugin/defaults';
+import { id } from './id';
 
 export interface EditorState {
   title: string;

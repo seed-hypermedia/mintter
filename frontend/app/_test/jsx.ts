@@ -1,4 +1,5 @@
 import { createHyperscript } from 'slate-hyperscript';
+
 import { options } from '../src/editor/options';
 import { createText } from './hyperscript/creators';
 

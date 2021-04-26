@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router';
 
+import { queryClient } from '../../app-providers';
 import {
   OnboardingStep,
   OnboardingStepActions,
@@ -8,7 +9,6 @@ import {
   OnboardingStepDescription,
   OnboardingStepTitle,
 } from './common';
-import { queryClient } from '../../app-providers';
 
 export const Complete: React.FC = () => {
   const history = useHistory();

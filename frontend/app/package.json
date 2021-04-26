@@ -4,14 +4,16 @@
   "scripts": {
     "dev": "snowpack dev --port 4000",
     "build": "snowpack build",
+    "lint": "eslint --ignore-path .eslintignore --ext .js,.jsx,.ts,.tsx . && prettier --ignore-path ./.eslintignore --check .",
     "test": "web-test-runner \"src/**/*.test.(tsx|ts)\"",
     "test:watch": "yarn test --watch",
     "test:coverage": "yarn test --coverage",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
-    "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\""
+    "validate": "npm run build && npm run lint && npm run test"
   },
   "dependencies": {
     "@mintter/api": "*",
+    "@mintter/eslint-config": "*",
+    "@mintter/eslint-config-react": "*",
     "@mintter/ui": "*",
     "@radix-ui/react-dropdown-menu": "^0.0.10",
     "@radix-ui/react-label": "^0.0.5",
@@ -67,6 +69,8 @@
     "@types/react": "^17.0.0",
     "@types/react-copy-to-clipboard": "^5.0.0",
     "@types/react-dom": "^17.0.0",
+    "@types/react-router": "^5.1.13",
+    "@types/react-router-dom": "^5.1.7",
     "@types/snowpack-env": "^2.3.2",
     "@web/dev-server-esbuild": "^0.2.11",
     "@web/dev-server-import-maps": "^0.0.5",

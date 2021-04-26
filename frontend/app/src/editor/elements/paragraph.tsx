@@ -1,10 +1,12 @@
-import * as React from 'react';
 import type {
   ParagraphKeyOption,
   ParagraphPluginOptionsValues,
 } from '@udecode/slate-plugins';
-import { ELEMENT_PARAGRAPH } from './defaults';
+import * as React from 'react';
+
 import { Text } from '@mintter/ui/text';
+
+import { ELEMENT_PARAGRAPH } from './defaults';
 
 // TODO: fix types
 export const Paragraph: React.FC<any> = ({

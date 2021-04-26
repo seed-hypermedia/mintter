@@ -1,12 +1,14 @@
 import { expect } from '@esm-bundle/chai';
-import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import type { Text } from 'slate';
 import faker from 'faker';
+import type { Text } from 'slate';
+
+import documents from '@mintter/api/documents/v1alpha/documents_pb';
+
 import { makeProto } from '../make-proto';
 import {
   textRunSerialize,
   createTextRun,
-  PartialTextRun,
+  // PartialTextRun,
   textRunDeserialize,
 } from '../transformers';
 

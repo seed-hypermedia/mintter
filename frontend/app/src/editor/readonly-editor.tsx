@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { SlateReactPresentation } from 'slate-react-presentation';
+
 import { ELEMENT_PARAGRAPH } from './elements/defaults';
 
 // TODO: fix types
@@ -54,6 +55,7 @@ export function ReadOnlyEditor({ value }: any) {
     }
 
     if (leaf.underline) {
+      // noop
     }
 
     if (leaf.strikethrough) {
@@ -61,7 +63,7 @@ export function ReadOnlyEditor({ value }: any) {
       className = 'line-through';
     }
 
-    return <Component className={className} children={children} />;
+    return <Component className={className}>{children}</Component>;
   }, []);
 
   return (

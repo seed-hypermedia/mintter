@@ -25,6 +25,10 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "eslint.workingDirectories": [
     {
+      "directory": "frontend/app",
+      "changeProcessCWD": true
+    },
+    {
       "directory": "frontend/ui",
       "changeProcessCWD": true
     }

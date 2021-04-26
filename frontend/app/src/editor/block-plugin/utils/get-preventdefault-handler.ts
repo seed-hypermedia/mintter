@@ -5,6 +5,6 @@ export const getPreventDefaultHandler = <T extends (...args: any) => any>(
   cb?: T,
   ...args: Parameters<T>
 ) => (event: any) => {
-  event.preventDefault()
-  cb?.(...(args as any))
-}
+  event.preventDefault();
+  cb?.(...(args as any));
+};

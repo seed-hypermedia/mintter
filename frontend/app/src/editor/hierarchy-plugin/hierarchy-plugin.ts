@@ -1,4 +1,5 @@
 import type { SlatePlugin } from '@udecode/slate-plugins';
+
 import { onKeyDownHierarchy } from './on-keydown-hierarchy';
 import { renderElementBlockList } from './render-element-blocklist';
 

@@ -1,15 +1,20 @@
-import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { buildDocument } from '@utils/generate';
+import type { Node, Text } from 'slate';
+
+import documents, {
+  TextRun,
+} from '@mintter/api/documents/v1alpha/documents_pb';
 import type { SlateBlock } from '@mintter/editor/editor';
-import { ELEMENT_BLOCK_LIST } from '../hierarchy-plugin/defaults';
+
+// import { buildDocument } from '@utils/generate';
+
+// import { Block } from '../block-plugin/components/block';
 import { ELEMENT_BLOCK } from '../block-plugin/defaults';
 import { ELEMENT_PARAGRAPH } from '../elements/defaults';
+import { ELEMENT_BLOCK_LIST } from '../hierarchy-plugin/defaults';
 import { id as getId } from '../id';
-import type { Node, Text } from 'slate';
 import { makeProto } from './make-proto';
-import { Block } from '../block-plugin/components/block';
 
-export function publicationToEditor(document = buildDocument()): SlateBlock[] {
+export function publicationToEditor(/* document = buildDocument() */): SlateBlock[] {
   return [
     {
       id: getId(),
@@ -62,8 +67,8 @@ export type DocumentSerializeEntry = {
 export function documentSerialize({
   document,
   blocks,
-  links,
-}: DocumentSerializeEntry): documents.Document {
+}: // links,
+DocumentSerializeEntry): documents.Document {
   // possible improvement: we can receive a `Document` so we don't have to create a new document all the time?
 
   const { title, subtitle, author } = document;
@@ -103,7 +108,7 @@ function createChildrenList(
   blocks: [string, documents.Block][],
   parentId?: string,
 ) {
-  let children: string[] = [];
+  const children: string[] = [];
 
   blocks.forEach(([id, block]: [string, documents.Block]) => {
     const parent: string = parentId === undefined ? '' : parentId;
@@ -138,7 +143,7 @@ function trimTextRun(entry: PartialTextRun): PartialTextRun {
   const copy = { ...entry };
 
   Object.entries(copy).forEach(([key, value]) => {
-    if (!value) delete copy[key as keyof TextRun];
+    if (!value) delete (copy as any)[key as keyof TextRun];
   });
 
   return copy;

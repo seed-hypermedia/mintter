@@ -1,6 +1,6 @@
+import { EditorNodesOptions, getNodes } from '@udecode/slate-plugins';
 import castArray from 'lodash/castArray';
 import type { Editor } from 'slate';
-import { EditorNodesOptions, getNodes } from '@udecode/slate-plugins';
 
 /**
  * Get the nodes with a type included in `types` at a location (default: selection).

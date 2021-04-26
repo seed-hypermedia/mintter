@@ -1,18 +1,20 @@
-import React from 'react';
-import { Slate, ReactEditor } from 'slate-react';
-import { css } from 'emotion';
 import {
   // BalloonToolbar,
   EditablePlugins,
   RenderElement,
   SlateDocument,
   // ToolbarMark,
+  BalloonToolbar /* , setDefaults */,
 } from '@udecode/slate-plugins';
-import { Box } from '@mintter/ui/box';
-import { BalloonToolbar, setDefaults } from '@udecode/slate-plugins';
-import { LinkPlugin, ToolbarLink } from './link-plugin';
-import { LinkMenu } from './link-plugin/link-menu';
+// import { css } from 'emotion';
+import React from 'react';
 import type { MenuStateReturn } from 'reakit/ts';
+import { Slate, ReactEditor } from 'slate-react';
+
+import { Box } from '@mintter/ui/box';
+
+import { /* LinkPlugin, */ ToolbarLink } from './link-plugin';
+import { LinkMenu } from './link-plugin/link-menu';
 
 interface EditorComponentProps {
   editor: any;
@@ -67,6 +69,7 @@ function Editor({
               readOnly ? 'no content' : 'Start writing your masterpiece...'
             }
             spellCheck
+            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
           />
         ) : (
@@ -80,6 +83,7 @@ function Editor({
                 readOnly ? 'no content' : 'Start writing your masterpiece...'
               }
               spellCheck
+              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               onSelect={() => {
                 /**

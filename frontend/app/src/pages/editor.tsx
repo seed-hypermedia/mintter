@@ -1,17 +1,17 @@
 import { setDefaults } from '@udecode/slate-plugins';
-import { useRef } from 'react';
-import { useHistory, useParams } from 'react-router';
-import { useMutation } from 'react-query';
+// import { useRef } from 'react';
+// import { useMutation } from 'react-query';
+import { /* useHistory,  */ useParams } from 'react-router';
 import { useMenuState } from 'reakit/Menu';
 import type { ReactEditor } from 'slate-react';
 
-import { publishDraft } from '@mintter/client';
-import { useDraft } from '@mintter/hooks';
+// import { publishDraft } from '@mintter/client';
 import { EditorComponent } from '@mintter/editor/editor-component';
 import { options } from '@mintter/editor/options';
 import { createPlugins } from '@mintter/editor/plugins';
 import { useEditor } from '@mintter/editor/use-editor';
 import { useEditorValue } from '@mintter/editor/use-editor-value';
+import { useDraft } from '@mintter/hooks';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
@@ -23,13 +23,13 @@ import { Separator } from '@components/separator';
 import { useSidePanel } from '../sidepanel';
 
 const Editor: React.FC = () => {
-  const history = useHistory();
-  const query = new URLSearchParams(window.location.search);
+  // const history = useHistory();
+  // const query = new URLSearchParams(window.location.search);
   const { documentId } = useParams<{ documentId: string }>();
   const { isLoading, isError, error, data } = useDraft(documentId);
-  const titleRef = useRef<HTMLInputElement>(null);
+  // const titleRef = useRef<HTMLInputElement>(null);
   const linkMenu = useMenuState({ loop: true, wrap: true });
-  const subtitleRef = useRef<HTMLInputElement>(null);
+  // const subtitleRef = useRef<HTMLInputElement>(null);
 
   // modify options
   const customOptions = setDefaults(
@@ -50,15 +50,17 @@ const Editor: React.FC = () => {
     setTitle,
     setSubtitle,
     onEditorChange,
-    setValue,
+    // setValue,
   } = useEditorValue({ document: data });
   const { title, subtitle, editorValue } = editorState;
 
   // publish
-  const { mutateAsync: publish } = useMutation(publishDraft);
+  // const { mutateAsync: publish } = useMutation(publishDraft);
 
   // sidepanel
-  const { isSidepanelOpen, sidepanelObjects, sidepanelSend } = useSidePanel();
+  const {
+    isSidepanelOpen /* , sidepanelObjects, sidepanelSend */,
+  } = useSidePanel();
 
   if (isError) {
     console.error('useDraft error: ', error);

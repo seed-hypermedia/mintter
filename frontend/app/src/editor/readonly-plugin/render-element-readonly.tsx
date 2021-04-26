@@ -1,9 +1,10 @@
+import { getRenderElement, setDefaults } from '@udecode/slate-plugins';
 import * as React from 'react';
 import { useFocused, useSelected } from 'slate-react';
-import { getRenderElement, setDefaults } from '@udecode/slate-plugins';
-import { DEFAULTS_READ_ONLY } from './defaults';
 import { SlateReactPresentation } from 'slate-react-presentation';
+
 import { ELEMENT_PARAGRAPH } from '../elements/defaults';
+import { DEFAULTS_READ_ONLY } from './defaults';
 
 export const renderElementReadOnly = (options?: any) => {
   const { read_only } = setDefaults(options, DEFAULTS_READ_ONLY);

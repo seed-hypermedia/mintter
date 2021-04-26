@@ -1,6 +1,8 @@
-import type documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { useEffect, useReducer, useCallback } from 'react';
-import { initialValue, EditorState, editorInitialValue } from './editor';
+import { /* useEffect, */ useReducer, useCallback } from 'react';
+
+// import type documents from '@mintter/api/documents/v1alpha/documents_pb';
+
+import { initialValue, EditorState /* , editorInitialValue */ } from './editor';
 
 export function initializeEditorValue() {
   // TODO: change this to a lazy initialization function later
@@ -52,11 +54,11 @@ export function draftReducer(
   }
 }
 
-export function useEditorValue({
+export function useEditorValue(/* {
   document,
 }: {
   document?: documents.Document.AsObject;
-}) {
+} */) {
   const [state, dispatch] = useReducer(draftReducer, initialValue);
 
   const setTitle = useCallback((payload: string) => {
@@ -107,16 +109,16 @@ export function useEditorValue({
 }
 
 // TODO: fix types
-function getMentions(blocksMap: documents.Block.AsObject[]) {
-  const mentions = blocksMap.reduce((acc: any, entry: any) => {
-    const block: documents.Block.AsObject = entry[1];
+// function getMentions(blocksMap: documents.Block.AsObject[]) {
+//   const mentions = blocksMap.reduce((acc: any, entry: any) => {
+//     const block: documents.Block.AsObject = entry[1];
 
-    // if (block.quotersList && block.quotersList.length) {
-    //   acc.push(...block.quotersList.map((version) => `${version}/${entry[0]}`));
-    // }
+//     // if (block.quotersList && block.quotersList.length) {
+//     //   acc.push(...block.quotersList.map((version) => `${version}/${entry[0]}`));
+//     // }
 
-    return acc;
-  }, []);
+//     return acc;
+//   }, []);
 
-  return mentions;
-}
+//   return mentions;
+// }

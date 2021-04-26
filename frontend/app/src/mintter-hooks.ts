@@ -1,20 +1,22 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import * as React from 'react';
 import {
   useQuery,
   useMutation,
-  UseQueryResult,
-  useInfiniteQuery,
-  UseInfiniteQueryResult,
-  QueryFunctionContext,
+  // UseQueryResult,
+  // useInfiniteQuery,
+  // UseInfiniteQueryResult,
+  // QueryFunctionContext,
 } from 'react-query';
-import type mintter from '@mintter/api/v2/mintter_pb';
+
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
+// import type mintter from '@mintter/api/v2/mintter_pb';
 import * as apiClient from '@mintter/client';
 
 export function useProfile(options = {}) {
   const profileQuery = useQuery(
     ['Profile'],
-    async (_ctx) => {
+    async (/* _ctx */) => {
       return await (await apiClient.getProfile()).getProfile();
     },
     options,
@@ -72,10 +74,14 @@ export function useProfileAddrs() {
   };
 }
 
-export function useConnectionList({ page } = { page: 0 }, options = {}) {
+export function useConnectionList(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _: { page: number } = { page: 0 },
+  options = {},
+) {
   const connectionsQuery = useQuery(
     ['ListConnections'],
-    async ({ queryKey }) => {
+    async (/* { queryKey } */) => {
       return apiClient.listProfiles();
     },
     {
@@ -196,18 +202,18 @@ export function useOthersPublicationsList(options = {}) {
 
 export function useMyPublicationsList(options = {}) {
   const docsQuery = usePublicationsList(options);
-  const { data: profile } = useProfile();
+  // const { data: profile } = useProfile();
 
-  const userId = React.useMemo(() => profile?.accountId, [profile]);
+  // const userId = React.useMemo(() => profile?.accountId, [profile]);
 
   const data = React.useMemo(
     () =>
-      docsQuery.data?.filter(({ document }) => {
+      docsQuery.data?.filter((/* { document } */) => {
         // TODO: remove when API is ready
         // return document?.author === userId;
         return true;
       }),
-    [docsQuery.data, userId],
+    [docsQuery.data],
   );
 
   return {
@@ -253,7 +259,8 @@ export function usePublication(
   const pubQuery = useQuery(
     ['Publication', documentId, version],
     async ({ queryKey }) => {
-      const [_key, documentId, version] = queryKey;
+      const [, /* _key */ documentId, version] = queryKey;
+      // @ts-ignore
       return apiClient.getPublication(documentId, version);
     },
     {
@@ -294,7 +301,7 @@ export function useDraft(draftId: string, options = {}) {
   const draftQuery = useQuery(
     ['Draft', draftId],
     async ({ queryKey }) => {
-      const [_key, draftId] = queryKey;
+      const [, /* _key */ draftId] = queryKey;
       return apiClient.getDraft(draftId);
     },
     {

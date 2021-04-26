@@ -3,9 +3,12 @@ import {
   screen,
   RenderOptions as RTLRenderOptions,
 } from '@testing-library/react';
-import { AppProviders } from '../app-providers';
-import { buildProfile } from '@utils/generate';
+
 import type mintter from '@mintter/api/v2/mintter_pb';
+
+import { buildProfile } from '@utils/generate';
+
+import { AppProviders } from '../app-providers';
 
 function AppWrapper({ children }: any) {
   return (
@@ -29,9 +32,9 @@ export async function render(
 ) {
   const {
     route = '/',
-    timeout = 4000,
+    // timeout = 4000,
     wrapper = AppWrapper,
-    wait = false,
+    // wait = false,
     ...renderOptions
   } = options;
 

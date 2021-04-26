@@ -5,8 +5,10 @@ import {
   waitForElementToBeRemoved,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AppProviders } from '../src/app-providers';
+
 import { buildProfile } from '@utils/generate';
+
+import { AppProviders } from '../src/app-providers';
 
 // jest.mock('../src/mintter-client.ts');
 
@@ -71,5 +73,8 @@ const waitForLoadingToFinish = (timeout = 4000) =>
     { timeout },
   );
 
+// eslint-disable-next-line import/export
 export * from '@testing-library/react';
+
+// eslint-disable-next-line import/export
 export { userEvent, fireEvent, render, waitForLoadingToFinish };
