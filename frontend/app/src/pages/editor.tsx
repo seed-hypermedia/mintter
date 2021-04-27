@@ -1,5 +1,5 @@
-import { setDefaults, getNode, setDefaults } from '@udecode/slate-plugins';
-import { useParams, useParams } from 'react-router';
+import { setDefaults, getNode } from '@udecode/slate-plugins';
+import { useParams } from 'react-router';
 import { useMenuState } from 'reakit/Menu';
 import type { Editor } from 'slate';
 import type { ReactEditor } from 'slate-react';
@@ -64,9 +64,7 @@ export default function EditorPage() {
   // const { mutateAsync: publish } = useMutation(publishDraft);
 
   // sidepanel
-  const {
-    isSidepanelOpen /* , sidepanelObjects, sidepanelSend */,
-  } = useSidePanel();
+  const { isSidepanelOpen, sidepanelSend } = useSidePanel();
 
   function saveDocument() {
     const blocks = createBlocksMap(editor);

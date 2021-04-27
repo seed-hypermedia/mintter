@@ -16,19 +16,11 @@ module.exports = {
       '@snowpack/plugin-typescript',
       {
         /* Yarn PnP workaround: see https://www.npmjs.com/package/@snowpack/plugin-typescript */
-        ...(process.versions.pnp ? { tsc: 'yarn pnpify tsc' } : {}),
+        // ...(process.versions.pnp ? { tsc: 'yarn pnpify tsc' } : {}),
       },
     ],
     '@snowpack/plugin-postcss',
-    [
-      '@snowpack/plugin-webpack',
-      {
-        extendConfig: (config) => {
-          console.log({ config });
-          return config;
-        },
-      },
-    ],
+    '@snowpack/plugin-webpack',
   ],
   routes: [
     /* Enable an SPA Fallback in development: */
@@ -45,7 +37,7 @@ module.exports = {
   },
   buildOptions: {
     /* ... */
-    jsxInject: "import React from 'react'",
+    // jsxInject: "import React from 'react'",
   },
   alias: {
     '@components': './src/components',

@@ -10,7 +10,7 @@ import { id as getId } from '@mintter/editor/id';
 import { makeProto } from '@mintter/editor/transformers/make-proto';
 
 export function buildProfile(
-  profile?: Partial<mintter.Profile.AsObject> = {},
+  profile: Partial<mintter.Profile.AsObject> = {},
 ): mintter.Profile.AsObject {
   return {
     peerId: faker.finance.bitcoinAddress(),

@@ -54,11 +54,12 @@ export function draftReducer(
   }
 }
 
-export function useEditorValue(/* {
+export function useEditorValue({
   document,
 }: {
   document?: documents.Document.AsObject;
-} */) {
+}) {
+  console.log('useEditorValue: ', document);
   const [state, dispatch] = useReducer(draftReducer, initialValue);
 
   const setTitle = useCallback((payload: string) => {

@@ -6,12 +6,12 @@ import type documents from '@mintter/api/documents/v1alpha/documents_pb';
 import { useAuthor } from '@mintter/hooks';
 import { Alert } from '@mintter/ui/alert';
 import { Box } from '@mintter/ui/box';
-import { Text, Text } from '@mintter/ui/text';
+import { Text } from '@mintter/ui/text';
 
-import { Avatar, Avatar } from '@components/avatar';
-import { getPath, getPath } from '@utils/routes';
+import { Avatar } from '@components/avatar';
+import { getPath } from '@utils/routes';
 
-import { Link, Link } from './link';
+import { Link } from './link';
 
 export function DocumentList({
   data,

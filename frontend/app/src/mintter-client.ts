@@ -82,8 +82,9 @@ export function createDraft(): Promise<documents.Document> {
   return Promise.resolve(draft);
 }
 
-export function deleteDraft(/* documentId: string */): Promise<any> {
+export function deleteDraft(documentId: string): Promise<any> {
   // noop
+  console.log(`delete draft with id ${documentId}`);
   return Promise.resolve();
 }
 
