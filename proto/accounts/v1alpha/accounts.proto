@@ -64,6 +64,8 @@ message Device {
   google.protobuf.Timestamp register_time = 2;
 }
 
+// === Events ===
+
 message DeviceRegistered {
   bytes proof = 1;
 }
