@@ -37,7 +37,7 @@ func TestMigrateRepo_WrongVersion(t *testing.T) {
 	require.True(t, errors.Is(err, errRepoMigrate))
 }
 
-func makeTestRepo(t *testing.T) *repo {
+func makeTestRepo(t *testing.T, tt Tester) *repo {
 	t.Helper()
 
 	dir := testutil.MakeRepoPath(t)
@@ -45,7 +45,7 @@ func makeTestRepo(t *testing.T) *repo {
 	log, err := zap.NewDevelopment(zap.WithCaller(false))
 	require.NoError(t, err)
 
-	repo, err := newRepo(dir, log)
+	repo, err := newRepoWithDeviceKey(dir, log, tt.Device.priv)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, os.RemoveAll(dir))

@@ -40,13 +40,13 @@ message Account {
 
   // List of known peer IDs that provide information about this account.
   // Account information can be retrieved even without being connect directly.
-  repeated string peers = 4;
+  // repeated string peers = 4;
 
   // Time where we started following this account.
-  google.protobuf.Timestamp follow_time = 5;
+  // google.protobuf.Timestamp follow_time = 5;
 
   // Last time this account was updated.
-  google.protobuf.Timestamp update_time = 6;
+  // google.protobuf.Timestamp update_time = 6;
 }
 
 message Profile {
@@ -58,9 +58,11 @@ message Profile {
 }
 
 message Device {
+  // CID-encoded Peer ID of this device.
   string peer_id = 1;
 
-  repeated string addrs = 2;
+  // Time where this device was registered.
+  google.protobuf.Timestamp register_time = 2;
 }
 
 message AccountEvent {

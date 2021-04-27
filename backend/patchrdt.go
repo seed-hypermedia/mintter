@@ -7,6 +7,7 @@ import (
 
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/crypto"
+	"google.golang.org/protobuf/proto"
 )
 
 type state struct {
@@ -138,4 +139,13 @@ func (s *state) NewPatch(author cid.Cid, key crypto.PrivKey, k PatchKind, body [
 	s.deps = append(s.deps, signed.cid)
 
 	return signed, nil
+}
+
+func (s *state) NewProtoPatch(author cid.Cid, key crypto.PrivKey, msg proto.Message) (signedPatch, error) {
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		return signedPatch{}, err
+	}
+
+	return s.NewPatch(author, key, PatchKind(proto.MessageName(msg)), data)
 }

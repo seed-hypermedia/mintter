@@ -10,7 +10,6 @@ import (
 	"github.com/multiformats/go-multiaddr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 
 	accounts "mintter/api/go/accounts/v1alpha"
 	backend "mintter/api/go/backend/v1alpha"
@@ -136,18 +135,9 @@ func (srv *backendServer) BindAccount(ctx context.Context, req *backend.BindAcco
 }
 
 func (srv *backendServer) register(ctx context.Context, state *state, binding AccountBinding) error {
-	data, err := proto.Marshal(&accounts.AccountEvent{
-		Data: &accounts.AccountEvent_DeviceRegistered{
-			DeviceRegistered: &accounts.DeviceRegistered{
-				Proof: binding.AccountProof,
-			},
-		},
+	sp, err := state.NewProtoPatch(binding.Account, srv.repo.Device().priv, &accounts.DeviceRegistered{
+		Proof: binding.AccountProof,
 	})
-	if err != nil {
-		return err
-	}
-
-	sp, err := state.NewPatch(binding.Account, srv.repo.Device().priv, PatchKindAccountEvent, data)
 	if err != nil {
 		return fmt.Errorf("failed to create a patch: %w", err)
 	}

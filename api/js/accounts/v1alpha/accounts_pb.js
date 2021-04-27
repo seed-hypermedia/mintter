@@ -54,7 +54,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.com.mintter.accounts.v1alpha.Account = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.com.mintter.accounts.v1alpha.Account.repeatedFields_, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.com.mintter.accounts.v1alpha.Account, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -96,7 +96,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.com.mintter.accounts.v1alpha.Device = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.com.mintter.accounts.v1alpha.Device.repeatedFields_, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.com.mintter.accounts.v1alpha.Device, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -300,13 +300,6 @@ proto.com.mintter.accounts.v1alpha.GetAccountRequest.prototype.setId = function(
 
 
 
-/**
- * List of repeated fields within this message type.
- * @private {!Array<number>}
- * @const
- */
-proto.com.mintter.accounts.v1alpha.Account.repeatedFields_ = [4];
-
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -340,10 +333,7 @@ proto.com.mintter.accounts.v1alpha.Account.toObject = function(includeInstance, 
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     profile: (f = msg.getProfile()) && proto.com.mintter.accounts.v1alpha.Profile.toObject(includeInstance, f),
-    devicesMap: (f = msg.getDevicesMap()) ? f.toObject(includeInstance, proto.com.mintter.accounts.v1alpha.Device.toObject) : [],
-    peersList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
-    followTime: (f = msg.getFollowTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    updateTime: (f = msg.getUpdateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+    devicesMap: (f = msg.getDevicesMap()) ? f.toObject(includeInstance, proto.com.mintter.accounts.v1alpha.Device.toObject) : []
   };
 
   if (includeInstance) {
@@ -395,20 +385,6 @@ proto.com.mintter.accounts.v1alpha.Account.deserializeBinaryFromReader = functio
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.com.mintter.accounts.v1alpha.Device.deserializeBinaryFromReader, "", new proto.com.mintter.accounts.v1alpha.Device());
          });
       break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
-      msg.addPeers(value);
-      break;
-    case 5:
-      var value = new google_protobuf_timestamp_pb.Timestamp;
-      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-      msg.setFollowTime(value);
-      break;
-    case 6:
-      var value = new google_protobuf_timestamp_pb.Timestamp;
-      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-      msg.setUpdateTime(value);
-      break;
     default:
       reader.skipField();
       break;
@@ -456,29 +432,6 @@ proto.com.mintter.accounts.v1alpha.Account.serializeBinaryToWriter = function(me
   f = message.getDevicesMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.com.mintter.accounts.v1alpha.Device.serializeBinaryToWriter);
-  }
-  f = message.getPeersList();
-  if (f.length > 0) {
-    writer.writeRepeatedString(
-      4,
-      f
-    );
-  }
-  f = message.getFollowTime();
-  if (f != null) {
-    writer.writeMessage(
-      5,
-      f,
-      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
-    );
-  }
-  f = message.getUpdateTime();
-  if (f != null) {
-    writer.writeMessage(
-      6,
-      f,
-      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
-    );
   }
 };
 
@@ -558,117 +511,6 @@ proto.com.mintter.accounts.v1alpha.Account.prototype.getDevicesMap = function(op
 proto.com.mintter.accounts.v1alpha.Account.prototype.clearDevicesMap = function() {
   this.getDevicesMap().clear();
   return this;};
-
-
-/**
- * repeated string peers = 4;
- * @return {!Array<string>}
- */
-proto.com.mintter.accounts.v1alpha.Account.prototype.getPeersList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
-};
-
-
-/**
- * @param {!Array<string>} value
- * @return {!proto.com.mintter.accounts.v1alpha.Account} returns this
- */
-proto.com.mintter.accounts.v1alpha.Account.prototype.setPeersList = function(value) {
-  return jspb.Message.setField(this, 4, value || []);
-};
-
-
-/**
- * @param {string} value
- * @param {number=} opt_index
- * @return {!proto.com.mintter.accounts.v1alpha.Account} returns this
- */
-proto.com.mintter.accounts.v1alpha.Account.prototype.addPeers = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
-};
-
-
-/**
- * Clears the list making it empty but non-null.
- * @return {!proto.com.mintter.accounts.v1alpha.Account} returns this
- */
-proto.com.mintter.accounts.v1alpha.Account.prototype.clearPeersList = function() {
-  return this.setPeersList([]);
-};
-
-
-/**
- * optional google.protobuf.Timestamp follow_time = 5;
- * @return {?proto.google.protobuf.Timestamp}
- */
-proto.com.mintter.accounts.v1alpha.Account.prototype.getFollowTime = function() {
-  return /** @type{?proto.google.protobuf.Timestamp} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 5));
-};
-
-
-/**
- * @param {?proto.google.protobuf.Timestamp|undefined} value
- * @return {!proto.com.mintter.accounts.v1alpha.Account} returns this
-*/
-proto.com.mintter.accounts.v1alpha.Account.prototype.setFollowTime = function(value) {
-  return jspb.Message.setWrapperField(this, 5, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
- * @return {!proto.com.mintter.accounts.v1alpha.Account} returns this
- */
-proto.com.mintter.accounts.v1alpha.Account.prototype.clearFollowTime = function() {
-  return this.setFollowTime(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.com.mintter.accounts.v1alpha.Account.prototype.hasFollowTime = function() {
-  return jspb.Message.getField(this, 5) != null;
-};
-
-
-/**
- * optional google.protobuf.Timestamp update_time = 6;
- * @return {?proto.google.protobuf.Timestamp}
- */
-proto.com.mintter.accounts.v1alpha.Account.prototype.getUpdateTime = function() {
-  return /** @type{?proto.google.protobuf.Timestamp} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 6));
-};
-
-
-/**
- * @param {?proto.google.protobuf.Timestamp|undefined} value
- * @return {!proto.com.mintter.accounts.v1alpha.Account} returns this
-*/
-proto.com.mintter.accounts.v1alpha.Account.prototype.setUpdateTime = function(value) {
-  return jspb.Message.setWrapperField(this, 6, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
- * @return {!proto.com.mintter.accounts.v1alpha.Account} returns this
- */
-proto.com.mintter.accounts.v1alpha.Account.prototype.clearUpdateTime = function() {
-  return this.setUpdateTime(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.com.mintter.accounts.v1alpha.Account.prototype.hasUpdateTime = function() {
-  return jspb.Message.getField(this, 6) != null;
-};
 
 
 
@@ -862,13 +704,6 @@ proto.com.mintter.accounts.v1alpha.Profile.prototype.setEmail = function(value) 
 
 
 
-/**
- * List of repeated fields within this message type.
- * @private {!Array<number>}
- * @const
- */
-proto.com.mintter.accounts.v1alpha.Device.repeatedFields_ = [2];
-
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -901,7 +736,7 @@ proto.com.mintter.accounts.v1alpha.Device.prototype.toObject = function(opt_incl
 proto.com.mintter.accounts.v1alpha.Device.toObject = function(includeInstance, msg) {
   var f, obj = {
     peerId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    addrsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
+    registerTime: (f = msg.getRegisterTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -943,8 +778,9 @@ proto.com.mintter.accounts.v1alpha.Device.deserializeBinaryFromReader = function
       msg.setPeerId(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.addAddrs(value);
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setRegisterTime(value);
       break;
     default:
       reader.skipField();
@@ -982,11 +818,12 @@ proto.com.mintter.accounts.v1alpha.Device.serializeBinaryToWriter = function(mes
       f
     );
   }
-  f = message.getAddrsList();
-  if (f.length > 0) {
-    writer.writeRepeatedString(
+  f = message.getRegisterTime();
+  if (f != null) {
+    writer.writeMessage(
       2,
-      f
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
 };
@@ -1011,39 +848,39 @@ proto.com.mintter.accounts.v1alpha.Device.prototype.setPeerId = function(value) 
 
 
 /**
- * repeated string addrs = 2;
- * @return {!Array<string>}
+ * optional google.protobuf.Timestamp register_time = 2;
+ * @return {?proto.google.protobuf.Timestamp}
  */
-proto.com.mintter.accounts.v1alpha.Device.prototype.getAddrsList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 2));
+proto.com.mintter.accounts.v1alpha.Device.prototype.getRegisterTime = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 2));
 };
 
 
 /**
- * @param {!Array<string>} value
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
  * @return {!proto.com.mintter.accounts.v1alpha.Device} returns this
- */
-proto.com.mintter.accounts.v1alpha.Device.prototype.setAddrsList = function(value) {
-  return jspb.Message.setField(this, 2, value || []);
+*/
+proto.com.mintter.accounts.v1alpha.Device.prototype.setRegisterTime = function(value) {
+  return jspb.Message.setWrapperField(this, 2, value);
 };
 
 
 /**
- * @param {string} value
- * @param {number=} opt_index
+ * Clears the message field making it undefined.
  * @return {!proto.com.mintter.accounts.v1alpha.Device} returns this
  */
-proto.com.mintter.accounts.v1alpha.Device.prototype.addAddrs = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 2, value, opt_index);
+proto.com.mintter.accounts.v1alpha.Device.prototype.clearRegisterTime = function() {
+  return this.setRegisterTime(undefined);
 };
 
 
 /**
- * Clears the list making it empty but non-null.
- * @return {!proto.com.mintter.accounts.v1alpha.Device} returns this
+ * Returns whether this field is set.
+ * @return {boolean}
  */
-proto.com.mintter.accounts.v1alpha.Device.prototype.clearAddrsList = function() {
-  return this.setAddrsList([]);
+proto.com.mintter.accounts.v1alpha.Device.prototype.hasRegisterTime = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 

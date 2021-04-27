@@ -7,15 +7,6 @@ import (
 	"github.com/ipfs/go-cid"
 )
 
-const (
-	PatchKindV1           PatchKind = "mintter/v1"
-	PatchKindAccountEvent PatchKind = "com.mintter.accounts.v1alpha/AccountEvent"
-)
-
-type PatchStore struct {
-	data map[cid.Cid][]Patch
-}
-
 type PatchKind string
 
 type Patch struct {
