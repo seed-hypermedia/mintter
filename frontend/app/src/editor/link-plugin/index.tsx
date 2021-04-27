@@ -1,4 +1,3 @@
-// import { Label } from '@radix-ui/react-label';
 import {
   // LinkOptions,
   LinkKeyOption,
@@ -17,12 +16,13 @@ import {
   getPreventDefaultHandler,
   getRangeBefore,
   getSelectionText,
-  upsertLinkAtSelection,
   getAbove,
+  upsertLinkAtSelection,
 } from '@udecode/slate-plugins';
 import isEqual from 'lodash.isequal';
 import get from 'lodash/get';
 import * as React from 'react';
+// import {upsertLinkAtSelection} from './upsert-link-at-selection'
 import { usePopoverState } from 'reakit/Popover';
 import { Transforms, Editor } from 'slate';
 import { ReactEditor, useSlate } from 'slate-react';
@@ -102,7 +102,7 @@ function upsertLinkIfValid(
 ) {
   const rangeFromBlockStart = getRangeFromBlockStart(editor);
   const textFromBlockStart = getText(editor, rangeFromBlockStart);
-  console.log({ rangeFromBlockStart, textFromBlockStart });
+  // console.log({ rangeFromBlockStart, textFromBlockStart });
   if (rangeFromBlockStart && isUrl(textFromBlockStart)) {
     upsertLink(editor, textFromBlockStart, {
       at: rangeFromBlockStart,
@@ -121,7 +121,7 @@ export const withLinks = (options: any) => <T extends ReactEditor>(
     isUrl: isUrlProtocol,
   });
 
-  const { insertText, insertData } = editor;
+  const { insertText, insertData, normalizeNode } = editor;
 
   const DEFAULT_RANGE_BEFORE_OPTIONS: RangeBeforeOptions = {
     matchString: ' ',
@@ -167,6 +167,7 @@ export const withLinks = (options: any) => <T extends ReactEditor>(
 
   editor.insertData = (data: DataTransfer) => {
     const text = data.getData('text/plain');
+    console.log('🚀 ~ file: index.tsx ~ line 168 ~ text', text);
 
     if (text) {
       if (isNodeTypeIn(editor, link.type)) {
@@ -235,6 +236,7 @@ export function ToolbarLink({ link: linkOptions }: any) {
         upsertLinkAtSelection(editor, link, { wrap: false, ...options });
         Transforms.setNodes(editor, { text: anchor }, { at: selection as any });
       });
+      console.log('add link', link);
     }
 
     popover.hide();
@@ -287,7 +289,7 @@ export function ToolbarLink({ link: linkOptions }: any) {
           size="1"
           css={{ '$$outlined-hovered-background-color': 'transparent' }}
         >
-          <Icon name="Link" size="1" color="opposite" />
+          <Icon name="Link" size="2" color="opposite" />
         </Button>
       }
     >

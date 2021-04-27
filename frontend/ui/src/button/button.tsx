@@ -141,6 +141,18 @@ export const Button = styled('button', {
         '$$outlined-hovered-background-color': '$colors$danger-muted',
         '$$outlined-active-background-color': '$colors$danger-softer',
       },
+      muted: {
+        '$$solid-background-color': '$colors$background-contrast',
+        '$$solid-text-color': '$colors$text-opposite',
+        '$$solid-hovered-background-color':
+          '$colors$background-contrast-strong',
+        '$$solid-active-background-color': '$colors$background-opposite',
+        '$$outlined-border-color': '$colors$background-contrast',
+        '$$outlined-text-color': '$colors$background-contrast',
+        '$$outlined-hovered-background-color':
+          '$colors$background-neutral-soft',
+        '$$outlined-active-background-color': '$colors$background-neutral',
+      },
     },
   },
 
@@ -150,7 +162,7 @@ export const Button = styled('button', {
     color: 'primary',
     shape: 'rounded',
   },
-}) as any
+})
 
 // TODO: when passing `as` to component it complains
 export type ButtonProps = React.ComponentProps<typeof Button>

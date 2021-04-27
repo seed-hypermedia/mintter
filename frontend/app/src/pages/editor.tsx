@@ -1,14 +1,20 @@
-import { setDefaults } from '@udecode/slate-plugins';
-// import { useRef } from 'react';
-// import { useMutation } from 'react-query';
-import { /* useHistory,  */ useParams } from 'react-router';
+import { setDefaults, getNode, setDefaults } from '@udecode/slate-plugins';
+import { useParams, useParams } from 'react-router';
 import { useMenuState } from 'reakit/Menu';
+import type { Editor } from 'slate';
 import type { ReactEditor } from 'slate-react';
 
 // import { publishDraft } from '@mintter/client';
+import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
+import { ELEMENT_BLOCK } from '@mintter/editor/block-plugin/defaults';
 import { EditorComponent } from '@mintter/editor/editor-component';
+import { getNodesByType } from '@mintter/editor/mintter-plugin/get-nodes-by-type';
 import { options } from '@mintter/editor/options';
 import { createPlugins } from '@mintter/editor/plugins';
+import {
+  BlockNode,
+  blockSerialize,
+} from '@mintter/editor/transformers/transformers';
 import { useEditor } from '@mintter/editor/use-editor';
 import { useEditorValue } from '@mintter/editor/use-editor-value';
 import { useDraft } from '@mintter/hooks';
@@ -22,7 +28,7 @@ import { Separator } from '@components/separator';
 
 import { useSidePanel } from '../sidepanel';
 
-const Editor: React.FC = () => {
+export default function EditorPage() {
   // const history = useHistory();
   // const query = new URLSearchParams(window.location.search);
   const { documentId } = useParams<{ documentId: string }>();
@@ -62,6 +68,12 @@ const Editor: React.FC = () => {
     isSidepanelOpen /* , sidepanelObjects, sidepanelSend */,
   } = useSidePanel();
 
+  function saveDocument() {
+    const blocks = createBlocksMap(editor);
+
+    console.log('save now', { editorValue, blocks });
+  }
+
   if (isError) {
     console.error('useDraft error: ', error);
     return <Text>Editor ERROR</Text>;
@@ -96,13 +108,15 @@ const Editor: React.FC = () => {
           paddingHorizontal: '$5',
         }}
       >
-        <Button color="primary" shape="pill" size="2">
+        <Button color="primary" shape="pill" size="2" onClick={saveDocument}>
           PUBLISH
         </Button>
-        {/* <Button
+        <Button
           size="1"
           onClick={() => sidepanelSend?.({ type: 'SIDEPANEL_TOOGLE' })}
-        ></Button> */}
+        >
+          toggle sidepanel
+        </Button>
       </Box>
       <Container css={{ gridArea: 'maincontent', marginBottom: 300 }}>
         <TextField
@@ -172,12 +186,36 @@ const Editor: React.FC = () => {
           }}
         >
           <pre>
-            <code>{JSON.stringify(editorState, null, 4)}</code>
+            <code>{JSON.stringify(editorState, null, 2)}</code>
           </pre>
         </Box>
       ) : null}
     </Box>
   );
-};
+}
 
-export default Editor;
+function createBlocksMap(editor: Editor): [string, documents.Block][] {
+  const iterableBlocks = getNodesByType(editor, ELEMENT_BLOCK, {
+    at: [],
+  });
+
+  const blocks: [string, documents.Block][] = [];
+
+  for (const [block, path] of iterableBlocks) {
+    const b: BlockNode = {
+      id: block.id as string,
+      type: ELEMENT_BLOCK,
+      style:
+        (block.style as documents.Block.Type) || documents.Block.Type.BASIC,
+      children: block.children as any,
+    };
+    if (path.length > 4) {
+      blocks.push([b.id, blockSerialize(b)]);
+    } else {
+      const parent = getNode(editor, path.slice(0, path.length - 2));
+      blocks.push([b.id, blockSerialize(b, parent?.id as string)]);
+    }
+  }
+
+  return blocks;
+}

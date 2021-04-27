@@ -51,6 +51,7 @@ describe('Document Serializer', () => {
       ],
     };
 
+    // this is created because I need to pass it to the function in order to know each block's parent and all the relations
     const blocks: [string, documents.Block][] = [
       [blockId, blockSerialize(block)],
     ];

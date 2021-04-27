@@ -1,20 +1,25 @@
+// @ts-nocheck
 import {
   // BalloonToolbar,
   EditablePlugins,
   RenderElement,
   SlateDocument,
-  // ToolbarMark,
-  BalloonToolbar /* , setDefaults */,
+  ToolbarElement,
+  ToolbarMark,
 } from '@udecode/slate-plugins';
-// import { css } from 'emotion';
 import React from 'react';
-import type { MenuStateReturn } from 'reakit/ts';
-import { Slate, ReactEditor } from 'slate-react';
+import type { MenuStateReturn, MenuStateReturn } from 'reakit/ts';
+import { Slate, ReactEditor, Slate, ReactEditor } from 'slate-react';
 
 import { Box } from '@mintter/ui/box';
+import { Button } from '@mintter/ui/button';
+import { Icon } from '@mintter/ui/icon';
 
-import { /* LinkPlugin, */ ToolbarLink } from './link-plugin';
+import { ELEMENT_PARAGRAPH } from './elements/defaults';
+import { ToolbarLink } from './link-plugin';
 import { LinkMenu } from './link-plugin/link-menu';
+import { MARK_BOLD } from './marks/bold';
+import { MARK_ITALIC } from './marks/italic';
 
 interface EditorComponentProps {
   editor: any;
@@ -47,17 +52,6 @@ function Editor({
         onChange(v as SlateDocument);
       }}
     >
-      {/* <BalloonToolbar
-        direction="top"
-        theme={theme.includes('dark') ? 'light' : 'dark'}
-        arrow
-      >
-        <ToolbarMark
-          type={MARK_BOLD}
-          icon={<Icons.Bold />}
-          tooltip={{content: 'Bold (⌘B)', ...tooltip}}
-        />
-      </BalloonToolbar> */}
       <Box>
         {readOnly ? (
           <EditablePlugins
@@ -122,7 +116,39 @@ function Editor({
               as={BalloonToolbar}
               css={{ backgroundColor: '$background-opposite' }}
             >
+              <Button
+                as={ToolbarMark}
+                type={MARK_BOLD}
+                variant="ghost"
+                size="1"
+                css={{ '$$outlined-hovered-background-color': 'transparent' }}
+                icon={<Icon name="Bold" size="2" color="opposite" />}
+              />
+              <Button
+                as={ToolbarMark}
+                type={MARK_ITALIC}
+                variant="ghost"
+                size="1"
+                css={{ '$$outlined-hovered-background-color': 'transparent' }}
+                icon={<Icon name="Italic" size="2" color="opposite" />}
+              />
               <ToolbarLink {...options} />
+              <Button
+                as={ToolbarElement}
+                type={ELEMENT_PARAGRAPH}
+                variant="ghost"
+                size="1"
+                css={{ '$$outlined-hovered-background-color': 'transparent' }}
+                icon={<Icon name="Paragraph" size="2" color="opposite" />}
+              />
+              <Button
+                as={ToolbarElement}
+                type="h2"
+                variant="ghost"
+                size="1"
+                css={{ '$$outlined-hovered-background-color': 'transparent' }}
+                icon={<Icon name="Heading" size="2" color="opposite" />}
+              />
             </Box>
             <LinkMenu menu={linkMenu} />
           </>

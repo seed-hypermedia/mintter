@@ -4,6 +4,7 @@ import highlightThemeLight from 'prism-react-renderer/themes/nightOwlLight'
 import {useCallback, useMemo, useState} from 'react'
 import {LivePreview, LiveProvider} from 'react-live'
 
+import {Alert} from '@src/alert'
 import {Box} from '@src/box'
 import {Button} from '@src/button'
 import {Icon} from '@src/icon'
@@ -13,6 +14,7 @@ import {TextField} from '@src/text-field'
 import {Theme, useTheme} from '@src/theme'
 
 const liveScope = {
+  Alert,
   Box,
   Button,
   Icon,

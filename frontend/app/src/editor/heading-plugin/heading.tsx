@@ -6,14 +6,9 @@ interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
 
 export default function Heading({
   children,
-  className = '',
   as = 'h2',
   ...props
 }: HeadingProps) {
   const Elm = as;
-  return (
-    <Elm {...props} className={`text-heading ${className}`}>
-      {children}
-    </Elm>
-  );
+  return <Elm {...props}>{children}</Elm>;
 }

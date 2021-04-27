@@ -20,7 +20,15 @@ module.exports = {
       },
     ],
     '@snowpack/plugin-postcss',
-    '@snowpack/plugin-webpack',
+    [
+      '@snowpack/plugin-webpack',
+      {
+        extendConfig: (config) => {
+          console.log({ config });
+          return config;
+        },
+      },
+    ],
   ],
   routes: [
     /* Enable an SPA Fallback in development: */
