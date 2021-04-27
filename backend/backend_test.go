@@ -137,7 +137,8 @@ func (tt *testBackendServer) Addrs(t *testing.T) []string {
 func makeTestBackendServer(t *testing.T, name string, ready bool) *testBackendServer {
 	t.Helper()
 
-	repo := makeTestRepo(t)
+	tester := makeTester(t, name)
+	repo := makeTestRepo(t, tester)
 
 	ds := testutil.MakeDatastore(t)
 	p2p, err := newP2PNode(config.P2P{
@@ -160,7 +161,6 @@ func makeTestBackendServer(t *testing.T, name string, ready bool) *testBackendSe
 	srv := newBackendServer(repo, p2p, patchStore)
 
 	if ready {
-		tester := makeTester(t, name)
 		require.NoError(t, repo.CommitAccount(tester.Account.pub))
 		acc, err := repo.Account()
 		require.NoError(t, err)

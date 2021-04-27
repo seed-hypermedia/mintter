@@ -32,21 +32,6 @@ export class Account extends jspb.Message {
   getDevicesMap(): jspb.Map<string, Device>;
   clearDevicesMap(): void;
 
-  getPeersList(): Array<string>;
-  setPeersList(value: Array<string>): void;
-  clearPeersList(): void;
-  addPeers(value: string, index?: number): void;
-
-  getFollowTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setFollowTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
-  hasFollowTime(): boolean;
-  clearFollowTime(): void;
-
-  getUpdateTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setUpdateTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
-  hasUpdateTime(): boolean;
-  clearUpdateTime(): void;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Account.AsObject;
   static toObject(includeInstance: boolean, msg: Account): Account.AsObject;
@@ -60,9 +45,6 @@ export namespace Account {
     id: string,
     profile?: Profile.AsObject,
     devicesMap: Array<[string, Device.AsObject]>,
-    peersList: Array<string>,
-    followTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    updateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
   }
 }
 
@@ -96,10 +78,10 @@ export class Device extends jspb.Message {
   getPeerId(): string;
   setPeerId(value: string): void;
 
-  getAddrsList(): Array<string>;
-  setAddrsList(value: Array<string>): void;
-  clearAddrsList(): void;
-  addAddrs(value: string, index?: number): void;
+  getRegisterTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setRegisterTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
+  hasRegisterTime(): boolean;
+  clearRegisterTime(): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Device.AsObject;
@@ -112,7 +94,7 @@ export class Device extends jspb.Message {
 export namespace Device {
   export type AsObject = {
     peerId: string,
-    addrsList: Array<string>,
+    registerTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
   }
 }
 

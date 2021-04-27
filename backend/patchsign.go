@@ -8,6 +8,9 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
 )
 
 type signedPatch struct {
@@ -18,6 +21,16 @@ type signedPatch struct {
 	peer      cid.Cid
 	cid       cid.Cid
 	signature []byte
+}
+
+func (sp signedPatch) ProtoBody() (proto.Message, error) {
+	msgType, err := protoregistry.GlobalTypes.FindMessageByName(protoreflect.FullName(sp.Kind))
+	if err != nil {
+		return nil, err
+	}
+
+	msg := msgType.New().Interface()
+	return msg, proto.Unmarshal(sp.Body, msg)
 }
 
 func signPatch(p Patch, k crypto.PrivKey) (signedPatch, error) {
