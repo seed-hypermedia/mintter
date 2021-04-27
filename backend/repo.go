@@ -20,6 +20,8 @@ import (
 const (
 	currentRepoLayoutVersion = "v1"
 
+	keysDir = "keys"
+
 	privKeyFilename = "libp2p_id_ed25519"
 	accountFilename = "mintter_id_ed25519.pub"
 )
@@ -75,6 +77,10 @@ func newRepoWithDeviceKey(path string, log *zap.Logger, key crypto.PrivKey) (r *
 
 func prepareRepo(path string, log *zap.Logger) (r *repo, err error) {
 	if err := os.MkdirAll(path, 0700); err != nil {
+		return nil, fmt.Errorf("store: failed to initialize local repo in %s: %w", path, err)
+	}
+
+	if err := os.MkdirAll(filepath.Join(path, keysDir), 0700); err != nil {
 		return nil, fmt.Errorf("store: failed to initialize local repo in %s: %w", path, err)
 	}
 
@@ -148,7 +154,7 @@ func (r *repo) setAccount(k crypto.PubKey) error {
 }
 
 func (r *repo) deviceKeyFromFile() (crypto.PrivKey, error) {
-	privFile := filepath.Join(r.path, privKeyFilename)
+	privFile := filepath.Join(r.path, keysDir, privKeyFilename)
 
 	privBytes, err := ioutil.ReadFile(privFile)
 	if err != nil && !os.IsNotExist(err) {
@@ -174,6 +180,16 @@ func (r *repo) setupKeys(pk crypto.PrivKey) error {
 	}
 	r.device = device
 
+	pkBytes, err := crypto.MarshalPrivateKey(pk)
+	if err != nil {
+		return err
+	}
+
+	// TODO: clean this up, coz we may end up writing the same file twice here between multiple runs.
+	if err := ioutil.WriteFile(filepath.Join(r.path, keysDir, privKeyFilename), pkBytes, 0600); err != nil {
+		return err
+	}
+
 	accKey, err := r.readAccountFile()
 	if err == nil {
 		r.setAccount(accKey)
@@ -194,7 +210,7 @@ func (r *repo) writeAccountFile(k crypto.PubKey) error {
 		return err
 	}
 
-	if err := ioutil.WriteFile(filepath.Join(r.path, accountFilename), data, 0644); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(r.path, keysDir, accountFilename), data, 0644); err != nil {
 		return err
 	}
 
@@ -202,7 +218,7 @@ func (r *repo) writeAccountFile(k crypto.PubKey) error {
 }
 
 func (r *repo) readAccountFile() (crypto.PubKey, error) {
-	data, err := ioutil.ReadFile(filepath.Join(r.path, accountFilename))
+	data, err := ioutil.ReadFile(filepath.Join(r.path, keysDir, accountFilename))
 	if err != nil {
 		return nil, err
 	}

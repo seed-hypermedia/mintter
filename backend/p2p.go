@@ -37,6 +37,7 @@ const (
 var userAgent = "mintter/" + Version
 
 type p2pNode struct {
+	ipfs    *ipfsutil.Node
 	host    host.Host
 	ps      *pubsub.PubSub
 	cleanup io.Closer
@@ -130,17 +131,18 @@ func newP2PNode(cfg config.P2P, ds datastore.Batching, key crypto.PrivKey) (n *p
 		return srv.Serve(lis)
 	})
 
+	ipfsnode, err := ipfsutil.New(ctx, ds, h, dht, nil)
+	if err != nil {
+		return nil, err
+	}
+	clean.Add(ipfsnode)
+
 	node := &p2pNode{
 		host:    h,
 		cleanup: &clean,
 		ps:      ps,
+		ipfs:    ipfsnode,
 	}
-
-	// ipfsnode, err := ipfsutil.New(ctx, ds, h, dht, nil)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// clean.Add(ipfsnode)
 
 	return node, nil
 }
