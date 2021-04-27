@@ -1,14 +1,14 @@
 import * as grpcWeb from 'grpc-web';
 
 import {
-  BindAccountRequest,
-  BindAccountResponse,
   DialPeerRequest,
   DialPeerResponse,
   GenSeedRequest,
-  GenSeedResponse} from './backend_pb';
+  GenSeedResponse,
+  RegisterRequest,
+  RegisterResponse} from './daemon_pb';
 
-export class BackendClient {
+export class DaemonClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: string; });
@@ -20,12 +20,12 @@ export class BackendClient {
                response: GenSeedResponse) => void
   ): grpcWeb.ClientReadableStream<GenSeedResponse>;
 
-  bindAccount(
-    request: BindAccountRequest,
+  register(
+    request: RegisterRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.Error,
-               response: BindAccountResponse) => void
-  ): grpcWeb.ClientReadableStream<BindAccountResponse>;
+               response: RegisterResponse) => void
+  ): grpcWeb.ClientReadableStream<RegisterResponse>;
 
   dialPeer(
     request: DialPeerRequest,
@@ -36,7 +36,7 @@ export class BackendClient {
 
 }
 
-export class BackendPromiseClient {
+export class DaemonPromiseClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: string; });
@@ -46,10 +46,10 @@ export class BackendPromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<GenSeedResponse>;
 
-  bindAccount(
-    request: BindAccountRequest,
+  register(
+    request: RegisterRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<BindAccountResponse>;
+  ): Promise<RegisterResponse>;
 
   dialPeer(
     request: DialPeerRequest,

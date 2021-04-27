@@ -14,44 +14,44 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	backend "mintter/api/go/backend/v1alpha"
+	daemon "mintter/api/go/daemon/v1alpha"
 	"mintter/backend/config"
 	"mintter/backend/testutil"
 )
 
-var _ backend.BackendServer = (*backendServer)(nil)
+var _ daemon.DaemonServer = (*backend)(nil)
 
 func TestGenSeed(t *testing.T) {
-	srv := makeTestBackendServer(t, "alice", false)
+	srv := makeTestBackend(t, "alice", false)
 	ctx := context.Background()
 
-	resp, err := srv.backend.GenSeed(ctx, &backend.GenSeedRequest{})
+	resp, err := srv.backend.GenSeed(ctx, &daemon.GenSeedRequest{})
 	require.NoError(t, err)
 	require.Equal(t, aezeed.NummnemonicWords, len(resp.Mnemonic))
 }
 
 func TestBindAccount(t *testing.T) {
 	testMnemonic := []string{"abandon", "impact", "blossom", "roast", "early", "turkey", "oblige", "cry", "citizen", "toilet", "prefer", "sudden", "glad", "luxury", "vehicle", "broom", "view", "front", "office", "rain", "machine", "angle", "humor", "acid"}
-	srv := makeTestBackendServer(t, "alice", false)
+	srv := makeTestBackend(t, "alice", false)
 	ctx := context.Background()
 
-	resp, err := srv.backend.BindAccount(ctx, &backend.BindAccountRequest{
+	resp, err := srv.backend.Register(ctx, &daemon.RegisterRequest{
 		Mnemonic: testMnemonic,
 	})
 	require.NoError(t, err)
 	require.NotEqual(t, "", resp.AccountId)
 
-	_, err = srv.backend.BindAccount(ctx, &backend.BindAccountRequest{
+	_, err = srv.backend.Register(ctx, &daemon.RegisterRequest{
 		Mnemonic: testMnemonic,
 	})
-	require.Error(t, err, "calling BindAccount more than once must fail")
+	require.Error(t, err, "calling Register more than once must fail")
 
 	stat, ok := status.FromError(err)
 	require.True(t, ok)
 	require.Equal(t, codes.FailedPrecondition, stat.Code())
 
-	srv2 := newBackendServer(srv.repo, srv.p2p, srv.backend.store)
-	_, err = srv2.BindAccount(ctx, &backend.BindAccountRequest{
+	srv2 := newBackend(srv.repo, srv.p2p, srv.backend.store)
+	_, err = srv2.Register(ctx, &daemon.RegisterRequest{
 		Mnemonic: testMnemonic,
 	})
 	require.Error(t, err, "backend must remember account initialization state")
@@ -59,7 +59,7 @@ func TestBindAccount(t *testing.T) {
 
 func TestBindAccount_Concurrent(t *testing.T) {
 	testMnemonic := []string{"abandon", "impact", "blossom", "roast", "early", "turkey", "oblige", "cry", "citizen", "toilet", "prefer", "sudden", "glad", "luxury", "vehicle", "broom", "view", "front", "office", "rain", "machine", "angle", "humor", "acid"}
-	srv := makeTestBackendServer(t, "alice", false)
+	srv := makeTestBackend(t, "alice", false)
 	ctx := context.Background()
 	c := 5
 
@@ -67,7 +67,7 @@ func TestBindAccount_Concurrent(t *testing.T) {
 
 	for i := 0; i < 5; i++ {
 		go func() {
-			_, err := srv.backend.BindAccount(ctx, &backend.BindAccountRequest{
+			_, err := srv.backend.Register(ctx, &daemon.RegisterRequest{
 				Mnemonic: testMnemonic,
 			})
 			if err != nil {
@@ -84,8 +84,8 @@ func TestBindAccount_Concurrent(t *testing.T) {
 
 func TestDialPeer(t *testing.T) {
 	ctx := context.Background()
-	alice := makeTestBackendServer(t, "alice", true)
-	bob := makeTestBackendServer(t, "bob", true)
+	alice := makeTestBackend(t, "alice", true)
+	bob := makeTestBackend(t, "bob", true)
 
 	sub, err := alice.p2p.host.EventBus().Subscribe(event.WildcardSubscription)
 	require.NoError(t, err)
@@ -105,7 +105,7 @@ func TestDialPeer(t *testing.T) {
 	}()
 
 	fmt.Println(time.Now(), "Dialed")
-	resp, err := alice.backend.DialPeer(ctx, &backend.DialPeerRequest{
+	resp, err := alice.backend.DialPeer(ctx, &daemon.DialPeerRequest{
 		Addrs: bob.Addrs(t),
 	})
 	require.NoError(t, err)
@@ -114,13 +114,13 @@ func TestDialPeer(t *testing.T) {
 	time.Sleep(2 * time.Second)
 }
 
-type testBackendServer struct {
-	backend *backendServer
+type testBackend struct {
+	backend *backend
 	repo    *repo
 	p2p     *p2pNode
 }
 
-func (tt *testBackendServer) Addrs(t *testing.T) []string {
+func (tt *testBackend) Addrs(t *testing.T) []string {
 	t.Helper()
 	addrs, err := tt.p2p.Addrs()
 	require.NoError(t, err)
@@ -134,7 +134,7 @@ func (tt *testBackendServer) Addrs(t *testing.T) []string {
 	return out
 }
 
-func makeTestBackendServer(t *testing.T, name string, ready bool) *testBackendServer {
+func makeTestBackend(t *testing.T, name string, ready bool) *testBackend {
 	t.Helper()
 
 	tester := makeTester(t, name)
@@ -158,7 +158,7 @@ func makeTestBackendServer(t *testing.T, name string, ready bool) *testBackendSe
 
 	patchStore, err := newPatchStore(repo.Device().priv, bs, db)
 	require.NoError(t, err)
-	srv := newBackendServer(repo, p2p, patchStore)
+	srv := newBackend(repo, p2p, patchStore)
 
 	if ready {
 		require.NoError(t, repo.CommitAccount(tester.Account.pub))
@@ -168,7 +168,7 @@ func makeTestBackendServer(t *testing.T, name string, ready bool) *testBackendSe
 		require.NoError(t, srv.register(context.Background(), newState(cid.Cid(acc.id), nil), tester.Binding))
 	}
 
-	return &testBackendServer{
+	return &testBackend{
 		backend: srv,
 		repo:    repo,
 		p2p:     p2p,
