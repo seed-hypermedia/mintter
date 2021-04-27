@@ -36,6 +36,44 @@ type repo struct {
 }
 
 func newRepo(path string, log *zap.Logger) (r *repo, err error) {
+	r, err = prepareRepo(path, log)
+	if err != nil {
+		return nil, err
+	}
+
+	pk, err := r.deviceKeyFromFile()
+	if err != nil {
+		return nil, fmt.Errorf("failed to recover device key from file: %w", err)
+	}
+
+	if pk == nil {
+		pk, _, err = crypto.GenerateEd25519Key(rand.Reader)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate random key pair: %w", err)
+		}
+	}
+
+	if err := r.setupKeys(pk); err != nil {
+		return nil, fmt.Errorf("failed to setup keys: %w", err)
+	}
+
+	return r, nil
+}
+
+func newRepoWithDeviceKey(path string, log *zap.Logger, key crypto.PrivKey) (r *repo, err error) {
+	r, err = prepareRepo(path, log)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := r.setupKeys(key); err != nil {
+		return nil, fmt.Errorf("failed to setup keys: %w", err)
+	}
+
+	return r, nil
+}
+
+func prepareRepo(path string, log *zap.Logger) (r *repo, err error) {
 	if err := os.MkdirAll(path, 0700); err != nil {
 		return nil, fmt.Errorf("store: failed to initialize local repo in %s: %w", path, err)
 	}
@@ -47,10 +85,6 @@ func newRepo(path string, log *zap.Logger) (r *repo, err error) {
 	r = &repo{
 		path:  path,
 		ready: make(chan struct{}),
-	}
-
-	if err := r.setupKeys(); err != nil {
-		return nil, fmt.Errorf("failed to setup keys: %w", err)
 	}
 
 	return r, nil
@@ -113,41 +147,27 @@ func (r *repo) setAccount(k crypto.PubKey) error {
 	return nil
 }
 
-func (r *repo) setupKeys() error {
+func (r *repo) deviceKeyFromFile() (crypto.PrivKey, error) {
 	privFile := filepath.Join(r.path, privKeyFilename)
 
-	var pk crypto.PrivKey
-	{
-		privBytes, err := ioutil.ReadFile(privFile)
-		if err != nil && !os.IsNotExist(err) {
-			return fmt.Errorf("failed reading private key file: %w", err)
-		}
-
-		if privBytes != nil {
-			k, err := crypto.UnmarshalPrivateKey(privBytes)
-			if err != nil {
-				return fmt.Errorf("failed to unmarshal private key: %w", err)
-			}
-
-			pk = k
-		} else {
-			priv, _, err := crypto.GenerateEd25519Key(rand.Reader)
-			if err != nil {
-				return fmt.Errorf("failed to generate random device credentials: %w", err)
-			}
-			pk = priv
-
-			privBytes, err := crypto.MarshalPrivateKey(pk)
-			if err != nil {
-				return fmt.Errorf("failed to marshal private key: %w", err)
-			}
-
-			if err := ioutil.WriteFile(privFile, privBytes, 0600); err != nil {
-				return fmt.Errorf("failed to write private key file: %w", err)
-			}
-		}
+	privBytes, err := ioutil.ReadFile(privFile)
+	if err != nil && !os.IsNotExist(err) {
+		return nil, fmt.Errorf("failed reading private key file: %w", err)
 	}
 
+	if privBytes == nil {
+		return nil, nil
+	}
+
+	k, err := crypto.UnmarshalPrivateKey(privBytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal private key: %w", err)
+	}
+
+	return k, nil
+}
+
+func (r *repo) setupKeys(pk crypto.PrivKey) error {
 	device, err := NewDevice(pk)
 	if err != nil {
 		return fmt.Errorf("failed to generate device: %w", err)

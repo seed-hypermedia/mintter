@@ -126,33 +126,20 @@ func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error)
 	txn := s.db.NewTransaction(false)
 	defer txn.Discard()
 
-	opts := badger.DefaultIteratorOptions
-	opts.PrefetchSize = 10
-	opts.Prefix = makePrefixHead(obj)
-	it := txn.NewIterator(opts)
-	defer it.Close()
-
-	out := make([][]signedPatch, 0, 10) // Cap is arbitrary.
+	heads, err := s.getHeads(ctx, txn, obj)
+	if err != nil {
+		return nil, err
+	}
 
 	g, ctx := errgroup.WithContext(ctx)
 
-	var i int
-	for it.Rewind(); it.Valid(); it.Next() {
-		var h head
+	out := make([][]signedPatch, len(heads))
 
-		item := it.Item()
-		if err := item.Value(func(data []byte) error {
-			if err := json.Unmarshal(data, &h); err != nil {
-				return err
-			}
-			return nil
-		}); err != nil {
-			return nil, err
-		}
-
-		out = append(out, make([]signedPatch, h.Seq))
-
-		byPeerIdx := i
+	// TODO: release Badger transaction here. We don't need it anymore
+	for i, h := range heads {
+		i := i
+		h := h
+		out[i] = make([]signedPatch, h.Seq) // Allocate enough space to store all the known patches.
 		g.Go(func() error {
 			next := h.CID
 			idx := h.Seq - 1
@@ -173,7 +160,7 @@ func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error)
 						return err
 					}
 
-					out[byPeerIdx][idx] = sp
+					out[i][idx] = sp
 					idx--
 
 					if len(sp.Deps) > 1 {
@@ -190,7 +177,6 @@ func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error)
 
 			return nil
 		})
-		i++
 	}
 
 	if err := g.Wait(); err != nil {
@@ -198,6 +184,32 @@ func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error)
 	}
 
 	return newState(obj, out), nil
+}
+
+func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid) ([]head, error) {
+	var out []head
+
+	opts := badger.DefaultIteratorOptions
+	opts.PrefetchSize = 10
+	opts.Prefix = makePrefixHead(obj)
+	it := txn.NewIterator(opts)
+	defer it.Close()
+
+	for it.Rewind(); it.Valid(); it.Next() {
+		item := it.Item()
+		if err := item.Value(func(data []byte) error {
+			var h head
+			if err := json.Unmarshal(data, &h); err != nil {
+				return err
+			}
+			out = append(out, h)
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return out, nil
 }
 
 func (s *patchStore) ReplicateFromHead(ctx context.Context, h head) error {

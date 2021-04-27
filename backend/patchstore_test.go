@@ -13,11 +13,9 @@ import (
 
 func init() {
 	nowFunc = func() func() time.Time {
-		var i time.Duration
 		return func() time.Time {
-			i++
 			var t time.Time
-			return t.Add(i * time.Second)
+			return t.Add(1 * time.Second)
 		}
 	}()
 }
