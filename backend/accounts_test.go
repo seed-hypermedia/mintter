@@ -12,7 +12,7 @@ import (
 
 func TestGetAccount_Own(t *testing.T) {
 	ctx := context.Background()
-	alice := makeTestBackendServer(t, "alice", true)
+	alice := makeTestBackend(t, "alice", true)
 
 	want := &accounts.Account{
 		Id: "bafzaajaiaejcb2wplid355indqgovc7oe2nfenxpxgnqzebtigh2ymffy4rp4gla",
@@ -33,7 +33,7 @@ func TestGetAccount_Own(t *testing.T) {
 
 func TestUpdateProfile(t *testing.T) {
 	ctx := context.Background()
-	alice := makeTestBackendServer(t, "alice", true)
+	alice := makeTestBackend(t, "alice", true)
 
 	update := &accounts.Profile{
 		Alias: "fake-alias",

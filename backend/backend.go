@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	accounts "mintter/api/go/accounts/v1alpha"
-	backend "mintter/api/go/backend/v1alpha"
+	daemon "mintter/api/go/daemon/v1alpha"
 )
 
 type lazyP2PNode func() (*p2pNode, error)
@@ -28,7 +28,7 @@ func makeLazyP2PNode(n *p2pNode, ready <-chan struct{}) lazyP2PNode {
 	}
 }
 
-type backendServer struct {
+type backend struct {
 	// log  *zap.Logger
 	repo  *repo
 	p2p   lazyP2PNode
@@ -41,10 +41,10 @@ type backendServer struct {
 	accounts *accountsServer
 }
 
-func newBackendServer(r *repo, p2p *p2pNode, store *patchStore) *backendServer {
+func newBackend(r *repo, p2p *p2pNode, store *patchStore) *backend {
 	// load the account state.
 	// If there's some - init p2p stuff.
-	srv := &backendServer{
+	srv := &backend{
 		repo:  r,
 		p2p:   makeLazyP2PNode(p2p, r.Ready()),
 		store: store,
@@ -59,20 +59,20 @@ func newBackendServer(r *repo, p2p *p2pNode, store *patchStore) *backendServer {
 	return srv
 }
 
-func (srv *backendServer) GenSeed(ctx context.Context, req *backend.GenSeedRequest) (*backend.GenSeedResponse, error) {
+func (srv *backend) GenSeed(ctx context.Context, req *daemon.GenSeedRequest) (*daemon.GenSeedResponse, error) {
 	words, err := NewMnemonic(req.AezeedPassphrase)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := &backend.GenSeedResponse{
+	resp := &daemon.GenSeedResponse{
 		Mnemonic: words,
 	}
 
 	return resp, nil
 }
 
-func (srv *backendServer) BindAccount(ctx context.Context, req *backend.BindAccountRequest) (*backend.BindAccountResponse, error) {
+func (srv *backend) Register(ctx context.Context, req *daemon.RegisterRequest) (*daemon.RegisterResponse, error) {
 	srv.bindAccountMu.Lock()
 	defer srv.bindAccountMu.Unlock()
 
@@ -128,13 +128,13 @@ func (srv *backendServer) BindAccount(ctx context.Context, req *backend.BindAcco
 		// which topic to publish to until we create the account, and account gets created just when we publish the patch.
 		// We leave it as is right now, but let's see if we need to do something with it in the future.
 
-		return &backend.BindAccountResponse{
+		return &daemon.RegisterResponse{
 			AccountId: aid.String(),
 		}, nil
 	}
 }
 
-func (srv *backendServer) register(ctx context.Context, state *state, binding AccountBinding) error {
+func (srv *backend) register(ctx context.Context, state *state, binding AccountBinding) error {
 	sp, err := state.NewProtoPatch(binding.Account, srv.repo.Device().priv, &accounts.DeviceRegistered{
 		Proof: binding.AccountProof,
 	})
@@ -149,7 +149,7 @@ func (srv *backendServer) register(ctx context.Context, state *state, binding Ac
 	return nil
 }
 
-func (srv *backendServer) DialPeer(ctx context.Context, req *backend.DialPeerRequest) (*backend.DialPeerResponse, error) {
+func (srv *backend) DialPeer(ctx context.Context, req *daemon.DialPeerRequest) (*daemon.DialPeerResponse, error) {
 	p2p, err := srv.p2p()
 	if err != nil {
 		return nil, err
@@ -175,5 +175,5 @@ func (srv *backendServer) DialPeer(ctx context.Context, req *backend.DialPeerReq
 		return nil, fmt.Errorf("failed to establish p2p connection: %w", err)
 	}
 
-	return &backend.DialPeerResponse{}, nil
+	return &daemon.DialPeerResponse{}, nil
 }
