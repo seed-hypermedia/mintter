@@ -1,6 +1,7 @@
 group("go") {
   deps = [
-    "//proto/backend/v1alpha:go_proto",
+    "//proto/accounts/v1alpha:go_proto",
+    "//proto/daemon/v1alpha:go_proto",
     "//proto/documents/v1alpha:go_proto",
     "//proto/p2p:go_proto",
     "//proto/v2:go_proto",
@@ -9,7 +10,8 @@ group("go") {
 
 group("js") {
   deps = [
-    "//proto/backend/v1alpha:js_proto",
+    "//proto/accounts/v1alpha:js_proto",
+    "//proto/daemon/v1alpha:js_proto",
     "//proto/documents/v1alpha:js_proto",
     "//proto/v2:js_proto",
   ]

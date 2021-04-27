@@ -38,7 +38,7 @@ export namespace GenSeedResponse {
   }
 }
 
-export class BindAccountRequest extends jspb.Message {
+export class RegisterRequest extends jspb.Message {
   getMnemonicList(): Array<string>;
   setMnemonicList(value: Array<string>): void;
   clearMnemonicList(): void;
@@ -48,33 +48,33 @@ export class BindAccountRequest extends jspb.Message {
   setAezeedPassphrase(value: string): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): BindAccountRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: BindAccountRequest): BindAccountRequest.AsObject;
-  static serializeBinaryToWriter(message: BindAccountRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): BindAccountRequest;
-  static deserializeBinaryFromReader(message: BindAccountRequest, reader: jspb.BinaryReader): BindAccountRequest;
+  toObject(includeInstance?: boolean): RegisterRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RegisterRequest): RegisterRequest.AsObject;
+  static serializeBinaryToWriter(message: RegisterRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RegisterRequest;
+  static deserializeBinaryFromReader(message: RegisterRequest, reader: jspb.BinaryReader): RegisterRequest;
 }
 
-export namespace BindAccountRequest {
+export namespace RegisterRequest {
   export type AsObject = {
     mnemonicList: Array<string>,
     aezeedPassphrase: string,
   }
 }
 
-export class BindAccountResponse extends jspb.Message {
+export class RegisterResponse extends jspb.Message {
   getAccountId(): string;
   setAccountId(value: string): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): BindAccountResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: BindAccountResponse): BindAccountResponse.AsObject;
-  static serializeBinaryToWriter(message: BindAccountResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): BindAccountResponse;
-  static deserializeBinaryFromReader(message: BindAccountResponse, reader: jspb.BinaryReader): BindAccountResponse;
+  toObject(includeInstance?: boolean): RegisterResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: RegisterResponse): RegisterResponse.AsObject;
+  static serializeBinaryToWriter(message: RegisterResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RegisterResponse;
+  static deserializeBinaryFromReader(message: RegisterResponse, reader: jspb.BinaryReader): RegisterResponse;
 }
 
-export namespace BindAccountResponse {
+export namespace RegisterResponse {
   export type AsObject = {
     accountId: string,
   }

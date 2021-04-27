@@ -1,14 +1,14 @@
 syntax = "proto3";
 
-package com.mintter.backend.v1alpha;
+package com.mintter.daemon.v1alpha;
 
 // import "google/protobuf/timestamp.proto";
 // import "google/protobuf/empty.proto";
 
-option go_package = "mintter/api/go/backend/v1alpha;backend";
+option go_package = "mintter/api/go/daemon/v1alpha;daemon";
 
-// Backend API encapsulates main functionality of the Mintter daemon.
-service Backend {
+// Daemon API encapsulates main functionality of the Mintter daemon.
+service Daemon {
   // Generates cryptographic seed that is used to derive Mintter Account Key.
   // It's currenly supposed to be using LND's Aezeed implementation, which solves some
   // of the issues with BIP-39. The seed is encoded as a mnemonic of 24 human-readable words.
@@ -18,8 +18,8 @@ service Backend {
   rpc GenSeed(GenSeedRequest) returns (GenSeedResponse);
 
   // After generating the seed, this call is used to commit the seed and
-  // create an account binding between the device/peer and previously created account.
-  rpc BindAccount(BindAccountRequest) returns (BindAccountResponse);
+  // create an account binding between the device and account.
+  rpc Register(RegisterRequest) returns (RegisterResponse);
 
   rpc DialPeer(DialPeerRequest) returns (DialPeerResponse);
 }
@@ -35,13 +35,13 @@ message GenSeedResponse {
   repeated string mnemonic = 1;
 }
 
-message BindAccountRequest {
+message RegisterRequest {
   repeated string mnemonic = 1;
 
   string aezeed_passphrase = 2;
 }
 
-message BindAccountResponse {
+message RegisterResponse {
   string account_id = 1;
 }
 

@@ -7,12 +7,12 @@ stamped_sources("proto_sources") {
 
 proto_library("go_proto") {
   deps = [ ":proto_sources" ]
-  outputs = [ "$root_build_dir/../api/go/backend/v1alpha/backend.pb.go" ]
+  outputs = [ "$root_build_dir/../api/go/daemon/v1alpha/daemon.pb.go" ]
   language = "go"
 }
 
 proto_library("js_proto") {
   deps = [ ":proto_sources" ]
-  outputs = [ "$root_build_dir/../api/js/backend/v1alpha/backend_pb.js" ]
+  outputs = [ "$root_build_dir/../api/js/daemon/v1alpha/daemon_pb.js" ]
   language = "js"
 }

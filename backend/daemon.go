@@ -3,12 +3,15 @@ package backend
 import (
 	"context"
 	"fmt"
-	backend "mintter/api/go/backend/v1alpha"
-	"mintter/backend/config"
 	"net"
 	"path/filepath"
 
+	"mintter/backend/config"
+
+	daemon "mintter/api/go/daemon/v1alpha"
+
 	badger "github.com/ipfs/go-ds-badger"
+
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -37,7 +40,7 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		return fmt.Errorf("failed to create p2p node: %w", err)
 	}
 
-	back := newBackendServer(repo, p2p, nil) // TODO: wire in everything. Use Badger v3.
+	back := newBackend(repo, p2p, nil) // TODO: wire in everything. Use Badger v3.
 
 	b, err := NewDaemon(cfg, back, log.Named("backend"))
 	if err != nil {
@@ -48,20 +51,20 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 }
 
 type Daemon struct {
-	backend *backendServer
+	backend *backend
 	cfg     config.Config
 	grpcsrv *grpc.Server
 	log     *zap.Logger
 }
 
-func NewDaemon(cfg config.Config, back *backendServer, log *zap.Logger) (*Daemon, error) {
+func NewDaemon(cfg config.Config, back *backend, log *zap.Logger) (*Daemon, error) {
 	b := &Daemon{
 		backend: back,
 		grpcsrv: grpc.NewServer(),
 		log:     log,
 	}
 
-	backend.RegisterBackendServer(b.grpcsrv, b.backend)
+	daemon.RegisterDaemonServer(b.grpcsrv, b.backend)
 
 	return b, nil
 }
