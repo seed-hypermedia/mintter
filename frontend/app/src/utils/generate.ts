@@ -9,7 +9,9 @@ import mintter from '@mintter/api/v2/mintter_pb';
 import { id as getId } from '@mintter/editor/id';
 import { makeProto } from '@mintter/editor/transformers/make-proto';
 
-export function buildProfile(): mintter.Profile.AsObject {
+export function buildProfile(
+  profile?: Partial<mintter.Profile.AsObject> = {},
+): mintter.Profile.AsObject {
   return {
     peerId: faker.finance.bitcoinAddress(),
     accountId: faker.finance.bitcoinAddress(),
@@ -17,6 +19,7 @@ export function buildProfile(): mintter.Profile.AsObject {
     email: faker.internet.email(),
     bio: faker.lorem.paragraph(),
     connectionStatus: mintter.ConnectionStatus.CONNECTED,
+    ...profile,
   };
 }
 

@@ -188,11 +188,11 @@ export function initProfile(
   return mintterClient().initProfile(request);
 }
 
-export function getProfile(/* 
-  profileId?: string,
- */): Promise<mintter.GetProfileResponse> {
+export function getProfile(
+  accountId?: string,
+): Promise<mintter.GetProfileResponse> {
   const response = new mintter.GetProfileResponse();
-  const profile = makeProto(new mintter.Profile(), buildProfile());
+  const profile = makeProto(new mintter.Profile(), buildProfile({ accountId }));
   response.setProfile(profile);
 
   return Promise.resolve(response);
