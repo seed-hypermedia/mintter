@@ -1,95 +1,113 @@
 package backend
 
 import (
-	"context"
 	"fmt"
+	"io"
 	"net"
 	"path/filepath"
 
+	"mintter/backend/badger3ds"
+	"mintter/backend/cleanup"
 	"mintter/backend/config"
 
+	accounts "mintter/api/go/accounts/v1alpha"
 	daemon "mintter/api/go/daemon/v1alpha"
 
-	badger "github.com/ipfs/go-ds-badger"
-
-	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
 )
 
-func Run(ctx context.Context, cfg config.Config) (err error) {
+// StartDaemonWithConfig starts the daemon and all the required components using the provided configuration.
+// Users must not call Close on the returned daemon instance. Instead everything will shutdown when provided
+// context gets canceled. Callers may want to wait on the done channel to block until everything shuts down properly.
+func StartDaemonWithConfig(cfg config.Config) (d *Daemon, err error) {
 	log, err := zap.NewDevelopment(zap.WithCaller(false))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer log.Sync()
 
+	var clean cleanup.Stack
+	defer func() {
+		// If we returned from this function with non-nil error
+		// it means that something failed during the initialization,
+		// hence here we close all the things that may have started correctly
+		// before failure occurred.
+		if err != nil {
+			err = multierr.Append(err, clean.Close())
+		}
+	}()
+
 	repo, err := newRepo(cfg.RepoPath, log.Named("repo"))
 	if err != nil {
-		return fmt.Errorf("failed to create repo: %w", err)
+		return nil, fmt.Errorf("failed to create repo: %w", err)
 	}
 
-	ds, err := badger.NewDatastore(filepath.Join(cfg.RepoPath, "ipfs"), &badger.DefaultOptions)
+	ds, err := badger3ds.NewDatastore(badger3ds.DefaultOptions(filepath.Join(cfg.RepoPath, "badger-v3")))
 	if err != nil {
-		return fmt.Errorf("failed to create datastore: %w", err)
+		return nil, fmt.Errorf("failed to create datastore: %w", err)
 	}
-	defer ds.Close()
+	clean.Add(ds)
 
 	p2p, err := newP2PNode(cfg.P2P, ds, repo.privKey())
 	if err != nil {
-		return fmt.Errorf("failed to create p2p node: %w", err)
+		return nil, fmt.Errorf("failed to create p2p node: %w", err)
 	}
+	clean.Add(p2p)
 
-	back := newBackend(repo, p2p, nil) // TODO: wire in everything. Use Badger v3.
-
-	b, err := NewDaemon(cfg, back, log.Named("backend"))
+	patches, err := newPatchStore(repo.Device().priv, p2p.ipfs.BlockStore(), ds.DB)
 	if err != nil {
-		return fmt.Errorf("failed to create daemon: %w", err)
+		return nil, fmt.Errorf("failed to create patch store: %w", err)
 	}
 
-	return b.Run(ctx)
+	back := newBackend(repo, p2p, patches)
+
+	srv := grpc.NewServer()
+
+	daemon.RegisterDaemonServer(srv, back)
+	accounts.RegisterAccountsServer(srv, back.accounts)
+
+	lis, err := net.Listen("tcp", ":"+cfg.GRPCPort)
+	if err != nil {
+		return nil, err
+	}
+
+	// Error channel for the grpc serve call.
+	errc := make(chan error, 1)
+	go func() {
+		errc <- srv.Serve(lis)
+		log.Info("ClosedGRPCServer")
+	}()
+	clean.AddErrFunc(func() error {
+		log.Info("GracefulShutdownStarted")
+		log.Debug("Press ctrl+c again to force quit, but it's better to wait :)")
+		srv.GracefulStop()
+		return <-errc
+	})
+
+	return &Daemon{
+		clean:   &clean,
+		backend: back,
+		lis:     lis,
+	}, nil
 }
 
 type Daemon struct {
+	clean   io.Closer
 	backend *backend
-	cfg     config.Config
-	grpcsrv *grpc.Server
-	log     *zap.Logger
+	lis     net.Listener
 }
 
-func NewDaemon(cfg config.Config, back *backend, log *zap.Logger) (*Daemon, error) {
-	b := &Daemon{
-		backend: back,
-		grpcsrv: grpc.NewServer(),
-		log:     log,
-	}
-
-	daemon.RegisterDaemonServer(b.grpcsrv, b.backend)
-
-	return b, nil
+func (d *Daemon) Backend() *backend {
+	return d.backend
 }
 
-func (b *Daemon) Run(ctx context.Context) (err error) {
-	g, ctx := errgroup.WithContext(ctx)
+func (d *Daemon) GRPCAddr() net.Addr {
+	return d.lis.Addr()
+}
 
-	g.Go(func() error {
-		l, err := net.Listen("tcp", ":"+b.cfg.GRPCPort)
-		if err != nil {
-			return err
-		}
-
-		return b.grpcsrv.Serve(l)
-	})
-
-	g.Go(func() error {
-		<-ctx.Done()
-		b.log.Info("GracefulShutdownStarted")
-		b.log.Debug("Press ctrl+c again to force quit, but it's better to wait :)")
-
-		b.grpcsrv.GracefulStop()
-
-		return nil
-	})
-
-	return g.Wait()
+func (d *Daemon) Close() error {
+	return d.clean.Close()
 }
