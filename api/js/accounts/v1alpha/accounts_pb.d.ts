@@ -98,40 +98,6 @@ export namespace Device {
   }
 }
 
-export class AccountEvent extends jspb.Message {
-  getDeviceRegistered(): DeviceRegistered | undefined;
-  setDeviceRegistered(value?: DeviceRegistered): void;
-  hasDeviceRegistered(): boolean;
-  clearDeviceRegistered(): void;
-
-  getProfiledUpdated(): ProfileUpdated | undefined;
-  setProfiledUpdated(value?: ProfileUpdated): void;
-  hasProfiledUpdated(): boolean;
-  clearProfiledUpdated(): void;
-
-  getDataCase(): AccountEvent.DataCase;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): AccountEvent.AsObject;
-  static toObject(includeInstance: boolean, msg: AccountEvent): AccountEvent.AsObject;
-  static serializeBinaryToWriter(message: AccountEvent, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): AccountEvent;
-  static deserializeBinaryFromReader(message: AccountEvent, reader: jspb.BinaryReader): AccountEvent;
-}
-
-export namespace AccountEvent {
-  export type AsObject = {
-    deviceRegistered?: DeviceRegistered.AsObject,
-    profiledUpdated?: ProfileUpdated.AsObject,
-  }
-
-  export enum DataCase { 
-    DATA_NOT_SET = 0,
-    DEVICE_REGISTERED = 4,
-    PROFILED_UPDATED = 5,
-  }
-}
-
 export class DeviceRegistered extends jspb.Message {
   getProof(): Uint8Array | string;
   getProof_asU8(): Uint8Array;
