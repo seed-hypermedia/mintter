@@ -3,7 +3,6 @@ syntax = "proto3";
 package com.mintter.accounts.v1alpha;
 
 import "google/protobuf/timestamp.proto";
-// import "google/protobuf/empty.proto";
 
 option go_package = "mintter/api/go/accounts/v1alpha;accounts";
 
@@ -63,14 +62,6 @@ message Device {
 
   // Time where this device was registered.
   google.protobuf.Timestamp register_time = 2;
-}
-
-message AccountEvent {
-  oneof data {
-    DeviceRegistered device_registered = 4;
-
-    ProfileUpdated profiled_updated = 5;
-  }
 }
 
 message DeviceRegistered {
