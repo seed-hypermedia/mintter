@@ -124,7 +124,9 @@ func (r *repo) CommitAccount(k crypto.PubKey) error {
 		return fmt.Errorf("account is already committed")
 	}
 
-	r.setAccount(k)
+	if err := r.setAccount(k); err != nil {
+		return err
+	}
 
 	return r.writeAccountFile(k)
 }
@@ -192,7 +194,9 @@ func (r *repo) setupKeys(pk crypto.PrivKey) error {
 
 	accKey, err := r.readAccountFile()
 	if err == nil {
-		r.setAccount(accKey)
+		if err := r.setAccount(accKey); err != nil {
+			return err
+		}
 	} else if !os.IsNotExist(err) {
 		return fmt.Errorf("failed to read account file: %w", err)
 	}
