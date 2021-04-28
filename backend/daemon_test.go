@@ -33,16 +33,18 @@ func TestDaemonEndToEnd(t *testing.T) {
 
 	d, err := StartDaemonWithConfig(cfg)
 	require.NoError(t, err)
-	t.Cleanup(func() {
+	defer func() {
 		require.NoError(t, d.Close())
-	})
+	}()
 
 	cc, err := grpc.Dial(d.lis.Addr().String(),
 		grpc.WithBlock(),
 		grpc.WithInsecure(),
 	)
 	require.NoError(t, err)
-	defer cc.Close()
+	defer func() {
+		require.NoError(t, cc.Close())
+	}()
 
 	accs := accounts.NewAccountsClient(cc)
 	resp, err := accs.GetAccount(ctx, &accounts.GetAccountRequest{})

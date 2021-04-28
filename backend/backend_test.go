@@ -155,8 +155,13 @@ func makeTestBackend(t *testing.T, name string, ready bool) *testBackend {
 	bs := blockstore.NewBlockstore(ds)
 
 	db := testutil.MakeBadgerV3(t)
+	ddb, err := newDB(db)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, ddb.Close())
+	})
 
-	patchStore, err := newPatchStore(repo.Device().priv, bs, db)
+	patchStore, err := newPatchStore(repo.Device().priv, bs, ddb)
 	require.NoError(t, err)
 	srv := newBackend(repo, p2p, patchStore)
 

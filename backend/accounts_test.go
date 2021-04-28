@@ -26,7 +26,7 @@ func TestGetAccount_Own(t *testing.T) {
 		},
 	}
 
-	acc, err := alice.backend.accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
+	acc, err := alice.backend.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, acc, "accounts don't match")
 }
@@ -40,11 +40,11 @@ func TestUpdateProfile(t *testing.T) {
 		Bio:   "Hacker",
 	}
 
-	acc, err := alice.backend.accounts.UpdateProfile(ctx, update)
+	acc, err := alice.backend.Accounts.UpdateProfile(ctx, update)
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, update, acc.Profile, "account must be equal")
 
-	storedAcc, err := alice.backend.accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
+	storedAcc, err := alice.backend.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, acc, storedAcc, "get account must return updated account")
 }

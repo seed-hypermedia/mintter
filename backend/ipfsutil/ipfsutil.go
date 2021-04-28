@@ -24,7 +24,6 @@ import (
 	"github.com/ipfs/go-unixfs/importer/balanced"
 	"github.com/ipfs/go-unixfs/importer/helpers"
 	"github.com/ipfs/go-unixfs/importer/trickle"
-	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/routing"
@@ -310,16 +309,6 @@ func (p *Node) Provider() provider.System {
 	return p.reprovider
 }
 
-// NewCID creates a new CID from data.
-func NewCID(codec, hashType uint64, data []byte) (cid.Cid, error) {
-	mh, err := multihash.Sum(data, hashType, -1)
-	if err != nil {
-		return cid.Undef, err
-	}
-
-	return cid.NewCidV1(codec, mh), nil
-}
-
 // NewBlock creates a new IPFS block assuming data is dag-cbor. It uses
 // blake2 as the hash function as looks like this is what the community is going for now.
 func NewBlock(data []byte) (blocks.Block, error) {
@@ -329,19 +318,4 @@ func NewBlock(data []byte) (blocks.Block, error) {
 	}
 
 	return blocks.NewBlockWithCid(data, id)
-}
-
-// PubKeyAsCID encodes public key as CID.
-func PubKeyAsCID(key crypto.PubKey) (cid.Cid, error) {
-	_, ok := key.(*crypto.Ed25519PublicKey)
-	if !ok {
-		return cid.Undef, fmt.Errorf("only Ed25519 keys can be encoded as CIDs, got %T", key)
-	}
-
-	data, err := crypto.MarshalPublicKey(key)
-	if err != nil {
-		return cid.Undef, err
-	}
-
-	return NewCID(cid.Libp2pKey, multihash.IDENTITY, data)
 }

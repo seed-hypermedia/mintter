@@ -231,5 +231,85 @@ proto.com.mintter.accounts.v1alpha.AccountsPromiseClient.prototype.updateProfile
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.mintter.accounts.v1alpha.ListAccountsRequest,
+ *   !proto.com.mintter.accounts.v1alpha.ListAccountsResponse>}
+ */
+const methodDescriptor_Accounts_ListAccounts = new grpc.web.MethodDescriptor(
+  '/com.mintter.accounts.v1alpha.Accounts/ListAccounts',
+  grpc.web.MethodType.UNARY,
+  proto.com.mintter.accounts.v1alpha.ListAccountsRequest,
+  proto.com.mintter.accounts.v1alpha.ListAccountsResponse,
+  /**
+   * @param {!proto.com.mintter.accounts.v1alpha.ListAccountsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.accounts.v1alpha.ListAccountsResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.com.mintter.accounts.v1alpha.ListAccountsRequest,
+ *   !proto.com.mintter.accounts.v1alpha.ListAccountsResponse>}
+ */
+const methodInfo_Accounts_ListAccounts = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.com.mintter.accounts.v1alpha.ListAccountsResponse,
+  /**
+   * @param {!proto.com.mintter.accounts.v1alpha.ListAccountsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.accounts.v1alpha.ListAccountsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.mintter.accounts.v1alpha.ListAccountsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.accounts.v1alpha.ListAccountsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.accounts.v1alpha.ListAccountsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.mintter.accounts.v1alpha.AccountsClient.prototype.listAccounts =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.mintter.accounts.v1alpha.Accounts/ListAccounts',
+      request,
+      metadata || {},
+      methodDescriptor_Accounts_ListAccounts,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.mintter.accounts.v1alpha.ListAccountsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.mintter.accounts.v1alpha.ListAccountsResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.com.mintter.accounts.v1alpha.AccountsPromiseClient.prototype.listAccounts =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.mintter.accounts.v1alpha.Accounts/ListAccounts',
+      request,
+      metadata || {},
+      methodDescriptor_Accounts_ListAccounts);
+};
+
+
 module.exports = proto.com.mintter.accounts.v1alpha;
 

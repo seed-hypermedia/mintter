@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package com.mintter.networking.v1alpha;
+
+option go_package = "mintter/api/go/networking/v1alpha;network";
+
+// Networking API service of the Mintter daemon.
+service Networking {
+  rpc StartAccountDiscovery(StartAccountDiscoveryRequest) returns (StartAccountDiscoveryResponse);
+
+  rpc GetPeerAddrs(GetPeerAddrsRequest) returns (GetPeerAddrsResponse);
+}
+
+message StartAccountDiscoveryRequest {
+  string account_id = 1;
+}
+
+message StartAccountDiscoveryResponse {}
+
+message GetPeerAddrsRequest {
+  // CID-encoded Peer ID.
+  string peer_id = 1;
+}
+
+message GetPeerAddrsResponse {
+  // List of known multiaddrs of the request peer.
+  repeated string addrs = 1;
+}
