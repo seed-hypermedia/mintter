@@ -34,6 +34,30 @@ func (s *Stack) AddErrFunc(fn ...func() error) {
 	}
 }
 
+// Go spins up a new goroutine to run the run function,
+// and adds close function to the cleanup stack.
+// Thus when you close the stack, close function will be invoked,
+// and should signal the run goroutine to stop and wait for its completion.
+// This can be useful for starting and gracefully stopping web servers.
+//
+// For example:
+//
+// var srv *http.Server
+// clean.Go(func() error {
+// 	return srv.ListenAndServe()
+// }, func() error {
+// 	return srv.Shutdown(context.Background())
+// })
+func (s *Stack) Go(run func() error, close func() error) {
+	c := make(chan error, 1)
+	go func() {
+		c <- run()
+	}()
+	s.AddErrFunc(func() error {
+		return multierr.Combine(close(), <-c)
+	})
+}
+
 // Close the stack in the LIFO order. It will only execute once and will remember the error.
 func (s *Stack) Close() error {
 	s.once.Do(func() {

@@ -6,6 +6,7 @@ filegroup(
         "//proto/accounts/v1alpha:go",
         "//proto/daemon/v1alpha:go",
         "//proto/documents/v1alpha:go",
+        "//proto/networking/v1alpha:go",
         "//proto/p2p:go",
         "//proto/peer/v1alpha:go",
         "//proto/v2:go",
@@ -18,6 +19,7 @@ filegroup(
         "//proto/accounts/v1alpha:js",
         "//proto/daemon/v1alpha:js",
         "//proto/documents/v1alpha:js",
+        "//proto/networking/v1alpha:js",
         "//proto/v2:js",
     ],
 )

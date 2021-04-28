@@ -7,7 +7,6 @@ import (
 	accounts "mintter/api/go/accounts/v1alpha"
 
 	"github.com/ipfs/go-cid"
-	"github.com/multiformats/go-multiaddr"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -77,6 +76,10 @@ func (srv *accountsServer) UpdateProfile(ctx context.Context, in *accounts.Profi
 	return account, nil
 }
 
+func (srv *accountsServer) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {
+	return nil, nil
+}
+
 func (srv *accountsServer) accountState(ctx context.Context, id AccountID) (*state, *accounts.Account, error) {
 	state, err := srv.patches.LoadState(ctx, cid.Cid(id))
 	if err != nil {
@@ -134,14 +137,4 @@ func (srv *accountsServer) getDevice(c cid.Cid, sp signedPatch) (*accounts.Devic
 		PeerId:       c.String(),
 		RegisterTime: timestamppb.New(sp.CreateTime),
 	}, nil
-}
-
-func addrSlice(addrs []multiaddr.Multiaddr) []string {
-	out := make([]string, len(addrs))
-
-	for i, a := range addrs {
-		out[i] = a.String()
-	}
-
-	return out
 }

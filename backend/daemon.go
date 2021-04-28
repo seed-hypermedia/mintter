@@ -10,9 +10,6 @@ import (
 	"mintter/backend/cleanup"
 	"mintter/backend/config"
 
-	accounts "mintter/api/go/accounts/v1alpha"
-	daemon "mintter/api/go/daemon/v1alpha"
-
 	"google.golang.org/grpc"
 
 	"go.uber.org/multierr"
@@ -38,6 +35,14 @@ func StartDaemonWithConfig(cfg config.Config) (d *Daemon, err error) {
 		if err != nil {
 			err = multierr.Append(err, clean.Close())
 		}
+
+		// This will be the top closer on the stack. Just to make sure
+		// that we say something to the user when the shutdown starts.
+		clean.AddErrFunc(func() error {
+			log.Info("GracefulShutdownStarted")
+			log.Debug("Press ctrl+c again to force quit, but it's better to wait :)")
+			return nil
+		})
 	}()
 
 	repo, err := newRepo(cfg.RepoPath, log.Named("repo"))
@@ -57,7 +62,13 @@ func StartDaemonWithConfig(cfg config.Config) (d *Daemon, err error) {
 	}
 	clean.Add(p2p)
 
-	patches, err := newPatchStore(repo.Device().priv, p2p.ipfs.BlockStore(), ds.DB)
+	db, err := newDB(ds.DB)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create db: %w", err)
+	}
+	clean.Add(db)
+
+	patches, err := newPatchStore(repo.Device().priv, p2p.ipfs.BlockStore(), db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create patch store: %w", err)
 	}
@@ -66,25 +77,20 @@ func StartDaemonWithConfig(cfg config.Config) (d *Daemon, err error) {
 
 	srv := grpc.NewServer()
 
-	daemon.RegisterDaemonServer(srv, back)
-	accounts.RegisterAccountsServer(srv, back.accounts)
+	back.RegisterGRPCServices(srv)
 
 	lis, err := net.Listen("tcp", ":"+cfg.GRPCPort)
 	if err != nil {
 		return nil, err
 	}
 
-	// Error channel for the grpc serve call.
-	errc := make(chan error, 1)
-	go func() {
-		errc <- srv.Serve(lis)
+	clean.Go(func() error {
+		err := srv.Serve(lis)
 		log.Info("ClosedGRPCServer")
-	}()
-	clean.AddErrFunc(func() error {
-		log.Info("GracefulShutdownStarted")
-		log.Debug("Press ctrl+c again to force quit, but it's better to wait :)")
+		return err
+	}, func() error {
 		srv.GracefulStop()
-		return <-errc
+		return nil
 	})
 
 	return &Daemon{
