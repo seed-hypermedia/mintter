@@ -24,7 +24,10 @@ func StartDaemonWithConfig(cfg config.Config) (d *Daemon, err error) {
 	if err != nil {
 		return nil, err
 	}
-	defer log.Sync()
+	defer func() {
+		err := log.Sync()
+		_ = err
+	}()
 
 	var clean cleanup.Stack
 	defer func() {

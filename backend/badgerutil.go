@@ -62,8 +62,8 @@ func makeKeyBuf(p keyPrefix, t keyType, size int) ([]byte, int) {
 
 func makeLastUIDKey() []byte {
 	const t = "lastuid"
-	k, pos := makeKeyBuf(prefixInternal, keyTypeData, len(t))
-	pos += copy(k, t)
+	k, _ := makeKeyBuf(prefixInternal, keyTypeData, len(t))
+	copy(k, t)
 	return k
 }
 
@@ -84,7 +84,6 @@ func makeUIDPrefix(codec uint64) []byte {
 	k, pos := makeKeyBuf(prefixInternal, keyTypeData, len(t)+8)
 	pos += copy(k, t)
 	binary.BigEndian.PutUint64(k[pos:], codec)
-	pos += 8
 	return k
 }
 
@@ -93,14 +92,12 @@ func makePredicateKey(p predicate, uid uint64) []byte {
 	k[pos] = byte(p)
 	pos++
 	binary.BigEndian.PutUint64(k[pos:], uid)
-	pos += 8
 	return k
 }
 
 func makePredicatePrefix(p predicate) []byte {
 	k, pos := makeKeyBuf(prefixDefault, keyTypeData, 1)
 	k[pos] = byte(p)
-	pos++
 	return k
 }
 
@@ -111,7 +108,6 @@ func makeCompoundPredicateKey(p predicate, rel, obj uint64) []byte {
 	binary.BigEndian.PutUint64(k[pos:], rel)
 	pos += 8
 	binary.BigEndian.PutUint64(k[pos:], obj)
-	pos += 8
 	return k
 }
 
@@ -120,7 +116,6 @@ func makeCompoundPredicatePrefix(p predicate, rel uint64) []byte {
 	k[pos] = byte(p)
 	pos++
 	binary.BigEndian.PutUint64(k[pos:], rel)
-	pos += 8
 	return k
 }
 
