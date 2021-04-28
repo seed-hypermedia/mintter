@@ -49,7 +49,8 @@ func makeTestRepo(t *testing.T, tt Tester) *repo {
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, os.RemoveAll(dir))
-		log.Sync()
+		err := log.Sync()
+		_ = err
 	})
 
 	return repo
