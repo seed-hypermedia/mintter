@@ -1,7 +1,6 @@
 package backend
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -278,22 +277,6 @@ func (s *patchStore) Unwatch(c chan<- signedPatch) {
 	defer s.mu.Unlock()
 
 	delete(s.subs, c)
-}
-
-func makePrefixHead(obj cid.Cid) []byte {
-	var b bytes.Buffer
-	b.WriteString("mtt/objects/")
-	b.Write(obj.Bytes())
-	return b.Bytes()
-}
-
-func makeKeyHead(obj, peer cid.Cid) []byte {
-	var b bytes.Buffer
-	b.WriteString("mtt/objects/")
-	b.Write(obj.Bytes())
-	b.WriteString("/peers/")
-	b.Write(peer.Bytes())
-	return b.Bytes()
 }
 
 type head struct {
