@@ -1,6 +1,6 @@
 import { /* useEffect, */ useReducer, useCallback } from 'react';
 
-// import type documents from '@mintter/api/documents/v1alpha/documents_pb';
+import type documents from '@mintter/api/documents/v1alpha/documents_pb';
 
 import { initialValue, EditorState /* , editorInitialValue */ } from './editor';
 

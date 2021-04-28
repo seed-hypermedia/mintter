@@ -15,6 +15,6 @@ export const createPath = (
   return `${match.url}${match.url === '/' ? '' : '/'}${path}`;
 };
 
-export const getPath = (match: Match<Record<string, string>>) => {
+export const getPath = (match: Match<Record<string, string | undefined>>) => {
   return match.path.includes(ADMIN_ROUTE) ? `/${ADMIN_ROUTE}` : '';
 };
