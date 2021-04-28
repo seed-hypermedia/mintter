@@ -1,0 +1,18 @@
+import("//build/protobuf/protobuf.gni")
+import("//build/sources/sources.gni")
+
+stamped_sources("proto_sources") {
+  sources = [ "*.proto" ]
+}
+
+proto_library("go_proto") {
+  deps = [ ":proto_sources" ]
+  outputs = [ "$root_build_dir/../api/go/networking/v1alpha/networking.pb.go" ]
+  language = "go"
+}
+
+proto_library("js_proto") {
+  deps = [ ":proto_sources" ]
+  outputs = [ "$root_build_dir/../api/js/networking/v1alpha/networking_pb.js" ]
+  language = "js"
+}

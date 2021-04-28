@@ -113,7 +113,13 @@ func makeTestPatchStore(t *testing.T, name string) *patchStore {
 
 	key := testutil.MakeProfile(t, name).Peer.PrivKey.PrivKey
 
-	store, err := newPatchStore(key, bs, db)
+	ddb, err := newDB(db)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, ddb.Close())
+	})
+
+	store, err := newPatchStore(key, bs, ddb)
 	require.NoError(t, err)
 
 	return store

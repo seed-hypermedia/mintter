@@ -5,6 +5,8 @@ import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/t
 import {
   Account,
   GetAccountRequest,
+  ListAccountsRequest,
+  ListAccountsResponse,
   Profile} from './accounts_pb';
 
 export class AccountsClient {
@@ -26,6 +28,13 @@ export class AccountsClient {
                response: Account) => void
   ): grpcWeb.ClientReadableStream<Account>;
 
+  listAccounts(
+    request: ListAccountsRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: ListAccountsResponse) => void
+  ): grpcWeb.ClientReadableStream<ListAccountsResponse>;
+
 }
 
 export class AccountsPromiseClient {
@@ -42,6 +51,11 @@ export class AccountsPromiseClient {
     request: Profile,
     metadata?: grpcWeb.Metadata
   ): Promise<Account>;
+
+  listAccounts(
+    request: ListAccountsRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<ListAccountsResponse>;
 
 }
 

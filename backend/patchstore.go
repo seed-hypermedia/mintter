@@ -9,13 +9,14 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
-	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
-	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"golang.org/x/sync/errgroup"
+
+	blocks "github.com/ipfs/go-block-format"
+	blockstore "github.com/ipfs/go-ipfs-blockstore"
+	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 )
 
 // nowFunc is overwritten in tests.
@@ -24,36 +25,30 @@ var nowFunc = func() time.Time {
 }
 
 type patchStore struct {
-	db *badger.DB
-
-	patches map[cid.Cid]map[cid.Cid][]patchIndexItem // object-id -> peer-id => patches
-	deps    map[cid.Cid][]cid.Cid                    // object-id => cids of unreferenced patches
-
-	bs   blockstore.Blockstore
 	k    crypto.PrivKey
 	peer cid.Cid
 
+	db       *db
+	bs       blockstore.Blockstore
 	exchange exchange.Interface
 
 	mu   sync.RWMutex
 	subs map[chan<- signedPatch]struct{}
 }
 
-func newPatchStore(k crypto.PrivKey, bs blockstore.Blockstore, db *badger.DB) (*patchStore, error) {
+func newPatchStore(k crypto.PrivKey, bs blockstore.Blockstore, db *db) (*patchStore, error) {
 	pid, err := peer.IDFromPrivateKey(k)
 	if err != nil {
 		return nil, err
 	}
 
 	return &patchStore{
-		db: db,
+		k:    k,
+		peer: peer.ToCid(pid),
 
-		patches: make(map[cid.Cid]map[cid.Cid][]patchIndexItem),
-		deps:    make(map[cid.Cid][]cid.Cid),
-		k:       k,
-		peer:    peer.ToCid(pid),
-		bs:      bs,
-		subs:    make(map[chan<- signedPatch]struct{}),
+		db:   db,
+		bs:   bs,
+		subs: make(map[chan<- signedPatch]struct{}),
 	}, nil
 }
 
@@ -61,7 +56,18 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 	txn := s.db.NewTransaction(true)
 	defer txn.Discard()
 
-	headKey := makeKeyHead(sp.ObjectID, sp.peer)
+	ouid, err := s.db.uidFromCID(txn, sp.ObjectID, true)
+	if err != nil {
+		return err
+	}
+
+	puid, err := s.db.uidFromCID(txn, sp.peer, true)
+	if err != nil {
+		return err
+	}
+
+	headKey := makeCompoundPredicateKey(predicatePatchHead, ouid, puid)
+
 	var h head
 	{
 		item, err := txn.Get(headKey)
@@ -187,11 +193,20 @@ func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error)
 }
 
 func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid) ([]head, error) {
+	ouid, err := s.db.uidFromCID(txn, obj, false)
+	if err != nil && err != badger.ErrKeyNotFound {
+		return nil, err
+	}
+
+	if err == badger.ErrKeyNotFound {
+		return nil, nil
+	}
+
 	var out []head
 
 	opts := badger.DefaultIteratorOptions
 	opts.PrefetchSize = 10
-	opts.Prefix = makePrefixHead(obj)
+	opts.Prefix = makeCompoundPredicatePrefix(predicatePatchHead, ouid)
 	it := txn.NewIterator(opts)
 	defer it.Close()
 

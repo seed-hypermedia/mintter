@@ -8,6 +8,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/lightningnetwork/lnd/aezeed"
 	"github.com/multiformats/go-multiaddr"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -34,11 +35,11 @@ type backend struct {
 	p2p   lazyP2PNode
 	store *patchStore
 
-	// Paranoia Mode: we want only one BindAccount call at the time.
-	bindAccountMu sync.Mutex
+	// Paranoia Mode: we don't want any concurrent registration calls happening.
+	registerMu sync.Mutex
 
 	// List of API services
-	accounts *accountsServer
+	Accounts accounts.AccountsServer
 }
 
 func newBackend(r *repo, p2p *p2pNode, store *patchStore) *backend {
@@ -49,7 +50,7 @@ func newBackend(r *repo, p2p *p2pNode, store *patchStore) *backend {
 		p2p:   makeLazyP2PNode(p2p, r.Ready()),
 		store: store,
 
-		accounts: &accountsServer{
+		Accounts: &accountsServer{
 			repo:    r,
 			p2p:     makeLazyP2PNode(p2p, r.Ready()),
 			patches: store,
@@ -57,6 +58,13 @@ func newBackend(r *repo, p2p *p2pNode, store *patchStore) *backend {
 	}
 
 	return srv
+}
+
+// RegisterGRPCServices registers the underlying backend API services with a given gRPC server instance.
+// This must be called before calling Serve() on the gRPC server.
+func (srv *backend) RegisterGRPCServices(s *grpc.Server) {
+	daemon.RegisterDaemonServer(s, srv)
+	accounts.RegisterAccountsServer(s, srv.Accounts)
 }
 
 func (srv *backend) GenSeed(ctx context.Context, req *daemon.GenSeedRequest) (*daemon.GenSeedResponse, error) {
@@ -73,8 +81,8 @@ func (srv *backend) GenSeed(ctx context.Context, req *daemon.GenSeedRequest) (*d
 }
 
 func (srv *backend) Register(ctx context.Context, req *daemon.RegisterRequest) (*daemon.RegisterResponse, error) {
-	srv.bindAccountMu.Lock()
-	defer srv.bindAccountMu.Unlock()
+	srv.registerMu.Lock()
+	defer srv.registerMu.Unlock()
 
 	var m aezeed.Mnemonic
 
