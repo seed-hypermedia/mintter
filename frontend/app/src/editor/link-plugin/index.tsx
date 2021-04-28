@@ -121,7 +121,7 @@ export const withLinks = (options: any) => <T extends ReactEditor>(
     isUrl: isUrlProtocol,
   });
 
-  const { insertText, insertData, normalizeNode } = editor;
+  const { insertText, insertData /* , normalizeNode */ } = editor;
 
   const DEFAULT_RANGE_BEFORE_OPTIONS: RangeBeforeOptions = {
     matchString: ' ',

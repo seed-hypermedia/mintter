@@ -231,7 +231,7 @@ export function blockSerialize(
 
   return block;
 }
-export function blockDeserialize(entry: documents.Block): any {}
+export function blockDeserialize(/* entry: documents.Block */): any {}
 export type PartialTextRun = Partial<documents.TextRun.AsObject>;
 export function createTextRun(
   entry: PartialTextRun,
@@ -324,6 +324,7 @@ export function inlineElementDeserialize(
   }
 
   if (obj.quote) {
+    // noop
   }
 }
 
