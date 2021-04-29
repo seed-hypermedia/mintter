@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	p2p "mintter/api/go/p2p/v1alpha"
+	"mintter/backend/badgerutil"
+	"mintter/backend/ipfsutil"
 	"sync"
 	"time"
 
@@ -19,6 +21,17 @@ import (
 	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 )
 
+var (
+	predPeersCID     = []byte("peers/cid")
+	predPeersObjects = []byte("peers/objects/")
+
+	predObjectsAccountCID   = []byte("objects/accounts/cid")
+	predObjectsDocumentsCID = []byte("objects/documents/cid")
+
+	kindPeers   = []byte("peers")
+	kindObjects = []byte("objects")
+)
+
 // nowFunc is overwritten in tests.
 var nowFunc = func() time.Time {
 	return time.Now().UTC()
@@ -28,7 +41,7 @@ type patchStore struct {
 	k    crypto.PrivKey
 	peer cid.Cid
 
-	db       *db
+	db       *badgerutil.DB
 	bs       blockstore.Blockstore
 	exchange exchange.Interface
 
@@ -36,7 +49,7 @@ type patchStore struct {
 	subs map[chan<- signedPatch]struct{}
 }
 
-func newPatchStore(k crypto.PrivKey, bs blockstore.Blockstore, db *db) (*patchStore, error) {
+func newPatchStore(k crypto.PrivKey, bs blockstore.Blockstore, db *badgerutil.DB) (*patchStore, error) {
 	pid, err := peer.IDFromPrivateKey(k)
 	if err != nil {
 		return nil, err
@@ -56,32 +69,26 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 	txn := s.db.NewTransaction(true)
 	defer txn.Discard()
 
-	ouid, err := s.db.uidFromCID(txn, sp.ObjectID, true)
+	_, ohash := ipfsutil.DecodeCID(sp.ObjectID)
+	_, phash := ipfsutil.DecodeCID(sp.peer)
+
+	ouid, err := s.db.UID(txn, kindObjects, ohash)
 	if err != nil {
 		return err
 	}
 
-	puid, err := s.db.uidFromCID(txn, sp.peer, true)
+	puid, err := s.db.UID(txn, kindPeers, phash)
 	if err != nil {
 		return err
 	}
 
-	headKey := makeCompoundPredicateKey(predicatePatchHead, ouid, puid)
+	headPred := badgerutil.PredicateWithUID(predPeersObjects, ouid)
 
 	h := &p2p.PeerVersion{}
 	{
-		item, err := txn.Get(headKey)
-		switch err {
-		case nil:
-			if err := item.Value(func(data []byte) error {
-				return proto.Unmarshal(data, h)
-			}); err != nil {
-				return err
-			}
-		case badger.ErrKeyNotFound:
-			// Leave head with 0 value.
-		default:
-			return err
+		err := s.db.GetData(txn, headPred, puid, badgerutil.DecodeProto(h))
+		if err != nil && err != badger.ErrKeyNotFound {
+			return fmt.Errorf("failed to get head: %w", err)
 		}
 	}
 
@@ -117,7 +124,7 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 		return err
 	}
 
-	if err := txn.Set(headKey, newHead); err != nil {
+	if err := s.db.SetData(txn, headPred, puid, newHead); err != nil {
 		return err
 	}
 
@@ -137,11 +144,15 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 }
 
 func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error) {
-	txn := s.db.NewTransaction(false)
-	defer txn.Discard()
-
-	heads, err := s.getHeads(ctx, txn, obj)
-	if err != nil {
+	var heads []*p2p.PeerVersion
+	if err := s.db.View(func(txn *badger.Txn) error {
+		v, err := s.getHeads(ctx, txn, obj)
+		if err != nil {
+			return err
+		}
+		heads = v
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -204,10 +215,26 @@ func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error)
 	return newState(obj, out), nil
 }
 
+func (s *patchStore) ListObjects(ctx context.Context, codec uint64, after string, limit int) ([]cid.Cid, error) {
+	// if err := s.db.View(func(txn *badger.Txn) error {
+	// 	defer it.Close()
+
+	// 	for it.Rewind(); it.Valid(); it.Next() {
+	// 		// item := it.Item()
+	// 		// s.db.getCIDValue()
+	// 	}
+	// 	return nil
+	// }); err != nil {
+	// 	return nil, fmt.Errorf("transaction failed: %w", err)
+	// }
+	return nil, nil
+}
+
 func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
-	ouid, err := s.db.uidFromCID(txn, obj, false)
+	_, ohash := ipfsutil.DecodeCID(obj)
+	ouid, err := s.db.UIDForTermReadOnly(txn, kindObjects, ohash)
 	if err != nil && err != badger.ErrKeyNotFound {
-		return nil, err
+		return nil, fmt.Errorf("failed to get head: %w", err)
 	}
 
 	if err == badger.ErrKeyNotFound {
@@ -216,24 +243,15 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid)
 
 	var out []*p2p.PeerVersion
 
-	opts := badger.DefaultIteratorOptions
-	opts.PrefetchSize = 10
-	opts.Prefix = makeCompoundPredicatePrefix(predicatePatchHead, ouid)
-	it := txn.NewIterator(opts)
+	it := s.db.ScanData(txn, badgerutil.PredicateWithUID(predPeersObjects, ouid), badgerutil.WithScanPrefetchSize(10))
 	defer it.Close()
 
 	for it.Rewind(); it.Valid(); it.Next() {
-		item := it.Item()
-		if err := item.Value(func(data []byte) error {
-			h := &p2p.PeerVersion{}
-			if err := proto.Unmarshal(data, h); err != nil {
-				return err
-			}
-			out = append(out, h)
-			return nil
-		}); err != nil {
+		h := &p2p.PeerVersion{}
+		if err := it.Item().Value(badgerutil.DecodeProto(h)); err != nil {
 			return nil, err
 		}
+		out = append(out, h)
 	}
 
 	return out, nil

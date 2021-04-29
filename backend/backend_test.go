@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	daemon "mintter/api/go/daemon/v1alpha"
+	"mintter/backend/badgerutil"
 	"mintter/backend/config"
 	"mintter/backend/testutil"
 )
@@ -154,14 +155,13 @@ func makeTestBackend(t *testing.T, name string, ready bool) *testBackend {
 
 	bs := blockstore.NewBlockstore(ds)
 
-	db := testutil.MakeBadgerV3(t)
-	ddb, err := newDB(db)
+	db, err := badgerutil.NewDB(testutil.MakeBadgerV3(t), []byte("!mtttest"))
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		require.NoError(t, ddb.Close())
+		require.NoError(t, db.Close())
 	})
 
-	patchStore, err := newPatchStore(repo.Device().priv, bs, ddb)
+	patchStore, err := newPatchStore(repo.Device().priv, bs, db)
 	require.NoError(t, err)
 	srv := newBackend(repo, p2p, patchStore)
 
