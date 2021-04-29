@@ -7,6 +7,11 @@ import (
 	"math"
 )
 
+var (
+	lastUIDPred = []byte("last-uid")
+	uidPred     = []byte("uid")
+)
+
 const (
 	PrefixDefault  byte = 0x00
 	PrefixInternal byte = 0x02
@@ -14,42 +19,6 @@ const (
 	KeyTypeData  byte = 0x00
 	KeyTypeIndex byte = 0x02
 )
-
-// UIDKey creates a key for the uid value.
-func UIDKey(namespace, kind, xid []byte) []byte {
-	lk := len(kind)
-	lx := len(xid)
-	k, pos := makeKeyBuf(namespace, PrefixInternal, KeyTypeIndex, uidPred, lk+lx)
-	pos += copy(k[pos:], kind)
-	pos += copy(k[pos:], xid)
-	return k
-}
-
-// DataKey creates a new key for data attribute.
-func DataKey(namespace, predicate []byte, uid uint64) []byte {
-	k, pos := makeKeyBuf(namespace, PrefixDefault, KeyTypeData, predicate, 8) // 8 bytes for uid.
-	binary.BigEndian.PutUint64(k[pos:], uid)
-	return k
-}
-
-// DataPrefix creates a new prefix for data attribute.
-func DataPrefix(namespace, predicate []byte) []byte {
-	k, _ := makeKeyBuf(namespace, PrefixDefault, KeyTypeData, predicate, 0)
-	return k
-}
-
-// Index key creates a new key for indexed attribute.
-func IndexKey(namespace, predicate, term []byte) []byte {
-	k, pos := makeKeyBuf(namespace, PrefixDefault, KeyTypeIndex, predicate, len(term))
-	copy(k[pos:], term)
-	return k
-}
-
-// Index prefix creates a prefix for indexed values of the given predicate.
-func IndexPrefix(namespace, predicate []byte) []byte {
-	k, _ := makeKeyBuf(namespace, PrefixDefault, KeyTypeIndex, predicate, 0)
-	return k
-}
 
 // ParseKey parses our key structure.
 func ParseKey(namespace, k []byte) (ParsedKey, error) {
@@ -103,6 +72,42 @@ func PredicateWithUID(pred []byte, uid uint64) []byte {
 	k := make([]byte, len(pred)+8)
 	n := copy(k, pred)
 	binary.BigEndian.PutUint64(k[n:], uid)
+	return k
+}
+
+// uidKey creates a key for the uid value.
+func uidKey(namespace, kind, xid []byte) []byte {
+	lk := len(kind)
+	lx := len(xid)
+	k, pos := makeKeyBuf(namespace, PrefixInternal, KeyTypeIndex, uidPred, lk+lx)
+	pos += copy(k[pos:], kind)
+	pos += copy(k[pos:], xid)
+	return k
+}
+
+// dataKey creates a new key for data attribute.
+func dataKey(namespace, predicate []byte, uid uint64) []byte {
+	k, pos := makeKeyBuf(namespace, PrefixDefault, KeyTypeData, predicate, 8) // 8 bytes for uid.
+	binary.BigEndian.PutUint64(k[pos:], uid)
+	return k
+}
+
+// dataPrefix creates a new prefix for data attribute.
+func dataPrefix(namespace, predicate []byte) []byte {
+	k, _ := makeKeyBuf(namespace, PrefixDefault, KeyTypeData, predicate, 0)
+	return k
+}
+
+// index key creates a new key for indexed attribute.
+func indexKey(namespace, predicate, term []byte) []byte {
+	k, pos := makeKeyBuf(namespace, PrefixDefault, KeyTypeIndex, predicate, len(term))
+	copy(k[pos:], term)
+	return k
+}
+
+// index prefix creates a prefix for indexed values of the given predicate.
+func indexPrefix(namespace, predicate []byte) []byte {
+	k, _ := makeKeyBuf(namespace, PrefixDefault, KeyTypeIndex, predicate, 0)
 	return k
 }
 

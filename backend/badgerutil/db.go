@@ -13,11 +13,6 @@ type DB struct {
 	ns  []byte
 }
 
-var (
-	lastUIDPred = []byte("last-uid")
-	uidPred     = []byte("uid")
-)
-
 // NewDB creates a new DB instance.
 func NewDB(b *badger.DB, namespace []byte) (*DB, error) {
 	k, _ := makeKeyBuf(namespace, PrefixInternal, KeyTypeData, lastUIDPred, 0)
@@ -33,15 +28,15 @@ func NewDB(b *badger.DB, namespace []byte) (*DB, error) {
 	}, nil
 }
 
-// UIDForTermReadOnly tries to read the uid for a given kind with given id. Fails if not found.
-func (db *DB) UIDForTermReadOnly(txn *badger.Txn, kind, xid []byte) (uint64, error) {
-	k := UIDKey(db.ns, kind, xid)
+// UIDReadOnly tries to read the uid for a given kind with given id. Fails if not found.
+func (db *DB) UIDReadOnly(txn *badger.Txn, kind, xid []byte) (uint64, error) {
+	k := uidKey(db.ns, kind, xid)
 	return GetUint64(txn, k)
 }
 
 // UID reads or creates a new uid for something of a given kind with the given id.
 func (db *DB) UID(txn *badger.Txn, kind, xid []byte) (uint64, error) {
-	k := UIDKey(db.ns, kind, xid)
+	k := uidKey(db.ns, kind, xid)
 
 	uid, err := GetUint64(txn, k)
 	if err == nil {
@@ -66,14 +61,14 @@ func (db *DB) UID(txn *badger.Txn, kind, xid []byte) (uint64, error) {
 
 // SetData sets the value for the predicate.
 func (db *DB) SetData(txn *badger.Txn, predicate []byte, uid uint64, v []byte) error {
-	k := DataKey(db.ns, predicate, uid)
+	k := dataKey(db.ns, predicate, uid)
 	return txn.Set(k, v)
 }
 
 // GetData gets the value for the predicate. Make sure to copy the returned value
 // bytes if you need to use it outside the transaction.
 func (db *DB) GetData(txn *badger.Txn, predicate []byte, uid uint64, codec func([]byte) error) error {
-	k := DataKey(db.ns, predicate, uid)
+	k := dataKey(db.ns, predicate, uid)
 	item, err := txn.Get(k)
 	if err != nil {
 		return err
@@ -88,7 +83,7 @@ func (db *DB) ScanData(txn *badger.Txn, predicate []byte, opts ...ScanOption) *b
 	for _, o := range opts {
 		o(&itopts)
 	}
-	itopts.Prefix = DataPrefix(db.ns, predicate)
+	itopts.Prefix = dataPrefix(db.ns, predicate)
 
 	return txn.NewIterator(itopts)
 }

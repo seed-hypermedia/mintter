@@ -21,9 +21,19 @@ import (
 	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 )
 
+/*
+Predicates:
+
+peers/cid/<peer-uid> => cid of the peer
+peers/heads/<object-uid> => head for a given object
+
+objects/accounts/cid => cid of this account object
+objects/documents/cid => cid of this document object
+*/
+
 var (
-	predPeersCID     = []byte("peers/cid")
-	predPeersObjects = []byte("peers/objects/")
+	predPeersCID   = []byte("peers/cid")
+	predPeersHeads = []byte("peers/heads/")
 
 	predObjectsAccountCID   = []byte("objects/accounts/cid")
 	predObjectsDocumentsCID = []byte("objects/documents/cid")
@@ -82,7 +92,7 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 		return err
 	}
 
-	headPred := badgerutil.PredicateWithUID(predPeersObjects, ouid)
+	headPred := badgerutil.PredicateWithUID(predPeersHeads, ouid)
 
 	h := &p2p.PeerVersion{}
 	{
@@ -232,7 +242,7 @@ func (s *patchStore) ListObjects(ctx context.Context, codec uint64, after string
 
 func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
 	_, ohash := ipfsutil.DecodeCID(obj)
-	ouid, err := s.db.UIDForTermReadOnly(txn, kindObjects, ohash)
+	ouid, err := s.db.UIDReadOnly(txn, kindObjects, ohash)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return nil, fmt.Errorf("failed to get head: %w", err)
 	}
@@ -243,7 +253,7 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid)
 
 	var out []*p2p.PeerVersion
 
-	it := s.db.ScanData(txn, badgerutil.PredicateWithUID(predPeersObjects, ouid), badgerutil.WithScanPrefetchSize(10))
+	it := s.db.ScanData(txn, badgerutil.PredicateWithUID(predPeersHeads, ouid), badgerutil.WithScanPrefetchSize(10))
 	defer it.Close()
 
 	for it.Rewind(); it.Valid(); it.Next() {
