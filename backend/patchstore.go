@@ -2,8 +2,8 @@ package backend
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	p2p "mintter/api/go/p2p/v1alpha"
 	"sync"
 	"time"
 
@@ -12,6 +12,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/protobuf/proto"
 
 	blocks "github.com/ipfs/go-block-format"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
@@ -67,13 +68,13 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 
 	headKey := makeCompoundPredicateKey(predicatePatchHead, ouid, puid)
 
-	var h head
+	h := &p2p.PeerVersion{}
 	{
 		item, err := txn.Get(headKey)
 		switch err {
 		case nil:
 			if err := item.Value(func(data []byte) error {
-				return json.Unmarshal(data, &h)
+				return proto.Unmarshal(data, h)
 			}); err != nil {
 				return err
 			}
@@ -88,8 +89,16 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 		return fmt.Errorf("concurrency error: precondition failed: stored seq = %d, incoming seq = %d", h.Seq, sp.Seq)
 	}
 
+	var headCID cid.Cid
+	if h.Head != "" {
+		headCID, err = cid.Decode(h.Head)
+		if err != nil {
+			return fmt.Errorf("bad head CID: %w", err)
+		}
+	}
+
 	if len(sp.Deps) > 0 {
-		if !sp.Deps[0].Equals(h.CID) {
+		if !sp.Deps[0].Equals(headCID) {
 			return fmt.Errorf("first dep must be previous head of this peer")
 		}
 	}
@@ -99,11 +108,11 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 		return fmt.Errorf("failed to put patch in blockstore: %w", err)
 	}
 
-	h.CID = sp.cid
+	h.Head = sp.cid.String()
 	h.Seq = sp.Seq
 	h.LamportTime = sp.LamportTime
 
-	newHead, err := json.Marshal(h)
+	newHead, err := proto.Marshal(h)
 	if err != nil {
 		return err
 	}
@@ -146,7 +155,11 @@ func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error)
 		h := h
 		out[i] = make([]signedPatch, h.Seq) // Allocate enough space to store all the known patches.
 		g.Go(func() error {
-			next := h.CID
+			next, err := cid.Decode(h.Head)
+			if err != nil {
+				return fmt.Errorf("bad head CID: %w", err)
+			}
+
 			idx := h.Seq - 1
 
 			// TODO: check if object and peer are the same between iterations.
@@ -191,7 +204,7 @@ func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error)
 	return newState(obj, out), nil
 }
 
-func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid) ([]head, error) {
+func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
 	ouid, err := s.db.uidFromCID(txn, obj, false)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return nil, err
@@ -201,7 +214,7 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid)
 		return nil, nil
 	}
 
-	var out []head
+	var out []*p2p.PeerVersion
 
 	opts := badger.DefaultIteratorOptions
 	opts.PrefetchSize = 10
@@ -212,8 +225,8 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid)
 	for it.Rewind(); it.Valid(); it.Next() {
 		item := it.Item()
 		if err := item.Value(func(data []byte) error {
-			var h head
-			if err := json.Unmarshal(data, &h); err != nil {
+			h := &p2p.PeerVersion{}
+			if err := proto.Unmarshal(data, h); err != nil {
 				return err
 			}
 			out = append(out, h)
@@ -226,8 +239,9 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid)
 	return out, nil
 }
 
-func (s *patchStore) ReplicateFromHead(ctx context.Context, h head) error {
-	exists, err := s.bs.Has(h.CID)
+func (s *patchStore) ReplicateFromHead(ctx context.Context, h *p2p.PeerVersion) error {
+	exists, err := s.bs.Has(cid.Undef)
+
 	if err != nil {
 		return err
 	}
@@ -277,17 +291,4 @@ func (s *patchStore) Unwatch(c chan<- signedPatch) {
 	defer s.mu.Unlock()
 
 	delete(s.subs, c)
-}
-
-type head struct {
-	Peer        cid.Cid
-	CID         cid.Cid
-	Seq         uint64
-	LamportTime uint64
-}
-
-type patchIndexItem struct {
-	Seq         uint64
-	LamportTime uint64
-	CID         cid.Cid
 }

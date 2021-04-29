@@ -1,10 +1,11 @@
 syntax = "proto3";
 
-package com.mintter.peer.v1alpha;
+package com.mintter.p2p.v1alpha;
 
-option go_package = "mintter/api/go/peer/v1alpha;peer";
+option go_package = "mintter/api/go/p2p/v1alpha;p2p";
 
-service Peer {
+// Mintter P2P API.
+service P2P {
   rpc Handshake(HandshakeInfo) returns (HandshakeInfo);
 
   rpc Ping(PingRequest) returns (PingResponse);
