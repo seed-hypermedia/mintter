@@ -12,7 +12,7 @@ var (
 )
 
 func TestDataKey(t *testing.T) {
-	k := DataKey(testNS, predFoo, 10)
+	k := dataKey(testNS, predFoo, 10)
 	pk, err := ParseKey(testNS, k)
 	require.NoError(t, err)
 
@@ -24,7 +24,7 @@ func TestDataKey(t *testing.T) {
 }
 
 func TestIndexKey(t *testing.T) {
-	k := IndexKey(testNS, predFoo, []byte("foo"))
+	k := indexKey(testNS, predFoo, []byte("foo"))
 	pk, err := ParseKey(testNS, k)
 	require.NoError(t, err)
 
