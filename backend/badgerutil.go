@@ -27,6 +27,32 @@ predicates:
 
 // <namespace><default-prefix|internal><...>
 
+/*
+predicates:
+  mtt:prefix:data:peers/cid:<uid> => full cid value  -  list all the peers i know, peer uid to cid
+  mtt:prefix:idx:peers/cid:<cid> => uid  - peer cid to uid
+
+  mtt:prefix:data:objects/cid:<uid> => full cid value   -   list all the object I know;  object uid to cid
+  mtt:prefix:idx:objects/cid:<cid> => uid    -    list all objects I know,   object cid to uid.
+
+  mtt:prefix:data:peers/objects/<obj-uid>:<peer-uid> => head for this object   -   iterate over heads of a given object, list peers that edited this object
+
+
+  data key:    mtt:prefix:data:<predicate>:uid => value
+  index key:   mtt:prefix:index:<predicate>:term =>
+
+  predicates:
+    peers/cid => full cid value Indexed
+	peers/objects/<object-uid>
+	objects/<obj-type>/cid => full cid value. Indexed
+
+
+  TODO: add object type.
+
+  objects/cid/<uid>
+
+*/
+
 const keyNamespace = "mtt"
 
 type keyPrefix byte

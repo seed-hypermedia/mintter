@@ -2,6 +2,7 @@ package backend
 
 import (
 	"context"
+	"mintter/backend/badgerutil"
 	"mintter/backend/testutil"
 	"testing"
 	"time"
@@ -107,19 +108,18 @@ func TestPatchStore_AddPatchLoadState(t *testing.T) {
 func makeTestPatchStore(t *testing.T, name string) *patchStore {
 	t.Helper()
 
-	db := testutil.MakeBadgerV3(t)
 	ds := testutil.MakeDatastore(t)
 	bs := blockstore.NewBlockstore(ds)
 
 	key := testutil.MakeProfile(t, name).Peer.PrivKey.PrivKey
 
-	ddb, err := newDB(db)
+	db, err := badgerutil.NewDB(testutil.MakeBadgerV3(t), []byte("!mtttest"))
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		require.NoError(t, ddb.Close())
+		require.NoError(t, db.Close())
 	})
 
-	store, err := newPatchStore(key, bs, ddb)
+	store, err := newPatchStore(key, bs, db)
 	require.NoError(t, err)
 
 	return store
