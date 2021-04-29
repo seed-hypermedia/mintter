@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.23.0
 // 	protoc        v3.11.4
-// source: peer/v1alpha/peer.proto
+// source: p2p/v1alpha/p2p.proto
 
-package peer
+package p2p
 
 import (
 	context "context"
@@ -40,7 +40,7 @@ type HandshakeInfo struct {
 func (x *HandshakeInfo) Reset() {
 	*x = HandshakeInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_peer_v1alpha_peer_proto_msgTypes[0]
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -53,7 +53,7 @@ func (x *HandshakeInfo) String() string {
 func (*HandshakeInfo) ProtoMessage() {}
 
 func (x *HandshakeInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_peer_v1alpha_peer_proto_msgTypes[0]
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66,7 +66,7 @@ func (x *HandshakeInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HandshakeInfo.ProtoReflect.Descriptor instead.
 func (*HandshakeInfo) Descriptor() ([]byte, []int) {
-	return file_peer_v1alpha_peer_proto_rawDescGZIP(), []int{0}
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *HandshakeInfo) GetProfileVersion() *Version {
@@ -85,7 +85,7 @@ type PingRequest struct {
 func (x *PingRequest) Reset() {
 	*x = PingRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_peer_v1alpha_peer_proto_msgTypes[1]
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -98,7 +98,7 @@ func (x *PingRequest) String() string {
 func (*PingRequest) ProtoMessage() {}
 
 func (x *PingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_peer_v1alpha_peer_proto_msgTypes[1]
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -111,7 +111,7 @@ func (x *PingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PingRequest.ProtoReflect.Descriptor instead.
 func (*PingRequest) Descriptor() ([]byte, []int) {
-	return file_peer_v1alpha_peer_proto_rawDescGZIP(), []int{1}
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{1}
 }
 
 type PingResponse struct {
@@ -123,7 +123,7 @@ type PingResponse struct {
 func (x *PingResponse) Reset() {
 	*x = PingResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_peer_v1alpha_peer_proto_msgTypes[2]
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -136,7 +136,7 @@ func (x *PingResponse) String() string {
 func (*PingResponse) ProtoMessage() {}
 
 func (x *PingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_peer_v1alpha_peer_proto_msgTypes[2]
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -149,7 +149,7 @@ func (x *PingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PingResponse.ProtoReflect.Descriptor instead.
 func (*PingResponse) Descriptor() ([]byte, []int) {
-	return file_peer_v1alpha_peer_proto_rawDescGZIP(), []int{2}
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{2}
 }
 
 type GetObjectVersionRequest struct {
@@ -163,7 +163,7 @@ type GetObjectVersionRequest struct {
 func (x *GetObjectVersionRequest) Reset() {
 	*x = GetObjectVersionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_peer_v1alpha_peer_proto_msgTypes[3]
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -176,7 +176,7 @@ func (x *GetObjectVersionRequest) String() string {
 func (*GetObjectVersionRequest) ProtoMessage() {}
 
 func (x *GetObjectVersionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_peer_v1alpha_peer_proto_msgTypes[3]
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -189,7 +189,7 @@ func (x *GetObjectVersionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetObjectVersionRequest.ProtoReflect.Descriptor instead.
 func (*GetObjectVersionRequest) Descriptor() ([]byte, []int) {
-	return file_peer_v1alpha_peer_proto_rawDescGZIP(), []int{3}
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetObjectVersionRequest) GetObjectId() string {
@@ -210,7 +210,7 @@ type Version struct {
 func (x *Version) Reset() {
 	*x = Version{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_peer_v1alpha_peer_proto_msgTypes[4]
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -223,7 +223,7 @@ func (x *Version) String() string {
 func (*Version) ProtoMessage() {}
 
 func (x *Version) ProtoReflect() protoreflect.Message {
-	mi := &file_peer_v1alpha_peer_proto_msgTypes[4]
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -236,7 +236,7 @@ func (x *Version) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Version.ProtoReflect.Descriptor instead.
 func (*Version) Descriptor() ([]byte, []int) {
-	return file_peer_v1alpha_peer_proto_rawDescGZIP(), []int{4}
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Version) GetVersionVector() []*PeerVersion {
@@ -260,7 +260,7 @@ type PeerVersion struct {
 func (x *PeerVersion) Reset() {
 	*x = PeerVersion{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_peer_v1alpha_peer_proto_msgTypes[5]
+		mi := &file_p2p_v1alpha_p2p_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -273,7 +273,7 @@ func (x *PeerVersion) String() string {
 func (*PeerVersion) ProtoMessage() {}
 
 func (x *PeerVersion) ProtoReflect() protoreflect.Message {
-	mi := &file_peer_v1alpha_peer_proto_msgTypes[5]
+	mi := &file_p2p_v1alpha_p2p_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -286,7 +286,7 @@ func (x *PeerVersion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PeerVersion.ProtoReflect.Descriptor instead.
 func (*PeerVersion) Descriptor() ([]byte, []int) {
-	return file_peer_v1alpha_peer_proto_rawDescGZIP(), []int{5}
+	return file_p2p_v1alpha_p2p_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *PeerVersion) GetPeer() string {
@@ -317,90 +317,89 @@ func (x *PeerVersion) GetLamportTime() uint64 {
 	return 0
 }
 
-var File_peer_v1alpha_peer_proto protoreflect.FileDescriptor
+var File_p2p_v1alpha_p2p_proto protoreflect.FileDescriptor
 
-var file_peer_v1alpha_peer_proto_rawDesc = []byte{
-	0x0a, 0x17, 0x70, 0x65, 0x65, 0x72, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2f, 0x70,
-	0x65, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x18, 0x63, 0x6f, 0x6d, 0x2e, 0x6d,
-	0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x65, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x61, 0x6c,
-	0x70, 0x68, 0x61, 0x22, 0x5b, 0x0a, 0x0d, 0x48, 0x61, 0x6e, 0x64, 0x73, 0x68, 0x61, 0x6b, 0x65,
-	0x49, 0x6e, 0x66, 0x6f, 0x12, 0x4a, 0x0a, 0x0f, 0x70, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x5f,
-	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e,
-	0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x65, 0x65, 0x72,
-	0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
-	0x52, 0x0e, 0x70, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
-	0x22, 0x0d, 0x0a, 0x0b, 0x50, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22,
-	0x0e, 0x0a, 0x0c, 0x50, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
-	0x36, 0x0a, 0x17, 0x47, 0x65, 0x74, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x56, 0x65, 0x72, 0x73,
-	0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x6f, 0x62,
-	0x6a, 0x65, 0x63, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6f,
-	0x62, 0x6a, 0x65, 0x63, 0x74, 0x49, 0x64, 0x22, 0x57, 0x0a, 0x07, 0x56, 0x65, 0x72, 0x73, 0x69,
-	0x6f, 0x6e, 0x12, 0x4c, 0x0a, 0x0e, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x76, 0x65,
-	0x63, 0x74, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x65, 0x65, 0x72, 0x2e, 0x76, 0x31,
-	0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x50, 0x65, 0x65, 0x72, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f,
-	0x6e, 0x52, 0x0d, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x56, 0x65, 0x63, 0x74, 0x6f, 0x72,
-	0x22, 0x6a, 0x0a, 0x0b, 0x50, 0x65, 0x65, 0x72, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12,
-	0x12, 0x0a, 0x04, 0x70, 0x65, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70,
-	0x65, 0x65, 0x72, 0x12, 0x12, 0x0a, 0x04, 0x68, 0x65, 0x61, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x04, 0x68, 0x65, 0x61, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x73, 0x65, 0x71, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x03, 0x73, 0x65, 0x71, 0x12, 0x21, 0x0a, 0x0c, 0x6c, 0x61, 0x6d,
-	0x70, 0x6f, 0x72, 0x74, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x0b, 0x6c, 0x61, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x54, 0x69, 0x6d, 0x65, 0x32, 0xa6, 0x02, 0x0a,
-	0x04, 0x50, 0x65, 0x65, 0x72, 0x12, 0x5d, 0x0a, 0x09, 0x48, 0x61, 0x6e, 0x64, 0x73, 0x68, 0x61,
-	0x6b, 0x65, 0x12, 0x27, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72,
-	0x2e, 0x70, 0x65, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x48, 0x61,
-	0x6e, 0x64, 0x73, 0x68, 0x61, 0x6b, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x1a, 0x27, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x65, 0x65, 0x72, 0x2e, 0x76,
+var file_p2p_v1alpha_p2p_proto_rawDesc = []byte{
+	0x0a, 0x15, 0x70, 0x32, 0x70, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2f, 0x70, 0x32,
+	0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x17, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e,
+	0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61,
+	0x22, 0x5a, 0x0a, 0x0d, 0x48, 0x61, 0x6e, 0x64, 0x73, 0x68, 0x61, 0x6b, 0x65, 0x49, 0x6e, 0x66,
+	0x6f, 0x12, 0x49, 0x0a, 0x0f, 0x70, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x76, 0x65, 0x72,
+	0x73, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x20, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x76, 0x31, 0x61,
+	0x6c, 0x70, 0x68, 0x61, 0x2e, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x0e, 0x70, 0x72,
+	0x6f, 0x66, 0x69, 0x6c, 0x65, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x22, 0x0d, 0x0a, 0x0b,
+	0x50, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x0e, 0x0a, 0x0c, 0x50,
+	0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x36, 0x0a, 0x17, 0x47,
+	0x65, 0x74, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74,
+	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6f, 0x62, 0x6a, 0x65, 0x63,
+	0x74, 0x49, 0x64, 0x22, 0x56, 0x0a, 0x07, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x4b,
+	0x0a, 0x0e, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x76, 0x65, 0x63, 0x74, 0x6f, 0x72,
+	0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e,
+	0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61,
+	0x2e, 0x50, 0x65, 0x65, 0x72, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x0d, 0x76, 0x65,
+	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x56, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x22, 0x6a, 0x0a, 0x0b, 0x50,
+	0x65, 0x65, 0x72, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x65,
+	0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x70, 0x65, 0x65, 0x72, 0x12, 0x12,
+	0x0a, 0x04, 0x68, 0x65, 0x61, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x68, 0x65,
+	0x61, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x73, 0x65, 0x71, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x03, 0x73, 0x65, 0x71, 0x12, 0x21, 0x0a, 0x0c, 0x6c, 0x61, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x5f,
+	0x74, 0x69, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x6c, 0x61, 0x6d, 0x70,
+	0x6f, 0x72, 0x74, 0x54, 0x69, 0x6d, 0x65, 0x32, 0x9f, 0x02, 0x0a, 0x03, 0x50, 0x32, 0x50, 0x12,
+	0x5b, 0x0a, 0x09, 0x48, 0x61, 0x6e, 0x64, 0x73, 0x68, 0x61, 0x6b, 0x65, 0x12, 0x26, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x76,
 	0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x48, 0x61, 0x6e, 0x64, 0x73, 0x68, 0x61, 0x6b, 0x65,
-	0x49, 0x6e, 0x66, 0x6f, 0x12, 0x55, 0x0a, 0x04, 0x50, 0x69, 0x6e, 0x67, 0x12, 0x25, 0x2e, 0x63,
-	0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x65, 0x65, 0x72, 0x2e,
-	0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x50, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x1a, 0x26, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65,
-	0x72, 0x2e, 0x70, 0x65, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x50,
-	0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x68, 0x0a, 0x10, 0x47,
-	0x65, 0x74, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12,
-	0x31, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x65,
-	0x65, 0x72, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x47, 0x65, 0x74, 0x4f, 0x62,
-	0x6a, 0x65, 0x63, 0x74, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x1a, 0x21, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72,
-	0x2e, 0x70, 0x65, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x56, 0x65,
-	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x42, 0x22, 0x5a, 0x20, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72,
-	0x2f, 0x61, 0x70, 0x69, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x65, 0x65, 0x72, 0x2f, 0x76, 0x31, 0x61,
-	0x6c, 0x70, 0x68, 0x61, 0x3b, 0x70, 0x65, 0x65, 0x72, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x49, 0x6e, 0x66, 0x6f, 0x1a, 0x26, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74,
+	0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x48,
+	0x61, 0x6e, 0x64, 0x73, 0x68, 0x61, 0x6b, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x53, 0x0a, 0x04,
+	0x50, 0x69, 0x6e, 0x67, 0x12, 0x24, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74,
+	0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x50,
+	0x69, 0x6e, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x25, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x76, 0x31, 0x61,
+	0x6c, 0x70, 0x68, 0x61, 0x2e, 0x50, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x66, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x56, 0x65,
+	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x30, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74,
+	0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e,
+	0x47, 0x65, 0x74, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x20, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69,
+	0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x32, 0x70, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68,
+	0x61, 0x2e, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x42, 0x20, 0x5a, 0x1e, 0x6d, 0x69, 0x6e,
+	0x74, 0x74, 0x65, 0x72, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x32, 0x70, 0x2f,
+	0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x3b, 0x70, 0x32, 0x70, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
-	file_peer_v1alpha_peer_proto_rawDescOnce sync.Once
-	file_peer_v1alpha_peer_proto_rawDescData = file_peer_v1alpha_peer_proto_rawDesc
+	file_p2p_v1alpha_p2p_proto_rawDescOnce sync.Once
+	file_p2p_v1alpha_p2p_proto_rawDescData = file_p2p_v1alpha_p2p_proto_rawDesc
 )
 
-func file_peer_v1alpha_peer_proto_rawDescGZIP() []byte {
-	file_peer_v1alpha_peer_proto_rawDescOnce.Do(func() {
-		file_peer_v1alpha_peer_proto_rawDescData = protoimpl.X.CompressGZIP(file_peer_v1alpha_peer_proto_rawDescData)
+func file_p2p_v1alpha_p2p_proto_rawDescGZIP() []byte {
+	file_p2p_v1alpha_p2p_proto_rawDescOnce.Do(func() {
+		file_p2p_v1alpha_p2p_proto_rawDescData = protoimpl.X.CompressGZIP(file_p2p_v1alpha_p2p_proto_rawDescData)
 	})
-	return file_peer_v1alpha_peer_proto_rawDescData
+	return file_p2p_v1alpha_p2p_proto_rawDescData
 }
 
-var file_peer_v1alpha_peer_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
-var file_peer_v1alpha_peer_proto_goTypes = []interface{}{
-	(*HandshakeInfo)(nil),           // 0: com.mintter.peer.v1alpha.HandshakeInfo
-	(*PingRequest)(nil),             // 1: com.mintter.peer.v1alpha.PingRequest
-	(*PingResponse)(nil),            // 2: com.mintter.peer.v1alpha.PingResponse
-	(*GetObjectVersionRequest)(nil), // 3: com.mintter.peer.v1alpha.GetObjectVersionRequest
-	(*Version)(nil),                 // 4: com.mintter.peer.v1alpha.Version
-	(*PeerVersion)(nil),             // 5: com.mintter.peer.v1alpha.PeerVersion
+var file_p2p_v1alpha_p2p_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_p2p_v1alpha_p2p_proto_goTypes = []interface{}{
+	(*HandshakeInfo)(nil),           // 0: com.mintter.p2p.v1alpha.HandshakeInfo
+	(*PingRequest)(nil),             // 1: com.mintter.p2p.v1alpha.PingRequest
+	(*PingResponse)(nil),            // 2: com.mintter.p2p.v1alpha.PingResponse
+	(*GetObjectVersionRequest)(nil), // 3: com.mintter.p2p.v1alpha.GetObjectVersionRequest
+	(*Version)(nil),                 // 4: com.mintter.p2p.v1alpha.Version
+	(*PeerVersion)(nil),             // 5: com.mintter.p2p.v1alpha.PeerVersion
 }
-var file_peer_v1alpha_peer_proto_depIdxs = []int32{
-	4, // 0: com.mintter.peer.v1alpha.HandshakeInfo.profile_version:type_name -> com.mintter.peer.v1alpha.Version
-	5, // 1: com.mintter.peer.v1alpha.Version.version_vector:type_name -> com.mintter.peer.v1alpha.PeerVersion
-	0, // 2: com.mintter.peer.v1alpha.Peer.Handshake:input_type -> com.mintter.peer.v1alpha.HandshakeInfo
-	1, // 3: com.mintter.peer.v1alpha.Peer.Ping:input_type -> com.mintter.peer.v1alpha.PingRequest
-	3, // 4: com.mintter.peer.v1alpha.Peer.GetObjectVersion:input_type -> com.mintter.peer.v1alpha.GetObjectVersionRequest
-	0, // 5: com.mintter.peer.v1alpha.Peer.Handshake:output_type -> com.mintter.peer.v1alpha.HandshakeInfo
-	2, // 6: com.mintter.peer.v1alpha.Peer.Ping:output_type -> com.mintter.peer.v1alpha.PingResponse
-	4, // 7: com.mintter.peer.v1alpha.Peer.GetObjectVersion:output_type -> com.mintter.peer.v1alpha.Version
+var file_p2p_v1alpha_p2p_proto_depIdxs = []int32{
+	4, // 0: com.mintter.p2p.v1alpha.HandshakeInfo.profile_version:type_name -> com.mintter.p2p.v1alpha.Version
+	5, // 1: com.mintter.p2p.v1alpha.Version.version_vector:type_name -> com.mintter.p2p.v1alpha.PeerVersion
+	0, // 2: com.mintter.p2p.v1alpha.P2P.Handshake:input_type -> com.mintter.p2p.v1alpha.HandshakeInfo
+	1, // 3: com.mintter.p2p.v1alpha.P2P.Ping:input_type -> com.mintter.p2p.v1alpha.PingRequest
+	3, // 4: com.mintter.p2p.v1alpha.P2P.GetObjectVersion:input_type -> com.mintter.p2p.v1alpha.GetObjectVersionRequest
+	0, // 5: com.mintter.p2p.v1alpha.P2P.Handshake:output_type -> com.mintter.p2p.v1alpha.HandshakeInfo
+	2, // 6: com.mintter.p2p.v1alpha.P2P.Ping:output_type -> com.mintter.p2p.v1alpha.PingResponse
+	4, // 7: com.mintter.p2p.v1alpha.P2P.GetObjectVersion:output_type -> com.mintter.p2p.v1alpha.Version
 	5, // [5:8] is the sub-list for method output_type
 	2, // [2:5] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
@@ -408,13 +407,13 @@ var file_peer_v1alpha_peer_proto_depIdxs = []int32{
 	0, // [0:2] is the sub-list for field type_name
 }
 
-func init() { file_peer_v1alpha_peer_proto_init() }
-func file_peer_v1alpha_peer_proto_init() {
-	if File_peer_v1alpha_peer_proto != nil {
+func init() { file_p2p_v1alpha_p2p_proto_init() }
+func file_p2p_v1alpha_p2p_proto_init() {
+	if File_p2p_v1alpha_p2p_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_peer_v1alpha_peer_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_p2p_v1alpha_p2p_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*HandshakeInfo); i {
 			case 0:
 				return &v.state
@@ -426,7 +425,7 @@ func file_peer_v1alpha_peer_proto_init() {
 				return nil
 			}
 		}
-		file_peer_v1alpha_peer_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_p2p_v1alpha_p2p_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PingRequest); i {
 			case 0:
 				return &v.state
@@ -438,7 +437,7 @@ func file_peer_v1alpha_peer_proto_init() {
 				return nil
 			}
 		}
-		file_peer_v1alpha_peer_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_p2p_v1alpha_p2p_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PingResponse); i {
 			case 0:
 				return &v.state
@@ -450,7 +449,7 @@ func file_peer_v1alpha_peer_proto_init() {
 				return nil
 			}
 		}
-		file_peer_v1alpha_peer_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_p2p_v1alpha_p2p_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetObjectVersionRequest); i {
 			case 0:
 				return &v.state
@@ -462,7 +461,7 @@ func file_peer_v1alpha_peer_proto_init() {
 				return nil
 			}
 		}
-		file_peer_v1alpha_peer_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_p2p_v1alpha_p2p_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Version); i {
 			case 0:
 				return &v.state
@@ -474,7 +473,7 @@ func file_peer_v1alpha_peer_proto_init() {
 				return nil
 			}
 		}
-		file_peer_v1alpha_peer_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_p2p_v1alpha_p2p_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PeerVersion); i {
 			case 0:
 				return &v.state
@@ -491,20 +490,20 @@ func file_peer_v1alpha_peer_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_peer_v1alpha_peer_proto_rawDesc,
+			RawDescriptor: file_p2p_v1alpha_p2p_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_peer_v1alpha_peer_proto_goTypes,
-		DependencyIndexes: file_peer_v1alpha_peer_proto_depIdxs,
-		MessageInfos:      file_peer_v1alpha_peer_proto_msgTypes,
+		GoTypes:           file_p2p_v1alpha_p2p_proto_goTypes,
+		DependencyIndexes: file_p2p_v1alpha_p2p_proto_depIdxs,
+		MessageInfos:      file_p2p_v1alpha_p2p_proto_msgTypes,
 	}.Build()
-	File_peer_v1alpha_peer_proto = out.File
-	file_peer_v1alpha_peer_proto_rawDesc = nil
-	file_peer_v1alpha_peer_proto_goTypes = nil
-	file_peer_v1alpha_peer_proto_depIdxs = nil
+	File_p2p_v1alpha_p2p_proto = out.File
+	file_p2p_v1alpha_p2p_proto_rawDesc = nil
+	file_p2p_v1alpha_p2p_proto_goTypes = nil
+	file_p2p_v1alpha_p2p_proto_depIdxs = nil
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -515,146 +514,146 @@ var _ grpc.ClientConnInterface
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion6
 
-// PeerClient is the client API for Peer service.
+// P2PClient is the client API for P2P service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type PeerClient interface {
+type P2PClient interface {
 	Handshake(ctx context.Context, in *HandshakeInfo, opts ...grpc.CallOption) (*HandshakeInfo, error)
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 	GetObjectVersion(ctx context.Context, in *GetObjectVersionRequest, opts ...grpc.CallOption) (*Version, error)
 }
 
-type peerClient struct {
+type p2PClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewPeerClient(cc grpc.ClientConnInterface) PeerClient {
-	return &peerClient{cc}
+func NewP2PClient(cc grpc.ClientConnInterface) P2PClient {
+	return &p2PClient{cc}
 }
 
-func (c *peerClient) Handshake(ctx context.Context, in *HandshakeInfo, opts ...grpc.CallOption) (*HandshakeInfo, error) {
+func (c *p2PClient) Handshake(ctx context.Context, in *HandshakeInfo, opts ...grpc.CallOption) (*HandshakeInfo, error) {
 	out := new(HandshakeInfo)
-	err := c.cc.Invoke(ctx, "/com.mintter.peer.v1alpha.Peer/Handshake", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/com.mintter.p2p.v1alpha.P2P/Handshake", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *peerClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
+func (c *p2PClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
 	out := new(PingResponse)
-	err := c.cc.Invoke(ctx, "/com.mintter.peer.v1alpha.Peer/Ping", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/com.mintter.p2p.v1alpha.P2P/Ping", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *peerClient) GetObjectVersion(ctx context.Context, in *GetObjectVersionRequest, opts ...grpc.CallOption) (*Version, error) {
+func (c *p2PClient) GetObjectVersion(ctx context.Context, in *GetObjectVersionRequest, opts ...grpc.CallOption) (*Version, error) {
 	out := new(Version)
-	err := c.cc.Invoke(ctx, "/com.mintter.peer.v1alpha.Peer/GetObjectVersion", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/com.mintter.p2p.v1alpha.P2P/GetObjectVersion", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// PeerServer is the server API for Peer service.
-type PeerServer interface {
+// P2PServer is the server API for P2P service.
+type P2PServer interface {
 	Handshake(context.Context, *HandshakeInfo) (*HandshakeInfo, error)
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	GetObjectVersion(context.Context, *GetObjectVersionRequest) (*Version, error)
 }
 
-// UnimplementedPeerServer can be embedded to have forward compatible implementations.
-type UnimplementedPeerServer struct {
+// UnimplementedP2PServer can be embedded to have forward compatible implementations.
+type UnimplementedP2PServer struct {
 }
 
-func (*UnimplementedPeerServer) Handshake(context.Context, *HandshakeInfo) (*HandshakeInfo, error) {
+func (*UnimplementedP2PServer) Handshake(context.Context, *HandshakeInfo) (*HandshakeInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Handshake not implemented")
 }
-func (*UnimplementedPeerServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
+func (*UnimplementedP2PServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
 }
-func (*UnimplementedPeerServer) GetObjectVersion(context.Context, *GetObjectVersionRequest) (*Version, error) {
+func (*UnimplementedP2PServer) GetObjectVersion(context.Context, *GetObjectVersionRequest) (*Version, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObjectVersion not implemented")
 }
 
-func RegisterPeerServer(s *grpc.Server, srv PeerServer) {
-	s.RegisterService(&_Peer_serviceDesc, srv)
+func RegisterP2PServer(s *grpc.Server, srv P2PServer) {
+	s.RegisterService(&_P2P_serviceDesc, srv)
 }
 
-func _Peer_Handshake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _P2P_Handshake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(HandshakeInfo)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PeerServer).Handshake(ctx, in)
+		return srv.(P2PServer).Handshake(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.mintter.peer.v1alpha.Peer/Handshake",
+		FullMethod: "/com.mintter.p2p.v1alpha.P2P/Handshake",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PeerServer).Handshake(ctx, req.(*HandshakeInfo))
+		return srv.(P2PServer).Handshake(ctx, req.(*HandshakeInfo))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Peer_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _P2P_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PingRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PeerServer).Ping(ctx, in)
+		return srv.(P2PServer).Ping(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.mintter.peer.v1alpha.Peer/Ping",
+		FullMethod: "/com.mintter.p2p.v1alpha.P2P/Ping",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PeerServer).Ping(ctx, req.(*PingRequest))
+		return srv.(P2PServer).Ping(ctx, req.(*PingRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Peer_GetObjectVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _P2P_GetObjectVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetObjectVersionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PeerServer).GetObjectVersion(ctx, in)
+		return srv.(P2PServer).GetObjectVersion(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.mintter.peer.v1alpha.Peer/GetObjectVersion",
+		FullMethod: "/com.mintter.p2p.v1alpha.P2P/GetObjectVersion",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PeerServer).GetObjectVersion(ctx, req.(*GetObjectVersionRequest))
+		return srv.(P2PServer).GetObjectVersion(ctx, req.(*GetObjectVersionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Peer_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "com.mintter.peer.v1alpha.Peer",
-	HandlerType: (*PeerServer)(nil),
+var _P2P_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "com.mintter.p2p.v1alpha.P2P",
+	HandlerType: (*P2PServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Handshake",
-			Handler:    _Peer_Handshake_Handler,
+			Handler:    _P2P_Handshake_Handler,
 		},
 		{
 			MethodName: "Ping",
-			Handler:    _Peer_Ping_Handler,
+			Handler:    _P2P_Ping_Handler,
 		},
 		{
 			MethodName: "GetObjectVersion",
-			Handler:    _Peer_GetObjectVersion_Handler,
+			Handler:    _P2P_GetObjectVersion_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "peer/v1alpha/peer.proto",
+	Metadata: "p2p/v1alpha/p2p.proto",
 }
