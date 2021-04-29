@@ -5,6 +5,7 @@ group("go") {
     "//proto/documents/v1alpha:go_proto",
     "//proto/networking/v1alpha:go_proto",
     "//proto/p2p:go_proto",
+    "//proto/p2p/v1alpha:go_proto",
     "//proto/v2:go_proto",
   ]
 }
