@@ -324,7 +324,7 @@ type Device struct {
 
 	// CID-encoded Peer ID of this device.
 	PeerId string `protobuf:"bytes,1,opt,name=peer_id,json=peerId,proto3" json:"peer_id,omitempty"`
-	// Time where this device was registered.
+	// Time when this device was registered.
 	RegisterTime *timestamp.Timestamp `protobuf:"bytes,2,opt,name=register_time,json=registerTime,proto3" json:"register_time,omitempty"`
 }
 

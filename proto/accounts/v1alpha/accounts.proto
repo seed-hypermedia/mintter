@@ -77,7 +77,7 @@ message Device {
   // CID-encoded Peer ID of this device.
   string peer_id = 1;
 
-  // Time where this device was registered.
+  // Time when this device was registered.
   google.protobuf.Timestamp register_time = 2;
 }
 

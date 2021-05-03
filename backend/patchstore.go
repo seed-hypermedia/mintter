@@ -21,6 +21,17 @@ import (
 	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 )
 
+var (
+	predPeerCid = badgerutil.RegisterPredicate("peers/cid", 10)
+
+	predObjectCid  = badgerutil.RegisterPredicate("objects/cid", 11)
+	predObjectType = badgerutil.RegisterPredicate("objects/type", 12)
+
+	predHeadPeer   = badgerutil.RegisterPredicate("heads/peer-uid", 13)
+	predHeadObject = badgerutil.RegisterPredicate("heads/object-uid", 14)
+	predHeadData   = badgerutil.RegisterPredicate("heads/data", 15)
+)
+
 /*
 Predicates:
 
@@ -82,21 +93,54 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 	_, ohash := ipfsutil.DecodeCID(sp.ObjectID)
 	_, phash := ipfsutil.DecodeCID(sp.peer)
 
-	ouid, err := s.db.UID(txn, kindObjects, ohash)
+	// ouid = LookupIndex(objects/cid, token=ohash) || NewUID
+	// puid = LookupIndex(peers/cid, token=phash) || NewUID
+
+	ouid, err := s.db.UID(txn.Txn, kindObjects, ohash)
 	if err != nil {
 		return err
 	}
 
-	puid, err := s.db.UID(txn, kindPeers, phash)
+	puid, err := s.db.UID(txn.Txn, kindPeers, phash)
 	if err != nil {
 		return err
 	}
+
+	/*
+		ouid = LookupIndex(objects/cid, ohash)
+		if !ouid {
+			ouid = NewUID("Peer")
+			SetIndex(objects/cid, ohash, ouid)
+			SetTriple(ouid, objects/type, ocodec)
+			SetIndex(objects/type, ocodec, ouid)
+		}
+
+		puid = LookupIndex(peers/cid, phash)
+		if !puid {
+			puid = NewUID("Object")
+			SetIndex(peers/cid, phash, puid)
+		}
+
+		h = &p2p.PeerVersion{}
+		hid = LookupIndex(heads/peer-uid, puid)
+		if hid {
+			h = GetSPO(hid, heads/data)
+		} else {
+			hid = NewUID("Head")
+			AddIndex("heads/peer-uid", puid, hid) -> one to many
+			AddIndex("heads/object-uid", ouid, hid) -> one to many
+		}
+
+		... Do stuff
+
+		SetSPO(hid, heads/data, h)
+	*/
 
 	headPred := badgerutil.PredicateWithUID(predPeersHeads, ouid)
 
 	h := &p2p.PeerVersion{}
 	{
-		err := s.db.GetData(txn, headPred, puid, badgerutil.DecodeProto(h))
+		err := s.db.GetData(txn.Txn, headPred, puid, badgerutil.DecodeProto(h))
 		if err != nil && err != badger.ErrKeyNotFound {
 			return fmt.Errorf("failed to get head: %w", err)
 		}
@@ -134,7 +178,7 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 		return err
 	}
 
-	if err := s.db.SetData(txn, headPred, puid, newHead); err != nil {
+	if err := s.db.SetData(txn.Txn, headPred, puid, newHead); err != nil {
 		return err
 	}
 
@@ -155,7 +199,7 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 
 func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error) {
 	var heads []*p2p.PeerVersion
-	if err := s.db.View(func(txn *badger.Txn) error {
+	if err := s.db.DB.View(func(txn *badger.Txn) error {
 		v, err := s.getHeads(ctx, txn, obj)
 		if err != nil {
 			return err
@@ -237,6 +281,7 @@ func (s *patchStore) ListObjects(ctx context.Context, codec uint64, after string
 	// }); err != nil {
 	// 	return nil, fmt.Errorf("transaction failed: %w", err)
 	// }
+
 	return nil, nil
 }
 
@@ -247,11 +292,18 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid)
 		return nil, fmt.Errorf("failed to get head: %w", err)
 	}
 
+	// ouid = LookupIndex(objects/cid, ohash)
+	// if not found = return
+
 	if err == badger.ErrKeyNotFound {
 		return nil, nil
 	}
 
 	var out []*p2p.PeerVersion
+
+	// ScanIndex("heads/object-uid", ouidBytes, func(i int, uid uint64) error {
+	//   GetSPO(uid, "heads/data").(*p2p.PeerVersion)
+	// })
 
 	it := s.db.ScanData(txn, badgerutil.PredicateWithUID(predPeersHeads, ouid), badgerutil.WithScanPrefetchSize(10))
 	defer it.Close()
