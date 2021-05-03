@@ -11,50 +11,6 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
-var predReg = map[string]uint64{}
-var regPred = map[uint64]string{}
-
-var (
-	predInternalType = "$node/type"
-)
-
-func init() {
-	RegisterPredicate(predInternalType, 1)
-}
-
-// RegisterPredicate registers a predicate globally.
-// ID must be globally unique.
-// Never reuse an ID if you stop using some predicates.
-// This function must not be called at runtime. Only during init.
-func RegisterPredicate(pred string, id uint64) string {
-	if id == 0 {
-		panic("predicate 0 is reserved")
-	}
-
-	if dup, ok := regPred[id]; ok {
-		panic("predicate id is used for " + dup)
-	}
-
-	if _, ok := predReg[pred]; ok {
-		panic("duplicate predicate " + pred)
-	}
-
-	predReg[pred] = id
-	regPred[id] = pred
-
-	return pred
-}
-
-// PredicateID converts predicate string to its uid.
-func PredicateID(pred string) uint64 {
-	id, ok := predReg[pred]
-	if !ok {
-		panic("BUG: unregistered predicate " + pred)
-	}
-
-	return id
-}
-
 func (db *DB) NewTransaction(update bool) *Txn {
 	return &Txn{
 		Txn:               db.DB.NewTransaction(update),
@@ -89,11 +45,20 @@ type Txn struct {
 	cardinalityCount  map[string]uint64
 }
 
+func (txn *Txn) GetXID(nodeType string, uid uint64) ([]byte, error) {
+	v, err := txn.GetPredicate(1, nodeType+".$xid")
+	if err != nil {
+		return nil, err
+	}
+
+	return v.([]byte), nil
+}
+
 // UID returns a UID for a given node type with a given external id.
 func (txn *Txn) UID(nodeType string, xid []byte) (uint64, error) {
-	uidPredicate := nodeType + "/" + "$uid"
+	xidPredicate := nodeType + ".$xid"
 	if xid != nil {
-		uid, err := txn.LookupIndex(uidPredicate, xid)
+		uid, err := txn.LookupIndex(xidPredicate, xid)
 		if err == nil {
 			return uid, nil
 		}
@@ -108,11 +73,18 @@ func (txn *Txn) UID(nodeType string, xid []byte) (uint64, error) {
 		return 0, err
 	}
 
-	if err := txn.AddIndex(uidPredicate, xid, uid); err != nil {
-		return 0, err
+	// TODO: add tests for nodes with no xid.
+	if xid != nil {
+		if err := txn.SetPredicate(uid, xidPredicate, xid, ValueTypeBinary); err != nil {
+			return 0, err
+		}
+
+		if err := txn.AddIndex(xidPredicate, xid, uid); err != nil {
+			return 0, err
+		}
 	}
 
-	if err := txn.SetPredicate(uid, "$type", nodeType, valueString); err != nil {
+	if err := txn.SetPredicate(uid, "$type", nodeType, ValueTypeString); err != nil {
 		return 0, err
 	}
 
@@ -137,7 +109,7 @@ func (txn *Txn) UIDRead(nodeType string, xid []byte) (uint64, error) {
 		return 0, fmt.Errorf("can't read uid for a node with no xid")
 	}
 
-	uidPredicate := nodeType + "/" + "$uid"
+	uidPredicate := nodeType + ".$xid"
 	uid, err := txn.LookupIndex(uidPredicate, xid)
 	return uid, err
 }
@@ -171,14 +143,13 @@ func (txn *Txn) AddIndex(predicate string, token []byte, uid uint64) error {
 		panic("token is too long")
 	}
 	tlen := uint16(l)
-	k, pos := makeKey(string(txn.db.ns), PrefixDefault, KeyTypeIndex, predicate, 2+l+8)
+	k, pos := makeKey(txn.db.ns, PrefixDefault, KeyTypeIndex, predicate, 2+l+8)
 	binary.BigEndian.PutUint16(k[pos:], tlen)
 	pos += 2
 	pos += copy(k[pos:], token)
 	binary.BigEndian.PutUint64(k[pos:], uid)
 
 	return txn.SetEntry(badger.NewEntry(k, nil))
-
 }
 
 // ScanIndex iterates over index keys for a given predicate and call the given callback function for each.
@@ -188,7 +159,7 @@ func (txn *Txn) ScanIndex(predicate string, token []byte, cb func(idx int, uid u
 		panic("token is too long")
 	}
 	tlen := uint16(l)
-	prefix, pos := makeKey(string(txn.db.ns), PrefixDefault, KeyTypeIndex, predicate, 2+l)
+	prefix, pos := makeKey(txn.db.ns, PrefixDefault, KeyTypeIndex, predicate, 2+l)
 	binary.BigEndian.PutUint16(prefix[pos:], tlen)
 	pos += 2
 	copy(prefix[pos:], token)
@@ -218,8 +189,50 @@ func (txn *Txn) ScanIndex(predicate string, token []byte, cb func(idx int, uid u
 	return nil
 }
 
+func (txn *Txn) ScanReverseIndex(predicate string, object uint64, cb func(i int, subject, ts, idx uint64) error) error {
+	prefix, pos := makeKey(txn.db.ns, PrefixDefault, KeyTypeReverse, predicate, 8)
+	binary.BigEndian.PutUint64(prefix[pos:], object)
+
+	// <predicate>:<reverse>:<value-uid>:<subject>:<ts>:<idx>
+
+	opts := badger.DefaultIteratorOptions
+	opts.Prefix = prefix
+	opts.PrefetchValues = false
+
+	it := txn.NewIterator(opts)
+	defer it.Close()
+
+	var i int
+
+	for it.Rewind(); it.Valid(); it.Next() {
+		k := it.Item().Key()
+		subject := binary.BigEndian.Uint64(k[len(k)-8-8-8:])
+		ts := binary.BigEndian.Uint64(k[len(k)-8-8:])
+		idx := binary.BigEndian.Uint64(k[len(k)-8:])
+
+		if subject == 0 {
+			return fmt.Errorf("wrong subject")
+		}
+
+		if ts == 0 {
+			return fmt.Errorf("wrong ts")
+		}
+
+		if err := cb(i, subject, ts, idx); err != nil {
+			return err
+		}
+		i++
+	}
+
+	if i == 0 {
+		return badger.ErrKeyNotFound
+	}
+
+	return nil
+}
+
 func (txn *Txn) ScanPredicate(subject uint64, predicate string, cb func(i int, v interface{}) error) error {
-	prefix, pos := makeKey(string(txn.db.ns), PrefixDefault, KeyTypeData, predicate, 8)
+	prefix, pos := makeKey(txn.db.ns, PrefixDefault, KeyTypeData, predicate, 8)
 	binary.BigEndian.PutUint64(prefix[pos:], subject)
 
 	opts := badger.DefaultIteratorOptions
@@ -255,20 +268,35 @@ func (txn *Txn) ScanPredicate(subject uint64, predicate string, cb func(i int, v
 func (txn *Txn) SetPredicate(subject uint64, predicate string, v interface{}, vt ValueType) error {
 	// check if predicate is multi or uniq
 	// if multi - get cardinality marker
-	return txn.setPredicate(subject, predicate, v, vt, 0, 0)
+	return txn.setPredicate(subject, predicate, v, vt, 0, 0, false)
+}
 
-	// <pred>:<data>:<subject>:<ts|0>:<idx|0> => value
-	// <pred>:<index>:<token-length>:<token>:<uid> => nil
-	// <pred>:<rev>:<object-uid>:<subject-uid> => nil
-	// <$uid>:<index>:<token-length>:<xid>:<uid>
-	// <$type>:<data>:<subject>:<0>:<0> => value
-	// <$type>:<index>:<token-length>:<type-name>:<uid>
+func (txn *Txn) SetPredicateWithInverse(subject uint64, predicate string, v interface{}, vt ValueType) error {
+	if vt != ValueTypeUID {
+		return fmt.Errorf("can only use UID for inverse predicates")
+	}
+
+	return txn.setPredicate(subject, predicate, v, vt, 0, 0, true)
+}
+
+func (txn *Txn) AddPredicateWithInverse(subject uint64, predicate string, v interface{}, vt ValueType) error {
+	if vt != ValueTypeUID {
+		return fmt.Errorf("can only use UID for inverse predicates")
+	}
+
+	if err := txn.setPredicate(subject, predicate, v, vt, txn.startTimeUnixNano, txn.cardinalityCount[predicate], true); err != nil {
+		return err
+	}
+
+	txn.cardinalityCount[predicate]++
+
+	return nil
 }
 
 // AddPredicate adds the value for the predicate for a subject. This can be used to set multiple values to the predicate,
 // e.g. Alice follows John, and Alice follows Bob.
 func (txn *Txn) AddPredicate(subject uint64, predicate string, v interface{}, vt ValueType) error {
-	if err := txn.setPredicate(subject, predicate, v, vt, txn.startTimeUnixNano, txn.cardinalityCount[predicate]); err != nil {
+	if err := txn.setPredicate(subject, predicate, v, vt, txn.startTimeUnixNano, txn.cardinalityCount[predicate], false); err != nil {
 		return err
 	}
 
@@ -279,12 +307,18 @@ func (txn *Txn) AddPredicate(subject uint64, predicate string, v interface{}, vt
 
 // GetPredicate gets the value for the predicate with unique constraint.
 func (txn *Txn) GetPredicate(subject uint64, predicate string) (interface{}, error) {
-	k, pos := makeKey(string(txn.db.ns), PrefixDefault, KeyTypeData, predicate, 8+8+8)
+	return txn.LookupPredicate(subject, predicate, 0, 0)
+}
+
+// LookupPredicate is similar to GetPredicate but allows to pass specific ts and idx values.
+// Useful for getting predicates from reverse indices.
+func (txn *Txn) LookupPredicate(subject uint64, predicate string, ts, idx uint64) (interface{}, error) {
+	k, pos := makeKey(txn.db.ns, PrefixDefault, KeyTypeData, predicate, 8+8+8)
 	binary.BigEndian.PutUint64(k[pos:], subject)
 	pos += 8
-	binary.BigEndian.PutUint64(k[pos:], 0)
+	binary.BigEndian.PutUint64(k[pos:], ts)
 	pos += 8
-	binary.BigEndian.PutUint64(k[pos:], 0)
+	binary.BigEndian.PutUint64(k[pos:], idx)
 
 	item, err := txn.Get(k)
 	if err != nil {
@@ -296,21 +330,21 @@ func (txn *Txn) GetPredicate(subject uint64, predicate string) (interface{}, err
 
 func (txn *Txn) valueFromItem(item *badger.Item) (interface{}, error) {
 	switch ValueType(item.UserMeta()) {
-	case valueString:
+	case ValueTypeString:
 		var out string
 		err := item.Value(func(v []byte) error {
 			out = string(v)
 			return nil
 		})
 		return out, err
-	case valueBinary:
+	case ValueTypeBinary:
 		var out []byte
 		err := item.Value(func(v []byte) error {
 			out = append(out, v...) // must copy the value here.
 			return nil
 		})
 		return out, err
-	case valueUID:
+	case ValueTypeUID:
 		var out uint64
 		err := item.Value(func(v []byte) error {
 			out = binary.BigEndian.Uint64(v)
@@ -320,7 +354,7 @@ func (txn *Txn) valueFromItem(item *badger.Item) (interface{}, error) {
 			return nil, fmt.Errorf("invalid value for uid")
 		}
 		return out, err
-	case valueProto:
+	case ValueTypeProto:
 		any := &anypb.Any{}
 		err := item.Value(func(v []byte) error {
 			return proto.Unmarshal(v, any)
@@ -338,17 +372,17 @@ func (txn *Txn) valueFromItem(item *badger.Item) (interface{}, error) {
 	}
 }
 
-func (txn *Txn) setPredicate(subject uint64, predicate string, v interface{}, vt ValueType, ts, idx uint64) error {
+func (txn *Txn) setPredicate(subject uint64, predicate string, v interface{}, vt ValueType, ts, idx uint64, hasInverse bool) error {
 	var data []byte
 	switch vt {
-	case valueString:
+	case ValueTypeString:
 		data = []byte(v.(string))
-	case valueBinary:
+	case ValueTypeBinary:
 		data = v.([]byte)
-	case valueUID:
+	case ValueTypeUID:
 		data = make([]byte, 8)
 		binary.BigEndian.PutUint64(data, v.(uint64))
-	case valueProto:
+	case ValueTypeProto:
 		any, err := anypb.New(v.(proto.Message))
 		if err != nil {
 			return err
@@ -362,12 +396,23 @@ func (txn *Txn) setPredicate(subject uint64, predicate string, v interface{}, vt
 		panic("BUG: unknown value type")
 	}
 
-	k, pos := makeKey(string(txn.db.ns), PrefixDefault, KeyTypeData, predicate, 8+8+8)
+	k, pos := makeKey(txn.db.ns, PrefixDefault, KeyTypeData, predicate, 8+8+8)
 	binary.BigEndian.PutUint64(k[pos:], subject)
 	pos += 8
 	binary.BigEndian.PutUint64(k[pos:], ts)
 	pos += 8
 	binary.BigEndian.PutUint64(k[pos:], idx)
+
+	if hasInverse && vt == ValueTypeUID {
+		// <predicate>:<reverse>:<value-uid>:<subject>:<ts>:<idx>
+		revK, revPos := makeKey(txn.db.ns, PrefixDefault, KeyTypeReverse, predicate, 8*4)
+		revPos += copy(revK[revPos:], data)
+		copy(revK[revPos:], k[len(k)-8-8-8:]) // copy subject:ts:idx from the original relation.
+
+		if err := txn.Set(revK, nil); err != nil {
+			return err
+		}
+	}
 
 	return txn.SetEntry(badger.NewEntry(k, data).WithMeta(byte(vt)))
 }
@@ -376,10 +421,10 @@ func (txn *Txn) setPredicate(subject uint64, predicate string, v interface{}, vt
 type ValueType byte
 
 const (
-	valueBinary ValueType = 0x00
-	valueString ValueType = 0x01
-	valueUID    ValueType = 0x02
-	valueProto  ValueType = 0x03
+	ValueTypeBinary ValueType = 0x00
+	ValueTypeString ValueType = 0x01
+	ValueTypeUID    ValueType = 0x02
+	ValueTypeProto  ValueType = 0x03
 )
 
 func valueKey(namespace, predicate string, cardinality, uid uint64) []byte {
@@ -389,22 +434,3 @@ func valueKey(namespace, predicate string, cardinality, uid uint64) []byte {
 	binary.BigEndian.PutUint64(k[pos:], uid)
 	return k
 }
-
-// TODO: how to set predicates with list values?
-/*
-<Alice> <follows> <John>
-<Alice> <follows> <Bob>
-
-Alice - 1
-Bob - 2
-John - 3
-follows - 4
-
-
-follows:pso:1:<MaxUint64-txncommitts-txnids> => 4
-
-
-follows:pso:Alice: => John
-follows:pso:Alice => Bob ?
-follows:rev:Bob:Alice => nil
-*/

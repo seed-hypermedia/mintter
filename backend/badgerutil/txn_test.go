@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const testNS = "mtt-test"
+
 func TestTxnUID(t *testing.T) {
 	db, err := NewDB(testutil.MakeBadgerV3(t), testNS)
 	require.NoError(t, err)
@@ -101,6 +103,15 @@ func TestTxnUID(t *testing.T) {
 		return nil
 	})
 	require.NoError(t, err)
+
+	// Test getting xid from uid.
+	err = db.View(func(txn *Txn) error {
+		v, err := txn.GetXID("User", 1)
+		require.NoError(t, err)
+		require.Equal(t, []byte("foo"), v)
+		return nil
+	})
+	require.NoError(t, err)
 }
 
 func TestMultipleRelations(t *testing.T) {
@@ -125,8 +136,8 @@ func TestMultipleRelations(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, uint64(3), cuid)
 
-		require.NoError(t, txn.AddPredicate(auid, "follows", buid, valueUID))
-		require.NoError(t, txn.AddPredicate(auid, "follows", cuid, valueUID))
+		require.NoError(t, txn.AddPredicate(auid, "follows", buid, ValueTypeUID))
+		require.NoError(t, txn.AddPredicate(auid, "follows", cuid, ValueTypeUID))
 		return nil
 	})
 	require.NoError(t, err)
@@ -139,6 +150,44 @@ func TestMultipleRelations(t *testing.T) {
 		want := []uint64{buid, cuid}
 		return txn.ScanPredicate(auid, "follows", func(i int, v interface{}) error {
 			require.Equal(t, want[i], v)
+			return nil
+		})
+	})
+	require.NoError(t, err)
+}
+
+func TestReversePredicatesUnique(t *testing.T) {
+	db, err := NewDB(testutil.MakeBadgerV3(t), testNS)
+	require.NoError(t, err)
+	defer func() {
+		require.NoError(t, db.Close())
+	}()
+
+	txn := db.NewTransaction(true)
+	defer txn.Discard()
+
+	alice, err := txn.UID("User", []byte("alice"))
+	require.NoError(t, err)
+	require.Equal(t, uint64(1), alice)
+
+	bob, err := txn.UID("User", []byte("bob"))
+	require.NoError(t, err)
+	require.Equal(t, uint64(2), bob)
+
+	err = txn.SetPredicateWithInverse(alice, "follows", bob, ValueTypeUID)
+	require.NoError(t, err, "alice must follow bob")
+
+	require.NoError(t, txn.Commit())
+
+	err = db.View(func(txn *Txn) error {
+		return txn.ScanReverseIndex("follows", bob, func(i int, subject, ts, idx uint64) error {
+			require.Equal(t, alice, subject)
+			require.Equal(t, uint64(0), ts)
+			require.Equal(t, uint64(0), idx)
+
+			name, err := txn.GetXID("User", subject)
+			require.NoError(t, err)
+			require.Equal(t, "alice", string(name))
 			return nil
 		})
 	})
