@@ -16,8 +16,9 @@ const (
 	PrefixDefault  byte = 0x00
 	PrefixInternal byte = 0x02
 
-	KeyTypeData  byte = 0x00
-	KeyTypeIndex byte = 0x02
+	KeyTypeData    byte = 0x00
+	KeyTypeIndex   byte = 0x02
+	KeyTypeReverse byte = 0x04
 )
 
 // ParseKey parses our key structure.
@@ -112,6 +113,24 @@ func indexPrefix(namespace, predicate []byte) []byte {
 }
 
 func makeKeyBuf(namespace []byte, prefix, keyType byte, predicate []byte, extra int) ([]byte, int) {
+	lp := len(predicate)
+	if lp > math.MaxUint16 {
+		panic("predicate is too long")
+	}
+	k := make([]byte, len(namespace)+1+1+2+lp+extra) // prefix + keyType + predicate size + predicate + extra space
+	var pos int
+	pos += copy(k, namespace)
+	k[pos] = prefix
+	pos++
+	k[pos] = keyType
+	pos++
+	binary.BigEndian.PutUint16(k[pos:], uint16(lp))
+	pos += 2
+	pos += copy(k[pos:], predicate)
+	return k, pos
+}
+
+func makeKey(namespace string, prefix, keyType byte, predicate string, extra int) ([]byte, int) {
 	lp := len(predicate)
 	if lp > math.MaxUint16 {
 		panic("predicate is too long")

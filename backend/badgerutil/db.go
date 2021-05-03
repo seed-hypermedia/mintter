@@ -16,9 +16,35 @@ type DB struct {
 // NewDB creates a new DB instance.
 func NewDB(b *badger.DB, namespace []byte) (*DB, error) {
 	k, _ := makeKeyBuf(namespace, PrefixInternal, KeyTypeData, lastUIDPred, 0)
+
+	// We want our uid sequence to start from 1, so we do all this crazyness
+	// to detect if we need to waist the 0 sequence.
+	err := b.View(func(txn *badger.Txn) error {
+		_, err := txn.Get(k)
+		return err
+	})
+	if err != nil && err != badger.ErrKeyNotFound {
+		return nil, fmt.Errorf("failed to init sequence: %w", err)
+	}
+
+	var newSeq bool
+	if err == badger.ErrKeyNotFound {
+		newSeq = true
+	}
+
 	seq, err := b.GetSequence(k, 20)
 	if err != nil {
 		return nil, err
+	}
+
+	if newSeq {
+		s, err := seq.Next()
+		if err != nil {
+			return nil, fmt.Errorf("failed to allocate new sequence: %w", err)
+		}
+		if s != 0 {
+			panic("BUG: something wrong happened during sequence initialization, first seq must be 0")
+		}
 	}
 
 	return &DB{
