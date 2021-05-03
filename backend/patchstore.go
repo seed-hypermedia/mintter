@@ -2,6 +2,7 @@ package backend
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
 	p2p "mintter/api/go/p2p/v1alpha"
 	"mintter/backend/badgerutil"
@@ -14,22 +15,21 @@ import (
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/protobuf/proto"
 
 	blocks "github.com/ipfs/go-block-format"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 )
 
-var (
-	predPeerCid = badgerutil.RegisterPredicate("peers/cid", 10)
+const (
+	predPeerCid = "peers/cid"
 
-	predObjectCid  = badgerutil.RegisterPredicate("objects/cid", 11)
-	predObjectType = badgerutil.RegisterPredicate("objects/type", 12)
+	predObjectCid  = "objects/cid"
+	predObjectType = "objects/type"
 
-	predHeadPeer   = badgerutil.RegisterPredicate("heads/peer-uid", 13)
-	predHeadObject = badgerutil.RegisterPredicate("heads/object-uid", 14)
-	predHeadData   = badgerutil.RegisterPredicate("heads/data", 15)
+	predHeadPeer   = "heads/peer-uid"
+	predHeadObject = "heads/object-uid"
+	predHeadData   = "heads/data"
 )
 
 /*
@@ -93,57 +93,33 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 	_, ohash := ipfsutil.DecodeCID(sp.ObjectID)
 	_, phash := ipfsutil.DecodeCID(sp.peer)
 
-	// ouid = LookupIndex(objects/cid, token=ohash) || NewUID
-	// puid = LookupIndex(peers/cid, token=phash) || NewUID
-
-	ouid, err := s.db.UID(txn.Txn, kindObjects, ohash)
+	ouid, err := txn.UID("Object", ohash)
 	if err != nil {
 		return err
 	}
 
-	puid, err := s.db.UID(txn.Txn, kindPeers, phash)
+	puid, err := txn.UID("Peer", phash)
 	if err != nil {
 		return err
 	}
 
-	/*
-		ouid = LookupIndex(objects/cid, ohash)
-		if !ouid {
-			ouid = NewUID("Peer")
-			SetIndex(objects/cid, ohash, ouid)
-			SetTriple(ouid, objects/type, ocodec)
-			SetIndex(objects/type, ocodec, ouid)
-		}
+	hxid := headXID(ouid, puid)
+	huid, err := txn.UID("Head", hxid)
+	if err != nil {
+		return fmt.Errorf("failed to get uid for head: %w", err)
+	}
 
-		puid = LookupIndex(peers/cid, phash)
-		if !puid {
-			puid = NewUID("Object")
-			SetIndex(peers/cid, phash, puid)
-		}
-
+	var h *p2p.PeerVersion
+	var newHead bool
+	v, err := txn.GetPredicate(huid, "Head.data")
+	switch err {
+	case nil:
+		h = v.(*p2p.PeerVersion)
+	case badger.ErrKeyNotFound:
 		h = &p2p.PeerVersion{}
-		hid = LookupIndex(heads/peer-uid, puid)
-		if hid {
-			h = GetSPO(hid, heads/data)
-		} else {
-			hid = NewUID("Head")
-			AddIndex("heads/peer-uid", puid, hid) -> one to many
-			AddIndex("heads/object-uid", ouid, hid) -> one to many
-		}
-
-		... Do stuff
-
-		SetSPO(hid, heads/data, h)
-	*/
-
-	headPred := badgerutil.PredicateWithUID(predPeersHeads, ouid)
-
-	h := &p2p.PeerVersion{}
-	{
-		err := s.db.GetData(txn.Txn, headPred, puid, badgerutil.DecodeProto(h))
-		if err != nil && err != badger.ErrKeyNotFound {
-			return fmt.Errorf("failed to get head: %w", err)
-		}
+		newHead = true
+	default:
+		return fmt.Errorf("failed to get head: %w", err)
 	}
 
 	if h.Seq+1 != sp.Seq {
@@ -173,13 +149,18 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 	h.Seq = sp.Seq
 	h.LamportTime = sp.LamportTime
 
-	newHead, err := proto.Marshal(h)
-	if err != nil {
-		return err
+	if err := txn.SetPredicate(huid, "Head.data", h, badgerutil.ValueTypeProto); err != nil {
+		return fmt.Errorf("failed to store new head: %w", err)
 	}
 
-	if err := s.db.SetData(txn.Txn, headPred, puid, newHead); err != nil {
-		return err
+	if newHead {
+		if err := txn.SetPredicateWithInverse(huid, "Head.peerUID", puid, badgerutil.ValueTypeUID); err != nil {
+			return fmt.Errorf("failed to store peer uid to head: %w", err)
+		}
+
+		if err := txn.SetPredicateWithInverse(huid, "Head.objectUID", ouid, badgerutil.ValueTypeUID); err != nil {
+			return fmt.Errorf("failed to store object uid to head: %w", err)
+		}
 	}
 
 	if err := txn.Commit(); err != nil {
@@ -197,9 +178,16 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 	return nil
 }
 
+func headXID(ouid, puid uint64) []byte {
+	out := make([]byte, 8+8)
+	binary.BigEndian.PutUint64(out, ouid)
+	binary.BigEndian.PutUint64(out[8:], puid)
+	return out
+}
+
 func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error) {
 	var heads []*p2p.PeerVersion
-	if err := s.db.DB.View(func(txn *badger.Txn) error {
+	if err := s.db.View(func(txn *badgerutil.Txn) error {
 		v, err := s.getHeads(ctx, txn, obj)
 		if err != nil {
 			return err
@@ -285,15 +273,13 @@ func (s *patchStore) ListObjects(ctx context.Context, codec uint64, after string
 	return nil, nil
 }
 
-func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
+func (s *patchStore) getHeads(ctx context.Context, txn *badgerutil.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
 	_, ohash := ipfsutil.DecodeCID(obj)
-	ouid, err := s.db.UIDReadOnly(txn, kindObjects, ohash)
+
+	ouid, err := txn.UIDRead("Object", ohash)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return nil, fmt.Errorf("failed to get head: %w", err)
 	}
-
-	// ouid = LookupIndex(objects/cid, ohash)
-	// if not found = return
 
 	if err == badger.ErrKeyNotFound {
 		return nil, nil
@@ -301,19 +287,16 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badger.Txn, obj cid.Cid)
 
 	var out []*p2p.PeerVersion
 
-	// ScanIndex("heads/object-uid", ouidBytes, func(i int, uid uint64) error {
-	//   GetSPO(uid, "heads/data").(*p2p.PeerVersion)
-	// })
-
-	it := s.db.ScanData(txn, badgerutil.PredicateWithUID(predPeersHeads, ouid), badgerutil.WithScanPrefetchSize(10))
-	defer it.Close()
-
-	for it.Rewind(); it.Valid(); it.Next() {
-		h := &p2p.PeerVersion{}
-		if err := it.Item().Value(badgerutil.DecodeProto(h)); err != nil {
-			return nil, err
+	if err := txn.ScanReverseIndex("Head.peerUID", ouid, func(i int, subject, ts, idx uint64) error {
+		v, err := txn.LookupPredicate(subject, "Head.data", ts, idx)
+		if err != nil {
+			return err
 		}
-		out = append(out, h)
+
+		out = append(out, v.(*p2p.PeerVersion))
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("failed scanning reverse index for heads: %w", err)
 	}
 
 	return out, nil

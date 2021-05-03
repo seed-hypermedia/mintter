@@ -66,7 +66,7 @@ func StartDaemonWithConfig(cfg config.Config) (d *Daemon, err error) {
 	}
 	clean.Add(p2p)
 
-	db, err := badgerutil.NewDB(ds.DB, []byte(keyNamespace))
+	db, err := badgerutil.NewDB(ds.DB, keyNamespace)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create db: %w", err)
 	}

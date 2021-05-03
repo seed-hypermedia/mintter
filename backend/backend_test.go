@@ -155,7 +155,7 @@ func makeTestBackend(t *testing.T, name string, ready bool) *testBackend {
 
 	bs := blockstore.NewBlockstore(ds)
 
-	db, err := badgerutil.NewDB(testutil.MakeBadgerV3(t), []byte("!mtttest"))
+	db, err := badgerutil.NewDB(testutil.MakeBadgerV3(t), "!mtttest")
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, db.Close())
