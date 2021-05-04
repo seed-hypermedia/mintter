@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	p2p "mintter/api/go/p2p/v1alpha"
-	"mintter/backend/badgerutil"
+	"mintter/backend/badgergraph"
 	"mintter/backend/ipfsutil"
 	"sync"
 	"time"
@@ -62,7 +62,7 @@ type patchStore struct {
 	k    crypto.PrivKey
 	peer cid.Cid
 
-	db       *badgerutil.DB
+	db       *badgergraph.DB
 	bs       blockstore.Blockstore
 	exchange exchange.Interface
 
@@ -70,7 +70,7 @@ type patchStore struct {
 	subs map[chan<- signedPatch]struct{}
 }
 
-func newPatchStore(k crypto.PrivKey, bs blockstore.Blockstore, db *badgerutil.DB) (*patchStore, error) {
+func newPatchStore(k crypto.PrivKey, bs blockstore.Blockstore, db *badgergraph.DB) (*patchStore, error) {
 	pid, err := peer.IDFromPrivateKey(k)
 	if err != nil {
 		return nil, err
@@ -187,7 +187,7 @@ func headXID(ouid, puid uint64) []byte {
 
 func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error) {
 	var heads []*p2p.PeerVersion
-	if err := s.db.View(func(txn *badgerutil.Txn) error {
+	if err := s.db.View(func(txn *badgergraph.Txn) error {
 		var err error
 		heads, err = s.getHeads(ctx, txn, obj)
 		return err
@@ -274,7 +274,7 @@ func (s *patchStore) ListObjects(ctx context.Context, codec uint64, after string
 	return nil, nil
 }
 
-func (s *patchStore) getHeads(ctx context.Context, txn *badgerutil.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
+func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
 	_, ohash := ipfsutil.DecodeCID(obj)
 
 	ouid, err := txn.UID("Object", ohash)
