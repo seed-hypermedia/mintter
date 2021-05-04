@@ -62,7 +62,6 @@ func parseKey(namespace string, key []byte) (parsedKey, error) {
 		}
 
 		pk.Cardinality = binary.BigEndian.Uint64(key[pos:])
-		pos += 8
 
 		if pk.Cardinality == 0 {
 			return pk, fmt.Errorf("invalid ts value in key: %d", pk.Cardinality)
@@ -73,7 +72,6 @@ func parseKey(namespace string, key []byte) (parsedKey, error) {
 		pk.Token = key[pos : pos+tlen]
 		pos += tlen
 		pk.Subject = binary.BigEndian.Uint64(key[pos:])
-		pos += 8
 		if pk.Subject == 0 {
 			return pk, fmt.Errorf("invalid key subject")
 		}
@@ -84,7 +82,6 @@ func parseKey(namespace string, key []byte) (parsedKey, error) {
 			return pk, fmt.Errorf("invalid key object")
 		}
 		pk.Subject = binary.BigEndian.Uint64(key[pos:])
-		pos += 8
 		if pk.Subject == 0 {
 			return pk, fmt.Errorf("invalid key subject")
 		}
