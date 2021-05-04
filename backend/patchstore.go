@@ -111,7 +111,7 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 
 	var h *p2p.PeerVersion
 	var newHead bool
-	v, err := txn.GetPredicate(huid, "Head.data")
+	v, err := txn.GetProperty(huid, "Head.data")
 	switch err {
 	case nil:
 		h = v.(*p2p.PeerVersion)
@@ -149,16 +149,16 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 	h.Seq = sp.Seq
 	h.LamportTime = sp.LamportTime
 
-	if err := txn.SetPredicate(huid, "Head.data", h, badgerutil.ValueTypeProto); err != nil {
+	if err := txn.SetProperty(huid, "Head.data", h, false); err != nil {
 		return fmt.Errorf("failed to store new head: %w", err)
 	}
 
 	if newHead {
-		if err := txn.SetPredicateWithInverse(huid, "Head.peerUID", puid, badgerutil.ValueTypeUID); err != nil {
+		if err := txn.SetRelation(huid, "Head.peerUID", puid, true); err != nil {
 			return fmt.Errorf("failed to store peer uid to head: %w", err)
 		}
 
-		if err := txn.SetPredicateWithInverse(huid, "Head.objectUID", ouid, badgerutil.ValueTypeUID); err != nil {
+		if err := txn.SetRelation(huid, "Head.objectUID", ouid, true); err != nil {
 			return fmt.Errorf("failed to store object uid to head: %w", err)
 		}
 	}
@@ -195,7 +195,7 @@ func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error)
 		heads = v
 		return nil
 	}); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get heads: %w", err)
 	}
 
 	g, ctx := errgroup.WithContext(ctx)
@@ -276,7 +276,7 @@ func (s *patchStore) ListObjects(ctx context.Context, codec uint64, after string
 func (s *patchStore) getHeads(ctx context.Context, txn *badgerutil.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
 	_, ohash := ipfsutil.DecodeCID(obj)
 
-	ouid, err := txn.UIDRead("Object", ohash)
+	ouid, err := txn.UID("Object", ohash)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return nil, fmt.Errorf("failed to get head: %w", err)
 	}
@@ -285,21 +285,24 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badgerutil.Txn, obj cid.
 		return nil, nil
 	}
 
-	var out []*p2p.PeerVersion
+	_ = ouid
 
-	if err := txn.ScanReverseIndex("Head.peerUID", ouid, func(i int, subject, ts, idx uint64) error {
-		v, err := txn.LookupPredicate(subject, "Head.data", ts, idx)
-		if err != nil {
-			return err
-		}
+	// var out []*p2p.PeerVersion
 
-		out = append(out, v.(*p2p.PeerVersion))
-		return nil
-	}); err != nil {
-		return nil, fmt.Errorf("failed scanning reverse index for heads: %w", err)
-	}
+	// if err := txn.ScanReverseIndex("Head.peerUID", ouid, func(i int, subject, ts, idx uint64) error {
+	// 	v, err := txn.LookupPredicate(subject, "Head.data", ts, idx)
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-	return out, nil
+	// 	out = append(out, v.(*p2p.PeerVersion))
+	// 	return nil
+	// }); err != nil {
+	// 	return nil, fmt.Errorf("failed scanning reverse index for heads: %w", err)
+	// }
+	// return out, nil
+
+	return nil, nil
 }
 
 func (s *patchStore) ReplicateFromHead(ctx context.Context, h *p2p.PeerVersion) error {
