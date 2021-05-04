@@ -1,16 +1,7 @@
 import * as React from 'react';
-import type { ReactEditor } from 'slate-react';
 import { useHistory, useParams } from 'react-router-dom';
 import slugify from 'slugify';
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { createPlugins } from '@mintter/editor/plugins';
-import { EditorComponent } from '@mintter/editor/editor-component';
-import { options } from '@mintter/editor/options';
-import { useEditor } from '@mintter/editor/use-editor';
-// import { toSlateTree } from 'editor/transformers/transformers';
-// import { useToasts } from 'react-toast-notifications';
-// import { AuthorLabel } from 'components/author-label';
-// import { PublicationModal } from 'components/publication-modal';
 import {
   useDraftsList,
   usePublication as usePublicationQuery,
@@ -19,12 +10,10 @@ import {
 import { useSidePanel } from '../sidepanel';
 import * as apiClient from '@mintter/client';
 import { useMutation } from 'react-query';
-// import { SlateBlock } from 'editor/editor';
 import { Text } from '@mintter/ui/text';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Container } from '@components/container';
-import { publicationToEditor } from '@mintter/editor/transformers/transformers';
 import { buildDocument } from '@utils/generate';
 
 export default function Publication() {
@@ -124,10 +113,6 @@ export default function Publication() {
   //     data,
   //   ]);
 
-  // create editor
-  const plugins = createPlugins(options);
-  const editor = useEditor(plugins, options) as ReactEditor;
-
   //   React.useEffect(() => {
   //     blockMenuDispatch({
   //       type: 'set_actions',
@@ -181,14 +166,7 @@ export default function Publication() {
       </Box>
       <Container css={{ gridArea: 'maincontent', marginBottom: 300 }}>
         <PublicationHeader document={data?.document} />
-        {value && (
-          <EditorComponent
-            readOnly
-            editor={editor}
-            plugins={plugins}
-            value={value}
-          />
-        )}
+        {value && <p>EDITOR HERE</p>}
       </Container>
       {isSidepanelOpen ? (
         <Box
