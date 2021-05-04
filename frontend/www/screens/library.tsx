@@ -10,6 +10,8 @@ import {
   useConnectionList,
   useProfile,
 } from 'shared/profile-context'
+import {Text} from 'components/text'
+import {Box} from 'components/box'
 import {Link} from 'components/link'
 import {Connections} from 'components/connections'
 import {SuggestedConnections} from 'components/suggested-connections'
@@ -20,6 +22,8 @@ import {useToasts} from 'react-toast-notifications'
 import Publications from './publications'
 import MyPublications from './my-publications'
 import Drafts from './drafts'
+import {Button} from 'components/button'
+import {Heading} from 'components/heading'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
@@ -97,22 +101,36 @@ export default function Library() {
         </div>
         <div>
           <MainColumn className="pt-12">
-            <div className="flex items-baseline justify-between">
-              <h1 className="text-4xl font-bold text-heading">Library</h1>
-              <div className="flex-1" />
-              <button
+            <Box
+              css={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Heading as="h1">Library</Heading>
+              {/* <div className="flex-1" /> */}
+              <Button
+                variant="primary"
+                size="2"
+                appearance="pill"
                 onClick={onCreateDocument}
-                className="bg-primary rounded-full px-4 py-2 text-white font-bold shadow transition duration-200 hover:shadow-lg ml-4"
               >
                 Compose
-              </button>
-            </div>
-            <div className="flex items-center mt-4 -mx-4">
+              </Button>
+            </Box>
+            <Box
+              css={{
+                mx: '-$3',
+                marginTop: '$2',
+                display: 'inline-flex',
+                gap: '$1',
+              }}
+            >
               <NavItem to={`${match.url}/feed`}>Feed</NavItem>
               <NavItem to={`${match.url}/published`}>Published</NavItem>
               <NavItem to={`${match.url}/drafts`}>Drafts</NavItem>
-              <div className="flex-1" />
-            </div>
+            </Box>
             <NoConnectionsBox onConnect={onConnect} />
             <div>
               <Switch>
@@ -148,12 +166,17 @@ function ProfileInfo() {
         {profile.username}
       </h3>
       <p className="text-body text-sm mt-2">{profile.bio}</p>
-      <Link
-        to={`${getPath(match)}/settings`}
-        className="text-primary hover:text-primary-hover cursor-pointer text-sm mt-4 underline inline-block"
-      >
-        Edit profile
-      </Link>
+      <Box css={{marginTop: '$4', mx: '-$2'}}>
+        <Button
+          as={Link}
+          variant="primary"
+          appearance="plain"
+          to={`${getPath(match)}/settings`}
+          css={{height: '$5'}}
+        >
+          edit profile
+        </Button>
+      </Box>
     </div>
   ) : null
 }
@@ -161,22 +184,39 @@ function ProfileInfo() {
 function NoConnectionsBox({onConnect}) {
   const {data = []} = useConnectionList()
   return data.length === 0 ? (
-    <>
-      <hr className="border-t-2 border-muted border-solid my-8" />
-      <div className="bg-background-muted border-muted border-solid border-2 rounded px-4 py-4 mb-4 text-center flex flex-col items-center">
-        <h3 className="text-xl font-bold text-primary">Connect to Others</h3>
-        {/* <p className="text-body font-light mt-5">
+    <Box
+      css={{
+        bc: '$gray200',
+        p: '$6',
+        marginTop: '$4',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        borderRadius: '$3',
+        boxShadow: 'inset 0 0 0 1px $colors$gray400, 0 0 0 1px $colors$gray400',
+      }}
+    >
+      <h3 className="text-xl font-bold text-primary">Connect to Others</h3>
+      {/* <p className="text-body font-light mt-5">
           Some clain sentence that's fun, welcomes user to the community
           and tells how it works and encourages to get started
         </p> */}
-        <button
-          onClick={() => onConnect()}
-          className="bg-primary hover:shadow-lg text-white font-bold py-3 px-4 rounded-full flex items-center mt-5 justify-center"
-        >
-          <Icons.Plus />
-          <span className="ml-2">Add your First Connection</span>
-        </button>
-      </div>
-    </>
+      <Button
+        onClick={() => onConnect()}
+        appearance="pill"
+        variant="primary"
+        css={{
+          height: '$7',
+          fontSize: '$3',
+          marginTop: '$4',
+          px: '$4',
+        }}
+      >
+        <Icons.Plus />
+        <Text color="white" size="3">
+          Add your First Connection
+        </Text>
+      </Button>
+    </Box>
   ) : null
 }

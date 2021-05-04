@@ -1,0 +1,41 @@
+import {Meta} from '@storybook/addon-docs/blocks'
+
+<Meta title="Overview/Getting Started" />
+
+# Getting Started
+
+This is the Design System that powers the [Mintter](https://mintter.com)
+platform. Under the hood, we use [Stitches](https://stitches.dev) for a modern
+CSS-in-JS approach and [Radix UI](https://radix-ui.com) for out-of-the-box
+accessible primitives to build our components.
+
+## Setup
+
+1.  Install the `@mintter/ui` package using your preferred package manager.
+
+```sh
+$ npm install @mintter/ui
+```
+
+2.  Wrap your application with the `Theme` component.
+
+```tsx
+import {Theme} from '@mintter/ui/theme'
+
+const App: React.FC = () => {
+  return (
+    <Theme>
+      <YourApp />
+    </Theme>
+  )
+}
+```
+
+## Principles
+
+Since we try to avoid over-abstracting things, we won't export all UI components
+from here initially. Our approach is to export the most basic primitives that
+you can leverage to build more complex UI patterns. Once we find a pattern is
+repeated in multiple places, then we abstract it and add it to this package.
+
+> Sometimes the best abstraction, is no abstraction at all.
