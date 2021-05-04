@@ -29,3 +29,6 @@ _old-editor
 # Bazel
 user.bazelrc
 bazel-*
+
+# Backend code
+backend/ui/rice-box.go-e
