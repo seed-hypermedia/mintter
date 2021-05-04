@@ -1,160 +1,77 @@
-// @ts-nocheck
-import React from 'react';
-import { Slate, ReactEditor } from 'slate-react';
-import { css } from 'emotion';
+import { KeyboardEvent, useState } from 'react';
+import type { NodeEntry } from 'slate';
 import {
-  // BalloonToolbar,
-  EditablePlugins,
-  RenderElement,
-  SlateDocument,
-  ToolbarElement,
-  ToolbarMark,
+  createExitBreakPlugin,
+  createHistoryPlugin,
+  createNodeIdPlugin,
+  createReactPlugin,
+  ELEMENT_PARAGRAPH,
+  ExitBreakRule,
+  SlatePlugins,
+  SlatePluginsProps,
+  SPEditor,
 } from '@udecode/slate-plugins';
-import { Box } from '@mintter/ui/box';
-import { BalloonToolbar, setDefaults } from '@udecode/slate-plugins';
-import { LinkPlugin, ToolbarLink } from './link-plugin';
-import { LinkMenu } from './link-plugin/link-menu';
-import type { MenuStateReturn } from 'reakit/ts';
-import { Button } from '@mintter/ui/button';
-import { BOLD_OPTIONS, MARK_BOLD } from './marks/bold';
-import { Icon } from '@mintter/ui/icon';
-import { MARK_ITALIC } from './marks/italic';
-import { ELEMENT_PARAGRAPH } from './elements/defaults';
+import { createId } from '@utils/create-id';
+import { createBlockPlugin, ELEMENT_BLOCK, BlockElement } from './block-plugin';
+import { createElement } from './create-element';
 
-interface EditorComponentProps {
-  editor: any;
-  plugins: any[];
-  options: any;
-  linkMenu: MenuStateReturn;
-  value: any;
-  onChange: (value: any) => void;
-  readOnly?: boolean;
-  renderElement?: RenderElement[];
-  theme?: 'theme-light' | 'theme-dark';
-  push?: any; // TODO: FIXME Types
+const initialValue = [
+  createElement('', { id: createId(), type: ELEMENT_BLOCK }),
+];
+
+function rulesWithCustomDefaultType(
+  type: string = ELEMENT_BLOCK,
+  rules: ExitBreakRule[] = [
+    { hotkey: 'mod+enter' },
+    {
+      hotkey: 'mod+shift+enter',
+      before: true,
+    },
+  ],
+): ExitBreakRule[] {
+  return rules.map((rule) => ({
+    ...rule,
+    defaultType: type,
+  }));
 }
 
-function Editor({
-  editor,
-  plugins,
-  options,
-  value,
-  onChange,
-  readOnly = false,
-  renderElement = [],
-  linkMenu,
-}: EditorComponentProps): JSX.Element {
+export function EditorComponent<T extends SPEditor = SPEditor>({
+  ...options
+}: SlatePluginsProps<T>) {
+  const [v, setV] = useState(initialValue);
   return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={(v) => {
-        onChange(v as SlateDocument);
-      }}
-    >
-      <Box>
-        {readOnly ? (
-          <EditablePlugins
-            style={{}}
-            readOnly={true}
-            plugins={plugins}
-            renderElement={renderElement}
-            placeholder={
-              readOnly ? 'no content' : 'Start writing your masterpiece...'
-            }
-            spellCheck
-            autoFocus
-          />
-        ) : (
-          <>
-            <EditablePlugins
-              style={{}}
-              readOnly={readOnly}
-              plugins={plugins}
-              renderElement={renderElement}
-              placeholder={
-                readOnly ? 'no content' : 'Start writing your masterpiece...'
-              }
-              spellCheck
-              autoFocus
-              onSelect={() => {
-                /**
-                 * Chrome doesn't scroll at bottom of the page. This fixes that.
-                 */
-                if (!(window as any).chrome) return;
-                if (editor.selection == null) return;
-                try {
-                  /**
-                   * Need a try/catch because sometimes you get an error like:
-                   *
-                   * Error: Cannot resolve a DOM node from Slate node: {"type":"p","children":[{"text":"","by":-1,"at":-1}]}
-                   */
-                  const domPoint = ReactEditor.toDOMPoint(
-                    editor,
-                    editor.selection.focus,
-                  );
-                  const node = domPoint[0];
-                  if (node == null) return;
-                  const element = node.parentElement;
-                  if (element == null) return;
-                  element.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'nearest',
-                  });
-                } catch (e) {
-                  /**
-                   * Empty catch. Do nothing if there is an error.
-                   */
-                }
-              }}
-            />
-            <Box
-              // TODO: Fix types
-              // @ts-ignore
-              as={BalloonToolbar}
-              css={{ backgroundColor: '$background-opposite' }}
-            >
-              <Button
-                as={ToolbarMark}
-                type={MARK_BOLD}
-                variant="ghost"
-                size="1"
-                css={{ '$$outlined-hovered-background-color': 'transparent' }}
-                icon={<Icon name="Bold" size="2" color="opposite" />}
-              />
-              <Button
-                as={ToolbarMark}
-                type={MARK_ITALIC}
-                variant="ghost"
-                size="1"
-                css={{ '$$outlined-hovered-background-color': 'transparent' }}
-                icon={<Icon name="Italic" size="2" color="opposite" />}
-              />
-              <ToolbarLink {...options} />
-              <Button
-                as={ToolbarElement}
-                type={ELEMENT_PARAGRAPH}
-                variant="ghost"
-                size="1"
-                css={{ '$$outlined-hovered-background-color': 'transparent' }}
-                icon={<Icon name="Paragraph" size="2" color="opposite" />}
-              />
-              <Button
-                as={ToolbarElement}
-                type="h2"
-                variant="ghost"
-                size="1"
-                css={{ '$$outlined-hovered-background-color': 'transparent' }}
-                icon={<Icon name="Heading" size="2" color="opposite" />}
-              />
-            </Box>
-            <LinkMenu menu={linkMenu} />
-          </>
-        )}
-      </Box>
-    </Slate>
+    <>
+      <SlatePlugins
+        editableProps={{
+          placeholder: 'start here...',
+        }}
+        plugins={[
+          createReactPlugin(),
+          createHistoryPlugin(),
+          createBlockPlugin(),
+          createExitBreakPlugin({
+            rules: rulesWithCustomDefaultType(ELEMENT_BLOCK, [
+              { hotkey: 'mod+enter' },
+              {
+                hotkey: 'mod+shift+enter',
+                before: true,
+              },
+              {
+                hotkey: 'enter',
+                query: {
+                  start: true,
+                  end: true,
+                  allow: [ELEMENT_BLOCK],
+                },
+              },
+            ]),
+          }),
+        ]}
+        initialValue={initialValue}
+        components={{ [ELEMENT_BLOCK]: BlockElement }}
+        onChange={(nv) => setV(nv as any)}
+      />
+      <pre>{JSON.stringify(v, null, 3)}</pre>
+    </>
   );
 }
-
-// TODO: fix types
-export const EditorComponent = (props: any) => <Editor {...props} />;

@@ -1,13 +1,13 @@
 import documents from '@mintter/api/documents/v1alpha/documents_pb';
 import mintter from '@mintter/api/v2/mintter_pb';
-import { id as getId } from '@mintter/editor/id';
-import { makeProto } from '@mintter/editor/transformers/make-proto';
+import { makeProto } from './make-proto';
 import {
   focusBlockStartById,
   normalizeDescendantsToDocumentFragment,
 } from '@udecode/slate-plugins';
 
 import faker from 'faker';
+import { createId } from './create-id';
 
 export function buildProfile(): mintter.Profile.AsObject {
   return {
@@ -38,7 +38,7 @@ export function buildPublication(): documents.Publication {
   let pub = new documents.Publication();
 
   pub.setDocument(buildDocument());
-  pub.setVersion(getId());
+  pub.setVersion(createId());
 
   return pub;
 }
@@ -53,7 +53,7 @@ export function buildDocument({
   childrenListStyle = documents.ListStyle.NONE,
   title = faker.lorem.sentence(),
   subtitle = faker.lorem.sentence(),
-  id = getId(),
+  id = createId(),
 }: BuildDocumentOptions = {}): documents.Document {
   console.log('author', author);
 
@@ -89,7 +89,7 @@ type BuildBlockOptions = Partial<documents.Block.AsObject> & {
 
 export function buildBlock({
   elementsList,
-  id = getId(),
+  id = createId(),
   childListStyle = documents.ListStyle.NONE,
   parent = '',
   type = documents.Block.Type.BASIC,
@@ -146,7 +146,7 @@ export function buildImageInlineElement(
   linkKey?: string,
 ): documents.InlineElement {
   if (linkKey === undefined) {
-    linkKey = getId();
+    linkKey = createId();
   }
   if (image === undefined) {
     image = {
@@ -166,7 +166,7 @@ export function buildQuoteInlineElement(
   linkKey?: string,
 ): documents.InlineElement {
   if (linkKey === undefined) {
-    linkKey = getId();
+    linkKey = createId();
   }
   if (quote === undefined) {
     quote = {
