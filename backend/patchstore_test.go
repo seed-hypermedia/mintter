@@ -2,7 +2,7 @@ package backend
 
 import (
 	"context"
-	"mintter/backend/badgerutil"
+	"mintter/backend/badgergraph"
 	"mintter/backend/testutil"
 	"testing"
 	"time"
@@ -113,7 +113,7 @@ func makeTestPatchStore(t *testing.T, name string) *patchStore {
 
 	key := testutil.MakeProfile(t, name).Peer.PrivKey.PrivKey
 
-	db, err := badgerutil.NewDB(testutil.MakeBadgerV3(t), "!mtttest")
+	db, err := badgergraph.NewDB(testutil.MakeBadgerV3(t), "!mtttest")
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, db.Close())

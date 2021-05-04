@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	daemon "mintter/api/go/daemon/v1alpha"
-	"mintter/backend/badgerutil"
+	"mintter/backend/badgergraph"
 	"mintter/backend/config"
 	"mintter/backend/testutil"
 )
@@ -155,7 +155,7 @@ func makeTestBackend(t *testing.T, name string, ready bool) *testBackend {
 
 	bs := blockstore.NewBlockstore(ds)
 
-	db, err := badgerutil.NewDB(testutil.MakeBadgerV3(t), "!mtttest")
+	db, err := badgergraph.NewDB(testutil.MakeBadgerV3(t), "!mtttest")
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, db.Close())
