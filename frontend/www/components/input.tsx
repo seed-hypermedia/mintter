@@ -1,36 +1,24 @@
 import React from 'react'
-export interface InputProps extends React.HTMLAttributes<HTMLInputElement> {
-  type?: 'text' | 'password' | 'email'
-  name: string
-  error?: boolean
-  disabled?: boolean
+import type * as Polymorphic from '@radix-ui/react-polymorphic'
+import {StitchesVariants, StitchesCss} from 'shared/stitches.config'
+import {FormControl, FORMCONTROL_TAG} from './form-control'
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ref: any
-}
+type InputCSSProp = Pick<StitchesCss<typeof FormControl>, 'css'>
+type InputVariants = StitchesVariants<typeof FormControl>
+type InputOwnProps = InputCSSProp &
+  InputVariants & {
+    type?: 'text' | 'password' | 'email'
+    name: string
+  }
+
+export type InputComponent = Polymorphic.ForwardRefComponent<
+  typeof FORMCONTROL_TAG,
+  InputOwnProps
+>
 
 // eslint-disable-next-line react/display-name
-const Input = React.forwardRef(
-  (
-    {
-      className = '',
-      type = 'text',
-      disabled = false,
-      error = false,
-      ...props
-    }: InputProps,
-    ref,
-  ) => (
-    <input
-      className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body${
-        error ? ' border-danger' : ''
-      } ${disabled ? ' opacity-75' : ''} ${className}`}
-      type={type}
-      ref={ref}
-      disabled={disabled}
-      {...props}
-    />
+export const Input = React.forwardRef(
+  ({type = 'text', disabled = false, ...props}: InputProps, ref) => (
+    <FormControl type={type} ref={ref} disabled={disabled} {...props} />
   ),
-)
-
-export default Input
+) as InputComponent

@@ -1,29 +1,38 @@
-import React from 'react'
-import Tippy from '@tippyjs/react'
-import {css} from 'emotion'
+import * as React from 'react'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
+import {Slot} from '@radix-ui/react-slot'
+import {styled} from 'shared/stitches.config'
+
+const StyledContent = styled(TooltipPrimitive.Content, {
+  borderRadius: 3,
+  padding: '5px 10px',
+  fontSize: 14,
+  backgroundColor: '$backgroundOpposite',
+  color: 'white',
+})
+const StyledArrow = styled(TooltipPrimitive.Arrow, {
+  fill: '$text',
+})
 
 export function Tooltip({
   children,
-  delay = 500,
-  content = 'tooltip content here',
+  content,
+  isOpen,
+  defaultIsOpen,
+  onIsOpenChange,
   ...props
 }) {
   return (
-    <Tippy
-      delay={delay}
-      content={
-        <span
-          className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
-            background-color: #333;
-            color: #ccc;
-          `}`}
-        >
-          {content}
-        </span>
-      }
-      {...props}
+    <TooltipPrimitive.Root
+      isOpen={isOpen}
+      defaultIsOpen={defaultIsOpen}
+      onIsOpenChange={onIsOpenChange}
     >
-      {children}
-    </Tippy>
+      <TooltipPrimitive.Trigger as={Slot}>{children}</TooltipPrimitive.Trigger>
+      <StyledContent side="top" align="center" {...props}>
+        {content}
+        <StyledArrow offset={5} width={11} height={5} />
+      </StyledContent>
+    </TooltipPrimitive.Root>
   )
 }

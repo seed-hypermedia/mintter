@@ -1,6 +1,7 @@
 import React from 'react'
 import {Helmet} from 'react-helmet'
 
+// TODO: implement Seo with hoofd
 interface SeoProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string
   description?: string

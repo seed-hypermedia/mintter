@@ -1,5 +1,5 @@
 import React from 'react'
-import Textarea from 'components/textarea'
+import {Textarea} from 'components/textarea'
 import {useProfileContext} from 'shared/profile-context'
 import {ErrorMessage} from './error-message'
 import {useMemo} from 'react'

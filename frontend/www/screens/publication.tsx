@@ -1,5 +1,5 @@
 import React from 'react'
-import {css} from 'emotion'
+
 import SplitPane from 'react-split-pane'
 import {useHistory, useParams, useRouteMatch} from 'react-router-dom'
 import {ReactEditor} from 'slate-react'
@@ -16,7 +16,7 @@ import {useToasts} from 'react-toast-notifications'
 import {SidePanelObject} from 'components/sidepanel-object'
 import {AuthorLabel} from 'components/author-label'
 import {PublicationModal} from 'components/publication-modal'
-import {useDocument, useDrafts} from 'shared/mintter-context'
+import {useDocument, useDraftsList} from 'shared/mintter-context'
 import {useAuthor} from 'shared/profile-context'
 import {ErrorMessage} from 'components/error-message'
 import {MainColumn} from 'components/main-column'
@@ -30,6 +30,7 @@ import {isLocalhost} from 'shared/is-localhost'
 import {getPath} from 'components/routes'
 import {useTransclusion} from 'shared/use-transclusion'
 import {SlateBlock} from 'editor/editor'
+import {Text} from 'components/text'
 
 export default function Publication() {
   const match = useRouteMatch()
@@ -43,7 +44,7 @@ export default function Publication() {
   const {state: sidePanel, dispatch: sidePanelDispatch} = useSidePanel()
 
   // get Drafts for editorOptions
-  const {data: drafts = []} = useDrafts()
+  const {data: drafts = []} = useDraftsList()
 
   // draftCreation
   const [createDraft] = useMutation(apiClient.createDraft, {
@@ -379,11 +380,10 @@ function PublicationHeader({document}: {document: Document.AsObject}) {
           {document.subtitle}
         </p>
       )}
-      <p className="text-sm mt-4 text-heading">
-        <span>by </span>
-
+      <Text color="muted" size="2" css={{display: 'inline-flex', gap: '$1'}}>
+        <Text>by</Text>
         <AuthorLabel author={author} />
-      </p>
+      </Text>
     </div>
   ) : null
 }

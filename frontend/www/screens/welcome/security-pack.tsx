@@ -1,32 +1,31 @@
-import {useState, useEffect, useMemo} from 'react'
-import Container from 'components/welcome-container'
-import Heading from 'components/welcome-heading'
-
-import Footer from 'components/footer'
-import Content from 'components/content'
-import P from 'components/welcome-p'
-import {css} from 'emotion'
-import Button from 'components/button'
-import {NextButton, BackButton} from 'components/welcome-buttons'
+import {useState, useEffect} from 'react'
+import {useToasts} from 'react-toast-notifications'
+import {CopyToClipboard} from 'react-copy-to-clipboard'
 import {useWelcome} from 'shared/welcome-provider'
 import {useProfileContext} from 'shared/profile-context'
-import {useToasts} from 'react-toast-notifications'
 import {useRouter} from 'shared/use-router'
+import {welcomeGrid} from './intro'
+import {Container} from 'components/container'
+import {Heading} from 'components/heading'
+import {NextButton, BackButton} from 'components/button'
 import {getPath} from 'components/routes'
-import {CopyToClipboard} from 'react-copy-to-clipboard'
+import {Button} from 'components/button'
+import {Box} from 'components/box'
+import {Grid} from 'components/grid'
+import {Text} from 'components/text'
 
 // TODO: (horacio): refactor rpc to not have it here
 export default function SecurityPack() {
   const [error, setError] = useState<{code: number; message: string}>()
   const {genSeed, createProfile} = useProfileContext()
-  const [mnemonic, setMnemonic] = useState<string[]>([])
+  const [words, setWords] = useState<string[]>([])
   const {history, match} = useRouter()
   const {dispatch} = useWelcome()
 
   async function handleRPC() {
     try {
       const resp = await genSeed()
-      setMnemonic(resp.getMnemonicList())
+      setWords(resp.getMnemonicList())
     } catch (err) {
       setError(err)
       console.error('something went wrong...', err)
@@ -37,25 +36,14 @@ export default function SecurityPack() {
     handleRPC()
   }, [])
 
-  function splitWords(arr: string[]): string[][] {
-    const temp = [...arr]
-    const res = []
-
-    while (temp.length) {
-      res.push(temp.splice(0, 6))
-    }
-
-    return res
-  }
-
   async function handleNext() {
     // store seed to the user
-    dispatch({type: 'mnemonicList', payload: mnemonic})
+    dispatch({type: 'mnemonicList', payload: words})
     //send the user to next page
     // history.replace('/welcome/retype-seed')
     try {
       createProfile({
-        mnemonicList: mnemonic,
+        mnemonicList: words,
         walletPassword: '',
         aezeedPassphrase: '',
       })
@@ -65,151 +53,105 @@ export default function SecurityPack() {
     }
   }
 
-  // mnemonic words separated into lists
-  const lists = useMemo(() => splitWords(mnemonic), [mnemonic])
   return (
-    <>
-      <Container className="mx-auto">
+    <Grid className={welcomeGrid}>
+      <Container
+        css={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '$7',
+        }}
+      >
         <Heading>Security Pack</Heading>
-        <P className="text-center">
+        <Text>
           Please save these 24 words securely! This will allow you to recreate
           your account
-        </P>
-        <Content className="flex-wrap flex w-full">
-          {/* {mnemonic.length === 0 ? (
-            <div className="flex-col flex-1 max-w-xs mx-auto">
-              <form>
-                <label
-                  className="block text-gray-500 text-xs font-semibold mb-1"
-                  htmlFor="passphrase"
-                >
-                  Passphrase?
-                </label>
-                <Input
-                  id="passphrase"
-                  type="password"
-                  name="passphrase"
-                  ref={e => {
-                    focusFirst(e)
-                    register(e)
-                  }}
-                />
-                <Button
-                  className="w-full mt-4 text-success transition duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white"
-                  type="submit"
-                  onClick={handleSubmit(handleRPC)}
-                >
-                  Generate security pack
-                </Button>
-              </form>
-            </div>
-          ) : ( */}
-          <MnemonicWords lists={lists} error={error} />
-          {/* )} */}
-        </Content>
+        </Text>
+        <MnemonicWords words={words} error={error} />
       </Container>
-      <Footer className="flex-none">
-        <Container className="mx-auto">
-          <div className="flex w-full justify-between flex-row-reverse">
-            <NextButton disabled={mnemonic.length === 0} onClick={handleNext}>
-              Next →
-            </NextButton>
-            <BackButton to={`${getPath(match)}/welcome`}>
-              ← start over
-            </BackButton>
-          </div>
-        </Container>
-      </Footer>
-    </>
+      <Container
+        css={{
+          display: 'flex',
+          flexDirection: 'row-reverse',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <NextButton disabled={words.length === 0} onClick={handleNext}>
+          Next →
+        </NextButton>
+        <BackButton to={`${getPath(match)}/welcome`}>← start over</BackButton>
+      </Container>
+    </Grid>
   )
 }
 
 export function MnemonicWords({
-  lists,
+  words,
   error,
 }: {
-  lists?: string[][]
+  words?: string[]
   error?: {code: number; message: string}
 }) {
   const {addToast} = useToasts()
-
-  const words = useMemo(
-    () =>
-      lists
-        .flat()
-        .map((w, i) => `${i + 1}. ${w}\n`)
-        .join(''),
-    [lists],
-  )
   return (
     <>
-      <div className="flex-wrap flex w-full" data-testid="mnemonic-list">
-        {error
-          ? error.message
-          : lists.map((list, listIdx) => (
-              <div
-                key={listIdx}
-                className={`w-1/2 flex-1 flex flex-col md:order-none ${css`
-                  min-width: 162px;
-                  margin-top: -12px;
-                  align-items: start;
-                  padding-left: 30%;
+      <Box data-testid="mnemonic-list">
+        {error ? (
+          error.message
+        ) : (
+          <Box
+            as="ol"
+            css={{
+              height: 'calc($7 * 9)',
+              columns: '3',
+              columnGap: '$4',
+            }}
+          >
+            {words.map((word, wordIdx) => (
+              <Grid
+                as="li"
+                css={{
+                  display: 'flex',
+                  height: '$7',
+                  placeItems: 'center',
+                  alignItems: 'baseline',
+                  justifyContent: 'center',
+                  marginBottom: '$1',
 
-                  @media (min-width: 396px) {
-                    min-width: 50%;
-                    order: ${listIdx % 2 == 0 ? '1' : '2'};
-                    margin-top: ${listIdx % 2 == 0 ? '0' : '-12px'};
-                    align-items: center;
-                    padding-left: 0;
-                  }
-
-                  @media (min-width: 768px) {
-                    min-width: 0;
-                    order: 0;
-                    margin-top: 0;
-                  }
-                `}`}
+                  gap: '$1',
+                  alignSelf: 'center',
+                }}
+                key={wordIdx}
               >
-                <ol>
-                  {list.map((word, wordIdx) => (
-                    <li key={wordIdx} className="my-3 flex items-baseline">
-                      <span
-                        className={`text-bold text-body-muted ${css`
-                          font-size: 0.65rem;
-                          width: 24px;
-                          display: inline-block;
-                        `}`}
-                      >
-                        {listIdx * 6 + wordIdx + 1}.
-                      </span>
-                      <span className="text-body">{word}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
+                <Text size="1">{wordIdx + 1}.</Text>
+                <Text size="3">{word}</Text>
+              </Grid>
             ))}
-      </div>
-      <CopyToClipboard
-        text={words}
-        onCopy={(_, result) => {
-          if (result) {
-            addToast('Address copied to your clipboard!', {
-              appearance: 'success',
-            })
-          } else {
-            addToast('Error while copying to Clipboard!', {
-              appearance: 'error',
-            })
-          }
-        }}
-      >
-        <Button
-          className="mx-auto mt-4 text-success duration-200 border border-success opacity-100 hover:bg-success hover:border-success hover:text-white transition-all"
-          type="submit"
+          </Box>
+        )}
+      </Box>
+      <Box css={{display: 'flex', justifyContent: 'center', p: '$4'}}>
+        <CopyToClipboard
+          text={words}
+          onCopy={(_, result) => {
+            if (result) {
+              addToast('Address copied to your clipboard!', {
+                appearance: 'success',
+              })
+            } else {
+              addToast('Error while copying to Clipboard!', {
+                appearance: 'error',
+              })
+            }
+          }}
         >
-          Copy and Save it securely!
-        </Button>
-      </CopyToClipboard>
+          <Button variant="success" appearance="outline" size="2" type="submit">
+            Copy and Save it securely!
+          </Button>
+        </CopyToClipboard>
+      </Box>
     </>
   )
 }

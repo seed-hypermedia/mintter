@@ -1,8 +1,8 @@
 import React from 'react'
 import {useForm} from 'react-hook-form'
 import Seo from 'components/seo'
-import Input from 'components/input'
-import Textarea from 'components/textarea'
+import {Input} from 'components/input'
+import {Textarea} from 'components/textarea'
 import {ProfileAddress} from 'components/profile-address'
 import {ErrorMessage, ErrorInterface} from 'components/error-message'
 import {useProfile, useProfileContext} from 'shared/profile-context'
@@ -10,6 +10,8 @@ import {useToasts} from 'react-toast-notifications'
 import {css} from 'emotion'
 import {Page} from 'components/page'
 import {MainColumn} from 'components/main-column'
+import {Button} from 'components/button'
+import {Box} from 'components/box'
 
 export default function Settings() {
   const {setProfile} = useProfileContext()
@@ -127,25 +129,19 @@ export default function Settings() {
                     ref={register}
                     rows={4}
                     placeholder="A little bit about yourself..."
-                    className={`block w-full border bg-background-muted border-muted rounded px-3 py-2 focus:outline-none focus:border-muted-hover transition duration-200 text-body-muted focus:text-body text-base ${errors.bio &&
-                      'border-danger'} ${css`
-                      min-height: 100px;
-                    `}`}
                   />
                 </div>
-                <div className="flex-1 flex items-center relative mt-10">
-                  <button
+                <Box css={{marginTop: '$5'}}>
+                  <Button
                     type="submit"
                     disabled={!formState.isValid}
-                    className={`text-success border px-4 py-2 rounded transition duration-200 ${
-                      !formState.isValid
-                        ? 'opacity-50 hover:bg-transparent cursor-not-allowed'
-                        : 'border-success opacity-100 hover:bg-success hover:text-white'
-                    }`}
+                    size="2"
+                    variant="success"
+                    appearance="outline"
                   >
                     Save
-                  </button>
-                </div>
+                  </Button>
+                </Box>
                 <hr className="border-t-2 border-muted border-solid mt-10" />
                 <p className="block text-white text-xs font-semibold bg-info rounded px-4 py-2 mt-8">
                   All your Mintter content is located in{' '}

@@ -24,6 +24,7 @@ out
 
 # frontend v2 test
 frontendv2
+_old-editor
 
 # Bazel
 user.bazelrc
