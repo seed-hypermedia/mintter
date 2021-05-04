@@ -1,10 +1,10 @@
-import * as React from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
 import { Box } from '@mintter/ui/box';
 
 // import { useTheme } from './theme-context';
 
-export interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface LayoutProps extends HTMLAttributes<HTMLDivElement> {
   initial?: string;
   animate?: string;
   exit?: string;
@@ -18,7 +18,7 @@ export default function Layout({
 }
 
 type AppLayoutProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 // TODO:
@@ -28,7 +28,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 }
 
 type PublicLayoutProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 export function PublicLayout({ children }: PublicLayoutProps) {

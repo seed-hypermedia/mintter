@@ -1,6 +1,4 @@
-import * as React from 'react';
-// import { useHistory, useRouteMatch } from 'react-router';
-
+import type * as React from 'react';
 // import Seo from 'components/seo'
 import { deleteDraft } from '@mintter/client';
 import { useDraftsList } from '@mintter/hooks';

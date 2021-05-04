@@ -14,20 +14,35 @@ module.exports = {
     '@snowpack/plugin-dotenv',
     [
       '@snowpack/plugin-typescript',
+
       {
         /* Yarn PnP workaround: see https://www.npmjs.com/package/@snowpack/plugin-typescript */
         // ...(process.versions.pnp ? { tsc: 'yarn pnpify tsc' } : {}),
+        args: '--project ./tsconfig.build.json',
       },
     ],
     '@snowpack/plugin-postcss',
-    '@snowpack/plugin-webpack',
+    // [
+    //   '@snowpack/plugin-webpack',
+    //   {
+    //     sourceMap: true,
+    //     htmlMinifierOptions: false,
+    //     extendConfig: (config) => {
+    //       // config.plugins.push(/* ... */);
+    //       JSON.stringify(config, null, 2);
+    //       return config;
+    //     },
+    //   },
+    // ],
   ],
   routes: [
     /* Enable an SPA Fallback in development: */
     { match: 'routes', src: '.*', dest: '/index.html' },
   ],
   optimize: {
-    /* Example: Bundle your final build: */
+    bundle: false,
+    minify: false,
+    target: 'es2020',
   },
   packageOptions: {
     /* ... */

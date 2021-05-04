@@ -1,3 +1,4 @@
+import type { FC } from 'react';
 import type {
   ParagraphKeyOption,
   ParagraphPluginOptionsValues,
@@ -9,7 +10,7 @@ import { Text } from '@mintter/ui/text';
 import { ELEMENT_PARAGRAPH } from './defaults';
 
 // TODO: fix types
-export const Paragraph: React.FC<any> = ({
+export const Paragraph: FC<any> = ({
   as = 'p',
   element,
   attributes,

@@ -23,7 +23,8 @@ export const App: React.FC = () => {
         console.log('TODO: reload app');
       }}
     >
-      {isLocalNode ? <AuthorNode path="/" /> : <PublisherNode />}
+      {/* {isLocalNode ? <AuthorNode path="/" /> : <PublisherNode />} */}
+      <AuthorNode path="/" />
     </ErrorBoundary>
   );
 };
