@@ -1,4 +1,4 @@
-package badgerutil
+package badgergraph
 
 import (
 	"encoding/binary"

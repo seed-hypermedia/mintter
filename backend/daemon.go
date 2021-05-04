@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"mintter/backend/badger3ds"
-	"mintter/backend/badgerutil"
+	"mintter/backend/badgergraph"
 	"mintter/backend/cleanup"
 	"mintter/backend/config"
 
@@ -66,7 +66,7 @@ func StartDaemonWithConfig(cfg config.Config) (d *Daemon, err error) {
 	}
 	clean.Add(p2p)
 
-	db, err := badgerutil.NewDB(ds.DB, keyNamespace)
+	db, err := badgergraph.NewDB(ds.DB, keyNamespace)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create db: %w", err)
 	}

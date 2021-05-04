@@ -1,4 +1,7 @@
-package badgerutil
+// Package badgergraph wraps BadgerDB and exposes methods for managing graph data.
+// The API is very procedural and low-level. The internals are somewhat inspired
+// by Dgraph, Cayley, and Datomic. Not supposed to be a general-purpose database.
+package badgergraph
 
 import (
 	"fmt"
@@ -9,7 +12,7 @@ import (
 
 // DB is a wrapper around Badger that can allocate UIDs.
 type DB struct {
-	*badger.DB
+	Badger      *badger.DB
 	uids        *badger.Sequence
 	cardinality *badger.Sequence
 	ns          string
@@ -56,7 +59,7 @@ func NewDB(b *badger.DB, namespace string) (*DB, error) {
 	}
 
 	return &DB{
-		DB:          b,
+		Badger:      b,
 		uids:        uids,
 		ns:          namespace,
 		cardinality: cardinality,

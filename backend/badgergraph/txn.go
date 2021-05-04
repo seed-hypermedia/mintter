@@ -1,4 +1,4 @@
-package badgerutil
+package badgergraph
 
 import (
 	"encoding/binary"
@@ -16,7 +16,7 @@ const PredicateNodeType = "$type"
 // NewTransaction starts a new transaction.
 func (db *DB) NewTransaction(update bool) *Txn {
 	return &Txn{
-		Txn:      db.DB.NewTransaction(update),
+		Txn:      db.Badger.NewTransaction(update),
 		canWrite: update,
 		db:       db,
 	}
