@@ -407,7 +407,7 @@ func (b *batch) Put(key ds.Key, value []byte) error {
 }
 
 func (b *batch) put(key ds.Key, value []byte) error {
-	return b.writeBatch.Set(key.Bytes(), value)
+	return b.writeBatch.SetEntry(badger.NewEntry(key.Bytes(), value).WithDiscard())
 }
 
 func (b *batch) Delete(key ds.Key) error {
@@ -474,7 +474,7 @@ func (t *txn) Put(key ds.Key, value []byte) error {
 }
 
 func (t *txn) put(key ds.Key, value []byte) error {
-	return t.txn.Set(key.Bytes(), value)
+	return t.txn.SetEntry(badger.NewEntry(key.Bytes(), value).WithDiscard())
 }
 
 func (t *txn) Sync(prefix ds.Key) error {
@@ -497,7 +497,7 @@ func (t *txn) PutWithTTL(key ds.Key, value []byte, ttl time.Duration) error {
 }
 
 func (t *txn) putWithTTL(key ds.Key, value []byte, ttl time.Duration) error {
-	return t.txn.SetEntry(badger.NewEntry(key.Bytes(), value).WithTTL(ttl))
+	return t.txn.SetEntry(badger.NewEntry(key.Bytes(), value).WithTTL(ttl).WithDiscard())
 }
 
 func (t *txn) GetExpiration(key ds.Key) (time.Time, error) {

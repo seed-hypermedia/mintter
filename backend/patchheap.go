@@ -2,8 +2,6 @@ package backend
 
 import (
 	"bytes"
-	"container/heap"
-	"fmt"
 )
 
 type patchHeapItem struct {
@@ -53,35 +51,4 @@ func (h *patchHeap) Pop() interface{} {
 	x := old[n-1]
 	*h = old[0 : n-1]
 	return x
-}
-
-func mergePatches(arr [][]Patch) []Patch {
-	var h heap.Interface
-	{
-		hh := make(patchHeap, 0, len(arr))
-		h = &hh
-		defer func() {
-			fmt.Println(hh, len(hh), cap(hh))
-		}()
-	}
-	heap.Init(h)
-
-	var size int
-	for i, a := range arr {
-		size += len(a)
-		heap.Push(h, patchHeapItem{data: arr, arr: i, idx: 0})
-	}
-
-	output := make([]Patch, 0, size)
-
-	for h.Len() != 0 {
-		curr := heap.Pop(h).(patchHeapItem)
-		output = append(output, curr.Value())
-
-		if curr.idx+1 < len(arr[curr.arr]) {
-			heap.Push(h, patchHeapItem{data: arr, arr: curr.arr, idx: curr.idx + 1})
-		}
-	}
-
-	return output
 }
