@@ -46,10 +46,9 @@ module.exports = {
   },
   packageOptions: {
     /* ... */
+    // knownEntrypoints: ['@mintter/ui/theme', '@mintter/ui/stitches.config'],
   },
-  devOptions: {
-    /* ... */
-  },
+  devOptions: {},
   buildOptions: {
     /* ... */
     // jsxInject: "import React from 'react'",

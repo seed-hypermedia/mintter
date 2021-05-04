@@ -1,6 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import * as React from 'react';
+import type * as React from 'react';
 
 import { styled } from '@mintter/ui/stitches.config';
 

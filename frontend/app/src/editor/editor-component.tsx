@@ -1,6 +1,6 @@
 // @ts-nocheck
 import {
-  // BalloonToolbar,
+  BalloonToolbar,
   EditablePlugins,
   RenderElement,
   SlateDocument,
