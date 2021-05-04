@@ -8,10 +8,11 @@ export const ELEMENT_H4 = 'h4'
 export const ELEMENT_H5 = 'h5'
 export const ELEMENT_H6 = 'h6'
 
+// TODO: fix types
 // type HeadingRecords = Record<HeadingKeyOption, HeadingPluginOptionsValues>
 
 const defaults = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].reduce(
-  (acc, current): any => {
+  (acc: string, current: string): any => {
     acc[current] = {
       component: Paragraph,
       type: ELEMENT_PARAGRAPH,

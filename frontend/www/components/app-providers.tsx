@@ -9,6 +9,7 @@ import {ToastProvider, DefaultToast} from 'react-toast-notifications'
 import {SidePanelProvider} from './sidepanel'
 import {BlockMenuProvider} from '../editor/block-plugin/components/blockmenu-context'
 import {ReactQueryConfigProvider} from 'react-query'
+import {Box} from './box'
 
 const queryConfig = {
   queries: {
@@ -25,7 +26,13 @@ const queryConfig = {
 export function Toast({children, ...props}) {
   return (
     <DefaultToast {...props} role="alert">
-      <div className="break-all">{children}</div>
+      <Box
+        css={{
+          wordBreak: 'break-all',
+        }}
+      >
+        {children}
+      </Box>
     </DefaultToast>
   )
 }

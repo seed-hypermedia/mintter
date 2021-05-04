@@ -1,0 +1,158 @@
+import {Icon, icons} from '@src/icon'
+import {Playground} from '@storybook-utils/components/code'
+import {Meta} from '@storybook/addon-docs/blocks'
+
+<Meta title="Data Display/Icon" />
+
+# Icon
+
+Renders an
+[accessible icon](https://radix-ui.com/primitives/docs/utilities/accessible-icon).
+
+## Import
+
+```tsx
+import {Icon} from '@mintter/ui/icon'
+```
+
+## Usage
+
+```jsx
+<Icon name="Mintter" />
+```
+
+### Size
+
+Pass a `size` prop to the `Icon` component to change its size.
+
+```jsx columns
+<Icon name="Mintter" size="1" />
+<Icon name="Mintter" size="2" />
+<Icon name="Mintter" size="3" />
+```
+
+> The default `Icon` `size` is `2`.
+
+### Color
+
+Pass a `color` prop to the `Icon` component to change its color.
+
+```jsx columns
+<Icon name="Mintter" color="default" />
+<Icon name="Mintter" color="alt" />
+<Icon name="Mintter" color="muted" />
+<Icon name="Mintter" color="opposite" />
+<Icon name="Mintter" color="contrast" />
+<Icon name="Mintter" color="primary" />
+<Icon name="Mintter" color="secondary" />
+<Icon name="Mintter" color="terciary" />
+<Icon name="Mintter" color="success" />
+<Icon name="Mintter" color="warning" />
+<Icon name="Mintter" color="danger" />
+```
+
+> The default `Icon` `color` is `default`.
+
+### All icons
+
+Below you will find all icons, divided by category.
+
+#### Brand
+
+```jsx columns
+<Icon name="Mintter" />
+```
+
+#### Arrows
+
+```jsx columns
+<Icon name="ArrowUp" />
+<Icon name="ArrowDown" />
+<Icon name="ArrowLeft" />
+<Icon name="ArrowRight" />
+<Icon name="ArrowTopLeft" />
+<Icon name="ArrowTopRight" />
+<Icon name="ArrowBottomLeft" />
+<Icon name="ArrowBottomRight" />
+<Icon name="ArrowTurnTopLeft" />
+<Icon name="ArrowTurnTopRight" />
+<Icon name="ArrowTurnBottomLeft" />
+<Icon name="ArrowTurnBottomRight" />
+<Icon name="ArrowChevronUp" />
+<Icon name="ArrowChevronDown" />
+<Icon name="ArrowChevronLeft" />
+<Icon name="ArrowChevronRight" />
+<Icon name="ArrowTriangleUp" />
+<Icon name="ArrowTriangleDown" />
+<Icon name="ArrowTriangleLeft" />
+<Icon name="ArrowTriangleRight" />
+```
+
+#### Actions
+
+```jsx columns
+<Icon name="Sort" />
+<Icon name="Copy" />
+<Icon name="Maximize" />
+<Icon name="Minimize" />
+<Icon name="Add" />
+<Icon name="AddCircle" />
+<Icon name="Close" />
+<Icon name="CloseCircle" />
+```
+
+#### Objects
+
+```jsx columns
+<Icon name="Clock" />
+<Icon name="Link" />
+<Icon name="ExternalLink" />
+<Icon name="File" />
+<Icon name="HelpCircle" />
+<Icon name="MessageBubble" />
+<Icon name="MoreHorizontal" />
+<Icon name="Grid4" />
+<Icon name="Grid6" />
+<Icon name="GearOutlined" />
+```
+
+## Playground
+
+<Playground
+  component={Icon}
+  options={[
+    {
+      type: 'select',
+      name: 'name',
+      label: 'Name',
+      options: Object.keys(icons),
+      defaultValue: 'Mintter',
+    },
+    {
+      type: 'select',
+      name: 'size',
+      label: 'Size',
+      options: ['1', '2', '3'],
+      defaultValue: '2',
+    },
+    {
+      type: 'select',
+      name: 'color',
+      label: 'Color',
+      options: [
+        'default',
+        'alt',
+        'muted',
+        'opposite',
+        'contrast',
+        'primary',
+        'secondary',
+        'terciary',
+        'success',
+        'warning',
+        'danger',
+      ],
+      defaultValue: 'default',
+    },
+  ]}
+/>

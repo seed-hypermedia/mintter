@@ -124,7 +124,7 @@ export function ToolbarBlock({icon, type}) {
   )
 }
 
-export function Separator() {
+export function toolbarSeparator() {
   return <div className="w-px h-4 bg-toolbar" />
 }
 
@@ -162,7 +162,7 @@ export function Toolbar() {
       <ToolbarBlockUList />
       <ToolbarBlockOList />
       <ToolbarBlockLink />
-      <Separator />
+      <toolbarSeparator />
       <ToolbarBlockP />
       <ToolbarBlockH1 />
       <ToolbarBlockH2 />

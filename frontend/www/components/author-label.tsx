@@ -1,38 +1,23 @@
-import Tippy from '@tippyjs/react'
-import {css} from 'emotion'
+import * as React from 'react'
 import {Profile} from '@mintter/api/v2/mintter_pb'
+import {Tooltip} from './tooltip'
+import {Text} from './text'
 
 interface AuthorLabelProps {
   author: Profile.AsObject
   className?: string
 }
 
-export function AuthorLabel({author, className = ''}: AuthorLabelProps) {
+export function AuthorLabel({author}: AuthorLabelProps) {
   if (!author) {
-    return <span>...</span>
+    return <Text>...</Text>
   }
 
   const {accountId, username} = author
 
   return (
-    <Tippy
-      delay={500}
-      content={
-        <span
-          className={`px-2 py-1 text-xs font-light transition duration-200 rounded bg-muted-hover ${css`
-            background-color: #333;
-            color: #ccc;
-          `}`}
-        >
-          {accountId}
-        </span>
-      }
-    >
-      <span
-        className={`text-primary hover:text-primary-hover hover:underline hover:cursor-not-allowed ${className}`}
-      >
-        {`${username} (${accountId.slice(-8)})`}
-      </span>
-    </Tippy>
+    <Tooltip content={accountId}>
+      <Text>{`${username} (${accountId.slice(-8)})`}</Text>
+    </Tooltip>
   )
 }
