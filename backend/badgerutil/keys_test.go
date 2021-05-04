@@ -12,38 +12,33 @@ func TestKeys(t *testing.T) {
 		Want parsedKey
 	}{
 		{
-			Key: dataKey("test", "follows", 125, 126, 127),
+			Key: dataKey("test", "follows", 125, 126),
 			Want: parsedKey{
-				Namespace: "test",
-				Predicate: "follows",
-				Subject:   125,
-				KeyType:   KeyTypeData,
-				Ts:        126,
-				Idx:       127,
+				Namespace:   "test",
+				Predicate:   "follows",
+				Subject:     125,
+				KeyType:     KeyTypeData,
+				Cardinality: 126,
 			},
 		},
 		{
-			Key: indexKey("test", "content", []byte("term"), 125, 126, 127),
+			Key: indexKey("test", "content", []byte("term"), 125),
 			Want: parsedKey{
 				Namespace: "test",
 				Predicate: "content",
 				Subject:   125,
 				Token:     []byte("term"),
 				KeyType:   KeyTypeIndex,
-				Ts:        126,
-				Idx:       127,
 			},
 		},
 		{
-			Key: reverseKey("test", "follows", 126, 125, 127, 128),
+			Key: reverseKey("test", "follows", 126, 125),
 			Want: parsedKey{
 				Namespace: "test",
 				Predicate: "follows",
 				Subject:   125,
 				Object:    126,
 				KeyType:   KeyTypeReverse,
-				Ts:        127,
-				Idx:       128,
 			},
 		},
 	}
