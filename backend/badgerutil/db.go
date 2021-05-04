@@ -4,23 +4,25 @@ import (
 	"fmt"
 
 	"github.com/dgraph-io/badger/v3"
+	"go.uber.org/multierr"
 )
 
 // DB is a wrapper around Badger that can allocate UIDs.
 type DB struct {
 	*badger.DB
-	seq *badger.Sequence
-	ns  string
+	uids        *badger.Sequence
+	cardinality *badger.Sequence
+	ns          string
 }
 
 // NewDB creates a new DB instance.
 func NewDB(b *badger.DB, namespace string) (*DB, error) {
-	k, _ := makeKey(namespace, PrefixInternal, KeyTypeData, "last-uid", 0)
+	uidsKey, _ := makeKey(namespace, PrefixInternal, KeyTypeData, "last-uid", 0)
 
 	// We want our uid sequence to start from 1, so we do all this crazyness
 	// to detect if we need to waist the 0 sequence.
 	err := b.View(func(txn *badger.Txn) error {
-		_, err := txn.Get(k)
+		_, err := txn.Get(uidsKey)
 		return err
 	})
 	if err != nil && err != badger.ErrKeyNotFound {
@@ -32,13 +34,13 @@ func NewDB(b *badger.DB, namespace string) (*DB, error) {
 		newSeq = true
 	}
 
-	seq, err := b.GetSequence(k, 20)
+	uids, err := b.GetSequence(uidsKey, 20)
 	if err != nil {
 		return nil, err
 	}
 
 	if newSeq {
-		s, err := seq.Next()
+		s, err := uids.Next()
 		if err != nil {
 			return nil, fmt.Errorf("failed to allocate new sequence: %w", err)
 		}
@@ -47,15 +49,25 @@ func NewDB(b *badger.DB, namespace string) (*DB, error) {
 		}
 	}
 
+	ck, _ := makeKey(namespace, PrefixInternal, KeyTypeData, "cardinality", 0)
+	cardinality, err := b.GetSequence(ck, 500) // We can afford larger bandwidth here.
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cardinality sequence: %w", err)
+	}
+
 	return &DB{
-		DB:  b,
-		seq: seq,
-		ns:  namespace,
+		DB:          b,
+		uids:        uids,
+		ns:          namespace,
+		cardinality: cardinality,
 	}, nil
 }
 
 // Close the underlying resources of the database.
 // Users must close Badger instance explicitly elsewhere.
 func (db *DB) Close() error {
-	return db.seq.Release()
+	return multierr.Combine(
+		db.uids.Release(),
+		db.cardinality.Release(),
+	)
 }
