@@ -7,6 +7,8 @@ import {ErrorMessage} from './error-message'
 import {Document} from '@mintter/api/v2/documents_pb'
 import {getPath} from 'components/routes'
 import {format} from 'date-fns'
+import {Button} from './button'
+import {Box} from './box'
 
 interface Props {
   data: Document.AsObject[]
@@ -80,9 +82,17 @@ function ListItem({item, onDeleteDocument}: ItemProps) {
   const date = React.useMemo(() => item.doc.getCreateTime().toDate(), [item])
 
   return (
-    <Link
+    <Box
+      as={Link}
       to={to}
       className="bg-transparent group w-full p-4 -mx-4 mt-2 first:mt-4 hover:bg-background-muted transition duration-100 box-border flex flex-col"
+      css={{
+        '&:hover': {
+          '.delete-button': {
+            opacity: 1,
+          },
+        },
+      }}
       // onMouseEnter={handlePrefetch}
     >
       <div className="flex-1 grid grid-cols-12 gap-4">
@@ -105,10 +115,20 @@ function ListItem({item, onDeleteDocument}: ItemProps) {
           </p>
         </div>
         {onDeleteDocument && (
-          <div className="col-span-1 flex items-center justify-end">
-            <button
+          <div className="col-span-1 flex items-center justify-end grou">
+            <Button
               data-testid="delete-button"
-              className="opacity-0 group-hover:opacity-100 text-danger"
+              className="delete-button"
+              size="2"
+              appearance="plain"
+              css={{
+                color: '$accentDanger',
+                opacity: 0,
+                '&:hover, &:active, &:focus': {
+                  color: '$accentDanger',
+                },
+                p: '$2',
+              }}
               onClick={e => {
                 e.preventDefault()
                 const resp = window.confirm(
@@ -120,10 +140,10 @@ function ListItem({item, onDeleteDocument}: ItemProps) {
               }}
             >
               <Icons.Trash />
-            </button>
+            </Button>
           </div>
         )}
       </div>
-    </Link>
+    </Box>
   )
 }

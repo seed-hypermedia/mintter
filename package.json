@@ -13,7 +13,7 @@
     "prettier": "prettier --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\"",
     "format": "yarn prettier --write",
     "check-format": "yarn prettier -c",
-    "dev": "yarn workspace @mintter/site dev",
+    "dev": "yarn workspace @mintter/app dev",
     "site:test": "is-ci \"site:test:coverage\" \"site:test:watch\"",
     "site:build": "yarn workspace @mintter/site build",
     "site:export": "yarn workspace @mintter/site export",
@@ -21,6 +21,8 @@
     "site:test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch",
     "site:test:precommit": "yarn workspace @mintter/site test",
     "site:test:coverage": "yarn workspace @mintter/site test --coverage",
+    "ui": "yarn workspace @mintter/ui",
+    "app": "yarn workspace @mintter/app",
     "release": "yarn build",
     "validate": "npm-run-all --sequential format site:test site:build",
     "validate:local": "npm-run-all --sequential format site:test:coverage site:build",
@@ -28,7 +30,9 @@
   },
   "workspaces": [
     "frontend/www",
-    "api/js"
+    "api/js",
+    "frontend/app",
+    "frontend/ui"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.5.2",
@@ -41,10 +45,10 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^1.19.1",
     "tslib": "^1.11.1",
-    "typescript": "^3.8.3"
+    "typescript": "^4.2.2"
   },
   "engines": {
-    "yarn": "^1.22.0"
+    "yarn": "^1.18.0"
   },
   "husky": {
     "hooks": {

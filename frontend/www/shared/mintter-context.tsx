@@ -37,7 +37,7 @@ export interface MintterClient {
 
 const MintterClientContext = React.createContext<MintterClient>(null)
 
-export function usePublications(options = {}) {
+export function usePublicationsList(options = {}) {
   const docsQuery = useQuery('Documents', apiClient.listDocuments, {
     ...options,
     refetchOnWindowFocus: true,
@@ -63,8 +63,8 @@ export function usePublications(options = {}) {
   }
 }
 
-export function useMyPublications(options = {}) {
-  const docsQuery = usePublications(options)
+export function useMyPublicationsList(options = {}) {
+  const docsQuery = usePublicationsList(options)
   const {data: profile} = useProfile()
 
   const userId = React.useMemo(() => profile?.accountId, [profile])
@@ -83,8 +83,8 @@ export function useMyPublications(options = {}) {
   }
 }
 
-export function useOthersPublications(options = {}) {
-  const docsQuery = usePublications(options)
+export function useOthersPublicationsList(options = {}) {
+  const docsQuery = usePublicationsList(options)
   const {data: profile} = useProfile()
 
   const userId = React.useMemo(() => profile?.accountId, [profile])
@@ -103,7 +103,7 @@ export function useOthersPublications(options = {}) {
   }
 }
 
-export function useDrafts(options = {}) {
+export function useDraftsList(options = {}) {
   const docsQuery = useQuery(
     'Drafts',
     () => apiClient.listDocuments('Drafts', PublishingState.DRAFT),
