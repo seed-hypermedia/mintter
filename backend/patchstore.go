@@ -188,14 +188,15 @@ func headXID(ouid, puid uint64) []byte {
 func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error) {
 	var heads []*p2p.PeerVersion
 	if err := s.db.View(func(txn *badgerutil.Txn) error {
-		v, err := s.getHeads(ctx, txn, obj)
-		if err != nil {
-			return err
-		}
-		heads = v
-		return nil
-	}); err != nil {
+		var err error
+		heads, err = s.getHeads(ctx, txn, obj)
+		return err
+	}); err != nil && err != badger.ErrKeyNotFound {
 		return nil, fmt.Errorf("failed to get heads: %w", err)
+	}
+
+	if heads == nil {
+		return newState(obj, nil), nil
 	}
 
 	g, ctx := errgroup.WithContext(ctx)
@@ -280,29 +281,26 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badgerutil.Txn, obj cid.
 	if err != nil && err != badger.ErrKeyNotFound {
 		return nil, fmt.Errorf("failed to get head: %w", err)
 	}
-
-	if err == badger.ErrKeyNotFound {
-		return nil, nil
+	if err != nil {
+		return nil, err
 	}
 
-	_ = ouid
+	heads, err := txn.ListReverseRelations("Head.objectUID", ouid)
+	if err != nil {
+		return nil, fmt.Errorf("no reverse relation for Head.peerUID: %w", err)
+	}
 
-	// var out []*p2p.PeerVersion
+	out := make([]*p2p.PeerVersion, len(heads))
 
-	// if err := txn.ScanReverseIndex("Head.peerUID", ouid, func(i int, subject, ts, idx uint64) error {
-	// 	v, err := txn.LookupPredicate(subject, "Head.data", ts, idx)
-	// 	if err != nil {
-	// 		return err
-	// 	}
+	for i, h := range heads {
+		v, err := txn.GetProperty(h, "Head.data")
+		if err != nil {
+			return nil, fmt.Errorf("failed to get property Head.data: %w", err)
+		}
+		out[i] = v.(*p2p.PeerVersion)
+	}
 
-	// 	out = append(out, v.(*p2p.PeerVersion))
-	// 	return nil
-	// }); err != nil {
-	// 	return nil, fmt.Errorf("failed scanning reverse index for heads: %w", err)
-	// }
-	// return out, nil
-
-	return nil, nil
+	return out, nil
 }
 
 func (s *patchStore) ReplicateFromHead(ctx context.Context, h *p2p.PeerVersion) error {
