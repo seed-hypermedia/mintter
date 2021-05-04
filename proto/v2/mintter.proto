@@ -23,6 +23,9 @@ service Mintter {
   // TODO(burdiyan): return plain profile here.
   rpc GetProfile(GetProfileRequest) returns(GetProfileResponse);
 
+  // Updates profile information.
+  rpc UpdateProfile(UpdateProfileRequest) returns(UpdateProfileResponse);
+
   rpc ListProfiles(ListProfilesRequest) returns(ListProfilesResponse);
 
   // List profiles of your directly connected profiles.
@@ -31,9 +34,6 @@ service Mintter {
 
   // Get network multiaddrs of the current node.
   rpc GetProfileAddrs(GetProfileAddrsRequest) returns(GetProfileAddrsResponse);
-
-  // Updates profile information.
-  rpc UpdateProfile(UpdateProfileRequest) returns(UpdateProfileResponse);
 
   // Establish a p2p connection to another peer on the network.
   rpc ConnectToPeer(ConnectToPeerRequest) returns(ConnectToPeerResponse);

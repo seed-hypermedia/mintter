@@ -8,12 +8,7 @@ export default function DefaultLink({
   ...props
 }) {
   return (
-    <RouterLink
-      to={to}
-      replace={replace}
-      className={`p-2 bg-transparent rounded ${className}`}
-      {...props}
-    >
+    <RouterLink to={to} replace={replace} {...props}>
       {children}
     </RouterLink>
   )

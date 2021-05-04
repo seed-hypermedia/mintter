@@ -6,7 +6,8 @@ test('Welcome Intro screen', async () => {
     route: '/welcome',
   })
 
-  expect(screen.getByText(/Welcome to Mintter/i)).toBeInTheDocument()
+  expect(screen.getByText(/Welcome to Mintter/i))
+
   expect(screen.getByText(/start/i)).toBeInTheDocument()
   expect(screen.getByText(/start/i)).not.toBeDisabled()
 })

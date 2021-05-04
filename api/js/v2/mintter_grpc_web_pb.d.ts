@@ -44,6 +44,13 @@ export class MintterClient {
                response: GetProfileResponse) => void
   ): grpcWeb.ClientReadableStream<GetProfileResponse>;
 
+  updateProfile(
+    request: UpdateProfileRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: UpdateProfileResponse) => void
+  ): grpcWeb.ClientReadableStream<UpdateProfileResponse>;
+
   listProfiles(
     request: ListProfilesRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -64,13 +71,6 @@ export class MintterClient {
     callback: (err: grpcWeb.Error,
                response: GetProfileAddrsResponse) => void
   ): grpcWeb.ClientReadableStream<GetProfileAddrsResponse>;
-
-  updateProfile(
-    request: UpdateProfileRequest,
-    metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
-               response: UpdateProfileResponse) => void
-  ): grpcWeb.ClientReadableStream<UpdateProfileResponse>;
 
   connectToPeer(
     request: ConnectToPeerRequest,
@@ -101,6 +101,11 @@ export class MintterPromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<GetProfileResponse>;
 
+  updateProfile(
+    request: UpdateProfileRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<UpdateProfileResponse>;
+
   listProfiles(
     request: ListProfilesRequest,
     metadata?: grpcWeb.Metadata
@@ -115,11 +120,6 @@ export class MintterPromiseClient {
     request: GetProfileAddrsRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<GetProfileAddrsResponse>;
-
-  updateProfile(
-    request: UpdateProfileRequest,
-    metadata?: grpcWeb.Metadata
-  ): Promise<UpdateProfileResponse>;
 
   connectToPeer(
     request: ConnectToPeerRequest,
