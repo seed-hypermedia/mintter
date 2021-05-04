@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type * as React from 'react';
 import { useHistory, useRouteMatch } from 'react-router';
 // import {Icons} from 'components/icons'
 import { DocumentList } from '../document-list';

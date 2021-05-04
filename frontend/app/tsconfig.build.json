@@ -1,12 +1,18 @@
 {
-  "include": ["src", "types", "_test"],
+  "extends": "./tsconfig.json",
   "compilerOptions": {
+    "noImplicitAny": true,
+    "target": "ES5",
+    "jsx": "react-jsx",
     "module": "esnext",
-    "target": "esnext",
-    "moduleResolution": "node",
-    "jsx": "preserve",
-    "baseUrl": "./",
-    /* paths - import rewriting/resolving */
+    "outDir": "dist",
+    "rootDir": "src",
+    "sourceMap": true,
+
+    // "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
     "paths": {
       "@components/*": ["./src/components/*"],
       "@pages/*": ["./src/pages/*"],
@@ -21,15 +27,16 @@
       //     "*": [".snowpack/types/*"]
       // More info: https://www.snowpack.dev/guides/streaming-imports
     },
-    /* noEmit - Snowpack builds (emits) files, not tsc. */
-    "noEmit": true,
-    /* Additional Options */
-    "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    // "allowSyntheticDefaultImports": true,
+    // "strict": true,
+    // "forceConsistentCasingInFileNames": true,
+    // "noFallthroughCasesInSwitch": true,
+
+    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "importsNotUsedAsValues": "error",
-    "downlevelIteration": true
-  }
+    // "isolatedModules": true,
+    "noEmit": true
+  },
+  "exclude": ["src/**/*.stories.*", "src/**/*.test.*"],
+  "include": ["src/**/*"]
 }

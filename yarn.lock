@@ -4329,31 +4329,37 @@
     "@typescript-eslint/types" "4.18.0"
     eslint-visitor-keys "^2.0.0"
 
-"@udecode/slate-plugins-common@^1.0.0-alpha.22":
-  version "1.0.0-alpha.22"
-  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-common/-/slate-plugins-common-1.0.0-alpha.22.tgz#61e526b4ede1a0931d98383570f044f7cd94853d"
-  integrity sha512-6zTNXiQ6UX2Fq1mPxNvCtGSha47YLmZHXze+tm8aGcKy3c7x/64CBPPv6r66C38OLT48zcmBDMWK6zFMt0X2Jw==
-  dependencies:
-    "@udecode/slate-plugins-core" "^1.0.0-alpha.22"
-    is-hotkey "^0.1.6"
-
 "@udecode/slate-plugins-core@^0.71.11":
   version "0.71.11"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-core/-/slate-plugins-core-0.71.11.tgz#6e8e7c4af4e484b990031a4762165f28c45163cb"
   integrity sha512-JbMbwl8V7fwK4JPbkhspDeBJ8+pk1QGw5l0IDREBCFaviqBg5shYs1ij6jnN7xKEQ+bIc0ogqxJ8B8zhq9pC5w==
 
-"@udecode/slate-plugins-core@^0.75.2":
+"@udecode/slate-plugins-core@^0.75.1":
   version "0.75.2"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-core/-/slate-plugins-core-0.75.2.tgz#f2d9a2be4809a8a117d549082815439ddedd5c5a"
   integrity sha512-H+1ftpy0KAEe/1POqlCyYDbnpe+9JiFwfGuNpO9UcN60wyIdN819jAOfNYWrEKmZiYqmMPdwF7sv3unlRfRg2g==
 
-"@udecode/slate-plugins-core@^1.0.0-alpha.22":
-  version "1.0.0-alpha.22"
-  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-core/-/slate-plugins-core-1.0.0-alpha.22.tgz#4940778839aae4d5751150fce701c9a308afc4a9"
-  integrity sha512-dveP7Rk3LMXxMBgfh/OrgcC8t6/yrPwCOVEwTrjXX0F50bvzZXVm5tIy+EZMOqcbdju78zVDecximUew4fSsFA==
+"@udecode/slate-plugins@0.75.1":
+  version "0.75.1"
+  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins/-/slate-plugins-0.75.1.tgz#0b5116ef735f25570abe3c4ab99e70a6782d61e8"
+  integrity sha512-q4P5bYSI4mhsKIlyX0hrsrudHPTgMf70olzL2g6dtyztB61s0IvdNug58bp1HNCnuDwHHLhMMlAbhaNlFqsCwg==
   dependencies:
-    lodash "^4.17.21"
-    zustand "^3.3.2"
+    "@react-hook/merged-ref" "^1.3.0"
+    "@tippyjs/react" "^4.0.2"
+    "@udecode/slate-plugins-core" "^0.75.1"
+    "@uifabric/styling" "^7.12.11"
+    "@uifabric/utilities" "^7.19.0"
+    image-extensions "^1.1.0"
+    is-hotkey "^0.1.6"
+    lodash "^4.17.15"
+    prismjs "^1.20.0"
+    react-dnd "^13.1.1"
+    react-dnd-html5-backend "^12.1.1"
+    react-use "^15.1.0"
+    remark-parse "^9.0.0"
+    remark-slate "^1.4.0"
+    unified "^9.1.0"
+    utility-types "^3.10.0"
 
 "@udecode/slate-plugins@^0.71.11":
   version "0.71.11"
@@ -4371,28 +4377,6 @@
     prismjs "^1.20.0"
     react-dnd "^11.1.3"
     react-dnd-html5-backend "^11.1.3"
-    react-use "^15.1.0"
-    remark-parse "^9.0.0"
-    remark-slate "^1.4.0"
-    unified "^9.1.0"
-    utility-types "^3.10.0"
-
-"@udecode/slate-plugins@^0.75.1":
-  version "0.75.2"
-  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins/-/slate-plugins-0.75.2.tgz#a1e66713c7196b70fb5662d0f4afb2a1bd1c2aa6"
-  integrity sha512-h7W0Da6sJSY41WGzJJIRztDQH5G8Lwn0t270hrhHLO6ibPidJATFvSWwufTSEw/XBONFrcg6tvHsULmiw2o9cA==
-  dependencies:
-    "@react-hook/merged-ref" "^1.3.0"
-    "@tippyjs/react" "^4.0.2"
-    "@udecode/slate-plugins-core" "^0.75.2"
-    "@uifabric/styling" "^7.12.11"
-    "@uifabric/utilities" "^7.19.0"
-    image-extensions "^1.1.0"
-    is-hotkey "^0.1.6"
-    lodash "^4.17.15"
-    prismjs "^1.20.0"
-    react-dnd "^13.1.1"
-    react-dnd-html5-backend "^12.1.1"
     react-use "^15.1.0"
     remark-parse "^9.0.0"
     remark-slate "^1.4.0"
@@ -19097,11 +19081,6 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
-
-zustand@^3.3.2:
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/zustand/-/zustand-3.4.1.tgz#ff1bc8480facda3a4329510b8164aa5b821be133"
-  integrity sha512-Kb91vSjy5vwBQ/PQ1a5GE6naS3gCxCgpkujT9zqZSO85+gnvmzgqraMW3ao1I0jR4PwHBXtLTf26r9j7EXoUiQ==
 
 zwitch@^1.0.0:
   version "1.0.5"

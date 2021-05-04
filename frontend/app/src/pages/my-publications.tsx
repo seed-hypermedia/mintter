@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type * as React from 'react';
 // import Seo from 'components/seo'
 import { useHistory, useRouteMatch } from 'react-router';
 import { DocumentList } from '../document-list';
