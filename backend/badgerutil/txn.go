@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math"
-	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	"google.golang.org/protobuf/proto"
@@ -17,11 +16,9 @@ const PredicateNodeType = "$type"
 // NewTransaction starts a new transaction.
 func (db *DB) NewTransaction(update bool) *Txn {
 	return &Txn{
-		Txn:               db.DB.NewTransaction(update),
-		canWrite:          update,
-		db:                db,
-		startTimeUnixNano: uint64(time.Now().UnixNano()),
-		cardinalityCount:  make(map[string]uint64),
+		Txn:      db.DB.NewTransaction(update),
+		canWrite: update,
+		db:       db,
 	}
 }
 
@@ -49,10 +46,8 @@ func (db *DB) View(fn func(txn *Txn) error) error {
 // our graph store methods.
 type Txn struct {
 	*badger.Txn
-	db                *DB
-	canWrite          bool
-	startTimeUnixNano uint64
-	cardinalityCount  map[string]uint64
+	db       *DB
+	canWrite bool
 }
 
 // XID returns external ID of a give UID. You have to know node type in advance.
@@ -87,7 +82,7 @@ func (txn *Txn) UID(nodeType string, xid []byte) (uint64, error) {
 		return 0, err
 	}
 
-	uid, err = txn.db.seq.Next()
+	uid, err = txn.db.uids.Next()
 	if err != nil {
 		return 0, err
 	}
@@ -117,12 +112,12 @@ func (txn *Txn) SetProperty(subject uint64, predicate string, value interface{},
 		panic("invalid value type for literal predicate")
 	}
 
-	return txn.setPredicate(subject, predicate, value, vt, math.MaxUint64, math.MaxUint64, index)
+	return txn.setPredicate(subject, predicate, value, vt, math.MaxUint64, index)
 }
 
 // GetProperty reads a single literal node property.
 func (txn *Txn) GetProperty(subject uint64, predicate string) (interface{}, error) {
-	k := dataKey(txn.db.ns, predicate, subject, math.MaxUint64, math.MaxUint64)
+	k := dataKey(txn.db.ns, predicate, subject, math.MaxUint64)
 	item, err := txn.Get(k)
 	if err != nil {
 		return nil, err
@@ -160,21 +155,18 @@ func (txn *Txn) GetIndexUnique(predicate string, token []byte) (uint64, error) {
 
 // SetRelation sets a unique relation between subject and object.
 func (txn *Txn) SetRelation(subject uint64, predicate string, object uint64, index bool) error {
-	return txn.setPredicate(subject, predicate, object, ValueTypeUID, math.MaxUint64, math.MaxUint64, index)
+	return txn.setPredicate(subject, predicate, object, ValueTypeUID, math.MaxUint64, index)
 }
 
 // AddRelation adds a relation between subject and object. Many relations can be added.
 func (txn *Txn) AddRelation(subject uint64, predicate string, object uint64, index bool) error {
-	ts := txn.startTimeUnixNano
-	idx := txn.cardinalityCount[predicate]
-	if err := txn.setPredicate(subject, predicate, object, ValueTypeUID, ts, idx, index); err != nil {
-		return err
-	}
-	txn.cardinalityCount[predicate]++
-
 	// TODO: do not allow adding same relation for the same subject and object to be added more than once.
+	card, err := txn.db.cardinality.Next()
+	if err != nil {
+		return fmt.Errorf("failed to get cardinality for relation: %w", err)
+	}
 
-	return nil
+	return txn.setPredicate(subject, predicate, object, ValueTypeUID, card, index)
 }
 
 // GetForwardRelation returns the object UID of a unique predicate.
@@ -191,7 +183,7 @@ func (txn *Txn) GetForwardRelation(subject uint64, predicate string) (uint64, er
 			return 0, err
 		}
 
-		if pk.Ts != math.MaxUint32 || pk.Idx != math.MaxUint64 {
+		if pk.Cardinality != math.MaxUint32 {
 			return 0, fmt.Errorf("invalid cardinality for unique relation")
 		}
 
@@ -544,7 +536,17 @@ func (txn *Txn) valueFromItem(item *badger.Item) (interface{}, error) {
 	}
 }
 
-func (txn *Txn) setPredicate(subject uint64, predicate string, v interface{}, vt ValueType, ts, idx uint64, hasInverse bool) error {
+// We want to support having predicates with multiple values,
+// e.g. a user with multiple emails. It's recommended to not overwrite
+// large values in Badger, thus we want to have a separate keys for each item of the list.
+// To differentiate keys we suffix them with a cardinality marker. This could be a timestamp
+// or some other unique identifier. To avoid problems with wall clocks we use a separate Badger
+// sequence, that is monotonically increasing for the whole database. For predicates with
+// single values we use math.MaxUint64 as cardinality marker.
+//
+// As a consequence, there's no simple way to avoid having multiple records for the same predicate and the same object,
+// which may or may not be a problem, but is something to know.
+func (txn *Txn) setPredicate(subject uint64, predicate string, v interface{}, vt ValueType, cardinality uint64, hasInverse bool) error {
 	var data []byte
 	switch vt {
 	case ValueTypeString:
@@ -568,16 +570,16 @@ func (txn *Txn) setPredicate(subject uint64, predicate string, v interface{}, vt
 		panic("BUG: unknown value type")
 	}
 
-	k := dataKey(txn.db.ns, predicate, subject, ts, idx)
+	k := dataKey(txn.db.ns, predicate, subject, cardinality)
 
 	if hasInverse {
 		if vt == ValueTypeUID {
-			revK := reverseKey(txn.db.ns, predicate, v.(uint64), subject, ts, idx)
+			revK := reverseKey(txn.db.ns, predicate, v.(uint64), subject)
 			if err := txn.Set(revK, nil); err != nil {
 				return err
 			}
 		} else {
-			revK := indexKey(txn.db.ns, predicate, data, subject, ts, idx)
+			revK := indexKey(txn.db.ns, predicate, data, subject)
 			if err := txn.Set(revK, nil); err != nil {
 				return err
 			}
