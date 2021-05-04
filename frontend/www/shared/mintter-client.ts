@@ -128,7 +128,7 @@ interface SetDocumentRequest {
 }
 
 export function setDocument(editor) {
-  return async function({document, state}: SetDocumentRequest): Promise<any> {
+  return async function ({document, state}: SetDocumentRequest): Promise<any> {
     //  do I still need this guard?
     if (Array.isArray(document.version)) {
       console.error(
@@ -198,21 +198,21 @@ export async function createProfile({
   return await usersClient().initProfile(req)
 }
 
-export async function getProfile(
-  _key: string,
-  profileId?: string,
-): Promise<Profile> {
-  const req = new GetProfileRequest()
+export async function getProfile(context): Promise<Profile> {
+  // const req = new GetProfileRequest()
 
-  if (profileId) {
-    req.setProfileId(profileId)
-  }
+  // if (profileId) {
+  //   req.setProfileId(profileId)
+  // }
 
-  try {
-    return await (await usersClient().getProfile(req)).getProfile()
-  } catch (err) {
-    console.error('getProfile error ==> ', err)
-  }
+  // try {
+  //   return await (await usersClient().getProfile(req)).getProfile()
+  // } catch (err) {
+  //   console.error('getProfile error ==> ', err)
+  // }
+  console.log(context)
+
+  return Promise.resolve('hello!')
 }
 
 export async function setProfile({

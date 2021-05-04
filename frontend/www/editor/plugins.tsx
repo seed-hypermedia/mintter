@@ -13,12 +13,12 @@ import {TransclusionPlugin} from './transclusion-plugin/transclusion-plugin'
 import {BlockPlugin} from './block-plugin/block-plugin'
 import {ReadOnlyPlugin} from './readonly-plugin/readonly-plugin'
 import {HeadingPlugin} from './heading-plugin/heading-plugin'
-import {LinkPlugin} from './link-plugin/link-plugin'
+// import {LinkPlugin} from './link-plugin/link-plugin'
 import {ListPlugin} from './list-plugin/list-plugin'
 
 export const plugins = [
   ParagraphPlugin(options),
-  LinkPlugin(),
+  // LinkPlugin(),
   BoldPlugin(options),
   CodePlugin(options),
   ItalicPlugin(options),
@@ -46,6 +46,6 @@ export function createPlugins(options) {
     ReadOnlyPlugin(options),
     HeadingPlugin(options),
     ListPlugin(options),
-    LinkPlugin(),
+    // LinkPlugin(),
   ]
 }

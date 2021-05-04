@@ -1,6 +1,7 @@
 import React, {useContext, createContext, useReducer, useMemo} from 'react'
 import {useLocation} from 'react-router-dom'
-import Steps from '../components/welcome-steps'
+import {Steps} from '../components/welcome-steps'
+import {Grid} from 'components/grid'
 
 interface WelcomeState {
   mnemonicList?: string[]
@@ -65,10 +66,16 @@ export default function WelcomeProvider(props: WelcomeProviderProps) {
   )
 
   return (
-    <>
+    <Grid
+      css={{
+        width: '100vw',
+        height: '100vh',
+        gridTemplateRows: '[welcome-steps] 160px [welcome-content] 1fr',
+      }}
+    >
       {activeStep >= 0 ? <Steps steps={steps} active={activeStep} /> : null}
       <WelcomeContext.Provider value={{...v, ...props.value}} {...props} />
-    </>
+    </Grid>
   )
 }
 
