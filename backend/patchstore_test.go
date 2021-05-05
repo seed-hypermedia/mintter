@@ -4,6 +4,7 @@ import (
 	"context"
 	"mintter/backend/badgergraph"
 	"mintter/backend/testutil"
+	"strconv"
 	"testing"
 	"time"
 
@@ -67,6 +68,31 @@ func TestPatchStore_AddPatchLoadState(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, ap, ss.byPeer[0])
 	require.Equal(t, bp, ss.byPeer[1])
+}
+
+func TestPatchStore_ListObjects(t *testing.T) {
+	alice := makeTester(t, "alice")
+	store := makeTestPatchStore(t, "alice")
+	kind := PatchKind("test-patch")
+	ctx := context.Background()
+
+	objects := []*state{
+		newState(testutil.MakeCID(t, "obj-1"), nil),
+		newState(testutil.MakeCID(t, "obj-2"), nil),
+		newState(testutil.MakeCID(t, "obj-3"), nil),
+	}
+
+	for i, o := range objects {
+		sp := mustNewPatch(o.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("patch-"+strconv.Itoa(i))))
+		require.NoError(t, store.AddPatch(ctx, sp))
+	}
+
+	cids, err := store.ListObjects(ctx, cid.Raw)
+	require.NoError(t, err)
+
+	for i, o := range objects {
+		require.Equal(t, o.obj, cids[i])
+	}
 }
 
 // TODO: add this replicate missing test.
