@@ -97,6 +97,21 @@ func StartDaemonWithConfig(cfg config.Config) (d *Daemon, err error) {
 		return nil
 	})
 
+	mas, err := p2p.Addrs()
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: wrap grpc-web
+	// expand repo path.
+	// add let's encrypt
+	// add frontend server
+	log.Info("DaemonStarted",
+		zap.String("grpcListener", lis.Addr().String()),
+		zap.Any("libp2pAddrs", mas),
+		zap.String("repoPath", cfg.RepoPath),
+	)
+
 	return &Daemon{
 		clean:   &clean,
 		backend: back,
