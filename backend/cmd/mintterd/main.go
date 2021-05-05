@@ -3,7 +3,6 @@ package main
 import (
 	"mintter/backend"
 	"mintter/backend/config"
-	"mintter/backend/daemon"
 
 	"github.com/alecthomas/kong"
 	"github.com/burdiyan/go/kongcli"
@@ -22,6 +21,12 @@ func main() {
 	ctx := mainutil.TrapSignals()
 
 	mainutil.Run(func() error {
-		return daemon.Run(ctx, cfg)
+		d, err := backend.StartDaemonWithConfig(cfg)
+		if err != nil {
+			return err
+		}
+
+		<-ctx.Done()
+		return d.Close()
 	})
 }
