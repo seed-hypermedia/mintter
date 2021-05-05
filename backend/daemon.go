@@ -1,9 +1,11 @@
 package backend
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"path/filepath"
 
 	"mintter/backend/badger3ds"
@@ -12,6 +14,7 @@ import (
 	"mintter/backend/config"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -82,19 +85,42 @@ func StartDaemonWithConfig(cfg config.Config) (d *Daemon, err error) {
 	srv := grpc.NewServer()
 
 	back.RegisterGRPCServices(srv)
+	reflection.Register(srv)
 
-	lis, err := net.Listen("tcp", ":"+cfg.GRPCPort)
+	glis, err := net.Listen("tcp", ":"+cfg.GRPCPort)
 	if err != nil {
 		return nil, err
 	}
 
+	hlis, err := net.Listen("tcp", ":"+cfg.HTTPPort)
+	if err != nil {
+		return nil, err
+	}
+
+	hsrv := &http.Server{
+		Handler: httpHandler(srv),
+	}
+
 	clean.Go(func() error {
-		err := srv.Serve(lis)
-		log.Info("ClosedGRPCServer")
+		err := srv.Serve(glis)
+		log.Info("CloseGRPCServerStopped")
 		return err
 	}, func() error {
+		log.Info("CloseGRPCServerStarted")
 		srv.GracefulStop()
 		return nil
+	})
+
+	clean.Go(func() error {
+		err := hsrv.Serve(hlis)
+		if err == http.ErrServerClosed {
+			err = nil
+		}
+		log.Info("CloseHTTPServerStopped")
+		return err
+	}, func() error {
+		log.Info("CloseHTTPServerStarted")
+		return hsrv.Shutdown(context.Background())
 	})
 
 	mas, err := p2p.Addrs()
@@ -102,20 +128,21 @@ func StartDaemonWithConfig(cfg config.Config) (d *Daemon, err error) {
 		return nil, err
 	}
 
-	// TODO: wrap grpc-web
-	// expand repo path.
+	// TODO:
 	// add let's encrypt
 	// add frontend server
 	log.Info("DaemonStarted",
-		zap.String("grpcListener", lis.Addr().String()),
+		zap.String("grpcListener", glis.Addr().String()),
+		zap.String("httpListener", hlis.Addr().String()),
 		zap.Any("libp2pAddrs", mas),
 		zap.String("repoPath", cfg.RepoPath),
+		zap.String("version", Version),
 	)
 
 	return &Daemon{
 		clean:   &clean,
 		backend: back,
-		lis:     lis,
+		lis:     glis,
 	}, nil
 }
 
