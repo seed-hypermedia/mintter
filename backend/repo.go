@@ -9,6 +9,7 @@ import (
 	"mintter/backend/ipfsutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/ipfs/go-cid"
@@ -38,6 +39,14 @@ type repo struct {
 }
 
 func newRepo(path string, log *zap.Logger) (r *repo, err error) {
+	if strings.HasPrefix(path, "~") {
+		homedir, err := os.UserHomeDir()
+		if err != nil {
+			return nil, fmt.Errorf("failed to detect home directory: %w", err)
+		}
+		path = strings.Replace(path, "~", homedir, 1)
+	}
+
 	r, err = prepareRepo(path, log)
 	if err != nil {
 		return nil, err
