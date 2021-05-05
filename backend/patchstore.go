@@ -21,38 +21,6 @@ import (
 	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 )
 
-const (
-	predPeerCid = "peers/cid"
-
-	predObjectCid  = "objects/cid"
-	predObjectType = "objects/type"
-
-	predHeadPeer   = "heads/peer-uid"
-	predHeadObject = "heads/object-uid"
-	predHeadData   = "heads/data"
-)
-
-/*
-Predicates:
-
-peers/cid/<peer-uid> => cid of the peer
-peers/heads/<object-uid> => head for a given object
-
-objects/accounts/cid => cid of this account object
-objects/documents/cid => cid of this document object
-*/
-
-var (
-	predPeersCID   = []byte("peers/cid")
-	predPeersHeads = []byte("peers/heads/")
-
-	predObjectsAccountCID   = []byte("objects/accounts/cid")
-	predObjectsDocumentsCID = []byte("objects/documents/cid")
-
-	kindPeers   = []byte("peers")
-	kindObjects = []byte("objects")
-)
-
 // nowFunc is overwritten in tests.
 var nowFunc = func() time.Time {
 	return time.Now().UTC()
@@ -86,16 +54,28 @@ func newPatchStore(k crypto.PrivKey, bs blockstore.Blockstore, db *badgergraph.D
 	}, nil
 }
 
+func encodeCodec(codec uint64) []byte {
+	out := make([]byte, 8)
+	binary.BigEndian.PutUint64(out, codec)
+	return out
+}
+
 func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 	txn := s.db.NewTransaction(true)
 	defer txn.Discard()
 
-	_, ohash := ipfsutil.DecodeCID(sp.ObjectID)
+	ocodec, ohash := ipfsutil.DecodeCID(sp.ObjectID)
 	_, phash := ipfsutil.DecodeCID(sp.peer)
 
 	ouid, err := txn.UID("Object", ohash)
 	if err != nil {
 		return err
+	}
+
+	if _, err := txn.GetProperty(ouid, "Object.type"); err == badger.ErrKeyNotFound {
+		if err := txn.SetProperty(ouid, "Object.type", encodeCodec(ocodec), true); err != nil {
+			return err
+		}
 	}
 
 	puid, err := txn.UID("Peer", phash)
@@ -258,20 +238,28 @@ func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error)
 	return newState(obj, out), nil
 }
 
-func (s *patchStore) ListObjects(ctx context.Context, codec uint64, after string, limit int) ([]cid.Cid, error) {
-	// if err := s.db.View(func(txn *badger.Txn) error {
-	// 	defer it.Close()
+// ListObjects allows to list object CIDs of a particular type.
+// The type of the object is encoded in its CID multicodec when object is created.
+func (s *patchStore) ListObjects(ctx context.Context, codec uint64) ([]cid.Cid, error) {
+	var out []cid.Cid
+	s.db.View(func(txn *badgergraph.Txn) error {
+		uids, err := txn.ListIndexedNodes("Object.type", encodeCodec(codec))
+		if err != nil {
+			return fmt.Errorf("failed to list objects with type %v: %w", codec, err)
+		}
 
-	// 	for it.Rewind(); it.Valid(); it.Next() {
-	// 		// item := it.Item()
-	// 		// s.db.getCIDValue()
-	// 	}
-	// 	return nil
-	// }); err != nil {
-	// 	return nil, fmt.Errorf("transaction failed: %w", err)
-	// }
+		out = make([]cid.Cid, len(uids))
+		for i, u := range uids {
+			ohash, err := txn.XID("Object", u)
+			if err != nil {
+				return fmt.Errorf("failed to find xid for object with uid %d: %w", u, err)
+			}
+			out[i] = cid.NewCidV1(codec, ohash)
+		}
+		return nil
+	})
 
-	return nil, nil
+	return out, nil
 }
 
 func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
