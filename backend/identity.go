@@ -20,6 +20,8 @@ import (
 
 func init() {
 	cbornode.RegisterCborType(AccountBinding{})
+	cid.Codecs["mintter-account"] = codecAccountID
+	cid.CodecToStr[codecAccountID] = "mintter-account"
 }
 
 // See identity_grammar.ebnf for explanation about our identifiers.
