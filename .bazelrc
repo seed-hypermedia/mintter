@@ -2,8 +2,6 @@
 build --action_env=PATH
 build --action_env=HOME
 
-build --symlink_prefix=.bazel-
-
 # Turn on --incompatible_strict_action_env which was on by default
 # in Bazel 0.21.0 but turned off again in 0.22.0. Follow
 # https://github.com/bazelbuild/bazel/issues/7026 for more details.
