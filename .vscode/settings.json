@@ -12,15 +12,8 @@
     "options": ["-I=${workspaceRoot}/proto"]
   },
   "gopls": {
-    "directoryFilters": [
-      "-node_modules",
-      "-bazel-bin",
-      "-bazel-mintter",
-      "-bazel-out",
-      "-bazel-testlogs",
-      "-out",
-      "-.git"
-    ]
+    "build.directoryFilters": ["-", "+backend", "+third_party", "+api/go"],
+    "formatting.local": "mintter/"
   },
   "typescript.tsdk": "node_modules/typescript/lib"
 }
