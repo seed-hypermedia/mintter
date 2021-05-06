@@ -1,0 +1,20 @@
+load("//build:rules.bzl", "local_action")
+
+local_action(
+    name = "ui",
+    srcs = glob([
+        "src/**",
+        "storybook-utils/**",
+    ]) + [
+        "package.json",
+        "tsconfig.build.json",
+        "tsconfig.json",
+    ],
+    outs = ["dist"],
+    cmd = """
+yarn build
+cp -Rs $(pwd)/dist/ $TARGET_OUT_DIR/dist
+""",
+    dir = True,
+    deps = ["//:yarn"],
+)
