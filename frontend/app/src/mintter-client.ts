@@ -1,13 +1,15 @@
-import faker from 'faker';
 import DocumentsClient, {
   DraftsClient,
 } from '@mintter/api/documents/v1alpha/documents_grpc_web_pb';
 import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import MintterClient from '@mintter/api/v2/mintter_grpc_web_pb';
-import mintter from '@mintter/api/v2/mintter_pb';
+import DaemonClient from '@mintter/api/daemon/v1alpha/daemon_grpc_web_pb';
+import daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
+import AccountsClient from '@mintter/api/accounts/v1alpha/accounts_grpc_web_pb';
+import accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
 import { buildDocument, buildProfile, buildPublication } from '@utils/generate';
 import { makeProto } from '@utils/make-proto';
 import { createId } from '@utils/create-id';
+import type { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 
 const MINTTER_API_URL =
   import.meta.env.MINTTER_API_URL || 'http://localhost:55001';
@@ -23,7 +25,8 @@ export function getApiUrl(): string {
     return window.location.origin;
   }
 
-  return MINTTER_API_URL;
+  // return MINTTER_API_URL;
+  return 'http://localhost:55001';
 }
 
 // This trick is required because we used to use API clients as globals,
@@ -36,6 +39,9 @@ export function getApiUrl(): string {
 let draftsClientInstance: DocumentsClient.DraftsPromiseClient;
 let publicationsClientInstance: DocumentsClient.PublicationsPromiseClient;
 let mintterClientInstance: MintterClient.MintterPromiseClient;
+
+let daemonClientInstance: DaemonClient.DaemonPromiseClient;
+let accountsClientInstance: AccountsClient.AccountsPromiseClient;
 
 export function draftsClient() {
   if (!draftsClientInstance) {
@@ -55,12 +61,22 @@ export function publicationsClient() {
   return publicationsClientInstance;
 }
 
-export function mintterClient() {
-  if (!mintterClientInstance) {
-    mintterClientInstance = new MintterClient.MintterPromiseClient(getApiUrl());
+export function daemonClient() {
+  if (!daemonClientInstance) {
+    daemonClientInstance = new DaemonClient.DaemonPromiseClient(getApiUrl());
   }
 
-  return mintterClientInstance;
+  return daemonClientInstance;
+}
+
+export function accountsClient() {
+  if (!accountsClientInstance) {
+    accountsClientInstance = new AccountsClient.DaemonPromiseClient(
+      getApiUrl(),
+    );
+  }
+
+  return accountsClientInstance;
 }
 
 // =================
@@ -130,7 +146,7 @@ export function getPublication(
   return Promise.resolve(pub);
 }
 
-export function deletePublication(version: string): Promise<any> {
+export function deletePublication(version: string): Promise<Empty> {
   let request = new documents.DeletePublicationRequest();
   request.setVersion(version);
   return publicationsClient().deletePublication(request);
@@ -161,108 +177,107 @@ export function listPublications(
  *
  */
 
-export function genSeed(aezeedPassphrase?: string) {
-  let response = new mintter.GenSeedResponse();
-  const seed = Array(24);
-  seed.map(() => faker.lorem.word());
-  response.setMnemonicList(seed);
-  return Promise.resolve(response);
+export async function genSeed(
+  aezeedPassphrase?: string,
+): Promise<daemon.GenSeedResponse> {
+  console.log('genSeed!');
+  let request = new daemon.GenSeedRequest();
+  // TODO: add aezeedPassphrase?
+  const result = await daemonClient().genSeed(request);
+  console.log('🚀 ~ file: mintter-client.ts ~ line 184 ~ result', result);
+  return result;
 }
 
 //TODO: type initProfile parameters
 export function initProfile(
-  mnemonicList: any,
-  aezeedPassphrase?: any,
+  mnemonicList: string[],
+  aezeedPassphrase?: string,
   walletPassword?: any,
-): Promise<mintter.InitProfileResponse> {
-  let request = new mintter.InitProfileRequest();
+): Promise<daemon.RegisterResponse> {
+  let request = new daemon.RegisterRequest();
+
   request.setMnemonicList(mnemonicList);
   if (aezeedPassphrase) {
     request.setAezeedPassphrase(aezeedPassphrase);
   }
-  if (walletPassword) {
-    request.setWalletPassword(walletPassword);
-  }
-  return mintterClient().initProfile(request);
+
+  return daemonClient().register(request);
 }
 
-export function getProfile(
-  profileId?: string,
-): Promise<mintter.GetProfileResponse> {
-  let response = new mintter.GetProfileResponse();
-  let profile = makeProto(new mintter.Profile(), buildProfile());
-  response.setProfile(profile);
-
-  return Promise.resolve(response);
+/**
+ *
+ * @deprecated
+ */
+export function getProfile(profileId?: string) {
+  console.log('getProfile: Implement!');
+  return Promise.resolve({});
 }
 
-// export function getProfile(
-//   profileId?: string,
-// ): Promise<mintter.GetProfileResponse> {
-//   let request = new mintter.GetProfileRequest();
-//   if (profileId) {
-//     request.setProfileId(profileId);
-//   }
-//   return mintterClient().getProfile(request);
-// }
-
-type UpdateProfileParams = {
-  username?: string;
-  email?: string;
-  bio?: string;
-};
-
-export async function updateProfile(
-  params: UpdateProfileParams,
-): Promise<mintter.UpdateProfileResponse> {
-  const { username = '', email = '', bio = '' } = params;
-  let profile = (await (await getProfile()).getProfile()) as mintter.Profile;
-  profile.setUsername(username);
-  profile.setEmail(email);
-  profile.setBio(bio);
-  let request = new mintter.UpdateProfileRequest();
-  request.setProfile(profile);
-  return mintterClient().updateProfile(request);
-}
-
-export function listProfiles(
-  pageSize?: number,
-  pageToken?: string,
-): Promise<mintter.ListProfilesResponse> {
-  let request = new mintter.ListProfilesRequest();
-  if (pageSize) {
-    request.setPageSize(pageSize);
-  }
-  if (pageToken) {
-    request.setPageToken(pageToken);
-  }
-  return mintterClient().listProfiles(request);
-}
-
-export function listSuggestedProfiles(
-  pageSize?: number,
-  pageToken?: string,
-): Promise<mintter.ListSuggestedProfilesResponse> {
-  let request = new mintter.ListSuggestedProfilesRequest();
-  if (pageSize) {
-    request.setPageSize(pageSize);
-  }
-  if (pageToken) {
-    request.setPageToken(pageToken);
+export function getAccount(id?: string): Promise<accounts.Account> {
+  const request = new accounts.GetAccountRequest();
+  if (id) {
+    request.setId(id);
   }
 
-  return mintterClient().listSuggestedProfiles(request);
+  return accountsClient().getAccount();
 }
 
-export function getProfileAddress(): Promise<mintter.GetProfileAddrsResponse> {
-  let request = new mintter.GetProfileAddrsRequest();
-  return mintterClient().getProfileAddrs(request);
+export function updateAccount(
+  profile: accounts.Profile.AsObject,
+): Promise<accounts.Account> {
+  const updateProfile: accounts.Profile = makeProto(
+    new accounts.Profile(),
+    entry,
+  );
+  return accountsClient().updateProfile(updateProfile);
 }
 
-export function connectToPeer(
-  addresses: string[],
-): Promise<mintter.ConnectToPeerResponse> {
-  let request = new mintter.ConnectToPeerRequest();
-  request.setAddrsList(addresses);
-  return mintterClient().connectToPeer(request);
+/**
+ *
+ * @deprecated
+ */
+export async function updateProfile(params: any) {
+  console.log('updateProfile: Implement!');
+  return Promise.resolve({});
+}
+
+/**
+ *
+ * @deprecated
+ */
+export function listProfiles(pageSize?: number, pageToken?: string) {
+  console.log('listProfiles: Implement!');
+  return Promise.resolve({});
+}
+
+export function listAccounts(): Promise<accounts.ListAccountsResponse> {
+  const request = new accounts.ListAccountsRequest();
+  return accountsClient().listAccounts(request);
+}
+
+/**
+ *
+ * @deprecated
+ */
+export function listSuggestedProfiles(pageSize?: number, pageToken?: string) {
+  console.log('listSuggestedProfiles: Implement!');
+  return {};
+}
+
+/**
+ *
+ * @deprecated
+ */
+export function getProfileAddress() {
+  console.log('getProfileAddress: Implement!');
+  return {};
+}
+
+/**
+ *
+ * @deprecated
+ */
+export function connectToPeer(addresses: string[]) {
+  console.log('connectToPeer: Implement!');
+  return {};
 }

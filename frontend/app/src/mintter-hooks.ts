@@ -11,6 +11,29 @@ import type mintter from '@mintter/api/v2/mintter_pb';
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
 import * as apiClient from '@mintter/client';
 
+export function useAccount(accountId?: string, options = {}) {
+  const accountQuery = useQuery(
+    accountId ? ['Account', accountId] : ['Account'],
+    async ({ queryKey }) => {
+      return await (await apiClient.getAccount(queryKey[1])).getProfile();
+    },
+    options,
+  );
+
+  const data = React.useMemo(() => accountQuery.data?.toObject?.(), [
+    accountQuery.data,
+  ]);
+
+  return {
+    ...accountQuery,
+    data,
+  };
+}
+
+/**
+ *
+ * @deprecated
+ */
 export function useProfile(options = {}) {
   const profileQuery = useQuery(
     ['Profile'],
@@ -30,6 +53,10 @@ export function useProfile(options = {}) {
   };
 }
 
+/**
+ *
+ * @deprecated
+ */
 export function useAuthor(accountId?: string, options = {}) {
   if (!accountId) return useProfile(options);
   const profileQuery = useQuery(
@@ -50,6 +77,10 @@ export function useAuthor(accountId?: string, options = {}) {
   };
 }
 
+/**
+ *
+ * @deprecated
+ */
 export function useProfileAddrs() {
   const profileAddrsQuery = useQuery(
     ['ProfileAddrs'],
@@ -72,6 +103,10 @@ export function useProfileAddrs() {
   };
 }
 
+/**
+ *
+ * @deprecated
+ */
 export function useConnectionList({ page } = { page: 0 }, options = {}) {
   const connectionsQuery = useQuery(
     ['ListConnections'],
@@ -96,6 +131,10 @@ export function useConnectionList({ page } = { page: 0 }, options = {}) {
   };
 }
 
+/**
+ *
+ * @deprecated
+ */
 export function useSuggestedConnections({ page } = { page: 0 }, options = {}) {
   const suggestionsQuery = useQuery(
     ['ListSuggestedConnections', page],
