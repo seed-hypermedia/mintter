@@ -14,7 +14,7 @@ let
             pkgs.findutils
             pkgs.protobuf3_11
             pkgs.go-protobuf
-            pkgs.go_1_15
+            pkgs.go_1_16
             pkgs.ninja
             python2
             protoc-gen-grpc-web
