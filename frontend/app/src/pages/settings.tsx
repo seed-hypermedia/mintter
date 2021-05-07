@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 
 import * as client from '@mintter/client';
-import { useProfile } from '@mintter/hooks';
+import { useAccount } from '@mintter/hooks';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
@@ -15,21 +15,22 @@ import { ProfileAddress } from '@components/profile-address';
 import { Separator } from '@components/separator';
 
 type ProfileInformationDataType = {
-  username: string;
+  alias: string;
   email: string;
   bio: string;
-  accountId: string;
 };
 
 export function Settings() {
   const theme = useTheme();
 
-  const profile = useProfile();
+  const {
+    data: { id: accountId, profile },
+  } = useAccount();
 
   const form = useForm<ProfileInformationDataType>({
     mode: 'onChange',
     defaultValues: {
-      username: '',
+      alias: '',
       email: '',
       bio: '',
       accountId: '',
@@ -37,13 +38,13 @@ export function Settings() {
   });
 
   useEffect(() => {
-    if (profile.data) {
-      form.setValue('username', profile.data.username);
-      form.setValue('email', profile.data.email);
-      form.setValue('bio', profile.data.bio);
-      form.setValue('accountId', profile.data.accountId);
+    if (profile) {
+      form.setValue('alias', profile.alias);
+      form.setValue('email', profile.email);
+      form.setValue('bio', profile.bio);
+      form.setValue('accountId', accountId);
     }
-  }, [profile.data]);
+  }, [profile]);
 
   const onSubmit = form.handleSubmit(async (data) =>
     toast.promise(client.updateProfile(data), {
@@ -88,10 +89,10 @@ export function Settings() {
           <TextField
             type="text"
             label="Username"
-            id="username"
-            name="username"
+            id="alias"
+            name="alias"
             ref={form.register}
-            placeholder="Readable username or alias. Doesn't have to be unique."
+            placeholder="Readable alias or alias. Doesn't have to be unique."
           />
           <TextField
             type="email"
@@ -156,7 +157,7 @@ export function Settings() {
             name="accountId"
             ref={form.register}
           />
-          <ProfileAddress />
+          {/* <ProfileAddress /> */}
           <Separator />
           <Text as="h2" size="8">
             Preferences

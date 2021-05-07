@@ -6,7 +6,13 @@ import DaemonClient from '@mintter/api/daemon/v1alpha/daemon_grpc_web_pb';
 import daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
 import AccountsClient from '@mintter/api/accounts/v1alpha/accounts_grpc_web_pb';
 import accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
-import { buildDocument, buildProfile, buildPublication } from '@utils/generate';
+import {
+  buildAccount,
+  buildDevices,
+  buildDocument,
+  buildProfile,
+  buildPublication,
+} from '@utils/generate';
 import { makeProto } from '@utils/make-proto';
 import { createId } from '@utils/create-id';
 import type { Empty } from 'google-protobuf/google/protobuf/empty_pb';
@@ -214,18 +220,49 @@ export function getAccount(id: string = ''): Promise<accounts.Account> {
   console.log('getAccount', id);
   const request = new accounts.GetAccountRequest();
   request.setId(id);
-  console.log({ request });
-  return accountsClient().getAccount();
+  return accountsClient().getAccount(request);
 }
 
+// export function getAccount(id: string = ''): Promise<accounts.Account> {
+//   const profile = makeProto(new accounts.Profile(), buildProfile());
+
+//   const devices = buildDevices();
+
+//   const account = new accounts.Account();
+//   account.setId(id);
+//   account.setProfile(profile);
+//   const map = account.getDevicesMap();
+//   devices.forEach((device) => {
+//     const n = new accounts.Device();
+//     n.setPeerId(device.peerId);
+//     map.set(device.peerId, n);
+//   });
+
+//   return account;
+// }
+
 export function updateAccount(
-  profile: accounts.Profile.AsObject,
+  entry: accounts.Profile.AsObject,
 ): Promise<accounts.Account> {
   const updateProfile: accounts.Profile = makeProto(
     new accounts.Profile(),
     entry,
   );
   return accountsClient().updateProfile(updateProfile);
+}
+
+export function listAccounts(
+  pageSize?: number,
+  pageToken?: string,
+): Promise<accounts.ListAccountsResponse> {
+  const request = new accounts.ListAccountsRequest();
+  if (pageSize) {
+    request.setPageSize(pageSize);
+  }
+  if (pageToken) {
+    request.setPageToken(pageToken);
+  }
+  return accountsClient().listAccounts(request);
 }
 
 /**
@@ -244,11 +281,6 @@ export async function updateProfile(params: any) {
 export function listProfiles(pageSize?: number, pageToken?: string) {
   console.log('listProfiles: Implement!');
   return Promise.resolve({});
-}
-
-export function listAccounts(): Promise<accounts.ListAccountsResponse> {
-  const request = new accounts.ListAccountsRequest();
-  return accountsClient().listAccounts(request);
 }
 
 /**

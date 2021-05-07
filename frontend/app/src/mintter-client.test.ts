@@ -20,4 +20,6 @@ describe('Mintter Client: Profile', () => {
     const res = await client.genSeed();
     expect(res.getMnemonicList()).to.have.length(24);
   });
+
+  it('');
 });

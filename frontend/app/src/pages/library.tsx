@@ -7,6 +7,7 @@ import {
   Route,
 } from 'react-router-dom';
 import {
+  useAccount,
   useConnectionCreate,
   useConnectionList,
   useProfile,
@@ -37,7 +38,7 @@ export type WithCreateDraft = {
 export default function Library() {
   const match = useRouteMatch();
   const history = useHistory();
-  const { connectToPeer } = useConnectionCreate();
+  // const { connectToPeer } = useConnectionCreate();
   // const { addToast, updateToast, removeToast } = useToasts();
 
   async function onCreateDraft() {
@@ -117,8 +118,8 @@ export default function Library() {
         }}
       >
         <ProfileInfo />
-        <Connections onConnect={onConnect} />
-        <SuggestedConnections onConnect={onConnect} />
+        {/* <Connections onConnect={onConnect} /> */}
+        {/* <SuggestedConnections onConnect={onConnect} /> */}
       </Box>
 
       <Container css={{ gridArea: 'maincontent' }}>
@@ -149,7 +150,7 @@ export default function Library() {
           <NavItem to={`${match.url}/drafts`}>Drafts</NavItem>
         </Box>
         <Separator />
-        <NoConnectionsBox onConnect={onConnect} />
+        {/* <NoConnectionsBox onConnect={onConnect} /> */}
 
         <Switch>
           <Route exact path={match.url}>
@@ -172,7 +173,10 @@ export default function Library() {
 
 function ProfileInfo() {
   const match = useRouteMatch();
-  const { data: profile } = useProfile();
+  const {
+    data: { profile },
+  } = useAccount();
+
   return profile ? (
     <Box
       css={{
@@ -189,7 +193,7 @@ function ProfileInfo() {
         // @ts-ignore
         css={{ fontWeight: '$bold' }}
       >
-        {profile.username}
+        {profile.alias}
       </Text>
       <Text>{profile.bio}</Text>
       <Button
