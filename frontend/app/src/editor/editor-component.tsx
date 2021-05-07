@@ -1,22 +1,46 @@
 import { KeyboardEvent, useState } from 'react';
 import type { NodeEntry } from 'slate';
 import {
+  createBoldPlugin,
   createExitBreakPlugin,
   createHistoryPlugin,
   createNodeIdPlugin,
   createReactPlugin,
+  createAutoformatPlugin,
   ELEMENT_PARAGRAPH,
   ExitBreakRule,
+  MARK_BOLD,
   SlatePlugins,
   SlatePluginsProps,
   SPEditor,
+  SlatePluginsOptions,
+  DEFAULTS_BOLD,
+  createSlatePluginsOptions,
+  MARK_ITALIC,
+  MARK_CODE,
+  MARK_STRIKETHROUGH,
+  createItalicPlugin,
+  createStrikethroughPlugin,
+  createCodePlugin,
 } from '@udecode/slate-plugins';
 import { createId } from '@utils/create-id';
-import { createBlockPlugin, ELEMENT_BLOCK, BlockElement } from './block-plugin';
+import { createBlockPlugin, ELEMENT_BLOCK, blockOptions } from './block-plugin';
 import { createElement } from './create-element';
+import { boldOptions, boldAutoformatRules } from './bold-plugin';
+import { codeOptions, codeAutoformatRules } from './code-plugin';
+import { italicOptions, italicAutoformatRules } from './italic-plugin';
+import {
+  strikethroughOptions,
+  strikethroughAutoformatRules,
+} from './strikethrough-plugin';
 
 const initialValue = [
-  createElement('', { id: createId(), type: ELEMENT_BLOCK }),
+  createElement('', {
+    mark: 'bold',
+    id: createId(),
+    depth: 0,
+    type: ELEMENT_BLOCK,
+  }),
 ];
 
 function rulesWithCustomDefaultType(
@@ -49,6 +73,20 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           createReactPlugin(),
           createHistoryPlugin(),
           createBlockPlugin(),
+          createAutoformatPlugin({
+            rules: [
+              ...boldAutoformatRules,
+              ...italicAutoformatRules,
+              ...codeAutoformatRules,
+              ...strikethroughAutoformatRules,
+              {
+                type: MARK_STRIKETHROUGH,
+                between: ['~~', '~~'],
+                mode: 'inline',
+                insertTrigger: true,
+              },
+            ],
+          }),
           createExitBreakPlugin({
             rules: rulesWithCustomDefaultType(ELEMENT_BLOCK, [
               { hotkey: 'mod+enter' },
@@ -66,9 +104,19 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
               },
             ]),
           }),
+          createBoldPlugin(),
+          createItalicPlugin(),
+          createStrikethroughPlugin(),
+          createCodePlugin(),
         ]}
+        options={{
+          ...blockOptions,
+          ...boldOptions,
+          ...italicOptions,
+          ...codeOptions,
+          ...strikethroughOptions,
+        }}
         initialValue={initialValue}
-        components={{ [ELEMENT_BLOCK]: BlockElement }}
         onChange={(nv) => setV(nv as any)}
       />
       <pre>{JSON.stringify(v, null, 3)}</pre>
