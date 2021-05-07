@@ -7,7 +7,7 @@ import mintter from '@mintter/api/v2/mintter_pb';
 import { buildDocument, buildProfile, buildPublication } from '@utils/generate';
 import { makeProto } from '@utils/make-proto';
 import { createId } from '@utils/create-id';
-
+console.log('ESTOY EN EL MOCK!!!');
 const MINTTER_API_URL =
   import.meta.env.MINTTER_API_URL || 'http://localhost:55001';
 
