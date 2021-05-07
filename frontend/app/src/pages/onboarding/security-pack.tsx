@@ -1,9 +1,9 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import toast from 'react-hot-toast';
 import { useQuery } from 'react-query';
 
-import { genSeed, initProfile } from '../../mintter-client';
+import { genSeed, register } from '../../mintter-client';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
@@ -18,8 +18,11 @@ import {
   OnboardingStepTitle,
   SecurityPackIcon,
 } from './common';
+import { TextField } from '@mintter/ui/text-field';
 
 export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
+  const [ownSeed, setOwnSeed] = useState<string>('');
+  const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false);
   const mnemonics = useQuery<string[], Error>(
     ['onboarding', 'mnemonics'],
     async () => {
@@ -33,13 +36,18 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
   );
 
   const handleSubmit = useCallback(async () => {
-    try {
-      await initProfile(mnemonics.data);
-      next();
-    } catch (error) {
-      toast.error(error.message);
+    let words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data;
+    if (words) {
+      try {
+        await register(words);
+        next();
+      } catch (error) {
+        toast.error(error.message);
+      }
+    } else {
+      toast.error('no words have being received?');
     }
-  }, [mnemonics, next]);
+  }, [useOwnSeed, ownSeed, mnemonics, next]);
 
   return (
     <OnboardingStep>
@@ -50,7 +58,17 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
         Please save these 24 words securely! This will allow you to recreate
         your account:
       </OnboardingStepDescription>
-      {mnemonics.isError ? (
+      {useOwnSeed ? (
+        <TextField
+          as="textarea"
+          id="ownSeed"
+          name="ownSeed"
+          label="Your Seed"
+          rows={5}
+          placeholder="foo bar baz ..."
+          hint="all words separated by ONE SPACE"
+        />
+      ) : mnemonics.isError ? (
         <OnboardingStepBody>
           <Text color="danger" css={{ textAlign: 'center' }}>
             {mnemonics.error.message}
@@ -59,6 +77,17 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
       ) : (
         <MnemonicList words={mnemonics.data ?? []} />
       )}
+      <Button
+        type="button"
+        variant="ghost"
+        color="muted"
+        onClick={() => toggleOwnSeed((v) => !v)}
+      >
+        Setting up a new device?{' '}
+        <Text css={{ textDecoration: 'underline', display: 'inline-block' }}>
+          provide your own seed
+        </Text>
+      </Button>
       <OnboardingStepActions>
         <OnboardingStepButton variant="outlined" onClick={prev}>
           Back
@@ -104,8 +133,10 @@ function MnemonicList({ words }: { words: string[] }) {
               justifyContent: 'center',
             }}
           >
-            <Text size="1">{wordIdx + 1}.</Text>
-            <Text>{word}</Text>
+            <Text size="1" color="muted">
+              {wordIdx + 1}.
+            </Text>
+            <Text size="4">{word}</Text>
           </Box>
         ))}
       </Box>

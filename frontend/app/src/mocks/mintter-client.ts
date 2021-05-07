@@ -167,11 +167,9 @@ export async function genSeed(aezeedPassphrase?: string) {
   return await Promise.resolve(response);
 }
 
-//TODO: type initProfile parameters
-export function initProfile(
-  mnemonicList: any,
-  aezeedPassphrase?: any,
-  walletPassword?: any,
+export function register(
+  mnemonicList: string[],
+  aezeedPassphrase?: string,
 ): Promise<mintter.InitProfileResponse> {
   let request = new mintter.InitProfileRequest();
   request.setMnemonicList(mnemonicList);
