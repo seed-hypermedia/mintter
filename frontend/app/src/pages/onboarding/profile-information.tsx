@@ -23,7 +23,6 @@ type ProfileInformationDataType = {
 };
 
 export const ProfileInformation: React.FC<OnboardingStepPropsType> = ({
-  prev,
   next,
 }) => {
   const updateProfile = useMutation(client.updateProfile);
@@ -98,9 +97,6 @@ export const ProfileInformation: React.FC<OnboardingStepPropsType> = ({
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
-        <OnboardingStepButton variant="outlined" onClick={prev}>
-          Back
-        </OnboardingStepButton>
         <OnboardingStepButton
           type="submit"
           disabled={!formState.isValid || formState.isSubmitting}

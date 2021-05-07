@@ -15,7 +15,8 @@ export const Complete: React.FC = () => {
   const location = useLocation<{ from?: string }>();
 
   const handleSubmit = useCallback(async () => {
-    await queryClient.invalidateQueries('Profile');
+    console.log('submit welcome!!');
+    await queryClient.invalidateQueries('Account');
     history.replace(location.state.from ?? '/library');
   }, [history, location]);
 
