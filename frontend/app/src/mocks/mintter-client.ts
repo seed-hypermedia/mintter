@@ -7,7 +7,7 @@ import mintter from '@mintter/api/v2/mintter_pb';
 import { buildDocument, buildProfile, buildPublication } from '@utils/generate';
 import { makeProto } from '@utils/make-proto';
 import { createId } from '@utils/create-id';
-
+console.log('ESTOY EN EL MOCK!!!');
 const MINTTER_API_URL =
   import.meta.env.MINTTER_API_URL || 'http://localhost:55001';
 
@@ -167,11 +167,9 @@ export async function genSeed(aezeedPassphrase?: string) {
   return await Promise.resolve(response);
 }
 
-//TODO: type initProfile parameters
-export function initProfile(
-  mnemonicList: any,
-  aezeedPassphrase?: any,
-  walletPassword?: any,
+export function register(
+  mnemonicList: string[],
+  aezeedPassphrase?: string,
 ): Promise<mintter.InitProfileResponse> {
   let request = new mintter.InitProfileRequest();
   request.setMnemonicList(mnemonicList);
