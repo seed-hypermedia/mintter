@@ -16,7 +16,7 @@ const Publication = lazy(() => import('./pages/publication'));
 export function AuthorNode({ path = '/' }: { path?: string }) {
   const match = useRouteMatch(path)!;
 
-  const profile = useAccount(undefined, {
+  const profile = useAccount('', {
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,

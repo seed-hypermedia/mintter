@@ -210,13 +210,11 @@ export function getProfile(profileId?: string) {
   return Promise.resolve({});
 }
 
-export function getAccount(id?: string): Promise<accounts.Account> {
+export function getAccount(id: string = ''): Promise<accounts.Account> {
   console.log('getAccount', id);
   const request = new accounts.GetAccountRequest();
-  if (id) {
-    request.setId(id);
-  }
-
+  request.setId(id);
+  console.log({ request });
   return accountsClient().getAccount();
 }
 
