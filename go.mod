@@ -4,12 +4,13 @@ go 1.13
 
 require (
 	github.com/AndreasBriese/bbloom v0.0.0-20190823232136-616930265c33 // indirect
-	github.com/GeertJohan/go.rice v1.0.0
+	github.com/GeertJohan/go.rice v1.0.2
 	github.com/alecthomas/kong v0.2.11
 	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/btcsuite/btcd v0.21.0-beta // indirect
 	github.com/burdiyan/go/kongcli v0.0.0-20200124222818-6f87e0e684b6
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
+	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c // indirect
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/dgraph-io/badger/v3 v3.2011.1
