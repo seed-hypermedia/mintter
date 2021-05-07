@@ -7,6 +7,7 @@ export const createElement = (
     type = ELEMENT_BLOCK,
     id,
     mark,
+    ...rest
   }: {
     type?: string;
     mark?: string;
