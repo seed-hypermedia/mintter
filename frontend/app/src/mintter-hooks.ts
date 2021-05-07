@@ -15,7 +15,7 @@ export function useAccount(accountId?: string, options = {}) {
   const accountQuery = useQuery(
     accountId ? ['Account', accountId] : ['Account'],
     async ({ queryKey }) => {
-      return await (await apiClient.getAccount(queryKey[1])).getProfile();
+      return await await apiClient.getAccount(queryKey[1]);
     },
     options,
   );

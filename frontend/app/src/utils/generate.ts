@@ -1,5 +1,5 @@
 import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import mintter from '@mintter/api/v2/mintter_pb';
+import accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
 import { makeProto } from './make-proto';
 import {
   focusBlockStartById,
@@ -9,29 +9,32 @@ import {
 import faker from 'faker';
 import { createId } from './create-id';
 
-export function buildProfile(): mintter.Profile.AsObject {
+export function buildProfile(): accounts.Profile.AsObject {
   return {
-    peerId: faker.finance.bitcoinAddress(),
-    accountId: faker.finance.bitcoinAddress(),
-    username: faker.internet.userName(),
+    alias: faker.internet.userName(),
     email: faker.internet.email(),
     bio: faker.lorem.paragraph(),
-    connectionStatus: mintter.ConnectionStatus.CONNECTED,
   };
 }
 
-export function buildBlocksMap(
-  blocks: documents.Block[],
-): Array<[string, documents.Block.AsObject]> {
-  return blocks.map((b) => {
-    let block = b.toObject();
-
-    return [block.id, block];
-  });
+export function buildAccount({
+  id = createId(),
+  profile = buildProfile(),
+  devicesMap = buildDevices(),
+}: {
+  id: string;
+  profile: accounts.Profile.AsObject;
+  deviceMap: [string, accounts.Device.AsObject][];
+} = {}): accounts.Account.AsObject {
+  return {
+    id,
+    profile,
+    devicesMap,
+  };
 }
 
-export function buildChildrensList(blocks: documents.Block[]): string[] {
-  return blocks.map((b) => b.getId());
+export function buildDevices(): accounts.Device.AsObject[] {
+  return [1, 2, 3].map((id) => ({ peerId: id, registerTime: Date.now() }));
 }
 
 export function buildPublication(): documents.Publication {
@@ -140,112 +143,3 @@ export function buildTextInlineElement(
 
   return node;
 }
-
-export function buildImageInlineElement(
-  image?: documents.Image.AsObject,
-  linkKey?: string,
-): documents.InlineElement {
-  if (linkKey === undefined) {
-    linkKey = createId();
-  }
-  if (image === undefined) {
-    image = {
-      altText: faker.lorem.sentence(),
-      linkKey,
-    };
-  }
-  let node = new documents.InlineElement();
-  let element = makeProto<documents.Image>(new documents.Image(), image);
-  node.setImage(element);
-
-  return node;
-}
-
-export function buildQuoteInlineElement(
-  quote?: documents.Quote.AsObject,
-  linkKey?: string,
-): documents.InlineElement {
-  if (linkKey === undefined) {
-    linkKey = createId();
-  }
-  if (quote === undefined) {
-    quote = {
-      linkKey,
-      startOffset: 0,
-      endOffset: 0,
-    };
-  }
-  let node = new documents.InlineElement();
-  let element = makeProto<documents.Quote>(new documents.Quote(), quote);
-  node.setQuote(element);
-  return node;
-}
-// export function buildGetDocument({
-//   author = faker.finance.bitcoinAddress(),
-//   publishingState = PublishingState.PUBLISHED,
-//   quotersList = [],
-// } = {}): GetDocumentResponse.AsObject {
-//   const blockRefList = bluidBlockRefList();
-//   const blocksMap: [string, Block.AsObject][] = [
-//     [
-//       blockRefList.refsList[0].ref,
-//       {
-//         id: blockRefList.refsList[0].ref,
-//         paragraph: {
-//           inlineElementsList: [
-//             {
-//               text: faker.lorem.sentence(),
-//             },
-//           ],
-//         },
-//         quotersList,
-//       },
-//     ],
-//   ];
-
-//   return {
-//     document: buildDocument({ blockRefList, author, publishingState }),
-//     blocksMap,
-//   };
-// }
-
-// export function bluidBlockRefList(): BlockRefList.AsObject {
-//   return {
-//     style: BlockRefList.Style.NONE,
-//     refsList: [
-//       {
-//         ref: faker.random.uuid(),
-//       },
-//     ],
-//   };
-// }
-
-// export function buildSuggestedConnection(): SuggestedProfile.AsObject {
-//   return {
-//     profile: buildProfile(),
-//     addrsList: buildAddrsList(),
-//   };
-// }
-
-// export function buildAddrsList(): string[] {
-//   return [faker.internet.ip(), faker.internet.ip(), faker.internet.ip()];
-// }
-
-// export function buildDraft({
-//   author = faker.finance.bitcoinAddress(),
-//   publishingState = PublishingState.DRAFT,
-//   blockRefList = bluidBlockRefList(),
-// } = {}) {
-//   return buildDocument({ author, publishingState, blockRefList });
-// }
-
-// export function buildEditProfile(): Pick<
-//   Profile.AsObject,
-//   'username' | 'bio' | 'email'
-// > {
-//   return {
-//     username: faker.internet.userName(),
-//     email: faker.internet.email(),
-//     bio: faker.lorem.paragraph(),
-//   };
-// }
