@@ -33,9 +33,3 @@ bazel-*
 
 # Backend code
 backend/ui/rice-box.go-e
-~/.mtt/badger-v3/00001.mem
-~/.mtt/badger-v3/000001.vlog
-~/.mtt/badger-v3/DISCARD
-~/.mtt/badger-v3/KEYREGISTRY
-~/.mtt/badger-v3/LOCK
-~/.mtt/badger-v3/MANIFEST
