@@ -71,7 +71,7 @@ export function daemonClient() {
 
 export function accountsClient() {
   if (!accountsClientInstance) {
-    accountsClientInstance = new AccountsClient.DaemonPromiseClient(
+    accountsClientInstance = new AccountsClient.AccountsPromiseClient(
       getApiUrl(),
     );
   }
@@ -183,13 +183,10 @@ export async function genSeed(
   console.log('genSeed!');
   let request = new daemon.GenSeedRequest();
   // TODO: add aezeedPassphrase?
-  const result = await daemonClient().genSeed(request);
-  console.log('🚀 ~ file: mintter-client.ts ~ line 184 ~ result', result);
-  return result;
+  return await daemonClient().genSeed(request);
 }
 
-//TODO: type initProfile parameters
-export function initProfile(
+export function register(
   mnemonicList: string[],
   aezeedPassphrase?: string,
   walletPassword?: any,
@@ -214,6 +211,7 @@ export function getProfile(profileId?: string) {
 }
 
 export function getAccount(id?: string): Promise<accounts.Account> {
+  console.log('getAccount', id);
   const request = new accounts.GetAccountRequest();
   if (id) {
     request.setId(id);
