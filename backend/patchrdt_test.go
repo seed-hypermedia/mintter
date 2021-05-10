@@ -1,9 +1,9 @@
 package backend
 
 import (
-	"fmt"
-	"mintter/backend/testutil"
 	"testing"
+
+	"mintter/backend/testutil"
 
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
@@ -96,7 +96,6 @@ func TestPatchRDTState_Concurrent(t *testing.T) {
 
 	for i, sp := range merged.Merge() {
 		require.Equal(t, expected[i], string(sp.Body))
-		fmt.Println(sp.Seq, sp.LamportTime, sp.LogTime, string(sp.Body))
 	}
 }
 

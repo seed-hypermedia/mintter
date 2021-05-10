@@ -98,7 +98,7 @@ func StartDaemonWithConfig(cfg config.Config) (d *Daemon, err error) {
 	}
 
 	hsrv := &http.Server{
-		Handler: httpHandler(srv),
+		Handler: httpHandler(srv, back),
 	}
 
 	clean.Go(func() error {

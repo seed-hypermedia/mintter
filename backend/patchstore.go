@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"sync"
+	"time"
+
 	p2p "mintter/api/go/p2p/v1alpha"
 	"mintter/backend/badgergraph"
 	"mintter/backend/ipfsutil"
-	"sync"
-	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
