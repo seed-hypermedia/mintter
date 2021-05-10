@@ -11,7 +11,7 @@ import { TextField } from '@mintter/ui/text-field';
 import { useTheme } from '@mintter/ui/theme';
 
 import { Container } from '@components/container';
-import { ProfileAddress } from '@components/profile-address';
+import { PeerAddrs } from '@components/peer-addrs';
 import { Separator } from '@components/separator';
 import { useMutation } from 'react-query';
 
@@ -25,7 +25,7 @@ export function Settings() {
   const theme = useTheme();
 
   const {
-    data: { id: accountId, profile },
+    data: { id: accountId, profile, deviceMap },
   } = useAccount();
 
   const updateProfile = useMutation(client.updateAccount);
@@ -48,6 +48,7 @@ export function Settings() {
   }, [profile]);
 
   const onSubmit = form.handleSubmit(async (data) => {
+    console.log({data})
     await toast.promise(updateProfile.mutateAsync(data), {
       loading: 'Updating profile',
       success: 'Profile updated',
@@ -155,11 +156,10 @@ export function Settings() {
             readOnly
             type="text"
             label="Account ID"
-            id="accountId"
             name="accountId"
-            ref={form.register}
+            value={accountId}
           />
-          {/* <ProfileAddress /> */}
+          <PeerAddrs />
           <Separator />
           <Text as="h2" size="8">
             Preferences

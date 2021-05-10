@@ -6,6 +6,8 @@ import DaemonClient from '@mintter/api/daemon/v1alpha/daemon_grpc_web_pb';
 import daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
 import AccountsClient from '@mintter/api/accounts/v1alpha/accounts_grpc_web_pb';
 import accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
+import NetworkingClient from '@mintter/api/networking/v1alpha/networking_grpc_web_pb';
+import networking from '@mintter/api/networking/v1alpha/networking_pb';
 import {
   buildAccount,
   buildDevices,
@@ -16,6 +18,7 @@ import {
 import { makeProto } from '@utils/make-proto';
 import { createId } from '@utils/create-id';
 import type { Empty } from 'google-protobuf/google/protobuf/empty_pb';
+import faker from 'faker';
 
 const MINTTER_API_URL =
   import.meta.env.MINTTER_API_URL || 'http://localhost:55001';
@@ -44,10 +47,10 @@ export function getApiUrl(): string {
 
 let draftsClientInstance: DocumentsClient.DraftsPromiseClient;
 let publicationsClientInstance: DocumentsClient.PublicationsPromiseClient;
-let mintterClientInstance: MintterClient.MintterPromiseClient;
 
 let daemonClientInstance: DaemonClient.DaemonPromiseClient;
 let accountsClientInstance: AccountsClient.AccountsPromiseClient;
+let networkingClientInstance: NetworkingClient.NetworkingPromiseClient;
 
 export function draftsClient() {
   if (!draftsClientInstance) {
@@ -83,6 +86,16 @@ export function accountsClient() {
   }
 
   return accountsClientInstance;
+}
+
+export function networkingClient() {
+  if (!networkingClientInstance) {
+    networkingClientInstance = new NetworkingClient.NetworkingPromiseClient(
+      getApiUrl(),
+    );
+  }
+
+  return networkingClientInstance;
 }
 
 // =================
@@ -253,13 +266,12 @@ export function setDeviceMap(
 export function updateAccount(
   entry: accounts.Profile.AsObject,
 ): Promise<accounts.Account> {
-  // console.log({entry})
-  const updateProfile: accounts.Profile = makeProto(
-    new accounts.Profile(),
-    entry,
-  );
-  // console.log({updateProfile})
-  return accountsClient().updateProfile(updateProfile)
+  const { alias, email, bio } = entry;
+  const updateProfile: accounts.Profile = new accounts.Profile();
+  updateProfile.setAlias(alias);
+  updateProfile.setEmail(email);
+  updateProfile.setBio(bio);
+  return accountsClient().updateProfile(updateProfile);
 }
 
 export function listAccounts(
@@ -274,6 +286,21 @@ export function listAccounts(
     request.setPageToken(pageToken);
   }
   return accountsClient().listAccounts(request);
+}
+
+export async function listPeerAddrs(peerId: string = '') {
+  // const request = new networking.GetPeerAddrsRequest()
+  // request.setPeerId(peerId)
+  // return await networkingClient().getPeerAddrs(request)
+
+  const response = new networking.GetPeerAddrsResponse();
+  response.setAddrsList([
+    faker.internet.ipv6(),
+    faker.internet.ipv6(),
+    faker.internet.ipv6(),
+  ]);
+
+  return Promise.resolve(response)
 }
 
 /**
