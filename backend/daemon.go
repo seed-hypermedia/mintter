@@ -3,153 +3,158 @@ package backend
 import (
 	"context"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"path/filepath"
 
 	"mintter/backend/badger3ds"
 	"mintter/backend/badgergraph"
-	"mintter/backend/cleanup"
 	"mintter/backend/config"
 
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
 
-// StartDaemonWithConfig starts the daemon and all the required components using the provided configuration.
-// Users must not call Close on the returned daemon instance. Instead everything will shutdown when provided
-// context gets canceled. Callers may want to wait on the done channel to block until everything shuts down properly.
-func StartDaemonWithConfig(cfg config.Config) (d *Daemon, err error) {
+// Daemon is Mintter local daemon.
+// It encapsulates all the logic about the Mintter application.
+// It's initialized lazily during the Run method invocation.
+type Daemon struct {
+	cfg   config.Config
+	ready chan struct{}
+
+	// These can only be accessed safely after ready is closed.
+	backend *backend
+	lis     net.Listener
+}
+
+func NewDaemon(cfg config.Config) *Daemon {
+	return &Daemon{
+		cfg:   cfg,
+		ready: make(chan struct{}),
+	}
+}
+
+// Run the daemon and block until ctx is canceled.
+func (d *Daemon) Run(ctx context.Context) error {
 	log, err := zap.NewDevelopment(zap.WithCaller(false))
 	if err != nil {
-		return nil, err
+		return err
 	}
-	defer func() {
-		err := log.Sync()
-		_ = err
-	}()
+	defer log.Sync()
 
-	var clean cleanup.Stack
-	defer func() {
-		// If we returned from this function with non-nil error
-		// it means that something failed during the initialization,
-		// hence here we close all the things that may have started correctly
-		// before failure occurred.
-		if err != nil {
-			err = multierr.Append(err, clean.Close())
-		}
-
-		// This will be the top closer on the stack. Just to make sure
-		// that we say something to the user when the shutdown starts.
-		clean.AddErrFunc(func() error {
-			log.Info("GracefulShutdownStarted")
-			log.Debug("Press ctrl+c again to force quit, but it's better to wait :)")
-			return nil
-		})
-	}()
+	cfg := d.cfg
 
 	repo, err := newRepo(cfg.RepoPath, log.Named("repo"))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create repo: %w", err)
+		return fmt.Errorf("failed to create repo: %w", err)
 	}
 
 	ds, err := badger3ds.NewDatastore(badger3ds.DefaultOptions(filepath.Join(cfg.RepoPath, "badger-v3")))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create datastore: %w", err)
+		return fmt.Errorf("failed to create datastore: %w", err)
 	}
-	clean.Add(ds)
+	defer func() {
+		log.Debug("ClosedBadgerDB", zap.Error(ds.Close()))
+	}()
 
 	p2p, err := newP2PNode(cfg.P2P, ds, repo.privKey())
 	if err != nil {
-		return nil, fmt.Errorf("failed to create p2p node: %w", err)
+		return fmt.Errorf("failed to create p2p node: %w", err)
 	}
-	clean.Add(p2p)
+	defer func() {
+		log.Debug("ClosedP2PNode", zap.Error(p2p.Close()))
+	}()
 
 	db, err := badgergraph.NewDB(ds.DB, "mintter")
 	if err != nil {
-		return nil, fmt.Errorf("failed to create db: %w", err)
+		return fmt.Errorf("failed to create db: %w", err)
 	}
-	clean.Add(db)
+	defer func() {
+		log.Debug("ClosedBadgerGraph", zap.Error(db.Close()))
+	}()
 
 	patches, err := newPatchStore(repo.Device().priv, p2p.ipfs.BlockStore(), db)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create patch store: %w", err)
+		return fmt.Errorf("failed to create patch store: %w", err)
 	}
 
-	back := newBackend(repo, p2p, patches)
+	d.backend = newBackend(repo, p2p, patches)
 
 	srv := grpc.NewServer()
 
-	back.RegisterGRPCServices(srv)
+	d.backend.RegisterGRPCServices(srv)
 	reflection.Register(srv)
 
-	glis, err := net.Listen("tcp", ":"+cfg.GRPCPort)
+	d.lis, err = net.Listen("tcp", ":"+cfg.GRPCPort)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("failed to craete GRPC litener: %w", err)
 	}
+	defer d.lis.Close()
 
 	hlis, err := net.Listen("tcp", ":"+cfg.HTTPPort)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("failed to create HTTP listener: %w", err)
 	}
+	defer hlis.Close()
 
 	hsrv := &http.Server{
-		Handler: httpHandler(srv, back),
+		Handler: httpHandler(srv, d.backend),
 	}
 
-	clean.Go(func() error {
-		err := srv.Serve(glis)
+	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		err := srv.Serve(d.lis)
 		log.Info("CloseGRPCServerStopped")
 		return err
-	}, func() error {
+	})
+	g.Go(func() error {
+		<-ctx.Done()
 		log.Info("CloseGRPCServerStarted")
 		srv.GracefulStop()
 		return nil
 	})
 
-	clean.Go(func() error {
+	g.Go(func() error {
 		err := hsrv.Serve(hlis)
 		if err == http.ErrServerClosed {
 			err = nil
 		}
 		log.Info("CloseHTTPServerStopped")
 		return err
-	}, func() error {
+	})
+	g.Go(func() error {
+		<-ctx.Done()
 		log.Info("CloseHTTPServerStarted")
 		return hsrv.Shutdown(context.Background())
 	})
 
 	mas, err := p2p.Addrs()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// TODO:
 	// add let's encrypt
 	// add frontend server
 	log.Info("DaemonStarted",
-		zap.String("grpcListener", glis.Addr().String()),
+		zap.String("grpcListener", d.lis.Addr().String()),
 		zap.String("httpListener", hlis.Addr().String()),
 		zap.Any("libp2pAddrs", mas),
 		zap.String("repoPath", cfg.RepoPath),
 		zap.String("version", Version),
 	)
 
-	return &Daemon{
-		clean:   &clean,
-		backend: back,
-		lis:     glis,
-	}, nil
-}
+	close(d.ready)
 
-type Daemon struct {
-	clean   io.Closer
-	backend *backend
-	lis     net.Listener
+	<-ctx.Done()
+	log.Info("GracefulShutdownStarted")
+	log.Debug("Press ctrl+c again to force quit, but it's better to wait :)")
+
+	return g.Wait()
 }
 
 func (d *Daemon) Backend() *backend {
@@ -160,6 +165,8 @@ func (d *Daemon) GRPCAddr() net.Addr {
 	return d.lis.Addr()
 }
 
-func (d *Daemon) Close() error {
-	return d.clean.Close()
+// Ready returns a channel that will be closed when daemon is fully initialized and ready to use.
+// Useful for programmatic access to the daemon.
+func (d *Daemon) Ready() <-chan struct{} {
+	return d.ready
 }

@@ -20,13 +20,9 @@ func main() {
 
 	ctx := mainutil.TrapSignals()
 
-	mainutil.Run(func() error {
-		d, err := backend.StartDaemonWithConfig(cfg)
-		if err != nil {
-			return err
-		}
+	d := backend.NewDaemon(cfg)
 
-		<-ctx.Done()
-		return d.Close()
+	mainutil.Run(func() error {
+		return d.Run(ctx)
 	})
 }
