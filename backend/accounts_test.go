@@ -2,9 +2,10 @@ package backend
 
 import (
 	"context"
+	"testing"
+
 	accounts "mintter/api/go/accounts/v1alpha"
 	"mintter/backend/testutil"
-	"testing"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/stretchr/testify/require"
@@ -15,7 +16,7 @@ func TestGetAccount_Own(t *testing.T) {
 	alice := makeTestBackend(t, "alice", true)
 
 	want := &accounts.Account{
-		Id: "bafzaajaiaejcb2wplid355indqgovc7oe2nfenxpxgnqzebtigh2ymffy4rp4gla",
+		Id: "bahezrj4iaqacb2wplid355indqgovc7oe2nfenxpxgnqzebtigh2ymffy4rp4gla",
 		Devices: map[string]*accounts.Device{
 			"bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh": {
 				PeerId: "bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh",

@@ -29,6 +29,7 @@ func makeLazyP2PNode(n *p2pNode, ready <-chan struct{}) lazyP2PNode {
 	}
 }
 
+// backend is the glue between major pieces of Mintter application.
 type backend struct {
 	// log  *zap.Logger
 	repo  *repo
@@ -126,7 +127,7 @@ func (srv *backend) Register(ctx context.Context, req *daemon.RegisterRequest) (
 			return nil, fmt.Errorf("failed to register account: %w", err)
 		}
 
-		if err := srv.repo.CommitAccount(acc.pub); err != nil {
+		if err := srv.repo.CommitAccount(acc); err != nil {
 			return nil, fmt.Errorf("failed to write account file: %w", err)
 		}
 

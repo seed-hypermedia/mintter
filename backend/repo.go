@@ -6,15 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"mintter/backend/ipfsutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 
-	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/crypto"
-	"github.com/multiformats/go-multihash"
 	"go.uber.org/zap"
 )
 
@@ -36,6 +33,7 @@ type repo struct {
 	mu    sync.Mutex
 	acc   PublicAccount
 	ready chan struct{}
+	log   *zap.Logger
 }
 
 func newRepo(path string, log *zap.Logger) (r *repo, err error) {
@@ -100,6 +98,7 @@ func prepareRepo(path string, log *zap.Logger) (r *repo, err error) {
 	r = &repo{
 		path:  path,
 		ready: make(chan struct{}),
+		log:   log,
 	}
 
 	return r, nil
@@ -128,36 +127,30 @@ func (r *repo) Ready() <-chan struct{} {
 	return r.ready
 }
 
-func (r *repo) CommitAccount(k crypto.PubKey) error {
+func (r *repo) CommitAccount(acc Account) error {
 	if _, err := r.readAccountFile(); err == nil {
 		return fmt.Errorf("account is already committed")
 	}
 
-	if err := r.setAccount(k); err != nil {
+	if err := r.setAccount(acc.pub); err != nil {
 		return err
 	}
 
-	return r.writeAccountFile(k)
+	return r.writeAccountFile(acc.pub)
 }
 
 func (r *repo) setAccount(k crypto.PubKey) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	keyBytes, err := crypto.MarshalPublicKey(k)
+	pacc, err := NewPublicAccount(k)
 	if err != nil {
-		return fmt.Errorf("failed to marshal public key: %w", err)
+		return fmt.Errorf("failed to create public account: %w", err)
 	}
 
-	aid, err := ipfsutil.NewCID(cid.Libp2pKey, multihash.IDENTITY, keyBytes)
-	if err != nil {
-		return fmt.Errorf("failed to create account id from public key: %w", err)
-	}
+	r.acc = pacc
 
-	r.acc = PublicAccount{
-		id:  AccountID(aid),
-		pub: k,
-	}
+	r.log.Debug("AccountInitialized", zap.String("accountID", r.acc.id.String()))
 
 	close(r.ready)
 

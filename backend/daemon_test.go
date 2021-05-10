@@ -2,14 +2,12 @@ package backend
 
 import (
 	"context"
-	"fmt"
+	"testing"
+
 	accounts "mintter/api/go/accounts/v1alpha"
 	daemon "mintter/api/go/daemon/v1alpha"
 	"mintter/backend/config"
 	"mintter/backend/testutil"
-	"os"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
@@ -46,10 +44,10 @@ func TestDaemonEndToEnd(t *testing.T) {
 		require.NoError(t, cc.Close())
 	}()
 
-	accs := accounts.NewAccountsClient(cc)
-	resp, err := accs.GetAccount(ctx, &accounts.GetAccountRequest{})
+	ac := accounts.NewAccountsClient(cc)
+	acc, err := ac.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.Error(t, err)
-	require.Nil(t, resp)
+	require.Nil(t, acc)
 
 	dc := daemon.NewDaemonClient(cc)
 
@@ -61,16 +59,39 @@ func TestDaemonEndToEnd(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.NotNil(t, reg)
+	require.NotEqual(t, "", reg.AccountId, "account ID must be generated after registration")
 
-	require.NoError(t,
-		filepath.Walk(cfg.RepoPath, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
+	acc, err = ac.GetAccount(ctx, &accounts.GetAccountRequest{})
+	require.NoError(t, err)
+	require.Equal(t, reg.AccountId, acc.Id, "must return account after registration")
+	require.Equal(t, 1, len(acc.Devices), "must return our own device after registration")
+	require.Nil(t, acc.Profile, "must have no profile right after registration")
 
-			fmt.Println(path)
+	profileUpdate := &accounts.Profile{
+		Alias: "fulanito",
+		Bio:   "Mintter Tester",
+		Email: "fulanito@example.com",
+	}
 
-			return nil
-		}),
-	)
+	updatedAcc, err := ac.UpdateProfile(ctx, profileUpdate)
+	require.NoError(t, err)
+	require.Equal(t, acc.Id, updatedAcc.Id)
+	require.Equal(t, acc.Devices, updatedAcc.Devices)
+	testutil.ProtoEqual(t, profileUpdate, updatedAcc.Profile, "profile update must return full profile")
+
+	acc, err = ac.GetAccount(ctx, &accounts.GetAccountRequest{})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, updatedAcc, acc, "get account after update must match")
+
+	// require.NoError(t,
+	// 	filepath.Walk(cfg.RepoPath, func(path string, info os.FileInfo, err error) error {
+	// 		if err != nil {
+	// 			return err
+	// 		}
+
+	// 		fmt.Println(path)
+
+	// 		return nil
+	// 	}),
+	// )
 }

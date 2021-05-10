@@ -9,14 +9,18 @@ import (
 	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"github.com/libp2p/go-libp2p-core/event"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/lightningnetwork/lnd/aezeed"
+	"github.com/multiformats/go-multihash"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	accounts "mintter/api/go/accounts/v1alpha"
 	daemon "mintter/api/go/daemon/v1alpha"
 	"mintter/backend/badgergraph"
 	"mintter/backend/config"
+	"mintter/backend/ipfsutil"
 	"mintter/backend/testutil"
 )
 
@@ -31,7 +35,7 @@ func TestGenSeed(t *testing.T) {
 	require.Equal(t, aezeed.NummnemonicWords, len(resp.Mnemonic))
 }
 
-func TestBindAccount(t *testing.T) {
+func TestRegister(t *testing.T) {
 	testMnemonic := []string{"abandon", "impact", "blossom", "roast", "early", "turkey", "oblige", "cry", "citizen", "toilet", "prefer", "sudden", "glad", "luxury", "vehicle", "broom", "view", "front", "office", "rain", "machine", "angle", "humor", "acid"}
 	srv := makeTestBackend(t, "alice", false)
 	ctx := context.Background()
@@ -51,14 +55,12 @@ func TestBindAccount(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, codes.FailedPrecondition, stat.Code())
 
-	srv2 := newBackend(srv.repo, srv.p2p, srv.backend.store)
-	_, err = srv2.Register(ctx, &daemon.RegisterRequest{
-		Mnemonic: testMnemonic,
-	})
-	require.Error(t, err, "backend must remember account initialization state")
+	acc, err := srv.backend.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
+	require.NoError(t, err, "must get account after registration")
+	require.NotNil(t, acc)
 }
 
-func TestBindAccount_Concurrent(t *testing.T) {
+func TestRegister_Concurrent(t *testing.T) {
 	testMnemonic := []string{"abandon", "impact", "blossom", "roast", "early", "turkey", "oblige", "cry", "citizen", "toilet", "prefer", "sudden", "glad", "luxury", "vehicle", "broom", "view", "front", "office", "rain", "machine", "angle", "humor", "acid"}
 	srv := makeTestBackend(t, "alice", false)
 	ctx := context.Background()
@@ -166,7 +168,7 @@ func makeTestBackend(t *testing.T, name string, ready bool) *testBackend {
 	srv := newBackend(repo, p2p, patchStore)
 
 	if ready {
-		require.NoError(t, repo.CommitAccount(tester.Account.pub))
+		require.NoError(t, repo.CommitAccount(tester.Account))
 		acc, err := repo.Account()
 		require.NoError(t, err)
 
@@ -178,4 +180,42 @@ func makeTestBackend(t *testing.T, name string, ready bool) *testBackend {
 		repo:    repo,
 		p2p:     p2p,
 	}
+}
+
+type Tester struct {
+	Account Account
+	Device  Device
+	Binding AccountBinding
+}
+
+func makeTester(t *testing.T, name string) Tester {
+	t.Helper()
+
+	prof := testutil.MakeProfile(t, name)
+
+	pubBytes, err := prof.Account.PubKey.Raw()
+	require.NoError(t, err)
+
+	aid, err := ipfsutil.NewCID(codecAccountID, multihash.IDENTITY, pubBytes)
+	require.NoError(t, err)
+
+	tt := Tester{
+		Account: Account{
+			id:   AccountID(aid),
+			priv: prof.Account.PrivKey.PrivKey,
+			pub:  prof.Account.PubKey.PubKey,
+		},
+		Device: Device{
+			id:   DeviceID(peer.ToCid(prof.Peer.ID)),
+			priv: prof.Peer.PrivKey.PrivKey,
+			pub:  prof.Peer.PubKey.PubKey,
+		},
+	}
+
+	binding, err := InviteDevice(tt.Account, tt.Device)
+	require.NoError(t, err)
+
+	tt.Binding = binding
+
+	return tt
 }
