@@ -77,6 +77,21 @@ export function useAuthor(accountId?: string, options = {}) {
   };
 }
 
+export function usePeerAddrs() {
+  const peerAddrsQuery = useQuery(['PeerAddrs'], apiClient.listPeerAddrs, {
+    refetchInterval: 5000,
+  });
+
+  const data = React.useMemo(() => peerAddrsQuery.data?.toObject().addrsList, [
+    peerAddrsQuery.data,
+  ]);
+
+  return {
+    ...peerAddrsQuery,
+    data,
+  };
+}
+
 /**
  *
  * @deprecated
