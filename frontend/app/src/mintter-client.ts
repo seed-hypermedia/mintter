@@ -216,39 +216,50 @@ export function getProfile(profileId?: string) {
   return Promise.resolve({});
 }
 
-export function getAccount(id: string = ''): Promise<accounts.Account> {
+export async function getAccount(id: string = ''): Promise<accounts.Account> {
   console.log('getAccount', id);
   const request = new accounts.GetAccountRequest();
   request.setId(id);
-  return accountsClient().getAccount(request);
+  const result = await accountsClient().getAccount(request);
+  console.log(
+    '🚀 ~ file: mintter-client.ts ~ line 224 ~ getAccount ~ result',
+    result,
+  );
+  return result;
 }
 
 // export function getAccount(id: string = ''): Promise<accounts.Account> {
 //   const profile = makeProto(new accounts.Profile(), buildProfile());
 
-//   const devices = buildDevices();
-
 //   const account = new accounts.Account();
 //   account.setId(id);
 //   account.setProfile(profile);
-//   const map = account.getDevicesMap();
-//   devices.forEach((device) => {
-//     const n = new accounts.Device();
-//     n.setPeerId(device.peerId);
-//     map.set(device.peerId, n);
-//   });
+//   setDeviceMap(account.getDevicesMap(), buildDevices());
 
 //   return account;
 // }
 
+export function setDeviceMap(
+  map: Map<string, accounts.Device>,
+  devices: accounts.Device.AsObject[],
+): void {
+  devices.forEach((device) => {
+    const n = new accounts.Device();
+    n.setPeerId(device.peerId);
+    map.set(device.peerId, n);
+  });
+}
+
 export function updateAccount(
   entry: accounts.Profile.AsObject,
 ): Promise<accounts.Account> {
+  // console.log({entry})
   const updateProfile: accounts.Profile = makeProto(
     new accounts.Profile(),
     entry,
   );
-  return accountsClient().updateProfile(updateProfile);
+  // console.log({updateProfile})
+  return accountsClient().updateProfile(updateProfile)
 }
 
 export function listAccounts(

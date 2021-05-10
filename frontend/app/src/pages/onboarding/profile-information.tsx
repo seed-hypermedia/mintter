@@ -1,8 +1,9 @@
 import { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
+import toast from 'react-hot-toast';
 
-import * as client from '@mintter/client';
+import * as apiClient from '@mintter/client';
 import { TextField } from '@mintter/ui/text-field';
 
 import {
@@ -17,7 +18,7 @@ import {
 } from './common';
 
 type ProfileInformationDataType = {
-  username: string;
+  alias: string;
   email: string;
   bio: string;
 };
@@ -25,7 +26,7 @@ type ProfileInformationDataType = {
 export const ProfileInformation: React.FC<OnboardingStepPropsType> = ({
   next,
 }) => {
-  const updateProfile = useMutation(client.updateProfile);
+  const updateProfile = useMutation(apiClient.updateAccount);
 
   const {
     register,
@@ -35,7 +36,7 @@ export const ProfileInformation: React.FC<OnboardingStepPropsType> = ({
   } = useForm<ProfileInformationDataType>({
     mode: 'onChange',
     defaultValues: {
-      username: '',
+      alias: '',
       email: '',
       bio: '',
     },
@@ -43,7 +44,12 @@ export const ProfileInformation: React.FC<OnboardingStepPropsType> = ({
 
   const onSubmit = useCallback(
     async (data: ProfileInformationDataType) => {
-      await updateProfile.mutateAsync(data);
+      await toast.promise(updateProfile.mutateAsync(data), {
+        loading: 'Updating profile',
+        success: 'Profile updated',
+        error: 'Error updating profile',
+      });
+      console.log('edit complete!');
       next();
     },
     [next, updateProfile],
@@ -63,11 +69,11 @@ export const ProfileInformation: React.FC<OnboardingStepPropsType> = ({
       >
         <TextField
           type="text"
-          label="Username"
-          id="username"
-          name="username"
+          label="Alias"
+          id="alias"
+          name="alias"
           ref={register}
-          placeholder="Readable username or alias. Doesn't have to be unique."
+          placeholder="Readable alias or username. Doesn't have to be unique."
         />
         <TextField
           type="email"
