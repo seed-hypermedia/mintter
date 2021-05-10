@@ -27,13 +27,19 @@ func TestDaemonEndToEnd(t *testing.T) {
 		},
 	}
 
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
 
-	d, err := StartDaemonWithConfig(cfg)
-	require.NoError(t, err)
-	defer func() {
-		require.NoError(t, d.Close())
+	d := NewDaemon(cfg)
+	errc := make(chan error, 1)
+	go func() {
+		errc <- d.Run(ctx)
 	}()
+	defer func() {
+		cancel()
+		require.NoError(t, <-errc)
+	}()
+
+	<-d.Ready()
 
 	cc, err := grpc.Dial(d.lis.Addr().String(),
 		grpc.WithBlock(),
