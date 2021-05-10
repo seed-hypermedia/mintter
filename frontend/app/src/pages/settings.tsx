@@ -13,6 +13,7 @@ import { useTheme } from '@mintter/ui/theme';
 import { Container } from '@components/container';
 import { ProfileAddress } from '@components/profile-address';
 import { Separator } from '@components/separator';
+import { useMutation } from 'react-query';
 
 type ProfileInformationDataType = {
   alias: string;
@@ -27,13 +28,14 @@ export function Settings() {
     data: { id: accountId, profile },
   } = useAccount();
 
+  const updateProfile = useMutation(client.updateAccount);
+
   const form = useForm<ProfileInformationDataType>({
     mode: 'onChange',
     defaultValues: {
       alias: '',
       email: '',
       bio: '',
-      accountId: '',
     },
   });
 
@@ -42,17 +44,17 @@ export function Settings() {
       form.setValue('alias', profile.alias);
       form.setValue('email', profile.email);
       form.setValue('bio', profile.bio);
-      form.setValue('accountId', accountId);
     }
   }, [profile]);
 
-  const onSubmit = form.handleSubmit(async (data) =>
-    toast.promise(client.updateProfile(data), {
+  const onSubmit = form.handleSubmit(async (data) => {
+    await toast.promise(updateProfile.mutateAsync(data), {
       loading: 'Updating profile',
       success: 'Profile updated',
       error: 'Error updating profile',
-    }),
-  );
+    });
+    console.log('edit complete!')
+  });
 
   return (
     <Box
