@@ -2,11 +2,12 @@ package backend
 
 import (
 	"context"
-	"mintter/backend/badgergraph"
-	"mintter/backend/testutil"
 	"strconv"
 	"testing"
 	"time"
+
+	"mintter/backend/badgergraph"
+	"mintter/backend/testutil"
 
 	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
@@ -66,6 +67,7 @@ func TestPatchStore_AddPatchLoadState(t *testing.T) {
 
 	ss, err := alice.LoadState(ctx, oid)
 	require.NoError(t, err)
+	require.Equal(t, 6, ss.size)
 	require.Equal(t, ap, ss.byPeer[0])
 	require.Equal(t, bp, ss.byPeer[1])
 }

@@ -3,14 +3,12 @@ package backend
 import (
 	"errors"
 	"io/ioutil"
-	"mintter/backend/ipfsutil"
-	"mintter/backend/testutil"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/multiformats/go-multihash"
+	"mintter/backend/testutil"
+
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
@@ -54,42 +52,4 @@ func makeTestRepo(t *testing.T, tt Tester) *repo {
 	})
 
 	return repo
-}
-
-type Tester struct {
-	Account Account
-	Device  Device
-	Binding AccountBinding
-}
-
-func makeTester(t *testing.T, name string) Tester {
-	t.Helper()
-
-	prof := testutil.MakeProfile(t, name)
-
-	pubBytes, err := prof.Account.PubKey.Raw()
-	require.NoError(t, err)
-
-	aid, err := ipfsutil.NewCID(codecAccountID, multihash.IDENTITY, pubBytes)
-	require.NoError(t, err)
-
-	tt := Tester{
-		Account: Account{
-			id:   AccountID(aid),
-			priv: prof.Account.PrivKey.PrivKey,
-			pub:  prof.Account.PubKey.PubKey,
-		},
-		Device: Device{
-			id:   DeviceID(peer.ToCid(prof.Peer.ID)),
-			priv: prof.Peer.PrivKey.PrivKey,
-			pub:  prof.Peer.PubKey.PubKey,
-		},
-	}
-
-	binding, err := InviteDevice(tt.Account, tt.Device)
-	require.NoError(t, err)
-
-	tt.Binding = binding
-
-	return tt
 }

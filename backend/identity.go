@@ -5,9 +5,10 @@ import (
 	"crypto/rand"
 	"encoding"
 	"fmt"
+	"time"
+
 	"mintter/backend/ipfsutil"
 	"mintter/backend/slip10"
-	"time"
 
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
@@ -26,10 +27,15 @@ func init() {
 
 // See identity_grammar.ebnf for explanation about our identifiers.
 
-const codecAccountID = 1091161161
+const codecAccountID uint64 = 1091161161
 
 // AccountID is the CID representation of the Mintter Account ID.
 type AccountID cid.Cid
+
+// Equals check if two Account IDs are equal.
+func (aid AccountID) Equals(a AccountID) bool {
+	return cid.Cid(aid).Equals(cid.Cid(a))
+}
 
 // String returns string representation of the account ID.
 func (aid AccountID) String() string {
@@ -129,6 +135,19 @@ type PublicAccount struct {
 	pub crypto.PubKey
 }
 
+// NewPublicAccount creates a PublicAccount from a public key.
+func NewPublicAccount(pub crypto.PubKey) (PublicAccount, error) {
+	aid, err := AccountIDFromPubKey(pub)
+	if err != nil {
+		return PublicAccount{}, err
+	}
+
+	return PublicAccount{
+		id:  aid,
+		pub: pub,
+	}, nil
+}
+
 // NewAccountFromMnemonic creates an Account from previously generated mnemonic phraze.
 func NewAccountFromMnemonic(m aezeed.Mnemonic, passphraze string) (Account, error) {
 	seed, err := m.ToCipherSeed([]byte(passphraze))
@@ -146,26 +165,51 @@ func NewAccountFromSeed(rand []byte) (Account, error) {
 		return Account{}, err
 	}
 
-	priv, pub, err := crypto.GenerateEd25519Key(bytes.NewReader(slipSeed.Seed()))
+	priv, _, err := crypto.GenerateEd25519Key(bytes.NewReader(slipSeed.Seed()))
 	if err != nil {
 		return Account{}, err
+	}
+
+	return NewAccount(priv)
+}
+
+// NewAccount creates a new Mintter Account from a private key.
+func NewAccount(pk crypto.PrivKey) (Account, error) {
+	if _, ok := pk.(*crypto.Ed25519PrivateKey); !ok {
+		return Account{}, fmt.Errorf("only Ed25519 keys are supported for Mintter Accounts now, got %T", pk)
+	}
+
+	pub := pk.GetPublic()
+
+	aid, err := AccountIDFromPubKey(pub)
+	if err != nil {
+		return Account{}, fmt.Errorf("failed to dervice Account ID: %w", err)
+	}
+
+	return Account{
+		id:   aid,
+		priv: pk,
+		pub:  pub,
+	}, nil
+}
+
+// AccountIDFromPubKey creates a new AccountID from a public key.
+func AccountIDFromPubKey(pub crypto.PubKey) (AccountID, error) {
+	if _, ok := pub.(*crypto.Ed25519PublicKey); !ok {
+		return AccountID{}, fmt.Errorf("only Ed25519 keys are supported for Mintter Account IDs, got: %T", pub)
 	}
 
 	pubBytes, err := pub.Raw()
 	if err != nil {
-		return Account{}, err
+		return AccountID{}, err
 	}
 
-	accCID, err := ipfsutil.NewCID(codecAccountID, multihash.IDENTITY, pubBytes)
+	acid, err := ipfsutil.NewCID(codecAccountID, multihash.IDENTITY, pubBytes)
 	if err != nil {
-		return Account{}, err
+		return AccountID{}, err
 	}
 
-	return Account{
-		id:   AccountID(accCID),
-		priv: priv,
-		pub:  pub,
-	}, nil
+	return AccountID(acid), nil
 }
 
 // Device represents a Mintter peer.
