@@ -2,8 +2,7 @@ syntax = "proto3";
 
 package com.mintter.daemon.v1alpha;
 
-// import "google/protobuf/timestamp.proto";
-// import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "mintter/api/go/daemon/v1alpha;daemon";
 
@@ -20,6 +19,9 @@ service Daemon {
   // After generating the seed, this call is used to commit the seed and
   // create an account binding between the device and account.
   rpc Register(RegisterRequest) returns (RegisterResponse);
+
+  // Get generic information about the running node.
+  rpc GetInfo(GetInfoRequest) returns (Info);
 
   rpc DialPeer(DialPeerRequest) returns (DialPeerResponse);
 }
@@ -45,6 +47,8 @@ message RegisterResponse {
   string account_id = 1;
 }
 
+message GetInfoRequest {}
+
 message DialPeerRequest {
   // A list of multiaddrs for the same peer ID to attempt p2p connection.
   // For example `/ip4/10.0.0.1/tcp/55000/p2p/QmDeadBeef`.
@@ -52,3 +56,15 @@ message DialPeerRequest {
 }
 
 message DialPeerResponse {}
+
+// Info is a generic information about the running node.
+message Info {
+  // Account ID this node belongs to.
+  string account_id = 1;
+
+  // Peer ID assigned to this node.
+  string peer_id = 2;
+
+  // Start time of the node.
+  google.protobuf.Timestamp start_time = 3;
+}

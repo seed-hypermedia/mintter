@@ -11,6 +11,8 @@
 const grpc = {};
 grpc.web = require('grpc-web');
 
+
+var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js')
 const proto = {};
 proto.com = {};
 proto.com.mintter = {};
@@ -226,6 +228,86 @@ proto.com.mintter.daemon.v1alpha.DaemonPromiseClient.prototype.register =
       request,
       metadata || {},
       methodDescriptor_Daemon_Register);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.mintter.daemon.v1alpha.GetInfoRequest,
+ *   !proto.com.mintter.daemon.v1alpha.Info>}
+ */
+const methodDescriptor_Daemon_GetInfo = new grpc.web.MethodDescriptor(
+  '/com.mintter.daemon.v1alpha.Daemon/GetInfo',
+  grpc.web.MethodType.UNARY,
+  proto.com.mintter.daemon.v1alpha.GetInfoRequest,
+  proto.com.mintter.daemon.v1alpha.Info,
+  /**
+   * @param {!proto.com.mintter.daemon.v1alpha.GetInfoRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.daemon.v1alpha.Info.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.com.mintter.daemon.v1alpha.GetInfoRequest,
+ *   !proto.com.mintter.daemon.v1alpha.Info>}
+ */
+const methodInfo_Daemon_GetInfo = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.com.mintter.daemon.v1alpha.Info,
+  /**
+   * @param {!proto.com.mintter.daemon.v1alpha.GetInfoRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.daemon.v1alpha.Info.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.mintter.daemon.v1alpha.GetInfoRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.daemon.v1alpha.Info)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.daemon.v1alpha.Info>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.mintter.daemon.v1alpha.DaemonClient.prototype.getInfo =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.mintter.daemon.v1alpha.Daemon/GetInfo',
+      request,
+      metadata || {},
+      methodDescriptor_Daemon_GetInfo,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.mintter.daemon.v1alpha.GetInfoRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.mintter.daemon.v1alpha.Info>}
+ *     A native promise that resolves to the response
+ */
+proto.com.mintter.daemon.v1alpha.DaemonPromiseClient.prototype.getInfo =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.mintter.daemon.v1alpha.Daemon/GetInfo',
+      request,
+      metadata || {},
+      methodDescriptor_Daemon_GetInfo);
 };
 
 

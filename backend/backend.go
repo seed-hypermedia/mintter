@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/ipfs/go-cid"
 	"github.com/lightningnetwork/lnd/aezeed"
@@ -11,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	accounts "mintter/api/go/accounts/v1alpha"
 	daemon "mintter/api/go/daemon/v1alpha"
@@ -36,6 +38,8 @@ type backend struct {
 	p2p   lazyP2PNode
 	store *patchStore
 
+	startTime time.Time
+
 	// Paranoia Mode: we don't want any concurrent registration calls happening.
 	registerMu sync.Mutex
 
@@ -50,6 +54,8 @@ func newBackend(r *repo, p2p *p2pNode, store *patchStore) *backend {
 		repo:  r,
 		p2p:   makeLazyP2PNode(p2p, r.Ready()),
 		store: store,
+
+		startTime: time.Now().UTC(),
 
 		Accounts: &accountsServer{
 			repo:    r,
@@ -156,6 +162,21 @@ func (srv *backend) register(ctx context.Context, state *state, binding AccountB
 	}
 
 	return nil
+}
+
+func (srv *backend) GetInfo(ctx context.Context, in *daemon.GetInfoRequest) (*daemon.Info, error) {
+	pa, err := srv.repo.Account()
+	if err != nil {
+		return nil, status.Error(codes.FailedPrecondition, err.Error())
+	}
+
+	resp := &daemon.Info{
+		AccountId: pa.id.String(),
+		PeerId:    srv.repo.Device().id.String(),
+		StartTime: timestamppb.New(srv.startTime),
+	}
+
+	return resp, nil
 }
 
 func (srv *backend) DialPeer(ctx context.Context, req *daemon.DialPeerRequest) (*daemon.DialPeerResponse, error) {
