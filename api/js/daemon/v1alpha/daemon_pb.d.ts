@@ -1,5 +1,7 @@
 import * as jspb from "google-protobuf"
 
+import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
+
 export class GenSeedRequest extends jspb.Message {
   getAezeedPassphrase(): string;
   setAezeedPassphrase(value: string): void;
@@ -80,6 +82,20 @@ export namespace RegisterResponse {
   }
 }
 
+export class GetInfoRequest extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetInfoRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetInfoRequest): GetInfoRequest.AsObject;
+  static serializeBinaryToWriter(message: GetInfoRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetInfoRequest;
+  static deserializeBinaryFromReader(message: GetInfoRequest, reader: jspb.BinaryReader): GetInfoRequest;
+}
+
+export namespace GetInfoRequest {
+  export type AsObject = {
+  }
+}
+
 export class DialPeerRequest extends jspb.Message {
   getAddrsList(): Array<string>;
   setAddrsList(value: Array<string>): void;
@@ -111,6 +127,34 @@ export class DialPeerResponse extends jspb.Message {
 
 export namespace DialPeerResponse {
   export type AsObject = {
+  }
+}
+
+export class Info extends jspb.Message {
+  getAccountId(): string;
+  setAccountId(value: string): void;
+
+  getPeerId(): string;
+  setPeerId(value: string): void;
+
+  getStartTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setStartTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
+  hasStartTime(): boolean;
+  clearStartTime(): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Info.AsObject;
+  static toObject(includeInstance: boolean, msg: Info): Info.AsObject;
+  static serializeBinaryToWriter(message: Info, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Info;
+  static deserializeBinaryFromReader(message: Info, reader: jspb.BinaryReader): Info;
+}
+
+export namespace Info {
+  export type AsObject = {
+    accountId: string,
+    peerId: string,
+    startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
   }
 }
 

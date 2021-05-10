@@ -1,10 +1,14 @@
 import * as grpcWeb from 'grpc-web';
 
+import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
+
 import {
   DialPeerRequest,
   DialPeerResponse,
   GenSeedRequest,
   GenSeedResponse,
+  GetInfoRequest,
+  Info,
   RegisterRequest,
   RegisterResponse} from './daemon_pb';
 
@@ -26,6 +30,13 @@ export class DaemonClient {
     callback: (err: grpcWeb.Error,
                response: RegisterResponse) => void
   ): grpcWeb.ClientReadableStream<RegisterResponse>;
+
+  getInfo(
+    request: GetInfoRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: Info) => void
+  ): grpcWeb.ClientReadableStream<Info>;
 
   dialPeer(
     request: DialPeerRequest,
@@ -50,6 +61,11 @@ export class DaemonPromiseClient {
     request: RegisterRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<RegisterResponse>;
+
+  getInfo(
+    request: GetInfoRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<Info>;
 
   dialPeer(
     request: DialPeerRequest,

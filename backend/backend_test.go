@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	accounts "mintter/api/go/accounts/v1alpha"
 	daemon "mintter/api/go/daemon/v1alpha"
@@ -115,6 +116,22 @@ func TestDialPeer(t *testing.T) {
 	require.NotNil(t, resp)
 
 	time.Sleep(2 * time.Second)
+}
+
+func TestGetInfo(t *testing.T) {
+	srv := makeTestBackend(t, "alice", false)
+	ctx := context.Background()
+
+	info, err := srv.backend.GetInfo(ctx, &daemon.GetInfoRequest{})
+	require.Error(t, err)
+	require.Nil(t, info)
+
+	srv = makeTestBackend(t, "alice", true)
+	info, err = srv.backend.GetInfo(ctx, &daemon.GetInfoRequest{})
+	require.NoError(t, err)
+	require.Equal(t, srv.repo.device.id.String(), info.PeerId)
+	require.Equal(t, srv.repo.acc.id.String(), info.AccountId)
+	testutil.ProtoEqual(t, timestamppb.New(srv.backend.startTime), info.StartTime, "start time doesn't match")
 }
 
 type testBackend struct {
