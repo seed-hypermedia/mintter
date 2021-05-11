@@ -6,6 +6,7 @@ import {
   isSelectionExpanded,
   MARK_BOLD,
   MARK_ITALIC,
+  MARK_STRIKETHROUGH,
   MARK_UNDERLINE,
   toggleMark,
   useEventEditorId,
@@ -52,7 +53,6 @@ export function Toolbar(props) {
   const [hidden] = useBalloonShow({ editor, ref, hiddenDelay: 0 });
   useBalloonMove({ editor, ref, direction: 'top' });
 
-  console.log({ ref, editor, hidden });
   return (
     <Portal.Root>
       <div
@@ -76,6 +76,12 @@ export function Toolbar(props) {
           label="Underline (⌘U)"
         >
           <Icon name="Underline" />
+        </ToolbarMark>
+        <ToolbarMark
+          type={getSlatePluginType(editor, MARK_STRIKETHROUGH)}
+          label="Strikethrough (⌘+Shift+S)"
+        >
+          <Icon name="Strikethrough" />
         </ToolbarMark>
       </div>
     </Portal.Root>

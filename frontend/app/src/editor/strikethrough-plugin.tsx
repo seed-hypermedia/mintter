@@ -20,20 +20,22 @@ export const strikethroughOptions: StrikethroughOptions = {
 export const strikethroughAutoformatRules: AutoformatRule[] = [
   {
     type: MARK_STRIKETHROUGH,
-    between: ['`', '`'],
+    between: ['~~', '~~'],
     mode: 'inline',
     insertTrigger: true,
   },
 ];
 
-const styleClass = css({});
+const styleClass = css({
+  textDecoration: 'line-through'
+});
 
 export function StrikethroughLeaf({ attributes, children, leaf, ...rest }) {
-  if (leaf.code) {
+  if (leaf.strikethrough) {
     return (
-      <code className={styleClass()} {...attributes}>
+      <span className={styleClass()} {...attributes}>
         {children}
-      </code>
+      </span>
     );
   }
 }
