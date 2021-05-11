@@ -6,6 +6,7 @@ import (
 
 	accounts "mintter/api/go/accounts/v1alpha"
 	daemon "mintter/api/go/daemon/v1alpha"
+	networking "mintter/api/go/networking/v1alpha"
 	"mintter/backend/config"
 	"mintter/backend/testutil"
 
@@ -35,8 +36,6 @@ func TestDaemonEndToEnd(t *testing.T) {
 		errc <- d.Run(ctx)
 	}()
 	defer func() {
-		// We have to wait for P2P node being fully initialized before exiting from the tests.
-		<-d.p2p.Ready()
 		cancel()
 		if err := <-errc; err == context.Canceled {
 			return
@@ -57,11 +56,12 @@ func TestDaemonEndToEnd(t *testing.T) {
 	}()
 
 	ac := accounts.NewAccountsClient(cc)
+	dc := daemon.NewDaemonClient(cc)
+	nc := networking.NewNetworkingClient(cc)
+
 	acc, err := ac.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.Error(t, err)
 	require.Nil(t, acc)
-
-	dc := daemon.NewDaemonClient(cc)
 
 	seed, err := dc.GenSeed(ctx, &daemon.GenSeedRequest{})
 	require.NoError(t, err)
@@ -94,6 +94,21 @@ func TestDaemonEndToEnd(t *testing.T) {
 	acc, err = ac.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, updatedAcc, acc, "get account after update must match")
+
+	// We have to wait for P2P node being fully initialized before exiting from the tests.
+	<-d.p2p.Ready()
+
+	infoResp, err := dc.GetInfo(ctx, &daemon.GetInfoRequest{})
+	require.NoError(t, err)
+	require.NotNil(t, infoResp)
+	require.NotEqual(t, "", infoResp.AccountId)
+	require.NotEqual(t, "", infoResp.PeerId)
+
+	addrsResp, err := nc.GetPeerAddrs(ctx, &networking.GetPeerAddrsRequest{
+		PeerId: infoResp.PeerId,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, addrsResp)
 
 	// require.NoError(t,
 	// 	filepath.Walk(cfg.RepoPath, func(path string, info os.FileInfo, err error) error {

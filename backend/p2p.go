@@ -40,6 +40,19 @@ const (
 
 var userAgent = "mintter/" + Version
 
+type p2pNodeFactory func() (*p2pNode, error)
+
+func makeP2PNodeFactory(n *p2pNode) p2pNodeFactory {
+	return func() (*p2pNode, error) {
+		select {
+		case <-n.Ready():
+			return n, nil
+		default:
+			return nil, fmt.Errorf("p2p node is not ready")
+		}
+	}
+}
+
 type p2pNode struct {
 	cfg  config.P2P
 	ds   datastore.Batching
@@ -257,6 +270,12 @@ func (n *p2pNode) connect(ctx context.Context, pinfo peer.AddrInfo) error {
 	// }
 
 	return nil
+}
+
+// PeerAddrs provides addresses for peer ID.
+func (n *p2pNode) PeerAddrs(p peer.ID) ([]multiaddr.Multiaddr, error) {
+	info := n.host.Peerstore().PeerInfo(p)
+	return peer.AddrInfoToP2pAddrs(&info)
 }
 
 // Addrs returns our own fully-qualified libp2p addresses.

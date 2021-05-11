@@ -20,6 +20,9 @@ service Accounts {
   // the Networking API.
   rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
 
+  // Starts looking for peers providing information about another Account ID.
+  rpc StartAccountDiscovery(StartAccountDiscoveryRequest) returns (StartAccountDiscoveryResponse);
+
   // rpc StartDiscovery(StartDiscoveryRequest) returns (StartDiscoveryResponse);
   // rpc ListAccounts
   // rpc UpdateProfile
@@ -43,6 +46,12 @@ message ListAccountsResponse {
 
   string next_page_token = 2;
 }
+
+message StartAccountDiscoveryRequest {
+  string account_id = 1;
+}
+
+message StartAccountDiscoveryResponse {}
 
 message Account {
   // Mintter Account ID.
