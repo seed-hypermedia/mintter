@@ -66,6 +66,38 @@ export namespace ListAccountsResponse {
   }
 }
 
+export class StartAccountDiscoveryRequest extends jspb.Message {
+  getAccountId(): string;
+  setAccountId(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): StartAccountDiscoveryRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: StartAccountDiscoveryRequest): StartAccountDiscoveryRequest.AsObject;
+  static serializeBinaryToWriter(message: StartAccountDiscoveryRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): StartAccountDiscoveryRequest;
+  static deserializeBinaryFromReader(message: StartAccountDiscoveryRequest, reader: jspb.BinaryReader): StartAccountDiscoveryRequest;
+}
+
+export namespace StartAccountDiscoveryRequest {
+  export type AsObject = {
+    accountId: string,
+  }
+}
+
+export class StartAccountDiscoveryResponse extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): StartAccountDiscoveryResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: StartAccountDiscoveryResponse): StartAccountDiscoveryResponse.AsObject;
+  static serializeBinaryToWriter(message: StartAccountDiscoveryResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): StartAccountDiscoveryResponse;
+  static deserializeBinaryFromReader(message: StartAccountDiscoveryResponse, reader: jspb.BinaryReader): StartAccountDiscoveryResponse;
+}
+
+export namespace StartAccountDiscoveryResponse {
+  export type AsObject = {
+  }
+}
+
 export class Account extends jspb.Message {
   getId(): string;
   setId(value: string): void;

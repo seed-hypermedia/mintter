@@ -7,7 +7,9 @@ import {
   GetAccountRequest,
   ListAccountsRequest,
   ListAccountsResponse,
-  Profile} from './accounts_pb';
+  Profile,
+  StartAccountDiscoveryRequest,
+  StartAccountDiscoveryResponse} from './accounts_pb';
 
 export class AccountsClient {
   constructor (hostname: string,
@@ -35,6 +37,13 @@ export class AccountsClient {
                response: ListAccountsResponse) => void
   ): grpcWeb.ClientReadableStream<ListAccountsResponse>;
 
+  startAccountDiscovery(
+    request: StartAccountDiscoveryRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: StartAccountDiscoveryResponse) => void
+  ): grpcWeb.ClientReadableStream<StartAccountDiscoveryResponse>;
+
 }
 
 export class AccountsPromiseClient {
@@ -56,6 +65,11 @@ export class AccountsPromiseClient {
     request: ListAccountsRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<ListAccountsResponse>;
+
+  startAccountDiscovery(
+    request: StartAccountDiscoveryRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<StartAccountDiscoveryResponse>;
 
 }
 

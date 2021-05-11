@@ -80,6 +80,12 @@ func (srv *accountsServer) ListAccounts(ctx context.Context, in *accounts.ListAc
 	return nil, nil
 }
 
+func (srv *accountsServer) StartAccountDiscovery(ctx context.Context, in *accounts.StartAccountDiscoveryRequest) (*accounts.StartAccountDiscoveryResponse, error) {
+	// Join topic
+	// Start looking for peers
+	return nil, nil
+}
+
 func (srv *accountsServer) accountState(ctx context.Context, id AccountID) (*state, *accounts.Account, error) {
 	state, err := srv.patches.LoadState(ctx, cid.Cid(id))
 	if err != nil {
