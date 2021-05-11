@@ -17,6 +17,7 @@ type Config struct {
 
 // P2P configuration.
 type P2P struct {
+	// TODO: make this a slice and add ip6 and quic addresses.
 	Addr        string `help:"address for binding p2p listener" default:"/ip4/0.0.0.0/tcp/55000"`
 	NoTLS       bool   `help:"disable TLS in libp2p"`
 	NoRelay     bool   `help:"disable libp2p circuit relay"`

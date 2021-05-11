@@ -35,8 +35,14 @@ func TestDaemonEndToEnd(t *testing.T) {
 		errc <- d.Run(ctx)
 	}()
 	defer func() {
+		// We have to wait for P2P node being fully initialized before exiting from the tests.
+		<-d.p2p.Ready()
 		cancel()
-		require.NoError(t, <-errc)
+		if err := <-errc; err == context.Canceled {
+			return
+		} else {
+			require.NoError(t, <-errc)
+		}
 	}()
 
 	<-d.Ready()

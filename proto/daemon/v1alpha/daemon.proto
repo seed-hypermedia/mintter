@@ -22,8 +22,6 @@ service Daemon {
 
   // Get generic information about the running node.
   rpc GetInfo(GetInfoRequest) returns (Info);
-
-  rpc DialPeer(DialPeerRequest) returns (DialPeerResponse);
 }
 
 message GenSeedRequest {
@@ -48,14 +46,6 @@ message RegisterResponse {
 }
 
 message GetInfoRequest {}
-
-message DialPeerRequest {
-  // A list of multiaddrs for the same peer ID to attempt p2p connection.
-  // For example `/ip4/10.0.0.1/tcp/55000/p2p/QmDeadBeef`.
-  repeated string addrs = 1;
-}
-
-message DialPeerResponse {}
 
 // Info is a generic information about the running node.
 message Info {

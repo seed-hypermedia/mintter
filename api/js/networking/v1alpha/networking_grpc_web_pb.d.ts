@@ -1,6 +1,8 @@
 import * as grpcWeb from 'grpc-web';
 
 import {
+  DialPeerRequest,
+  DialPeerResponse,
   GetPeerAddrsRequest,
   GetPeerAddrsResponse,
   StartAccountDiscoveryRequest,
@@ -17,6 +19,13 @@ export class NetworkingClient {
     callback: (err: grpcWeb.Error,
                response: StartAccountDiscoveryResponse) => void
   ): grpcWeb.ClientReadableStream<StartAccountDiscoveryResponse>;
+
+  dialPeer(
+    request: DialPeerRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: DialPeerResponse) => void
+  ): grpcWeb.ClientReadableStream<DialPeerResponse>;
 
   getPeerAddrs(
     request: GetPeerAddrsRequest,
@@ -36,6 +45,11 @@ export class NetworkingPromiseClient {
     request: StartAccountDiscoveryRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<StartAccountDiscoveryResponse>;
+
+  dialPeer(
+    request: DialPeerRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<DialPeerResponse>;
 
   getPeerAddrs(
     request: GetPeerAddrsRequest,
