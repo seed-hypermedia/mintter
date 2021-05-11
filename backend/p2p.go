@@ -3,27 +3,30 @@ package backend
 import (
 	"context"
 	"fmt"
-	"io"
-	"mintter/backend/cleanup"
+	"time"
+
 	"mintter/backend/config"
 	"mintter/backend/ipfsutil"
-	"time"
 
 	"github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
-	connmgr "github.com/libp2p/go-libp2p-connmgr"
-	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
-	gostream "github.com/libp2p/go-libp2p-gostream"
+	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	"github.com/libp2p/go-libp2p-peerstore/pstoreds"
-	pubsub "github.com/libp2p/go-libp2p-pubsub"
-	swarm "github.com/libp2p/go-libp2p-swarm"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
+	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+
+	blockstore "github.com/ipfs/go-ipfs-blockstore"
+	ipfsconfig "github.com/ipfs/go-ipfs-config"
+	connmgr "github.com/libp2p/go-libp2p-connmgr"
+	gostream "github.com/libp2p/go-libp2p-gostream"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
+	swarm "github.com/libp2p/go-libp2p-swarm"
 )
 
 // Prototcol values.
@@ -37,122 +40,157 @@ const (
 var userAgent = "mintter/" + Version
 
 type p2pNode struct {
-	ipfs    *ipfsutil.Node
-	host    host.Host
-	ps      *pubsub.PubSub
-	cleanup io.Closer
+	cfg  config.P2P
+	ds   datastore.Batching
+	repo *repo
+	log  *zap.Logger
+
+	ready chan struct{} // this will be closed after node is ready to use.
+
+	bs   blockstore.Blockstore
+	ipfs *ipfsutil.Node
+	host host.Host
+	dht  *dual.DHT
+	ps   *pubsub.PubSub
 }
 
-func newP2PNode(cfg config.P2P, ds datastore.Batching, key crypto.PrivKey) (n *p2pNode, err error) {
-	var (
-		clean  cleanup.Stack
-		cancel context.CancelFunc
-		ctx    context.Context
-		g      *errgroup.Group
-	)
-	defer func() {
-		// We have to close all the dependencies that were initialized until the error happened.
-		// This is for convenience, because otherwise we'd have to accept each dependency in the constructor
-		// and it would be cumbersome to use.
-		// In the happy path scenario the caller would have to call Close on the returned Node struct.
-		if err != nil {
-			err = multierr.Append(err, clean.Close())
-		}
-	}()
-	ctx, cancel = context.WithCancel(context.Background())
-	g, ctx = errgroup.WithContext(ctx)
-	// The last item in the cleanup stack must be this,
-	// so that when the user calls Close() on the p2p node
-	// we wait until all the goroutines finish their execution
-	// before closing all the other stuff that these goroutines might be using.
-	// Errgroup goroutines must use the context as a signal to stop.
-	defer clean.AddErrFunc(func() error {
-		cancel()
-		return g.Wait()
-	})
-
-	pstore, err := pstoreds.NewPeerstore(ctx, ds, pstoreds.DefaultOpts())
+func newP2PNode(cfg config.P2P, repo *repo, log *zap.Logger, ds datastore.Batching) (*p2pNode, error) {
+	bs, err := ipfsutil.NewBlockstore(ds)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create peerstore: %w", err)
+		return nil, fmt.Errorf("failed to setup blockstore: %w", err)
 	}
-	clean.Add(pstore)
+
+	return &p2pNode{
+		cfg:   cfg,
+		ds:    ds,
+		repo:  repo,
+		log:   log,
+		bs:    bs,
+		ready: make(chan struct{}),
+	}, nil
+}
+
+func (n *p2pNode) Run(ctx context.Context) (err error) {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-n.repo.Ready():
+		// Start the process only after repo is ready.
+	}
+
+	_ = gostream.Dial
+
+	g, ctx := errgroup.WithContext(ctx)
+
+	pstore, err := pstoreds.NewPeerstore(ctx, n.ds, pstoreds.DefaultOpts())
+	if err != nil {
+		return fmt.Errorf("failed to create peerstore: %w", err)
+	}
+	defer func() {
+		n.log.Debug("ClosedPeerStore", zap.Error(pstore.Close()))
+	}()
 
 	opts := []libp2p.Option{
-		libp2p.ListenAddrStrings(cfg.Addr),
+		libp2p.ListenAddrStrings(n.cfg.Addr),
 		libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute)),
 		ipfsutil.TransportOpts,
 		libp2p.Peerstore(pstore),
 		libp2p.UserAgent(userAgent),
+		libp2p.DisableRelay(),
 		// TODO(burdiyan): allow to enable this for nodes with public IPs.
 		// libp2p.EnableRelay(relay.OptHop),
 	}
 
-	if !cfg.NoRelay {
+	if !n.cfg.NoRelay {
 		opts = append(opts, ipfsutil.RelayOpts)
 	}
 
-	if !cfg.NoTLS {
+	if !n.cfg.NoTLS {
 		opts = append(opts, ipfsutil.SecurityOpts)
 	}
 
-	h, dht, err := ipfsutil.SetupLibp2p(ctx, key, nil, ds, opts...)
+	n.host, n.dht, err = ipfsutil.SetupLibp2p(ctx, n.repo.Device().priv, nil, n.ds, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to setup libp2p: %w", err)
+		return fmt.Errorf("failed to setup libp2p: %w", err)
 	}
-	clean.Add(h)
-	clean.Add(dht)
+	defer func() {
+		// TODO: log or multierr.Append to bubble up?
+		n.log.Debug("ClosedDHT", zap.Error(n.dht.Close()))
+		n.log.Debug("ClosedLibp2p", zap.Error(n.host.Close()))
+	}()
 
-	ps, err := pubsub.NewGossipSub(ctx, h,
+	n.ps, err = pubsub.NewGossipSub(ctx, n.host,
 		pubsub.WithMessageSigning(false),
 		pubsub.WithStrictSignatureVerification(false),
 		// TODO: add WithReadiness, and WithDiscovery.
 		// TODO: enable WithPeerExchange for public nodes.
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to setup pubsub: %w", err)
+		return fmt.Errorf("failed to setup pubsub: %w", err)
 	}
 
-	lis, err := gostream.Listen(h, ProtocolID)
+	lis, err := gostream.Listen(n.host, ProtocolID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to setup gostream listener: %w", err)
+		return fmt.Errorf("failed to setup gostream listener: %w", err)
 	}
-	clean.Add(lis)
+	defer lis.Close()
+
+	n.ipfs, err = ipfsutil.New(ctx, n.ds, n.host, n.dht, &ipfsutil.Config{Blockstore: n.bs})
+	if err != nil {
+		return fmt.Errorf("failed to setup IPFS node: %w", err)
+	}
+	defer func() {
+		n.log.Debug("ClosedIPFSNode", zap.Error(n.ipfs.Close()))
+	}()
 
 	srv := grpc.NewServer()
+
+	// // TODO: register mintter p2p api here.
+
+	g.Go(func() error {
+		return srv.Serve(lis)
+	})
+
 	g.Go(func() error {
 		<-ctx.Done()
 		srv.GracefulStop()
 		return ctx.Err()
 	})
 
-	// TODO: register mintter p2p api here.
-
-	g.Go(func() error {
-		return srv.Serve(lis)
-	})
-
-	ipfsnode, err := ipfsutil.New(ctx, ds, h, dht, nil)
-	if err != nil {
-		return nil, err
-	}
-	clean.Add(ipfsnode)
-
-	node := &p2pNode{
-		host:    h,
-		cleanup: &clean,
-		ps:      ps,
-		ipfs:    ipfsnode,
+	if !n.cfg.NoBootstrap {
+		// // TODO: bootstrap ipfs node.
+		peers, err := ipfsconfig.DefaultBootstrapPeers()
+		if err != nil {
+			return fmt.Errorf("failed to get bootstrap peers: %w", err)
+		}
+		n.log.Info("BootstrapStarted")
+		err = n.ipfs.Bootstrap(ctx, peers)
+		n.log.Info("BootstrapEnded", zap.Error(err))
 	}
 
-	return node, nil
+	// n.ps = ps
+	// n.host = h
+	// n.ipfs = ipfsnode
+
+	close(n.ready)
+
+	// TODO: log peer ids, multiaddrs and so on.
+	n.log.Info("P2PReady", zap.Any("addrs", n.Addrs()))
+
+	<-ctx.Done()
+	n.log.Info("P2PShutdownStarted")
+
+	return g.Wait()
 }
 
-func (n *p2pNode) Close() error {
-	err := n.cleanup.Close()
-	if err != context.Canceled && err != context.DeadlineExceeded {
-		return err
-	}
-	return nil
+// Ready can be used to wait until the P2P node is fully ready to use after calling Run().
+func (n *p2pNode) Ready() <-chan struct{} {
+	return n.ready
+}
+
+// Blockstore returns the underlying IPFS Blockstore.
+func (n *p2pNode) Blockstore() blockstore.Blockstore {
+	return n.bs
 }
 
 // Connect to a peer using one of the provided addresses.
@@ -207,6 +245,12 @@ func (n *p2pNode) connect(ctx context.Context, pinfo peer.AddrInfo) error {
 	return nil
 }
 
-func (n *p2pNode) Addrs() ([]multiaddr.Multiaddr, error) {
-	return peer.AddrInfoToP2pAddrs(host.InfoFromHost(n.host))
+// Addrs returns our own fully-qualified libp2p addresses.
+func (n *p2pNode) Addrs() []multiaddr.Multiaddr {
+	mas, err := peer.AddrInfoToP2pAddrs(host.InfoFromHost(n.host))
+	if err != nil {
+		panic(err) // This should never happen.
+	}
+
+	return mas
 }

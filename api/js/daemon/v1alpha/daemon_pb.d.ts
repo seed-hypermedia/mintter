@@ -96,40 +96,6 @@ export namespace GetInfoRequest {
   }
 }
 
-export class DialPeerRequest extends jspb.Message {
-  getAddrsList(): Array<string>;
-  setAddrsList(value: Array<string>): void;
-  clearAddrsList(): void;
-  addAddrs(value: string, index?: number): void;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DialPeerRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: DialPeerRequest): DialPeerRequest.AsObject;
-  static serializeBinaryToWriter(message: DialPeerRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DialPeerRequest;
-  static deserializeBinaryFromReader(message: DialPeerRequest, reader: jspb.BinaryReader): DialPeerRequest;
-}
-
-export namespace DialPeerRequest {
-  export type AsObject = {
-    addrsList: Array<string>,
-  }
-}
-
-export class DialPeerResponse extends jspb.Message {
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DialPeerResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: DialPeerResponse): DialPeerResponse.AsObject;
-  static serializeBinaryToWriter(message: DialPeerResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DialPeerResponse;
-  static deserializeBinaryFromReader(message: DialPeerResponse, reader: jspb.BinaryReader): DialPeerResponse;
-}
-
-export namespace DialPeerResponse {
-  export type AsObject = {
-  }
-}
-
 export class Info extends jspb.Message {
   getAccountId(): string;
   setAccountId(value: string): void;

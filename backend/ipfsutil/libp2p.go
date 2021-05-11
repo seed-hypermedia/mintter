@@ -2,6 +2,7 @@ package ipfsutil
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
@@ -39,21 +40,37 @@ func SetupLibp2p(
 	opts ...libp2p.Option,
 ) (host.Host, *dualdht.DHT, error) {
 	var (
-		ddht *dualdht.DHT
-		err  error
+		ddht   *dualdht.DHT
+		dhtErr = make(chan error, 1)
 	)
 
 	opts = append(opts,
 		libp2p.Identity(hostKey),
 		libp2p.ListenAddrs(listenAddrs...),
 		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
-			ddht, err = newDHT(ctx, h, dsDHT)
+			d, err := newDHT(ctx, h, dsDHT)
+			if err != nil {
+				dhtErr <- err
+				return nil, fmt.Errorf("failed to create DHT: %w", err)
+			}
+			ddht = d
+			dhtErr <- nil
+
 			return ddht, err
 		}),
 	)
 
-	h, err := libp2p.New(ctx, opts...)
+	var cfg libp2p.Config
+	if err := cfg.Apply(append(opts, libp2p.FallbackDefaults)...); err != nil {
+		return nil, nil, fmt.Errorf("failed to apply libp2p options: %w", err)
+	}
+
+	h, err := cfg.NewNode(ctx)
 	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create libp2p node: %w", err)
+	}
+
+	if err := <-dhtErr; err != nil {
 		return nil, nil, err
 	}
 
@@ -77,6 +94,7 @@ func newDHT(ctx context.Context, h host.Host, ds datastore.Batching) (*dualdht.D
 // RelayOpts set sane options for enabling circuit-relay.
 func RelayOpts(cfg *config.Config) error {
 	return cfg.Apply(
+		libp2p.EnableRelay(),
 		libp2p.NATPortMap(),
 		libp2p.EnableAutoRelay(),
 		libp2p.EnableNATService(),

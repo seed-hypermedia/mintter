@@ -8,6 +8,8 @@ option go_package = "mintter/api/go/networking/v1alpha;network";
 service Networking {
   rpc StartAccountDiscovery(StartAccountDiscoveryRequest) returns (StartAccountDiscoveryResponse);
 
+  rpc DialPeer(DialPeerRequest) returns (DialPeerResponse);
+
   rpc GetPeerAddrs(GetPeerAddrsRequest) returns (GetPeerAddrsResponse);
 }
 
@@ -16,6 +18,14 @@ message StartAccountDiscoveryRequest {
 }
 
 message StartAccountDiscoveryResponse {}
+
+message DialPeerRequest {
+  // A list of multiaddrs for the same peer ID to attempt p2p connection.
+  // For example `/ip4/10.0.0.1/tcp/55000/p2p/QmDeadBeef`.
+  repeated string addrs = 1;
+}
+
+message DialPeerResponse {}
 
 message GetPeerAddrsRequest {
   // CID-encoded Peer ID.

@@ -8,10 +8,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"mintter/backend/cleanup"
 	"strings"
 	"sync"
 	"time"
+
+	"mintter/backend/cleanup"
 
 	"github.com/ipfs/go-bitswap"
 	"github.com/ipfs/go-bitswap/network"
@@ -47,6 +48,8 @@ type Config struct {
 	Offline bool
 	// ReprovideInterval sets how often to reprovide records to the DHT
 	ReprovideInterval time.Duration
+
+	Blockstore blockstore.Blockstore
 }
 
 func (cfg *Config) setDefaults() {
@@ -99,12 +102,12 @@ func New(
 
 	// Setup block store.
 	var bs blockstore.Blockstore
-	{
-		bs = blockstore.NewBlockstore(store)
-		bs = blockstore.NewIdStore(bs)
-		bs, err = blockstore.CachedBlockstore(ctx, bs, blockstore.DefaultCacheOpts())
+	if cfg.Blockstore != nil {
+		bs = cfg.Blockstore
+	} else {
+		bs, err = NewBlockstore(store)
 		if err != nil {
-			return nil, fmt.Errorf("failed to setup block store: %w", err)
+			return nil, fmt.Errorf("failed to setup blockstore: %w", err)
 		}
 	}
 
@@ -318,4 +321,13 @@ func NewBlock(data []byte) (blocks.Block, error) {
 	}
 
 	return blocks.NewBlockWithCid(data, id)
+}
+
+// NewBlockstore creates a new Block Store from a given datastore.
+// It adds caching and bloom-filters, in addition to support for ID hashed blocks.
+func NewBlockstore(store datastore.Batching) (blockstore.Blockstore, error) {
+	var bs blockstore.Blockstore
+	bs = blockstore.NewBlockstore(store)
+	bs = blockstore.NewIdStore(bs)
+	return blockstore.CachedBlockstore(context.Background(), bs, blockstore.DefaultCacheOpts())
 }
