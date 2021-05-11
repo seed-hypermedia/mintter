@@ -1,53 +1,5 @@
 module.exports = {
   theme: {
-    typography: (theme) => ({
-      default: {
-        css: {
-          fontSize: '1.125rem',
-          lineHeight: 1.6,
-          color: theme('colors.gray.900'),
-          marginTop: 0,
-          marginBottom: 0,
-          strong: {
-            color: theme('colors.gray.900'),
-          },
-          a: {
-            color: theme('colors.blue.700'),
-          },
-          p: {
-            marginTop: 0,
-            marginBottom: 0,
-          },
-        },
-      },
-      xl: {
-        css: {
-          lineHeight: 1.6,
-          p: {
-            marginTop: 0,
-            marginBottom: 0,
-          },
-        },
-      },
-      '2xl': {
-        lineHeight: 1.6,
-        css: {
-          p: {
-            marginTop: 0,
-            marginBottom: 0,
-          },
-        },
-      },
-      '3xl': {
-        lineHeight: 1.6,
-        css: {
-          p: {
-            marginTop: 0,
-            marginBottom: 0,
-          },
-        },
-      },
-    }),
     screens: {
       sm: '640px',
       md: '768px',
@@ -109,7 +61,6 @@ module.exports = {
     'visited',
     'disabled',
   ],
-  plugins: [require('@tailwindcss/typography')],
   purge: {
     mode: 'all',
     content: [`./src/**/*.tsx`],

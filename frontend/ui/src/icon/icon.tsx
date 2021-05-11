@@ -52,12 +52,15 @@ const Svg = styled('svg', {
       danger: {
         color: '$danger-default',
       },
+      inherit: {
+        color: 'inherit'
+      }
     },
   },
 
   defaultVariants: {
     size: '2',
-    color: 'default',
+    color: 'inherit',
   },
 })
 
@@ -105,6 +108,8 @@ export const icons = {
   Italic,
   Paragraph,
   Heading,
+  Underline,
+  Strikethrough
 }
 
 export function Icon({
@@ -894,6 +899,38 @@ function Heading(props: any) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </Svg>
+  )
+}
+
+function Underline(props: any) {
+  return (
+    <Svg width={24} height={24} viewBox="0 0 15 15" {...props}>
+      <path
+        d="M5.00001 2.75C5.00001 2.47386 4.77615 2.25 4.50001 2.25C4.22387 2.25 4.00001 2.47386 4.00001 2.75V8.05C4.00001 9.983 5.56702 11.55 7.50001 11.55C9.43301 11.55 11 9.983 11 8.05V2.75C11 2.47386 10.7762 2.25 10.5 2.25C10.2239 2.25 10 2.47386 10 2.75V8.05C10 9.43071 8.88072 10.55 7.50001 10.55C6.1193 10.55 5.00001 9.43071 5.00001 8.05V2.75ZM3.49998 13.1001C3.27906 13.1001 3.09998 13.2791 3.09998 13.5001C3.09998 13.721 3.27906 13.9001 3.49998 13.9001H11.5C11.7209 13.9001 11.9 13.721 11.9 13.5001C11.9 13.2791 11.7209 13.1001 11.5 13.1001H3.49998Z"
+        fill="currentColor"
+        fillRule="evenodd"
+        clipRule="evenodd"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  )
+}
+
+
+
+function Strikethrough(props: any) {
+  return (
+    <Svg width={24} height={24} viewBox="0 0 15 15" {...props}>
+      <path d="M5.00003 3.25C5.00003 2.97386 4.77617 2.75 4.50003 2.75C4.22389 2.75 4.00003 2.97386 4.00003 3.25V7.10003H2.49998C2.27906 7.10003 2.09998 7.27912 2.09998 7.50003C2.09998 7.72094 2.27906 7.90003 2.49998 7.90003H4.00003V8.55C4.00003 10.483 5.56703 12.05 7.50003 12.05C9.43303 12.05 11 10.483 11 8.55V7.90003H12.5C12.7209 7.90003 12.9 7.72094 12.9 7.50003C12.9 7.27912 12.7209 7.10003 12.5 7.10003H11V3.25C11 2.97386 10.7762 2.75 10.5 2.75C10.2239 2.75 10 2.97386 10 3.25V7.10003H5.00003V3.25ZM5.00003 7.90003V8.55C5.00003 9.93071 6.11932 11.05 7.50003 11.05C8.88074 11.05 10 9.93071 10 8.55V7.90003H5.00003Z"
+      fill="currentColor"
+      fillRule="evenodd"
+      clipRule="evenodd"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round" />
     </Svg>
   )
 }

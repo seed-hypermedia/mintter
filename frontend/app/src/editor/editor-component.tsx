@@ -33,6 +33,7 @@ import {
   strikethroughOptions,
   strikethroughAutoformatRules,
 } from './strikethrough-plugin';
+import { Toolbar } from './toolbar';
 
 const initialValue = [
   createElement('', {
@@ -66,6 +67,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
   return (
     <>
       <SlatePlugins
+        id="editor"
         editableProps={{
           placeholder: 'start here...',
         }}
@@ -118,7 +120,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
         }}
         initialValue={initialValue}
         onChange={(nv) => setV(nv as any)}
-      />
+      ><Toolbar /></SlatePlugins>
       <pre>{JSON.stringify(v, null, 3)}</pre>
     </>
   );
