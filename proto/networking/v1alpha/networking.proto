@@ -9,6 +9,7 @@ service Networking {
   // Establishes a direct connection with a given peer explicitly.
   // rpc DialPeer(DialPeerRequest) returns (DialPeerResponse);
 
+  // Lookup networking addresses that a peer listens on.
   rpc GetPeerAddrs(GetPeerAddrsRequest) returns (GetPeerAddrsResponse);
 }
 
@@ -21,7 +22,7 @@ service Networking {
 // message DialPeerResponse {}
 
 message GetPeerAddrsRequest {
-  // CID-encoded Peer ID.
+  // Required. CID-encoded Peer ID.
   string peer_id = 1;
 }
 

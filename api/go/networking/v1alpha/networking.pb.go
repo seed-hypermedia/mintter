@@ -29,7 +29,7 @@ type GetPeerAddrsRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// CID-encoded Peer ID.
+	// Required. CID-encoded Peer ID.
 	PeerId string `protobuf:"bytes,1,opt,name=peer_id,json=peerId,proto3" json:"peer_id,omitempty"`
 }
 
@@ -238,6 +238,7 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type NetworkingClient interface {
+	// Lookup networking addresses that a peer listens on.
 	GetPeerAddrs(ctx context.Context, in *GetPeerAddrsRequest, opts ...grpc.CallOption) (*GetPeerAddrsResponse, error)
 }
 
@@ -260,6 +261,7 @@ func (c *networkingClient) GetPeerAddrs(ctx context.Context, in *GetPeerAddrsReq
 
 // NetworkingServer is the server API for Networking service.
 type NetworkingServer interface {
+	// Lookup networking addresses that a peer listens on.
 	GetPeerAddrs(context.Context, *GetPeerAddrsRequest) (*GetPeerAddrsResponse, error)
 }
 
