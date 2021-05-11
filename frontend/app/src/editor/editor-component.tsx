@@ -36,14 +36,24 @@ import {
 } from './strikethrough-plugin';
 import { Toolbar } from './toolbar';
 import { underlineOptions, underlineAutoformatRules } from './underline-plugin';
+import { createQuotePlugin, quoteOptions } from './quote-plugin';
 
 const initialValue = [
-  createElement('', {
-    mark: 'bold',
+  {
     id: createId(),
     depth: 0,
     type: ELEMENT_BLOCK,
-  }),
+    children: [
+      {
+        text: 'Hello world ',
+      },
+      {
+        type: 'quote',
+        id: `${createId()}/${createId()}`,
+        children: [{ text: '' }],
+      },
+    ],
+  },
 ];
 
 function rulesWithCustomDefaultType(
@@ -108,6 +118,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           createStrikethroughPlugin(),
           createCodePlugin(),
           createUnderlinePlugin(),
+          createQuotePlugin(),
         ]}
         options={{
           ...blockOptions,
@@ -115,11 +126,14 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           ...italicOptions,
           ...codeOptions,
           ...strikethroughOptions,
-          ...underlineOptions
+          ...underlineOptions,
+          ...quoteOptions,
         }}
         initialValue={initialValue}
         onChange={(nv) => setV(nv as any)}
-      ><Toolbar /></SlatePlugins>
+      >
+        <Toolbar />
+      </SlatePlugins>
       <pre>{JSON.stringify(v, null, 3)}</pre>
     </>
   );
