@@ -3,6 +3,7 @@ package backend
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"mintter/backend/config"
@@ -52,6 +53,11 @@ type p2pNode struct {
 	host host.Host
 	dht  *dual.DHT
 	ps   *pubsub.PubSub
+
+	mu sync.Mutex
+	// We only want one subscription per account. Fan-out messages internally if multiple
+	// subscribers are interested in the message.
+	subs map[AccountID]*subscription
 }
 
 func newP2PNode(cfg config.P2P, repo *repo, log *zap.Logger, ds datastore.Batching) (*p2pNode, error) {
@@ -67,6 +73,7 @@ func newP2PNode(cfg config.P2P, repo *repo, log *zap.Logger, ds datastore.Batchi
 		log:   log,
 		bs:    bs,
 		ready: make(chan struct{}),
+		subs:  make(map[AccountID]*subscription),
 	}, nil
 }
 
@@ -168,9 +175,14 @@ func (n *p2pNode) Run(ctx context.Context) (err error) {
 		n.log.Info("BootstrapEnded", zap.Error(err))
 	}
 
-	// n.ps = ps
-	// n.host = h
-	// n.ipfs = ipfsnode
+	acc, err := n.repo.Account()
+	if err != nil {
+		return fmt.Errorf("failed to get account: %w", err)
+	}
+	// Subscribe to our own account.
+	if _, err := n.subscribe(acc.id); err != nil {
+		return fmt.Errorf("failed to subscribe to our own account: %w", err)
+	}
 
 	close(n.ready)
 
@@ -179,6 +191,8 @@ func (n *p2pNode) Run(ctx context.Context) (err error) {
 
 	<-ctx.Done()
 	n.log.Info("P2PShutdownStarted")
+
+	n.closePubSub()
 
 	return g.Wait()
 }
@@ -253,4 +267,53 @@ func (n *p2pNode) Addrs() []multiaddr.Multiaddr {
 	}
 
 	return mas
+}
+
+func (n *p2pNode) closePubSub() {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	for aid, s := range n.subs {
+		n.log.Debug("ClosedSubscription", zap.String("accountID", aid.String()), zap.Error(s.Close()))
+	}
+}
+
+func (n *p2pNode) subscribe(aid AccountID) (*subscription, error) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	sub := n.subs[aid]
+	if sub != nil {
+		return sub, nil
+	}
+
+	topicName := aid.String() // TODO: prefix with something related to mintter.
+	t, err := n.ps.Join(topicName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to join topic %s: %w", topicName, err)
+	}
+
+	s, err := t.Subscribe()
+	if err != nil {
+		return nil, fmt.Errorf("")
+	}
+
+	sub = &subscription{
+		T: t,
+		S: s,
+	}
+
+	n.subs[aid] = sub
+
+	return sub, nil
+}
+
+type subscription struct {
+	T *pubsub.Topic
+	S *pubsub.Subscription
+}
+
+// Close closes the underlying subscription and topic.
+func (s *subscription) Close() error {
+	s.S.Cancel()
+	return s.T.Close()
 }
