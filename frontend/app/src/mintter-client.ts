@@ -241,6 +241,11 @@ export async function getAccount(id: string = ''): Promise<accounts.Account> {
   return result;
 }
 
+export async function getInfo() {
+  const request = daemon.GetInfoRequest()
+  return await daemonClient().getInfo(request)
+}
+
 // export function getAccount(id: string = ''): Promise<accounts.Account> {
 //   const profile = makeProto(new accounts.Profile(), buildProfile());
 
