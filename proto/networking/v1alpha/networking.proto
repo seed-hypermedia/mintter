@@ -2,30 +2,23 @@ syntax = "proto3";
 
 package com.mintter.networking.v1alpha;
 
-option go_package = "mintter/api/go/networking/v1alpha;network";
+option go_package = "mintter/api/go/networking/v1alpha;networking";
 
 // Networking API service of the Mintter daemon.
 service Networking {
-  rpc StartAccountDiscovery(StartAccountDiscoveryRequest) returns (StartAccountDiscoveryResponse);
-
-  rpc DialPeer(DialPeerRequest) returns (DialPeerResponse);
+  // Establishes a direct connection with a given peer explicitly.
+  // rpc DialPeer(DialPeerRequest) returns (DialPeerResponse);
 
   rpc GetPeerAddrs(GetPeerAddrsRequest) returns (GetPeerAddrsResponse);
 }
 
-message StartAccountDiscoveryRequest {
-  string account_id = 1;
-}
+// message DialPeerRequest {
+//   // A list of multiaddrs for the same peer ID to attempt p2p connection.
+//   // For example `/ip4/10.0.0.1/tcp/55000/p2p/QmDeadBeef`.
+//   repeated string addrs = 1;
+// }
 
-message StartAccountDiscoveryResponse {}
-
-message DialPeerRequest {
-  // A list of multiaddrs for the same peer ID to attempt p2p connection.
-  // For example `/ip4/10.0.0.1/tcp/55000/p2p/QmDeadBeef`.
-  repeated string addrs = 1;
-}
-
-message DialPeerResponse {}
+// message DialPeerResponse {}
 
 message GetPeerAddrsRequest {
   // CID-encoded Peer ID.

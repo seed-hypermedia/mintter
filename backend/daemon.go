@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path/filepath"
 
+	networking "mintter/api/go/networking/v1alpha"
 	"mintter/backend/badger3ds"
 	"mintter/backend/badgergraph"
 	"mintter/backend/config"
@@ -81,10 +82,12 @@ func (d *Daemon) Run(ctx context.Context) (err error) {
 
 	d.backend = newBackend(repo, d.p2p, patches)
 
-	srv := grpc.NewServer()
+	netSrv := newNetworkingServer(d.p2p)
 
+	srv := grpc.NewServer()
 	d.backend.RegisterGRPCServices(srv)
 	reflection.Register(srv)
+	networking.RegisterNetworkingServer(srv, netSrv)
 
 	d.lis, err = net.Listen("tcp", ":"+cfg.GRPCPort)
 	if err != nil {

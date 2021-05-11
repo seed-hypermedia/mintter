@@ -311,5 +311,85 @@ proto.com.mintter.accounts.v1alpha.AccountsPromiseClient.prototype.listAccounts 
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryRequest,
+ *   !proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryResponse>}
+ */
+const methodDescriptor_Accounts_StartAccountDiscovery = new grpc.web.MethodDescriptor(
+  '/com.mintter.accounts.v1alpha.Accounts/StartAccountDiscovery',
+  grpc.web.MethodType.UNARY,
+  proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryRequest,
+  proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryResponse,
+  /**
+   * @param {!proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryRequest,
+ *   !proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryResponse>}
+ */
+const methodInfo_Accounts_StartAccountDiscovery = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryResponse,
+  /**
+   * @param {!proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.mintter.accounts.v1alpha.AccountsClient.prototype.startAccountDiscovery =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.mintter.accounts.v1alpha.Accounts/StartAccountDiscovery',
+      request,
+      metadata || {},
+      methodDescriptor_Accounts_StartAccountDiscovery,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.mintter.accounts.v1alpha.StartAccountDiscoveryResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.com.mintter.accounts.v1alpha.AccountsPromiseClient.prototype.startAccountDiscovery =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.mintter.accounts.v1alpha.Accounts/StartAccountDiscovery',
+      request,
+      metadata || {},
+      methodDescriptor_Accounts_StartAccountDiscovery);
+};
+
+
 module.exports = proto.com.mintter.accounts.v1alpha;
 

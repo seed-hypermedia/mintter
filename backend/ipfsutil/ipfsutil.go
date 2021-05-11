@@ -37,6 +37,7 @@ import (
 	provider "github.com/ipfs/go-ipfs-provider"
 	format "github.com/ipfs/go-ipld-format"
 	ufsio "github.com/ipfs/go-unixfs/io"
+	"github.com/multiformats/go-multiaddr"
 	multihash "github.com/multiformats/go-multihash"
 )
 
@@ -330,4 +331,25 @@ func NewBlockstore(store datastore.Batching) (blockstore.Blockstore, error) {
 	bs = blockstore.NewBlockstore(store)
 	bs = blockstore.NewIdStore(bs)
 	return blockstore.CachedBlockstore(context.Background(), bs, blockstore.DefaultCacheOpts())
+}
+
+// StringAddrs convers a slice of multiaddrs into their string representation.
+func StringAddrs(mas []multiaddr.Multiaddr) []string {
+	out := make([]string, len(mas))
+
+	for i, ma := range mas {
+		out[i] = ma.String()
+	}
+
+	return out
+}
+
+// PeerIDFromCIDString converts a string-cid into Peer ID.
+func PeerIDFromCIDString(s string) (peer.ID, error) {
+	c, err := cid.Decode(s)
+	if err != nil {
+		return "", err
+	}
+
+	return peer.FromCid(c)
 }

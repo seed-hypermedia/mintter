@@ -183,6 +183,91 @@ func (x *ListAccountsResponse) GetNextPageToken() string {
 	return ""
 }
 
+type StartAccountDiscoveryRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	AccountId string `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+}
+
+func (x *StartAccountDiscoveryRequest) Reset() {
+	*x = StartAccountDiscoveryRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accounts_v1alpha_accounts_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *StartAccountDiscoveryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StartAccountDiscoveryRequest) ProtoMessage() {}
+
+func (x *StartAccountDiscoveryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_accounts_v1alpha_accounts_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StartAccountDiscoveryRequest.ProtoReflect.Descriptor instead.
+func (*StartAccountDiscoveryRequest) Descriptor() ([]byte, []int) {
+	return file_accounts_v1alpha_accounts_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *StartAccountDiscoveryRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+type StartAccountDiscoveryResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *StartAccountDiscoveryResponse) Reset() {
+	*x = StartAccountDiscoveryResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_accounts_v1alpha_accounts_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *StartAccountDiscoveryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StartAccountDiscoveryResponse) ProtoMessage() {}
+
+func (x *StartAccountDiscoveryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_accounts_v1alpha_accounts_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StartAccountDiscoveryResponse.ProtoReflect.Descriptor instead.
+func (*StartAccountDiscoveryResponse) Descriptor() ([]byte, []int) {
+	return file_accounts_v1alpha_accounts_proto_rawDescGZIP(), []int{4}
+}
+
 type Account struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -199,7 +284,7 @@ type Account struct {
 func (x *Account) Reset() {
 	*x = Account{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_accounts_v1alpha_accounts_proto_msgTypes[3]
+		mi := &file_accounts_v1alpha_accounts_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -212,7 +297,7 @@ func (x *Account) String() string {
 func (*Account) ProtoMessage() {}
 
 func (x *Account) ProtoReflect() protoreflect.Message {
-	mi := &file_accounts_v1alpha_accounts_proto_msgTypes[3]
+	mi := &file_accounts_v1alpha_accounts_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -225,7 +310,7 @@ func (x *Account) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Account.ProtoReflect.Descriptor instead.
 func (*Account) Descriptor() ([]byte, []int) {
-	return file_accounts_v1alpha_accounts_proto_rawDescGZIP(), []int{3}
+	return file_accounts_v1alpha_accounts_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Account) GetId() string {
@@ -262,7 +347,7 @@ type Profile struct {
 func (x *Profile) Reset() {
 	*x = Profile{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_accounts_v1alpha_accounts_proto_msgTypes[4]
+		mi := &file_accounts_v1alpha_accounts_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -275,7 +360,7 @@ func (x *Profile) String() string {
 func (*Profile) ProtoMessage() {}
 
 func (x *Profile) ProtoReflect() protoreflect.Message {
-	mi := &file_accounts_v1alpha_accounts_proto_msgTypes[4]
+	mi := &file_accounts_v1alpha_accounts_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -288,7 +373,7 @@ func (x *Profile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Profile.ProtoReflect.Descriptor instead.
 func (*Profile) Descriptor() ([]byte, []int) {
-	return file_accounts_v1alpha_accounts_proto_rawDescGZIP(), []int{4}
+	return file_accounts_v1alpha_accounts_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Profile) GetAlias() string {
@@ -326,7 +411,7 @@ type Device struct {
 func (x *Device) Reset() {
 	*x = Device{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_accounts_v1alpha_accounts_proto_msgTypes[5]
+		mi := &file_accounts_v1alpha_accounts_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -339,7 +424,7 @@ func (x *Device) String() string {
 func (*Device) ProtoMessage() {}
 
 func (x *Device) ProtoReflect() protoreflect.Message {
-	mi := &file_accounts_v1alpha_accounts_proto_msgTypes[5]
+	mi := &file_accounts_v1alpha_accounts_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -352,7 +437,7 @@ func (x *Device) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Device.ProtoReflect.Descriptor instead.
 func (*Device) Descriptor() ([]byte, []int) {
-	return file_accounts_v1alpha_accounts_proto_rawDescGZIP(), []int{5}
+	return file_accounts_v1alpha_accounts_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Device) GetPeerId() string {
@@ -380,7 +465,7 @@ type DeviceRegistered struct {
 func (x *DeviceRegistered) Reset() {
 	*x = DeviceRegistered{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_accounts_v1alpha_accounts_proto_msgTypes[6]
+		mi := &file_accounts_v1alpha_accounts_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -393,7 +478,7 @@ func (x *DeviceRegistered) String() string {
 func (*DeviceRegistered) ProtoMessage() {}
 
 func (x *DeviceRegistered) ProtoReflect() protoreflect.Message {
-	mi := &file_accounts_v1alpha_accounts_proto_msgTypes[6]
+	mi := &file_accounts_v1alpha_accounts_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -406,7 +491,7 @@ func (x *DeviceRegistered) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeviceRegistered.ProtoReflect.Descriptor instead.
 func (*DeviceRegistered) Descriptor() ([]byte, []int) {
-	return file_accounts_v1alpha_accounts_proto_rawDescGZIP(), []int{6}
+	return file_accounts_v1alpha_accounts_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *DeviceRegistered) GetProof() []byte {
@@ -427,7 +512,7 @@ type ProfileUpdated struct {
 func (x *ProfileUpdated) Reset() {
 	*x = ProfileUpdated{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_accounts_v1alpha_accounts_proto_msgTypes[7]
+		mi := &file_accounts_v1alpha_accounts_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -440,7 +525,7 @@ func (x *ProfileUpdated) String() string {
 func (*ProfileUpdated) ProtoMessage() {}
 
 func (x *ProfileUpdated) ProtoReflect() protoreflect.Message {
-	mi := &file_accounts_v1alpha_accounts_proto_msgTypes[7]
+	mi := &file_accounts_v1alpha_accounts_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -453,7 +538,7 @@ func (x *ProfileUpdated) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProfileUpdated.ProtoReflect.Descriptor instead.
 func (*ProfileUpdated) Descriptor() ([]byte, []int) {
-	return file_accounts_v1alpha_accounts_proto_rawDescGZIP(), []int{7}
+	return file_accounts_v1alpha_accounts_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ProfileUpdated) GetProfile() *Profile {
@@ -487,7 +572,13 @@ var file_accounts_v1alpha_accounts_proto_rawDesc = []byte{
 	0x68, 0x61, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x08, 0x61, 0x63, 0x63, 0x6f,
 	0x75, 0x6e, 0x74, 0x73, 0x12, 0x26, 0x0a, 0x0f, 0x6e, 0x65, 0x78, 0x74, 0x5f, 0x70, 0x61, 0x67,
 	0x65, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x6e,
-	0x65, 0x78, 0x74, 0x50, 0x61, 0x67, 0x65, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x8a, 0x02, 0x0a,
+	0x65, 0x78, 0x74, 0x50, 0x61, 0x67, 0x65, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x3d, 0x0a, 0x1c,
+	0x53, 0x74, 0x61, 0x72, 0x74, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x44, 0x69, 0x73, 0x63,
+	0x6f, 0x76, 0x65, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a,
+	0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x09, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x64, 0x22, 0x1f, 0x0a, 0x1d, 0x53,
+	0x74, 0x61, 0x72, 0x74, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x44, 0x69, 0x73, 0x63, 0x6f,
+	0x76, 0x65, 0x72, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x8a, 0x02, 0x0a,
 	0x07, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x3f, 0x0a, 0x07, 0x70, 0x72, 0x6f, 0x66,
 	0x69, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6f, 0x6d, 0x2e,
@@ -523,7 +614,7 @@ var file_accounts_v1alpha_accounts_proto_rawDesc = []byte{
 	0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65,
 	0x72, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70,
 	0x68, 0x61, 0x2e, 0x50, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x52, 0x07, 0x70, 0x72, 0x6f, 0x66,
-	0x69, 0x6c, 0x65, 0x32, 0xc6, 0x02, 0x0a, 0x08, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73,
+	0x69, 0x6c, 0x65, 0x32, 0xd9, 0x03, 0x0a, 0x08, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73,
 	0x12, 0x64, 0x0a, 0x0a, 0x47, 0x65, 0x74, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x2f,
 	0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x61, 0x63, 0x63,
 	0x6f, 0x75, 0x6e, 0x74, 0x73, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x47, 0x65,
@@ -543,10 +634,20 @@ var file_accounts_v1alpha_accounts_proto_rawDesc = []byte{
 	0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x32, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d,
 	0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x2e,
 	0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x41, 0x63, 0x63, 0x6f,
-	0x75, 0x6e, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x2a, 0x5a, 0x28,
-	0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x67, 0x6f, 0x2f, 0x61,
-	0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x3b,
-	0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x75, 0x6e, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x90, 0x01, 0x0a,
+	0x15, 0x53, 0x74, 0x61, 0x72, 0x74, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x44, 0x69, 0x73,
+	0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x12, 0x3a, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e,
+	0x74, 0x74, 0x65, 0x72, 0x2e, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x2e, 0x76, 0x31,
+	0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x53, 0x74, 0x61, 0x72, 0x74, 0x41, 0x63, 0x63, 0x6f, 0x75,
+	0x6e, 0x74, 0x44, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x1a, 0x3b, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72,
+	0x2e, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68,
+	0x61, 0x2e, 0x53, 0x74, 0x61, 0x72, 0x74, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x44, 0x69,
+	0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42,
+	0x2a, 0x5a, 0x28, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x67,
+	0x6f, 0x2f, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70,
+	0x68, 0x61, 0x3b, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -561,37 +662,41 @@ func file_accounts_v1alpha_accounts_proto_rawDescGZIP() []byte {
 	return file_accounts_v1alpha_accounts_proto_rawDescData
 }
 
-var file_accounts_v1alpha_accounts_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_accounts_v1alpha_accounts_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_accounts_v1alpha_accounts_proto_goTypes = []interface{}{
-	(*GetAccountRequest)(nil),    // 0: com.mintter.accounts.v1alpha.GetAccountRequest
-	(*ListAccountsRequest)(nil),  // 1: com.mintter.accounts.v1alpha.ListAccountsRequest
-	(*ListAccountsResponse)(nil), // 2: com.mintter.accounts.v1alpha.ListAccountsResponse
-	(*Account)(nil),              // 3: com.mintter.accounts.v1alpha.Account
-	(*Profile)(nil),              // 4: com.mintter.accounts.v1alpha.Profile
-	(*Device)(nil),               // 5: com.mintter.accounts.v1alpha.Device
-	(*DeviceRegistered)(nil),     // 6: com.mintter.accounts.v1alpha.DeviceRegistered
-	(*ProfileUpdated)(nil),       // 7: com.mintter.accounts.v1alpha.ProfileUpdated
-	nil,                          // 8: com.mintter.accounts.v1alpha.Account.DevicesEntry
-	(*timestamp.Timestamp)(nil),  // 9: google.protobuf.Timestamp
+	(*GetAccountRequest)(nil),             // 0: com.mintter.accounts.v1alpha.GetAccountRequest
+	(*ListAccountsRequest)(nil),           // 1: com.mintter.accounts.v1alpha.ListAccountsRequest
+	(*ListAccountsResponse)(nil),          // 2: com.mintter.accounts.v1alpha.ListAccountsResponse
+	(*StartAccountDiscoveryRequest)(nil),  // 3: com.mintter.accounts.v1alpha.StartAccountDiscoveryRequest
+	(*StartAccountDiscoveryResponse)(nil), // 4: com.mintter.accounts.v1alpha.StartAccountDiscoveryResponse
+	(*Account)(nil),                       // 5: com.mintter.accounts.v1alpha.Account
+	(*Profile)(nil),                       // 6: com.mintter.accounts.v1alpha.Profile
+	(*Device)(nil),                        // 7: com.mintter.accounts.v1alpha.Device
+	(*DeviceRegistered)(nil),              // 8: com.mintter.accounts.v1alpha.DeviceRegistered
+	(*ProfileUpdated)(nil),                // 9: com.mintter.accounts.v1alpha.ProfileUpdated
+	nil,                                   // 10: com.mintter.accounts.v1alpha.Account.DevicesEntry
+	(*timestamp.Timestamp)(nil),           // 11: google.protobuf.Timestamp
 }
 var file_accounts_v1alpha_accounts_proto_depIdxs = []int32{
-	3, // 0: com.mintter.accounts.v1alpha.ListAccountsResponse.accounts:type_name -> com.mintter.accounts.v1alpha.Account
-	4, // 1: com.mintter.accounts.v1alpha.Account.profile:type_name -> com.mintter.accounts.v1alpha.Profile
-	8, // 2: com.mintter.accounts.v1alpha.Account.devices:type_name -> com.mintter.accounts.v1alpha.Account.DevicesEntry
-	9, // 3: com.mintter.accounts.v1alpha.Device.register_time:type_name -> google.protobuf.Timestamp
-	4, // 4: com.mintter.accounts.v1alpha.ProfileUpdated.profile:type_name -> com.mintter.accounts.v1alpha.Profile
-	5, // 5: com.mintter.accounts.v1alpha.Account.DevicesEntry.value:type_name -> com.mintter.accounts.v1alpha.Device
-	0, // 6: com.mintter.accounts.v1alpha.Accounts.GetAccount:input_type -> com.mintter.accounts.v1alpha.GetAccountRequest
-	4, // 7: com.mintter.accounts.v1alpha.Accounts.UpdateProfile:input_type -> com.mintter.accounts.v1alpha.Profile
-	1, // 8: com.mintter.accounts.v1alpha.Accounts.ListAccounts:input_type -> com.mintter.accounts.v1alpha.ListAccountsRequest
-	3, // 9: com.mintter.accounts.v1alpha.Accounts.GetAccount:output_type -> com.mintter.accounts.v1alpha.Account
-	3, // 10: com.mintter.accounts.v1alpha.Accounts.UpdateProfile:output_type -> com.mintter.accounts.v1alpha.Account
-	2, // 11: com.mintter.accounts.v1alpha.Accounts.ListAccounts:output_type -> com.mintter.accounts.v1alpha.ListAccountsResponse
-	9, // [9:12] is the sub-list for method output_type
-	6, // [6:9] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	5,  // 0: com.mintter.accounts.v1alpha.ListAccountsResponse.accounts:type_name -> com.mintter.accounts.v1alpha.Account
+	6,  // 1: com.mintter.accounts.v1alpha.Account.profile:type_name -> com.mintter.accounts.v1alpha.Profile
+	10, // 2: com.mintter.accounts.v1alpha.Account.devices:type_name -> com.mintter.accounts.v1alpha.Account.DevicesEntry
+	11, // 3: com.mintter.accounts.v1alpha.Device.register_time:type_name -> google.protobuf.Timestamp
+	6,  // 4: com.mintter.accounts.v1alpha.ProfileUpdated.profile:type_name -> com.mintter.accounts.v1alpha.Profile
+	7,  // 5: com.mintter.accounts.v1alpha.Account.DevicesEntry.value:type_name -> com.mintter.accounts.v1alpha.Device
+	0,  // 6: com.mintter.accounts.v1alpha.Accounts.GetAccount:input_type -> com.mintter.accounts.v1alpha.GetAccountRequest
+	6,  // 7: com.mintter.accounts.v1alpha.Accounts.UpdateProfile:input_type -> com.mintter.accounts.v1alpha.Profile
+	1,  // 8: com.mintter.accounts.v1alpha.Accounts.ListAccounts:input_type -> com.mintter.accounts.v1alpha.ListAccountsRequest
+	3,  // 9: com.mintter.accounts.v1alpha.Accounts.StartAccountDiscovery:input_type -> com.mintter.accounts.v1alpha.StartAccountDiscoveryRequest
+	5,  // 10: com.mintter.accounts.v1alpha.Accounts.GetAccount:output_type -> com.mintter.accounts.v1alpha.Account
+	5,  // 11: com.mintter.accounts.v1alpha.Accounts.UpdateProfile:output_type -> com.mintter.accounts.v1alpha.Account
+	2,  // 12: com.mintter.accounts.v1alpha.Accounts.ListAccounts:output_type -> com.mintter.accounts.v1alpha.ListAccountsResponse
+	4,  // 13: com.mintter.accounts.v1alpha.Accounts.StartAccountDiscovery:output_type -> com.mintter.accounts.v1alpha.StartAccountDiscoveryResponse
+	10, // [10:14] is the sub-list for method output_type
+	6,  // [6:10] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_accounts_v1alpha_accounts_proto_init() }
@@ -637,7 +742,7 @@ func file_accounts_v1alpha_accounts_proto_init() {
 			}
 		}
 		file_accounts_v1alpha_accounts_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Account); i {
+			switch v := v.(*StartAccountDiscoveryRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -649,7 +754,7 @@ func file_accounts_v1alpha_accounts_proto_init() {
 			}
 		}
 		file_accounts_v1alpha_accounts_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Profile); i {
+			switch v := v.(*StartAccountDiscoveryResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -661,7 +766,7 @@ func file_accounts_v1alpha_accounts_proto_init() {
 			}
 		}
 		file_accounts_v1alpha_accounts_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Device); i {
+			switch v := v.(*Account); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -673,7 +778,7 @@ func file_accounts_v1alpha_accounts_proto_init() {
 			}
 		}
 		file_accounts_v1alpha_accounts_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeviceRegistered); i {
+			switch v := v.(*Profile); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -685,6 +790,30 @@ func file_accounts_v1alpha_accounts_proto_init() {
 			}
 		}
 		file_accounts_v1alpha_accounts_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Device); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accounts_v1alpha_accounts_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeviceRegistered); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_accounts_v1alpha_accounts_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ProfileUpdated); i {
 			case 0:
 				return &v.state
@@ -703,7 +832,7 @@ func file_accounts_v1alpha_accounts_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_accounts_v1alpha_accounts_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -738,6 +867,8 @@ type AccountsClient interface {
 	// interacting with the network, or users can ask to discover specific accounts using
 	// the Networking API.
 	ListAccounts(ctx context.Context, in *ListAccountsRequest, opts ...grpc.CallOption) (*ListAccountsResponse, error)
+	// Starts looking for peers providing information about another Account ID.
+	StartAccountDiscovery(ctx context.Context, in *StartAccountDiscoveryRequest, opts ...grpc.CallOption) (*StartAccountDiscoveryResponse, error)
 }
 
 type accountsClient struct {
@@ -775,6 +906,15 @@ func (c *accountsClient) ListAccounts(ctx context.Context, in *ListAccountsReque
 	return out, nil
 }
 
+func (c *accountsClient) StartAccountDiscovery(ctx context.Context, in *StartAccountDiscoveryRequest, opts ...grpc.CallOption) (*StartAccountDiscoveryResponse, error) {
+	out := new(StartAccountDiscoveryResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.accounts.v1alpha.Accounts/StartAccountDiscovery", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountsServer is the server API for Accounts service.
 type AccountsServer interface {
 	// Lookup an Account information across the already known accounts.
@@ -786,6 +926,8 @@ type AccountsServer interface {
 	// interacting with the network, or users can ask to discover specific accounts using
 	// the Networking API.
 	ListAccounts(context.Context, *ListAccountsRequest) (*ListAccountsResponse, error)
+	// Starts looking for peers providing information about another Account ID.
+	StartAccountDiscovery(context.Context, *StartAccountDiscoveryRequest) (*StartAccountDiscoveryResponse, error)
 }
 
 // UnimplementedAccountsServer can be embedded to have forward compatible implementations.
@@ -800,6 +942,9 @@ func (*UnimplementedAccountsServer) UpdateProfile(context.Context, *Profile) (*A
 }
 func (*UnimplementedAccountsServer) ListAccounts(context.Context, *ListAccountsRequest) (*ListAccountsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAccounts not implemented")
+}
+func (*UnimplementedAccountsServer) StartAccountDiscovery(context.Context, *StartAccountDiscoveryRequest) (*StartAccountDiscoveryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartAccountDiscovery not implemented")
 }
 
 func RegisterAccountsServer(s *grpc.Server, srv AccountsServer) {
@@ -860,6 +1005,24 @@ func _Accounts_ListAccounts_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Accounts_StartAccountDiscovery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartAccountDiscoveryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountsServer).StartAccountDiscovery(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.accounts.v1alpha.Accounts/StartAccountDiscovery",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountsServer).StartAccountDiscovery(ctx, req.(*StartAccountDiscoveryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Accounts_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "com.mintter.accounts.v1alpha.Accounts",
 	HandlerType: (*AccountsServer)(nil),
@@ -875,6 +1038,10 @@ var _Accounts_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListAccounts",
 			Handler:    _Accounts_ListAccounts_Handler,
+		},
+		{
+			MethodName: "StartAccountDiscovery",
+			Handler:    _Accounts_StartAccountDiscovery_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
