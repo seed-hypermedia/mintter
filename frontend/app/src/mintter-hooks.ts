@@ -30,6 +30,25 @@ export function useAccount(accountId?: string, options = {}) {
   };
 }
 
+export function useInfo(options = {}) {
+  const infoQuery = useQuery(
+    ['GetInfo'],
+    async () => {
+      return await apiClient.getInfo();
+    },
+    options,
+  );
+
+  const data = React.useMemo(() => infoQuery.data?.toObject(), [
+    infoQuery.data,
+  ]);
+
+  return {
+    ...infoQuery,
+    data,
+  };
+}
+
 /**
  *
  * @deprecated

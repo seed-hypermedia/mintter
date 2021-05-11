@@ -4,7 +4,7 @@ import { lazily } from 'react-lazily';
 import { createPath, getPath } from '@utils/routes';
 import { AppSpinner } from '@components/app-spinner';
 import { Topbar } from '@components/topbar';
-import { useAccount, useProfile } from '@mintter/hooks';
+import { useInfo, useProfile } from '@mintter/hooks';
 import { Box } from '@mintter/ui/box';
 
 const { OnboardingPage } = lazily(() => import('@pages/onboarding'));
@@ -16,18 +16,19 @@ const Publication = lazy(() => import('./pages/publication'));
 export function AuthorNode({ path = '/' }: { path?: string }) {
   const match = useRouteMatch(path)!;
 
-  const profile = useAccount('', {
+  const info = useInfo({
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     retry: false,
   });
+  console.log("🚀 ~ file: author-node.tsx ~ line 25 ~ AuthorNode ~ info", info)
 
-  if (profile.isLoading) {
+  if (info.isLoading) {
     return <AppSpinner isFullScreen />;
   }
 
-  if (profile.isError || (profile.isSuccess && !profile.data)) {
+  if (info.isError || (info.isSuccess && !info.data)) {
     return (
       <Switch>
         <Route exact path={createPath(match, 'welcome')}>
@@ -47,7 +48,7 @@ export function AuthorNode({ path = '/' }: { path?: string }) {
     );
   }
 
-  if (profile.isSuccess && profile.data) {
+  if (info.isSuccess && info.data) {
     return (
       <Box
         css={{

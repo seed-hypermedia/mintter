@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { Editor } from 'slate';
 import { useHistory, useParams } from 'react-router';
 import { useMutation } from 'react-query';
@@ -18,6 +18,7 @@ import { Separator } from '@components/separator';
 
 import { useSidePanel } from '../sidepanel';
 import { EditorComponent } from '@mintter/editor/editor-component';
+import 'show-keys'
 
 export default function EditorPage() {
   const history = useHistory();
@@ -28,7 +29,8 @@ export default function EditorPage() {
   const linkMenu = useMenuState({ loop: true, wrap: true });
   const subtitleRef = useRef<HTMLInputElement>(null);
 
-  const { title = '', subtitle = '' } = {};
+  const [title, setTitle] = useState<string>("")
+  const [subtitle, setSubtitle] = useState<string>("")
 
   // publish
   const { mutateAsync: publish } = useMutation(publishDraft);
@@ -94,7 +96,7 @@ export default function EditorPage() {
           name="title"
           placeholder="Document title"
           value={title}
-          // onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => setTitle(e.target.value)}
           rows={1}
           // TODO: Fix types
           // @ts-ignore
@@ -117,7 +119,7 @@ export default function EditorPage() {
           name="subtitle"
           placeholder="about this publication..."
           value={subtitle}
-          // onChange={(e) => setSubtitle(e.target.value)}
+          onChange={(e) => setSubtitle(e.target.value)}
           rows={1}
           // TODO: Fix types
           // @ts-ignore
