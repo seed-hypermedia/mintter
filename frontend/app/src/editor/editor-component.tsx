@@ -22,6 +22,7 @@ import {
   createItalicPlugin,
   createStrikethroughPlugin,
   createCodePlugin,
+  createUnderlinePlugin,
 } from '@udecode/slate-plugins';
 import { createId } from '@utils/create-id';
 import { createBlockPlugin, ELEMENT_BLOCK, blockOptions } from './block-plugin';
@@ -34,6 +35,7 @@ import {
   strikethroughAutoformatRules,
 } from './strikethrough-plugin';
 import { Toolbar } from './toolbar';
+import { underlineOptions, underlineAutoformatRules } from './underline-plugin';
 
 const initialValue = [
   createElement('', {
@@ -81,12 +83,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
               ...italicAutoformatRules,
               ...codeAutoformatRules,
               ...strikethroughAutoformatRules,
-              {
-                type: MARK_STRIKETHROUGH,
-                between: ['~~', '~~'],
-                mode: 'inline',
-                insertTrigger: true,
-              },
+              ...underlineAutoformatRules,
             ],
           }),
           createExitBreakPlugin({
@@ -110,6 +107,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           createItalicPlugin(),
           createStrikethroughPlugin(),
           createCodePlugin(),
+          createUnderlinePlugin(),
         ]}
         options={{
           ...blockOptions,
@@ -117,6 +115,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           ...italicOptions,
           ...codeOptions,
           ...strikethroughOptions,
+          ...underlineOptions
         }}
         initialValue={initialValue}
         onChange={(nv) => setV(nv as any)}

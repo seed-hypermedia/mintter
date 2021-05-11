@@ -21,12 +21,12 @@ export const boldAutoformatRules: AutoformatRule[] = [
     mode: 'inline',
     insertTrigger: true,
   },
-  {
-    type: MARK_BOLD,
-    between: ['__', '__'],
-    mode: 'inline',
-    insertTrigger: true,
-  },
+  // {
+  //   type: MARK_BOLD,
+  //   between: ['__', '__'],
+  //   mode: 'inline',
+  //   insertTrigger: true,
+  // },
 ];
 const styleClass = css({
   fontWeight: '$bold',
