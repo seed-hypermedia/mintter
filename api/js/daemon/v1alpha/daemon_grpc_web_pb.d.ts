@@ -3,8 +3,6 @@ import * as grpcWeb from 'grpc-web';
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
 
 import {
-  DialPeerRequest,
-  DialPeerResponse,
   GenSeedRequest,
   GenSeedResponse,
   GetInfoRequest,
@@ -38,13 +36,6 @@ export class DaemonClient {
                response: Info) => void
   ): grpcWeb.ClientReadableStream<Info>;
 
-  dialPeer(
-    request: DialPeerRequest,
-    metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.Error,
-               response: DialPeerResponse) => void
-  ): grpcWeb.ClientReadableStream<DialPeerResponse>;
-
 }
 
 export class DaemonPromiseClient {
@@ -66,11 +57,6 @@ export class DaemonPromiseClient {
     request: GetInfoRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<Info>;
-
-  dialPeer(
-    request: DialPeerRequest,
-    metadata?: grpcWeb.Metadata
-  ): Promise<DialPeerResponse>;
 
 }
 

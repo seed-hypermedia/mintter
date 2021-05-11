@@ -152,6 +152,86 @@ proto.com.mintter.networking.v1alpha.NetworkingPromiseClient.prototype.startAcco
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.mintter.networking.v1alpha.DialPeerRequest,
+ *   !proto.com.mintter.networking.v1alpha.DialPeerResponse>}
+ */
+const methodDescriptor_Networking_DialPeer = new grpc.web.MethodDescriptor(
+  '/com.mintter.networking.v1alpha.Networking/DialPeer',
+  grpc.web.MethodType.UNARY,
+  proto.com.mintter.networking.v1alpha.DialPeerRequest,
+  proto.com.mintter.networking.v1alpha.DialPeerResponse,
+  /**
+   * @param {!proto.com.mintter.networking.v1alpha.DialPeerRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.networking.v1alpha.DialPeerResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.com.mintter.networking.v1alpha.DialPeerRequest,
+ *   !proto.com.mintter.networking.v1alpha.DialPeerResponse>}
+ */
+const methodInfo_Networking_DialPeer = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.com.mintter.networking.v1alpha.DialPeerResponse,
+  /**
+   * @param {!proto.com.mintter.networking.v1alpha.DialPeerRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.mintter.networking.v1alpha.DialPeerResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.mintter.networking.v1alpha.DialPeerRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.com.mintter.networking.v1alpha.DialPeerResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.mintter.networking.v1alpha.DialPeerResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.mintter.networking.v1alpha.NetworkingClient.prototype.dialPeer =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.mintter.networking.v1alpha.Networking/DialPeer',
+      request,
+      metadata || {},
+      methodDescriptor_Networking_DialPeer,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.mintter.networking.v1alpha.DialPeerRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.mintter.networking.v1alpha.DialPeerResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.com.mintter.networking.v1alpha.NetworkingPromiseClient.prototype.dialPeer =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.mintter.networking.v1alpha.Networking/DialPeer',
+      request,
+      metadata || {},
+      methodDescriptor_Networking_DialPeer);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.com.mintter.networking.v1alpha.GetPeerAddrsRequest,
  *   !proto.com.mintter.networking.v1alpha.GetPeerAddrsResponse>}
  */

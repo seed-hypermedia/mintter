@@ -27,6 +27,7 @@ type Daemon struct {
 
 	// These can only be accessed safely after ready is closed.
 	backend *backend
+	p2p     *p2pNode
 	lis     net.Listener
 }
 
@@ -38,7 +39,7 @@ func NewDaemon(cfg config.Config) *Daemon {
 }
 
 // Run the daemon and block until ctx is canceled.
-func (d *Daemon) Run(ctx context.Context) error {
+func (d *Daemon) Run(ctx context.Context) (err error) {
 	log, err := zap.NewDevelopment(zap.WithCaller(false))
 	if err != nil {
 		return err
@@ -60,13 +61,10 @@ func (d *Daemon) Run(ctx context.Context) error {
 		log.Debug("ClosedBadgerDB", zap.Error(ds.Close()))
 	}()
 
-	p2p, err := newP2PNode(cfg.P2P, ds, repo.privKey())
+	d.p2p, err = newP2PNode(cfg.P2P, repo, log.Named("p2p"), ds)
 	if err != nil {
 		return fmt.Errorf("failed to create p2p node: %w", err)
 	}
-	defer func() {
-		log.Debug("ClosedP2PNode", zap.Error(p2p.Close()))
-	}()
 
 	db, err := badgergraph.NewDB(ds.DB, "mintter")
 	if err != nil {
@@ -76,12 +74,12 @@ func (d *Daemon) Run(ctx context.Context) error {
 		log.Debug("ClosedBadgerGraph", zap.Error(db.Close()))
 	}()
 
-	patches, err := newPatchStore(repo.Device().priv, p2p.ipfs.BlockStore(), db)
+	patches, err := newPatchStore(repo.Device().priv, d.p2p.Blockstore(), db)
 	if err != nil {
 		return fmt.Errorf("failed to create patch store: %w", err)
 	}
 
-	d.backend = newBackend(repo, p2p, patches)
+	d.backend = newBackend(repo, d.p2p, patches)
 
 	srv := grpc.NewServer()
 
@@ -105,6 +103,10 @@ func (d *Daemon) Run(ctx context.Context) error {
 	}
 
 	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		return d.p2p.Run(ctx)
+	})
 
 	g.Go(func() error {
 		err := srv.Serve(d.lis)
@@ -132,18 +134,12 @@ func (d *Daemon) Run(ctx context.Context) error {
 		return hsrv.Shutdown(context.Background())
 	})
 
-	mas, err := p2p.Addrs()
-	if err != nil {
-		return err
-	}
-
 	// TODO:
 	// add let's encrypt
 	// add frontend server
 	log.Info("DaemonStarted",
 		zap.String("grpcListener", d.lis.Addr().String()),
 		zap.String("httpListener", hlis.Addr().String()),
-		zap.Any("libp2pAddrs", mas),
 		zap.String("repoPath", cfg.RepoPath),
 		zap.String("version", Version),
 	)

@@ -8,7 +8,6 @@ import (
 
 	"github.com/ipfs/go-cid"
 	"github.com/lightningnetwork/lnd/aezeed"
-	"github.com/multiformats/go-multiaddr"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -18,24 +17,11 @@ import (
 	daemon "mintter/api/go/daemon/v1alpha"
 )
 
-type lazyP2PNode func() (*p2pNode, error)
-
-func makeLazyP2PNode(n *p2pNode, ready <-chan struct{}) lazyP2PNode {
-	return func() (*p2pNode, error) {
-		select {
-		case <-ready:
-			return n, nil
-		default:
-			return nil, fmt.Errorf("initialize the account first")
-		}
-	}
-}
-
 // backend is the glue between major pieces of Mintter application.
 type backend struct {
 	// log  *zap.Logger
 	repo  *repo
-	p2p   lazyP2PNode
+	p2p   *p2pNode
 	store *patchStore
 
 	startTime time.Time
@@ -52,14 +38,14 @@ func newBackend(r *repo, p2p *p2pNode, store *patchStore) *backend {
 	// If there's some - init p2p stuff.
 	srv := &backend{
 		repo:  r,
-		p2p:   makeLazyP2PNode(p2p, r.Ready()),
+		p2p:   p2p,
 		store: store,
 
 		startTime: time.Now().UTC(),
 
 		Accounts: &accountsServer{
 			repo:    r,
-			p2p:     makeLazyP2PNode(p2p, r.Ready()),
+			p2p:     p2p,
 			patches: store,
 		},
 	}
@@ -105,14 +91,14 @@ func (srv *backend) Register(ctx context.Context, req *daemon.RegisterRequest) (
 
 		acc, err := NewAccountFromMnemonic(m, string(req.AezeedPassphrase))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to create account from mnemonic: %w", err)
 		}
 
 		aid := cid.Cid(acc.id)
 
 		state, err := srv.store.LoadState(ctx, aid)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to load account state: %w", err)
 		}
 
 		// TODO: this can be non-empty if we have created the account previously,
@@ -179,31 +165,31 @@ func (srv *backend) GetInfo(ctx context.Context, in *daemon.GetInfoRequest) (*da
 	return resp, nil
 }
 
-func (srv *backend) DialPeer(ctx context.Context, req *daemon.DialPeerRequest) (*daemon.DialPeerResponse, error) {
-	p2p, err := srv.p2p()
-	if err != nil {
-		return nil, err
-	}
+// func (srv *backend) DialPeer(ctx context.Context, req *daemon.DialPeerRequest) (*daemon.DialPeerResponse, error) {
+// 	p2p, err := srv.p2p()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	mas := make([]multiaddr.Multiaddr, len(req.Addrs))
+// 	mas := make([]multiaddr.Multiaddr, len(req.Addrs))
 
-	for i, a := range req.Addrs {
-		ma, err := multiaddr.NewMultiaddr(a)
-		if err != nil {
-			// We allow passing plain peer IDs to attempt the connection, so when parsing fails
-			// we adapt the peer ID to be the valid multiaddr.
-			a = "/p2p/" + a
-			ma, err = multiaddr.NewMultiaddr(a)
-			if err != nil {
-				return nil, err
-			}
-		}
-		mas[i] = ma
-	}
+// 	for i, a := range req.Addrs {
+// 		ma, err := multiaddr.NewMultiaddr(a)
+// 		if err != nil {
+// 			// We allow passing plain peer IDs to attempt the connection, so when parsing fails
+// 			// we adapt the peer ID to be the valid multiaddr.
+// 			a = "/p2p/" + a
+// 			ma, err = multiaddr.NewMultiaddr(a)
+// 			if err != nil {
+// 				return nil, err
+// 			}
+// 		}
+// 		mas[i] = ma
+// 	}
 
-	if err := p2p.Connect(ctx, mas...); err != nil {
-		return nil, fmt.Errorf("failed to establish p2p connection: %w", err)
-	}
+// 	if err := p2p.Connect(ctx, mas...); err != nil {
+// 		return nil, fmt.Errorf("failed to establish p2p connection: %w", err)
+// 	}
 
-	return &daemon.DialPeerResponse{}, nil
-}
+// 	return &daemon.DialPeerResponse{}, nil
+// }
