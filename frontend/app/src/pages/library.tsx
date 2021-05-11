@@ -173,10 +173,19 @@ export default function Library() {
 
 function ProfileInfo() {
   const match = useRouteMatch();
-  const {
-    data: { profile },
-  } = useAccount();
+  const { data, isError, error, isLoading, isSuccess}= useAccount();
+  
+  if (isLoading) {
+    return <Text>loading...</Text>
+  }
 
+  if (isError) {
+    throw new Error(error)
+  }
+
+  const { profile } = data
+  console.log("🚀 ~ file: library.tsx ~ line 187 ~ ProfileInfo ~ data", data)
+  
   return profile ? (
     <Box
       css={{

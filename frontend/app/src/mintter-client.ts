@@ -242,7 +242,7 @@ export async function getAccount(id: string = ''): Promise<accounts.Account> {
 }
 
 export async function getInfo() {
-  const request = daemon.GetInfoRequest()
+  const request = new daemon.GetInfoRequest()
   return await daemonClient().getInfo(request)
 }
 
