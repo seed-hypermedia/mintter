@@ -2,6 +2,8 @@
 package cleanup
 
 import (
+	"context"
+	"errors"
 	"io"
 	"sync"
 
@@ -20,6 +22,10 @@ type Stack struct {
 	once  sync.Once
 	err   error
 	funcs []io.Closer
+
+	// IgnoreContextCanceled can be used to ignore context.Canceled errors
+	// during the shutdown process.
+	IgnoreContextCanceled bool
 }
 
 // Add closer to the cleanup stack.
@@ -40,7 +46,11 @@ func (s *Stack) Close() error {
 		// We have to close in reverse order because some later dependencies
 		// can use previous ones. This is similar to defer statement.
 		for i := len(s.funcs) - 1; i >= 0; i-- {
-			s.err = multierr.Append(s.err, s.funcs[i].Close())
+			err := s.funcs[i].Close()
+			if errors.Is(err, context.Canceled) && s.IgnoreContextCanceled {
+				continue
+			}
+			s.err = multierr.Append(s.err, err)
 		}
 
 	})

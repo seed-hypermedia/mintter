@@ -37,11 +37,7 @@ func TestDaemonEndToEnd(t *testing.T) {
 	}()
 	defer func() {
 		cancel()
-		if err := <-errc; err == context.Canceled {
-			return
-		} else {
-			require.NoError(t, <-errc)
-		}
+		require.NoError(t, <-errc)
 	}()
 
 	<-d.Ready()

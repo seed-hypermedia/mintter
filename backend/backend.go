@@ -21,7 +21,7 @@ import (
 type backend struct {
 	// log  *zap.Logger
 	repo  *repo
-	p2p   *p2pNode
+	p2p   p2pNodeFactory
 	store *patchStore
 
 	startTime time.Time
@@ -36,16 +36,19 @@ type backend struct {
 func newBackend(r *repo, p2p *p2pNode, store *patchStore) *backend {
 	// load the account state.
 	// If there's some - init p2p stuff.
+
+	p2pfn := makeP2PNodeFactory(p2p)
+
 	srv := &backend{
 		repo:  r,
-		p2p:   p2p,
+		p2p:   p2pfn,
 		store: store,
 
 		startTime: time.Now().UTC(),
 
 		Accounts: &accountsServer{
 			repo:    r,
-			p2p:     p2p,
+			p2p:     p2pfn,
 			patches: store,
 		},
 	}
