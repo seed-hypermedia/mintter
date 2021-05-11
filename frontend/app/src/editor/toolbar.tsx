@@ -38,6 +38,7 @@ const toolbarStyles = css({
   color: 'white',
   borderRadius: '$2',
   boxShadow: '$3',
+  padding: '$1',
   overflow: 'hidden',
 });
 
@@ -70,8 +71,10 @@ export function Toolbar(props) {
         >
           <Icon name="Italic" />
         </ToolbarMark>
-        <ToolbarMark type={getSlatePluginType(editor, MARK_UNDERLINE)}
-        label="Underline (⌘U)">
+        <ToolbarMark
+          type={getSlatePluginType(editor, MARK_UNDERLINE)}
+          label="Underline (⌘U)"
+        >
           <Icon name="Underline" />
         </ToolbarMark>
       </div>
@@ -79,28 +82,31 @@ export function Toolbar(props) {
   );
 }
 
+const activeClass = css({
+  backgroundColor: '$background-opposite',
+  color: '$text-opposite'
+});
+
 function ToolbarMark(props) {
   const editor = useStoreEditorState(useEventEditorId('focus'));
 
   const active = useMemo(
     () => !!editor?.selection && isMarkActive(editor, props.type),
-    [editor?.selection, props.type],
+    [editor?.selection, props],
   );
 
   return (
     <Tooltip content={props.label}>
       <Button
+        className={active ? activeClass() : ''}
         onMouseDown={
           editor
             ? getPreventDefaultHandler(toggleMark, editor, props.type)
             : undefined
         }
-        variant="solid"
+        variant="ghost"
         size="1"
-        color='muted'
-        css={{
-          borderRadius: 'unset',
-        }}
+        color="muted"
         {...props}
       />
     </Tooltip>
