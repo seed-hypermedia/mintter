@@ -13,7 +13,7 @@ import (
 
 type accountsServer struct {
 	repo    *repo
-	p2p     *p2pNode
+	p2p     p2pNodeFactory
 	patches *patchStore
 }
 
