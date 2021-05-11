@@ -2,6 +2,7 @@ package backend
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -10,12 +11,14 @@ import (
 	networking "mintter/api/go/networking/v1alpha"
 	"mintter/backend/badger3ds"
 	"mintter/backend/badgergraph"
+	"mintter/backend/cleanup"
 	"mintter/backend/config"
 
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
 
@@ -47,6 +50,14 @@ func (d *Daemon) Run(ctx context.Context) (err error) {
 	}
 	defer log.Sync()
 
+	var clean cleanup.Stack
+	clean.IgnoreContextCanceled = true
+	g, ctx := errgroup.WithContext(ctx)
+	defer func() {
+		clean.AddErrFunc(g.Wait)
+		err = multierr.Append(err, clean.Close())
+	}()
+
 	cfg := d.cfg
 
 	repo, err := newRepo(cfg.RepoPath, log.Named("repo"))
@@ -58,9 +69,7 @@ func (d *Daemon) Run(ctx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("failed to create datastore: %w", err)
 	}
-	defer func() {
-		log.Debug("ClosedBadgerDB", zap.Error(ds.Close()))
-	}()
+	clean.Add(ds)
 
 	d.p2p, err = newP2PNode(cfg.P2P, repo, log.Named("p2p"), ds)
 	if err != nil {
@@ -71,9 +80,7 @@ func (d *Daemon) Run(ctx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("failed to create db: %w", err)
 	}
-	defer func() {
-		log.Debug("ClosedBadgerGraph", zap.Error(db.Close()))
-	}()
+	clean.Add(db)
 
 	patches, err := newPatchStore(repo.Device().priv, d.p2p.Blockstore(), db)
 	if err != nil {
@@ -93,19 +100,27 @@ func (d *Daemon) Run(ctx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("failed to craete GRPC litener: %w", err)
 	}
-	defer d.lis.Close()
+	clean.AddErrFunc(func() error {
+		if err := d.lis.Close(); errors.Is(err, net.ErrClosed) {
+			return nil
+		}
+		return err
+	})
 
 	hlis, err := net.Listen("tcp", ":"+cfg.HTTPPort)
 	if err != nil {
 		return fmt.Errorf("failed to create HTTP listener: %w", err)
 	}
-	defer hlis.Close()
+	clean.AddErrFunc(func() error {
+		if err := hlis.Close(); errors.Is(err, net.ErrClosed) {
+			return nil
+		}
+		return err
+	})
 
 	hsrv := &http.Server{
 		Handler: httpHandler(srv, d.backend),
 	}
-
-	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
 		return d.p2p.Run(ctx)
@@ -152,8 +167,7 @@ func (d *Daemon) Run(ctx context.Context) (err error) {
 	<-ctx.Done()
 	log.Info("GracefulShutdownStarted")
 	log.Debug("Press ctrl+c again to force quit, but it's better to wait :)")
-
-	return g.Wait()
+	return // will go back to the deferred clean.Close() at the top.
 }
 
 func (d *Daemon) Backend() *backend {
