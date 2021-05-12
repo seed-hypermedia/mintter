@@ -12,6 +12,8 @@ import { useTheme } from '@mintter/ui/theme';
 
 import { Container } from '@components/container';
 import { PeerAddrs } from '@components/peer-addrs';
+import { PeerList } from '@components/peer-list';
+
 import { Separator } from '@components/separator';
 import { useMutation } from 'react-query';
 
@@ -23,10 +25,8 @@ type ProfileInformationDataType = {
 
 export function Settings() {
   const theme = useTheme();
-
-  const {
-    data: { id: accountId, profile, deviceMap },
-  } = useAccount();
+  const account = useAccount();
+  const { data } = account;
 
   const updateProfile = useMutation(client.updateAccount);
 
@@ -40,22 +40,33 @@ export function Settings() {
   });
 
   useEffect(() => {
-    if (profile) {
-      form.setValue('alias', profile.alias);
-      form.setValue('email', profile.email);
-      form.setValue('bio', profile.bio);
+    if (data?.profile) {
+      const { alias = '', email = '', bio = '' } = data?.profile;
+      form.setValue('alias', alias);
+      form.setValue('email', email);
+      form.setValue('bio', bio);
     }
-  }, [profile]);
+  }, [data]);
 
   const onSubmit = form.handleSubmit(async (data) => {
-    console.log({data})
     await toast.promise(updateProfile.mutateAsync(data), {
       loading: 'Updating profile',
       success: 'Profile updated',
       error: 'Error updating profile',
     });
-    console.log('edit complete!')
+    console.log('edit complete!');
   });
+
+  if (account.isLoading) {
+    return <Text>loading...</Text>;
+  }
+
+  if (account.isError) {
+    console.error(account.error);
+    return <Text>error!</Text>;
+  }
+
+  const { id: accountId } = account.data;
 
   return (
     <Box
@@ -175,7 +186,15 @@ export function Settings() {
               Dark Mode
             </Text>
           </Box>
+          <Separator />
+        <Text as="h2" size="8">
+          Devices List
+        </Text>
+        <Box css={{ alignItems: 'center', display: 'flex', gap: '$3' }}>
+          <PeerList />
         </Box>
+        </Box>
+        
       </Container>
     </Box>
   );

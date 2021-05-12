@@ -22,7 +22,6 @@ export function AuthorNode({ path = '/' }: { path?: string }) {
     refetchOnWindowFocus: false,
     retry: false,
   });
-  console.log("🚀 ~ file: author-node.tsx ~ line 25 ~ AuthorNode ~ info", info)
 
   if (info.isLoading) {
     return <AppSpinner isFullScreen />;
