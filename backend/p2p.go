@@ -170,12 +170,7 @@ func (n *p2pNode) Run(ctx context.Context) (err error) {
 	g.Go(func() error {
 		return srv.Serve(lis)
 	})
-
-	g.Go(func() error {
-		<-ctx.Done()
-		srv.GracefulStop()
-		return ctx.Err()
-	})
+	defer srv.GracefulStop()
 
 	n.log.Info("P2PReady", zap.Any("addrs", n.Addrs()))
 	close(n.ready)
@@ -193,6 +188,13 @@ func (n *p2pNode) Ready() <-chan struct{} {
 // Blockstore returns the underlying IPFS Blockstore.
 func (n *p2pNode) Blockstore() blockstore.Blockstore {
 	return n.bs
+}
+
+// ListAccountPeers returns a list of peers that are known to be subscribed
+// to the topic related to the given Account ID. This may or may not include
+// the actual peers of the given account.
+func (n *p2pNode) ListAccountPeers(aid AccountID) []peer.ID {
+	return n.ps.ListPeers(accountToTopic(aid))
 }
 
 func (n *p2pNode) setupLibp2p(ctx context.Context) error {
@@ -231,6 +233,7 @@ func (n *p2pNode) setupLibp2p(ctx context.Context) error {
 }
 
 func (n *p2pNode) setupPubSub(ctx context.Context) (err error) {
+
 	var d discovery.Discovery
 	{
 		d = disc.NewRoutingDiscovery(n.dht)
@@ -362,8 +365,14 @@ func (n *p2pNode) maybeBootstrap(ctx context.Context) {
 	}
 
 	n.log.Info("BootstrapStarted")
-	err = n.ipfs.Bootstrap(ctx, peers)
-	n.log.Info("BootstrapEnded", zap.Error(err))
+	result := ipfsutil.Bootstrap(ctx, n.host, n.dht, peers)
+	n.log.Info("BootstrapEnded",
+		zap.Int("totalPeers", len(peers)),
+		zap.Uint32("failedConnections", result.NumFailedConnections),
+	)
+	if result.NumFailedConnections > 0 {
+		n.log.Debug("BootstrapErrors", zap.Error(multierr.Combine(result.ConnectErrs...)))
+	}
 }
 
 func (n *p2pNode) closePubSub() {
@@ -383,7 +392,7 @@ func (n *p2pNode) subscribe(aid AccountID) (*subscription, error) {
 		return sub, nil
 	}
 
-	topicName := aid.String() // TODO: prefix with something related to mintter.
+	topicName := accountToTopic(aid)
 	t, err := n.ps.Join(topicName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to join topic %s: %w", topicName, err)
@@ -413,4 +422,8 @@ type subscription struct {
 func (s *subscription) Close() error {
 	s.S.Cancel()
 	return s.T.Close()
+}
+
+func accountToTopic(aid AccountID) string {
+	return aid.String() // TODO: form a more sensible topic name
 }
