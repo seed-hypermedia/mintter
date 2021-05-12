@@ -140,11 +140,11 @@ func NewNode(repoPath string, s *store.Store, log *zap.Logger, cfg config.P2P) (
 	}
 
 	if !cfg.NoRelay {
-		opts = append(opts, ipfsutil.RelayOpts)
+		opts = append(opts, ipfsutil.EnableRelay)
 	}
 
 	if !cfg.NoTLS {
-		opts = append(opts, ipfsutil.SecurityOpts)
+		opts = append(opts, ipfsutil.EnableTLS)
 	}
 
 	db, err := badger.NewDatastore(filepath.Join(repoPath, "ipfslite"), &badger.DefaultOptions)
