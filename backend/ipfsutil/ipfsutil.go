@@ -132,7 +132,7 @@ func New(
 		if cfg.Offline {
 			reprov = provider.NewOfflineProvider()
 		} else {
-			queue, err := queue.NewQueue(ctx, "repro", store)
+			queue, err := queue.NewQueue(ctx, "provider-v1", store)
 			if err != nil {
 				return nil, err
 			}
