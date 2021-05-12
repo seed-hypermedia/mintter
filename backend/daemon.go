@@ -128,29 +128,20 @@ func (d *Daemon) Run(ctx context.Context) (err error) {
 
 	g.Go(func() error {
 		err := srv.Serve(d.lis)
-		log.Info("CloseGRPCServerStopped")
+		log.Info("ClosedGRPCServer")
 		return err
 	})
-	g.Go(func() error {
-		<-ctx.Done()
-		log.Info("CloseGRPCServerStarted")
-		srv.GracefulStop()
-		return nil
-	})
+	defer srv.GracefulStop()
 
 	g.Go(func() error {
 		err := hsrv.Serve(hlis)
 		if err == http.ErrServerClosed {
 			err = nil
 		}
-		log.Info("CloseHTTPServerStopped")
+		log.Info("ClosedHTTPServer")
 		return err
 	})
-	g.Go(func() error {
-		<-ctx.Done()
-		log.Info("CloseHTTPServerStarted")
-		return hsrv.Shutdown(context.Background())
-	})
+	defer hsrv.Shutdown(context.Background())
 
 	// TODO:
 	// add let's encrypt

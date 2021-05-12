@@ -3,11 +3,14 @@ package ipfsutil
 import (
 	"context"
 	"fmt"
+	"sync"
+	"sync/atomic"
 
 	"github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p/config"
 	"github.com/multiformats/go-multiaddr"
 
@@ -47,6 +50,8 @@ func SetupLibp2p(
 	opts = append(opts,
 		libp2p.Identity(hostKey),
 		libp2p.ListenAddrs(listenAddrs...),
+		// This is a weird circular dependency here. Libp2p host depends on
+		// the routing system, and routing depends on the host.
 		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
 			d, err := newDHT(ctx, h, dsDHT)
 			if err != nil {
@@ -116,4 +121,46 @@ func TransportOpts(cfg *config.Config) error {
 		libp2p.Transport(libp2pquic.NewTransport),
 		libp2p.DefaultTransports,
 	)
+}
+
+// BootstrapResult is a result of the bootstrap process.
+type BootstrapResult struct {
+	// ConnectErrs is a list of results from the
+	// Connect() call for all the peers in the input order.
+	ConnectErrs []error
+	// RoutingErr is the result of the bootstrap call
+	// from the routing system.
+	RoutingErr error
+	// NumFailedConnection is the number of total failed connect calls.
+	NumFailedConnections uint32
+}
+
+// Bootstrap is an optional helper to connect to the given peers and bootstrap
+// the Peer DHT (and Bitswap).
+// This is a best-effort function, but it blocks.
+// It's fine to pass a list where some peers will not be reachable, but caller should
+// handle the results however is required by the application.
+func Bootstrap(ctx context.Context, h host.Host, rt routing.Routing, peers []peer.AddrInfo) BootstrapResult {
+	res := BootstrapResult{
+		ConnectErrs: make([]error, len(peers)),
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(len(peers))
+
+	for i, pinfo := range peers {
+		go func(i int, pinfo peer.AddrInfo) {
+			defer wg.Done()
+			err := h.Connect(ctx, pinfo)
+			res.ConnectErrs[i] = err
+			if err != nil {
+				atomic.AddUint32(&res.NumFailedConnections, 1)
+			}
+		}(i, pinfo)
+	}
+
+	res.RoutingErr = rt.Bootstrap(ctx)
+	wg.Wait()
+
+	return res
 }
