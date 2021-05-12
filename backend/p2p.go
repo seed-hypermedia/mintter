@@ -15,11 +15,11 @@ import (
 
 	"github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
-	"github.com/libp2p/go-libp2p-core/discovery"
 	"github.com/libp2p/go-libp2p-core/event"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
+	discovery "github.com/libp2p/go-libp2p-discovery"
 	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	"github.com/libp2p/go-libp2p-peerstore/pstoreds"
 	"github.com/multiformats/go-multiaddr"
@@ -217,11 +217,11 @@ func (n *p2pNode) setupLibp2p(ctx context.Context) error {
 	}
 
 	if !n.cfg.NoRelay {
-		opts = append(opts, ipfsutil.RelayOpts)
+		opts = append(opts, ipfsutil.EnableRelay)
 	}
 
 	if !n.cfg.NoTLS {
-		opts = append(opts, ipfsutil.SecurityOpts)
+		opts = append(opts, ipfsutil.EnableTLS)
 	}
 
 	n.host, n.dht, err = ipfsutil.SetupLibp2p(ctx, n.repo.Device().priv, nil, n.ds, opts...)

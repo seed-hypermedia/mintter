@@ -20,7 +20,6 @@ import (
 	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
 	libp2pquic "github.com/libp2p/go-libp2p-quic-transport"
 	record "github.com/libp2p/go-libp2p-record"
-	secio "github.com/libp2p/go-libp2p-secio"
 	libp2ptls "github.com/libp2p/go-libp2p-tls"
 )
 
@@ -96,8 +95,8 @@ func newDHT(ctx context.Context, h host.Host, ds datastore.Batching) (*dualdht.D
 	return dualdht.New(ctx, h, dhtOpts...)
 }
 
-// RelayOpts set sane options for enabling circuit-relay.
-func RelayOpts(cfg *config.Config) error {
+// EnableRelay set sane options for enabling circuit-relay.
+func EnableRelay(cfg *config.Config) error {
 	return cfg.Apply(
 		libp2p.EnableRelay(),
 		libp2p.NATPortMap(),
@@ -107,12 +106,9 @@ func RelayOpts(cfg *config.Config) error {
 	)
 }
 
-// SecurityOpts set sane options for security.
-func SecurityOpts(cfg *config.Config) error {
-	return cfg.Apply(
-		libp2p.Security(libp2ptls.ID, libp2ptls.New),
-		libp2p.Security(secio.ID, secio.New),
-	)
+// EnableTLS set sane options for security.
+func EnableTLS(cfg *config.Config) error {
+	return cfg.Apply(libp2p.Security(libp2ptls.ID, libp2ptls.New))
 }
 
 // TransportOpts set sane options for transport.
