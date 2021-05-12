@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"sync"
 	"time"
 
 	"mintter/backend/cleanup"
@@ -183,41 +182,15 @@ func (p *Node) Close() error {
 // if less than half of the given peers could be connected, or DHT bootstrap fails.
 // It's fine to pass a list where some peers will not be reachable, but caller should
 // handle the error however is required by the application (probably just log it).
+//
+// Deprecated: Use package-level Bootstrap function.
 func (p *Node) Bootstrap(ctx context.Context, peers []peer.AddrInfo) (err error) {
-	var wg sync.WaitGroup
-	errsc := make(chan error, len(peers))
-
-	for _, pinfo := range peers {
-		wg.Add(1)
-		go func(pinfo peer.AddrInfo) {
-			defer wg.Done()
-			err := p.host.Connect(ctx, pinfo)
-			if err != nil {
-				errsc <- err
-				return
-			}
-		}(pinfo)
+	res := Bootstrap(ctx, p.host, p.dht, peers)
+	if res.RoutingErr != nil || len(peers)/2 < int(res.NumFailedConnections) {
+		return fmt.Errorf("less than half of the peers were connected")
 	}
 
-	wg.Wait()
-	close(errsc)
-
-	var (
-		numPeers = len(peers)
-		numErrs  = len(errsc)
-	)
-
-	if numPeers/2 < numErrs {
-		errs := make([]error, 0, len(errsc))
-		for e := range errsc {
-			errs = append(errs, e)
-		}
-		err = multierr.Append(err, fmt.Errorf("only connected to %d bootstrap peers out of %d: %w", numPeers-numErrs, numPeers, multierr.Combine(errs...)))
-	}
-
-	err = multierr.Append(err, p.dht.Bootstrap(ctx))
-
-	return err
+	return nil
 }
 
 // Session returns a session-based NodeGetter.
