@@ -98,6 +98,7 @@ func newP2PNode(cfg config.P2P, repo *repo, log *zap.Logger, ds datastore.Batchi
 	}, nil
 }
 
+// Run the node until ctx is canceled or something fails during the initialization.
 func (n *p2pNode) Run(ctx context.Context) (err error) {
 	select {
 	case <-ctx.Done():
@@ -345,9 +346,11 @@ func (n *p2pNode) Addrs() []multiaddr.Multiaddr {
 
 func (n *p2pNode) handleNetworkEvent(evt interface{}) error {
 	// should only return error if it's fatal, coz everything will shutdown.
-	switch evt.(type) {
+	switch e := evt.(type) {
 	case event.EvtPeerIdentificationCompleted, event.EvtPeerProtocolsUpdated:
-		fmt.Println("got event", evt)
+		// TODO: handle
+	case event.EvtLocalReachabilityChanged:
+		n.log.Debug("NodeReachabilityChanged", zap.String("reachaility", e.Reachability.String()))
 	}
 
 	return nil

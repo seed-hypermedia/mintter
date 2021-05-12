@@ -122,9 +122,12 @@ func (d *Daemon) Run(ctx context.Context) (err error) {
 		Handler: httpHandler(srv, d.backend),
 	}
 
+	// We create a separate context for P2P node to perform a more controlled shutdown.
+	p2pCtx, p2pCancel := context.WithCancel(context.Background())
 	g.Go(func() error {
-		return d.p2p.Run(ctx)
+		return d.p2p.Run(p2pCtx)
 	})
+	defer p2pCancel()
 
 	g.Go(func() error {
 		err := srv.Serve(d.lis)

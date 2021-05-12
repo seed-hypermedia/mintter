@@ -117,7 +117,7 @@ func New(
 			blocksvc = blockservice.New(bs, offline.Exchange(bs))
 		} else {
 			bswapnet := network.NewFromIpfsHost(host, dht)
-			bswap := bitswap.New(ctx, bswapnet, bs)
+			bswap := bitswap.New(ctx, bswapnet, bs, bitswap.ProvideEnabled(true))
 
 			cleanup.Add(bswap)
 
