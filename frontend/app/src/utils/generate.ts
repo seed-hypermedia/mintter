@@ -1,5 +1,5 @@
 import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
+import type accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
 import { makeProto } from './make-proto';
 import {
   focusBlockStartById,
@@ -22,9 +22,9 @@ export function buildAccount({
   profile = buildProfile(),
   devicesMap = buildDevices(),
 }: {
-  id: string;
-  profile: accounts.Profile.AsObject;
-  deviceMap: [string, accounts.Device.AsObject][];
+  id?: string;
+  profile?: accounts.Profile.AsObject;
+  devicesMap?: [string, accounts.Device.AsObject][];
 } = {}): accounts.Account.AsObject {
   return {
     id,
@@ -34,7 +34,7 @@ export function buildAccount({
 }
 
 export function buildDevices(): accounts.Device.AsObject[] {
-  return [1, 2, 3].map((id) => ({ peerId: id, registerTime: Date.now() }));
+  return ["1", "2", "3"].map((id) => ({ peerId: id} as accounts.Device.AsObject));
 }
 
 export function buildPublication(): documents.Publication {
@@ -76,7 +76,6 @@ export function buildDocument({
   doc.setSubtitle(subtitle);
   doc.setAuthor(author);
   doc.setChildrenListStyle(childrenListStyle);
-  doc.setChildrenList(buildChildrensList(blocks));
   let blocksMap = doc.getBlocksMap();
   blocks.forEach((b) => {
     blocksMap.set(b.getId(), b);
