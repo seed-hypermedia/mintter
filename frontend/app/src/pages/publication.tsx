@@ -5,7 +5,6 @@ import type documents from '@mintter/api/documents/v1alpha/documents_pb';
 import {
   useDraftsList,
   usePublication as usePublicationQuery,
-  useAuthor,
 } from '@mintter/hooks';
 import { useSidePanel } from '../sidepanel';
 import * as apiClient from '@mintter/client';
@@ -310,7 +309,6 @@ function PublicationHeader({
 }: {
   document: documents.Document.AsObject | undefined;
 }) {
-  const { data: author } = useAuthor(document?.author);
   return document ? (
     <Box
       css={{

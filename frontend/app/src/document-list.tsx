@@ -3,7 +3,6 @@ import { useMemo, useState } from 'react';
 import { useLocation, useRouteMatch } from 'react-router-dom';
 
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { useAuthor } from '@mintter/hooks';
 import { Alert } from '@mintter/ui/alert';
 import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
@@ -76,7 +75,6 @@ function ListItem({
 
   const theTitle = title ? title : 'Untitled Document';
 
-  const { data: author } = useAuthor(itemAuthor);
 
   const isDraft = useMemo(() => location.pathname.includes('drafts'), [
     location.pathname,
@@ -143,9 +141,9 @@ function ListItem({
           {/* {!isDraft && location.pathname !== '/library/my-publications' && ( */}
 
           <Avatar css={{ gridArea: 'avatar' }} />
-          <Text size="1" css={{ gridArea: 'author', alignSelf: 'center' }}>
+          {/* <Text size="1" css={{ gridArea: 'author', alignSelf: 'center' }}>
             {author?.username}
-          </Text>
+          </Text> */}
           <Box css={{ gridArea: 'price' }}>
             <Text
               size="1"

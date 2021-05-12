@@ -16,10 +16,6 @@ export function PeerList() {
   }
 
   const { devicesMap } = query.data;
-  console.log(
-    '🚀 ~ file: peer-list.tsx ~ line 18 ~ PeerList ~ devicesMap',
-    devicesMap,
-  );
   return (
     <Box>
       {devicesMap.map(

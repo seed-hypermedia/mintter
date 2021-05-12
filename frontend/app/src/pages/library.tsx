@@ -9,8 +9,6 @@ import {
 import {
   useAccount,
   useConnectionCreate,
-  useConnectionList,
-  useProfile,
 } from '@mintter/hooks';
 import { createDraft } from '@mintter/client';
 import { Link } from '../link';
@@ -56,7 +54,7 @@ export default function Library() {
       //   autoDismiss: false,
       // });
       try {
-        await connectToPeer(addressList);
+        // await connectToPeer(addressList);
         // updateToast(toast, {
         //   content: 'Connection established successfuly!',
         //   appearance: 'success',
@@ -77,7 +75,7 @@ export default function Library() {
         //   autoDismiss: false,
         // });
         try {
-          await connectToPeer(peer.split(','));
+          // await connectToPeer(peer.split(','));
 
           // updateToast(toast, {
           //   content: 'Connection established successfuly!',
@@ -180,7 +178,8 @@ function ProfileInfo() {
   }
 
   if (isError) {
-    throw new Error(error)
+    console.error('ProfileInfo error: ', error)
+    return <Text>Error...</Text>
   }
 
   const { profile } = data
@@ -223,7 +222,7 @@ function ProfileInfo() {
 const NoConnectionsBox: React.FC<{ onConnect: () => void }> = ({
   onConnect,
 }: any) => {
-  const { data = [] } = useConnectionList();
+  const data = []
   return data.length === 0 ? (
     <MessageBox.Root>
       <MessageBox.Title>Connect to Others</MessageBox.Title>
