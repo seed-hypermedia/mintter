@@ -126,7 +126,7 @@ func (srv *backend) Register(ctx context.Context, req *daemon.RegisterRequest) (
 			return nil, fmt.Errorf("failed to write account file: %w", err)
 		}
 
-		// TODO: Here we would need to public our patch on the PubSub, so that people can discover our new device,
+		// TODO: Here we would need to publish our patch on the PubSub, so that people can discover our new device,
 		// but since there would be actually no one to receive the message, it doesn't really make much sense.
 		// Plus it complicates a lot the whole process. There's a bit of a chicken-and-egg problem: we don't know
 		// which topic to publish to until we create the account, and account gets created just when we publish the patch.
