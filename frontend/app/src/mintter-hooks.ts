@@ -6,23 +6,32 @@ import {
   useInfiniteQuery,
   UseInfiniteQueryResult,
   QueryFunctionContext,
+  UseQueryOptions,
 } from 'react-query';
 import type mintter from '@mintter/api/v2/mintter_pb';
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
+import type networking from '@mintter/api/networking/v1alpha/networking_pb';
 import * as apiClient from '@mintter/client';
+import type { QueryOptions } from '@testing-library/dom';
+import type { Account } from '@mintter/api/accounts/v1alpha/accounts_pb';
+import type { Info } from '@mintter/api/daemon/v1alpha/daemon_pb';
 
-export function useAccount(accountId?: string, options = {}) {
+export function useAccount<TData = Account.AsObject>(
+  accountId?: string,
+  options: UseQueryOptions<Account.AsObject, unknown, TData> = {},
+) {
   const accountQuery = useQuery(
     accountId ? ['Account', accountId] : ['Account'],
-    async ({ queryKey }) => {
-      return await await apiClient.getAccount(queryKey[1]);
+    async ({ queryKey: [_key, id] }) => {
+      return await apiClient.getAccount(id);
     },
     options,
   );
 
-  const data = React.useMemo(() => accountQuery.data?.toObject?.(), [
-    accountQuery.data,
-  ]);
+  const data: Account.AsObject = React.useMemo(
+    () => accountQuery.data?.toObject?.(),
+    [accountQuery.data],
+  );
 
   return {
     ...accountQuery,
@@ -30,21 +39,58 @@ export function useAccount(accountId?: string, options = {}) {
   };
 }
 
-export function useInfo(options = {}) {
-  const infoQuery = useQuery(
-    ['GetInfo'],
-    async () => {
-      return await apiClient.getInfo();
-    },
-    options,
-  );
+export function useInfo<TData = Info.AsObject>(
+  options: UseQueryOptions<Info.AsObject, unknown, TData> = {},
+) {
+  const infoQuery = useQuery(['GetInfo'], apiClient.getInfo, options);
 
-  const data = React.useMemo(() => infoQuery.data?.toObject(), [
+  const data: Info.AsObject = React.useMemo(() => infoQuery.data?.toObject(), [
     infoQuery.data,
   ]);
 
   return {
     ...infoQuery,
+    data,
+  };
+}
+
+export function usePeerAddrs(
+  peerId?: string,
+  options?: UseQueryOptions<string[], unknown, TData>,
+) {
+  // query getInfo if peerId is undefined
+  // query peerAddrs if peerId is defined or if getInfo is done
+  const {
+    data: { peerId: currentPeerId },
+  } = useInfo();
+
+  const peerAddrsQuery = useQuery<
+    networking.GetPeerAddrsResponse,
+    unknown,
+    networking.GetPeerAddrsResponse
+  >(
+    ['PeerAddrs', peerId],
+    async ({ queryKey: [_key, peerId] }) => {
+      let peerIdRequest = peerId;
+      if (!peerId) {
+        peerIdRequest = currentPeerId;
+      }
+      return await apiClient.listPeerAddrs(peerIdRequest);
+    },
+    {
+      refetchInterval: 5000,
+      enabled: !!peerId || !!currentPeerId,
+      ...options,
+    },
+  );
+
+  const data: string[] = React.useMemo(
+    () => peerAddrsQuery.data?.toObject().addrsList,
+    [peerAddrsQuery.data],
+  );
+
+  return {
+    ...peerAddrsQuery,
     data,
   };
 }
@@ -92,21 +138,6 @@ export function useAuthor(accountId?: string, options = {}) {
 
   return {
     ...profileQuery,
-    data,
-  };
-}
-
-export function usePeerAddrs() {
-  const peerAddrsQuery = useQuery(['PeerAddrs'], apiClient.listPeerAddrs, {
-    refetchInterval: 5000,
-  });
-
-  const data = React.useMemo(() => peerAddrsQuery.data?.toObject().addrsList, [
-    peerAddrsQuery.data,
-  ]);
-
-  return {
-    ...peerAddrsQuery,
     data,
   };
 }
@@ -197,12 +228,6 @@ export function useConnectionCreate() {
   const { mutateAsync: connectToPeer, ...mutationOptions } = useMutation(
     (peerIds: string[]) => apiClient.connectToPeer(peerIds),
     {
-      onSuccess: () => {
-        // TODO: refetch all these without queryCache
-        // queryCache.refetchQueries(['ListConnections']);
-        // queryCache.refetchQueries(['ListSuggestedConnections']);
-        // queryCache.refetchQueries(['Documents']);
-      },
       onError: (params) => {
         throw new Error(
           `Connection to Peer error -> ${JSON.stringify(params)}`,
@@ -330,12 +355,6 @@ export function usePublication(
       return apiClient.getPublication(documentId, version);
     },
     {
-      // initialData: () =>
-      // queryCache
-      //   .getQueryData<ListDocumentsResponse>('Documents')
-      //   ?.toObject()
-      //   ?.documentsList.find(doc => doc.version === version),
-      // initialStale: true,
       refetchOnWindowFocus: false,
       ...options,
     },
@@ -371,12 +390,6 @@ export function useDraft(draftId: string, options = {}) {
       return apiClient.getDraft(draftId);
     },
     {
-      // initialData: () =>
-      // queryCache
-      //   .getQueryData<ListDocumentsResponse>('Documents')
-      //   ?.toObject()
-      //   ?.documentsList.find(doc => doc.version === version),
-      // initialStale: true,
       refetchOnWindowFocus: false,
       ...options,
     },

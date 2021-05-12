@@ -230,14 +230,10 @@ export function getProfile(profileId?: string) {
 }
 
 export async function getAccount(id: string = ''): Promise<accounts.Account> {
-  console.log('getAccount', id);
   const request = new accounts.GetAccountRequest();
   request.setId(id);
   const result = await accountsClient().getAccount(request);
-  console.log(
-    '🚀 ~ file: mintter-client.ts ~ line 224 ~ getAccount ~ result',
-    result,
-  );
+
   return result;
 }
 
@@ -293,19 +289,13 @@ export function listAccounts(
   return accountsClient().listAccounts(request);
 }
 
-export async function listPeerAddrs(peerId: string = '') {
-  // const request = new networking.GetPeerAddrsRequest()
-  // request.setPeerId(peerId)
-  // return await networkingClient().getPeerAddrs(request)
-
-  const response = new networking.GetPeerAddrsResponse();
-  response.setAddrsList([
-    faker.internet.ipv6(),
-    faker.internet.ipv6(),
-    faker.internet.ipv6(),
-  ]);
-
-  return Promise.resolve(response)
+export async function listPeerAddrs(peerId: string) {
+  if (peerId === undefined) {
+    return Promise.reject('listPeerAddrs error: `peerId (string)` is required')
+  }
+  const request = new networking.GetPeerAddrsRequest()
+  request.setPeerId(peerId)
+  return await networkingClient().getPeerAddrs(request)
 }
 
 /**
