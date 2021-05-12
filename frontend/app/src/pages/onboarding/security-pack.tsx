@@ -60,6 +60,7 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
       </OnboardingStepDescription>
       {useOwnSeed ? (
         <TextField
+        // @ts-ignore
           as="textarea"
           id="ownSeed"
           name="ownSeed"

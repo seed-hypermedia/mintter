@@ -10,17 +10,18 @@ import {
 } from 'react-query';
 import type mintter from '@mintter/api/v2/mintter_pb';
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
+import type accounts from '@mintter/api/accounts/v1alpha/accounts_pb'
 import type networking from '@mintter/api/networking/v1alpha/networking_pb';
 import * as apiClient from '@mintter/client';
 import type { QueryOptions } from '@testing-library/dom';
-import type { Account } from '@mintter/api/accounts/v1alpha/accounts_pb';
-import type { Info } from '@mintter/api/daemon/v1alpha/daemon_pb';
+import type daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
 
-export function useAccount<TData = Account.AsObject>(
+export function useAccount<TData = accounts.Account>(
   accountId?: string,
-  options: UseQueryOptions<Account.AsObject, unknown, TData> = {},
-) {
-  const accountQuery = useQuery(
+  options: UseQueryOptions<accounts.Account.AsObject, unknown, TData> = {},
+): UseQueryResult<accounts.Account.AsObject, unknown> {
+  
+  const accountQuery = useQuery<accounts.Account, unknown, accounts.Account>(
     accountId ? ['Account', accountId] : ['Account'],
     async ({ queryKey: [_key, id] }) => {
       return await apiClient.getAccount(id);
@@ -28,8 +29,8 @@ export function useAccount<TData = Account.AsObject>(
     options,
   );
 
-  const data: Account.AsObject = React.useMemo(
-    () => accountQuery.data?.toObject?.(),
+  const data: accounts.Account.AsObject = React.useMemo(
+    () => accountQuery.data?.toObject(),
     [accountQuery.data],
   );
 
@@ -39,12 +40,12 @@ export function useAccount<TData = Account.AsObject>(
   };
 }
 
-export function useInfo<TData = Info.AsObject>(
-  options: UseQueryOptions<Info.AsObject, unknown, TData> = {},
-) {
-  const infoQuery = useQuery(['GetInfo'], apiClient.getInfo, options);
+export function useInfo(
+  options?: UseQueryOptions<daemon.Info, unknown, TData> = {},
+): UseQueryResult<daemon.Info.AsObject, unknown> {
+  const infoQuery = useQuery<daemon.Info, unknown, daemon.Info>(['GetInfo'], apiClient.getInfo, options);
 
-  const data: Info.AsObject = React.useMemo(() => infoQuery.data?.toObject(), [
+  const data: daemon.Info.AsObject = React.useMemo<daemon.Info.AsObject>(() => infoQuery.data?.toObject(), [
     infoQuery.data,
   ]);
 
@@ -54,9 +55,9 @@ export function useInfo<TData = Info.AsObject>(
   };
 }
 
-export function usePeerAddrs(
+export function usePeerAddrs<TData = networking.GetPeerAddrsResponse.AsObject>(
   peerId?: string,
-  options?: UseQueryOptions<string[], unknown, TData>,
+  options?: UseQueryOptions<networking.GetPeerAddrsResponse, unknown, TData>,
 ) {
   // query getInfo if peerId is undefined
   // query peerAddrs if peerId is defined or if getInfo is done
@@ -67,7 +68,7 @@ export function usePeerAddrs(
   const peerAddrsQuery = useQuery<
     networking.GetPeerAddrsResponse,
     unknown,
-    networking.GetPeerAddrsResponse
+    TData
   >(
     ['PeerAddrs', peerId],
     async ({ queryKey: [_key, peerId] }) => {
@@ -99,100 +100,13 @@ export function usePeerAddrs(
  *
  * @deprecated
  */
-export function useProfile(options = {}) {
-  const profileQuery = useQuery(
-    ['Profile'],
-    async (_ctx) => {
-      return await (await apiClient.getProfile()).getProfile();
-    },
-    options,
-  );
-
-  const data = React.useMemo(() => profileQuery.data?.toObject?.(), [
-    profileQuery.data,
-  ]);
-
-  return {
-    ...profileQuery,
-    data,
-  };
-}
-
-/**
- *
- * @deprecated
- */
-export function useAuthor(accountId?: string, options = {}) {
-  if (!accountId) return useProfile(options);
-  const profileQuery = useQuery(
-    accountId && ['Author', accountId],
-    async ({ queryKey }) => {
-      return apiClient.getProfile(queryKey[1]);
-    },
-    options,
-  );
-
-  const data = React.useMemo(() => profileQuery.data?.toObject?.().profile, [
-    profileQuery.data,
-  ]);
-
-  return {
-    ...profileQuery,
-    data,
-  };
-}
-
-/**
- *
- * @deprecated
- */
-export function useProfileAddrs() {
-  const profileAddrsQuery = useQuery(
-    ['ProfileAddrs'],
-    async () => {
-      return await apiClient.getProfileAddress();
-    },
-    {
-      refetchInterval: 5000,
-    },
-  );
-
-  const data = React.useMemo(
-    () => profileAddrsQuery.data?.toObject().addrsList,
-    [profileAddrsQuery.data],
-  );
-
-  return {
-    ...profileAddrsQuery,
-    data,
-  };
-}
-
-/**
- *
- * @deprecated
- */
 export function useConnectionList({ page } = { page: 0 }, options = {}) {
-  const connectionsQuery = useQuery(
-    ['ListConnections'],
-    async ({ queryKey }) => {
-      return apiClient.listProfiles();
-    },
-    {
-      refetchOnWindowFocus: true,
-      refetchInterval: 5000,
-      ...options,
-    },
-  );
-
-  const data = React.useMemo(
-    () => connectionsQuery.data?.toObject().profilesList,
-    [connectionsQuery.data],
-  );
-
   return {
-    ...connectionsQuery,
-    data,
+    data: [],
+    isLoading: false,
+    isSuccess: true,
+    isError: false,
+    error: null,
   };
 }
 
@@ -201,134 +115,47 @@ export function useConnectionList({ page } = { page: 0 }, options = {}) {
  * @deprecated
  */
 export function useSuggestedConnections({ page } = { page: 0 }, options = {}) {
-  const suggestionsQuery = useQuery(
-    ['ListSuggestedConnections', page],
-    async () => {
-      return apiClient.listSuggestedProfiles();
-    },
-    {
-      refetchOnWindowFocus: true,
-      refetchInterval: 5000,
-      ...options,
-    },
-  );
-
-  const data = React.useMemo(
-    () => suggestionsQuery.data?.toObject().profilesList,
-    [suggestionsQuery.data],
-  );
-
   return {
-    ...suggestionsQuery,
-    data,
+    data: [],
+    isLoading: false,
+    isSuccess: true,
+    isError: false,
+    error: null,
   };
 }
 
 export function useConnectionCreate() {
-  const { mutateAsync: connectToPeer, ...mutationOptions } = useMutation(
-    (peerIds: string[]) => apiClient.connectToPeer(peerIds),
-    {
-      onError: (params) => {
-        throw new Error(
-          `Connection to Peer error -> ${JSON.stringify(params)}`,
-        );
-      },
-    },
-  );
-
   return {
-    connectToPeer,
-    ...mutationOptions,
+    connectToPeer: () => {},
   };
 }
 
 export function usePublicationsList(options = {}) {
-  const docsQuery = useQuery(
-    'Publications',
-    async () => await apiClient.listPublications(),
-    {
-      ...options,
-      refetchOnWindowFocus: true,
-      // refetchInterval: 5000,
-    },
-  );
-
-  const data = React.useMemo(
-    () =>
-      docsQuery.data
-        ?.getPublicationsList()
-        .map((publication: documents.Publication) => {
-          return {
-            ...publication.toObject(),
-            publication,
-          };
-        }),
-    [docsQuery.data],
-  );
-
   return {
-    ...docsQuery,
-    data,
+    data: [],
+    isLoading: false,
+    isSuccess: true,
+    error: null,
+    isError: false,
   };
 }
 
 export function useOthersPublicationsList(options = {}) {
-  const docsQuery = usePublicationsList(options);
-  const { data: profile } = useProfile();
-
-  const userId = React.useMemo(() => profile?.accountId, [profile]);
-
-  const data = React.useMemo(
-    () =>
-      docsQuery.data?.filter(({ document }) => {
-        return document?.author !== userId;
-      }),
-    [docsQuery.data, userId],
-  );
-
   return {
-    ...docsQuery,
-    data,
+    data: [],
+    isLoading: false,
+    isSuccess: true,
+    error: null,
+    isError: false,
   };
 }
 
 export function useMyPublicationsList(options = {}) {
-  const docsQuery = usePublicationsList(options);
-  const { data: profile } = useProfile();
-
-  const userId = React.useMemo(() => profile?.accountId, [profile]);
-
-  const data = React.useMemo(
-    () =>
-      docsQuery.data?.filter(({ document }) => {
-        // TODO: remove when API is ready
-        // return document?.author === userId;
-        return true;
-      }),
-    [docsQuery.data, userId],
-  );
-
-  return {
-    ...docsQuery,
-    data,
-  };
+  return { data: [], isLoading: false, isSuccess: true, error: null, isError: false };
 }
 
 export function useDraftsList(options = {}) {
-  const draftsQuery = useQuery(
-    'Drafts',
-    async () => apiClient.listDrafts(),
-    options,
-  );
-
-  const data = React.useMemo(() => draftsQuery.data?.getDocumentsList(), [
-    draftsQuery.data,
-  ]);
-
-  return {
-    ...draftsQuery,
-    data,
-  };
+  return { data: [], isLoading: false, isSuccess: true, error: null, isError: false };
 }
 
 export function usePublication(
