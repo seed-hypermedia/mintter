@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net"
 	"sync"
 	"time"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p-core/discovery"
 	"github.com/libp2p/go-libp2p-core/event"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -27,8 +29,10 @@ import (
 	"google.golang.org/grpc"
 
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
+
 	ipfsconfig "github.com/ipfs/go-ipfs-config"
 	connmgr "github.com/libp2p/go-libp2p-connmgr"
+	disc "github.com/libp2p/go-libp2p-discovery"
 	gostream "github.com/libp2p/go-libp2p-gostream"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	swarm "github.com/libp2p/go-libp2p-swarm"
@@ -119,7 +123,6 @@ func (n *p2pNode) Run(ctx context.Context) (err error) {
 		return fmt.Errorf("failed to setup libp2p event bus: %w", err)
 	}
 	n.clean.Add(evts)
-
 	g.Go(func() error {
 		for {
 			select {
@@ -137,15 +140,11 @@ func (n *p2pNode) Run(ctx context.Context) (err error) {
 		}
 	})
 
-	n.ps, err = pubsub.NewGossipSub(ctx, n.host,
-		pubsub.WithMessageSigning(false),
-		pubsub.WithStrictSignatureVerification(false),
-		// TODO: add WithReadiness, and WithDiscovery.
-		// TODO: enable WithPeerExchange for public nodes.
-	)
-	if err != nil {
+	if err := n.setupPubSub(ctx); err != nil {
 		return fmt.Errorf("failed to setup pubsub: %w", err)
 	}
+
+	n.maybeBootstrap(ctx)
 
 	lis, err := gostream.Listen(n.host, ProtocolID)
 	if err != nil {
@@ -178,23 +177,11 @@ func (n *p2pNode) Run(ctx context.Context) (err error) {
 		return ctx.Err()
 	})
 
-	n.maybeBootstrap(ctx)
-
-	acc, err := n.repo.Account()
-	if err != nil {
-		return fmt.Errorf("failed to get account: %w", err)
-	}
-	// Subscribe to our own account.
-	if _, err := n.subscribe(acc.id); err != nil {
-		return fmt.Errorf("failed to subscribe to our own account: %w", err)
-	}
-
 	n.log.Info("P2PReady", zap.Any("addrs", n.Addrs()))
 	close(n.ready)
 
 	<-ctx.Done()
 	n.log.Info("P2PShutdownStarted")
-	n.closePubSub()
 	return // will go back to the deferred clean.Close()
 }
 
@@ -239,6 +226,48 @@ func (n *p2pNode) setupLibp2p(ctx context.Context) error {
 		return err
 	}
 	n.clean.Add(n.host, n.dht)
+
+	return nil
+}
+
+func (n *p2pNode) setupPubSub(ctx context.Context) (err error) {
+	var d discovery.Discovery
+	{
+		d = disc.NewRoutingDiscovery(n.dht)
+		minBackoff, maxBackoff := time.Second*60, time.Hour
+		rng := rand.New(rand.NewSource(rand.Int63()))
+		d, err = disc.NewBackoffDiscovery(d,
+			disc.NewExponentialBackoff(minBackoff, maxBackoff, disc.FullJitter, time.Second, 5.0, 0, rng),
+		)
+		if err != nil {
+			return fmt.Errorf("failed to setup topic discovery: %w", err)
+		}
+	}
+
+	n.ps, err = pubsub.NewGossipSub(ctx, n.host,
+		pubsub.WithMessageSigning(false),
+		pubsub.WithStrictSignatureVerification(false),
+		pubsub.WithDiscovery(d),
+		// TODO: enable WithPeerExchange for public nodes.
+	)
+	if err != nil {
+		return err
+	}
+
+	acc, err := n.repo.Account()
+	if err != nil {
+		return fmt.Errorf("failed to get account: %w", err)
+	}
+
+	// Subscribe to our own account.
+	if _, err := n.subscribe(acc.id); err != nil {
+		return fmt.Errorf("failed to subscribe to our own account: %w", err)
+	}
+
+	n.clean.AddErrFunc(func() error {
+		n.closePubSub()
+		return nil
+	})
 
 	return nil
 }
