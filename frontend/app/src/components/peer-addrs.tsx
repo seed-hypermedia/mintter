@@ -4,25 +4,24 @@ import toast from 'react-hot-toast';
 
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
+import { Text } from '@mintter/ui/text';
 import { TextField } from '@mintter/ui/text-field';
 import { usePeerAddrs } from '@mintter/hooks';
 
-export function PeerAddrs() {
-  const peerAddrs = usePeerAddrs();
-  console.log(
-    '🚀 ~ file: peer-addrs.tsx ~ line 12 ~ PeerAddrs ~ peerAddrs',
-    peerAddrs,
-  );
 
+export function PeerAddrs() {
+
+  const peerAddrs = usePeerAddrs();
   const addrs = useMemo(() => peerAddrs.data, [peerAddrs.data]);
   const copyText = useMemo(() => addrs?.join(','), [addrs]);
 
   if (peerAddrs.isLoading) {
-    return <p>Loading...</p>;
+    return <Text>Loading...</Text>;
   }
 
   if (peerAddrs.isError) {
-    return <p>ERROR</p>;
+    console.log('error: ', peerAddrs.error)
+    return <Text>ERROR</Text>;
   }
 
   return (
@@ -37,6 +36,7 @@ export function PeerAddrs() {
         label="Your Mintter address"
         rows={4}
         value={addrs?.join('\n\n')}
+        css={{fontSize: '$2'}}
       />
       <CopyToClipboard
         text={copyText as string}
