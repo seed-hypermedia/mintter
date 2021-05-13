@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"runtime"
+	"time"
 
 	"mintter/backend"
 	"mintter/backend/config"
@@ -25,9 +27,27 @@ func main() {
 
 	ctx := mainutil.TrapSignals()
 
-	d := backend.NewDaemon(cfg)
-
 	mainutil.Run(func() error {
-		return d.Run(ctx)
+		log := backend.NewLogger(cfg)
+		defer log.Sync()
+
+		app := backend.NewApp(cfg, log)
+
+		if err := app.Start(ctx); err != nil {
+			return err
+		}
+
+		<-ctx.Done()
+
+		stopCtx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+		defer cancel()
+
+		return app.Stop(stopCtx)
 	})
+
+	// d := backend.NewDaemon(cfg)
+
+	// mainutil.Run(func() error {
+	// 	return d.Run(ctx)
+	// })
 }

@@ -79,7 +79,8 @@ require (
 	github.com/whyrusleeping/cbor-gen v0.0.0-20210422071115-ad5b82622e0f
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.7.0
-	go.uber.org/multierr v1.6.0
+	go.uber.org/fx v1.13.1 // indirect
+	go.uber.org/multierr v1.7.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20210506145944-38f3c27a63bf
 	golang.org/x/net v0.0.0-20210316092652-d523dce5a7f4 // indirect
