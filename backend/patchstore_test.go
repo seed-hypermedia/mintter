@@ -42,9 +42,9 @@ func TestPatchStore_AddPatchLoadState(t *testing.T) {
 
 	as := newState(oid, nil)
 	ap := []signedPatch{
-		mustNewPatch(as.NewPatch(alice.peer, alice.k, kind, []byte("alice-patch-1"))),
-		mustNewPatch(as.NewPatch(alice.peer, alice.k, kind, []byte("alice-patch-2"))),
-		mustNewPatch(as.NewPatch(alice.peer, alice.k, kind, []byte("alice-patch-3"))),
+		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.id), alice.Tester.Device.priv, kind, []byte("alice-patch-1"))),
+		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.id), alice.Tester.Device.priv, kind, []byte("alice-patch-2"))),
+		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.id), alice.Tester.Device.priv, kind, []byte("alice-patch-3"))),
 	}
 
 	require.NoError(t, alice.AddPatch(ctx, ap[0]))
@@ -133,13 +133,16 @@ func TestPatchStore_ListObjects(t *testing.T) {
 // 	}
 // }
 
-func makeTestPatchStore(t *testing.T, name string) *patchStore {
+type testPatchStore struct {
+	*patchStore
+	Tester Tester
+}
+
+func makeTestPatchStore(t *testing.T, name string) *testPatchStore {
 	t.Helper()
 
 	ds := testutil.MakeDatastore(t)
 	bs := blockstore.NewBlockstore(ds)
-
-	key := testutil.MakeProfile(t, name).Peer.PrivKey.PrivKey
 
 	db, err := badgergraph.NewDB(testutil.MakeBadgerV3(t), "!mtttest")
 	require.NoError(t, err)
@@ -147,8 +150,11 @@ func makeTestPatchStore(t *testing.T, name string) *patchStore {
 		require.NoError(t, db.Close())
 	})
 
-	store, err := newPatchStore(key, bs, db)
+	store, err := newPatchStore(bs, db)
 	require.NoError(t, err)
 
-	return store
+	return &testPatchStore{
+		patchStore: store,
+		Tester:     makeTester(t, name),
+	}
 }

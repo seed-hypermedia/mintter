@@ -13,8 +13,6 @@ import (
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
-	"github.com/libp2p/go-libp2p-core/crypto"
-	"github.com/libp2p/go-libp2p-core/peer"
 	"golang.org/x/sync/errgroup"
 
 	blocks "github.com/ipfs/go-block-format"
@@ -28,9 +26,6 @@ var nowFunc = func() time.Time {
 }
 
 type patchStore struct {
-	k    crypto.PrivKey
-	peer cid.Cid
-
 	db       *badgergraph.DB
 	bs       blockstore.Blockstore
 	exchange exchange.Interface
@@ -39,16 +34,8 @@ type patchStore struct {
 	subs map[chan<- signedPatch]struct{}
 }
 
-func newPatchStore(k crypto.PrivKey, bs blockstore.Blockstore, db *badgergraph.DB) (*patchStore, error) {
-	pid, err := peer.IDFromPrivateKey(k)
-	if err != nil {
-		return nil, err
-	}
-
+func newPatchStore(bs blockstore.Blockstore, db *badgergraph.DB) (*patchStore, error) {
 	return &patchStore{
-		k:    k,
-		peer: peer.ToCid(pid),
-
 		db:   db,
 		bs:   bs,
 		subs: make(map[chan<- signedPatch]struct{}),

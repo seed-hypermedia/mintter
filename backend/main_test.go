@@ -3,6 +3,7 @@ package backend
 import (
 	"context"
 	"testing"
+	"time"
 
 	accounts "mintter/api/go/accounts/v1alpha"
 	daemon "mintter/api/go/daemon/v1alpha"
@@ -11,6 +12,7 @@ import (
 	"mintter/backend/testutil"
 
 	"github.com/stretchr/testify/require"
+	"go.uber.org/fx"
 	"google.golang.org/grpc"
 )
 
@@ -29,20 +31,25 @@ func TestDaemonEndToEnd(t *testing.T) {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	d := NewDaemon(cfg)
-	errc := make(chan error, 1)
-	go func() {
-		errc <- d.Run(ctx)
-	}()
+	log := NewLogger(cfg)
+	defer log.Sync()
+
+	var lisc <-chan GRPCListener
+	var p2p *p2pNode
+	app := NewApp(cfg, log, fx.Populate(&lisc), fx.Populate(&p2p))
+
+	require.NoError(t, app.Start(ctx))
 	defer func() {
-		cancel()
-		require.NoError(t, <-errc)
+		stopCtx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+		defer cancel()
+		require.NoError(t, app.Stop(stopCtx))
 	}()
 
-	<-d.Ready()
+	lis := <-lisc
 
-	cc, err := grpc.Dial(d.lis.Addr().String(),
+	cc, err := grpc.Dial(lis.Addr().String(),
 		grpc.WithBlock(),
 		grpc.WithInsecure(),
 	)
@@ -92,7 +99,7 @@ func TestDaemonEndToEnd(t *testing.T) {
 	testutil.ProtoEqual(t, updatedAcc, acc, "get account after update must match")
 
 	// We have to wait for P2P node being fully initialized before exiting from the tests.
-	<-d.p2p.Ready()
+	<-p2p.Ready()
 
 	infoResp, err := dc.GetInfo(ctx, &daemon.GetInfoRequest{})
 	require.NoError(t, err)

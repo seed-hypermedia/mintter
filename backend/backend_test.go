@@ -210,7 +210,7 @@ func makeTestBackend(t *testing.T, name string, ready bool) *testBackend {
 		require.NoError(t, db.Close())
 	})
 
-	patchStore, err := newPatchStore(repo.Device().priv, bs, db)
+	patchStore, err := newPatchStore(bs, db)
 	require.NoError(t, err)
 	srv := newBackend(repo, p2p, patchStore)
 
