@@ -161,17 +161,24 @@ func RegisterGRPC(srv *grpc.Server, b *backend, n *networkingServer) {
 	reflection.Register(srv)
 }
 
-func RegisterHTTP(lc fx.Lifecycle, cfg config.Config, h http.Handler) {
-	srv := &http.Server{
-		Handler: h,
-		Addr:    ":" + cfg.HTTPPort,
-	}
+type HTTPListener net.Listener
 
+func HTTPServer(lc fx.Lifecycle, cfg config.Config) (*http.Server, <-chan HTTPListener, error) {
+	srv := &http.Server{}
+
+	lisc := make(chan HTTPListener, 1)
 	errc := make(chan error, 1)
+
 	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
+		OnStart: func(ctx context.Context) error {
+			var liscfg net.ListenConfig
+			l, err := liscfg.Listen(ctx, "tcp", ":"+cfg.HTTPPort)
+			if err != nil {
+				return err
+			}
+			lisc <- HTTPListener(l)
 			go func() {
-				errc <- srv.ListenAndServe()
+				errc <- srv.Serve(l)
 			}()
 			return nil
 		},
@@ -181,6 +188,12 @@ func RegisterHTTP(lc fx.Lifecycle, cfg config.Config, h http.Handler) {
 			return err
 		},
 	})
+
+	return srv, lisc, nil
+}
+
+func RegisterHTTP(lc fx.Lifecycle, srv *http.Server, h http.Handler) {
+	srv.Handler = h
 }
 
 func LogLifecycle(lc fx.Lifecycle, log *zap.Logger, cfg config.Config, lisc <-chan GRPCListener) {
@@ -221,6 +234,7 @@ func NewApp(cfg config.Config, log *zap.Logger, opts ...fx.Option) *fx.App {
 			Blockstore,
 			PatchStore,
 			GRPCServer,
+			HTTPServer,
 			NetworkingServer,
 			Backend,
 		),
