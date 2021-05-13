@@ -7,6 +7,7 @@ import {
   UseInfiniteQueryResult,
   QueryFunctionContext,
   UseQueryOptions,
+  useQueryClient,
 } from 'react-query';
 import type mintter from '@mintter/api/v2/mintter_pb';
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
@@ -41,7 +42,7 @@ export function useAccount<TData = accounts.Account>(
 }
 
 export function useInfo(
-  options?: UseQueryOptions<daemon.Info, unknown, TData> = {},
+  options?: UseQueryOptions<daemon.Info, unknown, daemon.Info>,
 ): UseQueryResult<daemon.Info.AsObject, unknown> {
   const infoQuery = useQuery<daemon.Info, unknown, daemon.Info>(['GetInfo'], apiClient.getInfo, options);
 
@@ -55,32 +56,36 @@ export function useInfo(
   };
 }
 
-export function usePeerAddrs<TData = networking.GetPeerAddrsResponse.AsObject>(
+export function usePeerAddrs(
   peerId?: string,
-  options?: UseQueryOptions<networking.GetPeerAddrsResponse, unknown, TData>,
+  options?: UseQueryOptions<networking.GetPeerAddrsResponse, unknown, networking.GetPeerAddrsResponse.AsObject>,
 ) {
   // query getInfo if peerId is undefined
   // query peerAddrs if peerId is defined or if getInfo is done
-  const {
-    data: { peerId: currentPeerId },
-  } = useInfo();
+  const queryClient = useQueryClient()
+
+  let requestId = null;
+  if (!peerId) {
+    const info = queryClient.getQueryData<daemon.Info.AsObject>('GetInfo')
+    console.log("🚀 ~ file: mintter-hooks.ts ~ line 68 ~ info", info)
+    requestId = info?.peerId
+  } else {
+    requestId = peerId
+  }
+  
 
   const peerAddrsQuery = useQuery<
     networking.GetPeerAddrsResponse,
     unknown,
-    TData
+    networking.GetPeerAddrsResponse
   >(
     ['PeerAddrs', peerId],
     async ({ queryKey: [_key, peerId] }) => {
-      let peerIdRequest = peerId;
-      if (!peerId) {
-        peerIdRequest = currentPeerId;
-      }
-      return await apiClient.listPeerAddrs(peerIdRequest);
+      return await apiClient.listPeerAddrs(peerId);
     },
     {
       refetchInterval: 5000,
-      enabled: !!peerId || !!currentPeerId,
+      enabled: !!requestId,
       ...options,
     },
   );
