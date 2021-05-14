@@ -2,6 +2,7 @@ package backend
 
 import (
 	"context"
+	"errors"
 	"net"
 	"net/http"
 
@@ -78,12 +79,18 @@ func registerGRPC(srv *grpc.Server, dsrv daemon.DaemonServer, asrv accounts.Acco
 	reflection.Register(srv)
 }
 
-type httpListener net.Listener
+type httpServer struct {
+	srv   *http.Server
+	lis   net.Listener
+	ready chan struct{}
+}
 
-func provideHTTPServer(lc fx.Lifecycle, cfg config.Config) (*http.Server, <-chan httpListener, error) {
-	srv := &http.Server{}
+func provideHTTPServer(lc fx.Lifecycle, cfg config.Config) (*httpServer, *http.Server, error) {
+	wrap := &httpServer{
+		srv:   &http.Server{},
+		ready: make(chan struct{}),
+	}
 
-	lisc := make(chan httpListener, 1)
 	errc := make(chan error, 1)
 
 	lc.Append(fx.Hook{
@@ -93,20 +100,25 @@ func provideHTTPServer(lc fx.Lifecycle, cfg config.Config) (*http.Server, <-chan
 			if err != nil {
 				return err
 			}
-			lisc <- httpListener(l)
+			wrap.lis = l
 			go func() {
-				errc <- srv.Serve(l)
+				close(wrap.ready)
+				err := wrap.srv.Serve(l)
+				if !errors.Is(err, http.ErrServerClosed) {
+					panic(err) // Initialization bug. Should crash.
+				}
+				errc <- err
 			}()
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			err := srv.Shutdown(ctx)
+			err := wrap.srv.Shutdown(ctx)
 			<-errc
 			return err
 		},
 	})
 
-	return srv, lisc, nil
+	return wrap, wrap.srv, nil
 }
 
 func registerHTTP(lc fx.Lifecycle, srv *http.Server, h http.Handler) {

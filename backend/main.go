@@ -11,21 +11,14 @@ import (
 	"mintter/backend/badger3ds"
 	"mintter/backend/badgergraph"
 	"mintter/backend/config"
-	"mintter/backend/ipfsutil"
 )
 
 var moduleBackend = fx.Options(
 	fx.Provide(
-		provideP2PConfig,
-		provideLibp2p,
-		ipfsutil.DefaultBootstrapPeers,
-
 		provideRepo,
-		provideDatastore,
 		provideBadger,
 		provideBadgerGraph,
 		newPatchStore,
-		ipfsutil.NewBlockstore,
 		newBackend,
 	),
 	// We have to make this trick so that we ensure proper shutdown order:
@@ -35,15 +28,13 @@ var moduleBackend = fx.Options(
 	fx.Invoke(func(b *backend) error { return nil }),
 )
 
-type Handle struct {
-}
-
 // Module assembles everything that is required to run the app using fx framework.
 func Module(cfg config.Config, log *zap.Logger) fx.Option {
 	return fx.Options(
 		fx.Supply(cfg),
 		fx.Supply(log),
 		fx.Logger(&fxLogger{log.Named("fx").Sugar()}), // Configure FX internal logging with zap.
+		moduleP2P,
 		moduleBackend,
 		moduleGRPC,
 		moduleHTTP,
@@ -60,15 +51,16 @@ func NewLogger(cfg config.Config) *zap.Logger {
 	return log
 }
 
-func logAppLifecycle(lc fx.Lifecycle, log *zap.Logger, cfg config.Config, grpc *grpcServer) {
+func logAppLifecycle(lc fx.Lifecycle, log *zap.Logger, cfg config.Config, grpc *grpcServer, srv *httpServer) {
 	log = log.Named("daemon")
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			go func() {
 				<-grpc.ready
+				<-srv.ready
 				log.Info("DaemonStarted",
 					zap.String("grpcListener", grpc.lis.Addr().String()),
-					// zap.String("httpListener", hlis.Addr().String()),
+					zap.String("httpListener", srv.lis.Addr().String()),
 					zap.String("repoPath", cfg.RepoPath),
 					zap.String("version", Version),
 				)
