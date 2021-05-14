@@ -13,7 +13,7 @@
     "prettier": "prettier --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\"",
     "format": "yarn prettier --write",
     "check-format": "yarn prettier -c",
-    "dev": "yarn workspace @mintter/app dev",
+    "dev": "yarn install && yarn ui build && yarn app dev",
     "site:test": "is-ci \"site:test:coverage\" \"site:test:watch\"",
     "site:build": "yarn workspace @mintter/site build",
     "site:export": "yarn workspace @mintter/site export",
