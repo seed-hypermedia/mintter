@@ -11,6 +11,7 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/burdiyan/go/kongcli"
 	"github.com/burdiyan/go/mainutil"
+	"go.uber.org/fx"
 )
 
 func main() {
@@ -31,7 +32,9 @@ func main() {
 		log := backend.NewLogger(cfg)
 		defer log.Sync()
 
-		app := backend.NewApp(cfg, log)
+		app := fx.New(
+			backend.Module(cfg, log),
+		)
 
 		if err := app.Start(ctx); err != nil {
 			return err

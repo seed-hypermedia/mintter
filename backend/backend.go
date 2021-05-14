@@ -7,101 +7,65 @@ import (
 	"time"
 
 	"github.com/ipfs/go-cid"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/lightningnetwork/lnd/aezeed"
-	"google.golang.org/grpc"
+	"github.com/multiformats/go-multiaddr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	accounts "mintter/api/go/accounts/v1alpha"
-	daemon "mintter/api/go/daemon/v1alpha"
+	"mintter/backend/ipfsutil"
 )
 
 // backend is the glue between major pieces of Mintter application.
 type backend struct {
 	// log  *zap.Logger
-	repo  *repo
-	p2p   p2pNodeFactory
-	store *patchStore
+	repo   *repo
+	store  *patchStore
+	libp2p *ipfsutil.LibP2PNode
 
 	startTime time.Time
 
 	// Paranoia Mode: we don't want any concurrent registration calls happening.
 	registerMu sync.Mutex
-
-	// List of API services
-	Accounts accounts.AccountsServer
 }
 
-func newBackend(r *repo, p2p *p2pNode, store *patchStore) *backend {
-	// load the account state.
-	// If there's some - init p2p stuff.
-
-	p2pfn := makeP2PNodeFactory(p2p)
-
+func newBackend(r *repo, store *patchStore, libp2p *ipfsutil.LibP2PNode) *backend {
 	srv := &backend{
-		repo:  r,
-		p2p:   p2pfn,
-		store: store,
-
+		repo:      r,
+		store:     store,
+		libp2p:    libp2p,
 		startTime: time.Now().UTC(),
-
-		Accounts: &accountsServer{
-			repo:    r,
-			p2p:     p2pfn,
-			patches: store,
-		},
 	}
 
 	return srv
 }
 
-// RegisterGRPCServices registers the underlying backend API services with a given gRPC server instance.
-// This must be called before calling Serve() on the gRPC server.
-func (srv *backend) RegisterGRPCServices(s *grpc.Server) {
-	daemon.RegisterDaemonServer(s, srv)
-	accounts.RegisterAccountsServer(s, srv.Accounts)
-}
-
-func (srv *backend) GenSeed(ctx context.Context, req *daemon.GenSeedRequest) (*daemon.GenSeedResponse, error) {
-	words, err := NewMnemonic(req.AezeedPassphrase)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := &daemon.GenSeedResponse{
-		Mnemonic: words,
-	}
-
-	return resp, nil
-}
-
-func (srv *backend) Register(ctx context.Context, req *daemon.RegisterRequest) (*daemon.RegisterResponse, error) {
+// Register an account on this node using provided mnemonic.
+func (srv *backend) Register(ctx context.Context, m aezeed.Mnemonic, passphraze string) (AccountID, error) {
 	srv.registerMu.Lock()
 	defer srv.registerMu.Unlock()
 
-	var m aezeed.Mnemonic
-
-	if len(req.Mnemonic) != aezeed.NummnemonicWords {
-		return nil, fmt.Errorf("mnemonic must be exactly %d words, got %d", aezeed.NummnemonicWords, len(req.Mnemonic))
+	if len(m) != aezeed.NummnemonicWords {
+		return AccountID{}, fmt.Errorf("mnemonic must be exactly %d words, got %d", aezeed.NummnemonicWords, len(m))
 	}
 
 	select {
 	case <-srv.repo.Ready():
-		return nil, status.Errorf(codes.FailedPrecondition, "account is already initialized")
+		return AccountID{}, status.Errorf(codes.FailedPrecondition, "account is already initialized")
 	default:
-		copy(m[:], req.Mnemonic)
-
-		acc, err := NewAccountFromMnemonic(m, string(req.AezeedPassphrase))
+		acc, err := NewAccountFromMnemonic(m, string(passphraze))
 		if err != nil {
-			return nil, fmt.Errorf("failed to create account from mnemonic: %w", err)
+			return AccountID{}, fmt.Errorf("failed to create account from mnemonic: %w", err)
 		}
 
 		aid := cid.Cid(acc.id)
 
 		state, err := srv.store.LoadState(ctx, aid)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load account state: %w", err)
+			return AccountID{}, fmt.Errorf("failed to load account state: %w", err)
 		}
 
 		// TODO: this can be non-empty if we have created the account previously,
@@ -115,15 +79,15 @@ func (srv *backend) Register(ctx context.Context, req *daemon.RegisterRequest) (
 
 		binding, err := InviteDevice(acc, srv.repo.Device())
 		if err != nil {
-			return nil, fmt.Errorf("failed to create account binding: %w", err)
+			return AccountID{}, fmt.Errorf("failed to create account binding: %w", err)
 		}
 
 		if err := srv.register(ctx, state, binding); err != nil {
-			return nil, fmt.Errorf("failed to register account: %w", err)
+			return AccountID{}, fmt.Errorf("failed to register account: %w", err)
 		}
 
 		if err := srv.repo.CommitAccount(acc); err != nil {
-			return nil, fmt.Errorf("failed to write account file: %w", err)
+			return AccountID{}, fmt.Errorf("failed to write account file: %w", err)
 		}
 
 		// TODO: Here we would need to publish our patch on the PubSub, so that people can discover our new device,
@@ -132,9 +96,7 @@ func (srv *backend) Register(ctx context.Context, req *daemon.RegisterRequest) (
 		// which topic to publish to until we create the account, and account gets created just when we publish the patch.
 		// We leave it as is right now, but let's see if we need to do something with it in the future.
 
-		return &daemon.RegisterResponse{
-			AccountId: aid.String(),
-		}, nil
+		return AccountID(aid), nil
 	}
 }
 
@@ -153,46 +115,109 @@ func (srv *backend) register(ctx context.Context, state *state, binding AccountB
 	return nil
 }
 
-func (srv *backend) GetInfo(ctx context.Context, in *daemon.GetInfoRequest) (*daemon.Info, error) {
-	pa, err := srv.repo.Account()
+func (srv *backend) UpdateProfile(ctx context.Context, in *accounts.Profile) (*accounts.Account, error) {
+	acc, err := srv.repo.Account()
 	if err != nil {
-		return nil, status.Error(codes.FailedPrecondition, err.Error())
+		return nil, err
 	}
 
-	resp := &daemon.Info{
-		AccountId: pa.id.String(),
-		PeerId:    srv.repo.Device().id.String(),
-		StartTime: timestamppb.New(srv.startTime),
+	state, account, err := srv.GetAccountState(ctx, acc.id)
+	if err != nil {
+		return nil, err
 	}
 
-	return resp, nil
+	merged := &accounts.Profile{}
+	if account.Profile == nil {
+		account.Profile = &accounts.Profile{}
+	}
+	proto.Merge(merged, account.Profile)
+	proto.Merge(merged, in)
+
+	diff := diffProto(account.Profile, merged)
+	if diff == nil {
+		return account, nil
+	}
+
+	evt := &accounts.ProfileUpdated{
+		Profile: diff.(*accounts.Profile),
+	}
+
+	account.Profile = merged
+
+	sp, err := state.NewProtoPatch(cid.Cid(acc.id), srv.repo.Device().priv, evt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to produce patch to update profile: %w", err)
+	}
+
+	if err := srv.store.AddPatch(ctx, sp); err != nil {
+		return nil, fmt.Errorf("failed to store patch: %w", err)
+	}
+
+	return account, nil
 }
 
-// func (srv *backend) DialPeer(ctx context.Context, req *daemon.DialPeerRequest) (*daemon.DialPeerResponse, error) {
-// 	p2p, err := srv.p2p()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func (srv *backend) GetAccountState(ctx context.Context, id AccountID) (*state, *accounts.Account, error) {
+	state, err := srv.store.LoadState(ctx, cid.Cid(id))
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to load state: %w", err)
+	}
 
-// 	mas := make([]multiaddr.Multiaddr, len(req.Addrs))
+	if state.size == 0 {
+		return nil, nil, fmt.Errorf("no information about account %s", id)
+	}
 
-// 	for i, a := range req.Addrs {
-// 		ma, err := multiaddr.NewMultiaddr(a)
-// 		if err != nil {
-// 			// We allow passing plain peer IDs to attempt the connection, so when parsing fails
-// 			// we adapt the peer ID to be the valid multiaddr.
-// 			a = "/p2p/" + a
-// 			ma, err = multiaddr.NewMultiaddr(a)
-// 			if err != nil {
-// 				return nil, err
-// 			}
-// 		}
-// 		mas[i] = ma
-// 	}
+	aid := state.obj.String()
 
-// 	if err := p2p.Connect(ctx, mas...); err != nil {
-// 		return nil, fmt.Errorf("failed to establish p2p connection: %w", err)
-// 	}
+	acc := &accounts.Account{}
+	for state.Next() {
+		sp := state.Item()
+		msg, err := sp.ProtoBody()
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to unmarshal proto body: %w", err)
+		}
 
-// 	return &daemon.DialPeerResponse{}, nil
-// }
+		switch data := msg.(type) {
+		case *accounts.DeviceRegistered:
+			if acc.Id == "" {
+				acc.Id = aid
+			}
+
+			if acc.Id != aid {
+				return nil, nil, fmt.Errorf("profile update from unrelated author")
+			}
+
+			// TODO: verify proof
+			_ = data.Proof
+			if acc.Devices == nil {
+				acc.Devices = make(map[string]*accounts.Device)
+			}
+			d, err := srv.getDevice(sp.peer, sp)
+			if err != nil {
+				return nil, nil, fmt.Errorf("failed to find device %s: %w", sp.peer, err)
+			}
+			acc.Devices[d.PeerId] = d
+		case *accounts.ProfileUpdated:
+			if acc.Profile == nil {
+				acc.Profile = data.Profile
+			} else {
+				proto.Merge(acc.Profile, data.Profile)
+			}
+		}
+	}
+
+	return state, acc, nil
+}
+
+func (srv *backend) getDevice(c cid.Cid, sp signedPatch) (*accounts.Device, error) {
+	return &accounts.Device{
+		PeerId:       c.String(),
+		RegisterTime: timestamppb.New(sp.CreateTime),
+	}, nil
+}
+
+func (srv *backend) GetDeviceAddrs(d DeviceID) ([]multiaddr.Multiaddr, error) {
+	// TODO: lazy libp2p after repo ready
+
+	info := srv.libp2p.Host.Peerstore().PeerInfo(d.PeerID())
+	return peer.AddrInfoToP2pAddrs(&info)
+}

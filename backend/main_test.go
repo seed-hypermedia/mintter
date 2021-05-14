@@ -8,13 +8,61 @@ import (
 	accounts "mintter/api/go/accounts/v1alpha"
 	daemon "mintter/api/go/daemon/v1alpha"
 	networking "mintter/api/go/networking/v1alpha"
+	"mintter/backend/badger3ds"
 	"mintter/backend/config"
+	"mintter/backend/ipfsutil"
 	"mintter/backend/testutil"
 
+	"github.com/ipfs/go-datastore"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 )
+
+func TestLib(t *testing.T) {
+	cfg := config.P2P{
+		Addr:        "/ip4/0.0.0.0/tcp/0",
+		NoBootstrap: true,
+		NoRelay:     true,
+		NoTLS:       true,
+	}
+
+	opts := badger3ds.DefaultOptions("")
+	opts.InMemory = true
+	ds, err := badger3ds.NewDatastore(opts)
+	require.NoError(t, err)
+
+	tt := makeTester(t, "alice")
+
+	repo := makeTestRepo(t, tt)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	app := fx.New(
+		fx.Supply(cfg),
+		fx.Supply(repo),
+		fx.Provide(
+			func() datastore.Batching {
+				return ds
+			},
+			ipfsutil.DefaultBootstrapPeers,
+			provideLibp2p,
+		),
+		fx.Invoke(func(n *ipfsutil.LibP2PNode) {
+			require.NotNil(t, n.Host)
+			require.NotNil(t, n.Routing)
+		}),
+	)
+
+	require.NoError(t, app.Start(ctx))
+	defer func() {
+		stopCtx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+		defer cancel()
+		require.NoError(t, app.Stop(stopCtx))
+	}()
+
+}
 
 func TestDaemonEndToEnd(t *testing.T) {
 	cfg := config.Config{
@@ -36,9 +84,11 @@ func TestDaemonEndToEnd(t *testing.T) {
 	log := NewLogger(cfg)
 	defer log.Sync()
 
-	var lisc <-chan GRPCListener
-	var p2p *p2pNode
-	app := NewApp(cfg, log, fx.Populate(&lisc), fx.Populate(&p2p))
+	var srv *grpcServer
+	app := fx.New(
+		Module(cfg, log),
+		fx.Populate(&srv),
+	)
 
 	require.NoError(t, app.Start(ctx))
 	defer func() {
@@ -47,9 +97,9 @@ func TestDaemonEndToEnd(t *testing.T) {
 		require.NoError(t, app.Stop(stopCtx))
 	}()
 
-	lis := <-lisc
+	<-srv.ready
 
-	cc, err := grpc.Dial(lis.Addr().String(),
+	cc, err := grpc.Dial(srv.lis.Addr().String(),
 		grpc.WithBlock(),
 		grpc.WithInsecure(),
 	)
@@ -97,9 +147,6 @@ func TestDaemonEndToEnd(t *testing.T) {
 	acc, err = ac.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, updatedAcc, acc, "get account after update must match")
-
-	// We have to wait for P2P node being fully initialized before exiting from the tests.
-	<-p2p.Ready()
 
 	infoResp, err := dc.GetInfo(ctx, &daemon.GetInfoRequest{})
 	require.NoError(t, err)
