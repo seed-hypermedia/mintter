@@ -3,18 +3,29 @@ package ipfsutil
 import (
 	"context"
 	"fmt"
+	"io"
 	"sync"
 	"sync/atomic"
+	"time"
+
+	"mintter/backend/cleanup"
 
 	"github.com/ipfs/go-datastore"
+	"github.com/ipfs/go-ipfs/core/node"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/libp2p/go-libp2p-core/metrics"
 	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-peerstore/pstoreds"
 	"github.com/libp2p/go-libp2p/config"
 	"github.com/multiformats/go-multiaddr"
+	"go.uber.org/multierr"
 
+	ipfsconfig "github.com/ipfs/go-ipfs-config"
+	ipfsp2p "github.com/ipfs/go-ipfs/core/node/libp2p"
 	ipns "github.com/ipfs/go-ipns"
+	connmgr "github.com/libp2p/go-libp2p-connmgr"
 	routing "github.com/libp2p/go-libp2p-core/routing"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
@@ -22,6 +33,22 @@ import (
 	record "github.com/libp2p/go-libp2p-record"
 	libp2ptls "github.com/libp2p/go-libp2p-tls"
 )
+
+var dhtFactory = ipfsp2p.DHTOption
+
+// Bootstrappers is a convenience alias for a list of bootstrap addresses.
+// It is to provide some semantic meaning to otherwise unclear slice of addresses.
+type Bootstrappers []peer.AddrInfo
+
+// DefaultBootstrapPeers exposes default bootstrap peers from the go-ipfs package,
+// failing in case of an error, which should only happen if there's a bug somewhere.
+func DefaultBootstrapPeers() Bootstrappers {
+	peers, err := ipfsconfig.DefaultBootstrapPeers()
+	if err != nil {
+		panic(err)
+	}
+	return peers
+}
 
 // SetupLibp2p returns a routed host and DHT instances that can be used to
 // easily create a ipfslite Peer. You may consider to use Peer.Bootstrap()
@@ -34,6 +61,8 @@ import (
 // Interesting options to pass: NATPortMap() EnableAutoRelay(),
 // libp2p.EnableNATService(), DisableRelay(), ConnectionManager(...)... see
 // https://godoc.org/github.com/libp2p/go-libp2p#Option for more info.
+//
+// Deprecated: Use NewLibP2PNode().
 func SetupLibp2p(
 	ctx context.Context,
 	hostKey crypto.PrivKey,
@@ -41,11 +70,7 @@ func SetupLibp2p(
 	dsDHT datastore.Batching,
 	opts ...libp2p.Option,
 ) (host.Host, *dualdht.DHT, error) {
-	var (
-		ddht   *dualdht.DHT
-		dhtErr = make(chan error, 1)
-	)
-
+	var ddht *dualdht.DHT
 	opts = append(opts,
 		libp2p.Identity(hostKey),
 		libp2p.ListenAddrs(listenAddrs...),
@@ -54,13 +79,10 @@ func SetupLibp2p(
 		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
 			d, err := newDHT(ctx, h, dsDHT)
 			if err != nil {
-				dhtErr <- err
 				return nil, fmt.Errorf("failed to create DHT: %w", err)
 			}
 			ddht = d
-			dhtErr <- nil
-
-			return ddht, err
+			return d, nil
 		}),
 	)
 
@@ -72,10 +94,6 @@ func SetupLibp2p(
 	h, err := cfg.NewNode(ctx)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create libp2p node: %w", err)
-	}
-
-	if err := <-dhtErr; err != nil {
-		return nil, nil, err
 	}
 
 	return h, ddht, nil
@@ -96,17 +114,19 @@ func newDHT(ctx context.Context, h host.Host, ds datastore.Batching) (*dualdht.D
 }
 
 // EnableRelay set sane options for enabling circuit-relay.
+//
+// Deprecated: pass options explicitly.
 func EnableRelay(cfg *config.Config) error {
 	return cfg.Apply(
 		libp2p.EnableRelay(),
-		libp2p.NATPortMap(),
 		libp2p.EnableAutoRelay(),
-		libp2p.EnableNATService(),
 		libp2p.DefaultStaticRelays(),
 	)
 }
 
 // EnableTLS set sane options for security.
+//
+// Deprecated: Use libp2p.DefaultSecurity.
 func EnableTLS(cfg *config.Config) error {
 	return cfg.Apply(libp2p.Security(libp2ptls.ID, libp2ptls.New))
 }
@@ -159,4 +179,110 @@ func Bootstrap(ctx context.Context, h host.Host, rt routing.Routing, peers []pee
 	wg.Wait()
 
 	return res
+}
+
+// ParseMultiaddrs parses a slice of string multiaddrs.
+func ParseMultiaddrs(in []string) ([]multiaddr.Multiaddr, error) {
+	out := make([]multiaddr.Multiaddr, len(in))
+
+	for i, a := range in {
+		ma, err := multiaddr.NewMultiaddr(a)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = ma
+	}
+
+	return out, nil
+}
+
+// LibP2PNode exposes libp2p host and the underlying routing system (DHT), providing
+// some defaults. The node will not be listening, so users must explicitly call Listen()
+// on the underlying host's network.
+type LibP2PNode struct {
+	host.Host
+
+	Routing routing.Routing
+
+	bootstrappers []peer.AddrInfo
+	clean         cleanup.Stack
+}
+
+// NewLibP2PNode creates a new node.
+func NewLibP2PNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.AddrInfo, opts ...libp2p.Option) (n *LibP2PNode, err error) {
+	n = &LibP2PNode{
+		bootstrappers: bootstrap,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer func() {
+		if err != nil {
+			err = multierr.Append(err, n.Close())
+		}
+	}()
+	n.clean.AddErrFunc(func() error {
+		cancel()
+		return nil
+	})
+
+	ps, err := pstoreds.NewPeerstore(ctx, ds, pstoreds.DefaultOpts())
+	if err != nil {
+		return nil, err
+	}
+	n.clean.Add(ps)
+
+	o := []libp2p.Option{
+		libp2p.Identity(key),
+		libp2p.Peerstore(ps),
+		libp2p.NoListenAddrs, // Users must explicitly start listening.
+		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
+			r, err := dhtFactory(
+				ctx, h,
+				ds,
+				node.RecordValidator(ps),
+				bootstrap...,
+			)
+
+			n.Routing = r
+
+			// Routing interface from IPFS doesn't expose Close method,
+			// so it actually never gets closed propertly, even inside IPFS.
+			// This ugly trick attempts to solve this.
+			n.clean.AddErrFunc(func() error {
+				if c, ok := n.Routing.(io.Closer); ok {
+					return c.Close()
+				}
+				return nil
+			})
+
+			return r, err
+		}),
+		libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute)),
+		TransportOpts,
+		libp2p.NATPortMap(),
+		libp2p.EnableNATService(),
+		libp2p.DisableRelay(),
+		libp2p.BandwidthReporter(metrics.NewBandwidthCounter()),
+	}
+
+	o = append(o, opts...)
+
+	n.Host, err = libp2p.New(ctx, o...)
+	if err != nil {
+		return nil, err
+	}
+	n.clean.Add(n.Host)
+
+	return n, nil
+}
+
+// Bootstrap blocks, and performs bootstrapping process for the node,
+// including the underlying routing system.
+func (n *LibP2PNode) Bootstrap(ctx context.Context) BootstrapResult {
+	return Bootstrap(ctx, n.Host, n.Routing, n.bootstrappers)
+}
+
+// Close the node and all the underlying systems.
+func (n *LibP2PNode) Close() error {
+	return n.clean.Close()
 }
