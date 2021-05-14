@@ -13,6 +13,15 @@ import (
 	"mintter/backend/ipfsutil"
 )
 
+var moduleP2P = fx.Options(
+	fx.Provide(provideP2PConfig,
+		provideLibp2p,
+		ipfsutil.DefaultBootstrapPeers,
+		provideDatastore,
+		ipfsutil.NewBlockstore,
+	),
+)
+
 func provideP2PConfig(cfg config.Config) config.P2P {
 	return cfg.P2P
 }
