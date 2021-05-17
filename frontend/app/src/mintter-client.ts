@@ -157,12 +157,16 @@ export function publishDraft(
  */
 
 export function getPublication(
-  documentId: string,
+  publicationId: string,
   version?: string,
 ): Promise<documents.Publication> {
   let pub = new documents.Publication();
 
   return Promise.resolve(pub);
+}
+
+export function getDocument(documentId: string) {
+  return buildDocument()
 }
 
 export function deletePublication(version: string): Promise<Empty> {
@@ -199,7 +203,8 @@ export function listPublications(
 export async function genSeed(
   aezeedPassphrase?: string,
 ): Promise<daemon.GenSeedResponse> {
-  console.log('genSeed!');
+  console.log('real genSeed!');
+  
   let request = new daemon.GenSeedRequest();
   // TODO: add aezeedPassphrase?
   return await daemonClient().genSeed(request);
@@ -220,15 +225,6 @@ export function register(
   return daemonClient().register(request);
 }
 
-/**
- *
- * @deprecated
- */
-export function getProfile(profileId?: string) {
-  console.log('getProfile: Implement!');
-  return Promise.resolve({});
-}
-
 export async function getAccount(id: string = ''): Promise<accounts.Account> {
   const request = new accounts.GetAccountRequest();
   request.setId(id);
@@ -238,8 +234,8 @@ export async function getAccount(id: string = ''): Promise<accounts.Account> {
 }
 
 export async function getInfo() {
-  const request = new daemon.GetInfoRequest()
-  return await daemonClient().getInfo(request)
+  const request = new daemon.GetInfoRequest();
+  return await daemonClient().getInfo(request);
 }
 
 // export function getAccount(id: string = ''): Promise<accounts.Account> {
@@ -253,16 +249,16 @@ export async function getInfo() {
 //   return account;
 // }
 
-export function setDeviceMap(
-  map: Map<string, accounts.Device>,
-  devices: accounts.Device.AsObject[],
-): void {
-  devices.forEach((device) => {
-    const n = new accounts.Device();
-    n.setPeerId(device.peerId);
-    map.set(device.peerId, n);
-  });
-}
+// export function setDeviceMap(
+//   map: Map<string, accounts.Device>,
+//   devices: accounts.Device.AsObject[],
+// ): void {
+//   devices.forEach((device) => {
+//     const n = new accounts.Device();
+//     n.setPeerId(device.peerId);
+//     map.set(device.peerId, n);
+//   });
+// }
 
 export function updateAccount(
   entry: accounts.Profile.AsObject,
@@ -289,31 +285,15 @@ export function listAccounts(
   return accountsClient().listAccounts(request);
 }
 
-export async function listPeerAddrs(peerId: string) {
+export async function listPeerAddrs(
+  peerId: string,
+): Promise<networking.GetPeerAddrsResponse> {
   if (peerId === undefined) {
-    return Promise.reject('listPeerAddrs error: `peerId (string)` is required')
+    return Promise.reject('listPeerAddrs error: `peerId (string)` is required');
   }
-  const request = new networking.GetPeerAddrsRequest()
-  request.setPeerId(peerId)
-  return await networkingClient().getPeerAddrs(request)
-}
-
-/**
- *
- * @deprecated
- */
-export async function updateProfile(params: any) {
-  console.log('updateProfile: Implement!');
-  return Promise.resolve({});
-}
-
-/**
- *
- * @deprecated
- */
-export function listProfiles(pageSize?: number, pageToken?: string) {
-  console.log('listProfiles: Implement!');
-  return Promise.resolve({});
+  const request = new networking.GetPeerAddrsRequest();
+  request.setPeerId(peerId);
+  return await networkingClient().getPeerAddrs(request);
 }
 
 /**

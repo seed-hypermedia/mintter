@@ -16,21 +16,20 @@ import type networking from '@mintter/api/networking/v1alpha/networking_pb';
 import * as apiClient from '@mintter/client';
 import type { QueryOptions } from '@testing-library/dom';
 import type daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
+import { buildBlock } from '@utils/generate';
+import { toSlateBlock } from './editor/slate-block';
 
-export function useAccount<TData = accounts.Account>(
+export function useAccount<TData = accounts.Account.AsObject, TError = unknown>(
   accountId?: string,
-  options: UseQueryOptions<accounts.Account.AsObject, unknown, TData> = {},
-): UseQueryResult<accounts.Account.AsObject, unknown> {
-  
-  const accountQuery = useQuery<accounts.Account, unknown, accounts.Account>(
-    accountId ? ['Account', accountId] : ['Account'],
-    async ({ queryKey: [_key, id] }) => {
-      return await apiClient.getAccount(id);
-    },
+  options: UseQueryOptions<accounts.Account, TError, accounts.Account> = {},
+) {
+  const accountQuery = useQuery<accounts.Account, TError, accounts.Account>(
+    ['Account', accountId],
+    () => apiClient.getAccount(accountId),
     options,
   );
 
-  const data: accounts.Account.AsObject = React.useMemo(
+  const data = React.useMemo(
     () => accountQuery.data?.toObject(),
     [accountQuery.data],
   );
@@ -43,10 +42,10 @@ export function useAccount<TData = accounts.Account>(
 
 export function useInfo(
   options?: UseQueryOptions<daemon.Info, unknown, daemon.Info>,
-): UseQueryResult<daemon.Info.AsObject, unknown> {
+) {
   const infoQuery = useQuery<daemon.Info, unknown, daemon.Info>(['GetInfo'], apiClient.getInfo, options);
 
-  const data: daemon.Info.AsObject = React.useMemo<daemon.Info.AsObject>(() => infoQuery.data?.toObject(), [
+  const data = React.useMemo(() => infoQuery.data?.toObject(), [
     infoQuery.data,
   ]);
 
@@ -58,39 +57,31 @@ export function useInfo(
 
 export function usePeerAddrs(
   peerId?: string,
-  options?: UseQueryOptions<networking.GetPeerAddrsResponse, unknown, networking.GetPeerAddrsResponse.AsObject>,
+  options?: UseQueryOptions<networking.GetPeerAddrsResponse, unknown, networking.GetPeerAddrsResponse>,
 ) {
   // query getInfo if peerId is undefined
   // query peerAddrs if peerId is defined or if getInfo is done
   const queryClient = useQueryClient()
 
-  let requestId = null;
+  let requestId: string;
   if (!peerId) {
     const info = queryClient.getQueryData<daemon.Info.AsObject>('GetInfo')
-    console.log("🚀 ~ file: mintter-hooks.ts ~ line 68 ~ info", info)
-    requestId = info?.peerId
+    requestId = info?.peerId as string
   } else {
     requestId = peerId
   }
   
 
-  const peerAddrsQuery = useQuery<
-    networking.GetPeerAddrsResponse,
-    unknown,
-    networking.GetPeerAddrsResponse
-  >(
-    ['PeerAddrs', peerId],
-    async ({ queryKey: [_key, peerId] }) => {
-      return await apiClient.listPeerAddrs(peerId);
-    },
+  const peerAddrsQuery = useQuery(
+    ['PeerAddrs', requestId],
+    () => apiClient.listPeerAddrs(requestId),
     {
-      refetchInterval: 5000,
       enabled: !!requestId,
       ...options,
     },
   );
 
-  const data: string[] = React.useMemo(
+  const data = React.useMemo(
     () => peerAddrsQuery.data?.toObject().addrsList,
     [peerAddrsQuery.data],
   );
@@ -129,12 +120,20 @@ export function useSuggestedConnections({ page } = { page: 0 }, options = {}) {
   };
 }
 
+/**
+ * 
+ * @deprecated
+ */
 export function useConnectionCreate() {
   return {
     connectToPeer: () => {},
   };
 }
 
+/**
+ * 
+ * @deprecated
+ */
 export function usePublicationsList(options = {}) {
   return {
     data: [],
@@ -145,6 +144,10 @@ export function usePublicationsList(options = {}) {
   };
 }
 
+/**
+ * 
+ * @deprecated
+ */
 export function useOthersPublicationsList(options = {}) {
   return {
     data: [],
@@ -155,36 +158,44 @@ export function useOthersPublicationsList(options = {}) {
   };
 }
 
+/**
+ * 
+ * @deprecated
+ */
 export function useMyPublicationsList(options = {}) {
   return { data: [], isLoading: false, isSuccess: true, error: null, isError: false };
 }
 
+/**
+ * 
+ * @deprecated
+ */
 export function useDraftsList(options = {}) {
   return { data: [], isLoading: false, isSuccess: true, error: null, isError: false };
 }
 
 export function usePublication(
-  documentId: string,
+  publicationId: string,
   version?: string,
   options = {},
 ) {
-  if (!documentId) {
-    throw new Error(`usePublication: parameter "documentId" is required`);
+  if (!publicationId) {
+    throw new Error(`usePublication: parameter "publicationId" is required`);
   }
 
-  if (Array.isArray(documentId)) {
+  if (Array.isArray(publicationId)) {
     throw new Error(
       `Impossible render: You are trying to access a document passing ${
-        documentId.length
-      } document Ids => ${documentId.map((q) => q).join(', ')}`,
+        publicationId.length
+      } document Ids => ${publicationId.map((q) => q).join(', ')}`,
     );
   }
 
   const pubQuery = useQuery(
-    ['Publication', documentId, version],
+    ['Publication', publicationId, version],
     async ({ queryKey }) => {
-      const [_key, documentId, version] = queryKey;
-      return apiClient.getPublication(documentId, version);
+      const [_key, publicationId, version] = queryKey;
+      return apiClient.getPublication(publicationId, version);
     },
     {
       refetchOnWindowFocus: false,
@@ -235,4 +246,38 @@ export function useDraft(draftId: string, options = {}) {
     ...draftQuery,
     data,
   };
+}
+
+export function useDocument<TError = unknown>(documentId: string) {
+  // return document object
+  const documentQuery = useQuery<documents.Document>(['Document', documentId], () => apiClient.getDocument(documentId), {
+    enabled: !!documentId
+  })
+
+  const data: documents.Document.AsObject | undefined = React.useMemo(() => documentQuery.data?.toObject(), [documentQuery.data])
+
+  return {
+    ...documentQuery,
+    data
+  }
+}
+
+
+export function useQuote<TError = unknown>(quoteId: string) {
+  const [documentId, blockId] = quoteId.split('/')
+  //query document
+  // const document = useDocument(documentId)
+  const quoteQuery = useQuery(['Quote', blockId], async () => {
+    const block = buildBlock({id: blockId})
+    return Promise.resolve(block)
+  }, {
+    enabled: !!blockId
+  })
+
+  const data = React.useMemo(() => quoteQuery.data?.toObject(), [quoteQuery.data, quoteId])
+
+  return {
+    ...quoteQuery,
+    data
+  }
 }

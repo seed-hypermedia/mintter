@@ -1,10 +1,21 @@
-import { screen, waitFor } from '@testing-library/react';
+import React from 'react';
 import { expect } from '@esm-bundle/chai';
-import { render } from 'test/utils';
 import { SecurityPack } from './security-pack';
-describe('Onboarding screens', () => {
-  it('<SecurityPack />', async () => {
-    await render(<SecurityPack prev={() => {}} next={() => {}} />);
-    expect(document.body.contains(screen.getByText(/Security Pack/i)));
+import { AppProviders } from '../../app-providers';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { waitFor } from '@testing-library/dom';
+
+describe('Security Pack', () => {
+  it('Renders correctly', () => {
+    console.log('===== SECURITY PACK TEST START')
+    render(
+      <AppProviders>
+        <SecurityPack />
+      </AppProviders>,
+    );
+
+    fireEvent.click(screen.getByTestId(/button-toogle-custom-seed/i));
+    expect(document.body.contains(screen.getByTestId(/textarea-own-seed/i)));
+    console.log('===== SECURITY PACK TEST END')
   });
 });
