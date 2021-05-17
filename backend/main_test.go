@@ -39,6 +39,7 @@ func TestLib(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	var n *ipfsutil.LibP2PNode
 	app := fx.New(
 		fx.Supply(cfg),
 		fx.Supply(repo),
@@ -49,10 +50,7 @@ func TestLib(t *testing.T) {
 			ipfsutil.DefaultBootstrapPeers,
 			provideLibp2p,
 		),
-		fx.Invoke(func(n *ipfsutil.LibP2PNode) {
-			require.NotNil(t, n.Host)
-			require.NotNil(t, n.Routing)
-		}),
+		fx.Populate(&n),
 	)
 
 	require.NoError(t, app.Start(ctx))
@@ -62,6 +60,8 @@ func TestLib(t *testing.T) {
 		require.NoError(t, app.Stop(stopCtx))
 	}()
 
+	require.NotNil(t, n.Host)
+	require.NotNil(t, n.Routing)
 }
 
 func TestDaemonEndToEnd(t *testing.T) {

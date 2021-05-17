@@ -18,6 +18,7 @@ import (
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
+	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 	"github.com/ipfs/go-ipfs-provider/queue"
 	"github.com/ipfs/go-ipfs-provider/simple"
 	"github.com/ipfs/go-merkledag"
@@ -77,6 +78,8 @@ type Node struct {
 // Routing (usuall the DHT). The Host and the Routing may be nil if
 // config.Offline is set to true, as they are not used in that case. Peer
 // implements the ipld.DAGService interface.
+//
+// Deprecated: Use separated functions for assembling each component explicitly.
 func New(
 	ctx context.Context,
 	store datastore.Batching,
@@ -325,4 +328,62 @@ func PeerIDFromCIDString(s string) (peer.ID, error) {
 	}
 
 	return peer.FromCid(c)
+}
+
+// Bitswap exposes the bitswap network and exchange interface.
+type Bitswap struct {
+	*bitswap.Bitswap
+	Net network.BitSwapNetwork
+
+	cancel context.CancelFunc
+}
+
+// NewBitswap creates a new Bitswap wrapper.
+// Users must call Close() for shutdown.
+func NewBitswap(host host.Host, rt routing.ContentRouting, bs blockstore.Blockstore) (*Bitswap, error) {
+	net := network.NewFromIpfsHost(host, rt)
+	ctx, cancel := context.WithCancel(context.Background())
+	b := bitswap.New(ctx, net, bs, bitswap.ProvideEnabled(true))
+
+	return &Bitswap{
+		Bitswap: b.(*bitswap.Bitswap),
+		Net:     net,
+		cancel:  cancel,
+	}, nil
+}
+
+// Close closes bitswap.
+func (b *Bitswap) Close() error {
+	err := b.Bitswap.Close()
+	b.cancel()
+	return err
+}
+
+// NewProviderSystem creates a new provider.System. Users must call Run() to start and Close() to shutdown.
+func NewProviderSystem(bs blockstore.Blockstore, ds datastore.Datastore, rt routing.ContentRouting) (provider.System, error) {
+	ctx := context.Background() // This will be canceled when Close() is called explicitly.
+	q, err := queue.NewQueue(ctx, "provider-v1", ds)
+	if err != nil {
+		return nil, err
+	}
+
+	// No need to call q.Close() because provider will call it.
+	// It's weird but this is how it works at the moment.
+
+	prov := simple.NewProvider(ctx, q, rt)
+
+	sp := simple.NewReprovider(ctx, defaultReprovideInterval, rt, simple.NewBlockstoreProvider(bs))
+
+	return provider.NewSystem(prov, sp), nil
+}
+
+// IPFS holds various ipfs-related services in one type that is easy to pass around.
+// Should be constructed using struct literals.
+type IPFS struct {
+	Host           host.Host
+	Routing        routing.Routing
+	Provider       provider.System
+	BitswapNetwork network.BitSwapNetwork
+	Exchange       exchange.Interface
+	BlockService   blockservice.BlockService
 }
