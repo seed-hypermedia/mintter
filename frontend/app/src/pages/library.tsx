@@ -181,11 +181,8 @@ function ProfileInfo() {
     console.error('ProfileInfo error: ', error)
     return <Text>Error...</Text>
   }
-
-  const { profile } = data
-  console.log("🚀 ~ file: library.tsx ~ line 187 ~ ProfileInfo ~ data", data)
   
-  return profile ? (
+  return data?.profile ? (
     <Box
       css={{
         display: 'flex',
@@ -201,9 +198,9 @@ function ProfileInfo() {
         // @ts-ignore
         css={{ fontWeight: '$bold' }}
       >
-        {profile.alias}
+        {data.profile.alias}
       </Text>
-      <Text>{profile.bio}</Text>
+      <Text>{data.profile.bio}</Text>
       <Button
         // TODO: fix types
         // @ts-ignore

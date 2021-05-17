@@ -14,12 +14,3 @@ describe('Mintter Client: Publications', () => {
   it.skip('deletePublication()', () => {});
   it.skip('listPublications()', () => {});
 });
-
-describe('Mintter Client: Profile', () => {
-  it('genSeed()', async () => {
-    const res = await client.genSeed();
-    expect(res.getMnemonicList()).to.have.length(24);
-  });
-
-  it('');
-});

@@ -66,8 +66,6 @@ export function Settings() {
     return <Text>error!</Text>;
   }
 
-  const { id: accountId } = account.data;
-
   return (
     <Box
       data-testid="page"
@@ -168,7 +166,7 @@ export function Settings() {
             type="text"
             label="Account ID"
             name="accountId"
-            value={accountId}
+            value={data?.id}
           />
           <PeerAddrs />
           <Separator />

@@ -1,14 +1,15 @@
-import { render } from 'test/utils';
-import { waitFor, screen } from '@testing-library/react';
+import React from 'react';
 import { expect } from '@esm-bundle/chai';
 import { Welcome } from './welcome';
+import { fixture } from 'test/utils';
+import { screen, render, waitFor, fireEvent } from '@testing-library/react'
+import { AppProviders } from '../../app-providers';
 
-describe('Onboarding screens', () => {
-  it('<Welcome />', async () => {
-    await render(<Welcome next={() => {}} prev={() => {}} />);
-    await waitFor(() => {
-      expect(screen.getByText(/Welcome to Mintter/i));
-      expect(screen.getByText(/Start/i));
-    });
-  });
+it('<Welcome />', async () => {
+  
+  render(<AppProviders><Welcome next={() => {}} prev={() => {}} /></AppProviders>)
+  
+  screen.getByText(/Welcome to Mintter/i)
+  screen.getByTestId(/next-button/i)
+  
 });

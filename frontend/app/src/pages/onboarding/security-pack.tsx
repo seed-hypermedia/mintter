@@ -3,7 +3,7 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 import toast from 'react-hot-toast';
 import { useQuery } from 'react-query';
 
-import { genSeed, register } from '../../mintter-client';
+import { genSeed, register } from '@mintter/client';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
@@ -68,6 +68,7 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
           rows={5}
           placeholder="foo bar baz ..."
           hint="all words separated by ONE SPACE"
+          data-testid="textarea-own-seed"
         />
       ) : mnemonics.isError ? (
         <OnboardingStepBody>
@@ -83,6 +84,7 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
         variant="ghost"
         color="muted"
         onClick={() => toggleOwnSeed((v) => !v)}
+        data-testid="button-toogle-custom-seed"
       >
         Setting up a new device?{' '}
         <Text css={{ textDecoration: 'underline', display: 'inline-block' }}>
