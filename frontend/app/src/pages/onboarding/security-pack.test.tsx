@@ -7,7 +7,6 @@ import { waitFor } from '@testing-library/dom';
 
 describe('Security Pack', () => {
   it('Renders correctly', () => {
-    console.log('===== SECURITY PACK TEST START')
     render(
       <AppProviders>
         <SecurityPack />
@@ -16,6 +15,5 @@ describe('Security Pack', () => {
 
     fireEvent.click(screen.getByTestId(/button-toogle-custom-seed/i));
     expect(document.body.contains(screen.getByTestId(/textarea-own-seed/i)));
-    console.log('===== SECURITY PACK TEST END')
   });
 });

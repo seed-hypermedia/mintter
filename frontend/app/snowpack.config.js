@@ -63,9 +63,7 @@ module.exports = {
     '@mintter/client': isTest
       ? './src/mocks/mintter-client'
       : './src/mintter-client',
-    '@mintter/hooks': isTest
-      ? './src/mocks/mintter-hooks'
-      : './src/mintter-hooks',
+    '@mintter/hooks': './src/mintter-hooks',
     test: './src/test',
   },
 };
