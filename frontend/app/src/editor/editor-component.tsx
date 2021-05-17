@@ -30,6 +30,7 @@ import { createElement } from './create-element';
 import { boldOptions, boldAutoformatRules } from './bold-plugin';
 import { codeOptions, codeAutoformatRules } from './code-plugin';
 import { italicOptions, italicAutoformatRules } from './italic-plugin';
+import type * as documents from '@mintter/api/documents/v1alpha/documents_pb'
 import {
   strikethroughOptions,
   strikethroughAutoformatRules,

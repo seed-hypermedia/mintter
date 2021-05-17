@@ -23,7 +23,7 @@ export default {
             // mock a dependency
             // 'package-a': '/mocks/package-a.js',
             // mock a module in your own code
-            '@mintter/client': '/mocks/mintter-client.js',
+            '@mintter/client': './src/mocks/mintter-client'
           },
         },
       },
@@ -42,3 +42,14 @@ export default {
     </body>
   </html>`,
 };
+
+
+// import { esbuildPlugin } from "@web/dev-server-esbuild";
+
+// export default {
+//   nodeResolve: true,
+//   plugins: [
+//     snowpackPlugin(),
+//     esbuildPlugin({ tsx: true, jsxFactory: "React.createElement", jsxFragment: "Fragment" }),
+//   ],
+// };

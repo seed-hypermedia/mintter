@@ -41,7 +41,7 @@ export const Welcome: React.FC<OnboardingStepPropsType> = ({ next }) => {
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
-        <OnboardingStepButton onClick={next}>Start</OnboardingStepButton>
+        <OnboardingStepButton onClick={next} data-testid="next-button">Start</OnboardingStepButton>
       </OnboardingStepActions>
     </OnboardingStep>
   );

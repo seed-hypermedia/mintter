@@ -1,5 +1,5 @@
 const path = require('path');
-
+const isTest = process.env.NODE_ENV === 'test';
 /** @type {import("snowpack").SnowpackUserConfig } */
 module.exports = {
   // TODO: fix hot-reloading of workspace dependencies.
@@ -60,8 +60,12 @@ module.exports = {
     '@utils': './src/utils',
     '@mintter/ui-legacy': './src/lib',
     '@mintter/editor': './src/editor',
-    '@mintter/client': './src/mintter-client',
-    '@mintter/hooks': './src/mintter-hooks',
+    '@mintter/client': isTest
+      ? './src/mocks/mintter-client'
+      : './src/mintter-client',
+    '@mintter/hooks': isTest
+      ? './src/mocks/mintter-hooks'
+      : './src/mintter-hooks',
     test: './src/test',
   },
 };
