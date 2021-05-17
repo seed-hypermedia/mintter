@@ -16,18 +16,7 @@ export default {
       jsxFactory: 'React.createElement',
       jsxFragment: 'Fragment',
     }),
-    importMapsPlugin({
-      inject: {
-        importMap: {
-          imports: {
-            // mock a dependency
-            // 'package-a': '/mocks/package-a.js',
-            // mock a module in your own code
-            '@mintter/client': './src/mocks/mintter-client'
-          },
-        },
-      },
-    }),
+    importMapsPlugin(),
   ],
   nodeResolve: true,
   testRunnerHtml: (testFramework) => `<html>
