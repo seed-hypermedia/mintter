@@ -16,15 +16,14 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	accounts "mintter/api/go/accounts/v1alpha"
-	"mintter/backend/ipfsutil"
 )
 
 // backend is the glue between major pieces of Mintter application.
 type backend struct {
 	// log  *zap.Logger
-	repo   *repo
-	store  *patchStore
-	libp2p *ipfsutil.LibP2PNode
+	repo  *repo
+	store *patchStore
+	p2p   *p2pNode
 
 	startTime time.Time
 
@@ -32,11 +31,11 @@ type backend struct {
 	registerMu sync.Mutex
 }
 
-func newBackend(r *repo, store *patchStore, libp2p *ipfsutil.LibP2PNode) *backend {
+func newBackend(r *repo, store *patchStore, p2p *p2pNode) *backend {
 	srv := &backend{
 		repo:      r,
 		store:     store,
-		libp2p:    libp2p,
+		p2p:       p2p,
 		startTime: time.Now().UTC(),
 	}
 
@@ -216,8 +215,11 @@ func (srv *backend) getDevice(c cid.Cid, sp signedPatch) (*accounts.Device, erro
 }
 
 func (srv *backend) GetDeviceAddrs(d DeviceID) ([]multiaddr.Multiaddr, error) {
-	// TODO: lazy libp2p after repo ready
+	ipfs, err := srv.p2p.IPFS()
+	if err != nil {
+		return nil, err
+	}
 
-	info := srv.libp2p.Host.Peerstore().PeerInfo(d.PeerID())
+	info := ipfs.Host.Peerstore().PeerInfo(d.PeerID())
 	return peer.AddrInfoToP2pAddrs(&info)
 }

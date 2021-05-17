@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"runtime"
 	"time"
 
@@ -26,31 +25,17 @@ func main() {
 		kong.Description("Version: "+backend.Version),
 	)
 
-	ctx := mainutil.TrapSignals()
-
 	mainutil.Run(func() error {
 		log := backend.NewLogger(cfg)
 		defer log.Sync()
 
 		app := fx.New(
 			backend.Module(cfg, log),
+			fx.StopTimeout(1*time.Minute),
 		)
 
-		if err := app.Start(ctx); err != nil {
-			return err
-		}
+		app.Run()
 
-		<-ctx.Done()
-
-		stopCtx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
-		defer cancel()
-
-		return app.Stop(stopCtx)
+		return nil
 	})
-
-	// d := backend.NewDaemon(cfg)
-
-	// mainutil.Run(func() error {
-	// 	return d.Run(ctx)
-	// })
 }
