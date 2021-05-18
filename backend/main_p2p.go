@@ -2,9 +2,7 @@ package backend
 
 import (
 	"context"
-	"path/filepath"
 
-	"mintter/backend/badger3ds"
 	"mintter/backend/config"
 	"mintter/backend/ipfsutil"
 
@@ -18,10 +16,9 @@ import (
 )
 
 var moduleP2P = fx.Options(
-	fx.Provide(provideP2PConfig,
+	fx.Provide(
 		provideLibp2p,
-		ipfsutil.DefaultBootstrapPeers,
-		provideDatastore,
+		provideBootstrapPeers,
 		ipfsutil.NewBlockstore,
 		provideBitswap,
 		provideReprovider,
@@ -31,27 +28,16 @@ var moduleP2P = fx.Options(
 	),
 )
 
-func provideP2PConfig(cfg config.Config) config.P2P {
-	return cfg.P2P
-}
-
-func provideDatastore(lc fx.Lifecycle, cfg config.Config) (datastore.Batching, error) {
-	ds, err := badger3ds.NewDatastore(badger3ds.DefaultOptions(filepath.Join(cfg.RepoPath, "badger-v3")))
-	if err != nil {
-		return nil, err
+func provideBootstrapPeers(cfg config.P2P) ipfsutil.Bootstrappers {
+	if cfg.NoBootstrap {
+		return nil
 	}
 
-	lc.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
-			return ds.Close()
-		},
-	})
-
-	return ds, nil
+	return ipfsutil.DefaultBootstrapPeers()
 }
 
 // provideLibp2p assembles libp2p node ready to use. Listening must be started elsewhere.
-func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ds datastore.Batching, r *repo, boot ipfsutil.Bootstrappers) (*ipfsutil.LibP2PNode, error) {
+func provideLibp2p(lc *lifecycle, cfg config.P2P, ds datastore.Batching, r *repo, boot ipfsutil.Bootstrappers) (*ipfsutil.LibP2PNode, error) {
 	opts := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
 	}
@@ -82,7 +68,7 @@ func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ds datastore.Batching, r *re
 	return node, nil
 }
 
-func provideBitswap(lc fx.Lifecycle, n *ipfsutil.LibP2PNode, bs blockstore.Blockstore) (*ipfsutil.Bitswap, error) {
+func provideBitswap(lc *lifecycle, n *ipfsutil.LibP2PNode, bs blockstore.Blockstore) (*ipfsutil.Bitswap, error) {
 	bswap, err := ipfsutil.NewBitswap(n.Host, n.Routing, bs)
 	if err != nil {
 		return nil, err
@@ -97,7 +83,7 @@ func provideBitswap(lc fx.Lifecycle, n *ipfsutil.LibP2PNode, bs blockstore.Block
 	return bswap, nil
 }
 
-func provideReprovider(lc fx.Lifecycle, bs blockstore.Blockstore, ds datastore.Batching, n *ipfsutil.LibP2PNode) (provider.System, error) {
+func provideReprovider(lc *lifecycle, bs blockstore.Blockstore, ds datastore.Batching, n *ipfsutil.LibP2PNode) (provider.System, error) {
 	sys, err := ipfsutil.NewProviderSystem(bs, ds, n.Routing)
 	if err != nil {
 		return nil, err
@@ -116,7 +102,7 @@ func provideReprovider(lc fx.Lifecycle, bs blockstore.Blockstore, ds datastore.B
 	return sys, nil
 }
 
-func provideBlockService(lc fx.Lifecycle, bs blockstore.Blockstore, bswap *ipfsutil.Bitswap) (blockservice.BlockService, error) {
+func provideBlockService(bs blockstore.Blockstore, bswap *ipfsutil.Bitswap) (blockservice.BlockService, error) {
 	blksvc := blockservice.New(bs, bswap)
 
 	// No need to call Close() for block service, because it's only closing the exchange,
@@ -136,38 +122,7 @@ func provideIPFS(n *ipfsutil.LibP2PNode, bs blockservice.BlockService, bswap *ip
 	}
 }
 
-func provideP2P(lc fx.Lifecycle, log *zap.Logger, cfg config.P2P, node *ipfsutil.IPFS, repo *repo) (*p2pNode, error) {
-	p2p := newP2PNode(node, repo)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	done := make(chan struct{})
-	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			mas, err := ipfsutil.ParseMultiaddrs([]string{cfg.Addr}) // This will eventually be a slice of addrs.
-			if err != nil {
-				return err
-			}
-
-			go func() {
-				if err := p2p.Start(ctx, mas...); err != nil && err != context.Canceled {
-					panic(err) // This can only happen if there's a bug.
-				}
-				close(done)
-				addrs, err := node.Host.Network().InterfaceListenAddresses()
-				if err != nil {
-					panic(err)
-				}
-				log.Info("P2PNodeStarted", zap.Any("addrs", addrs))
-			}()
-
-			return nil
-		},
-		OnStop: func(context.Context) error {
-			cancel()
-			<-done
-			return nil
-		},
-	})
-
+func provideP2P(log *zap.Logger, cfg config.P2P, node *ipfsutil.IPFS, repo *repo, boot ipfsutil.Bootstrappers) (*p2pNode, error) {
+	p2p := newP2PNode(cfg, log.Named("p2p"), node, boot)
 	return p2p, nil
 }

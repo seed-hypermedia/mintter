@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/lightningnetwork/lnd/aezeed"
@@ -21,9 +22,10 @@ import (
 // backend is the glue between major pieces of Mintter application.
 type backend struct {
 	// log  *zap.Logger
-	repo  *repo
-	store *patchStore
-	p2p   *p2pNode
+	repo    *repo
+	patches *patchStore
+	p2p     *p2pNode
+	ready   chan struct{}
 
 	startTime time.Time
 
@@ -34,12 +36,43 @@ type backend struct {
 func newBackend(r *repo, store *patchStore, p2p *p2pNode) *backend {
 	srv := &backend{
 		repo:      r,
-		store:     store,
-		p2p:       p2p,
+		patches:   store,
 		startTime: time.Now().UTC(),
+		ready:     make(chan struct{}),
+		p2p:       p2p,
 	}
 
 	return srv
+}
+
+func (srv *backend) Start(ctx context.Context) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-srv.repo.Ready():
+		if err := srv.p2p.Start(ctx); err != nil {
+			return fmt.Errorf("failed to start p2p node: %w", err)
+		}
+	}
+
+	acc, err := srv.repo.Account()
+	if err != nil {
+		panic(err)
+	}
+	blk, err := blocks.NewBlockWithCid(nil, cid.Cid(acc.id))
+	if err != nil {
+		panic(err)
+	}
+	if err := srv.p2p.BlockService.AddBlock(blk); err != nil {
+		panic(err)
+	}
+	// time.Sleep(10 * time.Second) // Give some time for the node to warm up.
+	// err = srv.p2p.ipfs.Provider.Provide(cid.Cid(acc.id))
+	fmt.Println("account provided", err)
+
+	close(srv.ready)
+
+	return nil
 }
 
 // Register an account on this node using provided mnemonic.
@@ -62,7 +95,7 @@ func (srv *backend) Register(ctx context.Context, m aezeed.Mnemonic, passphraze 
 
 		aid := cid.Cid(acc.id)
 
-		state, err := srv.store.LoadState(ctx, aid)
+		state, err := srv.patches.LoadState(ctx, aid)
 		if err != nil {
 			return AccountID{}, fmt.Errorf("failed to load account state: %w", err)
 		}
@@ -107,7 +140,7 @@ func (srv *backend) register(ctx context.Context, state *state, binding AccountB
 		return fmt.Errorf("failed to create a patch: %w", err)
 	}
 
-	if err := srv.store.AddPatch(ctx, sp); err != nil {
+	if err := srv.patches.AddPatch(ctx, sp); err != nil {
 		return fmt.Errorf("failed to add patch: %w", err)
 	}
 
@@ -148,7 +181,7 @@ func (srv *backend) UpdateProfile(ctx context.Context, in *accounts.Profile) (*a
 		return nil, fmt.Errorf("failed to produce patch to update profile: %w", err)
 	}
 
-	if err := srv.store.AddPatch(ctx, sp); err != nil {
+	if err := srv.patches.AddPatch(ctx, sp); err != nil {
 		return nil, fmt.Errorf("failed to store patch: %w", err)
 	}
 
@@ -156,7 +189,7 @@ func (srv *backend) UpdateProfile(ctx context.Context, in *accounts.Profile) (*a
 }
 
 func (srv *backend) GetAccountState(ctx context.Context, id AccountID) (*state, *accounts.Account, error) {
-	state, err := srv.store.LoadState(ctx, cid.Cid(id))
+	state, err := srv.patches.LoadState(ctx, cid.Cid(id))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to load state: %w", err)
 	}
@@ -215,11 +248,20 @@ func (srv *backend) getDevice(c cid.Cid, sp signedPatch) (*accounts.Device, erro
 }
 
 func (srv *backend) GetDeviceAddrs(d DeviceID) ([]multiaddr.Multiaddr, error) {
-	ipfs, err := srv.p2p.IPFS()
+	ipfs, err := srv.readyIPFS()
 	if err != nil {
 		return nil, err
 	}
 
 	info := ipfs.Host.Peerstore().PeerInfo(d.PeerID())
 	return peer.AddrInfoToP2pAddrs(&info)
+}
+
+func (srv *backend) readyIPFS() (*p2pNode, error) {
+	select {
+	case <-srv.ready:
+		return srv.p2p, nil
+	default:
+		return nil, fmt.Errorf("p2p node is not ready yet")
+	}
 }
