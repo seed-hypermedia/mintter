@@ -12,7 +12,7 @@ import * as DropdownMenu from '@mintter/ui-legacy/dropdown-menu';
 import { Container } from '@components/container';
 import { getPath } from '@utils/routes';
 
-import { Link } from '../link';
+import { Link } from './link';
 
 interface NavItemProps {
   href: string;

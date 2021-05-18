@@ -23,6 +23,7 @@ import {
   createStrikethroughPlugin,
   createCodePlugin,
   createUnderlinePlugin,
+  withNodeId,
 } from '@udecode/slate-plugins';
 import { createId } from '@utils/create-id';
 import { createBlockPlugin, ELEMENT_BLOCK, blockOptions } from './block-plugin';
@@ -37,7 +38,8 @@ import {
 } from './strikethrough-plugin';
 import { Toolbar } from './toolbar';
 import { underlineOptions, underlineAutoformatRules } from './underline-plugin';
-import { createQuotePlugin, quoteOptions } from './quote-plugin';
+import { createQuotePlugin, ELEMENT_QUOTE, quoteOptions } from './quote-plugin';
+import { createLinkPlugin, ELEMENT_LINK, linkOptions } from './link-plugin';
 
 const initialValue = [
   {
@@ -48,12 +50,18 @@ const initialValue = [
       {
         text: 'Hello world ',
       },
+      // {
+      //   type: 'quote',
+      //   id: createId(),
+      //   url: `${createId()}/${createId()}`,
+      //   children: [{ text: '' }],
+      // },
       {
-        type: 'quote',
+        type: ELEMENT_LINK,
+        url: 'https://mintter.com',
         id: createId(),
-        url: `${createId()}/${createId()}`,
-        children: [{ text: '' }],
-      },
+        children: [{text: 'link here'}]
+      }
     ],
   },
 ];
@@ -121,6 +129,13 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           createCodePlugin(),
           createUnderlinePlugin(),
           createQuotePlugin(),
+          createLinkPlugin(),
+          {
+            withOverrides: withNodeId({
+              idCreator: () => createId(),
+              allow: [ELEMENT_LINK, ELEMENT_QUOTE]
+            })
+          }
         ]}
         options={{
           ...blockOptions,
@@ -130,6 +145,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           ...strikethroughOptions,
           ...underlineOptions,
           ...quoteOptions,
+          ...linkOptions
         }}
         initialValue={initialValue}
         onChange={(nv) => setV(nv as any)}
