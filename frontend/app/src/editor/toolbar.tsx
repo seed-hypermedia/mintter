@@ -14,6 +14,7 @@ import {
 } from '@udecode/slate-plugins';
 import {
   BalloonToolbar,
+  ToolbarElement,
   ToolbarMark,
   ToolbarMarkProps as DefaultToolbarMarkProps,
   useBalloonMove,
@@ -26,6 +27,8 @@ import { Icon, icons } from '@mintter/ui/icon';
 import { Button } from '@mintter/ui/button';
 import { Tooltip } from '@components/tooltip';
 import { Box } from '@mintter/ui/box';
+import { ELEMENT_LINK } from './link-plugin/create-link-plugin';
+import { ToolbarLink } from './link-plugin/link-toolbar';
 
 export function Toolbar() {
   const ref = useRef<HTMLDivElement>(null);
@@ -77,6 +80,7 @@ export function Toolbar() {
           label="Strikethrough (⌘+Shift+S)"
           icon="Strikethrough"
         />
+        <ToolbarLink />
       </Box>
     </Portal.Root>
   );

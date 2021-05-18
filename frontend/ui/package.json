@@ -69,6 +69,7 @@
     "@stitches/core": "0.1.9",
     "@stitches/react": "0.1.9",
     "autosize": "^4.0.2",
+    "nanoid": "^3.1.23",
     "react-merge-refs": "^1.1.0",
     "use-dark-mode": "^2.3.1",
     "uuid": "^8.3.2"

@@ -11,7 +11,7 @@ import {
   useConnectionCreate,
 } from '@mintter/hooks';
 import { createDraft } from '@mintter/client';
-import { Link } from '../link';
+import { Link } from '../components/link';
 import { Connections } from '../connections';
 import { SuggestedConnections } from '../suggested-connections';
 import { MainColumn } from '../main-column';

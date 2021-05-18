@@ -45,7 +45,7 @@ export const Button = styled('button', {
         '&:hover': {
           backgroundColor: '$$solid-hovered-background-color',
         },
-        '&:active': {
+        '&:active, &:focus': {
           backgroundColor: '$$solid-active-background-color',
         },
       },
@@ -57,7 +57,7 @@ export const Button = styled('button', {
         '&:hover': {
           backgroundColor: '$$outlined-hovered-background-color',
         },
-        '&:active': {
+        '&:active, &:focus': {
           backgroundColor: '$$outlined-active-background-color',
         },
       },
@@ -67,7 +67,7 @@ export const Button = styled('button', {
         '&:hover': {
           backgroundColor: '$$outlined-hovered-background-color',
         },
-        '&:active': {
+        '&:active, &:focus': {
           backgroundColor: '$$outlined-active-background-color',
         },
       },

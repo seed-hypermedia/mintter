@@ -10,7 +10,7 @@ import { Text } from '@mintter/ui/text';
 import { Avatar } from '@components/avatar';
 import { getPath } from '@utils/routes';
 
-import { Link } from './link';
+import { Link } from './components/link';
 
 export function DocumentList({
   data,
