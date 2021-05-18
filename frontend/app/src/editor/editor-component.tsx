@@ -50,7 +50,8 @@ const initialValue = [
       },
       {
         type: 'quote',
-        id: `${createId()}/${createId()}`,
+        id: createId(),
+        url: `${createId()}/${createId()}`,
         children: [{ text: '' }],
       },
     ],

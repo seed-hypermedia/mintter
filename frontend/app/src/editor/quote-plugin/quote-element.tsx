@@ -3,35 +3,35 @@ import { Text } from '@mintter/ui/text';
 import { Box } from '@mintter/ui/box';
 import type { TRenderElementProps } from '@udecode/slate-plugins-core';
 import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { useQuote } from '@mintter/hooks';
+import { useQuote, SlateQuote, toSlateQuote} from '@mintter/hooks';
+import {ELEMENT_QUOTE} from './create-quote-plugin'
+import { createId } from '@utils/create-id';
+import { useEffect } from 'react';
 
 export function QuoteElement({
   attributes,
   className,
   element,
   children,
-}: TRenderElementProps<{
-  type: ELEMENT_QUOTE;
-  id: string;
-  children: { text: string }[];
-}>) {
+}: TRenderElementProps<SlateQuote>) {
   const focused = useFocused();
   const selected = useSelected();
-  const quote = useQuote(element.id);
-  console.log('🚀 ~ file: quote-element.tsx ~ line 21 ~ quote', quote);
-  let qRender;
+  const quote = useQuote(element.url);
+  let qRender: string;
 
   if (quote.isLoading) {
     qRender = '...';
   }
 
   if (quote.isError) {
-    qRender = `Error fetching block ${element.linkKey}`;
+    qRender = `Error fetching quote ${element.id}`;
   }
 
   if (quote.isSuccess) {
-    qRender = 'success!!'
-    console.log(quote.data)
+
+    qRender = toSlateQuote(quote.data).map(node => (
+      <span>{node.text}</span>
+    ));
     return (
       <span {...attributes} data-quote-id={element.id}>
         {children}
@@ -41,18 +41,7 @@ export function QuoteElement({
           css={{
             position: 'relative',
             overflow: 'hidden',
-            '&:before': {
-              content: '',
-              position: 'absolute',
-              display: 'block',
-              width: '100%',
-              height: focused && selected ? '100%' : 3,
-              background: '$success-softer',
-              bottom: -3,
-              left: 0,
-              zIndex: -1,
-              transition: 'height 0.025s ease-out',
-            },
+            color: focused && selected ? '$secondary-stronger' : '$secondary-strong',
             '&:hover': {
               cursor: 'pointer',
               '&:before': {

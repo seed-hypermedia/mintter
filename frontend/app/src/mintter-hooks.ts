@@ -18,6 +18,7 @@ import type { QueryOptions } from '@testing-library/dom';
 import type daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
 import { buildBlock } from '@utils/generate';
 import { toSlateBlock } from './editor/slate-block';
+import { ELEMENT_QUOTE } from './editor/quote-plugin';
 
 export function useAccount<TData = accounts.Account.AsObject, TError = unknown>(
   accountId?: string,
@@ -262,16 +263,31 @@ export function useDocument<TError = unknown>(documentId: string) {
   }
 }
 
+export type SlateVoidChildren = {
+  children: { text: string }[];
+};
+export type SlateTextRun = Partial<Omit<documents.TextRun.AsObject, 'text'>> &
+  Pick<documents.TextRun.AsObject, 'text'>;
 
-export function useQuote<TError = unknown>(quoteId: string) {
-  const [documentId, blockId] = quoteId.split('/')
-  //query document
-  // const document = useDocument(documentId)
-  const quoteQuery = useQuery(['Quote', blockId], async () => {
-    const block = buildBlock({id: blockId})
+export type SlateQuote = SlateVoidChildren & {
+  type: string;
+  id: string;
+  url: string;
+};
+
+export type SlateInlineElement = SlateTextRun | SlateQuote;
+
+export function useQuote<TError = unknown>(quoteUrl: string) {
+  if (!isValidQuoteUrl(quoteUrl)) throw new Error(`useQuote > Invalid Quote URL: ${quoteUrl}`)
+  const [documentId, quoteId] = quoteUrl.split('/')
+  const quoteQuery = useQuery(['Quote', quoteId], async () => {
+    // query document
+    // getBlocksMap
+    // return quoteBlock
+    const block = buildBlock({id: quoteId})
     return Promise.resolve(block)
   }, {
-    enabled: !!blockId
+    enabled: !!quoteId
   })
 
   const data = React.useMemo(() => quoteQuery.data?.toObject(), [quoteQuery.data, quoteId])
@@ -280,4 +296,35 @@ export function useQuote<TError = unknown>(quoteId: string) {
     ...quoteQuery,
     data
   }
+}
+
+function isValidQuoteUrl(url: string): boolean {
+  return url.includes('/') && url.split('/').length == 2
+}
+
+export function toSlateQuote(entry: documents.Block.AsObject): SlateTextRun[] {
+  return entry.elementsList.map((element) => {
+    console.log("🚀 ~ element", element)
+    // assume elements are type textRun for now
+    let node = {};
+    if (element.textRun) {
+      const {textRun} = element
+      console.log("🚀 ~ textRun", textRun.text)
+      node.text = textRun.text
+      Object.keys(textRun).forEach(key => {
+        console.log("🚀 ~ key", key, typeof textRun[key])
+        if (typeof textRun[key] === 'boolean' && textRun[key]) {
+          node[key] = true
+        }
+      })
+
+      return node
+      // console.log({node})
+      // return element.textRun
+
+    }
+
+    return null
+    
+  })
 }
