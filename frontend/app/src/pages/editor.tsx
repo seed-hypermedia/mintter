@@ -19,6 +19,7 @@ import { Separator } from '@components/separator';
 import { useSidePanel } from '../sidepanel';
 import { EditorComponent } from '@mintter/editor/editor-component';
 import 'show-keys'
+import { useStoreEditorValue } from '@udecode/slate-plugins-core';
 
 export default function EditorPage() {
   const history = useHistory();
@@ -28,6 +29,7 @@ export default function EditorPage() {
   const titleRef = useRef<HTMLInputElement>(null);
   const linkMenu = useMenuState({ loop: true, wrap: true });
   const subtitleRef = useRef<HTMLInputElement>(null);
+  const editorValue = useStoreEditorValue("editor")
 
   const [title, setTitle] = useState<string>("")
   const [subtitle, setSubtitle] = useState<string>("")
@@ -39,8 +41,9 @@ export default function EditorPage() {
   const { isSidepanelOpen, sidepanelObjects, sidepanelSend } = useSidePanel();
 
   function saveDocument() {
+
     // const blocks = createBlocksMap(editor);
-    // console.log('save now', { editorValue, blocks });
+    console.log('save now', editorValue);
   }
 
   if (isError) {
