@@ -41,7 +41,7 @@ type grpcServer struct {
 	ready chan struct{}
 }
 
-func provideGRPCServer(lc fx.Lifecycle, cfg config.Config) (*grpcServer, *grpc.Server, error) {
+func provideGRPCServer(lc *lifecycle, cfg config.Config) (*grpcServer, *grpc.Server, error) {
 	srv := &grpcServer{
 		grpc:  grpc.NewServer(),
 		ready: make(chan struct{}),
@@ -49,18 +49,18 @@ func provideGRPCServer(lc fx.Lifecycle, cfg config.Config) (*grpcServer, *grpc.S
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			var lc net.ListenConfig
-			lis, err := lc.Listen(ctx, "tcp", ":"+cfg.GRPCPort)
+			var netc net.ListenConfig
+			lis, err := netc.Listen(ctx, "tcp", ":"+cfg.GRPCPort)
 			if err != nil {
 				return err
 			}
 			srv.lis = lis
-			go func() {
+
+			lc.g.Go(func() error {
 				close(srv.ready)
-				if err := srv.grpc.Serve(lis); err != nil {
-					panic(err) // Proper shutdown will return nil.
-				}
-			}()
+				return srv.grpc.Serve(lis)
+			})
+
 			return nil
 		},
 		OnStop: func(context.Context) error {
@@ -85,13 +85,11 @@ type httpServer struct {
 	ready chan struct{}
 }
 
-func provideHTTPServer(lc fx.Lifecycle, cfg config.Config) (*httpServer, *http.Server, error) {
+func provideHTTPServer(lc *lifecycle, cfg config.Config) (*httpServer, *http.Server, error) {
 	wrap := &httpServer{
 		srv:   &http.Server{},
 		ready: make(chan struct{}),
 	}
-
-	errc := make(chan error, 1)
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -101,26 +99,25 @@ func provideHTTPServer(lc fx.Lifecycle, cfg config.Config) (*httpServer, *http.S
 				return err
 			}
 			wrap.lis = l
-			go func() {
+			lc.g.Go(func() error {
 				close(wrap.ready)
 				err := wrap.srv.Serve(l)
-				if !errors.Is(err, http.ErrServerClosed) {
-					panic(err) // Initialization bug. Should crash.
+				if errors.Is(err, http.ErrServerClosed) {
+					return nil
 				}
-				errc <- err
-			}()
+				return err
+			})
+
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			err := wrap.srv.Shutdown(ctx)
-			<-errc
-			return err
+			return wrap.srv.Shutdown(ctx)
 		},
 	})
 
 	return wrap, wrap.srv, nil
 }
 
-func registerHTTP(lc fx.Lifecycle, srv *http.Server, h http.Handler) {
+func registerHTTP(srv *http.Server, h http.Handler) {
 	srv.Handler = h
 }
