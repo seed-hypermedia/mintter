@@ -2,6 +2,7 @@ package backend
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 
 	"github.com/dgraph-io/badger/v3"
@@ -75,24 +76,47 @@ func provideBackend(lc *lifecycle, r *repo, store *patchStore, p2p *p2pNode) (*b
 
 func logAppLifecycle(lc *lifecycle, log *zap.Logger, cfg config.Config, grpc *grpcServer, srv *httpServer, back *backend) {
 	log = log.Named("daemon")
+
+	await := func(ctx context.Context, c <-chan struct{}) error {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-c:
+			return nil
+		}
+	}
+
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			go func() {
-				<-grpc.ready
-				<-srv.ready
+			lc.g.Go(func() error {
+				if err := await(lc.ctx, grpc.ready); err != nil {
+					return err
+				}
+
+				if err := await(lc.ctx, srv.ready); err != nil {
+					return err
+				}
+
 				log.Info("DaemonStarted",
 					zap.String("grpcListener", grpc.lis.Addr().String()),
 					zap.String("httpListener", srv.lis.Addr().String()),
 					zap.String("repoPath", cfg.RepoPath),
 					zap.String("version", Version),
 				)
-				<-back.ready
+
+				if err := await(lc.ctx, back.ready); err != nil {
+					return err
+				}
+
 				addrs, err := back.p2p.Host.Network().InterfaceListenAddresses()
 				if err != nil {
-					panic(err)
+					return fmt.Errorf("failed to parse addrs: %w", err)
 				}
+
 				log.Info("P2PNodeStarted", zap.Any("addrs", addrs))
-			}()
+
+				return nil
+			})
 			return nil
 		},
 		OnStop: func(context.Context) error {
