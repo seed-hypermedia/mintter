@@ -19,7 +19,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func TestLib(t *testing.T) {
+func TestLibp2p(t *testing.T) {
 	cfg := config.P2P{
 		Addr:        "/ip4/0.0.0.0/tcp/0",
 		NoBootstrap: true,
@@ -44,6 +44,7 @@ func TestLib(t *testing.T) {
 		fx.Supply(cfg),
 		fx.Supply(repo),
 		fx.Provide(
+			provideLifecycle,
 			func() datastore.Batching {
 				return ds
 			},

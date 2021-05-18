@@ -45,6 +45,8 @@ func TestRegister(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, codes.FailedPrecondition, stat.Code())
 
+	back.GetAccountState(ctx, back.repo.acc.id)
+
 	// acc, err := srv.backend.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
 	// require.NoError(t, err, "must get account after registration")
 	// require.NotNil(t, acc)
@@ -69,6 +71,9 @@ func TestRegister_Concurrent(t *testing.T) {
 			}
 		}()
 	}
+
+	// One register request must succeed and backend must become ready eventually.
+	<-back.ready
 
 	for i := 0; i < c-1; i++ {
 		err := <-errs

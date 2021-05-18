@@ -6,7 +6,9 @@ import (
 
 	"github.com/libp2p/go-libp2p-core/protocol"
 	"github.com/multiformats/go-multiaddr"
+	"go.uber.org/zap"
 
+	"mintter/backend/config"
 	"mintter/backend/ipfsutil"
 )
 
@@ -23,53 +25,58 @@ var userAgent = "mintter/" + Version
 // p2pNode wraps IPFS node that would be only initialized after account is registered within the node,
 // so all the components must only be accessed after making sure node is ready.
 type p2pNode struct {
-	ipfs  *ipfsutil.IPFS
-	repo  *repo
-	ready chan struct{}
+	*ipfsutil.IPFS
+
+	cfg  config.P2P
+	boot ipfsutil.Bootstrappers
+	log  *zap.Logger
 }
 
 // newP2PNode creates a new Mintter P2P wrapper.
-func newP2PNode(n *ipfsutil.IPFS, r *repo) *p2pNode {
+func newP2PNode(cfg config.P2P, log *zap.Logger, n *ipfsutil.IPFS, boot ipfsutil.Bootstrappers) *p2pNode {
 	p2p := &p2pNode{
-		ipfs:  n,
-		repo:  r,
-		ready: make(chan struct{}),
+		IPFS: n,
+
+		cfg:  cfg,
+		boot: boot,
+		log:  log,
 	}
 
 	return p2p
 }
 
-// Start will start the services when the underlying repo is ready. It will start
-// listening on the given addresses. The call is blocking and will return error
-// when ctx is canceled before repo is ready.
-func (n *p2pNode) Start(ctx context.Context, addrs ...multiaddr.Multiaddr) error {
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-n.repo.Ready():
-		// Start initialization only after repo is ready.
+// Start will start listening on the configured addressess, and will bootstrap the network if needed.
+// It will block and return when bootstrapping is finished.
+func (n *p2pNode) Start(ctx context.Context) error {
+	ma, err := multiaddr.NewMultiaddr(n.cfg.Addr)
+	if err != nil {
+		return fmt.Errorf("failed to parse listen addr: %w", err)
 	}
 
-	if err := n.ipfs.Host.Network().Listen(addrs...); err != nil {
+	if err := n.Host.Network().Listen(ma); err != nil {
 		return err
 	}
 
-	close(n.ready)
+	if !n.cfg.NoBootstrap {
+		res := ipfsutil.Bootstrap(ctx, n.Host, n.Routing, n.boot)
+		n.log.Info("BootstrapEnded",
+			zap.NamedError("dhtError", res.RoutingErr),
+			zap.Int("peersTotal", len(n.boot)),
+			zap.Int("failedConnectionsTotal", int(res.NumFailedConnections)),
+		)
+
+		if res.NumFailedConnections > 0 {
+			for i, err := range res.ConnectErrs {
+				if err == nil {
+					continue
+				}
+				n.log.Debug("BootstrapConnectionError",
+					zap.String("peerID", n.boot[i].ID.String()),
+					zap.Error(err),
+				)
+			}
+		}
+	}
 
 	return nil
-}
-
-// IPFS returns the undelying ipfs instance or fails if it's not ready yet.
-func (n *p2pNode) IPFS() (*ipfsutil.IPFS, error) {
-	select {
-	case <-n.Ready():
-		return n.ipfs, nil
-	default:
-		return nil, fmt.Errorf("p2p node is not ready yet")
-	}
-}
-
-// Ready can be used to check when the node is ready to use.
-func (n *p2pNode) Ready() <-chan struct{} {
-	return n.ready
 }

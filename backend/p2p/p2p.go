@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"mintter/backend"
 	"mintter/backend/cleanup"
 	"mintter/backend/config"
 	"mintter/backend/document"
@@ -47,7 +46,7 @@ const (
 const defaultSyncPeriod = 10 * time.Minute
 
 // userAgent is type & version of the mtt service.
-var userAgent = "mintter/" + backend.Version
+var userAgent = "mintter/<dev>"
 
 // Errors.
 const (
