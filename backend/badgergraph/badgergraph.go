@@ -13,13 +13,14 @@ import (
 // DB is a wrapper around Badger that can allocate UIDs.
 type DB struct {
 	Badger      *badger.DB
+	schema      SchemaRegistry
 	uids        *badger.Sequence
 	cardinality *badger.Sequence
 	ns          string
 }
 
 // NewDB creates a new DB instance.
-func NewDB(b *badger.DB, namespace string) (*DB, error) {
+func NewDB(b *badger.DB, namespace string, schema SchemaRegistry) (*DB, error) {
 	uidsKey, _ := makeKey(namespace, PrefixInternal, KeyTypeData, "last-uid", 0)
 
 	// We want our uid sequence to start from 1, so we do all this crazyness
@@ -60,6 +61,7 @@ func NewDB(b *badger.DB, namespace string) (*DB, error) {
 
 	return &DB{
 		Badger:      b,
+		schema:      schema,
 		uids:        uids,
 		ns:          namespace,
 		cardinality: cardinality,

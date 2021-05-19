@@ -1,17 +1,11 @@
 package badgergraph
 
 import (
-	"encoding/binary"
 	"fmt"
 	"math"
 
 	"github.com/dgraph-io/badger/v3"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/anypb"
 )
-
-// PredicateNodeType is an internal predicate that specified type of the node.
-const PredicateNodeType = "$type"
 
 // NewTransaction starts a new transaction.
 func (db *DB) NewTransaction(update bool) *Txn {
@@ -64,12 +58,7 @@ func (txn *Txn) XID(nodeType string, uid uint64) ([]byte, error) {
 // New UIDs can only be allocated in the write mode, so this call will fail
 // in read-only transaction when there's no UID allocated already for this node.
 func (txn *Txn) UID(nodeType string, xid []byte) (uint64, error) {
-	xidPredicate := nodeType + ".$xid"
-	if xid == nil {
-		panic("BUG: can't allocate uids for nodes without external ids yet")
-	}
-
-	uid, err := txn.GetIndexUnique(xidPredicate, xid)
+	uid, err := txn.UIDRead(nodeType, xid)
 	if err == nil {
 		return uid, nil
 	}
@@ -82,37 +71,43 @@ func (txn *Txn) UID(nodeType string, xid []byte) (uint64, error) {
 		return 0, err
 	}
 
-	uid, err = txn.db.uids.Next()
+	return txn.UIDAllocate(nodeType, xid)
+}
+
+// UIDRead reads a previously allocated UID.
+func (txn *Txn) UIDRead(nodeType string, xid []byte) (uint64, error) {
+	xidPredicate := nodeType + ".$xid"
+	if xid == nil {
+		panic("BUG: can't allocate uids for nodes without external ids yet")
+	}
+
+	return txn.GetIndexUnique(xidPredicate, xid)
+}
+
+// UIDAllocate allocates a new uid for node type.
+func (txn *Txn) UIDAllocate(nodeType string, xid []byte) (uint64, error) {
+	if xid == nil {
+		panic("BUG: can't allocate uids for nodes without external ids yet")
+	}
+
+	if !txn.canWrite {
+		return 0, fmt.Errorf("can't allocate uid in read-only transaction")
+	}
+
+	uid, err := txn.db.uids.Next()
 	if err != nil {
 		return 0, err
 	}
 
-	if err := txn.SetProperty(uid, xidPredicate, xid, true); err != nil {
+	if err := txn.WriteTriple(uid, txn.db.schema.schema[nodeType][xidPredicate], xid); err != nil {
 		return 0, err
 	}
 
-	if err := txn.SetProperty(uid, PredicateNodeType, nodeType, true); err != nil {
+	if err := txn.WriteTriple(uid, txn.db.schema.schema[nodeType][nodeTypePredicate], nodeType); err != nil {
 		return 0, err
 	}
 
-	return uid, nil
-}
-
-// SetProperty sets a single literal node property.
-func (txn *Txn) SetProperty(subject uint64, predicate string, value interface{}, index bool) error {
-	var vt ValueType
-	switch value.(type) {
-	case string:
-		vt = ValueTypeString
-	case []byte:
-		vt = ValueTypeBinary
-	case proto.Message:
-		vt = ValueTypeProto
-	default:
-		panic("invalid value type for literal predicate")
-	}
-
-	return txn.setPredicate(subject, predicate, value, vt, math.MaxUint64, index)
+	return uid, err
 }
 
 // GetProperty reads a single literal node property.
@@ -123,7 +118,7 @@ func (txn *Txn) GetProperty(subject uint64, predicate string) (interface{}, erro
 		return nil, err
 	}
 
-	return txn.valueFromItem(item)
+	return decodeValue(item)
 }
 
 // GetIndexUnique gets the UID of the indexed token that was set with SetLiteral.
@@ -153,20 +148,46 @@ func (txn *Txn) GetIndexUnique(predicate string, token []byte) (uint64, error) {
 	return out, nil
 }
 
-// SetRelation sets a unique relation between subject and object.
-func (txn *Txn) SetRelation(subject uint64, predicate string, object uint64, index bool) error {
-	return txn.setPredicate(subject, predicate, object, ValueTypeUID, math.MaxUint64, index)
-}
-
-// AddRelation adds a relation between subject and object. Many relations can be added.
-func (txn *Txn) AddRelation(subject uint64, predicate string, object uint64, index bool) error {
-	// TODO: do not allow adding same relation for the same subject and object to be added more than once.
-	card, err := txn.db.cardinality.Next()
+// WriteTriple writes the subject-predicate-value triple according to the schema.
+func (txn *Txn) WriteTriple(subject uint64, p Predicate, v interface{}) error {
+	data, err := encodeValue(v, p.Type)
 	if err != nil {
-		return fmt.Errorf("failed to get cardinality for relation: %w", err)
+		return fmt.Errorf("failed to encode value: %w", err)
 	}
 
-	return txn.setPredicate(subject, predicate, object, ValueTypeUID, card, index)
+	var cardinality uint64
+	if !p.IsList {
+		cardinality = math.MaxUint64
+	} else {
+		cardinality, err = txn.db.cardinality.Next()
+		if err != nil {
+			return fmt.Errorf("failed to allocate cardinality: %w", err)
+		}
+	}
+
+	if err := txn.SetEntry(badger.NewEntry(
+		dataKey(txn.db.ns, p.FullName(), subject, cardinality),
+		data,
+	).WithMeta(byte(p.Type))); err != nil {
+		return fmt.Errorf("failed to set main entry: %w", err)
+	}
+
+	switch {
+	case !p.HasIndex:
+		return nil
+	case p.HasIndex && p.IsRelation():
+		if err := txn.Set(reverseKey(txn.db.ns, p.FullName(), v.(uint64), subject), nil); err != nil {
+			return fmt.Errorf("failed to set reverse relation: %w", err)
+		}
+	case p.HasIndex && !p.IsRelation():
+		if err := txn.Set(indexKey(txn.db.ns, p.FullName(), data, subject), nil); err != nil {
+			return fmt.Errorf("failed to set index: %w", err)
+		}
+	default:
+		panic("BUG: unknown case, something weird happened here")
+	}
+
+	return nil
 }
 
 // GetForwardRelation returns the object UID of a unique predicate.
@@ -187,7 +208,7 @@ func (txn *Txn) GetForwardRelation(subject uint64, predicate string) (uint64, er
 			return 0, fmt.Errorf("invalid cardinality for unique relation")
 		}
 
-		v, err := txn.valueFromItem(it.Item())
+		v, err := decodeValue(it.Item())
 		if err != nil {
 			return 0, err
 		}
@@ -234,7 +255,7 @@ func (txn *Txn) ListRelations(subject uint64, predicate string) ([]uint64, error
 
 	var out []uint64
 	for it.Rewind(); it.Valid(); it.Next() {
-		v, err := txn.valueFromItem(it.Item())
+		v, err := decodeValue(it.Item())
 		if err != nil {
 			return nil, err
 		}
@@ -284,50 +305,6 @@ func (txn *Txn) valueIterator(prefix []byte) *badger.Iterator {
 	return txn.NewIterator(opts)
 }
 
-func (txn *Txn) valueFromItem(item *badger.Item) (interface{}, error) {
-	switch ValueType(item.UserMeta()) {
-	case ValueTypeString:
-		var out string
-		err := item.Value(func(v []byte) error {
-			out = string(v)
-			return nil
-		})
-		return out, err
-	case ValueTypeBinary:
-		var out []byte
-		err := item.Value(func(v []byte) error {
-			out = append(out, v...) // must copy the value here.
-			return nil
-		})
-		return out, err
-	case ValueTypeUID:
-		var out uint64
-		err := item.Value(func(v []byte) error {
-			out = binary.BigEndian.Uint64(v)
-			return nil
-		})
-		if out == 0 {
-			return nil, fmt.Errorf("invalid value for uid")
-		}
-		return out, err
-	case ValueTypeProto:
-		any := &anypb.Any{}
-		err := item.Value(func(v []byte) error {
-			return proto.Unmarshal(v, any)
-		})
-		if err != nil {
-			return nil, err
-		}
-		out, err := anypb.UnmarshalNew(any, proto.UnmarshalOptions{})
-		if err != nil {
-			return nil, err
-		}
-		return out, err
-	default:
-		panic("unknown value type when reading predicate")
-	}
-}
-
 // We want to support having predicates with multiple values,
 // e.g. a user with multiple emails. It's recommended to not overwrite
 // large values in Badger, thus we want to have a separate keys for each item of the list.
@@ -338,56 +315,27 @@ func (txn *Txn) valueFromItem(item *badger.Item) (interface{}, error) {
 //
 // As a consequence, there's no simple way to avoid having multiple records for the same predicate and the same object,
 // which may or may not be a problem, but is something to know.
-func (txn *Txn) setPredicate(subject uint64, predicate string, v interface{}, vt ValueType, cardinality uint64, hasInverse bool) error {
-	var data []byte
-	switch vt {
-	case ValueTypeString:
-		data = []byte(v.(string))
-	case ValueTypeBinary:
-		data = v.([]byte)
-	case ValueTypeUID:
-		data = make([]byte, 8)
-		binary.BigEndian.PutUint64(data, v.(uint64))
-	case ValueTypeProto:
-		any, err := anypb.New(v.(proto.Message))
-		if err != nil {
-			return err
-		}
+// func (txn *Txn) setPredicate(subject uint64, predicate string, v interface{}, vt ValueType, cardinality uint64, hasInverse bool) error {
+// 	data, err := encodeValue(v, vt)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to encode value: %w", err)
+// 	}
 
-		data, err = proto.Marshal(any)
-		if err != nil {
-			return fmt.Errorf("failed to marshal proto value: %w", err)
-		}
-	default:
-		panic("BUG: unknown value type")
-	}
+// 	k := dataKey(txn.db.ns, predicate, subject, cardinality)
 
-	k := dataKey(txn.db.ns, predicate, subject, cardinality)
+// 	if hasInverse {
+// 		if vt == ValueTypeUID {
+// 			revK := reverseKey(txn.db.ns, predicate, v.(uint64), subject)
+// 			if err := txn.Set(revK, nil); err != nil {
+// 				return err
+// 			}
+// 		} else {
+// 			revK := indexKey(txn.db.ns, predicate, data, subject)
+// 			if err := txn.Set(revK, nil); err != nil {
+// 				return err
+// 			}
+// 		}
+// 	}
 
-	if hasInverse {
-		if vt == ValueTypeUID {
-			revK := reverseKey(txn.db.ns, predicate, v.(uint64), subject)
-			if err := txn.Set(revK, nil); err != nil {
-				return err
-			}
-		} else {
-			revK := indexKey(txn.db.ns, predicate, data, subject)
-			if err := txn.Set(revK, nil); err != nil {
-				return err
-			}
-		}
-	}
-
-	return txn.SetEntry(badger.NewEntry(k, data).WithMeta(byte(vt)))
-}
-
-// ValueType defines type of the stored value.
-type ValueType byte
-
-// Value types.
-const (
-	ValueTypeBinary ValueType = 0x01
-	ValueTypeString ValueType = 0x02
-	ValueTypeUID    ValueType = 0x03
-	ValueTypeProto  ValueType = 0x04
-)
+// 	return txn.SetEntry(badger.NewEntry(k, data).WithMeta(byte(vt)))
+// }
