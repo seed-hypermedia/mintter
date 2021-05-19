@@ -53,22 +53,36 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 	defer txn.Discard()
 
 	ocodec, ohash := ipfsutil.DecodeCID(sp.ObjectID)
-	_, phash := ipfsutil.DecodeCID(sp.peer)
+	pcodec, phash := ipfsutil.DecodeCID(sp.peer)
 
-	ouid, err := txn.UID(typeObject, ohash)
+	ouid, err := txn.UIDRead(typeCID, ohash)
 	if err != nil {
-		return err
-	}
-
-	if _, err := txn.GetProperty(ouid, predicateObjectType); err == badger.ErrKeyNotFound {
-		if err := txn.SetProperty(ouid, predicateObjectType, encodeCodec(ocodec), true); err != nil {
+		if err == badger.ErrKeyNotFound {
+			ouid, err = txn.UIDAllocate(typeCID, ohash)
+			if err != nil {
+				return fmt.Errorf("failed to allocate uid for object CID: %w", err)
+			}
+			if err := txn.WriteTriple(ouid, pCIDCodec, cid.CodecToStr[ocodec]); err != nil {
+				return fmt.Errorf("failed to set cid codec for object: %w", err)
+			}
+		} else {
 			return err
 		}
 	}
 
-	puid, err := txn.UID(typePeer, phash)
+	puid, err := txn.UIDRead(typeCID, phash)
 	if err != nil {
-		return err
+		if err == badger.ErrKeyNotFound {
+			puid, err = txn.UIDAllocate(typeCID, phash)
+			if err != nil {
+				return fmt.Errorf("failed to allocate uid for peer CID: %w", err)
+			}
+			if err := txn.WriteTriple(puid, pCIDCodec, cid.CodecToStr[pcodec]); err != nil {
+				return fmt.Errorf("failed to set cid codec for peer: %w", err)
+			}
+		} else {
+			return err
+		}
 	}
 
 	hxid := headXID(ouid, puid)
@@ -79,7 +93,7 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 
 	var h *p2p.PeerVersion
 	var newHead bool
-	v, err := txn.GetProperty(huid, predicateHeadData)
+	v, err := txn.GetProperty(huid, pHeadData.FullName())
 	switch err {
 	case nil:
 		h = v.(*p2p.PeerVersion)
@@ -117,16 +131,16 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 	h.Seq = sp.Seq
 	h.LamportTime = sp.LamportTime
 
-	if err := txn.SetProperty(huid, predicateHeadData, h, false); err != nil {
+	if err := txn.WriteTriple(huid, pHeadData, h); err != nil {
 		return fmt.Errorf("failed to store new head: %w", err)
 	}
 
 	if newHead {
-		if err := txn.SetRelation(huid, predicateHeadPeerUID, puid, true); err != nil {
+		if err := txn.WriteTriple(huid, pHeadPeer, puid); err != nil {
 			return fmt.Errorf("failed to store peer uid to head: %w", err)
 		}
 
-		if err := txn.SetRelation(huid, predicateHeadObjectUID, ouid, true); err != nil {
+		if err := txn.WriteTriple(huid, pHeadObject, ouid); err != nil {
 			return fmt.Errorf("failed to store object uid to head: %w", err)
 		}
 	}
@@ -231,14 +245,14 @@ func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error)
 func (s *patchStore) ListObjects(ctx context.Context, codec uint64) ([]cid.Cid, error) {
 	var out []cid.Cid
 	s.db.View(func(txn *badgergraph.Txn) error {
-		uids, err := txn.ListIndexedNodes(predicateObjectType, encodeCodec(codec))
+		uids, err := txn.ListIndexedNodes(pCIDCodec.FullName(), []byte(cid.CodecToStr[codec]))
 		if err != nil {
 			return fmt.Errorf("failed to list objects with type %v: %w", codec, err)
 		}
 
 		out = make([]cid.Cid, len(uids))
 		for i, u := range uids {
-			ohash, err := txn.XID(typeObject, u)
+			ohash, err := txn.XID(typeCID, u)
 			if err != nil {
 				return fmt.Errorf("failed to find xid for object with uid %d: %w", u, err)
 			}
@@ -253,7 +267,7 @@ func (s *patchStore) ListObjects(ctx context.Context, codec uint64) ([]cid.Cid, 
 func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
 	_, ohash := ipfsutil.DecodeCID(obj)
 
-	ouid, err := txn.UID(typeObject, ohash)
+	ouid, err := txn.UID(typeCID, ohash)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return nil, fmt.Errorf("failed to get head: %w", err)
 	}
@@ -261,7 +275,7 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid
 		return nil, err
 	}
 
-	heads, err := txn.ListReverseRelations(predicateHeadObjectUID, ouid)
+	heads, err := txn.ListReverseRelations(pHeadObject.FullName(), ouid)
 	if err != nil {
 		return nil, fmt.Errorf("no reverse relation Head -> Peer: %w", err)
 	}
@@ -269,9 +283,9 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid
 	out := make([]*p2p.PeerVersion, len(heads))
 
 	for i, h := range heads {
-		v, err := txn.GetProperty(h, predicateHeadData)
+		v, err := txn.GetProperty(h, pHeadData.FullName())
 		if err != nil {
-			return nil, fmt.Errorf("failed to get property %s: %w", predicateHeadData, err)
+			return nil, fmt.Errorf("failed to get property %s: %w", pHeadData.FullName(), err)
 		}
 		out[i] = v.(*p2p.PeerVersion)
 	}

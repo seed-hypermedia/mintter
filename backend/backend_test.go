@@ -24,7 +24,7 @@ import (
 )
 
 func TestProvide(t *testing.T) {
-	t.SkipNow()
+	// t.SkipNow()
 	alice := makeTestBackend(t, "alice", true)
 	bob := makeTestBackend(t, "bob", true)
 	carol := makeTestBackend(t, "carol", true)

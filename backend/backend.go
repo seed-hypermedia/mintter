@@ -66,8 +66,7 @@ func (srv *backend) Start(ctx context.Context) error {
 	if err := srv.p2p.BlockService.AddBlock(blk); err != nil {
 		panic(err)
 	}
-	// time.Sleep(10 * time.Second) // Give some time for the node to warm up.
-	// err = srv.p2p.ipfs.Provider.Provide(cid.Cid(acc.id))
+
 	fmt.Println("account provided", err)
 
 	close(srv.ready)

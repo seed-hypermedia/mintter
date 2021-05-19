@@ -151,7 +151,7 @@ func provideBadger(ds datastore.Batching) *badger.DB {
 }
 
 func provideBadgerGraph(lc *lifecycle, db *badger.DB) (*badgergraph.DB, error) {
-	gdb, err := badgergraph.NewDB(db, "mintter")
+	gdb, err := badgergraph.NewDB(db, "mintter", graphSchema)
 	if err != nil {
 		return nil, err
 	}
