@@ -6,7 +6,7 @@ import { useMenuState } from 'reakit/Menu';
 import type { ReactEditor } from 'slate-react';
 
 import { publishDraft } from '@mintter/client';
-import { useDraft } from '@mintter/hooks';
+import { useAccount, useEditorDraft } from '@mintter/hooks';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
@@ -20,30 +20,35 @@ import { useSidePanel } from '../sidepanel';
 import { EditorComponent } from '@mintter/editor/editor-component';
 import 'show-keys'
 import { useStoreEditorValue } from '@udecode/slate-plugins-core';
+import { toDocument } from '../to-document'
 
 export default function EditorPage() {
   const history = useHistory();
   const query = new URLSearchParams(window.location.search);
   const { docId } = useParams<{ docId: string }>();
-  const { isLoading, isError, error, data } = useDraft(docId);
+  const { isLoading, isError, error, data } = useEditorDraft(docId);
   const titleRef = useRef<HTMLInputElement>(null);
   const linkMenu = useMenuState({ loop: true, wrap: true });
   const subtitleRef = useRef<HTMLInputElement>(null);
   const editorValue = useStoreEditorValue("editor")
+  const {data: account} = useAccount("")
 
   const [title, setTitle] = useState<string>("")
   const [subtitle, setSubtitle] = useState<string>("")
 
   // publish
-  const { mutateAsync: publish } = useMutation(publishDraft);
+  const { mutateAsync: publish } = useMutation(async () => {
+    const document = toDocument({id: docId, author: account?.id, title, subtitle, blocks: editorValue})
+    // publishDraft
+    console.log('save document -> ', document)
+  });
 
   // sidepanel
   const { isSidepanelOpen, sidepanelObjects, sidepanelSend } = useSidePanel();
 
   function saveDocument() {
 
-    // const blocks = createBlocksMap(editor);
-    console.log('save now', editorValue);
+    publish()
   }
 
   if (isError) {

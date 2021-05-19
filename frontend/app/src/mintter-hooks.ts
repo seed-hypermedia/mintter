@@ -11,13 +11,12 @@ import {
 } from 'react-query';
 import type mintter from '@mintter/api/v2/mintter_pb';
 import type documents from '@mintter/api/documents/v1alpha/documents_pb';
-import type accounts from '@mintter/api/accounts/v1alpha/accounts_pb'
+import type accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
 import type networking from '@mintter/api/networking/v1alpha/networking_pb';
 import * as apiClient from '@mintter/client';
 import type { QueryOptions } from '@testing-library/dom';
 import type daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
 import { buildBlock } from '@utils/generate';
-import { toSlateBlock } from './editor/slate-block';
 import { ELEMENT_QUOTE } from './editor/quote-plugin';
 
 export function useAccount<TData = accounts.Account.AsObject, TError = unknown>(
@@ -30,10 +29,9 @@ export function useAccount<TData = accounts.Account.AsObject, TError = unknown>(
     options,
   );
 
-  const data = React.useMemo(
-    () => accountQuery.data?.toObject(),
-    [accountQuery.data],
-  );
+  const data = React.useMemo(() => accountQuery.data?.toObject(), [
+    accountQuery.data,
+  ]);
 
   return {
     ...accountQuery,
@@ -44,7 +42,11 @@ export function useAccount<TData = accounts.Account.AsObject, TError = unknown>(
 export function useInfo(
   options?: UseQueryOptions<daemon.Info, unknown, daemon.Info>,
 ) {
-  const infoQuery = useQuery<daemon.Info, unknown, daemon.Info>(['GetInfo'], apiClient.getInfo, options);
+  const infoQuery = useQuery<daemon.Info, unknown, daemon.Info>(
+    ['GetInfo'],
+    apiClient.getInfo,
+    options,
+  );
 
   const data = React.useMemo(() => infoQuery.data?.toObject(), [
     infoQuery.data,
@@ -58,20 +60,23 @@ export function useInfo(
 
 export function usePeerAddrs(
   peerId?: string,
-  options?: UseQueryOptions<networking.GetPeerAddrsResponse, unknown, networking.GetPeerAddrsResponse>,
+  options?: UseQueryOptions<
+    networking.GetPeerAddrsResponse,
+    unknown,
+    networking.GetPeerAddrsResponse
+  >,
 ) {
   // query getInfo if peerId is undefined
   // query peerAddrs if peerId is defined or if getInfo is done
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   let requestId: string;
   if (!peerId) {
-    const info = queryClient.getQueryData<daemon.Info.AsObject>('GetInfo')
-    requestId = info?.peerId as string
+    const info = queryClient.getQueryData<daemon.Info.AsObject>('GetInfo');
+    requestId = info?.peerId as string;
   } else {
-    requestId = peerId
+    requestId = peerId;
   }
-  
 
   const peerAddrsQuery = useQuery(
     ['PeerAddrs', requestId],
@@ -82,10 +87,9 @@ export function usePeerAddrs(
     },
   );
 
-  const data = React.useMemo(
-    () => peerAddrsQuery.data?.toObject().addrsList,
-    [peerAddrsQuery.data],
-  );
+  const data = React.useMemo(() => peerAddrsQuery.data?.toObject().addrsList, [
+    peerAddrsQuery.data,
+  ]);
 
   return {
     ...peerAddrsQuery,
@@ -122,7 +126,7 @@ export function useSuggestedConnections({ page } = { page: 0 }, options = {}) {
 }
 
 /**
- * 
+ *
  * @deprecated
  */
 export function useConnectionCreate() {
@@ -132,7 +136,7 @@ export function useConnectionCreate() {
 }
 
 /**
- * 
+ *
  * @deprecated
  */
 export function usePublicationsList(options = {}) {
@@ -146,7 +150,7 @@ export function usePublicationsList(options = {}) {
 }
 
 /**
- * 
+ *
  * @deprecated
  */
 export function useOthersPublicationsList(options = {}) {
@@ -160,19 +164,31 @@ export function useOthersPublicationsList(options = {}) {
 }
 
 /**
- * 
+ *
  * @deprecated
  */
 export function useMyPublicationsList(options = {}) {
-  return { data: [], isLoading: false, isSuccess: true, error: null, isError: false };
+  return {
+    data: [],
+    isLoading: false,
+    isSuccess: true,
+    error: null,
+    isError: false,
+  };
 }
 
 /**
- * 
+ *
  * @deprecated
  */
 export function useDraftsList(options = {}) {
-  return { data: [], isLoading: false, isSuccess: true, error: null, isError: false };
+  return {
+    data: [],
+    isLoading: false,
+    isSuccess: true,
+    error: null,
+    isError: false,
+  };
 }
 
 export function usePublication(
@@ -214,7 +230,10 @@ export function usePublication(
   };
 }
 
-export function useDraft(draftId: string, options = {}) {
+export function useDraft(
+  draftId: string,
+  options = {},
+): UseQueryResult<documents.Document.AsObject> {
   if (!draftId) {
     throw new Error(`useDraft: parameter "draftId" is required`);
   }
@@ -231,7 +250,7 @@ export function useDraft(draftId: string, options = {}) {
     ['Draft', draftId],
     async ({ queryKey }) => {
       const [_key, draftId] = queryKey;
-      return apiClient.getDraft(draftId);
+      return apiClient.getDraft(draftId); 
     },
     {
       refetchOnWindowFocus: false,
@@ -251,16 +270,23 @@ export function useDraft(draftId: string, options = {}) {
 
 export function useDocument<TError = unknown>(documentId: string) {
   // return document object
-  const documentQuery = useQuery<documents.Document>(['Document', documentId], () => apiClient.getDocument(documentId), {
-    enabled: !!documentId
-  })
+  const documentQuery = useQuery<documents.Document>(
+    ['Document', documentId],
+    () => apiClient.getDocument(documentId),
+    {
+      enabled: !!documentId,
+    },
+  );
 
-  const data: documents.Document.AsObject | undefined = React.useMemo(() => documentQuery.data?.toObject(), [documentQuery.data])
+  const data: documents.Document.AsObject | undefined = React.useMemo(
+    () => documentQuery.data?.toObject(),
+    [documentQuery.data],
+  );
 
   return {
     ...documentQuery,
-    data
-  }
+    data,
+  };
 }
 
 export type SlateVoidChildren = {
@@ -278,53 +304,66 @@ export type SlateQuote = SlateVoidChildren & {
 export type SlateInlineElement = SlateTextRun | SlateQuote;
 
 export function useQuote<TError = unknown>(quoteUrl: string) {
-  if (!isValidQuoteUrl(quoteUrl)) throw new Error(`useQuote > Invalid Quote URL: ${quoteUrl}`)
-  const [documentId, quoteId] = quoteUrl.split('/')
-  const quoteQuery = useQuery(['Quote', quoteId], async () => {
-    // query document
-    // getBlocksMap
-    // return quoteBlock
-    const block = buildBlock({id: quoteId})
-    return Promise.resolve(block)
-  }, {
-    enabled: !!quoteId
-  })
+  if (!isValidQuoteUrl(quoteUrl))
+    throw new Error(`useQuote > Invalid Quote URL: ${quoteUrl}`);
+  const [documentId, quoteId] = quoteUrl.split('/');
+  const quoteQuery = useQuery(
+    ['Quote', quoteId],
+    async () => {
+      // query document
+      // getBlocksMap
+      // return quoteBlock
+      const block = buildBlock({ id: quoteId });
+      return Promise.resolve(block);
+    },
+    {
+      enabled: !!quoteId,
+    },
+  );
 
-  const data = React.useMemo(() => quoteQuery.data?.toObject(), [quoteQuery.data, quoteId])
+  const data = React.useMemo(() => quoteQuery.data?.toObject(), [
+    quoteQuery.data,
+    quoteId,
+  ]);
 
   return {
     ...quoteQuery,
-    data
-  }
+    data,
+  };
 }
 
 function isValidQuoteUrl(url: string): boolean {
-  return url.includes('/') && url.split('/').length == 2
+  return url.includes('/') && url.split('/').length == 2;
 }
 
 export function toSlateQuote(entry: documents.Block.AsObject): SlateTextRun[] {
   return entry.elementsList.map((element) => {
-    console.log("🚀 ~ element", element)
+    console.log('🚀 ~ element', element);
     // assume elements are type textRun for now
     let node = {};
     if (element.textRun) {
-      const {textRun} = element
-      console.log("🚀 ~ textRun", textRun.text)
-      node.text = textRun.text
-      Object.keys(textRun).forEach(key => {
-        console.log("🚀 ~ key", key, typeof textRun[key])
+      const { textRun } = element;
+      console.log('🚀 ~ textRun', textRun.text);
+      node.text = textRun.text;
+      Object.keys(textRun).forEach((key) => {
+        console.log('🚀 ~ key', key, typeof textRun[key]);
         if (typeof textRun[key] === 'boolean' && textRun[key]) {
-          node[key] = true
+          node[key] = true;
         }
-      })
+      });
 
-      return node
+      return node;
       // console.log({node})
       // return element.textRun
-
     }
 
-    return null
-    
-  })
+    return null;
+  });
+}
+
+export function useEditorDraft(documentId: string) {
+  return useDraft(documentId)
+
+  // return not only the draft but all the functions to change the editor values
+  
 }
