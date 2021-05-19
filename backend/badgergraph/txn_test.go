@@ -97,7 +97,7 @@ func TestListIndexedNodes(t *testing.T) {
 	require.NoError(t, err)
 
 	err = db.View(func(txn *Txn) error {
-		nodes, err := txn.ListIndexedNodes(schema.schema["Person"][nodeTypePredicate].FullName(), []byte("Person"))
+		nodes, err := txn.ListIndexedNodes(schema.schema["Person"][predicateNodeType].FullName(), []byte("Person"))
 		require.NoError(t, err)
 		require.Equal(t, []uint64{1, 2, 3}, nodes)
 		return nil
@@ -198,11 +198,11 @@ func TestNodeType(t *testing.T) {
 	require.NoError(t, err)
 
 	err = db.View(func(txn *Txn) error {
-		v, err := txn.GetProperty(1, schema.schema["Person"][nodeTypePredicate].FullName())
+		v, err := txn.GetProperty(1, schema.schema["Person"][predicateNodeType].FullName())
 		require.NoError(t, err)
 		require.Equal(t, "Person", v)
 
-		v, err = txn.GetProperty(2, schema.schema["Peer"][nodeTypePredicate].FullName())
+		v, err = txn.GetProperty(2, schema.schema["Peer"][predicateNodeType].FullName())
 		require.NoError(t, err)
 		require.Equal(t, "Peer", v)
 		return nil
