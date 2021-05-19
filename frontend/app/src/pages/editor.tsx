@@ -24,8 +24,8 @@ import { useStoreEditorValue } from '@udecode/slate-plugins-core';
 export default function EditorPage() {
   const history = useHistory();
   const query = new URLSearchParams(window.location.search);
-  const { documentId } = useParams<{ documentId: string }>();
-  const { isLoading, isError, error, data } = useDraft(documentId);
+  const { docId } = useParams<{ docId: string }>();
+  const { isLoading, isError, error, data } = useDraft(docId);
   const titleRef = useRef<HTMLInputElement>(null);
   const linkMenu = useMenuState({ loop: true, wrap: true });
   const subtitleRef = useRef<HTMLInputElement>(null);
