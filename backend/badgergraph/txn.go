@@ -99,11 +99,11 @@ func (txn *Txn) UIDAllocate(nodeType string, xid []byte) (uint64, error) {
 		return 0, err
 	}
 
-	if err := txn.WriteTriple(uid, txn.db.schema.schema[nodeType][xidPredicate], xid); err != nil {
+	if err := txn.WriteTriple(uid, txn.db.schema.schema[nodeType][predicateXID], xid); err != nil {
 		return 0, err
 	}
 
-	if err := txn.WriteTriple(uid, txn.db.schema.schema[nodeType][nodeTypePredicate], nodeType); err != nil {
+	if err := txn.WriteTriple(uid, txn.db.schema.schema[nodeType][predicateNodeType], nodeType); err != nil {
 		return 0, err
 	}
 
