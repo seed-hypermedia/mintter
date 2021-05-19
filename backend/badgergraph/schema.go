@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	xidPredicate      = "$xid" // predicate suffix for node's external id.
-	nodeTypePredicate = "$type"
+	predicateXID      = "$xid" // predicate suffix for node's external id.
+	predicateNodeType = "$type"
 )
 
 // SchemaRegistry holds the schema of the graph.
@@ -35,16 +35,16 @@ func (reg *SchemaRegistry) RegisterType(nodeType string) {
 
 	fields := make(map[string]Predicate)
 	// Add internal predicate for external ids and node types.
-	fields[nodeTypePredicate] = Predicate{
+	fields[predicateNodeType] = Predicate{
 		node:     "!internal!",
-		fullName: nodeTypePredicate, // This predicate doesn't have nodetype prefix because we want to index across all node types.
-		Name:     nodeTypePredicate,
+		fullName: predicateNodeType, // This predicate doesn't have nodetype prefix because we want to index across all node types.
+		Name:     predicateNodeType,
 		HasIndex: true,
 		IsList:   false,
 		Type:     ValueTypeString,
 	}
-	xid := nodeType + "." + xidPredicate
-	fields[xidPredicate] = Predicate{
+	xid := nodeType + "." + predicateXID
+	fields[predicateXID] = Predicate{
 		node:     nodeType,
 		fullName: xid,
 		HasIndex: true,
