@@ -118,8 +118,8 @@ export function deleteDraft(documentId: string): Promise<any> {
 }
 
 export function getDraft(draftId: string): Promise<documents.Document> {
-  let document = new documents.Document();
-  document.setId(draftId);
+  let document = buildDocument({id: draftId})
+  // document.setId(draftId);
 
   return Promise.resolve(document);
 }
