@@ -10,58 +10,63 @@ export const Text = styled('span', {
     size: {
       1: {
         fontSize: '$1',
-        fontWeight: '$medium',
         letterSpacing: '0.01em',
         lineHeight: '$1',
       },
       2: {
         fontSize: '$2',
-        fontWeight: '$medium',
         letterSpacing: '0.01em',
         lineHeight: '$2',
       },
       3: {
         fontSize: '$3',
-        fontWeight: '$medium',
         letterSpacing: '0.01em',
         lineHeight: '$2',
       },
       4: {
         fontSize: '$4',
-        fontWeight: '$regular',
         letterSpacing: '0.02em',
         lineHeight: '$3',
       },
       5: {
         fontSize: '$3',
-        fontWeight: '$medium',
         letterSpacing: '0.03em',
         lineHeight: '$2',
       },
       6: {
         fontSize: '$4',
-        fontWeight: '$medium',
         letterSpacing: '0.02em',
         lineHeight: '$2',
       },
       7: {
         fontSize: '$5',
-        fontWeight: '$medium',
         letterSpacing: '0.01em',
         lineHeight: '$1',
       },
       8: {
         fontSize: '$6',
-        fontWeight: '$medium',
         letterSpacing: '0.01em',
         lineHeight: '$1',
       },
       9: {
         fontSize: '$7',
-        fontWeight: '$bold',
         letterSpacing: '0.01em',
         lineHeight: '$1',
       },
+    },
+    fontWeight: {
+      default: {
+        fontWeight: 'unset'
+      },
+      regular: {
+        fontWeight: '$regular'
+      },
+      medium: {
+        fontWeight: '$medium'
+      },
+      bold: {
+        fontWeight: '$bold'
+      }
     },
     alt: {
       true: {
@@ -108,6 +113,7 @@ export const Text = styled('span', {
   defaultVariants: {
     size: '3',
     color: 'default',
+    fontWeight: 'default'
   },
 
   compoundVariants: [
