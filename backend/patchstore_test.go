@@ -144,7 +144,7 @@ func makeTestPatchStore(t *testing.T, name string) *testPatchStore {
 	ds := testutil.MakeDatastore(t)
 	bs := blockstore.NewBlockstore(ds)
 
-	db, err := badgergraph.NewDB(testutil.MakeBadgerV3(t), "!mtttest")
+	db, err := badgergraph.NewDB(testutil.MakeBadgerV3(t), "!mtttest", graphSchema)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, db.Close())
