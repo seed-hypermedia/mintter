@@ -3,9 +3,10 @@ import { buildBlock, buildDocument } from '@utils/generate';
 import faker from 'faker';
 import { ELEMENT_BLOCK } from './block-plugin';
 export type SlateBlock = {
-  type: ELEMENT_BLOCK;
+  type: string;
   id: string;
   depth: number;
+  styleType?: documents.ListStyle
   children: any[]; // TODO: fix types
 };
 export function toSlateBlock(

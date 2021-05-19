@@ -58,7 +58,6 @@ export function buildDocument({
   subtitle = faker.lorem.sentence(),
   id = createId(),
 }: BuildDocumentOptions = {}): documents.Document {
-  console.log('author', author);
 
   let block1: documents.Block;
   let block2: documents.Block;
