@@ -2,13 +2,8 @@ import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
 import { buildBlock, buildDocument } from '@utils/generate';
 import faker from 'faker';
 import { ELEMENT_BLOCK } from './block-plugin';
-export type SlateBlock = {
-  type: string;
-  id: string;
-  depth: number;
-  styleType?: documents.ListStyle
-  children: any[]; // TODO: fix types
-};
+import {SlateBlock, SlateInlineElement} from './types'
+
 export function toSlateBlock(
   block: documents.Block | documents.Block.AsObject,
 ): SlateBlock {
@@ -21,12 +16,6 @@ export function toSlateBlock(
     children: obj.elementsList.map(toSlateElement),
   };
 }
-export type SlateTextRun = Partial<Omit<documents.TextRun.AsObject, 'text'>> & {
-  text: string;
-};
-export type SlateImage = any;
-export type SlateQuote = any;
-export type SlateInlineElement = SlateTextRun | SlateImage | SlateQuote;
 
 export function toSlateElement(
   element: documents.InlineElement | documents.InlineElement.AsObject,
