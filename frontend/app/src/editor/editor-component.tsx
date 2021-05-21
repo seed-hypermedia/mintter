@@ -31,7 +31,7 @@ import { createElement } from './create-element';
 import { boldOptions, boldAutoformatRules } from './bold-plugin';
 import { codeOptions, codeAutoformatRules } from './code-plugin';
 import { italicOptions, italicAutoformatRules } from './italic-plugin';
-import type * as documents from '@mintter/api/documents/v1alpha/documents_pb'
+import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
 import {
   strikethroughOptions,
   strikethroughAutoformatRules,
@@ -60,8 +60,19 @@ const initialValue = [
         type: ELEMENT_LINK,
         url: 'https://mintter.com',
         id: createId(),
-        children: [{text: 'link here'}]
-      }
+        children: [{ text: 'link here' }],
+      },
+    ],
+  },
+  {
+    type: ELEMENT_BLOCK,
+    blockType: documents.Block.Type.BASIC,
+    depth: 0,
+    id: createId(),
+    children: [
+      {
+        text: 'Heading 2',
+      },
     ],
   },
 ];
@@ -133,9 +144,9 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           {
             withOverrides: withNodeId({
               idCreator: () => createId(),
-              allow: [ELEMENT_LINK, ELEMENT_QUOTE]
-            })
-          }
+              allow: [ELEMENT_LINK, ELEMENT_QUOTE],
+            }),
+          },
         ]}
         options={{
           ...blockOptions,
@@ -145,7 +156,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           ...strikethroughOptions,
           ...underlineOptions,
           ...quoteOptions,
-          ...linkOptions
+          ...linkOptions,
         }}
         initialValue={initialValue}
         onChange={(nv) => setV(nv as any)}

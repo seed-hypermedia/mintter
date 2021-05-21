@@ -6,13 +6,8 @@ import { Link } from '@components/link';
 import { MINTTER_LINK_PREFIX } from '.';
 import { Tooltip } from '@components/tooltip';
 import { Icon } from '@mintter/ui/icon';
+import {SlateLink} from '../types'
 
-export type SlateLink = {
-  type: string;
-  id: string;
-  url: string;
-  children: SlateTextRun[];
-};
 
 export function LinkElement(props: TRenderElementProps<SlateLink>) {
   const isMintterLink = useMemo<boolean>(
