@@ -18,9 +18,9 @@ import { Separator } from '@components/separator';
 
 import { useSidePanel } from '../sidepanel';
 import { EditorComponent } from '@mintter/editor/editor-component';
-import 'show-keys'
+import 'show-keys';
 import { useStoreEditorValue } from '@udecode/slate-plugins-core';
-import { toDocument } from '../to-document'
+import { toDocument } from '../to-document';
 
 export default function EditorPage() {
   const history = useHistory();
@@ -30,25 +30,29 @@ export default function EditorPage() {
   const titleRef = useRef<HTMLInputElement>(null);
   const linkMenu = useMenuState({ loop: true, wrap: true });
   const subtitleRef = useRef<HTMLInputElement>(null);
-  const editorValue = useStoreEditorValue("editor")
-  const {data: account} = useAccount("")
+  const editorValue = useStoreEditorValue('editor');
+  const { data: account } = useAccount('');
 
-  const [title, setTitle] = useState<string>("")
-  const [subtitle, setSubtitle] = useState<string>("")
+  const [title, setTitle] = useState<string>('');
+  const [subtitle, setSubtitle] = useState<string>('');
 
   // publish
   const { mutateAsync: publish } = useMutation(async () => {
-    const document = toDocument({id: docId, author: account?.id, title, subtitle, blocks: editorValue})
+    const document = toDocument({
+      id: docId,
+      author: account?.id,
+      title,
+      subtitle,
+      blocks: editorValue,
+    });
     // publishDraft
-    console.log('save document -> ', document)
   });
 
   // sidepanel
   const { isSidepanelOpen, sidepanelObjects, sidepanelSend } = useSidePanel();
 
   function saveDocument() {
-
-    publish()
+    publish();
   }
 
   if (isError) {

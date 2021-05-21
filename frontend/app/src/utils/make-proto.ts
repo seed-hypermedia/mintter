@@ -7,7 +7,10 @@ import type * as jspb from 'google-protobuf';
 // This function attempts to convert a plain object into the given protobuf Message instance
 // assuming these two inconveniences.
 // TODO: types: how can I type `data` with the `AsObject` types of what the user passed as `T`? (before: (msg: T, data: T.AsObject))
-export function makeProto<T extends jspb.Message>(msg: T, data: any): T {
+export function makeProto<TData = any, T extends jspb.Message>(
+  msg: T,
+  data: TData,
+): T {
   for (const [key, value] of Object.entries(data)) {
     let setter = `set${key.charAt(0).toUpperCase() + key.slice(1)}`;
     if (Array.isArray(value)) {

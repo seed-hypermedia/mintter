@@ -24,7 +24,7 @@ export function BlockElement({
   function onOpenInSidepanel() {
     console.log('onOpenInSidepanel!');
   }
-  if (element.type === ELEMENT_BLOCK) {
+  if (element.type == ELEMENT_BLOCK) {
     return (
       <ContextMenu.Root onOpenChange={onOpenChange}>
         <ContextMenu.Trigger>

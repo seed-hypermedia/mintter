@@ -15,5 +15,7 @@
     "build.directoryFilters": ["-", "+backend", "+third_party", "+api/go"],
     "formatting.local": "mintter/"
   },
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2
 }

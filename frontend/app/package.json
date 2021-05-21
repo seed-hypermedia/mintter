@@ -5,7 +5,7 @@
     "dev": "snowpack dev --port 4000",
     "build": "snowpack build",
     "test": "web-test-runner \"src/**/*.test.(tsx|ts)\"",
-    "test:watch": "yarn test --watch",
+    "test:w": "yarn test --watch",
     "test:coverage": "yarn test --coverage",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\""
