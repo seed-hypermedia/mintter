@@ -20,11 +20,13 @@ import { buildBlock } from '@utils/generate';
 import { ELEMENT_QUOTE } from './editor/quote-plugin';
 import type { SlateTextRun } from './editor/types';
 
-export function useAccount<TData = accounts.Account.AsObject, TError = unknown>(
+export function useAccount(
   accountId?: string,
-  options: UseQueryOptions<accounts.Account, TError, accounts.Account> = {},
-) {
-  const accountQuery = useQuery<accounts.Account, TError, accounts.Account>(
+  options: UseQueryOptions<accounts.Account, unknown, accounts.Account> = {},
+): Omit<UseQueryResult<accounts.Account>, 'data'> & {
+  data?: accounts.Account.AsObject;
+} {
+  const accountQuery = useQuery(
     ['Account', accountId],
     () => apiClient.getAccount(accountId),
     options,
@@ -140,7 +142,9 @@ export function usePublication(
 export function useDraft(
   draftId: string,
   options = {},
-): UseQueryResult<documents.Document.AsObject> {
+): Omit<UseQueryResult<documents.Document>, 'data'> & {
+  data: documents.Document.AsObject;
+} {
   if (!draftId) {
     throw new Error(`useDraft: parameter "draftId" is required`);
   }
@@ -167,7 +171,7 @@ export function useDraft(
 
   const data = React.useMemo(() => draftQuery.data?.toObject?.(), [
     draftQuery.data,
-  ]);
+  ]) as documents.Document.AsObject;
 
   return {
     ...draftQuery,
@@ -232,20 +236,23 @@ function isValidQuoteUrl(url: string): boolean {
 export function toSlateQuote(
   entry: documents.Block.AsObject,
 ): Array<SlateTextRun> {
-  return entry.elementsList.map((element) => {
-    console.log('🚀 ~ element', element);
+  //@ts-ignore
+  return entry.elementsList.map((element: documents.InlineElement.AsObject) => {
     // assume elements are type textRun for now
-    let node = {};
+    let node: SlateTextRun = { text: '' };
     if (element.textRun) {
       const { textRun } = element;
-      console.log('🚀 ~ textRun', textRun.text);
       node.text = textRun.text;
-      Object.keys(textRun).forEach((key) => {
-        console.log('🚀 ~ key', key, typeof textRun[key]);
-        if (typeof textRun[key] === 'boolean' && textRun[key]) {
-          node[key] = true;
-        }
-      });
+      Object.keys(textRun).forEach(
+        //@ts-ignore
+        (key) => {
+          //@ts-ignore
+          if (typeof textRun[key] === 'boolean' && textRun[key]) {
+            //@ts-ignore
+            node[key] = true;
+          }
+        },
+      );
 
       return node;
       // console.log({node})
@@ -262,13 +269,11 @@ export function useEditorDraft(documentId: string) {
   // return not only the draft but all the functions to change the editor values
 }
 
-
-
 /**
  *
  * @deprecated
  */
- export function useConnectionList({ page } = { page: 0 }, options = {}) {
+export function useConnectionList({ page } = { page: 0 }, options = {}) {
   return {
     data: [],
     isLoading: false,

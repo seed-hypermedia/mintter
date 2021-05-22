@@ -25,7 +25,7 @@ describe('toDocument', () => {
         },
       ],
     };
-    const expected = makeProto<documents.Document.AsObject, documents.Document>(
+    const expected = makeProto<documents.Document, documents.Document.AsObject>(
       new documents.Document(),
       {
         id: 'test',
@@ -37,7 +37,7 @@ describe('toDocument', () => {
       },
     );
 
-    let block = makeProto<documents.Block.AsObject, documents.Block>(
+    let block = makeProto<documents.Block, documents.Block.AsObject>(
       new documents.Block(),
       {
         id: 'block-1',

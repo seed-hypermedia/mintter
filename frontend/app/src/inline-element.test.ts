@@ -17,7 +17,10 @@ describe('TextRun', () => {
     const test = {
       text: 'plain text',
     };
-    const expected = makeProto(new documents.TextRun(), test);
+    const expected = makeProto<documents.TextRun, documents.TextRun.AsObject>(
+      new documents.TextRun(),
+      test,
+    );
 
     const result = toTextRun(test);
     expect(result).to.deep.equal(expected);
@@ -29,7 +32,10 @@ describe('TextRun', () => {
       bold: true,
       underline: true,
     };
-    const expected = makeProto(new documents.TextRun(), test);
+    const expected = makeProto<documents.TextRun, documents.TextRun.AsObject>(
+      new documents.TextRun(),
+      test,
+    );
     const result = toTextRun(test);
     expect(result).to.deep.equal(expected);
   });
@@ -47,14 +53,20 @@ describe('toLink', () => {
         },
       ],
     };
-    const link = makeProto(new documents.Link(), {
-      uri: test.url,
-    });
+    const link = makeProto<documents.Link, documents.Link.AsObject>(
+      new documents.Link(),
+      {
+        uri: test.url,
+      },
+    );
     const textRuns = [
-      makeProto(new documents.TextRun(), {
-        text: 'plain link',
-        linkKey: test.id,
-      }),
+      makeProto<documents.TextRun, documents.TextRun.AsObject>(
+        new documents.TextRun(),
+        {
+          text: 'plain link',
+          linkKey: test.id,
+        },
+      ),
     ];
     const expected: ToLinkResult = { id: test.id, link, textRuns };
     expect(toLink(test)).to.deep.equal(expected);
@@ -106,15 +118,21 @@ describe('SlateLink to TextRun[]', () => {
   };
 
   const expected = [
-    makeProto(new documents.TextRun(), {
-      text: 'Hello ',
-      linkKey: 'test',
-    } as documents.TextRun.AsObject),
-    makeProto(new documents.TextRun(), {
-      text: 'World!',
-      bold: true,
-      linkKey: 'test',
-    } as documents.TextRun.AsObject),
+    makeProto<documents.TextRun, documents.TextRun.AsObject>(
+      new documents.TextRun(),
+      {
+        text: 'Hello ',
+        linkKey: 'test',
+      } as documents.TextRun.AsObject,
+    ),
+    makeProto<documents.TextRun, documents.TextRun.AsObject>(
+      new documents.TextRun(),
+      {
+        text: 'World!',
+        bold: true,
+        linkKey: 'test',
+      } as documents.TextRun.AsObject,
+    ),
   ];
 
   const result: Array<documents.TextRun> = toTextRun(test);
@@ -132,18 +150,24 @@ describe('toQuote', () => {
       children: [{ text: '' }],
     };
 
-    const quote = makeProto(new documents.Quote(), {
-      linkKey: test.id,
-      startOffset: 0,
-      endOffset: 0,
-    });
+    const quote = makeProto<documents.Quote, documents.Quote.AsObject>(
+      new documents.Quote(),
+      {
+        linkKey: test.id,
+        startOffset: 0,
+        endOffset: 0,
+      },
+    );
     expect(toQuote(test)).to.deep.equal(quote);
   });
 });
 
 describe('toInlineElement', () => {
   it('textRun', () => {
-    const test: documents.TextRun = makeProto(new documents.TextRun(), {
+    const test: documents.TextRun = makeProto<
+      documents.TextRun,
+      documents.TextRun.AsObject
+    >(new documents.TextRun(), {
       text: 'simple text',
       // bold: true,
     });
@@ -156,7 +180,10 @@ describe('toInlineElement', () => {
   });
 
   it('quote', () => {
-    const test: documents.Quote = makeProto(new documents.Quote(), {
+    const test: documents.Quote = makeProto<
+      documents.Quote,
+      documents.Quote.AsObject
+    >(new documents.Quote(), {
       linkKey: 'test://link',
       startOffset: 0,
       endOffset: 0,

@@ -1,16 +1,23 @@
+import { Box } from '@mintter/ui/box';
 import { css } from '@mintter/ui/stitches.config';
 import type { AutoformatRule } from '@udecode/slate-plugins-autoformat';
 import { DEFAULTS_BOLD, MARK_BOLD } from '@udecode/slate-plugins-basic-marks';
-import type { SlatePluginOptions } from '@udecode/slate-plugins-core';
+import type {
+  SlatePluginComponent,
+  SlatePluginOptions,
+  SPRenderLeafProps,
+} from '@udecode/slate-plugins-core';
+import type { SlateTextRun } from './types';
 
 export type BoldOptions = {
   [MARK_BOLD]: SlatePluginOptions;
 };
 
 export const boldOptions: BoldOptions = {
+  //@ts-ignore
   [MARK_BOLD]: {
     ...DEFAULTS_BOLD,
-    component: BoldLeaf,
+    component: BoldLeaf as SlatePluginComponent,
   },
 };
 
@@ -28,16 +35,25 @@ export const boldAutoformatRules: AutoformatRule[] = [
   //   insertTrigger: true,
   // },
 ];
-const styleClass = css({
-  fontWeight: '$bold',
-});
 
-export function BoldLeaf({ attributes, children, leaf, ...rest }) {
+export function BoldLeaf({
+  attributes,
+  children,
+  leaf,
+  ...rest
+}: SPRenderLeafProps<SlateTextRun>) {
   if (leaf.bold) {
     return (
-      <strong className={styleClass()} {...attributes}>
+      <Box
+        as="strong"
+        //@ts-ignore
+        css={{
+          fontWeight: '$bold',
+        }}
+        {...attributes}
+      >
         {children}
-      </strong>
+      </Box>
     );
   }
 }

@@ -21,6 +21,7 @@ import { EditorComponent } from '@mintter/editor/editor-component';
 import 'show-keys';
 import { useStoreEditorValue } from '@udecode/slate-plugins-core';
 import { toDocument } from '../to-document';
+import type { SlateBlock } from '@mintter/editor/types';
 
 export default function EditorPage() {
   const history = useHistory();
@@ -30,7 +31,7 @@ export default function EditorPage() {
   const titleRef = useRef<HTMLInputElement>(null);
   const linkMenu = useMenuState({ loop: true, wrap: true });
   const subtitleRef = useRef<HTMLInputElement>(null);
-  const editorValue = useStoreEditorValue('editor');
+  const editorValue = useStoreEditorValue('editor') as Array<SlateBlock>;
   const { data: account } = useAccount('');
 
   const [title, setTitle] = useState<string>('');
@@ -40,10 +41,12 @@ export default function EditorPage() {
   const { mutateAsync: publish } = useMutation(async () => {
     const document = toDocument({
       id: docId,
-      author: account?.id,
+      author: account?.id as string,
       title,
       subtitle,
       blocks: editorValue,
+      // TODO: get the document block parent list
+      childrenListStyle: documents.ListStyle.NONE,
     });
     // publishDraft
   });

@@ -7,9 +7,8 @@ import {
 import { makeProto } from '@utils/make-proto';
 import { ELEMENT_LINK } from './editor/link-plugin';
 import { ELEMENT_QUOTE } from './editor/quote-plugin';
-import type { SlateBlock, SlateLink } from './editor/types';
-import { toInlineElement, toQuote, toTextRun } from './inline-element';
-import type { SlateInlineElement } from './mintter-hooks';
+import type { SlateBlock, SlateLink, SlateTextRun } from './editor/types';
+import { toInlineElement, toQuote, toTextRun, toLink } from './inline-element';
 
 export type ToDocumentProps = {
   id: string;
@@ -29,7 +28,7 @@ export function toDocument({
   childrenListStyle = documents.ListStyle.NONE,
 }: ToDocumentProps): documents.Document {
   console.log('toDocument', { title, subtitle, blocks, id, author });
-  const newDoc = makeProto<documents.Document.AsObject, documents.Document>(
+  const newDoc = makeProto<documents.Document, documents.Document.AsObject>(
     new documents.Document(),
     {
       id,
@@ -48,7 +47,7 @@ export function toDocument({
     // add block to document's childrenList
     childrenList = [...childrenList, slateBlock.id];
     // contert slate block to doc block
-    const block = makeProto<documents.Block.AsObject, documents.Block>(
+    const block = makeProto<documents.Block, documents.Block.AsObject>(
       new documents.Block(),
       {
         id: slateBlock.id,
@@ -64,7 +63,7 @@ export function toDocument({
           // add link to linksMap
           linksMap.set(leaf.id, toLink(leaf));
 
-          return leaf.children.map((leafChild) =>
+          return leaf.children.map((leafChild: SlateTextRun) =>
             toInlineElement({
               textRun: toTextRun({
                 ...leafChild,
@@ -82,6 +81,7 @@ export function toDocument({
 
         throw Error(`toDocument Error: Block -> inlineElement not supported`);
       })
+      //@ts-ignore
       .flat();
     block.setElementsList(inlineElements);
     blocksMap.set(slateBlock.id, block);
@@ -90,11 +90,4 @@ export function toDocument({
   newDoc.setChildrenList(childrenList);
 
   return newDoc;
-}
-
-function toLink(link: SlateLink): documents.Link {
-  const newLink = new documents.Link();
-  newLink.setUri(link.url);
-
-  return newLink;
 }

@@ -47,12 +47,12 @@ export function SuggestedConnections({ onConnect }: any) {
                     height: 12,
                     borderRadius: '$round',
                     flex: 'none',
-                    backgroundColor:
-                      connectionStatusColor(
-                        profile as mintter.Profile.AsObject,
-                      ) === 'bg-danger'
-                        ? '$danger-default'
-                        : '$success-default',
+                    backgroundColor: '$success-default',
+                    // connectionStatusColor(
+                    //   profile as mintter.Profile.AsObject,
+                    // ) === 'bg-danger'
+                    //   ? '$danger-default'
+                    //   : '$success-default',
                   }}
                 />
 
@@ -84,12 +84,4 @@ export function SuggestedConnections({ onConnect }: any) {
       )}
     </div>
   );
-}
-
-function connectionStatusColor(
-  connection: mintter.Profile.AsObject,
-): 'bg-success' | 'bg-danger' {
-  return connection.connectionStatus === mintter.ConnectionStatus.CONNECTED
-    ? 'bg-success'
-    : 'bg-danger';
 }

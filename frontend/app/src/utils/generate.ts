@@ -33,8 +33,12 @@ export function buildAccount({
   };
 }
 
-export function buildDevices(): accounts.Device.AsObject[] {
-  return ["1", "2", "3"].map((id) => ({ peerId: id} as accounts.Device.AsObject));
+export function buildDevices(): Array<[string, accounts.Device.AsObject]> {
+  return [
+    ['1', { peerId: '1' } as accounts.Device.AsObject],
+    ['2', { peerId: '2' } as accounts.Device.AsObject],
+    ['3', { peerId: '3' } as accounts.Device.AsObject],
+  ];
 }
 
 export function buildPublication(): documents.Publication {
@@ -58,7 +62,6 @@ export function buildDocument({
   subtitle = faker.lorem.sentence(),
   id = createId(),
 }: BuildDocumentOptions = {}): documents.Document {
-
   let block1: documents.Block;
   let block2: documents.Block;
   let block3: documents.Block;
@@ -135,7 +138,10 @@ export function buildTextInlineElement(
   }
 
   let node = new documents.InlineElement();
-  let text = makeProto<documents.TextRun>(new documents.TextRun(), textRun);
+  let text = makeProto<documents.TextRun, documents.TextRun.AsObject>(
+    new documents.TextRun(),
+    textRun,
+  );
 
   node.setTextRun(text);
 

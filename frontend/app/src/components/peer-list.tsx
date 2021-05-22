@@ -15,23 +15,27 @@ export function PeerList() {
     return <Text>Error :(</Text>;
   }
 
-  const { devicesMap } = query.data;
-  return (
-    <Box>
-      {devicesMap.map(
-        ([id, device]: [string, account.Device.AsObject], index: number) => (
-          <Text>
-            <Text
-              as="span"
-              color="muted"
-              css={{ display: 'inline-block', marginRight: '$4' }}
-            >
-              {index + 1}.
-            </Text>{' '}
-            {device.peerId}
-          </Text>
-        ),
-      )}
-    </Box>
-  );
+  if (query.isSuccess && query.data) {
+    const { devicesMap } = query.data;
+    return (
+      <Box>
+        {devicesMap.map(
+          ([id, device]: [string, account.Device.AsObject], index: number) => (
+            <Text>
+              <Text
+                as="span"
+                color="muted"
+                css={{ display: 'inline-block', marginRight: '$4' }}
+              >
+                {index + 1}.
+              </Text>{' '}
+              {device.peerId}
+            </Text>
+          ),
+        )}
+      </Box>
+    );
+  }
+
+  return null;
 }
