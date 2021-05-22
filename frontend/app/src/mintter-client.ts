@@ -118,7 +118,7 @@ export function deleteDraft(documentId: string): Promise<any> {
 }
 
 export function getDraft(draftId: string): Promise<documents.Document> {
-  let document = buildDocument({id: draftId})
+  let document = buildDocument({ id: draftId });
   // document.setId(draftId);
 
   return Promise.resolve(document);
@@ -166,7 +166,7 @@ export function getPublication(
 }
 
 export function getDocument(documentId: string) {
-  return buildDocument()
+  return buildDocument();
 }
 
 export function deletePublication(version: string): Promise<Empty> {
@@ -204,7 +204,7 @@ export async function genSeed(
   aezeedPassphrase?: string,
 ): Promise<daemon.GenSeedResponse> {
   console.log('real genSeed!');
-  
+
   let request = new daemon.GenSeedRequest();
   // TODO: add aezeedPassphrase?
   return await daemonClient().genSeed(request);

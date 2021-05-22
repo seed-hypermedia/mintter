@@ -1,4 +1,7 @@
-import type { SlatePluginOptions } from '@udecode/slate-plugins-core';
+import type {
+  SlatePluginComponent,
+  SlatePluginOptions,
+} from '@udecode/slate-plugins-core';
 import { BlockElement } from './block-element';
 import { ELEMENT_BLOCK } from './create-block-plugin';
 
@@ -9,7 +12,7 @@ export type BlockOptions = {
 export const blockOptions: BlockOptions = {
   [ELEMENT_BLOCK]: {
     type: ELEMENT_BLOCK,
-    component: BlockElement,
+    component: BlockElement as SlatePluginComponent,
     defaultType: ELEMENT_BLOCK,
     // TODO: deserialize
   },

@@ -4,7 +4,11 @@ import {
   DEFAULTS_STRIKETHROUGH,
   MARK_STRIKETHROUGH,
 } from '@udecode/slate-plugins-basic-marks';
-import type { SlatePluginOptions } from '@udecode/slate-plugins-core';
+import type {
+  SlatePluginOptions,
+  SPRenderLeafProps,
+} from '@udecode/slate-plugins-core';
+import type { SlateTextRun } from './types';
 
 export type StrikethroughOptions = {
   [MARK_STRIKETHROUGH]: SlatePluginOptions;
@@ -13,6 +17,7 @@ export type StrikethroughOptions = {
 export const strikethroughOptions: StrikethroughOptions = {
   [MARK_STRIKETHROUGH]: {
     ...DEFAULTS_STRIKETHROUGH,
+    //@ts-ignore
     component: StrikethroughLeaf,
   },
 };
@@ -27,10 +32,15 @@ export const strikethroughAutoformatRules: AutoformatRule[] = [
 ];
 
 const styleClass = css({
-  textDecoration: 'line-through'
+  textDecoration: 'line-through',
 });
 
-export function StrikethroughLeaf({ attributes, children, leaf, ...rest }) {
+export function StrikethroughLeaf({
+  attributes,
+  children,
+  leaf,
+  ...rest
+}: SPRenderLeafProps<SlateTextRun>) {
   if (leaf.strikethrough) {
     return (
       <span className={styleClass()} {...attributes}>

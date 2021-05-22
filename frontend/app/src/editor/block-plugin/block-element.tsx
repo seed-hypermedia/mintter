@@ -6,6 +6,8 @@ import * as ContextMenu from '@radix-ui/react-context-menu';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { Slot } from '@radix-ui/react-slot';
 import { ELEMENT_BLOCK } from './create-block-plugin';
+import type { SPRenderElementProps } from '@udecode/slate-plugins-core';
+import type { SlateBlock } from '../types';
 // TODO: fix types
 export function BlockElement({
   attributes,
@@ -13,7 +15,7 @@ export function BlockElement({
   className,
   element,
   ...rest
-}: any) {
+}: SPRenderElementProps<SlateBlock>) {
   function onOpenChange(open: boolean) {
     console.log('open changed! = ', open);
   }

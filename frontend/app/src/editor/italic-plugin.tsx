@@ -1,23 +1,30 @@
 import { css } from '@mintter/ui/stitches.config';
+import { Box } from '@mintter/ui/box';
 import type { AutoformatRule } from '@udecode/slate-plugins-autoformat';
 import {
   DEFAULTS_ITALIC,
   MARK_ITALIC,
 } from '@udecode/slate-plugins-basic-marks';
-import type { SlatePluginOptions } from '@udecode/slate-plugins-core';
+import type {
+  SlatePluginComponent,
+  SlatePluginOptions,
+  SPRenderLeafProps,
+} from '@udecode/slate-plugins-core';
+import type { SlateTextRun } from './types';
 
 export type ItalicOptions = {
   [MARK_ITALIC]: SlatePluginOptions;
 };
 
 export const italicOptions: ItalicOptions = {
+  //@ts-ignore
   [MARK_ITALIC]: {
     ...DEFAULTS_ITALIC,
-    component: ItalicLeaf,
+    component: ItalicLeaf as SlatePluginComponent,
   },
 };
 
-export const italicAutoformatRules: AutoformatRule[] = [
+export const italicAutoformatRules: Array<AutoformatRule> = [
   {
     type: MARK_ITALIC,
     between: ['*', '*'],
@@ -31,16 +38,23 @@ export const italicAutoformatRules: AutoformatRule[] = [
     insertTrigger: true,
   },
 ];
-const styleClass = css({
-  fontStyle: 'italic',
-});
 
-export function ItalicLeaf({ attributes, children, leaf, ...rest }) {
+export function ItalicLeaf({
+  attributes,
+  children,
+  leaf,
+}: SPRenderLeafProps<SlateTextRun>) {
   if (leaf.italic) {
     return (
-      <em className={styleClass()} {...attributes}>
+      <Box
+        as="em"
+        css={{
+          fontStyle: 'italic',
+        }}
+        {...attributes}
+      >
         {children}
-      </em>
+      </Box>
     );
   }
 }
