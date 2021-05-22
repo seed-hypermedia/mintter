@@ -50,19 +50,11 @@ export function toInlineElement(
   return element;
 }
 
-export function toTextRun(
-  entry: SlateTextRun | SlateLink,
-): documents.TextRun | Array<documents.TextRun> {
-  if ('type' in entry) {
-    return entry.children.map((node) =>
-      makeProto(new documents.TextRun(), {
-        ...node,
-        linkKey: entry.id,
-      } as documents.TextRun.AsObject),
-    );
-  } else {
-    return makeProto(new documents.TextRun(), entry);
-  }
+export function toTextRun(entry: SlateTextRun): documents.TextRun {
+  return makeProto<documents.TextRun, documents.TextRun.AsObject>(
+    new documents.TextRun(),
+    entry,
+  );
 }
 
 // quote InlineElement
@@ -81,35 +73,19 @@ export type ToQuoteResult = {
 };
 
 export function toQuote(entry: SlateQuote): documents.Quote {
-  return makeProto(new documents.Quote(), {
-    linkKey: entry.id,
-    startOffset: 0,
-    endOffset: 0,
-  });
+  return makeProto<documents.Quote, documents.Quote.AsObject>(
+    new documents.Quote(),
+    {
+      linkKey: entry.id,
+      startOffset: 0,
+      endOffset: 0,
+    },
+  );
 }
 
-export type ToLinkResult = {
-  id: string;
-  link: documents.Link;
-  textRuns: Array<documents.TextRun>;
-};
+export function toLink(link: SlateLink): documents.Link {
+  const newLink = new documents.Link();
+  newLink.setUri(link.url);
 
-export function toLink({
-  id,
-  url,
-  children,
-}: SlateLink | SlateQuote): ToLinkResult {
-  if (typeof id === 'undefined') {
-    throw new Error(`toLink error: "id" cannot be undefined`);
-  }
-  if (typeof url === 'undefined') {
-    throw new Error(`toLink error: "url" cannot be undefined`);
-  }
-  const textRuns = children.map((textNode) =>
-    makeProto(new documents.TextRun(), {
-      ...textNode,
-      linkKey: id,
-    } as documents.TextRun.AsObject),
-  );
-  return { id, link: makeProto(new documents.Link(), { uri: url }), textRuns };
+  return newLink;
 }

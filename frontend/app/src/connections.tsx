@@ -72,13 +72,5 @@ export function Connections({ onConnect }: any) {
   //     </Box>
   //   </Box>
   // );
-  return <Text>connections. Implement!</Text>
-}
-
-function connectionStatusColor(
-  connection: mintter.Profile.AsObject,
-): 'success' | 'danger' {
-  return connection.connectionStatus === mintter.ConnectionStatus.CONNECTED
-    ? 'success'
-    : 'danger';
+  return <Text>connections. Implement!</Text>;
 }

@@ -1,23 +1,21 @@
-import type { SlateTextRun } from '@mintter/hooks';
 import { Box } from '@mintter/ui/box';
-import type { TRenderElementProps } from '@udecode/slate-plugins-core';
+import type { SPRenderElementProps } from '@udecode/slate-plugins-core';
 import { useEffect, useMemo } from 'react';
 import { Link } from '@components/link';
 import { MINTTER_LINK_PREFIX } from '.';
 import { Tooltip } from '@components/tooltip';
 import { Icon } from '@mintter/ui/icon';
-import {SlateLink} from '../types'
+import type { SlateLink } from '../types';
 
-
-export function LinkElement(props: TRenderElementProps<SlateLink>) {
+export function LinkElement(props: SPRenderElementProps<SlateLink>) {
   const isMintterLink = useMemo<boolean>(
     () => props.element.url.startsWith(MINTTER_LINK_PREFIX),
     [props.element.url],
   );
-  
+
   useEffect(() => {
-    console.log({[props.element.id]: props.element})
-  }, [props.element.id])
+    console.log({ [props.element.id]: props.element });
+  }, [props.element.id]);
   return isMintterLink ? (
     <MintterLink {...props} />
   ) : (
@@ -30,7 +28,7 @@ function MintterLink({
   attributes,
   children,
   ...props
-}: TRenderElementProps<SlateLink>) {
+}: SPRenderElementProps<SlateLink>) {
   return (
     <Tooltip
       content={
@@ -40,16 +38,16 @@ function MintterLink({
       }
     >
       <Box
-        as={Link}
         {...attributes}
+        //@ts-ignore
+        as={Link}
         to={element.url} // something is adding `type="button"` here and is braking the styles
         css={{
           background: 'blue',
-          appearance: 'unset !important',
+          appearance: 'unset',
           textDecoration: 'underline',
           wordBreak: 'break-all',
           color: '$text-default',
-
           '&:hover': {
             cursor: 'pointer',
           },
@@ -67,7 +65,7 @@ function ExternalLink({
   attributes,
   children,
   ...props
-}: TRenderElementProps<SlateLink>) {
+}: SPRenderElementProps<SlateLink>) {
   return (
     <Tooltip
       content={

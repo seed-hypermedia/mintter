@@ -13,7 +13,7 @@ import {
   someNode,
   unwrapNodes,
 } from '@udecode/slate-plugins-common';
-import { useStoreEditorState } from '@udecode/slate-plugins-core';
+import { SPEditor, useStoreEditorState } from '@udecode/slate-plugins-core';
 import { ELEMENT_LINK } from './create-link-plugin';
 import { Editor, Transforms } from 'slate';
 import { upsertLinkAtSelection } from '@udecode/slate-plugins-link';
@@ -40,24 +40,26 @@ export function ToolbarLink() {
   );
 }
 
-function LinkForm({ close }) {
+function LinkForm({ close }: { close: () => void }) {
   const [link, setLink] = useState('');
-  const editor = useStoreEditorState();
+  const editor = useStoreEditorState('editor');
   const isLink =
     !!editor?.selection && someNode(editor, { match: { type: ELEMENT_LINK } });
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!editor) return;
     if (link && isUrl(link)) {
       Editor.withoutNormalizing(editor, () => {
         upsertLinkAtSelection(editor, { url: link, wrap: false });
       });
     }
 
-    close()
+    close();
   }
 
   function handleRemove() {
+    if (!editor) return;
     const linkNode = getAbove(editor, {
       match: (n) => n.type === ELEMENT_LINK,
     });
@@ -74,6 +76,7 @@ function LinkForm({ close }) {
   }
 
   useEffect(() => {
+    if (!editor) return;
     const linkNode = getAbove(editor, {
       match: (n) => n.type === ELEMENT_LINK,
     });

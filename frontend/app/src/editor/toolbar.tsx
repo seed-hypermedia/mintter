@@ -15,7 +15,6 @@ import {
 import {
   BalloonToolbar,
   ToolbarElement,
-  ToolbarMark,
   ToolbarMarkProps as DefaultToolbarMarkProps,
   useBalloonMove,
   useBalloonShow,
@@ -45,7 +44,6 @@ export function Toolbar() {
           display: 'flex',
           alignItems: 'center',
           boxSizing: 'content-box',
-          zIndex: '$max',
           whiteSpace: 'nowrap',
           visibility: hidden ? 'hidden' : 'visible',
           transition: 'top 75ms ease-out, left 75ms ease-out 0s',
