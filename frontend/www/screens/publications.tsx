@@ -1,3 +1,4 @@
+import {useMemo} from 'react'
 import {Icons} from 'components/icons'
 import DocumentList from 'components/document-list'
 import {useMintter, useOthersPublications} from 'shared/mintter-context'
@@ -11,6 +12,14 @@ export default function Publications() {
   const {createDraft, deleteDocument} = useMintter()
 
   const {isLoading, isError, error, data} = useOthersPublications()
+
+  const articles = useMemo(
+    () =>
+      data?.length
+        ? data.sort((a, b) => b.publishTime.seconds - a.publishTime.seconds)
+        : [],
+    [data],
+  )
 
   async function handleCreateDraft() {
     const n = await createDraft()
@@ -57,7 +66,7 @@ export default function Publications() {
         isLoading={isLoading}
         isError={isError}
         error={error}
-        data={data}
+        data={articles}
         onDeleteDocument={handleDeleteDocument}
       />
     </>
