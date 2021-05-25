@@ -1,3 +1,4 @@
+import {useMemo} from 'react'
 import Seo from 'components/seo'
 import DocumentList from 'components/document-list'
 import {useMintter, useMyPublications} from 'shared/mintter-context'
@@ -10,6 +11,14 @@ export default function MyPublications({noSeo = false, isPublic = false}) {
   const {history, match} = useRouter()
   const {createDraft, deleteDocument} = useMintter()
   const {isError, isLoading, isSuccess, error, data} = useMyPublications()
+
+  const articles = useMemo(
+    () =>
+      data?.length
+        ? data.sort((a, b) => b.publishTime.seconds - a.publishTime.seconds)
+        : [],
+    [data],
+  )
 
   async function onCreateDocument() {
     const d = await createDraft()
@@ -57,7 +66,7 @@ export default function MyPublications({noSeo = false, isPublic = false}) {
         isLoading={isLoading}
         isError={isError}
         error={error}
-        data={data}
+        data={articles}
         onDeleteDocument={!isPublic && handleDeleteDocument}
       />
     </>
