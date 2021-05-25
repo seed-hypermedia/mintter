@@ -53,7 +53,7 @@ export function usePublications(options = {}) {
           doc,
           ...data,
         }
-      }),
+      }).sort((a,b) => b.publishTime.seconds - a.publishTime.seconds),
     [docsQuery.data],
   )
 
@@ -93,7 +93,7 @@ export function useOthersPublications(options = {}) {
     () =>
       docsQuery.data?.filter(doc => {
         return doc.author !== userId
-      }),
+      }).sort((a,b) => b.publishTime.seconds - a.publishTime.seconds),
     [docsQuery.data, userId],
   )
 
@@ -123,7 +123,7 @@ export function useDrafts(options = {}) {
           doc,
           ...data,
         }
-      }),
+      }).sort((a,b) => b.publishTime.seconds - a.publishTime.seconds),
     [docsQuery.data],
   )
 
