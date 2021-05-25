@@ -16,7 +16,7 @@ export default function Publications() {
   const articles = useMemo(
     () =>
       data?.length
-        ? data.sort((a, b) => b.publishTime.seconds - a.publishTime.seconds)
+        ? data.sort((a, b) => b.publishTime?.seconds - a.publishTime?.seconds)
         : [],
     [data],
   )
