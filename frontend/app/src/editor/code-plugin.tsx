@@ -7,7 +7,7 @@ import type {
   SlatePluginOptions,
   SPRenderLeafProps,
 } from '@udecode/slate-plugins-core';
-import type { SlateTextRun } from './types';
+import type { EditorTextRun } from './types';
 
 export type CodeOptions = {
   [MARK_CODE]: SlatePluginOptions;
@@ -34,7 +34,7 @@ export function CodeLeaf({
   attributes,
   children,
   leaf,
-}: SPRenderLeafProps<SlateTextRun>) {
+}: SPRenderLeafProps<EditorTextRun>) {
   if (leaf.code) {
     return (
       <Box

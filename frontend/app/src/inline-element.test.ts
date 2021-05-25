@@ -10,7 +10,7 @@ import {
   toInlineTextRun,
   toInlineElement,
 } from './inline-element';
-import type { SlateLink, SlateQuote, SlateTextRun } from './editor/types';
+import type { SlateLink, SlateQuote, EditorTextRun } from './editor/types';
 
 describe('TextRun', () => {
   it('simple text', () => {

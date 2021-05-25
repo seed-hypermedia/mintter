@@ -79,6 +79,7 @@ export function buildDocument({
   doc.setAuthor(author);
   doc.setChildrenListStyle(childrenListStyle);
   let blocksMap = doc.getBlocksMap();
+  doc.setChildrenList([block1.getId(), block2.getId(), block3.getId()]);
   blocks.forEach((b) => {
     blocksMap.set(b.getId(), b);
   });

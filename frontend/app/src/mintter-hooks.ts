@@ -18,7 +18,9 @@ import type { QueryOptions } from '@testing-library/dom';
 import type daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
 import { buildBlock } from '@utils/generate';
 import { ELEMENT_QUOTE } from './editor/quote-plugin';
-import type { SlateTextRun } from './editor/types';
+import type { EditorTextRun } from './editor/types';
+import { tempToEditor } from './to-document';
+import type { data } from 'autoprefixer';
 
 export function useAccount(
   accountId?: string,
@@ -169,13 +171,18 @@ export function useDraft(
     },
   );
 
-  const data = React.useMemo(() => draftQuery.data?.toObject?.(), [
+  const data = React.useMemo(() => draftQuery.data, [
     draftQuery.data,
-  ]) as documents.Document.AsObject;
+  ]) as documents.Document;
 
   return {
     ...draftQuery,
-    data,
+    data: data
+      ? {
+          ...data.toObject(),
+          editorValue: tempToEditor(data),
+        }
+      : undefined,
   };
 }
 
@@ -235,11 +242,11 @@ function isValidQuoteUrl(url: string): boolean {
 
 export function toSlateQuote(
   entry: documents.Block.AsObject,
-): Array<SlateTextRun> {
+): Array<EditorTextRun> {
   //@ts-ignore
   return entry.elementsList.map((element: documents.InlineElement.AsObject) => {
     // assume elements are type textRun for now
-    let node: SlateTextRun = { text: '' };
+    let node: EditorTextRun = { text: '' };
     if (element.textRun) {
       const { textRun } = element;
       node.text = textRun.text;
@@ -261,12 +268,6 @@ export function toSlateQuote(
 
     return null;
   });
-}
-
-export function useEditorDraft(documentId: string) {
-  return useDraft(documentId);
-
-  // return not only the draft but all the functions to change the editor values
 }
 
 /**

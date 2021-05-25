@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Editor } from 'slate';
 import { useHistory, useParams } from 'react-router';
 import { useMutation } from 'react-query';
@@ -6,7 +6,7 @@ import { useMenuState } from 'reakit/Menu';
 import type { ReactEditor } from 'slate-react';
 
 import { publishDraft } from '@mintter/client';
-import { useAccount, useEditorDraft } from '@mintter/hooks';
+import { useAccount, useDraft } from '@mintter/hooks';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
@@ -20,14 +20,14 @@ import { useSidePanel } from '../sidepanel';
 import { EditorComponent } from '@mintter/editor/editor-component';
 import 'show-keys';
 import { useStoreEditorValue } from '@udecode/slate-plugins-core';
-import { toDocument } from '../to-document';
+import { tempToEditor, toDocument } from '../to-document';
 import type { SlateBlock } from '@mintter/editor/types';
 
 export default function EditorPage() {
   const history = useHistory();
   const query = new URLSearchParams(window.location.search);
   const { docId } = useParams<{ docId: string }>();
-  const { isLoading, isError, error, data } = useEditorDraft(docId);
+  const { isLoading, isError, error, data } = useDraft(docId);
   const titleRef = useRef<HTMLInputElement>(null);
   const linkMenu = useMenuState({ loop: true, wrap: true });
   const subtitleRef = useRef<HTMLInputElement>(null);
@@ -148,7 +148,7 @@ export default function EditorPage() {
         />
         <Separator />
         <Box css={{ mx: '-$4', width: 'calc(100% + $7)' }}>
-          <EditorComponent />
+          <EditorComponent initialValue={data.editorValue} />
         </Box>
       </Container>
       {isSidepanelOpen ? (

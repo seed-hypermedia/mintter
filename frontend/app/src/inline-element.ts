@@ -2,7 +2,7 @@ import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
 import { makeProto } from '@utils/make-proto';
 import type {
   SlateInlineElement,
-  SlateTextRun,
+  EditorTextRun,
   SlateImage,
   SlateQuote,
   SlateLink,
@@ -50,7 +50,7 @@ export function toInlineElement(
   return element;
 }
 
-export function toTextRun(entry: SlateTextRun): documents.TextRun {
+export function toTextRun(entry: EditorTextRun): documents.TextRun {
   return makeProto<documents.TextRun, documents.TextRun.AsObject>(
     new documents.TextRun(),
     entry,

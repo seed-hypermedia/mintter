@@ -10,7 +10,7 @@ import type {
   SlatePluginOptions,
   SPRenderLeafProps,
 } from '@udecode/slate-plugins-core';
-import type { SlateTextRun } from './types';
+import type { EditorTextRun } from './types';
 
 export type ItalicOptions = {
   [MARK_ITALIC]: SlatePluginOptions;
@@ -43,7 +43,7 @@ export function ItalicLeaf({
   attributes,
   children,
   leaf,
-}: SPRenderLeafProps<SlateTextRun>) {
+}: SPRenderLeafProps<EditorTextRun>) {
   if (leaf.italic) {
     return (
       <Box
