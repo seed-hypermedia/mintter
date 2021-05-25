@@ -269,7 +269,7 @@ function usePublication() {
       if (title && !slug.includes('-')) {
         const titleSlug = slugify(title, {
           lower: true,
-          remove: /[*+~.?()'"!:@]/g,
+          remove: /[*+~.?(){}'"!:@«»<>,|\\/%]/g,
         })
         history.replace(`${titleSlug}-${version}`)
       }
