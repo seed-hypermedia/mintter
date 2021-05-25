@@ -3,7 +3,7 @@ import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
 export type SlateVoidChildren = {
   children: Array<{ text: string }>;
 };
-export type SlateTextRun = Partial<Omit<documents.TextRun.AsObject, 'text'>> &
+export type EditorTextRun = Partial<Omit<documents.TextRun.AsObject, 'text'>> &
   Pick<documents.TextRun.AsObject, 'text'>;
 
 export type SlateQuote = SlateVoidChildren & {
@@ -18,13 +18,13 @@ export type SlateImage = SlateVoidChildren & {
   alt_text: string;
 };
 
-export type SlateInlineElement = SlateTextRun | SlateQuote | SlateImage;
+export type SlateInlineElement = EditorTextRun | SlateQuote | SlateImage;
 
 export type SlateLink = {
   type: string;
   id: string;
   url: string;
-  children: SlateTextRun[];
+  children: EditorTextRun[];
 };
 
 export type SlateBlock = {
@@ -33,5 +33,5 @@ export type SlateBlock = {
   depth: number;
   blockType: documents.Block.Type;
   listStyle: documents.ListStyle;
-  children: Array<SlateTextRun | SlateQuote | SlateLink>; // TODO: fix types
+  children: Array<EditorTextRun | SlateQuote | SlateLink>; // TODO: fix types
 };

@@ -40,6 +40,7 @@ import { Toolbar } from './toolbar';
 import { underlineOptions, underlineAutoformatRules } from './underline-plugin';
 import { createQuotePlugin, ELEMENT_QUOTE, quoteOptions } from './quote-plugin';
 import { createLinkPlugin, ELEMENT_LINK, linkOptions } from './link-plugin';
+import type { SlateBlock } from './types';
 
 const initialValue = [
   {
@@ -96,11 +97,12 @@ function rulesWithCustomDefaultType(
 export function EditorComponent<T extends SPEditor = SPEditor>({
   ...options
 }: SlatePluginsProps<T>) {
-  const [v, setV] = useState(initialValue);
+  // const [v, setV] = useState(initialValue);
   return (
     <>
       <SlatePlugins
         id="editor"
+        {...options}
         editableProps={{
           placeholder: 'start here...',
         }}
@@ -158,12 +160,11 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           ...quoteOptions,
           ...linkOptions,
         }}
-        initialValue={initialValue}
-        onChange={(nv) => setV(nv as any)}
+        // onChange={(nv) => setV(nv as any)}
       >
         <Toolbar />
       </SlatePlugins>
-      <pre>{JSON.stringify(v, null, 3)}</pre>
+      {/* <pre>{JSON.stringify(v, null, 3)}</pre> */}
     </>
   );
 }
