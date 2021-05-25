@@ -8,7 +8,7 @@ import type {
   SlatePluginOptions,
   SPRenderLeafProps,
 } from '@udecode/slate-plugins-core';
-import type { SlateTextRun } from './types';
+import type { EditorTextRun } from './types';
 
 export type StrikethroughOptions = {
   [MARK_STRIKETHROUGH]: SlatePluginOptions;
@@ -40,7 +40,7 @@ export function StrikethroughLeaf({
   children,
   leaf,
   ...rest
-}: SPRenderLeafProps<SlateTextRun>) {
+}: SPRenderLeafProps<EditorTextRun>) {
   if (leaf.strikethrough) {
     return (
       <span className={styleClass()} {...attributes}>

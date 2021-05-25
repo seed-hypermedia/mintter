@@ -9,7 +9,7 @@ import type {
   SlatePluginOptions,
   SPRenderLeafProps,
 } from '@udecode/slate-plugins-core';
-import type { SlateTextRun } from './types';
+import type { EditorTextRun } from './types';
 
 export type UnderlineOptions = {
   [MARK_UNDERLINE]: SlatePluginOptions;
@@ -41,7 +41,7 @@ export function UnderlineLeaf({
   children,
   leaf,
   ...rest
-}: SPRenderLeafProps<SlateTextRun>) {
+}: SPRenderLeafProps<EditorTextRun>) {
   console.log('UNDERLINE LEAF', leaf);
   if (leaf.underline) {
     console.log('UNDERLINE!!!');

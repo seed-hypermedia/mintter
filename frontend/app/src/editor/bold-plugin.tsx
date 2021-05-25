@@ -7,7 +7,7 @@ import type {
   SlatePluginOptions,
   SPRenderLeafProps,
 } from '@udecode/slate-plugins-core';
-import type { SlateTextRun } from './types';
+import type { EditorTextRun } from './types';
 
 export type BoldOptions = {
   [MARK_BOLD]: SlatePluginOptions;
@@ -41,7 +41,7 @@ export function BoldLeaf({
   children,
   leaf,
   ...rest
-}: SPRenderLeafProps<SlateTextRun>) {
+}: SPRenderLeafProps<EditorTextRun>) {
   if (leaf.bold) {
     return (
       <Box
