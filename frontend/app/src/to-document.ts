@@ -5,7 +5,6 @@ import {
   buildTextInlineElement,
 } from '@utils/generate';
 import { makeProto } from '@utils/make-proto';
-import { ELEMENT_BLOCK } from './editor/block-plugin';
 import { ELEMENT_LINK } from './editor/link-plugin';
 import { ELEMENT_QUOTE } from './editor/quote-plugin';
 import type { SlateBlock, SlateLink, EditorTextRun } from './editor/types';
@@ -28,7 +27,7 @@ export function toDocument({
   blocks,
   childrenListStyle = documents.ListStyle.NONE,
 }: ToDocumentProps): documents.Document {
-  console.log('toDocument', { title, subtitle, blocks, id, author });
+  // console.log('toDocument', { title, subtitle, blocks, id, author });
   const newDoc = makeProto<documents.Document, documents.Document.AsObject>(
     new documents.Document(),
     {
@@ -91,38 +90,4 @@ export function toDocument({
   newDoc.setChildrenList(childrenList);
 
   return newDoc;
-}
-
-export function tempToEditor(
-  entry: documents.Document = buildDocument(),
-): Array<SlateBlock> {
-  let currentDoc = entry.toObject();
-  console.log('🚀 ~ file: to-document.ts ~ line 99 ~ currentDoc', currentDoc);
-
-  const blocksMap = entry.getBlocksMap();
-  const linksMap = entry.getLinksMap();
-  return currentDoc.childrenList.map((blockId) => {
-    let block = blocksMap.get(blockId)?.toObject();
-    return {
-      id: block?.id,
-      type: ELEMENT_BLOCK,
-      depth: 0,
-      listStyle: block?.childListStyle,
-      children: block?.elementsList.map(({ textRun, image, quote }) => {
-        if (textRun) {
-          if (textRun.linkKey) {
-            let id = textRun.linkKey;
-            delete textRun.linkKey;
-            return {
-              type: ELEMENT_LINK,
-              url: linksMap.get(id)?.toObject().uri,
-              children: [textRun],
-            };
-          } else {
-            return textRun;
-          }
-        }
-      }),
-    };
-  });
 }

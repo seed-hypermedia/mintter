@@ -53,22 +53,12 @@ describe('toLink', () => {
         },
       ],
     };
-    const link = makeProto<documents.Link, documents.Link.AsObject>(
+    const expected = makeProto<documents.Link, documents.Link.AsObject>(
       new documents.Link(),
       {
         uri: test.url,
       },
     );
-    const textRuns = [
-      makeProto<documents.TextRun, documents.TextRun.AsObject>(
-        new documents.TextRun(),
-        {
-          text: 'plain link',
-          linkKey: test.id,
-        },
-      ),
-    ];
-    const expected: ToLinkResult = { id: test.id, link, textRuns };
     expect(toLink(test)).to.deep.equal(expected);
   });
 
@@ -99,46 +89,6 @@ describe('toLink', () => {
     const expected = `toLink error: "url" cannot be undefined`;
     expect(() => toLink(test)).to.throw(expected);
   });
-});
-
-describe('SlateLink to TextRun[]', () => {
-  const test: SlateLink = {
-    id: 'test',
-    url: 'https://example.com',
-    type: 'a',
-    children: [
-      {
-        text: 'Hello ',
-      },
-      {
-        text: 'World!',
-        bold: true,
-      },
-    ],
-  };
-
-  const expected = [
-    makeProto<documents.TextRun, documents.TextRun.AsObject>(
-      new documents.TextRun(),
-      {
-        text: 'Hello ',
-        linkKey: 'test',
-      } as documents.TextRun.AsObject,
-    ),
-    makeProto<documents.TextRun, documents.TextRun.AsObject>(
-      new documents.TextRun(),
-      {
-        text: 'World!',
-        bold: true,
-        linkKey: 'test',
-      } as documents.TextRun.AsObject,
-    ),
-  ];
-
-  const result: Array<documents.TextRun> = toTextRun(test);
-
-  expect(result).to.have.length(2);
-  expect(result).to.deep.equal(expected);
 });
 
 describe('toQuote', () => {

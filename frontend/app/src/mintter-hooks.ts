@@ -18,8 +18,8 @@ import type { QueryOptions } from '@testing-library/dom';
 import type daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
 import { buildBlock } from '@utils/generate';
 import { ELEMENT_QUOTE } from './editor/quote-plugin';
-import type { EditorTextRun } from './editor/types';
-import { tempToEditor } from './to-document';
+import type { EditorTextRun, SlateBlock } from './editor/types';
+import { toEditorValue } from './to-editor-value';
 import type { data } from 'autoprefixer';
 
 export function useAccount(
@@ -145,7 +145,7 @@ export function useDraft(
   draftId: string,
   options = {},
 ): Omit<UseQueryResult<documents.Document>, 'data'> & {
-  data: documents.Document.AsObject;
+  data?: documents.Document.AsObject & { editorValue: Array<SlateBlock> };
 } {
   if (!draftId) {
     throw new Error(`useDraft: parameter "draftId" is required`);
@@ -180,7 +180,7 @@ export function useDraft(
     data: data
       ? {
           ...data.toObject(),
-          editorValue: tempToEditor(data),
+          editorValue: toEditorValue(data),
         }
       : undefined,
   };

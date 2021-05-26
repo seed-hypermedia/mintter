@@ -31,7 +31,7 @@ export type SlateBlock = {
   type: string;
   id: string;
   depth: number;
-  blockType: documents.Block.Type;
+  blockType?: documents.Block.Type;
   listStyle: documents.ListStyle;
   children: Array<EditorTextRun | SlateQuote | SlateLink>; // TODO: fix types
 };
