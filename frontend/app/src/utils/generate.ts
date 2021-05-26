@@ -79,12 +79,13 @@ export function buildDocument({
   doc.setAuthor(author);
   doc.setChildrenListStyle(childrenListStyle);
   let blocksMap = doc.getBlocksMap();
-  doc.setChildrenList([block1.getId(), block2.getId(), block3.getId()]);
+  doc.setChildrenList(blocks.map((b) => b.getId()));
   blocks.forEach((b) => {
     blocksMap.set(b.getId(), b);
   });
-  let linksMap = doc.getLinksMap();
   // set links map when needed
+  // let linksMap = doc.getLinksMap();
+
   return doc;
 }
 

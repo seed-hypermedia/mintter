@@ -47,26 +47,28 @@ export const Text = styled('span', {
         fontSize: '$6',
         letterSpacing: '0.01em',
         lineHeight: '$1',
+        fontWeight: '$bold',
       },
       9: {
         fontSize: '$7',
         letterSpacing: '0.01em',
         lineHeight: '$1',
+        fontWeight: '$bold',
       },
     },
     fontWeight: {
       default: {
-        fontWeight: 'unset'
+        fontWeight: 'unset',
       },
       regular: {
-        fontWeight: '$regular'
+        fontWeight: '$regular',
       },
       medium: {
-        fontWeight: '$medium'
+        fontWeight: '$medium',
       },
       bold: {
-        fontWeight: '$bold'
-      }
+        fontWeight: '$bold',
+      },
     },
     alt: {
       true: {
@@ -113,7 +115,7 @@ export const Text = styled('span', {
   defaultVariants: {
     size: '3',
     color: 'default',
-    fontWeight: 'default'
+    fontWeight: 'default',
   },
 
   compoundVariants: [

@@ -83,9 +83,16 @@ export function toQuote(entry: SlateQuote): documents.Quote {
   );
 }
 
-export function toLink(link: SlateLink): documents.Link {
+export function toLink(entry: SlateLink): documents.Link {
+  if (!entry.id) {
+    throw Error(`toLink error: "id" cannot be undefined`);
+  }
+
+  if (!entry.url) {
+    throw Error(`toLink error: "url" cannot be undefined`);
+  }
   const newLink = new documents.Link();
-  newLink.setUri(link.url);
+  newLink.setUri(entry.url);
 
   return newLink;
 }
