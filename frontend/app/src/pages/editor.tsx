@@ -20,7 +20,7 @@ import { useSidePanel } from '../sidepanel';
 import { EditorComponent } from '@mintter/editor/editor-component';
 import 'show-keys';
 import { useStoreEditorValue } from '@udecode/slate-plugins-core';
-import { tempToEditor, toDocument } from '../to-document';
+import { toDocument } from '../to-document';
 import type { SlateBlock } from '@mintter/editor/types';
 
 export default function EditorPage() {
