@@ -287,13 +287,13 @@ export function listAccounts(
 
 export async function listPeerAddrs(
   peerId: string,
-): Promise<networking.GetPeerAddrsResponse> {
+): Promise<networking.PeerInfo> {
   if (peerId === undefined) {
     return Promise.reject('listPeerAddrs error: `peerId (string)` is required');
   }
-  const request = new networking.GetPeerAddrsRequest();
+  const request = new networking.GetPeerInfoRequest();
   request.setPeerId(peerId);
-  return await networkingClient().getPeerAddrs(request);
+  return await networkingClient().getPeerInfo(request);
 }
 
 /**

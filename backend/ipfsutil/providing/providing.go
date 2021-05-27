@@ -11,11 +11,17 @@ import (
 
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
-	dshelp "github.com/ipfs/go-ipfs-ds-help"
+	"github.com/ipfs/go-log/v2"
 	"github.com/libp2p/go-libp2p-core/routing"
+	dht "github.com/libp2p/go-libp2p-kad-dht"
+	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
+
+	dshelp "github.com/ipfs/go-ipfs-ds-help"
 )
+
+var logger = log.Logger("providing")
 
 // Option is a functional option type for provider.
 type Option func(*Provider)
@@ -86,6 +92,7 @@ func New(rt routing.ContentRouting, ds datastore.TTLDatastore) *Provider {
 
 // Run the provider system. It blocks and will return
 // an error if something fails or ctx gets canceled.
+// Must be called before attempting to use any other method.
 func (p *Provider) Run(ctx context.Context) error {
 	timer := time.NewTimer(time.Hour)
 	if !timer.Stop() {
@@ -93,9 +100,9 @@ func (p *Provider) Run(ctx context.Context) error {
 	}
 	defer timer.Stop()
 
-	// Wait for routing to be ready.
-	// If dual dht get to the wan one
-	// If simple dht call routing table size until it's > 0.
+	if err := p.waitRouting(ctx); err != nil {
+		return err
+	}
 
 	// Start providing workers. They get tasks from the queue and provide.
 	g, ctx := errgroup.WithContext(ctx)
@@ -105,7 +112,6 @@ func (p *Provider) Run(ctx context.Context) error {
 		})
 	}
 
-Loop:
 	for {
 		// Get all the stuff.
 		// Push to the queue.
@@ -115,16 +121,14 @@ Loop:
 		timer.Reset(p.reprovideTickInterval)
 		select {
 		case <-ctx.Done():
-			break Loop
+			return g.Wait()
 		case <-timer.C:
 			continue
 		}
 	}
-
-	return g.Wait()
 }
 
-func (p *Provider) worker(ctx context.Context) error {
+func (p *Provider) worker(ctx context.Context) (err error) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -142,10 +146,7 @@ func (p *Provider) worker(ctx context.Context) error {
 	}
 }
 
-func (p *Provider) provide(ctx context.Context, txn interface {
-	datastore.TTL
-	datastore.Txn
-}, c cid.Cid) error {
+func (p *Provider) provide(ctx context.Context, txn ttlTxn, c cid.Cid) error {
 	key := datastore.NewKey("/providing").Child(dshelp.MultihashToDsKey(c.Hash()))
 	provided, err := txn.Has(key)
 	if err != nil {
@@ -166,11 +167,38 @@ func (p *Provider) provide(ctx context.Context, txn interface {
 			break
 		}
 
-		p.log.Debug("ProvideError", zap.Error(err), zap.String("cid", c.String()))
+		logger.Debug("ProvideError", zap.Error(err), zap.String("cid", c.String()))
 	}
 
 	if err := txn.PutWithTTL(key, nil, p.provideTTL); err != nil {
 		return fmt.Errorf("failed txn.Put: %w", err)
+	}
+
+	return nil
+}
+
+func (p *Provider) waitRouting(ctx context.Context) error {
+	var rt *dht.IpfsDHT
+
+	switch d := p.rt.(type) {
+	case *dht.IpfsDHT:
+		rt = d
+	case *dual.DHT:
+		rt = d.WAN
+	default:
+		return nil
+	}
+
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+
+	for rt.RoutingTable().Size() <= 0 {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-ticker.C:
+			continue
+		}
 	}
 
 	return nil

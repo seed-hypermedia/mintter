@@ -28,9 +28,9 @@ func withProviderWorkers(num int) providerOption {
 }
 
 type ttlStore interface {
-	datastore.TxnDatastore
-	datastore.Batching
 	datastore.TTL
+	NewTransaction(readOnly bool) (datastore.Txn, error)
+	Batch() (datastore.Batch, error)
 }
 
 type providing struct {

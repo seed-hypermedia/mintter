@@ -155,11 +155,11 @@ func TestDaemonEndToEnd(t *testing.T) {
 	require.NotEqual(t, "", infoResp.AccountId)
 	require.NotEqual(t, "", infoResp.PeerId)
 
-	addrsResp, err := nc.GetPeerAddrs(ctx, &networking.GetPeerAddrsRequest{
+	peerInfo, err := nc.GetPeerInfo(ctx, &networking.GetPeerInfoRequest{
 		PeerId: infoResp.PeerId,
 	})
 	require.NoError(t, err)
-	require.NotNil(t, addrsResp)
+	require.NotNil(t, peerInfo)
 
 	// require.NoError(t,
 	// 	filepath.Walk(cfg.RepoPath, func(path string, info os.FileInfo, err error) error {
