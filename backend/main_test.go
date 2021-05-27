@@ -39,7 +39,7 @@ func TestLibp2p(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	var n *ipfsutil.LibP2PNode
+	var n *ipfsutil.Libp2p
 	app := fx.New(
 		fx.Supply(cfg),
 		fx.Supply(repo),

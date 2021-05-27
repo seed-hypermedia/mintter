@@ -25,21 +25,21 @@ var userAgent = "mintter/" + Version
 // p2pNode wraps IPFS node that would be only initialized after account is registered within the node,
 // so all the components must only be accessed after making sure node is ready.
 type p2pNode struct {
-	*ipfsutil.IPFS
-
 	cfg  config.P2P
 	boot ipfsutil.Bootstrappers
 	log  *zap.Logger
+
+	libp2p *ipfsutil.Libp2p
 }
 
 // newP2PNode creates a new Mintter P2P wrapper.
-func newP2PNode(cfg config.P2P, log *zap.Logger, n *ipfsutil.IPFS, boot ipfsutil.Bootstrappers) *p2pNode {
+func newP2PNode(cfg config.P2P, log *zap.Logger, libp2p *ipfsutil.Libp2p, boot ipfsutil.Bootstrappers) *p2pNode {
 	p2p := &p2pNode{
-		IPFS: n,
-
 		cfg:  cfg,
 		boot: boot,
 		log:  log,
+
+		libp2p: libp2p,
 	}
 
 	return p2p
@@ -53,12 +53,12 @@ func (n *p2pNode) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to parse listen addr: %w", err)
 	}
 
-	if err := n.Host.Network().Listen(ma); err != nil {
+	if err := n.libp2p.Network().Listen(ma); err != nil {
 		return err
 	}
 
 	if !n.cfg.NoBootstrap {
-		res := ipfsutil.Bootstrap(ctx, n.Host, n.Routing, n.boot)
+		res := ipfsutil.Bootstrap(ctx, n.libp2p, n.libp2p.Routing, n.boot)
 		n.log.Info("BootstrapEnded",
 			zap.NamedError("dhtError", res.RoutingErr),
 			zap.Int("peersTotal", len(n.boot)),
