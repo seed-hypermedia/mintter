@@ -62,7 +62,7 @@ func DefaultBootstrapPeers() Bootstrappers {
 // libp2p.EnableNATService(), DisableRelay(), ConnectionManager(...)... see
 // https://godoc.org/github.com/libp2p/go-libp2p#Option for more info.
 //
-// Deprecated: Use NewLibP2PNode().
+// Deprecated: Use NewLibp2pNode().
 func SetupLibp2p(
 	ctx context.Context,
 	hostKey crypto.PrivKey,
@@ -196,10 +196,10 @@ func ParseMultiaddrs(in []string) ([]multiaddr.Multiaddr, error) {
 	return out, nil
 }
 
-// LibP2PNode exposes libp2p host and the underlying routing system (DHT), providing
+// Libp2p exposes libp2p host and the underlying routing system (DHT), providing
 // some defaults. The node will not be listening, so users must explicitly call Listen()
 // on the underlying host's network.
-type LibP2PNode struct {
+type Libp2p struct {
 	host.Host
 
 	Routing routing.Routing
@@ -208,9 +208,9 @@ type LibP2PNode struct {
 	clean         cleanup.Stack
 }
 
-// NewLibP2PNode creates a new node.
-func NewLibP2PNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.AddrInfo, opts ...libp2p.Option) (n *LibP2PNode, err error) {
-	n = &LibP2PNode{
+// NewLibp2pNode creates a new node.
+func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.AddrInfo, opts ...libp2p.Option) (n *Libp2p, err error) {
+	n = &Libp2p{
 		bootstrappers: bootstrap,
 	}
 
@@ -278,11 +278,11 @@ func NewLibP2PNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.A
 
 // Bootstrap blocks, and performs bootstrapping process for the node,
 // including the underlying routing system.
-func (n *LibP2PNode) Bootstrap(ctx context.Context) BootstrapResult {
+func (n *Libp2p) Bootstrap(ctx context.Context) BootstrapResult {
 	return Bootstrap(ctx, n.Host, n.Routing, n.bootstrappers)
 }
 
 // Close the node and all the underlying systems.
-func (n *LibP2PNode) Close() error {
+func (n *Libp2p) Close() error {
 	return n.clean.Close()
 }

@@ -23,7 +23,6 @@ var moduleP2P = fx.Options(
 		provideBitswap,
 		provideReprovider,
 		provideBlockService,
-		provideIPFS,
 		provideP2P,
 	),
 )
@@ -37,7 +36,7 @@ func provideBootstrapPeers(cfg config.P2P) ipfsutil.Bootstrappers {
 }
 
 // provideLibp2p assembles libp2p node ready to use. Listening must be started elsewhere.
-func provideLibp2p(lc *lifecycle, cfg config.P2P, ds datastore.Batching, r *repo, boot ipfsutil.Bootstrappers) (*ipfsutil.LibP2PNode, error) {
+func provideLibp2p(lc *lifecycle, cfg config.P2P, ds datastore.Batching, r *repo, boot ipfsutil.Bootstrappers) (*ipfsutil.Libp2p, error) {
 	opts := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
 	}
@@ -54,7 +53,7 @@ func provideLibp2p(lc *lifecycle, cfg config.P2P, ds datastore.Batching, r *repo
 		opts = append(opts, libp2p.DefaultSecurity)
 	}
 
-	node, err := ipfsutil.NewLibP2PNode(r.Device().priv, ds, boot, opts...)
+	node, err := ipfsutil.NewLibp2pNode(r.Device().priv, ds, boot, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +67,7 @@ func provideLibp2p(lc *lifecycle, cfg config.P2P, ds datastore.Batching, r *repo
 	return node, nil
 }
 
-func provideBitswap(lc *lifecycle, n *ipfsutil.LibP2PNode, bs blockstore.Blockstore) (*ipfsutil.Bitswap, error) {
+func provideBitswap(lc *lifecycle, n *ipfsutil.Libp2p, bs blockstore.Blockstore) (*ipfsutil.Bitswap, error) {
 	bswap, err := ipfsutil.NewBitswap(n.Host, n.Routing, bs)
 	if err != nil {
 		return nil, err
@@ -83,7 +82,7 @@ func provideBitswap(lc *lifecycle, n *ipfsutil.LibP2PNode, bs blockstore.Blockst
 	return bswap, nil
 }
 
-func provideReprovider(lc *lifecycle, bs blockstore.Blockstore, ds datastore.Batching, n *ipfsutil.LibP2PNode) (provider.System, error) {
+func provideReprovider(lc *lifecycle, bs blockstore.Blockstore, ds datastore.Batching, n *ipfsutil.Libp2p) (provider.System, error) {
 	sys, err := ipfsutil.NewProviderSystem(bs, ds, n.Routing)
 	if err != nil {
 		return nil, err
@@ -111,18 +110,7 @@ func provideBlockService(bs blockstore.Blockstore, bswap *ipfsutil.Bitswap) (blo
 	return blksvc, nil
 }
 
-func provideIPFS(n *ipfsutil.LibP2PNode, bs blockservice.BlockService, bswap *ipfsutil.Bitswap, prov provider.System) *ipfsutil.IPFS {
-	return &ipfsutil.IPFS{
-		Host:           n.Host,
-		Routing:        n.Routing,
-		Provider:       prov,
-		BitswapNetwork: bswap.Net,
-		Exchange:       bswap,
-		BlockService:   bs,
-	}
-}
-
-func provideP2P(log *zap.Logger, cfg config.P2P, node *ipfsutil.IPFS, repo *repo, boot ipfsutil.Bootstrappers) (*p2pNode, error) {
-	p2p := newP2PNode(cfg, log.Named("p2p"), node, boot)
+func provideP2P(log *zap.Logger, cfg config.P2P, libp2p *ipfsutil.Libp2p, boot ipfsutil.Bootstrappers) (*p2pNode, error) {
+	p2p := newP2PNode(cfg, log.Named("p2p"), libp2p, boot)
 	return p2p, nil
 }

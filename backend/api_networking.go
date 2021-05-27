@@ -40,7 +40,7 @@ func (srv *networkingAPI) GetPeerInfo(ctx context.Context, in *networking.GetPee
 		return nil, fmt.Errorf("failed to get device addrs: %w", err)
 	}
 
-	connectedness := srv.back.p2p.Host.Network().Connectedness(deviceID.PeerID())
+	connectedness := srv.back.p2p.libp2p.Network().Connectedness(deviceID.PeerID())
 
 	resp := &networking.PeerInfo{
 		Addrs:            ipfsutil.StringAddrs(mas),

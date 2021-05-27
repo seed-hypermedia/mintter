@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/lightningnetwork/lnd/aezeed"
@@ -45,6 +44,9 @@ func newBackend(r *repo, store *patchStore, p2p *p2pNode) *backend {
 	return srv
 }
 
+// Start instruct the backend to wait until account is ready to use
+// and then start the P2P services. Start blocks and returns
+// when the process is finished or ctx is canceled.
 func (srv *backend) Start(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
@@ -55,19 +57,21 @@ func (srv *backend) Start(ctx context.Context) error {
 		}
 	}
 
-	acc, err := srv.repo.Account()
-	if err != nil {
-		panic(err)
-	}
-	blk, err := blocks.NewBlockWithCid(nil, cid.Cid(acc.id))
-	if err != nil {
-		panic(err)
-	}
-	if err := srv.p2p.BlockService.AddBlock(blk); err != nil {
-		panic(err)
-	}
+	// TODO: provide account on the DHT.
 
-	fmt.Println("account provided", err)
+	// acc, err := srv.repo.Account()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// blk, err := blocks.NewBlockWithCid(nil, cid.Cid(acc.id))
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// if err := srv.p2p.BlockService.AddBlock(blk); err != nil {
+	// 	panic(err)
+	// }
+
+	// fmt.Println("account provided", err)
 
 	close(srv.ready)
 
@@ -252,7 +256,7 @@ func (srv *backend) GetDeviceAddrs(d DeviceID) ([]multiaddr.Multiaddr, error) {
 		return nil, err
 	}
 
-	info := ipfs.Host.Peerstore().PeerInfo(d.PeerID())
+	info := ipfs.libp2p.Peerstore().PeerInfo(d.PeerID())
 	return peer.AddrInfoToP2pAddrs(&info)
 }
 

@@ -108,7 +108,7 @@ func logAppLifecycle(lc *lifecycle, log *zap.Logger, cfg config.Config, grpc *gr
 					return err
 				}
 
-				addrs, err := back.p2p.Host.Network().InterfaceListenAddresses()
+				addrs, err := back.p2p.libp2p.Network().InterfaceListenAddresses()
 				if err != nil {
 					return fmt.Errorf("failed to parse addrs: %w", err)
 				}

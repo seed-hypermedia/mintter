@@ -18,7 +18,6 @@ import (
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
-	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 	"github.com/ipfs/go-ipfs-provider/queue"
 	"github.com/ipfs/go-ipfs-provider/simple"
 	"github.com/ipfs/go-merkledag"
@@ -375,15 +374,4 @@ func NewProviderSystem(bs blockstore.Blockstore, ds datastore.Datastore, rt rout
 	sp := simple.NewReprovider(ctx, defaultReprovideInterval, rt, simple.NewBlockstoreProvider(bs))
 
 	return provider.NewSystem(prov, sp), nil
-}
-
-// IPFS holds various ipfs-related services in one type that is easy to pass around.
-// Should be constructed using struct literals.
-type IPFS struct {
-	Host           host.Host
-	Routing        routing.Routing
-	Provider       provider.System
-	BitswapNetwork network.BitSwapNetwork
-	Exchange       exchange.Interface
-	BlockService   blockservice.BlockService
 }
