@@ -66,9 +66,9 @@ export function useInfo(
 export function usePeerAddrs(
   peerId?: string,
   options?: UseQueryOptions<
-    networking.GetPeerAddrsResponse,
+    networking.PeerInfo,
     unknown,
-    networking.GetPeerAddrsResponse
+    networking.PeerInfo
   >,
 ) {
   // query getInfo if peerId is undefined
