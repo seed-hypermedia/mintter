@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "snowpack dev --port 4000",
+    "dev2": "MINTTER_API_URL=\"http://localhost:55003\" snowpack dev --port 4000",
     "build": "snowpack build",
     "test": "web-test-runner \"src/**/*.test.(tsx|ts)\"",
     "test:w": "yarn test --watch",

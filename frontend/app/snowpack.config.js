@@ -1,5 +1,6 @@
 const path = require('path');
 const isTest = process.env.NODE_ENV === 'test';
+
 /** @type {import("snowpack").SnowpackUserConfig } */
 module.exports = {
   // TODO: fix hot-reloading of workspace dependencies.
@@ -8,6 +9,9 @@ module.exports = {
     public: { url: '/', static: true },
     src: { url: '/dist' },
     fonts: { url: '/fonts', static: true },
+  },
+  env: {
+    MINTTER_API_URL: process.env.MINTTER_API_URL,
   },
   plugins: [
     '@snowpack/plugin-react-refresh',

@@ -18,7 +18,6 @@ import {
 import { makeProto } from '@utils/make-proto';
 import { createId } from '@utils/create-id';
 import type { Empty } from 'google-protobuf/google/protobuf/empty_pb';
-import faker from 'faker';
 
 const MINTTER_API_URL =
   import.meta.env.MINTTER_API_URL || 'http://localhost:55001';
@@ -34,8 +33,7 @@ export function getApiUrl(): string {
     return window.location.origin;
   }
 
-  // return MINTTER_API_URL;
-  return 'http://localhost:55001';
+  return MINTTER_API_URL;
 }
 
 // This trick is required because we used to use API clients as globals,
