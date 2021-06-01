@@ -47,7 +47,6 @@ import {
   MintterLinkMenuContext,
 } from './link-plugin';
 import type { SlateBlock } from './types';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 const initialValue = [
   {
@@ -105,10 +104,8 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
   ...options
 }: SlatePluginsProps<T>) {
   const [mintterLinkOpen, setMintterLinkOpen] = useState(false);
-  const [mintterLinkPos, setMintterLinkPos] = useState({ x: 0, y: 0 });
 
   function openMintterLinkMenu() {
-    // setMintterLinkPos(coords);
     setMintterLinkOpen(true);
   }
 
@@ -116,7 +113,6 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
     <MintterLinkMenuContext.Provider
       value={{
         open: mintterLinkOpen,
-        coords: mintterLinkPos,
         show: openMintterLinkMenu,
         hide: () => setMintterLinkOpen(false),
       }}
@@ -181,7 +177,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           ...quoteOptions,
           ...linkOptions,
         }}
-        // onChange={(nv) => setV(nv as any)}
+      // onChange={(nv) => setV(nv as any)}
       >
         <Toolbar />
         <MintterLinkMenu />
