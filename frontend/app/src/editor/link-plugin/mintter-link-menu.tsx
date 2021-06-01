@@ -1,18 +1,42 @@
 import { Box } from '@mintter/ui/box';
 import * as Portal from '@radix-ui/react-portal';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { ReactEditor } from 'slate-react';
 import { Button } from '@mintter/ui/button';
+import { useStoreEditorState } from '@udecode/slate-plugins-core';
+import { OnboardingStepDescription } from '@pages/onboarding/common';
 
 export const MintterLinkMenuContext = createContext({
   open: false,
   coords: { x: 0, y: 0 },
-  show: (coords: { x: number, y: number }) => { },
-  hide: () => { },
-})
+  show: () => {},
+  hide: () => {},
+});
 
 export function MintterLinkMenu() {
-  const { open, coords, hide } = useContext(MintterLinkMenuContext)
+  const { open, hide } = useContext(MintterLinkMenuContext);
+  const [coords, setCoords] = useState({ x: 0, y: 0 });
 
+  const editor = useStoreEditorState();
+  console.log(
+    '🚀 ~ file: mintter-link-menu.tsx ~ line 17 ~ MintterLinkMenu ~ editor',
+    editor,
+  );
+
+  useEffect(() => {
+    if (open) {
+      const range =
+        editor.selection && ReactEditor.toDOMRange(editor, editor.selection);
+      const rect = range?.getBoundingClientRect();
+
+      if (rect) {
+        setCoords({
+          x: rect.right + window.pageXOffset,
+          y: rect.bottom + window.pageYOffset,
+        });
+      }
+    }
+  }, [open]);
   return (
     <Portal.Root>
       <Box
@@ -30,19 +54,23 @@ export function MintterLinkMenu() {
           visibility: open ? 'visible' : 'hidden',
           position: 'absolute',
           top: `${coords.y}px`,
-          left: `${coords.x}px`
+          left: `${coords.x}px`,
         }}
       >
         <Button onClick={hide} variant="ghost" color="muted">
           Dismiss
         </Button>
-        <Button onClick={() => {
-          console.log('create bookmark')
-          hide()
-        }} variant="ghost" color="muted">
+        <Button
+          onClick={() => {
+            console.log('create bookmark');
+            hide();
+          }}
+          variant="ghost"
+          color="muted"
+        >
           Create Document Bookmark
         </Button>
       </Box>
     </Portal.Root>
-  )
+  );
 }

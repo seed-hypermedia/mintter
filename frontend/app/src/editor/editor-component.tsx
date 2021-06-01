@@ -39,9 +39,15 @@ import {
 import { Toolbar } from './toolbar';
 import { underlineOptions, underlineAutoformatRules } from './underline-plugin';
 import { createQuotePlugin, ELEMENT_QUOTE, quoteOptions } from './quote-plugin';
-import { createLinkPlugin, ELEMENT_LINK, linkOptions, MintterLinkMenu, MintterLinkMenuContext } from './link-plugin';
+import {
+  createLinkPlugin,
+  ELEMENT_LINK,
+  linkOptions,
+  MintterLinkMenu,
+  MintterLinkMenuContext,
+} from './link-plugin';
 import type { SlateBlock } from './types';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 const initialValue = [
   {
@@ -98,16 +104,23 @@ function rulesWithCustomDefaultType(
 export function EditorComponent<T extends SPEditor = SPEditor>({
   ...options
 }: SlatePluginsProps<T>) {
-  const [mintterLinkOpen, setMintterLinkOpen] = useState(false)
-  const [mintterLinkPos, setMintterLinkPos] = useState({ x: 0, y: 0 })
+  const [mintterLinkOpen, setMintterLinkOpen] = useState(false);
+  const [mintterLinkPos, setMintterLinkPos] = useState({ x: 0, y: 0 });
 
-  function openMintterLinkMenu(coords: { x: number, y: number }) {
-    setMintterLinkPos(coords)
-    setMintterLinkOpen(true)
+  function openMintterLinkMenu() {
+    // setMintterLinkPos(coords);
+    setMintterLinkOpen(true);
   }
 
   return (
-    <MintterLinkMenuContext.Provider value={{ open: mintterLinkOpen, coords: mintterLinkPos, show: openMintterLinkMenu, hide: () => setMintterLinkOpen(false) }}>
+    <MintterLinkMenuContext.Provider
+      value={{
+        open: mintterLinkOpen,
+        coords: mintterLinkPos,
+        show: openMintterLinkMenu,
+        hide: () => setMintterLinkOpen(false),
+      }}
+    >
       <SlatePlugins
         id="editor"
         {...options}
@@ -168,7 +181,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           ...quoteOptions,
           ...linkOptions,
         }}
-      // onChange={(nv) => setV(nv as any)}
+        // onChange={(nv) => setV(nv as any)}
       >
         <Toolbar />
         <MintterLinkMenu />
