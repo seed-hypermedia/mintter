@@ -5,13 +5,11 @@ import {
   someNode,
   isUrl,
 } from '@udecode/slate-plugins';
-import { useContext } from 'react';
-import { Editor } from 'slate';
-import { ReactEditor } from 'slate-react';
+import type { ReactEditor } from 'slate-react';
 import { ELEMENT_LINK, MINTTER_LINK_PREFIX } from './create-link-plugin';
 
 export interface WithMintterLinkOptions {
-  openMintterLinkMenu: (coords: { x: number; y: number }) => void;
+  openMintterLinkMenu: () => void;
 }
 
 export function withMintterLink(

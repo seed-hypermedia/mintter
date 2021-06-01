@@ -4,13 +4,11 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { ReactEditor } from 'slate-react';
 import { Button } from '@mintter/ui/button';
 import { useStoreEditorState } from '@udecode/slate-plugins-core';
-import { OnboardingStepDescription } from '@pages/onboarding/common';
 
 export const MintterLinkMenuContext = createContext({
   open: false,
-  coords: { x: 0, y: 0 },
-  show: () => {},
-  hide: () => {},
+  show: () => { },
+  hide: () => { },
 });
 
 export function MintterLinkMenu() {
@@ -24,7 +22,7 @@ export function MintterLinkMenu() {
   );
 
   useEffect(() => {
-    if (open) {
+    if (open && editor) {
       const range =
         editor.selection && ReactEditor.toDOMRange(editor, editor.selection);
       const rect = range?.getBoundingClientRect();
@@ -36,7 +34,7 @@ export function MintterLinkMenu() {
         });
       }
     }
-  }, [open]);
+  }, [open, editor?.children]);
   return (
     <Portal.Root>
       <Box
