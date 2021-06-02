@@ -13,9 +13,6 @@ export function LinkElement(props: SPRenderElementProps<SlateLink>) {
     [props.element.url],
   );
 
-  useEffect(() => {
-    console.log({ [props.element.id]: props.element });
-  }, [props.element.id]);
   return isMintterLink ? (
     <MintterLink {...props} />
   ) : (
@@ -43,7 +40,6 @@ function MintterLink({
         as={Link}
         to={element.url} // something is adding `type="button"` here and is braking the styles
         css={{
-          background: 'blue',
           appearance: 'unset',
           textDecoration: 'underline',
           wordBreak: 'break-all',

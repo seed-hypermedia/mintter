@@ -47,6 +47,7 @@ import {
   MintterLinkMenuContext,
 } from './link-plugin';
 import type { SlateBlock } from './types';
+import { useMenuState } from 'reakit/Menu';
 
 const initialValue = [
   {
@@ -104,19 +105,10 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
   ...options
 }: SlatePluginsProps<T>) {
   const [mintterLinkOpen, setMintterLinkOpen] = useState(false);
-
-  function openMintterLinkMenu() {
-    setMintterLinkOpen(true);
-  }
+  const menu = useMenuState({ loop: true, wrap: true });
 
   return (
-    <MintterLinkMenuContext.Provider
-      value={{
-        open: mintterLinkOpen,
-        show: openMintterLinkMenu,
-        hide: () => setMintterLinkOpen(false),
-      }}
-    >
+    <>
       <SlatePlugins
         id="editor"
         {...options}
@@ -159,7 +151,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           createCodePlugin(),
           createUnderlinePlugin(),
           createQuotePlugin(),
-          createLinkPlugin({ openMintterLinkMenu }),
+          createLinkPlugin({ menu }),
           {
             withOverrides: withNodeId({
               idCreator: () => createId(),
@@ -177,12 +169,12 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           ...quoteOptions,
           ...linkOptions,
         }}
-      // onChange={(nv) => setV(nv as any)}
+        // onChange={(nv) => setV(nv as any)}
       >
         <Toolbar />
-        <MintterLinkMenu />
+        <MintterLinkMenu menu={menu} />
       </SlatePlugins>
       {/* <pre>{JSON.stringify(v, null, 3)}</pre> */}
-    </MintterLinkMenuContext.Provider>
+    </>
   );
 }

@@ -5,11 +5,12 @@ import {
   someNode,
   isUrl,
 } from '@udecode/slate-plugins';
+import type { MenuStateReturn } from 'reakit/Menu';
 import type { ReactEditor } from 'slate-react';
 import { ELEMENT_LINK, MINTTER_LINK_PREFIX } from './create-link-plugin';
 
 export interface WithMintterLinkOptions {
-  openMintterLinkMenu: () => void;
+  menu: MenuStateReturn;
 }
 
 export function withMintterLink(
@@ -34,7 +35,8 @@ export function withMintterLink(
           // const rect = range?.getBoundingClientRect()
 
           // if (rect) {
-          options.openMintterLinkMenu();
+          options.menu?.show();
+
           // }
 
           return upsertLinkAtSelection(editor, link);

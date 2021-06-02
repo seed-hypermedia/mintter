@@ -1,74 +1,98 @@
 import { Box } from '@mintter/ui/box';
 import * as Portal from '@radix-ui/react-portal';
-import { createContext, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  forwardRef,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { ReactEditor } from 'slate-react';
 import { Button } from '@mintter/ui/button';
 import { useStoreEditorState } from '@udecode/slate-plugins-core';
+import { Menu, MenuItem as ReakitMenuItem, MenuProps } from 'reakit/Menu';
 
-export const MintterLinkMenuContext = createContext({
-  open: false,
-  show: () => { },
-  hide: () => { },
-});
+function setMenuPosition(el: HTMLDivElement) {
+  const domSelection = window.getSelection();
 
-export function MintterLinkMenu() {
-  const { open, hide } = useContext(MintterLinkMenuContext);
-  const [coords, setCoords] = useState({ x: 0, y: 0 });
+  if (!domSelection || domSelection.rangeCount > 1) return;
 
+  const domRange = domSelection.getRangeAt(0);
+  const rect = domRange.getBoundingClientRect();
+
+  el.style.top = `${rect.bottom + window.pageYOffset}px`;
+  el.style.left = `${rect.left + window.pageXOffset}px`;
+}
+
+export type MintterLinkMenuProps = {
+  menu: MenuStateReturn;
+};
+
+const MenuItem = forwardRef(
+  ({ className = '', children, ...props }: any, ref: any) => {
+    return (
+      <Box
+        as={ReakitMenuItem}
+        ref={ref}
+        css={{
+          '&:focus': {
+            border: '1px solid blue',
+          },
+        }}
+        {...props}
+      >
+        {children}
+      </Box>
+    );
+  },
+);
+
+export function MintterLinkMenu({ menu }: MintterLinkMenuProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const initialFocus = useRef<HTMLButtonElement>(null);
   const editor = useStoreEditorState();
-  console.log(
-    '🚀 ~ file: mintter-link-menu.tsx ~ line 17 ~ MintterLinkMenu ~ editor',
-    editor,
-  );
 
   useEffect(() => {
-    if (open && editor) {
-      const range =
-        editor.selection && ReactEditor.toDOMRange(editor, editor.selection);
-      const rect = range?.getBoundingClientRect();
-
-      if (rect) {
-        setCoords({
-          x: rect.right + window.pageXOffset,
-          y: rect.bottom + window.pageYOffset,
-        });
-      }
+    if (ref.current && menu.visible) {
+      setMenuPosition(ref.current);
     }
-  }, [open, editor?.children]);
+  }, [editor, menu, ref]);
+
+  useEffect(() => {
+    if (menu.visible && initialFocus) {
+      initialFocus.current?.focus();
+    }
+  }, [menu.visible]);
+
   return (
     <Portal.Root>
-      <Box
-        css={{
-          display: 'flex',
-          flexDirection: 'column',
-          boxSizing: 'content-box',
-          alignItems: 'start',
-          whiteSpace: 'nowrap',
-          userSelect: 'none',
-          background: '$background-muted',
-          borderRadius: '$2',
-          boxShadow: '$3',
-          padding: '$1',
-          visibility: open ? 'visible' : 'hidden',
-          position: 'absolute',
-          top: `${coords.y}px`,
-          left: `${coords.x}px`,
-        }}
+      <Menu
+        {...menu}
+        tabIndex={0}
+        hideOnClickOutside
+        aria-label="Link Menu"
+        ref={ref}
       >
-        <Button onClick={hide} variant="ghost" color="muted">
-          Dismiss
-        </Button>
-        <Button
+        <MenuItem
+          {...menu}
           onClick={() => {
-            console.log('create bookmark');
-            hide();
+            console.log('dismiss menu');
+            menu.hide?.();
           }}
-          variant="ghost"
-          color="muted"
         >
-          Create Document Bookmark
-        </Button>
-      </Box>
+          Dismiss
+        </MenuItem>
+        <MenuItem
+          {...menu}
+          ref={initialFocus}
+          onClick={() => {
+            console.log('create transclusion');
+          }}
+        >
+          Create a transclusion
+        </MenuItem>
+      </Menu>
     </Portal.Root>
   );
 }
