@@ -1,14 +1,14 @@
-import * as React from 'react';
 import { useHistory, useParams } from 'react-router-dom';
+import { useMemo, useEffect } from 'react'
 import slugify from 'slugify';
-import type documents from '@mintter/api/documents/v1alpha/documents_pb';
+import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
 import {
   useDraftsList,
   usePublication as usePublicationQuery,
 } from '@mintter/hooks';
 import { useSidePanel } from '../sidepanel';
-import * as apiClient from '@mintter/client';
-import { useMutation } from 'react-query';
+// import * as apiClient from '@mintter/client';
+// import { useMutation } from 'react-query';
 import { Text } from '@mintter/ui/text';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
@@ -216,7 +216,7 @@ function usePublication() {
   }>();
 
   const history = useHistory();
-  const documentId = React.useMemo(() => docId.split('-').slice(-1)[0], [
+  const documentId = useMemo(() => docId.split('-').slice(-1)[0], [
     docId,
   ]);
 
@@ -226,12 +226,12 @@ function usePublication() {
   );
 
   const data: documents.Publication.AsObject = {
-    document: React.useMemo(() => buildDocument().toObject(), []),
+    document: useMemo(() => buildDocument().toObject(), []),
     version: docVersion,
   };
 
   // add slug to URL
-  React.useEffect(() => {
+  useEffect(() => {
     if (isSuccess && data?.document) {
       const { title } = data?.document;
       if (title && !docId.includes('-')) {

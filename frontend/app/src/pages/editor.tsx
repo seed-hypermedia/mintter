@@ -3,9 +3,9 @@ import type { Editor } from 'slate';
 import { useHistory, useParams } from 'react-router';
 import { useMutation } from 'react-query';
 import { useMenuState } from 'reakit/Menu';
-import type { ReactEditor } from 'slate-react';
+// import type { ReactEditor } from 'slate-react';
 
-import { publishDraft } from '@mintter/client';
+// import { publishDraft } from '@mintter/client';
 import { useAccount, useDraft } from '@mintter/hooks';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';

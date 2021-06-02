@@ -20,7 +20,8 @@ export const AppProviders: FC = ({ children }) => {
             <Router>{children}</Router>
           </SidePanelProvider>
           <Toaster position="bottom-right" />
-          <ReactQueryDevtools initialIsOpen={false} />
+          {/** @TODO Uncommenting this causes an error with react-query. We should fix this */}
+          {/* <ReactQueryDevtools initialIsOpen={false} /> */}
         </QueryClientProvider>
       </Suspense>
     </Theme>

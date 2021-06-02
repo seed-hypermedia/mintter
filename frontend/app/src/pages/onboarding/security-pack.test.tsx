@@ -1,4 +1,3 @@
-import React from 'react';
 import { expect } from '@esm-bundle/chai';
 import { SecurityPack } from './security-pack';
 import { AppProviders } from '../../app-providers';

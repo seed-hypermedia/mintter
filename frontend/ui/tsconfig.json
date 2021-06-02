@@ -1,27 +1,44 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "lib": ["ES2020", "DOM"],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "noEmit": true,
-    "paths": {
-      "@src/*": ["src/*"],
-      "@storybook-utils/*": ["storybook-utils/*"],
-      "@test-utils/*": ["test-utils/*"]
-    },
-    "pretty": true,
-    "resolveJsonModule": true,
+    "target": "ESNext",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
+    "allowJs": false,
     "skipLibCheck": true,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
     "strict": true,
-    "target": "ES5"
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "sourceMap": true,
+    "jsx": "react-jsx",
+    "importsNotUsedAsValues": "error",
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": [
+        "src/*"
+      ],
+      "@storybook-utils/*": [
+        "storybook-utils/*"
+      ],
+      "@test-utils/*": [
+        "test-utils/*"
+      ]
+    },
   },
-  "exclude": ["node_modules"],
-  "include": ["src/**/*", "test-utils/**/*", "storybook-utils/**/*"]
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "src",
+    "test-utils",
+    "storybook-utils"
+  ]
 }

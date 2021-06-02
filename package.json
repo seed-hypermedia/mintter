@@ -29,7 +29,7 @@
     "clean": "gn gen out"
   },
   "workspaces": [
-    "api/js",
+    "api/mjs",
     "frontend/app",
     "frontend/ui"
   ],

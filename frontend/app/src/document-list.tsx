@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
 import { useLocation, useRouteMatch } from 'react-router-dom';
 
-import type documents from '@mintter/api/documents/v1alpha/documents_pb';
+import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
 import { Alert } from '@mintter/ui/alert';
 import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
@@ -10,7 +10,7 @@ import { Text } from '@mintter/ui/text';
 import { Avatar } from '@components/avatar';
 import { getPath } from '@utils/routes';
 
-import { Link } from './components/link';
+import { Link } from '@components/link';
 
 export function DocumentList({
   data,
@@ -81,9 +81,8 @@ function ListItem({
   ]);
 
   const to = useMemo(() => {
-    const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${id}${
-      version ? `/${version}` : ''
-    }`;
+    const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${id}${version ? `/${version}` : ''
+      }`;
     return path;
   }, [location.pathname]);
   // function handlePrefetch() {

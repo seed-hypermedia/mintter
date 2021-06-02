@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {
   useQuery,
   useMutation,
@@ -9,10 +8,10 @@ import {
   UseQueryOptions,
   useQueryClient,
 } from 'react-query';
-import type mintter from '@mintter/api/v2/mintter_pb';
-import type documents from '@mintter/api/documents/v1alpha/documents_pb';
-import type accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
-import type networking from '@mintter/api/networking/v1alpha/networking_pb';
+// import type mintter from '@mintter/api/v2/mintter_pb';
+import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
+import type * as accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
+import type * as networking from '@mintter/api/networking/v1alpha/networking_pb';
 import * as apiClient from '@mintter/client';
 import type { QueryOptions } from '@testing-library/dom';
 import type daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
@@ -21,6 +20,7 @@ import { ELEMENT_QUOTE } from './editor/quote-plugin';
 import type { EditorTextRun, SlateBlock } from './editor/types';
 import { toEditorValue } from './to-editor-value';
 import type { data } from 'autoprefixer';
+import { useMemo } from 'react';
 
 export function useAccount(
   accountId?: string,
@@ -34,7 +34,7 @@ export function useAccount(
     options,
   );
 
-  const data = React.useMemo(() => accountQuery.data?.toObject(), [
+  const data = useMemo(() => accountQuery.data?.toObject(), [
     accountQuery.data,
   ]);
 
@@ -53,7 +53,7 @@ export function useInfo(
     options,
   );
 
-  const data = React.useMemo(() => infoQuery.data?.toObject(), [
+  const data = useMemo(() => infoQuery.data?.toObject(), [
     infoQuery.data,
   ]);
 
@@ -92,7 +92,7 @@ export function usePeerAddrs(
     },
   );
 
-  const data = React.useMemo(() => peerAddrsQuery.data?.toObject().addrsList, [
+  const data = useMemo(() => peerAddrsQuery.data?.toObject().addrsList, [
     peerAddrsQuery.data,
   ]);
 
@@ -113,8 +113,7 @@ export function usePublication(
 
   if (Array.isArray(publicationId)) {
     throw new Error(
-      `Impossible render: You are trying to access a document passing ${
-        publicationId.length
+      `Impossible render: You are trying to access a document passing ${publicationId.length
       } document Ids => ${publicationId.map((q) => q).join(', ')}`,
     );
   }
@@ -131,7 +130,7 @@ export function usePublication(
     },
   );
 
-  const data = React.useMemo(() => pubQuery.data?.toObject?.(), [
+  const data = useMemo(() => pubQuery.data?.toObject?.(), [
     pubQuery.data,
   ]);
 
@@ -153,8 +152,7 @@ export function useDraft(
 
   if (Array.isArray(draftId)) {
     throw new Error(
-      `Impossible render: You are trying to access a draft passing ${
-        draftId.length
+      `Impossible render: You are trying to access a draft passing ${draftId.length
       } draft Ids => ${draftId.map((q) => q).join(', ')}`,
     );
   }
@@ -171,7 +169,7 @@ export function useDraft(
     },
   );
 
-  const data = React.useMemo(() => draftQuery.data, [
+  const data = useMemo(() => draftQuery.data, [
     draftQuery.data,
   ]) as documents.Document;
 
@@ -179,9 +177,9 @@ export function useDraft(
     ...draftQuery,
     data: data
       ? {
-          ...data.toObject(),
-          editorValue: toEditorValue(data),
-        }
+        ...data.toObject(),
+        editorValue: toEditorValue(data),
+      }
       : undefined,
   };
 }
@@ -196,7 +194,7 @@ export function useDocument<TError = unknown>(documentId: string) {
     },
   );
 
-  const data: documents.Document.AsObject | undefined = React.useMemo(
+  const data: documents.Document.AsObject | undefined = useMemo(
     () => documentQuery.data?.toObject(),
     [documentQuery.data],
   );
@@ -225,7 +223,7 @@ export function useQuote<TError = unknown>(quoteUrl: string) {
     },
   );
 
-  const data = React.useMemo(() => quoteQuery.data?.toObject(), [
+  const data = useMemo(() => quoteQuery.data?.toObject(), [
     quoteQuery.data,
     quoteId,
   ]);
@@ -304,7 +302,7 @@ export function useSuggestedConnections({ page } = { page: 0 }, options = {}) {
  */
 export function useConnectionCreate() {
   return {
-    connectToPeer: () => {},
+    connectToPeer: () => { },
   };
 }
 

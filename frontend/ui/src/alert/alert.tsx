@@ -1,20 +1,20 @@
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
-import {ComponentProps} from 'react'
+import { ComponentProps } from 'react'
 
 // TODO: import components directly from its component file.
-import {Box} from '../box'
-import {Button} from '../button'
-import {keyframes} from '../stitches.config'
-import {Text} from '../text'
+import { Box } from '../box'
+import { Button } from '../button'
+import { keyframes } from '../stitches.config'
+import { Text } from '../text'
 
 const showOverlay = keyframes({
-  '0%': {opacity: 0},
-  '100%': {opacity: 0.75},
+  '0%': { opacity: 0 },
+  '100%': { opacity: 0.75 },
 })
 
 const hideOverlay = keyframes({
-  '0%': {opacity: 0.75},
-  '100%': {opacity: 0},
+  '0%': { opacity: 0.75 },
+  '100%': { opacity: 0 },
 })
 
 function Root({
@@ -55,13 +55,13 @@ function Trigger(
 }
 
 const showContent = keyframes({
-  '0%': {opacity: 0, transform: 'translate(-50%, -40%)'},
-  '100%': {opacity: 0.75, transform: 'translate(-50%, -50%)'},
+  '0%': { opacity: 0, transform: 'translate(-50%, -40%)' },
+  '100%': { opacity: 0.75, transform: 'translate(-50%, -50%)' },
 })
 
 const hideContent = keyframes({
-  '0%': {opacity: 0.75, transform: 'translate(-50%, -50%)'},
-  '100%': {opacity: 0, transform: 'translate(-50%, -40%)'},
+  '0%': { opacity: 0.75, transform: 'translate(-50%, -50%)' },
+  '100%': { opacity: 0, transform: 'translate(-50%, -40%)' },
 })
 
 function Content({
@@ -126,14 +126,14 @@ function Description(
   )
 }
 
-function Actions({css, children, ...props}: ComponentProps<typeof Box>) {
+function Actions({ css, children, ...props }: ComponentProps<typeof Box>) {
   return (
     // TODO: Fix types
     // @ts-ignore
     <Box
       // TODO: Fix types
       // @ts-ignore
-      css={{display: 'flex', justifyContent: 'flex-end', gap: '$4', ...css}}
+      css={{ display: 'flex', justifyContent: 'flex-end', gap: '$4', ...css }}
       {...props}
     >
       {children}

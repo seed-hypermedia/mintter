@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Switch,
   useRouteMatch,
@@ -8,13 +7,12 @@ import {
 } from 'react-router-dom';
 import {
   useAccount,
-  useConnectionCreate,
 } from '@mintter/hooks';
 import { createDraft } from '@mintter/client';
 import { Link } from '../components/link';
-import { Connections } from '../connections';
-import { SuggestedConnections } from '../suggested-connections';
-import { MainColumn } from '../main-column';
+// import { Connections } from '../connections';
+// import { SuggestedConnections } from '../suggested-connections';
+// import { MainColumn } from '../main-column';
 // import { Icons } from 'components/icons';
 import { Publications } from './publications';
 import { MyPublications } from './my-publications';
@@ -171,8 +169,8 @@ export default function Library() {
 
 function ProfileInfo() {
   const match = useRouteMatch();
-  const { data, isError, error, isLoading, isSuccess}= useAccount();
-  
+  const { data, isError, error, isLoading, isSuccess } = useAccount();
+
   if (isLoading) {
     return <Text>loading...</Text>
   }
@@ -181,7 +179,7 @@ function ProfileInfo() {
     console.error('ProfileInfo error: ', error)
     return <Text>Error...</Text>
   }
-  
+
   return data?.profile ? (
     <Box
       css={{

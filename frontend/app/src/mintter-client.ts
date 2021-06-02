@@ -1,13 +1,12 @@
-import DocumentsClient, {
-  DraftsClient,
-} from '@mintter/api/documents/v1alpha/documents_grpc_web_pb';
-import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import DaemonClient from '@mintter/api/daemon/v1alpha/daemon_grpc_web_pb';
-import daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
-import AccountsClient from '@mintter/api/accounts/v1alpha/accounts_grpc_web_pb';
-import accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
-import NetworkingClient from '@mintter/api/networking/v1alpha/networking_grpc_web_pb';
-import networking from '@mintter/api/networking/v1alpha/networking_pb';
+import * as DocumentsClient from '@mintter/api/documents/v1alpha/documents_grpc_web_pb';
+// import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
+import * as DaemonClient from '@mintter/api/daemon/v1alpha/daemon_grpc_web_pb';
+// import * as daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
+import * as AccountsClient from '@mintter/api/accounts/v1alpha/accounts_grpc_web_pb';
+// import * as accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
+import * as NetworkingClient from '@mintter/api/networking/v1alpha/networking_grpc_web_pb';
+// import * as networking from '@mintter/api/networking/v1alpha/networking_pb';
+
 import {
   buildAccount,
   buildDevices,
@@ -106,9 +105,10 @@ export function networkingClient() {
  *
  */
 
-export function createDraft(): Promise<documents.Document> {
+export function createDraft(): Promise<Document> {
   const draft = new documents.Document();
-  draft.setId(createId());
+  draft.id = createId()
+  // draft.setId(createId());
   return Promise.resolve(draft);
 }
 

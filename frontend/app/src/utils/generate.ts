@@ -1,10 +1,10 @@
-import documents from '@mintter/api/documents/v1alpha/documents_pb';
-import type accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
+import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
+import type * as accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
 import { makeProto } from './make-proto';
-import {
-  focusBlockStartById,
-  normalizeDescendantsToDocumentFragment,
-} from '@udecode/slate-plugins';
+// import {
+//   focusBlockStartById,
+//   normalizeDescendantsToDocumentFragment,
+// } from '@udecode/slate-plugins';
 
 import faker from 'faker';
 import { createId } from './create-id';

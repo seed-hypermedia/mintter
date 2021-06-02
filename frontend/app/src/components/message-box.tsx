@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Separator } from './separator';
 import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';

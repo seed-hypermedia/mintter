@@ -1,10 +1,10 @@
-import React, {Fragment} from 'react'
+import { Fragment } from 'react'
 
-import {Theme} from '../src/theme'
-import {Code} from './components/code'
+import { Theme } from '../src/theme'
+import { Code } from './components/code'
 
 export const parameters = {
-  actions: {argTypesRegex: '^on[A-Z].*'},
+  actions: { argTypesRegex: '^on[A-Z].*' },
   options: {
     storySort: {
       order: [
@@ -25,7 +25,7 @@ export const parameters = {
   },
   docs: {
     components: {
-      pre: ({children}: {children: React.ReactNode}) => {
+      pre: ({ children }: { children: React.ReactNode }) => {
         return <Fragment>{children}</Fragment>
       },
       code: Code,

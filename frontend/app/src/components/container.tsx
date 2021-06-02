@@ -1,5 +1,3 @@
-import React from 'react';
-
 import {
   styled,
   StitchesCss,
@@ -7,6 +5,7 @@ import {
 } from '@mintter/ui/stitches.config';
 
 import type * as Polymorphic from '@radix-ui/react-polymorphic';
+import { forwardRef } from 'react';
 
 const DEFAULT_TAG = 'div';
 
@@ -51,7 +50,7 @@ type ContainerComponent = Polymorphic.ForwardRefComponent<
 >;
 
 // TODO: fix types
-export const Container: any = React.forwardRef((props, forwardedRef) => (
+export const Container: any = forwardRef((props, forwardedRef) => (
   <StyledContainer {...props} ref={forwardedRef} />
 )) as any;
 // }) as ContainerComponent;
