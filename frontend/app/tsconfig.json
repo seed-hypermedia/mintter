@@ -31,6 +31,9 @@
       "@utils/*": [
         "./src/utils/*"
       ],
+      "@mintter/ui-legacy/*": [
+        "./ui/lib/*"
+      ],
       "@mintter/ui/*": [
         "../ui/src/*"
       ],
