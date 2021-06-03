@@ -104,6 +104,7 @@ function rulesWithCustomDefaultType(
 export function EditorComponent<T extends SPEditor = SPEditor>({
   ...options
 }: SlatePluginsProps<T>) {
+  const [v, setV] = useState(initialValue);
   const [mintterLinkOpen, setMintterLinkOpen] = useState(false);
   const menu = useMenuState({ loop: true, wrap: true });
 
@@ -169,12 +170,12 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           ...quoteOptions,
           ...linkOptions,
         }}
-        // onChange={(nv) => setV(nv as any)}
+        onChange={(nv) => setV(nv as any)}
       >
         <Toolbar />
         <MintterLinkMenu menu={menu} />
       </SlatePlugins>
-      {/* <pre>{JSON.stringify(v, null, 3)}</pre> */}
+      <pre>{JSON.stringify(v, null, 3)}</pre>
     </>
   );
 }

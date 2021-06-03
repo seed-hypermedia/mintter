@@ -12,6 +12,7 @@ import { ReactEditor } from 'slate-react';
 import { Button } from '@mintter/ui/button';
 import { useStoreEditorState } from '@udecode/slate-plugins-core';
 import { Menu, MenuItem as ReakitMenuItem, MenuProps } from 'reakit/Menu';
+import { createQuoteFromLink } from '../quote-plugin/create-quote-from-link';
 
 function setMenuPosition(el: HTMLDivElement) {
   const domSelection = window.getSelection();
@@ -38,11 +39,12 @@ const MenuItem = forwardRef(
         css={{
           fontSize: 13,
           padding: '5px 10px',
+          textAlign: 'left',
           borderRadius: 3,
           cursor: 'default',
           '&:focus': {
             outline: 'none',
-            boxShadow: '$3',
+            boxShadow: '$focus',
           },
         }}
         {...props}
@@ -72,13 +74,35 @@ export function MintterLinkMenu({ menu }: MintterLinkMenuProps) {
 
   return (
     <Portal.Root>
-      <Menu
+      <Box
+        as={Menu}
         {...menu}
         tabIndex={0}
         hideOnClickOutside
         aria-label="Link Menu"
         ref={ref}
+        css={{
+          // position: 'absolute',
+          boxShadow: '$3',
+          backgroundColor: 'white',
+          display: 'flex',
+          flexDirection: 'column',
+          '&:focus': {
+            outline: 'none',
+            boxShadow: '$focus',
+          },
+        }}
       >
+        <MenuItem
+          {...menu}
+          ref={initialFocus}
+          onClick={() => {
+            createQuoteFromLink(editor);
+            menu.hide?.();
+          }}
+        >
+          Quote block
+        </MenuItem>
         <MenuItem
           {...menu}
           onClick={() => {
@@ -88,16 +112,7 @@ export function MintterLinkMenu({ menu }: MintterLinkMenuProps) {
         >
           Dismiss
         </MenuItem>
-        <MenuItem
-          {...menu}
-          ref={initialFocus}
-          onClick={() => {
-            console.log('create transclusion');
-          }}
-        >
-          Create a transclusion
-        </MenuItem>
-      </Menu>
+      </Box>
     </Portal.Root>
   );
 }

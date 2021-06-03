@@ -18,6 +18,7 @@ export function QuoteElement({
   const focused = useFocused();
   const selected = useSelected();
   const quote = useQuote(element.url);
+  console.log('render quote!');
   let qRender;
 
   if (quote.isLoading) {
@@ -40,11 +41,16 @@ export function QuoteElement({
           contentEditable={false}
           css={{
             position: 'relative',
+            paddingHorizontal: '$2',
+            paddingVertical: '$1',
             overflow: 'hidden',
-            color:
-              focused && selected ? '$secondary-stronger' : '$secondary-strong',
+            color: '$secondary-strong',
+            borderRadius: '$1',
+            backgroundColor:
+              focused && selected ? '$background-neutral' : 'transparent',
             '&:hover': {
               cursor: 'pointer',
+              backgroundColor: '$background-neutral',
               '&:before': {
                 height: '100%',
               },

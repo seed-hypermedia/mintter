@@ -6,6 +6,7 @@ import { MINTTER_LINK_PREFIX } from '.';
 import { Tooltip } from '@components/tooltip';
 import { Icon } from '@mintter/ui/icon';
 import type { SlateLink } from '../types';
+import { Text } from '@mintter/ui/text';
 
 export function LinkElement(props: SPRenderElementProps<SlateLink>) {
   const isMintterLink = useMemo<boolean>(
@@ -14,9 +15,9 @@ export function LinkElement(props: SPRenderElementProps<SlateLink>) {
   );
 
   return isMintterLink ? (
-    <MintterLink {...props} />
+    <MintterLink data-link-id={props.element.id} {...props} />
   ) : (
-    <ExternalLink {...props} />
+    <ExternalLink data-link-id={props.element.id} {...props} />
   );
 }
 // TODO: add tooltip
@@ -37,8 +38,7 @@ function MintterLink({
       <Box
         {...attributes}
         //@ts-ignore
-        as={Link}
-        to={element.url} // something is adding `type="button"` here and is braking the styles
+        as="button"
         css={{
           appearance: 'unset',
           textDecoration: 'underline',

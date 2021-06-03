@@ -16,11 +16,12 @@ import type networking from '@mintter/api/networking/v1alpha/networking_pb';
 import * as apiClient from '@mintter/client';
 import type { QueryOptions } from '@testing-library/dom';
 import type daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
-import { buildBlock } from '@utils/generate';
+import { buildBlock, buildTextInlineElement } from '@utils/generate';
 import { ELEMENT_QUOTE } from './editor/quote-plugin';
 import type { EditorTextRun, SlateBlock } from './editor/types';
 import { toEditorValue } from './to-editor-value';
 import type { data } from 'autoprefixer';
+import { MINTTER_LINK_PREFIX } from './editor/link-plugin';
 
 export function useAccount(
   accountId?: string,
@@ -65,11 +66,7 @@ export function useInfo(
 
 export function usePeerAddrs(
   peerId?: string,
-  options?: UseQueryOptions<
-    networking.PeerInfo,
-    unknown,
-    networking.PeerInfo
-  >,
+  options?: UseQueryOptions<networking.PeerInfo, unknown, networking.PeerInfo>,
 ) {
   // query getInfo if peerId is undefined
   // query peerAddrs if peerId is defined or if getInfo is done
@@ -207,23 +204,41 @@ export function useDocument<TError = unknown>(documentId: string) {
   };
 }
 
-export function useQuote<TError = unknown>(quoteUrl: string) {
-  if (!isValidQuoteUrl(quoteUrl))
-    throw new Error(`useQuote > Invalid Quote URL: ${quoteUrl}`);
+export function useQuote<TError = unknown>(entry: string) {
+  const quoteUrl = isValidQuoteUrl(entry);
+  if (!quoteUrl)
+    throw Error(
+      `useQuote > Invalid Quote URL: ${entry} does not match the Quote URL format: mtt://documentID/quoteID`,
+    );
   const [documentId, quoteId] = quoteUrl.split('/');
+  console.log(
+    '🚀 ~ file: mintter-hooks.ts ~ line 213 ~ quoteId',
+    quoteId,
+    !!quoteId,
+  );
   const quoteQuery = useQuery(
     ['Quote', quoteId],
     async () => {
       // query document
       // getBlocksMap
       // return quoteBlock
-      const block = buildBlock({ id: quoteId });
-      return Promise.resolve(block);
+      console.log('inside async function top');
+
+      const block = buildBlock({
+        id: quoteId,
+        elementsList: [
+          buildTextInlineElement({ text: `${quoteId}: dummy quote text` }),
+        ],
+      });
+      console.log('inside async function top');
+      return await Promise.resolve(block);
     },
     {
       enabled: !!quoteId,
     },
   );
+
+  console.log({ quoteQuery });
 
   const data = React.useMemo(() => quoteQuery.data?.toObject(), [
     quoteQuery.data,
@@ -236,8 +251,16 @@ export function useQuote<TError = unknown>(quoteUrl: string) {
   };
 }
 
-function isValidQuoteUrl(url: string): boolean {
-  return url.includes('/') && url.split('/').length == 2;
+function isValidQuoteUrl(entry: string): boolean {
+  if (!entry.startsWith(MINTTER_LINK_PREFIX))
+    throw Error(
+      `useQuote > Invalid Quote URL: ${quoteUrl} does not start with ${MINTTER_LINK_PREFIX}`,
+    );
+  const [, url] = entry.split(MINTTER_LINK_PREFIX);
+  if (url.includes('/') && url.split('/').length == 2) {
+    return url;
+  }
+  return false;
 }
 
 export function toSlateQuote(
