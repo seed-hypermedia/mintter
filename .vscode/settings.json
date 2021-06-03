@@ -17,5 +17,8 @@
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "editor.formatOnSave": true,
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "[go]": {
+    "editor.tabSize": 4
+  }
 }

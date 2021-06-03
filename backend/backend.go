@@ -260,6 +260,20 @@ func (srv *backend) GetDeviceAddrs(d DeviceID) ([]multiaddr.Multiaddr, error) {
 	return peer.AddrInfoToP2pAddrs(&info)
 }
 
+func (srv *backend) GetAccountForDevice(d DeviceID) (AccountID, error) {
+	// TODO: implement proper mapping for all known device IDs.
+	if !srv.repo.device.ID().Equals(d) {
+		return AccountID{}, nil
+	}
+
+	acc, err := srv.repo.Account()
+	if err != nil {
+		return AccountID{}, status.Errorf(codes.FailedPrecondition, "failed to get own account: %v", err)
+	}
+
+	return acc.id, nil
+}
+
 func (srv *backend) readyIPFS() (*p2pNode, error) {
 	select {
 	case <-srv.ready:

@@ -42,9 +42,15 @@ func (srv *networkingAPI) GetPeerInfo(ctx context.Context, in *networking.GetPee
 
 	connectedness := srv.back.p2p.libp2p.Network().Connectedness(deviceID.PeerID())
 
+	aid, err := srv.back.GetAccountForDevice(deviceID)
+	if err != nil {
+		return nil, err
+	}
+
 	resp := &networking.PeerInfo{
 		Addrs:            ipfsutil.StringAddrs(mas),
 		ConnectionStatus: networking.ConnectionStatus(connectedness), // ConnectionStatus is a 1-to-1 mapping for the libp2p connectedness.
+		AccountId:        aid.String(),
 	}
 
 	return resp, nil

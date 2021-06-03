@@ -70,6 +70,9 @@ message PeerInfo {
 
   // Connection status of our node with a remote peer.
   ConnectionStatus connection_status = 2;
+
+  // Account ID that this peer is bound to.
+  string account_id = 3;
 }
 
 // Indicates connection status of our node with a remote peer.
