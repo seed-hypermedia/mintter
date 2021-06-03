@@ -1,29 +1,21 @@
-import { expect } from '@esm-bundle/chai';
-import { makeProto } from '@utils/make-proto';
-import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
+import { TextRun, Link, Quote, InlineElement } from '@mintter/api/documents/v1alpha/documents';
 import {
   toTextRun,
   toLink,
-  ToLinkResult,
   toQuote,
-  ToQuoteResult,
-  toInlineTextRun,
   toInlineElement,
 } from './inline-element';
-import type { SlateLink, SlateQuote, EditorTextRun } from './editor/types';
+import type { SlateLink, SlateQuote } from './editor/types';
 
 describe('TextRun', () => {
   it('simple text', () => {
     const test = {
       text: 'plain text',
     };
-    const expected = makeProto<documents.TextRun, documents.TextRun.AsObject>(
-      new documents.TextRun(),
-      test,
-    );
+    const expected = TextRun.fromPartial(test)
 
     const result = toTextRun(test);
-    expect(result).to.deep.equal(expected);
+    expect(result).toEqual(expected)
   });
 
   it('text with attributes', () => {
@@ -32,12 +24,10 @@ describe('TextRun', () => {
       bold: true,
       underline: true,
     };
-    const expected = makeProto<documents.TextRun, documents.TextRun.AsObject>(
-      new documents.TextRun(),
-      test,
-    );
+    const expected = TextRun.fromPartial(test)
+
     const result = toTextRun(test);
-    expect(result).to.deep.equal(expected);
+    expect(result).toEqual(expected);
   });
 });
 
@@ -53,13 +43,9 @@ describe('toLink', () => {
         },
       ],
     };
-    const expected = makeProto<documents.Link, documents.Link.AsObject>(
-      new documents.Link(),
-      {
-        uri: test.url,
-      },
-    );
-    expect(toLink(test)).to.deep.equal(expected);
+    const expected = Link.fromPartial({ uri: test.url })
+
+    expect(toLink(test)).toEqual(expected);
   });
 
   it('link with no id', () => {
@@ -74,7 +60,7 @@ describe('toLink', () => {
     };
 
     const expected = `toLink error: "id" cannot be undefined`;
-    expect(() => toLink(test)).to.throw(expected);
+    expect(() => toLink(test as any)).toThrow(expected);
   });
   it('link with no url', () => {
     const test: Partial<SlateLink> = {
@@ -87,7 +73,7 @@ describe('toLink', () => {
       ],
     };
     const expected = `toLink error: "url" cannot be undefined`;
-    expect(() => toLink(test)).to.throw(expected);
+    expect(() => toLink(test as any)).toThrow(expected);
   });
 });
 
@@ -100,48 +86,39 @@ describe('toQuote', () => {
       children: [{ text: '' }],
     };
 
-    const quote = makeProto<documents.Quote, documents.Quote.AsObject>(
-      new documents.Quote(),
-      {
-        linkKey: test.id,
-        startOffset: 0,
-        endOffset: 0,
-      },
-    );
-    expect(toQuote(test)).to.deep.equal(quote);
+    const expected = Quote.fromPartial({
+      linkKey: test.id,
+      startOffset: 0,
+      endOffset: 0,
+    })
+
+    expect(toQuote(test)).toEqual(expected);
   });
 });
 
 describe('toInlineElement', () => {
   it('textRun', () => {
-    const test: documents.TextRun = makeProto<
-      documents.TextRun,
-      documents.TextRun.AsObject
-    >(new documents.TextRun(), {
-      text: 'simple text',
-      // bold: true,
-    });
+    const test = TextRun.fromPartial({
+      text: 'simple text'
+    })
 
-    const expected = new documents.InlineElement();
-    expected.setTextRun(test);
+    const expected = InlineElement.fromPartial({
+      textRun: test
+    });
     const result = toInlineElement({ textRun: test });
 
-    expect(result).to.deep.equal(expected);
+    expect(result).toEqual(expected);
   });
 
   it('quote', () => {
-    const test: documents.Quote = makeProto<
-      documents.Quote,
-      documents.Quote.AsObject
-    >(new documents.Quote(), {
+    const test = Quote.fromPartial({
       linkKey: 'test://link',
       startOffset: 0,
-      endOffset: 0,
-    });
+      endOffset: 0
+    })
 
-    const expected = new documents.InlineElement();
-    expected.setQuote(test);
+    const expected = InlineElement.fromPartial({ quote: test });
 
-    expect(toInlineElement({ quote: test })).to.deep.equal(expected);
+    expect(toInlineElement({ quote: test })).toEqual(expected);
   });
 });

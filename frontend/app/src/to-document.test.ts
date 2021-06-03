@@ -1,8 +1,5 @@
-import { expect } from '@esm-bundle/chai';
-import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { makeProto } from '@utils/make-proto';
+import { Block, Document, InlineElement, ListStyle, TextRun } from '@mintter/api/documents/v1alpha/documents';
 import { ELEMENT_BLOCK } from './editor/block-plugin';
-import { toInlineElement, toTextRun } from './inline-element';
 import { toDocument, ToDocumentProps } from './to-document';
 
 describe('toDocument', () => {
@@ -12,11 +9,13 @@ describe('toDocument', () => {
       title: 'title',
       subtitle: 'subtitle',
       author: 'author',
+      childrenListStyle: ListStyle.NONE,
       blocks: [
         {
           type: ELEMENT_BLOCK,
           id: 'block-1',
-          parent: 0,
+          depth: 0,
+          listStyle: ListStyle.NONE,
           children: [
             {
               text: 'hello world',
@@ -25,35 +24,28 @@ describe('toDocument', () => {
         },
       ],
     };
-    const expected = makeProto<documents.Document, documents.Document.AsObject>(
-      new documents.Document(),
-      {
-        id: 'test',
-        title: 'title',
-        subtitle: 'subtitle',
-        author: 'author',
-        children: ['block-1'],
-        childrenListStyle: documents.ListStyle.NONE,
-      },
-    );
 
-    let block = makeProto<documents.Block, documents.Block.AsObject>(
-      new documents.Block(),
-      {
-        id: 'block-1',
-        parent: '',
-        childListStyle: documents.ListStyle.NONE,
-      },
-    );
+    const expected = Document.fromPartial({
+      id: 'test',
+      title: 'title',
+      subtitle: 'subtitle',
+      author: 'author',
+      children: ['block-1'],
+      childrenListStyle: ListStyle.NONE,
+      blocks: {
+        'block-1': Block.fromPartial({
+          id: 'block-1',
+          parent: '',
+          childListStyle: ListStyle.NONE,
+          elements: [
+            InlineElement.fromPartial({
+              textRun: TextRun.fromPartial({ text: 'hello world' })
+            })
+          ]
+        })
+      }
+    })
 
-    block.setElementsList([
-      toInlineElement({
-        textRun: toTextRun({ text: 'hello world' }),
-      }),
-    ]);
-
-    expected.getBlocksMap().set(block.getId(), block);
-
-    expect(toDocument(test).toObject()).to.deep.equal(expected.toObject());
+    expect(toDocument(test)).toEqual(expected);
   });
 });

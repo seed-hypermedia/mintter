@@ -1,7 +1,5 @@
-import { expect } from '@esm-bundle/chai';
 import { Welcome } from './welcome';
-import { fixture } from 'test/utils';
-import { screen, render, waitFor, fireEvent } from '@testing-library/react'
+import { screen, render } from '@testing-library/react'
 import { AppProviders } from '../../app-providers';
 
 it('<Welcome />', async () => {
