@@ -43,10 +43,6 @@ export function buildPublication(): Publication {
   })
 }
 
-type BuildDocumentOptions = Partial<Document> & {
-  blocks?: Block[];
-};
-
 export function buildDocument({
   author = faker.finance.bitcoinAddress(),
   blocks,
@@ -54,18 +50,26 @@ export function buildDocument({
   title = faker.lorem.sentence(),
   subtitle = faker.lorem.sentence(),
   id = createId(),
-}: BuildDocumentOptions = {}): Document {
+}: Partial<Document> = {}): Document {
+  if (blocks === undefined) {
+    const b1 = buildBlock()
+    const b2 = buildBlock()
+    const b3 = buildBlock()
+    blocks = {
+      [b1.id]: b1,
+      [b2.id]: b2,
+      [b3.id]: b3
+    }
+  }
+
   return Document.fromPartial({
     id,
     title,
     subtitle,
     author,
     childrenListStyle,
-    blocks: blocks || {
-      '1': buildBlock(),
-      '2': buildBlock(),
-      '3': buildBlock()
-    }
+    blocks: blocks,
+    children: Object.values(blocks).map(b => b.id)
   });
 }
 
