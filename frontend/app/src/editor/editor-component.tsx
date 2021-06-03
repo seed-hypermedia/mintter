@@ -1,24 +1,13 @@
-import { KeyboardEvent, useState } from 'react';
-import type { NodeEntry } from 'slate';
 import {
   createBoldPlugin,
   createExitBreakPlugin,
   createHistoryPlugin,
-  createNodeIdPlugin,
   createReactPlugin,
   createAutoformatPlugin,
-  ELEMENT_PARAGRAPH,
   ExitBreakRule,
-  MARK_BOLD,
   SlatePlugins,
   SlatePluginsProps,
   SPEditor,
-  SlatePluginsOptions,
-  DEFAULTS_BOLD,
-  createSlatePluginsOptions,
-  MARK_ITALIC,
-  MARK_CODE,
-  MARK_STRIKETHROUGH,
   createItalicPlugin,
   createStrikethroughPlugin,
   createCodePlugin,
@@ -27,11 +16,10 @@ import {
 } from '@udecode/slate-plugins';
 import { createId } from '@utils/create-id';
 import { createBlockPlugin, ELEMENT_BLOCK, blockOptions } from './block-plugin';
-import { createElement } from './create-element';
 import { boldOptions, boldAutoformatRules } from './bold-plugin';
 import { codeOptions, codeAutoformatRules } from './code-plugin';
 import { italicOptions, italicAutoformatRules } from './italic-plugin';
-import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
+import { Block_Type } from '@mintter/api/documents/v1alpha/documents'
 import {
   strikethroughOptions,
   strikethroughAutoformatRules,
@@ -40,7 +28,6 @@ import { Toolbar } from './toolbar';
 import { underlineOptions, underlineAutoformatRules } from './underline-plugin';
 import { createQuotePlugin, ELEMENT_QUOTE, quoteOptions } from './quote-plugin';
 import { createLinkPlugin, ELEMENT_LINK, linkOptions } from './link-plugin';
-import type { SlateBlock } from './types';
 
 const initialValue = [
   {
@@ -67,7 +54,7 @@ const initialValue = [
   },
   {
     type: ELEMENT_BLOCK,
-    blockType: documents.Block.Type.BASIC,
+    blockType: Block_Type.BASIC,
     depth: 0,
     id: createId(),
     children: [
@@ -160,7 +147,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           ...quoteOptions,
           ...linkOptions,
         }}
-        // onChange={(nv) => setV(nv as any)}
+      // onChange={(nv) => setV(nv as any)}
       >
         <Toolbar />
       </SlatePlugins>

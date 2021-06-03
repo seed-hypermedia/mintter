@@ -1,40 +1,33 @@
 import {
   useQuery,
-  useMutation,
   UseQueryResult,
-  useInfiniteQuery,
-  UseInfiniteQueryResult,
-  QueryFunctionContext,
   UseQueryOptions,
   useQueryClient,
 } from 'react-query';
-// import type mintter from '@mintter/api/v2/mintter_pb';
-import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
-import type * as accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
-import type * as networking from '@mintter/api/networking/v1alpha/networking_pb';
-import * as apiClient from '@mintter/client';
-import type { QueryOptions } from '@testing-library/dom';
-import type daemon from '@mintter/api/daemon/v1alpha/daemon_pb';
+import type { Account } from '@mintter/api/accounts/v1alpha/accounts'
+import type { Info } from '@mintter/api/daemon/v1alpha/daemon'
+import type { PeerInfo } from '@mintter/api/networking/v1alpha/networking'
+import type { Block, Document } from '@mintter/api/documents/v1alpha/documents'
+import { getAccount, getDocument, getDraft, getInfo, getPublication, listPeerAddrs } from '@mintter/client'
+
 import { buildBlock } from '@utils/generate';
-import { ELEMENT_QUOTE } from './editor/quote-plugin';
 import type { EditorTextRun, SlateBlock } from './editor/types';
 import { toEditorValue } from './to-editor-value';
-import type { data } from 'autoprefixer';
 import { useMemo } from 'react';
 
 export function useAccount(
   accountId?: string,
-  options: UseQueryOptions<accounts.Account, unknown, accounts.Account> = {},
-): Omit<UseQueryResult<accounts.Account>, 'data'> & {
-  data?: accounts.Account.AsObject;
+  options: UseQueryOptions<Account, unknown, Account> = {},
+): Omit<UseQueryResult<Account>, 'data'> & {
+  data?: Account;
 } {
   const accountQuery = useQuery(
     ['Account', accountId],
-    () => apiClient.getAccount(accountId),
+    () => getAccount(accountId),
     options,
   );
 
-  const data = useMemo(() => accountQuery.data?.toObject(), [
+  const data = useMemo(() => accountQuery.data, [
     accountQuery.data,
   ]);
 
@@ -45,15 +38,15 @@ export function useAccount(
 }
 
 export function useInfo(
-  options?: UseQueryOptions<daemon.Info, unknown, daemon.Info>,
+  options?: UseQueryOptions<Info, unknown, Info>,
 ) {
-  const infoQuery = useQuery<daemon.Info, unknown, daemon.Info>(
+  const infoQuery = useQuery<Info, unknown, Info>(
     ['GetInfo'],
-    apiClient.getInfo,
+    getInfo,
     options,
   );
 
-  const data = useMemo(() => infoQuery.data?.toObject(), [
+  const data = useMemo(() => infoQuery.data, [
     infoQuery.data,
   ]);
 
@@ -66,9 +59,9 @@ export function useInfo(
 export function usePeerAddrs(
   peerId?: string,
   options?: UseQueryOptions<
-    networking.PeerInfo,
+    PeerInfo,
     unknown,
-    networking.PeerInfo
+    PeerInfo
   >,
 ) {
   // query getInfo if peerId is undefined
@@ -77,7 +70,7 @@ export function usePeerAddrs(
 
   let requestId: string;
   if (!peerId) {
-    const info = queryClient.getQueryData<daemon.Info.AsObject>('GetInfo');
+    const info = queryClient.getQueryData<Info>('GetInfo');
     requestId = info?.peerId as string;
   } else {
     requestId = peerId;
@@ -85,14 +78,14 @@ export function usePeerAddrs(
 
   const peerAddrsQuery = useQuery(
     ['PeerAddrs', requestId],
-    () => apiClient.listPeerAddrs(requestId),
+    () => listPeerAddrs(requestId),
     {
       enabled: !!requestId,
       ...options,
     },
   );
 
-  const data = useMemo(() => peerAddrsQuery.data?.toObject().addrsList, [
+  const data = useMemo(() => peerAddrsQuery.data?.addrs, [
     peerAddrsQuery.data,
   ]);
 
@@ -122,7 +115,7 @@ export function usePublication(
     ['Publication', publicationId, version],
     async ({ queryKey }) => {
       const [_key, publicationId, version] = queryKey;
-      return apiClient.getPublication(publicationId, version);
+      return getPublication(publicationId, version);
     },
     {
       refetchOnWindowFocus: false,
@@ -130,7 +123,7 @@ export function usePublication(
     },
   );
 
-  const data = useMemo(() => pubQuery.data?.toObject?.(), [
+  const data = useMemo(() => pubQuery.data, [
     pubQuery.data,
   ]);
 
@@ -143,8 +136,8 @@ export function usePublication(
 export function useDraft(
   draftId: string,
   options = {},
-): Omit<UseQueryResult<documents.Document>, 'data'> & {
-  data?: documents.Document.AsObject & { editorValue: Array<SlateBlock> };
+): Omit<UseQueryResult<Document>, 'data'> & {
+  data?: Document & { editorValue: Array<SlateBlock> };
 } {
   if (!draftId) {
     throw new Error(`useDraft: parameter "draftId" is required`);
@@ -161,7 +154,7 @@ export function useDraft(
     ['Draft', draftId],
     async ({ queryKey }) => {
       const [_key, draftId] = queryKey;
-      return apiClient.getDraft(draftId);
+      return getDraft(draftId);
     },
     {
       refetchOnWindowFocus: false,
@@ -171,13 +164,13 @@ export function useDraft(
 
   const data = useMemo(() => draftQuery.data, [
     draftQuery.data,
-  ]) as documents.Document;
+  ])
 
   return {
     ...draftQuery,
     data: data
       ? {
-        ...data.toObject(),
+        ...data,
         editorValue: toEditorValue(data),
       }
       : undefined,
@@ -186,16 +179,16 @@ export function useDraft(
 
 export function useDocument<TError = unknown>(documentId: string) {
   // return document object
-  const documentQuery = useQuery<documents.Document>(
+  const documentQuery = useQuery<Document>(
     ['Document', documentId],
-    () => apiClient.getDocument(documentId),
+    () => getDocument(documentId),
     {
       enabled: !!documentId,
     },
   );
 
-  const data: documents.Document.AsObject | undefined = useMemo(
-    () => documentQuery.data?.toObject(),
+  const data: Document | undefined = useMemo(
+    () => documentQuery.data,
     [documentQuery.data],
   );
 
@@ -223,7 +216,7 @@ export function useQuote<TError = unknown>(quoteUrl: string) {
     },
   );
 
-  const data = useMemo(() => quoteQuery.data?.toObject(), [
+  const data = useMemo(() => quoteQuery.data, [
     quoteQuery.data,
     quoteId,
   ]);
@@ -239,7 +232,7 @@ function isValidQuoteUrl(url: string): boolean {
 }
 
 export function toSlateQuote(
-  entry: documents.Block.AsObject,
+  entry: Block,
 ): Array<EditorTextRun> {
   //@ts-ignore
   return entry.elementsList.map((element: documents.InlineElement.AsObject) => {

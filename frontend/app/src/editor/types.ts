@@ -1,10 +1,10 @@
-import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
+import type { TextRun, ListStyle, Block_Type } from '../../../../api/ts/documents/v1alpha/documents'
 
 export type SlateVoidChildren = {
   children: Array<{ text: string }>;
 };
-export type EditorTextRun = Partial<Omit<documents.TextRun.AsObject, 'text'>> &
-  Pick<documents.TextRun.AsObject, 'text'>;
+export type EditorTextRun = Partial<Omit<TextRun, 'text'>> &
+  Pick<TextRun, 'text'>;
 
 export type SlateQuote = SlateVoidChildren & {
   type: string;
@@ -31,7 +31,7 @@ export type SlateBlock = {
   type: string;
   id: string;
   depth: number;
-  blockType?: documents.Block.Type;
-  listStyle: documents.ListStyle;
+  blockType?: Block_Type;
+  listStyle: ListStyle;
   children: Array<EditorTextRun | SlateQuote | SlateLink>; // TODO: fix types
 };

@@ -1,15 +1,10 @@
-import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
-import type * as accounts from '@mintter/api/accounts/v1alpha/accounts_pb';
-import { makeProto } from './make-proto';
-// import {
-//   focusBlockStartById,
-//   normalizeDescendantsToDocumentFragment,
-// } from '@udecode/slate-plugins';
+import { Profile, Device, Account } from '@mintter/api/accounts/v1alpha/accounts'
+import { Publication, Block, ListStyle, Document, InlineElement, Block_Type, TextRun } from '@mintter/api/documents/v1alpha/documents'
 
 import faker from 'faker';
 import { createId } from './create-id';
 
-export function buildProfile(): accounts.Profile.AsObject {
+export function buildProfile(): Profile {
   return {
     alias: faker.internet.userName(),
     email: faker.internet.email(),
@@ -20,114 +15,93 @@ export function buildProfile(): accounts.Profile.AsObject {
 export function buildAccount({
   id = createId(),
   profile = buildProfile(),
-  devicesMap = buildDevices(),
+  devices = buildDevices(),
 }: {
   id?: string;
-  profile?: accounts.Profile.AsObject;
-  devicesMap?: [string, accounts.Device.AsObject][];
-} = {}): accounts.Account.AsObject {
-  return {
+  profile?: Profile;
+  devices?: Record<string, Device>;
+} = {}): Account {
+  return Account.fromPartial({
     id,
     profile,
-    devicesMap,
-  };
+    devices
+  })
 }
 
-export function buildDevices(): Array<[string, accounts.Device.AsObject]> {
-  return [
-    ['1', { peerId: '1' } as accounts.Device.AsObject],
-    ['2', { peerId: '2' } as accounts.Device.AsObject],
-    ['3', { peerId: '3' } as accounts.Device.AsObject],
-  ];
+export function buildDevices(): Record<string, Device> {
+  return {
+    '1': Device.fromPartial({ peerId: '1' }),
+    '2': Device.fromPartial({ peerId: '2' }),
+    '3': Device.fromPartial({ peerId: '3' })
+  }
 }
 
-export function buildPublication(): documents.Publication {
-  let pub = new documents.Publication();
-
-  pub.setDocument(buildDocument());
-  pub.setVersion(createId());
-
-  return pub;
+export function buildPublication(): Publication {
+  return Publication.fromPartial({
+    document: buildDocument(),
+    version: createId()
+  })
 }
 
-type BuildDocumentOptions = Partial<documents.Document.AsObject> & {
-  blocks?: documents.Block[];
+type BuildDocumentOptions = Partial<Document> & {
+  blocks?: Block[];
 };
 
 export function buildDocument({
   author = faker.finance.bitcoinAddress(),
   blocks,
-  childrenListStyle = documents.ListStyle.NONE,
+  childrenListStyle = ListStyle.NONE,
   title = faker.lorem.sentence(),
   subtitle = faker.lorem.sentence(),
   id = createId(),
-}: BuildDocumentOptions = {}): documents.Document {
-  let block1: documents.Block;
-  let block2: documents.Block;
-  let block3: documents.Block;
-  if (blocks === undefined) {
-    block1 = buildBlock();
-    block2 = buildBlock();
-    block3 = buildBlock();
-    blocks = [block1, block2, block3];
-  }
-
-  let doc = new documents.Document();
-  doc.setId(id);
-  doc.setTitle(title);
-  doc.setSubtitle(subtitle);
-  doc.setAuthor(author);
-  doc.setChildrenListStyle(childrenListStyle);
-  let blocksMap = doc.getBlocksMap();
-  doc.setChildrenList(blocks.map((b) => b.getId()));
-  blocks.forEach((b) => {
-    blocksMap.set(b.getId(), b);
+}: BuildDocumentOptions = {}): Document {
+  return Document.fromPartial({
+    id,
+    title,
+    subtitle,
+    author,
+    childrenListStyle,
+    blocks: blocks || {
+      '1': buildBlock(),
+      '2': buildBlock(),
+      '3': buildBlock()
+    }
   });
-  // set links map when needed
-  // let linksMap = doc.getLinksMap();
-
-  return doc;
 }
 
-type BuildBlockOptions = Partial<documents.Block.AsObject> & {
-  elementsList?: documents.InlineElement[];
+type BuildBlockOptions = Partial<Block> & {
+  elementsList?: InlineElement[];
 };
 
 export function buildBlock({
   elementsList,
   id = createId(),
-  childListStyle = documents.ListStyle.NONE,
+  childListStyle = ListStyle.NONE,
   parent = '',
-  type = documents.Block.Type.BASIC,
-  childrenList = [],
-}: BuildBlockOptions = {}): documents.Block {
-  let inlineElements: documents.InlineElement[];
-  if (elementsList === undefined) {
-    elementsList = [
-      buildTextInlineElement(),
-      buildTextInlineElement(),
-      buildTextInlineElement(),
-    ];
-  } else {
-    elementsList.map((n) => buildTextInlineElement(n.textRun));
-  }
-
-  let block = new documents.Block();
-  block.setId(id);
-  block.setElementsList(elementsList as documents.InlineElement[]);
-  block.setChildListStyle(childListStyle);
-  block.setParent(parent);
-  block.setChildrenList(childrenList);
-  block.setType(type);
-
-  return block;
+  type = Block_Type.BASIC,
+  children = [],
+}: BuildBlockOptions = {}): Block {
+  return Block.fromPartial({
+    id,
+    elements: elementsList
+      ? elementsList.map(n => buildTextInlineElement(n.textRun))
+      : [
+        buildTextInlineElement(),
+        buildTextInlineElement(),
+        buildTextInlineElement(),
+      ],
+    childListStyle,
+    parent,
+    children,
+    type
+  })
 }
 
 export function buildTextInlineElement(
-  textRun?: documents.TextRun.AsObject,
-): documents.InlineElement {
-  if (textRun === undefined) {
-    textRun = {
+  textRun?: TextRun,
+): InlineElement {
+  return InlineElement.fromPartial({
+    textRun: textRun || {
       text: faker.lorem.sentence(),
       bold: false,
       italic: false,
@@ -136,16 +110,6 @@ export function buildTextInlineElement(
       code: false,
       linkKey: '',
       blockquote: false,
-    };
-  }
-
-  let node = new documents.InlineElement();
-  let text = makeProto<documents.TextRun, documents.TextRun.AsObject>(
-    new documents.TextRun(),
-    textRun,
-  );
-
-  node.setTextRun(text);
-
-  return node;
+    }
+  })
 }

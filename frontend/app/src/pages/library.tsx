@@ -10,10 +10,6 @@ import {
 } from '@mintter/hooks';
 import { createDraft } from '@mintter/client';
 import { Link } from '../components/link';
-// import { Connections } from '../connections';
-// import { SuggestedConnections } from '../suggested-connections';
-// import { MainColumn } from '../main-column';
-// import { Icons } from 'components/icons';
 import { Publications } from './publications';
 import { MyPublications } from './my-publications';
 import { Drafts } from './drafts';
@@ -25,6 +21,7 @@ import * as MessageBox from '@components/message-box';
 import { getPath } from '@utils/routes';
 import { Container } from '@components/container';
 import type { CSS } from '@mintter/ui/stitches.config';
+import { useMemo } from 'react';
 
 export type WithCreateDraft = {
   onCreateDraft: () => void;
@@ -40,7 +37,7 @@ export default function Library() {
   async function onCreateDraft() {
     const d = await createDraft();
     history.push({
-      pathname: `${getPath(match)}/editor/${d.getId()}`,
+      pathname: `${getPath(match)}/editor/${d.id}`,
     });
   }
 
@@ -248,7 +245,7 @@ function NavItem({
     exact: onlyActiveWhenExact,
   });
 
-  const active = React.useMemo(() => match?.path === to, [match, to]);
+  const active = useMemo(() => match?.path === to, [match, to]);
 
   return (
     <Text

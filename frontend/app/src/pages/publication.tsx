@@ -1,14 +1,12 @@
 import { useHistory, useParams } from 'react-router-dom';
 import { useMemo, useEffect } from 'react'
 import slugify from 'slugify';
-import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
+import type { Publication as TPublication, Document } from '@mintter/api/documents/v1alpha/documents'
 import {
   useDraftsList,
   usePublication as usePublicationQuery,
 } from '@mintter/hooks';
 import { useSidePanel } from '../sidepanel';
-// import * as apiClient from '@mintter/client';
-// import { useMutation } from 'react-query';
 import { Text } from '@mintter/ui/text';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
@@ -225,8 +223,8 @@ function usePublication() {
     docVersion,
   );
 
-  const data: documents.Publication.AsObject = {
-    document: useMemo(() => buildDocument().toObject(), []),
+  const data: TPublication = {
+    document: useMemo(() => buildDocument(), []),
     version: docVersion,
   };
 
@@ -307,7 +305,7 @@ function SidePanelCTA({ handleInteract }: any) {
 function PublicationHeader({
   document,
 }: {
-  document: documents.Document.AsObject | undefined;
+  document: Document | undefined;
 }) {
   return document ? (
     <Box

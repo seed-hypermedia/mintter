@@ -27,7 +27,7 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
     ['onboarding', 'mnemonics'],
     async () => {
       const resp = await genSeed();
-      return resp.getMnemonicList();
+      return resp.mnemonic;
     },
     {
       refetchOnReconnect: false,
@@ -60,7 +60,7 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
       </OnboardingStepDescription>
       {useOwnSeed ? (
         <TextField
-        // @ts-ignore
+          // @ts-ignore
           as="textarea"
           id="ownSeed"
           name="ownSeed"

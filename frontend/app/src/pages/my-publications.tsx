@@ -1,13 +1,7 @@
-// import Seo from 'components/seo'
 import { useHistory, useRouteMatch } from 'react-router';
 import { DocumentList } from '../document-list';
 import { useMyPublicationsList } from '@mintter/hooks';
 import { deletePublication } from '@mintter/client';
-// import {ErrorMessage} from 'components/error-message'
-// import {Icons} from 'components/icons'
-// import { Button } from '@mintter/ui/button';
-// import { Separator } from '@components/separator';
-// import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
 import type { WithCreateDraft } from './library';
 import * as MessageBox from '@components/message-box';

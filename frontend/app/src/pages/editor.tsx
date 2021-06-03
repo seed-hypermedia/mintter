@@ -1,17 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
-import type { Editor } from 'slate';
+import { useRef, useState } from 'react';
 import { useHistory, useParams } from 'react-router';
 import { useMutation } from 'react-query';
 import { useMenuState } from 'reakit/Menu';
-// import type { ReactEditor } from 'slate-react';
 
-// import { publishDraft } from '@mintter/client';
 import { useAccount, useDraft } from '@mintter/hooks';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
 import { TextField } from '@mintter/ui/text-field';
-import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
 
 import { Container } from '@components/container';
 import { Separator } from '@components/separator';
@@ -22,6 +18,7 @@ import 'show-keys';
 import { useStoreEditorValue } from '@udecode/slate-plugins-core';
 import { toDocument } from '../to-document';
 import type { SlateBlock } from '@mintter/editor/types';
+import { ListStyle } from '@mintter/api/documents/v1alpha/documents';
 
 export default function EditorPage() {
   const history = useHistory();
@@ -46,7 +43,7 @@ export default function EditorPage() {
       subtitle,
       blocks: editorValue,
       // TODO: get the document block parent list
-      childrenListStyle: documents.ListStyle.NONE,
+      childrenListStyle: ListStyle.NONE,
     });
     // publishDraft
   });
@@ -168,28 +165,4 @@ export default function EditorPage() {
       ) : null}
     </Box>
   );
-}
-
-function createBlocksMap(editor: Editor): [string, documents.Block][] {
-  // const iterableBlocks = getNodesByType(editor, ELEMENT_BLOCK, {
-  //   at: [],
-  // });
-  // const blocks: [string, documents.Block][] = [];
-  // for (const [block, path] of iterableBlocks) {
-  //   const b: BlockNode = {
-  //     id: block.id as string,
-  //     type: ELEMENT_BLOCK,
-  //     style:
-  //       (block.style as documents.Block.Type) || documents.Block.Type.BASIC,
-  //     children: block.children as any,
-  //   };
-  //   if (path.length > 4) {
-  //     blocks.push([b.id, blockSerialize(b)]);
-  //   } else {
-  //     const parent = getNode(editor, path.slice(0, path.length - 2));
-  //     blocks.push([b.id, blockSerialize(b, parent?.id as string)]);
-  //   }
-  // }
-  // return blocks;
-  return [['foo', new documents.Block()]];
 }

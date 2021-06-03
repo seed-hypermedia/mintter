@@ -1,23 +1,16 @@
-import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { makeProto } from '@utils/make-proto';
-import type {
-  SlateInlineElement,
-  EditorTextRun,
-  SlateImage,
-  SlateQuote,
-  SlateLink,
-} from './editor/types';
+import { TextRun, Quote, Image, InlineElement, Link } from '@mintter/api/documents/v1alpha/documents'
+import type { EditorTextRun, SlateQuote, SlateLink } from './editor/types';
 
 export type EntryInlineElementTextRun = {
-  textRun: documents.TextRun;
+  textRun: TextRun;
 };
 
 export type EntryInlineElementQuote = {
-  quote: documents.Quote;
+  quote: Quote;
 };
 
 export type EntryInlineElementImage = {
-  image: documents.Image;
+  image: Image;
 };
 
 export function toInlineElement(
@@ -32,58 +25,38 @@ export function toInlineElement(
     );
   }
 
-  const element = new documents.InlineElement();
-  if ('textRun' in entry) {
-    element.setTextRun(entry.textRun);
-    return element;
-  } else if ('quote' in entry) {
-    element.setQuote(entry.quote);
-    return element;
-  } else if ('image' in entry) {
-    throw Error(`toInlineElement Error: image not supported (yet)`);
+  if ('textRun' in entry || 'quote' in entry || 'image' in entry) {
+    return InlineElement.fromPartial(entry)
   } else {
-    throw Error(
-      `toInlineElement Error: invalid entry. attribute nor "textRun" or "quote"`,
-    );
+    throw new Error(`toInlineElement Error: invalid entry. Expected oneof textRun, quote or image but got "${entry}"`,)
   }
-
-  return element;
 }
 
-export function toTextRun(entry: EditorTextRun): documents.TextRun {
-  return makeProto<documents.TextRun, documents.TextRun.AsObject>(
-    new documents.TextRun(),
-    entry,
-  );
+export function toTextRun(entry: EditorTextRun): TextRun {
+  return TextRun.fromPartial(entry)
 }
 
-// quote InlineElement
-
-export function toInlineQuote(entry: documents.Quote): documents.InlineElement {
-  const element = new documents.InlineElement();
-  element.setQuote(entry);
-
-  return element;
+export function toInlineQuote(quote: Quote): InlineElement {
+  return InlineElement.fromPartial({
+    quote
+  })
 }
 
 export type ToQuoteResult = {
   id: string;
-  quote: documents.Quote;
-  link: documents.Link;
+  quote: Quote;
+  link: Link;
 };
 
-export function toQuote(entry: SlateQuote): documents.Quote {
-  return makeProto<documents.Quote, documents.Quote.AsObject>(
-    new documents.Quote(),
-    {
-      linkKey: entry.id,
-      startOffset: 0,
-      endOffset: 0,
-    },
-  );
+export function toQuote(entry: SlateQuote): Quote {
+  return Quote.fromPartial({
+    linkKey: entry.id,
+    startOffset: 0,
+    endOffset: 0
+  })
 }
 
-export function toLink(entry: SlateLink): documents.Link {
+export function toLink(entry: SlateLink): Link {
   if (!entry.id) {
     throw Error(`toLink error: "id" cannot be undefined`);
   }
@@ -91,8 +64,7 @@ export function toLink(entry: SlateLink): documents.Link {
   if (!entry.url) {
     throw Error(`toLink error: "url" cannot be undefined`);
   }
-  const newLink = new documents.Link();
-  newLink.setUri(entry.url);
-
-  return newLink;
+  return Link.fromPartial({
+    uri: entry.url
+  })
 }

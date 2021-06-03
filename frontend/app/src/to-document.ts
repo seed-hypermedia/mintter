@@ -1,13 +1,7 @@
-import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
-import {
-  buildBlock,
-  buildDocument,
-  buildTextInlineElement,
-} from '@utils/generate';
-import { makeProto } from '@utils/make-proto';
+import { ListStyle, Document, Block } from '@mintter/api/documents/v1alpha/documents'
 import { ELEMENT_LINK } from './editor/link-plugin';
 import { ELEMENT_QUOTE } from './editor/quote-plugin';
-import type { SlateBlock, SlateLink, EditorTextRun } from './editor/types';
+import type { SlateBlock, EditorTextRun } from './editor/types';
 import { toInlineElement, toQuote, toTextRun, toLink } from './inline-element';
 
 export type ToDocumentProps = {
@@ -16,7 +10,7 @@ export type ToDocumentProps = {
   subtitle?: string;
   author: string;
   blocks: Array<SlateBlock>;
-  childrenListStyle: documents.ListStyle;
+  childrenListStyle: ListStyle;
 };
 
 export function toDocument({
@@ -25,34 +19,24 @@ export function toDocument({
   subtitle = '',
   author,
   blocks,
-  childrenListStyle = documents.ListStyle.NONE,
-}: ToDocumentProps): documents.Document {
+  childrenListStyle = ListStyle.NONE,
+}: ToDocumentProps): Document {
   // console.log('toDocument', { title, subtitle, blocks, id, author });
-  const newDoc = makeProto<documents.Document, documents.Document.AsObject>(
-    new documents.Document(),
-    {
-      id,
-      author,
-      title,
-      subtitle,
-      childrenListStyle,
-    },
-  );
+  const newDoc = Document.fromPartial({
+    id, author, title, subtitle, childrenListStyle
+  })
 
-  const blocksMap = newDoc.getBlocksMap();
-  const linksMap = newDoc.getLinksMap();
+  const blocksMap = newDoc.blocks;
+  const linksMap = newDoc.links;
   let childrenList: Array<string> = [];
 
   for (let slateBlock of blocks) {
     // add block to document's childrenList
     childrenList = [...childrenList, slateBlock.id];
-    // contert slate block to doc block
-    const block = makeProto<documents.Block, documents.Block.AsObject>(
-      new documents.Block(),
-      {
-        id: slateBlock.id,
-      },
-    );
+    // convert slate block to doc block
+    const block = Block.fromPartial({
+      id: slateBlock.id
+    })
 
     const inlineElements = slateBlock.children
       .map((leaf) => {
@@ -61,7 +45,7 @@ export function toDocument({
         }
         if (leaf.type == ELEMENT_LINK) {
           // add link to linksMap
-          linksMap.set(leaf.id, toLink(leaf));
+          linksMap[leaf.id] = toLink(leaf)
 
           return leaf.children.map((leafChild: EditorTextRun) =>
             toInlineElement({
@@ -74,7 +58,7 @@ export function toDocument({
         }
         if (leaf.type == ELEMENT_QUOTE) {
           // add link to linksMap
-          linksMap.set(leaf.id, toLink(leaf));
+          linksMap[leaf.id] = toLink(leaf)
 
           return toInlineElement({ quote: toQuote(leaf) });
         }
@@ -83,11 +67,12 @@ export function toDocument({
       })
       //@ts-ignore
       .flat();
-    block.setElementsList(inlineElements);
-    blocksMap.set(slateBlock.id, block);
+
+    block.elements = inlineElements
+    blocksMap[slateBlock.id] = block
   }
 
-  newDoc.setChildrenList(childrenList);
+  newDoc.children = childrenList
 
   return newDoc;
 }

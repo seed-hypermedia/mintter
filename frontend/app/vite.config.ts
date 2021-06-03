@@ -12,7 +12,6 @@ export default defineConfig({
       '@pages': join(process.cwd(), './src/pages'),
       '@utils': join(process.cwd(), './src/utils'),
       '@mintter/ui-legacy': join(process.cwd(), './src/lib'),
-      '@mintter/api': join(process.cwd(), '../../api/mjs'),
       '@mintter/ui': join(process.cwd(), '../ui/src'),
       '@mintter/editor': join(process.cwd(), './src/editor'),
       '@mintter/client': join(process.cwd(), isTest
