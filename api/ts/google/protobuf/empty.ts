@@ -1,4 +1,5 @@
 /* eslint-disable */
+//@ts-nocheck
 import { util, configure, Writer, Reader } from "protobufjs/minimal";
 import * as Long from "long";
 
@@ -15,7 +16,7 @@ export const protobufPackage = "google.protobuf";
  *
  * The JSON representation for `Empty` is empty JSON object `{}`.
  */
-export interface Empty {}
+export interface Empty { }
 
 const baseEmpty: object = {};
 

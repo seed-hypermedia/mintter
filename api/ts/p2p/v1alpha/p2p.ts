@@ -1,4 +1,5 @@
 /* eslint-disable */
+//@ts-nocheck
 import { util, configure, Writer, Reader } from "protobufjs/minimal";
 import * as Long from "long";
 import { grpc } from "@improbable-eng/grpc-web";
@@ -10,9 +11,9 @@ export interface HandshakeInfo {
   profileVersion: Version | undefined;
 }
 
-export interface PingRequest {}
+export interface PingRequest { }
 
-export interface PingResponse {}
+export interface PingResponse { }
 
 export interface GetObjectVersionRequest {
   objectId: string;
@@ -579,9 +580,9 @@ export class GrpcWebImpl {
     const maybeCombinedMetadata =
       metadata && this.options.metadata
         ? new BrowserHeaders({
-            ...this.options?.metadata.headersMap,
-            ...metadata?.headersMap,
-          })
+          ...this.options?.metadata.headersMap,
+          ...metadata?.headersMap,
+        })
         : metadata || this.options.metadata;
     return new Promise((resolve, reject) => {
       grpc.unary(methodDesc, {

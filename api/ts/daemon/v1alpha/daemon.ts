@@ -1,4 +1,5 @@
 /* eslint-disable */
+//@ts-nocheck
 import { util, configure, Writer, Reader } from "protobufjs/minimal";
 import * as Long from "long";
 import { grpc } from "@improbable-eng/grpc-web";
@@ -29,7 +30,7 @@ export interface RegisterResponse {
   accountId: string;
 }
 
-export interface GetInfoRequest {}
+export interface GetInfoRequest { }
 
 /** Info is a generic information about the running node. */
 export interface Info {
@@ -629,9 +630,9 @@ export class GrpcWebImpl {
     const maybeCombinedMetadata =
       metadata && this.options.metadata
         ? new BrowserHeaders({
-            ...this.options?.metadata.headersMap,
-            ...metadata?.headersMap,
-          })
+          ...this.options?.metadata.headersMap,
+          ...metadata?.headersMap,
+        })
         : metadata || this.options.metadata;
     return new Promise((resolve, reject) => {
       grpc.unary(methodDesc, {

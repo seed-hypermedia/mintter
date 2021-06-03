@@ -1,4 +1,5 @@
 /* eslint-disable */
+//@ts-nocheck
 import { util, configure, Writer, Reader } from "protobufjs/minimal";
 import * as Long from "long";
 import { grpc } from "@improbable-eng/grpc-web";
@@ -93,7 +94,7 @@ export function listStyleToJSON(object: ListStyle): string {
 }
 
 /** Request to create a new draft. */
-export interface CreateDraftRequest {}
+export interface CreateDraftRequest { }
 
 /** Request to delete an existing draft. */
 export interface DeleteDraftRequest {
@@ -2847,9 +2848,9 @@ export class GrpcWebImpl {
     const maybeCombinedMetadata =
       metadata && this.options.metadata
         ? new BrowserHeaders({
-            ...this.options?.metadata.headersMap,
-            ...metadata?.headersMap,
-          })
+          ...this.options?.metadata.headersMap,
+          ...metadata?.headersMap,
+        })
         : metadata || this.options.metadata;
     return new Promise((resolve, reject) => {
       grpc.unary(methodDesc, {

@@ -1,4 +1,5 @@
 /* eslint-disable */
+//@ts-nocheck
 import { util, configure, Writer, Reader } from "protobufjs/minimal";
 import * as Long from "long";
 import { grpc } from "@improbable-eng/grpc-web";
@@ -68,7 +69,7 @@ export interface StartObjectDiscoveryRequest {
 }
 
 /** Response for starting object discovery. */
-export interface StartObjectDiscoveryResponse {}
+export interface StartObjectDiscoveryResponse { }
 
 /** Request to stop object discovery. */
 export interface StopObjectDiscoveryRequest {
@@ -77,7 +78,7 @@ export interface StopObjectDiscoveryRequest {
 }
 
 /** Response for stopping object discovery. */
-export interface StopObjectDiscoveryResponse {}
+export interface StopObjectDiscoveryResponse { }
 
 /** Request to get object discovery status. */
 export interface GetObjectDiscoveryStatusRequest {
@@ -101,7 +102,7 @@ export interface ConnectRequest {
 }
 
 /** Response for conneting to a peer. */
-export interface ConnectResponse {}
+export interface ConnectResponse { }
 
 /** Various details about a known peer. */
 export interface PeerInfo {
@@ -868,27 +869,27 @@ export const NetworkingStartObjectDiscoveryDesc: UnaryMethodDefinitionish = {
 };
 
 export const NetworkingGetObjectDiscoveryStatusDesc: UnaryMethodDefinitionish =
-  {
-    methodName: "GetObjectDiscoveryStatus",
-    service: NetworkingDesc,
-    requestStream: false,
-    responseStream: false,
-    requestType: {
-      serializeBinary() {
-        return GetObjectDiscoveryStatusRequest.encode(this).finish();
-      },
-    } as any,
-    responseType: {
-      deserializeBinary(data: Uint8Array) {
-        return {
-          ...ObjectDiscoveryStatus.decode(data),
-          toObject() {
-            return this;
-          },
-        };
-      },
-    } as any,
-  };
+{
+  methodName: "GetObjectDiscoveryStatus",
+  service: NetworkingDesc,
+  requestStream: false,
+  responseStream: false,
+  requestType: {
+    serializeBinary() {
+      return GetObjectDiscoveryStatusRequest.encode(this).finish();
+    },
+  } as any,
+  responseType: {
+    deserializeBinary(data: Uint8Array) {
+      return {
+        ...ObjectDiscoveryStatus.decode(data),
+        toObject() {
+          return this;
+        },
+      };
+    },
+  } as any,
+};
 
 export const NetworkingStopObjectDiscoveryDesc: UnaryMethodDefinitionish = {
   methodName: "StopObjectDiscovery",
@@ -1003,9 +1004,9 @@ export class GrpcWebImpl {
     const maybeCombinedMetadata =
       metadata && this.options.metadata
         ? new BrowserHeaders({
-            ...this.options?.metadata.headersMap,
-            ...metadata?.headersMap,
-          })
+          ...this.options?.metadata.headersMap,
+          ...metadata?.headersMap,
+        })
         : metadata || this.options.metadata;
     return new Promise((resolve, reject) => {
       grpc.unary(methodDesc, {
