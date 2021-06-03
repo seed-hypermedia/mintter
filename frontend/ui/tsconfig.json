@@ -1,44 +1,14 @@
 {
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ESNext",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
-    ],
-    "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "sourceMap": true,
     "jsx": "react-jsx",
-    "importsNotUsedAsValues": "error",
-    "baseUrl": ".",
-    "paths": {
-      "@src/*": [
-        "src/*"
-      ],
-      "@storybook-utils/*": [
-        "storybook-utils/*"
-      ],
-      "@test-utils/*": [
-        "test-utils/*"
-      ]
-    },
+    "composite": true,
+    "declaration": true,
+    "outDir": "./dist"
   },
-  "exclude": [
-    "node_modules"
-  ],
   "include": [
-    "src",
-    "test-utils",
-    "storybook-utils"
+    "stitches.config.ts",
+    "./**/*.ts",
+    "./**/*.tsx"
   ]
 }
