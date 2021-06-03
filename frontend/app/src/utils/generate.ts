@@ -50,17 +50,11 @@ export function buildDocument({
   title = faker.lorem.sentence(),
   subtitle = faker.lorem.sentence(),
   id = createId(),
-}: Partial<Document> = {}): Document {
-  if (blocks === undefined) {
-    const b1 = buildBlock()
-    const b2 = buildBlock()
-    const b3 = buildBlock()
-    blocks = {
-      [b1.id]: b1,
-      [b2.id]: b2,
-      [b3.id]: b3
-    }
-  }
+}: Omit<Partial<Document>, 'blocks'> & { blocks?: Block[] } = {}): Document {
+  const blockMap = Object.fromEntries(
+    (blocks || [buildBlock(), buildBlock(), buildBlock()])
+      .map(block => [block.id, block])
+  )
 
   return Document.fromPartial({
     id,
@@ -68,8 +62,8 @@ export function buildDocument({
     subtitle,
     author,
     childrenListStyle,
-    blocks: blocks,
-    children: Object.values(blocks).map(b => b.id)
+    blocks: blockMap,
+    children: Object.values(blockMap).map(b => b.id)
   });
 }
 
