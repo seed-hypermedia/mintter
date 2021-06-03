@@ -36,8 +36,13 @@ const MenuItem = forwardRef(
         as={ReakitMenuItem}
         ref={ref}
         css={{
+          fontSize: 13,
+          padding: '5px 10px',
+          borderRadius: 3,
+          cursor: 'default',
           '&:focus': {
-            border: '1px solid blue',
+            outline: 'none',
+            boxShadow: '$3',
           },
         }}
         {...props}

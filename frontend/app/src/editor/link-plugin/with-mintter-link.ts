@@ -31,13 +31,7 @@ export function withMintterLink(
         if (text.includes(MINTTER_LINK_PREFIX)) {
           console.log('this is a mintter link => ', text, editor.selection);
 
-          // const range = editor.selection && ReactEditor.toDOMRange(editor, editor.selection)
-          // const rect = range?.getBoundingClientRect()
-
-          // if (rect) {
           options.menu?.show();
-
-          // }
 
           return upsertLinkAtSelection(editor, link);
         }
