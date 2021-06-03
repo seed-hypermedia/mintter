@@ -49,11 +49,9 @@
       "test/*": [
         "./src/test/*"
       ]
-    },
+    }
   },
   "include": [
-    "src",
-    "types",
-    "_test"
+    "src"
   ]
 }
