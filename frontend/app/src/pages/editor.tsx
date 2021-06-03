@@ -21,13 +21,8 @@ import type { SlateBlock } from '@mintter/editor/types';
 import { ListStyle } from '@mintter/api/documents/v1alpha/documents';
 
 export default function EditorPage() {
-  const history = useHistory();
-  const query = new URLSearchParams(window.location.search);
   const { docId } = useParams<{ docId: string }>();
   const { isLoading, isError, error, data } = useDraft(docId);
-  const titleRef = useRef<HTMLInputElement>(null);
-  const linkMenu = useMenuState({ loop: true, wrap: true });
-  const subtitleRef = useRef<HTMLInputElement>(null);
   const editorValue = useStoreEditorValue('editor') as Array<SlateBlock>;
   const { data: account } = useAccount('');
 
