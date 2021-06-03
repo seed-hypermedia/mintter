@@ -143,6 +143,9 @@ export class PeerInfo extends jspb.Message {
   getConnectionStatus(): ConnectionStatus;
   setConnectionStatus(value: ConnectionStatus): void;
 
+  getAccountId(): string;
+  setAccountId(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PeerInfo.AsObject;
   static toObject(includeInstance: boolean, msg: PeerInfo): PeerInfo.AsObject;
@@ -155,6 +158,7 @@ export namespace PeerInfo {
   export type AsObject = {
     addrsList: Array<string>,
     connectionStatus: ConnectionStatus,
+    accountId: string,
   }
 }
 

@@ -1252,7 +1252,8 @@ proto.com.mintter.networking.v1alpha.PeerInfo.prototype.toObject = function(opt_
 proto.com.mintter.networking.v1alpha.PeerInfo.toObject = function(includeInstance, msg) {
   var f, obj = {
     addrsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
-    connectionStatus: jspb.Message.getFieldWithDefault(msg, 2, 0)
+    connectionStatus: jspb.Message.getFieldWithDefault(msg, 2, 0),
+    accountId: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -1297,6 +1298,10 @@ proto.com.mintter.networking.v1alpha.PeerInfo.deserializeBinaryFromReader = func
       var value = /** @type {!proto.com.mintter.networking.v1alpha.ConnectionStatus} */ (reader.readEnum());
       msg.setConnectionStatus(value);
       break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setAccountId(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1337,6 +1342,13 @@ proto.com.mintter.networking.v1alpha.PeerInfo.serializeBinaryToWriter = function
   if (f !== 0.0) {
     writer.writeEnum(
       2,
+      f
+    );
+  }
+  f = message.getAccountId();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
       f
     );
   }
@@ -1395,6 +1407,24 @@ proto.com.mintter.networking.v1alpha.PeerInfo.prototype.getConnectionStatus = fu
  */
 proto.com.mintter.networking.v1alpha.PeerInfo.prototype.setConnectionStatus = function(value) {
   return jspb.Message.setProto3EnumField(this, 2, value);
+};
+
+
+/**
+ * optional string account_id = 3;
+ * @return {string}
+ */
+proto.com.mintter.networking.v1alpha.PeerInfo.prototype.getAccountId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.mintter.networking.v1alpha.PeerInfo} returns this
+ */
+proto.com.mintter.networking.v1alpha.PeerInfo.prototype.setAccountId = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
