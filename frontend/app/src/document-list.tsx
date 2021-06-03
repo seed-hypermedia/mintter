@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
 import { useLocation, useRouteMatch } from 'react-router-dom';
 
-import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
+// import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
 import { Alert } from '@mintter/ui/alert';
 import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';

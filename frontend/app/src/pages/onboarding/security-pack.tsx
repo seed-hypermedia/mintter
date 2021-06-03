@@ -2,8 +2,7 @@ import { useCallback, useState } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import toast from 'react-hot-toast';
 import { useQuery } from 'react-query';
-
-import { genSeed, register } from '@mintter/client';
+import { generateSeed, registerAccount } from '@mintter/client/accounts';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
@@ -26,7 +25,7 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
   const mnemonics = useQuery<string[], Error>(
     ['onboarding', 'mnemonics'],
     async () => {
-      const resp = await genSeed();
+      const resp = await generateSeed();
       return resp.mnemonic;
     },
     {
@@ -39,7 +38,7 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
     let words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data;
     if (words) {
       try {
-        await register(words);
+        await registerAccount(words);
         next();
       } catch (error) {
         toast.error(error.message);

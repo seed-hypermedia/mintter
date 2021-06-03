@@ -1,4 +1,4 @@
-import { TextRun, Quote, Image, InlineElement, Link } from '@mintter/api/documents/v1alpha/documents'
+import { TextRun, Quote, Image, InlineElement, Link } from '@mintter/client/documents'
 import type { EditorTextRun, SlateQuote, SlateLink } from './editor/types';
 
 export type EntryInlineElementTextRun = {

@@ -12,12 +12,12 @@ export default defineConfig({
       '@pages': join(process.cwd(), './src/pages'),
       '@utils': join(process.cwd(), './src/utils'),
       '@mintter/ui-legacy': join(process.cwd(), './src/lib'),
-      '@mintter/ui': join(process.cwd(), '../ui/src'),
+      // '@mintter/ui': join(process.cwd(), '../ui/src'),
       '@mintter/editor': join(process.cwd(), './src/editor'),
-      '@mintter/client': join(process.cwd(), isTest
-        ? './src/mocks/mintter-client'
-        : './src/mintter-client'),
-      '@mintter/hooks': join(process.cwd(), './src/mintter-hooks'),
+      // '@mintter/client': join(process.cwd(), isTest
+      //   ? './src/mocks/mintter-client'
+      //   : './src/mintter-client'),
+      // '@mintter/hooks': join(process.cwd(), './src/mintter-hooks'),
       test: join(process.cwd(), './src/test'),
     },
   },

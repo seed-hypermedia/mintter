@@ -2,8 +2,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 
-import * as client from '@mintter/client';
-import { useAccount } from '@mintter/hooks';
+import { useAccount, updateAccount } from '@mintter/client/accounts';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
@@ -28,7 +27,7 @@ export function Settings() {
   const account = useAccount();
   const { data } = account;
 
-  const updateProfile = useMutation(client.updateAccount);
+  const updateProfile = useMutation(updateAccount);
 
   const form = useForm<ProfileInformationDataType>({
     mode: 'onChange',
@@ -185,14 +184,14 @@ export function Settings() {
             </Text>
           </Box>
           <Separator />
-        <Text as="h2" size="8">
-          Devices List
+          <Text as="h2" size="8">
+            Devices List
         </Text>
-        <Box css={{ alignItems: 'center', display: 'flex', gap: '$3' }}>
-          <PeerList />
+          <Box css={{ alignItems: 'center', display: 'flex', gap: '$3' }}>
+            <PeerList />
+          </Box>
         </Box>
-        </Box>
-        
+
       </Container>
     </Box>
   );

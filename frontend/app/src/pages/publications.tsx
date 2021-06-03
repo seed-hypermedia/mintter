@@ -1,8 +1,7 @@
 import { useHistory, useRouteMatch } from 'react-router';
 import { DocumentList } from '../document-list';
 import type { WithCreateDraft } from './library';
-import { deletePublication } from '@mintter/client';
-import { useOthersPublicationsList } from '@mintter/hooks';
+import { deletePublication, useOthersPublicationsList } from '@mintter/client/publications';
 import { Text } from '@mintter/ui/text';
 import * as MessageBox from '../components/message-box';
 

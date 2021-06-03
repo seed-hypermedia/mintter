@@ -2,10 +2,8 @@ import { useHistory, useParams } from 'react-router-dom';
 import { useMemo, useEffect } from 'react'
 import slugify from 'slugify';
 import type { Publication as TPublication, Document } from '@mintter/api/documents/v1alpha/documents'
-import {
-  useDraftsList,
-  usePublication as usePublicationQuery,
-} from '@mintter/hooks';
+import { useDraftsList } from '@mintter/client/drafts'
+import { usePublication as usePublicationQuery } from '@mintter/client/publications'
 import { useSidePanel } from '../sidepanel';
 import { Text } from '@mintter/ui/text';
 import { Box } from '@mintter/ui/box';

@@ -5,10 +5,8 @@ import {
   useHistory,
   Route,
 } from 'react-router-dom';
-import {
-  useAccount,
-} from '@mintter/hooks';
-import { createDraft } from '@mintter/client';
+import { useAccount } from '@mintter/client/accounts';
+import { createDraft } from '@mintter/client/drafts';
 import { Link } from '../components/link';
 import { Publications } from './publications';
 import { MyPublications } from './my-publications';

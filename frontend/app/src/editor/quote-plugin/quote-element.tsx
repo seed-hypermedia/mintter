@@ -1,13 +1,9 @@
-import {useFocused, useSelected} from 'slate-react'
-import {Text} from '@mintter/ui/text'
-import {Box} from '@mintter/ui/box'
-import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
-import type * as documents from '@mintter/api/documents/v1alpha/documents_pb'
-import {useQuote, toSlateQuote} from '@mintter/hooks'
-import {ELEMENT_QUOTE} from './create-quote-plugin'
-import {createId} from '@utils/create-id'
-import {useEffect} from 'react'
-import type {SlateQuote} from '../types'
+import { useFocused, useSelected } from 'slate-react'
+import { Box } from '@mintter/ui/box'
+import type { SPRenderElementProps } from '@udecode/slate-plugins-core'
+import { useQuote } from '@mintter/client/quote'
+import type { EditorTextRun, SlateQuote } from '../types'
+import { Block } from '@mintter/client/documents'
 
 export function QuoteElement({
   attributes,
@@ -30,7 +26,7 @@ export function QuoteElement({
   }
 
   if (quote.isSuccess && quote.data) {
-    qRender = toSlateQuote(quote.data).map(({text = ''}) => <span>{text}</span>)
+    qRender = toSlateQuote(quote.data).map(({ text = '' }) => <span>{text}</span>)
     return (
       <span {...attributes} data-quote-id={element.id}>
         {children}
@@ -62,4 +58,34 @@ export function QuoteElement({
   }
 
   return null
+}
+
+function toSlateQuote(
+  entry: Block,
+): Array<EditorTextRun> {
+  //@ts-ignore
+  return entry.elementsList.map((element: documents.InlineElement.AsObject) => {
+    // assume elements are type textRun for now
+    let node: EditorTextRun = { text: '' };
+    if (element.textRun) {
+      const { textRun } = element;
+      node.text = textRun.text;
+      Object.keys(textRun).forEach(
+        //@ts-ignore
+        (key) => {
+          //@ts-ignore
+          if (typeof textRun[key] === 'boolean' && textRun[key]) {
+            //@ts-ignore
+            node[key] = true;
+          }
+        },
+      );
+
+      return node;
+      // console.log({node})
+      // return element.textRun
+    }
+
+    return null;
+  });
 }

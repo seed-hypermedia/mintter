@@ -13,6 +13,7 @@
   "dependencies": {
     "@mintter/api": "*",
     "@mintter/ui": "*",
+    "@mintter/client": "*",
     "@radix-ui/react-context-menu": "^0.0.19",
     "@radix-ui/react-dropdown-menu": "^0.0.19",
     "@radix-ui/react-polymorphic": "^0.0.11",

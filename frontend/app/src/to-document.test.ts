@@ -1,4 +1,4 @@
-import { Block, Document, InlineElement, ListStyle, TextRun } from '@mintter/api/documents/v1alpha/documents';
+import { Block, Document, InlineElement, ListStyle, TextRun } from '@mintter/client/documents';
 import { ELEMENT_BLOCK } from './editor/block-plugin';
 import { toDocument, ToDocumentProps } from './to-document';
 

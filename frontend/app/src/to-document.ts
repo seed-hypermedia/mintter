@@ -1,4 +1,4 @@
-import { ListStyle, Document, Block } from '@mintter/api/documents/v1alpha/documents'
+import { ListStyle, Document, Block } from '@mintter/client/documents'
 import { ELEMENT_LINK } from './editor/link-plugin';
 import { ELEMENT_QUOTE } from './editor/quote-plugin';
 import type { SlateBlock, EditorTextRun } from './editor/types';

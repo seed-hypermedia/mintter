@@ -1,4 +1,4 @@
-import { TextRun, Link, Quote, InlineElement } from '@mintter/api/documents/v1alpha/documents';
+import { TextRun, Link, Quote, InlineElement } from '@mintter/client/documents';
 import {
   toTextRun,
   toLink,

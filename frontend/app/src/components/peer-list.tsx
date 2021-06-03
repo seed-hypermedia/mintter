@@ -1,5 +1,4 @@
-import type { Device } from '@mintter/api/accounts/v1alpha/accounts';
-import { useAccount } from '@mintter/hooks';
+import { Device, useAccount } from '@mintter/client/accounts';
 import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
 

@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 import toast from 'react-hot-toast';
 
-import * as apiClient from '@mintter/client';
+import { updateAccount } from '@mintter/client/accounts';
 import { TextField } from '@mintter/ui/text-field';
 
 import {
@@ -26,7 +26,7 @@ type ProfileInformationDataType = {
 export const ProfileInformation: React.FC<OnboardingStepPropsType> = ({
   next,
 }) => {
-  const updateProfile = useMutation(apiClient.updateAccount);
+  const updateProfile = useMutation(updateAccount);
 
   const {
     register,

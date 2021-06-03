@@ -1,7 +1,6 @@
 import { lazily } from 'react-lazily';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
-// import { isLocalNode } from './constants';
 import { global } from '@mintter/ui/stitches.config';
 const { AuthorNode } = lazily(() => import('./author-node'));
 const { PublisherNode } = lazily(() => import('./publisher-node'));

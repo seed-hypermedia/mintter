@@ -1,4 +1,4 @@
-import type { Document } from '@mintter/api/documents/v1alpha/documents'
+import type { Document } from '@mintter/client/documents'
 
 import { ELEMENT_BLOCK } from './editor/block-plugin';
 import { ELEMENT_LINK } from './editor/link-plugin';

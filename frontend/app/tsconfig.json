@@ -1,25 +1,15 @@
 {
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
-    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
     "jsx": "react-jsx",
-    "sourceMap": true,
-    "importsNotUsedAsValues": "error",
+    "composite": true,
+    "rootDir": "./src",
+    "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
       "@components/*": [
@@ -34,23 +24,22 @@
       "@mintter/ui-legacy/*": [
         "./ui/lib/*"
       ],
-      "@mintter/ui/*": [
-        "../ui/src/*"
-      ],
       "@mintter/editor/*": [
         "./src/editor/*"
-      ],
-      "@mintter/client": [
-        "./src/mintter-client"
-      ],
-      "@mintter/hooks": [
-        "./src/mintter-hooks"
       ],
       "test/*": [
         "./src/test/*"
       ]
     }
   },
+  "references": [
+    {
+      "path": "../client/tsconfig.json"
+    },
+    {
+      "path": "../ui/tsconfig.json"
+    }
+  ],
   "include": [
     "src"
   ]
