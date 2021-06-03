@@ -9,48 +9,6 @@
   },
   "license": "MIT",
   "repository": "mintterteam/mintter-ui",
-  "exports": {
-    "./alert": "./dist/alert/index.js",
-    "./box": "./dist/box/index.js",
-    "./button": "./dist/button/index.js",
-    "./icon": "./dist/icon/index.js",
-    "./text": "./dist/text/index.js",
-    "./text-field": "./dist/text-field/index.js",
-    "./theme": "./dist/theme/index.js",
-    "./stitches.config": "./dist/stitches.config.js",
-    "./package.json": "./package.json"
-  },
-  "typesVersions": {
-    "*": {
-      "alert": [
-        "dist/alert/index.d.ts"
-      ],
-      "box": [
-        "dist/box/index.d.ts"
-      ],
-      "button": [
-        "dist/button/index.d.ts"
-      ],
-      "icon": [
-        "dist/icon/index.d.ts"
-      ],
-      "text": [
-        "dist/text/index.d.ts"
-      ],
-      "text-field": [
-        "dist/text-field/index.d.ts"
-      ],
-      "theme": [
-        "dist/theme/index.d.ts"
-      ],
-      "stitches.config": [
-        "dist/stitches.config.d.ts"
-      ]
-    }
-  },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "rm -rf dist && tsc --build tsconfig.build.json",
     "lint": "eslint --ignore-path .eslintignore --ext .js,.jsx,.ts,.tsx,.mdx . && prettier --ignore-path ./.eslintignore --check .",
