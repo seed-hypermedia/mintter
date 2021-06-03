@@ -1,15 +1,23 @@
 import { Profile, Device, Account } from '@mintter/api/accounts/v1alpha/accounts'
-import { Publication, Block, ListStyle, Document, InlineElement, Block_Type, TextRun } from '@mintter/api/documents/v1alpha/documents'
+import {
+  Publication,
+  Block,
+  ListStyle,
+  Document,
+  InlineElement,
+  Block_Type,
+  TextRun,
+} from '@mintter/api/documents/v1alpha/documents'
 
-import faker from 'faker';
-import { createId } from './create-id';
+import faker from 'faker'
+import { createId } from './create-id'
 
 export function buildProfile(): Profile {
   return {
     alias: faker.internet.userName(),
     email: faker.internet.email(),
     bio: faker.lorem.paragraph(),
-  };
+  }
 }
 
 export function buildAccount({
@@ -17,14 +25,14 @@ export function buildAccount({
   profile = buildProfile(),
   devices = buildDevices(),
 }: {
-  id?: string;
-  profile?: Profile;
-  devices?: Record<string, Device>;
+  id?: string
+  profile?: Profile
+  devices?: Record<string, Device>
 } = {}): Account {
   return Account.fromPartial({
     id,
     profile,
-    devices
+    devices,
   })
 }
 
@@ -32,14 +40,14 @@ export function buildDevices(): Record<string, Device> {
   return {
     '1': Device.fromPartial({ peerId: '1' }),
     '2': Device.fromPartial({ peerId: '2' }),
-    '3': Device.fromPartial({ peerId: '3' })
+    '3': Device.fromPartial({ peerId: '3' }),
   }
 }
 
 export function buildPublication(): Publication {
   return Publication.fromPartial({
     document: buildDocument(),
-    version: createId()
+    version: createId(),
   })
 }
 
@@ -68,11 +76,11 @@ export function buildDocument({
 }
 
 type BuildBlockOptions = Partial<Block> & {
-  elementsList?: InlineElement[];
-};
+  elements?: InlineElement[]
+}
 
 export function buildBlock({
-  elementsList,
+  elements,
   id = createId(),
   childListStyle = ListStyle.NONE,
   parent = '',
@@ -81,8 +89,8 @@ export function buildBlock({
 }: BuildBlockOptions = {}): Block {
   return Block.fromPartial({
     id,
-    elements: elementsList
-      ? elementsList.map(n => buildTextInlineElement(n.textRun))
+    elements: elements
+      ? elements.map(n => buildTextInlineElement(n.textRun))
       : [
         buildTextInlineElement(),
         buildTextInlineElement(),
@@ -91,13 +99,11 @@ export function buildBlock({
     childListStyle,
     parent,
     children,
-    type
+    type,
   })
 }
 
-export function buildTextInlineElement(
-  textRun?: TextRun,
-): InlineElement {
+export function buildTextInlineElement(textRun?: TextRun): InlineElement {
   return InlineElement.fromPartial({
     textRun: textRun || {
       text: faker.lorem.sentence(),
@@ -108,6 +114,6 @@ export function buildTextInlineElement(
       code: false,
       linkKey: '',
       blockquote: false,
-    }
+    },
   })
 }
