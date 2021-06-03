@@ -12,7 +12,7 @@ import {
   withLink,
 } from '@udecode/slate-plugins-link';
 import { Transforms } from 'slate';
-import type { ReactEditor } from 'slate-react';
+import { WithMintterLinkOptions, withMintterLink } from './with-mintter-link';
 
 /**
  * This is needed so the popover with a form works.
@@ -23,12 +23,15 @@ Transforms.deselect = () => {};
 
 export const ELEMENT_LINK = 'a';
 export const MINTTER_LINK_PREFIX = 'mtt://';
-export function createLinkPlugin(options?: WithLinkOptions): SlatePlugin {
+export function createLinkPlugin({
+  menu,
+  ...options
+}: WithLinkOptions & WithMintterLinkOptions): SlatePlugin {
   return {
     pluginKeys: ELEMENT_LINK,
     inlineTypes: () => [ELEMENT_LINK],
     renderElement: getRenderElement(ELEMENT_LINK),
     deserialize: getLinkDeserialize(),
-    withOverrides: withLink(),
+    withOverrides: [withLink(), withMintterLink({ menu })],
   };
 }

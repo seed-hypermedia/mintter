@@ -104,6 +104,7 @@ const stitches = createCss({
       pill: '9999px',
     },
     shadows: {
+      focus: '0 0 0 2px #808AFF',
       3: '0px 4px 8px rgba(0, 0, 0, 0.15);',
     },
     sizes: {
