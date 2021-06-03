@@ -1,25 +1,22 @@
-import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
+import type { Document } from '@mintter/api/documents/v1alpha/documents'
+
 import { ELEMENT_BLOCK } from './editor/block-plugin';
 import { ELEMENT_LINK } from './editor/link-plugin';
 import type { SlateBlock } from './editor/types';
 
-export function toEditorValue(entry: documents.Document): Array<SlateBlock> {
-  let currentDoc = entry.toObject();
-  // console.log(
-  //   '🚀 ~ file: to-document.ts ~ line 99 ~ currentDoc',
-  //   JSON.stringify(currentDoc, null, 2),
-  // );
+export function toEditorValue(entry: Document): Array<SlateBlock> {
+  let currentDoc = entry;
 
-  const blocksMap = entry.getBlocksMap();
-  const linksMap = entry.getLinksMap();
-  return currentDoc.childrenList.map((blockId: string) => {
-    let block = blocksMap.get(blockId)?.toObject();
+  const blocksMap = entry.blocks;
+  const linksMap = entry.links;
+  return currentDoc.children.map((blockId: string) => {
+    let block = blocksMap[blockId]
     return {
       id: block?.id,
       type: ELEMENT_BLOCK,
       depth: 0,
       listStyle: block?.childListStyle,
-      children: block?.elementsList.map(({ textRun, image, quote }) => {
+      children: block?.elements.map(({ textRun, image, quote }) => {
         if (textRun) {
           if (textRun.linkKey) {
             return {

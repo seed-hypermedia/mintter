@@ -1,8 +1,6 @@
 import { motion, Variants, Orchestration } from 'framer-motion';
-
 import { Box, BoxProps } from '@mintter/ui/box';
 import { Button, ButtonProps } from '@mintter/ui/button';
-// import type { CSS } from '@mintter/ui/stitches.config';
 import { Text, TextProps } from '@mintter/ui/text';
 
 export type OnboardingStepPropsType = {
