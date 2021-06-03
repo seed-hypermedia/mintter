@@ -21,7 +21,6 @@ export function toDocument({
   blocks,
   childrenListStyle = ListStyle.NONE,
 }: ToDocumentProps): Document {
-  // console.log('toDocument', { title, subtitle, blocks, id, author });
   const newDoc = Document.fromPartial({
     id, author, title, subtitle, childrenListStyle
   })
