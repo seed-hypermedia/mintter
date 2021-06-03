@@ -160,6 +160,7 @@ func TestDaemonEndToEnd(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.NotNil(t, peerInfo)
+	require.NotEqual(t, "", peerInfo.AccountId)
 
 	// require.NoError(t,
 	// 	filepath.Walk(cfg.RepoPath, func(path string, info os.FileInfo, err error) error {
