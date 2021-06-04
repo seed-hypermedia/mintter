@@ -1,15 +1,14 @@
 {
-  "extends": "../tsconfig.base.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "composite": true,
     "declaration": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "allowSyntheticDefaultImports": true
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "src"
   },
   "include": [
-    "src/**/*",
-    "hooks/**/*",
-    "src/index.ts"
+    "src"
   ]
 }
