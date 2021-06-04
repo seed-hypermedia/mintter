@@ -1,4 +1,3 @@
-// import { css } from '@mintter/ui/stitches.config';
 import { Box } from '@mintter/ui/box';
 import type { AutoformatRule } from '@udecode/slate-plugins-autoformat';
 import {

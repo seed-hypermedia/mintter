@@ -1,1 +1,0 @@
-export * from '@mintter/api/networking/v1alpha/networking'

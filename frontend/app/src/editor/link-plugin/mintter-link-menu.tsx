@@ -1,17 +1,12 @@
 import { Box } from '@mintter/ui/box';
 import * as Portal from '@radix-ui/react-portal';
 import {
-  createContext,
   forwardRef,
-  useContext,
   useEffect,
   useRef,
-  useState,
 } from 'react';
-import { ReactEditor } from 'slate-react';
-import { Button } from '@mintter/ui/button';
 import { useStoreEditorState } from '@udecode/slate-plugins-core';
-import { Menu, MenuItem as ReakitMenuItem, MenuProps } from 'reakit/Menu';
+import { Menu, MenuItem as ReakitMenuItem } from 'reakit/Menu';
 import { createQuoteFromLink } from '../quote-plugin/create-quote-from-link';
 
 function setMenuPosition(el: HTMLDivElement) {

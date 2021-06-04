@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 import toast from 'react-hot-toast';
 
-import { updateAccount } from '@mintter/client/accounts';
+import { updateAccount } from '@mintter/client';
 import { TextField } from '@mintter/ui/text-field';
 
 import {

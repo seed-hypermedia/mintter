@@ -1,5 +1,5 @@
 import { Document } from '@mintter/api/documents/v1alpha/documents'
-import { mockDocument } from '../mock'
+import { mockDocument } from './mock'
 
 /**
  * 

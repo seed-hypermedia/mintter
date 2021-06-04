@@ -1,4 +1,4 @@
-import type { TextRun, ListStyle, Block_Type } from '../../../../api/ts/documents/v1alpha/documents'
+import type { TextRun, ListStyle, Block_Type } from '@mintter/client'
 
 export type SlateVoidChildren = {
   children: Array<{ text: string }>;

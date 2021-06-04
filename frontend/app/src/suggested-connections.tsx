@@ -1,5 +1,5 @@
-import { useSuggestedConnections } from '@mintter/client/peer';
-import { SuggestedProfile, ConnectionStatus } from '@mintter/client/mintter'
+import { useSuggestedConnections } from '@mintter/client/hooks';
+import { mintter } from '@mintter/client'
 import { Text } from '@mintter/ui/text';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
@@ -25,10 +25,10 @@ export function SuggestedConnections({ onConnect }: any) {
         <Text size="2">no suggestions available :(</Text>
       ) : (
         <Box as="ul" aria-label="suggested connections">
-          {data.map((c: SuggestedProfile) => {
+          {data.map((c: mintter.SuggestedProfile) => {
             const { profile, addrs } = c;
             const isConnected =
-              profile?.connectionStatus === ConnectionStatus.CONNECTED;
+              profile?.connectionStatus === mintter.ConnectionStatus.CONNECTED;
 
             return (
               <Box

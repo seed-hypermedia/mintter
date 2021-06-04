@@ -1,5 +1,4 @@
 import { Box } from '@mintter/ui/box';
-import { css } from '@mintter/ui/stitches.config';
 import type { AutoformatRule } from '@udecode/slate-plugins-autoformat';
 import { DEFAULTS_BOLD, MARK_BOLD } from '@udecode/slate-plugins-basic-marks';
 import type {

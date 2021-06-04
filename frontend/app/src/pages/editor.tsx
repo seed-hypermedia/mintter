@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router';
 import { useMutation } from 'react-query';
 
-import { useDraft } from '@mintter/client/drafts';
-import { useAccount } from '@mintter/client/accounts'
+import { useDraft, useAccount } from '@mintter/client/hooks';
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
@@ -18,7 +17,7 @@ import 'show-keys';
 import { useStoreEditorValue } from '@udecode/slate-plugins-core';
 import { toDocument } from '../to-document';
 import type { SlateBlock } from '@mintter/editor/types';
-import { ListStyle } from '@mintter/api/documents/v1alpha/documents';
+import { ListStyle } from '@mintter/client';
 
 export default function EditorPage() {
   const { docId } = useParams<{ docId: string }>();

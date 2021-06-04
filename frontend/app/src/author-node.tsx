@@ -4,7 +4,7 @@ import { lazily } from 'react-lazily';
 import { createPath, getPath } from '@utils/routes';
 import { AppSpinner } from '@components/app-spinner';
 import { Topbar } from '@components/topbar';
-import { useInfo } from '@mintter/client/daemon'
+import { useInfo } from '@mintter/client/hooks'
 import { Box } from '@mintter/ui/box';
 
 const { OnboardingPage } = lazily(() => import('@pages/onboarding'));

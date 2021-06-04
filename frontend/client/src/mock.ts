@@ -8,9 +8,10 @@ import {
   Block_Type,
   TextRun,
 } from '@mintter/api/documents/v1alpha/documents'
-
 import faker from 'faker'
-import { createId } from './create-id'
+import { nanoid } from 'nanoid'
+
+export const createId = (length: number = 8) => nanoid(length)
 
 export function mockProfile(): Profile {
   return {

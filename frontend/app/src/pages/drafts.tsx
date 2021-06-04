@@ -1,5 +1,6 @@
 import { DocumentList } from '../document-list';
-import { useDraftsList, deleteDraft } from '@mintter/client/drafts'
+import { deleteDraft } from '@mintter/client'
+import { useDraftsList } from '@mintter/client/hooks'
 import { useHistory, useRouteMatch } from 'react-router';
 import type { WithCreateDraft } from './library';
 import * as MessageBox from '@components/message-box';

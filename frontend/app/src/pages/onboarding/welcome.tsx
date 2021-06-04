@@ -1,6 +1,5 @@
 import { Box } from '@mintter/ui/box';
 import { Text } from '@mintter/ui/text';
-
 import {
   OnboardingStep,
   OnboardingStepActions,

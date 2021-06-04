@@ -1,6 +1,6 @@
 import { Account, AccountsClientImpl, GetAccountRequest, ListAccountsRequest, Profile } from '@mintter/api/accounts/v1alpha/accounts'
 import { GenSeedRequest, RegisterRequest, DaemonClientImpl } from '@mintter/api/daemon/v1alpha/daemon'
-import { rpc } from '../rpc-client'
+import { rpc } from './rpc-client'
 
 /**
  * 

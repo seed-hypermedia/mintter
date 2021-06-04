@@ -1,6 +1,6 @@
 import { Document, DocumentView, DraftsClientImpl, ListDraftsResponse, PublishDraftRequest } from '@mintter/api/documents/v1alpha/documents'
-import { mockDocument } from '../mock'
-import { rpc } from '../rpc-client'
+import { mockDocument } from './mock'
+import { rpc } from './rpc-client'
 
 /**
  * 

@@ -4,7 +4,6 @@ import {
   getSlatePluginTypes,
   getRenderElement,
 } from '@udecode/slate-plugins';
-import { createId } from '@utils/create-id';
 
 export const ELEMENT_QUOTE = 'quote';
 export function createQuotePlugin(): SlatePlugin {

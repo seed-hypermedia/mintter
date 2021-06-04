@@ -7,7 +7,7 @@ import { Button } from '@mintter/ui/button';
 import { Icon } from '@mintter/ui/icon';
 import { Text } from '@mintter/ui/text';
 import { TextField } from '@mintter/ui/text-field';
-import * as DropdownMenu from '@mintter/ui-legacy/dropdown-menu';
+import * as DropdownMenu from '../lib/dropdown-menu';
 
 import { Container } from '@components/container';
 import { getPath } from '@utils/routes';

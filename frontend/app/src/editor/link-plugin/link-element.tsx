@@ -1,12 +1,10 @@
 import { Box } from '@mintter/ui/box';
 import type { SPRenderElementProps } from '@udecode/slate-plugins-core';
-import { useEffect, useMemo } from 'react';
-import { Link } from '@components/link';
+import { useMemo } from 'react';
 import { MINTTER_LINK_PREFIX } from '.';
 import { Tooltip } from '@components/tooltip';
 import { Icon } from '@mintter/ui/icon';
 import type { SlateLink } from '../types';
-import { Text } from '@mintter/ui/text';
 
 export function LinkElement(props: SPRenderElementProps<SlateLink>) {
   const isMintterLink = useMemo<boolean>(

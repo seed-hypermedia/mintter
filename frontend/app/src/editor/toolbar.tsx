@@ -21,12 +21,10 @@ import {
 } from '@udecode/slate-plugins-toolbar';
 import { useMemo, useRef } from 'react';
 import * as Portal from '@radix-ui/react-portal';
-// import { css } from '@mintter/ui/stitches.config';
 import { Icon, icons } from '@mintter/ui/icon';
 import { Button } from '@mintter/ui/button';
 import { Tooltip } from '@components/tooltip';
 import { Box } from '@mintter/ui/box';
-// import { ELEMENT_LINK } from './link-plugin/create-link-plugin';
 import { ToolbarLink } from './link-plugin/link-toolbar';
 
 export function Toolbar() {

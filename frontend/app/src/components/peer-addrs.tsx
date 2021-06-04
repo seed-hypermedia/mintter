@@ -6,7 +6,7 @@ import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';
 import { TextField } from '@mintter/ui/text-field';
-import { usePeerAddrs } from '@mintter/client/peer';
+import { usePeerAddrs } from '@mintter/client/hooks';
 
 export function PeerAddrs() {
 

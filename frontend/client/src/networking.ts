@@ -1,5 +1,5 @@
 import { GetPeerInfoRequest, NetworkingClientImpl, PeerInfo } from '@mintter/api/networking/v1alpha/networking'
-import { rpc } from '../rpc-client'
+import { rpc } from './rpc-client'
 
 /**
  * 

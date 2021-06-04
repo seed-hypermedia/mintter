@@ -1,4 +1,4 @@
-import { Block, InlineElement, ListStyle, TextRun } from '@mintter/client/documents';
+import { Block, InlineElement, ListStyle, TextRun } from '@mintter/client';
 import { buildDocument } from '@utils/generate';
 import { toInlineElement, toLink, toTextRun } from './inline-element';
 import { ELEMENT_BLOCK } from './editor/block-plugin';

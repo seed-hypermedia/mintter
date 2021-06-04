@@ -3,11 +3,13 @@
   "compilerOptions": {
     "composite": true,
     "declaration": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "allowSyntheticDefaultImports": true
   },
   "include": [
-    "mock.ts",
-    "rpc-client.ts",
-    "./**/*.ts"
+    "src/**/*",
+    "hooks/**/*",
+    "src/index.ts"
   ]
 }

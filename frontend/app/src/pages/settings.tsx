@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 
-import { useAccount, updateAccount } from '@mintter/client/accounts';
+import { updateAccount } from '@mintter/client';
+import { useAccount } from '@mintter/client/hooks'
 import { Box } from '@mintter/ui/box';
 import { Button } from '@mintter/ui/button';
 import { Text } from '@mintter/ui/text';

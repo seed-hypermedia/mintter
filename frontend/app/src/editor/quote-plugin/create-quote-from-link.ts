@@ -1,9 +1,8 @@
 import {
   getAbove,
-  selectEndOfBlockAboveSelection,
 } from '@udecode/slate-plugins-common';
 import type { SPEditor } from '@udecode/slate-plugins-core';
-import { Editor, Path, Transforms } from 'slate';
+import { Editor, Transforms } from 'slate';
 import type { ReactEditor } from 'slate-react';
 import { ELEMENT_LINK } from '../link-plugin';
 import type { SlateLink, SlateQuote } from '../types';

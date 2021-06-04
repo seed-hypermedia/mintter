@@ -1,6 +1,6 @@
 import { DeletePublicationRequest, DocumentView, ListPublicationsResponse, Publication, PublicationsClientImpl } from "@mintter/api/documents/v1alpha/documents";
-import { rpc } from "../rpc-client";
-import { mockPublication } from "../mock";
+import { rpc } from "./rpc-client";
+import { mockPublication } from "./mock";
 
 export function deletePublication(revision: string) {
   const request = DeletePublicationRequest.fromPartial({

@@ -1,9 +1,9 @@
-import type { Document } from '@mintter/client/documents'
+import type { Document } from '@mintter/client'
 
 import { ELEMENT_BLOCK } from './editor/block-plugin';
 import { ELEMENT_LINK } from './editor/link-plugin';
 import { ELEMENT_QUOTE } from './editor/quote-plugin';
-import type { EditorTextRun, SlateBlock, SlateLink, SlateQuote } from './editor/types';
+import type { SlateBlock } from './editor/types';
 
 export function toEditorValue(entry: Document): Array<SlateBlock> {
   let currentDoc = entry;

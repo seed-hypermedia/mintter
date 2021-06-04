@@ -15,7 +15,7 @@ import {
   createUnderlinePlugin,
   withNodeId,
 } from '@udecode/slate-plugins'
-import { createId } from '@utils/create-id'
+import { mock } from '@mintter/client'
 import { createBlockPlugin, ELEMENT_BLOCK, blockOptions } from './block-plugin'
 import { boldOptions, boldAutoformatRules } from './bold-plugin'
 import { codeOptions, codeAutoformatRules } from './code-plugin'
@@ -38,7 +38,7 @@ import { useMenuState } from 'reakit/Menu'
 
 const initialValue = [
   {
-    id: createId(),
+    id: mock.createId(),
     depth: 0,
     type: ELEMENT_BLOCK,
     children: [
@@ -54,7 +54,7 @@ const initialValue = [
       {
         type: ELEMENT_LINK,
         url: 'https://mintter.com',
-        id: createId(),
+        id: mock.createId(),
         children: [{ text: 'link here' }],
       },
     ],
@@ -63,7 +63,7 @@ const initialValue = [
     type: ELEMENT_BLOCK,
     blockType: Block_Type.BASIC,
     depth: 0,
-    id: createId(),
+    id: mock.createId(),
     children: [
       {
         text: 'Heading 2',
@@ -142,7 +142,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           createLinkPlugin({ menu }),
           {
             withOverrides: withNodeId({
-              idCreator: () => createId(),
+              idCreator: () => mock.createId(),
               allow: [ELEMENT_LINK, ELEMENT_QUOTE],
             }),
           },
