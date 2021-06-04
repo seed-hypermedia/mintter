@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, {useState} from 'react'
 import {
   createBoldPlugin,
   createExitBreakPlugin,
@@ -15,26 +15,26 @@ import {
   createUnderlinePlugin,
   withNodeId,
 } from '@udecode/slate-plugins'
-import { mock } from '@mintter/client'
-import { createBlockPlugin, ELEMENT_BLOCK, blockOptions } from './block-plugin'
-import { boldOptions, boldAutoformatRules } from './bold-plugin'
-import { codeOptions, codeAutoformatRules } from './code-plugin'
-import { italicOptions, italicAutoformatRules } from './italic-plugin'
-import { Block_Type } from '@mintter/api/documents/v1alpha/documents'
+import {mock} from '@mintter/client'
+import {createBlockPlugin, ELEMENT_BLOCK, blockOptions} from './block-plugin'
+import {boldOptions, boldAutoformatRules} from './bold-plugin'
+import {codeOptions, codeAutoformatRules} from './code-plugin'
+import {italicOptions, italicAutoformatRules} from './italic-plugin'
+import {Block_Type} from '@mintter/api/documents/v1alpha/documents'
 import {
   strikethroughOptions,
   strikethroughAutoformatRules,
 } from './strikethrough-plugin'
-import { Toolbar } from './toolbar'
-import { underlineOptions, underlineAutoformatRules } from './underline-plugin'
-import { createQuotePlugin, ELEMENT_QUOTE, quoteOptions } from './quote-plugin'
+import {Toolbar} from './toolbar'
+import {underlineOptions, underlineAutoformatRules} from './underline-plugin'
+import {createQuotePlugin, ELEMENT_QUOTE, quoteOptions} from './quote-plugin'
 import {
   createLinkPlugin,
   ELEMENT_LINK,
   linkOptions,
-  MintterLinkMenu,
+  // LinkMenu,
 } from './link-plugin'
-import { useMenuState } from 'reakit/Menu'
+// import {useMenuState} from 'reakit/Menu'
 
 const initialValue = [
   {
@@ -55,7 +55,7 @@ const initialValue = [
         type: ELEMENT_LINK,
         url: 'https://mintter.com',
         id: mock.createId(),
-        children: [{ text: 'link here' }],
+        children: [{text: 'link here'}],
       },
     ],
   },
@@ -75,7 +75,7 @@ const initialValue = [
 function rulesWithCustomDefaultType(
   type: string = ELEMENT_BLOCK,
   rules: ExitBreakRule[] = [
-    { hotkey: 'mod+enter' },
+    {hotkey: 'mod+enter'},
     {
       hotkey: 'mod+shift+enter',
       before: true,
@@ -89,17 +89,17 @@ function rulesWithCustomDefaultType(
 }
 
 export function EditorComponent<T extends SPEditor = SPEditor>({
+  initialValue,
   ...options
 }: SlatePluginsProps<T>) {
-  const [v, setV] = useState(initialValue)
-  const [mintterLinkOpen, setMintterLinkOpen] = useState(false)
-  const menu = useMenuState({ loop: true, wrap: true })
+  // const menu = useMenuState({loop: true, wrap: true})
 
   return (
     <>
       <SlatePlugins
         id="editor"
         {...options}
+        initialValue={initialValue}
         editableProps={{
           placeholder: 'start here...',
         }}
@@ -118,7 +118,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           }),
           createExitBreakPlugin({
             rules: rulesWithCustomDefaultType(ELEMENT_BLOCK, [
-              { hotkey: 'mod+enter' },
+              {hotkey: 'mod+enter'},
               {
                 hotkey: 'mod+shift+enter',
                 before: true,
@@ -139,7 +139,8 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           createCodePlugin(),
           createUnderlinePlugin(),
           createQuotePlugin(),
-          createLinkPlugin({ menu }),
+          // createLinkPlugin({menu}),
+          createLinkPlugin(),
           {
             withOverrides: withNodeId({
               idCreator: () => mock.createId(),
@@ -157,12 +158,10 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           ...quoteOptions,
           ...linkOptions,
         }}
-        onChange={nv => setV(nv as any)}
       >
         <Toolbar />
-        <MintterLinkMenu menu={menu} />
+        {/* <LinkMenu menu={menu} /> */}
       </SlatePlugins>
-      <pre>{JSON.stringify(v, null, 3)}</pre>
     </>
   )
 }

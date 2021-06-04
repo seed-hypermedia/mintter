@@ -1,10 +1,10 @@
 import React from 'react'
-import { useFocused, useSelected } from 'slate-react'
-import { Box } from '@mintter/ui'
-import type { SPRenderElementProps } from '@udecode/slate-plugins-core'
-import { useQuote } from '@mintter/client/hooks'
-import type { EditorTextRun, SlateQuote } from '../types'
-import { Block } from '@mintter/client'
+import {useFocused, useSelected} from 'slate-react'
+import {Box} from '@mintter/ui'
+import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
+import {useQuote} from '@mintter/client/hooks'
+import type {EditorTextRun, SlateQuote} from '../types'
+import {Block} from '@mintter/client'
 
 export function QuoteElement({
   attributes,
@@ -15,7 +15,6 @@ export function QuoteElement({
   const focused = useFocused()
   const selected = useSelected()
   const quote = useQuote(element.url)
-  console.log('render quote!', quote)
   let qRender
 
   if (quote.isLoading) {
@@ -27,10 +26,11 @@ export function QuoteElement({
   }
 
   if (quote.isSuccess && quote.data) {
-    qRender = toSlateQuote(quote.data).map(({ text = '' }) => <span>{text}</span>)
+    qRender = toSlateQuote(quote.data).map(({text = ''}, index) => (
+      <span key={index}>{text}</span>
+    ))
     return (
       <span {...attributes} data-quote-id={element.id}>
-        {children}
         <Box
           as="span"
           contentEditable={false}
@@ -54,6 +54,7 @@ export function QuoteElement({
         >
           {qRender}
         </Box>
+        {children}
       </span>
     )
   }
@@ -61,32 +62,30 @@ export function QuoteElement({
   return null
 }
 
-function toSlateQuote(
-  entry: Block,
-): Array<EditorTextRun> {
+function toSlateQuote(entry: Block): Array<EditorTextRun> {
   //@ts-ignore
   return entry.elementsList.map((element: documents.InlineElement.AsObject) => {
     // assume elements are type textRun for now
-    let node: EditorTextRun = { text: '' };
+    let node: EditorTextRun = {text: ''}
     if (element.textRun) {
-      const { textRun } = element;
-      node.text = textRun.text;
+      const {textRun} = element
+      node.text = textRun.text
       Object.keys(textRun).forEach(
         //@ts-ignore
-        (key) => {
+        key => {
           //@ts-ignore
           if (typeof textRun[key] === 'boolean' && textRun[key]) {
             //@ts-ignore
-            node[key] = true;
+            node[key] = true
           }
         },
-      );
+      )
 
-      return node;
+      return node
       // console.log({node})
       // return element.textRun
     }
 
-    return null;
-  });
+    return null
+  })
 }

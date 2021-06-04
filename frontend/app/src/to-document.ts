@@ -1,17 +1,17 @@
-import { ListStyle, Document, Block } from '@mintter/client'
-import { ELEMENT_LINK } from './editor/link-plugin';
-import { ELEMENT_QUOTE } from './editor/quote-plugin';
-import type { SlateBlock, EditorTextRun } from './editor/types';
-import { toInlineElement, toQuote, toTextRun, toLink } from './inline-element';
+import {ListStyle, Document, Block} from '@mintter/client'
+import {ELEMENT_LINK} from './editor/link-plugin'
+import {ELEMENT_QUOTE} from './editor/quote-plugin'
+import type {SlateBlock, EditorTextRun} from './editor/types'
+import {toInlineElement, toQuote, toTextRun, toLink} from './inline-element'
 
 export type ToDocumentProps = {
-  id: string;
-  title?: string;
-  subtitle?: string;
-  author: string;
-  blocks: Array<SlateBlock>;
-  childrenListStyle: ListStyle;
-};
+  id: string
+  title?: string
+  subtitle?: string
+  author: string
+  blocks: Array<SlateBlock>
+  childrenListStyle: ListStyle
+}
 
 export function toDocument({
   id,
@@ -22,25 +22,29 @@ export function toDocument({
   childrenListStyle = ListStyle.NONE,
 }: ToDocumentProps): Document {
   const newDoc = Document.fromPartial({
-    id, author, title, subtitle, childrenListStyle
+    id,
+    author,
+    title,
+    subtitle,
+    childrenListStyle,
   })
 
-  const blocksMap = newDoc.blocks;
-  const linksMap = newDoc.links;
-  let childrenList: Array<string> = [];
+  const blocksMap = newDoc.blocks
+  const linksMap = newDoc.links
+  let childrenList: Array<string> = []
 
   for (let slateBlock of blocks) {
     // add block to document's childrenList
-    childrenList = [...childrenList, slateBlock.id];
+    childrenList = [...childrenList, slateBlock.id]
     // convert slate block to doc block
     const block = Block.fromPartial({
-      id: slateBlock.id
+      id: slateBlock.id,
     })
 
     const inlineElements = slateBlock.children
-      .map((leaf) => {
+      .map(leaf => {
         if ('text' in leaf) {
-          return toInlineElement({ textRun: toTextRun(leaf) });
+          return toInlineElement({textRun: toTextRun(leaf)})
         }
         if (leaf.type == ELEMENT_LINK) {
           // add link to linksMap
@@ -53,19 +57,19 @@ export function toDocument({
                 linkKey: leaf.id,
               }),
             }),
-          );
+          )
         }
         if (leaf.type == ELEMENT_QUOTE) {
           // add link to linksMap
           linksMap[leaf.id] = toLink(leaf)
 
-          return toInlineElement({ quote: toQuote(leaf) });
+          return toInlineElement({quote: toQuote(leaf)})
         }
 
-        throw Error(`toDocument Error: Block -> inlineElement not supported`);
+        throw Error(`toDocument Error: Block -> inlineElement not supported`)
       })
       //@ts-ignore
-      .flat();
+      .flat()
 
     block.elements = inlineElements
     blocksMap[slateBlock.id] = block
@@ -73,5 +77,5 @@ export function toDocument({
 
   newDoc.children = childrenList
 
-  return newDoc;
+  return newDoc
 }

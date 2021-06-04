@@ -1,15 +1,19 @@
-import type { Document } from '@mintter/client'
+import type {Document} from '@mintter/client'
 
-import { ELEMENT_BLOCK } from './editor/block-plugin';
-import { ELEMENT_LINK } from './editor/link-plugin';
-import { ELEMENT_QUOTE } from './editor/quote-plugin';
-import type { SlateBlock } from './editor/types';
+import {ELEMENT_BLOCK} from './editor/block-plugin'
+import {ELEMENT_LINK} from './editor/link-plugin'
+import {ELEMENT_QUOTE} from './editor/quote-plugin'
+import type {SlateBlock} from './editor/types'
 
 export function toEditorValue(entry: Document): Array<SlateBlock> {
-  let currentDoc = entry;
+  console.log(
+    '🚀 ~ file: to-editor-value.ts ~ line 9 ~ toEditorValue ~ entry',
+    entry,
+  )
+  let currentDoc = entry
 
-  const blocksMap = entry.blocks;
-  const linksMap = entry.links;
+  const blocksMap = entry.blocks
+  const linksMap = entry.links
   return currentDoc.children.map((blockId: string) => {
     let block = blocksMap[blockId]
     return {
@@ -17,20 +21,20 @@ export function toEditorValue(entry: Document): Array<SlateBlock> {
       type: ELEMENT_BLOCK,
       depth: 0,
       listStyle: block.childListStyle,
-      children: block.elements.map<any>(({ textRun, image, quote }) => {
+      children: block.elements.map<any>(({textRun, image, quote}) => {
         if (image) {
           return {
             type: 'image',
             url: linksMap[image.linkKey].uri,
             alt_text: image.altText,
-            children: [{ text: '' }]
+            children: [{text: ''}],
           }
         } else if (textRun) {
           if (textRun.linkKey) {
             return {
               type: ELEMENT_LINK,
               url: linksMap[textRun.linkKey].uri,
-              children: [textRun]
+              children: [textRun],
             }
           } else {
             return textRun
@@ -40,12 +44,12 @@ export function toEditorValue(entry: Document): Array<SlateBlock> {
             type: ELEMENT_QUOTE,
             id: '',
             url: linksMap[quote.linkKey].uri,
-            children: [{ text: '' }]
+            children: [{text: ''}],
           }
         } else {
           throw new Error(`unkown element`)
         }
       }),
-    };
-  });
+    }
+  })
 }
