@@ -1,14 +1,17 @@
 {
-  "extends": "../tsconfig.base.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "jsx": "react-jsx",
     "composite": true,
     "declaration": true,
-    "outDir": "./dist"
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true
   },
   "include": [
-    "stitches.config.ts",
-    "./**/*.ts",
-    "./**/*.tsx"
+    "src",
+    "stitches.config.ts"
   ]
 }

@@ -1,12 +1,12 @@
 import * as Label from '@radix-ui/react-label'
 import autosize from 'autosize'
-import {forwardRef, useLayoutEffect, useRef} from 'react'
+import React, { forwardRef, useLayoutEffect, useRef } from 'react'
 import mergeRefs from 'react-merge-refs'
-import {nanoid} from 'nanoid'
+import { nanoid } from 'nanoid'
 
-import {Box} from '../box'
-import {styled} from '../stitches.config'
-import {Text} from '../text'
+import { Box } from '../box'
+import { styled } from '../../stitches.config'
+import { Text } from '../text'
 
 const InputContainer = styled(Box, {
   display: 'flex',
@@ -157,7 +157,7 @@ export const TextField = forwardRef<
   }
 >(
   (
-    {label, status = 'neutral', hint, id = nanoid(), containerCss, ...props},
+    { label, status = 'neutral', hint, id = nanoid(), containerCss, ...props },
     ref,
   ) => {
     const localRef = useRef<HTMLInputElement>(null)
