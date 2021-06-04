@@ -1,5 +1,5 @@
-import { Box } from '@mintter/ui/box';
-import { css } from '@mintter/ui/stitches.config';
+import React from 'react'
+import { Box } from '@mintter/ui';
 import type { AutoformatRule } from '@udecode/slate-plugins-autoformat';
 import { DEFAULTS_CODE, MARK_CODE } from '@udecode/slate-plugins-basic-marks';
 import type {
@@ -17,7 +17,7 @@ export const codeOptions: CodeOptions = {
   //@ts-ignore
   [MARK_CODE]: {
     ...DEFAULTS_CODE,
-    component: CodeLeaf as SlatePluginComponent,
+    component: CodeLeaf as SlatePluginComponent
   },
 };
 

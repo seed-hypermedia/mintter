@@ -1,7 +1,7 @@
+import React from 'react'
 import { Device } from '@mintter/client';
 import { useAccount } from '@mintter/client/hooks'
-import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
+import { Box, Text } from '@mintter/ui';
 
 export function PeerList() {
   const query = useAccount();

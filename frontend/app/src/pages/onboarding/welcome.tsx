@@ -1,5 +1,5 @@
-import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
+import React from 'react'
+import { Box, Text } from '@mintter/ui';
 import {
   OnboardingStep,
   OnboardingStepActions,

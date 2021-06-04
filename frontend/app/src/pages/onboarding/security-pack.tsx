@@ -1,12 +1,9 @@
-import { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import toast from 'react-hot-toast';
 import { useQuery } from 'react-query';
 import { generateSeed, registerAccount } from '@mintter/client';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Text } from '@mintter/ui/text';
-
+import { Box, Button, Text, TextField } from '@mintter/ui';
 import {
   OnboardingStep,
   OnboardingStepActions,
@@ -17,7 +14,6 @@ import {
   OnboardingStepTitle,
   SecurityPackIcon,
 } from './common';
-import { TextField } from '@mintter/ui/text-field';
 
 export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
   const [ownSeed, setOwnSeed] = useState<string>('');

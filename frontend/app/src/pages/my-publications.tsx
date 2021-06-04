@@ -1,10 +1,11 @@
+import React from 'react'
 import { useHistory, useRouteMatch } from 'react-router';
 import { DocumentList } from '../document-list';
 import { deletePublication } from '@mintter/client';
 import { useMyPublicationsList } from '@mintter/client/hooks'
-import { Text } from '@mintter/ui/text';
+import { Text } from '@mintter/ui';
 import type { WithCreateDraft } from './library';
-import * as MessageBox from '@components/message-box';
+import * as MessageBox from '../components/message-box';
 
 type MyPublicationProps = {
   noSeo?: boolean;

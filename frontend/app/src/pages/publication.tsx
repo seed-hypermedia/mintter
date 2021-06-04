@@ -1,14 +1,12 @@
+import React, { useMemo, useEffect } from 'react'
 import { useHistory, useParams } from 'react-router-dom';
-import { useMemo, useEffect } from 'react'
 import slugify from 'slugify';
 import type { Publication as TPublication, Document } from '@mintter/client'
 import { useDraftsList, usePublication as usePublicationQuery } from '@mintter/client/hooks'
 import { useSidePanel } from '../sidepanel';
-import { Text } from '@mintter/ui/text';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Container } from '@components/container';
-import { buildDocument } from '@utils/generate';
+import { Text, Box, Button } from '@mintter/ui';
+import { Container } from '../components/container'
+import { mock } from '@mintter/client';
 
 export default function Publication() {
   const history = useHistory();
@@ -221,7 +219,7 @@ function usePublication() {
   );
 
   const data: TPublication = {
-    document: useMemo(() => buildDocument(), []),
+    document: useMemo(() => mock.mockDocument(), []),
     version: docVersion,
   };
 

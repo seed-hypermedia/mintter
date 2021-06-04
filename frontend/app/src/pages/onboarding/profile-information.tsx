@@ -1,10 +1,10 @@
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 import toast from 'react-hot-toast';
 
 import { updateAccount } from '@mintter/client';
-import { TextField } from '@mintter/ui/text-field';
+import { TextField } from '@mintter/ui';
 
 import {
   OnboardingStep,

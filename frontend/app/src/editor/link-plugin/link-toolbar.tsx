@@ -1,8 +1,5 @@
-import { Button } from '@mintter/ui/button';
-import { Box } from '@mintter/ui/box';
-import { TextField } from '@mintter/ui/text-field';
-import { Text } from '@mintter/ui/text';
-import { Icon } from '@mintter/ui/icon';
+import React from 'react'
+import { Button, Box, TextField, Icon, Text } from '@mintter/ui';
 import * as Popover from '@radix-ui/react-popover';
 import { Slot } from '@radix-ui/react-slot';
 import { FormEvent, useEffect, useState } from 'react';
@@ -13,9 +10,9 @@ import {
   someNode,
   unwrapNodes,
 } from '@udecode/slate-plugins-common';
-import { SPEditor, useStoreEditorState } from '@udecode/slate-plugins-core';
+import { useStoreEditorState } from '@udecode/slate-plugins-core';
 import { ELEMENT_LINK } from './create-link-plugin';
-import { Editor, Transforms } from 'slate';
+import { Editor } from 'slate';
 import { upsertLinkAtSelection } from '@udecode/slate-plugins-link';
 export function ToolbarLink() {
   const [open, setOpen] = useState(false);

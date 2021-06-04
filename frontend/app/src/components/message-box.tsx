@@ -1,7 +1,5 @@
-import { Separator } from './separator';
-import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
-import { Button as UIButton, ButtonProps } from '@mintter/ui/button';
+import React from 'react'
+import { Button as UIButton, Text, Box } from '@mintter/ui';
 
 export function Root({ children }: any) {
   return (

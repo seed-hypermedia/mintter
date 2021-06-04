@@ -1,3 +1,4 @@
+import React from 'react'
 import { SecurityPack } from './security-pack';
 import { AppProviders } from '../../app-providers';
 import { fireEvent, render, screen } from '@testing-library/react';

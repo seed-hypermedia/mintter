@@ -1,10 +1,6 @@
 import { styled } from '@mintter/ui/stitches.config';
-import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
-import { Icon } from '@mintter/ui/icon';
+import { Box, Text, Icon } from '@mintter/ui';
 import * as ContextMenu from '@radix-ui/react-context-menu';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Slot } from '@radix-ui/react-slot';
 import { ELEMENT_BLOCK } from './create-block-plugin';
 import type { SPRenderElementProps } from '@udecode/slate-plugins-core';
 import type { SlateBlock } from '../types';

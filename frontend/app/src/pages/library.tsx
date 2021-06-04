@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   Switch,
   useRouteMatch,
@@ -11,13 +12,11 @@ import { Link } from '../components/link';
 import { Publications } from './publications';
 import { MyPublications } from './my-publications';
 import { Drafts } from './drafts';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Text } from '@mintter/ui/text';
-import { Separator } from '@components/separator';
-import * as MessageBox from '@components/message-box';
-import { getPath } from '@utils/routes';
-import { Container } from '@components/container';
+import { Box, Button, Text } from '@mintter/ui';
+import { Separator } from '../components/separator';
+import * as MessageBox from '../components/message-box';
+import { getPath } from '../utils/routes';
+import { Container } from '../components/container';
 import type { CSS } from '@mintter/ui/stitches.config';
 import { useMemo } from 'react';
 

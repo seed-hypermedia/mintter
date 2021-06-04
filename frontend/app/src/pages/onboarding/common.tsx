@@ -1,7 +1,6 @@
-import { motion, Variants, Orchestration } from 'framer-motion';
-import { Box, BoxProps } from '@mintter/ui/box';
-import { Button, ButtonProps } from '@mintter/ui/button';
-import { Text, TextProps } from '@mintter/ui/text';
+import React from 'react'
+import { motion, Variants } from 'framer-motion';
+import { Box, BoxProps, Button, ButtonProps, Text, TextProps } from '@mintter/ui';
 
 export type OnboardingStepPropsType = {
   prev: () => void;

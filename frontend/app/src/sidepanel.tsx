@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useReducer } from "react";
+import React, { createContext, useContext, useMemo, useReducer } from "react";
 
 type SidepanelAction =
   | { type: 'SIDEPANEL_TOOGLE' }

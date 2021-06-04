@@ -1,5 +1,6 @@
+import React from 'react'
 import { useFocused, useSelected } from 'slate-react'
-import { Box } from '@mintter/ui/box'
+import { Box } from '@mintter/ui'
 import type { SPRenderElementProps } from '@udecode/slate-plugins-core'
 import { useQuote } from '@mintter/client/hooks'
 import type { EditorTextRun, SlateQuote } from '../types'

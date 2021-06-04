@@ -1,9 +1,9 @@
-import { Box } from '@mintter/ui/box';
+import React from 'react'
+import { Box, Icon } from '@mintter/ui';
 import type { SPRenderElementProps } from '@udecode/slate-plugins-core';
 import { useMemo } from 'react';
 import { MINTTER_LINK_PREFIX } from '.';
-import { Tooltip } from '@components/tooltip';
-import { Icon } from '@mintter/ui/icon';
+import { Tooltip } from '../../components/tooltip';
 import type { SlateLink } from '../types';
 
 export function LinkElement(props: SPRenderElementProps<SlateLink>) {

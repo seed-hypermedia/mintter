@@ -1,8 +1,7 @@
+import React from 'react'
 import { useSuggestedConnections } from '@mintter/client/hooks';
 import { mintter } from '@mintter/client'
-import { Text } from '@mintter/ui/text';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
+import { Text, Box, Button } from '@mintter/ui';
 
 // TODO: fix types
 export function SuggestedConnections({ onConnect }: any) {

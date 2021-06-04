@@ -1,3 +1,4 @@
+import React from 'react'
 import { Welcome } from './welcome';
 import { screen, render } from '@testing-library/react'
 import { AppProviders } from '../../app-providers';

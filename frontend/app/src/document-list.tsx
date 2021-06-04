@@ -1,16 +1,14 @@
+import React, { useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { useMemo, useState } from 'react';
 import { useLocation, useRouteMatch } from 'react-router-dom';
 
-// import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { Alert } from '@mintter/ui/alert';
-import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
+import { Alert, Box, Text } from '@mintter/ui';
 
-import { Avatar } from '@components/avatar';
-import { getPath } from '@utils/routes';
+import { Avatar } from './components/avatar';
+import { Link } from './components/link';
 
-import { Link } from '@components/link';
+import { getPath } from './utils/routes';
+import { Publication, Document } from '@mintter/client';
 
 export function DocumentList({
   data,
@@ -53,9 +51,9 @@ function ListItem({
   onDeleteDocument,
 }: {
   item: {
-    publication: documents.Publication;
+    publication: Publication;
     version: string;
-    document?: documents.Document.AsObject;
+    document?: Document;
   }; // TODO: fix types (Document.AsObject + Document)
   onDeleteDocument?: (version: string) => void;
 }) {
@@ -71,7 +69,7 @@ function ListItem({
     title,
     subtitle,
     author: itemAuthor,
-  } = document as documents.Document.AsObject;
+  } = document as Document;
 
   const theTitle = title ? title : 'Untitled Document';
 
@@ -94,7 +92,7 @@ function ListItem({
   // }
 
   const date = useMemo(
-    () => publication?.getDocument()?.getCreateTime()?.toDate() || new Date(),
+    () => publication.document?.createTime?.getDate() || new Date(),
     [publication],
   );
 

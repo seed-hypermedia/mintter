@@ -1,6 +1,6 @@
-import { Box } from '@mintter/ui/box';
+import { Box } from '@mintter/ui';
 import * as Portal from '@radix-ui/react-portal';
-import {
+import React, {
   forwardRef,
   useEffect,
   useRef,

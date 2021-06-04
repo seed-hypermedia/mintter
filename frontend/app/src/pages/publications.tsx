@@ -1,9 +1,10 @@
+import React from 'react'
 import { useHistory, useRouteMatch } from 'react-router';
 import { DocumentList } from '../document-list';
 import type { WithCreateDraft } from './library';
 import { deletePublication } from '@mintter/client';
 import { useOthersPublicationsList } from '@mintter/client/hooks'
-import { Text } from '@mintter/ui/text';
+import { Text } from '@mintter/ui';
 import * as MessageBox from '../components/message-box';
 
 export const Publications: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {

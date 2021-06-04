@@ -1,8 +1,9 @@
+import React from 'react'
 import { BeatLoader as Spinner } from 'react-spinners';
 // TODO: remove spinner dependency, use a simple version
 
-import { styled } from '@mintter/ui/stitches.config';
-import { Box } from '@mintter/ui/box';
+import { Box } from '@mintter/ui'
+import { styled } from '@mintter/ui/stitches.config'
 
 const AppSpinnerContainer = styled(Box, {
   alignItems: 'center',

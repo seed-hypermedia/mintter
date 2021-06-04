@@ -1,22 +1,19 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router';
 import { useMutation } from 'react-query';
 
 import { useDraft, useAccount } from '@mintter/client/hooks';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Text } from '@mintter/ui/text';
-import { TextField } from '@mintter/ui/text-field';
+import { Box, Button, Text, TextField } from '@mintter/ui';
 
-import { Container } from '@components/container';
-import { Separator } from '@components/separator';
+import { Container } from '../components/container';
+import { Separator } from '../components/separator';
 
 import { useSidePanel } from '../sidepanel';
-import { EditorComponent } from '@mintter/editor/editor-component';
+import { EditorComponent } from '../editor/editor-component';
 import 'show-keys';
 import { useStoreEditorValue } from '@udecode/slate-plugins-core';
 import { toDocument } from '../to-document';
-import type { SlateBlock } from '@mintter/editor/types';
+import type { SlateBlock } from '../editor/types';
 import { ListStyle } from '@mintter/client';
 
 export default function EditorPage() {

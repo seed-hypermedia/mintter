@@ -1,5 +1,6 @@
+import React from 'react'
 import { styled } from '@mintter/ui/stitches.config';
-import { Box } from '@mintter/ui/box';
+import { Box } from '@mintter/ui';
 
 export const Avatar = styled(Box, {
   $$size: '$space$6',

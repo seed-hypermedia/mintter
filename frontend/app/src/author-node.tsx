@@ -1,17 +1,17 @@
-import { lazy } from 'react';
+import React, { lazy } from 'react';
 import { Switch, Route, useRouteMatch, Redirect } from 'react-router-dom';
 import { lazily } from 'react-lazily';
-import { createPath, getPath } from '@utils/routes';
-import { AppSpinner } from '@components/app-spinner';
-import { Topbar } from '@components/topbar';
+import { createPath, getPath } from './utils/routes';
+import { AppSpinner } from './components/app-spinner';
+import { Topbar } from './components/topbar';
 import { useInfo } from '@mintter/client/hooks'
-import { Box } from '@mintter/ui/box';
+import { Box } from '@mintter/ui';
 
-const { OnboardingPage } = lazily(() => import('@pages/onboarding'));
-const Library = lazy(() => import('@pages/library'));
-const Editor = lazy(() => import('@pages/editor'));
-const { Settings } = lazily(() => import('@pages/settings'));
-const Publication = lazy(() => import('@pages/publication'));
+const { OnboardingPage } = lazily(() => import('./pages/onboarding'));
+const Library = lazy(() => import('./pages/library'));
+const Editor = lazy(() => import('./pages/editor'));
+const { Settings } = lazily(() => import('./pages/settings'));
+const Publication = lazy(() => import('./pages/publication'));
 
 export function AuthorNode({ path = '/' }: { path?: string }) {
   const match = useRouteMatch(path)!;

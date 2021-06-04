@@ -1,16 +1,13 @@
+import React from 'react'
 import { Slot } from '@radix-ui/react-slot';
 import { useRef } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Icon } from '@mintter/ui/icon';
-import { Text } from '@mintter/ui/text';
-import { TextField } from '@mintter/ui/text-field';
+import { Box, Button, Icon, Text, TextField } from '@mintter/ui';
 import * as DropdownMenu from '../lib/dropdown-menu';
 
-import { Container } from '@components/container';
-import { getPath } from '@utils/routes';
+import { Container } from './container';
+import { getPath } from '../utils/routes';
 
 import { Link } from './link';
 
