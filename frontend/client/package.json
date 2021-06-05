@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "main": "index.js",
   "license": "MIT",
+  "exports": {
+    "./hooks": "./hooks/index.ts",
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "test": "jest",
     "test:w": "jest --watch",

@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "main": "index.js",
   "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts",
+    "./stitches.config": "./src/stitches.config.ts"
+  },
   "scripts": {
     "test": "jest",
     "test:w": "jest --watch",
