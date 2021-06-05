@@ -1,3 +1,4 @@
+import React from 'react'
 import { styled } from '@mintter/ui/stitches.config';
 import { Box, Text, Icon } from '@mintter/ui';
 import * as ContextMenu from '@radix-ui/react-context-menu';
