@@ -1,37 +1,9 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "ESNext",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
-    ],
-    "allowJs": false,
-    "skipLibCheck": false,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": false,
-    "noEmit": true,
-    "jsx": "react"
+    "esModuleInterop": true
   },
-  "references": [
-    {
-      "path": "../client"
-    },
-    {
-      "path": "../ui"
-    }
-  ],
   "include": [
-    "src"
+    "src/**/*"
   ]
 }
