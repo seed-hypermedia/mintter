@@ -4,7 +4,7 @@ import React, { ComponentProps } from 'react'
 // TODO: import components directly from its component file.
 import { Box } from '../box'
 import { Button } from '../button'
-import { keyframes } from '../../stitches.config'
+import { keyframes } from '../stitches.config'
 import { Text } from '../text'
 
 const showOverlay = keyframes({

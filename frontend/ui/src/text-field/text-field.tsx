@@ -5,7 +5,7 @@ import mergeRefs from 'react-merge-refs'
 import { nanoid } from 'nanoid'
 
 import { Box } from '../box'
-import { styled } from '../../stitches.config'
+import { styled } from '../stitches.config'
 import { Text } from '../text'
 
 const InputContainer = styled(Box, {
