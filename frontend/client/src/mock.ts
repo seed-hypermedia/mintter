@@ -8,16 +8,16 @@ import {
   Block_Type,
   TextRun,
 } from '@mintter/api/documents/v1alpha/documents'
-import faker from 'faker'
+import { internet, lorem, finance } from 'faker'
 import { nanoid } from 'nanoid'
 
 export const createId = (length: number = 8) => nanoid(length)
 
 export function mockProfile(): Profile {
   return {
-    alias: faker.internet.userName(),
-    email: faker.internet.email(),
-    bio: faker.lorem.paragraph(),
+    alias: internet.userName(),
+    email: internet.email(),
+    bio: lorem.paragraph(),
   }
 }
 
@@ -53,11 +53,11 @@ export function mockPublication(): Publication {
 }
 
 export function mockDocument({
-  author = faker.finance.bitcoinAddress(),
+  author = finance.bitcoinAddress(),
   blocks,
   childrenListStyle = ListStyle.NONE,
-  title = faker.lorem.sentence(),
-  subtitle = faker.lorem.sentence(),
+  title = lorem.sentence(),
+  subtitle = lorem.sentence(),
   id = createId(),
 }: Omit<Partial<Document>, 'blocks'> & { blocks?: Block[] } = {}): Document {
   const blockMap = Object.fromEntries(
@@ -107,7 +107,7 @@ export function mockBlock({
 export function mockTextInlineElement(textRun?: TextRun): InlineElement {
   return InlineElement.fromPartial({
     textRun: textRun || {
-      text: faker.lorem.sentence(),
+      text: lorem.sentence(),
       bold: false,
       italic: false,
       underline: false,

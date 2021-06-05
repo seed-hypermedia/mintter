@@ -1,5 +1,4 @@
-import { Block, InlineElement, ListStyle, TextRun } from '@mintter/client';
-import { buildDocument } from '@utils/generate';
+import { Block, InlineElement, ListStyle, TextRun, mock } from '@mintter/client';
 import { toInlineElement, toLink, toTextRun } from './inline-element';
 import { ELEMENT_BLOCK } from './editor/block-plugin';
 import type { SlateBlock } from './editor/types';
@@ -19,7 +18,7 @@ describe('toEditorValue', () => {
       ]
     })
 
-    const doc = buildDocument({
+    const doc = mock.mockDocument({
       blocks: [block],
       id: 'doc-id',
       childrenListStyle: ListStyle.NONE,
@@ -54,7 +53,7 @@ describe('toEditorValue', () => {
       ]
     })
 
-    const doc = buildDocument({
+    const doc = mock.mockDocument({
       blocks: [block],
       id: 'doc-id',
       childrenListStyle: ListStyle.NONE,
@@ -65,7 +64,7 @@ describe('toEditorValue', () => {
           url: 'https://example.test',
           children: [
             toTextRun({
-              text: 'hello world',
+              text: 'hello world'
             }),
           ],
         })
