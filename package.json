@@ -17,7 +17,9 @@
     "clean": "gn gen out"
   },
   "workspaces": [
-    "frontend/*"
+    "frontend/app",
+    "frontend/client",
+    "frontend/ui"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.5.2",

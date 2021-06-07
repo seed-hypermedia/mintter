@@ -1,9 +1,9 @@
 import { Block, InlineElement, ListStyle, TextRun, mock } from '@mintter/client';
 import { toInlineElement, toLink, toTextRun } from './inline-element';
-import { ELEMENT_BLOCK } from './editor/block-plugin';
-import type { SlateBlock } from './editor/types';
+import { ELEMENT_BLOCK } from './block-plugin';
+import type { SlateBlock } from './types';
 import { toEditorValue } from './to-editor-value';
-import { ELEMENT_LINK } from './editor/link-plugin';
+import { ELEMENT_LINK } from './link-plugin';
 
 describe('toEditorValue', () => {
   it('simple document', () => {

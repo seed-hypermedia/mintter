@@ -5,7 +5,7 @@ import {
   toQuote,
   toInlineElement,
 } from './inline-element';
-import type { SlateLink, SlateQuote } from './editor/types';
+import type { SlateLink, SlateQuote } from './types';
 
 describe('TextRun', () => {
   it('simple text', () => {

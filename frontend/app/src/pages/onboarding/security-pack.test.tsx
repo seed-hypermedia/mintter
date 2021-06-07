@@ -8,6 +8,8 @@ const mnemonicTest = ['word-1', 'word-2', 'word-3']
 
 beforeEach(() => {
   const mockGenerateSeed = jest.spyOn(clientMock, 'generateSeed')
+  // TODO: fix types
+  // @ts-ignore
   mockGenerateSeed.mockImplementation(() => ({
     mnemonic: mnemonicTest,
   }))
