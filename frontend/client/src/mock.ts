@@ -11,7 +11,7 @@ import {
 import { internet, lorem, finance } from 'faker'
 import { nanoid } from 'nanoid'
 
-export const createId = (length: number = 8) => nanoid(length)
+export const createId = (length = 8) => nanoid(length)
 
 export function mockProfile(): Profile {
   return {
@@ -26,9 +26,9 @@ export function mockAccount({
   profile = mockProfile(),
   devices = mockDevices(),
 }: {
-  id?: string
-  profile?: Profile
-  devices?: Record<string, Device>
+  id?: string;
+  profile?: Profile;
+  devices?: Record<string, Device>;
 } = {}): Account {
   return Account.fromPartial({
     id,
@@ -77,7 +77,7 @@ export function mockDocument({
 }
 
 type MockBlockOptions = Partial<Block> & {
-  elements?: InlineElement[]
+  elements?: InlineElement[];
 }
 
 export function mockBlock({

@@ -10,16 +10,20 @@
   "scripts": {
     "test": "jest",
     "test:w": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "format": "eslint '*/**/*.{ts,tsx}' --quiet --fix",
+    "lint": "eslint '*/**/*.{ts,tsx}' --quiet"
   },
   "devDependencies": {
     "@types/autosize": "^4.0.0",
     "@types/jest": "^26.0.23",
+    "eslint": "^7.28.0",
     "jest": "^27.0.4",
     "ts-jest": "^27.0.2",
     "typescript": "^4.3.2"
   },
   "dependencies": {
-    "autosize": "^5.0.0"
+    "autosize": "^5.0.0",
+    "eslint": "^7.28.0"
   }
 }
