@@ -17,13 +17,17 @@
   "devDependencies": {
     "@types/autosize": "^4.0.0",
     "@types/jest": "^26.0.23",
+    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/parser": "^4.26.0",
     "eslint": "^7.28.0",
+    "eslint-plugin-react": "^7.24.0",
     "jest": "^27.0.4",
     "ts-jest": "^27.0.2",
     "typescript": "^4.3.2"
   },
   "dependencies": {
     "autosize": "^5.0.0",
-    "eslint": "^7.28.0"
+    "eslint": "^7.28.0",
+    "react": "^17.0.2"
   }
 }
