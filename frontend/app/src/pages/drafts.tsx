@@ -1,4 +1,3 @@
-import React from 'react'
 import { DocumentList } from '../document-list';
 import { deleteDraft } from '@mintter/client'
 import { useDraftsList } from '@mintter/client/hooks'

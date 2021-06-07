@@ -1,4 +1,4 @@
-import {TextField} from './text-field'
+import { TextField } from './text-field'
 
 test('works', () => {
   expect(TextField).toBeDefined()

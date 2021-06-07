@@ -1,4 +1,3 @@
-import React from 'react'
 import { Box, Icon } from '@mintter/ui';
 import type { SPRenderElementProps } from '@udecode/slate-plugins-core';
 import { useMemo } from 'react';

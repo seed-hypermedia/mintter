@@ -1,8 +1,7 @@
-import React from 'react'
-import {Button, Box, TextField, Icon, Text} from '@mintter/ui'
+import { Button, Box, TextField, Icon, Text } from '@mintter/ui'
 import * as Popover from '@radix-ui/react-popover'
-import {Slot} from '@radix-ui/react-slot'
-import {FormEvent, useEffect, useState} from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { FormEvent, useEffect, useState } from 'react'
 import {
   getAbove,
   getPreventDefaultHandler,
@@ -10,11 +9,11 @@ import {
   someNode,
   unwrapNodes,
 } from '@udecode/slate-plugins-common'
-import {SPEditor, useStoreEditorState} from '@udecode/slate-plugins-core'
-import {ELEMENT_LINK} from './create-link-plugin'
-import {Editor, Transforms} from 'slate'
-import {upsertLinkAtSelection} from '@udecode/slate-plugins-link'
-import {isValidUrl} from './is-valid-url'
+import { SPEditor, useStoreEditorState } from '@udecode/slate-plugins-core'
+import { ELEMENT_LINK } from './create-link-plugin'
+import { Editor, Transforms } from 'slate'
+import { upsertLinkAtSelection } from '@udecode/slate-plugins-link'
+import { isValidUrl } from './is-valid-url'
 export function ToolbarLink() {
   const [open, setOpen] = useState(false)
   return (
@@ -38,18 +37,18 @@ export function ToolbarLink() {
   )
 }
 
-function LinkForm({close}: {close: () => void}) {
+function LinkForm({ close }: { close: () => void }) {
   const [link, setLink] = useState('')
   const editor = useStoreEditorState('editor')
   const isLink =
-    !!editor?.selection && someNode(editor, {match: {type: ELEMENT_LINK}})
+    !!editor?.selection && someNode(editor, { match: { type: ELEMENT_LINK } })
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!editor) return
     if (link && isValidUrl(link)) {
       Editor.withoutNormalizing(editor, () => {
-        upsertLinkAtSelection(editor, {url: link, wrap: false})
+        upsertLinkAtSelection(editor, { url: link, wrap: false })
       })
     }
 

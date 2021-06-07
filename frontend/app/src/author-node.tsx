@@ -1,4 +1,4 @@
-import React, { lazy } from 'react';
+import { lazy } from 'react';
 import { Switch, Route, useRouteMatch, Redirect } from 'react-router-dom';
 import { lazily } from 'react-lazily';
 import { createPath, getPath } from './utils/routes';

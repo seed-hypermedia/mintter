@@ -1,10 +1,9 @@
-import React from 'react'
-import {useFocused, useSelected} from 'slate-react'
-import {Box} from '@mintter/ui'
-import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
-import {useQuote} from '@mintter/client/hooks'
-import type {EditorTextRun, SlateQuote} from '../types'
-import {Block} from '@mintter/client'
+import { useFocused, useSelected } from 'slate-react'
+import { Box } from '@mintter/ui'
+import type { SPRenderElementProps } from '@udecode/slate-plugins-core'
+import { useQuote } from '@mintter/client/hooks'
+import type { EditorTextRun, SlateQuote } from '../types'
+import { Block } from '@mintter/client'
 
 export function QuoteElement({
   attributes,
@@ -26,7 +25,7 @@ export function QuoteElement({
   }
 
   if (quote.isSuccess && quote.data) {
-    qRender = toSlateQuote(quote.data).map(({text = ''}, index) => (
+    qRender = toSlateQuote(quote.data).map(({ text = '' }, index) => (
       <span key={index}>{text}</span>
     ))
     return (
@@ -66,9 +65,9 @@ function toSlateQuote(entry: Block): Array<EditorTextRun> {
   //@ts-ignore
   return entry.elementsList.map((element: documents.InlineElement.AsObject) => {
     // assume elements are type textRun for now
-    let node: EditorTextRun = {text: ''}
+    let node: EditorTextRun = { text: '' }
     if (element.textRun) {
-      const {textRun} = element
+      const { textRun } = element
       node.text = textRun.text
       Object.keys(textRun).forEach(
         //@ts-ignore

@@ -1,4 +1,3 @@
-import React from 'react'
 import { BeatLoader as Spinner } from 'react-spinners';
 // TODO: remove spinner dependency, use a simple version
 

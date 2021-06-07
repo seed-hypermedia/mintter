@@ -1,6 +1,6 @@
 import * as Label from '@radix-ui/react-label'
 import autosize from 'autosize'
-import React, { forwardRef, useLayoutEffect, useRef } from 'react'
+import { forwardRef, useLayoutEffect, useRef } from 'react'
 import mergeRefs from 'react-merge-refs'
 import { nanoid } from 'nanoid'
 

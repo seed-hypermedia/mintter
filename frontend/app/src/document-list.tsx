@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { useLocation, useRouteMatch } from 'react-router-dom';
 

@@ -1,33 +1,32 @@
-import React, {useMemo, useState} from 'react'
-import {Box, Button, Text, TextField} from '@mintter/ui'
+import { useMemo, useState } from 'react'
+import { Box, Button, Text, TextField } from '@mintter/ui'
 
-import {useParams} from 'react-router'
-import {useMutation, UseQueryResult} from 'react-query'
+import { useParams } from 'react-router'
+import { useMutation, UseQueryResult } from 'react-query'
 
-import {useDraft, useAccount} from '@mintter/client/hooks'
+import { useDraft, useAccount } from '@mintter/client/hooks'
 
-import {Container} from '@components/container'
-import {Separator} from '@components/separator'
+import { Container } from '../components/container'
+import { Separator } from '../components/separator'
 
-import {useSidePanel} from '../sidepanel'
-import {EditorComponent} from '@mintter/editor/editor-component'
+import { useSidePanel } from '../sidepanel'
+import { EditorComponent } from '../editor/editor-component'
 import 'show-keys'
-import {useStoreEditorValue} from '@udecode/slate-plugins-core'
-import {toDocument} from '../to-document'
-import type {SlateBlock} from '@mintter/editor/types'
-import {ListStyle, Document} from '@mintter/client'
-import {toEditorValue} from '../to-editor-value'
+import { toDocument } from '../to-document'
+import type { SlateBlock } from '../editor/types'
+import { ListStyle, Document } from '@mintter/client'
+import { toEditorValue } from '../to-editor-value'
 
 export default function EditorPage() {
-  const {docId} = useParams<{docId: string}>()
-  const {isLoading, isError, error, data} = useMintterEditor(docId)
-  const {data: account} = useAccount('')
+  const { docId } = useParams<{ docId: string }>()
+  const { isLoading, isError, error, data } = useMintterEditor(docId)
+  const { data: account } = useAccount('')
 
   const [title, setTitle] = useState<string>('')
   const [subtitle, setSubtitle] = useState<string>('')
 
   // publish
-  const {mutateAsync: publish} = useMutation(async () => {
+  const { mutateAsync: publish } = useMutation(async () => {
     const document = toDocument({
       id: docId,
       author: account?.id as string,
@@ -38,11 +37,11 @@ export default function EditorPage() {
       childrenListStyle: ListStyle.NONE,
     })
     // publishDraft
-    console.log({document})
+    console.log({ document })
   })
 
   // sidepanel
-  const {isSidepanelOpen, sidepanelObjects, sidepanelSend} = useSidePanel()
+  const { isSidepanelOpen, sidepanelObjects, sidepanelSend } = useSidePanel()
 
   function saveDocument() {
     publish()
@@ -87,12 +86,12 @@ export default function EditorPage() {
         </Button>
         <Button
           size="1"
-          onClick={() => sidepanelSend?.({type: 'SIDEPANEL_TOOGLE'})}
+          onClick={() => sidepanelSend?.({ type: 'SIDEPANEL_TOOGLE' })}
         >
           toggle sidepanel
         </Button>
       </Box>
-      <Container css={{gridArea: 'maincontent', marginBottom: 300}}>
+      <Container css={{ gridArea: 'maincontent', marginBottom: 300 }}>
         <TextField
           // TODO: Fix types
           // @ts-ignore
@@ -137,7 +136,7 @@ export default function EditorPage() {
           }}
         />
         <Separator />
-        <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
+        <Box css={{ mx: '-$4', width: 'calc(100% + $7)' }}>
           <EditorComponent initialValue={data.editorValue} />
         </Box>
       </Container>
@@ -164,7 +163,7 @@ function useMintterEditor(docId: string): Omit<
   UseQueryResult<Document>,
   'data'
 > & {
-  data?: Document & {editorValue: Array<SlateBlock>}
+  data?: Document & { editorValue: Array<SlateBlock> }
 } {
   const draftQuery = useDraft(docId)
 

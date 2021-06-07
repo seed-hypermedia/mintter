@@ -1,4 +1,3 @@
-import React from 'react'
 import { styled } from '@mintter/ui/stitches.config';
 import { Box } from '@mintter/ui';
 

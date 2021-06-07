@@ -1,4 +1,3 @@
-import React from 'react'
 import { Box } from '@mintter/ui';
 import type { AutoformatRule } from '@udecode/slate-plugins-autoformat';
 import {

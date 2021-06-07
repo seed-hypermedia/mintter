@@ -1,4 +1,3 @@
-import React from 'react'
 import { lazily } from 'react-lazily';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 

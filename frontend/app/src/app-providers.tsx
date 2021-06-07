@@ -1,4 +1,4 @@
-import React, { Suspense, FC } from 'react';
+import { Suspense, FC } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';

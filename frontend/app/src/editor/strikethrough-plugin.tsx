@@ -1,4 +1,3 @@
-import React from 'react'
 import { css } from '@mintter/ui/stitches.config';
 import type { AutoformatRule } from '@udecode/slate-plugins-autoformat';
 import {

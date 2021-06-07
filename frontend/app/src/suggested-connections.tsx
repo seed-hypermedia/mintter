@@ -1,4 +1,3 @@
-import React from 'react'
 import { useSuggestedConnections } from '@mintter/client/hooks';
 import { mintter } from '@mintter/client'
 import { Text, Box, Button } from '@mintter/ui';

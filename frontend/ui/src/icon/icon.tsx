@@ -1,5 +1,5 @@
 import * as AccessibleIcon from '@radix-ui/react-accessible-icon'
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { styled } from '../stitches.config'
 

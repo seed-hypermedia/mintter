@@ -1,4 +1,3 @@
-import React from 'react'
 import { Device } from '@mintter/client';
 import { useAccount } from '@mintter/client/hooks'
 import { Box, Text } from '@mintter/ui';

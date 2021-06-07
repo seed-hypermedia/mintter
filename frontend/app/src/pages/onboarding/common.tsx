@@ -1,4 +1,3 @@
-import React from 'react'
 import { motion, Variants } from 'framer-motion';
 import { Box, BoxProps, Button, ButtonProps, Text, TextProps } from '@mintter/ui';
 

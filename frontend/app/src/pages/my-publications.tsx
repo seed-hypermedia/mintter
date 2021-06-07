@@ -1,4 +1,3 @@
-import React from 'react'
 import { useHistory, useRouteMatch } from 'react-router';
 import { DocumentList } from '../document-list';
 import { deletePublication } from '@mintter/client';

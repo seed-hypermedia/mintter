@@ -1,5 +1,5 @@
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
-import React, { ComponentProps } from 'react'
+import { ComponentProps } from 'react'
 
 // TODO: import components directly from its component file.
 import { Box } from '../box'

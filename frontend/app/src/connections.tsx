@@ -1,4 +1,3 @@
-import React from 'react'
 import { Button, Box, Text } from '@mintter/ui';
 // TODO: fix types
 export function Connections({ onConnect }: any) {

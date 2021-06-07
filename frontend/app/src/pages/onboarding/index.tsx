@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Machine } from 'xstate';
 
 import { Box } from '@mintter/ui';

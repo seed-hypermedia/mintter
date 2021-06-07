@@ -1,4 +1,3 @@
-import React from 'react'
 import { Button as UIButton, Text, Box } from '@mintter/ui';
 
 export function Root({ children }: any) {

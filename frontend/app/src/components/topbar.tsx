@@ -1,4 +1,3 @@
-import React from 'react'
 import { Slot } from '@radix-ui/react-slot';
 import { useRef } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';

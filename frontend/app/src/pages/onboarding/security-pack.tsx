@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import toast from 'react-hot-toast';
 import { useQuery } from 'react-query';

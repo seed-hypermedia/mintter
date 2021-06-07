@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react'
+import { useMemo, useEffect } from 'react'
 import { useHistory, useParams } from 'react-router-dom';
 import slugify from 'slugify';
 import type { Publication as TPublication, Document } from '@mintter/client'
