@@ -1,4 +1,4 @@
-import createCss, {defaultThemeMap, StitchesCss} from '@stitches/react'
+import createCss, { defaultThemeMap, StitchesCss } from '@stitches/react'
 
 export * from '@stitches/core'
 
@@ -138,10 +138,10 @@ const stitches = createCss({
   // @ts-ignore
   media: {},
   utils: {
-    marginHorizontal: () => val => ({marginLeft: val, marginRight: val}),
-    marginVertical: () => val => ({marginTop: val, marginBottom: val}),
-    paddingHorizontal: () => val => ({paddingLeft: val, paddingRight: val}),
-    paddingVertical: () => val => ({paddingTop: val, paddingBottom: val}),
+    marginHorizontal: () => val => ({ marginLeft: val, marginRight: val }),
+    marginVertical: () => val => ({ marginTop: val, marginBottom: val }),
+    paddingHorizontal: () => val => ({ paddingLeft: val, paddingRight: val }),
+    paddingVertical: () => val => ({ paddingTop: val, paddingBottom: val }),
   },
   themeMap: {
     ...defaultThemeMap,
@@ -300,83 +300,96 @@ export const darkTheme = theme('dark-theme', {
   },
 })
 
+import basierCircleRegular from './fonts/basier-circle/regular.woff2'
+import basierCircleRegularItalic from './fonts/basier-circle/regular-italic.woff2'
+import basierCircleMedium from './fonts/basier-circle/medium.woff2'
+import basierCircleMediumItalic from './fonts/basier-circle/medium-italic.woff2'
+import basierCircleBold from './fonts/basier-circle/bold.woff2'
+import basierCircleBoldItalic from './fonts/basier-circle/bold-italic.woff2'
+import loraRegular from './fonts/lora/regular.ttf'
+import loraRegularItalic from './fonts/lora/regular-italic.ttf'
+import loraMedium from './fonts/lora/medium.ttf'
+import loraMediumItalic from './fonts/lora/medium-italic.ttf'
+import loraBold from './fonts/lora/bold.ttf'
+import loraBoldIatlic from './fonts/lora/bold-italic.ttf'
+
 export const globalStyles = global({
   '@font-face': [
     {
       fontFamily: 'Basier Circle',
       src:
-        "url('/fonts/basier-circle/regular.eot'), url('/fonts/basier-circle/regular.eot?#iefix') format('embedded-opentype'), url('/fonts/basier-circle/regular.woff2') format('woff2'), url('/fonts/basier-circle/regular.woff') format('woff'), url('/fonts/basier-circle/regular.ttf') format('truetype')",
+        `url('${basierCircleRegular}') format('woff2')`,
       fontWeight: '400',
       fontStyle: 'normal',
     },
     {
       fontFamily: 'Basier Circle',
       src:
-        "url('/fonts/basier-circle/regular-italic.eot'), url('/fonts/basier-circle/regular-italic.eot?#iefix') format('embedded-opentype'), url('/fonts/basier-circle/regular-italic.woff2') format('woff2'), url('/fonts/basier-circle/regular-italic.woff') format('woff'), url('/fonts/basier-circle/regular-italic.ttf') format('truetype')",
+        `url('${basierCircleRegularItalic}') format('woff2')`,
       fontWeight: '400',
       fontStyle: 'italic',
     },
     {
       fontFamily: 'Basier Circle',
       src:
-        "url('/fonts/basier-circle/medium.eot'), url('/fonts/basier-circle/medium.eot?#iefix') format('embedded-opentype'), url('/fonts/basier-circle/medium.woff2') format('woff2'), url('/fonts/basier-circle/medium.woff') format('woff'), url('/fonts/basier-circle/medium.ttf') format('truetype')",
+        `url('${basierCircleMedium}') format('woff2')`,
       fontWeight: '500',
       fontStyle: 'normal',
     },
     {
       fontFamily: 'Basier Circle',
       src:
-        "url('/fonts/basier-circle/medium-italic.eot'), url('/fonts/basier-circle/medium-italic.eot?#iefix') format('embedded-opentype'), url('/fonts/basier-circle/medium-italic.woff2') format('woff2'), url('/fonts/basier-circle/medium-italic.woff') format('woff'), url('/fonts/basier-circle/medium-italic.ttf') format('truetype')",
+        `url('${basierCircleMediumItalic}') format('woff2')`,
       fontWeight: '500',
       fontStyle: 'italic',
     },
     {
       fontFamily: 'Basier Circle',
       src:
-        "url('/fonts/basier-circle/bold.eot'), url('/fonts/basier-circle/bold.eot?#iefix') format('embedded-opentype'), url('/fonts/basier-circle/bold.woff2') format('woff2'), url('/fonts/basier-circle/bold.woff') format('woff'), url('/fonts/basier-circle/bold.ttf') format('truetype')",
+        `url('${basierCircleBold}') format('woff2')`,
       fontWeight: '700',
       fontStyle: 'normal',
     },
     {
       fontFamily: 'Basier Circle',
       src:
-        "url('/fonts/basier-circle/bold-italic.eot'), url('/fonts/basier-circle/bold-italic.eot?#iefix') format('embedded-opentype'), url('/fonts/basier-circle/bold-italic.woff2') format('woff2'), url('/fonts/basier-circle/bold-italic.woff') format('woff'), url('/fonts/basier-circle/bold-italic.ttf') format('truetype')",
+        `url('${basierCircleBoldItalic}') format('woff2')`,
       fontWeight: '700',
       fontStyle: 'italic',
     },
     {
       fontFamily: 'Lora',
-      src: "url('/fonts/lora/regular.ttf') format('truetype')",
+      src: `url('${loraRegular}') format('truetype')`,
       fontWeight: '400',
       fontStyle: 'normal',
     },
     {
       fontFamily: 'Lora',
-      src: "url('/fonts/lora/regular-italic.ttf') format('truetype')",
+      src: `url('${loraRegularItalic}') format('truetype')`,
       fontWeight: '400',
       fontStyle: 'italic',
     },
     {
       fontFamily: 'Lora',
-      src: "url('/fonts/lora/medium.ttf') format('truetype')",
+      src: `url('${loraMedium}') format('truetype')`,
       fontWeight: '500',
       fontStyle: 'normal',
     },
     {
       fontFamily: 'Lora',
-      src: "url('/fonts/lora/medium-italic.ttf') format('truetype')",
+      src: `url('${loraMediumItalic}') format('truetype')`,
       fontWeight: '500',
       fontStyle: 'italic',
     },
     {
       fontFamily: 'Lora',
-      src: "url('/fonts/lora/bold.ttf') format('truetype')",
+      src: `url('${loraBold}') format('truetype')`,
       fontWeight: '700',
       fontStyle: 'normal',
     },
     {
       fontFamily: 'Lora',
-      src: "url('/fonts/lora/bold-italic.ttf') format('truetype')",
+      src: `url('${loraBoldIatlic}') format('truetype')`,
       fontWeight: '700',
       fontStyle: 'italic',
     },
