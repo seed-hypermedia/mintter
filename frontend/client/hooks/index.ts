@@ -1,5 +1,5 @@
-import {UseQueryOptions, useQuery, useQueryClient} from 'react-query'
-import {useMemo} from 'react'
+import { useQuery, useQueryClient, UseQueryResult } from 'react-query'
+import { useMemo } from 'react'
 import {
   Account,
   getAccount,
@@ -12,11 +12,10 @@ import {
   listPeerAddrs,
   Publication,
   getPublication,
-  Block,
+  Block
 } from '../src'
-import {mockBlock, mockTextInlineElement} from '../src/mock'
-
-export type UseAccountOptions = UseQueryOptions<Account, unknown, Account>
+import { mockBlock, mockTextInlineElement } from '../src/mock'
+import type { HookOptions } from './types'
 
 /**
  *
@@ -26,11 +25,11 @@ export type UseAccountOptions = UseQueryOptions<Account, unknown, Account>
  */
 export function useAccount(
   accountId: string = '',
-  options: UseAccountOptions = {},
+  options: HookOptions<Account> = {},
 ) {
   const accountQuery = useQuery(
     ['Account', accountId],
-    () => getAccount(accountId),
+    () => getAccount(accountId, options.rpc as any),
     options,
   )
 
@@ -42,15 +41,17 @@ export function useAccount(
   }
 }
 
-export type UseInfoOptions = UseQueryOptions<Info, unknown, Info>
-
 /**
  *
  * @param options
  * @returns
  */
-export function useInfo(options: UseInfoOptions = {}) {
-  const infoQuery = useQuery(['GetInfo'], getInfo, options)
+export function useInfo(options: HookOptions<Info> = {}) {
+  const infoQuery = useQuery(
+    ['GetInfo'],
+    () => getInfo(options.rpc as any),
+    options
+  )
 
   const data = useMemo(() => infoQuery.data, [infoQuery.data])
 
@@ -60,8 +61,6 @@ export function useInfo(options: UseInfoOptions = {}) {
   }
 }
 
-export type UseDocumentOptions = UseQueryOptions<Document, unknown, Document>
-
 /**
  *
  * @param documentId
@@ -70,11 +69,11 @@ export type UseDocumentOptions = UseQueryOptions<Document, unknown, Document>
  */
 export function useDocument(
   documentId: string,
-  options: UseDocumentOptions = {},
+  options: HookOptions<Document> = {},
 ) {
   const documentQuery = useQuery<Document>(
     ['Document', documentId],
-    () => getDocument(documentId),
+    () => getDocument(documentId, options.rpc as any),
     {
       enabled: !!documentId,
     },
@@ -88,8 +87,6 @@ export function useDocument(
   }
 }
 
-export type UseDraftOptions = UseQueryOptions<Document, unknown, Document>
-
 /**
  *
  * @param draftId
@@ -98,7 +95,7 @@ export type UseDraftOptions = UseQueryOptions<Document, unknown, Document>
  */
 export function useDraft(
   draftId: string,
-  options = {},
+  options: HookOptions<Document> = {},
 ): UseQueryResult<Document> {
   if (!draftId) {
     throw new Error(`useDraft: parameter "draftId" is required`)
@@ -106,17 +103,16 @@ export function useDraft(
 
   if (Array.isArray(draftId)) {
     throw new Error(
-      `Impossible render: You are trying to access a draft passing ${
-        draftId.length
+      `Impossible render: You are trying to access a draft passing ${draftId.length
       } draft Ids => ${draftId.map(q => q).join(', ')}`,
     )
   }
 
   return useQuery(
     ['Draft', draftId],
-    async ({queryKey}) => {
-      const [_key, draftId] = queryKey
-      return getDraft(draftId)
+    async ({ queryKey }) => {
+      const [_key, draftId] = queryKey as [string, string]
+      return getDraft(draftId, options.rpc as any)
     },
     {
       refetchOnWindowFocus: false,
@@ -139,12 +135,6 @@ export function useDraftsList(options = {}) {
   }
 }
 
-export type UsePeerAddrsOptions = UseQueryOptions<
-  PeerInfo['addrs'],
-  unknown,
-  PeerInfo['addrs']
->
-
 /**
  *
  * @param peerId
@@ -153,7 +143,7 @@ export type UsePeerAddrsOptions = UseQueryOptions<
  */
 export function usePeerAddrs(
   peerId?: string,
-  options: UsePeerAddrsOptions = {},
+  options: HookOptions<PeerInfo['addrs']> = {},
 ) {
   const queryClient = useQueryClient()
 
@@ -167,7 +157,7 @@ export function usePeerAddrs(
 
   const peerAddrsQuery = useQuery(
     ['PeerAddrs', requestId],
-    () => listPeerAddrs(requestId),
+    () => listPeerAddrs(requestId, options.rpc as any),
     {
       enabled: !!requestId,
       ...options,
@@ -186,7 +176,7 @@ export function usePeerAddrs(
  *
  * @deprecated
  */
-export function useSuggestedConnections({page} = {page: 0}, options = {}) {
+export function useSuggestedConnections({ page } = { page: 0 }, options = {}) {
   return {
     data: [],
     isLoading: false,
@@ -195,12 +185,6 @@ export function useSuggestedConnections({page} = {page: 0}, options = {}) {
     error: null,
   }
 }
-
-export type UsePublicationOptions = UseQueryOptions<
-  Publication,
-  unknown,
-  Publication
->
 
 /**
  *
@@ -212,17 +196,13 @@ export type UsePublicationOptions = UseQueryOptions<
 export function usePublication(
   publicationId: string,
   version?: string,
-  options: UsePublicationOptions = {},
+  options: HookOptions<Publication> = {},
 ) {
   const publicationQuery = useQuery(
     ['Publication', publicationId, version],
-    async ({queryKey}) => {
-      const [_key, publicationId, version] = queryKey as [
-        string,
-        string,
-        string,
-      ]
-      return getPublication(publicationId, version)
+    async ({ queryKey }) => {
+      const [_key, publicationId, version] = queryKey as [string, string, string]
+      return getPublication(publicationId, version, options.rpc as any)
     },
     {
       refetchOnWindowFocus: false,
@@ -266,15 +246,13 @@ export function useMyPublicationsList(options = {}) {
   }
 }
 
-export type UseQuoteOptions = UseQueryOptions<Block, unknown, Block>
-
 /**
  *
  * @param url
  * @param options
  * @returns
  */
-export function useQuote(url: string, options: UseQuoteOptions = {}) {
+export function useQuote(url: string, options: HookOptions<Block> = {}) {
   const [, blockId] = url.split('/')
 
   console.warn('called mocked function "useQuote"')

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2021",
+    "target": "ESNext",
     "lib": [
       "DOM",
       "DOM.Iterable",
@@ -15,7 +15,8 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "importsNotUsedAsValues": "error"
   },
   "exclude": [
     "node_modules",

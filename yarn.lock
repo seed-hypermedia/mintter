@@ -2305,6 +2305,11 @@
   resolved "https://registry.yarnpkg.com/@types/faker/-/faker-5.5.6.tgz#039b700a9d8ad9150ecc842bf5e717e2027b6f75"
   integrity sha512-UCRj0kLg4sXs2XFVm48OU/wIjyJZkpRkwxhRGVQb5l5GmemkeW22WTz9iiDhYPBUqTzDsIWzhFRuF/4DD5+q2Q==
 
+"@types/google-protobuf@^3.15.2":
+  version "3.15.2"
+  resolved "https://registry.yarnpkg.com/@types/google-protobuf/-/google-protobuf-3.15.2.tgz#70753e948cabeb416d71299dc35c3f562a10fb0f"
+  integrity sha512-ubeqvw7sl6CdgeiIilsXB2jIFoD/D0F+/LIEp7xEBEXRNtDJcf05FRINybsJtL7GlkWOUVn6gJs2W9OF+xI6lg==
+
 "@types/graceful-fs@^4.1.2":
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/@types/graceful-fs/-/graceful-fs-4.1.5.tgz#21ffba0d98da4350db64891f92a9e5db3cdb4e15"
@@ -5918,6 +5923,11 @@ good-listener@^1.2.2:
   integrity sha1-1TswzfkxPf+33JoNR3CWqm0UXFA=
   dependencies:
     delegate "^3.1.2"
+
+google-protobuf@^3.17.2:
+  version "3.17.2"
+  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.17.2.tgz#7708eec9cf4a4dcdb624201f1ba1045994a6c22e"
+  integrity sha512-LlFVMhSkNy6C1MakEjiwbLxq5w+V+Go+mvt2EUoysrp8gXl903ic2W/3BwzM4/WnDMJP+u7UO2efUSl/0CJMzA==
 
 graceful-fs@^4.1.2, graceful-fs@^4.1.5, graceful-fs@^4.1.6, graceful-fs@^4.2.0, graceful-fs@^4.2.4:
   version "4.2.6"
@@ -9783,6 +9793,15 @@ react-query@^3.16.0:
   version "3.16.0"
   resolved "https://registry.yarnpkg.com/react-query/-/react-query-3.16.0.tgz#8de1556aabb3d200d0f8eeb74ce2b0b3dd0a0a51"
   integrity sha512-YOvI8mO9WG+r4XsyJinjlDMiV5IewUWUcTv2J7z6bIP3KOFvgT6k6HM8vQouz4hPnme7Ktq9j5e7LarUqgJXFQ==
+  dependencies:
+    "@babel/runtime" "^7.5.5"
+    broadcast-channel "^3.4.1"
+    match-sorter "^6.0.2"
+
+react-query@^3.16.1:
+  version "3.16.1"
+  resolved "https://registry.yarnpkg.com/react-query/-/react-query-3.16.1.tgz#0bb9c5c45a74e14b5e204218fa602fe1a1065976"
+  integrity sha512-dof8XXSZ7HprfzvpbJE+YZrhUXcQYxy1j+NU8ZPYpKKDF79wlZAke+GyYhQ0b6SuOFp8ZpVXSpdD4AL3lxmeXQ==
   dependencies:
     "@babel/runtime" "^7.5.5"
     broadcast-channel "^3.4.1"

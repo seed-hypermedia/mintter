@@ -1,3 +1,5 @@
+export const MINTTER_API_URL_DEFAULT = 'http://localhost:55001'
+
 export {
   GetAccountRequest,
   ListAccountsRequest,
