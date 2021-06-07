@@ -1,7 +1,7 @@
-const { pathsToModuleNameMapper } = require('ts-jest/utils')
+const {pathsToModuleNameMapper} = require('ts-jest/utils')
 // In the following statement, replace `./tsconfig` with the path to your `tsconfig` file
 // which contains the path mapping (ie the `compilerOptions.paths` option):
-const { compilerOptions } = require('../../tsconfig')
+const {compilerOptions} = require('../../tsconfig')
 
 module.exports = {
   preset: 'ts-jest',
@@ -11,5 +11,12 @@ module.exports = {
       isolatedModules: true,
     },
   },
-  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/../../' })
-};
+  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
+    prefix: '<rootDir>/../../',
+  }),
+  watchPlugins: [
+    'jest-watch-typeahead/filename',
+    'jest-watch-typeahead/testname',
+  ],
+  setupFilesAfterEnv: ['<rootDir>/src/test/setupTests.ts'],
+}
