@@ -24,7 +24,7 @@ import type { HookOptions } from './types'
  * @returns
  */
 export function useAccount(
-  accountId: string = '',
+  accountId = '',
   options: HookOptions<Account> = {},
 ) {
   const accountQuery = useQuery(
@@ -102,10 +102,11 @@ export function useDraft(
   }
 
   if (Array.isArray(draftId)) {
-    throw new Error(
-      `Impossible render: You are trying to access a draft passing ${draftId.length
-      } draft Ids => ${draftId.map(q => q).join(', ')}`,
-    )
+    throw new Error('Impossible render')
+    // throw new Error(
+    //   `Impossible render: You are trying to access a draft passing ${draftId.length
+    //   } draft Ids => ${draftId.map(q => q).join(', ')}`,
+    // )
   }
 
   return useQuery(

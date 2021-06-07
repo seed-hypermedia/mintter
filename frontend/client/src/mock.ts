@@ -21,6 +21,14 @@ export function mockProfile(): Profile {
   }
 }
 
+export function mockDevices(): Record<string, Device> {
+  return {
+    '1': Device.fromPartial({ peerId: '1' }),
+    '2': Device.fromPartial({ peerId: '2' }),
+    '3': Device.fromPartial({ peerId: '3' }),
+  }
+}
+
 export function mockAccount({
   id = createId(),
   profile = mockProfile(),
@@ -37,43 +45,19 @@ export function mockAccount({
   })
 }
 
-export function mockDevices(): Record<string, Device> {
-  return {
-    '1': Device.fromPartial({ peerId: '1' }),
-    '2': Device.fromPartial({ peerId: '2' }),
-    '3': Device.fromPartial({ peerId: '3' }),
-  }
-}
-
-export function mockPublication(): Publication {
-  return Publication.fromPartial({
-    document: mockDocument(),
-    version: createId(),
+export function mockTextInlineElement(textRun?: TextRun): InlineElement {
+  return InlineElement.fromPartial({
+    textRun: textRun || {
+      text: lorem.sentence(),
+      bold: false,
+      italic: false,
+      underline: false,
+      strikethrough: false,
+      code: false,
+      linkKey: '',
+      blockquote: false,
+    },
   })
-}
-
-export function mockDocument({
-  author = finance.bitcoinAddress(),
-  blocks,
-  childrenListStyle = ListStyle.NONE,
-  title = lorem.sentence(),
-  subtitle = lorem.sentence(),
-  id = createId(),
-}: Omit<Partial<Document>, 'blocks'> & { blocks?: Block[] } = {}): Document {
-  const blockMap = Object.fromEntries(
-    (blocks || [mockBlock(), mockBlock(), mockBlock()])
-      .map(block => [block.id, block])
-  )
-
-  return Document.fromPartial({
-    id,
-    title,
-    subtitle,
-    author,
-    childrenListStyle,
-    blocks: blockMap,
-    children: Object.values(blockMap).map(b => b.id)
-  });
 }
 
 type MockBlockOptions = Partial<Block> & {
@@ -104,17 +88,33 @@ export function mockBlock({
   })
 }
 
-export function mockTextInlineElement(textRun?: TextRun): InlineElement {
-  return InlineElement.fromPartial({
-    textRun: textRun || {
-      text: lorem.sentence(),
-      bold: false,
-      italic: false,
-      underline: false,
-      strikethrough: false,
-      code: false,
-      linkKey: '',
-      blockquote: false,
-    },
+export function mockDocument({
+  author = finance.bitcoinAddress(),
+  blocks,
+  childrenListStyle = ListStyle.NONE,
+  title = lorem.sentence(),
+  subtitle = lorem.sentence(),
+  id = createId(),
+}: Omit<Partial<Document>, 'blocks'> & { blocks?: Block[] } = {}): Document {
+  const blockMap = Object.fromEntries(
+    (blocks || [mockBlock(), mockBlock(), mockBlock()])
+      .map(block => [block.id, block])
+  )
+
+  return Document.fromPartial({
+    id,
+    title,
+    subtitle,
+    author,
+    childrenListStyle,
+    blocks: blockMap,
+    children: Object.values(blockMap).map(b => b.id)
+  });
+}
+
+export function mockPublication(): Publication {
+  return Publication.fromPartial({
+    document: mockDocument(),
+    version: createId(),
   })
 }
