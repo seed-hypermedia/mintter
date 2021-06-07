@@ -18,7 +18,7 @@ async function renderWelcomeScreen({
   mnemonic = mnemonicTest,
   ...renderOptions
 }: {
-  mnemonic: Array<string>
+  mnemonic: Array<string>;
 } = {}) {
   const route = '/welcome'
 

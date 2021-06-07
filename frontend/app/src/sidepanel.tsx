@@ -84,7 +84,7 @@ const initialReducerState: SidepanelReducerState = {
 };
 
 interface SidePanelProviderProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export const SidePanelProvider = ({ children }: SidePanelProviderProps): JSX.Element => {

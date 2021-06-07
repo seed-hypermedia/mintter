@@ -10,7 +10,7 @@ import type {ReactEditor} from 'slate-react'
 import {ELEMENT_LINK, MINTTER_LINK_PREFIX} from './create-link-plugin'
 
 export interface WithMintterLinkOptions {
-  menu?: MenuStateReturn
+  menu?: MenuStateReturn;
 }
 
 export function withMintterLink(

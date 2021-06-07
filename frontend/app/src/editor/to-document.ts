@@ -5,12 +5,12 @@ import type { SlateBlock, EditorTextRun } from './editor/types'
 import { toInlineElement, toQuote, toTextRun, toLink } from './inline-element'
 
 export type ToDocumentProps = {
-  id: string
-  title?: string
-  subtitle?: string
-  author: string
-  blocks: Array<SlateBlock>
-  childrenListStyle: ListStyle
+  id: string;
+  title?: string;
+  subtitle?: string;
+  author: string;
+  blocks: Array<SlateBlock>;
+  childrenListStyle: ListStyle;
 }
 
 export function toDocument({
