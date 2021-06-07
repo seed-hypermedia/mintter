@@ -29,7 +29,6 @@
     "clean": "gn gen out"
   },
   "workspaces": [
-    "api/ts",
     "frontend/*"
   ],
   "devDependencies": {

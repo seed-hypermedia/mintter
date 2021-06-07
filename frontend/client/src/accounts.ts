@@ -1,6 +1,6 @@
-import { AccountsClientImpl, GetAccountRequest, ListAccountsRequest, GrpcWebImpl } from '@mintter/api/accounts/v1alpha/accounts'
-import type { Account, Profile } from '@mintter/api/accounts/v1alpha/accounts'
-import { GenSeedRequest, RegisterRequest, DaemonClientImpl } from '@mintter/api/daemon/v1alpha/daemon'
+import { AccountsClientImpl, GetAccountRequest, ListAccountsRequest, GrpcWebImpl } from '../.generated/accounts/v1alpha/accounts'
+import type { Account, Profile } from '../.generated/accounts/v1alpha/accounts'
+import { GenSeedRequest, RegisterRequest, DaemonClientImpl } from '../.generated/daemon/v1alpha/daemon'
 import { MINTTER_API_URL_DEFAULT } from '.'
 
 /**

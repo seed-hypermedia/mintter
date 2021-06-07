@@ -1,5 +1,5 @@
-import { DeletePublicationRequest, ListPublicationsResponse, PublicationsClientImpl, GrpcWebImpl } from "@mintter/api/documents/v1alpha/documents";
-import type { Publication, DocumentView } from '@mintter/api/documents/v1alpha/documents'
+import { DeletePublicationRequest, ListPublicationsResponse, PublicationsClientImpl, GrpcWebImpl } from "../.generated/documents/v1alpha/documents";
+import type { Publication, DocumentView } from '../.generated/documents/v1alpha/documents'
 import { mockPublication } from "./mock";
 import { MINTTER_API_URL_DEFAULT } from ".";
 

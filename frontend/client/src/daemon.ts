@@ -1,4 +1,4 @@
-import { DaemonClientImpl, GetInfoRequest, GrpcWebImpl } from '@mintter/api/daemon/v1alpha/daemon'
+import { DaemonClientImpl, GetInfoRequest, GrpcWebImpl } from '../.generated/daemon/v1alpha/daemon'
 import { MINTTER_API_URL_DEFAULT } from '.'
 
 /**

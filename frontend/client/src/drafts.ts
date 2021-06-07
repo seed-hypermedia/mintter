@@ -1,5 +1,5 @@
-import { DraftsClientImpl, ListDraftsResponse, PublishDraftRequest, GrpcWebImpl } from '@mintter/api/documents/v1alpha/documents'
-import type { Document, DocumentView } from '@mintter/api/documents/v1alpha/documents'
+import { DraftsClientImpl, ListDraftsResponse, PublishDraftRequest, GrpcWebImpl } from '../.generated/documents/v1alpha/documents'
+import type { Document, DocumentView } from '../.generated/documents/v1alpha/documents'
 import { mockDocument } from './mock'
 import { MINTTER_API_URL_DEFAULT } from '.';
 

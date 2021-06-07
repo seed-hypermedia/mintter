@@ -1,5 +1,5 @@
-import { GetPeerInfoRequest, NetworkingClientImpl, GrpcWebImpl } from '@mintter/api/networking/v1alpha/networking'
-import type { PeerInfo } from '@mintter/api/networking/v1alpha/networking'
+import { GetPeerInfoRequest, NetworkingClientImpl, GrpcWebImpl } from '../.generated/networking/v1alpha/networking'
+import type { PeerInfo } from '../.generated/networking/v1alpha/networking'
 import { MINTTER_API_URL_DEFAULT } from '.'
 
 /**

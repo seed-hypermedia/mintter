@@ -11,7 +11,7 @@ export {
   Device,
   DeviceRegistered,
   ProfileUpdated
-} from '@mintter/api/accounts/v1alpha/accounts'
+} from '../.generated/accounts/v1alpha/accounts'
 export * from './accounts'
 
 export {
@@ -21,7 +21,7 @@ export {
   RegisterResponse,
   Info,
   GetInfoRequest
-} from '@mintter/api/daemon/v1alpha/daemon'
+} from '../.generated/daemon/v1alpha/daemon'
 export * from './daemon'
 
 export {
@@ -38,7 +38,7 @@ export {
   PeerInfo,
   ObjectDiscoveryStatus,
   GetObjectDiscoveryStatusRequest
-} from '@mintter/api/networking/v1alpha/networking'
+} from '../.generated/networking/v1alpha/networking'
 export * from './networking'
 
 export {
@@ -71,12 +71,12 @@ export {
   TextRun,
   Image,
   Quote
-} from '@mintter/api/documents/v1alpha/documents'
+} from '../.generated/documents/v1alpha/documents'
 export * from './documents'
 export * from './drafts'
 export * from './publications'
 
-export * as mintter from '@mintter/api/v2/mintter'
-export * as documents from '@mintter/api/v2/documents'
+export * as mintter from '../.generated/v2/mintter'
+export * as documents from '../.generated/v2/documents'
 
 export * as mock from './mock'

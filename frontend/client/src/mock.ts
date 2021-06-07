@@ -1,4 +1,4 @@
-import { Profile, Device, Account } from '@mintter/api/accounts/v1alpha/accounts'
+import { Profile, Device, Account } from '../.generated/accounts/v1alpha/accounts'
 import {
   Publication,
   Block,
@@ -7,7 +7,7 @@ import {
   InlineElement,
   Block_Type,
   TextRun,
-} from '@mintter/api/documents/v1alpha/documents'
+} from '../.generated/documents/v1alpha/documents'
 import { internet, lorem, finance } from 'faker'
 import { nanoid } from 'nanoid'
 

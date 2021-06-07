@@ -1,4 +1,4 @@
-import type { GrpcWebImpl } from '@mintter/api/documents/v1alpha/documents';
+import type { GrpcWebImpl } from '../.generated/documents/v1alpha/documents';
 import { mockDocument } from './mock'
 
 /**

@@ -1,9 +1,9 @@
-import type {Document} from '@mintter/client'
+import type { Document } from '@mintter/client'
 
-import {ELEMENT_BLOCK} from './editor/block-plugin'
-import {ELEMENT_LINK} from './editor/link-plugin'
-import {ELEMENT_QUOTE} from './editor/quote-plugin'
-import type {SlateBlock} from './editor/types'
+import { ELEMENT_BLOCK } from './block-plugin'
+import { ELEMENT_LINK } from './link-plugin'
+import { ELEMENT_QUOTE } from './quote-plugin'
+import type { SlateBlock } from './types'
 
 export function toEditorValue(entry: Document): Array<SlateBlock> {
   console.log(
@@ -21,13 +21,13 @@ export function toEditorValue(entry: Document): Array<SlateBlock> {
       type: ELEMENT_BLOCK,
       depth: 0,
       listStyle: block.childListStyle,
-      children: block.elements.map<any>(({textRun, image, quote}) => {
+      children: block.elements.map<any>(({ textRun, image, quote }: any) => {
         if (image) {
           return {
             type: 'image',
             url: linksMap[image.linkKey].uri,
             alt_text: image.altText,
-            children: [{text: ''}],
+            children: [{ text: '' }],
           }
         } else if (textRun) {
           if (textRun.linkKey) {
@@ -44,7 +44,7 @@ export function toEditorValue(entry: Document): Array<SlateBlock> {
             type: ELEMENT_QUOTE,
             id: '',
             url: linksMap[quote.linkKey].uri,
-            children: [{text: ''}],
+            children: [{ text: '' }],
           }
         } else {
           throw new Error(`unkown element`)
