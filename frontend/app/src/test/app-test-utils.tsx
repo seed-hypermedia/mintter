@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event'
 import {mock} from '@mintter/client'
 import {AppProviders} from '../app-providers'
 
-function AppWrapper({children}) {
+function AppWrapper({children}: {children: React.ReactNode}) {
   return (
     <div>
       <AppProviders>{children}</AppProviders>
@@ -40,7 +40,7 @@ async function render(
 
   profile = profile ?? mock.mockProfile()
 
-  let returnValue = {
+  const returnValue = {
     ...rtlRender(ui, {
       wrapper,
       ...renderOptions,

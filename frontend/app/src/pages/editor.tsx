@@ -163,7 +163,7 @@ function useMintterEditor(docId: string): Omit<
   UseQueryResult<Document>,
   'data'
 > & {
-  data?: Document & { editorValue: Array<SlateBlock> }
+  data?: Document & { editorValue: Array<SlateBlock> };
 } {
   const draftQuery = useDraft(docId)
 

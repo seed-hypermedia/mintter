@@ -17,7 +17,7 @@ const StyledArrow = styled(TooltipPrimitive.Arrow, {
 export type TooltipProps = {
   content: string | React.ReactNode;
   open?: boolean;
-  children: React.ReactNode
+  children: React.ReactNode;
 };
 
 export function Tooltip({ children, content, open, ...props }: TooltipProps) {

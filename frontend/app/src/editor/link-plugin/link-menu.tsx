@@ -18,7 +18,7 @@ function setMenuPosition(el: HTMLDivElement) {
 }
 
 export type LinkMenuProps = {
-  menu: MenuStateReturn
+  menu: MenuStateReturn;
 }
 
 const MenuItem = forwardRef(({ children, ...props }: any, ref: any) => {
