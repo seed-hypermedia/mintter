@@ -18,7 +18,7 @@ interface NavItemProps {
   className?: string;
 }
 
-export function Topbar({ isPublic = false }) {
+export function Topbar({ isPublic = false }: { isPublic: boolean }) {
   const history = useHistory();
   const match = useRouteMatch();
 

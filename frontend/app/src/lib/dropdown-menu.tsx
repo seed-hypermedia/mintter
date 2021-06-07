@@ -28,6 +28,8 @@ export const Content = forwardRef(
     );
   },
 );
+Content.displayName = 'Content'
+
 export const Label = DropdownMenuPrimitive.Label;
 export const Item = styled(DropdownMenuPrimitive.Item, {
   fontSize: 13,

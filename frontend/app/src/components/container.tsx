@@ -49,8 +49,7 @@ type ContainerComponent = Polymorphic.ForwardRefComponent<
   ContainerOwnProps
 >;
 
-// TODO: fix types
-export const Container: any = forwardRef((props, forwardedRef) => (
+export const Container = forwardRef((props, forwardedRef) => (
   <StyledContainer {...props} ref={forwardedRef} />
-)) as any;
-// }) as ContainerComponent;
+));
+Container.displayName = 'Container'

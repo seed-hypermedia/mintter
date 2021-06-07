@@ -11,11 +11,7 @@ type MyPublicationProps = {
   isPublic?: boolean;
 };
 
-export const MyPublications: React.FC<MyPublicationProps & WithCreateDraft> = ({
-  noSeo = false,
-  isPublic = false,
-  onCreateDraft,
-}) => {
+export const MyPublications = ({ isPublic = false, onCreateDraft }: MyPublicationProps & WithCreateDraft): JSX.Element => {
   const history = useHistory();
   const match = useRouteMatch();
   const {

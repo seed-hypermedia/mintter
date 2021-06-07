@@ -52,7 +52,7 @@ export const slideUpAnimationVariants: Variants = {
   },
 };
 
-export function OnboardingStep({ css, ...props }: BoxProps) {
+export function OnboardingStep({ css, ...props }: BoxProps): JSX.Element {
   return (
     <Box
       as={motion.form}
@@ -81,7 +81,7 @@ export function OnboardingStepTitle({
   css,
   icon,
   children,
-}: BoxProps & { icon?: JSX.Element }) {
+}: BoxProps & { icon?: JSX.Element }): JSX.Element {
   return (
     <Box
       as={motion.header}
@@ -101,8 +101,6 @@ export function OnboardingStepTitle({
         alt
         as="h1"
         size="9"
-        // TODO: fix types
-        // @ts-ignore
         css={{ textAlign: 'center' }}
       >
         {children}
@@ -111,7 +109,7 @@ export function OnboardingStepTitle({
   );
 }
 
-export function OnboardingStepDescription({ css, ...props }: TextProps) {
+export function OnboardingStepDescription({ css, ...props }: TextProps): JSX.Element {
   return (
     <Text
       as={motion.p}
@@ -128,7 +126,7 @@ export function OnboardingStepDescription({ css, ...props }: TextProps) {
   );
 }
 
-export function OnboardingStepBody({ css, children }: BoxProps) {
+export function OnboardingStepBody({ css, children }: BoxProps): JSX.Element {
   return (
     <Box
       data-testid="onboarding-body"
@@ -143,7 +141,7 @@ export function OnboardingStepBody({ css, children }: BoxProps) {
   );
 }
 
-export function OnboardingStepActions({ css, children }: BoxProps) {
+export function OnboardingStepActions({ css, children }: BoxProps): JSX.Element {
   return (
     <Box
       as={motion.footer}

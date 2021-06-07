@@ -1,9 +1,9 @@
-import {Box} from '@mintter/ui'
+import { Box } from '@mintter/ui'
 import * as Portal from '@radix-ui/react-portal'
-import {forwardRef, useEffect, useRef} from 'react'
-import {useStoreEditorState} from '@udecode/slate-plugins-core'
-import {Menu, MenuItem as ReakitMenuItem} from 'reakit/Menu'
-import {createQuoteFromLink} from '../quote-plugin/create-quote-from-link'
+import { forwardRef, useEffect, useRef } from 'react'
+import { useStoreEditorState } from '@udecode/slate-plugins-core'
+import { Menu, MenuItem as ReakitMenuItem } from 'reakit/Menu'
+import { createQuoteFromLink } from '../quote-plugin/create-quote-from-link'
 
 function setMenuPosition(el: HTMLDivElement) {
   const domSelection = window.getSelection()
@@ -21,32 +21,32 @@ export type LinkMenuProps = {
   menu: MenuStateReturn
 }
 
-const MenuItem = forwardRef(
-  ({className = '', children, ...props}: any, ref: any) => {
-    return (
-      <Box
-        as={ReakitMenuItem}
-        ref={ref}
-        css={{
-          fontSize: 13,
-          padding: '5px 10px',
-          textAlign: 'left',
-          borderRadius: 3,
-          cursor: 'default',
-          '&:focus': {
-            outline: 'none',
-            boxShadow: '$focus',
-          },
-        }}
-        {...props}
-      >
-        {children}
-      </Box>
-    )
-  },
+const MenuItem = forwardRef(({ children, ...props }: any, ref: any) => {
+  return (
+    <Box
+      as={ReakitMenuItem}
+      ref={ref}
+      css={{
+        fontSize: 13,
+        padding: '5px 10px',
+        textAlign: 'left',
+        borderRadius: 3,
+        cursor: 'default',
+        '&:focus': {
+          outline: 'none',
+          boxShadow: '$focus',
+        },
+      }}
+      {...props}
+    >
+      {children}
+    </Box>
+  )
+},
 )
+MenuItem.displayName = 'MenuItem'
 
-export function LinkMenu({menu}: LinkMenuProps) {
+export function LinkMenu({ menu }: LinkMenuProps) {
   const ref = useRef<HTMLDivElement>(null)
   const initialFocus = useRef<HTMLButtonElement>(null)
   const editor = useStoreEditorState()

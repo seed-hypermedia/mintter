@@ -65,7 +65,7 @@ function toSlateQuote(entry: Block): Array<EditorTextRun> {
   //@ts-ignore
   return entry.elementsList.map((element: documents.InlineElement.AsObject) => {
     // assume elements are type textRun for now
-    let node: EditorTextRun = { text: '' }
+    const node: EditorTextRun = { text: '' }
     if (element.textRun) {
       const { textRun } = element
       node.text = textRun.text

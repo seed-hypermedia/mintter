@@ -24,7 +24,7 @@ describe('toEditorValue', () => {
       childrenListStyle: ListStyle.NONE,
     });
 
-    let expected: Array<SlateBlock> = [
+    const expected: Array<SlateBlock> = [
       {
         type: ELEMENT_BLOCK,
         id: 'block-1',
@@ -71,7 +71,7 @@ describe('toEditorValue', () => {
       }
     });
 
-    let expected: Array<SlateBlock> = [
+    const expected: Array<SlateBlock> = [
       {
         type: ELEMENT_BLOCK,
         id: 'block-1',

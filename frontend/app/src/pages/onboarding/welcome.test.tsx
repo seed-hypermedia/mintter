@@ -4,6 +4,7 @@ import { AppProviders } from '../../app-providers';
 
 it('<Welcome />', async () => {
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   render(<AppProviders><Welcome next={() => { }} prev={() => { }} /></AppProviders>)
 
   screen.getByText(/Welcome to Mintter/i)

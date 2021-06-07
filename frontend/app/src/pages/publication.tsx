@@ -8,7 +8,7 @@ import { Text, Box, Button } from '@mintter/ui';
 import { Container } from '../components/container'
 import { mock } from '@mintter/client';
 
-export default function Publication() {
+export default function Publication(): JSX.Element {
   const history = useHistory();
   // const { addToast } = useToasts();
 
@@ -182,7 +182,7 @@ export default function Publication() {
           <Box as="ul" aria-label="sidepanel list">
             {sidepanelObjects.map((object) => (
               // <SidePanelObject key={object} id={object} />
-              <Box />
+              <Box key={object} />
             ))}
           </Box>
           {sidepanelObjects.length === 0 && (

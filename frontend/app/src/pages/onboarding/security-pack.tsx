@@ -15,8 +15,8 @@ import {
   SecurityPackIcon,
 } from './common';
 
-export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
-  const [ownSeed, setOwnSeed] = useState<string>('');
+export function SecurityPack({ prev, next }: OnboardingStepPropsType): JSX.Element {
+  const [ownSeed] = useState<string>('');
   const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false);
   const mnemonics = useQuery<string[], Error>(
     ['onboarding', 'mnemonics'],
@@ -31,7 +31,7 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
   );
 
   const handleSubmit = useCallback(async () => {
-    let words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data;
+    const words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data;
     if (words) {
       try {
         await registerAccount(words);
@@ -55,6 +55,7 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
       </OnboardingStepDescription>
       {useOwnSeed ? (
         <TextField
+          // TODO: fix types
           // @ts-ignore
           as="textarea"
           id="ownSeed"

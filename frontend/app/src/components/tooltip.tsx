@@ -17,19 +17,15 @@ const StyledArrow = styled(TooltipPrimitive.Arrow, {
 export type TooltipProps = {
   content: string | React.ReactNode;
   open?: boolean;
+  children: React.ReactNode
 };
 
-export const Tooltip: React.FC<TooltipProps> = ({
-  children,
-  content,
-  open,
-  ...props
-}) => (
-  <TooltipPrimitive.Root open={open} {...props}>
+export function Tooltip({ children, content, open, ...props }: TooltipProps) {
+  return <TooltipPrimitive.Root open={open} {...props}>
     <TooltipPrimitive.Trigger as={Slot}>{children}</TooltipPrimitive.Trigger>
     <StyledContent side="top" align="center" {...props}>
       {content}
       <StyledArrow offset={5} width={11} height={5} />
     </StyledContent>
   </TooltipPrimitive.Root>
-);
+}

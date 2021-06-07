@@ -10,12 +10,12 @@ export function toEditorValue(entry: Document): Array<SlateBlock> {
     '🚀 ~ file: to-editor-value.ts ~ line 9 ~ toEditorValue ~ entry',
     entry,
   )
-  let currentDoc = entry
+  const currentDoc = entry
 
   const blocksMap = entry.blocks
   const linksMap = entry.links
   return currentDoc.children.map((blockId: string) => {
-    let block = blocksMap[blockId]
+    const block = blocksMap[blockId]
     return {
       id: block?.id,
       type: ELEMENT_BLOCK,

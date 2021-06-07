@@ -5,7 +5,7 @@ import { useHistory, useRouteMatch } from 'react-router';
 import type { WithCreateDraft } from './library';
 import * as MessageBox from '../components/message-box';
 
-export const Drafts: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {
+export const Drafts = ({ onCreateDraft }: WithCreateDraft): JSX.Element => {
   const history = useHistory();
   const match = useRouteMatch();
   const { isLoading, isError, isSuccess, error, data } = useDraftsList();

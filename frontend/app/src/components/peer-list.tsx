@@ -1,4 +1,4 @@
-import { Device } from '@mintter/client';
+import type { Device } from '@mintter/client';
 import { useAccount } from '@mintter/client/hooks'
 import { Box, Text } from '@mintter/ui';
 
@@ -20,7 +20,7 @@ export function PeerList() {
       <Box>
         {Object.entries(devices).map(
           ([id, device]: [string, Device], index: number) => (
-            <Text>
+            <Text key={id}>
               <Text
                 as="span"
                 color="muted"

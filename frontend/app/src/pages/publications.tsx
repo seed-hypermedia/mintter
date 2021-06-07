@@ -6,7 +6,7 @@ import { useOthersPublicationsList } from '@mintter/client/hooks'
 import { Text } from '@mintter/ui';
 import * as MessageBox from '../components/message-box';
 
-export const Publications: React.FC<WithCreateDraft> = ({ onCreateDraft }) => {
+export const Publications = ({ onCreateDraft }: WithCreateDraft): JSX.Element => {
   const history = useHistory();
   const match = useRouteMatch();
 

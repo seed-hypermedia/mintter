@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useReducer } from "react";
+import React, { createContext, useContext, useMemo, useReducer } from "react";
 
 type SidepanelAction =
   | { type: 'SIDEPANEL_TOOGLE' }
@@ -83,7 +83,11 @@ const initialReducerState: SidepanelReducerState = {
   objects: [],
 };
 
-export const SidePanelProvider: React.FC<{}> = ({ children }) => {
+interface SidePanelProviderProps {
+  children: React.ReactNode
+}
+
+export const SidePanelProvider = ({ children }: SidePanelProviderProps): JSX.Element => {
   const [state, dispatch] = useReducer(
     sidepanelReducer,
     initialReducerState,
@@ -105,7 +109,7 @@ export const SidePanelProvider: React.FC<{}> = ({ children }) => {
   );
 };
 
-export function useSidePanel() {
+export function useSidePanel(): SidepanelContextValue {
   const context = useContext<SidepanelContextValue>(SidePanelContext);
 
   if (!context) {
