@@ -82,6 +82,11 @@ func (did DeviceID) PeerID() peer.ID {
 	return pid
 }
 
+// Equals checks whether two device IDs are equal.
+func (did DeviceID) Equals(d DeviceID) bool {
+	return cid.Cid(did).Equals(cid.Cid(d))
+}
+
 // MarshalBinary implements encoding.BinaryMarshaler.
 func (did DeviceID) MarshalBinary() ([]byte, error) {
 	return cid.Cid(did).MarshalBinary()

@@ -11,6 +11,7 @@ import (
 
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
+	"github.com/ipfs/go-datastore/query"
 	"github.com/ipfs/go-log/v2"
 	"github.com/libp2p/go-libp2p-core/routing"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
@@ -62,10 +63,19 @@ type ttlTxn interface {
 	datastore.TTL
 }
 
+// Datastore combines TTL, Batch, and Txn datastores.
+type Datastore interface {
+	datastore.Datastore
+	datastore.TTL
+	NewTransaction(readOnly bool) (datastore.Txn, error)
+	Batch() (datastore.Batch, error)
+}
+
 // Provider implements the functionality for providing and reproviding items on the DHT.
 type Provider struct {
-	ds datastore.TTLDatastore
-	rt routing.ContentRouting
+	ds       Datastore
+	rt       routing.ContentRouting
+	strategy Strategy
 
 	provideTimeout        time.Duration
 	reprovideTickInterval time.Duration
@@ -76,10 +86,11 @@ type Provider struct {
 }
 
 // New creates a new provider.
-func New(rt routing.ContentRouting, ds datastore.TTLDatastore) *Provider {
+func New(rt routing.ContentRouting, ds Datastore, s Strategy) *Provider {
 	return &Provider{
-		ds: ds,
-		rt: rt,
+		ds:       ds,
+		rt:       rt,
+		strategy: s,
 
 		provideTimeout:        1 * time.Minute,
 		reprovideTickInterval: 2 * time.Hour,
@@ -115,6 +126,23 @@ func (p *Provider) Run(ctx context.Context) error {
 	for {
 		// Get all the stuff.
 		// Push to the queue.
+		if err := func() error {
+			txn, err := p.ds.NewTransaction(true)
+			if err != nil {
+				return fmt.Errorf("failed to create transaction: %w", err)
+			}
+			defer txn.Discard()
+
+			for it := p.strategy(); it.Valid(); it.Next(ctx) {
+				item := it.Item()
+				// Check if need to provide
+				p.queue <- item
+			}
+
+			return txn.Commit()
+		}(); err != nil {
+			return err
+		}
 
 		// We've drained the timer initially, or it would have fired already in the select
 		// bellow, so it's safe to call reset here directly.
@@ -126,6 +154,20 @@ func (p *Provider) Run(ctx context.Context) error {
 			continue
 		}
 	}
+}
+
+func provided(ds Datastore) {
+	res, err := ds.Query(query.Query{
+		Prefix:   "/providing",
+		KeysOnly: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer res.Close()
+
+	res.Next()
+
 }
 
 func (p *Provider) worker(ctx context.Context) (err error) {
@@ -202,4 +244,8 @@ func (p *Provider) waitRouting(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func newKey(c cid.Cid) datastore.Key {
+	return datastore.NewKey("/providing").Child(dshelp.MultihashToDsKey(c.Hash()))
 }

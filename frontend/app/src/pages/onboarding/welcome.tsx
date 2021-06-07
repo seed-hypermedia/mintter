@@ -39,7 +39,9 @@ export function Welcome({ next }: OnboardingStepPropsType): JSX.Element {
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
-        <OnboardingStepButton onClick={next} data-testid="next-button">Start</OnboardingStepButton>
+        <OnboardingStepButton onClick={next} data-testid="next-button">
+          Start
+        </OnboardingStepButton>
       </OnboardingStepActions>
     </OnboardingStep>
   );
