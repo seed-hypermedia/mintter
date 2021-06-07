@@ -10,7 +10,7 @@
     "serve": "vite preview",
     "test": "jest",
     "test:w": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test:c": "jest --coverage",
     "format": "eslint '*/**/*.{ts,tsx}' --quiet --fix",
     "lint": "eslint '*/**/*.{ts,tsx}' --quiet"
   },
@@ -58,6 +58,7 @@
     "eslint": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "jest": "^27.0.4",
+    "jest-watch-typeahead": "^0.6.4",
     "ts-jest": "^27.0.2",
     "typescript": "^4.3.2",
     "vite": "^2.3.5",

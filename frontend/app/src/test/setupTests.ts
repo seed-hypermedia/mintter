@@ -1,7 +1,5 @@
 import '@testing-library/jest-dom/extend-expect'
 
-import {queryCache} from 'react-query'
-
 // make debug output for TestingLibrary Errors larger
 process.env.DEBUG_PRINT_LIMIT = 15000
 
@@ -10,6 +8,6 @@ process.env.DEBUG_PRINT_LIMIT = 15000
 beforeEach(() => jest.useRealTimers())
 
 // general cleanup
-afterEach(() => {
-  queryCache.clear()
-})
+// afterEach(() => {
+//   queryCache.clear()
+// })
