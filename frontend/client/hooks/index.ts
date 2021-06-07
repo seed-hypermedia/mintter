@@ -1,37 +1,53 @@
-import { UseQueryOptions, useQuery, useQueryClient } from 'react-query'
-import { useMemo } from 'react'
-import { Account, getAccount, Info, getInfo, Document, getDocument, getDraft, PeerInfo, listPeerAddrs, Publication, getPublication, Block } from '../src'
-import { mockBlock, mockTextInlineElement } from '../src/mock'
+import {UseQueryOptions, useQuery, useQueryClient} from 'react-query'
+import {useMemo} from 'react'
+import {
+  Account,
+  getAccount,
+  Info,
+  getInfo,
+  Document,
+  getDocument,
+  getDraft,
+  PeerInfo,
+  listPeerAddrs,
+  Publication,
+  getPublication,
+  Block,
+} from '../src'
+import {mockBlock, mockTextInlineElement} from '../src/mock'
 
 export type UseAccountOptions = UseQueryOptions<Account, unknown, Account>
 
 /**
- * 
- * @param accountId 
- * @param options 
- * @returns 
+ *
+ * @param accountId
+ * @param options
+ * @returns
  */
-export function useAccount(accountId: string = '', options: UseAccountOptions = {}) {
+export function useAccount(
+  accountId: string = '',
+  options: UseAccountOptions = {},
+) {
   const accountQuery = useQuery(
     ['Account', accountId],
     () => getAccount(accountId),
-    options
+    options,
   )
 
   const data = useMemo(() => accountQuery.data, [accountQuery.data])
 
   return {
     ...accountQuery,
-    data
+    data,
   }
 }
 
 export type UseInfoOptions = UseQueryOptions<Info, unknown, Info>
 
 /**
- * 
- * @param options 
- * @returns 
+ *
+ * @param options
+ * @returns
  */
 export function useInfo(options: UseInfoOptions = {}) {
   const infoQuery = useQuery(['GetInfo'], getInfo, options)
@@ -40,19 +56,22 @@ export function useInfo(options: UseInfoOptions = {}) {
 
   return {
     ...infoQuery,
-    data
+    data,
   }
 }
 
 export type UseDocumentOptions = UseQueryOptions<Document, unknown, Document>
 
 /**
- * 
- * @param documentId 
- * @param options 
- * @returns 
+ *
+ * @param documentId
+ * @param options
+ * @returns
  */
-export function useDocument(documentId: string, options: UseDocumentOptions = {}) {
+export function useDocument(
+  documentId: string,
+  options: UseDocumentOptions = {},
+) {
   const documentQuery = useQuery<Document>(
     ['Document', documentId],
     () => getDocument(documentId),
@@ -72,16 +91,31 @@ export function useDocument(documentId: string, options: UseDocumentOptions = {}
 export type UseDraftOptions = UseQueryOptions<Document, unknown, Document>
 
 /**
- * 
- * @param draftId 
- * @param options 
- * @returns 
+ *
+ * @param draftId
+ * @param options
+ * @returns
  */
-export function useDraft(draftId: string, options: UseDraftOptions = {}) {
-  const draftQuery = useQuery(
+export function useDraft(
+  draftId: string,
+  options = {},
+): UseQueryResult<Document> {
+  if (!draftId) {
+    throw new Error(`useDraft: parameter "draftId" is required`)
+  }
+
+  if (Array.isArray(draftId)) {
+    throw new Error(
+      `Impossible render: You are trying to access a draft passing ${
+        draftId.length
+      } draft Ids => ${draftId.map(q => q).join(', ')}`,
+    )
+  }
+
+  return useQuery(
     ['Draft', draftId],
-    async ({ queryKey }) => {
-      const [_key, draftId] = queryKey as [string, string]
+    async ({queryKey}) => {
+      const [_key, draftId] = queryKey
       return getDraft(draftId)
     },
     {
@@ -89,13 +123,6 @@ export function useDraft(draftId: string, options: UseDraftOptions = {}) {
       ...options,
     },
   )
-
-  const data = useMemo(() => draftQuery.data, [draftQuery.data])
-
-  return {
-    ...draftQuery,
-    data
-  }
 }
 
 /**
@@ -109,18 +136,25 @@ export function useDraftsList(options = {}) {
     isSuccess: true,
     error: null,
     isError: false,
-  };
+  }
 }
 
-export type UsePeerAddrsOptions = UseQueryOptions<PeerInfo['addrs'], unknown, PeerInfo['addrs']>
+export type UsePeerAddrsOptions = UseQueryOptions<
+  PeerInfo['addrs'],
+  unknown,
+  PeerInfo['addrs']
+>
 
 /**
- * 
- * @param peerId 
- * @param options 
- * @returns 
+ *
+ * @param peerId
+ * @param options
+ * @returns
  */
-export function usePeerAddrs(peerId?: string, options: UsePeerAddrsOptions = {}) {
+export function usePeerAddrs(
+  peerId?: string,
+  options: UsePeerAddrsOptions = {},
+) {
   const queryClient = useQueryClient()
 
   let requestId: string
@@ -152,30 +186,42 @@ export function usePeerAddrs(peerId?: string, options: UsePeerAddrsOptions = {})
  *
  * @deprecated
  */
-export function useSuggestedConnections({ page } = { page: 0 }, options = {}) {
+export function useSuggestedConnections({page} = {page: 0}, options = {}) {
   return {
     data: [],
     isLoading: false,
     isSuccess: true,
     isError: false,
     error: null,
-  };
+  }
 }
 
-export type UsePublicationOptions = UseQueryOptions<Publication, unknown, Publication>
+export type UsePublicationOptions = UseQueryOptions<
+  Publication,
+  unknown,
+  Publication
+>
 
 /**
- * 
- * @param publicationId 
- * @param version 
- * @param options 
- * @returns 
+ *
+ * @param publicationId
+ * @param version
+ * @param options
+ * @returns
  */
-export function usePublication(publicationId: string, version?: string, options: UsePublicationOptions = {}) {
+export function usePublication(
+  publicationId: string,
+  version?: string,
+  options: UsePublicationOptions = {},
+) {
   const publicationQuery = useQuery(
     ['Publication', publicationId, version],
-    async ({ queryKey }) => {
-      const [_key, publicationId, version] = queryKey as [string, string, string]
+    async ({queryKey}) => {
+      const [_key, publicationId, version] = queryKey as [
+        string,
+        string,
+        string,
+      ]
       return getPublication(publicationId, version)
     },
     {
@@ -188,7 +234,7 @@ export function usePublication(publicationId: string, version?: string, options:
 
   return {
     ...publicationQuery,
-    data
+    data,
   }
 }
 
@@ -203,7 +249,7 @@ export function useOthersPublicationsList(options = {}) {
     isSuccess: true,
     error: null,
     isError: false,
-  };
+  }
 }
 
 /**
@@ -217,26 +263,26 @@ export function useMyPublicationsList(options = {}) {
     isSuccess: true,
     error: null,
     isError: false,
-  };
+  }
 }
 
 export type UseQuoteOptions = UseQueryOptions<Block, unknown, Block>
 
 /**
- * 
- * @param url 
- * @param options 
- * @returns 
+ *
+ * @param url
+ * @param options
+ * @returns
  */
 export function useQuote(url: string, options: UseQuoteOptions = {}) {
   const [, blockId] = url.split('/')
 
-  console.warn('called mocked function "useQuote"');
+  console.warn('called mocked function "useQuote"')
 
   const quoteQuery = useQuery(
     ['Quote', blockId],
     async () => {
-      console.warn('called mocked function "useQuote"');
+      console.warn('called mocked function "useQuote"')
       const block = mockBlock({
         id: blockId,
         elements: [
@@ -248,21 +294,21 @@ export function useQuote(url: string, options: UseQuoteOptions = {}) {
             underline: false,
             strikethrough: false,
             blockquote: false,
-            code: false
-          })
-        ]
+            code: false,
+          }),
+        ],
       })
       return block
     },
     {
-      enabled: !!blockId
-    }
+      enabled: !!blockId,
+    },
   )
 
   const data = useMemo(() => quoteQuery.data, [quoteQuery.data])
 
   return {
     ...quoteQuery,
-    data
+    data,
   }
 }

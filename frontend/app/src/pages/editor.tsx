@@ -1,58 +1,60 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router';
-import { useMutation } from 'react-query';
+import React, {useMemo, useState} from 'react'
+import {Box, Button, Text, TextField} from '@mintter/ui'
 
-import { useDraft, useAccount } from '@mintter/client/hooks';
-import { Box, Button, Text, TextField } from '@mintter/ui';
+import {useParams} from 'react-router'
+import {useMutation, UseQueryResult} from 'react-query'
 
-import { Container } from '../components/container';
-import { Separator } from '../components/separator';
+import {useDraft, useAccount} from '@mintter/client/hooks'
 
-import { useSidePanel } from '../sidepanel';
-import { EditorComponent } from '../editor/editor-component';
-import 'show-keys';
-import { useStoreEditorValue } from '@udecode/slate-plugins-core';
-import { toDocument } from '../to-document';
-import type { SlateBlock } from '../editor/types';
-import { ListStyle } from '@mintter/client';
+import {Container} from '@components/container'
+import {Separator} from '@components/separator'
+
+import {useSidePanel} from '../sidepanel'
+import {EditorComponent} from '@mintter/editor/editor-component'
+import 'show-keys'
+import {useStoreEditorValue} from '@udecode/slate-plugins-core'
+import {toDocument} from '../to-document'
+import type {SlateBlock} from '@mintter/editor/types'
+import {ListStyle, Document} from '@mintter/client'
+import {toEditorValue} from '../to-editor-value'
 
 export default function EditorPage() {
-  const { docId } = useParams<{ docId: string }>();
-  const { isLoading, isError, error, data } = useDraft(docId);
-  const editorValue = useStoreEditorValue('editor') as Array<SlateBlock>;
-  const { data: account } = useAccount('');
+  const {docId} = useParams<{docId: string}>()
+  const {isLoading, isError, error, data} = useMintterEditor(docId)
+  const {data: account} = useAccount('')
 
-  const [title, setTitle] = useState<string>('');
-  const [subtitle, setSubtitle] = useState<string>('');
+  const [title, setTitle] = useState<string>('')
+  const [subtitle, setSubtitle] = useState<string>('')
 
   // publish
-  const { mutateAsync: publish } = useMutation(async () => {
+  const {mutateAsync: publish} = useMutation(async () => {
     const document = toDocument({
       id: docId,
       author: account?.id as string,
       title,
       subtitle,
-      blocks: editorValue,
+      blocks: data.editorValue,
       // TODO: get the document block parent list
       childrenListStyle: ListStyle.NONE,
-    });
+    })
     // publishDraft
-  });
+    console.log({document})
+  })
 
   // sidepanel
-  const { isSidepanelOpen, sidepanelObjects, sidepanelSend } = useSidePanel();
+  const {isSidepanelOpen, sidepanelObjects, sidepanelSend} = useSidePanel()
 
   function saveDocument() {
-    publish();
+    publish()
   }
 
   if (isError) {
-    console.error('useDraft error: ', error);
-    return <Text>Editor ERROR</Text>;
+    console.error('useDraft error: ', error)
+    return <Text>Editor ERROR</Text>
   }
 
   if (isLoading) {
-    return <Text>loading draft...</Text>;
+    return <Text>loading draft...</Text>
   }
 
   return (
@@ -85,12 +87,12 @@ export default function EditorPage() {
         </Button>
         <Button
           size="1"
-          onClick={() => sidepanelSend?.({ type: 'SIDEPANEL_TOOGLE' })}
+          onClick={() => sidepanelSend?.({type: 'SIDEPANEL_TOOGLE'})}
         >
           toggle sidepanel
         </Button>
       </Box>
-      <Container css={{ gridArea: 'maincontent', marginBottom: 300 }}>
+      <Container css={{gridArea: 'maincontent', marginBottom: 300}}>
         <TextField
           // TODO: Fix types
           // @ts-ignore
@@ -99,7 +101,7 @@ export default function EditorPage() {
           name="title"
           placeholder="Document title"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={e => setTitle(e.target.value)}
           rows={1}
           // TODO: Fix types
           // @ts-ignore
@@ -122,7 +124,7 @@ export default function EditorPage() {
           name="subtitle"
           placeholder="about this publication..."
           value={subtitle}
-          onChange={(e) => setSubtitle(e.target.value)}
+          onChange={e => setSubtitle(e.target.value)}
           rows={1}
           // TODO: Fix types
           // @ts-ignore
@@ -135,7 +137,7 @@ export default function EditorPage() {
           }}
         />
         <Separator />
-        <Box css={{ mx: '-$4', width: 'calc(100% + $7)' }}>
+        <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
           <EditorComponent initialValue={data.editorValue} />
         </Box>
       </Container>
@@ -155,5 +157,27 @@ export default function EditorPage() {
         </Box>
       ) : null}
     </Box>
-  );
+  )
+}
+
+function useMintterEditor(docId: string): Omit<
+  UseQueryResult<Document>,
+  'data'
+> & {
+  data?: Document & {editorValue: Array<SlateBlock>}
+} {
+  const draftQuery = useDraft(docId)
+
+  const editorValue = useMemo(
+    () => (draftQuery.data ? toEditorValue(draftQuery.data) : undefined),
+    [draftQuery, docId],
+  )
+
+  return {
+    ...draftQuery,
+    data: {
+      ...draftQuery.data,
+      editorValue,
+    },
+  }
 }
