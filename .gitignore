@@ -20,6 +20,7 @@ rice-box.go
 
 # temp files
 frontent/old_pages
+frontent/www
 out
 
 # frontend v2 test

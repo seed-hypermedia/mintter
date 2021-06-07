@@ -1,21 +1,21 @@
-import { Box, Icon } from '@mintter/ui';
-import type { SPRenderElementProps } from '@udecode/slate-plugins-core';
-import { useMemo } from 'react';
-import { MINTTER_LINK_PREFIX } from '.';
-import { Tooltip } from '../../components/tooltip';
-import type { SlateLink } from '../types';
+import {Box, Icon} from '@mintter/ui'
+import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
+import {useMemo} from 'react'
+import {MINTTER_LINK_PREFIX} from '.'
+import {Tooltip} from '../../components/tooltip'
+import type {SlateLink} from '../types'
 
 export function LinkElement(props: SPRenderElementProps<SlateLink>) {
   const isMintterLink = useMemo<boolean>(
     () => props.element.url.startsWith(MINTTER_LINK_PREFIX),
     [props.element.url],
-  );
+  )
 
   return isMintterLink ? (
     <MintterLink data-link-id={props.element.id} {...props} />
   ) : (
     <ExternalLink data-link-id={props.element.id} {...props} />
-  );
+  )
 }
 // TODO: add tooltip
 function MintterLink({
@@ -27,7 +27,7 @@ function MintterLink({
   return (
     <Tooltip
       content={
-        <Box css={{ maxWidth: '400px', wordBreak: 'break-all' }}>
+        <Box css={{maxWidth: '400px', wordBreak: 'break-all'}}>
           {element.url}
         </Box>
       }
@@ -41,6 +41,10 @@ function MintterLink({
           textDecoration: 'underline',
           wordBreak: 'break-all',
           color: '$text-default',
+          border: 'none',
+          fontFamily: '$alt',
+          fontSize: 'inherit',
+          background: 'transparent',
           '&:hover': {
             cursor: 'pointer',
           },
@@ -49,7 +53,7 @@ function MintterLink({
         {children}
       </Box>
     </Tooltip>
-  );
+  )
 }
 
 // TODO: add tooltip
@@ -93,5 +97,5 @@ function ExternalLink({
         {children}
       </Box>
     </Tooltip>
-  );
+  )
 }

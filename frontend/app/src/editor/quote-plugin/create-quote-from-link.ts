@@ -1,6 +1,6 @@
 import {getAbove} from '@udecode/slate-plugins-common'
 import type {SPEditor} from '@udecode/slate-plugins-core'
-import {Transforms, Path} from 'slate'
+import {Transforms, Path, Editor} from 'slate'
 import type {ReactEditor} from 'slate-react'
 import {ELEMENT_LINK} from '../link-plugin'
 import type {SlateLink, SlateQuote} from '../types'
@@ -19,11 +19,11 @@ export function createQuoteFromLink(editor: ReactEditor & SPEditor) {
         url: linkNode.url,
         type: ELEMENT_QUOTE,
         children: [{text: ''}],
-      },
+      } as SlateLink,
       {at: linkPath},
     )
     // hack to move the caret to the end of the quote after transforming it
-    window.getSelection().removeAllRanges()
+    window.getSelection()?.removeAllRanges()
     Transforms.select(editor, Path.next(linkPath))
   })
 }

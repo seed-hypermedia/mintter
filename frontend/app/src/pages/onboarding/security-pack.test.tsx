@@ -7,25 +7,36 @@ jest.mock('@mintter/client')
 const mnemonicTest = ['word-1', 'word-2', 'word-3']
 
 beforeEach(() => {
-  clientMock.generateSeed.mockResolvedValueOnce({
+  const mockGenerateSeed = jest.spyOn(clientMock, 'generateSeed')
+  mockGenerateSeed.mockImplementation(() => ({
     mnemonic: mnemonicTest,
-  } as clientMock.GenSeedResponse)
-
-  clientMock.registerAccount = jest.fn()
+  }))
+  const mockRegisterAccount = jest.spyOn(clientMock, 'registerAccount')
+  mockRegisterAccount.mockImplementation(jest.fn())
 })
 
 async function renderWelcomeScreen({
   mnemonic = mnemonicTest,
   ...renderOptions
 }: {
-  mnemonic: Array<string>;
+  mnemonic?: Array<string>
 } = {}) {
   const route = '/welcome'
 
-  const utils = await render(<SecurityPack />, {
-    route,
-    ...renderOptions,
-  })
+  const utils = await render(
+    <SecurityPack
+      prev={() => {
+        console.log('prev')
+      }}
+      next={() => {
+        console.log('next')
+      }}
+    />,
+    {
+      route,
+      ...renderOptions,
+    },
+  )
   const nextBtn = screen.getByText(/Next/i)
 
   return {

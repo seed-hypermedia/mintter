@@ -11,8 +11,8 @@
     "test": "jest",
     "test:w": "jest --watch",
     "test:coverage": "jest --coverage",
-    "format": "eslint '*/**/*.{ts,tsx}' --quiet --fix",
-    "lint": "eslint '*/**/*.{ts,tsx}' --quiet"
+    "lint": "eslint '*/**/*.{ts,tsx}' --quiet",
+    "format": "yarn lint --fix"
   },
   "devDependencies": {
     "@types/autosize": "^4.0.0",

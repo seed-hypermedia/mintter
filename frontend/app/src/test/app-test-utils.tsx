@@ -1,12 +1,13 @@
 import './matchmedia-mock'
 import {
   render as rtlRender,
+  RenderOptions as RTLRenderOptions,
   screen,
   fireEvent,
   waitForElementToBeRemoved,
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import {mock} from '@mintter/client'
+import {mock, Profile} from '@mintter/client'
 import {AppProviders} from '../app-providers'
 
 function AppWrapper({children}: {children: React.ReactNode}) {
@@ -17,8 +18,15 @@ function AppWrapper({children}: {children: React.ReactNode}) {
   )
 }
 
+type RenderOptions = RTLRenderOptions & {
+  route?: string
+  timeout?: number
+  wrapper?: any
+  profile?: Profile
+}
+
 async function render(
-  ui,
+  ui: any,
   {
     route = '/',
     timeout = 4000,
@@ -26,7 +34,7 @@ async function render(
     // wait = true,
     profile,
     ...renderOptions
-  } = {},
+  }: RenderOptions = {},
 ) {
   const routeConfig =
     typeof route === 'string'
@@ -55,7 +63,7 @@ async function render(
   return returnValue
 }
 
-const waitForLoadingToFinish = timeout =>
+const waitForLoadingToFinish = (timeout: number) =>
   waitForElementToBeRemoved(
     () => [
       ...screen.queryAllByLabelText(/loading spinner/i),

@@ -1,9 +1,10 @@
-import { Box } from '@mintter/ui'
+import {Box} from '@mintter/ui'
 import * as Portal from '@radix-ui/react-portal'
-import { forwardRef, useEffect, useRef } from 'react'
-import { useStoreEditorState } from '@udecode/slate-plugins-core'
-import { Menu, MenuItem as ReakitMenuItem } from 'reakit/Menu'
-import { createQuoteFromLink } from '../quote-plugin/create-quote-from-link'
+import {forwardRef, useEffect, useRef} from 'react'
+import {SPEditor, useStoreEditorState} from '@udecode/slate-plugins-core'
+import {Menu, MenuItem as ReakitMenuItem, MenuStateReturn} from 'reakit/Menu'
+import {createQuoteFromLink} from '../quote-plugin/create-quote-from-link'
+import type {ReactEditor} from 'slate-react'
 
 function setMenuPosition(el: HTMLDivElement) {
   const domSelection = window.getSelection()
@@ -18,10 +19,10 @@ function setMenuPosition(el: HTMLDivElement) {
 }
 
 export type LinkMenuProps = {
-  menu: MenuStateReturn;
+  menu: MenuStateReturn
 }
 
-const MenuItem = forwardRef(({ children, ...props }: any, ref: any) => {
+const MenuItem = forwardRef(({children, ...props}: any, ref: any) => {
   return (
     <Box
       as={ReakitMenuItem}
@@ -42,11 +43,10 @@ const MenuItem = forwardRef(({ children, ...props }: any, ref: any) => {
       {children}
     </Box>
   )
-},
-)
+})
 MenuItem.displayName = 'MenuItem'
 
-export function LinkMenu({ menu }: LinkMenuProps) {
+export function LinkMenu({menu}: LinkMenuProps) {
   const ref = useRef<HTMLDivElement>(null)
   const initialFocus = useRef<HTMLButtonElement>(null)
   const editor = useStoreEditorState()
@@ -88,7 +88,7 @@ export function LinkMenu({ menu }: LinkMenuProps) {
           {...menu}
           ref={initialFocus}
           onClick={() => {
-            createQuoteFromLink(editor)
+            createQuoteFromLink(editor as SPEditor & ReactEditor)
             menu.hide?.()
           }}
         >
