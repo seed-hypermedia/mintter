@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/extend-expect'
-import { SecurityPack } from './security-pack'
+import {SecurityPack} from './security-pack'
 import * as clientMock from '@mintter/client'
-import { render, screen, userEvent, waitFor } from '../../test/app-test-utils'
+import {render, screen, userEvent, waitFor} from '../../test/app-test-utils'
 jest.mock('@mintter/client')
 
 const mnemonicTest = ['word-1', 'word-2', 'word-3']
@@ -28,10 +28,10 @@ async function renderWelcomeScreen({
   const utils = await render(
     <SecurityPack
       prev={() => {
-        console.log('prev')
+        // call prev!
       }}
       next={() => {
-        console.log('next')
+        // call next!
       }}
     />,
     {
@@ -50,7 +50,7 @@ async function renderWelcomeScreen({
 }
 
 test('Welcome > <SecurityPack />', async () => {
-  const { nextBtn, mnemonic } = await renderWelcomeScreen()
+  const {nextBtn, mnemonic} = await renderWelcomeScreen()
   await waitFor(() => {
     expect(clientMock.generateSeed).toBeCalledTimes(1)
   })
