@@ -1,4 +1,16 @@
 import createCss, { defaultThemeMap, StitchesCss } from '@stitches/react'
+import basierCircleRegular from './fonts/basier-circle/regular.woff2'
+import basierCircleRegularItalic from './fonts/basier-circle/regular-italic.woff2'
+import basierCircleMedium from './fonts/basier-circle/medium.woff2'
+import basierCircleMediumItalic from './fonts/basier-circle/medium-italic.woff2'
+import basierCircleBold from './fonts/basier-circle/bold.woff2'
+import basierCircleBoldItalic from './fonts/basier-circle/bold-italic.woff2'
+import loraRegular from './fonts/lora/regular.ttf'
+import loraRegularItalic from './fonts/lora/regular-italic.ttf'
+import loraMedium from './fonts/lora/medium.ttf'
+import loraMediumItalic from './fonts/lora/medium-italic.ttf'
+import loraBold from './fonts/lora/bold.ttf'
+import loraBoldIatlic from './fonts/lora/bold-italic.ttf'
 
 export * from '@stitches/core'
 
@@ -299,19 +311,6 @@ export const darkTheme = theme('dark-theme', {
     'danger-contrast': '#FFFFFF',
   },
 })
-
-import basierCircleRegular from './fonts/basier-circle/regular.woff2'
-import basierCircleRegularItalic from './fonts/basier-circle/regular-italic.woff2'
-import basierCircleMedium from './fonts/basier-circle/medium.woff2'
-import basierCircleMediumItalic from './fonts/basier-circle/medium-italic.woff2'
-import basierCircleBold from './fonts/basier-circle/bold.woff2'
-import basierCircleBoldItalic from './fonts/basier-circle/bold-italic.woff2'
-import loraRegular from './fonts/lora/regular.ttf'
-import loraRegularItalic from './fonts/lora/regular-italic.ttf'
-import loraMedium from './fonts/lora/medium.ttf'
-import loraMediumItalic from './fonts/lora/medium-italic.ttf'
-import loraBold from './fonts/lora/bold.ttf'
-import loraBoldIatlic from './fonts/lora/bold-italic.ttf'
 
 export const globalStyles = global({
   '@font-face': [
