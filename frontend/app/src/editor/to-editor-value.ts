@@ -6,10 +6,10 @@ import { ELEMENT_QUOTE } from './quote-plugin'
 import type { SlateBlock } from './types'
 
 export function toEditorValue(entry: Document): Array<SlateBlock> {
-  console.log(
-    '🚀 ~ file: to-editor-value.ts ~ line 9 ~ toEditorValue ~ entry',
-    entry,
-  )
+  // console.log(
+  //   '🚀 ~ file: to-editor-value.ts ~ line 9 ~ toEditorValue ~ entry',
+  //   entry,
+  // )
   const currentDoc = entry
 
   const blocksMap = entry.blocks

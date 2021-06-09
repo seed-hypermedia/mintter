@@ -1,4 +1,4 @@
-import { Profile, Device, Account } from '../.generated/accounts/v1alpha/accounts'
+import {Profile, Device, Account} from '../.generated/accounts/v1alpha/accounts'
 import {
   Publication,
   Block,
@@ -8,8 +8,8 @@ import {
   Block_Type,
   TextRun,
 } from '../.generated/documents/v1alpha/documents'
-import { internet, lorem, finance } from 'faker'
-import { nanoid } from 'nanoid'
+import {internet, lorem, finance} from 'faker'
+import {nanoid} from 'nanoid'
 
 export const createId = (length = 8) => nanoid(length)
 
@@ -23,9 +23,9 @@ export function mockProfile(): Profile {
 
 export function mockDevices(): Record<string, Device> {
   return {
-    '1': Device.fromPartial({ peerId: '1' }),
-    '2': Device.fromPartial({ peerId: '2' }),
-    '3': Device.fromPartial({ peerId: '3' }),
+    '1': Device.fromPartial({peerId: '1'}),
+    '2': Device.fromPartial({peerId: '2'}),
+    '3': Device.fromPartial({peerId: '3'}),
   }
 }
 
@@ -34,9 +34,9 @@ export function mockAccount({
   profile = mockProfile(),
   devices = mockDevices(),
 }: {
-  id?: string;
-  profile?: Profile;
-  devices?: Record<string, Device>;
+  id?: string
+  profile?: Profile
+  devices?: Record<string, Device>
 } = {}): Account {
   return Account.fromPartial({
     id,
@@ -61,7 +61,7 @@ export function mockTextInlineElement(textRun?: TextRun): InlineElement {
 }
 
 type MockBlockOptions = Partial<Block> & {
-  elements?: InlineElement[];
+  elements?: InlineElement[]
 }
 
 export function mockBlock({
@@ -77,10 +77,10 @@ export function mockBlock({
     elements: elements
       ? elements.map(n => mockTextInlineElement(n.textRun))
       : [
-        mockTextInlineElement(),
-        mockTextInlineElement(),
-        mockTextInlineElement(),
-      ],
+          mockTextInlineElement(),
+          mockTextInlineElement(),
+          mockTextInlineElement(),
+        ],
     childListStyle,
     parent,
     children,
@@ -90,16 +90,14 @@ export function mockBlock({
 
 export function mockDocument({
   author = finance.bitcoinAddress(),
-  blocks,
+  blocks = [mockBlock(), mockBlock(), mockBlock()],
   childrenListStyle = ListStyle.NONE,
   title = lorem.sentence(),
   subtitle = lorem.sentence(),
+  links = {},
   id = createId(),
-}: Omit<Partial<Document>, 'blocks'> & { blocks?: Block[] } = {}): Document {
-  const blockMap = Object.fromEntries(
-    (blocks || [mockBlock(), mockBlock(), mockBlock()])
-      .map(block => [block.id, block])
-  )
+}: Omit<Partial<Document>, 'blocks'> & {blocks?: Block[]} = {}): Document {
+  const blockMap = Object.fromEntries(blocks.map(block => [block.id, block]))
 
   return Document.fromPartial({
     id,
@@ -108,8 +106,9 @@ export function mockDocument({
     author,
     childrenListStyle,
     blocks: blockMap,
-    children: Object.values(blockMap).map(b => b.id)
-  });
+    links,
+    children: Object.values(blockMap).map(b => b.id),
+  })
 }
 
 export function mockPublication(): Publication {
