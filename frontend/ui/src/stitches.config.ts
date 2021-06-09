@@ -1,4 +1,4 @@
-import createCss, { defaultThemeMap, StitchesCss } from '@stitches/react'
+import {createCss, defaultThemeMap, StitchesCss} from '@stitches/react'
 import basierCircleRegular from './fonts/basier-circle/regular.woff2'
 import basierCircleRegularItalic from './fonts/basier-circle/regular-italic.woff2'
 import basierCircleMedium from './fonts/basier-circle/medium.woff2'
@@ -150,10 +150,10 @@ const stitches = createCss({
   // @ts-ignore
   media: {},
   utils: {
-    marginHorizontal: () => val => ({ marginLeft: val, marginRight: val }),
-    marginVertical: () => val => ({ marginTop: val, marginBottom: val }),
-    paddingHorizontal: () => val => ({ paddingLeft: val, paddingRight: val }),
-    paddingVertical: () => val => ({ paddingTop: val, paddingBottom: val }),
+    marginHorizontal: () => val => ({marginLeft: val, marginRight: val}),
+    marginVertical: () => val => ({marginTop: val, marginBottom: val}),
+    paddingHorizontal: () => val => ({paddingLeft: val, paddingRight: val}),
+    paddingVertical: () => val => ({paddingTop: val, paddingBottom: val}),
   },
   themeMap: {
     ...defaultThemeMap,
@@ -164,15 +164,8 @@ const stitches = createCss({
   },
 })
 
-export const {
-  styled,
-  css,
-  theme,
-  getCssString,
-  global,
-  keyframes,
-  config,
-} = stitches
+export const {styled, css, theme, getCssString, global, keyframes, config} =
+  stitches
 export type Theme = typeof theme
 export type CSS = StitchesCss<typeof stitches>
 
@@ -316,43 +309,37 @@ export const globalStyles = global({
   '@font-face': [
     {
       fontFamily: 'Basier Circle',
-      src:
-        `url('${basierCircleRegular}') format('woff2')`,
+      src: `url('${basierCircleRegular}') format('woff2')`,
       fontWeight: '400',
       fontStyle: 'normal',
     },
     {
       fontFamily: 'Basier Circle',
-      src:
-        `url('${basierCircleRegularItalic}') format('woff2')`,
+      src: `url('${basierCircleRegularItalic}') format('woff2')`,
       fontWeight: '400',
       fontStyle: 'italic',
     },
     {
       fontFamily: 'Basier Circle',
-      src:
-        `url('${basierCircleMedium}') format('woff2')`,
+      src: `url('${basierCircleMedium}') format('woff2')`,
       fontWeight: '500',
       fontStyle: 'normal',
     },
     {
       fontFamily: 'Basier Circle',
-      src:
-        `url('${basierCircleMediumItalic}') format('woff2')`,
+      src: `url('${basierCircleMediumItalic}') format('woff2')`,
       fontWeight: '500',
       fontStyle: 'italic',
     },
     {
       fontFamily: 'Basier Circle',
-      src:
-        `url('${basierCircleBold}') format('woff2')`,
+      src: `url('${basierCircleBold}') format('woff2')`,
       fontWeight: '700',
       fontStyle: 'normal',
     },
     {
       fontFamily: 'Basier Circle',
-      src:
-        `url('${basierCircleBoldItalic}') format('woff2')`,
+      src: `url('${basierCircleBoldItalic}') format('woff2')`,
       fontWeight: '700',
       fontStyle: 'italic',
     },

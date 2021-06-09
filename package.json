@@ -14,6 +14,7 @@
     "prettier": "prettier --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\"",
     "ui": "yarn workspace @mintter/ui",
     "app": "yarn workspace @mintter/app",
+    "client": "yarn workspace @mintter/client",
     "clean": "gn gen out"
   },
   "workspaces": [
