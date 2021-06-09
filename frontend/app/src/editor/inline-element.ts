@@ -1,5 +1,5 @@
 import { TextRun, Quote, Image, InlineElement, Link } from '@mintter/client'
-import type { EditorTextRun, SlateQuote, SlateLink } from './types';
+import type { EditorTextRun, EditorQuote, EditorLink } from './types';
 
 export type EntryInlineElementTextRun = {
   textRun: TextRun;
@@ -48,7 +48,7 @@ export type ToQuoteResult = {
   link: Link;
 };
 
-export function toQuote(entry: SlateQuote): Quote {
+export function toQuote(entry: EditorQuote): Quote {
   return Quote.fromPartial({
     linkKey: entry.id,
     startOffset: 0,
@@ -56,7 +56,7 @@ export function toQuote(entry: SlateQuote): Quote {
   })
 }
 
-export function toLink(entry: SlateLink): Link {
+export function toLink(entry: EditorLink): Link {
   if (!entry.id) {
     throw Error(`toLink error: "id" cannot be undefined`);
   }

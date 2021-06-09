@@ -1,7 +1,7 @@
 import {ListStyle, Document, Block} from '@mintter/client'
 import {ELEMENT_LINK} from './link-plugin'
 import {ELEMENT_QUOTE} from './quote-plugin'
-import type {SlateBlock, EditorTextRun, SlateQuote, SlateLink} from './types'
+import type {SlateBlock, EditorTextRun, EditorQuote, EditorLink} from './types'
 import {toInlineElement, toQuote, toTextRun, toLink} from './inline-element'
 
 export type ToDocumentProps = {
@@ -43,7 +43,7 @@ export function toDocument({
       })
 
       const inlineElements = slateBlock.children
-        .map((leaf: EditorTextRun | SlateQuote | SlateLink) => {
+        .map((leaf: EditorTextRun | EditorQuote | EditorLink) => {
           if ('text' in leaf) {
             return toInlineElement({textRun: toTextRun(leaf)})
           }

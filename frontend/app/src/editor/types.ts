@@ -6,21 +6,21 @@ export type SlateVoidChildren = {
 export type EditorTextRun = Partial<Omit<TextRun, 'text'>> &
   Pick<TextRun, 'text'>
 
-export type SlateQuote = SlateVoidChildren & {
+export type EditorQuote = SlateVoidChildren & {
   type: string
   id: string
   url: string
 }
 
-export type SlateImage = SlateVoidChildren & {
+export type EditorImage = SlateVoidChildren & {
   type: string
   url: string
   alt_text: string
 }
 
-export type SlateInlineElement = EditorTextRun | SlateQuote | SlateImage
+export type EditorInlineElement = EditorTextRun | EditorQuote | EditorImage
 
-export type SlateLink = {
+export type EditorLink = {
   type: string
   id: string
   url: string
@@ -33,5 +33,5 @@ export type SlateBlock = {
   depth: number
   blockType?: BlockType
   listStyle: ListStyle
-  children: Array<EditorTextRun | SlateQuote | SlateLink> // TODO: fix types
+  children: Array<EditorTextRun | EditorQuote | EditorLink> // TODO: fix types
 }

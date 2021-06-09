@@ -5,7 +5,7 @@ import {
   toQuote,
   toInlineElement,
 } from './inline-element';
-import type { SlateLink, SlateQuote } from './types';
+import type { EditorLink, EditorQuote } from './types';
 
 describe('TextRun', () => {
   it('simple text', () => {
@@ -33,7 +33,7 @@ describe('TextRun', () => {
 
 describe('toLink', () => {
   it('simple link', () => {
-    const test: SlateLink = {
+    const test: EditorLink = {
       id: 'test',
       type: 'a',
       url: 'https://example.test',
@@ -49,7 +49,7 @@ describe('toLink', () => {
   });
 
   it('link with no id', () => {
-    const test: Partial<SlateLink> = {
+    const test: Partial<EditorLink> = {
       type: 'a',
       url: 'https://example.test',
       children: [
@@ -63,7 +63,7 @@ describe('toLink', () => {
     expect(() => toLink(test as any)).toThrow(expected);
   });
   it('link with no url', () => {
-    const test: Partial<SlateLink> = {
+    const test: Partial<EditorLink> = {
       type: 'a',
       id: 'test',
       children: [
@@ -79,7 +79,7 @@ describe('toLink', () => {
 
 describe('toQuote', () => {
   it('default', () => {
-    const test: SlateQuote = {
+    const test: EditorQuote = {
       id: 'test',
       type: 'quote',
       url: 'mintter://1234/5678',

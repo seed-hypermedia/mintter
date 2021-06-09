@@ -3,9 +3,9 @@ import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
 import {useMemo} from 'react'
 import {MINTTER_LINK_PREFIX} from '.'
 import {Tooltip} from '../../components/tooltip'
-import type {SlateLink} from '../types'
+import type {EditorLink} from '../types'
 
-export function LinkElement(props: SPRenderElementProps<SlateLink>) {
+export function LinkElement(props: SPRenderElementProps<EditorLink>) {
   const isMintterLink = useMemo<boolean>(
     () => props.element.url.startsWith(MINTTER_LINK_PREFIX),
     [props.element.url],
@@ -23,7 +23,7 @@ function MintterLink({
   attributes,
   children,
   ...props
-}: SPRenderElementProps<SlateLink>) {
+}: SPRenderElementProps<EditorLink>) {
   return (
     <Tooltip
       content={
@@ -62,7 +62,7 @@ function ExternalLink({
   attributes,
   children,
   ...props
-}: SPRenderElementProps<SlateLink>) {
+}: SPRenderElementProps<EditorLink>) {
   return (
     <Tooltip
       content={

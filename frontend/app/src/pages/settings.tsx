@@ -11,7 +11,7 @@ import {PeerAddrs} from '../components/peer-addrs'
 import {PeerList} from '../components/peer-list'
 import {Separator} from '../components/separator'
 
-import {useMutation} from 'react-query'
+import {useMutation, useQueryClient} from 'react-query'
 
 type ProfileInformationDataType = {
   alias: string
@@ -22,6 +22,7 @@ type ProfileInformationDataType = {
 export function Settings(): JSX.Element {
   const theme = useTheme()
   const account = useAccount()
+  const queryClient = useQueryClient
   const {data} = account
 
   const updateProfile = useMutation(updateAccount)
@@ -45,11 +46,16 @@ export function Settings(): JSX.Element {
   }, [data, form])
 
   const onSubmit = form.handleSubmit(async data => {
-    await toast.promise(updateProfile.mutateAsync(data), {
-      loading: 'Updating profile',
-      success: 'Profile updated',
-      error: 'Error updating profile',
-    })
+    await toast
+      .promise(updateProfile.mutateAsync(data), {
+        loading: 'Updating profile',
+        success: 'Profile updated',
+        error: 'Error updating profile',
+      })
+      .finally(() => {
+        queryClient.invalidateQueries('Account')
+      })
+
     console.log('edit complete!')
   })
 

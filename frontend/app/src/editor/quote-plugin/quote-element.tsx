@@ -2,7 +2,7 @@ import {useFocused, useSelected} from 'slate-react'
 import {Box} from '@mintter/ui'
 import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
 import {useQuote} from '@mintter/client/hooks'
-import type {EditorTextRun, SlateQuote} from '../types'
+import type {EditorTextRun, EditorQuote} from '../types'
 import type {Block} from '@mintter/client'
 
 export function QuoteElement({
@@ -10,7 +10,7 @@ export function QuoteElement({
   className,
   element,
   children,
-}: SPRenderElementProps<SlateQuote>) {
+}: SPRenderElementProps<EditorQuote>) {
   const focused = useFocused()
   const selected = useSelected()
   const quote = useQuote(element.url)
@@ -25,7 +25,7 @@ export function QuoteElement({
   }
 
   if (quote.isSuccess && quote.data) {
-    qRender = toSlateQuote(quote.data).map(({text = ''}, index) => (
+    qRender = toEditorQuote(quote.data).map(({text = ''}, index) => (
       <span key={index}>{text}</span>
     ))
     return (
@@ -61,7 +61,7 @@ export function QuoteElement({
   return null
 }
 
-function toSlateQuote(entry: Block): Array<EditorTextRun> {
+function toEditorQuote(entry: Block): Array<EditorTextRun> {
   //@ts-ignore
   return entry.elementsList.map((element: documents.InlineElement.AsObject) => {
     // assume elements are type textRun for now
