@@ -1,27 +1,23 @@
-import {Document, InlineElement, Link, Quote, TextRun} from '@mintter/client'
+import type {Document, InlineElement, Link, Quote, TextRun} from '@mintter/client'
 import {ELEMENT_BLOCK} from './block-plugin'
+import { toTextRun } from './inline-element'
 import {ELEMENT_LINK} from './link-plugin'
 import {ELEMENT_QUOTE} from './quote-plugin'
-import {SlateBlock, EditorLink, EditorQuote} from './types'
+import type {EditorBlock, EditorImage, EditorLink, EditorQuote, EditorTextRun} from './types'
 
-export function toEditorValue(entry: Document): Array<SlateBlock> {
-  // console.log(
-  //   '🚀 ~ file: to-editor-value.ts ~ line 9 ~ toEditorValue ~ entry',
-  //   entry,
-  // )
+export function toEditorValue(entry: Document): Array<EditorBlock> {
   const currentDoc = entry
-
   const blocksMap = entry.blocks
   const linksMap = entry.links
   return currentDoc.children.map((blockId: string) => {
     const block = blocksMap[blockId]
     return {
-      id: block?.id,
+      id: block.id,
       type: ELEMENT_BLOCK,
       depth: 0,
       listStyle: block.childListStyle,
-      children: block.elements.map<InlineElement>(
-        ({textRun, image, quote}: InlineElement) => {
+      children: block.elements.map(
+        ({textRun, image, quote}) => {
           if (image) {
             return {
               type: 'image',
@@ -33,7 +29,7 @@ export function toEditorValue(entry: Document): Array<SlateBlock> {
             if (textRun.linkKey) {
               return toEditorLink(linksMap, textRun)
             } else {
-              return textRun
+              return toEditorTextRun(textRun)
             }
           } else if (quote) {
             return toEditorQuote(linksMap, quote)
@@ -50,12 +46,11 @@ export function toEditorLink(
   links: {[key: string]: Link},
   entry: TextRun,
 ): EditorLink {
-  const {linkKey, ...rest} = entry
   return {
-    id: linkKey,
-    url: links[linkKey].uri,
+    id: entry.linkKey,
+    url: links[entry.linkKey].uri,
     type: ELEMENT_LINK,
-    children: [rest],
+    children: [toEditorTextRun(entry)],
   }
 }
 
@@ -65,8 +60,20 @@ export function toEditorQuote(
 ): EditorQuote {
   return {
     type: ELEMENT_QUOTE,
-    id: quote.linkKey,
-    url: linksMap[quote.linkKey].uri,
+    id: entry.linkKey,
+    url: links[entry.linkKey].uri,
     children: [{text: ''}],
   }
+}
+
+export function toEditorTextRun(entry: TextRun): EditorTextRun {
+  let result: EditorTextRun = {text: entry.text}
+  const trueValues = Object.keys(entry).map((key: keyof EditorTextRun) => {
+    if (key == 'text' || key == 'linkKey') return
+    if (entry[key]) {
+      result[key] = entry[key]
+    }
+
+  })
+  return result
 }
