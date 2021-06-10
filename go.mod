@@ -34,7 +34,6 @@ require (
 	github.com/ipfs/go-ipfs-blockstore v1.0.3
 	github.com/ipfs/go-ipfs-chunker v0.0.5
 	github.com/ipfs/go-ipfs-config v0.12.0
-	github.com/ipfs/go-ipfs-ds-help v1.0.0
 	github.com/ipfs/go-ipfs-exchange-interface v0.0.1
 	github.com/ipfs/go-ipfs-exchange-offline v0.0.1
 	github.com/ipfs/go-ipfs-provider v0.4.3
@@ -72,7 +71,9 @@ require (
 	github.com/rs/xid v1.2.1
 	github.com/sanity-io/litter v1.3.0
 	github.com/stretchr/testify v1.7.0
+	github.com/tidwall/tinyqueue v0.1.1
 	github.com/whyrusleeping/cbor-gen v0.0.0-20210422071115-ad5b82622e0f
+	go.etcd.io/bbolt v1.3.6
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.7.0
 	go.uber.org/fx v1.13.1
@@ -81,7 +82,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/net v0.0.0-20210316092652-d523dce5a7f4 // indirect
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
-	golang.org/x/sys v0.0.0-20210514084401-e8d321eab015 // indirect
+	golang.org/x/sys v0.0.0-20210603125802-9665404d3644 // indirect
 	golang.org/x/text v0.3.5 // indirect
 	google.golang.org/genproto v0.0.0-20201028140639-c77dae4b0522 // indirect
 	google.golang.org/grpc v1.33.2

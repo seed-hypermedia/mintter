@@ -73,7 +73,7 @@ func TestRegister_Concurrent(t *testing.T) {
 	}
 
 	// One register request must succeed and backend must become ready eventually.
-	<-back.ready
+	<-back.p2p.Ready()
 
 	for i := 0; i < c-1; i++ {
 		err := <-errs

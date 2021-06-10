@@ -44,7 +44,6 @@ func TestLibp2p(t *testing.T) {
 		fx.Supply(cfg),
 		fx.Supply(repo),
 		fx.Provide(
-			provideLifecycle,
 			func() datastore.Batching {
 				return ds
 			},
@@ -95,7 +94,7 @@ func TestDaemonEndToEnd(t *testing.T) {
 	defer func() {
 		stopCtx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 		defer cancel()
-		require.NoError(t, app.Stop(stopCtx))
+		require.Equal(t, context.Canceled, app.Stop(stopCtx))
 	}()
 
 	<-srv.ready
@@ -161,16 +160,4 @@ func TestDaemonEndToEnd(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, peerInfo)
 	require.NotEqual(t, "", peerInfo.AccountId)
-
-	// require.NoError(t,
-	// 	filepath.Walk(cfg.RepoPath, func(path string, info os.FileInfo, err error) error {
-	// 		if err != nil {
-	// 			return err
-	// 		}
-
-	// 		fmt.Println(path)
-
-	// 		return nil
-	// 	}),
-	// )
 }

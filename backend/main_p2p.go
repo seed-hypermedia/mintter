@@ -2,14 +2,16 @@ package backend
 
 import (
 	"context"
+	"fmt"
+	"path/filepath"
 
 	"mintter/backend/config"
 	"mintter/backend/ipfsutil"
+	"mintter/backend/ipfsutil/providing"
 
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-datastore"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
-	provider "github.com/ipfs/go-ipfs-provider"
 	"github.com/libp2p/go-libp2p"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -21,7 +23,6 @@ var moduleP2P = fx.Options(
 		provideBootstrapPeers,
 		ipfsutil.NewBlockstore,
 		provideBitswap,
-		provideReprovider,
 		provideBlockService,
 		provideP2P,
 	),
@@ -36,7 +37,7 @@ func provideBootstrapPeers(cfg config.P2P) ipfsutil.Bootstrappers {
 }
 
 // provideLibp2p assembles libp2p node ready to use. Listening must be started elsewhere.
-func provideLibp2p(lc *lifecycle, cfg config.P2P, ds datastore.Batching, r *repo, boot ipfsutil.Bootstrappers) (*ipfsutil.Libp2p, error) {
+func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ds datastore.Batching, r *repo, boot ipfsutil.Bootstrappers) (*ipfsutil.Libp2p, error) {
 	opts := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
 	}
@@ -67,7 +68,7 @@ func provideLibp2p(lc *lifecycle, cfg config.P2P, ds datastore.Batching, r *repo
 	return node, nil
 }
 
-func provideBitswap(lc *lifecycle, n *ipfsutil.Libp2p, bs blockstore.Blockstore) (*ipfsutil.Bitswap, error) {
+func provideBitswap(lc fx.Lifecycle, n *ipfsutil.Libp2p, bs blockstore.Blockstore) (*ipfsutil.Bitswap, error) {
 	bswap, err := ipfsutil.NewBitswap(n.Host, n.Routing, bs)
 	if err != nil {
 		return nil, err
@@ -82,25 +83,6 @@ func provideBitswap(lc *lifecycle, n *ipfsutil.Libp2p, bs blockstore.Blockstore)
 	return bswap, nil
 }
 
-func provideReprovider(lc *lifecycle, bs blockstore.Blockstore, ds datastore.Batching, n *ipfsutil.Libp2p) (provider.System, error) {
-	sys, err := ipfsutil.NewProviderSystem(bs, ds, n.Routing)
-	if err != nil {
-		return nil, err
-	}
-
-	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			sys.Run()
-			return nil
-		},
-		OnStop: func(context.Context) error {
-			return sys.Close()
-		},
-	})
-
-	return sys, nil
-}
-
 func provideBlockService(bs blockstore.Blockstore, bswap *ipfsutil.Bitswap) (blockservice.BlockService, error) {
 	blksvc := blockservice.New(bs, bswap)
 
@@ -110,7 +92,20 @@ func provideBlockService(bs blockstore.Blockstore, bswap *ipfsutil.Bitswap) (blo
 	return blksvc, nil
 }
 
-func provideP2P(log *zap.Logger, cfg config.P2P, libp2p *ipfsutil.Libp2p, boot ipfsutil.Bootstrappers) (*p2pNode, error) {
-	p2p := newP2PNode(cfg, log.Named("p2p"), libp2p, boot)
+func provideP2P(lc fx.Lifecycle, log *zap.Logger, bs blockstore.Blockstore, repo *repo, cfg config.P2P, libp2p *ipfsutil.Libp2p, boot ipfsutil.Bootstrappers) (*p2pNode, error) {
+	// TODO: provide real strategy for reproviding.
+	prov, err := providing.New(filepath.Join(repo.path, "providing/provided.db"), libp2p.Routing, bs.AllKeysChan)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create provider: %w", err)
+	}
+
+	p2p := newP2PNode(cfg, log.Named("p2p"), libp2p, prov, boot)
+
+	lc.Append(fx.Hook{
+		OnStop: func(context.Context) error {
+			return prov.Close()
+		},
+	})
+
 	return p2p, nil
 }

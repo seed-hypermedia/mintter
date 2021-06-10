@@ -2,7 +2,6 @@ package backend
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -23,8 +22,7 @@ import (
 	"mintter/backend/testutil"
 )
 
-func TestProvide(t *testing.T) {
-	t.SkipNow()
+func TestProvideAccount(t *testing.T) {
 	alice := makeTestBackend(t, "alice", true)
 	bob := makeTestBackend(t, "bob", true)
 	carol := makeTestBackend(t, "carol", true)
@@ -33,19 +31,15 @@ func TestProvide(t *testing.T) {
 	connectPeers(t, ctx, alice, bob)
 	connectPeers(t, ctx, bob, carol)
 
-	fmt.Println("CONNECTED")
+	time.Sleep(2 * time.Second)
 
-	time.Sleep(10 * time.Second)
-	fmt.Println("Finding")
+	var i int
 	addrs := carol.p2p.libp2p.Routing.FindProvidersAsync(ctx, cid.Cid(alice.repo.acc.id), 100)
-	for a := range addrs {
-		fmt.Println(a)
+	for range addrs {
+		i++
 	}
 
-	// fmt.Println("Start get block")
-	// blk, err := carol.p2p.BlockService.GetBlock(ctx, cid.Cid(alice.repo.acc.id))
-	// require.NoError(t, err)
-	// fmt.Println(blk)
+	require.Greater(t, i, 0, "carol must find alice's account via bob")
 }
 
 func makeTestBackend(t *testing.T, name string, ready bool) *backend {
@@ -72,7 +66,6 @@ func makeTestBackend(t *testing.T, name string, ready bool) *backend {
 			repo,
 		),
 		fx.Provide(
-			provideLifecycle,
 			func() datastore.Batching {
 				return ds
 			},
@@ -85,14 +78,10 @@ func makeTestBackend(t *testing.T, name string, ready bool) *backend {
 		moduleP2P,
 		fx.Populate(&back),
 	)
-	defer func() {
-		app.RequireStart()
-		if ready {
-			<-back.ready
-		}
-	}()
+
 	t.Cleanup(func() {
-		app.RequireStop()
+		err := app.Stop(context.Background())
+		require.Equal(t, context.Canceled, err)
 	})
 
 	if ready {
@@ -100,6 +89,12 @@ func makeTestBackend(t *testing.T, name string, ready bool) *backend {
 		acc, err := repo.Account()
 		require.NoError(t, err)
 		require.NoError(t, back.register(context.Background(), newState(cid.Cid(acc.id), nil), tester.Binding))
+	}
+
+	app.RequireStart()
+
+	if ready {
+		<-back.p2p.Ready()
 	}
 
 	return back
