@@ -13,7 +13,7 @@ import {useSidePanel} from '../sidepanel'
 import {EditorComponent} from '../editor/editor-component'
 import 'show-keys'
 import {toDocument} from '../editor/to-document'
-import type {SlateBlock} from '../editor/types'
+import type {EditorBlock} from '../editor/types'
 import {ListStyle, Document} from '@mintter/client'
 import {toEditorValue} from '../editor/to-editor-value'
 
@@ -168,7 +168,7 @@ function useMintterEditor(docId: string): Omit<
   UseQueryResult<Document>,
   'data'
 > & {
-  data?: {document?: Document; editorValue?: Array<SlateBlock>}
+  data?: {document?: Document; editorValue?: Array<EditorBlock>}
 } {
   const draftQuery = useDraft(docId)
 

@@ -1,5 +1,11 @@
 import {lazy} from 'react'
-import {Switch, Route, useRouteMatch, Redirect} from 'react-router-dom'
+import {
+  Switch,
+  Route,
+  useRouteMatch,
+  Redirect,
+  RouteComponentProps,
+} from 'react-router-dom'
 import {lazily} from 'react-lazily'
 import {createPath, getPath} from './utils/routes'
 import {AppSpinner} from './components/app-spinner'
@@ -34,7 +40,7 @@ export function AuthorNode({path = '/'}: {path?: string}) {
           <OnboardingPage />
         </Route>
         <Route
-          render={route => (
+          render={(route: RouteComponentProps) => (
             <Redirect
               to={{
                 pathname: `${getPath(route.match)}/welcome`,

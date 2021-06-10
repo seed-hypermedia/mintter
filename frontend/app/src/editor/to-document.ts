@@ -1,7 +1,7 @@
 import {ListStyle, Document, Block} from '@mintter/client'
 import {ELEMENT_LINK} from './link-plugin'
 import {ELEMENT_QUOTE} from './quote-plugin'
-import type {SlateBlock, EditorTextRun, EditorQuote, EditorLink} from './types'
+import type {EditorBlock, EditorTextRun, EditorQuote, EditorLink} from './types'
 import {toInlineElement, toQuote, toTextRun, toLink} from './inline-element'
 
 export type ToDocumentProps = {
@@ -9,7 +9,7 @@ export type ToDocumentProps = {
   title?: string
   subtitle?: string
   author: string
-  blocks?: Array<SlateBlock>
+  blocks?: Array<EditorBlock>
   childrenListStyle: ListStyle
 }
 

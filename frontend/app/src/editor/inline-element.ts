@@ -42,12 +42,6 @@ export function toInlineQuote(quote: Quote): InlineElement {
   })
 }
 
-export type ToQuoteResult = {
-  id: string;
-  quote: Quote;
-  link: Link;
-};
-
 export function toQuote(entry: EditorQuote): Quote {
   return Quote.fromPartial({
     linkKey: entry.id,
