@@ -8,7 +8,6 @@ import {
   OnboardingStepDescription,
   OnboardingStepTitle,
 } from './common';
-import { queryClient } from '../../app-providers';
 
 export const Complete: React.FC = () => {
   const history = useHistory();

@@ -1,32 +1,28 @@
-import * as React from 'react';
-import { useHistory, useParams } from 'react-router-dom';
-import slugify from 'slugify';
-import type documents from '@mintter/api/documents/v1alpha/documents_pb';
+import {useMemo, useEffect} from 'react'
+import {useHistory, useParams} from 'react-router-dom'
+import slugify from 'slugify'
+import type {Publication as TPublication, Document} from '@mintter/client'
 import {
   useDraftsList,
   usePublication as usePublicationQuery,
-} from '@mintter/hooks';
-import { useSidePanel } from '../sidepanel';
-import * as apiClient from '@mintter/client';
-import { useMutation } from 'react-query';
-import { Text } from '@mintter/ui/text';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Container } from '@components/container';
-import { buildDocument } from '@utils/generate';
+} from '@mintter/client/hooks'
+import {useSidePanel} from '../sidepanel'
+import {Text, Box, Button} from '@mintter/ui'
+import {Container} from '../components/container'
+import {mock} from '@mintter/client'
 
-export default function Publication() {
-  const history = useHistory();
+export default function Publication(): JSX.Element {
+  const history = useHistory()
   // const { addToast } = useToasts();
 
   // request document
-  const { isLoading, isError, error, data, value } = usePublication();
+  const {isLoading, isError, error, data, value} = usePublication()
 
   // sidepanel
-  const { isSidepanelOpen, sidepanelObjects, sidepanelSend } = useSidePanel();
+  const {isSidepanelOpen, sidepanelObjects, sidepanelSend} = useSidePanel()
 
   // get Drafts for editorOptions
-  const { data: drafts = [] } = useDraftsList();
+  const {data: drafts = []} = useDraftsList()
 
   // draftCreation
   // const [createDraft] = useMutation(apiClient.createDraft, {
@@ -66,7 +62,7 @@ export default function Publication() {
   //     block,
   //     destination,
   //   }: {
-  //     block: SlateBlock;
+  //     block: EditorBlock;
   //     destination?: Document.AsObject;
   //   }) => {
   //     const draftUrl = await createTransclusion({
@@ -127,12 +123,12 @@ export default function Publication() {
 
   // start rendering
   if (isError) {
-    console.error('useDraft error: ', error);
-    return <Text>Publication ERROR</Text>;
+    console.error('useDraft error: ', error)
+    return <Text>Publication ERROR</Text>
   }
 
   if (isLoading) {
-    return <Text>loading publication...</Text>;
+    return <Text>loading publication...</Text>
   }
 
   return (
@@ -163,7 +159,7 @@ export default function Publication() {
       >
         controls
       </Box>
-      <Container css={{ gridArea: 'maincontent', marginBottom: 300 }}>
+      <Container css={{gridArea: 'maincontent', marginBottom: 300}}>
         <PublicationHeader document={data?.document} />
         {value && <p>EDITOR HERE</p>}
       </Container>
@@ -179,17 +175,15 @@ export default function Publication() {
         >
           <Box>
             {/* <MintterIcon size="1.5em" /> */}
-            <Button
-              onClick={() => sidepanelSend?.({ type: 'SIDEPANEL_CLOSE' })}
-            >
+            <Button onClick={() => sidepanelSend?.({type: 'SIDEPANEL_CLOSE'})}>
               Close Sidepanel
               {/* <Icons.ChevronRight size={14} color="currentColor" /> */}
             </Button>
           </Box>
           <Box as="ul" aria-label="sidepanel list">
-            {sidepanelObjects.map((object) => (
+            {sidepanelObjects.map(object => (
               // <SidePanelObject key={object} id={object} />
-              <Box />
+              <Box key={object} />
             ))}
           </Box>
           {sidepanelObjects.length === 0 && (
@@ -199,7 +193,7 @@ export default function Publication() {
       ) : null}
       {/* <PublicationModal document={data.document} /> */}
     </Box>
-  );
+  )
 }
 
 // function PublicationError(props) {
@@ -210,48 +204,44 @@ export default function Publication() {
 
 function usePublication() {
   // get document version
-  const { docId, docVersion = '' } = useParams<{
-    docId: string;
-    docVersion: string;
-  }>();
+  const {docId, docVersion = ''} =
+    useParams<{
+      docId: string
+      docVersion: string
+    }>()
 
-  const history = useHistory();
-  const documentId = React.useMemo(() => docId.split('-').slice(-1)[0], [
-    docId,
-  ]);
+  const history = useHistory()
+  const documentId = useMemo(() => docId.split('-').slice(-1)[0], [docId])
 
-  const { isSuccess, ...document } = usePublicationQuery(
-    documentId,
-    docVersion,
-  );
+  const {isSuccess, ...document} = usePublicationQuery(documentId, docVersion)
 
-  const data: documents.Publication.AsObject = {
-    document: React.useMemo(() => buildDocument().toObject(), []),
+  const data: TPublication = {
+    document: useMemo(() => mock.mockDocument(), []),
     version: docVersion,
-  };
+  }
 
   // add slug to URL
-  React.useEffect(() => {
+  useEffect(() => {
     if (isSuccess && data?.document) {
-      const { title } = data?.document;
+      const {title} = data?.document
       if (title && !docId.includes('-')) {
         const titleSlug = slugify(title, {
           lower: true,
           remove: /[*+~.?()'"!:@]/g,
-        });
+        })
         history.replace(
           `/p/${titleSlug}-${documentId}${docVersion ? `/${docVersion}` : ''}`,
-        );
+        )
       }
     }
-  }, []);
+  }, [])
 
   return {
     ...document,
     isSuccess,
     data,
     value: [],
-  };
+  }
   // return {
   //   ...document,
   //   isSuccess,
@@ -267,7 +257,7 @@ function usePublication() {
   // };
 }
 
-function PublicationCTA({ handleInteract, visible }: any) {
+function PublicationCTA({handleInteract, visible}: any) {
   return (
     <Box>
       <Text>
@@ -283,10 +273,10 @@ function PublicationCTA({ handleInteract, visible }: any) {
         Interact with this document
       </Button>
     </Box>
-  );
+  )
 }
 
-function SidePanelCTA({ handleInteract }: any) {
+function SidePanelCTA({handleInteract}: any) {
   return (
     <Box>
       <Text as="h3">Want to add your thougts to this subject?</Text>
@@ -301,14 +291,10 @@ function SidePanelCTA({ handleInteract }: any) {
         Write about this Article
       </button>
     </Box>
-  );
+  )
 }
 
-function PublicationHeader({
-  document,
-}: {
-  document: documents.Document.AsObject | undefined;
-}) {
+function PublicationHeader({document}: {document: Document | undefined}) {
   return document ? (
     <Box
       css={{
@@ -320,7 +306,7 @@ function PublicationHeader({
         position: 'relative',
       }}
     >
-      <Box css={{ display: 'flex', gap: '$4', alignItems: 'center' }}>
+      <Box css={{display: 'flex', gap: '$4', alignItems: 'center'}}>
         <Box
           css={{
             background: '$background-neutral',
@@ -334,7 +320,7 @@ function PublicationHeader({
       <Text as="h1" size="8">
         {document.title}
       </Text>
-      <Text size="6" color="alt" css={{ marginTop: '$5' }}>
+      <Text size="6" color="alt" css={{marginTop: '$5'}}>
         Published on:
       </Text>
       {document.subtitle && (
@@ -351,47 +337,47 @@ function PublicationHeader({
         }}
       />
     </Box>
-  ) : null;
+  ) : null
 }
 
 function fallbackCopyTextToClipboard(text: string) {
-  const textArea = document.createElement('textarea');
-  textArea.value = text;
+  const textArea = document.createElement('textarea')
+  textArea.value = text
 
   // Avoid scrolling to bottom
-  textArea.style.top = '0';
-  textArea.style.left = '0';
-  textArea.style.position = 'fixed';
-  textArea.style.opacity = '0';
+  textArea.style.top = '0'
+  textArea.style.left = '0'
+  textArea.style.position = 'fixed'
+  textArea.style.opacity = '0'
 
-  document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
-  let result;
+  document.body.appendChild(textArea)
+  textArea.focus()
+  textArea.select()
+  let result
 
   try {
-    document.execCommand('copy');
-    result = true;
+    document.execCommand('copy')
+    result = true
   } catch (err) {
-    console.error('Fallback: Oops, unable to copy', err);
-    result = false;
+    console.error('Fallback: Oops, unable to copy', err)
+    result = false
   }
 
-  document.body.removeChild(textArea);
-  return result;
+  document.body.removeChild(textArea)
+  return result
 }
 function copyTextToClipboard(text: string) {
   if (!navigator.clipboard) {
-    return fallbackCopyTextToClipboard(text);
+    return fallbackCopyTextToClipboard(text)
   }
   return navigator.clipboard.writeText(text).then(
     () => {
       // console.log('Async: Copying to clipboard was successful!!')
-      return true;
+      return true
     },
-    (err) => {
-      console.error('Async: Could not copy text: ', err);
-      return false;
+    err => {
+      console.error('Async: Could not copy text: ', err)
+      return false
     },
-  );
+  )
 }

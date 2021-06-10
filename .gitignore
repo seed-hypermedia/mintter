@@ -18,14 +18,6 @@ out
 
 rice-box.go
 
-# temp files
-frontent/old_pages
-out
-
-# frontend v2 test
-frontendv2
-_old-editor
-
 # Bazel
 user.bazelrc
 bazel-*

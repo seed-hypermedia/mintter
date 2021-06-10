@@ -1,5 +1,6 @@
-.snowpack
-build
 node_modules
-cypress/integration/examples
-cypress/fixtures/example.json
+.DS_Store
+dist
+build
+dist-ssr
+*.local

@@ -1,34 +1,31 @@
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import toast from 'react-hot-toast';
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 
-import * as client from '@mintter/client';
-import { useAccount } from '@mintter/hooks';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Text } from '@mintter/ui/text';
-import { TextField } from '@mintter/ui/text-field';
-import { useTheme } from '@mintter/ui/theme';
+import { updateAccount } from '@mintter/client'
+import { useAccount } from '@mintter/client/hooks'
+import { Box, Button, Text, TextField, useTheme } from '@mintter/ui'
 
-import { Container } from '@components/container';
-import { PeerAddrs } from '@components/peer-addrs';
-import { PeerList } from '@components/peer-list';
+import { Container } from '../components/container'
+import { PeerAddrs } from '../components/peer-addrs'
+import { PeerList } from '../components/peer-list'
+import { Separator } from '../components/separator'
 
-import { Separator } from '@components/separator';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query'
 
 type ProfileInformationDataType = {
-  alias: string;
-  email: string;
-  bio: string;
-};
+  alias: string
+  email: string
+  bio: string
+}
 
-export function Settings() {
-  const theme = useTheme();
-  const account = useAccount();
-  const { data } = account;
+export function Settings(): JSX.Element {
+  const theme = useTheme()
+  const account = useAccount()
+  const queryClient = useQueryClient()
+  const { data } = account
 
-  const updateProfile = useMutation(client.updateAccount);
+  const updateProfile = useMutation(updateAccount)
 
   const form = useForm<ProfileInformationDataType>({
     mode: 'onChange',
@@ -37,33 +34,38 @@ export function Settings() {
       email: '',
       bio: '',
     },
-  });
+  })
 
   useEffect(() => {
     if (data?.profile) {
-      const { alias = '', email = '', bio = '' } = data?.profile;
-      form.setValue('alias', alias);
-      form.setValue('email', email);
-      form.setValue('bio', bio);
+      const { alias = '', email = '', bio = '' } = data?.profile
+      form.setValue('alias', alias)
+      form.setValue('email', email)
+      form.setValue('bio', bio)
     }
-  }, [data]);
+  }, [data, form])
 
-  const onSubmit = form.handleSubmit(async (data) => {
-    await toast.promise(updateProfile.mutateAsync(data), {
-      loading: 'Updating profile',
-      success: 'Profile updated',
-      error: 'Error updating profile',
-    });
-    console.log('edit complete!');
-  });
+  const onSubmit = form.handleSubmit(async data => {
+    await toast
+      .promise(updateProfile.mutateAsync(data), {
+        loading: 'Updating profile',
+        success: 'Profile updated',
+        error: 'Error updating profile',
+      })
+      .finally(() => {
+        queryClient.invalidateQueries('Account')
+      })
+
+    console.log('edit complete!')
+  })
 
   if (account.isLoading) {
-    return <Text>loading...</Text>;
+    return <Text>loading...</Text>
   }
 
   if (account.isError) {
-    console.error(account.error);
-    return <Text>error!</Text>;
+    console.error(account.error)
+    return <Text>error!</Text>
   }
 
   return (
@@ -113,17 +115,18 @@ export function Settings() {
             id="email"
             name="email"
             ref={form.register({
-              pattern: {
-                value: /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/,
-                message: 'Please type a valid email.',
-              },
+              // pattern: {
+              //   // eslint-disable-next-line no-control-regex
+              //   value: /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/,
+              //   message: 'Please type a valid email.',
+              // },
             })}
             placeholder="Real email that could be publically shared"
             hint={form.errors.email?.message}
           />
 
           <TextField
-            // TODO: Fix types
+            // TODO: fix types
             // @ts-ignore
             as="textarea"
             id="bio"
@@ -185,15 +188,14 @@ export function Settings() {
             </Text>
           </Box>
           <Separator />
-        <Text as="h2" size="8">
-          Devices List
-        </Text>
-        <Box css={{ alignItems: 'center', display: 'flex', gap: '$3' }}>
-          <PeerList />
+          <Text as="h2" size="8">
+            Devices List
+          </Text>
+          <Box css={{ alignItems: 'center', display: 'flex', gap: '$3' }}>
+            <PeerList />
+          </Box>
         </Box>
-        </Box>
-        
       </Container>
     </Box>
-  );
+  )
 }

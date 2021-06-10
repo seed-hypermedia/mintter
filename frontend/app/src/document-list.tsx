@@ -1,16 +1,14 @@
-import { format } from 'date-fns';
-import { useMemo, useState } from 'react';
-import { useLocation, useRouteMatch } from 'react-router-dom';
+import {useMemo, useState} from 'react'
+import {format} from 'date-fns'
+import {useLocation, useRouteMatch} from 'react-router-dom'
 
-import type documents from '@mintter/api/documents/v1alpha/documents_pb';
-import { Alert } from '@mintter/ui/alert';
-import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
+import {Alert, Box, Text} from '@mintter/ui'
 
-import { Avatar } from '@components/avatar';
-import { getPath } from '@utils/routes';
+import {Avatar} from './components/avatar'
+import {Link} from './components/link'
 
-import { Link } from './components/link';
+import {getPath} from './utils/routes'
+import type {Publication, Document} from '@mintter/client'
 
 export function DocumentList({
   data,
@@ -21,17 +19,17 @@ export function DocumentList({
 }: {
   // TODO: fix types
   // data: documents.Document.AsObject[];
-  data: any;
-  isLoading: boolean;
-  isError: boolean;
-  error: any;
-  onDeleteDocument?: (id: string) => Promise<void>;
+  data: any
+  isLoading: boolean
+  isError: boolean
+  error: any
+  onDeleteDocument?: (id: string) => Promise<void>
 }) {
   if (isLoading) {
-    return <p>Loading...</p>;
+    return <p>Loading...</p>
   }
   if (isError) {
-    return <p>ERROR</p>;
+    return <p>ERROR</p>
   }
 
   return (
@@ -45,7 +43,7 @@ export function DocumentList({
         />
       ))}
     </div>
-  );
+  )
 }
 
 function ListItem({
@@ -53,39 +51,34 @@ function ListItem({
   onDeleteDocument,
 }: {
   item: {
-    publication: documents.Publication;
-    version: string;
-    document?: documents.Document.AsObject;
-  }; // TODO: fix types (Document.AsObject + Document)
-  onDeleteDocument?: (version: string) => void;
+    publication: Publication
+    version: string
+    document?: Document
+  } // TODO: fix types (Document.AsObject + Document)
+  onDeleteDocument?: (version: string) => void
 }) {
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
 
-  const match = useRouteMatch();
-  const location = useLocation();
+  const match = useRouteMatch()
+  const location = useLocation()
   // const [prefetched, setPrefetch] = React.useState<boolean>(false)
-  const { publication, version, document } = item;
+  const {publication, version, document} = item
 
-  const {
-    id,
-    title,
-    subtitle,
-    author: itemAuthor,
-  } = document as documents.Document.AsObject;
+  const {id, title, subtitle, author: itemAuthor} = document as Document
 
-  const theTitle = title ? title : 'Untitled Document';
+  const theTitle = title ? title : 'Untitled Document'
 
-
-  const isDraft = useMemo(() => location.pathname.includes('drafts'), [
-    location.pathname,
-  ]);
+  const isDraft = useMemo(
+    () => location.pathname.includes('drafts'),
+    [location.pathname],
+  )
 
   const to = useMemo(() => {
     const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${id}${
       version ? `/${version}` : ''
-    }`;
-    return path;
-  }, [location.pathname]);
+    }`
+    return path
+  }, [location.pathname])
   // function handlePrefetch() {
   // if (!prefetched) {
   // TODO: prefetch on hover
@@ -95,12 +88,12 @@ function ListItem({
   // }
 
   const date = useMemo(
-    () => publication?.getDocument()?.getCreateTime()?.toDate() || new Date(),
+    () => publication.document?.createTime?.getDate() || new Date(),
     [publication],
-  );
+  )
 
   return (
-    <Box css={{ position: 'relative' }}>
+    <Box css={{position: 'relative'}}>
       <Box
         // TODO: fix types
         // @ts-ignore
@@ -140,11 +133,11 @@ function ListItem({
         >
           {/* {!isDraft && location.pathname !== '/library/my-publications' && ( */}
 
-          <Avatar css={{ gridArea: 'avatar' }} />
+          <Avatar css={{gridArea: 'avatar'}} />
           {/* <Text size="1" css={{ gridArea: 'author', alignSelf: 'center' }}>
             {author?.username}
           </Text> */}
-          <Box css={{ gridArea: 'price' }}>
+          <Box css={{gridArea: 'price'}}>
             <Text
               size="1"
               css={{
@@ -159,7 +152,7 @@ function ListItem({
               0.09$
             </Text>
           </Box>
-          <Box css={{ gridArea: 'content' }}>
+          <Box css={{gridArea: 'content'}}>
             <Text
               size="7"
               // TODO: fix types
@@ -179,7 +172,7 @@ function ListItem({
               </Text>
             )}
           </Box>
-          <Box css={{ gridArea: 'footer' }}>
+          <Box css={{gridArea: 'footer'}}>
             <Text size="1" color="muted">
               {format(new Date(date), 'MMMM d, yyyy')}
             </Text>
@@ -202,8 +195,8 @@ function ListItem({
                   size="1"
                   color="danger"
                   onClick={(e: any) => {
-                    e.preventDefault();
-                    setIsDeleteDialogOpen(true);
+                    e.preventDefault()
+                    setIsDeleteDialogOpen(true)
                   }}
                 >
                   trash
@@ -230,5 +223,5 @@ function ListItem({
         </Box>
       </Box>
     </Box>
-  );
+  )
 }

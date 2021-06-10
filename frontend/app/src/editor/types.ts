@@ -1,37 +1,40 @@
-import type * as documents from '@mintter/api/documents/v1alpha/documents_pb';
+import type { TextRun, ListStyle, BlockType } from '@mintter/client'
+import type { ELEMENT_BLOCK } from './block-plugin'
+import type { ELEMENT_LINK } from './link-plugin'
+import type { ELEMENT_QUOTE } from './quote-plugin'
 
 export type SlateVoidChildren = {
-  children: Array<{ text: string }>;
-};
-export type EditorTextRun = Partial<Omit<documents.TextRun.AsObject, 'text'>> &
-  Pick<documents.TextRun.AsObject, 'text'>;
+  children: Array<{ text: string }>
+}
+export type EditorTextRun = Partial<Omit<TextRun, 'text'>> &
+  Pick<TextRun, 'text'>
 
-export type SlateQuote = SlateVoidChildren & {
-  type: string;
-  id: string;
-  url: string;
-};
+export type EditorQuote = SlateVoidChildren & {
+  type: typeof ELEMENT_QUOTE
+  id: string
+  url: string
+}
 
-export type SlateImage = SlateVoidChildren & {
-  type: string;
-  url: string;
-  alt_text: string;
-};
+export type EditorImage = SlateVoidChildren & {
+  type: 'image'
+  url: string
+  alt_text: string
+}
 
-export type SlateInlineElement = EditorTextRun | SlateQuote | SlateImage;
+export type EditorInlineElement = EditorTextRun | EditorQuote | EditorImage
 
-export type SlateLink = {
-  type: string;
-  id: string;
-  url: string;
-  children: EditorTextRun[];
-};
+export type EditorLink = {
+  type: typeof ELEMENT_LINK
+  id: string
+  url: string
+  children: Array<EditorTextRun>
+}
 
-export type SlateBlock = {
-  type: string;
-  id: string;
-  depth: number;
-  blockType?: documents.Block.Type;
-  listStyle: documents.ListStyle;
-  children: Array<EditorTextRun | SlateQuote | SlateLink>; // TODO: fix types
-};
+export type EditorBlock = {
+  type: typeof ELEMENT_BLOCK
+  id: string
+  // depth: number
+  blockType?: BlockType
+  listStyle: ListStyle
+  children: Array<EditorTextRun | EditorQuote | EditorLink | EditorImage> // TODO: fix types
+}

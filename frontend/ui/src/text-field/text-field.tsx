@@ -1,12 +1,12 @@
 import * as Label from '@radix-ui/react-label'
 import autosize from 'autosize'
-import {forwardRef, useLayoutEffect, useRef} from 'react'
+import { forwardRef, useLayoutEffect, useRef } from 'react'
 import mergeRefs from 'react-merge-refs'
-import {nanoid} from 'nanoid'
+import { nanoid } from 'nanoid'
 
-import {Box} from '../box'
-import {styled} from '../stitches.config'
-import {Text} from '../text'
+import { Box } from '../box'
+import { styled } from '../stitches.config'
+import { Text } from '../text'
 
 const InputContainer = styled(Box, {
   display: 'flex',
@@ -148,63 +148,60 @@ const TextFieldHint = styled(Text, {
   },
 })
 
-export const TextField = forwardRef<
-  HTMLInputElement,
-  React.ComponentProps<typeof Input> & {
-    label?: string
-    hint?: string
-    containerCss?: React.ComponentProps<typeof InputContainer>['css']
-  }
->(
-  (
-    {label, status = 'neutral', hint, id = nanoid(), containerCss, ...props},
-    ref,
-  ) => {
-    const localRef = useRef<HTMLInputElement>(null)
+type TextFieldProps = React.ComponentProps<typeof Input> & {
+  label?: string
+  hint?: string
+  containerCss?: React.ComponentProps<typeof InputContainer>['css']
+}
 
-    useLayoutEffect(() => {
-      if ((props as any).as === 'textarea') {
-        autosize(localRef.current!)
-      }
-    }, [props])
+export const TextField = forwardRef<HTMLInputElement, TextFieldProps>((
+  { label, status = 'neutral', hint, id = nanoid(), containerCss, ...props }: TextFieldProps,
+  ref,
+) => {
+  const localRef = useRef<HTMLInputElement>(null)
 
-    return (
-      // TODO: Fix types
-      // @ts-ignore
-      <InputContainer size={props.size} css={containerCss}>
-        {label ? (
-          <Label.Root
-            as={Text}
-            htmlFor={id}
-            size={
-              props.size === '1' ? '2' : props.size === '2' ? '3' : undefined
-            }
-          >
-            {label}
-          </Label.Root>
-        ) : null}
-        {/* 
+  useLayoutEffect(() => {
+    if ((props as any).as === 'textarea') {
+      autosize(localRef.current!)
+    }
+  }, [props])
+
+  return (
+    // TODO: Fix types
+    // @ts-ignore
+    <InputContainer size={props.size} css={containerCss}>
+      {label ? (
+        <Label.Root
+          as={Text}
+          htmlFor={id}
+          size={
+            props.size === '1' ? '2' : props.size === '2' ? '3' : undefined
+          }
+        >
+          {label}
+        </Label.Root>
+      ) : null}
+      {/* 
       TODO: Fix types
       // @ts-ignore */}
-        <Input
-          ref={mergeRefs([localRef, ref])}
-          id={id}
+      <Input
+        ref={mergeRefs([localRef, ref])}
+        id={id}
+        status={status}
+        {...props}
+      />
+      {hint ? (
+        <TextFieldHint
           status={status}
-          {...props}
-        />
-        {hint ? (
-          <TextFieldHint
-            status={status}
-            size={
-              props.size === '1' ? '1' : props.size === '2' ? '2' : undefined
-            }
-          >
-            {hint}
-          </TextFieldHint>
-        ) : null}
-      </InputContainer>
-    )
-  },
+          size={
+            props.size === '1' ? '1' : props.size === '2' ? '2' : undefined
+          }
+        >
+          {hint}
+        </TextFieldHint>
+      ) : null}
+    </InputContainer>
+  )
+},
 )
-
-export type TextFieldProps = React.ComponentProps<typeof TextField>
+TextField.displayName = 'TextField'

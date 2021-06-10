@@ -1,6 +1,4 @@
-import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
-
+import { Box, Text } from '@mintter/ui';
 import {
   OnboardingStep,
   OnboardingStepActions,
@@ -13,7 +11,7 @@ import {
   SecurityPackIcon,
 } from './common';
 
-export const Welcome: React.FC<OnboardingStepPropsType> = ({ next }) => {
+export function Welcome({ next }: OnboardingStepPropsType): JSX.Element {
   return (
     <OnboardingStep>
       <OnboardingStepTitle>Welcome to Mintter</OnboardingStepTitle>
@@ -47,13 +45,13 @@ export const Welcome: React.FC<OnboardingStepPropsType> = ({ next }) => {
       </OnboardingStepActions>
     </OnboardingStep>
   );
-};
+}
 
-const WelcomeStep: React.FC<{
+const WelcomeStep = ({ icon, title, description }: {
   icon: JSX.Element;
   title: string;
   description: string;
-}> = ({ icon, title, description }) => {
+}) => {
   return (
     <Box
       css={{
