@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"go.uber.org/fx"
+	"go.uber.org/multierr"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -41,12 +42,13 @@ type grpcServer struct {
 	ready chan struct{}
 }
 
-func provideGRPCServer(lc *lifecycle, cfg config.Config) (*grpcServer, *grpc.Server, error) {
+func provideGRPCServer(lc fx.Lifecycle, stop fx.Shutdowner, cfg config.Config) (*grpcServer, *grpc.Server, error) {
 	srv := &grpcServer{
 		grpc:  grpc.NewServer(),
 		ready: make(chan struct{}),
 	}
 
+	errc := make(chan error, 1)
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			var netc net.ListenConfig
@@ -56,16 +58,22 @@ func provideGRPCServer(lc *lifecycle, cfg config.Config) (*grpcServer, *grpc.Ser
 			}
 			srv.lis = lis
 
-			lc.g.Go(func() error {
+			go func() {
 				close(srv.ready)
-				return srv.grpc.Serve(lis)
-			})
+				err := srv.grpc.Serve(lis)
+				if err != nil {
+					if err := stop.Shutdown(); err != nil {
+						panic(err)
+					}
+				}
+				errc <- err
+			}()
 
 			return nil
 		},
 		OnStop: func(context.Context) error {
 			srv.grpc.GracefulStop()
-			return nil
+			return <-errc
 		},
 	})
 
@@ -85,11 +93,13 @@ type httpServer struct {
 	ready chan struct{}
 }
 
-func provideHTTPServer(lc *lifecycle, cfg config.Config) (*httpServer, *http.Server, error) {
+func provideHTTPServer(lc fx.Lifecycle, stop fx.Shutdowner, cfg config.Config) (*httpServer, *http.Server, error) {
 	wrap := &httpServer{
 		srv:   &http.Server{},
 		ready: make(chan struct{}),
 	}
+
+	errc := make(chan error, 1)
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -99,19 +109,29 @@ func provideHTTPServer(lc *lifecycle, cfg config.Config) (*httpServer, *http.Ser
 				return err
 			}
 			wrap.lis = l
-			lc.g.Go(func() error {
+
+			go func() {
 				close(wrap.ready)
 				err := wrap.srv.Serve(l)
 				if errors.Is(err, http.ErrServerClosed) {
-					return nil
+					errc <- nil
+					return
 				}
-				return err
-			})
+
+				if err := stop.Shutdown(); err != nil {
+					panic(err)
+				}
+
+				errc <- err
+			}()
 
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			return wrap.srv.Shutdown(ctx)
+			return multierr.Combine(
+				wrap.srv.Shutdown(ctx),
+				<-errc,
+			)
 		},
 	})
 

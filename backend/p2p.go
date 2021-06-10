@@ -10,6 +10,7 @@ import (
 
 	"mintter/backend/config"
 	"mintter/backend/ipfsutil"
+	"mintter/backend/ipfsutil/providing"
 )
 
 // Prototcol values.
@@ -25,21 +26,25 @@ var userAgent = "mintter/" + Version
 // p2pNode wraps IPFS node that would be only initialized after account is registered within the node,
 // so all the components must only be accessed after making sure node is ready.
 type p2pNode struct {
-	cfg  config.P2P
-	boot ipfsutil.Bootstrappers
-	log  *zap.Logger
-
+	cfg    config.P2P
+	boot   ipfsutil.Bootstrappers
+	log    *zap.Logger
 	libp2p *ipfsutil.Libp2p
+	prov   *providing.Provider
+
+	ready chan struct{}
 }
 
 // newP2PNode creates a new Mintter P2P wrapper.
-func newP2PNode(cfg config.P2P, log *zap.Logger, libp2p *ipfsutil.Libp2p, boot ipfsutil.Bootstrappers) *p2pNode {
+func newP2PNode(cfg config.P2P, log *zap.Logger, libp2p *ipfsutil.Libp2p, prov *providing.Provider, boot ipfsutil.Bootstrappers) *p2pNode {
 	p2p := &p2pNode{
-		cfg:  cfg,
-		boot: boot,
-		log:  log,
-
+		cfg:    cfg,
+		boot:   boot,
+		log:    log,
 		libp2p: libp2p,
+		prov:   prov,
+
+		ready: make(chan struct{}),
 	}
 
 	return p2p
@@ -78,5 +83,12 @@ func (n *p2pNode) Start(ctx context.Context) error {
 		}
 	}
 
+	close(n.ready)
+
 	return nil
+}
+
+// Ready can be used to wait until the node is ready.
+func (n *p2pNode) Ready() <-chan struct{} {
+	return n.ready
 }

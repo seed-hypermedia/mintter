@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"runtime"
 	"time"
 
@@ -34,8 +35,14 @@ func main() {
 			fx.StopTimeout(1*time.Minute),
 		)
 
-		app.Run()
+		ctx := mainutil.TrapSignals()
 
-		return nil
+		if err := app.Start(ctx); err != nil {
+			return err
+		}
+
+		<-ctx.Done()
+
+		return app.Stop(context.Background())
 	})
 }

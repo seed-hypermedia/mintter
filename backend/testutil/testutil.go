@@ -11,7 +11,6 @@ import (
 
 	"mintter/backend/badger3ds"
 	"mintter/backend/identity"
-	"mintter/backend/ipfsutil"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
@@ -44,9 +43,10 @@ func MakeProfile(t *testing.T, name string) identity.Profile {
 // MakeCID with specified data.
 func MakeCID(t *testing.T, data string) cid.Cid {
 	t.Helper()
-	pid, err := ipfsutil.NewCID(cid.Raw, multihash.IDENTITY, []byte(data))
+	mh, err := multihash.Sum([]byte(data), multihash.IDENTITY, -1)
 	require.NoError(t, err)
-	return pid
+
+	return cid.NewCidV1(cid.Raw, mh)
 }
 
 // MakeBadgerV3 creates an in-memory instance of Badger v3.

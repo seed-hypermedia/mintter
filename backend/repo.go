@@ -15,13 +15,27 @@ import (
 	"go.uber.org/zap"
 )
 
+/*
+Repo layout v1 file tree:
+
+- VERSION => v1
+- keys/
+-- libp2p_id_ed25519 => device private key
+-- mintter_id_ed25519.pub => account public key
+- badger-v3/ => directory with badger-related data
+- providing/
+-- provided.db => BoltDB database with provided CIDs.
+*/
+
 const (
 	currentRepoLayoutVersion = "v1"
 
-	keysDir = "keys"
+	keysDir      = "keys"
+	providingDir = "providing"
 
 	privKeyFilename = "libp2p_id_ed25519"
 	accountFilename = "mintter_id_ed25519.pub"
+	versionFilename = "VERSION"
 )
 
 var errRepoMigrate = errors.New("repo migration failed")
@@ -88,6 +102,10 @@ func prepareRepo(path string, log *zap.Logger) (r *repo, err error) {
 	}
 
 	if err := os.MkdirAll(filepath.Join(path, keysDir), 0700); err != nil {
+		return nil, fmt.Errorf("store: failed to initialize local repo in %s: %w", path, err)
+	}
+
+	if err := os.MkdirAll(filepath.Join(path, providingDir), 0700); err != nil {
 		return nil, fmt.Errorf("store: failed to initialize local repo in %s: %w", path, err)
 	}
 
@@ -238,7 +256,7 @@ func migrateRepo(path string) error {
 		return fmt.Errorf("incompatible repo layout in %s: remove this directory or use a different one", path)
 	}
 
-	versionFile := filepath.Join(path, "VERSION")
+	versionFile := filepath.Join(path, versionFilename)
 
 	ver, err := ioutil.ReadFile(versionFile)
 	if err != nil {
