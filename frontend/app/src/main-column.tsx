@@ -1,5 +1,3 @@
-import type * as React from 'react';
-
 type MainColumnProps = {
   children: React.ReactNode;
   className?: string;

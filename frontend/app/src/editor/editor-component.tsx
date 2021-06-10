@@ -1,50 +1,43 @@
-import { KeyboardEvent, useState } from 'react';
-import type { NodeEntry } from 'slate';
 import {
   createBoldPlugin,
   createExitBreakPlugin,
   createHistoryPlugin,
-  createNodeIdPlugin,
   createReactPlugin,
   createAutoformatPlugin,
-  ELEMENT_PARAGRAPH,
   ExitBreakRule,
-  MARK_BOLD,
   SlatePlugins,
   SlatePluginsProps,
   SPEditor,
-  SlatePluginsOptions,
-  DEFAULTS_BOLD,
-  createSlatePluginsOptions,
-  MARK_ITALIC,
-  MARK_CODE,
-  MARK_STRIKETHROUGH,
   createItalicPlugin,
   createStrikethroughPlugin,
   createCodePlugin,
   createUnderlinePlugin,
   withNodeId,
-} from '@udecode/slate-plugins';
-import { createId } from '@utils/create-id';
-import { createBlockPlugin, ELEMENT_BLOCK, blockOptions } from './block-plugin';
-import { createElement } from './create-element';
-import { boldOptions, boldAutoformatRules } from './bold-plugin';
-import { codeOptions, codeAutoformatRules } from './code-plugin';
-import { italicOptions, italicAutoformatRules } from './italic-plugin';
-import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
+} from '@udecode/slate-plugins'
+import {mock} from '@mintter/client'
+import {createBlockPlugin, ELEMENT_BLOCK, blockOptions} from './block-plugin'
+import {boldOptions, boldAutoformatRules} from './bold-plugin'
+import {codeOptions, codeAutoformatRules} from './code-plugin'
+import {italicOptions, italicAutoformatRules} from './italic-plugin'
+import {BlockType} from '@mintter/client'
 import {
   strikethroughOptions,
   strikethroughAutoformatRules,
-} from './strikethrough-plugin';
-import { Toolbar } from './toolbar';
-import { underlineOptions, underlineAutoformatRules } from './underline-plugin';
-import { createQuotePlugin, ELEMENT_QUOTE, quoteOptions } from './quote-plugin';
-import { createLinkPlugin, ELEMENT_LINK, linkOptions } from './link-plugin';
-import type { SlateBlock } from './types';
+} from './strikethrough-plugin'
+import {Toolbar} from './toolbar'
+import {underlineOptions, underlineAutoformatRules} from './underline-plugin'
+import {createQuotePlugin, ELEMENT_QUOTE, quoteOptions} from './quote-plugin'
+import {
+  createLinkPlugin,
+  ELEMENT_LINK,
+  linkOptions,
+  // LinkMenu,
+} from './link-plugin'
+// import {useMenuState} from 'reakit/Menu'
 
 const initialValue = [
   {
-    id: createId(),
+    id: mock.createId(),
     depth: 0,
     type: ELEMENT_BLOCK,
     children: [
@@ -60,49 +53,52 @@ const initialValue = [
       {
         type: ELEMENT_LINK,
         url: 'https://mintter.com',
-        id: createId(),
-        children: [{ text: 'link here' }],
+        id: mock.createId(),
+        children: [{text: 'link here'}],
       },
     ],
   },
   {
     type: ELEMENT_BLOCK,
-    blockType: documents.Block.Type.BASIC,
+    blockType: BlockType.BASIC,
     depth: 0,
-    id: createId(),
+    id: mock.createId(),
     children: [
       {
         text: 'Heading 2',
       },
     ],
   },
-];
+]
 
 function rulesWithCustomDefaultType(
   type: string = ELEMENT_BLOCK,
   rules: ExitBreakRule[] = [
-    { hotkey: 'mod+enter' },
+    {hotkey: 'mod+enter'},
     {
       hotkey: 'mod+shift+enter',
       before: true,
     },
   ],
 ): ExitBreakRule[] {
-  return rules.map((rule) => ({
+  return rules.map(rule => ({
     ...rule,
     defaultType: type,
-  }));
+  }))
 }
 
 export function EditorComponent<T extends SPEditor = SPEditor>({
+  initialValue,
   ...options
 }: SlatePluginsProps<T>) {
-  // const [v, setV] = useState(initialValue);
+  // const menu = useMenuState({loop: true, wrap: true})
+
   return (
     <>
       <SlatePlugins
         id="editor"
         {...options}
+        initialValue={initialValue}
         editableProps={{
           placeholder: 'start here...',
         }}
@@ -121,7 +117,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           }),
           createExitBreakPlugin({
             rules: rulesWithCustomDefaultType(ELEMENT_BLOCK, [
-              { hotkey: 'mod+enter' },
+              {hotkey: 'mod+enter'},
               {
                 hotkey: 'mod+shift+enter',
                 before: true,
@@ -142,10 +138,11 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           createCodePlugin(),
           createUnderlinePlugin(),
           createQuotePlugin(),
+          // createLinkPlugin({menu}),
           createLinkPlugin(),
           {
             withOverrides: withNodeId({
-              idCreator: () => createId(),
+              idCreator: () => mock.createId(),
               allow: [ELEMENT_LINK, ELEMENT_QUOTE],
             }),
           },
@@ -160,11 +157,10 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
           ...quoteOptions,
           ...linkOptions,
         }}
-        // onChange={(nv) => setV(nv as any)}
       >
         <Toolbar />
+        {/* <LinkMenu menu={menu} /> */}
       </SlatePlugins>
-      {/* <pre>{JSON.stringify(v, null, 3)}</pre> */}
     </>
-  );
+  )
 }

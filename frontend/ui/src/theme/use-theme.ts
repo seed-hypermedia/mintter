@@ -1,6 +1,6 @@
 import useDarkMode from 'use-dark-mode'
 
-import {darkTheme, lightTheme} from '../stitches.config'
+import { darkTheme, lightTheme } from '../stitches.config'
 
 const theme = {
   light: lightTheme,
@@ -13,7 +13,7 @@ const oppositeTheme = {
 }
 
 export const useTheme = () => {
-  const {value, toggle} = useDarkMode(false, {
+  const { value, toggle } = useDarkMode(false, {
     classNameLight: theme.light,
     classNameDark: theme.dark,
   })

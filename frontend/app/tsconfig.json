@@ -1,28 +1,8 @@
 {
-  "include": ["src", "types", "_test"],
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "module": "esnext",
-    "target": "esnext",
-    "moduleResolution": "node",
-    "jsx": "preserve",
-    "baseUrl": "./",
-    "paths": {
-      "@components/*": ["./src/components/*"],
-      "@pages/*": ["./src/pages/*"],
-      "@utils/*": ["./src/utils/*"],
-      "@mintter/ui-legacy/*": ["./src/lib/*"],
-      "@mintter/editor/*": ["./src/editor/*"],
-      "@mintter/client": ["./src/mintter-client"],
-      "@mintter/hooks": ["./src/mintter-hooks"],
-      "test/*": ["./src/test/*"]
-    },
-    "noEmit": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "jsx": "react-jsx",
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "importsNotUsedAsValues": "error",
-    "downlevelIteration": true
-  }
+  },
+  "include": ["src/**/*"]
 }

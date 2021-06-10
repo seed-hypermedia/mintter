@@ -1,9 +1,6 @@
-import * as React from 'react';
-import { useSuggestedConnections } from '@mintter/hooks';
-import { Text } from '@mintter/ui/text';
-import mintter from '@mintter/api/v2/mintter_pb';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
+import { useSuggestedConnections } from '@mintter/client/hooks';
+import { mintter } from '@mintter/client'
+import { Text, Box, Button } from '@mintter/ui';
 
 // TODO: fix types
 export function SuggestedConnections({ onConnect }: any) {
@@ -26,8 +23,8 @@ export function SuggestedConnections({ onConnect }: any) {
         <Text size="2">no suggestions available :(</Text>
       ) : (
         <Box as="ul" aria-label="suggested connections">
-          {data.map((c: mintter.SuggestedProfile.AsObject) => {
-            const { profile, addrsList } = c;
+          {data.map((c: mintter.SuggestedProfile) => {
+            const { profile, addrs } = c;
             const isConnected =
               profile?.connectionStatus === mintter.ConnectionStatus.CONNECTED;
 
@@ -68,7 +65,7 @@ export function SuggestedConnections({ onConnect }: any) {
                   </Text>
                   <Button
                     onClick={() => {
-                      onConnect(addrsList);
+                      onConnect(addrs);
                     }}
                     color="primary"
                     variant="outlined"

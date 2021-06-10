@@ -1,11 +1,9 @@
-import {Fragment} from 'react'
+import { Fragment } from 'react'
 
-import {globalStyles} from '../stitches.config'
-import {useTheme} from './use-theme'
+import { globalStyles } from '../stitches.config'
+import { useTheme } from './use-theme'
 
-export type ThemeProps = React.ComponentProps<typeof Theme>
-
-export const Theme: React.FC = ({children}) => {
+export function Theme({ children }: { children: React.ReactNode }) {
   globalStyles()
   useTheme()
 

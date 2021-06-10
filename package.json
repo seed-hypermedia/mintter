@@ -10,27 +10,16 @@
     "changeset": "changeset",
     "build": "yarn workspaces run build",
     "test": "yarn workspaces run test",
+    "format": "yarn workspaces run format",
     "prettier": "prettier --ignore-path frontend/.gitignore \"frontend/**/*.+(js|jsx|ts|tsx|json|css)\"",
-    "format": "yarn prettier --write",
-    "check-format": "yarn prettier -c",
-    "dev": "yarn install && yarn ui build && yarn app dev",
-    "site:test": "is-ci \"site:test:coverage\" \"site:test:watch\"",
-    "site:build": "yarn workspace @mintter/site build",
-    "site:export": "yarn workspace @mintter/site export",
-    "site:test:watch": "yarn workspace @mintter/site test:watch",
-    "site:test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch",
-    "site:test:precommit": "yarn workspace @mintter/site test",
-    "site:test:coverage": "yarn workspace @mintter/site test --coverage",
     "ui": "yarn workspace @mintter/ui",
     "app": "yarn workspace @mintter/app",
-    "release": "yarn build",
-    "validate": "npm-run-all --sequential format site:test site:build",
-    "validate:local": "npm-run-all --sequential format site:test:coverage site:build",
+    "client": "yarn workspace @mintter/client",
     "clean": "gn gen out"
   },
   "workspaces": [
-    "api/js",
     "frontend/app",
+    "frontend/client",
     "frontend/ui"
   ],
   "devDependencies": {
@@ -44,7 +33,7 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^1.19.1",
     "tslib": "^1.11.1",
-    "typescript": "^4.2.2"
+    "typescript": "^4.3.2"
   },
   "engines": {
     "yarn": "^1.18.0"

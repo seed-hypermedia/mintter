@@ -1,6 +1,6 @@
-import * as React from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { styled } from '@mintter/ui/stitches.config';
+import { forwardRef } from 'react';
 
 export const Root = DropdownMenuPrimitive.Root;
 export const Trigger = DropdownMenuPrimitive.Trigger;
@@ -18,7 +18,7 @@ const StyledArrow = styled(DropdownMenuPrimitive.Arrow, {
 });
 
 // TODO: review types
-export const Content = React.forwardRef(
+export const Content = forwardRef(
   ({ children, ...props }: any, forwardedRef) => {
     return (
       <StyledContent ref={forwardedRef} {...props}>
@@ -28,6 +28,8 @@ export const Content = React.forwardRef(
     );
   },
 );
+Content.displayName = 'Content'
+
 export const Label = DropdownMenuPrimitive.Label;
 export const Item = styled(DropdownMenuPrimitive.Item, {
   fontSize: 13,

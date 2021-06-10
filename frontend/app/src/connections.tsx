@@ -1,9 +1,4 @@
-import * as React from 'react';
-// import {ErrorMessage} from './error-message'
-import { Button } from '@mintter/ui/button';
-import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
-
+import { Button, Box, Text } from '@mintter/ui';
 // TODO: fix types
 export function Connections({ onConnect }: any) {
   // const { data = [], isLoading, isError, error } = useConnectionList();

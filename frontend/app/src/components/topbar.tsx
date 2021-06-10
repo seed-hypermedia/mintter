@@ -1,30 +1,26 @@
-import { Slot } from '@radix-ui/react-slot';
-import { useRef } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import {Slot} from '@radix-ui/react-slot'
+import {useRef} from 'react'
+import {useHistory, useRouteMatch} from 'react-router-dom'
 
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Icon } from '@mintter/ui/icon';
-import { Text } from '@mintter/ui/text';
-import { TextField } from '@mintter/ui/text-field';
-import * as DropdownMenu from '@mintter/ui-legacy/dropdown-menu';
+import {Box, Button, Icon, Text, TextField} from '@mintter/ui'
+import * as DropdownMenu from '../lib/dropdown-menu'
 
-import { Container } from '@components/container';
-import { getPath } from '@utils/routes';
+import {Container} from './container'
+import {getPath} from '../utils/routes'
 
-import { Link } from './link';
+import {Link} from './link'
 
 interface NavItemProps {
-  href: string;
-  onClick: () => void;
-  isActive: boolean;
-  title: string;
-  className?: string;
+  href: string
+  onClick: () => void
+  isActive: boolean
+  title: string
+  className?: string
 }
 
-export function Topbar({ isPublic = false }) {
-  const history = useHistory();
-  const match = useRouteMatch();
+export function Topbar({isPublic = false}: {isPublic?: boolean}) {
+  const history = useHistory()
+  const match = useRouteMatch()
 
   return isPublic ? (
     <Box>public topbar here</Box>
@@ -44,6 +40,7 @@ export function Topbar({ isPublic = false }) {
       <Link to={getPath(match)}>
         <Icon name="Mintter" size="2" color="primary" />
       </Link>
+      {/* //@ts-ignore */}
       <Container
         css={{
           marginHorizontal: 'auto',
@@ -54,7 +51,7 @@ export function Topbar({ isPublic = false }) {
       >
         <MintterSearch />
       </Container>
-      <Box css={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <Box css={{display: 'flex', justifyContent: 'flex-end'}}>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger as={Slot}>
             <Button variant="ghost" size="1">
@@ -69,41 +66,41 @@ export function Topbar({ isPublic = false }) {
                 },
               }}
               onSelect={() => {
-                history.push(`${getPath(match)}/settings`);
+                history.push(`${getPath(match)}/settings`)
               }}
             >
-              <Text css={{ color: '$text-default' }}>Settings</Text>
+              <Text css={{color: '$text-default'}}>Settings</Text>
             </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Root>
       </Box>
     </Box>
-  );
+  )
 }
 
 function MintterSearch() {
-  const ref = useRef<HTMLInputElement>(null);
-  const history = useHistory();
-  const match = useRouteMatch();
+  const ref = useRef<HTMLInputElement>(null)
+  const history = useHistory()
+  const match = useRouteMatch()
 
   // TODO: fix types
   async function handleSearch(e: any) {
-    e.preventDefault();
-    let to = ref.current?.value as string;
+    e.preventDefault()
+    let to = ref.current?.value as string
     if (to.includes('mintter://')) {
-      to = to.split('/')[2];
+      to = to.split('/')[2]
     }
     // console.log('input value', {to, original: ref.current.value})
 
     if (ref.current) {
-      ref.current.value = '';
+      ref.current.value = ''
     }
 
-    history.push(`${getPath(match)}/p/${to}`);
+    history.push(`${getPath(match)}/p/${to}`)
   }
 
   return (
-    <Box as="form" css={{ width: '100%' }} onSubmit={handleSearch}>
+    <Box as="form" css={{width: '100%'}} onSubmit={handleSearch}>
       <TextField
         ref={ref}
         type="text"
@@ -112,5 +109,5 @@ function MintterSearch() {
         shape="pill"
       />
     </Box>
-  );
+  )
 }

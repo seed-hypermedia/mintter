@@ -1,7 +1,6 @@
 import { lazily } from 'react-lazily';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
-import { isLocalNode } from './constants';
 import { global } from '@mintter/ui/stitches.config';
 const { AuthorNode } = lazily(() => import('./author-node'));
 const { PublisherNode } = lazily(() => import('./publisher-node'));
@@ -27,7 +26,7 @@ export const App: React.FC = () => {
   );
 };
 
-const AppError: React.FC<FallbackProps> = ({ error, resetErrorBoundary }) => {
+function AppError({ error, resetErrorBoundary }: FallbackProps) {
   return (
     <div role="alert">
       <p>Something went wrong loading the App:</p>
@@ -35,4 +34,4 @@ const AppError: React.FC<FallbackProps> = ({ error, resetErrorBoundary }) => {
       <button onClick={resetErrorBoundary}>Try again</button>
     </div>
   );
-};
+}
