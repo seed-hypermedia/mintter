@@ -20,7 +20,6 @@ describe('toDocument', () => {
         {
           type: ELEMENT_BLOCK,
           id: 'block-1',
-          depth: 0,
           listStyle: ListStyle.NONE,
           children: [
             {

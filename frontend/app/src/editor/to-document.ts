@@ -1,8 +1,8 @@
-import {ListStyle, Document, Block} from '@mintter/client'
-import {ELEMENT_LINK} from './link-plugin'
-import {ELEMENT_QUOTE} from './quote-plugin'
-import type {SlateBlock, EditorTextRun, EditorQuote, EditorLink} from './types'
-import {toInlineElement, toQuote, toTextRun, toLink} from './inline-element'
+import { ListStyle, Document, Block, Quote } from '@mintter/client'
+import { ELEMENT_LINK } from './link-plugin'
+import { ELEMENT_QUOTE } from './quote-plugin'
+import type { SlateBlock, EditorTextRun, EditorQuote, EditorLink, EditorImage } from './types'
+import { toInlineElement, toQuote, toTextRun, toLink } from './inline-element'
 
 export type ToDocumentProps = {
   id: string
@@ -43,11 +43,11 @@ export function toDocument({
       })
 
       const inlineElements = slateBlock.children
-        .map((leaf: EditorTextRun | EditorQuote | EditorLink) => {
+        .map((leaf) => {
           if ('text' in leaf) {
-            return toInlineElement({textRun: toTextRun(leaf)})
+            return toInlineElement({ textRun: toTextRun(leaf) })
           }
-          if (leaf.type == ELEMENT_LINK) {
+          if (leaf.type === ELEMENT_LINK) {
             // add link to linksMap
             linksMap[leaf.id] = toLink(leaf)
 
@@ -60,11 +60,11 @@ export function toDocument({
               }),
             )
           }
-          if (leaf.type == ELEMENT_QUOTE) {
+          if (leaf.type === ELEMENT_QUOTE) {
             // add link to linksMap
-            linksMap[leaf.id] = toLink(leaf)
+            linksMap[leaf.id] = toLink({ id: leaf.id, url: leaf.url })
 
-            return toInlineElement({quote: toQuote(leaf)})
+            return toInlineElement({ quote: toQuote(leaf) })
           }
 
           throw Error(`toDocument Error: Block -> inlineElement not supported`)
