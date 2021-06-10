@@ -56,7 +56,8 @@ export function toQuote(entry: EditorQuote): Quote {
   })
 }
 
-export function toLink(entry: EditorLink): Link {
+
+export function toLink(entry: Partial<EditorLink> & Pick<EditorLink, 'id' | 'url'>): Link {
   if (!entry.id) {
     throw Error(`toLink error: "id" cannot be undefined`);
   }
