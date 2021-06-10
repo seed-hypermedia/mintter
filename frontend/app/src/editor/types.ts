@@ -30,7 +30,7 @@ export type EditorLink = {
   children: Array<EditorTextRun>
 }
 
-export type SlateBlock = {
+export type EditorBlock = {
   type: typeof ELEMENT_BLOCK
   id: string
   // depth: number

@@ -1,12 +1,12 @@
-import type { Document, Image, InlineElement, Link, Quote, TextRun } from '@mintter/client'
+import type { Document, InlineElement, Link, Quote, TextRun } from '@mintter/client'
 import { ELEMENT_BLOCK } from './block-plugin'
+import { toTextRun } from './inline-element'
 import { ELEMENT_LINK } from './link-plugin'
 import { ELEMENT_QUOTE } from './quote-plugin'
-import type { SlateBlock, EditorLink, EditorQuote, EditorImage } from './types'
+import type { EditorBlock, EditorImage, EditorLink, EditorQuote, EditorTextRun } from './types'
 
-export function toEditorValue(entry: Document): Array<SlateBlock> {
+export function toEditorValue(entry: Document): Array<EditorBlock> {
   const currentDoc = entry
-
   const blocksMap = entry.blocks
   const linksMap = entry.links
 
@@ -28,12 +28,12 @@ export function toEditorValue(entry: Document): Array<SlateBlock> {
 }
 
 export function toEditorLink(links: Record<string, Link>, entry: TextRun): EditorLink {
-  const { linkKey, ...rest } = entry
+  const { linkKey, ...textRun } = entry
   return {
-    id: linkKey,
-    url: links[linkKey].uri,
+    id: entry.linkKey,
+    url: links[entry.linkKey].uri,
     type: ELEMENT_LINK,
-    children: [rest],
+    children: [textRun],
   }
 }
 
