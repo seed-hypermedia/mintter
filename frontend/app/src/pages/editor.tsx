@@ -1,70 +1,66 @@
-import { useEffect, useRef, useState } from 'react';
-import type { Editor } from 'slate';
-import { useHistory, useParams } from 'react-router';
-import { useMutation } from 'react-query';
-import { useMenuState } from 'reakit/Menu';
-import type { ReactEditor } from 'slate-react';
+import {useEffect, useMemo, useRef, useState} from 'react'
+import {Box, Button, Text, TextField} from '@mintter/ui'
 
-import { publishDraft } from '@mintter/client';
-import { useAccount, useDraft } from '@mintter/hooks';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Text } from '@mintter/ui/text';
-import { TextField } from '@mintter/ui/text-field';
-import * as documents from '@mintter/api/documents/v1alpha/documents_pb';
+import {useParams} from 'react-router'
+import {useMutation, UseQueryResult} from 'react-query'
 
-import { Container } from '@components/container';
-import { Separator } from '@components/separator';
+import {useDraft, useAccount} from '@mintter/client/hooks'
 
-import { useSidePanel } from '../sidepanel';
-import { EditorComponent } from '@mintter/editor/editor-component';
-import 'show-keys';
-import { useStoreEditorValue } from '@udecode/slate-plugins-core';
-import { toDocument } from '../to-document';
-import type { SlateBlock } from '@mintter/editor/types';
+import {Container} from '../components/container'
+import {Separator} from '../components/separator'
+
+import {useSidePanel} from '../sidepanel'
+import {EditorComponent} from '../editor/editor-component'
+import 'show-keys'
+import {toDocument} from '../editor/to-document'
+import type {EditorBlock} from '../editor/types'
+import {ListStyle, Document} from '@mintter/client'
+import {toEditorValue} from '../editor/to-editor-value'
 
 export default function EditorPage() {
-  const history = useHistory();
-  const query = new URLSearchParams(window.location.search);
-  const { docId } = useParams<{ docId: string }>();
-  const { isLoading, isError, error, data } = useDraft(docId);
-  const titleRef = useRef<HTMLInputElement>(null);
-  const linkMenu = useMenuState({ loop: true, wrap: true });
-  const subtitleRef = useRef<HTMLInputElement>(null);
-  const editorValue = useStoreEditorValue('editor') as Array<SlateBlock>;
-  const { data: account } = useAccount('');
+  const {docId} = useParams<{docId: string}>()
+  const {isLoading, isError, error, data} = useMintterEditor(docId)
+  const {data: account} = useAccount('')
 
-  const [title, setTitle] = useState<string>('');
-  const [subtitle, setSubtitle] = useState<string>('');
+  const titleRef = useRef<HTMLInputElement>(null)
+  const subtitleRef = useRef<HTMLInputElement>(null)
 
   // publish
-  const { mutateAsync: publish } = useMutation(async () => {
+  const {mutateAsync: publish} = useMutation(async () => {
     const document = toDocument({
       id: docId,
       author: account?.id as string,
-      title,
-      subtitle,
-      blocks: editorValue,
+      title: titleRef.current?.value,
+      subtitle: subtitleRef.current?.value,
+      blocks: data?.editorValue,
       // TODO: get the document block parent list
-      childrenListStyle: documents.ListStyle.NONE,
-    });
+      childrenListStyle: ListStyle.NONE,
+    })
     // publishDraft
-  });
+    console.log({document})
+  })
+
+  useEffect(() => {
+    if (data?.document && titleRef.current && subtitleRef.current) {
+      titleRef.current.value = data.document.title
+      subtitleRef.current.value = data.document.subtitle
+    }
+  }, [data?.document, titleRef.current, subtitleRef.current])
 
   // sidepanel
-  const { isSidepanelOpen, sidepanelObjects, sidepanelSend } = useSidePanel();
+  const {isSidepanelOpen, sidepanelObjects, sidepanelSend} = useSidePanel()
 
   function saveDocument() {
-    publish();
+    publish()
   }
 
   if (isError) {
-    console.error('useDraft error: ', error);
-    return <Text>Editor ERROR</Text>;
+    console.error('useDraft error: ', error)
+    return <Text>Editor ERROR</Text>
   }
 
   if (isLoading) {
-    return <Text>loading draft...</Text>;
+    return <Text>loading draft...</Text>
   }
 
   return (
@@ -97,12 +93,12 @@ export default function EditorPage() {
         </Button>
         <Button
           size="1"
-          onClick={() => sidepanelSend?.({ type: 'SIDEPANEL_TOOGLE' })}
+          onClick={() => sidepanelSend?.({type: 'SIDEPANEL_TOOGLE'})}
         >
           toggle sidepanel
         </Button>
       </Box>
-      <Container css={{ gridArea: 'maincontent', marginBottom: 300 }}>
+      <Container css={{gridArea: 'maincontent', marginBottom: 300}}>
         <TextField
           // TODO: Fix types
           // @ts-ignore
@@ -110,8 +106,7 @@ export default function EditorPage() {
           data-testid="editor_title"
           name="title"
           placeholder="Document title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          ref={titleRef}
           rows={1}
           // TODO: Fix types
           // @ts-ignore
@@ -133,8 +128,7 @@ export default function EditorPage() {
           data-testid="editor_subtitle"
           name="subtitle"
           placeholder="about this publication..."
-          value={subtitle}
-          onChange={(e) => setSubtitle(e.target.value)}
+          ref={subtitleRef}
           rows={1}
           // TODO: Fix types
           // @ts-ignore
@@ -147,8 +141,8 @@ export default function EditorPage() {
           }}
         />
         <Separator />
-        <Box css={{ mx: '-$4', width: 'calc(100% + $7)' }}>
-          <EditorComponent initialValue={data.editorValue} />
+        <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
+          <EditorComponent initialValue={data?.editorValue} />
         </Box>
       </Container>
       {isSidepanelOpen ? (
@@ -167,29 +161,27 @@ export default function EditorPage() {
         </Box>
       ) : null}
     </Box>
-  );
+  )
 }
 
-function createBlocksMap(editor: Editor): [string, documents.Block][] {
-  // const iterableBlocks = getNodesByType(editor, ELEMENT_BLOCK, {
-  //   at: [],
-  // });
-  // const blocks: [string, documents.Block][] = [];
-  // for (const [block, path] of iterableBlocks) {
-  //   const b: BlockNode = {
-  //     id: block.id as string,
-  //     type: ELEMENT_BLOCK,
-  //     style:
-  //       (block.style as documents.Block.Type) || documents.Block.Type.BASIC,
-  //     children: block.children as any,
-  //   };
-  //   if (path.length > 4) {
-  //     blocks.push([b.id, blockSerialize(b)]);
-  //   } else {
-  //     const parent = getNode(editor, path.slice(0, path.length - 2));
-  //     blocks.push([b.id, blockSerialize(b, parent?.id as string)]);
-  //   }
-  // }
-  // return blocks;
-  return [['foo', new documents.Block()]];
+function useMintterEditor(docId: string): Omit<
+  UseQueryResult<Document>,
+  'data'
+> & {
+  data?: {document?: Document; editorValue?: Array<EditorBlock>}
+} {
+  const draftQuery = useDraft(docId)
+
+  const editorValue = useMemo(
+    () => (draftQuery.data ? toEditorValue(draftQuery.data) : undefined),
+    [draftQuery, docId],
+  )
+
+  return {
+    ...draftQuery,
+    data: {
+      document: draftQuery.data,
+      editorValue,
+    },
+  }
 }

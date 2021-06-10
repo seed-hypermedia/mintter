@@ -1,26 +1,21 @@
-import { Box } from '@mintter/ui/box';
-import type { SPRenderElementProps } from '@udecode/slate-plugins-core';
-import { useEffect, useMemo } from 'react';
-import { Link } from '@components/link';
-import { MINTTER_LINK_PREFIX } from '.';
-import { Tooltip } from '@components/tooltip';
-import { Icon } from '@mintter/ui/icon';
-import type { SlateLink } from '../types';
+import {Box, Icon} from '@mintter/ui'
+import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
+import {useMemo} from 'react'
+import {MINTTER_LINK_PREFIX} from '.'
+import {Tooltip} from '../../components/tooltip'
+import type {EditorLink} from '../types'
 
-export function LinkElement(props: SPRenderElementProps<SlateLink>) {
+export function LinkElement(props: SPRenderElementProps<EditorLink>) {
   const isMintterLink = useMemo<boolean>(
     () => props.element.url.startsWith(MINTTER_LINK_PREFIX),
     [props.element.url],
-  );
+  )
 
-  useEffect(() => {
-    console.log({ [props.element.id]: props.element });
-  }, [props.element.id]);
   return isMintterLink ? (
-    <MintterLink {...props} />
+    <MintterLink data-link-id={props.element.id} {...props} />
   ) : (
-    <ExternalLink {...props} />
-  );
+    <ExternalLink data-link-id={props.element.id} {...props} />
+  )
 }
 // TODO: add tooltip
 function MintterLink({
@@ -28,11 +23,11 @@ function MintterLink({
   attributes,
   children,
   ...props
-}: SPRenderElementProps<SlateLink>) {
+}: SPRenderElementProps<EditorLink>) {
   return (
     <Tooltip
       content={
-        <Box css={{ maxWidth: '400px', wordBreak: 'break-all' }}>
+        <Box css={{maxWidth: '400px', wordBreak: 'break-all'}}>
           {element.url}
         </Box>
       }
@@ -40,14 +35,16 @@ function MintterLink({
       <Box
         {...attributes}
         //@ts-ignore
-        as={Link}
-        to={element.url} // something is adding `type="button"` here and is braking the styles
+        as="button"
         css={{
-          background: 'blue',
           appearance: 'unset',
           textDecoration: 'underline',
           wordBreak: 'break-all',
           color: '$text-default',
+          border: 'none',
+          fontFamily: '$alt',
+          fontSize: 'inherit',
+          background: 'transparent',
           '&:hover': {
             cursor: 'pointer',
           },
@@ -56,7 +53,7 @@ function MintterLink({
         {children}
       </Box>
     </Tooltip>
-  );
+  )
 }
 
 // TODO: add tooltip
@@ -65,7 +62,7 @@ function ExternalLink({
   attributes,
   children,
   ...props
-}: SPRenderElementProps<SlateLink>) {
+}: SPRenderElementProps<EditorLink>) {
   return (
     <Tooltip
       content={
@@ -100,5 +97,5 @@ function ExternalLink({
         {children}
       </Box>
     </Tooltip>
-  );
+  )
 }

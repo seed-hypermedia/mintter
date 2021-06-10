@@ -1,9 +1,7 @@
 import {
   getPreventDefaultHandler,
-  getSelectionText,
   getSlatePluginType,
   isMarkActive,
-  isSelectionExpanded,
   MARK_BOLD,
   MARK_ITALIC,
   MARK_STRIKETHROUGH,
@@ -13,20 +11,14 @@ import {
   useStoreEditorState,
 } from '@udecode/slate-plugins';
 import {
-  BalloonToolbar,
-  ToolbarElement,
   ToolbarMarkProps as DefaultToolbarMarkProps,
   useBalloonMove,
   useBalloonShow,
 } from '@udecode/slate-plugins-toolbar';
 import { useMemo, useRef } from 'react';
 import * as Portal from '@radix-ui/react-portal';
-import { css } from '@mintter/ui/stitches.config';
-import { Icon, icons } from '@mintter/ui/icon';
-import { Button } from '@mintter/ui/button';
-import { Tooltip } from '@components/tooltip';
-import { Box } from '@mintter/ui/box';
-import { ELEMENT_LINK } from './link-plugin/create-link-plugin';
+import { Icon, icons, Button, Box } from '@mintter/ui';
+import { Tooltip } from '../components/tooltip'
 import { ToolbarLink } from './link-plugin/link-toolbar';
 
 export function Toolbar() {
@@ -103,9 +95,9 @@ function ToolbarMark({ type, icon, label }: ToolbarMarkProps) {
         css={
           active
             ? {
-                backgroundColor: '$background-opposite',
-                color: '$text-opposite',
-              }
+              backgroundColor: '$background-opposite',
+              color: '$text-opposite',
+            }
             : {}
         }
         onMouseDown={

@@ -19,7 +19,7 @@ export const createElement = (
     leaf[mark] = true;
   }
 
-  let node: TNode<{}> = {
+  const node: TNode = {
     type,
     children: [leaf],
   };

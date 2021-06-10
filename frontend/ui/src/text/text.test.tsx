@@ -1,4 +1,4 @@
-import {Text} from './text'
+import { Text } from './text'
 
 test('works', () => {
   expect(Text).toBeDefined()

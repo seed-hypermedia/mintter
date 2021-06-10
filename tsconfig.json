@@ -1,0 +1,20 @@
+{
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@mintter/ui/*": [
+                "frontend/ui/src/*"
+            ],
+            "@mintter/client/hooks": [
+                "frontend/client/hooks"
+            ],
+            "@mintter/api/*": [
+                "api/ts/*"
+            ],
+            "@mintter/*": [
+                "frontend/*/src"
+            ]
+        }
+    }
+}

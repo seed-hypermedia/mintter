@@ -1,49 +1,40 @@
-import React from 'react';
 import {
   Switch,
   useRouteMatch,
   Redirect,
   useHistory,
   Route,
-} from 'react-router-dom';
-import {
-  useAccount,
-  useConnectionCreate,
-} from '@mintter/hooks';
-import { createDraft } from '@mintter/client';
-import { Link } from '../components/link';
-import { Connections } from '../connections';
-import { SuggestedConnections } from '../suggested-connections';
-import { MainColumn } from '../main-column';
-// import { Icons } from 'components/icons';
-import { Publications } from './publications';
-import { MyPublications } from './my-publications';
-import { Drafts } from './drafts';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Text } from '@mintter/ui/text';
-import { Separator } from '@components/separator';
-import * as MessageBox from '@components/message-box';
-import { getPath } from '@utils/routes';
-import { Container } from '@components/container';
-import type { CSS } from '@mintter/ui/stitches.config';
+} from 'react-router-dom'
+import {useAccount} from '@mintter/client/hooks'
+import {createDraft} from '@mintter/client'
+import {Link} from '../components/link'
+import {Publications} from './publications'
+import {MyPublications} from './my-publications'
+import {Drafts} from './drafts'
+import {Box, Button, Text} from '@mintter/ui'
+import {Separator} from '../components/separator'
+import * as MessageBox from '../components/message-box'
+import {getPath} from '../utils/routes'
+import {Container} from '../components/container'
+import type {CSS} from '@mintter/ui/stitches.config'
+import {useMemo} from 'react'
 
 export type WithCreateDraft = {
-  onCreateDraft: () => void;
-};
+  onCreateDraft: () => void
+}
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
-  const match = useRouteMatch();
-  const history = useHistory();
+  const match = useRouteMatch()
+  const history = useHistory()
   // const { connectToPeer } = useConnectionCreate();
   // const { addToast, updateToast, removeToast } = useToasts();
 
   async function onCreateDraft() {
-    const d = await createDraft();
+    const d = await createDraft()
     history.push({
-      pathname: `${getPath(match)}/editor/${d.getId()}`,
-    });
+      pathname: `${getPath(match)}/editor/${d.id}`,
+    })
   }
 
   async function onConnect(addressList?: string[]) {
@@ -68,7 +59,7 @@ export default function Library() {
         // });
       }
     } else {
-      const peer: string | null = window.prompt(`enter a peer address`);
+      const peer: string | null = window.prompt(`enter a peer address`)
       if (peer) {
         // const toast = addToast('Connecting to peer...', {
         //   appearance: 'info',
@@ -76,7 +67,6 @@ export default function Library() {
         // });
         try {
           // await connectToPeer(peer.split(','));
-
           // updateToast(toast, {
           //   content: 'Connection established successfuly!',
           //   appearance: 'success',
@@ -120,7 +110,7 @@ export default function Library() {
         {/* <SuggestedConnections onConnect={onConnect} /> */}
       </Box>
 
-      <Container css={{ gridArea: 'maincontent' }}>
+      <Container css={{gridArea: 'maincontent'}}>
         <Box
           css={{
             display: 'flex',
@@ -166,13 +156,13 @@ export default function Library() {
         </Switch>
       </Container>
     </Box>
-  );
+  )
 }
 
 function ProfileInfo() {
-  const match = useRouteMatch();
-  const { data, isError, error, isLoading, isSuccess}= useAccount();
-  
+  const match = useRouteMatch()
+  const {data, isError, error, isLoading, isSuccess} = useAccount()
+
   if (isLoading) {
     return <Text>loading...</Text>
   }
@@ -181,7 +171,7 @@ function ProfileInfo() {
     console.error('ProfileInfo error: ', error)
     return <Text>Error...</Text>
   }
-  
+
   return data?.profile ? (
     <Box
       css={{
@@ -196,7 +186,7 @@ function ProfileInfo() {
         size="7"
         // TODO: fix types
         // @ts-ignore
-        css={{ fontWeight: '$bold' }}
+        css={{fontWeight: '$bold'}}
       >
         {data.profile.alias}
       </Text>
@@ -213,10 +203,10 @@ function ProfileInfo() {
         Edit profile
       </Button>
     </Box>
-  ) : null;
+  ) : null
 }
 
-const NoConnectionsBox: React.FC<{ onConnect: () => void }> = ({
+const NoConnectionsBox: React.FC<{onConnect: () => void}> = ({
   onConnect,
 }: any) => {
   const data = []
@@ -227,15 +217,15 @@ const NoConnectionsBox: React.FC<{ onConnect: () => void }> = ({
         <span>Add your first connection</span>
       </MessageBox.Button>
     </MessageBox.Root>
-  ) : null;
-};
+  ) : null
+}
 
 export type NavItemProps = {
-  children: React.ReactNode;
-  to: string;
-  css?: CSS;
-  onlyActiveWhenExact?: boolean;
-};
+  children: React.ReactNode
+  to: string
+  css?: CSS
+  onlyActiveWhenExact?: boolean
+}
 
 // TODO: fix types
 function NavItem({
@@ -248,12 +238,14 @@ function NavItem({
   const match = useRouteMatch({
     path: to,
     exact: onlyActiveWhenExact,
-  });
+  })
 
-  const active = React.useMemo(() => match?.path === to, [match, to]);
+  const active = useMemo(() => match?.path === to, [match, to])
 
   return (
     <Text
+      // TODO: fix types
+      // @ts-ignore
       as={Link}
       size="5"
       to={to}
@@ -268,5 +260,5 @@ function NavItem({
     >
       {children}
     </Text>
-  );
+  )
 }

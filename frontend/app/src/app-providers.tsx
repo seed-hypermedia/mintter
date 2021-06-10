@@ -1,17 +1,17 @@
-import { Suspense, FC } from 'react';
+import React, { Suspense, FC } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-import { Theme } from '@mintter/ui/theme';
-import { AppSpinner } from '@components/app-spinner';
+import { Theme } from '@mintter/ui';
+import { AppSpinner } from './components/app-spinner';
 
 import { SidePanelProvider } from './sidepanel';
 
 export const queryClient = new QueryClient();
 
-export const AppProviders: FC = ({ children }) => {
+export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <Theme>
       <Suspense fallback={<AppSpinner isFullScreen />}>
@@ -20,9 +20,10 @@ export const AppProviders: FC = ({ children }) => {
             <Router>{children}</Router>
           </SidePanelProvider>
           <Toaster position="bottom-right" />
-          <ReactQueryDevtools initialIsOpen={false} />
+          {/** @TODO Uncommenting this causes an error with react-query. We should fix this */}
+          {/* <ReactQueryDevtools initialIsOpen={false} /> */}
         </QueryClientProvider>
       </Suspense>
     </Theme>
   );
-};
+}

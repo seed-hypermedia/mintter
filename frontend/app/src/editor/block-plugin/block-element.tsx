@@ -1,13 +1,9 @@
-import { styled } from '@mintter/ui/stitches.config';
-import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
-import { Icon } from '@mintter/ui/icon';
-import * as ContextMenu from '@radix-ui/react-context-menu';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Slot } from '@radix-ui/react-slot';
-import { ELEMENT_BLOCK } from './create-block-plugin';
-import type { SPRenderElementProps } from '@udecode/slate-plugins-core';
-import type { SlateBlock } from '../types';
+import {styled} from '@mintter/ui/stitches.config'
+import {Box, Text, Icon} from '@mintter/ui'
+import * as ContextMenu from '@radix-ui/react-context-menu'
+import {ELEMENT_BLOCK} from './create-block-plugin'
+import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
+import type {EditorBlock} from '../types'
 // TODO: fix types
 export function BlockElement({
   attributes,
@@ -15,16 +11,16 @@ export function BlockElement({
   className,
   element,
   ...rest
-}: SPRenderElementProps<SlateBlock>) {
+}: SPRenderElementProps<EditorBlock>) {
   function onOpenChange(open: boolean) {
-    console.log('open changed! = ', open);
+    console.log('open changed! = ', open)
   }
 
   function onCopyBlockId() {
-    console.log('onCopyBlockId!');
+    console.log('onCopyBlockId!')
   }
   function onOpenInSidepanel() {
-    console.log('onOpenInSidepanel!');
+    console.log('onOpenInSidepanel!')
   }
   if (element.type == ELEMENT_BLOCK) {
     return (
@@ -66,7 +62,7 @@ export function BlockElement({
           </StyledContextMenuItem>
         </Box>
       </ContextMenu.Root>
-    );
+    )
   }
 }
 
@@ -87,4 +83,4 @@ const StyledContextMenuItem = styled(ContextMenu.Item, {
   [`& ${Text}`]: {
     flex: 1,
   },
-});
+})

@@ -2,12 +2,8 @@ import { useCallback, useState } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import toast from 'react-hot-toast';
 import { useQuery } from 'react-query';
-
-import { genSeed, register } from '@mintter/client';
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Text } from '@mintter/ui/text';
-
+import { generateSeed, registerAccount } from '@mintter/client';
+import { Box, Button, Text, TextField } from '@mintter/ui';
 import {
   OnboardingStep,
   OnboardingStepActions,
@@ -18,16 +14,15 @@ import {
   OnboardingStepTitle,
   SecurityPackIcon,
 } from './common';
-import { TextField } from '@mintter/ui/text-field';
 
-export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
-  const [ownSeed, setOwnSeed] = useState<string>('');
+export function SecurityPack({ prev, next }: OnboardingStepPropsType): JSX.Element {
+  const [ownSeed] = useState<string>('');
   const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false);
   const mnemonics = useQuery<string[], Error>(
     ['onboarding', 'mnemonics'],
     async () => {
-      const resp = await genSeed();
-      return resp.getMnemonicList();
+      const resp = await generateSeed();
+      return resp.mnemonic;
     },
     {
       refetchOnReconnect: false,
@@ -36,10 +31,10 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
   );
 
   const handleSubmit = useCallback(async () => {
-    let words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data;
+    const words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data;
     if (words) {
       try {
-        await register(words);
+        await registerAccount(words);
         next();
       } catch (error) {
         toast.error(error.message);
@@ -60,7 +55,8 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType) {
       </OnboardingStepDescription>
       {useOwnSeed ? (
         <TextField
-        // @ts-ignore
+          // TODO: fix types
+          // @ts-ignore
           as="textarea"
           id="ownSeed"
           name="ownSeed"

@@ -1,7 +1,6 @@
-import type * as account from '@mintter/api/accounts/v1alpha/accounts_pb';
-import { useAccount } from '@mintter/hooks';
-import { Box } from '@mintter/ui/box';
-import { Text } from '@mintter/ui/text';
+import type { Device } from '@mintter/client';
+import { useAccount } from '@mintter/client/hooks'
+import { Box, Text } from '@mintter/ui';
 
 export function PeerList() {
   const query = useAccount();
@@ -16,12 +15,12 @@ export function PeerList() {
   }
 
   if (query.isSuccess && query.data) {
-    const { devicesMap } = query.data;
+    const { devices } = query.data;
     return (
       <Box>
-        {devicesMap.map(
-          ([id, device]: [string, account.Device.AsObject], index: number) => (
-            <Text>
+        {Object.entries(devices).map(
+          ([id, device]: [string, Device], index: number) => (
+            <Text key={id}>
               <Text
                 as="span"
                 color="muted"

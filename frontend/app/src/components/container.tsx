@@ -1,18 +1,13 @@
-import React from 'react';
-
 import {
   styled,
   StitchesCss,
   StitchesVariants,
-} from '@mintter/ui/stitches.config';
+} from '@mintter/ui/stitches.config'
 
-import type * as Polymorphic from '@radix-ui/react-polymorphic';
+import type * as Polymorphic from '@radix-ui/react-polymorphic'
+import {forwardRef} from 'react'
 
-const DEFAULT_TAG = 'div';
-
-type ContainerCSSProp = Pick<StitchesCss<typeof StyledContainer>, 'css'>;
-type ContainerVariants = StitchesVariants<typeof StyledContainer>;
-type ContainerOwnProps = ContainerCSSProp & ContainerVariants;
+const DEFAULT_TAG = 'div'
 
 const StyledContainer: any = styled(DEFAULT_TAG, {
   // Reset
@@ -43,15 +38,9 @@ const StyledContainer: any = styled(DEFAULT_TAG, {
   defaultVariants: {
     size: '2',
   },
-});
+})
 
-type ContainerComponent = Polymorphic.ForwardRefComponent<
-  typeof DEFAULT_TAG,
-  ContainerOwnProps
->;
-
-// TODO: fix types
-export const Container: any = React.forwardRef((props, forwardedRef) => (
+export const Container: any = forwardRef((props, forwardedRef) => (
   <StyledContainer {...props} ref={forwardedRef} />
-)) as any;
-// }) as ContainerComponent;
+))
+Container.displayName = 'Container'

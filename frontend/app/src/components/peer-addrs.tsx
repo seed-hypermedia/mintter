@@ -2,12 +2,8 @@ import { useMemo } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import toast from 'react-hot-toast';
 
-import { Box } from '@mintter/ui/box';
-import { Button } from '@mintter/ui/button';
-import { Text } from '@mintter/ui/text';
-import { TextField } from '@mintter/ui/text-field';
-import { usePeerAddrs } from '@mintter/hooks';
-
+import { Box, Button, Text, TextField } from '@mintter/ui';
+import { usePeerAddrs } from '@mintter/client/hooks';
 
 export function PeerAddrs() {
 
@@ -36,7 +32,7 @@ export function PeerAddrs() {
         label="Your Mintter address"
         rows={4}
         value={addrs?.join('\n\n')}
-        css={{fontSize: '$2'}}
+        css={{ fontSize: '$2' }}
       />
       <CopyToClipboard
         text={copyText as string}

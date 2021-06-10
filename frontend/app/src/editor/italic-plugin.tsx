@@ -1,5 +1,4 @@
-import { css } from '@mintter/ui/stitches.config';
-import { Box } from '@mintter/ui/box';
+import { Box } from '@mintter/ui';
 import type { AutoformatRule } from '@udecode/slate-plugins-autoformat';
 import {
   DEFAULTS_ITALIC,
@@ -20,7 +19,7 @@ export const italicOptions: ItalicOptions = {
   //@ts-ignore
   [MARK_ITALIC]: {
     ...DEFAULTS_ITALIC,
-    component: ItalicLeaf as SlatePluginComponent,
+    component: ItalicLeaf as SlatePluginComponent
   },
 };
 

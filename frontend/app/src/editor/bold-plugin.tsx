@@ -1,5 +1,4 @@
-import { Box } from '@mintter/ui/box';
-import { css } from '@mintter/ui/stitches.config';
+import { Box } from '@mintter/ui';
 import type { AutoformatRule } from '@udecode/slate-plugins-autoformat';
 import { DEFAULTS_BOLD, MARK_BOLD } from '@udecode/slate-plugins-basic-marks';
 import type {
@@ -17,7 +16,7 @@ export const boldOptions: BoldOptions = {
   //@ts-ignore
   [MARK_BOLD]: {
     ...DEFAULTS_BOLD,
-    component: BoldLeaf as SlatePluginComponent,
+    component: BoldLeaf as SlatePluginComponent
   },
 };
 

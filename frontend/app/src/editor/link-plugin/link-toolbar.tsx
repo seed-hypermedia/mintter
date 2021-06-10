@@ -1,33 +1,30 @@
-import { Button } from '@mintter/ui/button';
-import { Box } from '@mintter/ui/box';
-import { TextField } from '@mintter/ui/text-field';
-import { Text } from '@mintter/ui/text';
-import { Icon } from '@mintter/ui/icon';
-import * as Popover from '@radix-ui/react-popover';
-import { Slot } from '@radix-ui/react-slot';
-import { FormEvent, useEffect, useState } from 'react';
+import { Button, Box, TextField, Icon, Text } from '@mintter/ui'
+import * as Popover from '@radix-ui/react-popover'
+import { Slot } from '@radix-ui/react-slot'
+import { FormEvent, useEffect, useState } from 'react'
 import {
   getAbove,
   getPreventDefaultHandler,
   isUrl,
   someNode,
   unwrapNodes,
-} from '@udecode/slate-plugins-common';
-import { SPEditor, useStoreEditorState } from '@udecode/slate-plugins-core';
-import { ELEMENT_LINK } from './create-link-plugin';
-import { Editor, Transforms } from 'slate';
-import { upsertLinkAtSelection } from '@udecode/slate-plugins-link';
+} from '@udecode/slate-plugins-common'
+import { SPEditor, useStoreEditorState } from '@udecode/slate-plugins-core'
+import { ELEMENT_LINK } from './create-link-plugin'
+import { Editor, Transforms } from 'slate'
+import { upsertLinkAtSelection } from '@udecode/slate-plugins-link'
+import { isValidUrl } from './is-valid-url'
 export function ToolbarLink() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
   return (
-    <Popover.Root open={open} onOpenChange={(nv) => setOpen(nv)}>
+    <Popover.Root open={open} onOpenChange={nv => setOpen(nv)}>
       <Popover.Trigger as={Slot}>
         <Button
           variant="ghost"
           size="1"
           color="muted"
           onClick={() => {
-            setOpen((pv) => !pv);
+            setOpen(pv => !pv)
           }}
         >
           <Icon name="Link" />
@@ -37,55 +34,55 @@ export function ToolbarLink() {
         <LinkForm close={() => setOpen(false)} />
       </Popover.Content>
     </Popover.Root>
-  );
+  )
 }
 
 function LinkForm({ close }: { close: () => void }) {
-  const [link, setLink] = useState('');
-  const editor = useStoreEditorState('editor');
+  const [link, setLink] = useState('')
+  const editor = useStoreEditorState('editor')
   const isLink =
-    !!editor?.selection && someNode(editor, { match: { type: ELEMENT_LINK } });
+    !!editor?.selection && someNode(editor, { match: { type: ELEMENT_LINK } })
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!editor) return;
-    if (link && isUrl(link)) {
+    event.preventDefault()
+    if (!editor) return
+    if (link && isValidUrl(link)) {
       Editor.withoutNormalizing(editor, () => {
-        upsertLinkAtSelection(editor, { url: link, wrap: false });
-      });
+        upsertLinkAtSelection(editor, { url: link, wrap: false })
+      })
     }
 
-    close();
+    close()
   }
 
   function handleRemove() {
-    if (!editor) return;
+    if (!editor) return
     const linkNode = getAbove(editor, {
-      match: (n) => n.type === ELEMENT_LINK,
-    });
+      match: n => n.type === ELEMENT_LINK,
+    })
     if (linkNode) {
-      const [link, path] = linkNode;
+      const [link, path] = linkNode
       unwrapNodes(editor, {
         at: path,
-        match: (n) => n.type === ELEMENT_LINK,
-      });
+        match: n => n.type === ELEMENT_LINK,
+      })
     } else {
-      console.log('linkNode DOES NOT exists ', linkNode);
+      console.log('linkNode DOES NOT exists ', linkNode)
     }
-    close();
+    close()
   }
 
   useEffect(() => {
-    if (!editor) return;
+    if (!editor) return
     const linkNode = getAbove(editor, {
-      match: (n) => n.type === ELEMENT_LINK,
-    });
-    let link = '';
+      match: n => n.type === ELEMENT_LINK,
+    })
+    let link = ''
     if (linkNode) {
-      link = linkNode[0].url as string;
+      link = linkNode[0].url as string
     }
-    setLink(link);
-  }, [editor?.selection]);
+    setLink(link)
+  }, [editor?.selection])
 
   return (
     <Box
@@ -116,7 +113,7 @@ function LinkForm({ close }: { close: () => void }) {
           name="address"
           label="Link Address"
           value={link}
-          onChange={(e) => setLink(e.target.value)}
+          onChange={e => setLink(e.target.value)}
           size="1"
         />
         <Box
@@ -140,5 +137,5 @@ function LinkForm({ close }: { close: () => void }) {
         </Box>
       </Box>
     </Box>
-  );
+  )
 }
