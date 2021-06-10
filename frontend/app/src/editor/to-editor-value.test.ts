@@ -1,9 +1,9 @@
-import {Block, InlineElement, ListStyle, TextRun, mock} from '@mintter/client'
-import {toInlineElement, toLink, toTextRun} from './inline-element'
-import {ELEMENT_BLOCK} from './block-plugin'
-import {SlateBlock} from './types'
-import {toEditorValue, toEditorLink} from './to-editor-value'
-import {ELEMENT_LINK} from './link-plugin'
+import { Block, InlineElement, ListStyle, TextRun, mock } from '@mintter/client'
+import { toInlineElement, toLink, toTextRun } from './inline-element'
+import { ELEMENT_BLOCK } from './block-plugin'
+import type { SlateBlock } from './types'
+import { toEditorValue, toEditorLink } from './to-editor-value'
+import { ELEMENT_LINK } from './link-plugin'
 
 describe('toEditorValue', () => {
   it('simple document', () => {
@@ -13,7 +13,7 @@ describe('toEditorValue', () => {
       childListStyle: ListStyle.NONE,
       elements: [
         InlineElement.fromPartial({
-          textRun: TextRun.fromPartial({text: 'hello world'}),
+          textRun: TextRun.fromPartial({ text: 'hello world' }),
         }),
       ],
     })
@@ -28,7 +28,6 @@ describe('toEditorValue', () => {
       {
         type: ELEMENT_BLOCK,
         id: 'block-1',
-        depth: 0,
         listStyle: ListStyle.NONE,
         children: [
           toTextRun({
@@ -48,7 +47,7 @@ describe('toEditorValue', () => {
       childListStyle: ListStyle.NONE,
       elements: [
         toInlineElement({
-          textRun: toTextRun({text: 'hello world', linkKey: 'link-key'}),
+          textRun: toTextRun({ text: 'hello world', linkKey: 'link-key' }),
         }),
       ],
     })
@@ -76,12 +75,11 @@ describe('toEditorValue', () => {
       {
         type: ELEMENT_BLOCK,
         id: 'block-1',
-        depth: 0,
         listStyle: ListStyle.NONE,
         children: [
           toEditorLink(
             linksMap,
-            toTextRun({text: 'hello world', linkKey: 'link-key'}),
+            toTextRun({ text: 'hello world', linkKey: 'link-key' }),
           ),
         ],
       },

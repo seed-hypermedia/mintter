@@ -1,56 +1,34 @@
-import {Document, InlineElement, Link, Quote, TextRun} from '@mintter/client'
-import {ELEMENT_BLOCK} from './block-plugin'
-import {ELEMENT_LINK} from './link-plugin'
-import {ELEMENT_QUOTE} from './quote-plugin'
-import {SlateBlock, EditorLink, EditorQuote} from './types'
+import type { Document, Image, InlineElement, Link, Quote, TextRun } from '@mintter/client'
+import { ELEMENT_BLOCK } from './block-plugin'
+import { ELEMENT_LINK } from './link-plugin'
+import { ELEMENT_QUOTE } from './quote-plugin'
+import type { SlateBlock, EditorLink, EditorQuote, EditorImage } from './types'
 
 export function toEditorValue(entry: Document): Array<SlateBlock> {
-  // console.log(
-  //   '🚀 ~ file: to-editor-value.ts ~ line 9 ~ toEditorValue ~ entry',
-  //   entry,
-  // )
   const currentDoc = entry
 
   const blocksMap = entry.blocks
   const linksMap = entry.links
-  return currentDoc.children.map((blockId: string) => {
+
+  return currentDoc.children.map(blockId => {
     const block = blocksMap[blockId]
     return {
-      id: block?.id,
       type: ELEMENT_BLOCK,
-      depth: 0,
+      id: block.id,
       listStyle: block.childListStyle,
-      children: block.elements.map<InlineElement>(
-        ({textRun, image, quote}: InlineElement) => {
-          if (image) {
-            return {
-              type: 'image',
-              url: linksMap[image.linkKey].uri,
-              alt_text: image.altText,
-              children: [{text: ''}],
-            }
-          } else if (textRun) {
-            if (textRun.linkKey) {
-              return toEditorLink(linksMap, textRun)
-            } else {
-              return textRun
-            }
-          } else if (quote) {
-            return toEditorQuote(linksMap, quote)
-          } else {
-            throw new Error(`unkown element`)
-          }
-        },
-      ),
+      children: block.elements.map(({ textRun, image, quote }) => {
+        if (textRun && textRun.linkKey) return toEditorLink(linksMap, textRun)
+        if (textRun) return textRun
+        if (image) return toEditorImage(linksMap, image)
+        if (quote) return toEditorQuote(linksMap, quote)
+        throw new Error('unkwon element')
+      })
     }
   })
 }
 
-export function toEditorLink(
-  links: {[key: string]: Link},
-  entry: TextRun,
-): EditorLink {
-  const {linkKey, ...rest} = entry
+export function toEditorLink(links: Record<string, Link>, entry: TextRun): EditorLink {
+  const { linkKey, ...rest } = entry
   return {
     id: linkKey,
     url: links[linkKey].uri,
@@ -59,14 +37,20 @@ export function toEditorLink(
   }
 }
 
-export function toEditorQuote(
-  links: {[key: string]: Link},
-  entry: Quote,
-): EditorQuote {
+export function toEditorQuote(links: Record<string, Link>, quote: Quote): EditorQuote {
   return {
     type: ELEMENT_QUOTE,
     id: quote.linkKey,
-    url: linksMap[quote.linkKey].uri,
-    children: [{text: ''}],
+    url: links[quote.linkKey].uri,
+    children: [{ text: '' }],
+  }
+}
+
+export function toEditorImage(links: Record<string, Link>, image: Image): EditorImage {
+  return {
+    type: 'image',
+    alt_text: image.altText,
+    url: links[image.linkKey].uri,
+    children: [{ text: '' }]
   }
 }
