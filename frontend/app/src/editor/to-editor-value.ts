@@ -1,4 +1,4 @@
-import type { Document, InlineElement, Link, Quote, TextRun } from '@mintter/client'
+import type { Document, Image, Link, Quote, TextRun } from '@mintter/client'
 import { ELEMENT_BLOCK } from './block-plugin'
 import { toTextRun } from './inline-element'
 import { ELEMENT_LINK } from './link-plugin'

@@ -35,6 +35,13 @@ describe('toEditorValue', () => {
         children: [
           {
             text: 'hello world',
+            blockquote: false,
+            bold: false,
+            code: false,
+            italic: false,
+            linkKey: '',
+            strikethrough: false,
+            underline: false
           },
         ],
       },
@@ -45,7 +52,13 @@ describe('toEditorValue', () => {
 
   it('with link', () => {
     const editorText = {
-      text: 'hello world'
+      text: 'hello world',
+      blockquote: false,
+      bold: false,
+      code: false,
+      italic: false,
+      strikethrough: false,
+      underline: false
     }
     const block = Block.fromPartial({
       id: 'block-1',
