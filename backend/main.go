@@ -2,14 +2,12 @@ package backend
 
 import (
 	"context"
-	"fmt"
 	"path/filepath"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-datastore"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 
 	"mintter/backend/badger3ds"
 	"mintter/backend/badgergraph"
@@ -38,7 +36,6 @@ func Module(cfg config.Config, log *zap.Logger) fx.Option {
 		fx.Supply(log),
 		fx.Logger(&fxLogger{log.Named("fx").Sugar()}), // Configure FX internal logging with zap.
 		fx.Provide(
-			provideLifecycle,
 			provideP2PConfig,
 			provideDatastore,
 		),
@@ -59,64 +56,59 @@ func NewLogger(cfg config.Config) *zap.Logger {
 	return log
 }
 
-func provideBackend(lc *lifecycle, r *repo, store *patchStore, p2p *p2pNode) (*backend, error) {
+func provideBackend(lc fx.Lifecycle, stop fx.Shutdowner, r *repo, store *patchStore, p2p *p2pNode) (*backend, error) {
 	back := newBackend(r, store, p2p)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	errc := make(chan error, 1)
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			lc.g.Go(func() error {
-				return back.Start(lc.ctx)
-			})
+			go func() {
+				err := back.Start(ctx)
+				if err != nil && err != context.Canceled {
+					if err := stop.Shutdown(); err != nil {
+						panic(err)
+					}
+				}
+				errc <- err
+			}()
 			return nil
+		},
+		OnStop: func(context.Context) error {
+			cancel()
+			return <-errc
 		},
 	})
 
 	return back, nil
 }
 
-func logAppLifecycle(lc *lifecycle, log *zap.Logger, cfg config.Config, grpc *grpcServer, srv *httpServer, back *backend) {
+func logAppLifecycle(lc fx.Lifecycle, stop fx.Shutdowner, log *zap.Logger, cfg config.Config, grpc *grpcServer, srv *httpServer, back *backend) {
 	log = log.Named("daemon")
-
-	await := func(ctx context.Context, c <-chan struct{}) error {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-c:
-			return nil
-		}
-	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			lc.g.Go(func() error {
-				if err := await(lc.ctx, grpc.ready); err != nil {
-					return err
-				}
-
-				if err := await(lc.ctx, srv.ready); err != nil {
-					return err
-				}
-
+			go func() {
+				<-grpc.ready
+				<-srv.ready
 				log.Info("DaemonStarted",
 					zap.String("grpcListener", grpc.lis.Addr().String()),
 					zap.String("httpListener", srv.lis.Addr().String()),
 					zap.String("repoPath", cfg.RepoPath),
 					zap.String("version", Version),
 				)
-
-				if err := await(lc.ctx, back.ready); err != nil {
-					return err
-				}
-
+				<-back.p2p.Ready()
 				addrs, err := back.p2p.libp2p.Network().InterfaceListenAddresses()
 				if err != nil {
-					return fmt.Errorf("failed to parse addrs: %w", err)
+					log.Error("FailedToParseOwnAddrs", zap.Error(err))
+					if err := stop.Shutdown(); err != nil {
+						panic(err)
+					}
+					return
 				}
-
 				log.Info("P2PNodeStarted", zap.Any("addrs", addrs))
-
-				return nil
-			})
+			}()
 			return nil
 		},
 		OnStop: func(context.Context) error {
@@ -131,7 +123,7 @@ func provideP2PConfig(cfg config.Config) config.P2P {
 	return cfg.P2P
 }
 
-func provideDatastore(lc *lifecycle, cfg config.Config) (datastore.Batching, error) {
+func provideDatastore(lc fx.Lifecycle, cfg config.Config) (datastore.Batching, error) {
 	ds, err := badger3ds.NewDatastore(badger3ds.DefaultOptions(filepath.Join(cfg.RepoPath, "badger-v3")))
 	if err != nil {
 		return nil, err
@@ -150,7 +142,7 @@ func provideBadger(ds datastore.Batching) *badger.DB {
 	return ds.(*badger3ds.Datastore).DB
 }
 
-func provideBadgerGraph(lc *lifecycle, db *badger.DB) (*badgergraph.DB, error) {
+func provideBadgerGraph(lc fx.Lifecycle, db *badger.DB) (*badgergraph.DB, error) {
 	gdb, err := badgergraph.NewDB(db, "mintter", graphSchema)
 	if err != nil {
 		return nil, err
@@ -173,52 +165,4 @@ type fxLogger struct {
 
 func (l *fxLogger) Printf(msg string, args ...interface{}) {
 	l.l.Debugf(msg, args...)
-}
-
-// lifecycle wraps fx lifecycle with errgroup.Group,
-// which can be used to spin up goroutines during application startup.
-// This allows for better control of goroutines using the semantics of errgroup,
-// meaning that if any goroutine fails to start, the other ones will short-circuit as well.
-// The context inside the lifecycle is the one that these goroutines should watch for cancelation.
-type lifecycle struct {
-	fx.Lifecycle
-
-	g   *errgroup.Group
-	ctx context.Context
-}
-
-func provideLifecycle(lc fx.Lifecycle, stop fx.Shutdowner) *lifecycle {
-	g, ctx, cancel := errgroupWithCancel()
-
-	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			go func() {
-				<-ctx.Done()
-				if err := stop.Shutdown(); err != nil {
-					panic(err)
-				}
-			}()
-			return nil
-		},
-		OnStop: func(context.Context) error {
-			cancel()
-			err := g.Wait()
-			if err == context.Canceled {
-				return nil
-			}
-			return err
-		},
-	})
-
-	return &lifecycle{
-		Lifecycle: lc,
-		g:         g,
-		ctx:       ctx,
-	}
-}
-
-func errgroupWithCancel() (*errgroup.Group, context.Context, context.CancelFunc) {
-	ctx, cancel := context.WithCancel(context.Background())
-	g, gctx := errgroup.WithContext(ctx)
-	return g, gctx, cancel
 }

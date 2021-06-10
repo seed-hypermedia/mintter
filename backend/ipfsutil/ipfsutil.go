@@ -27,6 +27,8 @@ import (
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/routing"
+	dht "github.com/libp2p/go-libp2p-kad-dht"
+	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	"go.uber.org/multierr"
 
 	blockservice "github.com/ipfs/go-blockservice"
@@ -374,4 +376,32 @@ func NewProviderSystem(bs blockstore.Blockstore, ds datastore.Datastore, rt rout
 	sp := simple.NewReprovider(ctx, defaultReprovideInterval, rt, simple.NewBlockstoreProvider(bs))
 
 	return provider.NewSystem(prov, sp), nil
+}
+
+// WaitRouting blocks until the content routing is ready. It's best-effort.
+func WaitRouting(ctx context.Context, rti routing.ContentRouting) error {
+	var rt *dht.IpfsDHT
+
+	switch d := rti.(type) {
+	case *dht.IpfsDHT:
+		rt = d
+	case *dual.DHT:
+		rt = d.WAN
+	default:
+		return nil
+	}
+
+	ticker := time.NewTicker(50 * time.Millisecond)
+	defer ticker.Stop()
+
+	for rt.RoutingTable().Size() <= 0 {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-ticker.C:
+			continue
+		}
+	}
+
+	return nil
 }

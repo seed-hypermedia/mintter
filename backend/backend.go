@@ -10,6 +10,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/lightningnetwork/lnd/aezeed"
 	"github.com/multiformats/go-multiaddr"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -24,7 +25,6 @@ type backend struct {
 	repo    *repo
 	patches *patchStore
 	p2p     *p2pNode
-	ready   chan struct{}
 
 	startTime time.Time
 
@@ -37,7 +37,6 @@ func newBackend(r *repo, store *patchStore, p2p *p2pNode) *backend {
 		repo:      r,
 		patches:   store,
 		startTime: time.Now().UTC(),
-		ready:     make(chan struct{}),
 		p2p:       p2p,
 	}
 
@@ -48,34 +47,67 @@ func newBackend(r *repo, store *patchStore, p2p *p2pNode) *backend {
 // and then start the P2P services. Start blocks and returns
 // when the process is finished or ctx is canceled.
 func (srv *backend) Start(ctx context.Context) error {
+	// When we start the backend it may be that we don't have the account
+	// yet, thus we don't want to start all the other services.
+	// So we wait until the repo is ready, then start the P2P node,
+	// wait until that one is ready, and then provide our own account on the DHT.
+
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
 	case <-srv.repo.Ready():
-		if err := srv.p2p.Start(ctx); err != nil {
-			return fmt.Errorf("failed to start p2p node: %w", err)
-		}
+		break
 	}
 
-	// TODO: provide account on the DHT.
+	g, ctx := errgroup.WithContext(ctx)
 
-	// acc, err := srv.repo.Account()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// blk, err := blocks.NewBlockWithCid(nil, cid.Cid(acc.id))
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// if err := srv.p2p.BlockService.AddBlock(blk); err != nil {
-	// 	panic(err)
-	// }
+	g.Go(func() error {
+		return srv.p2p.Start(ctx)
+	})
 
-	// fmt.Println("account provided", err)
+	g.Go(func() error {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-srv.p2p.Ready():
+			return srv.p2p.prov.StartReproviding(ctx)
+		}
+	})
 
-	close(srv.ready)
+	g.Go(func() error {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-srv.p2p.Ready():
+			break
+		}
 
-	return nil
+		acc, err := srv.repo.Account()
+		if err != nil {
+			return fmt.Errorf("failed to get account to provide: %w", err)
+		}
+
+		timer := time.NewTimer(time.Millisecond)
+		defer timer.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-timer.C:
+				err := srv.p2p.prov.Provide(ctx, cid.Cid(acc.id))
+				if err == nil {
+					return nil
+				}
+
+				// TODO: log errors.
+
+				timer.Reset(5 * time.Second)
+			}
+		}
+	})
+
+	return g.Wait()
 }
 
 // Register an account on this node using provided mnemonic.
@@ -276,7 +308,7 @@ func (srv *backend) GetAccountForDevice(d DeviceID) (AccountID, error) {
 
 func (srv *backend) readyIPFS() (*p2pNode, error) {
 	select {
-	case <-srv.ready:
+	case <-srv.p2p.Ready():
 		return srv.p2p, nil
 	default:
 		return nil, fmt.Errorf("p2p node is not ready yet")
