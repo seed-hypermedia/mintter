@@ -1,6 +1,6 @@
-import { Button, Box, Text } from '@mintter/ui';
+import {Button, Box, Text} from '@mintter/ui'
 // TODO: fix types
-export function Connections({ onConnect }: any) {
+export function Connections({onConnect}: any) {
   // const { data = [], isLoading, isError, error } = useConnectionList();
 
   // if (isLoading) {
@@ -67,5 +67,5 @@ export function Connections({ onConnect }: any) {
   //     </Box>
   //   </Box>
   // );
-  return <Text>connections. Implement!</Text>;
+  return <Text>connections. Implement!</Text>
 }

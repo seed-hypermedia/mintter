@@ -75,12 +75,8 @@ export function mockBlock({
   return Block.fromPartial({
     id,
     elements: elements
-      ? elements.map(n => mockTextInlineElement(n.textRun))
-      : [
-          mockTextInlineElement(),
-          mockTextInlineElement(),
-          mockTextInlineElement(),
-        ],
+      ? elements.map((n) => mockTextInlineElement(n.textRun))
+      : [mockTextInlineElement(), mockTextInlineElement(), mockTextInlineElement()],
     childListStyle,
     parent,
     children,
@@ -97,7 +93,7 @@ export function mockDocument({
   links = {},
   id = createId(),
 }: Omit<Partial<Document>, 'blocks'> & {blocks?: Block[]} = {}): Document {
-  const blockMap = Object.fromEntries(blocks.map(block => [block.id, block]))
+  const blockMap = Object.fromEntries(blocks.map((block) => [block.id, block]))
 
   return Document.fromPartial({
     id,
@@ -107,7 +103,7 @@ export function mockDocument({
     childrenListStyle,
     blocks: blockMap,
     links,
-    children: Object.values(blockMap).map(b => b.id),
+    children: Object.values(blockMap).map((b) => b.id),
   })
 }
 

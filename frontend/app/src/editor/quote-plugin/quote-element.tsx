@@ -4,17 +4,15 @@ import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
 import {useQuote} from '@mintter/client/hooks'
 import type {EditorTextRun, EditorQuote} from '../types'
 import type {Block} from '@mintter/client'
+import {useCallback} from 'react'
 
-export function QuoteElement({
-  attributes,
-  className,
-  element,
-  children,
-}: SPRenderElementProps<EditorQuote>) {
+export function QuoteElement({attributes, className, element, children}: SPRenderElementProps<EditorQuote>) {
   const focused = useFocused()
   const selected = useSelected()
   const quote = useQuote(element.url)
   let qRender
+
+  const renderElement = useCallback(({text = ''}, index) => <span key={index}>{text}</span>, [])
 
   if (quote.isLoading) {
     qRender = <span>...</span>
@@ -25,9 +23,7 @@ export function QuoteElement({
   }
 
   if (quote.isSuccess && quote.data) {
-    qRender = toEditorQuote(quote.data).map(({text = ''}, index) => (
-      <span key={index}>{text}</span>
-    ))
+    qRender = toEditorQuote(quote.data).map(renderElement)
     return (
       <span {...attributes} data-quote-id={element.id}>
         <Box
@@ -40,8 +36,7 @@ export function QuoteElement({
             overflow: 'hidden',
             color: '$secondary-strong',
             borderRadius: '$1',
-            backgroundColor:
-              focused && selected ? '$background-neutral' : 'transparent',
+            backgroundColor: focused && selected ? '$background-neutral' : 'transparent',
             '&:hover': {
               cursor: 'pointer',
               backgroundColor: '$background-neutral',
@@ -71,7 +66,7 @@ function toEditorQuote(entry: Block): Array<EditorTextRun> {
       node.text = textRun.text
       Object.keys(textRun).forEach(
         //@ts-ignore
-        key => {
+        (key) => {
           //@ts-ignore
           if (typeof textRun[key] === 'boolean' && textRun[key]) {
             //@ts-ignore

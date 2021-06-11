@@ -91,10 +91,7 @@ export default function EditorPage() {
         <Button color="primary" shape="pill" size="2" onClick={saveDocument}>
           PUBLISH
         </Button>
-        <Button
-          size="1"
-          onClick={() => sidepanelSend?.({type: 'SIDEPANEL_TOOGLE'})}
-        >
+        <Button size="1" onClick={() => sidepanelSend?.({type: 'SIDEPANEL_TOOGLE'})}>
           toggle sidepanel
         </Button>
       </Box>
@@ -164,18 +161,12 @@ export default function EditorPage() {
   )
 }
 
-function useMintterEditor(docId: string): Omit<
-  UseQueryResult<Document>,
-  'data'
-> & {
+function useMintterEditor(docId: string): Omit<UseQueryResult<Document>, 'data'> & {
   data?: {document?: Document; editorValue?: Array<EditorBlock>}
 } {
   const draftQuery = useDraft(docId)
 
-  const editorValue = useMemo(
-    () => (draftQuery.data ? toEditorValue(draftQuery.data) : undefined),
-    [draftQuery, docId],
-  )
+  const editorValue = useMemo(() => (draftQuery.data ? toEditorValue(draftQuery.data) : undefined), [draftQuery, docId])
 
   return {
     ...draftQuery,

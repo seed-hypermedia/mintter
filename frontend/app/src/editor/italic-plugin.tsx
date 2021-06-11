@@ -1,27 +1,20 @@
-import { Box } from '@mintter/ui';
-import type { AutoformatRule } from '@udecode/slate-plugins-autoformat';
-import {
-  DEFAULTS_ITALIC,
-  MARK_ITALIC,
-} from '@udecode/slate-plugins-basic-marks';
-import type {
-  SlatePluginComponent,
-  SlatePluginOptions,
-  SPRenderLeafProps,
-} from '@udecode/slate-plugins-core';
-import type { EditorTextRun } from './types';
+import {Box} from '@mintter/ui'
+import type {AutoformatRule} from '@udecode/slate-plugins-autoformat'
+import {DEFAULTS_ITALIC, MARK_ITALIC} from '@udecode/slate-plugins-basic-marks'
+import type {SlatePluginComponent, SlatePluginOptions, SPRenderLeafProps} from '@udecode/slate-plugins-core'
+import type {EditorTextRun} from './types'
 
 export type ItalicOptions = {
-  [MARK_ITALIC]: SlatePluginOptions;
-};
+  [MARK_ITALIC]: SlatePluginOptions
+}
 
 export const italicOptions: ItalicOptions = {
   //@ts-ignore
   [MARK_ITALIC]: {
     ...DEFAULTS_ITALIC,
-    component: ItalicLeaf as SlatePluginComponent
+    component: ItalicLeaf as SlatePluginComponent,
   },
-};
+}
 
 export const italicAutoformatRules: Array<AutoformatRule> = [
   {
@@ -36,13 +29,9 @@ export const italicAutoformatRules: Array<AutoformatRule> = [
     mode: 'inline',
     insertTrigger: true,
   },
-];
+]
 
-export function ItalicLeaf({
-  attributes,
-  children,
-  leaf,
-}: SPRenderLeafProps<EditorTextRun>) {
+export function ItalicLeaf({attributes, children, leaf}: SPRenderLeafProps<EditorTextRun>) {
   if (leaf.italic) {
     return (
       <Box
@@ -54,6 +43,6 @@ export function ItalicLeaf({
       >
         {children}
       </Box>
-    );
+    )
   }
 }

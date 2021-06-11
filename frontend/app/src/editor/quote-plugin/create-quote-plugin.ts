@@ -1,9 +1,4 @@
-import {
-  SlatePlugin,
-  getVoidTypes,
-  getSlatePluginTypes,
-  getRenderElement,
-} from '@udecode/slate-plugins'
+import {SlatePlugin, getVoidTypes, getSlatePluginTypes, getRenderElement} from '@udecode/slate-plugins'
 import {withQuote} from './with-quote'
 
 export const ELEMENT_QUOTE = 'quote'

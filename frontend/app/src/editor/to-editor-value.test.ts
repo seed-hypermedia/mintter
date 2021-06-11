@@ -1,9 +1,9 @@
-import { Block, InlineElement, ListStyle, TextRun, Document, Link } from '@mintter/client'
-import { toInlineElement, toTextRun } from './inline-element'
-import { ELEMENT_BLOCK } from './block-plugin'
-import type { EditorBlock } from './types'
-import { toEditorValue } from './to-editor-value'
-import { ELEMENT_LINK } from './link-plugin'
+import {Block, InlineElement, ListStyle, TextRun, Document, Link} from '@mintter/client'
+import {toInlineElement, toTextRun} from './inline-element'
+import {ELEMENT_BLOCK} from './block-plugin'
+import type {EditorBlock} from './types'
+import {toEditorValue} from './to-editor-value'
+import {ELEMENT_LINK} from './link-plugin'
 
 describe('toEditorValue', () => {
   it('simple document', () => {
@@ -13,7 +13,7 @@ describe('toEditorValue', () => {
       childListStyle: ListStyle.NONE,
       elements: [
         InlineElement.fromPartial({
-          textRun: TextRun.fromPartial({ text: 'hello world' }),
+          textRun: TextRun.fromPartial({text: 'hello world'}),
         }),
       ],
     })
@@ -21,10 +21,10 @@ describe('toEditorValue', () => {
     const doc = Document.fromPartial({
       id: 'doc-id',
       blocks: {
-        [block.id]: block
+        [block.id]: block,
       },
       children: [block.id],
-      childrenListStyle: ListStyle.NONE
+      childrenListStyle: ListStyle.NONE,
     })
 
     const expected: Array<EditorBlock> = [
@@ -41,7 +41,7 @@ describe('toEditorValue', () => {
             italic: false,
             linkKey: '',
             strikethrough: false,
-            underline: false
+            underline: false,
           },
         ],
       },
@@ -58,7 +58,7 @@ describe('toEditorValue', () => {
       code: false,
       italic: false,
       strikethrough: false,
-      underline: false
+      underline: false,
     }
     const block = Block.fromPartial({
       id: 'block-1',
@@ -66,7 +66,7 @@ describe('toEditorValue', () => {
       childListStyle: ListStyle.NONE,
       elements: [
         toInlineElement({
-          textRun: toTextRun({ ...editorText, linkKey: 'link-1' }),
+          textRun: toTextRun({...editorText, linkKey: 'link-1'}),
         }),
       ],
     })
@@ -74,15 +74,15 @@ describe('toEditorValue', () => {
     const doc = Document.fromPartial({
       id: 'doc-id',
       blocks: {
-        'block-1': block
+        'block-1': block,
       },
       children: [block.id],
       childrenListStyle: ListStyle.NONE,
       links: {
         'link-1': Link.fromPartial({
-          uri: 'https://example.test'
-        })
-      }
+          uri: 'https://example.test',
+        }),
+      },
     })
 
     const expected: Array<EditorBlock> = [
@@ -95,10 +95,8 @@ describe('toEditorValue', () => {
             type: ELEMENT_LINK,
             id: 'link-1',
             url: 'https://example.test',
-            children: [
-              editorText
-            ]
-          }
+            children: [editorText],
+          },
         ],
       },
     ]

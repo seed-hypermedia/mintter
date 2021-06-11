@@ -1,6 +1,6 @@
-import { Button as UIButton, Text, Box } from '@mintter/ui';
+import {Button as UIButton, Text, Box} from '@mintter/ui'
 
-export function Root({ children }: any) {
+export function Root({children}: any) {
   return (
     <Box
       css={{
@@ -11,26 +11,25 @@ export function Root({ children }: any) {
         gridAutoFlow: 'row',
         alignItems: 'center',
         borderRadius: '$3',
-        boxShadow:
-          'inset 0 0 0 1px $colors$background-neutral-soft, 0 0 0 1px $colors$background-neutral-soft',
+        boxShadow: 'inset 0 0 0 1px $colors$background-neutral-soft, 0 0 0 1px $colors$background-neutral-soft',
         textAlign: 'center',
         gap: '$5',
       }}
     >
       {children}
     </Box>
-  );
+  )
 }
 
-export function Title({ children }: any) {
-  return <Text size="7">{children}</Text>;
+export function Title({children}: any) {
+  return <Text size="7">{children}</Text>
 }
 
 // TODO: fix types
-export function Button({ children, ...props }: any) {
+export function Button({children, ...props}: any) {
   return (
     <UIButton variant="outlined" color="primary" {...props}>
       {children}
     </UIButton>
-  );
+  )
 }

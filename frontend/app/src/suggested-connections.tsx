@@ -1,17 +1,17 @@
-import { useSuggestedConnections } from '@mintter/client/hooks';
-import { mintter } from '@mintter/client'
-import { Text, Box, Button } from '@mintter/ui';
+import {useSuggestedConnections} from '@mintter/client/hooks'
+import {mintter} from '@mintter/client'
+import {Text, Box, Button} from '@mintter/ui'
 
 // TODO: fix types
-export function SuggestedConnections({ onConnect }: any) {
-  const { data = [], isLoading, isError, error } = useSuggestedConnections();
+export function SuggestedConnections({onConnect}: any) {
+  const {data = [], isLoading, isError, error} = useSuggestedConnections()
 
   if (isLoading) {
-    return <Text>loading...</Text>;
+    return <Text>loading...</Text>
   }
 
   if (isError) {
-    return <Text>ERROR</Text>;
+    return <Text>ERROR</Text>
   }
 
   return (
@@ -24,9 +24,8 @@ export function SuggestedConnections({ onConnect }: any) {
       ) : (
         <Box as="ul" aria-label="suggested connections">
           {data.map((c: mintter.SuggestedProfile) => {
-            const { profile, addrs } = c;
-            const isConnected =
-              profile?.connectionStatus === mintter.ConnectionStatus.CONNECTED;
+            const {profile, addrs} = c
+            const isConnected = profile?.connectionStatus === mintter.ConnectionStatus.CONNECTED
 
             return (
               <Box
@@ -60,12 +59,10 @@ export function SuggestedConnections({ onConnect }: any) {
                     justifyContent: 'space-between',
                   }}
                 >
-                  <Text>
-                    {`${profile?.username} (${profile?.accountId.slice(-8)})`}
-                  </Text>
+                  <Text>{`${profile?.username} (${profile?.accountId.slice(-8)})`}</Text>
                   <Button
                     onClick={() => {
-                      onConnect(addrs);
+                      onConnect(addrs)
                     }}
                     color="primary"
                     variant="outlined"
@@ -75,10 +72,10 @@ export function SuggestedConnections({ onConnect }: any) {
                   </Button>
                 </Box>
               </Box>
-            );
+            )
           })}
         </Box>
       )}
     </div>
-  );
+  )
 }

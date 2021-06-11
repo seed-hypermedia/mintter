@@ -1,25 +1,17 @@
-import {
-  SPEditor,
-  upsertLinkAtSelection,
-  WithOverride,
-  someNode,
-  isUrl,
-} from '@udecode/slate-plugins'
+import {SPEditor, upsertLinkAtSelection, WithOverride, someNode, isUrl} from '@udecode/slate-plugins'
 import type {MenuStateReturn} from 'reakit/Menu'
 import type {ReactEditor} from 'slate-react'
 import {ELEMENT_LINK, MINTTER_LINK_PREFIX} from './create-link-plugin'
 
 export interface WithMintterLinkOptions {
-  menu?: MenuStateReturn;
+  menu?: MenuStateReturn
 }
 
-export function withMintterLink(
-  options: WithMintterLinkOptions,
-): WithOverride<ReactEditor & SPEditor> {
-  return editor => {
+export function withMintterLink(options: WithMintterLinkOptions): WithOverride<ReactEditor & SPEditor> {
+  return (editor) => {
     const {insertData, insertText} = editor
 
-    editor.insertData = data => {
+    editor.insertData = (data) => {
       const text = data.getData('text/plain')
       const link = {url: text, wrap: false}
 

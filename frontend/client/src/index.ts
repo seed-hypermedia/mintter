@@ -10,7 +10,7 @@ export {
   Profile,
   Device,
   DeviceRegistered,
-  ProfileUpdated
+  ProfileUpdated,
 } from '../.generated/accounts/v1alpha/accounts'
 export * from './accounts'
 
@@ -20,7 +20,7 @@ export {
   RegisterRequest,
   RegisterResponse,
   Info,
-  GetInfoRequest
+  GetInfoRequest,
 } from '../.generated/daemon/v1alpha/daemon'
 export * from './daemon'
 
@@ -37,7 +37,7 @@ export {
   ConnectResponse,
   PeerInfo,
   ObjectDiscoveryStatus,
-  GetObjectDiscoveryStatusRequest
+  GetObjectDiscoveryStatusRequest,
 } from '../.generated/networking/v1alpha/networking'
 export * from './networking'
 
@@ -70,7 +70,7 @@ export {
   InlineElement,
   TextRun,
   Image,
-  Quote
+  Quote,
 } from '../.generated/documents/v1alpha/documents'
 export * from './documents'
 export * from './drafts'

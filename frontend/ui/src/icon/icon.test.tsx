@@ -1,4 +1,4 @@
-import { Icon } from './icon'
+import {Icon} from './icon'
 
 test('works', () => {
   expect(Icon).toBeDefined()

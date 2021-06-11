@@ -2,10 +2,7 @@ import {useMemo, useEffect} from 'react'
 import {useHistory, useParams} from 'react-router-dom'
 import slugify from 'slugify'
 import type {Publication as TPublication, Document} from '@mintter/client'
-import {
-  useDraftsList,
-  usePublication as usePublicationQuery,
-} from '@mintter/client/hooks'
+import {useDraftsList, usePublication as usePublicationQuery} from '@mintter/client/hooks'
 import {useSidePanel} from '../sidepanel'
 import {Text, Box, Button} from '@mintter/ui'
 import {Container} from '../components/container'
@@ -181,14 +178,12 @@ export default function Publication(): JSX.Element {
             </Button>
           </Box>
           <Box as="ul" aria-label="sidepanel list">
-            {sidepanelObjects.map(object => (
+            {sidepanelObjects.map((object) => (
               // <SidePanelObject key={object} id={object} />
               <Box key={object} />
             ))}
           </Box>
-          {sidepanelObjects.length === 0 && (
-            <SidePanelCTA handleInteract={handleInteract} />
-          )}
+          {sidepanelObjects.length === 0 && <SidePanelCTA handleInteract={handleInteract} />}
         </Box>
       ) : null}
       {/* <PublicationModal document={data.document} /> */}
@@ -204,11 +199,10 @@ export default function Publication(): JSX.Element {
 
 function usePublication() {
   // get document version
-  const {docId, docVersion = ''} =
-    useParams<{
-      docId: string
-      docVersion: string
-    }>()
+  const {docId, docVersion = ''} = useParams<{
+    docId: string
+    docVersion: string
+  }>()
 
   const history = useHistory()
   const documentId = useMemo(() => docId.split('-').slice(-1)[0], [docId])
@@ -229,9 +223,7 @@ function usePublication() {
           lower: true,
           remove: /[*+~.?()'"!:@]/g,
         })
-        history.replace(
-          `/p/${titleSlug}-${documentId}${docVersion ? `/${docVersion}` : ''}`,
-        )
+        history.replace(`/p/${titleSlug}-${documentId}${docVersion ? `/${docVersion}` : ''}`)
       }
     }
   }, [])
@@ -265,8 +257,7 @@ function PublicationCTA({handleInteract, visible}: any) {
       </Text>
       <Text>
         Mintter is a distributed publishing platform that brings to your content{' '}
-        <Text as="strong">Ownership, Authorship, Atribution</Text> and{' '}
-        <Text as="strong">Traceability.</Text>
+        <Text as="strong">Ownership, Authorship, Atribution</Text> and <Text as="strong">Traceability.</Text>
       </Text>
       <Button onClick={handleInteract}>
         {/* <Icons.ChevronLeft size={16} color="currentColor" /> */}
@@ -281,8 +272,7 @@ function SidePanelCTA({handleInteract}: any) {
     <Box>
       <Text as="h3">Want to add your thougts to this subject?</Text>
       <Text>
-        <Text as="strong">Reply, develop</Text> or{' '}
-        <Text as="strong">refute</Text> on the Mintter app now.
+        <Text as="strong">Reply, develop</Text> or <Text as="strong">refute</Text> on the Mintter app now.
       </Text>
       <button
         className="bg-primary rounded-full mt-4 px-8 py-2 text-white font-bold shadow transition duration-200 text-sm"
@@ -375,7 +365,7 @@ function copyTextToClipboard(text: string) {
       // console.log('Async: Copying to clipboard was successful!!')
       return true
     },
-    err => {
+    (err) => {
       console.error('Async: Could not copy text: ', err)
       return false
     },

@@ -11,17 +11,22 @@
     "test": "jest",
     "test:w": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint '*/**/*.{ts,tsx}' --quiet",
-    "format": "yarn lint --fix"
+    "lint": "eslint .",
+    "prettier": "prettier --ignore-path .gitignore \"**/*.+(ts|tsx|json)\"",
+    "precommit": "lint-staged",
+    "format": "yarn prettier --write",
+    "check-format": "yarn prettier --list-different",
+    "validate": "yarn check-format && yarn lint"
   },
   "devDependencies": {
     "@stitches/core": "0.1.9",
     "@stitches/react": "0.1.9",
     "@types/autosize": "^4.0.0",
     "@types/jest": "^26.0.23",
-    "@typescript-eslint/eslint-plugin": "^4.26.0",
-    "@typescript-eslint/parser": "^4.26.0",
+    "@typescript-eslint/eslint-plugin": "^4.26.1",
     "eslint": "^7.28.0",
+    "lint-staged": "^11.0.0",
+    "@typescript-eslint/parser": "^4.26.1",
     "eslint-plugin-react": "^7.24.0",
     "jest": "^27.0.4",
     "ts-jest": "^27.0.2",
@@ -32,5 +37,10 @@
     "autosize": "^5.0.0",
     "eslint": "^7.28.0",
     "react": "^17.0.2"
+  },
+  "lint-staged": {
+    "src/**/*.+(ts|tsx)": [
+      "yarn validate"
+    ]
   }
 }

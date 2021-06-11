@@ -1,10 +1,4 @@
-import {
-  Switch,
-  useRouteMatch,
-  Redirect,
-  useHistory,
-  Route,
-} from 'react-router-dom'
+import {Switch, useRouteMatch, Redirect, useHistory, Route} from 'react-router-dom'
 import {useAccount} from '@mintter/client/hooks'
 import {createDraft} from '@mintter/client'
 import {Link} from '../components/link'
@@ -206,9 +200,7 @@ function ProfileInfo() {
   ) : null
 }
 
-const NoConnectionsBox: React.FC<{onConnect: () => void}> = ({
-  onConnect,
-}: any) => {
+const NoConnectionsBox: React.FC<{onConnect: () => void}> = ({onConnect}: any) => {
   const data = []
   return data.length === 0 ? (
     <MessageBox.Root>
@@ -228,13 +220,7 @@ export type NavItemProps = {
 }
 
 // TODO: fix types
-function NavItem({
-  children,
-  to,
-  css,
-  onlyActiveWhenExact = false,
-  ...props
-}: NavItemProps) {
+function NavItem({children, to, css, onlyActiveWhenExact = false, ...props}: NavItemProps) {
   const match = useRouteMatch({
     path: to,
     exact: onlyActiveWhenExact,

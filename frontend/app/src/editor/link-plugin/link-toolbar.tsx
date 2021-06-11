@@ -1,30 +1,24 @@
-import { Button, Box, TextField, Icon, Text } from '@mintter/ui'
+import {Button, Box, TextField, Icon, Text} from '@mintter/ui'
 import * as Popover from '@radix-ui/react-popover'
-import { Slot } from '@radix-ui/react-slot'
-import { FormEvent, useEffect, useState } from 'react'
-import {
-  getAbove,
-  getPreventDefaultHandler,
-  isUrl,
-  someNode,
-  unwrapNodes,
-} from '@udecode/slate-plugins-common'
-import { SPEditor, useStoreEditorState } from '@udecode/slate-plugins-core'
-import { ELEMENT_LINK } from './create-link-plugin'
-import { Editor, Transforms } from 'slate'
-import { upsertLinkAtSelection } from '@udecode/slate-plugins-link'
-import { isValidUrl } from './is-valid-url'
+import {Slot} from '@radix-ui/react-slot'
+import {FormEvent, useEffect, useState} from 'react'
+import {getAbove, getPreventDefaultHandler, isUrl, someNode, unwrapNodes} from '@udecode/slate-plugins-common'
+import {SPEditor, useStoreEditorState} from '@udecode/slate-plugins-core'
+import {ELEMENT_LINK} from './create-link-plugin'
+import {Editor, Transforms} from 'slate'
+import {upsertLinkAtSelection} from '@udecode/slate-plugins-link'
+import {isValidUrl} from './is-valid-url'
 export function ToolbarLink() {
   const [open, setOpen] = useState(false)
   return (
-    <Popover.Root open={open} onOpenChange={nv => setOpen(nv)}>
+    <Popover.Root open={open} onOpenChange={(nv) => setOpen(nv)}>
       <Popover.Trigger as={Slot}>
         <Button
           variant="ghost"
           size="1"
           color="muted"
           onClick={() => {
-            setOpen(pv => !pv)
+            setOpen((pv) => !pv)
           }}
         >
           <Icon name="Link" />
@@ -37,18 +31,17 @@ export function ToolbarLink() {
   )
 }
 
-function LinkForm({ close }: { close: () => void }) {
+function LinkForm({close}: {close: () => void}) {
   const [link, setLink] = useState('')
   const editor = useStoreEditorState('editor')
-  const isLink =
-    !!editor?.selection && someNode(editor, { match: { type: ELEMENT_LINK } })
+  const isLink = !!editor?.selection && someNode(editor, {match: {type: ELEMENT_LINK}})
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!editor) return
     if (link && isValidUrl(link)) {
       Editor.withoutNormalizing(editor, () => {
-        upsertLinkAtSelection(editor, { url: link, wrap: false })
+        upsertLinkAtSelection(editor, {url: link, wrap: false})
       })
     }
 
@@ -58,13 +51,13 @@ function LinkForm({ close }: { close: () => void }) {
   function handleRemove() {
     if (!editor) return
     const linkNode = getAbove(editor, {
-      match: n => n.type === ELEMENT_LINK,
+      match: (n) => n.type === ELEMENT_LINK,
     })
     if (linkNode) {
       const [link, path] = linkNode
       unwrapNodes(editor, {
         at: path,
-        match: n => n.type === ELEMENT_LINK,
+        match: (n) => n.type === ELEMENT_LINK,
       })
     } else {
       console.log('linkNode DOES NOT exists ', linkNode)
@@ -75,7 +68,7 @@ function LinkForm({ close }: { close: () => void }) {
   useEffect(() => {
     if (!editor) return
     const linkNode = getAbove(editor, {
-      match: n => n.type === ELEMENT_LINK,
+      match: (n) => n.type === ELEMENT_LINK,
     })
     let link = ''
     if (linkNode) {
@@ -113,7 +106,7 @@ function LinkForm({ close }: { close: () => void }) {
           name="address"
           label="Link Address"
           value={link}
-          onChange={e => setLink(e.target.value)}
+          onChange={(e) => setLink(e.target.value)}
           size="1"
         />
         <Box

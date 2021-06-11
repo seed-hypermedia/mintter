@@ -1,8 +1,8 @@
-import { BeatLoader as Spinner } from 'react-spinners';
+import {BeatLoader as Spinner} from 'react-spinners'
 // TODO: remove spinner dependency, use a simple version
 
-import { Box } from '@mintter/ui'
-import { styled } from '@mintter/ui/stitches.config'
+import {Box} from '@mintter/ui'
+import {styled} from '@mintter/ui/stitches.config'
 
 const AppSpinnerContainer = styled(Box, {
   alignItems: 'center',
@@ -22,15 +22,13 @@ const AppSpinnerContainer = styled(Box, {
       },
     },
   },
-});
+})
 
-export const AppSpinner: React.FC<
-  React.ComponentProps<typeof AppSpinnerContainer>
-> = (props) => {
+export const AppSpinner: React.FC<React.ComponentProps<typeof AppSpinnerContainer>> = (props) => {
   return (
     // @ts-ignore
     <AppSpinnerContainer aria-label="loading spinner" {...props}>
       <Spinner color="var(--colors-primary-softer)" />
     </AppSpinnerContainer>
-  );
-};
+  )
+}

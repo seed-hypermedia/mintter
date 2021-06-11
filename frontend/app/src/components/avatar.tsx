@@ -1,5 +1,5 @@
-import { styled } from '@mintter/ui/stitches.config';
-import { Box } from '@mintter/ui';
+import {styled} from '@mintter/ui/stitches.config'
+import {Box} from '@mintter/ui'
 
 export const Avatar = styled(Box, {
   $$size: '$space$6',
@@ -23,8 +23,8 @@ export const Avatar = styled(Box, {
   defaultVariants: {
     size: '2',
   },
-});
+})
 
-export type AvatarProps = React.ComponentProps<typeof Avatar>;
+export type AvatarProps = React.ComponentProps<typeof Avatar>
 
 // TODO: receive the author (forwardRef)

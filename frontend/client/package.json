@@ -11,18 +11,23 @@
     "test": "jest",
     "test:w": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint '*/**/*.{ts,tsx}' --quiet",
-    "format": "yarn lint --fix"
+    "precommit": "lint-staged",
+    "lint": "eslint .",
+    "prettier": "prettier --ignore-path .gitignore \"**/*.+(ts|tsx|json)\"",
+    "format": "yarn prettier --write",
+    "check-format": "yarn prettier --list-different",
+    "validate": "yarn check-format && yarn lint"
   },
   "devDependencies": {
     "@types/jest": "^26.0.23",
-    "@typescript-eslint/eslint-plugin": "^4.26.0",
-    "@typescript-eslint/parser": "^4.26.0",
-    "eslint": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "jest": "^27.0.4",
     "ts-jest": "^27.0.2",
-    "typescript": "^4.3.2"
+    "typescript": "^4.3.2",
+    "lint-staged": "^11.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.26.1",
+    "eslint": "^7.28.0",
+    "@typescript-eslint/parser": "^4.26.1"
   },
   "dependencies": {
     "@improbable-eng/grpc-web": "^0.14.0",
@@ -33,5 +38,10 @@
     "long": "^4.0.0",
     "protobufjs": "^6.11.2",
     "react-query": "^3.16.1"
+  },
+  "lint-staged": {
+    "src/**/*.+(ts|tsx)": [
+      "yarn validate"
+    ]
   }
 }

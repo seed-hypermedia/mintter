@@ -23,20 +23,17 @@ type ProfileInformationDataType = {
   bio: string
 }
 
-export function ProfileInformation({
-  next,
-}: OnboardingStepPropsType): JSX.Element {
+export function ProfileInformation({next}: OnboardingStepPropsType): JSX.Element {
   const updateProfile = useMutation(updateAccount)
 
-  const {register, handleSubmit, errors, formState} =
-    useForm<ProfileInformationDataType>({
-      mode: 'onChange',
-      defaultValues: {
-        alias: '',
-        email: '',
-        bio: '',
-      },
-    })
+  const {register, handleSubmit, errors, formState} = useForm<ProfileInformationDataType>({
+    mode: 'onChange',
+    defaultValues: {
+      alias: '',
+      email: '',
+      bio: '',
+    },
+  })
 
   const onSubmit = useCallback(
     async (data: ProfileInformationDataType) => {
@@ -53,16 +50,11 @@ export function ProfileInformation({
 
   return (
     <OnboardingStep onSubmit={handleSubmit(onSubmit)}>
-      <OnboardingStepTitle icon={<ProfileInformationIcon />}>
-        Profile Information
-      </OnboardingStepTitle>
+      <OnboardingStepTitle icon={<ProfileInformationIcon />}>Profile Information</OnboardingStepTitle>
       <OnboardingStepDescription>
-        Link your personal data with your new Mintter account. You can fill this
-        information later if you prefer.
+        Link your personal data with your new Mintter account. You can fill this information later if you prefer.
       </OnboardingStepDescription>
-      <OnboardingStepBody
-        css={{display: 'flex', flexDirection: 'column', gap: '$6'}}
-      >
+      <OnboardingStepBody css={{display: 'flex', flexDirection: 'column', gap: '$6'}}>
         <TextField
           type="text"
           label="Alias"
@@ -100,10 +92,7 @@ export function ProfileInformation({
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
-        <OnboardingStepButton
-          type="submit"
-          disabled={!formState.isValid || formState.isSubmitting}
-        >
+        <OnboardingStepButton type="submit" disabled={!formState.isValid || formState.isSubmitting}>
           Next
         </OnboardingStepButton>
       </OnboardingStepActions>
