@@ -1,11 +1,5 @@
 import {lazy} from 'react'
-import {
-  Switch,
-  Route,
-  useRouteMatch,
-  Redirect,
-  RouteComponentProps,
-} from 'react-router-dom'
+import {Switch, Route, useRouteMatch, Redirect, RouteComponentProps} from 'react-router-dom'
 import {lazily} from 'react-lazily'
 import {createPath, getPath} from './utils/routes'
 import {AppSpinner} from './components/app-spinner'
@@ -70,9 +64,7 @@ export function AuthorNode({path = '/'}: {path?: string}) {
           <Route exact path={['/editor/:docId', '/admin/editor/:docId']}>
             <Editor />
           </Route>
-          <Route
-            path={['/p/:docId/:docVersion', '/admin/p/:docId/:docVersion']}
-          >
+          <Route path={['/p/:docId/:docVersion', '/admin/p/:docId/:docVersion']}>
             <Publication />
           </Route>
           <Route path={['/settings', '/admin/settings']}>

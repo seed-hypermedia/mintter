@@ -1,11 +1,7 @@
-import {
-  SlatePlugin,
-  getRenderElement,
-  withNodeId,
-} from '@udecode/slate-plugins';
-import { mock } from '@mintter/client';
+import {SlatePlugin, getRenderElement, withNodeId} from '@udecode/slate-plugins'
+import {mock} from '@mintter/client'
 
-export const ELEMENT_BLOCK = 'block';
+export const ELEMENT_BLOCK = 'block'
 
 export const createBlockPlugin = (): SlatePlugin => ({
   pluginKeys: [ELEMENT_BLOCK],
@@ -14,4 +10,4 @@ export const createBlockPlugin = (): SlatePlugin => ({
     idCreator: () => mock.createId(),
     allow: [ELEMENT_BLOCK],
   }),
-});
+})

@@ -65,10 +65,7 @@ async function render(
 
 const waitForLoadingToFinish = (timeout: number) =>
   waitForElementToBeRemoved(
-    () => [
-      ...screen.queryAllByLabelText(/loading spinner/i),
-      ...screen.queryAllByText(/loading/i),
-    ],
+    () => [...screen.queryAllByLabelText(/loading spinner/i), ...screen.queryAllByText(/loading/i)],
     {timeout},
   )
 

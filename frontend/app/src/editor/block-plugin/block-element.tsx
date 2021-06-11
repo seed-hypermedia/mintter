@@ -5,13 +5,7 @@ import {ELEMENT_BLOCK} from './create-block-plugin'
 import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
 import type {EditorBlock} from '../types'
 // TODO: fix types
-export function BlockElement({
-  attributes,
-  children,
-  className,
-  element,
-  ...rest
-}: SPRenderElementProps<EditorBlock>) {
+export function BlockElement({attributes, children, className, element, ...rest}: SPRenderElementProps<EditorBlock>) {
   function onOpenChange(open: boolean) {
     console.log('open changed! = ', open)
   }

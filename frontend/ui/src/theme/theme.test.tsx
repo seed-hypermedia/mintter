@@ -1,4 +1,4 @@
-import { Theme } from './theme'
+import {Theme} from './theme'
 
 test('works', () => {
   expect(Theme).toBeDefined()

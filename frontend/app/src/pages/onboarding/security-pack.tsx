@@ -1,9 +1,9 @@
-import { useCallback, useState } from 'react';
-import CopyToClipboard from 'react-copy-to-clipboard';
-import toast from 'react-hot-toast';
-import { useQuery } from 'react-query';
-import { generateSeed, registerAccount } from '@mintter/client';
-import { Box, Button, Text, TextField } from '@mintter/ui';
+import {useCallback, useState} from 'react'
+import CopyToClipboard from 'react-copy-to-clipboard'
+import toast from 'react-hot-toast'
+import {useQuery} from 'react-query'
+import {generateSeed, registerAccount} from '@mintter/client'
+import {Box, Button, Text, TextField} from '@mintter/ui'
 import {
   OnboardingStep,
   OnboardingStepActions,
@@ -13,45 +13,42 @@ import {
   OnboardingStepPropsType,
   OnboardingStepTitle,
   SecurityPackIcon,
-} from './common';
+} from './common'
 
-export function SecurityPack({ prev, next }: OnboardingStepPropsType): JSX.Element {
-  const [ownSeed] = useState<string>('');
-  const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false);
+export function SecurityPack({prev, next}: OnboardingStepPropsType): JSX.Element {
+  const [ownSeed] = useState<string>('')
+  const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false)
   const mnemonics = useQuery<string[], Error>(
     ['onboarding', 'mnemonics'],
     async () => {
-      const resp = await generateSeed();
-      return resp.mnemonic;
+      const resp = await generateSeed()
+      return resp.mnemonic
     },
     {
       refetchOnReconnect: false,
       refetchOnWindowFocus: false,
     },
-  );
+  )
 
   const handleSubmit = useCallback(async () => {
-    const words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data;
+    const words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data
     if (words) {
       try {
-        await registerAccount(words);
-        next();
+        await registerAccount(words)
+        next()
       } catch (error) {
-        toast.error(error.message);
+        toast.error(error.message)
       }
     } else {
-      toast.error('no words have being received?');
+      toast.error('no words have being received?')
     }
-  }, [useOwnSeed, ownSeed, mnemonics, next]);
+  }, [useOwnSeed, ownSeed, mnemonics, next])
 
   return (
     <OnboardingStep>
-      <OnboardingStepTitle icon={<SecurityPackIcon />}>
-        Security Pack
-      </OnboardingStepTitle>
+      <OnboardingStepTitle icon={<SecurityPackIcon />}>Security Pack</OnboardingStepTitle>
       <OnboardingStepDescription>
-        Please save these 24 words securely! This will allow you to recreate
-        your account:
+        Please save these 24 words securely! This will allow you to recreate your account:
       </OnboardingStepDescription>
       {useOwnSeed ? (
         <TextField
@@ -68,7 +65,7 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType): JSX.Eleme
         />
       ) : mnemonics.isError ? (
         <OnboardingStepBody>
-          <Text color="danger" css={{ textAlign: 'center' }}>
+          <Text color="danger" css={{textAlign: 'center'}}>
             {mnemonics.error.message}
           </Text>
         </OnboardingStepBody>
@@ -83,26 +80,21 @@ export function SecurityPack({ prev, next }: OnboardingStepPropsType): JSX.Eleme
         data-testid="button-toogle-custom-seed"
       >
         Setting up a new device?{' '}
-        <Text css={{ textDecoration: 'underline', display: 'inline-block' }}>
-          provide your own seed
-        </Text>
+        <Text css={{textDecoration: 'underline', display: 'inline-block'}}>provide your own seed</Text>
       </Button>
       <OnboardingStepActions>
         <OnboardingStepButton variant="outlined" onClick={prev}>
           Back
         </OnboardingStepButton>
-        <OnboardingStepButton
-          disabled={mnemonics.isLoading || !mnemonics.data?.length}
-          onClick={handleSubmit}
-        >
+        <OnboardingStepButton disabled={mnemonics.isLoading || !mnemonics.data?.length} onClick={handleSubmit}>
           Next
         </OnboardingStepButton>
       </OnboardingStepActions>
     </OnboardingStep>
-  );
+  )
 }
 
-function MnemonicList({ words }: { words: string[] }) {
+function MnemonicList({words}: {words: string[]}) {
   return (
     <OnboardingStepBody
       css={{
@@ -143,9 +135,9 @@ function MnemonicList({ words }: { words: string[] }) {
         text={words.join(' ')}
         onCopy={(_, result) => {
           if (result) {
-            toast.success('Words copied to your clipboard!');
+            toast.success('Words copied to your clipboard!')
           } else {
-            toast.error('Error while copying to clipboard');
+            toast.error('Error while copying to clipboard')
           }
         }}
       >
@@ -154,5 +146,5 @@ function MnemonicList({ words }: { words: string[] }) {
         </Button>
       </CopyToClipboard>
     </OnboardingStepBody>
-  );
+  )
 }

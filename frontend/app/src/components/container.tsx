@@ -1,8 +1,4 @@
-import {
-  styled,
-  StitchesCss,
-  StitchesVariants,
-} from '@mintter/ui/stitches.config'
+import {styled, StitchesCss, StitchesVariants} from '@mintter/ui/stitches.config'
 
 import type * as Polymorphic from '@radix-ui/react-polymorphic'
 import {forwardRef} from 'react'
@@ -40,7 +36,5 @@ const StyledContainer: any = styled(DEFAULT_TAG, {
   },
 })
 
-export const Container: any = forwardRef((props, forwardedRef) => (
-  <StyledContainer {...props} ref={forwardedRef} />
-))
+export const Container: any = forwardRef((props, forwardedRef) => <StyledContainer {...props} ref={forwardedRef} />)
 Container.displayName = 'Container'

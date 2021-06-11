@@ -1,10 +1,10 @@
-import { DaemonClientImpl, GetInfoRequest, GrpcWebImpl } from '../.generated/daemon/v1alpha/daemon'
-import { MINTTER_API_URL_DEFAULT } from '.'
+import {DaemonClientImpl, GetInfoRequest, GrpcWebImpl} from '../.generated/daemon/v1alpha/daemon'
+import {MINTTER_API_URL_DEFAULT} from '.'
 
 /**
- * 
- * @param rpc 
- * @returns 
+ *
+ * @param rpc
+ * @returns
  */
 export async function getInfo(rpc?: GrpcWebImpl) {
   rpc ||= new GrpcWebImpl(MINTTER_API_URL_DEFAULT, {})

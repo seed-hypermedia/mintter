@@ -1,13 +1,12 @@
-import type { TextRun, ListStyle, BlockType } from '@mintter/client'
-import type { ELEMENT_BLOCK } from './block-plugin'
-import type { ELEMENT_LINK } from './link-plugin'
-import type { ELEMENT_QUOTE } from './quote-plugin'
+import type {TextRun, ListStyle, BlockType} from '@mintter/client'
+import type {ELEMENT_BLOCK} from './block-plugin'
+import type {ELEMENT_LINK} from './link-plugin'
+import type {ELEMENT_QUOTE} from './quote-plugin'
 
 export type SlateVoidChildren = {
-  children: Array<{ text: string }>
+  children: Array<{text: string}>
 }
-export type EditorTextRun = Partial<Omit<TextRun, 'text'>> &
-  Pick<TextRun, 'text'>
+export type EditorTextRun = Partial<Omit<TextRun, 'text'>> & Pick<TextRun, 'text'>
 
 export type EditorQuote = SlateVoidChildren & {
   type: typeof ELEMENT_QUOTE

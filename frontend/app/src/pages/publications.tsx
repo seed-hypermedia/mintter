@@ -1,27 +1,27 @@
-import { useHistory, useRouteMatch } from 'react-router';
-import { DocumentList } from '../document-list';
-import type { WithCreateDraft } from './library';
-import { deletePublication } from '@mintter/client';
-import { useOthersPublicationsList } from '@mintter/client/hooks'
-import { Text } from '@mintter/ui';
-import * as MessageBox from '../components/message-box';
+import {useHistory, useRouteMatch} from 'react-router'
+import {DocumentList} from '../document-list'
+import type {WithCreateDraft} from './library'
+import {deletePublication} from '@mintter/client'
+import {useOthersPublicationsList} from '@mintter/client/hooks'
+import {Text} from '@mintter/ui'
+import * as MessageBox from '../components/message-box'
 
-export const Publications = ({ onCreateDraft }: WithCreateDraft): JSX.Element => {
-  const history = useHistory();
-  const match = useRouteMatch();
+export const Publications = ({onCreateDraft}: WithCreateDraft): JSX.Element => {
+  const history = useHistory()
+  const match = useRouteMatch()
 
-  const { isLoading, isError, error, data = [] } = useOthersPublicationsList();
+  const {isLoading, isError, error, data = []} = useOthersPublicationsList()
 
   async function handleDeleteDocument(version: string) {
-    await deletePublication(version);
+    await deletePublication(version)
   }
 
   if (isError) {
-    return <p>feed ERROR</p>;
+    return <p>feed ERROR</p>
   }
 
   if (isLoading) {
-    return <p>loading feed...</p>;
+    return <p>loading feed...</p>
   }
 
   return (
@@ -44,5 +44,5 @@ export const Publications = ({ onCreateDraft }: WithCreateDraft): JSX.Element =>
         onDeleteDocument={handleDeleteDocument}
       />
     </>
-  );
-};
+  )
+}

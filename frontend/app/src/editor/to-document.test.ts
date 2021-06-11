@@ -1,12 +1,6 @@
-import {
-  Block,
-  Document,
-  InlineElement,
-  ListStyle,
-  TextRun,
-} from '@mintter/client'
-import { ELEMENT_BLOCK } from './block-plugin'
-import { toDocument, ToDocumentProps } from './to-document'
+import {Block, Document, InlineElement, ListStyle, TextRun} from '@mintter/client'
+import {ELEMENT_BLOCK} from './block-plugin'
+import {toDocument, ToDocumentProps} from './to-document'
 
 describe('toDocument', () => {
   it('one block document', () => {
@@ -44,7 +38,7 @@ describe('toDocument', () => {
           childListStyle: ListStyle.NONE,
           elements: [
             InlineElement.fromPartial({
-              textRun: TextRun.fromPartial({ text: 'hello world' }),
+              textRun: TextRun.fromPartial({text: 'hello world'}),
             }),
           ],
         }),

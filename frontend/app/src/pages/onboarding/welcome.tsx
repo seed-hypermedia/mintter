@@ -1,4 +1,4 @@
-import { Box, Text } from '@mintter/ui';
+import {Box, Text} from '@mintter/ui'
 import {
   OnboardingStep,
   OnboardingStepActions,
@@ -9,15 +9,14 @@ import {
   OnboardingStepTitle,
   ProfileInformationIcon,
   SecurityPackIcon,
-} from './common';
+} from './common'
 
-export function Welcome({ next }: OnboardingStepPropsType): JSX.Element {
+export function Welcome({next}: OnboardingStepPropsType): JSX.Element {
   return (
     <OnboardingStep>
       <OnboardingStepTitle>Welcome to Mintter</OnboardingStepTitle>
       <OnboardingStepDescription>
-        Joining Mintter is fast and easy, these are the only two steps you need
-        to complete:
+        Joining Mintter is fast and easy, these are the only two steps you need to complete:
       </OnboardingStepDescription>
       <OnboardingStepBody
         css={{
@@ -44,14 +43,10 @@ export function Welcome({ next }: OnboardingStepPropsType): JSX.Element {
         </OnboardingStepButton>
       </OnboardingStepActions>
     </OnboardingStep>
-  );
+  )
 }
 
-const WelcomeStep = ({ icon, title, description }: {
-  icon: JSX.Element;
-  title: string;
-  description: string;
-}) => {
+const WelcomeStep = ({icon, title, description}: {icon: JSX.Element; title: string; description: string}) => {
   return (
     <Box
       css={{
@@ -74,10 +69,10 @@ const WelcomeStep = ({ icon, title, description }: {
       >
         {icon}
       </Box>
-      <Text alt size="7" css={{ marginTop: '$6' }}>
+      <Text alt size="7" css={{marginTop: '$6'}}>
         {title}
       </Text>
-      <Text css={{ marginTop: '$4', maxWidth: 228 }}>{description}</Text>
+      <Text css={{marginTop: '$4', maxWidth: 228}}>{description}</Text>
     </Box>
-  );
-};
+  )
+}

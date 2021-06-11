@@ -1,4 +1,4 @@
-import { Switch, Route } from 'react-router-dom';
+import {Switch, Route} from 'react-router-dom'
 
 export const PublisherNode: React.FC = () => {
   return (
@@ -7,5 +7,5 @@ export const PublisherNode: React.FC = () => {
         <div>Publisher node root</div>
       </Route>
     </Switch>
-  );
-};
+  )
+}

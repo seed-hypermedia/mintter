@@ -101,13 +101,7 @@ function MintterSearch() {
 
   return (
     <Box as="form" css={{width: '100%'}} onSubmit={handleSearch}>
-      <TextField
-        ref={ref}
-        type="text"
-        name="hash-search"
-        placeholder="Enter a publication CID"
-        shape="pill"
-      />
+      <TextField ref={ref} type="text" name="hash-search" placeholder="Enter a publication CID" shape="pill" />
     </Box>
   )
 }
