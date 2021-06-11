@@ -1,5 +1,5 @@
-import { useQuery, useQueryClient, UseQueryResult } from 'react-query'
-import { useMemo } from 'react'
+import {useQuery, useQueryClient, UseQueryResult} from 'react-query'
+import {useMemo} from 'react'
 import {
   Account,
   getAccount,
@@ -12,10 +12,10 @@ import {
   listPeerAddrs,
   Publication,
   getPublication,
-  Block
+  Block,
 } from '../src'
-import { mockBlock, mockTextInlineElement } from '../src/mock'
-import type { HookOptions } from './types'
+import {mockBlock, mockTextInlineElement} from '../src/mock'
+import type {HookOptions} from './types'
 
 /**
  *
@@ -23,15 +23,8 @@ import type { HookOptions } from './types'
  * @param options
  * @returns
  */
-export function useAccount(
-  accountId = '',
-  options: HookOptions<Account> = {},
-) {
-  const accountQuery = useQuery(
-    ['Account', accountId],
-    () => getAccount(accountId, options.rpc as any),
-    options,
-  )
+export function useAccount(accountId = '', options: HookOptions<Account> = {}) {
+  const accountQuery = useQuery(['Account', accountId], () => getAccount(accountId, options.rpc as any), options)
 
   const data = useMemo(() => accountQuery.data, [accountQuery.data])
 
@@ -47,11 +40,7 @@ export function useAccount(
  * @returns
  */
 export function useInfo(options: HookOptions<Info> = {}) {
-  const infoQuery = useQuery(
-    ['GetInfo'],
-    () => getInfo(options.rpc as any),
-    options
-  )
+  const infoQuery = useQuery(['GetInfo'], () => getInfo(options.rpc as any), options)
 
   const data = useMemo(() => infoQuery.data, [infoQuery.data])
 
@@ -67,10 +56,7 @@ export function useInfo(options: HookOptions<Info> = {}) {
  * @param options
  * @returns
  */
-export function useDocument(
-  documentId: string,
-  options: HookOptions<Document> = {},
-) {
+export function useDocument(documentId: string, options: HookOptions<Document> = {}) {
   const documentQuery = useQuery<Document>(
     ['Document', documentId],
     () => getDocument(documentId, options.rpc as any),
@@ -93,10 +79,7 @@ export function useDocument(
  * @param options
  * @returns
  */
-export function useDraft(
-  draftId: string,
-  options: HookOptions<Document> = {},
-): UseQueryResult<Document> {
+export function useDraft(draftId: string, options: HookOptions<Document> = {}): UseQueryResult<Document> {
   if (!draftId) {
     throw new Error(`useDraft: parameter "draftId" is required`)
   }
@@ -111,7 +94,7 @@ export function useDraft(
 
   return useQuery(
     ['Draft', draftId],
-    async ({ queryKey }) => {
+    async ({queryKey}) => {
       const [_key, draftId] = queryKey as [string, string]
       return getDraft(draftId, options.rpc as any)
     },
@@ -142,10 +125,7 @@ export function useDraftsList(options = {}) {
  * @param options
  * @returns
  */
-export function usePeerAddrs(
-  peerId?: string,
-  options: HookOptions<PeerInfo['addrs']> = {},
-) {
+export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['addrs']> = {}) {
   const queryClient = useQueryClient()
 
   let requestId: string
@@ -156,14 +136,10 @@ export function usePeerAddrs(
     requestId = peerId
   }
 
-  const peerAddrsQuery = useQuery(
-    ['PeerAddrs', requestId],
-    () => listPeerAddrs(requestId, options.rpc as any),
-    {
-      enabled: !!requestId,
-      ...options,
-    },
-  )
+  const peerAddrsQuery = useQuery(['PeerAddrs', requestId], () => listPeerAddrs(requestId, options.rpc as any), {
+    enabled: !!requestId,
+    ...options,
+  })
 
   const data = useMemo(() => peerAddrsQuery.data, [peerAddrsQuery.data])
 
@@ -177,7 +153,7 @@ export function usePeerAddrs(
  *
  * @deprecated
  */
-export function useSuggestedConnections({ page } = { page: 0 }, options = {}) {
+export function useSuggestedConnections({page} = {page: 0}, options = {}) {
   return {
     data: [],
     isLoading: false,
@@ -194,14 +170,10 @@ export function useSuggestedConnections({ page } = { page: 0 }, options = {}) {
  * @param options
  * @returns
  */
-export function usePublication(
-  publicationId: string,
-  version?: string,
-  options: HookOptions<Publication> = {},
-) {
+export function usePublication(publicationId: string, version?: string, options: HookOptions<Publication> = {}) {
   const publicationQuery = useQuery(
     ['Publication', publicationId, version],
-    async ({ queryKey }) => {
+    async ({queryKey}) => {
       const [_key, publicationId, version] = queryKey as [string, string, string]
       return getPublication(publicationId, version, options.rpc as any)
     },

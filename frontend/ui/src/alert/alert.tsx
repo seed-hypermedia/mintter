@@ -17,10 +17,7 @@ const hideOverlay = keyframes({
   '100%': {opacity: 0},
 })
 
-function Root({
-  children,
-  ...props
-}: ComponentProps<typeof AlertDialogPrimitive.Root>) {
+function Root({children, ...props}: ComponentProps<typeof AlertDialogPrimitive.Root>) {
   return (
     <AlertDialogPrimitive.Root {...props}>
       <AlertDialogPrimitive.Overlay
@@ -47,10 +44,7 @@ function Root({
   )
 }
 
-function Trigger(
-  props: ComponentProps<typeof AlertDialogPrimitive.Trigger> &
-    ComponentProps<typeof Button>,
-) {
+function Trigger(props: ComponentProps<typeof AlertDialogPrimitive.Trigger> & ComponentProps<typeof Button>) {
   return <AlertDialogPrimitive.Trigger as={Button} {...props} />
 }
 
@@ -68,14 +62,13 @@ function Content({
   css,
   children,
   ...props
-}: ComponentProps<typeof AlertDialogPrimitive.Content> &
-  ComponentProps<typeof Box>) {
+}: ComponentProps<typeof AlertDialogPrimitive.Content> & ComponentProps<typeof Box>) {
   return (
     // TODO: Fix types
     // @ts-ignore
     <AlertDialogPrimitive.Content
       {...props}
-      onPointerDownOutside={e => e.preventDefault()}
+      onPointerDownOutside={(e) => e.preventDefault()}
       as={Box}
       css={{
         position: 'fixed',
@@ -105,25 +98,12 @@ function Content({
   )
 }
 
-function Title(
-  props: ComponentProps<typeof AlertDialogPrimitive.Title> &
-    ComponentProps<typeof Text>,
-) {
+function Title(props: ComponentProps<typeof AlertDialogPrimitive.Title> & ComponentProps<typeof Text>) {
   return <AlertDialogPrimitive.Title as={Text} size="7" {...props} />
 }
 
-function Description(
-  props: ComponentProps<typeof AlertDialogPrimitive.Description> &
-    ComponentProps<typeof Text>,
-) {
-  return (
-    <AlertDialogPrimitive.Description
-      as={Text}
-      size="2"
-      color="muted"
-      {...props}
-    />
-  )
+function Description(props: ComponentProps<typeof AlertDialogPrimitive.Description> & ComponentProps<typeof Text>) {
+  return <AlertDialogPrimitive.Description as={Text} size="2" color="muted" {...props} />
 }
 
 function Actions({css, children, ...props}: ComponentProps<typeof Box>) {
@@ -141,25 +121,11 @@ function Actions({css, children, ...props}: ComponentProps<typeof Box>) {
   )
 }
 
-function Cancel(
-  props: ComponentProps<typeof AlertDialogPrimitive.Cancel> &
-    ComponentProps<typeof Button>,
-) {
-  return (
-    <AlertDialogPrimitive.Cancel
-      as={Button}
-      variant="ghost"
-      color="muted"
-      size="1"
-      {...props}
-    />
-  )
+function Cancel(props: ComponentProps<typeof AlertDialogPrimitive.Cancel> & ComponentProps<typeof Button>) {
+  return <AlertDialogPrimitive.Cancel as={Button} variant="ghost" color="muted" size="1" {...props} />
 }
 
-function Action(
-  props: ComponentProps<typeof AlertDialogPrimitive.Action> &
-    ComponentProps<typeof Button>,
-) {
+function Action(props: ComponentProps<typeof AlertDialogPrimitive.Action> & ComponentProps<typeof Button>) {
   return <AlertDialogPrimitive.Action as={Button} size="1" {...props} />
 }
 

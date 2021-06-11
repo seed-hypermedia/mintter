@@ -1,17 +1,17 @@
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import {useEffect} from 'react'
+import {useForm} from 'react-hook-form'
 import toast from 'react-hot-toast'
 
-import { updateAccount } from '@mintter/client'
-import { useAccount } from '@mintter/client/hooks'
-import { Box, Button, Text, TextField, useTheme } from '@mintter/ui'
+import {updateAccount} from '@mintter/client'
+import {useAccount} from '@mintter/client/hooks'
+import {Box, Button, Text, TextField, useTheme} from '@mintter/ui'
 
-import { Container } from '../components/container'
-import { PeerAddrs } from '../components/peer-addrs'
-import { PeerList } from '../components/peer-list'
-import { Separator } from '../components/separator'
+import {Container} from '../components/container'
+import {PeerAddrs} from '../components/peer-addrs'
+import {PeerList} from '../components/peer-list'
+import {Separator} from '../components/separator'
 
-import { useMutation, useQueryClient } from 'react-query'
+import {useMutation, useQueryClient} from 'react-query'
 
 type ProfileInformationDataType = {
   alias: string
@@ -23,7 +23,7 @@ export function Settings(): JSX.Element {
   const theme = useTheme()
   const account = useAccount()
   const queryClient = useQueryClient()
-  const { data } = account
+  const {data} = account
 
   const updateProfile = useMutation(updateAccount)
 
@@ -38,14 +38,14 @@ export function Settings(): JSX.Element {
 
   useEffect(() => {
     if (data?.profile) {
-      const { alias = '', email = '', bio = '' } = data?.profile
+      const {alias = '', email = '', bio = ''} = data?.profile
       form.setValue('alias', alias)
       form.setValue('email', email)
       form.setValue('bio', bio)
     }
   }, [data, form])
 
-  const onSubmit = form.handleSubmit(async data => {
+  const onSubmit = form.handleSubmit(async (data) => {
     await toast
       .promise(updateProfile.mutateAsync(data), {
         loading: 'Updating profile',
@@ -81,11 +81,7 @@ export function Settings(): JSX.Element {
         gap: '$5',
       }}
     >
-      <Container
-        as="form"
-        css={{ gridArea: 'maincontent', marginBottom: 300 }}
-        onSubmit={onSubmit}
-      >
+      <Container as="form" css={{gridArea: 'maincontent', marginBottom: 300}} onSubmit={onSubmit}>
         <Text as="h1" size="9">
           Settings
         </Text>
@@ -142,7 +138,7 @@ export function Settings(): JSX.Element {
             size="2"
             shape="pill"
             color="success"
-            css={{ alignSelf: 'flex-start' }}
+            css={{alignSelf: 'flex-start'}}
           >
             Save
           </Button>
@@ -164,25 +160,14 @@ export function Settings(): JSX.Element {
           >
             All your Mintter content is located in <code>~/.mtt/</code>
           </Text>
-          <TextField
-            readOnly
-            type="text"
-            label="Account ID"
-            name="accountId"
-            value={data?.id}
-          />
+          <TextField readOnly type="text" label="Account ID" name="accountId" value={data?.id} />
           <PeerAddrs />
           <Separator />
           <Text as="h2" size="8">
             Preferences
           </Text>
-          <Box css={{ alignItems: 'center', display: 'flex', gap: '$3' }}>
-            <input
-              id="darkMode"
-              type="checkbox"
-              checked={theme.currentTheme === 'dark'}
-              onChange={theme.toggle}
-            />
+          <Box css={{alignItems: 'center', display: 'flex', gap: '$3'}}>
+            <input id="darkMode" type="checkbox" checked={theme.currentTheme === 'dark'} onChange={theme.toggle} />
             <Text as="label" htmlFor="darkMode">
               Dark Mode
             </Text>
@@ -191,7 +176,7 @@ export function Settings(): JSX.Element {
           <Text as="h2" size="8">
             Devices List
           </Text>
-          <Box css={{ alignItems: 'center', display: 'flex', gap: '$3' }}>
+          <Box css={{alignItems: 'center', display: 'flex', gap: '$3'}}>
             <PeerList />
           </Box>
         </Box>

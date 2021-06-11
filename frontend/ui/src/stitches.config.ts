@@ -150,10 +150,10 @@ const stitches = createCss({
   // @ts-ignore
   media: {},
   utils: {
-    marginHorizontal: () => val => ({marginLeft: val, marginRight: val}),
-    marginVertical: () => val => ({marginTop: val, marginBottom: val}),
-    paddingHorizontal: () => val => ({paddingLeft: val, paddingRight: val}),
-    paddingVertical: () => val => ({paddingTop: val, paddingBottom: val}),
+    marginHorizontal: () => (val) => ({marginLeft: val, marginRight: val}),
+    marginVertical: () => (val) => ({marginTop: val, marginBottom: val}),
+    paddingHorizontal: () => (val) => ({paddingLeft: val, paddingRight: val}),
+    paddingVertical: () => (val) => ({paddingTop: val, paddingBottom: val}),
   },
   themeMap: {
     ...defaultThemeMap,
@@ -164,8 +164,7 @@ const stitches = createCss({
   },
 })
 
-export const {styled, css, theme, getCssString, global, keyframes, config} =
-  stitches
+export const {styled, css, theme, getCssString, global, keyframes, config} = stitches
 export type Theme = typeof theme
 export type CSS = StitchesCss<typeof stitches>
 

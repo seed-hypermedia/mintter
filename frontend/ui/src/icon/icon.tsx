@@ -1,7 +1,7 @@
 import * as AccessibleIcon from '@radix-ui/react-accessible-icon'
-import { useMemo } from 'react'
+import {useMemo} from 'react'
 
-import { styled } from '../stitches.config'
+import {styled} from '../stitches.config'
 
 const Svg = styled('svg', {
   fill: 'none',
@@ -117,13 +117,11 @@ export function Icon({
   ...props
 }: React.ComponentProps<typeof Svg> & {
   name: keyof typeof icons
-}) {
+}): JSX.Element {
   const Component: React.ComponentType<any> = useMemo(() => icons[name], [name])
 
   const label = useMemo(
-    () =>
-      `${Component.displayName?.replace(/([A-Z0-9])/g, ' $1').trim() ?? 'Unknown'
-      } Icon`,
+    () => `${Component.displayName?.replace(/([A-Z0-9])/g, ' $1').trim() ?? 'Unknown'} Icon`,
     [Component.displayName],
   )
 
@@ -149,407 +147,167 @@ function Mintter(props: any) {
 
 function ArrowUp(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(90)"
-      {...props}
-    >
-      <path
-        d="M19 12H5M12 19l-7-7 7-7"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(90)" {...props}>
+      <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowDown(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(-90)"
-      {...props}
-    >
-      <path
-        d="M19 12H5M12 19l-7-7 7-7"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(-90)" {...props}>
+      <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowLeft(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(0)"
-      {...props}
-    >
-      <path
-        d="M19 12H5M12 19l-7-7 7-7"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(0)" {...props}>
+      <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowRight(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(180)"
-      {...props}
-    >
-      <path
-        d="M19 12H5M12 19l-7-7 7-7"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(180)" {...props}>
+      <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTopLeft(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(90)"
-      {...props}
-    >
-      <path
-        d="M17 7L7 17M17 17H7V7"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(90)" {...props}>
+      <path d="M17 7L7 17M17 17H7V7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTopRight(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(180)"
-      {...props}
-    >
-      <path
-        d="M17 7L7 17M17 17H7V7"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(180)" {...props}>
+      <path d="M17 7L7 17M17 17H7V7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowBottomLeft(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(0)"
-      {...props}
-    >
-      <path
-        d="M17 7L7 17M17 17H7V7"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(0)" {...props}>
+      <path d="M17 7L7 17M17 17H7V7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowBottomRight(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(-90)"
-      {...props}
-    >
-      <path
-        d="M17 7L7 17M17 17H7V7"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(-90)" {...props}>
+      <path d="M17 7L7 17M17 17H7V7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTurnTopLeft(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(180)"
-      {...props}
-    >
-      <path
-        d="M15 10l5 5-5 5"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M4 4v7a4 4 0 004 4h12"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(180)" {...props}>
+      <path d="M15 10l5 5-5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 4v7a4 4 0 004 4h12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTurnTopRight(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(180)"
-      {...props}
-    >
-      <path
-        d="M9 10l-5 5 5 5"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M20 4v7a4 4 0 01-4 4H4"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(180)" {...props}>
+      <path d="M9 10l-5 5 5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M20 4v7a4 4 0 01-4 4H4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTurnBottomLeft(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(0)"
-      {...props}
-    >
-      <path
-        d="M9 10l-5 5 5 5"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M20 4v7a4 4 0 01-4 4H4"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(0)" {...props}>
+      <path d="M9 10l-5 5 5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M20 4v7a4 4 0 01-4 4H4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 function ArrowTurnBottomRight(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(0)"
-      {...props}
-    >
-      <path
-        d="M15 10l5 5-5 5"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M4 4v7a4 4 0 004 4h12"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(0)" {...props}>
+      <path d="M15 10l5 5-5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 4v7a4 4 0 004 4h12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowChevronUp(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(90)"
-      {...props}
-    >
-      <path
-        d="M14 6l-6 6 6 6"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(90)" {...props}>
+      <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowChevronDown(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(270)"
-      {...props}
-    >
-      <path
-        d="M14 6l-6 6 6 6"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(270)" {...props}>
+      <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowChevronLeft(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(0)"
-      {...props}
-    >
-      <path
-        d="M14 6l-6 6 6 6"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(0)" {...props}>
+      <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowChevronRight(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(180)"
-      {...props}
-    >
-      <path
-        d="M14 6l-6 6 6 6"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(180)" {...props}>
+      <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTriangleUp(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(90)"
-      {...props}
-    >
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(90)" {...props}>
       <path d="M14 16l-6-4 6-4" fill="currentColor" />
-      <path
-        d="M14 16l-6-4 6-4v8z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M14 16l-6-4 6-4v8z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTriangleDown(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(270)"
-      {...props}
-    >
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(270)" {...props}>
       <path d="M14 16l-6-4 6-4" fill="currentColor" />
-      <path
-        d="M14 16l-6-4 6-4v8z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M14 16l-6-4 6-4v8z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTriangleLeft(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(0)"
-      {...props}
-    >
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(0)" {...props}>
       <path d="M14 16l-6-4 6-4" fill="currentColor" />
-      <path
-        d="M14 16l-6-4 6-4v8z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M14 16l-6-4 6-4v8z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTriangleRight(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(180)"
-      {...props}
-    >
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(180)" {...props}>
       <path d="M14 16l-6-4 6-4" fill="currentColor" />
-      <path
-        d="M14 16l-6-4 6-4v8z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M14 16l-6-4 6-4v8z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
@@ -558,19 +316,9 @@ function Sort(props: any) {
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
       <path d="M16 10l-4-6-4 6" fill="currentColor" />
-      <path
-        d="M16 10l-4-6-4 6h8z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M16 10l-4-6-4 6h8z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M8 14l4 6 4-6" fill="currentColor" />
-      <path
-        d="M8 14l4 6 4-6H8z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M8 14l4 6 4-6H8z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
@@ -623,12 +371,7 @@ function Minimize(props: any) {
 function Add(props: any) {
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
-      <path
-        d="M12 5v14M5 12h14"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
@@ -648,32 +391,15 @@ function AddCircle(props: any) {
 
 function Close(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(45)"
-      {...props}
-    >
-      <path
-        d="M12 5v14M5 12h14"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(45)" {...props}>
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function CloseCircle(props: any) {
   return (
-    <Svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      transform="rotate(45)"
-      {...props}
-    >
+    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(45)" {...props}>
       <path
         d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v8M8 12h8"
         stroke="currentColor"
@@ -693,12 +419,7 @@ function Clock(props: any) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path
-        d="M12 6v6l4 2"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M12 6v6l4 2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
@@ -738,12 +459,7 @@ function File(props: any) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path
-        d="M13 2v7h7"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M13 2v7h7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }

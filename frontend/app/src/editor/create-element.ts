@@ -1,5 +1,5 @@
-import type { TNode } from '@udecode/slate-plugins-core';
-import { ELEMENT_BLOCK } from './block-plugin/create-block-plugin';
+import type {TNode} from '@udecode/slate-plugins-core'
+import {ELEMENT_BLOCK} from './block-plugin/create-block-plugin'
 
 export const createElement = (
   text = '',
@@ -9,24 +9,24 @@ export const createElement = (
     mark,
     ...rest
   }: {
-    type?: string;
-    mark?: string;
-    id?: string;
+    type?: string
+    mark?: string
+    id?: string
   } = {},
 ) => {
-  const leaf: any = { text };
+  const leaf: any = {text}
   if (mark) {
-    leaf[mark] = true;
+    leaf[mark] = true
   }
 
   const node: TNode = {
     type,
     children: [leaf],
-  };
-
-  if (id) {
-    node.id = id;
   }
 
-  return node;
-};
+  if (id) {
+    node.id = id
+  }
+
+  return node
+}

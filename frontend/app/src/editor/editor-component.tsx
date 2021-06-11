@@ -20,10 +20,7 @@ import {boldOptions, boldAutoformatRules} from './bold-plugin'
 import {codeOptions, codeAutoformatRules} from './code-plugin'
 import {italicOptions, italicAutoformatRules} from './italic-plugin'
 import {BlockType} from '@mintter/client'
-import {
-  strikethroughOptions,
-  strikethroughAutoformatRules,
-} from './strikethrough-plugin'
+import {strikethroughOptions, strikethroughAutoformatRules} from './strikethrough-plugin'
 import {Toolbar} from './toolbar'
 import {underlineOptions, underlineAutoformatRules} from './underline-plugin'
 import {createQuotePlugin, ELEMENT_QUOTE, quoteOptions} from './quote-plugin'
@@ -81,16 +78,13 @@ function rulesWithCustomDefaultType(
     },
   ],
 ): ExitBreakRule[] {
-  return rules.map(rule => ({
+  return rules.map((rule) => ({
     ...rule,
     defaultType: type,
   }))
 }
 
-export function EditorComponent<T extends SPEditor = SPEditor>({
-  initialValue,
-  ...options
-}: SlatePluginsProps<T>) {
+export function EditorComponent<T extends SPEditor = SPEditor>({initialValue, ...options}: SlatePluginsProps<T>) {
   // const menu = useMenuState({loop: true, wrap: true})
 
   return (

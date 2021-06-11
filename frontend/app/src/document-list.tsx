@@ -36,11 +36,7 @@ export function DocumentList({
     <div>
       {/* // TODO: fix types */}
       {data.map((item: any) => (
-        <ListItem
-          key={item.id}
-          item={item}
-          onDeleteDocument={onDeleteDocument}
-        />
+        <ListItem key={item.id} item={item} onDeleteDocument={onDeleteDocument} />
       ))}
     </div>
   )
@@ -68,15 +64,10 @@ function ListItem({
 
   const theTitle = title ? title : 'Untitled Document'
 
-  const isDraft = useMemo(
-    () => location.pathname.includes('drafts'),
-    [location.pathname],
-  )
+  const isDraft = useMemo(() => location.pathname.includes('drafts'), [location.pathname])
 
   const to = useMemo(() => {
-    const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${id}${
-      version ? `/${version}` : ''
-    }`
+    const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${id}${version ? `/${version}` : ''}`
     return path
   }, [location.pathname])
   // function handlePrefetch() {
@@ -87,10 +78,7 @@ function ListItem({
   // }
   // }
 
-  const date = useMemo(
-    () => publication.document?.createTime?.getDate() || new Date(),
-    [publication],
-  )
+  const date = useMemo(() => publication.document?.createTime?.getDate() || new Date(), [publication])
 
   return (
     <Box css={{position: 'relative'}}>
@@ -186,10 +174,7 @@ function ListItem({
                 alignItems: 'center',
               }}
             >
-              <Alert.Root
-                open={isDeleteDialogOpen}
-                onOpenChange={setIsDeleteDialogOpen}
-              >
+              <Alert.Root open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <Alert.Trigger
                   data-testid="delete-button"
                   size="1"
@@ -204,15 +189,11 @@ function ListItem({
                 <Alert.Content onClick={(e: any) => e.stopPropagation()}>
                   <Alert.Title color="danger">Delete document</Alert.Title>
                   <Alert.Description>
-                    Are you sure you want to delete this document? This action
-                    is not reversible.
+                    Are you sure you want to delete this document? This action is not reversible.
                   </Alert.Description>
                   <Alert.Actions>
                     <Alert.Cancel>Cancel</Alert.Cancel>
-                    <Alert.Action
-                      color="danger"
-                      onClick={() => onDeleteDocument(version)}
-                    >
+                    <Alert.Action color="danger" onClick={() => onDeleteDocument(version)}>
                       Delete
                     </Alert.Action>
                   </Alert.Actions>

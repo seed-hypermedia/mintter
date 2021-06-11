@@ -1,13 +1,10 @@
-import type {
-  SlatePluginComponent,
-  SlatePluginOptions,
-} from '@udecode/slate-plugins-core';
-import { ELEMENT_QUOTE } from './create-quote-plugin';
-import { QuoteElement } from './quote-element';
+import type {SlatePluginComponent, SlatePluginOptions} from '@udecode/slate-plugins-core'
+import {ELEMENT_QUOTE} from './create-quote-plugin'
+import {QuoteElement} from './quote-element'
 
 export type QuoteOptions = {
-  [ELEMENT_QUOTE]: SlatePluginOptions;
-};
+  [ELEMENT_QUOTE]: SlatePluginOptions
+}
 
 export const quoteOptions: QuoteOptions = {
   [ELEMENT_QUOTE]: {
@@ -16,4 +13,4 @@ export const quoteOptions: QuoteOptions = {
     defaultType: ELEMENT_QUOTE,
     // TODO: deserialize
   },
-};
+}

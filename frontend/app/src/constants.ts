@@ -1,2 +1,2 @@
-export const isLocalNode = window.location.hostname === 'localhost';
-export const ADMIN_ROUTE = 'admin';
+export const isLocalNode = window.location.hostname === 'localhost'
+export const ADMIN_ROUTE = 'admin'

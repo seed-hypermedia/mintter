@@ -1,0 +1,9 @@
+# ignore backend code
+api
+backend
+build
+docs
+infra
+out
+scripts
+tools

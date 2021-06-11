@@ -1,37 +1,34 @@
-import { useHistory, useRouteMatch } from 'react-router';
-import { DocumentList } from '../document-list';
-import { deletePublication } from '@mintter/client';
-import { useMyPublicationsList } from '@mintter/client/hooks'
-import { Text } from '@mintter/ui';
-import type { WithCreateDraft } from './library';
-import * as MessageBox from '../components/message-box';
+import {useHistory, useRouteMatch} from 'react-router'
+import {DocumentList} from '../document-list'
+import {deletePublication} from '@mintter/client'
+import {useMyPublicationsList} from '@mintter/client/hooks'
+import {Text} from '@mintter/ui'
+import type {WithCreateDraft} from './library'
+import * as MessageBox from '../components/message-box'
 
 type MyPublicationProps = {
-  noSeo?: boolean;
-  isPublic?: boolean;
-};
+  noSeo?: boolean
+  isPublic?: boolean
+}
 
-export const MyPublications = ({ isPublic = false, onCreateDraft }: MyPublicationProps & WithCreateDraft): JSX.Element => {
-  const history = useHistory();
-  const match = useRouteMatch();
-  const {
-    isError,
-    isLoading,
-    isSuccess,
-    error,
-    data = [],
-  } = useMyPublicationsList();
+export const MyPublications = ({
+  isPublic = false,
+  onCreateDraft,
+}: MyPublicationProps & WithCreateDraft): JSX.Element => {
+  const history = useHistory()
+  const match = useRouteMatch()
+  const {isError, isLoading, isSuccess, error, data = []} = useMyPublicationsList()
 
   async function handleDeleteDocument(version: string) {
-    await deletePublication(version);
+    await deletePublication(version)
   }
 
   if (isLoading) {
-    return <p>loading my publications...</p>;
+    return <p>loading my publications...</p>
   }
 
   if (isError) {
-    return <p>ERROR</p>;
+    return <p>ERROR</p>
   }
 
   return (
@@ -56,5 +53,5 @@ export const MyPublications = ({ isPublic = false, onCreateDraft }: MyPublicatio
         onDeleteDocument={!isPublic ? handleDeleteDocument : undefined}
       />
     </>
-  );
-};
+  )
+}
