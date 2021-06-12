@@ -1,6 +1,6 @@
 {
   "name": "@mintter/app",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,8 +20,8 @@
     "validate": "yarn check-types && yarn check-format && yarn lint"
   },
   "dependencies": {
-    "@mintter/client": "^0.1.0",
-    "@mintter/ui": "^0.1.0",
+    "@mintter/client": "^0.2.0",
+    "@mintter/ui": "^0.2.0",
     "@radix-ui/react-accessible-icon": "^0.0.14",
     "@radix-ui/react-alert-dialog": "^0.0.17",
     "@radix-ui/react-context-menu": "^0.0.19",
