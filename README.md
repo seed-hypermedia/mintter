@@ -85,4 +85,4 @@ API for frontend to use.
 - avoid creating abstractions
 - avoid creating folders, better to have files as flat as possible
 - avoid default exports, only default exports for page components (to use
-  dynamic import)
+  dynamic import).
