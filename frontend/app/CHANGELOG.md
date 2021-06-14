@@ -1,5 +1,13 @@
 # @mintter/app
 
+## 0.2.1
+
+### Patch Changes
+
+- 55d36c61: add slate-test-utils for testing the editor using hyperscript
+- Updated dependencies [c344c10f]
+  - @mintter/ui@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

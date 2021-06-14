@@ -151,20 +151,6 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
 
 /**
  *
- * @deprecated
- */
-export function useSuggestedConnections({page} = {page: 0}, options = {}) {
-  return {
-    data: [],
-    isLoading: false,
-    isSuccess: true,
-    isError: false,
-    error: null,
-  }
-}
-
-/**
- *
  * @param publicationId
  * @param version
  * @param options

@@ -21,103 +21,6 @@ export default function Publication(): JSX.Element {
   // get Drafts for editorOptions
   const {data: drafts = []} = useDraftsList()
 
-  // draftCreation
-  // const [createDraft] = useMutation(apiClient.createDraft, {
-  //   onSuccess: () => {
-  //     queryCache.refetchQueries('Drafts');
-  //   },
-  // });
-
-  // block menu dispatch
-  //   const blockMenuDispatch = useBlockMenuDispatch();
-
-  // transclusions
-  //   const { createTransclusion } = useTransclusion();
-
-  async function handleInteract() {
-    //     if (
-    //       getPath(match).includes('admin') ||
-    //       isLocalhost(window.location.hostname)
-    //     ) {
-    //       const d = await createDraft();
-    //       const value = d.toObject();
-    //       history.push(
-    //         `${getPath(match)}/editor/${value.version}?object=${
-    //           data.document?.version
-    //         }`,
-    //       );
-    //     } else {
-    //       history.push(
-    //         `${location.pathname}${
-    //           location.search ? `${location.search}&modal=show` : '?modal=show'
-    //         }`,
-    //       );
-    //     }
-  }
-
-  //   const handleQuotation = (document: Document.AsObject) => async ({
-  //     block,
-  //     destination,
-  //   }: {
-  //     block: EditorBlock;
-  //     destination?: Document.AsObject;
-  //   }) => {
-  //     const draftUrl = await createTransclusion({
-  //       source: document.version,
-  //       destination: destination ? destination.version : undefined,
-  //       block: block,
-  //     });
-
-  //     history.push(`${getPath(match)}/editor/${draftUrl}`);
-  //   };
-
-  //   const handleSidepanel = (document: Document.AsObject) => (
-  //     blockId: string,
-  //   ) => {
-  //     const objectId = blockId.includes('/')
-  //       ? blockId
-  //       : `${document.version}/${blockId}`;
-
-  //     sidepanelSend({
-  //       type: 'add_object',
-  //       payload: objectId,
-  //     });
-  //   };
-
-  //   function onCopyBlockId(blockId: string) {
-  //     const id = blockId.includes('/')
-  //       ? blockId
-  //       : `${data.document?.version}/${blockId}`;
-  //     const res = copyTextToClipboard(`mintter://${id}`);
-  //     if (res) {
-  //       addToast('Block Ref copied to your clipboard!', {
-  //         appearance: 'success',
-  //       });
-  //     } else {
-  //       addToast('Error while copying to Clipboard!', {
-  //         appearance: 'error',
-  //       });
-  //     }
-  //   }
-
-  //   const onQuote = React.useCallback(handleQuotation(data?.document), [data]);
-  //   const onSidePanel = React.useCallback(handleSidepanel(data?.document), [
-  //     data,
-  //   ]);
-
-  //   React.useEffect(() => {
-  //     blockMenuDispatch({
-  //       type: 'set_actions',
-  //       payload: {
-  //         onQuote,
-  //         onCopyBlockId,
-  //         onSidePanel,
-  //         useDocument,
-  //         drafts,
-  //       },
-  //     });
-  //   }, [onQuote, onSidePanel, useDocument, drafts]);
-
   // start rendering
   if (isError) {
     console.error('useDraft error: ', error)
@@ -183,19 +86,13 @@ export default function Publication(): JSX.Element {
               <Box key={object} />
             ))}
           </Box>
-          {sidepanelObjects.length === 0 && <SidePanelCTA handleInteract={handleInteract} />}
+          {/* {sidepanelObjects.length === 0 && <SidePanelCTA handleInteract={handleInteract} />} */}
         </Box>
       ) : null}
       {/* <PublicationModal document={data.document} /> */}
     </Box>
   )
 }
-
-// function PublicationError(props) {
-//   return props.error ? (
-//     <div className="bg-white p-4 text-red-800">ERROR IN PUBLICATION</div>
-//   ) : null
-// }
 
 function usePublication() {
   // get document version
@@ -274,12 +171,9 @@ function SidePanelCTA({handleInteract}: any) {
       <Text>
         <Text as="strong">Reply, develop</Text> or <Text as="strong">refute</Text> on the Mintter app now.
       </Text>
-      <button
-        className="bg-primary rounded-full mt-4 px-8 py-2 text-white font-bold shadow transition duration-200 text-sm"
-        onClick={handleInteract}
-      >
+      <Button variant="solid" color="primary" onClick={handleInteract}>
         Write about this Article
-      </button>
+      </Button>
     </Box>
   )
 }
