@@ -8,7 +8,8 @@
   "private": true,
   "scripts": {
     "changeset": "changeset",
-    "build": "yarn workspaces run build",
+    "prebuild": "yarn validate",
+    "build": "yarn app build",
     "test": "yarn workspaces run test",
     "lint": "yarn workspaces run lint",
     "format": "yarn workspaces run format",

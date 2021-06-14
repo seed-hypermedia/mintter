@@ -7,6 +7,9 @@ process.env.DEBUG_PRINT_LIMIT = '15000'
 // enable fake timers if they need.
 beforeEach(() => jest.useRealTimers())
 
+// fix stitches CSSOM old issue
+CSSMediaRule.prototype.insertRule = CSSStyleSheet.prototype.insertRule
+
 // general cleanup
 // afterEach(() => {
 //   queryCache.clear()
