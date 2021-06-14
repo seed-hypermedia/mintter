@@ -100,8 +100,6 @@ export default function Library() {
         }}
       >
         <ProfileInfo />
-        {/* <Connections onConnect={onConnect} /> */}
-        {/* <SuggestedConnections onConnect={onConnect} /> */}
       </Box>
 
       <Container css={{gridArea: 'maincontent'}}>

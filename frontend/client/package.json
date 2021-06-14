@@ -12,6 +12,7 @@
     "test:w": "jest --watch",
     "test:coverage": "jest --coverage",
     "precommit": "lint-staged",
+    "build": "true",
     "lint": "eslint .",
     "prettier": "prettier --ignore-path .gitignore \"**/*.+(ts|tsx|json)\"",
     "format": "yarn prettier --write",
