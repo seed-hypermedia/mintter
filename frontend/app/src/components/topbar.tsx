@@ -3,7 +3,6 @@ import {useRef} from 'react'
 import {useHistory, useRouteMatch} from 'react-router-dom'
 
 import {Box, Button, Icon, Text, TextField} from '@mintter/ui'
-import * as DropdownMenu from '../lib/dropdown-menu'
 
 import {Container} from './container'
 import {getPath} from '../utils/routes'
@@ -52,27 +51,15 @@ export function Topbar({isPublic = false}: {isPublic?: boolean}) {
         <MintterSearch />
       </Container>
       <Box css={{display: 'flex', justifyContent: 'flex-end'}}>
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger as={Slot}>
-            <Button variant="ghost" size="1">
-              <Icon name="GearOutlined" size="1" />
-            </Button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content>
-            <DropdownMenu.Item
-              css={{
-                '&:hover, &:active, &:focus': {
-                  background: '$primary-muted',
-                },
-              }}
-              onSelect={() => {
-                history.push(`${getPath(match)}/settings`)
-              }}
-            >
-              <Text css={{color: '$text-default'}}>Settings</Text>
-            </DropdownMenu.Item>
-          </DropdownMenu.Content>
-        </DropdownMenu.Root>
+        <Button
+          //@ts-ignore
+          as={Link}
+          to={`${getPath(match)}/settings`}
+          variant="ghost"
+          size="1"
+        >
+          <Icon name="GearOutlined" size="1" />
+        </Button>
       </Box>
     </Box>
   )
