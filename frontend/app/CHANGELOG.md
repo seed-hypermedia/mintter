@@ -1,5 +1,11 @@
 # @mintter/app
 
+## 0.2.2
+
+### Patch Changes
+
+- bump radix ui component versions
+
 ## 0.2.1
 
 ### Patch Changes
