@@ -154,6 +154,7 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 		return fmt.Errorf("failed to put patch in blockstore: %w", err)
 	}
 
+	h.Peer = sp.peer.String()
 	h.Head = sp.cid.String()
 	h.Seq = sp.Seq
 	h.LamportTime = sp.LamportTime
