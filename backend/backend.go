@@ -420,14 +420,10 @@ func (srv *backend) handleLibp2pEvent(ctx context.Context, evt interface{}) erro
 			return nil
 		}
 
-		supported := supportsMintterProtocol(protos)
-
-		srv.log.Debug("PeerConnected",
-			zap.String("peer", e.Peer.String()),
-			zap.Bool("isMintter", supported),
-		)
-
-		if supported {
+		if supportsMintterProtocol(protos) {
+			srv.log.Debug("MintterPeerConnected",
+				zap.String("peer", e.Peer.String()),
+			)
 			return srv.handleMintterPeer(ctx, e.Peer)
 		}
 	}
