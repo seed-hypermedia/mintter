@@ -7,6 +7,7 @@ import {
   InlineElement,
   Block_Type,
   TextRun,
+  Link,
 } from '../.generated/documents/v1alpha/documents'
 import {internet, lorem, finance} from 'faker'
 import {nanoid} from 'nanoid'
@@ -92,9 +93,8 @@ export function mockDocument({
   subtitle = lorem.sentence(),
   links = {},
   id = createId(),
-}: Omit<Partial<Document>, 'blocks'> & {blocks?: Block[]} = {}): Document {
+}: Omit<Partial<Document>, 'blocks'> & {blocks?: Array<Block>; links?: {[k: string]: Link}} = {}): Document {
   const blockMap = Object.fromEntries(blocks.map((block) => [block.id, block]))
-
   return Document.fromPartial({
     id,
     title,

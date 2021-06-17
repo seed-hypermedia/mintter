@@ -17,7 +17,7 @@
     "prettier": "prettier --ignore-path .gitignore \"**/*.+(ts|tsx|json)\"",
     "format": "yarn prettier --write",
     "check-format": "yarn prettier --list-different",
-    "validate": "yarn check-format && yarn lint"
+    "validate": "yarn check-format && yarn lint && yarn test"
   },
   "devDependencies": {
     "@types/jest": "^26.0.23",
