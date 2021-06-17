@@ -374,6 +374,32 @@ func (srv *backend) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) e
 	return nil
 }
 
+func (srv *backend) ListAccounts(ctx context.Context) ([]*accounts.Account, error) {
+	objects, err := srv.patches.ListObjects(ctx, codecAccountID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*accounts.Account, len(objects))
+
+	// TODO: do this concurrently.
+	for i, c := range objects {
+		state, err := srv.patches.LoadState(ctx, c)
+		if err != nil {
+			return nil, err
+		}
+
+		account, err := accountFromState(state)
+		if err != nil {
+			return nil, err
+		}
+
+		out[i] = account
+	}
+
+	return out, nil
+}
+
 // Subscribe will notify the given channel about the underlying events. Messages can get dropped for slow receivers.
 func (srv *backend) Subscribe(c chan<- interface{}) {
 	srv.subsMu.Lock()
@@ -391,6 +417,9 @@ func (srv *backend) Unsubscribe(c chan<- interface{}) {
 	srv.subsMu.Unlock()
 }
 
+// emitEvent notifies subscribers about an internal event that occurred.
+//
+// TODO: implement some event interface instead of an empty one.
 func (srv *backend) emitEvent(ctx context.Context, evt interface{}) {
 	srv.subsMu.Lock()
 	defer srv.subsMu.Unlock()
@@ -465,7 +494,9 @@ func (srv *backend) handleMintterPeer(ctx context.Context, pid peer.ID) error {
 		return fmt.Errorf("failed to get local object version for peer %s: %w", pid.String(), err)
 	}
 
-	state, err := resolvePatches(ctx, aid, mergeVersions(localVer, remoteVer), srv.p2p.bs)
+	mergedVer := mergeVersions(localVer, remoteVer)
+
+	state, err := resolvePatches(ctx, aid, mergedVer, srv.p2p.bs)
 	if err != nil {
 		return fmt.Errorf("failed to resolve account %s: %w", aid, err)
 	}
@@ -478,6 +509,10 @@ func (srv *backend) handleMintterPeer(ctx context.Context, pid peer.ID) error {
 	deviceID := peer.ToCid(pid)
 	if _, ok := account.Devices[deviceID.String()]; !ok {
 		return fmt.Errorf("device %s is not found in account %s", deviceID, aid)
+	}
+
+	if err := srv.patches.StoreVersion(ctx, aid, mergedVer); err != nil {
+		return fmt.Errorf("failed to store version: %w", err)
 	}
 
 	if err := srv.p2p.libp2p.Peerstore().Put(pid, metadataKeyAccount, aid.Bytes()); err != nil {
