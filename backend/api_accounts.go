@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ipfs/go-cid"
+
 	accounts "mintter/api/go/accounts/v1alpha"
 )
 
@@ -27,12 +29,17 @@ func (srv *accountsAPI) GetAccount(ctx context.Context, in *accounts.GetAccountR
 		return nil, err
 	}
 
-	_, resp, err := srv.back.GetAccountState(ctx, acc.id)
+	state, err := srv.back.patches.LoadState(ctx, cid.Cid(acc.id))
 	if err != nil {
-		return nil, fmt.Errorf("failed to hydrate account state: %w", err)
+		return nil, fmt.Errorf("failed to load state for account %s: %w", acc.id, err)
 	}
 
-	return resp, nil
+	account, err := accountFromState(state)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hydrate account state %s: %w", acc.id, err)
+	}
+
+	return account, nil
 }
 
 func (srv *accountsAPI) UpdateProfile(ctx context.Context, in *accounts.Profile) (*accounts.Account, error) {

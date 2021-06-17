@@ -92,14 +92,14 @@ func provideBlockService(bs blockstore.Blockstore, bswap *ipfsutil.Bitswap) (blo
 	return blksvc, nil
 }
 
-func provideP2P(lc fx.Lifecycle, log *zap.Logger, bs blockstore.Blockstore, repo *repo, cfg config.P2P, libp2p *ipfsutil.Libp2p, boot ipfsutil.Bootstrappers) (*p2pNode, error) {
+func provideP2P(lc fx.Lifecycle, log *zap.Logger, bs blockservice.BlockService, repo *repo, cfg config.P2P, libp2p *ipfsutil.Libp2p, boot ipfsutil.Bootstrappers) (*p2pNode, error) {
 	// TODO: provide real strategy for reproviding.
-	prov, err := providing.New(filepath.Join(repo.path, "providing/provided.db"), libp2p.Routing, bs.AllKeysChan)
+	prov, err := providing.New(filepath.Join(repo.path, "providing/provided.db"), libp2p.Routing, bs.Blockstore().AllKeysChan)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create provider: %w", err)
 	}
 
-	p2p := newP2PNode(cfg, log.Named("p2p"), libp2p, prov, boot)
+	p2p := newP2PNode(cfg, log.Named("p2p"), bs, libp2p, prov, boot)
 
 	lc.Append(fx.Hook{
 		OnStop: func(context.Context) error {

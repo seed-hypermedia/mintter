@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ipfs/go-blockservice"
 	"github.com/libp2p/go-libp2p-core/protocol"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/zap"
@@ -19,6 +20,8 @@ const (
 	ProtocolName    = "mintter"
 
 	ProtocolID protocol.ID = "/" + ProtocolName + "/" + ProtocolVersion
+
+	protocolSupportKey = "mintter-support" // This is what we use as a key to protect the connection in ConnManager.
 )
 
 var userAgent = "mintter/" + Version
@@ -31,18 +34,20 @@ type p2pNode struct {
 	log    *zap.Logger
 	libp2p *ipfsutil.Libp2p
 	prov   *providing.Provider
+	bs     blockservice.BlockService
 
 	ready chan struct{}
 }
 
 // newP2PNode creates a new Mintter P2P wrapper.
-func newP2PNode(cfg config.P2P, log *zap.Logger, libp2p *ipfsutil.Libp2p, prov *providing.Provider, boot ipfsutil.Bootstrappers) *p2pNode {
+func newP2PNode(cfg config.P2P, log *zap.Logger, bs blockservice.BlockService, libp2p *ipfsutil.Libp2p, prov *providing.Provider, boot ipfsutil.Bootstrappers) *p2pNode {
 	p2p := &p2pNode{
 		cfg:    cfg,
 		boot:   boot,
 		log:    log,
 		libp2p: libp2p,
 		prov:   prov,
+		bs:     bs,
 
 		ready: make(chan struct{}),
 	}
@@ -91,4 +96,15 @@ func (n *p2pNode) Start(ctx context.Context) error {
 // Ready can be used to wait until the node is ready.
 func (n *p2pNode) Ready() <-chan struct{} {
 	return n.ready
+}
+
+func supportsMintterProtocol(protos []string) bool {
+	// Eventually we'd need to implement some compatibility checks between different protocol versions.
+	for _, p := range protos {
+		if p == string(ProtocolID) {
+			return true
+		}
+	}
+
+	return false
 }
