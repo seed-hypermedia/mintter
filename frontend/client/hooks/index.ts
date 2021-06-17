@@ -13,8 +13,11 @@ import {
   Publication,
   getPublication,
   Block,
+  mock,
+  Quote,
+  Link,
 } from '../src'
-import {mockBlock, mockTextInlineElement} from '../src/mock'
+import {mockBlock, mockDocument, mockTextInlineElement} from '../src/mock'
 import type {HookOptions} from './types'
 
 /**
@@ -205,41 +208,70 @@ export function useMyPublicationsList(options = {}) {
   }
 }
 
+export type UseQuoteResult = Omit<UseQueryResult<Document>, 'data'> & {
+  data?: {
+    document: Document
+    quote: Block
+  }
+}
+
 /**
  *
- * @param url
+ * @param documentId (string) the document id of the current quote
+ * @param quoteId (string) the block id of the current quote
  * @param options
  * @returns
  */
-export function useQuote(url: string, options: HookOptions<Block> = {}) {
-  const [, blockId] = url.split('/')
-
+export function useQuote(documentId: string, quoteId?: string, options: HookOptions<Document> = {}): any {
   console.warn('called mocked function "useQuote"')
 
   const quoteQuery = useQuery(
-    ['Quote', blockId],
+    ['Document', documentId],
     async () => {
       console.warn('called mocked function "useQuote"')
-      const block = mockBlock({
-        id: blockId,
-        elements: [
-          mockTextInlineElement({
-            text: `${blockId}: dummy quote text`,
-            linkKey: '',
-            bold: false,
-            italic: false,
-            underline: false,
-            strikethrough: false,
-            blockquote: false,
-            code: false,
-          }),
-        ],
-      })
-      return block
+
+      const innerQuote = {
+        id: mock.createId(),
+        url: `mtt://${mock.createId()}/${mock.createId()}`,
+      }
+
+      const doc = quoteId
+        ? mockDocument({
+            blocks: [
+              mockBlock(),
+              Block.fromPartial({
+                id: quoteId,
+                elements:
+                  Math.random() * 1 > 0.5
+                    ? [
+                        mockTextInlineElement(),
+                        {
+                          quote: Quote.fromPartial({
+                            linkKey: innerQuote.id,
+                          }),
+                        },
+                      ]
+                    : undefined,
+              }),
+            ],
+            links: {
+              [innerQuote.id]: Link.fromPartial({
+                uri: innerQuote.url,
+              }),
+            },
+          })
+        : mockDocument({title: 'this is a title'})
+
+      const block = quoteId ? doc.blocks[quoteId] : undefined
+
+      return {
+        document: doc,
+        quote: block,
+      }
     },
-    {
-      enabled: !!blockId,
-    },
+    // {
+    //   enabled: !!quoteId,
+    // },
   )
 
   const data = useMemo(() => quoteQuery.data, [quoteQuery.data])

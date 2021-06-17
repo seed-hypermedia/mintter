@@ -1,64 +1,77 @@
+import {useCallback} from 'react'
 import {useFocused, useSelected} from 'slate-react'
 import {Box} from '@mintter/ui'
+import {theme} from '@mintter/ui/stitches.config'
 import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
 import {useQuote} from '@mintter/client/hooks'
 import type {EditorTextRun, EditorQuote} from '../types'
-import type {Block} from '@mintter/client'
-import {useCallback} from 'react'
+import type {Block, Document, InlineElement} from '@mintter/client'
+import {InlineQuote, renderQuoteInlineElements} from './inline-quote'
+import {MINTTER_LINK_PREFIX} from '../link-plugin'
 
 export function QuoteElement({attributes, className, element, children}: SPRenderElementProps<EditorQuote>) {
   const focused = useFocused()
   const selected = useSelected()
-  const quote = useQuote(element.url)
+  const [documentId, quoteId] = getQuoteIds(element.url)
+  const {data, isLoading, isSuccess, isError} = useQuote(documentId, quoteId)
+  console.log('🚀 ~ file: quote-element.tsx ~ line 17 ~ QuoteElement ~ data', data)
+
+  const renderElements = useCallback(renderQuoteInlineElements, [data])
   let qRender
 
   const renderElement = useCallback(({text = ''}, index) => <span key={index}>{text}</span>, [])
 
-  if (quote.isLoading) {
+  if (isLoading) {
     qRender = <span>...</span>
   }
 
-  if (quote.isError) {
+  if (isError) {
     qRender = <span>Error fetching quote {element.id}</span>
   }
 
-  if (quote.isSuccess && quote.data) {
-    qRender = toEditorQuote(quote.data).map(renderElement)
-    return (
-      <span {...attributes} data-quote-id={element.id}>
-        <Box
-          as="span"
-          contentEditable={false}
-          css={{
-            position: 'relative',
-            paddingHorizontal: '$2',
-            paddingVertical: '$1',
-            overflow: 'hidden',
-            color: '$secondary-strong',
-            borderRadius: '$1',
-            backgroundColor: focused && selected ? '$background-neutral' : 'transparent',
-            '&:hover': {
-              cursor: 'pointer',
-              backgroundColor: '$background-neutral',
-              '&:before': {
-                height: '100%',
-              },
-            },
-          }}
-        >
-          {qRender}
-        </Box>
-        {children}
-      </span>
-    )
+  if (isSuccess && data) {
+    if (!data.quote) {
+      console.log('no hay quote!', {data})
+      qRender = data.document.title
+    } else {
+      qRender = data.quote.elements.map((element: InlineElement) => renderElements(element, data.document))
+    }
   }
+  return (
+    <span {...attributes} data-quote-id={element.id}>
+      <Box
+        as="span"
+        contentEditable={false}
+        css={{
+          position: 'relative',
+          paddingHorizontal: '$2',
+          paddingVertical: '$1',
+          overflow: 'hidden',
+          borderRadius: '$1',
+          border: '2px solid',
+          borderColor: focused && selected ? '$primary-default' : '$primary-muted',
+          backgroundColor: '$background-muted',
+          '&:hover': {
+            cursor: 'pointer',
+            backgroundColor: '$background-neutral',
+            '&:before': {
+              height: '100%',
+            },
+          },
+        }}
+      >
+        {qRender}
+      </Box>
+      {children}
+    </span>
+  )
 
-  return null
+  return children
 }
 
 function toEditorQuote(entry: Block): Array<EditorTextRun> {
   //@ts-ignore
-  return entry.elementsList.map((element: documents.InlineElement.AsObject) => {
+  return entry.elements.map((element: documents.InlineElement.AsObject) => {
     // assume elements are type textRun for now
     const node: EditorTextRun = {text: ''}
     if (element.textRun) {
@@ -82,4 +95,18 @@ function toEditorQuote(entry: Block): Array<EditorTextRun> {
 
     return null
   })
+}
+
+export function getQuoteIds(entry: string): [string, string] {
+  if (!entry.startsWith(MINTTER_LINK_PREFIX)) {
+    throw Error(`getQuoteId Error: url must start with ${MINTTER_LINK_PREFIX}. (${entry})`)
+  }
+
+  const [, ids] = entry.split(MINTTER_LINK_PREFIX)
+
+  if (ids.length <= 2) {
+    throw Error(`getQuoteId Error: url must contain a documentId and a blockId at least. (${entry})`)
+  }
+  const [one, second] = ids.split('/')
+  return [one, second]
 }

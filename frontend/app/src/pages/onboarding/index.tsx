@@ -14,13 +14,13 @@ import {Complete} from './complete'
 
 const onboardingMachine = Machine({
   id: 'onboarding',
-  initial: 'loading',
+  initial: 'welcome',
   states: {
-    loading: {
-      on: {
-        NEXT: 'welcome',
-      },
-    },
+    // loading: {
+    //   on: {
+    //     NEXT: 'welcome',
+    //   },
+    // },
     welcome: {
       on: {
         NEXT: 'securityPack',
@@ -55,11 +55,11 @@ export const OnboardingPage: React.FC = () => {
     [sendToOnboardingMachine],
   )
 
-  useEffect(() => {
-    setTimeout(() => {
-      onboardingStepProps.next()
-    }, 1000)
-  }, [onboardingStepProps])
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     onboardingStepProps.next()
+  //   }, 1000)
+  // }, [onboardingStepProps])
 
   return (
     <Box

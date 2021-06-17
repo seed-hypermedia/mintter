@@ -8,6 +8,7 @@ import type {EditorBlock} from '../types'
 export function BlockElement({attributes, children, className, element, ...rest}: SPRenderElementProps<EditorBlock>) {
   function onOpenChange(open: boolean) {
     console.log('open changed! = ', open)
+    // TODO: style the block as "selected"
   }
 
   function onCopyBlockId() {
@@ -46,11 +47,11 @@ export function BlockElement({attributes, children, className, element, ...rest}
             boxShadow: '0px 5px 15px -5px hsla(206,22%,7%,.15)',
           }}
         >
-          <StyledContextMenuItem onSelect={onOpenInSidepanel}>
+          <StyledContextMenuItem onSelect={onOpenInSidepanel} onClick={onOpenInSidepanel}>
             <Icon size="1" name="ArrowTopRight" />
             <Text size="2">Open in Sidepanel</Text>
           </StyledContextMenuItem>
-          <StyledContextMenuItem onSelect={onCopyBlockId}>
+          <StyledContextMenuItem onSelect={onCopyBlockId} onClick={onCopyBlockId}>
             <Icon size="1" name="Copy" />
             <Text size="2">Copy Block Ref</Text>
           </StyledContextMenuItem>

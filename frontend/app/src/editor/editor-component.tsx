@@ -24,12 +24,7 @@ import {strikethroughOptions, strikethroughAutoformatRules} from './strikethroug
 import {Toolbar} from './toolbar'
 import {underlineOptions, underlineAutoformatRules} from './underline-plugin'
 import {createQuotePlugin, ELEMENT_QUOTE, quoteOptions} from './quote-plugin'
-import {
-  createLinkPlugin,
-  ELEMENT_LINK,
-  linkOptions,
-  // LinkMenu,
-} from './link-plugin'
+import {createLinkPlugin, ELEMENT_LINK, linkOptions} from './link-plugin'
 // import {useMenuState} from 'reakit/Menu'
 
 const initialValue = [
@@ -85,7 +80,7 @@ function rulesWithCustomDefaultType(
 }
 
 export function EditorComponent<T extends SPEditor = SPEditor>({initialValue, ...options}: SlatePluginsProps<T>) {
-  // const menu = useMenuState({loop: true, wrap: true})
+  // const menu = useMenuState()
 
   return (
     <>
@@ -153,7 +148,6 @@ export function EditorComponent<T extends SPEditor = SPEditor>({initialValue, ..
         }}
       >
         <Toolbar />
-        {/* <LinkMenu menu={menu} /> */}
       </SlatePlugins>
     </>
   )
