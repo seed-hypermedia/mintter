@@ -65,6 +65,14 @@ func TestAccountVerifiedOnConnect(t *testing.T) {
 	aliceacc, err := bob.GetAccountForDevice(alice.repo.device.id)
 	require.NoError(t, err)
 	require.Equal(t, alice.repo.acc.id.String(), aliceacc.String())
+
+	accs, err := alice.ListAccounts(ctx)
+	require.NoError(t, err)
+	require.Len(t, accs, 2)
+
+	accs, err = bob.ListAccounts(ctx)
+	require.NoError(t, err)
+	require.Len(t, accs, 2)
 }
 
 func TestProvideAccount(t *testing.T) {

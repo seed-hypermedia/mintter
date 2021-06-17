@@ -47,7 +47,14 @@ func (srv *accountsAPI) UpdateProfile(ctx context.Context, in *accounts.Profile)
 }
 
 func (srv *accountsAPI) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {
-	return nil, nil
+	accs, err := srv.back.ListAccounts(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &accounts.ListAccountsResponse{
+		Accounts: accs,
+	}, nil
 }
 
 func (srv *accountsAPI) StartAccountDiscovery(ctx context.Context, in *accounts.StartAccountDiscoveryRequest) (*accounts.StartAccountDiscoveryResponse, error) {
