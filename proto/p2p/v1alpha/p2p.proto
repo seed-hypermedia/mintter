@@ -6,23 +6,19 @@ option go_package = "mintter/api/go/p2p/v1alpha;p2p";
 
 // Mintter P2P API.
 service P2P {
-  rpc Handshake(HandshakeInfo) returns (HandshakeInfo);
-
-  rpc Ping(PingRequest) returns (PingResponse);
+  rpc GetPeerInfo(GetPeerInfoRequest) returns (PeerInfo);
 
   rpc GetObjectVersion(GetObjectVersionRequest) returns (Version);
 }
 
-message HandshakeInfo {
-  Version profile_version = 1;
-}
-
-message PingRequest {}
-
-message PingResponse {}
+message GetPeerInfoRequest {}
 
 message GetObjectVersionRequest {
   string object_id = 1;
+}
+
+message PeerInfo {
+  string account_id = 1;
 }
 
 message Version {

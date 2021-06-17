@@ -16,12 +16,6 @@ var (
 		HasIndex: true,
 		Type:     badgergraph.ValueTypeString,
 	})
-	// If CID encodes some piece of data (i.e. IPFS block) this is where it gets stored.
-	pCIDData = graphSchema.RegisterPredicate(typeCID, badgergraph.Predicate{
-		Name:     "data",
-		HasIndex: false,
-		Type:     badgergraph.ValueTypeBinary,
-	})
 
 	pHeadData = graphSchema.RegisterPredicate(typeHead, badgergraph.Predicate{
 		Name:     "data",
