@@ -22,6 +22,51 @@ import (
 	"mintter/backend/testutil"
 )
 
+func TestAccountVerifiedOnConnect(t *testing.T) {
+	alice := makeTestBackend(t, "alice", true)
+	bob := makeTestBackend(t, "bob", true)
+	ctx := context.Background()
+
+	ac := make(chan interface{}, 2)
+
+	alice.Subscribe(ac)
+	bob.Subscribe(ac)
+
+	out := make(chan accountVerified, 2)
+
+	go func() {
+		for evt := range ac {
+			verified, ok := evt.(accountVerified)
+			if !ok {
+				continue
+			}
+			out <- verified
+		}
+	}()
+
+	want := map[string]string{
+		alice.repo.acc.id.String(): alice.repo.device.id.String(),
+		bob.repo.acc.id.String():   bob.repo.device.id.String(),
+	}
+
+	connectPeers(t, ctx, alice, bob)
+
+	// Both Alice and Bob must receive an event after identifying each other.
+
+	verified := <-out
+	require.Equal(t, want[verified.Account.String()], verified.Device.String())
+	verified = <-out
+	require.Equal(t, want[verified.Account.String()], verified.Device.String())
+
+	bobacc, err := alice.GetAccountForDevice(bob.repo.device.id)
+	require.NoError(t, err)
+	require.Equal(t, bob.repo.acc.id.String(), bobacc.String())
+
+	aliceacc, err := bob.GetAccountForDevice(alice.repo.device.id)
+	require.NoError(t, err)
+	require.Equal(t, alice.repo.acc.id.String(), aliceacc.String())
+}
+
 func TestProvideAccount(t *testing.T) {
 	alice := makeTestBackend(t, "alice", true)
 	bob := makeTestBackend(t, "bob", true)

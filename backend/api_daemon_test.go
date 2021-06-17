@@ -45,7 +45,7 @@ func TestRegister(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, codes.FailedPrecondition, stat.Code())
 
-	back.GetAccountState(ctx, back.repo.acc.id)
+	// back.GetAccountState(ctx, back.repo.acc.id)
 
 	// acc, err := srv.backend.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
 	// require.NoError(t, err, "must get account after registration")

@@ -56,8 +56,8 @@ func NewLogger(cfg config.Config) *zap.Logger {
 	return log
 }
 
-func provideBackend(lc fx.Lifecycle, stop fx.Shutdowner, r *repo, store *patchStore, p2p *p2pNode) (*backend, error) {
-	back := newBackend(r, store, p2p)
+func provideBackend(lc fx.Lifecycle, stop fx.Shutdowner, log *zap.Logger, r *repo, store *patchStore, p2p *p2pNode) (*backend, error) {
+	back := newBackend(log.Named("backend"), r, store, p2p)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	errc := make(chan error, 1)
