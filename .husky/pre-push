@@ -6,6 +6,8 @@
 # cd ../client
 # yarn test
 # cd ../app
-cd frontend/app
-yarn test
-yarn build
+# cd frontend/app
+# yarn test
+# yarn build
+
+npx lint-staged

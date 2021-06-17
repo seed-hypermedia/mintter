@@ -1,6 +1,9 @@
-import {SPEditor, upsertLinkAtSelection, WithOverride, someNode, isUrl} from '@udecode/slate-plugins'
+import {mock} from '@mintter/client'
+import {SPEditor, upsertLinkAtSelection, WithOverride, someNode, isUrl, insertNodes} from '@udecode/slate-plugins'
 import type {MenuStateReturn} from 'reakit/Menu'
 import type {ReactEditor} from 'slate-react'
+import {ELEMENT_QUOTE} from '../quote-plugin'
+import type {EditorQuote} from '../types'
 import {ELEMENT_LINK, MINTTER_LINK_PREFIX} from './create-link-plugin'
 
 export interface WithMintterLinkOptions {
@@ -21,11 +24,16 @@ export function withMintterLink(options: WithMintterLinkOptions): WithOverride<R
         }
 
         if (text.includes(MINTTER_LINK_PREFIX)) {
-          console.log('this is a mintter link => ', text, editor.selection)
+          console.log('this is a mintter link => ', text, options.menu)
+          options.menu?.show()
 
-          // options.menu?.show();
-
-          return upsertLinkAtSelection(editor, link)
+          // return upsertLinkAtSelection(editor, link)
+          return insertNodes<EditorQuote>(editor, {
+            id: mock.createId(),
+            type: 'quote',
+            url: text,
+            children: [{text: ''}],
+          })
         }
 
         if (isUrl(text)) {

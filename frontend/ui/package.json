@@ -16,7 +16,7 @@
     "precommit": "lint-staged",
     "format": "yarn prettier --write",
     "check-format": "yarn prettier --list-different",
-    "validate": "yarn check-format && yarn lint"
+    "validate": "yarn check-format && yarn lint && yarn test"
   },
   "devDependencies": {
     "@types/autosize": "^4.0.0",
