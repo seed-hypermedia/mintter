@@ -11,6 +11,7 @@ import (
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
+	"go.uber.org/zap"
 
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 )
@@ -21,14 +22,16 @@ var nowFunc = func() time.Time {
 }
 
 type patchStore struct {
-	db *badgergraph.DB
-	bs *blockstoreGetter
+	log *zap.Logger
+	db  *badgergraph.DB
+	bs  *blockstoreGetter
 }
 
-func newPatchStore(bs blockstore.Blockstore, db *badgergraph.DB) (*patchStore, error) {
+func newPatchStore(log *zap.Logger, bs blockstore.Blockstore, db *badgergraph.DB) (*patchStore, error) {
 	return &patchStore{
-		db: db,
-		bs: &blockstoreGetter{bs},
+		log: log,
+		db:  db,
+		bs:  &blockstoreGetter{bs},
 	}, nil
 }
 
@@ -201,6 +204,44 @@ func (s *patchStore) ListObjects(ctx context.Context, codec uint64) ([]cid.Cid, 
 	// })
 
 	return out, nil
+}
+
+// AllObjectsChan returns a channel that would receive CIDs of all the known objects.
+// This can be used to provide the items on the DHT.
+func (s *patchStore) AllObjectsChan(ctx context.Context) (<-chan cid.Cid, error) {
+	c := make(chan cid.Cid)
+
+	go func() {
+		defer close(c)
+
+		if err := s.db.View(func(txn *badgergraph.Txn) error {
+			uids, err := txn.ListIndexedNodes(badgergraph.NodeTypePredicate().FullName(), []byte(typeObject))
+			if err != nil {
+				return err
+			}
+
+			for _, u := range uids {
+				hash, err := txn.XID(typeObject, u)
+				if err != nil {
+					return err
+				}
+
+				// TODO(burdiyan): we use raw codec here, although it's not really correct.
+				// Due to the fact that we only store hashes now, we loose some info here.
+				// But the thing is that DHT and other IPFS internals are doing the same thing.
+				// DHT requires a channel of CIDs, even though it only uses hashes later on.
+				// Weird stuff. We probably should store some data that would help us recover
+				// the correct codec here, so that if something changes inside IPFS we don't get hurt.
+				c <- cid.NewCidV1(cid.Raw, hash)
+			}
+
+			return nil
+		}); err != nil {
+			s.log.Error("AllObjectsChanFailed", zap.Error(err))
+		}
+	}()
+
+	return c, nil
 }
 
 // GetObjectVersion retrieves peer versions for a given object ID.

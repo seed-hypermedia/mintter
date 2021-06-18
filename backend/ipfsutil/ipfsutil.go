@@ -76,7 +76,7 @@ type Node struct {
 }
 
 // New creates an IPFS-Lite Peer. It uses the given datastore, libp2p Host and
-// Routing (usuall the DHT). The Host and the Routing may be nil if
+// Routing (usually the DHT). The Host and the Routing may be nil if
 // config.Offline is set to true, as they are not used in that case. Peer
 // implements the ipld.DAGService interface.
 //

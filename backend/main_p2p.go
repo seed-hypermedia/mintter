@@ -10,6 +10,7 @@ import (
 	"mintter/backend/ipfsutil/providing"
 
 	"github.com/ipfs/go-blockservice"
+	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"github.com/libp2p/go-libp2p"
@@ -92,9 +93,8 @@ func provideBlockService(bs blockstore.Blockstore, bswap *ipfsutil.Bitswap) (blo
 	return blksvc, nil
 }
 
-func provideP2P(lc fx.Lifecycle, log *zap.Logger, bs blockservice.BlockService, repo *repo, cfg config.P2P, libp2p *ipfsutil.Libp2p, boot ipfsutil.Bootstrappers) (*p2pNode, error) {
-	// TODO: provide real strategy for reproviding.
-	prov, err := providing.New(filepath.Join(repo.path, "providing/provided.db"), libp2p.Routing, bs.Blockstore().AllKeysChan)
+func provideP2P(lc fx.Lifecycle, log *zap.Logger, patches *patchStore, bs blockservice.BlockService, repo *repo, cfg config.P2P, libp2p *ipfsutil.Libp2p, boot ipfsutil.Bootstrappers) (*p2pNode, error) {
+	prov, err := providing.New(filepath.Join(repo.path, "providing/provided.db"), libp2p.Routing, makeStrategy(bs.Blockstore(), patches))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create provider: %w", err)
 	}
@@ -108,4 +108,39 @@ func provideP2P(lc fx.Lifecycle, log *zap.Logger, bs blockservice.BlockService, 
 	})
 
 	return p2p, nil
+}
+
+// makeStrategy creates a providing strategy that merges blocks from the block store
+// and objects from the patch store.
+func makeStrategy(bs blockstore.Blockstore, patches *patchStore) providing.Strategy {
+	return func(ctx context.Context) (<-chan cid.Cid, error) {
+		oc, err := patches.AllObjectsChan(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		bc, err := bs.AllKeysChan(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		out := make(chan cid.Cid)
+
+		go func() {
+			defer close(out)
+
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case c := <-oc:
+					out <- c
+				case c := <-bc:
+					out <- c
+				}
+			}
+		}()
+
+		return out, nil
+	}
 }
