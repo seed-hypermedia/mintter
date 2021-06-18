@@ -3,18 +3,27 @@ package backend
 import "mintter/backend/badgergraph"
 
 const (
-	typeCID  = "CID"
-	typeHead = "Head" // head of the peer's patch log for an object.
+	typeHead    = "Head" // head of the peer's patch log for an object.
+	typeObject  = "Object"
+	typeAccount = "Account"
+	typePeer    = "Peer"
 )
 
 var graphSchema = badgergraph.NewSchema()
 
+func init() {
+	graphSchema.RegisterType(typeHead)
+	graphSchema.RegisterType(typeObject)
+	graphSchema.RegisterType(typeAccount)
+	graphSchema.RegisterType(typePeer)
+}
+
 var (
-	// Encodes multicodec of the cid in its text form.
-	pCIDCodec = graphSchema.RegisterPredicate(typeCID, badgergraph.Predicate{
-		Name:     "codec",
+	pAccountPeer = graphSchema.RegisterPredicate(typeAccount, badgergraph.Predicate{
+		Name:     "peer",
 		HasIndex: true,
-		Type:     badgergraph.ValueTypeString,
+		Type:     badgergraph.ValueTypeUID,
+		IsList:   true,
 	})
 
 	pHeadData = graphSchema.RegisterPredicate(typeHead, badgergraph.Predicate{

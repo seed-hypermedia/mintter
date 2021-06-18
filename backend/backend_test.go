@@ -58,11 +58,11 @@ func TestAccountVerifiedOnConnect(t *testing.T) {
 	verified = <-out
 	require.Equal(t, want[verified.Account.String()], verified.Device.String())
 
-	bobacc, err := alice.GetAccountForDevice(bob.repo.device.id)
+	bobacc, err := alice.GetAccountForDevice(ctx, bob.repo.device.id)
 	require.NoError(t, err)
 	require.Equal(t, bob.repo.acc.id.String(), bobacc.String())
 
-	aliceacc, err := bob.GetAccountForDevice(alice.repo.device.id)
+	aliceacc, err := bob.GetAccountForDevice(ctx, alice.repo.device.id)
 	require.NoError(t, err)
 	require.Equal(t, alice.repo.acc.id.String(), aliceacc.String())
 
