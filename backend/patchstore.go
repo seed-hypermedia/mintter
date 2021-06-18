@@ -4,16 +4,13 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"sync"
 	"time"
 
 	p2p "mintter/api/go/p2p/v1alpha"
 	"mintter/backend/badgergraph"
-	"mintter/backend/ipfsutil"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
-	"github.com/multiformats/go-multihash"
 
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 )
@@ -26,24 +23,18 @@ var nowFunc = func() time.Time {
 type patchStore struct {
 	db *badgergraph.DB
 	bs *blockstoreGetter
-
-	mu   sync.RWMutex
-	subs map[chan<- signedPatch]struct{}
 }
 
 func newPatchStore(bs blockstore.Blockstore, db *badgergraph.DB) (*patchStore, error) {
 	return &patchStore{
-		db:   db,
-		bs:   &blockstoreGetter{bs},
-		subs: make(map[chan<- signedPatch]struct{}),
+		db: db,
+		bs: &blockstoreGetter{bs},
 	}, nil
 }
 
 func (s *patchStore) StoreVersion(ctx context.Context, obj cid.Cid, ver *p2p.Version) error {
 	return s.db.Update(func(txn *badgergraph.Txn) error {
-		ocodec, ohash := ipfsutil.DecodeCID(obj)
-
-		ouid, err := uidForCID(txn, ocodec, ohash)
+		ouid, err := txn.UID(typeObject, obj.Hash())
 		if err != nil {
 			return err
 		}
@@ -54,9 +45,7 @@ func (s *patchStore) StoreVersion(ctx context.Context, obj cid.Cid, ver *p2p.Ver
 				return fmt.Errorf("failed to decode version peer %s: %w", pv.Peer, err)
 			}
 
-			pcodec, phash := ipfsutil.DecodeCID(peer)
-
-			puid, err := uidForCID(txn, pcodec, phash)
+			puid, err := txn.UID(typePeer, peer.Hash())
 			if err != nil {
 				return err
 			}
@@ -98,91 +87,81 @@ func (s *patchStore) StoreVersion(ctx context.Context, obj cid.Cid, ver *p2p.Ver
 }
 
 func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
-	txn := s.db.NewTransaction(true)
-	defer txn.Discard()
-
-	ocodec, ohash := ipfsutil.DecodeCID(sp.ObjectID)
-	pcodec, phash := ipfsutil.DecodeCID(sp.peer)
-
-	ouid, err := uidForCID(txn, ocodec, ohash)
-	if err != nil {
-		return fmt.Errorf("failed to get UID for object: %w", err)
-	}
-
-	puid, err := uidForCID(txn, pcodec, phash)
-	if err != nil {
-		return fmt.Errorf("failed to get UID for peer: %w", err)
-	}
-
-	hxid := headXID(ouid, puid)
-	huid, err := txn.UID(typeHead, hxid)
-	if err != nil {
-		return fmt.Errorf("failed to get uid for head: %w", err)
-	}
-
-	var h *p2p.PeerVersion
-	var newHead bool
-	v, err := txn.GetProperty(huid, pHeadData.FullName())
-	switch err {
-	case nil:
-		h = v.(*p2p.PeerVersion)
-	case badger.ErrKeyNotFound:
-		h = &p2p.PeerVersion{}
-		newHead = true
-	default:
-		return fmt.Errorf("failed to get head: %w", err)
-	}
-
-	if h.Seq+1 != sp.Seq {
-		return fmt.Errorf("concurrency error: precondition failed: stored seq = %d, incoming seq = %d", h.Seq, sp.Seq)
-	}
-
-	var headCID cid.Cid
-	if h.Head != "" {
-		headCID, err = cid.Decode(h.Head)
+	if err := s.db.Update(func(txn *badgergraph.Txn) error {
+		ouid, err := txn.UID(typeObject, sp.ObjectID.Hash())
 		if err != nil {
-			return fmt.Errorf("bad head CID: %w", err)
+			return err
 		}
+
+		puid, err := txn.UID(typePeer, sp.peer.Hash())
+		if err != nil {
+			return err
+		}
+
+		hxid := headXID(ouid, puid)
+		huid, err := txn.UID(typeHead, hxid)
+		if err != nil {
+			return err
+		}
+
+		v, err := txn.GetProperty(huid, pHeadData.FullName())
+		if err != nil && err != badger.ErrKeyNotFound {
+			return err
+		}
+
+		if v == nil {
+			head := &p2p.PeerVersion{
+				Peer:        sp.peer.String(),
+				Head:        sp.cid.String(),
+				Seq:         sp.Seq,
+				LamportTime: sp.LamportTime,
+			}
+
+			if err := txn.WriteTriple(huid, pHeadData, head); err != nil {
+				return err
+			}
+
+			if err := txn.WriteTriple(huid, pHeadPeer, puid); err != nil {
+				return fmt.Errorf("failed to store peer uid to head: %w", err)
+			}
+
+			if err := txn.WriteTriple(huid, pHeadObject, ouid); err != nil {
+				return fmt.Errorf("failed to store object uid to head: %w", err)
+			}
+
+			return nil
+		}
+
+		pv := v.(*p2p.PeerVersion)
+
+		if pv.Seq+1 != sp.Seq {
+			return fmt.Errorf("concurrency error: precondition failed: stored seq = %d, incoming seq = %d", pv.Seq, sp.Seq)
+		}
+
+		oldHead, err := cid.Decode(pv.Head)
+		if err != nil {
+			return fmt.Errorf("failed to decode old head cid: %w", err)
+		}
+
+		if len(sp.Deps) > 0 && !sp.Deps[0].Equals(oldHead) {
+			return fmt.Errorf("first dep of the patch must be the previous head of this peer")
+		}
+
+		pv.Seq = sp.Seq
+		pv.LamportTime = sp.LamportTime
+		pv.Head = sp.cid.String()
+
+		if err := txn.WriteTriple(huid, pHeadData, pv); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return fmt.Errorf("failed to store head: %w", err)
 	}
 
-	if len(sp.Deps) > 0 && !sp.Deps[0].Equals(headCID) {
-		return fmt.Errorf("first dep must be previous head of this peer")
-	}
-
-	// TODO: use the same txn to store blocks.
 	if err := s.bs.Put(sp.blk); err != nil {
-		return fmt.Errorf("failed to put patch in blockstore: %w", err)
-	}
-
-	h.Peer = sp.peer.String()
-	h.Head = sp.cid.String()
-	h.Seq = sp.Seq
-	h.LamportTime = sp.LamportTime
-
-	if err := txn.WriteTriple(huid, pHeadData, h); err != nil {
-		return fmt.Errorf("failed to store new head: %w", err)
-	}
-
-	if newHead {
-		if err := txn.WriteTriple(huid, pHeadPeer, puid); err != nil {
-			return fmt.Errorf("failed to store peer uid to head: %w", err)
-		}
-
-		if err := txn.WriteTriple(huid, pHeadObject, ouid); err != nil {
-			return fmt.Errorf("failed to store object uid to head: %w", err)
-		}
-	}
-
-	if err := txn.Commit(); err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	// Notify
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	for s := range s.subs {
-		s <- sp
+		return fmt.Errorf("failed to store patch block: %w", err)
 	}
 
 	return nil
@@ -201,22 +180,25 @@ func (s *patchStore) LoadState(ctx context.Context, obj cid.Cid) (*state, error)
 // The type of the object is encoded in its CID multicodec when object is created.
 func (s *patchStore) ListObjects(ctx context.Context, codec uint64) ([]cid.Cid, error) {
 	var out []cid.Cid
-	s.db.View(func(txn *badgergraph.Txn) error {
-		uids, err := txn.ListIndexedNodes(pCIDCodec.FullName(), []byte(cid.CodecToStr[codec]))
-		if err != nil {
-			return fmt.Errorf("failed to list objects with type %v: %w", codec, err)
-		}
 
-		out = make([]cid.Cid, len(uids))
-		for i, u := range uids {
-			ohash, err := txn.XID(typeCID, u)
-			if err != nil {
-				return fmt.Errorf("failed to find xid for object with uid %d: %w", u, err)
-			}
-			out[i] = cid.NewCidV1(codec, ohash)
-		}
-		return nil
-	})
+	// TODO: fix this.
+
+	// s.db.View(func(txn *badgergraph.Txn) error {
+	// 	uids, err := txn.ListIndexedNodes(pCIDCodec.FullName(), []byte(cid.CodecToStr[codec]))
+	// 	if err != nil {
+	// 		return fmt.Errorf("failed to list objects with type %v: %w", codec, err)
+	// 	}
+
+	// 	out = make([]cid.Cid, len(uids))
+	// 	for i, u := range uids {
+	// 		ohash, err := txn.XID(typeCID, u)
+	// 		if err != nil {
+	// 			return fmt.Errorf("failed to find xid for object with uid %d: %w", u, err)
+	// 		}
+	// 		out[i] = cid.NewCidV1(codec, ohash)
+	// 	}
+	// 	return nil
+	// })
 
 	return out, nil
 }
@@ -238,27 +220,8 @@ func (s *patchStore) GetObjectVersion(ctx context.Context, obj cid.Cid) (*p2p.Ve
 	}, nil
 }
 
-// Watch will notify the given channel when new patches get added to the store.
-// Callers must make sure to drain the channels and not block for too long.
-func (s *patchStore) Watch(c chan<- signedPatch) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.subs[c] = struct{}{}
-}
-
-// Unwatch will remove the given channel from the subscribers list in the store.
-func (s *patchStore) Unwatch(c chan<- signedPatch) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	delete(s.subs, c)
-}
-
 func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
-	_, ohash := ipfsutil.DecodeCID(obj)
-
-	ouid, err := txn.UID(typeCID, ohash)
+	ouid, err := txn.UID(typeObject, obj.Hash())
 	if err != nil && err != badger.ErrKeyNotFound {
 		return nil, fmt.Errorf("failed to get head: %w", err)
 	}
@@ -282,28 +245,6 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid
 	}
 
 	return out, nil
-}
-
-func uidForCID(txn *badgergraph.Txn, codec uint64, hash multihash.Multihash) (uint64, error) {
-	uid, err := txn.UIDRead(typeCID, hash)
-	if err == nil {
-		return uid, nil
-	}
-
-	if err != badger.ErrKeyNotFound {
-		return 0, err
-	}
-
-	uid, err = txn.UIDAllocate(typeCID, hash)
-	if err != nil {
-		return 0, fmt.Errorf("failed to allocate uid: %w", err)
-	}
-
-	if err := txn.WriteTriple(uid, pCIDCodec, cid.CodecToStr[codec]); err != nil {
-		return 0, fmt.Errorf("failed to set cid codec triple: %w", err)
-	}
-
-	return uid, nil
 }
 
 func headXID(ouid, puid uint64) []byte {

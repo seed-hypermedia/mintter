@@ -3,6 +3,7 @@ package badgergraph
 import (
 	"encoding/binary"
 	"fmt"
+	"reflect"
 
 	"github.com/dgraph-io/badger/v3"
 	"google.golang.org/protobuf/proto"
@@ -13,6 +14,20 @@ const (
 	predicateXID      = "$xid" // predicate suffix for node's external id.
 	predicateNodeType = "$type"
 )
+
+var nodeTypePredicate = Predicate{
+	node:     "!internal!",
+	fullName: predicateNodeType, // This predicate doesn't have nodetype prefix because we want to index across all node types.
+	Name:     predicateNodeType,
+	HasIndex: true,
+	IsList:   false,
+	Type:     ValueTypeString,
+}
+
+// NodeTypePredicate returns the internal predicate that can be used to query node types.
+func NodeTypePredicate() Predicate {
+	return nodeTypePredicate
+}
 
 // SchemaRegistry holds the schema of the graph.
 type SchemaRegistry struct {
@@ -30,19 +45,13 @@ func NewSchema() SchemaRegistry {
 func (reg *SchemaRegistry) RegisterType(nodeType string) {
 	_, ok := reg.schema[nodeType]
 	if ok {
-		panic("type is already registered")
+		// panic("type is already registered: " + nodeType)
+		return
 	}
 
 	fields := make(map[string]Predicate)
 	// Add internal predicate for external ids and node types.
-	fields[predicateNodeType] = Predicate{
-		node:     "!internal!",
-		fullName: predicateNodeType, // This predicate doesn't have nodetype prefix because we want to index across all node types.
-		Name:     predicateNodeType,
-		HasIndex: true,
-		IsList:   false,
-		Type:     ValueTypeString,
-	}
+	fields[predicateNodeType] = nodeTypePredicate
 	xid := nodeType + "." + predicateXID
 	fields[predicateXID] = Predicate{
 		node:     nodeType,
@@ -133,7 +142,7 @@ func (p Predicate) NodeType() string {
 func encodeValue(v interface{}, t ValueType) ([]byte, error) {
 	switch t {
 	case ValueTypeUnset:
-		panic("BUG: unset value type")
+		panic("BUG: unset value type " + reflect.TypeOf(v).String())
 	case ValueTypeBinary:
 		vv := v.([]byte)
 		out := make([]byte, len(vv))

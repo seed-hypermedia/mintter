@@ -69,7 +69,7 @@ func MakeBadgerV3(t *testing.T) *badger.DB {
 func MakeRepoPath(t *testing.T) string {
 	t.Helper()
 
-	dir, err := ioutil.TempDir("", "mintter-repo")
+	dir, err := ioutil.TempDir("", "mintter-repo-*")
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
