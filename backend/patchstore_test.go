@@ -12,6 +12,7 @@ import (
 	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
 func init() {
@@ -152,7 +153,7 @@ func makeTestPatchStore(t *testing.T, name string) *testPatchStore {
 		require.NoError(t, db.Close())
 	})
 
-	store, err := newPatchStore(bs, db)
+	store, err := newPatchStore(zap.NewNop(), bs, db)
 	require.NoError(t, err)
 
 	return &testPatchStore{

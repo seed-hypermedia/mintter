@@ -6,6 +6,7 @@ import (
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-datastore"
+	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
@@ -19,7 +20,7 @@ var moduleBackend = fx.Options(
 		provideRepo,
 		provideBadger,
 		provideBadgerGraph,
-		newPatchStore,
+		providePatchStore,
 		provideBackend,
 	),
 	// We have to make this trick so that we ensure proper shutdown order:
@@ -54,6 +55,10 @@ func NewLogger(cfg config.Config) *zap.Logger {
 		panic(err)
 	}
 	return log
+}
+
+func providePatchStore(log *zap.Logger, bs blockstore.Blockstore, db *badgergraph.DB) (*patchStore, error) {
+	return newPatchStore(log.Named("patch-store"), bs, db)
 }
 
 func provideBackend(lc fx.Lifecycle, stop fx.Shutdowner, log *zap.Logger, r *repo, store *patchStore, p2p *p2pNode) (*backend, error) {
