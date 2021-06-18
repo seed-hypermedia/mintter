@@ -42,7 +42,7 @@ func (srv *networkingAPI) GetPeerInfo(ctx context.Context, in *networking.GetPee
 
 	connectedness := srv.back.p2p.libp2p.Network().Connectedness(deviceID.PeerID())
 
-	aid, err := srv.back.GetAccountForDevice(deviceID)
+	aid, err := srv.back.GetAccountForDevice(ctx, deviceID)
 	if err != nil {
 		return nil, err
 	}

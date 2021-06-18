@@ -12,7 +12,6 @@ import (
 	"github.com/libp2p/go-libp2p-core/event"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/libp2p/go-libp2p-core/peerstore"
 	gostream "github.com/libp2p/go-libp2p-gostream"
 	swarm "github.com/libp2p/go-libp2p-swarm"
 	"github.com/lightningnetwork/lnd/aezeed"
@@ -29,7 +28,6 @@ import (
 
 	accounts "mintter/api/go/accounts/v1alpha"
 	p2p "mintter/api/go/p2p/v1alpha"
-	"mintter/backend/badgergraph"
 	"mintter/backend/cleanup"
 )
 
@@ -37,7 +35,7 @@ import (
 type backend struct {
 	log     *zap.Logger
 	repo    *repo
-	db      *badgergraph.DB
+	db      *graphdb
 	patches *patchStore
 	p2p     *p2pNode
 
@@ -58,7 +56,7 @@ func newBackend(log *zap.Logger, r *repo, store *patchStore, p2p *p2pNode) *back
 	srv := &backend{
 		log:       log,
 		repo:      r,
-		db:        store.db,
+		db:        &graphdb{store.db},
 		patches:   store,
 		startTime: time.Now().UTC(),
 		p2p:       p2p,
@@ -313,7 +311,7 @@ func (srv *backend) GetDeviceAddrs(d DeviceID) ([]multiaddr.Multiaddr, error) {
 	return peer.AddrInfoToP2pAddrs(&info)
 }
 
-func (srv *backend) GetAccountForDevice(d DeviceID) (AccountID, error) {
+func (srv *backend) GetAccountForDevice(ctx context.Context, d DeviceID) (AccountID, error) {
 	if srv.repo.device.ID().Equals(d) {
 		acc, err := srv.repo.Account()
 		if err != nil {
@@ -323,20 +321,7 @@ func (srv *backend) GetAccountForDevice(d DeviceID) (AccountID, error) {
 		return acc.id, nil
 	}
 
-	v, err := srv.p2p.libp2p.Peerstore().Get(d.PeerID(), metadataKeyAccount)
-	if err == peerstore.ErrNotFound {
-		return AccountID{}, status.Error(codes.NotFound, "not found")
-	}
-	if err != nil {
-		return AccountID{}, err
-	}
-
-	c, err := cid.Cast(v.([]byte))
-	if err != nil {
-		return AccountID{}, fmt.Errorf("failed to decode account id as CID: %w", err)
-	}
-
-	return AccountID(c), nil
+	return srv.db.GetDeviceAccount(ctx, d)
 }
 
 func (srv *backend) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) error {
@@ -375,26 +360,35 @@ func (srv *backend) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) e
 }
 
 func (srv *backend) ListAccounts(ctx context.Context) ([]*accounts.Account, error) {
-	objects, err := srv.patches.ListObjects(ctx, codecAccountID)
+	objects, err := srv.db.ListAccounts(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get list of account ids: %w", err)
 	}
 
 	out := make([]*accounts.Account, len(objects))
 
-	// TODO: do this concurrently.
+	g, ctx := errgroup.WithContext(ctx)
+
 	for i, c := range objects {
-		state, err := srv.patches.LoadState(ctx, c)
-		if err != nil {
-			return nil, err
-		}
+		i, c := i, c
+		g.Go(func() error {
+			state, err := srv.patches.LoadState(ctx, c)
+			if err != nil {
+				return err
+			}
 
-		account, err := accountFromState(state)
-		if err != nil {
-			return nil, err
-		}
+			account, err := accountFromState(state)
+			if err != nil {
+				return err
+			}
+			out[i] = account
 
-		out[i] = account
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, fmt.Errorf("failed to resolve accounts: %w", err)
 	}
 
 	return out, nil
@@ -434,8 +428,6 @@ func (srv *backend) emitEvent(ctx context.Context, evt interface{}) {
 		}
 	}
 }
-
-const metadataKeyAccount = "mintterAccount"
 
 func (srv *backend) handleLibp2pEvent(ctx context.Context, evt interface{}) error {
 	switch e := evt.(type) {
@@ -515,8 +507,8 @@ func (srv *backend) handleMintterPeer(ctx context.Context, pid peer.ID) error {
 		return fmt.Errorf("failed to store version: %w", err)
 	}
 
-	if err := srv.p2p.libp2p.Peerstore().Put(pid, metadataKeyAccount, aid.Bytes()); err != nil {
-		return fmt.Errorf("failed to store account of a peer: %w", err)
+	if err := srv.db.StoreDevice(ctx, AccountID(aid), DeviceID(deviceID)); err != nil {
+		return fmt.Errorf("failed to store device of the connected peer %s: %w", deviceID, err)
 	}
 
 	srv.emitEvent(ctx, accountVerified{
@@ -546,6 +538,10 @@ func (srv *backend) register(ctx context.Context, state *state, binding AccountB
 
 	if err := srv.patches.AddPatch(ctx, sp); err != nil {
 		return fmt.Errorf("failed to add patch: %w", err)
+	}
+
+	if err := srv.db.StoreDevice(ctx, AccountID(binding.Account), DeviceID(binding.Member)); err != nil {
+		return fmt.Errorf("failed to store own device-account relationship: %w", err)
 	}
 
 	return nil

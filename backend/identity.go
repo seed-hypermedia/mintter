@@ -32,6 +32,11 @@ const codecAccountID uint64 = 1091161161
 // AccountID is the CID representation of the Mintter Account ID.
 type AccountID cid.Cid
 
+// Hash returns the multihash part of the CID-encoded Account ID.
+func (aid AccountID) Hash() multihash.Multihash {
+	return cid.Cid(aid).Hash()
+}
+
 // Equals check if two Account IDs are equal.
 func (aid AccountID) Equals(a AccountID) bool {
 	return cid.Cid(aid).Equals(cid.Cid(a))
@@ -64,6 +69,11 @@ func (aid AccountID) IsZero() bool {
 
 // DeviceID is the Libp2p peer ID wrapped as a CID.
 type DeviceID cid.Cid
+
+// Hash returns the multihash part of the CID-encoded Device ID.
+func (did DeviceID) Hash() multihash.Multihash {
+	return cid.Cid(did).Hash()
+}
 
 // String returns string representation of the device ID.
 func (did DeviceID) String() string {
