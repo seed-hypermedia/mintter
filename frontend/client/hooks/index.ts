@@ -60,13 +60,9 @@ export function useInfo(options: HookOptions<Info> = {}) {
  * @returns
  */
 export function useDocument(documentId: string, options: HookOptions<Document> = {}) {
-  const documentQuery = useQuery<Document>(
-    ['Document', documentId],
-    () => getDocument(documentId, options.rpc),
-    {
-      enabled: !!documentId,
-    },
-  )
+  const documentQuery = useQuery<Document>(['Document', documentId], () => getDocument(documentId, options.rpc), {
+    enabled: !!documentId,
+  })
 
   const data = useMemo(() => documentQuery.data, [documentQuery.data])
 

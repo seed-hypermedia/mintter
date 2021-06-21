@@ -5,7 +5,6 @@ import type {ReactEditor} from 'slate-react'
 
 export function withQuote(): WithOverride<ReactEditor & SPEditor> {
   return (editor) => {
-    console.log({editor})
     const {deleteBackward, deleteFragment} = editor
 
     editor.deleteBackward = (unit) => {

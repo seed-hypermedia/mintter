@@ -12,47 +12,49 @@ import {SecurityPack} from './security-pack'
 import {ProfileInformation} from './profile-information'
 import {Complete} from './complete'
 
-const onboardingMachine = Machine({
-  id: 'onboarding',
-  initial: 'welcome',
-  states: {
-    // loading: {
-    //   on: {
-    //     NEXT: 'welcome',
-    //   },
-    // },
-    welcome: {
-      on: {
-        NEXT: 'securityPack',
+const createMachine = (machine = {}) =>
+  Machine({
+    id: 'onboarding',
+    initial: 'welcome',
+    states: {
+      // loading: {
+      //   on: {
+      //     NEXT: 'welcome',
+      //   },
+      // },
+      welcome: {
+        on: {
+          NEXT: 'securityPack',
+        },
+      },
+      securityPack: {
+        on: {
+          PREV: 'welcome',
+          NEXT: 'profileInformation',
+        },
+      },
+      profileInformation: {
+        on: {
+          PREV: 'securityPack',
+          NEXT: 'complete',
+        },
+      },
+      complete: {
+        type: 'final',
       },
     },
-    securityPack: {
-      on: {
-        PREV: 'welcome',
-        NEXT: 'profileInformation',
-      },
-    },
-    profileInformation: {
-      on: {
-        PREV: 'securityPack',
-        NEXT: 'complete',
-      },
-    },
-    complete: {
-      type: 'final',
-    },
-  },
-})
+    ...machine,
+  })
 
-export const OnboardingPage: React.FC = () => {
-  const [onboardingMachineState, sendToOnboardingMachine] = useMachine(onboardingMachine)
+export function OnboardingPage({machine = {}}: {machine?: any}) {
+  const [onboardingMachineState, send] = useMachine(createMachine(machine))
 
   const onboardingStepProps: OnboardingStepPropsType = useMemo(
     () => ({
-      prev: () => sendToOnboardingMachine('PREV'),
-      next: () => sendToOnboardingMachine('NEXT'),
+      prev: () => send('PREV'),
+      next: () => send('NEXT'),
     }),
-    [sendToOnboardingMachine],
+    [send],
   )
 
   // useEffect(() => {
