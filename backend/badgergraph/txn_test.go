@@ -1,6 +1,7 @@
 package badgergraph
 
 import (
+	"errors"
 	"testing"
 
 	"mintter/backend/testutil"
@@ -72,6 +73,48 @@ func TestSetGetProperty(t *testing.T) {
 	// require.NoError(t, err)
 }
 
+func TestPreallocateUIDs(t *testing.T) {
+	schema := NewSchema()
+	schema.RegisterType("Person")
+
+	db, err := NewDB(testutil.MakeBadgerV3(t), testNS, schema)
+	require.NoError(t, err)
+	defer func() {
+		require.NoError(t, db.Close())
+	}()
+
+	concurrency := 32
+	type result struct {
+		idx  int
+		err  error
+		uids []uint64
+	}
+
+	out := make(chan result, concurrency)
+	for i := 0; i < concurrency; i++ {
+		go func(i int) {
+			var res result
+			res.uids, res.err = db.PreallocateUIDs(
+				XID{NodeType: "Person", ID: []byte("alice")},
+				XID{NodeType: "Person", ID: []byte("bob")},
+				XID{NodeType: "Person", ID: []byte("carol")},
+			)
+			res.idx = i
+			out <- res
+		}(i)
+	}
+
+	var wantUIDs []uint64
+	for i := 0; i < concurrency; i++ {
+		res := <-out
+		if i == 0 {
+			wantUIDs = res.uids
+		}
+		require.NoError(t, res.err)
+		require.Equal(t, wantUIDs, res.uids)
+	}
+}
+
 func TestListIndexedNodes(t *testing.T) {
 	schema := NewSchema()
 	schema.RegisterType("Person")
@@ -103,6 +146,50 @@ func TestListIndexedNodes(t *testing.T) {
 		return nil
 	})
 	require.NoError(t, err)
+}
+
+func TestUIDConcurrent(t *testing.T) {
+	schema := NewSchema()
+	schema.RegisterType("Peer")
+	db, err := NewDB(testutil.MakeBadgerV3(t), testNS, schema)
+	require.NoError(t, err)
+	defer func() {
+		require.NoError(t, db.Close())
+	}()
+
+	concurrency := 15
+
+	type result struct {
+		err error
+		uid uint64
+		idx int
+	}
+
+	done := make(chan result, concurrency)
+
+	for i := 0; i < concurrency; i++ {
+		go func(i int) {
+		start:
+			var res result
+			err := db.Update(func(txn *Txn) error {
+				uid, err := txn.UID("Peer", []byte("peer-id"))
+				res.uid = uid
+				return err
+			})
+			if errors.Is(err, badger.ErrConflict) {
+				goto start
+			}
+			res.err = err
+			res.idx = i
+			done <- res
+		}(i)
+	}
+
+	for i := 0; i < concurrency; i++ {
+		res := <-done
+		require.NoErrorf(t, res.err, "failed to allocate UID: worker %d", res.idx+1)
+		require.Equal(t, uint64(1), res.uid, "allocated uid didn't reuse the value")
+	}
 }
 
 func TestUID(t *testing.T) {

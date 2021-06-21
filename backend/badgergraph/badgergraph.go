@@ -21,7 +21,7 @@ type DB struct {
 
 // NewDB creates a new DB instance.
 func NewDB(b *badger.DB, namespace string, schema SchemaRegistry) (*DB, error) {
-	uidsKey, _ := makeKey(namespace, PrefixInternal, KeyTypeData, "last-uid", 0)
+	uidsKey, _ := makeKey(namespace, prefixInternal, keyTypeData, "last-uid", 0)
 
 	// We want our uid sequence to start from 1, so we do all this crazyness
 	// to detect if we need to waist the 0 sequence.
@@ -53,7 +53,7 @@ func NewDB(b *badger.DB, namespace string, schema SchemaRegistry) (*DB, error) {
 		}
 	}
 
-	ck, _ := makeKey(namespace, PrefixInternal, KeyTypeData, "cardinality", 0)
+	ck, _ := makeKey(namespace, prefixInternal, keyTypeData, "cardinality", 0)
 	cardinality, err := b.GetSequence(ck, 500) // We can afford larger bandwidth here.
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cardinality sequence: %w", err)
@@ -66,6 +66,39 @@ func NewDB(b *badger.DB, namespace string, schema SchemaRegistry) (*DB, error) {
 		ns:          namespace,
 		cardinality: cardinality,
 	}, nil
+}
+
+type XID struct {
+	NodeType string
+	ID       []byte
+}
+
+// PreallocateUIDs allocates a bunch of UIDs, or returns existing ones.
+func (db *DB) PreallocateUIDs(xids ...XID) ([]uint64, error) {
+	// TODO: implement cache here so that it's faster to get already allocated UIDs.
+	out := make([]uint64, len(xids))
+
+retry:
+	err := db.Update(func(txn *Txn) error {
+		for i, x := range xids {
+			uid, err := txn.UID(x.NodeType, x.ID)
+			if err != nil {
+				return err
+			}
+			out[i] = uid
+		}
+		return nil
+	})
+
+	if err == badger.ErrConflict {
+		goto retry
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get uids: %w", err)
+	}
+
+	return out, nil
 }
 
 // Close the underlying resources of the database.

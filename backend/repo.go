@@ -28,7 +28,7 @@ Repo layout v1 file tree:
 */
 
 const (
-	currentRepoLayoutVersion = "v1"
+	currentRepoLayoutVersion = "dev-1" // TODO: when layout is stable set a correct version here.
 
 	keysDir      = "keys"
 	providingDir = "providing"
@@ -269,7 +269,7 @@ func migrateRepo(path string) error {
 	}
 
 	if !bytes.Equal(ver, []byte(currentRepoLayoutVersion)) {
-		return fmt.Errorf("unsupported repo layout version: got = %s, want = %s", ver, currentRepoLayoutVersion)
+		return fmt.Errorf("incompatible repo version: got = %s, want = %s; try a different directory for repo path", ver, currentRepoLayoutVersion)
 	}
 
 	return nil

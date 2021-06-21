@@ -16,47 +16,42 @@ import (
 	"go.uber.org/fx/fxtest"
 	"go.uber.org/zap"
 
+	accounts "mintter/api/go/accounts/v1alpha"
 	"mintter/backend/badger3ds"
 	"mintter/backend/config"
 	"mintter/backend/ipfsutil"
 	"mintter/backend/testutil"
 )
 
+func TestObjectUpdateSync(t *testing.T) {
+	t.SkipNow() // TODO: finish the test.
+	alice := makeTestBackend(t, "alice", true)
+	bob := makeTestBackend(t, "bob", true)
+	ctx := context.Background()
+
+	connectPeers(t, ctx, alice, bob, true)
+
+	aliceAccount, err := alice.UpdateProfile(ctx, &accounts.Profile{
+		Alias: "I just updated my profile",
+	})
+	require.NoError(t, err)
+
+	time.Sleep(10 * time.Second)
+
+	state, err := bob.GetAccountState(ctx, alice.repo.acc.id)
+	require.NoError(t, err)
+	aliceFromBob, err := accountFromState(state)
+	require.NoError(t, err)
+
+	testutil.ProtoEqual(t, aliceAccount, aliceFromBob, "bob must get a profile update from alice")
+}
+
 func TestAccountVerifiedOnConnect(t *testing.T) {
 	alice := makeTestBackend(t, "alice", true)
 	bob := makeTestBackend(t, "bob", true)
 	ctx := context.Background()
 
-	ac := make(chan interface{}, 2)
-
-	alice.Subscribe(ac)
-	bob.Subscribe(ac)
-
-	out := make(chan accountVerified, 2)
-
-	go func() {
-		for evt := range ac {
-			verified, ok := evt.(accountVerified)
-			if !ok {
-				continue
-			}
-			out <- verified
-		}
-	}()
-
-	want := map[string]string{
-		alice.repo.acc.id.String(): alice.repo.device.id.String(),
-		bob.repo.acc.id.String():   bob.repo.device.id.String(),
-	}
-
-	connectPeers(t, ctx, alice, bob)
-
-	// Both Alice and Bob must receive an event after identifying each other.
-
-	verified := <-out
-	require.Equal(t, want[verified.Account.String()], verified.Device.String())
-	verified = <-out
-	require.Equal(t, want[verified.Account.String()], verified.Device.String())
+	connectPeers(t, ctx, alice, bob, true)
 
 	bobacc, err := alice.GetAccountForDevice(ctx, bob.repo.device.id)
 	require.NoError(t, err)
@@ -81,8 +76,8 @@ func TestProvideAccount(t *testing.T) {
 	carol := makeTestBackend(t, "carol", true)
 	ctx := context.Background()
 
-	connectPeers(t, ctx, alice, bob)
-	connectPeers(t, ctx, bob, carol)
+	connectPeers(t, ctx, alice, bob, false)
+	connectPeers(t, ctx, bob, carol, false)
 
 	time.Sleep(2 * time.Second)
 
@@ -106,10 +101,13 @@ func makeTestBackend(t *testing.T, name string, ready bool) *backend {
 	ds, err := badger3ds.NewDatastore(dsopts)
 	require.NoError(t, err)
 
+	log, err := zap.NewDevelopment()
+	require.NoError(t, err)
+
 	var back *backend
 	app := fxtest.New(t,
 		fx.Supply(
-			zap.NewNop(),
+			log,
 			config.P2P{
 				Addr:        "/ip4/0.0.0.0/tcp/0",
 				NoTLS:       true,
@@ -159,8 +157,49 @@ type Tester struct {
 	Binding AccountBinding
 }
 
-func connectPeers(t *testing.T, ctx context.Context, a, b *backend) {
+func connectPeers(t *testing.T, ctx context.Context, a, b *backend, waitVerify bool) {
 	t.Helper()
+
+	if waitVerify {
+		checkEvent := func(back *backend, want DeviceID) chan struct{} {
+			c := make(chan interface{}, 10)
+			done := make(chan struct{})
+
+			go func() {
+				for {
+					select {
+					case <-ctx.Done():
+						return
+					case evt, ok := <-c:
+						if !ok {
+							return
+						}
+
+						verified, ok := evt.(accountVerified)
+						if !ok {
+							continue
+						}
+
+						if verified.Device.Equals(want) {
+							close(done)
+						}
+					}
+				}
+			}()
+
+			back.Notify(c)
+
+			return done
+		}
+
+		adone := checkEvent(a, b.repo.device.id)
+		bdone := checkEvent(b, a.repo.device.id)
+
+		defer func() {
+			<-adone
+			<-bdone
+		}()
+	}
 
 	anode, err := a.readyIPFS()
 	require.NoError(t, err)
