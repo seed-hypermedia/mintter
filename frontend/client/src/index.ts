@@ -11,7 +11,6 @@ export {
   Device,
   DeviceRegistered,
   ProfileUpdated,
-  GrpcWebImpl as AccountsGrpcClient,
 } from '../.generated/accounts/v1alpha/accounts'
 export * from './accounts'
 
@@ -22,7 +21,6 @@ export {
   RegisterResponse,
   Info,
   GetInfoRequest,
-  GrpcWebImpl as DaemonGrpcClient,
 } from '../.generated/daemon/v1alpha/daemon'
 export * from './daemon'
 
@@ -40,7 +38,6 @@ export {
   PeerInfo,
   ObjectDiscoveryStatus,
   GetObjectDiscoveryStatusRequest,
-  GrpcWebImpl as NetworkingGrpcClient,
 } from '../.generated/networking/v1alpha/networking'
 export * from './networking'
 
@@ -74,8 +71,9 @@ export {
   TextRun,
   Image,
   Quote,
-  GrpcWebImpl as DocumentsGrpcClient,
 } from '../.generated/documents/v1alpha/documents'
+
+export {createGrpcClient} from './grpc-client'
 
 export * from './documents'
 export * from './drafts'
