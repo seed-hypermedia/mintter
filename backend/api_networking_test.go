@@ -10,6 +10,17 @@ import (
 	networking "mintter/api/go/networking/v1alpha"
 )
 
+func TestAPIConnect(t *testing.T) {
+	ctx := context.Background()
+	alice := newNetworkingAPI(makeTestBackend(t, "alice", true))
+	bob := newNetworkingAPI(makeTestBackend(t, "bob", true))
+
+	// TODO: implement a proper test.
+	_ = ctx
+	_ = alice
+	_ = bob
+}
+
 func TestNetworkingGetPeerInfo(t *testing.T) {
 	ctx := context.Background()
 	back := makeTestBackend(t, "alice", true)
