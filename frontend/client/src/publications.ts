@@ -5,7 +5,6 @@ import {
 } from '../.generated/documents/v1alpha/documents'
 import type {Publication, DocumentView} from '../.generated/documents/v1alpha/documents'
 import {mockPublication} from './mock'
-import {MINTTER_API_URL_DEFAULT} from '.'
 import {createGrpcClient, GrpcClient} from './grpc-client'
 
 /**
@@ -15,7 +14,7 @@ import {createGrpcClient, GrpcClient} from './grpc-client'
  * @returns
  */
 export function deletePublication(revision: string, rpc?: GrpcClient) {
-  rpc ||= createGrpcClient({host: MINTTER_API_URL_DEFAULT})
+  rpc ||= createGrpcClient()
   const request = DeletePublicationRequest.fromPartial({
     version: revision,
   })
