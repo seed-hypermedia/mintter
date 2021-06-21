@@ -61,6 +61,7 @@ export function ProfileInformation({next}: OnboardingStepPropsType): JSX.Element
           id="alias"
           name="alias"
           ref={register}
+          data-testid="alias-input"
           placeholder="Readable alias or username. Doesn't have to be unique."
         />
         <TextField
@@ -69,6 +70,7 @@ export function ProfileInformation({next}: OnboardingStepPropsType): JSX.Element
           label="Email"
           id="email"
           name="email"
+          data-testid="email-input"
           ref={register({
             // pattern: {
             //   // eslint-disable-next-line no-control-regex
@@ -86,13 +88,18 @@ export function ProfileInformation({next}: OnboardingStepPropsType): JSX.Element
           id="bio"
           name="bio"
           label="Bio"
+          data-testid="bio-input"
           ref={register}
           rows={4}
           placeholder="A little bit about yourself..."
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
-        <OnboardingStepButton type="submit" disabled={!formState.isValid || formState.isSubmitting}>
+        <OnboardingStepButton
+          type="submit"
+          data-testid="next-button"
+          disabled={!formState.isValid || formState.isSubmitting}
+        >
           Next
         </OnboardingStepButton>
       </OnboardingStepActions>
