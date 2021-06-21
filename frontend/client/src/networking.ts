@@ -1,6 +1,5 @@
 import {GetPeerInfoRequest, NetworkingClientImpl} from '../.generated/networking/v1alpha/networking'
 import type {PeerInfo} from '../.generated/networking/v1alpha/networking'
-import {MINTTER_API_URL_DEFAULT} from '.'
 import {createGrpcClient, GrpcClient} from './grpc-client'
 
 /**
@@ -10,7 +9,7 @@ import {createGrpcClient, GrpcClient} from './grpc-client'
  * @returns
  */
 export async function listPeerAddrs(peerId: string, rpc?: GrpcClient): Promise<PeerInfo['addrs']> {
-  rpc ||= createGrpcClient({host: MINTTER_API_URL_DEFAULT})
+  rpc ||= createGrpcClient()
   const request = GetPeerInfoRequest.fromPartial({peerId})
   const info = await new NetworkingClientImpl(rpc).GetPeerInfo(request)
   return info.addrs

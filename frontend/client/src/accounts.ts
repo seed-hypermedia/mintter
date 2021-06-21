@@ -1,7 +1,6 @@
 import {AccountsClientImpl, GetAccountRequest, ListAccountsRequest} from '../.generated/accounts/v1alpha/accounts'
 import type {Account, Profile} from '../.generated/accounts/v1alpha/accounts'
 import {GenSeedRequest, RegisterRequest, DaemonClientImpl} from '../.generated/daemon/v1alpha/daemon'
-import {MINTTER_API_URL_DEFAULT} from '.'
 import {createGrpcClient, GrpcClient} from './grpc-client'
 
 /**
@@ -11,7 +10,7 @@ import {createGrpcClient, GrpcClient} from './grpc-client'
  * @returns
  */
 export function generateSeed(aezeedPassphrase?: string, rpc?: GrpcClient) {
-  rpc ||= createGrpcClient({host: MINTTER_API_URL_DEFAULT})
+  rpc ||= createGrpcClient()
 
   const request = GenSeedRequest.fromPartial({})
 
@@ -32,7 +31,7 @@ export function registerAccount(
   walletPassword?: any,
   rpc?: GrpcClient,
 ) {
-  rpc ||= createGrpcClient({host: MINTTER_API_URL_DEFAULT})
+  rpc ||= createGrpcClient()
 
   const request = RegisterRequest.fromPartial({
     mnemonic: mnemonicList,
@@ -49,7 +48,7 @@ export function registerAccount(
  * @returns
  */
 export function updateAccount(profile: Profile, rpc?: GrpcClient) {
-  rpc ||= createGrpcClient({host: MINTTER_API_URL_DEFAULT})
+  rpc ||= createGrpcClient()
 
   return new AccountsClientImpl(rpc).UpdateProfile(profile)
 }
@@ -62,7 +61,7 @@ export function updateAccount(profile: Profile, rpc?: GrpcClient) {
  * @returns
  */
 export function listAccounts(pageSize?: number, pageToken?: string, rpc?: GrpcClient) {
-  rpc ||= createGrpcClient({host: MINTTER_API_URL_DEFAULT})
+  rpc ||= createGrpcClient()
 
   const request = ListAccountsRequest.fromPartial({
     pageSize,
@@ -78,7 +77,7 @@ export function listAccounts(pageSize?: number, pageToken?: string, rpc?: GrpcCl
  * @returns
  */
 export function getAccount(id: string, rpc?: GrpcClient): Promise<Account> {
-  rpc ||= createGrpcClient({host: MINTTER_API_URL_DEFAULT})
+  rpc ||= createGrpcClient()
 
   const request = GetAccountRequest.fromPartial({
     id,

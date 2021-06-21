@@ -1,7 +1,6 @@
 import {DraftsClientImpl, ListDraftsResponse, PublishDraftRequest} from '../.generated/documents/v1alpha/documents'
 import type {Document, DocumentView} from '../.generated/documents/v1alpha/documents'
 import {mockDocument} from './mock'
-import {MINTTER_API_URL_DEFAULT} from '.'
 import {createGrpcClient, GrpcClient} from './grpc-client'
 
 /**
@@ -54,7 +53,7 @@ export async function listDrafts(pageSize?: number, pageToken?: string, view?: D
  * @returns
  */
 export function publishDraft(documentId: string, rpc?: GrpcClient) {
-  rpc ||= createGrpcClient({host: MINTTER_API_URL_DEFAULT})
+  rpc ||= createGrpcClient()
   const request = PublishDraftRequest.fromPartial({documentId})
   return new DraftsClientImpl(rpc).PublishDraft(request)
 }
