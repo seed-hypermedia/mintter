@@ -91,6 +91,8 @@ func (p *Provider) Close() error {
 	return p.db.Close()
 }
 
+// TODO: add periodic GC for values that were not reprovided for too long.
+
 // StartReproviding starts the reprovider. It blocks and returns
 // an error if something fails or ctx gets canceled.
 // Caller should make sure routing is ready before calling this.

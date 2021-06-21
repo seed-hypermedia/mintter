@@ -101,6 +101,10 @@ func (reg *SchemaRegistry) RegisterPredicate(nodeType string, p Predicate) Predi
 	return p
 }
 
+func (reg *SchemaRegistry) xidPredicate(nodeType string) Predicate {
+	return reg.schema[nodeType][predicateXID]
+}
+
 // ValueType defines type of the stored value.
 type ValueType byte
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
 
 	"mintter/backend/badgergraph"
@@ -15,7 +16,8 @@ type graphdb struct {
 
 // StoreDevice stores the binding between account and device.
 func (db *graphdb) StoreDevice(ctx context.Context, aid AccountID, did DeviceID) error {
-	if err := db.db.Update(func(txn *badgergraph.Txn) error {
+retry:
+	err := db.db.Update(func(txn *badgergraph.Txn) error {
 		auid, err := txn.UID(typeAccount, aid.Hash())
 		if err != nil {
 			return err
@@ -31,11 +33,16 @@ func (db *graphdb) StoreDevice(ctx context.Context, aid AccountID, did DeviceID)
 		}
 
 		return nil
-	}); err != nil {
-		return fmt.Errorf("failed to store account-device binding %s-%s: %w", aid, did, err)
+	})
+	if err == nil {
+		return nil
 	}
 
-	return nil
+	if err == badger.ErrConflict {
+		goto retry
+	}
+
+	return fmt.Errorf("failed to store account-device binding %s-%s: %w", aid, did, err)
 }
 
 func (db *graphdb) GetDeviceAccount(ctx context.Context, did DeviceID) (aid AccountID, err error) {

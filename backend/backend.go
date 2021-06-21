@@ -48,8 +48,8 @@ type backend struct {
 	// dialOpts must only be used after P2P node is ready.
 	dialOpts []grpc.DialOption
 
-	subsMu sync.Mutex
-	subs   map[chan<- interface{}]struct{}
+	watchMu  sync.RWMutex
+	watchers map[chan<- interface{}]struct{}
 }
 
 func newBackend(log *zap.Logger, r *repo, store *patchStore, p2p *p2pNode) *backend {
@@ -74,7 +74,6 @@ func (srv *backend) Start(ctx context.Context) (err error) {
 	// yet, thus we don't want to start all the other services.
 	// So we wait until the repo is ready, then start the P2P node,
 	// wait until that one is ready, and then provide our own account on the DHT.
-
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -301,6 +300,15 @@ func (srv *backend) UpdateProfile(ctx context.Context, in *accounts.Profile) (*a
 	return account, nil
 }
 
+func (srv *backend) GetAccountState(ctx context.Context, aid AccountID) (*state, error) {
+	state, err := srv.patches.LoadState(ctx, cid.Cid(aid))
+	if err != nil {
+		return nil, fmt.Errorf("failed to load state for account %s: %w", aid, err)
+	}
+
+	return state, nil
+}
+
 func (srv *backend) GetDeviceAddrs(d DeviceID) ([]multiaddr.Multiaddr, error) {
 	ipfs, err := srv.readyIPFS()
 	if err != nil {
@@ -394,37 +402,38 @@ func (srv *backend) ListAccounts(ctx context.Context) ([]*accounts.Account, erro
 	return out, nil
 }
 
-// Subscribe will notify the given channel about the underlying events. Messages can get dropped for slow receivers.
-func (srv *backend) Subscribe(c chan<- interface{}) {
-	srv.subsMu.Lock()
-	if srv.subs == nil {
-		srv.subs = make(map[chan<- interface{}]struct{})
+// Notify will notify the given channel about the underlying events. Messages can get dropped for slow receivers.
+func (srv *backend) Notify(c chan<- interface{}) {
+	srv.watchMu.Lock()
+	if srv.watchers == nil {
+		srv.watchers = make(map[chan<- interface{}]struct{})
 	}
-	srv.subs[c] = struct{}{}
-	srv.subsMu.Unlock()
+	srv.watchers[c] = struct{}{}
+	srv.watchMu.Unlock()
 }
 
-// Unsubscribe will stop notifying the channel about the underlying events.
-func (srv *backend) Unsubscribe(c chan<- interface{}) {
-	srv.subsMu.Lock()
-	delete(srv.subs, c)
-	srv.subsMu.Unlock()
+// StopNotify will stop notifying the channel about the underlying events.
+func (srv *backend) StopNotify(c chan<- interface{}) {
+	srv.watchMu.Lock()
+	delete(srv.watchers, c)
+	srv.watchMu.Unlock()
 }
 
 // emitEvent notifies subscribers about an internal event that occurred.
 //
 // TODO: implement some event interface instead of an empty one.
 func (srv *backend) emitEvent(ctx context.Context, evt interface{}) {
-	srv.subsMu.Lock()
-	defer srv.subsMu.Unlock()
-	if srv.subs == nil {
+	srv.watchMu.RLock()
+	defer srv.watchMu.RUnlock()
+	if srv.watchers == nil {
 		return
 	}
 
-	for c := range srv.subs {
+	for c := range srv.watchers {
 		select {
+		case <-ctx.Done():
+			return
 		case c <- evt:
-		default:
 		}
 	}
 }

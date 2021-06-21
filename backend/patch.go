@@ -149,7 +149,20 @@ func resolvePatches(ctx context.Context, obj cid.Cid, ver *p2p.Version, bgetter 
 func mergeVersions(vers ...*p2p.Version) *p2p.Version {
 	merged := make(map[string]*p2p.PeerVersion)
 
+	var obj string
 	for _, v := range vers {
+		if v.ObjectId == "" {
+			panic("BUG: version without object id")
+		}
+
+		if obj == "" {
+			obj = v.ObjectId
+		}
+
+		if obj != v.ObjectId {
+			panic("BUG: merging versions of unrelated objects")
+		}
+
 		for _, pv := range v.VersionVector {
 			m := merged[pv.Peer]
 			if m == nil || pv.Seq > m.Seq {
@@ -159,6 +172,7 @@ func mergeVersions(vers ...*p2p.Version) *p2p.Version {
 	}
 
 	out := &p2p.Version{
+		ObjectId:      obj,
 		VersionVector: make([]*p2p.PeerVersion, len(merged)),
 	}
 

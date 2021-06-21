@@ -129,15 +129,12 @@ func makeStrategy(bs blockstore.Blockstore, patches *patchStore) providing.Strat
 		go func() {
 			defer close(out)
 
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				case c := <-oc:
-					out <- c
-				case c := <-bc:
-					out <- c
-				}
+			for c := range oc {
+				out <- c
+			}
+
+			for c := range bc {
+				out <- c
 			}
 		}()
 
