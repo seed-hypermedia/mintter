@@ -17,7 +17,7 @@ func TestKeys(t *testing.T) {
 				Namespace:   "test",
 				Predicate:   "follows",
 				Subject:     125,
-				KeyType:     KeyTypeData,
+				KeyType:     keyTypeData,
 				Cardinality: 126,
 			},
 		},
@@ -28,7 +28,7 @@ func TestKeys(t *testing.T) {
 				Predicate: "content",
 				Subject:   125,
 				Token:     []byte("term"),
-				KeyType:   KeyTypeIndex,
+				KeyType:   keyTypeIndex,
 			},
 		},
 		{
@@ -38,7 +38,7 @@ func TestKeys(t *testing.T) {
 				Predicate: "follows",
 				Subject:   125,
 				Object:    126,
-				KeyType:   KeyTypeReverse,
+				KeyType:   keyTypeReverse,
 			},
 		},
 	}

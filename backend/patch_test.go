@@ -42,17 +42,26 @@ func TestPatchesSort(t *testing.T) {
 
 func TestMergeVersions(t *testing.T) {
 	in := []*p2p.Version{
-		{VersionVector: []*p2p.PeerVersion{
-			{Peer: "p1", Head: "h1", Seq: 1},
-		}},
-		{VersionVector: []*p2p.PeerVersion{
-			{Peer: "p1", Head: "h5", Seq: 5},
-			{Peer: "p2", Head: "2h10", Seq: 10},
-		}},
-		{VersionVector: []*p2p.PeerVersion{
-			{Peer: "p3", Head: "3h5", Seq: 5},
-			{Peer: "p2", Head: "2h10", Seq: 10},
-		}},
+		{
+			ObjectId: "obj1",
+			VersionVector: []*p2p.PeerVersion{
+				{Peer: "p1", Head: "h1", Seq: 1},
+			},
+		},
+		{
+			ObjectId: "obj1",
+			VersionVector: []*p2p.PeerVersion{
+				{Peer: "p1", Head: "h5", Seq: 5},
+				{Peer: "p2", Head: "2h10", Seq: 10},
+			},
+		},
+		{
+			ObjectId: "obj1",
+			VersionVector: []*p2p.PeerVersion{
+				{Peer: "p3", Head: "3h5", Seq: 5},
+				{Peer: "p2", Head: "2h10", Seq: 10},
+			},
+		},
 	}
 
 	want := map[string]*p2p.PeerVersion{

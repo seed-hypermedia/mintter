@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/ipfs/go-cid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	accounts "mintter/api/go/accounts/v1alpha"
 )
@@ -24,19 +26,29 @@ func (srv *accountsAPI) GetAccount(ctx context.Context, in *accounts.GetAccountR
 		panic("BUG: not implemented searching other accounts yet")
 	}
 
-	acc, err := srv.back.repo.Account()
+	var aid AccountID
+	if in.Id == "" {
+		acc, err := srv.back.repo.Account()
+		if err != nil {
+			return nil, err
+		}
+		aid = acc.id
+	} else {
+		c, err := cid.Decode(in.Id)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "can't decode account id as CID: %v", err)
+		}
+		aid = AccountID(c)
+	}
+
+	state, err := srv.back.GetAccountState(ctx, aid)
 	if err != nil {
 		return nil, err
 	}
 
-	state, err := srv.back.patches.LoadState(ctx, cid.Cid(acc.id))
-	if err != nil {
-		return nil, fmt.Errorf("failed to load state for account %s: %w", acc.id, err)
-	}
-
 	account, err := accountFromState(state)
 	if err != nil {
-		return nil, fmt.Errorf("failed to hydrate account state %s: %w", acc.id, err)
+		return nil, fmt.Errorf("failed to hydrate account state %s: %w", aid, err)
 	}
 
 	return account, nil

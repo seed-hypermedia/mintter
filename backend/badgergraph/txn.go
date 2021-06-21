@@ -16,7 +16,9 @@ func (db *DB) NewTransaction(update bool) *Txn {
 	}
 }
 
-// Update wraps read-write transaction handling.
+// Update wraps read-write transaction handling. Make sure fn
+// doesn't have any side-effects, because it will be automatically retried
+// on transaction conflict.
 func (db *DB) Update(fn func(txn *Txn) error) error {
 	txn := db.NewTransaction(true)
 	defer txn.Discard()
@@ -44,9 +46,15 @@ type Txn struct {
 	canWrite bool
 }
 
-// XID returns external ID of a give UID. You have to know node type in advance.
+// XID returns external ID of a given UID. You have to know node type in advance.
 func (txn *Txn) XID(nodeType string, uid uint64) ([]byte, error) {
-	v, err := txn.GetProperty(uid, nodeType+".$xid")
+	k := revUIDKey(txn.db.ns, txn.db.schema.xidPredicate(nodeType), uid)
+	item, err := txn.Get(k)
+	if err != nil {
+		return nil, err
+	}
+
+	v, err := decodeValue(item)
 	if err != nil {
 		return nil, err
 	}
@@ -57,6 +65,10 @@ func (txn *Txn) XID(nodeType string, uid uint64) ([]byte, error) {
 // UID returns a UID for a given node type with a given external id.
 // New UIDs can only be allocated in the write mode, so this call will fail
 // in read-only transaction when there's no UID allocated already for this node.
+//
+// IMPORTANT: this may cause transaction conflicts on attempts to allocate UIDs
+// for the same node type and xid concurrently. The error must be handled by the caller.
+// If transaction is not safe to retry, preallocate UIDs in a separate transaction prior using them.
 func (txn *Txn) UID(nodeType string, xid []byte) (uint64, error) {
 	uid, err := txn.UIDRead(nodeType, xid)
 	if err == nil {
@@ -71,21 +83,27 @@ func (txn *Txn) UID(nodeType string, xid []byte) (uint64, error) {
 		return 0, err
 	}
 
-	return txn.UIDAllocate(nodeType, xid)
+	return txn.uidAllocate(nodeType, xid)
 }
 
 // UIDRead reads a previously allocated UID.
 func (txn *Txn) UIDRead(nodeType string, xid []byte) (uint64, error) {
-	xidPredicate := nodeType + ".$xid"
-	if xid == nil {
-		panic("BUG: can't allocate uids for nodes without external ids yet")
+	k := uidKey(txn.db.ns, txn.db.schema.xidPredicate(nodeType), xid)
+	item, err := txn.Get(k)
+	if err != nil {
+		return 0, err
 	}
 
-	return txn.GetIndexUnique(xidPredicate, xid)
+	v, err := decodeValue(item)
+	if err != nil {
+		return 0, err
+	}
+
+	return v.(uint64), nil
 }
 
-// UIDAllocate allocates a new uid for node type.
-func (txn *Txn) UIDAllocate(nodeType string, xid []byte) (uint64, error) {
+// uidAllocate allocates a new uid for node type.
+func (txn *Txn) uidAllocate(nodeType string, xid []byte) (uint64, error) {
 	if xid == nil {
 		panic("BUG: can't allocate uids for nodes without external ids yet")
 	}
@@ -99,7 +117,18 @@ func (txn *Txn) UIDAllocate(nodeType string, xid []byte) (uint64, error) {
 		return 0, err
 	}
 
-	if err := txn.WriteTriple(uid, txn.db.schema.schema[nodeType][predicateXID], xid); err != nil {
+	k := uidKey(txn.db.ns, txn.db.schema.xidPredicate(nodeType), xid)
+	data, err := encodeValue(uid, ValueTypeUID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to encode allocated uid: %w", err)
+	}
+
+	if err := txn.SetEntry(badger.NewEntry(k, data).WithMeta(byte(ValueTypeUID))); err != nil {
+		return 0, err
+	}
+
+	k = revUIDKey(txn.db.ns, txn.db.schema.xidPredicate(nodeType), uid)
+	if err := txn.SetEntry(badger.NewEntry(k, xid).WithMeta(byte(ValueTypeBinary))); err != nil {
 		return 0, err
 	}
 

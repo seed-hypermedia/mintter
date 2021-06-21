@@ -11,6 +11,7 @@ import (
 )
 
 type p2pAPI struct {
+	p2p.UnimplementedP2PServer
 	back *backend
 }
 

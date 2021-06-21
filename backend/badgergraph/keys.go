@@ -7,12 +7,12 @@ import (
 )
 
 const (
-	PrefixDefault  byte = 0x00
-	PrefixInternal byte = 0x02
+	prefixDefault  byte = 0x00
+	prefixInternal byte = 0x02
 
-	KeyTypeData    byte = 0x00
-	KeyTypeIndex   byte = 0x02
-	KeyTypeReverse byte = 0x04
+	keyTypeData    byte = 0x00
+	keyTypeIndex   byte = 0x02
+	keyTypeReverse byte = 0x04
 )
 
 type parsedKey struct {
@@ -41,7 +41,7 @@ func parseKey(namespace string, key []byte) (parsedKey, error) {
 	prefix := key[pos]
 	pos++
 
-	if prefix != PrefixDefault {
+	if prefix != prefixDefault {
 		return pk, fmt.Errorf("invalid key prefix %v", prefix)
 	}
 
@@ -54,7 +54,7 @@ func parseKey(namespace string, key []byte) (parsedKey, error) {
 	pos++
 
 	switch pk.KeyType {
-	case KeyTypeData:
+	case keyTypeData:
 		pk.Subject = binary.BigEndian.Uint64(key[pos:])
 		pos += 8
 		if pk.Subject == 0 {
@@ -66,7 +66,7 @@ func parseKey(namespace string, key []byte) (parsedKey, error) {
 		if pk.Cardinality == 0 {
 			return pk, fmt.Errorf("invalid ts value in key: %d", pk.Cardinality)
 		}
-	case KeyTypeIndex:
+	case keyTypeIndex:
 		tlen := int(binary.BigEndian.Uint16(key[pos:]))
 		pos += 2
 		pk.Token = key[pos : pos+tlen]
@@ -75,7 +75,7 @@ func parseKey(namespace string, key []byte) (parsedKey, error) {
 		if pk.Subject == 0 {
 			return pk, fmt.Errorf("invalid key subject")
 		}
-	case KeyTypeReverse:
+	case keyTypeReverse:
 		pk.Object = binary.BigEndian.Uint64(key[pos:])
 		pos += 8
 		if pk.Object == 0 {
@@ -98,7 +98,7 @@ func indexKey(namespace, predicate string, token []byte, subject uint64) []byte 
 		panic("token is too long")
 	}
 	tlen := uint16(l)
-	k, pos := makeKey(namespace, PrefixDefault, KeyTypeIndex, predicate, 2+l+8) // token size + token + subject
+	k, pos := makeKey(namespace, prefixDefault, keyTypeIndex, predicate, 2+l+8) // token size + token + subject
 	binary.BigEndian.PutUint16(k[pos:], tlen)
 	pos += 2
 	pos += copy(k[pos:], token)
@@ -112,7 +112,7 @@ func indexPrefix(namespace, predicate string, token []byte) []byte {
 		panic("token is too long")
 	}
 	tlen := uint16(l)
-	k, pos := makeKey(namespace, PrefixDefault, KeyTypeIndex, predicate, 2+l) // token size + token
+	k, pos := makeKey(namespace, prefixDefault, keyTypeIndex, predicate, 2+l) // token size + token
 	binary.BigEndian.PutUint16(k[pos:], tlen)
 	pos += 2
 	copy(k[pos:], token)
@@ -120,7 +120,7 @@ func indexPrefix(namespace, predicate string, token []byte) []byte {
 }
 
 func dataKey(namespace, predicate string, uid, cardinality uint64) []byte {
-	k, pos := makeKey(namespace, PrefixDefault, KeyTypeData, predicate, 8+8) // subject + cardinality
+	k, pos := makeKey(namespace, prefixDefault, keyTypeData, predicate, 8+8) // subject + cardinality
 	binary.BigEndian.PutUint64(k[pos:], uid)
 	pos += 8
 	binary.BigEndian.PutUint64(k[pos:], cardinality)
@@ -128,18 +128,18 @@ func dataKey(namespace, predicate string, uid, cardinality uint64) []byte {
 }
 
 func dataPrefix(namespace, predicate string) []byte {
-	k, _ := makeKey(namespace, PrefixDefault, KeyTypeData, predicate, 0)
+	k, _ := makeKey(namespace, prefixDefault, keyTypeData, predicate, 0)
 	return k
 }
 
 func dataPrefixSubject(namespace, predicate string, subject uint64) []byte {
-	k, pos := makeKey(namespace, PrefixDefault, KeyTypeData, predicate, 8) // subject + ts + idx.
+	k, pos := makeKey(namespace, prefixDefault, keyTypeData, predicate, 8) // subject + ts + idx.
 	binary.BigEndian.PutUint64(k[pos:], subject)
 	return k
 }
 
 func reverseKey(namespace, predicate string, object, subject uint64) []byte {
-	k, pos := makeKey(namespace, PrefixDefault, KeyTypeReverse, predicate, 8+8) // object, subject
+	k, pos := makeKey(namespace, prefixDefault, keyTypeReverse, predicate, 8+8) // object, subject
 	binary.BigEndian.PutUint64(k[pos:], object)
 	pos += 8
 	binary.BigEndian.PutUint64(k[pos:], subject)
@@ -147,8 +147,29 @@ func reverseKey(namespace, predicate string, object, subject uint64) []byte {
 }
 
 func reversePrefix(namespace, predicate string, object uint64) []byte {
-	k, pos := makeKey(namespace, PrefixDefault, KeyTypeReverse, predicate, 8)
+	k, pos := makeKey(namespace, prefixDefault, keyTypeReverse, predicate, 8)
 	binary.BigEndian.PutUint64(k[pos:], object)
+	return k
+}
+
+func uidKey(namespace string, p Predicate, xid []byte) []byte {
+	l := len(xid)
+	if l > math.MaxUint16 {
+		panic("xid is too long")
+	}
+	xidlen := uint16(l)
+	k, pos := makeKey(namespace, prefixInternal, keyTypeData, p.FullName(), 2+l)
+	binary.BigEndian.PutUint16(k[pos:], xidlen)
+	pos += 2
+	if l != copy(k[pos:], xid) {
+		panic("BUG: failed to copy xid buffer")
+	}
+	return k
+}
+
+func revUIDKey(namespace string, p Predicate, uid uint64) []byte {
+	k, pos := makeKey(namespace, prefixInternal, keyTypeIndex, p.FullName(), 8) // UID
+	binary.BigEndian.PutUint64(k[pos:], uid)
 	return k
 }
 

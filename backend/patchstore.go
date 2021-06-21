@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"sync"
 	"time"
 
 	p2p "mintter/api/go/p2p/v1alpha"
@@ -25,6 +26,9 @@ type patchStore struct {
 	log *zap.Logger
 	db  *badgergraph.DB
 	bs  *blockstoreGetter
+
+	watchMu  sync.RWMutex
+	watchers map[chan<- headUpdated]struct{}
 }
 
 func newPatchStore(log *zap.Logger, bs blockstore.Blockstore, db *badgergraph.DB) (*patchStore, error) {
@@ -36,7 +40,9 @@ func newPatchStore(log *zap.Logger, bs blockstore.Blockstore, db *badgergraph.DB
 }
 
 func (s *patchStore) StoreVersion(ctx context.Context, obj cid.Cid, ver *p2p.Version) error {
-	return s.db.Update(func(txn *badgergraph.Txn) error {
+retry:
+	notif := make([]*p2p.PeerVersion, 0, len(ver.VersionVector))
+	err := s.db.Update(func(txn *badgergraph.Txn) error {
 		ouid, err := txn.UID(typeObject, obj.Hash())
 		if err != nil {
 			return err
@@ -83,13 +89,31 @@ func (s *patchStore) StoreVersion(ctx context.Context, obj cid.Cid, ver *p2p.Ver
 			if err := txn.WriteTriple(huid, pHeadData, pv); err != nil {
 				return fmt.Errorf("failed to store new head: %w", err)
 			}
+
+			notif = append(notif, pv)
 		}
 
 		return nil
 	})
+	if err == nil {
+		for _, pv := range notif {
+			s.notify(ctx, headUpdated{
+				obj: obj,
+				pv:  pv,
+			})
+		}
+		return nil
+	}
+
+	if err == badger.ErrConflict {
+		goto retry
+	}
+
+	return fmt.Errorf("failed to commit transaction: %w", err)
 }
 
 func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
+	var newHead *p2p.PeerVersion
 	if err := s.db.Update(func(txn *badgergraph.Txn) error {
 		ouid, err := txn.UID(typeObject, sp.ObjectID.Hash())
 		if err != nil {
@@ -132,6 +156,8 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 				return fmt.Errorf("failed to store object uid to head: %w", err)
 			}
 
+			newHead = head
+
 			return nil
 		}
 
@@ -158,6 +184,8 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 			return err
 		}
 
+		newHead = pv
+
 		return nil
 	}); err != nil {
 		return fmt.Errorf("failed to store head: %w", err)
@@ -166,6 +194,11 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 	if err := s.bs.Put(sp.blk); err != nil {
 		return fmt.Errorf("failed to store patch block: %w", err)
 	}
+
+	s.notify(ctx, headUpdated{
+		obj: sp.ObjectID,
+		pv:  newHead,
+	})
 
 	return nil
 }
@@ -257,8 +290,46 @@ func (s *patchStore) GetObjectVersion(ctx context.Context, obj cid.Cid) (*p2p.Ve
 	}
 
 	return &p2p.Version{
+		ObjectId:      obj.String(),
 		VersionVector: out,
 	}, nil
+}
+
+func (s *patchStore) Notify(c chan<- headUpdated) {
+	s.watchMu.Lock()
+	defer s.watchMu.Unlock()
+	if s.watchers == nil {
+		s.watchers = make(map[chan<- headUpdated]struct{})
+	}
+	s.watchers[c] = struct{}{}
+}
+
+func (s *patchStore) StopNotify(c chan<- headUpdated) {
+	s.watchMu.Lock()
+	defer s.watchMu.Unlock()
+	delete(s.watchers, c)
+}
+
+func (s *patchStore) notify(ctx context.Context, evt headUpdated) {
+	s.watchMu.RLock()
+	defer s.watchMu.RUnlock()
+
+	if s.watchers == nil {
+		return
+	}
+
+	for c := range s.watchers {
+		select {
+		case <-ctx.Done():
+			return
+		case c <- evt:
+		}
+	}
+}
+
+type headUpdated struct {
+	obj cid.Cid
+	pv  *p2p.PeerVersion
 }
 
 func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
