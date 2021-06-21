@@ -1,5 +1,5 @@
-import type {GrpcWebImpl} from '../.generated/documents/v1alpha/documents'
 import {mockDocument} from './mock'
+import type {GrpcClient} from './grpc-client'
 
 /**
  *
@@ -7,7 +7,7 @@ import {mockDocument} from './mock'
  * @param rpc
  * @returns
  */
-export async function getDocument(id: string, rpc?: GrpcWebImpl) {
+export async function getDocument(id: string, rpc?: GrpcClient) {
   console.warn('called mocked function "getDocument"')
   return mockDocument({id})
 }
