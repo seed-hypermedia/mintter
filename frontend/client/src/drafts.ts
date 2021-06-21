@@ -1,19 +1,15 @@
-import {
-  DraftsClientImpl,
-  ListDraftsResponse,
-  PublishDraftRequest,
-  GrpcWebImpl,
-} from '../.generated/documents/v1alpha/documents'
+import {DraftsClientImpl, ListDraftsResponse, PublishDraftRequest} from '../.generated/documents/v1alpha/documents'
 import type {Document, DocumentView} from '../.generated/documents/v1alpha/documents'
 import {mockDocument} from './mock'
 import {MINTTER_API_URL_DEFAULT} from '.'
+import {createGrpcClient, GrpcClient} from './grpc-client'
 
 /**
  *
  * @param rpc
  * @returns
  */
-export async function createDraft(rpc?: GrpcWebImpl) {
+export async function createDraft(rpc?: GrpcClient) {
   console.warn('called mocked function "createDraft"')
   return mockDocument()
 }
@@ -23,7 +19,7 @@ export async function createDraft(rpc?: GrpcWebImpl) {
  * @param draftId
  * @param rpc
  */
-export async function deleteDraft(draftId: string, rpc?: GrpcWebImpl) {
+export async function deleteDraft(draftId: string, rpc?: GrpcClient) {
   console.warn('called mocked function "deleteDraft"')
 }
 
@@ -33,7 +29,7 @@ export async function deleteDraft(draftId: string, rpc?: GrpcWebImpl) {
  * @param rpc
  * @returns
  */
-export async function updateDraft(draft: Document, rpc?: GrpcWebImpl) {
+export async function updateDraft(draft: Document, rpc?: GrpcClient) {
   console.warn('called mocked function "updateDraft"')
   return document
 }
@@ -46,7 +42,7 @@ export async function updateDraft(draft: Document, rpc?: GrpcWebImpl) {
  * @param rpc
  * @returns
  */
-export async function listDrafts(pageSize?: number, pageToken?: string, view?: DocumentView, rpc?: GrpcWebImpl) {
+export async function listDrafts(pageSize?: number, pageToken?: string, view?: DocumentView, rpc?: GrpcClient) {
   console.warn('called mocked function "getDrafts"')
   return ListDraftsResponse.fromPartial({})
 }
@@ -57,8 +53,8 @@ export async function listDrafts(pageSize?: number, pageToken?: string, view?: D
  * @param rpc
  * @returns
  */
-export function publishDraft(documentId: string, rpc?: GrpcWebImpl) {
-  rpc ||= new GrpcWebImpl(MINTTER_API_URL_DEFAULT, {})
+export function publishDraft(documentId: string, rpc?: GrpcClient) {
+  rpc ||= createGrpcClient({host: MINTTER_API_URL_DEFAULT})
   const request = PublishDraftRequest.fromPartial({documentId})
   return new DraftsClientImpl(rpc).PublishDraft(request)
 }
@@ -69,7 +65,7 @@ export function publishDraft(documentId: string, rpc?: GrpcWebImpl) {
  * @param rpc
  * @returns
  */
-export async function getDraft(id: string, rpc?: GrpcWebImpl): Promise<Document> {
+export async function getDraft(id: string, rpc?: GrpcClient): Promise<Document> {
   console.warn('called mocked function "getDraft"')
   return mockDocument({id})
 }
