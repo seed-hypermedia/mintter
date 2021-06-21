@@ -27,7 +27,7 @@ import type {HookOptions} from './types'
  * @returns
  */
 export function useAccount(accountId = '', options: HookOptions<Account> = {}) {
-  const accountQuery = useQuery(['Account', accountId], () => getAccount(accountId, options.rpc as any), options)
+  const accountQuery = useQuery(['Account', accountId], () => getAccount(accountId, options.rpc), options)
 
   const data = useMemo(() => accountQuery.data, [accountQuery.data])
 
@@ -43,7 +43,7 @@ export function useAccount(accountId = '', options: HookOptions<Account> = {}) {
  * @returns
  */
 export function useInfo(options: HookOptions<Info> = {}) {
-  const infoQuery = useQuery(['GetInfo'], () => getInfo(options.rpc as any), options)
+  const infoQuery = useQuery(['GetInfo'], () => getInfo(options.rpc), options)
 
   const data = useMemo(() => infoQuery.data, [infoQuery.data])
 
@@ -62,7 +62,7 @@ export function useInfo(options: HookOptions<Info> = {}) {
 export function useDocument(documentId: string, options: HookOptions<Document> = {}) {
   const documentQuery = useQuery<Document>(
     ['Document', documentId],
-    () => getDocument(documentId, options.rpc as any),
+    () => getDocument(documentId, options.rpc),
     {
       enabled: !!documentId,
     },
@@ -99,7 +99,7 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
     ['Draft', draftId],
     async ({queryKey}) => {
       const [_key, draftId] = queryKey as [string, string]
-      return getDraft(draftId, options.rpc as any)
+      return getDraft(draftId, options.rpc)
     },
     {
       refetchOnWindowFocus: false,
@@ -164,7 +164,7 @@ export function usePublication(publicationId: string, version?: string, options:
     ['Publication', publicationId, version],
     async ({queryKey}) => {
       const [_key, publicationId, version] = queryKey as [string, string, string]
-      return getPublication(publicationId, version, options.rpc as any)
+      return getPublication(publicationId, version, options.rpc)
     },
     {
       refetchOnWindowFocus: false,
