@@ -1,5 +1,11 @@
 # @mintter/client
 
+## 0.2.1
+
+### Patch Changes
+
+- feat(envs): setup for multiple local backends and fronts
+
 ## 0.2.0
 
 ### Minor Changes

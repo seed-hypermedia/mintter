@@ -1,4 +1,4 @@
-export const MINTTER_API_URL_DEFAULT = 'http://localhost:55001'
+export const MINTTER_API_URL_DEFAULT = import.meta.env.VITE_MINTTER_API_URL ?? 'http://localhost:55001'
 
 export {
   GetAccountRequest,
@@ -11,7 +11,7 @@ export {
   Device,
   DeviceRegistered,
   ProfileUpdated,
-  GrpcWebImpl as AccountsGrpcClient
+  GrpcWebImpl as AccountsGrpcClient,
 } from '../.generated/accounts/v1alpha/accounts'
 export * from './accounts'
 
@@ -22,7 +22,7 @@ export {
   RegisterResponse,
   Info,
   GetInfoRequest,
-  GrpcWebImpl as DaemonGrpcClient
+  GrpcWebImpl as DaemonGrpcClient,
 } from '../.generated/daemon/v1alpha/daemon'
 export * from './daemon'
 
@@ -40,7 +40,7 @@ export {
   PeerInfo,
   ObjectDiscoveryStatus,
   GetObjectDiscoveryStatusRequest,
-  GrpcWebImpl as NetworkingGrpcClient
+  GrpcWebImpl as NetworkingGrpcClient,
 } from '../.generated/networking/v1alpha/networking'
 export * from './networking'
 
@@ -74,7 +74,7 @@ export {
   TextRun,
   Image,
   Quote,
-  GrpcWebImpl as DocumentsGrpcClient
+  GrpcWebImpl as DocumentsGrpcClient,
 } from '../.generated/documents/v1alpha/documents'
 
 export * from './documents'
