@@ -25,4 +25,6 @@ bazel-*
 
 # Backend code
 backend/ui/rice-box.go-e
-fallback
+
+# local backends
+_s*

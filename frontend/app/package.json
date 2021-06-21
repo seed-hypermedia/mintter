@@ -1,11 +1,12 @@
 {
   "name": "@mintter/app",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "vite",
+    "dev2": "VITE_MINTTER_API_URL=http://localhost:56001 && vite --port 4000",
     "build": "vite build",
     "serve": "vite preview",
     "test": "jest",
@@ -20,7 +21,7 @@
     "validate": "yarn check-types && yarn check-format && yarn lint && yarn test"
   },
   "dependencies": {
-    "@mintter/client": "^0.2.0",
+    "@mintter/client": "^0.2.1",
     "@mintter/ui": "^0.2.1",
     "@radix-ui/react-accessible-icon": "0.0.15",
     "@radix-ui/react-alert-dialog": "0.0.18",

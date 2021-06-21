@@ -1,5 +1,17 @@
 # @mintter/app
 
+## 0.3.0
+
+### Minor Changes
+
+- ad6f2fc7: feat(link-embed): paste interaction on link embeds
+
+### Patch Changes
+
+- feat(envs): setup for multiple local backends and fronts
+- Updated dependencies [undefined]
+  - @mintter/client@0.2.1
+
 ## 0.2.2
 
 ### Patch Changes

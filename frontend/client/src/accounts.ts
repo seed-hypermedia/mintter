@@ -83,7 +83,7 @@ export function listAccounts(pageSize?: number, pageToken?: string, rpc?: GrpcWe
  */
 export function getAccount(id: string, rpc?: GrpcWebImpl): Promise<Account> {
   rpc ||= new GrpcWebImpl(MINTTER_API_URL_DEFAULT, {})
-
+  console.log({MINTTER_API_URL_DEFAULT})
   const request = GetAccountRequest.fromPartial({
     id,
   })
