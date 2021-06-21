@@ -11,7 +11,6 @@ export {
   Device,
   DeviceRegistered,
   ProfileUpdated,
-  GrpcWebImpl as AccountsGrpcClient,
 } from '../.generated/accounts/v1alpha/accounts'
 export * from './accounts'
 
