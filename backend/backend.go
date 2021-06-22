@@ -29,7 +29,6 @@ import (
 	accounts "mintter/api/go/accounts/v1alpha"
 	p2p "mintter/api/go/p2p/v1alpha"
 	"mintter/backend/cleanup"
-	"mintter/backend/ipfsutil"
 )
 
 // backend is the glue between major pieces of Mintter application.
@@ -41,6 +40,7 @@ type backend struct {
 	db      *graphdb
 	patches *patchStore
 	p2p     *p2pNode
+	drafts  *draftStore
 
 	startTime time.Time
 
@@ -57,13 +57,16 @@ type backend struct {
 
 func newBackend(log *zap.Logger, r *repo, store *patchStore, p2p *p2pNode) *backend {
 	srv := &backend{
-		log:       log,
-		repo:      r,
-		db:        &graphdb{store.db},
-		patches:   store,
+		log:     log,
+		repo:    r,
+		db:      &graphdb{store.db},
+		patches: store,
+		p2p:     p2p,
+		drafts:  &draftStore{r.draftsDir()},
+
 		startTime: time.Now().UTC(),
-		p2p:       p2p,
-		dialOpts:  makeDialOpts(p2p.libp2p.Host),
+
+		dialOpts: makeDialOpts(p2p.libp2p.Host),
 	}
 
 	return srv
@@ -422,31 +425,33 @@ func (srv *backend) StopNotify(c chan<- interface{}) {
 	srv.watchMu.Unlock()
 }
 
-func (srv *backend) CreateDraft(ctx context.Context) error {
+// CreateDraft creates a new draft and returns its ID.
+// ID of a draft is a CID of a permanode using mintter-document CID codec.
+func (srv *backend) CreateDraft(ctx context.Context, perma signedPermanode, data []byte) (cid.Cid, error) {
 	p2p, err := srv.readyIPFS()
 	if err != nil {
-		return err
+		return cid.Undef, err
 	}
 
-	pn := newPermanode()
-
-	signed, err := SignCBOR(pn, srv.repo.device.priv)
-	if err != nil {
-		return fmt.Errorf("failed to sign CBOR permanode: %w", err)
+	if err := p2p.bs.AddBlock(perma.blk); err != nil {
+		return cid.Undef, fmt.Errorf("failed to add permanode block: %w", err)
 	}
 
-	blk, err := ipfsutil.NewBlock(signed.data)
-	if err != nil {
-		return fmt.Errorf("failed to create permanode block: %w", err)
+	if _, err := srv.patches.UpsertObjectID(ctx, perma.blk.Cid()); err != nil {
+		return cid.Undef, fmt.Errorf("failed to register object id for draft: %w", err)
 	}
 
-	if err := p2p.bs.AddBlock(blk); err != nil {
-		return fmt.Errorf("failed to add permanode block: %w", err)
+	if err := srv.drafts.StoreDraft(perma.blk.Cid(), data); err != nil {
+		return cid.Undef, fmt.Errorf("failed to store draft content: %w", err)
 	}
 
-	// TODO: store draft
+	return perma.blk.Cid(), nil
+}
 
-	return nil
+// NewDocumentPermanode creates a new permanode signed with the backend's private key.
+// It's expected to be stored in the block store later.
+func (srv *backend) NewDocumentPermanode() (signedPermanode, error) {
+	return newSignedPermanode(codecDocumentID, srv.repo.device.priv)
 }
 
 // emitEvent notifies subscribers about an internal event that occurred.

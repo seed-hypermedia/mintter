@@ -13,7 +13,6 @@ var graphSchema = badgergraph.NewSchema()
 
 func init() {
 	graphSchema.RegisterType(typeHead)
-	graphSchema.RegisterType(typeObject)
 	graphSchema.RegisterType(typeAccount)
 	graphSchema.RegisterType(typePeer)
 }
@@ -24,6 +23,12 @@ var (
 		HasIndex: true,
 		Type:     badgergraph.ValueTypeUID,
 		IsList:   true,
+	})
+
+	pObjectType = graphSchema.RegisterPredicate(typeObject, badgergraph.Predicate{
+		Name:     "type",
+		HasIndex: true,
+		Type:     badgergraph.ValueTypeString,
 	})
 
 	pHeadData = graphSchema.RegisterPredicate(typeHead, badgergraph.Predicate{

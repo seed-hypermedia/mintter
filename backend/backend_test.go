@@ -23,6 +23,33 @@ import (
 	"mintter/backend/testutil"
 )
 
+func TestBackendCreateDraft(t *testing.T) {
+	alice := makeTestBackend(t, "alice", true)
+	ctx := context.Background()
+
+	document := []byte("document-data")
+
+	pn, err := alice.NewDocumentPermanode()
+	require.NoError(t, err)
+
+	c, err := alice.CreateDraft(ctx, pn, document)
+	require.NoError(t, err)
+	require.False(t, cid.Undef.Equals(c))
+
+	permablk, err := alice.p2p.bs.GetBlock(ctx, c)
+	require.NoError(t, err)
+
+	require.Equal(t, pn.blk.RawData(), permablk.RawData(), "retrieved permanode must match the created one")
+
+	perma, err := decodePermanodeBlock(permablk)
+	require.NoError(t, err)
+	require.False(t, perma.IsZero())
+
+	data, err := alice.drafts.GetDraft(c)
+	require.NoError(t, err)
+	require.Equal(t, document, data, "retrieved draft must match stored one")
+}
+
 func TestObjectUpdateSync(t *testing.T) {
 	t.SkipNow() // TODO: finish the test.
 	alice := makeTestBackend(t, "alice", true)
