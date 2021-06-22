@@ -3,6 +3,7 @@ package backend
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
@@ -74,6 +75,57 @@ func (db *graphdb) GetDeviceAccount(ctx context.Context, did DeviceID) (aid Acco
 	}
 
 	return aid, nil
+}
+
+func (db *graphdb) IndexDocument(ctx context.Context,
+	docID cid.Cid,
+	author AccountID,
+	title string,
+	createTime, updateTime time.Time,
+) error {
+	dhash := docID.Hash()
+	ahash := author.Hash()
+
+retry:
+
+	err := db.db.Update(func(txn *badgergraph.Txn) error {
+		duid, err := txn.UID(typeDocument, dhash)
+		if err != nil {
+			return err
+		}
+
+		auid, err := txn.UID(typeAccount, ahash)
+		if err != nil {
+			return err
+		}
+
+		if err := txn.WriteTriple(duid, pDocumentAuthor, auid); err != nil {
+			return err
+		}
+
+		if err := txn.WriteTriple(duid, pDocumentTitle, title); err != nil {
+			return err
+		}
+
+		if err := txn.WriteTriple(duid, pDocumentCreateTime, createTime.UTC().Format(time.RFC3339)); err != nil {
+			return err
+		}
+
+		if err := txn.WriteTriple(duid, pDocumentUpdateTime, createTime.UTC().Format(time.RFC3339)); err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err == nil {
+		return nil
+	}
+
+	if err == badger.ErrConflict {
+		goto retry
+	}
+
+	return fmt.Errorf("failed to index document %s: %w", docID, err)
 }
 
 func (db *graphdb) ListAccounts(ctx context.Context) (objects []cid.Cid, err error) {

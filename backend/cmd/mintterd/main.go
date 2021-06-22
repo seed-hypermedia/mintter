@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"runtime"
 	"time"
 
 	"mintter/backend"
@@ -16,9 +15,6 @@ import (
 
 func main() {
 	var cfg config.Config
-
-	// Badger recommends setting high value for GOMAXPROCS to take advantage of higher IOPS on SSDs.
-	runtime.GOMAXPROCS(128)
 
 	kong.Parse(&cfg,
 		kong.Name("mintterd"),

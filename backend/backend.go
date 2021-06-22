@@ -445,6 +445,10 @@ func (srv *backend) CreateDraft(ctx context.Context, perma signedPermanode, data
 		return cid.Undef, fmt.Errorf("failed to store draft content: %w", err)
 	}
 
+	if err := srv.db.IndexDocument(ctx, perma.blk.Cid(), srv.repo.acc.id, "", perma.perma.CreateTime, perma.perma.CreateTime); err != nil {
+		return cid.Undef, err
+	}
+
 	return perma.blk.Cid(), nil
 }
 
