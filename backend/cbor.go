@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+
 	_ "mintter/backend/ipldutil"
 
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -12,9 +13,22 @@ import (
 	typegen "github.com/whyrusleeping/cbor-gen"
 )
 
-func init() {
-	cbornode.RegisterCborType(Patch{})
-}
+// Signing objects is a controversial subject with lots of tradeoffs,
+// and here we made a deliberate choice of some of them:
+//
+// Goal #1: The resulting signed object must be a valid CBOR.
+// Goal #2: Only one pass is required to serialize/deserialize the object for signing and verifying.
+// Goal #3: The signed data must be "visible", not serialized as opaque byte string.
+//
+// To achieve these goals the value to sign must be serializable to CBOR map.
+// Then we marshal the data, and "embed" it into an "envelope" map with a specific structure.
+// The order of fields of the "envelope" map is important and goes as following:
+//
+// {"payloadSize": <int>, "payload": <map>, "signature": <bytes>, "publicKey": <bytes>}
+//
+// Field payload is the actual value that we sign. Payload size helps to "exctract" the payload bytes,
+// and get to the signature without parsing the payload. Then we can verify the signature, and parse
+// the payload into the corresponding struct.
 
 const (
 	fieldPayloadSize = "payloadSize"

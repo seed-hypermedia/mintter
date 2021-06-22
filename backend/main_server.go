@@ -13,6 +13,7 @@ import (
 
 	accounts "mintter/api/go/accounts/v1alpha"
 	daemon "mintter/api/go/daemon/v1alpha"
+	documents "mintter/api/go/documents/v1alpha"
 	networking "mintter/api/go/networking/v1alpha"
 	"mintter/backend/config"
 )
@@ -22,6 +23,7 @@ var moduleGRPC = fx.Options(
 		newNetworkingAPI,
 		newAccountsAPI,
 		newDaemonAPI,
+		newDraftsAPI,
 		provideGRPCServer,
 	),
 	fx.Invoke(registerGRPC),
@@ -80,10 +82,16 @@ func provideGRPCServer(lc fx.Lifecycle, stop fx.Shutdowner, cfg config.Config) (
 	return srv, srv.grpc, nil
 }
 
-func registerGRPC(srv *grpc.Server, dsrv daemon.DaemonServer, asrv accounts.AccountsServer, nsrv networking.NetworkingServer) {
+func registerGRPC(srv *grpc.Server,
+	dsrv daemon.DaemonServer,
+	asrv accounts.AccountsServer,
+	nsrv networking.NetworkingServer,
+	drafts documents.DraftsServer,
+) {
 	accounts.RegisterAccountsServer(srv, asrv)
 	networking.RegisterNetworkingServer(srv, nsrv)
 	daemon.RegisterDaemonServer(srv, dsrv)
+	documents.RegisterDraftsServer(srv, drafts)
 	reflection.Register(srv)
 }
 
