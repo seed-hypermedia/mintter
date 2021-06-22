@@ -158,7 +158,7 @@ func uidKey(namespace string, p Predicate, xid []byte) []byte {
 		panic("xid is too long")
 	}
 	xidlen := uint16(l)
-	k, pos := makeKey(namespace, prefixInternal, keyTypeData, p.FullName(), 2+l)
+	k, pos := makeKey(namespace, prefixInternal, keyTypeData, p.fullName, 2+l)
 	binary.BigEndian.PutUint16(k[pos:], xidlen)
 	pos += 2
 	if l != copy(k[pos:], xid) {
@@ -168,7 +168,7 @@ func uidKey(namespace string, p Predicate, xid []byte) []byte {
 }
 
 func revUIDKey(namespace string, p Predicate, uid uint64) []byte {
-	k, pos := makeKey(namespace, prefixInternal, keyTypeIndex, p.FullName(), 8) // UID
+	k, pos := makeKey(namespace, prefixInternal, keyTypeIndex, p.fullName, 8) // UID
 	binary.BigEndian.PutUint64(k[pos:], uid)
 	return k
 }

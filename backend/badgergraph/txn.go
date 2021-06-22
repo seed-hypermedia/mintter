@@ -140,8 +140,8 @@ func (txn *Txn) uidAllocate(nodeType string, xid []byte) (uint64, error) {
 }
 
 // GetProperty reads a single literal node property.
-func (txn *Txn) GetProperty(subject uint64, predicate string) (interface{}, error) {
-	k := dataKey(txn.db.ns, predicate, subject, math.MaxUint64)
+func (txn *Txn) GetProperty(subject uint64, p Predicate) (interface{}, error) {
+	k := dataKey(txn.db.ns, p.fullName, subject, math.MaxUint64)
 	item, err := txn.Get(k)
 	if err != nil {
 		return nil, err
@@ -151,8 +151,8 @@ func (txn *Txn) GetProperty(subject uint64, predicate string) (interface{}, erro
 }
 
 // HasProperty checks if a property exists without decoding the value.
-func (txn *Txn) HasProperty(subject uint64, predicate string) (bool, error) {
-	k := dataKey(txn.db.ns, predicate, subject, math.MaxUint64)
+func (txn *Txn) HasProperty(subject uint64, p Predicate) (bool, error) {
+	k := dataKey(txn.db.ns, p.fullName, subject, math.MaxUint64)
 	_, err := txn.Get(k)
 	if err == nil {
 		return true, nil
@@ -166,8 +166,8 @@ func (txn *Txn) HasProperty(subject uint64, predicate string) (bool, error) {
 }
 
 // GetIndexUnique gets the UID of the indexed token that was set with SetLiteral.
-func (txn *Txn) GetIndexUnique(predicate string, token []byte) (uint64, error) {
-	it := txn.keyIterator(indexPrefix(txn.db.ns, predicate, token))
+func (txn *Txn) GetIndexUnique(p Predicate, token []byte) (uint64, error) {
+	it := txn.keyIterator(indexPrefix(txn.db.ns, p.fullName, token))
 	defer it.Close()
 
 	var out uint64
@@ -210,7 +210,7 @@ func (txn *Txn) WriteTriple(subject uint64, p Predicate, v interface{}) error {
 	}
 
 	if err := txn.SetEntry(badger.NewEntry(
-		dataKey(txn.db.ns, p.FullName(), subject, cardinality),
+		dataKey(txn.db.ns, p.fullName, subject, cardinality),
 		data,
 	).WithMeta(byte(p.Type))); err != nil {
 		return fmt.Errorf("failed to set main entry: %w", err)
@@ -220,11 +220,11 @@ func (txn *Txn) WriteTriple(subject uint64, p Predicate, v interface{}) error {
 	case !p.HasIndex:
 		return nil
 	case p.HasIndex && p.IsRelation():
-		if err := txn.Set(reverseKey(txn.db.ns, p.FullName(), v.(uint64), subject), nil); err != nil {
+		if err := txn.Set(reverseKey(txn.db.ns, p.fullName, v.(uint64), subject), nil); err != nil {
 			return fmt.Errorf("failed to set reverse relation: %w", err)
 		}
 	case p.HasIndex && !p.IsRelation():
-		if err := txn.Set(indexKey(txn.db.ns, p.FullName(), data, subject), nil); err != nil {
+		if err := txn.Set(indexKey(txn.db.ns, p.fullName, data, subject), nil); err != nil {
 			return fmt.Errorf("failed to set index: %w", err)
 		}
 	default:
@@ -235,8 +235,8 @@ func (txn *Txn) WriteTriple(subject uint64, p Predicate, v interface{}) error {
 }
 
 // GetForwardRelation returns the object UID of a unique predicate.
-func (txn *Txn) GetForwardRelation(subject uint64, predicate string) (uint64, error) {
-	it := txn.keyIterator(dataPrefix(txn.db.ns, predicate))
+func (txn *Txn) GetForwardRelation(subject uint64, p Predicate) (uint64, error) {
+	it := txn.keyIterator(dataPrefix(txn.db.ns, p.fullName))
 	defer it.Close()
 
 	var out uint64
@@ -272,8 +272,8 @@ func (txn *Txn) GetForwardRelation(subject uint64, predicate string) (uint64, er
 }
 
 // ListIndexedNodes uses indexed token to search for nodes that contain the token.
-func (txn *Txn) ListIndexedNodes(predicate string, token []byte) ([]uint64, error) {
-	it := txn.keyIterator(indexPrefix(txn.db.ns, predicate, token))
+func (txn *Txn) ListIndexedNodes(p Predicate, token []byte) ([]uint64, error) {
+	it := txn.keyIterator(indexPrefix(txn.db.ns, p.fullName, token))
 	defer it.Close()
 
 	var out []uint64
@@ -293,8 +293,8 @@ func (txn *Txn) ListIndexedNodes(predicate string, token []byte) ([]uint64, erro
 }
 
 // ListRelations can be used to read forward relations of a subject.
-func (txn *Txn) ListRelations(subject uint64, predicate string) ([]uint64, error) {
-	it := txn.valueIterator(dataPrefixSubject(txn.db.ns, predicate, subject))
+func (txn *Txn) ListRelations(subject uint64, p Predicate) ([]uint64, error) {
+	it := txn.valueIterator(dataPrefixSubject(txn.db.ns, p.fullName, subject))
 	defer it.Close()
 
 	var out []uint64
@@ -315,8 +315,8 @@ func (txn *Txn) ListRelations(subject uint64, predicate string) ([]uint64, error
 }
 
 // ListReverseRelations finds reverse relations of a given object and predicate.
-func (txn *Txn) ListReverseRelations(predicate string, object uint64) ([]uint64, error) {
-	it := txn.keyIterator(reversePrefix(txn.db.ns, predicate, object))
+func (txn *Txn) ListReverseRelations(p Predicate, object uint64) ([]uint64, error) {
+	it := txn.keyIterator(reversePrefix(txn.db.ns, p.fullName, object))
 	defer it.Close()
 
 	var out []uint64

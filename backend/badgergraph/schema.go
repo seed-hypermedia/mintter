@@ -128,8 +128,8 @@ type Predicate struct {
 	IsList   bool
 }
 
-// FullName returns full name of the predicate (<nodeType>.<field>).
-func (p Predicate) FullName() string {
+// String implements fmt.Stringer.
+func (p Predicate) String() string {
 	return p.fullName
 }
 
