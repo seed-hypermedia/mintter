@@ -20,5 +20,8 @@
   "editor.tabSize": 2,
   "[go]": {
     "editor.tabSize": 4
+  },
+  "[starlark]": {
+    "editor.tabSize": 4
   }
 }

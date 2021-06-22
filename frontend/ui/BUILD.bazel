@@ -1,0 +1,13 @@
+filegroup(
+    name = "sources",
+    srcs = glob([
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.js",
+        "src/**/*.jsx",
+    ]) + [
+        "package.json",
+        "tsconfig.json",
+    ],
+    visibility = ["//frontend:__subpackages__"],
+)

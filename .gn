@@ -1,5 +1,0 @@
-buildconfig = "//build/config/BUILDCONFIG.gn"
-
-script_executable = ""
-
-ninja_required_version = "1.10.1"
