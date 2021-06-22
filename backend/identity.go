@@ -11,23 +11,12 @@ import (
 	"mintter/backend/slip10"
 
 	"github.com/ipfs/go-cid"
-	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/lightningnetwork/lnd/aezeed"
 	"github.com/lightningnetwork/lnd/keychain"
 	"github.com/multiformats/go-multihash"
 )
-
-func init() {
-	cbornode.RegisterCborType(AccountBinding{})
-	cid.Codecs["mintter-account"] = codecAccountID
-	cid.CodecToStr[codecAccountID] = "mintter-account"
-}
-
-// See identity_grammar.ebnf for explanation about our identifiers.
-
-const codecAccountID uint64 = 1091161161
 
 // AccountID is the CID representation of the Mintter Account ID.
 type AccountID cid.Cid

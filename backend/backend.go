@@ -29,9 +29,12 @@ import (
 	accounts "mintter/api/go/accounts/v1alpha"
 	p2p "mintter/api/go/p2p/v1alpha"
 	"mintter/backend/cleanup"
+	"mintter/backend/ipfsutil"
 )
 
 // backend is the glue between major pieces of Mintter application.
+// But actually it turned out to be a kitchen sink of all kinds of stuff.
+// Eventually this will need to be cleaned up.
 type backend struct {
 	log     *zap.Logger
 	repo    *repo
@@ -417,6 +420,33 @@ func (srv *backend) StopNotify(c chan<- interface{}) {
 	srv.watchMu.Lock()
 	delete(srv.watchers, c)
 	srv.watchMu.Unlock()
+}
+
+func (srv *backend) CreateDraft(ctx context.Context) error {
+	p2p, err := srv.readyIPFS()
+	if err != nil {
+		return err
+	}
+
+	pn := newPermanode()
+
+	signed, err := SignCBOR(pn, srv.repo.device.priv)
+	if err != nil {
+		return fmt.Errorf("failed to sign CBOR permanode: %w", err)
+	}
+
+	blk, err := ipfsutil.NewBlock(signed.data)
+	if err != nil {
+		return fmt.Errorf("failed to create permanode block: %w", err)
+	}
+
+	if err := p2p.bs.AddBlock(blk); err != nil {
+		return fmt.Errorf("failed to add permanode block: %w", err)
+	}
+
+	// TODO: store draft
+
+	return nil
 }
 
 // emitEvent notifies subscribers about an internal event that occurred.
