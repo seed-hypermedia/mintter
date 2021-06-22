@@ -28,5 +28,6 @@ cp -Rs $(pwd)/dist/ $TARGET_OUT_DIR/dist
     dir = True,
     deps = [
         "//:yarn",
+        "//proto:js",
     ],
 )

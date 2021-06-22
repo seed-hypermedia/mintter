@@ -99,31 +99,24 @@ def mtt_js_proto(name, srcs, visibility = ["//visibility:public"], **kwargs):
     """
     Macro for Mintter specific Protobuf compilation for JavaScript.
     """
-
-    # TODO: fix JS proto build.
-    native.filegroup(
+    proto_compile(
         name = name,
+        srcs = srcs,
+        replaces = [".ts"],
+        proto_root = "proto",
+        output_root = "frontend/client/.generated/",
+        protoc_flags = [
+            "--plugin=`which protoc-gen-ts_proto`",
+            "--ts_proto_opt=esModuleInterop=false",
+            "--ts_proto_out=frontend/client/.generated/",
+            "--ts_proto_opt=env=browser",
+            "--ts_proto_opt=outputClientImpl=grpc-web",
+            "--ts_proto_opt=lowerCaseServiceMethods=true",
+            "--ts_proto_opt=addGrpcMetadata=true",
+        ],
         visibility = visibility,
+        **kwargs
     )
-
-    # proto_compile(
-    #     name = name,
-    #     srcs = srcs,
-    #     replaces = [
-    #         "_pb.js",
-    #         "_pb.d.ts",
-    #         "_grpc_web_pb.js",
-    #         "_grpc_web_pb.d.ts",
-    #     ],
-    #     proto_root = "proto",
-    #     output_root = "api/js/",
-    #     protoc_flags = [
-    #         "--js_out=import_style=commonjs:api/js/",
-    #         "--grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:api/js/",
-    #     ],
-    #     visibility = visibility,
-    #     **kwargs
-    # )
 
 def mtt_go_proto(name, srcs, visibility = ["//visibility:public"], **kwargs):
     """
