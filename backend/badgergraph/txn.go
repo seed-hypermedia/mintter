@@ -150,6 +150,21 @@ func (txn *Txn) GetProperty(subject uint64, predicate string) (interface{}, erro
 	return decodeValue(item)
 }
 
+// HasProperty checks if a property exists without decoding the value.
+func (txn *Txn) HasProperty(subject uint64, predicate string) (bool, error) {
+	k := dataKey(txn.db.ns, predicate, subject, math.MaxUint64)
+	_, err := txn.Get(k)
+	if err == nil {
+		return true, nil
+	}
+
+	if err != badger.ErrKeyNotFound {
+		return false, err
+	}
+
+	return false, nil
+}
+
 // GetIndexUnique gets the UID of the indexed token that was set with SetLiteral.
 func (txn *Txn) GetIndexUnique(predicate string, token []byte) (uint64, error) {
 	it := txn.keyIterator(indexPrefix(txn.db.ns, predicate, token))
