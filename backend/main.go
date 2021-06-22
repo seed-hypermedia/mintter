@@ -2,7 +2,6 @@ package backend
 
 import (
 	"context"
-	"path/filepath"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-datastore"
@@ -128,8 +127,8 @@ func provideP2PConfig(cfg config.Config) config.P2P {
 	return cfg.P2P
 }
 
-func provideDatastore(lc fx.Lifecycle, cfg config.Config) (datastore.Batching, error) {
-	ds, err := badger3ds.NewDatastore(badger3ds.DefaultOptions(filepath.Join(cfg.RepoPath, "badger-v3")))
+func provideDatastore(lc fx.Lifecycle, r *repo) (datastore.Batching, error) {
+	ds, err := badger3ds.NewDatastore(badger3ds.DefaultOptions(r.badgerDir()))
 	if err != nil {
 		return nil, err
 	}
