@@ -11,8 +11,13 @@ import (
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
+	cbornode "github.com/ipfs/go-ipld-cbor"
 	"golang.org/x/sync/errgroup"
 )
+
+func init() {
+	cbornode.RegisterCborType(Patch{})
+}
 
 type PatchKind string
 

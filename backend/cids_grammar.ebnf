@@ -10,8 +10,8 @@ dag_cbor_codec = 0x71;
 identity_hash_codec = 0x00;
 blake2_256_codec = 0xB220;
 mintter_account_codec = 1091161161;
+mintter_document_codec = 1091161162;
 libp2p_key_codec = 0x72;
-
 
 digest_length = digit, { digit }; (* varint-encoded number that specifies the length of the hash digest *)
 digest = ? bytes ?;
@@ -20,4 +20,5 @@ digest = ? bytes ?;
 account_id = cid_v1_prefix, mintter_account_codec, identity_hash_codec, digest_length, digest;
 patch_id = cid_v1_prefix, dag_cbor_codec, blake2_256_codec, digest_length, digest;
 peer_id = cid_v1_prefix, libp2p_key_codec, identity_hash_codec, digest_length, digest;
-object_id = account_id | patch_id;
+document_id = cid_v1_prefix, mintter_document_codec, blake2_256_codec, digest_length, digest;
+object_id = account_id | document_id;
