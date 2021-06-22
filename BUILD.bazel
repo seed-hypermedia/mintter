@@ -4,6 +4,8 @@ exports_files([
     "go.mod",
     "go.sum",
     "WORKSPACE",
+    "tsconfig.json",
+    "tsconfig.base.json",
 ])
 
 local_action(
