@@ -2,6 +2,7 @@ package backend
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/ipfs/go-cid"
@@ -19,6 +20,31 @@ func (d *draftStore) StoreDraft(id cid.Cid, data []byte) error {
 
 func (d *draftStore) GetDraft(id cid.Cid) ([]byte, error) {
 	return ioutil.ReadFile(d.filename(id))
+}
+
+func (d *draftStore) ListDrafts() ([]cid.Cid, error) {
+	dir, err := os.Open(d.basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := dir.ReadDir(-1)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]cid.Cid, len(files))
+
+	for i, f := range files {
+		c, err := cid.Decode(f.Name())
+		if err != nil {
+			return nil, err
+		}
+
+		out[i] = c
+	}
+
+	return out, nil
 }
 
 func (d *draftStore) filename(id cid.Cid) string {

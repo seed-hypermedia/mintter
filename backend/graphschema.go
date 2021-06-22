@@ -7,6 +7,8 @@ const (
 	typeObject  = "Object"
 	typeAccount = "Account"
 	typePeer    = "Peer"
+
+	typeDocument = "Document"
 )
 
 var graphSchema = badgergraph.NewSchema()
@@ -29,6 +31,27 @@ var (
 		Name:     "type",
 		HasIndex: true,
 		Type:     badgergraph.ValueTypeString,
+	})
+
+	pDocumentTitle = graphSchema.RegisterPredicate(typeDocument, badgergraph.Predicate{
+		Name:     "title",
+		HasIndex: true,
+		Type:     badgergraph.ValueTypeString,
+	})
+	pDocumentCreateTime = graphSchema.RegisterPredicate(typeDocument, badgergraph.Predicate{
+		Name:     "createTime",
+		HasIndex: true,
+		Type:     badgergraph.ValueTypeString,
+	})
+	pDocumentUpdateTime = graphSchema.RegisterPredicate(typeDocument, badgergraph.Predicate{
+		Name:     "updateTime",
+		HasIndex: true,
+		Type:     badgergraph.ValueTypeString,
+	})
+	pDocumentAuthor = graphSchema.RegisterPredicate(typeDocument, badgergraph.Predicate{
+		Name:     "author", // Relation to the Account.
+		HasIndex: true,
+		Type:     badgergraph.ValueTypeUID,
 	})
 
 	pHeadData = graphSchema.RegisterPredicate(typeHead, badgergraph.Predicate{
