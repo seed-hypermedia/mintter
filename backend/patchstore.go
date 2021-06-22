@@ -75,7 +75,7 @@ retry:
 				return err
 			}
 
-			v, err := txn.GetProperty(huid, pHeadData.FullName())
+			v, err := txn.GetProperty(huid, pHeadData)
 			if err != nil && err != badger.ErrKeyNotFound {
 				return fmt.Errorf("failed to get head: %w", err)
 			}
@@ -141,7 +141,7 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 			return err
 		}
 
-		v, err := txn.GetProperty(huid, pHeadData.FullName())
+		v, err := txn.GetProperty(huid, pHeadData)
 		if err != nil && err != badger.ErrKeyNotFound {
 			return err
 		}
@@ -230,7 +230,7 @@ func (s *patchStore) ListObjects(ctx context.Context, codec uint64) ([]cid.Cid, 
 	// TODO: fix this.
 
 	// s.db.View(func(txn *badgergraph.Txn) error {
-	// 	uids, err := txn.ListIndexedNodes(pCIDCodec.FullName(), []byte(cid.CodecToStr[codec]))
+	// 	uids, err := txn.ListIndexedNodes(pCIDCodec, []byte(cid.CodecToStr[codec]))
 	// 	if err != nil {
 	// 		return fmt.Errorf("failed to list objects with type %v: %w", codec, err)
 	// 	}
@@ -258,7 +258,7 @@ func (s *patchStore) AllObjectsChan(ctx context.Context) (<-chan cid.Cid, error)
 		defer close(c)
 
 		if err := s.db.View(func(txn *badgergraph.Txn) error {
-			uids, err := txn.ListIndexedNodes(badgergraph.NodeTypePredicate().FullName(), []byte(typeObject))
+			uids, err := txn.ListIndexedNodes(badgergraph.NodeTypePredicate(), []byte(typeObject))
 			if err != nil {
 				return err
 			}
@@ -349,7 +349,7 @@ func (s *patchStore) registerObject(txn *badgergraph.Txn, c cid.Cid) (uint64, er
 		return 0, fmt.Errorf("failed to allocate uid for object: %w", err)
 	}
 
-	has, err := txn.HasProperty(uid, pObjectType.FullName())
+	has, err := txn.HasProperty(uid, pObjectType)
 	if err != nil {
 		return 0, fmt.Errorf("failed to check object type property: %w", err)
 	}
@@ -372,7 +372,7 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid
 		return nil, err
 	}
 
-	heads, err := txn.ListReverseRelations(pHeadObject.FullName(), ouid)
+	heads, err := txn.ListReverseRelations(pHeadObject, ouid)
 	if err != nil {
 		return nil, fmt.Errorf("no reverse relation Head -> Peer: %w", err)
 	}
@@ -380,9 +380,9 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid
 	out := make([]*p2p.PeerVersion, len(heads))
 
 	for i, h := range heads {
-		v, err := txn.GetProperty(h, pHeadData.FullName())
+		v, err := txn.GetProperty(h, pHeadData)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get property %s: %w", pHeadData.FullName(), err)
+			return nil, fmt.Errorf("failed to get property %s: %w", pHeadData, err)
 		}
 		out[i] = v.(*p2p.PeerVersion)
 	}

@@ -53,7 +53,7 @@ func (db *graphdb) GetDeviceAccount(ctx context.Context, did DeviceID) (aid Acco
 			return err
 		}
 
-		auids, err := txn.ListReverseRelations(pAccountPeer.FullName(), puid)
+		auids, err := txn.ListReverseRelations(pAccountPeer, puid)
 		if err != nil {
 			return err
 		}
@@ -75,6 +75,27 @@ func (db *graphdb) GetDeviceAccount(ctx context.Context, did DeviceID) (aid Acco
 	}
 
 	return aid, nil
+}
+
+func (db *graphdb) TouchDocument(ctx context.Context, docID cid.Cid, title string, t time.Time) error {
+	return db.db.Update(func(txn *badgergraph.Txn) error {
+		uid, err := txn.UIDRead(typeDocument, docID.Hash())
+		if err != nil {
+			return err
+		}
+
+		if err := txn.WriteTriple(uid, pDocumentUpdateTime, t.UTC().Format(time.RFC3339)); err != nil {
+			return err
+		}
+
+		if title != "" {
+			if err := txn.WriteTriple(uid, pDocumentTitle, title); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 }
 
 func (db *graphdb) IndexDocument(ctx context.Context,
@@ -130,7 +151,7 @@ retry:
 
 func (db *graphdb) ListAccounts(ctx context.Context) (objects []cid.Cid, err error) {
 	if err := db.db.View(func(txn *badgergraph.Txn) error {
-		uids, err := txn.ListIndexedNodes(badgergraph.NodeTypePredicate().FullName(), []byte(typeAccount))
+		uids, err := txn.ListIndexedNodes(badgergraph.NodeTypePredicate(), []byte(typeAccount))
 		if err != nil {
 			return err
 		}

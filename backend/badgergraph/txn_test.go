@@ -140,7 +140,7 @@ func TestListIndexedNodes(t *testing.T) {
 	require.NoError(t, err)
 
 	err = db.View(func(txn *Txn) error {
-		nodes, err := txn.ListIndexedNodes(schema.schema["Person"][predicateNodeType].FullName(), []byte("Person"))
+		nodes, err := txn.ListIndexedNodes(schema.schema["Person"][predicateNodeType], []byte("Person"))
 		require.NoError(t, err)
 		require.Equal(t, []uint64{1, 2, 3}, nodes)
 		return nil
@@ -285,11 +285,11 @@ func TestNodeType(t *testing.T) {
 	require.NoError(t, err)
 
 	err = db.View(func(txn *Txn) error {
-		v, err := txn.GetProperty(1, schema.schema["Person"][predicateNodeType].FullName())
+		v, err := txn.GetProperty(1, schema.schema["Person"][predicateNodeType])
 		require.NoError(t, err)
 		require.Equal(t, "Person", v)
 
-		v, err = txn.GetProperty(2, schema.schema["Peer"][predicateNodeType].FullName())
+		v, err = txn.GetProperty(2, schema.schema["Peer"][predicateNodeType])
 		require.NoError(t, err)
 		require.Equal(t, "Peer", v)
 		return nil
@@ -335,11 +335,11 @@ func TestRelations(t *testing.T) {
 	require.NoError(t, err)
 
 	err = db.View(func(txn *Txn) error {
-		following, err := txn.ListRelations(alice, personFollows.FullName())
+		following, err := txn.ListRelations(alice, personFollows)
 		require.NoError(t, err)
 		require.Equal(t, []uint64{bob, carol}, following)
 
-		followers, err := txn.ListReverseRelations(personFollows.FullName(), carol)
+		followers, err := txn.ListReverseRelations(personFollows, carol)
 		require.NoError(t, err)
 		require.Equal(t, []uint64{alice, bob}, followers)
 		return nil

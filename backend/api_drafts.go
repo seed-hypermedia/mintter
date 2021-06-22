@@ -7,6 +7,8 @@ import (
 
 	"github.com/ipfs/go-cid"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -23,6 +25,25 @@ func newDraftsAPI(back *backend) documents.DraftsServer {
 	return &draftsAPI{
 		back: back,
 	}
+}
+
+func (srv *draftsAPI) GetDraft(ctx context.Context, in *documents.GetDraftRequest) (*documents.Document, error) {
+	c, err := cid.Decode(in.DocumentId)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "failed to parse document id %s: %v", in.DocumentId, err)
+	}
+
+	data, err := srv.back.drafts.GetDraft(c)
+	if err != nil {
+		return nil, err
+	}
+
+	doc := &documents.Document{}
+	if err := proto.Unmarshal(data, doc); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal draft: %w", err)
+	}
+
+	return doc, nil
 }
 
 func (srv *draftsAPI) CreateDraft(ctx context.Context, in *documents.CreateDraftRequest) (*documents.Document, error) {
@@ -86,12 +107,12 @@ func (srv *draftsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRe
 					return err
 				}
 
-				title, err := txn.GetProperty(duid, pDocumentTitle.FullName())
+				title, err := txn.GetProperty(duid, pDocumentTitle)
 				if err != nil {
 					return err
 				}
 
-				auid, err := txn.GetProperty(duid, pDocumentAuthor.FullName())
+				auid, err := txn.GetProperty(duid, pDocumentAuthor)
 				if err != nil {
 					return err
 				}
@@ -101,7 +122,7 @@ func (srv *draftsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRe
 					return err
 				}
 
-				createTime, err := txn.GetProperty(duid, pDocumentCreateTime.FullName())
+				createTime, err := txn.GetProperty(duid, pDocumentCreateTime)
 				if err != nil {
 					return err
 				}
@@ -111,7 +132,7 @@ func (srv *draftsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRe
 					return err
 				}
 
-				updateTime, err := txn.GetProperty(duid, pDocumentUpdateTime.FullName())
+				updateTime, err := txn.GetProperty(duid, pDocumentUpdateTime)
 				if err != nil {
 					return err
 				}
@@ -139,4 +160,52 @@ func (srv *draftsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRe
 	}
 
 	return resp, nil
+}
+
+func (srv *draftsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRequest) (*documents.Document, error) {
+	c, err := cid.Decode(in.Document.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "failed to parse document id %s: %v", in.Document.Id, err)
+	}
+
+	data, err := srv.back.drafts.GetDraft(c)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get draft from store: %w", err)
+	}
+
+	old := &documents.Document{}
+	if err := proto.Unmarshal(data, old); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal draft proto: %w", err)
+	}
+
+	merged := proto.Clone(old).(*documents.Document)
+	proto.Merge(merged, in.Document)
+
+	if proto.Equal(merged, old) {
+		return merged, nil
+	}
+
+	now := time.Now().UTC().Truncate(time.Second)
+	merged.UpdateTime = timestamppb.New(now)
+
+	mergedData, err := proto.Marshal(merged)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal merged proto: %w", err)
+	}
+
+	if err := srv.back.drafts.StoreDraft(c, mergedData); err != nil {
+		return nil, fmt.Errorf("failed to store updated draft: %w", err)
+	}
+
+	// We overwrite title in the index only if it's changed.
+	title := merged.Title
+	if title == old.Title {
+		title = ""
+	}
+
+	if err := srv.back.db.TouchDocument(ctx, c, title, now); err != nil {
+		return nil, fmt.Errorf("failed to touch document index: %w", err)
+	}
+
+	return merged, nil
 }
