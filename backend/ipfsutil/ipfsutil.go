@@ -292,8 +292,8 @@ func (p *Node) Provider() provider.System {
 
 // NewBlock creates a new IPFS block assuming data is dag-cbor. It uses
 // blake2 as the hash function as looks like this is what the community is going for now.
-func NewBlock(data []byte) (blocks.Block, error) {
-	id, err := NewCID(cid.DagCBOR, multihash.BLAKE2B_MIN+31, data)
+func NewBlock(codec uint64, data []byte) (blocks.Block, error) {
+	id, err := NewCID(codec, multihash.BLAKE2B_MIN+31, data)
 	if err != nil {
 		return nil, err
 	}

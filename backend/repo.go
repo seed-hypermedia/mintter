@@ -25,13 +25,15 @@ Repo layout v1 file tree:
 - db/
 -- badger-v3/ => directory with badger-related data
 -- providing.db => BoltDB database for DHT provider
+- drafts/ => directory with drafts
 */
 
 const (
 	currentRepoLayoutVersion = "dev-2" // TODO: when layout is stable set a correct version here.
 
-	keysDir = "keys"
-	dbDir   = "db"
+	keysDir   = "keys"
+	dbDir     = "db"
+	draftsDir = "drafts"
 
 	badgerDirPath = dbDir + "/badger-v3"
 
@@ -101,11 +103,12 @@ func newRepoWithDeviceKey(path string, log *zap.Logger, key crypto.PrivKey) (r *
 }
 
 func prepareRepo(path string, log *zap.Logger) (r *repo, err error) {
-	dirs := []string{
+	dirs := [...]string{
 		path,
 		filepath.Join(path, keysDir),
 		filepath.Join(path, dbDir),
 		filepath.Join(path, badgerDirPath),
+		filepath.Join(path, draftsDir),
 	}
 
 	for _, d := range dirs {
@@ -186,6 +189,10 @@ func (r *repo) badgerDir() string {
 
 func (r *repo) providingDBPath() string {
 	return filepath.Join(r.path, providingDBPath)
+}
+
+func (r *repo) draftsDir() string {
+	return filepath.Join(r.path, draftsDir)
 }
 
 func (r *repo) deviceKeyFromFile() (crypto.PrivKey, error) {

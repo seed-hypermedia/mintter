@@ -9,6 +9,7 @@ import (
 
 	p2p "mintter/api/go/p2p/v1alpha"
 	"mintter/backend/badgergraph"
+	"mintter/backend/ipfsutil"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
@@ -39,11 +40,20 @@ func newPatchStore(log *zap.Logger, bs blockstore.Blockstore, db *badgergraph.DB
 	}, nil
 }
 
+func (s *patchStore) UpsertObjectID(ctx context.Context, obj cid.Cid) (uint64, error) {
+	var uid uint64
+	return uid, s.db.Update(func(txn *badgergraph.Txn) error {
+		var err error
+		uid, err = s.registerObject(txn, obj)
+		return err
+	})
+}
+
 func (s *patchStore) StoreVersion(ctx context.Context, obj cid.Cid, ver *p2p.Version) error {
 retry:
 	notif := make([]*p2p.PeerVersion, 0, len(ver.VersionVector))
 	err := s.db.Update(func(txn *badgergraph.Txn) error {
-		ouid, err := txn.UID(typeObject, obj.Hash())
+		ouid, err := s.registerObject(txn, obj)
 		if err != nil {
 			return err
 		}
@@ -115,7 +125,7 @@ retry:
 func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 	var newHead *p2p.PeerVersion
 	if err := s.db.Update(func(txn *badgergraph.Txn) error {
-		ouid, err := txn.UID(typeObject, sp.ObjectID.Hash())
+		ouid, err := s.registerObject(txn, sp.ObjectID)
 		if err != nil {
 			return err
 		}
@@ -330,6 +340,27 @@ func (s *patchStore) notify(ctx context.Context, evt headUpdated) {
 type headUpdated struct {
 	obj cid.Cid
 	pv  *p2p.PeerVersion
+}
+
+func (s *patchStore) registerObject(txn *badgergraph.Txn, c cid.Cid) (uint64, error) {
+	codec, hash := ipfsutil.DecodeCID(c)
+	uid, err := txn.UID(typeObject, hash)
+	if err != nil {
+		return 0, fmt.Errorf("failed to allocate uid for object: %w", err)
+	}
+
+	has, err := txn.HasProperty(uid, pObjectType.FullName())
+	if err != nil {
+		return 0, fmt.Errorf("failed to check object type property: %w", err)
+	}
+
+	if !has {
+		if err := txn.WriteTriple(uid, pObjectType, cid.CodecToStr[codec]); err != nil {
+			return 0, fmt.Errorf("failed to store object type: %w", err)
+		}
+	}
+
+	return uid, nil
 }
 
 func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {

@@ -447,7 +447,9 @@ type ListDraftsResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Documents being matched by the list request.
+	// Documents being matched by the list request. Items in this list
+	// won't be complete, and only basic information will be present.
+	// To get the full content a separate Get request is needed.
 	Documents []*Document `protobuf:"bytes,1,rep,name=documents,proto3" json:"documents,omitempty"`
 	// Token for the next page if there're any.
 	NextPageToken string `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
@@ -777,7 +779,9 @@ type ListPublicationsResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// List of publications matching the request.
+	// List of publications matching the request. Items in this list
+	// won't be complete, and only basic information will be present.
+	// To get the full content a separate Get request is needed.
 	Publications []*Publication `protobuf:"bytes,1,rep,name=publications,proto3" json:"publications,omitempty"`
 	// Token for the next page if there're more results.
 	NextPageToken string `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`

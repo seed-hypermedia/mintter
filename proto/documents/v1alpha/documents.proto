@@ -64,7 +64,9 @@ message ListDraftsRequest {
 
 // Response for listing drafts.
 message ListDraftsResponse {
-  // Documents being matched by the list request.
+  // Documents being matched by the list request. Items in this list
+  // won't be complete, and only basic information will be present.
+  // To get the full content a separate Get request is needed.
   repeated Document documents = 1;
 
   // Token for the next page if there're any.
@@ -126,7 +128,9 @@ message ListPublicationsRequest {
 
 // Response with list of publications.
 message ListPublicationsResponse {
-  // List of publications matching the request.
+  // List of publications matching the request. Items in this list
+  // won't be complete, and only basic information will be present.
+  // To get the full content a separate Get request is needed.
   repeated Publication publications = 1;
 
   // Token for the next page if there're more results.
