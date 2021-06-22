@@ -22,19 +22,23 @@ Repo layout v1 file tree:
 - keys/
 -- libp2p_id_ed25519 => device private key
 -- mintter_id_ed25519.pub => account public key
-- badger-v3/ => directory with badger-related data
-- providing/
--- provided.db => BoltDB database with provided CIDs.
+- db/
+-- badger-v3/ => directory with badger-related data
+-- providing.db => BoltDB database for DHT provider
 */
 
 const (
-	currentRepoLayoutVersion = "dev-1" // TODO: when layout is stable set a correct version here.
+	currentRepoLayoutVersion = "dev-2" // TODO: when layout is stable set a correct version here.
 
-	keysDir      = "keys"
-	providingDir = "providing"
+	keysDir = "keys"
+	dbDir   = "db"
 
-	privKeyFilename = "libp2p_id_ed25519"
-	accountFilename = "mintter_id_ed25519.pub"
+	badgerDirPath = dbDir + "/badger-v3"
+
+	providingDBPath    = dbDir + "/providing.db"
+	privKeyFilePath    = keysDir + "/libp2p_id_ed25519"
+	accountKeyFilePath = keysDir + "/mintter_id_ed25519.pub"
+
 	versionFilename = "VERSION"
 )
 
@@ -97,16 +101,17 @@ func newRepoWithDeviceKey(path string, log *zap.Logger, key crypto.PrivKey) (r *
 }
 
 func prepareRepo(path string, log *zap.Logger) (r *repo, err error) {
-	if err := os.MkdirAll(path, 0700); err != nil {
-		return nil, fmt.Errorf("store: failed to initialize local repo in %s: %w", path, err)
+	dirs := []string{
+		path,
+		filepath.Join(path, keysDir),
+		filepath.Join(path, dbDir),
+		filepath.Join(path, badgerDirPath),
 	}
 
-	if err := os.MkdirAll(filepath.Join(path, keysDir), 0700); err != nil {
-		return nil, fmt.Errorf("store: failed to initialize local repo in %s: %w", path, err)
-	}
-
-	if err := os.MkdirAll(filepath.Join(path, providingDir), 0700); err != nil {
-		return nil, fmt.Errorf("store: failed to initialize local repo in %s: %w", path, err)
+	for _, d := range dirs {
+		if err := os.MkdirAll(d, 0700); err != nil {
+			return nil, fmt.Errorf("failed to create dir %s: %w", d, err)
+		}
 	}
 
 	if err := migrateRepo(path); err != nil {
@@ -175,8 +180,16 @@ func (r *repo) setAccount(k crypto.PubKey) error {
 	return nil
 }
 
+func (r *repo) badgerDir() string {
+	return filepath.Join(r.path, badgerDirPath)
+}
+
+func (r *repo) providingDBPath() string {
+	return filepath.Join(r.path, providingDBPath)
+}
+
 func (r *repo) deviceKeyFromFile() (crypto.PrivKey, error) {
-	privFile := filepath.Join(r.path, keysDir, privKeyFilename)
+	privFile := filepath.Join(r.path, privKeyFilePath)
 
 	privBytes, err := ioutil.ReadFile(privFile)
 	if err != nil && !os.IsNotExist(err) {
@@ -208,7 +221,7 @@ func (r *repo) setupKeys(pk crypto.PrivKey) error {
 	}
 
 	// TODO: clean this up, coz we may end up writing the same file twice here between multiple runs.
-	if err := ioutil.WriteFile(filepath.Join(r.path, keysDir, privKeyFilename), pkBytes, 0600); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(r.path, privKeyFilePath), pkBytes, 0600); err != nil {
 		return err
 	}
 
@@ -234,7 +247,7 @@ func (r *repo) writeAccountFile(k crypto.PubKey) error {
 		return err
 	}
 
-	if err := ioutil.WriteFile(filepath.Join(r.path, keysDir, accountFilename), data, 0644); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(r.path, accountKeyFilePath), data, 0644); err != nil {
 		return err
 	}
 
@@ -242,7 +255,7 @@ func (r *repo) writeAccountFile(k crypto.PubKey) error {
 }
 
 func (r *repo) readAccountFile() (crypto.PubKey, error) {
-	data, err := ioutil.ReadFile(filepath.Join(r.path, keysDir, accountFilename))
+	data, err := ioutil.ReadFile(filepath.Join(r.path, accountKeyFilePath))
 	if err != nil {
 		return nil, err
 	}

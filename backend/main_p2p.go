@@ -3,7 +3,6 @@ package backend
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 
 	"mintter/backend/config"
 	"mintter/backend/ipfsutil"
@@ -94,7 +93,7 @@ func provideBlockService(bs blockstore.Blockstore, bswap *ipfsutil.Bitswap) (blo
 }
 
 func provideP2P(lc fx.Lifecycle, log *zap.Logger, patches *patchStore, bs blockservice.BlockService, repo *repo, cfg config.P2P, libp2p *ipfsutil.Libp2p, boot ipfsutil.Bootstrappers) (*p2pNode, error) {
-	prov, err := providing.New(filepath.Join(repo.path, "providing/provided.db"), libp2p.Routing, makeStrategy(bs.Blockstore(), patches))
+	prov, err := providing.New(repo.providingDBPath(), libp2p.Routing, makeStrategy(bs.Blockstore(), patches))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create provider: %w", err)
 	}
