@@ -4,7 +4,6 @@ let
     protoc-gen-grpc-web = pkgs.callPackage ./build/nix/protoc-gen-grpc-web {};
     node = pkgs.nodejs-16_x;
     yarn = (pkgs.yarn.override { nodejs = node; });
-    gn = pkgs.callPackage ./build/nix/gn {};
     
     tools = pkgs.buildEnv rec {
         name = "mintter-tools";
@@ -15,12 +14,11 @@ let
             pkgs.protobuf3_11
             pkgs.go-protobuf
             pkgs.go_1_16
-            pkgs.ninja
+            pkgs.bazelisk
             python2
             protoc-gen-grpc-web
             node
             yarn
-            gn
         ];
     };
 in

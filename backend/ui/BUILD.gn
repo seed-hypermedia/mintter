@@ -1,6 +1,0 @@
-import("//build/go/bindata.gni")
-
-go_bindata("ui") {
-  deps = [ "//frontend/www:export" ]
-  package_name = "ui"
-}
