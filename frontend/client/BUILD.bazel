@@ -9,10 +9,6 @@ filegroup(
         "hooks/**/*.tsx",
         "hooks/**/*.js",
         "hooks/**/*.jsx",
-        ".generated/**/*.ts",
-        ".generated/**/*.tsx",
-        ".generated/**/*.js",
-        ".generated/**/*.jsx",
     ]) + [
         "package.json",
         "tsconfig.json",

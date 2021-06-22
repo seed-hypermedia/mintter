@@ -51,7 +51,8 @@
     "styled-components": "^5.2.0"
   },
   "dependencies": {
-    "prettier": "^2.3.1"
+    "prettier": "^2.3.1",
+    "ts-proto": "^1.81.3"
   },
   "lint-staged": {
     "frontend/**/*.+(ts|tsx|json|js)": "yarn workspaces run precommit"
