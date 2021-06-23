@@ -1,10 +1,13 @@
 package badgergraph
 
 import (
+	"encoding/binary"
 	"fmt"
 	"math"
+	"sync"
 
 	"github.com/dgraph-io/badger/v3"
+	"go.uber.org/multierr"
 )
 
 // NewTransaction starts a new transaction.
@@ -333,6 +336,76 @@ func (txn *Txn) ListReverseRelations(p Predicate, object uint64) ([]uint64, erro
 	}
 
 	return out, nil
+}
+
+// DeleteNode removes a node from the database including all its predicates and indexes.
+func (txn *Txn) DeleteNode(nodeType string, xid []byte) error {
+	uid, err := txn.UIDRead(nodeType, xid)
+	if err != nil {
+		return err
+	}
+
+	var wg sync.WaitGroup
+	keysc := make(chan []byte, len(txn.db.schema.schema[nodeType])*2)
+
+	for _, pred := range txn.db.schema.schema[nodeType] {
+		it := txn.keyIterator(dataPrefixSubject(txn.db.ns, pred.fullName, uid))
+		defer it.Close()
+
+		wg.Add(1)
+		go func(it *badger.Iterator, pred Predicate) {
+			defer wg.Done()
+
+			for it.Rewind(); it.Valid(); it.Next() {
+				keysc <- it.Item().KeyCopy(nil)
+			}
+		}(it, pred)
+
+		if pred.HasIndex {
+			kt := keyTypeIndex
+			if pred.IsRelation() {
+				kt = keyTypeReverse
+			}
+
+			prefix, _ := makeKey(txn.db.ns, prefixDefault, kt, pred.fullName, 0)
+			it := txn.keyIterator(prefix)
+			defer it.Close()
+
+			wg.Add(1)
+			go func(it *badger.Iterator, pred Predicate) {
+				defer wg.Done()
+
+				for it.Rewind(); it.Valid(); it.Next() {
+					k := it.Item().KeyCopy(nil)
+					subject := binary.BigEndian.Uint64(k[len(k)-8:])
+					if subject != uid {
+						continue
+					}
+					keysc <- k
+				}
+			}(it, pred)
+		}
+	}
+
+	// We don't know if keysc has enough buffer to receive all the keys to delete,
+	// Thus we have to wait until all the goroutines finish, and then close the keysc,
+	// so that the iterator bellow knows how to exit.
+	go func() {
+		wg.Wait()
+		close(keysc)
+	}()
+
+	var outErr error
+	for k := range keysc {
+		if err := txn.Delete(k); err != nil {
+			outErr = multierr.Append(outErr, err)
+		}
+	}
+
+	multierr.Append(outErr, txn.Delete(uidKey(txn.db.ns, txn.db.schema.xidPredicate(nodeType), xid)))
+	multierr.Append(outErr, txn.Delete(revUIDKey(txn.db.ns, txn.db.schema.xidPredicate(nodeType), uid)))
+
+	return outErr
 }
 
 func (txn *Txn) keyIterator(prefix []byte) *badger.Iterator {

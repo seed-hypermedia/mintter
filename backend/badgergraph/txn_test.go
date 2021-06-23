@@ -346,3 +346,79 @@ func TestRelations(t *testing.T) {
 	})
 	require.NoError(t, err)
 }
+
+func TestDeleteNode(t *testing.T) {
+	schema := NewSchema()
+	follows := schema.RegisterPredicate("Person", Predicate{
+		Name:   "follows",
+		IsList: true,
+		// HasIndex: true,
+		Type: ValueTypeUID,
+	})
+	name := schema.RegisterPredicate("Person", Predicate{
+		Name:     "name",
+		HasIndex: true,
+		Type:     ValueTypeString,
+	})
+
+	db, err := NewDB(testutil.MakeBadgerV3(t), testNS, schema)
+	require.NoError(t, err)
+	defer func() {
+		require.NoError(t, db.Close())
+	}()
+
+	keyCountInitial := countBadgerKeys(t, db.Badger)
+
+	alice := []byte("alice")
+	bob := []byte("bob")
+	carol := []byte("carol")
+
+	err = db.Update(func(txn *Txn) error {
+		auid, err := txn.UID("Person", alice)
+		require.NoError(t, err)
+
+		buid, err := txn.UID("Person", bob)
+		require.NoError(t, err)
+
+		cuid, err := txn.UID("Person", carol)
+		require.NoError(t, err)
+
+		require.NoError(t, txn.WriteTriple(auid, follows, buid))
+		require.NoError(t, txn.WriteTriple(buid, follows, cuid))
+		require.NoError(t, txn.WriteTriple(auid, name, "Alice"))
+		require.NoError(t, txn.WriteTriple(buid, name, "Bob"))
+		require.NoError(t, txn.WriteTriple(cuid, name, "Carol"))
+		return nil
+	})
+	require.NoError(t, err)
+
+	keyCountBeforeDelete := countBadgerKeys(t, db.Badger)
+	require.True(t, keyCountInitial < keyCountBeforeDelete, "must write some keys")
+
+	err = db.Update(func(txn *Txn) error {
+		require.NoError(t, txn.DeleteNode("Person", alice))
+		require.NoError(t, txn.DeleteNode("Person", bob))
+		require.NoError(t, txn.DeleteNode("Person", carol))
+		return nil
+	})
+	require.NoError(t, err)
+
+	keyCountAfterDelete := countBadgerKeys(t, db.Badger)
+	require.Equal(t, keyCountAfterDelete, keyCountInitial, "must delete all the written keys")
+}
+
+func countBadgerKeys(t *testing.T, db *badger.DB) int {
+	var count int
+	err := db.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		opts.PrefetchValues = false
+		it := txn.NewIterator(opts)
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			count++
+		}
+		return nil
+	})
+	require.NoError(t, err)
+	return count
+}
