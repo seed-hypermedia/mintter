@@ -2,11 +2,12 @@ package daemon
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	v2 "mintter/api/go/v2"
 	"mintter/backend/config"
 	"mintter/backend/testutil"
-	"testing"
-	"time"
 
 	"github.com/burdiyan/go/mainutil"
 	"github.com/sanity-io/litter"
@@ -31,6 +32,7 @@ func TestDaemon(t *testing.T) {
 			NoBootstrap: true,
 			NoRelay:     true,
 			NoTLS:       true,
+			NoMetrics:   true,
 		},
 	}
 

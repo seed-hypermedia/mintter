@@ -22,6 +22,7 @@ type P2P struct {
 	NoTLS       bool   `help:"disable TLS in libp2p"`
 	NoRelay     bool   `help:"disable libp2p circuit relay"`
 	NoBootstrap bool   `help:"disable IPFS bootstrapping"`
+	NoMetrics   bool   `help:"disable Prometheus metrics collection"`
 }
 
 // UI configuration for the node.

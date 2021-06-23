@@ -140,6 +140,7 @@ func makeTestBackend(t *testing.T, name string, ready bool) *backend {
 				NoTLS:       true,
 				NoRelay:     true,
 				NoBootstrap: true,
+				NoMetrics:   true,
 			},
 			repo,
 		),

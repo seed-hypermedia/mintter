@@ -93,6 +93,10 @@ func parseKey(namespace string, key []byte) (parsedKey, error) {
 }
 
 func indexKey(namespace, predicate string, token []byte, subject uint64) []byte {
+	if token == nil {
+		panic("BUG: must provide token")
+	}
+
 	l := len(token)
 	if l > math.MaxUint16 {
 		panic("token is too long")
@@ -107,6 +111,10 @@ func indexKey(namespace, predicate string, token []byte, subject uint64) []byte 
 }
 
 func indexPrefix(namespace, predicate string, token []byte) []byte {
+	if token == nil {
+		panic("BUG: must provide token")
+	}
+
 	l := len(token)
 	if l > math.MaxUint16 {
 		panic("token is too long")
@@ -133,7 +141,7 @@ func dataPrefix(namespace, predicate string) []byte {
 }
 
 func dataPrefixSubject(namespace, predicate string, subject uint64) []byte {
-	k, pos := makeKey(namespace, prefixDefault, keyTypeData, predicate, 8) // subject + ts + idx.
+	k, pos := makeKey(namespace, prefixDefault, keyTypeData, predicate, 8) // subject
 	binary.BigEndian.PutUint64(k[pos:], subject)
 	return k
 }

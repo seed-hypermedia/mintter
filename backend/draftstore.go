@@ -14,6 +14,10 @@ type draftStore struct {
 	basePath string
 }
 
+func (d *draftStore) DeleteDraft(id cid.Cid) error {
+	return os.Remove(d.filename(id))
+}
+
 func (d *draftStore) StoreDraft(id cid.Cid, data []byte) error {
 	return atomicfile.WriteFile(d.filename(id), data, 0666)
 }
