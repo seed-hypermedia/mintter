@@ -8,13 +8,9 @@ set -e
 
 export WORKDIR=$(cd $(dirname $0) && pwd)
 
-
-# Command build is a wrapper for ninja that will enter into the outdir correctly.
-# The GN_OUT_DIR variable is supposed to come from direnv's .envrc file.
-build() {
-    echo "This command is broken right now. Coming soon!"
-    exit 1
-    exec ninja -C $GN_OUT_DIR $@
+# Command build-backend builds the mintterd binary for the host platform.
+build-backend() {
+    bazel build //:mintterd
 }
 
 # Command build-frontend build a production bundle of the frontend app.
@@ -63,9 +59,9 @@ help() {
 Usage: $cli_name [command] [flags...]
 
 Commands:
-  build           Build production mintterd binary. It will install the dependencies and do everything required.
+  build-backend   Build backend binary.
   build-frontend  Build production frontend app.
-  build-cross     Cross-compile for all the suppored platforms. Check '$GN_OUT_DIR/<platform>' for the outputs.
+  build-cross     Cross-compile for all the suppored platforms.
   run-backend     Run the backend for development.
   run-frontend    Run the frontend for development.
   run             Prepare a production build and run it locally.
