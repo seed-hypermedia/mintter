@@ -9,7 +9,6 @@ filegroup(
         "//proto/networking/v1alpha:go",
         "//proto/p2p:go",
         "//proto/p2p/v1alpha:go",
-        "//proto/v2:go",
     ],
 )
 
@@ -20,6 +19,5 @@ filegroup(
         "//proto/daemon/v1alpha:js",
         "//proto/documents/v1alpha:js",
         "//proto/networking/v1alpha:js",
-        "//proto/v2:js",
     ],
 )

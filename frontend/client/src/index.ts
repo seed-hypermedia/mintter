@@ -77,7 +77,4 @@ export * from './documents'
 export * from './drafts'
 export * from './publications'
 
-export * as mintter from '../.generated/v2/mintter'
-export * as documents from '../.generated/v2/documents'
-
 export * as mock from './mock'
