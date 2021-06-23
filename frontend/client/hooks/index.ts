@@ -13,11 +13,12 @@ import {
   Publication,
   getPublication,
   Block,
-  mock,
   Quote,
   Link,
+  ListDraftsResponse,
+  listDrafts,
 } from '../src'
-import {mockBlock, mockDocument, mockTextInlineElement} from '../src/mock'
+import {mockBlock, mockDocument, mockTextInlineElement} from '../mocks'
 import type {HookOptions} from './types'
 
 /**
@@ -27,14 +28,7 @@ import type {HookOptions} from './types'
  * @returns
  */
 export function useAccount(accountId = '', options: HookOptions<Account> = {}) {
-  const accountQuery = useQuery(['Account', accountId], () => getAccount(accountId, options.rpc), options)
-
-  const data = useMemo(() => accountQuery.data, [accountQuery.data])
-
-  return {
-    ...accountQuery,
-    data,
-  }
+  return useQuery(['Account', accountId], () => getAccount(accountId, options.rpc), options)
 }
 
 /**
@@ -43,14 +37,7 @@ export function useAccount(accountId = '', options: HookOptions<Account> = {}) {
  * @returns
  */
 export function useInfo(options: HookOptions<Info> = {}) {
-  const infoQuery = useQuery(['GetInfo'], () => getInfo(options.rpc), options)
-
-  const data = useMemo(() => infoQuery.data, [infoQuery.data])
-
-  return {
-    ...infoQuery,
-    data,
-  }
+  return useQuery(['GetInfo'], () => getInfo(options.rpc), options)
 }
 
 /**
@@ -95,7 +82,8 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
     ['Draft', draftId],
     async ({queryKey}) => {
       const [_key, draftId] = queryKey as [string, string]
-      return getDraft(draftId, options.rpc)
+      const resp = await getDraft(draftId, options.rpc)
+      return resp
     },
     {
       refetchOnWindowFocus: false,
@@ -108,13 +96,16 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
  *
  * @deprecated
  */
-export function useDraftsList(options = {}) {
+export function useDraftsList(options: any = {}) {
+  const draftsListQuery = useQuery<ListDraftsResponse>('DraftList', async () => {
+    return listDrafts()
+  })
+
+  const data = useMemo(() => draftsListQuery.data?.documents, [draftsListQuery.data])
+
   return {
-    data: [],
-    isLoading: false,
-    isSuccess: true,
-    error: null,
-    isError: false,
+    ...draftsListQuery,
+    data,
   }
 }
 

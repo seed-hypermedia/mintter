@@ -5,7 +5,8 @@
   "license": "MIT",
   "exports": {
     "./hooks": "./hooks/index.ts",
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./mocks": "./mocks/index.ts"
   },
   "scripts": {
     "test": "true",

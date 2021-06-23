@@ -1,5 +1,5 @@
 import {SlatePlugin, getRenderElement, withNodeId} from '@udecode/slate-plugins'
-import {mock} from '@mintter/client'
+import * as mock from '@mintter/client/mocks'
 
 export const ELEMENT_BLOCK = 'block'
 

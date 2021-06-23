@@ -76,5 +76,3 @@ export {createGrpcClient} from './grpc-client'
 export * from './documents'
 export * from './drafts'
 export * from './publications'
-
-export * as mock from './mock'
