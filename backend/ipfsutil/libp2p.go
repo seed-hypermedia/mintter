@@ -15,7 +15,6 @@ import (
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/libp2p/go-libp2p-core/metrics"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-peerstore/pstoreds"
 	"github.com/libp2p/go-libp2p/config"
@@ -262,7 +261,6 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.A
 		libp2p.NATPortMap(),
 		libp2p.EnableNATService(),
 		libp2p.DisableRelay(),
-		libp2p.BandwidthReporter(metrics.NewBandwidthCounter()),
 	}
 
 	o = append(o, opts...)

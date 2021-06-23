@@ -4,6 +4,9 @@ import (
 	"context"
 	"time"
 
+	_ "expvar"
+	_ "net/http/pprof"
+
 	"mintter/backend"
 	"mintter/backend/config"
 

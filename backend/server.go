@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 )
 
@@ -13,8 +14,9 @@ func newHTTPHandler(g *grpc.Server, b *backend) http.Handler {
 		return true
 	}))
 
-	mux := http.NewServeMux()
+	mux := http.DefaultServeMux
 
+	mux.Handle("/debug/metrics", promhttp.Handler())
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if grpcWebHandler.IsAcceptableGrpcCorsRequest(r) || grpcWebHandler.IsGrpcWebRequest(r) {
 			grpcWebHandler.ServeHTTP(w, r)
