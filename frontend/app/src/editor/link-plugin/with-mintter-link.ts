@@ -1,4 +1,4 @@
-import {mock} from '@mintter/client'
+import * as mock from '@mintter/client/mocks'
 import {SPEditor, upsertLinkAtSelection, WithOverride, someNode, isUrl, insertNodes} from '@udecode/slate-plugins'
 import type {MenuStateReturn} from 'reakit/Menu'
 import type {ReactEditor} from 'slate-react'

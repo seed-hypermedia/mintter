@@ -9,6 +9,7 @@ import {Link} from './components/link'
 
 import {getPath} from './utils/routes'
 import type {Publication, Document} from '@mintter/client'
+import {useAccount} from '@mintter/client/hooks'
 
 export function DocumentList({
   data,
@@ -19,7 +20,7 @@ export function DocumentList({
 }: {
   // TODO: fix types
   // data: documents.Document.AsObject[];
-  data: any
+  data: Array<Document>
   isLoading: boolean
   isError: boolean
   error: any
@@ -31,44 +32,31 @@ export function DocumentList({
   if (isError) {
     return <p>ERROR</p>
   }
-
   return (
-    <div>
-      {/* // TODO: fix types */}
-      {data.map((item: any) => (
+    <Box as="ul" css={{padding: 0}}>
+      {data.map((item: Document) => (
         <ListItem key={item.id} item={item} onDeleteDocument={onDeleteDocument} />
       ))}
-    </div>
+    </Box>
   )
 }
 
-function ListItem({
-  item,
-  onDeleteDocument,
-}: {
-  item: {
-    publication: Publication
-    version: string
-    document?: Document
-  } // TODO: fix types (Document.AsObject + Document)
-  onDeleteDocument?: (version: string) => void
-}) {
+function ListItem({item, onDeleteDocument}: {item: Document; onDeleteDocument?: (documentId: string) => void}) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
 
   const match = useRouteMatch()
   const location = useLocation()
   // const [prefetched, setPrefetch] = React.useState<boolean>(false)
-  const {publication, version, document} = item
 
-  const {id, title, subtitle, author: itemAuthor} = document as Document
+  const {id, title, subtitle, author: itemAuthor} = item
+  // const {data: account} = useAccount(itemAuthor)
 
   const theTitle = title ? title : 'Untitled Document'
 
   const isDraft = useMemo(() => location.pathname.includes('drafts'), [location.pathname])
 
   const to = useMemo(() => {
-    const path = `${getPath(match)}${isDraft ? '/editor' : '/p'}/${id}${version ? `/${version}` : ''}`
-    return path
+    return `${getPath(match)}${isDraft ? '/editor' : '/p'}/${id}`
   }, [location.pathname])
   // function handlePrefetch() {
   // if (!prefetched) {
@@ -78,10 +66,10 @@ function ListItem({
   // }
   // }
 
-  const date = useMemo(() => publication.document?.createTime?.getDate() || new Date(), [publication])
+  const date = useMemo(() => item.createTime?.getDate() || new Date(), [item.createTime])
 
   return (
-    <Box css={{position: 'relative'}}>
+    <Box as="li" css={{position: 'relative', listStyle: 'none'}}>
       <Box
         // TODO: fix types
         // @ts-ignore
@@ -119,12 +107,14 @@ function ListItem({
             gap: '$2',
           }}
         >
-          {/* {!isDraft && location.pathname !== '/library/my-publications' && ( */}
-
-          <Avatar css={{gridArea: 'avatar'}} />
-          {/* <Text size="1" css={{ gridArea: 'author', alignSelf: 'center' }}>
-            {author?.username}
-          </Text> */}
+          {/* {!isDraft && location.pathname !== '/library/my-publications' && (
+            <>
+              <Avatar css={{gridArea: 'avatar'}} />
+              <Text size="1" css={{gridArea: 'author', alignSelf: 'center'}}>
+                {account?.profile?.alias}
+              </Text>{' '}
+            </>
+          )} */}
           <Box css={{gridArea: 'price'}}>
             <Text
               size="1"
@@ -193,7 +183,7 @@ function ListItem({
                   </Alert.Description>
                   <Alert.Actions>
                     <Alert.Cancel>Cancel</Alert.Cancel>
-                    <Alert.Action color="danger" onClick={() => onDeleteDocument(version)}>
+                    <Alert.Action color="danger" onClick={() => onDeleteDocument(id)}>
                       Delete
                     </Alert.Action>
                   </Alert.Actions>

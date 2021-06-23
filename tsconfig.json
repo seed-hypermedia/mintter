@@ -5,6 +5,7 @@
     "paths": {
       "@mintter/ui/*": ["frontend/ui/src/*"],
       "@mintter/client/hooks": ["frontend/client/hooks"],
+      "@mintter/client/mocks": ["frontend/client/mocks"],
       "@mintter/api/*": ["api/ts/*"],
       "@mintter/*": ["frontend/*/src"]
     }

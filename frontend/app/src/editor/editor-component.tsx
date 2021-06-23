@@ -13,8 +13,11 @@ import {
   createCodePlugin,
   createUnderlinePlugin,
   withNodeId,
+  useEditorState,
+  useStoreEditorValue,
+  useStoreEditorState,
 } from '@udecode/slate-plugins'
-import {mock} from '@mintter/client'
+import * as mock from '@mintter/client/mocks'
 import {createBlockPlugin, ELEMENT_BLOCK, blockOptions} from './block-plugin'
 import {boldOptions, boldAutoformatRules} from './bold-plugin'
 import {codeOptions, codeAutoformatRules} from './code-plugin'
@@ -25,43 +28,8 @@ import {Toolbar} from './toolbar'
 import {underlineOptions, underlineAutoformatRules} from './underline-plugin'
 import {createQuotePlugin, ELEMENT_QUOTE, quoteOptions} from './quote-plugin'
 import {createLinkPlugin, ELEMENT_LINK, linkOptions} from './link-plugin'
+import {useState, useEffect} from 'react'
 // import {useMenuState} from 'reakit/Menu'
-
-const initialValue = [
-  {
-    id: mock.createId(),
-    depth: 0,
-    type: ELEMENT_BLOCK,
-    children: [
-      {
-        text: 'Hello world ',
-      },
-      // {
-      //   type: 'quote',
-      //   id: createId(),
-      //   url: `${createId()}/${createId()}`,
-      //   children: [{ text: '' }],
-      // },
-      {
-        type: ELEMENT_LINK,
-        url: 'https://mintter.com',
-        id: mock.createId(),
-        children: [{text: 'link here'}],
-      },
-    ],
-  },
-  {
-    type: ELEMENT_BLOCK,
-    blockType: BlockType.BASIC,
-    depth: 0,
-    id: mock.createId(),
-    children: [
-      {
-        text: 'Heading 2',
-      },
-    ],
-  },
-]
 
 function rulesWithCustomDefaultType(
   type: string = ELEMENT_BLOCK,
@@ -79,15 +47,23 @@ function rulesWithCustomDefaultType(
   }))
 }
 
-export function EditorComponent<T extends SPEditor = SPEditor>({initialValue, ...options}: SlatePluginsProps<T>) {
+export function EditorComponent<T extends SPEditor = SPEditor>({value, onChange, ...options}: SlatePluginsProps<T>) {
   // const menu = useMenuState()
+  const [show, setShow] = useState(false)
 
-  return (
+  useEffect(() => {
+    if (!show && !!value) {
+      setShow(true)
+    } else {
+    }
+  }, [value])
+
+  return show ? (
     <>
       <SlatePlugins
         id="editor"
-        {...options}
-        initialValue={initialValue}
+        initialValue={value}
+        // onChange={onChange}
         editableProps={{
           placeholder: 'start here...',
         }}
@@ -146,9 +122,10 @@ export function EditorComponent<T extends SPEditor = SPEditor>({initialValue, ..
           ...quoteOptions,
           ...linkOptions,
         }}
+        {...options}
       >
         <Toolbar />
       </SlatePlugins>
     </>
-  )
+  ) : null
 }

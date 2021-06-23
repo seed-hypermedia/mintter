@@ -4,7 +4,7 @@ import {
   PublicationsClientImpl,
 } from '../.generated/documents/v1alpha/documents'
 import type {Publication, DocumentView} from '../.generated/documents/v1alpha/documents'
-import {mockPublication} from './mock'
+import {mockPublication} from '../mocks'
 import {createGrpcClient, GrpcClient} from './grpc-client'
 
 /**
