@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	documents "mintter/api/go/documents/v1alpha"
@@ -28,9 +29,9 @@ func newDraftsAPI(back *backend) documents.DraftsServer {
 }
 
 func (srv *draftsAPI) GetDraft(ctx context.Context, in *documents.GetDraftRequest) (*documents.Document, error) {
-	c, err := cid.Decode(in.DocumentId)
+	c, err := srv.parseDocumentID(in.DocumentId)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "failed to parse document id %s: %v", in.DocumentId, err)
+		return nil, err
 	}
 
 	data, err := srv.back.drafts.GetDraft(c)
@@ -163,9 +164,9 @@ func (srv *draftsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRe
 }
 
 func (srv *draftsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRequest) (*documents.Document, error) {
-	c, err := cid.Decode(in.Document.Id)
+	c, err := srv.parseDocumentID(in.Document.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "failed to parse document id %s: %v", in.Document.Id, err)
+		return nil, err
 	}
 
 	data, err := srv.back.drafts.GetDraft(c)
@@ -208,4 +209,31 @@ func (srv *draftsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraft
 	}
 
 	return merged, nil
+}
+
+func (srv *draftsAPI) DeleteDraft(ctx context.Context, in *documents.DeleteDraftRequest) (*emptypb.Empty, error) {
+	c, err := srv.parseDocumentID(in.DocumentId)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := srv.back.db.db.Update(func(txn *badgergraph.Txn) error {
+		return txn.DeleteNode(typeDocument, c.Hash())
+	}); err != nil {
+		return nil, fmt.Errorf("failed to delete document %s from index: %w", in.DocumentId, err)
+	}
+
+	if err := srv.back.drafts.DeleteDraft(c); err != nil {
+		return nil, fmt.Errorf("failed to delete document content: %w", err)
+	}
+
+	return &emptypb.Empty{}, nil
+}
+
+func (srv *draftsAPI) parseDocumentID(id string) (cid.Cid, error) {
+	c, err := cid.Decode(id)
+	if err != nil {
+		return cid.Undef, status.Errorf(codes.InvalidArgument, "failed to parse document id %s: %v", id, err)
+	}
+	return c, nil
 }

@@ -120,3 +120,28 @@ func TestAPIUpdateDraft(t *testing.T) {
 
 	testutil.ProtoEqual(t, doc, got, "must get draft that was updated")
 }
+
+func TestAPIDeleteDraft(t *testing.T) {
+	back := makeTestBackend(t, "alice", true)
+	api := newDraftsAPI(back)
+	ctx := context.Background()
+
+	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	doc.Title = "My updated title"
+
+	// Create another doc just to ensure list returns at least something after delete.
+	_, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	doc, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: doc})
+	require.NoError(t, err)
+
+	deleted, err := api.DeleteDraft(ctx, &documents.DeleteDraftRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+	require.NotNil(t, deleted)
+
+	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Documents, 1) // Must be 1 because we've created another document apart from the deleted one.
+}

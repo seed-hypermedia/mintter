@@ -43,7 +43,6 @@ func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ds datastore.Batching, r *re
 
 	opts := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
-		libp2p.BandwidthReporter(m),
 	}
 
 	if !cfg.NoRelay {
@@ -58,6 +57,10 @@ func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ds datastore.Batching, r *re
 		opts = append(opts, libp2p.DefaultSecurity)
 	}
 
+	if !cfg.NoMetrics {
+		opts = append(opts, libp2p.BandwidthReporter(m))
+	}
+
 	node, err := ipfsutil.NewLibp2pNode(r.Device().priv, ds, boot, opts...)
 	if err != nil {
 		return nil, err
@@ -65,7 +68,9 @@ func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ds datastore.Batching, r *re
 
 	m.SetHost(node.Host)
 
-	prometheus.MustRegister(m)
+	if !cfg.NoMetrics {
+		prometheus.MustRegister(m)
+	}
 
 	lc.Append(fx.Hook{
 		OnStop: func(context.Context) error {

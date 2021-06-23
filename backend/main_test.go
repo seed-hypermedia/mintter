@@ -25,6 +25,7 @@ func TestLibp2p(t *testing.T) {
 		NoBootstrap: true,
 		NoRelay:     true,
 		NoTLS:       true,
+		NoMetrics:   true,
 	}
 
 	opts := badger3ds.DefaultOptions("")
@@ -75,6 +76,7 @@ func TestDaemonEndToEnd(t *testing.T) {
 			NoBootstrap: true,
 			NoRelay:     true,
 			NoTLS:       true,
+			NoMetrics:   true,
 		},
 	}
 
