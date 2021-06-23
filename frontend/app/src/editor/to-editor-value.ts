@@ -1,4 +1,5 @@
-import type {Document, Image, Link, Quote, TextRun} from '@mintter/client'
+import {Document, Image, Link, ListStyle, Quote, TextRun} from '@mintter/client'
+import * as mocks from '@mintter/client/mocks'
 import {ELEMENT_BLOCK} from './block-plugin'
 import {toTextRun} from './inline-element'
 import {ELEMENT_LINK} from './link-plugin'
@@ -9,22 +10,37 @@ export function toEditorValue(entry: Document): Array<EditorBlock> {
   const currentDoc = entry
   const blocksMap = entry.blocks
   const linksMap = entry.links
+  console.log('🚀 ~ file: to-editor-value.ts ~ line 15 ~ toEditorValue ~ entry.children.length', entry.children.length)
 
-  return currentDoc.children.map((blockId) => {
-    const block = blocksMap[blockId]
-    return {
-      type: ELEMENT_BLOCK,
-      id: block.id,
-      listStyle: block.childListStyle,
-      children: block.elements.map(({textRun, image, quote}) => {
-        if (textRun && textRun.linkKey) return toEditorLink(linksMap, textRun)
-        if (textRun) return textRun
-        if (image) return toEditorImage(linksMap, image)
-        if (quote) return toEditorQuote(linksMap, quote)
-        throw new Error('unkwon element')
-      }),
-    }
-  })
+  if (currentDoc.children.length === 0) {
+    console.log('enter in the no blocks')
+    // no blocks (new Draft)
+    return [
+      {
+        type: ELEMENT_BLOCK,
+        id: mocks.createId(),
+        listStyle: ListStyle.NONE,
+        children: [{text: ''}],
+      },
+    ]
+  } else {
+    console.log('enter with blocks')
+    return currentDoc.children.map((blockId) => {
+      const block = blocksMap[blockId]
+      return {
+        type: ELEMENT_BLOCK,
+        id: block.id,
+        listStyle: block.childListStyle,
+        children: block.elements.map(({textRun, image, quote}) => {
+          if (textRun && textRun.linkKey) return toEditorLink(linksMap, textRun)
+          if (textRun) return textRun
+          if (image) return toEditorImage(linksMap, image)
+          if (quote) return toEditorQuote(linksMap, quote)
+          throw new Error('unkwon element')
+        }),
+      }
+    })
+  }
 }
 
 export function toEditorLink(links: Record<string, Link>, entry: TextRun): EditorLink {

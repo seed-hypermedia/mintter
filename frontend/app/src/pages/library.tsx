@@ -1,6 +1,6 @@
 import {Switch, useRouteMatch, Redirect, useHistory, Route} from 'react-router-dom'
 import {useAccount} from '@mintter/client/hooks'
-import {createDraft} from '@mintter/client'
+import {listAccounts, connect, createDraft} from '@mintter/client'
 import {Link} from '../components/link'
 import {Publications} from './publications'
 import {MyPublications} from './my-publications'
@@ -11,7 +11,8 @@ import * as MessageBox from '../components/message-box'
 import {getPath} from '../utils/routes'
 import {Container} from '../components/container'
 import type {CSS} from '@mintter/ui/stitches.config'
-import {useMemo} from 'react'
+import {useEffect, useMemo} from 'react'
+import toast from 'react-hot-toast'
 
 export type WithCreateDraft = {
   onCreateDraft: () => void
@@ -20,58 +21,50 @@ export type WithCreateDraft = {
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
   const match = useRouteMatch()
+  console.log('🚀 ~ file: library.tsx ~ line 24 ~ Library ~ match', match)
   const history = useHistory()
   // const { connectToPeer } = useConnectionCreate();
-  // const { addToast, updateToast, removeToast } = useToasts();
 
   async function onCreateDraft() {
     const d = await createDraft()
-    history.push({
-      pathname: `${getPath(match)}/editor/${d.id}`,
-    })
+    if (d?.id) {
+      history.push({
+        pathname: `${getPath(match)}/editor/${d.id}`,
+      })
+    } else {
+      console.warn(`createDraft Error: "createDraft" does not returned a Document`, d)
+    }
   }
 
   async function onConnect(addressList?: string[]) {
     // TODO: re-enable toasts
     if (addressList) {
-      // const toast = addToast('Connecting to peer...', {
-      //   appearance: 'info',
-      //   autoDismiss: false,
-      // });
       try {
-        // await connectToPeer(addressList);
-        // updateToast(toast, {
-        //   content: 'Connection established successfuly!',
-        //   appearance: 'success',
-        //   autoDismiss: true,
-        // });
+        // await toast.promise(connectToPeer(addressList), {
+        //   loading: 'Connecting to peer...',
+        //   success: 'Connection Succeeded!',
+        //   error: 'Connection Error',
+        // })
       } catch (err) {
-        // removeToast(toast, () => {
-        //   addToast(err.message, {
-        //     appearance: 'error',
-        //   });
-        // });
+        console.error(err.message)
       }
     } else {
+      console.log('open prompt!')
       const peer: string | null = window.prompt(`enter a peer address`)
       if (peer) {
-        // const toast = addToast('Connecting to peer...', {
-        //   appearance: 'info',
-        //   autoDismiss: false,
-        // });
         try {
-          // await connectToPeer(peer.split(','));
-          // updateToast(toast, {
-          //   content: 'Connection established successfuly!',
-          //   appearance: 'success',
-          //   autoDismiss: true,
-          // });
+          await toast.promise(connect(peer), {
+            loading: 'Connecting to peer...',
+            success: 'Connection Succeeded!',
+            error: 'Connection Error',
+          })
+          setInterval(() => {
+            listAccounts().then((res) => {
+              console.log('listAccounts', res)
+            })
+          }, 2000)
         } catch (err) {
-          // removeToast(toast, () => {
-          //   addToast(err.message, {
-          //     appearance: 'error',
-          //   });
-          // });
+          console.error(err.message)
         }
       }
     }
@@ -100,6 +93,7 @@ export default function Library() {
         }}
       >
         <ProfileInfo />
+        <Button onClick={() => onConnect()}>Connect</Button>
       </Box>
 
       <Container css={{gridArea: 'maincontent'}}>
@@ -225,6 +219,7 @@ function NavItem({children, to, css, onlyActiveWhenExact = false, ...props}: Nav
   })
 
   const active = useMemo(() => match?.path === to, [match, to])
+  // console.log('🚀 ~ NavItem ', {active, match})
 
   return (
     <Text

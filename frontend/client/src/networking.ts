@@ -1,4 +1,9 @@
-import {GetPeerInfoRequest, NetworkingClientImpl} from '../.generated/networking/v1alpha/networking'
+import {
+  GetPeerInfoRequest,
+  NetworkingClientImpl,
+  ConnectRequest,
+  ConnectResponse,
+} from '../.generated/networking/v1alpha/networking'
 import type {PeerInfo} from '../.generated/networking/v1alpha/networking'
 import {createGrpcClient, GrpcClient} from './grpc-client'
 
@@ -22,4 +27,10 @@ export async function listPeerAddrs(peerId: string, rpc?: GrpcClient): Promise<P
 export function listSuggestedProfiles(pageSize?: number, pageToken?: string, rpc?: GrpcClient) {
   console.log('listSuggestedProfiles: Implement!')
   return {}
+}
+
+export async function connect(addrs: Array<string>, rpc?: GrpcWenimpl): Promise<ConnectResponse> {
+  rpc ||= createGrpcClient()
+  const request = ConnectRequest.fromPartial({addrs})
+  return await new NetworkingClientImpl(rpc).Connect(request)
 }

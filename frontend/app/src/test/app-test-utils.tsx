@@ -2,12 +2,14 @@ import './matchmedia-mock'
 import {
   render as rtlRender,
   RenderOptions as RTLRenderOptions,
+  RenderResult as RTLRenderResults,
   screen,
   fireEvent,
   waitForElementToBeRemoved,
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import {mock, Profile} from '@mintter/client'
+import {Account, Profile} from '@mintter/client'
+import * as mocks from '@mintter/client/mocks'
 import {AppProviders} from '../app-providers'
 
 function AppWrapper({children}: {children: React.ReactNode}) {
@@ -18,24 +20,21 @@ function AppWrapper({children}: {children: React.ReactNode}) {
   )
 }
 
-type RenderOptions = RTLRenderOptions & {
+export type RenderOptions = RTLRenderOptions & {
   route?: string
   timeout?: number
   wrapper?: any
-  profile?: Profile
+  account?: Account
+}
+
+export type RenderResult = RTLRenderResults & {
+  account: Account
 }
 
 async function render(
   ui: any,
-  {
-    route = '/',
-    timeout = 4000,
-    wrapper = AppWrapper,
-    // wait = true,
-    profile,
-    ...renderOptions
-  }: RenderOptions = {},
-) {
+  {route = '/', timeout = 4000, wrapper = AppWrapper, wait = false, account, ...renderOptions}: RenderOptions = {},
+): RenderResult {
   const routeConfig =
     typeof route === 'string'
       ? {
@@ -46,19 +45,19 @@ async function render(
 
   window.history.pushState(routeConfig.state, 'Test page', routeConfig.pathname)
 
-  profile = profile ?? mock.mockProfile()
+  account ||= mocks.mockAccount()
 
   const returnValue = {
     ...rtlRender(ui, {
       wrapper,
       ...renderOptions,
     }),
-    profile,
+    account,
   }
 
-  // if (wait) {
-  //   await waitForLoadingToFinish(timeout)
-  // }
+  if (wait) {
+    await waitForLoadingToFinish(timeout)
+  }
 
   return returnValue
 }

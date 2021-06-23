@@ -14,44 +14,23 @@ import {EditorComponent} from '../editor/editor-component'
 import 'show-keys'
 import {toDocument} from '../editor/to-document'
 import type {EditorBlock} from '../editor/types'
-import {ListStyle, Document} from '@mintter/client'
+import {ListStyle, Document, updateDraft} from '@mintter/client'
 import {toEditorValue} from '../editor/to-editor-value'
+import {ELEMENT_BLOCK} from '../editor/block-plugin'
+import {createId} from '@mintter/client/mocks'
+import {useReducer} from 'react'
+import {EditorAction, editorReducer, EditorState, initialValue, useEditorReducer} from '../editor/editor-reducer'
+import {useStoreEditorValue} from '@udecode/slate-plugins'
 
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
-  const {isLoading, isError, error, data} = useMintterEditor(docId)
-  const {data: account} = useAccount('')
-
-  const titleRef = useRef<HTMLInputElement>(null)
-  const subtitleRef = useRef<HTMLInputElement>(null)
-
-  // publish
-  const {mutateAsync: publish} = useMutation(async () => {
-    const document = toDocument({
-      id: docId,
-      author: account?.id as string,
-      title: titleRef.current?.value,
-      subtitle: subtitleRef.current?.value,
-      blocks: data?.editorValue,
-      // TODO: get the document block parent list
-      childrenListStyle: ListStyle.NONE,
-    })
-    // publishDraft
-    console.log({document})
-  })
-
-  useEffect(() => {
-    if (data?.document && titleRef.current && subtitleRef.current) {
-      titleRef.current.value = data.document.title
-      subtitleRef.current.value = data.document.subtitle
-    }
-  }, [data?.document, titleRef.current, subtitleRef.current])
+  const {isLoading, isError, error, data} = useEditorDraft(docId)
 
   // sidepanel
   const {isSidepanelOpen, sidepanelObjects, sidepanelSend} = useSidePanel()
 
-  function saveDocument() {
-    publish()
+  function save() {
+    data?.save()
   }
 
   if (isError) {
@@ -77,6 +56,7 @@ export default function EditorPage() {
         gridTemplateRows: '64px 1fr',
         gap: '$5',
       }}
+      data-testid="editor-wrapper"
     >
       <Box
         css={{
@@ -88,9 +68,12 @@ export default function EditorPage() {
           paddingHorizontal: '$5',
         }}
       >
-        <Button color="primary" shape="pill" size="2" onClick={saveDocument}>
-          PUBLISH
+        <Button color="success" shape="pill" size="2" onClick={save}>
+          SAVE
         </Button>
+        {/* <Button color="primary" shape="pill" size="2" onClick={saveDocument}>
+          PUBLISH
+        </Button> */}
         <Button size="1" onClick={() => sidepanelSend?.({type: 'SIDEPANEL_TOOGLE'})}>
           toggle sidepanel
         </Button>
@@ -103,7 +86,8 @@ export default function EditorPage() {
           data-testid="editor_title"
           name="title"
           placeholder="Document title"
-          ref={titleRef}
+          value={data?.value.title}
+          onChange={(event) => data.send({type: 'title', payload: event.target.value})}
           rows={1}
           // TODO: Fix types
           // @ts-ignore
@@ -125,7 +109,8 @@ export default function EditorPage() {
           data-testid="editor_subtitle"
           name="subtitle"
           placeholder="about this publication..."
-          ref={subtitleRef}
+          value={data?.value.subtitle}
+          onChange={(event) => data.send({type: 'subtitle', payload: event.target.value})}
           rows={1}
           // TODO: Fix types
           // @ts-ignore
@@ -139,7 +124,13 @@ export default function EditorPage() {
         />
         <Separator />
         <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
-          <EditorComponent initialValue={data?.editorValue} />
+          <EditorComponent
+            value={data?.value.blocks}
+            // onChange={(value: Array<EditorBlock>) => {
+            //   console.log('changed!', value)
+            //   data?.send({type: 'editor', payload: value})
+            // }}
+          />
         </Box>
       </Container>
       {isSidepanelOpen ? (
@@ -161,18 +152,70 @@ export default function EditorPage() {
   )
 }
 
-function useMintterEditor(docId: string): Omit<UseQueryResult<Document>, 'data'> & {
-  data?: {document?: Document; editorValue?: Array<EditorBlock>}
-} {
-  const draftQuery = useDraft(docId)
+type UseEditorValue = {
+  value: EditorState
+  send: React.Dispatch<EditorAction>
+  save: (d: Document) => Promise<Document>
+  publish: () => Promise<void>
+}
 
-  const editorValue = useMemo(() => (draftQuery.data ? toEditorValue(draftQuery.data) : undefined), [draftQuery, docId])
+function useEditorDraft(documentId: string): UseQueryResult<UseEditorValue> {
+  // set local state
+  /**
+   * need to do:
+   * - fetch draft
+   * - convert draft into editor value
+   * - effect to autosave draft
+   * need to return:
+   * - editor value
+   * - publish function
+   */
+  const draftQuery = useDraft(documentId)
+  const [value, send] = useEditorReducer()
+  const currentEditorValue = useStoreEditorValue('editor')
+  const document = useMemo(() => draftQuery.data, [draftQuery.data])
+
+  useEffect(() => {
+    if (draftQuery.isSuccess && draftQuery.data) {
+      const {title, subtitle} = draftQuery.data
+      send({
+        type: 'full',
+        payload: {
+          title,
+          subtitle,
+          blocks: toEditorValue(draftQuery.data),
+        },
+      })
+    }
+  }, [draftQuery.data])
+
+  const {mutateAsync: publish} = useMutation(async () => {
+    // const document = createDocument()
+    // // publishDraft
+    // console.log({document})
+    console.log('publish!!!')
+  })
+
+  const {mutateAsync: save} = useMutation(async () => {
+    const {id, author} = document
+    const newDoc = toDocument({
+      id,
+      author,
+      blocks: currentEditorValue,
+    })
+
+    console.log('save document!', newDoc)
+
+    return await updateDraft(newDoc)
+  })
 
   return {
     ...draftQuery,
     data: {
-      document: draftQuery.data,
-      editorValue,
+      value,
+      send,
+      save,
+      publish,
     },
   }
 }

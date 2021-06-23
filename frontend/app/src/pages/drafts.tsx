@@ -4,14 +4,17 @@ import {useDraftsList} from '@mintter/client/hooks'
 import {useHistory, useRouteMatch} from 'react-router'
 import type {WithCreateDraft} from './library'
 import * as MessageBox from '../components/message-box'
+import {useQueryClient} from 'react-query'
 
 export const Drafts = ({onCreateDraft}: WithCreateDraft): JSX.Element => {
   const history = useHistory()
   const match = useRouteMatch()
+  const queryClient = useQueryClient()
   const {isLoading, isError, isSuccess, error, data} = useDraftsList()
 
-  async function handleDeleteDocument(version: string) {
-    await deleteDraft(version)
+  async function handleDeleteDocument(documentId: string) {
+    await deleteDraft(documentId)
+    await queryClient.invalidateQueries('DraftList')
   }
 
   if (isError) {
