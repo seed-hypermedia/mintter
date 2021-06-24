@@ -43,20 +43,16 @@ export function DocumentList({
 
 function ListItem({item, onDeleteDocument}: {item: Document; onDeleteDocument?: (documentId: string) => void}) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
-
-  const match = useRouteMatch()
+  const {path} = useRouteMatch()
   const location = useLocation()
   // const [prefetched, setPrefetch] = React.useState<boolean>(false)
-
   const {id, title, subtitle, author: itemAuthor} = item
-  // const {data: account} = useAccount(itemAuthor)
-
   const theTitle = title ? title : 'Untitled Document'
 
   const isDraft = useMemo(() => location.pathname.includes('drafts'), [location.pathname])
 
   const to = useMemo(() => {
-    return `${getPath(match)}${isDraft ? '/editor' : '/p'}/${id}`
+    return `${getPath(path)}${isDraft ? '/editor' : '/p'}/${id}`
   }, [location.pathname])
   // function handlePrefetch() {
   // if (!prefetched) {
