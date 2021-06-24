@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
 
@@ -204,4 +205,34 @@ func TestAPIDeleteDraft(t *testing.T) {
 	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Documents, 1) // Must be 1 because we've created another document apart from the deleted one.
+}
+
+func TestAPIPublishDraft(t *testing.T) {
+	back := makeTestBackend(t, "alice", true)
+	api := newDraftsAPI(back)
+	ctx := context.Background()
+
+	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	doc.Title = "My updated title"
+
+	doc, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: doc})
+	require.NoError(t, err)
+
+	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+
+	docid, err := cid.Decode(doc.Id)
+	require.NoError(t, err)
+
+	version, err := back.patches.GetObjectVersion(ctx, docid)
+	require.NoError(t, err)
+
+	require.Equal(t, doc.Id, version.ObjectId)
+	require.Len(t, version.VersionVector, 1)
+	require.Equal(t, published.Version, version.VersionVector[0].Head)
+
+	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Documents, 0, "published draft must be removed from drafts")
 }

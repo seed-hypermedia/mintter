@@ -237,6 +237,57 @@ func (srv *draftsAPI) DeleteDraft(ctx context.Context, in *documents.DeleteDraft
 	return &emptypb.Empty{}, nil
 }
 
+func (srv *draftsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraftRequest) (*documents.PublishDraftResponse, error) {
+	p2p, err := srv.back.readyIPFS()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := srv.parseDocumentID(in.DocumentId)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := srv.back.drafts.GetDraft(c)
+	if err != nil {
+		return nil, err
+	}
+
+	doc := &documents.Document{}
+	if err := proto.Unmarshal(data, doc); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal draft: %w", err)
+	}
+
+	doc.PublishTime = timestamppb.Now()
+
+	author, err := cid.Decode(doc.Author)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse author %s: %w", doc.Author, err)
+	}
+
+	// TODO: merge previous state when updating already published documents.
+	state := newState(c, nil)
+	sp, err := state.NewProtoPatch(author, srv.back.repo.Device().priv, doc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create patch from draft: %w", err)
+	}
+
+	if err := srv.back.patches.AddPatch(ctx, sp); err != nil {
+		return nil, fmt.Errorf("failed to add patch: %w", err)
+	}
+
+	if err := srv.back.drafts.DeleteDraft(c); err != nil {
+		return nil, fmt.Errorf("failed to remove draft content: %w", err)
+	}
+
+	p2p.prov.EnqueueProvide(ctx, c)
+	p2p.prov.EnqueueProvide(ctx, sp.cid)
+
+	return &documents.PublishDraftResponse{
+		Version: sp.cid.String(),
+	}, nil
+}
+
 func (srv *draftsAPI) parseDocumentID(id string) (cid.Cid, error) {
 	c, err := cid.Decode(id)
 	if err != nil {
