@@ -76,6 +76,66 @@ func TestAPIGetDraft(t *testing.T) {
 	testutil.ProtoEqual(t, doc, got, "must get draft that was created")
 }
 
+func TestAPIUpdateDraft_BugDuplicatedBlocks(t *testing.T) {
+	// See: https://www.notion.so/mintter/updateDraft-duplicating-blocks-e5611c8112a4487cac199ffd612244ee
+	// for some history.
+
+	back := makeTestBackend(t, "alice", true)
+	api := newDraftsAPI(back)
+	ctx := context.Background()
+
+	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	doc.Children = []string{"block-1"}
+	doc.Blocks = map[string]*documents.Block{
+		"block-1": {
+			Id: "block-1",
+			Elements: []*documents.InlineElement{
+				{
+					Content: &documents.InlineElement_TextRun{
+						TextRun: &documents.TextRun{
+							Text: "Hello World",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	updated, err := api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: doc})
+	require.NoError(t, err)
+	doc.UpdateTime = updated.UpdateTime
+	testutil.ProtoEqual(t, doc, updated, "updated doc don't match")
+
+	got, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, updated, got, "got must be as updated")
+
+	got.Children = []string{"block-1", "block-2"}
+	got.Blocks["block-2"] = &documents.Block{
+		Id: "block-2",
+		Elements: []*documents.InlineElement{
+			{
+				Content: &documents.InlineElement_TextRun{
+					TextRun: &documents.TextRun{
+						Text: "Another Hello World",
+					},
+				},
+			},
+		},
+	}
+
+	updated, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: got})
+	require.NoError(t, err)
+	got.UpdateTime = updated.UpdateTime
+	testutil.ProtoEqual(t, got, updated, "updated must match got")
+
+	got, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: updated.Id})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, updated, got, "got after update")
+}
+
 func TestAPIUpdateDraft(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
 	api := newDraftsAPI(back)
