@@ -7,17 +7,24 @@ package providing
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
+	kbucket "github.com/libp2p/go-libp2p-kbucket"
 	"go.etcd.io/bbolt"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 )
 
-var logger = log.Logger("providing")
+var logger = log.Logger("providing").Desugar()
+
+func init() {
+	log.SetLogLevel("providing", "info")
+}
 
 // Strategy is a function that returns items to be reprovided.
 type Strategy func(context.Context) (<-chan cid.Cid, error)
@@ -43,6 +50,10 @@ type Provider struct {
 	rt       Routing
 	strategy Strategy
 	db       *bbolt.DB
+
+	wg   sync.WaitGroup
+	quit context.CancelFunc
+	cidc chan cid.Cid
 }
 
 var bucketProvided = []byte("/provided/")
@@ -74,6 +85,8 @@ func New(filename string, rt Routing, s Strategy) (*Provider, error) {
 		rt:       rt,
 		db:       db,
 		strategy: s,
+
+		cidc: make(chan cid.Cid, 32),
 	}
 
 	if err := prov.db.Update(func(txn *bbolt.Tx) error {
@@ -83,11 +96,62 @@ func New(filename string, rt Routing, s Strategy) (*Provider, error) {
 		return nil, err
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	prov.quit = cancel
+
+	prov.wg.Add(1)
+	go prov.loop(ctx)
+
 	return prov, nil
+}
+
+func (p *Provider) loop(ctx context.Context) {
+	defer p.wg.Done()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case c, ok := <-p.cidc:
+			if !ok {
+				return
+			}
+
+			p.wg.Add(1)
+			go func(c cid.Cid) {
+				defer p.wg.Done()
+
+				t := time.NewTimer(time.Hour)
+				t.Stop()
+				defer t.Stop()
+
+				for {
+					err := p.Provide(ctx, c)
+					if errors.Is(err, kbucket.ErrLookupFailure) {
+						t.Reset(5 * time.Minute)
+						select {
+						case <-t.C:
+							continue
+						case <-ctx.Done():
+							return
+						}
+					}
+
+					if err != nil {
+						logger.Error("FailedToProvide", zap.Error(err), zap.String("cid", c.String()))
+					}
+
+					break
+				}
+			}(c)
+		}
+	}
 }
 
 // Close closes the provider.
 func (p *Provider) Close() error {
+	p.quit()
+	p.wg.Wait()
 	return p.db.Close()
 }
 
@@ -118,6 +182,13 @@ func (p *Provider) StartReproviding(ctx context.Context) (err error) {
 			timer.Reset(p.ReprovideTickInterval)
 		}
 	}
+}
+
+// EnqueueProvide adds the CID to be provided in the background. It will retry in case
+// of transient failures, and will log an error otherwise.
+// Whenever provider gets closed, all the providing goroutines would shutdown.
+func (p *Provider) EnqueueProvide(ctx context.Context, c cid.Cid) {
+	p.cidc <- c
 }
 
 // Provide is used to provide a single record. It's blocking, and it will
@@ -156,6 +227,7 @@ func (p *Provider) reprovideAll(ctx context.Context, batchSize int) error {
 	if err != nil {
 		return fmt.Errorf("failed to call strategy: %w", err)
 	}
+
 	// TODO: get stats about how many blocks we have, and adjust the batch size dynamically.
 	nextBatch := make([]cid.Cid, 0, batchSize)
 
@@ -163,23 +235,51 @@ func (p *Provider) reprovideAll(ctx context.Context, batchSize int) error {
 
 	handleBatch := func(batch []cid.Cid) {
 		g.Go(func() error {
-			times := make([]uint64, len(batch))
+			toProvide := make([]cid.Cid, 0, len(batch))
 			if err := p.db.View(func(txn *bbolt.Tx) error {
-				for i, c := range batch {
+				for _, c := range batch {
 					if !p.shouldProvide(ctx, txn, c) {
 						continue
 					}
 
-					if err := p.provideOne(ctx, c); err != nil {
-						logger.Debug("ProvideError", zap.Error(err), zap.String("cid", c.String()))
-						continue
-					}
-
-					times[i] = uint64(time.Now().Unix())
+					toProvide = append(toProvide, c)
 				}
 				return nil
 			}); err != nil {
 				return err
+			}
+
+			times := make([]uint64, len(toProvide))
+
+			var t *time.Timer
+			for i, c := range toProvide {
+			retry:
+				err := p.provideOne(ctx, c)
+				if errors.Is(err, kbucket.ErrLookupFailure) {
+					if t == nil {
+						t = time.NewTimer(time.Hour)
+						t.Stop()
+						defer t.Stop()
+					}
+					t.Reset(time.Second * 5)
+					select {
+					case <-t.C:
+						goto retry
+					case <-ctx.Done():
+						return ctx.Err()
+					}
+				}
+
+				if errors.Is(err, context.Canceled) {
+					return err
+				}
+
+				if err != nil {
+					logger.Error("ReprovideError", zap.Error(err), zap.String("cid", c.String()))
+					continue
+				}
+
+				times[i] = uint64(time.Now().Unix())
 			}
 
 			if err := p.db.Batch(func(txn *bbolt.Tx) error {
@@ -200,6 +300,7 @@ func (p *Provider) reprovideAll(ctx context.Context, batchSize int) error {
 			return nil
 
 		})
+
 		nextBatch = make([]cid.Cid, 0, batchSize)
 	}
 
@@ -225,6 +326,13 @@ func (p *Provider) reprovideAll(ctx context.Context, batchSize int) error {
 func (p *Provider) provideOne(ctx context.Context, c cid.Cid) error {
 	ctx, cancel := context.WithTimeout(ctx, p.ProvideTimeout)
 	defer cancel()
+
+	// For some reason IPFS DHT will not return context error even if it's canceled.
+	// so we may end up being stuck retrying forever. This is a workaround that helps
+	// break out of this kind of situation.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 
 	return p.rt.Provide(ctx, c, true)
 }
