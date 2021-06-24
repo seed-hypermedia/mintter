@@ -433,7 +433,7 @@ func (srv *backend) CreateDraft(ctx context.Context, perma signedPermanode, data
 		return cid.Undef, err
 	}
 
-	if err := p2p.bs.AddBlock(perma.blk); err != nil {
+	if err := p2p.bs.Blockstore().Put(perma.blk); err != nil {
 		return cid.Undef, fmt.Errorf("failed to add permanode block: %w", err)
 	}
 
