@@ -179,9 +179,16 @@ func (srv *draftsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraft
 		return nil, fmt.Errorf("failed to unmarshal draft proto: %w", err)
 	}
 
+	// We don't use proto.Merge here, because we have arrays, in which case their contents will be duplicated.
 	merged := proto.Clone(old).(*documents.Document)
-	proto.Merge(merged, in.Document)
+	merged.Title = in.Document.Title
+	merged.Subtitle = in.Document.Subtitle
+	merged.ChildrenListStyle = in.Document.ChildrenListStyle
+	merged.Children = in.Document.Children
+	merged.Blocks = in.Document.Blocks
+	merged.Links = in.Document.Links
 
+	// If updated document didn't change, we don't need to hit the database or file system.
 	if proto.Equal(merged, old) {
 		return merged, nil
 	}

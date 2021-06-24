@@ -36,7 +36,7 @@ func TestBackendCreateDraft(t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, cid.Undef.Equals(c))
 
-	permablk, err := alice.p2p.bs.GetBlock(ctx, c)
+	permablk, err := alice.p2p.bs.Blockstore().Get(c)
 	require.NoError(t, err)
 
 	require.Equal(t, pn.blk.RawData(), permablk.RawData(), "retrieved permanode must match the created one")
