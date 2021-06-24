@@ -276,7 +276,13 @@ func (txn *Txn) GetForwardRelation(subject uint64, p Predicate) (uint64, error) 
 
 // ListIndexedNodes uses indexed token to search for nodes that contain the token.
 func (txn *Txn) ListIndexedNodes(p Predicate, token []byte) ([]uint64, error) {
-	it := txn.keyIterator(indexPrefix(txn.db.ns, p.fullName, token))
+	var prefix []byte
+	if token != nil {
+		prefix = indexPrefix(txn.db.ns, p.fullName, token)
+	} else {
+		prefix, _ = makeKey(txn.db.ns, prefixDefault, keyTypeIndex, p.fullName, 0)
+	}
+	it := txn.keyIterator(prefix)
 	defer it.Close()
 
 	var out []uint64

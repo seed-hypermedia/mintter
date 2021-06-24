@@ -29,6 +29,9 @@ func init() {
 // Strategy is a function that returns items to be reprovided.
 type Strategy func(context.Context) (<-chan cid.Cid, error)
 
+// TODO(burdiyan): add metrics for last reprovide cycle start, and last reprovide cycle end.
+// Any other metrics that might be useful as well.
+
 // Provider implements the functionality for providing and reproviding items on the DHT.
 type Provider struct {
 	// ProvideTimeout is the max duration of the Provide call of the Routing.

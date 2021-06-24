@@ -164,41 +164,13 @@ func (srv *backend) Start(ctx context.Context) (err error) {
 		}
 	})
 
-	// Provide our own account on the DHT when P2P node is ready.
-	g.Go(func() error {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-srv.p2p.Ready():
-			break
-		}
+	// Provide our own account on the DHT.
+	acc, err := srv.repo.Account()
+	if err != nil {
+		return fmt.Errorf("failed to get account to provide: %w", err)
+	}
 
-		acc, err := srv.repo.Account()
-		if err != nil {
-			return fmt.Errorf("failed to get account to provide: %w", err)
-		}
-
-		// We want to retry forever until our own account can be provided.
-		timer := time.NewTimer(time.Millisecond)
-		defer timer.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case <-timer.C:
-				err := srv.p2p.prov.Provide(ctx, cid.Cid(acc.id))
-				if err == nil {
-					srv.log.Debug("PersonalAccountProvided")
-					return nil
-				}
-
-				srv.log.Debug("FailedToProvidePersonalAccount", zap.Error(err))
-
-				timer.Reset(5 * time.Second)
-			}
-		}
-	})
+	srv.p2p.prov.EnqueueProvide(ctx, cid.Cid(acc.id))
 
 	return g.Wait()
 }

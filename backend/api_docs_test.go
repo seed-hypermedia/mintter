@@ -2,6 +2,8 @@ package backend
 
 import (
 	"context"
+	"strconv"
+	"sync"
 	"testing"
 
 	"github.com/ipfs/go-cid"
@@ -14,7 +16,7 @@ import (
 
 func TestAPICreateDraft(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
-	api := newDraftsAPI(back)
+	api := newDocsAPI(back)
 	ctx := context.Background()
 
 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -28,7 +30,7 @@ func TestAPICreateDraft(t *testing.T) {
 
 func TestAPIListDrafts(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
-	api := newDraftsAPI(back)
+	api := newDocsAPI(back)
 	ctx := context.Background()
 
 	var docs [5]*documents.Document
@@ -65,7 +67,7 @@ func TestAPIListDrafts(t *testing.T) {
 
 func TestAPIGetDraft(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
-	api := newDraftsAPI(back)
+	api := newDocsAPI(back)
 	ctx := context.Background()
 
 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -82,7 +84,7 @@ func TestAPIUpdateDraft_BugDuplicatedBlocks(t *testing.T) {
 	// for some history.
 
 	back := makeTestBackend(t, "alice", true)
-	api := newDraftsAPI(back)
+	api := newDocsAPI(back)
 	ctx := context.Background()
 
 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -139,7 +141,7 @@ func TestAPIUpdateDraft_BugDuplicatedBlocks(t *testing.T) {
 
 func TestAPIUpdateDraft(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
-	api := newDraftsAPI(back)
+	api := newDocsAPI(back)
 	ctx := context.Background()
 
 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -184,19 +186,11 @@ func TestAPIUpdateDraft(t *testing.T) {
 
 func TestAPIDeleteDraft(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
-	api := newDraftsAPI(back)
+	api := newDocsAPI(back)
 	ctx := context.Background()
 
-	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-	doc.Title = "My updated title"
-
-	// Create another doc just to ensure list returns at least something after delete.
-	_, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-
-	doc, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: doc})
-	require.NoError(t, err)
+	doc := makeDraft(t, ctx, api, "My Document 1")
+	doc2 := makeDraft(t, ctx, api, "My Document 2")
 
 	deleted, err := api.DeleteDraft(ctx, &documents.DeleteDraftRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
@@ -205,19 +199,15 @@ func TestAPIDeleteDraft(t *testing.T) {
 	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Documents, 1) // Must be 1 because we've created another document apart from the deleted one.
+	testutil.ProtoEqual(t, doc2, list.Documents[0], "second document must be the only thing in the list")
 }
 
 func TestAPIPublishDraft(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
-	api := newDraftsAPI(back)
+	api := newDocsAPI(back)
 	ctx := context.Background()
 
-	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-	doc.Title = "My updated title"
-
-	doc, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: doc})
-	require.NoError(t, err)
+	doc := makeDraft(t, ctx, api, "My Document Title")
 
 	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
@@ -235,4 +225,58 @@ func TestAPIPublishDraft(t *testing.T) {
 	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Documents, 0, "published draft must be removed from drafts")
+
+	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
+	require.NoError(t, err, "must get document after publishing")
+	doc.PublishTime = pub.Document.PublishTime // This is the only field that should differ.
+	testutil.ProtoEqual(t, doc, pub.Document, "published document doesn't match")
+}
+
+func TestListPublications(t *testing.T) {
+	back := makeTestBackend(t, "alice", true)
+	api := newDocsAPI(back)
+	ctx := context.Background()
+
+	var drafts [5]*documents.Document
+	var publications [len(drafts)]*documents.PublishDraftResponse
+
+	var wg sync.WaitGroup
+
+	wg.Add(len(drafts))
+	for i := range drafts {
+		go func(i int) {
+			drafts[i] = makeDraft(t, ctx, api, "My Document "+strconv.Itoa(i))
+			wg.Done()
+		}(i)
+	}
+
+	wg.Wait()
+
+	wg.Add(len(drafts))
+	for i := range drafts {
+		go func(i int) {
+			d := drafts[i]
+			pub, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: d.Id})
+			require.NoError(t, err, "failed to publish document "+d.Title)
+			publications[i] = pub
+			wg.Done()
+		}(i)
+	}
+
+	wg.Wait()
+
+	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, len(drafts))
+}
+
+func makeDraft(t *testing.T, ctx context.Context, api DocsServer, title string) *documents.Document {
+	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	doc.Title = title
+
+	doc, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: doc})
+	require.NoError(t, err)
+
+	return doc
 }
