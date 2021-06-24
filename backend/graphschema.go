@@ -41,10 +41,15 @@ var (
 	pDocumentCreateTime = graphSchema.RegisterPredicate(typeDocument, badgergraph.Predicate{
 		Name:     "createTime",
 		HasIndex: true,
-		Type:     badgergraph.ValueTypeString,
+		Type:     badgergraph.ValueTypeString, // TODO: introduce Time value type to store it natively.
 	})
 	pDocumentUpdateTime = graphSchema.RegisterPredicate(typeDocument, badgergraph.Predicate{
 		Name:     "updateTime",
+		HasIndex: true,
+		Type:     badgergraph.ValueTypeString,
+	})
+	pDocumentPublishTime = graphSchema.RegisterPredicate(typeDocument, badgergraph.Predicate{
+		Name:     "publishTime",
 		HasIndex: true,
 		Type:     badgergraph.ValueTypeString,
 	})

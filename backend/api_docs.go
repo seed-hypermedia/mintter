@@ -17,18 +17,25 @@ import (
 	"mintter/backend/badgergraph"
 )
 
-type draftsAPI struct {
-	documents.UnimplementedDraftsServer
+// DocsServer combines Drafts and Publications servers.
+type DocsServer interface {
+	documents.DraftsServer
+	documents.PublicationsServer
+}
+
+type docsAPI struct {
+	documents.UnimplementedPublicationsServer
+
 	back *backend
 }
 
-func newDraftsAPI(back *backend) documents.DraftsServer {
-	return &draftsAPI{
+func newDocsAPI(back *backend) DocsServer {
+	return &docsAPI{
 		back: back,
 	}
 }
 
-func (srv *draftsAPI) GetDraft(ctx context.Context, in *documents.GetDraftRequest) (*documents.Document, error) {
+func (srv *docsAPI) GetDraft(ctx context.Context, in *documents.GetDraftRequest) (*documents.Document, error) {
 	c, err := srv.parseDocumentID(in.DocumentId)
 	if err != nil {
 		return nil, err
@@ -47,7 +54,7 @@ func (srv *draftsAPI) GetDraft(ctx context.Context, in *documents.GetDraftReques
 	return doc, nil
 }
 
-func (srv *draftsAPI) CreateDraft(ctx context.Context, in *documents.CreateDraftRequest) (*documents.Document, error) {
+func (srv *docsAPI) CreateDraft(ctx context.Context, in *documents.CreateDraftRequest) (*documents.Document, error) {
 	pn, err := srv.back.NewDocumentPermanode()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create permanode: %v", err)
@@ -77,7 +84,7 @@ func (srv *draftsAPI) CreateDraft(ctx context.Context, in *documents.CreateDraft
 	return doc, nil
 }
 
-func (srv *draftsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
+func (srv *docsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
 	cids, err := srv.back.drafts.ListDrafts()
 	if err != nil {
 		return nil, err
@@ -163,7 +170,7 @@ func (srv *draftsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRe
 	return resp, nil
 }
 
-func (srv *draftsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRequest) (*documents.Document, error) {
+func (srv *docsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRequest) (*documents.Document, error) {
 	c, err := srv.parseDocumentID(in.Document.Id)
 	if err != nil {
 		return nil, err
@@ -218,7 +225,7 @@ func (srv *draftsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraft
 	return merged, nil
 }
 
-func (srv *draftsAPI) DeleteDraft(ctx context.Context, in *documents.DeleteDraftRequest) (*emptypb.Empty, error) {
+func (srv *docsAPI) DeleteDraft(ctx context.Context, in *documents.DeleteDraftRequest) (*emptypb.Empty, error) {
 	c, err := srv.parseDocumentID(in.DocumentId)
 	if err != nil {
 		return nil, err
@@ -237,7 +244,7 @@ func (srv *draftsAPI) DeleteDraft(ctx context.Context, in *documents.DeleteDraft
 	return &emptypb.Empty{}, nil
 }
 
-func (srv *draftsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraftRequest) (*documents.PublishDraftResponse, error) {
+func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraftRequest) (*documents.PublishDraftResponse, error) {
 	p2p, err := srv.back.readyIPFS()
 	if err != nil {
 		return nil, err
@@ -258,7 +265,8 @@ func (srv *draftsAPI) PublishDraft(ctx context.Context, in *documents.PublishDra
 		return nil, fmt.Errorf("failed to unmarshal draft: %w", err)
 	}
 
-	doc.PublishTime = timestamppb.Now()
+	now := time.Now().UTC().Truncate(time.Second)
+	doc.PublishTime = timestamppb.New(now)
 
 	author, err := cid.Decode(doc.Author)
 	if err != nil {
@@ -280,6 +288,16 @@ func (srv *draftsAPI) PublishDraft(ctx context.Context, in *documents.PublishDra
 		return nil, fmt.Errorf("failed to remove draft content: %w", err)
 	}
 
+	if err := srv.back.db.db.Update(func(txn *badgergraph.Txn) error {
+		uid, err := txn.UIDRead(typeDocument, c.Hash())
+		if err != nil {
+			return err
+		}
+		return txn.WriteTriple(uid, pDocumentPublishTime, now.Format(time.RFC3339))
+	}); err != nil {
+		return nil, err
+	}
+
 	p2p.prov.EnqueueProvide(ctx, c)
 	p2p.prov.EnqueueProvide(ctx, sp.cid)
 
@@ -288,7 +306,144 @@ func (srv *draftsAPI) PublishDraft(ctx context.Context, in *documents.PublishDra
 	}, nil
 }
 
-func (srv *draftsAPI) parseDocumentID(id string) (cid.Cid, error) {
+func (srv *docsAPI) GetPublication(ctx context.Context, in *documents.GetPublicationRequest) (*documents.Publication, error) {
+	c, err := srv.parseDocumentID(in.DocumentId)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := srv.back.patches.LoadState(ctx, c)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load state: %w", err)
+	}
+
+	if state.size == 0 {
+		return nil, status.Errorf(codes.NotFound, "not found patches for document ID %s", in.DocumentId)
+	}
+
+	// TODO: handle multiple patches.
+	if state.size > 1 {
+		return nil, status.Errorf(codes.Unimplemented, "documents with more than 1 patch are not supported yet")
+	}
+
+	sp := state.Item()
+
+	doc := &documents.Document{}
+	if err := proto.Unmarshal(sp.Body, doc); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal document: %w", err)
+	}
+
+	return &documents.Publication{
+		Version:  sp.cid.String(),
+		Document: doc,
+	}, nil
+}
+
+func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
+	var uids []uint64
+	if err := srv.back.db.db.View(func(txn *badgergraph.Txn) error {
+		nodes, err := txn.ListIndexedNodes(pDocumentPublishTime, nil)
+		if err != nil {
+			return err
+		}
+
+		uids = nodes
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	resp := &documents.ListPublicationsResponse{
+		Publications: make([]*documents.Publication, len(uids)),
+	}
+
+	var g errgroup.Group
+	for i, uid := range uids {
+		i, duid := i, uid
+		g.Go(func() error {
+			return srv.back.db.db.View(func(txn *badgergraph.Txn) error {
+				title, err := txn.GetProperty(duid, pDocumentTitle)
+				if err != nil {
+					return err
+				}
+
+				auid, err := txn.GetProperty(duid, pDocumentAuthor)
+				if err != nil {
+					return err
+				}
+
+				ahash, err := txn.XID(typeAccount, auid.(uint64))
+				if err != nil {
+					return err
+				}
+
+				createTime, err := txn.GetProperty(duid, pDocumentCreateTime)
+				if err != nil {
+					return err
+				}
+
+				createTimeParsed, err := time.Parse(time.RFC3339, createTime.(string))
+				if err != nil {
+					return err
+				}
+
+				updateTime, err := txn.GetProperty(duid, pDocumentUpdateTime)
+				if err != nil {
+					return err
+				}
+
+				updateTimeParsed, err := time.Parse(time.RFC3339, updateTime.(string))
+				if err != nil {
+					return err
+				}
+
+				publishTime, err := txn.GetProperty(duid, pDocumentPublishTime)
+				if err != nil {
+					return err
+				}
+
+				publishTimeParsed, err := time.Parse(time.RFC3339, publishTime.(string))
+				if err != nil {
+					return err
+				}
+
+				dhash, err := txn.XID(typeDocument, duid)
+				if err != nil {
+					return err
+				}
+
+				c := cid.NewCidV1(codecDocumentID, dhash)
+
+				resp.Publications[i] = &documents.Publication{
+					// TODO(burdiyan): fix this fact.
+					Version: "WE HAVE A BUG: THERE CAN BE NO SINGLE VERSION OF A PUBLICATION",
+					Document: &documents.Document{
+						Id:          c.String(),
+						Author:      cid.NewCidV1(codecAccountID, ahash).String(),
+						Title:       title.(string),
+						CreateTime:  timestamppb.New(createTimeParsed),
+						UpdateTime:  timestamppb.New(updateTimeParsed),
+						PublishTime: timestamppb.New(publishTimeParsed),
+					},
+				}
+
+				return nil
+			})
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// TODO(burdiyan): implement a delete publication.
+// How can we delete if there's no single version?
+
+func (srv *docsAPI) parseDocumentID(id string) (cid.Cid, error) {
 	c, err := cid.Decode(id)
 	if err != nil {
 		return cid.Undef, status.Errorf(codes.InvalidArgument, "failed to parse document id %s: %v", id, err)
