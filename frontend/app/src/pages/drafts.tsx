@@ -1,10 +1,12 @@
 import {DocumentList} from '../document-list'
 import {deleteDraft} from '@mintter/client'
+import toast from 'react-hot-toast'
 import {useDraftsList} from '@mintter/client/hooks'
 import {useHistory, useRouteMatch} from 'react-router'
 import type {WithCreateDraft} from './library'
 import * as MessageBox from '../components/message-box'
 import {useQueryClient} from 'react-query'
+import {AppSpinner} from '../components/app-spinner'
 
 export const Drafts = ({onCreateDraft}: WithCreateDraft): JSX.Element => {
   const history = useHistory()
@@ -15,14 +17,16 @@ export const Drafts = ({onCreateDraft}: WithCreateDraft): JSX.Element => {
   async function handleDeleteDocument(documentId: string) {
     await deleteDraft(documentId)
     await queryClient.invalidateQueries('DraftList')
+    toast.success(`Draft successfully deleted`)
   }
 
   if (isError) {
+    toast.error('something went wrong!', {duration: 6000})
     return <p>Drafts ERROR</p>
   }
 
   if (isLoading) {
-    return <p>loading drafts...</p>
+    return <AppSpinner />
   }
 
   return (

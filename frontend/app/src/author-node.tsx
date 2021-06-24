@@ -30,14 +30,14 @@ export function AuthorNode({path = '/'}: {path?: string}) {
   if (info.isError || (info.isSuccess && !info.data)) {
     return (
       <Switch>
-        <Route exact path={createPath(match, 'welcome')}>
+        <Route exact path={'/welcome'}>
           <OnboardingPage />
         </Route>
         <Route
           render={(route: RouteComponentProps) => (
             <Redirect
               to={{
-                pathname: `${getPath(route.match)}/welcome`,
+                pathname: `/welcome`,
                 state: {from: route.location.pathname},
               }}
             />
@@ -71,7 +71,7 @@ export function AuthorNode({path = '/'}: {path?: string}) {
             <Settings />
           </Route>
           <Route>
-            <Redirect to={createPath(match, 'library')} />
+            <Redirect to={'/library'} />
           </Route>
         </Switch>
       </Box>

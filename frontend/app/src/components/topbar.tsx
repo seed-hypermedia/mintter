@@ -19,7 +19,7 @@ interface NavItemProps {
 
 export function Topbar({isPublic = false}: {isPublic?: boolean}) {
   const history = useHistory()
-  const match = useRouteMatch()
+  const {path} = useRouteMatch()
 
   return isPublic ? (
     <Box>public topbar here</Box>
@@ -36,7 +36,7 @@ export function Topbar({isPublic = false}: {isPublic?: boolean}) {
         alignItems: 'center',
       }}
     >
-      <Link to={getPath(match)}>
+      <Link to={`/`}>
         <Icon name="Mintter" size="2" color="primary" />
       </Link>
       {/* //@ts-ignore */}
@@ -54,7 +54,7 @@ export function Topbar({isPublic = false}: {isPublic?: boolean}) {
         <Button
           //@ts-ignore
           as={Link}
-          to={`${getPath(match)}/settings`}
+          to={`/settings`}
           variant="ghost"
           size="1"
         >
@@ -68,7 +68,7 @@ export function Topbar({isPublic = false}: {isPublic?: boolean}) {
 function MintterSearch() {
   const ref = useRef<HTMLInputElement>(null)
   const history = useHistory()
-  const match = useRouteMatch()
+  const {path} = useRouteMatch()
 
   // TODO: fix types
   async function handleSearch(e: any) {
@@ -83,7 +83,7 @@ function MintterSearch() {
       ref.current.value = ''
     }
 
-    history.push(`${getPath(match)}/p/${to}`)
+    history.push(`/p/${to}`)
   }
 
   return (

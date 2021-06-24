@@ -86,11 +86,10 @@ export function OnboardingPage({machine = {}}: {machine?: any}) {
           width: '100%',
         }}
       >
-        {onboardingMachineState.matches('loading') ? <AppSpinner isCentered /> : null}
-        {onboardingMachineState.matches('welcome') ? <Welcome {...onboardingStepProps} /> : null}
-        {onboardingMachineState.matches('securityPack') ? <SecurityPack {...onboardingStepProps} /> : null}
-        {onboardingMachineState.matches('profileInformation') ? <ProfileInformation {...onboardingStepProps} /> : null}
-        {onboardingMachineState.matches('complete') ? <Complete /> : null}
+        {onboardingMachineState.matches('welcome') && <Welcome {...onboardingStepProps} />}
+        {onboardingMachineState.matches('securityPack') && <SecurityPack {...onboardingStepProps} />}
+        {onboardingMachineState.matches('profileInformation') && <ProfileInformation {...onboardingStepProps} />}
+        {onboardingMachineState.matches('complete') && <Complete />}
       </Box>
     </Box>
   )

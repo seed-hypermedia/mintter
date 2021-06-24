@@ -1,8 +1,8 @@
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {Box, Button, Text, TextField} from '@mintter/ui'
-
+import toast from 'react-hot-toast'
 import {useParams} from 'react-router'
-import {useMutation, UseQueryResult} from 'react-query'
+import {useMutation, useQueryClient, UseQueryResult} from 'react-query'
 
 import {useDraft, useAccount} from '@mintter/client/hooks'
 
@@ -21,17 +21,24 @@ import {createId} from '@mintter/client/mocks'
 import {useReducer} from 'react'
 import {EditorAction, editorReducer, EditorState, initialValue, useEditorReducer} from '../editor/editor-reducer'
 import {useStoreEditorValue} from '@udecode/slate-plugins'
+import {AppSpinner} from '../components/app-spinner'
+import {SAVING} from 'slate-history'
 
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
+  const queryClient = useQueryClient()
   const {isLoading, isError, error, data} = useEditorDraft(docId)
 
   // sidepanel
   const {isSidepanelOpen, sidepanelObjects, sidepanelSend} = useSidePanel()
 
-  function save() {
-    data?.save()
+  async function save() {
+    // console.log('save now!!')
+    await data?.save()
+    toast.success('Draft saved!', {position: 'top-center', duration: 4000})
   }
+
+  // const {status} = useAutosave(save)
 
   if (isError) {
     console.error('useDraft error: ', error)
@@ -39,7 +46,7 @@ export default function EditorPage() {
   }
 
   if (isLoading) {
-    return <Text>loading draft...</Text>
+    return <AppSpinner />
   }
 
   return (
@@ -68,9 +75,6 @@ export default function EditorPage() {
           paddingHorizontal: '$5',
         }}
       >
-        <Button color="success" shape="pill" size="2" onClick={save}>
-          SAVE
-        </Button>
         {/* <Button color="primary" shape="pill" size="2" onClick={saveDocument}>
           PUBLISH
         </Button> */}
@@ -79,6 +83,7 @@ export default function EditorPage() {
         </Button>
       </Box>
       <Container css={{gridArea: 'maincontent', marginBottom: 300}}>
+        <AutosaveStatus save={save} />
         <TextField
           // TODO: Fix types
           // @ts-ignore
@@ -152,6 +157,31 @@ export default function EditorPage() {
   )
 }
 
+const message = {
+  error: {
+    color: 'danger',
+    text: 'error saving document!',
+  },
+  loading: {
+    color: 'muted',
+    text: 'saving...',
+  },
+  success: {
+    color: 'success',
+    text: 'draft saved!',
+  },
+}
+
+function AutosaveStatus({save}) {
+  const {status, isLoading} = useAutosave(save)
+
+  return (
+    <Box css={{paddingHorizontal: '$5'}}>
+      {message[status] ? <Text color={message[status].color}>{message[status].text}</Text> : <Text></Text>}
+    </Box>
+  )
+}
+
 type UseEditorValue = {
   value: EditorState
   send: React.Dispatch<EditorAction>
@@ -170,6 +200,7 @@ function useEditorDraft(documentId: string): UseQueryResult<UseEditorValue> {
    * - editor value
    * - publish function
    */
+  const queryClient = useQueryClient()
   const draftQuery = useDraft(documentId)
   const [value, send] = useEditorReducer()
   const currentEditorValue = useStoreEditorValue('editor')
@@ -196,18 +227,43 @@ function useEditorDraft(documentId: string): UseQueryResult<UseEditorValue> {
     console.log('publish!!!')
   })
 
-  const {mutateAsync: save} = useMutation(async () => {
-    const {id, author} = document
-    const newDoc = toDocument({
-      id,
-      author,
-      blocks: currentEditorValue,
-    })
+  const {mutateAsync: save} = useMutation(
+    async () => {
+      const {id, author} = document
+      const {title, subtitle} = value
+      console.log('🚀 ~ file: ', {title, subtitle})
+      const newDoc = toDocument({
+        id,
+        author,
+        title,
+        subtitle,
+        blocks: currentEditorValue,
+      })
+      return await updateDraft(newDoc)
+    },
+    {
+      onMutate: async () => {
+        await queryClient.cancelQueries(['Draft', document?.id])
+        await queryClient.invalidateQueries('DraftList')
 
-    console.log('save document!', newDoc)
+        const previousDraft = queryClient.getQueryData<Document>(['Draft', document?.id])
 
-    return await updateDraft(newDoc)
-  })
+        const newDraft = toDocument({
+          id: document.id,
+          title: value.title,
+          subtitle: value.subtitle,
+          author: document.author,
+          blocks: currentEditorValue,
+        })
+
+        if (previousDraft) {
+          queryClient.setQueryData<Document>(['Draft', document?.id], newDraft)
+        }
+
+        return {previousDraft, newDraft}
+      },
+    },
+  )
 
   return {
     ...draftQuery,
@@ -218,4 +274,54 @@ function useEditorDraft(documentId: string): UseQueryResult<UseEditorValue> {
       publish,
     },
   }
+}
+
+function useAutosave(cb) {
+  let [key, setKey] = useState<number>(0)
+
+  const shouldSave = useDebounce(key, 1000)
+
+  const {mutateAsync, status, isLoading, isIdle} = useMutation(cb)
+  console.log('🚀 ~ file: editor.tsx ~ line 276 ~ useAutosave ~ isIdle', isIdle)
+
+  const onKeyDownEvent = (event: KeyboardEvent) => {
+    setKey(key++)
+  }
+
+  useEffect(() => {
+    window.addEventListener('keydown', onKeyDownEvent)
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDownEvent)
+    }
+  }, [])
+
+  useEffect(async () => {
+    if (shouldSave) {
+      await mutateAsync()
+    }
+  }, [shouldSave])
+
+  return {isLoading, status}
+}
+
+function useDebounce(value, delay) {
+  // State and setters for debounced value
+  const [debouncedValue, setDebouncedValue] = useState(value)
+  useEffect(
+    () => {
+      // Update debounced value after delay
+      const handler = setTimeout(() => {
+        setDebouncedValue(value)
+      }, delay)
+      // Cancel the timeout if value changes (also on delay change or unmount)
+      // This is how we prevent debounced value from updating if value is changed ...
+      // .. within the delay period. Timeout gets cleared and restarted.
+      return () => {
+        clearTimeout(handler)
+      }
+    },
+    [value, delay], // Only re-call effect if value or delay changes
+  )
+  return debouncedValue
 }

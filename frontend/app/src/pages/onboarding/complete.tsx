@@ -1,4 +1,5 @@
 import {useCallback} from 'react'
+import {useQueryClient} from 'react-query'
 import {useHistory, useLocation} from 'react-router'
 
 import {
@@ -12,12 +13,14 @@ import {
 export const Complete: React.FC = () => {
   const history = useHistory()
   const location = useLocation<{from?: string}>()
+  const queryClient = useQueryClient()
 
   const handleSubmit = useCallback(async () => {
     console.log('submit welcome!!')
-    // await queryClient.invalidateQueries('Account');
-    // history.replace(location.state.from ?? '/library');
-    window.location.reload()
+    await queryClient.invalidateQueries('AccountInfo')
+    // console.log({from: location.state.from})
+    history.replace(location.state.from ?? '/')
+    // window.location.reload()
   }, [history, location])
 
   return (
