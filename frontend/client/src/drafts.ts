@@ -48,9 +48,8 @@ export async function deleteDraft(documentId: string, rpc?: GrpcClient) {
  */
 export async function updateDraft(entry: Document, rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
-  const request = UpdateDraftRequest.fromPartial({document: entry})
-  const response = await new DraftsClientImpl(rpc).UpdateDraft(request)
-  console.log(JSON.stringify({entry, response}, null, 2))
+  // const request = UpdateDraftRequest.fromPartial({document: entry})
+  const response = await new DraftsClientImpl(rpc).UpdateDraft({document: entry})
   return response
 }
 

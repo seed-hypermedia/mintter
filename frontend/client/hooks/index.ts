@@ -37,7 +37,14 @@ export function useAccount(accountId = '', options: HookOptions<Account> = {}) {
  * @returns
  */
 export function useInfo(options: HookOptions<Info> = {}) {
-  return useQuery(['GetInfo'], () => getInfo(options.rpc), options)
+  return useQuery(
+    ['AccountInfo'],
+    async () => {
+      const resp = await getInfo(options.rpc)
+      return resp
+    },
+    options,
+  )
 }
 
 /**

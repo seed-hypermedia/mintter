@@ -3,7 +3,7 @@ import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 
 import {global} from '@mintter/ui/stitches.config'
 const {AuthorNode} = lazily(() => import('./author-node'))
-const {PublisherNode} = lazily(() => import('./publisher-node'))
+// const {PublisherNode} = lazily(() => import('./publisher-node'))
 
 const globalStyles = global({
   body: {

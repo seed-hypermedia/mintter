@@ -1,4 +1,4 @@
-import {Switch, useRouteMatch, Redirect, useHistory, Route} from 'react-router-dom'
+import {Switch, useRouteMatch, Redirect, useHistory, Route, useParams} from 'react-router-dom'
 import {useAccount} from '@mintter/client/hooks'
 import {listAccounts, connect, createDraft} from '@mintter/client'
 import {Link} from '../components/link'
@@ -20,16 +20,14 @@ export type WithCreateDraft = {
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
-  const match = useRouteMatch()
-  console.log('🚀 ~ file: library.tsx ~ line 24 ~ Library ~ match', match)
+  const {path, url} = useRouteMatch()
   const history = useHistory()
   // const { connectToPeer } = useConnectionCreate();
-
   async function onCreateDraft() {
     const d = await createDraft()
     if (d?.id) {
       history.push({
-        pathname: `${getPath(match)}/editor/${d.id}`,
+        pathname: `${getPath(path)}/editor/${d.id}`,
       })
     } else {
       console.warn(`createDraft Error: "createDraft" does not returned a Document`, d)
@@ -119,25 +117,21 @@ export default function Library() {
             marginTop: '$6',
           }}
         >
-          <NavItem to={`${match.url}/feed`}>Feed</NavItem>
-          <NavItem to={`${match.url}/published`}>Published</NavItem>
-          <NavItem to={`${match.url}/drafts`}>Drafts</NavItem>
+          <NavItem to={`${url}`} onlyActiveWhenExact>
+            Feed
+          </NavItem>
+          <NavItem to={`${url}/published`}>Published</NavItem>
+          <NavItem to={`${url}/drafts`}>Drafts</NavItem>
         </Box>
         <Separator />
         {/* <NoConnectionsBox onConnect={onConnect} /> */}
 
         <Switch>
-          <Route exact path={match.url}>
-            <Redirect to={`${match.url}/feed`} />
-          </Route>
-          <Route path={`${match.url}/feed`}>
+          <Route exact path={path}>
             <Publications onCreateDraft={onCreateDraft} />
           </Route>
-          <Route path={`${match.url}/published`}>
-            <MyPublications onCreateDraft={onCreateDraft} />
-          </Route>
-          <Route path={`${match.url}/drafts`}>
-            <Drafts onCreateDraft={onCreateDraft} />
+          <Route path={`${path}/:tab`}>
+            <NestedTabs onCreateDraft={onCreateDraft} />
           </Route>
         </Switch>
       </Container>
@@ -145,8 +139,20 @@ export default function Library() {
   )
 }
 
+function NestedTabs({onCreateDraft}) {
+  const {tab} = useParams()
+
+  if (tab == 'published') {
+    return <MyPublications onCreateDraft={onCreateDraft} />
+  }
+
+  if (tab == 'drafts') {
+    return <Drafts onCreateDraft={onCreateDraft} />
+  }
+}
+
 function ProfileInfo() {
-  const match = useRouteMatch()
+  const {path} = useRouteMatch()
   const {data, isError, error, isLoading, isSuccess} = useAccount()
 
   if (isLoading) {
@@ -184,7 +190,7 @@ function ProfileInfo() {
         variant="outlined"
         color="primary"
         size="1"
-        to={`${getPath(match)}/settings`}
+        to={`${getPath(path)}/settings`}
       >
         Edit profile
       </Button>
@@ -218,8 +224,7 @@ function NavItem({children, to, css, onlyActiveWhenExact = false, ...props}: Nav
     exact: onlyActiveWhenExact,
   })
 
-  const active = useMemo(() => match?.path === to, [match, to])
-  // console.log('🚀 ~ NavItem ', {active, match})
+  const active = useMemo(() => match?.path === to, [match?.path, to])
 
   return (
     <Text

@@ -49,6 +49,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       ...action.payload,
     }
 
+  console.log('action', action)
   return {
     ...state,
     [action.type]: action.payload,
