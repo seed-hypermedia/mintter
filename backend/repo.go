@@ -29,7 +29,7 @@ Repo layout v1 file tree:
 */
 
 const (
-	currentRepoLayoutVersion = "dev-3" // TODO: when layout is stable set a correct version here.
+	currentRepoLayoutVersion = "dev-4" // TODO: when layout is stable set a correct version here.
 
 	keysDir   = "keys"
 	dbDir     = "db"

@@ -23,7 +23,7 @@ var moduleGRPC = fx.Options(
 		newNetworkingAPI,
 		newAccountsAPI,
 		newDaemonAPI,
-		newDraftsAPI,
+		newDocsAPI,
 		provideGRPCServer,
 	),
 	fx.Invoke(registerGRPC),
@@ -86,12 +86,13 @@ func registerGRPC(srv *grpc.Server,
 	dsrv daemon.DaemonServer,
 	asrv accounts.AccountsServer,
 	nsrv networking.NetworkingServer,
-	drafts documents.DraftsServer,
+	docs DocsServer,
 ) {
 	accounts.RegisterAccountsServer(srv, asrv)
 	networking.RegisterNetworkingServer(srv, nsrv)
 	daemon.RegisterDaemonServer(srv, dsrv)
-	documents.RegisterDraftsServer(srv, drafts)
+	documents.RegisterDraftsServer(srv, docs)
+	documents.RegisterPublicationsServer(srv, docs)
 	reflection.Register(srv)
 }
 
