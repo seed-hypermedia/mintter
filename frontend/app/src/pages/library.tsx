@@ -24,13 +24,16 @@ export default function Library() {
   const history = useHistory()
   // const { connectToPeer } = useConnectionCreate();
   async function onCreateDraft() {
-    const d = await createDraft()
-    if (d?.id) {
-      history.push({
-        pathname: `${getPath(path)}/editor/${d.id}`,
-      })
-    } else {
-      console.warn(`createDraft Error: "createDraft" does not returned a Document`, d)
+    try {
+      const d = await createDraft()
+      console.log('🚀 ~ onCreateDraft ~ d', d)
+      if (d?.id) {
+        history.push({
+          pathname: `${getPath(path)}/editor/${d.id}`,
+        })
+      }
+    } catch (err) {
+      console.warn(`createDraft Error: "createDraft" does not returned a Document`, d, err)
     }
   }
 

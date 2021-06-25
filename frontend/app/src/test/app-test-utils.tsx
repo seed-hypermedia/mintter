@@ -11,16 +11,20 @@ import userEvent from '@testing-library/user-event'
 import {Account, Profile} from '@mintter/client'
 import * as mocks from '@mintter/client/mocks'
 import {AppProviders} from '../app-providers'
-
-function AppWrapper({children}: {children: React.ReactNode}) {
-  return (
-    <div>
-      <AppProviders>{children}</AppProviders>
-    </div>
-  )
+import {MemoryRouter} from 'react-router-dom'
+import {App} from '../app'
+function createWrapper(route: string) {
+  return function AppWrapper({children}: {children: React.ReactNode}) {
+    return (
+      <AppProviders>
+        <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+      </AppProviders>
+    )
+  }
 }
 
 export type RenderOptions = RTLRenderOptions & {
+  wait?: boolean
   route?: string
   timeout?: number
   wrapper?: any
@@ -32,8 +36,8 @@ export type RenderResult = RTLRenderResults & {
 }
 
 async function render(
-  ui: any,
-  {route = '/', timeout = 4000, wrapper = AppWrapper, wait = false, account, ...renderOptions}: RenderOptions = {},
+  ui: any = <App />,
+  {route = '/', timeout = 4000, wrapper, wait = true, account, ...renderOptions}: RenderOptions = {},
 ): RenderResult {
   const routeConfig =
     typeof route === 'string'
@@ -46,6 +50,7 @@ async function render(
   window.history.pushState(routeConfig.state, 'Test page', routeConfig.pathname)
 
   account ||= mocks.mockAccount()
+  wrapper ||= createWrapper(route)
 
   const returnValue = {
     ...rtlRender(ui, {

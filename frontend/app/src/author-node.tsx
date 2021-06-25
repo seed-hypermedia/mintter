@@ -6,6 +6,8 @@ import {AppSpinner} from './components/app-spinner'
 import {Topbar} from './components/topbar'
 import {useInfo} from '@mintter/client/hooks'
 import {Box} from '@mintter/ui'
+import {ErrorBoundary} from 'react-error-boundary'
+import {AppError} from './app'
 
 const {OnboardingPage} = lazily(() => import('./pages/onboarding'))
 const Library = lazy(() => import('./pages/library'))
@@ -49,32 +51,34 @@ export function AuthorNode({path = '/'}: {path?: string}) {
 
   if (info.isSuccess && info.data) {
     return (
-      <Box
-        css={{
-          minHeight: '100vh',
-          display: 'grid',
-          gridTemplateRows: '64px 1fr',
-        }}
-      >
-        <Topbar />
-        <Switch>
-          <Route path={['/library', '/admin/library']}>
-            <Library />
-          </Route>
-          <Route exact path={['/editor/:docId', '/admin/editor/:docId']}>
-            <Editor />
-          </Route>
-          <Route path={['/p/:docId/:docVersion', '/admin/p/:docId/:docVersion']}>
-            <Publication />
-          </Route>
-          <Route path={['/settings', '/admin/settings']}>
-            <Settings />
-          </Route>
-          <Route>
-            <Redirect to={'/library'} />
-          </Route>
-        </Switch>
-      </Box>
+      <ErrorBoundary FallbackComponent={AppError}>
+        <Box
+          css={{
+            minHeight: '100vh',
+            display: 'grid',
+            gridTemplateRows: '64px 1fr',
+          }}
+        >
+          <Topbar />
+          <Switch>
+            <Route path={['/library', '/admin/library']}>
+              <Library />
+            </Route>
+            <Route exact path={['/editor/:docId', '/admin/editor/:docId']}>
+              <Editor />
+            </Route>
+            <Route path={['/p/:docId/:docVersion', '/admin/p/:docId/:docVersion']}>
+              <Publication />
+            </Route>
+            <Route path={['/settings', '/admin/settings']}>
+              <Settings />
+            </Route>
+            <Route>
+              <Redirect to={'/library'} />
+            </Route>
+          </Switch>
+        </Box>
+      </ErrorBoundary>
     )
   }
 

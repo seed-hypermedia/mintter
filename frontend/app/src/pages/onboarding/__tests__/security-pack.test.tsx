@@ -12,20 +12,20 @@ afterEach(() => {
   jest.clearAllMocks()
 })
 
-function renderSecurityPack() {
-  render(<OnboardingPage machine={{initial: 'securityPack'}} />)
+async function renderSecurityPack() {
+  return await render(<OnboardingPage machine={{initial: 'securityPack'}} />, {wait: false})
 }
 
 describe('<SecurityPack />', () => {
   test('render properly', async () => {
-    renderSecurityPack()
+    await renderSecurityPack()
     await waitFor(() => {
       expect(screen.queryByText('word-2')).toBeVisible()
     })
   })
 
   test('should call registerAccount with the mnemonic words', async () => {
-    renderSecurityPack()
+    await renderSecurityPack()
 
     const button = screen.getByText(/next/i)
     userEvent.click(button)
