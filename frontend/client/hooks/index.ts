@@ -18,7 +18,7 @@ import {
   ListDraftsResponse,
   listDrafts,
 } from '../src'
-import {mockBlock, mockDocument, mockTextInlineElement} from '../mocks'
+import {mockBlock, mockDocument, mockTextInlineElement, createId} from '../mocks'
 import type {HookOptions} from './types'
 
 /**
@@ -73,6 +73,7 @@ export function useDocument(documentId: string, options: HookOptions<Document> =
  * @returns
  */
 export function useDraft(draftId: string, options: HookOptions<Document> = {}): UseQueryResult<Document> {
+  console.log('enter useDraft!')
   if (!draftId) {
     throw new Error(`useDraft: parameter "draftId" is required`)
   }
@@ -90,6 +91,7 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
     async ({queryKey}) => {
       const [_key, draftId] = queryKey as [string, string]
       const resp = await getDraft(draftId, options.rpc)
+      console.log('🚀 ~ file: index.ts ~ line 93 ~ resp', resp)
       return resp
     },
     {
@@ -225,8 +227,8 @@ export function useQuote(documentId: string, quoteId?: string, options: HookOpti
       console.warn('called mocked function "useQuote"')
 
       const innerQuote = {
-        id: mock.createId(),
-        url: `mtt://${mock.createId()}/${mock.createId()}`,
+        id: createId(),
+        url: `mtt://${createId()}/${createId()}`,
       }
 
       const doc = quoteId

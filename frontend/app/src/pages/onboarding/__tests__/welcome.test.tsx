@@ -2,7 +2,7 @@ import {screen, render, userEvent, waitFor} from '../../../test/app-test-utils'
 import {OnboardingPage} from '../index'
 
 it('<Welcome />', async () => {
-  render(<OnboardingPage />)
+  await render()
 
   screen.getByText(/Welcome to Mintter/i)
 
