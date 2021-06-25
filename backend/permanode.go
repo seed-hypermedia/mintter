@@ -68,7 +68,7 @@ func newPermanode() permanode {
 
 	return permanode{
 		Random:     buf[:],
-		CreateTime: time.Now().UTC().Truncate(time.Second),
+		CreateTime: nowTruncated(),
 	}
 }
 
