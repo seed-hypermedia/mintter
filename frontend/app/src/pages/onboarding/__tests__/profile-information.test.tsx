@@ -4,37 +4,40 @@ import * as clientMock from '@mintter/client'
 
 jest.mock('@mintter/client')
 
-function renderProfileInformation() {
-  render(<OnboardingPage machine={{initial: 'profileInformation'}} />)
+async function renderProfileInformation() {
+  return await render(<OnboardingPage machine={{initial: 'profileInformation'}} />, {wait: false})
 }
 
 describe('<ProfileInformation />', () => {
   test('render Properly', async () => {
     await renderProfileInformation()
-
-    expect(screen.getByText(/Profile Information/i)).toBeInTheDocument()
-    waitFor(() => {
-      expect(screen.getByTestId('next-button')).toBeDisabled()
+    await waitFor(() => {
+      expect(screen.getByText(/Profile Information/i)).toBeInTheDocument()
     })
   })
 
   test('should call updateAccount with the form values', async () => {
-    renderProfileInformation()
+    await renderProfileInformation()
     const profile = {
       alias: 'johndoe',
       email: 'john@doe.com',
       bio: 'John Doe is better than Chuck Norris',
     }
+    const next = screen.queryByTestId('next-button')
+
+    await waitFor(() => {
+      expect(next).toBeInTheDocument()
+    })
 
     userEvent.type(screen.getByTestId(/alias-input/i), profile.alias)
     userEvent.type(screen.getByTestId(/email-input/i), profile.email)
     userEvent.type(screen.getByTestId(/bio-input/i), profile.bio)
 
     await waitFor(() => {
-      expect(screen.getByTestId('next-button')).not.toBeDisabled()
+      expect(next).not.toBeDisabled()
     })
 
-    userEvent.click(screen.getByTestId('next-button'))
+    userEvent.click(next)
 
     await waitFor(() => {
       expect(clientMock.updateAccount).toHaveBeenCalledTimes(1)

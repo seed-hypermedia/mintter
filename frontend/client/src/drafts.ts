@@ -24,9 +24,7 @@ export async function createDraft(rpc?: GrpcClient): Promise<Document> {
   const emptyBlock = Block.fromPartial({id: createId(), elements: [InlineElement.fromPartial({textRun: {text: ''}})]})
   const request = CreateDraftRequest.fromPartial({blocks: [emptyBlock]} as Document)
 
-  const resp = await new DraftsClientImpl(rpc).CreateDraft(request)
-  console.log('🚀 ~ file: drafts.ts ~ line 25 ~ createDraft ~ request', resp)
-  return resp
+  return await new DraftsClientImpl(rpc).CreateDraft(request)
 }
 
 /**
@@ -83,11 +81,10 @@ export async function listDrafts(
  * @param rpc
  * @returns
  */
-export function publishDraft(documentId: string, rpc?: GrpcClient) {
+export async function publishDraft(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
-  console.warn('called mocked function "publishDraft"')
-  // const request = PublishDraftRequest.fromPartial({documentId})
-  // return new DraftsClientImpl(rpc).PublishDraft(request)
+  const request = PublishDraftRequest.fromPartial({documentId})
+  return await new DraftsClientImpl(rpc).PublishDraft(request)
 }
 
 /**
@@ -99,7 +96,5 @@ export function publishDraft(documentId: string, rpc?: GrpcClient) {
 export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
   const request = GetDraftRequest.fromPartial({documentId})
-  const response = await new DraftsClientImpl(rpc).GetDraft(request)
-  console.log('🚀 ~ response', {response})
-  return response
+  return await new DraftsClientImpl(rpc).GetDraft(request)
 }

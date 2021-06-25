@@ -10,21 +10,34 @@ export type RenderLibraryOptions = RenderOptions & {
   createDraft?: any
 }
 export type RenderLibraryResult = RenderResult & {
+  ui: any
   drafts: Array<clientMock.Document>
 }
 
-export async function renderLibrary(
-  ui: any,
-  {router = {initialEntries: ['/library/feed']}, account, drafts, wait, createDraft}: RenderLibraryOptions = {},
-): RenderLibraryResult {
+export async function renderLibrary({
+  ui,
+  route = '/library',
+  account,
+  info,
+  drafts,
+  wait,
+  createDraft,
+  ...rest
+}: RenderLibraryOptions = {}): RenderLibraryResult {
   account ||= mocks.mockAccount()
+  info ||= {
+    accountId: account.id,
+    peerId: 'peer',
+    startTime: '',
+  }
   ;(clientMock.getAccount as jest.Mock).mockResolvedValue(account)
+  ;(clientMock.getInfo as jest.Mock).mockResolvedValue(info)
 
   drafts ||= [mocks.mockDocument(), mocks.mockDocument(), mocks.mockDocument()]
   ;(clientMock.listDrafts as jest.Mock).mockResolvedValue({documents: drafts, nextPageToken: 'nextPageToken'})
   ;(clientMock.createDraft as jest.Mock).mockResolvedValue(mocks.mockDocument())
 
-  const utils = await render(ui, {router, wait})
+  const utils = await render(ui, {route, wait, ...rest})
 
   return {
     ...utils,

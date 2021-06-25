@@ -22,7 +22,8 @@ import {useReducer} from 'react'
 import {EditorAction, editorReducer, EditorState, initialValue, useEditorReducer} from '../editor/editor-reducer'
 import {useStoreEditorValue} from '@udecode/slate-plugins'
 import {AppSpinner} from '../components/app-spinner'
-import {SAVING} from 'slate-history'
+import {AutosaveStatus} from '../editor/autosave'
+import {useEditorDraft} from '../editor/use-editor-draft'
 
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
@@ -32,13 +33,17 @@ export default function EditorPage() {
   // sidepanel
   const {isSidepanelOpen, sidepanelObjects, sidepanelSend} = useSidePanel()
 
+  useEffect(() => {
+    return () => {
+      data.save()
+    }
+  }, [])
+
   async function save() {
     // console.log('save now!!')
     await data?.save()
     toast.success('Draft saved!', {position: 'top-center', duration: 4000})
   }
-
-  // const {status} = useAutosave(save)
 
   if (isError) {
     console.error('useDraft error: ', error)
@@ -155,173 +160,4 @@ export default function EditorPage() {
       ) : null}
     </Box>
   )
-}
-
-const message = {
-  error: {
-    color: 'danger',
-    text: 'error saving document!',
-  },
-  loading: {
-    color: 'muted',
-    text: 'saving...',
-  },
-  success: {
-    color: 'success',
-    text: 'draft saved!',
-  },
-}
-
-function AutosaveStatus({save}) {
-  const {status, isLoading} = useAutosave(save)
-
-  return (
-    <Box css={{paddingHorizontal: '$5'}}>
-      {message[status] ? <Text color={message[status].color}>{message[status].text}</Text> : <Text></Text>}
-    </Box>
-  )
-}
-
-type UseEditorValue = {
-  value: EditorState
-  send: React.Dispatch<EditorAction>
-  save: (d: Document) => Promise<Document>
-  publish: () => Promise<void>
-}
-
-function useEditorDraft(documentId: string): UseQueryResult<UseEditorValue> {
-  // set local state
-  /**
-   * need to do:
-   * - fetch draft
-   * - convert draft into editor value
-   * - effect to autosave draft
-   * need to return:
-   * - editor value
-   * - publish function
-   */
-  const queryClient = useQueryClient()
-  const draftQuery = useDraft(documentId)
-  const [value, send] = useEditorReducer()
-  const currentEditorValue = useStoreEditorValue('editor')
-  const document = useMemo(() => draftQuery.data, [draftQuery.data])
-
-  useEffect(() => {
-    if (draftQuery.isSuccess && draftQuery.data) {
-      const {title, subtitle} = draftQuery.data
-      send({
-        type: 'full',
-        payload: {
-          title,
-          subtitle,
-          blocks: toEditorValue(draftQuery.data),
-        },
-      })
-    }
-  }, [draftQuery.data])
-
-  const {mutateAsync: publish} = useMutation(async () => {
-    // const document = createDocument()
-    // // publishDraft
-    // console.log({document})
-    console.log('publish!!!')
-  })
-
-  const {mutateAsync: save} = useMutation(
-    async () => {
-      const {id, author} = document
-      const {title, subtitle} = value
-      console.log('🚀 ~ file: ', {title, subtitle})
-      const newDoc = toDocument({
-        id,
-        author,
-        title,
-        subtitle,
-        blocks: currentEditorValue,
-      })
-      return await updateDraft(newDoc)
-    },
-    {
-      onMutate: async () => {
-        await queryClient.cancelQueries(['Draft', document?.id])
-        await queryClient.invalidateQueries('DraftList')
-
-        const previousDraft = queryClient.getQueryData<Document>(['Draft', document?.id])
-
-        const newDraft = toDocument({
-          id: document.id,
-          title: value.title,
-          subtitle: value.subtitle,
-          author: document.author,
-          blocks: currentEditorValue,
-        })
-
-        if (previousDraft) {
-          queryClient.setQueryData<Document>(['Draft', document?.id], newDraft)
-        }
-
-        return {previousDraft, newDraft}
-      },
-    },
-  )
-
-  return {
-    ...draftQuery,
-    data: {
-      value,
-      send,
-      save,
-      publish,
-    },
-  }
-}
-
-function useAutosave(cb) {
-  let [key, setKey] = useState<number>(0)
-
-  const shouldSave = useDebounce(key, 1000)
-
-  const {mutateAsync, status, isLoading, isIdle} = useMutation(cb)
-  console.log('🚀 ~ file: editor.tsx ~ line 276 ~ useAutosave ~ isIdle', isIdle)
-
-  const onKeyDownEvent = (event: KeyboardEvent) => {
-    setKey(key++)
-  }
-
-  useEffect(() => {
-    window.addEventListener('keydown', onKeyDownEvent)
-
-    return () => {
-      window.removeEventListener('keydown', onKeyDownEvent)
-    }
-  }, [])
-
-  useEffect(async () => {
-    if (shouldSave) {
-      await mutateAsync()
-    }
-  }, [shouldSave])
-
-  return {isLoading, status}
-}
-
-function useDebounce(value, delay) {
-  // State and setters for debounced value
-  const [debouncedValue, setDebouncedValue] = useState(value)
-  useEffect(
-    () => {
-      // Update debounced value after delay
-      const handler = setTimeout(() => {
-        setDebouncedValue(value)
-      }, delay)
-      // Cancel the timeout if value changes (also on delay change or unmount)
-      // This is how we prevent debounced value from updating if value is changed ...
-      // .. within the delay period. Timeout gets cleared and restarted.
-      return () => {
-        clearTimeout(handler)
-      }
-    },
-    [value, delay], // Only re-call effect if value or delay changes
-  )
-  return debouncedValue
 }
