@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	"google.golang.org/protobuf/proto"
@@ -111,10 +112,11 @@ type ValueType byte
 // Value types.
 const (
 	ValueTypeUnset  ValueType = 0
-	ValueTypeBinary ValueType = 0x01
-	ValueTypeString ValueType = 0x02
-	ValueTypeUID    ValueType = 0x03
-	ValueTypeProto  ValueType = 0x04
+	ValueTypeBinary ValueType = 1 << 1
+	ValueTypeString ValueType = 1 << 2
+	ValueTypeUID    ValueType = 1 << 3
+	ValueTypeProto  ValueType = 1 << 4
+	ValueTypeTime   ValueType = 1 << 5
 )
 
 // Predicate is a descriptor for predicate.
@@ -176,6 +178,12 @@ func encodeValue(v interface{}, t ValueType) ([]byte, error) {
 			return nil, fmt.Errorf("failed to marshal proto value: %w", err)
 		}
 		return data, nil
+	case ValueTypeTime:
+		data, err := v.(time.Time).MarshalBinary()
+		if err != nil {
+			return nil, err
+		}
+		return data, nil
 	default:
 		return nil, fmt.Errorf("unknown value type: %v", t)
 	}
@@ -220,6 +228,12 @@ func decodeValue(item *badger.Item) (interface{}, error) {
 			return nil, err
 		}
 		return out, err
+	case ValueTypeTime:
+		var t time.Time
+		err := item.Value(func(v []byte) error {
+			return t.UnmarshalBinary(v)
+		})
+		return t, err
 	default:
 		panic("unknown value type when reading predicate")
 	}

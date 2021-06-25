@@ -135,17 +135,7 @@ func (srv *docsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRequ
 					return err
 				}
 
-				createTimeParsed, err := time.Parse(time.RFC3339, createTime.(string))
-				if err != nil {
-					return err
-				}
-
 				updateTime, err := txn.GetProperty(duid, pDocumentUpdateTime)
-				if err != nil {
-					return err
-				}
-
-				updateTimeParsed, err := time.Parse(time.RFC3339, updateTime.(string))
 				if err != nil {
 					return err
 				}
@@ -154,8 +144,8 @@ func (srv *docsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRequ
 					Id:         c.String(),
 					Author:     cid.NewCidV1(codecAccountID, ahash).String(),
 					Title:      title.(string),
-					CreateTime: timestamppb.New(createTimeParsed),
-					UpdateTime: timestamppb.New(updateTimeParsed),
+					CreateTime: timestamppb.New(createTime.(time.Time)),
+					UpdateTime: timestamppb.New(updateTime.(time.Time)),
 				}
 
 				return nil
@@ -200,7 +190,7 @@ func (srv *docsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRe
 		return merged, nil
 	}
 
-	now := time.Now().UTC().Truncate(time.Second)
+	now := nowTruncated()
 	merged.UpdateTime = timestamppb.New(now)
 
 	mergedData, err := proto.Marshal(merged)
@@ -265,7 +255,7 @@ func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraft
 		return nil, fmt.Errorf("failed to unmarshal draft: %w", err)
 	}
 
-	now := time.Now().UTC().Truncate(time.Second)
+	now := nowTruncated()
 	doc.PublishTime = timestamppb.New(now)
 
 	author, err := cid.Decode(doc.Author)
@@ -293,7 +283,7 @@ func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraft
 		if err != nil {
 			return err
 		}
-		return txn.WriteTriple(uid, pDocumentPublishTime, now.Format(time.RFC3339))
+		return txn.WriteTriple(uid, pDocumentPublishTime, now)
 	}); err != nil {
 		return nil, err
 	}
@@ -383,27 +373,12 @@ func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPubl
 					return err
 				}
 
-				createTimeParsed, err := time.Parse(time.RFC3339, createTime.(string))
-				if err != nil {
-					return err
-				}
-
 				updateTime, err := txn.GetProperty(duid, pDocumentUpdateTime)
 				if err != nil {
 					return err
 				}
 
-				updateTimeParsed, err := time.Parse(time.RFC3339, updateTime.(string))
-				if err != nil {
-					return err
-				}
-
 				publishTime, err := txn.GetProperty(duid, pDocumentPublishTime)
-				if err != nil {
-					return err
-				}
-
-				publishTimeParsed, err := time.Parse(time.RFC3339, publishTime.(string))
 				if err != nil {
 					return err
 				}
@@ -422,9 +397,9 @@ func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPubl
 						Id:          c.String(),
 						Author:      cid.NewCidV1(codecAccountID, ahash).String(),
 						Title:       title.(string),
-						CreateTime:  timestamppb.New(createTimeParsed),
-						UpdateTime:  timestamppb.New(updateTimeParsed),
-						PublishTime: timestamppb.New(publishTimeParsed),
+						CreateTime:  timestamppb.New(createTime.(time.Time)),
+						UpdateTime:  timestamppb.New(updateTime.(time.Time)),
+						PublishTime: timestamppb.New(publishTime.(time.Time)),
 					},
 				}
 
