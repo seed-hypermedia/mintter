@@ -161,10 +161,16 @@ func encodeValue(v interface{}, t ValueType) ([]byte, error) {
 		binary.BigEndian.PutUint64(out, v.(uint64))
 		return out, nil
 	case ValueTypeProto:
-		any, err := anypb.New(v.(proto.Message))
+		// We do this manually instead of relying on anypb,
+		// because anypb hardcodes type.googlapis.com type URL prefix.
+		any := new(anypb.Any)
+		src := v.(proto.Message)
+		any.TypeUrl = "/" + string(src.ProtoReflect().Descriptor().FullName())
+		msg, err := proto.Marshal(v.(proto.Message))
 		if err != nil {
 			return nil, err
 		}
+		any.Value = msg
 		data, err := proto.Marshal(any)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal proto value: %w", err)
