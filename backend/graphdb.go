@@ -84,7 +84,7 @@ func (db *graphdb) TouchDocument(ctx context.Context, docID cid.Cid, title strin
 			return err
 		}
 
-		if err := txn.WriteTriple(uid, pDocumentUpdateTime, t.UTC().Format(time.RFC3339)); err != nil {
+		if err := txn.WriteTriple(uid, pDocumentUpdateTime, t); err != nil {
 			return err
 		}
 
@@ -128,11 +128,11 @@ retry:
 			return err
 		}
 
-		if err := txn.WriteTriple(duid, pDocumentCreateTime, createTime.UTC().Format(time.RFC3339)); err != nil {
+		if err := txn.WriteTriple(duid, pDocumentCreateTime, createTime); err != nil {
 			return err
 		}
 
-		if err := txn.WriteTriple(duid, pDocumentUpdateTime, createTime.UTC().Format(time.RFC3339)); err != nil {
+		if err := txn.WriteTriple(duid, pDocumentUpdateTime, createTime); err != nil {
 			return err
 		}
 

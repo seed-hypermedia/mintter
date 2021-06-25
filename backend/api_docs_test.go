@@ -268,6 +268,13 @@ func TestListPublications(t *testing.T) {
 	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Publications, len(drafts))
+	for _, l := range list.Publications {
+		require.NotEqual(t, "", l.Document.Id)
+		require.NotEqual(t, "", l.Document.Title)
+		require.NotNil(t, l.Document.CreateTime)
+		require.NotNil(t, l.Document.UpdateTime)
+		require.NotNil(t, l.Document.PublishTime)
+	}
 }
 
 func makeDraft(t *testing.T, ctx context.Context, api DocsServer, title string) *documents.Document {
