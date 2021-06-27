@@ -13,6 +13,7 @@ import {Container} from '../components/container'
 import type {CSS} from '@mintter/ui/stitches.config'
 import {useEffect, useMemo} from 'react'
 import toast from 'react-hot-toast'
+import {Connections} from '../connections'
 
 export type WithCreateDraft = {
   onCreateDraft: () => void
@@ -52,6 +53,7 @@ export default function Library() {
     } else {
       console.log('open prompt!')
       const peer: string | null = window.prompt(`enter a peer address`)
+      console.log('🚀 ~ file: library.tsx ~ line 55 ~ onConnect ~ peer', peer)
       if (peer) {
         try {
           await toast.promise(connect(peer), {
@@ -59,11 +61,6 @@ export default function Library() {
             success: 'Connection Succeeded!',
             error: 'Connection Error',
           })
-          setInterval(() => {
-            listAccounts().then((res) => {
-              console.log('listAccounts', res)
-            })
-          }, 2000)
         } catch (err) {
           console.error(err.message)
         }
@@ -94,7 +91,7 @@ export default function Library() {
         }}
       >
         <ProfileInfo />
-        <Button onClick={() => onConnect()}>Connect</Button>
+        <Connections onConnect={onConnect} />
       </Box>
 
       <Container css={{gridArea: 'maincontent'}}>

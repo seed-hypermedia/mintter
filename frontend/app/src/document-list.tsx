@@ -47,6 +47,7 @@ function ListItem({item, onDeleteDocument}: {item: Document; onDeleteDocument?: 
   const location = useLocation()
   // const [prefetched, setPrefetch] = React.useState<boolean>(false)
   const {id, title, subtitle, author: itemAuthor} = item
+  console.log('🚀 ~ file: document-list.tsx ~ line 50 ~ ListItem ~ item', item)
   const theTitle = title ? title : 'Untitled Document'
 
   const isDraft = useMemo(() => location.pathname.includes('drafts'), [location.pathname])

@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {Box, Button, Text, TextField} from '@mintter/ui'
 import toast from 'react-hot-toast'
-import {useParams} from 'react-router'
+import {useHistory, useParams} from 'react-router'
 import {useMutation, useQueryClient, UseQueryResult} from 'react-query'
 
 import {useDraft, useAccount} from '@mintter/client/hooks'
@@ -27,6 +27,7 @@ import {useEditorDraft} from '../editor/use-editor-draft'
 
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
+  const history = useHistory()
   const queryClient = useQueryClient()
   const {isLoading, isError, error, data} = useEditorDraft(docId)
 
@@ -43,6 +44,14 @@ export default function EditorPage() {
     // console.log('save now!!')
     await data?.save()
     toast.success('Draft saved!', {position: 'top-center', duration: 4000})
+  }
+
+  async function handlePublish() {
+    // TODO: getting an error when publishing since the draft is being removed
+    // queryClient.cancelQueries(docId)
+    await data?.publish()
+    toast.success('Draft Published!', {position: 'top-center', duration: 4000})
+    history.push('/library')
   }
 
   if (isError) {
@@ -80,12 +89,12 @@ export default function EditorPage() {
           paddingHorizontal: '$5',
         }}
       >
-        {/* <Button color="primary" shape="pill" size="2" onClick={saveDocument}>
+        <Button color="primary" shape="pill" size="2" onClick={handlePublish}>
           PUBLISH
-        </Button> */}
-        <Button size="1" onClick={() => sidepanelSend?.({type: 'SIDEPANEL_TOOGLE'})}>
-          toggle sidepanel
         </Button>
+        {/* <Button size="1" onClick={() => sidepanelSend?.({type: 'SIDEPANEL_TOOGLE'})}>
+          toggle sidepanel
+        </Button> */}
       </Box>
       <Container css={{gridArea: 'maincontent', marginBottom: 300}}>
         <AutosaveStatus save={save} />

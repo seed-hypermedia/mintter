@@ -1,5 +1,6 @@
 import {
   DeletePublicationRequest,
+  ListPublicationsRequest,
   ListPublicationsResponse,
   PublicationsClientImpl,
 } from '../.generated/documents/v1alpha/documents'
@@ -30,10 +31,11 @@ export function deletePublication(revision: string, rpc?: GrpcClient) {
  * @returns
  */
 export async function listPublications(pageSize?: number, pageToken?: string, view?: DocumentView, rpc?: GrpcClient) {
-  console.warn('called mocked function "listPublications"')
-  return ListPublicationsResponse.fromPartial({
-    publications: [mockPublication(), mockPublication(), mockPublication()],
-  })
+  rpc ||= createGrpcClient()
+  const request = ListPublicationsRequest.fromPartial({pageSize, pageToken, view})
+  const resp = await new PublicationsClientImpl(rpc).ListPublications(request)
+  console.log('🚀 ~ line 37 ~ listPublications ~ ', resp)
+  return resp
 }
 
 /**

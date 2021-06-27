@@ -1,7 +1,7 @@
 import {grpc} from '@improbable-eng/grpc-web'
 import {BrowserHeaders} from 'browser-headers'
 
-export const MINTTER_API_URL_DEFAULT = 'http://localhost:55001'
+export const MINTTER_API_URL_DEFAULT = import.meta.env.VITE_MINTTER_API_URL || 'http://localhost:55001'
 
 export interface GrpcClient {
   unary<T extends grpc.UnaryMethodDefinition<any, any>>(
