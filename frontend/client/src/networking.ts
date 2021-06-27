@@ -17,6 +17,7 @@ export async function listPeerAddrs(peerId: string, rpc?: GrpcClient): Promise<P
   rpc ||= createGrpcClient()
   const request = GetPeerInfoRequest.fromPartial({peerId})
   const info = await new NetworkingClientImpl(rpc).GetPeerInfo(request)
+  console.log('🚀 ~ file: networking.ts ~ line 20 ~ listPeerAddrs ~ info', info)
   return info.addrs
 }
 
@@ -31,6 +32,8 @@ export function listSuggestedProfiles(pageSize?: number, pageToken?: string, rpc
 
 export async function connect(addrs: Array<string>, rpc?: GrpcWenimpl): Promise<ConnectResponse> {
   rpc ||= createGrpcClient()
-  const request = ConnectRequest.fromPartial({addrs})
+  console.log({addrs})
+  const request = ConnectRequest.fromPartial({addrs: addrs.split(',')})
+  console.log('🚀 ~ file: networking.ts ~ line 37 ~ connect ~ request', request)
   return await new NetworkingClientImpl(rpc).Connect(request)
 }
