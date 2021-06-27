@@ -17,6 +17,9 @@ import {
   Link,
   ListDraftsResponse,
   listDrafts,
+  ListPublicationsResponse,
+  listPublications,
+  listAccounts,
 } from '../src'
 import {mockBlock, mockDocument, mockTextInlineElement, createId} from '../mocks'
 import type {HookOptions} from './types'
@@ -129,12 +132,13 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
 
   let requestId: string
   if (!peerId) {
-    const info = queryClient.getQueryData<Info>('GetInfo')
+    const info = queryClient.getQueryData<Info>('AccountInfo')
+    console.log('🚀 ~ file: index.ts ~ line 135 ~ usePeerAddrs ~ info', info)
     requestId = info?.peerId as string
   } else {
     requestId = peerId
   }
-
+  console.log('🚀 ~ file: index.ts ~ line 152 ~ usePeerAddrs ~ requestId', requestId)
   const peerAddrsQuery = useQuery(['PeerAddrs', requestId], () => listPeerAddrs(requestId, options.rpc as any), {
     enabled: !!requestId,
     ...options,
@@ -181,12 +185,28 @@ export function usePublication(publicationId: string, version?: string, options:
  * @deprecated
  */
 export function useOthersPublicationsList(options = {}) {
+  const queryClient = useQueryClient()
+  const info = queryClient.getQueryData<Info>('AccountInfo')
+  const myPubsListQuery = useQuery<ListPublicationsResponse>('MyPubsList', async () => {
+    return listPublications()
+  })
+
+  const data = useMemo(
+    () =>
+      myPubsListQuery.data?.publications.reduce((acc, current) => {
+        if (current.document?.author != info?.accountId) {
+          return (acc = [...acc, current.document])
+        }
+
+        return acc
+      }, []),
+    [myPubsListQuery.data, info],
+  )
+  console.log('🚀 ~ file: index.ts ~ line 205 ~ useMyPublicationsList ~ data', data)
+
   return {
-    data: [],
-    isLoading: false,
-    isSuccess: true,
-    error: null,
-    isError: false,
+    ...myPubsListQuery,
+    data,
   }
 }
 
@@ -195,12 +215,28 @@ export function useOthersPublicationsList(options = {}) {
  * @deprecated
  */
 export function useMyPublicationsList(options = {}) {
+  const queryClient = useQueryClient()
+  const info = queryClient.getQueryData<Info>('AccountInfo')
+  const myPubsListQuery = useQuery<ListPublicationsResponse>('MyPubsList', async () => {
+    return listPublications()
+  })
+
+  const data = useMemo(
+    () =>
+      myPubsListQuery.data?.publications.reduce((acc, current) => {
+        if (current.document?.author == info?.accountId) {
+          return (acc = [...acc, current.document])
+        }
+
+        return acc
+      }, []),
+    [myPubsListQuery.data, info],
+  )
+  console.log('🚀 ~ file: index.ts ~ line 205 ~ useMyPublicationsList ~ data', data)
+
   return {
-    data: [],
-    isLoading: false,
-    isSuccess: true,
-    error: null,
-    isError: false,
+    ...myPubsListQuery,
+    data,
   }
 }
 
@@ -274,6 +310,17 @@ export function useQuote(documentId: string, quoteId?: string, options: HookOpti
 
   return {
     ...quoteQuery,
+    data,
+  }
+}
+
+export function useListAccounts() {
+  const listAccountsQuery = useQuery('ListAccounts', () => listAccounts())
+
+  const data = useMemo(() => listAccountsQuery.data?.accounts, [listAccountsQuery.data])
+
+  return {
+    ...listAccountsQuery,
     data,
   }
 }

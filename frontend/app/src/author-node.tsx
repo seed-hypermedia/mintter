@@ -67,7 +67,7 @@ export function AuthorNode({path = '/'}: {path?: string}) {
             <Route exact path={['/editor/:docId', '/admin/editor/:docId']}>
               <Editor />
             </Route>
-            <Route path={['/p/:docId/:docVersion', '/admin/p/:docId/:docVersion']}>
+            <Route path={['/p/:docId', '/admin/p/:docId']}>
               <Publication />
             </Route>
             <Route path={['/settings', '/admin/settings']}>

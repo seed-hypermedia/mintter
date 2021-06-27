@@ -6,12 +6,12 @@ import {useDraftsList, usePublication as usePublicationQuery} from '@mintter/cli
 import {useSidePanel} from '../sidepanel'
 import {Text, Box, Button} from '@mintter/ui'
 import {Container} from '../components/container'
-import {mock} from '@mintter/client'
+import {mockDocument} from '@mintter/client/mocks'
 
 export default function Publication(): JSX.Element {
   const history = useHistory()
   // const { addToast } = useToasts();
-
+  console.log('load publication!!')
   // request document
   const {isLoading, isError, error, data, value} = usePublication()
 
@@ -107,7 +107,7 @@ function usePublication() {
   const {isSuccess, ...document} = usePublicationQuery(documentId, docVersion)
 
   const data: TPublication = {
-    document: useMemo(() => mock.mockDocument(), []),
+    document: useMemo(() => mockDocument(), []),
     version: docVersion,
   }
 

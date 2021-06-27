@@ -1,7 +1,7 @@
 import {useQueryClient, useMutation} from 'react-query'
 import {useMemo, useEffect, Dispatch} from 'react'
 import {EditorAction, EditorState, useEditorReducer} from './editor-reducer'
-import {Document, updateDraft} from '@mintter/client'
+import {Document, publishDraft, updateDraft} from '@mintter/client'
 import {useDraft} from '@mintter/client/hooks'
 import {useStoreEditorValue} from '@udecode/slate-plugins'
 import {toEditorValue} from './to-editor-value'
@@ -45,13 +45,6 @@ export function useEditorDraft(documentId: string): UseQueryResult<UseEditorValu
     }
   }, [draftQuery.data])
 
-  const {mutateAsync: publish} = useMutation(async () => {
-    // const document = createDocument()
-    // // publishDraft
-    // console.log({document})
-    console.log('publish!!!')
-  })
-
   const {mutateAsync: save} = useMutation(
     async () => {
       const {id, author} = document
@@ -88,6 +81,13 @@ export function useEditorDraft(documentId: string): UseQueryResult<UseEditorValu
       },
     },
   )
+
+  const {mutateAsync: publish} = useMutation(async () => {
+    await save()
+    const resp = await publishDraft(document?.id)
+    console.log("🚀 ~ resp", resp)
+    return resp
+  })
 
   return {
     ...draftQuery,
