@@ -346,16 +346,28 @@ func (srv *backend) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) e
 }
 
 func (srv *backend) ListAccounts(ctx context.Context) ([]*accounts.Account, error) {
+	me, err := srv.repo.Account()
+	if err != nil {
+		return nil, err
+	}
+
+	mecid := cid.Cid(me.id)
+
 	objects, err := srv.db.ListAccounts(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get list of account ids: %w", err)
 	}
 
-	out := make([]*accounts.Account, len(objects))
+	out := make([]*accounts.Account, len(objects)-1) // Minus our own Account.
 
 	g, ctx := errgroup.WithContext(ctx)
 
 	for i, c := range objects {
+		// Do not return our own account for the list.
+		if mecid.Equals(c) {
+			continue
+		}
+
 		i, c := i, c
 		g.Go(func() error {
 			state, err := srv.patches.LoadState(ctx, c)
