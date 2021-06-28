@@ -11,6 +11,7 @@ exports_files([
 local_action(
     name = "yarn",
     srcs = [
+        ".yarnrc",
         "package.json",
         "yarn.lock",
     ],
