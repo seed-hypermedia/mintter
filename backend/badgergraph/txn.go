@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"math"
 	"sync"
+	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	"go.uber.org/multierr"
+	"google.golang.org/protobuf/proto"
 )
 
 // NewTransaction starts a new transaction.
@@ -57,12 +59,7 @@ func (txn *Txn) XID(nodeType string, uid uint64) ([]byte, error) {
 		return nil, err
 	}
 
-	v, err := decodeValue(item)
-	if err != nil {
-		return nil, err
-	}
-
-	return v.([]byte), nil
+	return decodeValueBinary(item, nil)
 }
 
 // UID returns a UID for a given node type with a given external id.
@@ -97,12 +94,7 @@ func (txn *Txn) UIDRead(nodeType string, xid []byte) (uint64, error) {
 		return 0, err
 	}
 
-	v, err := decodeValue(item)
-	if err != nil {
-		return 0, err
-	}
-
-	return v.(uint64), nil
+	return decodeValueUID(item)
 }
 
 // uidAllocate allocates a new uid for node type.
@@ -126,12 +118,12 @@ func (txn *Txn) uidAllocate(nodeType string, xid []byte) (uint64, error) {
 		return 0, fmt.Errorf("failed to encode allocated uid: %w", err)
 	}
 
-	if err := txn.SetEntry(badger.NewEntry(k, data).WithMeta(byte(ValueTypeUID))); err != nil {
+	if err := txn.SetEntry(badger.NewEntry(k, data).WithMeta(byte(ValueTypeUID)).WithDiscard()); err != nil {
 		return 0, err
 	}
 
 	k = revUIDKey(txn.db.ns, txn.db.schema.xidPredicate(nodeType), uid)
-	if err := txn.SetEntry(badger.NewEntry(k, xid).WithMeta(byte(ValueTypeBinary))); err != nil {
+	if err := txn.SetEntry(badger.NewEntry(k, xid).WithMeta(byte(ValueTypeBinary)).WithDiscard()); err != nil {
 		return 0, err
 	}
 
@@ -142,15 +134,64 @@ func (txn *Txn) uidAllocate(nodeType string, xid []byte) (uint64, error) {
 	return uid, err
 }
 
-// GetProperty reads a single literal node property.
-func (txn *Txn) GetProperty(subject uint64, p Predicate) (interface{}, error) {
+// GetPropertyBinary is a type-specific way of getting a Binary property.
+func (txn *Txn) GetPropertyBinary(subject uint64, p Predicate) ([]byte, error) {
+	it, err := txn.getProperty(subject, p)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodeValueBinary(it, nil)
+}
+
+// GetPropertyString is a type-specific way of getting a String property.
+func (txn *Txn) GetPropertyString(subject uint64, p Predicate) (string, error) {
+	it, err := txn.getProperty(subject, p)
+	if err != nil {
+		return "", err
+	}
+
+	return decodeValueString(it)
+}
+
+// GetPropertyUID is a type-specific way of getting a UID property (a relation).
+func (txn *Txn) GetPropertyUID(subject uint64, p Predicate) (uint64, error) {
+	it, err := txn.getProperty(subject, p)
+	if err != nil {
+		return 0, err
+	}
+
+	return decodeValueUID(it)
+}
+
+// GetPropertyProto is a type-specific way of getting a Proto property.
+func (txn *Txn) GetPropertyProto(subject uint64, p Predicate, msg proto.Message) error {
+	it, err := txn.getProperty(subject, p)
+	if err != nil {
+		return err
+	}
+
+	return decodeValueProto(it, msg)
+}
+
+// GetPropertyTime is a type-specific way of getting a Time property.
+func (txn *Txn) GetPropertyTime(subject uint64, p Predicate) (time.Time, error) {
+	it, err := txn.getProperty(subject, p)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return decodeValueTime(it)
+}
+
+func (txn *Txn) getProperty(subject uint64, p Predicate) (*badger.Item, error) {
 	k := dataKey(txn.db.ns, p.fullName, subject, math.MaxUint64)
 	item, err := txn.Get(k)
 	if err != nil {
 		return nil, err
 	}
 
-	return decodeValue(item)
+	return item, nil
 }
 
 // HasProperty checks if a property exists without decoding the value.
@@ -215,7 +256,7 @@ func (txn *Txn) WriteTriple(subject uint64, p Predicate, v interface{}) error {
 	if err := txn.SetEntry(badger.NewEntry(
 		dataKey(txn.db.ns, p.fullName, subject, cardinality),
 		data,
-	).WithMeta(byte(p.Type))); err != nil {
+	).WithMeta(byte(p.Type)).WithDiscard()); err != nil {
 		return fmt.Errorf("failed to set main entry: %w", err)
 	}
 
@@ -235,43 +276,6 @@ func (txn *Txn) WriteTriple(subject uint64, p Predicate, v interface{}) error {
 	}
 
 	return nil
-}
-
-// GetForwardRelation returns the object UID of a unique predicate.
-func (txn *Txn) GetForwardRelation(subject uint64, p Predicate) (uint64, error) {
-	it := txn.keyIterator(dataPrefix(txn.db.ns, p.fullName))
-	defer it.Close()
-
-	var out uint64
-	var i int
-	for it.Rewind(); it.Valid(); it.Next() {
-		item := it.Item()
-		pk, err := parseKey(txn.db.ns, item.Key())
-		if err != nil {
-			return 0, err
-		}
-
-		if pk.Cardinality != math.MaxUint32 {
-			return 0, fmt.Errorf("invalid cardinality for unique relation")
-		}
-
-		v, err := decodeValue(it.Item())
-		if err != nil {
-			return 0, err
-		}
-		out = v.(uint64)
-		i++
-	}
-
-	if i > 1 {
-		return 0, fmt.Errorf("found more than one record for unique relation")
-	}
-
-	if i == 0 {
-		return 0, badger.ErrKeyNotFound
-	}
-
-	return out, nil
 }
 
 // ListIndexedNodes uses indexed token to search for nodes that contain the token.
@@ -308,12 +312,11 @@ func (txn *Txn) ListRelations(subject uint64, p Predicate) ([]uint64, error) {
 
 	var out []uint64
 	for it.Rewind(); it.Valid(); it.Next() {
-		v, err := decodeValue(it.Item())
+		uid, err := decodeValueUID(it.Item())
 		if err != nil {
 			return nil, err
 		}
-
-		out = append(out, v.(uint64))
+		out = append(out, uid)
 	}
 
 	if out == nil {

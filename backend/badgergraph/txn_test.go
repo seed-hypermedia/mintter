@@ -13,66 +13,6 @@ import (
 
 const testNS = "mtt-test"
 
-func TestSetGetProperty(t *testing.T) {
-	// db, err := NewDB(testutil.MakeBadgerV3(t), testNS)
-	// require.NoError(t, err)
-	// defer func() {
-	// 	require.NoError(t, db.Close())
-	// }()
-
-	// tests := []struct {
-	// 	XID     []byte
-	// 	Preds   map[string]interface{}
-	// 	WantUID uint64
-	// }{
-	// 	{
-	// 		XID: []byte("alice"),
-	// 		Preds: map[string]interface{}{
-	// 			"Person/name":  "Alice",
-	// 			"Person/email": "alice@example.com",
-	// 		},
-	// 		WantUID: 1,
-	// 	},
-	// }
-
-	// err = db.Update(func(txn *Txn) error {
-	// 	for _, tt := range tests {
-	// 		uid, err := txn.UID("Person", tt.XID)
-	// 		require.NoError(t, err)
-
-	// 		for k, v := range tt.Preds {
-	// 			require.NoError(t, txn.SetProperty(uid, k, v, false))
-	// 		}
-	// 	}
-	// 	return nil
-	// })
-	// require.NoError(t, err)
-
-	// err = db.View(func(txn *Txn) error {
-	// 	for _, tt := range tests {
-	// 		for k, v := range tt.Preds {
-	// 			vv, err := txn.GetProperty(tt.WantUID, k)
-	// 			require.NoError(t, err)
-	// 			require.Equal(t, v, vv)
-	// 		}
-	// 	}
-	// 	return nil
-	// })
-	// require.NoError(t, err)
-
-	// err = db.View(func(txn *Txn) error {
-	// 	for _, tt := range tests {
-	// 		for k, v := range tt.Preds {
-	// 			vv, err := txn.GetProperty(tt.WantUID, k)
-	// 			require.NoError(t, err)
-	// 			require.Equal(t, v, vv)
-	// 		}
-	// 	}
-	// 	return nil
-	// })
-	// require.NoError(t, err)
-}
-
 func TestPreallocateUIDs(t *testing.T) {
 	schema := NewSchema()
 	schema.RegisterType("Person")
@@ -285,11 +225,11 @@ func TestNodeType(t *testing.T) {
 	require.NoError(t, err)
 
 	err = db.View(func(txn *Txn) error {
-		v, err := txn.GetProperty(1, schema.schema["Person"][predicateNodeType])
+		v, err := txn.GetPropertyString(1, schema.schema["Person"][predicateNodeType])
 		require.NoError(t, err)
 		require.Equal(t, "Person", v)
 
-		v, err = txn.GetProperty(2, schema.schema["Peer"][predicateNodeType])
+		v, err = txn.GetPropertyString(2, schema.schema["Peer"][predicateNodeType])
 		require.NoError(t, err)
 		require.Equal(t, "Peer", v)
 		return nil

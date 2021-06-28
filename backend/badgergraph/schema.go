@@ -8,7 +8,6 @@ import (
 
 	"github.com/dgraph-io/badger/v3"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/anypb"
 )
 
 const (
@@ -163,17 +162,7 @@ func encodeValue(v interface{}, t ValueType) ([]byte, error) {
 		binary.BigEndian.PutUint64(out, v.(uint64))
 		return out, nil
 	case ValueTypeProto:
-		// We do this manually instead of relying on anypb,
-		// because anypb hardcodes type.googlapis.com type URL prefix.
-		any := new(anypb.Any)
-		src := v.(proto.Message)
-		any.TypeUrl = "/" + string(src.ProtoReflect().Descriptor().FullName())
-		msg, err := proto.Marshal(v.(proto.Message))
-		if err != nil {
-			return nil, err
-		}
-		any.Value = msg
-		data, err := proto.Marshal(any)
+		data, err := proto.Marshal(v.(proto.Message))
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal proto value: %w", err)
 		}
@@ -189,52 +178,63 @@ func encodeValue(v interface{}, t ValueType) ([]byte, error) {
 	}
 }
 
-func decodeValue(item *badger.Item) (interface{}, error) {
-	switch ValueType(item.UserMeta()) {
-	case ValueTypeString:
-		var out string
-		err := item.Value(func(v []byte) error {
-			out = string(v)
-			return nil
-		})
-		return out, err
-	case ValueTypeBinary:
-		var out []byte
-		err := item.Value(func(v []byte) error {
-			out = append(out, v...) // must copy the value here.
-			return nil
-		})
-		return out, err
-	case ValueTypeUID:
-		var out uint64
-		err := item.Value(func(v []byte) error {
-			out = binary.BigEndian.Uint64(v)
-			return nil
-		})
-		if out == 0 {
-			return nil, fmt.Errorf("invalid value for uid")
-		}
-		return out, err
-	case ValueTypeProto:
-		any := &anypb.Any{}
-		err := item.Value(func(v []byte) error {
-			return proto.Unmarshal(v, any)
-		})
-		if err != nil {
-			return nil, err
-		}
-		out, err := anypb.UnmarshalNew(any, proto.UnmarshalOptions{})
-		if err != nil {
-			return nil, err
-		}
-		return out, err
-	case ValueTypeTime:
-		var t time.Time
-		err := item.Value(func(v []byte) error {
-			return t.UnmarshalBinary(v)
-		})
-		return t, err
-	default:
-		panic("unknown value type when reading predicate")
+func decodeValueBinary(item *badger.Item, dst []byte) ([]byte, error) {
+	if vt := item.UserMeta(); ValueType(vt) != ValueTypeBinary {
+		return nil, fmt.Errorf("value type is not Binary: %v", vt)
 	}
+	return item.ValueCopy(dst)
+}
+
+func decodeValueString(item *badger.Item) (string, error) {
+	if vt := item.UserMeta(); ValueType(vt) != ValueTypeString {
+		return "", fmt.Errorf("value type is not String: %v", vt)
+	}
+
+	var out string
+	err := item.Value(func(v []byte) error {
+		out = string(v)
+		return nil
+	})
+
+	return out, err
+}
+
+func decodeValueUID(item *badger.Item) (uint64, error) {
+	if vt := item.UserMeta(); ValueType(vt) != ValueTypeUID {
+		return 0, fmt.Errorf("value type is not UID: %v", vt)
+	}
+
+	var out uint64
+	err := item.Value(func(v []byte) error {
+		out = binary.BigEndian.Uint64(v)
+		return nil
+	})
+
+	if out == 0 {
+		return 0, fmt.Errorf("invalid value for uid")
+	}
+
+	return out, err
+}
+
+func decodeValueTime(item *badger.Item) (time.Time, error) {
+	if vt := item.UserMeta(); ValueType(vt) != ValueTypeTime {
+		return time.Time{}, fmt.Errorf("value type is not Time: %v", vt)
+	}
+
+	var t time.Time
+	err := item.Value(func(v []byte) error {
+		return t.UnmarshalBinary(v)
+	})
+	return t, err
+}
+
+func decodeValueProto(item *badger.Item, msg proto.Message) error {
+	if vt := item.UserMeta(); ValueType(vt) != ValueTypeProto {
+		return fmt.Errorf("value type is not Proto: %v", vt)
+	}
+
+	return item.Value(func(d []byte) error {
+		return proto.Unmarshal(d, msg)
+	})
 }
