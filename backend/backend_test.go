@@ -90,11 +90,11 @@ func TestAccountVerifiedOnConnect(t *testing.T) {
 
 	accs, err := alice.ListAccounts(ctx)
 	require.NoError(t, err)
-	require.Len(t, accs, 2)
+	require.Len(t, accs, 1)
 
 	accs, err = bob.ListAccounts(ctx)
 	require.NoError(t, err)
-	require.Len(t, accs, 2)
+	require.Len(t, accs, 1)
 }
 
 func TestProvideAccount(t *testing.T) {

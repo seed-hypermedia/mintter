@@ -68,9 +68,3 @@ func (srv *accountsAPI) ListAccounts(ctx context.Context, in *accounts.ListAccou
 		Accounts: accs,
 	}, nil
 }
-
-func (srv *accountsAPI) StartAccountDiscovery(ctx context.Context, in *accounts.StartAccountDiscoveryRequest) (*accounts.StartAccountDiscoveryResponse, error) {
-	// Join topic
-	// Start looking for peers
-	return nil, nil
-}

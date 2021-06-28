@@ -19,15 +19,6 @@ service Accounts {
   // interacting with the network, or users can ask to discover specific accounts using
   // the Networking API.
   rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
-
-  // Starts looking for peers providing information about another Account ID.
-  rpc StartAccountDiscovery(StartAccountDiscoveryRequest) returns (StartAccountDiscoveryResponse);
-
-  // rpc StartDiscovery(StartDiscoveryRequest) returns (StartDiscoveryResponse);
-  // rpc ListAccounts
-  // rpc UpdateProfile
-  // rpc FollowAccount - given an account ID discover peers that might know the profile information about it.
-  // rpc UnfollowAccount
 }
 
 message GetAccountRequest {
@@ -47,12 +38,6 @@ message ListAccountsResponse {
   string next_page_token = 2;
 }
 
-message StartAccountDiscoveryRequest {
-  string account_id = 1;
-}
-
-message StartAccountDiscoveryResponse {}
-
 message Account {
   // Mintter Account ID.
   string id = 1;
@@ -62,16 +47,6 @@ message Account {
 
   // List of known devices of this Account.
   map<string, Device> devices = 3;
-
-  // List of known peer IDs that provide information about this account.
-  // Account information can be retrieved even without being connect directly.
-  // repeated string peers = 4;
-
-  // Time where we started following this account.
-  // google.protobuf.Timestamp follow_time = 5;
-
-  // Last time this account was updated.
-  // google.protobuf.Timestamp update_time = 6;
 }
 
 message Profile {

@@ -362,10 +362,16 @@ func (srv *backend) ListAccounts(ctx context.Context) ([]*accounts.Account, erro
 
 	g, ctx := errgroup.WithContext(ctx)
 
+	var skip bool
 	for i, c := range objects {
 		// Do not return our own account for the list.
 		if mecid.Equals(c) {
+			skip = true
 			continue
+		}
+
+		if skip {
+			i--
 		}
 
 		i, c := i, c
