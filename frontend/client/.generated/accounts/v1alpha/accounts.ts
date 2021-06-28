@@ -22,12 +22,6 @@ export interface ListAccountsResponse {
   nextPageToken: string
 }
 
-export interface StartAccountDiscoveryRequest {
-  accountId: string
-}
-
-export interface StartAccountDiscoveryResponse {}
-
 export interface Account {
   /** Mintter Account ID. */
   id: string
@@ -265,99 +259,6 @@ export const ListAccountsResponse = {
     } else {
       message.nextPageToken = ''
     }
-    return message
-  },
-}
-
-const baseStartAccountDiscoveryRequest: object = {accountId: ''}
-
-export const StartAccountDiscoveryRequest = {
-  encode(message: StartAccountDiscoveryRequest, writer: Writer = Writer.create()): Writer {
-    if (message.accountId !== '') {
-      writer.uint32(10).string(message.accountId)
-    }
-    return writer
-  },
-
-  decode(input: Reader | Uint8Array, length?: number): StartAccountDiscoveryRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {...baseStartAccountDiscoveryRequest} as StartAccountDiscoveryRequest
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.accountId = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): StartAccountDiscoveryRequest {
-    const message = {...baseStartAccountDiscoveryRequest} as StartAccountDiscoveryRequest
-    if (object.accountId !== undefined && object.accountId !== null) {
-      message.accountId = String(object.accountId)
-    } else {
-      message.accountId = ''
-    }
-    return message
-  },
-
-  toJSON(message: StartAccountDiscoveryRequest): unknown {
-    const obj: any = {}
-    message.accountId !== undefined && (obj.accountId = message.accountId)
-    return obj
-  },
-
-  fromPartial(object: DeepPartial<StartAccountDiscoveryRequest>): StartAccountDiscoveryRequest {
-    const message = {...baseStartAccountDiscoveryRequest} as StartAccountDiscoveryRequest
-    if (object.accountId !== undefined && object.accountId !== null) {
-      message.accountId = object.accountId
-    } else {
-      message.accountId = ''
-    }
-    return message
-  },
-}
-
-const baseStartAccountDiscoveryResponse: object = {}
-
-export const StartAccountDiscoveryResponse = {
-  encode(_: StartAccountDiscoveryResponse, writer: Writer = Writer.create()): Writer {
-    return writer
-  },
-
-  decode(input: Reader | Uint8Array, length?: number): StartAccountDiscoveryResponse {
-    const reader = input instanceof Reader ? input : new Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {...baseStartAccountDiscoveryResponse} as StartAccountDiscoveryResponse
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(_: any): StartAccountDiscoveryResponse {
-    const message = {...baseStartAccountDiscoveryResponse} as StartAccountDiscoveryResponse
-    return message
-  },
-
-  toJSON(_: StartAccountDiscoveryResponse): unknown {
-    const obj: any = {}
-    return obj
-  },
-
-  fromPartial(_: DeepPartial<StartAccountDiscoveryResponse>): StartAccountDiscoveryResponse {
-    const message = {...baseStartAccountDiscoveryResponse} as StartAccountDiscoveryResponse
     return message
   },
 }
@@ -823,11 +724,6 @@ export interface Accounts {
    * the Networking API.
    */
   listAccounts(request: DeepPartial<ListAccountsRequest>, metadata?: grpc.Metadata): Promise<ListAccountsResponse>
-  /** Starts looking for peers providing information about another Account ID. */
-  startAccountDiscovery(
-    request: DeepPartial<StartAccountDiscoveryRequest>,
-    metadata?: grpc.Metadata,
-  ): Promise<StartAccountDiscoveryResponse>
 }
 
 export class AccountsClientImpl implements Accounts {
@@ -838,7 +734,6 @@ export class AccountsClientImpl implements Accounts {
     this.GetAccount = this.GetAccount.bind(this)
     this.UpdateProfile = this.UpdateProfile.bind(this)
     this.ListAccounts = this.ListAccounts.bind(this)
-    this.StartAccountDiscovery = this.StartAccountDiscovery.bind(this)
   }
 
   GetAccount(request: DeepPartial<GetAccountRequest>, metadata?: grpc.Metadata): Promise<Account> {
@@ -851,17 +746,6 @@ export class AccountsClientImpl implements Accounts {
 
   ListAccounts(request: DeepPartial<ListAccountsRequest>, metadata?: grpc.Metadata): Promise<ListAccountsResponse> {
     return this.rpc.unary(AccountsListAccountsDesc, ListAccountsRequest.fromPartial(request), metadata)
-  }
-
-  StartAccountDiscovery(
-    request: DeepPartial<StartAccountDiscoveryRequest>,
-    metadata?: grpc.Metadata,
-  ): Promise<StartAccountDiscoveryResponse> {
-    return this.rpc.unary(
-      AccountsStartAccountDiscoveryDesc,
-      StartAccountDiscoveryRequest.fromPartial(request),
-      metadata,
-    )
   }
 }
 
@@ -927,28 +811,6 @@ export const AccountsListAccountsDesc: UnaryMethodDefinitionish = {
     deserializeBinary(data: Uint8Array) {
       return {
         ...ListAccountsResponse.decode(data),
-        toObject() {
-          return this
-        },
-      }
-    },
-  } as any,
-}
-
-export const AccountsStartAccountDiscoveryDesc: UnaryMethodDefinitionish = {
-  methodName: 'StartAccountDiscovery',
-  service: AccountsDesc,
-  requestStream: false,
-  responseStream: false,
-  requestType: {
-    serializeBinary() {
-      return StartAccountDiscoveryRequest.encode(this).finish()
-    },
-  } as any,
-  responseType: {
-    deserializeBinary(data: Uint8Array) {
-      return {
-        ...StartAccountDiscoveryResponse.decode(data),
         toObject() {
           return this
         },
