@@ -75,18 +75,18 @@ retry:
 				return err
 			}
 
-			v, err := txn.GetProperty(huid, pHeadData)
-			if err != nil && err != badger.ErrKeyNotFound {
+			oldpv := &p2p.PeerVersion{}
+			if err := txn.GetPropertyProto(huid, pHeadData, oldpv); err != nil && err != badger.ErrKeyNotFound {
 				return fmt.Errorf("failed to get head: %w", err)
 			}
 
 			// We avoid storing data that's older than we have, or if it's the same.
-			if v != nil && v.(*p2p.PeerVersion).Seq >= pv.Seq {
+			if oldpv.Seq >= pv.Seq {
 				continue
 			}
 
 			// The first time we store a head we also write its peer and object relations.
-			if v == nil {
+			if oldpv.Seq == 0 {
 				if err := txn.WriteTriple(huid, pHeadPeer, puid); err != nil {
 					return fmt.Errorf("failed to store peer uid to head: %w", err)
 				}
@@ -141,20 +141,18 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 			return err
 		}
 
-		v, err := txn.GetProperty(huid, pHeadData)
-		if err != nil && err != badger.ErrKeyNotFound {
+		oldpv := &p2p.PeerVersion{}
+		if err := txn.GetPropertyProto(huid, pHeadData, oldpv); err != nil && err != badger.ErrKeyNotFound {
 			return err
 		}
 
-		if v == nil {
-			head := &p2p.PeerVersion{
-				Peer:        sp.peer.String(),
-				Head:        sp.cid.String(),
-				Seq:         sp.Seq,
-				LamportTime: sp.LamportTime,
-			}
+		if oldpv.Seq == 0 {
+			oldpv.Peer = sp.peer.String()
+			oldpv.Head = sp.cid.String()
+			oldpv.Seq = sp.Seq
+			oldpv.LamportTime = sp.LamportTime
 
-			if err := txn.WriteTriple(huid, pHeadData, head); err != nil {
+			if err := txn.WriteTriple(huid, pHeadData, oldpv); err != nil {
 				return err
 			}
 
@@ -166,18 +164,16 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 				return fmt.Errorf("failed to store object uid to head: %w", err)
 			}
 
-			newHead = head
+			newHead = oldpv
 
 			return nil
 		}
 
-		pv := v.(*p2p.PeerVersion)
-
-		if pv.Seq+1 != sp.Seq {
-			return fmt.Errorf("concurrency error: precondition failed: stored seq = %d, incoming seq = %d", pv.Seq, sp.Seq)
+		if oldpv.Seq+1 != sp.Seq {
+			return fmt.Errorf("concurrency error: precondition failed: stored seq = %d, incoming seq = %d", oldpv.Seq, sp.Seq)
 		}
 
-		oldHead, err := cid.Decode(pv.Head)
+		oldHead, err := cid.Decode(oldpv.Head)
 		if err != nil {
 			return fmt.Errorf("failed to decode old head cid: %w", err)
 		}
@@ -186,15 +182,15 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 			return fmt.Errorf("first dep of the patch must be the previous head of this peer")
 		}
 
-		pv.Seq = sp.Seq
-		pv.LamportTime = sp.LamportTime
-		pv.Head = sp.cid.String()
+		oldpv.Seq = sp.Seq
+		oldpv.LamportTime = sp.LamportTime
+		oldpv.Head = sp.cid.String()
 
-		if err := txn.WriteTriple(huid, pHeadData, pv); err != nil {
+		if err := txn.WriteTriple(huid, pHeadData, oldpv); err != nil {
 			return err
 		}
 
-		newHead = pv
+		newHead = oldpv
 
 		return nil
 	}); err != nil {
@@ -364,7 +360,7 @@ func (s *patchStore) registerObject(txn *badgergraph.Txn, c cid.Cid) (uint64, er
 }
 
 func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
-	ouid, err := txn.UID(typeObject, obj.Hash())
+	ouid, err := txn.UIDRead(typeObject, obj.Hash())
 	if err != nil && err != badger.ErrKeyNotFound {
 		return nil, fmt.Errorf("failed to get head: %w", err)
 	}
@@ -380,11 +376,10 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid
 	out := make([]*p2p.PeerVersion, len(heads))
 
 	for i, h := range heads {
-		v, err := txn.GetProperty(h, pHeadData)
-		if err != nil {
+		out[i] = &p2p.PeerVersion{}
+		if err := txn.GetPropertyProto(h, pHeadData, out[i]); err != nil {
 			return nil, fmt.Errorf("failed to get property %s: %w", pHeadData, err)
 		}
-		out[i] = v.(*p2p.PeerVersion)
 	}
 
 	return out, nil
