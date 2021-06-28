@@ -120,6 +120,11 @@ func (srv *docsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRequ
 					return err
 				}
 
+				subtitle, err := txn.GetProperty(duid, pDocumentSubtitle)
+				if err != nil {
+					return err
+				}
+
 				auid, err := txn.GetProperty(duid, pDocumentAuthor)
 				if err != nil {
 					return err
@@ -144,6 +149,7 @@ func (srv *docsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRequ
 					Id:         c.String(),
 					Author:     cid.NewCidV1(codecAccountID, ahash).String(),
 					Title:      title.(string),
+					Subtitle:   subtitle.(string),
 					CreateTime: timestamppb.New(createTime.(time.Time)),
 					UpdateTime: timestamppb.New(updateTime.(time.Time)),
 				}
@@ -202,13 +208,23 @@ func (srv *docsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRe
 		return nil, fmt.Errorf("failed to store updated draft: %w", err)
 	}
 
-	// We overwrite title in the index only if it's changed.
+	// We overwrite title in the index only if it's changed. This implies that
+	// users won't be able to remove title and subtitle.
+	//
+	// TODO: There should be a better way of avoiding database writes
+	// for values that don't change. Or is it even worth it?
+
 	title := merged.Title
 	if title == old.Title {
 		title = ""
 	}
 
-	if err := srv.back.db.TouchDocument(ctx, c, title, now); err != nil {
+	subtitle := merged.Subtitle
+	if subtitle == old.Subtitle {
+		subtitle = ""
+	}
+
+	if err := srv.back.db.TouchDocument(ctx, c, title, subtitle, now); err != nil {
 		return nil, fmt.Errorf("failed to touch document index: %w", err)
 	}
 
@@ -358,6 +374,11 @@ func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPubl
 					return err
 				}
 
+				subtitle, err := txn.GetProperty(duid, pDocumentSubtitle)
+				if err != nil {
+					return err
+				}
+
 				auid, err := txn.GetProperty(duid, pDocumentAuthor)
 				if err != nil {
 					return err
@@ -397,6 +418,7 @@ func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPubl
 						Id:          c.String(),
 						Author:      cid.NewCidV1(codecAccountID, ahash).String(),
 						Title:       title.(string),
+						Subtitle:    subtitle.(string),
 						CreateTime:  timestamppb.New(createTime.(time.Time)),
 						UpdateTime:  timestamppb.New(updateTime.(time.Time)),
 						PublishTime: timestamppb.New(publishTime.(time.Time)),

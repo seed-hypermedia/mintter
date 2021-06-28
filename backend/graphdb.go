@@ -77,7 +77,7 @@ func (db *graphdb) GetDeviceAccount(ctx context.Context, did DeviceID) (aid Acco
 	return aid, nil
 }
 
-func (db *graphdb) TouchDocument(ctx context.Context, docID cid.Cid, title string, t time.Time) error {
+func (db *graphdb) TouchDocument(ctx context.Context, docID cid.Cid, title, subtitle string, t time.Time) error {
 	return db.db.Update(func(txn *badgergraph.Txn) error {
 		uid, err := txn.UIDRead(typeDocument, docID.Hash())
 		if err != nil {
@@ -88,8 +88,17 @@ func (db *graphdb) TouchDocument(ctx context.Context, docID cid.Cid, title strin
 			return err
 		}
 
+		// TODO: this implies that the user won't be able to remove title nor subtitle after it's written.
+		// Is it worth it?
+
 		if title != "" {
 			if err := txn.WriteTriple(uid, pDocumentTitle, title); err != nil {
+				return err
+			}
+		}
+
+		if subtitle != "" {
+			if err := txn.WriteTriple(uid, pDocumentSubtitle, subtitle); err != nil {
 				return err
 			}
 		}
@@ -101,7 +110,7 @@ func (db *graphdb) TouchDocument(ctx context.Context, docID cid.Cid, title strin
 func (db *graphdb) IndexDocument(ctx context.Context,
 	docID cid.Cid,
 	author AccountID,
-	title string,
+	title, subtitle string,
 	createTime, updateTime time.Time,
 ) error {
 	dhash := docID.Hash()
@@ -125,6 +134,10 @@ retry:
 		}
 
 		if err := txn.WriteTriple(duid, pDocumentTitle, title); err != nil {
+			return err
+		}
+
+		if err := txn.WriteTriple(duid, pDocumentSubtitle, subtitle); err != nil {
 			return err
 		}
 

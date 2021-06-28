@@ -39,10 +39,8 @@ func TestAPIListDrafts(t *testing.T) {
 	for i := range docs {
 		i := i
 		g.Go(func() error {
-			doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-			if err != nil {
-				return err
-			}
+			ia := strconv.Itoa(i)
+			doc := makeDraft(t, ctx, api, "My Document Title "+ia, "Subtitle "+ia)
 			docs[i] = doc
 			return nil
 		})
@@ -189,8 +187,8 @@ func TestAPIDeleteDraft(t *testing.T) {
 	api := newDocsAPI(back)
 	ctx := context.Background()
 
-	doc := makeDraft(t, ctx, api, "My Document 1")
-	doc2 := makeDraft(t, ctx, api, "My Document 2")
+	doc := makeDraft(t, ctx, api, "My Document 1", "Subtitle 1")
+	doc2 := makeDraft(t, ctx, api, "My Document 2", "Subtitle 2")
 
 	deleted, err := api.DeleteDraft(ctx, &documents.DeleteDraftRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
@@ -207,7 +205,7 @@ func TestAPIPublishDraft(t *testing.T) {
 	api := newDocsAPI(back)
 	ctx := context.Background()
 
-	doc := makeDraft(t, ctx, api, "My Document Title")
+	doc := makeDraft(t, ctx, api, "My Document Title", "Subtitle")
 
 	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
@@ -245,7 +243,8 @@ func TestListPublications(t *testing.T) {
 	wg.Add(len(drafts))
 	for i := range drafts {
 		go func(i int) {
-			drafts[i] = makeDraft(t, ctx, api, "My Document "+strconv.Itoa(i))
+			ia := strconv.Itoa(i)
+			drafts[i] = makeDraft(t, ctx, api, "My Document "+ia, "Subtitle "+ia)
 			wg.Done()
 		}(i)
 	}
@@ -271,16 +270,18 @@ func TestListPublications(t *testing.T) {
 	for _, l := range list.Publications {
 		require.NotEqual(t, "", l.Document.Id)
 		require.NotEqual(t, "", l.Document.Title)
+		require.NotEqual(t, "", l.Document.Subtitle)
 		require.NotNil(t, l.Document.CreateTime)
 		require.NotNil(t, l.Document.UpdateTime)
 		require.NotNil(t, l.Document.PublishTime)
 	}
 }
 
-func makeDraft(t *testing.T, ctx context.Context, api DocsServer, title string) *documents.Document {
+func makeDraft(t *testing.T, ctx context.Context, api DocsServer, title, subtitle string) *documents.Document {
 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
 	doc.Title = title
+	doc.Subtitle = subtitle
 
 	doc, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: doc})
 	require.NoError(t, err)
