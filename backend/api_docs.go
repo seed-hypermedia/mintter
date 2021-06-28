@@ -3,7 +3,6 @@ package backend
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/ipfs/go-cid"
 	"golang.org/x/sync/errgroup"
@@ -115,32 +114,32 @@ func (srv *docsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRequ
 					return err
 				}
 
-				title, err := txn.GetProperty(duid, pDocumentTitle)
+				title, err := txn.GetPropertyString(duid, pDocumentTitle)
 				if err != nil {
 					return err
 				}
 
-				subtitle, err := txn.GetProperty(duid, pDocumentSubtitle)
+				subtitle, err := txn.GetPropertyString(duid, pDocumentSubtitle)
 				if err != nil {
 					return err
 				}
 
-				auid, err := txn.GetProperty(duid, pDocumentAuthor)
+				auid, err := txn.GetPropertyUID(duid, pDocumentAuthor)
 				if err != nil {
 					return err
 				}
 
-				ahash, err := txn.XID(typeAccount, auid.(uint64))
+				ahash, err := txn.XID(typeAccount, auid)
 				if err != nil {
 					return err
 				}
 
-				createTime, err := txn.GetProperty(duid, pDocumentCreateTime)
+				createTime, err := txn.GetPropertyTime(duid, pDocumentCreateTime)
 				if err != nil {
 					return err
 				}
 
-				updateTime, err := txn.GetProperty(duid, pDocumentUpdateTime)
+				updateTime, err := txn.GetPropertyTime(duid, pDocumentUpdateTime)
 				if err != nil {
 					return err
 				}
@@ -148,10 +147,10 @@ func (srv *docsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRequ
 				resp.Documents[i] = &documents.Document{
 					Id:         c.String(),
 					Author:     cid.NewCidV1(codecAccountID, ahash).String(),
-					Title:      title.(string),
-					Subtitle:   subtitle.(string),
-					CreateTime: timestamppb.New(createTime.(time.Time)),
-					UpdateTime: timestamppb.New(updateTime.(time.Time)),
+					Title:      title,
+					Subtitle:   subtitle,
+					CreateTime: timestamppb.New(createTime),
+					UpdateTime: timestamppb.New(updateTime),
 				}
 
 				return nil
@@ -369,37 +368,37 @@ func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPubl
 		i, duid := i, uid
 		g.Go(func() error {
 			return srv.back.db.db.View(func(txn *badgergraph.Txn) error {
-				title, err := txn.GetProperty(duid, pDocumentTitle)
+				title, err := txn.GetPropertyString(duid, pDocumentTitle)
 				if err != nil {
 					return err
 				}
 
-				subtitle, err := txn.GetProperty(duid, pDocumentSubtitle)
+				subtitle, err := txn.GetPropertyString(duid, pDocumentSubtitle)
 				if err != nil {
 					return err
 				}
 
-				auid, err := txn.GetProperty(duid, pDocumentAuthor)
+				auid, err := txn.GetPropertyUID(duid, pDocumentAuthor)
 				if err != nil {
 					return err
 				}
 
-				ahash, err := txn.XID(typeAccount, auid.(uint64))
+				ahash, err := txn.XID(typeAccount, auid)
 				if err != nil {
 					return err
 				}
 
-				createTime, err := txn.GetProperty(duid, pDocumentCreateTime)
+				createTime, err := txn.GetPropertyTime(duid, pDocumentCreateTime)
 				if err != nil {
 					return err
 				}
 
-				updateTime, err := txn.GetProperty(duid, pDocumentUpdateTime)
+				updateTime, err := txn.GetPropertyTime(duid, pDocumentUpdateTime)
 				if err != nil {
 					return err
 				}
 
-				publishTime, err := txn.GetProperty(duid, pDocumentPublishTime)
+				publishTime, err := txn.GetPropertyTime(duid, pDocumentPublishTime)
 				if err != nil {
 					return err
 				}
@@ -417,11 +416,11 @@ func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPubl
 					Document: &documents.Document{
 						Id:          c.String(),
 						Author:      cid.NewCidV1(codecAccountID, ahash).String(),
-						Title:       title.(string),
-						Subtitle:    subtitle.(string),
-						CreateTime:  timestamppb.New(createTime.(time.Time)),
-						UpdateTime:  timestamppb.New(updateTime.(time.Time)),
-						PublishTime: timestamppb.New(publishTime.(time.Time)),
+						Title:       title,
+						Subtitle:    subtitle,
+						CreateTime:  timestamppb.New(createTime),
+						UpdateTime:  timestamppb.New(updateTime),
+						PublishTime: timestamppb.New(publishTime),
 					},
 				}
 
