@@ -38,6 +38,11 @@ var (
 		HasIndex: false,
 		Type:     badgergraph.ValueTypeString,
 	})
+	pDocumentSubtitle = graphSchema.RegisterPredicate(typeDocument, badgergraph.Predicate{
+		Name:     "subtitle",
+		HasIndex: false,
+		Type:     badgergraph.ValueTypeString,
+	})
 	pDocumentCreateTime = graphSchema.RegisterPredicate(typeDocument, badgergraph.Predicate{
 		Name:     "createTime",
 		HasIndex: true,
