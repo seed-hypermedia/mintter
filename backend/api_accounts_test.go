@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetAccount_Own(t *testing.T) {
+func TestAPIGetAccount_Own(t *testing.T) {
 	ctx := context.Background()
 	back := makeTestBackend(t, "alice", true)
 	alice := newAccountsAPI(back)
@@ -33,7 +33,7 @@ func TestGetAccount_Own(t *testing.T) {
 	testutil.ProtoEqual(t, want, acc, "accounts don't match")
 }
 
-func TestUpdateProfile(t *testing.T) {
+func TestAPIUpdateProfile(t *testing.T) {
 	ctx := context.Background()
 	back := makeTestBackend(t, "alice", true)
 	alice := newAccountsAPI(back)
@@ -50,4 +50,14 @@ func TestUpdateProfile(t *testing.T) {
 	storedAcc, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, acc, storedAcc, "get account must return updated account")
+}
+
+func TestAPIListAccounts(t *testing.T) {
+	ctx := context.Background()
+	back := makeTestBackend(t, "alice", true)
+	api := newAccountsAPI(back)
+
+	list, err := api.ListAccounts(ctx, &accounts.ListAccountsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Accounts, 0)
 }
