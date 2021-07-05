@@ -2,10 +2,11 @@ package server_test
 
 import (
 	"context"
-	proto "mintter/api/go/v2"
-	"mintter/backend/server"
 	"testing"
 	"time"
+
+	proto "mintter/backend/api/v2"
+	"mintter/backend/server"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"

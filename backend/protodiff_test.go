@@ -1,9 +1,10 @@
 package backend
 
 import (
-	accounts "mintter/api/go/accounts/v1alpha"
-	"mintter/backend/testutil"
 	"testing"
+
+	accounts "mintter/backend/api/accounts/v1alpha"
+	"mintter/backend/testutil"
 
 	"github.com/stretchr/testify/require"
 )

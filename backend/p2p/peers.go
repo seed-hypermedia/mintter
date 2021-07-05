@@ -3,7 +3,8 @@ package p2p
 import (
 	"context"
 	"fmt"
-	internal "mintter/api/go/p2p"
+
+	internal "mintter/backend/api/p2p"
 	"mintter/backend/identity"
 
 	"github.com/libp2p/go-libp2p-core/host"

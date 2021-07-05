@@ -2,7 +2,8 @@ package server
 
 import (
 	"context"
-	proto "mintter/api/go/v2"
+
+	proto "mintter/backend/api/v2"
 	"mintter/backend/identity"
 )
 

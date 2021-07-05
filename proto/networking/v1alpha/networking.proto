@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package com.mintter.networking.v1alpha;
 
-option go_package = "mintter/api/go/networking/v1alpha;networking";
+option go_package = "mintter/backend/api/networking/v1alpha;networking";
 
 // Networking API service of the Mintter daemon.
 service Networking {

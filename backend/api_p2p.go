@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	p2p "mintter/api/go/p2p/v1alpha"
+	p2p "mintter/backend/api/p2p/v1alpha"
 )
 
 type p2pAPI struct {
