@@ -43,6 +43,7 @@ protoc -I {proto_root} {protoc_flags} {protos}
 
 PWD="$(pwd)"
 for o in {source_outs}; do
+    {extra_output_script}
     ln -s $PWD/$o $TARGET_OUT_DIR/
 done
 """.format(
@@ -52,6 +53,7 @@ done
             protos = " ".join([s.short_path for s in inputs]),
             source_outs = " ".join(source_outs),
             protoc_flags = " ".join(protoc_flags),
+            extra_output_script = ctx.attr.extra_output_script,
         ),
     )
 
@@ -81,6 +83,11 @@ proto_compile = rule(
             doc = "List of flags for protoc.",
             mandatory = True,
         ),
+        # TODO: this is probably very unsafe for non-trusted users.
+        "extra_output_script": attr.string(
+            doc = "Extra shell template that would be invoked for each generated output file. Useful to modify the files somehow after generation.",
+            default = "",
+        ),
         "_workspace": attr.label(
             doc = "Implicit dependency on the WORKSPACE file.",
             default = "//:WORKSPACE",
@@ -109,6 +116,7 @@ def mtt_js_proto(name, srcs, visibility = ["//visibility:public"], **kwargs):
             "--ts_proto_opt=lowerCaseServiceMethods=true",
             "--ts_proto_opt=addGrpcMetadata=true",
         ],
+        extra_output_script = "echo -e \"//@ts-nocheck\n$(cat $PWD/$o)\" > $PWD/$o",
         visibility = visibility,
         **kwargs
     )
