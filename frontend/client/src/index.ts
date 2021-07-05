@@ -1,68 +1,63 @@
-export {
+export type {
   GetAccountRequest,
   ListAccountsRequest,
   Account,
-  Account_DevicesEntry as AccountDevicesEntry,
+  Account_DevicesEntry,
   Profile,
   Device,
   DeviceRegistered,
   ProfileUpdated,
+  Accounts,
 } from '../.generated/accounts/v1alpha/accounts'
 export * from './accounts'
 
-export {
+export type {
   GenSeedRequest,
   GenSeedResponse,
   RegisterRequest,
   RegisterResponse,
-  Info,
   GetInfoRequest,
+  Info,
+  Daemon,
 } from '../.generated/daemon/v1alpha/daemon'
 export * from './daemon'
 
-export {
-  ConnectionStatus,
-  connectionStatusToJSON,
-  connectionStatusFromJSON,
+export type {
   StartObjectDiscoveryRequest,
   StartObjectDiscoveryResponse,
   StopObjectDiscoveryRequest,
   StopObjectDiscoveryResponse,
+  GetObjectDiscoveryStatusRequest,
   GetPeerInfoRequest,
   ConnectRequest,
   ConnectResponse,
   PeerInfo,
   ObjectDiscoveryStatus,
-  GetObjectDiscoveryStatusRequest,
+  ConnectionStatus,
 } from '../.generated/networking/v1alpha/networking'
 export * from './networking'
 
-export {
+export type {
   DocumentView,
-  documentViewFromJSON,
-  documentViewToJSON,
   ListStyle,
-  listStyleFromJSON,
-  listStyleToJSON,
   CreateDraftRequest,
+  DeleteDraftRequest,
   GetDraftRequest,
+  UpdateDraftRequest,
   ListDraftsRequest,
   ListDraftsResponse,
   PublishDraftRequest,
-  PublishDraftResponse,
   GetPublicationRequest,
   DeletePublicationRequest,
   ListPublicationsRequest,
   ListPublicationsResponse,
   Publication,
   Document,
-  Document_BlocksEntry as DocumentBlocksEntry,
-  Document_LinksEntry as DocumentLinksEntry,
+  Document_BlocksEntry,
+  Document_LinksEntry,
   Link,
   Block,
-  Block_Type as BlockType,
-  block_TypeFromJSON as blockTypeFromJSON,
-  block_TypeToJSON as blockTypeToJSON,
+  Block_Type,
   InlineElement,
   TextRun,
   Image,

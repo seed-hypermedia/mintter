@@ -16,7 +16,7 @@ import (
 	"go.uber.org/fx/fxtest"
 	"go.uber.org/zap"
 
-	accounts "mintter/api/go/accounts/v1alpha"
+	accounts "mintter/backend/api/accounts/v1alpha"
 	"mintter/backend/badger3ds"
 	"mintter/backend/config"
 	"mintter/backend/ipfsutil"

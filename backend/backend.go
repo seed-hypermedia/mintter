@@ -26,8 +26,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	accounts "mintter/api/go/accounts/v1alpha"
-	p2p "mintter/api/go/p2p/v1alpha"
+	accounts "mintter/backend/api/accounts/v1alpha"
+	p2p "mintter/backend/api/p2p/v1alpha"
 	"mintter/backend/cleanup"
 )
 

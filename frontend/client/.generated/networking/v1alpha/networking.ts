@@ -1,10 +1,9 @@
+//@ts-nocheck
 /* eslint-disable */
 import {util, configure, Writer, Reader} from 'protobufjs/minimal'
 import * as Long from 'long'
 import {grpc} from '@improbable-eng/grpc-web'
 import {BrowserHeaders} from 'browser-headers'
-
-export const protobufPackage = 'com.mintter.networking.v1alpha'
 
 /**
  * Indicates connection status of our node with a remote peer.
@@ -933,7 +932,7 @@ export class GrpcWebImpl {
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined
-export type DeepPartial<T> = T extends Builtin
+type DeepPartial<T> = T extends Builtin
   ? T
   : T extends Array<infer U>
   ? Array<DeepPartial<U>>

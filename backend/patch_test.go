@@ -4,7 +4,7 @@ import (
 	"sort"
 	"testing"
 
-	p2p "mintter/api/go/p2p/v1alpha"
+	p2p "mintter/backend/api/p2p/v1alpha"
 	"mintter/backend/ipfsutil"
 	"mintter/backend/testutil"
 

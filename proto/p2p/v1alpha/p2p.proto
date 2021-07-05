@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package com.mintter.p2p.v1alpha;
 
-option go_package = "mintter/api/go/p2p/v1alpha;p2p";
+option go_package = "mintter/backend/api/p2p/v1alpha;p2p";
 
 import "google/protobuf/empty.proto";
 

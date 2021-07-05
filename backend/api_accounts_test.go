@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	accounts "mintter/api/go/accounts/v1alpha"
+	accounts "mintter/backend/api/accounts/v1alpha"
 	"mintter/backend/testutil"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
