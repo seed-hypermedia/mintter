@@ -10,6 +10,7 @@ import {Container} from '../components/container'
 import {PeerAddrs} from '../components/peer-addrs'
 import {PeerList} from '../components/peer-list'
 import {Separator} from '../components/separator'
+import Publication from '../pages/publication'
 
 import {useMutation, useQueryClient} from 'react-query'
 

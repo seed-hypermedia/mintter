@@ -1,4 +1,4 @@
-import type {TextRun, ListStyle, BlockType} from '@mintter/client'
+import type {TextRun, ListStyle, Block_Type} from '@mintter/client'
 import type {ELEMENT_BLOCK} from './block-plugin'
 import type {ELEMENT_LINK} from './link-plugin'
 import type {ELEMENT_QUOTE} from './quote-plugin'
@@ -33,7 +33,7 @@ export type EditorBlock = {
   type: typeof ELEMENT_BLOCK
   id: string
   // depth: number
-  blockType?: BlockType
+  blockType?: Block_Type
   listStyle: ListStyle
   children: Array<EditorTextRun | EditorQuote | EditorLink | EditorImage> // TODO: fix types
 }
