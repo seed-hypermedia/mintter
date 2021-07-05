@@ -1,26 +1,11 @@
-import {useEffect, useMemo, useRef, useState} from 'react'
+import 'show-keys'
+import {useMemo, useRef, useState} from 'react'
 import {Box, Button, Text, TextField} from '@mintter/ui'
 import toast from 'react-hot-toast'
 import {useHistory, useParams} from 'react-router'
-import {useMutation, useQueryClient, UseQueryResult} from 'react-query'
-
-import {useDraft, useAccount} from '@mintter/client/hooks'
-
 import {Container} from '../components/container'
 import {Separator} from '../components/separator'
-
-import {useSidePanel} from '../sidepanel'
 import {EditorComponent} from '../editor/editor-component'
-import 'show-keys'
-import {toDocument} from '../editor/to-document'
-import type {EditorBlock} from '../editor/types'
-import {ListStyle, Document, updateDraft} from '@mintter/client'
-import {toEditorValue} from '../editor/to-editor-value'
-import {ELEMENT_BLOCK} from '../editor/block-plugin'
-import {createId} from '@mintter/client/mocks'
-import {useReducer} from 'react'
-import {EditorAction, editorReducer, EditorState, initialValue, useEditorReducer} from '../editor/editor-reducer'
-import {useStoreEditorValue} from '@udecode/slate-plugins'
 import {AppSpinner} from '../components/app-spinner'
 import {AutosaveStatus} from '../editor/autosave'
 import {useEditorDraft} from '../editor/use-editor-draft'
@@ -28,19 +13,9 @@ import {useEditorDraft} from '../editor/use-editor-draft'
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
   const history = useHistory()
-  const queryClient = useQueryClient()
   const {isLoading, isError, error, data} = useEditorDraft(docId)
 
-  // sidepanel
-  const {isSidepanelOpen, sidepanelObjects, sidepanelSend} = useSidePanel()
-
-  useEffect(() => {
-    return () => {
-      data.save()
-    }
-  }, [])
-
-  async function save() {
+  async function handleSave() {
     // console.log('save now!!')
     await data?.save()
     toast.success('Draft saved!', {position: 'top-center', duration: 4000})
@@ -68,10 +43,12 @@ export default function EditorPage() {
       css={{
         display: 'grid',
         minHeight: '$full',
-        gridTemplateAreas: isSidepanelOpen
-          ? `"controls controls controls"
-        "maincontent maincontent rightside"`
-          : `"controls controls controls"
+        // gridTemplateAreas: isSidepanelOpen
+        //   ? `"controls controls controls"
+        // "maincontent maincontent rightside"`
+        //   : `"controls controls controls"
+        // "maincontent maincontent maincontent"`,
+        gridTemplateAreas: `"controls controls controls"
         "maincontent maincontent maincontent"`,
         gridTemplateColumns: 'minmax(300px, 25%) 1fr minmax(300px, 25%)',
         gridTemplateRows: '64px 1fr',
@@ -97,7 +74,7 @@ export default function EditorPage() {
         </Button> */}
       </Box>
       <Container css={{gridArea: 'maincontent', marginBottom: 300}}>
-        <AutosaveStatus save={save} />
+        <AutosaveStatus save={data.save} />
         <TextField
           // TODO: Fix types
           // @ts-ignore
@@ -143,30 +120,9 @@ export default function EditorPage() {
         />
         <Separator />
         <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
-          <EditorComponent
-            value={data?.value.blocks}
-            // onChange={(value: Array<EditorBlock>) => {
-            //   console.log('changed!', value)
-            //   data?.send({type: 'editor', payload: value})
-            // }}
-          />
+          <EditorComponent value={data?.value.blocks} />
         </Box>
       </Container>
-      {isSidepanelOpen ? (
-        <Box
-          css={{
-            backgroundColor: '$background-muted',
-            overflow: 'auto',
-            gridArea: 'rightside',
-            color: '$text-opposite',
-            padding: '$4',
-          }}
-        >
-          <pre>
-            <code>{JSON.stringify({}, null, 2)}</code>
-          </pre>
-        </Box>
-      ) : null}
     </Box>
   )
 }

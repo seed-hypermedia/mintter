@@ -41,27 +41,25 @@ export function DocumentList({
   )
 }
 
-function ListItem({item, onDeleteDocument}: {item: Document; onDeleteDocument?: (documentId: string) => void}) {
+function ListItem({
+  item,
+  onDeleteDocument,
+}: {
+  item: {document: Document; version?: string}
+  onDeleteDocument?: (documentId: string) => void
+}) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
   const {path} = useRouteMatch()
   const location = useLocation()
   // const [prefetched, setPrefetch] = React.useState<boolean>(false)
-  const {id, title, subtitle, author: itemAuthor} = item
-  console.log('🚀 ~ file: document-list.tsx ~ line 50 ~ ListItem ~ item', item)
+  const {id, title, subtitle, author: itemAuthor} = item.document
   const theTitle = title ? title : 'Untitled Document'
 
   const isDraft = useMemo(() => location.pathname.includes('drafts'), [location.pathname])
 
   const to = useMemo(() => {
-    return `${getPath(path)}${isDraft ? '/editor' : '/p'}/${id}`
+    return `${isDraft ? '/editor' : '/p'}/${id}`
   }, [location.pathname])
-  // function handlePrefetch() {
-  // if (!prefetched) {
-  // TODO: prefetch on hover
-  // console.log(`prefetch draft with id ${draft.id}`)
-  // setPrefetch(true)
-  // }
-  // }
 
   const date = useMemo(() => item.createTime?.getDate() || new Date(), [item.createTime])
 
@@ -180,7 +178,13 @@ function ListItem({item, onDeleteDocument}: {item: Document; onDeleteDocument?: 
                   </Alert.Description>
                   <Alert.Actions>
                     <Alert.Cancel>Cancel</Alert.Cancel>
-                    <Alert.Action color="danger" onClick={() => onDeleteDocument(id)}>
+                    <Alert.Action
+                      color="danger"
+                      onClick={() => {
+                        let deleteId = item.version ?? id
+                        onDeleteDocument(deleteId)
+                      }}
+                    >
                       Delete
                     </Alert.Action>
                   </Alert.Actions>
