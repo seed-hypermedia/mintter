@@ -2,33 +2,32 @@ import {useMemo, useEffect} from 'react'
 import {useHistory, useParams} from 'react-router-dom'
 import slugify from 'slugify'
 import type {Publication as TPublication, Document} from '@mintter/client'
-import {useDraftsList, usePublication as usePublicationQuery} from '@mintter/client/hooks'
+import {useDocument, useDraftsList, usePublication, usePublication as usePublicationQuery} from '@mintter/client/hooks'
 import {useSidePanel} from '../sidepanel'
 import {Text, Box, Button} from '@mintter/ui'
 import {Container} from '../components/container'
 import {mockDocument} from '@mintter/client/mocks'
+import {EditorState, useEditorReducer} from '../editor/editor-reducer'
+import {EditorComponent} from '../editor/editor-component'
+import {toEditorValue} from '../editor/to-editor-value'
+import {AppSpinner} from '../components/app-spinner'
+import type {UseQueryResult} from 'react-query'
 
 export default function Publication(): JSX.Element {
+  const {docId} = useParams<{docId: string}>()
   const history = useHistory()
-  // const { addToast } = useToasts();
-  console.log('load publication!!')
   // request document
-  const {isLoading, isError, error, data, value} = usePublication()
-
-  // sidepanel
-  const {isSidepanelOpen, sidepanelObjects, sidepanelSend} = useSidePanel()
-
-  // get Drafts for editorOptions
-  const {data: drafts = []} = useDraftsList()
+  const {isLoading, isError, error, data} = useEditorPublication(docId)
+  console.log('🚀 ~ file: publication.tsx ~ line 19 ~ Publication ~ data', data)
 
   // start rendering
   if (isError) {
-    console.error('useDraft error: ', error)
+    console.error('usePublication error: ', error)
     return <Text>Publication ERROR</Text>
   }
 
   if (isLoading) {
-    return <Text>loading publication...</Text>
+    return <AppSpinner />
   }
 
   return (
@@ -36,17 +35,19 @@ export default function Publication(): JSX.Element {
       css={{
         display: 'grid',
         minHeight: '$full',
-        gridTemplateAreas: isSidepanelOpen
-          ? `"controls controls controls"
-        "maincontent maincontent rightside"`
-          : `"controls controls controls"
+        // gridTemplateAreas: isSidepanelOpen
+        //   ? `"controls controls controls"
+        // "maincontent maincontent rightside"`
+        //   : `"controls controls controls"
+        // "maincontent maincontent maincontent"`,
+        gridTemplateAreas: `"controls controls controls"
         "maincontent maincontent maincontent"`,
         gridTemplateColumns: 'minmax(300px, 25%) 1fr minmax(300px, 25%)',
         gridTemplateRows: '64px 1fr',
         gap: '$5',
       }}
+      data-testid="publication-wrapper"
     >
-      {/* <Seo title={data.document?.title} description={data.document?.subtitle} /> */}
       <Box
         css={{
           display: 'flex',
@@ -57,128 +58,56 @@ export default function Publication(): JSX.Element {
           paddingHorizontal: '$5',
         }}
       >
-        controls
+        {/* <Button size="1" onClick={() => sidepanelSend?.({type: 'SIDEPANEL_TOOGLE'})}>
+          toggle sidepanel
+        </Button> */}
       </Box>
       <Container css={{gridArea: 'maincontent', marginBottom: 300}}>
         <PublicationHeader document={data?.document} />
-        {value && <p>EDITOR HERE</p>}
-      </Container>
-      {isSidepanelOpen ? (
-        <Box
-          css={{
-            height: '100%',
-            minHeight: '100%',
-            overflow: 'auto',
-            zIndex: 0,
-            background: 'red',
-          }}
-        >
-          <Box>
-            {/* <MintterIcon size="1.5em" /> */}
-            <Button onClick={() => sidepanelSend?.({type: 'SIDEPANEL_CLOSE'})}>
-              Close Sidepanel
-              {/* <Icons.ChevronRight size={14} color="currentColor" /> */}
-            </Button>
-          </Box>
-          <Box as="ul" aria-label="sidepanel list">
-            {sidepanelObjects.map((object) => (
-              // <SidePanelObject key={object} id={object} />
-              <Box key={object} />
-            ))}
-          </Box>
-          {/* {sidepanelObjects.length === 0 && <SidePanelCTA handleInteract={handleInteract} />} */}
+        <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
+          <EditorComponent value={data?.value?.blocks} />
         </Box>
-      ) : null}
+      </Container>
       {/* <PublicationModal document={data.document} /> */}
     </Box>
   )
 }
 
-function usePublication() {
-  // get document version
-  const {docId, docVersion = ''} = useParams<{
-    docId: string
-    docVersion: string
-  }>()
+type UseEditorPublicationValue = {
+  document?: Document
+  version?: string
+  value?: EditorState
+}
 
-  const history = useHistory()
-  const documentId = useMemo(() => docId.split('-').slice(-1)[0], [docId])
+function useEditorPublication(publicationId: string): UseQueryResult<UseEditorPublicationValue> {
+  const publicationQuery = usePublication(publicationId)
+  const [value, send] = useEditorReducer()
 
-  const {isSuccess, ...document} = usePublicationQuery(documentId, docVersion)
-
-  const data: TPublication = {
-    document: useMemo(() => mockDocument(), []),
-    version: docVersion,
-  }
-
-  // add slug to URL
   useEffect(() => {
-    if (isSuccess && data?.document) {
-      const {title} = data?.document
-      if (title && !docId.includes('-')) {
-        const titleSlug = slugify(title, {
-          lower: true,
-          remove: /[*+~.?()'"!:@]/g,
-        })
-        history.replace(`/p/${titleSlug}-${documentId}${docVersion ? `/${docVersion}` : ''}`)
-      }
+    if (publicationQuery.isSuccess && publicationQuery.data) {
+      const {title, subtitle} = publicationQuery.data.document
+      send({
+        type: 'full',
+        payload: {
+          title,
+          subtitle,
+          blocks: toEditorValue(publicationQuery.data.document),
+        },
+      })
     }
-  }, [])
+  }, [publicationQuery.data])
 
   return {
-    ...document,
-    isSuccess,
-    data,
-    value: [],
+    ...publicationQuery,
+    data: {
+      document: publicationQuery.data?.document,
+      version: publicationQuery.data?.version,
+      value,
+    },
   }
-  // return {
-  //   ...document,
-  //   isSuccess,
-  //   data,
-  //   value:
-  //     data && data.document
-  //       ? toSlateTree({
-  //           blockRefList: data.document.blockRefList,
-  //           blocksMap: data?.blocksMap,
-  //           isRoot: true,
-  //         })
-  //       : null,
-  // };
 }
 
-function PublicationCTA({handleInteract, visible}: any) {
-  return (
-    <Box>
-      <Text>
-        Document created via <Text as="strong">Mintter App.</Text>
-      </Text>
-      <Text>
-        Mintter is a distributed publishing platform that brings to your content{' '}
-        <Text as="strong">Ownership, Authorship, Atribution</Text> and <Text as="strong">Traceability.</Text>
-      </Text>
-      <Button onClick={handleInteract}>
-        {/* <Icons.ChevronLeft size={16} color="currentColor" /> */}
-        Interact with this document
-      </Button>
-    </Box>
-  )
-}
-
-function SidePanelCTA({handleInteract}: any) {
-  return (
-    <Box>
-      <Text as="h3">Want to add your thougts to this subject?</Text>
-      <Text>
-        <Text as="strong">Reply, develop</Text> or <Text as="strong">refute</Text> on the Mintter app now.
-      </Text>
-      <Button variant="solid" color="primary" onClick={handleInteract}>
-        Write about this Article
-      </Button>
-    </Box>
-  )
-}
-
-function PublicationHeader({document}: {document: Document | undefined}) {
+function PublicationHeader({document}: {document?: Document}) {
   return document ? (
     <Box
       css={{
@@ -250,6 +179,7 @@ function fallbackCopyTextToClipboard(text: string) {
   document.body.removeChild(textArea)
   return result
 }
+
 function copyTextToClipboard(text: string) {
   if (!navigator.clipboard) {
     return fallbackCopyTextToClipboard(text)
