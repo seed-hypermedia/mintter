@@ -14,7 +14,7 @@ export function QuoteElement({attributes, className, element, children}: SPRende
   const selected = useSelected()
   const [documentId, quoteId] = getQuoteIds(element.url)
   const {data, isLoading, isSuccess, isError} = useQuote(documentId, quoteId)
-  console.log('🚀 ~ file: quote-element.tsx ~ line 17 ~ QuoteElement ~ data', data)
+  console.log('🚀 ~ quote-element.tsx ~ ', {data, isLoading, isSuccess, isError})
 
   const renderElements = useCallback(renderQuoteInlineElements, [data])
   let qRender
@@ -30,6 +30,7 @@ export function QuoteElement({attributes, className, element, children}: SPRende
   }
 
   if (isSuccess && data) {
+    console.log('🚀 ~ file: quote-element.tsx ~ line 35 ~ QuoteElement ~ data.quote', data)
     if (!data.quote) {
       console.log('no hay quote!', {data})
       qRender = data.document.title
@@ -65,8 +66,6 @@ export function QuoteElement({attributes, className, element, children}: SPRende
       {children}
     </span>
   )
-
-  return children
 }
 
 function toEditorQuote(entry: Block): Array<EditorTextRun> {
