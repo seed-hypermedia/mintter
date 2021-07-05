@@ -1,8 +1,6 @@
 export {
   GetAccountRequest,
   ListAccountsRequest,
-  StartAccountDiscoveryRequest,
-  StartAccountDiscoveryResponse,
   Account,
   Account_DevicesEntry as AccountDevicesEntry,
   Profile,

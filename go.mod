@@ -73,6 +73,7 @@ require (
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/polydawn/refmt v0.0.0-20201211092308-30ac6d18308e
 	github.com/prometheus/client_golang v1.11.0
+	github.com/rs/cors v1.7.0
 	github.com/rs/xid v1.2.1
 	github.com/sanity-io/litter v1.3.0
 	github.com/stretchr/testify v1.7.0
