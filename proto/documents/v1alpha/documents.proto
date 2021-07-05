@@ -5,7 +5,7 @@ package com.mintter.documents.v1alpha;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-option go_package = "mintter/api/go/documents/v1alpha;documents";
+option go_package = "mintter/backend/api/documents/v1alpha;documents";
 
 // Drafts service is separate from Publications for the access-control purposes,
 // but overall there're not many differences between the two.

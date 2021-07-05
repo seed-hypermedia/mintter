@@ -4,7 +4,7 @@ package com.mintter.accounts.v1alpha;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "mintter/api/go/accounts/v1alpha;accounts";
+option go_package = "mintter/backend/api/accounts/v1alpha;accounts";
 
 // Accounts API service.
 service Accounts {

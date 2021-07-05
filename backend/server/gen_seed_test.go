@@ -2,8 +2,9 @@ package server_test
 
 import (
 	"context"
-	proto "mintter/api/go/v2"
 	"testing"
+
+	proto "mintter/backend/api/v2"
 
 	"github.com/stretchr/testify/require"
 )

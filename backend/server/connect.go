@@ -3,7 +3,8 @@ package server
 import (
 	"context"
 	"fmt"
-	proto "mintter/api/go/v2"
+
+	proto "mintter/backend/api/v2"
 
 	"github.com/multiformats/go-multiaddr"
 )

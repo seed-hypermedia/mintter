@@ -20,8 +20,6 @@ def _proto_compile(ctx):
             fail("Only .proto files are allowed in srcs of '{}'".format(ctx.label))
         for r in replaces:
             replaced_filename = i.basename.replace(".proto", r)
-            if replaced_filename in ctx.attr.skip_outputs:
-                continue
             o = ctx.actions.declare_file(replaced_filename)
             outs.append(o)
             source_outs.append(o.short_path.replace(proto_root, output_root))
@@ -83,9 +81,6 @@ proto_compile = rule(
             doc = "List of flags for protoc.",
             mandatory = True,
         ),
-        "skip_outputs": attr.string_list(
-            doc = "List of output files that need not to be declared by the automatic replacement rules. Useful for proto files that output no GRPC services.",
-        ),
         "_workspace": attr.label(
             doc = "Implicit dependency on the WORKSPACE file.",
             default = "//:WORKSPACE",
@@ -127,7 +122,7 @@ def mtt_go_proto(name, srcs, visibility = ["//visibility:public"], **kwargs):
         srcs = srcs,
         replaces = [".pb.go"],
         proto_root = "proto",
-        output_root = "api/go/",
+        output_root = "backend/api/",
         protoc_flags = ["--go_out=module=mintter,plugins=grpc:."],
         visibility = visibility,
         **kwargs
