@@ -84,10 +84,16 @@ export function useEditorDraft(documentId: string): UseQueryResult<UseEditorValu
 
   const {mutateAsync: publish} = useMutation(async () => {
     await save()
-    const resp = await publishDraft(document?.id)
-    console.log("🚀 ~ resp", resp)
-    return resp
+    return await publishDraft(document?.id)
   })
+
+  useEffect(() => {
+    // save before closing the page
+    return () => {
+      console.log('saving before closing!')
+      save()
+    }
+  }, [])
 
   return {
     ...draftQuery,
