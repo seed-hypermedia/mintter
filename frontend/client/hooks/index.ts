@@ -107,7 +107,7 @@ export function useDraftsList(options: any = {}) {
     return listDrafts()
   })
 
-  const data = useMemo(() => draftsListQuery.data?.documents, [draftsListQuery.data])
+  const data = useMemo(() => draftsListQuery.data?.documents.map((d) => ({document: d})), [draftsListQuery.data])
 
   return {
     ...draftsListQuery,
@@ -149,29 +149,21 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
 /**
  *
  * @param publicationId
- * @param version
  * @param options
  * @returns
  */
-export function usePublication(publicationId: string, version?: string, options: HookOptions<Publication> = {}) {
-  const publicationQuery = useQuery(
-    ['Publication', publicationId, version],
+export function usePublication(publicationId: string, options: HookOptions<Publication> = {}) {
+  return useQuery(
+    ['Publication', publicationId],
     async ({queryKey}) => {
-      const [_key, publicationId, version] = queryKey as [string, string, string]
-      return getPublication(publicationId, version, options.rpc)
+      const [_key, publicationId] = queryKey as [string, string]
+      return getPublication(publicationId, options.rpc)
     },
     {
       refetchOnWindowFocus: false,
       ...options,
     },
   )
-
-  const data = useMemo(() => publicationQuery.data, [publicationQuery.data])
-
-  return {
-    ...publicationQuery,
-    data,
-  }
 }
 
 /**
@@ -189,14 +181,13 @@ export function useOthersPublicationsList(options = {}) {
     () =>
       myPubsListQuery.data?.publications.reduce((acc, current) => {
         if (current.document?.author != info?.accountId) {
-          return (acc = [...acc, current.document])
+          return (acc = [...acc, current])
         }
 
         return acc
       }, []),
     [myPubsListQuery.data, info],
   )
-  console.log('🚀 ~ file: index.ts ~ line 205 ~ useMyPublicationsList ~ data', data)
 
   return {
     ...myPubsListQuery,
@@ -219,7 +210,7 @@ export function useMyPublicationsList(options = {}) {
     () =>
       myPubsListQuery.data?.publications.reduce((acc, current) => {
         if (current.document?.author == info?.accountId) {
-          return (acc = [...acc, current.document])
+          return (acc = [...acc, current])
         }
 
         return acc
