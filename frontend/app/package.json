@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "dev2": "VITE_MINTTER_API_URL=http://localhost:56001 && vite --port 4000",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "serve": "vite preview",
     "test": "jest --maxWorkers=50%",
     "test:w": "jest --watch --maxWorkers=25%",
