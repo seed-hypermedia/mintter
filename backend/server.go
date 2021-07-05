@@ -28,5 +28,6 @@ func newHTTPHandler(g *grpc.Server, b *backend) http.Handler {
 		fmt.Fprint(w, "This server only serves grpc-web")
 	})
 
+	// TODO: fix this for production releases.
 	return cors.AllowAll().Handler(mux)
 }
