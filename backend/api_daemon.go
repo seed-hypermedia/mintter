@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	daemon "mintter/api/go/daemon/v1alpha"
+	daemon "mintter/backend/api/daemon/v1alpha"
 )
 
 type daemonAPI struct {

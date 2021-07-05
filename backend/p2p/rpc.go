@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net"
 
-	internal "mintter/api/go/p2p"
-	v2 "mintter/api/go/v2"
+	internal "mintter/backend/api/p2p"
+	v2 "mintter/backend/api/v2"
 	"mintter/backend/identity"
 
 	"github.com/libp2p/go-libp2p-core/host"

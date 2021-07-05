@@ -4,7 +4,7 @@ package com.mintter.daemon.v1alpha;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "mintter/api/go/daemon/v1alpha;daemon";
+option go_package = "mintter/backend/api/daemon/v1alpha;daemon";
 
 // Daemon API encapsulates main functionality of the Mintter daemon.
 service Daemon {

@@ -1,9 +1,10 @@
 package document_test
 
 import (
-	v2 "mintter/api/go/v2"
-	"mintter/backend/testutil"
 	"testing"
+
+	v2 "mintter/backend/api/v2"
+	"mintter/backend/testutil"
 
 	"github.com/stretchr/testify/require"
 )

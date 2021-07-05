@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	proto "mintter/api/go/v2"
+	proto "mintter/backend/api/v2"
 	"mintter/backend/identity"
 
 	peer "github.com/libp2p/go-libp2p-core/peer"

@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	accounts "mintter/api/go/accounts/v1alpha"
+	accounts "mintter/backend/api/accounts/v1alpha"
 )
 
 type accountsAPI struct {
