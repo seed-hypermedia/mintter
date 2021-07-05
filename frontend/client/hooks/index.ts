@@ -232,6 +232,11 @@ export type UseQuoteResult = Omit<UseQueryResult<Document>, 'data'> & {
   }
 }
 
+export type UseQuoteReturn = {
+  document: Document
+  quote: Block
+}
+
 /**
  *
  * @param documentId (string) the document id of the current quote
@@ -239,62 +244,26 @@ export type UseQuoteResult = Omit<UseQueryResult<Document>, 'data'> & {
  * @param options
  * @returns
  */
-export function useQuote(documentId: string, quoteId?: string, options: HookOptions<Document> = {}): any {
-  console.warn('called mocked function "useQuote"')
-
-  const quoteQuery = useQuery(
-    ['Document', documentId],
-    async () => {
-      console.warn('called mocked function "useQuote"')
-
-      const innerQuote = {
-        id: createId(),
-        url: `mtt://${createId()}/${createId()}`,
-      }
-
-      const doc = quoteId
-        ? mockDocument({
-            blocks: [
-              mockBlock(),
-              Block.fromPartial({
-                id: quoteId,
-                elements:
-                  Math.random() * 1 > 0.5
-                    ? [
-                        mockTextInlineElement(),
-                        {
-                          quote: Quote.fromPartial({
-                            linkKey: innerQuote.id,
-                          }),
-                        },
-                      ]
-                    : undefined,
-              }),
-            ],
-            links: {
-              [innerQuote.id]: Link.fromPartial({
-                uri: innerQuote.url,
-              }),
-            },
-          })
-        : mockDocument({title: 'this is a title'})
-
-      const block = quoteId ? doc.blocks[quoteId] : undefined
-
+export function useQuote(
+  documentId: string,
+  quoteId?: string,
+  options: HookOptions<Document> = {},
+): UseQueryResult<UseQuoteReturn> {
+  const pubQuery = usePublication(documentId)
+  console.log('useQuote', {documentId, quoteId, pubQuery})
+  const data = useMemo(() => {
+    if (pubQuery.isSuccess) {
       return {
-        document: doc,
-        quote: block,
+        document: pubQuery.data?.document,
+        quote: pubQuery.data?.document?.blocks[quoteId],
       }
-    },
-    // {
-    //   enabled: !!quoteId,
-    // },
-  )
-
-  const data = useMemo(() => quoteQuery.data, [quoteQuery.data])
+    } else {
+      return {}
+    }
+  }, [pubQuery.data])
 
   return {
-    ...quoteQuery,
+    ...pubQuery,
     data,
   }
 }

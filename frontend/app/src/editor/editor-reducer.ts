@@ -1,5 +1,5 @@
 import {useReducer} from 'react'
-import {BlockType, ListStyle} from '@mintter/client'
+import {Block_Type, ListStyle} from '@mintter/client'
 import {ELEMENT_BLOCK} from './block-plugin'
 import type {EditorBlock} from './types'
 import * as mocks from '@mintter/client/mocks'
@@ -34,7 +34,7 @@ const initialValue: EditorState = {
   blocks: [
     {
       type: ELEMENT_BLOCK,
-      blockType: BlockType.BASIC,
+      blockType: Block_Type.BASIC,
       id: mocks.createId(),
       listStyle: ListStyle.NONE,
       children: [{text: ''}],

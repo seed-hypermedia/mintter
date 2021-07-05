@@ -22,7 +22,6 @@ import {createBlockPlugin, ELEMENT_BLOCK, blockOptions} from './block-plugin'
 import {boldOptions, boldAutoformatRules} from './bold-plugin'
 import {codeOptions, codeAutoformatRules} from './code-plugin'
 import {italicOptions, italicAutoformatRules} from './italic-plugin'
-import {BlockType} from '@mintter/client'
 import {strikethroughOptions, strikethroughAutoformatRules} from './strikethrough-plugin'
 import {Toolbar} from './toolbar'
 import {underlineOptions, underlineAutoformatRules} from './underline-plugin'
@@ -47,9 +46,16 @@ function rulesWithCustomDefaultType(
   }))
 }
 
-export function EditorComponent<T extends SPEditor = SPEditor>({value, onChange, ...options}: SlatePluginsProps<T>) {
+export function EditorComponent<T extends SPEditor = SPEditor>({
+  value,
+  onChange,
+  editableProps,
+  ...options
+}: SlatePluginsProps<T>) {
   // const menu = useMenuState()
   const [show, setShow] = useState(false)
+  const vvalue = useStoreEditorValue()
+  console.log('🚀 ~ file: editor-component.tsx ~ line 58 ~ vvalue', vvalue)
 
   useEffect(() => {
     if (!show && !!value) {
@@ -65,6 +71,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({value, onChange,
         initialValue={value}
         // onChange={onChange}
         editableProps={{
+          ...editableProps,
           placeholder: 'start here...',
         }}
         plugins={[
