@@ -1,4 +1,4 @@
-export type {
+export {
   GetAccountRequest,
   ListAccountsRequest,
   Account,
@@ -7,22 +7,20 @@ export type {
   Device,
   DeviceRegistered,
   ProfileUpdated,
-  Accounts,
 } from '../.generated/accounts/v1alpha/accounts'
 export * from './accounts'
 
-export type {
+export {
   GenSeedRequest,
   GenSeedResponse,
   RegisterRequest,
   RegisterResponse,
   GetInfoRequest,
   Info,
-  Daemon,
 } from '../.generated/daemon/v1alpha/daemon'
 export * from './daemon'
 
-export type {
+export {
   StartObjectDiscoveryRequest,
   StartObjectDiscoveryResponse,
   StopObjectDiscoveryRequest,
@@ -37,7 +35,7 @@ export type {
 } from '../.generated/networking/v1alpha/networking'
 export * from './networking'
 
-export type {
+export {
   DocumentView,
   ListStyle,
   CreateDraftRequest,
