@@ -2,11 +2,12 @@ package p2p_test
 
 import (
 	"context"
-	v2 "mintter/api/go/v2"
-	"mintter/backend/document"
-	"mintter/backend/testutil"
 	"testing"
 	"time"
+
+	v2 "mintter/backend/api/v2"
+	"mintter/backend/document"
+	"mintter/backend/testutil"
 
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"

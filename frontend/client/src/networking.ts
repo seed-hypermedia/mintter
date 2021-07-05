@@ -30,10 +30,10 @@ export function listSuggestedProfiles(pageSize?: number, pageToken?: string, rpc
   return {}
 }
 
-export async function connect(addrs: Array<string>, rpc?: GrpcWenimpl): Promise<ConnectResponse> {
+export async function connect(addrs: Array<string>, rpc?: GrpcClient): Promise<ConnectResponse> {
   rpc ||= createGrpcClient()
   console.log({addrs})
-  const request = ConnectRequest.fromPartial({addrs: addrs.split(',')})
+  const request = ConnectRequest.fromPartial({addrs: addrs})
   console.log('🚀 ~ file: networking.ts ~ line 37 ~ connect ~ request', request)
   return await new NetworkingClientImpl(rpc).Connect(request)
 }

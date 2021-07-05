@@ -3,7 +3,7 @@ package server_test
 import (
 	"testing"
 
-	proto "mintter/api/go/v2"
+	proto "mintter/backend/api/v2"
 	"mintter/backend/config"
 	"mintter/backend/server"
 	"mintter/backend/testutil"

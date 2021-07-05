@@ -11,10 +11,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	accounts "mintter/api/go/accounts/v1alpha"
-	daemon "mintter/api/go/daemon/v1alpha"
-	documents "mintter/api/go/documents/v1alpha"
-	networking "mintter/api/go/networking/v1alpha"
+	accounts "mintter/backend/api/accounts/v1alpha"
+	daemon "mintter/backend/api/daemon/v1alpha"
+	documents "mintter/backend/api/documents/v1alpha"
+	networking "mintter/backend/api/networking/v1alpha"
 	"mintter/backend/config"
 )
 

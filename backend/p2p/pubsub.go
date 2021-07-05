@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	v2 "mintter/api/go/v2"
-	"mintter/backend/document"
-	"mintter/backend/identity"
 	"strings"
 	"time"
+
+	v2 "mintter/backend/api/v2"
+	"mintter/backend/document"
+	"mintter/backend/identity"
 
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"go.uber.org/multierr"

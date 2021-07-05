@@ -2,8 +2,6 @@
 import {util, configure, Writer, Reader} from 'protobufjs/minimal'
 import * as Long from 'long'
 
-export const protobufPackage = 'google.protobuf'
-
 /**
  * A Timestamp represents a point in time independent of any time zone or local
  * calendar, encoded as a count of seconds and fractions of seconds at
@@ -187,7 +185,7 @@ var globalThis: any = (() => {
 })()
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined
-export type DeepPartial<T> = T extends Builtin
+type DeepPartial<T> = T extends Builtin
   ? T
   : T extends Array<infer U>
   ? Array<DeepPartial<U>>

@@ -11,9 +11,9 @@ import (
 	"os"
 	"strconv"
 
-	proto "mintter/api/go/v2"
-	v2 "mintter/api/go/v2"
 	"mintter/backend"
+	proto "mintter/backend/api/v2"
+	v2 "mintter/backend/api/v2"
 	"mintter/backend/config"
 	"mintter/backend/document"
 	"mintter/backend/identity"

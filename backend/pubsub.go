@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	p2p "mintter/api/go/p2p/v1alpha"
+	p2p "mintter/backend/api/p2p/v1alpha"
 
 	"github.com/ipfs/go-cid"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"

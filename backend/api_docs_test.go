@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
 
-	documents "mintter/api/go/documents/v1alpha"
+	documents "mintter/backend/api/documents/v1alpha"
 	"mintter/backend/testutil"
 )
 
