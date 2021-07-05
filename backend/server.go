@@ -6,11 +6,13 @@ import (
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/cors"
 	"google.golang.org/grpc"
 )
 
 func newHTTPHandler(g *grpc.Server, b *backend) http.Handler {
 	grpcWebHandler := grpcweb.WrapServer(g, grpcweb.WithOriginFunc(func(origin string) bool {
+		fmt.Println(origin)
 		return true
 	}))
 
@@ -26,5 +28,5 @@ func newHTTPHandler(g *grpc.Server, b *backend) http.Handler {
 		fmt.Fprint(w, "This server only serves grpc-web")
 	})
 
-	return mux
+	return cors.AllowAll().Handler(mux)
 }
