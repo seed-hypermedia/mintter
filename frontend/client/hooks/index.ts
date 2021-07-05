@@ -1,20 +1,14 @@
 import {useQuery, useQueryClient, UseQueryResult} from 'react-query'
 import {useMemo} from 'react'
+import {Account, Info, Document, Publication, Block, Quote, Link} from '../src'
 import {
-  Account,
   getAccount,
-  Info,
   getInfo,
-  Document,
   getDocument,
   getDraft,
   PeerInfo,
   listPeerAddrs,
-  Publication,
   getPublication,
-  Block,
-  Quote,
-  Link,
   ListDraftsResponse,
   listDrafts,
   ListPublicationsResponse,
