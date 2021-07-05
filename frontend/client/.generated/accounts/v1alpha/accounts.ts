@@ -1,11 +1,10 @@
+//@ts-nocheck
 /* eslint-disable */
 import {util, configure, Writer, Reader} from 'protobufjs/minimal'
 import * as Long from 'long'
 import {grpc} from '@improbable-eng/grpc-web'
 import {BrowserHeaders} from 'browser-headers'
 import {Timestamp} from '../../google/protobuf/timestamp'
-
-export const protobufPackage = 'com.mintter.accounts.v1alpha'
 
 export interface GetAccountRequest {
   /** ID of the Account to be looked up. If empty - our own account will be returned. */
@@ -920,7 +919,7 @@ function base64FromBytes(arr: Uint8Array): string {
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined
-export type DeepPartial<T> = T extends Builtin
+type DeepPartial<T> = T extends Builtin
   ? T
   : T extends Array<infer U>
   ? Array<DeepPartial<U>>

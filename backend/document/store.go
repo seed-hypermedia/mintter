@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	v2 "mintter/api/go/v2"
+	v2 "mintter/backend/api/v2"
 	"mintter/backend/identity"
 	"mintter/backend/ipldutil"
 

@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	documents "mintter/api/go/documents/v1alpha"
+	documents "mintter/backend/api/documents/v1alpha"
 	"mintter/backend/badgergraph"
 )
 

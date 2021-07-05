@@ -1,3 +1,4 @@
+//@ts-nocheck
 /* eslint-disable */
 import {util, configure, Writer, Reader} from 'protobufjs/minimal'
 import * as Long from 'long'
@@ -5,8 +6,6 @@ import {grpc} from '@improbable-eng/grpc-web'
 import {Empty} from '../../google/protobuf/empty'
 import {BrowserHeaders} from 'browser-headers'
 import {Timestamp} from '../../google/protobuf/timestamp'
-
-export const protobufPackage = 'com.mintter.documents.v1alpha'
 
 /** Defines if the documents being returned should be displayed in full or only basic information. */
 export enum DocumentView {
@@ -2655,7 +2654,7 @@ export class GrpcWebImpl {
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined
-export type DeepPartial<T> = T extends Builtin
+type DeepPartial<T> = T extends Builtin
   ? T
   : T extends Array<infer U>
   ? Array<DeepPartial<U>>

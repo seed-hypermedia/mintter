@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	accounts "mintter/api/go/accounts/v1alpha"
-	daemon "mintter/api/go/daemon/v1alpha"
-	networking "mintter/api/go/networking/v1alpha"
+	accounts "mintter/backend/api/accounts/v1alpha"
+	daemon "mintter/backend/api/daemon/v1alpha"
+	networking "mintter/backend/api/networking/v1alpha"
 	"mintter/backend/badger3ds"
 	"mintter/backend/config"
 	"mintter/backend/ipfsutil"

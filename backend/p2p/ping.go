@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	internal "mintter/api/go/p2p"
+	internal "mintter/backend/api/p2p"
 	"mintter/backend/identity"
 )
 
