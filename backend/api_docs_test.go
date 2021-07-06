@@ -9,6 +9,8 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	documents "mintter/backend/api/documents/v1alpha"
 	"mintter/backend/testutil"
@@ -235,6 +237,10 @@ func TestListPublications(t *testing.T) {
 	api := newDocsAPI(back)
 	ctx := context.Background()
 
+	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 0)
+
 	var drafts [5]*documents.Document
 	var publications [len(drafts)]*documents.PublishDraftResponse
 
@@ -264,7 +270,7 @@ func TestListPublications(t *testing.T) {
 
 	wg.Wait()
 
-	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	list, err = api.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Publications, len(drafts))
 	for _, l := range list.Publications {
@@ -275,6 +281,30 @@ func TestListPublications(t *testing.T) {
 		require.NotNil(t, l.Document.UpdateTime)
 		require.NotNil(t, l.Document.PublishTime)
 	}
+}
+
+func TestAPIDeletePublication(t *testing.T) {
+	back := makeTestBackend(t, "alice", true)
+	api := newDocsAPI(back)
+	ctx := context.Background()
+
+	doc := makeDraft(t, ctx, api, "My Publication For Delete", "THIS WILL BE DELETED")
+	_, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+
+	deleted, err := api.DeletePublication(ctx, &documents.DeletePublicationRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+	require.NotNil(t, deleted)
+
+	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 0)
+
+	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
+	s, ok := status.FromError(err)
+	require.True(t, ok)
+	require.Equal(t, codes.NotFound, s.Code())
+	require.Nil(t, pub)
 }
 
 func makeDraft(t *testing.T, ctx context.Context, api DocsServer, title, subtitle string) *documents.Document {

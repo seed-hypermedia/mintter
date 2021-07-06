@@ -156,8 +156,8 @@ export interface GetPublicationRequest {
 
 /** Request for deleting a publication. */
 export interface DeletePublicationRequest {
-  /** Content-addressable version of the document to delete. */
-  version: string
+  /** Document ID of the publication to be removed. */
+  documentId: string
 }
 
 /** Request for listing publications. */
@@ -184,8 +184,6 @@ export interface ListPublicationsResponse {
 
 /** A published document with a content-addressable version ID. */
 export interface Publication {
-  /** Output only. Content-addressable version of this publication. */
-  version: string
   /** Output only. The actual document itself. */
   document: Document | undefined
 }
@@ -926,12 +924,12 @@ export const GetPublicationRequest = {
   },
 }
 
-const baseDeletePublicationRequest: object = {version: ''}
+const baseDeletePublicationRequest: object = {documentId: ''}
 
 export const DeletePublicationRequest = {
   encode(message: DeletePublicationRequest, writer: Writer = Writer.create()): Writer {
-    if (message.version !== '') {
-      writer.uint32(10).string(message.version)
+    if (message.documentId !== '') {
+      writer.uint32(10).string(message.documentId)
     }
     return writer
   },
@@ -944,7 +942,7 @@ export const DeletePublicationRequest = {
       const tag = reader.uint32()
       switch (tag >>> 3) {
         case 1:
-          message.version = reader.string()
+          message.documentId = reader.string()
           break
         default:
           reader.skipType(tag & 7)
@@ -956,26 +954,26 @@ export const DeletePublicationRequest = {
 
   fromJSON(object: any): DeletePublicationRequest {
     const message = {...baseDeletePublicationRequest} as DeletePublicationRequest
-    if (object.version !== undefined && object.version !== null) {
-      message.version = String(object.version)
+    if (object.documentId !== undefined && object.documentId !== null) {
+      message.documentId = String(object.documentId)
     } else {
-      message.version = ''
+      message.documentId = ''
     }
     return message
   },
 
   toJSON(message: DeletePublicationRequest): unknown {
     const obj: any = {}
-    message.version !== undefined && (obj.version = message.version)
+    message.documentId !== undefined && (obj.documentId = message.documentId)
     return obj
   },
 
   fromPartial(object: DeepPartial<DeletePublicationRequest>): DeletePublicationRequest {
     const message = {...baseDeletePublicationRequest} as DeletePublicationRequest
-    if (object.version !== undefined && object.version !== null) {
-      message.version = object.version
+    if (object.documentId !== undefined && object.documentId !== null) {
+      message.documentId = object.documentId
     } else {
-      message.version = ''
+      message.documentId = ''
     }
     return message
   },
@@ -1149,13 +1147,10 @@ export const ListPublicationsResponse = {
   },
 }
 
-const basePublication: object = {version: ''}
+const basePublication: object = {}
 
 export const Publication = {
   encode(message: Publication, writer: Writer = Writer.create()): Writer {
-    if (message.version !== '') {
-      writer.uint32(10).string(message.version)
-    }
     if (message.document !== undefined) {
       Document.encode(message.document, writer.uint32(18).fork()).ldelim()
     }
@@ -1169,9 +1164,6 @@ export const Publication = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 1:
-          message.version = reader.string()
-          break
         case 2:
           message.document = Document.decode(reader, reader.uint32())
           break
@@ -1185,11 +1177,6 @@ export const Publication = {
 
   fromJSON(object: any): Publication {
     const message = {...basePublication} as Publication
-    if (object.version !== undefined && object.version !== null) {
-      message.version = String(object.version)
-    } else {
-      message.version = ''
-    }
     if (object.document !== undefined && object.document !== null) {
       message.document = Document.fromJSON(object.document)
     } else {
@@ -1200,18 +1187,12 @@ export const Publication = {
 
   toJSON(message: Publication): unknown {
     const obj: any = {}
-    message.version !== undefined && (obj.version = message.version)
     message.document !== undefined && (obj.document = message.document ? Document.toJSON(message.document) : undefined)
     return obj
   },
 
   fromPartial(object: DeepPartial<Publication>): Publication {
     const message = {...basePublication} as Publication
-    if (object.version !== undefined && object.version !== null) {
-      message.version = object.version
-    } else {
-      message.version = ''
-    }
     if (object.document !== undefined && object.document !== null) {
       message.document = Document.fromPartial(object.document)
     } else {
@@ -2479,7 +2460,7 @@ export const DraftsPublishDraftDesc: UnaryMethodDefinitionish = {
 export interface Publications {
   /** Gets a single publication. */
   getPublication(request: DeepPartial<GetPublicationRequest>, metadata?: grpc.Metadata): Promise<Publication>
-  /** Deletes a publication from the local node. */
+  /** Deletes a publication from the local node. It removes all the patches corresponding to a document. */
   deletePublication(request: DeepPartial<DeletePublicationRequest>, metadata?: grpc.Metadata): Promise<Empty>
   /** Lists stored publications. */
   listPublications(
