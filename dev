@@ -25,11 +25,6 @@ build-cross() {
     build cross_compile
 }
 
-# Command test-backend runs tests for the backend.
-test-backend() {
-    cd backend && go test $@ ./...
-}
-
 # Command run-backend will run the backend for development.
 run-backend() {
     echo "Please run the frontend in a separate terminal and use it's URL in the browser!"
@@ -67,7 +62,6 @@ Commands:
   build-backend   Build backend binary.
   build-frontend  Build production frontend app.
   build-cross     Cross-compile for all the suppored platforms.
-  test-backend    Run the whole suite of tests for the backend. Supports arguments for the 'go test' command.
   run-backend     Run the backend for development.
   run-frontend    Run the frontend for development.
   run             Prepare a production build and run it locally.
