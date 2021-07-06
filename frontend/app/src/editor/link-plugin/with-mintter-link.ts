@@ -1,6 +1,7 @@
 import * as mock from '@mintter/client/mocks'
 import {SPEditor, upsertLinkAtSelection, WithOverride, someNode, isUrl, insertNodes} from '@udecode/slate-plugins'
 import type {MenuStateReturn} from 'reakit/Menu'
+import {Transforms} from 'slate'
 import type {ReactEditor} from 'slate-react'
 import {ELEMENT_QUOTE} from '../quote-plugin'
 import type {EditorQuote} from '../types'
@@ -12,7 +13,7 @@ export interface WithMintterLinkOptions {
 
 export function withMintterLink(options: WithMintterLinkOptions): WithOverride<ReactEditor & SPEditor> {
   return (editor) => {
-    const {insertData, insertText} = editor
+    const {insertData, insertText, normalizeNode} = editor
 
     editor.insertData = (data) => {
       const text = data.getData('text/plain')
@@ -24,8 +25,8 @@ export function withMintterLink(options: WithMintterLinkOptions): WithOverride<R
         }
 
         if (text.includes(MINTTER_LINK_PREFIX)) {
-          console.log('this is a mintter link => ', text, options.menu)
-          options.menu?.show()
+          // console.log('this is a mintter link => ', text, options.menu)
+          // options.menu?.show()
 
           // return upsertLinkAtSelection(editor, link)
           return insertNodes<EditorQuote>(editor, {
@@ -37,12 +38,24 @@ export function withMintterLink(options: WithMintterLinkOptions): WithOverride<R
         }
 
         if (isUrl(text)) {
-          console.log('link inserted at => ', editor.selection)
+          // console.log('link inserted at => ', editor.selection)
           return upsertLinkAtSelection(editor, link)
         }
       }
 
       insertData(data)
+    }
+
+    editor.normalizeNode = (entry) => {
+      const [node, path] = entry
+      if (node.type === ELEMENT_LINK) {
+        if (!node.id) {
+          Transforms.setNodes(editor, {id: mock.createId()}, {at: path})
+          return
+        }
+      }
+
+      normalizeNode(entry)
     }
 
     return editor

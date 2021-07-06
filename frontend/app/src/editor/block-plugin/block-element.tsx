@@ -103,7 +103,6 @@ function copyTextToClipboard(text: string) {
     }
     return navigator.clipboard.writeText(text).then(
       () => {
-        console.log('Async: Copying to clipboard was successful!!')
         resolve(text)
       },
       (err) => {

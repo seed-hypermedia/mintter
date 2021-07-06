@@ -1,5 +1,5 @@
 import {SlatePlugin, getVoidTypes, getSlatePluginTypes, getRenderElement} from '@udecode/slate-plugins'
-// import {withQuote} from './with-quote'
+import {withQuote} from './with-quote'
 
 export const ELEMENT_QUOTE = 'quote'
 export function createQuotePlugin(): SlatePlugin {
@@ -8,6 +8,6 @@ export function createQuotePlugin(): SlatePlugin {
     inlineTypes: getSlatePluginTypes(ELEMENT_QUOTE),
     voidTypes: getSlatePluginTypes(ELEMENT_QUOTE),
     renderElement: getRenderElement(ELEMENT_QUOTE),
-    // withOverrides: withQuote(),
+    withOverrides: withQuote(),
   }
 }

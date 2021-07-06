@@ -10,10 +10,8 @@ export function toEditorValue(entry: Document): Array<EditorBlock> {
   const currentDoc = entry
   const blocksMap = entry.blocks
   const linksMap = entry.links
-  console.log('🚀 ~ file: to-editor-value.ts ~ line 15 ~ toEditorValue ~ entry.children.length', entry.children.length)
 
   if (currentDoc.children.length === 0) {
-    console.log('enter in the no blocks')
     // no blocks (new Draft)
     return [
       {
@@ -24,7 +22,6 @@ export function toEditorValue(entry: Document): Array<EditorBlock> {
       },
     ]
   } else {
-    console.log('enter with blocks')
     return currentDoc.children.map((blockId) => {
       const block = blocksMap[blockId]
       return {

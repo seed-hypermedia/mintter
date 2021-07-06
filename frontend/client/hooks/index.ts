@@ -70,26 +70,23 @@ export function useDocument(documentId: string, options: HookOptions<Document> =
  * @returns
  */
 export function useDraft(draftId: string, options: HookOptions<Document> = {}): UseQueryResult<Document> {
-  console.log('enter useDraft!')
   if (!draftId) {
     throw new Error(`useDraft: parameter "draftId" is required`)
   }
 
   if (Array.isArray(draftId)) {
-    throw new Error('Impossible render')
-    // throw new Error(
-    //   `Impossible render: You are trying to access a draft passing ${draftId.length
-    //   } draft Ids => ${draftId.map(q => q).join(', ')}`,
-    // )
+    throw new Error(
+      `Impossible render: You are trying to access a draft passing ${draftId.length} draft Ids => ${draftId
+        .map((q) => q)
+        .join(', ')}`,
+    )
   }
 
   return useQuery(
     ['Draft', draftId],
     async ({queryKey}) => {
       const [_key, draftId] = queryKey as [string, string]
-      const resp = await getDraft(draftId, options.rpc)
-      console.log('🚀 ~ file: index.ts ~ line 93 ~ resp', resp)
-      return resp
+      return await getDraft(draftId, options.rpc)
     },
     {
       refetchOnWindowFocus: false,
@@ -127,12 +124,10 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
   let requestId: string
   if (!peerId) {
     const info = queryClient.getQueryData<Info>('AccountInfo')
-    console.log('🚀 ~ file: index.ts ~ line 135 ~ usePeerAddrs ~ info', info)
     requestId = info?.peerId as string
   } else {
     requestId = peerId
   }
-  console.log('🚀 ~ file: index.ts ~ line 152 ~ usePeerAddrs ~ requestId', requestId)
   const peerAddrsQuery = useQuery(['PeerAddrs', requestId], () => listPeerAddrs(requestId, options.rpc as any), {
     enabled: !!requestId,
     ...options,
@@ -217,7 +212,6 @@ export function useMyPublicationsList(options = {}) {
       }, []),
     [myPubsListQuery.data, info],
   )
-  console.log('🚀 ~ file: index.ts ~ line 205 ~ useMyPublicationsList ~ data', data)
 
   return {
     ...myPubsListQuery,
@@ -250,7 +244,6 @@ export function useQuote(
   options: HookOptions<Document> = {},
 ): UseQueryResult<UseQuoteReturn> {
   const pubQuery = usePublication(documentId)
-  console.log('useQuote', {documentId, quoteId, pubQuery})
   const data = useMemo(() => {
     if (pubQuery.isSuccess) {
       return {

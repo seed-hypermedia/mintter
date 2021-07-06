@@ -13,15 +13,11 @@ import {createGrpcClient, GrpcClient} from './grpc-client'
  *
  * @param revision
  * @param rpc
- * @returns
+ * @deprecated
  */
 export function deletePublication(version: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   console.warn('deletePublication(): not working now!')
-  // const request = DeletePublicationRequest.fromPartial({
-  //   version,
-  // })
-  // return new PublicationsClientImpl(rpc).DeletePublication(request)
 }
 
 /**
@@ -35,9 +31,7 @@ export function deletePublication(version: string, rpc?: GrpcClient) {
 export async function listPublications(pageSize?: number, pageToken?: string, view?: DocumentView, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   const request = ListPublicationsRequest.fromPartial({pageSize, pageToken, view})
-  const response = await new PublicationsClientImpl(rpc).ListPublications(request)
-  console.log('🚀 ~ listPublications ~ ', response)
-  return response
+  return await new PublicationsClientImpl(rpc).ListPublications(request)
 }
 
 /**
@@ -50,7 +44,5 @@ export async function listPublications(pageSize?: number, pageToken?: string, vi
 export async function getPublication(documentId: string, rpc?: GrpcClient): Promise<Publication> {
   rpc ||= createGrpcClient()
   const request = GetPublicationRequest.fromPartial({documentId})
-  const response = await new PublicationsClientImpl(rpc).GetPublication(request)
-  console.log(`🚀 ~ getPublication (${documentId}) ~ `, response)
-  return response
+  return await new PublicationsClientImpl(rpc).GetPublication(request)
 }
