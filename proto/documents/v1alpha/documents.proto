@@ -90,13 +90,11 @@ service Publications {
   // Gets a single publication.
   rpc GetPublication(GetPublicationRequest) returns (Publication);
 
-  // Deletes a publication from the local node.
+  // Deletes a publication from the local node. It removes all the patches corresponding to a document.
   rpc DeletePublication(DeletePublicationRequest) returns (google.protobuf.Empty);
 
   // Lists stored publications.
   rpc ListPublications(ListPublicationsRequest) returns (ListPublicationsResponse);
-
-  // Eventually we may have ListVersions rpc for listing multiple versions of the same document.
 }
 
 // Request for getting a single publication.
@@ -110,8 +108,8 @@ message GetPublicationRequest {
 
 // Request for deleting a publication.
 message DeletePublicationRequest {
-  // Content-addressable version of the document to delete.
-  string version = 1;
+  // Document ID of the publication to be removed.
+  string document_id = 1;
 }
 
 // Request for listing publications.
@@ -139,8 +137,8 @@ message ListPublicationsResponse {
 
 // A published document with a content-addressable version ID.
 message Publication {
-  // Output only. Content-addressable version of this publication.
-  string version = 1;
+  // TODO: return something to identify the state of the document.
+  // It could be the full list of changes or a version vector specified currently known heads.
 
   // Output only. The actual document itself.
   Document document = 2;

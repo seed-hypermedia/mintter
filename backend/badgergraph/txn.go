@@ -348,12 +348,7 @@ func (txn *Txn) ListReverseRelations(p Predicate, object uint64) ([]uint64, erro
 }
 
 // DeleteNode removes a node from the database including all its predicates and indexes.
-func (txn *Txn) DeleteNode(nodeType string, xid []byte) error {
-	uid, err := txn.UIDRead(nodeType, xid)
-	if err != nil {
-		return err
-	}
-
+func (txn *Txn) DeleteNode(nodeType string, uid uint64) error {
 	var wg sync.WaitGroup
 	keysc := make(chan []byte, len(txn.db.schema.schema[nodeType])*2)
 
@@ -403,6 +398,11 @@ func (txn *Txn) DeleteNode(nodeType string, xid []byte) error {
 		wg.Wait()
 		close(keysc)
 	}()
+
+	xid, err := txn.XID(nodeType, uid)
+	if err != nil {
+		return err
+	}
 
 	var outErr error
 	for k := range keysc {

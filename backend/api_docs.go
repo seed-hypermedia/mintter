@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
@@ -237,7 +238,11 @@ func (srv *docsAPI) DeleteDraft(ctx context.Context, in *documents.DeleteDraftRe
 	}
 
 	if err := srv.back.db.db.Update(func(txn *badgergraph.Txn) error {
-		return txn.DeleteNode(typeDocument, c.Hash())
+		duid, err := txn.UIDRead(typeDocument, c.Hash())
+		if err != nil {
+			return err
+		}
+		return txn.DeleteNode(typeDocument, duid)
 	}); err != nil {
 		return nil, fmt.Errorf("failed to delete document %s from index: %w", in.DocumentId, err)
 	}
@@ -339,7 +344,6 @@ func (srv *docsAPI) GetPublication(ctx context.Context, in *documents.GetPublica
 	}
 
 	return &documents.Publication{
-		Version:  sp.cid.String(),
 		Document: doc,
 	}, nil
 }
@@ -348,8 +352,12 @@ func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPubl
 	var uids []uint64
 	if err := srv.back.db.db.View(func(txn *badgergraph.Txn) error {
 		nodes, err := txn.ListIndexedNodes(pDocumentPublishTime, nil)
-		if err != nil {
+		if err != nil && err != badger.ErrKeyNotFound {
 			return err
+		}
+
+		if err == badger.ErrKeyNotFound {
+			return nil
 		}
 
 		uids = nodes
@@ -357,6 +365,10 @@ func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPubl
 		return nil
 	}); err != nil {
 		return nil, err
+	}
+
+	if uids == nil {
+		return &documents.ListPublicationsResponse{}, nil
 	}
 
 	resp := &documents.ListPublicationsResponse{
@@ -411,8 +423,6 @@ func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPubl
 				c := cid.NewCidV1(codecDocumentID, dhash)
 
 				resp.Publications[i] = &documents.Publication{
-					// TODO(burdiyan): fix this fact.
-					Version: "WE HAVE A BUG: THERE CAN BE NO SINGLE VERSION OF A PUBLICATION",
 					Document: &documents.Document{
 						Id:          c.String(),
 						Author:      cid.NewCidV1(codecAccountID, ahash).String(),
@@ -434,6 +444,63 @@ func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPubl
 	}
 
 	return resp, nil
+}
+
+func (srv *docsAPI) DeletePublication(ctx context.Context, in *documents.DeletePublicationRequest) (*emptypb.Empty, error) {
+	c, err := srv.parseDocumentID(in.DocumentId)
+	if err != nil {
+		return nil, err
+	}
+
+	state, err := srv.back.patches.LoadState(ctx, c)
+	if err != nil {
+		return nil, err
+	}
+
+	// It doesn't matter if these deletes are not atomic, because we're deleting patches from the beginning,
+	// and we still keep the head around. Although eventually we should do this in a single transaction when possible.
+	for _, p := range state.Merge() {
+		if err := srv.back.patches.bs.DeleteBlock(p.cid); err != nil {
+			return nil, fmt.Errorf("failed to delete patch %s: %w", p.cid, err)
+		}
+	}
+
+	if err := srv.back.db.db.Update(func(txn *badgergraph.Txn) error {
+		h := c.Hash()
+
+		duid, err := txn.UIDRead(typeDocument, h)
+		if err != nil {
+			return err
+		}
+
+		if err := txn.DeleteNode(typeDocument, duid); err != nil {
+			return err
+		}
+
+		ouid, err := txn.UIDRead(typeObject, h)
+		if err != nil {
+			return err
+		}
+
+		heads, err := txn.ListReverseRelations(pHeadObject, ouid)
+		if err != nil {
+			return err
+		}
+
+		for _, huid := range heads {
+			txn.DeleteNode(typeHead, huid)
+		}
+
+		if err := txn.DeleteNode(typeObject, ouid); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("failed to delete document %s from index: %w", in.DocumentId, err)
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 // TODO(burdiyan): implement a delete publication.

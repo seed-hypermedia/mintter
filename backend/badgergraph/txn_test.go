@@ -336,9 +336,16 @@ func TestDeleteNode(t *testing.T) {
 	require.True(t, keyCountInitial < keyCountBeforeDelete, "must write some keys")
 
 	err = db.Update(func(txn *Txn) error {
-		require.NoError(t, txn.DeleteNode("Person", alice))
-		require.NoError(t, txn.DeleteNode("Person", bob))
-		require.NoError(t, txn.DeleteNode("Person", carol))
+		auid, err := txn.UIDRead("Person", alice)
+		require.NoError(t, err)
+		buid, err := txn.UIDRead("Person", bob)
+		require.NoError(t, err)
+		cuid, err := txn.UIDRead("Person", carol)
+		require.NoError(t, err)
+
+		require.NoError(t, txn.DeleteNode("Person", auid))
+		require.NoError(t, txn.DeleteNode("Person", buid))
+		require.NoError(t, txn.DeleteNode("Person", cuid))
 		return nil
 	})
 	require.NoError(t, err)
