@@ -9,11 +9,14 @@ import {EditorComponent} from '../editor/editor-component'
 import {AppSpinner} from '../components/app-spinner'
 import {AutosaveStatus} from '../editor/autosave'
 import {useEditorDraft} from '../editor/use-editor-draft'
+import {useStoreEditorValue} from '@udecode/slate-plugins'
 
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
   const history = useHistory()
   const {isLoading, isError, error, data} = useEditorDraft(docId)
+  const vvalue = useStoreEditorValue()
+  console.log('🚀 ~ editor.tsx ~ line 89 ~ vvalue', vvalue)
 
   async function handleSave() {
     // console.log('save now!!')

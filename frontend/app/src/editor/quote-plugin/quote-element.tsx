@@ -8,6 +8,8 @@ import type {EditorTextRun, EditorQuote} from '../types'
 import type {Block, Document, InlineElement} from '@mintter/client'
 import {InlineQuote, renderQuoteInlineElements} from './inline-quote'
 import {MINTTER_LINK_PREFIX} from '../link-plugin'
+import {Tooltip} from '../../components/tooltip'
+import {Link} from '../../components/link'
 
 export function QuoteElement({attributes, className, element, children}: SPRenderElementProps<EditorQuote>) {
   const focused = useFocused()
@@ -39,29 +41,32 @@ export function QuoteElement({attributes, className, element, children}: SPRende
   }
   return (
     <span {...attributes} data-quote-id={element.id}>
-      <Box
-        as="span"
-        contentEditable={false}
-        css={{
-          position: 'relative',
-          paddingHorizontal: '$2',
-          paddingVertical: '$1',
-          overflow: 'hidden',
-          borderRadius: '$1',
-          border: '2px solid',
-          borderColor: focused && selected ? '$primary-default' : '$primary-muted',
-          backgroundColor: '$background-muted',
-          '&:hover': {
-            cursor: 'pointer',
-            backgroundColor: '$background-neutral',
-            '&:before': {
-              height: '100%',
+      <Tooltip content={element.url}>
+        <Box
+          as={Link}
+          to={`/p/${documentId}`}
+          contentEditable={false}
+          css={{
+            position: 'relative',
+            paddingHorizontal: '$2',
+            paddingVertical: '$1',
+            overflow: 'hidden',
+            borderRadius: '$1',
+            // border: '2px solid',
+            // borderColor: focused && selected ? '$warning-soft' : '$warning-softer',
+            backgroundColor: '$secondary-muted',
+            '&:hover': {
+              cursor: 'pointer',
+              backgroundColor: '$secondary-soft',
+              '&:before': {
+                height: '100%',
+              },
             },
-          },
-        }}
-      >
-        {qRender}
-      </Box>
+          }}
+        >
+          {qRender}
+        </Box>
+      </Tooltip>
       {children}
     </span>
   )
