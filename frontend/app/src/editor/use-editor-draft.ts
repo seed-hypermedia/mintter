@@ -90,7 +90,6 @@ export function useEditorDraft(documentId: string): UseQueryResult<UseEditorValu
   useEffect(() => {
     // save before closing the page
     return () => {
-      console.log('saving before closing!')
       save()
     }
   }, [])

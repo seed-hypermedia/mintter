@@ -14,7 +14,6 @@ export function QuoteElement({attributes, className, element, children}: SPRende
   const selected = useSelected()
   const [documentId, quoteId] = getQuoteIds(element.url)
   const {data, isLoading, isSuccess, isError} = useQuote(documentId, quoteId)
-  console.log('🚀 ~ quote-element.tsx ~ ', {data, isLoading, isSuccess, isError})
 
   const renderElements = useCallback(renderQuoteInlineElements, [data])
   let qRender
@@ -30,12 +29,12 @@ export function QuoteElement({attributes, className, element, children}: SPRende
   }
 
   if (isSuccess && data) {
-    console.log('🚀 ~ file: quote-element.tsx ~ line 35 ~ QuoteElement ~ data.quote', data)
     if (!data.quote) {
-      console.log('no hay quote!', {data})
       qRender = data.document.title
     } else {
-      qRender = data.quote.elements.map((element: InlineElement) => renderElements(element, data.document))
+      qRender = data.quote.elements.map((element: InlineElement, idx: number) =>
+        renderElements(element, data.document, idx),
+      )
     }
   }
   return (

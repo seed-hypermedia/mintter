@@ -28,13 +28,13 @@ export function InlineQuote({quote, link}: InlineQuoteProps) {
   return null
 }
 
-export const renderQuoteInlineElements = ({textRun, quote}: InlineElement, document: Document) => {
+export const renderQuoteInlineElements = ({textRun, quote}: InlineElement, document: Document, index: number) => {
   if (textRun) {
-    return <span>{textRun.text}</span>
+    return <span key={index}>{textRun.text}</span>
   }
 
   if (quote) {
-    return <InlineQuote quote={quote} link={document.links[quote.linkKey]} />
+    return <InlineQuote key={index} quote={quote} link={document.links[quote.linkKey]} />
   }
 
   return null

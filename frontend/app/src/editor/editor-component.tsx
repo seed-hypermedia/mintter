@@ -54,8 +54,8 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
 }: SlatePluginsProps<T>) {
   // const menu = useMenuState()
   const [show, setShow] = useState(false)
-  const vvalue = useStoreEditorValue()
-  console.log('🚀 ~ file: editor-component.tsx ~ line 58 ~ vvalue', vvalue)
+  // const vvalue = useStoreEditorValue()
+  // console.log('🚀 ~ file: editor-component.tsx ~ line 58 ~ vvalue', vvalue)
 
   useEffect(() => {
     if (!show && !!value) {
