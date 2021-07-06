@@ -5,6 +5,9 @@ import toast from 'react-hot-toast'
 import * as ContextMenu from '@radix-ui/react-context-menu'
 import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
 import type {EditorBlock} from '../types'
+import {Editor} from 'slate'
+import {ReactEditor} from 'slate-react'
+import {useLinkEmbeds} from '../use-link-embeds'
 
 const StyledItem = styled(ContextMenu.Item, {
   display: 'flex',
@@ -32,6 +35,13 @@ const StyledContent = styled(ContextMenu.Content, {
 
 // TODO: fix types
 export function BlockElement({attributes, children, className, element, ...rest}: SPRenderElementProps<EditorBlock>) {
+  const linkEmbeds = useLinkEmbeds(element)
+
+  if (linkEmbeds) {
+    for (let node of linkEmbeds) {
+      console.log('linkEmbed = ', node)
+    }
+  }
   // TODO: remove router dependency from block element
   const {docId} = useParams<{docId: string}>()
 

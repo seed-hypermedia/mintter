@@ -48,6 +48,7 @@ function rulesWithCustomDefaultType(
 
 export function EditorComponent<T extends SPEditor = SPEditor>({
   value,
+  id = 'editor',
   onChange,
   editableProps,
   ...options
@@ -67,7 +68,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
   return show ? (
     <>
       <SlatePlugins
-        id="editor"
+        id={id}
         initialValue={value}
         // onChange={onChange}
         editableProps={{
