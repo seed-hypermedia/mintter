@@ -14,12 +14,15 @@ import {AppSpinner} from '../components/app-spinner'
 import type {UseQueryResult} from 'react-query'
 import {Separator} from '../components/separator'
 import {format} from 'date-fns'
+import {useSlatePluginsActions, useStoreEditorValue} from '@udecode/slate-plugins'
 
 export default function Publication(): JSX.Element {
   const {docId} = useParams<{docId: string}>()
   const history = useHistory()
   // request document
   const {isLoading, isError, error, data} = useEditorPublication(docId)
+  const vvalue = useStoreEditorValue()
+  console.log('🚀 ~ file: publication.tsx ~ line 89 ~ useEditorPublication ~ vvalue', vvalue)
 
   // start rendering
   if (isError) {
@@ -67,7 +70,7 @@ export default function Publication(): JSX.Element {
         <PublicationHeader document={data?.document} />
         <Separator />
         <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
-          <EditorComponent value={data?.value?.blocks} editableProps={{readOnly: true}} />
+          <EditorComponent id="publication" value={data?.value?.blocks} editableProps={{readOnly: true}} />
         </Box>
       </Container>
       {/* <PublicationModal document={data.document} /> */}
@@ -84,20 +87,24 @@ type UseEditorPublicationValue = {
 function useEditorPublication(publicationId: string): UseQueryResult<UseEditorPublicationValue> {
   const publicationQuery = usePublication(publicationId)
   const [value, send] = useEditorReducer()
+  const {setValue} = useSlatePluginsActions()
 
   useEffect(() => {
     if (publicationQuery.isSuccess && publicationQuery.data) {
       const {title, subtitle} = publicationQuery.data.document
+      let blocks = toEditorValue(publicationQuery.data.document)
       send({
         type: 'full',
         payload: {
           title,
           subtitle,
-          blocks: toEditorValue(publicationQuery.data.document),
+          blocks,
         },
       })
+
+      setValue(blocks, 'publication')
     }
-  }, [publicationQuery.data])
+  }, [publicationQuery.data, publicationId])
 
   return {
     ...publicationQuery,
