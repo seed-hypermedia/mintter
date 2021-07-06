@@ -1,24 +1,24 @@
+import {createId} from '@mintter/client/mocks'
 import {getAbove, isCollapsed} from '@udecode/slate-plugins'
 import type {SPEditor, WithOverride} from '@udecode/slate-plugins-core'
-import {Editor} from 'slate'
+import {Editor, Transforms} from 'slate'
 import type {ReactEditor} from 'slate-react'
+import {ELEMENT_QUOTE} from './create-quote-plugin'
 
 export function withQuote(): WithOverride<ReactEditor & SPEditor> {
   return (editor) => {
-    const {deleteBackward, deleteFragment} = editor
+    const {normalizeNode} = editor
 
-    editor.deleteBackward = (unit) => {
-      if (editor.selection && isCollapsed(editor.selection)) {
-        // console.log('quote deleteBackward!', unit)
-        console.log({above: getAbove(editor, {})})
+    editor.normalizeNode = (entry) => {
+      const [node, path] = entry
+      if (node.type === ELEMENT_QUOTE) {
+        if (!node.id) {
+          Transforms.setNodes(editor, {id: createId()}, {at: path})
+          return
+        }
       }
 
-      deleteBackward(unit)
-    }
-
-    editor.deleteFragment = (direction) => {
-      console.log('quote deleteFragment!', direction)
-      deleteFragment(direction)
+      normalizeNode(entry)
     }
 
     return editor

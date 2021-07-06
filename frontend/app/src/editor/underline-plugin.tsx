@@ -30,9 +30,7 @@ const styleClass = css({
 })
 
 export function UnderlineLeaf({attributes, children, leaf, ...rest}: SPRenderLeafProps<EditorTextRun>) {
-  console.log('UNDERLINE LEAF', leaf)
   if (leaf.underline) {
-    console.log('UNDERLINE!!!')
     return (
       <span className={styleClass()} {...attributes}>
         {children}

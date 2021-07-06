@@ -60,7 +60,7 @@ function LinkForm({close}: {close: () => void}) {
         match: (n) => n.type === ELEMENT_LINK,
       })
     } else {
-      console.log('linkNode DOES NOT exists ', linkNode)
+      // console.log('linkNode DOES NOT exists ', linkNode)
     }
     close()
   }
@@ -116,7 +116,9 @@ function LinkForm({close}: {close: () => void}) {
             justifyContent: 'space-between',
           }}
         >
-          <Button type="submit">save</Button>
+          <Button size="1" type="submit">
+            save
+          </Button>
           <Button
             type="button"
             onClick={getPreventDefaultHandler(handleRemove)}
