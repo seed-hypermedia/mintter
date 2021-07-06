@@ -1,4 +1,4 @@
-module mintter/backend
+module mintter
 
 go 1.16
 
