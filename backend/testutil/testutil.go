@@ -43,10 +43,16 @@ func MakeProfile(t *testing.T, name string) identity.Profile {
 // MakeCID with specified data.
 func MakeCID(t *testing.T, data string) cid.Cid {
 	t.Helper()
+	return MakeCIDWithCodec(t, cid.Raw, data)
+}
+
+// MakeCIDWithCodec makes CID with a given codec.
+func MakeCIDWithCodec(t *testing.T, codec uint64, data string) cid.Cid {
+	t.Helper()
 	mh, err := multihash.Sum([]byte(data), multihash.IDENTITY, -1)
 	require.NoError(t, err)
 
-	return cid.NewCidV1(cid.Raw, mh)
+	return cid.NewCidV1(codec, mh)
 }
 
 // MakeBadgerV3 creates an in-memory instance of Badger v3.
