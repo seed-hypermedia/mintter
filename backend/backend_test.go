@@ -50,8 +50,7 @@ func TestBackendCreateDraft(t *testing.T) {
 	require.Equal(t, document, data, "retrieved draft must match stored one")
 }
 
-func TestObjectUpdateSync(t *testing.T) {
-	t.SkipNow() // TODO: finish the test.
+func TestAccountSync(t *testing.T) {
 	alice := makeTestBackend(t, "alice", true)
 	bob := makeTestBackend(t, "bob", true)
 	ctx := context.Background()
@@ -63,7 +62,7 @@ func TestObjectUpdateSync(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	time.Sleep(10 * time.Second)
+	require.NoError(t, bob.SyncAccounts(ctx))
 
 	state, err := bob.GetAccountState(ctx, alice.repo.acc.id)
 	require.NoError(t, err)
@@ -95,6 +94,28 @@ func TestAccountVerifiedOnConnect(t *testing.T) {
 	accs, err = bob.ListAccounts(ctx)
 	require.NoError(t, err)
 	require.Len(t, accs, 1)
+}
+
+func TestRecoverConnections(t *testing.T) {
+	alice := makeTestBackend(t, "alice", true)
+	bob := makeTestBackend(t, "bob", true)
+	ctx := context.Background()
+
+	connectPeers(t, ctx, alice, bob, true)
+
+	ok := alice.p2p.libp2p.ConnManager().IsProtected(bob.repo.device.id.PeerID(), protocolSupportKey)
+	require.True(t, ok)
+	ok = bob.p2p.libp2p.ConnManager().IsProtected(alice.repo.device.id.PeerID(), protocolSupportKey)
+	require.True(t, ok)
+
+	alice.p2p.libp2p.ConnManager().Unprotect(bob.repo.device.id.PeerID(), protocolSupportKey)
+	ok = alice.p2p.libp2p.ConnManager().IsProtected(bob.repo.device.id.PeerID(), protocolSupportKey)
+	require.NoError(t, alice.p2p.libp2p.Network().ClosePeer(bob.repo.device.id.PeerID()))
+	require.False(t, ok)
+
+	require.NoError(t, alice.SyncAccounts(ctx))
+	ok = alice.p2p.libp2p.ConnManager().IsProtected(bob.repo.device.id.PeerID(), protocolSupportKey)
+	require.True(t, ok)
 }
 
 func TestProvideAccount(t *testing.T) {
@@ -210,6 +231,7 @@ func connectPeers(t *testing.T, ctx context.Context, a, b *backend, waitVerify b
 
 						if verified.Device.Equals(want) {
 							close(done)
+							return
 						}
 					}
 				}
