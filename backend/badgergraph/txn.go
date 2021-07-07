@@ -278,6 +278,11 @@ func (txn *Txn) WriteTriple(subject uint64, p Predicate, v interface{}) error {
 	return nil
 }
 
+// ListNodesOfType returns UIDs of all the known nodes of a given type.
+func (txn *Txn) ListNodesOfType(nodeType string) ([]uint64, error) {
+	return txn.ListIndexedNodes(nodeTypePredicate, []byte(nodeType))
+}
+
 // ListIndexedNodes uses indexed token to search for nodes that contain the token.
 func (txn *Txn) ListIndexedNodes(p Predicate, token []byte) ([]uint64, error) {
 	var prefix []byte
