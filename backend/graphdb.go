@@ -162,9 +162,55 @@ retry:
 	return fmt.Errorf("failed to index document %s: %w", docID, err)
 }
 
+func (db *graphdb) ListAccountDevices() (map[AccountID][]DeviceID, error) {
+	var out map[AccountID][]DeviceID
+	if err := db.db.View(func(txn *badgergraph.Txn) error {
+		auids, err := txn.ListNodesOfType(typeAccount)
+		if err != nil && err != badger.ErrKeyNotFound {
+			return err
+		}
+
+		if err == badger.ErrKeyNotFound {
+			return nil
+		}
+
+		out = make(map[AccountID][]DeviceID, len(auids))
+		for _, auid := range auids {
+			ahash, err := txn.XID(typeAccount, auid)
+			if err != nil {
+				return err
+			}
+
+			aid := AccountID(cid.NewCidV1(codecAccountID, ahash))
+
+			duids, err := txn.ListRelations(auid, pAccountPeer)
+			if err != nil {
+				return err
+			}
+
+			out[aid] = make([]DeviceID, len(duids))
+
+			for i, duid := range duids {
+				dhash, err := txn.XID(typePeer, duid)
+				if err != nil {
+					return err
+				}
+
+				out[aid][i] = DeviceID(cid.NewCidV1(cid.Libp2pKey, dhash))
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
 func (db *graphdb) ListAccounts(ctx context.Context) (objects []cid.Cid, err error) {
 	if err := db.db.View(func(txn *badgergraph.Txn) error {
-		uids, err := txn.ListIndexedNodes(badgergraph.NodeTypePredicate(), []byte(typeAccount))
+		uids, err := txn.ListNodesOfType(typeAccount)
 		if err != nil {
 			return err
 		}
