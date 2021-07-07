@@ -125,10 +125,16 @@ func TestUIDConcurrent(t *testing.T) {
 		}(i)
 	}
 
+	// All concurrent request must return the same UID. It may not be 1
+	// depending on which goroutine successfully commits the transaction first.
+	var uid uint64
 	for i := 0; i < concurrency; i++ {
 		res := <-done
+		if i == 0 {
+			uid = res.uid
+		}
 		require.NoErrorf(t, res.err, "failed to allocate UID: worker %d", res.idx+1)
-		require.Equal(t, uint64(1), res.uid, "allocated uid didn't reuse the value")
+		require.Equal(t, uid, res.uid, "allocated uid didn't reuse the value")
 	}
 }
 

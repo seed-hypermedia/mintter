@@ -2,12 +2,14 @@ package backend
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"reflect"
 	"sync"
 	"time"
 
+	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/event"
 	"github.com/libp2p/go-libp2p-core/host"
@@ -30,6 +32,8 @@ import (
 	p2p "mintter/backend/api/p2p/v1alpha"
 	"mintter/backend/cleanup"
 )
+
+const accountsPullInterval = time.Minute
 
 // backend is the glue between major pieces of Mintter application.
 // But actually it turned out to be a kitchen sink of all kinds of stuff.
@@ -164,6 +168,35 @@ func (srv *backend) Start(ctx context.Context) (err error) {
 		}
 	})
 
+	// Start pulling account updates.
+	g.Go(func() error {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-srv.p2p.Ready():
+			break
+		}
+
+		t := time.NewTimer(time.Hour)
+		t.Stop()
+		defer t.Stop()
+
+		for {
+			if err := srv.SyncAccounts(ctx); err != nil {
+				return err
+			}
+
+			t.Reset(accountsPullInterval)
+
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-t.C:
+				continue
+			}
+		}
+	})
+
 	// Provide our own account on the DHT.
 	acc, err := srv.repo.Account()
 	if err != nil {
@@ -173,6 +206,99 @@ func (srv *backend) Start(ctx context.Context) (err error) {
 	srv.p2p.prov.EnqueueProvide(ctx, cid.Cid(acc.id))
 
 	return g.Wait()
+}
+
+// SyncAccounts attempts to pull updates for known Mintter Accounts from the connected peers.
+func (srv *backend) SyncAccounts(ctx context.Context) error {
+	_, err := srv.readyIPFS()
+	if err != nil {
+		return err
+	}
+
+	all, err := srv.db.ListAccountDevices()
+	if err != nil {
+		return err
+	}
+
+	type result struct {
+		Peer peer.ID
+		Err  error
+	}
+
+	var count int
+	c := make(chan result)
+
+	me := srv.repo.acc.id
+
+	for a, dd := range all {
+		if a.Equals(me) {
+			continue
+		}
+
+		for _, d := range dd {
+			count++
+			go func(a AccountID, d DeviceID) {
+				pid := d.PeerID()
+				err := func() error {
+					cc, err := srv.dialPeer(ctx, pid)
+					if err != nil {
+						return err
+					}
+
+					p2pc := p2p.NewP2PClient(cc)
+
+					remoteVer, err := p2pc.GetObjectVersion(ctx, &p2p.GetObjectVersionRequest{
+						ObjectId: a.String(),
+					})
+					if err != nil {
+						return fmt.Errorf("failed to request account version for peer %s: %w", pid.String(), err)
+					}
+
+					acid := cid.Cid(a)
+
+					localVer, err := srv.patches.GetObjectVersion(ctx, acid)
+					if err != nil {
+						return fmt.Errorf("failed to get local object version for peer %s: %w", pid.String(), err)
+					}
+
+					mergedVer := mergeVersions(localVer, remoteVer)
+					if proto.Equal(mergedVer, localVer) {
+						return nil
+					}
+
+					state, err := resolvePatches(ctx, acid, mergedVer, srv.p2p.bs)
+					if err != nil {
+						return fmt.Errorf("failed to resolve account %s: %w", acid, err)
+					}
+
+					account, err := accountFromState(state)
+					if err != nil {
+						return err
+					}
+
+					if _, ok := account.Devices[d.String()]; !ok {
+						return fmt.Errorf("device %s is not found in account %s", d, a)
+					}
+
+					if err := srv.patches.StoreVersion(ctx, acid, mergedVer); err != nil {
+						return fmt.Errorf("failed to store version: %w", err)
+					}
+
+					return nil
+				}()
+				c <- result{Peer: pid, Err: err}
+			}(a, d)
+		}
+	}
+
+	for i := 0; i < count; i++ {
+		res := <-c
+		if res.Err != nil {
+			srv.log.Error("FailedToSyncPeerAccount", zap.Error(res.Err), zap.String("peer", res.Peer.String()))
+		}
+	}
+
+	return nil
 }
 
 // Register an account on this node using provided mnemonic.
@@ -335,6 +461,8 @@ func (srv *backend) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) e
 				sw.Backoff().Clear(info.ID)
 			}
 		}
+
+		// Remember peer, check inside handleMintterPeer.
 
 		// We return as soon as we connect to at least one address.
 		if err := p2p.libp2p.Host.Connect(ctx, *info); err == nil {
@@ -500,7 +628,17 @@ func (srv *backend) handleMintterPeer(ctx context.Context, pid peer.ID) error {
 
 	c := p2p.NewP2PClient(conn)
 
-	// TODO: check if we already know this peer, so that we don't need to ask its account id again.
+	// TODO: check if we knew this peer before, so we don't need to fetch its account here,
+	// as it will be performed automatically in the background process.
+
+	_, err = srv.db.GetDeviceAccount(ctx, DeviceID(peer.ToCid(pid)))
+	if err == nil {
+		return nil
+	}
+
+	if !errors.Is(err, badger.ErrKeyNotFound) {
+		return err
+	}
 
 	info, err := c.GetPeerInfo(ctx, &p2p.GetPeerInfoRequest{})
 	if err != nil {
@@ -561,6 +699,11 @@ func (srv *backend) dialPeer(ctx context.Context, pid peer.ID) (*grpc.ClientConn
 	// Dial options can only be used after P2P node is ready, so we have to check for that.
 	if _, err := srv.readyIPFS(); err != nil {
 		return nil, err
+	}
+
+	sw, ok := srv.p2p.libp2p.Host.Network().(*swarm.Swarm)
+	if ok {
+		sw.Backoff().Clear(pid)
 	}
 
 	return srv.rpc.Dial(ctx, pid, srv.dialOpts)
