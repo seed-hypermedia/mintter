@@ -16,8 +16,8 @@ func newHTTPHandler(g *grpc.Server, b *backend) http.Handler {
 		return true
 	}))
 
-	mux := http.DefaultServeMux
-
+	mux := http.NewServeMux()
+	mux.Handle("/debug/", http.DefaultServeMux) // pprof and expvar handlers are registered on the router.
 	mux.Handle("/debug/metrics", promhttp.Handler())
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if grpcWebHandler.IsAcceptableGrpcCorsRequest(r) || grpcWebHandler.IsGrpcWebRequest(r) {
