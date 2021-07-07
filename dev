@@ -20,9 +20,7 @@ build-frontend() {
 
 # Command build-cross builds for all the supported platforms in parallel.
 build-cross() {
-    echo "This command is broken right now. Coming soon!"
-    exit 1
-    build cross_compile
+    bazel build //:cross_compile
 }
 
 # Command run-backend will run the backend for development.
