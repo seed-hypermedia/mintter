@@ -88,6 +88,7 @@ func (bg *blockstoreGetter) GetBlock(ctx context.Context, c cid.Cid) (blocks.Blo
 }
 
 func resolvePatches(ctx context.Context, obj cid.Cid, ver *p2p.Version, bgetter blockGetter) (*state, error) {
+	// TODO: create bitswap session for the ID of the object
 	heads := ver.VersionVector
 	if heads == nil {
 		return newState(obj, nil), nil
