@@ -1,8 +1,17 @@
 import {getNodes, useStoreEditorState} from '@udecode/slate-plugins'
+import {useMemo, useReducer} from 'react'
 import {Editor} from 'slate'
 import {MINTTER_LINK_PREFIX} from './link-plugin'
 import type {EditorBlock, EditorInlineElement, EditorLink, EditorQuote} from './types'
 import {useNodePath} from './use-node-path'
+
+function documentsReducer(state, action) {
+  if (action.type === 'ADD') {
+    return {
+      ...state,
+    }
+  }
+}
 
 export function useLinkEmbeds(block: EditorBlock): any {
   const editor = useStoreEditorState()

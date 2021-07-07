@@ -53,10 +53,9 @@ export default function Library() {
     } else {
       console.log('open prompt!')
       const peer: string | null = window.prompt(`enter a peer address`)
-      console.log('🚀 ~ file: library.tsx ~ line 55 ~ onConnect ~ peer', peer)
       if (peer) {
         try {
-          await toast.promise(connect(peer), {
+          await toast.promise(connect(peer.split(',')), {
             loading: 'Connecting to peer...',
             success: 'Connection Succeeded!',
             error: 'Connection Error',
