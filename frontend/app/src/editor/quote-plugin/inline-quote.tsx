@@ -36,7 +36,6 @@ export function InlineQuote({quote, link, index}: InlineQuoteProps) {
 }
 
 export const renderQuoteInlineElements = ({textRun, quote}: InlineElement, document: Document, index: number) => {
-  console.log({quote})
   if (textRun) {
     return <span key={index}>{textRun.text}</span>
   }

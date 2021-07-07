@@ -13,8 +13,8 @@ import {toEditorValue} from '../editor/to-editor-value'
 import {AppSpinner} from '../components/app-spinner'
 import type {UseQueryResult} from 'react-query'
 import {Separator} from '../components/separator'
-import {format} from 'date-fns'
 import {useSlatePluginsActions, useStoreEditorValue} from '@udecode/slate-plugins'
+import {getDateFormat} from '../utils/get-format-date'
 
 export default function Publication(): JSX.Element {
   const {docId} = useParams<{docId: string}>()
@@ -22,7 +22,7 @@ export default function Publication(): JSX.Element {
   // request document
   const {isLoading, isError, error, data} = useEditorPublication(docId)
   const vvalue = useStoreEditorValue()
-  console.log('🚀 ~ file: publication.tsx ~ line 89 ~ useEditorPublication ~ vvalue', vvalue)
+  // console.log('🚀 ~ file: publication.tsx ~ line 89 ~ useEditorPublication ~ vvalue', vvalue)
 
   // start rendering
   if (isError) {
@@ -117,7 +117,6 @@ function useEditorPublication(publicationId: string): UseQueryResult<UseEditorPu
 }
 
 function PublicationHeader({document}: {document?: Document}) {
-  const date = useMemo(() => document?.publishTime || new Date(), [document?.publishTime])
   return document ? (
     <Box
       css={{
@@ -147,7 +146,7 @@ function PublicationHeader({document}: {document?: Document}) {
         </Text>
       )}
       <Text size="2" color="alt" css={{marginTop: '$5'}}>
-        Published on: {format(new Date(date), 'MMMM d, yyyy')}
+        Published on: {getDateFormat(document, 'publishTime')}
       </Text>
     </Box>
   ) : null

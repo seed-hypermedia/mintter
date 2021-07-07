@@ -1,6 +1,6 @@
 import {useCallback} from 'react'
 import {useFocused, useSelected} from 'slate-react'
-import {Box} from '@mintter/ui'
+import {Box, Text} from '@mintter/ui'
 import {theme} from '@mintter/ui/stitches.config'
 import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
 import {useQuote} from '@mintter/client/hooks'
@@ -14,8 +14,8 @@ import {Link} from '../../components/link'
 export function QuoteElement({attributes, className, element, children}: SPRenderElementProps<EditorQuote>) {
   const focused = useFocused()
   const selected = useSelected()
-  const [documentId, quoteId] = getQuoteIds(element.url)
-  const {data, isLoading, isSuccess, isError} = useQuote(documentId, quoteId)
+  const [publicationId, quoteId] = getQuoteIds(element.url)
+  const {data, isLoading, isSuccess, isError} = useQuote(publicationId, quoteId)
 
   const renderElements = useCallback(renderQuoteInlineElements, [data])
   let qRender
@@ -41,10 +41,16 @@ export function QuoteElement({attributes, className, element, children}: SPRende
   }
   return (
     <span {...attributes} data-quote-id={element.id}>
-      <Tooltip content={element.url}>
+      <Tooltip
+        content={
+          <Box>
+            <Text color="contrast">{data?.document?.title}</Text>
+          </Box>
+        }
+      >
         <Box
           as={Link}
-          to={`/p/${documentId}`}
+          to={`/p/${publicationId}`}
           contentEditable={false}
           css={{
             position: 'relative',
@@ -52,9 +58,11 @@ export function QuoteElement({attributes, className, element, children}: SPRende
             paddingVertical: '$1',
             overflow: 'hidden',
             borderRadius: '$1',
+            textDecoration: 'none',
+            color: 'inherit',
             // border: '2px solid',
             // borderColor: focused && selected ? '$warning-soft' : '$warning-softer',
-            backgroundColor: '$secondary-muted',
+            backgroundColor: focused && selected ? '$secondary-soft' : '$secondary-muted',
             '&:hover': {
               cursor: 'pointer',
               backgroundColor: '$secondary-soft',
@@ -108,7 +116,7 @@ export function getQuoteIds(entry: string): [string, string] {
   const [, ids] = entry.split(MINTTER_LINK_PREFIX)
 
   if (ids.length <= 2) {
-    throw Error(`getQuoteId Error: url must contain a documentId and a blockId at least. (${entry})`)
+    throw Error(`getQuoteId Error: url must contain a publicationId and a blockId at least. (${entry})`)
   }
   const [one, second] = ids.split('/')
   return [one, second]

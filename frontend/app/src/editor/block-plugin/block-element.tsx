@@ -7,7 +7,7 @@ import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
 import type {EditorBlock} from '../types'
 import {Editor} from 'slate'
 import {ReactEditor} from 'slate-react'
-import {useLinkEmbeds} from '../use-link-embeds'
+import {AnnotationList} from './annotation-list'
 
 const StyledItem = styled(ContextMenu.Item, {
   display: 'flex',
@@ -35,13 +35,6 @@ const StyledContent = styled(ContextMenu.Content, {
 
 // TODO: fix types
 export function BlockElement({attributes, children, className, element, ...rest}: SPRenderElementProps<EditorBlock>) {
-  const linkEmbeds = useLinkEmbeds(element)
-
-  if (linkEmbeds) {
-    for (let node of linkEmbeds) {
-      console.log('linkEmbed = ', node)
-    }
-  }
   // TODO: remove router dependency from block element
   const {docId} = useParams<{docId: string}>()
 
@@ -54,6 +47,7 @@ export function BlockElement({attributes, children, className, element, ...rest}
       {...attributes}
       data-block-id={element.id}
       css={{
+        position: 'relative',
         paddingVertical: '$2',
         paddingHorizontal: '$4',
         '&:hover': {
@@ -75,6 +69,7 @@ export function BlockElement({attributes, children, className, element, ...rest}
           </StyledItem>
         </StyledContent>
       </ContextMenu.Root>
+      <AnnotationList quote={element} />
     </Box>
   )
 }

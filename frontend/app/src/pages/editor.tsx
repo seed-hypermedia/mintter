@@ -16,7 +16,7 @@ export default function EditorPage() {
   const history = useHistory()
   const {isLoading, isError, error, data} = useEditorDraft(docId)
   const vvalue = useStoreEditorValue()
-  console.log('🚀 ~ editor.tsx ~ line 89 ~ vvalue', vvalue)
+  // console.log('🚀 ~ editor.tsx ~ line 89 ~ vvalue', vvalue)
 
   async function handleSave() {
     // console.log('save now!!')
