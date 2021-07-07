@@ -94,6 +94,9 @@ export const Text = styled('span', {
       primary: {
         color: '$primary-default',
       },
+      'primary-softer': {
+        color: '$primary-softer',
+      },
       secondary: {
         color: '$secondary-default',
       },
