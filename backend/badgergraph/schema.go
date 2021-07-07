@@ -24,11 +24,6 @@ var nodeTypePredicate = Predicate{
 	Type:     ValueTypeString,
 }
 
-// NodeTypePredicate returns the internal predicate that can be used to query node types.
-func NodeTypePredicate() Predicate {
-	return nodeTypePredicate
-}
-
 // SchemaRegistry holds the schema of the graph.
 type SchemaRegistry struct {
 	schema map[string]map[string]Predicate

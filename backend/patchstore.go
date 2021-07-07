@@ -254,7 +254,7 @@ func (s *patchStore) AllObjectsChan(ctx context.Context) (<-chan cid.Cid, error)
 		defer close(c)
 
 		if err := s.db.View(func(txn *badgergraph.Txn) error {
-			uids, err := txn.ListIndexedNodes(badgergraph.NodeTypePredicate(), []byte(typeObject))
+			uids, err := txn.ListNodesOfType(typeObject)
 			if err != nil {
 				return err
 			}
