@@ -3,7 +3,7 @@ import {DocumentList} from '../document-list'
 import {deletePublication} from '@mintter/client'
 import {useMyPublicationsList} from '@mintter/client/hooks'
 import {Text} from '@mintter/ui'
-import type {WithCreateDraft} from './library'
+import type {DocumentInteractionProps} from './library'
 import * as MessageBox from '../components/message-box'
 
 type MyPublicationProps = {
@@ -14,14 +14,11 @@ type MyPublicationProps = {
 export const MyPublications = ({
   isPublic = false,
   onCreateDraft,
-}: MyPublicationProps & WithCreateDraft): JSX.Element => {
+  onDeletePublication,
+}: MyPublicationProps & DocumentInteractionProps): JSX.Element => {
   const history = useHistory()
   const match = useRouteMatch()
   const {isError, isLoading, isSuccess, error, data = []} = useMyPublicationsList()
-
-  async function handleDeleteDocument(version: string) {
-    await deletePublication(version)
-  }
 
   if (isLoading) {
     return <p>loading my publications...</p>
@@ -50,7 +47,7 @@ export const MyPublications = ({
         isError={isError}
         error={error}
         data={data}
-        onDeleteDocument={!isPublic ? handleDeleteDocument : undefined}
+        onDeletePublication={!isPublic ? onDeletePublication : undefined}
       />
     </>
   )

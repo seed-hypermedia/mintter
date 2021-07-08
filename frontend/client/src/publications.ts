@@ -15,9 +15,11 @@ import {createGrpcClient, GrpcClient} from './grpc-client'
  * @param rpc
  * @deprecated
  */
-export function deletePublication(version: string, rpc?: GrpcClient) {
+export function deletePublication(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
-  console.warn('deletePublication(): not working now!')
+  const request = DeletePublicationRequest.fromPartial({documentId})
+  const response = new PublicationsClientImpl(rpc).DeletePublication(request)
+  console.log('delete response ', response)
 }
 
 /**

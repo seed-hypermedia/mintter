@@ -16,7 +16,7 @@ export function DocumentList({
   isLoading,
   isError,
   error,
-  onDeleteDocument,
+  onDeletePublication,
 }: {
   // TODO: fix types
   // data: documents.Document.AsObject[];
@@ -24,7 +24,7 @@ export function DocumentList({
   isLoading: boolean
   isError: boolean
   error: any
-  onDeleteDocument?: (id: string) => Promise<void>
+  onDeletePublication?: (id: string) => Promise<void>
 }) {
   if (isLoading) {
     return <p>Loading...</p>
@@ -35,7 +35,7 @@ export function DocumentList({
   return (
     <Box as="ul" css={{padding: 0}}>
       {data.map((item: Document) => (
-        <ListItem key={item.id} item={item} onDeleteDocument={onDeleteDocument} />
+        <ListItem key={item.id} item={item} onDeletePublication={onDeletePublication} />
       ))}
     </Box>
   )
@@ -43,10 +43,10 @@ export function DocumentList({
 
 function ListItem({
   item,
-  onDeleteDocument,
+  onDeletePublication,
 }: {
   item: {document: Document; version?: string}
-  onDeleteDocument?: (documentId: string) => void
+  onDeletePublication?: (documentId: string) => void
 }) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
   const {path} = useRouteMatch()
@@ -151,7 +151,7 @@ function ListItem({
             </Text>
           </Box>
 
-          {onDeleteDocument && (
+          {onDeletePublication && (
             <Box
               css={{
                 gridArea: 'icon',
@@ -182,7 +182,7 @@ function ListItem({
                       color="danger"
                       onClick={() => {
                         let deleteId = item.version ?? id
-                        onDeleteDocument(deleteId)
+                        onDeletePublication(deleteId)
                       }}
                     >
                       Delete

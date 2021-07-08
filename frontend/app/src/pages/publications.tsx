@@ -1,20 +1,16 @@
 import {useHistory, useRouteMatch} from 'react-router'
 import {DocumentList} from '../document-list'
-import type {WithCreateDraft} from './library'
+import type {DocumentInteractionProps} from './library'
 import {deletePublication} from '@mintter/client'
 import {useOthersPublicationsList} from '@mintter/client/hooks'
 import {Text} from '@mintter/ui'
 import * as MessageBox from '../components/message-box'
 
-export const Publications = ({onCreateDraft}: WithCreateDraft): JSX.Element => {
+export const Publications = ({onCreateDraft, onDeletePublication}: DocumentInteractionProps): JSX.Element => {
   const history = useHistory()
   const match = useRouteMatch()
 
   const {isLoading, isError, error, data = []} = useOthersPublicationsList()
-
-  async function handleDeleteDocument(version: string) {
-    await deletePublication(version)
-  }
 
   if (isError) {
     return <p>feed ERROR</p>
@@ -41,7 +37,7 @@ export const Publications = ({onCreateDraft}: WithCreateDraft): JSX.Element => {
         isError={isError}
         error={error}
         data={data as any}
-        onDeleteDocument={handleDeleteDocument}
+        onDeletePublication={onDeletePublication}
       />
     </>
   )
