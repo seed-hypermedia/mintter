@@ -1,31 +1,27 @@
-import {Switch, useRouteMatch, Redirect, useHistory, Route, useParams} from 'react-router-dom'
-import {useAccount} from '@mintter/client/hooks'
+import {Switch, useRouteMatch, useHistory, Route, useParams} from 'react-router-dom'
+import {useAccount, useDraftsList, useMyPublicationsList, useOthersPublicationsList} from '@mintter/client/hooks'
 import {listAccounts, connect, createDraft, deletePublication} from '@mintter/client'
 import {Link} from '../components/link'
-import {Publications} from './publications'
-import {MyPublications} from './my-publications'
-import {Drafts} from './drafts'
 import {Box, Button, Text} from '@mintter/ui'
 import {Separator} from '../components/separator'
 import * as MessageBox from '../components/message-box'
-import {getPath} from '../utils/routes'
 import {Container} from '../components/container'
 import type {CSS} from '@mintter/ui/stitches.config'
-import {useEffect, useMemo} from 'react'
+import {useMemo} from 'react'
 import toast from 'react-hot-toast'
 import {Connections} from '../connections'
-import {useQueryClient} from 'react-query'
+import {ListPage} from './list-page'
 
-export type DocumentInteractionProps = {
-  onCreateDraft: () => void
-  onDeletePublication: () => void
+const hookSelector = {
+  published: useMyPublicationsList,
+  drafts: useDraftsList,
 }
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
   const {path, url} = useRouteMatch()
+  const {tab} = useParams()
   const history = useHistory()
-  const queryClient = useQueryClient()
   // const { connectToPeer } = useConnectionCreate();
   async function onCreateDraft() {
     try {
@@ -33,7 +29,7 @@ export default function Library() {
       console.log('🚀 ~ onCreateDraft ~ d', d)
       if (d?.id) {
         history.push({
-          pathname: `${getPath(path)}/editor/${d.id}`,
+          pathname: `/editor/${d.id}`,
         })
       }
     } catch (err) {
@@ -68,11 +64,6 @@ export default function Library() {
         }
       }
     }
-  }
-
-  async function onDeletePublication(entryId: string) {
-    await deletePublication(entryId)
-    queryClient.invalidateQueries('PublicationList')
   }
 
   return (
@@ -135,27 +126,15 @@ export default function Library() {
 
         <Switch>
           <Route exact path={path}>
-            <Publications onCreateDraft={onCreateDraft} onDeletePublication={onDeletePublication} />
+            <ListPage onCreateDraft={onCreateDraft} useDataHook={useOthersPublicationsList} />
           </Route>
           <Route path={`${path}/:tab`}>
-            <NestedTabs onCreateDraft={onCreateDraft} onDeletePublication={onDeletePublication} />
+            <ListPage onCreateDraft={onCreateDraft} useDataHook={hookSelector[tab]} />
           </Route>
         </Switch>
       </Container>
     </Box>
   )
-}
-
-function NestedTabs({onCreateDraft, onDeletePublication}) {
-  const {tab} = useParams()
-
-  if (tab == 'published') {
-    return <MyPublications onCreateDraft={onCreateDraft} onDeletePublication={onDeletePublication} />
-  }
-
-  if (tab == 'drafts') {
-    return <Drafts onCreateDraft={onCreateDraft} />
-  }
 }
 
 function ProfileInfo() {
@@ -197,7 +176,7 @@ function ProfileInfo() {
         variant="outlined"
         color="primary"
         size="1"
-        to={`${getPath(path)}/settings`}
+        to="/settings"
       >
         Edit profile
       </Button>

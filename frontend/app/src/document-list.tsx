@@ -1,22 +1,24 @@
 import {useMemo, useState} from 'react'
 import {format} from 'date-fns'
 import {useLocation, useRouteMatch} from 'react-router-dom'
-
 import {Alert, Box, Text} from '@mintter/ui'
-
 import {Avatar} from './components/avatar'
 import {Link} from './components/link'
-
 import {getPath} from './utils/routes'
-import type {Publication, Document} from '@mintter/client'
+import {Publication, Document, deleteDraft, deletePublication} from '@mintter/client'
 import {useAccount} from '@mintter/client/hooks'
+import {useMachine} from '@xstate/react'
+import {deleteConfirmationDialogMachine, DeleteConfirmationDialogMachineContext} from './delete-confirmation-dialog'
+import {useQueryClient} from 'react-query'
+import {toast} from 'react-hot-toast'
+import {getDateFormat} from './utils/get-format-date'
+import {useCallback} from 'react'
 
 export function DocumentList({
   data,
   isLoading,
   isError,
   error,
-  onDeletePublication,
 }: {
   // TODO: fix types
   // data: documents.Document.AsObject[];
@@ -24,8 +26,24 @@ export function DocumentList({
   isLoading: boolean
   isError: boolean
   error: any
-  onDeletePublication?: (id: string) => Promise<void>
 }) {
+  const queryClient = useQueryClient()
+  const location = useLocation()
+  const isDraft = useMemo(() => location.pathname.includes('drafts'), [location.pathname])
+  const toPrefix = useMemo(() => (isDraft ? '/editor/' : '/p/'), [isDraft])
+  const deleteMachine = useMachine(
+    deleteConfirmationDialogMachine({onSuccess: onDeleteSuccess, executeAction: onDelete}),
+  )
+
+  function onDeleteSuccess() {
+    toast.success(`${isDraft ? 'Draft' : 'Publication'} deleted successfully`)
+    queryClient.invalidateQueries(isDraft ? 'DraftList' : 'PublicationList')
+  }
+
+  function onDelete(context: DeleteConfirmationDialogMachineContext, event: DeleteConfirmationDialogMachineEvent) {
+    if (isDraft) return deleteDraft(event.entryId)
+    return deletePublication(event.entryId)
+  }
   if (isLoading) {
     return <p>Loading...</p>
   }
@@ -35,33 +53,19 @@ export function DocumentList({
   return (
     <Box as="ul" css={{padding: 0}}>
       {data.map((item: Document) => (
-        <ListItem key={item.id} item={item} onDeletePublication={onDeletePublication} />
+        <ListItem key={item.id} item={item} deleteMachine={deleteMachine} toPrefix={toPrefix} />
       ))}
     </Box>
   )
 }
 
-function ListItem({
-  item,
-  onDeletePublication,
-}: {
-  item: {document: Document; version?: string}
-  onDeletePublication?: (documentId: string) => void
-}) {
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
-  const {path} = useRouteMatch()
-  const location = useLocation()
-  // const [prefetched, setPrefetch] = React.useState<boolean>(false)
+function ListItem({item, deleteMachine, toPrefix}: {item: {document: Document; version?: string}; deleteMachine: any}) {
+  const match = useRouteMatch()
+  console.log('🚀 ~ file: document-list.tsx ~ line 64 ~ ListItem ~ match', match)
+  const [deleteModal, deleteModalSend] = deleteMachine
+
   const {id, title, subtitle, author: itemAuthor} = item.document
   const theTitle = title ? title : 'Untitled Document'
-
-  const isDraft = useMemo(() => location.pathname.includes('drafts'), [location.pathname])
-
-  const to = useMemo(() => {
-    return `${isDraft ? '/editor' : '/p'}/${id}`
-  }, [location.pathname])
-
-  const date = useMemo(() => item.createTime?.getDate() || new Date(), [item.createTime])
 
   return (
     <Box as="li" css={{position: 'relative', listStyle: 'none'}}>
@@ -69,7 +73,7 @@ function ListItem({
         // TODO: fix types
         // @ts-ignore
         as={Link}
-        to={to}
+        to={`${toPrefix}/${id}`}
         css={{
           padding: '$5',
           borderRadius: '$2',
@@ -147,51 +151,51 @@ function ListItem({
           </Box>
           <Box css={{gridArea: 'footer'}}>
             <Text size="1" color="muted">
-              {format(new Date(date), 'MMMM d, yyyy')}
+              {getDateFormat(item.document, 'createTime')}
             </Text>
           </Box>
 
-          {onDeletePublication && (
-            <Box
-              css={{
-                gridArea: 'icon',
-                display: 'flex',
-                alignItems: 'center',
-              }}
+          <Box
+            css={{
+              gridArea: 'icon',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <Alert.Root
+              open={deleteModal.matches('open')}
+              onOpenChange={(value) => (value ? deleteModalSend('OPEN_DIALOG') : deleteModalSend('CANCEL'))}
             >
-              <Alert.Root open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <Alert.Trigger
-                  data-testid="delete-button"
-                  size="1"
-                  color="danger"
-                  onClick={(e: any) => {
-                    e.preventDefault()
-                    setIsDeleteDialogOpen(true)
-                  }}
-                >
-                  trash
-                </Alert.Trigger>
-                <Alert.Content onClick={(e: any) => e.stopPropagation()}>
-                  <Alert.Title color="danger">Delete document</Alert.Title>
-                  <Alert.Description>
-                    Are you sure you want to delete this document? This action is not reversible.
-                  </Alert.Description>
-                  <Alert.Actions>
-                    <Alert.Cancel>Cancel</Alert.Cancel>
-                    <Alert.Action
-                      color="danger"
-                      onClick={() => {
-                        let deleteId = item.version ?? id
-                        onDeletePublication(deleteId)
-                      }}
-                    >
-                      Delete
-                    </Alert.Action>
-                  </Alert.Actions>
-                </Alert.Content>
-              </Alert.Root>
-            </Box>
-          )}
+              <Alert.Trigger
+                data-testid="delete-button"
+                size="1"
+                color="danger"
+                onClick={(e: any) => {
+                  e.preventDefault()
+                  deleteModalSend('OPEN_DIALOG')
+                }}
+              >
+                trash
+              </Alert.Trigger>
+              <Alert.Content onClick={(e: any) => e.stopPropagation()}>
+                <Alert.Title color="danger">Delete document</Alert.Title>
+                <Alert.Description>
+                  Are you sure you want to delete this document? This action is not reversible.
+                </Alert.Description>
+                <Alert.Actions>
+                  <Alert.Cancel>Cancel</Alert.Cancel>
+                  <Alert.Action
+                    color="danger"
+                    onClick={() => {
+                      deleteModalSend({type: 'CONFIRM', entryId: item.version ?? id})
+                    }}
+                  >
+                    Delete
+                  </Alert.Action>
+                </Alert.Actions>
+              </Alert.Content>
+            </Alert.Root>
+          </Box>
         </Box>
       </Box>
     </Box>
