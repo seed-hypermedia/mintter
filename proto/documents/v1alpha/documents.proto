@@ -323,3 +323,16 @@ message Quote {
   // Optional. Offset where quoted fragment ends.
   int32 end_offset = 3;
 }
+
+// === Events ===
+
+// This event gets produced every time a new document is published for the first time.
+// We'll have a feed of these events from which other peers can learn about new documents
+// being published.
+message DocumentPublished {
+  string document_id = 1;
+
+  string title = 2;
+
+  string subtitle = 3;
+}
