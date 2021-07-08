@@ -1,7 +1,7 @@
 import * as mock from '@mintter/client/mocks'
 import {SPEditor, upsertLinkAtSelection, WithOverride, someNode, isUrl, insertNodes} from '@udecode/slate-plugins'
 import type {MenuStateReturn} from 'reakit/Menu'
-import {Transforms} from 'slate'
+import {Editor, Transforms} from 'slate'
 import type {ReactEditor} from 'slate-react'
 import {ELEMENT_QUOTE} from '../quote-plugin'
 import type {EditorQuote} from '../types'
@@ -29,12 +29,15 @@ export function withMintterLink(options: WithMintterLinkOptions): WithOverride<R
           // options.menu?.show()
 
           // return upsertLinkAtSelection(editor, link)
-          return insertNodes<EditorQuote>(editor, {
-            id: mock.createId(),
-            type: 'quote',
-            url: text,
-            children: [{text: ''}],
+          Editor.withoutNormalizing(editor, () => {
+            insertNodes<EditorQuote>(editor, {
+              id: mock.createId(),
+              type: 'quote',
+              url: text,
+              children: [{text: ''}],
+            })
           })
+          return
         }
 
         if (isUrl(text)) {

@@ -8,6 +8,7 @@ import {Container} from './container'
 import {getPath} from '../utils/routes'
 
 import {Link} from './link'
+import {MINTTER_LINK_PREFIX} from '../editor/link-plugin'
 
 interface NavItemProps {
   href: string
@@ -74,7 +75,7 @@ function MintterSearch() {
   async function handleSearch(e: any) {
     e.preventDefault()
     let to = ref.current?.value as string
-    if (to.includes('mintter://')) {
+    if (to.includes(MINTTER_LINK_PREFIX)) {
       to = to.split('/')[2]
     }
     // console.log('input value', {to, original: ref.current.value})
