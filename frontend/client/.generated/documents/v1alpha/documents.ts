@@ -371,6 +371,17 @@ export interface Quote {
   endOffset: number
 }
 
+/**
+ * This event gets produced every time a new document is published for the first time.
+ * We'll have a feed of these events from which other peers can learn about new documents
+ * being published.
+ */
+export interface DocumentPublished {
+  documentId: string
+  title: string
+  subtitle: string
+}
+
 const baseCreateDraftRequest: object = {}
 
 export const CreateDraftRequest = {
@@ -2258,6 +2269,95 @@ export const Quote = {
       message.endOffset = object.endOffset
     } else {
       message.endOffset = 0
+    }
+    return message
+  },
+}
+
+const baseDocumentPublished: object = {documentId: '', title: '', subtitle: ''}
+
+export const DocumentPublished = {
+  encode(message: DocumentPublished, writer: Writer = Writer.create()): Writer {
+    if (message.documentId !== '') {
+      writer.uint32(10).string(message.documentId)
+    }
+    if (message.title !== '') {
+      writer.uint32(18).string(message.title)
+    }
+    if (message.subtitle !== '') {
+      writer.uint32(26).string(message.subtitle)
+    }
+    return writer
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): DocumentPublished {
+    const reader = input instanceof Reader ? input : new Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = {...baseDocumentPublished} as DocumentPublished
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.documentId = reader.string()
+          break
+        case 2:
+          message.title = reader.string()
+          break
+        case 3:
+          message.subtitle = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): DocumentPublished {
+    const message = {...baseDocumentPublished} as DocumentPublished
+    if (object.documentId !== undefined && object.documentId !== null) {
+      message.documentId = String(object.documentId)
+    } else {
+      message.documentId = ''
+    }
+    if (object.title !== undefined && object.title !== null) {
+      message.title = String(object.title)
+    } else {
+      message.title = ''
+    }
+    if (object.subtitle !== undefined && object.subtitle !== null) {
+      message.subtitle = String(object.subtitle)
+    } else {
+      message.subtitle = ''
+    }
+    return message
+  },
+
+  toJSON(message: DocumentPublished): unknown {
+    const obj: any = {}
+    message.documentId !== undefined && (obj.documentId = message.documentId)
+    message.title !== undefined && (obj.title = message.title)
+    message.subtitle !== undefined && (obj.subtitle = message.subtitle)
+    return obj
+  },
+
+  fromPartial(object: DeepPartial<DocumentPublished>): DocumentPublished {
+    const message = {...baseDocumentPublished} as DocumentPublished
+    if (object.documentId !== undefined && object.documentId !== null) {
+      message.documentId = object.documentId
+    } else {
+      message.documentId = ''
+    }
+    if (object.title !== undefined && object.title !== null) {
+      message.title = object.title
+    } else {
+      message.title = ''
+    }
+    if (object.subtitle !== undefined && object.subtitle !== null) {
+      message.subtitle = object.subtitle
+    } else {
+      message.subtitle = ''
     }
     return message
   },
