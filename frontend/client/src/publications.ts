@@ -11,15 +11,14 @@ import {createGrpcClient, GrpcClient} from './grpc-client'
 
 /**
  *
- * @param revision
+ * @param documentId
  * @param rpc
- * @deprecated
+ * @returns Promise<void>
  */
-export function deletePublication(documentId: string, rpc?: GrpcClient) {
+export async function deletePublication(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   const request = DeletePublicationRequest.fromPartial({documentId})
-  const response = new PublicationsClientImpl(rpc).DeletePublication(request)
-  console.log('delete response ', response)
+  return await new PublicationsClientImpl(rpc).DeletePublication(request)
 }
 
 /**
