@@ -168,7 +168,7 @@ export function usePublication(publicationId: string, options: HookOptions<Publi
 export function useOthersPublicationsList(options = {}) {
   const queryClient = useQueryClient()
   const info = queryClient.getQueryData<Info>('AccountInfo')
-  const myPubsListQuery = useQuery<ListPublicationsResponse>('MyPubsList', async () => {
+  const myPubsListQuery = useQuery<ListPublicationsResponse>(['PublicationList', 'OthersPublications'], async () => {
     return listPublications()
   })
 
@@ -197,7 +197,7 @@ export function useOthersPublicationsList(options = {}) {
 export function useMyPublicationsList(options = {}) {
   const queryClient = useQueryClient()
   const info = queryClient.getQueryData<Info>('AccountInfo')
-  const myPubsListQuery = useQuery<ListPublicationsResponse>('MyPubsList', async () => {
+  const myPubsListQuery = useQuery<ListPublicationsResponse>(['PublicationList', 'MyPublications'], async () => {
     return listPublications()
   })
 

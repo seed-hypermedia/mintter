@@ -46,7 +46,7 @@ export const Drafts = ({onCreateDraft}: WithCreateDraft): JSX.Element => {
         isError={isError}
         error={error}
         data={data}
-        onDeleteDocument={handleDeleteDocument}
+        onDeletePublication={handleDeleteDocument}
       />
     </>
   )

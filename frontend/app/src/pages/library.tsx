@@ -1,6 +1,6 @@
 import {Switch, useRouteMatch, Redirect, useHistory, Route, useParams} from 'react-router-dom'
 import {useAccount} from '@mintter/client/hooks'
-import {listAccounts, connect, createDraft} from '@mintter/client'
+import {listAccounts, connect, createDraft, deletePublication} from '@mintter/client'
 import {Link} from '../components/link'
 import {Publications} from './publications'
 import {MyPublications} from './my-publications'
@@ -14,15 +14,18 @@ import type {CSS} from '@mintter/ui/stitches.config'
 import {useEffect, useMemo} from 'react'
 import toast from 'react-hot-toast'
 import {Connections} from '../connections'
+import {useQueryClient} from 'react-query'
 
-export type WithCreateDraft = {
+export type DocumentInteractionProps = {
   onCreateDraft: () => void
+  onDeletePublication: () => void
 }
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
   const {path, url} = useRouteMatch()
   const history = useHistory()
+  const queryClient = useQueryClient()
   // const { connectToPeer } = useConnectionCreate();
   async function onCreateDraft() {
     try {
@@ -65,6 +68,11 @@ export default function Library() {
         }
       }
     }
+  }
+
+  async function onDeletePublication(entryId: string) {
+    await deletePublication(entryId)
+    queryClient.invalidateQueries('PublicationList')
   }
 
   return (
@@ -127,10 +135,10 @@ export default function Library() {
 
         <Switch>
           <Route exact path={path}>
-            <Publications onCreateDraft={onCreateDraft} />
+            <Publications onCreateDraft={onCreateDraft} onDeletePublication={onDeletePublication} />
           </Route>
           <Route path={`${path}/:tab`}>
-            <NestedTabs onCreateDraft={onCreateDraft} />
+            <NestedTabs onCreateDraft={onCreateDraft} onDeletePublication={onDeletePublication} />
           </Route>
         </Switch>
       </Container>
@@ -138,11 +146,11 @@ export default function Library() {
   )
 }
 
-function NestedTabs({onCreateDraft}) {
+function NestedTabs({onCreateDraft, onDeletePublication}) {
   const {tab} = useParams()
 
   if (tab == 'published') {
-    return <MyPublications onCreateDraft={onCreateDraft} />
+    return <MyPublications onCreateDraft={onCreateDraft} onDeletePublication={onDeletePublication} />
   }
 
   if (tab == 'drafts') {
