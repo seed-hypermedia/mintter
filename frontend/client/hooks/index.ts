@@ -97,7 +97,8 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
 
 /**
  *
- * @deprecated
+ * @param options
+ * @returns
  */
 export function useDraftsList(options: any = {}) {
   const draftsListQuery = useQuery<ListDraftsResponse>('DraftList', async () => {
