@@ -77,7 +77,7 @@ export function Settings(): JSX.Element {
         minHeight: '$full',
         gridTemplateAreas: `"controls controls controls"
         "maincontent maincontent maincontent"`,
-        gridTemplateColumns: 'minmax(300px, 25%) 1fr minmax(300px, 25%)',
+        gridTemplateColumns: 'minmax(350px, 25%) 1fr minmax(350px, 25%)',
         gridTemplateRows: '64px 1fr',
         gap: '$5',
       }}

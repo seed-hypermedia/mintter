@@ -10,13 +10,20 @@ import {AppSpinner} from '../components/app-spinner'
 import {AutosaveStatus} from '../editor/autosave'
 import {useEditorDraft} from '../editor/use-editor-draft'
 import {useStoreEditorValue} from '@udecode/slate-plugins'
+import {useEnableSidepanel, useSidepanel, Sidepanel} from '../components/sidepanel'
 
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
   const history = useHistory()
   const {isLoading, isError, error, data} = useEditorDraft(docId)
-  const vvalue = useStoreEditorValue()
+  // const vvalue = useStoreEditorValue()
   // console.log('🚀 ~ editor.tsx ~ line 89 ~ vvalue', vvalue)
+
+  const [sidepanelState, sidepanelSend] = useSidepanel()
+
+  useEnableSidepanel(sidepanelSend)
+
+  const isSidepanelOpen = useMemo<boolean>(() => sidepanelState.matches('enabled.opened'), [sidepanelState.value])
 
   async function handleSave() {
     // console.log('save now!!')
@@ -46,16 +53,15 @@ export default function EditorPage() {
       css={{
         display: 'grid',
         minHeight: '$full',
-        // gridTemplateAreas: isSidepanelOpen
-        //   ? `"controls controls controls"
-        // "maincontent maincontent rightside"`
-        //   : `"controls controls controls"
-        // "maincontent maincontent maincontent"`,
-        gridTemplateAreas: `"controls controls controls"
+        gridTemplateAreas: isSidepanelOpen
+          ? `"controls controls controls"
+        "maincontent maincontent rightside"`
+          : `"controls controls controls"
         "maincontent maincontent maincontent"`,
-        gridTemplateColumns: 'minmax(300px, 25%) 1fr minmax(300px, 25%)',
+        // gridTemplateAreas: `"controls controls controls"
+        // "maincontent maincontent maincontent"`,
+        gridTemplateColumns: 'minmax(350px, 15%) 1fr minmax(350px, 40%)',
         gridTemplateRows: '64px 1fr',
-        gap: '$5',
       }}
       data-testid="editor-wrapper"
     >
@@ -67,16 +73,24 @@ export default function EditorPage() {
           justifyContent: 'flex-end',
           gap: '$2',
           paddingHorizontal: '$5',
+          borderBottom: '1px solid rgba(0,0,0,0.1)',
         }}
       >
         <Button color="primary" shape="pill" size="2" onClick={handlePublish}>
           PUBLISH
         </Button>
-        {/* <Button size="1" onClick={() => sidepanelSend?.({type: 'SIDEPANEL_TOOGLE'})}>
-          toggle sidepanel
-        </Button> */}
+        <Button
+          size="1"
+          color="muted"
+          variant="outlined"
+          onClick={() => {
+            sidepanelSend('SIDEPANEL_TOGGLE')
+          }}
+        >
+          {`${isSidepanelOpen ? 'Close' : 'Open'} sidepanel`}
+        </Button>
       </Box>
-      <Container css={{gridArea: 'maincontent', marginBottom: 300}}>
+      <Container css={{gridArea: 'maincontent', marginBottom: 300, paddingTop: '$7'}}>
         <AutosaveStatus save={data.save} />
         <TextField
           // TODO: Fix types
@@ -126,6 +140,7 @@ export default function EditorPage() {
           <EditorComponent value={data?.value.blocks} />
         </Box>
       </Container>
+      {isSidepanelOpen && <Sidepanel gridArea="rightside" />}
     </Box>
   )
 }

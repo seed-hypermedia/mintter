@@ -53,6 +53,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
   id = 'editor',
   onChange,
   editableProps,
+  sidepanelSend,
   ...options
 }: SlatePluginsProps<T>) {
   // const menu = useMenuState()
@@ -81,7 +82,7 @@ export function EditorComponent<T extends SPEditor = SPEditor>({
         plugins={[
           createReactPlugin(),
           createHistoryPlugin(),
-          createBlockPlugin(),
+          createBlockPlugin({sidepanelSend}),
           createAutoformatPlugin({
             rules: [
               ...boldAutoformatRules,
