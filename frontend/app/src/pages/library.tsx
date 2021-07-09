@@ -78,7 +78,7 @@ export default function Library() {
         height: '$full',
         gridTemplateAreas: `"controls controls controls"
         "leftside maincontent rightside"`,
-        gridTemplateColumns: 'minmax(300px, 25%) 1fr minmax(300px, 25%)',
+        gridTemplateColumns: 'minmax(350px, 25%) 1fr minmax(350px, 25%)',
         gridTemplateRows: '64px 1fr',
         gap: '$5',
       }}

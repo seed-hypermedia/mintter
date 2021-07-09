@@ -17,7 +17,7 @@ export function LinkElement(props: SPRenderElementProps<EditorLink>) {
 // TODO: add tooltip
 function MintterLink({element, attributes, children, ...props}: SPRenderElementProps<EditorLink>) {
   return (
-    <Tooltip content={<Box css={{maxWidth: '400px', wordBreak: 'break-all'}}>{element.url}</Box>}>
+    <Tooltip content={<Box css={{maxWidth: '350px', wordBreak: 'break-all'}}>{element.url}</Box>}>
       <Box
         {...attributes}
         //@ts-ignore

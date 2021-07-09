@@ -15,14 +15,24 @@ import type {UseQueryResult} from 'react-query'
 import {Separator} from '../components/separator'
 import {useSlatePluginsActions, useStoreEditorValue} from '@udecode/slate-plugins'
 import {getDateFormat} from '../utils/get-format-date'
+import {useSidepanel, Sidepanel, useEnableSidepanel} from '../components/sidepanel'
 
 export default function Publication(): JSX.Element {
   const {docId} = useParams<{docId: string}>()
   const history = useHistory()
+  const [sidepanelState, sidepanelSend] = useSidepanel()
+
+  useEnableSidepanel(sidepanelSend)
   // request document
   const {isLoading, isError, error, data} = useEditorPublication(docId)
-  const vvalue = useStoreEditorValue()
+  // const vvalue = useStoreEditorValue()
   // console.log('🚀 ~ file: publication.tsx ~ line 89 ~ useEditorPublication ~ vvalue', vvalue)
+
+  const isSidepanelOpen = useMemo<boolean>(() => sidepanelState.matches('enabled.opened'), [sidepanelState.value])
+
+  if (isLoading) {
+    return <AppSpinner />
+  }
 
   // start rendering
   if (isError) {
@@ -30,25 +40,21 @@ export default function Publication(): JSX.Element {
     return <Text>Publication ERROR</Text>
   }
 
-  if (isLoading) {
-    return <AppSpinner />
-  }
-
   return (
     <Box
       css={{
         display: 'grid',
         minHeight: '$full',
-        // gridTemplateAreas: isSidepanelOpen
-        //   ? `"controls controls controls"
-        // "maincontent maincontent rightside"`
-        //   : `"controls controls controls"
-        // "maincontent maincontent maincontent"`,
-        gridTemplateAreas: `"controls controls controls"
+        gridTemplateAreas: isSidepanelOpen
+          ? `"controls controls controls"
+        "maincontent maincontent rightside"`
+          : `"controls controls controls"
         "maincontent maincontent maincontent"`,
-        gridTemplateColumns: 'minmax(300px, 25%) 1fr minmax(300px, 25%)',
+        // gridTemplateAreas: `"controls controls controls"
+        // "maincontent maincontent maincontent"`,
+        gridTemplateColumns: 'minmax(350px, 15%) 1fr minmax(350px, 40%)',
         gridTemplateRows: '64px 1fr',
-        gap: '$5',
+        // gap: '$5',
       }}
       data-testid="publication-wrapper"
     >
@@ -59,21 +65,34 @@ export default function Publication(): JSX.Element {
           alignItems: 'center',
           justifyContent: 'flex-end',
           gap: '$2',
+          borderBottom: '1px solid rgba(0,0,0,0.1)',
           paddingHorizontal: '$5',
         }}
       >
-        {/* <Button size="1" onClick={() => sidepanelSend?.({type: 'SIDEPANEL_TOOGLE'})}>
-          toggle sidepanel
-        </Button> */}
+        <Button
+          size="1"
+          color="muted"
+          variant="outlined"
+          onClick={() => {
+            sidepanelSend('SIDEPANEL_TOGGLE')
+          }}
+        >
+          {`${isSidepanelOpen ? 'Close' : 'Open'} sidepanel`}
+        </Button>
       </Box>
-      <Container css={{gridArea: 'maincontent', marginBottom: 300}}>
+      <Container css={{gridArea: 'maincontent', marginBottom: 300, padding: '$5', paddingTop: '$7'}}>
         <PublicationHeader document={data?.document} />
         <Separator />
         <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
-          <EditorComponent id="publication" value={data?.value?.blocks} editableProps={{readOnly: true}} />
+          <EditorComponent
+            id="publication"
+            value={data?.value?.blocks}
+            editableProps={{readOnly: true}}
+            sidepanelSend={sidepanelSend}
+          />
         </Box>
       </Container>
-      {/* <PublicationModal document={data.document} /> */}
+      {isSidepanelOpen && <Sidepanel gridArea={'rightside'} />}
     </Box>
   )
 }
