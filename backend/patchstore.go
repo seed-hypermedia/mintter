@@ -339,8 +339,8 @@ type headUpdated struct {
 }
 
 func (s *patchStore) registerObject(txn *badgergraph.Txn, c cid.Cid) (uint64, error) {
-	codec, hash := ipfsutil.DecodeCID(c)
-	uid, err := txn.UID(typeObject, hash)
+	codec, _ := ipfsutil.DecodeCID(c)
+	uid, err := txn.UID(typeObject, c.Bytes())
 	if err != nil {
 		return 0, fmt.Errorf("failed to allocate uid for object: %w", err)
 	}
@@ -360,7 +360,7 @@ func (s *patchStore) registerObject(txn *badgergraph.Txn, c cid.Cid) (uint64, er
 }
 
 func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
-	ouid, err := txn.UIDRead(typeObject, obj.Hash())
+	ouid, err := txn.UIDRead(typeObject, obj.Bytes())
 	if err != nil && err != badger.ErrKeyNotFound {
 		return nil, fmt.Errorf("failed to get head: %w", err)
 	}
