@@ -15,6 +15,11 @@ func init() {
 // See cids_grammar.ebnf for explanation about our identifiers.
 
 const (
-	codecAccountID  uint64 = 1091161161
-	codecDocumentID uint64 = 1091161162
+	codecAccountID    uint64 = 1091161161
+	codecDocumentID   uint64 = 1091161162
+	codecDocumentFeed uint64 = 1091161163
 )
+
+func newDocumentFeedID(aid AccountID) cid.Cid {
+	return cid.NewCidV1(codecDocumentFeed, aid.Hash())
+}

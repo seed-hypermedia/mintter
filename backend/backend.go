@@ -29,7 +29,9 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	accounts "mintter/backend/api/accounts/v1alpha"
+	documents "mintter/backend/api/documents/v1alpha"
 	p2p "mintter/backend/api/p2p/v1alpha"
+	"mintter/backend/badgergraph"
 	"mintter/backend/cleanup"
 )
 
@@ -262,26 +264,111 @@ func (srv *backend) SyncAccounts(ctx context.Context) error {
 					}
 
 					mergedVer := mergeVersions(localVer, remoteVer)
-					if proto.Equal(mergedVer, localVer) {
+					if !proto.Equal(mergedVer, localVer) {
+						state, err := resolvePatches(ctx, acid, mergedVer, srv.p2p.bs)
+						if err != nil {
+							return fmt.Errorf("failed to resolve account %s: %w", acid, err)
+						}
+
+						account, err := accountFromState(state)
+						if err != nil {
+							return err
+						}
+
+						if _, ok := account.Devices[d.String()]; !ok {
+							return fmt.Errorf("device %s is not found in account %s", d, a)
+						}
+
+						if err := srv.patches.StoreVersion(ctx, acid, mergedVer); err != nil {
+							return fmt.Errorf("failed to store version: %w", err)
+						}
+					}
+
+					// TODO: All of this is very-very-very bad, and needs to be improved.
+
+					feedID := newDocumentFeedID(a)
+					feedVer, err := p2pc.GetObjectVersion(ctx, &p2p.GetObjectVersionRequest{
+						ObjectId: feedID.String(),
+					})
+					if err != nil {
+						return fmt.Errorf("failed to get document feed version: %w", err)
+					}
+
+					localFeedVer, err := srv.patches.GetObjectVersion(ctx, feedID)
+					if err != nil {
+						return fmt.Errorf("failed to get local object version for peer %s: %w", pid.String(), err)
+					}
+
+					mergedFeedVer := mergeVersions(feedVer, localFeedVer)
+					if proto.Equal(localFeedVer, mergedFeedVer) {
 						return nil
 					}
 
-					state, err := resolvePatches(ctx, acid, mergedVer, srv.p2p.bs)
+					docFeedState, err := resolvePatches(ctx, feedID, mergedFeedVer, srv.p2p.bs)
 					if err != nil {
-						return fmt.Errorf("failed to resolve account %s: %w", acid, err)
+						return fmt.Errorf("failed to resolve document feed state: %w", err)
 					}
 
-					account, err := accountFromState(state)
-					if err != nil {
-						return err
+					for docFeedState.Next() {
+						msg, err := docFeedState.Item().ProtoBody()
+						if err != nil {
+							return fmt.Errorf("failed to decode document feed state message: %w", err)
+						}
+
+						evt := msg.(*documents.DocumentPublished)
+						docid, err := cid.Decode(msg.(*documents.DocumentPublished).DocumentId)
+						if err != nil {
+							return fmt.Errorf("failed to parse document id: %w", err)
+						}
+
+						docVer, err := p2pc.GetObjectVersion(ctx, &p2p.GetObjectVersionRequest{ObjectId: evt.DocumentId})
+						if err != nil {
+							return fmt.Errorf("failed to get local document verion: %w", err)
+						}
+
+						localDocVer, err := srv.patches.GetObjectVersion(ctx, docid)
+						if err != nil {
+							return fmt.Errorf("failed to get local document version: %w", err)
+						}
+
+						mergedDocVer := mergeVersions(docVer, localDocVer)
+						if proto.Equal(localDocVer, mergedDocVer) {
+							continue
+						}
+
+						docstate, err := resolvePatches(ctx, docid, mergedDocVer, srv.p2p.bs)
+						if err != nil {
+							return fmt.Errorf("failed to get document state: %w", err)
+						}
+
+						doc, err := documentFromState(docstate)
+						if err != nil {
+							return fmt.Errorf("failed to apply document state: %w", err)
+						}
+
+						if err := srv.db.IndexDocument(ctx, docid, a, doc.Title, doc.Subtitle, doc.CreateTime.AsTime(), doc.UpdateTime.AsTime()); err != nil {
+							return fmt.Errorf("failed to index new document: %w", err)
+						}
+
+						// TODO: DRY this mutation.
+
+						if err := srv.db.db.Update(func(txn *badgergraph.Txn) error {
+							uid, err := txn.UIDRead(typeDocument, docid.Hash())
+							if err != nil {
+								return err
+							}
+							return txn.WriteTriple(uid, pDocumentPublishTime, doc.PublishTime.AsTime())
+						}); err != nil {
+							return err
+						}
+
+						if err := srv.patches.StoreVersion(ctx, docid, mergedDocVer); err != nil {
+							return fmt.Errorf("failed to store updated document version: %w", err)
+						}
 					}
 
-					if _, ok := account.Devices[d.String()]; !ok {
-						return fmt.Errorf("device %s is not found in account %s", d, a)
-					}
-
-					if err := srv.patches.StoreVersion(ctx, acid, mergedVer); err != nil {
-						return fmt.Errorf("failed to store version: %w", err)
+					if err := srv.patches.StoreVersion(ctx, feedID, mergedFeedVer); err != nil {
+						return fmt.Errorf("failed to store feed version: %w", err)
 					}
 
 					return nil

@@ -139,6 +139,48 @@ func TestAPIUpdateDraft_BugDuplicatedBlocks(t *testing.T) {
 	testutil.ProtoEqual(t, updated, got, "got after update")
 }
 
+func TestAPISyncDocuments(t *testing.T) {
+	alice := makeTestBackend(t, "alice", true)
+	aapi := newDocsAPI(alice)
+	bob := makeTestBackend(t, "bob", true)
+	bapi := newDocsAPI(bob)
+	ctx := context.Background()
+
+	draft := makeDraft(t, ctx, aapi, "Alice Docs", "Subtitle")
+	_, err := aapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+
+	connectPeers(t, ctx, alice, bob, true)
+
+	list, err := bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 0)
+
+	require.NoError(t, bob.SyncAccounts(ctx))
+
+	pub, err := bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	draft.PublishTime = pub.Document.PublishTime // Draft doesn't have publish time.
+	testutil.ProtoEqual(t, draft, pub.Document, "fetched draft must be equal")
+
+	list, err = bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 1)
+
+	// Try to sync again. Nothing new has to appear.
+
+	require.NoError(t, bob.SyncAccounts(ctx))
+
+	pub, err = bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	draft.PublishTime = pub.Document.PublishTime // Draft doesn't have publish time.
+	testutil.ProtoEqual(t, draft, pub.Document, "fetched draft must be equal")
+
+	list, err = bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 1)
+}
+
 func TestAPIUpdateDraft(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
 	api := newDocsAPI(back)
