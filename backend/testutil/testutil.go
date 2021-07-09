@@ -1,16 +1,12 @@
 package testutil
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
-	"runtime"
 	"testing"
 
 	"mintter/backend/badger3ds"
-	"mintter/backend/identity"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
@@ -23,22 +19,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 )
-
-// MakeProfile from available test data.
-func MakeProfile(t *testing.T, name string) identity.Profile {
-	t.Helper()
-
-	_, file, _, _ := runtime.Caller(0)
-	dir := filepath.Dir(file)
-
-	data, err := ioutil.ReadFile(dir + "/testdata/profiles/" + name + ".json")
-	require.NoError(t, err)
-
-	var p identity.Profile
-	require.NoError(t, json.Unmarshal(data, &p))
-
-	return p
-}
 
 // MakeCID with specified data.
 func MakeCID(t *testing.T, data string) cid.Cid {

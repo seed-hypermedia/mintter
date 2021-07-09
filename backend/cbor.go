@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 
-	_ "mintter/backend/ipldutil"
-
 	"github.com/libp2p/go-libp2p-core/crypto"
 
 	cbornode "github.com/ipfs/go-ipld-cbor"
