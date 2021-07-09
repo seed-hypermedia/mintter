@@ -7,13 +7,13 @@ export type ListPageProps = {
   useDataHook: () => any
 }
 export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
-  const {isLoading, isError, error, data = []} = useDataHook()
+  const {status, error, data = []} = useDataHook()
 
-  if (isLoading) {
+  if (status === 'loading') {
     return <p>loading...</p>
   }
 
-  if (isError) {
+  if (status === 'error') {
     console.error('ListPage error: ', error)
     return <p>ERROR</p>
   }
@@ -30,7 +30,7 @@ export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
         </MessageBox.Root>
       )}
       {/* TODO: fix data type */}
-      <DocumentList isLoading={isLoading} isError={isError} error={error} data={data as any} />
+      <DocumentList status={status} error={error} data={data as any} />
     </>
   )
 }
