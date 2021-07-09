@@ -3,6 +3,7 @@ package backend
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
@@ -26,7 +27,8 @@ type DocsServer interface {
 type docsAPI struct {
 	documents.UnimplementedPublicationsServer
 
-	back *backend
+	feedMu sync.Mutex
+	back   *backend
 }
 
 func newDocsAPI(back *backend) DocsServer {
@@ -298,6 +300,8 @@ func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraft
 		return nil, fmt.Errorf("failed to remove draft content: %w", err)
 	}
 
+	// TODO: DRY this mutation.
+
 	if err := srv.back.db.db.Update(func(txn *badgergraph.Txn) error {
 		uid, err := txn.UIDRead(typeDocument, c.Hash())
 		if err != nil {
@@ -308,8 +312,37 @@ func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraft
 		return nil, err
 	}
 
+	docfeed := newDocumentFeedID(AccountID(author))
+
+	// TODO: rethink so that this lock is not necessary.
+	srv.feedMu.Lock()
+	defer srv.feedMu.Unlock()
+
+	feedstate, err := srv.back.patches.LoadState(ctx, docfeed)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get document feed state: %w", err)
+	}
+
+	// TODO: this should not be necessary, but it is, so that we can get the next seq no.
+	_ = feedstate.Merge()
+
+	feedsp, err := feedstate.NewProtoPatch(author, srv.back.repo.Device().priv, &documents.DocumentPublished{
+		DocumentId: doc.Id,
+		Title:      doc.Title,
+		Subtitle:   doc.Subtitle,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create document feed patch: %w", err)
+	}
+
+	// To avoid transaction errors we allow only one writer for document feed object.
+	if err := srv.back.patches.AddPatch(ctx, feedsp); err != nil {
+		return nil, fmt.Errorf("failed to add document feed patch: %w", err)
+	}
+
 	p2p.prov.EnqueueProvide(ctx, c)
 	p2p.prov.EnqueueProvide(ctx, sp.cid)
+	p2p.prov.EnqueueProvide(ctx, feedsp.cid)
 
 	return &documents.PublishDraftResponse{
 		Version: sp.cid.String(),
@@ -327,20 +360,9 @@ func (srv *docsAPI) GetPublication(ctx context.Context, in *documents.GetPublica
 		return nil, fmt.Errorf("failed to load state: %w", err)
 	}
 
-	if state.size == 0 {
-		return nil, status.Errorf(codes.NotFound, "not found patches for document ID %s", in.DocumentId)
-	}
-
-	// TODO: handle multiple patches.
-	if state.size > 1 {
-		return nil, status.Errorf(codes.Unimplemented, "documents with more than 1 patch are not supported yet")
-	}
-
-	sp := state.Item()
-
-	doc := &documents.Document{}
-	if err := proto.Unmarshal(sp.Body, doc); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal document: %w", err)
+	doc, err := documentFromState(state)
+	if err != nil {
+		return nil, err
 	}
 
 	return &documents.Publication{
@@ -477,7 +499,7 @@ func (srv *docsAPI) DeletePublication(ctx context.Context, in *documents.DeleteP
 			return err
 		}
 
-		ouid, err := txn.UIDRead(typeObject, h)
+		ouid, err := txn.UIDRead(typeObject, c.Bytes())
 		if err != nil {
 			return err
 		}
@@ -488,7 +510,9 @@ func (srv *docsAPI) DeletePublication(ctx context.Context, in *documents.DeleteP
 		}
 
 		for _, huid := range heads {
-			txn.DeleteNode(typeHead, huid)
+			if err := txn.DeleteNode(typeHead, huid); err != nil {
+				return err
+			}
 		}
 
 		if err := txn.DeleteNode(typeObject, ouid); err != nil {
@@ -497,7 +521,7 @@ func (srv *docsAPI) DeletePublication(ctx context.Context, in *documents.DeleteP
 
 		return nil
 	}); err != nil {
-		return nil, fmt.Errorf("failed to delete document %s from index: %w", in.DocumentId, err)
+		return nil, fmt.Errorf("failed to delete publication %s from index: %w", in.DocumentId, err)
 	}
 
 	return &emptypb.Empty{}, nil
@@ -512,4 +536,24 @@ func (srv *docsAPI) parseDocumentID(id string) (cid.Cid, error) {
 		return cid.Undef, status.Errorf(codes.InvalidArgument, "failed to parse document id %s: %v", id, err)
 	}
 	return c, nil
+}
+
+func documentFromState(state *state) (*documents.Document, error) {
+	if state.size == 0 {
+		return nil, status.Errorf(codes.NotFound, "not found patches for document ID %s", state.obj.String())
+	}
+
+	// TODO: handle multiple patches.
+	if state.size > 1 {
+		return nil, status.Errorf(codes.Unimplemented, "documents with more than 1 patch are not supported yet")
+	}
+
+	sp := state.Item()
+
+	doc := &documents.Document{}
+	if err := proto.Unmarshal(sp.Body, doc); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal document: %w", err)
+	}
+
+	return doc, nil
 }
