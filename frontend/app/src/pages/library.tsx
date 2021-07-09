@@ -11,6 +11,7 @@ import {useMemo} from 'react'
 import toast from 'react-hot-toast'
 import {Connections} from '../connections'
 import {ListPage} from './list-page'
+import {useCallback} from 'react'
 
 const hookSelector = {
   published: useMyPublicationsList,
@@ -23,7 +24,8 @@ export default function Library() {
   const {tab} = useParams()
   const history = useHistory()
   // const { connectToPeer } = useConnectionCreate();
-  async function onCreateDraft() {
+
+  const onCreateDraft = useCallback(async () => {
     try {
       const d = await createDraft()
       console.log('🚀 ~ onCreateDraft ~ d', d)
@@ -35,36 +37,38 @@ export default function Library() {
     } catch (err) {
       console.warn(`createDraft Error: "createDraft" does not returned a Document`, d, err)
     }
-  }
+  }, [])
 
-  async function onConnect(addressList?: string[]) {
-    // TODO: re-enable toasts
-    if (addressList) {
-      try {
-        // await toast.promise(connectToPeer(addressList), {
-        //   loading: 'Connecting to peer...',
-        //   success: 'Connection Succeeded!',
-        //   error: 'Connection Error',
-        // })
-      } catch (err) {
-        console.error(err.message)
-      }
-    } else {
-      console.log('open prompt!')
-      const peer: string | null = window.prompt(`enter a peer address`)
-      if (peer) {
+  const onConnect = useCallback(async (addressList?: string[]) => {
+    {
+      // TODO: re-enable toasts
+      if (addressList) {
         try {
-          await toast.promise(connect(peer.split(',')), {
-            loading: 'Connecting to peer...',
-            success: 'Connection Succeeded!',
-            error: 'Connection Error',
-          })
+          // await toast.promise(connectToPeer(addressList), {
+          //   loading: 'Connecting to peer...',
+          //   success: 'Connection Succeeded!',
+          //   error: 'Connection Error',
+          // })
         } catch (err) {
           console.error(err.message)
         }
+      } else {
+        console.log('open prompt!')
+        const peer: string | null = window.prompt(`enter a peer address`)
+        if (peer) {
+          try {
+            await toast.promise(connect(peer.split(',')), {
+              loading: 'Connecting to peer...',
+              success: 'Connection Succeeded!',
+              error: 'Connection Error',
+            })
+          } catch (err) {
+            console.error(err.message)
+          }
+        }
       }
     }
-  }
+  }, [])
 
   return (
     <Box
@@ -128,9 +132,12 @@ export default function Library() {
           <Route exact path={path}>
             <ListPage onCreateDraft={onCreateDraft} useDataHook={useOthersPublicationsList} />
           </Route>
-          <Route path={`${path}/:tab`}>
-            <ListPage onCreateDraft={onCreateDraft} useDataHook={hookSelector[tab]} />
-          </Route>
+          <Route
+            path={`${path}/:tab`}
+            render={({match}) => {
+              return <ListPage onCreateDraft={onCreateDraft} useDataHook={hookSelector[match.params.tab]} />
+            }}
+          />
         </Switch>
       </Container>
     </Box>

@@ -16,21 +16,19 @@ import {useCallback} from 'react'
 
 export function DocumentList({
   data,
-  isLoading,
-  isError,
+  status,
   error,
 }: {
   // TODO: fix types
   // data: documents.Document.AsObject[];
   data: Array<Document>
-  isLoading: boolean
-  isError: boolean
+  status: string
   error: any
 }) {
   const queryClient = useQueryClient()
   const location = useLocation()
   const isDraft = useMemo(() => location.pathname.includes('drafts'), [location.pathname])
-  const toPrefix = useMemo(() => (isDraft ? '/editor/' : '/p/'), [isDraft])
+  const toPrefix = useMemo(() => (isDraft ? '/editor' : '/p'), [isDraft])
   const deleteMachine = useMachine(
     deleteConfirmationDialogMachine({onSuccess: onDeleteSuccess, executeAction: onDelete}),
   )
@@ -41,13 +39,15 @@ export function DocumentList({
   }
 
   function onDelete(context: DeleteConfirmationDialogMachineContext, event: DeleteConfirmationDialogMachineEvent) {
+    console.log('DELETE!', {isDraft, context, event})
     if (isDraft) return deleteDraft(event.entryId)
     return deletePublication(event.entryId)
   }
-  if (isLoading) {
+  if (status === 'loading') {
     return <p>Loading...</p>
   }
-  if (isError) {
+  if (status === 'error') {
+    console.error('DocumentList error: ', error)
     return <p>ERROR</p>
   }
   return (
