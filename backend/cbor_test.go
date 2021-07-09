@@ -1,7 +1,6 @@
 package backend
 
 import (
-	"mintter/backend/testutil"
 	"testing"
 
 	cbornode "github.com/ipfs/go-ipld-cbor"
@@ -17,7 +16,7 @@ func init() {
 }
 
 func TestSignedCBOR(t *testing.T) {
-	key := testutil.MakeProfile(t, "alice").Peer.PrivKey
+	key := makeTester(t, "alice").Device.priv
 	in := foo{"Alex"}
 	signed, err := SignCBOR(in, key)
 	require.NoError(t, err)

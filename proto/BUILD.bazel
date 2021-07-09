@@ -7,7 +7,6 @@ filegroup(
         "//proto/daemon/v1alpha:go",
         "//proto/documents/v1alpha:go",
         "//proto/networking/v1alpha:go",
-        "//proto/p2p:go",
         "//proto/p2p/v1alpha:go",
     ],
 )

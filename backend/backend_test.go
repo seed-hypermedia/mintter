@@ -2,15 +2,15 @@ package backend
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
 
+	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/multiformats/go-multihash"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
@@ -19,7 +19,6 @@ import (
 	accounts "mintter/backend/api/accounts/v1alpha"
 	"mintter/backend/badger3ds"
 	"mintter/backend/config"
-	"mintter/backend/ipfsutil"
 	"mintter/backend/testutil"
 )
 
@@ -264,28 +263,68 @@ func connectPeers(t *testing.T, ctx context.Context, a, b *backend, waitVerify b
 	require.NoError(t, err)
 }
 
+type fakeProfile struct {
+	Account string
+	Device  string
+}
+
+// JSON-stringified private keys.
+var fakeUsers = map[string]fakeProfile{
+	"alice": {
+		Account: `"CAESQPp+QNO5NNWKgfAx1wgAj+iOISKrENspgGZzvDsnR3y46s9aB771DRwM6ovuJppSNu+5mwyQM0GPrDClxyL+GWA="`,
+		Device:  `"CAESQNXo6/umWsQoXAZ13REtd0BesPr2paY4SEhjaA9UuzEWUkE+/Tte18OgQqqbZzip9yaQ1ePQ8Wm6jJUr2pFFMoc="`,
+	},
+	"bob": {
+		Account: `"CAESQO89km7Cis1PMBoBV3MHx3JNO4XdtN5a+y+OgIL4klX3QEmTQlKDerpf6r90ERxIlUaPTX9uPb5fQwJbUsZX228="`,
+		Device:  `"CAESQNHDw1Cp9rFiOdKfyrx+wBVzTcv9upV18O2s5CJO1fCJ10ROWmNXYFYiSnht8y7/yasNerO2fOObm+kNcxI9Sus="`,
+	},
+	"carol": {
+		Account: `"CAESQBDN9IeKt2dZu5KbT3+U4LKdOavRGl2gE3HnWlRhxzBTmjYh916I2c8+j67TeHpO1RPjB4rqFszswTCWDIVvh3U="`,
+		Device:  `"CAESQKqxw/q2HruIc7BxBygaoYoE3Nq0DCGSFMYQqOtpdn5SMR1H6HqnKMSgbCWC77Lldo5ODsqurRr48D1pfQxPPD0="`,
+	},
+	"derek": {
+		Account: `"CAESQAmQsZC/oEbMLxv9ajRBpdcSinMfhfIeDKqFP3WlWs3jHguezw8JydB/vFIFPiyAUCRLCM5zgiO9ds0GXx1C518="`,
+		Device:  `"CAESQNW0CDuhSw9c1F7hUlELIMg+Lr5peQ6wa8NxmbDGo9fiTy7X5IWZDo40cxVJynnM3zV1pOH4aueXtPZriePUYow="`,
+	},
+}
+
 func makeTester(t *testing.T, name string) Tester {
 	t.Helper()
 
-	prof := testutil.MakeProfile(t, name)
+	prof, ok := fakeUsers[name]
+	if !ok {
+		t.Fatalf("no fake profile with name %s", name)
+	}
 
-	pubBytes, err := prof.Account.PubKey.Raw()
+	var apriv crypto.PrivKey
+	{
+		var data []byte
+		require.NoError(t, json.Unmarshal([]byte(prof.Account), &data))
+
+		k, err := crypto.UnmarshalPrivateKey(data)
+		require.NoError(t, err)
+		apriv = k
+	}
+
+	var dpriv crypto.PrivKey
+	{
+		var data []byte
+		require.NoError(t, json.Unmarshal([]byte(prof.Device), &data))
+
+		k, err := crypto.UnmarshalPrivateKey(data)
+		require.NoError(t, err)
+		dpriv = k
+	}
+
+	device, err := NewDevice(dpriv)
 	require.NoError(t, err)
 
-	aid, err := ipfsutil.NewCID(codecAccountID, multihash.IDENTITY, pubBytes)
+	acc, err := NewAccount(apriv)
 	require.NoError(t, err)
 
 	tt := Tester{
-		Account: Account{
-			id:   AccountID(aid),
-			priv: prof.Account.PrivKey.PrivKey,
-			pub:  prof.Account.PubKey.PubKey,
-		},
-		Device: Device{
-			id:   DeviceID(peer.ToCid(prof.Peer.ID)),
-			priv: prof.Peer.PrivKey.PrivKey,
-			pub:  prof.Peer.PubKey.PubKey,
-		},
+		Account: acc,
+		Device:  device,
 	}
 
 	binding, err := InviteDevice(tt.Account, tt.Device)
