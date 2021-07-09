@@ -2,6 +2,7 @@ import {lazily} from 'react-lazily'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 
 import {global} from '@mintter/ui/stitches.config'
+import {SidepanelProvider} from './components/sidepanel'
 const {AuthorNode} = lazily(() => import('./author-node'))
 // const {PublisherNode} = lazily(() => import('./publisher-node'))
 
@@ -21,7 +22,9 @@ export const App: React.FC = () => {
       }}
     >
       {/* {isLocalNode ? <AuthorNode path="/" /> : <PublisherNode />} */}
-      <AuthorNode path="/" />
+      <SidepanelProvider>
+        <AuthorNode path="/" />
+      </SidepanelProvider>
     </ErrorBoundary>
   )
 }

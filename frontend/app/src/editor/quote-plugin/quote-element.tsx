@@ -20,8 +20,6 @@ export function QuoteElement({attributes, className, element, children}: SPRende
   const renderElements = useCallback(renderQuoteInlineElements, [data])
   let qRender
 
-  const renderElement = useCallback(({text = ''}, index) => <span key={index}>{text}</span>, [])
-
   if (isLoading) {
     qRender = <span>...</span>
   }

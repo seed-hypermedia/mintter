@@ -1,6 +1,6 @@
 import {styled} from '@mintter/ui/stitches.config'
 import {Box, Text, Icon} from '@mintter/ui'
-import {useParams} from 'react-router-dom'
+import {useHistory, useParams} from 'react-router-dom'
 import toast from 'react-hot-toast'
 import * as ContextMenu from '@radix-ui/react-context-menu'
 import type {SPRenderElementProps} from '@udecode/slate-plugins-core'
@@ -8,6 +8,7 @@ import type {EditorBlock} from '../types'
 import {Editor} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {AnnotationList} from './annotation-list'
+import {createDraft} from 'frontend/client/src/drafts'
 
 const StyledItem = styled(ContextMenu.Item, {
   display: 'flex',
@@ -34,13 +35,33 @@ const StyledContent = styled(ContextMenu.Content, {
 })
 
 // TODO: fix types
-export function BlockElement({attributes, children, className, element, ...rest}: SPRenderElementProps<EditorBlock>) {
+export function BlockElement({
+  attributes,
+  children,
+  className,
+  element,
+  sidepanelSend,
+  ...rest
+}: SPRenderElementProps<EditorBlock>) {
   // TODO: remove router dependency from block element
   const {docId} = useParams<{docId: string}>()
+  const history = useHistory()
 
   async function onCopy() {
     await copyTextToClipboard(`mtt://${docId}/${element.id}`)
     toast.success('Block reference copied successfully')
+  }
+
+  function onSendToSidepanel() {
+    sidepanelSend({type: 'SIDEPANEL_ADD_ITEM', entryItem: `${docId}/${element.id}`})
+  }
+
+  async function onStartDraft() {
+    sidepanelSend({type: 'SIDEPANEL_ADD_ITEM', entryItem: `${docId}/${element.id}`})
+    const newDraft = await createDraft()
+    if (newDraft.id) {
+      history.push(`/editor/${newDraft.id}`)
+    }
   }
   return (
     <Box
@@ -66,6 +87,14 @@ export function BlockElement({attributes, children, className, element, ...rest}
           <StyledItem onSelect={onCopy}>
             <Icon size="1" name="Copy" />
             <Text size="2">Copy Block Ref</Text>
+          </StyledItem>
+          <StyledItem onSelect={onSendToSidepanel}>
+            <Icon size="1" name="ArrowBottomRight" />
+            <Text size="2">Open in Sidepanel</Text>
+          </StyledItem>
+          <StyledItem onSelect={onStartDraft}>
+            <Icon size="1" name="AddCircle" />
+            <Text size="2">Start a Draft</Text>
           </StyledItem>
         </StyledContent>
       </ContextMenu.Root>
@@ -117,3 +146,9 @@ function copyTextToClipboard(text: string) {
     )
   })
 }
+
+export const createBlockElement =
+  ({sidepanelSend}) =>
+  (editor) =>
+  (props) =>
+    <BlockElement {...props} sidepanelSend={sidepanelSend} />

@@ -21,8 +21,6 @@ export function AnnotationList({quote}) {
     }
   }, [quote])
 
-  console.log(embeds)
-
   return Object.values(embeds).length > 0 ? (
     <Box
       contentEditable={false}
