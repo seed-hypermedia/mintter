@@ -4,29 +4,32 @@ package config
 // Config for Mintter daemon.
 type Config struct {
 	HTTPPort      string `help:"Port to expose HTTP server (including grpc-web)" default:"55001"`
-	HTTPSPort     string `help:"Port to expose HTTPS server" default:"443"`
 	GRPCPort      string `help:"Port to expose gRPC server" default:"55002"`
 	RepoPath      string `help:"Path to where to store node data" default:"~/.mtt"`
 	NoOpenBrowser bool   `help:"If true - do not open the browser to access the UI"`
 
-	Domain string `help:"Domain that Let's Encrypt will generate the certificate for (required for SSL support)"`
+	P2P         P2P         `prefix:"p2p." embed:""`
+	UI          UI          `prefix:"ui." embed:""`
+	LetsEncrypt LetsEncrypt `prefix:"lets-encrypt." embed:""`
+}
 
-	P2P P2P `help:"P2P configuration" prefix:"p2p." embed:""`
-	UI  UI  `help:"ui configuration" prefix:"ui." embed:""`
+type LetsEncrypt struct {
+	Domain string `help:"Domain that Let's Encrypt will generate the certificate for (required for SSL support)"`
+	Email  string `help:"Email that Let's Encrypt will use for notifications (optional)"`
 }
 
 // P2P configuration.
 type P2P struct {
 	// TODO: make this a slice and add ip6 and quic addresses.
-	Addr        string `help:"address for binding p2p listener" default:"/ip4/0.0.0.0/tcp/55000"`
-	NoTLS       bool   `help:"disable TLS in libp2p"`
-	NoRelay     bool   `help:"disable libp2p circuit relay"`
-	NoBootstrap bool   `help:"disable IPFS bootstrapping"`
-	NoMetrics   bool   `help:"disable Prometheus metrics collection"`
+	Addr        string `help:"Address for binding p2p listener" default:"/ip4/0.0.0.0/tcp/55000"`
+	NoTLS       bool   `help:"Disable TLS in libp2p"`
+	NoRelay     bool   `help:"Disable libp2p circuit relay"`
+	NoBootstrap bool   `help:"Disable IPFS bootstrapping"`
+	NoMetrics   bool   `help:"Disable Prometheus metrics collection"`
 }
 
 // UI configuration for the node.
 type UI struct {
-	LogoURI     string `help:"uri of the primary logo image"`
-	HomePageURI string `help:"uri of the home page"`
+	LogoURI     string `help:"URI of the primary logo image"`
+	HomePageURI string `help:"URI of the home page"`
 }

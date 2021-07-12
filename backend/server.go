@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func newHTTPHandler(g *grpc.Server, b *backend) http.Handler {
+func makeHTTPHandler(g *grpc.Server, b *backend) http.Handler {
 	grpcWebHandler := grpcweb.WrapServer(g, grpcweb.WithOriginFunc(func(origin string) bool {
 		fmt.Println(origin)
 		return true
