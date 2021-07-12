@@ -16,7 +16,7 @@ import {
 } from './common'
 
 export function SecurityPack({prev, next}: OnboardingStepPropsType): JSX.Element {
-  const [ownSeed] = useState<string>('')
+  const [ownSeed, setOwnSeed] = useState<string>('')
   const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false)
   const mnemonics = useQuery<string[], Error>(
     ['onboarding', 'mnemonics'],
@@ -31,6 +31,7 @@ export function SecurityPack({prev, next}: OnboardingStepPropsType): JSX.Element
   )
 
   const handleSubmit = useCallback(async () => {
+    console.log({useOwnSeed, ownSeed})
     const words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data
     if (words) {
       try {
@@ -62,6 +63,8 @@ export function SecurityPack({prev, next}: OnboardingStepPropsType): JSX.Element
           placeholder="foo bar baz ..."
           hint="all words separated by ONE SPACE"
           data-testid="textarea-own-seed"
+          value={ownSeed}
+          onChange={(e) => setOwnSeed(e.target.value)}
         />
       ) : mnemonics.isError ? (
         <OnboardingStepBody>
