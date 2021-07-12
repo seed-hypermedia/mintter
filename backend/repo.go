@@ -18,22 +18,24 @@ import (
 /*
 Repo layout v1 file tree:
 
-- VERSION => v1
-- keys/
+- /VERSION => v1
+- /keys/
 -- libp2p_id_ed25519 => device private key
 -- mintter_id_ed25519.pub => account public key
-- db/
+- /db/
 -- badger-v3/ => directory with badger-related data
 -- providing.db => BoltDB database for DHT provider
-- drafts/ => directory with drafts
+- /drafts/ => directory with drafts
+- /autocert-cache/ => directory with autocert cache
 */
 
 const (
 	currentRepoLayoutVersion = "dev-9" // TODO: when layout is stable set a correct version here.
 
-	keysDir   = "keys"
-	dbDir     = "db"
-	draftsDir = "drafts"
+	keysDir     = "keys"
+	dbDir       = "db"
+	draftsDir   = "drafts"
+	autocertDir = "autocert-cache"
 
 	badgerDirPath = dbDir + "/badger-v3"
 
@@ -109,6 +111,7 @@ func prepareRepo(path string, log *zap.Logger) (r *repo, err error) {
 		filepath.Join(path, dbDir),
 		filepath.Join(path, badgerDirPath),
 		filepath.Join(path, draftsDir),
+		filepath.Join(path, autocertDir),
 	}
 
 	for _, d := range dirs {
@@ -189,6 +192,10 @@ func (r *repo) badgerDir() string {
 
 func (r *repo) providingDBPath() string {
 	return filepath.Join(r.path, providingDBPath)
+}
+
+func (r *repo) autocertDir() string {
+	return filepath.Join(r.path, autocertDir)
 }
 
 func (r *repo) draftsDir() string {

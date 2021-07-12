@@ -2,12 +2,15 @@ package backend
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 
 	"go.uber.org/fx"
 	"go.uber.org/multierr"
+	"golang.org/x/crypto/acme/autocert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -33,7 +36,7 @@ var moduleGRPC = fx.Options(
 var moduleHTTP = fx.Options(
 	fx.Provide(
 		provideHTTPServer,
-		newHTTPHandler,
+		makeHTTPHandler,
 	),
 	fx.Invoke(registerHTTP),
 )
@@ -96,32 +99,81 @@ func registerGRPC(srv *grpc.Server,
 	reflection.Register(srv)
 }
 
+// httpServer is a wrapper for HTTP server which is useful for lazy listener initialization.
+// We can setup the server inside the FX provider function, but start actually listenning only
+// inside the OnStart hook. The ready channel can be used to wait until the server is actually listening.
 type httpServer struct {
 	srv   *http.Server
 	lis   net.Listener
 	ready chan struct{}
 }
 
-func provideHTTPServer(lc fx.Lifecycle, stop fx.Shutdowner, cfg config.Config) (*httpServer, *http.Server, error) {
+func (s *httpServer) Serve() error {
+	return s.srv.Serve(s.lis)
+}
+
+func (s *httpServer) Shutdown(ctx context.Context) error {
+	return s.srv.Shutdown(ctx)
+}
+
+func provideHTTPServer(lc fx.Lifecycle, stop fx.Shutdowner, r *repo, cfg config.Config) (*httpServer, *http.Server, error) {
 	wrap := &httpServer{
-		srv:   &http.Server{},
+		srv: &http.Server{
+			Addr: ":" + cfg.HTTPPort,
+		},
 		ready: make(chan struct{}),
+	}
+
+	needTLS := cfg.LetsEncrypt.Domain != ""
+
+	// This gets used if Let's Encrypt is enabled in order to redirect HTTP to HTTPS.
+	redirectSrv := &http.Server{
+		Addr: ":http",
 	}
 
 	errc := make(chan error, 1)
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			var liscfg net.ListenConfig
-			l, err := liscfg.Listen(ctx, "tcp", ":"+cfg.HTTPPort)
-			if err != nil {
-				return err
+			if needTLS {
+				certManager := autocert.Manager{
+					Prompt:     autocert.AcceptTOS,
+					HostPolicy: autocert.HostWhitelist(cfg.LetsEncrypt.Domain),
+					Email:      cfg.LetsEncrypt.Email,
+					Cache:      autocert.DirCache(r.autocertDir()),
+				}
+
+				wrap.srv.Addr = ":https"
+				wrap.srv.TLSConfig = certManager.TLSConfig()
+
+				l, err := tls.Listen("tcp", ":https", wrap.srv.TLSConfig)
+				if err != nil {
+					return fmt.Errorf("failed to setup TLS listener: %w", err)
+				}
+				wrap.lis = l
+
+				redirectSrv.Handler = certManager.HTTPHandler(nil)
+
+				go func() {
+					err := redirectSrv.ListenAndServe()
+					if !errors.Is(err, http.ErrServerClosed) {
+						if err := stop.Shutdown(); err != nil {
+							panic(err)
+						}
+					}
+				}()
+			} else {
+				var liscfg net.ListenConfig
+				l, err := liscfg.Listen(ctx, "tcp", wrap.srv.Addr)
+				if err != nil {
+					return err
+				}
+				wrap.lis = l
 			}
-			wrap.lis = l
 
 			go func() {
 				close(wrap.ready)
-				err := wrap.srv.Serve(l)
+				err := wrap.Serve()
 				if errors.Is(err, http.ErrServerClosed) {
 					errc <- nil
 					return
@@ -138,7 +190,8 @@ func provideHTTPServer(lc fx.Lifecycle, stop fx.Shutdowner, cfg config.Config) (
 		},
 		OnStop: func(ctx context.Context) error {
 			return multierr.Combine(
-				wrap.srv.Shutdown(ctx),
+				redirectSrv.Shutdown(ctx),
+				wrap.Shutdown(ctx),
 				<-errc,
 			)
 		},
