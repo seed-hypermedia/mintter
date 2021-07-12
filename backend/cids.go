@@ -12,7 +12,7 @@ func init() {
 	cid.CodecToStr[codecDocumentID] = "mintter-document"
 }
 
-// See cids_grammar.ebnf for explanation about our identifiers.
+// See cids_grammar.rl for explanation about our identifiers.
 
 const (
 	codecAccountID    uint64 = 1091161161
