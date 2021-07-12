@@ -31,10 +31,14 @@ var moduleBackend = fx.Options(
 
 // Module assembles everything that is required to run the app using fx framework.
 func Module(cfg config.Config, log *zap.Logger) fx.Option {
+	if cfg.LetsEncrypt.Domain != "" {
+		log.Warn("Let's Encrypt is enabled, HTTP-port configuration value is ignored, will listen on the default TLS port (443)")
+	}
+
 	return fx.Options(
 		fx.Supply(cfg),
 		fx.Supply(log),
-		fx.Logger(&fxLogger{log.Named("fx").Sugar()}), // Configure FX internal logging with zap.
+		fx.NopLogger,
 		fx.Provide(
 			provideP2PConfig,
 			provideDatastore,
@@ -49,7 +53,10 @@ func Module(cfg config.Config, log *zap.Logger) fx.Option {
 
 // NewLogger creates a new logger from config.
 func NewLogger(cfg config.Config) *zap.Logger {
-	log, err := zap.NewDevelopment(zap.WithCaller(false))
+	log, err := zap.NewDevelopment(
+		zap.WithCaller(false),
+		zap.AddStacktrace(zap.ErrorLevel),
+	)
 	if err != nil {
 		panic(err)
 	}
