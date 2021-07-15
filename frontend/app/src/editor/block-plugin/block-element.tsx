@@ -53,11 +53,11 @@ export function BlockElement({
   }
 
   function onSendToSidepanel() {
-    sidepanelSend({type: 'SIDEPANEL_ADD_ITEM', entryItem: `${docId}/${element.id}`})
+    sidepanelSend({type: 'SIDEPANEL_ADD_ITEM', payload: `${docId}/${element.id}`})
   }
 
   async function onStartDraft() {
-    sidepanelSend({type: 'SIDEPANEL_ADD_ITEM', entryItem: `${docId}/${element.id}`})
+    sidepanelSend({type: 'SIDEPANEL_ADD_ITEM', payload: `${docId}/${element.id}`})
     const newDraft = await createDraft()
     if (newDraft.id) {
       history.push(`/editor/${newDraft.id}`)

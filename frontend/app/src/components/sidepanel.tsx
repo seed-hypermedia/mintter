@@ -9,14 +9,56 @@ import {useState} from 'react'
 import {useAccount, useDocument, usePublication} from '@mintter/client/hooks'
 import type {Block} from 'frontend/client/.generated/documents/v1alpha/documents'
 import {getAccount} from 'frontend/client/src/accounts'
+import {useMemo} from 'react'
+
+interface SidepanelStateSchema {
+  states: {
+    disabled: {}
+    enabled: {
+      states: {
+        closed: {}
+        opened: {}
+        hist: {}
+      }
+    }
+  }
+}
+
+export type SidepanelEventsType =
+  | {
+      type: 'SIDEPANEL_ENABLE'
+    }
+  | {
+      type: 'SIDEPANEL_DISABLE'
+    }
+  | {
+      type: 'SIDEPANEL_ADD_ITEM'
+      payload: string
+    }
+  | {
+      type: 'SIDEPANEL_REMOVE_ITEM'
+      payload: string
+    }
+  | {
+      type: 'SIDEPANEL_OPEN'
+    }
+  | {
+      type: 'SIDEPANEL_TOGGLE'
+    }
+
+export type SidepanelContextType = {
+  items: Set<string>
+}
+
+export type SidepanelMachineResult = ReturnType<typeof createSidepanelMachine>
 
 export function createSidepanelMachine({services, actions}) {
-  return createMachine(
+  return createMachine<SidepanelContextType, SidepanelStateSchema, SidepanelEventsType>(
     {
       id: 'sidepanel',
       initial: 'disabled',
       context: {
-        items: [],
+        items: new Set<string>(),
       },
       states: {
         disabled: {
@@ -83,18 +125,12 @@ export function SidepanelProvider({children}) {
   const machine = useMachine(
     createSidepanelMachine({
       actions: {
-        sidepanelAddItem: assign((context, event) => {
-          if (context.items.indexOf(event.entryItem) == -1) {
-            return {items: [...context.items, event.entryItem]}
-          }
-        }),
-        sidepanelRemoveItem: assign((context, event) => {
-          const index = context.items.indexOf(event.entryItem)
-          if (index === 0) {
-            console.log('index 0!!')
-            return {items: [...context.items.slice(1)]}
-          }
-          return {items: [...context.items.slice(0, index), ...context.items.slice(index + 1)]}
+        sidepanelAddItem: assign((context: SidepanelContextType, event: SidepanelEventsType) =>
+          context.items.add(event.payload),
+        ),
+        sidepanelRemoveItem: assign((context: SidepanelContextType, event: SidepanelEventsType) => {
+          console.log('remove, ', {items: [...context.items], event})
+          return context.items.delete(event.payload)
         }),
       },
     }),
@@ -103,7 +139,7 @@ export function SidepanelProvider({children}) {
   return <SidepanelContext.Provider value={machine}>{children}</SidepanelContext.Provider>
 }
 
-export function useSidepanel() {
+export function useSidepanel(): SidepanelMachineResult {
   const machine = useContext(SidepanelContext)
 
   if (!machine) {
@@ -130,7 +166,7 @@ export type SidepanelProps = {
 
 export function Sidepanel({gridArea}: SidepanelProps) {
   const [state, send] = useSidepanel()
-  console.log(state.context.items)
+
   return (
     <Box
       css={{
@@ -140,7 +176,7 @@ export function Sidepanel({gridArea}: SidepanelProps) {
         borderLeft: '1px solid rgba(0,0,0,0.1)',
       }}
     >
-      {state.context.items.map((item) => {
+      {[...state.context.items].map((item) => {
         return <SidepanelItem item={item} send={send} />
       })}
     </Box>
@@ -179,7 +215,7 @@ export function SidepanelItem({item, send}: SidepanelItemProps) {
           size="1"
           variant="ghost"
           color="primary"
-          onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', entryItem: item})}
+          onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', payload: item})}
         >
           remove
         </Button>
