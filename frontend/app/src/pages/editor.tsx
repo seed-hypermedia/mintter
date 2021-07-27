@@ -5,19 +5,17 @@ import toast from 'react-hot-toast'
 import {useHistory, useParams} from 'react-router'
 import {Container} from '../components/container'
 import {Separator} from '../components/separator'
-import {EditorComponent} from '../editor/editor-component'
 import {AppSpinner} from '../components/app-spinner'
-import {AutosaveStatus} from '../editor/autosave'
-import {useEditorDraft} from '../editor/use-editor-draft'
-import {useStoreEditorValue} from '@udecode/slate-plugins'
 import {useEnableSidepanel, useSidepanel, Sidepanel} from '../components/sidepanel'
+import {Editor} from '../editor/editor'
+import {useEditorDraft} from '../editor/use-editor-draft'
+import {useMintterEditor} from '../editor/use-mintter-editor'
 
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
   const history = useHistory()
   const {isLoading, isError, error, data} = useEditorDraft(docId)
-  // const vvalue = useStoreEditorValue()
-  // console.log('🚀 ~ editor.tsx ~ line 89 ~ vvalue', vvalue)
+  const {editor, plugins} = useMintterEditor()
 
   const [sidepanelState, sidepanelSend] = useSidepanel()
 
@@ -91,7 +89,7 @@ export default function EditorPage() {
         </Button>
       </Box>
       <Container css={{gridArea: 'maincontent', marginBottom: 300, paddingTop: '$7'}}>
-        <AutosaveStatus save={data.save} />
+        {/* <AutosaveStatus save={data.save} /> */}
         <TextField
           // TODO: Fix types
           // @ts-ignore
@@ -137,7 +135,8 @@ export default function EditorPage() {
         />
         <Separator />
         <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
-          <EditorComponent value={data?.value.blocks} />
+          {/* <Editor editor={editor} plugins={plugins} value={data?.value.children} /> */}
+          <Editor editor={editor} plugins={plugins} />
         </Box>
       </Container>
       {isSidepanelOpen && <Sidepanel gridArea="rightside" />}

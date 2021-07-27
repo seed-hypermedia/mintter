@@ -8,7 +8,7 @@ import {Container} from './container'
 import {getPath} from '../utils/routes'
 
 import {Link} from './link'
-import {MINTTER_LINK_PREFIX} from '../editor/link-plugin'
+import {MINTTER_LINK_PREFIX} from '../editor/constants'
 
 interface NavItemProps {
   href: string
