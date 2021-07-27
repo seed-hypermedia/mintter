@@ -1,0 +1,49 @@
+diff --git a/node_modules/slate-hyperscript/dist/index.es.js b/node_modules/slate-hyperscript/dist/index.es.js
+index 41f7a93..2a52b53 100644
+--- a/node_modules/slate-hyperscript/dist/index.es.js
++++ b/node_modules/slate-hyperscript/dist/index.es.js
+@@ -69,7 +69,7 @@ class FocusToken extends Token {
+  */
+ 
+ var addAnchorToken = (text, token) => {
+-  var offset = text.text.length;
++  var offset = text.value.length;
+   ANCHOR.set(text, [offset, token]);
+ };
+ /**
+@@ -84,7 +84,7 @@ var getAnchorOffset = text => {
+  */
+ 
+ var addFocusToken = (text, token) => {
+-  var offset = text.text.length;
++  var offset = text.value.length;
+   FOCUS.set(text, [offset, token]);
+ };
+ /**
+@@ -117,7 +117,7 @@ var resolveDescendants = children => {
+ 
+     if (typeof child === 'string') {
+       var text = {
+-        text: child
++        value: child
+       };
+       STRINGS.add(text);
+       child = text;
+@@ -129,7 +129,7 @@ var resolveDescendants = children => {
+       if (Text.isText(prev) && STRINGS.has(prev) && STRINGS.has(c) && Text.equals(prev, c, {
+         loose: true
+       })) {
+-        prev.text += c.text;
++        prev.value += c.value;
+       } else {
+         nodes.push(c);
+       }
+@@ -239,7 +239,7 @@ function createText(tagName, attributes, children) {
+ 
+   if (node == null) {
+     node = {
+-      text: ''
++      value: ''
+     };
+   }
+ 

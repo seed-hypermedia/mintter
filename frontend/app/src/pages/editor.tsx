@@ -135,8 +135,7 @@ export default function EditorPage() {
         />
         <Separator />
         <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
-          {/* <Editor editor={editor} plugins={plugins} value={data?.value.children} /> */}
-          <Editor editor={editor} plugins={plugins} />
+          <Editor editor={editor} plugins={plugins} value={data?.value.children} />
         </Box>
       </Container>
       {isSidepanelOpen && <Sidepanel gridArea="rightside" />}

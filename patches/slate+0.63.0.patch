@@ -1,0 +1,377 @@
+diff --git a/node_modules/slate/dist/index.es.js b/node_modules/slate/dist/index.es.js
+index 743f3b1..2980ba3 100644
+--- a/node_modules/slate/dist/index.es.js
++++ b/node_modules/slate/dist/index.es.js
+@@ -180,7 +180,7 @@ var createEditor = () => {
+     insertNode: node => {
+       Transforms.insertNodes(editor, node);
+     },
+-    insertText: text => {
++    insertText: value => {
+       var {
+         selection,
+         marks
+@@ -210,12 +210,12 @@ var createEditor = () => {
+ 
+         if (marks) {
+           var node = _objectSpread({
+-            text
++            value
+           }, marks);
+ 
+           Transforms.insertNodes(editor, node);
+         } else {
+-          Transforms.insertText(editor, text);
++          Transforms.insertText(editor, value);
+         }
+ 
+         editor.marks = null;
+@@ -231,7 +231,7 @@ var createEditor = () => {
+ 
+       if (Element.isElement(node) && node.children.length === 0) {
+         var child = {
+-          text: ''
++          value: ''
+         };
+         Transforms.insertNodes(editor, child, {
+           at: path.concat(0),
+@@ -268,7 +268,7 @@ var createEditor = () => {
+           if (editor.isInline(_child)) {
+             if (prev == null || !Text.isText(prev)) {
+               var newChild = {
+-                text: ''
++                value: ''
+               };
+               Transforms.insertNodes(editor, newChild, {
+                 at: path.concat(n),
+@@ -277,7 +277,7 @@ var createEditor = () => {
+               n++;
+             } else if (isLast) {
+               var _newChild = {
+-                text: ''
++                value: ''
+               };
+               Transforms.insertNodes(editor, _newChild, {
+                 at: path.concat(n + 1),
+@@ -297,13 +297,13 @@ var createEditor = () => {
+                 voids: true
+               });
+               n--;
+-            } else if (prev.text === '') {
++            } else if (prev.value === '') {
+               Transforms.removeNodes(editor, {
+                 at: path.concat(n - 1),
+                 voids: true
+               });
+               n--;
+-            } else if (isLast && _child.text === '') {
++            } else if (isLast && _child.value === '') {
+               Transforms.removeNodes(editor, {
+                 at: path.concat(n),
+                 voids: true
+@@ -1011,7 +1011,7 @@ var Editor = {
+       children
+     } = element;
+     var [first] = children;
+-    return children.length === 0 || children.length === 1 && Text.isText(first) && first.text === '' && !editor.isVoid(element);
++    return children.length === 0 || children.length === 1 && Text.isText(first) && first.value === '' && !editor.isVoid(element);
+   },
+ 
+   /**
+@@ -1138,7 +1138,7 @@ var Editor = {
+       if (match) {
+         var [_node] = match;
+ 
+-        var _rest = _objectWithoutProperties(_node, ["text"]);
++        var _rest = _objectWithoutProperties(_node, ["value"]);
+ 
+         return _rest;
+       } else {
+@@ -1173,7 +1173,7 @@ var Editor = {
+       }
+     }
+ 
+-    var rest = _objectWithoutProperties(node, ["text"]);
++    var rest = _objectWithoutProperties(node, ["value"]);
+ 
+     return rest;
+   },
+@@ -1385,7 +1385,7 @@ var Editor = {
+ 
+           if (Element.isElement(node) && node.children.length === 0) {
+             var child = {
+-              text: ''
++              value: ''
+             };
+             Transforms.insertNodes(editor, child, {
+               at: dirtyPath.concat(0),
+@@ -1544,7 +1544,7 @@ var Editor = {
+ 
+       return {
+         path,
+-        offset: edge === 'end' ? node.text.length : 0
++        offset: edge === 'end' ? node.value.length : 0
+       };
+     }
+ 
+@@ -1716,10 +1716,10 @@ var Editor = {
+         // Reset `leafText` counters for new text node.
+ 
+         if (isFirst) {
+-          leafTextRemaining = reverse$1 ? first.offset : node.text.length - first.offset;
++          leafTextRemaining = reverse$1 ? first.offset : node.value.length - first.offset;
+           leafTextOffset = first.offset; // Works for reverse too.
+         } else {
+-          leafTextRemaining = node.text.length;
++          leafTextRemaining = node.value.length;
+           leafTextOffset = reverse$1 ? leafTextRemaining : 0;
+         } // Yield position at the start of node (potentially).
+ 
+@@ -1938,7 +1938,7 @@ var Editor = {
+       match: Text.isText,
+       voids
+     })) {
+-      var t = node.text;
++      var t = node.value;
+ 
+       if (Path.equals(path, end.path)) {
+         t = t.slice(0, end.offset);
+@@ -1991,10 +1991,10 @@ var Editor = {
+         continue;
+       }
+ 
+-      if (node.text !== '' || Path.isBefore(path, blockPath)) {
++      if (node.value !== '' || Path.isBefore(path, blockPath)) {
+         end = {
+           path,
+-          offset: node.text.length
++          offset: node.value.length
+         };
+         break;
+       }
+@@ -2184,7 +2184,7 @@ var Node = {
+ 
+       return properties;
+     } else {
+-      var properties = _objectWithoutProperties(node, ["text"]);
++      var properties = _objectWithoutProperties(node, ["value"]);
+ 
+       return properties;
+     }
+@@ -2238,13 +2238,13 @@ var Node = {
+ 
+         if (Path.equals(path, end.path)) {
+           var leaf = Node.leaf(r, path);
+-          leaf.text = leaf.text.slice(0, end.offset);
++          leaf.value = leaf.value.slice(0, end.offset);
+         }
+ 
+         if (Path.equals(path, start.path)) {
+           var _leaf = Node.leaf(r, path);
+ 
+-          _leaf.text = _leaf.text.slice(start.offset);
++          _leaf.value = _leaf.value.slice(start.offset);
+         }
+       }
+ 
+@@ -2472,7 +2472,7 @@ var Node = {
+    */
+   string(node) {
+     if (Text.isText(node)) {
+-      return node.text;
++      return node.value;
+     } else {
+       return node.children.map(Node.string).join('');
+     }
+@@ -3502,20 +3502,20 @@ var Text = {
+       loose = false
+     } = options;
+ 
+-    function omitText(obj) {
+-      var rest = _objectWithoutProperties(obj, ["text"]);
++    function omitValue(obj) {
++      var rest = _objectWithoutProperties(obj, ["value"]);
+ 
+       return rest;
+     }
+ 
+-    return isEqual(loose ? omitText(text) : text, loose ? omitText(another) : another);
++    return isEqual(loose ? omitValue(text) : text, loose ? omitValue(another) : another);
+   },
+ 
+   /**
+    * Check if a value implements the `Text` interface.
+    */
+   isText(value) {
+-    return isPlainObject(value) && typeof value.text === 'string';
++    return isPlainObject(value) && typeof value.value === 'string';
+   },
+ 
+   /**
+@@ -3529,7 +3529,7 @@ var Text = {
+    * Check if some props are a partial of Text.
+    */
+   isTextProps(props) {
+-    return props.text !== undefined;
++    return props.value !== undefined;
+   },
+ 
+   /**
+@@ -3540,7 +3540,7 @@ var Text = {
+    */
+   matches(text, props) {
+     for (var key in props) {
+-      if (key === 'text') {
++      if (key === 'value') {
+         continue;
+       }
+ 
+@@ -3568,7 +3568,7 @@ var Text = {
+       for (var leaf of leaves) {
+         var {
+           length
+-        } = leaf.text;
++        } = leaf.value;
+         var offset = o;
+         o += length; // If the range encompases the entire leaf, add the range.
+ 
+@@ -3594,10 +3594,10 @@ var Text = {
+         if (end.offset < o) {
+           var off = end.offset - offset;
+           after = _objectSpread$5(_objectSpread$5({}, middle), {}, {
+-            text: middle.text.slice(off)
++            value: middle.value.slice(off)
+           });
+           middle = _objectSpread$5(_objectSpread$5({}, middle), {}, {
+-            text: middle.text.slice(0, off)
++            value: middle.value.slice(0, off)
+           });
+         }
+ 
+@@ -3605,10 +3605,10 @@ var Text = {
+           var _off = start.offset - offset;
+ 
+           before = _objectSpread$5(_objectSpread$5({}, middle), {}, {
+-            text: middle.text.slice(0, _off)
++            value: middle.value.slice(0, _off)
+           });
+           middle = _objectSpread$5(_objectSpread$5({}, middle), {}, {
+-            text: middle.text.slice(_off)
++            value: middle.value.slice(_off)
+           });
+         }
+ 
+@@ -3674,11 +3674,11 @@ var applyToDraft = (editor, selection, op) => {
+ 
+         var _node = Node.leaf(editor, _path);
+ 
+-        var before = _node.text.slice(0, offset);
++        var before = _node.value.slice(0, offset);
+ 
+-        var after = _node.text.slice(offset);
++        var after = _node.value.slice(offset);
+ 
+-        _node.text = before + text + after;
++        _node.value = before + text + after;
+ 
+         if (selection) {
+           for (var [_point, _key] of Range.points(selection)) {
+@@ -3705,7 +3705,7 @@ var applyToDraft = (editor, selection, op) => {
+         var _index = _path2[_path2.length - 1];
+ 
+         if (Text.isText(_node2) && Text.isText(prev)) {
+-          prev.text += _node2.text;
++          prev.value += _node2.value;
+         } else if (!Text.isText(_node2) && !Text.isText(prev)) {
+           prev.children.push(..._node2.children);
+         } else {
+@@ -3796,7 +3796,7 @@ var applyToDraft = (editor, selection, op) => {
+ 
+               if (_prev) {
+                 _point4.path = _prev[1];
+-                _point4.offset = _prev[0].text.length;
++                _point4.offset = _prev[0].value.length;
+               } else if (next) {
+                 _point4.path = next[1];
+                 _point4.offset = 0;
+@@ -3821,11 +3821,11 @@ var applyToDraft = (editor, selection, op) => {
+ 
+         var _node4 = Node.leaf(editor, _path5);
+ 
+-        var _before = _node4.text.slice(0, _offset);
++        var _before = _node4.value.slice(0, _offset);
+ 
+-        var _after = _node4.text.slice(_offset + _text.length);
++        var _after = _node4.value.slice(_offset + _text.length);
+ 
+-        _node4.text = _before + _after;
++        _node4.value = _before + _after;
+ 
+         if (selection) {
+           for (var [_point5, _key5] of Range.points(selection)) {
+@@ -3929,13 +3929,13 @@ var applyToDraft = (editor, selection, op) => {
+         var newNode;
+ 
+         if (Text.isText(_node6)) {
+-          var _before2 = _node6.text.slice(0, position);
++          var _before2 = _node6.value.slice(0, position);
+ 
+-          var _after2 = _node6.text.slice(position);
++          var _after2 = _node6.value.slice(position);
+ 
+-          _node6.text = _before2;
++          _node6.value = _before2;
+           newNode = _objectSpread$6(_objectSpread$6({}, _properties), {}, {
+-            text: _after2
++            value: _after2
+           });
+         } else {
+           var _before3 = _node6.children.slice(0, position);
+@@ -4308,9 +4308,9 @@ var NodeTransforms = {
+       // and extra properties of the merge will be.
+ 
+       if (Text.isText(node) && Text.isText(prevNode)) {
+-        var rest = _objectWithoutProperties(node, ["text"]);
++        var rest = _objectWithoutProperties(node, ["value"]);
+ 
+-        position = prevNode.text.length;
++        position = prevNode.value.length;
+         properties = rest;
+       } else if (Element.isElement(node) && Element.isElement(prevNode)) {
+         var rest = _objectWithoutProperties(node, ["children"]);
+@@ -4344,7 +4344,7 @@ var NodeTransforms = {
+       // hanging selection.
+ 
+ 
+-      if (Element.isElement(prevNode) && Editor.isEmpty(editor, prevNode) || Text.isText(prevNode) && prevNode.text === '') {
++      if (Element.isElement(prevNode) && Editor.isEmpty(editor, prevNode) || Text.isText(prevNode) && prevNode.value === '') {
+         Transforms.removeNodes(editor, {
+           at: prevPath,
+           voids
+@@ -4643,7 +4643,7 @@ var NodeTransforms = {
+ 
+           if (!after) {
+             var text = {
+-              text: ''
++              value: ''
+             };
+             var afterPath = Path.next(voidPath);
+             Transforms.insertNodes(editor, text, {
+@@ -5287,7 +5287,7 @@ var TextTransforms = {
+           offset
+         } = start;
+ 
+-        var text = _node.text.slice(offset);
++        var text = _node.value.slice(offset);
+ 
+         if (text.length > 0) editor.apply({
+           type: 'remove_text',
+@@ -5315,7 +5315,7 @@ var TextTransforms = {
+ 
+         var _offset = isSingleText ? start.offset : 0;
+ 
+-        var _text = _node2.text.slice(_offset, end.offset);
++        var _text = _node2.value.slice(_offset, end.offset);
+ 
+         if (_text.length > 0) editor.apply({
+           type: 'remove_text',

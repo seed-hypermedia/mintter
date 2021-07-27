@@ -1,0 +1,68 @@
+diff --git a/node_modules/slate-react/dist/index.es.js b/node_modules/slate-react/dist/index.es.js
+index 87f94ad..7dbbca8 100644
+--- a/node_modules/slate-react/dist/index.es.js
++++ b/node_modules/slate-react/dist/index.es.js
+@@ -81,7 +81,7 @@ var String = props => {
+   // to support expected plain text.
+ 
+ 
+-  if (leaf.text === '' && parent.children[parent.children.length - 1] === text && !editor.isInline(parent) && Editor.string(editor, parentPath) === '') {
++  if (leaf.value === '' && parent.children[parent.children.length - 1] === text && !editor.isInline(parent) && Editor.string(editor, parentPath) === '') {
+     return /*#__PURE__*/React.createElement(ZeroWidthString, {
+       isLineBreak: true
+     });
+@@ -90,21 +90,21 @@ var String = props => {
+   // inserted next to it still.
+ 
+ 
+-  if (leaf.text === '') {
++  if (leaf.value === '') {
+     return /*#__PURE__*/React.createElement(ZeroWidthString, null);
+   } // COMPAT: Browsers will collapse trailing new lines at the end of blocks,
+   // so we need to add an extra trailing new lines to prevent that.
+ 
+ 
+-  if (isLast && leaf.text.slice(-1) === '\n') {
++  if (isLast && leaf.value.slice(-1) === '\n') {
+     return /*#__PURE__*/React.createElement(TextString, {
+       isTrailing: true,
+-      text: leaf.text
++      text: leaf.value
+     });
+   }
+ 
+   return /*#__PURE__*/React.createElement(TextString, {
+-    text: leaf.text
++    text: leaf.value
+   });
+ };
+ /**
+@@ -247,7 +247,7 @@ var Leaf = props => {
+ };
+ 
+ var MemoizedLeaf = /*#__PURE__*/React.memo(Leaf, (prev, next) => {
+-  return next.parent === prev.parent && next.isLast === prev.isLast && next.renderLeaf === prev.renderLeaf && next.renderPlaceholder === prev.renderPlaceholder && next.text === prev.text && next.leaf.text === prev.leaf.text && Text$1.matches(next.leaf, prev.leaf) && next.leaf[PLACEHOLDER_SYMBOL] === prev.leaf[PLACEHOLDER_SYMBOL];
++  return next.parent === prev.parent && next.isLast === prev.isLast && next.renderLeaf === prev.renderLeaf && next.renderPlaceholder === prev.renderPlaceholder && next.text === prev.text && next.leaf.value === prev.leaf.text && Text$1.matches(next.leaf, prev.leaf) && next.leaf[PLACEHOLDER_SYMBOL] === prev.leaf[PLACEHOLDER_SYMBOL];
+ });
+ var DefaultLeaf = props => {
+   var {
+@@ -2548,7 +2548,7 @@ function getTextInsertion(editor, domNode) {
+     return undefined;
+   }
+ 
+-  var prevText = node.text;
++  var prevText = node.value;
+   var nextText = domNode.textContent; // textContent will pad an extra \n when the textContent ends with an \n
+ 
+   if (nextText.endsWith('\n')) {
+@@ -2626,8 +2626,8 @@ function normalizeTextInsertionRange(editor, range, _ref2) {
+       var {
+         anchor
+       } = range;
+-      var characterBeforeAnchor = node.text[anchor.offset - 1];
+-      var characterAfterAnchor = node.text[anchor.offset];
++      var characterBeforeAnchor = node.value[anchor.offset - 1];
++      var characterAfterAnchor = node.value[anchor.offset];
+ 
+       if (insertText.length === 1 && insertText === characterAfterAnchor) {
+         // Assume text should be inserted at the anchor
