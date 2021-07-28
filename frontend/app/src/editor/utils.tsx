@@ -1,6 +1,9 @@
+import type {FlowContent} from 'frontend/client/src/mttast'
 import {createEditor, NodeEntry, Range} from 'slate'
 import {DefaultElement, DefaultLeaf, RenderElementProps, RenderLeafProps, withReact} from 'slate-react'
 import {SlatePlugin} from './types'
+import {u} from 'unist-builder'
+import {nanoid} from 'nanoid'
 
 export type MTTEditor = BaseEditor & ReactEditor
 
@@ -38,4 +41,20 @@ export const buildDecorate = (plugins: SlatePlugin[]) => (entry: NodeEntry) => {
   }
 
   return ranges
+}
+
+export function isCollapsed(range: Location) {
+  return Range.isCollapsed(range)
+}
+
+export function isFlowContent(node: FlowContent) {
+  if (node.type == 'blockquote' || node.type == 'header' || node.type == 'statement') {
+    return true
+  } else {
+    return false
+  }
+}
+
+export function createStatement() {
+  return u('statement', {id: nanoid()}, [u('paragraph', [u('text', '')])])
 }

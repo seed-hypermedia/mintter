@@ -1,12 +1,10 @@
-
-
 interface Alternative {
-  alt: ?string
+  alt?: string
 }
 
 interface Resource {
-	url: string?
-	title: string?
+  url?: string
+  title?: string
 }
 
 interface Literal {
@@ -86,8 +84,6 @@ interface Code extends Parent {
   children: [Content, GroupingContent?]
 }
 
-
-
 interface Video extends Alternative, Resource {
   type: 'video'
 }
@@ -105,30 +101,29 @@ interface Link extends Resource {
 }
 
 interface Text extends Literal {
-	type: "text"
-	strong?: boolean
-	emphasis?: boolean
-	underline?: boolean
-	strikethrough?: boolean
-	superscript?: boolean
-	subscript?: boolean
+  type: 'text'
+  strong?: boolean
+  emphasis?: boolean
+  underline?: boolean
+  strikethrough?: boolean
+  superscript?: boolean
+  subscript?: boolean
 }
 
+export type Content = Paragraph
 
-type Content = Paragraph
+export type StaticContent = StaticParagraph
 
-type StaticContent = StaticParagraph
-
-type GroupingContent = Group | OrderedList | UnorderedList
+export type GroupingContent = Group | OrderedList | UnorderedList
 
 // The statements of a document
-type FlowContent = Statement | Header | Blockquote
+export type FlowContent = Statement | Header | Blockquote
 
 // Content that is embeded from elsewhere
-type EmbeddedContent = Embed | Video | Image
+export type EmbeddedContent = Embed | Video | Image
 
 // the text and markup of a document that's not intended for
-type StaticPhrasingContent = Text
+export type StaticPhrasingContent = Text
 
 // the text and markup of a document
-type PhrasingContent = Link | StaticPhrasingContent | EmbeddedContent
+export type PhrasingContent = Link | StaticPhrasingContent | EmbeddedContent
