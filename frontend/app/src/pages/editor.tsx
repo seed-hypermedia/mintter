@@ -1,5 +1,5 @@
 import 'show-keys'
-import {useMemo, useRef, useState} from 'react'
+import {useMemo} from 'react'
 import {Box, Button, Text, TextField} from '@mintter/ui'
 import toast from 'react-hot-toast'
 import {useHistory, useParams} from 'react-router'
@@ -7,15 +7,13 @@ import {Container} from '../components/container'
 import {Separator} from '../components/separator'
 import {AppSpinner} from '../components/app-spinner'
 import {useEnableSidepanel, useSidepanel, Sidepanel} from '../components/sidepanel'
-import {Editor} from '../editor/editor'
-import {useEditorDraft} from '../editor/use-editor-draft'
-import {useMintterEditor} from '../editor/use-mintter-editor'
+import { plugins, useEditorDraft } from '../editor'
+import { Editor } from 'mixtape'
 
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
   const history = useHistory()
   const {isLoading, isError, error, data} = useEditorDraft(docId)
-  const {editor, plugins} = useMintterEditor()
 
   const [sidepanelState, sidepanelSend] = useSidepanel()
 
@@ -135,7 +133,7 @@ export default function EditorPage() {
         />
         <Separator />
         <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
-          <Editor editor={editor} plugins={plugins} value={data?.value.children} />
+          <Editor plugins={plugins} value={data?.value.children} onChange={(payload) => data.send({ type: 'children', payload })}/>
         </Box>
       </Container>
       {isSidepanelOpen && <Sidepanel gridArea="rightside" />}

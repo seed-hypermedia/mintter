@@ -1,4 +1,4 @@
-import {SlatePlugin} from '../types'
+import type {EditorPlugin} from 'mixtape'
 import {styled} from '@mintter/ui/stitches.config'
 
 export const ELEMENT_GROUP = 'group'
@@ -12,8 +12,8 @@ export const Group = styled('ul', {
   },
 })
 
-export const createGroupPlugin = (): SlatePlugin => ({
-  key: ELEMENT_GROUP,
+export const createGroupPlugin = (): EditorPlugin => ({
+  name: ELEMENT_GROUP,
   renderElement({attributes, children, element}) {
     if (element.type === ELEMENT_GROUP) {
       return <Group {...attributes}>{children}</Group>

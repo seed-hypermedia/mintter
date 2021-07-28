@@ -1,8 +1,5 @@
 import {Path, Transforms} from 'slate'
-import {BaseEditor, Location, Node, Range} from 'slate'
-import type {ReactEditor} from 'slate-react'
-import {SlatePlugin} from '../types'
-import {FlowContent, u} from '@mintter/client'
+import type {EditorPlugin} from 'mixtape'
 import {Editor} from 'slate'
 import {isFlowContent, isCollapsed, createStatement} from '../utils'
 import {styled} from '@mintter/ui/stitches.config'
@@ -13,8 +10,8 @@ const Statement = styled('li', {
   padding: 0,
 })
 
-export const createStatementPlugin = (): SlatePlugin => ({
-  key: ELEMENT_STATEMENT,
+export const createStatementPlugin = (): EditorPlugin => ({
+  name: ELEMENT_STATEMENT,
   renderElement({attributes, children, element}) {
     if (element.type === ELEMENT_STATEMENT) {
       return (

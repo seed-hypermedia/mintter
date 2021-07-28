@@ -1,6 +1,7 @@
 import {u} from '@mintter/client'
 import {nanoid} from 'nanoid'
-import {useQuery} from 'react-query'
+import {useQuery, UseQueryResult} from 'react-query'
+
 export function useEditorDraft(documentId: string): UseQueryResult<UseEditorValue> {
   // set local state
   /**

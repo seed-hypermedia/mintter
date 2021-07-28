@@ -1,5 +1,5 @@
 import {styled} from '@mintter/ui/stitches.config'
-import {SlatePlugin} from '../types'
+import type {EditorPlugin} from 'mixtape'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
@@ -10,8 +10,8 @@ const Paragraph = styled('p', {
   },
 })
 
-export const createParagraphPlugin = (): SlatePlugin => ({
-  key: ELEMENT_PARAGRAPH,
+export const createParagraphPlugin = (): EditorPlugin => ({
+  name: ELEMENT_PARAGRAPH,
   renderElement({attributes, children, element}) {
     if (element.type === ELEMENT_PARAGRAPH) {
       return <Paragraph {...attributes}>{children}</Paragraph>

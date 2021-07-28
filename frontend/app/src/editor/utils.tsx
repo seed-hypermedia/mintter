@@ -1,59 +1,40 @@
-import type {FlowContent} from 'frontend/client/src/mttast'
-import {createEditor, NodeEntry, Range} from 'slate'
-import {DefaultElement, DefaultLeaf, RenderElementProps, RenderLeafProps, withReact} from 'slate-react'
-import {SlatePlugin} from './types'
+import type {
+  Content,
+  EmbeddedContent,
+  FlowContent,
+  GroupingContent,
+  PhrasingContent,
+  StaticContent,
+  StaticPhrasingContent,
+} from 'frontend/client/src/mttast'
+import {BaseRange, Range} from 'mixtape'
 import {u} from 'unist-builder'
 import {nanoid} from 'nanoid'
+import {isPlainObject} from 'is-plain-object'
 
-export type MTTEditor = BaseEditor & ReactEditor
-
-export const buildEditor = (plugins: SlatePlugin[]): MTTEditor => {
-  return plugins
-    .flatMap(({configureEditor}) => configureEditor || [])
-    .reduce((editor, configure) => configure(editor) || editor, withReact(createEditor()))
+export function isCollapsed(range: unknown): range is Range {
+  return Range.isCollapsed(range as BaseRange)
 }
 
-export const buildRenderElement = (plugins: SlatePlugin[]) => (props: RenderElementProps) => {
-  for (const {renderElement} of plugins) {
-    const element = renderElement && renderElement(props)
-    if (element) return element
-  }
-  return <DefaultElement {...props} />
-}
-
-export const buildRenderLeaf = (plugins: SlatePlugin[]) => (props: RenderLeafProps) => {
-  const leafProps = {...props}
-
-  for (const {renderLeaf} of plugins) {
-    const newChildren = renderLeaf && renderLeaf(leafProps)
-    if (newChildren) leafProps.children = newChildren
+const includesNodeType =
+  <T extends unknown>(types: string[]) =>
+  (value: unknown): value is T => {
+    return isPlainObject(value) && types.includes((value as Record<string, string>).type)
   }
 
-  return <DefaultLeaf {...leafProps} />
-}
+export const isFlowContent = includesNodeType<FlowContent>(['blockquote', 'header', 'statement'])
 
-export const buildDecorate = (plugins: SlatePlugin[]) => (entry: NodeEntry) => {
-  let ranges: Range[] = []
+export const isGroupContent = includesNodeType<GroupingContent>(['group', 'orderedList', 'unorderedList'])
 
-  for (const {decorate} of plugins) {
-    if (!decorate) continue
-    ranges = [...ranges, ...(decorate(entry) || [])]
-  }
+export const isEmbeddedContent = includesNodeType<EmbeddedContent>(['embed', 'video', 'image'])
 
-  return ranges
-}
+export const isStaticPhrasingContent = includesNodeType<StaticPhrasingContent>(['text'])
 
-export function isCollapsed(range: Location) {
-  return Range.isCollapsed(range)
-}
+export const isPhrasingContent = includesNodeType<PhrasingContent>(['text', 'link'])
 
-export function isFlowContent(node: FlowContent) {
-  if (node.type == 'blockquote' || node.type == 'header' || node.type == 'statement') {
-    return true
-  } else {
-    return false
-  }
-}
+export const isContent = includesNodeType<Content>(['paragraph'])
+
+export const isStaticContent = includesNodeType<StaticContent>(['staticParagraph'])
 
 export function createStatement() {
   return u('statement', {id: nanoid()}, [u('paragraph', [u('text', '')])])
