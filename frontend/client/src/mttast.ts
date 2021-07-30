@@ -1,4 +1,4 @@
-import type {Parent, Literal} from 'unist'
+import type {Node, Parent, Literal} from 'unist'
 
 export interface Alternative {
   alt?: string
@@ -57,15 +57,15 @@ export interface Code extends Parent {
   children: [Content, GroupingContent] | [Content]
 }
 
-export interface Video extends Alternative, Resource {
+export interface Video extends Node, Alternative, Resource {
   type: 'video'
 }
 
-export interface Image extends Alternative, Resource {
+export interface Image extends Node, Alternative, Resource {
   type: 'image'
 }
 
-export interface Embed extends Alternative, Resource {
+export interface Embed extends Node, Alternative, Resource {
   type: 'embed'
 }
 
