@@ -86,14 +86,4 @@ export const image = createNode<Image>('image')
 
 export const video = createNode<Video>('video')
 
-export const text = (value: string, options: Omit<Text, 'type' | 'value' | 'text'> = {}): Text => ({
-  type: 'text',
-  value,
-  ...options,
-  get text() {
-    return this.value
-  },
-  set text(v: string) {
-    this.value = v
-  },
-})
+export const text = createNode<Text>('text')
