@@ -1,5 +1,5 @@
-import type {EditorPlugin} from 'mixtape'
 import {styled} from '@mintter/ui/stitches.config'
+import type {EditorPlugin} from '../types'
 
 export const ELEMENT_GROUP = 'group'
 

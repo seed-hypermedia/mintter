@@ -1,7 +1,8 @@
 import {Path, Transforms} from 'slate'
-import type {EditorPlugin} from 'mixtape'
-import {Editor} from 'slate'
-import {isFlowContent, isCollapsed, createStatement} from '../utils'
+import type {EditorPlugin} from '../types'
+import {Editor, Element} from 'slate'
+import {isFlowContent} from 'mttast'
+import {isCollapsed, createStatement} from '../utils'
 import {styled} from '@mintter/ui/stitches.config'
 
 export const ELEMENT_STATEMENT = 'statement'
@@ -34,7 +35,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
         if (parentStatement) {
           const [sNode, sPath] = parentStatement
           Editor.withoutNormalizing(editor, () => {
-            Transforms.insertNodes(editor, createStatement(), {at: Path.next(sPath)})
+            Transforms.insertNodes(editor, createStatement() as Element, {at: Path.next(sPath)})
             Transforms.select(editor, Path.next(sPath))
           })
           return

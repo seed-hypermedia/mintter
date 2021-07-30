@@ -7,8 +7,7 @@ import {Container} from '../components/container'
 import {Separator} from '../components/separator'
 import {AppSpinner} from '../components/app-spinner'
 import {useEnableSidepanel, useSidepanel, Sidepanel} from '../components/sidepanel'
-import { plugins, useEditorDraft } from '../editor'
-import { Editor } from 'mixtape'
+import {plugins, useEditorDraft, Editor} from '../editor'
 
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
@@ -133,7 +132,11 @@ export default function EditorPage() {
         />
         <Separator />
         <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
-          <Editor plugins={plugins} value={data?.value.children} onChange={(payload) => data.send({ type: 'children', payload })}/>
+          <Editor
+            plugins={plugins}
+            value={data?.value.children}
+            onChange={(payload) => data.send({type: 'children', payload})}
+          />
         </Box>
       </Container>
       {isSidepanelOpen && <Sidepanel gridArea="rightside" />}

@@ -39,7 +39,6 @@
     "date-fns": "^2.22.1",
     "framer-motion": "^4.1.17",
     "is-plain-object": "^5.0.0",
-    "mixtape": "https://github.com/mintterteam/mixtape",
     "react": "^17.0.0",
     "react-copy-to-clipboard": "^5.0.3",
     "react-dom": "^17.0.0",
