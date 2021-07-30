@@ -3,11 +3,27 @@ import type {EditorPlugin} from 'mixtape'
 import {Editor} from 'slate'
 import {isFlowContent, isCollapsed, createStatement} from '../utils'
 import {styled} from '@mintter/ui/stitches.config'
+import {Box} from '@mintter/ui/box'
 
 export const ELEMENT_STATEMENT = 'statement'
 
+const DragHandle = styled(Box, {
+  backgroundColor: '$background-muted',
+  width: 24,
+  height: 36,
+  flex: 'none',
+  opacity: 0,
+  '&:hover': {
+    cursor: 'pointer',
+    opacity: 1,
+  },
+})
+
 const Statement = styled('li', {
   padding: 0,
+  position: 'relative',
+  display: 'flex',
+  // flexDirection: 'column',
 })
 
 export const createStatementPlugin = (): EditorPlugin => ({
@@ -16,8 +32,8 @@ export const createStatementPlugin = (): EditorPlugin => ({
     if (element.type === ELEMENT_STATEMENT) {
       return (
         <Statement {...attributes}>
-          <div contentEditable={false} />
-          {children}
+          <DragHandle contentEditable={false} />
+          <Box css={{flex: 1}}>{children}</Box>
         </Statement>
       )
     }

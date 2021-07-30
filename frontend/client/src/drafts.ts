@@ -13,6 +13,8 @@ import {
 import type {Document, DocumentView} from '../.generated/documents/v1alpha/documents'
 import {createId, mockDocument} from '../mocks'
 import {createGrpcClient, GrpcClient} from './grpc-client'
+import {u} from 'unist-builder'
+import {nanoid} from 'nanoid'
 
 /**
  *
@@ -94,7 +96,14 @@ export async function publishDraft(documentId: string, rpc?: GrpcClient) {
  * @returns
  */
 export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Document> {
-  rpc ||= createGrpcClient()
-  const request = GetDraftRequest.fromPartial({documentId})
-  return await new DraftsClientImpl(rpc).GetDraft(request)
+  // rpc ||= createGrpcClient()
+  // const request = GetDraftRequest.fromPartial({documentId})
+  // return await new DraftsClientImpl(rpc).GetDraft(request)
+
+  return await Promise.resolve(
+    u('root', {title: '', subtitle: ''}, [
+      u('group', [u('statement', {id: nanoid()}, [u('paragraph', [u('text', 'first child')])])]),
+    ]),
+  )
+  // return await Promise.reject({message: 'testing error'})
 }
