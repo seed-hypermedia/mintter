@@ -1,5 +1,5 @@
-import type {Statement} from 'mttast'
-import {statement, paragraph, text} from 'mttast-builder'
+import type {Statement} from '@mintter/mttast'
+import {statement, paragraph, text} from '@mintter/mttast-builder'
 import {nanoid} from 'nanoid'
 import {BaseRange, Range} from 'slate'
 

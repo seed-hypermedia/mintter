@@ -1,5 +1,5 @@
 {
-  "name": "mttast-json-schema",
+  "name": "@mintter/mttast-schema",
   "version": "0.1.0",
   "main": "index.js",
   "license": "MIT",

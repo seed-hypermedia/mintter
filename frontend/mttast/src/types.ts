@@ -12,6 +12,8 @@ export interface Parent extends UnistParent {
 
 export interface Document extends Parent {
   type: 'document'
+  title: string
+  subtitle: string
   author?: string
   schema?: string
   stylesheet?: string
@@ -45,21 +47,25 @@ export interface StaticParagraph extends Parent {
 
 export interface Statement extends Parent {
   type: 'statement'
+  id: string
   children: [Content, GroupingContent] | [Content]
 }
 
 export interface Header extends Parent {
   type: 'header'
+  id: string
   children: [Content, GroupingContent] | [Content]
 }
 
 export interface Blockquote extends Parent {
   type: 'blockquote'
+  id: string
   children: [Content, GroupingContent] | [Content]
 }
 
 export interface Code extends Parent {
   type: 'code'
+  id: string
   lang?: string
   meta?: string
   children: [Content, GroupingContent] | [Content]
@@ -67,6 +73,7 @@ export interface Code extends Parent {
 
 export interface Callout extends Parent {
   type: 'callout'
+  id: string
   children: [Content, GroupingContent] | [Content]
 }
 

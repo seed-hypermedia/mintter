@@ -62,6 +62,7 @@
     "xstate": "^4.20.0"
   },
   "devDependencies": {
+    "@mintter/mttast-builder": "^0.1.0",
     "@testing-library/jest-dom": "^5.13.0",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^13.1.9",

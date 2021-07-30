@@ -17,22 +17,22 @@ type Document = {
   children: [GroupingContent]
 }
 
-type DRAFT_FETCH_EVENT = {
+export type DRAFT_FETCH_EVENT = {
   type: 'FETCH'
   documentId: string
 }
 
-type DRAFT_UPDATE_EVENT = {
+export type DRAFT_UPDATE_EVENT = {
   type: 'UPDATE'
   payload: Partial<Document>
 }
 
-type DRAFT_RECEIVE_DATA_EVENT = {
+export type DRAFT_RECEIVE_DATA_EVENT = {
   type: 'RECEIVE_DATA'
   data: Document
 }
 
-type DraftEditorMachineEvent =
+export type DraftEditorMachineEvent =
   | DRAFT_FETCH_EVENT
   | DRAFT_RECEIVE_DATA_EVENT
   | DRAFT_UPDATE_EVENT
@@ -43,14 +43,14 @@ type DraftEditorMachineEvent =
       type: 'PUBLISH'
     }
 
-type DraftEditorMachineContext = {
+export type DraftEditorMachineContext = {
   retries: number
   prevDraft: Document | null
   localDraft: Document | null
   errorMessage?: string
 }
 
-const draftEditorMachine = ({actions}) =>
+const draftEditorMachine = ({afterSave, afterPublish}) =>
   createMachine<DraftEditorMachineContext, DraftEditorMachineEvent>(
     {
       id: 'editor',
@@ -134,7 +134,7 @@ const draftEditorMachine = ({actions}) =>
               after: {
                 1000: {
                   target: 'idle',
-                  actions: 'saveDraft',
+                  actions: ['saveDraft'],
                 },
               },
             },
@@ -143,12 +143,17 @@ const draftEditorMachine = ({actions}) =>
         published: {
           id: 'published',
           type: 'final',
+          entry: ['afterPublish'],
         },
       },
     },
     {
       services: {
-        fetchData: (context, event) => () => getDraft(event.documentId),
+        fetchData: (context, event) => async () => {
+          const result = await getDraft(event.documentId)
+          console.log('🚀 ~ file: use-editor-draft.ts ~ line 154 ~ fetchData: ~ result', result)
+          return result
+        },
       },
       actions: {
         updateValueToContext: assign({
@@ -176,13 +181,17 @@ const draftEditorMachine = ({actions}) =>
             errorMessage: event.data?.message || 'An unknown error occurred',
           }
         }),
-        ...actions,
+        saveDraft: assign((context, event) => {
+          // save to backend
+          afterSave(context, event)
+        }),
+        afterPublish,
       },
     },
   )
 
-export function useEditorDraft(documentId: string, options) {
-  const [state, send] = useMachine(draftEditorMachine(options))
+export function useEditorDraft({documentId, ...afterActions}) {
+  const [state, send] = useMachine(draftEditorMachine(afterActions))
   useEffect(() => {
     if (documentId) {
       send({type: 'FETCH', documentId})

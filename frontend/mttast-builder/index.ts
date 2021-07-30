@@ -16,10 +16,11 @@ import type {
   Image,
   Video,
   Document,
-} from 'mttast'
+} from '@mintter/mttast'
+import {nanoid} from 'nanoid'
 
 type ChildrenOf<N extends Parent> = N['children'] | (() => N['children'])
-type OptionsOf<N extends Node> = Omit<N, 'type' | 'children'> & Record<string, unknown>
+type OptionsOf<N extends Node> = Omit<N, 'type' | 'children'>
 
 function normalizeChildren<P extends Parent>(children?: ChildrenOf<P>): P['children'] {
   if (Array.isArray(children)) {
@@ -32,13 +33,16 @@ function normalizeChildren<P extends Parent>(children?: ChildrenOf<P>): P['child
   }
 }
 
-function createParent<N extends Parent>(type: N['type']) {
-  return (optsOrKids: OptionsOf<N> | ChildrenOf<N>, kids?: ChildrenOf<N>): N =>
-    ({
+function createParent<N extends Parent>(type: N['type'], defaults: Partial<OptionsOf<N>> = {}) {
+  return (optsOrKids: OptionsOf<N> | ChildrenOf<N>, kids?: ChildrenOf<N>): N => {
+    console.log('parent call', {type, optsOrKids, kids})
+    return {
       type,
+      ...defaults,
       ...(kids ? optsOrKids : {}),
-      children: normalizeChildren(kids),
-    } as N)
+      children: normalizeChildren(Array.isArray(optsOrKids) ? optsOrKids : kids),
+    } as N
+  }
 }
 
 function createNode<N extends Node>(type: N['type']) {
@@ -49,17 +53,21 @@ function createNode<N extends Node>(type: N['type']) {
     } as N)
 }
 
-export const document = createParent<Document>('document')
+export function createId() {
+  return nanoid(8)
+}
 
-export const statement = createParent<Statement>('statement')
+export const document = createParent<Document>('document', {title: '', subtitle: ''})
 
-export const header = createParent<Header>('header')
+export const statement = createParent<Statement>('statement', {id: createId()})
 
-export const blockquote = createParent<Blockquote>('blockquote')
+export const header = createParent<Header>('header', {id: createId()})
 
-export const code = createParent<Code>('code')
+export const blockquote = createParent<Blockquote>('blockquote', {id: createId()})
 
-export const callout = createParent<Callout>('callout')
+export const code = createParent<Code>('code', {id: createId()})
+
+export const callout = createParent<Callout>('callout', {id: createId()})
 
 export const group = createParent<Group>('group')
 

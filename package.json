@@ -17,6 +17,9 @@
     "ui": "yarn workspace @mintter/ui",
     "app": "yarn workspace @mintter/app",
     "client": "yarn workspace @mintter/client",
+    "mttast": "yarn workspace @mintter/mttast",
+    "builder": "yarn workspace @mintter/mttast-builder",
+    "schema": "yarn workspace @mintter/mttast-schema",
     "clean": "gn gen out",
     "prepare": "husky install"
   },

@@ -7,27 +7,25 @@ import {Container} from '../components/container'
 import {Separator} from '../components/separator'
 import {AppSpinner} from '../components/app-spinner'
 import {useEnableSidepanel, useSidepanel, Sidepanel} from '../components/sidepanel'
-import {plugins, useEditorDraft, Editor} from '../editor'
+import {plugins, useEditorDraft, Editor, DraftEditorMachineContext} from '../editor'
 import {assign} from 'xstate'
 
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
   const history = useHistory()
-  const [state, send] = useEditorDraft(docId, {
-    actions: {
-      saveDraft: assign(async (context, event) => {
-        // save to backend
-
-        const saved = true
-        toast.success('Draft saved!', {position: 'top-center', duration: 4000})
-        return {
-          prevDraft: context.localDraft,
-        }
-      }),
+  const [state, send] = useEditorDraft({
+    documentId: docId,
+    afterSave: (context, event) => {
+      console.log('after save called!', context)
+      toast.success('Draft saved!', {position: 'top-center', duration: 4000})
+    },
+    afterPublish: (context: DraftEditorMachineContext, event) => {
+      history.push(`/p/${context.prevDraft?.id}`)
     },
   })
 
   const {context} = state
+  console.log('🚀 ~ file: editor.tsx ~ line 30 ~ EditorPage ~ context', context)
 
   const [sidepanelState, sidepanelSend] = useSidepanel()
 
@@ -159,10 +157,17 @@ export default function EditorPage() {
             }}
           />
           <Separator />
-          <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
+          <Box
+            css={
+              {
+                // marginLeft: '-48px',
+                // backgroundColor: 'green'
+              }
+            }
+          >
             <Editor
               plugins={plugins}
-              value={context.localDraft?.children || []}
+              value={context.localDraft?.children}
               onChange={(value) =>
                 send({
                   type: 'UPDATE',

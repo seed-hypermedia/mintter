@@ -15,6 +15,7 @@ import {createId, mockDocument} from '../mocks'
 import {createGrpcClient, GrpcClient} from './grpc-client'
 import {u} from 'unist-builder'
 import {nanoid} from 'nanoid'
+import {document, statement, paragraph, text, group} from '@mintter/mttast-builder'
 
 /**
  *
@@ -100,10 +101,13 @@ export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Do
   // const request = GetDraftRequest.fromPartial({documentId})
   // return await new DraftsClientImpl(rpc).GetDraft(request)
 
+  // return await Promise.resolve(document([statement([paragraph([text('hello world')])])]))
+
   return await Promise.resolve(
-    u('root', {title: '', subtitle: ''}, [
-      u('group', [u('statement', {id: nanoid()}, [u('paragraph', [u('text', 'first child')])])]),
+    document([
+      statement([paragraph([text('hello world')]), group([statement([paragraph([text('hello nested statement')])])])]),
     ]),
   )
+
   // return await Promise.reject({message: 'testing error'})
 }
