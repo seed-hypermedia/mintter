@@ -21,9 +21,7 @@
     "prepare": "husky install"
   },
   "workspaces": [
-    "frontend/app",
-    "frontend/client",
-    "frontend/ui"
+    "frontend/*"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.16.0",
