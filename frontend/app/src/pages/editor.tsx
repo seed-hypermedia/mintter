@@ -109,7 +109,7 @@ export default function EditorPage() {
             data-testid="editor_title"
             name="title"
             placeholder="Document title"
-            value={context.localDraft.title}
+            value={context.localDraft?.title}
             onChange={(event) =>
               send({
                 type: 'UPDATE',
@@ -138,7 +138,7 @@ export default function EditorPage() {
             data-testid="editor_subtitle"
             name="subtitle"
             placeholder="about this publication..."
-            value={context.localDraft.subtitle}
+            value={context.localDraft?.subtitle}
             onChange={(event) =>
               send({
                 type: 'UPDATE',
@@ -162,7 +162,7 @@ export default function EditorPage() {
           <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
             <Editor
               plugins={plugins}
-              value={context.localDraft.children}
+              value={context.localDraft?.children || []}
               onChange={(value) =>
                 send({
                   type: 'UPDATE',

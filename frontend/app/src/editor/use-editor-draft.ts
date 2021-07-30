@@ -188,5 +188,5 @@ export function useEditorDraft(documentId: string, options) {
       send({type: 'FETCH', documentId})
     }
   }, [])
-  return [state, send]
+  return [state, send] as const
 }
