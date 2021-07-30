@@ -6,7 +6,7 @@ export const ELEMENT_GROUP = 'group'
 export const Group = styled('ul', {
   margin: 0,
   padding: 0,
-  paddingLeft: '$6',
+  paddingLeft: '$5',
   '& > li': {
     listStyle: 'none',
   },
