@@ -10,7 +10,7 @@ import type {
   FlowContent,
   Group,
   GroupingContent,
-  Header,
+  Heading,
   Link,
   OrderedList,
   Paragraph,
@@ -37,7 +37,7 @@ const isType =
     return isPlainObject(value) && (value as Record<string, unknown>).type === type
   }
 
-export const isFlowContent = isOneOfTypes<FlowContent>(['blockquote', 'header', 'statement'])
+export const isFlowContent = isOneOfTypes<FlowContent>(['blockquote', 'heading', 'statement'])
 
 export const isGroupContent = isOneOfTypes<GroupingContent>(['group', 'orderedList', 'unorderedList'])
 
@@ -65,7 +65,7 @@ export const isStaticParagraph = isType<StaticParagraph>('staticParagraph')
 
 export const isStatement = isType<Statement>('statement')
 
-export const isHeader = isType<Header>('header')
+export const isHeading = isType<Heading>('heading')
 
 export const isBlockquote = isType<Blockquote>('blockquote')
 

@@ -15,7 +15,7 @@ import {createId, mockDocument} from '../mocks'
 import {createGrpcClient, GrpcClient} from './grpc-client'
 import {u} from 'unist-builder'
 import {nanoid} from 'nanoid'
-import {document, statement, paragraph, text, group} from '@mintter/mttast-builder'
+import {document, statement, paragraph, text, group, heading, staticParagraph, ul} from '@mintter/mttast-builder'
 
 /**
  *
@@ -103,9 +103,27 @@ export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Do
 
   // return await Promise.resolve(document([statement([paragraph([text('hello world')])])]))
 
+  // return await Promise.resolve(
+  //   document([
+  //     statement([paragraph([text('hello world')]), group([statement([paragraph([text('hello nested statement')])])])]),
+  //   ]),
+  // )
+
+  // return await Promise.resolve(document([statement([paragraph([text('')])])]))
+
   return await Promise.resolve(
     document([
-      statement([paragraph([text('hello world')]), group([statement([paragraph([text('hello nested statement')])])])]),
+      group([
+        statement([paragraph([text('first item')])]),
+        heading([
+          staticParagraph([text('heading text')]),
+          ul([
+            statement([paragraph([text('item 1')])]),
+            statement([paragraph([text('item 2')])]),
+            statement([paragraph([text('item 3')])]),
+          ]),
+        ]),
+      ]),
     ]),
   )
 

@@ -1,14 +1,18 @@
-// TODO
 /**
- * remove custom hook
- * implement fetch inside the service
+ *
+ *
+ * TODOS:
+ * - loosing focus from editor when save
+ *
  */
+
+import {useEffect, useMemo, useReducer} from 'react'
 import {FlowContent, getDraft, GroupingContent, u} from '@mintter/client'
 import {useMachine} from '@xstate/react'
 import {assign, createMachine} from 'xstate'
 import type {Descendant} from 'mixtape'
 import {nanoid} from 'nanoid'
-import {useEffect, useMemo, useReducer} from 'react'
+import isEqual from 'lodash.isequal'
 
 type Document = {
   id: string
@@ -114,9 +118,10 @@ const draftEditorMachine = ({afterSave, afterPublish}) =>
           initial: 'idle',
           states: {
             idle: {
+              entry: 'checkContext',
               on: {
                 UPDATE: {
-                  actions: 'updateValueToContext',
+                  actions: ['updateValueToContext'],
                   target: 'debouncing',
                 },
                 PUBLISH: {
@@ -127,14 +132,32 @@ const draftEditorMachine = ({afterSave, afterPublish}) =>
             debouncing: {
               on: {
                 UPDATE: {
-                  actions: 'updateValueToContext',
+                  actions: ['updateValueToContext'],
                   target: 'debouncing',
                 },
               },
               after: {
-                1000: {
+                1000: [
+                  {
+                    target: 'saving',
+                    cond: 'isValueDirty',
+                  },
+                  {
+                    target: 'idle',
+                  },
+                ],
+              },
+            },
+            saving: {
+              invoke: {
+                src: 'saveDraft',
+                onDone: {
                   target: 'idle',
-                  actions: ['saveDraft'],
+                  actions: ['afterSave', 'assignDataToContext'],
+                },
+                onError: {
+                  target: 'idle',
+                  actions: ['assignErrorToContext'],
                 },
               },
             },
@@ -148,11 +171,22 @@ const draftEditorMachine = ({afterSave, afterPublish}) =>
       },
     },
     {
+      guards: {
+        isValueDirty: (context) => {
+          return !isEqual(context.localDraft, context.prevDraft)
+        },
+      },
       services: {
+        checkContext: (context, event) => {
+          console.log('checking!!', {context, event})
+        },
         fetchData: (context, event) => async () => {
-          const result = await getDraft(event.documentId)
-          console.log('🚀 ~ file: use-editor-draft.ts ~ line 154 ~ fetchData: ~ result', result)
-          return result
+          const res = await getDraft(event.documentId)
+          console.log({res})
+          return res
+        },
+        saveDraft: (context, event) => () => {
+          return saveDraft(context.localDraft)
         },
       },
       actions: {
@@ -165,7 +199,7 @@ const draftEditorMachine = ({afterSave, afterPublish}) =>
           },
         }),
         assignDataToContext: assign((context, event) => {
-          console.log('assignDataToContext', event.type)
+          console.log('assignDataToContext', event)
           // if (event.type !== 'RECEIVE_DATA') return {}
           return {
             prevDraft: (event as DRAFT_RECEIVE_DATA_EVENT).data,
@@ -181,21 +215,23 @@ const draftEditorMachine = ({afterSave, afterPublish}) =>
             errorMessage: event.data?.message || 'An unknown error occurred',
           }
         }),
-        saveDraft: assign((context, event) => {
-          // save to backend
-          afterSave(context, event)
-        }),
         afterPublish,
+        afterSave,
       },
     },
   )
 
 export function useEditorDraft({documentId, ...afterActions}) {
-  const [state, send] = useMachine(draftEditorMachine(afterActions))
+  const [state, send] = useMachine(draftEditorMachine(afterActions), {devTools: true})
   useEffect(() => {
     if (documentId) {
       send({type: 'FETCH', documentId})
     }
   }, [])
   return [state, send] as const
+}
+
+// TODO: change with RPC call
+async function saveDraft(data) {
+  return await Promise.resolve(data)
 }

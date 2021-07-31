@@ -51,8 +51,8 @@ export interface Statement extends Parent {
   children: [Content, GroupingContent] | [Content]
 }
 
-export interface Header extends Parent {
-  type: 'header'
+export interface Heading extends Parent {
+  type: 'heading'
   id: string
   children: [Content, GroupingContent] | [Content]
 }
@@ -125,7 +125,7 @@ export type StaticContent = StaticParagraph
 export type GroupingContent = Group | OrderedList | UnorderedList
 
 // The statements of a document
-export type FlowContent = Statement | Header | Blockquote
+export type FlowContent = Statement | Heading | Blockquote
 
 // Content that is embeded from elsewhere
 export type EmbeddedContent = Embed | Video | Image

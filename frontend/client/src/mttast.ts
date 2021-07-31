@@ -67,7 +67,7 @@ export interface Statement extends Parent {
   children: [Content, GroupingContent?]
 }
 
-export interface Header extends Parent {
+export interface Heading extends Parent {
   type: 'header'
   children: [StaticContent, GroupingContent?]
 }

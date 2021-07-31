@@ -56,6 +56,7 @@ export default function EditorPage() {
   }
 
   if (state.matches('editing.idle') || state.matches('editing.debouncing')) {
+    console.log('editor page context', context)
     return (
       <Box
         css={{

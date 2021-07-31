@@ -5,6 +5,7 @@ import {isFlowContent} from '@mintter/mttast'
 import {isCollapsed, createStatement} from '../utils'
 import {styled} from '@mintter/ui/stitches.config'
 import {Box} from '@mintter/ui/box'
+import {createId, statement} from 'frontend/mttast-builder/dist'
 
 export const ELEMENT_STATEMENT = 'statement'
 
@@ -17,7 +18,6 @@ const DragHandle = styled(Box, {
   width: 24,
   height: 36,
   flex: 'none',
-  // backgroundColor: 'red',
   opacity: 0,
   '&:hover': {
     cursor: 'pointer',
@@ -27,10 +27,10 @@ const DragHandle = styled(Box, {
 
 const Statement = styled('li', {
   padding: 0,
+  paddingLeft: '$5',
   position: 'relative',
   display: 'flex',
   gap: '$3',
-  // flexDirection: 'column',
 })
 
 export const createStatementPlugin = (): EditorPlugin => ({
@@ -51,6 +51,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
     const {insertBreak} = editor
 
     editor.insertBreak = () => {
+      console.log('insertBreak: start')
       const {selection} = editor
       if (isCollapsed(selection)) {
         const parentStatement = Editor.above(editor, {
@@ -58,9 +59,33 @@ export const createStatementPlugin = (): EditorPlugin => ({
         })
         if (parentStatement) {
           const [sNode, sPath] = parentStatement
+          const isEnd = Editor.isEnd(editor, selection.focus, sPath)
+          const isStart = Editor.isStart(editor, selection.focus, sPath)
+
+          if (isStart) {
+            // create statement at same path
+            Editor.withoutNormalizing(editor, () => {
+              Transforms.insertNodes(editor, createStatement() as Element, {at: sPath})
+              Transforms.select(editor, Editor.start(editor, Editor.start(editor, Path.next(sPath))))
+            })
+            return
+          }
+
+          if (isEnd) {
+            // create new statement at next path
+            Editor.withoutNormalizing(editor, () => {
+              Transforms.insertNodes(editor, createStatement() as Element, {at: Path.next(sPath)})
+              Transforms.select(editor, Path.next(sPath))
+            })
+            return
+          }
+
+          // if selection is in the middle, split paragraph and create statement at next path
           Editor.withoutNormalizing(editor, () => {
-            Transforms.insertNodes(editor, createStatement() as Element, {at: Path.next(sPath)})
-            Transforms.select(editor, Path.next(sPath))
+            Transforms.splitNodes(editor)
+            const newParagraphPath = [...sPath, 1]
+            Transforms.wrapNodes(editor, statement({id: createId()}, []), {at: newParagraphPath})
+            Transforms.moveNodes(editor, {at: newParagraphPath, to: Path.next(sPath)})
           })
           return
         }

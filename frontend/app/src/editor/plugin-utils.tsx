@@ -17,6 +17,14 @@ export function buildRenderElementHook(
   return function SlateElement(props: RenderElementProps) {
     for (const renderElement of hooks) {
       const element = renderElement(props)
+      if (props.element.type == 'heading') {
+        console.log('🚀 ~ file: plugin-utils.tsx ~ line 20 ~ SlateElement ~ element', {
+          data: props.element,
+          props,
+          element,
+        })
+      }
+
       if (element) return element
     }
     return <DefaultElement {...props} />

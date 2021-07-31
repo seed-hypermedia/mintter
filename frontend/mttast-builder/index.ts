@@ -3,7 +3,7 @@ import type {
   Blockquote,
   Code,
   Group,
-  Header,
+  Heading,
   OrderedList,
   Paragraph,
   Statement,
@@ -60,7 +60,7 @@ export const document = createParent<Document>('document', {title: '', subtitle:
 
 export const statement = createParent<Statement>('statement', {id: createId()})
 
-export const header = createParent<Header>('header', {id: createId()})
+export const heading = createParent<Heading>('heading', {id: createId()})
 
 export const blockquote = createParent<Blockquote>('blockquote', {id: createId()})
 
@@ -86,4 +86,14 @@ export const image = createNode<Image>('image')
 
 export const video = createNode<Video>('video')
 
-export const text = createNode<Text>('text')
+export const text = (value: string, options: Omit<Text, 'type' | 'value' | 'text'> = {}): Text => ({
+  type: 'text',
+  value,
+  ...options,
+  get text() {
+    return this.value
+  },
+  set text(v: string) {
+    this.value = v
+  },
+})
