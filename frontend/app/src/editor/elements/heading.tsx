@@ -5,9 +5,11 @@ import type {EditorPlugin} from '../types'
 export const ELEMENT_HEADING = 'heading'
 
 export const Heading = styled('div', {
-  fontSize: '$7',
-  fontWeight: '$bold',
-  lineHeight: '$3',
+  '& > span': {
+    fontSize: '$7',
+    fontWeight: '$bold',
+    lineHeight: '$3',
+  },
 })
 
 export const createHeadingPlugin = (): EditorPlugin => ({
@@ -17,4 +19,20 @@ export const createHeadingPlugin = (): EditorPlugin => ({
       return <Heading {...attributes}>{children}</Heading>
     }
   },
+  configureEditor: editor => {
+    /**
+     * TODO: override insertBreak
+     * - if Start: ???
+     * - if End:
+     *  - create a group
+     *  - create a statement
+     *  - select child statement
+     * - if Middle:
+     *  - break static paragraph
+     *  - move text into new paragraph
+     *  - wrap paragraph in a statement
+     *  - wrap statement in a group (should be in the correct position: second child of heading)
+     *  
+     */
+  }
 })
