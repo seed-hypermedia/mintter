@@ -12,7 +12,7 @@ export function createUnderlinePlugin(): EditorPlugin {
     key: MARK_UNDERLINE,
     renderLeaf({attributes, children, leaf}) {
       if (leaf[MARK_UNDERLINE] && leaf.value) {
-        return <Underline {...attributes}>{children}</Underline>
+        return <u {...attributes}>{children}</u>
       }
     },
   }

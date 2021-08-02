@@ -12,6 +12,7 @@ import {createUnderlinePlugin} from './leafs/underline'
 import {createStrikethroughPlugin} from './leafs/strikethrough'
 import {createSuperscriptPlugin} from './leafs/superscript'
 import {createSubscriptPlugin} from './leafs/subscript'
+import {createHoveringToolbarPlugin} from './hovering-toolbar'
 
 export const plugins: Array<EditorPlugin> = [
   createGroupPlugin(),
@@ -27,6 +28,7 @@ export const plugins: Array<EditorPlugin> = [
   createStrikethroughPlugin(),
   createSuperscriptPlugin(),
   createSubscriptPlugin(),
+  createHoveringToolbarPlugin(),
 ]
 
 export * from './editor'

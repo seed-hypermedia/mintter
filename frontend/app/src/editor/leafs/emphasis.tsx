@@ -7,7 +7,7 @@ export function createEmphasisPlugin(): EditorPlugin {
     key: MARK_EMPHASIS,
     renderLeaf({attributes, children, leaf}) {
       if (leaf[MARK_EMPHASIS] && leaf.value) {
-        return <i {...attributes}>{children}</i>
+        return <em {...attributes}>{children}</em>
       }
     },
   }

@@ -144,15 +144,15 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
                 },
               },
               after: {
-                1000: [
-                  {
-                    target: 'saving',
-                    cond: 'isValueDirty',
-                  },
-                  {
-                    target: 'idle',
-                  },
-                ],
+                // 1000: [
+                //   {
+                //     target: 'saving',
+                //     cond: 'isValueDirty',
+                //   },
+                //   {
+                //     target: 'idle',
+                //   },
+                // ],
               },
             },
             saving: {

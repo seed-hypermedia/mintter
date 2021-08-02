@@ -93,7 +93,7 @@ export interface Link extends Resource {
   type: 'link'
 }
 
-export interface Text extends Literal {
+export type Text = Literal & {
   type: 'text'
   strong?: boolean
   emphasis?: boolean

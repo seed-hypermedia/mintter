@@ -1,11 +1,12 @@
-import {createEditor, NodeEntry, Editor, Range} from 'slate'
-import {withReact, RenderElementProps, RenderLeafProps, DefaultElement, DefaultLeaf} from 'slate-react'
+import {createEditor, NodeEntry, Editor, Range, BaseEditor} from 'slate'
+import {withHistory} from 'slate-history'
+import {withReact, RenderElementProps, RenderLeafProps, DefaultElement, DefaultLeaf, ReactEditor} from 'slate-react'
 import type {EditorEventHandlers, EditorPlugin} from './types'
 
 export function buildEditorHook(plugins: EditorPlugin[]): Editor {
   const hooks = plugins.flatMap(({configureEditor}) => configureEditor || [])
 
-  return hooks.reduce((editor, configure) => configure(editor) || editor, withReact(createEditor()))
+  return hooks.reduce((editor, configure) => configure(editor) || editor, withHistory(withReact(createEditor())))
 }
 
 export function buildRenderElementHook(
@@ -17,14 +18,6 @@ export function buildRenderElementHook(
   return function SlateElement(props: RenderElementProps) {
     for (const renderElement of hooks) {
       const element = renderElement(props)
-      if (props.element.type == 'heading') {
-        console.log('🚀 ~ file: plugin-utils.tsx ~ line 20 ~ SlateElement ~ element', {
-          data: props.element,
-          props,
-          element,
-        })
-      }
-
       if (element) return element
     }
     return <DefaultElement {...props} />
@@ -57,12 +50,14 @@ export function buildDecorateHook(plugins: EditorPlugin[]): ((entry: NodeEntry) 
 export function buildEventHandlerHook(
   plugins: EditorPlugin[],
   event: keyof EditorEventHandlers,
+  editor: BaseEditor & ReactEditor,
 ): ((props: unknown) => void) | undefined {
   const hooks = plugins.flatMap((p) => p[event] || [])
-  if (!hooks.length) return undefined
 
+  if (!hooks.length) return undefined
+  console.log('🚀 ~ file: plugin-utils.tsx ~ line 54 ~ hooks', hooks)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (ev: any) => hooks.forEach((h) => h(ev))
+  return (ev: any) => hooks.forEach((h) => h(ev, editor))
 }
 
 export function getUsedEventHandlers(plugins: EditorPlugin[]): Array<keyof EditorEventHandlers> {
