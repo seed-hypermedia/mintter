@@ -9,10 +9,11 @@
 import {useEffect, useMemo, useReducer} from 'react'
 import {FlowContent, getDraft, GroupingContent, u} from '@mintter/client'
 import {useMachine} from '@xstate/react'
-import {assign, createMachine} from 'xstate'
+import {ActionFunction, assign, createMachine} from 'xstate'
 import type {Descendant} from 'mixtape'
 import {nanoid} from 'nanoid'
 import isEqual from 'lodash.isequal'
+import {QueryClient, useQueryClient} from 'react-query'
 
 type Document = {
   id: string
@@ -54,7 +55,13 @@ export type DraftEditorMachineContext = {
   errorMessage?: string
 }
 
-const draftEditorMachine = ({afterSave, afterPublish}) =>
+interface DraftEditorMachineProps {
+  afterSave: ActionFunction
+  afterPublish: ActionFunction
+  client: QueryClient
+}
+
+const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachineProps) =>
   createMachine<DraftEditorMachineContext, DraftEditorMachineEvent>(
     {
       id: 'editor',
@@ -92,7 +99,7 @@ const draftEditorMachine = ({afterSave, afterPublish}) =>
         fetching: {
           id: 'fetching',
           on: {
-            FETCH: 'fetching',
+            FETCH: {},
             CANCEL: {
               target: 'idle',
             },
@@ -180,10 +187,11 @@ const draftEditorMachine = ({afterSave, afterPublish}) =>
         checkContext: (context, event) => {
           console.log('checking!!', {context, event})
         },
-        fetchData: (context, event) => async () => {
-          const res = await getDraft(event.documentId)
-          console.log({res})
-          return res
+        fetchData: (context, event) => () => {
+          return client.fetchQuery(['Draft', event.documentId], async ({queryKey}) => {
+            const [_key, draftId] = queryKey
+            return await await getDraft(draftId)
+          })
         },
         saveDraft: (context, event) => () => {
           return saveDraft(context.localDraft)
@@ -222,7 +230,9 @@ const draftEditorMachine = ({afterSave, afterPublish}) =>
   )
 
 export function useEditorDraft({documentId, ...afterActions}) {
-  const [state, send] = useMachine(draftEditorMachine(afterActions), {devTools: true})
+  const client = useQueryClient()
+  const [state, send] = useMachine(draftEditorMachine({...afterActions, client}), {devTools: true})
+  // TODO: refactor machint to use queryClient in the services
   useEffect(() => {
     if (documentId) {
       send({type: 'FETCH', documentId})
