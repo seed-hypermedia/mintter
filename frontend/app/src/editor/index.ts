@@ -6,6 +6,12 @@ import {createStatementPlugin} from './elements/statement'
 import {createStaticParagraphPlugin} from './elements/static-paragraph'
 import {createUnorderedListPlugin} from './elements/unordered-list'
 import type {EditorPlugin} from './types'
+import {createStrongPlugin} from './leafs/strong'
+import {createEmphasisPlugin} from './leafs/emphasis'
+import {createUnderlinePlugin} from './leafs/underline'
+import {createStrikethroughPlugin} from './leafs/strikethrough'
+import {createSuperscriptPlugin} from './leafs/superscript'
+import {createSubscriptPlugin} from './leafs/subscript'
 
 export const plugins: Array<EditorPlugin> = [
   createGroupPlugin(),
@@ -15,6 +21,12 @@ export const plugins: Array<EditorPlugin> = [
   createStaticParagraphPlugin(),
   createStatementPlugin(),
   createParagraphPlugin(),
+  createStrongPlugin(),
+  createEmphasisPlugin(),
+  createUnderlinePlugin(),
+  createStrikethroughPlugin(),
+  createSuperscriptPlugin(),
+  createSubscriptPlugin(),
 ]
 
 export * from './editor'

@@ -114,13 +114,13 @@ export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Do
   return await Promise.resolve(
     document([
       group([
-        statement([paragraph([text('first item')])]),
+        statement([paragraph([text('first '), text('item in bold', {strong: true})])]),
         heading([
           staticParagraph([text('heading text')]),
           ul([
-            statement([paragraph([text('item 1')])]),
-            statement([paragraph([text('item 2')])]),
-            statement([paragraph([text('item 3')])]),
+            statement([paragraph([text('item 1', {emphasis: true, underline: true})])]),
+            statement([paragraph([text('item 2', {strikethrough: true}), text('superscript', {superscript: true})])]),
+            statement([paragraph([text('item 3'), text('subscript', {subscript: true})])]),
           ]),
         ]),
       ]),
