@@ -109,7 +109,7 @@ export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Do
   //   ]),
   // )
 
-  // return await Promise.resolve(document([statement([paragraph([text('')])])]))
+  return await Promise.resolve(document([statement([paragraph([text('Hello world')])])]))
 
   // return await Promise.resolve(
   //   document([
@@ -129,7 +129,7 @@ export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Do
 
   // return await Promise.reject({message: 'testing error'})
 
-  return await Promise.resolve(allNodes)
+  // return await Promise.resolve(allNodes)
 }
 
 var allNodes = u(

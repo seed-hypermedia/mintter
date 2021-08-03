@@ -6,6 +6,11 @@ import {Editor, Transforms, Text, Range} from 'slate'
 import {useEditor, ReactEditor} from 'slate-react'
 import type {EditorPlugin} from './types'
 import {Box} from '@mintter/ui/box'
+import {Tooltip} from '../components/tooltip'
+import {Button} from '@mintter/ui/button'
+import {Icon} from '@mintter/ui/icon'
+import {isCollapsed} from './utils'
+import {text} from 'frontend/mttast-builder/dist'
 
 export function createHoveringToolbarPlugin(): EditorPlugin {
   // TODO: not working properly, it changed the whole line format and do not respect the current selection. check how udecode is doing it
@@ -20,6 +25,7 @@ export function createHoveringToolbarPlugin(): EditorPlugin {
           event.preventDefault()
           return toggleFormat(editor, 'emphasis')
         case 'formatUnderline':
+          console.log('formatUnderline!')
           event.preventDefault()
           return toggleFormat(editor, 'underline')
       }
@@ -31,31 +37,55 @@ type FormatTypes = keyof Omit<MTTText, 'type' | 'text' | 'value' | 'data' | 'pos
 
 export function toggleFormat(editor: BaseEditor & ReactEditor, format: FormatTypes) {
   const isActive = isFormatActive(editor, format)
-  Transforms.setNodes(editor, {[format]: isActive ? null : true}, {match: Text.isText, split: true})
+  if (isCollapsed(editor.selection)) {
+    console.log('toggleFormat: selection collapsed!')
+    if (isActive) {
+      editor.removeMark(format)
+    } else {
+      editor.addMark(format, true)
+    }
+
+    // Transforms.insertNodes(editor, text('', {[format]: !isActive}))
+  } else {
+    console.log('toggleFormat: selection is not collapsed!')
+    Transforms.setNodes(editor, {[format]: !isActive}, {match: Text.isText, split: true})
+  }
 }
 
 export function isFormatActive(editor: BaseEditor & ReactEditor, format: FormatTypes) {
   const [match] = Editor.nodes(editor, {
-    match: (n) => n[format] === true,
+    match: (n) => n[format],
     mode: 'all',
   })
   return !!match
 }
 
-const FormatButton = ({format}) => {
+const FormatButton = ({format}: {format: FormatTypes}) => {
   const editor = useEditor()
+  const iconName = useMemo(() => capitalize(format), [format])
   return (
-    <button
-      reversed
-      active={isFormatActive(editor, format)}
-      onMouseDown={(event) => {
-        console.log('mouse down!', event)
-        event.preventDefault()
-        toggleFormat(editor, format)
-      }}
-    >
-      <span>{format}</span>
-    </button>
+    <Tooltip content={format}>
+      <Button
+        css={
+          isFormatActive(editor, format)
+            ? {
+                backgroundColor: '$background-opposite',
+                color: '$text-opposite',
+              }
+            : {}
+        }
+        onMouseDown={(event) => {
+          console.log('mouse down!', event)
+          event.preventDefault()
+          toggleFormat(editor, format)
+        }}
+        variant="ghost"
+        size="1"
+        color="muted"
+      >
+        <Icon name={iconName} />
+      </Button>
+    </Tooltip>
   )
 }
 
@@ -122,10 +152,14 @@ export function HoveringToolbar() {
   return (
     <Portal>
       <Menu ref={ref}>
-        <FormatButton format="bold" />
-        <FormatButton format="italic" />
-        <FormatButton format="underlined" />
+        <FormatButton format="strong" />
+        <FormatButton format="emphasis" />
+        <FormatButton format="underline" />
       </Menu>
     </Portal>
   )
+}
+
+function capitalize(word: string): string {
+  return `${word[0].toUpperCase()}${word.slice(1)}`
 }

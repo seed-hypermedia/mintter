@@ -104,8 +104,8 @@ export const icons = {
   Grid4,
   Grid6,
   GearOutlined,
-  Bold,
-  Italic,
+  Strong,
+  Emphasis,
   Paragraph,
   Heading,
   Underline,
@@ -119,7 +119,6 @@ export function Icon({
   name: keyof typeof icons
 }): JSX.Element {
   const Component: React.ComponentType<any> = useMemo(() => icons[name], [name])
-
   const label = useMemo(
     () => `${Component.displayName?.replace(/([A-Z0-9])/g, ' $1').trim() ?? 'Unknown'} Icon`,
     [Component.displayName],
@@ -551,7 +550,7 @@ function GearOutlined(props: any) {
   )
 }
 
-function Bold(props: any) {
+function Strong(props: any) {
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
       <path
@@ -564,7 +563,7 @@ function Bold(props: any) {
   )
 }
 
-function Italic(props: any) {
+function Emphasis(props: any) {
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
       <path

@@ -111,15 +111,13 @@ export function unwrapLink(editor: BaseEditor & ReactEditor): void {
 
 export function wrapLink(editor: BaseEditor & ReactEditor, url: string): void {
   if (isLinkActive(editor)) {
-    console.log('isLinkActive!')
     unwrapLink(editor)
   }
 
   const {selection} = editor
-  const newLink: LinkType = link({url}, isCollapsed(selection) ? [text(url)] : [text('')])
+  const newLink: LinkType = link({url}, isCollapsed(selection) ? [text(url)] : [])
 
   if (isCollapsed(selection)) {
-    console.log('isCollapsed!', newLink)
     Transforms.insertNodes(editor, newLink)
   } else {
     Transforms.wrapNodes(editor, newLink, {split: true})
