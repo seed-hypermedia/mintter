@@ -15,11 +15,12 @@ export const Heading = styled('div', {
 export const createHeadingPlugin = (): EditorPlugin => ({
   name: ELEMENT_HEADING,
   renderElement({attributes, children, element}) {
+    // TODO: compute heading level
     if (element.type === ELEMENT_HEADING) {
       return <Heading {...attributes}>{children}</Heading>
     }
   },
-  configureEditor: editor => {
+  configureEditor: (editor) => {
     /**
      * TODO: override insertBreak
      * - if Start: ???
@@ -32,7 +33,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
      *  - move text into new paragraph
      *  - wrap paragraph in a statement
      *  - wrap statement in a group (should be in the correct position: second child of heading)
-     *  
+     *
      */
-  }
+  },
 })

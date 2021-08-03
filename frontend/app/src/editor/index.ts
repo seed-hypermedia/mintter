@@ -5,6 +5,7 @@ import {createHeadingPlugin} from './elements/heading'
 import {createStatementPlugin} from './elements/statement'
 import {createStaticParagraphPlugin} from './elements/static-paragraph'
 import {createUnorderedListPlugin} from './elements/unordered-list'
+import {createLinkPlugin} from './elements/link'
 import type {EditorPlugin} from './types'
 import {createStrongPlugin} from './leafs/strong'
 import {createEmphasisPlugin} from './leafs/emphasis'
@@ -29,6 +30,7 @@ export const plugins: Array<EditorPlugin> = [
   createSuperscriptPlugin(),
   createSubscriptPlugin(),
   createHoveringToolbarPlugin(),
+  createLinkPlugin(),
 ]
 
 export * from './editor'

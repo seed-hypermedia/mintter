@@ -85,11 +85,11 @@ export interface Image extends Alternative, Resource {
   type: 'image'
 }
 
-export interface Embed extends Alternative, Resource {
+export interface Embed extends Alternative, Resource, Parent {
   type: 'embed'
 }
 
-export interface Link extends Resource {
+export interface Link extends Resource, Parent {
   type: 'link'
 }
 

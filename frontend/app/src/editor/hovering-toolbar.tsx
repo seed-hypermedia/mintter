@@ -12,7 +12,6 @@ export function createHoveringToolbarPlugin(): EditorPlugin {
   // related: https://rawgit.com/w3c/input-events/v1/index.html#interface-InputEvent-Attributes
   return {
     onDOMBeforeInput(event: InputEvent, editor: BaseEditor & ReactEditor) {
-      console.log('onDOMBeforeInput: ', event.inputType)
       switch (event.inputType) {
         case 'formatBold':
           event.preventDefault()
@@ -45,7 +44,6 @@ export function isFormatActive(editor: BaseEditor & ReactEditor, format: FormatT
 
 const FormatButton = ({format}) => {
   const editor = useEditor()
-  console.log('🚀 ~ file: hovering-toolbar.tsx ~ line 48 ~ FormatButton ~ editor', editor)
   return (
     <button
       reversed

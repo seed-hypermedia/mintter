@@ -16,7 +16,6 @@ export default function EditorPage() {
   const [state, send] = useEditorDraft({
     documentId: docId,
     afterSave: (context, event) => {
-      console.log('after save called!', context)
       toast.success('Draft saved!', {position: 'top-center', duration: 4000})
     },
     afterPublish: (context: DraftEditorMachineContext, event) => {
@@ -25,7 +24,6 @@ export default function EditorPage() {
   })
 
   const {context} = state
-  console.log('🚀 ~ file: editor.tsx ~ line 30 ~ EditorPage ~ context', context)
 
   const [sidepanelState, sidepanelSend] = useSidepanel()
 
@@ -56,7 +54,6 @@ export default function EditorPage() {
   }
 
   if (state.matches('editing.idle') || state.matches('editing.debouncing')) {
-    console.log('editor page context', context)
     return (
       <Box
         css={{
@@ -192,8 +189,6 @@ function _EditorPage() {
   const {docId} = useParams<{docId: string}>()
   const history = useHistory()
 
-  console.log('🚀 ~ file: editor.tsx ~ line 22 ~ EditorPage ~ value', data)
-
   const [sidepanelState, sidepanelSend] = useSidepanel()
 
   useEnableSidepanel(sidepanelSend)
@@ -274,7 +269,8 @@ function _EditorPage() {
           data-testid="editor_title"
           name="title"
           placeholder="Document title"
-          value={data?.value.title}
+          // value={data?.value.title}
+          value={value.title}
           onChange={(event) => data.send({type: 'title', payload: event.target.value})}
           rows={1}
           // TODO: Fix types
@@ -297,7 +293,8 @@ function _EditorPage() {
           data-testid="editor_subtitle"
           name="subtitle"
           placeholder="about this publication..."
-          value={data?.value.subtitle}
+          // value={data?.value.subtitle}
+          value={value.subtitle}
           onChange={(event) => data.send({type: 'subtitle', payload: event.target.value})}
           rows={1}
           // TODO: Fix types

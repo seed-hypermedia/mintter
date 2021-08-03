@@ -5,7 +5,7 @@ import {isFlowContent} from '@mintter/mttast'
 import {isCollapsed, createStatement} from '../utils'
 import {styled} from '@mintter/ui/stitches.config'
 import {Box} from '@mintter/ui/box'
-import {createId, statement} from 'frontend/mttast-builder/dist'
+import {createId, statement} from '@mintter/mttast-builder'
 
 export const ELEMENT_STATEMENT = 'statement'
 
@@ -38,12 +38,10 @@ export const createStatementPlugin = (): EditorPlugin => ({
   renderElement({attributes, children, element}) {
     if (element.type === ELEMENT_STATEMENT) {
       return (
-        <>
-          <Statement {...attributes}>
-            <DragHandle contentEditable={false} />
-            <Box css={{flex: 1}}>{children}</Box>
-          </Statement>
-        </>
+        <Statement {...attributes}>
+          <DragHandle contentEditable={false} />
+          <Box css={{flex: 1}}>{children}</Box>
+        </Statement>
       )
     }
   },

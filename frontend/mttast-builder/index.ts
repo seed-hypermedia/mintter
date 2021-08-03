@@ -78,9 +78,9 @@ export const paragraph = createParent<Paragraph>('paragraph')
 
 export const staticParagraph = createParent<StaticParagraph>('staticParagraph')
 
-export const link = createNode<Link>('link')
+export const link = createParent<Link>('link')
 
-export const embed = createNode<Embed>('embed')
+export const embed = createParent<Embed>('embed')
 
 export const image = createNode<Image>('image')
 

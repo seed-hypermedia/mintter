@@ -55,7 +55,6 @@ export function buildEventHandlerHook(
   const hooks = plugins.flatMap((p) => p[event] || [])
 
   if (!hooks.length) return undefined
-  console.log('🚀 ~ file: plugin-utils.tsx ~ line 54 ~ hooks', hooks)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (ev: any) => hooks.forEach((h) => h(ev, editor))
 }
