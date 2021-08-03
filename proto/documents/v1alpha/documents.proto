@@ -65,8 +65,9 @@ message ListDraftsRequest {
 
 // Response for listing drafts.
 message ListDraftsResponse {
-  // Information about drafts matching the list request.
-  repeated DocumentInfo drafts = 1;
+  // Drafts matching the list request.
+  // Content is omitted.
+  repeated Document drafts = 1;
 
   // Token for the next page if there're any.
   string next_page_token = 2;
@@ -80,8 +81,8 @@ message PublishDraftRequest {
 
 // Response from publishing a draft.
 message PublishDraftResponse {
-  // Version identifier of the published document.
-  string version = 1;
+  // Document after it has been published.
+  Publication publication = 1;
 }
 
 // Publications service provides access to published documents.
@@ -125,7 +126,8 @@ message ListPublicationsRequest {
 message ListPublicationsResponse {
   // List of publications matching the request.
   // Only most recent versions are returned.
-  repeated DocumentInfo publications = 1;
+  // Content is omitted, only metadata is present.
+  repeated Publication publications = 1;
 
   // Token for the next page if there're more results.
   string next_page_token = 2;
@@ -152,8 +154,8 @@ message Publication {
   google.protobuf.Timestamp publish_time = 3;
 }
 
-// Basic metadata of a document.
-message DocumentInfo {
+// Document represents metadata and content of a draft or publication.
+message Document {
   // Permanent ID of the document.
   string id = 1;
 
@@ -171,19 +173,9 @@ message DocumentInfo {
 
   // Output only. Time when document was updated.
   google.protobuf.Timestamp update_time = 5;
-}
 
-// Content of a document.
-message DocumentContent {
   // JSON-serialized Mintter AST.
   // It's expected to be the first child of the document root,
   // which must be of type GroupingContent.
-  string json = 1;
-}
-
-// Document represents metadata and content of a draft or publication.
-message Document {
-  DocumentInfo info = 1;
-
-  DocumentContent content = 2;
+  string content = 6;
 }
