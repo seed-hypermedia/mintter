@@ -1,3 +1,5 @@
+import type {Node, Parent, Literal} from 'unist'
+
 export interface Alternative {
   alt?: string
 }
@@ -7,47 +9,17 @@ export interface Resource {
   title?: string
 }
 
-export interface Literal {
-  value: unknown
-}
-
-export interface Point {
-  line: number // number >= 1
-  column: number // number >= 1
-  offset?: number // number >= 0?
-}
-
-export interface Position {
-  start: Point
-  end: Point
-  indent?: number // number >= 1?
-}
-
-export interface Data {
-  [key: string]: unknown
-}
-
-export interface Node {
-  type: string
-  data?: Data
-  position?: Position
-}
-
-export interface Parent {
-  children: Array<unknown>
-}
-
-export interface Group {
+export interface Group extends Parent {
   type: 'group'
   children: Array<FlowContent>
 }
 
-export interface OrderedList {
+export interface OrderedList extends Parent {
   type: 'orderedList'
   children: Array<FlowContent>
 }
 
-export interface UnorderedList {
+export interface UnorderedList extends Parent {
   type: 'unorderedList'
   children: Array<FlowContent>
 }
@@ -62,46 +34,49 @@ export interface StaticParagraph extends Parent {
   children: Array<StaticPhrasingContent>
 }
 
+// Statement represents a unit of discourse dealing with a particular point or idea.
 export interface Statement extends Parent {
   type: 'statement'
-  children: [Content, GroupingContent?]
+  children: [Content, GroupingContent] | [Content]
 }
 
 export interface Heading extends Parent {
   type: 'header'
-  children: [StaticContent, GroupingContent?]
+  children: [StaticContent, GroupingContent]
 }
 
 export interface Blockquote extends Parent {
   type: 'blockquote'
-  children: [Content, GroupingContent?]
+  children: [Content, GroupingContent] | [Content]
 }
 
 export interface Code extends Parent {
   type: 'code'
   lang?: string
   meta?: string
-  children: [Content, GroupingContent?]
+  children: [Content, GroupingContent] | [Content]
 }
 
-export interface Video extends Alternative, Resource {
+export interface Video extends Node, Alternative, Resource {
   type: 'video'
 }
 
-export interface Image extends Alternative, Resource {
+export interface Image extends Node, Alternative, Resource {
   type: 'image'
 }
 
-export interface Embed extends Alternative, Resource {
+export interface Embed extends Node, Alternative, Resource {
   type: 'embed'
 }
 
-export interface Link extends Resource {
+export interface Link extends Parent, Resource {
   type: 'link'
+  children: Array<StaticPhrasingContent>
 }
 
 export interface Text extends Literal {
   type: 'text'
+  value: string
   strong?: boolean
   emphasis?: boolean
   underline?: boolean
