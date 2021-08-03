@@ -30,7 +30,7 @@ service Drafts {
 
 // Request to create a new draft.
 message CreateDraftRequest {
-  // Existing Document ID can be specified to update
+  // Optional. Existing Document ID can be specified to update
   // previously published document. A draft will be created
   // with the content of the most recent known version.
   string existing_document_id = 1;
