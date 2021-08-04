@@ -4,23 +4,14 @@ import {Text} from '@mintter/ui/text'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
-const Paragraph = styled(Text, {
-  padding: '$1',
-  paddingHorizontal: '$3',
-  margin: 0,
-  borderRadius: '$1',
-  transition: 'all 0.1s ease',
-  '&:hover': {
-    backgroundColor: '$background-muted',
-  },
-})
+const Paragraph = styled(Text, {})
 
 export const createParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_PARAGRAPH,
   renderElement({attributes, children, element}) {
     if (element.type === ELEMENT_PARAGRAPH) {
       return (
-        <Paragraph alt size="4" {...attributes}>
+        <Paragraph as="p" alt size="4" css={{paddingLeft: '$2'}} {...attributes}>
           {children}
         </Paragraph>
       )

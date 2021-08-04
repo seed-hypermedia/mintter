@@ -109,12 +109,19 @@ export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Do
   //   ]),
   // )
 
-  return await Promise.resolve(document([statement([paragraph([text('Hello world')])])]))
+  // return await Promise.resolve(document([statement([paragraph([text('Hello world')])])]))
 
   // return await Promise.resolve(
   //   document([
   //     group([
-  //       statement([paragraph([text('first item')])]),
+  //       statement([
+  //         paragraph([text('first item')]),
+  //         ul([
+  //           statement([paragraph([text('item 1')])]),
+  //           statement([paragraph([text('item 2')])]),
+  //           statement([paragraph([text('item 3')])]),
+  //         ]),
+  //       ]),
   //       heading([
   //         staticParagraph([text('heading text')]),
   //         ul([
@@ -129,7 +136,30 @@ export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Do
 
   // return await Promise.reject({message: 'testing error'})
 
-  // return await Promise.resolve(allNodes)
+  return await Promise.resolve(allNodes)
+
+  // return await Promise.resolve(
+  //   document([
+  //     group([
+  //       heading([
+  //         staticParagraph([text('heading text')]),
+  //         group([
+  //           statement([paragraph([text('item 1')])]),
+  //           heading([
+  //             staticParagraph([text('heading text')]),
+  //             group([
+  //               statement([paragraph([text('item 1')])]),
+  //               heading([
+  //                 staticParagraph([text('heading text')]),
+  //                 group([statement([paragraph([text('item 1')])]), statement([paragraph([text('item 2')])])]),
+  //               ]),
+  //             ]),
+  //           ]),
+  //         ]),
+  //       ]),
+  //     ]),
+  //   ]),
+  // )
 }
 
 var allNodes = u(

@@ -1,15 +1,20 @@
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
+import {Icon} from '@mintter/ui/icon'
 import type {EditorPlugin} from '../types'
+import {Dragger, Tools} from './statement'
+import {Box} from '@mintter/ui/box'
+import {Marker} from '../marker'
 
 export const ELEMENT_HEADING = 'heading'
 
-export const Heading = styled('div', {
-  '& > span': {
-    fontSize: '$7',
-    fontWeight: '$bold',
-    lineHeight: '$3',
-  },
+export const Heading = styled('li', {
+  marginTop: '$7',
+  padding: 0,
+  position: 'relative',
+  display: 'flex',
+  alignItems: 'flex-start',
+  listStyle: 'none',
 })
 
 export const createHeadingPlugin = (): EditorPlugin => ({
@@ -17,7 +22,26 @@ export const createHeadingPlugin = (): EditorPlugin => ({
   renderElement({attributes, children, element}) {
     // TODO: compute heading level
     if (element.type === ELEMENT_HEADING) {
-      return <Heading {...attributes}>{children}</Heading>
+      return (
+        <Heading {...attributes}>
+          <Tools contentEditable={false}>
+            <Dragger>
+              <Icon name="Grid6" size="2" color="muted" />
+            </Dragger>
+            <Marker element={element} />
+          </Tools>
+          <Box
+            css={{
+              flex: 1,
+              '& > p': {
+                fontWeight: '$bold',
+              },
+            }}
+          >
+            {children}
+          </Box>
+        </Heading>
+      )
     }
   },
   configureEditor: (editor) => {

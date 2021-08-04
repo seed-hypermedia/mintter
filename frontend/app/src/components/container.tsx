@@ -13,7 +13,7 @@ const StyledContainer: any = styled(DEFAULT_TAG, {
   // Custom
   width: '90%',
   marginHorizontal: 'auto',
-  paddingHorizontal: '$5',
+  paddingHorizontal: '$4',
 
   variants: {
     size: {

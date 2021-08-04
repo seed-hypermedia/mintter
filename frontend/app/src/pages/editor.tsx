@@ -64,8 +64,6 @@ export default function EditorPage() {
           "maincontent maincontent rightside"`
             : `"controls controls controls"
           "maincontent maincontent maincontent"`,
-          // gridTemplateAreas: `"controls controls controls"
-          // "maincontent maincontent maincontent"`,
           gridTemplateColumns: 'minmax(350px, 15%) 1fr minmax(350px, 40%)',
           gridTemplateRows: '64px 1fr',
         }}

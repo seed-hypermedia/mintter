@@ -11,6 +11,7 @@ import {
   getUsedEventHandlers,
 } from './plugin-utils'
 import {HoveringToolbar} from './hovering-toolbar'
+import {Box} from '@mintter/ui/box'
 
 export type {EditorPlugin} from './types'
 
@@ -34,13 +35,18 @@ export function Editor({plugins = [], value, onChange, children}: EditorProps): 
   )
 
   return (
-    <>
+    <Box
+      css={{
+        position: 'relative',
+        width: '$full',
+      }}
+    >
       <Slate editor={editor} value={value} onChange={onChange}>
         <HoveringToolbar />
         <Editable renderElement={renderElement} renderLeaf={renderLeaf} decorate={decorate} {...eventHandlers} />
         {children}
       </Slate>
       <pre>{JSON.stringify(editor.children, null, 2)}</pre>
-    </>
+    </Box>
   )
 }

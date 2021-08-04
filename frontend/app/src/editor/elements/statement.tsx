@@ -6,31 +6,43 @@ import {isCollapsed, createStatement} from '../utils'
 import {styled} from '@mintter/ui/stitches.config'
 import {Box} from '@mintter/ui/box'
 import {createId, statement} from '@mintter/mttast-builder'
+import {Icon} from '@mintter/ui/icon'
+import {Marker} from '../marker'
 
 export const ELEMENT_STATEMENT = 'statement'
 
-const DragHandle = styled(Box, {
-  backgroundColor: '$background-muted',
-  position: 'absolute',
-  left: 0,
-  top: 0,
-  transform: 'translateX(-100%)',
-  width: 24,
-  height: 36,
+export const Tools = styled('div', {
+  // width: 48,
+  height: '$space$8',
+  overflow: 'hidden',
+  marginLeft: '-$7',
   flex: 'none',
-  opacity: 0,
-  '&:hover': {
-    cursor: 'pointer',
-    opacity: 1,
-  },
+  display: 'flex',
 })
-
 const Statement = styled('li', {
+  marginTop: '$3',
   padding: 0,
-  paddingLeft: '$5',
   position: 'relative',
   display: 'flex',
-  gap: '$3',
+  alignItems: 'flex-start',
+  listStyle: 'none',
+})
+
+export const Dragger = styled('div', {
+  // backgroundColor: 'red',
+  width: '$space$7',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: 32,
+  borderRadius: '$2',
+  opacity: 0,
+  transition: 'all ease-in-out 0.1s',
+  '&:hover': {
+    backgroundColor: '$background-muted',
+    opacity: 1,
+    cursor: 'grab',
+  },
 })
 
 export const createStatementPlugin = (): EditorPlugin => ({
@@ -39,7 +51,12 @@ export const createStatementPlugin = (): EditorPlugin => ({
     if (element.type === ELEMENT_STATEMENT) {
       return (
         <Statement {...attributes}>
-          <DragHandle contentEditable={false} />
+          <Tools contentEditable={false}>
+            <Dragger data-dragger>
+              <Icon name="Grid6" size="2" color="muted" />
+            </Dragger>
+            <Marker element={element} />
+          </Tools>
           <Box css={{flex: 1}}>{children}</Box>
         </Statement>
       )
