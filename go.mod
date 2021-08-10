@@ -12,15 +12,15 @@ require (
 	github.com/alexeyco/simpletable v1.0.0
 	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/btcsuite/btcd v0.21.0-beta // indirect
+	github.com/btcsuite/btcd v0.21.0-beta.0.20210513141527-ee5896bad5be // indirect
 	github.com/btcsuite/btclog v0.0.0-20170628155309-84c8d2346e9f // indirect
-	github.com/btcsuite/btcutil v1.0.2 // indirect
-	github.com/btcsuite/btcwallet v0.11.1-0.20200814001439-1d31f4ea6fc5 // indirect
-	github.com/btcsuite/btcwallet/wallet/txauthor v1.0.0 // indirect
+	github.com/btcsuite/btcutil v1.0.3-0.20210527170813-e2ba6805a890 // indirect
+	github.com/btcsuite/btcwallet v0.12.1-0.20210803004036-eebed51155ec // indirect
+	github.com/btcsuite/btcwallet/wallet/txauthor v1.0.2-0.20210803004036-eebed51155ec // indirect
 	github.com/btcsuite/btcwallet/wallet/txrules v1.0.0 // indirect
-	github.com/btcsuite/btcwallet/wallet/txsizes v1.0.0 // indirect
-	github.com/btcsuite/btcwallet/walletdb v1.3.3 // indirect
-	github.com/btcsuite/btcwallet/wtxmgr v1.2.0 // indirect
+	github.com/btcsuite/btcwallet/wallet/txsizes v1.0.1-0.20210519225359-6ab9b615576f // indirect
+	github.com/btcsuite/btcwallet/walletdb v1.3.6-0.20210803004036-eebed51155ec // indirect
+	github.com/btcsuite/btcwallet/wtxmgr v1.3.1-0.20210803004036-eebed51155ec // indirect
 	github.com/btcsuite/go-socks v0.0.0-20170105172521-4720035b7bfd // indirect
 	github.com/btcsuite/websocket v0.0.0-20150119174127-31079b680792 // indirect
 	github.com/burdiyan/go/kongcli v0.0.0-20200124222818-6f87e0e684b6
@@ -154,7 +154,7 @@ require (
 	github.com/libp2p/go-ws-transport v0.4.0 // indirect
 	github.com/libp2p/go-yamux/v2 v2.2.0 // indirect
 	github.com/lightninglabs/gozmq v0.0.0-20191113021534-d20a764486bf // indirect
-	github.com/lightninglabs/neutrino v0.11.1-0.20200316235139-bffc52e8f200 // indirect
+	github.com/lightninglabs/neutrino v0.12.1 // indirect
 	github.com/lightningnetwork/lnd v0.11.0-beta
 	github.com/lightningnetwork/lnd/clock v1.0.1 // indirect
 	github.com/lightningnetwork/lnd/queue v1.0.4 // indirect
@@ -219,7 +219,7 @@ require (
 	go.uber.org/dig v1.10.0 // indirect
 	go.uber.org/fx v1.13.1
 	go.uber.org/multierr v1.7.0
-	go.uber.org/zap v1.16.0
+	go.uber.org/zap v1.17.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/mod v0.5.0 // indirect
 	golang.org/x/net v0.0.0-20210916014120-12bc252f5db8 // indirect
@@ -238,3 +238,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	nhooyr.io/websocket v1.8.6 // indirect
 )
+
+require github.com/btcsuite/btcutil/psbt v1.0.3-0.20210527170813-e2ba6805a890 // indirect
+
+replace github.com/lightningnetwork/lnd => ./third_party/lnd

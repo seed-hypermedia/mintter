@@ -413,8 +413,8 @@ func (srv *backend) Register(ctx context.Context, m aezeed.Mnemonic, passphraze 
 	srv.registerMu.Lock()
 	defer srv.registerMu.Unlock()
 
-	if len(m) != aezeed.NummnemonicWords {
-		return AccountID{}, fmt.Errorf("mnemonic must be exactly %d words, got %d", aezeed.NummnemonicWords, len(m))
+	if len(m) != aezeed.NumMnemonicWords {
+		return AccountID{}, fmt.Errorf("mnemonic must be exactly %d words, got %d", aezeed.NumMnemonicWords, len(m))
 	}
 
 	select {
