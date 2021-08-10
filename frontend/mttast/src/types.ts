@@ -101,8 +101,8 @@ export type Text = Literal & {
   strikethrough?: boolean
   superscript?: boolean
   subscript?: boolean
-  get text(): string
-  set text(val: string)
+  // get text(): string
+  // set text(val: string)
 }
 
 // Mixin

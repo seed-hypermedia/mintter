@@ -154,12 +154,9 @@ export default function EditorPage() {
           />
           <Separator />
           <Box
-            css={
-              {
-                // marginLeft: '-48px',
-                // backgroundColor: 'green'
-              }
-            }
+            css={{
+              marginLeft: '-$7',
+            }}
           >
             <Editor
               plugins={plugins}

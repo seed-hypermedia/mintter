@@ -8,6 +8,7 @@ import {Box} from '@mintter/ui/box'
 import {createId, statement} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
 import {Marker} from '../marker'
+import {Range} from 'slate'
 
 export const ELEMENT_STATEMENT = 'statement'
 
@@ -63,49 +64,73 @@ export const createStatementPlugin = (): EditorPlugin => ({
     }
   },
   configureEditor(editor) {
-    const {insertBreak} = editor
+    // const {insertBreak} = editor
 
     editor.insertBreak = () => {
-      console.log('insertBreak: start')
       const {selection} = editor
+
+      /**
+       * IF (selection) {
+       *
+       * }
+       */
+
       if (isCollapsed(selection)) {
         const parentStatement = Editor.above(editor, {
           match: (n) => isFlowContent(n),
         })
         if (parentStatement) {
           const [sNode, sPath] = parentStatement
-          const isEnd = Editor.isEnd(editor, selection.focus, sPath)
-          const isStart = Editor.isStart(editor, selection.focus, sPath)
+          console.log('🚀 ~ file: statement.tsx ~ line 78 ~ configureEditor ~ sPath', sPath)
+          const isEnd = Editor.isEnd(editor, selection.focus, [...sPath, 0])
+          const isStart = Editor.isStart(editor, selection.anchor, [...sPath, 0])
+
+          // check if there's a group child
+          const hasChildrenGrouping = sNode.children.length == 2
 
           if (isStart) {
-            // create statement at same path
+            // create statement at same path. same as Heading plugin!
+            console.log('isStart ', editor)
             Editor.withoutNormalizing(editor, () => {
               Transforms.insertNodes(editor, createStatement() as Element, {at: sPath})
               Transforms.select(editor, Editor.start(editor, Editor.start(editor, Path.next(sPath))))
             })
             return
-          }
-
-          if (isEnd) {
+          } else if (isEnd) {
             // create new statement at next path
             Editor.withoutNormalizing(editor, () => {
-              Transforms.insertNodes(editor, createStatement() as Element, {at: Path.next(sPath)})
-              Transforms.select(editor, Path.next(sPath))
+              if (hasChildrenGrouping) {
+                // add new statement as the first child of child group
+                console.log('isEnd ', editor)
+                Transforms.insertNodes(editor, createStatement() as Element, {at: [...sPath, 1, 0]})
+                Transforms.select(editor, [...sPath, 1, 0])
+              } else {
+                Transforms.insertNodes(editor, createStatement() as Element, {at: Path.next(sPath)})
+                Transforms.select(editor, Path.next(sPath))
+              }
             })
             return
           }
 
           // if selection is in the middle, split paragraph and create statement at next path
+          console.log('Middle ', editor)
           Editor.withoutNormalizing(editor, () => {
             Transforms.splitNodes(editor)
             const newParagraphPath = [...sPath, 1]
-            Transforms.wrapNodes(editor, statement({id: createId()}, []), {at: newParagraphPath})
-            Transforms.moveNodes(editor, {at: newParagraphPath, to: Path.next(sPath)})
+            if (hasChildrenGrouping) {
+              Transforms.moveNodes(editor, {at: newParagraphPath, to: [...newParagraphPath, 2, 0]})
+              // Transforms.select(editor, [...newParagraphPath, 1, 0])
+              console.log('hay children!')
+            } else {
+              Transforms.moveNodes(editor, {at: newParagraphPath, to: Path.next(sPath)})
+              console.log('NOO hay children!')
+            }
           })
           return
         }
       } else {
-        insertBreak()
+        // TODO: we can avoid insertBreak when the selection involves two blocks?
+        // insertBreak()
       }
     }
 

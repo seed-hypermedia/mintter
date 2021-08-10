@@ -90,10 +90,10 @@ export const text = (value: string, options: Omit<Text, 'type' | 'value' | 'text
   type: 'text',
   value,
   ...options,
-  get text() {
-    return this.value
-  },
-  set text(v: string) {
-    this.value = v
-  },
+  // get text() {
+  //   return this.value
+  // },
+  // set text(v: string) {
+  //   this.value = v
+  // },
 })

@@ -134,9 +134,15 @@ export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Do
   //   ]),
   // )
 
+  return await Promise.resolve(
+    document([
+      group([statement([paragraph([text('item 1')]), group([statement([paragraph([text('nested text 2')])])])])]),
+    ]),
+  )
+
   // return await Promise.reject({message: 'testing error'})
 
-  return await Promise.resolve(allNodes)
+  // return await Promise.resolve(allNodes)
 
   // return await Promise.resolve(
   //   document([
