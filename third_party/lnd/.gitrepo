@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/lightningnetwork/lnd
+	branch = master
+	commit = 23c3597d13db00756ae903a845e7a8f59f109813
+	parent = 3317bcccb073742915d64dd7c166f179bedc2379
+	method = merge
+	cmdver = 0.4.3
