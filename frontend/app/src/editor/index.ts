@@ -14,11 +14,13 @@ import {createStrikethroughPlugin} from './leafs/strikethrough'
 import {createSuperscriptPlugin} from './leafs/superscript'
 import {createSubscriptPlugin} from './leafs/subscript'
 import {createHoveringToolbarPlugin} from './hovering-toolbar'
+import {createBlockquotePlugin} from './elements/blockquote'
 import {Node, Transforms} from 'slate'
+import {createEmbedPlugin} from './elements/embed'
+import {createCodeBlockPlugin} from './elements/code-block'
 
 export const plugins: Array<EditorPlugin> = [
   createHoveringToolbarPlugin(),
-  createTextPlugin(),
   createStrongPlugin(),
   createEmphasisPlugin(),
   createUnderlinePlugin(),
@@ -27,38 +29,21 @@ export const plugins: Array<EditorPlugin> = [
   createSubscriptPlugin(),
 
   createLinkPlugin(),
+  createEmbedPlugin(),
 
   createStaticParagraphPlugin(),
   createParagraphPlugin(),
 
-  createStatementPlugin(),
   createHeadingPlugin(),
+  createStatementPlugin(),
+
+  createBlockquotePlugin(),
+  createCodeBlockPlugin(),
 
   createGroupPlugin(),
   createUnorderedListPlugin(),
   createOrderedListPlugin(),
 ]
-
-function createTextPlugin(): EditorPlugin {
-  return {
-    configureEditor(editor) {
-      const {apply} = editor
-
-      editor.apply = (operation) => {
-        const {type} = operation
-        const {selection} = editor
-        if (type == 'insert_text') {
-          const node = Node.get(editor, selection?.anchor.path)
-          console.log('🚀 ~ node', node)
-          Transforms.setNodes(editor, {text: node.value + operation.text})
-        }
-        apply(operation)
-      }
-
-      return editor
-    },
-  }
-}
 
 export * from './editor'
 export * from './use-editor-draft'

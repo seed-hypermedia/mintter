@@ -1,54 +1,36 @@
 import {isFlowContent, Statement} from '@mintter/mttast'
 import {statement, paragraph, text, createId} from '@mintter/mttast-builder'
-import {BaseEditor, BaseRange, BaseSelection, NodeEntry, Point, Range, Editor} from 'slate'
+import {BaseEditor, BaseRange, BaseSelection, NodeEntry, Point, Range, Editor, Element, Path} from 'slate'
 import type {ReactEditor} from 'slate-react'
+import {ELEMENT_HEADING} from './elements/heading'
+import {ELEMENT_STATEMENT} from './elements/statement'
 
-type MTTEditor = BaseEditor & ReactEditor
+export type MTTEditor = BaseEditor & ReactEditor
 
 export function createStatement(): Statement {
   return statement([paragraph([text('')])])
 }
 
-export type GetParentResult<T = Ancestor> = {
-  isStart: boolean
-  isEnd: boolean
-  parent: NodeEntry<T>
-}
-export function getFlowContentParent<T = Statement | HeadingType | Blockquote>(
-  editor: MTTEditor,
-  selection: BaseSelection,
-  parentType: 'heading' | 'statement' | 'blockquote' | undefined,
-): GetParentResult<T> | undefined {
-  const type = parentType ?? 'statement'
+export const isCollapsed = (range: Range): boolean => !!range && Range.isCollapsed(range)
 
-  const contentParentPath = selection?.focus.path.slice(0, selection?.focus.path.length - 2)
+export const hasSelection = (editor: MTTEditor) => !!editor.selection
 
-  const parent: NodeEntry<T> = Editor.above(editor, {
-    match: (n) => isFlowContent(n),
-    at: contentParentPath,
-  })
-
-  if (!parent) return
-
-  const [node, path] = parent
-
-  if (node.type != parentType) return
-
-  const isStart = Editor.isStart(editor, selection.focus, [...path, 0])
-  const isEnd = Editor.isEnd(editor, selection.focus, [...path, 0])
-  console.log({selection, end: Editor.end(editor, path)})
-
-  return {
-    isStart,
-    isEnd,
-    parent,
+export const getParentFlowContent =
+  (editor: MTTEditor) =>
+  ({at, type} = {}) => {
+    let above = Editor.above(editor, {
+      at,
+      match: (n) => !Editor.isEditor(n) && Element.isElement(n) && isFlowContent(n),
+    })
+    console.log('ABOVE: ', type, above, editor.selection)
+    return above
   }
-}
 
-export function isEnd(editor: MTTEditor, point: Point, at: Location): boolean {
-  !!point && Editor.isEnd(editor, point, at)
-}
+export const isRangeStart = (editor: MTTEditor) => (path: Path) =>
+  !!editor.selection && path.length > 2 && Editor.isStart(editor, editor.selection.anchor, path)
 
-export function isCollapsed(range: unknown): range is Range {
-  return Range.isCollapsed(range as BaseRange)
-}
+export const isRangeEnd = (editor: MTTEditor) => (path: Path) =>
+  !!editor.selection && path.length > 2 && Editor.isEnd(editor, editor.selection.focus, path)
+
+export const isRangeMiddle = (editor: MTTEditor) => (path: Path) =>
+  !!editor.selection && path.length > 2 && !isRangeStart(editor)(path) && !isRangeEnd(editor)(path)

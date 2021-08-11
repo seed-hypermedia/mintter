@@ -15,7 +15,21 @@ import {createId, mockDocument} from '../mocks'
 import {createGrpcClient, GrpcClient} from './grpc-client'
 import {u} from 'unist-builder'
 import {nanoid} from 'nanoid'
-import {document, statement, paragraph, text, group, heading, staticParagraph, ul} from '@mintter/mttast-builder'
+import {
+  document,
+  statement,
+  paragraph,
+  text,
+  group,
+  heading,
+  staticParagraph,
+  ul,
+  code,
+  blockquote,
+  embed,
+  ol,
+  link,
+} from '@mintter/mttast-builder'
 
 /**
  *
@@ -103,69 +117,9 @@ export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Do
 
   // return await Promise.resolve(document([statement([paragraph([text('hello world')])])]))
 
-  // return await Promise.resolve(
-  //   document([
-  //     statement([paragraph([text('hello world')]), group([statement([paragraph([text('hello nested statement')])])])]),
-  //   ]),
-  // )
-
-  // return await Promise.resolve(document([statement([paragraph([text('Hello world')])])]))
-
-  // return await Promise.resolve(
-  //   document([
-  //     group([
-  //       statement([
-  //         paragraph([text('first item')]),
-  //         ul([
-  //           statement([paragraph([text('item 1')])]),
-  //           statement([paragraph([text('item 2')])]),
-  //           statement([paragraph([text('item 3')])]),
-  //         ]),
-  //       ]),
-  //       heading([
-  //         staticParagraph([text('heading text')]),
-  //         ul([
-  //           statement([paragraph([text('item 1')])]),
-  //           statement([paragraph([text('item 2')])]),
-  //           statement([paragraph([text('item 3')])]),
-  //         ]),
-  //       ]),
-  //     ]),
-  //   ]),
-  // )
-
-  return await Promise.resolve(
-    document([
-      group([statement([paragraph([text('item 1')]), group([statement([paragraph([text('nested text 2')])])])])]),
-    ]),
-  )
-
   // return await Promise.reject({message: 'testing error'})
 
-  // return await Promise.resolve(allNodes)
-
-  // return await Promise.resolve(
-  //   document([
-  //     group([
-  //       heading([
-  //         staticParagraph([text('heading text')]),
-  //         group([
-  //           statement([paragraph([text('item 1')])]),
-  //           heading([
-  //             staticParagraph([text('heading text')]),
-  //             group([
-  //               statement([paragraph([text('item 1')])]),
-  //               heading([
-  //                 staticParagraph([text('heading text')]),
-  //                 group([statement([paragraph([text('item 1')])]), statement([paragraph([text('item 2')])])]),
-  //               ]),
-  //             ]),
-  //           ]),
-  //         ]),
-  //       ]),
-  //     ]),
-  //   ]),
-  // )
+  return await Promise.resolve(allNodes)
 }
 
 var allNodes = u(
@@ -177,149 +131,116 @@ var allNodes = u(
     createdAt: new Date(),
   },
   [
-    u('group', [
-      u(
-        'statement',
-        {
-          id: nanoid(8),
-        },
-        [u('paragraph', [u('text', `hello world. I'm the content of a normal statement`)])],
-      ),
-      u('heading', {id: nanoid(8)}, [
-        u('staticParagraph', [u('text', `Heading + orderedList + nesting`)]),
-        u('orderedList', [
-          u('statement', {id: nanoid(8)}, [u('paragraph', [u('text', 'child 1')])]),
-          u('statement', {id: nanoid(8)}, [
-            u('paragraph', [u('text', 'child 2')]),
-            u('orderedList', [
-              u('statement', {id: nanoid(8)}, [u('paragraph', [u('text', 'nested child 2.1')])]),
-              u('statement', {id: nanoid(8)}, [u('paragraph', [u('text', 'nested child 2.2')])]),
+    group([
+      statement({id: nanoid(8)}, [paragraph([text(`hello world. I'm the content of a normal statement`)])]),
+      heading({id: nanoid(8)}, [
+        staticParagraph([text('Heading + orderedList + nesting')]),
+        ol([
+          statement({id: nanoid(8)}, [paragraph([text('Child 1')])]),
+          statement({id: nanoid(8)}, [
+            paragraph([text('Child 2')]),
+            ul([
+              statement({id: nanoid(8)}, [paragraph([text('Nested child 1')])]),
+              statement({id: nanoid(8)}, [paragraph([text('Nested child 2')])]),
             ]),
           ]),
-          u('statement', {id: nanoid(8)}, [u('paragraph', [u('text', 'child 3')])]),
+          statement({id: nanoid(8)}, [paragraph([text('Child 3')])]),
         ]),
       ]),
-      u(
-        'heading',
-        {
-          id: nanoid(8),
-        },
-        [
-          u('staticParagraph', [u('text', `A Heading`)]),
-          u('orderedList', [
-            u(
-              'statement',
-              {
-                id: nanoid(8),
-              },
-              [u('paragraph', [u('text', 'Headings')])],
-            ),
-            u(
-              'statement',
-              {
-                id: nanoid(8),
-              },
-              [u('paragraph', [u('text', 'Lists')])],
-            ),
-            u(
-              'statement',
-              {
-                id: nanoid(8),
-              },
-              [u('paragraph', [u('text', 'Images')])],
-            ),
-            u(
-              'statement',
-              {
-                id: nanoid(8),
-              },
-              [u('paragraph', [u('text', 'Embeds')])],
-            ),
-          ]),
-        ],
-      ),
-      u(
-        'heading',
-        {
-          id: nanoid(8),
-        },
-        [
-          u('staticParagraph', [u('text', `Inline Elements`)]),
-          u('group', [
-            u(
-              'statement',
-              {
-                id: nanoid(8),
-              },
-              [
-                u('paragraph', [
-                  u('text', {bold: true}, 'Inline elements'),
-                  u('text', ' are a crucial part of our Document model. They can only live inside any '),
-                  u('text', {code: true}, 'FlowContent'),
-                  u('text', 'node.'),
+      heading({id: nanoid(8)}, [
+        staticParagraph([text('Heading 2')]),
+        group([
+          heading({id: nanoid(8)}, [
+            staticParagraph([text('Heading 3')]),
+            group([
+              heading({id: nanoid(8)}, [
+                staticParagraph([text('Heading 4')]),
+                group([
+                  heading({id: nanoid(8)}, [
+                    staticParagraph([text('Heading 5')]),
+                    group([heading({id: nanoid(8)}, [staticParagraph([text('Heading 6')])])]),
+                  ]),
                 ]),
-              ],
-            ),
-          ]),
-        ],
-      ),
-      u('heading', {id: nanoid(8)}, [
-        u('staticParagraph', [u('text', `Links and Embeds`)]),
-        u('group', [
-          u('statement', {id: nanoid(8)}, [
-            u('paragraph', [
-              u('text', 'We can also represent '),
-              u('link', {id: nanoid(8), url: 'https://mintter.com'}, [u('text', 'external web links')]),
-              u('text', ', and also embeds (mintter links): '),
-              u('embed', {id: nanoid(8), url: `mtt://${nanoid(8)}/${nanoid(6)}`}, [u('text', '')]),
+              ]),
             ]),
           ]),
         ]),
       ]),
-      u('heading', {id: nanoid(8)}, [
-        u('staticParagraph', [u('text', `Code blocks and Blockquotes`)]),
-        u('group', [
-          u('code', {id: nanoid(8), lang: 'javascript', meta: null}, [
-            u(
-              'text',
-              `function greeting(name) {
-  console.log("Hello " + name + "!");
-}
+      heading({id: nanoid(8)}, [
+        staticParagraph([text('Inline Elements')]),
+        group([
+          statement({id: nanoid(8)}, [
+            paragraph([
+              text('Inline Elements', {strong: true}),
+              text(' are a '),
+              text('simple', {strikethrough: true}),
+              text(' '),
+              text('crucial part', {underline: true}),
+              text(' of our '),
+              text('Document Model', {strong: true, emphasis: true}),
+              text('. They can only live inside any '),
+              text('FlowContent', {emphasis: true}),
+              text('1', {superscript: true}),
+              text(' node'),
+              text('a', {subscript: true}),
+              text('.'),
+            ]),
+          ]),
+        ]),
+      ]),
+      heading({id: nanoid(8)}, [
+        staticParagraph([text('Links and Embeds')]),
+        group([
+          statement({id: nanoid(8)}, [
+            paragraph([
+              text('We can also represent '),
+              link({url: 'https://mintter.com'}, [text('external web links')]),
+              text(', and also embeds (mintter links): '),
+              embed({url: `mtt://${nanoid(8)}/${nanoid(6)}`}, [
+                text('another embed content '),
+                text('with ', {strong: true}),
+                text('formatting.', {emphasis: true}),
+              ]),
+            ]),
+          ]),
+        ]),
+      ]),
+      heading({id: nanoid(8)}, [
+        staticParagraph([text(`Code blocks and Blockquotes`)]),
+        group([
+          code({id: nanoid(8), lang: 'javascript', meta: null}, [
+            text(`function greeting(name) {
+        console.log("Hello " + name + "!");
+      }
 
-greeting('Horacio');`,
-            ),
+      greeting('Horacio');`),
           ]),
-          u('blockquote', {id: nanoid(8)}, [
-            u('paragraph', [u('text', 'History doesn’t repeat itself. But it does rhyme.')]),
-          ]),
-          u('blockquote', {id: nanoid(8)}, [
-            u('paragraph', [u('embed', {id: nanoid(8), url: `mtt://${nanoid(8)}/${nanoid(6)}`}, [u('text', '')])]),
-          ]),
-        ]),
-      ]),
-      u('heading', {id: nanoid(8)}, [
-        u('staticParagraph', [u('text', `Video and Image`)]),
-        u('group', [
-          u('statement', {id: nanoid(8)}, [
-            u('paragraph', [
-              u('video', {id: nanoid(8), url: 'https://www.youtube.com/watch?v=NTfPtYJORck'}, [u('text', '')]),
-            ]),
-          ]),
-          u('statement', {id: nanoid(8)}, [
-            u('paragraph', [
-              u(
-                'image',
-                {
-                  id: nanoid(8),
-                  alt: 'teamwork',
-                  url: 'https://images.unsplash.com/photo-1587440871875-191322ee64b0?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=3451&q=80',
-                },
-                [u('text', '')],
-              ),
+          blockquote({id: nanoid(8)}, [paragraph([text('History doesn’t repeat itself. But it does rhyme.')])]),
+          blockquote({id: nanoid(8)}, [
+            paragraph([
+              embed({url: `mtt://${nanoid(8)}/${nanoid(6)}`}, [
+                text('this is the content of an embed inside a blockquote'),
+              ]),
             ]),
           ]),
         ]),
       ]),
+      // heading([
+      //   staticParagraph([text('Video and Images')]),
+      //   group([
+      //     statement([paragraph([video({url: 'https://www.youtube.com/watch?v=NTfPtYJORck'}, [text('')])])]),
+      //     statement([
+      //       paragraph([
+      //         image(
+      //           {
+      //             url: 'https://images.unsplash.com/photo-1587440871875-191322ee64b0?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=3451&q=80',
+      //           },
+      //           [text('')],
+      //         ),
+      //       ]),
+      //     ]),
+      //   ]),
+      // ]),
     ]),
   ],
 )

@@ -9,7 +9,15 @@ import {Ancestor, BaseEditor, BaseSelection, NodeEntry, Transforms} from 'slate'
 import {Editor, Path} from 'slate'
 import {Blockquote, Heading as HeadingType, isFlowContent, Parent, Statement} from '@mintter/mttast'
 import type {ReactEditor} from 'slate-react'
-import {createStatement, isCollapsed} from '../utils'
+import {
+  createStatement,
+  getParentFlowContent,
+  isCollapsed,
+  isRangeEnd,
+  isRangeMiddle,
+  isRangeStart,
+  MTTEditor,
+} from '../utils'
 import {group, paragraph, statement, text} from 'frontend/mttast-builder/dist'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 
@@ -69,98 +77,67 @@ export const createHeadingPlugin = (): EditorPlugin => ({
     const {insertBreak} = editor
     editor.insertBreak = () => {
       const {selection} = editor
-      if (isCollapsed(selection)) {
-        const parentEntry = getFlowContentParent(editor, selection, ELEMENT_HEADING)
-        console.log('🚀 ~ file: heading.tsx ~ line 74 ~ parentEntry', parentEntry)
-        if (parentEntry) {
-          const {isStart, isEnd, parent} = parentEntry
-          const [pNode, pPath] = parent
+      const headingNode: NodeEntry<Heading> = getParentFlowContent(editor)({type: ELEMENT_HEADING})
 
-          // check if there's a group child
-          const hasChildrenGrouping = pNode.children.length == 2
+      if (headingNode) {
+        const [node, path] = headingNode
+        // cond([
+        //   [isRangeStart(editor), handleEnterAtStartOfHeading(editor)],
+        //   [isRangeEnd(editor), handleEnterAtEndOfHeading(editor)],
+        //   [isRangeMiddle(editor), handleEnterAtMiddleOfHeading(editor)],
+        //   [() => insertBreak()],
+        // ])(statement)
 
-          if (isEnd) {
-            Editor.withoutNormalizing(editor, () => {
-              if (hasChildrenGrouping) {
-                // create a statement as first child of the current group
-                Transforms.insertNodes(editor, createStatement(), {
-                  at: [...pPath, 1, 0],
-                })
-              } else {
-                // create a new group below the current heading
-                Transforms.insertNodes(editor, group([createStatement()]), {
-                  at: [...pPath, 1],
-                })
-              }
-              Transforms.select(editor, [...pPath, 1, 0])
-            })
+        const isStart = isRangeStart(editor)([...path, 0])
+        const isEnd = isRangeEnd(editor)([...path, 0])
+        const isMiddle = !isStart && !isEnd
 
-            return
-          }
+        console.log('heading', {isStart, isEnd, isMiddle})
 
-          if (isStart) {
-            // create statement at same path. the same as in the statement plugin!
-            Editor.withoutNormalizing(editor, () => {
-              Transforms.insertNodes(editor, createStatement(), {at: pPath})
-              Transforms.select(editor, Editor.start(editor, Editor.start(editor, Path.next(pPath))))
-            })
-            return
-          }
-
-          // the selection is in the middle of a heading
-          Editor.withoutNormalizing(editor, () => {
-            Transforms.splitNodes(editor)
-            const newParagraphPath = [...pPath, 1]
-            Transforms.setNodes(editor, {type: ELEMENT_PARAGRAPH}, {at: newParagraphPath})
-
-            if (hasChildrenGrouping) {
-              //   // the heading already has a child group, the new statement should be the first child of it
-              Transforms.wrapNodes(editor, statement([]), {at: newParagraphPath})
-              Transforms.moveNodes(editor, {at: newParagraphPath, to: [...pPath, 2, 0]})
-            } else {
-              //   Transforms.wrapNodes(editor, group([statement([])]), {at: newParagraphPath})
-              Transforms.wrapNodes(editor, group([statement([])]), {at: newParagraphPath})
-            }
-          })
-
-          return
-        }
+        if (isStart) return handleEnterAtStartOfHeading(editor)(headingNode)
+        if (isEnd) return handleEnterAtEndOfHeading(editor)(headingNode)
+        if (isMiddle) return handleEnterAtMiddleOfHeading(editor)(headingNode)
       }
+
       insertBreak()
     }
 
     return editor
   },
 })
-type GetParentResult<T = Ancestor> = {
-  isStart: boolean
-  isEnd: boolean
-  parent: NodeEntry<T>
-}
-function getFlowContentParent<T = Statement | HeadingType | Blockquote>(
-  editor: BaseEditor & ReactEditor,
-  selection: BaseSelection,
-  parentType: 'heading' | 'statement' | 'blockquote' | undefined,
-): GetParentResult<T> | undefined {
-  const type = parentType ?? 'statement'
-  console.log('🚀 ~ file: heading.tsx ~ line 95 ~ type', type)
-  const parent: NodeEntry<T> = Editor.above(editor, {
-    match: (n) => isFlowContent(n),
+
+const handleEnterAtStartOfHeading = (editor: MTTEditor) => (heading: NodeEntry<HeadingType>) => {
+  console.log('Heading: AT Start')
+  const [node, path] = heading
+
+  // create statement at same path. the same as in the statement plugin!
+  Editor.withoutNormalizing(editor, () => {
+    Transforms.insertNodes(editor, createStatement(), {at: path})
+    Transforms.select(editor, Editor.start(editor, Path.next(path)))
   })
-
-  if (!parent) return
-
-  const [node, path] = parent
-
-  if (node.type != parentType) return
-
-  const isStart = Editor.isStart(editor, selection.focus, [...path, 0])
-  const isEnd = Editor.isEnd(editor, selection.focus, [...path, 0])
-  console.log({selection, end: Editor.end(editor, path)})
-
-  return {
-    isStart,
-    isEnd,
-    parent,
-  }
+}
+const handleEnterAtEndOfHeading = (editor: MTTEditor) => (heading: NodeEntry<HeadingType>) => {
+  console.log('Heading: AT End')
+  const [node, path] = heading
+  const hasChildrenGrouping = node.children.length == 2
+  let targetPath = [...path, 1, 0]
+  Editor.withoutNormalizing(editor, () => {
+    if (hasChildrenGrouping) {
+      // create a statement as first child of the current group
+      Transforms.insertNodes(editor, createStatement(), {
+        at: [...path, 1, 0],
+      })
+    } else {
+      // create a new group below the current heading
+      Transforms.insertNodes(editor, group([createStatement()]), {
+        at: [...path, 1],
+      })
+    }
+    Transforms.select(editor, [...path, 1, 0])
+  })
+}
+const handleEnterAtMiddleOfHeading = (editor: MTTEditor) => (heading: NodeEntry<HeadingType>) => {
+  console.log('Heading: AT Middle')
+  const [node, path] = heading
+  let targetPath = []
 }
