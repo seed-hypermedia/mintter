@@ -6,10 +6,9 @@ export const ELEMENT_UNORDERED_LIST = 'unorderedList'
 
 export const UnorderedList = styled(Group, {
   margin: 0,
+  marginLeft: '-$8',
   padding: 0,
   position: 'relative',
-  listStyleType: 'disc',
-  flexWrap: 'wrap',
 })
 
 export const createUnorderedListPlugin = (): EditorPlugin => ({

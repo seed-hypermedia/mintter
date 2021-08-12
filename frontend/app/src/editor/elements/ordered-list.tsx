@@ -7,6 +7,7 @@ export const ELEMENT_ORDERED_LIST = 'orderedList'
 export const OrderedList = styled(Group, {
   margin: 0,
   padding: 0,
+  marginLeft: '-$8',
 })
 
 export const createOrderedListPlugin = (): EditorPlugin => ({

@@ -153,24 +153,18 @@ export default function EditorPage() {
             }}
           />
           <Separator />
-          <Box
-            css={{
-              marginLeft: '-$7',
-            }}
-          >
-            <Editor
-              plugins={plugins}
-              value={context.localDraft?.children}
-              onChange={(value) =>
-                send({
-                  type: 'UPDATE',
-                  payload: {
-                    children: value,
-                  },
-                })
-              }
-            />
-          </Box>
+          <Editor
+            plugins={plugins}
+            value={context.localDraft?.children}
+            onChange={(value) =>
+              send({
+                type: 'UPDATE',
+                payload: {
+                  children: value,
+                },
+              })
+            }
+          />
         </Container>
         {isSidepanelOpen && <Sidepanel gridArea="rightside" />}
       </Box>

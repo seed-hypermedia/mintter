@@ -38,7 +38,7 @@ export function Editor({plugins = [], value, onChange, children}: EditorProps): 
     <Box
       css={{
         position: 'relative',
-        width: '$full',
+        marginLeft: '-$8',
       }}
     >
       <Slate editor={editor} value={value} onChange={onChange}>

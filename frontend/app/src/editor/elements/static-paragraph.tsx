@@ -11,18 +11,7 @@ import {ELEMENT_PARAGRAPH} from './paragraph'
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
 const StaticParagraph = styled(Text, {
-  // padding: '$1',
-  // display: 'block',
-  // paddingHorizontal: '$3',
-  // margin: 0,
-  // borderRadius: '$1',
-  // transition: 'all 0.1s ease',
-  // '&:hover': {
-  //   backgroundColor: '$background-muted',
-  // },
-  // fontFamily: '$alt',
   fontWeight: '$bold',
-  padding: 0,
 })
 
 const headingMap = {
@@ -59,7 +48,7 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
         <StaticParagraph
           {...sizeProps}
           data-element-type={element.type}
-          css={{paddingLeft: '$2', fontWeight: level ? '$bold' : '$regular', marginBottom: '$5'}}
+          css={{fontWeight: level ? '$bold' : '$regular', lineHeight: 2}}
           {...attributes}
         >
           {children}

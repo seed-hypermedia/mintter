@@ -1,7 +1,7 @@
 import {BaseEditor, BaseSelection, NodeEntry, Path, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
 import {Editor, Element} from 'slate'
-import {isFlowContent, Statement as StatementType} from '@mintter/mttast'
+import {isFlowContent, isGroupContent, Statement as StatementType} from '@mintter/mttast'
 import {
   isCollapsed,
   createStatement,
@@ -24,25 +24,36 @@ import {useEffect} from 'react'
 export const ELEMENT_STATEMENT = 'statement'
 
 export const Tools = styled('div', {
-  // width: 48,
   height: '$space$8',
   overflow: 'hidden',
-  marginLeft: '-$7',
-  flex: 'none',
+  alignSelf: 'center',
   display: 'flex',
+  alignItems: 'center',
 })
 const Statement = styled('li', {
   marginTop: '$3',
   padding: 0,
-  position: 'relative',
-  display: 'flex',
-  alignItems: 'flex-start',
   listStyle: 'none',
+  display: 'grid',
+  gridTemplateColumns: 'minmax($space$8, auto) 1fr',
+  gridTemplateRows: 'min-content auto',
+  gap: '0 $2',
+  gridTemplateAreas: `"controls content"
+  ". children"`,
+  [`& > ${Tools}`]: {
+    gridArea: 'controls',
+  },
+  "& > [data-element-type='paragraph']": {
+    gridArea: 'content',
+  },
+  '& > ul, & > ol': {
+    gridArea: 'children',
+  },
 })
 
 export const Dragger = styled('div', {
   // backgroundColor: 'red',
-  width: '$space$7',
+  width: '$space$8',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -51,7 +62,6 @@ export const Dragger = styled('div', {
   opacity: 0,
   transition: 'all ease-in-out 0.1s',
   '&:hover': {
-    backgroundColor: '$background-muted',
     opacity: 1,
     cursor: 'grab',
   },
@@ -76,18 +86,20 @@ export const createStatementPlugin = (): EditorPlugin => ({
             </Dragger>
             <Marker element={element} />
           </Tools>
-          <Box css={{flex: 1}}>{children}</Box>
+
+          {children}
         </Statement>
       )
     }
   },
   configureEditor(editor) {
-    const {insertBreak} = editor
+    const {insertBreak, deleteBackward} = editor
 
     editor.insertBreak = () => {
       const {selection} = editor
 
       const statement: NodeEntry<StatementType> = getParentFlowContent(editor)({type: ELEMENT_STATEMENT})
+
       if (statement) {
         const [node, path] = statement
         // cond([
@@ -101,14 +113,53 @@ export const createStatementPlugin = (): EditorPlugin => ({
         const isEnd = isRangeEnd(editor)([...path, 0])
         const isMiddle = !isStart && !isEnd
 
-        console.log('statement', {isStart, isEnd, isMiddle})
+        console.log('statement', {isStart, isEnd, node, path, selection})
 
         if (isStart) return handleEnterAtStartOfStatement(editor)(statement)
         if (isEnd) return handleEnterAtEndOfStatement(editor)(statement)
         if (isMiddle) return handleEnterAtMiddleOfStatement(editor)(statement)
+        return
       }
 
       insertBreak()
+    }
+
+    editor.deleteBackward = (unit) => {
+      console.log('deleteBackward: ', unit, editor.selection)
+      const {selection} = editor
+      const statement: NodeEntry<StatementType> = getParentFlowContent(editor)({type: ELEMENT_STATEMENT})
+
+      // TODO: is removing the statement and leaving an orphan paragraph
+
+      // if (statement) {
+      //   const [node, path] = statement
+
+      //   const isStart = isRangeStart(editor)([...path, 0])
+
+      //   console.log('statement', {isStart})
+
+      //   if (isStart) {
+      //     Transforms.unwrapNodes(editor, {at: path})
+      //     const parent = Editor.node(editor, Path.parent(path))
+      //     console.log('🚀 ~ file: statement.tsx ~ line 141 ~ editor.deleteBackward ~ parent', parent)
+
+      //     if (parent && isGroupContent(parent[0]) && parent[0].children.length == 1) {
+      //       //remove empty group
+      //       Transforms.unwrapNodes(editor, {at: path})
+      //     }
+
+      //     if (node.children.length == 2) {
+      //       Transforms.unwrapNodes(editor, {at: Path.next(path)})
+      //     }
+      //   }
+
+      //   // if (isStart) return handleDeleteAtStartOfHeading(editor)(headingNode)
+      //   // if (isEnd) return handleEnterAtEndOfHeading(editor)(headingNode)
+      //   // return handleEnterAtMiddleOfHeading(editor)(headingNode)
+      //   // return
+      // }
+
+      deleteBackward(unit)
     }
 
     return editor

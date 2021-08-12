@@ -4,6 +4,8 @@ import {BaseEditor, BaseRange, BaseSelection, NodeEntry, Point, Range, Editor, E
 import type {ReactEditor} from 'slate-react'
 import {ELEMENT_HEADING} from './elements/heading'
 import {ELEMENT_STATEMENT} from './elements/statement'
+import {ELEMENT_PARAGRAPH} from './elements/paragraph'
+import {ELEMENT_STATIC_PARAGRAPH} from './elements/static-paragraph'
 
 export type MTTEditor = BaseEditor & ReactEditor
 
@@ -17,13 +19,12 @@ export const hasSelection = (editor: MTTEditor) => !!editor.selection
 
 export const getParentFlowContent =
   (editor: MTTEditor) =>
-  ({at, type} = {}) => {
-    let above = Editor.above(editor, {
-      at,
-      match: (n) => !Editor.isEditor(n) && Element.isElement(n) && isFlowContent(n),
+  ({at = editor.selection, type} = {}) => {
+    const parent = Editor.parent(editor, at, {
+      depth: editor.selection?.anchor.path.length - 1,
     })
-    console.log('ABOVE: ', type, above, editor.selection)
-    return above
+    const [node, path] = parent
+    return node.type == type ? parent : null
   }
 
 export const isRangeStart = (editor: MTTEditor) => (path: Path) =>
@@ -31,6 +32,3 @@ export const isRangeStart = (editor: MTTEditor) => (path: Path) =>
 
 export const isRangeEnd = (editor: MTTEditor) => (path: Path) =>
   !!editor.selection && path.length > 2 && Editor.isEnd(editor, editor.selection.focus, path)
-
-export const isRangeMiddle = (editor: MTTEditor) => (path: Path) =>
-  !!editor.selection && path.length > 2 && !isRangeStart(editor)(path) && !isRangeEnd(editor)(path)

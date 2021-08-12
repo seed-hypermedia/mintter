@@ -7,7 +7,7 @@ export const Group = styled('ul', {
   margin: 0,
   padding: 0,
   position: 'relative',
-  marginLeft: '$6',
+  // marginLeft: '$6',
 })
 
 export const createGroupPlugin = (): EditorPlugin => ({

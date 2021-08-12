@@ -24,12 +24,23 @@ import {ELEMENT_PARAGRAPH} from './paragraph'
 export const ELEMENT_HEADING = 'heading'
 
 export const Heading = styled('li', {
-  marginTop: '$7',
-  padding: 0,
-  position: 'relative',
-  display: 'flex',
-  alignItems: 'flex-start',
-  listStyle: 'none',
+  marginTop: '$3',
+  display: 'grid',
+  gridTemplateColumns: '$space$8 1fr',
+  gridTemplateRows: 'auto auto',
+  gap: '0 $2',
+  gridTemplateAreas: `"controls content"
+  ". children"`,
+  [`& > ${Tools}`]: {
+    gridArea: 'controls',
+  },
+
+  "& > [data-element-type='staticParagraph']": {
+    gridArea: 'content',
+  },
+  '& > ul, & > ol': {
+    gridArea: 'children',
+  },
 })
 
 export const createHeadingPlugin = (): EditorPlugin => ({
@@ -45,61 +56,63 @@ export const createHeadingPlugin = (): EditorPlugin => ({
             </Dragger>
             <Marker element={element} />
           </Tools>
-          <Box
-            css={{
-              flex: 1,
-              '& > p': {
-                fontWeight: '$bold',
-              },
-            }}
-          >
-            {children}
-          </Box>
+          {children}
         </Heading>
       )
     }
   },
   configureEditor: (editor) => {
-    /**
-     * TODO: override insertBreak
-     * - if Start: ???
-     * - if End:
-     *  - create a group
-     *  - create a statement
-     *  - select child statement
-     * - if Middle:
-     *  - break static paragraph
-     *  - move text into new paragraph
-     *  - wrap paragraph in a statement
-     *  - wrap statement in a group (should be in the correct position: second child of heading)
-     *
-     */
-    const {insertBreak} = editor
+    const {insertBreak, deleteBackward} = editor
     editor.insertBreak = () => {
       const {selection} = editor
       const headingNode: NodeEntry<Heading> = getParentFlowContent(editor)({type: ELEMENT_HEADING})
+      console.log('🚀 ~ file: heading.tsx ~ line 81 ~ headingNode', headingNode)
 
       if (headingNode) {
         const [node, path] = headingNode
-        // cond([
-        //   [isRangeStart(editor), handleEnterAtStartOfHeading(editor)],
-        //   [isRangeEnd(editor), handleEnterAtEndOfHeading(editor)],
-        //   [isRangeMiddle(editor), handleEnterAtMiddleOfHeading(editor)],
-        //   [() => insertBreak()],
-        // ])(statement)
 
         const isStart = isRangeStart(editor)([...path, 0])
         const isEnd = isRangeEnd(editor)([...path, 0])
         const isMiddle = !isStart && !isEnd
 
-        console.log('heading', {isStart, isEnd, isMiddle})
+        console.log('heading', {isStart, isEnd})
 
         if (isStart) return handleEnterAtStartOfHeading(editor)(headingNode)
         if (isEnd) return handleEnterAtEndOfHeading(editor)(headingNode)
         if (isMiddle) return handleEnterAtMiddleOfHeading(editor)(headingNode)
+        return
       }
 
       insertBreak()
+    }
+
+    editor.deleteBackward = (unit) => {
+      console.log('deleteBackward: ', unit, editor.selection)
+      const {selection} = editor
+      const headingNode: NodeEntry<HeadingType> = getParentFlowContent(editor)({type: ELEMENT_HEADING})
+      console.log('🚀 ~ headingNode', headingNode)
+
+      if (headingNode) {
+        const [node, path] = headingNode
+
+        const isStart = isRangeStart(editor)([...path, 0])
+
+        console.log('heading', {isStart})
+
+        if (isStart) {
+          Transforms.unwrapNodes(editor, {at: path})
+          if (node.children.length == 2) {
+            Transforms.unwrapNodes(editor, {at: Path.next(path)})
+          }
+        }
+
+        // if (isStart) return handleDeleteAtStartOfHeading(editor)(headingNode)
+        // if (isEnd) return handleEnterAtEndOfHeading(editor)(headingNode)
+        // return handleEnterAtMiddleOfHeading(editor)(headingNode)
+        // return
+      }
+
+      deleteBackward(unit)
     }
 
     return editor
@@ -139,5 +152,24 @@ const handleEnterAtEndOfHeading = (editor: MTTEditor) => (heading: NodeEntry<Hea
 const handleEnterAtMiddleOfHeading = (editor: MTTEditor) => (heading: NodeEntry<HeadingType>) => {
   console.log('Heading: AT Middle')
   const [node, path] = heading
-  let targetPath = []
+  const hasChildrenGrouping = node.children.length == 2
+  let targetPath = [...path, 1, 0]
+  Editor.withoutNormalizing(editor, () => {
+    Transforms.splitNodes(editor)
+    Transforms.setNodes(editor, {type: ELEMENT_PARAGRAPH}, {at: [...path, 1]})
+    Transforms.wrapNodes(editor, statement([]), {at: [...path, 1]})
+    console.log(node)
+    if (hasChildrenGrouping) {
+      Transforms.moveNodes(editor, {at: [...path, 1], to: [...path, 2, 0]})
+    } else {
+      Transforms.wrapNodes(editor, group([]), {at: [...path, 1]})
+    }
+  })
+}
+
+const handleDeleteAtStartOfHeading = (editor: MTTEditor) => (heading: NodeEntry<HeadingType>) => {
+  console.log('Heading: Delete at START')
+  /**
+   * - if
+   */
 }

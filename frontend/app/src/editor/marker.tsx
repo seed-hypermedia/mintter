@@ -23,12 +23,14 @@ function Disc() {
 
 export function Marker({element}) {
   const {type, path} = useParentType(element)
-  return (
-    type != ELEMENT_GROUP && (
+  console.log('market type: ', type, path)
+
+  if (type == ELEMENT_UNORDERED_LIST || type == ELEMENT_ORDERED_LIST) {
+    return (
       <Box
         contentEditable={false}
         css={{
-          width: 24,
+          width: 32,
           height: 32,
           display: 'flex',
           alignItems: 'center',
@@ -42,7 +44,9 @@ export function Marker({element}) {
         ) : null}
       </Box>
     )
-  )
+  }
+
+  return null
 }
 
 function useParentType(element) {
