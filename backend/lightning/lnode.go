@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"reflect"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/jessevdk/go-flags"
 	"github.com/lightningnetwork/lnd"
+	"github.com/lightningnetwork/lnd/aezeed"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/chainrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/invoicesrpc"
@@ -21,24 +23,6 @@ import (
 
 	"mintter/backend/config"
 )
-
-// API represents the lnnode exposed functions that are accessible for
-// mintter services to use.
-// It is mainly enable the service to subscribe to various daemon events
-// and get an APIClient to query the daemon directly via RPC.
-type API interface {
-	SubscribeEvents() (*subscribe.Client, error)
-	HasActiveChannel() bool
-	IsReadyForPayment() bool
-	WaitReadyForPayment(timeout time.Duration) error
-	NodePubkey() string
-	APIClient() lnrpc.LightningClient
-	RouterClient() routerrpc.RouterClient
-	WalletKitClient() walletrpc.WalletKitClient
-	ChainNotifierClient() chainrpc.ChainNotifierClient
-	InvoicesClient() invoicesrpc.InvoicesClient
-	SignerClient() signrpc.SignerClient
-}
 
 // Daemon contains data regarding the lightning daemon.
 type Ldaemon struct {
@@ -53,6 +37,7 @@ type Ldaemon struct {
 	wg                  sync.WaitGroup
 	interceptor         signal.Interceptor
 	lightningClient     lnrpc.LightningClient
+	unlockerClient      lnrpc.WalletUnlockerClient
 	routerClient        routerrpc.RouterClient
 	walletKitClient     walletrpc.WalletKitClient
 	chainNotifierClient chainrpc.ChainNotifierClient
@@ -71,6 +56,52 @@ func NewLdaemon(log *zap.Logger, cfg *config.LND, startBeforeSync bool) (*Ldaemo
 		ntfnServer: subscribe.NewServer(),
 		log:        log,
 	}, nil
+}
+
+// Stop is used to stop the lightning network daemon.
+func (d *Ldaemon) Stop() error {
+	if atomic.SwapInt32(&d.stopped, 1) == 0 {
+		d.stopDaemon()
+		d.ntfnServer.Stop()
+	}
+	d.wg.Wait()
+	d.log.Info("Daemon shutdown successfully")
+	return nil
+}
+
+// Start is used to start the lightning network daemon.
+func (d *Ldaemon) Start(Passphrase []byte,
+	WalletSeed *aezeed.CipherSeed, RecoveryWindow uint32) error {
+	if atomic.SwapInt32(&d.started, 1) == 1 {
+		return fmt.Errorf("Daemon already started")
+	}
+	d.startTime = time.Now()
+
+	if err := d.ntfnServer.Start(); err != nil {
+		return fmt.Errorf("Failed to start ntfnServer: %v", err)
+	}
+
+	if err := checkMacaroons(d.cfg); err != nil {
+		d.log.Error("Something went wrong checking macaroons",
+			zap.String("err", err.Error()))
+		return err
+	}
+
+	if _, err := d.startDaemon(); err != nil {
+		return fmt.Errorf("Failed to start daemon: %v", err)
+	}
+
+	return nil
+}
+
+// RestartDaemon is used to restart a daemon that from some reason failed to start
+// or was started and failed at some later point.
+func (d *Ldaemon) RestartDaemon() error {
+	if atomic.LoadInt32(&d.started) == 0 {
+		return fmt.Errorf("Daemon must be started before attempt to restart")
+	}
+	_, err := d.startDaemon()
+	return err
 }
 
 func (d *Ldaemon) stopDaemon() {
@@ -237,17 +268,17 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 	return conf, nil
 }
 
-func (d *Ldaemon) startDaemon() error {
+func (d *Ldaemon) startDaemon() (*lnd.Config, error) {
 	d.Lock()
 	defer d.Unlock()
 	if d.daemonRunning {
-		return fmt.Errorf("Daemon already running")
+		return nil, fmt.Errorf("Daemon already running")
 	}
 
 	// Hook interceptor for os signals.
 	shutdownInterceptor, err := signal.Intercept()
 	if err != nil {
-		return fmt.Errorf("Problem getting interceptor" + err.Error())
+		return nil, fmt.Errorf("Problem getting interceptor" + err.Error())
 	}
 
 	d.interceptor = shutdownInterceptor
@@ -259,6 +290,7 @@ func (d *Ldaemon) startDaemon() error {
 	go d.notifyWhenReady(readyChan)
 	d.daemonRunning = true
 
+	config_chan := make(chan *lnd.Config, 1)
 	// Run the daemon
 	go func() {
 		defer func() {
@@ -267,16 +299,21 @@ func (d *Ldaemon) startDaemon() error {
 		}()
 
 		lndConfig, err := d.createConfig(d.cfg.LndDir)
+		config_chan <- lndConfig
+		close(config_chan)
 		if err != nil {
 			d.log.Error("Failed to create config", zap.String("err", err.Error()))
+		} else {
+			d.log.Info("Stating LND Daemon")
+			err = lnd.Main(lndConfig, lnd.ListenerCfg{}, d.interceptor)
+			if err != nil {
+				d.log.Error("Main function returned with error", zap.String("err", err.Error()))
+			}
+			d.log.Info("LND Daemon Finished")
 		}
-		d.log.Info("Stating LND Daemon")
-		err = lnd.Main(lndConfig, lnd.ListenerCfg{}, d.interceptor)
-		if err != nil {
-			d.log.Error("Main function returned with error", zap.String("err", err.Error()))
-		}
-		d.log.Info("LND Daemon Finished")
-
 	}()
-	return nil
+
+	lnd_config := <-config_chan
+
+	return lnd_config, nil
 }

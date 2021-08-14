@@ -71,6 +71,7 @@ func (d *Ldaemon) startSubscriptions() error {
 
 	d.Lock()
 	d.lightningClient = lnrpc.NewLightningClient(grpcCon)
+	d.unlockerClient = lnrpc.NewWalletUnlockerClient(grpcCon)
 	d.routerClient = routerrpc.NewRouterClient(grpcCon)
 	d.walletKitClient = walletrpc.NewWalletKitClient(grpcCon)
 	d.chainNotifierClient = chainrpc.NewChainNotifierClient(grpcCon)
