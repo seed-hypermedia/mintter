@@ -56,6 +56,15 @@ type API interface {
 	SignerClient() signrpc.SignerClient
 }
 
+type WalletSecurity struct {
+	WalletPassphrase string   `help:"The password for encrypting the wallet. Mandatory"`
+	RecoveryWindow   int32    `help:"A positive number indicating the lookback period (from the tip of the chain) in blocks to start scanning for funds in case we want to recover an already created wallet"`
+	AezeedPassphrase string   `help:"The password to encrypt the Aezeed superseed. Not to confuse with the wallet password, it may be diferent. Optional"`
+	AezeedMnemonics  []string `help:"The mnemonics used to regenerate the wallet"`
+	SeedEntropy      []byte   `help:"An entropy random enough used to derive the seed of the wallet"`
+	StatelessInit    bool     `help:"If true, no macaroon will be written on disk on any wallet manimulation (unlock, init or change password) It does not mean a new macaroon is not generated, just that it is not written to disk"`
+}
+
 // HasActiveChannel returns true if the node has at least one active channel.
 func (d *Ldaemon) HasActiveChannel() bool {
 	lnclient := d.APIClient()
@@ -138,8 +147,10 @@ func (d *Ldaemon) APIClient() lnrpc.LightningClient {
 // passphrase. If the StatelessInit param is false,
 // a macaroon is also written to disk.
 func (d *Ldaemon) UnlockWallet(Passphrase string, StatelessInit bool) error {
+	/*FIXME do we really need these locks here?
 	d.Lock()
 	defer d.Unlock()
+	*/
 
 	if len(Passphrase) == 0 {
 		return fmt.Errorf("You must provide a non null password")
@@ -170,8 +181,10 @@ func (d *Ldaemon) UnlockWallet(Passphrase string, StatelessInit bool) error {
 // StatelessInit param is false, the macaroon is also written to disk.
 func (d *Ldaemon) ChangeWalletPassPhrase(OldPassphrase string,
 	NewPassphrase string, StatelessInit bool) ([]byte, error) {
+	/*FIXME do we really need these locks here?
 	d.Lock()
 	defer d.Unlock()
+	*/
 
 	if len(NewPassphrase) == 0 {
 		return nil, fmt.Errorf("You must provide a non null new password")
@@ -206,41 +219,40 @@ func (d *Ldaemon) ChangeWalletPassPhrase(OldPassphrase string,
 // new ones from the entropy provided. On success, this function returns the
 // serialized admin macaroon to use in all rpc calls. If the StatelessInit param
 // is false, the macaroon is also written to disk.
-func (d *Ldaemon) InitWallet(WalletPassphrase string, RecoveryWindow int32,
-	AezeedPassphrase string, AezeedMnemonics []string, SeedEntropy []byte,
-	StatelessInit bool) ([]byte, error) {
+func (d *Ldaemon) InitWallet(WalletSecurity WalletSecurity) ([]byte, error) {
+	/*FIXME do we really need these locks here?
 	d.Lock()
 	defer d.Unlock()
-
+	*/
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	// if the user wants to init a wallet from an entropy instead of
 	// from an already created mnemonics
-	if len(SeedEntropy) != 0 {
+	if len(WalletSecurity.SeedEntropy) != 0 {
 		getSeedReq := &lnrpc.GenSeedRequest{
-			AezeedPassphrase: []byte(AezeedPassphrase),
-			SeedEntropy:      SeedEntropy,
+			AezeedPassphrase: []byte(WalletSecurity.AezeedPassphrase),
+			SeedEntropy:      WalletSecurity.SeedEntropy,
 		}
 		if seed_res, err := d.unlockerClient.GenSeed(ctx, getSeedReq); err != nil {
 			d.log.Error("Could not get seed from parameters provided", zap.String("err", err.Error()))
 			return nil, err
 		} else {
-			AezeedMnemonics = seed_res.CipherSeedMnemonic
+			WalletSecurity.AezeedMnemonics = seed_res.CipherSeedMnemonic
 		}
 		d.log.Info("Init Wallet from entropy")
 
 		// if the user already has mnemonics from a previous instance or
 		// it wants to recover a node, then we create from mnemonics
-	} else if len(AezeedMnemonics) != 0 {
-		if RecoveryWindow > 0 {
+	} else if len(WalletSecurity.AezeedMnemonics) != 0 {
+		if WalletSecurity.RecoveryWindow > 0 {
 			d.log.Info("Init Wallet from Mnemonics")
-		} else if RecoveryWindow == 0 {
+		} else if WalletSecurity.RecoveryWindow == 0 {
 			// This would be strange since if the user already has mnemonics and wants to create a new wallet,
 			// is usually because it is in recovery mode, but with a window length of 0, no past funds will be found
 			d.log.Warn("Init Wallet from Mnemonics but with a 0 recovery window. No funds will be recovered")
 		} else {
-			return nil, fmt.Errorf("Recovery window must be >= 0 and it is %v", RecoveryWindow)
+			return nil, fmt.Errorf("Recovery window must be >= 0 and it is %v", WalletSecurity.RecoveryWindow)
 		}
 
 	} else {
@@ -248,16 +260,17 @@ func (d *Ldaemon) InitWallet(WalletPassphrase string, RecoveryWindow int32,
 	}
 
 	initWalletrequest := &lnrpc.InitWalletRequest{
-		WalletPassword:     []byte(WalletPassphrase),
-		CipherSeedMnemonic: AezeedMnemonics,
-		AezeedPassphrase:   []byte(AezeedPassphrase),
-		RecoveryWindow:     RecoveryWindow,
+		WalletPassword:     []byte(WalletSecurity.WalletPassphrase),
+		CipherSeedMnemonic: WalletSecurity.AezeedMnemonics,
+		AezeedPassphrase:   []byte(WalletSecurity.AezeedPassphrase),
+		RecoveryWindow:     WalletSecurity.RecoveryWindow,
 		ChannelBackups:     &lnrpc.ChanBackupSnapshot{},
-		StatelessInit:      StatelessInit,
+		StatelessInit:      WalletSecurity.StatelessInit,
 	}
 	if init_res, err := d.unlockerClient.InitWallet(ctx, initWalletrequest); err != nil {
 		d.log.Error("Could not InitWallet response from params provided",
-			zap.Int32("RecoveryWindow", RecoveryWindow), zap.Bool("StatelessInit", StatelessInit))
+			zap.Int32("RecoveryWindow", WalletSecurity.RecoveryWindow),
+			zap.Bool("StatelessInit", WalletSecurity.StatelessInit))
 		return nil, err
 	} else {
 		return init_res.AdminMacaroon, nil

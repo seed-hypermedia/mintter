@@ -10,7 +10,6 @@ import (
 
 	"github.com/jessevdk/go-flags"
 	"github.com/lightningnetwork/lnd"
-	"github.com/lightningnetwork/lnd/aezeed"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/chainrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/invoicesrpc"
@@ -70,8 +69,7 @@ func (d *Ldaemon) Stop() error {
 }
 
 // Start is used to start the lightning network daemon.
-func (d *Ldaemon) Start(Passphrase []byte,
-	WalletSeed *aezeed.CipherSeed, RecoveryWindow uint32) error {
+func (d *Ldaemon) Start(WalletSecurity WalletSecurity) error {
 	if atomic.SwapInt32(&d.started, 1) == 1 {
 		return fmt.Errorf("Daemon already started")
 	}
@@ -87,7 +85,7 @@ func (d *Ldaemon) Start(Passphrase []byte,
 		return err
 	}
 
-	if _, err := d.startDaemon(); err != nil {
+	if _, _, err := d.startDaemon(WalletSecurity); err != nil {
 		return fmt.Errorf("Failed to start daemon: %v", err)
 	}
 
@@ -96,11 +94,11 @@ func (d *Ldaemon) Start(Passphrase []byte,
 
 // RestartDaemon is used to restart a daemon that from some reason failed to start
 // or was started and failed at some later point.
-func (d *Ldaemon) RestartDaemon() error {
+func (d *Ldaemon) RestartDaemon(WalletSecurity WalletSecurity) error {
 	if atomic.LoadInt32(&d.started) == 0 {
 		return fmt.Errorf("Daemon must be started before attempt to restart")
 	}
-	_, err := d.startDaemon()
+	_, _, err := d.startDaemon(WalletSecurity)
 	return err
 }
 
@@ -268,17 +266,17 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 	return conf, nil
 }
 
-func (d *Ldaemon) startDaemon() (*lnd.Config, error) {
+func (d *Ldaemon) startDaemon(WalletSecurity WalletSecurity) (*lnd.Config, []byte, error) {
 	d.Lock()
 	defer d.Unlock()
 	if d.daemonRunning {
-		return nil, fmt.Errorf("Daemon already running")
+		return nil, nil, fmt.Errorf("Daemon already running")
 	}
 
 	// Hook interceptor for os signals.
 	shutdownInterceptor, err := signal.Intercept()
 	if err != nil {
-		return nil, fmt.Errorf("Problem getting interceptor" + err.Error())
+		return nil, nil, fmt.Errorf("Problem getting interceptor" + err.Error())
 	}
 
 	d.interceptor = shutdownInterceptor
@@ -286,10 +284,8 @@ func (d *Ldaemon) startDaemon() (*lnd.Config, error) {
 	d.quitChan = make(chan struct{})
 	readyChan := make(chan interface{})
 
-	d.wg.Add(2)
-	go d.notifyWhenReady(readyChan)
+	d.wg.Add(1)
 	d.daemonRunning = true
-
 	config_chan := make(chan *lnd.Config, 1)
 	// Run the daemon
 	go func() {
@@ -315,5 +311,15 @@ func (d *Ldaemon) startDaemon() (*lnd.Config, error) {
 
 	lnd_config := <-config_chan
 
-	return lnd_config, nil
+	d.wg.Add(1)
+
+	go d.notifyWhenReady(readyChan)
+
+	if macaroon, err := d.InitWallet(WalletSecurity); err != nil {
+		d.log.Error("Could not init wallet", zap.String("err", err.Error()))
+		return lnd_config, macaroon, err
+	} else {
+		return lnd_config, macaroon, err
+	}
+
 }
