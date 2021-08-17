@@ -67,7 +67,7 @@ require (
 	github.com/rs/cors v1.7.0
 	github.com/sanity-io/litter v1.3.0
 	github.com/stretchr/testify v1.7.0
-	github.com/tidwall/gjson v1.8.1 // indirect
+	github.com/tidwall/gjson v1.8.1
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tidwall/tinyqueue v0.1.1
 	github.com/whyrusleeping/cbor-gen v0.0.0-20210422071115-ad5b82622e0f
