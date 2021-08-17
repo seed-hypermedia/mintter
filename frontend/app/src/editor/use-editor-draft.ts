@@ -1,106 +1,247 @@
-import {useQueryClient, useMutation} from 'react-query'
-import {useMemo, useEffect, Dispatch} from 'react'
-import {EditorAction, EditorState, useEditorReducer} from './editor-reducer'
-import {Document, publishDraft, updateDraft} from '@mintter/client'
-import {useDraft} from '@mintter/client/hooks'
-import {useStoreEditorValue} from '@udecode/slate-plugins'
-import {toEditorValue} from './to-editor-value'
-import {toDocument} from './to-document'
+/**
+ *
+ *
+ * TODOS:
+ * - loosing focus from editor when save
+ *
+ */
 
-type UseEditorValue = {
-  value: EditorState
-  send: Dispatch<EditorAction>
-  save: (d: Document) => Promise<Document>
-  publish: () => Promise<void>
+import {useEffect, useMemo, useReducer} from 'react'
+import {FlowContent, getDraft, GroupingContent, u} from '@mintter/client'
+import {useMachine} from '@xstate/react'
+import {ActionFunction, assign, createMachine} from 'xstate'
+import type {Descendant} from 'mixtape'
+import {nanoid} from 'nanoid'
+import isEqual from 'lodash.isequal'
+import {QueryClient, useQueryClient} from 'react-query'
+
+type Document = {
+  id: string
+  title: string
+  subtitle: string
+  children: [GroupingContent]
 }
 
-export function useEditorDraft(documentId: string): UseQueryResult<UseEditorValue> {
-  // set local state
-  /**
-   * need to do:
-   * - fetch draft
-   * - convert draft into editor value
-   * - effect to autosave draft
-   * need to return:
-   * - editor value
-   * - publish function
-   */
-  const queryClient = useQueryClient()
-  const draftQuery = useDraft(documentId)
-  const [value, send] = useEditorReducer()
-  const currentEditorValue = useStoreEditorValue('editor')
-  const document = useMemo(() => draftQuery.data, [draftQuery.data])
+export type DRAFT_FETCH_EVENT = {
+  type: 'FETCH'
+  documentId: string
+}
 
-  useEffect(() => {
-    if (draftQuery.isSuccess && draftQuery.data) {
-      const {title, subtitle} = draftQuery.data
-      send({
-        type: 'full',
-        payload: {
-          title,
-          subtitle,
-          blocks: toEditorValue(draftQuery.data),
-        },
-      })
+export type DRAFT_UPDATE_EVENT = {
+  type: 'UPDATE'
+  payload: Partial<Document>
+}
+
+export type DRAFT_RECEIVE_DATA_EVENT = {
+  type: 'RECEIVE_DATA'
+  data: Document
+}
+
+export type DraftEditorMachineEvent =
+  | DRAFT_FETCH_EVENT
+  | DRAFT_RECEIVE_DATA_EVENT
+  | DRAFT_UPDATE_EVENT
+  | {
+      type: 'CANCEL'
     }
-  }, [draftQuery.data])
+  | {
+      type: 'PUBLISH'
+    }
 
-  const {mutateAsync: save} = useMutation(
-    async () => {
-      const {id, author} = document
-      const {title, subtitle} = value
-      const newDoc = toDocument({
-        id,
-        author,
-        title,
-        subtitle,
-        blocks: currentEditorValue,
-      })
-      return await updateDraft(newDoc)
+export type DraftEditorMachineContext = {
+  retries: number
+  prevDraft: Document | null
+  localDraft: Document | null
+  errorMessage?: string
+}
+
+interface DraftEditorMachineProps {
+  afterSave: ActionFunction
+  afterPublish: ActionFunction
+  client: QueryClient
+}
+
+const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachineProps) =>
+  createMachine<DraftEditorMachineContext, DraftEditorMachineEvent>(
+    {
+      id: 'editor',
+      initial: 'idle',
+      context: {
+        retries: 0,
+        prevDraft: null,
+        localDraft: null,
+        errorMessage: '',
+      },
+      states: {
+        idle: {
+          on: {
+            FETCH: {
+              target: 'fetching',
+            },
+          },
+          initial: 'noError',
+          states: {
+            noError: {
+              entry: ['clearErrorMessage'],
+            },
+            errored: {
+              on: {
+                FETCH: {
+                  target: '#fetching',
+                  actions: assign({
+                    retries: (context, event) => context.retries + 1,
+                  }),
+                },
+              },
+            },
+          },
+        },
+        fetching: {
+          id: 'fetching',
+          on: {
+            FETCH: {},
+            CANCEL: {
+              target: 'idle',
+            },
+            RECEIVE_DATA: {
+              target: 'editing',
+              actions: 'assignDataToContext',
+            },
+          },
+          invoke: {
+            src: 'fetchData',
+            onError: {
+              target: 'idle.errored',
+              actions: 'assignErrorToContext',
+            },
+            onDone: {
+              target: '#editing',
+              actions: ['assignDataToContext'],
+            },
+          },
+        },
+        editing: {
+          id: 'editing',
+          initial: 'idle',
+          states: {
+            idle: {
+              entry: 'checkContext',
+              on: {
+                UPDATE: {
+                  actions: ['updateValueToContext'],
+                  target: 'debouncing',
+                },
+                PUBLISH: {
+                  target: '#published',
+                },
+              },
+            },
+            debouncing: {
+              on: {
+                UPDATE: {
+                  actions: ['updateValueToContext'],
+                  target: 'debouncing',
+                },
+              },
+              after: {
+                // 1000: [
+                //   {
+                //     target: 'saving',
+                //     cond: 'isValueDirty',
+                //   },
+                //   {
+                //     target: 'idle',
+                //   },
+                // ],
+              },
+            },
+            saving: {
+              invoke: {
+                src: 'saveDraft',
+                onDone: {
+                  target: 'idle',
+                  actions: ['afterSave', 'assignDataToContext'],
+                },
+                onError: {
+                  target: 'idle',
+                  actions: ['assignErrorToContext'],
+                },
+              },
+            },
+          },
+        },
+        published: {
+          id: 'published',
+          type: 'final',
+          entry: ['afterPublish'],
+        },
+      },
     },
     {
-      onMutate: async () => {
-        await queryClient.cancelQueries(['Draft', document?.id])
-        await queryClient.invalidateQueries('DraftList')
-
-        const previousDraft = queryClient.getQueryData<Document>(['Draft', document?.id])
-
-        const newDraft = toDocument({
-          id: document.id,
-          title: value.title,
-          subtitle: value.subtitle,
-          author: document.author,
-          blocks: currentEditorValue,
-        })
-
-        if (previousDraft) {
-          queryClient.setQueryData<Document>(['Draft', document?.id], newDraft)
-        }
-
-        return {previousDraft, newDraft}
+      guards: {
+        isValueDirty: (context) => {
+          return !isEqual(context.localDraft, context.prevDraft)
+        },
+      },
+      services: {
+        checkContext: (context, event) => {
+          console.log('checking!!', {context, event})
+        },
+        fetchData: (context, event) => () => {
+          return client.fetchQuery(['Draft', event.documentId], async ({queryKey}) => {
+            const [_key, draftId] = queryKey
+            return await await getDraft(draftId)
+          })
+        },
+        saveDraft: (context, event) => () => {
+          return saveDraft(context.localDraft)
+        },
+      },
+      actions: {
+        updateValueToContext: assign({
+          localDraft: (context, event) => {
+            return {
+              ...context.localDraft,
+              ...(event as DRAFT_UPDATE_EVENT).payload,
+            }
+          },
+        }),
+        assignDataToContext: assign((context, event) => {
+          console.log('assignDataToContext', event)
+          // if (event.type !== 'RECEIVE_DATA') return {}
+          return {
+            prevDraft: (event as DRAFT_RECEIVE_DATA_EVENT).data,
+            localDraft: (event as DRAFT_RECEIVE_DATA_EVENT).data,
+          }
+        }),
+        clearErrorMessage: assign({
+          errorMessage: undefined,
+        }),
+        assignErrorToContext: assign((context, event) => {
+          console.log('assignErrorToContext', {context, event})
+          return {
+            errorMessage: event.data?.message || 'An unknown error occurred',
+          }
+        }),
+        afterPublish,
+        afterSave,
       },
     },
   )
 
-  const {mutateAsync: publish} = useMutation(async () => {
-    await save()
-    return await publishDraft(document?.id)
-  })
-
+export function useEditorDraft({documentId, ...afterActions}) {
+  const client = useQueryClient()
+  const [state, send] = useMachine(draftEditorMachine({...afterActions, client}), {devTools: true})
+  // TODO: refactor machint to use queryClient in the services
   useEffect(() => {
-    // save before closing the page
-    return () => {
-      save()
+    if (documentId) {
+      send({type: 'FETCH', documentId})
     }
   }, [])
+  return [state, send] as const
+}
 
-  return {
-    ...draftQuery,
-    data: {
-      value,
-      send,
-      save,
-      publish,
-    },
-  }
+// TODO: change with RPC call
+async function saveDraft(data) {
+  return await Promise.resolve(data)
 }

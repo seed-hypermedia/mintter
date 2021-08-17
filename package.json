@@ -17,13 +17,14 @@
     "ui": "yarn workspace @mintter/ui",
     "app": "yarn workspace @mintter/app",
     "client": "yarn workspace @mintter/client",
+    "mttast": "yarn workspace @mintter/mttast",
+    "builder": "yarn workspace @mintter/mttast-builder",
+    "schema": "yarn workspace @mintter/mttast-schema",
     "clean": "gn gen out",
     "prepare": "husky install"
   },
   "workspaces": [
-    "frontend/app",
-    "frontend/client",
-    "frontend/ui"
+    "frontend/*"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.16.0",

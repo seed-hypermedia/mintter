@@ -1,0 +1,23 @@
+---
+"@mintter/app": patch
+---
+
+- implement mintter ast in the editor
+- use unified utils to create editor elements
+- editor elements
+  - group
+  - ul
+  - ol
+  - statement
+  - blockquote
+  - codeblock
+  - paragraph
+  - static-paragraph
+- editor leafs
+  - strong
+  - emphasis
+  - code
+  - underline
+  - strikethrough
+  - superscript
+  - subscript

@@ -7,8 +7,7 @@ import "google/protobuf/empty.proto";
 
 option go_package = "mintter/backend/api/documents/v1alpha;documents";
 
-// Drafts service is separate from Publications for the access-control purposes,
-// but overall there're not many differences between the two.
+// Drafts service exposes the functionality
 service Drafts {
   // Creates a new draft with a new permanent document ID.
   rpc CreateDraft(CreateDraftRequest) returns (Document);
@@ -30,11 +29,16 @@ service Drafts {
 }
 
 // Request to create a new draft.
-message CreateDraftRequest {}
+message CreateDraftRequest {
+  // Optional. Existing Document ID can be specified to update
+  // previously published document. A draft will be created
+  // with the content of the most recent known version.
+  string existing_document_id = 1;
+}
 
 // Request to delete an existing draft.
 message DeleteDraftRequest {
-  // ID of the document whose draft needs to be deleted.
+  // ID of the document whose draft needs to be deleted. Only one
   string document_id = 1;
 }
 
@@ -46,7 +50,7 @@ message GetDraftRequest {
 
 // Request to update an existing draft.
 message UpdateDraftRequest {
-  // Instance of the document.
+  // Instance of the document to be updated.
   Document document = 1;
 }
 
@@ -57,17 +61,13 @@ message ListDraftsRequest {
 
   // Optional. Token for the page to return.
   string page_token = 2;
-
-  // Optional. View of the each document instance to return.
-  DocumentView view = 3;
 }
 
 // Response for listing drafts.
 message ListDraftsResponse {
-  // Documents being matched by the list request. Items in this list
-  // won't be complete, and only basic information will be present.
-  // To get the full content a separate Get request is needed.
-  repeated Document documents = 1;
+  // Drafts matching the list request.
+  // Content is omitted.
+  repeated Document drafts = 1;
 
   // Token for the next page if there're any.
   string next_page_token = 2;
@@ -81,11 +81,11 @@ message PublishDraftRequest {
 
 // Response from publishing a draft.
 message PublishDraftResponse {
-  // Content-addressable version ID of the newly published document.
-  string version = 1;
+  // Document after it has been published.
+  Publication publication = 1;
 }
 
-// Publications service provides access to the publications.
+// Publications service provides access to published documents.
 service Publications {
   // Gets a single publication.
   rpc GetPublication(GetPublicationRequest) returns (Publication);
@@ -93,7 +93,7 @@ service Publications {
   // Deletes a publication from the local node. It removes all the patches corresponding to a document.
   rpc DeletePublication(DeletePublicationRequest) returns (google.protobuf.Empty);
 
-  // Lists stored publications.
+  // Lists stored publications. Only the most recent versions show up.
   rpc ListPublications(ListPublicationsRequest) returns (ListPublicationsResponse);
 }
 
@@ -102,13 +102,14 @@ message GetPublicationRequest {
   // Required. ID of the published document.
   string document_id = 1;
 
-  // Optional. Specific version of the published document. By default latest is returned.
+  // Optional. Specific version of the published document. If empty, the latest one is returned.
   string version = 2;
 }
 
 // Request for deleting a publication.
 message DeletePublicationRequest {
   // Document ID of the publication to be removed.
+  // All versions will also be removed.
   string document_id = 1;
 }
 
@@ -117,222 +118,64 @@ message ListPublicationsRequest {
   // Optional. Number of results per page. Default is defined by the server.
   int32 page_size = 1;
 
-  // Optional. Token of the page if obtained from the previous request.
+  // Optional. Value from next_page_token obtains from a previous response.
   string page_token = 2;
-
-  // Optional. View of each document instance in the list.
-  DocumentView view = 3;
 }
 
 // Response with list of publications.
 message ListPublicationsResponse {
-  // List of publications matching the request. Items in this list
-  // won't be complete, and only basic information will be present.
-  // To get the full content a separate Get request is needed.
+  // List of publications matching the request.
+  // Only most recent versions are returned.
+  // Content is omitted, only metadata is present.
   repeated Publication publications = 1;
 
   // Token for the next page if there're more results.
   string next_page_token = 2;
 }
 
-// A published document with a content-addressable version ID.
+// State of the document after publication.
 message Publication {
-  // TODO: return something to identify the state of the document.
-  // It could be the full list of changes or a version vector specified currently known heads.
+  // Version points to the state of the publication at some point in time.
+  // It is represented as a string, although it can be a list of CIDs.
+  // The order of hashes must be deterministic, which is tricky because
+  // CIDs can have different base encoding when represented as a string.
+  // So same hash, can have different string representations.
+  // We should either define a canonical base encoding, or sort binary
+  // representation of the hash portion of the CID.
+  // Anyway, all these details should be opaque for consumers of this API.
+  // On the other hand, if API consumers never compare versions as plain strings
+  // it doesn't really matter if different version strings point to the same document.
+  string version = 1;
 
-  // Output only. The actual document itself.
+  // Document metadata.
   Document document = 2;
+
+  // Time when this version was published.
+  google.protobuf.Timestamp publish_time = 3;
 }
 
-// Defines if the documents being returned should be displayed in full or only basic information.
-enum DocumentView {
-  // Default value. Same as BASIC.
-  VIEW_UNSPECIFIED = 0;
-
-  // Basic view. Do not display content nor links.
-  BASIC = 1;
-
-  // Full view. Return every field of the underlying resource.
-  FULL = 2;
-}
-
-// State of the Mintter document.
+// Document represents metadata and content of a draft or publication.
 message Document {
-  // Output only. Permanent ID of the document.
+  // Permanent ID of the document.
   string id = 1;
 
-  // Required. Title of the document.
-  string title = 2;
+  // Title of the document.
+  string title = 1;
 
-  // Required. Subtitle/abstract of the document.
-  string subtitle = 3;
+  // Subtitle of the document.
+  string subtitle = 2;
 
-  // Output only. ID of the author of the document.
-  string author = 4;
+  // Output only. Author of the document.
+  string author = 3;
 
-  // Optional. List style for displaying top-level document blocks.
-  ListStyle children_list_style = 5;
+  // Output only. Time when document was created.
+  google.protobuf.Timestamp create_time = 4;
 
-  // Required. List of top-level content blocks.
-  repeated string children = 6;
+  // Output only. Time when document was updated.
+  google.protobuf.Timestamp update_time = 5;
 
-  // Required. Lookup map of all the content blocks of this document.
-  map<string, Block> blocks = 7;
-
-  // Lookup map of all the links used in this document.
-  map<string, Link> links = 8;
-
-  // Output only. Time when first draft of this document was created.
-  google.protobuf.Timestamp create_time = 9;
-
-  // Output only. Time when this document was updated.
-  google.protobuf.Timestamp update_time = 10;
-
-  // Output only. Only set if this document is already published. Time when this
-  // document was published.
-  google.protobuf.Timestamp publish_time = 11;
-}
-
-// Link to another resource.
-message Link {
-  // Required. URI this link points to.
-  string uri = 1;
-
-  // Optional. Content type for the content this URI points to.
-  string mime_type = 2;
-}
-
-// List style for a list of blocks.
-enum ListStyle {
-  // Use no marker to display the block.
-  NONE = 0;
-
-  // Use a bullet marker to display the block.
-  BULLET = 1;
-
-  // Use an ordered number to display the block.
-  NUMBER = 2;
-}
-
-// Block of content.
-message Block {
-  // Block type. This is an enum to support future types, even though we only have defined a single heading type.
-  enum Type {
-    // Basic blocks.
-    BASIC = 0;
-
-    // Heading is used for blocks that are headings.
-    //
-    // Heading blocks should contain the enclosed content as children, unlike HTML and others where headings are
-    // detached from their content. We also don't have explicit heading levels to avoid common mistakes when authors
-    // would incorrectly use them. Instead we infer the level of the current heading by inspecting its parent blocks.
-    //
-    // Heading blocks must contain a single text run inline element, as headings can't be embedded objects, or support
-    // other rich text formatting.
-    HEADING = 1;
-  }
-
-  // Required. ID of the block. Must be unique within the document.
-  string id = 1;
-
-  // Required. ID of the parent block. Empty if this is a top-level block. The
-  // ID must be present in the blocks map of the document.
-  string parent = 2;
-
-  // Required. Type of this block.
-  Type type = 3;
-
-  // Required. List of inline elements/spans of this block. This is the actual
-  // content of the block.
-  repeated InlineElement elements = 4;
-
-  // Optional. Defines which list style must be applied to the children of this
-  // block if there're any.
-  ListStyle child_list_style = 5;
-
-  // Optional. List of IDs of child content blocks. The ID must be present in
-  // the blocks map of the document.
-  repeated string children = 6;
-}
-
-// Element of a content block.
-message InlineElement {
-  // Content of the inline element. Union type. Only one can be set.
-  oneof content {
-    // Text run with support for attributes. If multiple text inline elements
-    // have the same attributes, they are expected to be merged together by the
-    // client.
-    TextRun text_run = 1;
-
-    // Multimedia image.
-    Image image = 2;
-
-    // Quote from another Mintter document. The content is supposed to be
-    // resolved and brought-in by the client.
-    Quote quote = 3;
-  }
-}
-
-// Run of text with attributes.
-message TextRun {
-  // Actual string of text.
-  string text = 1;
-
-  // Bold formatting attribute.
-  bool bold = 2;
-
-  // Italic formatting attribute.
-  bool italic = 3;
-
-  // Underline formatting attribute.
-  bool underline = 4;
-
-  // Strikethrough formatting attribute.
-  bool strikethrough = 5;
-
-  // Code formatting attribute.
-  bool code = 6;
-
-  // Blockquote formatting attribute. This is available for content that can't be reused with Mintter Quotes.
-  bool blockquote = 7;
-
-  // If text is an anchor for a link - this must be a map key from the document's links lookup map that corresponds to
-  // the link.
-  string link_key = 8;
-}
-
-// Image embedded object.
-message Image {
-  // Alt text of the image. Useful for accessibility purposes. Supposed to
-  // describe the content of the image with words.
-  string alt_text = 1;
-
-  // Key to the link that points to the image. The key must be present in the
-  // top-level links map of the document.
-  string link_key = 2;
-}
-
-// Embedded object for Mintter Quote.
-message Quote {
-  // Required. Key from the document's links lookup map. Must be a link to a Mintter Block.
-  string link_key = 1;
-
-  // Optional. Offset from which quoted fragment starts.
-  int32 start_offset = 2;
-
-  // Optional. Offset where quoted fragment ends.
-  int32 end_offset = 3;
-}
-
-// === Events ===
-
-// This event gets produced every time a new document is published for the first time.
-// We'll have a feed of these events from which other peers can learn about new documents
-// being published.
-message DocumentPublished {
-  string document_id = 1;
-
-  string title = 2;
-
-  string subtitle = 3;
+  // JSON-serialized Mintter AST.
+  // It's expected to be the first child of the document root,
+  // which must be of type GroupingContent.
+  string content = 6;
 }
