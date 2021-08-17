@@ -1,14 +1,12 @@
-import {Slot} from '@radix-ui/react-slot'
 import {useRef} from 'react'
 import {useHistory, useRouteMatch} from 'react-router-dom'
 
-import {Box, Button, Icon, Text, TextField} from '@mintter/ui'
+import {Box, Button, Icon, TextField} from '@mintter/ui'
 
 import {Container} from './container'
-import {getPath} from '../utils/routes'
 
 import {Link} from './link'
-import {MINTTER_LINK_PREFIX} from '../editor/link-plugin'
+import {MINTTER_LINK_PREFIX} from '../constants'
 
 interface NavItemProps {
   href: string

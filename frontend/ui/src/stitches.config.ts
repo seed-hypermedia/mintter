@@ -135,8 +135,9 @@ const stitches = createCss({
       4: '12px',
       5: '16px',
       6: '20px',
-      7: '32px',
-      8: '64px',
+      7: '24px',
+      8: '32px',
+      9: '64px',
     },
     zIndices: {
       1: '100',

@@ -1,0 +1,18 @@
+{
+  "name": "@mintter/mttast",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/unist": "^2.0.6",
+    "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "is-plain-object": "^5.0.0"
+  }
+}
