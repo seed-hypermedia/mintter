@@ -7,96 +7,19 @@ import {Empty} from '../../google/protobuf/empty'
 import {BrowserHeaders} from 'browser-headers'
 import {Timestamp} from '../../google/protobuf/timestamp'
 
-/** Defines if the documents being returned should be displayed in full or only basic information. */
-export enum DocumentView {
-  /** VIEW_UNSPECIFIED - Default value. Same as BASIC. */
-  VIEW_UNSPECIFIED = 0,
-  /** BASIC - Basic view. Do not display content nor links. */
-  BASIC = 1,
-  /** FULL - Full view. Return every field of the underlying resource. */
-  FULL = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function documentViewFromJSON(object: any): DocumentView {
-  switch (object) {
-    case 0:
-    case 'VIEW_UNSPECIFIED':
-      return DocumentView.VIEW_UNSPECIFIED
-    case 1:
-    case 'BASIC':
-      return DocumentView.BASIC
-    case 2:
-    case 'FULL':
-      return DocumentView.FULL
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return DocumentView.UNRECOGNIZED
-  }
-}
-
-export function documentViewToJSON(object: DocumentView): string {
-  switch (object) {
-    case DocumentView.VIEW_UNSPECIFIED:
-      return 'VIEW_UNSPECIFIED'
-    case DocumentView.BASIC:
-      return 'BASIC'
-    case DocumentView.FULL:
-      return 'FULL'
-    default:
-      return 'UNKNOWN'
-  }
-}
-
-/** List style for a list of blocks. */
-export enum ListStyle {
-  /** NONE - Use no marker to display the block. */
-  NONE = 0,
-  /** BULLET - Use a bullet marker to display the block. */
-  BULLET = 1,
-  /** NUMBER - Use an ordered number to display the block. */
-  NUMBER = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function listStyleFromJSON(object: any): ListStyle {
-  switch (object) {
-    case 0:
-    case 'NONE':
-      return ListStyle.NONE
-    case 1:
-    case 'BULLET':
-      return ListStyle.BULLET
-    case 2:
-    case 'NUMBER':
-      return ListStyle.NUMBER
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return ListStyle.UNRECOGNIZED
-  }
-}
-
-export function listStyleToJSON(object: ListStyle): string {
-  switch (object) {
-    case ListStyle.NONE:
-      return 'NONE'
-    case ListStyle.BULLET:
-      return 'BULLET'
-    case ListStyle.NUMBER:
-      return 'NUMBER'
-    default:
-      return 'UNKNOWN'
-  }
-}
-
 /** Request to create a new draft. */
-export interface CreateDraftRequest {}
+export interface CreateDraftRequest {
+  /**
+   * Optional. Existing Document ID can be specified to update
+   * previously published document. A draft will be created
+   * with the content of the most recent known version.
+   */
+  existingDocumentId: string
+}
 
 /** Request to delete an existing draft. */
 export interface DeleteDraftRequest {
-  /** ID of the document whose draft needs to be deleted. */
+  /** ID of the document whose draft needs to be deleted. Only one */
   documentId: string
 }
 
@@ -108,7 +31,7 @@ export interface GetDraftRequest {
 
 /** Request to update an existing draft. */
 export interface UpdateDraftRequest {
-  /** Instance of the document. */
+  /** Instance of the document to be updated. */
   document: Document | undefined
 }
 
@@ -118,16 +41,13 @@ export interface ListDraftsRequest {
   pageSize: number
   /** Optional. Token for the page to return. */
   pageToken: string
-  /** Optional. View of the each document instance to return. */
-  view: DocumentView
 }
 
 /** Response for listing drafts. */
 export interface ListDraftsResponse {
   /**
-   * Documents being matched by the list request. Items in this list
-   * won't be complete, and only basic information will be present.
-   * To get the full content a separate Get request is needed.
+   * Drafts matching the list request.
+   * Content is omitted.
    */
   documents: Document[]
   /** Token for the next page if there're any. */
@@ -140,23 +60,20 @@ export interface PublishDraftRequest {
   documentId: string
 }
 
-/** Response from publishing a draft. */
-export interface PublishDraftResponse {
-  /** Content-addressable version ID of the newly published document. */
-  version: string
-}
-
 /** Request for getting a single publication. */
 export interface GetPublicationRequest {
   /** Required. ID of the published document. */
   documentId: string
-  /** Optional. Specific version of the published document. By default latest is returned. */
+  /** Optional. Specific version of the published document. If empty, the latest one is returned. */
   version: string
 }
 
 /** Request for deleting a publication. */
 export interface DeletePublicationRequest {
-  /** Document ID of the publication to be removed. */
+  /**
+   * Document ID of the publication to be removed.
+   * All versions will also be removed.
+   */
   documentId: string
 }
 
@@ -164,228 +81,79 @@ export interface DeletePublicationRequest {
 export interface ListPublicationsRequest {
   /** Optional. Number of results per page. Default is defined by the server. */
   pageSize: number
-  /** Optional. Token of the page if obtained from the previous request. */
+  /** Optional. Value from next_page_token obtains from a previous response. */
   pageToken: string
-  /** Optional. View of each document instance in the list. */
-  view: DocumentView
 }
 
 /** Response with list of publications. */
 export interface ListPublicationsResponse {
   /**
-   * List of publications matching the request. Items in this list
-   * won't be complete, and only basic information will be present.
-   * To get the full content a separate Get request is needed.
+   * List of publications matching the request.
+   * Only most recent versions are returned.
+   * Content is omitted, only metadata is present.
    */
   publications: Publication[]
   /** Token for the next page if there're more results. */
   nextPageToken: string
 }
 
-/** A published document with a content-addressable version ID. */
+/** State of the document after publication. */
 export interface Publication {
-  /** Output only. The actual document itself. */
+  /**
+   * Version points to the state of the publication at some point in time.
+   * It is represented as a string, although it can be a list of CIDs.
+   * The order of hashes must be deterministic, which is tricky because
+   * CIDs can have different base encoding when represented as a string.
+   * So same hash, can have different string representations.
+   * We should either define a canonical base encoding, or sort binary
+   * representation of the hash portion of the CID.
+   * Anyway, all these details should be opaque for consumers of this API.
+   * On the other hand, if API consumers never compare versions as plain strings
+   * it doesn't really matter if different version strings point to the same document.
+   */
+  version: string
+  /** Document metadata. */
   document: Document | undefined
 }
 
-/** State of the Mintter document. */
+/** Document represents metadata and content of a draft or publication. */
 export interface Document {
-  /** Output only. Permanent ID of the document. */
+  /** Permanent ID of the document. */
   id: string
-  /** Required. Title of the document. */
+  /** Title of the document. */
   title: string
-  /** Required. Subtitle/abstract of the document. */
+  /** Subtitle of the document. */
   subtitle: string
-  /** Output only. ID of the author of the document. */
+  /** Output only. Author of the document. */
   author: string
-  /** Optional. List style for displaying top-level document blocks. */
-  childrenListStyle: ListStyle
-  /** Required. List of top-level content blocks. */
-  children: string[]
-  /** Required. Lookup map of all the content blocks of this document. */
-  blocks: {[key: string]: Block}
-  /** Lookup map of all the links used in this document. */
-  links: {[key: string]: Link}
-  /** Output only. Time when first draft of this document was created. */
-  createTime: Date | undefined
-  /** Output only. Time when this document was updated. */
-  updateTime: Date | undefined
   /**
-   * Output only. Only set if this document is already published. Time when this
-   * document was published.
+   * JSON-serialized Mintter AST.
+   * It's expected to be the first child of the document root,
+   * which must be of type GroupingContent.
    */
+  content: string
+  /** Output only. Time when document was created. */
+  createTime: Date | undefined
+  /** Output only. Time when document was updated. */
+  updateTime: Date | undefined
+  /** Output only. Time when this version was published. Not present in drafts. */
   publishTime: Date | undefined
 }
 
-export interface Document_BlocksEntry {
-  key: string
-  value: Block | undefined
-}
-
-export interface Document_LinksEntry {
-  key: string
-  value: Link | undefined
-}
-
-/** Link to another resource. */
-export interface Link {
-  /** Required. URI this link points to. */
-  uri: string
-  /** Optional. Content type for the content this URI points to. */
-  mimeType: string
-}
-
-/** Block of content. */
-export interface Block {
-  /** Required. ID of the block. Must be unique within the document. */
-  id: string
-  /**
-   * Required. ID of the parent block. Empty if this is a top-level block. The
-   * ID must be present in the blocks map of the document.
-   */
-  parent: string
-  /** Required. Type of this block. */
-  type: Block_Type
-  /**
-   * Required. List of inline elements/spans of this block. This is the actual
-   * content of the block.
-   */
-  elements: InlineElement[]
-  /**
-   * Optional. Defines which list style must be applied to the children of this
-   * block if there're any.
-   */
-  childListStyle: ListStyle
-  /**
-   * Optional. List of IDs of child content blocks. The ID must be present in
-   * the blocks map of the document.
-   */
-  children: string[]
-}
-
-/** Block type. This is an enum to support future types, even though we only have defined a single heading type. */
-export enum Block_Type {
-  /** BASIC - Basic blocks. */
-  BASIC = 0,
-  /**
-   * HEADING - Heading is used for blocks that are headings.
-   *
-   * Heading blocks should contain the enclosed content as children, unlike HTML and others where headings are
-   * detached from their content. We also don't have explicit heading levels to avoid common mistakes when authors
-   * would incorrectly use them. Instead we infer the level of the current heading by inspecting its parent blocks.
-   *
-   * Heading blocks must contain a single text run inline element, as headings can't be embedded objects, or support
-   * other rich text formatting.
-   */
-  HEADING = 1,
-  UNRECOGNIZED = -1,
-}
-
-export function block_TypeFromJSON(object: any): Block_Type {
-  switch (object) {
-    case 0:
-    case 'BASIC':
-      return Block_Type.BASIC
-    case 1:
-    case 'HEADING':
-      return Block_Type.HEADING
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return Block_Type.UNRECOGNIZED
-  }
-}
-
-export function block_TypeToJSON(object: Block_Type): string {
-  switch (object) {
-    case Block_Type.BASIC:
-      return 'BASIC'
-    case Block_Type.HEADING:
-      return 'HEADING'
-    default:
-      return 'UNKNOWN'
-  }
-}
-
-/** Element of a content block. */
-export interface InlineElement {
-  /**
-   * Text run with support for attributes. If multiple text inline elements
-   * have the same attributes, they are expected to be merged together by the
-   * client.
-   */
-  textRun: TextRun | undefined
-  /** Multimedia image. */
-  image: Image | undefined
-  /**
-   * Quote from another Mintter document. The content is supposed to be
-   * resolved and brought-in by the client.
-   */
-  quote: Quote | undefined
-}
-
-/** Run of text with attributes. */
-export interface TextRun {
-  /** Actual string of text. */
-  text: string
-  /** Bold formatting attribute. */
-  bold: boolean
-  /** Italic formatting attribute. */
-  italic: boolean
-  /** Underline formatting attribute. */
-  underline: boolean
-  /** Strikethrough formatting attribute. */
-  strikethrough: boolean
-  /** Code formatting attribute. */
-  code: boolean
-  /** Blockquote formatting attribute. This is available for content that can't be reused with Mintter Quotes. */
-  blockquote: boolean
-  /**
-   * If text is an anchor for a link - this must be a map key from the document's links lookup map that corresponds to
-   * the link.
-   */
-  linkKey: string
-}
-
-/** Image embedded object. */
-export interface Image {
-  /**
-   * Alt text of the image. Useful for accessibility purposes. Supposed to
-   * describe the content of the image with words.
-   */
-  altText: string
-  /**
-   * Key to the link that points to the image. The key must be present in the
-   * top-level links map of the document.
-   */
-  linkKey: string
-}
-
-/** Embedded object for Mintter Quote. */
-export interface Quote {
-  /** Required. Key from the document's links lookup map. Must be a link to a Mintter Block. */
-  linkKey: string
-  /** Optional. Offset from which quoted fragment starts. */
-  startOffset: number
-  /** Optional. Offset where quoted fragment ends. */
-  endOffset: number
-}
-
-/**
- * This event gets produced every time a new document is published for the first time.
- * We'll have a feed of these events from which other peers can learn about new documents
- * being published.
- */
+/** Message that gets published to documents feed of the Mintter author. */
 export interface DocumentPublished {
   documentId: string
   title: string
   subtitle: string
 }
 
-const baseCreateDraftRequest: object = {}
+const baseCreateDraftRequest: object = {existingDocumentId: ''}
 
 export const CreateDraftRequest = {
-  encode(_: CreateDraftRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: CreateDraftRequest, writer: Writer = Writer.create()): Writer {
+    if (message.existingDocumentId !== '') {
+      writer.uint32(10).string(message.existingDocumentId)
+    }
     return writer
   },
 
@@ -396,6 +164,9 @@ export const CreateDraftRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
+        case 1:
+          message.existingDocumentId = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -404,18 +175,29 @@ export const CreateDraftRequest = {
     return message
   },
 
-  fromJSON(_: any): CreateDraftRequest {
+  fromJSON(object: any): CreateDraftRequest {
     const message = {...baseCreateDraftRequest} as CreateDraftRequest
+    if (object.existingDocumentId !== undefined && object.existingDocumentId !== null) {
+      message.existingDocumentId = String(object.existingDocumentId)
+    } else {
+      message.existingDocumentId = ''
+    }
     return message
   },
 
-  toJSON(_: CreateDraftRequest): unknown {
+  toJSON(message: CreateDraftRequest): unknown {
     const obj: any = {}
+    message.existingDocumentId !== undefined && (obj.existingDocumentId = message.existingDocumentId)
     return obj
   },
 
-  fromPartial(_: DeepPartial<CreateDraftRequest>): CreateDraftRequest {
+  fromPartial(object: DeepPartial<CreateDraftRequest>): CreateDraftRequest {
     const message = {...baseCreateDraftRequest} as CreateDraftRequest
+    if (object.existingDocumentId !== undefined && object.existingDocumentId !== null) {
+      message.existingDocumentId = object.existingDocumentId
+    } else {
+      message.existingDocumentId = ''
+    }
     return message
   },
 }
@@ -585,7 +367,7 @@ export const UpdateDraftRequest = {
   },
 }
 
-const baseListDraftsRequest: object = {pageSize: 0, pageToken: '', view: 0}
+const baseListDraftsRequest: object = {pageSize: 0, pageToken: ''}
 
 export const ListDraftsRequest = {
   encode(message: ListDraftsRequest, writer: Writer = Writer.create()): Writer {
@@ -594,9 +376,6 @@ export const ListDraftsRequest = {
     }
     if (message.pageToken !== '') {
       writer.uint32(18).string(message.pageToken)
-    }
-    if (message.view !== 0) {
-      writer.uint32(24).int32(message.view)
     }
     return writer
   },
@@ -613,9 +392,6 @@ export const ListDraftsRequest = {
           break
         case 2:
           message.pageToken = reader.string()
-          break
-        case 3:
-          message.view = reader.int32() as any
           break
         default:
           reader.skipType(tag & 7)
@@ -637,11 +413,6 @@ export const ListDraftsRequest = {
     } else {
       message.pageToken = ''
     }
-    if (object.view !== undefined && object.view !== null) {
-      message.view = documentViewFromJSON(object.view)
-    } else {
-      message.view = 0
-    }
     return message
   },
 
@@ -649,7 +420,6 @@ export const ListDraftsRequest = {
     const obj: any = {}
     message.pageSize !== undefined && (obj.pageSize = message.pageSize)
     message.pageToken !== undefined && (obj.pageToken = message.pageToken)
-    message.view !== undefined && (obj.view = documentViewToJSON(message.view))
     return obj
   },
 
@@ -664,11 +434,6 @@ export const ListDraftsRequest = {
       message.pageToken = object.pageToken
     } else {
       message.pageToken = ''
-    }
-    if (object.view !== undefined && object.view !== null) {
-      message.view = object.view
-    } else {
-      message.view = 0
     }
     return message
   },
@@ -808,61 +573,6 @@ export const PublishDraftRequest = {
   },
 }
 
-const basePublishDraftResponse: object = {version: ''}
-
-export const PublishDraftResponse = {
-  encode(message: PublishDraftResponse, writer: Writer = Writer.create()): Writer {
-    if (message.version !== '') {
-      writer.uint32(10).string(message.version)
-    }
-    return writer
-  },
-
-  decode(input: Reader | Uint8Array, length?: number): PublishDraftResponse {
-    const reader = input instanceof Reader ? input : new Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {...basePublishDraftResponse} as PublishDraftResponse
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.version = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): PublishDraftResponse {
-    const message = {...basePublishDraftResponse} as PublishDraftResponse
-    if (object.version !== undefined && object.version !== null) {
-      message.version = String(object.version)
-    } else {
-      message.version = ''
-    }
-    return message
-  },
-
-  toJSON(message: PublishDraftResponse): unknown {
-    const obj: any = {}
-    message.version !== undefined && (obj.version = message.version)
-    return obj
-  },
-
-  fromPartial(object: DeepPartial<PublishDraftResponse>): PublishDraftResponse {
-    const message = {...basePublishDraftResponse} as PublishDraftResponse
-    if (object.version !== undefined && object.version !== null) {
-      message.version = object.version
-    } else {
-      message.version = ''
-    }
-    return message
-  },
-}
-
 const baseGetPublicationRequest: object = {documentId: '', version: ''}
 
 export const GetPublicationRequest = {
@@ -990,7 +700,7 @@ export const DeletePublicationRequest = {
   },
 }
 
-const baseListPublicationsRequest: object = {pageSize: 0, pageToken: '', view: 0}
+const baseListPublicationsRequest: object = {pageSize: 0, pageToken: ''}
 
 export const ListPublicationsRequest = {
   encode(message: ListPublicationsRequest, writer: Writer = Writer.create()): Writer {
@@ -999,9 +709,6 @@ export const ListPublicationsRequest = {
     }
     if (message.pageToken !== '') {
       writer.uint32(18).string(message.pageToken)
-    }
-    if (message.view !== 0) {
-      writer.uint32(24).int32(message.view)
     }
     return writer
   },
@@ -1018,9 +725,6 @@ export const ListPublicationsRequest = {
           break
         case 2:
           message.pageToken = reader.string()
-          break
-        case 3:
-          message.view = reader.int32() as any
           break
         default:
           reader.skipType(tag & 7)
@@ -1042,11 +746,6 @@ export const ListPublicationsRequest = {
     } else {
       message.pageToken = ''
     }
-    if (object.view !== undefined && object.view !== null) {
-      message.view = documentViewFromJSON(object.view)
-    } else {
-      message.view = 0
-    }
     return message
   },
 
@@ -1054,7 +753,6 @@ export const ListPublicationsRequest = {
     const obj: any = {}
     message.pageSize !== undefined && (obj.pageSize = message.pageSize)
     message.pageToken !== undefined && (obj.pageToken = message.pageToken)
-    message.view !== undefined && (obj.view = documentViewToJSON(message.view))
     return obj
   },
 
@@ -1069,11 +767,6 @@ export const ListPublicationsRequest = {
       message.pageToken = object.pageToken
     } else {
       message.pageToken = ''
-    }
-    if (object.view !== undefined && object.view !== null) {
-      message.view = object.view
-    } else {
-      message.view = 0
     }
     return message
   },
@@ -1158,10 +851,13 @@ export const ListPublicationsResponse = {
   },
 }
 
-const basePublication: object = {}
+const basePublication: object = {version: ''}
 
 export const Publication = {
   encode(message: Publication, writer: Writer = Writer.create()): Writer {
+    if (message.version !== '') {
+      writer.uint32(10).string(message.version)
+    }
     if (message.document !== undefined) {
       Document.encode(message.document, writer.uint32(18).fork()).ldelim()
     }
@@ -1175,6 +871,9 @@ export const Publication = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
+        case 1:
+          message.version = reader.string()
+          break
         case 2:
           message.document = Document.decode(reader, reader.uint32())
           break
@@ -1188,6 +887,11 @@ export const Publication = {
 
   fromJSON(object: any): Publication {
     const message = {...basePublication} as Publication
+    if (object.version !== undefined && object.version !== null) {
+      message.version = String(object.version)
+    } else {
+      message.version = ''
+    }
     if (object.document !== undefined && object.document !== null) {
       message.document = Document.fromJSON(object.document)
     } else {
@@ -1198,12 +902,18 @@ export const Publication = {
 
   toJSON(message: Publication): unknown {
     const obj: any = {}
+    message.version !== undefined && (obj.version = message.version)
     message.document !== undefined && (obj.document = message.document ? Document.toJSON(message.document) : undefined)
     return obj
   },
 
   fromPartial(object: DeepPartial<Publication>): Publication {
     const message = {...basePublication} as Publication
+    if (object.version !== undefined && object.version !== null) {
+      message.version = object.version
+    } else {
+      message.version = ''
+    }
     if (object.document !== undefined && object.document !== null) {
       message.document = Document.fromPartial(object.document)
     } else {
@@ -1213,7 +923,7 @@ export const Publication = {
   },
 }
 
-const baseDocument: object = {id: '', title: '', subtitle: '', author: '', childrenListStyle: 0, children: ''}
+const baseDocument: object = {id: '', title: '', subtitle: '', author: '', content: ''}
 
 export const Document = {
   encode(message: Document, writer: Writer = Writer.create()): Writer {
@@ -1229,26 +939,17 @@ export const Document = {
     if (message.author !== '') {
       writer.uint32(34).string(message.author)
     }
-    if (message.childrenListStyle !== 0) {
-      writer.uint32(40).int32(message.childrenListStyle)
+    if (message.content !== '') {
+      writer.uint32(42).string(message.content)
     }
-    for (const v of message.children) {
-      writer.uint32(50).string(v!)
-    }
-    Object.entries(message.blocks).forEach(([key, value]) => {
-      Document_BlocksEntry.encode({key: key as any, value}, writer.uint32(58).fork()).ldelim()
-    })
-    Object.entries(message.links).forEach(([key, value]) => {
-      Document_LinksEntry.encode({key: key as any, value}, writer.uint32(66).fork()).ldelim()
-    })
     if (message.createTime !== undefined) {
-      Timestamp.encode(toTimestamp(message.createTime), writer.uint32(74).fork()).ldelim()
+      Timestamp.encode(toTimestamp(message.createTime), writer.uint32(50).fork()).ldelim()
     }
     if (message.updateTime !== undefined) {
-      Timestamp.encode(toTimestamp(message.updateTime), writer.uint32(82).fork()).ldelim()
+      Timestamp.encode(toTimestamp(message.updateTime), writer.uint32(58).fork()).ldelim()
     }
     if (message.publishTime !== undefined) {
-      Timestamp.encode(toTimestamp(message.publishTime), writer.uint32(90).fork()).ldelim()
+      Timestamp.encode(toTimestamp(message.publishTime), writer.uint32(66).fork()).ldelim()
     }
     return writer
   },
@@ -1257,9 +958,6 @@ export const Document = {
     const reader = input instanceof Reader ? input : new Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseDocument} as Document
-    message.children = []
-    message.blocks = {}
-    message.links = {}
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1276,30 +974,15 @@ export const Document = {
           message.author = reader.string()
           break
         case 5:
-          message.childrenListStyle = reader.int32() as any
+          message.content = reader.string()
           break
         case 6:
-          message.children.push(reader.string())
-          break
-        case 7:
-          const entry7 = Document_BlocksEntry.decode(reader, reader.uint32())
-          if (entry7.value !== undefined) {
-            message.blocks[entry7.key] = entry7.value
-          }
-          break
-        case 8:
-          const entry8 = Document_LinksEntry.decode(reader, reader.uint32())
-          if (entry8.value !== undefined) {
-            message.links[entry8.key] = entry8.value
-          }
-          break
-        case 9:
           message.createTime = fromTimestamp(Timestamp.decode(reader, reader.uint32()))
           break
-        case 10:
+        case 7:
           message.updateTime = fromTimestamp(Timestamp.decode(reader, reader.uint32()))
           break
-        case 11:
+        case 8:
           message.publishTime = fromTimestamp(Timestamp.decode(reader, reader.uint32()))
           break
         default:
@@ -1312,9 +995,6 @@ export const Document = {
 
   fromJSON(object: any): Document {
     const message = {...baseDocument} as Document
-    message.children = []
-    message.blocks = {}
-    message.links = {}
     if (object.id !== undefined && object.id !== null) {
       message.id = String(object.id)
     } else {
@@ -1335,25 +1015,10 @@ export const Document = {
     } else {
       message.author = ''
     }
-    if (object.childrenListStyle !== undefined && object.childrenListStyle !== null) {
-      message.childrenListStyle = listStyleFromJSON(object.childrenListStyle)
+    if (object.content !== undefined && object.content !== null) {
+      message.content = String(object.content)
     } else {
-      message.childrenListStyle = 0
-    }
-    if (object.children !== undefined && object.children !== null) {
-      for (const e of object.children) {
-        message.children.push(String(e))
-      }
-    }
-    if (object.blocks !== undefined && object.blocks !== null) {
-      Object.entries(object.blocks).forEach(([key, value]) => {
-        message.blocks[key] = Block.fromJSON(value)
-      })
-    }
-    if (object.links !== undefined && object.links !== null) {
-      Object.entries(object.links).forEach(([key, value]) => {
-        message.links[key] = Link.fromJSON(value)
-      })
+      message.content = ''
     }
     if (object.createTime !== undefined && object.createTime !== null) {
       message.createTime = fromJsonTimestamp(object.createTime)
@@ -1379,24 +1044,7 @@ export const Document = {
     message.title !== undefined && (obj.title = message.title)
     message.subtitle !== undefined && (obj.subtitle = message.subtitle)
     message.author !== undefined && (obj.author = message.author)
-    message.childrenListStyle !== undefined && (obj.childrenListStyle = listStyleToJSON(message.childrenListStyle))
-    if (message.children) {
-      obj.children = message.children.map((e) => e)
-    } else {
-      obj.children = []
-    }
-    obj.blocks = {}
-    if (message.blocks) {
-      Object.entries(message.blocks).forEach(([k, v]) => {
-        obj.blocks[k] = Block.toJSON(v)
-      })
-    }
-    obj.links = {}
-    if (message.links) {
-      Object.entries(message.links).forEach(([k, v]) => {
-        obj.links[k] = Link.toJSON(v)
-      })
-    }
+    message.content !== undefined && (obj.content = message.content)
     message.createTime !== undefined && (obj.createTime = message.createTime.toISOString())
     message.updateTime !== undefined && (obj.updateTime = message.updateTime.toISOString())
     message.publishTime !== undefined && (obj.publishTime = message.publishTime.toISOString())
@@ -1405,9 +1053,6 @@ export const Document = {
 
   fromPartial(object: DeepPartial<Document>): Document {
     const message = {...baseDocument} as Document
-    message.children = []
-    message.blocks = {}
-    message.links = {}
     if (object.id !== undefined && object.id !== null) {
       message.id = object.id
     } else {
@@ -1428,29 +1073,10 @@ export const Document = {
     } else {
       message.author = ''
     }
-    if (object.childrenListStyle !== undefined && object.childrenListStyle !== null) {
-      message.childrenListStyle = object.childrenListStyle
+    if (object.content !== undefined && object.content !== null) {
+      message.content = object.content
     } else {
-      message.childrenListStyle = 0
-    }
-    if (object.children !== undefined && object.children !== null) {
-      for (const e of object.children) {
-        message.children.push(e)
-      }
-    }
-    if (object.blocks !== undefined && object.blocks !== null) {
-      Object.entries(object.blocks).forEach(([key, value]) => {
-        if (value !== undefined) {
-          message.blocks[key] = Block.fromPartial(value)
-        }
-      })
-    }
-    if (object.links !== undefined && object.links !== null) {
-      Object.entries(object.links).forEach(([key, value]) => {
-        if (value !== undefined) {
-          message.links[key] = Link.fromPartial(value)
-        }
-      })
+      message.content = ''
     }
     if (object.createTime !== undefined && object.createTime !== null) {
       message.createTime = object.createTime
@@ -1466,809 +1092,6 @@ export const Document = {
       message.publishTime = object.publishTime
     } else {
       message.publishTime = undefined
-    }
-    return message
-  },
-}
-
-const baseDocument_BlocksEntry: object = {key: ''}
-
-export const Document_BlocksEntry = {
-  encode(message: Document_BlocksEntry, writer: Writer = Writer.create()): Writer {
-    if (message.key !== '') {
-      writer.uint32(10).string(message.key)
-    }
-    if (message.value !== undefined) {
-      Block.encode(message.value, writer.uint32(18).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: Reader | Uint8Array, length?: number): Document_BlocksEntry {
-    const reader = input instanceof Reader ? input : new Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {...baseDocument_BlocksEntry} as Document_BlocksEntry
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.key = reader.string()
-          break
-        case 2:
-          message.value = Block.decode(reader, reader.uint32())
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): Document_BlocksEntry {
-    const message = {...baseDocument_BlocksEntry} as Document_BlocksEntry
-    if (object.key !== undefined && object.key !== null) {
-      message.key = String(object.key)
-    } else {
-      message.key = ''
-    }
-    if (object.value !== undefined && object.value !== null) {
-      message.value = Block.fromJSON(object.value)
-    } else {
-      message.value = undefined
-    }
-    return message
-  },
-
-  toJSON(message: Document_BlocksEntry): unknown {
-    const obj: any = {}
-    message.key !== undefined && (obj.key = message.key)
-    message.value !== undefined && (obj.value = message.value ? Block.toJSON(message.value) : undefined)
-    return obj
-  },
-
-  fromPartial(object: DeepPartial<Document_BlocksEntry>): Document_BlocksEntry {
-    const message = {...baseDocument_BlocksEntry} as Document_BlocksEntry
-    if (object.key !== undefined && object.key !== null) {
-      message.key = object.key
-    } else {
-      message.key = ''
-    }
-    if (object.value !== undefined && object.value !== null) {
-      message.value = Block.fromPartial(object.value)
-    } else {
-      message.value = undefined
-    }
-    return message
-  },
-}
-
-const baseDocument_LinksEntry: object = {key: ''}
-
-export const Document_LinksEntry = {
-  encode(message: Document_LinksEntry, writer: Writer = Writer.create()): Writer {
-    if (message.key !== '') {
-      writer.uint32(10).string(message.key)
-    }
-    if (message.value !== undefined) {
-      Link.encode(message.value, writer.uint32(18).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: Reader | Uint8Array, length?: number): Document_LinksEntry {
-    const reader = input instanceof Reader ? input : new Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {...baseDocument_LinksEntry} as Document_LinksEntry
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.key = reader.string()
-          break
-        case 2:
-          message.value = Link.decode(reader, reader.uint32())
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): Document_LinksEntry {
-    const message = {...baseDocument_LinksEntry} as Document_LinksEntry
-    if (object.key !== undefined && object.key !== null) {
-      message.key = String(object.key)
-    } else {
-      message.key = ''
-    }
-    if (object.value !== undefined && object.value !== null) {
-      message.value = Link.fromJSON(object.value)
-    } else {
-      message.value = undefined
-    }
-    return message
-  },
-
-  toJSON(message: Document_LinksEntry): unknown {
-    const obj: any = {}
-    message.key !== undefined && (obj.key = message.key)
-    message.value !== undefined && (obj.value = message.value ? Link.toJSON(message.value) : undefined)
-    return obj
-  },
-
-  fromPartial(object: DeepPartial<Document_LinksEntry>): Document_LinksEntry {
-    const message = {...baseDocument_LinksEntry} as Document_LinksEntry
-    if (object.key !== undefined && object.key !== null) {
-      message.key = object.key
-    } else {
-      message.key = ''
-    }
-    if (object.value !== undefined && object.value !== null) {
-      message.value = Link.fromPartial(object.value)
-    } else {
-      message.value = undefined
-    }
-    return message
-  },
-}
-
-const baseLink: object = {uri: '', mimeType: ''}
-
-export const Link = {
-  encode(message: Link, writer: Writer = Writer.create()): Writer {
-    if (message.uri !== '') {
-      writer.uint32(10).string(message.uri)
-    }
-    if (message.mimeType !== '') {
-      writer.uint32(18).string(message.mimeType)
-    }
-    return writer
-  },
-
-  decode(input: Reader | Uint8Array, length?: number): Link {
-    const reader = input instanceof Reader ? input : new Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {...baseLink} as Link
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.uri = reader.string()
-          break
-        case 2:
-          message.mimeType = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): Link {
-    const message = {...baseLink} as Link
-    if (object.uri !== undefined && object.uri !== null) {
-      message.uri = String(object.uri)
-    } else {
-      message.uri = ''
-    }
-    if (object.mimeType !== undefined && object.mimeType !== null) {
-      message.mimeType = String(object.mimeType)
-    } else {
-      message.mimeType = ''
-    }
-    return message
-  },
-
-  toJSON(message: Link): unknown {
-    const obj: any = {}
-    message.uri !== undefined && (obj.uri = message.uri)
-    message.mimeType !== undefined && (obj.mimeType = message.mimeType)
-    return obj
-  },
-
-  fromPartial(object: DeepPartial<Link>): Link {
-    const message = {...baseLink} as Link
-    if (object.uri !== undefined && object.uri !== null) {
-      message.uri = object.uri
-    } else {
-      message.uri = ''
-    }
-    if (object.mimeType !== undefined && object.mimeType !== null) {
-      message.mimeType = object.mimeType
-    } else {
-      message.mimeType = ''
-    }
-    return message
-  },
-}
-
-const baseBlock: object = {id: '', parent: '', type: 0, childListStyle: 0, children: ''}
-
-export const Block = {
-  encode(message: Block, writer: Writer = Writer.create()): Writer {
-    if (message.id !== '') {
-      writer.uint32(10).string(message.id)
-    }
-    if (message.parent !== '') {
-      writer.uint32(18).string(message.parent)
-    }
-    if (message.type !== 0) {
-      writer.uint32(24).int32(message.type)
-    }
-    for (const v of message.elements) {
-      InlineElement.encode(v!, writer.uint32(34).fork()).ldelim()
-    }
-    if (message.childListStyle !== 0) {
-      writer.uint32(40).int32(message.childListStyle)
-    }
-    for (const v of message.children) {
-      writer.uint32(50).string(v!)
-    }
-    return writer
-  },
-
-  decode(input: Reader | Uint8Array, length?: number): Block {
-    const reader = input instanceof Reader ? input : new Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {...baseBlock} as Block
-    message.elements = []
-    message.children = []
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.id = reader.string()
-          break
-        case 2:
-          message.parent = reader.string()
-          break
-        case 3:
-          message.type = reader.int32() as any
-          break
-        case 4:
-          message.elements.push(InlineElement.decode(reader, reader.uint32()))
-          break
-        case 5:
-          message.childListStyle = reader.int32() as any
-          break
-        case 6:
-          message.children.push(reader.string())
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): Block {
-    const message = {...baseBlock} as Block
-    message.elements = []
-    message.children = []
-    if (object.id !== undefined && object.id !== null) {
-      message.id = String(object.id)
-    } else {
-      message.id = ''
-    }
-    if (object.parent !== undefined && object.parent !== null) {
-      message.parent = String(object.parent)
-    } else {
-      message.parent = ''
-    }
-    if (object.type !== undefined && object.type !== null) {
-      message.type = block_TypeFromJSON(object.type)
-    } else {
-      message.type = 0
-    }
-    if (object.elements !== undefined && object.elements !== null) {
-      for (const e of object.elements) {
-        message.elements.push(InlineElement.fromJSON(e))
-      }
-    }
-    if (object.childListStyle !== undefined && object.childListStyle !== null) {
-      message.childListStyle = listStyleFromJSON(object.childListStyle)
-    } else {
-      message.childListStyle = 0
-    }
-    if (object.children !== undefined && object.children !== null) {
-      for (const e of object.children) {
-        message.children.push(String(e))
-      }
-    }
-    return message
-  },
-
-  toJSON(message: Block): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.parent !== undefined && (obj.parent = message.parent)
-    message.type !== undefined && (obj.type = block_TypeToJSON(message.type))
-    if (message.elements) {
-      obj.elements = message.elements.map((e) => (e ? InlineElement.toJSON(e) : undefined))
-    } else {
-      obj.elements = []
-    }
-    message.childListStyle !== undefined && (obj.childListStyle = listStyleToJSON(message.childListStyle))
-    if (message.children) {
-      obj.children = message.children.map((e) => e)
-    } else {
-      obj.children = []
-    }
-    return obj
-  },
-
-  fromPartial(object: DeepPartial<Block>): Block {
-    const message = {...baseBlock} as Block
-    message.elements = []
-    message.children = []
-    if (object.id !== undefined && object.id !== null) {
-      message.id = object.id
-    } else {
-      message.id = ''
-    }
-    if (object.parent !== undefined && object.parent !== null) {
-      message.parent = object.parent
-    } else {
-      message.parent = ''
-    }
-    if (object.type !== undefined && object.type !== null) {
-      message.type = object.type
-    } else {
-      message.type = 0
-    }
-    if (object.elements !== undefined && object.elements !== null) {
-      for (const e of object.elements) {
-        message.elements.push(InlineElement.fromPartial(e))
-      }
-    }
-    if (object.childListStyle !== undefined && object.childListStyle !== null) {
-      message.childListStyle = object.childListStyle
-    } else {
-      message.childListStyle = 0
-    }
-    if (object.children !== undefined && object.children !== null) {
-      for (const e of object.children) {
-        message.children.push(e)
-      }
-    }
-    return message
-  },
-}
-
-const baseInlineElement: object = {}
-
-export const InlineElement = {
-  encode(message: InlineElement, writer: Writer = Writer.create()): Writer {
-    if (message.textRun !== undefined) {
-      TextRun.encode(message.textRun, writer.uint32(10).fork()).ldelim()
-    }
-    if (message.image !== undefined) {
-      Image.encode(message.image, writer.uint32(18).fork()).ldelim()
-    }
-    if (message.quote !== undefined) {
-      Quote.encode(message.quote, writer.uint32(26).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: Reader | Uint8Array, length?: number): InlineElement {
-    const reader = input instanceof Reader ? input : new Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {...baseInlineElement} as InlineElement
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.textRun = TextRun.decode(reader, reader.uint32())
-          break
-        case 2:
-          message.image = Image.decode(reader, reader.uint32())
-          break
-        case 3:
-          message.quote = Quote.decode(reader, reader.uint32())
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): InlineElement {
-    const message = {...baseInlineElement} as InlineElement
-    if (object.textRun !== undefined && object.textRun !== null) {
-      message.textRun = TextRun.fromJSON(object.textRun)
-    } else {
-      message.textRun = undefined
-    }
-    if (object.image !== undefined && object.image !== null) {
-      message.image = Image.fromJSON(object.image)
-    } else {
-      message.image = undefined
-    }
-    if (object.quote !== undefined && object.quote !== null) {
-      message.quote = Quote.fromJSON(object.quote)
-    } else {
-      message.quote = undefined
-    }
-    return message
-  },
-
-  toJSON(message: InlineElement): unknown {
-    const obj: any = {}
-    message.textRun !== undefined && (obj.textRun = message.textRun ? TextRun.toJSON(message.textRun) : undefined)
-    message.image !== undefined && (obj.image = message.image ? Image.toJSON(message.image) : undefined)
-    message.quote !== undefined && (obj.quote = message.quote ? Quote.toJSON(message.quote) : undefined)
-    return obj
-  },
-
-  fromPartial(object: DeepPartial<InlineElement>): InlineElement {
-    const message = {...baseInlineElement} as InlineElement
-    if (object.textRun !== undefined && object.textRun !== null) {
-      message.textRun = TextRun.fromPartial(object.textRun)
-    } else {
-      message.textRun = undefined
-    }
-    if (object.image !== undefined && object.image !== null) {
-      message.image = Image.fromPartial(object.image)
-    } else {
-      message.image = undefined
-    }
-    if (object.quote !== undefined && object.quote !== null) {
-      message.quote = Quote.fromPartial(object.quote)
-    } else {
-      message.quote = undefined
-    }
-    return message
-  },
-}
-
-const baseTextRun: object = {
-  text: '',
-  bold: false,
-  italic: false,
-  underline: false,
-  strikethrough: false,
-  code: false,
-  blockquote: false,
-  linkKey: '',
-}
-
-export const TextRun = {
-  encode(message: TextRun, writer: Writer = Writer.create()): Writer {
-    if (message.text !== '') {
-      writer.uint32(10).string(message.text)
-    }
-    if (message.bold === true) {
-      writer.uint32(16).bool(message.bold)
-    }
-    if (message.italic === true) {
-      writer.uint32(24).bool(message.italic)
-    }
-    if (message.underline === true) {
-      writer.uint32(32).bool(message.underline)
-    }
-    if (message.strikethrough === true) {
-      writer.uint32(40).bool(message.strikethrough)
-    }
-    if (message.code === true) {
-      writer.uint32(48).bool(message.code)
-    }
-    if (message.blockquote === true) {
-      writer.uint32(56).bool(message.blockquote)
-    }
-    if (message.linkKey !== '') {
-      writer.uint32(66).string(message.linkKey)
-    }
-    return writer
-  },
-
-  decode(input: Reader | Uint8Array, length?: number): TextRun {
-    const reader = input instanceof Reader ? input : new Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {...baseTextRun} as TextRun
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.text = reader.string()
-          break
-        case 2:
-          message.bold = reader.bool()
-          break
-        case 3:
-          message.italic = reader.bool()
-          break
-        case 4:
-          message.underline = reader.bool()
-          break
-        case 5:
-          message.strikethrough = reader.bool()
-          break
-        case 6:
-          message.code = reader.bool()
-          break
-        case 7:
-          message.blockquote = reader.bool()
-          break
-        case 8:
-          message.linkKey = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): TextRun {
-    const message = {...baseTextRun} as TextRun
-    if (object.text !== undefined && object.text !== null) {
-      message.text = String(object.text)
-    } else {
-      message.text = ''
-    }
-    if (object.bold !== undefined && object.bold !== null) {
-      message.bold = Boolean(object.bold)
-    } else {
-      message.bold = false
-    }
-    if (object.italic !== undefined && object.italic !== null) {
-      message.italic = Boolean(object.italic)
-    } else {
-      message.italic = false
-    }
-    if (object.underline !== undefined && object.underline !== null) {
-      message.underline = Boolean(object.underline)
-    } else {
-      message.underline = false
-    }
-    if (object.strikethrough !== undefined && object.strikethrough !== null) {
-      message.strikethrough = Boolean(object.strikethrough)
-    } else {
-      message.strikethrough = false
-    }
-    if (object.code !== undefined && object.code !== null) {
-      message.code = Boolean(object.code)
-    } else {
-      message.code = false
-    }
-    if (object.blockquote !== undefined && object.blockquote !== null) {
-      message.blockquote = Boolean(object.blockquote)
-    } else {
-      message.blockquote = false
-    }
-    if (object.linkKey !== undefined && object.linkKey !== null) {
-      message.linkKey = String(object.linkKey)
-    } else {
-      message.linkKey = ''
-    }
-    return message
-  },
-
-  toJSON(message: TextRun): unknown {
-    const obj: any = {}
-    message.text !== undefined && (obj.text = message.text)
-    message.bold !== undefined && (obj.bold = message.bold)
-    message.italic !== undefined && (obj.italic = message.italic)
-    message.underline !== undefined && (obj.underline = message.underline)
-    message.strikethrough !== undefined && (obj.strikethrough = message.strikethrough)
-    message.code !== undefined && (obj.code = message.code)
-    message.blockquote !== undefined && (obj.blockquote = message.blockquote)
-    message.linkKey !== undefined && (obj.linkKey = message.linkKey)
-    return obj
-  },
-
-  fromPartial(object: DeepPartial<TextRun>): TextRun {
-    const message = {...baseTextRun} as TextRun
-    if (object.text !== undefined && object.text !== null) {
-      message.text = object.text
-    } else {
-      message.text = ''
-    }
-    if (object.bold !== undefined && object.bold !== null) {
-      message.bold = object.bold
-    } else {
-      message.bold = false
-    }
-    if (object.italic !== undefined && object.italic !== null) {
-      message.italic = object.italic
-    } else {
-      message.italic = false
-    }
-    if (object.underline !== undefined && object.underline !== null) {
-      message.underline = object.underline
-    } else {
-      message.underline = false
-    }
-    if (object.strikethrough !== undefined && object.strikethrough !== null) {
-      message.strikethrough = object.strikethrough
-    } else {
-      message.strikethrough = false
-    }
-    if (object.code !== undefined && object.code !== null) {
-      message.code = object.code
-    } else {
-      message.code = false
-    }
-    if (object.blockquote !== undefined && object.blockquote !== null) {
-      message.blockquote = object.blockquote
-    } else {
-      message.blockquote = false
-    }
-    if (object.linkKey !== undefined && object.linkKey !== null) {
-      message.linkKey = object.linkKey
-    } else {
-      message.linkKey = ''
-    }
-    return message
-  },
-}
-
-const baseImage: object = {altText: '', linkKey: ''}
-
-export const Image = {
-  encode(message: Image, writer: Writer = Writer.create()): Writer {
-    if (message.altText !== '') {
-      writer.uint32(10).string(message.altText)
-    }
-    if (message.linkKey !== '') {
-      writer.uint32(18).string(message.linkKey)
-    }
-    return writer
-  },
-
-  decode(input: Reader | Uint8Array, length?: number): Image {
-    const reader = input instanceof Reader ? input : new Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {...baseImage} as Image
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.altText = reader.string()
-          break
-        case 2:
-          message.linkKey = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): Image {
-    const message = {...baseImage} as Image
-    if (object.altText !== undefined && object.altText !== null) {
-      message.altText = String(object.altText)
-    } else {
-      message.altText = ''
-    }
-    if (object.linkKey !== undefined && object.linkKey !== null) {
-      message.linkKey = String(object.linkKey)
-    } else {
-      message.linkKey = ''
-    }
-    return message
-  },
-
-  toJSON(message: Image): unknown {
-    const obj: any = {}
-    message.altText !== undefined && (obj.altText = message.altText)
-    message.linkKey !== undefined && (obj.linkKey = message.linkKey)
-    return obj
-  },
-
-  fromPartial(object: DeepPartial<Image>): Image {
-    const message = {...baseImage} as Image
-    if (object.altText !== undefined && object.altText !== null) {
-      message.altText = object.altText
-    } else {
-      message.altText = ''
-    }
-    if (object.linkKey !== undefined && object.linkKey !== null) {
-      message.linkKey = object.linkKey
-    } else {
-      message.linkKey = ''
-    }
-    return message
-  },
-}
-
-const baseQuote: object = {linkKey: '', startOffset: 0, endOffset: 0}
-
-export const Quote = {
-  encode(message: Quote, writer: Writer = Writer.create()): Writer {
-    if (message.linkKey !== '') {
-      writer.uint32(10).string(message.linkKey)
-    }
-    if (message.startOffset !== 0) {
-      writer.uint32(16).int32(message.startOffset)
-    }
-    if (message.endOffset !== 0) {
-      writer.uint32(24).int32(message.endOffset)
-    }
-    return writer
-  },
-
-  decode(input: Reader | Uint8Array, length?: number): Quote {
-    const reader = input instanceof Reader ? input : new Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {...baseQuote} as Quote
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.linkKey = reader.string()
-          break
-        case 2:
-          message.startOffset = reader.int32()
-          break
-        case 3:
-          message.endOffset = reader.int32()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): Quote {
-    const message = {...baseQuote} as Quote
-    if (object.linkKey !== undefined && object.linkKey !== null) {
-      message.linkKey = String(object.linkKey)
-    } else {
-      message.linkKey = ''
-    }
-    if (object.startOffset !== undefined && object.startOffset !== null) {
-      message.startOffset = Number(object.startOffset)
-    } else {
-      message.startOffset = 0
-    }
-    if (object.endOffset !== undefined && object.endOffset !== null) {
-      message.endOffset = Number(object.endOffset)
-    } else {
-      message.endOffset = 0
-    }
-    return message
-  },
-
-  toJSON(message: Quote): unknown {
-    const obj: any = {}
-    message.linkKey !== undefined && (obj.linkKey = message.linkKey)
-    message.startOffset !== undefined && (obj.startOffset = message.startOffset)
-    message.endOffset !== undefined && (obj.endOffset = message.endOffset)
-    return obj
-  },
-
-  fromPartial(object: DeepPartial<Quote>): Quote {
-    const message = {...baseQuote} as Quote
-    if (object.linkKey !== undefined && object.linkKey !== null) {
-      message.linkKey = object.linkKey
-    } else {
-      message.linkKey = ''
-    }
-    if (object.startOffset !== undefined && object.startOffset !== null) {
-      message.startOffset = object.startOffset
-    } else {
-      message.startOffset = 0
-    }
-    if (object.endOffset !== undefined && object.endOffset !== null) {
-      message.endOffset = object.endOffset
-    } else {
-      message.endOffset = 0
     }
     return message
   },
@@ -2363,10 +1186,7 @@ export const DocumentPublished = {
   },
 }
 
-/**
- * Drafts service is separate from Publications for the access-control purposes,
- * but overall there're not many differences between the two.
- */
+/** Drafts service exposes the functionality */
 export interface Drafts {
   /** Creates a new draft with a new permanent document ID. */
   createDraft(request: DeepPartial<CreateDraftRequest>, metadata?: grpc.Metadata): Promise<Document>
@@ -2379,7 +1199,7 @@ export interface Drafts {
   /** List currently stored drafts. */
   listDrafts(request: DeepPartial<ListDraftsRequest>, metadata?: grpc.Metadata): Promise<ListDraftsResponse>
   /** Publishes a draft. I.e. draft will become a publication, and will no longer appear in drafts section. */
-  publishDraft(request: DeepPartial<PublishDraftRequest>, metadata?: grpc.Metadata): Promise<PublishDraftResponse>
+  publishDraft(request: DeepPartial<PublishDraftRequest>, metadata?: grpc.Metadata): Promise<Publication>
 }
 
 export class DraftsClientImpl implements Drafts {
@@ -2387,35 +1207,35 @@ export class DraftsClientImpl implements Drafts {
 
   constructor(rpc: Rpc) {
     this.rpc = rpc
-    this.CreateDraft = this.CreateDraft.bind(this)
-    this.DeleteDraft = this.DeleteDraft.bind(this)
-    this.GetDraft = this.GetDraft.bind(this)
-    this.UpdateDraft = this.UpdateDraft.bind(this)
-    this.ListDrafts = this.ListDrafts.bind(this)
-    this.PublishDraft = this.PublishDraft.bind(this)
+    this.createDraft = this.createDraft.bind(this)
+    this.deleteDraft = this.deleteDraft.bind(this)
+    this.getDraft = this.getDraft.bind(this)
+    this.updateDraft = this.updateDraft.bind(this)
+    this.listDrafts = this.listDrafts.bind(this)
+    this.publishDraft = this.publishDraft.bind(this)
   }
 
-  CreateDraft(request: DeepPartial<CreateDraftRequest>, metadata?: grpc.Metadata): Promise<Document> {
+  createDraft(request: DeepPartial<CreateDraftRequest>, metadata?: grpc.Metadata): Promise<Document> {
     return this.rpc.unary(DraftsCreateDraftDesc, CreateDraftRequest.fromPartial(request), metadata)
   }
 
-  DeleteDraft(request: DeepPartial<DeleteDraftRequest>, metadata?: grpc.Metadata): Promise<Empty> {
+  deleteDraft(request: DeepPartial<DeleteDraftRequest>, metadata?: grpc.Metadata): Promise<Empty> {
     return this.rpc.unary(DraftsDeleteDraftDesc, DeleteDraftRequest.fromPartial(request), metadata)
   }
 
-  GetDraft(request: DeepPartial<GetDraftRequest>, metadata?: grpc.Metadata): Promise<Document> {
+  getDraft(request: DeepPartial<GetDraftRequest>, metadata?: grpc.Metadata): Promise<Document> {
     return this.rpc.unary(DraftsGetDraftDesc, GetDraftRequest.fromPartial(request), metadata)
   }
 
-  UpdateDraft(request: DeepPartial<UpdateDraftRequest>, metadata?: grpc.Metadata): Promise<Document> {
+  updateDraft(request: DeepPartial<UpdateDraftRequest>, metadata?: grpc.Metadata): Promise<Document> {
     return this.rpc.unary(DraftsUpdateDraftDesc, UpdateDraftRequest.fromPartial(request), metadata)
   }
 
-  ListDrafts(request: DeepPartial<ListDraftsRequest>, metadata?: grpc.Metadata): Promise<ListDraftsResponse> {
+  listDrafts(request: DeepPartial<ListDraftsRequest>, metadata?: grpc.Metadata): Promise<ListDraftsResponse> {
     return this.rpc.unary(DraftsListDraftsDesc, ListDraftsRequest.fromPartial(request), metadata)
   }
 
-  PublishDraft(request: DeepPartial<PublishDraftRequest>, metadata?: grpc.Metadata): Promise<PublishDraftResponse> {
+  publishDraft(request: DeepPartial<PublishDraftRequest>, metadata?: grpc.Metadata): Promise<Publication> {
     return this.rpc.unary(DraftsPublishDraftDesc, PublishDraftRequest.fromPartial(request), metadata)
   }
 }
@@ -2547,7 +1367,7 @@ export const DraftsPublishDraftDesc: UnaryMethodDefinitionish = {
   responseType: {
     deserializeBinary(data: Uint8Array) {
       return {
-        ...PublishDraftResponse.decode(data),
+        ...Publication.decode(data),
         toObject() {
           return this
         },
@@ -2556,13 +1376,13 @@ export const DraftsPublishDraftDesc: UnaryMethodDefinitionish = {
   } as any,
 }
 
-/** Publications service provides access to the publications. */
+/** Publications service provides access to published documents. */
 export interface Publications {
   /** Gets a single publication. */
   getPublication(request: DeepPartial<GetPublicationRequest>, metadata?: grpc.Metadata): Promise<Publication>
   /** Deletes a publication from the local node. It removes all the patches corresponding to a document. */
   deletePublication(request: DeepPartial<DeletePublicationRequest>, metadata?: grpc.Metadata): Promise<Empty>
-  /** Lists stored publications. */
+  /** Lists stored publications. Only the most recent versions show up. */
   listPublications(
     request: DeepPartial<ListPublicationsRequest>,
     metadata?: grpc.Metadata,
@@ -2574,20 +1394,20 @@ export class PublicationsClientImpl implements Publications {
 
   constructor(rpc: Rpc) {
     this.rpc = rpc
-    this.GetPublication = this.GetPublication.bind(this)
-    this.DeletePublication = this.DeletePublication.bind(this)
-    this.ListPublications = this.ListPublications.bind(this)
+    this.getPublication = this.getPublication.bind(this)
+    this.deletePublication = this.deletePublication.bind(this)
+    this.listPublications = this.listPublications.bind(this)
   }
 
-  GetPublication(request: DeepPartial<GetPublicationRequest>, metadata?: grpc.Metadata): Promise<Publication> {
+  getPublication(request: DeepPartial<GetPublicationRequest>, metadata?: grpc.Metadata): Promise<Publication> {
     return this.rpc.unary(PublicationsGetPublicationDesc, GetPublicationRequest.fromPartial(request), metadata)
   }
 
-  DeletePublication(request: DeepPartial<DeletePublicationRequest>, metadata?: grpc.Metadata): Promise<Empty> {
+  deletePublication(request: DeepPartial<DeletePublicationRequest>, metadata?: grpc.Metadata): Promise<Empty> {
     return this.rpc.unary(PublicationsDeletePublicationDesc, DeletePublicationRequest.fromPartial(request), metadata)
   }
 
-  ListPublications(
+  listPublications(
     request: DeepPartial<ListPublicationsRequest>,
     metadata?: grpc.Metadata,
   ): Promise<ListPublicationsResponse> {

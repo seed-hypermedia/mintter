@@ -443,20 +443,20 @@ export class DaemonClientImpl implements Daemon {
 
   constructor(rpc: Rpc) {
     this.rpc = rpc
-    this.GenSeed = this.GenSeed.bind(this)
-    this.Register = this.Register.bind(this)
-    this.GetInfo = this.GetInfo.bind(this)
+    this.genSeed = this.genSeed.bind(this)
+    this.register = this.register.bind(this)
+    this.getInfo = this.getInfo.bind(this)
   }
 
-  GenSeed(request: DeepPartial<GenSeedRequest>, metadata?: grpc.Metadata): Promise<GenSeedResponse> {
+  genSeed(request: DeepPartial<GenSeedRequest>, metadata?: grpc.Metadata): Promise<GenSeedResponse> {
     return this.rpc.unary(DaemonGenSeedDesc, GenSeedRequest.fromPartial(request), metadata)
   }
 
-  Register(request: DeepPartial<RegisterRequest>, metadata?: grpc.Metadata): Promise<RegisterResponse> {
+  register(request: DeepPartial<RegisterRequest>, metadata?: grpc.Metadata): Promise<RegisterResponse> {
     return this.rpc.unary(DaemonRegisterDesc, RegisterRequest.fromPartial(request), metadata)
   }
 
-  GetInfo(request: DeepPartial<GetInfoRequest>, metadata?: grpc.Metadata): Promise<Info> {
+  getInfo(request: DeepPartial<GetInfoRequest>, metadata?: grpc.Metadata): Promise<Info> {
     return this.rpc.unary(DaemonGetInfoDesc, GetInfoRequest.fromPartial(request), metadata)
   }
 }
