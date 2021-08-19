@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useReducer} from 'react'
-import {FlowContent, getDraft, GroupingContent, Document} from '@mintter/client'
+import {FlowContent, getDraft, GroupingContent, Document, updateDraft} from '@mintter/client'
 import {useMachine} from '@xstate/react'
 import {ActionFunction, assign, createMachine} from 'xstate'
 import type {Descendant} from 'mixtape'
@@ -7,6 +7,7 @@ import {nanoid} from 'nanoid'
 import isEqual from 'lodash.isequal'
 import {QueryClient, useQueryClient} from 'react-query'
 import {group, paragraph, statement, text} from 'frontend/mttast-builder/dist'
+import {publishDraft} from 'frontend/client/src/drafts'
 
 export type DRAFT_FETCH_EVENT = {
   type: 'FETCH'
@@ -47,7 +48,9 @@ interface DraftEditorMachineProps {
   client: QueryClient
 }
 
-const defaultContent = [group([statement([paragraph([text('')])])])]
+const defaultContent = [
+  group([statement([paragraph([text('demo')]), group([statement([paragraph([text('demo 2')])])])])]),
+]
 
 const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachineProps) =>
   createMachine<DraftEditorMachineContext, DraftEditorMachineEvent>(
@@ -113,14 +116,14 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
           initial: 'idle',
           states: {
             idle: {
-              entry: 'checkContext',
+              // entry: 'checkContext',
               on: {
                 UPDATE: {
                   actions: ['updateValueToContext'],
                   target: 'debouncing',
                 },
                 PUBLISH: {
-                  target: '#published',
+                  target: 'publishing',
                 },
               },
             },
@@ -131,24 +134,24 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
                   target: 'debouncing',
                 },
               },
-              after: {
-                1000: [
-                  {
-                    target: 'saving',
-                    cond: 'isValueDirty',
-                  },
-                  {
-                    target: 'idle',
-                  },
-                ],
-              },
+              // after: {
+              //   1000: [
+              //     {
+              //       target: 'saving',
+              //       cond: 'isValueDirty',
+              //     },
+              //     {
+              //       target: 'idle',
+              //     },
+              //   ],
+              // },
             },
             saving: {
               invoke: {
                 src: 'saveDraft',
                 onDone: {
                   target: 'idle',
-                  actions: ['afterSave', 'assignDataToContext'],
+                  actions: ['afterSave'],
                 },
                 onError: {
                   target: 'idle',
@@ -156,25 +159,42 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
                 },
               },
             },
+            publishing: {
+              invoke: {
+                src: 'publishDraft',
+                onDone: {
+                  target: 'published',
+                },
+                onError: {
+                  target: 'idle',
+                  actions: ['assignErrorToContext'],
+                },
+              },
+            },
+            published: {
+              type: 'final',
+            },
+          },
+          onDone: {
+            target: 'finishEditing',
           },
         },
-        published: {
-          id: 'published',
-          type: 'final',
+        finishEditing: {
           entry: ['afterPublish'],
+          type: 'final',
         },
       },
     },
     {
       guards: {
         isValueDirty: (context) => {
-          return !isEqual(context.localDraft, context.prevDraft)
+          const isContentNotEqual = !isEqual(context.localDraft.content, context.prevDraft.content)
+          const isTitleNotEqual = !isEqual(context.localDraft.title, context.prevDraft.title)
+          const isSubtitleNotEqual = !isEqual(context.localDraft.subtitle, context.prevDraft.subtitle)
+          return isContentNotEqual || isTitleNotEqual || isSubtitleNotEqual
         },
       },
       services: {
-        checkContext: (context, event) => {
-          console.log('checking!!', {context, event})
-        },
         fetchData: (context, event) => () => {
           return client.fetchQuery(['Draft', event.documentId], async ({queryKey}) => {
             const [_key, draftId] = queryKey
@@ -182,11 +202,21 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
           })
         },
         saveDraft: (context, event) => () => {
-          console.log('SAVING')
-          return saveDraft(context.localDraft)
+          const newDraft: Document = {
+            ...context.localDraft,
+            content: JSON.stringify(context.localDraft.content),
+          }
+          return updateDraft(newDraft)
+        },
+        publishDraft: (context) => () => {
+          console.log('PUBLISHING', context)
+          return publishDraft(context.localDraft.id)
         },
       },
       actions: {
+        checkContext: (context, event) => {
+          console.log('checking!!', {context, event})
+        },
         updateValueToContext: assign({
           localDraft: (context, event) => {
             return {
@@ -245,9 +275,4 @@ export function useEditorDraft({documentId, ...afterActions}) {
     }
   }, [])
   return [state, send] as const
-}
-
-// TODO: change with RPC call
-async function saveDraft(data) {
-  return await Promise.resolve(data)
 }

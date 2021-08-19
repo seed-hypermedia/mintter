@@ -47,10 +47,10 @@ export async function createDraft(rpc?: GrpcClient): Promise<Document> {
  * @param draftId
  * @param rpc
  */
-export async function deleteDraft(documentId: string, rpc?: GrpcClient) {
+export function deleteDraft(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   const request = DeleteDraftRequest.fromPartial({documentId})
-  const response = await new DraftsClientImpl(rpc).deleteDraft(request)
+  return new DraftsClientImpl(rpc).deleteDraft(request)
 }
 
 /**
@@ -59,10 +59,10 @@ export async function deleteDraft(documentId: string, rpc?: GrpcClient) {
  * @param rpc
  * @returns
  */
-export async function updateDraft(entry: Document, rpc?: GrpcClient): Promise<Document> {
+export function updateDraft(entry: Document, rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
   const request = UpdateDraftRequest.fromPartial({document: entry})
-  return await new DraftsClientImpl(rpc).updateDraft({document: entry})
+  return new DraftsClientImpl(rpc).updateDraft({document: entry})
 }
 
 /**
@@ -73,7 +73,7 @@ export async function updateDraft(entry: Document, rpc?: GrpcClient): Promise<Do
  * @param rpc
  * @returns
  */
-export async function listDrafts(
+export function listDrafts(
   pageSize?: number,
   pageToken?: string,
   view?: any,
@@ -86,7 +86,7 @@ export async function listDrafts(
     view,
   })
 
-  return await new DraftsClientImpl(rpc).listDrafts(request)
+  return new DraftsClientImpl(rpc).listDrafts(request)
 }
 
 /**
@@ -95,10 +95,10 @@ export async function listDrafts(
  * @param rpc
  * @returns
  */
-export async function publishDraft(documentId: string, rpc?: GrpcClient) {
+export function publishDraft(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   const request = PublishDraftRequest.fromPartial({documentId})
-  return await new DraftsClientImpl(rpc).publishDraft(request)
+  return new DraftsClientImpl(rpc).publishDraft(request)
 }
 
 /**
@@ -107,10 +107,10 @@ export async function publishDraft(documentId: string, rpc?: GrpcClient) {
  * @param rpc
  * @returns
  */
-export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Document> {
+export function getDraft(documentId: string, rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
   const request = GetDraftRequest.fromPartial({documentId})
-  return await new DraftsClientImpl(rpc).getDraft(request)
+  return new DraftsClientImpl(rpc).getDraft(request)
 
   // // return await Promise.resolve(document([statement([paragraph([text('hello world')])])]))
 

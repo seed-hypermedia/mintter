@@ -118,46 +118,35 @@ export const createStatementPlugin = (): EditorPlugin => ({
         if (isStart) return handleEnterAtStartOfStatement(editor)(statement)
         if (isEnd) return handleEnterAtEndOfStatement(editor)(statement)
         if (isMiddle) return handleEnterAtMiddleOfStatement(editor)(statement)
-        return
+        // return
       }
 
       insertBreak()
     }
 
     editor.deleteBackward = (unit) => {
-      console.log('deleteBackward: ', unit, editor.selection)
       const {selection} = editor
       const statement: NodeEntry<StatementType> = getParentFlowContent(editor)({type: ELEMENT_STATEMENT})
 
       // TODO: is removing the statement and leaving an orphan paragraph
 
-      // if (statement) {
-      //   const [node, path] = statement
+      if (statement) {
+        const [node, path] = statement
+        console.log('🚀 ~ file: statement.tsx ~ line 135 ~ editor.deleteBackward ~ node, path', node, path)
+        if (Editor.string(editor, path) == '') {
+          // statement is empty, is ok to delete it
+          Transforms.removeNodes(editor, {
+            at: path,
+          })
+          return
+        }
 
-      //   const isStart = isRangeStart(editor)([...path, 0])
-
-      //   console.log('statement', {isStart})
-
-      //   if (isStart) {
-      //     Transforms.unwrapNodes(editor, {at: path})
-      //     const parent = Editor.node(editor, Path.parent(path))
-      //     console.log('🚀 ~ file: statement.tsx ~ line 141 ~ editor.deleteBackward ~ parent', parent)
-
-      //     if (parent && isGroupContent(parent[0]) && parent[0].children.length == 1) {
-      //       //remove empty group
-      //       Transforms.unwrapNodes(editor, {at: path})
-      //     }
-
-      //     if (node.children.length == 2) {
-      //       Transforms.unwrapNodes(editor, {at: Path.next(path)})
-      //     }
-      //   }
-
-      //   // if (isStart) return handleDeleteAtStartOfHeading(editor)(headingNode)
-      //   // if (isEnd) return handleEnterAtEndOfHeading(editor)(headingNode)
-      //   // return handleEnterAtMiddleOfHeading(editor)(headingNode)
-      //   // return
-      // }
+        const isStart = isRangeStart(editor)([...path, 0])
+        console.log('deleteBackward: ', isStart)
+        // if (isStart) {
+        //   return
+        // }
+      }
 
       deleteBackward(unit)
     }
@@ -208,15 +197,19 @@ const handleEnterAtMiddleOfStatement = (editor: MTTEditor) => (nodeEntry: NodeEn
   let targetPath = Path.next(path)
 
   Editor.withoutNormalizing(editor, () => {
+    // split paragraph
     Transforms.splitNodes(editor)
-    Transforms.wrapNodes(editor, statement([]))
-    const newParagraphPath = [...path, 1]
+
+    // wrap new aragraph in new statement
+    Transforms.wrapNodes(editor, statement({id: createId()}, []), {at: [...path, 1]})
+
     if (hasChildrenGrouping) {
       targetPath = [...path, 2, 0]
-      Transforms.moveNodes(editor, {at: newParagraphPath, to: targetPath})
+      Transforms.moveNodes(editor, {at: [...path, 1], to: targetPath})
       Transforms.select(editor, Editor.start(editor, [...path, 1, 0]))
     } else {
-      Transforms.moveNodes(editor, {at: newParagraphPath, to: targetPath})
+      Transforms.moveNodes(editor, {at: [...path, 1], to: Path.next(path)})
+      Transforms.select(editor, Editor.start(editor, Path.next(path)))
     }
   })
 }

@@ -87,7 +87,6 @@ export const createHeadingPlugin = (): EditorPlugin => ({
     }
 
     editor.deleteBackward = (unit) => {
-      console.log('deleteBackward: ', unit, editor.selection)
       const {selection} = editor
       const headingNode: NodeEntry<HeadingType> = getParentFlowContent(editor)({type: ELEMENT_HEADING})
       console.log('🚀 ~ headingNode', headingNode)
@@ -96,8 +95,6 @@ export const createHeadingPlugin = (): EditorPlugin => ({
         const [node, path] = headingNode
 
         const isStart = isRangeStart(editor)([...path, 0])
-
-        console.log('heading', {isStart})
 
         if (isStart) {
           Transforms.unwrapNodes(editor, {at: path})

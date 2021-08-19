@@ -12,6 +12,7 @@ import {
 } from './plugin-utils'
 import {HoveringToolbar} from './hovering-toolbar'
 import {Box} from '@mintter/ui/box'
+import {plugins as defaultPlugins} from './plugins'
 
 export type {EditorPlugin} from './types'
 
@@ -20,10 +21,18 @@ interface EditorProps {
   value: Descendant[]
   onChange: (value: Descendant[]) => void
   children?: unknown
+  readOnly?: boolean
 }
 
-export function Editor({plugins = [], value, onChange, children}: EditorProps): JSX.Element {
+export function Editor({
+  value,
+  onChange,
+  children,
+  readOnly = false,
+  plugins = defaultPlugins,
+}: EditorProps): JSX.Element {
   const editor = useMemo(() => buildEditorHook(plugins), [plugins])
+  console.log('🚀 ~ editor', editor)
   const renderElement = useMemo(() => buildRenderElementHook(plugins), [plugins])
   const renderLeaf = useMemo(() => buildRenderLeafHook(plugins), [plugins])
   const decorate = useMemo(() => buildDecorateHook(plugins), [plugins])
@@ -43,10 +52,16 @@ export function Editor({plugins = [], value, onChange, children}: EditorProps): 
     >
       <Slate editor={editor} value={value} onChange={onChange}>
         <HoveringToolbar />
-        <Editable renderElement={renderElement} renderLeaf={renderLeaf} decorate={decorate} {...eventHandlers} />
+        <Editable
+          readOnly={readOnly}
+          renderElement={renderElement}
+          renderLeaf={renderLeaf}
+          decorate={decorate}
+          {...eventHandlers}
+        />
         {children}
       </Slate>
-      <pre>{JSON.stringify(editor.children, null, 2)}</pre>
+      <pre>{JSON.stringify(value, null, 2)}</pre>
     </Box>
   )
 }
