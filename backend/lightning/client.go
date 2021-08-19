@@ -61,7 +61,7 @@ type WalletSecurity struct {
 	RecoveryWindow   int32    `help:"A positive number indicating the lookback period (from the tip of the chain) in blocks to start scanning for funds in case we want to recover an already created wallet"`
 	AezeedPassphrase string   `help:"The password to encrypt the Aezeed superseed. Not to confuse with the wallet password, it may be diferent. Optional"`
 	AezeedMnemonics  []string `help:"The mnemonics used to regenerate the wallet"`
-	SeedEntropy      []byte   `help:"An entropy random enough used to derive the seed of the wallet"`
+	SeedEntropy      []byte   `help:"An entropy random enough used to securely derive the seed of the wallet"`
 	StatelessInit    bool     `help:"If true, no macaroon will be written on disk on any wallet manimulation (unlock, init or change password) It does not mean a new macaroon is not generated, just that it is not written to disk"`
 }
 
@@ -81,7 +81,7 @@ func (d *Ldaemon) HasActiveChannel() bool {
 	return len(channels.Channels) > 0
 }
 
-// WaitReadyForPayment is waiting untill we are ready to pay
+// WaitReadyForPayment is waiting until we are ready to pay
 func (d *Ldaemon) WaitReadyForPayment(timeout time.Duration) error {
 	client, err := d.ntfnServer.Subscribe()
 	if err != nil {
@@ -219,7 +219,7 @@ func (d *Ldaemon) ChangeWalletPassPhrase(OldPassphrase string,
 // new ones from the entropy provided. On success, this function returns the
 // serialized admin macaroon to use in all rpc calls. If the StatelessInit param
 // is false, the macaroon is also written to disk.
-func (d *Ldaemon) InitWallet(WalletSecurity WalletSecurity) ([]byte, error) {
+func (d *Ldaemon) InitWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 	/*FIXME do we really need these locks here?
 	d.Lock()
 	defer d.Unlock()

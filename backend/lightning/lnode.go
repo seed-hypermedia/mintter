@@ -48,7 +48,7 @@ type Ldaemon struct {
 
 // NewDaemon is used to create a new daemon that wraps a lightning
 // network daemon.
-func NewLdaemon(log *zap.Logger, cfg *config.LND, startBeforeSync bool) (*Ldaemon, error) {
+func NewLdaemon(log *zap.Logger, cfg *config.LND) (*Ldaemon, error) {
 
 	return &Ldaemon{
 		cfg:        cfg,
@@ -69,7 +69,7 @@ func (d *Ldaemon) Stop() error {
 }
 
 // Start is used to start the lightning network daemon.
-func (d *Ldaemon) Start(WalletSecurity WalletSecurity) error {
+func (d *Ldaemon) Start(WalletSecurity *WalletSecurity) error {
 	if atomic.SwapInt32(&d.started, 1) == 1 {
 		return fmt.Errorf("Daemon already started")
 	}
@@ -92,9 +92,9 @@ func (d *Ldaemon) Start(WalletSecurity WalletSecurity) error {
 	return nil
 }
 
-// RestartDaemon is used to restart a daemon that from some reason failed to start
+// Restart is used to restart a daemon that from some reason failed to start
 // or was started and failed at some later point.
-func (d *Ldaemon) RestartDaemon(WalletSecurity WalletSecurity) error {
+func (d *Ldaemon) Restart(WalletSecurity *WalletSecurity) error {
 	if atomic.LoadInt32(&d.started) == 0 {
 		return fmt.Errorf("Daemon must be started before attempt to restart")
 	}
@@ -266,7 +266,7 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 	return conf, nil
 }
 
-func (d *Ldaemon) startDaemon(WalletSecurity WalletSecurity) (*lnd.Config, []byte, error) {
+func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity) (*lnd.Config, []byte, error) {
 	d.Lock()
 	defer d.Unlock()
 	if d.daemonRunning {
