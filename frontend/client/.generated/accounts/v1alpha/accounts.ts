@@ -730,20 +730,20 @@ export class AccountsClientImpl implements Accounts {
 
   constructor(rpc: Rpc) {
     this.rpc = rpc
-    this.GetAccount = this.GetAccount.bind(this)
-    this.UpdateProfile = this.UpdateProfile.bind(this)
-    this.ListAccounts = this.ListAccounts.bind(this)
+    this.getAccount = this.getAccount.bind(this)
+    this.updateProfile = this.updateProfile.bind(this)
+    this.listAccounts = this.listAccounts.bind(this)
   }
 
-  GetAccount(request: DeepPartial<GetAccountRequest>, metadata?: grpc.Metadata): Promise<Account> {
+  getAccount(request: DeepPartial<GetAccountRequest>, metadata?: grpc.Metadata): Promise<Account> {
     return this.rpc.unary(AccountsGetAccountDesc, GetAccountRequest.fromPartial(request), metadata)
   }
 
-  UpdateProfile(request: DeepPartial<Profile>, metadata?: grpc.Metadata): Promise<Account> {
+  updateProfile(request: DeepPartial<Profile>, metadata?: grpc.Metadata): Promise<Account> {
     return this.rpc.unary(AccountsUpdateProfileDesc, Profile.fromPartial(request), metadata)
   }
 
-  ListAccounts(request: DeepPartial<ListAccountsRequest>, metadata?: grpc.Metadata): Promise<ListAccountsResponse> {
+  listAccounts(request: DeepPartial<ListAccountsRequest>, metadata?: grpc.Metadata): Promise<ListAccountsResponse> {
     return this.rpc.unary(AccountsListAccountsDesc, ListAccountsRequest.fromPartial(request), metadata)
   }
 }

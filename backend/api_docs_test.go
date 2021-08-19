@@ -27,7 +27,6 @@ func TestAPICreateDraft(t *testing.T) {
 	require.Equal(t, back.repo.acc.id.String(), doc.Author)
 	require.False(t, doc.UpdateTime.AsTime().IsZero())
 	require.False(t, doc.CreateTime.AsTime().IsZero())
-	require.Nil(t, doc.PublishTime)
 }
 
 func TestAPIListDrafts(t *testing.T) {
@@ -79,108 +78,6 @@ func TestAPIGetDraft(t *testing.T) {
 	testutil.ProtoEqual(t, doc, got, "must get draft that was created")
 }
 
-func TestAPIUpdateDraft_BugDuplicatedBlocks(t *testing.T) {
-	// See: https://www.notion.so/mintter/updateDraft-duplicating-blocks-e5611c8112a4487cac199ffd612244ee
-	// for some history.
-
-	back := makeTestBackend(t, "alice", true)
-	api := newDocsAPI(back)
-	ctx := context.Background()
-
-	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-
-	doc.Children = []string{"block-1"}
-	doc.Blocks = map[string]*documents.Block{
-		"block-1": {
-			Id: "block-1",
-			Elements: []*documents.InlineElement{
-				{
-					Content: &documents.InlineElement_TextRun{
-						TextRun: &documents.TextRun{
-							Text: "Hello World",
-						},
-					},
-				},
-			},
-		},
-	}
-
-	updated, err := api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: doc})
-	require.NoError(t, err)
-	doc.UpdateTime = updated.UpdateTime
-	testutil.ProtoEqual(t, doc, updated, "updated doc don't match")
-
-	got, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: doc.Id})
-	require.NoError(t, err)
-	testutil.ProtoEqual(t, updated, got, "got must be as updated")
-
-	got.Children = []string{"block-1", "block-2"}
-	got.Blocks["block-2"] = &documents.Block{
-		Id: "block-2",
-		Elements: []*documents.InlineElement{
-			{
-				Content: &documents.InlineElement_TextRun{
-					TextRun: &documents.TextRun{
-						Text: "Another Hello World",
-					},
-				},
-			},
-		},
-	}
-
-	updated, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: got})
-	require.NoError(t, err)
-	got.UpdateTime = updated.UpdateTime
-	testutil.ProtoEqual(t, got, updated, "updated must match got")
-
-	got, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: updated.Id})
-	require.NoError(t, err)
-	testutil.ProtoEqual(t, updated, got, "got after update")
-}
-
-func TestAPISyncDocuments(t *testing.T) {
-	alice := makeTestBackend(t, "alice", true)
-	aapi := newDocsAPI(alice)
-	bob := makeTestBackend(t, "bob", true)
-	bapi := newDocsAPI(bob)
-	ctx := context.Background()
-
-	draft := makeDraft(t, ctx, aapi, "Alice Docs", "Subtitle")
-	_, err := aapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
-	require.NoError(t, err)
-
-	connectPeers(t, ctx, alice, bob, true)
-
-	list, err := bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
-	require.NoError(t, err)
-	require.Len(t, list.Publications, 0)
-
-	require.NoError(t, bob.SyncAccounts(ctx))
-
-	pub, err := bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
-	require.NoError(t, err)
-	draft.PublishTime = pub.Document.PublishTime // Draft doesn't have publish time.
-	testutil.ProtoEqual(t, draft, pub.Document, "fetched draft must be equal")
-
-	list, err = bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
-	require.NoError(t, err)
-	require.Len(t, list.Publications, 1)
-
-	// Try to sync again. Nothing new has to appear.
-
-	require.NoError(t, bob.SyncAccounts(ctx))
-
-	pub, err = bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
-	require.NoError(t, err)
-	draft.PublishTime = pub.Document.PublishTime // Draft doesn't have publish time.
-	testutil.ProtoEqual(t, draft, pub.Document, "fetched draft must be equal")
-
-	list, err = bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
-	require.NoError(t, err)
-	require.Len(t, list.Publications, 1)
-}
-
 func TestAPIUpdateDraft(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
 	api := newDocsAPI(back)
@@ -191,21 +88,7 @@ func TestAPIUpdateDraft(t *testing.T) {
 
 	doc.Title = "My new document title"
 	doc.Subtitle = "This is my document's abstract"
-	doc.Children = []string{"block-1"}
-	doc.Blocks = map[string]*documents.Block{
-		"block-1": {
-			Id: "block-1",
-			Elements: []*documents.InlineElement{
-				{
-					Content: &documents.InlineElement_TextRun{
-						TextRun: &documents.TextRun{
-							Text: "Hello world!",
-						},
-					},
-				},
-			},
-		},
-	}
+	doc.Content = `{"content":"Hello World"}`
 
 	updated, err := api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: doc})
 	require.NoError(t, err)
@@ -274,7 +157,7 @@ func TestAPIPublishDraft(t *testing.T) {
 	testutil.ProtoEqual(t, doc, pub.Document, "published document doesn't match")
 }
 
-func TestListPublications(t *testing.T) {
+func TestAPIListPublications(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
 	api := newDocsAPI(back)
 	ctx := context.Background()
@@ -284,7 +167,7 @@ func TestListPublications(t *testing.T) {
 	require.Len(t, list.Publications, 0)
 
 	var drafts [5]*documents.Document
-	var publications [len(drafts)]*documents.PublishDraftResponse
+	var publications [len(drafts)]*documents.Publication
 
 	var wg sync.WaitGroup
 
@@ -347,6 +230,48 @@ func TestAPIDeletePublication(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, codes.NotFound, s.Code())
 	require.Nil(t, pub)
+}
+
+func TestAPISyncDocuments(t *testing.T) {
+	alice := makeTestBackend(t, "alice", true)
+	aapi := newDocsAPI(alice)
+	bob := makeTestBackend(t, "bob", true)
+	bapi := newDocsAPI(bob)
+	ctx := context.Background()
+
+	draft := makeDraft(t, ctx, aapi, "Alice Docs", "Subtitle")
+	_, err := aapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+
+	connectPeers(t, ctx, alice, bob, true)
+
+	list, err := bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 0)
+
+	require.NoError(t, bob.SyncAccounts(ctx))
+
+	pub, err := bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	draft.PublishTime = pub.Document.PublishTime // Draft doesn't have publish time.
+	testutil.ProtoEqual(t, draft, pub.Document, "fetched draft must be equal")
+
+	list, err = bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 1)
+
+	// Try to sync again. Nothing new has to appear.
+
+	require.NoError(t, bob.SyncAccounts(ctx))
+
+	pub, err = bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	draft.PublishTime = pub.Document.PublishTime // Draft doesn't have publish time.
+	testutil.ProtoEqual(t, draft, pub.Document, "fetched draft must be equal")
+
+	list, err = bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 1)
 }
 
 func makeDraft(t *testing.T, ctx context.Context, api DocsServer, title, subtitle string) *documents.Document {

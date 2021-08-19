@@ -703,14 +703,14 @@ export class NetworkingClientImpl implements Networking {
 
   constructor(rpc: Rpc) {
     this.rpc = rpc
-    this.StartObjectDiscovery = this.StartObjectDiscovery.bind(this)
-    this.GetObjectDiscoveryStatus = this.GetObjectDiscoveryStatus.bind(this)
-    this.StopObjectDiscovery = this.StopObjectDiscovery.bind(this)
-    this.GetPeerInfo = this.GetPeerInfo.bind(this)
-    this.Connect = this.Connect.bind(this)
+    this.startObjectDiscovery = this.startObjectDiscovery.bind(this)
+    this.getObjectDiscoveryStatus = this.getObjectDiscoveryStatus.bind(this)
+    this.stopObjectDiscovery = this.stopObjectDiscovery.bind(this)
+    this.getPeerInfo = this.getPeerInfo.bind(this)
+    this.connect = this.connect.bind(this)
   }
 
-  StartObjectDiscovery(
+  startObjectDiscovery(
     request: DeepPartial<StartObjectDiscoveryRequest>,
     metadata?: grpc.Metadata,
   ): Promise<StartObjectDiscoveryResponse> {
@@ -721,7 +721,7 @@ export class NetworkingClientImpl implements Networking {
     )
   }
 
-  GetObjectDiscoveryStatus(
+  getObjectDiscoveryStatus(
     request: DeepPartial<GetObjectDiscoveryStatusRequest>,
     metadata?: grpc.Metadata,
   ): Promise<ObjectDiscoveryStatus> {
@@ -732,18 +732,18 @@ export class NetworkingClientImpl implements Networking {
     )
   }
 
-  StopObjectDiscovery(
+  stopObjectDiscovery(
     request: DeepPartial<StopObjectDiscoveryRequest>,
     metadata?: grpc.Metadata,
   ): Promise<StopObjectDiscoveryResponse> {
     return this.rpc.unary(NetworkingStopObjectDiscoveryDesc, StopObjectDiscoveryRequest.fromPartial(request), metadata)
   }
 
-  GetPeerInfo(request: DeepPartial<GetPeerInfoRequest>, metadata?: grpc.Metadata): Promise<PeerInfo> {
+  getPeerInfo(request: DeepPartial<GetPeerInfoRequest>, metadata?: grpc.Metadata): Promise<PeerInfo> {
     return this.rpc.unary(NetworkingGetPeerInfoDesc, GetPeerInfoRequest.fromPartial(request), metadata)
   }
 
-  Connect(request: DeepPartial<ConnectRequest>, metadata?: grpc.Metadata): Promise<ConnectResponse> {
+  connect(request: DeepPartial<ConnectRequest>, metadata?: grpc.Metadata): Promise<ConnectResponse> {
     return this.rpc.unary(NetworkingConnectDesc, ConnectRequest.fromPartial(request), metadata)
   }
 }

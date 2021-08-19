@@ -188,10 +188,7 @@ func (srv *docsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRe
 	merged := proto.Clone(old).(*documents.Document)
 	merged.Title = in.Document.Title
 	merged.Subtitle = in.Document.Subtitle
-	merged.ChildrenListStyle = in.Document.ChildrenListStyle
-	merged.Children = in.Document.Children
-	merged.Blocks = in.Document.Blocks
-	merged.Links = in.Document.Links
+	merged.Content = in.Document.Content
 
 	// If updated document didn't change, we don't need to hit the database or file system.
 	if proto.Equal(merged, old) {
@@ -256,7 +253,7 @@ func (srv *docsAPI) DeleteDraft(ctx context.Context, in *documents.DeleteDraftRe
 	return &emptypb.Empty{}, nil
 }
 
-func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraftRequest) (*documents.PublishDraftResponse, error) {
+func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraftRequest) (*documents.Publication, error) {
 	p2p, err := srv.back.readyIPFS()
 	if err != nil {
 		return nil, err
@@ -344,8 +341,9 @@ func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraft
 	p2p.prov.EnqueueProvide(ctx, sp.cid)
 	p2p.prov.EnqueueProvide(ctx, feedsp.cid)
 
-	return &documents.PublishDraftResponse{
-		Version: sp.cid.String(),
+	return &documents.Publication{
+		Version:  sp.cid.String(),
+		Document: doc,
 	}, nil
 }
 
