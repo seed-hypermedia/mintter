@@ -5,7 +5,7 @@ import {
   ListPublicationsResponse,
   PublicationsClientImpl,
 } from '../.generated/documents/v1alpha/documents'
-import type {Publication, DocumentView} from '../.generated/documents/v1alpha/documents'
+import type {Publication} from '../.generated/documents/v1alpha/documents'
 import {mockPublication} from '../mocks'
 import {createGrpcClient, GrpcClient} from './grpc-client'
 
@@ -18,7 +18,7 @@ import {createGrpcClient, GrpcClient} from './grpc-client'
 export async function deletePublication(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   const request = DeletePublicationRequest.fromPartial({documentId})
-  return await new PublicationsClientImpl(rpc).DeletePublication(request)
+  return await new PublicationsClientImpl(rpc).deletePublication(request)
 }
 
 /**
@@ -29,10 +29,10 @@ export async function deletePublication(documentId: string, rpc?: GrpcClient) {
  * @param rpc
  * @returns
  */
-export async function listPublications(pageSize?: number, pageToken?: string, view?: DocumentView, rpc?: GrpcClient) {
+export async function listPublications(pageSize?: number, pageToken?: string, view?: any, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   const request = ListPublicationsRequest.fromPartial({pageSize, pageToken, view})
-  return await new PublicationsClientImpl(rpc).ListPublications(request)
+  return await new PublicationsClientImpl(rpc).listPublications(request)
 }
 
 /**
@@ -45,5 +45,5 @@ export async function listPublications(pageSize?: number, pageToken?: string, vi
 export async function getPublication(documentId: string, rpc?: GrpcClient): Promise<Publication> {
   rpc ||= createGrpcClient()
   const request = GetPublicationRequest.fromPartial({documentId})
-  return await new PublicationsClientImpl(rpc).GetPublication(request)
+  return await new PublicationsClientImpl(rpc).getPublication(request)
 }

@@ -19,7 +19,7 @@ export default function EditorPage() {
       toast.success('Draft saved!', {position: 'top-center', duration: 4000})
     },
     afterPublish: (context: DraftEditorMachineContext, event) => {
-      history.push(`/p/${context.prevDraft?.id}`)
+      history.push(`/p/${context.document?.id}`)
     },
   })
 
@@ -32,7 +32,7 @@ export default function EditorPage() {
   const isSidepanelOpen = useMemo<boolean>(() => sidepanelState.matches('enabled.opened'), [sidepanelState.value])
 
   async function handleSave() {
-    // console.log('save now!!')
+    console.log('save now!!')
     // await data?.save()
     toast.success('Draft saved!', {position: 'top-center', duration: 4000})
   }
@@ -103,7 +103,7 @@ export default function EditorPage() {
             data-testid="editor_title"
             name="title"
             placeholder="Document title"
-            value={context.localDraft?.title}
+            value={context.localDraft.title}
             onChange={(event) =>
               send({
                 type: 'UPDATE',
@@ -132,7 +132,7 @@ export default function EditorPage() {
             data-testid="editor_subtitle"
             name="subtitle"
             placeholder="about this publication..."
-            value={context.localDraft?.subtitle}
+            value={context.localDraft.subtitle}
             onChange={(event) =>
               send({
                 type: 'UPDATE',
@@ -155,12 +155,12 @@ export default function EditorPage() {
           <Separator />
           <Editor
             plugins={plugins}
-            value={context.localDraft?.children}
-            onChange={(value) =>
+            value={context.localDraft.content}
+            onChange={(content) =>
               send({
                 type: 'UPDATE',
                 payload: {
-                  children: value,
+                  content,
                 },
               })
             }
@@ -300,7 +300,7 @@ function _EditorPage() {
         <Box css={{mx: '-$4', width: 'calc(100% + $7)'}}>
           <Editor
             plugins={plugins}
-            value={data?.value.children}
+            value={data?.value}
             onChange={(payload) => data.send({type: 'children', payload})}
           />
         </Box>

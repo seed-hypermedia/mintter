@@ -1,19 +1,16 @@
 import {
-  Block,
   CreateDraftRequest,
   DeleteDraftRequest,
   DraftsClientImpl,
   GetDraftRequest,
-  InlineElement,
   ListDraftsRequest,
   ListDraftsResponse,
   PublishDraftRequest,
   UpdateDraftRequest,
 } from '../.generated/documents/v1alpha/documents'
-import type {Document, DocumentView} from '../.generated/documents/v1alpha/documents'
-import {createId, mockDocument} from '../mocks'
+import type {Document} from '../.generated/documents/v1alpha/documents'
+import {createId} from '../mocks'
 import {createGrpcClient, GrpcClient} from './grpc-client'
-import {u} from 'unist-builder'
 import {nanoid} from 'nanoid'
 import {
   document,
@@ -40,10 +37,9 @@ import {
  */
 export async function createDraft(rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
-  const emptyBlock = Block.fromPartial({id: createId(), elements: [InlineElement.fromPartial({textRun: {text: ''}})]})
-  const request = CreateDraftRequest.fromPartial({blocks: [emptyBlock]} as Document)
 
-  return await new DraftsClientImpl(rpc).CreateDraft(request)
+  const request = CreateDraftRequest.fromPartial({})
+  return await new DraftsClientImpl(rpc).createDraft(request)
 }
 
 /**
@@ -54,7 +50,7 @@ export async function createDraft(rpc?: GrpcClient): Promise<Document> {
 export async function deleteDraft(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   const request = DeleteDraftRequest.fromPartial({documentId})
-  const response = await new DraftsClientImpl(rpc).DeleteDraft(request)
+  const response = await new DraftsClientImpl(rpc).deleteDraft(request)
 }
 
 /**
@@ -65,9 +61,8 @@ export async function deleteDraft(documentId: string, rpc?: GrpcClient) {
  */
 export async function updateDraft(entry: Document, rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
-  // const request = UpdateDraftRequest.fromPartial({document: entry})
-  const response = await new DraftsClientImpl(rpc).UpdateDraft({document: entry})
-  return response
+  const request = UpdateDraftRequest.fromPartial({document: entry})
+  return await new DraftsClientImpl(rpc).updateDraft({document: entry})
 }
 
 /**
@@ -81,7 +76,7 @@ export async function updateDraft(entry: Document, rpc?: GrpcClient): Promise<Do
 export async function listDrafts(
   pageSize?: number,
   pageToken?: string,
-  view?: DocumentView,
+  view?: any,
   rpc?: GrpcClient,
 ): Promise<ListDraftsResponse> {
   rpc ||= createGrpcClient()
@@ -91,7 +86,7 @@ export async function listDrafts(
     view,
   })
 
-  return await new DraftsClientImpl(rpc).ListDrafts(request)
+  return await new DraftsClientImpl(rpc).listDrafts(request)
 }
 
 /**
@@ -103,7 +98,7 @@ export async function listDrafts(
 export async function publishDraft(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   const request = PublishDraftRequest.fromPartial({documentId})
-  return await new DraftsClientImpl(rpc).PublishDraft(request)
+  return await new DraftsClientImpl(rpc).publishDraft(request)
 }
 
 /**
@@ -113,19 +108,18 @@ export async function publishDraft(documentId: string, rpc?: GrpcClient) {
  * @returns
  */
 export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Document> {
-  // rpc ||= createGrpcClient()
-  // const request = GetDraftRequest.fromPartial({documentId})
-  // return await new DraftsClientImpl(rpc).GetDraft(request)
+  rpc ||= createGrpcClient()
+  const request = GetDraftRequest.fromPartial({documentId})
+  return await new DraftsClientImpl(rpc).getDraft(request)
 
-  // return await Promise.resolve(document([statement([paragraph([text('hello world')])])]))
+  // // return await Promise.resolve(document([statement([paragraph([text('hello world')])])]))
 
-  // return await Promise.reject({message: 'testing error'})
+  // // return await Promise.reject({message: 'testing error'})
 
-  return await Promise.resolve(allNodes)
+  // return await Promise.resolve(allNodes)
 }
 
-var allNodes = u(
-  'root',
+var allNodes = document(
   {
     id: nanoid(20),
     title: 'Demo Document',
