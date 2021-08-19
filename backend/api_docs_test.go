@@ -136,6 +136,8 @@ func TestAPIPublishDraft(t *testing.T) {
 
 	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
+	doc.PublishTime = published.Document.PublishTime // This is the only field that should differ.
+	testutil.ProtoEqual(t, doc, published.Document, "published document doesn't match")
 
 	docid, err := cid.Decode(doc.Id)
 	require.NoError(t, err)
@@ -153,8 +155,7 @@ func TestAPIPublishDraft(t *testing.T) {
 
 	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
 	require.NoError(t, err, "must get document after publishing")
-	doc.PublishTime = pub.Document.PublishTime // This is the only field that should differ.
-	testutil.ProtoEqual(t, doc, pub.Document, "published document doesn't match")
+	testutil.ProtoEqual(t, published, pub, "published document doesn't match")
 }
 
 func TestAPIListPublications(t *testing.T) {

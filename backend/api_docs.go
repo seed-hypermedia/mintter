@@ -364,6 +364,7 @@ func (srv *docsAPI) GetPublication(ctx context.Context, in *documents.GetPublica
 	}
 
 	return &documents.Publication{
+		Version:  state.deps[0].String(), // TODO: implement case with multiple heads.
 		Document: doc,
 	}, nil
 }
