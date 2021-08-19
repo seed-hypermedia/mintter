@@ -1,9 +1,11 @@
 import {motion, Variants} from 'framer-motion'
 import {Box, BoxProps, Button, ButtonProps, Text, TextProps} from '@mintter/ui'
+import type {GenSeedResponse} from '@mintter/client'
 
 export type OnboardingStepPropsType = {
   prev: () => void
   next: () => void
+  generateSeed: () => Promise<GenSeedResponse>
 }
 
 const containerAnimationVariants: Variants = {
@@ -91,6 +93,7 @@ export function OnboardingStepTitle({css, icon, children}: BoxProps & {icon?: JS
         gap: '$5',
         ...css,
       }}
+      data-cy="welcome-title"
     >
       {icon}
       <Text alt as="h1" size="9" css={{textAlign: 'center'}}>
