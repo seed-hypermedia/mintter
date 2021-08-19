@@ -1,26 +1,12 @@
-/**
- *
- *
- * TODOS:
- * - loosing focus from editor when save
- *
- */
-
 import {useEffect, useMemo, useReducer} from 'react'
-import {FlowContent, getDraft, GroupingContent, u} from '@mintter/client'
+import {FlowContent, getDraft, GroupingContent, Document} from '@mintter/client'
 import {useMachine} from '@xstate/react'
 import {ActionFunction, assign, createMachine} from 'xstate'
 import type {Descendant} from 'mixtape'
 import {nanoid} from 'nanoid'
 import isEqual from 'lodash.isequal'
 import {QueryClient, useQueryClient} from 'react-query'
-
-type Document = {
-  id: string
-  title: string
-  subtitle: string
-  children: [GroupingContent]
-}
+import {group, paragraph, statement, text} from 'frontend/mttast-builder/dist'
 
 export type DRAFT_FETCH_EVENT = {
   type: 'FETCH'
@@ -29,7 +15,7 @@ export type DRAFT_FETCH_EVENT = {
 
 export type DRAFT_UPDATE_EVENT = {
   type: 'UPDATE'
-  payload: Partial<Document>
+  payload: Document
 }
 
 export type DRAFT_RECEIVE_DATA_EVENT = {
@@ -60,6 +46,8 @@ interface DraftEditorMachineProps {
   afterPublish: ActionFunction
   client: QueryClient
 }
+
+const defaultContent = [group([statement([paragraph([text('')])])])]
 
 const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachineProps) =>
   createMachine<DraftEditorMachineContext, DraftEditorMachineEvent>(
@@ -144,15 +132,15 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
                 },
               },
               after: {
-                // 1000: [
-                //   {
-                //     target: 'saving',
-                //     cond: 'isValueDirty',
-                //   },
-                //   {
-                //     target: 'idle',
-                //   },
-                // ],
+                1000: [
+                  {
+                    target: 'saving',
+                    cond: 'isValueDirty',
+                  },
+                  {
+                    target: 'idle',
+                  },
+                ],
               },
             },
             saving: {
@@ -190,10 +178,11 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
         fetchData: (context, event) => () => {
           return client.fetchQuery(['Draft', event.documentId], async ({queryKey}) => {
             const [_key, draftId] = queryKey
-            return await await getDraft(draftId)
+            return await getDraft(draftId)
           })
         },
         saveDraft: (context, event) => () => {
+          console.log('SAVING')
           return saveDraft(context.localDraft)
         },
       },
@@ -207,11 +196,28 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
           },
         }),
         assignDataToContext: assign((context, event) => {
-          console.log('assignDataToContext', event)
+          console.log(event)
           // if (event.type !== 'RECEIVE_DATA') return {}
+          if (event.type == 'done.invoke.fetchData') {
+            const value = {
+              ...event.data,
+              content: event.data.content ? JSON.parse(event.data.content) : defaultContent,
+            }
+            return {
+              prevDraft: value,
+              localDraft: value,
+            }
+          }
+          console.log('not fetch event', event)
           return {
-            prevDraft: (event as DRAFT_RECEIVE_DATA_EVENT).data,
-            localDraft: (event as DRAFT_RECEIVE_DATA_EVENT).data,
+            localDraft: {
+              ...context.localDraft,
+              ...event.data,
+            },
+            prevDraft: {
+              ...context.prevDraft,
+              ...event.data,
+            },
           }
         }),
         clearErrorMessage: assign({

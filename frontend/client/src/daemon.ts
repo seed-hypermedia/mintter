@@ -10,5 +10,7 @@ export async function getInfo(rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
 
   const request = GetInfoRequest.fromPartial({})
-  return await new DaemonClientImpl(rpc).GetInfo(request)
+  const response = await new DaemonClientImpl(rpc).getInfo()
+  console.log('🚀 ~ file: daemon.ts ~ line 14 ~ getInfo ~ response', response)
+  return response
 }

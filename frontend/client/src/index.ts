@@ -36,8 +36,6 @@ export {
 export * from './networking'
 
 export {
-  DocumentView,
-  ListStyle,
   CreateDraftRequest,
   DeleteDraftRequest,
   GetDraftRequest,
@@ -51,15 +49,6 @@ export {
   ListPublicationsResponse,
   Publication,
   Document,
-  Document_BlocksEntry,
-  Document_LinksEntry,
-  Link,
-  Block,
-  Block_Type,
-  InlineElement,
-  TextRun,
-  Image,
-  Quote,
 } from '../.generated/documents/v1alpha/documents'
 
 export {createGrpcClient} from './grpc-client'
