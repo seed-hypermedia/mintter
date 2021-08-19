@@ -45,7 +45,7 @@ export const deleteConfirmationDialogMachine = ({onSuccess, executeAction}: Dele
           states: {
             idle: {
               on: {
-                CANCEL: '#closed',
+                CANCEL: 'dismiss',
                 CONFIRM: 'executingAction',
               },
             },
@@ -57,11 +57,17 @@ export const deleteConfirmationDialogMachine = ({onSuccess, executeAction}: Dele
                   actions: 'assignErrorMessageToContext',
                 },
                 onDone: {
-                  target: '#closed',
+                  target: 'dismiss',
                   actions: ['clearActionFromContext', 'onSuccess'],
                 },
               },
             },
+            dismiss: {
+              type: 'final',
+            },
+          },
+          onDone: {
+            target: 'closed',
           },
         },
       },

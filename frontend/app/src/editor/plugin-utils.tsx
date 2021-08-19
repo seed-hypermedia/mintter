@@ -5,7 +5,6 @@ import type {EditorEventHandlers, EditorPlugin} from './types'
 
 export function buildEditorHook(plugins: EditorPlugin[]): Editor {
   const hooks = plugins.flatMap(({configureEditor}) => configureEditor || [])
-
   return hooks.reduce((editor, configure) => configure(editor) || editor, withHistory(withReact(createEditor())))
 }
 

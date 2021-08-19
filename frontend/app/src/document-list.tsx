@@ -39,7 +39,6 @@ export function DocumentList({
   }
 
   function onDelete(context: DeleteConfirmationDialogMachineContext, event: DeleteConfirmationDialogMachineEvent) {
-    console.log('DELETE!', {isDraft, context, event})
     if (isDraft) return deleteDraft(event.entryId)
     return deletePublication(event.entryId)
   }
@@ -65,7 +64,7 @@ function ListItem({item, deleteMachine, toPrefix}: {item: {document: Document; v
   const [deleteModal, deleteModalSend] = deleteMachine
 
   const {id, title, subtitle, author: itemAuthor} = item.document
-  const theTitle = title ? title : 'Untitled Document'
+  const theTitle = title ?? 'Untitled Document'
 
   return (
     <Box as="li" css={{position: 'relative', listStyle: 'none'}}>
@@ -187,7 +186,7 @@ function ListItem({item, deleteMachine, toPrefix}: {item: {document: Document; v
                   <Alert.Action
                     color="danger"
                     onClick={() => {
-                      deleteModalSend({type: 'CONFIRM', entryId: item.version ?? id})
+                      deleteModalSend({type: 'CONFIRM', entryId: item.document.id})
                     }}
                   >
                     Delete
