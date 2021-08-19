@@ -2,7 +2,7 @@ import {useCallback, useState} from 'react'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import toast from 'react-hot-toast'
 import {useQuery} from 'react-query'
-import {generateSeed, registerAccount} from '@mintter/client'
+import {generateSeed as defaultGenerateSeed, registerAccount} from '@mintter/client'
 import {Box, Button, Text, TextField} from '@mintter/ui'
 import {
   OnboardingStep,
@@ -15,7 +15,7 @@ import {
   SecurityPackIcon,
 } from './common'
 
-export function SecurityPack({prev, next}: OnboardingStepPropsType): JSX.Element {
+export function SecurityPack({prev, next, generateSeed = defaultGenerateSeed}: OnboardingStepPropsType): JSX.Element {
   const [ownSeed, setOwnSeed] = useState<string>('')
   const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false)
   const mnemonics = useQuery<string[], Error>(
