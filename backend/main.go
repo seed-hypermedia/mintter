@@ -38,6 +38,7 @@ func Module(cfg config.Config, log *zap.Logger) fx.Option {
 	return fx.Options(
 		fx.Supply(cfg),
 		fx.Supply(log),
+		fx.Logger(&fxLogger{zap.NewNop().Sugar()}), // sometimes we may want to pass real zap logger here.
 		fx.NopLogger,
 		fx.Provide(
 			provideP2PConfig,

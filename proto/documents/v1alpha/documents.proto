@@ -25,7 +25,7 @@ service Drafts {
   rpc ListDrafts(ListDraftsRequest) returns (ListDraftsResponse);
 
   // Publishes a draft. I.e. draft will become a publication, and will no longer appear in drafts section.
-  rpc PublishDraft(PublishDraftRequest) returns (PublishDraftResponse);
+  rpc PublishDraft(PublishDraftRequest) returns (Publication);
 }
 
 // Request to create a new draft.
@@ -67,7 +67,7 @@ message ListDraftsRequest {
 message ListDraftsResponse {
   // Drafts matching the list request.
   // Content is omitted.
-  repeated Document drafts = 1;
+  repeated Document documents = 1;
 
   // Token for the next page if there're any.
   string next_page_token = 2;
@@ -77,12 +77,6 @@ message ListDraftsResponse {
 message PublishDraftRequest {
   // ID of the document which current draft needs to be published.
   string document_id = 1;
-}
-
-// Response from publishing a draft.
-message PublishDraftResponse {
-  // Document after it has been published.
-  Publication publication = 1;
 }
 
 // Publications service provides access to published documents.
@@ -149,9 +143,6 @@ message Publication {
 
   // Document metadata.
   Document document = 2;
-
-  // Time when this version was published.
-  google.protobuf.Timestamp publish_time = 3;
 }
 
 // Document represents metadata and content of a draft or publication.
@@ -160,22 +151,36 @@ message Document {
   string id = 1;
 
   // Title of the document.
-  string title = 1;
+  string title = 2;
 
   // Subtitle of the document.
-  string subtitle = 2;
+  string subtitle = 3;
 
   // Output only. Author of the document.
-  string author = 3;
-
-  // Output only. Time when document was created.
-  google.protobuf.Timestamp create_time = 4;
-
-  // Output only. Time when document was updated.
-  google.protobuf.Timestamp update_time = 5;
+  string author = 4;
 
   // JSON-serialized Mintter AST.
   // It's expected to be the first child of the document root,
   // which must be of type GroupingContent.
-  string content = 6;
+  string content = 5;
+
+  // Output only. Time when document was created.
+  google.protobuf.Timestamp create_time = 6;
+
+  // Output only. Time when document was updated.
+  google.protobuf.Timestamp update_time = 7;
+
+  // Output only. Time when this version was published. Not present in drafts.
+  google.protobuf.Timestamp publish_time = 8;
+}
+
+// === Events ===
+
+// Message that gets published to documents feed of the Mintter author.
+message DocumentPublished {
+  string document_id = 1;
+
+  string title = 2;
+
+  string subtitle = 3;
 }
