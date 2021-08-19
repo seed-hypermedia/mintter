@@ -23,7 +23,6 @@ function Disc() {
 
 export function Marker({element}) {
   const {type, path} = useParentType(element)
-  console.log('market type: ', type, path)
 
   if (type == ELEMENT_UNORDERED_LIST || type == ELEMENT_ORDERED_LIST) {
     return (

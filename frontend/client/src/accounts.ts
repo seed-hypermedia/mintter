@@ -13,8 +13,8 @@ export function generateSeed(aezeedPassphrase?: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
 
   const request = GenSeedRequest.fromPartial({})
-
-  return new DaemonClientImpl(rpc).GenSeed(request)
+  const response = new DaemonClientImpl(rpc).genSeed(request)
+  return response
 }
 
 /**
@@ -38,7 +38,7 @@ export function registerAccount(
     aezeedPassphrase,
   })
 
-  return new DaemonClientImpl(rpc).Register(request)
+  return new DaemonClientImpl(rpc).register(request)
 }
 
 /**
@@ -50,7 +50,7 @@ export function registerAccount(
 export function updateAccount(profile: Profile, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
 
-  return new AccountsClientImpl(rpc).UpdateProfile(profile)
+  return new AccountsClientImpl(rpc).updateProfile(profile)
 }
 
 /**
@@ -67,7 +67,7 @@ export function listAccounts(pageSize?: number, pageToken?: string, rpc?: GrpcCl
     pageSize,
     pageToken,
   })
-  return new AccountsClientImpl(rpc).ListAccounts(request)
+  return new AccountsClientImpl(rpc).listAccounts(request)
 }
 
 /**
@@ -83,5 +83,5 @@ export function getAccount(id: string, rpc?: GrpcClient): Promise<Account> {
     id,
   })
 
-  return new AccountsClientImpl(rpc).GetAccount(request)
+  return new AccountsClientImpl(rpc).getAccount(request)
 }

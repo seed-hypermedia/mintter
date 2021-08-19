@@ -18,5 +18,5 @@ import {GrpcClient, createGrpcClient} from './grpc-client'
 export async function getDocument(id: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   console.warn('called mocked function "getDocument"')
-  return mock.mockDocument({id})
+  return {}
 }
