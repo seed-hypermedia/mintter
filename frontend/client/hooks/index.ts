@@ -148,8 +148,11 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
  * @param options
  * @returns
  */
-export function usePublication(publicationId: string, options: HookOptions<Publication> = {}) {
-  return useQuery(
+export function usePublication(
+  publicationId: string,
+  options: HookOptions<Publication> = {},
+): UseQueryResult<Publication> {
+  const publicationQuery = useQuery(
     ['Publication', publicationId],
     async ({queryKey}) => {
       const [_key, publicationId] = queryKey as [string, string]
@@ -160,6 +163,22 @@ export function usePublication(publicationId: string, options: HookOptions<Publi
       ...options,
     },
   )
+
+  const content = useMemo(
+    () => (publicationQuery.data?.document?.content ? JSON.parse(publicationQuery.data?.document?.content) : ''),
+    [publicationQuery.data],
+  )
+
+  return {
+    ...publicationQuery,
+    data: {
+      ...publicationQuery.data,
+      document: {
+        ...publicationQuery.data?.document,
+        content,
+      },
+    },
+  }
 }
 
 /**

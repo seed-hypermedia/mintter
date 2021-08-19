@@ -17,6 +17,7 @@ import {createGrpcClient, GrpcClient} from './grpc-client'
  */
 export async function deletePublication(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
+  console.log('delete pub, ', documentId)
   const request = DeletePublicationRequest.fromPartial({documentId})
   return await new PublicationsClientImpl(rpc).deletePublication(request)
 }

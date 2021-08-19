@@ -10,7 +10,7 @@ import {ELEMENT_STATIC_PARAGRAPH} from './elements/static-paragraph'
 export type MTTEditor = BaseEditor & ReactEditor
 
 export function createStatement(): Statement {
-  return statement([paragraph([text('')])])
+  return statement([paragraph({id: createId()}, [text('')])])
 }
 
 export const isCollapsed = (range: Range): boolean => !!range && Range.isCollapsed(range)
