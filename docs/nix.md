@@ -15,16 +15,27 @@ So Nix is the only piece of software needed. It will install the rest of the
 tools, and will make sure we all use the same versions. You don't need `node`,
 `go` or anything else.
 
-Install Nix by running `curl -L https://nixos.org/nix/install | sh`.
+Install Nix following the [official instructions](https://nixos.org/download.html).
 
-_IMPORTANT! If you are on macOS Catalina or above run `./scripts/setup-nix.sh`
-first, and then install Nix._ This will create a virtual volume mounted at
-`/nix`. This is needed because since Catalina you can't create arbitrary
-directories in `/`, and Nix _really_ wants to use `/nix`.
+### IMPORTANT
+
+- If you are on macOS Catalina or above you'll have to create a separate APFS volume that should be mounted at `/nix`.
+The installer should guide you through the process. Don't be scared.
+
+- Check your shell profile. The installer should've added a new line that would source Nix profile into your shell. If it doesn't happen, just add it yourself:
+
+```
+. $HOME/.nix-profile/etc/profile.d/nix.sh
+```
+
+### OPTIONAL
+
+- Run `sudo mdutil -i off /nix` to disable Spotlight indexing. Recommended!
+- Run `sudo SetFile -a V /nix && sudo killall Finder` to hide Nix disk volume from the Desktop.
 
 ## Hermetic Toolchains
 
-There's some one-time setup required for all this to work.
+There's a one-time setup required for all this to work.
 
 Install direnv by running
 
@@ -32,8 +43,7 @@ Install direnv by running
 nix-env -iA nixpkgs.direnv
 ```
 
-Hook it into your shell (add one of the following lines to you `~/.profile`,
-`~/.bashrc`, or `~/.zshrc`, depending on the shell you use).
+Add direnv hook to your shell profile:
 
 ```shell
 eval "$(direnv hook bash)"  # for bash
@@ -41,7 +51,7 @@ eval "$(direnv hook zsh)"   # for zsh
 eval (direnv hook fish)     # for fish
 ```
 
-When inside the repository run
+Then `cd` to the repository and run:
 
 ```shell
 direnv allow .
