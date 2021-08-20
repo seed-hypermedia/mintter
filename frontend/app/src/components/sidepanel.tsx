@@ -1,15 +1,14 @@
 import {createContext, useEffect, useContext} from 'react'
 import {Box, Text, Button} from '@mintter/ui'
-import {useActor, useMachine} from '@xstate/react'
-import type {UseMachineOptions} from '@xstate/react/lib/useMachine'
+import {useMachine} from '@xstate/react'
 
-import type {UseMutateFunction} from 'react-query'
-import {assign, createMachine, interpret} from 'xstate'
-import {useState} from 'react'
-import {useAccount, useDocument, usePublication} from '@mintter/client/hooks'
+import {assign, createMachine} from 'xstate'
+import {usePublication} from '@mintter/client/hooks'
+/** 
+ * @todo remove usage of Block
+ * @body Block doesn't exist anymore right? We should remove it's usage and make sure everything still works @horacioh
+ * */
 import type {Block} from 'frontend/client/.generated/documents/v1alpha/documents'
-import {getAccount} from 'frontend/client/src/accounts'
-import {useMemo} from 'react'
 
 interface SidepanelStateSchema {
   states: {
