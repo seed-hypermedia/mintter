@@ -62,6 +62,9 @@ export const createParagraphPlugin = (): EditorPlugin => ({
           //  no: add statement as the same level of top statement
         }
       }
+      normalizeNode(entry)
     }
+
+    return editor
   },
 })
