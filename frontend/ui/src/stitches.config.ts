@@ -13,8 +13,6 @@ import loraMediumItalic from './fonts/lora/medium-italic.ttf'
 import loraBold from './fonts/lora/bold.ttf'
 import loraBoldIatlic from './fonts/lora/bold-italic.ttf'
 
-export * from '@stitches/core'
-
 const stitches = createCss({
   prefix: 'mtt-',
   theme: {

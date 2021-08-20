@@ -1,13 +1,5 @@
-import * as mock from '../mocks'
-import {
-  Drafts,
-  DraftsClientImpl,
-  Document,
-  CreateDraftRequest,
-  GetDraftRequest,
-} from '../.generated/documents/v1alpha/documents'
-
-import {GrpcClient, createGrpcClient} from './grpc-client'
+import {createGrpcClient} from './grpc-client'
+import type { GrpcClient } from './grpc-client'
 
 /**
  *

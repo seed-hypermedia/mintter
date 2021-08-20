@@ -7,8 +7,8 @@ import {Container} from '../components/container'
 import {Separator} from '../components/separator'
 import {AppSpinner} from '../components/app-spinner'
 import {useEnableSidepanel, useSidepanel, Sidepanel} from '../components/sidepanel'
-import {plugins, useEditorDraft, Editor, DraftEditorMachineContext} from '../editor'
-import {assign} from 'xstate'
+import {useEditorDraft, Editor} from '../editor'
+import type {DraftEditorMachineContext} from '../editor'
 
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()

@@ -9,26 +9,8 @@ import {
   UpdateDraftRequest,
 } from '../.generated/documents/v1alpha/documents'
 import type {Document} from '../.generated/documents/v1alpha/documents'
-import {createId} from '../mocks'
-import {createGrpcClient, GrpcClient} from './grpc-client'
-import {nanoid} from 'nanoid'
-import {
-  document,
-  statement,
-  paragraph,
-  text,
-  group,
-  heading,
-  staticParagraph,
-  ul,
-  code,
-  blockquote,
-  embed,
-  ol,
-  link,
-  // video,
-  // image,
-} from '@mintter/mttast-builder'
+import {createGrpcClient} from './grpc-client'
+import type { GrpcClient } from './grpc-client'
 
 /**
  *
@@ -83,7 +65,6 @@ export function listDrafts(
   const request = ListDraftsRequest.fromPartial({
     pageSize,
     pageToken,
-    view,
   })
 
   return new DraftsClientImpl(rpc).listDrafts(request)
@@ -119,145 +100,145 @@ export function getDraft(documentId: string, rpc?: GrpcClient): Promise<Document
   // return await Promise.resolve(allNodes)
 }
 
-var allNodes = document(
-  {
-    id: nanoid(20),
-    title: 'Demo Document',
-    subtitle: 'demo description',
-    createdAt: new Date(),
-  },
-  [
-    group([
-      // statement({id: nanoid(8)}, [
-      //   paragraph([text('demo statement')]),
-      //   group([
-      //     heading({id: nanoid(8)}, [
-      //       staticParagraph([text('Heading 2')]),
-      //       group([heading({id: nanoid(8)}, [staticParagraph([text('Heading 3')])])]),
-      //     ]),
-      //   ]),
-      // ]),
-      statement({id: nanoid(8)}, [
-        paragraph([text('demo list items')]),
-        ul([
-          statement({id: nanoid(8)}, [paragraph([text('item 1')])]),
-          statement({id: nanoid(8)}, [
-            paragraph([text('item 2')]),
-            ol([
-              statement({id: nanoid(8)}, [paragraph([text('item 2.1')])]),
-              statement({id: nanoid(8)}, [paragraph([text('item 2.2')])]),
-              statement({id: nanoid(8)}, [paragraph([text('item 2.3')])]),
-            ]),
-          ]),
-          statement({id: nanoid(8)}, [paragraph([text('item 3')])]),
-        ]),
-      ]),
-      //       blockquote({id: nanoid(8)}, [paragraph([embed({url: `mtt://${nanoid(8)}/${nanoid(6)}`}, [text('...')])])]),
-      //       statement({id: nanoid(8)}, [paragraph([text(`hello world. I'm the content of a normal statement`)])]),
-      //       heading({id: nanoid(8)}, [
-      //         staticParagraph([text('Inline Elements')]),
-      //         group([
-      //           statement({id: nanoid(8)}, [
-      //             paragraph([
-      //               text('Inline Elements', {strong: true}),
-      //               text(' are a '),
-      //               text('simple', {strikethrough: true}),
-      //               text(' '),
-      //               text('crucial part', {underline: true}),
-      //               text(' of our '),
-      //               text('Document Model', {strong: true, emphasis: true}),
-      //               text('. They can only live inside any '),
-      //               text('FlowContent', {emphasis: true}),
-      //               text('1', {superscript: true}),
-      //               text(' node'),
-      //               text('a', {subscript: true}),
-      //               text('.'),
-      //             ]),
-      //           ]),
-      //         ]),
-      //       ]),
-      //       heading({id: nanoid(8)}, [
-      //         staticParagraph([text('Links and Embeds')]),
-      //         group([
-      //           statement({id: nanoid(8)}, [
-      //             paragraph([
-      //               text('We can also represent '),
-      //               link({url: 'https://mintter.com'}, [text('external web links')]),
-      //               text(', and also embeds (mintter links): '),
-      //               embed({url: `mtt://${nanoid(8)}/${nanoid(6)}`}, [text('...')]),
-      //             ]),
-      //           ]),
-      //         ]),
-      //       ]),
-      //       blockquote({id: nanoid(8)}, [paragraph([embed({url: `mtt://${nanoid(8)}/${nanoid(6)}`}, [text('...')])])]),
-      //       statement({id: nanoid(8)}, [paragraph([text(`hello world. I'm the content of a normal statement`)])]),
-      //       heading({id: nanoid(8)}, [
-      //         staticParagraph([text('Heading + orderedList + nesting')]),
-      //         ol([
-      //           statement({id: nanoid(8)}, [paragraph([text('Child 1')])]),
-      //           statement({id: nanoid(8)}, [
-      //             paragraph([text('Child 2')]),
-      //             ul([
-      //               statement({id: nanoid(8)}, [paragraph([text('Nested child 1')])]),
-      //               statement({id: nanoid(8)}, [paragraph([text('Nested child 2')])]),
-      //             ]),
-      //           ]),
-      //           statement({id: nanoid(8)}, [paragraph([text('Child 3')])]),
-      //         ]),
-      //       ]),
+// var allNodes = document(
+//   {
+//     id: nanoid(20),
+//     title: 'Demo Document',
+//     subtitle: 'demo description',
+//     createdAt: new Date(),
+//   },
+//   [
+//     group([
+//       // statement({id: nanoid(8)}, [
+//       //   paragraph([text('demo statement')]),
+//       //   group([
+//       //     heading({id: nanoid(8)}, [
+//       //       staticParagraph([text('Heading 2')]),
+//       //       group([heading({id: nanoid(8)}, [staticParagraph([text('Heading 3')])])]),
+//       //     ]),
+//       //   ]),
+//       // ]),
+//       statement({id: nanoid(8)}, [
+//         paragraph([text('demo list items')]),
+//         ul([
+//           statement({id: nanoid(8)}, [paragraph([text('item 1')])]),
+//           statement({id: nanoid(8)}, [
+//             paragraph([text('item 2')]),
+//             ol([
+//               statement({id: nanoid(8)}, [paragraph([text('item 2.1')])]),
+//               statement({id: nanoid(8)}, [paragraph([text('item 2.2')])]),
+//               statement({id: nanoid(8)}, [paragraph([text('item 2.3')])]),
+//             ]),
+//           ]),
+//           statement({id: nanoid(8)}, [paragraph([text('item 3')])]),
+//         ]),
+//       ]),
+//       //       blockquote({id: nanoid(8)}, [paragraph([embed({url: `mtt://${nanoid(8)}/${nanoid(6)}`}, [text('...')])])]),
+//       //       statement({id: nanoid(8)}, [paragraph([text(`hello world. I'm the content of a normal statement`)])]),
+//       //       heading({id: nanoid(8)}, [
+//       //         staticParagraph([text('Inline Elements')]),
+//       //         group([
+//       //           statement({id: nanoid(8)}, [
+//       //             paragraph([
+//       //               text('Inline Elements', {strong: true}),
+//       //               text(' are a '),
+//       //               text('simple', {strikethrough: true}),
+//       //               text(' '),
+//       //               text('crucial part', {underline: true}),
+//       //               text(' of our '),
+//       //               text('Document Model', {strong: true, emphasis: true}),
+//       //               text('. They can only live inside any '),
+//       //               text('FlowContent', {emphasis: true}),
+//       //               text('1', {superscript: true}),
+//       //               text(' node'),
+//       //               text('a', {subscript: true}),
+//       //               text('.'),
+//       //             ]),
+//       //           ]),
+//       //         ]),
+//       //       ]),
+//       //       heading({id: nanoid(8)}, [
+//       //         staticParagraph([text('Links and Embeds')]),
+//       //         group([
+//       //           statement({id: nanoid(8)}, [
+//       //             paragraph([
+//       //               text('We can also represent '),
+//       //               link({url: 'https://mintter.com'}, [text('external web links')]),
+//       //               text(', and also embeds (mintter links): '),
+//       //               embed({url: `mtt://${nanoid(8)}/${nanoid(6)}`}, [text('...')]),
+//       //             ]),
+//       //           ]),
+//       //         ]),
+//       //       ]),
+//       //       blockquote({id: nanoid(8)}, [paragraph([embed({url: `mtt://${nanoid(8)}/${nanoid(6)}`}, [text('...')])])]),
+//       //       statement({id: nanoid(8)}, [paragraph([text(`hello world. I'm the content of a normal statement`)])]),
+//       //       heading({id: nanoid(8)}, [
+//       //         staticParagraph([text('Heading + orderedList + nesting')]),
+//       //         ol([
+//       //           statement({id: nanoid(8)}, [paragraph([text('Child 1')])]),
+//       //           statement({id: nanoid(8)}, [
+//       //             paragraph([text('Child 2')]),
+//       //             ul([
+//       //               statement({id: nanoid(8)}, [paragraph([text('Nested child 1')])]),
+//       //               statement({id: nanoid(8)}, [paragraph([text('Nested child 2')])]),
+//       //             ]),
+//       //           ]),
+//       //           statement({id: nanoid(8)}, [paragraph([text('Child 3')])]),
+//       //         ]),
+//       //       ]),
 
-      //       heading({id: nanoid(8)}, [staticParagraph([text('Heading 1')])]),
-      //       heading({id: nanoid(8)}, [
-      //         staticParagraph([text('Heading 2')]),
-      //         group([
-      //           heading({id: nanoid(8)}, [
-      //             staticParagraph([text('Heading 2.1')]),
-      //             group([
-      //               heading({id: nanoid(8)}, [
-      //                 staticParagraph([text('Heading 2.1.1')]),
-      //                 //     group([
-      //                 //       heading({id: nanoid(8)}, [
-      //                 //         staticParagraph([text('Heading 5')]),
-      //                 //         group([heading({id: nanoid(8)}, [staticParagraph([text('Heading 6')])])]),
-      //                 //       ]),
-      //                 //     ]),
-      //               ]),
-      //             ]),
-      //           ]),
-      //         ]),
-      //       ]),
+//       //       heading({id: nanoid(8)}, [staticParagraph([text('Heading 1')])]),
+//       //       heading({id: nanoid(8)}, [
+//       //         staticParagraph([text('Heading 2')]),
+//       //         group([
+//       //           heading({id: nanoid(8)}, [
+//       //             staticParagraph([text('Heading 2.1')]),
+//       //             group([
+//       //               heading({id: nanoid(8)}, [
+//       //                 staticParagraph([text('Heading 2.1.1')]),
+//       //                 //     group([
+//       //                 //       heading({id: nanoid(8)}, [
+//       //                 //         staticParagraph([text('Heading 5')]),
+//       //                 //         group([heading({id: nanoid(8)}, [staticParagraph([text('Heading 6')])])]),
+//       //                 //       ]),
+//       //                 //     ]),
+//       //               ]),
+//       //             ]),
+//       //           ]),
+//       //         ]),
+//       //       ]),
 
-      //       heading({id: nanoid(8)}, [
-      //         staticParagraph([text(`Code blocks and Blockquotes`)]),
-      //         group([
-      //           code({id: nanoid(8), lang: 'javascript', meta: null}, [
-      //             text(`function greeting(name) {
-      //   console.log("Hello " + name + "!");
-      // }
+//       //       heading({id: nanoid(8)}, [
+//       //         staticParagraph([text(`Code blocks and Blockquotes`)]),
+//       //         group([
+//       //           code({id: nanoid(8), lang: 'javascript', meta: null}, [
+//       //             text(`function greeting(name) {
+//       //   console.log("Hello " + name + "!");
+//       // }
 
-      // greeting('Horacio');`),
-      //           ]),
-      //           blockquote({id: nanoid(8)}, [paragraph([text('History doesn’t repeat itself. But it does rhyme.')])]),
-      //           blockquote({id: nanoid(8)}, [paragraph([embed({url: `mtt://${nanoid(8)}/${nanoid(6)}`}, [text('...')])])]),
-      //         ]),
-      //       ]),
+//       // greeting('Horacio');`),
+//       //           ]),
+//       //           blockquote({id: nanoid(8)}, [paragraph([text('History doesn’t repeat itself. But it does rhyme.')])]),
+//       //           blockquote({id: nanoid(8)}, [paragraph([embed({url: `mtt://${nanoid(8)}/${nanoid(6)}`}, [text('...')])])]),
+//       //         ]),
+//       //       ]),
 
-      // heading([
-      //   staticParagraph([text('Video and Images')]),
-      //   group([
-      //     statement([paragraph([video({url: 'https://www.youtube.com/watch?v=NTfPtYJORck'}, [text('')])])]),
-      //     statement([
-      //       paragraph([
-      //         image(
-      //           {
-      //             url: 'https://images.unsplash.com/photo-1587440871875-191322ee64b0?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=3451&q=80',
-      //           },
-      //           [text('')],
-      //         ),
-      //       ]),
-      //     ]),
-      //   ]),
-      // ]),
-    ]),
-  ],
-)
+//       // heading([
+//       //   staticParagraph([text('Video and Images')]),
+//       //   group([
+//       //     statement([paragraph([video({url: 'https://www.youtube.com/watch?v=NTfPtYJORck'}, [text('')])])]),
+//       //     statement([
+//       //       paragraph([
+//       //         image(
+//       //           {
+//       //             url: 'https://images.unsplash.com/photo-1587440871875-191322ee64b0?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=3451&q=80',
+//       //           },
+//       //           [text('')],
+//       //         ),
+//       //       ]),
+//       //     ]),
+//       //   ]),
+//       // ]),
+//     ]),
+//   ],
+// )

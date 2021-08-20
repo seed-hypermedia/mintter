@@ -1,11 +1,8 @@
-import {isFlowContent, Statement} from '@mintter/mttast'
+import type {Statement} from '@mintter/mttast'
 import {statement, paragraph, text, createId} from '@mintter/mttast-builder'
-import {BaseEditor, BaseRange, BaseSelection, NodeEntry, Point, Range, Editor, Element, Path} from 'slate'
+import {Range, Editor, Path} from 'slate'
+import type {BaseEditor} from 'slate'
 import type {ReactEditor} from 'slate-react'
-import {ELEMENT_HEADING} from './elements/heading'
-import {ELEMENT_STATEMENT} from './elements/statement'
-import {ELEMENT_PARAGRAPH} from './elements/paragraph'
-import {ELEMENT_STATIC_PARAGRAPH} from './elements/static-paragraph'
 
 export type MTTEditor = BaseEditor & ReactEditor
 

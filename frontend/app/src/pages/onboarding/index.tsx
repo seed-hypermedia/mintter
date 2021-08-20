@@ -3,8 +3,6 @@ import {Machine} from 'xstate'
 
 import {Box} from '@mintter/ui'
 
-import {AppSpinner} from '../../components/app-spinner'
-
 import {useMachine} from '@xstate/react'
 import type {OnboardingStepPropsType} from './common'
 import {Welcome} from './welcome'

@@ -5,11 +5,11 @@ import {
   OnboardingStepBody,
   OnboardingStepButton,
   OnboardingStepDescription,
-  OnboardingStepPropsType,
   OnboardingStepTitle,
   ProfileInformationIcon,
   SecurityPackIcon,
 } from './common'
+import type {OnboardingStepPropsType} from './common'
 
 export function Welcome({next}: OnboardingStepPropsType): JSX.Element {
   return (

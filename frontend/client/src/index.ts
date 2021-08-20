@@ -8,7 +8,6 @@ export {
   DeviceRegistered,
   ProfileUpdated,
 } from '../.generated/accounts/v1alpha/accounts'
-export * from './accounts'
 
 export {
   GenSeedRequest,
@@ -18,7 +17,6 @@ export {
   GetInfoRequest,
   Info,
 } from '../.generated/daemon/v1alpha/daemon'
-export * from './daemon'
 
 export {
   StartObjectDiscoveryRequest,
@@ -33,7 +31,6 @@ export {
   ObjectDiscoveryStatus,
   ConnectionStatus,
 } from '../.generated/networking/v1alpha/networking'
-export * from './networking'
 
 export {
   CreateDraftRequest,
@@ -53,8 +50,9 @@ export {
 
 export {createGrpcClient} from './grpc-client'
 
-export * from './documents'
-export * from './drafts'
-export * from './publications'
-export * from './mttast'
-export {u} from 'unist-builder'
+export {generateSeed, getAccount, registerAccount, updateAccount, listAccounts} from './accounts'
+export {getInfo} from './daemon'
+export {getDocument} from './documents'
+export {createDraft, deleteDraft, updateDraft, listDrafts, publishDraft, getDraft} from './drafts'
+export {listPeerAddrs, listSuggestedProfiles, connect} from './networking'
+export {deletePublication, listPublications, getPublication} from './publications'

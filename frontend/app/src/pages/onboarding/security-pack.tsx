@@ -10,10 +10,11 @@ import {
   OnboardingStepBody,
   OnboardingStepButton,
   OnboardingStepDescription,
-  OnboardingStepPropsType,
   OnboardingStepTitle,
   SecurityPackIcon,
 } from './common'
+import type {OnboardingStepPropsType} from './common'
+
 
 export function SecurityPack({prev, next, generateSeed = defaultGenerateSeed}: OnboardingStepPropsType): JSX.Element {
   const [ownSeed, setOwnSeed] = useState<string>('')
