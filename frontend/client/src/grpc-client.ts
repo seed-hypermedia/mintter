@@ -1,5 +1,5 @@
-import { grpc } from '@improbable-eng/grpc-web'
-import { BrowserHeaders } from 'browser-headers'
+import {grpc} from '@improbable-eng/grpc-web'
+import {BrowserHeaders} from 'browser-headers'
 
 export const MINTTER_API_URL_DEFAULT = import.meta.env.VITE_MINTTER_API_URL || 'http://localhost:55001'
 
@@ -21,7 +21,7 @@ interface createGrpcClientOptions {
 export function createGrpcClient(options: createGrpcClientOptions = {}): GrpcClient {
   return {
     unary(methodDesc, _request, _metadata) {
-      const request = { ..._request, ...methodDesc.requestType }
+      const request = {..._request, ...methodDesc.requestType}
       const metadata = new BrowserHeaders({
         ...(options.metadata?.headersMap || {}),
         ...(_metadata?.headersMap || {}),

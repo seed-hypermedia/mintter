@@ -1,25 +1,19 @@
-import {BaseEditor, BaseSelection, NodeEntry, Path, Transforms} from 'slate'
+import {Path, Transforms} from 'slate'
+import type {NodeEntry} from 'slate'
 import type {EditorPlugin} from '../types'
 import {Editor, Element} from 'slate'
-import {isFlowContent, isGroupContent, Statement as StatementType} from '@mintter/mttast'
+import type {Statement as StatementType} from '@mintter/mttast'
 import {
-  isCollapsed,
   createStatement,
   isRangeStart,
   isRangeEnd,
   getParentFlowContent,
-  MTTEditor,
-  isRangeMiddle,
 } from '../utils'
+import type {MTTEditor} from '../utils'
 import {styled} from '@mintter/ui/stitches.config'
-import {Box} from '@mintter/ui/box'
 import {createId, statement} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
 import {Marker} from '../marker'
-import {Range} from 'slate'
-import {ReactEditor, useSlateStatic} from 'slate-react'
-import {cond} from 'ramda'
-import {useEffect} from 'react'
 
 export const ELEMENT_STATEMENT = 'statement'
 

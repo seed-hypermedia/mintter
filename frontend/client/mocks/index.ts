@@ -1,5 +1,5 @@
 import {Profile, Device, Account} from '../.generated/accounts/v1alpha/accounts'
-import {Publication, Block, ListStyle, Document} from '../.generated/documents/v1alpha/documents'
+import {Publication, Document} from '../.generated/documents/v1alpha/documents'
 import {internet, lorem, finance} from 'faker'
 import {nanoid} from 'nanoid'
 
