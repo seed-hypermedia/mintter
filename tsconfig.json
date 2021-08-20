@@ -6,10 +6,8 @@
       "@mintter/ui/*": ["frontend/ui/src/*"],
       "@mintter/client/hooks": ["frontend/client/hooks"],
       "@mintter/client/mocks": ["frontend/client/mocks"],
-      "@mintter/api/*": ["api/ts/*"],
+      "@mintter/mttast-builder": ["frontend/mttast-builder"],
       "@mintter/*": ["frontend/*/src"],
-      "mttast-builder": ["frontend/mttast-builder"],
-      "mttast": ["frontend/mttast"]
     }
   }
 }
