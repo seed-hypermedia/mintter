@@ -5,7 +5,7 @@ import {assign, createMachine} from 'xstate'
 import type {ActionFunction} from 'xstate'
 import isEqual from 'lodash/isequal'
 import {QueryClient, useQueryClient} from 'react-query'
-import {group, paragraph, statement, text} from 'frontend/mttast-builder/dist'
+import {group, paragraph, statement, text} from '@mintter/mttast-builder'
 import {publishDraft} from 'frontend/client/src/drafts'
 
 export type DRAFT_FETCH_EVENT = {
