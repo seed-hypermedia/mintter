@@ -1,2 +1,26 @@
-export * from './types'
+export type {
+  Document,
+  Group,
+  OrderedList,
+  UnorderedList,
+  Paragraph,
+  StaticParagraph,
+  Statement,
+  Heading,
+  Blockquote,
+  Code,
+  Callout,
+  Video,
+  Image,
+  Embed,
+  Link,
+  Text,
+  Content,
+  StaticContent,
+  GroupingContent,
+  FlowContent,
+  EmbeddedContent,
+  StaticPhrasingContent,
+  PhrasingContent
+} from './types'
 export * from './assertions'

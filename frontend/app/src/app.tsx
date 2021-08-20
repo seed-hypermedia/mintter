@@ -1,5 +1,6 @@
 import {lazily} from 'react-lazily'
-import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
+import {ErrorBoundary} from 'react-error-boundary'
+import type {FallbackProps} from 'react-error-boundary'
 
 import {global} from '@mintter/ui/stitches.config'
 import {SidepanelProvider} from './components/sidepanel'

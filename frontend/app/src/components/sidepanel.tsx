@@ -4,7 +4,7 @@ import {useActor, useMachine} from '@xstate/react'
 import type {UseMachineOptions} from '@xstate/react/lib/useMachine'
 
 import type {UseMutateFunction} from 'react-query'
-import {assign, createMachine, interpret, StateMachine} from 'xstate'
+import {assign, createMachine, interpret} from 'xstate'
 import {useState} from 'react'
 import {useAccount, useDocument, usePublication} from '@mintter/client/hooks'
 import type {Block} from 'frontend/client/.generated/documents/v1alpha/documents'

@@ -1,18 +1,14 @@
-import {useMemo, useState} from 'react'
-import {format} from 'date-fns'
+import {useMemo} from 'react'
 import {useLocation, useRouteMatch} from 'react-router-dom'
 import {Alert, Box, Text} from '@mintter/ui'
-import {Avatar} from './components/avatar'
 import {Link} from './components/link'
-import {getPath} from './utils/routes'
-import {Publication, Document, deleteDraft, deletePublication} from '@mintter/client'
-import {useAccount} from '@mintter/client/hooks'
+import {Document, deleteDraft, deletePublication} from '@mintter/client'
 import {useMachine} from '@xstate/react'
-import {deleteConfirmationDialogMachine, DeleteConfirmationDialogMachineContext} from './delete-confirmation-dialog'
+import {deleteConfirmationDialogMachine} from './delete-confirmation-dialog'
+import type {DeleteConfirmationDialogMachineContext} from './delete-confirmation-dialog'
 import {useQueryClient} from 'react-query'
 import {toast} from 'react-hot-toast'
 import {getDateFormat} from './utils/get-format-date'
-import {useCallback} from 'react'
 
 export function DocumentList({
   data,

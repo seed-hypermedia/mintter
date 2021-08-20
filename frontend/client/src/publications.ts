@@ -2,12 +2,11 @@ import {
   DeletePublicationRequest,
   GetPublicationRequest,
   ListPublicationsRequest,
-  ListPublicationsResponse,
   PublicationsClientImpl,
 } from '../.generated/documents/v1alpha/documents'
 import type {Publication} from '../.generated/documents/v1alpha/documents'
-import {mockPublication} from '../mocks'
-import {createGrpcClient, GrpcClient} from './grpc-client'
+import {createGrpcClient} from './grpc-client'
+import type {GrpcClient} from './grpc-client'
 
 /**
  *

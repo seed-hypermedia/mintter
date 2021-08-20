@@ -1,6 +1,8 @@
-import {createEditor, NodeEntry, Editor, Range, BaseEditor} from 'slate'
+import {createEditor, Editor, Range} from 'slate'
+import type {BaseEditor,NodeEntry} from 'slate'
 import {withHistory} from 'slate-history'
-import {withReact, RenderElementProps, RenderLeafProps, DefaultElement, DefaultLeaf, ReactEditor} from 'slate-react'
+import {withReact, DefaultElement, DefaultLeaf} from 'slate-react'
+import type {RenderElementProps,ReactEditor,RenderLeafProps} from 'slate-react'
 import type {EditorEventHandlers, EditorPlugin} from './types'
 
 export function buildEditorHook(plugins: EditorPlugin[]): Editor {

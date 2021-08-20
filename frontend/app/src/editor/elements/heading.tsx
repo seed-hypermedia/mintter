@@ -1,24 +1,20 @@
 import {styled} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
 import {Icon} from '@mintter/ui/icon'
 import type {EditorPlugin} from '../types'
 import {Dragger, Tools} from './statement'
-import {Box} from '@mintter/ui/box'
 import {Marker} from '../marker'
-import {Ancestor, BaseEditor, BaseSelection, NodeEntry, Transforms} from 'slate'
+import {Transforms} from 'slate'
+import type {NodeEntry} from 'slate'
 import {Editor, Path} from 'slate'
-import {Blockquote, Heading as HeadingType, isFlowContent, Parent, Statement} from '@mintter/mttast'
-import type {ReactEditor} from 'slate-react'
+import type {Heading as HeadingType} from '@mintter/mttast'
 import {
   createStatement,
   getParentFlowContent,
-  isCollapsed,
   isRangeEnd,
-  isRangeMiddle,
   isRangeStart,
-  MTTEditor,
 } from '../utils'
-import {group, paragraph, statement, text} from 'frontend/mttast-builder/dist'
+import type {MTTEditor} from '../utils'
+import {group, statement} from '@mintter/mttast-builder'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 
 export const ELEMENT_HEADING = 'heading'

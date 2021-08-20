@@ -1,8 +1,10 @@
-import {motion, Variants} from 'framer-motion'
-import {Box, BoxProps, Button, ButtonProps, Text, TextProps} from '@mintter/ui'
+import {motion} from 'framer-motion'
+import type {Variants} from 'framer-motion'
+import {Box, Button, Text} from '@mintter/ui'
+import type {BoxProps, ButtonProps, TextProps} from '@mintter/ui'
 import type {GenSeedResponse} from '@mintter/client'
 
-export type OnboardingStepPropsType = {
+export interface OnboardingStepPropsType {
   prev: () => void
   next: () => void
   generateSeed: () => Promise<GenSeedResponse>

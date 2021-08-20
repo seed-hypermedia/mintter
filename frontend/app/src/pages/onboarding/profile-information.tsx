@@ -12,10 +12,10 @@ import {
   OnboardingStepBody,
   OnboardingStepButton,
   OnboardingStepDescription,
-  OnboardingStepPropsType,
   OnboardingStepTitle,
   ProfileInformationIcon,
 } from './common'
+import type {OnboardingStepPropsType} from './common'
 
 type ProfileInformationDataType = {
   alias: string

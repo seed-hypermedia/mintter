@@ -1,12 +1,12 @@
-import {useQuery, useQueryClient, UseQueryResult} from 'react-query'
+import {useQuery, useQueryClient} from 'react-query'
+import type {UseQueryResult} from 'react-query'
 import {useMemo} from 'react'
-import {Account, Info, Document, Publication, Block, Quote, Link} from '../src'
+import type {Account, Info, Document, Publication,PeerInfo} from '../src'
 import {
   getAccount,
   getInfo,
   getDocument,
   getDraft,
-  PeerInfo,
   listPeerAddrs,
   getPublication,
   ListDraftsResponse,
@@ -15,7 +15,6 @@ import {
   listPublications,
   listAccounts,
 } from '../src'
-import {mockBlock, mockDocument, mockTextInlineElement, createId} from '../mocks'
 import type {HookOptions} from './types'
 
 /**

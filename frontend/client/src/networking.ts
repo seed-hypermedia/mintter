@@ -2,10 +2,10 @@ import {
   GetPeerInfoRequest,
   NetworkingClientImpl,
   ConnectRequest,
-  ConnectResponse,
 } from '../.generated/networking/v1alpha/networking'
-import type {PeerInfo} from '../.generated/networking/v1alpha/networking'
-import {createGrpcClient, GrpcClient} from './grpc-client'
+import type {PeerInfo, ConnectResponse } from '../.generated/networking/v1alpha/networking'
+import {createGrpcClient} from './grpc-client'
+import type { GrpcClient } from './grpc-client'
 
 /**
  *

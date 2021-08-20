@@ -1,10 +1,9 @@
-import {Editor, NodeEntry} from 'slate'
+import {Editor} from 'slate'
+import type {NodeEntry} from 'slate'
 import {Box} from '@mintter/ui/box'
 import {Text} from '@mintter/ui/text'
 import {ReactEditor, useSlateStatic} from 'slate-react'
-import {useMemo} from 'react'
 import type {GroupingContent} from '@mintter/mttast'
-import {ELEMENT_GROUP} from './elements/group'
 import {ELEMENT_UNORDERED_LIST} from './elements/unordered-list'
 import {ELEMENT_ORDERED_LIST} from './elements/ordered-list'
 
