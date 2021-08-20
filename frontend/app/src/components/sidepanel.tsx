@@ -5,7 +5,7 @@ import {useMachine} from '@xstate/react'
 import {assign, createMachine} from 'xstate'
 import {usePublication} from '@mintter/client/hooks'
 /** 
- * @todo remove usage of Block
+ * @todo remove usage of type Block
  * @body Block doesn't exist anymore right? We should remove it's usage and make sure everything still works @horacioh
  * */
 import type {Block} from 'frontend/client/.generated/documents/v1alpha/documents'
