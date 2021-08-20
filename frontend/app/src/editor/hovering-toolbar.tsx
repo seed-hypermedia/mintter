@@ -10,7 +10,7 @@ import {Tooltip} from '../components/tooltip'
 import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
 import {isCollapsed} from './utils'
-import {text} from 'frontend/mttast-builder/dist'
+import {text} from '@mintter/mttast-builder'
 
 export function createHoveringToolbarPlugin(): EditorPlugin {
   // TODO: not working properly, it changed the whole line format and do not respect the current selection. check how udecode is doing it
