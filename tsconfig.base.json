@@ -11,7 +11,7 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "isolatedModules": true,
-    "importsNotUsedAsValues": "error"
+    "importsNotUsedAsValues": "error",
   },
   "exclude": ["node_modules", "dist"]
 }
