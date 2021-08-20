@@ -38,7 +38,7 @@ export type RenderResult = RTLRenderResults & {
 async function render(
   ui: any = <App />,
   {route = '/', timeout = 4000, wrapper, wait = true, account, ...renderOptions}: RenderOptions = {},
-): RenderResult {
+): Promise<RenderResult> {
   const routeConfig =
     typeof route === 'string'
       ? {
