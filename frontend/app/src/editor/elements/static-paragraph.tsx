@@ -56,6 +56,10 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
       )
     }
   },
+  /*
+   * @todo Demo TODO
+   * @body this is an example TODO from a PR
+   */
   configureEditor: (editor) => {
     const {normalizeNode} = editor
 
