@@ -10,6 +10,12 @@ You MUST have [Nix](https://nixos.org/nix) package manager installed on your mac
 
 To setup Nix see [this](/docs/nix.md).
 
+> For users on using the new apple silicon (m1) chip that run into weird errors (from nix and others) while setting up the repository. 
+> It may help to install rosetta 2 as not all tools have aarch64 support yet. You can install rosetta through the terminal by typing:
+> ```zsh
+> softwareupdate --install-rosetta
+> ```
+
 ## Build System
 
 We've been changing the way we build the project quite a few times already. Initially we've been using
