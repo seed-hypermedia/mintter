@@ -1,6 +1,6 @@
 let
     pkgs = import ./build/nix/nixpkgs.nix;
-    protoc-gen-grpc-web = pkgs.callPackage ./build/nix/protoc-gen-grpc-web {};
+    # protoc-gen-grpc-web = pkgs.callPackage ./build/nix/protoc-gen-grpc-web {};
     node = pkgs.nodejs-16_x;
     yarn = (pkgs.yarn.override { nodejs = node; });
     
@@ -14,7 +14,7 @@ let
             pkgs.go-protobuf
             pkgs.go
             pkgs.bazelisk
-            protoc-gen-grpc-web
+            # protoc-gen-grpc-web
             node
             yarn
         ];
