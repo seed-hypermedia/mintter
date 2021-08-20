@@ -1,4 +1,4 @@
-import {styled, StitchesCss, StitchesVariants} from '@mintter/ui/stitches.config'
+import {styled, StitchesVariants} from '@mintter/ui/stitches.config'
 
 import type * as Polymorphic from '@radix-ui/react-polymorphic'
 import {forwardRef} from 'react'

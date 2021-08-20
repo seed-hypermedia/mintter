@@ -1,4 +1,5 @@
-import {createCss, defaultThemeMap, StitchesCss} from '@stitches/react'
+import {createCss, defaultThemeMap} from '@stitches/react'
+import type {StitchesCss} from '@stitches/react'
 import basierCircleRegular from './fonts/basier-circle/regular.woff2'
 import basierCircleRegularItalic from './fonts/basier-circle/regular-italic.woff2'
 import basierCircleMedium from './fonts/basier-circle/medium.woff2'
