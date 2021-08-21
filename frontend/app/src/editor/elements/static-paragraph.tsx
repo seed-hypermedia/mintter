@@ -2,11 +2,12 @@ import {styled} from '@mintter/ui/stitches.config'
 import type {EditorPlugin} from '../types'
 import {Text} from '@mintter/ui/text'
 import {ReactEditor, useSlateStatic} from 'slate-react'
-import {Editor, Node, Transforms} from 'slate'
+import {Editor, Node, Path, Transforms} from 'slate'
 import type {NodeEntry} from 'slate'
 import type {Heading} from '@mintter/mttast'
 import {ELEMENT_HEADING} from './heading'
 import {ELEMENT_PARAGRAPH} from './paragraph'
+import {createId, statement} from 'frontend/mttast-builder/dist'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
@@ -70,6 +71,17 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
 
         if (parent.type != ELEMENT_HEADING) {
           Transforms.setNodes(editor, {type: ELEMENT_PARAGRAPH}, {at: path})
+          return
+        }
+
+        if (Path.hasPrevious(path)) {
+          Editor.withoutNormalizing(editor, () => {
+            // we are here because we created a new static-paragraph element as a second chid of the heading. what we want is to create a new statement as a child of this heading. we also need to check if there's already a group child on this statement to know if we need to add an extra group or not.
+            Transforms.setNodes(editor, {type: ELEMENT_PARAGRAPH}, {at: path})
+            Transforms.wrapNodes(editor, statement({id: createId()}, []), {
+              at: path,
+            })
+          })
           return
         }
       }

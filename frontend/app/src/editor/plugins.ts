@@ -53,4 +53,17 @@ export const plugins: Array<EditorPlugin> = [
   createGroupPlugin(),
   createUnorderedListPlugin(),
   createOrderedListPlugin(),
+
+  {
+    configureEditor(editor) {
+      const {normalizeNode} = editor
+
+      editor.normalizeNode = (entry) => {
+        const [node, path] = entry
+        console.log(path, node.type, node.id, node)
+        normalizeNode(entry)
+      }
+      return editor
+    },
+  },
 ]
