@@ -1,5 +1,6 @@
 import {styled} from '@mintter/ui/stitches.config'
 import type {EditorPlugin} from '../types'
+import {removeEmptyGroup} from '../utils'
 import {Group} from './group'
 
 export const ELEMENT_UNORDERED_LIST = 'unorderedList'
@@ -21,5 +22,15 @@ export const createUnorderedListPlugin = (): EditorPlugin => ({
         </UnorderedList>
       )
     }
+  },
+  configureEditor(editor) {
+    const {normalizeNode} = editor
+
+    editor.normalizeNode = (entry) => {
+      if (removeEmptyGroup(editor, entry)) return
+      normalizeNode(entry)
+    }
+
+    return editor
   },
 })
