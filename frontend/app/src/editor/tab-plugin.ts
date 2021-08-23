@@ -2,6 +2,7 @@ import { Editor, Transforms, Path, Element } from 'slate'
 import type {Group} from '@mintter/mttast'
 import { isGroupContent, isFlowContent } from '@mintter/mttast'
 import type { EditorPlugin } from './types'
+import { group } from '@mintter/mttast-builder'
 
 /**
  * This plugin handles the <Tab> interactions with the editor:
@@ -43,7 +44,7 @@ function moveStatement(editor: Editor, up: boolean) {
       at: statementPath
     })!
 
-    if(!Element.isElement(previous)) return
+    if(!isFlowContent(previous)) return
     const subGroup = previous.children[1] as Group
 
     // determine the correct path wether the previous statement already has a group of children or not
@@ -53,7 +54,7 @@ function moveStatement(editor: Editor, up: boolean) {
 
     // if the previous statement doesn't have a group of children we need to create it first
     if(!subGroup) {
-      Transforms.wrapNodes(editor, { type: 'group', children: [] }, {
+      Transforms.wrapNodes(editor,  group([]), {
         at: statementPath
       })
     }
