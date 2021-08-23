@@ -17,7 +17,7 @@ import {createHoveringToolbarPlugin} from './hovering-toolbar'
 import {createBlockquotePlugin} from './elements/blockquote'
 import {createEmbedPlugin} from './elements/embed'
 import {createCodeBlockPlugin} from './elements/code-block'
-import { createTabPlugin } from './tab-plugin'
+import {createTabPlugin} from './tab-plugin'
 
 export const plugins: Array<EditorPlugin> = [
   createHoveringToolbarPlugin(),
@@ -40,7 +40,7 @@ export const plugins: Array<EditorPlugin> = [
 
   createBlockquotePlugin(),
   createCodeBlockPlugin(),
- 
+
   createGroupPlugin(),
   createUnorderedListPlugin(),
   createOrderedListPlugin(),
@@ -57,7 +57,7 @@ export const plugins: Array<EditorPlugin> = [
 
       editor.normalizeNode = (entry) => {
         const [node, path] = entry
-        console.log(path, node.type, node.id, node)
+        // console.log(path, node.type, node.id, node)
         normalizeNode(entry)
       }
       return editor
