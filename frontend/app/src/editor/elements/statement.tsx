@@ -1,11 +1,9 @@
 import {Path, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
-import {Editor} from 'slate'
-import {isGroupContent} from '@mintter/mttast'
-import {
-  isLastChild,
-  getLastChild,
-} from '../utils'
+import {Editor, Element} from 'slate'
+import {GroupingContent, isGroupContent, Statement as StatementType} from '@mintter/mttast'
+import {isCollapsed, unhangRange, isLastChild, getLastChild} from '../utils'
+import type {MTTEditor} from '../utils'
 import {styled} from '@mintter/ui/stitches.config'
 import {group} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
