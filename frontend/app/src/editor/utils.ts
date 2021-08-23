@@ -105,6 +105,10 @@ export function isLastChild(parentEntry: NodeEntry<Ancestor>, childPath: Path): 
   return Path.equals(lastChildPath, childPath)
 }
 
+export function isFirstChild(path: Path): boolean {
+  return path[path.length - 1] == 0
+}
+
 /**
  *
  * @param editor MTTEditor

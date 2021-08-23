@@ -1,5 +1,6 @@
+import {isGroupContent} from '@mintter/mttast'
 import {styled} from '@mintter/ui/stitches.config'
-import {Editor, Transforms} from 'slate'
+import {Editor, Node, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
 import {removeEmptyGroup} from '../utils'
 
@@ -27,7 +28,18 @@ export const createGroupPlugin = (): EditorPlugin => ({
     const {normalizeNode} = editor
 
     editor.normalizeNode = (entry) => {
+      // const [node, path] = entry
+      // if (isGroupContent(node)) {
       if (removeEmptyGroup(editor, entry)) return
+      //   for (const [child, childPath] of Node.children(editor, path)) {
+      //     if (isGroupContent(child)) {
+      //       console.log('group child!!', child, childPath)
+      //       Transforms.unwrapNodes(editor, {at: childPath})
+      //       return
+      //     }
+      //   }
+      // }
+
       normalizeNode(entry)
     }
 
