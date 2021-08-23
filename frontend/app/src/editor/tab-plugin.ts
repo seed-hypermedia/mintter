@@ -17,12 +17,7 @@ export const createTabPlugin = (): EditorPlugin => {
     onKeyDown(e) {
       if (e.key === 'Tab' && editor.selection) {
         e.preventDefault()
-
-        if (!editor.selection.anchor.offset) {
-          moveStatement(editor, e.shiftKey)
-        } else {
-          Transforms.insertText(editor, '\t')
-        }
+        moveStatement(editor, e.shiftKey)
       }
     },
   }
