@@ -2,10 +2,10 @@ import {createEditor, Editor, Range} from 'slate'
 import type {NodeEntry} from 'slate'
 import {withHistory} from 'slate-history'
 import {withReact, DefaultElement, DefaultLeaf} from 'slate-react'
-import type {RenderElementProps,RenderLeafProps} from 'slate-react'
+import type {RenderElementProps, RenderLeafProps} from 'slate-react'
 import type {EditorEventHandlers, EditorPlugin} from './types'
 
-const byMode = (mode:string) => (plugin:EditorPlugin) => plugin.mode === undefined || plugin.mode === mode
+const byMode = (mode: string) => (plugin: EditorPlugin) => plugin.mode === undefined || plugin.mode === mode
 
 export function buildEditorHook(plugins: EditorPlugin[], mode: string): Editor {
   const hooks = plugins.filter(byMode(mode)).flatMap(({configureEditor}) => configureEditor || [])
@@ -14,7 +14,8 @@ export function buildEditorHook(plugins: EditorPlugin[], mode: string): Editor {
 }
 
 export function buildRenderElementHook(
-  plugins: EditorPlugin[], mode: string
+  plugins: EditorPlugin[],
+  mode: string,
 ): ((props: RenderElementProps) => JSX.Element) | undefined {
   const hooks = plugins.filter(byMode(mode)).flatMap(({renderElement}) => renderElement || [])
   if (!hooks.length) return undefined
@@ -28,7 +29,10 @@ export function buildRenderElementHook(
   }
 }
 
-export function buildRenderLeafHook(plugins: EditorPlugin[], mode: string): ((props: RenderLeafProps) => JSX.Element) | undefined {
+export function buildRenderLeafHook(
+  plugins: EditorPlugin[],
+  mode: string,
+): ((props: RenderLeafProps) => JSX.Element) | undefined {
   const hooks = plugins.filter(byMode(mode)).flatMap(({renderLeaf}) => renderLeaf || [])
   if (!hooks.length) return undefined
 
@@ -44,7 +48,7 @@ export function buildRenderLeafHook(plugins: EditorPlugin[], mode: string): ((pr
   }
 }
 
-export function buildDecorateHook(plugins: EditorPlugin[], mode:string): ((entry: NodeEntry) => Range[]) | undefined {
+export function buildDecorateHook(plugins: EditorPlugin[], mode: string): ((entry: NodeEntry) => Range[]) | undefined {
   const hooks = plugins.filter(byMode(mode)).flatMap(({decorate}) => decorate || [])
   if (!hooks.length) return undefined
 
@@ -54,7 +58,7 @@ export function buildDecorateHook(plugins: EditorPlugin[], mode:string): ((entry
 export function buildEventHandlerHook(
   plugins: EditorPlugin[],
   event: keyof EditorEventHandlers,
-  mode: string
+  mode: string,
 ): ((props: unknown) => void) | undefined {
   const hooks = plugins.filter(byMode(mode)).flatMap((p) => p[event] || [])
 

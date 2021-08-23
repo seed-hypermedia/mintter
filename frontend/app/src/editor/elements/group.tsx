@@ -28,17 +28,25 @@ export const createGroupPlugin = (): EditorPlugin => ({
     const {normalizeNode} = editor
 
     editor.normalizeNode = (entry) => {
-      // const [node, path] = entry
-      // if (isGroupContent(node)) {
-      if (removeEmptyGroup(editor, entry)) return
-      //   for (const [child, childPath] of Node.children(editor, path)) {
-      //     if (isGroupContent(child)) {
-      //       console.log('group child!!', child, childPath)
-      //       Transforms.unwrapNodes(editor, {at: childPath})
-      //       return
-      //     }
-      //   }
-      // }
+      const [node, path] = entry
+      if (isGroupContent(node)) {
+        if (removeEmptyGroup(editor, entry)) return
+        const parent = Editor.parent(editor, path)
+        if (parent) {
+          const [parentNode, parentPath] = parent
+          if (isGroupContent(parentNode)) {
+            Transforms.unwrapNodes(editor, {at: path})
+            return
+          }
+        }
+        //   for (const [child, childPath] of Node.children(editor, path)) {
+        //     if (isGroupContent(child)) {
+        //       console.log('group child!!', child, childPath)
+        //       Transforms.unwrapNodes(editor, {at: childPath})
+        //       return
+        //     }
+        //   }
+      }
 
       normalizeNode(entry)
     }
