@@ -1,14 +1,17 @@
-import {Path, Transforms} from 'slate'
+import {Node, Path, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
 import {Editor, Element} from 'slate'
-import {GroupingContent, isGroupContent, Statement as StatementType} from '@mintter/mttast'
-import {isCollapsed, unhangRange, isLastChild, getLastChild} from '../utils'
+import {isGroupContent, isHeading, isStatement, Statement as StatementType} from '@mintter/mttast'
+import {isLastChild, getLastChild} from '../utils'
 import type {MTTEditor} from '../utils'
 import {styled} from '@mintter/ui/stitches.config'
 import {group} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
 import {Marker} from '../marker'
 import {ELEMENT_HEADING} from './heading'
+import {isFirstChild} from '@udecode/slate-plugins'
+import type {NodeEntry} from 'slate'
+import {ELEMENT_GROUP} from './group'
 
 export const ELEMENT_STATEMENT = 'statement'
 
@@ -86,9 +89,22 @@ export const createStatementPlugin = (): EditorPlugin => ({
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
-      if (node.type == ELEMENT_STATEMENT) {
+      if (isStatement(node)) {
         // check if there's a group below, if so, move inside that group
         const parent = Editor.parent(editor, path)
+        // const firstChild = parent[0].children.length ? Editor.node(editor, path.concat(0)) : null
+        // console.log({parent, firstChild})
+
+        // for (const [child, childPath] of Node.children(editor, path)) {
+        //   if (Element.isElement(child) && isGroupContent(child)) {
+        //     Transforms.unwrapNodes(editor, {at: path})
+        //     return
+        //   }
+
+        //   if (Path.hasPrevious(childPath)) {
+        //     console.log('has previous!', child, childPath)
+        //   }
+        // }
 
         if (!isLastChild(parent, path)) {
           const lastChild = getLastChild(parent)
@@ -101,12 +117,15 @@ export const createStatementPlugin = (): EditorPlugin => ({
         }
 
         const [parentNode, parentPath] = parent
-        if (parentNode.type == ELEMENT_STATEMENT) {
+        if (isStatement(parentNode)) {
           // if parent is a statement and is the last child (because the previous if is false) then we can move the new statement to the next position of it's parent
-          Transforms.moveNodes(editor, {at: path, to: Path.next(parentPath)})
+          Transforms.moveNodes(editor, {
+            at: path,
+            to: isFirstChild(path) ? parentPath : Path.next(parentPath),
+          })
           return
         }
-        if (parentNode.type == ELEMENT_HEADING) {
+        if (isHeading(parentNode)) {
           // this statement should be part of a group inside the heading, we need to wrap it!
           Transforms.wrapNodes(editor, group([]), {at: path})
           return

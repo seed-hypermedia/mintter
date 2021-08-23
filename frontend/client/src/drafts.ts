@@ -10,7 +10,8 @@ import {
 } from '../.generated/documents/v1alpha/documents'
 import type {Document} from '../.generated/documents/v1alpha/documents'
 import {createGrpcClient} from './grpc-client'
-import type { GrpcClient } from './grpc-client'
+import type {GrpcClient} from './grpc-client'
+import {document, group, paragraph, statement, text} from '@mintter/mttast-builder'
 
 /**
  *
@@ -88,10 +89,18 @@ export function publishDraft(documentId: string, rpc?: GrpcClient) {
  * @param rpc
  * @returns
  */
-export function getDraft(documentId: string, rpc?: GrpcClient): Promise<Document> {
+export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
   const request = GetDraftRequest.fromPartial({documentId})
-  return new DraftsClientImpl(rpc).getDraft(request)
+  const doc = await new DraftsClientImpl(rpc).getDraft(request)
+  doc.content = JSON.stringify([
+    group([
+      statement([paragraph([text('hello')])]),
+      statement([paragraph([text('')]), group([statement([paragraph([text('another')])])])]),
+    ]),
+  ])
+
+  return doc
 
   // // return await Promise.resolve(document([statement([paragraph([text('hello world')])])]))
 
