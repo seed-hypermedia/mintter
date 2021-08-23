@@ -47,9 +47,7 @@ interface DraftEditorMachineProps {
   client: QueryClient
 }
 
-const defaultContent = [
-  group([statement({id: createId()}, [paragraph([text('')])])]),
-]
+const defaultContent = [group([statement({id: createId()}, [paragraph([text('')])])])]
 
 const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachineProps) =>
   createMachine<DraftEditorMachineContext, DraftEditorMachineEvent>(
