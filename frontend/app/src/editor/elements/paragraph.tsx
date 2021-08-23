@@ -5,9 +5,8 @@ import {Node, Path, Editor} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {useMemo} from 'react'
 import {Transforms} from 'slate'
+import {isParagraph} from '@mintter/mttast'
 import {createId, statement} from '@mintter/mttast-builder'
-import {isParagraph, Statement} from '@mintter/mttast'
-import type {Descendant} from 'slate'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
