@@ -9,7 +9,7 @@ export const Underline = styled('span', {
 
 export function createUnderlinePlugin(): EditorPlugin {
   return {
-    key: MARK_UNDERLINE,
+    name: MARK_UNDERLINE,
     renderLeaf({attributes, children, leaf}) {
       if (leaf[MARK_UNDERLINE] && leaf.value) {
         return <u {...attributes}>{children}</u>

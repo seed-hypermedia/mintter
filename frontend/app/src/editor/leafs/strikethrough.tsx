@@ -9,7 +9,7 @@ export const Strikethrough = styled('span', {
 
 export function createStrikethroughPlugin(): EditorPlugin {
   return {
-    key: MARK_STRIKETHROUGH,
+    name: MARK_STRIKETHROUGH,
     renderLeaf({attributes, children, leaf}) {
       if (leaf[MARK_STRIKETHROUGH] && leaf.value) {
         return <Strikethrough {...attributes}>{children}</Strikethrough>

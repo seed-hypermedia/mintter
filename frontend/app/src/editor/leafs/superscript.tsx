@@ -11,7 +11,7 @@ export const Superscript = styled('i', {
 
 export function createSuperscriptPlugin(): EditorPlugin {
   return {
-    key: MARK_SUPERSCRIPT,
+    name: MARK_SUPERSCRIPT,
     renderLeaf({attributes, children, leaf}) {
       if (leaf[MARK_SUPERSCRIPT] && leaf.value) {
         return <Superscript {...attributes}>{children}</Superscript>
