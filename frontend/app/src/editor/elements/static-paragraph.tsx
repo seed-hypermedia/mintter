@@ -7,7 +7,7 @@ import type {NodeEntry} from 'slate'
 import type {Heading} from '@mintter/mttast'
 import {ELEMENT_HEADING} from './heading'
 import {ELEMENT_PARAGRAPH} from './paragraph'
-import {createId, statement} from 'frontend/mttast-builder/dist'
+import {createId, statement} from '@mintter/mttast-builder'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
