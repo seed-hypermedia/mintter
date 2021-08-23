@@ -1,19 +1,22 @@
 import {createEditor, Editor, Range} from 'slate'
-import type {BaseEditor,NodeEntry} from 'slate'
+import type {NodeEntry} from 'slate'
 import {withHistory} from 'slate-history'
 import {withReact, DefaultElement, DefaultLeaf} from 'slate-react'
-import type {RenderElementProps,ReactEditor,RenderLeafProps} from 'slate-react'
+import type {RenderElementProps,RenderLeafProps} from 'slate-react'
 import type {EditorEventHandlers, EditorPlugin} from './types'
 
-export function buildEditorHook(plugins: EditorPlugin[]): Editor {
-  const hooks = plugins.flatMap(({configureEditor}) => configureEditor || [])
-  return hooks.reduce((editor, configure) => configure(editor) || editor, withHistory(withReact(createEditor())))
+const byMode = (mode:string) => (plugin:EditorPlugin) => plugin.mode === undefined || plugin.mode === mode
+
+export function buildEditorHook(plugins: EditorPlugin[], mode: string): Editor {
+  const hooks = plugins.filter(byMode(mode)).flatMap(({configureEditor}) => configureEditor || [])
+
+  return hooks.reduce((editor, hook) => hook(editor) || editor, withHistory(withReact(createEditor())))
 }
 
 export function buildRenderElementHook(
-  plugins: EditorPlugin[],
+  plugins: EditorPlugin[], mode: string
 ): ((props: RenderElementProps) => JSX.Element) | undefined {
-  const hooks = plugins.flatMap(({renderElement}) => renderElement || [])
+  const hooks = plugins.filter(byMode(mode)).flatMap(({renderElement}) => renderElement || [])
   if (!hooks.length) return undefined
 
   return function SlateElement(props: RenderElementProps) {
@@ -25,8 +28,8 @@ export function buildRenderElementHook(
   }
 }
 
-export function buildRenderLeafHook(plugins: EditorPlugin[]): ((props: RenderLeafProps) => JSX.Element) | undefined {
-  const hooks = plugins.flatMap(({renderLeaf}) => renderLeaf || [])
+export function buildRenderLeafHook(plugins: EditorPlugin[], mode: string): ((props: RenderLeafProps) => JSX.Element) | undefined {
+  const hooks = plugins.filter(byMode(mode)).flatMap(({renderLeaf}) => renderLeaf || [])
   if (!hooks.length) return undefined
 
   return function SlateLeaf(props: RenderLeafProps) {
@@ -41,8 +44,8 @@ export function buildRenderLeafHook(plugins: EditorPlugin[]): ((props: RenderLea
   }
 }
 
-export function buildDecorateHook(plugins: EditorPlugin[]): ((entry: NodeEntry) => Range[]) | undefined {
-  const hooks = plugins.flatMap(({decorate}) => decorate || [])
+export function buildDecorateHook(plugins: EditorPlugin[], mode:string): ((entry: NodeEntry) => Range[]) | undefined {
+  const hooks = plugins.filter(byMode(mode)).flatMap(({decorate}) => decorate || [])
   if (!hooks.length) return undefined
 
   return (entry: NodeEntry) => hooks.flatMap((decorate) => decorate(entry) || [])
@@ -51,13 +54,13 @@ export function buildDecorateHook(plugins: EditorPlugin[]): ((entry: NodeEntry) 
 export function buildEventHandlerHook(
   plugins: EditorPlugin[],
   event: keyof EditorEventHandlers,
-  editor: BaseEditor & ReactEditor,
+  mode: string
 ): ((props: unknown) => void) | undefined {
-  const hooks = plugins.flatMap((p) => p[event] || [])
+  const hooks = plugins.filter(byMode(mode)).flatMap((p) => p[event] || [])
 
   if (!hooks.length) return undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (ev: any) => hooks.forEach((h) => h(ev, editor))
+  return (ev: any) => hooks.forEach((h) => h(ev))
 }
 
 export function getUsedEventHandlers(plugins: EditorPlugin[]): Array<keyof EditorEventHandlers> {
