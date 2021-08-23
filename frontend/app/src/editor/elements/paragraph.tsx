@@ -4,6 +4,8 @@ import {Text} from '@mintter/ui/text'
 import {Node, Path, Editor} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {useMemo} from 'react'
+import {Transforms} from 'slate'
+import {createId, statement} from 'frontend/mttast-builder/dist'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
@@ -54,14 +56,16 @@ export const createParagraphPlugin = (): EditorPlugin => ({
       const [node, path] = entry
       if (node.type == ELEMENT_PARAGRAPH) {
         if (Path.hasPrevious(path)) {
-          const prevNode = Node.get(editor, Path.previous(path))
-          console.log('🚀 ~ file: paragraph.tsx ~ line 28 ~ prevNode', prevNode)
-          // wrap the paragraph with a statement
-          // check if there's a group child
-          //  yes: add the new statement as first group child
-          //  no: add statement as the same level of top statement
+          // const prevNode = Node.get(editor, Path.previous(path))
+          Transforms.wrapNodes(editor, statement({id: createId()}, []), {
+            at: path,
+          })
+          return
         }
       }
+      normalizeNode(entry)
     }
+
+    return editor
   },
 })
