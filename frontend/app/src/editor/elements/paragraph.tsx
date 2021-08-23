@@ -5,7 +5,7 @@ import {Node, Path, Editor} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {useMemo} from 'react'
 import {Transforms} from 'slate'
-import {createId, statement} from 'frontend/mttast-builder/dist'
+import {createId, statement} from '@mintter/mttast-builder'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 

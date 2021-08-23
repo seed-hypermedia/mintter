@@ -10,13 +10,16 @@ import {Tooltip} from '../components/tooltip'
 import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
 import {isCollapsed} from './utils'
-import {text} from '@mintter/mttast-builder'
 
-export function createHoveringToolbarPlugin(): EditorPlugin {
-  // TODO: not working properly, it changed the whole line format and do not respect the current selection. check how udecode is doing it
-  // related: https://rawgit.com/w3c/input-events/v1/index.html#interface-InputEvent-Attributes
+export const createHoveringToolbarPlugin = (): EditorPlugin => {
+  let editor: Editor
   return {
-    onDOMBeforeInput(event: InputEvent, editor: BaseEditor & ReactEditor) {
+    name: 'hoveringToolbar',
+    configureEditor: e => editor = e,
+    onBeforeInput(e) {
+      const event = e as unknown as InputEvent;
+      event.preventDefault();
+
       switch (event.inputType) {
         case 'formatBold':
           event.preventDefault()
@@ -29,7 +32,7 @@ export function createHoveringToolbarPlugin(): EditorPlugin {
           event.preventDefault()
           return toggleFormat(editor, 'underline')
       }
-    },
+    }
   }
 }
 
