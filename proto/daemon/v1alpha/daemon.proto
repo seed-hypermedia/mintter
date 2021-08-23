@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package com.mintter.daemon.v1alpha;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "mintter/backend/api/daemon/v1alpha;daemon";
+
+// Daemon API encapsulates main functionality of the Mintter daemon.
+service Daemon {
+  // Generates cryptographic seed that is used to derive Mintter Account Key.
+  // It's currenly supposed to be using LND's Aezeed implementation, which solves some
+  // of the issues with BIP-39. The seed is encoded as a mnemonic of 24 human-readable words.
+  // The seed could be reconstructed given these words and the passphrase.
+  //
+  // See: https://github.com/lightningnetwork/lnd/tree/master/aezeed.
+  rpc GenSeed(GenSeedRequest) returns (GenSeedResponse);
+
+  // After generating the seed, this call is used to commit the seed and
+  // create an account binding between the device and account.
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+
+  // Get generic information about the running node.
+  rpc GetInfo(GetInfoRequest) returns (Info);
+}
+
+message GenSeedRequest {
+  // Passphrase that will be used to encipher the seed.
+  string aezeed_passphrase = 1;
+}
+
+message GenSeedResponse {
+  // The list of human-friendly words that can be used to backup the seed. These
+  // words must be stored in a secret place by the user.
+  repeated string mnemonic = 1;
+}
+
+message RegisterRequest {
+  repeated string mnemonic = 1;
+
+  string aezeed_passphrase = 2;
+}
+
+message RegisterResponse {
+  string account_id = 1;
+}
+
+message GetInfoRequest {}
+
+// Info is a generic information about the running node.
+message Info {
+  // Account ID this node belongs to.
+  string account_id = 1;
+
+  // Peer ID assigned to this node.
+  string peer_id = 2;
+
+  // Start time of the node.
+  google.protobuf.Timestamp start_time = 3;
+}

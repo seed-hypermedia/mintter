@@ -2,6 +2,7 @@ package cleanup
 
 import (
 	"errors"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -45,4 +46,10 @@ func TestStack(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, expected, errs)
 	require.Contains(t, err.Error(), "three; two; one")
+}
+
+func TestEmpty(t *testing.T) {
+	var c io.Closer = &Stack{}
+
+	require.NoError(t, c.Close())
 }

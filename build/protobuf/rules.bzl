@@ -20,8 +20,6 @@ def _proto_compile(ctx):
             fail("Only .proto files are allowed in srcs of '{}'".format(ctx.label))
         for r in replaces:
             replaced_filename = i.basename.replace(".proto", r)
-            if replaced_filename in ctx.attr.skip_outputs:
-                continue
             o = ctx.actions.declare_file(replaced_filename)
             outs.append(o)
             source_outs.append(o.short_path.replace(proto_root, output_root))
@@ -45,6 +43,7 @@ protoc -I {proto_root} {protoc_flags} {protos}
 
 PWD="$(pwd)"
 for o in {source_outs}; do
+    {extra_output_script}
     ln -s $PWD/$o $TARGET_OUT_DIR/
 done
 """.format(
@@ -54,6 +53,7 @@ done
             protos = " ".join([s.short_path for s in inputs]),
             source_outs = " ".join(source_outs),
             protoc_flags = " ".join(protoc_flags),
+            extra_output_script = ctx.attr.extra_output_script,
         ),
     )
 
@@ -83,8 +83,10 @@ proto_compile = rule(
             doc = "List of flags for protoc.",
             mandatory = True,
         ),
-        "skip_outputs": attr.string_list(
-            doc = "List of output files that need not to be declared by the automatic replacement rules. Useful for proto files that output no GRPC services.",
+        # TODO: this is probably very unsafe for non-trusted users.
+        "extra_output_script": attr.string(
+            doc = "Extra shell template that would be invoked for each generated output file. Useful to modify the files somehow after generation.",
+            default = "",
         ),
         "_workspace": attr.label(
             doc = "Implicit dependency on the WORKSPACE file.",
@@ -102,18 +104,20 @@ def mtt_js_proto(name, srcs, visibility = ["//visibility:public"], **kwargs):
     proto_compile(
         name = name,
         srcs = srcs,
-        replaces = [
-            "_pb.js",
-            "_pb.d.ts",
-            "_grpc_web_pb.js",
-            "_grpc_web_pb.d.ts",
-        ],
+        replaces = [".ts"],
         proto_root = "proto",
-        output_root = "api/js/",
+        output_root = "frontend/client/.generated/",
         protoc_flags = [
-            "--js_out=import_style=commonjs:api/js/",
-            "--grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:api/js/",
+            "--plugin=`which protoc-gen-ts_proto`",
+            "--ts_proto_opt=esModuleInterop=false",
+            "--ts_proto_out=frontend/client/.generated/",
+            "--ts_proto_opt=env=browser",
+            "--ts_proto_opt=lowerCaseServiceMethods=true",
+            "--ts_proto_opt=addGrpcMetadata=true",
+            "--ts_proto_opt=outputClientImpl=grpc-web",
+            "--ts_proto_opt=exportCommonSymbols=false"
         ],
+        extra_output_script = "echo -e \"//@ts-nocheck\n$(cat $PWD/$o)\" > $PWD/$o",
         visibility = visibility,
         **kwargs
     )
@@ -127,7 +131,7 @@ def mtt_go_proto(name, srcs, visibility = ["//visibility:public"], **kwargs):
         srcs = srcs,
         replaces = [".pb.go"],
         proto_root = "proto",
-        output_root = "api/go/",
+        output_root = "backend/api/",
         protoc_flags = ["--go_out=module=mintter,plugins=grpc:."],
         visibility = visibility,
         **kwargs

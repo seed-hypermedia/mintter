@@ -1,13 +1,19 @@
 package main
 
 import (
+	"context"
+	"time"
+
+	_ "expvar"
+	_ "net/http/pprof"
+
 	"mintter/backend"
 	"mintter/backend/config"
-	"mintter/backend/daemon"
 
 	"github.com/alecthomas/kong"
 	"github.com/burdiyan/go/kongcli"
 	"github.com/burdiyan/go/mainutil"
+	"go.uber.org/fx"
 )
 
 func main() {
@@ -19,9 +25,23 @@ func main() {
 		kong.Description("Version: "+backend.Version),
 	)
 
-	ctx := mainutil.TrapSignals()
-
 	mainutil.Run(func() error {
-		return daemon.Run(ctx, cfg)
+		log := backend.NewLogger(cfg)
+		defer log.Sync()
+
+		app := fx.New(
+			backend.Module(cfg, log),
+			fx.StopTimeout(1*time.Minute),
+		)
+
+		ctx := mainutil.TrapSignals()
+
+		if err := app.Start(ctx); err != nil {
+			return err
+		}
+
+		<-ctx.Done()
+
+		return app.Stop(context.Background())
 	})
 }

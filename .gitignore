@@ -1,3 +1,4 @@
+/bin
 node_modules
 .netlify
 .now
@@ -18,13 +19,13 @@ out
 
 rice-box.go
 
-# temp files
-frontent/old_pages
-out
-
-# frontend v2 test
-frontendv2
-
 # Bazel
 user.bazelrc
 bazel-*
+.bazel-*
+
+# Backend code
+backend/ui/rice-box.go-e
+
+# local backends
+_s*

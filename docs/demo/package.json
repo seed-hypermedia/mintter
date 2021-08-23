@@ -1,0 +1,10 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Horacio Herrera",
+  "license": "MIT",
+  "dependencies": {
+    "unist-builder": "^3.0.0"
+  }
+}

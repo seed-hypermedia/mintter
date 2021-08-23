@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package com.mintter.accounts.v1alpha;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "mintter/backend/api/accounts/v1alpha;accounts";
+
+// Accounts API service.
+service Accounts {
+  // Lookup an Account information across the already known accounts.
+  // Can also be used to retrieve our own account.
+  rpc GetAccount(GetAccountRequest) returns (Account);
+
+  // Update Profile information of our own Account.
+  rpc UpdateProfile(Profile) returns (Account);
+
+  // List accounts known to the backend (excluding our own account). New accounts can be discovered naturally by
+  // interacting with the network, or users can ask to discover specific accounts using
+  // the Networking API.
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
+}
+
+message GetAccountRequest {
+  // ID of the Account to be looked up. If empty - our own account will be returned.
+  string id = 1;
+}
+
+message ListAccountsRequest {
+  int32 page_size = 1;
+
+  string page_token = 2;
+}
+
+message ListAccountsResponse {
+  repeated Account accounts = 1;
+
+  string next_page_token = 2;
+}
+
+message Account {
+  // Mintter Account ID.
+  string id = 1;
+
+  // Profile information of this account.
+  Profile profile = 2;
+
+  // List of known devices of this Account.
+  map<string, Device> devices = 3;
+}
+
+message Profile {
+  string alias = 1;
+
+  string bio = 2;
+
+  string email = 3;
+}
+
+message Device {
+  // CID-encoded Peer ID of this device.
+  string peer_id = 1;
+
+  // Time when this device was registered.
+  google.protobuf.Timestamp register_time = 2;
+}
+
+// === Events ===
+
+message DeviceRegistered {
+  bytes proof = 1;
+}
+
+message ProfileUpdated {
+  Profile profile = 2;
+}

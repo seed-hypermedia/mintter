@@ -3,6 +3,7 @@ package ipfsutil
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/stretchr/testify/require"
 
+	"github.com/ipfs/go-cid"
 	datastore "github.com/ipfs/go-datastore"
 	dssync "github.com/ipfs/go-datastore/sync"
 	cbor "github.com/ipfs/go-ipld-cbor"
@@ -89,6 +91,20 @@ func TestFiles(t *testing.T) {
 	content2, err := ioutil.ReadAll(rsc)
 	require.NoError(t, err)
 	require.Equal(t, content, content2, "retrieved must be the same as put")
+}
+
+func TestNewCID(t *testing.T) {
+	id, err := NewCID(cid.DagCBOR, multihash.BLAKE2B_MIN+31, []byte("hello world"))
+	require.NoError(t, err)
+
+	id2, err := cid.Cast(id.Bytes())
+	require.NoError(t, err)
+
+	require.True(t, id.Equals(id2))
+
+	fmt.Printf("%X\n", id.Bytes())
+	mh, _ := multihash.Decode(id.Hash())
+	fmt.Printf("%X\n", mh.Digest)
 }
 
 func setupPeers(t *testing.T) (p1, p2 *Node) {
