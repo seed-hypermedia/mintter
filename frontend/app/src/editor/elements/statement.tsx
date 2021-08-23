@@ -1,33 +1,15 @@
-import {Location, Path, Range, Transforms} from 'slate'
-import type {NodeEntry} from 'slate'
+import {Path, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
-import {Editor, Element} from 'slate'
-import {GroupingContent, isGroupContent, Statement as StatementType} from '@mintter/mttast'
+import {Editor} from 'slate'
+import {isGroupContent} from '@mintter/mttast'
 import {
-  createStatement,
-  isRangeStart,
-  isRangeEnd,
-  getParentFlowContent,
-  isCollapsed,
-  unhangRange,
   isLastChild,
   getLastChild,
 } from '../utils'
-import type {MTTEditor} from '../utils'
 import {styled} from '@mintter/ui/stitches.config'
-import {createId, group, paragraph, statement, text} from '@mintter/mttast-builder'
+import {group} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
 import {Marker} from '../marker'
-import {
-  getAbove,
-  getParent,
-  getResetNodeOnKeyDown,
-  isBlockAboveEmpty,
-  isBlockTextEmptyAfterSelection,
-  someNode,
-  TElement,
-} from '@udecode/slate-plugins'
-import {ELEMENT_PARAGRAPH} from './paragraph'
 import {ELEMENT_HEADING} from './heading'
 
 export const ELEMENT_STATEMENT = 'statement'

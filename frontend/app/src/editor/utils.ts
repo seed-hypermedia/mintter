@@ -1,7 +1,8 @@
-import {GroupingContent, isGroupContent, Statement} from '@mintter/mttast'
+import {isGroupContent} from '@mintter/mttast'
+import type {Statement,GroupingContent} from '@mintter/mttast'
 import {statement, paragraph, text, createId} from '@mintter/mttast-builder'
-import {Range, Editor, Path, Ancestor, NodeEntry, Descendant} from 'slate'
-import type {BaseEditor} from 'slate'
+import {Range, Editor, Path,Transforms} from 'slate'
+import type {BaseEditor,Ancestor,Descendant,NodeEntry,Point,Span} from 'slate'
 import type {ReactEditor} from 'slate-react'
 
 export type MTTEditor = BaseEditor & ReactEditor
