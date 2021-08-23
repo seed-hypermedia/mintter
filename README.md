@@ -6,43 +6,42 @@ For more info about the architecture see [this](/docs/architecture/README.md).
 
 ## Prerequisites
 
-You MUST have [Nix](https://nixos.org/nix) package manager installed on your
-machine to work with this repository.
+You MUST have [Nix](https://nixos.org/nix) package manager installed on your machine to work with this repository.
 
 To setup Nix see [this](/docs/nix.md).
 
-## Building System
+> For users on using the new apple silicon (m1) chip that run into weird errors (from nix and others) while setting up
+> the repository. It may help to install rosetta 2 as not all tools have aarch64 support yet. You can install rosetta
+> through the terminal by typing:
+>
+> ```zsh
+> softwareupdate --install-rosetta
+> ```
 
-This project's build system is pretty complex, but the final output is a single
-static `mintterd` binary - that's the only you need to run.
+## Build System
 
-We use [Ninja](https://ninja-build.org) build system with support of
-[GN](http://gn.googlesource.com) templates to make the build easier to reason
-about. It also helps us to run only the required things avoiding to do the work
-if nothing has changed.
+We've been changing the way we build the project quite a few times already. Initially we've been using
+[redo](https://github.com/apenwarr/redo), then
+[GN](https://chromium.googlesource.com/chromium/src/tools/gn/+/48062805e19b4697c5fbd926dc649c78b6aaa138/README.md) and
+Ninja, and now we're using [Bazel](https://bazel.build).
 
-Most of the developer activities are wrapped into the `./dev` script in the root
-of the repo. Run `./dev` with no argument to see the help information.
+But don't be confused, we're not using Bazel in a conventional way.
+
+Reach out to @burdiyan for more info, or look around the `BUILD.bazel` files and our custom rules yourself.
 
 ## Overview
 
-The binary depends on a single-page NextJS application that's built and exported
-separately and then included into the binary itself.
+Since we've wrote our
+[Design Document](https://www.notion.so/mintter/Mintter-Design-Document-bed174849106466cbec2a12dabddd701) the project
+structure has changed significantly.
 
-The NextJS app depends on some other packages with our editor plugins.
+At the moment you may find a mix of old and new code, so don't get too confused.
 
-And everything depends on code generated from our Protobuf definitions.
+The basic architecture that still remains the same is that we two main component: Backend and Frontend.
 
-Brief overview of the directory structure:
+Backend is running on user's machine, and Frontend is a web application that's using Backend APIs under the hood.
 
-- `api` - contains all the Protobuf generated code for Go and JS.
-- `backend` - backend Go code.
-- `frontend/packages` - frontend TS and JS code which are separate packages.
-- `frontend/www` - frontend TS and JS code for our NextJS SPA.
-- `proto` - definitions in Protobuf shared between frontend and backend.
-- `build` - tooling and configuration for the build system.
-- `out` - build outputs are stored here in separate directories for each
-  platform.
+We're using Protobuf and GRPC for our API definitions. Look inside `proto` to see available APIs.
 
 ### Getting Started
 
@@ -52,37 +51,20 @@ Assuming you have the prerequisites:
 2. Make sure Nix and Direnv are installed (see above).
 3. Run `./dev run` to make a production build and run it locally.
 
-During development it might be easier to run frontend and backend separately
-though.
+During development it might be easier to run frontend and backend separately though.
 
 Run `./dev` with no argument to see available commands.
 
 ## Cross Compilation
 
-We support cross compilation for Linux, Windows, and macOS at the moment. Run
-`./dev build-cross` to cross-compile for all the platforms in parallel.
+We support cross compilation for Linux, Windows, and macOS at the moment. Run `./dev build-cross` to cross-compile for
+all the platforms in parallel.
 
-### gRPC
-
-We are using [gRPC](https://grpc.io) for communication between frontend and
-backend. Take a look inside `.proto` files in [proto](/proto) directory.
-
-### Frontend vs. Backend
-
-Frontend is the NextJS web app. For production, we'll use `next export` to
-generate static assets and use it as an SPA. These static assets are going to be
-served from the backend.
-
-Backend is a long-running program that lives on user's local machine. It handles
-all the p2p networking, IPFS and Lightning Network stuff. It exposes the gRPC
-API for frontend to use.
-
-### Frontend code conventions
+### Frontend Code Conventions
 
 - files and folders are all `kebab-case`
 - variables are `camelCase`
 - components and editor plugins are `PascalCase`
 - avoid creating abstractions
 - avoid creating folders, better to have files as flat as possible
-- avoid default exports, only default exports for page components (to use
-  dynamic import).
+- avoid default exports, only default exports for page components (to use dynamic import)

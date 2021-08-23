@@ -4,11 +4,14 @@ exports_files([
     "go.mod",
     "go.sum",
     "WORKSPACE",
+    "tsconfig.json",
+    "tsconfig.base.json",
 ])
 
 local_action(
     name = "yarn",
     srcs = [
+        ".yarnrc",
         "package.json",
         "yarn.lock",
     ],
@@ -27,10 +30,7 @@ filegroup(
         "go.sum",
     ] + glob(
         ["backend/**/*.go"],
-        exclude = [
-            "**/rice-box.go",
-            "**/*_test.go",
-        ],
+        exclude = ["**/*_test.go"],
     ),
 )
 
@@ -73,14 +73,13 @@ TARGET_PLATFORMS = [
 export GOOS={os}
 export GOARCH={arch}
 export CGO_ENABLED="0"
-go build -tags=bindata -o $TARGET_OUT_DIR/{os}_{arch}/mintterd ./backend/cmd/mintterd
+go build -o $TARGET_OUT_DIR/{os}_{arch}/mintterd ./backend/cmd/mintterd
 """.format(
             os = os,
             arch = arch,
         ),
         tags = ["manual"],
         deps = [
-            "//backend/ui:bindata",
             "//proto:go",
         ],
     )

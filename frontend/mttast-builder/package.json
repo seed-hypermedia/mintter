@@ -1,0 +1,22 @@
+{
+  "name": "@mintter/mttast-builder",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@mintter/mttast": "^0.1.0",
+    "@types/unist": "^2.0.6",
+    "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "nanoid": "^3.1.23"
+  }
+}
