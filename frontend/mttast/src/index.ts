@@ -21,6 +21,7 @@ export type {
   FlowContent,
   EmbeddedContent,
   StaticPhrasingContent,
-  PhrasingContent
+  PhrasingContent,
+  MttastContent
 } from './types'
 export * from './assertions'

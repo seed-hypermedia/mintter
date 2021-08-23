@@ -1,11 +1,11 @@
-import type { Content, EmbeddedContent, FlowContent, GroupingContent, Link, StaticParagraph } from '@mintter/mttast'
+import type { MttastContent, Document } from '@mintter/mttast'
 import type { BaseEditor, Editor, NodeEntry, Range} from 'slate'
 import type {ReactEditor, RenderElementProps, RenderLeafProps, Editable} from 'slate-react'
 
 declare module 'slate' {
   export interface CustomTypes {
     Editor: BaseEditor & ReactEditor
-    Element: Content | StaticParagraph | GroupingContent | FlowContent | EmbeddedContent | Link
+    Element: Document | Exclude<MttastContent, Text>
     Text: Text
   }
 }
