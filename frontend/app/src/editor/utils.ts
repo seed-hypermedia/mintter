@@ -10,7 +10,7 @@ export function createStatement(): Statement {
   return statement([paragraph({id: createId()}, [text('')])])
 }
 
-export const isCollapsed = (range: Range): boolean => !!range && Range.isCollapsed(range)
+export const isCollapsed = (range?: Range | null): boolean => !!range && Range.isCollapsed(range)
 
 export const hasSelection = (editor: MTTEditor) => !!editor.selection
 
