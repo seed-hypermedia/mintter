@@ -6,6 +6,8 @@ import {ReactEditor, useSlateStatic} from 'slate-react'
 import {useMemo} from 'react'
 import {Transforms} from 'slate'
 import {createId, statement} from '@mintter/mttast-builder'
+import {isParagraph, Statement} from '@mintter/mttast'
+import type {Descendant} from 'slate'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
@@ -54,11 +56,15 @@ export const createParagraphPlugin = (): EditorPlugin => ({
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
-      if (node.type == ELEMENT_PARAGRAPH) {
+      if (isParagraph(node)) {
         if (Path.hasPrevious(path)) {
-          // const prevNode = Node.get(editor, Path.previous(path))
+          const prevNode = Node.get(editor, Path.previous(path))
+          /*
+           * @todo if the selection is in the beginning, then wrap the first paragraph with a new statement
+           * @body Issue Body
+           */
           Transforms.wrapNodes(editor, statement({id: createId()}, []), {
-            at: path,
+            at: Editor.isEmpty(editor, prevNode) ? Path.previous(path) : path,
           })
           return
         }
