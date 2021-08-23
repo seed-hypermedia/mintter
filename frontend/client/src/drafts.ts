@@ -93,12 +93,12 @@ export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Do
   rpc ||= createGrpcClient()
   const request = GetDraftRequest.fromPartial({documentId})
   const doc = await new DraftsClientImpl(rpc).getDraft(request)
-  doc.content = JSON.stringify([
-    group([
-      statement([paragraph([text('hello')])]),
-      statement([paragraph([text('')]), group([statement([paragraph([text('another')])])])]),
-    ]),
-  ])
+  // doc.content = JSON.stringify([
+  //   group([
+  //     statement([paragraph([text('hello')])]),
+  //     statement([paragraph([text('')]), group([statement([paragraph([text('another')])])])]),
+  //   ]),
+  // ])
 
   return doc
 
