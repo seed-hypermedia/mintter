@@ -1,19 +1,34 @@
-import {Path, Transforms} from 'slate'
+import {Location, Path, Range, Transforms} from 'slate'
 import type {NodeEntry} from 'slate'
 import type {EditorPlugin} from '../types'
 import {Editor, Element} from 'slate'
-import type {Statement as StatementType} from '@mintter/mttast'
+import {GroupingContent, isGroupContent, Statement as StatementType} from '@mintter/mttast'
 import {
   createStatement,
   isRangeStart,
   isRangeEnd,
   getParentFlowContent,
+  isCollapsed,
+  unhangRange,
+  isLastChild,
+  getLastChild,
 } from '../utils'
 import type {MTTEditor} from '../utils'
 import {styled} from '@mintter/ui/stitches.config'
-import {createId, statement} from '@mintter/mttast-builder'
+import {createId, group, paragraph, statement, text} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
 import {Marker} from '../marker'
+import {
+  getAbove,
+  getParent,
+  getResetNodeOnKeyDown,
+  isBlockAboveEmpty,
+  isBlockTextEmptyAfterSelection,
+  someNode,
+  TElement,
+} from '@udecode/slate-plugins'
+import {ELEMENT_PARAGRAPH} from './paragraph'
+import {ELEMENT_HEADING} from './heading'
 
 export const ELEMENT_STATEMENT = 'statement'
 
@@ -87,123 +102,39 @@ export const createStatementPlugin = (): EditorPlugin => ({
     }
   },
   configureEditor(editor) {
-    const {insertBreak, deleteBackward} = editor
+    const {normalizeNode} = editor
 
-    editor.insertBreak = () => {
-      const {selection} = editor
+    editor.normalizeNode = (entry) => {
+      const [node, path] = entry
+      if (node.type == ELEMENT_STATEMENT) {
+        // check if there's a group below, if so, move inside that group
+        const parent = Editor.parent(editor, path)
 
-      const statement: NodeEntry<StatementType> = getParentFlowContent(editor)({type: ELEMENT_STATEMENT})
-
-      if (statement) {
-        const [node, path] = statement
-        // cond([
-        //   [isRangeStart(editor), handleEnterAtStartOfStatement(editor)],
-        //   [isRangeEnd(editor), handleEnterAtEndOfStatement(editor)],
-        //   [isRangeMiddle(editor), handleEnterAtMiddleOfStatement(editor)],
-        //   [() => insertBreak()],
-        // ])(statement)
-
-        const isStart = isRangeStart(editor)([...path, 0])
-        const isEnd = isRangeEnd(editor)([...path, 0])
-        const isMiddle = !isStart && !isEnd
-
-        console.log('statement', {isStart, isEnd, node, path, selection})
-
-        if (isStart) return handleEnterAtStartOfStatement(editor)(statement)
-        if (isEnd) return handleEnterAtEndOfStatement(editor)(statement)
-        if (isMiddle) return handleEnterAtMiddleOfStatement(editor)(statement)
-        // return
-      }
-
-      insertBreak()
-    }
-
-    editor.deleteBackward = (unit) => {
-      const {selection} = editor
-      const statement: NodeEntry<StatementType> = getParentFlowContent(editor)({type: ELEMENT_STATEMENT})
-
-      // TODO: is removing the statement and leaving an orphan paragraph
-
-      if (statement) {
-        const [node, path] = statement
-        console.log('🚀 ~ file: statement.tsx ~ line 135 ~ editor.deleteBackward ~ node, path', node, path)
-        if (Editor.string(editor, path) == '') {
-          // statement is empty, is ok to delete it
-          Transforms.removeNodes(editor, {
-            at: path,
-          })
-          return
+        if (!isLastChild(parent, path)) {
+          const lastChild = getLastChild(parent)
+          if (isGroupContent(lastChild[0])) {
+            // the last child of the statement is a group. we should move the new as the first child
+            console.log('move node!')
+            Transforms.moveNodes(editor, {at: path, to: lastChild[1].concat(0)})
+            return
+          }
         }
 
-        const isStart = isRangeStart(editor)([...path, 0])
-        console.log('deleteBackward: ', isStart)
-        // if (isStart) {
-        //   return
-        // }
+        const [parentNode, parentPath] = parent
+        if (parentNode.type == ELEMENT_STATEMENT) {
+          // if parent is a statement and is the last child (because the previous if is false) then we can move the new statement to the next position of it's parent
+          Transforms.moveNodes(editor, {at: path, to: Path.next(parentPath)})
+          return
+        }
+        if (parentNode.type == ELEMENT_HEADING) {
+          // this statement should be part of a group inside the heading, we need to wrap it!
+          Transforms.wrapNodes(editor, group([]), {at: path})
+          return
+        }
       }
-
-      deleteBackward(unit)
+      normalizeNode(entry)
     }
 
     return editor
   },
 })
-
-const handleEnterAtStartOfStatement = (editor: MTTEditor) => (nodeEntry: NodeEntry<StatementType>) => {
-  // create statement at same path. same as Heading plugin!
-  console.log('enter at START of statement')
-  const [node, path] = nodeEntry
-
-  Editor.withoutNormalizing(editor, () => {
-    Transforms.insertNodes(editor, createStatement() as Element, {at: path})
-    Transforms.select(editor, Editor.start(editor, Editor.start(editor, Path.next(path))))
-  })
-}
-
-const handleEnterAtEndOfStatement = (editor: MTTEditor) => (nodeEntry: NodeEntry<StatementType>) => {
-  // create new statement at next path
-  console.log('enter at END of statement', nodeEntry)
-  const [node, path] = nodeEntry
-  const hasChildrenGrouping = node.children.length == 2
-  console.log(
-    '🚀 ~ file: statement.tsx ~ line 127 ~ handleEnterAtEndOfStatement ~ hasChildrenGrouping',
-    hasChildrenGrouping,
-  )
-  let targetPath = Path.next(path)
-  Editor.withoutNormalizing(editor, () => {
-    if (hasChildrenGrouping) {
-      // add new statement as the first child of child group
-      targetPath = [...path, 1, 0]
-      Transforms.insertNodes(editor, createStatement() as Element, {at: targetPath})
-      Transforms.select(editor, targetPath)
-    } else {
-      Transforms.insertNodes(editor, createStatement() as Element, {at: targetPath})
-      Transforms.select(editor, targetPath)
-    }
-  })
-}
-
-const handleEnterAtMiddleOfStatement = (editor: MTTEditor) => (nodeEntry: NodeEntry<StatementType>) => {
-  // if selection is in the middle, split paragraph and create statement at next path
-  console.log('enter at MIDDLE of statement')
-  const [node, path] = nodeEntry
-  const hasChildrenGrouping = node.children.length == 2
-  let targetPath = Path.next(path)
-
-  Editor.withoutNormalizing(editor, () => {
-    // split paragraph
-    Transforms.splitNodes(editor)
-
-    // wrap new aragraph in new statement
-    Transforms.wrapNodes(editor, statement({id: createId()}, []), {at: [...path, 1]})
-
-    if (hasChildrenGrouping) {
-      targetPath = [...path, 2, 0]
-      Transforms.moveNodes(editor, {at: [...path, 1], to: targetPath})
-      Transforms.select(editor, Editor.start(editor, [...path, 1, 0]))
-    } else {
-      Transforms.moveNodes(editor, {at: [...path, 1], to: Path.next(path)})
-      Transforms.select(editor, Editor.start(editor, Path.next(path)))
-    }
-  })
-}

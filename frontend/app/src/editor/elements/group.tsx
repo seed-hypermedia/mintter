@@ -1,5 +1,7 @@
 import {styled} from '@mintter/ui/stitches.config'
+import {Editor, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
+import {removeEmptyGroup} from '../utils'
 
 export const ELEMENT_GROUP = 'group'
 
@@ -20,5 +22,15 @@ export const createGroupPlugin = (): EditorPlugin => ({
         </Group>
       )
     }
+  },
+  configureEditor(editor) {
+    const {normalizeNode} = editor
+
+    editor.normalizeNode = (entry) => {
+      if (removeEmptyGroup(editor, entry)) return
+      normalizeNode(entry)
+    }
+
+    return editor
   },
 })

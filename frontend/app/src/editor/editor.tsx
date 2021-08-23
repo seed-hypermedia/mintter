@@ -32,7 +32,6 @@ export function Editor({
   plugins = defaultPlugins,
 }: EditorProps): JSX.Element {
   const editor = useMemo(() => buildEditorHook(plugins), [plugins])
-  console.log('🚀 ~ editor', editor)
   const renderElement = useMemo(() => buildRenderElementHook(plugins), [plugins])
   const renderLeaf = useMemo(() => buildRenderLeafHook(plugins), [plugins])
   const decorate = useMemo(() => buildDecorateHook(plugins), [plugins])

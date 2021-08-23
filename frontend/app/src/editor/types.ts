@@ -26,7 +26,7 @@ export type EditorEventHandlers = {
 
 export interface EditorPlugin extends EditorEventHandlers {
   name: string
-  configureEditor?: (editor: Editor) => Editor | undefined
+  configureEditor?: (editor: Editor) => Editor
   renderElement?: (props: RenderElementProps) => JSX.Element | undefined
   renderLeaf?: (props: RenderLeafProps) => JSX.Element | undefined
   decorate?: (node: NodeEntry) => Range[] | undefined
