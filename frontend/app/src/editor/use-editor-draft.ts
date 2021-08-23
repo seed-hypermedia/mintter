@@ -131,17 +131,17 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
                   target: 'debouncing',
                 },
               },
-              // after: {
-              //   1000: [
-              //     {
-              //       target: 'saving',
-              //       cond: 'isValueDirty',
-              //     },
-              //     {
-              //       target: 'idle',
-              //     },
-              //   ],
-              // },
+              after: {
+                1000: [
+                  {
+                    target: 'saving',
+                    cond: 'isValueDirty',
+                  },
+                  {
+                    target: 'idle',
+                  },
+                ],
+              },
             },
             saving: {
               invoke: {
