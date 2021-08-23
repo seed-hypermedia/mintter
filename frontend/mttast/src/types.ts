@@ -118,6 +118,8 @@ export interface Resource {
 
 // Content Model
 
+export type MttastContent = FlowContent | GroupingContent | Content | PhrasingContent | EmbeddedContent
+
 export type Content = Paragraph
 
 export type StaticContent = StaticParagraph
