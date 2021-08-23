@@ -15,28 +15,19 @@ import {createSuperscriptPlugin} from './leafs/superscript'
 import {createSubscriptPlugin} from './leafs/subscript'
 import {createHoveringToolbarPlugin} from './hovering-toolbar'
 import {createBlockquotePlugin} from './elements/blockquote'
-import {Node, Transforms} from 'slate'
 import {createEmbedPlugin} from './elements/embed'
 import {createCodeBlockPlugin} from './elements/code-block'
+import { createTabPlugin } from './tab-plugin'
 
 export const plugins: Array<EditorPlugin> = [
   createHoveringToolbarPlugin(),
+
   createStrongPlugin(),
   createEmphasisPlugin(),
   createUnderlinePlugin(),
   createStrikethroughPlugin(),
   createSuperscriptPlugin(),
   createSubscriptPlugin(),
-
-  // {
-  //   configureEditor(editor) {
-  //     const {isInline} = editor
-
-  //     editor.isInline = (element) => (element.type == 'text' ? true : isInline(element))
-
-  //     return editor
-  //   },
-  // },
 
   createLinkPlugin(),
   createEmbedPlugin(),
@@ -49,8 +40,10 @@ export const plugins: Array<EditorPlugin> = [
 
   createBlockquotePlugin(),
   createCodeBlockPlugin(),
-
+ 
   createGroupPlugin(),
   createUnorderedListPlugin(),
   createOrderedListPlugin(),
+
+  createTabPlugin()
 ]
