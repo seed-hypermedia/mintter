@@ -1,10 +1,11 @@
-import type { MttastContent, Document } from '@mintter/mttast'
+import type { MttastContent, Document, Text } from '@mintter/mttast'
 import type { BaseEditor, Editor, NodeEntry, Range} from 'slate'
+import type { HistoryEditor } from 'slate-history'
 import type {ReactEditor, RenderElementProps, RenderLeafProps, Editable} from 'slate-react'
 
 declare module 'slate' {
   export interface CustomTypes {
-    Editor: BaseEditor & ReactEditor
+    Editor: BaseEditor & ReactEditor & HistoryEditor
     Element: Document | Exclude<MttastContent, Text>
     Text: Text
   }
@@ -19,8 +20,9 @@ export type EditorEventHandlers = {
 
 export interface EditorPlugin extends EditorEventHandlers {
   name: string
-  configureEditor?: (editor: Editor) => Editor
-  renderElement?: (props: RenderElementProps) => JSX.Element | undefined
-  renderLeaf?: (props: RenderLeafProps) => JSX.Element | undefined
-  decorate?: (node: NodeEntry) => Range[] | undefined
+  mode?: string
+  configureEditor?: (editor: Editor) => Editor | undefined |  void
+  renderElement?: (props: RenderElementProps) => JSX.Element | undefined | void
+  renderLeaf?: (props: RenderLeafProps) => JSX.Element | undefined | void
+  decorate?: (node: NodeEntry) => Range[] | undefined | void
 }

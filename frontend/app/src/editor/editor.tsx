@@ -17,6 +17,7 @@ import {plugins as defaultPlugins} from './plugins'
 export type {EditorPlugin} from './types'
 
 interface EditorProps {
+  mode?: string
   plugins?: EditorPlugin[]
   value: Descendant[]
   onChange: (value: Descendant[]) => void
@@ -30,15 +31,16 @@ export function Editor({
   children,
   readOnly = false,
   plugins = defaultPlugins,
+  mode = readOnly ? 'read-only' : 'default'
 }: EditorProps): JSX.Element {
-  const editor = useMemo(() => buildEditorHook(plugins), [plugins])
-  const renderElement = useMemo(() => buildRenderElementHook(plugins), [plugins])
-  const renderLeaf = useMemo(() => buildRenderLeafHook(plugins), [plugins])
-  const decorate = useMemo(() => buildDecorateHook(plugins), [plugins])
+  const editor = useMemo(() => buildEditorHook(plugins, mode), [plugins])
+  const renderElement = useMemo(() => buildRenderElementHook(plugins, mode), [plugins])
+  const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, mode), [plugins])
+  const decorate = useMemo(() => buildDecorateHook(plugins, mode), [plugins])
 
   const eventHandlers = useMemo(
     () =>
-      Object.fromEntries(getUsedEventHandlers(plugins).map((ev) => [ev, buildEventHandlerHook(plugins, ev, editor)])),
+      Object.fromEntries(getUsedEventHandlers(plugins).map((ev) => [ev, buildEventHandlerHook(plugins, ev, mode)])),
     [plugins],
   )
 
