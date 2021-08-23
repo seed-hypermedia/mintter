@@ -1,18 +1,11 @@
-import type {BaseElement, BaseText, BaseEditor, Editor, NodeEntry, Range} from 'slate'
+import type { Content, EmbeddedContent, FlowContent, GroupingContent, Link, StaticParagraph } from '@mintter/mttast'
+import type { BaseEditor, Editor, NodeEntry, Range} from 'slate'
 import type {ReactEditor, RenderElementProps, RenderLeafProps, Editable} from 'slate-react'
-
-interface Element extends BaseElement {
-  type: string
-}
-
-interface Text extends BaseText {
-  [key: string]: unknown
-}
 
 declare module 'slate' {
   export interface CustomTypes {
     Editor: BaseEditor & ReactEditor
-    Element: Element
+    Element: Content | StaticParagraph | GroupingContent | FlowContent | EmbeddedContent | Link
     Text: Text
   }
 }
