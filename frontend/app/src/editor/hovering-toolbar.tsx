@@ -3,22 +3,24 @@ import {useState, useMemo, useRef, useEffect, forwardRef} from 'react'
 import type {Text as MTTText} from '@mintter/mttast'
 import type {BaseEditor} from 'slate'
 import {Editor, Transforms, Text, Range} from 'slate'
-import {useEditor, ReactEditor} from 'slate-react'
+import {useEditor, ReactEditor, useSlateStatic} from 'slate-react'
 import type {EditorPlugin} from './types'
 import {Box} from '@mintter/ui/box'
 import {Tooltip} from '../components/tooltip'
 import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
 import {isCollapsed} from './utils'
+import {text} from '@mintter/mttast-builder'
+import {ToolbarLink} from './elements/link'
 
 export const createHoveringToolbarPlugin = (): EditorPlugin => {
   let editor: Editor
   return {
     name: 'hoveringToolbar',
-    configureEditor: e => editor = e,
+    configureEditor: (e) => (editor = e),
     onBeforeInput(e) {
-      const event = e as unknown as InputEvent;
-      event.preventDefault();
+      const event = e as unknown as InputEvent
+      event.preventDefault()
 
       switch (event.inputType) {
         case 'formatBold':
@@ -32,7 +34,7 @@ export const createHoveringToolbarPlugin = (): EditorPlugin => {
           event.preventDefault()
           return toggleFormat(editor, 'underline')
       }
-    }
+    },
   }
 }
 
@@ -93,7 +95,7 @@ const FormatButton = ({format}: {format: FormatTypes}) => {
 }
 
 const Portal = ({children}) => {
-  return typeof document === 'object' ? ReactDOM.createPortal(children, document.body) : null
+  return typeof document == 'object' ? ReactDOM.createPortal(children, document.body) : null
 }
 
 const Menu = forwardRef(({className, ...props}: PropsWithChildren<BaseProps>, ref: Ref<OrNull<HTMLDivElement>>) => (
@@ -122,35 +124,69 @@ const Menu = forwardRef(({className, ...props}: PropsWithChildren<BaseProps>, re
   />
 ))
 
+export interface UseLastSelectionResult {
+  lastSelection: Range | null
+  resetSelection: () => void
+}
+
+export function useLastEditorSelection(): UseLastSelectionResult {
+  const editor = useSlateStatic()
+  const [lastSelection, update] = useState(editor.selection)
+
+  const resetSelection = () => update(undefined)
+
+  useEffect(() => {
+    const setSelection = (newSelection) => {
+      if (!newSelection) return
+      if (lastSelection && Range.equals(lastSelection, newSelection)) return
+      update(newSelection)
+    }
+
+    setSelection(editor.selection)
+  }, [editor.selection, lastSelection])
+
+  return {lastSelection, resetSelection}
+}
+/*
+ * @todo handle escape key to remove toolbar
+ * @body
+ */
 export function HoveringToolbar() {
   const ref = useRef<HTMLDivElement | null>()
-  const editor = useEditor()
+  const editor = useSlateStatic()
+  const {lastSelection, resetSelection} = useLastEditorSelection()
 
   useEffect(() => {
     const el = ref.current
-    const {selection} = editor
-
     if (!el) {
       return
     }
 
-    if (
-      !selection ||
-      !ReactEditor.isFocused(editor) ||
-      Range.isCollapsed(selection) ||
-      Editor.string(editor, selection) === ''
-    ) {
+    if (!lastSelection || Range.isCollapsed(lastSelection) || Editor.string(editor, lastSelection) == '') {
       el.removeAttribute('style')
       return
     }
-
-    const domSelection = window.getSelection()
-    const domRange = domSelection.getRangeAt(0)
+    const domRange = ReactEditor.toDOMRange(editor, lastSelection)
     const rect = domRange.getBoundingClientRect()
     el.style.opacity = '1'
     el.style.top = `${rect.top + window.pageYOffset - el.offsetHeight}px`
     el.style.left = `${rect.left + window.pageXOffset - el.offsetWidth / 2 + rect.width / 2}px`
   })
+
+  useEffect(() => {
+    const escEvent = addEventListener('keydown', (e) => {
+      // important to close the toolbar if the escape key is pressed. there's no other way than this apart from calling the `resetSelection`
+      if (e.key == 'Escape') {
+        console.log('lastSelection', lastSelection, editor.selection)
+        Transforms.deselect(editor)
+        resetSelection()
+      }
+    })
+
+    return () => {
+      removeEventListener('keydown', escEvent)
+    }
+  }, [])
 
   return (
     <Portal>
@@ -158,11 +194,13 @@ export function HoveringToolbar() {
         <FormatButton format="strong" />
         <FormatButton format="emphasis" />
         <FormatButton format="underline" />
+        <ToolbarLink lastSelection={lastSelection} resetSelection={resetSelection} />
       </Menu>
     </Portal>
   )
 }
 
 function capitalize(word: string): string {
+  console.log('capitalize: ', word)
   return `${word[0].toUpperCase()}${word.slice(1)}`
 }

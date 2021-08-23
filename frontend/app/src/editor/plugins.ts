@@ -44,6 +44,10 @@ export const plugins: Array<EditorPlugin> = [
   createGroupPlugin(),
   createUnorderedListPlugin(),
   createOrderedListPlugin(),
+  /*
+   * @todo Missing plugins
+   * @body insert html, insert markdown
+   */
 
   createTabPlugin(),
   {
