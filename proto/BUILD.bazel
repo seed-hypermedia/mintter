@@ -3,16 +3,20 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
     name = "go",
     srcs = [
+        "//proto/accounts/v1alpha:go",
+        "//proto/daemon/v1alpha:go",
         "//proto/documents/v1alpha:go",
-        "//proto/p2p:go",
-        "//proto/v2:go",
+        "//proto/networking/v1alpha:go",
+        "//proto/p2p/v1alpha:go",
     ],
 )
 
 filegroup(
     name = "js",
     srcs = [
+        "//proto/accounts/v1alpha:js",
+        "//proto/daemon/v1alpha:js",
         "//proto/documents/v1alpha:js",
-        "//proto/v2:js",
+        "//proto/networking/v1alpha:js",
     ],
 )

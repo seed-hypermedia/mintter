@@ -8,16 +8,19 @@ set -e
 
 export WORKDIR=$(cd $(dirname $0) && pwd)
 
+# Command build-backend builds the mintterd binary for the host platform.
+build-backend() {
+    bazel build //:mintterd
+}
 
-# Command build is a wrapper for ninja that will enter into the outdir correctly.
-# The GN_OUT_DIR variable is supposed to come from direnv's .envrc file.
-build() {
-    exec ninja -C $GN_OUT_DIR $@
+# Command build-frontend build a production bundle of the frontend app.
+build-frontend() {
+    bazel build //frontend/app
 }
 
 # Command build-cross builds for all the supported platforms in parallel.
 build-cross() {
-    build cross_compile
+    bazel build //:cross_compile
 }
 
 # Command run-backend will run the backend for development.
@@ -28,26 +31,23 @@ run-backend() {
 
 # Command run-frontend will prepare all the dependencies and run frontend for development.
 run-frontend() {
-    (build frontend/www:deps)
-    exec yarn dev $@
+    bazel build //:yarn
+    exec yarn app dev $@
 }
 
 # Command run will do a production build for the current platform and run the resulting binary.
 run() {
-    (build)
-    # Env variables are supposed to come from direnv.
-    exec $GN_OUT_DIR/$CURRENT_PLATFORM/mintterd $@
+    echo "This command is broken right now. Coming soon!"
+    exit 1
 }
 
 # Command deploy will do a build and deployment to the provided address.
 deploy() {
+    echo "This command is broken right now. Coming soon!"
+    exit 1
     (build linux)
     DEPLOY_ADDR="$1"
     . ./infra/deploy.sh
-}
-
-deploy-alice() {
-    echo "Deprecated. Run './dev deploy alicearticles.org' instead."
 }
 
 help() {
@@ -57,8 +57,9 @@ help() {
 Usage: $cli_name [command] [flags...]
 
 Commands:
-  build           Build production mintterd binary. It will install the dependencies and do everything required.
-  build-cross     Cross-compile for all the suppored platforms. Check '$GN_OUT_DIR/<platform>' for the outputs.
+  build-backend   Build backend binary.
+  build-frontend  Build production frontend app.
+  build-cross     Cross-compile for all the suppored platforms.
   run-backend     Run the backend for development.
   run-frontend    Run the frontend for development.
   run             Prepare a production build and run it locally.

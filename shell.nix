@@ -1,10 +1,8 @@
 let
     pkgs = import ./build/nix/nixpkgs.nix;
-    python2 = pkgs.python2;
-    protoc-gen-grpc-web = pkgs.callPackage ./build/nix/protoc-gen-grpc-web {};
-    node = pkgs.nodejs-12_x;
+    # protoc-gen-grpc-web = pkgs.callPackage ./build/nix/protoc-gen-grpc-web {};
+    node = pkgs.nodejs-16_x;
     yarn = (pkgs.yarn.override { nodejs = node; });
-    gn = pkgs.callPackage ./build/nix/gn {};
     
     tools = pkgs.buildEnv rec {
         name = "mintter-tools";
@@ -14,13 +12,11 @@ let
             pkgs.findutils
             pkgs.protobuf3_11
             pkgs.go-protobuf
-            pkgs.go_1_15
-            pkgs.ninja
-            python2
-            protoc-gen-grpc-web
+            pkgs.go
+            pkgs.bazelisk
+            # protoc-gen-grpc-web
             node
             yarn
-            gn
         ];
     };
 in

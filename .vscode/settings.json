@@ -5,21 +5,30 @@
     "**/.hg": true,
     "**/CVS": true,
     "**/.DS_Store": true,
-    "**/*.env": true
+    "**/*.env": true,
+    "bazel-mintter/**": true
+  },
+  "files.watcherExclude": {
+    "bazel-*/**": true
+  },
+  "search.exclude": {
+    "bazel-*/**": true
   },
   "clang-format.style": "{ IndentWidth: 2, ColumnLimit: 120, BasedOnStyle: google }",
   "protoc": {
     "options": ["-I=${workspaceRoot}/proto"]
   },
   "gopls": {
-    "directoryFilters": [
-      "-node_modules",
-      "-bazel-bin",
-      "-bazel-mintter",
-      "-bazel-out",
-      "-bazel-testlogs",
-      "-out",
-      "-.git"
-    ]
+    "build.directoryFilters": ["-", "+backend", "+third_party", "+api/go"],
+    "formatting.local": "mintter/"
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "[go]": {
+    "editor.tabSize": 4
+  },
+  "[starlark]": {
+    "editor.tabSize": 4
   }
 }

@@ -1,45 +1,61 @@
 package testutil
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
-	"runtime"
 	"testing"
 
-	"mintter/backend/identity"
+	"mintter/backend/badger3ds"
 
+	"github.com/dgraph-io/badger/v3"
+	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/sync"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
+	"github.com/ipfs/go-log/v2"
+	"github.com/multiformats/go-multihash"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 )
 
-// MakeProfile from available test data.
-func MakeProfile(t *testing.T, name string) identity.Profile {
+// MakeCID with specified data.
+func MakeCID(t *testing.T, data string) cid.Cid {
 	t.Helper()
+	return MakeCIDWithCodec(t, cid.Raw, data)
+}
 
-	_, file, _, _ := runtime.Caller(0)
-	dir := filepath.Dir(file)
-
-	data, err := ioutil.ReadFile(dir + "/testdata/profiles/" + name + ".json")
+// MakeCIDWithCodec makes CID with a given codec.
+func MakeCIDWithCodec(t *testing.T, codec uint64, data string) cid.Cid {
+	t.Helper()
+	mh, err := multihash.Sum([]byte(data), multihash.IDENTITY, -1)
 	require.NoError(t, err)
 
-	var p identity.Profile
-	require.NoError(t, json.Unmarshal(data, &p))
+	return cid.NewCidV1(codec, mh)
+}
 
-	return p
+// MakeBadgerV3 creates an in-memory instance of Badger v3.
+func MakeBadgerV3(t *testing.T) *badger.DB {
+	opts := badger3ds.DefaultOptions("")
+	opts.InMemory = true
+	log.SetLogLevel("badger", "ERROR")
+	ds, err := badger3ds.NewDatastore(opts)
+	require.NoError(t, err)
+
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, ds.Close())
+	})
+
+	return ds.DB
 }
 
 // MakeRepoPath for testing..
 func MakeRepoPath(t *testing.T) string {
 	t.Helper()
 
-	dir, err := ioutil.TempDir("", "mintter-repo")
+	dir, err := ioutil.TempDir("", "mintter-repo-*")
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
