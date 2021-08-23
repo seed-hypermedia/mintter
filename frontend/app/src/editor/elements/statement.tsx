@@ -113,6 +113,11 @@ export const createStatementPlugin = (): EditorPlugin => ({
           Transforms.wrapNodes(editor, group([]), {at: path})
           return
         }
+
+        if (isGroupContent(node.children[0])) {
+          Transforms.unwrapNodes(editor, {at: path})
+          return
+        }
       }
       normalizeNode(entry)
     }

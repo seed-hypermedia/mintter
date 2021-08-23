@@ -10,10 +10,16 @@ import type {EditorPlugin} from './types'
  */
 export const createTabPlugin = (): EditorPlugin => {
   let editor: Editor
-
   return {
     name: 'tab',
-    configureEditor: (e) => (editor = e),
+    configureEditor: (e) => {
+      editor = e
+      return e
+    },
+    /*
+     * @todo Fix the types for the event handlers
+     * @body We need to add that the event functions accepts an extra parameter which is the editor. I dunno how to do it with the TS wizardry that is there lol (plugin-utils, line 60)
+     */
     onKeyDown(e) {
       if (e.key === 'Tab' && editor.selection) {
         e.preventDefault()
@@ -46,19 +52,21 @@ function moveStatement(editor: Editor, up: boolean) {
     const newPath = previousPath.concat(subGroup ? [1, subGroup.children.length] : [1])
 
     // if the previous statement doesn't have a group of children we need to create it first
-    if (!subGroup) {
-      Transforms.wrapNodes(
-        editor,
-        {type: 'group', children: []},
-        {
-          at: statementPath,
-        },
-      )
-    }
+    Editor.withoutNormalizing(editor, () => {
+      if (!subGroup) {
+        Transforms.wrapNodes(
+          editor,
+          {type: 'group', children: []},
+          {
+            at: statementPath,
+          },
+        )
+      }
 
-    Transforms.moveNodes(editor, {
-      at: statementPath,
-      to: newPath,
+      Transforms.moveNodes(editor, {
+        at: statementPath,
+        to: newPath,
+      })
     })
   } else {
     const [_, parentGroupPath] = Editor.parent(editor, statementPath)
