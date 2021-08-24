@@ -39,7 +39,7 @@ func provideBootstrapPeers(cfg config.P2P) ipfsutil.Bootstrappers {
 
 // provideLibp2p assembles libp2p node ready to use. Listening must be started elsewhere.
 func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ds datastore.Batching, r *repo, boot ipfsutil.Bootstrappers) (*ipfsutil.Libp2p, error) {
-	m := newLibp2pCollector()
+	m := ipfsutil.NewLibp2pMetrics()
 
 	opts := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
