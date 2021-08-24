@@ -18,6 +18,9 @@ import {createBlockquotePlugin} from './elements/blockquote'
 import {createEmbedPlugin} from './elements/embed'
 import {createCodeBlockPlugin} from './elements/code-block'
 import {createTabPlugin} from './tab-plugin'
+import {isCollapsed} from './utils'
+import {Editor, Location, Node, Path, Range, Text} from 'slate'
+import {isContent, isStaticContent} from '@mintter/mttast'
 
 export const plugins: Array<EditorPlugin> = [
   createHoveringToolbarPlugin(),
@@ -53,7 +56,32 @@ export const plugins: Array<EditorPlugin> = [
   {
     name: 'normalize',
     configureEditor(editor) {
-      const {normalizeNode} = editor
+      const {normalizeNode, apply, insertText} = editor
+
+      editor.apply = (op) => {
+        console.log(op)
+        apply(op)
+      }
+
+      editor.insertText = (text) => {
+        const {selection} = editor
+        if (selection && isCollapsed(selection)) {
+          const parent = Editor.parent(editor, selection.anchor.path)
+          if (parent) {
+            const [parentNode, parentPath] = parent
+            if (isContent(parentNode) || isStaticContent(parentNode)) {
+              if (parentNode.children.length > 1) {
+                for (const [child, childPath] of Node.children(parent)) {
+                  if (Path.hasPrevious(childPath)) {
+                    // const prev = Node.
+                  }
+                }
+              }
+            }
+          }
+        }
+        insertText(text)
+      }
 
       editor.normalizeNode = (entry) => {
         const [node, path] = entry

@@ -7443,22 +7443,22 @@ slash@^3.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
 
-"slate-history@https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.61.4-mtt":
+"slate-history@https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.61.5-mtt":
   version "0.62.0"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.61.4-mtt#c426b11efe4411cb929bcf5fdd55babbe54b8d37"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.61.5-mtt#a047d14639864799d65e8e9c41ae0add61e4c842"
   dependencies:
     immer "^8.0.1"
     is-plain-object "^5.0.0"
 
-"slate-hyperscript@https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.61.4-mtt":
+"slate-hyperscript@https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.61.5-mtt":
   version "0.62.0"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.61.4-mtt#35e0864475fb7605b948dac595f1a6e5be975215"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.61.5-mtt#7dfd4ed0880f2f37f412fef8e3a2d81be16d7717"
   dependencies:
     is-plain-object "^5.0.0"
 
-"slate-react@https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.61.4-mtt":
+"slate-react@https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.61.5-mtt":
   version "0.65.2"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.61.4-mtt#80d6b61eb650ab1f47406ce741f16c7d49b0302d"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.61.5-mtt#13cb8e0bc46f3a77274791f25c22e15554cdcd14"
   dependencies:
     "@types/is-hotkey" "^0.1.1"
     "@types/lodash" "^4.14.149"
@@ -7468,9 +7468,9 @@ slash@^3.0.0:
     scroll-into-view-if-needed "^2.2.20"
     tiny-invariant "1.0.6"
 
-"slate@https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.61.4-mtt":
+"slate@https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.61.5-mtt":
   version "0.63.0"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.61.4-mtt#312803beab4ea6bd13f0911d26d60c6ed6ed12be"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.61.5-mtt#8641f13ae661a3f3947affbd6c1b85e5ed695f60"
   dependencies:
     "@types/esrever" "^0.2.0"
     esrever "^0.2.0"

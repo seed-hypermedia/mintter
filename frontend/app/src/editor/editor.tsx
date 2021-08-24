@@ -23,6 +23,7 @@ interface EditorProps {
   onChange: (value: Descendant[]) => void
   children?: unknown
   readOnly?: boolean
+  sidepanelSend: any
 }
 
 export function Editor({
@@ -31,7 +32,8 @@ export function Editor({
   children,
   readOnly = false,
   plugins = defaultPlugins,
-  mode = readOnly ? 'read-only' : 'default'
+  mode = readOnly ? 'read-only' : 'default',
+  sidepanelSend,
 }: EditorProps): JSX.Element {
   const editor = useMemo(() => buildEditorHook(plugins, mode), [plugins])
   const renderElement = useMemo(() => buildRenderElementHook(plugins, mode), [plugins])
@@ -39,8 +41,7 @@ export function Editor({
   const decorate = useMemo(() => buildDecorateHook(plugins, mode), [plugins])
 
   const eventHandlers = useMemo(
-    () =>
-      Object.fromEntries(getUsedEventHandlers(plugins).map((ev) => [ev, buildEventHandlerHook(plugins, ev, mode)])),
+    () => Object.fromEntries(getUsedEventHandlers(plugins).map((ev) => [ev, buildEventHandlerHook(plugins, ev, mode)])),
     [plugins],
   )
 

@@ -1,13 +1,22 @@
 import {Path, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
 import {Editor} from 'slate'
-import {isGroupContent, isHeading, isStatement} from '@mintter/mttast'
+import {isGroupContent, isHeading, isStatement, isText} from '@mintter/mttast'
+import type {Statement as StatementType} from '@mintter/mttast'
 import {isLastChild, getLastChild} from '../utils'
+import type {MTTEditor} from '../utils'
 import {styled} from '@mintter/ui/stitches.config'
 import {group} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
+import {Text} from '@mintter/ui/text'
 import {Marker} from '../marker'
 import {isFirstChild} from '@udecode/slate-plugins'
+import type {NodeEntry} from 'slate'
+import * as ContextMenu from '@radix-ui/react-context-menu'
+import {useParams} from 'react-router'
+import toast from 'react-hot-toast'
+import {send} from 'xstate'
+import {useSidepanel} from '../../components/sidepanel'
 
 export const ELEMENT_STATEMENT = 'statement'
 
@@ -18,7 +27,7 @@ export const Tools = styled('div', {
   display: 'flex',
   alignItems: 'center',
 })
-const Statement = styled('li', {
+const StatementStyled = styled('li', {
   marginTop: '$3',
   padding: 0,
   listStyle: 'none',
@@ -55,6 +64,30 @@ export const Dragger = styled('div', {
   },
 })
 
+const ContextMenuContentStyled = styled(ContextMenu.Content, {
+  minWidth: 130,
+  backgroundColor: 'white',
+  borderRadius: 6,
+  padding: 5,
+  boxShadow: '0px 5px 15px -5px hsla(206,22%,7%,.15)',
+})
+
+const StyledItem = styled(ContextMenu.Item, {
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'start',
+  gap: '$4',
+  paddingVertical: '$2',
+  paddingHorizontal: '$4',
+  cursor: 'pointer',
+  '&:focus': {
+    outline: 'none',
+    backgroundColor: '$primary-muted',
+    cursor: 'pointer',
+  },
+})
+
 export const createStatementPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATEMENT,
   renderElement({attributes, children, element}) {
@@ -65,18 +98,40 @@ export const createStatementPlugin = (): EditorPlugin => ({
     // useEffect(() => {
     //   console.log('parent new childs!', element, parent)
     // }, [parent.children.length])
-    if (element.type === ELEMENT_STATEMENT) {
+    if (isStatement(element)) {
+      const {docId} = useParams<{docId: string}>()
+      const {send} = useSidepanel()
+      async function onCopy() {
+        await copyTextToClipboard(`mtt://${docId}/${(element as StatementType).id}`)
+        toast.success('Statement Reference copied successfully')
+      }
+      function onStartDraft() {}
       return (
-        <Statement {...attributes}>
+        <StatementStyled {...attributes}>
           <Tools contentEditable={false}>
             <Dragger data-dragger>
               <Icon name="Grid6" size="2" color="muted" />
             </Dragger>
             <Marker element={element} />
           </Tools>
-
-          {children}
-        </Statement>
+          <ContextMenu.Root>
+            <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
+            <ContextMenuContentStyled alignOffset={-5}>
+              <StyledItem onSelect={onCopy}>
+                <Icon name="Copy" size="1" />
+                <Text size="2">Copy Statement Reference</Text>
+              </StyledItem>
+              <StyledItem onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: `${docId}/${element.id}`})}>
+                <Icon size="1" name="ArrowBottomRight" />
+                <Text size="2">Open in Sidepanel</Text>
+              </StyledItem>
+              <StyledItem onSelect={onStartDraft}>
+                <Icon size="1" name="AddCircle" />
+                <Text size="2">Start a Draft</Text>
+              </StyledItem>
+            </ContextMenuContentStyled>
+          </ContextMenu.Root>
+        </StatementStyled>
       )
     }
   },
@@ -86,6 +141,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
       if (isStatement(node)) {
+        if (removeEmptyStatement(editor, entry)) return
         // check if there's a group below, if so, move inside that group
         const parent = Editor.parent(editor, path)
 
@@ -125,3 +181,62 @@ export const createStatementPlugin = (): EditorPlugin => ({
     return editor
   },
 })
+
+export function removeEmptyStatement(editor: MTTEditor, entry: NodeEntry<StatementType>): boolean | undefined {
+  const [node, path] = entry
+  if (isStatement(node)) {
+    if (node.children.length == 1) {
+      const children = Editor.node(editor, path.concat(0))
+      if (!('type' in children[0])) {
+        Transforms.removeNodes(editor, {
+          at: path,
+        })
+        return true
+      }
+    }
+  }
+}
+
+function copyTextToClipboard(text: string) {
+  return new Promise((resolve, reject) => {
+    if (!navigator.clipboard) {
+      return fallbackCopyTextToClipboard(text)
+    }
+    return navigator.clipboard.writeText(text).then(
+      () => {
+        resolve(text)
+      },
+      (err) => {
+        console.error('Async: Could not copy text: ', err)
+        reject(err)
+      },
+    )
+  })
+}
+
+function fallbackCopyTextToClipboard(text: string) {
+  return new Promise((resolve, reject) => {
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+
+    // Avoid scrolling to bottom
+    textArea.style.top = '0'
+    textArea.style.left = '0'
+    textArea.style.position = 'fixed'
+    textArea.style.opacity = '0'
+
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
+
+    try {
+      document.execCommand('copy')
+    } catch (err) {
+      console.error('Fallback: Oops, unable to copy', err)
+      reject(err)
+    }
+
+    document.body.removeChild(textArea)
+    resolve(true)
+  })
+}
