@@ -49,7 +49,6 @@ interface EditorProps {
   onChange: (value: Descendant[]) => void
   children?: unknown
   readOnly?: boolean
-  sidepanelSend: any
 }
 
 export function Editor({
@@ -58,7 +57,6 @@ export function Editor({
   children,
   readOnly = false,
   mode = readOnly ? 'read-only' : 'default',
-  sidepanelSend,
 }: EditorProps): JSX.Element {
   return (
     <Box
@@ -68,7 +66,7 @@ export function Editor({
       }}
     >
       <Suspense fallback={'loading'}>
-        <AsyncEditor value={value} onChange={onChange} mode={mode}>
+        <AsyncEditor data-testid="editor" value={value} onChange={onChange} mode={mode}>
           {children}
         </AsyncEditor>
         <pre>{JSON.stringify(value, null, 2)}</pre>

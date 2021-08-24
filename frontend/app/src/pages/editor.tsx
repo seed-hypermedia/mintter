@@ -71,6 +71,7 @@ export default function EditorPage() {
             PUBLISH
           </Button>
           <Button
+            data-testid="sidepanel-button"
             size="1"
             color="muted"
             variant="outlined"
