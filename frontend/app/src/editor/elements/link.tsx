@@ -22,6 +22,7 @@ import {Button} from '@mintter/ui/button'
 import {getPreventDefaultHandler, unwrapNodes, upsertLinkAtSelection} from '@udecode/slate-plugins'
 import type {Range} from 'slate'
 import type {UseLastSelectionResult} from '../hovering-toolbar'
+import {MINTTER_LINK_PREFIX} from '../../constants'
 
 export const ELEMENT_LINK = 'link'
 
@@ -90,8 +91,12 @@ export const createLinkPlugin = (): EditorPlugin => ({
     editor.insertData = (data) => {
       const text = data.getData('text/plain')
 
-      if (text && isUrl(text)) {
-        wrapLink(editor, text)
+      if (text) {
+        if (isMintterLink(text)) {
+          wrapMintterLink(editor, text)
+        } else if (isUrl(text)) {
+          wrapLink(editor, text)
+        }
       } else {
         insertData(data)
       }
@@ -128,7 +133,7 @@ export function insertLink(
       const linkLeaf = Editor.leaf(editor, selection)
       if (linkLeaf) {
         const [, leafPath] = linkLeaf
-        Transforms.select(editor, selection)
+        Transforms.select(editor, leafPath)
       }
     }
   }
@@ -165,9 +170,9 @@ export function wrapLink(editor: MTTEditor, url: string, selection = editor.sele
     Transforms.insertNodes(editor, newLink, {at: selection})
   } else {
     Transforms.wrapNodes(editor, newLink, {split: true, at: selection})
-    Transforms.select(editor, selection)
-    Transforms.collapse(editor, {edge: 'end'})
   }
+  // Transforms.collapse(editor, {edge: 'end'})
+  Transforms.select(editor, selection)
 }
 
 export function isValidUrl(entry: string): boolean {
@@ -175,6 +180,15 @@ export function isValidUrl(entry: string): boolean {
     /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+|(?:www\.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w\-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[.!/\\\w]*))?)/,
   )
   return urlRegex.test(entry)
+}
+
+function isMintterLink(text: string) {
+  return text.includes(MINTTER_LINK_PREFIX)
+}
+
+function wrapMintterLink(editor: MTTEditor, text: string) {
+  console.log('add mintter link!!', text)
+  wrapLink(editor, text)
 }
 
 export interface ToolbarLinkProps extends UseLastSelectionResult {}
