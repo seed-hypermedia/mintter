@@ -29,3 +29,7 @@ backend/ui/rice-box.go-e
 
 # local backends
 _s*
+
+# Terraform
+.terraform
+
