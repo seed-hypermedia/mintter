@@ -1,3 +1,3 @@
-resource "digitalocean_project" "mintter" {
-  name = "tf-test"
+resource "digitalocean_project" "main" {
+  name = "Mintter"
 }
