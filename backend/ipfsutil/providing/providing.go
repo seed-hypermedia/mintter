@@ -81,7 +81,7 @@ func New(filename string, rt Routing, s Strategy) (*Provider, error) {
 	}
 
 	prov := &Provider{
-		ProvideTimeout:        1 * time.Minute,
+		ProvideTimeout:        90 * time.Second,
 		ReprovideTickInterval: 1 * time.Hour,
 		ProvideTTL:            6 * time.Hour,
 
