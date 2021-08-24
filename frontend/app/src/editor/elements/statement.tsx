@@ -32,6 +32,7 @@ const StatementStyled = styled('li', {
   padding: 0,
   listStyle: 'none',
   display: 'grid',
+  wordBreak: 'break-word',
   gridTemplateColumns: 'minmax($space$8, auto) 1fr',
   gridTemplateRows: 'min-content auto',
   gap: '0 $2',

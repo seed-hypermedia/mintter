@@ -1,11 +1,11 @@
 import {useEffect} from 'react'
 import {getDraft, Document, updateDraft} from '@mintter/client'
-import {useMachine} from '@xstate/react'
+import {useInterpret, useMachine} from '@xstate/react'
 import {assign, createMachine} from 'xstate'
-import type {ActionFunction} from 'xstate'
+import type {ActionFunction, Event} from 'xstate'
 import isEqual from 'lodash/isequal'
 import {QueryClient, useQueryClient} from 'react-query'
-import {createId, group, heading, paragraph, statement, staticParagraph, text} from '@mintter/mttast-builder'
+import {createId, group, heading, paragraph, statement, text} from '@mintter/mttast-builder'
 import {publishDraft} from 'frontend/client/src/drafts'
 
 export type DRAFT_FETCH_EVENT = {
@@ -50,7 +50,7 @@ interface DraftEditorMachineProps {
 const defaultContent = [group([statement({id: createId()}, [paragraph([text('')])])])]
 
 const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachineProps) =>
-  createMachine(
+  createMachine<DraftEditorMachineContext, DraftEditorMachineEvent>(
     {
       id: 'editor',
       initial: 'idle',
@@ -62,11 +62,6 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
       },
       states: {
         idle: {
-          on: {
-            FETCH: {
-              target: 'fetching',
-            },
-          },
           initial: 'noError',
           states: {
             noError: {
@@ -76,11 +71,14 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
               on: {
                 FETCH: {
                   target: '#fetching',
-                  actions: assign({
-                    retries: (context, event) => context.retries + 1,
-                  }),
+                  actions: ['incrementRetries'],
                 },
               },
+            },
+          },
+          on: {
+            FETCH: {
+              target: 'fetching',
             },
           },
         },
@@ -185,14 +183,14 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
     {
       guards: {
         isValueDirty: (context) => {
-          const isContentNotEqual = !isEqual(context.localDraft.content, context.prevDraft.content)
-          const isTitleNotEqual = !isEqual(context.localDraft.title, context.prevDraft.title)
-          const isSubtitleNotEqual = !isEqual(context.localDraft.subtitle, context.prevDraft.subtitle)
+          const isContentNotEqual = !isEqual(context.localDraft?.content, context.prevDraft?.content)
+          const isTitleNotEqual = !isEqual(context.localDraft?.title, context.prevDraft?.title)
+          const isSubtitleNotEqual = !isEqual(context.localDraft?.subtitle, context.prevDraft?.subtitle)
           return isContentNotEqual || isTitleNotEqual || isSubtitleNotEqual
         },
       },
       services: {
-        fetchData: (context, event) => () => {
+        fetchData: (_, event: DraftEditorMachineEvent) => () => {
           return client.fetchQuery(['Draft', event.documentId], async ({queryKey}) => {
             const [_key, draftId] = queryKey
             return await getDraft(draftId)
@@ -201,13 +199,13 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
         saveDraft: (context, event) => () => {
           const newDraft: Document = {
             ...context.localDraft,
-            content: JSON.stringify(context.localDraft.content),
+            content: JSON.stringify(context.localDraft?.content),
           }
           return updateDraft(newDraft)
         },
         publishDraft: (context) => () => {
           console.log('PUBLISHING', context)
-          return publishDraft(context.localDraft.id)
+          return publishDraft(context.localDraft?.id)
         },
       },
       actions: {
@@ -223,7 +221,6 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
           },
         }),
         assignDataToContext: assign((context, event) => {
-          console.log(event)
           // if (event.type !== 'RECEIVE_DATA') return {}
           if (event.type == 'done.invoke.fetchData') {
             const value = {
@@ -248,13 +245,16 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
           }
         }),
         clearErrorMessage: assign({
-          errorMessage: undefined,
+          errorMessage: '',
         }),
         assignErrorToContext: assign((context, event) => {
           console.log('assignErrorToContext', {context, event})
           return {
             errorMessage: event.data?.message || 'An unknown error occurred',
           }
+        }),
+        incrementRetries: assign<DraftEditorMachineContext, DraftEditorMachineEvent>({
+          retries: (context) => context.retries + 1,
         }),
         afterPublish,
         afterSave,
@@ -264,6 +264,7 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
 
 export function useEditorDraft({documentId, ...afterActions}) {
   const client = useQueryClient()
+
   const [state, send] = useMachine(draftEditorMachine({...afterActions, client}), {devTools: true})
   // TODO: refactor machint to use queryClient in the services
   useEffect(() => {
