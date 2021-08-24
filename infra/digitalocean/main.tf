@@ -7,7 +7,7 @@ resource "digitalocean_project" "main" {
 resource "digitalocean_droplet" "ethosfera" {
   name               = "example"
   size               = "s-1vcpu-2gb"
-  image              = "centos-7-x64"
+  image              = "72067660"
   region             = "fra1"
   backups            = false
   monitoring         = true
