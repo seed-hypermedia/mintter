@@ -1,14 +1,14 @@
 terraform {
   required_providers {
     digitalocean = {
-      source = "digitalocean/digitalocean"
+      source  = "digitalocean/digitalocean"
       version = "2.11.1"
     }
   }
 }
 
 variable "do_token" {
-  type = string
+  type      = string
   sensitive = true
 }
 

@@ -30,5 +30,9 @@
   },
   "[starlark]": {
     "editor.tabSize": 4
+  },
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSave": true
   }
 }
