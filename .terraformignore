@@ -1,0 +1,5 @@
+backend
+frontend
+docs
+./**
+!infra/**
