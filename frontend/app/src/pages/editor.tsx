@@ -24,6 +24,8 @@ export default function EditorPage() {
     },
   })
 
+  console.log('🚀 ~ file: editor.tsx ~ line 17 ~ EditorPage ~ state, send', state)
+
   const {context} = state
 
   const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
