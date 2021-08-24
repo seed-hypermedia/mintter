@@ -7,6 +7,7 @@ export type ListPageProps = {
   useDataHook: () => any
 }
 export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
+  console.log('🚀 ~ file: list-page.tsx ~ line 10 ~ ListPage ~ useDataHook', useDataHook)
   const {status, error, data = []} = useDataHook()
 
   if (status === 'loading') {

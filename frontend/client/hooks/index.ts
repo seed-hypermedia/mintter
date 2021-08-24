@@ -1,7 +1,7 @@
 import {useQuery, useQueryClient} from 'react-query'
 import type {UseQueryResult} from 'react-query'
 import {useMemo} from 'react'
-import type {Account, Info, Document, Publication,PeerInfo} from '../src'
+import type {Account, Info, Document, Publication, PeerInfo} from '../src'
 import {
   getAccount,
   getInfo,

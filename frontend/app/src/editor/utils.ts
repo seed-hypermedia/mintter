@@ -1,10 +1,11 @@
-import {isGroupContent} from '@mintter/mttast'
+import {isFlowContent, isGroupContent} from '@mintter/mttast'
 import type {GroupingContent} from '@mintter/mttast'
 import {Range, Editor, Path, Transforms} from 'slate'
 import type {BaseEditor, Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
 import type {ReactEditor} from 'slate-react'
+import type {HistoryEditor} from 'slate-history'
 
-export type MTTEditor = BaseEditor & ReactEditor
+export type MTTEditor = BaseEditor & ReactEditor & HistoryEditor
 
 export const isCollapsed = (range: Range): boolean => !!range && Range.isCollapsed(range)
 
@@ -106,27 +107,4 @@ export function isLastChild(parentEntry: NodeEntry<Ancestor>, childPath: Path): 
 
 export function isFirstChild(path: Path): boolean {
   return path[path.length - 1] == 0
-}
-
-/**
- *
- * @param editor MTTEditor
- * @param entry NodeEntry<GroupingContent>
- * @returns boolean | undefined
- *
- * when deleting statements we sometimes endup with empty groups. this methos removes them.
- */
-export function removeEmptyGroup(editor: MTTEditor, entry: NodeEntry<GroupingContent>): boolean | undefined {
-  const [node, path] = entry
-  if (isGroupContent(node)) {
-    if (node.children.length == 1) {
-      const children = Editor.node(editor, path.concat(0))
-      if (!children[0].type) {
-        Transforms.removeNodes(editor, {
-          at: path,
-        })
-        return true
-      }
-    }
-  }
 }
