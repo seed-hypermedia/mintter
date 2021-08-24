@@ -42,15 +42,15 @@ export type DraftEditorMachineContext = {
 }
 
 interface DraftEditorMachineProps {
-  afterSave: ActionFunction
-  afterPublish: ActionFunction
+  afterSave: ActionFunction<DraftEditorMachineContext, DraftEditorMachineEvent>
+  afterPublish: ActionFunction<DraftEditorMachineContext, DraftEditorMachineEvent>
   client: QueryClient
 }
 
 const defaultContent = [group([statement({id: createId()}, [paragraph([text('')])])])]
 
 const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachineProps) =>
-  createMachine<DraftEditorMachineContext, DraftEditorMachineEvent>(
+  createMachine(
     {
       id: 'editor',
       initial: 'idle',

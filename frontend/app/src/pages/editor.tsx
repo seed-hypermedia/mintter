@@ -15,10 +15,10 @@ export default function EditorPage() {
   const history = useHistory()
   const [state, send] = useEditorDraft({
     documentId: docId,
-    afterSave: (context, event) => {
+    afterSave: () => {
       toast.success('Draft saved!', {position: 'top-center', duration: 4000})
     },
-    afterPublish: (context: DraftEditorMachineContext, event) => {
+    afterPublish: (context: DraftEditorMachineContext) => {
       toast.success('Draft Published!', {position: 'top-center', duration: 4000})
       history.push(`/p/${context.localDraft?.id}`)
     },
@@ -26,11 +26,9 @@ export default function EditorPage() {
 
   const {context} = state
 
-  const [sidepanelState, sidepanelSend] = useSidepanel()
+  const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
 
-  useEnableSidepanel(sidepanelSend)
-
-  const isSidepanelOpen = useMemo<boolean>(() => sidepanelState.matches('enabled.opened'), [sidepanelState.value])
+  useEnableSidepanel()
 
   if (state.matches('fetching')) {
     return <AppSpinner />
@@ -89,7 +87,7 @@ export default function EditorPage() {
             data-testid="editor_title"
             name="title"
             placeholder="Document title"
-            value={context.localDraft.title}
+            value={context?.localDraft?.title}
             onChange={(event) =>
               send({
                 type: 'UPDATE',
@@ -118,7 +116,7 @@ export default function EditorPage() {
             data-testid="editor_subtitle"
             name="subtitle"
             placeholder="about this publication..."
-            value={context.localDraft.subtitle}
+            value={context?.localDraft?.subtitle}
             onChange={(event) =>
               send({
                 type: 'UPDATE',
@@ -140,7 +138,7 @@ export default function EditorPage() {
           />
           <Separator />
           <Editor
-            value={context.localDraft.content}
+            value={context?.localDraft?.content}
             onChange={(content) =>
               send({
                 type: 'UPDATE',

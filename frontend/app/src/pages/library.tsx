@@ -21,7 +21,6 @@ const hookSelector = {
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
   const {path, url} = useRouteMatch()
-  const {tab} = useParams()
   const history = useHistory()
   // const { connectToPeer } = useConnectionCreate();
 
@@ -57,11 +56,13 @@ export default function Library() {
         const peer: string | null = window.prompt(`enter a peer address`)
         if (peer) {
           try {
-            await toast.promise(connect(peer.split(',')), {
-              loading: 'Connecting to peer...',
-              success: 'Connection Succeeded!',
-              error: 'Connection Error',
-            })
+            const connAttempt = await connect(peer.split(','))
+            console.log(connAttempt)
+            // await toast.promise(connect(peer.split(',')), {
+            //   loading: 'Connecting to peer...',
+            //   success: 'Connection Succeeded!',
+            //   error: 'Connection Error',
+            // })
           } catch (err) {
             console.error(err.message)
           }
@@ -135,6 +136,7 @@ export default function Library() {
           <Route
             path={`${path}/:tab`}
             render={({match}) => {
+              console.log('match.params.tab', match.params.tab)
               return <ListPage onCreateDraft={onCreateDraft} useDataHook={hookSelector[match.params.tab]} />
             }}
           />

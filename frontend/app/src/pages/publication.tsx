@@ -12,15 +12,13 @@ import {Editor} from '../editor'
 
 export default function Publication(): JSX.Element {
   const {docId} = useParams<{docId: string}>()
-  const history = useHistory()
-  const [sidepanelState, sidepanelSend] = useSidepanel()
+  const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
   const {isLoading, isError, data, error} = usePublication(docId)
-  useEnableSidepanel(sidepanelSend)
+
+  useEnableSidepanel()
   // request document
   // const vvalue = useStoreEditorValue()
   // console.log('🚀 ~ file: publication.tsx ~ line 89 ~ useEditorPublication ~ vvalue', vvalue)
-
-  const isSidepanelOpen = useMemo<boolean>(() => sidepanelState.matches('enabled.opened'), [sidepanelState.value])
 
   if (isLoading) {
     return <AppSpinner />

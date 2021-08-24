@@ -1,6 +1,6 @@
 import {styled} from '@mintter/ui/stitches.config'
 import type {EditorPlugin} from '../types'
-import {removeEmptyGroup} from '../utils'
+import {removeEmptyGroup} from './group'
 import {Group} from './group'
 
 export const ELEMENT_ORDERED_LIST = 'orderedList'

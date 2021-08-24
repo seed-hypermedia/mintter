@@ -21,7 +21,7 @@ export const createHoveringToolbarPlugin = (): EditorPlugin => {
     onBeforeInput(e) {
       const event = e as unknown as InputEvent
       event.preventDefault()
-
+      console.log('onBeforeInput: ', event, editor)
       switch (event.inputType) {
         case 'formatBold':
           event.preventDefault()
