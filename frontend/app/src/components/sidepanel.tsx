@@ -4,31 +4,22 @@ import {useActor, useInterpret, useSelector} from '@xstate/react'
 
 import {createMachine, Interpreter, State, assign} from 'xstate'
 import {usePublication} from '@mintter/client/hooks'
-/**
- * @todo remove usage of type Block
- * @body Block doesn't exist anymore right? We should remove it's usage and make sure everything still works @horacioh
- * */
-import type {Block} from 'frontend/client/.generated/documents/v1alpha/documents'
-
-type SidepanelAddItemEvent = {
-  type: 'SIDEPANEL_ADD_ITEM'
-  payload: string
-}
-
-type SidepanelRemoveItemEvent = {
-  type: 'SIDEPANEL_REMOVE_ITEM'
-  payload: string
-}
 
 export type SidepanelEventsType =
+  | {
+      type: 'SIDEPANEL_ADD_ITEM'
+      payload: string
+    }
+  | {
+      type: 'SIDEPANEL_REMOVE_ITEM'
+      payload: string
+    }
   | {
       type: 'SIDEPANEL_ENABLE'
     }
   | {
       type: 'SIDEPANEL_DISABLE'
     }
-  | SidepanelAddItemEvent
-  | SidepanelRemoveItemEvent
   | {
       type: 'SIDEPANEL_OPEN'
     }
@@ -44,64 +35,77 @@ export type SidepanelContextType = {
  * @todo add types to services and actions
  * @body Issue Body
  */
-export const sidepanelMachine = createMachine({
-  id: 'sidepanel',
-  initial: 'disabled',
-  context: {
-    items: new Set<string>(),
-  },
-  states: {
-    disabled: {
-      on: {
-        SIDEPANEL_ENABLE: {
-          target: 'enabled.hist',
+export const sidepanelMachine = createMachine(
+  {
+    id: 'sidepanel',
+    initial: 'disabled',
+    context: {
+      items: new Set<string>(),
+    },
+    states: {
+      disabled: {
+        on: {
+          SIDEPANEL_ENABLE: {
+            target: 'enabled.hist',
+          },
+        },
+      },
+      enabled: {
+        id: 'enabled',
+        on: {
+          SIDEPANEL_DISABLE: {
+            target: 'disabled',
+          },
+          SIDEPANEL_ADD_ITEM: {
+            actions: 'sidepanelAddItem',
+            target: '.opened',
+          },
+          SIDEPANEL_REMOVE_ITEM: {
+            actions: 'sidepanelRemoveItem',
+          },
+        },
+        initial: 'closed',
+        states: {
+          closed: {
+            on: {
+              SIDEPANEL_OPEN: {
+                target: 'opened',
+              },
+              SIDEPANEL_TOGGLE: {
+                target: 'opened',
+              },
+            },
+          },
+          opened: {
+            on: {
+              SIDEPANEL_TOGGLE: {
+                target: 'closed',
+              },
+            },
+          },
+          hist: {
+            type: 'history',
+            history: 'shallow',
+          },
         },
       },
     },
-    enabled: {
-      id: 'enabled',
-      on: {
-        SIDEPANEL_DISABLE: {
-          target: 'disabled',
-        },
-        SIDEPANEL_ADD_ITEM: {
-          actions: 'sidepanelAddItem',
-          target: '.opened',
-        },
-        SIDEPANEL_REMOVE_ITEM: {
-          actions: 'sidepanelRemoveItem',
-        },
+  },
+  {
+    actions: {
+      sidepanelAddItem: (context: SidepanelContextType, event: SidepanelEventsType) => {
+        if ('payload' in event) {
+          context.items.add(event.payload)
+        }
       },
-      initial: 'closed',
-      states: {
-        closed: {
-          on: {
-            SIDEPANEL_OPEN: {
-              target: 'opened',
-            },
-            SIDEPANEL_TOGGLE: {
-              target: 'opened',
-            },
-          },
-        },
-        opened: {
-          on: {
-            SIDEPANEL_CLOSE: {
-              target: 'closed',
-            },
-            SIDEPANEL_TOGGLE: {
-              target: 'closed',
-            },
-          },
-        },
-        hist: {
-          type: 'history',
-          history: 'shallow',
-        },
+      sidepanelRemoveItem: (context: SidepanelContextType, event: SidepanelEventsType) => {
+        if ('payload' in event) {
+          context.items.delete(event.payload)
+        }
       },
     },
   },
-})
+)
 
 export interface SidepanelGlobalContextType {
   service?: Interpreter<SidepanelContextType, any, SidepanelEventsType>
@@ -109,19 +113,13 @@ export interface SidepanelGlobalContextType {
 
 export const SidepanelContext = createContext<SidepanelGlobalContextType>({})
 
-export function SidepanelProvider({children}) {
-  const service = useInterpret(sidepanelMachine, {
-    actions: {
-      sidepanelAddItem: assign((context: SidepanelContextType, event: SidepanelEventsType) => {
-        context.items.add(event.payload)
-        return context
-      }),
-      sidepanelRemoveItem: assign((context: SidepanelContextType, event: SidepanelRemoveItemEvent) => {
-        context.items.delete(event.payload)
-        return context
-      }),
-    },
-  })
+export type SidepanelProviderProps = {
+  children: React.ReactElement
+  machine?: typeof sidepanelMachine
+}
+
+export function SidepanelProvider({children, machine = sidepanelMachine}: SidepanelProviderProps) {
+  const service = useInterpret(machine)
 
   return <SidepanelContext.Provider value={{service}}>{children}</SidepanelContext.Provider>
 }
