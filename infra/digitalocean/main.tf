@@ -5,7 +5,7 @@ resource "digitalocean_project" "main" {
 }
 
 resource "digitalocean_droplet" "ethosfera" {
-  name               = "example"
+  name               = "ethosfera"
   size               = "s-1vcpu-2gb"
   image              = "72067660"
   region             = "fra1"
