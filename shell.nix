@@ -13,6 +13,7 @@ let
             pkgs.protobuf3_11
             pkgs.go-protobuf
             pkgs.go
+            pkgs.terraform
             pkgs.bazelisk
             node
             yarn
