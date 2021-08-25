@@ -1,21 +1,18 @@
 import type {Embed as EmbedType, Statement} from '@mintter/mttast'
-import {styled} from '@mintter/ui/stitches.config'
-import {paragraph, statement, text} from '@mintter/mttast-builder'
-import {nanoid} from 'nanoid'
-import {useQuery} from 'react-query'
-import {ReactEditor, useSlateStatic} from 'slate-react'
 import type {EditorPlugin} from '../types'
 import type {MTTEditor} from '../utils'
+import {styled} from '@mintter/ui/stitches.config'
+import {createId, paragraph, statement, text} from '@mintter/mttast-builder'
+import {useQuery} from 'react-query'
+import {ReactEditor, useSlateStatic} from 'slate-react'
 import {useEffect} from 'react'
 import {ELEMENT_STATEMENT} from './statement'
-import {Editor, Path, Transforms} from 'slate'
+import {Editor, Transforms} from 'slate'
 import {useRef} from 'react'
 
 export const ELEMENT_EMBED = 'embed'
 
 export const Embed = styled('q', {
-  // paddingVertical: '$1',
-  // paddingHorizontal: '$3',
   borderRadius: '$1',
   transition: 'all ease-in-out 0.1s',
   '&:hover': {
@@ -66,7 +63,7 @@ function useEmbed(editor: MTTEditor, element: EmbedType) {
   const rendered = useRef(false)
   const embedQuery = useQuery<Statement>(['Embed', element.url], async () => {
     return await new Promise((resolve, reject) => {
-      const result = statement({id: nanoid()}, [paragraph([text('hello from embed')])])
+      const result = statement({id: createId()}, [paragraph([text('hello from embed')])])
 
       setTimeout(() => {
         resolve(result)
