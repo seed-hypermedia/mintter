@@ -55,18 +55,18 @@ export function buildDecorateHook(plugins: EditorPlugin[], mode: string): ((entr
   return (entry: NodeEntry) => hooks.flatMap((decorate) => decorate(entry) || [])
 }
 
-export function buildEventHandlerHook(
-  plugins: EditorPlugin[],
-  event: keyof EditorEventHandlers,
-  mode: string,
-): ((props: unknown) => void) | undefined {
-  const hooks = plugins.filter(byMode(mode)).flatMap((p) => p[event] || [])
+export function buildEventHandlerHooks(plugins: EditorPlugin[], mode: string): EditorEventHandlers {
+  const handlers: EditorEventHandlers = {}
+  const events = plugins.filter(byMode(mode)).flatMap((p) => Object.keys(p).filter((k) => k.startsWith('on'))) as Array<
+    keyof EditorEventHandlers
+  >
 
-  if (!hooks.length) return undefined
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (ev: any) => hooks.forEach((h) => h(ev))
-}
+  for (const event of events) {
+    const hooks = plugins.filter(byMode(mode)).flatMap((p) => p[event] || [])
 
-export function getUsedEventHandlers(plugins: EditorPlugin[]): Array<keyof EditorEventHandlers> {
-  return plugins.flatMap((p) => Object.keys(p).filter((k) => k.startsWith('on'))) as Array<keyof EditorEventHandlers>
+    // @ts-expect-error the event handler expects `this` to be type never which we cannot pass
+    handlers[event] = (ev) => hooks.forEach((h) => h(ev))
+  }
+
+  return handlers
 }
