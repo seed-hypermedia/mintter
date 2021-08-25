@@ -62,7 +62,7 @@ export const createParagraphPlugin = (): EditorPlugin => ({
            * @todo if the selection is in the beginning, then wrap the first paragraph with a new statement
            * @body Issue Body
            */
-          Transforms.wrapNodes(editor, statement({id: createId()}, []), {
+          Transforms.wrapNodes(editor, statement({id: createId()}), {
             at: Editor.isEmpty(editor, prevNode) ? Path.previous(path) : path,
           })
           return
