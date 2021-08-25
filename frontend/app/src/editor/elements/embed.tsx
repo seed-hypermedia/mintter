@@ -1,17 +1,13 @@
 import {isEmbed} from '@mintter/mttast'
 import {styled} from '@mintter/ui/stitches.config'
-import {paragraph, statement, text} from '@mintter/mttast-builder'
-import {nanoid} from 'nanoid'
 import type {EditorPlugin} from '../types'
-import {lazy, Suspense, useCallback, useMemo} from 'react'
+import {lazy, Suspense, useCallback} from 'react'
 import {Node} from 'slate'
 import {getDraft} from 'frontend/client/src/drafts'
 
 export const ELEMENT_EMBED = 'embed'
 
 export const Embed = styled('q', {
-  // paddingVertical: '$1',
-  // paddingHorizontal: '$3',
   borderRadius: '$1',
   transition: 'all ease-in-out 0.1s',
   '&:hover': {

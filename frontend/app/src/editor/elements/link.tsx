@@ -1,15 +1,15 @@
+import type {EditorPlugin} from '../types'
+import type {Link as LinkType} from '@mintter/mttast'
+import type {MTTEditor} from '../utils'
+import type {UseLastSelectionResult} from '../hovering-toolbar'
 import {useEffect, useState} from 'react'
 import {isLink} from '@mintter/mttast'
-import type {Link as LinkType} from '@mintter/mttast'
 import isUrl from 'is-url'
 import {styled} from '@mintter/ui/stitches.config'
 import {link, text} from '@mintter/mttast-builder'
 import {Editor, Element as SlateElement, Transforms} from 'slate'
-import type {BaseEditor} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
-import type {EditorPlugin} from '../types'
 import {isCollapsed} from '../utils'
-import type {MTTEditor} from '../utils'
 import {FormEvent, forwardRef} from 'react'
 import {Tooltip} from '../../components/tooltip'
 import {Box} from '@mintter/ui/box'
@@ -19,9 +19,7 @@ import {TextField} from '@mintter/ui/text-field'
 import * as Popover from '@radix-ui/react-popover'
 import {Slot} from '@radix-ui/react-slot'
 import {Button} from '@mintter/ui/button'
-import {getPreventDefaultHandler, unwrapNodes, upsertLinkAtSelection} from '@udecode/slate-plugins'
-import type {Range} from 'slate'
-import type {UseLastSelectionResult} from '../hovering-toolbar'
+import {getPreventDefaultHandler} from '@udecode/slate-plugins'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 
 export const ELEMENT_LINK = 'link'
@@ -74,13 +72,15 @@ export const createLinkPlugin = (): EditorPlugin => ({
      *   - write a link text
      *   - by selecting and interacting with the toolbar (not in here)
      */
-    const {isInline, insertText, insertData, normalizeNode} = editor
+    const {isInline, insertText, insertData} = editor
 
     editor.isInline = (element) => {
       return isLink(element) ? true : isInline(element)
     }
 
     editor.insertText = (text: string) => {
+      console.log('🚀 ~ insertText', text, editor)
+
       if (text && isUrl(text)) {
         wrapLink(editor, text)
       } else {
@@ -88,21 +88,27 @@ export const createLinkPlugin = (): EditorPlugin => ({
       }
     }
 
-    editor.insertData = (data) => {
+    editor.insertData = (data: DataTransfer) => {
       const text = data.getData('text/plain')
+      console.log('🚀 ~ insertData', text, editor)
 
-      if (text) {
-        if (isMintterLink(text)) {
-          wrapMintterLink(editor, text)
-        } else if (isUrl(text)) {
-          wrapLink(editor, text)
-        }
+      if (text && isUrl(text)) {
+        wrapLink(editor, text)
       } else {
         insertData(data)
       }
-    }
 
-    editor.normalizeNode = (entry) => {}
+      // if (text) {
+      //   if (isMintterLink(text)) {
+      //     wrapMintterLink(editor, text)
+      //   } else if (isUrl(text)) {
+      //     console.log('insertData Link!', editor)
+      //     wrapLink(editor, text)
+      //   } else {
+      //     insertData(data)
+      //   }
+      // }
+    }
 
     return editor
   },
@@ -118,31 +124,26 @@ export function insertLink(
   editor: MTTEditor,
   {url, selection = editor.selection, wrap = false}: InsertLinkOptions,
 ): void {
-  if (!selection) return
+  console.log('insertLink: ', url, selection, wrap)
 
-  if (isCollapsed(selection)) {
-    if (!wrap) {
-      /*
-       * @todo explain why we need to do this first here
-       */
-      Transforms.insertNodes(editor, link({url}, [text(url)]), {
-        at: selection,
-      })
-      return
-    } else {
-      const linkLeaf = Editor.leaf(editor, selection)
-      if (linkLeaf) {
-        const [, leafPath] = linkLeaf
-        Transforms.select(editor, leafPath)
-      }
-    }
+  /*
+   * @todo Refactor wrapLink
+   * @body this code below is the same as the `wrapLink` implementation just that here we are passing the current selection. I tried to refactor it but got errors.
+   *
+   * Either you can paste a link at it will wrap it in a link component or create a link from the link modal. both does not wotk if you use wrapLink here.
+   */
+  if (isLinkActive(editor)) {
+    unwrapLink(editor)
   }
 
-  unwrapNodes(editor, {at: selection, match: {type: ELEMENT_LINK}})
+  const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])
 
-  wrapLink(editor, url, selection)
-
-  Transforms.collapse(editor, {edge: 'end'})
+  if (isCollapsed(selection!)) {
+    Transforms.insertNodes(editor, newLink, {at: selection!})
+  } else {
+    Transforms.wrapNodes(editor, newLink, {at: selection!, split: true})
+    Transforms.collapse(editor, {edge: 'end'})
+  }
 }
 
 export function isLinkActive(editor: MTTEditor): boolean {
@@ -164,15 +165,16 @@ export function wrapLink(editor: MTTEditor, url: string, selection = editor.sele
     unwrapLink(editor)
   }
 
-  const newLink: LinkType = link({url}, isCollapsed(selection) ? [text(url)] : [])
+  const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])
 
-  if (isCollapsed(selection)) {
-    Transforms.insertNodes(editor, newLink, {at: selection})
+  console.log(newLink)
+
+  if (isCollapsed(selection!)) {
+    Transforms.insertNodes(editor, newLink)
   } else {
-    Transforms.wrapNodes(editor, newLink, {split: true, at: selection})
+    Transforms.wrapNodes(editor, newLink, {split: true})
+    Transforms.collapse(editor, {edge: 'end'})
   }
-  // Transforms.collapse(editor, {edge: 'end'})
-  Transforms.select(editor, selection)
 }
 
 export function isValidUrl(entry: string): boolean {
@@ -235,8 +237,12 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!editor) return
-    if (link && isValidUrl(link)) {
-      insertLink(editor, {url: link, selection: lastSelection, wrap: true})
+    if (link && isUrl(link)) {
+      ReactEditor.focus(editor)
+      setTimeout(() => {
+        Transforms.setSelection(editor, lastSelection)
+        insertLink(editor, {url: link, selection: lastSelection, wrap: true})
+      }, 0)
     }
 
     close()

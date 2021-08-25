@@ -104,7 +104,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
       const {send} = useSidepanel()
       async function onCopy() {
         await copyTextToClipboard(`mtt://${docId}/${(element as StatementType).id}`)
-        toast.success('Statement Reference copied successfully')
+        toast.success('Statement Reference copied successfully', {position: 'top-center'})
       }
       function onStartDraft() {}
       return (
