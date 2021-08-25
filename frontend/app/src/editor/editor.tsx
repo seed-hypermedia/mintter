@@ -35,7 +35,13 @@ const AsyncEditor = lazy(async () => {
       return (
         <Slate editor={editor} value={value} onChange={onChange}>
           <HoveringToolbar />
-          <Editable renderElement={renderElement} renderLeaf={renderLeaf} decorate={decorate} {...eventHandlers} />
+          <Editable
+            data-testid="editor"
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+            decorate={decorate}
+            {...eventHandlers}
+          />
           {children}
         </Slate>
       )
@@ -66,7 +72,7 @@ export function Editor({
       }}
     >
       <Suspense fallback={'loading'}>
-        <AsyncEditor data-testid="editor" value={value} onChange={onChange} mode={mode}>
+        <AsyncEditor value={value} onChange={onChange} mode={mode}>
           {children}
         </AsyncEditor>
         <pre>{JSON.stringify(value, null, 2)}</pre>

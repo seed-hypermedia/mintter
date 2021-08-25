@@ -90,19 +90,18 @@ export const createLinkPlugin = (): EditorPlugin => ({
 
     editor.insertData = (data) => {
       const text = data.getData('text/plain')
+      console.log('🚀 ~ file: link.tsx ~ line 93 ~ configureEditor ~ text', text)
 
       if (text) {
         if (isMintterLink(text)) {
           wrapMintterLink(editor, text)
         } else if (isUrl(text)) {
           wrapLink(editor, text)
+        } else {
+          insertData(data)
         }
-      } else {
-        insertData(data)
       }
     }
-
-    editor.normalizeNode = (entry) => {}
 
     return editor
   },
