@@ -18,6 +18,7 @@ import {createBlockquotePlugin} from './elements/blockquote'
 import {createEmbedPlugin} from './elements/embed'
 import {createCodeBlockPlugin} from './elements/code-block'
 import {createTabPlugin} from './tab-plugin'
+import {createMDHighlightPlugin} from './md-highlight'
 
 export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
   createHoveringToolbarPlugin(),
@@ -50,6 +51,7 @@ export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
    */
 
   createTabPlugin(),
+  createMDHighlightPlugin(),
   {
     name: 'normalize',
     configureEditor(editor) {
