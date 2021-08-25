@@ -5,9 +5,7 @@ import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {createMachine, Interpreter, State, assign} from 'xstate'
 import {usePublication} from '@mintter/client/hooks'
 import {visit} from 'unist-util-visit'
-import {ELEMENT_STATEMENT} from '../editor/elements/statement'
-import {document} from 'frontend/mttast-builder/dist'
-import {isLink} from '@mintter/mttast'
+import {document} from '@mintter/mttast-builder'
 import {Node} from 'slate'
 
 export type SidepanelEventsType =
