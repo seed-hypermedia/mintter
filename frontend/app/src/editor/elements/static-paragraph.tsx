@@ -82,6 +82,7 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
             Transforms.wrapNodes(editor, statement({id}), {
               at: path,
             })
+            Transforms.setNodes(editor, {id}, {at: path})
           })
           return
         }
