@@ -1,0 +1,68 @@
+{
+	"name": "mintter",
+	"scopeName": "text.mintter",
+	"patterns": [
+    {
+      "include": "#bold"
+    },
+		{
+      "include": "#italic"
+    },
+		{
+			"include": "#raw"
+		}
+  ],
+	"repository": {
+		"bold": {
+      "begin": "(?x) (?<open>(\\*\\*(?=\\w)|(?<!\\w)\\*\\*|(?<!\\w)\\b__))(?=\\S) (?=\n  (\n    <[^>]*+>              # HTML tags\n    | (?<raw>`+)([^`]|(?!(?<!`)\\k<raw>(?!`))`)*+\\k<raw>\n                      # Raw\n    | \\\\[\\\\`*_{}\\[\\]()#.!+\\->]?+      # Escapes\n    | \\[\n    (\n        (?<square>          # Named group\n          [^\\[\\]\\\\]        # Match most chars\n          | \\\\.            # Escaped chars\n          | \\[ \\g<square>*+ \\]    # Nested brackets\n        )*+\n      \\]\n      (\n        (              # Reference Link\n          [ ]?          # Optional space\n          \\[[^\\]]*+\\]        # Ref name\n        )\n        | (              # Inline Link\n          \\(            # Opening paren\n            [ \\t]*+        # Optional whitespace\n            <?(.*?)>?      # URL\n            [ \\t]*+        # Optional whitespace\n            (          # Optional Title\n              (?<title>['\"])\n              (.*?)\n              \\k<title>\n            )?\n          \\)\n        )\n      )\n    )\n    | (?!(?<=\\S)\\k<open>).            # Everything besides\n                      # style closer\n  )++\n  (?<=\\S)(?=__\\b|\\*\\*)\\k<open>                # Close\n)\n",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.bold.markdown"
+        }
+      },
+      "end": "(?<=\\S)(\\1)",
+      "name": "markup.bold.markdown",
+      "patterns": [
+        {
+          "include": "#raw"
+        },
+        {
+          "include": "#bold"
+        },
+        {
+          "include": "#italic"
+        }
+      ]
+    },
+		"italic": {
+      "begin": "(?x) (?<open>(\\*(?=\\w)|(?<!\\w)\\*|(?<!\\w)\\b_))(?=\\S)                # Open\n  (?=\n    (\n      <[^>]*+>              # HTML tags\n      | (?<raw>`+)([^`]|(?!(?<!`)\\k<raw>(?!`))`)*+\\k<raw>\n                        # Raw\n      | \\\\[\\\\`*_{}\\[\\]()#.!+\\->]?+      # Escapes\n      | \\[\n      (\n          (?<square>          # Named group\n            [^\\[\\]\\\\]        # Match most chars\n            | \\\\.            # Escaped chars\n            | \\[ \\g<square>*+ \\]    # Nested brackets\n          )*+\n        \\]\n        (\n          (              # Reference Link\n            [ ]?          # Optional space\n            \\[[^\\]]*+\\]        # Ref name\n          )\n          | (              # Inline Link\n            \\(            # Opening paren\n              [ \\t]*+        # Optional whtiespace\n              <?(.*?)>?      # URL\n              [ \\t]*+        # Optional whtiespace\n              (          # Optional Title\n                (?<title>['\"])\n                (.*?)\n                \\k<title>\n              )?\n            \\)\n          )\n        )\n      )\n      | \\k<open>\\k<open>                # Must be bold closer\n      | (?!(?<=\\S)\\k<open>).            # Everything besides\n                        # style closer\n    )++\n    (?<=\\S)(?=_\\b|\\*)\\k<open>                # Close\n  )\n",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.italic.markdown"
+        }
+      },
+      "end": "(?<=\\S)(\\1)((?!\\1)|(?=\\1\\1))",
+      "name": "markup.italic.markdown",
+      "patterns": [
+        {
+          "include": "#raw"
+        },
+        {
+          "include": "#bold"
+        }
+      ]
+    },
+		"raw": {
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.raw.markdown"
+        },
+        "3": {
+          "name": "punctuation.definition.raw.markdown"
+        }
+      },
+      "match": "(`+)([^`]|(?!(?<!`)\\1(?!`))`)*+(\\1)",
+      "name": "markup.inline.raw.string.markdown"
+    }
+	}
+}

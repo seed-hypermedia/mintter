@@ -51,6 +51,7 @@
     "react-router-dom": "^5.2.0",
     "react-spinners": "^0.11.0",
     "reakit": "^1.3.8",
+    "shiki": "^0.9.7",
     "show-keys": "^1.1.1",
     "slate": "https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.61.5-mtt",
     "slate-history": "https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.61.5-mtt",
