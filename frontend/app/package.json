@@ -58,6 +58,7 @@
     "slate-hyperscript": "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.61.5-mtt",
     "slate-react": "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.61.5-mtt",
     "slugify": "^1.5.3",
+    "unist-util-visit": "^4.0.0",
     "use-dark-mode": "^2.3.1",
     "xstate": "^4.20.0"
   },
