@@ -18,7 +18,11 @@ export type EditorEventHandlers = {
   >]?: Parameters<typeof Editable>[0][Event]
 }
 
-export interface EditorPlugin extends EditorEventHandlers {
+interface BeforeInputHandler {
+  onDOMBeforeInput?: (event: InputEvent) => void
+}
+
+export interface EditorPlugin extends EditorEventHandlers, BeforeInputHandler {
   name: string
   mode?: string
   configureEditor?: (editor: Editor) => Editor | undefined | void
