@@ -9,9 +9,11 @@ import {AppSpinner} from '../components/app-spinner'
 import {useEnableSidepanel, useSidepanel, Sidepanel} from '../components/sidepanel'
 import {useEditorDraft, Editor} from '../editor'
 import type {DraftEditorMachineContext} from '../editor'
+import {useQueryClient} from 'react-query'
 
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
+  const client = useQueryClient()
   const history = useHistory()
   const [state, send] = useEditorDraft({
     documentId: docId,
@@ -22,9 +24,8 @@ export default function EditorPage() {
       toast.success('Draft Published!', {position: 'top-center', duration: 4000})
       history.push(`/p/${context.localDraft?.id}`)
     },
+    client,
   })
-
-  console.log('🚀 ~ file: editor.tsx ~ line 17 ~ EditorPage ~ state, send', state)
 
   const {context} = state
 
@@ -71,6 +72,7 @@ export default function EditorPage() {
             PUBLISH
           </Button>
           <Button
+            data-testid="sidepanel-button"
             size="1"
             color="muted"
             variant="outlined"
@@ -139,17 +141,19 @@ export default function EditorPage() {
             }}
           />
           <Separator />
-          <Editor
-            value={context?.localDraft?.content}
-            onChange={(content) =>
-              send({
-                type: 'UPDATE',
-                payload: {
-                  content,
-                },
-              })
-            }
-          />
+          {context.localDraft?.content && (
+            <Editor
+              value={context.localDraft.content}
+              onChange={(content) =>
+                send({
+                  type: 'UPDATE',
+                  payload: {
+                    content,
+                  },
+                })
+              }
+            />
+          )}
         </Container>
         {isSidepanelOpen && <Sidepanel gridArea="rightside" />}
       </Box>

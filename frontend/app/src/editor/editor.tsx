@@ -35,7 +35,13 @@ const AsyncEditor = lazy(async () => {
       return (
         <Slate editor={editor} value={value} onChange={onChange}>
           <HoveringToolbar />
-          <Editable renderElement={renderElement} renderLeaf={renderLeaf} decorate={decorate} {...eventHandlers} />
+          <Editable
+            data-testid="editor"
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+            decorate={decorate}
+            {...eventHandlers}
+          />
           {children}
         </Slate>
       )
@@ -49,7 +55,6 @@ interface EditorProps {
   onChange: (value: Descendant[]) => void
   children?: unknown
   readOnly?: boolean
-  sidepanelSend: any
 }
 
 export function Editor({
@@ -58,7 +63,6 @@ export function Editor({
   children,
   readOnly = false,
   mode = readOnly ? 'read-only' : 'default',
-  sidepanelSend,
 }: EditorProps): JSX.Element {
   return (
     <Box

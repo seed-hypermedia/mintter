@@ -1,7 +1,9 @@
-import {useQuery, useQueryClient} from 'react-query'
+import type {HookOptions} from './types'
+import type {GroupingContent} from '@mintter/mttast'
 import type {UseQueryResult} from 'react-query'
-import {useMemo} from 'react'
 import type {Account, Info, Document, Publication, PeerInfo} from '../src'
+import {useQuery, useQueryClient} from 'react-query'
+import {useMemo} from 'react'
 import {
   getAccount,
   getInfo,
@@ -15,7 +17,6 @@ import {
   listPublications,
   listAccounts,
 } from '../src'
-import type {HookOptions} from './types'
 
 /**
  *
@@ -147,10 +148,7 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
  * @param options
  * @returns
  */
-export function usePublication(
-  publicationId: string,
-  options: HookOptions<Publication> = {},
-): UseQueryResult<Publication> {
+export function usePublication(publicationId: string, options: HookOptions<Publication> = {}) {
   const publicationQuery = useQuery(
     ['Publication', publicationId],
     async ({queryKey}) => {
@@ -163,8 +161,8 @@ export function usePublication(
     },
   )
 
-  const content = useMemo(
-    () => (publicationQuery.data?.document?.content ? JSON.parse(publicationQuery.data?.document?.content) : ''),
+  const content: [GroupingContent] = useMemo(
+    () => (publicationQuery.data?.document?.content ? JSON.parse(publicationQuery.data?.document?.content) : null),
     [publicationQuery.data],
   )
 
