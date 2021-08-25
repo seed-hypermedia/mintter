@@ -29,9 +29,10 @@ export const Embed = styled('q', {
 export const createEmbedPlugin = (): EditorPlugin => ({
   name: ELEMENT_EMBED,
   configureEditor(editor) {
-    const {isVoid} = editor
+    const {isVoid, isInline} = editor
 
     editor.isVoid = (node) => isEmbed(node) || isVoid(node)
+    editor.isInline = (node) => isEmbed(node) || isInline(node)
 
     return editor
   },
