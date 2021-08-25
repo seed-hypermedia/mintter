@@ -1,17 +1,18 @@
-import ReactDOM from 'react-dom'
-import {useState, useMemo, useRef, useEffect, forwardRef} from 'react'
-import type {Text as MTTText} from '@mintter/mttast'
-import type {BaseEditor} from 'slate'
-import {Editor, Transforms, Text, Range} from 'slate'
-import {useEditor, ReactEditor, useSlateStatic} from 'slate-react'
+import type {Ref} from 'react'
+import type {MTTEditor} from './utils'
 import type {EditorPlugin} from './types'
+import type {Text as MTTText} from '@mintter/mttast'
+import type {BaseSelection} from 'slate'
+import ReactDOM from 'react-dom'
+import React, {useState, useRef, useEffect, forwardRef} from 'react'
+import {Editor, Transforms, Text, Range} from 'slate'
+import {ReactEditor, useSlateStatic} from 'slate-react'
+import {ToolbarLink} from './elements/link'
 import {Box} from '@mintter/ui/box'
 import {Tooltip} from '../components/tooltip'
 import {Button} from '@mintter/ui/button'
-import {Icon} from '@mintter/ui/icon'
+import {icons} from '@mintter/ui/icon'
 import {isCollapsed} from './utils'
-import {text} from '@mintter/mttast-builder'
-import {ToolbarLink} from './elements/link'
 
 export const createHoveringToolbarPlugin = (): EditorPlugin => {
   let editor: Editor
@@ -40,7 +41,7 @@ export const createHoveringToolbarPlugin = (): EditorPlugin => {
 
 type FormatTypes = keyof Omit<MTTText, 'type' | 'text' | 'value' | 'data' | 'position'>
 
-export function toggleFormat(editor: BaseEditor & ReactEditor, format: FormatTypes) {
+export function toggleFormat(editor: MTTEditor, format: FormatTypes) {
   const isActive = isFormatActive(editor, format)
   if (isCollapsed(editor.selection)) {
     console.log('toggleFormat: selection collapsed!')
@@ -57,7 +58,7 @@ export function toggleFormat(editor: BaseEditor & ReactEditor, format: FormatTyp
   }
 }
 
-export function isFormatActive(editor: BaseEditor & ReactEditor, format: FormatTypes) {
+export function isFormatActive(editor: MTTEditor, format: FormatTypes) {
   const [match] = Editor.nodes(editor, {
     match: (n) => n[format],
     mode: 'all',
@@ -66,8 +67,9 @@ export function isFormatActive(editor: BaseEditor & ReactEditor, format: FormatT
 }
 
 const FormatButton = ({format}: {format: FormatTypes}) => {
-  const editor = useEditor()
-  const iconName = useMemo(() => capitalize(format), [format])
+  const editor = useSlateStatic()
+  // const iconName: Pick<IconProps, 'name'> = useMemo(() => format && capitalize(format), [format])
+  const IconComponent = icons[capitalize(format)]
   return (
     <Tooltip content={format}>
       <Button
@@ -88,21 +90,20 @@ const FormatButton = ({format}: {format: FormatTypes}) => {
         size="1"
         color="muted"
       >
-        <Icon name={iconName} />
+        <IconComponent />
       </Button>
     </Tooltip>
   )
 }
 
-const Portal = ({children}) => {
+const Portal = ({children}: {children: React.ReactChildren}) => {
   return typeof document == 'object' ? ReactDOM.createPortal(children, document.body) : null
 }
 
-const Menu = forwardRef(({className, ...props}: PropsWithChildren<BaseProps>, ref: Ref<OrNull<HTMLDivElement>>) => (
+const Menu = forwardRef(({children, ...props}, ref: Ref<HTMLDivElement>) => (
   <Box
     {...props}
     ref={ref}
-    className={className}
     css={{
       padding: '8px 7px 6px',
       position: 'absolute',
@@ -121,7 +122,9 @@ const Menu = forwardRef(({className, ...props}: PropsWithChildren<BaseProps>, re
         marginLeft: 15,
       },
     }}
-  />
+  >
+    {children}
+  </Box>
 ))
 
 export interface UseLastSelectionResult {
@@ -131,12 +134,12 @@ export interface UseLastSelectionResult {
 
 export function useLastEditorSelection(): UseLastSelectionResult {
   const editor = useSlateStatic()
-  const [lastSelection, update] = useState(editor.selection)
+  const [lastSelection, update] = useState<BaseSelection>(editor.selection)
 
-  const resetSelection = () => update(undefined)
+  const resetSelection = () => update(null)
 
   useEffect(() => {
-    const setSelection = (newSelection) => {
+    const setSelection = (newSelection: BaseSelection) => {
       if (!newSelection) return
       if (lastSelection && Range.equals(lastSelection, newSelection)) return
       update(newSelection)
@@ -174,15 +177,16 @@ export function HoveringToolbar() {
   })
 
   useEffect(() => {
-    const escEvent = addEventListener('keydown', (e) => {
+    const escEvent = (e: KeyboardEvent) => {
       // important to close the toolbar if the escape key is pressed. there's no other way than this apart from calling the `resetSelection`
       if (e.key == 'Escape') {
         console.log('lastSelection', lastSelection, editor.selection)
         Transforms.deselect(editor)
         resetSelection()
       }
-    })
+    }
 
+    addEventListener('keydown', escEvent)
     return () => {
       removeEventListener('keydown', escEvent)
     }
@@ -190,6 +194,11 @@ export function HoveringToolbar() {
 
   return (
     <Portal>
+      {/*
+      /*
+       * @todo fix types on Menu component.
+       * @body Children complains about something... 
+       * @ts-ignore */}
       <Menu ref={ref}>
         <FormatButton format="strong" />
         <FormatButton format="emphasis" />
@@ -200,7 +209,6 @@ export function HoveringToolbar() {
   )
 }
 
-function capitalize(word: string): string {
-  console.log('capitalize: ', word)
+function capitalize(word: string) {
   return `${word[0].toUpperCase()}${word.slice(1)}`
 }
