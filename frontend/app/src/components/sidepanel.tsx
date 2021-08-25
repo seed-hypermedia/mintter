@@ -1,9 +1,14 @@
+import type {FlowContent, Paragraph, StaticParagraph} from '@mintter/mttast'
 import {createContext, useEffect, useContext} from 'react'
 import {Box, Text, Button} from '@mintter/ui'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
-
 import {createMachine, Interpreter, State, assign} from 'xstate'
 import {usePublication} from '@mintter/client/hooks'
+import {visit} from 'unist-util-visit'
+import {ELEMENT_STATEMENT} from '../editor/elements/statement'
+import {document} from 'frontend/mttast-builder/dist'
+import {isLink} from '@mintter/mttast'
+import {Node} from 'slate'
 
 export type SidepanelEventsType =
   | {
@@ -221,16 +226,23 @@ export function SidepanelItem({item}: SidepanelItemProps) {
           remove
         </Button>
       </Box>
-      {/* <PinnedBlock block={data?.document?.blocks[blockId]} /> */}
+      <PinnedBlock content={data?.document.content} blockId={blockId} />
     </Box>
   )
 }
 
-// function PinnedBlock({block}: {block: Block}) {
-//   // TODO: render content as a mini editor
-//   return (
-//     <Box css={{backgroundColor: '$secondary-muted', padding: '$4', borderRadius: '$2', marginTop: '$3'}}>
-//       <Text alt>{block.elements.map((item) => item.textRun?.text).join('')}</Text>
-//     </Box>
-//   )
-// }
+function PinnedBlock({content, blockId}: {content: any; blockId: string}) {
+  let block: FlowContent
+  visit(document(content), {id: blockId}, (node) => {
+    block = node
+  })
+
+  if (block) {
+    return (
+      <Box css={{backgroundColor: '$secondary-muted', padding: '$4', borderRadius: '$2', marginTop: '$3'}}>
+        <Text alt>{Node.string(block.children[0])}</Text>
+      </Box>
+    )
+  }
+  return null
+}
