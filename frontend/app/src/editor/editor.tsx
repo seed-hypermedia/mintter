@@ -1,24 +1,50 @@
-import {useMemo} from 'react'
+import {lazy, Suspense, useMemo} from 'react'
 import type {Descendant} from 'slate'
 import {Slate, Editable} from 'slate-react'
-import type {EditorPlugin} from './types'
 import {
   buildEditorHook,
   buildRenderElementHook,
   buildRenderLeafHook,
   buildDecorateHook,
-  buildEventHandlerHook,
-  getUsedEventHandlers,
+  buildEventHandlerHooks,
 } from './plugin-utils'
 import {HoveringToolbar} from './hovering-toolbar'
 import {Box} from '@mintter/ui/box'
-import {plugins as defaultPlugins} from './plugins'
+import {plugins} from './plugins'
 
 export type {EditorPlugin} from './types'
 
+interface AsyncEditorProps {
+  mode: string
+  value: Descendant[]
+  onChange: (value: Descendant[]) => void
+  children?: unknown
+}
+
+const AsyncEditor = lazy(async () => {
+  const resolvedPlugins = await Promise.all(plugins)
+
+  return {
+    default: function AsyncEditor({value, onChange, mode, children}: AsyncEditorProps) {
+      const editor = useMemo(() => buildEditorHook(resolvedPlugins, mode), [])
+      const renderElement = useMemo(() => buildRenderElementHook(resolvedPlugins, mode), [mode])
+      const renderLeaf = useMemo(() => buildRenderLeafHook(resolvedPlugins, mode), [mode])
+      const decorate = useMemo(() => buildDecorateHook(resolvedPlugins, mode), [mode])
+      const eventHandlers = useMemo(() => buildEventHandlerHooks(resolvedPlugins, mode), [mode])
+
+      return (
+        <Slate editor={editor} value={value} onChange={onChange}>
+          <HoveringToolbar />
+          <Editable renderElement={renderElement} renderLeaf={renderLeaf} decorate={decorate} {...eventHandlers} />
+          {children}
+        </Slate>
+      )
+    },
+  }
+})
+
 interface EditorProps {
   mode?: string
-  plugins?: EditorPlugin[]
   value: Descendant[]
   onChange: (value: Descendant[]) => void
   children?: unknown
@@ -31,20 +57,9 @@ export function Editor({
   onChange,
   children,
   readOnly = false,
-  plugins = defaultPlugins,
   mode = readOnly ? 'read-only' : 'default',
   sidepanelSend,
 }: EditorProps): JSX.Element {
-  const editor = useMemo(() => buildEditorHook(plugins, mode), [plugins])
-  const renderElement = useMemo(() => buildRenderElementHook(plugins, mode), [plugins])
-  const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, mode), [plugins])
-  const decorate = useMemo(() => buildDecorateHook(plugins, mode), [plugins])
-
-  const eventHandlers = useMemo(
-    () => Object.fromEntries(getUsedEventHandlers(plugins).map((ev) => [ev, buildEventHandlerHook(plugins, ev, mode)])),
-    [plugins],
-  )
-
   return (
     <Box
       css={{
@@ -52,18 +67,12 @@ export function Editor({
         marginLeft: '-$8',
       }}
     >
-      <Slate editor={editor} value={value} onChange={onChange}>
-        <HoveringToolbar />
-        <Editable
-          readOnly={readOnly}
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-          decorate={decorate}
-          {...eventHandlers}
-        />
-        {children}
-      </Slate>
-      <pre>{JSON.stringify(value, null, 2)}</pre>
+      <Suspense fallback={'loading'}>
+        <AsyncEditor value={value} onChange={onChange} mode={mode}>
+          {children}
+        </AsyncEditor>
+        <pre>{JSON.stringify(value, null, 2)}</pre>
+      </Suspense>
     </Box>
   )
 }

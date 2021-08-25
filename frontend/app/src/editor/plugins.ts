@@ -18,11 +18,8 @@ import {createBlockquotePlugin} from './elements/blockquote'
 import {createEmbedPlugin} from './elements/embed'
 import {createCodeBlockPlugin} from './elements/code-block'
 import {createTabPlugin} from './tab-plugin'
-import {isCollapsed} from './utils'
-import {Editor, Location, Node, Path, Range, Text} from 'slate'
-import {isContent, isStaticContent} from '@mintter/mttast'
 
-export const plugins: Array<EditorPlugin> = [
+export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
   createHoveringToolbarPlugin(),
 
   createStrongPlugin(),
