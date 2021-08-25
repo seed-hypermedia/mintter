@@ -57,29 +57,9 @@ export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
     configureEditor(editor) {
       const {normalizeNode} = editor
 
-      // editor.insertText = (text) => {
-      //   const {selection} = editor
-      //   if (selection && isCollapsed(selection)) {
-      //     const parent = Editor.parent(editor, selection.anchor.path)
-      //     if (parent) {
-      //       const [parentNode, parentPath] = parent
-      //       if (isContent(parentNode) || isStaticContent(parentNode)) {
-      //         if (parentNode.children.length > 1) {
-      //           for (const [child, childPath] of Node.children(parent)) {
-      //             if (Path.hasPrevious(childPath)) {
-      //               // const prev = Node.
-      //             }
-      //           }
-      //         }
-      //       }
-      //     }
-      //   }
-      //   insertText(text)
-      // }
-
       editor.normalizeNode = (entry) => {
         const [node, path] = entry
-        console.log(path, node.type, node.id, node)
+        // console.log(path, node.type, node.id, node)
         normalizeNode(entry)
       }
       return editor

@@ -1,7 +1,7 @@
 import {styled} from '../stitches.config'
 
 export const Text = styled('span', {
-  color: 'inherit',
+  color: '$text-default',
   display: 'block',
   fontFamily: '$default',
   margin: 0,
