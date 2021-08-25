@@ -1,6 +1,4 @@
-import {isFlowContent, isGroupContent} from '@mintter/mttast'
-import type {GroupingContent} from '@mintter/mttast'
-import {Range, Editor, Path, Transforms} from 'slate'
+import {Range, Editor, Path, Transforms, Text} from 'slate'
 import type {BaseEditor, Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
 import type {ReactEditor} from 'slate-react'
 import type {HistoryEditor} from 'slate-history'
@@ -107,4 +105,29 @@ export function isLastChild(parentEntry: NodeEntry<Ancestor>, childPath: Path): 
 
 export function isFirstChild(path: Path): boolean {
   return path[path.length - 1] == 0
+}
+
+export function toggleMark(editor: Editor, key: string) {
+  if (!editor.selection) return
+
+  if (!Editor.marks(editor)?.[key]) {
+    editor.addMark(key, true)
+  } else {
+    const {selection} = editor
+    if (selection) {
+      if (Range.isExpanded(selection)) {
+        console.log('selection expanded')
+
+        Transforms.unsetNodes(editor, key, {
+          match: Text.isText,
+          split: true,
+        })
+      } else {
+        console.log('selection collapsed')
+        const marks = {...(Editor.marks(editor) || {})}
+        delete marks[key]
+        editor.marks = marks
+      }
+    }
+  }
 }
