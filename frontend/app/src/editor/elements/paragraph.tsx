@@ -64,9 +64,14 @@ export const createParagraphPlugin = (): EditorPlugin => ({
            */
           let id = createId()
           console.log('🚀 ~ file: paragraph.tsx ~ line 66 ~ id', id)
-          Transforms.wrapNodes(editor, statement({id}), {
-            at: Editor.isEmpty(editor, prevNode) ? Path.previous(path) : path,
+          Editor.withoutNormalizing(editor, () => {
+            let targetPath = Editor.isEmpty(editor, prevNode) ? Path.previous(path) : path
+            Transforms.wrapNodes(editor, statement({id}), {
+              at: targetPath,
+            })
+            Transforms.setNodes(editor, {id: createId()}, {at: targetPath})
           })
+
           return
         }
       }
