@@ -44,24 +44,6 @@ export const createEmbedPlugin = (): EditorPlugin => ({
   },
   renderElement({attributes, children, element}) {
     if (isEmbed(element)) {
-      //eslint-disable-next-line react-hooks/rules-of-hooks
-      // const AsyncEmbed = useCallback(
-      //   lazy(async () => {
-      //     const {document} = await getPublication(element.url || '')
-      //     const data = JSON.parse(document?.content || '')
-      //     return {
-      //       default: function AsyncEmbed() {
-      //         return (
-      //           <span contentEditable={false}>
-      //             <span>{Node.string(data)}</span>
-      //           </span>
-      //         )
-      //       },
-      //     }
-      //   }),
-      //   [element.url],
-      // )
-
       const {data, status, error} = useEmbed(element.url || '')
       if (status == 'loading') {
         return (
