@@ -1,5 +1,5 @@
 import type {EditorPlugin} from '../types'
-import {Element, Node, Text} from 'slate'
+import {Text} from 'slate'
 import type {BaseRange} from 'slate'
 import {setCDN, getHighlighter} from 'shiki'
 import MintterGrammer from './mintter.tmLanguage.json'
@@ -8,11 +8,7 @@ import {MARK_EMPHASIS} from '../leafs/emphasis'
 import {MARK_UNDERLINE} from '../leafs/underline'
 
 export const createMDHighlightPlugin = async (): Promise<EditorPlugin> => {
-  /**
-   * @todo bundle themes, languages & onigasm
-   * @body Our monorepo setup doesn't allow us to point shiki to a local file path so we point it to unpkg. This should be changed and all language file, theme files and onigasm binary bundled into the app
-   */
-  setCDN('https://unpkg.com/shiki/')
+  setCDN('/shiki/')
 
   const highlighter = await getHighlighter({
     theme: 'github-light',
