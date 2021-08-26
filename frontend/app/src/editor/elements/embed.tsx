@@ -9,6 +9,7 @@ import {usePublication} from '@mintter/client/hooks'
 import {visit} from 'unist-util-visit'
 import {document} from '@mintter/mttast-builder'
 import {useMemo} from 'react'
+import {MINTTER_LINK_PREFIX} from '../../constants'
 
 export const ELEMENT_EMBED = 'embed'
 
@@ -100,7 +101,7 @@ function useEmbed(url: string) {
   if (!url) {
     throw new Error(`useEmbed: "url" must be a valid URL string. got "${url}"`)
   }
-  const [publicationId, blockId] = url.split('/')
+  const [publicationId, blockId] = getEmbedIds(url)
   const publicationQuery = usePublication(publicationId)
   let statement = useMemo(() => {
     let temp: FlowContent
@@ -120,4 +121,18 @@ function useEmbed(url: string) {
       statement,
     },
   }
+}
+
+export function getEmbedIds(entry: string): [string, string] {
+  if (!entry.startsWith(MINTTER_LINK_PREFIX)) {
+    throw Error(`getEmbedId Error: url must start with ${MINTTER_LINK_PREFIX}. (${entry})`)
+  }
+
+  const [, ids] = entry.split(MINTTER_LINK_PREFIX)
+
+  if (ids.length <= 2) {
+    throw Error(`getEmbedId Error: url must contain a publicationId and a blockId at least. (${entry})`)
+  }
+  const [one, second] = ids.split('/')
+  return [one, second]
 }
