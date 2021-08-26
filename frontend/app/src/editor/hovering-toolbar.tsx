@@ -12,51 +12,26 @@ import {Box} from '@mintter/ui/box'
 import {Tooltip} from '../components/tooltip'
 import {Button} from '@mintter/ui/button'
 import {icons} from '@mintter/ui/icon'
-import {isCollapsed} from './utils'
-
-export const createHoveringToolbarPlugin = (): EditorPlugin => {
-  let editor: Editor
-  return {
-    name: 'hoveringToolbar',
-    configureEditor: (e) => (editor = e),
-    onBeforeInput(e) {
-      const event = e as unknown as InputEvent
-      event.preventDefault()
-      console.log('onBeforeInput: ', event, editor)
-      switch (event.inputType) {
-        case 'formatBold':
-          event.preventDefault()
-          return toggleFormat(editor, 'strong')
-        case 'formatItalic':
-          event.preventDefault()
-          return toggleFormat(editor, 'emphasis')
-        case 'formatUnderline':
-          console.log('formatUnderline!')
-          event.preventDefault()
-          return toggleFormat(editor, 'underline')
-      }
-    },
-  }
-}
+import {toggleMark} from './utils'
 
 type FormatTypes = keyof Omit<MTTText, 'type' | 'text' | 'value' | 'data' | 'position'>
 
-export function toggleFormat(editor: MTTEditor, format: FormatTypes) {
-  const isActive = isFormatActive(editor, format)
-  if (isCollapsed(editor.selection)) {
-    console.log('toggleFormat: selection collapsed!')
-    if (isActive) {
-      editor.removeMark(format)
-    } else {
-      editor.addMark(format, true)
-    }
+// export function toggleMark(editor: MTTEditor, format: FormatTypes) {
+//   const isActive = isFormatActive(editor, format)
+//   if (isCollapsed(editor.selection)) {
+//     console.log('toggleMark: selection collapsed!')
+//     if (isActive) {
+//       editor.removeMark(format)
+//     } else {
+//       editor.addMark(format, true)
+//     }
 
-    // Transforms.insertNodes(editor, text('', {[format]: !isActive}))
-  } else {
-    console.log('toggleFormat: selection is not collapsed!')
-    Transforms.setNodes(editor, {[format]: !isActive}, {match: Text.isText, split: true})
-  }
-}
+//     // Transforms.insertNodes(editor, text('', {[format]: !isActive}))
+//   } else {
+//     console.log('toggleMark: selection is not collapsed!')
+//     Transforms.setNodes(editor, {[format]: !isActive}, {match: Text.isText, split: true})
+//   }
+// }
 
 export function isFormatActive(editor: MTTEditor, format: FormatTypes) {
   const [match] = Editor.nodes(editor, {
@@ -83,8 +58,9 @@ const FormatButton = ({format}: {format: FormatTypes}) => {
         }
         onMouseDown={(event) => {
           console.log('mouse down!', event)
+
           event.preventDefault()
-          toggleFormat(editor, format)
+          toggleMark(editor, format)
         }}
         variant="ghost"
         size="1"
