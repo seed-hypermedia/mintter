@@ -24,6 +24,8 @@ export const Tools = styled('div', {
   alignSelf: 'center',
   display: 'flex',
   alignItems: 'center',
+  userSelect: 'none',
+  WebkitUserSelect: 'none',
 })
 const StatementStyled = styled('li', {
   marginTop: '$3',
