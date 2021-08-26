@@ -11,7 +11,7 @@ import {
 import type {Document} from '../.generated/documents/v1alpha/documents'
 import {createGrpcClient} from './grpc-client'
 import type {GrpcClient} from './grpc-client'
-import {createId, document, group, paragraph, statement, text} from '@mintter/mttast-builder'
+import {createId, document, embed, group, paragraph, statement, text} from '@mintter/mttast-builder'
 
 /**
  *
@@ -95,8 +95,12 @@ export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Do
   const doc = await new DraftsClientImpl(rpc).getDraft(request)
   // doc.content = JSON.stringify([
   //   group([
-  //     statement({id: createId()}, [paragraph([text('hello')])]),
-  //     statement({id: createId()}, [paragraph([text('')]), group([statement([paragraph([text('another')])])])]),
+  //     statement({id: createId()}, [
+  //       paragraph([
+  //         text('hello'),
+  //         embed({url: 'bahfjrj4iasqoiara34x57ubhyfngtcmbgemmxcsmxs3c5hli4dx27l5kn37yggkrmeka/GubuBNmv'}, [text('')]),
+  //       ]),
+  //     ]),
   //   ]),
   // ])
 
