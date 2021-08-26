@@ -1,21 +1,19 @@
 import {Path, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
 import {Editor} from 'slate'
-import {isGroupContent, isHeading, isStatement, isText} from '@mintter/mttast'
+import {isBlockquote, isGroupContent, isHeading, isStatement, isText} from '@mintter/mttast'
 import type {Statement as StatementType} from '@mintter/mttast'
-import {isLastChild, getLastChild} from '../utils'
+import {isLastChild, getLastChild, isFirstChild} from '../utils'
 import type {MTTEditor} from '../utils'
 import {styled} from '@mintter/ui/stitches.config'
 import {group} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
 import {Marker} from '../marker'
-import {isFirstChild} from '@udecode/slate-plugins'
 import type {NodeEntry} from 'slate'
 import * as ContextMenu from '@radix-ui/react-context-menu'
 import {useParams} from 'react-router'
 import toast from 'react-hot-toast'
-import {send} from 'xstate'
 import {useSidepanel} from '../../components/sidepanel'
 
 export const ELEMENT_STATEMENT = 'statement'
@@ -157,7 +155,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
         }
 
         const [parentNode, parentPath] = parent
-        if (isStatement(parentNode)) {
+        if (isStatement(parentNode) || isBlockquote(parentNode)) {
           // if parent is a statement and is the last child (because the previous if is false) then we can move the new statement to the next position of it's parent
           Transforms.moveNodes(editor, {
             at: path,
