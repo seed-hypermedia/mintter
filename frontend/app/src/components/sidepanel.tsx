@@ -1,8 +1,8 @@
-import type {FlowContent, Paragraph, StaticParagraph} from '@mintter/mttast'
+import type {FlowContent, GroupingContent} from '@mintter/mttast'
 import {createContext, useEffect, useContext} from 'react'
 import {Box, Text, Button} from '@mintter/ui'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
-import {createMachine, Interpreter, State, assign} from 'xstate'
+import {createMachine, Interpreter, State} from 'xstate'
 import {usePublication} from '@mintter/client/hooks'
 import {visit} from 'unist-util-visit'
 import {document} from '@mintter/mttast-builder'
@@ -229,7 +229,7 @@ export function SidepanelItem({item}: SidepanelItemProps) {
   )
 }
 
-function PinnedBlock({content, blockId}: {content: any; blockId: string}) {
+function PinnedBlock({content, blockId}: {content: [GroupingContent]; blockId: string}) {
   let block: FlowContent
   visit(document(content), {id: blockId}, (node) => {
     block = node
