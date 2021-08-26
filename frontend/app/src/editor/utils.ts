@@ -107,27 +107,43 @@ export function isFirstChild(path: Path): boolean {
   return path[path.length - 1] == 0
 }
 
-export function toggleMark(editor: Editor, key: string) {
+export function toggleMark(
+  editor: Editor,
+  key: keyof Omit<Text, 'value'>,
+  ...clears: Array<keyof Omit<Text, 'value'>>
+): void {
   if (!editor.selection) return
 
-  if (!Editor.marks(editor)?.[key]) {
-    editor.addMark(key, true)
-  } else {
-    const {selection} = editor
-    if (selection) {
-      if (Range.isExpanded(selection)) {
-        console.log('selection expanded')
+  const isActive = isMarkActive(editor, key)
 
-        Transforms.unsetNodes(editor, key, {
-          match: Text.isText,
-          split: true,
-        })
-      } else {
-        console.log('selection collapsed')
-        const marks = {...(Editor.marks(editor) || {})}
-        delete marks[key]
-        editor.marks = marks
-      }
+  if (isActive) {
+    removeMark(editor, key)
+  } else {
+    clears.forEach((item) => {
+      removeMark(editor, item)
+    })
+
+    editor.addMark(key, true)
+  }
+}
+
+export function isMarkActive(editor: Editor, key: keyof Omit<Text, 'value'>): boolean {
+  return !!Editor.marks(editor)?.[key]
+}
+
+export function removeMark(editor: Editor, key: keyof Omit<Text, 'value'>): void {
+  const {selection} = editor
+  if (selection) {
+    if (Range.isExpanded(selection)) {
+      Transforms.unsetNodes(editor, key, {
+        match: Text.isText,
+        split: true,
+      })
+    } else {
+      const marks = {...(Editor.marks(editor) || {type: 'text'})}
+      delete marks[key]
+      editor.marks = marks
+      editor.onChange()
     }
   }
 }
