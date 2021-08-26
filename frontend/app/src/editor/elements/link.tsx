@@ -1,12 +1,12 @@
 import type {EditorPlugin} from '../types'
-import type {Link as LinkType} from '@mintter/mttast'
+import type {Embed, Link as LinkType} from '@mintter/mttast'
 import type {MTTEditor} from '../utils'
 import type {UseLastSelectionResult} from '../hovering-toolbar'
 import {useEffect, useState} from 'react'
 import {isLink} from '@mintter/mttast'
 import isUrl from 'is-url'
 import {styled} from '@mintter/ui/stitches.config'
-import {link, text} from '@mintter/mttast-builder'
+import {embed, link, text} from '@mintter/mttast-builder'
 import {Editor, Element as SlateElement, Transforms} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {isCollapsed} from '../utils'
@@ -19,7 +19,6 @@ import {TextField} from '@mintter/ui/text-field'
 import * as Popover from '@radix-ui/react-popover'
 import {Slot} from '@radix-ui/react-slot'
 import {Button} from '@mintter/ui/button'
-import {getPreventDefaultHandler} from '@udecode/slate-plugins'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 
 export const ELEMENT_LINK = 'link'
@@ -92,22 +91,13 @@ export const createLinkPlugin = (): EditorPlugin => ({
       const text = data.getData('text/plain')
       console.log('🚀 ~ insertData', text, editor)
 
-      if (text && isUrl(text)) {
+      if (text && isMintterLink(text)) {
+        wrapMintterLink(editor, text)
+      } else if (text && isUrl(text)) {
         wrapLink(editor, text)
       } else {
         insertData(data)
       }
-
-      // if (text) {
-      //   if (isMintterLink(text)) {
-      //     wrapMintterLink(editor, text)
-      //   } else if (isUrl(text)) {
-      //     console.log('insertData Link!', editor)
-      //     wrapLink(editor, text)
-      //   } else {
-      //     insertData(data)
-      //   }
-      // }
     }
 
     return editor
@@ -167,8 +157,6 @@ export function wrapLink(editor: MTTEditor, url: string, selection = editor.sele
 
   const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])
 
-  console.log(newLink)
-
   if (isCollapsed(selection!)) {
     Transforms.insertNodes(editor, newLink)
   } else {
@@ -188,9 +176,17 @@ function isMintterLink(text: string) {
   return text.includes(MINTTER_LINK_PREFIX)
 }
 
-function wrapMintterLink(editor: MTTEditor, text: string) {
+function wrapMintterLink(editor: MTTEditor, url: string) {
   console.log('add mintter link!!', text)
-  wrapLink(editor, text)
+  const {selection} = editor
+  const newEmbed: Embed = embed({url}, [text('')])
+  const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])
+
+  if (isCollapsed(selection!)) {
+    Transforms.insertNodes(editor, newEmbed)
+  } else {
+    wrapLink(editor, url)
+  }
 }
 
 export interface ToolbarLinkProps extends UseLastSelectionResult {}
