@@ -4,7 +4,7 @@ import * as MessageBox from '../components/message-box'
 
 export type ListPageProps = {
   onCreateDraft: () => void
-  useDataHook: () => any
+  useDataHook: () => {data: Array<Document>; status: string; error: any}
 }
 export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
   console.log('🚀 ~ file: list-page.tsx ~ line 10 ~ ListPage ~ useDataHook', useDataHook)
@@ -31,7 +31,7 @@ export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
         </MessageBox.Root>
       )}
       {/* TODO: fix data type */}
-      <DocumentList status={status} error={error} data={data as any} />
+      <DocumentList status={status} error={error} data={data} />
     </>
   )
 }
