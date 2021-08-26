@@ -13,7 +13,6 @@ import {createUnderlinePlugin} from './leafs/underline'
 import {createStrikethroughPlugin} from './leafs/strikethrough'
 import {createSuperscriptPlugin} from './leafs/superscript'
 import {createSubscriptPlugin} from './leafs/subscript'
-import {createHoveringToolbarPlugin} from './hovering-toolbar'
 import {createBlockquotePlugin} from './elements/blockquote'
 import {createEmbedPlugin} from './elements/embed'
 import {createCodeBlockPlugin} from './elements/code-block'
@@ -21,8 +20,6 @@ import {createTabPlugin} from './tab-plugin'
 import {createMDHighlightPlugin} from './md-highlight'
 
 export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
-  createHoveringToolbarPlugin(),
-
   createStrongPlugin(),
   createEmphasisPlugin(),
   createUnderlinePlugin(),
