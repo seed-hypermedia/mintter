@@ -1,45 +1,18 @@
 import type {Ref} from 'react'
-import type {MTTEditor} from './utils'
-import type {EditorPlugin} from './types'
 import type {Text as MTTText} from '@mintter/mttast'
 import type {BaseSelection} from 'slate'
 import ReactDOM from 'react-dom'
 import React, {useState, useRef, useEffect, forwardRef} from 'react'
-import {Editor, Transforms, Text, Range} from 'slate'
+import {Editor, Transforms, Range} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {ToolbarLink} from './elements/link'
 import {Box} from '@mintter/ui/box'
 import {Tooltip} from '../components/tooltip'
 import {Button} from '@mintter/ui/button'
 import {icons} from '@mintter/ui/icon'
-import {toggleMark} from './utils'
+import {toggleMark, isMarkActive} from './utils'
 
 type FormatTypes = keyof Omit<MTTText, 'type' | 'text' | 'value' | 'data' | 'position'>
-
-// export function toggleMark(editor: MTTEditor, format: FormatTypes) {
-//   const isActive = isFormatActive(editor, format)
-//   if (isCollapsed(editor.selection)) {
-//     console.log('toggleMark: selection collapsed!')
-//     if (isActive) {
-//       editor.removeMark(format)
-//     } else {
-//       editor.addMark(format, true)
-//     }
-
-//     // Transforms.insertNodes(editor, text('', {[format]: !isActive}))
-//   } else {
-//     console.log('toggleMark: selection is not collapsed!')
-//     Transforms.setNodes(editor, {[format]: !isActive}, {match: Text.isText, split: true})
-//   }
-// }
-
-export function isFormatActive(editor: MTTEditor, format: FormatTypes) {
-  const [match] = Editor.nodes(editor, {
-    match: (n) => n[format],
-    mode: 'all',
-  })
-  return !!match
-}
 
 const FormatButton = ({format}: {format: FormatTypes}) => {
   const editor = useSlateStatic()
@@ -49,7 +22,7 @@ const FormatButton = ({format}: {format: FormatTypes}) => {
     <Tooltip content={format}>
       <Button
         css={
-          isFormatActive(editor, format)
+          isMarkActive(editor, format)
             ? {
                 backgroundColor: '$background-opposite',
                 color: '$text-opposite',
