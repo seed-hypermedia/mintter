@@ -1615,11 +1615,6 @@
   resolved "https://registry.yarnpkg.com/@types/escape-html/-/escape-html-1.0.1.tgz#b19b4646915f0ae2c306bf984dc0a59c5cfc97ba"
   integrity sha512-4mI1FuUUZiuT95fSVqvZxp/ssQK9zsa86S43h9x3zPOSU9BBJ+BfDkXwuaU7BfsD+e7U0/cUUfJFk3iW2M4okA==
 
-"@types/esrever@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@types/esrever/-/esrever-0.2.0.tgz#96404a2284b2c7527f08a1e957f8a31705f9880f"
-  integrity sha512-5NI6TeGzVEy/iBcuYtcPzzIC6EqlfQ2+UZ54vT0ulq8bPNGAy8UJD+XcsAyEOcnYFUjOVWuUV+k4/rVkxt9/XQ==
-
 "@types/faker@^5.5.6":
   version "5.5.7"
   resolved "https://registry.yarnpkg.com/@types/faker/-/faker-5.5.7.tgz#52aa3ad6ead3642b7c54e1e87e9e3ff5b10b3873"
@@ -3885,11 +3880,6 @@ esrecurse@^4.3.0:
   integrity sha512-KmfKL3b6G+RXvP8N1vr3Tq1kL/oCFgn2NYXEtqP8/L3pKapUA4G8cFVaoF3SU323CD4XypR/ffioHmkti6/Tag==
   dependencies:
     estraverse "^5.2.0"
-
-esrever@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/esrever/-/esrever-0.2.0.tgz#96e9d28f4f1b1a76784cd5d490eaae010e7407b8"
-  integrity sha1-lunSj08bGnZ4TNXUkOquAQ50B7g=
 
 estraverse@^4.1.1:
   version "4.3.0"
@@ -7466,22 +7456,22 @@ slash@^3.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
 
-"slate-history@https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.61.5-mtt":
-  version "0.62.0"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.61.5-mtt#a047d14639864799d65e8e9c41ae0add61e4c842"
+"slate-history@https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.65.4-mtt":
+  version "0.65.3"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.65.4-mtt#e1cf8879cd28e80fc690e8df0f408e5378f4d428"
   dependencies:
     immer "^8.0.1"
     is-plain-object "^5.0.0"
 
-"slate-hyperscript@https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.61.5-mtt":
+"slate-hyperscript@https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.65.4-mtt":
   version "0.62.0"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.61.5-mtt#7dfd4ed0880f2f37f412fef8e3a2d81be16d7717"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.65.4-mtt#9940b86ed378539b6f7cceb1efa1812499c2ef28"
   dependencies:
     is-plain-object "^5.0.0"
 
-"slate-react@https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.61.5-mtt":
-  version "0.65.2"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.61.5-mtt#13cb8e0bc46f3a77274791f25c22e15554cdcd14"
+"slate-react@https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.65.4-mtt":
+  version "0.65.3"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.65.4-mtt#653dea30661bbaeef68b9934d789c3f1e7757701"
   dependencies:
     "@types/is-hotkey" "^0.1.1"
     "@types/lodash" "^4.14.149"
@@ -7491,13 +7481,10 @@ slash@^3.0.0:
     scroll-into-view-if-needed "^2.2.20"
     tiny-invariant "1.0.6"
 
-"slate@https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.61.5-mtt":
-  version "0.63.0"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.61.5-mtt#8641f13ae661a3f3947affbd6c1b85e5ed695f60"
+"slate@https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.65.4-mtt":
+  version "0.65.3"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.65.4-mtt#be582851d717b68cac4a7632f79bbfe4e9cd35f7"
   dependencies:
-    "@types/esrever" "^0.2.0"
-    esrever "^0.2.0"
-    fast-deep-equal "^3.1.3"
     immer "^8.0.1"
     is-plain-object "^5.0.0"
     tiny-warning "^1.0.3"
