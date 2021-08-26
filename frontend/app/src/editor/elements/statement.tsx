@@ -1,7 +1,7 @@
 import {Path, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
 import {Editor} from 'slate'
-import {isGroupContent, isHeading, isStatement, isText} from '@mintter/mttast'
+import {isBlockquote, isGroupContent, isHeading, isStatement, isText} from '@mintter/mttast'
 import type {Statement as StatementType} from '@mintter/mttast'
 import {isLastChild, getLastChild} from '../utils'
 import type {MTTEditor} from '../utils'
@@ -157,7 +157,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
         }
 
         const [parentNode, parentPath] = parent
-        if (isStatement(parentNode)) {
+        if (isStatement(parentNode) || isBlockquote(parentNode)) {
           // if parent is a statement and is the last child (because the previous if is false) then we can move the new statement to the next position of it's parent
           Transforms.moveNodes(editor, {
             at: path,

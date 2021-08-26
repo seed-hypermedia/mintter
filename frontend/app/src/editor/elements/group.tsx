@@ -41,13 +41,6 @@ export const createGroupPlugin = (): EditorPlugin => ({
             return
           }
         }
-        //   for (const [child, childPath] of Node.children(editor, path)) {
-        //     if (isGroupContent(child)) {
-        //       console.log('group child!!', child, childPath)
-        //       Transforms.unwrapNodes(editor, {at: childPath})
-        //       return
-        //     }
-        //   }
       }
 
       normalizeNode(entry)
