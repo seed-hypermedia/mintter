@@ -19,13 +19,14 @@ interface AsyncEditorProps {
   value: Descendant[]
   onChange: (value: Descendant[]) => void
   children?: unknown
+  readOnly?: boolean
 }
 
 const AsyncEditor = lazy(async () => {
   const resolvedPlugins = await Promise.all(plugins)
 
   return {
-    default: function AsyncEditor({value, onChange, mode, children}: AsyncEditorProps) {
+    default: function AsyncEditor({value, onChange, mode, children, readOnly}: AsyncEditorProps) {
       const editor = useMemo(() => buildEditorHook(resolvedPlugins, mode), [])
       const renderElement = useMemo(() => buildRenderElementHook(resolvedPlugins, mode), [mode])
       const renderLeaf = useMemo(() => buildRenderLeafHook(resolvedPlugins, mode), [mode])
@@ -36,6 +37,7 @@ const AsyncEditor = lazy(async () => {
         <Slate editor={editor} value={value} onChange={onChange}>
           <HoveringToolbar />
           <Editable
+            readOnly={readOnly}
             data-testid="editor"
             renderElement={renderElement}
             renderLeaf={renderLeaf}
@@ -72,7 +74,7 @@ export function Editor({
       }}
     >
       <Suspense fallback={'loading'}>
-        <AsyncEditor value={value} onChange={onChange} mode={mode}>
+        <AsyncEditor value={value} onChange={onChange} mode={mode} readOnly={readOnly}>
           {children}
         </AsyncEditor>
         <pre>{JSON.stringify(value, null, 2)}</pre>
