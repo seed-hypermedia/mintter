@@ -7,6 +7,7 @@ import {usePublication} from '@mintter/client/hooks'
 import {visit} from 'unist-util-visit'
 import {document} from '@mintter/mttast-builder'
 import {Node} from 'slate'
+import {getEmbedIds} from '../editor/elements/embed'
 
 export type SidepanelEventsType =
   | {
@@ -192,7 +193,7 @@ export type SidepanelItemProps = {
 }
 
 export function SidepanelItem({item}: SidepanelItemProps) {
-  const [publicationId, blockId] = item.split('/')
+  const [publicationId, blockId] = getEmbedIds(item)
   const {status, data, error} = usePublication(publicationId)
   const {send} = useSidepanel()
 
@@ -203,9 +204,19 @@ export function SidepanelItem({item}: SidepanelItemProps) {
   if (status == 'error') {
     console.error('SidepanelItem error: ', error)
     return (
-      <Box
-        css={{padding: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}
-      >{`Error with item id: ${publicationId}`}</Box>
+      <Box css={{padding: '$4', marginTop: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>
+        <Box css={{display: 'flex', gap: '$4'}}>
+          <Text size="2" css={{flex: 1}}>{`Error with item id: ${publicationId}`}</Text>
+          <Button
+            size="1"
+            variant="ghost"
+            color="primary"
+            onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', payload: item})}
+          >
+            remove
+          </Button>
+        </Box>
+      </Box>
     )
   }
 
