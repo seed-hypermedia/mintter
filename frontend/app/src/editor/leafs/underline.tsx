@@ -20,7 +20,10 @@ export function createUnderlinePlugin(): EditorPlugin {
       }
     },
     onDOMBeforeInput(ev) {
-      if (ev.inputType === 'formatUnderline') toggleMark(editor, MARK_UNDERLINE)
+      if (ev.inputType == 'formatUnderline') {
+        ev.preventDefault()
+        toggleMark(editor, MARK_UNDERLINE)
+      }
     },
   }
 }

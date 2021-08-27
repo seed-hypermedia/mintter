@@ -116,19 +116,25 @@ export function toggleMark(
 
   const isActive = isMarkActive(editor, key)
 
-  if (isActive) {
-    removeMark(editor, key)
-  } else {
-    clears.forEach((item) => {
-      removeMark(editor, item)
-    })
-
-    editor.addMark(key, true)
-  }
+  Transforms.setNodes(
+    editor,
+    {
+      [key]: isActive ? null : true,
+    },
+    {
+      match: Text.isText,
+      split: true,
+    },
+  )
 }
 
 export function isMarkActive(editor: Editor, key: keyof Omit<Text, 'value'>): boolean {
-  return !!Editor.marks(editor)?.[key]
+  const [match] = Editor.nodes(editor, {
+    match: (n) => !!n[key],
+    mode: 'all',
+  })
+
+  return !!match
 }
 
 export function removeMark(editor: Editor, key: keyof Omit<Text, 'value'>): void {

@@ -15,7 +15,10 @@ export function createStrongPlugin(): EditorPlugin {
       }
     },
     onDOMBeforeInput(ev) {
-      if (ev.inputType === 'formatBold') toggleMark(editor, MARK_STRONG)
+      if (ev.inputType == 'formatBold') {
+        ev.preventDefault()
+        toggleMark(editor, MARK_STRONG)
+      }
     },
   }
 }

@@ -15,7 +15,10 @@ export function createEmphasisPlugin(): EditorPlugin {
       }
     },
     onDOMBeforeInput(ev) {
-      if (ev.inputType === 'formatItalic') toggleMark(editor, MARK_EMPHASIS)
+      if (ev.inputType == 'formatItalic') {
+        ev.preventDefault()
+        toggleMark(editor, MARK_EMPHASIS)
+      }
     },
   }
 }
