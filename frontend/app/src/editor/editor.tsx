@@ -67,18 +67,18 @@ export function Editor({
   mode = readOnly ? 'read-only' : 'default',
 }: EditorProps): JSX.Element {
   return (
-    <Box
-      css={{
-        position: 'relative',
-        marginLeft: '-$8',
-      }}
-    >
-      <Suspense fallback={'loading'}>
+    <Suspense fallback={'loading'}>
+      <Box
+        css={{
+          position: 'relative',
+          marginLeft: '-$8',
+        }}
+      >
         <AsyncEditor value={value} onChange={onChange} mode={mode} readOnly={readOnly}>
           {children}
         </AsyncEditor>
         <pre>{JSON.stringify(value, null, 2)}</pre>
-      </Suspense>
-    </Box>
+      </Box>
+    </Suspense>
   )
 }
