@@ -1,17 +1,16 @@
+import type {CSS} from '@mintter/ui/stitches.config'
 import {Switch, useRouteMatch, useHistory, Route, useParams} from 'react-router-dom'
 import {useAccount, useDraftsList, useMyPublicationsList, useOthersPublicationsList} from '@mintter/client/hooks'
-import {listAccounts, connect, createDraft, deletePublication} from '@mintter/client'
+import {connect, createDraft} from '@mintter/client'
 import {Link} from '../components/link'
 import {Box, Button, Text} from '@mintter/ui'
 import {Separator} from '../components/separator'
 import * as MessageBox from '../components/message-box'
 import {Container} from '../components/container'
-import type {CSS} from '@mintter/ui/stitches.config'
-import {useMemo} from 'react'
-import toast from 'react-hot-toast'
+import {useMemo, useCallback} from 'react'
 import {Connections} from '../connections'
 import {ListPage} from './list-page'
-import {useCallback} from 'react'
+import toast from 'react-hot-toast'
 
 const hookSelector = {
   published: useMyPublicationsList,
@@ -56,13 +55,12 @@ export default function Library() {
         const peer: string | null = window.prompt(`enter a peer address`)
         if (peer) {
           try {
-            const connAttempt = await connect(peer.split(','))
-            console.log(connAttempt)
-            // await toast.promise(connect(peer.split(',')), {
-            //   loading: 'Connecting to peer...',
-            //   success: 'Connection Succeeded!',
-            //   error: 'Connection Error',
-            // })
+            // const connAttempt = await connect(peer.split(','))
+            await toast.promise(connect(peer.split(',')), {
+              loading: 'Connecting to peer...',
+              success: 'Connection Succeeded!',
+              error: 'Connection Error',
+            })
           } catch (err) {
             console.error(err.message)
           }
@@ -147,14 +145,13 @@ export default function Library() {
 }
 
 function ProfileInfo() {
-  const {path} = useRouteMatch()
-  const {data, isError, error, isLoading, isSuccess} = useAccount()
+  const {status, data, error} = useAccount()
 
-  if (isLoading) {
+  if (status == 'loading') {
     return <Text>loading...</Text>
   }
 
-  if (isError) {
+  if (status == 'error') {
     console.error('ProfileInfo error: ', error)
     return <Text>Error...</Text>
   }
@@ -168,6 +165,14 @@ function ProfileInfo() {
         alignItems: 'flex-start',
       }}
     >
+      <Box
+        css={{
+          width: 80,
+          height: 80,
+          borderRadius: '$round',
+          background: '$background-neutral-soft',
+        }}
+      />
       <Text
         as="h3"
         size="7"
