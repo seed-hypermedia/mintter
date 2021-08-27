@@ -106,6 +106,7 @@ export function useLastEditorSelection(): UseLastSelectionResult {
 export function HoveringToolbar() {
   const ref = useRef<HTMLDivElement | null>()
   const editor = useSlateStatic()
+  const [storeFocus, sendStoreFocus] = useState(false)
   const {lastSelection, resetSelection} = useLastEditorSelection()
 
   useEffect(() => {
@@ -114,11 +115,13 @@ export function HoveringToolbar() {
       return
     }
 
-    if (!lastSelection || Range.isCollapsed(lastSelection) || Editor.string(editor, lastSelection) == '') {
+    let selection = storeFocus ? lastSelection : editor.selection
+
+    if (!selection || Range.isCollapsed(selection) || Editor.string(editor, selection) == '') {
       el.removeAttribute('style')
       return
     }
-    const domRange = ReactEditor.toDOMRange(editor, lastSelection)
+    const domRange = ReactEditor.toDOMRange(editor, selection)
     const rect = domRange.getBoundingClientRect()
     el.style.opacity = '1'
     el.style.top = `${rect.top + window.pageYOffset - el.offsetHeight}px`
@@ -129,7 +132,6 @@ export function HoveringToolbar() {
     const escEvent = (e: KeyboardEvent) => {
       // important to close the toolbar if the escape key is pressed. there's no other way than this apart from calling the `resetSelection`
       if (e.key == 'Escape') {
-        console.log('lastSelection', lastSelection, editor.selection)
         Transforms.deselect(editor)
         resetSelection()
       }
@@ -152,7 +154,7 @@ export function HoveringToolbar() {
         <FormatButton format="strong" />
         <FormatButton format="emphasis" />
         <FormatButton format="underline" />
-        <ToolbarLink lastSelection={lastSelection} resetSelection={resetSelection} />
+        <ToolbarLink lastSelection={lastSelection} resetSelection={resetSelection} sendStoreFocus={sendStoreFocus} />
       </Menu>
     </Portal>
   )

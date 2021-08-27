@@ -1,6 +1,7 @@
 import type {EditorPlugin} from '../types'
 import type {Embed, Link as LinkType} from '@mintter/mttast'
 import type {MTTEditor} from '../utils'
+import type {BaseRange} from 'slate'
 import type {UseLastSelectionResult} from '../hovering-toolbar'
 import {useEffect, useState} from 'react'
 import {isLink} from '@mintter/mttast'
@@ -78,8 +79,6 @@ export const createLinkPlugin = (): EditorPlugin => ({
     }
 
     editor.insertText = (text: string) => {
-      console.log('🚀 ~ insertText', text, editor)
-
       if (text && isUrl(text)) {
         wrapLink(editor, text)
       } else {
@@ -106,7 +105,7 @@ export const createLinkPlugin = (): EditorPlugin => ({
 
 export interface InsertLinkOptions {
   url: string
-  selection: Range | null
+  selection: BaseRange | null
   wrap: boolean
 }
 
@@ -189,9 +188,11 @@ function wrapMintterLink(editor: MTTEditor, url: string) {
   }
 }
 
-export interface ToolbarLinkProps extends UseLastSelectionResult {}
+export interface ToolbarLinkProps extends UseLastSelectionResult {
+  sendStoreFocus: (n: boolean) => void
+}
 
-export function ToolbarLink({lastSelection, resetSelection}: ToolbarLinkProps) {
+export function ToolbarLink({sendStoreFocus, resetSelection, lastSelection}: ToolbarLinkProps) {
   const [open, setOpen] = useState(false)
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
@@ -201,7 +202,11 @@ export function ToolbarLink({lastSelection, resetSelection}: ToolbarLinkProps) {
           size="1"
           color="muted"
           onClick={() => {
-            setOpen((v) => !v)
+            setOpen((v) => {
+              sendStoreFocus(!v)
+              return !v
+            })
+            resetSelection()
           }}
         >
           <Icon name="Link" />
@@ -222,7 +227,7 @@ export function ToolbarLink({lastSelection, resetSelection}: ToolbarLinkProps) {
 }
 
 export interface LinkModalProps {
-  lastSelection: Range | null
+  lastSelection: BaseRange | null
   close: () => void
 }
 export function LinkModal({close, lastSelection}: LinkModalProps) {
@@ -236,7 +241,7 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
     if (link && isUrl(link)) {
       ReactEditor.focus(editor)
       setTimeout(() => {
-        Transforms.setSelection(editor, lastSelection)
+        Transforms.setSelection(editor, lastSelection!)
         insertLink(editor, {url: link, selection: lastSelection, wrap: true})
       }, 0)
     }
@@ -245,17 +250,9 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
   }
 
   function handleRemove() {
-    if (!editor) return
-    const linkEntry = Editor.above(editor, {
-      match: (n) => n.type == ELEMENT_LINK,
-    })
-    if (!linkEntry) return
-
-    const [linkNode, linkPath] = linkEntry
-    Transforms.unwrapNodes(editor, {
-      at: linkPath,
-      match: (n) => n.type == ELEMENT_LINK,
-    })
+    if (isLinkActive(editor)) {
+      unwrapLink(editor)
+    }
     close()
   }
 
@@ -313,7 +310,10 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
           </Button>
           <Button
             type="button"
-            onClick={getPreventDefaultHandler(handleRemove)}
+            onClick={(e) => {
+              e.preventDefault()
+              handleRemove()
+            }}
             disabled={isLink}
             variant="outlined"
             color="danger"
