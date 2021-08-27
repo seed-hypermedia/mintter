@@ -1,7 +1,7 @@
 import type {EditorPlugin} from '../types'
 import type {Embed, Link as LinkType} from '@mintter/mttast'
 import type {MTTEditor} from '../utils'
-import type {BaseRange} from 'slate'
+import type {BaseRange, BaseSelection} from 'slate'
 import type {UseLastSelectionResult} from '../hovering-toolbar'
 import {useEffect, useState} from 'react'
 import {isLink} from '@mintter/mttast'
@@ -21,6 +21,7 @@ import * as Popover from '@radix-ui/react-popover'
 import {Slot} from '@radix-ui/react-slot'
 import {Button} from '@mintter/ui/button'
 import {MINTTER_LINK_PREFIX} from '../../constants'
+import type {Range} from 'slate'
 
 export const ELEMENT_LINK = 'link'
 
@@ -135,31 +136,33 @@ export function insertLink(
   }
 }
 
-export function isLinkActive(editor: MTTEditor): boolean {
+export function isLinkActive(editor: MTTEditor, selection: BaseSelection = editor.selection): boolean {
   const [link] = Editor.nodes(editor, {
     match: (n) => !Editor.isEditor(n) && SlateElement.isElement(n) && n.type == ELEMENT_LINK,
+    at: selection,
   })
 
   return !!link
 }
 
-export function unwrapLink(editor: MTTEditor): void {
+export function unwrapLink(editor: MTTEditor, selection: Range | null = editor.selection): void {
   Transforms.unwrapNodes(editor, {
     match: (n) => !Editor.isEditor(n) && SlateElement.isElement(n) && n.type == ELEMENT_LINK,
+    at: selection ?? undefined,
   })
 }
 
-export function wrapLink(editor: MTTEditor, url: string, selection = editor.selection): void {
+export function wrapLink(editor: MTTEditor, url: string, selection: Range | null = editor.selection): void {
   if (isLinkActive(editor)) {
-    unwrapLink(editor)
+    unwrapLink(editor, selection)
   }
 
   const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])
 
   if (isCollapsed(selection!)) {
-    Transforms.insertNodes(editor, newLink)
+    Transforms.insertNodes(editor, newLink, {at: selection ?? undefined})
   } else {
-    Transforms.wrapNodes(editor, newLink, {split: true})
+    Transforms.wrapNodes(editor, newLink, {split: true, at: selection ?? undefined})
     Transforms.collapse(editor, {edge: 'end'})
   }
 }
@@ -227,7 +230,7 @@ export function ToolbarLink({sendStoreFocus, resetSelection, lastSelection}: Too
 }
 
 export interface LinkModalProps {
-  lastSelection: BaseRange | null
+  lastSelection: Range | null
   close: () => void
 }
 export function LinkModal({close, lastSelection}: LinkModalProps) {
@@ -250,8 +253,9 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
   }
 
   function handleRemove() {
-    if (isLinkActive(editor)) {
-      unwrapLink(editor)
+    if (isLinkActive(editor, lastSelection)) {
+      console.log('remove link!', editor)
+      unwrapLink(editor, lastSelection)
     }
     close()
   }

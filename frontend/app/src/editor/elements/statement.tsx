@@ -11,10 +11,12 @@ import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
 import {Marker} from '../marker'
 import type {NodeEntry} from 'slate'
-import * as ContextMenu from '@radix-ui/react-context-menu'
-import {useParams} from 'react-router'
+import {ContextMenu} from '../context-menu'
+import {useHistory, useParams} from 'react-router'
 import toast from 'react-hot-toast'
 import {useSidepanel} from '../../components/sidepanel'
+import {createDraft} from 'frontend/client/src/drafts'
+import {MINTTER_LINK_PREFIX} from '../../constants'
 
 export const ELEMENT_STATEMENT = 'statement'
 
@@ -65,30 +67,6 @@ export const Dragger = styled('div', {
   },
 })
 
-const ContextMenuContentStyled = styled(ContextMenu.Content, {
-  minWidth: 130,
-  backgroundColor: 'white',
-  borderRadius: 6,
-  padding: 5,
-  boxShadow: '0px 5px 15px -5px hsla(206,22%,7%,.15)',
-})
-
-const StyledItem = styled(ContextMenu.Item, {
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'start',
-  gap: '$4',
-  paddingVertical: '$2',
-  paddingHorizontal: '$4',
-  cursor: 'pointer',
-  '&:focus': {
-    outline: 'none',
-    backgroundColor: '$primary-muted',
-    cursor: 'pointer',
-  },
-})
-
 export const createStatementPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATEMENT,
   renderElement({attributes, children, element}) {
@@ -102,11 +80,24 @@ export const createStatementPlugin = (): EditorPlugin => ({
     if (isStatement(element)) {
       const {docId} = useParams<{docId: string}>()
       const {send} = useSidepanel()
+      const history = useHistory()
+
       async function onCopy() {
-        await copyTextToClipboard(`mtt://${docId}/${(element as StatementType).id}`)
+        await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${docId}/${(element as StatementType).id}`)
         toast.success('Statement Reference copied successfully', {position: 'top-center'})
       }
-      function onStartDraft() {}
+      async function onStartDraft() {
+        send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${docId}/${element.id}`})
+        try {
+          const newDraft = await createDraft()
+          if (newDraft) {
+            history.push(`/editor/${newDraft.id}`)
+          }
+        } catch (err) {
+          throw Error('new Draft error: ')
+        }
+      }
+
       return (
         <StatementStyled {...attributes}>
           <Tools contentEditable={false}>
@@ -117,20 +108,20 @@ export const createStatementPlugin = (): EditorPlugin => ({
           </Tools>
           <ContextMenu.Root>
             <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
-            <ContextMenuContentStyled alignOffset={-5}>
-              <StyledItem onSelect={onCopy}>
+            <ContextMenu.Content alignOffset={-5}>
+              <ContextMenu.Item onSelect={onCopy}>
                 <Icon name="Copy" size="1" />
                 <Text size="2">Copy Statement Reference</Text>
-              </StyledItem>
-              <StyledItem onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: `${docId}/${element.id}`})}>
+              </ContextMenu.Item>
+              <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: `${docId}/${element.id}`})}>
                 <Icon size="1" name="ArrowBottomRight" />
                 <Text size="2">Open in Sidepanel</Text>
-              </StyledItem>
-              <StyledItem onSelect={onStartDraft}>
+              </ContextMenu.Item>
+              <ContextMenu.Item onSelect={onStartDraft}>
                 <Icon size="1" name="AddCircle" />
                 <Text size="2">Start a Draft</Text>
-              </StyledItem>
-            </ContextMenuContentStyled>
+              </ContextMenu.Item>
+            </ContextMenu.Content>
           </ContextMenu.Root>
         </StatementStyled>
       )
@@ -198,7 +189,7 @@ export function removeEmptyStatement(editor: MTTEditor, entry: NodeEntry<Stateme
   }
 }
 
-function copyTextToClipboard(text: string) {
+export function copyTextToClipboard(text: string) {
   return new Promise((resolve, reject) => {
     if (!navigator.clipboard) {
       return fallbackCopyTextToClipboard(text)
