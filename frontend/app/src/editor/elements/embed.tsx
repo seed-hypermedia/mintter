@@ -10,6 +10,11 @@ import {visit} from 'unist-util-visit'
 import {document} from '@mintter/mttast-builder'
 import {useMemo} from 'react'
 import {MINTTER_LINK_PREFIX} from '../../constants'
+import {ContextMenu} from '../context-menu'
+import {Icon} from '@mintter/ui/icon'
+import {Text} from '@mintter/ui/text'
+import {copyTextToClipboard} from './statement'
+import toast from 'react-hot-toast'
 
 export const ELEMENT_EMBED = 'embed'
 
@@ -45,6 +50,12 @@ export const createEmbedPlugin = (): EditorPlugin => ({
   renderElement({attributes, children, element}) {
     if (isEmbed(element)) {
       const {data, status, error} = useEmbed(element.url || '')
+
+      async function onCopy() {
+        await copyTextToClipboard(element.url)
+        toast.success('Embed Reference copied successfully', {position: 'top-center'})
+      }
+
       if (status == 'loading') {
         return (
           <span {...attributes}>
@@ -66,13 +77,20 @@ export const createEmbedPlugin = (): EditorPlugin => ({
 
       return (
         <EmbedStyled cite={element.url} {...attributes}>
-          {/* <Suspense fallback={''}> */}
-          {/* <AsyncEmbed /> */}
-          <span contentEditable={false}>
-            <span>{Node.string(data.statement)}</span>
-          </span>
-          {/* </Suspense> */}
-          {children}
+          <ContextMenu.Root>
+            <ContextMenu.Trigger>
+              <span contentEditable={false}>
+                <span>{Node.string(data.statement)}</span>
+              </span>
+              {children}
+            </ContextMenu.Trigger>
+            <ContextMenu.Content>
+              <ContextMenu.Item onSelect={onCopy}>
+                <Icon name="Copy" size="1" />
+                <Text size="2">Copy Embed Reference</Text>
+              </ContextMenu.Item>
+            </ContextMenu.Content>
+          </ContextMenu.Root>
         </EmbedStyled>
       )
     }

@@ -83,7 +83,7 @@ export interface UseLastSelectionResult {
 
 export function useLastEditorSelection(): UseLastSelectionResult {
   const editor = useSlateStatic()
-  const [lastSelection, update] = useState<BaseSelection>(editor.selection)
+  const [lastSelection, update] = useState<Range | null>(editor.selection)
 
   const resetSelection = () => update(null)
 

@@ -1,9 +1,11 @@
+import type {Account} from '@mintter/client'
 import {Button, Box, Text} from '@mintter/ui'
 import {useListAccounts} from '@mintter/client/hooks'
-import type {Account} from 'frontend/client/.generated/accounts/v1alpha/accounts'
 import {useQuery} from 'react-query'
 import {getPeerInfo} from 'frontend/client/src/networking'
 import {ConnectionStatus} from 'frontend/client/.generated/networking/v1alpha/networking'
+import * as HoverCard from '@radix-ui/react-hover-card'
+import {styled, keyframes} from '@mintter/ui/stitches.config'
 // TODO: fix types
 export function Connections({onConnect}: any) {
   const {status, data, error} = useListAccounts()
@@ -44,6 +46,53 @@ export function Connections({onConnect}: any) {
   return null
 }
 
+/*
+ * @todo context menu styles copied
+ * @body This is copied from the context menu file
+ */
+const slideUpAndFade = keyframes({
+  '0%': {opacity: 0, transform: 'translateY(2px)'},
+  '100%': {opacity: 1, transform: 'translateY(0)'},
+})
+
+const slideRightAndFade = keyframes({
+  '0%': {opacity: 0, transform: 'translateX(-2px)'},
+  '100%': {opacity: 1, transform: 'translateX(0)'},
+})
+
+const slideDownAndFade = keyframes({
+  '0%': {opacity: 0, transform: 'translateY(-2px)'},
+  '100%': {opacity: 1, transform: 'translateY(0)'},
+})
+
+const slideLeftAndFade = keyframes({
+  '0%': {opacity: 0, transform: 'translateX(2px)'},
+  '100%': {opacity: 1, transform: 'translateX(0)'},
+})
+
+const HoverCardContentStyled = styled(HoverCard.Content, {
+  minWidth: 130,
+  backgroundColor: 'white',
+  borderRadius: 6,
+  padding: '$4',
+  boxShadow: 'hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px',
+  '@media (prefers-reduced-motion: no-preference)': {
+    animationDuration: '400ms',
+    animationTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+    willChange: 'transform, opacity',
+    '&[data-state="open"]': {
+      '&[data-side="top"]': {animationName: slideDownAndFade},
+      '&[data-side="right"]': {animationName: slideLeftAndFade},
+      '&[data-side="bottom"]': {animationName: slideUpAndFade},
+      '&[data-side="left"]': {animationName: slideRightAndFade},
+    },
+  },
+})
+
+const StyledArrow = styled(HoverCard.Arrow, {
+  fill: 'white',
+})
+
 export type AccountItemProps = {
   account: Account
 }
@@ -56,43 +105,60 @@ function AccountItem({account}: AccountItemProps) {
   })
 
   return (
-    <Box
-      as="li"
-      key={account.id}
-      css={{
-        display: 'flex',
-        gap: '$3',
-        alignItems: 'center',
-        // paddingHorizontal: '$3',
-        // paddingVertical: '$2',
-        padding: '$3',
-        marginHorizontal: '-$3',
-        borderRadius: '$3',
-        transition: 'background 0.25s ease-in-out',
-        '&:hover': {
-          cursor: 'pointer',
-          backgroundColor: '$background-muted',
-        },
-      }}
-    >
-      {data && (
+    <HoverCard.Root>
+      <HoverCard.Trigger>
         <Box
+          as="li"
+          key={account.id}
           css={{
-            width: 12,
-            height: 12,
-            borderRadius: '$round',
-            flex: 'none',
-            backgroundColor:
-              data.connectionStatus == ConnectionStatus.CONNECTED
-                ? '$success-default'
-                : data.connectionStatus == ConnectionStatus.NOT_CONNECTED
-                ? '$danger-default'
-                : '$background-default',
+            display: 'flex',
+            gap: '$3',
+            alignItems: 'center',
+            // paddingHorizontal: '$3',
+            // paddingVertical: '$2',
+            padding: '$3',
+            marginHorizontal: '-$3',
+            borderRadius: '$3',
+            transition: 'background 0.25s ease-in-out',
+            '&:hover': {
+              cursor: 'pointer',
+              backgroundColor: '$background-muted',
+            },
           }}
-        />
-      )}
+        >
+          {data && (
+            <Box
+              css={{
+                width: 12,
+                height: 12,
+                borderRadius: '$round',
+                flex: 'none',
+                backgroundColor:
+                  data.connectionStatus == ConnectionStatus.CONNECTED
+                    ? '$success-default'
+                    : data.connectionStatus == ConnectionStatus.NOT_CONNECTED
+                    ? '$danger-default'
+                    : '$background-default',
+              }}
+            />
+          )}
 
-      <Text data-testid="connection-alias">{`${account.profile?.alias} (${account.id.slice(-8)})`}</Text>
-    </Box>
+          <Text data-testid="connection-alias">{`${account.profile?.alias} (${account.id.slice(-8)})`}</Text>
+        </Box>
+      </HoverCard.Trigger>
+      <HoverCardContentStyled align="start" portalled>
+        <StyledArrow />
+        <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>
+          <Box css={{width: 32, height: 32, backgroundColor: '$background-neutral', borderRadius: '$round'}} />
+          <Box>
+            <Text fontWeight="bold">{account.profile?.alias}</Text>
+            <Text color="muted">{account.profile?.bio}</Text>
+            <Text size="1" css={{marginTop: '$3'}}>
+              {account.profile?.email}
+            </Text>
+          </Box>
+        </Box>
+      </HoverCardContentStyled>
+    </HoverCard.Root>
   )
 }
