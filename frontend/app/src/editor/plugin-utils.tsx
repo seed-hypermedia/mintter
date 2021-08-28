@@ -4,55 +4,98 @@ import {withHistory} from 'slate-history'
 import {withReact, DefaultElement, DefaultLeaf} from 'slate-react'
 import type {RenderElementProps, RenderLeafProps} from 'slate-react'
 import type {EditorEventHandlers, EditorPlugin} from './types'
+import type {EditableProps} from 'slate-react/dist/components/editable'
 
 const byMode = (mode: string) => (plugin: EditorPlugin) => plugin.mode === undefined || plugin.mode === mode
 
-export function buildEditorHook(plugins: EditorPlugin[], mode: string): Editor {
-  const hooks = plugins.filter(byMode(mode)).flatMap(({configureEditor}) => configureEditor || [])
-
-  return hooks.reduce((editor, hook) => hook(editor) || editor, withHistory(withReact(createEditor())))
+class PluginError extends Error {
+  constructor(plugin: string, message: string) {
+    super(message)
+    this.name = `[${plugin}] Error`
+  }
 }
 
-export function buildRenderElementHook(
-  plugins: EditorPlugin[],
-  mode: string,
-): ((props: RenderElementProps) => JSX.Element) | undefined {
-  const hooks = plugins.filter(byMode(mode)).flatMap(({renderElement}) => renderElement || [])
-  if (!hooks.length) return undefined
+const hasHook =
+  (hook: keyof EditorPlugin) =>
+  (plugin: EditorPlugin): plugin is EditorPlugin & Required<Pick<EditorPlugin, typeof hook>> => {
+    return typeof plugin[hook] === 'function'
+  }
+
+export function buildEditorHook(plugins: EditorPlugin[], mode: string): Editor {
+  const filteredPlugins = plugins.filter(byMode(mode)).filter(hasHook('configureEditor'))
+
+  let editor = withHistory(withReact(createEditor()))
+  for (const {name, configureEditor} of filteredPlugins) {
+    try {
+      editor = configureEditor(editor) || editor
+    } catch (e) {
+      const error = new PluginError(name, 'in configureEditor hook')
+      error.stack = e.stack
+      throw error
+    }
+  }
+  return editor
+}
+
+export function buildRenderElementHook(plugins: EditorPlugin[], mode: string): EditableProps['renderElement'] {
+  const filteredPlugins = plugins.filter(byMode(mode)).filter(hasHook('renderElement'))
+  if (!filteredPlugins.length) return undefined
 
   return function SlateElement(props: RenderElementProps) {
-    for (const renderElement of hooks) {
-      const element = renderElement(props)
-      if (element) return element
+    for (const {name, renderElement} of filteredPlugins) {
+      try {
+        const element = renderElement(props)
+        if (element) return element
+      } catch (e) {
+        const error = new PluginError(name, 'in renderElement hook')
+        error.stack = e.stack
+        throw error
+      }
     }
     return <DefaultElement {...props} />
   }
 }
 
-export function buildRenderLeafHook(
-  plugins: EditorPlugin[],
-  mode: string,
-): ((props: RenderLeafProps) => JSX.Element) | undefined {
-  const hooks = plugins.filter(byMode(mode)).flatMap(({renderLeaf}) => renderLeaf || [])
-  if (!hooks.length) return undefined
+export function buildRenderLeafHook(plugins: EditorPlugin[], mode: string): EditableProps['renderLeaf'] {
+  const filteredPlugins = plugins.filter(byMode(mode)).filter(hasHook('renderLeaf'))
+  if (!filteredPlugins.length) return undefined
 
   return function SlateLeaf(props: RenderLeafProps) {
     const leafProps = {...props}
 
-    for (const renderLeaf of hooks) {
-      const newChildren = renderLeaf && renderLeaf(leafProps)
-      if (newChildren) leafProps.children = newChildren
+    for (const {name, renderLeaf} of filteredPlugins) {
+      try {
+        const newChildren = renderLeaf(leafProps)
+        if (newChildren) leafProps.children = newChildren
+      } catch (e) {
+        const error = new PluginError(name, 'in renderLeaf hook')
+        error.stack = e.stack
+        throw error
+      }
     }
 
     return <DefaultLeaf {...leafProps} />
   }
 }
 
-export function buildDecorateHook(plugins: EditorPlugin[], mode: string): ((entry: NodeEntry) => Range[]) | undefined {
-  const hooks = plugins.filter(byMode(mode)).flatMap(({decorate}) => decorate || [])
-  if (!hooks.length) return undefined
+export function buildDecorateHook(plugins: EditorPlugin[], mode: string): EditableProps['decorate'] {
+  const filteredPlugins = plugins.filter(byMode(mode)).filter(hasHook('decorate'))
+  if (!filteredPlugins.length) return undefined
 
-  return (entry: NodeEntry) => hooks.flatMap((decorate) => decorate(entry) || [])
+  return function decorate(entry: NodeEntry) {
+    let ranges: Range[] = []
+
+    for (const {name, decorate} of filteredPlugins) {
+      try {
+        ranges = ranges.concat(decorate(entry) || [])
+      } catch (e) {
+        const error = new PluginError(name, 'in decorate hook')
+        error.stack = e.stack
+        throw error
+      }
+    }
+    return ranges
+  }
 }
 
 export function buildEventHandlerHooks(plugins: EditorPlugin[], mode: string): EditorEventHandlers {
@@ -62,11 +105,20 @@ export function buildEventHandlerHooks(plugins: EditorPlugin[], mode: string): E
   >
 
   for (const event of events) {
-    const hooks = plugins.filter(byMode(mode)).flatMap((p) => p[event] || [])
+    const filteredPlugins = plugins.filter(byMode(mode)).filter(hasHook(event))
 
-    // @ts-expect-error the event handler expects `this` to be type never which we cannot pass
-    handlers[event] = (ev) => hooks.forEach((h) => h(ev))
+    handlers[event] = function (ev) {
+      for (const {name, [event]: hook} of filteredPlugins) {
+        try {
+          // @ts-expect-error the event handler expects `this` to be type never which we cannot pass
+          hook(ev)
+        } catch (e) {
+          const error = new PluginError(name, `in ${event} hook`)
+          error.stack = e.stack
+          throw error
+        }
+      }
+    }
   }
-
   return handlers
 }
