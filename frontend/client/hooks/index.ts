@@ -178,10 +178,6 @@ export function usePublication(publicationId: string, options: HookOptions<Publi
   }
 }
 
-/**
- *
- * @deprecated
- */
 export function useOthersPublicationsList(options = {}) {
   const queryClient = useQueryClient()
   const info = queryClient.getQueryData<Info>('AccountInfo')
@@ -207,10 +203,6 @@ export function useOthersPublicationsList(options = {}) {
   }
 }
 
-/**
- *
- * @deprecated
- */
 export function useMyPublicationsList(options = {}) {
   const queryClient = useQueryClient()
   const info = queryClient.getQueryData<Info>('AccountInfo')
@@ -280,6 +272,7 @@ export function useQuote(
 
 export function useListAccounts() {
   const listAccountsQuery = useQuery('ListAccounts', () => listAccounts())
+  console.log('🚀 ~ file: index.ts ~ line 283 ~ useListAccounts ~ listAccountsQuery', listAccountsQuery)
 
   const data = useMemo(() => listAccountsQuery.data?.accounts, [listAccountsQuery.data])
 
