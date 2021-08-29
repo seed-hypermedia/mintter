@@ -12,7 +12,7 @@ export const ELEMENT_PARAGRAPH = 'paragraph'
 
 const Paragraph = styled(Text, {
   "&[data-parent='blockquote']": {
-    backgroundColor: '$background-muted',
+    // backgroundColor: '$background-muted',
     padding: '$7',
     borderRadius: '$2',
     overflow: 'hidden',
@@ -24,7 +24,7 @@ const Paragraph = styled(Text, {
       top: 0,
       width: 4,
       height: '$full',
-      backgroundColor: '$secondary-soft',
+      // backgroundColor: '$secondary-soft',
     },
   },
 })
