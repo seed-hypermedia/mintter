@@ -17,7 +17,6 @@ import {createBlockquotePlugin} from './elements/blockquote'
 import {createEmbedPlugin} from './elements/embed'
 import {createBlockPlugin} from './elements/code'
 import {createTabPlugin} from './tab-plugin'
-import {createMDHighlightPlugin} from './md-highlight'
 
 export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
   createStrongPlugin(),
@@ -48,7 +47,6 @@ export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
    */
 
   createTabPlugin(),
-  createMDHighlightPlugin(),
   {
     name: 'normalize',
     configureEditor(editor) {
