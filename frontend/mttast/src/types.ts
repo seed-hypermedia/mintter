@@ -125,7 +125,7 @@ export type StaticContent = StaticParagraph
 export type GroupingContent = Group | OrderedList | UnorderedList
 
 // The statements of a document
-export type FlowContent = Statement | Heading | Blockquote
+export type FlowContent = Statement | Heading | Blockquote | Code
 
 // Content that is embeded from elsewhere
 export type EmbeddedContent = Embed | Video | Image
