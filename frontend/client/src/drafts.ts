@@ -11,7 +11,7 @@ import {
 import type {Document} from '../.generated/documents/v1alpha/documents'
 import {createGrpcClient} from './grpc-client'
 import type {GrpcClient} from './grpc-client'
-import {createId, document, embed, group, paragraph, statement, text} from '@mintter/mttast-builder'
+import {code, createId, document, embed, group, paragraph, statement, text} from '@mintter/mttast-builder'
 
 /**
  *
@@ -95,13 +95,43 @@ export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Do
   const doc = await new DraftsClientImpl(rpc).getDraft(request)
   // doc.content = JSON.stringify([
   //   group([
-  //     statement({id: createId()}, [
-  //       paragraph([
-  //         text('hello'),
-  //         embed({url: 'bahfjrj4iasqoiara34x57ubhyfngtcmbgemmxcsmxs3c5hli4dx27l5kn37yggkrmeka/GubuBNmv'}, [text('')]),
-  //       ]),
+  //     // statement({id: createId()}, [
+  //     //   paragraph([
+  //     //     text('hello'),
+  //     //     embed({url: 'bahfjrj4iasqoiara34x57ubhyfngtcmbgemmxcsmxs3c5hli4dx27l5kn37yggkrmeka/GubuBNmv'}, [text('')]),
+  //     //   ]),
+  //     // ]),
+
+  //   statement({id: createId()}, [paragraph([text('')])]),
+  //   code({lang: 'javascript'}, [
+  //     paragraph([text(`function decorateCodeElements([node, path]: NodeEntry<Node>) {`)]),
+  //     paragraph([text(`  for (const [text, textPath] of Node.texts(node)) {`)]),
+  //     paragraph([text(`    const [tokens] = highlighter.codeToThemedTokens(text.value, node.lang)`)]),
+  //     paragraph([text(`    console.log('🚀 ~ tokens', tokens)`)]),
+  //     paragraph([text(`    let offset = 0`)]),
+  //     paragraph([text(`    tokens.forEach((token, i) => {`)]),
+  //     paragraph([text(`      if (i != 0) {`)]),
+  //     paragraph([text(`        const range: Range & Record<string, unknown> = {`)]),
+  //     paragraph([text(`          anchor: {path: [...nodePath, ...textPath], offset},`)]),
+  //     paragraph([
+  //       text(`          focus: {path: [...nodePath, ...textPath], offset: offset + token.content.length},`),
   //     ]),
+  //     paragraph([text(`          data: {`)]),
+  //     paragraph([text(`            color: token.color,`)]),
+  //     paragraph([text(`          },`)]),
+  //     paragraph([text(`        }`)]),
+  //     paragraph([text(`        if (token.fontStyle === 1) range[MARK_EMPHASIS] = true`)]),
+  //     paragraph([text(`        if (token.fontStyle === 2) range[MARK_STRONG] = true`)]),
+  //     paragraph([text(`        if (token.fontStyle === 4) range[MARK_UNDERLINE] = true`)]),
+  //     paragraph([text(`        console.log({ranges, range})`)]),
+  //     paragraph([text(`        ranges.push(range)`)]),
+  //     paragraph([text(`      }`)]),
+  //     paragraph([text(`      offset += token.content.length`)]),
+  //     paragraph([text(`    })`)]),
+  //     paragraph([text(`  }`)]),
+  //     paragraph([text(`}`)]),
   //   ]),
+  // ]),
   // ])
 
   return doc

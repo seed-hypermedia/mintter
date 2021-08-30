@@ -5,13 +5,13 @@ import {Node, Path, Editor} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {useMemo} from 'react'
 import {Transforms} from 'slate'
-import {isParagraph} from '@mintter/mttast'
+import {isCode, isParagraph} from '@mintter/mttast'
 import {createId, statement} from '@mintter/mttast-builder'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
 const Paragraph = styled(Text, {
-  "&[data-parent='blockquote']": {
+  '&[data-parent=blockquote]': {
     // backgroundColor: '$background-muted',
     padding: '$7',
     borderRadius: '$2',
@@ -27,6 +27,11 @@ const Paragraph = styled(Text, {
       // backgroundColor: '$secondary-soft',
     },
   },
+  '&[data-parent=code]': {
+    fontFamily: 'monospace',
+    margin: 0,
+    padding: 0,
+  },
 })
 
 export const createParagraphPlugin = (): EditorPlugin => ({
@@ -35,14 +40,14 @@ export const createParagraphPlugin = (): EditorPlugin => ({
     if (element.type === ELEMENT_PARAGRAPH) {
       const editor = useSlateStatic()
       const path = ReactEditor.findPath(editor, element)
-      const parent = useMemo(() => Editor.parent(editor, path))
+      const [parentNode] = Editor.parent(editor, path)
       return (
         <Paragraph
-          as="p"
+          as={isCode(parentNode) ? 'span' : 'p'}
           alt
           size="4"
           css={{paddingLeft: '$2'}}
-          data-parent={parent ? parent[0].type : null}
+          data-parent={parentNode?.type ?? null}
           {...attributes}
         >
           {children}
@@ -51,13 +56,24 @@ export const createParagraphPlugin = (): EditorPlugin => ({
     }
   },
   configureEditor: (editor) => {
-    const {normalizeNode, insertNode} = editor
+    const {normalizeNode, insertBreak} = editor
+
+    editor.insertBreak = () => {
+      console.log('insertBreak!: ', editor)
+      insertBreak()
+    }
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
       if (isParagraph(node)) {
+        console.log('normalizeNode isParagraph: ', editor)
         if (Path.hasPrevious(path)) {
+          const [parentNode, parentPath] = Editor.parent(editor, path)
           const prevNode = Node.get(editor, Path.previous(path))
+          if (isCode(parentNode)) {
+            console.log('paragraph normalizeNode isCode parent', editor)
+            return
+          }
           /*
            * @todo if the selection is in the beginning, then wrap the first paragraph with a new statement
            * @body Issue Body
