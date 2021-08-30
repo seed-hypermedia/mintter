@@ -1,0 +1,104 @@
+{
+  "type": "group",
+  "children": [
+    {
+      "type": "statement",
+      "id": "0ozzkCQG",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Now let look into the document."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "statement",
+      "id": "lcKwgIFx",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "I can write"
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "children": [
+            {
+              "type": "statement",
+              "id": "-U05oyCe",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "And nest things"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "statement",
+              "id": "193HuRrG",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "Under "
+                    },
+                    {
+                      "type": "text",
+                      "value": "each",
+                      "strong": true
+                    },
+                    {
+                      "type": "text",
+                      "value": " other"
+                    }
+                  ]
+                },
+                {
+                  "type": "group",
+                  "children": [
+                    {
+                      "type": "statement",
+                      "id": "lFXQ1dmo",
+                      "children": [
+                        {
+                          "type": "paragraph",
+                          "children": [
+                            {
+                              "type": "text",
+                              "value": "And even "
+                            },
+                            {
+                              "type": "text",
+                              "value": "further",
+                              "underline": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
