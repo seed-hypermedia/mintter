@@ -1,4 +1,5 @@
 import {styled} from '../stitches.config'
+import type * as Stitches from '@stitches/react'
 
 export const Button = styled('button', {
   all: 'unset',
@@ -160,6 +161,6 @@ export const Button = styled('button', {
     shape: 'rounded',
   },
 })
-
+export type ButtonVariants = Stitches.VariantProps<typeof Button>
 // TODO: when passing `as` to component it complains
-export type ButtonProps = React.ComponentProps<typeof Button>
+export type ButtonProps = ButtonVariants

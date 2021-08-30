@@ -1,5 +1,5 @@
-import {createCss, defaultThemeMap} from '@stitches/react'
-import type {StitchesCss} from '@stitches/react'
+import {createStitches, createTheme, defaultThemeMap} from '@stitches/react'
+import type * as Stitches from '@stitches/react'
 import basierCircleRegular from './fonts/basier-circle/regular.woff2'
 import basierCircleRegularItalic from './fonts/basier-circle/regular-italic.woff2'
 import basierCircleMedium from './fonts/basier-circle/medium.woff2'
@@ -13,7 +13,7 @@ import loraMediumItalic from './fonts/lora/medium-italic.ttf'
 import loraBold from './fonts/lora/bold.ttf'
 import loraBoldIatlic from './fonts/lora/bold-italic.ttf'
 
-const stitches = createCss({
+const stitches = createStitches({
   prefix: 'mtt-',
   theme: {
     borderStyles: {},
@@ -150,10 +150,10 @@ const stitches = createCss({
   // @ts-ignore
   media: {},
   utils: {
-    marginHorizontal: () => (val) => ({marginLeft: val, marginRight: val}),
-    marginVertical: () => (val) => ({marginTop: val, marginBottom: val}),
-    paddingHorizontal: () => (val) => ({paddingLeft: val, paddingRight: val}),
-    paddingVertical: () => (val) => ({paddingTop: val, paddingBottom: val}),
+    marginHorizontal: (val: Stitches.ScaleValue<'space'>) => ({marginLeft: val, marginRight: val}),
+    marginVertical: (val: Stitches.ScaleValue<'space'>) => ({marginTop: val, marginBottom: val}),
+    paddingHorizontal: (val: Stitches.ScaleValue<'space'>) => ({paddingLeft: val, paddingRight: val}),
+    paddingVertical: (val: Stitches.ScaleValue<'space'>) => ({paddingTop: val, paddingBottom: val}),
   },
   themeMap: {
     ...defaultThemeMap,
@@ -164,11 +164,10 @@ const stitches = createCss({
   },
 })
 
-export const {styled, css, theme, getCssString, global, keyframes, config} = stitches
-export type Theme = typeof theme
-export type CSS = StitchesCss<typeof stitches>
+export const {styled, css, globalCss, keyframes, config} = stitches
+export type CSS = Stitches.CSS<typeof config>
 
-export const lightTheme = theme('light-theme', {
+export const lightTheme = createTheme('light-theme', {
   colors: {
     'background-opposite': '#1A1A1A',
     'background-contrast-strong': '#333333',
@@ -236,7 +235,7 @@ export const lightTheme = theme('light-theme', {
   },
 })
 
-export const darkTheme = theme('dark-theme', {
+export const darkTheme = createTheme('dark-theme', {
   colors: {
     'background-opposite': '#FFFFFF',
     'background-contrast-strong': '#E5E5E5',
@@ -304,7 +303,7 @@ export const darkTheme = theme('dark-theme', {
   },
 })
 
-export const globalStyles = global({
+export const globalStyles = globalCss({
   '@font-face': [
     {
       fontFamily: 'Basier Circle',
