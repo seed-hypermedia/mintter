@@ -91,6 +91,7 @@ export interface Embed extends Alternative, Resource, Parent {
 
 export interface Link extends Resource, Parent {
   type: 'link'
+  children: StaticPhrasingContent[]
 }
 
 export type Text = Literal & {
