@@ -1,11 +1,12 @@
 import * as Label from '@radix-ui/react-label'
+import type * as Stitches from '@stitches/react'
 import autosize from 'autosize'
 import {forwardRef, useLayoutEffect, useRef} from 'react'
 import mergeRefs from 'react-merge-refs'
 import {nanoid} from 'nanoid'
 
 import {Box} from '../box'
-import {styled} from '../stitches.config'
+import {CSS, styled} from '../stitches.config'
 import {Text} from '../text'
 
 const InputContainer = styled(Box, {
@@ -148,11 +149,13 @@ const TextFieldHint = styled(Text, {
   },
 })
 
-type TextFieldProps = React.ComponentProps<typeof Input> & {
-  label?: string
-  hint?: string
-  containerCss?: React.ComponentProps<typeof InputContainer>['css']
-}
+type TextFieldProps = Stitches.VariantProps<typeof Input> &
+  Partial<{
+    id: string
+    label: string
+    hint: string
+    containerCss: CSS
+  }>
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   ({label, status = 'neutral', hint, id = nanoid(), containerCss, ...props}: TextFieldProps, ref) => {
@@ -178,7 +181,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       // @ts-ignore */}
         <Input ref={mergeRefs([localRef, ref])} id={id} status={status} {...props} />
         {hint ? (
-          <TextFieldHint status={status} size={props.size === '1' ? '1' : props.size === '2' ? '2' : undefined}>
+          <TextFieldHint status={status} size={props.size == '1' || props.size == '2' ? props.size : undefined}>
             {hint}
           </TextFieldHint>
         ) : null}

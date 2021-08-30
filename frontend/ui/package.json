@@ -31,8 +31,8 @@
   },
   "dependencies": {
     "@radix-ui/react-label": "^0.0.13",
-    "@stitches/core": "0.2.0",
-    "@stitches/react": "^0.2.5",
+    "@stitches/core": "^1.0.0",
+    "@stitches/react": "^1.0.0",
     "autosize": "^5.0.0",
     "eslint": "^7.28.0",
     "react": "^17.0.2"
