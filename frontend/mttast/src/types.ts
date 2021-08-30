@@ -117,7 +117,7 @@ export interface Resource {
 
 // Content Model
 
-export type MttastContent = FlowContent | GroupingContent | Content | PhrasingContent | EmbeddedContent
+export type MttastContent = FlowContent | GroupingContent | Content | PhrasingContent
 
 export type Content = Paragraph
 
@@ -128,11 +128,8 @@ export type GroupingContent = Group | OrderedList | UnorderedList
 // The statements of a document
 export type FlowContent = Statement | Heading | Blockquote | Code
 
-// Content that is embeded from elsewhere
-export type EmbeddedContent = Embed | Video | Image
-
 // the text and markup of a document that's not intended for
-export type StaticPhrasingContent = Text
+export type StaticPhrasingContent = Text | Video | Image
 
 // the text and markup of a document
-export type PhrasingContent = Link | StaticPhrasingContent | EmbeddedContent
+export type PhrasingContent = Link | Embed | StaticPhrasingContent
