@@ -1,3 +1,4 @@
+import type * as Stitches from '@stitches/react'
 import {styled} from '../stitches.config'
 
 export const Text = styled('span', {
@@ -164,4 +165,4 @@ export const Text = styled('span', {
   ],
 })
 
-export type TextProps = React.ComponentProps<typeof Text>
+export type TextProps = Stitches.VariantProps<typeof Text>
