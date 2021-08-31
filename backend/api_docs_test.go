@@ -276,6 +276,8 @@ func TestAPISyncDocuments(t *testing.T) {
 }
 
 func makeDraft(t *testing.T, ctx context.Context, api DocsServer, title, subtitle string) *documents.Document {
+	t.Helper()
+
 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
 	doc.Title = title
