@@ -1715,9 +1715,9 @@
   integrity sha512-MUc6zSmU3tEVnkQ78q0peeEjKWPUADMlC/t++2bI8WnAG2tvYRPIgHG8lWkXwqc8MsUF6Z2MOf+Mh5sazOmhiQ==
 
 "@types/is-hotkey@^0.1.1":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@types/is-hotkey/-/is-hotkey-0.1.3.tgz#1e86be048d3af160e8e676d5cd463f6f7061589a"
-  integrity sha512-Hz+eHHpMWLBX1CpDXSuQre9nYXN2e2VGVHvkkldxDzo9eFtRpHm5iOlJlZvnNGvele5584cUSkRnFRQb+Wcu0w==
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@types/is-hotkey/-/is-hotkey-0.1.4.tgz#4aa47254a4b5139b6af6ce9567ff0ea6ea490471"
+  integrity sha512-WkDPhxo2k20zHl4zeR/5MHew+O7kfkQLXjRuD2fjH1s0eYPxxMdXWw5Y6lTqmJFbcMkOm1wKLgRzAf+hNcJVSw==
 
 "@types/is-url@^1.2.30":
   version "1.2.30"
@@ -1778,9 +1778,9 @@
   integrity sha512-YSBPTLTVm2e2OoQIDYx8HaeWJ5tTToLH67kXR7zYNGupXMEHa2++G8k+DczX2cFVgalypqtyZIcU19AFcmOpmg==
 
 "@types/lodash@^4.14.149":
-  version "4.14.171"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.171.tgz#f01b3a5fe3499e34b622c362a46a609fdb23573b"
-  integrity sha512-7eQ2xYLLI/LsicL2nejW9Wyko3lcpN6O/z0ZLHrEQsg280zIdCv1t/0m6UtBjUHokCGBQ3gYTbHzDkZ1xOBwwg==
+  version "4.14.172"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.172.tgz#aad774c28e7bfd7a67de25408e03ee5a8c3d028a"
+  integrity sha512-/BHF5HAx3em7/KkzVKm3LrsD6HZAXuXO1AJZQ3cRRBZj4oHZDviWPYu0aEplAqDFNHZPW6d3G7KN+ONcCCC7pw==
 
 "@types/long@^4.0.1":
   version "4.0.1"
@@ -7543,21 +7543,21 @@ slash@^3.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
 
-"slate-history@https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.65.3-unist":
+"slate-history@https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.65.3-unist2":
   version "0.65.3"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.65.3-unist#fe65ca65a19ee58e2c106f5cbb2b9341d4d30b80"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.65.3-unist2#d04bc8978743ff22977d72b7c6c669d0d416e8a8"
   dependencies:
     is-plain-object "^3.0.0"
 
-"slate-hyperscript@https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.65.3-unist":
+"slate-hyperscript@https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.65.3-unist2":
   version "0.62.0"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.65.3-unist#69913a434fc9fe8bca570c1ffef41eb65ead9688"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.65.3-unist2#4d88ca6dba0300cb73ba5a560e309bd5b60ed83e"
   dependencies:
     is-plain-object "^3.0.0"
 
-"slate-react@https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.65.3-unist":
+"slate-react@https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.65.3-unist2":
   version "0.65.3"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.65.3-unist#cfa72102bac26982e604f47a92797036ce9070e4"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.65.3-unist2#e3eaa7cadcc92e6c7a9138352bf0ba7c86ff2f42"
   dependencies:
     "@types/is-hotkey" "^0.1.1"
     "@types/lodash" "^4.14.149"
@@ -7568,9 +7568,9 @@ slash@^3.0.0:
     scroll-into-view-if-needed "^2.2.20"
     tiny-invariant "1.0.6"
 
-"slate@https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.65.3-unist":
+"slate@https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.65.3-unist2":
   version "0.65.3"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.65.3-unist#9844a6ddbde2b31b88152ad3ac9bfbfdafc11ea0"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.65.3-unist2#232514625187c844d6d6385c107ed1717ee606d5"
   dependencies:
     "@types/esrever" "^0.2.0"
     esrever "^0.2.0"
