@@ -1,4 +1,4 @@
-import {createStitches, createTheme, defaultThemeMap} from '@stitches/react'
+import {createStitches, defaultThemeMap} from '@stitches/react'
 import type * as Stitches from '@stitches/react'
 import basierCircleRegular from './fonts/basier-circle/regular.woff2'
 import basierCircleRegularItalic from './fonts/basier-circle/regular-italic.woff2'
@@ -14,7 +14,7 @@ import loraBold from './fonts/lora/bold.ttf'
 import loraBoldIatlic from './fonts/lora/bold-italic.ttf'
 
 const stitches = createStitches({
-  // prefix: 'mtt-',
+  prefix: 'mtt-',
   theme: {
     borderStyles: {},
     borderWidths: {},
@@ -164,7 +164,7 @@ const stitches = createStitches({
   },
 })
 
-export const {styled, css, globalCss, keyframes, config} = stitches
+export const {styled, css, globalCss, keyframes, config, createTheme} = stitches
 export type CSS = Stitches.CSS<typeof config>
 
 export const lightTheme = createTheme('light-theme', {

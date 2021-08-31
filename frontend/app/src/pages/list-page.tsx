@@ -1,13 +1,14 @@
+import type {UseQueryResult} from 'react-query'
+import type {Publication} from '@mintter/client'
 import {DocumentList} from '../document-list'
 import {Text} from '@mintter/ui'
 import * as MessageBox from '../components/message-box'
 
 export type ListPageProps = {
   onCreateDraft: () => void
-  useDataHook: () => {data: Array<Document>; status: string; error: any}
+  useDataHook: () => UseQueryResult<Array<{document: Document} | Partial<Publication>>>
 }
 export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
-  console.log('🚀 ~ file: list-page.tsx ~ line 10 ~ ListPage ~ useDataHook', useDataHook)
   const {status, error, data = []} = useDataHook()
 
   if (status === 'loading') {
@@ -30,7 +31,6 @@ export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
           </MessageBox.Button>
         </MessageBox.Root>
       )}
-      {/* TODO: fix data type */}
       <DocumentList status={status} error={error} data={data} />
     </>
   )

@@ -1,63 +1,45 @@
+import type {Document, Publication} from '@mintter/client'
 import {useMemo} from 'react'
-import {useLocation, useRouteMatch} from 'react-router-dom'
+import {useLocation} from 'react-router-dom'
 import {Alert, Box, Text} from '@mintter/ui'
 import {Link} from './components/link'
-import {Document, deleteDraft, deletePublication} from '@mintter/client'
 import {useMachine} from '@xstate/react'
 import {deleteConfirmationDialogMachine} from './delete-confirmation-dialog'
-import type {DeleteConfirmationDialogMachineContext} from './delete-confirmation-dialog'
 import {useQueryClient} from 'react-query'
 import {toast} from 'react-hot-toast'
 import {getDateFormat} from './utils/get-format-date'
 
-export function DocumentList({
-  data,
-  status,
-  error,
-}: {
-  // TODO: fix types
-  // data: documents.Document.AsObject[];
-  data: Array<Document>
-  status: string
-  error: any
-}) {
-  const queryClient = useQueryClient()
+export function DocumentList({data, status, error}) {
   const location = useLocation()
   const isDraft = useMemo(() => location.pathname.includes('drafts'), [location.pathname])
   const toPrefix = useMemo(() => (isDraft ? '/editor' : '/p'), [isDraft])
-  const deleteMachine = useMachine(
-    deleteConfirmationDialogMachine({onSuccess: onDeleteSuccess, executeAction: onDelete}),
-  )
 
-  function onDeleteSuccess() {
-    toast.success(`${isDraft ? 'Draft' : 'Publication'} deleted successfully`)
-    queryClient.invalidateQueries(isDraft ? 'DraftList' : 'PublicationList')
-  }
-
-  function onDelete(context: DeleteConfirmationDialogMachineContext, event: DeleteConfirmationDialogMachineEvent) {
-    if (isDraft) return deleteDraft(event.entryId)
-    return deletePublication(event.entryId)
-  }
-  if (status === 'loading') {
+  if (status == 'loading') {
     return <p>Loading...</p>
   }
-  if (status === 'error') {
+  if (status == 'error') {
     console.error('DocumentList error: ', error)
     return <p>ERROR</p>
   }
   return (
     <Box as="ul" css={{padding: 0}}>
-      {data.map((item: Document) => (
-        <ListItem key={item.id} item={item} deleteMachine={deleteMachine} toPrefix={toPrefix} />
+      {data.map((item: {document: Document} | Publication) => (
+        <ListItem isDraft={isDraft} key={item.document?.id} item={item} toPrefix={toPrefix} />
       ))}
     </Box>
   )
 }
 
-function ListItem({item, deleteMachine, toPrefix}: {item: {document: Document; version?: string}; deleteMachine: any}) {
-  const match = useRouteMatch()
-  console.log('🚀 ~ file: document-list.tsx ~ line 64 ~ ListItem ~ match', match)
-  const [deleteModal, deleteModalSend] = deleteMachine
+function ListItem({item, toPrefix, isDraft}: any) {
+  const queryClient = useQueryClient()
+  const [state, send] = useMachine(
+    deleteConfirmationDialogMachine({
+      onSuccess: () => {
+        toast.success(`${isDraft ? 'Draft' : 'Publication'} deleted successfully`)
+        queryClient.invalidateQueries(isDraft ? 'DraftList' : 'PublicationList')
+      },
+    }),
+  )
 
   const {id, title, subtitle, author: itemAuthor} = item.document
   const theTitle = title ?? 'Untitled Document'
@@ -158,8 +140,11 @@ function ListItem({item, deleteMachine, toPrefix}: {item: {document: Document; v
             }}
           >
             <Alert.Root
-              open={deleteModal.matches('open')}
-              onOpenChange={(value) => (value ? deleteModalSend('OPEN_DIALOG') : deleteModalSend('CANCEL'))}
+              id={item.document.id}
+              open={state.matches('open')}
+              onOpenChange={(value: boolean) =>
+                value ? send({type: 'OPEN_DIALOG', payload: {entryId: item.document.id, isDraft}}) : send('CANCEL')
+              }
             >
               <Alert.Trigger
                 data-testid="delete-button"
@@ -167,7 +152,7 @@ function ListItem({item, deleteMachine, toPrefix}: {item: {document: Document; v
                 color="danger"
                 onClick={(e: any) => {
                   e.preventDefault()
-                  deleteModalSend('OPEN_DIALOG')
+                  send({type: 'OPEN_DIALOG', payload: {entryId: item.document.id, isDraft}})
                 }}
               >
                 trash
@@ -182,7 +167,7 @@ function ListItem({item, deleteMachine, toPrefix}: {item: {document: Document; v
                   <Alert.Action
                     color="danger"
                     onClick={() => {
-                      deleteModalSend({type: 'CONFIRM', entryId: item.document.id})
+                      send('CONFIRM')
                     }}
                   >
                     Delete

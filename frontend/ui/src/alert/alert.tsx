@@ -1,3 +1,4 @@
+import type * as AlertTypes from '@radix-ui/react-alert-dialog'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 import type {ComponentProps} from 'react'
 
@@ -17,9 +18,9 @@ const hideOverlay = keyframes({
   '100%': {opacity: 0},
 })
 
-function Root({children, ...props}: ComponentProps<typeof AlertDialogPrimitive.Root>) {
+function Root({children, id, ...props}) {
   return (
-    <AlertDialogPrimitive.Root {...props}>
+    <AlertDialogPrimitive.Root id={id} {...props}>
       <AlertDialogPrimitive.Overlay
         as={Box}
         css={{
