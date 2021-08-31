@@ -83,12 +83,9 @@ func TestDaemonEndToEnd(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	log := NewLogger(cfg)
-	defer log.Sync()
-
 	var srv *grpcServer
 	app := fx.New(
-		Module(cfg, log),
+		Module(cfg),
 		fx.Populate(&srv),
 	)
 
