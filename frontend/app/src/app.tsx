@@ -2,12 +2,12 @@ import {lazily} from 'react-lazily'
 import {ErrorBoundary} from 'react-error-boundary'
 import type {FallbackProps} from 'react-error-boundary'
 
-import {global} from '@mintter/ui/stitches.config'
+import {globalCss} from '@mintter/ui/stitches.config'
 import {SidepanelProvider} from './components/sidepanel'
 const {AuthorNode} = lazily(() => import('./author-node'))
 // const {PublisherNode} = lazily(() => import('./publisher-node'))
 
-const globalStyles = global({
+const globalStyles = globalCss({
   body: {
     backgroundColor: '$background-alt',
     color: '$text-default',
