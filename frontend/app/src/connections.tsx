@@ -30,7 +30,7 @@ export function Connections({onConnect}: any) {
         ) : (
           <Box as="ul" aria-label="connections" css={{marginTop: '$6', padding: 0}}>
             {data!.map((c: Account) => (
-              <AccountItem account={c} />
+              <AccountItem key={c.id} account={c} />
             ))}
           </Box>
         )}
