@@ -59,19 +59,16 @@ export const createParagraphPlugin = (): EditorPlugin => ({
     const {normalizeNode, insertBreak} = editor
 
     editor.insertBreak = () => {
-      console.log('insertBreak!: ', editor)
       insertBreak()
     }
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
       if (isParagraph(node)) {
-        console.log('normalizeNode isParagraph: ', editor)
         if (Path.hasPrevious(path)) {
           const [parentNode, parentPath] = Editor.parent(editor, path)
           const prevNode = Node.get(editor, Path.previous(path))
           if (isCode(parentNode)) {
-            console.log('paragraph normalizeNode isCode parent', editor)
             return
           }
           /*
@@ -79,7 +76,6 @@ export const createParagraphPlugin = (): EditorPlugin => ({
            * @body Issue Body
            */
           let id = createId()
-          console.log('🚀 ~ file: paragraph.tsx ~ line 66 ~ id', id)
           Editor.withoutNormalizing(editor, () => {
             let targetPath = Editor.isEmpty(editor, prevNode) ? Path.previous(path) : path
             Transforms.wrapNodes(editor, statement({id}), {
