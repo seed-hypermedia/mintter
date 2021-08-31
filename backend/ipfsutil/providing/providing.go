@@ -141,7 +141,7 @@ func (p *Provider) loop(ctx context.Context) {
 					}
 
 					if err != nil {
-						logger.Error("FailedToProvide", zap.Error(err), zap.String("cid", c.String()))
+						logger.Warn("FailedToProvide", zap.Error(err), zap.String("cid", c.String()))
 					}
 
 					break
