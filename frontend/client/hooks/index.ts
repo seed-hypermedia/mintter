@@ -46,25 +46,6 @@ export function useInfo(options: HookOptions<Info> = {}) {
 
 /**
  *
- * @param documentId
- * @param options
- * @returns
- */
-export function useDocument(documentId: string, options: HookOptions<Document> = {}) {
-  const documentQuery = useQuery<Document>(['Document', documentId], () => getDocument(documentId, options.rpc), {
-    enabled: !!documentId,
-  })
-
-  const data = useMemo(() => documentQuery.data, [documentQuery.data])
-
-  return {
-    ...documentQuery,
-    data,
-  }
-}
-
-/**
- *
  * @param draftId
  * @param options
  * @returns
@@ -187,7 +168,7 @@ export function useOthersPublicationsList(options = {}) {
 
   const data = useMemo(
     () =>
-      myPubsListQuery.data?.publications.reduce((acc, current) => {
+      myPubsListQuery.data?.publications.reduce((acc: Array<Publication>, current: Publication) => {
         if (current.document?.author != info?.accountId) {
           return (acc = [...acc, current])
         }
@@ -212,7 +193,7 @@ export function useMyPublicationsList(options = {}) {
 
   const data = useMemo(
     () =>
-      myPubsListQuery.data?.publications.reduce((acc, current) => {
+      myPubsListQuery.data?.publications.reduce((acc: Array<Publication>, current: Publication) => {
         if (current.document?.author == info?.accountId) {
           return (acc = [...acc, current])
         }
@@ -228,51 +209,8 @@ export function useMyPublicationsList(options = {}) {
   }
 }
 
-export type UseQuoteResult = Omit<UseQueryResult<Document>, 'data'> & {
-  data?: {
-    document: Document
-    quote: Block
-  }
-}
-
-export type UseQuoteReturn = {
-  document: Document
-  quote: Block
-}
-
-/**
- *
- * @param documentId (string) the document id of the current quote
- * @param quoteId (string) the block id of the current quote
- * @param options
- * @returns
- */
-export function useQuote(
-  documentId: string,
-  quoteId?: string,
-  options: HookOptions<Document> = {},
-): UseQueryResult<UseQuoteReturn> {
-  const pubQuery = usePublication(documentId)
-  const data = useMemo(() => {
-    if (pubQuery.isSuccess) {
-      return {
-        document: pubQuery.data?.document,
-        quote: pubQuery.data?.document?.blocks[quoteId],
-      }
-    } else {
-      return {}
-    }
-  }, [pubQuery.data])
-
-  return {
-    ...pubQuery,
-    data,
-  }
-}
-
 export function useListAccounts() {
   const listAccountsQuery = useQuery('ListAccounts', () => listAccounts())
-  console.log('🚀 ~ file: index.ts ~ line 283 ~ useListAccounts ~ listAccountsQuery', listAccountsQuery)
 
   const data = useMemo(() => listAccountsQuery.data?.accounts, [listAccountsQuery.data])
 
