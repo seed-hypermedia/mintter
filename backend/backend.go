@@ -253,14 +253,14 @@ func (srv *backend) SyncAccounts(ctx context.Context) error {
 						ObjectId: a.String(),
 					})
 					if err != nil {
-						return fmt.Errorf("failed to request account version for peer %s: %w", pid.String(), err)
+						return fmt.Errorf("failed to request account version for device %s: %w", d.String(), err)
 					}
 
 					acid := cid.Cid(a)
 
 					localVer, err := srv.patches.GetObjectVersion(ctx, acid)
 					if err != nil {
-						return fmt.Errorf("failed to get local object version for peer %s: %w", pid.String(), err)
+						return fmt.Errorf("failed to get local object version for device %s: %w", d.String(), err)
 					}
 
 					mergedVer := mergeVersions(localVer, remoteVer)
@@ -296,7 +296,7 @@ func (srv *backend) SyncAccounts(ctx context.Context) error {
 
 					localFeedVer, err := srv.patches.GetObjectVersion(ctx, feedID)
 					if err != nil {
-						return fmt.Errorf("failed to get local object version for peer %s: %w", pid.String(), err)
+						return fmt.Errorf("failed to get local object version for device %s: %w", d.String(), err)
 					}
 
 					mergedFeedVer := mergeVersions(feedVer, localFeedVer)
@@ -378,10 +378,29 @@ func (srv *backend) SyncAccounts(ctx context.Context) error {
 		}
 	}
 
+	const msg = "FailedToSyncDeviceAccount"
+
 	for i := 0; i < count; i++ {
 		res := <-c
-		if res.Err != nil {
-			srv.log.Error("FailedToSyncPeerAccount", zap.Error(res.Err), zap.String("peer", res.Peer.String()))
+		if res.Err == nil {
+			continue
+		}
+
+		var offline bool
+		if s, ok := status.FromError(res.Err); ok {
+			offline = s.Code() == codes.Unavailable
+		}
+
+		if offline {
+			srv.log.Debug(msg,
+				zap.Error(errors.New("device unavailable")),
+				zap.String("device", peer.ToCid(res.Peer).String()),
+			)
+		} else {
+			srv.log.Error(msg,
+				zap.Error(res.Err),
+				zap.String("device", peer.ToCid(res.Peer).String()),
+			)
 		}
 	}
 
@@ -689,6 +708,7 @@ func (srv *backend) handleLibp2pEvent(ctx context.Context, evt interface{}) erro
 		if err != nil {
 			srv.log.Error("FailedToGetProtocolsForPeer",
 				zap.String("peer", e.Peer.String()),
+				zap.String("device", peer.ToCid(e.Peer).String()),
 				zap.Error(err),
 			)
 			return nil
@@ -697,6 +717,7 @@ func (srv *backend) handleLibp2pEvent(ctx context.Context, evt interface{}) erro
 		if supportsMintterProtocol(protos) {
 			srv.log.Debug("MintterPeerConnected",
 				zap.String("peer", e.Peer.String()),
+				zap.String("device", peer.ToCid(e.Peer).String()),
 			)
 			return srv.handleMintterPeer(ctx, e.Peer)
 		}
@@ -729,7 +750,7 @@ func (srv *backend) handleMintterPeer(ctx context.Context, pid peer.ID) error {
 
 	info, err := c.GetPeerInfo(ctx, &p2p.GetPeerInfoRequest{})
 	if err != nil {
-		return fmt.Errorf("failed to get peer info for peer %s: %w", pid.String(), err)
+		return fmt.Errorf("failed to get peer info for device %s: %w", peer.ToCid(pid), err)
 	}
 
 	aid, err := cid.Decode(info.AccountId)
@@ -741,12 +762,12 @@ func (srv *backend) handleMintterPeer(ctx context.Context, pid peer.ID) error {
 		ObjectId: info.AccountId,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to request account version for peer %s: %w", pid.String(), err)
+		return fmt.Errorf("failed to request account version for device %s: %w", peer.ToCid(pid), err)
 	}
 
 	localVer, err := srv.patches.GetObjectVersion(ctx, aid)
 	if err != nil {
-		return fmt.Errorf("failed to get local object version for peer %s: %w", pid.String(), err)
+		return fmt.Errorf("failed to get local object version for device %s: %w", peer.ToCid(pid), err)
 	}
 
 	mergedVer := mergeVersions(localVer, remoteVer)
@@ -852,7 +873,7 @@ func (c *grpcConnections) Dial(ctx context.Context, pid peer.ID, opts []grpc.Dia
 
 	conn, err := grpc.DialContext(ctx, pid.String(), opts...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to establish connection to %s: %w", pid.String(), err)
+		return nil, fmt.Errorf("failed to establish connection to device %s: %w", peer.ToCid(pid), err)
 	}
 
 	if c.conns[pid] != nil {
