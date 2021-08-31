@@ -55,7 +55,7 @@ func newP2PNode(cfg config.P2P, log *zap.Logger, bs blockservice.BlockService, l
 	return p2p
 }
 
-// Start will start listening on the configured addressess, and will bootstrap the network if needed.
+// Start will start listening on the configured addresses, and will bootstrap the network if needed.
 // It will block and return when bootstrapping is finished.
 func (n *p2pNode) Start(ctx context.Context) error {
 	ma, err := multiaddr.NewMultiaddr(n.cfg.Addr)
