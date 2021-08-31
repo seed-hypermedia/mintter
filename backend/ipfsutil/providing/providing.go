@@ -20,10 +20,15 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// Log messages.
+const (
+	LogMsgReprovideFailed = "ReprovideFailed"
+)
+
 var logger = log.Logger("providing").Desugar()
 
 func init() {
-	log.SetLogLevel("providing", "info")
+	log.SetLogLevel("providing", "debug")
 }
 
 // Strategy is a function that returns items to be reprovided.
@@ -278,7 +283,11 @@ func (p *Provider) reprovideAll(ctx context.Context, batchSize int) error {
 				}
 
 				if err != nil {
-					logger.Error("ReprovideError", zap.Error(err), zap.String("cid", c.String()))
+					log := logger.Error
+					if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+						log = logger.Debug
+					}
+					log(LogMsgReprovideFailed, zap.Error(err), zap.String("cid", c.String()))
 					continue
 				}
 

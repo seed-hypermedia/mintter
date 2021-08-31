@@ -35,6 +35,11 @@ import (
 	"mintter/backend/cleanup"
 )
 
+// Log messages.
+const (
+	LogMsgFailedToSyncDeviceAccount = "FailedToSyncDeviceAccount"
+)
+
 const accountsPullInterval = time.Minute
 
 // backend is the glue between major pieces of Mintter application.
@@ -223,8 +228,9 @@ func (srv *backend) SyncAccounts(ctx context.Context) error {
 	}
 
 	type result struct {
-		Peer peer.ID
-		Err  error
+		Account AccountID
+		Device  DeviceID
+		Err     error
 	}
 
 	var count int
@@ -253,30 +259,30 @@ func (srv *backend) SyncAccounts(ctx context.Context) error {
 						ObjectId: a.String(),
 					})
 					if err != nil {
-						return fmt.Errorf("failed to request account version for device %s: %w", d.String(), err)
+						return err
 					}
 
 					acid := cid.Cid(a)
 
 					localVer, err := srv.patches.GetObjectVersion(ctx, acid)
 					if err != nil {
-						return fmt.Errorf("failed to get local object version for device %s: %w", d.String(), err)
+						return fmt.Errorf("failed to get local: %w", err)
 					}
 
 					mergedVer := mergeVersions(localVer, remoteVer)
 					if !proto.Equal(mergedVer, localVer) {
 						state, err := resolvePatches(ctx, acid, mergedVer, srv.p2p.bs)
 						if err != nil {
-							return fmt.Errorf("failed to resolve account %s: %w", acid, err)
+							return fmt.Errorf("failed to resolve account: %w", err)
 						}
 
 						account, err := accountFromState(state)
 						if err != nil {
-							return err
+							return fmt.Errorf("failed to hydrate account state: %w", err)
 						}
 
 						if _, ok := account.Devices[d.String()]; !ok {
-							return fmt.Errorf("device %s is not found in account %s", d, a)
+							return fmt.Errorf("device is not found in account")
 						}
 
 						if err := srv.patches.StoreVersion(ctx, acid, mergedVer); err != nil {
@@ -291,12 +297,12 @@ func (srv *backend) SyncAccounts(ctx context.Context) error {
 						ObjectId: feedID.String(),
 					})
 					if err != nil {
-						return fmt.Errorf("failed to get document feed version: %w", err)
+						return err
 					}
 
 					localFeedVer, err := srv.patches.GetObjectVersion(ctx, feedID)
 					if err != nil {
-						return fmt.Errorf("failed to get local object version for device %s: %w", d.String(), err)
+						return err
 					}
 
 					mergedFeedVer := mergeVersions(feedVer, localFeedVer)
@@ -373,35 +379,29 @@ func (srv *backend) SyncAccounts(ctx context.Context) error {
 
 					return nil
 				}()
-				c <- result{Peer: pid, Err: err}
+				c <- result{Account: a, Device: d, Err: err}
 			}(a, d)
 		}
 	}
 
-	const msg = "FailedToSyncDeviceAccount"
-
 	for i := 0; i < count; i++ {
 		res := <-c
-		if res.Err == nil {
+		err := res.Err
+		if err == nil || errors.Is(err, context.Canceled) {
 			continue
 		}
 
-		var offline bool
-		if s, ok := status.FromError(res.Err); ok {
-			offline = s.Code() == codes.Unavailable
+		log := srv.log.Error
+		if s, ok := status.FromError(err); ok && s.Code() == codes.Unavailable {
+			log = srv.log.Debug
+			err = errors.New("device unavailable")
 		}
 
-		if offline {
-			srv.log.Debug(msg,
-				zap.Error(errors.New("device unavailable")),
-				zap.String("device", peer.ToCid(res.Peer).String()),
-			)
-		} else {
-			srv.log.Error(msg,
-				zap.Error(res.Err),
-				zap.String("device", peer.ToCid(res.Peer).String()),
-			)
-		}
+		log(LogMsgFailedToSyncDeviceAccount,
+			zap.Error(err),
+			zap.String("device", res.Device.String()),
+			zap.String("peer", res.Device.PeerID().String()),
+		)
 	}
 
 	return nil
