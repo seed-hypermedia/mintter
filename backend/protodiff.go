@@ -10,13 +10,13 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-func diffProto(old, new proto.Message) proto.Message {
-	if old == nil || new == nil {
+func diffProto(old, target proto.Message) proto.Message {
+	if old == nil || target == nil {
 		panic("protodiff: can't diff nil proto message")
 	}
 
 	mOld := old.ProtoReflect()
-	mNew := new.ProtoReflect()
+	mNew := target.ProtoReflect()
 
 	if mOld.IsValid() != mNew.IsValid() {
 		panic("protodiff: invalid proto message to diff")

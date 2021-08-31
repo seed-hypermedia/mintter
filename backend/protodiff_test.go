@@ -11,20 +11,20 @@ import (
 
 func TestDiffProto_EmptyOld(t *testing.T) {
 	old := &accounts.Profile{}
-	new := &accounts.Profile{
+	target := &accounts.Profile{
 		Alias: "fake-alias",
 	}
 
-	diff := diffProto(old, new).(*accounts.Profile)
-	testutil.ProtoEqual(t, new, diff, "must produce diff against empty message")
+	diff := diffProto(old, target).(*accounts.Profile)
+	testutil.ProtoEqual(t, target, diff, "must produce diff against empty message")
 }
 
 func TestDiffProto_EmptyNew(t *testing.T) {
 	old := &accounts.Profile{
 		Alias: "fake-alias",
 	}
-	new := &accounts.Profile{}
-	require.Nil(t, diffProto(old, new))
+	target := &accounts.Profile{}
+	require.Nil(t, diffProto(old, target))
 }
 
 func TestDiffProto_Mixed(t *testing.T) {
@@ -32,7 +32,7 @@ func TestDiffProto_Mixed(t *testing.T) {
 		Alias: "fake-alias",
 		Bio:   "unchanged-bio",
 	}
-	new := &accounts.Profile{
+	updated := &accounts.Profile{
 		Alias: "new-alias",
 		Bio:   "unchanged-bio",
 		Email: "foo@example.com",
@@ -44,6 +44,6 @@ func TestDiffProto_Mixed(t *testing.T) {
 		Email: "foo@example.com",
 	}
 
-	diff := diffProto(old, new).(*accounts.Profile)
+	diff := diffProto(old, updated).(*accounts.Profile)
 	testutil.ProtoEqual(t, want, diff, "diff failed")
 }
