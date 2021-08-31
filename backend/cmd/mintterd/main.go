@@ -26,11 +26,8 @@ func main() {
 	)
 
 	mainutil.Run(func() error {
-		log := backend.NewLogger(cfg)
-		defer log.Sync()
-
 		app := fx.New(
-			backend.Module(cfg, log),
+			backend.Module(cfg),
 			fx.StopTimeout(1*time.Minute),
 		)
 

@@ -30,16 +30,10 @@ var moduleBackend = fx.Options(
 )
 
 // Module assembles everything that is required to run the app using fx framework.
-func Module(cfg config.Config, log *zap.Logger) fx.Option {
-	if cfg.LetsEncrypt.Domain != "" {
-		log.Warn("Let's Encrypt is enabled, HTTP-port configuration value is ignored, will listen on the default TLS port (443)")
-	}
-
+func Module(cfg config.Config) fx.Option {
 	return fx.Options(
 		fx.Supply(cfg),
-		fx.Supply(log),
 		fx.Logger(&fxLogger{zap.NewNop().Sugar()}), // sometimes we may want to pass real zap logger here.
-		fx.NopLogger,
 		fx.Provide(
 			provideP2PConfig,
 			provideDatastore,
@@ -52,24 +46,12 @@ func Module(cfg config.Config, log *zap.Logger) fx.Option {
 	)
 }
 
-// NewLogger creates a new logger from config.
-func NewLogger(cfg config.Config) *zap.Logger {
-	log, err := zap.NewDevelopment(
-		zap.WithCaller(false),
-		zap.AddStacktrace(zap.ErrorLevel),
-	)
-	if err != nil {
-		panic(err)
-	}
-	return log
+func providePatchStore(bs blockstore.Blockstore, db *badgergraph.DB) (*patchStore, error) {
+	return newPatchStore(makeLogger("mintter/patch-store"), bs, db)
 }
 
-func providePatchStore(log *zap.Logger, bs blockstore.Blockstore, db *badgergraph.DB) (*patchStore, error) {
-	return newPatchStore(log.Named("patch-store"), bs, db)
-}
-
-func provideBackend(lc fx.Lifecycle, stop fx.Shutdowner, log *zap.Logger, r *repo, store *patchStore, p2p *p2pNode) (*backend, error) {
-	back := newBackend(log.Named("backend"), r, store, p2p)
+func provideBackend(lc fx.Lifecycle, stop fx.Shutdowner, r *repo, store *patchStore, p2p *p2pNode) (*backend, error) {
+	back := newBackend(makeLogger("mintter/backend"), r, store, p2p)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	errc := make(chan error, 1)
@@ -96,8 +78,12 @@ func provideBackend(lc fx.Lifecycle, stop fx.Shutdowner, log *zap.Logger, r *rep
 	return back, nil
 }
 
-func logAppLifecycle(lc fx.Lifecycle, stop fx.Shutdowner, log *zap.Logger, cfg config.Config, grpc *grpcServer, srv *httpServer, back *backend) {
-	log = log.Named("daemon")
+func logAppLifecycle(lc fx.Lifecycle, stop fx.Shutdowner, cfg config.Config, grpc *grpcServer, srv *httpServer, back *backend) {
+	log := makeLogger("mintter/daemon")
+
+	if cfg.LetsEncrypt.Domain != "" {
+		log.Warn("Let's Encrypt is enabled, HTTP-port configuration value is ignored, will listen on the default TLS port (443)")
+	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
@@ -119,7 +105,7 @@ func logAppLifecycle(lc fx.Lifecycle, stop fx.Shutdowner, log *zap.Logger, cfg c
 					}
 					return
 				}
-				log.Info("P2PNodeStarted", zap.Any("addrs", addrs))
+				log.Info("P2PNodeStarted", zap.Any("listeners", addrs))
 			}()
 			return nil
 		},
@@ -167,8 +153,8 @@ func provideBadgerGraph(lc fx.Lifecycle, db *badger.DB) (*badgergraph.DB, error)
 	return gdb, nil
 }
 
-func provideRepo(cfg config.Config, log *zap.Logger) (*repo, error) {
-	return newRepo(cfg.RepoPath, log.Named("repo"))
+func provideRepo(cfg config.Config) (*repo, error) {
+	return newRepo(cfg.RepoPath, makeLogger("mintter/repo"))
 }
 
 type fxLogger struct {

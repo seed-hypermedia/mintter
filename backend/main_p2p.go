@@ -15,7 +15,6 @@ import (
 	"github.com/libp2p/go-libp2p"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 var moduleP2P = fx.Options(
@@ -105,13 +104,13 @@ func provideBlockService(bs blockstore.Blockstore, bswap *ipfsutil.Bitswap) (blo
 	return blksvc, nil
 }
 
-func provideP2P(lc fx.Lifecycle, log *zap.Logger, patches *patchStore, bs blockservice.BlockService, repo *repo, cfg config.P2P, libp2p *ipfsutil.Libp2p, boot ipfsutil.Bootstrappers) (*p2pNode, error) {
+func provideP2P(lc fx.Lifecycle, patches *patchStore, bs blockservice.BlockService, repo *repo, cfg config.P2P, libp2p *ipfsutil.Libp2p, boot ipfsutil.Bootstrappers) (*p2pNode, error) {
 	prov, err := providing.New(repo.providingDBPath(), libp2p.Routing, makeStrategy(bs.Blockstore(), patches))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create provider: %w", err)
 	}
 
-	p2p := newP2PNode(cfg, log.Named("p2p"), bs, libp2p, prov, boot)
+	p2p := newP2PNode(cfg, makeLogger("mintter/p2p"), bs, libp2p, prov, boot)
 
 	lc.Append(fx.Hook{
 		OnStop: func(context.Context) error {
