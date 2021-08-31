@@ -14,7 +14,7 @@ import loraBold from './fonts/lora/bold.ttf'
 import loraBoldIatlic from './fonts/lora/bold-italic.ttf'
 
 const stitches = createStitches({
-  prefix: 'mtt-',
+  // prefix: 'mtt-',
   theme: {
     borderStyles: {},
     borderWidths: {},
