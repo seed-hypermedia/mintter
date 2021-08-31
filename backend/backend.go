@@ -420,7 +420,7 @@ func (srv *backend) Register(ctx context.Context, m aezeed.Mnemonic, passphraze 
 	case <-srv.repo.Ready():
 		return AccountID{}, status.Errorf(codes.FailedPrecondition, "account is already initialized")
 	default:
-		acc, err := NewAccountFromMnemonic(m, string(passphraze))
+		acc, err := NewAccountFromMnemonic(m, passphraze)
 		if err != nil {
 			return AccountID{}, fmt.Errorf("failed to create account from mnemonic: %w", err)
 		}
