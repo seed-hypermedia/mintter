@@ -15,7 +15,7 @@ import {createSuperscriptPlugin} from './leafs/superscript'
 import {createSubscriptPlugin} from './leafs/subscript'
 import {createBlockquotePlugin} from './elements/blockquote'
 import {createEmbedPlugin} from './elements/embed'
-import {createBlockPlugin} from './elements/code'
+import {createCodePlugin} from './elements/code'
 import {createTabPlugin} from './tab-plugin'
 
 export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
@@ -36,7 +36,7 @@ export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
   createStatementPlugin(),
 
   createBlockquotePlugin(),
-  createBlockPlugin({theme: 'github-light'}),
+  createCodePlugin({theme: 'github-light'}),
 
   createGroupPlugin(),
   createUnorderedListPlugin(),

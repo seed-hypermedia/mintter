@@ -1,7 +1,7 @@
 import type {EditorPlugin} from '../types'
 import type {FlowContent} from '@mintter/mttast'
 import {isEmbed} from '@mintter/mttast'
-import {styled} from '@mintter/ui/stitches.config'
+import {css, styled} from '@mintter/ui/stitches.config'
 // import {lazy, Suspense, useCallback} from 'react'
 import {Node} from 'slate'
 // import {getPublication} from 'frontend/client/src/publications'
@@ -15,6 +15,9 @@ import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
 import {copyTextToClipboard} from './statement'
 import toast from 'react-hot-toast'
+import {useFocused, useSelected} from 'slate-react'
+import {useSidepanel} from '../../components/sidepanel'
+import {InlineEditor} from '../inline-editor'
 
 export const ELEMENT_EMBED = 'embed'
 
@@ -49,10 +52,18 @@ export const createEmbedPlugin = (): EditorPlugin => ({
   },
   renderElement({attributes, children, element}) {
     if (isEmbed(element)) {
-      const {data, status, error} = useEmbed(element.url || '')
+      if (!element.url) {
+        console.error(`Embed: element does not have a url attribute: ${JSON.stringify(element)}`)
+        return <span {...attributes}>error on embed{children}</span>
+      }
+      const {data, status, error} = useEmbed(element.url)
+      console.log('🚀 ~ file: embed.tsx ~ line 60 ~ renderElement ~ data', data)
+      const selected = useSelected()
+      const focused = useFocused()
+      const {send} = useSidepanel()
 
       async function onCopy() {
-        await copyTextToClipboard(element.url)
+        await copyTextToClipboard(element.url!)
         toast.success('Embed Reference copied successfully', {position: 'top-center'})
       }
 
@@ -76,11 +87,18 @@ export const createEmbedPlugin = (): EditorPlugin => ({
       }
 
       return (
-        <EmbedStyled cite={element.url} {...attributes}>
+        <EmbedStyled
+          cite={element.url}
+          {...attributes}
+          css={{
+            backgroundColor: focused && selected ? '$secondary-softer' : 'transparent',
+          }}
+        >
           <ContextMenu.Root>
             <ContextMenu.Trigger>
               <span contentEditable={false}>
-                <span>{Node.string(data.statement)}</span>
+                <InlineEditor document={data.document} statement={data.statement} />
+                {/* <span>{Node.string(data.statement)}</span> */}
               </span>
               {children}
             </ContextMenu.Trigger>
@@ -88,6 +106,10 @@ export const createEmbedPlugin = (): EditorPlugin => ({
               <ContextMenu.Item onSelect={onCopy}>
                 <Icon name="Copy" size="1" />
                 <Text size="2">Copy Embed Reference</Text>
+              </ContextMenu.Item>
+              <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: element.url!})}>
+                <Icon name="Copy" size="1" />
+                <Text size="2">Open in Sidepanel</Text>
               </ContextMenu.Item>
             </ContextMenu.Content>
           </ContextMenu.Root>
