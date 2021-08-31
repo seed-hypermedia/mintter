@@ -47,7 +47,12 @@ export const createCodePlugin = async (props: CodePluginProps = {}): Promise<Edi
   const {theme = 'github-dark'} = props
 
   setCDN('/shiki/')
-
+  /*
+   * @todo `getHighlighter() await takes too long?`
+   * @body can we do this after we render the editor? this function is taking long and is making the editor look that it loads slower than it should.
+   *
+   * Any ideas?
+   */
   const highlighter = await getHighlighter({
     theme,
   })

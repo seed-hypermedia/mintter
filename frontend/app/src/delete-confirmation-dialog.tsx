@@ -1,20 +1,25 @@
-import {deletePublication} from 'frontend/client/src/publications'
+import type {InvokeCreator} from 'xstate'
 import {assign, createMachine} from 'xstate'
 import {toast} from 'react-hot-toast'
+import {deleteDraft} from 'frontend/client/src/drafts'
+import {deletePublication} from 'frontend/client/src/publications'
 
 export interface DeleteConfirmationDialogMachineContext {
-  action?: () => Promise<void>
+  isDraft?: boolean
   errorMessage?: string
+  entryId?: string
 }
 
 export type DeleteConfirmationDialogMachineEvent =
   | {
       type: 'OPEN_DIALOG'
-      action: () => Promise<void>
+      payload: {
+        entryId: string
+        isDraft: boolean
+      }
     }
   | {
       type: 'CONFIRM'
-      entryId: string
     }
   | {
       type: 'CANCEL'
@@ -45,7 +50,10 @@ export const deleteConfirmationDialogMachine = ({onSuccess, executeAction}: Dele
           states: {
             idle: {
               on: {
-                CANCEL: 'dismiss',
+                CANCEL: {
+                  target: 'dismiss',
+                  actions: 'clearContextEntry',
+                },
                 CONFIRM: 'executingAction',
               },
             },
@@ -58,7 +66,7 @@ export const deleteConfirmationDialogMachine = ({onSuccess, executeAction}: Dele
                 },
                 onDone: {
                   target: 'dismiss',
-                  actions: ['clearActionFromContext', 'onSuccess'],
+                  actions: ['clearContextEntry', 'onSuccess'],
                 },
               },
             },
@@ -74,28 +82,30 @@ export const deleteConfirmationDialogMachine = ({onSuccess, executeAction}: Dele
     },
     {
       services: {
-        executeAction,
+        executeAction: (context) => {
+          console.log('execute action!!')
+          return context.isDraft ? deleteDraft(context.entryId!) : deletePublication(context.entryId!)
+        },
       },
       actions: {
-        assignActionToContext: assign((context, event) => {
-          if (event.type !== 'OPEN_DIALOG') return {}
-          return {
-            action: event.action,
-          }
+        assignActionToContext: assign((_, event) => {
+          if (event.type != 'OPEN_DIALOG') return {}
+          return event.payload
         }),
         assignErrorMessageToContext: assign((context, event: any) => {
-          const errorMessage = event.data?.message || 'assignErrorMessageToContext: something went wrong'
+          const errorMessage = event.data?.message || 'DeleteAlert: something went wrong'
           toast.error(errorMessage)
           return {
             errorMessage,
           }
         }),
-        clearErrorMessage: assign({
+        clearErrorMessage: assign((_) => ({
           errorMessage: undefined,
-        }),
-        clearActionFromContext: assign({
+        })),
+        clearContextEntry: assign((_) => ({
+          entryId: undefined,
           action: undefined,
-        }),
+        })),
         onSuccess,
       },
     },

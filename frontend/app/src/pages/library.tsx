@@ -33,7 +33,7 @@ export default function Library() {
         })
       }
     } catch (err) {
-      console.warn(`createDraft Error: "createDraft" does not returned a Document`, d, err)
+      console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
     }
   }, [])
 
@@ -134,7 +134,6 @@ export default function Library() {
           <Route
             path={`${path}/:tab`}
             render={({match}) => {
-              console.log('match.params.tab', match.params.tab)
               return <ListPage onCreateDraft={onCreateDraft} useDataHook={hookSelector[match.params.tab]} />
             }}
           />
