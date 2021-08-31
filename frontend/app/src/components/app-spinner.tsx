@@ -28,7 +28,7 @@ export const AppSpinner: React.FC<React.ComponentProps<typeof AppSpinnerContaine
   return (
     // @ts-ignore
     <AppSpinnerContainer aria-label="loading spinner" {...props}>
-      <Spinner color="var(--mtt--colors-primary-softer)" />
+      <Spinner color="var(--colors-primary-softer)" />
     </AppSpinnerContainer>
   )
 }
