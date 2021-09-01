@@ -23,7 +23,7 @@ export const ELEMENT_STATEMENT = 'statement'
 export const Tools = styled('div', {
   height: '$space$8',
   overflow: 'hidden',
-  alignSelf: 'center',
+  alignSelf: 'start',
   display: 'flex',
   alignItems: 'center',
   userSelect: 'none',
@@ -78,6 +78,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
     //   console.log('parent new childs!', element, parent)
     // }, [parent.children.length])
     if (isStatement(element)) {
+      console.log('statement element: ', element)
       const {docId} = useParams<{docId: string}>()
       const {send} = useSidepanel()
       const history = useHistory()
@@ -141,7 +142,6 @@ export const createStatementPlugin = (): EditorPlugin => ({
           const lastChild = getLastChild(parent)
           if (isGroupContent(lastChild[0])) {
             // the last child of the statement is a group. we should move the new as the first child
-            console.log('move node!')
             Transforms.moveNodes(editor, {at: path, to: lastChild[1].concat(0)})
             return
           }
