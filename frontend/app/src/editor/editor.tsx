@@ -11,6 +11,7 @@ import {
 import {HoveringToolbar} from './hovering-toolbar'
 import {Box} from '@mintter/ui/box'
 import {plugins} from './plugins'
+import {useState} from 'react'
 
 export type {EditorPlugin} from './types'
 
@@ -66,6 +67,7 @@ export function Editor({
   readOnly = false,
   mode = readOnly ? 'read-only' : 'default',
 }: EditorProps): JSX.Element {
+  const [visible, setVisible] = useState(false)
   return (
     <Suspense fallback={'loading'}>
       <Box
@@ -77,7 +79,24 @@ export function Editor({
         <AsyncEditor value={value} onChange={onChange} mode={mode} readOnly={readOnly}>
           {children}
         </AsyncEditor>
-        <pre>{JSON.stringify(value, null, 2)}</pre>
+
+        <Box css={{marginTop: 40}}>
+          <button type="button" onClick={() => setVisible((v) => !v)}>
+            toggle Value
+          </button>
+          {visible && (
+            <Box
+              as="pre"
+              css={{
+                padding: 20,
+                backgroundColor: '$background-muted',
+                overflowX: 'scroll',
+              }}
+            >
+              {JSON.stringify(value, null, 2)}
+            </Box>
+          )}
+        </Box>
       </Box>
     </Suspense>
   )

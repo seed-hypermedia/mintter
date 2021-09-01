@@ -1,10 +1,9 @@
 import type {EditorPlugin} from '../types'
-import type {FlowContent} from '@mintter/mttast'
+import type {Embed, FlowContent, PhrasingContent} from '@mintter/mttast'
+import type {RenderElementProps} from 'slate-react'
 import {isEmbed} from '@mintter/mttast'
-import {css, styled} from '@mintter/ui/stitches.config'
-// import {lazy, Suspense, useCallback} from 'react'
+import {styled} from '@mintter/ui/stitches.config'
 import {Node} from 'slate'
-// import {getPublication} from 'frontend/client/src/publications'
 import {usePublication} from '@mintter/client/hooks'
 import {visit} from 'unist-util-visit'
 import {document} from '@mintter/mttast-builder'
@@ -17,20 +16,24 @@ import {copyTextToClipboard} from './statement'
 import toast from 'react-hot-toast'
 import {useFocused, useSelected} from 'slate-react'
 import {useSidepanel} from '../../components/sidepanel'
-import {InlineEditor} from '../inline-editor'
 
 export const ELEMENT_EMBED = 'embed'
 
 export const EmbedStyled = styled('q', {
   borderRadius: '$1',
   transition: 'all ease-in-out 0.1s',
+  backgroundColor: '$background-alt',
   '&:hover': {
     backgroundColor: '$secondary-softer',
     cursor: 'pointer',
+    // color: '$text-contrast',
   },
   '&::before, &::after': {
     fontWeight: '$bold',
     fontSize: '$5',
+    color: '$text-alt',
+    backgroundColor: '$background-alt',
+    padding: '$1',
   },
   '&::before': {
     content: '[',
@@ -56,68 +59,88 @@ export const createEmbedPlugin = (): EditorPlugin => ({
         console.error(`Embed: element does not have a url attribute: ${JSON.stringify(element)}`)
         return <span {...attributes}>error on embed{children}</span>
       }
-      const {data, status, error} = useEmbed(element.url)
-      console.log('🚀 ~ file: embed.tsx ~ line 60 ~ renderElement ~ data', data)
-      const selected = useSelected()
-      const focused = useFocused()
-      const {send} = useSidepanel()
-
-      async function onCopy() {
-        await copyTextToClipboard(element.url!)
-        toast.success('Embed Reference copied successfully', {position: 'top-center'})
-      }
-
-      if (status == 'loading') {
-        return (
-          <span {...attributes}>
-            <span contentEditable={false}>...</span>
-            {children}
-          </span>
-        )
-      }
-
-      if (status == 'error') {
-        console.error('Embed Error: ', error)
-        return (
-          <span {...attributes}>
-            <span contentEditable={false}>EMBED ERROR</span>
-            {children}
-          </span>
-        )
-      }
 
       return (
-        <EmbedStyled
-          cite={element.url}
-          {...attributes}
-          css={{
-            backgroundColor: focused && selected ? '$secondary-softer' : 'transparent',
-          }}
-        >
-          <ContextMenu.Root>
-            <ContextMenu.Trigger>
-              <span contentEditable={false}>
-                <InlineEditor document={data.document} statement={data.statement} />
-                {/* <span>{Node.string(data.statement)}</span> */}
-              </span>
-              {children}
-            </ContextMenu.Trigger>
-            <ContextMenu.Content>
-              <ContextMenu.Item onSelect={onCopy}>
-                <Icon name="Copy" size="1" />
-                <Text size="2">Copy Embed Reference</Text>
-              </ContextMenu.Item>
-              <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: element.url!})}>
-                <Icon name="Copy" size="1" />
-                <Text size="2">Open in Sidepanel</Text>
-              </ContextMenu.Item>
-            </ContextMenu.Content>
-          </ContextMenu.Root>
-        </EmbedStyled>
+        <InlineEmbed embed={element} {...attributes}>
+          {children}
+        </InlineEmbed>
       )
     }
   },
 })
+
+export type InlineEmbedProps = Partial<Omit<RenderElementProps, 'element'>> & {
+  embed: Embed
+}
+
+/*
+ * @todo Create an Inline Editor
+ * @body refactor this to use an inline editor instead of mapping through the childs of the statement content
+ */
+function InlineEmbed({embed, children = null, ...props}: InlineEmbedProps) {
+  const {data, status, error} = useEmbed(embed.url)
+  const selected = useSelected()
+  const focused = useFocused()
+  const {send} = useSidepanel()
+
+  async function onCopy() {
+    await copyTextToClipboard(embed.url!)
+    toast.success('Embed Reference copied successfully', {position: 'top-center'})
+  }
+
+  if (status == 'loading') {
+    return (
+      <span {...props} contentEditable={false}>
+        ...
+        {children}
+      </span>
+    )
+  }
+
+  if (status == 'error') {
+    console.error('Embed Error: ', error)
+    return (
+      <span contentEditable={false} {...props}>
+        EMBED ERROR
+        {children}
+      </span>
+    )
+  }
+  return (
+    <EmbedStyled
+      cite={embed.url}
+      css={{
+        backgroundColor: focused && selected ? '$secondary-softer' : '$background-alt',
+      }}
+    >
+      <ContextMenu.Root>
+        <ContextMenu.Trigger>
+          <span contentEditable={false}>
+            {data.statement.children[0].children.map((child, idx) =>
+              isEmbed(child) ? (
+                <InlineEmbed key={`${child.url}-${idx}`} embed={child} />
+              ) : (
+                <span key={`${child.type}-${idx}`}>{Node.string(child)}</span>
+              ),
+            )}
+          </span>
+          {children}
+        </ContextMenu.Trigger>
+        <ContextMenu.Content>
+          <ContextMenu.Item onSelect={onCopy}>
+            <Icon name="Copy" size="1" />
+            <Text size="2">Copy Embed Reference</Text>
+          </ContextMenu.Item>
+          <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: embed.url!})}>
+            <Icon name="Copy" size="1" />
+            <Text size="2">Open in Sidepanel</Text>
+          </ContextMenu.Item>
+        </ContextMenu.Content>
+      </ContextMenu.Root>
+    </EmbedStyled>
+  )
+  return <span>EMBED HERE</span>
+}
 
 function useEmbed(url: string) {
   if (!url) {
