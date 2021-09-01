@@ -1,13 +1,14 @@
-import type {FlowContent, GroupingContent} from '@mintter/mttast'
+import {isEmbed} from '@mintter/mttast'
 import {createContext, useEffect, useContext} from 'react'
 import {Box, Text, Button} from '@mintter/ui'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {createMachine, Interpreter, State} from 'xstate'
-import {usePublication} from '@mintter/client/hooks'
-import {visit} from 'unist-util-visit'
-import {document} from '@mintter/mttast-builder'
+// import {usePublication} from '@mintter/client/hooks'
+// import {visit} from 'unist-util-visit'
+// import {document} from '@mintter/mttast-builder'
 import {Node} from 'slate'
-import {getEmbedIds} from '../editor/elements/embed'
+// import {getEmbedIds} from '../editor/elements/embed'
+import {InlineEmbed, useEmbed} from '../editor/elements/embed'
 
 export type SidepanelEventsType =
   | {
@@ -193,8 +194,8 @@ export type SidepanelItemProps = {
 }
 
 export function SidepanelItem({item}: SidepanelItemProps) {
-  const [publicationId, blockId] = getEmbedIds(item)
-  const {status, data, error} = usePublication(publicationId)
+  // const [publicationId, blockId] = getEmbedIds(item)
+  const {status, data, error} = useEmbed(item)
   const {send} = useSidepanel()
 
   if (status == 'loading') {
@@ -235,23 +236,31 @@ export function SidepanelItem({item}: SidepanelItemProps) {
           remove
         </Button>
       </Box>
-      <PinnedBlock content={data?.document.content} blockId={blockId} />
+      <Box css={{paddingVertical: '$4', borderRadius: '$2', marginTop: '$3'}}>
+        {data.statement.children[0].children.map((child, idx) =>
+          isEmbed(child) ? (
+            <InlineEmbed key={`${child.url}-${idx}`} embed={child} />
+          ) : (
+            <span key={`${child.type}-${idx}`}>{Node.string(child)}</span>
+          ),
+        )}
+      </Box>
     </Box>
   )
 }
 
-function PinnedBlock({content, blockId}: {content: [GroupingContent]; blockId: string}) {
-  let block: FlowContent
-  visit(document(content), {id: blockId}, (node) => {
-    block = node
-  })
+// function PinnedBlock({content, blockId}: {content: [GroupingContent]; blockId: string}) {
+//   let block: FlowContent
+//   visit(document(content), {id: blockId}, (node) => {
+//     block = node
+//   })
 
-  if (block) {
-    return (
-      <Box css={{backgroundColor: '$secondary-muted', padding: '$4', borderRadius: '$2', marginTop: '$3'}}>
-        <Text alt>{Node.string(block.children[0])}</Text>
-      </Box>
-    )
-  }
-  return null
-}
+//   if (block) {
+//     return (
+//       <Box css={{backgroundColor: '$secondary-muted', padding: '$4', borderRadius: '$2', marginTop: '$3'}}>
+//         <Text alt>{Node.string(block.children[0])}</Text>
+//       </Box>
+//     )
+//   }
+//   return null
+// }
