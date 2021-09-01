@@ -1,5 +1,5 @@
 import 'show-keys'
-import {useMemo} from 'react'
+import type {FormEvent} from 'react'
 import {Box, Button, Text, TextField} from '@mintter/ui'
 import toast from 'react-hot-toast'
 import {useHistory, useParams} from 'react-router'
@@ -83,7 +83,13 @@ export default function EditorPage() {
             {`${isSidepanelOpen ? 'Close' : 'Open'} sidepanel`}
           </Button>
         </Box>
-        <Container css={{gridArea: 'maincontent', marginBottom: 300, paddingTop: '$7'}}>
+        <Container
+          css={{
+            gridArea: 'maincontent',
+            marginBottom: 300,
+            paddingTop: '$7',
+          }}
+        >
           <TextField
             // TODO: Fix types
             // @ts-ignore
@@ -92,11 +98,11 @@ export default function EditorPage() {
             name="title"
             placeholder="Document title"
             value={context?.localDraft?.title}
-            onChange={(event) =>
+            onChange={(event: FormEvent<HTMLInputElement>) =>
               send({
                 type: 'UPDATE',
                 payload: {
-                  title: event.target.value,
+                  title: event.currentTarget.value,
                 },
               })
             }
@@ -121,11 +127,11 @@ export default function EditorPage() {
             name="subtitle"
             placeholder="about this publication..."
             value={context?.localDraft?.subtitle}
-            onChange={(event) =>
+            onChange={(event: FormEvent<HTMLInputElement>) =>
               send({
                 type: 'UPDATE',
                 payload: {
-                  subtitle: event.target.value,
+                  subtitle: event.currentTarget.value,
                 },
               })
             }
