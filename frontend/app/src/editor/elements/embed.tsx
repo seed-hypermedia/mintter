@@ -16,6 +16,8 @@ import {copyTextToClipboard} from './statement'
 import toast from 'react-hot-toast'
 import {useFocused, useSelected} from 'slate-react'
 import {useSidepanel} from '../../components/sidepanel'
+import {forwardRef} from 'react'
+import {useHistory} from 'react-router'
 
 export const ELEMENT_EMBED = 'embed'
 
@@ -32,8 +34,7 @@ export const EmbedStyled = styled('q', {
     fontWeight: '$bold',
     fontSize: '$5',
     color: '$text-alt',
-    backgroundColor: '$background-alt',
-    padding: '$1',
+    // backgroundColor: '$background-alt',
   },
   '&::before': {
     content: '[',
@@ -77,15 +78,21 @@ export type InlineEmbedProps = Partial<Omit<RenderElementProps, 'element'>> & {
  * @todo Create an Inline Editor
  * @body refactor this to use an inline editor instead of mapping through the childs of the statement content
  */
-export function InlineEmbed({embed, children = null, ...props}: InlineEmbedProps) {
+export const InlineEmbed = forwardRef(({embed, children = null, ...props}: InlineEmbedProps, ref) => {
   const {data, status, error} = useEmbed(embed.url)
   const selected = useSelected()
   const focused = useFocused()
   const {send} = useSidepanel()
+  const history = useHistory()
 
   async function onCopy() {
     await copyTextToClipboard(embed.url!)
     toast.success('Embed Reference copied successfully', {position: 'top-center'})
+  }
+
+  function onGoToPublication(url: string) {
+    const [publicationId] = getEmbedIds(url)
+    history.push(`/p/${publicationId}`)
   }
 
   if (status == 'loading') {
@@ -108,6 +115,7 @@ export function InlineEmbed({embed, children = null, ...props}: InlineEmbedProps
   }
   return (
     <EmbedStyled
+      ref={ref}
       cite={embed.url}
       css={{
         backgroundColor: focused && selected ? '$secondary-softer' : '$background-alt',
@@ -115,7 +123,7 @@ export function InlineEmbed({embed, children = null, ...props}: InlineEmbedProps
     >
       <ContextMenu.Root>
         <ContextMenu.Trigger>
-          <span contentEditable={false}>
+          <Text css={{display: 'inline-block'}} alt contentEditable={false} size="4">
             {data.statement.children[0].children.map((child, idx) =>
               isEmbed(child) ? (
                 <InlineEmbed key={`${child.url}-${idx}`} embed={child} />
@@ -123,24 +131,27 @@ export function InlineEmbed({embed, children = null, ...props}: InlineEmbedProps
                 <span key={`${child.type}-${idx}`}>{Node.string(child)}</span>
               ),
             )}
-          </span>
+          </Text>
           {children}
         </ContextMenu.Trigger>
         <ContextMenu.Content>
+          <ContextMenu.Item onSelect={() => onGoToPublication(embed.url)}>
+            <Icon name="ArrowTopRight" size="1" />
+            <Text size="2">Open in main Panel</Text>
+          </ContextMenu.Item>
           <ContextMenu.Item onSelect={onCopy}>
             <Icon name="Copy" size="1" />
             <Text size="2">Copy Embed Reference</Text>
           </ContextMenu.Item>
           <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: embed.url!})}>
-            <Icon name="Copy" size="1" />
+            <Icon name="ArrowChevronDown" size="1" />
             <Text size="2">Open in Sidepanel</Text>
           </ContextMenu.Item>
         </ContextMenu.Content>
       </ContextMenu.Root>
     </EmbedStyled>
   )
-  return <span>EMBED HERE</span>
-}
+})
 
 export function useEmbed(url: string) {
   if (!url) {

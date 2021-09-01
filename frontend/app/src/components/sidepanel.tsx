@@ -236,7 +236,8 @@ export function SidepanelItem({item}: SidepanelItemProps) {
           remove
         </Button>
       </Box>
-      <Box css={{paddingVertical: '$4', borderRadius: '$2', marginTop: '$3'}}>
+      {/* <Box css={{paddingVertical: '$4', borderRadius: '$2', marginTop: '$3'}}> */}
+      <Text as="span" alt size="2" css={{display: 'inline-block'}}>
         {data.statement.children[0].children.map((child, idx) =>
           isEmbed(child) ? (
             <InlineEmbed key={`${child.url}-${idx}`} embed={child} />
@@ -244,7 +245,8 @@ export function SidepanelItem({item}: SidepanelItemProps) {
             <span key={`${child.type}-${idx}`}>{Node.string(child)}</span>
           ),
         )}
-      </Box>
+      </Text>
+      {/* </Box> */}
     </Box>
   )
 }

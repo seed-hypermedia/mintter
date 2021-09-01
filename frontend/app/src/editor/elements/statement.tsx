@@ -1,7 +1,8 @@
 import {Path, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
+import type {Embed, Paragraph, StaticParagraph} from '@mintter/mttast'
 import {Editor} from 'slate'
-import {isBlockquote, isGroupContent, isHeading, isStatement, isText} from '@mintter/mttast'
+import {isBlockquote, isEmbed, isGroupContent, isHeading, isStatement} from '@mintter/mttast'
 import type {Statement as StatementType} from '@mintter/mttast'
 import {isLastChild, getLastChild, isFirstChild} from '../utils'
 import type {MTTEditor} from '../utils'
@@ -12,11 +13,19 @@ import {Text} from '@mintter/ui/text'
 import {Marker} from '../marker'
 import type {NodeEntry} from 'slate'
 import {ContextMenu} from '../context-menu'
-import {useHistory, useParams} from 'react-router'
+import {useHistory, useLocation, useParams} from 'react-router'
 import toast from 'react-hot-toast'
 import {useSidepanel} from '../../components/sidepanel'
 import {createDraft} from 'frontend/client/src/drafts'
 import {MINTTER_LINK_PREFIX} from '../../constants'
+import {useMemo} from 'react'
+import {Box} from '@mintter/ui/box'
+import {useEffect} from 'react'
+import {Node} from 'slate'
+import {ReactEditor, useSlateStatic} from 'slate-react'
+import {getEmbedIds, useEmbed} from './embed'
+import {useQuery} from 'react-query'
+import {useAccount, usePublication} from '@mintter/client/hooks'
 
 export const ELEMENT_STATEMENT = 'statement'
 
@@ -29,17 +38,20 @@ export const Tools = styled('div', {
   userSelect: 'none',
   WebkitUserSelect: 'none',
 })
+
 const StatementStyled = styled('li', {
+  // backgroundColor: 'rgba(0,0,0,0.1)',
   marginTop: '$3',
   padding: 0,
   listStyle: 'none',
   display: 'grid',
   wordBreak: 'break-word',
-  gridTemplateColumns: 'minmax($space$8, auto) 1fr',
+  gridTemplateColumns: 'minmax($space$8, auto) 1fr 300px',
   gridTemplateRows: 'min-content auto',
-  gap: '0 $2',
-  gridTemplateAreas: `"controls content"
-  ". children"`,
+  gap: 0,
+  gridTemplateAreas: `"controls content annotations"
+  ". children annotations"`,
+  marginRight: -300,
   [`& > ${Tools}`]: {
     gridArea: 'controls',
   },
@@ -78,10 +90,11 @@ export const createStatementPlugin = (): EditorPlugin => ({
     //   console.log('parent new childs!', element, parent)
     // }, [parent.children.length])
     if (isStatement(element)) {
-      console.log('statement element: ', element)
       const {docId} = useParams<{docId: string}>()
       const {send} = useSidepanel()
+      const location = useLocation()
       const history = useHistory()
+      const isDraft = useMemo(() => location.pathname.includes('editor'), [location.pathname])
 
       async function onCopy() {
         await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${docId}/${(element as StatementType).id}`)
@@ -107,27 +120,32 @@ export const createStatementPlugin = (): EditorPlugin => ({
             </Dragger>
             <Marker element={element} />
           </Tools>
-          <ContextMenu.Root>
-            <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
-            <ContextMenu.Content alignOffset={-5}>
-              <ContextMenu.Item onSelect={onCopy}>
-                <Icon name="Copy" size="1" />
-                <Text size="2">Copy Statement Reference</Text>
-              </ContextMenu.Item>
-              <ContextMenu.Item
-                onSelect={() =>
-                  send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${docId}/${element.id}`})
-                }
-              >
-                <Icon size="1" name="ArrowBottomRight" />
-                <Text size="2">Open in Sidepanel</Text>
-              </ContextMenu.Item>
-              <ContextMenu.Item onSelect={onStartDraft}>
-                <Icon size="1" name="AddCircle" />
-                <Text size="2">Start a Draft</Text>
-              </ContextMenu.Item>
-            </ContextMenu.Content>
-          </ContextMenu.Root>
+          {!isDraft ? (
+            <ContextMenu.Root>
+              <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
+              <ContextMenu.Content alignOffset={-5}>
+                <ContextMenu.Item onSelect={onCopy}>
+                  <Icon name="Copy" size="1" />
+                  <Text size="2">Copy Statement Reference</Text>
+                </ContextMenu.Item>
+                <ContextMenu.Item
+                  onSelect={() =>
+                    send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${docId}/${element.id}`})
+                  }
+                >
+                  <Icon size="1" name="ArrowBottomRight" />
+                  <Text size="2">Open in Sidepanel</Text>
+                </ContextMenu.Item>
+                <ContextMenu.Item onSelect={onStartDraft}>
+                  <Icon size="1" name="AddCircle" />
+                  <Text size="2">Start a Draft</Text>
+                </ContextMenu.Item>
+              </ContextMenu.Content>
+            </ContextMenu.Root>
+          ) : (
+            children
+          )}
+          <Annotations element={element.children[0]} />
         </StatementStyled>
       )
     }
@@ -144,9 +162,9 @@ export const createStatementPlugin = (): EditorPlugin => ({
 
         if (!isLastChild(parent, path)) {
           const lastChild = getLastChild(parent)
-          if (isGroupContent(lastChild[0])) {
+          if (isGroupContent(lastChild?.[0])) {
             // the last child of the statement is a group. we should move the new as the first child
-            Transforms.moveNodes(editor, {at: path, to: lastChild[1].concat(0)})
+            Transforms.moveNodes(editor, {at: path, to: lastChild?.[1].concat(0)})
             return
           }
         }
@@ -177,6 +195,71 @@ export const createStatementPlugin = (): EditorPlugin => ({
     return editor
   },
 })
+
+function Annotations({element}: {element: Paragraph | StaticParagraph}) {
+  const editor = useSlateStatic()
+  const path = ReactEditor.findPath(editor, element)
+  let annotations = useMemo(() => {
+    return Array.from(
+      Editor.nodes(editor, {
+        at: path,
+        match: isEmbed,
+      }),
+    )
+  }, [element.children.length])
+
+  return (
+    <aside>
+      <Box
+        as="ul"
+        contentEditable={false}
+        css={{height: 40, gridArea: 'annotations', userSelect: 'none', margin: 0, padding: 0}}
+      >
+        {annotations.map(([child]) => (
+          <AnnotationItem item={child} />
+        ))}
+      </Box>
+    </aside>
+  )
+}
+
+function AnnotationItem({item}: {item: Embed}) {
+  const [publicationId] = getEmbedIds(item.url)
+  const {data} = usePublication(publicationId)
+  const {data: author} = useAccount(undefined, {
+    enabled: !!data.document,
+  })
+  return (
+    data && (
+      <Box
+        as="li"
+        css={{
+          display: 'block',
+
+          borderRadius: '$2',
+          padding: '$3',
+          '&:hover': {
+            backgroundColor: '$background-muted',
+          },
+        }}
+      >
+        <Text
+          size="3"
+          fontWeight="bold"
+          css={{width: 200, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}
+        >
+          {data.document.title}
+        </Text>
+        <Box css={{display: 'flex', gap: '$2', alignItems: 'center', marginTop: '$2'}}>
+          <Box css={{width: 24, height: 24, backgroundColor: '$background-neutral', borderRadius: '$round'}} />
+          <Text size="2" color="muted">
+            {author?.profile?.alias}
+          </Text>
+        </Box>
+      </Box>
+    )
+  )
+}
 
 export function removeEmptyStatement(editor: MTTEditor, entry: NodeEntry<StatementType>): boolean | undefined {
   const [node, path] = entry
