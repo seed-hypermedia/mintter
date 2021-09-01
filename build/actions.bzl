@@ -16,7 +16,7 @@ cd $(dirname $SOURCE_ROOT_DIR/{build_file_path})
         build_file_path = ctx.build_file_path,
     )
 
-def run_local_shell(ctx, inputs, outputs, command, tools = [], sandbox = False, **kwargs):
+def run_local_shell(ctx, inputs, outputs, command, sandbox = False, **kwargs):
     """
     Runs shell action within the source directory of the Bazel package.
 
@@ -41,9 +41,11 @@ def run_local_shell(ctx, inputs, outputs, command, tools = [], sandbox = False, 
 
     lines = []
 
-    for t in tools:
-        tool = t.files_to_run.executable
-        lines.append("export TOOL_{}=$EXECROOT/{}".format(tool.basename.upper(), tool.path))
+    for t in ctx.attr.tools:
+        # ctx.expand_location()
+        # print(t.files_to_run.executable.basename)
+        loc = ctx.expand_location("$(location {})".format(t.label))
+        lines.append("export TOOL_{}=\"$EXECROOT/{}\"".format(t.files_to_run.executable.basename.upper().replace("-", "_"), loc))
 
     # Bazel pre-creates declared directory outputs, which makes the rule always succeed.
     # We don't want that so we remove predeclared directories with extra command lines.

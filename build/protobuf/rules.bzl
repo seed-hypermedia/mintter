@@ -83,6 +83,9 @@ proto_compile = rule(
             doc = "List of flags for protoc.",
             mandatory = True,
         ),
+        "tools": attr.label_list(
+            doc = "Tools with their names that will be made available to the rule environment.",
+        ),
         # TODO: this is probably very unsafe for non-trusted users.
         "extra_output_script": attr.string(
             doc = "Extra shell template that would be invoked for each generated output file. Useful to modify the files somehow after generation.",
@@ -115,7 +118,7 @@ def mtt_js_proto(name, srcs, visibility = ["//visibility:public"], **kwargs):
             "--ts_proto_opt=lowerCaseServiceMethods=true",
             "--ts_proto_opt=addGrpcMetadata=true",
             "--ts_proto_opt=outputClientImpl=grpc-web",
-            "--ts_proto_opt=exportCommonSymbols=false"
+            "--ts_proto_opt=exportCommonSymbols=false",
         ],
         extra_output_script = "echo -e \"//@ts-nocheck\n$(cat $PWD/$o)\" > $PWD/$o",
         visibility = visibility,
@@ -132,7 +135,16 @@ def mtt_go_proto(name, srcs, visibility = ["//visibility:public"], **kwargs):
         replaces = [".pb.go"],
         proto_root = "proto",
         output_root = "backend/api/",
-        protoc_flags = ["--go_out=module=mintter,plugins=grpc:."],
+        protoc_flags = [
+            "--plugin=protoc-gen-go=$TOOL_PROTOC_GEN_GO",
+            "--plugin=protoc-gen-go-grpc=$TOOL_PROTOC_GEN_GO_GRPC",
+            "--go_out=module=mintter:.",
+            "--go-grpc_out=module=mintter,require_unimplemented_servers=false:.",
+        ],
         visibility = visibility,
+        tools = [
+            "//tools/protoc-gen-go",
+            "//tools/protoc-gen-go-grpc",
+        ],
         **kwargs
     )
