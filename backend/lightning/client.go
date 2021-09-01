@@ -57,7 +57,7 @@ type API interface {
 }
 
 type WalletSecurity struct {
-	WalletPassphrase string   `help:"The password for encrypting the wallet. Mandatory"`
+	WalletPassphrase string   `help:"The current password for encrypting the wallet. Mandatory"`
 	RecoveryWindow   int32    `help:"A positive number indicating the lookback period (from the tip of the chain) in blocks to start scanning for funds in case we want to recover an already created wallet"`
 	AezeedPassphrase string   `help:"The password to encrypt the Aezeed superseed. Not to confuse with the wallet password, it may be diferent. Optional"`
 	AezeedMnemonics  []string `help:"The mnemonics used to regenerate the wallet"`
@@ -143,10 +143,10 @@ func (d *Ldaemon) APIClient() lnrpc.LightningClient {
 	return d.lightningClient
 }
 
-// UnlockWallet unlocks an existing wallet provided a valid
+// unlockWallet unlocks an existing wallet provided a valid
 // passphrase. If the StatelessInit param is false,
 // a macaroon is also written to disk.
-func (d *Ldaemon) UnlockWallet(Passphrase string, StatelessInit bool) error {
+func (d *Ldaemon) unlockWallet(Passphrase string, StatelessInit bool) error {
 	/*FIXME do we really need these locks here?
 	d.Lock()
 	defer d.Unlock()
@@ -166,11 +166,13 @@ func (d *Ldaemon) UnlockWallet(Passphrase string, StatelessInit bool) error {
 	}
 
 	if _, err := d.unlockerClient.UnlockWallet(ctx, unlock_req); err != nil {
+		d.log.Error("Could not UnlockWallet response from params provided",
+			zap.Bool("StatelessInit", StatelessInit))
 		return err
 	} else {
 		return nil
-
 	}
+
 }
 
 // ChangeWalletPassPhrase changes the Wallet password. This assumes
@@ -179,7 +181,7 @@ func (d *Ldaemon) UnlockWallet(Passphrase string, StatelessInit bool) error {
 // provides a valid OldPassphrase. On success, the function returns
 // the new macarron according to the new password. If the
 // StatelessInit param is false, the macaroon is also written to disk.
-func (d *Ldaemon) ChangeWalletPassPhrase(OldPassphrase string,
+func (d *Ldaemon) changeWalletPassPhrase(OldPassphrase string,
 	NewPassphrase string, StatelessInit bool) ([]byte, error) {
 	/*FIXME do we really need these locks here?
 	d.Lock()
@@ -211,7 +213,7 @@ func (d *Ldaemon) ChangeWalletPassPhrase(OldPassphrase string,
 
 }
 
-// InitWallet initializes a wallet from scratch provided a Wallet Passphrase,
+// initWallet initializes a wallet from scratch provided a Wallet Passphrase,
 // a positive RecoveryWindow (lookback number of blocks to watch for funds
 // in recovery mode, 0 otherwise), an optional AezeedPassphrase (if we want to
 // set a passphrase to the mnemonics) and either a 24 word mnemonics or a Seed
@@ -219,7 +221,7 @@ func (d *Ldaemon) ChangeWalletPassPhrase(OldPassphrase string,
 // new ones from the entropy provided. On success, this function returns the
 // serialized admin macaroon to use in all rpc calls. If the StatelessInit param
 // is false, the macaroon is also written to disk.
-func (d *Ldaemon) InitWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
+func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 	/*FIXME do we really need these locks here?
 	d.Lock()
 	defer d.Unlock()

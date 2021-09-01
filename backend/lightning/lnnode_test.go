@@ -1,11 +1,14 @@
 package lightning
 
 import (
+	"fmt"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/lightningnetwork/lnd/aezeed"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 
 	"mintter/backend"
 	"mintter/backend/config"
@@ -71,9 +74,10 @@ var (
 )
 
 type subset struct {
-	subname     string
-	credentials WalletSecurity
-	success     bool
+	subname                string
+	credentials            WalletSecurity
+	newPassword            string
+	removeWalletBeforeTest bool
 }
 
 func TestStart(t *testing.T) {
@@ -86,68 +90,97 @@ func TestStart(t *testing.T) {
 		{
 			name: "neutrino",
 			lnconf: &config.LND{
-				UseNeutrino: true,
-				Network:     "testnet",
-				LndDir:      "/tmp/lndirtests",
+				UseNeutrino:    true,
+				Network:        "testnet",
+				LndDir:         "/tmp/lndirtests",
+				NoNetBootstrap: true,
 			},
 			subtest: []subset{
 				{
 					subname: "Init from seed",
 					credentials: WalletSecurity{
-						WalletPassphrase: "test",
+						WalletPassphrase: "testtest",
 						RecoveryWindow:   0,
 						AezeedPassphrase: testVectors[0].password,
 						AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
 						SeedEntropy:      testVectors[0].entropy[:],
 						StatelessInit:    false,
 					},
-					success: true,
+					newPassword:            "",
+					removeWalletBeforeTest: true,
 				},
 				{
-					subname: "Init from seed with mnemonics and recovery window",
+					subname: "Unlock pasword ok",
 					credentials: WalletSecurity{
-						WalletPassphrase: "test",
-						RecoveryWindow:   100,
-						AezeedPassphrase: testVectors[1].password,
-						AezeedMnemonics:  testVectors[1].expectedMnemonic[:],
-						SeedEntropy:      testVectors[1].entropy[:],
-						StatelessInit:    false,
+						WalletPassphrase: "testtest",
 					},
-					success: true,
+					newPassword:            "",
+					removeWalletBeforeTest: false,
+				},
+				{
+					subname: "Unlock wrong pasword",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testtesto",
+					},
+					newPassword:            "",
+					removeWalletBeforeTest: false,
 				},
 			},
 		},
 		{
 			name: "bitcoind",
 			lnconf: &config.LND{
-				UseNeutrino: false,
-				Network:     "regtest",
-				LndDir:      "/tmp/lndirtests",
+				UseNeutrino:    false,
+				Network:        "regtest",
+				LndDir:         "/tmp/lndirtests",
+				NoNetBootstrap: true,
 			},
 			subtest: []subset{
 				{
-					subname: "Init from seed",
+					subname: "Init from seed with mnemonics and recovery window",
 					credentials: WalletSecurity{
-						WalletPassphrase: "test",
-						RecoveryWindow:   0,
-						AezeedPassphrase: "",
-						AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
-						SeedEntropy:      testVectors[0].entropy[:],
-						StatelessInit:    false,
-					},
-					success: true,
-				},
-				{
-					subname: "Init from seed with mnemonics",
-					credentials: WalletSecurity{
-						WalletPassphrase: "test",
-						RecoveryWindow:   0,
-						AezeedPassphrase: "",
+						WalletPassphrase: "testtesto",
+						RecoveryWindow:   100,
+						AezeedPassphrase: testVectors[1].password,
 						AezeedMnemonics:  testVectors[1].expectedMnemonic[:],
 						SeedEntropy:      testVectors[1].entropy[:],
 						StatelessInit:    false,
 					},
-					success: true,
+					newPassword:            "",
+					removeWalletBeforeTest: true,
+				},
+
+				{
+					subname: "Unlock pasword ok",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testtesto",
+					},
+					newPassword:            "",
+					removeWalletBeforeTest: false,
+				},
+				{
+					subname: "Change password ok",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testtesto",
+					},
+					newPassword:            "testtesta",
+					removeWalletBeforeTest: false,
+				},
+				{
+					subname: "Unlock wrong pasword",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testtesto",
+					},
+					newPassword:            "",
+					removeWalletBeforeTest: false,
+				},
+				{
+					subname: "Change wrong password",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testtest",
+					},
+					newPassword:            "testtesti",
+					removeWalletBeforeTest: false,
 				},
 			},
 		},
@@ -159,15 +192,44 @@ func TestStart(t *testing.T) {
 		defer log.Sync()
 		for _, subtest := range tt.subtest {
 			t.Run(subtest.subname, func(t *testing.T) {
-				require.NoError(t, checkStart(t, tt.lnconf, &subtest.credentials), tt.name+". must succeed")
+				d, err := checkStart(t, tt.lnconf, &subtest.credentials,
+					subtest.newPassword, subtest.removeWalletBeforeTest)
+				require.NoError(t, err, tt.name+". must succeed")
+				require.NoError(t, d.Stop(), tt.name+". must succeed")
+				require.NoError(t, d.Restart(&subtest.credentials, subtest.newPassword),
+					tt.name+". must succeed")
+				require.NoError(t, d.Stop(), tt.name+". must succeed")
 			})
 		}
 
 	}
 }
 
-func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity) error {
+func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
+	newPassword string, removeWalletBeforeTest bool) (*Ldaemon, error) {
 	t.Helper()
-	//d := NewLdaemon(log*zap.Logger, cfg*config.LND)
-	return nil
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+	logger.Named("backend")
+
+	d, err := NewLdaemon(logger, lnconf)
+	if err != nil {
+		return d, err
+	}
+
+	if removeWalletBeforeTest {
+		path := lnconf.LndDir + "/bitcoin/" + lnconf.Network + "/wallet.db"
+		if err := os.Remove(path); err != nil {
+			return d, fmt.Errorf("Could not remove file: " + path + err.Error())
+		}
+	}
+
+	err = d.Start(credentials, newPassword)
+	if err != nil {
+		return d, err
+	} else if d.started == 1 {
+		return d, err
+	} else {
+		return d, fmt.Errorf("Daemon not started " + err.Error())
+	}
 }

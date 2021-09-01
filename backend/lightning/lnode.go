@@ -10,6 +10,7 @@ import (
 
 	"github.com/jessevdk/go-flags"
 	"github.com/lightningnetwork/lnd"
+	"github.com/lightningnetwork/lnd/build"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/chainrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/invoicesrpc"
@@ -21,6 +22,16 @@ import (
 	"go.uber.org/zap"
 
 	"mintter/backend/config"
+)
+
+const (
+	alreadyExistsError = "wallet already exists"
+)
+
+var (
+	initBackend sync.Once
+	logWriter   *build.RotatingLogWriter
+	initError   error
 )
 
 // Daemon contains data regarding the lightning daemon.
@@ -69,7 +80,10 @@ func (d *Ldaemon) Stop() error {
 }
 
 // Start is used to start the lightning network daemon.
-func (d *Ldaemon) Start(WalletSecurity *WalletSecurity) error {
+// If NewPassword is different from "" and there exists an old wallet,
+// then before unlocking the old wallet, the password is changed. The old
+// password must be provided in the WalletSecurity struct.
+func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string) error {
 	if atomic.SwapInt32(&d.started, 1) == 1 {
 		return fmt.Errorf("Daemon already started")
 	}
@@ -85,7 +99,7 @@ func (d *Ldaemon) Start(WalletSecurity *WalletSecurity) error {
 		return err
 	}
 
-	if _, _, err := d.startDaemon(WalletSecurity); err != nil {
+	if _, _, err := d.startDaemon(WalletSecurity, NewPassword); err != nil {
 		return fmt.Errorf("Failed to start daemon: %v", err)
 	}
 
@@ -94,11 +108,11 @@ func (d *Ldaemon) Start(WalletSecurity *WalletSecurity) error {
 
 // Restart is used to restart a daemon that from some reason failed to start
 // or was started and failed at some later point.
-func (d *Ldaemon) Restart(WalletSecurity *WalletSecurity) error {
+func (d *Ldaemon) Restart(WalletSecurity *WalletSecurity, NewPassword string) error {
 	if atomic.LoadInt32(&d.started) == 0 {
 		return fmt.Errorf("Daemon must be started before attempt to restart")
 	}
-	_, _, err := d.startDaemon(WalletSecurity)
+	_, _, err := d.startDaemon(WalletSecurity, NewPassword)
 	return err
 }
 
@@ -250,7 +264,7 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 		return nil, err
 	}
 
-	writer, err := GetLogWriter(d.cfg)
+	writer, err := GetLogWriter(d.cfg.LndDir + "/bitcoin/" + d.cfg.Network)
 	if err != nil {
 		d.log.Error("GetLogWriter function returned with error", zap.String("err", err.Error()))
 		return nil, err
@@ -266,7 +280,8 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 	return conf, nil
 }
 
-func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity) (*lnd.Config, []byte, error) {
+func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
+	NewPassword string) (*lnd.Config, []byte, error) {
 	d.Lock()
 	defer d.Unlock()
 	if d.daemonRunning {
@@ -315,11 +330,46 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity) (*lnd.Config, []by
 
 	go d.notifyWhenReady(readyChan)
 
-	if macaroon, err := d.InitWallet(WalletSecurity); err != nil {
-		d.log.Error("Could not init wallet", zap.String("err", err.Error()))
-		return lnd_config, macaroon, err
+	if macaroon, err := d.initWallet(WalletSecurity); err != nil {
+		if err.Error() == alreadyExistsError {
+			if len(NewPassword) != 0 {
+				if macaroon, err = d.changeWalletPassPhrase(WalletSecurity.WalletPassphrase, NewPassword,
+					WalletSecurity.StatelessInit); err != nil {
+					d.log.Error("Could not change wallet password before unlock", zap.String("err", err.Error()))
+					return lnd_config, macaroon, err
+				} else {
+					WalletSecurity.WalletPassphrase = NewPassword
+				}
+
+			}
+			return lnd_config, macaroon, d.unlockWallet(WalletSecurity.WalletPassphrase,
+				WalletSecurity.StatelessInit)
+		} else {
+			d.log.Error("Could not init wallet", zap.String("err", err.Error()))
+			return lnd_config, macaroon, err
+		}
+
 	} else {
 		return lnd_config, macaroon, err
 	}
+
+}
+
+func GetLogWriter(workingDir string) (*build.RotatingLogWriter, error) {
+	initBackend.Do(func() {
+		buildLogWriter := build.NewRotatingLogWriter()
+
+		filename := workingDir + "/lnd.log"
+		err := buildLogWriter.InitLogRotator(filename, 10, 3)
+		if err != nil {
+			initError = err
+			return
+		}
+		logWriter = buildLogWriter
+	})
+	return logWriter, initError
+}
+
+func initLog(workingDir string) {
 
 }
