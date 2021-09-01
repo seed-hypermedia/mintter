@@ -111,7 +111,7 @@ export interface Alternative {
 }
 
 export interface Resource {
-  url?: string
+  url: string
   title?: string
 }
 
