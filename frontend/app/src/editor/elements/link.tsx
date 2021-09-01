@@ -89,7 +89,6 @@ export const createLinkPlugin = (): EditorPlugin => ({
 
     editor.insertData = (data: DataTransfer) => {
       const text = data.getData('text/plain')
-      console.log('🚀 ~ insertData', text, editor)
 
       if (text && isMintterLink(text)) {
         wrapMintterLink(editor, text)
