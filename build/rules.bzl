@@ -61,7 +61,6 @@ local_action = rule(
         # TODO: fix cfg = "exec".
         "tools": attr.label_list(
             doc = "Tools with their names that will be made available to the rule environment.",
-            allow_files = False,
         ),
         "_workspace": attr.label(
             doc = "Implicit dependency on the WORKSPACE file.",
@@ -109,7 +108,6 @@ executable = rule(
         ),
         "tools": attr.label_list(
             doc = "Tools with their names that will be made available to the rule environment.",
-            allow_files = False,
         ),
         "out": attr.string(
             doc = "Override default out name.",
@@ -123,3 +121,23 @@ executable = rule(
     },
     executable = True,
 )
+
+def go_tool(name, go_pkg, **kwargs):
+    """Build a Go tool using existing Go toolchain. The executable can then be passed as a tool for other rules.
+
+    The tool must exist in the root go.mod file. You can force go mod to require it by using blank imports in some file,
+    if there's no direct require in your code.
+    """
+    executable(
+        name = name,
+        srcs = [
+            "//:go.mod",
+            "//:go.sum",
+        ],
+        cmd = """
+cd $SOURCE_ROOT_DIR
+mkdir -p bin
+go build -o $TARGET_OUT_DIR/{name} {go_pkg}
+""".format(name = name, go_pkg = go_pkg),
+        **kwargs
+    )

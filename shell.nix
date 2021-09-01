@@ -10,8 +10,7 @@ let
             pkgs.bash
             pkgs.coreutils
             pkgs.findutils
-            pkgs.protobuf3_11
-            pkgs.go-protobuf
+            pkgs.protobuf
             pkgs.go
             pkgs.terraform
             pkgs.bazelisk

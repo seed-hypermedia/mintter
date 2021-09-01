@@ -4,11 +4,11 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	accounts "mintter/backend/api/accounts/v1alpha"
 	"mintter/backend/testutil"
-
-	"github.com/golang/protobuf/ptypes/timestamp"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAPIGetAccount_Own(t *testing.T) {
@@ -21,7 +21,7 @@ func TestAPIGetAccount_Own(t *testing.T) {
 		Devices: map[string]*accounts.Device{
 			"bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh": {
 				PeerId: "bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh",
-				RegisterTime: &timestamp.Timestamp{
+				RegisterTime: &timestamppb.Timestamp{
 					Seconds: -62135596799,
 				},
 			},
