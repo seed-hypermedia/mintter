@@ -2,9 +2,10 @@ package crdt
 
 import "fmt"
 
+// Sentinel identifiers for subtrees.
 const (
-	rootList  = "$ROOT$"
-	trashList = "$TRASH$"
+	RootSubtree  = "$ROOT$"
+	TrashSubtree = "$TRASH$"
 )
 
 // Node of a CRDT tree.
@@ -72,8 +73,8 @@ func NewTree(front *Frontier) *Tree {
 	d := &Tree{
 		nodes: map[string]*Node{},
 		lists: map[string]*list{
-			rootList:  newList(rootList),
-			trashList: newList(trashList),
+			RootSubtree:  newList(RootSubtree),
+			TrashSubtree: newList(TrashSubtree),
 		},
 		parents: map[string]*list{},
 		front:   front,
@@ -104,13 +105,13 @@ func (d *Tree) MoveNode(site, nodeID, parentID string, leftPos ID) error {
 // So the ID of the Node will still be known to the tree. To undo the deletion, move
 // the node to another position. ID of the node MUST exist in the tree.
 func (d *Tree) DeleteNode(site, nodeID string) error {
-	return d.MoveNode(site, nodeID, trashList, listEnd)
+	return d.MoveNode(site, nodeID, TrashSubtree, listEnd)
 }
 
 // Iterator creates a new TreeIterator to walk the current
 // node position in the depth-first order.
 func (d *Tree) Iterator() *TreeIterator {
-	l := d.lists[rootList]
+	l := d.lists[RootSubtree]
 	pos := &l.root
 
 	return &TreeIterator{
@@ -121,6 +122,10 @@ func (d *Tree) Iterator() *TreeIterator {
 }
 
 func (d *Tree) integrateCreate(id ID, nodeID string) (*Node, error) {
+	if nodeID == "" {
+		return nil, fmt.Errorf("must specify node ID")
+	}
+
 	if d.nodes[nodeID] != nil {
 		return nil, fmt.Errorf("duplicate node ID %s", nodeID)
 	}
@@ -149,7 +154,10 @@ func (d *Tree) integrateMove(id ID, nodeID, parentID string, ref ID) error {
 		return fmt.Errorf("can't move node %s under itself", nodeID)
 	}
 
-	l := d.findList(parentID)
+	l, err := d.findList(parentID)
+	if err != nil {
+		return err
+	}
 
 	refPos, err := l.findPos(ref)
 	if err != nil {
@@ -209,7 +217,9 @@ func (d *Tree) integrateMove(id ID, nodeID, parentID string, ref ID) error {
 
 	// Redo operations
 	for i := dest + 1; i < len(d.movesLog); i++ {
-		d.redoMove(d.movesLog[i], i)
+		if err := d.redoMove(d.movesLog[i], i); err != nil {
+			panic("BUG: failed to redo operation, this must never fail")
+		}
 	}
 
 	return nil
@@ -246,18 +256,22 @@ func (d *Tree) undoMove(op moveRecord, idx int) {
 	}
 }
 
-func (d *Tree) redoMove(op moveRecord, idx int) {
+func (d *Tree) redoMove(op moveRecord, idx int) error {
 	blk := d.nodes[op.NodeID]
 
-	l := d.findList(op.ParentID)
+	l, err := d.findList(op.ParentID)
+	if err != nil {
+		return err
+	}
+
 	pos, err := l.findPos(op.ID)
 	if err != nil {
-		panic(fmt.Errorf("BUG: can't redo undone move: %w", err))
+		return err
 	}
 
 	if d.isAncestor(blk.id, pos.list.id) {
 		pos.value = nil
-		return
+		return nil
 	}
 
 	if blk.pos != nil {
@@ -268,6 +282,8 @@ func (d *Tree) redoMove(op moveRecord, idx int) {
 	blk.pos = pos
 	pos.value = blk
 	d.parents[blk.id] = pos.list
+
+	return nil
 }
 
 // isAncestor checks if a is ancestor of b include transitive nodes.
@@ -284,14 +300,18 @@ func (d *Tree) newID(site string) ID {
 	return d.front.NewID(site)
 }
 
-func (d *Tree) findList(id string) *list {
+func (d *Tree) findList(id string) (*list, error) {
+	if id == "" {
+		return nil, fmt.Errorf("must specify parent node ID")
+	}
+
 	l := d.lists[id]
 	if l == nil {
 		l = newList(id)
 		d.lists[id] = l
 	}
 
-	return l
+	return l, nil
 }
 
 // TreeIterator walks the tree in the depth-first order.
