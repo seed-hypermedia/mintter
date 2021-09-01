@@ -1,5 +1,5 @@
 import type {HookOptions} from './types'
-import type {GroupingContent} from '@mintter/mttast'
+import type {FlowContent} from '@mintter/mttast'
 import type {UseQueryResult} from 'react-query'
 import type {Account, Info, Document, Publication, PeerInfo} from '../src'
 import {useQuery, useQueryClient} from 'react-query'
@@ -7,7 +7,6 @@ import {useMemo} from 'react'
 import {
   getAccount,
   getInfo,
-  getDocument,
   getDraft,
   listPeerAddrs,
   getPublication,
@@ -142,7 +141,7 @@ export function usePublication(publicationId: string, options: HookOptions<Publi
     },
   )
 
-  const content: [GroupingContent] = useMemo(
+  const content: Array<FlowContent> = useMemo(
     () => (publicationQuery.data?.document?.content ? JSON.parse(publicationQuery.data?.document?.content) : null),
     [publicationQuery.data],
   )

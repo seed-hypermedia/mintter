@@ -18,9 +18,9 @@ const hideOverlay = keyframes({
   '100%': {opacity: 0},
 })
 
-function Root({children, id, ...props}) {
+function Root({children, ...props}) {
   return (
-    <AlertDialogPrimitive.Root id={id} {...props}>
+    <AlertDialogPrimitive.Root {...props}>
       <AlertDialogPrimitive.Overlay
         as={Box}
         css={{
