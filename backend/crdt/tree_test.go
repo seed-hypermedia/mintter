@@ -244,6 +244,14 @@ func TestEmptyParent(t *testing.T) {
 	require.Error(t, d.CreateNode("alice", "b1", "", listStart))
 }
 
+func TestBadParent(t *testing.T) {
+	t.Parallel()
+
+	d := NewTree(NewFrontier())
+
+	require.Error(t, d.CreateNode("alice", "b1", "missing-node-id", listStart))
+}
+
 func TestEmptyNodeID(t *testing.T) {
 	t.Parallel()
 
