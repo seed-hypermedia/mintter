@@ -305,6 +305,10 @@ func (d *Tree) findList(id string) (*list, error) {
 		return nil, fmt.Errorf("must specify parent node ID")
 	}
 
+	if id != RootSubtree && id != TrashSubtree && d.nodes[id] == nil {
+		return nil, fmt.Errorf("parent node ID %s doesn't exist in the tree", id)
+	}
+
 	l := d.lists[id]
 	if l == nil {
 		l = newList(id)
