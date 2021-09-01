@@ -114,7 +114,11 @@ export const createStatementPlugin = (): EditorPlugin => ({
                 <Icon name="Copy" size="1" />
                 <Text size="2">Copy Statement Reference</Text>
               </ContextMenu.Item>
-              <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: `${docId}/${element.id}`})}>
+              <ContextMenu.Item
+                onSelect={() =>
+                  send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${docId}/${element.id}`})
+                }
+              >
                 <Icon size="1" name="ArrowBottomRight" />
                 <Text size="2">Open in Sidepanel</Text>
               </ContextMenu.Item>

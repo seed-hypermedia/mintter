@@ -77,7 +77,7 @@ export type InlineEmbedProps = Partial<Omit<RenderElementProps, 'element'>> & {
  * @todo Create an Inline Editor
  * @body refactor this to use an inline editor instead of mapping through the childs of the statement content
  */
-function InlineEmbed({embed, children = null, ...props}: InlineEmbedProps) {
+export function InlineEmbed({embed, children = null, ...props}: InlineEmbedProps) {
   const {data, status, error} = useEmbed(embed.url)
   const selected = useSelected()
   const focused = useFocused()
@@ -142,7 +142,7 @@ function InlineEmbed({embed, children = null, ...props}: InlineEmbedProps) {
   return <span>EMBED HERE</span>
 }
 
-function useEmbed(url: string) {
+export function useEmbed(url: string) {
   if (!url) {
     throw new Error(`useEmbed: "url" must be a valid URL string. got "${url}"`)
   }
