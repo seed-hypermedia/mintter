@@ -10,24 +10,8 @@ const (
 
 // Node of a CRDT tree.
 type Node struct {
-	opID ID
-	id   string
-	pos  *Position
-}
-
-// OpID is the operation ID that created the node.
-func (n *Node) OpID() ID {
-	return n.opID
-}
-
-// NodeID is a tree-unique node ID.
-func (n *Node) NodeID() string {
-	return n.id
-}
-
-// Position is the current position of the node.
-func (n *Node) Position() *Position {
-	return n.pos
+	id  string
+	pos *Position
 }
 
 // Tree is a CRDT that allows to create nodes in a tree
@@ -83,17 +67,35 @@ func NewTree(front *Frontier) *Tree {
 	return d
 }
 
-// CreateNode and move it to the specified place. ID of the node MUST NOT exist in the tree.
-func (d *Tree) CreateNode(site, nodeID, parentID string, leftPos ID) error {
-	if _, err := d.integrateCreate(d.newID(site), nodeID); err != nil {
-		return err
+func (d *Tree) SetNodePosition(site, nodeID, parentID, leftID string) error {
+	var leftPos *Position
+	if leftID == "" {
+		l, err := d.findList(parentID)
+		if err != nil {
+			return err
+		}
+
+		leftPos = &l.root
+	} else {
+		c := d.nodes[leftID]
+		if c == nil {
+			return fmt.Errorf("left sibling node %s is not in the tree", leftID)
+		}
+
+		leftPos = c.pos
 	}
 
-	if err := d.integrateMove(d.newID(site), nodeID, parentID, leftPos); err != nil {
-		return err
+	if leftPos == nil || leftPos.list.id != parentID {
+		return fmt.Errorf("left node %s is not child of %s", leftID, parentID)
 	}
 
-	return nil
+	// We don't want to do anything if the node is already where it should be.
+	next := leftPos.NextFilled()
+	if next != nil && next.value.(*Node).id == nodeID {
+		return nil
+	}
+
+	return d.MoveNode(site, nodeID, parentID, leftPos.id)
 }
 
 // MoveNode from it's current position to the new one. ID of the node MUST exist in the tree.
@@ -121,33 +123,9 @@ func (d *Tree) Iterator() *TreeIterator {
 	}
 }
 
-func (d *Tree) integrateCreate(id ID, nodeID string) (*Node, error) {
-	if nodeID == "" {
-		return nil, fmt.Errorf("must specify node ID")
-	}
-
-	if d.nodes[nodeID] != nil {
-		return nil, fmt.Errorf("duplicate node ID %s", nodeID)
-	}
-
-	blk := &Node{
-		opID: id,
-		id:   nodeID,
-	}
-
-	d.nodes[nodeID] = blk
-
-	if err := d.front.Track(id); err != nil {
-		return nil, err
-	}
-
-	return blk, nil
-}
-
 func (d *Tree) integrateMove(id ID, nodeID, parentID string, ref ID) error {
-	blk := d.nodes[nodeID]
-	if blk == nil {
-		return fmt.Errorf("node ID %s not found", nodeID)
+	if nodeID == "" {
+		return fmt.Errorf("must specify nodeID")
 	}
 
 	if nodeID == parentID {
@@ -162,6 +140,18 @@ func (d *Tree) integrateMove(id ID, nodeID, parentID string, ref ID) error {
 	refPos, err := l.findPos(ref)
 	if err != nil {
 		return err
+	}
+
+	blk := d.nodes[nodeID]
+	if blk == nil {
+		blk = &Node{
+			id: nodeID,
+		}
+		d.nodes[nodeID] = blk
+	}
+
+	if right := refPos.Next(); right != nil && right.value != nil && right.value.(*Node).id == nodeID {
+		return fmt.Errorf("node %s is already next to position %v", nodeID, ref)
 	}
 
 	// We can safely update clock here, because we've checked all the invariants up to this point.
