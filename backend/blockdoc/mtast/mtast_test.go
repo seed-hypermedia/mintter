@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"mintter/backend/blockdoc"
+	"mintter/backend/crdt"
 
 	"github.com/stretchr/testify/require"
 )
@@ -94,4 +95,23 @@ func TestWalker(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, want, log)
+}
+
+func TestDiff(t *testing.T) {
+	data, err := ioutil.ReadFile("./testdata/simple-nested.json")
+	require.NoError(t, err)
+
+	doc := blockdoc.NewDocument("simple-nested", "alice")
+
+	wlk := blockdoc.NewReconciler(doc)
+	err = Walk(string(data), wlk)
+	require.NoError(t, err)
+
+	crdt.NodePositionsTest(t, []crdt.TestPosition{
+		{Node: "0ozzkCQG", Parent: crdt.RootNodeID, Left: ""},
+		{Node: "lcKwgIFx", Parent: crdt.RootNodeID, Left: "0ozzkCQG"},
+		{Node: "-U05oyCe", Parent: "lcKwgIFx", Left: ""},
+		{Node: "193HuRrG", Parent: "lcKwgIFx", Left: "-U05oyCe"},
+		{Node: "lFXQ1dmo", Parent: "193HuRrG", Left: ""},
+	}, doc.Tree().Iterator())
 }

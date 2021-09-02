@@ -105,6 +105,29 @@ type position struct {
 	value interface{}
 }
 
+// Prev returns previous position in the linked list. Nil is returned
+// when start of the list is reached.
+func (pos *position) Prev() *position {
+	prev := pos.left
+
+	if prev == &pos.list.root {
+		return nil
+	}
+
+	return prev
+}
+
+// PrevFilled returns the first non-empty position to the left of the current one.
+func (pos *position) PrevFilled() *position {
+	for left := pos.Prev(); left != nil; left = left.Prev() {
+		if left.value != nil {
+			return left
+		}
+	}
+
+	return nil
+}
+
 // Next position in the linked list. Nil is returned
 // when end of the list is reached.
 func (pos *position) Next() *position {
@@ -117,7 +140,7 @@ func (pos *position) Next() *position {
 	return next
 }
 
-// NextFilled returns the next non-empty position to the current one.
+// NextFilled returns the first non-empty position to the right of the current one.
 func (pos *position) NextFilled() *position {
 	for right := pos.Next(); right != nil; right = right.Next() {
 		if right.value != nil {
