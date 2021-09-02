@@ -208,6 +208,14 @@ func TestMove_Nested(t *testing.T) {
 	testPlacement(t, want, d.Iterator())
 }
 
+func TestMove_Duplicate(t *testing.T) {
+	d := NewTree(NewFrontier())
+
+	require.NoError(t, d.MoveNode("alice", "b1", RootSubtree, listStart))
+	require.Error(t, d.MoveNode("alice", "b1", RootSubtree, listStart))
+	require.Equal(t, 1, d.front.maxClock)
+}
+
 func TestDelete(t *testing.T) {
 	d := NewTree(NewFrontier())
 
@@ -304,4 +312,8 @@ func TestSetNodePosition(t *testing.T) {
 	require.NoError(t, d.SetNodePosition("alice", "b1", RootSubtree, ""))
 	require.Error(t, d.SetNodePosition("alice", "b1", "b3", ""))
 	require.NoError(t, d.SetNodePosition("alice", "b2", RootSubtree, "b1"))
+	require.Error(t, d.SetNodePosition("bob", "b3", "b1", "foo"), "must fail setting missing left sibling")
+	require.NoError(t, d.SetNodePosition("bob", "b3", "b1", ""))
+
+	require.Equal(t, 3, d.front.maxClock)
 }
