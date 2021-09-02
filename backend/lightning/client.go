@@ -54,6 +54,7 @@ type API interface {
 	ChainNotifierClient() chainrpc.ChainNotifierClient
 	InvoicesClient() invoicesrpc.InvoicesClient
 	SignerClient() signrpc.SignerClient
+	SetAcceptorCallback(callback func(req *lnrpc.ChannelAcceptRequest) bool)
 }
 
 type WalletSecurity struct {
@@ -308,6 +309,16 @@ func (d *Ldaemon) InvoicesClient() invoicesrpc.InvoicesClient {
 	d.Lock()
 	defer d.Unlock()
 	return d.invoicesClient
+}
+
+// The provided function has to decide whether to accetp (return true) or not (return false)
+// a channel request based on the information provided by the rpc request struct. The callback
+// will be called whenever the node receives a new channel request.
+func (d *Ldaemon) SetAcceptorCallback(callback func(req *lnrpc.ChannelAcceptRequest) bool) {
+	d.Lock()
+	defer d.Unlock()
+
+	acceptorCallback = callback
 }
 
 // Check the macaroons are in the expected path and weight more than

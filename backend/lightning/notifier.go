@@ -16,6 +16,10 @@ import (
 	"go.uber.org/zap"
 )
 
+var (
+	acceptorCallback = func(req *lnrpc.ChannelAcceptRequest) bool { return true }
+)
+
 // DaemonReadyEvent is sent when the daemon is ready for RPC requests
 type DaemonReadyEvent struct {
 	IdentityPubkey string
@@ -92,8 +96,8 @@ func (d *Ldaemon) startSubscriptions() error {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	d.wg.Add(6)
-	go d.subscribeChannels(d.lightningClient, ctx)
-	go d.subscribePeers(d.lightningClient, ctx)
+	go d.subscribeChannels(ctx, d.lightningClient)
+	go d.subscribePeers(ctx, d.lightningClient)
 	go d.subscribeTransactions(ctx)
 	go d.subscribeInvoices(ctx)
 	go d.subscribeChannelAcceptor(ctx, d.lightningClient)
@@ -135,22 +139,25 @@ func (d *Ldaemon) subscribeChannelAcceptor(ctx context.Context, client lnrpc.Lig
 			continue
 		}
 		private := request.ChannelFlags&uint32(lnwire.FFAnnounceChannel) == 0
-		d.log.Info("channel creation requested", zap.String("node", string(request.NodePubkey)),
-			zap.Bool("private", private))
+		accepted := acceptorCallback(request)
 
 		err = channelAcceptorClient.Send(&lnrpc.ChannelAcceptResponse{
 			PendingChanId: request.PendingChanId,
-			Accept:        private,
+			Accept:        accepted,
 		})
 		if err != nil {
 			d.log.Error("Error in channelAcceptorClient.Send", zap.String("PendingChanId", string(request.PendingChanId)),
 				zap.Bool("private", private), zap.String("err", err.Error()))
 			return err
 		}
+		d.log.Info("channel creation requested", zap.String("counterparty ID", string(request.NodePubkey)),
+			zap.Bool("private", private), zap.Uint64("amount", request.FundingAmt),
+			zap.Uint64("push_amount", request.PushAmt), zap.Uint64("fee_per_kw", request.FeePerKw),
+			zap.Uint64("min_htlc", request.MinHtlc), zap.Bool("accepted", accepted))
 	}
 }
 
-func (d *Ldaemon) subscribePeers(client lnrpc.LightningClient, ctx context.Context) error {
+func (d *Ldaemon) subscribePeers(ctx context.Context, client lnrpc.LightningClient) error {
 	defer d.wg.Done()
 
 	subscription, err := client.SubscribePeerEvents(ctx, &lnrpc.PeerEventSubscription{})
@@ -181,7 +188,7 @@ func (d *Ldaemon) subscribePeers(client lnrpc.LightningClient, ctx context.Conte
 	}
 }
 
-func (d *Ldaemon) subscribeChannels(client lnrpc.LightningClient, ctx context.Context) error {
+func (d *Ldaemon) subscribeChannels(ctx context.Context, client lnrpc.LightningClient) error {
 	defer d.wg.Done()
 
 	subscription, err := client.SubscribeChannelEvents(ctx, &lnrpc.ChannelEventSubscription{})
