@@ -226,38 +226,39 @@ function Annotations({element}: {element: Paragraph | StaticParagraph}) {
 function AnnotationItem({item}: {item: Embed}) {
   const [publicationId] = getEmbedIds(item.url)
   const {data} = usePublication(publicationId)
+  console.log('🚀 ~ file: statement.tsx ~ line 229 ~ AnnotationItem ~ data', data)
   const {data: author} = useAccount(undefined, {
     enabled: !!data.document,
   })
-  return (
-    data && (
-      <Box
-        as="li"
-        css={{
-          display: 'block',
+  return data && author ? (
+    <Box
+      as="li"
+      css={{
+        display: 'block',
 
-          borderRadius: '$2',
-          padding: '$3',
-          '&:hover': {
-            backgroundColor: '$background-muted',
-          },
-        }}
+        borderRadius: '$2',
+        padding: '$3',
+        '&:hover': {
+          backgroundColor: '$background-muted',
+        },
+      }}
+    >
+      <Text
+        size="3"
+        fontWeight="bold"
+        css={{width: 200, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}
       >
-        <Text
-          size="3"
-          fontWeight="bold"
-          css={{width: 200, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}
-        >
-          {data.document.title}
+        {data.document.title}
+      </Text>
+      <Box css={{display: 'flex', gap: '$2', alignItems: 'center', marginTop: '$2'}}>
+        <Box css={{width: 24, height: 24, backgroundColor: '$background-neutral', borderRadius: '$round'}} />
+        <Text size="2" color="muted">
+          {author?.profile?.alias}
         </Text>
-        <Box css={{display: 'flex', gap: '$2', alignItems: 'center', marginTop: '$2'}}>
-          <Box css={{width: 24, height: 24, backgroundColor: '$background-neutral', borderRadius: '$round'}} />
-          <Text size="2" color="muted">
-            {author?.profile?.alias}
-          </Text>
-        </Box>
       </Box>
-    )
+    </Box>
+  ) : (
+    <span>...</span>
   )
 }
 
