@@ -114,12 +114,13 @@ func (d *Tree) DeleteNode(site, nodeID string) error {
 // node position in the depth-first order.
 func (d *Tree) Iterator() *TreeIterator {
 	l := d.lists[RootSubtree]
-	pos := &l.root
+	if l == nil {
+		panic("BUG: must have root subtree")
+	}
 
 	return &TreeIterator{
 		doc:   d,
-		stack: []*list{l},
-		pos:   []*Position{pos},
+		stack: []*Position{l.root.NextFilled()},
 	}
 }
 
@@ -312,8 +313,7 @@ func (d *Tree) findList(id string) (*list, error) {
 // Create by the Tree's Iterator() method.
 type TreeIterator struct {
 	doc   *Tree
-	stack []*list
-	pos   []*Position
+	stack []*Position
 }
 
 // Next returns the next Node or nil when reached end of the tree.
@@ -323,39 +323,23 @@ START:
 		return nil
 	}
 
-	for {
-		idx := len(it.stack) - 1
+	idx := len(it.stack) - 1
 
-		l := it.stack[idx]
-		pos := it.pos[idx]
-		it.pos[idx] = pos.right
+	pos := it.stack[idx]
 
-		// Skip the first element.
-		if pos == &l.root {
-			continue
-		}
-
-		// Remove from the stack if we reached the end.
-		if it.pos[idx] == &l.root {
-			it.stack = it.stack[:idx]
-			it.pos = it.pos[:idx]
-		}
-
-		// We have to use goto here because we need check if stack is empty again.
-		// This can happen if the last element of the iterator was removed, so
-		// next idx will be -1 and it will panic.
-		if pos.value == nil {
-			goto START
-		}
-
-		blk := pos.value.(*Node)
-
-		children := it.doc.lists[blk.id]
-		if children != nil {
-			it.stack = append(it.stack, children)
-			it.pos = append(it.pos, &children.root)
-		}
-
-		return blk
+	if pos == nil {
+		it.stack = it.stack[:idx]
+		goto START
 	}
+
+	blk := pos.value.(*Node)
+
+	children := it.doc.lists[blk.id]
+	if children != nil {
+		it.stack = append(it.stack, children.root.NextFilled())
+	}
+
+	it.stack[idx] = pos.NextFilled()
+
+	return blk
 }
