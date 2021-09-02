@@ -13,20 +13,26 @@
 // Notice the recursion: list has blocks, and each block can have another list inside.
 package blockdoc
 
-import "mintter/backend/crdt"
+import (
+	"mintter/backend/crdt"
+)
 
 // Document is the root data type for the Mintter Document. It wraps a CRDT and it is itself a CRDT.
 type Document struct {
-	tree  *crdt.Tree
-	front *crdt.Frontier
+	id     string
+	siteID string
+	tree   *crdt.Tree
+	front  *crdt.Frontier
 }
 
-func NewDocument() *Document {
+func NewDocument(docID, siteID string) *Document {
 	front := crdt.NewFrontier()
 	tree := crdt.NewTree(front)
 
 	return &Document{
-		tree:  tree,
-		front: front,
+		id:     docID,
+		siteID: siteID,
+		tree:   tree,
+		front:  front,
 	}
 }

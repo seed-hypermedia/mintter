@@ -114,3 +114,26 @@ func (pos *Position) ID() ID {
 func (pos *Position) Value() interface{} {
 	return pos.value
 }
+
+// Next position in the linked list. Nil is returned
+// when end of the list is reached.
+func (pos *Position) Next() *Position {
+	next := pos.right
+
+	if next == &pos.list.root {
+		return nil
+	}
+
+	return next
+}
+
+// NextFilled returns the next non-empty position to the current one.
+func (pos *Position) NextFilled() *Position {
+	for right := pos.Next(); right != nil; right = right.Next() {
+		if right.value != nil {
+			return right
+		}
+	}
+
+	return nil
+}

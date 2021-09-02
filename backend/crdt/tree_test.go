@@ -30,10 +30,10 @@ func testPlacement(t *testing.T, want []testWant, it *TreeIterator) {
 func TestInsert(t *testing.T) {
 	d := NewTree(NewFrontier())
 
-	require.NoError(t, d.CreateNode("alice", "b1", RootSubtree, listStart))
-	require.NoError(t, d.CreateNode("alice", "b2", RootSubtree, d.nodes["b1"].pos.id))
-	require.NoError(t, d.CreateNode("alice", "b3", "b1", listStart))
-	require.NoError(t, d.CreateNode("alice", "b4", "b1", listStart))
+	require.NoError(t, d.MoveNode("alice", "b1", RootSubtree, listStart))
+	require.NoError(t, d.MoveNode("alice", "b2", RootSubtree, d.nodes["b1"].pos.id))
+	require.NoError(t, d.MoveNode("alice", "b3", "b1", listStart))
+	require.NoError(t, d.MoveNode("alice", "b4", "b1", listStart))
 
 	want := []testWant{
 		{"b1", RootSubtree, listStart, d.nodes["b1"].pos.id},
@@ -48,8 +48,8 @@ func TestInsert(t *testing.T) {
 func TestMove_Swap(t *testing.T) {
 	d := NewTree(NewFrontier())
 
-	require.NoError(t, d.CreateNode("alice", "b1", RootSubtree, listStart))
-	require.NoError(t, d.CreateNode("alice", "b2", RootSubtree, d.nodes["b1"].pos.id))
+	require.NoError(t, d.MoveNode("alice", "b1", RootSubtree, listStart))
+	require.NoError(t, d.MoveNode("alice", "b2", RootSubtree, d.nodes["b1"].pos.id))
 	require.NoError(t, d.MoveNode("alice", "b2", RootSubtree, listStart))
 
 	want := []testWant{
@@ -66,13 +66,13 @@ func TestMove_ConcurrentCycle(t *testing.T) {
 			d := NewTree(NewFrontier())
 
 			// Alice creates two nodes.
-			require.NoError(t, d.CreateNode("alice", "b1", RootSubtree, listStart))
+			require.NoError(t, d.MoveNode("alice", "b1", RootSubtree, listStart))
 			b1 := d.nodes["b1"].pos
 
-			require.NoError(t, d.CreateNode("alice", "b2", RootSubtree, b1.id))
+			require.NoError(t, d.MoveNode("alice", "b2", RootSubtree, b1.id))
 			b2 := d.nodes["b2"].pos
 
-			require.NoError(t, d.CreateNode("alice", "b3", RootSubtree, b2.id))
+			require.NoError(t, d.MoveNode("alice", "b3", RootSubtree, b2.id))
 
 			// Concurrently
 			//   Alice moves 2 under 3
@@ -102,9 +102,9 @@ func TestMove_ConcurrentCycle(t *testing.T) {
 func TestMove_CycleNestedSequential(t *testing.T) {
 	d := NewTree(NewFrontier())
 
-	require.NoError(t, d.CreateNode("alice", "b1", RootSubtree, listStart))
-	require.NoError(t, d.CreateNode("alice", "b2", "b1", listStart))
-	require.NoError(t, d.CreateNode("alice", "b3", "b2", listStart))
+	require.NoError(t, d.MoveNode("alice", "b1", RootSubtree, listStart))
+	require.NoError(t, d.MoveNode("alice", "b2", "b1", listStart))
+	require.NoError(t, d.MoveNode("alice", "b3", "b2", listStart))
 	require.NoError(t, d.MoveNode("alice", "b1", "b3", listStart))
 
 	want := []testWant{
@@ -125,9 +125,9 @@ func TestMove_ConcurrentCommute(t *testing.T) {
 			d := NewTree(NewFrontier())
 
 			// Alice creates two nodes.
-			require.NoError(t, d.CreateNode("alice", "b1", RootSubtree, listStart))
-			require.NoError(t, d.CreateNode("alice", "b2", RootSubtree, d.nodes["b1"].pos.id))
-			require.NoError(t, d.CreateNode("alice", "b3", RootSubtree, d.nodes["b2"].pos.id))
+			require.NoError(t, d.MoveNode("alice", "b1", RootSubtree, listStart))
+			require.NoError(t, d.MoveNode("alice", "b2", RootSubtree, d.nodes["b1"].pos.id))
+			require.NoError(t, d.MoveNode("alice", "b3", RootSubtree, d.nodes["b2"].pos.id))
 
 			// Concurrently
 			//   Alice moves b2 to the front.
@@ -160,16 +160,16 @@ func TestMove_ConcurrentCommute(t *testing.T) {
 func TestMove_OutdatedSuperseeding(t *testing.T) {
 	d := NewTree(NewFrontier())
 
-	require.NoError(t, d.CreateNode("alice", "b1", RootSubtree, listStart))
-	require.NoError(t, d.CreateNode("alice", "b2", RootSubtree, d.nodes["b1"].pos.id))
-	require.NoError(t, d.CreateNode("alice", "b3", RootSubtree, d.nodes["b2"].pos.id))
+	require.NoError(t, d.MoveNode("alice", "b1", RootSubtree, listStart))
+	require.NoError(t, d.MoveNode("alice", "b2", RootSubtree, d.nodes["b1"].pos.id))
+	require.NoError(t, d.MoveNode("alice", "b3", RootSubtree, d.nodes["b2"].pos.id))
 
 	b2 := d.nodes["b2"].pos
 	b3 := d.nodes["b3"].pos
 
 	bobMoveID := d.newID("bob") // Bob will create a moveOperation that would superseed the one from alice.
 
-	require.NoError(t, d.CreateNode("alice", "b4", RootSubtree, b3.id))
+	require.NoError(t, d.MoveNode("alice", "b4", RootSubtree, b3.id))
 
 	aliceMoveID := d.newID("alice")
 
@@ -189,10 +189,10 @@ func TestMove_OutdatedSuperseeding(t *testing.T) {
 func TestMove_Nested(t *testing.T) {
 	d := NewTree(NewFrontier())
 
-	require.NoError(t, d.CreateNode("alice", "b1", RootSubtree, listStart))
-	require.NoError(t, d.CreateNode("alice", "b2", RootSubtree, d.nodes["b1"].pos.id))
-	require.NoError(t, d.CreateNode("alice", "b3", "b1", listStart))
-	require.NoError(t, d.CreateNode("alice", "b4", "b1", listStart))
+	require.NoError(t, d.MoveNode("alice", "b1", RootSubtree, listStart))
+	require.NoError(t, d.MoveNode("alice", "b2", RootSubtree, d.nodes["b1"].pos.id))
+	require.NoError(t, d.MoveNode("alice", "b3", "b1", listStart))
+	require.NoError(t, d.MoveNode("alice", "b4", "b1", listStart))
 
 	b4old := d.nodes["b4"].pos
 
@@ -211,10 +211,10 @@ func TestMove_Nested(t *testing.T) {
 func TestDelete(t *testing.T) {
 	d := NewTree(NewFrontier())
 
-	require.NoError(t, d.CreateNode("alice", "b1", RootSubtree, listStart))
-	require.NoError(t, d.CreateNode("alice", "b2", RootSubtree, d.nodes["b1"].pos.id))
-	require.NoError(t, d.CreateNode("alice", "b3", "b1", listStart))
-	require.NoError(t, d.CreateNode("alice", "b4", "b1", listStart))
+	require.NoError(t, d.MoveNode("alice", "b1", RootSubtree, listStart))
+	require.NoError(t, d.MoveNode("alice", "b2", RootSubtree, d.nodes["b1"].pos.id))
+	require.NoError(t, d.MoveNode("alice", "b3", "b1", listStart))
+	require.NoError(t, d.MoveNode("alice", "b4", "b1", listStart))
 
 	b1BeforeMove := d.nodes["b1"].pos
 
@@ -241,7 +241,7 @@ func TestEmptyParent(t *testing.T) {
 
 	d := NewTree(NewFrontier())
 
-	require.Error(t, d.CreateNode("alice", "b1", "", listStart))
+	require.Error(t, d.MoveNode("alice", "b1", "", listStart))
 }
 
 func TestBadParent(t *testing.T) {
@@ -249,7 +249,7 @@ func TestBadParent(t *testing.T) {
 
 	d := NewTree(NewFrontier())
 
-	require.Error(t, d.CreateNode("alice", "b1", "missing-node-id", listStart))
+	require.Error(t, d.MoveNode("alice", "b1", "missing-node-id", listStart))
 }
 
 func TestEmptyNodeID(t *testing.T) {
@@ -257,16 +257,16 @@ func TestEmptyNodeID(t *testing.T) {
 
 	d := NewTree(NewFrontier())
 
-	require.Error(t, d.CreateNode("alice", "", RootSubtree, listStart))
+	require.Error(t, d.MoveNode("alice", "", RootSubtree, listStart))
 }
 
 func TestUndoRedo(t *testing.T) {
 	d := NewTree(NewFrontier())
 
-	require.NoError(t, d.CreateNode("alice", "b1", RootSubtree, listStart))
-	require.NoError(t, d.CreateNode("alice", "b2", "b1", listStart))
-	require.NoError(t, d.CreateNode("alice", "b3", "b2", listStart))
-	require.NoError(t, d.CreateNode("alice", "b4", "b2", d.nodes["b3"].pos.id))
+	require.NoError(t, d.MoveNode("alice", "b1", RootSubtree, listStart))
+	require.NoError(t, d.MoveNode("alice", "b2", "b1", listStart))
+	require.NoError(t, d.MoveNode("alice", "b3", "b2", listStart))
+	require.NoError(t, d.MoveNode("alice", "b4", "b2", d.nodes["b3"].pos.id))
 
 	want := []testWant{
 		{"b1", RootSubtree, listStart, d.nodes["b1"].pos.id},
@@ -296,4 +296,12 @@ func TestUndoRedo(t *testing.T) {
 		{"b4", "b2", d.nodes["b3"].pos.id, d.nodes["b4"].pos.id},
 	}
 	testPlacement(t, want, d.Iterator())
+}
+
+func TestSetNodePosition(t *testing.T) {
+	d := NewTree(NewFrontier())
+
+	require.NoError(t, d.SetNodePosition("alice", "b1", RootSubtree, ""))
+	require.Error(t, d.SetNodePosition("alice", "b1", "b3", ""))
+	require.NoError(t, d.SetNodePosition("alice", "b2", RootSubtree, "b1"))
 }
