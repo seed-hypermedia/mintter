@@ -195,7 +195,6 @@ export type SidepanelItemProps = {
 }
 
 export function SidepanelItem({item}: SidepanelItemProps) {
-  // const [publicationId, blockId] = getEmbedIds(item)
   const {status, data, error} = useEmbed(item)
   const {send} = useSidepanel()
 
@@ -208,7 +207,7 @@ export function SidepanelItem({item}: SidepanelItemProps) {
     return (
       <Box css={{padding: '$4', marginTop: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>
         <Box css={{display: 'flex', gap: '$4'}}>
-          <Text size="2" css={{flex: 1}}>{`Error with item id: ${publicationId}`}</Text>
+          <Text size="2" css={{flex: 1}}>{`Error with item id: ${data.statement.id}`}</Text>
           <Button
             size="1"
             variant="ghost"

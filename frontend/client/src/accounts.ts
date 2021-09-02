@@ -78,7 +78,6 @@ export function listAccounts(pageSize?: number, pageToken?: string, rpc?: GrpcCl
  */
 export function getAccount(id: string, rpc?: GrpcClient): Promise<Account> {
   rpc ||= createGrpcClient()
-  console.log('getAccount: ', id)
   const request = GetAccountRequest.fromPartial({
     id,
   })
