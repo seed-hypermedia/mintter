@@ -179,6 +179,7 @@ export function Sidepanel({gridArea}: SidepanelProps) {
         top: 0,
         gridArea,
         padding: '$5',
+        zIndex: 1,
         borderLeft: '1px solid rgba(0,0,0,0.1)',
       }}
     >

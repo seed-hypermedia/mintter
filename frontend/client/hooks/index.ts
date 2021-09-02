@@ -16,6 +16,7 @@ import {
   listPublications,
   listAccounts,
 } from '../src'
+import type {ListAccountsResponse} from '../.generated/accounts/v1alpha/accounts'
 
 /**
  *
@@ -158,12 +159,16 @@ export function usePublication(publicationId: string, options: HookOptions<Publi
   }
 }
 
-export function useOthersPublicationsList(options = {}) {
+export function useOthersPublicationsList(options: HookOptions<ListPublicationsResponse> = {}) {
   const queryClient = useQueryClient()
   const info = queryClient.getQueryData<Info>('AccountInfo')
-  const myPubsListQuery = useQuery<ListPublicationsResponse>(['PublicationList', 'OthersPublications'], async () => {
-    return listPublications()
-  })
+  const myPubsListQuery = useQuery<ListPublicationsResponse>(
+    ['PublicationList', 'OthersPublications'],
+    async () => {
+      return listPublications()
+    },
+    options,
+  )
 
   const data = useMemo(
     () =>
@@ -183,12 +188,16 @@ export function useOthersPublicationsList(options = {}) {
   }
 }
 
-export function useMyPublicationsList(options = {}) {
+export function useMyPublicationsList(options: HookOptions<ListPublicationsResponse> = {}) {
   const queryClient = useQueryClient()
   const info = queryClient.getQueryData<Info>('AccountInfo')
-  const myPubsListQuery = useQuery<ListPublicationsResponse>(['PublicationList', 'MyPublications'], async () => {
-    return listPublications()
-  })
+  const myPubsListQuery = useQuery<ListPublicationsResponse>(
+    ['PublicationList', 'MyPublications'],
+    async () => {
+      return listPublications()
+    },
+    options,
+  )
 
   const data = useMemo(
     () =>
@@ -208,10 +217,13 @@ export function useMyPublicationsList(options = {}) {
   }
 }
 
-export function useListAccounts() {
-  const listAccountsQuery = useQuery('ListAccounts', () => listAccounts())
+export function useListAccounts(options: HookOptions<ListAccountsResponse>) {
+  const listAccountsQuery = useQuery<ListAccountsResponse>('ListAccounts', () => listAccounts(), {
+    ...options,
+    refetchInterval: 5000,
+  })
 
-  const data = useMemo(() => listAccountsQuery.data?.accounts, [listAccountsQuery.data])
+  const data = useMemo(() => listAccountsQuery.data?.accounts || [], [listAccountsQuery.data])
 
   return {
     ...listAccountsQuery,

@@ -123,7 +123,7 @@ export const InlineEmbed = forwardRef(({embed, children = null, ...props}: Inlin
     >
       <ContextMenu.Root>
         <ContextMenu.Trigger>
-          <Text css={{display: 'inline-block'}} alt contentEditable={false} size="4">
+          <Text css={{display: 'inline'}} alt contentEditable={false} size="4">
             {data.statement.children[0].children.map((child, idx) =>
               isEmbed(child) ? (
                 <InlineEmbed key={`${child.url}-${idx}`} embed={child} />
