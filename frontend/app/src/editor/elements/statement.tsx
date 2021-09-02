@@ -227,7 +227,7 @@ function AnnotationItem({item}: {item: Embed}) {
   const [publicationId] = getEmbedIds(item.url)
   const {data} = usePublication(publicationId)
   console.log('🚀 ~ file: statement.tsx ~ line 229 ~ AnnotationItem ~ data', data)
-  const {data: author} = useAccount(undefined, {
+  const {data: author} = useAccount(data.document.author, {
     enabled: !!data.document,
   })
   return data && author ? (
