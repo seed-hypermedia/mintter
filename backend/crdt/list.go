@@ -13,14 +13,14 @@ var (
 // their causal children.
 type list struct {
 	id    string
-	items map[ID]*Position
-	root  Position
+	items map[ID]*position
+	root  position
 }
 
 func newList(lid string) *list {
 	l := &list{
 		id:    lid,
-		items: map[ID]*Position{},
+		items: map[ID]*position{},
 	}
 
 	l.root.left = &l.root
@@ -32,13 +32,13 @@ func newList(lid string) *list {
 	return l
 }
 
-func (l *list) integrate(id ID, parent *Position, v interface{}) (*Position, error) {
+func (l *list) integrate(id ID, parent *position, v interface{}) (*position, error) {
 	// TODO: probably should move this check to the top level document.
 	if l.items[id] != nil {
 		return nil, fmt.Errorf("position id %v is already integrated in list %s", id, l.id)
 	}
 
-	p := &Position{
+	p := &position{
 		id:   id,
 		ref:  parent.id,
 		list: l,
@@ -53,7 +53,7 @@ func (l *list) integrate(id ID, parent *Position, v interface{}) (*Position, err
 	// Only in case of concurrent inserts (the ones with the same ref as ours)
 	// we'd skip over them and their causal children.
 	for {
-		if parent.right == &l.root || parent.right.id.Less(id) {
+		if parent.right == &l.root || parent.Next().id.Less(id) {
 			break
 		}
 
@@ -69,7 +69,7 @@ func (l *list) integrate(id ID, parent *Position, v interface{}) (*Position, err
 	return p, nil
 }
 
-func (l *list) findPos(id ID) (*Position, error) {
+func (l *list) findPos(id ID) (*position, error) {
 	p, ok := l.items[id]
 	if !ok {
 		return nil, fmt.Errorf("position %v not found in list %s", id, l.id)
@@ -78,11 +78,11 @@ func (l *list) findPos(id ID) (*Position, error) {
 	return p, nil
 }
 
-func (l *list) append(id ID, v interface{}) (*Position, error) {
+func (l *list) append(id ID, v interface{}) (*position, error) {
 	return l.integrate(id, l.root.left, v)
 }
 
-func (l *list) insertAfter(id ID, el *Position, left *Position) *Position {
+func (l *list) insertAfter(id ID, el *position, left *position) *position {
 	// Relink positions.
 	el.left = left
 	el.right = left.right
@@ -92,32 +92,22 @@ func (l *list) insertAfter(id ID, el *Position, left *Position) *Position {
 	return el
 }
 
-// Position inside a list CRDT.
-type Position struct {
+// position inside a list CRDT.
+type position struct {
 	id  ID
 	ref ID
 
 	list *list
 
-	left  *Position
-	right *Position
+	left  *position
+	right *position
 
 	value interface{}
 }
 
-// ID of the position.
-func (pos *Position) ID() ID {
-	return pos.id
-}
-
-// Value assigned to the position.
-func (pos *Position) Value() interface{} {
-	return pos.value
-}
-
 // Next position in the linked list. Nil is returned
 // when end of the list is reached.
-func (pos *Position) Next() *Position {
+func (pos *position) Next() *position {
 	next := pos.right
 
 	if next == &pos.list.root {
@@ -128,7 +118,7 @@ func (pos *Position) Next() *Position {
 }
 
 // NextFilled returns the next non-empty position to the current one.
-func (pos *Position) NextFilled() *Position {
+func (pos *position) NextFilled() *position {
 	for right := pos.Next(); right != nil; right = right.Next() {
 		if right.value != nil {
 			return right
