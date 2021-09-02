@@ -7,7 +7,7 @@ export const createPath = (url: string, path: string): string => {
     throw new Error(`"createPath function Error => The path passed cannot have '/' at the beginning: check ${path}`)
   }
 
-  return `${url}${url === '/' ? '' : '/'}${path}`
+  return `${url}${url == '/' ? '' : '/'}${path}`
 }
 
 export const getPath = (path: string): string => {
