@@ -33,6 +33,24 @@ func TestAPIGetAccount_Own(t *testing.T) {
 	testutil.ProtoEqual(t, want, acc, "accounts don't match")
 }
 
+func TestAPIGetAccount_Other(t *testing.T) {
+	ctx := context.Background()
+	aliceb := makeTestBackend(t, "alice", true)
+	bobb := makeTestBackend(t, "bob", true)
+
+	alice := newAccountsAPI(aliceb)
+
+	connectPeers(t, ctx, aliceb, bobb, true)
+
+	acc, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{
+		Id: bobb.repo.acc.id.String(),
+	})
+	require.NoError(t, err)
+
+	require.Equal(t, bobb.repo.acc.id.String(), acc.Id, "account ids must match")
+	require.Len(t, acc.Devices, 1, "alice must receive the one device from bob")
+}
+
 func TestAPIUpdateProfile(t *testing.T) {
 	ctx := context.Background()
 	back := makeTestBackend(t, "alice", true)

@@ -22,10 +22,6 @@ func newAccountsAPI(back *backend) accounts.AccountsServer {
 }
 
 func (srv *accountsAPI) GetAccount(ctx context.Context, in *accounts.GetAccountRequest) (*accounts.Account, error) {
-	if in.Id != "" {
-		panic("BUG: not implemented searching other accounts yet")
-	}
-
 	var aid AccountID
 	if in.Id == "" {
 		acc, err := srv.back.repo.Account()
