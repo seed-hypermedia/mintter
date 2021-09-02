@@ -18,12 +18,14 @@ func testPlacement(t *testing.T, want []testWant, it *TreeIterator) {
 	t.Helper()
 	var idx int
 	for blk := it.Next(); blk != nil; blk = it.Next() {
-		w := want[idx]
-		require.Equal(t, w.NodeID, blk.id, "node ids don't match %s", w.NodeID)
-		require.Equal(t, w.ParentID, blk.pos.list.id, "node lists don't match %s", w.NodeID)
-		require.Equal(t, w.Pos, blk.pos.id, "node current position doesn't match %s", w.NodeID)
-		require.Equal(t, w.LeftPos, blk.pos.left.id, "node left position doesn't match %s", w.NodeID)
-		idx++
+		t.Run(blk.id, func(t *testing.T) {
+			w := want[idx]
+			require.Equal(t, w.NodeID, blk.id, "node ids don't match")
+			require.Equal(t, w.ParentID, blk.pos.list.id, "node lists don't match")
+			require.Equal(t, w.Pos, blk.pos.id, "node current position doesn't match")
+			require.Equal(t, w.LeftPos, blk.pos.left.id, "node left position doesn't match")
+			idx++
+		})
 	}
 	require.Equal(t, len(want), idx, "number of active nodes doesn't match")
 }
@@ -317,6 +319,12 @@ func TestSetNodePosition(t *testing.T) {
 	require.NoError(t, d.SetNodePosition("bob", "b3", "b1", ""))
 
 	require.Equal(t, 3, d.front.maxClock)
+
+	NodePositionsTest(t, []TestPosition{
+		{Node: "b1", Parent: RootNodeID, Left: ""},
+		{Node: "b3", Parent: "b1", Left: ""},
+		{Node: "b2", Parent: RootNodeID, Left: "b1"},
+	}, d.Iterator())
 }
 
 func BenchmarkSetNodePosition_Append(b *testing.B) {

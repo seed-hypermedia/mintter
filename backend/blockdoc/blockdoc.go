@@ -36,3 +36,8 @@ func NewDocument(docID, siteID string) *Document {
 		front:  front,
 	}
 }
+
+// Tree returns the underlying hierarchy of blocks.
+func (d *Document) Tree() *crdt.Tree {
+	return d.tree
+}
