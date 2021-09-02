@@ -115,3 +115,28 @@ func TestDiff(t *testing.T) {
 		{Node: "lFXQ1dmo", Parent: "193HuRrG", Left: ""},
 	}, doc.Tree().Iterator())
 }
+
+func BenchmarkAST(b *testing.B) {
+	data, err := ioutil.ReadFile("./testdata/lorem-150-flat.json")
+	require.NoError(b, err)
+
+	doc := blockdoc.NewDocument("lorem", "alice")
+	wlk := blockdoc.NewReconciler(doc)
+
+	ast := string(data)
+
+	b.ResetTimer()
+
+	for n := 0; n < b.N; n++ {
+		require.NoError(b, Walk(ast, wlk))
+	}
+
+	/*
+		goos: darwin
+		goarch: amd64
+		pkg: mintter/backend/blockdoc/mtast
+		cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+		BenchmarkAST
+		BenchmarkAST-12    	    1034	   1114534 ns/op	  127544 B/op	     301 allocs/op
+	*/
+}
