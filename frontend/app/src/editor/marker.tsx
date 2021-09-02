@@ -1,47 +1,57 @@
-import {Editor} from 'slate'
-import type {NodeEntry} from 'slate'
-import {Box} from '@mintter/ui/box'
-import {Text} from '@mintter/ui/text'
-import {ReactEditor, useSlateStatic} from 'slate-react'
 import type {GroupingContent} from '@mintter/mttast'
+import type {NodeEntry} from 'slate'
+import {isGroupContent} from '@mintter/mttast'
+import {Editor} from 'slate'
+import {ReactEditor, useSlateStatic} from 'slate-react'
 import {ELEMENT_UNORDERED_LIST} from './elements/unordered-list'
 import {ELEMENT_ORDERED_LIST} from './elements/ordered-list'
+import {styled} from '@mintter/ui/stitches.config'
 
-function Disc() {
-  return (
-    <Box
-      css={{
-        width: 6,
-        height: 6,
-        backgroundColor: '$background-contrast',
-        borderRadius: '$round',
-      }}
-    />
-  )
-}
+export const MarkerStyled = styled('div', {
+  width: '$space$8',
+  height: '$space$8',
+  display: 'flex',
+  position: 'relative',
+  alignItems: 'center',
+  justifyContent: 'center',
+  '&::before': {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    display: 'flex',
+  },
+  variants: {
+    groupType: {
+      unorderedList: {
+        '&::before': {
+          content: '●',
+          color: '$background-contrast',
+        },
+      },
+      orderedList: {
+        '&::before': {
+          width: '$space$8',
+          height: '$space$8',
+          counterIncrement: 'section',
+          content: 'counters(section, ".") "."',
+        },
+      },
+      group: {
+        '&::before': {
+          // display: 'none',
+          content: '●',
+          color: '$background-contrast',
+        },
+      },
+    },
+  },
+})
 
 export function Marker({element}) {
-  const {type, path} = useParentType(element)
+  const {type} = useParentType(element)
 
   if (type == ELEMENT_UNORDERED_LIST || type == ELEMENT_ORDERED_LIST) {
-    return (
-      <Box
-        contentEditable={false}
-        css={{
-          width: 32,
-          height: 32,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {type == ELEMENT_UNORDERED_LIST ? (
-          <Disc />
-        ) : type == ELEMENT_ORDERED_LIST ? (
-          <Text>{`${path[path.length - 1] + 1}.`}</Text>
-        ) : null}
-      </Box>
-    )
+    return <MarkerStyled groupType={type} data-tool="marker" contentEditable={false} />
   }
 
   return null
@@ -50,10 +60,14 @@ export function Marker({element}) {
 function useParentType(element) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
-  const parent: NodeEntry<GroupingContent> = Editor.parent(editor, path)
-  if (parent)
+  const parent: NodeEntry<GroupingContent> | undefined = Editor.above(editor, {
+    at: path,
+    match: isGroupContent,
+  })
+  if (parent) {
     return {
       type: parent[0].type,
       path,
     }
+  }
 }
