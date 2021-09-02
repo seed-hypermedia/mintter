@@ -4,14 +4,15 @@ import "fmt"
 
 // Sentinel identifiers for subtrees.
 const (
-	RootSubtree  = "$ROOT$"
-	TrashSubtree = "$TRASH$"
+	RootNodeID  = "$ROOT$"
+	TrashNodeID = "$TRASH$"
 )
 
-// Node of a CRDT tree.
-type Node struct {
-	id  string
-	pos *Position
+// node of a CRDT tree.
+type node struct {
+	id       string
+	pos      *position
+	children *list
 }
 
 // Tree is a CRDT that allows to create nodes in a tree
@@ -29,7 +30,7 @@ type Node struct {
 // See: https://martin.kleppmann.com/papers/move-op.pdf for details.
 //
 // Briefly: all moves are kept in memory with their "inverse" values,
-// so whenever a new move operation comes in which has an older ID, we undo all
+// so whenever a new move operation comes in with an older ID, we undo all
 // newer moves, apply the incoming one, and redo the undone moves. The result is
 // as if we've received all moves in order. This means that some older moves
 // could invalidate newer moves, and vice-versa. But the result is always a correct tree.
@@ -37,11 +38,9 @@ type Node struct {
 // and follows the rules of the list CRDT. List positions are never moved nor
 // deleted, but could be "unlinked" and left dangling.
 type Tree struct {
-	nodes    map[string]*Node
-	lists    map[string]*list
-	parents  map[string]*list
-	movesLog []moveRecord
+	nodes    map[string]*node
 	front    *Frontier
+	movesLog []moveRecord
 }
 
 type moveRecord struct {
@@ -49,28 +48,36 @@ type moveRecord struct {
 	NodeID        string
 	ParentID      string
 	LeftSiblingID ID
-	OldPosition   *Position
+	OldPosition   *position
 }
 
 // NewTree creates a new Tree with a given Frontier.
 func NewTree(front *Frontier) *Tree {
 	d := &Tree{
-		nodes: map[string]*Node{},
-		lists: map[string]*list{
-			RootSubtree:  newList(RootSubtree),
-			TrashSubtree: newList(TrashSubtree),
+		nodes: map[string]*node{
+			RootNodeID: {
+				id:       RootNodeID,
+				children: newList(RootNodeID),
+			},
+			TrashNodeID: {
+				id:       TrashNodeID,
+				children: newList(TrashNodeID),
+			},
 		},
-		parents: map[string]*list{},
-		front:   front,
+		front: front,
 	}
 
 	return d
 }
 
+// SetNodePosition is a convenience method for specifying node positions
+// in terms of node IDs using the current state of the tree.
+// The position of a node is defined by it's parent node ID, and it's left sibling node ID.
+// If the node is already where it should be, no new operations will be produced.
 func (d *Tree) SetNodePosition(site, nodeID, parentID, leftID string) error {
-	var leftPos *Position
+	var leftPos *position
 	if leftID == "" {
-		l, err := d.findList(parentID)
+		l, err := d.findSubtree(parentID)
 		if err != nil {
 			return err
 		}
@@ -90,8 +97,7 @@ func (d *Tree) SetNodePosition(site, nodeID, parentID, leftID string) error {
 	}
 
 	// We don't want to do anything if the node is already where it should be.
-	next := leftPos.NextFilled()
-	if next != nil && next.value.(*Node).id == nodeID {
+	if next := leftPos.NextFilled(); next != nil && next.value.(*node).id == nodeID {
 		return nil
 	}
 
@@ -107,20 +113,20 @@ func (d *Tree) MoveNode(site, nodeID, parentID string, leftPos ID) error {
 // So the ID of the Node will still be known to the tree. To undo the deletion, move
 // the node to another position. ID of the node MUST exist in the tree.
 func (d *Tree) DeleteNode(site, nodeID string) error {
-	return d.MoveNode(site, nodeID, TrashSubtree, listEnd)
+	return d.MoveNode(site, nodeID, TrashNodeID, listEnd)
 }
 
 // Iterator creates a new TreeIterator to walk the current
 // node position in the depth-first order.
 func (d *Tree) Iterator() *TreeIterator {
-	l := d.lists[RootSubtree]
+	l := d.nodes[RootNodeID].children
 	if l == nil {
 		panic("BUG: must have root subtree")
 	}
 
 	return &TreeIterator{
 		doc:   d,
-		stack: []*Position{l.root.NextFilled()},
+		stack: []*position{l.root.NextFilled()},
 	}
 }
 
@@ -133,7 +139,7 @@ func (d *Tree) integrateMove(id ID, nodeID, parentID string, ref ID) error {
 		return fmt.Errorf("can't move node %s under itself", nodeID)
 	}
 
-	l, err := d.findList(parentID)
+	l, err := d.findSubtree(parentID)
 	if err != nil {
 		return err
 	}
@@ -145,13 +151,13 @@ func (d *Tree) integrateMove(id ID, nodeID, parentID string, ref ID) error {
 
 	blk := d.nodes[nodeID]
 	if blk == nil {
-		blk = &Node{
+		blk = &node{
 			id: nodeID,
 		}
 		d.nodes[nodeID] = blk
 	}
 
-	if right := refPos.Next(); right != nil && right.value != nil && right.value.(*Node).id == nodeID {
+	if right := refPos.Next(); right != nil && right.value != nil && right.value.(*node).id == nodeID {
 		return fmt.Errorf("node %s is already next to position %v", nodeID, ref)
 	}
 
@@ -216,7 +222,7 @@ func (d *Tree) integrateMove(id ID, nodeID, parentID string, ref ID) error {
 	return nil
 }
 
-func (d *Tree) doMove(blk *Node, pos *Position) {
+func (d *Tree) doMove(blk *node, pos *position) {
 	if d.isAncestor(blk.id, pos.list.id) {
 		pos.value = nil
 		return
@@ -228,7 +234,6 @@ func (d *Tree) doMove(blk *Node, pos *Position) {
 
 	blk.pos = pos
 	pos.value = blk
-	d.parents[blk.id] = pos.list
 }
 
 func (d *Tree) undoMove(op moveRecord, idx int) {
@@ -241,16 +246,13 @@ func (d *Tree) undoMove(op moveRecord, idx int) {
 	if op.OldPosition != nil {
 		op.OldPosition.value = blk
 		blk.pos = op.OldPosition
-		d.parents[blk.id] = blk.pos.list
-	} else {
-		delete(d.parents, blk.id)
 	}
 }
 
 func (d *Tree) redoMove(op moveRecord, idx int) error {
 	blk := d.nodes[op.NodeID]
 
-	l, err := d.findList(op.ParentID)
+	l, err := d.findSubtree(op.ParentID)
 	if err != nil {
 		return err
 	}
@@ -272,52 +274,52 @@ func (d *Tree) redoMove(op moveRecord, idx int) error {
 	d.movesLog[idx].OldPosition = blk.pos
 	blk.pos = pos
 	pos.value = blk
-	d.parents[blk.id] = pos.list
 
 	return nil
 }
 
 // isAncestor checks if a is ancestor of b include transitive nodes.
 func (d *Tree) isAncestor(a, b string) bool {
-	for parent := d.parents[b]; parent != nil; parent = d.parents[parent.id] {
-		if parent.id == a {
+	c := d.nodes[b]
+	for {
+		if c == nil || c.pos == nil {
+			return false
+		}
+
+		if c.pos.list.id == a {
 			return true
 		}
+
+		c = d.nodes[c.pos.list.id]
 	}
-	return false
 }
 
 func (d *Tree) newID(site string) ID {
 	return d.front.NewID(site)
 }
 
-func (d *Tree) findList(id string) (*list, error) {
-	if id == "" {
-		return nil, fmt.Errorf("must specify parent node ID")
+func (d *Tree) findSubtree(id string) (*list, error) {
+	n := d.nodes[id]
+	if n == nil {
+		return nil, fmt.Errorf("node ID %q is not in the tree", id)
 	}
 
-	if id != RootSubtree && id != TrashSubtree && d.nodes[id] == nil {
-		return nil, fmt.Errorf("parent node ID %s doesn't exist in the tree", id)
+	if n.children == nil {
+		n.children = newList(id)
 	}
 
-	l := d.lists[id]
-	if l == nil {
-		l = newList(id)
-		d.lists[id] = l
-	}
-
-	return l, nil
+	return n.children, nil
 }
 
 // TreeIterator walks the tree in the depth-first order.
 // Create by the Tree's Iterator() method.
 type TreeIterator struct {
 	doc   *Tree
-	stack []*Position
+	stack []*position
 }
 
 // Next returns the next Node or nil when reached end of the tree.
-func (it *TreeIterator) Next() *Node {
+func (it *TreeIterator) Next() *node {
 START:
 	if len(it.stack) == 0 {
 		return nil
@@ -332,11 +334,9 @@ START:
 		goto START
 	}
 
-	blk := pos.value.(*Node)
-
-	children := it.doc.lists[blk.id]
-	if children != nil {
-		it.stack = append(it.stack, children.root.NextFilled())
+	blk := pos.value.(*node)
+	if blk.children != nil {
+		it.stack = append(it.stack, blk.children.root.NextFilled())
 	}
 
 	it.stack[idx] = pos.NextFilled()
