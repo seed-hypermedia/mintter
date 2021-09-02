@@ -32,6 +32,7 @@ type TestVector struct {
 
 var (
 	cfg         config.Config
+	nodeID      = "0226594d21c0862a11168ab07cdbc15e7c7af5ee561b741259e311f1614f4df3b7"
 	testEntropy = [aezeed.EntropySize]byte{
 		0x81, 0xb6, 0x37, 0xd8,
 		0x63, 0x59, 0xe6, 0x96,
@@ -49,10 +50,10 @@ var (
 			salt:     testSalt,
 			password: "",
 			expectedMnemonic: [aezeed.NumMnemonicWords]string{
-				"ability", "liquid", "travel", "stem", "barely", "drastic",
-				"pact", "cupboard", "apple", "thrive", "morning", "oak",
-				"feature", "tissue", "couch", "old", "math", "inform",
-				"success", "suggest", "drink", "motion", "know", "royal",
+				"above", "judge", "emerge", "veteran", "reform", "crunch",
+				"system", "all", "snap", "please", "shoulder", "vault",
+				"hurt", "city", "quarter", "cover", "enlist", "swear",
+				"success", "suggest", "drink", "wagon", "enrich", "body",
 			},
 			expectedBirthday: 0,
 		},
@@ -63,10 +64,10 @@ var (
 			salt:     testSalt,
 			password: "!very_safe_55345_password*",
 			expectedMnemonic: [aezeed.NumMnemonicWords]string{
-				"able", "tree", "stool", "crush", "transfer", "cloud",
-				"cross", "three", "profit", "outside", "hen", "citizen",
-				"plate", "ride", "require", "leg", "siren", "drum",
-				"success", "suggest", "drink", "require", "fiscal", "upgrade",
+				"absorb", "century", "submit", "father", "path", "glove",
+				"gloom", "super", "divert", "garden", "ice", "mirror",
+				"wisdom", "grass", "dice", "kit", "ugly", "castle", "success",
+				"suggest", "drink", "monster", "congress", "flight",
 			},
 			expectedBirthday: 3365,
 		},
@@ -78,6 +79,7 @@ type subset struct {
 	credentials            WalletSecurity
 	newPassword            string
 	removeWalletBeforeTest bool
+	getID                  bool
 }
 
 func TestStart(t *testing.T) {
@@ -86,11 +88,51 @@ func TestStart(t *testing.T) {
 		name    string
 		lnconf  *config.LND
 		subtest []subset
-	}{
+	}{ /*
+			{
+				name: "bitcoind",
+				lnconf: &config.LND{
+					UseNeutrino:    true,
+					Network:        "testnet",
+					LndDir:         "/tmp/lndirtests",
+					NoNetBootstrap: true,
+				},
+				subtest: []subset{
+					{
+						subname: "Init from seed",
+						credentials: WalletSecurity{
+							WalletPassphrase: "testtest",
+							RecoveryWindow:   0,
+							AezeedPassphrase: testVectors[0].password,
+							AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
+							SeedEntropy:      testVectors[0].entropy[:],
+							StatelessInit:    false,
+						},
+						newPassword:            "",
+						removeWalletBeforeTest: true,
+					},
+					{
+						subname: "Unlock pasword ok",
+						credentials: WalletSecurity{
+							WalletPassphrase: "testtest",
+						},
+						newPassword:            "",
+						removeWalletBeforeTest: false,
+					},
+					{
+						subname: "Unlock wrong pasword",
+						credentials: WalletSecurity{
+							WalletPassphrase: "testtesto",
+						},
+						newPassword:            "",
+						removeWalletBeforeTest: false,
+					},
+				},
+			},*/
 		{
 			name: "neutrino",
 			lnconf: &config.LND{
-				UseNeutrino:    true,
+				UseNeutrino:    false,
 				Network:        "testnet",
 				LndDir:         "/tmp/lndirtests",
 				NoNetBootstrap: true,
@@ -103,41 +145,15 @@ func TestStart(t *testing.T) {
 						RecoveryWindow:   0,
 						AezeedPassphrase: testVectors[0].password,
 						AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
-						SeedEntropy:      testVectors[0].entropy[:],
+						SeedEntropy:      []byte{},
 						StatelessInit:    false,
 					},
 					newPassword:            "",
 					removeWalletBeforeTest: true,
 				},
 				{
-					subname: "Unlock pasword ok",
-					credentials: WalletSecurity{
-						WalletPassphrase: "testtest",
-					},
-					newPassword:            "",
-					removeWalletBeforeTest: false,
-				},
-				{
-					subname: "Unlock wrong pasword",
-					credentials: WalletSecurity{
-						WalletPassphrase: "testtesto",
-					},
-					newPassword:            "",
-					removeWalletBeforeTest: false,
-				},
-			},
-		},
-		{
-			name: "bitcoind",
-			lnconf: &config.LND{
-				UseNeutrino:    false,
-				Network:        "regtest",
-				LndDir:         "/tmp/lndirtests",
-				NoNetBootstrap: true,
-			},
-			subtest: []subset{
-				{
-					subname: "Init from seed with mnemonics and recovery window",
+
+					subname: "Init from mnemonics and recovery window",
 					credentials: WalletSecurity{
 						WalletPassphrase: "testtesto",
 						RecoveryWindow:   100,
@@ -182,6 +198,15 @@ func TestStart(t *testing.T) {
 					newPassword:            "testtesti",
 					removeWalletBeforeTest: false,
 				},
+				{
+					subname: "Get node ID",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testtesti",
+					},
+					newPassword:            "",
+					removeWalletBeforeTest: false,
+					getID:                  true,
+				},
 			},
 		},
 	}
@@ -198,6 +223,9 @@ func TestStart(t *testing.T) {
 				require.NoError(t, d.Stop(), tt.name+". must succeed")
 				require.NoError(t, d.Restart(&subtest.credentials, subtest.newPassword),
 					tt.name+". must succeed")
+				if subtest.getID {
+					require.Equal(t, nodeID, d.NodePubkey(), "must be equal")
+				}
 				require.NoError(t, d.Stop(), tt.name+". must succeed")
 			})
 		}
@@ -218,7 +246,7 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 	}
 
 	if removeWalletBeforeTest {
-		path := lnconf.LndDir + "/bitcoin/" + lnconf.Network + "/wallet.db"
+		path := lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/wallet.db"
 		if err := os.Remove(path); err != nil {
 			return d, fmt.Errorf("Could not remove file: " + path + err.Error())
 		}
