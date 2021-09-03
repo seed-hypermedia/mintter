@@ -1,4 +1,3 @@
-import type {MouseEvent} from 'react'
 import type {EditorPlugin} from '../types'
 import type {Embed, Paragraph, StaticParagraph} from '@mintter/mttast'
 import type {MTTEditor} from '../utils'
@@ -8,6 +7,7 @@ import {Path, Transforms, Editor} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {
   useMemo,
+  forwardRef,
   // useRef, useCallback, useEffect
 } from 'react'
 import {useHistory, useLocation, useParams} from 'react-router'
@@ -15,7 +15,7 @@ import toast from 'react-hot-toast'
 import {isBlockquote, isEmbed, isGroupContent, isHeading, isStatement} from '@mintter/mttast'
 import {useAccount, usePublication} from '@mintter/client/hooks'
 import {createDraft} from '@mintter/client'
-import {styled} from '@mintter/ui/stitches.config'
+import {css, styled} from '@mintter/ui/stitches.config'
 import {group} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
@@ -25,21 +25,11 @@ import {ContextMenu} from '../context-menu'
 import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {getEmbedIds} from './embed'
-import {Marker} from '../marker'
+import {StatementTools, Tools} from '../statement-tools'
 
 export const ELEMENT_STATEMENT = 'statement'
 
-export const Tools = styled('div', {
-  height: '$space$8',
-  overflow: 'hidden',
-  alignSelf: 'start',
-  display: 'flex',
-  alignItems: 'center',
-  userSelect: 'none',
-  WebkitUserSelect: 'none',
-})
-
-const StatementStyled = styled('li', {
+export const statementStyle = css({
   // backgroundColor: 'rgba(0,0,0,0.1)',
   marginTop: '$3',
   padding: 0,
@@ -50,7 +40,7 @@ const StatementStyled = styled('li', {
   gridTemplateRows: 'min-content auto',
   gap: 0,
   gridTemplateAreas: `"controls content annotations"
-  ". children annotations"`,
+". children annotations"`,
   marginRight: -300,
   [`& > ${Tools}`]: {
     gridArea: 'controls',
@@ -63,21 +53,7 @@ const StatementStyled = styled('li', {
   },
 })
 
-export const Dragger = styled('div', {
-  // backgroundColor: 'red',
-  width: '$space$8',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  height: 32,
-  borderRadius: '$2',
-  opacity: 0,
-  transition: 'all ease-in-out 0.1s',
-  '&:hover': {
-    opacity: 1,
-    cursor: 'grab',
-  },
-})
+const StatementStyled = styled('li', statementStyle)
 
 export const createStatementPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATEMENT,
@@ -118,12 +94,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
           {...attributes}
           // onMouseEnter={onEnter} onMouseLeave={onLeave}
         >
-          <Tools contentEditable={false}>
-            <Dragger data-dragger>
-              <Icon name="Grid6" size="2" color="muted" />
-            </Dragger>
-            <Marker element={element} />
-          </Tools>
+          <StatementTools element={element} />
           {!isDraft ? (
             <ContextMenu.Root>
               <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
@@ -324,3 +295,5 @@ function fallbackCopyTextToClipboard(text: string) {
     resolve(true)
   })
 }
+
+const StatementMenu = forwardRef((props, ref) => {})
