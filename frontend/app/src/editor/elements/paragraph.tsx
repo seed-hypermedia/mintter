@@ -5,32 +5,39 @@ import {Node, Path, Editor} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {useMemo} from 'react'
 import {Transforms} from 'slate'
-import {isCode, isParagraph} from '@mintter/mttast'
+import {isBlockquote, isCode, isParagraph} from '@mintter/mttast'
 import {createId, statement} from '@mintter/mttast-builder'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
 const Paragraph = styled(Text, {
-  '&[data-parent=blockquote]': {
-    // backgroundColor: '$background-muted',
-    padding: '$7',
-    borderRadius: '$2',
-    overflow: 'hidden',
-    position: 'relative',
-    '&::before': {
-      content: '',
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      width: 4,
-      height: '$full',
-      // backgroundColor: '$secondary-soft',
-    },
-  },
   '&[data-parent=code]': {
     fontFamily: 'monospace',
     margin: 0,
     padding: 0,
+  },
+  '&[data-parent=blockquote]': {
+    borderRadius: '$2',
+    paddingVertical: '$4',
+    marginHorizontal: '$2',
+    paddingLeft: '$5',
+    position: 'relative',
+    // backgroundColor: '$background-muted',
+    fontStyle: 'italic',
+    color: '$text-alt',
+    fontSize: '$5',
+    '&::before': {
+      content: '',
+      backround: 'red',
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      transform: 'translateX(-4px)',
+      width: 4,
+      borderRadius: '$2',
+      height: '$full',
+      backgroundColor: '$primary-soft',
+    },
   },
 })
 
@@ -43,7 +50,7 @@ export const createParagraphPlugin = (): EditorPlugin => ({
       const [parentNode] = Editor.parent(editor, path)
       return (
         <Paragraph
-          as={isCode(parentNode) ? 'span' : 'p'}
+          as={isCode(parentNode) ? 'span' : isBlockquote(parentNode) ? 'blockquote' : 'p'}
           alt
           size="4"
           css={{paddingLeft: '$2'}}

@@ -47,17 +47,17 @@ export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
    */
 
   createTabPlugin(),
-  {
-    name: 'normalize',
-    configureEditor(editor) {
-      const {normalizeNode} = editor
+  // {
+  //   name: 'normalize',
+  //   configureEditor(editor) {
+  //     const {normalizeNode} = editor
 
-      editor.normalizeNode = (entry) => {
-        const [node, path] = entry
-        // console.log(path, node.type, node.id, node)
-        normalizeNode(entry)
-      }
-      return editor
-    },
-  },
+  //     editor.normalizeNode = (entry) => {
+  //       const [node, path] = entry
+  //       // console.log(path, node.type, node.id, node)
+  //       normalizeNode(entry)
+  //     }
+  //     return editor
+  //   },
+  // },
 ]
