@@ -14,9 +14,7 @@ export const groupStyle = css({
   position: 'relative',
   variants: {
     type: {
-      group: {
-        marginLeft: '-$8',
-      },
+      group: {},
       orderedList: {
         marginLeft: '-$8',
         counterReset: 'section',
