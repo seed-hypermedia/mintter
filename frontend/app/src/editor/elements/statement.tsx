@@ -31,6 +31,7 @@ export const ELEMENT_STATEMENT = 'statement'
 
 export const statementStyle = css({
   // backgroundColor: 'rgba(0,0,0,0.1)',
+  $$hover: 0,
   marginTop: '$3',
   padding: 0,
   listStyle: 'none',
@@ -50,6 +51,9 @@ export const statementStyle = css({
   },
   '& > ul, & > ol': {
     gridArea: 'children',
+  },
+  '&::hover': {
+    $$hover: 1,
   },
 })
 
