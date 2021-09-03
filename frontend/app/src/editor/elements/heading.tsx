@@ -1,37 +1,15 @@
 import {styled} from '@mintter/ui/stitches.config'
-import {Icon} from '@mintter/ui/icon'
 import type {EditorPlugin} from '../types'
-import {Dragger, Tools} from './statement'
-import {Marker} from '../marker'
-import {Transforms} from 'slate'
-import type {NodeEntry} from 'slate'
-import {Editor, Path} from 'slate'
-import type {Heading as HeadingType} from '@mintter/mttast'
-import type {MTTEditor} from '../utils'
-import {group, statement} from '@mintter/mttast-builder'
-import {ELEMENT_PARAGRAPH} from './paragraph'
+import {StatementTools} from '../statement-tools'
+import {statementStyle} from './statement'
+import {isHeading, isStaticParagraph} from '@mintter/mttast'
+import {Editor, Element, Node, Transforms} from 'slate'
+import {isFirstChild, turnIntoDefaultFlowContent} from '../utils'
+import {staticParagraph} from 'frontend/mttast-builder/dist'
 
 export const ELEMENT_HEADING = 'heading'
 
-export const Heading = styled('li', {
-  marginTop: '$3',
-  display: 'grid',
-  gridTemplateColumns: '$space$8 1fr',
-  gridTemplateRows: 'auto auto',
-  gap: '0 $2',
-  gridTemplateAreas: `"controls content"
-  ". children"`,
-  [`& > ${Tools}`]: {
-    gridArea: 'controls',
-  },
-
-  "& > [data-element-type='staticParagraph']": {
-    gridArea: 'content',
-  },
-  '& > ul, & > ol': {
-    gridArea: 'children',
-  },
-})
+export const Heading = styled('li', statementStyle)
 
 export const createHeadingPlugin = (): EditorPlugin => ({
   name: ELEMENT_HEADING,
@@ -40,23 +18,34 @@ export const createHeadingPlugin = (): EditorPlugin => ({
     if (element.type === ELEMENT_HEADING) {
       return (
         <Heading {...attributes}>
-          <Tools contentEditable={false}>
-            <Dragger>
-              <Icon name="Grid6" size="2" color="muted" />
-            </Dragger>
-            <Marker element={element} />
-          </Tools>
+          <StatementTools element={element} />
           {children}
         </Heading>
       )
     }
   },
   configureEditor: (editor) => {
-    const {normalizeNode} = editor
+    const {normalizeNode, deleteBackward} = editor
+
+    editor.deleteBackward = (unit) => {
+      if (turnIntoDefaultFlowContent(editor)) return
+      deleteBackward(unit)
+    }
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
-      if (node.type == ELEMENT_HEADING) {
+      if (isHeading(node)) {
+        for (const [child, childPath] of Node.children(editor, path)) {
+          if (Element.isElement(child) && !editor.isInline(child)) {
+            if (isFirstChild(childPath) && !isStaticParagraph(child)) {
+              Editor.withoutNormalizing(editor, () => {
+                Transforms.removeNodes(editor, {at: childPath})
+                Transforms.insertNodes(editor, staticParagraph(child.children), {at: childPath})
+              })
+              return
+            }
+          }
+        }
       }
       normalizeNode(entry)
     }
