@@ -21,9 +21,30 @@ export const Tools = styled('div', {
   alignItems: 'center',
   userSelect: 'none',
   WebkitUserSelect: 'none',
+  opacity: 0,
+  transition: 'all ease-in-out 0.1s',
+  '&:hover': {
+    opacity: 1,
+  },
 })
 
-export const Dragger = styled('div', {
+// export const Dragger = styled('div', {
+//   // backgroundColor: 'red',
+//   width: '$space$8',
+//   display: 'flex',
+//   alignItems: 'center',
+//   justifyContent: 'center',
+//   height: 32,
+//   borderRadius: '$2',
+//   opacity: 0,
+//   transition: 'all ease-in-out 0.1s',
+//   '&:hover': {
+//     opacity: 1,
+//     // cursor: 'grab',
+//   },
+// })
+
+export const ElementDropdown = styled('div', {
   // backgroundColor: 'red',
   width: '$space$8',
   display: 'flex',
@@ -31,12 +52,12 @@ export const Dragger = styled('div', {
   justifyContent: 'center',
   height: 32,
   borderRadius: '$2',
-  opacity: 0,
+  // opacity: 0,
   transition: 'all ease-in-out 0.1s',
-  '&:hover': {
-    opacity: 1,
-    cursor: 'grab',
-  },
+  // '&:hover': {
+  //   opacity: 1,
+  //   // cursor: 'grab',
+  // },
 })
 
 const items = [
@@ -71,9 +92,9 @@ export const StatementTools = forwardRef(({element}: {element: FlowContent}, ref
       <Tools contentEditable={false} ref={ref}>
         <Dropdown.Root>
           <Dropdown.Trigger as={Slot}>
-            <Dragger data-dragger>
+            <ElementDropdown data-dragger>
               <Icon name="AddCircle" size="2" color="muted" />
-            </Dragger>
+            </ElementDropdown>
           </Dropdown.Trigger>
           <Dropdown.Content align="start" side="bottom" css={{minWidth: 220}}>
             <Dropdown.Label>

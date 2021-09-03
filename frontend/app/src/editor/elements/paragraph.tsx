@@ -20,7 +20,7 @@ const Paragraph = styled(Text, {
     borderRadius: '$2',
     paddingVertical: '$4',
     marginHorizontal: '$2',
-    paddingLeft: '$5',
+    paddingLeft: '$8',
     position: 'relative',
     // backgroundColor: '$background-muted',
     fontStyle: 'italic',
