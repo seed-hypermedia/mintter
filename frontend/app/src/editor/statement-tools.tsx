@@ -64,22 +64,22 @@ const items = [
   {
     label: 'Statement',
     iconName: 'Paragraph',
-    onSelect: setToStatement,
+    onSelect: setType(statement),
   },
   {
     label: 'Heading',
     iconName: 'Heading',
-    onSelect: setToHeading,
+    onSelect: setType(heading),
   },
   {
     label: 'Blockquote',
     iconName: 'MessageBubble',
-    onSelect: setToBlockquote,
+    onSelect: setType(blockquote),
   },
   {
     label: 'Code block',
     iconName: 'AddCircle',
-    onSelect: setCodeblock,
+    onSelect: setType(code),
   },
 ]
 
@@ -116,34 +116,15 @@ export const StatementTools = forwardRef(({element}: {element: FlowContent}, ref
   )
 })
 
-function setToStatement(editor: MTTEditor, element: FlowContent, at: Path) {
-  Editor.withoutNormalizing(editor, function () {
-    const {children, type, ...props} = element
-    Transforms.removeNodes(editor, {at})
-    Transforms.insertNodes(editor, statement({...props}, children), {at})
-  })
-}
-
-function setToHeading(editor: MTTEditor, element: FlowContent, at: Path) {
-  Editor.withoutNormalizing(editor, function () {
-    const {children, type, ...props} = element
-    Transforms.removeNodes(editor, {at})
-    Transforms.insertNodes(editor, heading({...props}, children), {at})
-  })
-}
-
-function setToBlockquote(editor: MTTEditor, element: FlowContent, at: Path) {
-  Editor.withoutNormalizing(editor, function () {
-    const {children, type, ...props} = element
-    Transforms.removeNodes(editor, {at})
-    Transforms.insertNodes(editor, blockquote({...props}, children), {at})
-  })
-}
-
-function setCodeblock(editor: MTTEditor, element: FlowContent, at: Path) {
-  Editor.withoutNormalizing(editor, function () {
-    const {children, type, ...props} = element
-    Transforms.removeNodes(editor, {at})
-    Transforms.insertNodes(editor, code({...props}, children), {at})
-  })
+/*
+ * @todo add correct types to builder function
+ */
+function setType(fn: any) {
+  return function setToStatement(editor: MTTEditor, element: FlowContent, at: Path) {
+    Editor.withoutNormalizing(editor, function () {
+      const {children, type, ...props} = element
+      Transforms.removeNodes(editor, {at})
+      Transforms.insertNodes(editor, fn({...props}, children), {at})
+    })
+  }
 }
