@@ -20,7 +20,7 @@ export default function Publication(): JSX.Element {
 
   async function handleUpdate() {
     try {
-      const d = await createDraft()
+      const d = await createDraft(docId)
       if (d?.id) {
         // history.push({
         //   pathname: `/editor/${d.id}`,
