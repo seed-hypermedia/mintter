@@ -348,7 +348,7 @@ func encodeProtoFull(t *testing.T, w io.Writer, ops []op) {
 
 func walkTestdata(t *testing.T, filename string) []op {
 	wlk := blockdoc.NewWalkHandlers()
-	front := crdt.NewFrontier()
+	front := crdt.NewVectorClock()
 
 	newID := func(site string) crdt.ID {
 		id := front.NewID(site)

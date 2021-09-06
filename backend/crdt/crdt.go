@@ -25,28 +25,28 @@ func (i ID) Less(ii ID) bool {
 	return i.Clock < ii.Clock
 }
 
-// Frontier tracks IDs for each site and maximal
+// VectorClock tracks IDs for each site and maximal
 // lamport timestamp for the whole document.
-type Frontier struct {
+type VectorClock struct {
 	maxClock int
 	lastSeen map[string]int
 }
 
-// NewFrontier creates a new Frontier.
-func NewFrontier() *Frontier {
-	return &Frontier{
+// NewVectorClock creates a new Frontier.
+func NewVectorClock() *VectorClock {
+	return &VectorClock{
 		lastSeen: map[string]int{},
 	}
 }
 
 // NewID produces a new ID for a given site, without tracking it.
-func (f *Frontier) NewID(site string) ID {
+func (f *VectorClock) NewID(site string) ID {
 	return ID{Site: site, Clock: f.maxClock + 1}
 }
 
 // Track the ID of a new operation. Will fail for outdated IDs.
-func (f *Frontier) Track(id ID) error {
-	if l := f.lastSeen[id.Site]; id.Clock < l {
+func (f *VectorClock) Track(id ID) error {
+	if l := f.lastSeen[id.Site]; id.Clock <= l {
 		return fmt.Errorf("out of date operation for site %s: incoming clock=%d, last=%d", id.Site, id.Clock, l)
 	}
 
