@@ -75,6 +75,16 @@ func TestAPICreateDraft_Update(t *testing.T) {
 
 	_, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: doc.Id})
 	require.Error(t, err, "draft must be remove after publishing")
+
+	gotPub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+
+	testutil.ProtoEqual(t, pub2, gotPub, "must get updated publication")
+
+	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+
+	require.Len(t, list.Publications, 1, "must have published document in the list")
 }
 
 func TestAPIListDrafts(t *testing.T) {

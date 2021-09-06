@@ -595,15 +595,10 @@ func documentFromState(state *state) (*documents.Document, error) {
 		return nil, status.Errorf(codes.NotFound, "not found patches for document ID %s", state.obj.String())
 	}
 
-	// TODO: handle multiple patches.
-	if state.size > 1 {
-		return nil, status.Errorf(codes.Unimplemented, "documents with more than 1 patch are not supported yet")
-	}
-
-	sp := state.Item()
+	all := state.Merge()
 
 	doc := &documents.Document{}
-	if err := proto.Unmarshal(sp.Body, doc); err != nil {
+	if err := proto.Unmarshal(all[len(all)-1].Body, doc); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal document: %w", err)
 	}
 
