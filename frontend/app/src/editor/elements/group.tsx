@@ -1,6 +1,6 @@
-import {isFlowContent, isGroupContent} from '@mintter/mttast'
+import {isFlowContent, isGroup, isGroupContent} from '@mintter/mttast'
 import type {GroupingContent} from '@mintter/mttast'
-import {styled} from '@mintter/ui/stitches.config'
+import {css, styled} from '@mintter/ui/stitches.config'
 import {Editor, Transforms} from 'slate'
 import type {NodeEntry} from 'slate'
 import type {EditorPlugin} from '../types'
@@ -8,19 +8,32 @@ import type {MTTEditor} from '../utils'
 
 export const ELEMENT_GROUP = 'group'
 
-export const Group = styled('ul', {
+export const groupStyle = css({
   margin: 0,
   padding: 0,
   position: 'relative',
-  // marginLeft: '$6',
+  variants: {
+    type: {
+      group: {},
+      orderedList: {
+        marginLeft: '-$8',
+        counterReset: 'section',
+      },
+      unorderedList: {
+        marginLeft: '-$8',
+      },
+    },
+  },
 })
+
+export const Group = styled('ul', groupStyle)
 
 export const createGroupPlugin = (): EditorPlugin => ({
   name: ELEMENT_GROUP,
   renderElement({attributes, children, element}) {
-    if (element.type === ELEMENT_GROUP) {
+    if (isGroup(element)) {
       return (
-        <Group data-element-type={element.type} {...attributes}>
+        <Group type={element.type} data-element-type={element.type} {...attributes}>
           {children}
         </Group>
       )

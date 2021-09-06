@@ -152,9 +152,23 @@ function AccountItem({account}: AccountItemProps) {
           <Box css={{width: 32, height: 32, backgroundColor: '$background-neutral', borderRadius: '$round'}} />
           <Box>
             <Text fontWeight="bold">{account.profile?.alias}</Text>
-            <Text color="muted">{account.profile?.bio}</Text>
+            <Text
+              color="muted"
+              css={{
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {account.profile?.bio}
+            </Text>
             <Text size="1" css={{marginTop: '$3'}}>
               {account.profile?.email}
+            </Text>
+            <Text size="1">
+              <b>Acc. ID:</b> {account.id}
+            </Text>
+            <Text size="1">
+              <b>device ID:</b> {Object.keys(account.devices)[0]}
             </Text>
           </Box>
         </Box>
