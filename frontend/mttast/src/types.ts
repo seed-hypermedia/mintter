@@ -117,7 +117,7 @@ export interface Resource {
 
 // Content Model
 
-export type MttastContent = FlowContent | GroupingContent | Content | PhrasingContent
+export type MttastContent = FlowContent | GroupingContent | Content | StaticContent | PhrasingContent | Document
 
 export type Content = Paragraph
 
@@ -126,7 +126,7 @@ export type StaticContent = StaticParagraph
 export type GroupingContent = Group | OrderedList | UnorderedList
 
 // The statements of a document
-export type FlowContent = Statement | Heading | Blockquote | Code
+export type FlowContent = Statement | Heading | Blockquote | Code | Callout
 
 // the text and markup of a document that's not intended for
 export type StaticPhrasingContent = Text | Video | Image
