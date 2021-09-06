@@ -1,7 +1,6 @@
 import type {FlowContent, Statement} from '@mintter/mttast'
 import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
-import {forwardRef} from 'react'
 import {Marker} from './marker'
 import {Dropdown} from './dropdown'
 import {Slot} from '@radix-ui/react-slot'
@@ -40,8 +39,9 @@ export const Tools = styled('div', {
 //   },
 // })
 
-export const ElementDropdown = styled('div', {
-  // backgroundColor: 'red',
+export const ElementDropdown = styled('button', {
+  border: 'none',
+  backgroundColor: '$background-default',
   width: '$space$8',
   display: 'flex',
   alignItems: 'center',
@@ -79,20 +79,19 @@ const items = [
   },
 ]
 
-export const StatementTools = forwardRef(({element}: {element: FlowContent}, ref) => {
+export function StatementTools({element}: {element: FlowContent}) {
   const editor = useSlateStatic()
   const isReadOnly = useReadOnly()
   const path = ReactEditor.findPath(editor, element)
+
   return (
-    <Tools contentEditable={false} ref={ref}>
+    <Tools contentEditable={false}>
       {!isReadOnly ? (
-        <Dropdown.Root>
-          <Dropdown.Trigger as={Slot}>
-            <ElementDropdown data-dragger>
-              <Icon name="AddCircle" size="2" color="muted" />
-            </ElementDropdown>
+        <Dropdown.Root modal={false}>
+          <Dropdown.Trigger as={ElementDropdown} data-trigger>
+            <Icon name="Grid4" size="2" color="muted" />
           </Dropdown.Trigger>
-          <Dropdown.Content align="start" side="bottom" css={{minWidth: 220}}>
+          <Dropdown.Content portalled align="start" side="bottom" css={{minWidth: 220}}>
             <Dropdown.Label>
               <Text color="muted" size="2" css={{marginHorizontal: '$3', marginVertical: '$2'}}>
                 Turn Statement into:
@@ -110,7 +109,7 @@ export const StatementTools = forwardRef(({element}: {element: FlowContent}, ref
       <Marker element={element} />
     </Tools>
   )
-})
+}
 
 /*
  * @todo add correct types to builder function
