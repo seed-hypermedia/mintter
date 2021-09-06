@@ -10,7 +10,7 @@ import {useSlateStatic} from 'slate-react'
 import {ReactEditor} from 'slate-react'
 import {Transforms, Editor, Path} from 'slate'
 import type {MTTEditor} from './utils'
-import {blockquote, code, heading, statement} from 'frontend/mttast-builder/dist'
+import {blockquote, code, heading, statement} from '@mintter/mttast-builder'
 import {useReadOnly} from 'slate-react'
 
 export const Tools = styled('div', {

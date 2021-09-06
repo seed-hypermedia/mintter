@@ -3,7 +3,7 @@ import type {BaseEditor, Ancestor, Descendant, NodeEntry, Point, Span} from 'sla
 import type {ReactEditor} from 'slate-react'
 import type {HistoryEditor} from 'slate-history'
 import {isFlowContent, isStatement} from '@mintter/mttast'
-import {statement} from 'frontend/mttast-builder/dist'
+import {statement} from '@mintter/mttast-builder'
 
 export type MTTEditor = BaseEditor & ReactEditor & HistoryEditor
 
