@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option go_package = ".;mtast";
+
+message PackedChange {
+  PackedLookup lookup = 1;
+  PackedMove moves = 2;
+  PackedKeys attrs = 3;
+}
+
+message PackedMove {
+  repeated int64 site = 1;
+  repeated int64 clock = 2;
+  repeated int64 node = 3;
+  repeated int64 parent = 4;
+  repeated int64 leftSite = 5;
+  repeated int64 leftClock = 6;
+}
+
+message PackedKeys {
+  repeated int64 site = 1;
+  repeated int64 clock = 2;
+  repeated int64 node = 3;
+  repeated int64 key = 4;
+  repeated bytes value = 5;
+}
+
+message PackedLookup {
+  repeated string sites = 1;
+  repeated string nodes = 2;
+  repeated string keys = 3;
+}

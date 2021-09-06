@@ -3,14 +3,16 @@ module mintter
 go 1.16
 
 require (
-	github.com/DataDog/zstd v1.4.8 // indirect
+	github.com/DataDog/zstd v1.4.8
 	github.com/alecthomas/kong v0.2.11
+	github.com/alexeyco/simpletable v1.0.0
 	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/burdiyan/go/kongcli v0.0.0-20200124222818-6f87e0e684b6
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/dgraph-io/badger/v3 v3.2103.0
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
+	github.com/fxamacker/cbor/v2 v2.3.0
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/snappy v0.0.3 // indirect
@@ -52,6 +54,7 @@ require (
 	github.com/libp2p/go-libp2p-swarm v0.5.0
 	github.com/libp2p/go-libp2p-tls v0.1.3
 	github.com/lightningnetwork/lnd v0.11.0-beta
+	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/multiformats/go-multiaddr v0.3.3
 	github.com/multiformats/go-multihash v0.0.15
 	github.com/polydawn/refmt v0.0.0-20201211092308-30ac6d18308e
