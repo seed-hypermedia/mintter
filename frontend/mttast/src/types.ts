@@ -94,7 +94,7 @@ export interface Link extends Resource, Parent {
   children: StaticPhrasingContent[]
 }
 
-export type Text = Literal & {
+export interface Text extends Literal {
   type: 'text'
   strong?: boolean
   emphasis?: boolean
