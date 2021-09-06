@@ -25,7 +25,7 @@ type OptionsOf<N extends Node> = Omit<N, 'type' | 'children'>
 function normalizeChildren<P extends Parent>(children?: ChildrenOf<P>): P['children'] {
   if (Array.isArray(children)) {
     return children.filter((c) => !!c)
-  } else if (typeof children === 'function') {
+  } else if (typeof children == 'function') {
     const res = children()
     return normalizeChildren(res)
   } else {

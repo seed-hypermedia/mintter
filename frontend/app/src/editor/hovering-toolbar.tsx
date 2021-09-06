@@ -9,12 +9,14 @@ import {ToolbarLink} from './elements/link'
 import {Box} from '@mintter/ui/box'
 import {Tooltip} from '../components/tooltip'
 import {Button} from '@mintter/ui/button'
-import {icons} from '@mintter/ui/icon'
+import {Icon, icons} from '@mintter/ui/icon'
 import {toggleMark, isMarkActive} from './utils'
+import {ELEMENT_UNORDERED_LIST} from './elements/unordered-list'
+import {ELEMENT_ORDERED_LIST} from './elements/ordered-list'
 
 type FormatTypes = keyof Omit<MTTText, 'type' | 'text' | 'value' | 'data' | 'position'>
 
-const FormatButton = ({format}: {format: FormatTypes}) => {
+function FormatButton({format}: {format: FormatTypes}) {
   const editor = useSlateStatic()
   // const iconName: Pick<IconProps, 'name'> = useMemo(() => format && capitalize(format), [format])
   const IconComponent = icons[capitalize(format)]
@@ -155,6 +157,8 @@ export function HoveringToolbar() {
         <FormatButton format="emphasis" />
         <FormatButton format="underline" />
         <ToolbarLink lastSelection={lastSelection} resetSelection={resetSelection} sendStoreFocus={sendStoreFocus} />
+        {/* <ToggleListButton type="orderedList" />
+        <ToggleListButton type="unorderedList" /> */}
       </Menu>
     </Portal>
   )
@@ -162,4 +166,36 @@ export function HoveringToolbar() {
 
 function capitalize(word: string) {
   return `${word[0].toUpperCase()}${word.slice(1)}`
+}
+
+const listFormatLabel = {
+  [ELEMENT_UNORDERED_LIST]: 'Unordered List (ul)',
+  [ELEMENT_ORDERED_LIST]: 'Ordered List (ol)',
+}
+
+function ToggleListButton({type}: {type: 'orderedList' | 'unorderedList'}) {
+  const editor = useSlateStatic()
+  return (
+    <Tooltip content={type}>
+      {/* <Button
+        css={
+          isMarkActive(editor, format)
+            ? {
+                backgroundColor: '$background-opposite',
+                color: '$text-opposite',
+              }
+            : {}
+        }
+        onMouseDown={(event) => {
+          console.log('mouse down!', event)
+
+          event.preventDefault()
+          toggleMark(editor, format)
+        }}
+        variant="ghost"
+        size="1"
+        color="muted"
+      ></Button> */}
+    </Tooltip>
+  )
 }
