@@ -18,10 +18,10 @@ import {code, createId, document, embed, group, ol, ul, paragraph, statement, te
  * @param rpc RPC client
  * @returns {Promise<Document>} A promise to the Draft.
  */
-export async function createDraft(rpc?: GrpcClient): Promise<Document> {
+export async function createDraft(publicationId: string = '', rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
 
-  const request = CreateDraftRequest.fromPartial({})
+  const request = CreateDraftRequest.fromPartial({existingDocumentId: publicationId})
   return await new DraftsClientImpl(rpc).createDraft(request)
 }
 

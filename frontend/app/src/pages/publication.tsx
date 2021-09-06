@@ -1,6 +1,7 @@
 import {useMemo} from 'react'
 import {useHistory, useParams} from 'react-router-dom'
 import type {Document} from '@mintter/client'
+import {createDraft} from '@mintter/client'
 import {usePublication} from '@mintter/client/hooks'
 import {Text, Box, Button} from '@mintter/ui'
 import {Container} from '../components/container'
@@ -16,9 +17,20 @@ export default function Publication(): JSX.Element {
   const {isLoading, isError, data, error} = usePublication(docId)
 
   useEnableSidepanel()
-  // request document
-  // const vvalue = useStoreEditorValue()
-  // console.log('🚀 ~ file: publication.tsx ~ line 89 ~ useEditorPublication ~ vvalue', vvalue)
+
+  async function handleUpdate() {
+    try {
+      const d = await createDraft()
+      if (d?.id) {
+        // history.push({
+        //   pathname: `/editor/${d.id}`,
+        // })
+        console.log('update document!!', d)
+      }
+    } catch (err) {
+      console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
+    }
+  }
 
   if (isLoading) {
     return <AppSpinner />
@@ -59,6 +71,9 @@ export default function Publication(): JSX.Element {
           paddingHorizontal: '$5',
         }}
       >
+        <Button color="primary" shape="pill" size="2" onClick={handleUpdate}>
+          UPDATE
+        </Button>
         <Button
           size="1"
           color="muted"
