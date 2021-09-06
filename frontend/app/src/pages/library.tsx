@@ -26,7 +26,6 @@ export default function Library() {
   const onCreateDraft = useCallback(async () => {
     try {
       const d = await createDraft()
-      console.log('🚀 ~ onCreateDraft ~ d', d)
       if (d?.id) {
         history.push({
           pathname: `/editor/${d.id}`,

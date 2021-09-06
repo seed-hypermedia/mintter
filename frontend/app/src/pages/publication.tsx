@@ -13,6 +13,7 @@ import {Editor} from '../editor'
 
 export default function Publication(): JSX.Element {
   const {docId} = useParams<{docId: string}>()
+  const history = useHistory()
   const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
   const {isLoading, isError, data, error} = usePublication(docId)
 
@@ -22,10 +23,9 @@ export default function Publication(): JSX.Element {
     try {
       const d = await createDraft(docId)
       if (d?.id) {
-        // history.push({
-        //   pathname: `/editor/${d.id}`,
-        // })
-        console.log('update document!!', d)
+        history.push({
+          pathname: `/editor/${d.id}`,
+        })
       }
     } catch (err) {
       console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
