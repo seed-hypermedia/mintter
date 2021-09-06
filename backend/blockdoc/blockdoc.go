@@ -22,11 +22,11 @@ type Document struct {
 	id     string
 	siteID string
 	tree   *crdt.Tree
-	front  *crdt.Frontier
+	front  *crdt.VectorClock
 }
 
 func NewDocument(docID, siteID string) *Document {
-	front := crdt.NewFrontier()
+	front := crdt.NewVectorClock()
 	tree := crdt.NewTree(front)
 
 	return &Document{

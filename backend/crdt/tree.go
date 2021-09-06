@@ -39,7 +39,7 @@ type node struct {
 // deleted, but could be "unlinked" and left dangling.
 type Tree struct {
 	nodes    map[string]*node
-	front    *Frontier
+	vclock   *VectorClock
 	movesLog []moveRecord
 }
 
@@ -52,7 +52,7 @@ type moveRecord struct {
 }
 
 // NewTree creates a new Tree with a given Frontier.
-func NewTree(front *Frontier) *Tree {
+func NewTree(vclock *VectorClock) *Tree {
 	d := &Tree{
 		nodes: map[string]*node{
 			RootNodeID: {
@@ -64,7 +64,7 @@ func NewTree(front *Frontier) *Tree {
 				children: newList(TrashNodeID),
 			},
 		},
-		front: front,
+		vclock: vclock,
 	}
 
 	return d
@@ -164,7 +164,7 @@ func (d *Tree) integrateMove(id ID, nodeID, parentID string, ref ID) error {
 	// We can safely update clock here, because we've checked all the invariants up to this point.
 	// Although we still have to make the ancestorship check, these invalid moves would still
 	// allocate a position, but won't perform the actual move.
-	if err := d.front.Track(id); err != nil {
+	if err := d.vclock.Track(id); err != nil {
 		return err
 	}
 
@@ -295,7 +295,7 @@ func (d *Tree) isAncestor(a, b string) bool {
 }
 
 func (d *Tree) newID(site string) ID {
-	return d.front.NewID(site)
+	return d.vclock.NewID(site)
 }
 
 func (d *Tree) findSubtree(id string) (*list, error) {

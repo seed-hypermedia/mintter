@@ -31,7 +31,7 @@ func testPlacement(t *testing.T, want []testWant, it *TreeIterator) {
 }
 
 func TestInsert(t *testing.T) {
-	d := NewTree(NewFrontier())
+	d := NewTree(NewVectorClock())
 
 	require.NoError(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
 	require.NoError(t, d.MoveNode("alice", "b2", RootNodeID, d.nodes["b1"].pos.id))
@@ -49,7 +49,7 @@ func TestInsert(t *testing.T) {
 }
 
 func TestMove_Swap(t *testing.T) {
-	d := NewTree(NewFrontier())
+	d := NewTree(NewVectorClock())
 
 	require.NoError(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
 	require.NoError(t, d.MoveNode("alice", "b2", RootNodeID, d.nodes["b1"].pos.id))
@@ -66,7 +66,7 @@ func TestMove_Swap(t *testing.T) {
 func TestMove_ConcurrentCycle(t *testing.T) {
 	for i, round := range []string{"NORMAL", "REVERSED"} {
 		t.Run(round, func(t *testing.T) {
-			d := NewTree(NewFrontier())
+			d := NewTree(NewVectorClock())
 
 			// Alice creates two nodes.
 			require.NoError(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
@@ -103,7 +103,7 @@ func TestMove_ConcurrentCycle(t *testing.T) {
 }
 
 func TestMove_CycleNestedSequential(t *testing.T) {
-	d := NewTree(NewFrontier())
+	d := NewTree(NewVectorClock())
 
 	require.NoError(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
 	require.NoError(t, d.MoveNode("alice", "b2", "b1", listStart))
@@ -125,7 +125,7 @@ func TestMove_ConcurrentCommute(t *testing.T) {
 
 	for i, round := range []string{"NORMAL", "REVERSED"} {
 		t.Run(round, func(t *testing.T) {
-			d := NewTree(NewFrontier())
+			d := NewTree(NewVectorClock())
 
 			// Alice creates two nodes.
 			require.NoError(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
@@ -161,7 +161,7 @@ func TestMove_ConcurrentCommute(t *testing.T) {
 }
 
 func TestMove_OutdatedSuperseeding(t *testing.T) {
-	d := NewTree(NewFrontier())
+	d := NewTree(NewVectorClock())
 
 	require.NoError(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
 	require.NoError(t, d.MoveNode("alice", "b2", RootNodeID, d.nodes["b1"].pos.id))
@@ -190,7 +190,7 @@ func TestMove_OutdatedSuperseeding(t *testing.T) {
 }
 
 func TestMove_Nested(t *testing.T) {
-	d := NewTree(NewFrontier())
+	d := NewTree(NewVectorClock())
 
 	require.NoError(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
 	require.NoError(t, d.MoveNode("alice", "b2", RootNodeID, d.nodes["b1"].pos.id))
@@ -212,15 +212,15 @@ func TestMove_Nested(t *testing.T) {
 }
 
 func TestMove_Duplicate(t *testing.T) {
-	d := NewTree(NewFrontier())
+	d := NewTree(NewVectorClock())
 
 	require.NoError(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
 	require.Error(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
-	require.Equal(t, 1, d.front.maxClock)
+	require.Equal(t, 1, d.vclock.maxClock)
 }
 
 func TestDelete(t *testing.T) {
-	d := NewTree(NewFrontier())
+	d := NewTree(NewVectorClock())
 
 	require.NoError(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
 	require.NoError(t, d.MoveNode("alice", "b2", RootNodeID, d.nodes["b1"].pos.id))
@@ -250,7 +250,7 @@ func TestDelete(t *testing.T) {
 func TestEmptyParent(t *testing.T) {
 	t.Parallel()
 
-	d := NewTree(NewFrontier())
+	d := NewTree(NewVectorClock())
 
 	require.Error(t, d.MoveNode("alice", "b1", "", listStart))
 }
@@ -258,7 +258,7 @@ func TestEmptyParent(t *testing.T) {
 func TestBadParent(t *testing.T) {
 	t.Parallel()
 
-	d := NewTree(NewFrontier())
+	d := NewTree(NewVectorClock())
 
 	require.Error(t, d.MoveNode("alice", "b1", "missing-node-id", listStart))
 }
@@ -266,13 +266,13 @@ func TestBadParent(t *testing.T) {
 func TestEmptyNodeID(t *testing.T) {
 	t.Parallel()
 
-	d := NewTree(NewFrontier())
+	d := NewTree(NewVectorClock())
 
 	require.Error(t, d.MoveNode("alice", "", RootNodeID, listStart))
 }
 
 func TestUndoRedo(t *testing.T) {
-	d := NewTree(NewFrontier())
+	d := NewTree(NewVectorClock())
 
 	require.NoError(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
 	require.NoError(t, d.MoveNode("alice", "b2", "b1", listStart))
@@ -310,7 +310,7 @@ func TestUndoRedo(t *testing.T) {
 }
 
 func TestSetNodePosition(t *testing.T) {
-	d := NewTree(NewFrontier())
+	d := NewTree(NewVectorClock())
 
 	require.NoError(t, d.SetNodePosition("alice", "b1", RootNodeID, ""))
 	require.Error(t, d.SetNodePosition("alice", "b1", "b3", ""))
@@ -318,7 +318,7 @@ func TestSetNodePosition(t *testing.T) {
 	require.Error(t, d.SetNodePosition("bob", "b3", "b1", "foo"), "must fail setting missing left sibling")
 	require.NoError(t, d.SetNodePosition("bob", "b3", "b1", ""))
 
-	require.Equal(t, 3, d.front.maxClock)
+	require.Equal(t, 3, d.vclock.maxClock)
 
 	NodePositionsTest(t, []TestPosition{
 		{Node: "b1", Parent: RootNodeID, Left: ""},
@@ -329,7 +329,7 @@ func TestSetNodePosition(t *testing.T) {
 
 func BenchmarkSetNodePosition_Append(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		d := NewTree(NewFrontier())
+		d := NewTree(NewVectorClock())
 
 		var left string
 
@@ -355,7 +355,7 @@ func BenchmarkSetNodePosition_Append(b *testing.B) {
 
 func BenchmarkUndoRedo(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		d := NewTree(NewFrontier())
+		d := NewTree(NewVectorClock())
 
 		var left string
 

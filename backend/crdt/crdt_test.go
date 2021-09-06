@@ -13,7 +13,7 @@ func TestIDSorting(t *testing.T) {
 }
 
 func TestFrontier(t *testing.T) {
-	f := NewFrontier()
+	f := NewVectorClock()
 
 	id := f.NewID("alice")
 	require.NoError(t, f.Track(id))
