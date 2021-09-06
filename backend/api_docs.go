@@ -2,6 +2,7 @@ package backend
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -57,6 +58,41 @@ func (srv *docsAPI) GetDraft(ctx context.Context, in *documents.GetDraftRequest)
 }
 
 func (srv *docsAPI) CreateDraft(ctx context.Context, in *documents.CreateDraftRequest) (*documents.Document, error) {
+	if in.ExistingDocumentId != "" {
+		pub, err := srv.GetPublication(ctx, &documents.GetPublicationRequest{
+			DocumentId: in.ExistingDocumentId,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		docid, err := srv.parseDocumentID(in.ExistingDocumentId)
+		if err != nil {
+			return nil, err
+		}
+
+		pub.Document.PublishTime = nil
+
+		data, err := proto.Marshal(pub.Document)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, err := srv.back.patches.UpsertObjectID(ctx, docid); err != nil {
+			return nil, fmt.Errorf("failed to register object id for draft: %w", err)
+		}
+
+		if err := srv.back.drafts.StoreDraft(docid, data); err != nil {
+			return nil, fmt.Errorf("failed to store draft content: %w", err)
+		}
+
+		if err := srv.back.db.IndexDocument(ctx, docid, srv.back.repo.acc.id, "", "", pub.Document.CreateTime.AsTime(), pub.Document.UpdateTime.AsTime()); err != nil {
+			return nil, err
+		}
+
+		return pub.Document, nil
+	}
+
 	pn, err := srv.back.NewDocumentPermanode()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create permanode: %v", err)
@@ -282,8 +318,25 @@ func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraft
 		return nil, fmt.Errorf("failed to parse author %s: %w", doc.Author, err)
 	}
 
-	// TODO: merge previous state when updating already published documents.
-	state := newState(c, nil)
+	// TODO: this needs some more love. It's ugly as hell.
+	state, err := srv.back.patches.LoadState(ctx, c)
+	if err != nil {
+		if errors.Is(err, badger.ErrKeyNotFound) {
+			state = newState(c, nil)
+		} else {
+			return nil, fmt.Errorf("failed to load state for draft %s: %w", c.String(), err)
+		}
+	}
+
+	// Right now we don't do any merging with previous states. Just replace with the new state.
+	// We need to read the current state so that we can create a new patch.
+	if state.size > 0 {
+		_, err = documentFromState(state)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	sp, err := state.NewProtoPatch(author, srv.back.repo.Device().priv, doc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create patch from draft: %w", err)

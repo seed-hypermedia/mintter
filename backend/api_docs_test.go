@@ -29,6 +29,54 @@ func TestAPICreateDraft(t *testing.T) {
 	require.False(t, doc.CreateTime.AsTime().IsZero())
 }
 
+func TestAPICreateDraft_Update(t *testing.T) {
+	// Create draft, update content, publish, then update the publication.
+
+	back := makeTestBackend(t, "alice", true)
+	api := newDocsAPI(back)
+
+	ctx := context.Background()
+	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	doc.Title = "Old Publication"
+	doc.Content = "Old content"
+	doc, err = api.UpdateDraft(ctx, &documents.UpdateDraftRequest{
+		Document: doc,
+	})
+	require.NoError(t, err)
+
+	pub, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{
+		DocumentId: doc.Id,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, pub)
+
+	newDraft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{
+		ExistingDocumentId: doc.Id,
+	})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, doc, newDraft, "draft from publication doesn't match")
+
+	gotDraft, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, doc, gotDraft, "get draft of a new draft doesn't match")
+
+	gotDraft.Content = "Updated Content"
+	gotDraft.Title = "Updated title"
+
+	updatedDraft, err := api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: gotDraft})
+	require.NoError(t, err)
+
+	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+
+	updatedDraft.PublishTime = pub2.Document.PublishTime
+	testutil.ProtoEqual(t, updatedDraft, pub2.Document, "publishing new version doesn't match")
+
+	_, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: doc.Id})
+	require.Error(t, err, "draft must be remove after publishing")
+}
+
 func TestAPIListDrafts(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
 	api := newDocsAPI(back)
