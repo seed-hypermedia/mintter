@@ -5,7 +5,7 @@ import {statementStyle} from './statement'
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
 import {Editor, Element, Node, Transforms} from 'slate'
 import {isFirstChild, turnIntoDefaultFlowContent} from '../utils'
-import {staticParagraph} from 'frontend/mttast-builder/dist'
+import {staticParagraph} from '@mintter/mttast-builder'
 
 export const ELEMENT_HEADING = 'heading'
 
