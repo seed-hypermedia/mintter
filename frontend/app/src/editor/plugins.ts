@@ -17,6 +17,7 @@ import {createBlockquotePlugin} from './elements/blockquote'
 import {createEmbedPlugin} from './elements/embed'
 import {createCodePlugin} from './elements/code'
 import {createTabPlugin} from './tab-plugin'
+import {createMarkdownShortcutsPlugin} from './markdown-plugin'
 
 export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
   createStrongPlugin(),
@@ -47,6 +48,7 @@ export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
    */
 
   createTabPlugin(),
+  createMarkdownShortcutsPlugin(),
   // {
   //   name: 'normalize',
   //   configureEditor(editor) {
