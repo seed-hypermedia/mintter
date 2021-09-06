@@ -11,7 +11,13 @@ export const createOrderedListPlugin = (): EditorPlugin => ({
   renderElement({attributes, children, element}) {
     if (element.type === ELEMENT_ORDERED_LIST) {
       return (
-        <OrderedList type={element.type} data-grouping-type={element.type} {...attributes}>
+        <OrderedList
+          type={element.type}
+          data-grouping-type={element.type}
+          start={element.start}
+          style={{counterReset: `section ${element.start ? element.start - 1 : ''}`}}
+          {...attributes}
+        >
           {children}
         </OrderedList>
       )

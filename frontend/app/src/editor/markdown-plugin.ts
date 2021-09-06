@@ -41,7 +41,10 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
           if (above && !isOrderedList(above[1])) {
             Transforms.select(editor, range)
             Transforms.delete(editor)
-            Transforms.setNodes(editor, {type: ELEMENT_ORDERED_LIST}, {match: isGroupContent})
+
+            const start = parseInt(beforeText)
+
+            Transforms.setNodes(editor, {type: ELEMENT_ORDERED_LIST, start}, {match: isGroupContent})
           }
         }
 
