@@ -1,4 +1,4 @@
-import {Editor, Transforms, Path, Element} from 'slate'
+import {Editor, Transforms, Path} from 'slate'
 import type {Group} from '@mintter/mttast'
 import {isGroupContent, isFlowContent} from '@mintter/mttast'
 import type {EditorPlugin} from './types'
@@ -38,14 +38,17 @@ function moveStatement(editor: Editor, up: boolean) {
 
   if (!statementPath) throw new Error('found no parent statement')
 
+  const [parentGroup, parentGroupPath] = Editor.parent(editor, statementPath)
+
   if (!up) {
     if (!Path.hasPrevious(statementPath)) return // there is no previous statement to move into
 
-    const [previous, previousPath] = Editor.previous(editor, {
-      at: statementPath,
-    })!
+    const [previous, previousPath] =
+      Editor.previous(editor, {
+        at: statementPath,
+      }) || []
 
-    if (!Element.isElement(previous)) return
+    if (!isFlowContent(previous) || !previousPath) return
     const subGroup = previous.children[1] as Group
 
     // determine the correct path wether the previous statement already has a group of children or not
@@ -56,7 +59,7 @@ function moveStatement(editor: Editor, up: boolean) {
       if (!subGroup) {
         Transforms.wrapNodes(
           editor,
-          {type: 'group', children: []},
+          {type: isGroupContent(parentGroup) ? parentGroup.type : 'group', children: []},
           {
             at: statementPath,
           },
@@ -69,7 +72,7 @@ function moveStatement(editor: Editor, up: boolean) {
       })
     })
   } else {
-    const [_, parentGroupPath] = Editor.parent(editor, statementPath)
+    // const [_, parentGroupPath] = Editor.parent(editor, statementPath)
 
     // find our parent groups parent group, this is where we want to move our statement into
     const [grandparentGroup, grandparentGroupPath] =
