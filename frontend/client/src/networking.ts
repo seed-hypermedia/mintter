@@ -33,9 +33,9 @@ export function listSuggestedProfiles(pageSize?: number, pageToken?: string, rpc
 
 export function connect(addrs: Array<string>, rpc?: GrpcClient): Promise<ConnectResponse> {
   rpc ||= createGrpcClient()
-  console.log({addrs})
+  // console.log({addrs})
   const request = ConnectRequest.fromPartial({addrs: addrs})
-  console.log('🚀 ~ file: networking.ts ~ line 37 ~ connect ~ request', request)
+  // console.log('🚀 ~ file: networking.ts ~ line 37 ~ connect ~ request', request)
   return new NetworkingClientImpl(rpc).connect(request)
 }
 
