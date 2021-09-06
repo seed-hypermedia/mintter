@@ -13,7 +13,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
     editor.insertText = (text) => {
       const {selection} = editor
 
-      if (text === ' ' && selection && Range.isCollapsed(selection)) {
+      if (text == ' ' && selection && Range.isCollapsed(selection)) {
         const {anchor} = selection
         const block = Editor.above(editor, {
           match: (n) => Editor.isBlock(editor, n),
@@ -58,7 +58,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
         //     Transforms.setNodes(editor, {type: ELEMENT_HEADING}, {match: isStatement})
         //   }
         // }
-        return
+        insertText(text)
       }
       insertText(text)
     }
