@@ -38,7 +38,7 @@ function createParent<N extends Parent>(type: N['type'], defaults: Partial<Optio
     ({
       type,
       ...defaults,
-      ...(kids ? optsOrKids : {}),
+      ...(Array.isArray(optsOrKids) ? {} : optsOrKids),
       children: normalizeChildren(Array.isArray(optsOrKids) ? optsOrKids : kids),
     } as N)
 }
