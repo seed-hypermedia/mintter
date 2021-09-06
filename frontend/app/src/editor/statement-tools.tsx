@@ -18,14 +18,10 @@ export const Tools = styled('div', {
   overflow: 'hidden',
   alignSelf: 'start',
   display: 'flex',
-  alignItems: 'center',
+  // alignItems: 'center',
   userSelect: 'none',
   WebkitUserSelect: 'none',
-  opacity: 0,
   transition: 'all ease-in-out 0.1s',
-  '&:hover': {
-    opacity: 1,
-  },
 })
 
 // export const Dragger = styled('div', {
@@ -52,12 +48,12 @@ export const ElementDropdown = styled('div', {
   justifyContent: 'center',
   height: 32,
   borderRadius: '$2',
-  // opacity: 0,
+  opacity: 0,
   transition: 'all ease-in-out 0.1s',
-  // '&:hover': {
-  //   opacity: 1,
-  //   // cursor: 'grab',
-  // },
+  [`${Tools}:hover &`]: {
+    opacity: 1,
+    //   // cursor: 'grab',
+  },
 })
 
 const items = [
@@ -88,8 +84,8 @@ export const StatementTools = forwardRef(({element}: {element: FlowContent}, ref
   const isReadOnly = useReadOnly()
   const path = ReactEditor.findPath(editor, element)
   return (
-    !isReadOnly && (
-      <Tools contentEditable={false} ref={ref}>
+    <Tools contentEditable={false} ref={ref}>
+      {!isReadOnly ? (
         <Dropdown.Root>
           <Dropdown.Trigger as={Slot}>
             <ElementDropdown data-dragger>
@@ -110,9 +106,9 @@ export const StatementTools = forwardRef(({element}: {element: FlowContent}, ref
             ))}
           </Dropdown.Content>
         </Dropdown.Root>
-        <Marker element={element} />
-      </Tools>
-    )
+      ) : null}
+      <Marker element={element} />
+    </Tools>
   )
 })
 

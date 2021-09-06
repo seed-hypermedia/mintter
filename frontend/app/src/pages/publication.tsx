@@ -73,8 +73,7 @@ export default function Publication(): JSX.Element {
       <Container css={{gridArea: 'maincontent', marginBottom: 300, padding: '$5', paddingTop: '$7'}}>
         <PublicationHeader document={data?.document} />
         <Separator />
-
-        <Editor readOnly value={data?.document?.content} />
+        <Editor onChange={() => {}} readOnly value={data?.document?.content} />
       </Container>
       {isSidepanelOpen && <Sidepanel gridArea={'rightside'} />}
     </Box>
