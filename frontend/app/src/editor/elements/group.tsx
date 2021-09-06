@@ -11,6 +11,7 @@ export const ELEMENT_GROUP = 'group'
 export const groupStyle = css({
   margin: 0,
   padding: 0,
+  marginLeft: '$8',
   position: 'relative',
   variants: {
     type: {

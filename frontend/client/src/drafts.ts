@@ -93,6 +93,5 @@ export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Do
   rpc ||= createGrpcClient()
   const request = GetDraftRequest.fromPartial({documentId})
   const doc = await new DraftsClientImpl(rpc).getDraft(request)
-
   return doc
 }
