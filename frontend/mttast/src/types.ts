@@ -27,6 +27,7 @@ export interface Group extends Parent {
 
 export interface OrderedList extends Parent {
   type: 'orderedList'
+  start?: number
   children: Array<FlowContent>
 }
 
