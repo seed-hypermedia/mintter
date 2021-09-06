@@ -1,7 +1,9 @@
-import {Range, Editor, Path, Transforms, Text} from 'slate'
+import {Range, Editor, Path, Transforms, Text, Node} from 'slate'
 import type {BaseEditor, Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
 import type {ReactEditor} from 'slate-react'
 import type {HistoryEditor} from 'slate-history'
+import {isFlowContent, isStatement} from '@mintter/mttast'
+import {statement} from 'frontend/mttast-builder/dist'
 
 export type MTTEditor = BaseEditor & ReactEditor & HistoryEditor
 
@@ -151,5 +153,30 @@ export function removeMark(editor: Editor, key: keyof Omit<Text, 'value'>): void
       editor.marks = marks
       editor.onChange()
     }
+  }
+}
+
+export function turnIntoDefaultFlowContent(editor: MTTEditor): boolean | undefined {
+  const {selection} = editor
+  if (selection && isCollapsed(selection)) {
+    const block = Editor.above(editor, {
+      match: (n) => isFlowContent(n) && !isStatement(n),
+    })
+
+    if (block) {
+      const [node, path] = block
+
+      if (!Node.string(node.children[0])) {
+        Editor.withoutNormalizing(editor, () => {
+          Transforms.insertNodes(editor, statement({id: node.id}, node.children), {
+            at: Path.next(path),
+          })
+          Transforms.removeNodes(editor, {at: path})
+          Transforms.select(editor, path.concat(0))
+        })
+        return true
+      }
+    }
+    return false
   }
 }

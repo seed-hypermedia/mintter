@@ -34,7 +34,7 @@ const isOneOfTypes =
 const isType =
   <T extends unknown>(type: string) =>
   (value: unknown): value is T => {
-    return isPlainObject(value) && (value as Record<string, unknown>).type === type
+    return isPlainObject(value) && (value as Record<string, unknown>).type == type
   }
 
 export const isFlowContent = isOneOfTypes<FlowContent>(['blockquote', 'heading', 'statement'])

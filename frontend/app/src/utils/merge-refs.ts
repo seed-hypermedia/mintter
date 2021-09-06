@@ -5,7 +5,7 @@ export const mergeRefs = (...refs: any) => {
   if (filteredRefs.length === 0) return filteredRefs[0]
   return (inst: any) => {
     for (const ref of filteredRefs) {
-      if (typeof ref === 'function') {
+      if (typeof ref == 'function') {
         ref(inst)
       } else if (ref) {
         ref.current = inst
