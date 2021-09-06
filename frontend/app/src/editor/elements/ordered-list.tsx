@@ -15,6 +15,10 @@ export const createOrderedListPlugin = (): EditorPlugin => ({
           type={element.type}
           data-grouping-type={element.type}
           start={element.start}
+          /**
+           * @todo proper handling of start property
+           * @body OrderedLists now have a start property that indicates at which number the enumeration should start. The handling of this is quite hacky atm though. We should improve this.
+           */
           style={{counterReset: `section ${element.start ? element.start - 1 : ''}`}}
           {...attributes}
         >
