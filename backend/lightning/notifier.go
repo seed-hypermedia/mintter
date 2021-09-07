@@ -66,22 +66,27 @@ func (d *Ldaemon) SubscribeEvents() (*subscribe.Client, error) {
 	return d.ntfnServer.Subscribe()
 }
 
-func (d *Ldaemon) startSubscriptions() error {
+func (d *Ldaemon) startRpcClients(macBytes []byte) error {
 	var err error
-	grpcCon, err := newLightningClient(d.cfg)
+	grpcCon, err := newLightningClient(false, macBytes, d.cfg.LndDir, d.cfg.Network, d.cfg.RawRPCListeners[0])
 	if err != nil {
 		return err
 	}
 
 	d.Lock()
-	d.lightningClient = lnrpc.NewLightningClient(grpcCon)
 	d.unlockerClient = lnrpc.NewWalletUnlockerClient(grpcCon)
+	d.lightningClient = lnrpc.NewLightningClient(grpcCon)
 	d.routerClient = routerrpc.NewRouterClient(grpcCon)
 	d.walletKitClient = walletrpc.NewWalletKitClient(grpcCon)
 	d.chainNotifierClient = chainrpc.NewChainNotifierClient(grpcCon)
 	d.signerClient = signrpc.NewSignerClient(grpcCon)
 	d.invoicesClient = invoicesrpc.NewInvoicesClient(grpcCon)
 	d.Unlock()
+
+	return nil
+}
+
+func (d *Ldaemon) startSubscriptions() error {
 
 	info, chainErr := d.lightningClient.GetInfo(context.Background(), &lnrpc.GetInfoRequest{})
 	if chainErr != nil {

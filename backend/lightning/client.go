@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -22,8 +21,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	macaroon "gopkg.in/macaroon.v2"
-
-	"mintter/backend/config"
 )
 
 const (
@@ -154,7 +151,7 @@ func (d *Ldaemon) unlockWallet(Passphrase string, StatelessInit bool) error {
 	*/
 
 	if len(Passphrase) == 0 {
-		return fmt.Errorf("You must provide a non null password")
+		return fmt.Errorf("you must provide a non null password")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
@@ -190,9 +187,9 @@ func (d *Ldaemon) changeWalletPassPhrase(OldPassphrase string,
 	*/
 
 	if len(NewPassphrase) == 0 {
-		return nil, fmt.Errorf("You must provide a non null new password")
+		return nil, fmt.Errorf("you must provide a non null new password")
 	} else if NewPassphrase == OldPassphrase {
-		return nil, fmt.Errorf("You new password must be different from the old one")
+		return nil, fmt.Errorf("you new password must be different from the old one")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
@@ -227,6 +224,7 @@ func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 	d.Lock()
 	defer d.Unlock()
 	*/
+
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -255,11 +253,11 @@ func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 			// is usually because it is in recovery mode, but with a window length of 0, no past funds will be found
 			d.log.Warn("Init Wallet from Mnemonics but with a 0 recovery window. No funds will be recovered")
 		} else {
-			return nil, fmt.Errorf("Recovery window must be >= 0 and it is %v", WalletSecurity.RecoveryWindow)
+			return nil, fmt.Errorf("recovery window must be >= 0 and it is %v", WalletSecurity.RecoveryWindow)
 		}
 
-	} else {
-		return nil, fmt.Errorf("You must provide either a valid AezeedMnemonics or a valid entropy")
+	} else if _, err := os.Stat(d.cfg.LndDir + "/data/chain/bitcoin/" + d.cfg.Network + "/wallet.db"); os.IsNotExist(err) {
+		return nil, fmt.Errorf("you must provide either a valid AezeedMnemonics or a valid entropy")
 	}
 
 	initWalletrequest := &lnrpc.InitWalletRequest{
@@ -267,7 +265,6 @@ func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 		CipherSeedMnemonic: WalletSecurity.AezeedMnemonics,
 		AezeedPassphrase:   []byte(WalletSecurity.AezeedPassphrase),
 		RecoveryWindow:     WalletSecurity.RecoveryWindow,
-		ChannelBackups:     &lnrpc.ChanBackupSnapshot{},
 		StatelessInit:      WalletSecurity.StatelessInit,
 	}
 	if init_res, err := d.unlockerClient.InitWallet(ctx, initWalletrequest); err != nil {
@@ -321,32 +318,14 @@ func (d *Ldaemon) SetAcceptorCallback(callback func(req *lnrpc.ChannelAcceptRequ
 	acceptorCallback = callback
 }
 
-// Check the macaroons are in the expected path and weight more than
-// the blank macaroon
-func checkMacaroons(cfg *config.LND) error {
+func newLightningClient(noMacaroon bool, macBytes []byte, appWorkingDir string, network string, host string) (*grpc.ClientConn, error) {
+	var err error
+	var tlsCertPath = ""
 
-	mDir := path.Join(cfg.LndDir, "data", "chain", "bitcoin", cfg.Network)
-	fi, err := os.Stat(path.Join(mDir, defaultMacaroonFilename))
-	if err != nil {
-		return err
+	if appWorkingDir != "" {
+		tlsCertPath = filepath.Join(appWorkingDir, defaultTLSCertFilename)
 	}
-	if fi.Size() < currentAdminMacaroonSize {
-		os.Remove(path.Join(mDir, defaultMacaroonFilename))
-		os.Remove(path.Join(mDir, "invoice.macaroon"))
-		os.Remove(path.Join(mDir, "readonly.macaroon"))
-	}
-	return nil
-}
 
-func newLightningClient(cfg *config.LND) (*grpc.ClientConn, error) {
-	return newLightningConnection(cfg)
-}
-
-func newLightningConnection(cfg *config.LND) (*grpc.ClientConn, error) {
-	appWorkingDir := cfg.LndDir
-	network := cfg.Network
-	macaroonDir := strings.Join([]string{appWorkingDir, "data", "chain", "bitcoin", network}, "/")
-	tlsCertPath := filepath.Join(appWorkingDir, defaultTLSCertFilename)
 	creds, err := credentials.NewClientTLSFromFile(tlsCertPath, "")
 	if err != nil {
 		return nil, err
@@ -357,21 +336,24 @@ func newLightningConnection(cfg *config.LND) (*grpc.ClientConn, error) {
 		grpc.WithTransportCredentials(creds),
 		grpc.WithDefaultCallOptions(maxMsgRecvSize),
 	}
+	if !noMacaroon {
 
-	macPath := filepath.Join(macaroonDir, defaultMacaroonFilename)
-	macBytes, err := ioutil.ReadFile(macPath)
-	if err != nil {
-		return nil, err
+		mac := &macaroon.Macaroon{}
+		if len(macBytes) == 0 && appWorkingDir != "" && network != "" {
+			macaroonDir := strings.Join([]string{appWorkingDir, "data", "chain", "bitcoin", network}, "/")
+			macPath := filepath.Join(macaroonDir, defaultMacaroonFilename)
+			if macBytes, err = ioutil.ReadFile(macPath); err != nil {
+				return nil, err
+			}
+		}
+		if err = mac.UnmarshalBinary(macBytes); err != nil {
+			return nil, err
+		}
+
+		// Now we append the macaroon credentials to the dial options.
+		cred := macaroons.NewMacaroonCredential(mac)
+		opts = append(opts, grpc.WithPerRPCCredentials(cred))
 	}
-	mac := &macaroon.Macaroon{}
-	if err = mac.UnmarshalBinary(macBytes); err != nil {
-		return nil, err
-	}
-
-	// Now we append the macaroon credentials to the dial options.
-	cred := macaroons.NewMacaroonCredential(mac)
-	opts = append(opts, grpc.WithPerRPCCredentials(cred))
-
 	// FIXME Decide if we are going to use unix sockets or not
 	/*
 		conn, err := lnd.MemDial()
@@ -388,7 +370,7 @@ func newLightningConnection(cfg *config.LND) (*grpc.ClientConn, error) {
 			}),
 		)
 	*/
-	grpcCon, err := grpc.Dial("localhost", opts...)
+	grpcCon, err := grpc.Dial(host, opts...)
 	if err != nil {
 		return nil, err
 	}

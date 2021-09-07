@@ -92,10 +92,10 @@ func TestStart(t *testing.T) {
 			{
 				name: "bitcoind",
 				lnconf: &config.LND{
-					UseNeutrino:    true,
+					UseNeutrino:    false,
 					Network:        "testnet",
 					LndDir:         "/tmp/lndirtests",
-					NoNetBootstrap: true,
+					NoNetBootstrap: false,
 				},
 				subtest: []subset{
 					{
@@ -132,10 +132,10 @@ func TestStart(t *testing.T) {
 		{
 			name: "neutrino",
 			lnconf: &config.LND{
-				UseNeutrino:    false,
+				UseNeutrino:    true,
 				Network:        "testnet",
 				LndDir:         "/tmp/lndirtests",
-				NoNetBootstrap: true,
+				NoNetBootstrap: false,
 			},
 			subtest: []subset{
 				{
@@ -213,8 +213,6 @@ func TestStart(t *testing.T) {
 	log := backend.NewLogger(cfg)
 	defer log.Sync()
 	for _, tt := range tests {
-		log := backend.NewLogger(cfg)
-		defer log.Sync()
 		for _, subtest := range tt.subtest {
 			t.Run(subtest.subname, func(t *testing.T) {
 				d, err := checkStart(t, tt.lnconf, &subtest.credentials,
@@ -247,7 +245,7 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 
 	if removeWalletBeforeTest {
 		path := lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/wallet.db"
-		if err := os.Remove(path); err != nil {
+		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
 			return d, fmt.Errorf("Could not remove file: " + path + err.Error())
 		}
 	}

@@ -51,8 +51,8 @@ type LND struct {
 
 	Network         string   `help:"Which network to use {mainnet,testnet,regtest (default)}."`
 	LndDir          string   `help:"The base directory that contains lnd's data, logs, configuration file, etc."`
-	RawRPCListeners []string `help:"Add an interface/port/socket to listen for RPC connections"`
-	RawListeners    []string `help:"Add an interface/port to listen for peer connections"`
+	RawRPCListeners []string `help:"Add an interface/port/socket to listen for RPC connections" default:"127.0.0.1:10009"`
+	RawListeners    []string `help:"Add an interface/port to listen for peer connections" default:"0.0.0.0:9735"`
 
 	// Adding an external IP will advertise your node to the network. This signals
 	// that your node is available to accept incoming channels. If you don't wish to
@@ -70,6 +70,6 @@ type LND struct {
 	NAT            bool   `help:"Toggle NAT traversal support (using either UPnP or NAT-PMP) to automatically advertise your external IP address to the network -- NOTE this does not support devices behind multiple NATs"`
 	DebugLevel     string `help:"Logging level for all subsystems {trace, debug, info, warn, error, critical} -- You may also specify <global-level>,<subsystem>=<level>,<subsystem2>=<level>,... to set the log level for individual subsystems -- Use show to list available subsystems"`
 	NoNetBootstrap bool   `help:"If true, then automatic network bootstrapping will not be attempted."`
-	Alias          string `help:"The node alias. Used as a moniker by peers and intelligence services"`
-	Color          string `help:"The color of the node in hex format (i.e. '#3399FF'). Used to customize node appearance in intelligence services"`
+	Alias          string `help:"The node alias. Used as a moniker by peers and intelligence services" default:"MintterServer"`
+	Color          string `help:"The color of the node in hex format (i.e. '#3399FF'). Used to customize node appearance in intelligence services" default:"#7193FE"`
 }

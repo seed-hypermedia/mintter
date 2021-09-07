@@ -3,6 +3,7 @@ package lightning
 import (
 	"context"
 	"fmt"
+	"os"
 	"reflect"
 	"sync"
 	"sync/atomic"
@@ -85,22 +86,16 @@ func (d *Ldaemon) Stop() error {
 // password must be provided in the WalletSecurity struct.
 func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string) error {
 	if atomic.SwapInt32(&d.started, 1) == 1 {
-		return fmt.Errorf("Daemon already started")
+		return fmt.Errorf("daemon already started")
 	}
 	d.startTime = time.Now()
 
 	if err := d.ntfnServer.Start(); err != nil {
-		return fmt.Errorf("Failed to start ntfnServer: %v", err)
-	}
-
-	if err := checkMacaroons(d.cfg); err != nil {
-		d.log.Error("Something went wrong checking macaroons",
-			zap.String("err", err.Error()))
-		return err
+		return fmt.Errorf("failed to start ntfnServer: %v", err)
 	}
 
 	if _, _, err := d.startDaemon(WalletSecurity, NewPassword); err != nil {
-		return fmt.Errorf("Failed to start daemon: %v", err)
+		return fmt.Errorf("failed to start daemon: %v", err)
 	}
 
 	return nil
@@ -110,7 +105,7 @@ func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string) erro
 // or was started and failed at some later point.
 func (d *Ldaemon) Restart(WalletSecurity *WalletSecurity, NewPassword string) error {
 	if atomic.LoadInt32(&d.started) == 0 {
-		return fmt.Errorf("Daemon must be started before attempt to restart")
+		return fmt.Errorf("daemon must be started before attempt to restart")
 	}
 	_, _, err := d.startDaemon(WalletSecurity, NewPassword)
 	return err
@@ -168,29 +163,82 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 
 	lndConfig := lnd.DefaultConfig()
 	lndConfig.Bitcoin.Active = true
+	var f reflect.StructField
+	var found bool
+	typ := reflect.TypeOf(d.cfg)
+
 	if d.cfg.Network == "mainnet" {
 		lndConfig.Bitcoin.MainNet = true
-	} else if d.cfg.Network == "testnet" {
-		lndConfig.Bitcoin.TestNet3 = true
-	} else {
+	} else if d.cfg.Network == "regtest" {
 		lndConfig.Bitcoin.RegTest = true
+	} else {
+		lndConfig.Bitcoin.TestNet3 = true
 	}
 	d.log.Info("LnNode, selected network:", zap.String("Network", d.cfg.Network))
+
+	if d.cfg.Alias == "" {
+		f, found = typ.Elem().FieldByName("Alias")
+		if !found {
+			return nil, fmt.Errorf("failed to get default value of config var Alias")
+		} else {
+			lndConfig.Alias = f.Tag.Get("default")
+		}
+
+	} else {
+		lndConfig.Alias = d.cfg.Alias
+	}
+
+	if d.cfg.Color == "" {
+		f, found = typ.Elem().FieldByName("Color")
+		if !found {
+			return nil, fmt.Errorf("failed to get default value of config var Color")
+		} else {
+			lndConfig.Color = f.Tag.Get("default")
+		}
+
+	} else {
+		lndConfig.Color = d.cfg.Color
+	}
+
+	if len(d.cfg.RawListeners) == 0 {
+		f, found = typ.Elem().FieldByName("RawListeners")
+		if !found {
+			return nil, fmt.Errorf("failed to get default value of config var RawListeners")
+		} else {
+			lndConfig.RawListeners = append(lndConfig.RawListeners, f.Tag.Get("default"))
+			d.cfg.RawListeners = append(d.cfg.RawListeners, f.Tag.Get("default"))
+		}
+
+	} else {
+		lndConfig.RawListeners = d.cfg.RawListeners
+	}
+
+	if len(d.cfg.RawRPCListeners) == 0 {
+		f, found = typ.Elem().FieldByName("RawRPCListeners")
+		if !found {
+			return nil, fmt.Errorf("failed to get default value of config var RawRPCListeners")
+		} else {
+			lndConfig.RawRPCListeners = append(lndConfig.RawRPCListeners, f.Tag.Get("default"))
+			d.cfg.RawRPCListeners = append(d.cfg.RawRPCListeners, f.Tag.Get("default"))
+		}
+
+	} else {
+		lndConfig.RawRPCListeners = d.cfg.RawRPCListeners
+	}
 
 	if d.cfg.UseNeutrino {
 		lndConfig.Bitcoin.Node = "neutrino"
 		d.log.Info("neutrio backed selected")
 	} else {
 		lndConfig.Bitcoin.Node = "bitcoind"
-		typ := reflect.TypeOf(d.cfg)
-		var f reflect.StructField
-		var found bool
+
 		if d.cfg.BitcoindRPCHost == "" {
-			f, found = typ.FieldByName("BitcoindRPCHost")
+			f, found = typ.Elem().FieldByName("BitcoindRPCHost")
 			if !found {
-				return nil, fmt.Errorf("Failed to get default value of config var BitcoindRPCHost")
+				return nil, fmt.Errorf("failed to get default value of config var BitcoindRPCHost")
 			} else {
 				lndConfig.BitcoindMode.RPCHost = f.Tag.Get("default")
+				d.cfg.BitcoindRPCHost = f.Tag.Get("default")
 			}
 
 		} else {
@@ -198,44 +246,48 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 		}
 
 		if d.cfg.BitcoindRPCPass == "" {
-			f, found = typ.FieldByName("BitcoindRPCPass")
+			f, found = typ.Elem().FieldByName("BitcoindRPCPass")
 			if !found {
-				return nil, fmt.Errorf("Failed to get default value of config var BitcoindRPCPass")
+				return nil, fmt.Errorf("failed to get default value of config var BitcoindRPCPass")
 			} else {
 				lndConfig.BitcoindMode.RPCPass = f.Tag.Get("default")
+				d.cfg.BitcoindRPCPass = f.Tag.Get("default")
 			}
 		} else {
 			lndConfig.BitcoindMode.RPCPass = d.cfg.BitcoindRPCPass
 		}
 
 		if d.cfg.BitcoindRPCUser == "" {
-			f, found = typ.FieldByName("BitcoindRPCUser")
+			f, found = typ.Elem().FieldByName("BitcoindRPCUser")
 			if !found {
-				return nil, fmt.Errorf("Failed to get default value of config var BitcoindRPCUser")
+				return nil, fmt.Errorf("failed to get default value of config var BitcoindRPCUser")
 			} else {
 				lndConfig.BitcoindMode.RPCUser = f.Tag.Get("default")
+				d.cfg.BitcoindRPCUser = f.Tag.Get("default")
 			}
 		} else {
 			lndConfig.BitcoindMode.RPCUser = d.cfg.BitcoindRPCUser
 		}
 
 		if d.cfg.Zmqpubrawblock == "" {
-			f, found = typ.FieldByName("Zmqpubrawblock")
+			f, found = typ.Elem().FieldByName("Zmqpubrawblock")
 			if !found {
-				return nil, fmt.Errorf("Failed to get default value of config var Zmqpubrawblock")
+				return nil, fmt.Errorf("failed to get default value of config var Zmqpubrawblock")
 			} else {
 				lndConfig.BitcoindMode.ZMQPubRawBlock = f.Tag.Get("default")
+				d.cfg.Zmqpubrawblock = f.Tag.Get("default")
 			}
 		} else {
 			lndConfig.BitcoindMode.ZMQPubRawBlock = d.cfg.Zmqpubrawblock
 		}
 
 		if d.cfg.Zmqpubrawtx == "" {
-			f, found = typ.FieldByName("Zmqpubrawtx")
+			f, found = typ.Elem().FieldByName("Zmqpubrawtx")
 			if !found {
-				return nil, fmt.Errorf("Failed to get default value of config var Zmqpubrawtx")
+				return nil, fmt.Errorf("failed to get default value of config var Zmqpubrawtx")
 			} else {
 				lndConfig.BitcoindMode.ZMQPubRawTx = f.Tag.Get("default")
+				d.cfg.Zmqpubrawtx = f.Tag.Get("default")
 			}
 		} else {
 			lndConfig.BitcoindMode.ZMQPubRawTx = d.cfg.Zmqpubrawtx
@@ -246,20 +298,21 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 	}
 
 	lndConfig.LndDir = d.cfg.LndDir
-	lndConfig.Alias = d.cfg.Alias
-	lndConfig.Color = d.cfg.Color
-	lndConfig.DebugLevel = d.cfg.DebugLevel
+	if d.cfg.DebugLevel != "" {
+		lndConfig.DebugLevel = d.cfg.DebugLevel
+	}
+
 	lndConfig.DisableListen = d.cfg.DisableListen
 	lndConfig.DisableRest = d.cfg.DisableRest
 	lndConfig.ExternalHosts = d.cfg.ExternalHosts
 	lndConfig.RawExternalIPs = d.cfg.RawExternalIPs
-	lndConfig.RawListeners = d.cfg.RawListeners
-	lndConfig.RawRPCListeners = d.cfg.RawRPCListeners
 	lndConfig.NAT = d.cfg.NAT
 	lndConfig.NoNetBootstrap = d.cfg.NoNetBootstrap
 
 	cfg := lndConfig
-	if err := flags.IniParse(lndConfig.ConfigFile, &cfg); err != nil {
+
+	//TODO: This should not be necessary but if not, cfg.ProtocolOptions is not filled
+	if err := flags.IniParse("", &cfg); err != nil && !os.IsNotExist(err) {
 		d.log.Error("Failed to parse config", zap.String("err", err.Error()))
 		return nil, err
 	}
@@ -282,10 +335,9 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 
 func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 	NewPassword string) (*lnd.Config, []byte, error) {
-	d.Lock()
-	defer d.Unlock()
+
 	if d.daemonRunning {
-		return nil, nil, fmt.Errorf("Daemon already running")
+		return nil, nil, fmt.Errorf("daemon already running")
 	}
 
 	// Hook interceptor for os signals.
@@ -299,10 +351,15 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 	d.quitChan = make(chan struct{})
 	readyChan := make(chan interface{})
 
-	d.wg.Add(1)
 	d.daemonRunning = true
 	config_chan := make(chan *lnd.Config, 1)
+	err_chan := make(chan error, 1)
+
+	d.wg.Add(1)
+	go d.notifyWhenReady(readyChan)
+
 	// Run the daemon
+	d.wg.Add(1)
 	go func() {
 		defer func() {
 			defer d.wg.Done()
@@ -310,12 +367,14 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 		}()
 
 		lndConfig, err := d.createConfig(d.cfg.LndDir)
+		err_chan <- err
 		config_chan <- lndConfig
+		close(err_chan)
 		close(config_chan)
 		if err != nil {
 			d.log.Error("Failed to create config", zap.String("err", err.Error()))
 		} else {
-			d.log.Info("Stating LND Daemon")
+			d.log.Info("Starting LND Daemon")
 			err = lnd.Main(lndConfig, lnd.ListenerCfg{}, d.interceptor)
 			if err != nil {
 				d.log.Error("Main function returned with error", zap.String("err", err.Error()))
@@ -325,11 +384,21 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 	}()
 
 	lnd_config := <-config_chan
+	if err_config := <-err_chan; err_config != nil {
+		return lnd_config, nil, err
+	}
 
-	d.wg.Add(1)
+	// We start just the unlocker client because it is needed to init the wallet and it does not need the macaroon (since it has not been created yet)
+	if grpcCon, err := newLightningClient(true, []byte(""), d.cfg.LndDir, "", d.cfg.RawRPCListeners[0]); err != nil {
+		return lnd_config, nil, err
+	} else {
+		d.Lock()
+		d.unlockerClient = lnrpc.NewWalletUnlockerClient(grpcCon)
+		d.Unlock()
+	}
 
-	go d.notifyWhenReady(readyChan)
-
+	//FIXME: We need time for LND to spin up unlocker server and we dont have the channel ready inside (like breez)
+	time.Sleep(5 * time.Second)
 	if macaroon, err := d.initWallet(WalletSecurity); err != nil {
 		if err.Error() == alreadyExistsError {
 			if len(NewPassword) != 0 {
@@ -350,6 +419,13 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 		}
 
 	} else {
+		//FIXME: Ready signal should go inside LND main function after server inirialization (see breez project LND harcoded code)
+		time.Sleep(3 * time.Second)
+		d.startRpcClients(macaroon)
+		if readyChan != nil {
+			readyChan <- struct{}{}
+		}
+
 		return lnd_config, macaroon, err
 	}
 
