@@ -86,7 +86,7 @@ func (srv *docsAPI) CreateDraft(ctx context.Context, in *documents.CreateDraftRe
 			return nil, fmt.Errorf("failed to store draft content: %w", err)
 		}
 
-		if err := srv.back.db.IndexDocument(ctx, docid, srv.back.repo.acc.id, "", "", pub.Document.CreateTime.AsTime(), pub.Document.UpdateTime.AsTime()); err != nil {
+		if err := srv.back.db.IndexDocument(ctx, docid, srv.back.repo.acc.id, pub.Document.Title, pub.Document.Subtitle, pub.Document.CreateTime.AsTime(), pub.Document.UpdateTime.AsTime()); err != nil {
 			return nil, err
 		}
 

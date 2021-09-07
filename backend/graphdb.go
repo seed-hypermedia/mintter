@@ -145,7 +145,7 @@ retry:
 			return err
 		}
 
-		if err := txn.WriteTriple(duid, pDocumentUpdateTime, createTime); err != nil {
+		if err := txn.WriteTriple(duid, pDocumentUpdateTime, updateTime); err != nil {
 			return err
 		}
 
