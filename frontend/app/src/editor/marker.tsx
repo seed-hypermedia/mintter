@@ -57,10 +57,10 @@ export const MarkerStyled = styled('div', {
 })
 
 export function Marker({element}) {
-  const {type} = useParentType(element)
+  const parent = useParentType(element)
 
-  if (type == ELEMENT_UNORDERED_LIST || type == ELEMENT_ORDERED_LIST) {
-    return <MarkerStyled groupType={type} data-tool="marker" contentEditable={false} />
+  if ((parent && parent.type == ELEMENT_UNORDERED_LIST) || (parent && parent.type == ELEMENT_ORDERED_LIST)) {
+    return <MarkerStyled groupType={parent.type} data-tool="marker" contentEditable={false} />
   }
 
   return null
