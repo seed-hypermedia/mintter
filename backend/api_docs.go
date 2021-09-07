@@ -424,7 +424,7 @@ func (srv *docsAPI) GetPublication(ctx context.Context, in *documents.GetPublica
 func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
 	var uids []uint64
 	if err := srv.back.db.db.View(func(txn *badgergraph.Txn) error {
-		nodes, err := txn.ListIndexedNodes(graphschema.PredDocumentPublishTime, nil)
+		nodes, err := txn.ListNodesOfType(graphschema.TypePublication)
 		if err != nil && err != badger.ErrKeyNotFound {
 			return err
 		}
