@@ -182,6 +182,10 @@ require (
 	github.com/multiformats/go-multiaddr-net v0.2.0 // indirect
 	github.com/multiformats/go-multibase v0.0.3 // indirect
 	github.com/multiformats/go-multicodec v0.2.0 // indirect
+	github.com/libp2p/go-netroute v0.1.4 // indirect
+	github.com/libp2p/go-sockaddr v0.1.0 // indirect
+	github.com/lightningnetwork/lnd v0.13.2-beta
+	github.com/multiformats/go-multiaddr v0.3.1
 	github.com/multiformats/go-multihash v0.0.15
 	github.com/multiformats/go-multistream v0.2.2 // indirect
 	github.com/multiformats/go-varint v0.0.6 // indirect
@@ -301,4 +305,6 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
-replace github.com/lightningnetwork/lnd => ./third_party/lnd
+replace go.etcd.io/etcd => go.etcd.io/etcd v0.5.0-alpha.5.0.20201125193152-8a03d2e9614b
+
+//replace github.com/lightningnetwork/lnd => ./third_party/lnd
