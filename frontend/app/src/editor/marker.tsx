@@ -8,32 +8,41 @@ import {ELEMENT_ORDERED_LIST} from './elements/ordered-list'
 import {styled} from '@mintter/ui/stitches.config'
 
 export const MarkerStyled = styled('div', {
-  width: '$space$8',
+  minWidth: '$space$8',
+  width: 'auto',
   height: '$space$8',
   display: 'flex',
   position: 'relative',
-  alignItems: 'center',
-  justifyContent: 'center',
+  overflowX: 'visible',
+  flexDirection: 'row-reverse',
   '&::before': {
     position: 'absolute',
     alignItems: 'center',
-    justifyContent: 'center',
     display: 'flex',
+    whiteSpace: 'nowrap',
+    paddingRight: '$1',
   },
   variants: {
     groupType: {
       unorderedList: {
         '&::before': {
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '$space$8',
+          height: '$space$8',
           content: '●',
           color: '$background-contrast',
         },
       },
       orderedList: {
         '&::before': {
-          width: '$space$8',
           height: '$space$8',
           counterIncrement: 'section',
-          content: 'counters(section, ".") "."',
+          content: 'counters(section, ".") ". "',
+          // content: 'counter(section) "."',
+          // '& &::before': {
+          //   content: 'counter(section, "roman") "."',
+          // },
         },
       },
       group: {

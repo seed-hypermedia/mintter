@@ -31,10 +31,20 @@ export type SidepanelEventsType =
   | {
       type: 'SIDEPANEL_TOGGLE'
     }
+  | {
+      type: 'SIDEPANEL_LOAD_ANNOTATIONS'
+      payload: any
+    }
 
 export type SidepanelContextType = {
-  items: Set<string>
+  annotations: Set<string>
+  bookmarks: Set<string>
 }
+
+/*
+ * @todo Load annotations in the sidepanel.
+ * @body maybe what we can do is to calculate the information and send it to the machine, or directly set the information inside the machine?
+ */
 
 /*
  * @todo add types to services and actions
@@ -45,7 +55,8 @@ export const sidepanelMachine = createMachine(
     id: 'sidepanel',
     initial: 'disabled',
     context: {
-      items: new Set<string>(),
+      annotations: new Set<string>(),
+      bookmarks: new Set<string>(),
     },
     states: {
       disabled: {
@@ -67,6 +78,9 @@ export const sidepanelMachine = createMachine(
           },
           SIDEPANEL_REMOVE_ITEM: {
             actions: 'sidepanelRemoveItem',
+          },
+          SIDEPANEL_LOAD_ANNOTATIONS: {
+            actions: ['getAnnotations'],
           },
         },
         initial: 'closed',
@@ -100,13 +114,16 @@ export const sidepanelMachine = createMachine(
     actions: {
       sidepanelAddItem: (context: SidepanelContextType, event: SidepanelEventsType) => {
         if ('payload' in event) {
-          context.items.add(event.payload)
+          context.bookmarks.add(event.payload)
         }
       },
       sidepanelRemoveItem: (context: SidepanelContextType, event: SidepanelEventsType) => {
         if ('payload' in event) {
-          context.items.delete(event.payload)
+          context.bookmarks.delete(event.payload)
         }
+      },
+      getAnnotations: (context: SidepanelContextType, event: SidepanelEventsType) => {
+        console.log(event)
       },
     },
   },
@@ -134,7 +151,7 @@ export function isOpenSelector(state: State<SidepanelContextType>) {
 }
 
 export function sidepanelItems(state: State<SidepanelContextType>) {
-  return state.context.items
+  return state.context.bookmarks
 }
 
 export function useSidepanel() {
@@ -149,7 +166,8 @@ export function useSidepanel() {
   return {
     isOpen,
     send,
-    items: state.context.items,
+    bookmarks: state.context.bookmarks,
+    annotations: state.context.annotations,
   }
 }
 
@@ -170,8 +188,7 @@ export type SidepanelProps = {
 }
 
 export function Sidepanel({gridArea}: SidepanelProps) {
-  const {items} = useSidepanel()
-  console.log('🚀 ~ file: sidepanel.tsx ~ line 157 ~ Sidepanel ~ items', items)
+  const {bookmarks} = useSidepanel()
 
   return (
     <Box
@@ -183,7 +200,7 @@ export function Sidepanel({gridArea}: SidepanelProps) {
         borderLeft: '1px solid rgba(0,0,0,0.1)',
       }}
     >
-      {Array.from(items).map((item) => {
+      {Array.from(bookmarks).map((item) => {
         return <SidepanelItem item={item} />
       })}
     </Box>
