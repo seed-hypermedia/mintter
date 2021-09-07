@@ -1,7 +1,9 @@
-import {Editor, Transforms, Path} from 'slate'
-import type {Group} from '@mintter/mttast'
-import {isGroupContent, isFlowContent} from '@mintter/mttast'
+import {Editor, Transforms, Path, Node} from 'slate'
+import {isGroupContent, isParent} from '@mintter/mttast'
+import {isFlowContent} from '@mintter/mttast'
 import type {EditorPlugin} from './types'
+import type {GroupingContent} from 'frontend/mttast/src/types'
+import {group} from '@mintter/mttast-builder'
 
 /**
  * This plugin handles the <Tab> interactions with the editor:
@@ -30,63 +32,97 @@ export const createTabPlugin = (): EditorPlugin => {
 }
 
 function moveStatement(editor: Editor, up: boolean) {
-  const [, statementPath] =
+  const [statement, statementPath] =
     Editor.above(editor, {
       at: editor.selection!,
+      mode: 'lowest',
       match: isFlowContent,
     }) || []
 
-  if (!statementPath) throw new Error('found no parent statement')
+  if (!statement || !statementPath) throw new Error('found no parent statement')
 
-  const [parentGroup, parentGroupPath] = Editor.parent(editor, statementPath)
+  const [parent] = Editor.parent(editor, statementPath)
 
-  if (!up) {
-    if (!Path.hasPrevious(statementPath)) return // there is no previous statement to move into
+  Editor.withoutNormalizing(editor, () => {
+    if (!up) {
+      const [prev, prevPath] = Editor.previous(editor, {at: statementPath}) || []
 
-    const [previous, previousPath] =
-      Editor.previous(editor, {
-        at: statementPath,
-      }) || []
+      if (!isParent(prev) || !prevPath) return
 
-    if (!isFlowContent(previous) || !previousPath) return
-    const subGroup = previous.children[1] as Group
-
-    // determine the correct path wether the previous statement already has a group of children or not
-    const newPath = previousPath.concat(subGroup ? [1, subGroup.children.length] : [1])
-
-    // if the previous statement doesn't have a group of children we need to create it first
-    Editor.withoutNormalizing(editor, () => {
-      if (!subGroup) {
+      if (prev.children.length === 1) {
         Transforms.wrapNodes(
           editor,
-          {type: isGroupContent(parentGroup) ? parentGroup.type : 'group', children: []},
-          {
-            at: statementPath,
-          },
+          {type: isGroupContent(parent) ? parent.type : 'group', children: []},
+          {at: statementPath},
         )
+
+        Transforms.moveNodes(editor, {
+          at: statementPath,
+          to: [...prevPath, 1],
+        })
+      } else {
+        Transforms.moveNodes(editor, {
+          at: statementPath,
+          to: [...prevPath, 1, (prev.children[1] as GroupingContent).children.length],
+        })
+      }
+    } else {
+      // don't try to lift anything if we're already at the root level (with default group the root is depth 4)
+      if (statementPath.length < 4) return
+
+      const siblings = Array.from(nextSiblings(editor, statementPath))
+
+      // don't re-parent anything if there are no siblins
+      if (siblings.length) {
+        const range = {
+          anchor: Editor.start(editor, siblings[0][1]),
+          focus: Editor.end(editor, siblings[siblings.length - 1][1]),
+        }
+
+        // if we don't have a group, wrap siblings and then move
+        if (statement?.children.length === 1) {
+          Transforms.wrapNodes(
+            editor,
+            {type: isGroupContent(parent) ? parent.type : 'group', children: []},
+            {
+              match: (_, path) => siblings.some((s) => Path.equals(s[1], path)),
+              at: range,
+            },
+          )
+
+          Transforms.moveNodes(editor, {
+            at: Path.next(statementPath),
+            to: [...statementPath, 1],
+          })
+        } else {
+          Transforms.moveNodes(editor, {
+            at: range,
+            // moveNodes is recursive, but we only want to move nodes that are actually inside children, not any childrens children
+            match: (_, path) => siblings.some((s) => Path.equals(s[1], path)),
+            to: [...statementPath, 1, statement?.children[1].children.length],
+          })
+        }
       }
 
-      Transforms.moveNodes(editor, {
-        at: statementPath,
-        to: newPath,
-      })
-    })
-  } else {
-    // const [_, parentGroupPath] = Editor.parent(editor, statementPath)
+      doubleLift(editor, statementPath)
+    }
+  })
+}
 
-    // find our parent groups parent group, this is where we want to move our statement into
-    const [grandparentGroup, grandparentGroupPath] =
-      Editor.above(editor, {
-        at: parentGroupPath,
-        match: isGroupContent,
-      }) || []
+function* nextSiblings(editor: Editor, path: Path) {
+  const parent = Path.parent(path)
 
-    // if there is not grandparentGroup, it means were at the root level so do nothing
-    if (!grandparentGroup || !grandparentGroupPath) return
-
-    Transforms.moveNodes(editor, {
-      at: statementPath,
-      to: [...grandparentGroupPath, grandparentGroup.children.length],
-    })
+  for (const entry of Node.children(editor, parent)) {
+    if (Path.compare(entry[1], path) <= 0) continue
+    yield entry
   }
+}
+
+function doubleLift(editor: Editor, path: Path) {
+  const ref = Editor.pathRef(editor, path)
+
+  Transforms.liftNodes(editor, {at: path})
+  if (!ref.current) throw new Error('couldnt track path')
+  Transforms.liftNodes(editor, {at: ref.current})
+  ref.unref()
 }
