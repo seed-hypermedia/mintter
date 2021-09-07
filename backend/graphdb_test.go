@@ -8,12 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"mintter/backend/badgergraph"
+	"mintter/backend/db/graphschema"
 	"mintter/backend/testutil"
 )
 
 func TestGraphStoreDevice(t *testing.T) {
 	bdb := testutil.MakeBadgerV3(t)
-	db, err := badgergraph.NewDB(bdb, "mtt-test", graphSchema)
+	db, err := badgergraph.NewDB(bdb, "mtt-test", graphschema.Schema())
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, db.Close())
@@ -48,7 +49,7 @@ func TestGraphStoreDevice(t *testing.T) {
 
 func TestGraphListAccountDevices(t *testing.T) {
 	bdb := testutil.MakeBadgerV3(t)
-	db, err := badgergraph.NewDB(bdb, "mtt-test", graphSchema)
+	db, err := badgergraph.NewDB(bdb, "mtt-test", graphschema.Schema())
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, db.Close())

@@ -33,6 +33,7 @@ import (
 	p2p "mintter/backend/api/p2p/v1alpha"
 	"mintter/backend/badgergraph"
 	"mintter/backend/cleanup"
+	"mintter/backend/db/graphschema"
 )
 
 // Log messages.
@@ -352,18 +353,18 @@ func (srv *backend) SyncAccounts(ctx context.Context) error {
 							return fmt.Errorf("failed to apply document state: %w", err)
 						}
 
-						if err := srv.db.IndexDocument(ctx, docid, a, doc.Title, doc.Subtitle, doc.CreateTime.AsTime(), doc.UpdateTime.AsTime()); err != nil {
+						if err := srv.db.IndexPublication(ctx, docid, a, doc.Title, doc.Subtitle, doc.CreateTime.AsTime(), doc.UpdateTime.AsTime(), doc.PublishTime.AsTime()); err != nil {
 							return fmt.Errorf("failed to index new document: %w", err)
 						}
 
 						// TODO: DRY this mutation.
 
 						if err := srv.db.db.Update(func(txn *badgergraph.Txn) error {
-							uid, err := txn.UIDRead(typeDocument, docid.Hash())
+							uid, err := txn.UIDRead(graphschema.TypePublication, docid.Hash())
 							if err != nil {
 								return err
 							}
-							return txn.WriteTriple(uid, pDocumentPublishTime, doc.PublishTime.AsTime())
+							return txn.WriteTriple(uid, graphschema.PredDocumentPublishTime, doc.PublishTime.AsTime())
 						}); err != nil {
 							return err
 						}
@@ -669,7 +670,7 @@ func (srv *backend) CreateDraft(ctx context.Context, perma signedPermanode, data
 		return cid.Undef, fmt.Errorf("failed to store draft content: %w", err)
 	}
 
-	if err := srv.db.IndexDocument(ctx, perma.blk.Cid(), srv.repo.acc.id, "", "", perma.perma.CreateTime, perma.perma.CreateTime); err != nil {
+	if err := srv.db.IndexDraft(ctx, perma.blk.Cid(), srv.repo.acc.id, "", "", perma.perma.CreateTime, perma.perma.CreateTime); err != nil {
 		return cid.Undef, err
 	}
 

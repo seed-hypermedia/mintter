@@ -15,7 +15,7 @@ const testNS = "mtt-test"
 
 func TestPreallocateUIDs(t *testing.T) {
 	schema := NewSchema()
-	schema.RegisterType("Person")
+	person := schema.Register("Person")
 
 	db, err := NewDB(testutil.MakeBadgerV3(t), testNS, schema)
 	require.NoError(t, err)
@@ -35,9 +35,9 @@ func TestPreallocateUIDs(t *testing.T) {
 		go func(i int) {
 			var res result
 			res.uids, res.err = db.PreallocateUIDs(
-				XID{NodeType: "Person", ID: []byte("alice")},
-				XID{NodeType: "Person", ID: []byte("bob")},
-				XID{NodeType: "Person", ID: []byte("carol")},
+				XID{NodeType: person, ID: []byte("alice")},
+				XID{NodeType: person, ID: []byte("bob")},
+				XID{NodeType: person, ID: []byte("carol")},
 			)
 			res.idx = i
 			out <- res
@@ -57,7 +57,7 @@ func TestPreallocateUIDs(t *testing.T) {
 
 func TestListIndexedNodes(t *testing.T) {
 	schema := NewSchema()
-	schema.RegisterType("Person")
+	schema.Register("Person")
 
 	db, err := NewDB(testutil.MakeBadgerV3(t), testNS, schema)
 	require.NoError(t, err)
@@ -90,7 +90,7 @@ func TestListIndexedNodes(t *testing.T) {
 
 func TestUIDConcurrent(t *testing.T) {
 	schema := NewSchema()
-	schema.RegisterType("Peer")
+	schema.Register("Peer")
 	db, err := NewDB(testutil.MakeBadgerV3(t), testNS, schema)
 	require.NoError(t, err)
 	defer func() {
@@ -140,7 +140,7 @@ func TestUIDConcurrent(t *testing.T) {
 
 func TestUID(t *testing.T) {
 	schema := NewSchema()
-	schema.RegisterType("User")
+	schema.Register("User")
 	db, err := NewDB(testutil.MakeBadgerV3(t), testNS, schema)
 	require.NoError(t, err)
 	defer func() {
@@ -185,7 +185,7 @@ func TestUID(t *testing.T) {
 
 func TestUIDRead(t *testing.T) {
 	schema := NewSchema()
-	schema.RegisterType("User")
+	schema.Register("User")
 	db, err := NewDB(testutil.MakeBadgerV3(t), testNS, schema)
 	require.NoError(t, err)
 	defer func() {
@@ -212,8 +212,8 @@ func TestUIDRead(t *testing.T) {
 
 func TestNodeType(t *testing.T) {
 	schema := NewSchema()
-	schema.RegisterType("Person")
-	schema.RegisterType("Peer")
+	schema.Register("Person")
+	schema.Register("Peer")
 	db, err := NewDB(testutil.MakeBadgerV3(t), testNS, schema)
 	require.NoError(t, err)
 	defer func() {
@@ -245,12 +245,13 @@ func TestNodeType(t *testing.T) {
 
 func TestRelations(t *testing.T) {
 	schema := NewSchema()
-	personFollows := schema.RegisterPredicate("Person", Predicate{
+	personFollows := Predicate{
 		Name:     "follows",
 		IsList:   true,
 		HasIndex: true,
 		Type:     ValueTypeUID,
-	})
+	}
+	schema.Register("Person", personFollows)
 	db, err := NewDB(testutil.MakeBadgerV3(t), testNS, schema)
 	require.NoError(t, err)
 	defer func() {
@@ -295,17 +296,18 @@ func TestRelations(t *testing.T) {
 
 func TestDeleteNode(t *testing.T) {
 	schema := NewSchema()
-	follows := schema.RegisterPredicate("Person", Predicate{
+	follows := Predicate{
 		Name:   "follows",
 		IsList: true,
-		// HasIndex: true,
-		Type: ValueTypeUID,
-	})
-	name := schema.RegisterPredicate("Person", Predicate{
+		Type:   ValueTypeUID,
+	}
+	name := Predicate{
 		Name:     "name",
 		HasIndex: true,
 		Type:     ValueTypeString,
-	})
+	}
+
+	schema.Register("Person", follows, name)
 
 	db, err := NewDB(testutil.MakeBadgerV3(t), testNS, schema)
 	require.NoError(t, err)

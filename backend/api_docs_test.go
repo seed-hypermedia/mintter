@@ -79,6 +79,7 @@ func TestAPIUpdatePublicationE2E(t *testing.T) {
 	gotDraft.Title = "Updated title"
 	updatedDraft, err := api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: gotDraft})
 	require.NoError(t, err)
+	gotDraft.UpdateTime = updatedDraft.UpdateTime
 	testutil.ProtoEqual(t, gotDraft, updatedDraft, "can't update draft of a publication")
 
 	// Publish again.
@@ -103,6 +104,10 @@ func TestAPIUpdatePublicationE2E(t *testing.T) {
 	publist, err = api.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
 	require.Len(t, publist.Publications, 1, "must have published document in the list")
+
+	// TODO: return version in the list response.
+	// gotPub.Document.Content = ""
+	// testutil.ProtoEqual(t, gotPub, publist.Publications[0], "listed publication doesn't match")
 }
 
 func TestAPIListDrafts(t *testing.T) {

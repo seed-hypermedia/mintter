@@ -12,6 +12,7 @@ import (
 	"mintter/backend/badger3ds"
 	"mintter/backend/badgergraph"
 	"mintter/backend/config"
+	"mintter/backend/db/graphschema"
 )
 
 var moduleBackend = fx.Options(
@@ -141,7 +142,7 @@ func provideBadger(ds datastore.Batching) *badger.DB {
 }
 
 func provideBadgerGraph(lc fx.Lifecycle, db *badger.DB) (*badgergraph.DB, error) {
-	gdb, err := badgergraph.NewDB(db, "mintter", graphSchema)
+	gdb, err := badgergraph.NewDB(db, "mintter", graphschema.Schema())
 	if err != nil {
 		return nil, err
 	}

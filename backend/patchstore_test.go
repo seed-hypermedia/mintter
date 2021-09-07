@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"mintter/backend/badgergraph"
+	"mintter/backend/db/graphschema"
 	"mintter/backend/testutil"
 
 	"github.com/ipfs/go-cid"
@@ -147,7 +148,7 @@ func makeTestPatchStore(t *testing.T, name string) *testPatchStore {
 	ds := testutil.MakeDatastore(t)
 	bs := blockstore.NewBlockstore(ds)
 
-	db, err := badgergraph.NewDB(testutil.MakeBadgerV3(t), "!mtttest", graphSchema)
+	db, err := badgergraph.NewDB(testutil.MakeBadgerV3(t), "!mtttest", graphschema.Schema())
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, db.Close())
