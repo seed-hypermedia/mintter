@@ -17,6 +17,7 @@ import (
 
 	documents "mintter/backend/api/documents/v1alpha"
 	"mintter/backend/badgergraph"
+	"mintter/backend/db/graphschema"
 )
 
 // DocsServer combines Drafts and Publications servers.
@@ -86,7 +87,7 @@ func (srv *docsAPI) CreateDraft(ctx context.Context, in *documents.CreateDraftRe
 			return nil, fmt.Errorf("failed to store draft content: %w", err)
 		}
 
-		if err := srv.back.db.IndexDocument(ctx, docid, srv.back.repo.acc.id, pub.Document.Title, pub.Document.Subtitle, pub.Document.CreateTime.AsTime(), pub.Document.UpdateTime.AsTime()); err != nil {
+		if err := srv.back.db.IndexDraft(ctx, docid, srv.back.repo.acc.id, pub.Document.Title, pub.Document.Subtitle, pub.Document.CreateTime.AsTime(), pub.Document.UpdateTime.AsTime()); err != nil {
 			return nil, err
 		}
 
@@ -148,37 +149,37 @@ func (srv *docsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRequ
 		i, c := i, c
 		g.Go(func() error {
 			return srv.back.db.db.View(func(txn *badgergraph.Txn) error {
-				duid, err := txn.UID(typeDocument, c.Hash())
+				duid, err := txn.UID(graphschema.TypeDraft, c.Hash())
 				if err != nil {
 					return err
 				}
 
-				title, err := txn.GetPropertyString(duid, pDocumentTitle)
+				title, err := txn.GetPropertyString(duid, graphschema.PredDocumentTitle)
 				if err != nil {
 					return err
 				}
 
-				subtitle, err := txn.GetPropertyString(duid, pDocumentSubtitle)
+				subtitle, err := txn.GetPropertyString(duid, graphschema.PredDocumentSubtitle)
 				if err != nil {
 					return err
 				}
 
-				auid, err := txn.GetPropertyUID(duid, pDocumentAuthor)
+				auid, err := txn.GetPropertyUID(duid, graphschema.PredDocumentAuthor)
 				if err != nil {
 					return err
 				}
 
-				ahash, err := txn.XID(typeAccount, auid)
+				ahash, err := txn.XID(graphschema.TypeAccount, auid)
 				if err != nil {
 					return err
 				}
 
-				createTime, err := txn.GetPropertyTime(duid, pDocumentCreateTime)
+				createTime, err := txn.GetPropertyTime(duid, graphschema.PredDocumentCreateTime)
 				if err != nil {
 					return err
 				}
 
-				updateTime, err := txn.GetPropertyTime(duid, pDocumentUpdateTime)
+				updateTime, err := txn.GetPropertyTime(duid, graphschema.PredDocumentUpdateTime)
 				if err != nil {
 					return err
 				}
@@ -259,7 +260,7 @@ func (srv *docsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRe
 		subtitle = ""
 	}
 
-	if err := srv.back.db.TouchDocument(ctx, c, title, subtitle, now); err != nil {
+	if err := srv.back.db.TouchDraft(ctx, c, title, subtitle, now); err != nil {
 		return nil, fmt.Errorf("failed to touch document index: %w", err)
 	}
 
@@ -272,21 +273,27 @@ func (srv *docsAPI) DeleteDraft(ctx context.Context, in *documents.DeleteDraftRe
 		return nil, err
 	}
 
+	err = srv.deleteDraft(ctx, c)
+
+	return &emptypb.Empty{}, err
+}
+
+func (srv *docsAPI) deleteDraft(ctx context.Context, docID cid.Cid) error {
 	if err := srv.back.db.db.Update(func(txn *badgergraph.Txn) error {
-		duid, err := txn.UIDRead(typeDocument, c.Hash())
+		duid, err := txn.UIDRead(graphschema.TypeDraft, docID.Hash())
 		if err != nil {
 			return err
 		}
-		return txn.DeleteNode(typeDocument, duid)
+		return txn.DeleteNode(graphschema.TypeDraft, duid)
 	}); err != nil {
-		return nil, fmt.Errorf("failed to delete document %s from index: %w", in.DocumentId, err)
+		return fmt.Errorf("failed to delete document %s from index: %w", docID, err)
 	}
 
-	if err := srv.back.drafts.DeleteDraft(c); err != nil {
-		return nil, fmt.Errorf("failed to delete document content: %w", err)
+	if err := srv.back.drafts.DeleteDraft(docID); err != nil {
+		return fmt.Errorf("failed to delete document content: %w", err)
 	}
 
-	return &emptypb.Empty{}, nil
+	return nil
 }
 
 func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraftRequest) (*documents.Publication, error) {
@@ -294,6 +301,12 @@ func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraft
 	if err != nil {
 		return nil, err
 	}
+
+	// TODO: rethink so that this lock is not necessary.
+	// For some stupid thing we can't publish drafts concurrently.
+	// Remove this lock and see how the tests will fail. Not a biggie though.
+	srv.feedMu.Lock()
+	defer srv.feedMu.Unlock()
 
 	c, err := srv.parseDocumentID(in.DocumentId)
 	if err != nil {
@@ -346,27 +359,13 @@ func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraft
 		return nil, fmt.Errorf("failed to add patch: %w", err)
 	}
 
-	if err := srv.back.drafts.DeleteDraft(c); err != nil {
-		return nil, fmt.Errorf("failed to remove draft content: %w", err)
+	if err := srv.deleteDraft(ctx, c); err != nil {
+		return nil, fmt.Errorf("failed to delete draft from the database: %w", err)
 	}
 
-	// TODO: DRY this mutation.
-
-	if err := srv.back.db.db.Update(func(txn *badgergraph.Txn) error {
-		uid, err := txn.UIDRead(typeDocument, c.Hash())
-		if err != nil {
-			return err
-		}
-		return txn.WriteTriple(uid, pDocumentPublishTime, now)
-	}); err != nil {
-		return nil, err
-	}
+	srv.back.db.IndexPublication(ctx, c, AccountID(author), doc.Title, doc.Subtitle, doc.CreateTime.AsTime(), doc.UpdateTime.AsTime(), doc.PublishTime.AsTime())
 
 	docfeed := newDocumentFeedID(AccountID(author))
-
-	// TODO: rethink so that this lock is not necessary.
-	srv.feedMu.Lock()
-	defer srv.feedMu.Unlock()
 
 	feedstate, err := srv.back.patches.LoadState(ctx, docfeed)
 	if err != nil {
@@ -425,7 +424,7 @@ func (srv *docsAPI) GetPublication(ctx context.Context, in *documents.GetPublica
 func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
 	var uids []uint64
 	if err := srv.back.db.db.View(func(txn *badgergraph.Txn) error {
-		nodes, err := txn.ListIndexedNodes(pDocumentPublishTime, nil)
+		nodes, err := txn.ListIndexedNodes(graphschema.PredDocumentPublishTime, nil)
 		if err != nil && err != badger.ErrKeyNotFound {
 			return err
 		}
@@ -454,42 +453,42 @@ func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPubl
 		i, duid := i, uid
 		g.Go(func() error {
 			return srv.back.db.db.View(func(txn *badgergraph.Txn) error {
-				title, err := txn.GetPropertyString(duid, pDocumentTitle)
+				title, err := txn.GetPropertyString(duid, graphschema.PredDocumentTitle)
 				if err != nil {
 					return err
 				}
 
-				subtitle, err := txn.GetPropertyString(duid, pDocumentSubtitle)
+				subtitle, err := txn.GetPropertyString(duid, graphschema.PredDocumentSubtitle)
 				if err != nil {
 					return err
 				}
 
-				auid, err := txn.GetPropertyUID(duid, pDocumentAuthor)
+				auid, err := txn.GetPropertyUID(duid, graphschema.PredDocumentAuthor)
 				if err != nil {
 					return err
 				}
 
-				ahash, err := txn.XID(typeAccount, auid)
+				ahash, err := txn.XID(graphschema.TypeAccount, auid)
 				if err != nil {
 					return err
 				}
 
-				createTime, err := txn.GetPropertyTime(duid, pDocumentCreateTime)
+				createTime, err := txn.GetPropertyTime(duid, graphschema.PredDocumentCreateTime)
 				if err != nil {
 					return err
 				}
 
-				updateTime, err := txn.GetPropertyTime(duid, pDocumentUpdateTime)
+				updateTime, err := txn.GetPropertyTime(duid, graphschema.PredDocumentUpdateTime)
 				if err != nil {
 					return err
 				}
 
-				publishTime, err := txn.GetPropertyTime(duid, pDocumentPublishTime)
+				publishTime, err := txn.GetPropertyTime(duid, graphschema.PredDocumentPublishTime)
 				if err != nil {
 					return err
 				}
 
-				dhash, err := txn.XID(typeDocument, duid)
+				dhash, err := txn.XID(graphschema.TypePublication, duid)
 				if err != nil {
 					return err
 				}
@@ -542,32 +541,32 @@ func (srv *docsAPI) DeletePublication(ctx context.Context, in *documents.DeleteP
 	if err := srv.back.db.db.Update(func(txn *badgergraph.Txn) error {
 		h := c.Hash()
 
-		duid, err := txn.UIDRead(typeDocument, h)
+		duid, err := txn.UIDRead(graphschema.TypePublication, h)
 		if err != nil {
 			return err
 		}
 
-		if err := txn.DeleteNode(typeDocument, duid); err != nil {
+		if err := txn.DeleteNode(graphschema.TypePublication, duid); err != nil {
 			return err
 		}
 
-		ouid, err := txn.UIDRead(typeObject, c.Bytes())
+		ouid, err := txn.UIDRead(graphschema.TypeObject, c.Bytes())
 		if err != nil {
 			return err
 		}
 
-		heads, err := txn.ListReverseRelations(pHeadObject, ouid)
+		heads, err := txn.ListReverseRelations(graphschema.PredHeadObject, ouid)
 		if err != nil {
 			return err
 		}
 
 		for _, huid := range heads {
-			if err := txn.DeleteNode(typeHead, huid); err != nil {
+			if err := txn.DeleteNode(graphschema.TypeHead, huid); err != nil {
 				return err
 			}
 		}
 
-		if err := txn.DeleteNode(typeObject, ouid); err != nil {
+		if err := txn.DeleteNode(graphschema.TypeObject, ouid); err != nil {
 			return err
 		}
 

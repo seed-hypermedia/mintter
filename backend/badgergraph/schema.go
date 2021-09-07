@@ -10,14 +10,15 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// NodeType specifies type of a node.
+type NodeType string
+
 const (
-	predicateXID      = "$xid" // predicate suffix for node's external id.
-	predicateNodeType = "$type"
+	predicateXID      = "db/xid" // predicate suffix for node's external id.
+	predicateNodeType = "db/type"
 )
 
 var nodeTypePredicate = Predicate{
-	node:     "!internal!",
-	fullName: predicateNodeType, // This predicate doesn't have nodetype prefix because we want to index across all node types.
 	Name:     predicateNodeType,
 	HasIndex: true,
 	IsList:   false,
@@ -26,77 +27,56 @@ var nodeTypePredicate = Predicate{
 
 // SchemaRegistry holds the schema of the graph.
 type SchemaRegistry struct {
-	schema map[string]map[string]Predicate
+	schema map[NodeType]map[string]Predicate
 }
 
 // NewSchema creates a new schema registry.
-func NewSchema() SchemaRegistry {
-	return SchemaRegistry{
-		schema: make(map[string]map[string]Predicate),
+func NewSchema() *SchemaRegistry {
+	return &SchemaRegistry{
+		schema: make(map[NodeType]map[string]Predicate),
 	}
 }
 
-// RegisterType registers a type. Useful to register types with only internal predicates.
-func (reg *SchemaRegistry) RegisterType(nodeType string) {
-	_, ok := reg.schema[nodeType]
+// Register node type and its corresponding predicates. Must be called before using the database.
+func (reg *SchemaRegistry) Register(nodeType string, preds ...Predicate) NodeType {
+	nt := NodeType(nodeType)
+	_, ok := reg.schema[nt]
 	if ok {
-		// panic("type is already registered: " + nodeType)
-		return
+		panic("type is already registered: " + nodeType)
 	}
 
 	fields := make(map[string]Predicate)
 	// Add internal predicate for external ids and node types.
 	fields[predicateNodeType] = nodeTypePredicate
-	xid := nodeType + "." + predicateXID
 	fields[predicateXID] = Predicate{
-		node:     nodeType,
-		fullName: xid,
+		Name:     predicateXID + "." + nodeType,
 		HasIndex: true,
 		IsList:   false,
 		Type:     ValueTypeBinary,
 	}
-	reg.schema[nodeType] = fields
-}
 
-// RegisterPredicate registers a predicate in the schema.
-// All predicates must be registered before using the database.
-// Not safe for concurrent use.
-// Will panic if duplicate predicate is being registered.
-func (reg *SchemaRegistry) RegisterPredicate(nodeType string, p Predicate) Predicate {
-	if p.node != "" {
-		panic("BUG: predicate with node specified being registered")
-	}
-
-	if p.Type == ValueTypeUnset {
-		panic("missing value type")
-	}
-
-	if p.Name == "" {
-		panic("missing predicate name")
-	}
-
-	p.node = nodeType
-	p.fullName = nodeType + "." + p.Name
-
-	fields, ok := reg.schema[nodeType]
-	if !ok {
-		reg.RegisterType(nodeType)
-		fields, ok = reg.schema[nodeType]
-		if !ok {
-			panic("BUG: failed to register type")
+	for _, p := range preds {
+		if p.Type == ValueTypeUnset {
+			panic("missing value type")
 		}
+
+		if p.Name == "" {
+			panic("missing predicate name")
+		}
+
+		if _, ok := fields[p.Name]; ok {
+			panic("duplicate predicate " + p.Name)
+		}
+
+		fields[p.Name] = p
 	}
 
-	if _, ok := fields[p.Name]; ok {
-		panic("duplicate predicate being registered")
-	}
+	reg.schema[nt] = fields
 
-	fields[p.Name] = p
-
-	return p
+	return nt
 }
 
-func (reg *SchemaRegistry) xidPredicate(nodeType string) Predicate {
+func (reg *SchemaRegistry) xidPredicate(nodeType NodeType) Predicate {
 	return reg.schema[nodeType][predicateXID]
 }
 
@@ -115,9 +95,6 @@ const (
 
 // Predicate is a descriptor for predicate.
 type Predicate struct {
-	node     string
-	fullName string
-
 	Name     string
 	Type     ValueType
 	HasIndex bool
@@ -126,17 +103,12 @@ type Predicate struct {
 
 // String implements fmt.Stringer.
 func (p Predicate) String() string {
-	return p.fullName
+	return p.Name
 }
 
 // IsRelation indicates if the predicate is a relation or simple value.
 func (p Predicate) IsRelation() bool {
 	return p.Type == ValueTypeUID
-}
-
-// NodeType returns the type of the node this predicate is registered for.
-func (p Predicate) NodeType() string {
-	return p.node
 }
 
 func encodeValue(v interface{}, t ValueType) ([]byte, error) {
@@ -151,7 +123,14 @@ func encodeValue(v interface{}, t ValueType) ([]byte, error) {
 		}
 		return out, nil
 	case ValueTypeString:
-		return []byte(v.(string)), nil
+		switch vv := v.(type) {
+		case string:
+			return []byte(vv), nil
+		case NodeType:
+			return []byte(vv), nil
+		default:
+			panic(fmt.Errorf("invalid type %T for string value type", v))
+		}
 	case ValueTypeUID:
 		out := make([]byte, 8)
 		binary.BigEndian.PutUint64(out, v.(uint64))

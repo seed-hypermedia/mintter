@@ -52,7 +52,7 @@ type Txn struct {
 }
 
 // XID returns external ID of a given UID. You have to know node type in advance.
-func (txn *Txn) XID(nodeType string, uid uint64) ([]byte, error) {
+func (txn *Txn) XID(nodeType NodeType, uid uint64) ([]byte, error) {
 	k := revUIDKey(txn.db.ns, txn.db.schema.xidPredicate(nodeType), uid)
 	item, err := txn.Get(k)
 	if err != nil {
@@ -69,7 +69,7 @@ func (txn *Txn) XID(nodeType string, uid uint64) ([]byte, error) {
 // IMPORTANT: this may cause transaction conflicts on attempts to allocate UIDs
 // for the same node type and xid concurrently. The error must be handled by the caller.
 // If transaction is not safe to retry, preallocate UIDs in a separate transaction prior using them.
-func (txn *Txn) UID(nodeType string, xid []byte) (uint64, error) {
+func (txn *Txn) UID(nodeType NodeType, xid []byte) (uint64, error) {
 	uid, err := txn.UIDRead(nodeType, xid)
 	if err == nil {
 		return uid, nil
@@ -87,7 +87,7 @@ func (txn *Txn) UID(nodeType string, xid []byte) (uint64, error) {
 }
 
 // UIDRead reads a previously allocated UID.
-func (txn *Txn) UIDRead(nodeType string, xid []byte) (uint64, error) {
+func (txn *Txn) UIDRead(nodeType NodeType, xid []byte) (uint64, error) {
 	k := uidKey(txn.db.ns, txn.db.schema.xidPredicate(nodeType), xid)
 	item, err := txn.Get(k)
 	if err != nil {
@@ -98,7 +98,7 @@ func (txn *Txn) UIDRead(nodeType string, xid []byte) (uint64, error) {
 }
 
 // uidAllocate allocates a new uid for node type.
-func (txn *Txn) uidAllocate(nodeType string, xid []byte) (uint64, error) {
+func (txn *Txn) uidAllocate(nodeType NodeType, xid []byte) (uint64, error) {
 	if xid == nil {
 		panic("BUG: can't allocate uids for nodes without external ids yet")
 	}
@@ -185,7 +185,7 @@ func (txn *Txn) GetPropertyTime(subject uint64, p Predicate) (time.Time, error) 
 }
 
 func (txn *Txn) getProperty(subject uint64, p Predicate) (*badger.Item, error) {
-	k := dataKey(txn.db.ns, p.fullName, subject, math.MaxUint64)
+	k := dataKey(txn.db.ns, p.Name, subject, math.MaxUint64)
 	item, err := txn.Get(k)
 	if err != nil {
 		return nil, err
@@ -196,7 +196,7 @@ func (txn *Txn) getProperty(subject uint64, p Predicate) (*badger.Item, error) {
 
 // HasProperty checks if a property exists without decoding the value.
 func (txn *Txn) HasProperty(subject uint64, p Predicate) (bool, error) {
-	k := dataKey(txn.db.ns, p.fullName, subject, math.MaxUint64)
+	k := dataKey(txn.db.ns, p.Name, subject, math.MaxUint64)
 	_, err := txn.Get(k)
 	if err == nil {
 		return true, nil
@@ -211,7 +211,7 @@ func (txn *Txn) HasProperty(subject uint64, p Predicate) (bool, error) {
 
 // GetIndexUnique gets the UID of the indexed token that was set with SetLiteral.
 func (txn *Txn) GetIndexUnique(p Predicate, token []byte) (uint64, error) {
-	it := txn.keyIterator(indexPrefix(txn.db.ns, p.fullName, token))
+	it := txn.keyIterator(indexPrefix(txn.db.ns, p.Name, token))
 	defer it.Close()
 
 	var out uint64
@@ -254,7 +254,7 @@ func (txn *Txn) WriteTriple(subject uint64, p Predicate, v interface{}) error {
 	}
 
 	if err := txn.SetEntry(badger.NewEntry(
-		dataKey(txn.db.ns, p.fullName, subject, cardinality),
+		dataKey(txn.db.ns, p.Name, subject, cardinality),
 		data,
 	).WithMeta(byte(p.Type)).WithDiscard()); err != nil {
 		return fmt.Errorf("failed to set main entry: %w", err)
@@ -264,11 +264,11 @@ func (txn *Txn) WriteTriple(subject uint64, p Predicate, v interface{}) error {
 	case !p.HasIndex:
 		return nil
 	case p.HasIndex && p.IsRelation():
-		if err := txn.Set(reverseKey(txn.db.ns, p.fullName, v.(uint64), subject), nil); err != nil {
+		if err := txn.Set(reverseKey(txn.db.ns, p.Name, v.(uint64), subject), nil); err != nil {
 			return fmt.Errorf("failed to set reverse relation: %w", err)
 		}
 	case p.HasIndex && !p.IsRelation():
-		if err := txn.Set(indexKey(txn.db.ns, p.fullName, data, subject), nil); err != nil {
+		if err := txn.Set(indexKey(txn.db.ns, p.Name, data, subject), nil); err != nil {
 			return fmt.Errorf("failed to set index: %w", err)
 		}
 	default:
@@ -279,7 +279,7 @@ func (txn *Txn) WriteTriple(subject uint64, p Predicate, v interface{}) error {
 }
 
 // ListNodesOfType returns UIDs of all the known nodes of a given type.
-func (txn *Txn) ListNodesOfType(nodeType string) ([]uint64, error) {
+func (txn *Txn) ListNodesOfType(nodeType NodeType) ([]uint64, error) {
 	return txn.ListIndexedNodes(nodeTypePredicate, []byte(nodeType))
 }
 
@@ -287,9 +287,9 @@ func (txn *Txn) ListNodesOfType(nodeType string) ([]uint64, error) {
 func (txn *Txn) ListIndexedNodes(p Predicate, token []byte) ([]uint64, error) {
 	var prefix []byte
 	if token != nil {
-		prefix = indexPrefix(txn.db.ns, p.fullName, token)
+		prefix = indexPrefix(txn.db.ns, p.Name, token)
 	} else {
-		prefix, _ = makeKey(txn.db.ns, prefixDefault, keyTypeIndex, p.fullName, 0)
+		prefix, _ = makeKey(txn.db.ns, prefixDefault, keyTypeIndex, p.Name, 0)
 	}
 	it := txn.keyIterator(prefix)
 	defer it.Close()
@@ -312,7 +312,7 @@ func (txn *Txn) ListIndexedNodes(p Predicate, token []byte) ([]uint64, error) {
 
 // ListRelations can be used to read forward relations of a subject.
 func (txn *Txn) ListRelations(subject uint64, p Predicate) ([]uint64, error) {
-	it := txn.valueIterator(dataPrefixSubject(txn.db.ns, p.fullName, subject))
+	it := txn.valueIterator(dataPrefixSubject(txn.db.ns, p.Name, subject))
 	defer it.Close()
 
 	var out []uint64
@@ -333,7 +333,7 @@ func (txn *Txn) ListRelations(subject uint64, p Predicate) ([]uint64, error) {
 
 // ListReverseRelations finds reverse relations of a given object and predicate.
 func (txn *Txn) ListReverseRelations(p Predicate, object uint64) ([]uint64, error) {
-	it := txn.keyIterator(reversePrefix(txn.db.ns, p.fullName, object))
+	it := txn.keyIterator(reversePrefix(txn.db.ns, p.Name, object))
 	defer it.Close()
 
 	var out []uint64
@@ -353,12 +353,12 @@ func (txn *Txn) ListReverseRelations(p Predicate, object uint64) ([]uint64, erro
 }
 
 // DeleteNode removes a node from the database including all its predicates and indexes.
-func (txn *Txn) DeleteNode(nodeType string, uid uint64) error {
+func (txn *Txn) DeleteNode(nodeType NodeType, uid uint64) error {
 	var wg sync.WaitGroup
 	keysc := make(chan []byte, len(txn.db.schema.schema[nodeType])*2)
 
 	for _, pred := range txn.db.schema.schema[nodeType] {
-		it := txn.keyIterator(dataPrefixSubject(txn.db.ns, pred.fullName, uid))
+		it := txn.keyIterator(dataPrefixSubject(txn.db.ns, pred.Name, uid))
 		defer it.Close()
 
 		wg.Add(1)
@@ -376,7 +376,7 @@ func (txn *Txn) DeleteNode(nodeType string, uid uint64) error {
 				kt = keyTypeReverse
 			}
 
-			prefix, _ := makeKey(txn.db.ns, prefixDefault, kt, pred.fullName, 0)
+			prefix, _ := makeKey(txn.db.ns, prefixDefault, kt, pred.Name, 0)
 			it := txn.keyIterator(prefix)
 			defer it.Close()
 
