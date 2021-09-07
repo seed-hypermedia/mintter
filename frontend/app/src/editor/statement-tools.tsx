@@ -1,7 +1,7 @@
 import type {FlowContent, Statement} from '@mintter/mttast'
 import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
-import {Marker} from './marker'
+import {Marker, MarkerStyled} from './marker'
 import {Dropdown} from './dropdown'
 import {Slot} from '@radix-ui/react-slot'
 import {Text} from '@mintter/ui/text'
@@ -14,13 +14,13 @@ import {useReadOnly} from 'slate-react'
 
 export const Tools = styled('div', {
   height: '100%',
-  overflow: 'hidden',
   alignSelf: 'start',
   display: 'flex',
   // alignItems: 'center',
   userSelect: 'none',
   WebkitUserSelect: 'none',
   transition: 'all ease-in-out 0.1s',
+  flexDirection: 'row-reverse',
 })
 
 // export const Dragger = styled('div', {
@@ -45,6 +45,7 @@ export const ElementDropdown = styled('button', {
   width: '$space$8',
   display: 'flex',
   alignItems: 'center',
+  zIndex: 2,
   justifyContent: 'center',
   height: 32,
   borderRadius: '$2',
@@ -86,6 +87,7 @@ export function StatementTools({element}: {element: FlowContent}) {
 
   return (
     <Tools contentEditable={false}>
+      <Marker element={element} />
       {!isReadOnly ? (
         <Dropdown.Root modal={false}>
           <Dropdown.Trigger as={ElementDropdown} data-trigger>
@@ -106,7 +108,6 @@ export function StatementTools({element}: {element: FlowContent}) {
           </Dropdown.Content>
         </Dropdown.Root>
       ) : null}
-      <Marker element={element} />
     </Tools>
   )
 }

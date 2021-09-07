@@ -27,11 +27,11 @@ export default function EditorPage() {
     client,
   })
 
-  const {context} = state
-
   const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
 
   useEnableSidepanel()
+
+  const {context} = state
 
   if (state.matches('fetching')) {
     return <AppSpinner />

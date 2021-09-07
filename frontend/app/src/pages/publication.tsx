@@ -1,4 +1,4 @@
-import {useMemo} from 'react'
+import {useEffect, useMemo} from 'react'
 import {useHistory, useParams} from 'react-router-dom'
 import type {Document} from '@mintter/client'
 import {createDraft} from '@mintter/client'
@@ -15,9 +15,15 @@ export default function Publication(): JSX.Element {
   const {docId} = useParams<{docId: string}>()
   const history = useHistory()
   const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
-  const {isLoading, isError, data, error} = usePublication(docId)
+  const {status, data, error} = usePublication(docId)
 
   useEnableSidepanel()
+
+  useEffect(() => {
+    if (status == 'success') {
+      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', payload: data.document.content})
+    }
+  }, [status])
 
   async function handleUpdate() {
     try {
@@ -32,12 +38,12 @@ export default function Publication(): JSX.Element {
     }
   }
 
-  if (isLoading) {
+  if (status == 'loading') {
     return <AppSpinner />
   }
 
   // start rendering
-  if (isError) {
+  if (status == 'error') {
     console.error('usePublication error: ', error)
     return <Text>Publication ERROR</Text>
   }
