@@ -9,6 +9,7 @@ import (
 
 	p2p "mintter/backend/api/p2p/v1alpha"
 	"mintter/backend/badgergraph"
+	"mintter/backend/db/graphschema"
 	"mintter/backend/ipfsutil"
 
 	"github.com/dgraph-io/badger/v3"
@@ -64,19 +65,19 @@ retry:
 				return fmt.Errorf("failed to decode version peer %s: %w", pv.Peer, err)
 			}
 
-			puid, err := txn.UID(typePeer, peer.Hash())
+			puid, err := txn.UID(graphschema.TypePeer, peer.Hash())
 			if err != nil {
 				return err
 			}
 
 			hxid := headXID(ouid, puid)
-			huid, err := txn.UID(typeHead, hxid)
+			huid, err := txn.UID(graphschema.TypeHead, hxid)
 			if err != nil {
 				return err
 			}
 
 			oldpv := &p2p.PeerVersion{}
-			if err := txn.GetPropertyProto(huid, pHeadData, oldpv); err != nil && err != badger.ErrKeyNotFound {
+			if err := txn.GetPropertyProto(huid, graphschema.PredHeadData, oldpv); err != nil && err != badger.ErrKeyNotFound {
 				return fmt.Errorf("failed to get head: %w", err)
 			}
 
@@ -87,16 +88,16 @@ retry:
 
 			// The first time we store a head we also write its peer and object relations.
 			if oldpv.Seq == 0 {
-				if err := txn.WriteTriple(huid, pHeadPeer, puid); err != nil {
+				if err := txn.WriteTriple(huid, graphschema.PredHeadPeer, puid); err != nil {
 					return fmt.Errorf("failed to store peer uid to head: %w", err)
 				}
 
-				if err := txn.WriteTriple(huid, pHeadObject, ouid); err != nil {
+				if err := txn.WriteTriple(huid, graphschema.PredHeadObject, ouid); err != nil {
 					return fmt.Errorf("failed to store object uid to head: %w", err)
 				}
 			}
 
-			if err := txn.WriteTriple(huid, pHeadData, pv); err != nil {
+			if err := txn.WriteTriple(huid, graphschema.PredHeadData, pv); err != nil {
 				return fmt.Errorf("failed to store new head: %w", err)
 			}
 
@@ -130,19 +131,19 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 			return err
 		}
 
-		puid, err := txn.UID(typePeer, sp.peer.Hash())
+		puid, err := txn.UID(graphschema.TypePeer, sp.peer.Hash())
 		if err != nil {
 			return err
 		}
 
 		hxid := headXID(ouid, puid)
-		huid, err := txn.UID(typeHead, hxid)
+		huid, err := txn.UID(graphschema.TypeHead, hxid)
 		if err != nil {
 			return err
 		}
 
 		oldpv := &p2p.PeerVersion{}
-		if err := txn.GetPropertyProto(huid, pHeadData, oldpv); err != nil && err != badger.ErrKeyNotFound {
+		if err := txn.GetPropertyProto(huid, graphschema.PredHeadData, oldpv); err != nil && err != badger.ErrKeyNotFound {
 			return err
 		}
 
@@ -152,15 +153,15 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 			oldpv.Seq = sp.Seq
 			oldpv.LamportTime = sp.LamportTime
 
-			if err := txn.WriteTriple(huid, pHeadData, oldpv); err != nil {
+			if err := txn.WriteTriple(huid, graphschema.PredHeadData, oldpv); err != nil {
 				return err
 			}
 
-			if err := txn.WriteTriple(huid, pHeadPeer, puid); err != nil {
+			if err := txn.WriteTriple(huid, graphschema.PredHeadPeer, puid); err != nil {
 				return fmt.Errorf("failed to store peer uid to head: %w", err)
 			}
 
-			if err := txn.WriteTriple(huid, pHeadObject, ouid); err != nil {
+			if err := txn.WriteTriple(huid, graphschema.PredHeadObject, ouid); err != nil {
 				return fmt.Errorf("failed to store object uid to head: %w", err)
 			}
 
@@ -186,7 +187,7 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 		oldpv.LamportTime = sp.LamportTime
 		oldpv.Head = sp.cid.String()
 
-		if err := txn.WriteTriple(huid, pHeadData, oldpv); err != nil {
+		if err := txn.WriteTriple(huid, graphschema.PredHeadData, oldpv); err != nil {
 			return err
 		}
 
@@ -254,13 +255,13 @@ func (s *patchStore) AllObjectsChan(ctx context.Context) (<-chan cid.Cid, error)
 		defer close(c)
 
 		if err := s.db.View(func(txn *badgergraph.Txn) error {
-			uids, err := txn.ListNodesOfType(typeObject)
+			uids, err := txn.ListNodesOfType(graphschema.TypeObject)
 			if err != nil {
 				return err
 			}
 
 			for _, u := range uids {
-				hash, err := txn.XID(typeObject, u)
+				hash, err := txn.XID(graphschema.TypeObject, u)
 				if err != nil {
 					return err
 				}
@@ -340,18 +341,18 @@ type headUpdated struct {
 
 func (s *patchStore) registerObject(txn *badgergraph.Txn, c cid.Cid) (uint64, error) {
 	codec, _ := ipfsutil.DecodeCID(c)
-	uid, err := txn.UID(typeObject, c.Bytes())
+	uid, err := txn.UID(graphschema.TypeObject, c.Bytes())
 	if err != nil {
 		return 0, fmt.Errorf("failed to allocate uid for object: %w", err)
 	}
 
-	has, err := txn.HasProperty(uid, pObjectType)
+	has, err := txn.HasProperty(uid, graphschema.PredObjectType)
 	if err != nil {
 		return 0, fmt.Errorf("failed to check object type property: %w", err)
 	}
 
 	if !has {
-		if err := txn.WriteTriple(uid, pObjectType, cid.CodecToStr[codec]); err != nil {
+		if err := txn.WriteTriple(uid, graphschema.PredObjectType, cid.CodecToStr[codec]); err != nil {
 			return 0, fmt.Errorf("failed to store object type: %w", err)
 		}
 	}
@@ -360,7 +361,7 @@ func (s *patchStore) registerObject(txn *badgergraph.Txn, c cid.Cid) (uint64, er
 }
 
 func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid.Cid) ([]*p2p.PeerVersion, error) {
-	ouid, err := txn.UIDRead(typeObject, obj.Bytes())
+	ouid, err := txn.UIDRead(graphschema.TypeObject, obj.Bytes())
 	if err != nil && err != badger.ErrKeyNotFound {
 		return nil, fmt.Errorf("failed to get head: %w", err)
 	}
@@ -368,7 +369,7 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid
 		return nil, err
 	}
 
-	heads, err := txn.ListReverseRelations(pHeadObject, ouid)
+	heads, err := txn.ListReverseRelations(graphschema.PredHeadObject, ouid)
 	if err != nil {
 		return nil, fmt.Errorf("no reverse relation Head -> Peer: %w", err)
 	}
@@ -377,8 +378,8 @@ func (s *patchStore) getHeads(ctx context.Context, txn *badgergraph.Txn, obj cid
 
 	for i, h := range heads {
 		out[i] = &p2p.PeerVersion{}
-		if err := txn.GetPropertyProto(h, pHeadData, out[i]); err != nil {
-			return nil, fmt.Errorf("failed to get property %s: %w", pHeadData, err)
+		if err := txn.GetPropertyProto(h, graphschema.PredHeadData, out[i]); err != nil {
+			return nil, fmt.Errorf("failed to get property %s: %w", graphschema.PredHeadData, err)
 		}
 	}
 

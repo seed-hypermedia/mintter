@@ -30,7 +30,7 @@ Repo layout v1 file tree:
 */
 
 const (
-	currentRepoLayoutVersion = "dev-9" // TODO: when layout is stable set a correct version here.
+	currentRepoLayoutVersion = "dev-10" // TODO: when layout is stable set a correct version here.
 
 	keysDir     = "keys"
 	dbDir       = "db"
@@ -131,10 +131,6 @@ func prepareRepo(path string, log *zap.Logger) (r *repo, err error) {
 	}
 
 	return r, nil
-}
-
-func (r *repo) privKey() crypto.PrivKey {
-	return r.device.priv
 }
 
 func (r *repo) Device() Device {
