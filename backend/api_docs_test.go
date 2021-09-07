@@ -29,12 +29,15 @@ func TestAPICreateDraft(t *testing.T) {
 	require.False(t, doc.CreateTime.AsTime().IsZero())
 }
 
-func TestAPICreateDraft_Update(t *testing.T) {
+func TestAPIUpdatePublicationE2E(t *testing.T) {
 	// Create draft, update content, publish, then update the publication.
+
+	// See: https://www.notion.so/mintter/list-item-issues-with-updates-3d4eef6f3b1a47bbac722772abb5eeb5.
 
 	back := makeTestBackend(t, "alice", true)
 	api := newDocsAPI(back)
 
+	// Create a new draft.
 	ctx := context.Background()
 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
@@ -45,46 +48,61 @@ func TestAPICreateDraft_Update(t *testing.T) {
 	})
 	require.NoError(t, err)
 
+	// Publish draft.
 	pub, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{
 		DocumentId: doc.Id,
 	})
 	require.NoError(t, err)
 	require.NotNil(t, pub)
+	pub.Document.PublishTime = nil
+	testutil.ProtoEqual(t, doc, pub.Document, "published draft doesn't match")
+	require.NotEqual(t, "", pub.Version, "publication must have a version")
 
+	// Create draft from a publication.
 	newDraft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{
 		ExistingDocumentId: doc.Id,
 	})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, doc, newDraft, "draft from publication doesn't match")
 
+	// Check that previous publication is still in the list. Metadata must still be indexed.
+	publist, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, publist.Publications, 1, "previous publication must be in the list after updating")
+	require.Equal(t, pub.Document.Title, publist.Publications[0].Document.Title)
+
+	// Change the content.
 	gotDraft, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, doc, gotDraft, "get draft of a new draft doesn't match")
-
 	gotDraft.Content = "Updated Content"
 	gotDraft.Title = "Updated title"
-
 	updatedDraft, err := api.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: gotDraft})
 	require.NoError(t, err)
+	testutil.ProtoEqual(t, gotDraft, updatedDraft, "can't update draft of a publication")
 
+	// Publish again.
 	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
-
 	updatedDraft.PublishTime = pub2.Document.PublishTime
 	testutil.ProtoEqual(t, updatedDraft, pub2.Document, "publishing new version doesn't match")
 
+	// Check we have no drafts.
 	_, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: doc.Id})
-	require.Error(t, err, "draft must be remove after publishing")
+	require.Error(t, err, "draft must be removed after publishing")
+	drafts, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	require.Len(t, drafts.Documents, 0, "must have no drafts after publishing")
 
+	// Check the most recent publication is returned.
 	gotPub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
-
 	testutil.ProtoEqual(t, pub2, gotPub, "must get updated publication")
 
-	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	// Only the most recent version should appear in the publist.
+	publist, err = api.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
-
-	require.Len(t, list.Publications, 1, "must have published document in the list")
+	require.Len(t, publist.Publications, 1, "must have published document in the list")
 }
 
 func TestAPIListDrafts(t *testing.T) {
