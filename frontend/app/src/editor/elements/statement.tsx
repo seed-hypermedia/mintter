@@ -1,10 +1,10 @@
 import type {EditorPlugin} from '../types'
-import type {Embed, Paragraph, StaticParagraph} from '@mintter/mttast'
+import type {RenderElementProps} from 'slate-react'
 import type {MTTEditor} from '../utils'
 import type {Statement as StatementType} from '@mintter/mttast'
 import type {NodeEntry} from 'slate'
 import {Path, Transforms, Editor} from 'slate'
-import {ReactEditor, useSlateStatic} from 'slate-react'
+import {useReadOnly} from 'slate-react'
 import {
   useMemo,
   forwardRef,
@@ -13,7 +13,6 @@ import {
 import {useHistory, useLocation, useParams} from 'react-router'
 import toast from 'react-hot-toast'
 import {isBlockquote, isEmbed, isGroupContent, isHeading, isStatement} from '@mintter/mttast'
-import {useAccount, usePublication} from '@mintter/client/hooks'
 import {createDraft} from '@mintter/client'
 import {css, styled} from '@mintter/ui/stitches.config'
 import {group} from '@mintter/mttast-builder'
@@ -36,16 +35,16 @@ export const statementStyle = css({
   listStyle: 'none',
   display: 'grid',
   wordBreak: 'break-word',
-  gridTemplateColumns: 'minmax($space$8, auto) 1fr 300px',
+  // gridTemplateColumns: 'minmax($space$8, auto) 1fr',
+  gridTemplateColumns: '$space$8 1fr',
   gridTemplateRows: 'min-content auto',
   gap: 0,
-  gridTemplateAreas: `"controls content annotations"
-". children annotations"`,
-  marginRight: -300,
+  gridTemplateAreas: `"controls content"
+  ". children"`,
   [`& > ${Tools}`]: {
     gridArea: 'controls',
   },
-  "& > [data-element-type='paragraph']": {
+  '& > [data-element-type=paragraph]': {
     gridArea: 'content',
   },
   '& > ul, & > ol': {
@@ -57,72 +56,9 @@ const StatementStyled = styled('li', statementStyle)
 
 export const createStatementPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATEMENT,
-  renderElement({attributes, children, element}) {
-    if (isStatement(element)) {
-      const {docId} = useParams<{docId: string}>()
-      const {send} = useSidepanel()
-      const location = useLocation()
-      const history = useHistory()
-      const isDraft = useMemo(() => location.pathname.includes('editor'), [location.pathname])
-
-      async function onCopy() {
-        await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${docId}/${(element as StatementType).id}`)
-        toast.success('Statement Reference copied successfully', {position: 'top-center'})
-      }
-      async function onStartDraft() {
-        send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${docId}/${element.id}`})
-        try {
-          const newDraft = await createDraft()
-          if (newDraft) {
-            history.push(`/editor/${newDraft.id}`)
-          }
-        } catch (err) {
-          throw Error('new Draft error: ')
-        }
-      }
-
-      // const onEnter = useCallback((event: MouseEvent<HTMLLIElement>) => {
-      //   console.log('onEnter: ', event)
-      // }, [])
-
-      // const onLeave = useCallback((event: MouseEvent<HTMLLIElement>) => {
-      //   console.log('onLeave: ', event)
-      // }, [])
-
-      return (
-        <StatementStyled
-          {...attributes}
-          // onMouseEnter={onEnter} onMouseLeave={onLeave}
-        >
-          <StatementTools element={element} />
-          {!isDraft ? (
-            <ContextMenu.Root>
-              <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
-              <ContextMenu.Content alignOffset={-5}>
-                <ContextMenu.Item onSelect={onCopy}>
-                  <Icon name="Copy" size="1" />
-                  <Text size="2">Copy Statement Reference</Text>
-                </ContextMenu.Item>
-                <ContextMenu.Item
-                  onSelect={() =>
-                    send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${docId}/${element.id}`})
-                  }
-                >
-                  <Icon size="1" name="ArrowBottomRight" />
-                  <Text size="2">Open in Sidepanel</Text>
-                </ContextMenu.Item>
-                <ContextMenu.Item onSelect={onStartDraft}>
-                  <Icon size="1" name="AddCircle" />
-                  <Text size="2">Start a Draft</Text>
-                </ContextMenu.Item>
-              </ContextMenu.Content>
-            </ContextMenu.Root>
-          ) : (
-            children
-          )}
-          {/* <Annotations element={element.children[0]} /> */}
-        </StatementStyled>
-      )
+  renderElement(props) {
+    if (isStatement(props.element)) {
+      return <Statement {...props} />
     }
   },
   configureEditor(editor) {
@@ -171,69 +107,71 @@ export const createStatementPlugin = (): EditorPlugin => ({
   },
 })
 
-function Annotations({element}: {element: Paragraph | StaticParagraph}) {
-  const editor = useSlateStatic()
-  const path = ReactEditor.findPath(editor, element)
-  let annotations = useMemo(() => {
-    return Array.from(
-      Editor.nodes(editor, {
-        at: path,
-        match: isEmbed,
-      }),
-    )
-  }, [element.children.length])
+function Statement({attributes, children, element}: RenderElementProps) {
+  const {docId} = useParams<{docId: string}>()
+  const {send} = useSidepanel()
+  const location = useLocation()
+  const history = useHistory()
+  const isReadOnly = useReadOnly()
+  const isDraft = useMemo(() => location.pathname.includes('editor'), [location.pathname])
+
+  async function onCopy() {
+    await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${docId}/${(element as StatementType).id}`)
+    toast.success('Statement Reference copied successfully', {position: 'top-center'})
+  }
+  async function onStartDraft() {
+    send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${docId}/${element.id}`})
+    try {
+      const newDraft = await createDraft()
+      if (newDraft) {
+        history.push(`/editor/${newDraft.id}`)
+      }
+    } catch (err) {
+      throw Error('new Draft error: ')
+    }
+  }
+
+  // const onEnter = useCallback((event: MouseEvent<HTMLLIElement>) => {
+  //   console.log('onEnter: ', event)
+  // }, [])
+
+  // const onLeave = useCallback((event: MouseEvent<HTMLLIElement>) => {
+  //   console.log('onLeave: ', event)
+  // }, [])
 
   return (
-    <aside>
-      <Box
-        as="ul"
-        contentEditable={false}
-        css={{height: 40, gridArea: 'annotations', userSelect: 'none', margin: 0, padding: 0}}
-      >
-        {annotations.map(([child]) => (
-          <AnnotationItem item={child} />
-        ))}
-      </Box>
-    </aside>
-  )
-}
-
-function AnnotationItem({item}: {item: Embed}) {
-  const [publicationId] = getEmbedIds(item.url)
-  const {data} = usePublication(publicationId)
-  const {data: author} = useAccount(data.document.author, {
-    enabled: !!data.document,
-  })
-
-  return data && author ? (
-    <Box
-      as="li"
-      css={{
-        display: 'block',
-
-        borderRadius: '$2',
-        padding: '$3',
-        '&:hover': {
-          backgroundColor: '$background-muted',
-        },
-      }}
+    <StatementStyled
+      {...attributes}
+      // onMouseEnter={onEnter} onMouseLeave={onLeave}
     >
-      <Text
-        size="3"
-        fontWeight="bold"
-        css={{width: 200, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}
-      >
-        {data.document.title}
-      </Text>
-      <Box css={{display: 'flex', gap: '$2', alignItems: 'center', marginTop: '$2'}}>
-        <Box css={{width: 24, height: 24, backgroundColor: '$background-neutral', borderRadius: '$round'}} />
-        <Text size="2" color="muted">
-          {author?.profile?.alias}
-        </Text>
-      </Box>
-    </Box>
-  ) : (
-    <span>...</span>
+      <StatementTools element={element} />
+      {!isDraft ? (
+        <ContextMenu.Root>
+          <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
+          <ContextMenu.Content alignOffset={-5}>
+            <ContextMenu.Item onSelect={onCopy}>
+              <Icon name="Copy" size="1" />
+              <Text size="2">Copy Statement Reference</Text>
+            </ContextMenu.Item>
+            <ContextMenu.Item
+              onSelect={() =>
+                send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${docId}/${element.id}`})
+              }
+            >
+              <Icon size="1" name="ArrowBottomRight" />
+              <Text size="2">Open in Sidepanel</Text>
+            </ContextMenu.Item>
+            <ContextMenu.Item onSelect={onStartDraft}>
+              <Icon size="1" name="AddCircle" />
+              <Text size="2">Start a Draft</Text>
+            </ContextMenu.Item>
+          </ContextMenu.Content>
+        </ContextMenu.Root>
+      ) : (
+        children
+      )}
+      {/* <Annotations element={element.children[0]} /> */}
+    </StatementStyled>
   )
 }
 

@@ -12,6 +12,8 @@ export const MarkerStyled = styled('div', {
   width: 'auto',
   height: '$space$8',
   display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   position: 'relative',
   overflowX: 'visible',
   flexDirection: 'row-reverse',
@@ -29,12 +31,11 @@ export const MarkerStyled = styled('div', {
     groupType: {
       unorderedList: {
         '&::before': {
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '$space$8',
-          height: '$space$8',
-          content: '●',
-          color: '$background-contrast',
+          width: '$space$2',
+          height: '$space$2',
+          content: '',
+          background: '$background-contrast',
+          borderRadius: '$round',
         },
       },
       orderedList: {

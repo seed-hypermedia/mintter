@@ -1,16 +1,16 @@
+import type {MTTEditor} from './utils'
 import type {FlowContent, Statement} from '@mintter/mttast'
 import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
-import {Marker, MarkerStyled} from './marker'
+import {Marker} from './marker'
 import {Dropdown} from './dropdown'
-import {Slot} from '@radix-ui/react-slot'
 import {Text} from '@mintter/ui/text'
 import {useSlateStatic} from 'slate-react'
 import {ReactEditor} from 'slate-react'
 import {Transforms, Editor, Path} from 'slate'
-import type {MTTEditor} from './utils'
 import {blockquote, code, heading, statement} from '@mintter/mttast-builder'
 import {useReadOnly} from 'slate-react'
+import {Box} from '@mintter/ui/box'
 
 export const Tools = styled('div', {
   height: '100%',
@@ -21,6 +21,7 @@ export const Tools = styled('div', {
   WebkitUserSelect: 'none',
   transition: 'all ease-in-out 0.1s',
   flexDirection: 'row-reverse',
+  width: '$space$8',
 })
 
 // export const Dragger = styled('div', {
@@ -47,7 +48,7 @@ export const ElementDropdown = styled('button', {
   alignItems: 'center',
   zIndex: 2,
   justifyContent: 'center',
-  height: 32,
+  // height: 32,
   borderRadius: '$2',
   opacity: 0,
   transition: 'all ease-in-out 0.1s',
