@@ -25,7 +25,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
     }
   },
   configureEditor: (editor) => {
-    const {normalizeNode, deleteBackward} = editor
+    const {normalizeNode, deleteBackward, insertBreak} = editor
 
     editor.deleteBackward = (unit) => {
       if (resetFlowContent(editor)) return
