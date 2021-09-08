@@ -2,9 +2,18 @@ import {styled} from '@mintter/ui/stitches.config'
 import type {EditorPlugin} from '../types'
 import {StatementTools} from '../statement-tools'
 import {statementStyle} from './statement'
-import {isHeading, isStaticParagraph} from '@mintter/mttast'
+import {
+  isHeading,
+  isStaticParagraph,
+  // isFlowContent,
+  // isStatement,
+} from '@mintter/mttast'
 import {Editor, Element, Node, Transforms} from 'slate'
-import {isFirstChild, resetFlowContent} from '../utils'
+import {
+  isFirstChild,
+  resetFlowContent,
+  // isCollapsed
+} from '../utils'
 import {staticParagraph} from '@mintter/mttast-builder'
 
 export const ELEMENT_HEADING = 'heading'
@@ -29,6 +38,21 @@ export const createHeadingPlugin = (): EditorPlugin => ({
 
     editor.deleteBackward = (unit) => {
       if (resetFlowContent(editor)) return
+      // const {selection} = editor
+      // if (selection && isCollapsed(selection)) {
+      //   const block = Editor.above(editor, {
+      //     match: (n) => isFlowContent(n) && !isStatement(n),
+      //   })
+
+      //   if (block) {
+      //     const [node, path] = block
+
+      //     if (!Node.string(node.children[0])) {
+      //     } else {
+      //       // return
+      //     }
+      //   }
+      // }
       deleteBackward(unit)
     }
 

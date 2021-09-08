@@ -1,7 +1,7 @@
-import 'show-keys'
-import type {FormEvent} from 'react'
+// import 'show-keys'
+import {FormEvent, useEffect, useRef} from 'react'
 import {Box, Button, Text, TextField} from '@mintter/ui'
-import toast from 'react-hot-toast'
+import toastFactory from 'react-hot-toast'
 import {useHistory, useParams} from 'react-router'
 import {Container} from '../components/container'
 import {Separator} from '../components/separator'
@@ -15,17 +15,29 @@ export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
   const client = useQueryClient()
   const history = useHistory()
+  const toast = useRef('')
   const [state, send] = useEditorDraft({
     documentId: docId,
     afterSave: () => {
-      toast.success('Draft saved!', {position: 'top-center', duration: 4000})
+      if (!toast.current) {
+        toast.current = toastFactory.success('Draft saved!', {position: 'top-center', duration: 2000})
+      } else {
+        toastFactory.success('Draft saved!', {position: 'top-center', duration: 2000, id: toast.current})
+      }
     },
     afterPublish: (context: DraftEditorMachineContext) => {
-      toast.success('Draft Published!', {position: 'top-center', duration: 4000})
+      if (!toast.current) {
+        toast.current = toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000})
+      } else {
+        toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000, id: toast.current})
+      }
+
       history.push(`/p/${context.localDraft?.id}`)
     },
     client,
   })
+
+  useEffect(() => {}, [])
 
   const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
 

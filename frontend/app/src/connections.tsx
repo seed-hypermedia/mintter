@@ -25,7 +25,7 @@ export function Connections({onConnect}: any) {
         <Text as="h3" size="7" css={{fontWeight: '$bold'}}>
           Connections
         </Text>
-        {data!.length === 0 ? (
+        {data!.length == 0 ? (
           <Text size="2">no connections available :(</Text>
         ) : (
           <Box as="ul" aria-label="connections" css={{marginTop: '$6', padding: 0}}>
@@ -72,6 +72,7 @@ const slideLeftAndFade = keyframes({
 
 const HoverCardContentStyled = styled(HoverCard.Content, {
   minWidth: 130,
+  maxWidth: 520,
   backgroundColor: 'white',
   borderRadius: 6,
   padding: '$4',
@@ -157,6 +158,7 @@ function AccountItem({account}: AccountItemProps) {
               css={{
                 whiteSpace: 'nowrap',
                 textOverflow: 'ellipsis',
+                overflow: 'hidden',
               }}
             >
               {account.profile?.bio}
@@ -164,10 +166,24 @@ function AccountItem({account}: AccountItemProps) {
             <Text size="1" css={{marginTop: '$3'}}>
               {account.profile?.email}
             </Text>
-            <Text size="1">
+            <Text
+              size="1"
+              css={{
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+                overflow: 'hidden',
+              }}
+            >
               <b>Acc. ID:</b> {account.id}
             </Text>
-            <Text size="1">
+            <Text
+              size="1"
+              css={{
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+                overflow: 'hidden',
+              }}
+            >
               <b>device ID:</b> {Object.keys(account.devices)[0]}
             </Text>
           </Box>

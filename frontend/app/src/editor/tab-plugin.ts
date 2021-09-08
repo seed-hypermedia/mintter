@@ -49,7 +49,7 @@ function moveStatement(editor: Editor, up: boolean) {
 
       if (!isParent(prev) || !prevPath) return
 
-      if (prev.children.length === 1) {
+      if (prev.children.length == 1) {
         Transforms.wrapNodes(
           editor,
           {type: isGroupContent(parent) ? parent.type : 'group', children: []},
@@ -80,7 +80,7 @@ function moveStatement(editor: Editor, up: boolean) {
         }
 
         // if we don't have a group, wrap siblings and then move
-        if (statement?.children.length === 1) {
+        if (statement?.children.length == 1) {
           Transforms.wrapNodes(
             editor,
             {type: isGroupContent(parent) ? parent.type : 'group', children: []},
