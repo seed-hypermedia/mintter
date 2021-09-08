@@ -716,18 +716,31 @@ func (srv *backend) handleLibp2pEvent(ctx context.Context, evt interface{}) erro
 		}
 
 		if supportsMintterProtocol(protos) {
-			srv.log.Debug("MintterPeerConnected",
-				zap.String("peer", e.Peer.String()),
-				zap.String("device", peer.ToCid(e.Peer).String()),
-			)
-			return srv.handleMintterPeer(ctx, e.Peer)
+			return srv.handleMintterPeer(ctx, e)
 		}
 	}
 
 	return nil
 }
 
-func (srv *backend) handleMintterPeer(ctx context.Context, pid peer.ID) error {
+func (srv *backend) handleMintterPeer(ctx context.Context, evt event.EvtPeerIdentificationCompleted) (err error) {
+	log := srv.log.With(
+		zap.String("device", peer.ToCid(evt.Peer).String()),
+	)
+
+	// This will be populated bellow.
+	var account *accounts.Account
+	log.Debug("MintterPeerConnectionStarted")
+	defer func() {
+		log.Debug("MintterPeerConnectionEstablished",
+			zap.String("account", account.Id),
+			zap.String("alias", account.Profile.Alias),
+			zap.Error(err),
+		)
+	}()
+
+	pid := evt.Peer
+
 	srv.p2p.libp2p.Host.ConnManager().Protect(pid, protocolSupportKey)
 
 	conn, err := srv.dialPeer(ctx, pid)
@@ -778,7 +791,7 @@ func (srv *backend) handleMintterPeer(ctx context.Context, pid peer.ID) error {
 		return fmt.Errorf("failed to resolve account %s: %w", aid, err)
 	}
 
-	account, err := accountFromState(state)
+	account, err = accountFromState(state)
 	if err != nil {
 		return err
 	}
