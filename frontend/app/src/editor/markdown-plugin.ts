@@ -13,7 +13,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
     editor.insertText = (text) => {
       const {selection} = editor
 
-      if (text == ' ' && selection && Range.isCollapsed(selection)) {
+      if (text === ' ' && selection && Range.isCollapsed(selection)) {
         const {anchor} = selection
         const block = Editor.above(editor, {
           match: (n) => Editor.isBlock(editor, n),
@@ -31,6 +31,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
             Transforms.select(editor, range)
             Transforms.delete(editor)
             Transforms.setNodes(editor, {type: ELEMENT_UNORDERED_LIST}, {match: isGroupContent})
+            return
           }
         }
 
@@ -45,6 +46,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
             const start = parseInt(beforeText)
 
             Transforms.setNodes(editor, {type: ELEMENT_ORDERED_LIST, start}, {match: isGroupContent})
+            return
           }
         }
 
