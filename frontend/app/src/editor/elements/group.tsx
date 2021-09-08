@@ -12,16 +12,14 @@ export const groupStyle = css({
   margin: 0,
   padding: 0,
   position: 'relative',
+  paddingLeft: 0,
   variants: {
     type: {
       group: {},
       orderedList: {
-        marginLeft: '-$8',
         counterReset: 'section',
       },
-      unorderedList: {
-        marginLeft: '-$8',
-      },
+      unorderedList: {},
     },
   },
 })
