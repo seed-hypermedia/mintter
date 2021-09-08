@@ -1,5 +1,6 @@
 import {styled} from '@mintter/ui/stitches.config'
 import type {EditorPlugin} from '../types'
+import {resetGroupingContent} from '../utils'
 import {groupStyle, removeEmptyGroup} from './group'
 
 export const ELEMENT_ORDERED_LIST = 'orderedList'
@@ -28,13 +29,17 @@ export const createOrderedListPlugin = (): EditorPlugin => ({
     }
   },
   configureEditor(editor) {
-    const {normalizeNode} = editor
+    const {normalizeNode, deleteBackward} = editor
 
     editor.normalizeNode = (entry) => {
       if (removeEmptyGroup(editor, entry)) return
       normalizeNode(entry)
     }
 
+    editor.deleteBackward = (unit) => {
+      if (resetGroupingContent(editor)) return
+      deleteBackward(unit)
+    }
     return editor
   },
 })

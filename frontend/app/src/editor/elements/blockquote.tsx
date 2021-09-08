@@ -1,8 +1,8 @@
 import {isBlockquote} from '@mintter/mttast'
 import {styled} from '@mintter/ui/stitches.config'
-import {StatementTools, Tools} from '../statement-tools'
+import {StatementTools} from '../statement-tools'
 import type {EditorPlugin} from '../types'
-import {turnIntoDefaultFlowContent} from '../utils'
+import {resetFlowContent} from '../utils'
 import {statementStyle} from './statement'
 
 export const ELEMENT_BLOCKQUOTE = 'blockquote'
@@ -27,7 +27,7 @@ export const createBlockquotePlugin = (): EditorPlugin => ({
     const {deleteBackward} = editor
 
     editor.deleteBackward = (unit) => {
-      if (turnIntoDefaultFlowContent(editor)) return
+      if (resetFlowContent(editor)) return
       deleteBackward(unit)
     }
 
