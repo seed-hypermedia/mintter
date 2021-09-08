@@ -1,5 +1,8 @@
+import {isFlowContent, isGroup, isGroupContent} from '@mintter/mttast'
 import {styled} from '@mintter/ui/stitches.config'
+import {Editor} from 'slate'
 import type {EditorPlugin} from '../types'
+import {isCollapsed} from '../utils'
 import {groupStyle, removeEmptyGroup} from './group'
 import {Group} from './group'
 
@@ -19,11 +22,24 @@ export const createUnorderedListPlugin = (): EditorPlugin => ({
     }
   },
   configureEditor(editor) {
-    const {normalizeNode} = editor
+    const {normalizeNode, deleteBackward} = editor
 
     editor.normalizeNode = (entry) => {
       if (removeEmptyGroup(editor, entry)) return
       normalizeNode(entry)
+    }
+
+    editor.deleteBackward = (unit) => {
+      console.log('delete!!')
+      const {selection} = editor
+      if (selection && isCollapsed(selection)) {
+        const list = Editor.above(editor, {
+          match: (n) => isGroupContent(n) && !isGroup(n),
+        })
+        console.log({list})
+        return
+      }
+      deleteBackward(unit)
     }
 
     return editor

@@ -15,9 +15,12 @@ export const MarkerStyled = styled('div', {
   position: 'relative',
   overflowX: 'visible',
   flexDirection: 'row-reverse',
+  color: '$text-muted',
+  fontSize: '$2',
   '&::before': {
     position: 'absolute',
     alignItems: 'center',
+    marginTop: '$1',
     display: 'flex',
     whiteSpace: 'nowrap',
     paddingRight: '$1',
