@@ -32,7 +32,7 @@ type TestVector struct {
 
 var (
 	cfg         config.Config
-	nodeID      = "0226594d21c0862a11168ab07cdbc15e7c7af5ee561b741259e311f1614f4df3b7"
+	expectedID  = "0226594d21c0862a11168ab07cdbc15e7c7af5ee561b741259e311f1614f4df3b7"
 	testEntropy = [aezeed.EntropySize]byte{
 		0x81, 0xb6, 0x37, 0xd8,
 		0x63, 0x59, 0xe6, 0x96,
@@ -215,9 +215,10 @@ func TestStart(t *testing.T) {
 	for _, tt := range tests {
 		for _, subtest := range tt.subtest {
 			t.Run(subtest.subname, func(t *testing.T) {
-				d, err := checkStart(t, tt.lnconf, &subtest.credentials,
+				d, nodeID, err := checkStart(t, tt.lnconf, &subtest.credentials,
 					subtest.newPassword, subtest.removeWalletBeforeTest)
 				require.NoError(t, err, tt.name+". must succeed")
+				require.EqualValues(t, expectedID, nodeID)
 				require.NoError(t, d.Stop(), tt.name+". must succeed")
 				require.NoError(t, d.Restart(&subtest.credentials, subtest.newPassword),
 					tt.name+". must succeed")
@@ -232,30 +233,56 @@ func TestStart(t *testing.T) {
 }
 
 func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
-	newPassword string, removeWalletBeforeTest bool) (*Ldaemon, error) {
+	newPassword string, removeWalletBeforeTest bool) (*Ldaemon, string, error) {
 	t.Helper()
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
 	logger.Named("backend")
-
+	var nodeID = ""
 	d, err := NewLdaemon(logger, lnconf)
 	if err != nil {
-		return d, err
+		return d, nodeID, err
+
 	}
 
 	if removeWalletBeforeTest {
 		path := lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/wallet.db"
 		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
-			return d, fmt.Errorf("Could not remove file: " + path + err.Error())
+			return d, nodeID, fmt.Errorf("Could not remove file: " + path + err.Error())
 		}
 	}
 
 	err = d.Start(credentials, newPassword)
+
 	if err != nil {
-		return d, err
+		return d, nodeID, err
 	} else if d.started == 1 {
-		return d, err
+		//In order for the subscriptions to take effect and write the log accordingly
+		client, err := d.SubscribeEvents()
+		defer client.Cancel()
+		if err != nil {
+			return d, nodeID, err
+		}
+		var i = 0
+		for {
+			select {
+			case u := <-client.Updates():
+				switch update := u.(type) {
+				case DaemonReadyEvent:
+					return d, update.IdentityPubkey, nil
+				}
+			case <-client.Quit():
+				return d, nodeID, fmt.Errorf("Got quit signal")
+			}
+			i++
+			if i < 10 {
+				time.Sleep(1 * time.Second)
+				continue
+			}
+			break
+		}
+		return d, nodeID, fmt.Errorf("Timeout reached waiting for ready event")
 	} else {
-		return d, fmt.Errorf("Daemon not started " + err.Error())
+		return d, nodeID, fmt.Errorf("Daemon not started " + err.Error())
 	}
 }
