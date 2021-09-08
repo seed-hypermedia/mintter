@@ -4,7 +4,7 @@ import {StatementTools} from '../statement-tools'
 import {statementStyle} from './statement'
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
 import {Editor, Element, Node, Transforms} from 'slate'
-import {isFirstChild, turnIntoDefaultFlowContent} from '../utils'
+import {isFirstChild, resetFlowContent} from '../utils'
 import {staticParagraph} from '@mintter/mttast-builder'
 
 export const ELEMENT_HEADING = 'heading'
@@ -28,7 +28,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
     const {normalizeNode, deleteBackward} = editor
 
     editor.deleteBackward = (unit) => {
-      if (turnIntoDefaultFlowContent(editor)) return
+      if (resetFlowContent(editor)) return
       deleteBackward(unit)
     }
 

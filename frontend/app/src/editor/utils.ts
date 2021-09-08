@@ -1,9 +1,10 @@
-import {Range, Editor, Path, Transforms, Text, Node} from 'slate'
 import type {BaseEditor, Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
 import type {ReactEditor} from 'slate-react'
 import type {HistoryEditor} from 'slate-history'
-import {isFlowContent, isStatement} from '@mintter/mttast'
-import {statement} from '@mintter/mttast-builder'
+import type {GroupingContent} from '@mintter/mttast'
+import {Range, Editor, Path, Transforms, Text, Node} from 'slate'
+import {isFlowContent, isGroup, isGroupContent, isStatement} from '@mintter/mttast'
+import {group, statement} from '@mintter/mttast-builder'
 
 export type MTTEditor = BaseEditor & ReactEditor & HistoryEditor
 
@@ -156,7 +157,7 @@ export function removeMark(editor: Editor, key: keyof Omit<Text, 'value'>): void
   }
 }
 
-export function turnIntoDefaultFlowContent(editor: MTTEditor): boolean | undefined {
+export function resetFlowContent(editor: MTTEditor): boolean | undefined {
   const {selection} = editor
   if (selection && isCollapsed(selection)) {
     const block = Editor.above(editor, {
@@ -179,4 +180,25 @@ export function turnIntoDefaultFlowContent(editor: MTTEditor): boolean | undefin
     }
     return false
   }
+}
+
+export function resetGroupingContent(editor: MTTEditor): boolean {
+  const {selection} = editor
+  if (selection && isCollapsed(selection)) {
+    const list = Editor.above<GroupingContent>(editor, {
+      match: (n) => isGroupContent(n) && !isGroup(n),
+    })
+    if (list) {
+      const [listNode, listPath] = list
+      if (!Node.string(listNode)) {
+        Editor.withoutNormalizing(editor, () => {
+          Transforms.insertNodes(editor, group(listNode.children), {at: Path.next(listPath)})
+          Transforms.removeNodes(editor, {at: listPath})
+          Transforms.select(editor, listPath.concat(0))
+        })
+        return true
+      }
+    }
+  }
+  return false
 }
