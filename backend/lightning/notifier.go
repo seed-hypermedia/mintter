@@ -86,13 +86,16 @@ func (d *Ldaemon) startRpcClients(macBytes []byte) error {
 	return nil
 }
 
+// This function asynchronously subscribe to important events such as channels updates, peer updates, transactions updates,
+// invoices updates, chain synchronization updates and channel acceptor updates
 func (d *Ldaemon) startSubscriptions() error {
 	var i = 0
 	//We need time for the LND to complete init once the rest of the servers (except from the unlocker) to be up and running
 	for {
-		time.Sleep(time.Duration((maxConnAttemps - i)) * time.Second)
+		time.Sleep(waitSecondsPerAttempt * time.Second)
 		info, chainErr := d.lightningClient.GetInfo(context.Background(), &lnrpc.GetInfoRequest{})
 		if chainErr != nil {
+			//A typical error is that server is still waking up
 			i++
 			if i < maxConnAttemps {
 				continue
@@ -106,6 +109,7 @@ func (d *Ldaemon) startSubscriptions() error {
 		break
 	}
 
+	//Once the general info server returns, we consider it to be safe to start connecting to other servers
 	ctx, cancel := context.WithCancel(context.Background())
 
 	d.wg.Add(6)
@@ -129,6 +133,9 @@ func (d *Ldaemon) startSubscriptions() error {
 	return nil
 }
 
+// By subscribing to this, every time someone wants to open a channel with us, we get called. In this call
+// we decide wether we accept the incoming channel or not. The function that decides can be set calling
+// SetAcceptorCallback function. The default is allowing all connections
 func (d *Ldaemon) subscribeChannelAcceptor(ctx context.Context, client lnrpc.LightningClient) error {
 	defer d.wg.Done()
 
@@ -297,7 +304,7 @@ func (d *Ldaemon) syncToChain(ctx context.Context) error {
 			d.log.Info("Synchronized to chain finshed", zap.Uint32("BlockHeight", chainInfo.BlockHeight))
 			break
 		}
-		time.Sleep(time.Second * 3)
+		time.Sleep(time.Second * 5)
 	}
 	d.ntfnServer.SendUpdate(ChainSyncedEvent{})
 	return nil

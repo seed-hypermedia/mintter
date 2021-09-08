@@ -72,4 +72,5 @@ type LND struct {
 	NoNetBootstrap bool   `help:"If true, then automatic network bootstrapping will not be attempted."`
 	Alias          string `help:"The node alias. Used as a moniker by peers and intelligence services" default:"MintterServer"`
 	Color          string `help:"The color of the node in hex format (i.e. '#3399FF'). Used to customize node appearance in intelligence services" default:"#7193FE"`
+	Autopilot      bool   `help:"Enable Autopilot so the daemon can manage liquidity on its own"`
 }

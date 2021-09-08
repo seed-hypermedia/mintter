@@ -153,7 +153,7 @@ func (d *Ldaemon) unlockWallet(Passphrase string, StatelessInit bool) error {
 	if len(Passphrase) == 0 {
 		return fmt.Errorf("you must provide a non null password")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	unlock_req := &lnrpc.UnlockWalletRequest{
@@ -192,7 +192,7 @@ func (d *Ldaemon) changeWalletPassPhrase(OldPassphrase string,
 		return nil, fmt.Errorf("you new password must be different from the old one")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	pass_req := &lnrpc.ChangePasswordRequest{
@@ -220,12 +220,8 @@ func (d *Ldaemon) changeWalletPassPhrase(OldPassphrase string,
 // serialized admin macaroon to use in all rpc calls. If the StatelessInit param
 // is false, the macaroon is also written to disk.
 func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
-	/*FIXME do we really need these locks here?
-	d.Lock()
-	defer d.Unlock()
-	*/
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	// if the user wants to init a wallet from an entropy instead of
