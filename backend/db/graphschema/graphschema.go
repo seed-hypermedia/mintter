@@ -41,7 +41,7 @@ var (
 	PredDocumentCreateTime = badgergraph.Predicate{
 		Name:     "document/createTime",
 		HasIndex: true,
-		Type:     badgergraph.ValueTypeTime, // TODO: introduce Time value type to store it natively.
+		Type:     badgergraph.ValueTypeTime,
 	}
 	PredDocumentUpdateTime = badgergraph.Predicate{
 		Name:     "document/updateTime",
