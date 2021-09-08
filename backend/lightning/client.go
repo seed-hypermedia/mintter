@@ -236,8 +236,7 @@ func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 			SeedEntropy:      WalletSecurity.SeedEntropy,
 		}
 		if seed_res, err := d.unlockerClient.GenSeed(ctx, getSeedReq); err != nil {
-			d.log.Error("Could not get seed from parameters provided", zap.String("err", err.Error()))
-			return nil, err
+			return nil, fmt.Errorf("could not get seed from parameters provided %s", err.Error())
 		} else {
 			WalletSecurity.AezeedMnemonics = seed_res.CipherSeedMnemonic
 		}
@@ -268,10 +267,8 @@ func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 		StatelessInit:      WalletSecurity.StatelessInit,
 	}
 	if init_res, err := d.unlockerClient.InitWallet(ctx, initWalletrequest); err != nil {
-		d.log.Error("Could not InitWallet response from params provided",
-			zap.Int32("RecoveryWindow", WalletSecurity.RecoveryWindow),
-			zap.Bool("StatelessInit", WalletSecurity.StatelessInit))
-		return nil, err
+		return nil, fmt.Errorf("could not InitWallet response from params provided RecoveryWindow: %d StatelessInit: %t err: %s",
+			WalletSecurity.RecoveryWindow, WalletSecurity.StatelessInit, err.Error())
 	} else {
 		return init_res.AdminMacaroon, nil
 	}

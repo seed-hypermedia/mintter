@@ -87,16 +87,24 @@ func (d *Ldaemon) startRpcClients(macBytes []byte) error {
 }
 
 func (d *Ldaemon) startSubscriptions() error {
-
-	info, chainErr := d.lightningClient.GetInfo(context.Background(), &lnrpc.GetInfoRequest{})
-	if chainErr != nil {
-		d.log.Warn("Failed get chain info:", zap.String("wrn", chainErr.Error()))
-		return chainErr
+	var i = 0
+	//We need time for the LND to complete init once the rest of the servers (except from the unlocker) to be up and running
+	for {
+		time.Sleep(time.Duration((maxConnAttemps - i)) * time.Second)
+		info, chainErr := d.lightningClient.GetInfo(context.Background(), &lnrpc.GetInfoRequest{})
+		if chainErr != nil {
+			i++
+			if i < maxConnAttemps {
+				continue
+			}
+			d.log.Warn("Failed get chain info:", zap.String("wrn", chainErr.Error()))
+			return chainErr
+		}
+		d.Lock()
+		d.nodePubkey = info.IdentityPubkey
+		d.Unlock()
+		break
 	}
-
-	d.Lock()
-	d.nodePubkey = info.IdentityPubkey
-	d.Unlock()
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -114,7 +122,7 @@ func (d *Ldaemon) startSubscriptions() error {
 		cancel()
 	}()
 
-	if err := d.ntfnServer.SendUpdate(DaemonReadyEvent{IdentityPubkey: info.IdentityPubkey}); err != nil {
+	if err := d.ntfnServer.SendUpdate(DaemonReadyEvent{IdentityPubkey: d.nodePubkey}); err != nil {
 		return err
 	}
 	d.log.Info("Daemon ready! subscriptions started")

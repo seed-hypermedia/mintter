@@ -27,6 +27,7 @@ import (
 
 const (
 	alreadyExistsError = "wallet already exists"
+	maxConnAttemps     = 5
 )
 
 var (
@@ -141,6 +142,7 @@ func (d *Ldaemon) notifyWhenReady(readyChan chan interface{}) {
 			go d.stopDaemon()
 		}
 	case <-d.quitChan:
+		d.log.Info("Quit chan called")
 	}
 }
 
@@ -396,37 +398,44 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 		d.unlockerClient = lnrpc.NewWalletUnlockerClient(grpcCon)
 		d.Unlock()
 	}
+	//We need time for LND to spin up unlocker server and we dont have the ready signal in ready channel inside lnd(like breez)
+	var i = 0
+	for {
+		time.Sleep(time.Duration((maxConnAttemps - i)) * time.Second)
+		if macaroon, err := d.initWallet(WalletSecurity); err != nil {
+			if err.Error() == alreadyExistsError {
+				if len(NewPassword) != 0 {
+					if macaroon, err = d.changeWalletPassPhrase(WalletSecurity.WalletPassphrase, NewPassword,
+						WalletSecurity.StatelessInit); err != nil {
+						d.log.Error("Could not change wallet password before unlock", zap.String("err", err.Error()))
+						return lnd_config, macaroon, err
+					} else {
+						WalletSecurity.WalletPassphrase = NewPassword
+					}
 
-	//FIXME: We need time for LND to spin up unlocker server and we dont have the channel ready inside (like breez)
-	time.Sleep(5 * time.Second)
-	if macaroon, err := d.initWallet(WalletSecurity); err != nil {
-		if err.Error() == alreadyExistsError {
-			if len(NewPassword) != 0 {
-				if macaroon, err = d.changeWalletPassPhrase(WalletSecurity.WalletPassphrase, NewPassword,
-					WalletSecurity.StatelessInit); err != nil {
-					d.log.Error("Could not change wallet password before unlock", zap.String("err", err.Error()))
-					return lnd_config, macaroon, err
-				} else {
-					WalletSecurity.WalletPassphrase = NewPassword
 				}
-
+				return lnd_config, macaroon, d.unlockWallet(WalletSecurity.WalletPassphrase,
+					WalletSecurity.StatelessInit)
+			} else {
+				i++
+				if i < maxConnAttemps {
+					continue
+				}
+				d.log.Error("Could not init wallet", zap.String("err", err.Error()))
+				return lnd_config, macaroon, err
 			}
-			return lnd_config, macaroon, d.unlockWallet(WalletSecurity.WalletPassphrase,
-				WalletSecurity.StatelessInit)
+
 		} else {
-			d.log.Error("Could not init wallet", zap.String("err", err.Error()))
+			d.startRpcClients(macaroon)
+			if readyChan != nil {
+				readyChan <- struct{}{}
+			} else {
+				err := fmt.Errorf("could not send ready signal and start subscriptions accordingly")
+				d.log.Error("CError sending signal", zap.String("err", err.Error()))
+				return lnd_config, macaroon, err
+			}
 			return lnd_config, macaroon, err
 		}
-
-	} else {
-		//FIXME: Ready signal should go inside LND main function after server inirialization (see breez project LND harcoded code)
-		time.Sleep(3 * time.Second)
-		d.startRpcClients(macaroon)
-		if readyChan != nil {
-			readyChan <- struct{}{}
-		}
-
-		return lnd_config, macaroon, err
 	}
 
 }
@@ -444,8 +453,4 @@ func GetLogWriter(workingDir string) (*build.RotatingLogWriter, error) {
 		logWriter = buildLogWriter
 	})
 	return logWriter, initError
-}
-
-func initLog(workingDir string) {
-
 }
