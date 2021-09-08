@@ -1,6 +1,6 @@
 import type {IThemeRegistration} from 'shiki'
 import type {EditorPlugin} from '../types'
-import type {MTTEditor} from '../utils'
+import {MTTEditor, turnIntoDefaultFlowContent} from '../utils'
 import {setCDN, getHighlighter} from 'shiki'
 import {Box} from '@mintter/ui/box'
 import {styled} from '@mintter/ui/stitches.config'
@@ -38,7 +38,13 @@ export const createCodePlugin = async (props: CodePluginProps = {}): Promise<Edi
   return {
     name: ELEMENT_CODE,
     configureEditor(e) {
+      const {deleteBackward} = e
+      e.deleteBackward = (unit) => {
+        if (turnIntoDefaultFlowContent(editor)) return
+        deleteBackward(unit)
+      }
       editor = e
+
       return e
     },
     renderElement({attributes, children, element}) {

@@ -1,11 +1,11 @@
-import {styled} from '@mintter/ui/stitches.config'
+import type {StaticParagraph as StaticParagraphType} from '@mintter/mttast'
 import type {EditorPlugin} from '../types'
+import type {TextProps} from '@mintter/ui/text'
+import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {Editor, Node, Path, Transforms} from 'slate'
-import type {NodeEntry} from 'slate'
-import type {Heading} from '@mintter/mttast'
-import {ELEMENT_HEADING} from './heading'
+import {isHeading, isStaticParagraph} from '@mintter/mttast'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 import {createId, statement} from '@mintter/mttast-builder'
 
@@ -15,7 +15,11 @@ const StaticParagraph = styled(Text, {
   fontWeight: '$bold',
 })
 
-const headingMap = {
+const headingMap: {
+  [key: number | string]: Pick<TextProps, 'size'> & {
+    as: 'h2' | 'h3' | 'h4' | 'h5' | 'p'
+  }
+} = {
   2: {
     as: 'h2',
     size: 8,
@@ -41,16 +45,18 @@ const headingMap = {
 export const createStaticParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATIC_PARAGRAPH,
   renderElement({attributes, children, element}) {
-    const editor = useSlateStatic()
-    const level = useHeadingLevel(element)
-    if (element.type === ELEMENT_STATIC_PARAGRAPH) {
+    const level = useHeadingLevel(element as StaticParagraphType)
+    if (isStaticParagraph(element)) {
       const sizeProps = headingMap[level ?? 'default']
       return (
         <StaticParagraph
-          {...sizeProps}
           data-element-type={element.type}
-          css={{fontWeight: level ? '$bold' : '$regular', lineHeight: 2}}
+          {...sizeProps}
           {...attributes}
+          css={{
+            marginTop: '1.5em',
+            fontWeight: '$bold',
+          }}
         >
           {children}
         </StaticParagraph>
@@ -66,10 +72,10 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
-      if (node.type == ELEMENT_STATIC_PARAGRAPH) {
+      if (isStaticParagraph(node)) {
         const parent = Node.parent(editor, path)
 
-        if (parent.type != ELEMENT_HEADING) {
+        if (!isHeading(parent)) {
           Transforms.setNodes(editor, {type: ELEMENT_PARAGRAPH}, {at: path})
           return
         }
@@ -94,13 +100,13 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
   },
 })
 
-function useHeadingLevel(element) {
+function useHeadingLevel(element: StaticParagraphType) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
-  const parent: NodeEntry<Heading> = Editor.parent(editor, path)
+  const parent = Editor.parent(editor, path)
   if (parent) {
     const [node, path] = parent
-    if (node.type == ELEMENT_HEADING) {
+    if (isHeading(node)) {
       return path.length
     }
   }

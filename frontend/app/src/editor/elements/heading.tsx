@@ -15,7 +15,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
   name: ELEMENT_HEADING,
   renderElement({attributes, children, element}) {
     // TODO: compute heading level
-    if (element.type === ELEMENT_HEADING) {
+    if (isHeading(element)) {
       return (
         <Heading {...attributes}>
           <StatementTools element={element} />
