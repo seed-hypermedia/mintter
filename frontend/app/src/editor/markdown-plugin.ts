@@ -13,7 +13,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
     editor.insertText = (text) => {
       const {selection} = editor
 
-      if (text === ' ' && selection && Range.isCollapsed(selection)) {
+      if (text == ' ' && selection && Range.isCollapsed(selection)) {
         const {anchor} = selection
         const block = Editor.above(editor, {
           match: (n) => Editor.isBlock(editor, n),
@@ -51,7 +51,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
         }
 
         // // turn statement into
-        // if (beforeText === '#') {
+        // if (beforeText == '#') {
         //   const above = Editor.above(editor, {match: isStatement, mode: 'lowest'})
 
         //   if (above && !isOrderedList(above[1])) {
@@ -60,7 +60,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
         //     Transforms.setNodes(editor, {type: ELEMENT_HEADING}, {match: isStatement})
         //   }
         // }
-        insertText(text)
+        // insertText(text)
       }
       insertText(text)
     }

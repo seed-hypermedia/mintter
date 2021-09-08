@@ -2,7 +2,7 @@ import {useEffect, useMemo} from 'react'
 import {useHistory, useParams} from 'react-router-dom'
 import type {Document} from '@mintter/client'
 import {createDraft} from '@mintter/client'
-import {usePublication} from '@mintter/client/hooks'
+import {useAccount, useInfo, usePublication} from '@mintter/client/hooks'
 import {Text, Box, Button} from '@mintter/ui'
 import {Container} from '../components/container'
 import {AppSpinner} from '../components/app-spinner'
@@ -16,6 +16,14 @@ export default function Publication(): JSX.Element {
   const history = useHistory()
   const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
   const {status, data, error} = usePublication(docId)
+  const {data: author} = useAccount(data.document.author, {
+    enabled: !!data?.document?.author,
+  })
+  const {data: myInfo} = useInfo()
+
+  const canUpdate = useMemo(() => {
+    return author?.id == myInfo?.accountId
+  }, [author, myInfo])
 
   useEnableSidepanel()
 
@@ -77,9 +85,11 @@ export default function Publication(): JSX.Element {
           paddingHorizontal: '$5',
         }}
       >
-        <Button color="primary" shape="pill" size="2" onClick={handleUpdate}>
-          UPDATE
-        </Button>
+        {canUpdate && (
+          <Button color="primary" shape="pill" size="2" onClick={handleUpdate}>
+            UPDATE
+          </Button>
+        )}
         <Button
           size="1"
           color="muted"
@@ -102,6 +112,10 @@ export default function Publication(): JSX.Element {
 }
 
 function PublicationHeader({document}: {document?: Document}) {
+  const {data: author} = useAccount(document?.author, {
+    enabled: !!document?.author,
+  })
+
   return document ? (
     <Box
       css={{
@@ -111,17 +125,19 @@ function PublicationHeader({document}: {document?: Document}) {
         position: 'relative',
       }}
     >
-      {/* <Box css={{display: 'flex', gap: '$4', alignItems: 'center'}}>
-        <Box
-          css={{
-            background: '$background-neutral',
-            width: 24,
-            height: 24,
-            borderRadius: '$round',
-          }}
-        />
-        <Text size="2"></Text>
-      </Box> */}
+      {author && (
+        <Box css={{display: 'flex', gap: '$4', alignItems: 'center'}}>
+          <Box
+            css={{
+              background: '$background-neutral',
+              width: 24,
+              height: 24,
+              borderRadius: '$round',
+            }}
+          />
+          <Text size="2">{author.profile?.alias}</Text>
+        </Box>
+      )}
       <Text size="9" css={{fontWeight: '$bold'}}>
         {document.title}
       </Text>
