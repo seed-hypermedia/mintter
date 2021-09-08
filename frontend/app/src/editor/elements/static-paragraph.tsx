@@ -7,7 +7,8 @@ import {ReactEditor, useSlateStatic} from 'slate-react'
 import {Editor, Node, Path, Transforms} from 'slate'
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
 import {ELEMENT_PARAGRAPH} from './paragraph'
-import {createId, statement} from '@mintter/mttast-builder'
+import {createId, paragraph, statement, text} from '@mintter/mttast-builder'
+import {isCollapsed} from '../utils'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
@@ -68,7 +69,34 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
    * @body this is an example TODO from a PR
    */
   configureEditor: (editor) => {
-    const {normalizeNode} = editor
+    const {normalizeNode, insertBreak} = editor
+
+    editor.insertBreak = () => {
+      const {selection} = editor
+
+      if (selection && isCollapsed(selection)) {
+        const element = Editor.above(editor, {
+          match: isStaticParagraph,
+        })
+
+        if (element) {
+          const [, path] = element
+          if (Editor.isStart(editor, selection.anchor, path)) {
+            console.log('is Start!')
+            Editor.withoutNormalizing(editor, () => {
+              Transforms.insertNodes(editor, statement({id: createId()}, [paragraph([text('')])]), {
+                at: Path.parent(path),
+              })
+              Transforms.select(editor, Path.next(Path.parent(path)).concat(0))
+              Transforms.collapse(editor, {edge: 'start'})
+            })
+
+            return
+          }
+        }
+      }
+      insertBreak()
+    }
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
