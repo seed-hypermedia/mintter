@@ -728,15 +728,11 @@ func (srv *backend) handleMintterPeer(ctx context.Context, evt event.EvtPeerIden
 		zap.String("device", peer.ToCid(evt.Peer).String()),
 	)
 
-	// This will be populated bellow.
-	var account *accounts.Account
-	log.Debug("MintterPeerConnectionStarted")
+	log.Debug("MintterPeerConnected")
 	defer func() {
-		log.Debug("MintterPeerConnectionEstablished",
-			zap.String("account", account.Id),
-			zap.String("alias", account.Profile.Alias),
-			zap.Error(err),
-		)
+		if err != nil {
+			log.Warn("MintterPeerConnectionFailed", zap.Error(err))
+		}
 	}()
 
 	pid := evt.Peer
@@ -791,10 +787,15 @@ func (srv *backend) handleMintterPeer(ctx context.Context, evt event.EvtPeerIden
 		return fmt.Errorf("failed to resolve account %s: %w", aid, err)
 	}
 
-	account, err = accountFromState(state)
+	account, err := accountFromState(state)
 	if err != nil {
 		return err
 	}
+
+	log.Debug("MintterPeerConnectionEstablished",
+		zap.String("account", account.Id),
+		zap.String("alias", account.Profile.Alias),
+	)
 
 	deviceID := peer.ToCid(pid)
 	if _, ok := account.Devices[deviceID.String()]; !ok {
