@@ -112,7 +112,7 @@ function Statement({attributes, children, element}: RenderElementProps) {
   const {send} = useSidepanel()
   const location = useLocation()
   const history = useHistory()
-  const isDraft = useMemo(() => location.pathname.includes('editor'), [location.pathname])
+  const isDraft = useMemo(() => location.pathname.includes('editor'), [location])
 
   async function onCopy() {
     await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${docId}/${(element as StatementType).id}`)
