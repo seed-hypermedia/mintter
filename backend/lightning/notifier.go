@@ -68,7 +68,8 @@ func (d *Ldaemon) SubscribeEvents() (*subscribe.Client, error) {
 
 func (d *Ldaemon) startRpcClients(macBytes []byte) error {
 	var err error
-	grpcCon, err := newLightningClient(false, macBytes, d.cfg.LndDir, d.cfg.Network, d.cfg.RawRPCListeners[0])
+
+	grpcCon, err := newLightningClient(false, macBytes, "", d.cfg.LndDir+"/"+defaultTLSCertFilename, d.cfg.RawRPCListeners[0])
 	if err != nil {
 		return err
 	}
@@ -147,7 +148,10 @@ func (d *Ldaemon) subscribeChannelAcceptor(ctx context.Context, client lnrpc.Lig
 	for {
 		request, err := channelAcceptorClient.Recv()
 		if err == io.EOF || ctx.Err() == context.Canceled {
-			d.log.Error("channelAcceptorClient cancelled, shutting down", zap.String("err", err.Error()))
+			d.log.Warn("channelAcceptorClient cancelled, shutting down", zap.String("err", err.Error()))
+			return nil
+		} else if err != nil {
+			d.log.Error("Unexpected error in channelAcceptor subscriptions", zap.String("err", err.Error()))
 			return err
 		}
 
@@ -190,7 +194,10 @@ func (d *Ldaemon) subscribePeers(ctx context.Context, client lnrpc.LightningClie
 	for {
 		notification, err := subscription.Recv()
 		if err == io.EOF || ctx.Err() == context.Canceled {
-			d.log.Error("SubscribePeers cancelled, shutting down", zap.String("err", err.Error()))
+			d.log.Warn("subscribePeers cancelled, shutting down", zap.String("err", err.Error()))
+			return nil
+		} else if err != nil {
+			d.log.Error("Unexpected error in peers subscriptions", zap.String("err", err.Error()))
 			return err
 		}
 
@@ -221,7 +228,11 @@ func (d *Ldaemon) subscribeChannels(ctx context.Context, client lnrpc.LightningC
 	for {
 		notification, err := subscription.Recv()
 		if err == io.EOF || ctx.Err() == context.Canceled {
-			d.log.Error("subscribeChannels cancelled, shutting down", zap.String("err", err.Error()))
+			d.log.Warn("subscribeChannels cancelled, shutting down", zap.String("err", err.Error()))
+			return nil
+		} else if err != nil {
+			d.log.Error("Unexpected error in channel subscriptions", zap.String("err", err.Error()))
+			return err
 		}
 		d.log.Info("Channel event received", zap.String("type", string(notification.Type)))
 		if err != nil {
@@ -248,7 +259,10 @@ func (d *Ldaemon) subscribeTransactions(ctx context.Context) error {
 	for {
 		notification, err := stream.Recv()
 		if err == io.EOF || ctx.Err() == context.Canceled {
-			d.log.Error("subscribeTransactions cancelled, shutting down", zap.String("err", err.Error()))
+			d.log.Warn("subscribeTransactions cancelled, shutting down", zap.String("err", err.Error()))
+			return nil
+		} else if err != nil {
+			d.log.Error("Unexpected error in transactions subscriptions", zap.String("err", err.Error()))
 			return err
 		}
 		d.log.Info("SubscribeTransactions received new transaction")
@@ -276,7 +290,10 @@ func (d *Ldaemon) subscribeInvoices(ctx context.Context) error {
 	for {
 		invoice, err := stream.Recv()
 		if err == io.EOF || ctx.Err() == context.Canceled {
-			d.log.Error("subscribeInvoices cancelled, shutting down", zap.String("err", err.Error()))
+			d.log.Warn("subscribeInvoices cancelled, shutting down", zap.String("err", err.Error()))
+			return nil
+		} else if err != nil {
+			d.log.Error("Unexpected error in invoices subscriptions", zap.String("err", err.Error()))
 			return err
 		}
 		if err != nil {
@@ -292,7 +309,10 @@ func (d *Ldaemon) syncToChain(ctx context.Context) error {
 	defer d.wg.Done()
 	for {
 		chainInfo, chainErr := d.lightningClient.GetInfo(ctx, &lnrpc.GetInfoRequest{})
-		if chainErr != nil {
+		if ctx.Err() == context.Canceled {
+			d.log.Warn("syncToChain cancelled, shutting down")
+			return nil
+		} else if chainErr != nil {
 			d.log.Warn("Failed get chain info", zap.String("err", chainErr.Error()))
 			return chainErr
 		}

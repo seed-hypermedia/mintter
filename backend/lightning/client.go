@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/lightningnetwork/lnd/lnrpc"
@@ -134,21 +132,57 @@ func (d *Ldaemon) NodePubkey() string {
 	return d.nodePubkey
 }
 
-// APIClient returns the interface to query the daemon.
+// APIClient returns the interface to query the daemon. This is the most general client
 func (d *Ldaemon) APIClient() lnrpc.LightningClient {
 	d.Lock()
 	defer d.Unlock()
 	return d.lightningClient
 }
 
+func (d *Ldaemon) RouterClient() routerrpc.RouterClient {
+	d.Lock()
+	defer d.Unlock()
+	return d.routerClient
+}
+
+func (d *Ldaemon) WalletKitClient() walletrpc.WalletKitClient {
+	d.Lock()
+	defer d.Unlock()
+	return d.walletKitClient
+}
+
+func (d *Ldaemon) ChainNotifierClient() chainrpc.ChainNotifierClient {
+	d.Lock()
+	defer d.Unlock()
+	return d.chainNotifierClient
+}
+
+func (d *Ldaemon) SignerClient() signrpc.SignerClient {
+	d.Lock()
+	defer d.Unlock()
+	return d.signerClient
+}
+
+func (d *Ldaemon) InvoicesClient() invoicesrpc.InvoicesClient {
+	d.Lock()
+	defer d.Unlock()
+	return d.invoicesClient
+}
+
+// The provided function has to decide whether to accetp (return true) or not (return false)
+// a channel request based on the information provided by the rpc request struct. The callback
+// will be called whenever the node receives a new channel request.
+func (d *Ldaemon) SetAcceptorCallback(callback func(req *lnrpc.ChannelAcceptRequest) bool) {
+	d.Lock()
+	defer d.Unlock()
+
+	acceptorCallback = callback
+}
+
 // unlockWallet unlocks an existing wallet provided a valid
 // passphrase. If the StatelessInit param is false,
 // a macaroon is also written to disk.
 func (d *Ldaemon) unlockWallet(Passphrase string, StatelessInit bool) error {
-	/*FIXME do we really need these locks here?
-	d.Lock()
-	defer d.Unlock()
-	*/
 
 	if len(Passphrase) == 0 {
 		return fmt.Errorf("you must provide a non null password")
@@ -271,55 +305,28 @@ func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 
 }
 
-func (d *Ldaemon) RouterClient() routerrpc.RouterClient {
-	d.Lock()
-	defer d.Unlock()
-	return d.routerClient
-}
-
-func (d *Ldaemon) WalletKitClient() walletrpc.WalletKitClient {
-	d.Lock()
-	defer d.Unlock()
-	return d.walletKitClient
-}
-
-func (d *Ldaemon) ChainNotifierClient() chainrpc.ChainNotifierClient {
-	d.Lock()
-	defer d.Unlock()
-	return d.chainNotifierClient
-}
-
-func (d *Ldaemon) SignerClient() signrpc.SignerClient {
-	d.Lock()
-	defer d.Unlock()
-	return d.signerClient
-}
-
-func (d *Ldaemon) InvoicesClient() invoicesrpc.InvoicesClient {
-	d.Lock()
-	defer d.Unlock()
-	return d.invoicesClient
-}
-
-// The provided function has to decide whether to accetp (return true) or not (return false)
-// a channel request based on the information provided by the rpc request struct. The callback
-// will be called whenever the node receives a new channel request.
-func (d *Ldaemon) SetAcceptorCallback(callback func(req *lnrpc.ChannelAcceptRequest) bool) {
-	d.Lock()
-	defer d.Unlock()
-
-	acceptorCallback = callback
-}
-
-func newLightningClient(noMacaroon bool, macBytes []byte, appWorkingDir string, network string, host string) (*grpc.ClientConn, error) {
+// This function returns a gRPC client with the required credentials. If noMacaroon flag is set, then the RPC wont include
+// any macaroon. This only makes sense at initialization (create wallet or change password) since the admin.macaroon is not baked yet
+// Any other situation is considered risky. If noMacaroon flag is unset, then you can either provide the macaroon in binary or giving
+// the full path to find it in disk. TLS Certification full path is mandatory (with or without macaroon), as well as host IP:port
+func newLightningClient(noMacaroon bool, macBytes []byte, macPath string, certPath string, host string) (*grpc.ClientConn, error) {
 	var err error
-	var tlsCertPath = ""
+	var i = 0
 
-	if appWorkingDir != "" {
-		tlsCertPath = filepath.Join(appWorkingDir, defaultTLSCertFilename)
+	// If its the first time, usualy the lnd autocert is working in another goroutine so we wait a bit
+	for {
+		if info, err := os.Stat(certPath); os.IsNotExist(err) || info.Size() == 0 {
+			i++
+			if i > maxConnAttemps {
+				return nil, fmt.Errorf("We could find a valid certificate in " + certPath)
+			}
+			time.Sleep(1 * time.Second)
+		} else {
+			break
+		}
 	}
 
-	creds, err := credentials.NewClientTLSFromFile(tlsCertPath, "")
+	creds, err := credentials.NewClientTLSFromFile(certPath, "")
 	if err != nil {
 		return nil, err
 	}
@@ -332,15 +339,17 @@ func newLightningClient(noMacaroon bool, macBytes []byte, appWorkingDir string, 
 	if !noMacaroon {
 
 		mac := &macaroon.Macaroon{}
-		if len(macBytes) == 0 && appWorkingDir != "" && network != "" {
-			macaroonDir := strings.Join([]string{appWorkingDir, "data", "chain", "bitcoin", network}, "/")
-			macPath := filepath.Join(macaroonDir, defaultMacaroonFilename)
+		if len(macBytes) == 0 && macPath != "" {
+
 			if macBytes, err = ioutil.ReadFile(macPath); err != nil {
 				return nil, err
 			}
-		}
-		if err = mac.UnmarshalBinary(macBytes); err != nil {
-			return nil, err
+		} else if len(macBytes) != 0 {
+			if err = mac.UnmarshalBinary(macBytes); err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, fmt.Errorf("No macaroon path provided nor macaroon binary. you Must provide one of them")
 		}
 
 		// Now we append the macaroon credentials to the dial options.

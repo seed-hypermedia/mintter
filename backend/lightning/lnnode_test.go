@@ -79,7 +79,6 @@ type subset struct {
 	credentials            WalletSecurity
 	newPassword            string
 	removeWalletBeforeTest bool
-	getID                  bool
 }
 
 func TestStart(t *testing.T) {
@@ -198,15 +197,6 @@ func TestStart(t *testing.T) {
 					newPassword:            "testtesti",
 					removeWalletBeforeTest: false,
 				},
-				{
-					subname: "Get node ID",
-					credentials: WalletSecurity{
-						WalletPassphrase: "testtesti",
-					},
-					newPassword:            "",
-					removeWalletBeforeTest: false,
-					getID:                  true,
-				},
 			},
 		},
 	}
@@ -222,9 +212,6 @@ func TestStart(t *testing.T) {
 				require.NoError(t, d.Stop(), tt.name+". must succeed")
 				require.NoError(t, d.Restart(&subtest.credentials, subtest.newPassword),
 					tt.name+". must succeed")
-				if subtest.getID {
-					require.Equal(t, nodeID, d.NodePubkey(), "must be equal")
-				}
 				require.NoError(t, d.Stop(), tt.name+". must succeed")
 			})
 		}
@@ -270,18 +257,26 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 				switch update := u.(type) {
 				case DaemonReadyEvent:
 					return d, update.IdentityPubkey, nil
+				default:
+					return d, nodeID, fmt.Errorf("Got unexpected update instead of ready event")
 				}
 			case <-client.Quit():
-				return d, nodeID, fmt.Errorf("Got quit signal")
+				return d, nodeID, fmt.Errorf("Got quit signal while waiting for ready event")
+			default:
+				i++
+				if i < 6 {
+					time.Sleep(1 * time.Second)
+				} else {
+					// Since we could have missed the event (LND was up very quick and sent it before we started listening)
+					if d.NodePubkey() != "" {
+						return d, d.NodePubkey(), nil
+					} else {
+						return d, nodeID, fmt.Errorf("Timeout reached waiting for ready event")
+					}
+				}
 			}
-			i++
-			if i < 10 {
-				time.Sleep(1 * time.Second)
-				continue
-			}
-			break
 		}
-		return d, nodeID, fmt.Errorf("Timeout reached waiting for ready event")
+
 	} else {
 		return d, nodeID, fmt.Errorf("Daemon not started " + err.Error())
 	}

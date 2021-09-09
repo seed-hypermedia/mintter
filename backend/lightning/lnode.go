@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -85,7 +86,9 @@ func (d *Ldaemon) Stop() error {
 // Start is used to start the lightning network daemon.
 // If NewPassword is different from "" and there exists an old wallet,
 // then before unlocking the old wallet, the password is changed. The old
-// password must be provided in the WalletSecurity struct.
+// password must be provided in the WalletSecurity struct. This function is non
+// blocking altough it may take several seconds to return. To check if the daemon
+// is completely up, the user must wait for the DaemonReadyEvent by subscribing to it
 func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string) error {
 	if atomic.SwapInt32(&d.started, 1) == 1 {
 		return fmt.Errorf("daemon already started")
@@ -129,6 +132,7 @@ func (d *Ldaemon) stopDaemon() {
 
 	d.wg.Wait()
 	d.daemonRunning = false
+	d.nodePubkey = ""
 	d.ntfnServer.SendUpdate(DaemonDownEvent{})
 	d.log.Info("Daemon sent down event")
 }
@@ -303,7 +307,7 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 	lndConfig.Autopilot.Active = d.cfg.Autopilot
 	cfg := lndConfig
 
-	//TODO: This should not be necessary but if not, cfg.ProtocolOptions is not filled
+	//FIXME: This should not be necessary but otherwise, cfg.ProtocolOptions would not be filled
 	if err := flags.IniParse("", &cfg); err != nil && !os.IsNotExist(err) {
 		d.log.Error("Failed to parse config", zap.String("err", err.Error()))
 		return nil, err
@@ -327,7 +331,7 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 
 // Launches the LND main function in a separate thread and after that inits the wallet. On success, it launches
 // subsctription channels (for asynchronous notifications) and returns without blocking. This means the user cannot
-// use the daemon until it receives the DaemonReadyEvent
+// use the daemon until it either receives the DaemonReadyEvent or nodePubkey is filled
 func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 	NewPassword string) (*lnd.Config, []byte, error) {
 
@@ -380,8 +384,13 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 		return lnd_config, nil, err
 	}
 
+	var (
+		macPath  = d.cfg.LndDir + "/" + defaultMacaroonFilename
+		certPath = d.cfg.LndDir + "/" + defaultTLSCertFilename
+	)
+
 	// We start just the unlocker client because it is needed to init the wallet and it does not need the macaroon (since it has not been created yet)
-	if grpcCon, err := newLightningClient(true, []byte(""), d.cfg.LndDir, "", d.cfg.RawRPCListeners[0]); err != nil {
+	if grpcCon, err := newLightningClient(true, []byte(""), macPath, certPath, d.cfg.RawRPCListeners[0]); err != nil {
 		go d.stopDaemon()
 		return lnd_config, nil, err
 	} else {
@@ -389,12 +398,13 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 		d.unlockerClient = lnrpc.NewWalletUnlockerClient(grpcCon)
 		d.Unlock()
 	}
+
 	//We need time for LND to spin up unlocker server and we dont have the ready signal in ready channel inside lnd(like breez)
 	var i = 0
 	for {
 		time.Sleep(waitSecondsPerAttempt * time.Second)
 		if macaroon, err := d.initWallet(WalletSecurity); err != nil {
-			if err.Error() == alreadyExistsError {
+			if strings.Contains(err.Error(), alreadyExistsError) {
 				if len(NewPassword) != 0 {
 					if macaroon, err = d.changeWalletPassPhrase(WalletSecurity.WalletPassphrase, NewPassword,
 						WalletSecurity.StatelessInit); err != nil {
@@ -406,6 +416,7 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 					}
 
 				}
+				d.log.Info("Unlocking wallet since it was already created")
 				return lnd_config, macaroon, d.unlockWallet(WalletSecurity.WalletPassphrase,
 					WalletSecurity.StatelessInit)
 			} else {
