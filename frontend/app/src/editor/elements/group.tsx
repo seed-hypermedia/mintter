@@ -4,7 +4,6 @@ import {css, styled} from '@mintter/ui/stitches.config'
 import {Editor, Transforms} from 'slate'
 import type {NodeEntry} from 'slate'
 import type {EditorPlugin} from '../types'
-import type {MTTEditor} from '../utils'
 
 export const ELEMENT_GROUP = 'group'
 
@@ -63,13 +62,13 @@ export const createGroupPlugin = (): EditorPlugin => ({
 
 /**
  *
- * @param editor MTTEditor
+ * @param editor Editor
  * @param entry NodeEntry<GroupingContent>
  * @returns boolean | undefined
  *
  * when deleting statements we sometimes endup with empty groups. this methos removes them.
  */
-export function removeEmptyGroup(editor: MTTEditor, entry: NodeEntry<GroupingContent>): boolean | undefined {
+export function removeEmptyGroup(editor: Editor, entry: NodeEntry<GroupingContent>): boolean | undefined {
   const [node, path] = entry
   if (isGroupContent(node)) {
     if (node.children.length == 1) {

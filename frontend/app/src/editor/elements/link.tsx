@@ -1,6 +1,5 @@
 import type {EditorPlugin} from '../types'
 import type {Embed, Link as LinkType} from '@mintter/mttast'
-import type {MTTEditor} from '../utils'
 import type {BaseRange, BaseSelection} from 'slate'
 import type {UseLastSelectionResult} from '../hovering-toolbar'
 import {useEffect, useState} from 'react'
@@ -109,10 +108,7 @@ export interface InsertLinkOptions {
   wrap: boolean
 }
 
-export function insertLink(
-  editor: MTTEditor,
-  {url, selection = editor.selection, wrap = false}: InsertLinkOptions,
-): void {
+export function insertLink(editor: Editor, {url, selection = editor.selection, wrap = false}: InsertLinkOptions): void {
   console.log('insertLink: ', url, selection, wrap)
 
   /*
@@ -135,7 +131,7 @@ export function insertLink(
   }
 }
 
-export function isLinkActive(editor: MTTEditor, selection: BaseSelection = editor.selection): boolean {
+export function isLinkActive(editor: Editor, selection: BaseSelection = editor.selection): boolean {
   const [link] = Editor.nodes(editor, {
     match: (n) => !Editor.isEditor(n) && SlateElement.isElement(n) && n.type == ELEMENT_LINK,
     at: selection,
@@ -144,14 +140,14 @@ export function isLinkActive(editor: MTTEditor, selection: BaseSelection = edito
   return !!link
 }
 
-export function unwrapLink(editor: MTTEditor, selection: Range | null = editor.selection): void {
+export function unwrapLink(editor: Editor, selection: Range | null = editor.selection): void {
   Transforms.unwrapNodes(editor, {
     match: (n) => !Editor.isEditor(n) && SlateElement.isElement(n) && n.type == ELEMENT_LINK,
     at: selection ?? undefined,
   })
 }
 
-export function wrapLink(editor: MTTEditor, url: string, selection: Range | null = editor.selection): void {
+export function wrapLink(editor: Editor, url: string, selection: Range | null = editor.selection): void {
   if (isLinkActive(editor)) {
     unwrapLink(editor, selection)
   }
@@ -177,7 +173,7 @@ function isMintterLink(text: string) {
   return text.includes(MINTTER_LINK_PREFIX)
 }
 
-function wrapMintterLink(editor: MTTEditor, url: string) {
+function wrapMintterLink(editor: Editor, url: string) {
   const {selection} = editor
   const newEmbed: Embed = embed({url}, [text('')])
   const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])

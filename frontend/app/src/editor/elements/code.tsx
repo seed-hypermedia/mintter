@@ -1,6 +1,5 @@
 import type {IThemeRegistration} from 'shiki'
 import type {EditorPlugin} from '../types'
-import type {MTTEditor} from '../utils'
 import {resetFlowContent} from '../utils'
 import {setCDN, getHighlighter} from 'shiki'
 import {Box} from '@mintter/ui/box'
@@ -34,7 +33,7 @@ export const createCodePlugin = async (props: CodePluginProps = {}): Promise<Edi
   const highlighter = await getHighlighter({
     theme,
   })
-  let editor: MTTEditor
+  let editor: Editor
 
   return {
     name: ELEMENT_CODE,
