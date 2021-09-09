@@ -14,7 +14,7 @@ import {Editor} from '../editor'
 export default function Publication(): JSX.Element {
   const {docId} = useParams<{docId: string}>()
   const history = useHistory()
-  const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
+  const {send: sidepanelSend, isOpen: isSidepanelOpen, annotations} = useSidepanel()
   const {status, data, error} = usePublication(docId)
   const {data: author} = useAccount(data.document.author, {
     enabled: !!data?.document?.author,
@@ -24,8 +24,15 @@ export default function Publication(): JSX.Element {
   useEnableSidepanel()
 
   useEffect(() => {
+    if (Array.from(annotations).length) {
+      console.log('ENABLE!!')
+      sidepanelSend('SIDEPANEL_OPEN')
+    }
+  }, [annotations])
+
+  useEffect(() => {
     if (status == 'success') {
-      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', payload: data.document.content})
+      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', content: data.document.content})
     }
   }, [status])
 
@@ -83,7 +90,7 @@ export default function Publication(): JSX.Element {
         }}
       >
         {canUpdate && (
-          <Button color="primary" shape="pill" size="2" onClick={handleUpdate}>
+          <Button color="success" shape="pill" size="2" onClick={handleUpdate}>
             UPDATE
           </Button>
         )}
