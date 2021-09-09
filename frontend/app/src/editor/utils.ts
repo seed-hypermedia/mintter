@@ -6,7 +6,11 @@ import {Range, Editor, Path, Transforms, Text, Node} from 'slate'
 import {isFlowContent, isGroup, isGroupContent, isStatement} from '@mintter/mttast'
 import {group, statement} from '@mintter/mttast-builder'
 
-export type MTTEditor = BaseEditor & ReactEditor & HistoryEditor
+export type MTTEditor = BaseEditor &
+  ReactEditor &
+  HistoryEditor & {
+    mode: string
+  }
 
 export const isCollapsed = (range: Range): boolean => !!range && Range.isCollapsed(range)
 
