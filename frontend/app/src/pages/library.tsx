@@ -9,7 +9,7 @@ import * as MessageBox from '../components/message-box'
 import {Container} from '../components/container'
 import {useMemo, useCallback} from 'react'
 import {Connections} from '../connections'
-import {ListPage} from './list-page'
+import {DraftListPage, ListPage} from './list-page'
 import toast from 'react-hot-toast'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
@@ -134,7 +134,7 @@ export default function Library() {
           <Route
             path={`${path}/drafts`}
             render={() => {
-              return <ListPage onCreateDraft={onCreateDraft} useDataHook={useDraftsList} />
+              return <DraftListPage onCreateDraft={onCreateDraft} />
             }}
           />
         </Switch>
@@ -223,7 +223,7 @@ function NavItem({children, to, css, onlyActiveWhenExact = false, ...props}: Nav
     exact: onlyActiveWhenExact,
   })
 
-  const active = useMemo(() => match?.path === to, [match?.path, to])
+  let active = match?.path === to
 
   return (
     <Text

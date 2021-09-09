@@ -26,7 +26,7 @@ export function DocumentList({data, status, error}) {
   return (
     <Box as="ul" css={{padding: 0}}>
       {data.map((item: {document: Document} | Publication) => (
-        <ListItem isDraft={isDraft} item={item} toPrefix={toPrefix} />
+        <ListItem key={item.document?.id} isDraft={isDraft} item={item} toPrefix={toPrefix} />
       ))}
     </Box>
   )
