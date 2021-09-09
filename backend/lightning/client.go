@@ -42,7 +42,8 @@ type API interface {
 	HasActiveChannel() bool
 	IsReadyForPayment() bool
 	WaitReadyForPayment(timeout time.Duration) error
-	NodePubkey() string
+	GetID() string
+	GetMacaroon() []byte
 	APIClient() lnrpc.LightningClient
 	RouterClient() routerrpc.RouterClient
 	WalletKitClient() walletrpc.WalletKitClient
@@ -125,11 +126,18 @@ func (d *Ldaemon) IsReadyForPayment() bool {
 	return allChannelsActive
 }
 
-// NodePubkey returns the identity public key of the lightning node.
-func (d *Ldaemon) NodePubkey() string {
+// GetID returns the identity public key of the lightning node.
+func (d *Ldaemon) GetID() string {
 	d.Lock()
 	defer d.Unlock()
-	return d.nodePubkey
+	return d.nodeID
+}
+
+// GetMacaroon returns the Admin macaroon to externally control the lnd node via RPC
+func (d *Ldaemon) GetMacaroon() []byte {
+	d.Lock()
+	defer d.Unlock()
+	return d.adminMacaroon
 }
 
 // APIClient returns the interface to query the daemon. This is the most general client
@@ -259,18 +267,20 @@ func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 	defer cancel()
 
 	// if the user wants to init a wallet from an entropy instead of
-	// from an already created mnemonics
+	// from an already created mnemonics.
 	if len(WalletSecurity.SeedEntropy) != 0 {
 		getSeedReq := &lnrpc.GenSeedRequest{
 			AezeedPassphrase: []byte(WalletSecurity.AezeedPassphrase),
 			SeedEntropy:      WalletSecurity.SeedEntropy,
 		}
+
 		if seed_res, err := d.unlockerClient.GenSeed(ctx, getSeedReq); err != nil {
 			return nil, fmt.Errorf("could not get seed from parameters provided %s", err.Error())
 		} else {
+			// These mnemonics are different even if called GenSeed with the same Entropy since the birthday date is diferent
 			WalletSecurity.AezeedMnemonics = seed_res.CipherSeedMnemonic
 		}
-		d.log.Info("Init Wallet from entropy")
+		d.log.Info("Init Wallet from provided entropy + provided password + unknown salt + current date")
 
 		// if the user already has mnemonics from a previous instance or
 		// it wants to recover a node, then we create from mnemonics
@@ -344,12 +354,13 @@ func newLightningClient(noMacaroon bool, macBytes []byte, macPath string, certPa
 			if macBytes, err = ioutil.ReadFile(macPath); err != nil {
 				return nil, err
 			}
-		} else if len(macBytes) != 0 {
+		}
+		if len(macBytes) != 0 {
 			if err = mac.UnmarshalBinary(macBytes); err != nil {
 				return nil, err
 			}
 		} else {
-			return nil, fmt.Errorf("No macaroon path provided nor macaroon binary. you Must provide one of them")
+			return nil, fmt.Errorf("no macaroon path provided nor macaroon binary. you Must provide one of them")
 		}
 
 		// Now we append the macaroon credentials to the dial options.

@@ -26,7 +26,9 @@ type DaemonReadyEvent struct {
 }
 
 // DaemonDownEvent is sent when the daemon stops
-type DaemonDownEvent struct{}
+type DaemonDownEvent struct {
+	err error
+}
 
 // ChannelEvent is sent whenever a channel is created/closed or active/inactive.
 type ChannelEvent struct {
@@ -105,7 +107,7 @@ func (d *Ldaemon) startSubscriptions() error {
 			return chainErr
 		}
 		d.Lock()
-		d.nodePubkey = info.IdentityPubkey
+		d.nodeID = info.IdentityPubkey
 		d.Unlock()
 		break
 	}
@@ -127,7 +129,7 @@ func (d *Ldaemon) startSubscriptions() error {
 		cancel()
 	}()
 
-	if err := d.ntfnServer.SendUpdate(DaemonReadyEvent{IdentityPubkey: d.nodePubkey}); err != nil {
+	if err := d.ntfnServer.SendUpdate(DaemonReadyEvent{IdentityPubkey: d.nodeID}); err != nil {
 		return err
 	}
 	d.log.Info("Daemon ready! subscriptions started")

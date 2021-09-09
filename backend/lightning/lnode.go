@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/jessevdk/go-flags"
@@ -28,8 +27,8 @@ import (
 
 const (
 	alreadyExistsError    = "wallet already exists"
-	waitSecondsPerAttempt = 4
-	maxConnAttemps        = 10
+	waitSecondsPerAttempt = 3
+	maxConnAttemps        = 20
 )
 
 var (
@@ -43,11 +42,10 @@ type Ldaemon struct {
 	sync.Mutex
 	cfg                 *config.LND
 	log                 *zap.Logger
-	started             int32
-	stopped             int32
 	startTime           time.Time
 	daemonRunning       bool
-	nodePubkey          string
+	nodeID              string
+	adminMacaroon       []byte
 	wg                  sync.WaitGroup
 	interceptor         signal.Interceptor
 	lightningClient     lnrpc.LightningClient
@@ -74,49 +72,41 @@ func NewLdaemon(log *zap.Logger, cfg *config.LND) (*Ldaemon, error) {
 
 // Stop is used to stop the lightning network daemon.
 func (d *Ldaemon) Stop() error {
-	if atomic.SwapInt32(&d.stopped, 1) == 0 {
-		d.stopDaemon()
-		d.ntfnServer.Stop()
+	d.Lock()
+	if !d.daemonRunning {
+		d.Unlock()
+		return fmt.Errorf("daemon already stopped")
 	}
-	d.wg.Wait()
-	d.log.Info("Daemon shutdown successfully")
+	d.Unlock()
+
+	d.stopDaemon(nil)
 	return nil
 }
 
 // Start is used to start the lightning network daemon.
 // If NewPassword is different from "" and there exists an old wallet,
 // then before unlocking the old wallet, the password is changed. The old
-// password must be provided in the WalletSecurity struct. This function is non
-// blocking altough it may take several seconds to return. To check if the daemon
-// is completely up, the user must wait for the DaemonReadyEvent by subscribing to it
-func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string) error {
-	if atomic.SwapInt32(&d.started, 1) == 1 {
-		return fmt.Errorf("daemon already started")
-	}
+// password must be provided in the WalletSecurity struct. This function can be either
+// blocking or non blocking based on the param flag. If blocking flag is set, the
+// function does not return until either flnd is fully up and running, or a problem
+// occurs or a 1 minute timeout elapses. If non blocking instead, the function returns
+// inmediately but the user must wait for either the DaemonReadyEvent or the
+// DaemonDownEvent  by subscribing to them
+func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string, blocking bool) error {
 	d.startTime = time.Now()
 
 	if err := d.ntfnServer.Start(); err != nil {
 		return fmt.Errorf("failed to start ntfnServer: %v", err)
 	}
 
-	if _, _, err := d.startDaemon(WalletSecurity, NewPassword); err != nil {
+	if _, err := d.startDaemon(WalletSecurity, NewPassword, blocking); err != nil {
 		return fmt.Errorf("failed to start daemon: %v", err)
 	}
 
 	return nil
 }
 
-// Restart is used to restart a daemon that from some reason failed to start
-// or was started and failed at some later point.
-func (d *Ldaemon) Restart(WalletSecurity *WalletSecurity, NewPassword string) error {
-	if atomic.LoadInt32(&d.started) == 0 {
-		return fmt.Errorf("daemon must be started before attempt to restart")
-	}
-	_, _, err := d.startDaemon(WalletSecurity, NewPassword)
-	return err
-}
-
-func (d *Ldaemon) stopDaemon() {
+func (d *Ldaemon) stopDaemon(err error) {
 	d.Lock()
 	defer d.Unlock()
 	if !d.daemonRunning {
@@ -131,10 +121,10 @@ func (d *Ldaemon) stopDaemon() {
 	close(d.quitChan)
 
 	d.wg.Wait()
+	d.nodeID = ""
+	d.ntfnServer.SendUpdate(DaemonDownEvent{err})
+	d.log.Info("shutdown event sent")
 	d.daemonRunning = false
-	d.nodePubkey = ""
-	d.ntfnServer.SendUpdate(DaemonDownEvent{})
-	d.log.Info("Daemon sent down event")
 }
 
 // Whether or not all the channels of the node are in active state. Not active means the counterparty is offline
@@ -329,59 +319,52 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 	return conf, nil
 }
 
-// Launches the LND main function in a separate thread and after that inits the wallet. On success, it launches
-// subsctription channels (for asynchronous notifications) and returns without blocking. This means the user cannot
-// use the daemon until it either receives the DaemonReadyEvent or nodePubkey is filled
-func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
-	NewPassword string) (*lnd.Config, []byte, error) {
+// Launches the LND main function in a separate goroutine and after that inits the wallet also in a separate
+// goroutine. On success, it launches subsctription channels (for asynchronous notifications). If blocking flag
+// is set, this function waits until LND is fully initialized or an error accurs or a 1 minute timeout.
+// If blocking flag is unset, this function returns after validating configuration and the user should listen to
+// the DaemonReadyEvent and DaemonDownEvent so it knows when its has been initialized or failed
 
+func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
+	NewPassword string, blocking bool) (*lnd.Config, error) {
+
+	d.Lock()
 	if d.daemonRunning {
-		return nil, nil, fmt.Errorf("daemon already running")
+		d.Unlock()
+		return nil, fmt.Errorf("daemon already running")
 	}
+	d.Unlock()
 
 	// Hook interceptor for os signals.
 	shutdownInterceptor, err := signal.Intercept()
 	if err != nil {
-		return nil, nil, fmt.Errorf("Problem getting interceptor" + err.Error())
+		return nil, fmt.Errorf("Problem getting interceptor" + err.Error())
 	}
 
-	d.interceptor = shutdownInterceptor
+	d.daemonRunning = true
 
+	d.interceptor = shutdownInterceptor
 	d.quitChan = make(chan struct{})
 
-	d.daemonRunning = true
-	config_chan := make(chan *lnd.Config, 1)
-	err_chan := make(chan error, 1)
+	lndConfig, err := d.createConfig(d.cfg.LndDir)
 
-	// Run the daemon
-	d.wg.Add(1)
-	go func() {
-		defer func() {
+	if err != nil {
+		d.log.Error("Failed to create config", zap.String("err", err.Error()))
+		return lndConfig, err
+	} else {
+		// Run the daemon
+		d.wg.Add(1)
+		go func() {
 			defer d.wg.Done()
-			go d.stopDaemon()
-		}()
 
-		lndConfig, err := d.createConfig(d.cfg.LndDir)
-		err_chan <- err
-		config_chan <- lndConfig
-		close(err_chan)
-		close(config_chan)
-		if err != nil {
-			d.log.Error("Failed to create config", zap.String("err", err.Error()))
-		} else {
 			d.log.Info("Starting LND Daemon")
-			err = lnd.Main(lndConfig, lnd.ListenerCfg{}, d.interceptor)
+			lndeEr := lnd.Main(lndConfig, lnd.ListenerCfg{}, d.interceptor)
 			if err != nil {
 				d.log.Error("Main function returned with error", zap.String("err", err.Error()))
 			}
 			d.log.Info("LND Daemon Finished")
-		}
-	}()
-
-	lnd_config := <-config_chan
-	if err_config := <-err_chan; err_config != nil {
-		go d.stopDaemon()
-		return lnd_config, nil, err
+			go d.stopDaemon(lndeEr)
+		}()
 	}
 
 	var (
@@ -391,59 +374,73 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 
 	// We start just the unlocker client because it is needed to init the wallet and it does not need the macaroon (since it has not been created yet)
 	if grpcCon, err := newLightningClient(true, []byte(""), macPath, certPath, d.cfg.RawRPCListeners[0]); err != nil {
-		go d.stopDaemon()
-		return lnd_config, nil, err
+		go d.stopDaemon(err)
+		return lndConfig, err
 	} else {
 		d.Lock()
 		d.unlockerClient = lnrpc.NewWalletUnlockerClient(grpcCon)
 		d.Unlock()
 	}
 
-	//We need time for LND to spin up unlocker server and we dont have the ready signal in ready channel inside lnd(like breez)
-	var i = 0
-	for {
-		time.Sleep(waitSecondsPerAttempt * time.Second)
-		if macaroon, err := d.initWallet(WalletSecurity); err != nil {
-			if strings.Contains(err.Error(), alreadyExistsError) {
-				if len(NewPassword) != 0 {
-					if macaroon, err = d.changeWalletPassPhrase(WalletSecurity.WalletPassphrase, NewPassword,
-						WalletSecurity.StatelessInit); err != nil {
-						d.log.Error("Could not change wallet password before unlock", zap.String("err", err.Error()))
-						go d.stopDaemon()
-						return lnd_config, macaroon, err
-					} else {
-						WalletSecurity.WalletPassphrase = NewPassword
+	errChan := make(chan error)
+
+	go func() {
+		var i = 0
+		var macaroon []byte
+		var err error
+
+		//We need time for LND to spin up unlocker server and we dont have the ready signal in ready channel inside lnd(like breez)
+		for {
+			time.Sleep(waitSecondsPerAttempt * time.Second)
+			if macaroon, err = d.initWallet(WalletSecurity); err != nil {
+				if strings.Contains(err.Error(), alreadyExistsError) {
+					if len(NewPassword) != 0 {
+						if macaroon, err = d.changeWalletPassPhrase(WalletSecurity.WalletPassphrase, NewPassword,
+							WalletSecurity.StatelessInit); err != nil {
+							d.log.Error("Could not change wallet password before unlock", zap.String("err", err.Error()))
+							go d.stopDaemon(err)
+							break
+						} else {
+							WalletSecurity.WalletPassphrase = NewPassword
+						}
 					}
-
+					d.log.Info("Unlocking wallet since it was already created")
+					err = d.unlockWallet(WalletSecurity.WalletPassphrase, WalletSecurity.StatelessInit)
+					break
+				} else {
+					i++
+					if i < maxConnAttemps {
+						continue
+					}
+					d.log.Error("Could not init wallet", zap.String("err", err.Error()))
+					go d.stopDaemon(err)
+					break
 				}
-				d.log.Info("Unlocking wallet since it was already created")
-				return lnd_config, macaroon, d.unlockWallet(WalletSecurity.WalletPassphrase,
-					WalletSecurity.StatelessInit)
+
 			} else {
-				i++
-				if i < maxConnAttemps {
-					continue
+				if err = d.startRpcClients(macaroon); err != nil {
+					d.log.Error("Can't start rpc clients, shutting down",
+						zap.String("err", err.Error()))
+					go d.stopDaemon(err)
+				} else if err = d.startSubscriptions(); err != nil {
+					d.log.Error("Can't start daemon subscriptions, shutting down",
+						zap.String("err", err.Error()))
+					go d.stopDaemon(err)
 				}
-				d.log.Error("Could not init wallet", zap.String("err", err.Error()))
-				go d.stopDaemon()
-				return lnd_config, macaroon, err
+				break
 			}
-
-		} else {
-			var err error
-			if err = d.startRpcClients(macaroon); err != nil {
-				d.log.Error("Can't start rpc clients, shutting down",
-					zap.String("err", err.Error()))
-				go d.stopDaemon()
-			} else if err = d.startSubscriptions(); err != nil {
-				d.log.Error("Can't start daemon subscriptions, shutting down",
-					zap.String("err", err.Error()))
-				go d.stopDaemon()
-			}
-			return lnd_config, macaroon, err
 		}
-	}
+		d.Lock()
+		d.adminMacaroon = macaroon
+		d.Unlock()
+		errChan <- err
+	}()
 
+	var retErr error
+	if blocking {
+		retErr = <-errChan
+	}
+	return lndConfig, retErr
 }
 
 func getLogWriter(workingDir string) (*build.RotatingLogWriter, error) {

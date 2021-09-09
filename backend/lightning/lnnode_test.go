@@ -144,7 +144,7 @@ func TestStart(t *testing.T) {
 						RecoveryWindow:   0,
 						AezeedPassphrase: testVectors[0].password,
 						AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
-						SeedEntropy:      []byte{},
+						SeedEntropy:      testVectors[1].entropy[:],
 						StatelessInit:    false,
 					},
 					newPassword:            "",
@@ -158,7 +158,7 @@ func TestStart(t *testing.T) {
 						RecoveryWindow:   100,
 						AezeedPassphrase: testVectors[1].password,
 						AezeedMnemonics:  testVectors[1].expectedMnemonic[:],
-						SeedEntropy:      testVectors[1].entropy[:],
+						SeedEntropy:      []byte{},
 						StatelessInit:    false,
 					},
 					newPassword:            "",
@@ -205,14 +205,23 @@ func TestStart(t *testing.T) {
 	for _, tt := range tests {
 		for _, subtest := range tt.subtest {
 			t.Run(subtest.subname, func(t *testing.T) {
-				d, nodeID, err := checkStart(t, tt.lnconf, &subtest.credentials,
-					subtest.newPassword, subtest.removeWalletBeforeTest)
-				require.NoError(t, err, tt.name+". must succeed")
-				require.EqualValues(t, expectedID, nodeID)
-				require.NoError(t, d.Stop(), tt.name+". must succeed")
-				require.NoError(t, d.Restart(&subtest.credentials, subtest.newPassword),
-					tt.name+". must succeed")
-				require.NoError(t, d.Stop(), tt.name+". must succeed")
+				d, nodeID, errStart := checkStart(t, tt.lnconf, &subtest.credentials,
+					subtest.newPassword, subtest.removeWalletBeforeTest, false)
+				errStop := d.Stop()
+				require.NoError(t, errStart, tt.name+". must succeed")
+				// since init from seed gives a random mnemonics (even if we feed it with the same entropy the birthday date is diferent)
+				if subtest.subname != "Init from seed" {
+					require.EqualValues(t, expectedID, nodeID)
+				}
+				require.NoError(t, errStop, tt.name+". must succeed")
+				errStart = d.Start(&subtest.credentials, subtest.newPassword, true)
+				errStop = d.Stop()
+				require.NoError(t, errStart, tt.name+". must succeed")
+				if subtest.subname != "Init from seed" {
+					require.EqualValues(t, expectedID, d.GetID())
+				}
+				require.NoError(t, errStop, tt.name+". must succeed")
+
 			})
 		}
 
@@ -220,7 +229,7 @@ func TestStart(t *testing.T) {
 }
 
 func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
-	newPassword string, removeWalletBeforeTest bool) (*Ldaemon, string, error) {
+	newPassword string, removeWalletBeforeTest bool, blocking bool) (*Ldaemon, string, error) {
 	t.Helper()
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
@@ -239,11 +248,11 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 		}
 	}
 
-	err = d.Start(credentials, newPassword)
+	err = d.Start(credentials, newPassword, blocking)
 
 	if err != nil {
 		return d, nodeID, err
-	} else if d.started == 1 {
+	} else if !blocking {
 		//In order for the subscriptions to take effect and write the log accordingly
 		client, err := d.SubscribeEvents()
 		defer client.Cancel()
@@ -257,6 +266,9 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 				switch update := u.(type) {
 				case DaemonReadyEvent:
 					return d, update.IdentityPubkey, nil
+				case DaemonDownEvent:
+					return d, "", update.err
+				case ChainSyncedEvent:
 				default:
 					return d, nodeID, fmt.Errorf("Got unexpected update instead of ready event")
 				}
@@ -264,12 +276,12 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 				return d, nodeID, fmt.Errorf("Got quit signal while waiting for ready event")
 			default:
 				i++
-				if i < 6 {
-					time.Sleep(1 * time.Second)
+				if i < 25 {
+					time.Sleep(5 * time.Second)
 				} else {
-					// Since we could have missed the event (LND was up very quick and sent it before we started listening)
-					if d.NodePubkey() != "" {
-						return d, d.NodePubkey(), nil
+					// Since we could have missed the event (LND was up very quick and sent it before we started listening) highly unlikely though
+					if d.GetID() != "" {
+						return d, d.GetID(), nil
 					} else {
 						return d, nodeID, fmt.Errorf("Timeout reached waiting for ready event")
 					}
@@ -278,6 +290,6 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 		}
 
 	} else {
-		return d, nodeID, fmt.Errorf("Daemon not started " + err.Error())
+		return d, d.GetID(), nil
 	}
 }
