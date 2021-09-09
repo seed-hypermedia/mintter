@@ -99,7 +99,7 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
           Editor.withoutNormalizing(editor, () => {
             // we are here because we created a new static-paragraph element as a second chid of the heading. what we want is to create a new statement as a child of this heading. we also need to check if there's already a group child on this statement to know if we need to add an extra group or not.
             Transforms.setNodes(editor, {type: ELEMENT_PARAGRAPH}, {at: path})
-            let id = createId()
+            const id = createId()
             Transforms.wrapNodes(editor, statement({id}), {
               at: path,
             })
