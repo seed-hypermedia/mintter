@@ -3,7 +3,7 @@ import type {EditorPlugin} from '../types'
 import type {TextProps} from '@mintter/ui/text'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
-import {ReactEditor, useSlateStatic} from 'slate-react'
+import {ReactEditor, RenderElementProps, useSlateStatic} from 'slate-react'
 import {Editor, Node, Path, Transforms} from 'slate'
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
 import {ELEMENT_PARAGRAPH} from './paragraph'
@@ -12,7 +12,7 @@ import {isCollapsed} from '../utils'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
-const StaticParagraph = styled(Text, {
+const StaticParagraphStyled = styled(Text, {
   fontWeight: '$bold',
 })
 
@@ -45,23 +45,9 @@ const headingMap: {
 
 export const createStaticParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATIC_PARAGRAPH,
-  renderElement({attributes, children, element}) {
-    const level = useHeadingLevel(element as StaticParagraphType)
-    if (isStaticParagraph(element)) {
-      const sizeProps = headingMap[level ?? 'default']
-      return (
-        <StaticParagraph
-          data-element-type={element.type}
-          {...sizeProps}
-          {...attributes}
-          css={{
-            marginTop: '1.5em',
-            fontWeight: '$bold',
-          }}
-        >
-          {children}
-        </StaticParagraph>
-      )
+  renderElement(props) {
+    if (isStaticParagraph(props.element)) {
+      return <StaticParagraph {...props} />
     }
   },
   /*
@@ -138,4 +124,22 @@ function useHeadingLevel(element: StaticParagraphType) {
       return path.length
     }
   }
+}
+
+function StaticParagraph({childrem, element, attributes}: RenderElementProps) {
+  const level = useHeadingLevel(element as StaticParagraphType)
+  const sizeProps = headingMap[level ?? 'default']
+  return (
+    <StaticParagraphStyled
+      data-element-type={element.type}
+      {...sizeProps}
+      {...attributes}
+      css={{
+        marginTop: '1.5em',
+        fontWeight: '$bold',
+      }}
+    >
+      {children}
+    </StaticParagraphStyled>
+  )
 }

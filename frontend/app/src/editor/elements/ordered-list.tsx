@@ -1,3 +1,4 @@
+import {isOrderedList} from '@mintter/mttast'
 import {styled} from '@mintter/ui/stitches.config'
 import type {EditorPlugin} from '../types'
 import {resetGroupingContent} from '../utils'
@@ -10,7 +11,7 @@ export const OrderedList = styled('ol', groupStyle)
 export const createOrderedListPlugin = (): EditorPlugin => ({
   name: ELEMENT_ORDERED_LIST,
   renderElement({attributes, children, element}) {
-    if (element.type === ELEMENT_ORDERED_LIST) {
+    if (isOrderedList(element)) {
       return (
         <OrderedList
           type={element.type}

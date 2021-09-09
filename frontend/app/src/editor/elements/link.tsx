@@ -43,7 +43,7 @@ export const Link = forwardRef((props, ref) => {
 export const createLinkPlugin = (): EditorPlugin => ({
   name: ELEMENT_LINK,
   renderElement({attributes, children, element}) {
-    if (element.type === ELEMENT_LINK) {
+    if (isLink(element)) {
       return (
         <Tooltip
           content={
