@@ -1,21 +1,20 @@
-import type {FlowContent} from '@mintter/mttast'
+import type {FlowContent, Statement} from '@mintter/mttast'
 import {isLink} from '@mintter/mttast'
 import {isEmbed} from '@mintter/mttast'
 import {createContext, useEffect, useContext} from 'react'
-import {Box, Text, Button} from '@mintter/ui'
+import {Box, Text, Button, Icon} from '@mintter/ui'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {createMachine, Interpreter, State} from 'xstate'
-// import {usePublication} from '@mintter/client/hooks'
-// import {visit} from 'unist-util-visit'
-// import {document} from '@mintter/mttast-builder'
-import {Editor, Node} from 'slate'
-// import {getEmbedIds} from '../editor/elements/embed'
+import {Node} from 'slate'
 import {InlineEmbed, useEmbed} from '../editor/elements/embed'
 import {MINTTER_LINK_PREFIX} from '../constants'
 import {visit} from 'unist-util-visit'
 import {document} from '@mintter/mttast-builder'
 import {assign} from 'xstate'
 import {useAccount} from '@mintter/client/hooks'
+import {ContextMenu} from '../editor/context-menu'
+import {copyTextToClipboard} from '../editor/elements/statement'
+import toast from 'react-hot-toast'
 
 export type SidepanelEventsType =
   | {
@@ -90,7 +89,7 @@ export const sidepanelMachine = createMachine(
             actions: ['getAnnotations'],
           },
         },
-        initial: 'closed',
+        initial: 'opened',
         states: {
           closed: {
             on: {
@@ -259,6 +258,11 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
   })
   const {send} = useSidepanel()
 
+  async function onCopy() {
+    await copyTextToClipboard(item)
+    toast.success('Statement Reference copied successfully', {position: 'top-center'})
+  }
+
   if (status == 'loading') {
     return <Box css={{padding: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>...</Box>
   }
@@ -266,21 +270,31 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
   if (status == 'error') {
     console.error('SidepanelItem error: ', error)
     return (
-      <Box css={{padding: '$4', marginTop: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>
-        <Box css={{display: 'flex', gap: '$4'}}>
-          <Text size="2" css={{flex: 1}}>{`Error with item id: ${data.statement.id}`}</Text>
-          {remove && (
-            <Button
-              size="1"
-              variant="ghost"
-              color="primary"
-              onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', payload: item})}
-            >
-              remove
-            </Button>
-          )}
-        </Box>
-      </Box>
+      <ContextMenu.Root>
+        <ContextMenu.Trigger>
+          <Box css={{padding: '$4', marginTop: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>
+            <Box css={{display: 'flex', gap: '$4'}}>
+              <Text size="2" css={{flex: 1}}>{`Error with item id: ${data.statement.id}`}</Text>
+              {remove && (
+                <Button
+                  size="1"
+                  variant="ghost"
+                  color="primary"
+                  onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', payload: item})}
+                >
+                  remove
+                </Button>
+              )}
+            </Box>
+          </Box>
+        </ContextMenu.Trigger>
+        <ContextMenu.Content alignOffset={-5}>
+          <ContextMenu.Item onSelect={onCopy}>
+            <Icon name="Copy" size="1" />
+            <Text size="2">Copy Statement Reference</Text>
+          </ContextMenu.Item>
+        </ContextMenu.Content>
+      </ContextMenu.Root>
     )
   }
 
