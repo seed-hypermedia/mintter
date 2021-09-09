@@ -21,10 +21,6 @@ export default function Publication(): JSX.Element {
   })
   const {data: myInfo} = useInfo()
 
-  const canUpdate = useMemo(() => {
-    return author?.id == myInfo?.accountId
-  }, [author, myInfo])
-
   useEnableSidepanel()
 
   useEffect(() => {
@@ -56,6 +52,8 @@ export default function Publication(): JSX.Element {
     return <Text>Publication ERROR</Text>
   }
 
+  let canUpdate = author?.id == myInfo?.accountId
+
   return (
     <Box
       css={{
@@ -70,7 +68,6 @@ export default function Publication(): JSX.Element {
         // "maincontent maincontent maincontent"`,
         gridTemplateColumns: 'minmax(350px, 15%) 1fr minmax(350px, 40%)',
         gridTemplateRows: '64px 1fr',
-        // gap: '$5',
       }}
       data-testid="publication-wrapper"
     >
