@@ -93,7 +93,7 @@ function Paragraph({children, element, attributes}: RenderElementProps) {
   const path = ReactEditor.findPath(editor, element)
   const [parentNode] = Editor.parent(editor, path)
   return (
-    <Paragraph
+    <ParagraphStyled
       as={isCode(parentNode) ? 'span' : isBlockquote(parentNode) ? 'blockquote' : 'p'}
       alt
       size="4"
@@ -102,6 +102,6 @@ function Paragraph({children, element, attributes}: RenderElementProps) {
       {...attributes}
     >
       {children}
-    </Paragraph>
+    </ParagraphStyled>
   )
 }
