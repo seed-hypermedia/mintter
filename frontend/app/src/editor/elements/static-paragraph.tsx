@@ -127,7 +127,7 @@ function useHeadingLevel(element: StaticParagraphType) {
   }
 }
 
-function StaticParagraph({childrem, element, attributes}: RenderElementProps) {
+function StaticParagraph({children, element, attributes}: RenderElementProps) {
   const level = useHeadingLevel(element as StaticParagraphType)
   const sizeProps = headingMap[level ?? 'default']
   return (
