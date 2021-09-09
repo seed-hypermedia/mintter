@@ -42,24 +42,7 @@ export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
   createGroupPlugin(),
   createUnorderedListPlugin(),
   createOrderedListPlugin(),
-  /*
-   * @todo Missing plugins
-   * @body insert html, insert markdown
-   */
 
   createTabPlugin(),
   createMarkdownShortcutsPlugin(),
-  // {
-  //   name: 'normalize',
-  //   configureEditor(editor) {
-  //     const {normalizeNode} = editor
-
-  //     editor.normalizeNode = (entry) => {
-  //       const [node, path] = entry
-  //       // console.log(path, node.type, node.id, node)
-  //       normalizeNode(entry)
-  //     }
-  //     return editor
-  //   },
-  // },
 ]
