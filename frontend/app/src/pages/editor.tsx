@@ -37,9 +37,7 @@ export default function EditorPage() {
     client,
   })
 
-  useEffect(() => {}, [])
-
-  const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
+  const {send: sidepanelSend, isOpen: isSidepanelOpen, annotations} = useSidepanel()
 
   useEnableSidepanel()
 
