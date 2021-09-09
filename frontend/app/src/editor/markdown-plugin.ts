@@ -1,7 +1,8 @@
-import {isGroupContent, isOrderedList, isStatement, isUnorderedList} from '@mintter/mttast'
+import {isGroupContent, isOrderedList, isParagraph, isStatement, isUnorderedList} from '@mintter/mttast'
 import {Range, Editor, Transforms} from 'slate'
 import {ELEMENT_HEADING} from './elements/heading'
 import {ELEMENT_ORDERED_LIST} from './elements/ordered-list'
+import {ELEMENT_STATIC_PARAGRAPH} from './elements/static-paragraph'
 import {ELEMENT_UNORDERED_LIST} from './elements/unordered-list'
 import type {EditorPlugin} from './types'
 
@@ -28,9 +29,11 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
           const above = Editor.above(editor, {match: isGroupContent, mode: 'lowest'})
 
           if (above && !isUnorderedList(above[1])) {
-            Transforms.select(editor, range)
-            Transforms.delete(editor)
-            Transforms.setNodes(editor, {type: ELEMENT_UNORDERED_LIST}, {match: isGroupContent})
+            Editor.withoutNormalizing(editor, () => {
+              Transforms.select(editor, range)
+              Transforms.delete(editor)
+              Transforms.setNodes(editor, {type: ELEMENT_UNORDERED_LIST}, {match: isGroupContent})
+            })
             return
           }
         }
@@ -40,24 +43,29 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
           const above = Editor.above(editor, {match: isGroupContent, mode: 'lowest'})
 
           if (above && !isOrderedList(above[1])) {
-            Transforms.select(editor, range)
-            Transforms.delete(editor)
+            Editor.withoutNormalizing(editor, () => {
+              Transforms.select(editor, range)
+              Transforms.delete(editor)
 
-            const start = parseInt(beforeText)
+              const start = parseInt(beforeText)
 
-            Transforms.setNodes(editor, {type: ELEMENT_ORDERED_LIST, start}, {match: isGroupContent})
+              Transforms.setNodes(editor, {type: ELEMENT_ORDERED_LIST, start}, {match: isGroupContent})
+            })
             return
           }
         }
 
         // turn statement into
-        if (beforeText == '#') {
+        if (beforeText === '#') {
           const above = Editor.above(editor, {match: isStatement, mode: 'lowest'})
 
           if (above && !isOrderedList(above[1])) {
-            Transforms.select(editor, range)
-            Transforms.delete(editor)
-            Transforms.setNodes(editor, {type: ELEMENT_HEADING}, {match: isStatement})
+            Editor.withoutNormalizing(editor, () => {
+              Transforms.select(editor, range)
+              Transforms.delete(editor)
+              Transforms.setNodes(editor, {type: ELEMENT_HEADING}, {match: isStatement})
+              Transforms.setNodes(editor, {type: ELEMENT_STATIC_PARAGRAPH}, {match: isParagraph})
+            })
           }
         }
       }
