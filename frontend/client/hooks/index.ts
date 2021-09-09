@@ -169,7 +169,6 @@ export function useOthersPublicationsList(options: HookOptions<ListPublicationsR
     },
     options,
   )
-  console.log('useOthersPubs', myPubsListQuery.data, info)
   const data = useMemo(
     () =>
       myPubsListQuery.data?.publications.reduce((acc: Array<Publication>, current: Publication) => {
@@ -198,7 +197,6 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
     },
     options,
   )
-  console.log('useMuPubs', myPubsListQuery, info)
   const data = useMemo(
     () =>
       myPubsListQuery.data?.publications.reduce((acc: Array<Publication>, current: Publication) => {
