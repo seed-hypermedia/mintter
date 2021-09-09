@@ -1,5 +1,5 @@
 import {styled, css, keyframes} from '@mintter/ui/stitches.config'
-import * as DropdownDefault from '@radix-ui/react-dropdown-menu'
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
 
 const slideUpAndFade = keyframes({
   '0%': {opacity: 0, transform: 'translateY(2px)'},
@@ -56,11 +56,18 @@ export const dropdownItemStyle = css({
   },
 })
 
-const DropdownContent = styled(DropdownDefault.Content, dropdownContentStyle)
-const DropdownItem = styled(DropdownDefault.Item, dropdownItemStyle)
+const DropdownContent = styled(DropdownMenuPrimitive.Content, dropdownContentStyle)
+const DropdownItem = styled(DropdownMenuPrimitive.Item, dropdownItemStyle)
+
+const StyledSeparator = styled(DropdownMenuPrimitive.Separator, {
+  height: 1,
+  backgroundColor: '$background-neutral',
+  margin: 8,
+})
 
 export const Dropdown = {
-  ...DropdownDefault,
+  ...DropdownMenuPrimitive,
   Content: DropdownContent,
   Item: DropdownItem,
+  Separator: StyledSeparator,
 }
