@@ -1,14 +1,20 @@
+import type {FlowContent, Statement} from '@mintter/mttast'
+import {isLink} from '@mintter/mttast'
 import {isEmbed} from '@mintter/mttast'
 import {createContext, useEffect, useContext} from 'react'
-import {Box, Text, Button} from '@mintter/ui'
+import {Box, Text, Button, Icon} from '@mintter/ui'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {createMachine, Interpreter, State} from 'xstate'
-// import {usePublication} from '@mintter/client/hooks'
-// import {visit} from 'unist-util-visit'
-// import {document} from '@mintter/mttast-builder'
 import {Node} from 'slate'
-// import {getEmbedIds} from '../editor/elements/embed'
 import {InlineEmbed, useEmbed} from '../editor/elements/embed'
+import {MINTTER_LINK_PREFIX} from '../constants'
+import {visit} from 'unist-util-visit'
+import {document} from '@mintter/mttast-builder'
+import {assign} from 'xstate'
+import {useAccount} from '@mintter/client/hooks'
+import {ContextMenu} from '../editor/context-menu'
+import {copyTextToClipboard} from '../editor/elements/statement'
+import toast from 'react-hot-toast'
 
 export type SidepanelEventsType =
   | {
@@ -33,7 +39,7 @@ export type SidepanelEventsType =
     }
   | {
       type: 'SIDEPANEL_LOAD_ANNOTATIONS'
-      payload: any
+      content: Array<FlowContent>
     }
 
 export type SidepanelContextType = {
@@ -83,7 +89,7 @@ export const sidepanelMachine = createMachine(
             actions: ['getAnnotations'],
           },
         },
-        initial: 'closed',
+        initial: 'opened',
         states: {
           closed: {
             on: {
@@ -122,9 +128,21 @@ export const sidepanelMachine = createMachine(
           context.bookmarks.delete(event.payload)
         }
       },
-      getAnnotations: (context: SidepanelContextType, event: SidepanelEventsType) => {
-        console.log(event)
-      },
+      getAnnotations: assign((_, event: SidepanelEventsType) => {
+        let nodes = new Set<string>()
+        if ('content' in event) {
+          visit(
+            document(event.content),
+            (n) => isEmbed(n) || (isLink(n) && n.url.includes(MINTTER_LINK_PREFIX)),
+            (node) => {
+              nodes.add(node.url)
+            },
+          )
+        }
+        return {
+          annotations: nodes,
+        }
+      }),
     },
   },
 )
@@ -188,32 +206,62 @@ export type SidepanelProps = {
 }
 
 export function Sidepanel({gridArea}: SidepanelProps) {
-  const {bookmarks} = useSidepanel()
+  const {bookmarks, annotations} = useSidepanel()
 
   return (
     <Box
       css={{
         top: 0,
         gridArea,
-        padding: '$5',
         zIndex: 1,
         borderLeft: '1px solid rgba(0,0,0,0.1)',
       }}
     >
-      {Array.from(bookmarks).map((item) => {
-        return <SidepanelItem item={item} />
-      })}
+      {Array.from(annotations).length ? (
+        <Box
+          css={{
+            padding: '$5',
+          }}
+        >
+          <Text fontWeight="bold">Annotations</Text>
+          {Array.from(annotations).map((item) => {
+            return <SidepanelItem key={item} item={item} remove={false} />
+          })}
+        </Box>
+      ) : null}
+
+      {Array.from(bookmarks).length ? (
+        <Box
+          css={{
+            padding: '$5',
+          }}
+        >
+          <Text fontWeight="bold">Bookmarks</Text>
+          {Array.from(bookmarks).map((item) => {
+            return <SidepanelItem key={item} item={item} />
+          })}
+        </Box>
+      ) : null}
     </Box>
   )
 }
 
 export type SidepanelItemProps = {
   item: string
+  remove?: boolean
 }
 
-export function SidepanelItem({item}: SidepanelItemProps) {
+export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
   const {status, data, error} = useEmbed(item)
+  const {data: author} = useAccount(data.document.author, {
+    enabled: !!data.document.author,
+  })
   const {send} = useSidepanel()
+
+  async function onCopy() {
+    await copyTextToClipboard(item)
+    toast.success('Statement Reference copied successfully', {position: 'top-center'})
+  }
 
   if (status == 'loading') {
     return <Box css={{padding: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>...</Box>
@@ -222,9 +270,51 @@ export function SidepanelItem({item}: SidepanelItemProps) {
   if (status == 'error') {
     console.error('SidepanelItem error: ', error)
     return (
-      <Box css={{padding: '$4', marginTop: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>
-        <Box css={{display: 'flex', gap: '$4'}}>
-          <Text size="2" css={{flex: 1}}>{`Error with item id: ${data.statement.id}`}</Text>
+      <ContextMenu.Root>
+        <ContextMenu.Trigger>
+          <Box css={{padding: '$4', marginTop: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>
+            <Box css={{display: 'flex', gap: '$4'}}>
+              <Text size="2" css={{flex: 1}}>{`Error with item id: ${data.statement.id}`}</Text>
+              {remove && (
+                <Button
+                  size="1"
+                  variant="ghost"
+                  color="primary"
+                  onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', payload: item})}
+                >
+                  remove
+                </Button>
+              )}
+            </Box>
+          </Box>
+        </ContextMenu.Trigger>
+        <ContextMenu.Content alignOffset={-5}>
+          <ContextMenu.Item onSelect={onCopy}>
+            <Icon name="Copy" size="1" />
+            <Text size="2">Copy Statement Reference</Text>
+          </ContextMenu.Item>
+        </ContextMenu.Content>
+      </ContextMenu.Root>
+    )
+  }
+
+  return (
+    <Box
+      css={{
+        padding: '$4',
+        marginTop: '$5',
+        border: '1px solid rgba(0,0,0,0.1)',
+        borderRadius: '$2',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '$4',
+      }}
+    >
+      <Box css={{display: 'flex', gap: '$4'}}>
+        <Text size="2" css={{flex: 1}}>
+          <span style={{fontWeight: 'bold'}}>{data?.document?.title}</span> by {author?.profile?.alias}
+        </Text>
+        {remove && (
           <Button
             size="1"
             variant="ghost"
@@ -233,27 +323,9 @@ export function SidepanelItem({item}: SidepanelItemProps) {
           >
             remove
           </Button>
-        </Box>
+        )}
       </Box>
-    )
-  }
 
-  return (
-    <Box css={{padding: '$4', marginTop: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>
-      <Box css={{display: 'flex', gap: '$4'}}>
-        <Text size="2" css={{flex: 1}}>
-          <span style={{fontWeight: 'bold'}}>{data?.document?.title}</span> by USER
-        </Text>
-        <Button
-          size="1"
-          variant="ghost"
-          color="primary"
-          onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', payload: item})}
-        >
-          remove
-        </Button>
-      </Box>
-      {/* <Box css={{paddingVertical: '$4', borderRadius: '$2', marginTop: '$3'}}> */}
       <Text as="span" alt size="2" css={{display: 'inline-block'}}>
         {data.statement.children[0].children.map((child, idx) =>
           isEmbed(child) ? (
@@ -263,23 +335,6 @@ export function SidepanelItem({item}: SidepanelItemProps) {
           ),
         )}
       </Text>
-      {/* </Box> */}
     </Box>
   )
 }
-
-// function PinnedBlock({content, blockId}: {content: [GroupingContent]; blockId: string}) {
-//   let block: FlowContent
-//   visit(document(content), {id: blockId}, (node) => {
-//     block = node
-//   })
-
-//   if (block) {
-//     return (
-//       <Box css={{backgroundColor: '$secondary-muted', padding: '$4', borderRadius: '$2', marginTop: '$3'}}>
-//         <Text alt>{Node.string(block.children[0])}</Text>
-//       </Box>
-//     )
-//   }
-//   return null
-// }
