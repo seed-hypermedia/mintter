@@ -5,7 +5,7 @@ import type {ReactEditor, RenderElementProps, RenderLeafProps, Editable} from 's
 
 declare module 'slate' {
   export interface CustomTypes {
-    Editor: BaseEditor & ReactEditor & HistoryEditor
+    Editor: BaseEditor & ReactEditor & HistoryEditor & {mode: string}
     Element: Document | Exclude<MttastContent, Text>
     Text: Text
   }
@@ -24,7 +24,7 @@ interface BeforeInputHandler {
 
 export interface EditorPlugin extends EditorEventHandlers, BeforeInputHandler {
   name: string
-  mode?: string
+  apply?: string | ((mode: string) => boolean)
   configureEditor?: (editor: Editor) => Editor | undefined | void
   renderElement?: (props: RenderElementProps) => JSX.Element | undefined | void
   renderLeaf?: (props: RenderLeafProps) => JSX.Element | undefined | void
