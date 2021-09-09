@@ -37,9 +37,7 @@ export default function EditorPage() {
     client,
   })
 
-  useEffect(() => {}, [])
-
-  const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
+  const {send: sidepanelSend, isOpen: isSidepanelOpen, annotations} = useSidepanel()
 
   useEnableSidepanel()
 
@@ -162,14 +160,18 @@ export default function EditorPage() {
           {context.localDraft?.content && (
             <Editor
               value={context.localDraft.content}
-              onChange={(content) =>
+              onChange={(content) => {
                 send({
                   type: 'UPDATE',
                   payload: {
                     content,
                   },
                 })
-              }
+                sidepanelSend({
+                  type: 'SIDEPANEL_LOAD_ANNOTATIONS',
+                  content,
+                })
+              }}
             />
           )}
         </Container>

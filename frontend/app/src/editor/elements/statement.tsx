@@ -3,26 +3,19 @@ import type {RenderElementProps} from 'slate-react'
 import type {Statement as StatementType} from '@mintter/mttast'
 import type {NodeEntry} from 'slate'
 import {Path, Transforms, Editor} from 'slate'
-import {useReadOnly} from 'slate-react'
-import {
-  useMemo,
-  forwardRef,
-  // useRef, useCallback, useEffect
-} from 'react'
+import {useMemo, forwardRef} from 'react'
 import {useHistory, useLocation, useParams} from 'react-router'
 import toast from 'react-hot-toast'
-import {isBlockquote, isEmbed, isGroupContent, isHeading, isStatement} from '@mintter/mttast'
+import {isBlockquote, isGroupContent, isHeading, isStatement} from '@mintter/mttast'
 import {createDraft} from '@mintter/client'
 import {css, styled} from '@mintter/ui/stitches.config'
 import {group} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
-import {Box} from '@mintter/ui/box'
 import {isLastChild, getLastChild, isFirstChild} from '../utils'
 import {ContextMenu} from '../context-menu'
 import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
-import {getEmbedIds} from './embed'
 import {StatementTools, Tools} from '../statement-tools'
 
 export const ELEMENT_STATEMENT = 'statement'
