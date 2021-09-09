@@ -1,4 +1,7 @@
-import {Button as UIButton, Text, Box} from '@mintter/ui'
+import type {ButtonProps} from '@mintter/ui/button'
+import {Button as UIButton} from '@mintter/ui/button'
+import {Text} from '@mintter/ui/text'
+import {Box} from '@mintter/ui/box'
 
 export function Root({children}: any) {
   return (
@@ -26,7 +29,7 @@ export function Title({children}: any) {
 }
 
 // TODO: fix types
-export function Button({children, ...props}: any) {
+export function Button({children, ...props}: ButtonProps) {
   return (
     <UIButton variant="outlined" color="primary" {...props}>
       {children}

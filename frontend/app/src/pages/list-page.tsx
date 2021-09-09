@@ -10,20 +10,21 @@ export type ListPageProps = {
 }
 export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
   const {status, error, data = []} = useDataHook()
+  console.log('🚀 ~ file: list-page.tsx ~ line 13 ~ ListPage ~ status, error, data', status, error, data)
 
-  if (status === 'loading') {
+  if (status == 'loading') {
     return <p>loading...</p>
   }
 
-  if (status === 'error') {
+  if (status == 'error') {
     console.error('ListPage error: ', error)
-    return <p>ERROR</p>
+    return <Text>ERROR</Text>
   }
 
   return (
     <>
       {/* <Seo title="Feed" /> */}
-      {data?.length === 0 && (
+      {data?.length == 0 && (
         <MessageBox.Root>
           <MessageBox.Title>No Publications (yet)</MessageBox.Title>
           <MessageBox.Button onClick={onCreateDraft}>

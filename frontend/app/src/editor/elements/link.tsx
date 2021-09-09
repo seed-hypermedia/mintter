@@ -178,7 +178,6 @@ function isMintterLink(text: string) {
 }
 
 function wrapMintterLink(editor: MTTEditor, url: string) {
-  console.log('add mintter link!!', text)
   const {selection} = editor
   const newEmbed: Embed = embed({url}, [text('')])
   const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])
