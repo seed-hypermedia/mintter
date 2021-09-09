@@ -1,4 +1,3 @@
-import type {MTTEditor} from './utils'
 import type {FlowContent, Statement} from '@mintter/mttast'
 import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
@@ -117,7 +116,7 @@ export function StatementTools({element}: {element: FlowContent}) {
  * @todo add correct types to builder function
  */
 function setType(fn: any) {
-  return function setToStatement(editor: MTTEditor, element: FlowContent, at: Path) {
+  return function setToStatement(editor: Editor, element: FlowContent, at: Path) {
     Editor.withoutNormalizing(editor, function () {
       const {children, type, ...props} = element
       Transforms.removeNodes(editor, {at})

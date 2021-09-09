@@ -1,6 +1,5 @@
 import type {EditorPlugin} from '../types'
 import type {RenderElementProps} from 'slate-react'
-import type {MTTEditor} from '../utils'
 import type {Statement as StatementType} from '@mintter/mttast'
 import type {NodeEntry} from 'slate'
 import {Path, Transforms, Editor} from 'slate'
@@ -174,7 +173,7 @@ function Statement({attributes, children, element}: RenderElementProps) {
   )
 }
 
-export function removeEmptyStatement(editor: MTTEditor, entry: NodeEntry<StatementType>): boolean | undefined {
+export function removeEmptyStatement(editor: Editor, entry: NodeEntry<StatementType>): boolean | undefined {
   const [node, path] = entry
   if (isStatement(node)) {
     if (node.children.length == 1) {

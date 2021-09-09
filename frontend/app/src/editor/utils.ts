@@ -1,12 +1,8 @@
-import type {BaseEditor, Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
-import type {ReactEditor} from 'slate-react'
-import type {HistoryEditor} from 'slate-history'
+import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
 import type {GroupingContent} from '@mintter/mttast'
 import {Range, Editor, Path, Transforms, Text, Node} from 'slate'
 import {isFlowContent, isGroup, isGroupContent, isStatement} from '@mintter/mttast'
 import {group, statement} from '@mintter/mttast-builder'
-
-export type MTTEditor = BaseEditor & ReactEditor & HistoryEditor
 
 export const isCollapsed = (range: Range): boolean => !!range && Range.isCollapsed(range)
 
@@ -57,7 +53,7 @@ export interface UnhangRangeOptions {
  * so the selection isn’t hanging into the second block.
  *
  * */
-export function unhangRange(editor: MTTEditor, options: UnhangRangeOptions = {}) {
+export function unhangRange(editor: Editor, options: UnhangRangeOptions = {}) {
   const {at = editor.selection, voids, unhang = true} = options
 
   if (Range.isRange(at) && unhang) {
@@ -157,7 +153,7 @@ export function removeMark(editor: Editor, key: keyof Omit<Text, 'value'>): void
   }
 }
 
-export function resetFlowContent(editor: MTTEditor): boolean | undefined {
+export function resetFlowContent(editor: Editor): boolean | undefined {
   const {selection} = editor
   if (selection && isCollapsed(selection)) {
     const block = Editor.above(editor, {
@@ -182,7 +178,7 @@ export function resetFlowContent(editor: MTTEditor): boolean | undefined {
   }
 }
 
-export function resetGroupingContent(editor: MTTEditor): boolean {
+export function resetGroupingContent(editor: Editor): boolean {
   const {selection} = editor
   if (selection && isCollapsed(selection)) {
     const list = Editor.above<GroupingContent>(editor, {
