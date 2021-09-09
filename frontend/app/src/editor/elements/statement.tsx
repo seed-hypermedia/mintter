@@ -112,7 +112,6 @@ function Statement({attributes, children, element}: RenderElementProps) {
   const {send} = useSidepanel()
   const location = useLocation()
   const history = useHistory()
-  const isReadOnly = useReadOnly()
   const isDraft = useMemo(() => location.pathname.includes('editor'), [location.pathname])
 
   async function onCopy() {
