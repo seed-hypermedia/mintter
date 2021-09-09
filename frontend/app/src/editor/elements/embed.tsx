@@ -168,7 +168,7 @@ export function useEmbed(url: string) {
     }
 
     return temp
-  }, [publicationQuery.data])
+  }, [publicationQuery])
 
   return {
     ...publicationQuery,
