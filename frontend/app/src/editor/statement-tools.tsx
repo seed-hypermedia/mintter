@@ -12,6 +12,7 @@ import {Transforms, Editor, Path, Node} from 'slate'
 import {blockquote, code, group, heading, ol, statement, ul} from '@mintter/mttast-builder'
 import {useReadOnly} from 'slate-react'
 import {Box} from '@mintter/ui/box'
+import {Fragment} from 'react'
 
 export const Tools = styled('div', {
   height: '100%',
@@ -45,6 +46,7 @@ export const ElementDropdown = styled('button', {
   border: 'none',
   backgroundColor: '$background-default',
   width: '$space$8',
+  height: '$space$8',
   display: 'flex',
   alignItems: 'center',
   zIndex: 2,
@@ -116,14 +118,14 @@ export function StatementTools({element}: {element: FlowContent}) {
     <Tools contentEditable={false}>
       <Marker element={element} />
       {!isReadOnly ? (
-        <Dropdown.Root modal={false}>
+        <Dropdown.Root>
           <Dropdown.Trigger as={ElementDropdown} data-trigger>
             <Icon name="Grid4" size="2" color="muted" />
           </Dropdown.Trigger>
           <Dropdown.Content portalled align="start" side="bottom" css={{minWidth: 220}}>
             {Object.entries(items).map(([key, value], index, arr) => {
               return (
-                <>
+                <Fragment key={key}>
                   <Dropdown.Label>
                     <Text color="muted" size="2" css={{marginHorizontal: '$3', marginVertical: '$2'}}>
                       Turn {key} into:
@@ -136,7 +138,7 @@ export function StatementTools({element}: {element: FlowContent}) {
                     </Dropdown.Item>
                   ))}
                   {arr.length > index + 1 && <Dropdown.Separator />}
-                </>
+                </Fragment>
               )
             })}
           </Dropdown.Content>

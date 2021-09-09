@@ -75,9 +75,7 @@ export const createLinkPlugin = (): EditorPlugin => ({
      */
     const {isInline, insertText, insertData} = editor
 
-    editor.isInline = (element) => {
-      return isLink(element) ? true : isInline(element)
-    }
+    editor.isInline = (element) => isLink(element) || isInline(element)
 
     editor.insertText = (text: string) => {
       if (text && isUrl(text)) {
@@ -180,7 +178,7 @@ function isMintterLink(text: string) {
 function wrapMintterLink(editor: MTTEditor, url: string) {
   const {selection} = editor
   const newEmbed: Embed = embed({url}, [text('')])
-  const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])
+  // const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])
 
   if (isCollapsed(selection!)) {
     Transforms.insertNodes(editor, newEmbed)
@@ -239,7 +237,7 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!editor) return
-    if (link && isUrl(link)) {
+    if (link && (isUrl(link) || isMintterLink(link))) {
       ReactEditor.focus(editor)
       setTimeout(() => {
         Transforms.setSelection(editor, lastSelection!)

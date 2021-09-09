@@ -162,14 +162,18 @@ export default function EditorPage() {
           {context.localDraft?.content && (
             <Editor
               value={context.localDraft.content}
-              onChange={(content) =>
+              onChange={(content) => {
                 send({
                   type: 'UPDATE',
                   payload: {
                     content,
                   },
                 })
-              }
+                sidepanelSend({
+                  type: 'SIDEPANEL_LOAD_ANNOTATIONS',
+                  content,
+                })
+              }}
             />
           )}
         </Container>
