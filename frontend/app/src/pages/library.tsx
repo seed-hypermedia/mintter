@@ -12,11 +12,6 @@ import {Connections} from '../connections'
 import {ListPage} from './list-page'
 import toast from 'react-hot-toast'
 
-const hookSelector = {
-  published: useMyPublicationsList,
-  drafts: useDraftsList,
-}
-
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
   const {path, url} = useRouteMatch()
@@ -131,9 +126,15 @@ export default function Library() {
             <ListPage onCreateDraft={onCreateDraft} useDataHook={useOthersPublicationsList} />
           </Route>
           <Route
-            path={`${path}/:tab`}
-            render={({match}) => {
-              return <ListPage onCreateDraft={onCreateDraft} useDataHook={hookSelector[match.params.tab]} />
+            path={`${path}/published`}
+            render={() => {
+              return <ListPage onCreateDraft={onCreateDraft} useDataHook={useMyPublicationsList} />
+            }}
+          />
+          <Route
+            path={`${path}/drafts`}
+            render={() => {
+              return <ListPage onCreateDraft={onCreateDraft} useDataHook={useDraftsList} />
             }}
           />
         </Switch>

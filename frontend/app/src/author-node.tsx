@@ -16,8 +16,6 @@ const {Settings} = lazily(() => import('./pages/settings'))
 const Publication = lazy(() => import('./pages/publication'))
 
 export function AuthorNode({path = '/'}: {path?: string}) {
-  const match = useRouteMatch(path)!
-
   const info = useInfo({
     refetchOnMount: false,
     refetchOnReconnect: false,

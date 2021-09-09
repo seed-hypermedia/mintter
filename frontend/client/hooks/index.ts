@@ -86,7 +86,7 @@ export function useDraftsList(options: any = {}) {
     return listDrafts()
   })
 
-  const data = useMemo(() => draftsListQuery.data?.documents.map((d) => ({document: d})), [draftsListQuery.data])
+  const data = useMemo(() => draftsListQuery.data?.documents.map((d) => ({document: d})), [draftsListQuery])
 
   return {
     ...draftsListQuery,
@@ -115,7 +115,7 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
     ...options,
   })
 
-  const data = useMemo(() => peerAddrsQuery.data, [peerAddrsQuery.data])
+  const data = useMemo(() => peerAddrsQuery.data, [peerAddrsQuery])
 
   return {
     ...peerAddrsQuery,
@@ -144,7 +144,7 @@ export function usePublication(publicationId: string, options: HookOptions<Publi
 
   const content: Array<FlowContent> = useMemo(
     () => (publicationQuery.data?.document?.content ? JSON.parse(publicationQuery.data?.document?.content) : null),
-    [publicationQuery.data],
+    [publicationQuery],
   )
 
   return {
@@ -169,7 +169,7 @@ export function useOthersPublicationsList(options: HookOptions<ListPublicationsR
     },
     options,
   )
-
+  console.log('useOthersPubs', myPubsListQuery.data, info)
   const data = useMemo(
     () =>
       myPubsListQuery.data?.publications.reduce((acc: Array<Publication>, current: Publication) => {
@@ -179,7 +179,7 @@ export function useOthersPublicationsList(options: HookOptions<ListPublicationsR
 
         return acc
       }, []),
-    [myPubsListQuery.data, info],
+    [myPubsListQuery, info],
   )
 
   return {
@@ -198,7 +198,7 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
     },
     options,
   )
-
+  console.log('useMuPubs', myPubsListQuery, info)
   const data = useMemo(
     () =>
       myPubsListQuery.data?.publications.reduce((acc: Array<Publication>, current: Publication) => {
@@ -208,7 +208,7 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
 
         return acc
       }, []),
-    [myPubsListQuery.data, info],
+    [myPubsListQuery, info],
   )
 
   return {
@@ -223,7 +223,7 @@ export function useListAccounts(options: HookOptions<ListAccountsResponse> = {})
     refetchInterval: 5000,
   })
 
-  const data = useMemo(() => listAccountsQuery.data?.accounts || [], [listAccountsQuery.data])
+  const data = useMemo(() => listAccountsQuery.data?.accounts || [], [listAccountsQuery])
 
   return {
     ...listAccountsQuery,

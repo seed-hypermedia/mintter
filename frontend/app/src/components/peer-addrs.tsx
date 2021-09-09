@@ -7,7 +7,7 @@ import {usePeerAddrs} from '@mintter/client/hooks'
 
 export function PeerAddrs() {
   const peerAddrs = usePeerAddrs()
-  const addrs = useMemo(() => peerAddrs.data, [peerAddrs.data])
+  const addrs = useMemo(() => peerAddrs.data, [peerAddrs])
   const copyText = useMemo(() => addrs?.join(','), [addrs])
 
   if (peerAddrs.isLoading) {
