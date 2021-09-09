@@ -1,5 +1,6 @@
-import {styled} from '@mintter/ui/stitches.config'
 import type {EditorPlugin} from '../types'
+import type {RenderElementProps} from 'slate-react'
+import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {Node, Path, Editor} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
@@ -10,7 +11,7 @@ import {createId, statement} from '@mintter/mttast-builder'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
-const Paragraph = styled(Text, {
+const ParagraphStyled = styled(Text, {
   '&[data-parent=code]': {
     fontFamily: 'monospace',
     margin: 0,
@@ -43,23 +44,9 @@ const Paragraph = styled(Text, {
 
 export const createParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_PARAGRAPH,
-  renderElement({attributes, children, element}) {
-    if (element.type === ELEMENT_PARAGRAPH) {
-      const editor = useSlateStatic()
-      const path = ReactEditor.findPath(editor, element)
-      const [parentNode] = Editor.parent(editor, path)
-      return (
-        <Paragraph
-          as={isCode(parentNode) ? 'span' : isBlockquote(parentNode) ? 'blockquote' : 'p'}
-          alt
-          size="4"
-          css={{paddingLeft: '$2'}}
-          data-parent={parentNode?.type ?? null}
-          {...attributes}
-        >
-          {children}
-        </Paragraph>
-      )
+  renderElement(props) {
+    if (isParagraph(props.element)) {
+      return <Paragraph {...props} />
     }
   },
   configureEditor: (editor) => {
@@ -100,3 +87,21 @@ export const createParagraphPlugin = (): EditorPlugin => ({
     return editor
   },
 })
+
+function Paragraph({children, element, attributes}: RenderElementProps) {
+  const editor = useSlateStatic()
+  const path = ReactEditor.findPath(editor, element)
+  const [parentNode] = Editor.parent(editor, path)
+  return (
+    <Paragraph
+      as={isCode(parentNode) ? 'span' : isBlockquote(parentNode) ? 'blockquote' : 'p'}
+      alt
+      size="4"
+      css={{paddingLeft: '$2'}}
+      data-parent={parentNode?.type ?? null}
+      {...attributes}
+    >
+      {children}
+    </Paragraph>
+  )
+}
