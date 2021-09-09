@@ -31,8 +31,8 @@ export const MarkerStyled = styled('div', {
     groupType: {
       unorderedList: {
         '&::before': {
-          width: '$space$2',
-          height: '$space$2',
+          width: '5px',
+          height: '6px',
           content: '',
           background: '$background-contrast',
           borderRadius: '$round',

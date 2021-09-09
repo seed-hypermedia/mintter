@@ -8,6 +8,8 @@ import {deleteConfirmationDialogMachine} from './delete-confirmation-dialog'
 import {useQueryClient} from 'react-query'
 import {toast} from 'react-hot-toast'
 import {getDateFormat} from './utils/get-format-date'
+import {useAccount} from '@mintter/client/hooks'
+import {Avatar} from './components/avatar'
 
 export function DocumentList({data, status, error}) {
   const location = useLocation()
@@ -41,8 +43,11 @@ function ListItem({item, toPrefix, isDraft}: any) {
     }),
   )
 
-  const {id, title, subtitle, author: itemAuthor} = item.document
-  const theTitle = title ?? 'Untitled Document'
+  let {id, title, subtitle, author: itemAuthor} = item.document
+  const {data: author} = useAccount(itemAuthor, {
+    enabled: !!itemAuthor,
+  })
+  title ||= 'Untitled Document'
 
   return (
     <Box as="li" css={{position: 'relative', listStyle: 'none'}}>
@@ -83,14 +88,14 @@ function ListItem({item, toPrefix, isDraft}: any) {
             gap: '$2',
           }}
         >
-          {/* {!isDraft && location.pathname !== '/library/my-publications' && (
+          {!isDraft && location.pathname !== '/library/my-publications' && (
             <>
               <Avatar css={{gridArea: 'avatar'}} />
               <Text size="1" css={{gridArea: 'author', alignSelf: 'center'}}>
-                {account?.profile?.alias}
-              </Text>{' '}
+                {author?.profile?.alias}
+              </Text>
             </>
-          )} */}
+          )}
           <Box css={{gridArea: 'price'}}>
             <Text
               size="1"
@@ -118,7 +123,7 @@ function ListItem({item, toPrefix, isDraft}: any) {
                 overflow: 'hidden',
               }}
             >
-              {theTitle}
+              {title}
             </Text>
             {subtitle && (
               <Text size="5" color="muted">
