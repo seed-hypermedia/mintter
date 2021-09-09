@@ -94,22 +94,28 @@ func (d *Ldaemon) startRpcClients(macBytes []byte) error {
 func (d *Ldaemon) startSubscriptions() error {
 	var i = 0
 	//We need time for the LND to complete init once the rest of the servers (except from the unlocker) to be up and running
+loop:
 	for {
 		time.Sleep(waitSecondsPerAttempt * time.Second)
 		info, chainErr := d.lightningClient.GetInfo(context.Background(), &lnrpc.GetInfoRequest{})
 		if chainErr != nil {
-			//A typical error is that server is still waking up
-			i++
-			if i < maxConnAttemps {
-				continue
+			select {
+			case <-d.quitChan: // Early exit on shutdown
+				return chainErr
+			default:
+				//A common error is "server still waking up"
+				i++
+				if i < maxConnAttemps {
+					continue loop
+				}
+				d.log.Warn("Failed get chain info:", zap.String("wrn", chainErr.Error()))
+				return chainErr
 			}
-			d.log.Warn("Failed get chain info:", zap.String("wrn", chainErr.Error()))
-			return chainErr
 		}
 		d.Lock()
 		d.nodeID = info.IdentityPubkey
 		d.Unlock()
-		break
+		break loop
 	}
 
 	//Once the general info server returns, we consider it to be safe to start connecting to other servers
@@ -255,6 +261,7 @@ func (d *Ldaemon) subscribeTransactions(ctx context.Context) error {
 	stream, err := d.lightningClient.SubscribeTransactions(ctx, &lnrpc.GetTransactionsRequest{})
 	if err != nil {
 		d.log.Error("Failed to call SubscribeTransactions", zap.String("err", err.Error()))
+		return err
 	}
 
 	d.log.Info("Wallet transactions subscription created")

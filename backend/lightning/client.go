@@ -223,10 +223,6 @@ func (d *Ldaemon) unlockWallet(Passphrase string, StatelessInit bool) error {
 // StatelessInit param is false, the macaroon is also written to disk.
 func (d *Ldaemon) changeWalletPassPhrase(OldPassphrase string,
 	NewPassphrase string, StatelessInit bool) ([]byte, error) {
-	/*FIXME do we really need these locks here?
-	d.Lock()
-	defer d.Unlock()
-	*/
 
 	if len(NewPassphrase) == 0 {
 		return nil, fmt.Errorf("you must provide a non null new password")
@@ -389,4 +385,21 @@ func newLightningClient(noMacaroon bool, macBytes []byte, macPath string, certPa
 	}
 
 	return grpcCon, nil
+}
+
+// Whether or not all the channels of the node are in active state. Not active means the counterparty is offline
+// or it is in the process of being closed.
+func (d *Ldaemon) allChannelsActive(client lnrpc.LightningClient) (bool, error) {
+	channels, err := client.ListChannels(context.Background(), &lnrpc.ListChannelsRequest{})
+	if err != nil {
+		d.log.Error("Error in allChannelsActive() > ListChannels()",
+			zap.String("err", err.Error()))
+		return false, err
+	}
+	for _, c := range channels.Channels {
+		if !c.Active {
+			return false, nil
+		}
+	}
+	return true, nil
 }
