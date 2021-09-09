@@ -50,17 +50,16 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
           }
         }
 
-        // // turn statement into
-        // if (beforeText == '#') {
-        //   const above = Editor.above(editor, {match: isStatement, mode: 'lowest'})
+        // turn statement into
+        if (beforeText == '#') {
+          const above = Editor.above(editor, {match: isStatement, mode: 'lowest'})
 
-        //   if (above && !isOrderedList(above[1])) {
-        //     Transforms.select(editor, range)
-        //     Transforms.delete(editor)
-        //     Transforms.setNodes(editor, {type: ELEMENT_HEADING}, {match: isStatement})
-        //   }
-        // }
-        // insertText(text)
+          if (above && !isOrderedList(above[1])) {
+            Transforms.select(editor, range)
+            Transforms.delete(editor)
+            Transforms.setNodes(editor, {type: ELEMENT_HEADING}, {match: isStatement})
+          }
+        }
       }
       insertText(text)
     }
