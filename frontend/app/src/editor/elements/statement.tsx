@@ -48,9 +48,13 @@ const StatementStyled = styled('li', statementStyle)
 
 export const createStatementPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATEMENT,
-  renderElement(props) {
-    if (isStatement(props.element)) {
-      return <Statement {...props} />
+  renderElement({element, children, attributes}) {
+    if (isStatement(element)) {
+      return (
+        <Statement element={element} attributes={attributes}>
+          {children}
+        </Statement>
+      )
     }
   },
   configureEditor(editor) {

@@ -19,9 +19,8 @@ export type {
   StaticContent,
   GroupingContent,
   FlowContent,
-  EmbeddedContent,
   StaticPhrasingContent,
   PhrasingContent,
-  MttastContent
+  MttastContent,
 } from './types'
 export * from './assertions'

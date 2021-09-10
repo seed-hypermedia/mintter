@@ -46,9 +46,13 @@ const headingMap: {
 
 export const createStaticParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATIC_PARAGRAPH,
-  renderElement(props) {
-    if (isStaticParagraph(props.element)) {
-      return <StaticParagraph {...props} />
+  renderElement({element, children, attributes}) {
+    if (isStaticParagraph(element)) {
+      return (
+        <StaticParagraph element={element} attributes={attributes}>
+          {children}
+        </StaticParagraph>
+      )
     }
   },
   /*

@@ -1,12 +1,16 @@
+import type {Range} from 'slate'
+import type {Lang} from 'shiki'
+import type {RenderElementProps} from 'slate-react'
+import type {Code as CodeType, FlowContent} from '@mintter/mttast'
 import type {Highlighter, IThemeRegistration} from 'shiki'
 import type {EditorPlugin} from '../types'
+import {ReactEditor, useSlateStatic} from 'slate-react'
 import {resetFlowContent} from '../utils'
 import {setCDN, getHighlighter} from 'shiki'
 import {Box} from '@mintter/ui/box'
 import {styled} from '@mintter/ui/stitches.config'
 import {isCode, isParagraph} from '@mintter/mttast'
 import {Editor, Node, Transforms} from 'slate'
-import type {Range} from 'slate'
 import {MARK_EMPHASIS} from '../leafs/emphasis'
 import {MARK_STRONG} from '../leafs/strong'
 import {MARK_UNDERLINE} from '../leafs/underline'
@@ -14,10 +18,9 @@ import {StatementTools} from '../statement-tools'
 import {statementStyle} from './statement'
 
 export const ELEMENT_CODE = 'code'
-
 const HIGHLIGHTER = Symbol('shiki highlighter')
 
-export const Code = styled('pre', statementStyle)
+export const CodeStyled = styled('pre', statementStyle)
 
 interface CodePluginProps {
   theme?: IThemeRegistration
@@ -43,26 +46,11 @@ export const createCodePlugin = async (props: CodePluginProps = {}): Promise<Edi
 
       return e
     },
-    renderElement({attributes, children, element}) {
+    renderElement({children, element, attributes}) {
       if (isCode(element)) {
         return (
-          <Code data-element-type={element.type} {...attributes}>
-            <StatementTools element={element} />
-            <Box
-              as="code"
-              css={{
-                backgroundColor: '$background-muted',
-                padding: '$7',
-                borderRadius: '$2',
-                overflow: 'scroll',
-                position: 'relative',
-                // color: highlighter.getForegroundColor(theme as string),
-                // caretColor: highlighter.getForegroundColor(theme as string),
-                // backgroundColor: highlighter.getBackgroundColor(theme as string),
-              }}
-            >
-              {children}
-            </Box>
+          <Code element={element} attributes={attributes}>
+            {children}
           </Code>
         )
       }
@@ -122,4 +110,61 @@ export const createCodePlugin = async (props: CodePluginProps = {}): Promise<Edi
       return ranges
     },
   }
+}
+
+function Code({
+  children,
+  element,
+  attributes,
+}: RenderElementProps & {
+  element: CodeType
+}) {
+  const editor = useSlateStatic()
+  const path = ReactEditor.findPath(editor, element)
+
+  function setLanguage(e: React.ChangeEvent<HTMLSelectElement>) {
+    const {...newData} = element.data
+    delete newData[HIGHLIGHTER]
+
+    Transforms.setNodes(editor, {lang: e.target.value as Lang, data: newData}, {at: path})
+  }
+
+  let lang = element.lang || ''
+
+  return (
+    <>
+      <Box
+        contentEditable={false}
+        css={{
+          position: 'absolute',
+          right: 0,
+          top: 0,
+          transform: 'translate(8px, -8px)',
+          zIndex: 2,
+        }}
+      >
+        <select id="lang-selection" name="lang-selection" value={lang} onChange={setLanguage}>
+          <option value="">Select a Language</option>
+          <option value="javascript">JavaScript</option>
+          <option value="typescript">TypeScript</option>
+          <option value="go">Golang</option>
+        </select>
+      </Box>
+      <CodeStyled data-element-type={element.type} {...attributes}>
+        <StatementTools element={element} />
+        <Box
+          as="code"
+          css={{
+            backgroundColor: '$background-muted',
+            padding: '$7',
+            borderRadius: '$2',
+            overflow: 'hidden',
+            position: 'relative',
+          }}
+        >
+          {children}
+        </Box>
+      </CodeStyled>
+    </>
+  )
 }
