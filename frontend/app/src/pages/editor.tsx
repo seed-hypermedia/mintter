@@ -16,6 +16,9 @@ export default function EditorPage() {
   const client = useQueryClient()
   const history = useHistory()
   const toast = useRef('')
+
+  const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
+
   const [state, send] = useEditorDraft({
     documentId: docId,
     afterSave: () => {
@@ -34,10 +37,11 @@ export default function EditorPage() {
 
       history.push(`/p/${context.localDraft?.id}`)
     },
+    loadAnnotations: (context: DraftEditorMachineContext) => {
+      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', content: context.localDraft?.content})
+    },
     client,
   })
-
-  const {send: sidepanelSend, isOpen: isSidepanelOpen, annotations} = useSidepanel()
 
   useEnableSidepanel()
 
