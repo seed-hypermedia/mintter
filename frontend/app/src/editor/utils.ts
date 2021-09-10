@@ -109,6 +109,7 @@ export function isFirstChild(path: Path): boolean {
 export function toggleMark(
   editor: Editor,
   key: keyof Omit<Text, 'value'>,
+  value: any = true,
   ...clears: Array<keyof Omit<Text, 'value'>>
 ): void {
   if (!editor.selection) return
@@ -118,7 +119,7 @@ export function toggleMark(
   Transforms.setNodes(
     editor,
     {
-      [key]: isActive ? null : true,
+      [key]: isActive ? null : value,
     },
     {
       match: Text.isText,
