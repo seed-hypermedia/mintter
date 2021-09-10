@@ -1,7 +1,8 @@
-import type {Range} from 'slate'
+import {Path, Range} from 'slate'
 import type {Lang} from 'shiki'
 import type {RenderElementProps} from 'slate-react'
-import type {Code as CodeType, FlowContent} from '@mintter/mttast'
+import {useReadOnly} from 'slate-react'
+import type {Code as CodeType} from '@mintter/mttast'
 import type {Highlighter, IThemeRegistration} from 'shiki'
 import type {EditorPlugin} from '../types'
 import {ReactEditor, useSlateStatic} from 'slate-react'
@@ -16,11 +17,33 @@ import {MARK_STRONG} from '../leafs/strong'
 import {MARK_UNDERLINE} from '../leafs/underline'
 import {StatementTools} from '../statement-tools'
 import {statementStyle} from './statement'
+import {createId, paragraph, statement, text} from 'frontend/mttast-builder/dist'
 
 export const ELEMENT_CODE = 'code'
 const HIGHLIGHTER = Symbol('shiki highlighter')
 
-export const CodeStyled = styled('pre', statementStyle)
+const SelectorWrapper = styled('div', {
+  boxSizing: 'border-box',
+  position: 'absolute',
+  right: 0,
+  top: 0,
+  transform: 'translate(8px, -8px)',
+  zIndex: 2,
+  opacity: 0,
+  transition: 'opacity 0.5s',
+})
+
+export const CodeStyled = styled('pre', statementStyle, {
+  position: 'relative',
+  code: {
+    overflowX: 'scroll',
+  },
+  '&:hover': {
+    [`${SelectorWrapper}`]: {
+      opacity: 1,
+    },
+  },
+})
 
 interface CodePluginProps {
   theme?: IThemeRegistration
@@ -38,6 +61,10 @@ export const createCodePlugin = async (props: CodePluginProps = {}): Promise<Edi
     configureEditor(e) {
       editor = e
 
+      /*
+       * @todo modify paste so it will add empty lines
+       * @body we need to paste code content inside the same paragraph
+       */
       const {deleteBackward} = e
       e.deleteBackward = (unit) => {
         if (resetFlowContent(editor)) return
@@ -56,11 +83,22 @@ export const createCodePlugin = async (props: CodePluginProps = {}): Promise<Edi
       }
     },
     onKeyDown(ev) {
-      if (ev.key === 'Enter') {
+      if (ev.key == 'Enter') {
         const code = Editor.above(editor, {match: isCode})
         if (code) {
           ev.preventDefault()
-          Transforms.insertText(editor, '\n')
+          if (ev.shiftKey) {
+            const [, codePath] = code
+            Editor.withoutNormalizing(editor, () => {
+              Transforms.insertNodes(editor, statement({id: createId()}, [paragraph([text('')])]), {
+                at: Path.next(codePath),
+              })
+              Transforms.select(editor, Path.next(codePath))
+              Transforms.collapse(editor, {edge: 'start'})
+            })
+          } else {
+            Transforms.insertText(editor, '\n')
+          }
         }
       }
     },
@@ -98,15 +136,16 @@ export const createCodePlugin = async (props: CodePluginProps = {}): Promise<Edi
               color: token.color,
             }
 
-            if (token.fontStyle === 1) range[MARK_EMPHASIS] = true
-            if (token.fontStyle === 2) range[MARK_STRONG] = true
-            if (token.fontStyle === 4) range[MARK_UNDERLINE] = true
+            if (token.fontStyle == 1) range[MARK_EMPHASIS] = true
+            if (token.fontStyle == 2) range[MARK_STRONG] = true
+            if (token.fontStyle == 4) range[MARK_UNDERLINE] = true
 
             ranges.push(range)
             offset += token.content.length
           }
         }
       }
+      console.log('🚀 ~ file: code.tsx ~ line 150 ~ decorate ~ ranges', ranges)
       return ranges
     },
   }
@@ -121,50 +160,51 @@ function Code({
 }) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
+  const isReadOnly = useReadOnly()
 
   function setLanguage(e: React.ChangeEvent<HTMLSelectElement>) {
-    const {...newData} = element.data
+    const {...newData} = element.data || {}
     delete newData[HIGHLIGHTER]
 
     Transforms.setNodes(editor, {lang: e.target.value as Lang, data: newData}, {at: path})
   }
 
   let lang = element.lang || ''
+  console.log('lang', lang)
 
   return (
-    <>
-      <Box
-        contentEditable={false}
-        css={{
-          position: 'absolute',
-          right: 0,
-          top: 0,
-          transform: 'translate(8px, -8px)',
-          zIndex: 2,
-        }}
-      >
-        <select id="lang-selection" name="lang-selection" value={lang} onChange={setLanguage}>
-          <option value="">Select a Language</option>
-          <option value="javascript">JavaScript</option>
-          <option value="typescript">TypeScript</option>
-          <option value="go">Golang</option>
-        </select>
-      </Box>
-      <CodeStyled data-element-type={element.type} {...attributes}>
-        <StatementTools element={element} />
-        <Box
-          as="code"
+    <CodeStyled data-element-type={element.type} {...attributes}>
+      {!isReadOnly ? (
+        <SelectorWrapper
+          contentEditable={false}
           css={{
-            backgroundColor: '$background-muted',
-            padding: '$7',
-            borderRadius: '$2',
-            overflow: 'hidden',
-            position: 'relative',
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            transform: 'translate(8px, -8px)',
+            zIndex: 2,
           }}
         >
-          {children}
-        </Box>
-      </CodeStyled>
-    </>
+          <select id="lang-selection" name="lang-selection" value={lang} onChange={setLanguage}>
+            <option value="">Select a Language</option>
+            <option value="javascript">JavaScript</option>
+            <option value="typescript">TypeScript</option>
+            <option value="go">Golang</option>
+          </select>
+        </SelectorWrapper>
+      ) : null}
+      <StatementTools element={element} />
+      <Box
+        as="code"
+        css={{
+          backgroundColor: '$background-muted',
+          padding: '$8',
+          borderRadius: '$2',
+          position: 'relative',
+        }}
+      >
+        {children}
+      </Box>
+    </CodeStyled>
   )
 }
