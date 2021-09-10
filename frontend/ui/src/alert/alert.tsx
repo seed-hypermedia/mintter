@@ -5,135 +5,109 @@ import type {ComponentProps} from 'react'
 // TODO: import components directly from its component file.
 import {Box} from '../box'
 import {Button} from '../button'
-import {keyframes} from '../stitches.config'
+import {keyframes, styled} from '../stitches.config'
 import {Text} from '../text'
 
-const showOverlay = keyframes({
+const overlayShow = keyframes({
   '0%': {opacity: 0},
   '100%': {opacity: 0.75},
 })
 
-const hideOverlay = keyframes({
-  '0%': {opacity: 0.75},
-  '100%': {opacity: 0},
+const contentShow = keyframes({
+  '0%': {opacity: 0, transform: 'translate(-50%, -48%) scale(.96)'},
+  '100%': {opacity: 1, transform: 'translate(-50%, -50%) scale(1)'},
+})
+
+const StyledOverlay = styled(AlertDialogPrimitive.Overlay, {
+  backgroundColor: '#333',
+  opacity: 0.75,
+  position: 'fixed',
+  inset: 0,
+  '@media (prefers-reduced-motion: no-preference)': {
+    animation: `${overlayShow} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
+  },
 })
 
 function Root({children, ...props}) {
   return (
     <AlertDialogPrimitive.Root {...props}>
-      <AlertDialogPrimitive.Overlay
-        as={Box}
-        css={{
-          backgroundColor: '#333',
-          backdropFilter: 'saturate(180%) blur(20px)',
-          opacity: 0.75,
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0,
-          '&[data-state="open"]': {
-            animation: `${showOverlay} 200ms ease-out`,
-          },
-          '&[data-state="closed"]': {
-            animation: `${hideOverlay} 200ms ease-in`,
-          },
-        }}
-      />
+      <StyledOverlay />
       {children}
     </AlertDialogPrimitive.Root>
   )
 }
 
 function Trigger(props: ComponentProps<typeof AlertDialogPrimitive.Trigger> & ComponentProps<typeof Button>) {
-  return <AlertDialogPrimitive.Trigger as={Button} {...props} />
-}
-
-const showContent = keyframes({
-  '0%': {opacity: 0, transform: 'translate(-50%, -40%)'},
-  '100%': {opacity: 0.75, transform: 'translate(-50%, -50%)'},
-})
-
-const hideContent = keyframes({
-  '0%': {opacity: 0.75, transform: 'translate(-50%, -50%)'},
-  '100%': {opacity: 0, transform: 'translate(-50%, -40%)'},
-})
-
-function Content({
-  css,
-  children,
-  ...props
-}: ComponentProps<typeof AlertDialogPrimitive.Content> & ComponentProps<typeof Box>) {
   return (
-    // TODO: Fix types
-    // @ts-ignore
-    <AlertDialogPrimitive.Content
-      {...props}
-      onPointerDownOutside={(e) => e.preventDefault()}
-      as={Box}
-      css={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 360,
-        backgroundColor: '$background-default',
-        borderRadius: 6,
-        padding: 20,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$5',
-        '&[data-state="open"]': {
-          animation: `${showContent} 300ms ease-out`,
-        },
-        '&[data-state="closed"]': {
-          animation: `${hideContent} 300ms ease-in`,
-        },
-        // TODO: Fix types
-        // @ts-ignore
-        ...css,
-      }}
-    >
-      {children}
-    </AlertDialogPrimitive.Content>
+    <AlertDialogPrimitive.Trigger asChild>
+      <Button {...props} />
+    </AlertDialogPrimitive.Trigger>
   )
 }
 
+const StyledContent = styled(AlertDialogPrimitive.Content, {
+  backgroundColor: 'white',
+  borderRadius: 6,
+  boxShadow: 'hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px',
+  position: 'fixed',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '90vw',
+  maxWidth: '500px',
+  maxHeight: '85vh',
+  padding: 25,
+  '@media (prefers-reduced-motion: no-preference)': {
+    animation: `${contentShow} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
+    willChange: 'transform',
+  },
+  '&:focus': {outline: 'none'},
+})
+
 function Title(props: ComponentProps<typeof AlertDialogPrimitive.Title> & ComponentProps<typeof Text>) {
-  return <AlertDialogPrimitive.Title as={Text} size="7" {...props} />
+  return (
+    <AlertDialogPrimitive.Title asChild>
+      <Text size="7" {...props} />
+    </AlertDialogPrimitive.Title>
+  )
 }
 
 function Description(props: ComponentProps<typeof AlertDialogPrimitive.Description> & ComponentProps<typeof Text>) {
-  return <AlertDialogPrimitive.Description as={Text} size="2" color="muted" {...props} />
+  return (
+    <AlertDialogPrimitive.Description asChild>
+      <Text size="2" color="muted" {...props} />
+    </AlertDialogPrimitive.Description>
+  )
 }
 
 function Actions({css, children, ...props}: ComponentProps<typeof Box>) {
   return (
-    // TODO: Fix types
-    // @ts-ignore
-    <Box
-      // TODO: Fix types
-      // @ts-ignore
-      css={{display: 'flex', justifyContent: 'flex-end', gap: '$4', ...css}}
-      {...props}
-    >
+    <Box css={{display: 'flex', justifyContent: 'flex-end', gap: '$4', ...css}} {...props}>
       {children}
     </Box>
   )
 }
 
 function Cancel(props: ComponentProps<typeof AlertDialogPrimitive.Cancel> & ComponentProps<typeof Button>) {
-  return <AlertDialogPrimitive.Cancel as={Button} variant="ghost" color="muted" size="1" {...props} />
+  return (
+    <AlertDialogPrimitive.Cancel asChild>
+      <Button variant="ghost" color="muted" size="1" {...props} />
+    </AlertDialogPrimitive.Cancel>
+  )
 }
 
 function Action(props: ComponentProps<typeof AlertDialogPrimitive.Action> & ComponentProps<typeof Button>) {
-  return <AlertDialogPrimitive.Action as={Button} size="1" {...props} />
+  return (
+    <AlertDialogPrimitive.Action asChild>
+      <Button size="1" {...props} />
+    </AlertDialogPrimitive.Action>
+  )
 }
 
 export const Alert = {
   Root,
   Trigger,
-  Content,
+  Content: StyledContent,
   Title,
   Description,
   Actions,
