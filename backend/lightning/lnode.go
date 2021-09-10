@@ -26,6 +26,7 @@ import (
 
 const (
 	alreadyExistsError    = "wallet already exists"
+	alreadyUnlockedError  = "wallet already unlocked"
 	waitSecondsPerAttempt = 3
 	maxConnAttemps        = 20
 )
@@ -212,15 +213,18 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 					if len(NewPassword) != 0 {
 						if macaroon, err = d.changeWalletPassPhrase(WalletSecurity.WalletPassphrase, NewPassword,
 							WalletSecurity.StatelessInit); err != nil {
-							d.log.Error("Could not change wallet password before unlock", zap.String("err", err.Error()))
+							d.log.Error("Could not change wallet password", zap.String("err", err.Error()))
 							go d.stopDaemon(err)
-							break loop
 						} else {
 							WalletSecurity.WalletPassphrase = NewPassword
 						}
+						break loop
 					}
 					d.log.Info("Unlocking wallet since it was already created")
 					err = d.unlockWallet(WalletSecurity.WalletPassphrase, WalletSecurity.StatelessInit)
+					if err != nil && strings.Contains(err.Error(), alreadyUnlockedError) {
+						err = nil
+					}
 				} else {
 					select {
 					case <-d.quitChan: // Early exit on shutdown

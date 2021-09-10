@@ -145,7 +145,7 @@ func TestStart(t *testing.T) {
 						AezeedPassphrase: testVectors[0].password,
 						AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
 						SeedEntropy:      testVectors[1].entropy[:],
-						StatelessInit:    false,
+						StatelessInit:    true,
 					},
 					newPassword:            "",
 					removeWalletBeforeTest: true,
@@ -154,15 +154,15 @@ func TestStart(t *testing.T) {
 
 					subname: "Init from mnemonics and recovery window",
 					credentials: WalletSecurity{
-						WalletPassphrase: "testtesto",
+						WalletPassphrase: "testtest",
 						RecoveryWindow:   100,
 						AezeedPassphrase: testVectors[1].password,
 						AezeedMnemonics:  testVectors[1].expectedMnemonic[:],
 						SeedEntropy:      []byte{},
-						StatelessInit:    false,
+						StatelessInit:    true,
 					},
-					newPassword:            "",
-					removeWalletBeforeTest: true,
+					newPassword:            "testtesto",
+					removeWalletBeforeTest: false,
 				},
 
 				{
@@ -243,6 +243,14 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 
 	if removeWalletBeforeTest {
 		path := lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/wallet.db"
+		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
+			return d, nodeID, fmt.Errorf("Could not remove file: " + path + err.Error())
+		}
+
+		// If macaroons.db is removed, the previous node password is forgotten. We can safely
+		// Init a fresh new instance. If it is not removed, then we need to change the password
+		// before init
+		path = lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/macaroons.db"
 		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
 			return d, nodeID, fmt.Errorf("Could not remove file: " + path + err.Error())
 		}
