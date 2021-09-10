@@ -69,12 +69,14 @@ export const createCodePlugin = async (props: CodePluginProps = {}): Promise<Edi
     decorate([node, path]) {
       const ranges: Array<Range> = []
 
+      // if the codeblock has a lang attribute but no highlighter yet, attach one
       if (isCode(node) && !node.data?.[HIGHLIGHTER] && node.lang) {
         getHighlighter({theme, langs: [node.lang]}).then((highlighter) => {
           Transforms.setNodes(editor, {data: {...node.data, [HIGHLIGHTER]: highlighter}}, {at: path})
         })
       }
 
+      // tokenize & decorate the paragraph inside codeblock
       if (isParagraph(node)) {
         const [code] =
           Editor.above(editor, {
