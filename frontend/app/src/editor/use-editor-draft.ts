@@ -41,11 +41,12 @@ interface DraftEditorMachineProps {
   client: QueryClient
   afterSave: ActionFunction<DraftEditorMachineContext, DraftEditorMachineEvent>
   afterPublish: ActionFunction<DraftEditorMachineContext, DraftEditorMachineEvent>
+  loadAnnotations: ActionFunction<DraftEditorMachineContext, DraftEditorMachineEvent>
 }
 
 const defaultContent = [group([statement({id: createId()}, [paragraph([text('')])])])]
 
-const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachineProps) =>
+const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: DraftEditorMachineProps) =>
   createMachine<DraftEditorMachineContext, any>(
     {
       id: 'editor',
@@ -87,7 +88,7 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
             },
             RECEIVE_DATA: {
               target: 'editing',
-              actions: 'assignDataToContext',
+              actions: ['assignDataToContext', 'loadAnnotations'],
             },
           },
           invoke: {
@@ -255,6 +256,7 @@ const draftEditorMachine = ({afterSave, afterPublish, client}: DraftEditorMachin
         }),
         afterPublish,
         afterSave,
+        loadAnnotations,
       },
     },
   )
