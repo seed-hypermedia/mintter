@@ -3,6 +3,7 @@ package lightning
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -139,7 +140,7 @@ func TestStart(t *testing.T) {
 			},
 			subtest: []subset{
 				{
-					subname: "Init from seed",
+					subname: "Init from mnemonics",
 					credentials: WalletSecurity{
 						WalletPassphrase: "testtest",
 						RecoveryWindow:   0,
@@ -168,14 +169,13 @@ func TestStart(t *testing.T) {
 						RecoveryWindow:   100,
 						AezeedPassphrase: testVectors[1].password,
 						AezeedMnemonics:  testVectors[1].expectedMnemonic[:],
-						SeedEntropy:      []byte{},
+						SeedEntropy:      testVectors[1].entropy[:],
 						StatelessInit:    false,
 					},
 					newPassword:                 "",
 					removeCredentialsBeforeTest: true,
 					mustFail:                    false,
 				},
-
 				{
 					subname: "Unlock pasword ok and macaroons",
 					credentials: WalletSecurity{
@@ -244,6 +244,21 @@ func TestStart(t *testing.T) {
 					removeCredentialsBeforeTest: false,
 					mustFail:                    false,
 				},
+				{
+					// since init from seed gives a random mnemonics (even if we feed it with the same entropy the birthday date is diferent)
+					subname: "Init from random seed",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testfinal",
+						RecoveryWindow:   0,
+						AezeedPassphrase: testVectors[1].password,
+						AezeedMnemonics:  []string{""},
+						SeedEntropy:      testVectors[1].entropy[:],
+						StatelessInit:    false,
+					},
+					newPassword:                 "",
+					removeCredentialsBeforeTest: true,
+					mustFail:                    false,
+				},
 			},
 		},
 	}
@@ -257,23 +272,22 @@ func TestStart(t *testing.T) {
 					subtest.newPassword, subtest.removeCredentialsBeforeTest, false)
 				d.Stop()
 				if subtest.mustFail {
-					require.Error(t, errStart, tt.name+". must succeed")
+					require.Error(t, errStart, tt.name+". must fail")
 				} else {
 					require.NoError(t, errStart, tt.name+". must succeed")
 				}
 
-				// since init from seed gives a random mnemonics (even if we feed it with the same entropy the birthday date is diferent)
-				if subtest.subname != "Init from seed" {
+				if strings.Contains(subtest.subname, "mnemonics") {
 					require.EqualValues(t, expectedID, nodeID)
 				}
 				errStart = d.Start(&subtest.credentials, subtest.newPassword, true)
 				d.Stop()
 				if subtest.mustFail {
-					require.Error(t, errStart, tt.name+". must succeed")
+					require.Error(t, errStart, tt.name+". must fail")
 				} else {
 					require.NoError(t, errStart, tt.name+". must succeed")
 				}
-				if subtest.subname != "Init from seed" {
+				if strings.Contains(subtest.subname, "mnemonics") {
 					require.EqualValues(t, expectedID, d.GetID())
 				}
 
@@ -340,7 +354,7 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 			default:
 				i++
 				if i < 25 {
-					time.Sleep(3 * time.Second)
+					time.Sleep(5 * time.Second)
 				} else {
 					// Since we could have missed the event (LND was up very quick and sent it before we started listening) highly unlikely though
 					if d.GetID() != "" {

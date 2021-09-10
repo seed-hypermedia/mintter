@@ -100,6 +100,9 @@ func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string, bloc
 	if _, err := d.startDaemon(WalletSecurity, NewPassword, blocking); err != nil {
 		return fmt.Errorf("failed to start daemon: %v", err)
 	}
+	if blocking {
+		d.log.Info("Daemon Started")
+	}
 
 	return nil
 }
@@ -116,7 +119,7 @@ func (d *Ldaemon) stopDaemon(err error) {
 		d.log.Info("Daemon.stop() called")
 	}
 
-	if d.interceptor.Alive() {
+	if d.interceptor.Alive() && d.interceptor.ShutdownChannel() != nil {
 		d.interceptor.RequestShutdown()
 	}
 
@@ -170,12 +173,12 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 			defer d.wg.Done()
 
 			d.log.Info("Starting LND Daemon")
-			lndeEr := lnd.Main(lndConfig, lnd.ListenerCfg{}, d.interceptor)
-			if err != nil {
-				d.log.Error("Main function returned with error", zap.String("err", lndeEr.Error()))
+			lndErr := lnd.Main(lndConfig, lnd.ListenerCfg{}, d.interceptor)
+			if lndErr != nil {
+				d.log.Error("Main function returned with error", zap.String("err", lndErr.Error()))
 			}
 			d.log.Info("LND Daemon Finished")
-			go d.stopDaemon(lndeEr)
+			go d.stopDaemon(lndErr)
 		}()
 	}
 
@@ -200,35 +203,35 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 		defer d.wg.Done()
 		var i = 0
 		var macaroon []byte
-		var err error
+		var initErr error
 
 		// We have to wait until LND spins up the unlocker server and we dont have the ready signal
 		// in ready channel inside lnd (like breez), so we wait in a backoff loop
 	loop:
 		for {
 			time.Sleep(waitSecondsPerAttempt * time.Second)
-			if macaroon, err = d.initWallet(WalletSecurity); err != nil {
-				if strings.Contains(err.Error(), alreadyExistsError) {
+			if macaroon, initErr = d.initWallet(WalletSecurity); initErr != nil {
+				if strings.Contains(initErr.Error(), alreadyExistsError) {
 					if len(NewPassword) != 0 {
 						d.log.Info("Changing wallet password")
-						if macaroon, err = d.changeWalletPassPhrase(WalletSecurity.WalletPassphrase, NewPassword,
-							WalletSecurity.StatelessInit); err != nil {
-							d.log.Error("Could not change wallet password", zap.String("err", err.Error()))
-							go d.stopDaemon(err)
+						if macaroon, initErr = d.changeWalletPassPhrase(WalletSecurity.WalletPassphrase, NewPassword,
+							WalletSecurity.StatelessInit); initErr != nil {
+							d.log.Error("Could not change wallet password", zap.String("err", initErr.Error()))
+							go d.stopDaemon(initErr)
 							break loop
 						} else {
 							WalletSecurity.WalletPassphrase = NewPassword
 						}
 					}
 					d.log.Info("Unlocking existing wallet")
-					err = d.unlockWallet(WalletSecurity.WalletPassphrase, WalletSecurity.StatelessInit)
-					if err != nil && strings.Contains(err.Error(), alreadyUnlockedError) {
+					initErr = d.unlockWallet(WalletSecurity.WalletPassphrase, WalletSecurity.StatelessInit)
+					if initErr != nil && strings.Contains(initErr.Error(), alreadyUnlockedError) {
 						// This happens when we init a wallet with a new password.
 						// The password is updated and the wallet unlocked all at once.
 						// So reunlock the wallet will return a whitelisted error
-						err = nil
-					} else if err != nil {
-						go d.stopDaemon(err)
+						initErr = nil
+					} else if initErr != nil {
+						go d.stopDaemon(initErr)
 						break loop
 					}
 				} else {
@@ -240,15 +243,15 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 						if i < maxConnAttemps {
 							continue loop
 						}
-						d.log.Error("Could not init wallet", zap.String("err", err.Error()))
-						go d.stopDaemon(err)
+						d.log.Error("Could not init wallet", zap.String("err", initErr.Error()))
+						go d.stopDaemon(initErr)
 						break loop
 					}
 
 				}
 
 			}
-			if err == nil {
+			if initErr == nil {
 				// in case we are unlocking instead of init
 				if macaroon == nil && len(d.adminMacaroon) != 0 {
 					d.Lock()
@@ -256,14 +259,14 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 					d.Unlock()
 				}
 
-				if err = d.startRpcClients(macaroon); err != nil {
+				if initErr = d.startRpcClients(macaroon); initErr != nil {
 					d.log.Error("Can't start rpc clients, shutting down",
-						zap.String("err", err.Error()))
-					go d.stopDaemon(err)
-				} else if err = d.startSubscriptions(); err != nil {
+						zap.String("err", initErr.Error()))
+					go d.stopDaemon(initErr)
+				} else if initErr = d.startSubscriptions(); initErr != nil {
 					d.log.Error("Can't start daemon subscriptions, shutting down",
-						zap.String("err", err.Error()))
-					go d.stopDaemon(err)
+						zap.String("err", initErr.Error()))
+					go d.stopDaemon(initErr)
 				}
 				break loop
 			}
@@ -276,9 +279,9 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 
 		if blocking {
 			select {
-			case errChan <- err:
+			case errChan <- initErr:
 			case <-d.quitChan: //If nobody were listening to errChan, the above line would block if it weren't by this case
-				errChan <- err
+				errChan <- initErr
 			}
 		}
 
@@ -286,17 +289,21 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 
 	if blocking {
 		select {
-		case err = <-errChan:
+		case err := <-errChan:
+			return lndConfig, err
 		case <-d.quitChan:
-			err = <-errChan
+			err := <-errChan
 			if err != nil {
 				d.log.Error("Quitting while waiting in a blocking start",
 					zap.String("err", err.Error()))
 			}
+			return lndConfig, err
 		}
 
+	} else {
+		return lndConfig, nil
 	}
-	return lndConfig, err
+
 }
 
 // This adds minnter specific conf to the default LND config. The former takes precedence in case of conflicts.

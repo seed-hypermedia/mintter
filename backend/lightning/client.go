@@ -57,7 +57,7 @@ type WalletSecurity struct {
 	WalletPassphrase string   `help:"The current password for encrypting the wallet. Mandatory"`
 	RecoveryWindow   int32    `help:"A positive number indicating the lookback period (from the tip of the chain) in blocks to start scanning for funds in case we want to recover an already created wallet"`
 	AezeedPassphrase string   `help:"The password to encrypt the Aezeed superseed. Not to confuse with the wallet password, it may be diferent. Optional"`
-	AezeedMnemonics  []string `help:"The mnemonics used to regenerate the wallet"`
+	AezeedMnemonics  []string `help:"The mnemonics used to regenerate the wallet. If both seed and mnemonics are set, Mnemonics take precedence"`
 	SeedEntropy      []byte   `help:"An entropy random enough used to securely derive the seed of the wallet"`
 	StatelessInit    bool     `help:"If true, no macaroon will be written on disk on any wallet manimulation (unlock, init or change password) It does not mean a new macaroon is not generated, just that it is not written to disk"`
 }
@@ -237,7 +237,7 @@ func (d *Ldaemon) changeWalletPassPhrase(OldPassphrase string,
 		CurrentPassword:    []byte(OldPassphrase),
 		NewPassword:        []byte(NewPassphrase),
 		StatelessInit:      StatelessInit,
-		NewMacaroonRootKey: false,
+		NewMacaroonRootKey: StatelessInit,
 	}
 
 	if pass_res, err := d.unlockerClient.ChangePassword(ctx, pass_req); err != nil {
@@ -262,9 +262,22 @@ func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// if the user wants to init a wallet from an entropy instead of
-	// from an already created mnemonics.
-	if len(WalletSecurity.SeedEntropy) != 0 {
+	// If the user already has mnemonics from a previous instance or
+	// it wants to recover a node, then we create from mnemonics
+	if len(WalletSecurity.AezeedMnemonics) != 0 {
+		if WalletSecurity.RecoveryWindow > 0 {
+			d.log.Info("Init Wallet from Mnemonics")
+		} else if WalletSecurity.RecoveryWindow == 0 {
+			// This would be strange since if the user already has mnemonics and wants to create a new wallet,
+			// is usually because it is in recovery mode, but with a window length of 0, no past funds will be found
+			d.log.Warn("Init Wallet from Mnemonics but with a 0 recovery window. No funds will be recovered")
+		} else {
+			return nil, fmt.Errorf("recovery window must be >= 0 and it is %v", WalletSecurity.RecoveryWindow)
+		}
+
+	} else if len(WalletSecurity.SeedEntropy) != 0 {
+		// if the user wants to init a wallet from an entropy instead of
+		// from an already created mnemonics.
 		getSeedReq := &lnrpc.GenSeedRequest{
 			AezeedPassphrase: []byte(WalletSecurity.AezeedPassphrase),
 			SeedEntropy:      WalletSecurity.SeedEntropy,
@@ -277,19 +290,6 @@ func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 			WalletSecurity.AezeedMnemonics = seed_res.CipherSeedMnemonic
 		}
 		d.log.Info("Init Wallet from provided entropy + provided password + unknown salt + current date")
-
-		// if the user already has mnemonics from a previous instance or
-		// it wants to recover a node, then we create from mnemonics
-	} else if len(WalletSecurity.AezeedMnemonics) != 0 {
-		if WalletSecurity.RecoveryWindow > 0 {
-			d.log.Info("Init Wallet from Mnemonics")
-		} else if WalletSecurity.RecoveryWindow == 0 {
-			// This would be strange since if the user already has mnemonics and wants to create a new wallet,
-			// is usually because it is in recovery mode, but with a window length of 0, no past funds will be found
-			d.log.Warn("Init Wallet from Mnemonics but with a 0 recovery window. No funds will be recovered")
-		} else {
-			return nil, fmt.Errorf("recovery window must be >= 0 and it is %v", WalletSecurity.RecoveryWindow)
-		}
 
 	} else if _, err := os.Stat(d.cfg.LndDir + "/data/chain/bitcoin/" + d.cfg.Network + "/wallet.db"); os.IsNotExist(err) {
 		return nil, fmt.Errorf("you must provide either a valid AezeedMnemonics or a valid entropy")
@@ -356,7 +356,7 @@ func newLightningClient(noMacaroon bool, macBytes []byte, macPath string, certPa
 				return nil, err
 			}
 		} else {
-			return nil, fmt.Errorf("no macaroon path provided nor macaroon binary. You must provide at least one of them")
+			return nil, fmt.Errorf("neither macaroon path nor marshaled macaroon provided. You must provide at least one of them")
 		}
 
 		// Now we append the macaroon credentials to the dial options.
