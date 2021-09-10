@@ -16,8 +16,15 @@ import {MARK_EMPHASIS} from '../leafs/emphasis'
 import {MARK_STRONG} from '../leafs/strong'
 import {MARK_UNDERLINE} from '../leafs/underline'
 import {StatementTools} from '../statement-tools'
-import {statementStyle} from './statement'
+import {copyTextToClipboard, statementStyle} from './statement'
 import {createId, paragraph, statement, text} from 'frontend/mttast-builder/dist'
+import {ContextMenu} from '../context-menu'
+import {Icon} from '@mintter/ui/icon'
+import {Text} from '@mintter/ui/text'
+import {MINTTER_LINK_PREFIX} from '../../constants'
+import {useParams} from 'react-router'
+import toast from 'react-hot-toast'
+import {useSidepanel} from '../../components/sidepanel'
 
 export const ELEMENT_CODE = 'code'
 const HIGHLIGHTER = Symbol('shiki highlighter')
@@ -145,7 +152,6 @@ export const createCodePlugin = async (props: CodePluginProps = {}): Promise<Edi
           }
         }
       }
-      console.log('🚀 ~ file: code.tsx ~ line 150 ~ decorate ~ ranges', ranges)
       return ranges
     },
   }
@@ -158,9 +164,11 @@ function Code({
 }: RenderElementProps & {
   element: CodeType
 }) {
+  const {docId} = useParams<{docId: string}>()
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const isReadOnly = useReadOnly()
+  const {send} = useSidepanel()
 
   function setLanguage(e: React.ChangeEvent<HTMLSelectElement>) {
     const {...newData} = element.data || {}
@@ -170,41 +178,61 @@ function Code({
   }
 
   let lang = element.lang || ''
-  console.log('lang', lang)
+
+  async function onCopy() {
+    await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${docId}/${(element as CodeType).id}`)
+    toast.success('Statement Reference copied successfully', {position: 'top-center'})
+  }
 
   return (
-    <CodeStyled data-element-type={element.type} {...attributes}>
-      {!isReadOnly ? (
-        <SelectorWrapper
-          contentEditable={false}
-          css={{
-            position: 'absolute',
-            right: 0,
-            top: 0,
-            transform: 'translate(8px, -8px)',
-            zIndex: 2,
-          }}
+    <ContextMenu.Root>
+      <ContextMenu.Trigger>
+        <CodeStyled data-element-type={element.type} {...attributes}>
+          {!isReadOnly ? (
+            <SelectorWrapper
+              contentEditable={false}
+              css={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                transform: 'translate(8px, -8px)',
+                zIndex: 2,
+              }}
+            >
+              <select id="lang-selection" name="lang-selection" value={lang} onChange={setLanguage}>
+                <option value="">Select a Language</option>
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="go">Golang</option>
+              </select>
+            </SelectorWrapper>
+          ) : null}
+          <StatementTools element={element} />
+          <Box
+            as="code"
+            css={{
+              backgroundColor: '$background-muted',
+              padding: '$8',
+              borderRadius: '$2',
+              position: 'relative',
+            }}
+          >
+            {children}
+          </Box>
+        </CodeStyled>
+      </ContextMenu.Trigger>
+      <ContextMenu.Content alignOffset={-5}>
+        <ContextMenu.Item onSelect={onCopy}>
+          <Icon name="Copy" size="1" />
+          <Text size="2">Copy Statement Reference</Text>
+        </ContextMenu.Item>
+        <ContextMenu.Item
+          onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${docId}/${element.id}`})}
         >
-          <select id="lang-selection" name="lang-selection" value={lang} onChange={setLanguage}>
-            <option value="">Select a Language</option>
-            <option value="javascript">JavaScript</option>
-            <option value="typescript">TypeScript</option>
-            <option value="go">Golang</option>
-          </select>
-        </SelectorWrapper>
-      ) : null}
-      <StatementTools element={element} />
-      <Box
-        as="code"
-        css={{
-          backgroundColor: '$background-muted',
-          padding: '$8',
-          borderRadius: '$2',
-          position: 'relative',
-        }}
-      >
-        {children}
-      </Box>
-    </CodeStyled>
+          <Icon size="1" name="ArrowBottomRight" />
+          <Text size="2">Open in Sidepanel</Text>
+        </ContextMenu.Item>
+      </ContextMenu.Content>
+    </ContextMenu.Root>
   )
 }

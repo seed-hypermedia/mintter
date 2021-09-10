@@ -1,4 +1,4 @@
-import type {FlowContent, Statement} from '@mintter/mttast'
+import type {MttastContent} from '@mintter/mttast'
 import {isLink} from '@mintter/mttast'
 import {isEmbed} from '@mintter/mttast'
 import {createContext, useEffect, useContext} from 'react'
@@ -6,7 +6,7 @@ import {Box, Text, Button, Icon} from '@mintter/ui'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {createMachine, Interpreter, State} from 'xstate'
 import {Node} from 'slate'
-import {InlineEmbed, useEmbed} from '../editor/elements/embed'
+import {getEmbedIds, InlineEmbed, useEmbed} from '../editor/elements/embed'
 import {MINTTER_LINK_PREFIX} from '../constants'
 import {visit} from 'unist-util-visit'
 import {document} from '@mintter/mttast-builder'
@@ -15,6 +15,7 @@ import {useAccount} from '@mintter/client/hooks'
 import {ContextMenu} from '../editor/context-menu'
 import {copyTextToClipboard} from '../editor/elements/statement'
 import toast from 'react-hot-toast'
+import {useHistory} from 'react-router'
 
 export type SidepanelEventsType =
   | {
@@ -39,7 +40,7 @@ export type SidepanelEventsType =
     }
   | {
       type: 'SIDEPANEL_LOAD_ANNOTATIONS'
-      content: Array<FlowContent>
+      content: Array<MttastContent>
     }
 
 export type SidepanelContextType = {
@@ -189,15 +190,15 @@ export function useSidepanel() {
   }
 }
 
-export function useEnableSidepanel() {
+export function useEnableSidepanel(content?: Array<MttastContent>) {
   const {send} = useSidepanel()
   useEffect(() => {
     send('SIDEPANEL_ENABLE')
-
+    // send({type: 'SIDEPANEL_LOAD_ANNOTATIONS', content})
     return () => {
       send('SIDEPANEL_DISABLE')
     }
-  }, [])
+  }, [content])
   return null
 }
 
@@ -257,10 +258,16 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
     enabled: !!data.document.author,
   })
   const {send} = useSidepanel()
+  const history = useHistory()
 
   async function onCopy() {
     await copyTextToClipboard(item)
     toast.success('Statement Reference copied successfully', {position: 'top-center'})
+  }
+
+  function onGoToPublication(url: string) {
+    const [publicationId] = getEmbedIds(url)
+    history.push(`/p/${publicationId}`)
   }
 
   if (status == 'loading') {
@@ -270,71 +277,79 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
   if (status == 'error') {
     console.error('SidepanelItem error: ', error)
     return (
-      <ContextMenu.Root>
-        <ContextMenu.Trigger>
-          <Box css={{padding: '$4', marginTop: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>
-            <Box css={{display: 'flex', gap: '$4'}}>
-              <Text size="2" css={{flex: 1}}>{`Error with item id: ${data.statement.id}`}</Text>
-              {remove && (
-                <Button
-                  size="1"
-                  variant="ghost"
-                  color="primary"
-                  onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', payload: item})}
-                >
-                  remove
-                </Button>
-              )}
-            </Box>
-          </Box>
-        </ContextMenu.Trigger>
-        <ContextMenu.Content alignOffset={-5}>
-          <ContextMenu.Item onSelect={onCopy}>
-            <Icon name="Copy" size="1" />
-            <Text size="2">Copy Statement Reference</Text>
-          </ContextMenu.Item>
-        </ContextMenu.Content>
-      </ContextMenu.Root>
+      <Box css={{padding: '$4', marginTop: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>
+        <Box css={{display: 'flex', gap: '$4'}}>
+          <Text size="2" css={{flex: 1}}>{`Error with item id: ${data.statement.id}`}</Text>
+          {remove && (
+            <Button
+              size="1"
+              variant="ghost"
+              color="primary"
+              onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', payload: item})}
+            >
+              remove
+            </Button>
+          )}
+        </Box>
+      </Box>
     )
   }
 
+  /*
+   * @todo refactor statement context menu
+   * @body this context menu code is repeated in many components now, we need a wrapper
+   */
   return (
-    <Box
-      css={{
-        padding: '$4',
-        marginTop: '$5',
-        border: '1px solid rgba(0,0,0,0.1)',
-        borderRadius: '$2',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$4',
-      }}
-    >
-      <Box css={{display: 'flex', gap: '$4'}}>
-        <Text size="2" css={{flex: 1}}>
-          <span style={{fontWeight: 'bold'}}>{data?.document?.title}</span> by {author?.profile?.alias}
-        </Text>
-        {remove && (
-          <Button
-            size="1"
-            variant="ghost"
-            color="primary"
-            onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', payload: item})}
-          >
-            remove
-          </Button>
-        )}
-      </Box>
+    <ContextMenu.Root>
+      <ContextMenu.Trigger>
+        <Box
+          css={{
+            padding: '$4',
+            marginTop: '$5',
+            border: '1px solid rgba(0,0,0,0.1)',
+            borderRadius: '$2',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '$4',
+          }}
+        >
+          <Box css={{display: 'flex', gap: '$4'}}>
+            <Text size="2" css={{flex: 1}}>
+              <span style={{fontWeight: 'bold'}}>{data?.document?.title}</span> by {author?.profile?.alias}
+            </Text>
+            {remove && (
+              <Button
+                size="1"
+                variant="ghost"
+                color="primary"
+                onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', payload: item})}
+              >
+                remove
+              </Button>
+            )}
+          </Box>
 
-      <Text as="span" alt size="2" css={{display: 'inline-block'}}>
-        {data.statement.children[0].children.map((child, idx) =>
-          isEmbed(child) ? (
-            <InlineEmbed key={`${child.url}-${idx}`} embed={child} />
-          ) : (
-            <span key={`${child.type}-${idx}`}>{Node.string(child)}</span>
-          ),
-        )}
-      </Text>
-    </Box>
+          <Text as="span" alt size="2" css={{display: 'inline-block'}}>
+            {data.statement.children[0].children.map((child, idx) =>
+              isEmbed(child) ? (
+                <InlineEmbed key={`${child.url}-${idx}`} embed={child} />
+              ) : (
+                <span key={`${child.type}-${idx}`}>{Node.string(child)}</span>
+              ),
+            )}
+          </Text>
+        </Box>
+      </ContextMenu.Trigger>
+      <ContextMenu.Content alignOffset={-5}>
+        <ContextMenu.Item onSelect={onCopy}>
+          <Icon name="Copy" size="1" />
+          <Text size="2">Copy Statement Reference</Text>
+        </ContextMenu.Item>
+        <ContextMenu.Item onSelect={() => onGoToPublication(item)}>
+          <Icon name="ArrowTopRight" size="1" />
+          <Text size="2">Open in main Panel</Text>
+        </ContextMenu.Item>
+      </ContextMenu.Content>
+    </ContextMenu.Root>
   )
 }

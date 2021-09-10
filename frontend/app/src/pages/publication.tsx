@@ -24,13 +24,6 @@ export default function Publication(): JSX.Element {
   useEnableSidepanel()
 
   useEffect(() => {
-    if (Array.from(annotations).length) {
-      console.log('ENABLE!!')
-      sidepanelSend('SIDEPANEL_OPEN')
-    }
-  }, [annotations])
-
-  useEffect(() => {
     if (status == 'success') {
       sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', content: data.document.content})
     }
