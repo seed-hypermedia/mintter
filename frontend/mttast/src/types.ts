@@ -1,13 +1,19 @@
-import type {Node as UnistNode, Parent as UnistParent, Literal as UnistLiteral, Data as UnistData} from 'unist'
+import type {Lang} from 'shiki'
 
 // Nodes
 
-export interface Literal extends UnistLiteral {
+interface Node {
+  type: string
+
+  data?: Record<string | symbol, unknown>
+}
+
+export interface Literal extends Node {
   value: string
 }
 
-export interface Parent extends UnistParent {
-  children: Array<UnistNode<UnistData>>
+export interface Parent extends Node {
+  children: MttastContent[]
 }
 
 export interface Document extends Parent {
@@ -67,7 +73,7 @@ export interface Blockquote extends Parent {
 export interface Code extends Parent {
   type: 'code'
   id: string
-  lang?: string
+  lang?: Lang
   meta?: string
   children: [Content, GroupingContent] | [Content]
 }
