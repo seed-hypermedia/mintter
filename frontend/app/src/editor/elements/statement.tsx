@@ -22,11 +22,12 @@ export const ELEMENT_STATEMENT = 'statement'
 
 export const statementStyle = css({
   // backgroundColor: 'rgba(0,0,0,0.1)',
-  marginTop: '$3',
+  marginTop: '$6',
   padding: 0,
   listStyle: 'none',
   display: 'grid',
   wordBreak: 'break-word',
+  boxShadow: '-0.1px 0 0 0 rgba(0,0,0,0.5)',
   // gridTemplateColumns: 'minmax($space$8, auto) 1fr',
   gridTemplateColumns: '$space$8 1fr',
   gridTemplateRows: 'min-content auto',
@@ -36,7 +37,7 @@ export const statementStyle = css({
   [`& > ${Tools}`]: {
     gridArea: 'controls',
   },
-  '& > [data-element-type=paragraph]': {
+  '& > [data-element-type=paragraph], & > [data-element-type=code]': {
     gridArea: 'content',
   },
   '& > ul, & > ol': {
