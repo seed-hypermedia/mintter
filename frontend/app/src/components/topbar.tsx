@@ -1,10 +1,11 @@
 import {useRef} from 'react'
-import {useHistory, useRouteMatch} from 'react-router-dom'
-
-import {Box, Button, Icon, TextField} from '@mintter/ui'
-
+import {useHistory} from 'react-router-dom'
+import {Box} from '@mintter/ui/box'
+import {Icon} from '@mintter/ui/icon'
+import {TextField} from '@mintter/ui/text-field'
+import {buttonStyles} from '@mintter/ui/button/button'
+import {styled} from '@mintter/ui/stitches.config'
 import {Container} from './container'
-
 import {Link} from './link'
 import {MINTTER_LINK_PREFIX} from '../constants'
 
@@ -16,10 +17,9 @@ interface NavItemProps {
   className?: string
 }
 
-export function Topbar({isPublic = false}: {isPublic?: boolean}) {
-  const history = useHistory()
-  const {path} = useRouteMatch()
+const SettingsButton = styled(Link, buttonStyles)
 
+export function Topbar({isPublic = false}: {isPublic?: boolean}) {
   return isPublic ? (
     <Box>public topbar here</Box>
   ) : (
@@ -47,27 +47,20 @@ export function Topbar({isPublic = false}: {isPublic?: boolean}) {
           justifyContent: 'space-between',
         }}
       >
-        <MintterSearch />
+        <Search />
       </Container>
       <Box css={{display: 'flex', justifyContent: 'flex-end'}}>
-        <Button
-          //@ts-ignore
-          as={Link}
-          to={`/settings`}
-          variant="ghost"
-          size="1"
-        >
+        <SettingsButton to={`/settings`} variant="ghost" size="1">
           <Icon name="GearOutlined" size="1" />
-        </Button>
+        </SettingsButton>
       </Box>
     </Box>
   )
 }
 
-function MintterSearch() {
+function Search() {
   const ref = useRef<HTMLInputElement>(null)
   const history = useHistory()
-  const {path} = useRouteMatch()
 
   // TODO: fix types
   async function handleSearch(e: any) {
@@ -87,7 +80,7 @@ function MintterSearch() {
 
   return (
     <Box as="form" css={{width: '100%'}} onSubmit={handleSearch}>
-      <TextField ref={ref} type="text" name="hash-search" placeholder="Enter a publication CID" shape="pill" />
+      <TextField ref={ref} name="hash-search" placeholder="Enter a publication CID" shape="pill" />
     </Box>
   )
 }

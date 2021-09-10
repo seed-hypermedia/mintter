@@ -1,12 +1,16 @@
-import type {Account} from '@mintter/client'
-import {Button, Box, Text} from '@mintter/ui'
-import {useListAccounts} from '@mintter/client/hooks'
+import type {Account, Device, ConnectionStatus} from '@mintter/client'
 import {useQuery} from 'react-query'
-import {getPeerInfo} from 'frontend/client/src/networking'
-import {ConnectionStatus} from 'frontend/client/.generated/networking/v1alpha/networking'
+import {Button} from '@mintter/ui/button'
+import {Box} from '@mintter/ui/box'
+import {Text} from '@mintter/ui/text'
+import {useListAccounts} from '@mintter/client/hooks'
+import {getPeerInfo} from '@mintter/client'
 import * as HoverCard from '@radix-ui/react-hover-card'
 import {styled, keyframes} from '@mintter/ui/stitches.config'
-// TODO: fix types
+
+/*
+ * @todo onConnect types
+ */
 export function Connections({onConnect}: any) {
   const {status, data, error} = useListAccounts()
 
@@ -101,13 +105,13 @@ export type AccountItemProps = {
 function AccountItem({account}: AccountItemProps) {
   const {data} = useQuery(['ConnectionStatus', account.devices], ({queryKey}) => {
     if (Object.keys(account.devices).length > 0) {
-      return getPeerInfo(queryKey[1])
+      return getPeerInfo(queryKey[1] as {[key: string]: Device})
     }
   })
 
   return (
     <HoverCard.Root>
-      <HoverCard.Trigger>
+      <HoverCard.Trigger asChild>
         <Box
           as="li"
           key={account.id}

@@ -1,16 +1,19 @@
 import type {CSS} from '@mintter/ui/stitches.config'
-import {Switch, useRouteMatch, useHistory, Route, useParams} from 'react-router-dom'
-import {useAccount, useDraftsList, useMyPublicationsList, useOthersPublicationsList} from '@mintter/client/hooks'
+import {styled} from '@mintter/ui/stitches.config'
+import {Switch, useRouteMatch, useHistory, Route} from 'react-router-dom'
+import {useAccount, useMyPublicationsList, useOthersPublicationsList} from '@mintter/client/hooks'
 import {connect, createDraft} from '@mintter/client'
 import {Link} from '../components/link'
 import {Box, Button, Text} from '@mintter/ui'
 import {Separator} from '../components/separator'
 import * as MessageBox from '../components/message-box'
 import {Container} from '../components/container'
-import {useMemo, useCallback} from 'react'
+import {useCallback} from 'react'
 import {Connections} from '../connections'
 import {DraftListPage, ListPage} from './list-page'
 import toast from 'react-hot-toast'
+import {textStyles} from '@mintter/ui/text/text'
+import {buttonStyles} from '@mintter/ui/button/button'
 
 // TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
@@ -143,6 +146,8 @@ export default function Library() {
   )
 }
 
+const ButtonLinkStyled = styled(Link, buttonStyles)
+
 function ProfileInfo() {
   const {status, data, error} = useAccount()
 
@@ -182,17 +187,9 @@ function ProfileInfo() {
         {data.profile.alias}
       </Text>
       <Text>{data.profile.bio}</Text>
-      <Button
-        // TODO: fix types
-        // @ts-ignore
-        as={Link}
-        variant="outlined"
-        color="primary"
-        size="1"
-        to="/settings"
-      >
+      <ButtonLinkStyled variant="outlined" color="primary" size="1" to="/settings">
         Edit profile
-      </Button>
+      </ButtonLinkStyled>
     </Box>
   ) : null
 }
@@ -216,7 +213,10 @@ export type NavItemProps = {
   onlyActiveWhenExact?: boolean
 }
 
-// TODO: fix types
+const NavItemStyled = styled(Link, textStyles, {
+  textDecoration: 'none',
+})
+
 function NavItem({children, to, css, onlyActiveWhenExact = false, ...props}: NavItemProps) {
   const match = useRouteMatch({
     path: to,
@@ -226,22 +226,16 @@ function NavItem({children, to, css, onlyActiveWhenExact = false, ...props}: Nav
   let active = match?.path === to
 
   return (
-    <Text
-      // TODO: fix types
-      // @ts-ignore
-      as={Link}
+    <NavItemStyled
       size="5"
       to={to}
-      // TODO: fix types
-      // @ts-ignore
       css={{
-        textDecoration: 'none',
         color: active ? '$primary-default' : '$text-default',
         fontWeight: active ? '$bold' : '$regular',
       }}
       {...props}
     >
       {children}
-    </Text>
+    </NavItemStyled>
   )
 }

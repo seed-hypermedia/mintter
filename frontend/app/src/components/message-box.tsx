@@ -2,6 +2,7 @@ import type {ButtonProps} from '@mintter/ui/button'
 import {Button as UIButton} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 import {Box} from '@mintter/ui/box'
+import type React from 'react'
 
 export function Root({children}: any) {
   return (
@@ -28,8 +29,10 @@ export function Title({children}: any) {
   return <Text size="7">{children}</Text>
 }
 
-// TODO: fix types
-export function Button({children, ...props}: ButtonProps) {
+export function Button({
+  children,
+  ...props
+}: ButtonProps & {children: React.ReactChild; onClick: (e: React.MouseEvent<HTMLButtonElement>) => void}) {
   return (
     <UIButton variant="outlined" color="primary" {...props}>
       {children}
