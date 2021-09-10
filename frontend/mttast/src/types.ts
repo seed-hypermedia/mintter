@@ -109,6 +109,7 @@ export interface Text extends Literal {
   strikethrough?: boolean
   superscript?: boolean
   subscript?: boolean
+  color?: string
 }
 
 // Mixin
