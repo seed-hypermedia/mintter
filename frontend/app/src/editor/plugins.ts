@@ -18,6 +18,7 @@ import {createEmbedPlugin} from './elements/embed'
 import {createCodePlugin} from './elements/code'
 import {createTabPlugin} from './tab-plugin'
 import {createMarkdownShortcutsPlugin} from './markdown-plugin'
+import {createColorPlugin} from './leafs/color'
 
 export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
   createStrongPlugin(),
@@ -26,6 +27,7 @@ export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
   createStrikethroughPlugin(),
   createSuperscriptPlugin(),
   createSubscriptPlugin(),
+  createColorPlugin(),
 
   createLinkPlugin(),
   createEmbedPlugin(),
