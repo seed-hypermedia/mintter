@@ -117,9 +117,11 @@ export function StatementTools({element}: {element: FlowContent}) {
     <Tools contentEditable={false}>
       <Marker element={element} />
       {!isReadOnly ? (
-        <Dropdown.Root>
-          <Dropdown.Trigger as={ElementDropdown} data-trigger>
-            <Icon name="Grid4" size="2" color="muted" />
+        <Dropdown.Root modal={false}>
+          <Dropdown.Trigger asChild>
+            <ElementDropdown data-trigger>
+              <Icon name="Grid4" size="2" color="muted" />
+            </ElementDropdown>
           </Dropdown.Trigger>
           <Dropdown.Content portalled align="start" side="bottom" css={{minWidth: 220}}>
             {Object.entries(items).map(([key, value], index, arr) => {

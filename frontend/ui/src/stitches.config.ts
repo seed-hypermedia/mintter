@@ -150,8 +150,8 @@ const stitches = createStitches({
   // @ts-ignore
   media: {},
   utils: {
-    marginHorizontal: (val: Stitches.ScaleValue<'space'>) => ({marginLeft: val, marginRight: val}),
-    marginVertical: (val: Stitches.ScaleValue<'space'>) => ({marginTop: val, marginBottom: val}),
+    marginHorizontal: (val: Stitches.ScaleValue<'space'> | string) => ({marginLeft: val, marginRight: val}),
+    marginVertical: (val: Stitches.ScaleValue<'space'> | string) => ({marginTop: val, marginBottom: val}),
     paddingHorizontal: (val: Stitches.ScaleValue<'space'>) => ({paddingLeft: val, paddingRight: val}),
     paddingVertical: (val: Stitches.ScaleValue<'space'>) => ({paddingTop: val, paddingBottom: val}),
   },
