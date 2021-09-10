@@ -206,8 +206,8 @@ func (d *Ldaemon) unlockWallet(Passphrase string, StatelessInit bool) error {
 	}
 
 	if _, err := d.unlockerClient.UnlockWallet(ctx, unlock_req); err != nil {
-		d.log.Error("Could not UnlockWallet response from params provided",
-			zap.Bool("StatelessInit", StatelessInit))
+		d.log.Error("Could not unlock wallet", zap.Bool("StatelessInit",
+			StatelessInit), zap.String("err", err.Error()))
 		return err
 	} else {
 		return nil
@@ -227,7 +227,7 @@ func (d *Ldaemon) changeWalletPassPhrase(OldPassphrase string,
 	if len(NewPassphrase) == 0 {
 		return nil, fmt.Errorf("you must provide a non null new password")
 	} else if NewPassphrase == OldPassphrase {
-		return nil, fmt.Errorf("you new password must be different from the old one")
+		return nil, fmt.Errorf("your new password must be different from the old one")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -271,7 +271,7 @@ func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 		}
 
 		if seed_res, err := d.unlockerClient.GenSeed(ctx, getSeedReq); err != nil {
-			return nil, fmt.Errorf("could not get seed from parameters provided %s", err.Error())
+			return nil, fmt.Errorf("could not get seed %s", err.Error())
 		} else {
 			// These mnemonics are different even if called GenSeed with the same Entropy since the birthday date is diferent
 			WalletSecurity.AezeedMnemonics = seed_res.CipherSeedMnemonic
@@ -303,7 +303,7 @@ func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 		StatelessInit:      WalletSecurity.StatelessInit,
 	}
 	if init_res, err := d.unlockerClient.InitWallet(ctx, initWalletrequest); err != nil {
-		return nil, fmt.Errorf("could not InitWallet response from params provided RecoveryWindow: %d StatelessInit: %t err: %s",
+		return nil, fmt.Errorf("could not init wallet RecoveryWindow: %d StatelessInit: %t err: %s",
 			WalletSecurity.RecoveryWindow, WalletSecurity.StatelessInit, err.Error())
 	} else {
 		return init_res.AdminMacaroon, nil
@@ -356,7 +356,7 @@ func newLightningClient(noMacaroon bool, macBytes []byte, macPath string, certPa
 				return nil, err
 			}
 		} else {
-			return nil, fmt.Errorf("no macaroon path provided nor macaroon binary. you Must provide one of them")
+			return nil, fmt.Errorf("no macaroon path provided nor macaroon binary. You must provide at least one of them")
 		}
 
 		// Now we append the macaroon credentials to the dial options.

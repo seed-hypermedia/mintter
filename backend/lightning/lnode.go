@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/jessevdk/go-flags"
@@ -43,7 +44,7 @@ type Ldaemon struct {
 	cfg                 *config.LND
 	log                 *zap.Logger
 	startTime           time.Time
-	daemonRunning       bool
+	daemonRunning       int32
 	daemonStopped       bool
 	nodeID              string
 	adminMacaroon       []byte
@@ -74,15 +75,9 @@ func NewLdaemon(log *zap.Logger, cfg *config.LND) (*Ldaemon, error) {
 
 // Stop is used to stop the lightning network daemon. This function is blocking
 // and waits until the lnd node is completely stoped. Typically a couple of seconds
-func (d *Ldaemon) Stop() error {
-	d.Lock()
-	if !d.daemonRunning {
-		d.Unlock()
-		return fmt.Errorf("daemon already stopped")
-	}
-	d.Unlock()
+func (d *Ldaemon) Stop() {
+
 	d.stopDaemon(nil)
-	return nil
 }
 
 // Start is used to start the lightning network daemon.
@@ -101,6 +96,7 @@ func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string, bloc
 		return fmt.Errorf("failed to start ntfnServer: %v", err)
 	}
 
+	d.log.Info("Starting Daemon", zap.Bool("blocking", blocking))
 	if _, err := d.startDaemon(WalletSecurity, NewPassword, blocking); err != nil {
 		return fmt.Errorf("failed to start daemon: %v", err)
 	}
@@ -109,25 +105,27 @@ func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string, bloc
 }
 
 func (d *Ldaemon) stopDaemon(err error) {
-	d.Lock()
-	if !d.daemonRunning {
-		d.Unlock()
+
+	if atomic.SwapInt32(&d.daemonRunning, 0) == 0 {
 		return
 	}
-	alive := d.interceptor.Alive()
 
-	d.log.Info("Daemon.stop() called")
-	if alive {
+	if err != nil {
+		d.log.Info("Daemon.stop() called with error " + err.Error())
+	} else {
+		d.log.Info("Daemon.stop() called")
+	}
+
+	if d.interceptor.Alive() {
 		d.interceptor.RequestShutdown()
 	}
+
 	close(d.quitChan)
-	d.daemonRunning = false
-	d.Unlock()
 
 	d.wg.Wait()
-	d.nodeID = ""
 
 	d.Lock()
+	d.nodeID = ""
 	d.daemonStopped = true
 	d.ntfnServer.SendUpdate(DaemonDownEvent{err})
 	d.log.Info("shutdown event sent")
@@ -148,7 +146,7 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 		return nil, fmt.Errorf("daemon must be stopped first")
 	}
 	d.daemonStopped = false
-	d.daemonRunning = true
+	atomic.StoreInt32(&d.daemonRunning, 1)
 	d.Unlock()
 
 	// Hook interceptor for os signals.
@@ -174,7 +172,7 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 			d.log.Info("Starting LND Daemon")
 			lndeEr := lnd.Main(lndConfig, lnd.ListenerCfg{}, d.interceptor)
 			if err != nil {
-				d.log.Error("Main function returned with error", zap.String("err", err.Error()))
+				d.log.Error("Main function returned with error", zap.String("err", lndeEr.Error()))
 			}
 			d.log.Info("LND Daemon Finished")
 			go d.stopDaemon(lndeEr)
@@ -204,26 +202,34 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 		var macaroon []byte
 		var err error
 
-		//We have to wait until LND spins up the unlocker server and we dont have the ready signal in ready channel inside lnd (like breez), so we wait in a backoff loop
+		// We have to wait until LND spins up the unlocker server and we dont have the ready signal
+		// in ready channel inside lnd (like breez), so we wait in a backoff loop
 	loop:
 		for {
 			time.Sleep(waitSecondsPerAttempt * time.Second)
 			if macaroon, err = d.initWallet(WalletSecurity); err != nil {
 				if strings.Contains(err.Error(), alreadyExistsError) {
 					if len(NewPassword) != 0 {
+						d.log.Info("Changing wallet password")
 						if macaroon, err = d.changeWalletPassPhrase(WalletSecurity.WalletPassphrase, NewPassword,
 							WalletSecurity.StatelessInit); err != nil {
 							d.log.Error("Could not change wallet password", zap.String("err", err.Error()))
 							go d.stopDaemon(err)
+							break loop
 						} else {
 							WalletSecurity.WalletPassphrase = NewPassword
 						}
-						break loop
 					}
-					d.log.Info("Unlocking wallet since it was already created")
+					d.log.Info("Unlocking existing wallet")
 					err = d.unlockWallet(WalletSecurity.WalletPassphrase, WalletSecurity.StatelessInit)
 					if err != nil && strings.Contains(err.Error(), alreadyUnlockedError) {
+						// This happens when we init a wallet with a new password.
+						// The password is updated and the wallet unlocked all at once.
+						// So reunlock the wallet will return a whitelisted error
 						err = nil
+					} else if err != nil {
+						go d.stopDaemon(err)
+						break loop
 					}
 				} else {
 					select {
@@ -243,7 +249,8 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 
 			}
 			if err == nil {
-				if macaroon == nil { // in case we are unlocking instead of init
+				// in case we are unlocking instead of init
+				if macaroon == nil && len(d.adminMacaroon) != 0 {
 					d.Lock()
 					macaroon = d.adminMacaroon
 					d.Unlock()
@@ -261,9 +268,12 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 				break loop
 			}
 		}
-		d.Lock()
-		d.adminMacaroon = macaroon
-		d.Unlock()
+		if len(macaroon) != 0 {
+			d.Lock()
+			d.adminMacaroon = macaroon
+			d.Unlock()
+		}
+
 		if blocking {
 			select {
 			case errChan <- err:
@@ -359,10 +369,10 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 
 	if d.cfg.UseNeutrino {
 		lndConfig.Bitcoin.Node = "neutrino"
-		d.log.Info("neutrio backed selected")
+		d.log.Info("neutrino backend selected")
 	} else {
 		lndConfig.Bitcoin.Node = "bitcoind"
-
+		d.log.Info("bitcoind backend selected")
 		if d.cfg.BitcoindRPCHost == "" {
 			f, found = typ.Elem().FieldByName("BitcoindRPCHost")
 			if !found {

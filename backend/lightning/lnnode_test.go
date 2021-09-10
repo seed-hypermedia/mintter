@@ -75,10 +75,11 @@ var (
 )
 
 type subset struct {
-	subname                string
-	credentials            WalletSecurity
-	newPassword            string
-	removeWalletBeforeTest bool
+	subname                     string
+	credentials                 WalletSecurity
+	newPassword                 string
+	removeCredentialsBeforeTest bool
+	mustFail                    bool
 }
 
 func TestStart(t *testing.T) {
@@ -108,7 +109,7 @@ func TestStart(t *testing.T) {
 							StatelessInit:    false,
 						},
 						newPassword:            "",
-						removeWalletBeforeTest: true,
+						removeCredentialsBeforeTest: true,
 					},
 					{
 						subname: "Unlock pasword ok",
@@ -116,7 +117,7 @@ func TestStart(t *testing.T) {
 							WalletPassphrase: "testtest",
 						},
 						newPassword:            "",
-						removeWalletBeforeTest: false,
+						removeCredentialsBeforeTest: false,
 					},
 					{
 						subname: "Unlock wrong pasword",
@@ -124,7 +125,7 @@ func TestStart(t *testing.T) {
 							WalletPassphrase: "testtesto",
 						},
 						newPassword:            "",
-						removeWalletBeforeTest: false,
+						removeCredentialsBeforeTest: false,
 					},
 				},
 			},*/
@@ -147,55 +148,101 @@ func TestStart(t *testing.T) {
 						SeedEntropy:      testVectors[1].entropy[:],
 						StatelessInit:    true,
 					},
-					newPassword:            "",
-					removeWalletBeforeTest: true,
+					newPassword:                 "",
+					removeCredentialsBeforeTest: true,
+					mustFail:                    false,
 				},
 				{
-
-					subname: "Init from mnemonics and recovery window",
+					subname: "Unlock pasword ok but no macaroons",
 					credentials: WalletSecurity{
 						WalletPassphrase: "testtest",
+					},
+					newPassword:                 "",
+					removeCredentialsBeforeTest: false,
+					mustFail:                    true,
+				},
+				{
+					subname: "Init from mnemonics and recovery window",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testtesto",
 						RecoveryWindow:   100,
 						AezeedPassphrase: testVectors[1].password,
 						AezeedMnemonics:  testVectors[1].expectedMnemonic[:],
 						SeedEntropy:      []byte{},
-						StatelessInit:    true,
+						StatelessInit:    false,
 					},
-					newPassword:            "testtesto",
-					removeWalletBeforeTest: false,
+					newPassword:                 "",
+					removeCredentialsBeforeTest: true,
+					mustFail:                    false,
 				},
 
 				{
-					subname: "Unlock pasword ok",
+					subname: "Unlock pasword ok and macaroons",
 					credentials: WalletSecurity{
 						WalletPassphrase: "testtesto",
 					},
-					newPassword:            "",
-					removeWalletBeforeTest: false,
+					newPassword:                 "",
+					removeCredentialsBeforeTest: false,
+					mustFail:                    false,
 				},
 				{
-					subname: "Change password ok",
+					subname: "Change password from init ok",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testtesto",
+						RecoveryWindow:   100,
+						AezeedPassphrase: testVectors[1].password,
+						AezeedMnemonics:  testVectors[1].expectedMnemonic[:],
+						SeedEntropy:      []byte{},
+						StatelessInit:    false,
+					},
+					newPassword:                 "testtest",
+					removeCredentialsBeforeTest: true,
+					mustFail:                    false,
+				},
+				{
+					subname: "Unlock pasword ok ",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testtest",
+					},
+					newPassword:                 "",
+					removeCredentialsBeforeTest: false,
+					mustFail:                    false,
+				},
+				{
+					subname: "Change password from change pass",
 					credentials: WalletSecurity{
 						WalletPassphrase: "testtesto",
 					},
-					newPassword:            "testtesta",
-					removeWalletBeforeTest: false,
+					newPassword:                 "testtesta",
+					removeCredentialsBeforeTest: false,
+					mustFail:                    false,
 				},
 				{
 					subname: "Unlock wrong pasword",
 					credentials: WalletSecurity{
 						WalletPassphrase: "testtesto",
 					},
-					newPassword:            "",
-					removeWalletBeforeTest: false,
+					newPassword:                 "",
+					removeCredentialsBeforeTest: false,
+					mustFail:                    true,
 				},
 				{
 					subname: "Change wrong password",
 					credentials: WalletSecurity{
 						WalletPassphrase: "testtest",
 					},
-					newPassword:            "testtesti",
-					removeWalletBeforeTest: false,
+					newPassword:                 "testtesti",
+					removeCredentialsBeforeTest: false,
+					mustFail:                    false,
+				},
+				{
+					subname: "Unlock right pasword",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testtesti",
+					},
+					newPassword:                 "",
+					removeCredentialsBeforeTest: false,
+					mustFail:                    false,
 				},
 			},
 		},
@@ -205,22 +252,30 @@ func TestStart(t *testing.T) {
 	for _, tt := range tests {
 		for _, subtest := range tt.subtest {
 			t.Run(subtest.subname, func(t *testing.T) {
+				fmt.Println("TEST NAME: " + subtest.subname)
 				d, nodeID, errStart := checkStart(t, tt.lnconf, &subtest.credentials,
-					subtest.newPassword, subtest.removeWalletBeforeTest, false)
-				errStop := d.Stop()
-				require.NoError(t, errStart, tt.name+". must succeed")
+					subtest.newPassword, subtest.removeCredentialsBeforeTest, false)
+				d.Stop()
+				if subtest.mustFail {
+					require.Error(t, errStart, tt.name+". must succeed")
+				} else {
+					require.NoError(t, errStart, tt.name+". must succeed")
+				}
+
 				// since init from seed gives a random mnemonics (even if we feed it with the same entropy the birthday date is diferent)
 				if subtest.subname != "Init from seed" {
 					require.EqualValues(t, expectedID, nodeID)
 				}
-				require.NoError(t, errStop, tt.name+". must succeed")
 				errStart = d.Start(&subtest.credentials, subtest.newPassword, true)
-				errStop = d.Stop()
-				require.NoError(t, errStart, tt.name+". must succeed")
+				d.Stop()
+				if subtest.mustFail {
+					require.Error(t, errStart, tt.name+". must succeed")
+				} else {
+					require.NoError(t, errStart, tt.name+". must succeed")
+				}
 				if subtest.subname != "Init from seed" {
 					require.EqualValues(t, expectedID, d.GetID())
 				}
-				require.NoError(t, errStop, tt.name+". must succeed")
 
 			})
 		}
@@ -229,7 +284,7 @@ func TestStart(t *testing.T) {
 }
 
 func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
-	newPassword string, removeWalletBeforeTest bool, blocking bool) (*Ldaemon, string, error) {
+	newPassword string, removeCredentialsBeforeTest bool, blocking bool) (*Ldaemon, string, error) {
 	t.Helper()
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
@@ -241,7 +296,7 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 
 	}
 
-	if removeWalletBeforeTest {
+	if removeCredentialsBeforeTest {
 		path := lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/wallet.db"
 		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
 			return d, nodeID, fmt.Errorf("Could not remove file: " + path + err.Error())
@@ -285,7 +340,7 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 			default:
 				i++
 				if i < 25 {
-					time.Sleep(5 * time.Second)
+					time.Sleep(3 * time.Second)
 				} else {
 					// Since we could have missed the event (LND was up very quick and sent it before we started listening) highly unlikely though
 					if d.GetID() != "" {

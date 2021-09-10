@@ -209,7 +209,7 @@ func (d *Ldaemon) subscribePeers(ctx context.Context, client lnrpc.LightningClie
 			return err
 		}
 
-		d.log.Info("Peer event received", zap.String("type", string(notification.Type)),
+		d.log.Info("Peer event received", zap.String("type", notification.GetType().String()),
 			zap.String("peerID", notification.PubKey))
 		if err != nil {
 			d.log.Error("Subscribe peers Failed to get notification", zap.String("err", err.Error()))
