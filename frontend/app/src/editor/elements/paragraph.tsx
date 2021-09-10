@@ -44,9 +44,13 @@ const ParagraphStyled = styled(Text, {
 
 export const createParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_PARAGRAPH,
-  renderElement(props) {
-    if (isParagraph(props.element)) {
-      return <Paragraph {...props} />
+  renderElement({element, children, attributes}) {
+    if (isParagraph(element)) {
+      return (
+        <Paragraph element={element} attributes={attributes}>
+          {children}
+        </Paragraph>
+      )
     }
   },
   configureEditor: (editor) => {
