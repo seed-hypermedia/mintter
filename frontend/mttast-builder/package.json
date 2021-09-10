@@ -14,9 +14,9 @@
   "devDependencies": {
     "@mintter/mttast": "^0.1.0",
     "@types/unist": "^2.0.6",
-    "typescript": "^4.3.5"
+    "typescript": "^4.4.2"
   },
   "dependencies": {
-    "nanoid": "^3.1.23"
+    "nanoid": "^3.1.25"
   }
 }

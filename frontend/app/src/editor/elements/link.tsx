@@ -191,7 +191,7 @@ export function ToolbarLink({sendStoreFocus, resetSelection, lastSelection}: Too
   const [open, setOpen] = useState(false)
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
-      <Popover.Trigger as={Slot}>
+      <Popover.Trigger asChild>
         <Button
           variant="ghost"
           size="1"

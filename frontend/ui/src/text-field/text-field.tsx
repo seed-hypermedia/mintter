@@ -150,7 +150,8 @@ const TextFieldHint = styled(Text, {
   },
 })
 
-type TextFieldProps = Stitches.VariantProps<typeof Input> &
+type TextFieldProps = React.HTMLProps<HTMLInputElement> &
+  Stitches.VariantProps<typeof Input> &
   Partial<{
     id: string
     label: string

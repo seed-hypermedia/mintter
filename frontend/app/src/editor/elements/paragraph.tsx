@@ -92,6 +92,7 @@ function Paragraph({children, element, attributes}: RenderElementProps) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const [parentNode] = Editor.parent(editor, path)
+
   return (
     <ParagraphStyled
       as={isCode(parentNode) ? 'span' : isBlockquote(parentNode) ? 'blockquote' : 'p'}

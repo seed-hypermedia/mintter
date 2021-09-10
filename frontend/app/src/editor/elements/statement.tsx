@@ -137,7 +137,7 @@ function Statement({attributes, children, element}: RenderElementProps) {
     >
       <StatementTools element={element} />
       {!isDraft ? (
-        <ContextMenu.Root>
+        <ContextMenu.Root modal={false}>
           <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
           <ContextMenu.Content alignOffset={-5}>
             <ContextMenu.Item onSelect={onCopy}>
