@@ -13,6 +13,7 @@ import {styled, keyframes} from '@mintter/ui/stitches.config'
  */
 export function Connections({onConnect}: any) {
   const {status, data, error} = useListAccounts()
+  console.log('🚀 ~ Connections', data)
 
   if (status == 'loading') {
     return <Text>loading...</Text>
