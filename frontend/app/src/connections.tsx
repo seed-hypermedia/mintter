@@ -1,10 +1,10 @@
-import type {Account, Device, ConnectionStatus} from '@mintter/client'
+import type {Account, Device} from '@mintter/client'
 import {useQuery} from 'react-query'
 import {Button} from '@mintter/ui/button'
 import {Box} from '@mintter/ui/box'
 import {Text} from '@mintter/ui/text'
 import {useListAccounts} from '@mintter/client/hooks'
-import {getPeerInfo} from '@mintter/client'
+import {getPeerInfo, ConnectionStatus} from '@mintter/client'
 import * as HoverCard from '@radix-ui/react-hover-card'
 import {styled, keyframes} from '@mintter/ui/stitches.config'
 
