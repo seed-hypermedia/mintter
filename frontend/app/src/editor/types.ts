@@ -1,4 +1,4 @@
-import type {MttastContent, Document, Text} from '@mintter/mttast'
+import type {MttastContent, Document, Text, Image, Video} from '@mintter/mttast'
 import type {BaseEditor, Editor, NodeEntry, Range} from 'slate'
 import type {HistoryEditor} from 'slate-history'
 import type {ReactEditor, RenderElementProps, RenderLeafProps, Editable} from 'slate-react'
@@ -6,7 +6,7 @@ import type {ReactEditor, RenderElementProps, RenderLeafProps, Editable} from 's
 declare module 'slate' {
   export interface CustomTypes {
     Editor: BaseEditor & ReactEditor & HistoryEditor & {mode: string}
-    Element: Document | Exclude<MttastContent, Text>
+    Element: Exclude<MttastContent, Document | Text | Video | Image>
     Text: Text
   }
 }
