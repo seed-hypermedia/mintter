@@ -33,12 +33,13 @@ export const createCodePlugin = async (props: CodePluginProps = {}): Promise<Edi
   return {
     name: ELEMENT_CODE,
     configureEditor(e) {
+      editor = e
+
       const {deleteBackward} = e
       e.deleteBackward = (unit) => {
         if (resetFlowContent(editor)) return
         deleteBackward(unit)
       }
-      editor = e
 
       return e
     },
@@ -64,6 +65,15 @@ export const createCodePlugin = async (props: CodePluginProps = {}): Promise<Edi
             </Box>
           </Code>
         )
+      }
+    },
+    onKeyDown(ev) {
+      if (ev.key === 'Enter') {
+        const code = Editor.above(editor, {match: isCode})
+        if (code) {
+          ev.preventDefault()
+          Transforms.insertText(editor, '\n')
+        }
       }
     },
     decorate([node, path]) {
