@@ -10,6 +10,7 @@ import {toast} from 'react-hot-toast'
 import {getDateFormat} from './utils/get-format-date'
 import {useAccount} from '@mintter/client/hooks'
 import {Avatar} from './components/avatar'
+import {styled} from '@mintter/ui/stitches.config'
 
 export function DocumentList({data, status, error}) {
   const location = useLocation()
@@ -32,6 +33,18 @@ export function DocumentList({data, status, error}) {
   )
 }
 
+const StyledLink = styled(Link, {
+  padding: '$5',
+  borderRadius: '$2',
+  display: 'flex',
+  gap: '$5',
+  textDecoration: 'none',
+  transition: 'background 0.25s ease-in-out',
+  '&:hover': {
+    backgroundColor: '$background-muted',
+  },
+})
+
 function ListItem({item, toPrefix, isDraft}: any) {
   const queryClient = useQueryClient()
   const [state, send] = useMachine(
@@ -51,23 +64,7 @@ function ListItem({item, toPrefix, isDraft}: any) {
 
   return (
     <Box as="li" css={{position: 'relative', listStyle: 'none'}}>
-      <Box
-        // TODO: fix types
-        // @ts-ignore
-        as={Link}
-        to={`${toPrefix}/${id}`}
-        css={{
-          padding: '$5',
-          borderRadius: '$2',
-          display: 'flex',
-          gap: '$5',
-          textDecoration: 'none',
-          transition: 'background 0.25s ease-in-out',
-          '&:hover': {
-            backgroundColor: '$background-muted',
-          },
-        }}
-      >
+      <StyledLink to={`${toPrefix}/${id}`}>
         <Box
           css={{
             flex: 'none',
@@ -182,7 +179,7 @@ function ListItem({item, toPrefix, isDraft}: any) {
             </Alert.Root>
           </Box>
         </Box>
-      </Box>
+      </StyledLink>
     </Box>
   )
 }

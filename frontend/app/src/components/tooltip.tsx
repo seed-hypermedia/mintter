@@ -23,7 +23,7 @@ export type TooltipProps = {
 export function Tooltip({children, content, open, ...props}: TooltipProps) {
   return (
     <TooltipPrimitive.Root open={open} {...props}>
-      <TooltipPrimitive.Trigger as={Slot}>{children}</TooltipPrimitive.Trigger>
+      <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
       <StyledContent side="top" align="center" {...props}>
         {content}
         <StyledArrow offset={5} width={11} height={5} />

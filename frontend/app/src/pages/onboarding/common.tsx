@@ -1,9 +1,16 @@
 import {motion} from 'framer-motion'
 import type {Variants} from 'framer-motion'
+import type {CSS} from '@mintter/ui/stitches.config'
 import {Box, Button, Text} from '@mintter/ui'
-import type {BoxProps, ButtonProps, TextProps} from '@mintter/ui'
+import type {ButtonProps, TextProps} from '@mintter/ui'
 import type {GenSeedResponse} from '@mintter/client'
+import {styled} from '@mintter/ui/stitches.config'
+import {textStyles} from '@mintter/ui/text/text'
+import type React from 'react'
 
+export type ReactNode<T = any> = T & {
+  children: React.ReactNode
+}
 export interface OnboardingStepPropsType {
   prev: () => void
   next: () => void
@@ -56,114 +63,90 @@ export const slideUpAnimationVariants: Variants = {
   },
 }
 
-export function OnboardingStep({css, ...props}: BoxProps): JSX.Element {
+const OnboardingStepStyled = styled(motion.form, {
+  boxSizing: 'border-box',
+  alignItems: 'center',
+  display: 'flex',
+  flex: 'auto',
+  flexDirection: 'column',
+  gap: '$7',
+  justifyContent: 'center',
+})
+
+export function OnboardingStep(props) {
   return (
-    <Box
-      as={motion.form}
+    <OnboardingStepStyled
       variants={containerAnimationVariants}
       initial="hidden"
       data-testid="onboarding-wrapper"
       animate="visible"
       exit="hidden"
-      // TODO: fix types
-      // @ts-ignore
-      css={{
-        alignItems: 'center',
-        display: 'flex',
-        flex: 'auto',
-        flexDirection: 'column',
-        gap: '$7',
-        justifyContent: 'center',
-        ...css,
-      }}
       {...props}
     />
   )
 }
 
-export function OnboardingStepTitle({css, icon, children}: BoxProps & {icon?: JSX.Element}): JSX.Element {
+const OnboardingStepTitleStyled = styled(motion.header, {
+  boxSizing: 'border-box',
+  alignItems: 'center',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '$5',
+})
+
+export function OnboardingStepTitle({
+  icon,
+  children,
+  ...props
+}: ReactNode<{
+  icon?: JSX.Element
+  css?: CSS
+}>) {
   return (
-    <Box
-      as={motion.header}
-      variants={slideDownAnimationVariants}
-      // TODO: fix types
-      // @ts-ignore
-      css={{
-        alignItems: 'center',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$5',
-        ...css,
-      }}
-      data-cy="welcome-title"
-    >
+    <OnboardingStepTitleStyled variants={slideDownAnimationVariants} data-cy="welcome-title" {...props}>
       {icon}
       <Text alt as="h1" size="9" css={{textAlign: 'center'}}>
         {children}
       </Text>
-    </Box>
+    </OnboardingStepTitleStyled>
   )
 }
 
-export function OnboardingStepDescription({css, ...props}: TextProps): JSX.Element {
-  return (
-    <Text
-      as={motion.p}
-      variants={fadeAnimationVariants}
-      // TODO: fix types
-      // @ts-ignore
-      css={{
-        textAlign: 'center',
-        maxWidth: '$three-quarters',
-        ...css,
-      }}
-      {...props}
-    />
-  )
+const OnboardingStepDescriptionStyled = styled(motion.p, textStyles, {
+  textAlign: 'center',
+  maxWidth: '$three-quarters',
+})
+
+export function OnboardingStepDescription(props: ReactNode<TextProps>): JSX.Element {
+  return <OnboardingStepDescriptionStyled variants={fadeAnimationVariants} {...props} />
 }
 
-export function OnboardingStepBody({css, children}: BoxProps): JSX.Element {
-  return (
-    <Box
-      data-testid="onboarding-body"
-      as={motion.main}
-      variants={fadeAnimationVariants}
-      // TODO: fix types
-      // @ts-ignore
-      css={{marginTop: 'auto', width: '100%', ...css}}
-    >
-      {children}
-    </Box>
-  )
+const OnboardingStepBodyStyled = styled(motion.main, {
+  boxSizing: 'border-box',
+  marginTop: 'auto',
+  width: '100%',
+})
+export function OnboardingStepBody(props: ReactNode<{css: CSS}>) {
+  return <OnboardingStepBodyStyled data-testid="onboarding-body" variants={fadeAnimationVariants} {...props} />
 }
 
-export function OnboardingStepActions({css, children}: BoxProps): JSX.Element {
-  return (
-    <Box
-      as={motion.footer}
-      variants={slideUpAnimationVariants}
-      // TODO: fix types
-      // @ts-ignore
-      css={{
-        display: 'flex',
-        justifyContent: 'space-evenly',
-        marginTop: 'auto',
-        width: '100%',
-        [`& > ${Button}`]: {
-          maxWidth: 240,
-          width: '100%',
-        },
-        ...css,
-      }}
-    >
-      {children}
-    </Box>
-  )
+const OnboardingStepActionsStyled = styled(motion.footer, {
+  boxSizing: 'border-box',
+  display: 'flex',
+  justifyContent: 'space-evenly',
+  marginTop: 'auto',
+  width: '100%',
+  [`& > ${Button}`]: {
+    maxWidth: 240,
+    width: '100%',
+  },
+})
+
+export function OnboardingStepActions(props: ReactNode<{css?: CSS}>) {
+  return <OnboardingStepActionsStyled variants={slideUpAnimationVariants} {...props} />
 }
 
-export function OnboardingStepButton(props: ButtonProps) {
-  // TODO: fix types
-  // @ts-ignore
+export function OnboardingStepButton(props: ReactNode<ButtonProps & React.HTMLProps<HTMLButtonElement>>) {
   return <Button type="button" shape="pill" size="3" {...props} />
 }
 
@@ -206,11 +189,9 @@ export function ProfileInformationIcon() {
   )
 }
 
-function IconContainer({children}: {children: React.ReactNode}) {
+function IconContainer({children}: ReactNode<any>) {
   return (
     <Box
-      // TODO: fix types
-      // @ts-ignore
       css={{
         alignItems: 'center',
         backgroundColor: '$primary-muted',

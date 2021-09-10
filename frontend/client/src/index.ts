@@ -54,5 +54,5 @@ export {generateSeed, getAccount, registerAccount, updateAccount, listAccounts} 
 export {getInfo} from './daemon'
 export {getDocument} from './documents'
 export {createDraft, deleteDraft, updateDraft, listDrafts, publishDraft, getDraft} from './drafts'
-export {listPeerAddrs, listSuggestedProfiles, connect} from './networking'
+export {listPeerAddrs, listSuggestedProfiles, connect, getPeerInfo} from './networking'
 export {deletePublication, listPublications, getPublication} from './publications'
