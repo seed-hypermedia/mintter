@@ -145,7 +145,7 @@ export const InlineEmbed = forwardRef(({embed, children = null, ...props}: Inlin
           </ContextMenu.Item>
           <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: embed.url!})}>
             <Icon name="ArrowChevronDown" size="1" />
-            <Text size="2">Open in Sidepanel</Text>
+            <Text size="2">Add to Bookmarks</Text>
           </ContextMenu.Item>
         </ContextMenu.Content>
       </ContextMenu.Root>

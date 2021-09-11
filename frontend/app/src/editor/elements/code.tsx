@@ -230,7 +230,7 @@ function Code({
           onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${docId}/${element.id}`})}
         >
           <Icon size="1" name="ArrowBottomRight" />
-          <Text size="2">Open in Sidepanel</Text>
+          <Text size="2">Add to Bookmarks</Text>
         </ContextMenu.Item>
       </ContextMenu.Content>
     </ContextMenu.Root>
