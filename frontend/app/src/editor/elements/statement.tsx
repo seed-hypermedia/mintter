@@ -155,7 +155,7 @@ function Statement({attributes, children, element}: RenderElementProps) {
               }
             >
               <Icon size="1" name="ArrowBottomRight" />
-              <Text size="2">Open in Sidepanel</Text>
+              <Text size="2">Add to Bookmarks</Text>
             </ContextMenu.Item>
             <ContextMenu.Item onSelect={onStartDraft}>
               <Icon size="1" name="AddCircle" />
