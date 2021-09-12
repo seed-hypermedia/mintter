@@ -78,6 +78,9 @@ func NewLdaemon(log *zap.Logger, cfg *config.LND) (*Ldaemon, error) {
 func (d *Ldaemon) Stop() {
 
 	d.stopDaemon(nil)
+	for !d.daemonStopped {
+		time.Sleep(waitSecondsPerAttempt * time.Second)
+	}
 }
 
 // Start is used to start the lightning network daemon.
@@ -108,11 +111,12 @@ func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string, bloc
 }
 
 func (d *Ldaemon) stopDaemon(err error) {
-
+	d.Lock()
 	if atomic.SwapInt32(&d.daemonRunning, 0) == 0 {
+		d.Unlock()
 		return
 	}
-
+	d.Unlock()
 	if err != nil {
 		d.log.Info("Daemon.stop() called with error " + err.Error())
 	} else {
@@ -123,10 +127,12 @@ func (d *Ldaemon) stopDaemon(err error) {
 		d.interceptor.RequestShutdown()
 	}
 
-	close(d.quitChan)
-
+	if d.quitChan != nil {
+		close(d.quitChan)
+	} else {
+		d.log.Error("quitChan does not exists")
+	}
 	d.wg.Wait()
-
 	d.Lock()
 	d.nodeID = ""
 	d.daemonStopped = true
@@ -148,19 +154,18 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 		d.Unlock()
 		return nil, fmt.Errorf("daemon must be stopped first")
 	}
+
+	// Hook interceptor for os signals. We dont use err since the only err possible
+	// is interceptor already created
+	d.interceptor, _ = signal.Intercept()
+
+	d.quitChan = make(chan struct{})
+
 	d.daemonStopped = false
 	atomic.StoreInt32(&d.daemonRunning, 1)
 	d.Unlock()
 
-	// Hook interceptor for os signals.
-	shutdownInterceptor, err := signal.Intercept()
-	if err != nil {
-		return nil, fmt.Errorf("Problem getting interceptor" + err.Error())
-	}
-
-	d.interceptor = shutdownInterceptor
-	d.quitChan = make(chan struct{})
-
+	var lndErr error
 	lndConfig, err := d.createConfig(d.cfg.LndDir)
 
 	if err != nil {
@@ -173,7 +178,7 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 			defer d.wg.Done()
 
 			d.log.Info("Starting LND Daemon")
-			lndErr := lnd.Main(lndConfig, lnd.ListenerCfg{}, d.interceptor)
+			lndErr = lnd.Main(lndConfig, lnd.ListenerCfg{}, d.interceptor)
 			if lndErr != nil {
 				d.log.Error("Main function returned with error", zap.String("err", lndErr.Error()))
 			}
@@ -290,12 +295,18 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 	if blocking {
 		select {
 		case err := <-errChan:
+			if lndErr != nil {
+				err = lndErr
+			}
 			return lndConfig, err
 		case <-d.quitChan:
 			err := <-errChan
 			if err != nil {
 				d.log.Error("Quitting while waiting in a blocking start",
 					zap.String("err", err.Error()))
+			}
+			if lndErr != nil {
+				err = lndErr
 			}
 			return lndConfig, err
 		}
