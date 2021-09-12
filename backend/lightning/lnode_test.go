@@ -140,7 +140,7 @@ func TestStart(t *testing.T) {
 			},
 			subtest: []subset{
 				{
-					subname: "Init from mnemonics",
+					subname: "Init from mnemonics stateless",
 					credentials: WalletSecurity{
 						WalletPassphrase: "testtest",
 						RecoveryWindow:   0,
@@ -157,50 +157,15 @@ func TestStart(t *testing.T) {
 					subname: "Unlock pasword ok but no macaroons",
 					credentials: WalletSecurity{
 						WalletPassphrase: "testtest",
+						StatelessInit:    true,
 					},
 					newPassword:                 "",
 					removeCredentialsBeforeTest: false,
 					mustFail:                    true,
 				},
-				{
-					subname: "Init from mnemonics and recovery window",
-					credentials: WalletSecurity{
-						WalletPassphrase: "testtesto",
-						RecoveryWindow:   100,
-						AezeedPassphrase: testVectors[1].password,
-						AezeedMnemonics:  testVectors[1].expectedMnemonic[:],
-						SeedEntropy:      testVectors[1].entropy[:],
-						StatelessInit:    false,
-					},
-					newPassword:                 "",
-					removeCredentialsBeforeTest: true,
-					mustFail:                    false,
-				},
+
 				{
 					subname: "Unlock pasword ok and macaroons",
-					credentials: WalletSecurity{
-						WalletPassphrase: "testtesto",
-					},
-					newPassword:                 "",
-					removeCredentialsBeforeTest: false,
-					mustFail:                    false,
-				},
-				{
-					subname: "Change password from init ok",
-					credentials: WalletSecurity{
-						WalletPassphrase: "testtesto",
-						RecoveryWindow:   100,
-						AezeedPassphrase: testVectors[1].password,
-						AezeedMnemonics:  testVectors[1].expectedMnemonic[:],
-						SeedEntropy:      []byte{},
-						StatelessInit:    false,
-					},
-					newPassword:                 "testtest",
-					removeCredentialsBeforeTest: true,
-					mustFail:                    false,
-				},
-				{
-					subname: "Unlock pasword ok ",
 					credentials: WalletSecurity{
 						WalletPassphrase: "testtest",
 					},
@@ -211,7 +176,7 @@ func TestStart(t *testing.T) {
 				{
 					subname: "Change password from change pass",
 					credentials: WalletSecurity{
-						WalletPassphrase: "testtesto",
+						WalletPassphrase: "testtest",
 					},
 					newPassword:                 "testtesta",
 					removeCredentialsBeforeTest: false,
@@ -220,7 +185,7 @@ func TestStart(t *testing.T) {
 				{
 					subname: "Unlock wrong pasword",
 					credentials: WalletSecurity{
-						WalletPassphrase: "testtesto",
+						WalletPassphrase: "testtest",
 					},
 					newPassword:                 "",
 					removeCredentialsBeforeTest: false,
@@ -233,12 +198,12 @@ func TestStart(t *testing.T) {
 					},
 					newPassword:                 "testtesti",
 					removeCredentialsBeforeTest: false,
-					mustFail:                    false,
+					mustFail:                    true,
 				},
 				{
 					subname: "Unlock right pasword",
 					credentials: WalletSecurity{
-						WalletPassphrase: "testtesti",
+						WalletPassphrase: "testtesta",
 					},
 					newPassword:                 "",
 					removeCredentialsBeforeTest: false,
@@ -268,6 +233,10 @@ func TestStart(t *testing.T) {
 		for _, subtest := range tt.subtest {
 			t.Run(subtest.subname, func(t *testing.T) {
 				fmt.Println("TEST NAME: " + subtest.subname)
+				tt.lnconf.DisableListen = true
+				if subtest.subname == "Unlock pasword ok and macaroons" {
+					fmt.Println("TEST NAME: " + subtest.subname)
+				}
 				d, nodeID, errStart := checkStart(t, tt.lnconf, &subtest.credentials,
 					subtest.newPassword, subtest.removeCredentialsBeforeTest, false)
 				d.Stop()
@@ -280,15 +249,21 @@ func TestStart(t *testing.T) {
 				if strings.Contains(subtest.subname, "mnemonics") {
 					require.EqualValues(t, expectedID, nodeID)
 				}
-				errStart = d.Start(&subtest.credentials, subtest.newPassword, true)
-				d.Stop()
+
+				if subtest.subname != "Change password from change pass" {
+					errStart = d.Start(&subtest.credentials, subtest.newPassword, true)
+					nodeID = d.GetID()
+					d.Stop()
+				}
+
 				if subtest.mustFail {
 					require.Error(t, errStart, tt.name+". must fail")
 				} else {
 					require.NoError(t, errStart, tt.name+". must succeed")
 				}
+
 				if strings.Contains(subtest.subname, "mnemonics") {
-					require.EqualValues(t, expectedID, d.GetID())
+					require.EqualValues(t, expectedID, nodeID)
 				}
 
 			})
@@ -320,6 +295,19 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 		// Init a fresh new instance. If it is not removed, then we need to change the password
 		// before init
 		path = lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/macaroons.db"
+		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
+			return d, nodeID, fmt.Errorf("Could not remove file: " + path + err.Error())
+		}
+
+		path = lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/admin.macaroon"
+		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
+			return d, nodeID, fmt.Errorf("Could not remove file: " + path + err.Error())
+		}
+		path = lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/readonly.macaroon"
+		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
+			return d, nodeID, fmt.Errorf("Could not remove file: " + path + err.Error())
+		}
+		path = lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/invoice.macaroon"
 		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
 			return d, nodeID, fmt.Errorf("Could not remove file: " + path + err.Error())
 		}
