@@ -62,7 +62,7 @@ type LND struct {
 
 	// A list of domains for lnd to periodically resolve, and advertise the resolved
 	// IPs for the backing node. This is useful for users that only have a dynamic IP,
-	//or want to expose the node at a domain. externalhosts=my-node-domain.com
+	// or want to expose the node at a domain. externalhosts=my-node-domain.com
 	ExternalHosts []string `help:"A set of hosts that should be periodically resolved to announce IPs for"`
 
 	DisableListen  bool   `help:"Disable listening for incoming peer connections"`

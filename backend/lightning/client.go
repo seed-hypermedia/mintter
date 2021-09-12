@@ -264,7 +264,7 @@ func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 
 	// If the user already has mnemonics from a previous instance or
 	// it wants to recover a node, then we create from mnemonics
-	if len(WalletSecurity.AezeedMnemonics) != 0 {
+	if len(WalletSecurity.AezeedMnemonics) > 1 {
 		if WalletSecurity.RecoveryWindow > 0 {
 			d.log.Info("Init Wallet from Mnemonics")
 		} else if WalletSecurity.RecoveryWindow == 0 {
@@ -324,7 +324,7 @@ func newLightningClient(noMacaroon bool, macBytes []byte, macPath string, certPa
 		if info, err := os.Stat(certPath); os.IsNotExist(err) || info.Size() == 0 {
 			i++
 			if i > maxConnAttemps {
-				return nil, fmt.Errorf("We could find a valid certificate in " + certPath)
+				return nil, fmt.Errorf("We couldn't find a valid certificate in " + certPath)
 			}
 			time.Sleep(1 * time.Second)
 		} else {
@@ -345,8 +345,20 @@ func newLightningClient(noMacaroon bool, macBytes []byte, macPath string, certPa
 	if !noMacaroon {
 
 		mac := &macaroon.Macaroon{}
-		if len(macBytes) == 0 && macPath != "" {
 
+		if len(macBytes) == 0 && macPath != "" {
+			// If its the first time, usualy the lnd admin.macaroon is stil being baked so we wait a bit
+			for {
+				if info, err := os.Stat(macPath); os.IsNotExist(err) || info.Size() == 0 {
+					i++
+					if i > maxConnAttemps {
+						return nil, fmt.Errorf("We couldn't find a valid macaroon in " + macPath)
+					}
+					time.Sleep(1 * time.Second)
+				} else {
+					break
+				}
+			}
 			if macBytes, err = ioutil.ReadFile(macPath); err != nil {
 				return nil, err
 			}
