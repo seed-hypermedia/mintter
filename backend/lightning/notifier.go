@@ -68,10 +68,14 @@ func (d *Ldaemon) SubscribeEvents() (*subscribe.Client, error) {
 	return d.ntfnServer.Subscribe()
 }
 
+// If no marshaled macaroon is provided, we tried to use the local macaroon
+// stored in workinng_dir/data/chain/bitcoin/network/ if stateless init is set
+// it won't probably find any though
 func (d *Ldaemon) startRpcClients(macBytes []byte) error {
 	var err error
 
-	grpcCon, err := newLightningClient(false, macBytes, "", d.cfg.LndDir+"/"+defaultTLSCertFilename, d.cfg.RawRPCListeners[0])
+	grpcCon, err := newLightningClient(false, macBytes, d.cfg.LndDir+"/data/chain/bitcoin/"+d.cfg.Network+
+		"/"+defaultMacaroonFilename, d.cfg.LndDir+"/"+defaultTLSCertFilename, d.cfg.RawRPCListeners[0])
 	if err != nil {
 		return err
 	}
