@@ -279,7 +279,9 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
     return (
       <Box css={{padding: '$4', marginTop: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>
         <Box css={{display: 'flex', gap: '$4'}}>
-          <Text size="2" css={{flex: 1}}>{`Error with item id: ${data.statement.id}`}</Text>
+          <Text size="2" css={{flex: 1}}>
+            Error
+          </Text>
           {remove && (
             <Button
               size="1"
@@ -291,6 +293,7 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
             </Button>
           )}
         </Box>
+        <Text as="span" alt size="2" css={{display: 'inline-block'}}>{`Error with item id: ${item}`}</Text>
       </Box>
     )
   }
