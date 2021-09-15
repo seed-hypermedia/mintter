@@ -11,7 +11,7 @@ let
             pkgs.coreutils
             pkgs.findutils
             pkgs.protobuf
-            pkgs.go
+            pkgs.go_1_17
             pkgs.terraform
             pkgs.bazelisk
             node
