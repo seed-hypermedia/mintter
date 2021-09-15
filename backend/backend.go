@@ -792,9 +792,14 @@ func (srv *backend) handleMintterPeer(ctx context.Context, evt event.EvtPeerIden
 		return err
 	}
 
+	var alias string
+	if account.Profile != nil {
+		alias = account.Profile.Alias
+	}
+
 	log.Debug("MintterPeerConnectionEstablished",
 		zap.String("account", account.Id),
-		zap.String("alias", account.Profile.Alias),
+		zap.String("alias", alias),
 	)
 
 	deviceID := peer.ToCid(pid)
