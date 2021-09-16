@@ -22,9 +22,19 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+// TODO: make this cross-platform
+func logFileName() string {
+	dir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+
+	return filepath.Join(dir, "Library/Logs/mintter.log")
+}
+
 func main() {
 	logFile := &lumberjack.Logger{
-		Filename:   "/Users/burdiyan/Library/Logs/mintter.log",
+		Filename:   logFileName(),
 		MaxSize:    250, // megabytes
 		MaxBackups: 3,
 	}
