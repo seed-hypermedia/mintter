@@ -1,8 +1,8 @@
 //@ts-nocheck
 /* eslint-disable */
-import {util, configure, Writer, Reader} from 'protobufjs/minimal'
-import * as Long from 'long'
+import Long from 'long'
 import {grpc} from '@improbable-eng/grpc-web'
+import _m0 from 'protobufjs/minimal'
 import {BrowserHeaders} from 'browser-headers'
 import {Timestamp} from '../../google/protobuf/timestamp'
 
@@ -43,15 +43,15 @@ export interface Info {
 const baseGenSeedRequest: object = {aezeedPassphrase: ''}
 
 export const GenSeedRequest = {
-  encode(message: GenSeedRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: GenSeedRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.aezeedPassphrase !== '') {
       writer.uint32(10).string(message.aezeedPassphrase)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): GenSeedRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): GenSeedRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseGenSeedRequest} as GenSeedRequest
     while (reader.pos < end) {
@@ -98,15 +98,15 @@ export const GenSeedRequest = {
 const baseGenSeedResponse: object = {mnemonic: ''}
 
 export const GenSeedResponse = {
-  encode(message: GenSeedResponse, writer: Writer = Writer.create()): Writer {
+  encode(message: GenSeedResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.mnemonic) {
       writer.uint32(10).string(v!)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): GenSeedResponse {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): GenSeedResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseGenSeedResponse} as GenSeedResponse
     message.mnemonic = []
@@ -160,7 +160,7 @@ export const GenSeedResponse = {
 const baseRegisterRequest: object = {mnemonic: '', aezeedPassphrase: ''}
 
 export const RegisterRequest = {
-  encode(message: RegisterRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: RegisterRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.mnemonic) {
       writer.uint32(10).string(v!)
     }
@@ -170,8 +170,8 @@ export const RegisterRequest = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): RegisterRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): RegisterRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseRegisterRequest} as RegisterRequest
     message.mnemonic = []
@@ -239,15 +239,15 @@ export const RegisterRequest = {
 const baseRegisterResponse: object = {accountId: ''}
 
 export const RegisterResponse = {
-  encode(message: RegisterResponse, writer: Writer = Writer.create()): Writer {
+  encode(message: RegisterResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.accountId !== '') {
       writer.uint32(10).string(message.accountId)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): RegisterResponse {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): RegisterResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseRegisterResponse} as RegisterResponse
     while (reader.pos < end) {
@@ -294,12 +294,12 @@ export const RegisterResponse = {
 const baseGetInfoRequest: object = {}
 
 export const GetInfoRequest = {
-  encode(_: GetInfoRequest, writer: Writer = Writer.create()): Writer {
+  encode(_: GetInfoRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): GetInfoRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): GetInfoRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseGetInfoRequest} as GetInfoRequest
     while (reader.pos < end) {
@@ -332,7 +332,7 @@ export const GetInfoRequest = {
 const baseInfo: object = {accountId: '', peerId: ''}
 
 export const Info = {
-  encode(message: Info, writer: Writer = Writer.create()): Writer {
+  encode(message: Info, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.accountId !== '') {
       writer.uint32(10).string(message.accountId)
     }
@@ -345,8 +345,8 @@ export const Info = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): Info {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): Info {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseInfo} as Info
     while (reader.pos < end) {
@@ -633,9 +633,7 @@ function fromJsonTimestamp(o: any): Date {
   }
 }
 
-// If you get a compile-error about 'Constructor<Long> and ... have no overlap',
-// add '--ts_proto_opt=esModuleInterop=true' as a flag when calling 'protoc'.
-if (util.Long !== Long) {
-  util.Long = Long as any
-  configure()
+if (_m0.util.Long !== Long) {
+  _m0.util.Long = Long as any
+  _m0.configure()
 }

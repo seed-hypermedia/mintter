@@ -1,8 +1,8 @@
 //@ts-nocheck
 /* eslint-disable */
-import {util, configure, Writer, Reader} from 'protobufjs/minimal'
-import * as Long from 'long'
+import Long from 'long'
 import {grpc} from '@improbable-eng/grpc-web'
+import _m0 from 'protobufjs/minimal'
 import {BrowserHeaders} from 'browser-headers'
 
 /**
@@ -121,15 +121,15 @@ export interface ObjectDiscoveryStatus {
 const baseStartObjectDiscoveryRequest: object = {objectId: ''}
 
 export const StartObjectDiscoveryRequest = {
-  encode(message: StartObjectDiscoveryRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: StartObjectDiscoveryRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.objectId !== '') {
       writer.uint32(10).string(message.objectId)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): StartObjectDiscoveryRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): StartObjectDiscoveryRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseStartObjectDiscoveryRequest} as StartObjectDiscoveryRequest
     while (reader.pos < end) {
@@ -176,12 +176,12 @@ export const StartObjectDiscoveryRequest = {
 const baseStartObjectDiscoveryResponse: object = {}
 
 export const StartObjectDiscoveryResponse = {
-  encode(_: StartObjectDiscoveryResponse, writer: Writer = Writer.create()): Writer {
+  encode(_: StartObjectDiscoveryResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): StartObjectDiscoveryResponse {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): StartObjectDiscoveryResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseStartObjectDiscoveryResponse} as StartObjectDiscoveryResponse
     while (reader.pos < end) {
@@ -214,15 +214,15 @@ export const StartObjectDiscoveryResponse = {
 const baseStopObjectDiscoveryRequest: object = {objectId: ''}
 
 export const StopObjectDiscoveryRequest = {
-  encode(message: StopObjectDiscoveryRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: StopObjectDiscoveryRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.objectId !== '') {
       writer.uint32(10).string(message.objectId)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): StopObjectDiscoveryRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): StopObjectDiscoveryRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseStopObjectDiscoveryRequest} as StopObjectDiscoveryRequest
     while (reader.pos < end) {
@@ -269,12 +269,12 @@ export const StopObjectDiscoveryRequest = {
 const baseStopObjectDiscoveryResponse: object = {}
 
 export const StopObjectDiscoveryResponse = {
-  encode(_: StopObjectDiscoveryResponse, writer: Writer = Writer.create()): Writer {
+  encode(_: StopObjectDiscoveryResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): StopObjectDiscoveryResponse {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): StopObjectDiscoveryResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseStopObjectDiscoveryResponse} as StopObjectDiscoveryResponse
     while (reader.pos < end) {
@@ -307,15 +307,15 @@ export const StopObjectDiscoveryResponse = {
 const baseGetObjectDiscoveryStatusRequest: object = {objectId: ''}
 
 export const GetObjectDiscoveryStatusRequest = {
-  encode(message: GetObjectDiscoveryStatusRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: GetObjectDiscoveryStatusRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.objectId !== '') {
       writer.uint32(10).string(message.objectId)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): GetObjectDiscoveryStatusRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): GetObjectDiscoveryStatusRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseGetObjectDiscoveryStatusRequest} as GetObjectDiscoveryStatusRequest
     while (reader.pos < end) {
@@ -362,15 +362,15 @@ export const GetObjectDiscoveryStatusRequest = {
 const baseGetPeerInfoRequest: object = {peerId: ''}
 
 export const GetPeerInfoRequest = {
-  encode(message: GetPeerInfoRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: GetPeerInfoRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.peerId !== '') {
       writer.uint32(10).string(message.peerId)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): GetPeerInfoRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): GetPeerInfoRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseGetPeerInfoRequest} as GetPeerInfoRequest
     while (reader.pos < end) {
@@ -417,15 +417,15 @@ export const GetPeerInfoRequest = {
 const baseConnectRequest: object = {addrs: ''}
 
 export const ConnectRequest = {
-  encode(message: ConnectRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: ConnectRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.addrs) {
       writer.uint32(10).string(v!)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): ConnectRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): ConnectRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseConnectRequest} as ConnectRequest
     message.addrs = []
@@ -479,12 +479,12 @@ export const ConnectRequest = {
 const baseConnectResponse: object = {}
 
 export const ConnectResponse = {
-  encode(_: ConnectResponse, writer: Writer = Writer.create()): Writer {
+  encode(_: ConnectResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): ConnectResponse {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): ConnectResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseConnectResponse} as ConnectResponse
     while (reader.pos < end) {
@@ -517,7 +517,7 @@ export const ConnectResponse = {
 const basePeerInfo: object = {addrs: '', connectionStatus: 0, accountId: ''}
 
 export const PeerInfo = {
-  encode(message: PeerInfo, writer: Writer = Writer.create()): Writer {
+  encode(message: PeerInfo, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.addrs) {
       writer.uint32(10).string(v!)
     }
@@ -530,8 +530,8 @@ export const PeerInfo = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): PeerInfo {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): PeerInfo {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...basePeerInfo} as PeerInfo
     message.addrs = []
@@ -613,15 +613,15 @@ export const PeerInfo = {
 const baseObjectDiscoveryStatus: object = {peers: ''}
 
 export const ObjectDiscoveryStatus = {
-  encode(message: ObjectDiscoveryStatus, writer: Writer = Writer.create()): Writer {
+  encode(message: ObjectDiscoveryStatus, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.peers) {
       writer.uint32(10).string(v!)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): ObjectDiscoveryStatus {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): ObjectDiscoveryStatus {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseObjectDiscoveryStatus} as ObjectDiscoveryStatus
     message.peers = []
@@ -942,9 +942,7 @@ type DeepPartial<T> = T extends Builtin
   ? {[K in keyof T]?: DeepPartial<T[K]>}
   : Partial<T>
 
-// If you get a compile-error about 'Constructor<Long> and ... have no overlap',
-// add '--ts_proto_opt=esModuleInterop=true' as a flag when calling 'protoc'.
-if (util.Long !== Long) {
-  util.Long = Long as any
-  configure()
+if (_m0.util.Long !== Long) {
+  _m0.util.Long = Long as any
+  _m0.configure()
 }

@@ -1,8 +1,8 @@
 //@ts-nocheck
 /* eslint-disable */
-import {util, configure, Writer, Reader} from 'protobufjs/minimal'
-import * as Long from 'long'
+import Long from 'long'
 import {grpc} from '@improbable-eng/grpc-web'
+import _m0 from 'protobufjs/minimal'
 import {Empty} from '../../google/protobuf/empty'
 import {BrowserHeaders} from 'browser-headers'
 import {Timestamp} from '../../google/protobuf/timestamp'
@@ -150,15 +150,15 @@ export interface DocumentPublished {
 const baseCreateDraftRequest: object = {existingDocumentId: ''}
 
 export const CreateDraftRequest = {
-  encode(message: CreateDraftRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: CreateDraftRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.existingDocumentId !== '') {
       writer.uint32(10).string(message.existingDocumentId)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): CreateDraftRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): CreateDraftRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseCreateDraftRequest} as CreateDraftRequest
     while (reader.pos < end) {
@@ -205,15 +205,15 @@ export const CreateDraftRequest = {
 const baseDeleteDraftRequest: object = {documentId: ''}
 
 export const DeleteDraftRequest = {
-  encode(message: DeleteDraftRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: DeleteDraftRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== '') {
       writer.uint32(10).string(message.documentId)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): DeleteDraftRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeleteDraftRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseDeleteDraftRequest} as DeleteDraftRequest
     while (reader.pos < end) {
@@ -260,15 +260,15 @@ export const DeleteDraftRequest = {
 const baseGetDraftRequest: object = {documentId: ''}
 
 export const GetDraftRequest = {
-  encode(message: GetDraftRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: GetDraftRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== '') {
       writer.uint32(10).string(message.documentId)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): GetDraftRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): GetDraftRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseGetDraftRequest} as GetDraftRequest
     while (reader.pos < end) {
@@ -315,15 +315,15 @@ export const GetDraftRequest = {
 const baseUpdateDraftRequest: object = {}
 
 export const UpdateDraftRequest = {
-  encode(message: UpdateDraftRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: UpdateDraftRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.document !== undefined) {
       Document.encode(message.document, writer.uint32(10).fork()).ldelim()
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): UpdateDraftRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): UpdateDraftRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseUpdateDraftRequest} as UpdateDraftRequest
     while (reader.pos < end) {
@@ -370,7 +370,7 @@ export const UpdateDraftRequest = {
 const baseListDraftsRequest: object = {pageSize: 0, pageToken: ''}
 
 export const ListDraftsRequest = {
-  encode(message: ListDraftsRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: ListDraftsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.pageSize !== 0) {
       writer.uint32(8).int32(message.pageSize)
     }
@@ -380,8 +380,8 @@ export const ListDraftsRequest = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): ListDraftsRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListDraftsRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseListDraftsRequest} as ListDraftsRequest
     while (reader.pos < end) {
@@ -442,7 +442,7 @@ export const ListDraftsRequest = {
 const baseListDraftsResponse: object = {nextPageToken: ''}
 
 export const ListDraftsResponse = {
-  encode(message: ListDraftsResponse, writer: Writer = Writer.create()): Writer {
+  encode(message: ListDraftsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.documents) {
       Document.encode(v!, writer.uint32(10).fork()).ldelim()
     }
@@ -452,8 +452,8 @@ export const ListDraftsResponse = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): ListDraftsResponse {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListDraftsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseListDraftsResponse} as ListDraftsResponse
     message.documents = []
@@ -521,15 +521,15 @@ export const ListDraftsResponse = {
 const basePublishDraftRequest: object = {documentId: ''}
 
 export const PublishDraftRequest = {
-  encode(message: PublishDraftRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: PublishDraftRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== '') {
       writer.uint32(10).string(message.documentId)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): PublishDraftRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): PublishDraftRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...basePublishDraftRequest} as PublishDraftRequest
     while (reader.pos < end) {
@@ -576,7 +576,7 @@ export const PublishDraftRequest = {
 const baseGetPublicationRequest: object = {documentId: '', version: ''}
 
 export const GetPublicationRequest = {
-  encode(message: GetPublicationRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: GetPublicationRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== '') {
       writer.uint32(10).string(message.documentId)
     }
@@ -586,8 +586,8 @@ export const GetPublicationRequest = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): GetPublicationRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): GetPublicationRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseGetPublicationRequest} as GetPublicationRequest
     while (reader.pos < end) {
@@ -648,15 +648,15 @@ export const GetPublicationRequest = {
 const baseDeletePublicationRequest: object = {documentId: ''}
 
 export const DeletePublicationRequest = {
-  encode(message: DeletePublicationRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: DeletePublicationRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== '') {
       writer.uint32(10).string(message.documentId)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): DeletePublicationRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeletePublicationRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseDeletePublicationRequest} as DeletePublicationRequest
     while (reader.pos < end) {
@@ -703,7 +703,7 @@ export const DeletePublicationRequest = {
 const baseListPublicationsRequest: object = {pageSize: 0, pageToken: ''}
 
 export const ListPublicationsRequest = {
-  encode(message: ListPublicationsRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: ListPublicationsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.pageSize !== 0) {
       writer.uint32(8).int32(message.pageSize)
     }
@@ -713,8 +713,8 @@ export const ListPublicationsRequest = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): ListPublicationsRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListPublicationsRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseListPublicationsRequest} as ListPublicationsRequest
     while (reader.pos < end) {
@@ -775,7 +775,7 @@ export const ListPublicationsRequest = {
 const baseListPublicationsResponse: object = {nextPageToken: ''}
 
 export const ListPublicationsResponse = {
-  encode(message: ListPublicationsResponse, writer: Writer = Writer.create()): Writer {
+  encode(message: ListPublicationsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.publications) {
       Publication.encode(v!, writer.uint32(10).fork()).ldelim()
     }
@@ -785,8 +785,8 @@ export const ListPublicationsResponse = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): ListPublicationsResponse {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListPublicationsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseListPublicationsResponse} as ListPublicationsResponse
     message.publications = []
@@ -854,7 +854,7 @@ export const ListPublicationsResponse = {
 const basePublication: object = {version: ''}
 
 export const Publication = {
-  encode(message: Publication, writer: Writer = Writer.create()): Writer {
+  encode(message: Publication, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.version !== '') {
       writer.uint32(10).string(message.version)
     }
@@ -864,8 +864,8 @@ export const Publication = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): Publication {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): Publication {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...basePublication} as Publication
     while (reader.pos < end) {
@@ -926,7 +926,7 @@ export const Publication = {
 const baseDocument: object = {id: '', title: '', subtitle: '', author: '', content: ''}
 
 export const Document = {
-  encode(message: Document, writer: Writer = Writer.create()): Writer {
+  encode(message: Document, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
     }
@@ -954,8 +954,8 @@ export const Document = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): Document {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): Document {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseDocument} as Document
     while (reader.pos < end) {
@@ -1100,7 +1100,7 @@ export const Document = {
 const baseDocumentPublished: object = {documentId: '', title: '', subtitle: ''}
 
 export const DocumentPublished = {
-  encode(message: DocumentPublished, writer: Writer = Writer.create()): Writer {
+  encode(message: DocumentPublished, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== '') {
       writer.uint32(10).string(message.documentId)
     }
@@ -1113,8 +1113,8 @@ export const DocumentPublished = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): DocumentPublished {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): DocumentPublished {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseDocumentPublished} as DocumentPublished
     while (reader.pos < end) {
@@ -1587,9 +1587,7 @@ function fromJsonTimestamp(o: any): Date {
   }
 }
 
-// If you get a compile-error about 'Constructor<Long> and ... have no overlap',
-// add '--ts_proto_opt=esModuleInterop=true' as a flag when calling 'protoc'.
-if (util.Long !== Long) {
-  util.Long = Long as any
-  configure()
+if (_m0.util.Long !== Long) {
+  _m0.util.Long = Long as any
+  _m0.configure()
 }
