@@ -1,4 +1,5 @@
-import type {FlowContent, Statement} from '@mintter/mttast'
+import type {FlowContent} from '@mintter/mttast'
+import type {BaseRange} from 'slate'
 import {Icon, icons} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {isGroupContent} from '@mintter/mttast'
@@ -11,7 +12,8 @@ import {Transforms, Editor, Path, Node} from 'slate'
 import {blockquote, code, group, heading, ol, statement, ul} from '@mintter/mttast-builder'
 import {useReadOnly} from 'slate-react'
 import {Box} from '@mintter/ui/box'
-import {Fragment} from 'react'
+import {Fragment, useEffect} from 'react'
+import {useLastEditorSelection} from './hovering-toolbar'
 
 export const Tools = styled('div', {
   height: '100%',
@@ -23,6 +25,7 @@ export const Tools = styled('div', {
   transition: 'all ease-in-out 0.1s',
   flexDirection: 'row-reverse',
   width: '$space$8',
+  marginRight: '$2',
 })
 
 // export const Dragger = styled('div', {
@@ -58,13 +61,19 @@ export const ElementDropdown = styled('button', {
     opacity: 1,
     //   // cursor: 'grab',
   },
+  '[data-element-type="heading"] &': {
+    alignSelf: 'end',
+  },
+  '[data-element-type="code"] &': {
+    marginTop: '$4',
+  },
 })
 
 const items: {
   [key: string]: Array<{
     label: string
     iconName: keyof typeof icons
-    onSelect: (editor: Editor, element: FlowContent, at: Path) => void
+    onSelect: (editor: Editor, element: FlowContent, at: Path, lastSelection: BaseRange | null) => void
   }>
 } = {
   statement: [
@@ -111,7 +120,12 @@ const items: {
 export function StatementTools({element}: {element: FlowContent}) {
   const editor = useSlateStatic()
   const isReadOnly = useReadOnly()
+  const {lastSelection} = useLastEditorSelection()
   const path = ReactEditor.findPath(editor, element)
+
+  useEffect(() => {
+    console.log('prevSelection', editor.selection, lastSelection)
+  }, [editor.selection])
 
   return (
     <Tools contentEditable={false}>
@@ -133,7 +147,13 @@ export function StatementTools({element}: {element: FlowContent}) {
                     </Text>
                   </Dropdown.Label>
                   {value.map((item) => (
-                    <Dropdown.Item key={item.label} onSelect={() => item.onSelect(editor, element, path)}>
+                    <Dropdown.Item
+                      key={item.label}
+                      onSelect={() => {
+                        console.log({editor})
+                        item.onSelect(editor, element, path, editor.selection)
+                      }}
+                    >
                       <Icon size="2" name={item.iconName} />
                       {item.label}
                     </Dropdown.Item>
@@ -153,7 +173,9 @@ export function StatementTools({element}: {element: FlowContent}) {
  * @todo add correct types to builder function
  */
 function setType(fn: any) {
-  return function setToStatement(editor: Editor, element: FlowContent, at: Path) {
+  return function setToStatement(editor: Editor, element: FlowContent, at: Path, lastSelection: BaseRange | null) {
+    const prevSelection = {...lastSelection}
+    console.log('🚀 ~ prevSelection', prevSelection)
     Editor.withoutNormalizing(editor, function () {
       const {children, type, ...props} = element
       Transforms.removeNodes(editor, {at})
