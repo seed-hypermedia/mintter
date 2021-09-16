@@ -1,4 +1,4 @@
-import type {FlowContent} from '@mintter/mttast'
+import type {MttastContent} from '@mintter/mttast'
 import type {BaseRange} from 'slate'
 import {Icon, icons} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
@@ -73,7 +73,7 @@ const items: {
   [key: string]: Array<{
     label: string
     iconName: keyof typeof icons
-    onSelect: (editor: Editor, element: FlowContent, at: Path, lastSelection: BaseRange | null) => void
+    onSelect: (editor: Editor, element: MttastContent, at: Path, lastSelection: BaseRange | null) => void
   }>
 } = {
   statement: [
@@ -117,7 +117,7 @@ const items: {
   ],
 }
 
-export function StatementTools({element}: {element: FlowContent}) {
+export function StatementTools({element}: {element: MttastContent}) {
   const editor = useSlateStatic()
   const isReadOnly = useReadOnly()
   const {lastSelection} = useLastEditorSelection()
@@ -173,7 +173,7 @@ export function StatementTools({element}: {element: FlowContent}) {
  * @todo add correct types to builder function
  */
 function setType(fn: any) {
-  return function setToStatement(editor: Editor, element: FlowContent, at: Path, lastSelection: BaseRange | null) {
+  return function setToStatement(editor: Editor, element: MttastContent, at: Path, lastSelection: BaseRange | null) {
     const prevSelection = {...lastSelection}
     console.log('🚀 ~ prevSelection', prevSelection)
     Editor.withoutNormalizing(editor, function () {
@@ -185,7 +185,7 @@ function setType(fn: any) {
 }
 
 function setList(fn: any) {
-  return function wrapWithListType(editor: Editor, element: FlowContent, at: Path) {
+  return function wrapWithListType(editor: Editor, element: MttastContent, at: Path) {
     const list = Node.parent(editor, at)
 
     if (list && isGroupContent(list)) {

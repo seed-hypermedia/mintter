@@ -2,8 +2,9 @@ import type {EditorPlugin} from '../types'
 import type {RenderElementProps} from 'slate-react'
 import type {Statement as StatementType} from '@mintter/mttast'
 import type {NodeEntry} from 'slate'
+import type {MutableRefObject} from 'react'
 import {Path, Transforms, Editor} from 'slate'
-import {useMemo, forwardRef} from 'react'
+import {useMemo, useEffect} from 'react'
 import {useHistory, useLocation, useParams} from 'react-router'
 import toast from 'react-hot-toast'
 import {isBlockquote, isGroupContent, isHeading, isStatement} from '@mintter/mttast'
@@ -228,5 +229,3 @@ function fallbackCopyTextToClipboard(text: string) {
     resolve(true)
   })
 }
-
-const StatementMenu = forwardRef((props, ref) => {})

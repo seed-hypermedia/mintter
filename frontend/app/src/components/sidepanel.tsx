@@ -1,7 +1,7 @@
 import type {MttastContent} from '@mintter/mttast'
 import {isLink} from '@mintter/mttast'
 import {isEmbed} from '@mintter/mttast'
-import {createContext, useEffect, useContext} from 'react'
+import {createContext, useEffect, useContext, useRef} from 'react'
 import {Box, Text, Button, Icon} from '@mintter/ui'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {createMachine, Interpreter, State} from 'xstate'
@@ -16,6 +16,7 @@ import {ContextMenu} from '../editor/context-menu'
 import {copyTextToClipboard} from '../editor/elements/statement'
 import toast from 'react-hot-toast'
 import {useHistory} from 'react-router'
+import {useEmbedHover} from '../editor/hover-machine'
 
 export type SidepanelEventsType =
   | {
@@ -253,13 +254,16 @@ export type SidepanelItemProps = {
 }
 
 export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
+  const ref = useRef<HTMLDivElement | null>(null)
+  console.log('🚀 ~ file: sidepanel.tsx ~ line 258 ~ SidepanelItem ~ ref', ref)
   const {status, data, error} = useEmbed(item)
   const {data: author} = useAccount(data.document.author, {
     enabled: !!data.document.author,
   })
   const {send} = useSidepanel()
   const history = useHistory()
-
+  const {send: sendHover, embed: embedHover} = useEmbedHover(ref, item)
+  console.log({embedHover})
   async function onCopy() {
     await copyTextToClipboard(item)
     toast.success('Statement Reference copied successfully', {position: 'top-center'})
@@ -306,6 +310,7 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
     <ContextMenu.Root>
       <ContextMenu.Trigger>
         <Box
+          ref={ref}
           css={{
             padding: '$4',
             marginTop: '$5',
@@ -314,6 +319,8 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
             display: 'flex',
             flexDirection: 'column',
             gap: '$4',
+            transition: 'all ease-in-out 0.1s',
+            backgroundColor: embedHover == item ? '$secondary-softer' : '$background-alt',
           }}
         >
           <Box css={{display: 'flex', gap: '$4'}}>
