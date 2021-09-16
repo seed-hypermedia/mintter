@@ -18,7 +18,7 @@ filegroup(
             "**/tsconfig.json",
             "**/*.config.ts",
             "**/*.config.js",
-        ],
+        ] + ["app/index.html"],
         exclude = ["node_modules"],
     ),
 )
@@ -34,6 +34,7 @@ yarn build
 mv $(pwd)/dist/ $TARGET_OUT_DIR/app/dist
 """,
     dir = True,
+    visibility = ["//visibility:public"],
     deps = [
         "//:yarn",
         "//proto:js",

@@ -13,6 +13,7 @@ import (
 	"mintter/backend/badgergraph"
 	"mintter/backend/config"
 	"mintter/backend/db/graphschema"
+	"mintter/backend/logging"
 )
 
 var moduleBackend = fx.Options(
@@ -48,11 +49,11 @@ func Module(cfg config.Config) fx.Option {
 }
 
 func providePatchStore(bs blockstore.Blockstore, db *badgergraph.DB) (*patchStore, error) {
-	return newPatchStore(makeLogger("mintter/patch-store"), bs, db)
+	return newPatchStore(logging.Logger("mintter/patch-store", "debug"), bs, db)
 }
 
 func provideBackend(lc fx.Lifecycle, stop fx.Shutdowner, r *repo, store *patchStore, p2p *p2pNode) (*backend, error) {
-	back := newBackend(makeLogger("mintter/backend"), r, store, p2p)
+	back := newBackend(logging.Logger("mintter/backend", "debug"), r, store, p2p)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	errc := make(chan error, 1)
@@ -80,7 +81,7 @@ func provideBackend(lc fx.Lifecycle, stop fx.Shutdowner, r *repo, store *patchSt
 }
 
 func logAppLifecycle(lc fx.Lifecycle, stop fx.Shutdowner, cfg config.Config, grpc *grpcServer, srv *httpServer, back *backend) {
-	log := makeLogger("mintter/daemon")
+	log := logging.Logger("mintter/daemon", "debug")
 
 	if cfg.LetsEncrypt.Domain != "" {
 		log.Warn("Let's Encrypt is enabled, HTTP-port configuration value is ignored, will listen on the default TLS port (443)")
@@ -155,7 +156,7 @@ func provideBadgerGraph(lc fx.Lifecycle, db *badger.DB) (*badgergraph.DB, error)
 }
 
 func provideRepo(cfg config.Config) (*repo, error) {
-	return newRepo(cfg.RepoPath, makeLogger("mintter/repo"))
+	return newRepo(cfg.RepoPath, logging.Logger("mintter/repo", "debug"))
 }
 
 type fxLogger struct {

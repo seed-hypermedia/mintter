@@ -32,4 +32,5 @@ type P2P struct {
 type UI struct {
 	LogoURI     string `help:"URI of the primary logo image"`
 	HomePageURI string `help:"URI of the home page"`
+	AssetsPath  string `help:"Path to the bundled web app" default:"frontend/app/dist"`
 }
