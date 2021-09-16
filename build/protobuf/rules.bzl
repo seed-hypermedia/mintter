@@ -112,7 +112,7 @@ def mtt_js_proto(name, srcs, visibility = ["//visibility:public"], **kwargs):
         output_root = "frontend/client/.generated/",
         protoc_flags = [
             "--plugin=`which protoc-gen-ts_proto`",
-            "--ts_proto_opt=esModuleInterop=false",
+            "--ts_proto_opt=esModuleInterop=true",
             "--ts_proto_out=frontend/client/.generated/",
             "--ts_proto_opt=env=browser",
             "--ts_proto_opt=lowerCaseServiceMethods=true",

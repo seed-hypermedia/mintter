@@ -1,8 +1,8 @@
 //@ts-nocheck
 /* eslint-disable */
-import {util, configure, Writer, Reader} from 'protobufjs/minimal'
-import * as Long from 'long'
+import Long from 'long'
 import {grpc} from '@improbable-eng/grpc-web'
+import _m0 from 'protobufjs/minimal'
 import {BrowserHeaders} from 'browser-headers'
 import {Timestamp} from '../../google/protobuf/timestamp'
 
@@ -59,15 +59,15 @@ export interface ProfileUpdated {
 const baseGetAccountRequest: object = {id: ''}
 
 export const GetAccountRequest = {
-  encode(message: GetAccountRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: GetAccountRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): GetAccountRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): GetAccountRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseGetAccountRequest} as GetAccountRequest
     while (reader.pos < end) {
@@ -114,7 +114,7 @@ export const GetAccountRequest = {
 const baseListAccountsRequest: object = {pageSize: 0, pageToken: ''}
 
 export const ListAccountsRequest = {
-  encode(message: ListAccountsRequest, writer: Writer = Writer.create()): Writer {
+  encode(message: ListAccountsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.pageSize !== 0) {
       writer.uint32(8).int32(message.pageSize)
     }
@@ -124,8 +124,8 @@ export const ListAccountsRequest = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): ListAccountsRequest {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListAccountsRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseListAccountsRequest} as ListAccountsRequest
     while (reader.pos < end) {
@@ -186,7 +186,7 @@ export const ListAccountsRequest = {
 const baseListAccountsResponse: object = {nextPageToken: ''}
 
 export const ListAccountsResponse = {
-  encode(message: ListAccountsResponse, writer: Writer = Writer.create()): Writer {
+  encode(message: ListAccountsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.accounts) {
       Account.encode(v!, writer.uint32(10).fork()).ldelim()
     }
@@ -196,8 +196,8 @@ export const ListAccountsResponse = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): ListAccountsResponse {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListAccountsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseListAccountsResponse} as ListAccountsResponse
     message.accounts = []
@@ -265,7 +265,7 @@ export const ListAccountsResponse = {
 const baseAccount: object = {id: ''}
 
 export const Account = {
-  encode(message: Account, writer: Writer = Writer.create()): Writer {
+  encode(message: Account, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
     }
@@ -278,8 +278,8 @@ export const Account = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): Account {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): Account {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseAccount} as Account
     message.devices = {}
@@ -367,7 +367,7 @@ export const Account = {
 const baseAccount_DevicesEntry: object = {key: ''}
 
 export const Account_DevicesEntry = {
-  encode(message: Account_DevicesEntry, writer: Writer = Writer.create()): Writer {
+  encode(message: Account_DevicesEntry, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.key !== '') {
       writer.uint32(10).string(message.key)
     }
@@ -377,8 +377,8 @@ export const Account_DevicesEntry = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): Account_DevicesEntry {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): Account_DevicesEntry {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseAccount_DevicesEntry} as Account_DevicesEntry
     while (reader.pos < end) {
@@ -439,7 +439,7 @@ export const Account_DevicesEntry = {
 const baseProfile: object = {alias: '', bio: '', email: ''}
 
 export const Profile = {
-  encode(message: Profile, writer: Writer = Writer.create()): Writer {
+  encode(message: Profile, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.alias !== '') {
       writer.uint32(10).string(message.alias)
     }
@@ -452,8 +452,8 @@ export const Profile = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): Profile {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): Profile {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseProfile} as Profile
     while (reader.pos < end) {
@@ -528,7 +528,7 @@ export const Profile = {
 const baseDevice: object = {peerId: ''}
 
 export const Device = {
-  encode(message: Device, writer: Writer = Writer.create()): Writer {
+  encode(message: Device, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.peerId !== '') {
       writer.uint32(10).string(message.peerId)
     }
@@ -538,8 +538,8 @@ export const Device = {
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): Device {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): Device {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseDevice} as Device
     while (reader.pos < end) {
@@ -600,15 +600,15 @@ export const Device = {
 const baseDeviceRegistered: object = {}
 
 export const DeviceRegistered = {
-  encode(message: DeviceRegistered, writer: Writer = Writer.create()): Writer {
+  encode(message: DeviceRegistered, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.proof.length !== 0) {
       writer.uint32(10).bytes(message.proof)
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): DeviceRegistered {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeviceRegistered {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseDeviceRegistered} as DeviceRegistered
     message.proof = new Uint8Array()
@@ -656,15 +656,15 @@ export const DeviceRegistered = {
 const baseProfileUpdated: object = {}
 
 export const ProfileUpdated = {
-  encode(message: ProfileUpdated, writer: Writer = Writer.create()): Writer {
+  encode(message: ProfileUpdated, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.profile !== undefined) {
       Profile.encode(message.profile, writer.uint32(18).fork()).ldelim()
     }
     return writer
   },
 
-  decode(input: Reader | Uint8Array, length?: number): ProfileUpdated {
-    const reader = input instanceof Reader ? input : new Reader(input)
+  decode(input: _m0.Reader | Uint8Array, length?: number): ProfileUpdated {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {...baseProfileUpdated} as ProfileUpdated
     while (reader.pos < end) {
@@ -952,9 +952,7 @@ function fromJsonTimestamp(o: any): Date {
   }
 }
 
-// If you get a compile-error about 'Constructor<Long> and ... have no overlap',
-// add '--ts_proto_opt=esModuleInterop=true' as a flag when calling 'protoc'.
-if (util.Long !== Long) {
-  util.Long = Long as any
-  configure()
+if (_m0.util.Long !== Long) {
+  _m0.util.Long = Long as any
+  _m0.configure()
 }
