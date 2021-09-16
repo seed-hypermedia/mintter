@@ -27,7 +27,6 @@ export const statementStyle = css({
   listStyle: 'none',
   display: 'grid',
   wordBreak: 'break-word',
-  boxShadow: '-0.1px 0 0 0 rgba(0,0,0,0.5)',
   // gridTemplateColumns: 'minmax($space$8, auto) 1fr',
   gridTemplateColumns: '$space$8 1fr',
   gridTemplateRows: 'min-content auto',
@@ -37,7 +36,7 @@ export const statementStyle = css({
   [`& > ${Tools}`]: {
     gridArea: 'controls',
   },
-  '& > [data-element-type=paragraph], & > [data-element-type=code]': {
+  '& > [data-element-type="paragraph"], & > [data-element-type="code"], & > [data-element-type="staticParagraph"]': {
     gridArea: 'content',
   },
   '& > ul, & > ol': {
@@ -52,7 +51,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
   renderElement({element, children, attributes}) {
     if (isStatement(element)) {
       return (
-        <Statement element={element} attributes={attributes}>
+        <Statement element={element} data-element-type={element.type} attributes={attributes}>
           {children}
         </Statement>
       )
