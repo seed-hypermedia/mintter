@@ -13,6 +13,7 @@ var loggers = map[string]*zap.Logger{
 	"mintter/daemon":      log.Logger("mintter/daemon").Desugar(),
 	"mintter/backend":     log.Logger("mintter/backend").Desugar(),
 	"mintter/repo":        log.Logger("mintter/repo").Desugar(),
+	"grpc":                log.Logger("grpc").Desugar(),
 }
 
 func makeLogger(name string) *zap.Logger {
