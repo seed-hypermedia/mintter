@@ -12,16 +12,10 @@ require (
 	github.com/dgraph-io/badger/v3 v3.2103.0
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.3.0
-	github.com/getlantern/golog v0.0.0-20210606115803-bce9f9fe5a5f // indirect
-	github.com/getlantern/hidden v0.0.0-20201229170000-e66e7f878730 // indirect
-	github.com/getlantern/ops v0.0.0-20200403153110-8476b16edcd6 // indirect
-	github.com/getlantern/systray v1.1.0
-	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/flatbuffers v2.0.0+incompatible // indirect
-	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/improbable-eng/grpc-web v0.14.1
 	github.com/ipfs/go-bitswap v0.3.4
