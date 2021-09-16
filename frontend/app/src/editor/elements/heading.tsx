@@ -18,7 +18,14 @@ import {staticParagraph} from '@mintter/mttast-builder'
 
 export const ELEMENT_HEADING = 'heading'
 
-export const Heading = styled('li', statementStyle)
+export const Heading = styled('li', statementStyle, {
+  // gridTemplateAreas: `"controls content"
+  // "children children"`,
+  '& > ul, & > ol': {
+    marginLeft: '-$8',
+    boxShadow: 'none',
+  },
+})
 
 export const createHeadingPlugin = (): EditorPlugin => ({
   name: ELEMENT_HEADING,
@@ -26,7 +33,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
     // TODO: compute heading level
     if (isHeading(element)) {
       return (
-        <Heading {...attributes}>
+        <Heading {...attributes} data-element-type={element.type}>
           <StatementTools element={element} />
           {children}
         </Heading>
