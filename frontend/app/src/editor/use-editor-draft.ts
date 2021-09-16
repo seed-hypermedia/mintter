@@ -207,9 +207,6 @@ const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: 
         },
       },
       actions: {
-        checkContext: (context, event) => {
-          console.log('checking!!', {context, event})
-        },
         updateValueToContext: assign({
           localDraft: (context, event) => {
             return {
@@ -269,7 +266,7 @@ export function useEditorDraft({documentId, ...afterActions}: UseEditorDraftPara
   const client = useQueryClient()
 
   const [state, send] = useMachine(draftEditorMachine({...afterActions, client}), {devTools: true})
-  // TODO: refactor machint to use queryClient in the services
+
   useEffect(() => {
     if (documentId) {
       send({type: 'FETCH', documentId})

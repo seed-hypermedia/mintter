@@ -10,6 +10,7 @@ import {Separator} from '../components/separator'
 import {getDateFormat} from '../utils/get-format-date'
 import {useSidepanel, Sidepanel, useEnableSidepanel} from '../components/sidepanel'
 import {Editor} from '../editor'
+import {HoverProvider} from '../editor/hover-machine'
 
 export default function Publication(): JSX.Element {
   const {docId} = useParams<{docId: string}>()
@@ -25,7 +26,7 @@ export default function Publication(): JSX.Element {
 
   useEffect(() => {
     if (status == 'success') {
-      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', content: data.document.content})
+      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', payload: data.document.content})
     }
   }, [status])
 
@@ -55,56 +56,58 @@ export default function Publication(): JSX.Element {
   let canUpdate = author?.id == myInfo?.accountId
 
   return (
-    <Box
-      css={{
-        display: 'grid',
-        minHeight: '$full',
-        gridTemplateAreas: isSidepanelOpen
-          ? `"controls controls controls"
-        "maincontent maincontent rightside"`
-          : `"controls controls controls"
-        "maincontent maincontent maincontent"`,
-        // gridTemplateAreas: `"controls controls controls"
-        // "maincontent maincontent maincontent"`,
-        gridTemplateColumns: 'minmax(350px, 15%) 1fr minmax(350px, 40%)',
-        gridTemplateRows: '64px 1fr',
-      }}
-      data-testid="publication-wrapper"
-    >
+    <HoverProvider>
       <Box
         css={{
-          display: 'flex',
-          gridArea: 'controls',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          gap: '$2',
-          borderBottom: '1px solid rgba(0,0,0,0.1)',
-          paddingHorizontal: '$5',
+          display: 'grid',
+          minHeight: '$full',
+          gridTemplateAreas: isSidepanelOpen
+            ? `"controls controls controls"
+        "maincontent maincontent rightside"`
+            : `"controls controls controls"
+        "maincontent maincontent maincontent"`,
+          // gridTemplateAreas: `"controls controls controls"
+          // "maincontent maincontent maincontent"`,
+          gridTemplateColumns: 'minmax(350px, 15%) 1fr minmax(350px, 40%)',
+          gridTemplateRows: '64px 1fr',
         }}
+        data-testid="publication-wrapper"
       >
-        {canUpdate && (
-          <Button color="success" shape="pill" size="2" onClick={handleUpdate}>
-            UPDATE
-          </Button>
-        )}
-        <Button
-          size="1"
-          color="muted"
-          variant="outlined"
-          onClick={() => {
-            sidepanelSend('SIDEPANEL_TOGGLE')
+        <Box
+          css={{
+            display: 'flex',
+            gridArea: 'controls',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: '$2',
+            borderBottom: '1px solid rgba(0,0,0,0.1)',
+            paddingHorizontal: '$5',
           }}
         >
-          {`${isSidepanelOpen ? 'Close' : 'Open'} sidepanel`}
-        </Button>
+          {canUpdate && (
+            <Button color="success" shape="pill" size="2" onClick={handleUpdate}>
+              UPDATE
+            </Button>
+          )}
+          <Button
+            size="1"
+            color="muted"
+            variant="outlined"
+            onClick={() => {
+              sidepanelSend('SIDEPANEL_TOGGLE')
+            }}
+          >
+            {`${isSidepanelOpen ? 'Close' : 'Open'} sidepanel`}
+          </Button>
+        </Box>
+        <Container css={{gridArea: 'maincontent', marginBottom: 300, padding: '$5', paddingTop: '$7'}}>
+          <PublicationHeader document={data?.document} />
+          <Separator />
+          <Editor onChange={() => {}} readOnly value={data?.document?.content} />
+        </Container>
+        {isSidepanelOpen && <Sidepanel gridArea={'rightside'} />}
       </Box>
-      <Container css={{gridArea: 'maincontent', marginBottom: 300, padding: '$5', paddingTop: '$7'}}>
-        <PublicationHeader document={data?.document} />
-        <Separator />
-        <Editor onChange={() => {}} readOnly value={data?.document?.content} />
-      </Container>
-      {isSidepanelOpen && <Sidepanel gridArea={'rightside'} />}
-    </Box>
+    </HoverProvider>
   )
 }
 
