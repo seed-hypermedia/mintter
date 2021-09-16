@@ -64,6 +64,20 @@ TARGET_PLATFORMS = [
     ("windows", "amd64"),
 ]
 
+executable(
+    name = "mintter",
+    srcs = [":go_sources"],
+    out = "mintter",
+    cmd = """
+export CGO_ENABLED="1"
+go build -o $TARGET_OUT_DIR/mintter ./backend/cmd/mintter
+""",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//proto:go",
+    ],
+)
+
 [
     executable(
         name = "mintterd_{}_{}".format(os, arch),

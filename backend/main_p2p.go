@@ -7,6 +7,7 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/ipfsutil"
 	"mintter/backend/ipfsutil/providing"
+	"mintter/backend/logging"
 
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
@@ -110,7 +111,7 @@ func provideP2P(lc fx.Lifecycle, patches *patchStore, bs blockservice.BlockServi
 		return nil, fmt.Errorf("failed to create provider: %w", err)
 	}
 
-	p2p := newP2PNode(cfg, makeLogger("mintter/p2p"), bs, libp2p, prov, boot)
+	p2p := newP2PNode(cfg, logging.Logger("mintter/p2p", "debug"), bs, libp2p, prov, boot)
 
 	lc.Append(fx.Hook{
 		OnStop: func(context.Context) error {

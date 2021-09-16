@@ -141,3 +141,41 @@ go build -o $TARGET_OUT_DIR/{name} {go_pkg}
 """.format(name = name, go_pkg = go_pkg),
         **kwargs
     )
+
+def _macos_application(ctx):
+    out = ctx.actions.declare_directory(ctx.attr.out)
+
+    lines = []
+
+    for k, v in ctx.attr.contents.items():
+        lines.append("mkdir -p $TARGET_OUT_DIR/{}/Contents/{}".format(ctx.attr.out, v))
+        for f in k.files.to_list():
+            lines.append("cp -R $SOURCE_ROOT_DIR/{} $TARGET_OUT_DIR/{}/Contents/{}".format(f.path, ctx.attr.out, v))
+
+    run_local_shell(
+        ctx,
+        inputs = ctx.files.contents,
+        outputs = [out],
+        command = "\n".join(lines),
+        progress_message = "Running macos_application action '{}'".format(ctx.label),
+    )
+
+    return [DefaultInfo(files = depset([out]))]
+
+macos_application = rule(
+    implementation = _macos_application,
+    attrs = {
+        "out": attr.string(
+            doc = "Name of the output (including .app extension)",
+            mandatory = True,
+        ),
+        "contents": attr.label_keyed_string_dict(
+            doc = "Things to copy inside the bundle.",
+            mandatory = True,
+            allow_files = True,
+        ),
+        "tools": attr.label_list(
+            doc = "Tools with their names that will be made available to the rule environment.",
+        ),
+    },
+)

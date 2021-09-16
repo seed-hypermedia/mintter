@@ -25,7 +25,6 @@ def run_local_shell(ctx, inputs, outputs, command, sandbox = False, **kwargs):
         inputs: Inputs for the action.
         outputs: Outputs for the action.
         command: Script to run.
-        tools: Tools for this action that will be made available as environment variables. Remember to specify tool files as inputs.
         sandbox: Wether to run the action in the sandbox.
         **kwargs: Other arguments accepted by run_shell action.
     """
