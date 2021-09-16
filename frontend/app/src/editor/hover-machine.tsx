@@ -1,7 +1,5 @@
-import type {Embed} from '@mintter/mttast'
 import {useActor, useInterpret} from '@xstate/react'
-import {embed} from 'frontend/mttast-builder/dist'
-import {createContext, MouseEvent, MutableRefObject, useContext, useEffect} from 'react'
+import {createContext, MutableRefObject, useContext, useEffect} from 'react'
 import {createMachine, assign, Interpreter, State} from 'xstate'
 
 export type HoverMachineEvent =
