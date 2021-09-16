@@ -7,7 +7,7 @@ import {Node} from 'slate'
 import {usePublication} from '@mintter/client/hooks'
 import {visit} from 'unist-util-visit'
 import {document} from '@mintter/mttast-builder'
-import {useMemo} from 'react'
+import {useMemo, useRef} from 'react'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {ContextMenu} from '../context-menu'
 import {Icon} from '@mintter/ui/icon'
@@ -18,6 +18,7 @@ import {useFocused, useSelected} from 'slate-react'
 import {useSidepanel} from '../../components/sidepanel'
 import {forwardRef} from 'react'
 import {useHistory} from 'react-router'
+import {useEmbedHover} from '../hover-machine'
 
 export const ELEMENT_EMBED = 'embed'
 
@@ -60,7 +61,7 @@ export const createEmbedPlugin = (): EditorPlugin => ({
         console.error(`Embed: element does not have a url attribute: ${JSON.stringify(element)}`)
         return <span {...attributes}>error on embed{children}</span>
       }
-
+      console.log('embed!!')
       return (
         <InlineEmbed embed={element} {...attributes}>
           {children}
@@ -80,10 +81,12 @@ export type InlineEmbedProps = Partial<Omit<RenderElementProps, 'element'>> & {
  */
 export const InlineEmbed = forwardRef(({embed, children = null, ...props}: InlineEmbedProps, ref) => {
   const {data, status, error} = useEmbed(embed.url)
+  // const ref = useRef<HTMLQuoteElement | null>(null)
   const selected = useSelected()
   const focused = useFocused()
   const {send} = useSidepanel()
   const history = useHistory()
+  const {embed: hoverEmbed} = useEmbedHover(ref, embed.url)
 
   async function onCopy() {
     await copyTextToClipboard(embed.url!)
@@ -118,8 +121,9 @@ export const InlineEmbed = forwardRef(({embed, children = null, ...props}: Inlin
       ref={ref}
       cite={embed.url}
       css={{
-        backgroundColor: focused && selected ? '$secondary-softer' : '$background-alt',
+        backgroundColor: (focused && selected) || hoverEmbed == embed.url ? '$secondary-softer' : '$background-alt',
       }}
+      {...props}
     >
       <ContextMenu.Root>
         <ContextMenu.Trigger>
