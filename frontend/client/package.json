@@ -21,7 +21,7 @@
     "validate": "yarn check-format && yarn lint && yarn test"
   },
   "dependencies": {
-    "@improbable-eng/grpc-web": "^0.14.0",
+    "@improbable-eng/grpc-web": "^0.14.1",
     "@mintter/mttast-builder": "^0.1.0",
     "@types/faker": "^5.5.6",
     "@types/google-protobuf": "^3.15.2",
