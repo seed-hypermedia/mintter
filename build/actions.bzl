@@ -53,7 +53,7 @@ def run_local_shell(ctx, inputs, outputs, command, sandbox = False, **kwargs):
             lines.append("rm -rf {}".format(o.path))
 
     ctx.actions.run_shell(
-        inputs = inputs,
+        inputs = inputs + ctx.files.tools,
         outputs = outputs,
         use_default_shell_env = True,
         execution_requirements = reqs,
