@@ -4,28 +4,22 @@
   "license": "MIT",
   "exports": {
     ".": "./src/index.ts",
+    "./alert": "./src/alert/index.ts",
+    "./box": "./src/box/index.ts",
+    "./button": "./src/button/index.ts",
+    "./icon": "./src/icon/index.ts",
+    "./text": "./src/text/index.ts",
+    "./text-field": "./src/text-field/index.ts",
+    "./theme": "./src/theme/index.ts",
     "./stitches.config": "./src/stitches.config.ts"
   },
-  "scripts": {
-    "test": "true",
-    "test:w": "true",
-    "test:coverage": "true",
-    "lint": "eslint .",
-    "prettier": "prettier --ignore-path .gitignore \"**/*.+(ts|tsx|json)\"",
-    "precommit": "lint-staged",
-    "format": "yarn prettier --write",
-    "check-format": "yarn prettier --list-different",
-    "validate": "yarn check-format && yarn lint && yarn test"
-  },
+  "scripts": {},
   "devDependencies": {
     "@types/autosize": "^4.0.0",
-    "@types/jest": "^26.0.23",
     "@typescript-eslint/eslint-plugin": "^4.26.1",
     "@typescript-eslint/parser": "^4.26.1",
     "eslint": "^7.28.0",
     "eslint-plugin-react": "^7.24.0",
-    "jest": "^27.0.4",
-    "lint-staged": "^11.0.0",
     "ts-jest": "^27.0.2",
     "typescript": "^4.3.5"
   },
@@ -34,12 +28,7 @@
     "@stitches/core": "^1.0.0",
     "@stitches/react": "^1.0.0",
     "autosize": "^5.0.0",
-    "eslint": "^7.28.0",
-    "react": "^17.0.2"
-  },
-  "lint-staged": {
-    "src/**/*.+(ts|tsx)": [
-      "yarn validate"
-    ]
+    "react": "^17.0.2",
+    "use-dark-mode": "^2.3.1"
   }
 }

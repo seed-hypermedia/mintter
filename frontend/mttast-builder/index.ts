@@ -1,23 +1,23 @@
-import type {Node, Parent} from 'unist'
 import type {
   Blockquote,
+  Callout,
   Code,
+  Document,
+  Embed,
   Group,
   Heading,
+  Image,
+  Link,
   OrderedList,
   Paragraph,
   Statement,
-  UnorderedList,
-  Callout,
   StaticParagraph,
   Text,
-  Link,
-  Embed,
-  Image,
+  UnorderedList,
   Video,
-  Document,
 } from '@mintter/mttast'
 import {nanoid} from 'nanoid'
+import type {Node, Parent} from 'unist'
 
 type ChildrenOf<N extends Parent> = N['children'] | (() => N['children'])
 type OptionsOf<N extends Node> = Omit<N, 'type' | 'children'>

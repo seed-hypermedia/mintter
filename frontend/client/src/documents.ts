@@ -1,5 +1,5 @@
+import type {GrpcClient} from './grpc-client'
 import {createGrpcClient} from './grpc-client'
-import type { GrpcClient } from './grpc-client'
 
 /**
  *

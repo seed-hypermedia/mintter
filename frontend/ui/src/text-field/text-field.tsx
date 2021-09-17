@@ -1,13 +1,12 @@
 import * as Label from '@radix-ui/react-label'
 import type * as Stitches from '@stitches/react'
 import autosize from 'autosize'
-import {forwardRef, useLayoutEffect, useRef} from 'react'
-import mergeRefs from 'react-merge-refs'
 import {nanoid} from 'nanoid'
-
+import {forwardRef, useLayoutEffect, useRef} from 'react'
+import type {LegacyRef, MutableRefObject} from 'react-copy-to-clipboard/node_modules/@types/react'
 import {Box} from '../box'
-import {styled} from '../stitches.config'
 import type {CSS} from '../stitches.config'
+import {styled} from '../stitches.config'
 import {Text} from '../text'
 
 const InputContainer = styled(Box, {
@@ -192,3 +191,15 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   },
 )
 TextField.displayName = 'TextField'
+
+function mergeRefs<T = any>(refs: Array<MutableRefObject<T> | LegacyRef<T>>): RefCallback<T> {
+  return (value) => {
+    refs.forEach((ref) => {
+      if (typeof ref == 'function') {
+        ref(value)
+      } else if (ref != null) {
+        ;(ref as MutableRefObject<T | null>).current = value
+      }
+    })
+  }
+}

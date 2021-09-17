@@ -1,18 +1,18 @@
+import {updateAccount} from '@mintter/client'
+import {useAccount} from '@mintter/client/hooks'
+import {Box} from '@mintter/ui/box'
+import {Button} from '@mintter/ui/button'
+import {Text} from '@mintter/ui/text'
+import {TextField} from '@mintter/ui/text-field'
+import {useTheme} from '@mintter/ui/theme'
 import {useEffect} from 'react'
 import {useForm} from 'react-hook-form'
 import toast from 'react-hot-toast'
-
-import {updateAccount} from '@mintter/client'
-import {useAccount} from '@mintter/client/hooks'
-import {Box, Button, Text, TextField, useTheme} from '@mintter/ui'
-
+import {useMutation, useQueryClient} from 'react-query'
 import {Container} from '../components/container'
 import {PeerAddrs} from '../components/peer-addrs'
 import {PeerList} from '../components/peer-list'
 import {Separator} from '../components/separator'
-import Publication from '../pages/publication'
-
-import {useMutation, useQueryClient} from 'react-query'
 
 type ProfileInformationDataType = {
   alias: string
@@ -20,7 +20,7 @@ type ProfileInformationDataType = {
   bio: string
 }
 
-export function Settings(): JSX.Element {
+export default function Settings() {
   const theme = useTheme()
   const account = useAccount()
   const queryClient = useQueryClient()

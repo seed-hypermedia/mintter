@@ -1,6 +1,4 @@
-import type {Document} from 'frontend/client/.generated/documents/v1alpha/documents'
-import {useCallback} from 'react'
-import {format} from 'date-fns'
+import type {Document} from '@mintter/client'
 
 type Keys<T> = {[P in keyof T]: T[P]}[typeof P]
 
@@ -8,6 +6,23 @@ type KeyOfType<T, U = Keys<T>> = {[P in keyof T]: T[P] extends U ? P : never}[ke
 
 export type DateKeys = KeyOfType<Document, Date | undefined>
 
-export function getDateFormat(document: Document, key: DateKeys, dateFormat: string = 'MMMM d, yyyy') {
-  return format(new Date(document[key]), dateFormat)
+export function getDateFormat(document: Document, key: DateKeys) {
+  var months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ]
+
+  var date = new Date(document[key]!)
+
+  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
 }

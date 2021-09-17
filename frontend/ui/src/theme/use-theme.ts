@@ -1,5 +1,4 @@
 import useDarkMode from 'use-dark-mode'
-
 import {darkTheme, lightTheme} from '../stitches.config'
 
 const theme = {

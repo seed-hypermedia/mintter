@@ -1,4 +1,6 @@
-import {Box, Text} from '@mintter/ui'
+import {Box} from '@mintter/ui/box'
+import {Text} from '@mintter/ui/text'
+import type {OnboardingStepPropsType} from './common'
 import {
   OnboardingStep,
   OnboardingStepActions,
@@ -9,7 +11,6 @@ import {
   ProfileInformationIcon,
   SecurityPackIcon,
 } from './common'
-import type {OnboardingStepPropsType} from './common'
 
 export function Welcome({next}: OnboardingStepPropsType): JSX.Element {
   return (
