@@ -1,7 +1,6 @@
 import {useCallback} from 'react'
 import {useQueryClient} from 'react-query'
 import {useHistory, useLocation} from 'react-router'
-
 import {
   OnboardingStep,
   OnboardingStepActions,

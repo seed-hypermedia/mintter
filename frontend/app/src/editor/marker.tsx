@@ -1,11 +1,11 @@
 import type {GroupingContent} from '@mintter/mttast'
-import type {NodeEntry} from 'slate'
 import {isGroupContent} from '@mintter/mttast'
+import {styled} from '@mintter/ui/stitches.config'
+import type {NodeEntry} from 'slate'
 import {Editor} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
-import {ELEMENT_UNORDERED_LIST} from './elements/unordered-list'
 import {ELEMENT_ORDERED_LIST} from './elements/ordered-list'
-import {styled} from '@mintter/ui/stitches.config'
+import {ELEMENT_UNORDERED_LIST} from './elements/unordered-list'
 
 export const MarkerStyled = styled('div', {
   minWidth: '$space$8',

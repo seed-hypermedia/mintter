@@ -1,8 +1,8 @@
-import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
 import type {GroupingContent} from '@mintter/mttast'
-import {Range, Editor, Path, Transforms, Text, Node} from 'slate'
 import {isFlowContent, isGroup, isGroupContent, isStatement} from '@mintter/mttast'
 import {group, statement} from '@mintter/mttast-builder'
+import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
+import {Editor, Node, Path, Range, Text, Transforms} from 'slate'
 
 export const isCollapsed = (range: Range): boolean => !!range && Range.isCollapsed(range)
 

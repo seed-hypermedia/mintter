@@ -1,25 +1,21 @@
 import type {MttastContent} from '@mintter/mttast'
-import type {BaseRange} from 'slate'
+import {isGroupContent} from '@mintter/mttast'
+import {blockquote, code, group, heading, ol, statement, ul} from '@mintter/mttast-builder'
 import {Icon, icons} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
-import {isGroupContent} from '@mintter/mttast'
-import {Marker} from './marker'
-import {Dropdown} from './dropdown'
 import {Text} from '@mintter/ui/text'
-import {useSlateStatic} from 'slate-react'
-import {ReactEditor} from 'slate-react'
-import {Transforms, Editor, Path, Node} from 'slate'
-import {blockquote, code, group, heading, ol, statement, ul} from '@mintter/mttast-builder'
-import {useReadOnly} from 'slate-react'
-import {Box} from '@mintter/ui/box'
 import {Fragment, useEffect} from 'react'
+import type {BaseRange} from 'slate'
+import {Editor, Node, Path, Transforms} from 'slate'
+import {ReactEditor, useReadOnly, useSlateStatic} from 'slate-react'
+import {Dropdown} from './dropdown'
 import {useLastEditorSelection} from './hovering-toolbar'
+import {Marker} from './marker'
 
 export const Tools = styled('div', {
   height: '100%',
   alignSelf: 'start',
   display: 'flex',
-  // alignItems: 'center',
   userSelect: 'none',
   WebkitUserSelect: 'none',
   transition: 'all ease-in-out 0.1s',

@@ -1,3 +1,4 @@
+import type {Document} from '../.generated/documents/v1alpha/documents'
 import {
   CreateDraftRequest,
   DeleteDraftRequest,
@@ -8,10 +9,8 @@ import {
   PublishDraftRequest,
   UpdateDraftRequest,
 } from '../.generated/documents/v1alpha/documents'
-import type {Document} from '../.generated/documents/v1alpha/documents'
-import {createGrpcClient} from './grpc-client'
 import type {GrpcClient} from './grpc-client'
-import {code, createId, document, embed, group, ol, ul, paragraph, statement, text} from '@mintter/mttast-builder'
+import {createGrpcClient} from './grpc-client'
 
 /**
  *

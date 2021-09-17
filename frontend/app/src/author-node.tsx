@@ -1,18 +1,17 @@
+import {useInfo} from '@mintter/client/hooks'
+import {Box} from '@mintter/ui/box'
 import {lazy} from 'react'
-import {Switch, Route, useRouteMatch, Redirect} from 'react-router-dom'
+import {ErrorBoundary} from 'react-error-boundary'
 import type {RouteComponentProps} from 'react-router-dom'
-import {lazily} from 'react-lazily'
+import {Redirect, Route, Switch} from 'react-router-dom'
+import {AppError} from './app'
 import {AppSpinner} from './components/app-spinner'
 import {Topbar} from './components/topbar'
-import {useInfo} from '@mintter/client/hooks'
-import {Box} from '@mintter/ui'
-import {ErrorBoundary} from 'react-error-boundary'
-import {AppError} from './app'
 
-const {OnboardingPage} = lazily(() => import('./pages/onboarding'))
+const OnboardingPage = lazy(() => import('./pages/onboarding'))
 const Library = lazy(() => import('./pages/library'))
 const Editor = lazy(() => import('./pages/editor'))
-const {Settings} = lazily(() => import('./pages/settings'))
+const Settings = lazy(() => import('./pages/settings'))
 const Publication = lazy(() => import('./pages/publication'))
 
 export function AuthorNode({path = '/'}: {path?: string}) {

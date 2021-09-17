@@ -1,10 +1,8 @@
-import {lazily} from 'react-lazily'
-import {ErrorBoundary} from 'react-error-boundary'
-import type {FallbackProps} from 'react-error-boundary'
-
 import {globalCss} from '@mintter/ui/stitches.config'
+import type {FallbackProps} from 'react-error-boundary'
+import {ErrorBoundary} from 'react-error-boundary'
+import {AuthorNode} from './author-node'
 import {SidepanelProvider} from './components/sidepanel'
-const {AuthorNode} = lazily(() => import('./author-node'))
 // const {PublisherNode} = lazily(() => import('./publisher-node'))
 
 const globalStyles = globalCss({

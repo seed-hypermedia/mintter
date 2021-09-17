@@ -1,9 +1,7 @@
-import {Editor, Transforms, Path, Node} from 'slate'
-import {isGroupContent, isParent} from '@mintter/mttast'
-import {isFlowContent} from '@mintter/mttast'
+import type {GroupingContent} from '@mintter/mttast'
+import {isFlowContent, isGroupContent, isParent} from '@mintter/mttast'
+import {Editor, Node, Path, Transforms} from 'slate'
 import type {EditorPlugin} from './types'
-import type {GroupingContent} from 'frontend/mttast/src/types'
-import {group} from '@mintter/mttast-builder'
 
 /**
  * This plugin handles the <Tab> interactions with the editor:

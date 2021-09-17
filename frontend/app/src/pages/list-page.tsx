@@ -1,9 +1,9 @@
-import type {UseQueryResult} from 'react-query'
 import type {Publication} from '@mintter/client'
-import {DocumentList} from '../document-list'
-import {Text} from '@mintter/ui'
-import * as MessageBox from '../components/message-box'
 import {useDraftsList} from '@mintter/client/hooks'
+import {Text} from '@mintter/ui/text'
+import type {UseQueryResult} from 'react-query'
+import * as MessageBox from '../components/message-box'
+import {DocumentList} from '../document-list'
 
 export type ListPageProps = {
   onCreateDraft: () => void

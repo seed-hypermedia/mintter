@@ -1,13 +1,12 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
       "@mintter/ui/*": ["frontend/ui/src/*"],
       "@mintter/client/hooks": ["frontend/client/hooks"],
-      "@mintter/client/mocks": ["frontend/client/mocks"],
       "@mintter/mttast-builder": ["frontend/mttast-builder"],
-      "@mintter/*": ["frontend/*/src"],
+      "@mintter/*": ["frontend/*/src"]
     }
   }
 }

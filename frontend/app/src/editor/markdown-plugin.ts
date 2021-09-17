@@ -1,5 +1,5 @@
 import {isGroupContent, isOrderedList, isParagraph, isStatement, isUnorderedList} from '@mintter/mttast'
-import {Range, Editor, Transforms} from 'slate'
+import {Editor, Range, Transforms} from 'slate'
 import {ELEMENT_HEADING} from './elements/heading'
 import {ELEMENT_ORDERED_LIST} from './elements/ordered-list'
 import {ELEMENT_STATIC_PARAGRAPH} from './elements/static-paragraph'

@@ -1,11 +1,10 @@
+import {updateAccount} from '@mintter/client'
+import {TextField} from '@mintter/ui/text-field'
 import {useCallback} from 'react'
 import {useForm} from 'react-hook-form'
-import {useMutation} from 'react-query'
 import toast from 'react-hot-toast'
-
-import {updateAccount} from '@mintter/client'
-import {TextField} from '@mintter/ui'
-
+import {useMutation} from 'react-query'
+import type {OnboardingStepPropsType} from './common'
 import {
   OnboardingStep,
   OnboardingStepActions,
@@ -15,7 +14,6 @@ import {
   OnboardingStepTitle,
   ProfileInformationIcon,
 } from './common'
-import type {OnboardingStepPropsType} from './common'
 
 type ProfileInformationDataType = {
   alias: string

@@ -1,13 +1,13 @@
+import type {Device} from '../.generated/accounts/v1alpha/accounts'
+import type {ConnectResponse, PeerInfo} from '../.generated/networking/v1alpha/networking'
 import {
-  GetPeerInfoRequest,
-  NetworkingClientImpl,
   ConnectRequest,
   GetObjectDiscoveryStatusRequest,
+  GetPeerInfoRequest,
+  NetworkingClientImpl,
 } from '../.generated/networking/v1alpha/networking'
-import type {PeerInfo, ConnectResponse} from '../.generated/networking/v1alpha/networking'
-import {createGrpcClient} from './grpc-client'
 import type {GrpcClient} from './grpc-client'
-import type {Device} from '../.generated/accounts/v1alpha/accounts'
+import {createGrpcClient} from './grpc-client'
 
 /**
  *

@@ -1,6 +1,5 @@
-import * as TooltipPrimitive from '@radix-ui/react-tooltip'
-import {Slot} from '@radix-ui/react-slot'
 import {styled} from '@mintter/ui/stitches.config'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 
 const StyledContent = styled(TooltipPrimitive.Content, {
   borderRadius: '$2',

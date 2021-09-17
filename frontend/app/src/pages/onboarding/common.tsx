@@ -1,11 +1,13 @@
-import {motion} from 'framer-motion'
-import type {Variants} from 'framer-motion'
+import {Box} from '@mintter/ui/box'
+import type {ButtonProps} from '@mintter/ui/button'
+import {Button} from '@mintter/ui/button'
 import type {CSS} from '@mintter/ui/stitches.config'
-import {Box, Button, Text} from '@mintter/ui'
-import type {ButtonProps, TextProps} from '@mintter/ui'
-import type {GenSeedResponse} from '@mintter/client'
 import {styled} from '@mintter/ui/stitches.config'
+import type {TextProps} from '@mintter/ui/text'
+import {Text} from '@mintter/ui/text'
 import {textStyles} from '@mintter/ui/text/text'
+import type {Variants} from 'framer-motion'
+import {motion} from 'framer-motion'
 import type React from 'react'
 
 export type ReactNode<T = any> = T & {
@@ -14,7 +16,7 @@ export type ReactNode<T = any> = T & {
 export interface OnboardingStepPropsType {
   prev: () => void
   next: () => void
-  generateSeed: () => Promise<GenSeedResponse>
+  generateSeed?: () => Promise<GenSeedResponse>
 }
 
 const containerAnimationVariants: Variants = {

@@ -1,17 +1,16 @@
-import {lazy, Suspense, useMemo} from 'react'
+import {Box} from '@mintter/ui/box'
+import {lazy, Suspense, useMemo, useState} from 'react'
 import type {Descendant} from 'slate'
-import {Slate, Editable} from 'slate-react'
+import {Editable, Slate} from 'slate-react'
+import {HoveringToolbar} from './hovering-toolbar'
 import {
+  buildDecorateHook,
   buildEditorHook,
+  buildEventHandlerHooks,
   buildRenderElementHook,
   buildRenderLeafHook,
-  buildDecorateHook,
-  buildEventHandlerHooks,
 } from './plugin-utils'
-import {HoveringToolbar} from './hovering-toolbar'
-import {Box} from '@mintter/ui/box'
 import {plugins} from './plugins'
-import {useState} from 'react'
 
 export type {EditorPlugin} from './types'
 
