@@ -11,7 +11,9 @@ import type {
   Group,
   GroupingContent,
   Heading,
+  Image,
   Link,
+  MttastContent,
   OrderedList,
   Paragraph,
   PhrasingContent,
@@ -19,11 +21,9 @@ import type {
   StaticContent,
   StaticParagraph,
   StaticPhrasingContent,
-  UnorderedList,
-  Image,
-  Video,
   Text,
-  MttastContent,
+  UnorderedList,
+  Video,
 } from './types'
 
 const isOneOfTypes =

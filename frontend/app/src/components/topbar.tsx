@@ -1,13 +1,13 @@
+import {Box} from '@mintter/ui/box'
+import {buttonStyles} from '@mintter/ui/button/button'
+import {Icon} from '@mintter/ui/icon'
+import {styled} from '@mintter/ui/stitches.config'
+import {TextField} from '@mintter/ui/text-field'
 import {useRef} from 'react'
 import {useHistory} from 'react-router-dom'
-import {Box} from '@mintter/ui/box'
-import {Icon} from '@mintter/ui/icon'
-import {TextField} from '@mintter/ui/text-field'
-import {buttonStyles} from '@mintter/ui/button/button'
-import {styled} from '@mintter/ui/stitches.config'
+import {MINTTER_LINK_PREFIX} from '../constants'
 import {Container} from './container'
 import {Link} from './link'
-import {MINTTER_LINK_PREFIX} from '../constants'
 
 interface NavItemProps {
   href: string

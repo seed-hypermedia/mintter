@@ -5,28 +5,15 @@
   "license": "MIT",
   "exports": {
     "./hooks": "./hooks/index.ts",
-    ".": "./src/index.ts",
-    "./mocks": "./mocks/index.ts"
+    ".": "./src/index.ts"
   },
-  "scripts": {
-    "test": "true",
-    "test:w": "true",
-    "test:coverage": "true",
-    "precommit": "lint-staged",
-    "build": "true",
-    "lint": "eslint .",
-    "prettier": "prettier --ignore-path .gitignore \"**/*.+(ts|tsx|json)\"",
-    "format": "yarn prettier --write",
-    "check-format": "yarn prettier --list-different",
-    "validate": "yarn check-format && yarn lint && yarn test"
-  },
+  "scripts": {},
   "dependencies": {
     "@improbable-eng/grpc-web": "^0.14.1",
     "@mintter/mttast-builder": "^0.1.0",
     "@types/faker": "^5.5.6",
     "@types/google-protobuf": "^3.15.2",
     "@types/unist": "^2.0.6",
-    "faker": "^5.5.3",
     "google-protobuf": "^3.17.2",
     "long": "^4.0.0",
     "protobufjs": "^6.11.2",
@@ -34,14 +21,10 @@
     "unist-builder": "^3.0.0"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.23",
     "@typescript-eslint/eslint-plugin": "^4.31.0",
     "@typescript-eslint/parser": "^4.31.0",
     "eslint": "^7.32.0",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "jest": "^27.0.4",
-    "lint-staged": "^11.0.0",
-    "ts-jest": "^27.0.5",
     "typescript": "^4.4.2"
   },
   "lint-staged": {

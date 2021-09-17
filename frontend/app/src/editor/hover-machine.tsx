@@ -1,6 +1,6 @@
 import {useActor, useInterpret} from '@xstate/react'
 import {createContext, MutableRefObject, useContext, useEffect} from 'react'
-import {createMachine, assign, Interpreter, State} from 'xstate'
+import {assign, createMachine, Interpreter} from 'xstate'
 
 export type HoverMachineEvent =
   | {

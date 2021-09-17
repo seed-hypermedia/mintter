@@ -1,8 +1,8 @@
-import type {EditorPlugin} from '../types'
+import {isUnorderedList} from '@mintter/mttast'
 import {styled} from '@mintter/ui/stitches.config'
+import type {EditorPlugin} from '../types'
 import {resetGroupingContent} from '../utils'
 import {groupStyle, removeEmptyGroup} from './group'
-import {isUnorderedList} from '@mintter/mttast'
 
 export const ELEMENT_UNORDERED_LIST = 'unorderedList'
 

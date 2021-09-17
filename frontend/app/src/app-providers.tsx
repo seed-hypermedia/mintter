@@ -1,7 +1,7 @@
+import {Theme} from '@mintter/ui/theme'
+import {Suspense} from 'react'
 import {Toaster} from 'react-hot-toast'
 import {QueryClient, QueryClientProvider} from 'react-query'
-import {Theme} from '@mintter/ui'
-import {Suspense} from 'react'
 import {AppSpinner} from './components/app-spinner'
 
 export const queryClient = new QueryClient()

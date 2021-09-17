@@ -1,10 +1,10 @@
-import {createEditor, Editor, Range} from 'slate'
 import type {NodeEntry} from 'slate'
+import {createEditor, Editor, Range} from 'slate'
 import {withHistory} from 'slate-history'
-import {withReact, DefaultElement, DefaultLeaf} from 'slate-react'
 import type {RenderElementProps, RenderLeafProps} from 'slate-react'
-import type {EditorEventHandlers, EditorPlugin} from './types'
+import {DefaultElement, DefaultLeaf, withReact} from 'slate-react'
 import type {EditableProps} from 'slate-react/dist/components/editable'
+import type {EditorEventHandlers, EditorPlugin} from './types'
 
 const byApply =
   (mode: string) =>

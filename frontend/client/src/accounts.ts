@@ -1,8 +1,8 @@
-import {AccountsClientImpl, GetAccountRequest, ListAccountsRequest} from '../.generated/accounts/v1alpha/accounts'
 import type {Account, Profile} from '../.generated/accounts/v1alpha/accounts'
-import {GenSeedRequest, RegisterRequest, DaemonClientImpl} from '../.generated/daemon/v1alpha/daemon'
-import {createGrpcClient} from './grpc-client'
+import {AccountsClientImpl, GetAccountRequest, ListAccountsRequest} from '../.generated/accounts/v1alpha/accounts'
+import {DaemonClientImpl, GenSeedRequest, RegisterRequest} from '../.generated/daemon/v1alpha/daemon'
 import type {GrpcClient} from './grpc-client'
+import {createGrpcClient} from './grpc-client'
 /**
  *
  * @param aezeedPassphrase

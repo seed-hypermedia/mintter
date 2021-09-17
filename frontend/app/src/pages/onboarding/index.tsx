@@ -1,17 +1,15 @@
-import {useEffect, useMemo} from 'react'
-import {Machine} from 'xstate'
-
-import {Box} from '@mintter/ui'
-
+import {Box} from '@mintter/ui/box'
 import {useMachine} from '@xstate/react'
+import {useMemo} from 'react'
+import {createMachine} from 'xstate'
 import type {OnboardingStepPropsType} from './common'
-import {Welcome} from './welcome'
-import {SecurityPack} from './security-pack'
-import {ProfileInformation} from './profile-information'
 import {Complete} from './complete'
+import {ProfileInformation} from './profile-information'
+import {SecurityPack} from './security-pack'
+import {Welcome} from './welcome'
 
-const createMachine = (machine = {}) =>
-  Machine({
+const makeMachine = (machine = {}) =>
+  createMachine({
     id: 'onboarding',
     initial: 'welcome',
     states: {
@@ -44,8 +42,8 @@ const createMachine = (machine = {}) =>
     ...machine,
   })
 
-export function OnboardingPage({machine = {}}: {machine?: any}) {
-  const [onboardingMachineState, send] = useMachine(createMachine(machine))
+export default function OnboardingPage({machine = {}}: {machine?: any}) {
+  const [onboardingMachineState, send] = useMachine(makeMachine(machine))
 
   const onboardingStepProps: OnboardingStepPropsType = useMemo(
     () => ({
@@ -54,12 +52,6 @@ export function OnboardingPage({machine = {}}: {machine?: any}) {
     }),
     [send],
   )
-
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     onboardingStepProps.next()
-  //   }, 1000)
-  // }, [onboardingStepProps])
 
   return (
     <Box

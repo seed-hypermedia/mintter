@@ -1,20 +1,11 @@
-import {styled} from '@mintter/ui/stitches.config'
-import type {EditorPlugin} from '../types'
-import {StatementTools} from '../statement-tools'
-import {statementStyle} from './statement'
-import {
-  isHeading,
-  isStaticParagraph,
-  // isFlowContent,
-  // isStatement,
-} from '@mintter/mttast'
-import {Editor, Element, Node, Transforms} from 'slate'
-import {
-  isFirstChild,
-  resetFlowContent,
-  // isCollapsed
-} from '../utils'
+import {isHeading, isStaticParagraph} from '@mintter/mttast'
 import {staticParagraph} from '@mintter/mttast-builder'
+import {styled} from '@mintter/ui/stitches.config'
+import {Editor, Element, Node, Transforms} from 'slate'
+import {StatementTools} from '../statement-tools'
+import type {EditorPlugin} from '../types'
+import {isFirstChild, resetFlowContent} from '../utils'
+import {statementStyle} from './statement'
 
 export const ELEMENT_HEADING = 'heading'
 

@@ -1,6 +1,4 @@
 import {styled} from '@mintter/ui/stitches.config'
-
-import type * as Polymorphic from '@radix-ui/react-polymorphic'
 import {forwardRef} from 'react'
 
 const DEFAULT_TAG = 'div'

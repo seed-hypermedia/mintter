@@ -1,8 +1,6 @@
-import type {InvokeCreator} from 'xstate'
-import {assign, createMachine} from 'xstate'
+import {deleteDraft, deletePublication} from '@mintter/client'
 import {toast} from 'react-hot-toast'
-import {deleteDraft} from 'frontend/client/src/drafts'
-import {deletePublication} from 'frontend/client/src/publications'
+import {assign, createMachine} from 'xstate'
 
 export interface DeleteConfirmationDialogMachineContext {
   isDraft?: boolean

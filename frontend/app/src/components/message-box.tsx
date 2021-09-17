@@ -1,7 +1,7 @@
+import {Box} from '@mintter/ui/box'
 import type {ButtonProps} from '@mintter/ui/button'
 import {Button as UIButton} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
-import {Box} from '@mintter/ui/box'
 import type React from 'react'
 
 export function Root({children}: any) {

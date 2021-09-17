@@ -1,8 +1,8 @@
-import {isFlowContent, isGroup, isGroupContent} from '@mintter/mttast'
 import type {GroupingContent} from '@mintter/mttast'
+import {isFlowContent, isGroup, isGroupContent} from '@mintter/mttast'
 import {css, styled} from '@mintter/ui/stitches.config'
-import {Editor, Transforms} from 'slate'
 import type {NodeEntry} from 'slate'
+import {Editor, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
 
 export const ELEMENT_GROUP = 'group'

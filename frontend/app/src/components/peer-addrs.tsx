@@ -1,9 +1,11 @@
+import {usePeerAddrs} from '@mintter/client/hooks'
+import {Box} from '@mintter/ui/box'
+import {Button} from '@mintter/ui/button'
+import {Text} from '@mintter/ui/text'
+import {TextField} from '@mintter/ui/text-field'
 import {useMemo} from 'react'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import toast from 'react-hot-toast'
-
-import {Box, Button, Text, TextField} from '@mintter/ui'
-import {usePeerAddrs} from '@mintter/client/hooks'
 
 export function PeerAddrs() {
   const peerAddrs = usePeerAddrs()
