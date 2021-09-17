@@ -19,7 +19,10 @@ filegroup(
             "**/*.config.ts",
             "**/*.config.js",
         ] + ["app/index.html"],
-        exclude = ["node_modules"],
+        exclude = [
+            "node_modules",
+            "**/node_modules/**",
+        ],
     ),
 )
 
