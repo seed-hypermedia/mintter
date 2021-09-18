@@ -45,6 +45,7 @@ type Ldaemon struct {
 	log                 *zap.Logger
 	startTime           time.Time
 	daemonRunning       int32
+	coreRunning         int32
 	daemonStopped       bool
 	nodeID              string
 	adminMacaroon       []byte
@@ -70,6 +71,8 @@ func NewLdaemon(log *zap.Logger, cfg *config.LND) (*Ldaemon, error) {
 		ntfnServer:    subscribe.NewServer(),
 		log:           log,
 		daemonStopped: true,
+		daemonRunning: 0,
+		coreRunning:   0,
 	}, nil
 }
 
@@ -123,8 +126,9 @@ func (d *Ldaemon) stopDaemon(err error) {
 		d.log.Info("Daemon.stop() called")
 	}
 
-	if d.interceptor.Alive() && d.interceptor.ShutdownChannel() != nil {
-		d.interceptor.RequestShutdown()
+	if d.interceptor.Alive() && d.interceptor.ShutdownChannel() != nil &&
+		atomic.SwapInt32(&d.coreRunning, 0) == 1 {
+		d.interceptor.RequestShutdown() // if daemon is doubled closed, it does strange things on restart
 	}
 
 	if d.quitChan != nil {
@@ -178,10 +182,13 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 			defer d.wg.Done()
 
 			d.log.Info("Starting LND Daemon")
+			atomic.StoreInt32(&d.coreRunning, 1)
 			lndErr = lnd.Main(lndConfig, lnd.ListenerCfg{}, d.interceptor)
 			if lndErr != nil {
 				d.log.Error("Main function returned with error", zap.String("err", lndErr.Error()))
 			}
+			atomic.StoreInt32(&d.coreRunning, 0)
+			time.Sleep(1 * time.Second) //Sometimes right after being stopped it still gets signals.
 			d.log.Info("LND Daemon Finished")
 			go d.stopDaemon(lndErr)
 		}()
@@ -257,12 +264,6 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 
 			}
 			if initErr == nil {
-				// in case we are unlocking instead of init
-				if macaroon == nil && len(d.adminMacaroon) != 0 {
-					d.Lock()
-					macaroon = d.adminMacaroon
-					d.Unlock()
-				}
 
 				if initErr = d.startRpcClients(macaroon); initErr != nil {
 					d.log.Error("Can't start rpc clients, shutting down",

@@ -74,6 +74,12 @@ func (d *Ldaemon) SubscribeEvents() (*subscribe.Client, error) {
 func (d *Ldaemon) startRpcClients(macBytes []byte) error {
 	var err error
 
+	// in case this is a restart, macaroons are already stored in daemon and wallet already exists
+	if len(macBytes) == 0 && len(d.adminMacaroon) != 0 {
+		d.Lock()
+		macBytes = d.adminMacaroon
+		d.Unlock()
+	}
 	grpcCon, err := newLightningClient(false, macBytes, d.cfg.LndDir+"/data/chain/bitcoin/"+d.cfg.Network+
 		"/"+defaultMacaroonFilename, d.cfg.LndDir+"/"+defaultTLSCertFilename, d.cfg.RawRPCListeners[0])
 	if err != nil {
