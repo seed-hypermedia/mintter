@@ -135,7 +135,7 @@ func TestStart(t *testing.T) {
 			lnconf: &config.LND{
 				UseNeutrino:    true,
 				Network:        "testnet",
-				LndDir:         "/tmp/lndirtests",
+				LndDir:         "/tmp/lndirtests/start",
 				NoNetBootstrap: false,
 			},
 			subtest: []subset{
@@ -147,7 +147,7 @@ func TestStart(t *testing.T) {
 						AezeedPassphrase: testVectors[0].password,
 						AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
 						SeedEntropy:      testVectors[1].entropy[:],
-						StatelessInit:    true,
+						StatelessInit:    true, //false, //true
 					},
 					newPassword:                 "",
 					removeCredentialsBeforeTest: true,
@@ -272,6 +272,182 @@ func TestStart(t *testing.T) {
 	}
 }
 
+func TestPeers(t *testing.T) {
+	tests := [...]struct {
+		name             string
+		lnconfAlice      *config.LND
+		lnconfBob        *config.LND
+		credentialsAlice WalletSecurity
+		credentialsBob   WalletSecurity
+	}{
+		{
+			name: "neutrino",
+			lnconfAlice: &config.LND{
+				UseNeutrino:     true,
+				Network:         "testnet",
+				LndDir:          "/tmp/lndirtests/alice",
+				NoNetBootstrap:  false,
+				RawRPCListeners: []string{"127.0.0.1:10009"},
+				RawListeners:    []string{"0.0.0.0:9735"},
+			},
+
+			lnconfBob: &config.LND{
+				UseNeutrino:     true,
+				Network:         "testnet",
+				LndDir:          "/tmp/lndirtests/bob",
+				NoNetBootstrap:  false,
+				RawRPCListeners: []string{"127.0.0.1:1009"},
+				RawListeners:    []string{"0.0.0.0:8735"},
+			},
+			credentialsAlice: WalletSecurity{
+				WalletPassphrase: "passAlice",
+				RecoveryWindow:   0,
+				AezeedPassphrase: testVectors[0].password,
+				AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
+				SeedEntropy:      testVectors[0].entropy[:],
+				StatelessInit:    true,
+			},
+			credentialsBob: WalletSecurity{
+				WalletPassphrase: "passwordBob",
+				RecoveryWindow:   0,
+				AezeedPassphrase: testVectors[1].password,
+				AezeedMnemonics:  testVectors[1].expectedMnemonic[:],
+				SeedEntropy:      testVectors[1].entropy[:],
+				StatelessInit:    true,
+			},
+		},
+	}
+	log := backend.NewLogger(cfg)
+	defer log.Sync()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := interactPeers(t, tt.lnconfAlice, tt.lnconfBob,
+				&tt.credentialsAlice, &tt.credentialsBob)
+
+			require.NoError(t, err, tt.name+". must succeed")
+
+		})
+	}
+
+}
+
+func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
+	credentialsBob *WalletSecurity, credentialsAlice *WalletSecurity) error {
+	t.Helper()
+	logger, _ := zap.NewProduction()
+	logger2, _ := zap.NewProduction()
+	defer logger.Sync()
+	logger.Named("backend")
+
+	bob, errBob := NewLdaemon(logger, lnconfBob)
+	if errBob != nil {
+		return errBob
+
+	}
+
+	alice, errAlice := NewLdaemon(logger2, lnconfAlice)
+	if errAlice != nil {
+		return errAlice
+	}
+
+	if errAlice = alice.Start(credentialsAlice, "", false); errAlice != nil {
+		return errAlice
+	}
+	clientAlice, errAlice := alice.SubscribeEvents()
+	defer clientAlice.Cancel()
+	if errAlice != nil {
+		return errAlice
+	}
+
+	if errBob = bob.Start(credentialsBob, "", false); errBob != nil {
+		return errBob
+	}
+	clientBob, errBob := bob.SubscribeEvents()
+	defer clientBob.Cancel()
+	if errBob != nil {
+		return errBob
+	}
+
+	var i = 0
+	aliceReady, bobReady := false, false
+waitLoop:
+	for {
+		select {
+		case a := <-clientAlice.Updates():
+			switch update := a.(type) {
+			case DaemonReadyEvent:
+				aliceReady = true
+			case DaemonDownEvent:
+				return update.err
+			case ChainSyncedEvent:
+			default:
+				return fmt.Errorf("Got unexpected Alice update instead of ready event")
+			}
+		case <-clientAlice.Quit():
+			return fmt.Errorf("Got Bob quit signal while waiting for ready event")
+		case b := <-clientBob.Updates():
+			switch update := b.(type) {
+			case DaemonReadyEvent:
+				bobReady = true
+			case DaemonDownEvent:
+				return update.err
+			case ChainSyncedEvent:
+			default:
+				return fmt.Errorf("Got unexpected BOb update instead of ready event")
+			}
+		case <-clientBob.Quit():
+			return fmt.Errorf("Got Bob quit signal while waiting for ready event")
+		default:
+			if aliceReady && bobReady {
+				break waitLoop
+			}
+			i++
+			if i < 25 {
+				time.Sleep(5 * time.Second)
+			} else {
+				return fmt.Errorf("Timeout reached waiting for ready event")
+			}
+		}
+	}
+	alice.Stop()
+	bob.Stop()
+	return nil
+}
+
+func removeCredentials(workingDir string, network string) error {
+
+	path := workingDir + "/data/chain/bitcoin/" + network + "/wallet.db"
+	if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
+		return fmt.Errorf("Could not remove file: " + path + err.Error())
+	}
+
+	// If macaroons.db is removed, the previous node password is forgotten. We can safely
+	// Init a fresh new instance. If it is not removed, then we need to change the password
+	// before init
+	path = workingDir + "/data/chain/bitcoin/" + network + "/macaroons.db"
+	if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
+		return fmt.Errorf("Could not remove file: " + path + err.Error())
+	}
+
+	path = workingDir + "/data/chain/bitcoin/" + network + "/admin.macaroon"
+	if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
+		return fmt.Errorf("Could not remove file: " + path + err.Error())
+	}
+	path = workingDir + "/data/chain/bitcoin/" + network + "/readonly.macaroon"
+	if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
+		return fmt.Errorf("Could not remove file: " + path + err.Error())
+	}
+	path = workingDir + "/data/chain/bitcoin/" + network + "/invoice.macaroon"
+	if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
+		return fmt.Errorf("Could not remove file: " + path + err.Error())
+	}
+	path = workingDir + "/data/chain/bitcoin/" + network + "/router.macaroon"
+	if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
+		return fmt.Errorf("Could not remove file: " + path + err.Error())
+	}
+	return nil
+}
+
 func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 	newPassword string, removeCredentialsBeforeTest bool, blocking bool) (*Ldaemon, string, error) {
 	t.Helper()
@@ -279,50 +455,29 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 	defer logger.Sync()
 	logger.Named("backend")
 	var nodeID = ""
-	d, err := NewLdaemon(logger, lnconf)
+	bob, err := NewLdaemon(logger, lnconf)
 	if err != nil {
-		return d, nodeID, err
+		return bob, nodeID, err
 
 	}
 
 	if removeCredentialsBeforeTest {
-		path := lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/wallet.db"
-		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
-			return d, nodeID, fmt.Errorf("Could not remove file: " + path + err.Error())
-		}
 
-		// If macaroons.db is removed, the previous node password is forgotten. We can safely
-		// Init a fresh new instance. If it is not removed, then we need to change the password
-		// before init
-		path = lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/macaroons.db"
-		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
-			return d, nodeID, fmt.Errorf("Could not remove file: " + path + err.Error())
-		}
-
-		path = lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/admin.macaroon"
-		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
-			return d, nodeID, fmt.Errorf("Could not remove file: " + path + err.Error())
-		}
-		path = lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/readonly.macaroon"
-		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
-			return d, nodeID, fmt.Errorf("Could not remove file: " + path + err.Error())
-		}
-		path = lnconf.LndDir + "/data/chain/bitcoin/" + lnconf.Network + "/invoice.macaroon"
-		if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
-			return d, nodeID, fmt.Errorf("Could not remove file: " + path + err.Error())
+		if err := removeCredentials(lnconf.LndDir, lnconf.Network); err != nil {
+			return bob, "", err
 		}
 	}
 
-	err = d.Start(credentials, newPassword, blocking)
+	err = bob.Start(credentials, newPassword, blocking)
 
 	if err != nil {
-		return d, nodeID, err
+		return bob, nodeID, err
 	} else if !blocking {
 		//In order for the subscriptions to take effect and write the log accordingly
-		client, err := d.SubscribeEvents()
+		client, err := bob.SubscribeEvents()
 		defer client.Cancel()
 		if err != nil {
-			return d, nodeID, err
+			return bob, nodeID, err
 		}
 		var i = 0
 		for {
@@ -330,31 +485,33 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 			case u := <-client.Updates():
 				switch update := u.(type) {
 				case DaemonReadyEvent:
-					return d, update.IdentityPubkey, nil
+					fmt.Println("Ready event gotten with ID: " + update.IdentityPubkey)
+					return bob, update.IdentityPubkey, nil
 				case DaemonDownEvent:
-					return d, "", update.err
+					return bob, "", update.err
 				case ChainSyncedEvent:
 				default:
-					return d, nodeID, fmt.Errorf("Got unexpected update instead of ready event")
+					return bob, nodeID, fmt.Errorf("Got unexpected update instead of ready event")
 				}
 			case <-client.Quit():
-				return d, nodeID, fmt.Errorf("Got quit signal while waiting for ready event")
+				return bob, nodeID, fmt.Errorf("Got quit signal while waiting for ready event")
 			default:
 				i++
 				if i < 25 {
 					time.Sleep(5 * time.Second)
 				} else {
 					// Since we could have missed the event (LND was up very quick and sent it before we started listening) highly unlikely though
-					if d.GetID() != "" {
-						return d, d.GetID(), nil
+					if bob.GetID() != "" {
+						fmt.Println("We missed the Ready event but getID was already set")
+						return bob, bob.GetID(), nil
 					} else {
-						return d, nodeID, fmt.Errorf("Timeout reached waiting for ready event")
+						return bob, nodeID, fmt.Errorf("Timeout reached waiting for ready event")
 					}
 				}
 			}
 		}
 
 	} else {
-		return d, d.GetID(), nil
+		return bob, bob.GetID(), nil
 	}
 }
