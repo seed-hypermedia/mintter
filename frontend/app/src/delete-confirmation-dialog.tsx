@@ -27,7 +27,7 @@ export type DeleteConfirmationMethods = {
   onSuccess: () => void
 }
 
-export const deleteConfirmationDialogMachine = ({onSuccess, executeAction}: DeleteConfirmationMethods) =>
+export const deleteConfirmationDialogMachine = ({onSuccess}: DeleteConfirmationMethods) =>
   createMachine<DeleteConfirmationDialogMachineContext, DeleteConfirmationDialogMachineEvent>(
     {
       id: 'deleteConfirmationDialog',
@@ -81,7 +81,6 @@ export const deleteConfirmationDialogMachine = ({onSuccess, executeAction}: Dele
     {
       services: {
         executeAction: (context) => {
-          console.log('execute action!!')
           return context.isDraft ? deleteDraft(context.entryId!) : deletePublication(context.entryId!)
         },
       },
