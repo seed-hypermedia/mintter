@@ -1,7 +1,7 @@
 import {Document, getDraft, publishDraft, updateDraft} from '@mintter/client'
 import {createId, group, paragraph, statement, text} from '@mintter/mttast-builder'
 import {useMachine} from '@xstate/react'
-import isEqual from 'lodash/isequal'
+import isEqual from 'lodash.isequal'
 import {useEffect} from 'react'
 import {QueryClient, useQueryClient} from 'react-query'
 import type {Descendant} from 'slate'

@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@mintter/client": "^0.2.1",
+    "@mintter/mttast-builder": "^0.1.0",
     "@mintter/ui": "^0.2.1",
     "@radix-ui/react-accessible-icon": "0.1.0",
     "@radix-ui/react-alert-dialog": "0.1.0",
@@ -29,6 +30,7 @@
     "@xstate/react": "^1.6.1",
     "framer-motion": "^4.1.17",
     "is-url": "^1.2.4",
+    "lodash.isequal": "^4.5.0",
     "react": "^17.0.2",
     "react-copy-to-clipboard": "^5.0.4",
     "react-dom": "^17.0.2",
@@ -45,11 +47,9 @@
     "slate-hyperscript": "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.65.3-unist2",
     "slate-react": "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.65.3-unist2",
     "unist-util-visit": "^4.0.0",
-    "xstate": "^4.23.4",
-    "@mintter/mttast-builder": "^0.1.0"
+    "xstate": "^4.23.4"
   },
   "devDependencies": {
-    "prettier": "^2.4.0",
     "@types/is-url": "^1.2.30",
     "@types/react": "^17.0.20",
     "@types/react-copy-to-clipboard": "^5.0.1",
@@ -64,6 +64,7 @@
     "eslint": "^7.32.0",
     "eslint-plugin-react": "^7.25.1",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "prettier": "^2.4.0",
     "typescript": "^4.4.2",
     "vite": "^2.5.6",
     "vite-react-jsx": "^1.1.2",

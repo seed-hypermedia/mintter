@@ -1,19 +1,35 @@
-import type {Account, Device} from '@mintter/client'
-import {ConnectionStatus, getPeerInfo} from '@mintter/client'
+import {Account, connect, ConnectionStatus, Device, getPeerInfo} from '@mintter/client'
 import {useListAccounts} from '@mintter/client/hooks'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
+import {Prompt} from '@mintter/ui/dialog'
 import {keyframes, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
+import {TextField} from '@mintter/ui/text-field'
 import * as HoverCard from '@radix-ui/react-hover-card'
+import {FormEvent, useState} from 'react'
+import toast from 'react-hot-toast'
 import {useQuery} from 'react-query'
 
-/*
- * @todo onConnect types
- */
-export function Connections({onConnect}: any) {
+export function Connections() {
   const {status, data, error} = useListAccounts()
-  console.log('🚀 ~ Connections', data)
+  const [peer, setPeer] = useState('')
+
+  async function handleConnect() {
+    if (peer) {
+      try {
+        // const connAttempt = await connect(peer.split(','))
+        await toast.promise(connect(peer.split(',')), {
+          loading: 'Connecting to peer...',
+          success: 'Connection Succeeded!',
+          error: 'Connection Error',
+        })
+        setPeer('')
+      } catch (err: any) {
+        console.error(err.message)
+      }
+    }
+  }
 
   if (status == 'loading') {
     return <Text>loading...</Text>
@@ -40,9 +56,33 @@ export function Connections({onConnect}: any) {
           </Box>
         )}
         <Box css={{marginTop: '$6', mx: '-$2'}}>
-          <Button onClick={() => onConnect()} variant="outlined" color="primary" size="1">
-            + add connection
-          </Button>
+          <Prompt.Root>
+            <Prompt.Trigger variant="outlined" color="primary" size="1">
+              + add connection
+            </Prompt.Trigger>
+            <Prompt.Content>
+              <Prompt.Title>Connect to Peer</Prompt.Title>
+              <Prompt.Description>Enter a peer address to connect</Prompt.Description>
+              <TextField
+                value={peer}
+                onChange={(event: FormEvent<HTMLInputElement>) => setPeer(event.currentTarget.value)}
+                as="textarea"
+                rows={3}
+                css={{
+                  minHeight: 150,
+                  maxHeight: 150,
+                  overflow: 'scroll',
+                }}
+              />
+              <Prompt.Actions>
+                <Prompt.Close asChild>
+                  <Button size="2" onClick={handleConnect}>
+                    Connect
+                  </Button>
+                </Prompt.Close>
+              </Prompt.Actions>
+            </Prompt.Content>
+          </Prompt.Root>
         </Box>
       </Box>
     )

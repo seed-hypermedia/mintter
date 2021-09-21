@@ -150,13 +150,12 @@ const TextFieldHint = styled(Text, {
 })
 
 type TextFieldProps = React.HTMLProps<HTMLInputElement> &
-  Stitches.VariantProps<typeof Input> &
-  Partial<{
-    id: string
-    label: string
-    hint: string
-    containerCss: CSS
-  }>
+  Stitches.VariantProps<typeof Input> & {
+    id?: string
+    label?: string
+    hint?: string
+    containerCss?: CSS
+  }
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   ({label, status = 'neutral', hint, id = nanoid(), containerCss, ...props}: TextFieldProps, ref) => {

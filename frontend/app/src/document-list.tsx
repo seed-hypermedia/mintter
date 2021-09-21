@@ -1,7 +1,7 @@
 import type {Document, Publication} from '@mintter/client'
 import {useAccount} from '@mintter/client/hooks'
-import {Alert} from '@mintter/ui/alert'
 import {Box} from '@mintter/ui/box'
+import {Alert} from '@mintter/ui/dialog'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {useMachine} from '@xstate/react'
