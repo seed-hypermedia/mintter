@@ -1,4 +1,4 @@
-import {connect, createDraft} from '@mintter/client'
+import {createDraft} from '@mintter/client'
 import {useAccount, useMyPublicationsList, useOthersPublicationsList} from '@mintter/client/hooks'
 import {Box} from '@mintter/ui/box'
 import {Button, buttonStyles} from '@mintter/ui/button'
@@ -6,7 +6,6 @@ import type {CSS} from '@mintter/ui/stitches.config'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text, textStyles} from '@mintter/ui/text'
 import {useCallback} from 'react'
-import toast from 'react-hot-toast'
 import {Route, Switch, useHistory, useRouteMatch} from 'react-router-dom'
 import {Container} from '../components/container'
 import {Link} from '../components/link'
@@ -15,7 +14,6 @@ import {Separator} from '../components/separator'
 import {Connections} from '../connections'
 import {DraftListPage, ListPage} from './list-page'
 
-// TODO: Think if there's a better way  to disable SSR, so that access to localStorage doesn't blow up the whole app.
 export default function Library() {
   const {path, url} = useRouteMatch()
   const history = useHistory()
@@ -31,38 +29,6 @@ export default function Library() {
       }
     } catch (err) {
       console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
-    }
-  }, [])
-
-  const onConnect = useCallback(async (addressList?: string[]) => {
-    {
-      // TODO: re-enable toasts
-      if (addressList) {
-        try {
-          // await toast.promise(connectToPeer(addressList), {
-          //   loading: 'Connecting to peer...',
-          //   success: 'Connection Succeeded!',
-          //   error: 'Connection Error',
-          // })
-        } catch (err) {
-          console.error(err.message)
-        }
-      } else {
-        console.log('open prompt!')
-        const peer: string | null = window.prompt(`enter a peer address`)
-        if (peer) {
-          try {
-            // const connAttempt = await connect(peer.split(','))
-            await toast.promise(connect(peer.split(',')), {
-              loading: 'Connecting to peer...',
-              success: 'Connection Succeeded!',
-              error: 'Connection Error',
-            })
-          } catch (err) {
-            console.error(err.message)
-          }
-        }
-      }
     }
   }, [])
 
@@ -89,7 +55,7 @@ export default function Library() {
         }}
       >
         <ProfileInfo />
-        <Connections onConnect={onConnect} />
+        <Connections />
       </Box>
 
       <Container css={{gridArea: 'maincontent'}}>
@@ -122,8 +88,6 @@ export default function Library() {
           <NavItem to={`${url}/drafts`}>Drafts</NavItem>
         </Box>
         <Separator />
-        {/* <NoConnectionsBox onConnect={onConnect} /> */}
-
         <Switch>
           <Route exact path={path}>
             <ListPage onCreateDraft={onCreateDraft} useDataHook={useOthersPublicationsList} />

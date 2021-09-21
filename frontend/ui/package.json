@@ -4,7 +4,7 @@
   "license": "MIT",
   "exports": {
     ".": "./src/index.ts",
-    "./alert": "./src/alert/index.ts",
+    "./dialog": "./src/dialog/index.ts",
     "./box": "./src/box/index.ts",
     "./button": "./src/button/index.ts",
     "./icon": "./src/icon/index.ts",
