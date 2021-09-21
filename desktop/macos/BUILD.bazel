@@ -8,4 +8,5 @@ macos_application(
         "//frontend:app": "Resources",
         "Info.plist": "",
     },
+    tags = ["manual"],
 )
