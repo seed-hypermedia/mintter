@@ -15,7 +15,7 @@ build-backend() {
 
 # Command build-frontend build a production bundle of the frontend app.
 build-frontend() {
-    bazel build //frontend/app
+    bazel build //frontend:app
 }
 
 # Command build-cross builds for all the supported platforms in parallel.
