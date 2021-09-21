@@ -16,12 +16,14 @@
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "editor.formatOnSave": true,
-  "editor.tabSize": 2,
-  "[go]": {
-    "editor.tabSize": 4
+  "[javascript]": {
+    "editor.tabSize": 2
   },
-  "[starlark]": {
-    "editor.tabSize": 4
+  "[typescript]": {
+    "editor.tabSize": 2
+  },
+  "[nix]": {
+    "editor.tabSize": 2
   },
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true,
