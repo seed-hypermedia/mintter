@@ -1,5 +1,5 @@
-import {defineConfig} from 'vite'
 import reactRefresh from '@vitejs/plugin-react-refresh'
+import {defineConfig} from 'vite'
 import reactJSX from 'vite-react-jsx'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
