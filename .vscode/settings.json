@@ -32,7 +32,5 @@
   "[terraform]": {
     "editor.defaultFormatter": "hashicorp.terraform",
     "editor.formatOnSave": true
-  },
-  "javascript.preferences.importModuleSpecifier": "non-relative",
-  "typescript.preferences.importModuleSpecifier": "non-relative"
+  }
 }

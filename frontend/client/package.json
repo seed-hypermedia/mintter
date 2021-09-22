@@ -7,7 +7,11 @@
     "./hooks": "./hooks/index.ts",
     ".": "./src/index.ts"
   },
-  "scripts": {},
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint .",
+    "format": "yarn prettier --write ."
+  },
   "dependencies": {
     "@improbable-eng/grpc-web": "^0.14.1",
     "@mintter/mttast-builder": "^0.1.0",
@@ -21,10 +25,12 @@
     "unist-builder": "^3.0.0"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.31.0",
-    "@typescript-eslint/parser": "^4.31.0",
+    "@typescript-eslint/eslint-plugin": "^4.31.2",
+    "@typescript-eslint/parser": "^4.31.2",
     "eslint": "^7.32.0",
-    "eslint-plugin-react-hooks": "^4.2.0",
+    "eslint-config-preact": "^1.1.4",
+    "eslint-config-prettier": "^8.3.0",
+    "prettier": "^2.4.1",
     "typescript": "^4.4.2"
   },
   "lint-staged": {
