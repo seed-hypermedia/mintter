@@ -148,7 +148,7 @@ loop:
 	if err := d.ntfnServer.SendUpdate(DaemonReadyEvent{IdentityPubkey: d.nodeID}); err != nil {
 		return err
 	}
-	d.log.Info("Daemon ready! subscriptions started")
+	d.log.Info("Daemon ready! subscriptions started. But the node cannot perform network operations until it is fully synced")
 	return nil
 }
 

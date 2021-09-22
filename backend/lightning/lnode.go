@@ -26,10 +26,11 @@ import (
 )
 
 const (
-	alreadyExistsError    = "wallet already exists"
-	alreadyUnlockedError  = "wallet already unlocked"
-	waitSecondsPerAttempt = 3
-	maxConnAttemps        = 20
+	alreadyExistsError     = "wallet already exists"
+	alreadyUnlockedError   = "wallet already unlocked"
+	mnemonicsChecksumError = "mnemonic phrase checksum doesn't match"
+	waitSecondsPerAttempt  = 3
+	maxConnAttemps         = 40
 )
 
 var (
@@ -252,7 +253,7 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 						break loop
 					default:
 						i++
-						if i < maxConnAttemps {
+						if i < maxConnAttemps && !strings.Contains(initErr.Error(), mnemonicsChecksumError) {
 							continue loop
 						}
 						d.log.Error("Could not init wallet", zap.String("err", initErr.Error()))

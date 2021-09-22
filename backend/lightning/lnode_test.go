@@ -1,6 +1,7 @@
 package lightning
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/lightningnetwork/lnd/aezeed"
+	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
@@ -29,11 +31,11 @@ type TestVector struct {
 	password         string
 	expectedMnemonic [aezeed.NumMnemonicWords]string
 	expectedBirthday uint16
+	expectedID       string
 }
 
 var (
 	cfg         config.Config
-	expectedID  = "0226594d21c0862a11168ab07cdbc15e7c7af5ee561b741259e311f1614f4df3b7"
 	testEntropy = [aezeed.EntropySize]byte{
 		0x81, 0xb6, 0x37, 0xd8,
 		0x63, 0x59, 0xe6, 0x96,
@@ -57,6 +59,7 @@ var (
 				"success", "suggest", "drink", "wagon", "enrich", "body",
 			},
 			expectedBirthday: 0,
+			expectedID:       "0226594d21c0862a11168ab07cdbc15e7c7af5ee561b741259e311f1614f4df3b7",
 		},
 		{
 			version:  0,
@@ -71,6 +74,22 @@ var (
 				"suggest", "drink", "monster", "congress", "flight",
 			},
 			expectedBirthday: 3365,
+			expectedID:       "0226594d21c0862a11168ab07cdbc15e7c7af5ee561b741259e311f1614f4df3b7",
+		},
+		{
+			version:  0,
+			time:     aezeed.BitcoinGenesisDate,
+			entropy:  testEntropy,
+			salt:     testSalt,
+			password: "",
+			expectedMnemonic: [aezeed.NumMnemonicWords]string{
+				"ability", "mouse", "defense", "minor", "wood", "float",
+				"twist", "dinner", "jump", "another", "rabbit", "air",
+				"badge", "crisp", "cup", "occur", "scrub", "pelican",
+				"always", "chat", "rain", "initial", "inch", "nature",
+			},
+			expectedBirthday: 0,
+			expectedID:       "03b8dd9c41d09d93b136122641085b3f2d1db0fcdfd99e1c2a57a8f4ec51d8f919",
 		},
 	}
 )
@@ -81,6 +100,7 @@ type subset struct {
 	newPassword                 string
 	removeCredentialsBeforeTest bool
 	mustFail                    bool
+	expectedID                  string
 }
 
 func TestStart(t *testing.T) {
@@ -147,11 +167,12 @@ func TestStart(t *testing.T) {
 						AezeedPassphrase: testVectors[0].password,
 						AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
 						SeedEntropy:      testVectors[1].entropy[:],
-						StatelessInit:    true, //false, //true
+						StatelessInit:    true,
 					},
 					newPassword:                 "",
 					removeCredentialsBeforeTest: true,
 					mustFail:                    false,
+					expectedID:                  testVectors[0].expectedID,
 				},
 				{
 					subname: "Unlock pasword ok but no macaroons",
@@ -162,6 +183,7 @@ func TestStart(t *testing.T) {
 					newPassword:                 "",
 					removeCredentialsBeforeTest: false,
 					mustFail:                    true,
+					expectedID:                  testVectors[0].expectedID,
 				},
 
 				{
@@ -172,6 +194,7 @@ func TestStart(t *testing.T) {
 					newPassword:                 "",
 					removeCredentialsBeforeTest: false,
 					mustFail:                    false,
+					expectedID:                  testVectors[0].expectedID,
 				},
 				{
 					subname: "Change password from change pass",
@@ -181,6 +204,7 @@ func TestStart(t *testing.T) {
 					newPassword:                 "testtesta",
 					removeCredentialsBeforeTest: false,
 					mustFail:                    false,
+					expectedID:                  testVectors[0].expectedID,
 				},
 				{
 					subname: "Unlock wrong pasword",
@@ -190,6 +214,7 @@ func TestStart(t *testing.T) {
 					newPassword:                 "",
 					removeCredentialsBeforeTest: false,
 					mustFail:                    true,
+					expectedID:                  testVectors[0].expectedID,
 				},
 				{
 					subname: "Change wrong password",
@@ -199,6 +224,7 @@ func TestStart(t *testing.T) {
 					newPassword:                 "testtesti",
 					removeCredentialsBeforeTest: false,
 					mustFail:                    true,
+					expectedID:                  testVectors[0].expectedID,
 				},
 				{
 					subname: "Unlock right pasword",
@@ -208,6 +234,7 @@ func TestStart(t *testing.T) {
 					newPassword:                 "",
 					removeCredentialsBeforeTest: false,
 					mustFail:                    false,
+					expectedID:                  testVectors[0].expectedID,
 				},
 				{
 					// since init from seed gives a random mnemonics (even if we feed it with the same entropy the birthday date is diferent)
@@ -222,6 +249,7 @@ func TestStart(t *testing.T) {
 					},
 					newPassword:                 "",
 					removeCredentialsBeforeTest: true,
+					expectedID:                  testVectors[1].expectedID,
 					mustFail:                    false,
 				},
 			},
@@ -247,7 +275,7 @@ func TestStart(t *testing.T) {
 				}
 
 				if strings.Contains(subtest.subname, "mnemonics") {
-					require.EqualValues(t, expectedID, nodeID)
+					require.EqualValues(t, subtest.expectedID, nodeID)
 				}
 
 				if subtest.subname != "Change password from change pass" {
@@ -263,7 +291,7 @@ func TestStart(t *testing.T) {
 				}
 
 				if strings.Contains(subtest.subname, "mnemonics") {
-					require.EqualValues(t, expectedID, nodeID)
+					require.EqualValues(t, subtest.expectedID, nodeID)
 				}
 
 			})
@@ -289,6 +317,7 @@ func TestPeers(t *testing.T) {
 				NoNetBootstrap:  false,
 				RawRPCListeners: []string{"127.0.0.1:10009"},
 				RawListeners:    []string{"0.0.0.0:9735"},
+				DisableRest:     true,
 			},
 
 			lnconfBob: &config.LND{
@@ -296,23 +325,24 @@ func TestPeers(t *testing.T) {
 				Network:         "testnet",
 				LndDir:          "/tmp/lndirtests/bob",
 				NoNetBootstrap:  false,
-				RawRPCListeners: []string{"127.0.0.1:1009"},
+				RawRPCListeners: []string{"127.0.0.1:10069"},
 				RawListeners:    []string{"0.0.0.0:8735"},
+				DisableRest:     true,
 			},
-			credentialsAlice: WalletSecurity{
-				WalletPassphrase: "passAlice",
+			credentialsBob: WalletSecurity{
+				WalletPassphrase: "passwordBob",
 				RecoveryWindow:   0,
 				AezeedPassphrase: testVectors[0].password,
 				AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
 				SeedEntropy:      testVectors[0].entropy[:],
 				StatelessInit:    true,
 			},
-			credentialsBob: WalletSecurity{
-				WalletPassphrase: "passwordBob",
+			credentialsAlice: WalletSecurity{
+				WalletPassphrase: "passwordAlice",
 				RecoveryWindow:   0,
-				AezeedPassphrase: testVectors[1].password,
-				AezeedMnemonics:  testVectors[1].expectedMnemonic[:],
-				SeedEntropy:      testVectors[1].entropy[:],
+				AezeedPassphrase: testVectors[2].password,
+				AezeedMnemonics:  testVectors[2].expectedMnemonic[:],
+				SeedEntropy:      testVectors[2].entropy[:],
 				StatelessInit:    true,
 			},
 		},
@@ -322,7 +352,8 @@ func TestPeers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := interactPeers(t, tt.lnconfAlice, tt.lnconfBob,
-				&tt.credentialsAlice, &tt.credentialsBob)
+				&tt.credentialsAlice, &tt.credentialsBob,
+				testVectors[2].expectedID, testVectors[0].expectedID)
 
 			require.NoError(t, err, tt.name+". must succeed")
 
@@ -332,8 +363,17 @@ func TestPeers(t *testing.T) {
 }
 
 func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
-	credentialsBob *WalletSecurity, credentialsAlice *WalletSecurity) error {
+	credentialsAlice *WalletSecurity, credentialsBob *WalletSecurity,
+	expectedAliceID string, expectedBobID string) error {
 	t.Helper()
+	var err error
+	if err = removeCredentials(lnconfAlice.LndDir, lnconfAlice.Network); err != nil {
+		return err
+	}
+	if err = removeCredentials(lnconfBob.LndDir, lnconfBob.Network); err != nil {
+		return err
+	}
+
 	logger, _ := zap.NewProduction()
 	logger2, _ := zap.NewProduction()
 	defer logger.Sync()
@@ -369,17 +409,35 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	}
 
 	var i = 0
-	aliceReady, bobReady := false, false
+	aliceReady, bobReady, BobID, AliceID := false, false, "", ""
 waitLoop:
 	for {
 		select {
 		case a := <-clientAlice.Updates():
 			switch update := a.(type) {
 			case DaemonReadyEvent:
-				aliceReady = true
+				if update.IdentityPubkey != expectedAliceID {
+					return fmt.Errorf("After initializing Alice got ID:" + update.IdentityPubkey +
+						" but expected" + expectedAliceID)
+				} else {
+					aliceReady = true
+				}
 			case DaemonDownEvent:
 				return update.err
 			case ChainSyncedEvent:
+			case PeerEvent:
+				BobID = update.PubKey
+				if BobID != expectedBobID {
+					return fmt.Errorf("Alice got the correct BobID, but Bob did not receive Alice's after 2 seconds")
+				} else {
+					time.Sleep(2 * time.Second) // We give Bob some time to receive the notification and fill AliceID
+					if AliceID != "" {
+						break waitLoop
+					} else {
+						return fmt.Errorf("Alice got the correct BobID, but Bob did not receive Alice's after 2 seconds")
+					}
+				}
+
 			default:
 				return fmt.Errorf("Got unexpected Alice update instead of ready event")
 			}
@@ -388,10 +446,27 @@ waitLoop:
 		case b := <-clientBob.Updates():
 			switch update := b.(type) {
 			case DaemonReadyEvent:
-				bobReady = true
+				if update.IdentityPubkey != expectedBobID {
+					return fmt.Errorf("After initializing Bob got ID:" + update.IdentityPubkey +
+						" but expected" + expectedBobID)
+				} else {
+					bobReady = true
+				}
 			case DaemonDownEvent:
 				return update.err
 			case ChainSyncedEvent:
+			case PeerEvent:
+				AliceID = update.PubKey
+				if AliceID != expectedBobID {
+					return fmt.Errorf("Bob got the correct AliceID, but Alice did not receive Bob's after 2 seconds")
+				} else {
+					time.Sleep(2 * time.Second) // We give Alice some time to receive the notification and fill BobID
+					if BobID != "" {
+						break waitLoop
+					} else {
+						return fmt.Errorf("Bob got the correct AliceID, but Alice did not receive Bob's after 2 seconds")
+					}
+				}
 			default:
 				return fmt.Errorf("Got unexpected BOb update instead of ready event")
 			}
@@ -399,14 +474,28 @@ waitLoop:
 			return fmt.Errorf("Got Bob quit signal while waiting for ready event")
 		default:
 			if aliceReady && bobReady {
-				break waitLoop
+
+				fmt.Println("Both Alice and Bob are ready, so we try to peer them: ")
+				_, err := alice.APIClient().ConnectPeer(context.Background(), &lnrpc.ConnectPeerRequest{
+					Addr: &lnrpc.LightningAddress{
+						Pubkey: expectedBobID,
+						Host:   lnconfBob.RawListeners[0],
+					},
+					Perm:    false,
+					Timeout: 2,
+				})
+				if err == nil {
+					break waitLoop
+				}
+
 			}
 			i++
-			if i < 25 {
-				time.Sleep(5 * time.Second)
+			if i < 2500 {
+				time.Sleep(3 * time.Second)
 			} else {
 				return fmt.Errorf("Timeout reached waiting for ready event")
 			}
+
 		}
 	}
 	alice.Stop()
