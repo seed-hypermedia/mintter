@@ -38,4 +38,6 @@ in
       export CURRENT_PLATFORM="$(go env GOOS)_$(go env GOARCH)"
       export BAZEL_SH="$(which bash)"
     '';
+
+    RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
   }
