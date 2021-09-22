@@ -19,10 +19,12 @@ in
       node
       yarn
       pkgs.pkg-config
-      pkgs.gcc    
+      pkgs.gcc
       pkgs.libiconv
     ] ++ (
       pkgs.lib.optionals pkgs.stdenv.isDarwin [
+        pkgs.clang
+        pkgs.clang-tools
         pkgs.darwin.libobjc
         pkgs.darwin.apple_sdk.frameworks.Security
         pkgs.darwin.apple_sdk.frameworks.CoreServices
@@ -39,5 +41,7 @@ in
       export BAZEL_SH="$(which bash)"
     '';
 
-    RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+    # export NIX_CFLAGS_COMPILE="-L /usr/lib $NIX_CFLAGS_COMPILE"
+    # RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+    # RUSTFLAGS = "-L /usr/lib -L /System/Library";
   }
