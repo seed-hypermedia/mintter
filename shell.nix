@@ -13,6 +13,7 @@ let
       pkgs.go_1_17
       pkgs.terraform
       pkgs.bazelisk
+      pkgs.rustup
       node
       yarn
   ];
