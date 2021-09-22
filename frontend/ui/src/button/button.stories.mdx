@@ -1,13 +1,15 @@
-import {Button} from '@src/button'
-import {Playground} from '@storybook-utils/components/code'
-import {Meta} from '@storybook/addon-docs/blocks'
+import {Button} from './button'
+import {Theme} from '../theme'
+import {Box} from '../box'
+import {Meta, Story, Canvas} from '@storybook/addon-docs'
 
 <Meta title="Forms/Button" />
 
+export const Template = (args) => <Button {...args} />
+
 # Button
 
-The `Button` component can be used to initiate an action, like can be submitting
-a form or anything you want.
+The `Button` component can be used to initiate an action, like can be submitting a form or anything you want.
 
 ## Import
 
@@ -17,19 +19,29 @@ import {Button} from '@mintter/ui/button'
 
 ## Usage
 
-```jsx
-<Button>This is my Button!</Button>
-```
+<Canvas>
+  <Story name="default">
+    <Theme>
+      <Button>Default Button</Button>
+    </Theme>
+  </Story>
+</Canvas>
 
 ### Size
 
 Pass a `size` prop to the `Button` component to change their size.
 
-```jsx columns
-<Button size="1">Small Button</Button>
-<Button size="2">Medium Button</Button>
-<Button size="3">Large Button</Button>
-```
+<Canvas>
+  <Story name="size">
+    <Theme>
+      <Box css={{display: 'flex', gap: '$4', alignItems: 'center'}}>
+        <Button size="1">Small Button</Button>
+        <Button size="2">Medium Button</Button>
+        <Button size="3">Large Button</Button>
+      </Box>
+    </Theme>
+  </Story>
+</Canvas>
 
 > The default `Button` size is `medium`.
 
@@ -58,8 +70,7 @@ Pass a `shape` prop to the `Button` component to change its shape.
 
 ### Color
 
-The `Button` component has various color schemes based in the Theme brand and
-status colors.
+The `Button` component has various color schemes based in the Theme brand and status colors.
 
 ```jsx columns
 <Button color="primary">Primary button</Button>
@@ -76,52 +87,3 @@ status colors.
 ## Playground
 
 Combine `Button` props to preview your component.
-
-<Playground
-  component={Button}
-  options={[
-    {
-      type: 'select',
-      name: 'size',
-      label: 'Size',
-      options: ['1', '2', '3'],
-      defaultValue: '2',
-    },
-    {
-      type: 'select',
-      name: 'variant',
-      label: 'Variant',
-      options: ['solid', 'outlined', 'ghost'],
-      defaultValue: 'solid',
-    },
-    {
-      type: 'select',
-      name: 'shape',
-      label: 'Shape',
-      options: ['rounded', 'pill'],
-      defaultValue: 'rounded',
-    },
-    {
-      type: 'select',
-      name: 'color',
-      label: 'Color',
-      options: [
-        'primary',
-        'secondary',
-        'terciary',
-        'success',
-        'warning',
-        'danger',
-        'muted',
-      ],
-      defaultValue: 'primary',
-    },
-    {
-      type: 'string',
-      name: 'children',
-      label: 'Text',
-      defaultValue: 'Click me',
-      computePropsFromValue: children => ({children}),
-    },
-  ]}
-/>
