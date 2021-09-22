@@ -1,0 +1,48 @@
+{
+  "gitSiteUrl": "https://github.com/mintterteam/mintter/",
+  "pkgManagers": {
+    "javascript": {
+      "version": true,
+      "getPublishedVersion": "git describe --tags --match 'mintter-v*' --abbrev=0 HEAD | sed 's/mintter-v//'",
+      "publish": ["echo publish here"]
+    },
+    "rust": {
+      "version": true,
+      "getPublishedVersion": "git describe --tags --match 'mintter-v*' --abbrev=0 HEAD | sed 's/mintter-v//'",
+      "publish": ["echo publish here"]
+    }
+  },
+  "packages": {
+    "@mintter/app": {
+      "path": "./frontend/app",
+      "manager": "javascript",
+      "dependencies": [
+        "@mintter/client",
+        "@mintter/mttast",
+        "@mintter/mttast-builder",
+        "@mintter/ui"
+      ]
+    },
+    "@mintter/client": {
+      "path": "./frontend/client",
+      "manager": "javascript"
+    },
+    "@mintter/mttast": {
+      "path": "./frontend/mttast",
+      "manager": "javascript"
+    },
+    "@mintter/mttast-builder": {
+      "path": "./frontend/mttast-builder",
+      "manager": "javascript"
+    },
+    "@mintter/ui": {
+      "path": "./frontend/ui",
+      "manager": "javascript"
+    },
+    "mintter": {
+      "path": "./src-tauri",
+      "manager": "rust",
+      "dependencies": ["@mintter/app"]
+    }
+  }
+}

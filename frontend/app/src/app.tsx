@@ -3,7 +3,6 @@ import type {FallbackProps} from 'react-error-boundary'
 import {ErrorBoundary} from 'react-error-boundary'
 import {AuthorNode} from './author-node'
 import {SidepanelProvider} from './components/sidepanel'
-// const {PublisherNode} = lazily(() => import('./publisher-node'))
 
 const globalStyles = globalCss({
   body: {
