@@ -1,13 +1,11 @@
-import {Icon, icons} from '@src/icon'
-import {Playground} from '@storybook-utils/components/code'
-import {Meta} from '@storybook/addon-docs/blocks'
+import {Icon, icons} from './icon'
+import {Meta} from '@storybook/addon-docs'
 
 <Meta title="Data Display/Icon" />
 
 # Icon
 
-Renders an
-[accessible icon](https://radix-ui.com/primitives/docs/utilities/accessible-icon).
+Renders an [accessible icon](https://radix-ui.com/primitives/docs/utilities/accessible-icon).
 
 ## Import
 
@@ -117,42 +115,3 @@ Below you will find all icons, divided by category.
 ```
 
 ## Playground
-
-<Playground
-  component={Icon}
-  options={[
-    {
-      type: 'select',
-      name: 'name',
-      label: 'Name',
-      options: Object.keys(icons),
-      defaultValue: 'Mintter',
-    },
-    {
-      type: 'select',
-      name: 'size',
-      label: 'Size',
-      options: ['1', '2', '3'],
-      defaultValue: '2',
-    },
-    {
-      type: 'select',
-      name: 'color',
-      label: 'Color',
-      options: [
-        'default',
-        'alt',
-        'muted',
-        'opposite',
-        'contrast',
-        'primary',
-        'secondary',
-        'terciary',
-        'success',
-        'warning',
-        'danger',
-      ],
-      defaultValue: 'default',
-    },
-  ]}
-/>

@@ -1,4 +1,4 @@
-import {Fragment} from 'react'
+import React, {Fragment} from 'react'
 import {globalStyles} from '../stitches.config'
 import {useTheme} from './use-theme'
 
