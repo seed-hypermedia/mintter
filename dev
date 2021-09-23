@@ -43,8 +43,7 @@ run-frontend() {
 
 # Command run-desktop will run Tauri in the dev mode.
 run-desktop() {
-    echo "=== You still to run ./dev run-backend in a separate terminal! ==="
-    cd frontend/app && tauri dev
+    cd frontend/app && rm -rf src-tauri/target/debug/mintterd* && tauri dev
 }
 
 # Command run will do a production build for the current platform and run the resulting binary.

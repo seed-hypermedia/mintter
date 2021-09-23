@@ -6,8 +6,8 @@
   "build": {
     "distDir": "../../../bazel-bin/frontend/app/dist",
     "devPath": "http://localhost:3000",
-    "beforeDevCommand": "yarn dev",
-    "beforeBuildCommand": "cd $(git rev-parse --show-toplevel) && bazel build //frontend:app //:mintterd"
+    "beforeDevCommand": "bazel build //:mintterd && yarn dev",
+    "beforeBuildCommand": "bazel build //frontend:app //:mintterd"
   },
   "tauri": {
     "bundle": {
