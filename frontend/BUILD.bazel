@@ -2,8 +2,8 @@
 
 load("//build:rules.bzl", "local_action")
 
-filegroup(
-    name = "sources",
+local_action(
+    name = "app",
     srcs = glob(
         [
             "**/*.ts",
@@ -22,18 +22,15 @@ filegroup(
         exclude = [
             "node_modules",
             "**/node_modules/**",
+            "app/src-tauri/**",
+            "app/dist/**",
         ],
     ),
-)
-
-local_action(
-    name = "app",
-    srcs = [":sources"],
     outs = ["app/dist"],
     cmd = """
 cd app
 rm -rf dist
-yarn build
+vite build
 mv $(pwd)/dist/ $TARGET_OUT_DIR/app/dist
 """,
     dir = True,
@@ -43,3 +40,25 @@ mv $(pwd)/dist/ $TARGET_OUT_DIR/app/dist
         "//proto:js",
     ],
 )
+
+# local_action(
+#     name = "tauri",
+#     srcs = glob(
+#         [
+#             "app/src-tauri/**",
+#         ],
+#         exclude = [
+#             "app/src-tauri/target/**",
+#         ],
+#     ),
+#     outs = ["out.tauri"],
+#     cmd = """
+# cd app
+# tauri build &> $(git rev-parse --show-toplevel)/bazel-out/tauri-build-output
+# touch $TARGET_OUT_DIR/out.tauri
+# """,
+#     deps = [
+#         ":app",
+#         "//:mintterd",
+#     ],
+# )
