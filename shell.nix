@@ -40,6 +40,7 @@ in
     shellHook = ''
       export CURRENT_PLATFORM="$(go env GOOS)_$(go env GOARCH)"
       export BAZEL_SH="$(which bash)"
+      export CGO_ENABLED="0"
       rm -rf bazel
       
       mkdir -p bin
