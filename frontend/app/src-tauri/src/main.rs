@@ -3,12 +3,25 @@
   windows_subsystem = "windows"
 )]
 
-use tauri::{CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu};
-
+use tauri::async_runtime::Receiver;
+use tauri::{
+  api::process::{Command, CommandChild, CommandEvent},
+  CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
+};
 mod menu;
+
+type Daemon = (Receiver<CommandEvent>, CommandChild);
+
+fn start_daemon() -> Daemon {
+  Command::new_sidecar("mintterd")
+    .expect("failed to create `my-sidecar` binary command")
+    .spawn()
+    .expect("Failed to spawn sidecar")
+}
 
 fn main() {
   tauri::Builder::default()
+    .manage(start_daemon())
     .menu(menu::get_menu())
     .system_tray(
       SystemTray::new().with_menu(
@@ -20,17 +33,28 @@ fn main() {
     )
     .on_system_tray_event(|app, event| match event {
       SystemTrayEvent::MenuItemClick { id, .. } => {
-        // let item_handle = app.tray_handle().get_item(&id);
         match id.as_str() {
           "exit_app" => {
             // exit the app
             app.exit(0);
           }
           "start" => {
-            println!("start daemon")
+            let daemon = app.try_state::<Daemon>();
+
+            if daemon.is_none() {
+              println!("should start daemon");
+            } else {
+              println!("daemon already started");
+            }
           }
           "stop" => {
-            println!("stop daemon")
+            let daemon = app.try_state::<Daemon>();
+
+            if daemon.is_none() {
+              println!("daemon already stopped");
+            } else {
+              println!("should stop daemon");
+            }
           }
           _ => {}
         }
