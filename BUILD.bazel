@@ -58,6 +58,14 @@ config_setting(
 )
 
 config_setting(
+    name = "linux_arm64",
+    constraint_values = [
+        "@platforms//cpu:aarch64",
+        "@platforms//os:linux",
+    ],
+)
+
+config_setting(
     name = "windows_amd64",
     constraint_values = [
         "@platforms//cpu:x86_64",
@@ -69,6 +77,7 @@ TARGET_PLATFORMS = [
     ("darwin", "amd64"),
     ("darwin", "arm64"),
     ("linux", "amd64"),
+    ("linux", "arm64"),
     ("windows", "amd64"),
 ]
 
@@ -87,21 +96,31 @@ go build -v -o $TARGET_OUT_DIR/mintter ./backend/cmd/mintter
     ],
 )
 
+LLVM_TRIPLES = {
+    "darwin/amd64": "x86_64-apple-darwin",
+    "darwin/arm64": "aarch64-apple-darwin",
+    "windows/amd64": "x86_64-pc-windows-msvc",
+    "linux/amd64": "x86_64-unknown-linux-gnu",
+    "linux/arm64": "aarch64-unknown-linux-gnu",
+}
+
 [
     executable(
         name = "mintterd_{}_{}".format(os, arch),
         srcs = [":go_sources"],
-        out = "{}_{}/mintterd".format(os, arch),
+        out = "mintterd-{}".format(LLVM_TRIPLES[os + "/" + arch]),
         cmd = """
 export GOOS={os}
 export GOARCH={arch}
 export CGO_ENABLED="0"
-go build -o $TARGET_OUT_DIR/{os}_{arch}/mintterd ./backend/cmd/mintterd
+go build -o $TARGET_OUT_DIR/mintterd-{triple} ./backend/cmd/mintterd
 """.format(
             os = os,
             arch = arch,
+            triple = LLVM_TRIPLES[os + "/" + arch],
         ),
         tags = ["manual"],
+        visibility = ["//visibility:public"],
         deps = [
             "//proto:go",
         ],
@@ -117,6 +136,7 @@ alias(
         ":windows_amd64": ":mintterd_windows_amd64",
         ":darwin_arm64": ":mintterd_darwin_arm64",
     }),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
