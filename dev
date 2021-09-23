@@ -18,6 +18,12 @@ build-frontend() {
     bazel build //frontend:app
 }
 
+# Command build-desktop builds a production bundle of the desktop Tauri app for the current platform.
+build-desktop() {
+    cd frontend/app
+    tauri build
+}
+
 # Command build-cross builds for all the supported platforms in parallel.
 build-cross() {
     bazel build //:cross_compile
@@ -60,6 +66,7 @@ Commands:
   build-backend   Build backend binary.
   build-frontend  Build production frontend app.
   build-cross     Cross-compile for all the suppored platforms.
+  build-desktop   Build production dekstop bundle for the current application.
   run-backend     Run the backend for development.
   run-frontend    Run the frontend for development.
   run             Prepare a production build and run it locally.
