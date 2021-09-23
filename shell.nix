@@ -44,7 +44,7 @@ in
       rm -rf bazel
       
       mkdir -p bin
-      ln -sf `which bazelisk` bin/bazel
+      ln -sf ${pkgs.bazelisk}/bin/bazelisk bin/bazel
       ln -sf /usr/bin/gcc ./bin/gcc
       ln -sf /usr/bin/clang ./bin/clang
       ln -sf /usr/bin/cc ./bin/cc
