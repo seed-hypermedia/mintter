@@ -65,7 +65,7 @@ type LND struct {
 	// or want to expose the node at a domain. externalhosts=my-node-domain.com
 	ExternalHosts []string `help:"A set of hosts that should be periodically resolved to announce IPs for"`
 
-	DisableListen  bool   `help:"Disable listening for incoming peer connections"`
+	DisableListen  bool   `help:"Disable listening on RawListeners for incoming peer connections. No LND gossip"`
 	DisableRest    bool   `help:"Disable REST API"`
 	NAT            bool   `help:"Toggle NAT traversal support (using either UPnP or NAT-PMP) to automatically advertise your external IP address to the network -- NOTE this does not support devices behind multiple NATs"`
 	DebugLevel     string `help:"Logging level for all subsystems {trace, debug, info, warn, error, critical} -- You may also specify <global-level>,<subsystem>=<level>,<subsystem2>=<level>,... to set the log level for individual subsystems -- Use show to list available subsystems"`

@@ -41,6 +41,7 @@ type API interface {
 	SubscribeEvents() (*subscribe.Client, error)
 	HasActiveChannel() bool
 	IsReadyForPayment() bool
+	IsSynced() bool
 	WaitReadyForPayment(timeout time.Duration) error
 	GetID() string
 	GetMacaroon() []byte
@@ -110,6 +111,12 @@ func (d *Ldaemon) WaitReadyForPayment(timeout time.Duration) error {
 			return fmt.Errorf("timeout has exceeded while trying to process your request")
 		}
 	}
+}
+
+func (d *Ldaemon) IsSynced() bool {
+	d.Lock()
+	defer d.Unlock()
+	return d.synced
 }
 
 // IsReadyForPayment returns true if we can pay

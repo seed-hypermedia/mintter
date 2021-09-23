@@ -314,7 +314,7 @@ func TestPeers(t *testing.T) {
 				UseNeutrino:     true,
 				Network:         "testnet",
 				LndDir:          "/tmp/lndirtests/alice",
-				NoNetBootstrap:  false,
+				NoNetBootstrap:  true,
 				RawRPCListeners: []string{"127.0.0.1:10009"},
 				RawListeners:    []string{"0.0.0.0:9735"},
 				DisableRest:     true,
@@ -324,7 +324,7 @@ func TestPeers(t *testing.T) {
 				UseNeutrino:     true,
 				Network:         "testnet",
 				LndDir:          "/tmp/lndirtests/bob",
-				NoNetBootstrap:  false,
+				NoNetBootstrap:  true,
 				RawRPCListeners: []string{"127.0.0.1:10069"},
 				RawListeners:    []string{"0.0.0.0:8735"},
 				DisableRest:     true,
@@ -374,11 +374,12 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 		return err
 	}
 
-	logger, _ := zap.NewProduction()
-	logger2, _ := zap.NewProduction()
+	logger, _ := zap.NewProduction()  //zap.NewExample()
+	logger2, _ := zap.NewProduction() //zap.NewExample()
 	defer logger.Sync()
-	logger.Named("backend")
-
+	defer logger2.Sync()
+	logger.Named("Bob")
+	logger2.Named("Alice")
 	bob, errBob := NewLdaemon(logger, lnconfBob)
 	if errBob != nil {
 		return errBob
@@ -393,6 +394,8 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	if errAlice = alice.Start(credentialsAlice, "", false); errAlice != nil {
 		return errAlice
 	}
+	defer alice.Stop()
+
 	clientAlice, errAlice := alice.SubscribeEvents()
 	defer clientAlice.Cancel()
 	if errAlice != nil {
@@ -402,6 +405,8 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	if errBob = bob.Start(credentialsBob, "", false); errBob != nil {
 		return errBob
 	}
+	defer bob.Stop()
+
 	clientBob, errBob := bob.SubscribeEvents()
 	defer clientBob.Cancel()
 	if errBob != nil {
@@ -409,7 +414,7 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	}
 
 	var i = 0
-	aliceReady, bobReady, BobID, AliceID := false, false, "", ""
+	aliceReady, bobReady, aliceSynced, bobSynced, pairSent, aliceID, bobID := false, false, false, false, false, "", ""
 waitLoop:
 	for {
 		select {
@@ -425,21 +430,21 @@ waitLoop:
 			case DaemonDownEvent:
 				return update.err
 			case ChainSyncedEvent:
+				aliceSynced = true
 			case PeerEvent:
-				BobID = update.PubKey
-				if BobID != expectedBobID {
-					return fmt.Errorf("Alice got the correct BobID, but Bob did not receive Alice's after 2 seconds")
+				bobID = update.PubKey
+				if bobID != expectedBobID {
+					return fmt.Errorf("Alice received a peer notification but it wasn't Bob, Expected:" + expectedBobID +
+						" but gotten:" + bobID)
 				} else {
-					time.Sleep(2 * time.Second) // We give Bob some time to receive the notification and fill AliceID
-					if AliceID != "" {
+					fmt.Println("Alice received a peer notification from Bob:" + bobID)
+					if aliceID != "" {
 						break waitLoop
-					} else {
-						return fmt.Errorf("Alice got the correct BobID, but Bob did not receive Alice's after 2 seconds")
 					}
 				}
 
 			default:
-				return fmt.Errorf("Got unexpected Alice update instead of ready event")
+				return fmt.Errorf("Got unexpected Alice update")
 			}
 		case <-clientAlice.Quit():
 			return fmt.Errorf("Got Bob quit signal while waiting for ready event")
@@ -455,27 +460,28 @@ waitLoop:
 			case DaemonDownEvent:
 				return update.err
 			case ChainSyncedEvent:
+				bobSynced = true
 			case PeerEvent:
-				AliceID = update.PubKey
-				if AliceID != expectedBobID {
-					return fmt.Errorf("Bob got the correct AliceID, but Alice did not receive Bob's after 2 seconds")
+				aliceID = update.PubKey
+				if aliceID != expectedAliceID {
+					return fmt.Errorf("Bob received a peer notification but it wasn't Alice, Expected:" + expectedAliceID +
+						" but gotten:" + aliceID)
 				} else {
+					fmt.Println("Bob received a peer notification from Alice:" + aliceID)
 					time.Sleep(2 * time.Second) // We give Alice some time to receive the notification and fill BobID
-					if BobID != "" {
+					if bobID != "" {
 						break waitLoop
-					} else {
-						return fmt.Errorf("Bob got the correct AliceID, but Alice did not receive Bob's after 2 seconds")
 					}
 				}
 			default:
-				return fmt.Errorf("Got unexpected BOb update instead of ready event")
+				return fmt.Errorf("Got unexpected Bob update")
 			}
 		case <-clientBob.Quit():
 			return fmt.Errorf("Got Bob quit signal while waiting for ready event")
 		default:
-			if aliceReady && bobReady {
+			if aliceReady && bobReady && aliceSynced && bobSynced && !pairSent {
 
-				fmt.Println("Both Alice and Bob are ready, so we try to peer them: ")
+				fmt.Println("Both Alice and Bob are ready and synced. Pairing...")
 				_, err := alice.APIClient().ConnectPeer(context.Background(), &lnrpc.ConnectPeerRequest{
 					Addr: &lnrpc.LightningAddress{
 						Pubkey: expectedBobID,
@@ -485,7 +491,7 @@ waitLoop:
 					Timeout: 2,
 				})
 				if err == nil {
-					break waitLoop
+					pairSent = true
 				}
 
 			}
@@ -498,8 +504,7 @@ waitLoop:
 
 		}
 	}
-	alice.Stop()
-	bob.Stop()
+
 	return nil
 }
 

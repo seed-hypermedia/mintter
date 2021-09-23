@@ -51,7 +51,9 @@ type InvoiceEvent struct {
 }
 
 // ChainSyncedEvent is sent when the chain gets into synced state.
-type ChainSyncedEvent struct{}
+type ChainSyncedEvent struct {
+	BlockHeight uint32
+}
 
 // ResumeEvent is sent when the app resumes.
 type ResumeEvent struct{}
@@ -326,6 +328,7 @@ func (d *Ldaemon) subscribeInvoices(ctx context.Context) error {
 
 func (d *Ldaemon) syncToChain(ctx context.Context) error {
 	defer d.wg.Done()
+	var height uint32
 	for {
 		chainInfo, chainErr := d.lightningClient.GetInfo(ctx, &lnrpc.GetInfoRequest{})
 		if ctx.Err() == context.Canceled {
@@ -341,10 +344,14 @@ func (d *Ldaemon) syncToChain(ctx context.Context) error {
 
 		if chainInfo.SyncedToChain {
 			d.log.Info("Synchronized to chain finshed", zap.Uint32("BlockHeight", chainInfo.BlockHeight))
+			height = chainInfo.BlockHeight
 			break
 		}
 		time.Sleep(time.Second * 5)
 	}
-	d.ntfnServer.SendUpdate(ChainSyncedEvent{})
+	d.Lock()
+	d.synced = true
+	d.Unlock()
+	d.ntfnServer.SendUpdate(ChainSyncedEvent{height})
 	return nil
 }

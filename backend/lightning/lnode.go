@@ -49,6 +49,7 @@ type Ldaemon struct {
 	coreRunning         int32
 	daemonStopped       bool
 	nodeID              string
+	synced              bool
 	adminMacaroon       []byte
 	wg                  sync.WaitGroup
 	interceptor         signal.Interceptor
@@ -74,6 +75,7 @@ func NewLdaemon(log *zap.Logger, cfg *config.LND) (*Ldaemon, error) {
 		daemonStopped: true,
 		daemonRunning: 0,
 		coreRunning:   0,
+		synced:        false,
 	}, nil
 }
 
@@ -130,6 +132,9 @@ func (d *Ldaemon) stopDaemon(err error) {
 	if d.interceptor.Alive() && d.interceptor.ShutdownChannel() != nil &&
 		atomic.SwapInt32(&d.coreRunning, 0) == 1 {
 		d.interceptor.RequestShutdown() // if daemon is doubled closed, it does strange things on restart
+	} else {
+		d.log.Warn("Shutdown request not sent", zap.Bool("Alive", d.interceptor.Alive()),
+			zap.Int32("coreRunning", d.coreRunning))
 	}
 
 	if d.quitChan != nil {
@@ -137,6 +142,7 @@ func (d *Ldaemon) stopDaemon(err error) {
 	} else {
 		d.log.Error("quitChan does not exists")
 	}
+	d.log.Info("Waiting for all ")
 	d.wg.Wait()
 	d.Lock()
 	d.nodeID = ""
