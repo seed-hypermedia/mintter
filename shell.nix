@@ -28,25 +28,31 @@ let
   # Inputs specifc for Darwin.
   # TODO: we override clang and gcc, because built-in Nix wrappers for some reason fail when building Tauri app.
   # This means that we must be careful when depending on third-party system libraries installed outside Nix.
-  darwin = [
-    impure-cc
-  ];
-  # Inputs specific for Linux.
-  linux = [
-    pkgs.gcc
-    pkgs.pkg-config
-    pkgs.gtk3
-    pkgs.openssl
-    pkgs.webkitgtk
-    pkgs.libappindicator
-    pkgs.libappindicator-gtk3
-    pkgs.libcanberra
-  ];
+  darwin = {
+    tools = [
+      impure-cc
+    ];
+    libs = [];
+  };
+  linux = {
+    tools = [
+      pkgs.gcc
+      pkgs.pkg-config
+    ];
+    libs = [
+      pkgs.gtk3
+      pkgs.openssl
+      pkgs.webkitgtk
+      pkgs.libappindicator
+      pkgs.libappindicator-gtk3
+      pkgs.libcanberra
+    ];
+  };
 in
   pkgs.mkShell {
     nativeBuildInputs = [
-      (pkgs.lib.optionals pkgs.stdenv.isDarwin [darwin])
-      (pkgs.lib.optionals pkgs.stdenv.isLinux [linux])
+      (pkgs.lib.optionals pkgs.stdenv.isDarwin [darwin.tools])
+      (pkgs.lib.optionals pkgs.stdenv.isLinux [linux.tools])
       pkgs.bash
       pkgs.coreutils
       pkgs.findutils
@@ -59,6 +65,10 @@ in
       pkgs.rustfmt
       node
       yarn
+    ];
+    buildInputs = [
+      (pkgs.lib.optionals pkgs.stdenv.isDarwin [darwin.libs])
+      (pkgs.lib.optionals pkgs.stdenv.isLinux [linux.libs])
     ];
     shellHook = ''
       rm -rf bin
