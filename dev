@@ -43,6 +43,9 @@ run-frontend() {
 
 # Command run-desktop will run Tauri in the dev mode.
 run-desktop() {
+    # We run tauri directly, not from within yarn to avoid cache invalidation issues.
+    # We also remove the previously copied mintterd binaries that Tauri copied,
+    # because otherwise we have some strange permission issues on subsequent tauri dev.
     cd frontend/app && rm -rf src-tauri/target/debug/mintterd* && tauri dev
 }
 
