@@ -13,6 +13,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/client"
+	"github.com/docker/go-connections/nat"
+
 	"mintter/backend"
 	"mintter/backend/config"
 )
@@ -35,8 +40,9 @@ type TestVector struct {
 }
 
 var (
-	cfg         config.Config
-	testEntropy = [aezeed.EntropySize]byte{
+	bitcoindImage = "ruimarinho/bitcoin-core"
+	cfg           config.Config
+	testEntropy   = [aezeed.EntropySize]byte{
 		0x81, 0xb6, 0x37, 0xd8,
 		0x63, 0x59, 0xe6, 0x96,
 		0x0d, 0xe7, 0x95, 0xe4,
@@ -109,53 +115,62 @@ func TestStart(t *testing.T) {
 		name    string
 		lnconf  *config.LND
 		subtest []subset
-	}{ /*
-			{
-				name: "bitcoind",
-				lnconf: &config.LND{
-					UseNeutrino:    false,
-					Network:        "testnet",
-					LndDir:         "/tmp/lndirtests",
-					NoNetBootstrap: false,
+	}{
+		{
+			name: "bitcoind",
+			lnconf: &config.LND{
+				UseNeutrino:     false,
+				Network:         "regtest",
+				LndDir:          "/tmp/lndirtests/bitcoind",
+				NoNetBootstrap:  false,
+				BitcoindRPCUser: "foo",
+				BitcoindRPCPass: "qDDZdeQ5vw9XXFeVnXT4PZ--tGN2xNjjR4nrtyszZx0=",
+			},
+			subtest: []subset{
+				{
+					subname: "Init from seed",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testtest",
+						RecoveryWindow:   0,
+						AezeedPassphrase: testVectors[0].password,
+						AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
+						SeedEntropy:      testVectors[0].entropy[:],
+						StatelessInit:    false,
+					},
+					newPassword:                 "",
+					removeCredentialsBeforeTest: true,
+					mustFail:                    false,
+					expectedID:                  testVectors[0].expectedID,
 				},
-				subtest: []subset{
-					{
-						subname: "Init from seed",
-						credentials: WalletSecurity{
-							WalletPassphrase: "testtest",
-							RecoveryWindow:   0,
-							AezeedPassphrase: testVectors[0].password,
-							AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
-							SeedEntropy:      testVectors[0].entropy[:],
-							StatelessInit:    false,
-						},
-						newPassword:            "",
-						removeCredentialsBeforeTest: true,
+				{
+					subname: "Unlock pasword ok but no macaroons",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testtest",
+						StatelessInit:    true,
 					},
-					{
-						subname: "Unlock pasword ok",
-						credentials: WalletSecurity{
-							WalletPassphrase: "testtest",
-						},
-						newPassword:            "",
-						removeCredentialsBeforeTest: false,
-					},
-					{
-						subname: "Unlock wrong pasword",
-						credentials: WalletSecurity{
-							WalletPassphrase: "testtesto",
-						},
-						newPassword:            "",
-						removeCredentialsBeforeTest: false,
-					},
+					newPassword:                 "",
+					removeCredentialsBeforeTest: false,
+					mustFail:                    true,
+					expectedID:                  testVectors[0].expectedID,
 				},
-			},*/
+				{
+					subname: "Unlock pasword ok and macaroons",
+					credentials: WalletSecurity{
+						WalletPassphrase: "testtest",
+					},
+					newPassword:                 "",
+					removeCredentialsBeforeTest: false,
+					mustFail:                    false,
+					expectedID:                  testVectors[0].expectedID,
+				},
+			},
+		},
 		{
 			name: "neutrino",
 			lnconf: &config.LND{
 				UseNeutrino:    true,
 				Network:        "testnet",
-				LndDir:         "/tmp/lndirtests/start",
+				LndDir:         "/tmp/lndirtests/neutrino",
 				NoNetBootstrap: false,
 			},
 			subtest: []subset{
@@ -549,6 +564,7 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 	defer logger.Sync()
 	logger.Named("backend")
 	var nodeID = ""
+	var containerID = ""
 	bob, err := NewLdaemon(logger, lnconf)
 	if err != nil {
 		return bob, nodeID, err
@@ -560,6 +576,13 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 		if err := removeCredentials(lnconf.LndDir, lnconf.Network); err != nil {
 			return bob, "", err
 		}
+	}
+
+	if !lnconf.UseNeutrino {
+		if containerID, err = startContainer(bitcoindImage); err != nil {
+			return bob, "", err
+		}
+		defer stopContainer(containerID)
 	}
 
 	err = bob.Start(credentials, newPassword, blocking)
@@ -608,4 +631,72 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 	} else {
 		return bob, bob.GetID(), nil
 	}
+}
+
+func stopContainer(containerID string) error {
+
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+	defer cli.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err := cli.ContainerStop(ctx, containerID, nil); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func startContainer(imageName string) (string, error) {
+
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return "", err
+	}
+	defer cli.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if _, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{}); err != nil {
+		return "", err
+	}
+
+	resp, err := cli.ContainerCreate(ctx, &container.Config{
+		Image: imageName,
+		ExposedPorts: nat.PortSet{
+			"18443/tcp": struct{}{},
+			"18444/tcp": struct{}{},
+		},
+
+		Cmd: []string{"-regtest=1", "-rpcallowip=0.0.0.0", "-rpcbind=0.0.0.0",
+			"-rpcauth='foo:7d9ba5ae63c3d4dc30583ff4fe65a67e$9e3634e81c11659e3de036d0bf88f89cd169c1039e6e09607562d54765c649cc"},
+	}, nil, nil, nil, "")
+	if err != nil {
+		return "", err
+	}
+
+	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+		return resp.ID, err
+	}
+
+	time.Sleep(5 * time.Second)
+
+	if cList, err := cli.ContainerList(ctx, types.ContainerListOptions{}); err != nil {
+		return resp.ID, err
+
+	} else {
+		for _, container := range cList {
+
+			if container.ID == resp.ID && container.State != "running" {
+				return resp.ID, fmt.Errorf("container state is :" + container.State + " instead of running")
+			}
+		}
+	}
+
+	return resp.ID, nil
 }

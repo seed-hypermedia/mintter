@@ -8,6 +8,8 @@ require (
 	github.com/Stebalien/go-bitfield v0.0.1 // indirect
 	github.com/Yawning/aez v0.0.0-20180114000226-4dad034d9db2 // indirect
 	github.com/aead/siphash v1.0.1 // indirect
+	github.com/DataDog/zstd v1.4.8 // indirect
+	github.com/Microsoft/go-winio v0.5.0 // indirect
 	github.com/alecthomas/kong v0.2.11
 	github.com/alexeyco/simpletable v1.0.0
 	github.com/benbjohnson/clock v1.1.0 // indirect
@@ -32,6 +34,7 @@ require (
 	github.com/crackcomm/go-gitignore v0.0.0-20170627025303-887ab5e44cc3 // indirect
 	github.com/cskr/pubsub v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/containerd/containerd v1.5.5 // indirect
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c // indirect
 	github.com/decred/dcrd/lru v1.0.0 // indirect
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
@@ -47,6 +50,10 @@ require (
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/docker/docker v20.10.8+incompatible
+	github.com/docker/go-connections v0.4.0 // indirect
+	github.com/docker/go-units v0.4.0 // indirect
+	github.com/golang/protobuf v1.5.2
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/flatbuffers v2.0.0+incompatible // indirect
 	github.com/google/gopacket v1.1.19 // indirect
