@@ -105,7 +105,7 @@ func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string, bloc
 		return fmt.Errorf("failed to start ntfnServer: %v", err)
 	}
 
-	d.log.Info("Starting Daemon", zap.Bool("blocking", blocking))
+	d.log.Info("Starting lightning daemon", zap.Bool("blocking", blocking))
 	if _, err := d.startDaemon(WalletSecurity, NewPassword, blocking); err != nil {
 		return fmt.Errorf("failed to start daemon: %v", err)
 	}
@@ -134,7 +134,8 @@ func (d *Ldaemon) stopDaemon(err error) {
 		d.interceptor.RequestShutdown() // if daemon is doubled closed, it does strange things on restart
 	} else {
 		d.log.Warn("Shutdown request not sent", zap.Bool("Alive", d.interceptor.Alive()),
-			zap.Int32("coreRunning", d.coreRunning))
+			zap.Int32("coreRunning", d.coreRunning), zap.Bool("ShutdownChannel exists",
+				d.interceptor.ShutdownChannel() != nil))
 	}
 
 	if d.quitChan != nil {
@@ -188,11 +189,11 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 		go func() {
 			defer d.wg.Done()
 
-			d.log.Info("Starting LND Daemon")
+			d.log.Info("Starting LND core")
 			atomic.StoreInt32(&d.coreRunning, 1)
 			lndErr = lnd.Main(lndConfig, lnd.ListenerCfg{}, d.interceptor)
 			if lndErr != nil {
-				d.log.Error("Main function returned with error", zap.String("err", lndErr.Error()))
+				d.log.Error("Main LND core function returned with error", zap.String("err", lndErr.Error()))
 			}
 			atomic.StoreInt32(&d.coreRunning, 0)
 			time.Sleep(1 * time.Second) //Sometimes right after being stopped it still gets signals.
