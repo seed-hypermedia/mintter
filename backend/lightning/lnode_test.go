@@ -15,8 +15,8 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-	"github.com/docker/go-connections/nat"
 
 	"mintter/backend"
 	"mintter/backend/config"
@@ -41,6 +41,7 @@ type TestVector struct {
 
 var (
 	bitcoindImage = "ruimarinho/bitcoin-core"
+	containerName = "bitcoinContainer"
 	cfg           config.Config
 	testEntropy   = [aezeed.EntropySize]byte{
 		0x81, 0xb6, 0x37, 0xd8,
@@ -135,7 +136,7 @@ func TestStart(t *testing.T) {
 						AezeedPassphrase: testVectors[0].password,
 						AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
 						SeedEntropy:      testVectors[0].entropy[:],
-						StatelessInit:    false,
+						StatelessInit:    true,
 					},
 					newPassword:                 "",
 					removeCredentialsBeforeTest: true,
@@ -272,7 +273,13 @@ func TestStart(t *testing.T) {
 	}
 	log := backend.NewLogger(cfg)
 	defer log.Sync()
+	var errDocker error
+	var containerID string
 	for _, tt := range tests {
+		if !tt.lnconf.UseNeutrino {
+			containerID, errDocker = startContainer(bitcoindImage)
+			require.NoError(t, errDocker, tt.name+". must succeed")
+		}
 		for _, subtest := range tt.subtest {
 			t.Run(subtest.subname, func(t *testing.T) {
 				fmt.Println("TEST NAME: " + subtest.subname)
@@ -280,6 +287,7 @@ func TestStart(t *testing.T) {
 				if subtest.subname == "Unlock pasword ok and macaroons" {
 					fmt.Println("TEST NAME: " + subtest.subname)
 				}
+
 				d, nodeID, errStart := checkStart(t, tt.lnconf, &subtest.credentials,
 					subtest.newPassword, subtest.removeCredentialsBeforeTest, false)
 				d.Stop()
@@ -311,7 +319,7 @@ func TestStart(t *testing.T) {
 
 			})
 		}
-
+		stopContainer(containerID)
 	}
 }
 
@@ -380,8 +388,11 @@ func TestPeers(t *testing.T) {
 func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	credentialsAlice *WalletSecurity, credentialsBob *WalletSecurity,
 	expectedAliceID string, expectedBobID string) error {
+
 	t.Helper()
 	var err error
+	var containerID string
+
 	if err = removeCredentials(lnconfAlice.LndDir, lnconfAlice.Network); err != nil {
 		return err
 	}
@@ -404,6 +415,13 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	alice, errAlice := NewLdaemon(logger2, lnconfAlice)
 	if errAlice != nil {
 		return errAlice
+	}
+
+	if !lnconfBob.UseNeutrino || !lnconfAlice.UseNeutrino {
+		if containerID, err = startContainer(bitcoindImage); err != nil {
+			return err
+		}
+		defer stopContainer(containerID)
 	}
 
 	if errAlice = alice.Start(credentialsAlice, "", false); errAlice != nil {
@@ -564,7 +582,6 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 	defer logger.Sync()
 	logger.Named("backend")
 	var nodeID = ""
-	var containerID = ""
 	bob, err := NewLdaemon(logger, lnconf)
 	if err != nil {
 		return bob, nodeID, err
@@ -576,13 +593,6 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 		if err := removeCredentials(lnconf.LndDir, lnconf.Network); err != nil {
 			return bob, "", err
 		}
-	}
-
-	if !lnconf.UseNeutrino {
-		if containerID, err = startContainer(bitcoindImage); err != nil {
-			return bob, "", err
-		}
-		defer stopContainer(containerID)
 	}
 
 	err = bob.Start(credentials, newPassword, blocking)
@@ -644,8 +654,16 @@ func stopContainer(containerID string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if err := cli.ContainerStop(ctx, containerID, nil); err != nil {
+	args := filters.Arg("name", containerName)
+	containerFilters := filters.NewArgs(args)
+
+	if cList, err := cli.ContainerList(ctx, types.ContainerListOptions{Filters: containerFilters}); err != nil {
 		return err
+
+	} else {
+		for _, container := range cList {
+			cli.ContainerRemove(ctx, container.ID, types.ContainerRemoveOptions{Force: true})
+		}
 	}
 
 	return nil
@@ -666,16 +684,26 @@ func startContainer(imageName string) (string, error) {
 		return "", err
 	}
 
-	resp, err := cli.ContainerCreate(ctx, &container.Config{
-		Image: imageName,
-		ExposedPorts: nat.PortSet{
-			"18443/tcp": struct{}{},
-			"18444/tcp": struct{}{},
-		},
+	args := filters.Arg("ancestor", bitcoindImage)
+	containerFilters := filters.NewArgs(args)
 
-		Cmd: []string{"-regtest=1", "-rpcallowip=0.0.0.0", "-rpcbind=0.0.0.0",
-			"-rpcauth='foo:7d9ba5ae63c3d4dc30583ff4fe65a67e$9e3634e81c11659e3de036d0bf88f89cd169c1039e6e09607562d54765c649cc"},
-	}, nil, nil, nil, "")
+	if cList, err := cli.ContainerList(ctx, types.ContainerListOptions{All: true, Filters: containerFilters}); err != nil {
+		return "", err
+	} else {
+		for _, container := range cList {
+			cli.ContainerRemove(ctx, container.ID, types.ContainerRemoveOptions{Force: true})
+		}
+	}
+	resp, err := cli.ContainerCreate(ctx, &container.Config{
+		Image: imageName, /*
+			ExposedPorts: nat.PortSet{
+				"18443/tcp": struct{}{},
+				"18444/tcp": struct{}{},
+			},*/
+
+		Cmd: []string{"-regtest=1", "-txindex=1", "-zmqpubrawblock=tcp://127.0.0.1:28332", "-zmqpubrawtx=tcp://127.0.0.1:28333",
+			"-rpcauth=foo:7d9ba5ae63c3d4dc30583ff4fe65a67e$9e3634e81c11659e3de036d0bf88f89cd169c1039e6e09607562d54765c649cc"},
+	}, &container.HostConfig{NetworkMode: "host"}, nil, nil, containerName)
 	if err != nil {
 		return "", err
 	}
@@ -686,7 +714,7 @@ func startContainer(imageName string) (string, error) {
 
 	time.Sleep(5 * time.Second)
 
-	if cList, err := cli.ContainerList(ctx, types.ContainerListOptions{}); err != nil {
+	if cList, err := cli.ContainerList(ctx, types.ContainerListOptions{Filters: containerFilters}); err != nil {
 		return resp.ID, err
 
 	} else {
