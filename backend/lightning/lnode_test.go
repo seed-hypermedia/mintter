@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -42,8 +43,25 @@ type TestVector struct {
 var (
 	bitcoindImage = "ruimarinho/bitcoin-core"
 	containerName = "bitcoinContainer"
-	cfg           config.Config
-	testEntropy   = [aezeed.EntropySize]byte{
+
+	bitcoindRPCGenericUser       = "mintter"
+	bitcoindRPCGenericAsciiPass  = "2NfbXsZPYQUq5nANSCttreiyJT1gAJv8ZoUNfsU7evQ="
+	bitcoindRPCGenericBinaryPass = "410905ded7ef5116b3d4bcb3cc187e77$0060c04d2a643576086971596eb3df02ca5e32acffe1caa697e96cf764a9d204"
+
+	bitcoindRPCBobUser       = "bob"
+	bitcoindRPCBobAsciiPass  = "2NfbXsZPYQUq5nANSCttreiyJT1gAJv8ZoUNfsU7evQ="
+	bitcoindRPCBobBinaryPass = "410905ded7ef5116b3d4bcb3cc187e77$0060c04d2a643576086971596eb3df02ca5e32acffe1caa697e96cf764a9d204"
+
+	bitcoindRPCAliceUser       = "alice"
+	bitcoindRPCAliceAsciiPass  = "2NfbXsZPYQUq5nANSCttreiyJT1gAJv8ZoUNfsU7evQ="
+	bitcoindRPCAliceBinaryPass = "410905ded7ef5116b3d4bcb3cc187e77$0060c04d2a643576086971596eb3df02ca5e32acffe1caa697e96cf764a9d204"
+
+	bitcoindRPCCarolUser       = "carol"
+	bitcoindRPCCarolAsciiPass  = "hvkOnizG4vkoWAakJlc_deLDQblQlhmr3rikrpdty1U="
+	bitcoindRPCCarolBinaryPass = "b0b9aa23db2d181e8331e7f2ffeb69f1$9923bee41605b62997fdc9dd31dd968bd4cf27c5664e903929e640fcafe07491"
+
+	cfg         config.Config
+	testEntropy = [aezeed.EntropySize]byte{
 		0x81, 0xb6, 0x37, 0xd8,
 		0x63, 0x59, 0xe6, 0x96,
 		0x0d, 0xe7, 0x95, 0xe4,
@@ -122,10 +140,10 @@ func TestStart(t *testing.T) {
 			lnconf: &config.LND{
 				UseNeutrino:     false,
 				Network:         "regtest",
-				LndDir:          "/tmp/lndirtests/bitcoind",
+				LndDir:          "/tmp/lndirtests/startTest",
 				NoNetBootstrap:  false,
-				BitcoindRPCUser: "foo",
-				BitcoindRPCPass: "qDDZdeQ5vw9XXFeVnXT4PZ--tGN2xNjjR4nrtyszZx0=",
+				BitcoindRPCUser: bitcoindRPCGenericUser,
+				BitcoindRPCPass: bitcoindRPCGenericAsciiPass,
 			},
 			subtest: []subset{
 				{
@@ -171,7 +189,7 @@ func TestStart(t *testing.T) {
 			lnconf: &config.LND{
 				UseNeutrino:    true,
 				Network:        "testnet",
-				LndDir:         "/tmp/lndirtests/neutrino",
+				LndDir:         "/tmp/lndirtests/startTest",
 				NoNetBootstrap: false,
 			},
 			subtest: []subset{
@@ -332,6 +350,48 @@ func TestPeers(t *testing.T) {
 		credentialsBob   WalletSecurity
 	}{
 		{
+			name: "bitcoind",
+			lnconfAlice: &config.LND{
+				UseNeutrino:     false,
+				Network:         "regtest",
+				LndDir:          "/tmp/lndirtests/alice",
+				NoNetBootstrap:  true,
+				RawRPCListeners: []string{"127.0.0.1:10009"},
+				RawListeners:    []string{"0.0.0.0:9735"},
+				BitcoindRPCUser: bitcoindRPCAliceUser,
+				BitcoindRPCPass: bitcoindRPCAliceAsciiPass,
+				DisableRest:     true,
+			},
+
+			lnconfBob: &config.LND{
+				UseNeutrino:     false,
+				Network:         "regtest",
+				LndDir:          "/tmp/lndirtests/bob",
+				NoNetBootstrap:  true,
+				RawRPCListeners: []string{"127.0.0.1:10069"},
+				RawListeners:    []string{"0.0.0.0:8735"},
+				BitcoindRPCUser: bitcoindRPCBobUser,
+				BitcoindRPCPass: bitcoindRPCBobAsciiPass,
+				DisableRest:     true,
+			},
+			credentialsBob: WalletSecurity{
+				WalletPassphrase: "passwordBob",
+				RecoveryWindow:   0,
+				AezeedPassphrase: testVectors[0].password,
+				AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
+				SeedEntropy:      testVectors[0].entropy[:],
+				StatelessInit:    true,
+			},
+			credentialsAlice: WalletSecurity{
+				WalletPassphrase: "passwordAlice",
+				RecoveryWindow:   0,
+				AezeedPassphrase: testVectors[2].password,
+				AezeedMnemonics:  testVectors[2].expectedMnemonic[:],
+				SeedEntropy:      testVectors[2].entropy[:],
+				StatelessInit:    true,
+			},
+		},
+		{
 			name: "neutrino",
 			lnconfAlice: &config.LND{
 				UseNeutrino:     true,
@@ -340,6 +400,8 @@ func TestPeers(t *testing.T) {
 				NoNetBootstrap:  true,
 				RawRPCListeners: []string{"127.0.0.1:10009"},
 				RawListeners:    []string{"0.0.0.0:9735"},
+				BitcoindRPCUser: bitcoindRPCAliceUser,
+				BitcoindRPCPass: bitcoindRPCAliceAsciiPass,
 				DisableRest:     true,
 			},
 
@@ -350,6 +412,8 @@ func TestPeers(t *testing.T) {
 				NoNetBootstrap:  true,
 				RawRPCListeners: []string{"127.0.0.1:10069"},
 				RawListeners:    []string{"0.0.0.0:8735"},
+				BitcoindRPCUser: bitcoindRPCBobUser,
+				BitcoindRPCPass: bitcoindRPCBobAsciiPass,
 				DisableRest:     true,
 			},
 			credentialsBob: WalletSecurity{
@@ -460,6 +524,15 @@ waitLoop:
 				} else {
 					aliceReady = true
 				}
+				if bobReady && (!lnconfAlice.UseNeutrino || !lnconfBob.UseNeutrino) {
+					if aliceAddr, err := alice.NewAddress("", 0); err != nil {
+						return fmt.Errorf("Could not get new address" + err.Error())
+					} else {
+						if err = mineBlocks(101, aliceAddr, containerID); err != nil {
+							return fmt.Errorf("Problem miming blocks" + err.Error())
+						}
+					}
+				}
 			case DaemonDownEvent:
 				return update.err
 			case ChainSyncedEvent:
@@ -475,7 +548,8 @@ waitLoop:
 						break waitLoop
 					}
 				}
-
+			case TransactionEvent:
+			case ChannelEvent:
 			default:
 				return fmt.Errorf("Got unexpected Alice update")
 			}
@@ -489,6 +563,15 @@ waitLoop:
 						" but expected" + expectedBobID)
 				} else {
 					bobReady = true
+				}
+				if aliceReady && (!lnconfAlice.UseNeutrino || !lnconfBob.UseNeutrino) {
+					if bobAddr, err := bob.NewAddress("", 0); err != nil {
+						return fmt.Errorf("Could not get new address" + err.Error())
+					} else {
+						if err = mineBlocks(101, bobAddr, containerID); err != nil {
+							return fmt.Errorf("Problem miming blocks" + err.Error())
+						}
+					}
 				}
 			case DaemonDownEvent:
 				return update.err
@@ -506,6 +589,8 @@ waitLoop:
 						break waitLoop
 					}
 				}
+			case TransactionEvent:
+			case ChannelEvent:
 			default:
 				return fmt.Errorf("Got unexpected Bob update")
 			}
@@ -701,8 +786,13 @@ func startContainer(imageName string) (string, error) {
 				"18444/tcp": struct{}{},
 			},*/
 
-		Cmd: []string{"-regtest=1", "-txindex=1", "-zmqpubrawblock=tcp://127.0.0.1:28332", "-zmqpubrawtx=tcp://127.0.0.1:28333",
-			"-rpcauth=foo:7d9ba5ae63c3d4dc30583ff4fe65a67e$9e3634e81c11659e3de036d0bf88f89cd169c1039e6e09607562d54765c649cc"},
+		Cmd: []string{"-regtest=1", "-txindex=1",
+			"-zmqpubrawblock=tcp://127.0.0.1:28332",
+			"-zmqpubrawtx=tcp://127.0.0.1:28333",
+			"-rpcauth=" + bitcoindRPCGenericUser + ":" + bitcoindRPCGenericBinaryPass,
+			"-rpcauth=" + bitcoindRPCAliceUser + ":" + bitcoindRPCAliceBinaryPass,
+			"-rpcauth=" + bitcoindRPCBobUser + ":" + bitcoindRPCBobBinaryPass,
+			"-rpcauth=" + bitcoindRPCCarolUser + ":" + bitcoindRPCCarolBinaryPass},
 	}, &container.HostConfig{NetworkMode: "host"}, nil, nil, containerName)
 	if err != nil {
 		return "", err
@@ -727,4 +817,26 @@ func startContainer(imageName string) (string, error) {
 	}
 
 	return resp.ID, nil
+}
+
+func mineBlocks(numBlocks uint64, addr string, containerID string) error {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+	defer cli.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	miningCmd := []string{"bitcoin-cli", "-regtest", "-rpcuser=" + bitcoindRPCGenericUser,
+		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "generatetoaddress", strconv.FormatUint(numBlocks, 10), addr}
+	if res, err := cli.ContainerExecCreate(ctx, containerID, types.ExecConfig{Cmd: miningCmd}); err != nil {
+		return err
+	} else if err := cli.ContainerExecStart(ctx, res.ID, types.ExecStartCheck{}); err != nil {
+		return err
+	} else {
+		return nil
+	}
+
 }
