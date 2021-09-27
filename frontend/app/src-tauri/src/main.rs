@@ -33,22 +33,10 @@ async fn main() {
             app.exit(0);
           }
           "start" => {
-            let daemon = app.try_state::<Daemon>();
-
-            if daemon.is_none() {
-              println!("should start daemon");
-            } else {
-              println!("daemon already started");
-            }
+            daemon::start_daemon(app.state::<daemon::Connection>()).unwrap();
           }
           "stop" => {
-            let daemon = app.try_state::<Daemon>();
-
-            if daemon.is_none() {
-              println!("daemon already stopped");
-            } else {
-              println!("should stop daemon");
-            }
+            daemon::stop_daemon(app.state::<daemon::Connection>()).unwrap();
           }
           _ => {}
         }
