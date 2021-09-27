@@ -13,8 +13,8 @@ pub struct DaemonPlugin<R: Runtime> {
 #[derive(Default)]
 pub struct Connection(Mutex<Option<Sender<()>>>);
 
-#[tauri::command]
-pub fn start_daemon(connection: tauri::State<'_, Connection>) -> Result<(), ()> {
+// #[tauri::command]
+pub fn start_daemon(connection: tauri::State<Connection>) {
   let mut lock = connection.0.lock().unwrap();
   let (tx, mut rx) = mpsc::channel::<()>(1);
 
@@ -33,7 +33,9 @@ pub fn start_daemon(connection: tauri::State<'_, Connection>) -> Result<(), ()> 
           match event {
             CommandEvent::Stdout(out) => println!("daemon {}", out),
             CommandEvent::Stderr(err) | CommandEvent::Error(err) => println!("daemon error {}", err),
-            CommandEvent::Terminated(reason) => println!("daemon terminated {:?}", reason.code),
+            CommandEvent::Terminated(reason) => {
+              println!("daemon terminated {:?}", reason.code);
+            },
             _ => {}
           }
         }
@@ -41,15 +43,11 @@ pub fn start_daemon(connection: tauri::State<'_, Connection>) -> Result<(), ()> 
     }
   });
   *lock = Some(tx);
-
-  Ok(())
 }
 
-#[tauri::command]
-pub fn stop_daemon(connection: tauri::State<'_, Connection>) -> Result<(), ()> {
+pub fn stop_daemon(connection: tauri::State<'_, Connection>) {
   let mut lock = connection.0.lock().unwrap();
   *lock = None;
-  Ok(())
 }
 
 impl<R: Runtime> DaemonPlugin<R> {
@@ -57,7 +55,7 @@ impl<R: Runtime> DaemonPlugin<R> {
   // see https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
   pub fn new() -> Self {
     Self {
-      invoke_handler: Box::new(tauri::generate_handler![start_daemon, stop_daemon]),
+      invoke_handler: Box::new(tauri::generate_handler![]),
     }
   }
 }
