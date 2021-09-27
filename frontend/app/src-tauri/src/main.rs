@@ -3,26 +3,20 @@
   windows_subsystem = "windows"
 )]
 
-use tauri::async_runtime::Receiver;
-use tauri::{
-  api::process::{Command, CommandChild, CommandEvent},
-  CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
-};
+use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
+
+mod daemon;
 mod menu;
 
-type Daemon = (Receiver<CommandEvent>, CommandChild);
-
-fn start_daemon() -> Daemon {
-  Command::new_sidecar("mintterd")
-    .expect("failed to create `my-sidecar` binary command")
-    .spawn()
-    .expect("Failed to spawn sidecar")
-}
-
-fn main() {
+#[tokio::main]
+async fn main() {
   tauri::Builder::default()
-    .manage(start_daemon())
+    .plugin(daemon::DaemonPlugin::new())
     .menu(menu::get_menu())
+    .setup(|app| {
+      daemon::start_daemon(app.state::<daemon::Connection>()).unwrap();
+      Ok(())
+    })
     .system_tray(
       SystemTray::new().with_menu(
         SystemTrayMenu::new()
