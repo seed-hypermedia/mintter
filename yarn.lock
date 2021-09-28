@@ -1029,7 +1029,7 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tauri-apps/api@^1.0.0-beta.8":
+"@tauri-apps/api@^1.0.0-beta.4", "@tauri-apps/api@^1.0.0-beta.8":
   version "1.0.0-beta.8"
   resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.0.0-beta.8.tgz#a43dc4a4515148f29bfb616db85445b771e84f78"
   integrity sha512-a56lXB7XvQ4+fKtT0pxpkjTSKhyrQ1Vmjyvt2ox3mT9xw3l7s8IOKHJ1WuqW6TA6xdoy3Cyja3Z3prw8hflS7g==
@@ -7240,6 +7240,13 @@ tar@^6.1.0:
     minizlib "^2.1.1"
     mkdirp "^1.0.3"
     yallist "^4.0.0"
+
+"tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log":
+  version "0.1.0"
+  resolved "https://github.com/tauri-apps/tauri-plugin-log#7d2f0704c76839d0b3b255835f69e6d1b5789420"
+  dependencies:
+    "@tauri-apps/api" "^1.0.0-beta.4"
+    tslib "^2.1.0"
 
 temp-dir@^1.0.0:
   version "1.0.0"
