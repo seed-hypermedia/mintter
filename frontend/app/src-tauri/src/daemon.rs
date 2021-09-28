@@ -1,3 +1,4 @@
+use log::{error, trace};
 use std::sync::Mutex;
 use tauri::api::process::{Command, CommandEvent};
 use tauri::{
@@ -13,7 +14,6 @@ pub struct DaemonPlugin<R: Runtime> {
 #[derive(Default)]
 pub struct Connection(Mutex<Option<Sender<()>>>);
 
-// #[tauri::command]
 pub fn start_daemon(connection: tauri::State<Connection>) {
   let mut lock = connection.0.lock().unwrap();
   let (tx, mut rx) = mpsc::channel::<()>(1);
@@ -31,10 +31,14 @@ pub fn start_daemon(connection: tauri::State<Connection>) {
         }
         Some(event) = cx.recv() => {
           match event {
-            CommandEvent::Stdout(out) => println!("daemon {}", out),
-            CommandEvent::Stderr(err) | CommandEvent::Error(err) => println!("daemon error {}", err),
+            CommandEvent::Stdout(out) => trace!("daemon {}", out),
+            CommandEvent::Stderr(err) | CommandEvent::Error(err) => error!("daemon error {}", err),
             CommandEvent::Terminated(reason) => {
-              println!("daemon terminated {:?}", reason.code);
+              match reason.code {
+                Some(code) if code == 0 => trace!("daemon terminated"),
+                Some(code) => error!("daemon crashed with exit code {}", code),
+                None => error!("daemon crashed without exit code")
+              }
             },
             _ => {}
           }
