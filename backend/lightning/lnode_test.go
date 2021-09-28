@@ -1,23 +1,15 @@
 package lightning
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/lightningnetwork/lnd/aezeed"
-	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
-
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/client"
 
 	"mintter/backend"
 	"mintter/backend/config"
@@ -41,24 +33,9 @@ type TestVector struct {
 }
 
 var (
-	bitcoindImage = "ruimarinho/bitcoin-core"
-	containerName = "bitcoinContainer"
-
 	bitcoindRPCGenericUser       = "mintter"
 	bitcoindRPCGenericAsciiPass  = "2NfbXsZPYQUq5nANSCttreiyJT1gAJv8ZoUNfsU7evQ="
 	bitcoindRPCGenericBinaryPass = "410905ded7ef5116b3d4bcb3cc187e77$0060c04d2a643576086971596eb3df02ca5e32acffe1caa697e96cf764a9d204"
-
-	bitcoindRPCBobUser       = "bob"
-	bitcoindRPCBobAsciiPass  = "2NfbXsZPYQUq5nANSCttreiyJT1gAJv8ZoUNfsU7evQ="
-	bitcoindRPCBobBinaryPass = "410905ded7ef5116b3d4bcb3cc187e77$0060c04d2a643576086971596eb3df02ca5e32acffe1caa697e96cf764a9d204"
-
-	bitcoindRPCAliceUser       = "alice"
-	bitcoindRPCAliceAsciiPass  = "2NfbXsZPYQUq5nANSCttreiyJT1gAJv8ZoUNfsU7evQ="
-	bitcoindRPCAliceBinaryPass = "410905ded7ef5116b3d4bcb3cc187e77$0060c04d2a643576086971596eb3df02ca5e32acffe1caa697e96cf764a9d204"
-
-	bitcoindRPCCarolUser       = "carol"
-	bitcoindRPCCarolAsciiPass  = "hvkOnizG4vkoWAakJlc_deLDQblQlhmr3rikrpdty1U="
-	bitcoindRPCCarolBinaryPass = "b0b9aa23db2d181e8331e7f2ffeb69f1$9923bee41605b62997fdc9dd31dd968bd4cf27c5664e903929e640fcafe07491"
 
 	cfg         config.Config
 	testEntropy = [aezeed.EntropySize]byte{
@@ -123,7 +100,7 @@ type subset struct {
 	subname                     string
 	credentials                 WalletSecurity
 	newPassword                 string
-	removeCredentialsBeforeTest bool
+	RemoveCredentialsBeforeTest bool
 	mustFail                    bool
 	expectedID                  string
 }
@@ -157,7 +134,7 @@ func TestStart(t *testing.T) {
 						StatelessInit:    true,
 					},
 					newPassword:                 "",
-					removeCredentialsBeforeTest: true,
+					RemoveCredentialsBeforeTest: true,
 					mustFail:                    false,
 					expectedID:                  testVectors[0].expectedID,
 				},
@@ -168,7 +145,7 @@ func TestStart(t *testing.T) {
 						StatelessInit:    true,
 					},
 					newPassword:                 "",
-					removeCredentialsBeforeTest: false,
+					RemoveCredentialsBeforeTest: false,
 					mustFail:                    true,
 					expectedID:                  testVectors[0].expectedID,
 				},
@@ -178,7 +155,7 @@ func TestStart(t *testing.T) {
 						WalletPassphrase: "testtest",
 					},
 					newPassword:                 "",
-					removeCredentialsBeforeTest: false,
+					RemoveCredentialsBeforeTest: false,
 					mustFail:                    false,
 					expectedID:                  testVectors[0].expectedID,
 				},
@@ -204,7 +181,7 @@ func TestStart(t *testing.T) {
 						StatelessInit:    true,
 					},
 					newPassword:                 "",
-					removeCredentialsBeforeTest: true,
+					RemoveCredentialsBeforeTest: true,
 					mustFail:                    false,
 					expectedID:                  testVectors[0].expectedID,
 				},
@@ -215,7 +192,7 @@ func TestStart(t *testing.T) {
 						StatelessInit:    true,
 					},
 					newPassword:                 "",
-					removeCredentialsBeforeTest: false,
+					RemoveCredentialsBeforeTest: false,
 					mustFail:                    true,
 					expectedID:                  testVectors[0].expectedID,
 				},
@@ -226,7 +203,7 @@ func TestStart(t *testing.T) {
 						WalletPassphrase: "testtest",
 					},
 					newPassword:                 "",
-					removeCredentialsBeforeTest: false,
+					RemoveCredentialsBeforeTest: false,
 					mustFail:                    false,
 					expectedID:                  testVectors[0].expectedID,
 				},
@@ -236,7 +213,7 @@ func TestStart(t *testing.T) {
 						WalletPassphrase: "testtest",
 					},
 					newPassword:                 "testtesta",
-					removeCredentialsBeforeTest: false,
+					RemoveCredentialsBeforeTest: false,
 					mustFail:                    false,
 					expectedID:                  testVectors[0].expectedID,
 				},
@@ -246,7 +223,7 @@ func TestStart(t *testing.T) {
 						WalletPassphrase: "testtest",
 					},
 					newPassword:                 "",
-					removeCredentialsBeforeTest: false,
+					RemoveCredentialsBeforeTest: false,
 					mustFail:                    true,
 					expectedID:                  testVectors[0].expectedID,
 				},
@@ -256,7 +233,7 @@ func TestStart(t *testing.T) {
 						WalletPassphrase: "testtest",
 					},
 					newPassword:                 "testtesti",
-					removeCredentialsBeforeTest: false,
+					RemoveCredentialsBeforeTest: false,
 					mustFail:                    true,
 					expectedID:                  testVectors[0].expectedID,
 				},
@@ -266,7 +243,7 @@ func TestStart(t *testing.T) {
 						WalletPassphrase: "testtesta",
 					},
 					newPassword:                 "",
-					removeCredentialsBeforeTest: false,
+					RemoveCredentialsBeforeTest: false,
 					mustFail:                    false,
 					expectedID:                  testVectors[0].expectedID,
 				},
@@ -282,7 +259,7 @@ func TestStart(t *testing.T) {
 						StatelessInit:    false,
 					},
 					newPassword:                 "",
-					removeCredentialsBeforeTest: true,
+					RemoveCredentialsBeforeTest: true,
 					expectedID:                  testVectors[1].expectedID,
 					mustFail:                    false,
 				},
@@ -307,7 +284,7 @@ func TestStart(t *testing.T) {
 				}
 
 				d, nodeID, errStart := checkStart(t, tt.lnconf, &subtest.credentials,
-					subtest.newPassword, subtest.removeCredentialsBeforeTest, false)
+					subtest.newPassword, subtest.RemoveCredentialsBeforeTest, false)
 				d.Stop()
 				if subtest.mustFail {
 					require.Error(t, errStart, tt.name+". must fail")
@@ -341,327 +318,8 @@ func TestStart(t *testing.T) {
 	}
 }
 
-func TestPeers(t *testing.T) {
-	tests := [...]struct {
-		name             string
-		lnconfAlice      *config.LND
-		lnconfBob        *config.LND
-		credentialsAlice WalletSecurity
-		credentialsBob   WalletSecurity
-	}{
-		{
-			name: "bitcoind",
-			lnconfAlice: &config.LND{
-				UseNeutrino:     false,
-				Network:         "regtest",
-				LndDir:          "/tmp/lndirtests/alice",
-				NoNetBootstrap:  true,
-				RawRPCListeners: []string{"127.0.0.1:10009"},
-				RawListeners:    []string{"0.0.0.0:9735"},
-				BitcoindRPCUser: bitcoindRPCAliceUser,
-				BitcoindRPCPass: bitcoindRPCAliceAsciiPass,
-				DisableRest:     true,
-			},
-
-			lnconfBob: &config.LND{
-				UseNeutrino:     false,
-				Network:         "regtest",
-				LndDir:          "/tmp/lndirtests/bob",
-				NoNetBootstrap:  true,
-				RawRPCListeners: []string{"127.0.0.1:10069"},
-				RawListeners:    []string{"0.0.0.0:8735"},
-				BitcoindRPCUser: bitcoindRPCBobUser,
-				BitcoindRPCPass: bitcoindRPCBobAsciiPass,
-				DisableRest:     true,
-			},
-			credentialsBob: WalletSecurity{
-				WalletPassphrase: "passwordBob",
-				RecoveryWindow:   0,
-				AezeedPassphrase: testVectors[0].password,
-				AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
-				SeedEntropy:      testVectors[0].entropy[:],
-				StatelessInit:    true,
-			},
-			credentialsAlice: WalletSecurity{
-				WalletPassphrase: "passwordAlice",
-				RecoveryWindow:   0,
-				AezeedPassphrase: testVectors[2].password,
-				AezeedMnemonics:  testVectors[2].expectedMnemonic[:],
-				SeedEntropy:      testVectors[2].entropy[:],
-				StatelessInit:    true,
-			},
-		},
-		{
-			name: "neutrino",
-			lnconfAlice: &config.LND{
-				UseNeutrino:     true,
-				Network:         "testnet",
-				LndDir:          "/tmp/lndirtests/alice",
-				NoNetBootstrap:  true,
-				RawRPCListeners: []string{"127.0.0.1:10009"},
-				RawListeners:    []string{"0.0.0.0:9735"},
-				BitcoindRPCUser: bitcoindRPCAliceUser,
-				BitcoindRPCPass: bitcoindRPCAliceAsciiPass,
-				DisableRest:     true,
-			},
-
-			lnconfBob: &config.LND{
-				UseNeutrino:     true,
-				Network:         "testnet",
-				LndDir:          "/tmp/lndirtests/bob",
-				NoNetBootstrap:  true,
-				RawRPCListeners: []string{"127.0.0.1:10069"},
-				RawListeners:    []string{"0.0.0.0:8735"},
-				BitcoindRPCUser: bitcoindRPCBobUser,
-				BitcoindRPCPass: bitcoindRPCBobAsciiPass,
-				DisableRest:     true,
-			},
-			credentialsBob: WalletSecurity{
-				WalletPassphrase: "passwordBob",
-				RecoveryWindow:   0,
-				AezeedPassphrase: testVectors[0].password,
-				AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
-				SeedEntropy:      testVectors[0].entropy[:],
-				StatelessInit:    true,
-			},
-			credentialsAlice: WalletSecurity{
-				WalletPassphrase: "passwordAlice",
-				RecoveryWindow:   0,
-				AezeedPassphrase: testVectors[2].password,
-				AezeedMnemonics:  testVectors[2].expectedMnemonic[:],
-				SeedEntropy:      testVectors[2].entropy[:],
-				StatelessInit:    true,
-			},
-		},
-	}
-	log := backend.NewLogger(cfg)
-	defer log.Sync()
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := interactPeers(t, tt.lnconfAlice, tt.lnconfBob,
-				&tt.credentialsAlice, &tt.credentialsBob,
-				testVectors[2].expectedID, testVectors[0].expectedID)
-
-			require.NoError(t, err, tt.name+". must succeed")
-
-		})
-	}
-
-}
-
-func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
-	credentialsAlice *WalletSecurity, credentialsBob *WalletSecurity,
-	expectedAliceID string, expectedBobID string) error {
-
-	t.Helper()
-	var err error
-	var containerID string
-
-	if err = removeCredentials(lnconfAlice.LndDir, lnconfAlice.Network); err != nil {
-		return err
-	}
-	if err = removeCredentials(lnconfBob.LndDir, lnconfBob.Network); err != nil {
-		return err
-	}
-
-	logger, _ := zap.NewProduction()  //zap.NewExample()
-	logger2, _ := zap.NewProduction() //zap.NewExample()
-	defer logger.Sync()
-	defer logger2.Sync()
-	logger.Named("Bob")
-	logger2.Named("Alice")
-	bob, errBob := NewLdaemon(logger, lnconfBob)
-	if errBob != nil {
-		return errBob
-
-	}
-
-	alice, errAlice := NewLdaemon(logger2, lnconfAlice)
-	if errAlice != nil {
-		return errAlice
-	}
-
-	if !lnconfBob.UseNeutrino || !lnconfAlice.UseNeutrino {
-		if containerID, err = startContainer(bitcoindImage); err != nil {
-			return err
-		}
-		defer stopContainer(containerID)
-	}
-
-	if errAlice = alice.Start(credentialsAlice, "", false); errAlice != nil {
-		return errAlice
-	}
-	defer alice.Stop()
-
-	clientAlice, errAlice := alice.SubscribeEvents()
-	defer clientAlice.Cancel()
-	if errAlice != nil {
-		return errAlice
-	}
-
-	if errBob = bob.Start(credentialsBob, "", false); errBob != nil {
-		return errBob
-	}
-	defer bob.Stop()
-
-	clientBob, errBob := bob.SubscribeEvents()
-	defer clientBob.Cancel()
-	if errBob != nil {
-		return errBob
-	}
-
-	var i = 0
-	aliceReady, bobReady, aliceSynced, bobSynced, pairSent, aliceID, bobID := false, false, false, false, false, "", ""
-waitLoop:
-	for {
-		select {
-		case a := <-clientAlice.Updates():
-			switch update := a.(type) {
-			case DaemonReadyEvent:
-				if update.IdentityPubkey != expectedAliceID {
-					return fmt.Errorf("After initializing Alice got ID:" + update.IdentityPubkey +
-						" but expected" + expectedAliceID)
-				} else {
-					aliceReady = true
-				}
-				if bobReady && (!lnconfAlice.UseNeutrino || !lnconfBob.UseNeutrino) {
-					if aliceAddr, err := alice.NewAddress("", 0); err != nil {
-						return fmt.Errorf("Could not get new address" + err.Error())
-					} else {
-						if err = mineBlocks(101, aliceAddr, containerID); err != nil {
-							return fmt.Errorf("Problem miming blocks" + err.Error())
-						}
-					}
-				}
-			case DaemonDownEvent:
-				return update.err
-			case ChainSyncedEvent:
-				aliceSynced = true
-			case PeerEvent:
-				bobID = update.PubKey
-				if bobID != expectedBobID {
-					return fmt.Errorf("Alice received a peer notification but it wasn't Bob, Expected:" + expectedBobID +
-						" but gotten:" + bobID)
-				} else {
-					fmt.Println("Alice received a peer notification from Bob:" + bobID)
-					if aliceID != "" {
-						break waitLoop
-					}
-				}
-			case TransactionEvent:
-			case ChannelEvent:
-			default:
-				return fmt.Errorf("Got unexpected Alice update")
-			}
-		case <-clientAlice.Quit():
-			return fmt.Errorf("Got Bob quit signal while waiting for ready event")
-		case b := <-clientBob.Updates():
-			switch update := b.(type) {
-			case DaemonReadyEvent:
-				if update.IdentityPubkey != expectedBobID {
-					return fmt.Errorf("After initializing Bob got ID:" + update.IdentityPubkey +
-						" but expected" + expectedBobID)
-				} else {
-					bobReady = true
-				}
-				if aliceReady && (!lnconfAlice.UseNeutrino || !lnconfBob.UseNeutrino) {
-					if bobAddr, err := bob.NewAddress("", 0); err != nil {
-						return fmt.Errorf("Could not get new address" + err.Error())
-					} else {
-						if err = mineBlocks(101, bobAddr, containerID); err != nil {
-							return fmt.Errorf("Problem miming blocks" + err.Error())
-						}
-					}
-				}
-			case DaemonDownEvent:
-				return update.err
-			case ChainSyncedEvent:
-				bobSynced = true
-			case PeerEvent:
-				aliceID = update.PubKey
-				if aliceID != expectedAliceID {
-					return fmt.Errorf("Bob received a peer notification but it wasn't Alice, Expected:" + expectedAliceID +
-						" but gotten:" + aliceID)
-				} else {
-					fmt.Println("Bob received a peer notification from Alice:" + aliceID)
-					time.Sleep(2 * time.Second) // We give Alice some time to receive the notification and fill BobID
-					if bobID != "" {
-						break waitLoop
-					}
-				}
-			case TransactionEvent:
-			case ChannelEvent:
-			default:
-				return fmt.Errorf("Got unexpected Bob update")
-			}
-		case <-clientBob.Quit():
-			return fmt.Errorf("Got Bob quit signal while waiting for ready event")
-		default:
-			if aliceReady && bobReady && aliceSynced && bobSynced && !pairSent {
-
-				fmt.Println("Both Alice and Bob are ready and synced. Pairing...")
-				_, err := alice.APIClient().ConnectPeer(context.Background(), &lnrpc.ConnectPeerRequest{
-					Addr: &lnrpc.LightningAddress{
-						Pubkey: expectedBobID,
-						Host:   lnconfBob.RawListeners[0],
-					},
-					Perm:    false,
-					Timeout: 2,
-				})
-				if err == nil {
-					pairSent = true
-				}
-
-			}
-			i++
-			if i < 2500 {
-				time.Sleep(3 * time.Second)
-			} else {
-				return fmt.Errorf("Timeout reached waiting for ready event")
-			}
-
-		}
-	}
-
-	return nil
-}
-
-func removeCredentials(workingDir string, network string) error {
-
-	path := workingDir + "/data/chain/bitcoin/" + network + "/wallet.db"
-	if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
-		return fmt.Errorf("Could not remove file: " + path + err.Error())
-	}
-
-	// If macaroons.db is removed, the previous node password is forgotten. We can safely
-	// Init a fresh new instance. If it is not removed, then we need to change the password
-	// before init
-	path = workingDir + "/data/chain/bitcoin/" + network + "/macaroons.db"
-	if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
-		return fmt.Errorf("Could not remove file: " + path + err.Error())
-	}
-
-	path = workingDir + "/data/chain/bitcoin/" + network + "/admin.macaroon"
-	if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
-		return fmt.Errorf("Could not remove file: " + path + err.Error())
-	}
-	path = workingDir + "/data/chain/bitcoin/" + network + "/readonly.macaroon"
-	if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
-		return fmt.Errorf("Could not remove file: " + path + err.Error())
-	}
-	path = workingDir + "/data/chain/bitcoin/" + network + "/invoice.macaroon"
-	if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
-		return fmt.Errorf("Could not remove file: " + path + err.Error())
-	}
-	path = workingDir + "/data/chain/bitcoin/" + network + "/router.macaroon"
-	if err := os.Remove(path); !os.IsNotExist(err) && err != nil {
-		return fmt.Errorf("Could not remove file: " + path + err.Error())
-	}
-	return nil
-}
-
 func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
-	newPassword string, removeCredentialsBeforeTest bool, blocking bool) (*Ldaemon, string, error) {
+	newPassword string, RemoveCredentialsBeforeTest bool, blocking bool) (*Ldaemon, string, error) {
 	t.Helper()
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
@@ -673,9 +331,8 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 
 	}
 
-	if removeCredentialsBeforeTest {
-
-		if err := removeCredentials(lnconf.LndDir, lnconf.Network); err != nil {
+	if RemoveCredentialsBeforeTest {
+		if err := os.RemoveAll(lnconf.LndDir); !os.IsNotExist(err) && err != nil {
 			return bob, "", err
 		}
 	}
@@ -701,7 +358,6 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 					return bob, update.IdentityPubkey, nil
 				case DaemonDownEvent:
 					return bob, "", update.err
-				case ChainSyncedEvent:
 				default:
 					return bob, nodeID, fmt.Errorf("Got unexpected update instead of ready event")
 				}
@@ -726,117 +382,4 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 	} else {
 		return bob, bob.GetID(), nil
 	}
-}
-
-func stopContainer(containerID string) error {
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return err
-	}
-	defer cli.Close()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	args := filters.Arg("name", containerName)
-	containerFilters := filters.NewArgs(args)
-
-	if cList, err := cli.ContainerList(ctx, types.ContainerListOptions{Filters: containerFilters}); err != nil {
-		return err
-
-	} else {
-		for _, container := range cList {
-			cli.ContainerRemove(ctx, container.ID, types.ContainerRemoveOptions{Force: true})
-		}
-	}
-
-	return nil
-}
-
-func startContainer(imageName string) (string, error) {
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return "", err
-	}
-	defer cli.Close()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	if _, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{}); err != nil {
-		return "", err
-	}
-
-	args := filters.Arg("ancestor", bitcoindImage)
-	containerFilters := filters.NewArgs(args)
-
-	if cList, err := cli.ContainerList(ctx, types.ContainerListOptions{All: true, Filters: containerFilters}); err != nil {
-		return "", err
-	} else {
-		for _, container := range cList {
-			cli.ContainerRemove(ctx, container.ID, types.ContainerRemoveOptions{Force: true})
-		}
-	}
-	resp, err := cli.ContainerCreate(ctx, &container.Config{
-		Image: imageName, /*
-			ExposedPorts: nat.PortSet{
-				"18443/tcp": struct{}{},
-				"18444/tcp": struct{}{},
-			},*/
-
-		Cmd: []string{"-regtest=1", "-txindex=1",
-			"-zmqpubrawblock=tcp://127.0.0.1:28332",
-			"-zmqpubrawtx=tcp://127.0.0.1:28333",
-			"-rpcauth=" + bitcoindRPCGenericUser + ":" + bitcoindRPCGenericBinaryPass,
-			"-rpcauth=" + bitcoindRPCAliceUser + ":" + bitcoindRPCAliceBinaryPass,
-			"-rpcauth=" + bitcoindRPCBobUser + ":" + bitcoindRPCBobBinaryPass,
-			"-rpcauth=" + bitcoindRPCCarolUser + ":" + bitcoindRPCCarolBinaryPass},
-	}, &container.HostConfig{NetworkMode: "host"}, nil, nil, containerName)
-	if err != nil {
-		return "", err
-	}
-
-	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
-		return resp.ID, err
-	}
-
-	time.Sleep(5 * time.Second)
-
-	if cList, err := cli.ContainerList(ctx, types.ContainerListOptions{Filters: containerFilters}); err != nil {
-		return resp.ID, err
-
-	} else {
-		for _, container := range cList {
-
-			if container.ID == resp.ID && container.State != "running" {
-				return resp.ID, fmt.Errorf("container state is :" + container.State + " instead of running")
-			}
-		}
-	}
-
-	return resp.ID, nil
-}
-
-func mineBlocks(numBlocks uint64, addr string, containerID string) error {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return err
-	}
-	defer cli.Close()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	miningCmd := []string{"bitcoin-cli", "-regtest", "-rpcuser=" + bitcoindRPCGenericUser,
-		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "generatetoaddress", strconv.FormatUint(numBlocks, 10), addr}
-	if res, err := cli.ContainerExecCreate(ctx, containerID, types.ExecConfig{Cmd: miningCmd}); err != nil {
-		return err
-	} else if err := cli.ContainerExecStart(ctx, res.ID, types.ExecStartCheck{}); err != nil {
-		return err
-	} else {
-		return nil
-	}
-
 }
