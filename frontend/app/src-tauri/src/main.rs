@@ -3,24 +3,16 @@
   windows_subsystem = "windows"
 )]
 
-use tauri::{
-  api::path::app_dir, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
-};
+use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use tauri_plugin_log::{LogTarget, LoggerBuilder};
-use tokio::fs;
 
 mod daemon;
 mod menu;
 
 #[tokio::main]
 async fn main() {
-  let app_ctx = tauri::generate_context!();
-  let app_dir = app_dir(app_ctx.config()).unwrap();
-
-  fs::create_dir(&app_dir).await.unwrap();
-
   tauri::Builder::default()
-    .plugin(LoggerBuilder::new([LogTarget::Folder(app_dir.into()), LogTarget::Stdout]).build())
+    .plugin(LoggerBuilder::new([LogTarget::AppDir, LogTarget::Stdout]).build())
     .plugin(daemon::DaemonPlugin::new())
     .menu(menu::get_menu())
     .setup(|app| {
