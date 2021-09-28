@@ -51,7 +51,8 @@ type InvoiceEvent struct {
 }
 
 // ChainSyncedEvent is sent when the chain gets into synced state.
-type ChainSyncedEvent struct {
+type ChainSychronizationEvent struct {
+	Synced      bool
 	BlockHeight uint32
 }
 
@@ -340,19 +341,24 @@ func (d *Ldaemon) syncToChain(ctx context.Context) error {
 			return chainErr
 		}
 
-		d.log.Info("Sync to chain interval", zap.Bool("Synced", chainInfo.SyncedToChain),
-			zap.Uint32("BlockHeight", chainInfo.BlockHeight))
+		d.Lock()
+		if chainInfo.SyncedToChain != d.synced ||
+			(chainInfo.SyncedToChain == d.synced && height < chainInfo.BlockHeight) {
+			d.synced = chainInfo.SyncedToChain
+			d.Unlock()
 
-		if chainInfo.SyncedToChain {
-			d.log.Info("Synchronized to chain finshed", zap.Uint32("BlockHeight", chainInfo.BlockHeight))
-			height = chainInfo.BlockHeight
-			break
+			d.log.Info("Sync to chain interval", zap.Bool("Synced", chainInfo.SyncedToChain),
+				zap.Uint32("BlockHeight", chainInfo.BlockHeight))
+
+			d.ntfnServer.SendUpdate(ChainSychronizationEvent{
+				Synced:      chainInfo.SyncedToChain,
+				BlockHeight: chainInfo.BlockHeight,
+			})
+		} else {
+			d.Unlock()
 		}
+		height = chainInfo.BlockHeight
 		time.Sleep(time.Second * 5)
 	}
-	d.Lock()
-	d.synced = true
-	d.Unlock()
-	d.ntfnServer.SendUpdate(ChainSyncedEvent{height})
-	return nil
+
 }
