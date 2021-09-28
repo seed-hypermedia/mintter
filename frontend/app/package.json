@@ -50,6 +50,7 @@
     "slate-history": "https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.65.3-unist2",
     "slate-hyperscript": "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.65.3-unist2",
     "slate-react": "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.65.3-unist2",
+    "tauri-plugin-log-api": "https://github.com/tauri-apps/tauri-plugin-log",
     "unist-util-visit": "^4.0.0",
     "xstate": "^4.23.4"
   },
