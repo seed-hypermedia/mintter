@@ -3012,7 +3012,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-log"
 version = "0.1.0"
-source = "git+https://github.com/tauri-apps/tauri-plugin-log#7d2f0704c76839d0b3b255835f69e6d1b5789420"
+source = "git+https://github.com/JonasKruckenberg/tauri-plugin-log?branch=patch-2#1fb0b9a15f3ec561e6f51e37916f656ebf906c73"
 dependencies = [
  "byte-unit",
  "chrono",
