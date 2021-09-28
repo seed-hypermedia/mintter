@@ -47,6 +47,7 @@ type API interface {
 	GetMacaroon() []byte
 	APIClient() lnrpc.LightningClient
 	NewAddress() (string, error)
+	GetBalance() (int64, error)
 	RouterClient() routerrpc.RouterClient
 	WalletKitClient() walletrpc.WalletKitClient
 	ChainNotifierClient() chainrpc.ChainNotifierClient
@@ -422,25 +423,4 @@ func (d *Ldaemon) allChannelsActive(client lnrpc.LightningClient) (bool, error) 
 		}
 	}
 	return true, nil
-}
-
-// Gets a new public address from the account ID provided (LND supports multiple accounts
-// under the same wallet) Default accouunt if no ID is provided. It also takes a type paraman address
-// where you can specify the returned format of the address it has to be one of:
-// addressType = 0 -> p2wkh: Pay to witness key hash
-// addressType = 1 -> np2wkh: Pay to nested witness key hash
-func (d *Ldaemon) NewAddress(account string, addressType int32) (string, error) {
-	lnclient := d.APIClient()
-	if lnclient == nil {
-		return "", fmt.Errorf("lnclient is not ready yet")
-	}
-
-	if addr, err := lnclient.NewAddress(context.Background(),
-		&lnrpc.NewAddressRequest{Type: lnrpc.AddressType(addressType),
-			Account: account}); err != nil {
-		d.log.Error("Error in HasActiveChannel() > ListChannels()", zap.String("err", err.Error()))
-		return "", err
-	} else {
-		return addr.Address, nil
-	}
 }
