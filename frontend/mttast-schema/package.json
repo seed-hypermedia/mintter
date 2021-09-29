@@ -1,9 +1,0 @@
-{
-  "name": "@mintter/mttast-schema",
-  "version": "0.1.0",
-  "main": "index.js",
-  "license": "MIT",
-  "devDependencies": {
-    "ajv": "^8.6.2"
-  }
-}

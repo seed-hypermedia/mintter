@@ -1,18 +1,17 @@
-import type { Document } from '@mintter/client'
-import { createDraft } from '@mintter/client'
-import { useAccount, useInfo, usePublication } from '@mintter/client/hooks'
-import { Box } from '@mintter/ui/box'
-import { Button } from '@mintter/ui/button'
-import { Text } from '@mintter/ui/text'
-import { useEffect } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
-import { AppSpinner } from '../components/app-spinner'
-import { Container } from '../components/container'
-import { Separator } from '../components/separator'
-import { Sidepanel, useEnableSidepanel, useSidepanel } from '../components/sidepanel'
-import { Editor } from '../editor'
-import { HoverProvider } from '../editor/hover-machine'
-import { getDateFormat } from '../utils/get-format-date'
+import type {Document} from '@mintter/client'
+import {createDraft} from '@mintter/client'
+import {useAccount, useInfo, usePublication} from '@mintter/client/hooks'
+import {Box} from '@mintter/ui/box'
+import {Button} from '@mintter/ui/button'
+import {Text} from '@mintter/ui/text'
+import {useEffect} from 'react'
+import {useHistory, useParams} from 'react-router-dom'
+import {AppSpinner} from '../components/app-spinner'
+import {Container} from '../components/container'
+import {Separator} from '../components/separator'
+import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
+import {Editor} from '../editor'
+import {getDateFormat} from '../utils/get-format-date'
 
 export default function Publication(): JSX.Element {
   const {docId} = useParams<{docId: string}>()
@@ -58,58 +57,58 @@ export default function Publication(): JSX.Element {
   let canUpdate = author?.id == myInfo?.accountId
 
   return (
-    <HoverProvider>
+    // <HoverProvider>
+    <Box
+      css={{
+        display: 'grid',
+        minHeight: '$full',
+        gridTemplateAreas: isSidepanelOpen
+          ? `"controls controls controls"
+        "maincontent maincontent rightside"`
+          : `"controls controls controls"
+        "maincontent maincontent maincontent"`,
+        // gridTemplateAreas: `"controls controls controls"
+        // "maincontent maincontent maincontent"`,
+        gridTemplateColumns: 'minmax(350px, 15%) 1fr minmax(350px, 40%)',
+        gridTemplateRows: '64px 1fr',
+      }}
+      data-testid="publication-wrapper"
+    >
       <Box
         css={{
-          display: 'grid',
-          minHeight: '$full',
-          gridTemplateAreas: isSidepanelOpen
-            ? `"controls controls controls"
-        "maincontent maincontent rightside"`
-            : `"controls controls controls"
-        "maincontent maincontent maincontent"`,
-          // gridTemplateAreas: `"controls controls controls"
-          // "maincontent maincontent maincontent"`,
-          gridTemplateColumns: 'minmax(350px, 15%) 1fr minmax(350px, 40%)',
-          gridTemplateRows: '64px 1fr',
+          display: 'flex',
+          gridArea: 'controls',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: '$2',
+          borderBottom: '1px solid rgba(0,0,0,0.1)',
+          paddingHorizontal: '$5',
         }}
-        data-testid="publication-wrapper"
       >
-        <Box
-          css={{
-            display: 'flex',
-            gridArea: 'controls',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            gap: '$2',
-            borderBottom: '1px solid rgba(0,0,0,0.1)',
-            paddingHorizontal: '$5',
+        {canUpdate && (
+          <Button color="success" shape="pill" size="2" onClick={handleUpdate}>
+            UPDATE
+          </Button>
+        )}
+        <Button
+          size="1"
+          color="muted"
+          variant="outlined"
+          onClick={() => {
+            sidepanelSend('SIDEPANEL_TOGGLE')
           }}
         >
-          {canUpdate && (
-            <Button color="success" shape="pill" size="2" onClick={handleUpdate}>
-              UPDATE
-            </Button>
-          )}
-          <Button
-            size="1"
-            color="muted"
-            variant="outlined"
-            onClick={() => {
-              sidepanelSend('SIDEPANEL_TOGGLE')
-            }}
-          >
-            {`${isSidepanelOpen ? 'Close' : 'Open'} sidepanel`}
-          </Button>
-        </Box>
-        <Container css={{gridArea: 'maincontent', marginBottom: 300, padding: '$5', paddingTop: '$7'}}>
-          <PublicationHeader document={data?.document} />
-          <Separator />
-          <Editor onChange={() => {}} readOnly value={data?.document?.content} />
-        </Container>
-        {isSidepanelOpen && <Sidepanel gridArea={'rightside'} />}
+          {`${isSidepanelOpen ? 'Close' : 'Open'} sidepanel`}
+        </Button>
       </Box>
-    </HoverProvider>
+      <Container css={{gridArea: 'maincontent', marginBottom: 300, padding: '$5', paddingTop: '$7'}}>
+        <PublicationHeader document={data?.document} />
+        <Separator />
+        <Editor onChange={() => {}} readOnly value={data?.document?.content} />
+      </Container>
+      {isSidepanelOpen && <Sidepanel gridArea={'rightside'} />}
+    </Box>
+    // </HoverProvider>
   )
 }
 

@@ -1,5 +1,5 @@
 import {usePublication} from '@mintter/client/hooks'
-import type {Embed, FlowContent} from '@mintter/mttast'
+import type {FlowContent} from '@mintter/mttast'
 import {isEmbed} from '@mintter/mttast'
 import {document} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
@@ -9,13 +9,11 @@ import {forwardRef, useMemo} from 'react'
 import toast from 'react-hot-toast'
 import {useHistory} from 'react-router'
 import {Node} from 'slate'
-import type {RenderElementProps} from 'slate-react'
 import {useFocused, useSelected} from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {ContextMenu} from '../context-menu'
-import {useEmbedHover} from '../hover-machine'
 import type {EditorPlugin} from '../types'
 import {copyTextToClipboard} from './statement'
 
@@ -60,7 +58,6 @@ export const createEmbedPlugin = (): EditorPlugin => ({
         console.error(`Embed: element does not have a url attribute: ${JSON.stringify(element)}`)
         return <span {...attributes}>error on embed{children}</span>
       }
-      console.log('embed!!')
       return (
         <InlineEmbed embed={element} {...attributes}>
           {children}
@@ -70,22 +67,17 @@ export const createEmbedPlugin = (): EditorPlugin => ({
   },
 })
 
-export type InlineEmbedProps = Partial<Omit<RenderElementProps, 'element'>> & {
-  embed: Embed
-}
-
 /*
- * @todo Create an Inline Editor
- * @body refactor this to use an inline editor instead of mapping through the childs of the statement content
+ * @todo InlineEmbed ref type
  */
-export const InlineEmbed = forwardRef(({embed, children = null, ...props}: InlineEmbedProps, ref) => {
+export const InlineEmbed = forwardRef(({embed, children = null, ...props}: any, ref) => {
   const {data, status, error} = useEmbed(embed.url)
   // const ref = useRef<HTMLQuoteElement | null>(null)
   const selected = useSelected()
   const focused = useFocused()
   const {send} = useSidepanel()
   const history = useHistory()
-  const {embed: hoverEmbed} = useEmbedHover(ref, embed.url)
+  // const {statement: hoverEmbed} = useHoverEvent(ref, embed.url)
 
   async function onCopy() {
     await copyTextToClipboard(embed.url!)
@@ -119,9 +111,9 @@ export const InlineEmbed = forwardRef(({embed, children = null, ...props}: Inlin
     <EmbedStyled
       ref={ref}
       cite={embed.url}
-      css={{
-        backgroundColor: (focused && selected) || hoverEmbed == embed.url ? '$secondary-softer' : '$background-alt',
-      }}
+      // css={{
+      //   backgroundColor: (focused && selected) || hoverEmbed == embed.url ? '$secondary-softer' : '$background-alt',
+      // }}
       {...props}
     >
       <ContextMenu.Root>

@@ -18,6 +18,12 @@ build-frontend() {
     bazel build //frontend:app
 }
 
+# Command build-desktop builds a production bundle of the desktop Tauri app for the current platform.
+build-desktop() {
+    cd frontend/app
+    tauri build
+}
+
 # Command build-cross builds for all the supported platforms in parallel.
 build-cross() {
     bazel build //:cross_compile
@@ -33,6 +39,15 @@ run-backend() {
 run-frontend() {
     bazel build //:yarn
     exec yarn app dev $@
+}
+
+# Command run-desktop will run Tauri in the dev mode.
+run-desktop() {
+    # We run tauri directly, not from within yarn to avoid cache invalidation issues.
+    # We also remove the previously copied mintterd binaries that Tauri copied,
+    # because otherwise we have some strange permission issues on subsequent tauri dev.
+    bazel build //:mintterd //:yarn
+    cd frontend/app && rm -rf src-tauri/target/debug/mintterd* && tauri dev
 }
 
 # Command run will do a production build for the current platform and run the resulting binary.
@@ -60,8 +75,10 @@ Commands:
   build-backend   Build backend binary.
   build-frontend  Build production frontend app.
   build-cross     Cross-compile for all the suppored platforms.
+  build-desktop   Build production dekstop bundle for the current application.
   run-backend     Run the backend for development.
   run-frontend    Run the frontend for development.
+  run-desktop     Run the desktop app in development mode.
   run             Prepare a production build and run it locally.
   deploy          Build and deploy a production build. Needs 1 argument with the address of the deploy target.
 "

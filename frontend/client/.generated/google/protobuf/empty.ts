@@ -1,6 +1,6 @@
 /* eslint-disable */
-import Long from 'long'
-import _m0 from 'protobufjs/minimal'
+import Long from "long";
+import _m0 from "protobufjs/minimal";
 
 /**
  * A generic empty message that you can re-use to avoid defining duplicated
@@ -15,45 +15,52 @@ import _m0 from 'protobufjs/minimal'
  */
 export interface Empty {}
 
-const baseEmpty: object = {}
+const baseEmpty: object = {};
 
 export const Empty = {
   encode(_: Empty, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    return writer
+    return writer;
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Empty {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {...baseEmpty} as Empty
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseEmpty } as Empty;
     while (reader.pos < end) {
-      const tag = reader.uint32()
+      const tag = reader.uint32();
       switch (tag >>> 3) {
         default:
-          reader.skipType(tag & 7)
-          break
+          reader.skipType(tag & 7);
+          break;
       }
     }
-    return message
+    return message;
   },
 
   fromJSON(_: any): Empty {
-    const message = {...baseEmpty} as Empty
-    return message
+    const message = { ...baseEmpty } as Empty;
+    return message;
   },
 
   toJSON(_: Empty): unknown {
-    const obj: any = {}
-    return obj
+    const obj: any = {};
+    return obj;
   },
 
   fromPartial(_: DeepPartial<Empty>): Empty {
-    const message = {...baseEmpty} as Empty
-    return message
+    const message = { ...baseEmpty } as Empty;
+    return message;
   },
-}
+};
 
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined
+type Builtin =
+  | Date
+  | Function
+  | Uint8Array
+  | string
+  | number
+  | boolean
+  | undefined;
 type DeepPartial<T> = T extends Builtin
   ? T
   : T extends Array<infer U>
@@ -61,10 +68,10 @@ type DeepPartial<T> = T extends Builtin
   : T extends ReadonlyArray<infer U>
   ? ReadonlyArray<DeepPartial<U>>
   : T extends {}
-  ? {[K in keyof T]?: DeepPartial<T[K]>}
-  : Partial<T>
+  ? { [K in keyof T]?: DeepPartial<T[K]> }
+  : Partial<T>;
 
 if (_m0.util.Long !== Long) {
-  _m0.util.Long = Long as any
-  _m0.configure()
+  _m0.util.Long = Long as any;
+  _m0.configure();
 }
