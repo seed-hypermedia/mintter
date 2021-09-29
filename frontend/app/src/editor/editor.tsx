@@ -67,6 +67,7 @@ export function Editor({
   mode = readOnly ? 'read-only' : 'default',
 }: EditorProps): JSX.Element {
   const [visible, setVisible] = useState(false)
+
   return (
     <Suspense fallback={'loading'}>
       <Box

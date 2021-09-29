@@ -1,25 +1,21 @@
-import type {MttastContent} from '@mintter/mttast'
-import {isLink} from '@mintter/mttast'
-import {isEmbed} from '@mintter/mttast'
-import {createContext, useEffect, useContext, useRef} from 'react'
+import {useAccount} from '@mintter/client/hooks'
+import {FlowContent, isEmbed, isLink} from '@mintter/mttast'
+import {document} from '@mintter/mttast-builder'
 import {Box} from '@mintter/ui/box'
-import {Text} from '@mintter/ui/text'
 import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
+import {Text} from '@mintter/ui/text'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
-import {createMachine, Interpreter, State} from 'xstate'
-import {Node} from 'slate'
-import {getEmbedIds, InlineEmbed, useEmbed} from '../editor/elements/embed'
-import {MINTTER_LINK_PREFIX} from '../constants'
-import {visit} from 'unist-util-visit'
-import {document} from '@mintter/mttast-builder'
-import {assign} from 'xstate'
-import {useAccount} from '@mintter/client/hooks'
-import {ContextMenu} from '../editor/context-menu'
-import {copyTextToClipboard} from '../editor/elements/statement'
+import {MINTTER_LINK_PREFIX} from 'frontend/app/src/constants'
+import {createContext, useContext, useEffect, useRef} from 'react'
 import toast from 'react-hot-toast'
 import {useHistory} from 'react-router'
-import {useEmbedHover} from '../editor/hover-machine'
+import {Node} from 'slate'
+import {visit} from 'unist-util-visit'
+import {assign, createMachine, Interpreter, State} from 'xstate'
+import {ContextMenu} from '../editor/context-menu'
+import {getEmbedIds, InlineEmbed, useEmbed} from '../editor/elements/embed'
+import {copyTextToClipboard} from '../editor/elements/statement'
 
 export type SidepanelEventsType =
   | {
@@ -29,6 +25,10 @@ export type SidepanelEventsType =
   | {
       type: 'SIDEPANEL_REMOVE_ITEM'
       payload: string
+    }
+  | {
+      type: 'SIDEPANEL_LOAD_ANNOTATIONS'
+      payload: Array<FlowContent>
     }
   | {
       type: 'SIDEPANEL_ENABLE'
@@ -41,10 +41,6 @@ export type SidepanelEventsType =
     }
   | {
       type: 'SIDEPANEL_TOGGLE'
-    }
-  | {
-      type: 'SIDEPANEL_LOAD_ANNOTATIONS'
-      content: Array<MttastContent>
     }
 
 export type SidepanelContextType = {
@@ -61,7 +57,7 @@ export type SidepanelContextType = {
  * @todo add types to services and actions
  * @body Issue Body
  */
-export const sidepanelMachine = createMachine(
+export const sidepanelMachine = createMachine<SidepanelContextType, SidepanelEventsType>(
   {
     id: 'sidepanel',
     initial: 'disabled',
@@ -124,29 +120,29 @@ export const sidepanelMachine = createMachine(
   {
     actions: {
       sidepanelAddItem: (context: SidepanelContextType, event: SidepanelEventsType) => {
-        if ('payload' in event) {
-          context.bookmarks.add(event.payload)
-        }
+        if (event.type != 'SIDEPANEL_ADD_ITEM') return
+        context.bookmarks.add(event.payload)
       },
       sidepanelRemoveItem: (context: SidepanelContextType, event: SidepanelEventsType) => {
-        if ('payload' in event) {
-          context.bookmarks.delete(event.payload)
-        }
+        if (event.type != 'SIDEPANEL_REMOVE_ITEM') return
+        context.bookmarks.delete(event.payload)
       },
-      getAnnotations: assign((_, event: SidepanelEventsType) => {
-        let nodes = new Set<string>()
-        if ('content' in event) {
+      getAnnotations: assign({
+        annotations: (_, event) => {
+          let nodes = new Set<string>()
+          if (event.type != 'SIDEPANEL_LOAD_ANNOTATIONS') return
           visit(
-            document(event.content),
+            document(event.payload),
             (n) => isEmbed(n) || (isLink(n) && n.url.includes(MINTTER_LINK_PREFIX)),
             (node) => {
-              nodes.add(node.url)
+              if ('url' in node) {
+                nodes.add(node.url)
+              }
             },
           )
-        }
-        return {
-          annotations: nodes,
-        }
+
+          return nodes
+        },
       }),
     },
   },
@@ -194,16 +190,15 @@ export function useSidepanel() {
   }
 }
 
-export function useEnableSidepanel(content?: Array<MttastContent>) {
+export function useEnableSidepanel() {
   const {send} = useSidepanel()
   useEffect(() => {
     send('SIDEPANEL_ENABLE')
-    // send({type: 'SIDEPANEL_LOAD_ANNOTATIONS', content})
+
     return () => {
       send('SIDEPANEL_DISABLE')
     }
-  }, [content])
-  return null
+  }, [])
 }
 
 export type SidepanelProps = {
@@ -258,15 +253,14 @@ export type SidepanelItemProps = {
 
 export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
   const ref = useRef<HTMLDivElement | null>(null)
-  console.log('🚀 ~ file: sidepanel.tsx ~ line 258 ~ SidepanelItem ~ ref', ref)
   const {status, data, error} = useEmbed(item)
   const {data: author} = useAccount(data.document.author, {
     enabled: !!data.document.author,
   })
   const {send} = useSidepanel()
   const history = useHistory()
-  const {send: sendHover, embed: embedHover} = useEmbedHover(ref, item)
-  console.log({embedHover})
+  // const {send: sendHover, embed: embedHover} = useHoverEvent(ref, item)
+  // console.log({embedHover})
   async function onCopy() {
     await copyTextToClipboard(item)
     toast.success('Statement Reference copied successfully', {position: 'top-center'})
@@ -323,7 +317,7 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
             flexDirection: 'column',
             gap: '$4',
             transition: 'all ease-in-out 0.1s',
-            backgroundColor: embedHover == item ? '$secondary-softer' : '$background-alt',
+            // backgroundColor: embedHover == item ? '$secondary-softer' : '$background-alt',
           }}
         >
           <Box css={{display: 'flex', gap: '$4'}}>

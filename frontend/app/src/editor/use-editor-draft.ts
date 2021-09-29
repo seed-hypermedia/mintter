@@ -5,8 +5,7 @@ import isEqual from 'lodash.isequal'
 import {useEffect} from 'react'
 import {QueryClient, useQueryClient} from 'react-query'
 import type {Descendant} from 'slate'
-import type {ActionFunction} from 'xstate'
-import {assign, createMachine} from 'xstate'
+import {ActionFunction, assign, createMachine} from 'xstate'
 
 export type DraftEditorMachineEvent =
   | {
@@ -62,7 +61,7 @@ const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: 
           initial: 'noError',
           states: {
             noError: {
-              entry: ['clearErrorMessage'],
+              entry: ['clearErrorMessage', 'clearAnnotations'],
             },
             errored: {
               on: {
@@ -86,10 +85,6 @@ const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: 
             CANCEL: {
               target: 'idle',
             },
-            RECEIVE_DATA: {
-              target: 'editing',
-              actions: ['assignDataToContext', 'loadAnnotations'],
-            },
           },
           invoke: {
             src: 'fetchData',
@@ -99,7 +94,7 @@ const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: 
             },
             onDone: {
               target: '#editing',
-              actions: ['assignDataToContext'],
+              actions: ['assignDataToContext', 'loadAnnotations'],
             },
           },
         },
@@ -216,7 +211,6 @@ const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: 
           },
         }),
         assignDataToContext: assign((context, event) => {
-          // if (event.type !== 'RECEIVE_DATA') return {}
           if (event.type == 'done.invoke.fetchData') {
             const value = {
               ...event.data,
