@@ -20,6 +20,13 @@ import (
 	"mintter/backend/config"
 )
 
+const (
+	coinbaseReward = 50
+	satsPerBtc     = 100000000
+	aliceBalance   = 1250000
+	bobBalance     = 5500000
+)
+
 var (
 	bitcoindImage = "ruimarinho/bitcoin-core"
 	containerName = "bitcoinContainer"
@@ -48,6 +55,7 @@ func TestPeers(t *testing.T) {
 		{
 			name: "bitcoind",
 			lnconfAlice: &config.LND{
+				Alias:           "alice",
 				UseNeutrino:     false,
 				Network:         "regtest",
 				LndDir:          "/tmp/lndirtests/alice",
@@ -60,50 +68,9 @@ func TestPeers(t *testing.T) {
 			},
 
 			lnconfBob: &config.LND{
+				Alias:           "bob",
 				UseNeutrino:     false,
 				Network:         "regtest",
-				LndDir:          "/tmp/lndirtests/bob",
-				NoNetBootstrap:  true,
-				RawRPCListeners: []string{"127.0.0.1:10069"},
-				RawListeners:    []string{"0.0.0.0:8735"},
-				BitcoindRPCUser: bitcoindRPCBobUser,
-				BitcoindRPCPass: bitcoindRPCBobAsciiPass,
-				DisableRest:     true,
-			},
-			credentialsBob: WalletSecurity{
-				WalletPassphrase: "passwordBob",
-				RecoveryWindow:   0,
-				AezeedPassphrase: testVectors[0].password,
-				AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
-				SeedEntropy:      testVectors[0].entropy[:],
-				StatelessInit:    true,
-			},
-			credentialsAlice: WalletSecurity{
-				WalletPassphrase: "passwordAlice",
-				RecoveryWindow:   0,
-				AezeedPassphrase: testVectors[2].password,
-				AezeedMnemonics:  testVectors[2].expectedMnemonic[:],
-				SeedEntropy:      testVectors[2].entropy[:],
-				StatelessInit:    true,
-			},
-		},
-		{
-			name: "neutrino",
-			lnconfAlice: &config.LND{
-				UseNeutrino:     true,
-				Network:         "testnet",
-				LndDir:          "/tmp/lndirtests/alice",
-				NoNetBootstrap:  true,
-				RawRPCListeners: []string{"127.0.0.1:10009"},
-				RawListeners:    []string{"0.0.0.0:9735"},
-				BitcoindRPCUser: bitcoindRPCAliceUser,
-				BitcoindRPCPass: bitcoindRPCAliceAsciiPass,
-				DisableRest:     true,
-			},
-
-			lnconfBob: &config.LND{
-				UseNeutrino:     true,
-				Network:         "testnet",
 				LndDir:          "/tmp/lndirtests/bob",
 				NoNetBootstrap:  true,
 				RawRPCListeners: []string{"127.0.0.1:10069"},
@@ -153,9 +120,8 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	var err error
 	var containerID string
 	var minedBlocks = 101
-	const coinbaseReward = 50
-	const satsPerBtc = 100000000
-	var expectedMinedAmount = coinbaseReward * minedBlocks * satsPerBtc
+
+	//var expectedMinedAmount = coinbaseReward * minedBlocks * satsPerBtc
 
 	if err := os.RemoveAll(lnconfAlice.LndDir); !os.IsNotExist(err) && err != nil {
 		return fmt.Errorf("Could not remove: " + lnconfAlice.LndDir + err.Error())
@@ -187,6 +153,11 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 			return err
 		}
 		defer stopContainer(containerID)
+
+		// Initial mining Coinbase goes to the miner (bitcoind)
+		if err = mineBlocks(uint64(minedBlocks), "", containerID); err != nil {
+			return err
+		}
 	}
 
 	if errAlice = alice.Start(credentialsAlice, "", false); errAlice != nil {
@@ -229,20 +200,20 @@ waitLoop:
 					if aliceAddr, err := alice.NewAddress("", 0); err != nil {
 						return fmt.Errorf("Could not get new address" + err.Error())
 					} else {
-						if err = mineBlocks(uint64(minedBlocks), aliceAddr, containerID); err != nil {
-							return fmt.Errorf("Problem miming blocks" + err.Error())
+						if err = sendToAddress(uint64(aliceBalance), aliceAddr, containerID, true); err != nil {
+							return fmt.Errorf("Problem mining blocks" + err.Error())
 						}
 					}
 				}
 			case DaemonDownEvent:
 				return update.err
 			case ChainSychronizationEvent:
-				if update.Synced && update.BlockHeight == uint32(2*minedBlocks) { //minedBlocks alice + minedBlocks bob
+				if update.Synced && update.BlockHeight == uint32(minedBlocks+2) { //initinal mined blocks + alice funding tx + bob funding tx
 					if balance, err := alice.GetBalance(""); err != nil {
 						return err
-					} else if totFunds := balance.TotalFunds(true); totFunds != int64(expectedMinedAmount) {
+					} else if totFunds := balance.TotalFunds(false); totFunds != int64(aliceBalance) {
 						return fmt.Errorf("Alice has a wrong balance. Expected:" +
-							strconv.FormatInt(int64(expectedMinedAmount), 10) + "sats, but got:" +
+							strconv.FormatInt(int64(aliceBalance), 10) + "sats, but got:" +
 							strconv.FormatInt(int64(totFunds), 10) + "sats")
 					} else {
 						aliceSynced = true
@@ -257,6 +228,8 @@ waitLoop:
 					fmt.Println("Alice received a peer notification from Bob:" + bobID)
 					if aliceID != "" {
 						break waitLoop
+					} else {
+						return fmt.Errorf("Alice received bob peer ID but bob didn't receive alice's in 2 seconds")
 					}
 				}
 			case TransactionEvent:
@@ -280,20 +253,20 @@ waitLoop:
 					if bobAddr, err := bob.NewAddress("", 0); err != nil {
 						return fmt.Errorf("Could not get new address" + err.Error())
 					} else {
-						if err = mineBlocks(uint64(minedBlocks), bobAddr, containerID); err != nil {
-							return fmt.Errorf("Problem miming blocks" + err.Error())
+						if err = sendToAddress(uint64(bobBalance), bobAddr, containerID, true); err != nil {
+							return fmt.Errorf("Problem mining blocks" + err.Error())
 						}
 					}
 				}
 			case DaemonDownEvent:
 				return update.err
 			case ChainSychronizationEvent:
-				if update.Synced && update.BlockHeight == uint32(2*minedBlocks) { //minedBlocks alice + minedBlocks bob
+				if update.Synced && update.BlockHeight == uint32(minedBlocks+2) { //initinal mined blocks + alice funding tx + bob funding tx
 					if balance, err := bob.GetBalance(""); err != nil {
 						return err
-					} else if totFunds := balance.TotalFunds(true); totFunds != int64(expectedMinedAmount) {
+					} else if totFunds := balance.TotalFunds(false); totFunds != int64(bobBalance) {
 						return fmt.Errorf("Bob has a wrong balance. Expected:" +
-							strconv.FormatInt(int64(expectedMinedAmount), 10) + "sats, but got:" +
+							strconv.FormatInt(int64(bobBalance), 10) + "sats, but got:" +
 							strconv.FormatInt(int64(totFunds), 10) + "sats")
 					} else {
 						bobSynced = true
@@ -309,6 +282,8 @@ waitLoop:
 					time.Sleep(2 * time.Second) // We give Alice some time to receive the notification and fill BobID
 					if bobID != "" {
 						break waitLoop
+					} else {
+						return fmt.Errorf("Bob received alice peer ID but alice didn't receive bob's in 2 seconds")
 					}
 				}
 			case TransactionEvent:
@@ -406,9 +381,8 @@ func startContainer(imageName string) (string, error) {
 				"18444/tcp": struct{}{},
 			},*/
 
-		Cmd: []string{"-regtest=1", "-txindex=1",
-			"-zmqpubrawblock=tcp://127.0.0.1:28332",
-			"-zmqpubrawtx=tcp://127.0.0.1:28333",
+		Cmd: []string{"-regtest=1", "-txindex=1", "-fallbackfee=0.0002",
+			"-zmqpubrawblock=tcp://127.0.0.1:28332", "-zmqpubrawtx=tcp://127.0.0.1:28333",
 			"-rpcauth=" + bitcoindRPCGenericUser + ":" + bitcoindRPCGenericBinaryPass,
 			"-rpcauth=" + bitcoindRPCAliceUser + ":" + bitcoindRPCAliceBinaryPass,
 			"-rpcauth=" + bitcoindRPCBobUser + ":" + bitcoindRPCBobBinaryPass,
@@ -445,18 +419,68 @@ func mineBlocks(numBlocks uint64, addr string, containerID string) error {
 		return err
 	}
 	defer cli.Close()
-
+	var cmdID types.IDResponse
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	miningCmd := []string{"bitcoin-cli", "-regtest", "-rpcuser=" + bitcoindRPCGenericUser,
 		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "generatetoaddress", strconv.FormatUint(numBlocks, 10), addr}
-	if res, err := cli.ContainerExecCreate(ctx, containerID, types.ExecConfig{Cmd: miningCmd}); err != nil {
-		return err
-	} else if err := cli.ContainerExecStart(ctx, res.ID, types.ExecStartCheck{}); err != nil {
+
+	createWalletCmd := []string{"bitcoin-cli", "-regtest", "-rpcuser=" + bitcoindRPCGenericUser,
+		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "createwallet", "bitcoindWallet"}
+
+	generateCmd := []string{"bitcoin-cli", "-regtest", "-rpcuser=" + bitcoindRPCGenericUser,
+		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "-generate", strconv.FormatUint(numBlocks, 10)}
+
+	if addr != "" {
+		if cmdID, err = cli.ContainerExecCreate(ctx, containerID, types.ExecConfig{Cmd: miningCmd}); err != nil {
+			return err
+		}
+	} else {
+		if cmdID, err = cli.ContainerExecCreate(ctx, containerID, types.ExecConfig{Cmd: createWalletCmd}); err != nil {
+			return err
+		} else if err = cli.ContainerExecStart(ctx, cmdID.ID, types.ExecStartCheck{}); err != nil {
+			return err
+		} else if cmdID, err = cli.ContainerExecCreate(ctx, containerID, types.ExecConfig{Cmd: generateCmd}); err != nil {
+			return err
+		}
+		time.Sleep(5 * time.Second) // wait for the wallet to be created
+	}
+
+	if err := cli.ContainerExecStart(ctx, cmdID.ID, types.ExecStartCheck{}); err != nil {
 		return err
 	} else {
 		return nil
 	}
 
+}
+
+func sendToAddress(amount uint64, addr string, containerID string, instantMining bool) error {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+	defer cli.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	btcAmount := float32(amount) / float32(satsPerBtc)
+	mineCmd := []string{"bitcoin-cli", "-regtest", "-rpcuser=" + bitcoindRPCGenericUser,
+		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "-generate", "1"}
+
+	sendCmd := []string{"bitcoin-cli", "-regtest", "-rpcuser=" + bitcoindRPCGenericUser,
+		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "sendtoaddress", addr, fmt.Sprintf("%v", btcAmount)}
+	if res, err := cli.ContainerExecCreate(ctx, containerID, types.ExecConfig{Cmd: sendCmd}); err != nil {
+		return err
+	} else if err := cli.ContainerExecStart(ctx, res.ID, types.ExecStartCheck{}); err != nil {
+		return err
+	} else if instantMining {
+		time.Sleep(10 * time.Millisecond) // wait for the previous tx to enter the mempool
+		if res, err := cli.ContainerExecCreate(ctx, containerID, types.ExecConfig{Cmd: mineCmd}); err != nil {
+			return err
+		} else if err := cli.ContainerExecStart(ctx, res.ID, types.ExecStartCheck{}); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -3,6 +3,8 @@ package lightning
 import (
 	"context"
 	"io"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/lightningnetwork/lnd/lnrpc"
@@ -277,7 +279,8 @@ func (d *Ldaemon) subscribeTransactions(ctx context.Context) error {
 		d.log.Error("Failed to call SubscribeTransactions", zap.String("err", err.Error()))
 		return err
 	}
-
+	var received int64 = 0
+	txs := 0
 	d.log.Info("Wallet transactions subscription created")
 	for {
 		notification, err := stream.Recv()
@@ -288,7 +291,20 @@ func (d *Ldaemon) subscribeTransactions(ctx context.Context) error {
 			d.log.Error("Unexpected error in transactions subscriptions", zap.String("err", err.Error()))
 			return err
 		}
-		d.log.Info("SubscribeTransactions received new transaction")
+
+		received += notification.Amount
+		txs++
+		d.log.Info("SubscribeTransactions "+d.cfg.Alias+
+			" received new transaction. Total transactions #"+
+			strconv.Itoa(txs)+" and total amount "+
+			strconv.FormatInt(received, 10), zap.String("BlockHash", notification.BlockHash),
+			zap.String("Addreses", strings.Join(notification.DestAddresses[:], ", ")),
+			zap.String("Label", notification.Label),
+			zap.String("TxHash", notification.TxHash),
+			zap.Int64("amount", notification.Amount),
+			zap.Int32("Confirmations", notification.NumConfirmations),
+		)
+
 		if err != nil {
 			d.log.Error("Failed to receive a transaction", zap.String("err", err.Error()))
 			// in case of unexpected error, we will wait a bit so we won't get
