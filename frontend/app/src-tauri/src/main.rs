@@ -12,7 +12,7 @@ mod menu;
 #[tokio::main]
 async fn main() {
   tauri::Builder::default()
-    .plugin(LoggerBuilder::new([LogTarget::AppDir, LogTarget::Stdout]).build())
+    .plugin(LoggerBuilder::new([LogTarget::AppDir, LogTarget::Stdout, LogTarget::Webview]).build())
     .plugin(daemon::DaemonPlugin::new())
     .menu(menu::get_menu())
     .setup(|app| {

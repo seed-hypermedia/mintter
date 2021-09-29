@@ -1029,7 +1029,7 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
-"@tauri-apps/api@^1.0.0-beta.4", "@tauri-apps/api@^1.0.0-beta.8":
+"@tauri-apps/api@^1.0.0-beta.8":
   version "1.0.0-beta.8"
   resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.0.0-beta.8.tgz#a43dc4a4515148f29bfb616db85445b771e84f78"
   integrity sha512-a56lXB7XvQ4+fKtT0pxpkjTSKhyrQ1Vmjyvt2ox3mT9xw3l7s8IOKHJ1WuqW6TA6xdoy3Cyja3Z3prw8hflS7g==
@@ -7241,12 +7241,12 @@ tar@^6.1.0:
     mkdirp "^1.0.3"
     yallist "^4.0.0"
 
-"tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log":
+"tauri-plugin-log-api@https://github.com/JonasKruckenberg/tauri-plugin-log#target-webview":
   version "0.1.0"
-  resolved "https://github.com/tauri-apps/tauri-plugin-log#7d2f0704c76839d0b3b255835f69e6d1b5789420"
+  resolved "https://github.com/JonasKruckenberg/tauri-plugin-log#864a7a12574c12cf3eced7b9adbf7bdae2c0d80c"
   dependencies:
-    "@tauri-apps/api" "^1.0.0-beta.4"
-    tslib "^2.1.0"
+    "@tauri-apps/api" "^1.0.0-beta.8"
+    tslib "^2.3.1"
 
 temp-dir@^1.0.0:
   version "1.0.0"
@@ -7448,7 +7448,7 @@ tslib@^1.0.0, tslib@^1.8.1, tslib@^1.9.0, tslib@^1.9.3:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
 
-tslib@^2.1.0:
+tslib@^2.1.0, tslib@^2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.3.1.tgz#e8a335add5ceae51aa261d32a490158ef042ef01"
   integrity sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==
