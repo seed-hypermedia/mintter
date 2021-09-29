@@ -3,7 +3,6 @@ package lightning
 import (
 	"context"
 	"io"
-	"strconv"
 	"strings"
 	"time"
 
@@ -279,8 +278,7 @@ func (d *Ldaemon) subscribeTransactions(ctx context.Context) error {
 		d.log.Error("Failed to call SubscribeTransactions", zap.String("err", err.Error()))
 		return err
 	}
-	var received int64 = 0
-	txs := 0
+
 	d.log.Info("Wallet transactions subscription created")
 	for {
 		notification, err := stream.Recv()
@@ -292,14 +290,9 @@ func (d *Ldaemon) subscribeTransactions(ctx context.Context) error {
 			return err
 		}
 
-		received += notification.Amount
-		txs++
-		d.log.Info("SubscribeTransactions "+d.cfg.Alias+
-			" received new transaction. Total transactions #"+
-			strconv.Itoa(txs)+" and total amount "+
-			strconv.FormatInt(received, 10), zap.String("BlockHash", notification.BlockHash),
+		d.log.Debug("SubscribeTransactions "+d.cfg.Alias+" received new transaction.",
+			zap.String("BlockHash", notification.BlockHash),
 			zap.String("Addreses", strings.Join(notification.DestAddresses[:], ", ")),
-			zap.String("Label", notification.Label),
 			zap.String("TxHash", notification.TxHash),
 			zap.Int64("amount", notification.Amount),
 			zap.Int32("Confirmations", notification.NumConfirmations),

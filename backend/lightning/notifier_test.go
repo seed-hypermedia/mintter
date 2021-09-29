@@ -140,7 +140,6 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	bob, errBob := NewLdaemon(logger, lnconfBob)
 	if errBob != nil {
 		return errBob
-
 	}
 
 	alice, errAlice := NewLdaemon(logger2, lnconfAlice)
@@ -163,10 +162,10 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	if errAlice = alice.Start(credentialsAlice, "", false); errAlice != nil {
 		return errAlice
 	}
-	defer alice.Stop()
 
 	clientAlice, errAlice := alice.SubscribeEvents()
 	defer clientAlice.Cancel()
+
 	if errAlice != nil {
 		return errAlice
 	}
@@ -174,10 +173,13 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	if errBob = bob.Start(credentialsBob, "", false); errBob != nil {
 		return errBob
 	}
+
 	defer bob.Stop()
+	defer alice.Stop() //Alice will stop first. She has the interceptor
 
 	clientBob, errBob := bob.SubscribeEvents()
 	defer clientBob.Cancel()
+
 	if errBob != nil {
 		return errBob
 	}
@@ -228,8 +230,6 @@ waitLoop:
 					fmt.Println("Alice received a peer notification from Bob:" + bobID)
 					if aliceID != "" {
 						break waitLoop
-					} else {
-						return fmt.Errorf("Alice received bob peer ID but bob didn't receive alice's in 2 seconds")
 					}
 				}
 			case TransactionEvent:
@@ -279,11 +279,8 @@ waitLoop:
 						" but gotten:" + aliceID)
 				} else {
 					fmt.Println("Bob received a peer notification from Alice:" + aliceID)
-					time.Sleep(2 * time.Second) // We give Alice some time to receive the notification and fill BobID
 					if bobID != "" {
 						break waitLoop
-					} else {
-						return fmt.Errorf("Bob received alice peer ID but alice didn't receive bob's in 2 seconds")
 					}
 				}
 			case TransactionEvent:
@@ -311,10 +308,10 @@ waitLoop:
 
 			}
 			i++
-			if i < 2500 {
+			if i < 20 {
 				time.Sleep(3 * time.Second)
 			} else {
-				return fmt.Errorf("Timeout reached waiting for ready event")
+				return fmt.Errorf("Timeout reached!")
 			}
 
 		}

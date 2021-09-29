@@ -1,6 +1,7 @@
 package lightning
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"reflect"
@@ -141,9 +142,23 @@ func (d *Ldaemon) stopDaemon(err error) {
 		atomic.SwapInt32(&d.coreRunning, 0) == 1 {
 		d.interceptor.RequestShutdown()
 	} else {
-		d.log.Warn("Shutdown request not sent", zap.Bool("Alive", d.interceptor.Alive()),
+		d.log.Warn("Shutdown request not sent via signaling", zap.Bool("Alive", d.interceptor.Alive()),
 			zap.Int32("coreRunning", d.coreRunning), zap.Bool("ShutdownChannel exists",
 				d.interceptor.ShutdownChannel() != nil))
+
+		if d.interceptor.ShutdownChannel() == nil {
+			if d.interceptor, err = signal.Intercept(); err == nil {
+				d.interceptor.RequestShutdown()
+			} else {
+				ctx, Cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer Cancel()
+				d.log.Info("Shuting down via rpc command...")
+				d.lightningClient.StopDaemon(ctx, &lnrpc.StopRequest{})
+			}
+		} else {
+			d.interceptor.RequestShutdown()
+		}
+
 	}
 
 	if d.quitChan != nil {
@@ -175,9 +190,10 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 		return nil, fmt.Errorf("daemon must be stopped first")
 	}
 
-	// Hook interceptor for os signals. We dont use err since the only err possible
-	// is interceptor already created
-	d.interceptor, _ = signal.Intercept()
+	var interceptErr error
+	if d.interceptor, interceptErr = signal.Intercept(); interceptErr != nil {
+		d.log.Warn("Could not hook interceptor. Already started. Check if there is another instance of lnd running on the system")
+	}
 
 	d.quitChan = make(chan struct{})
 
