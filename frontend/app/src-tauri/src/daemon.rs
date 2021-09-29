@@ -32,7 +32,7 @@ pub fn start_daemon(connection: tauri::State<Connection>) {
         Some(event) = cx.recv() => {
           match event {
             CommandEvent::Stdout(out) => trace!("daemon {}", out),
-            CommandEvent::Stderr(err) | CommandEvent::Error(err) => error!("daemon error {}", err),
+            CommandEvent::Stderr(err) | CommandEvent::Error(err) => trace!("daemon error {}", err),
             CommandEvent::Terminated(reason) => {
               match reason.code {
                 Some(code) if code == 0 => trace!("daemon terminated"),
