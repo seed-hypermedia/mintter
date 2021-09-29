@@ -1,36 +1,35 @@
 import {useActor, useInterpret} from '@xstate/react'
-import {createContext, MutableRefObject, useContext, useEffect} from 'react'
+import {createContext, useContext, useEffect} from 'react'
 import {assign, createMachine, Interpreter} from 'xstate'
 
 export type HoverMachineEvent =
   | {
-      type: 'MOUSEENTER_EMBED'
+      type: 'MOUSEENTER_STATEMENT'
       payload: string
     }
   | {
-      type: 'MOUSELEAVE_EMBED'
+      type: 'MOUSELEAVE_STATEMENT'
       payload: string
     }
 
-export type HoverMachineContextType = {statement: any; embed: string | null}
+export type HoverMachineContextType = {statement: string | null}
 export const hoverMachine = createMachine<HoverMachineContextType, HoverMachineEvent>(
   {
     id: 'hover-machine',
     context: {
       statement: null,
-      embed: null,
     },
     initial: 'idle',
     states: {
       idle: {
         on: {
-          MOUSEENTER_EMBED: {
+          MOUSEENTER_STATEMENT: {
             target: 'idle',
-            actions: ['setEmbedToContext'],
+            actions: ['setStatementToContext'],
           },
-          MOUSELEAVE_EMBED: {
+          MOUSELEAVE_STATEMENT: {
             target: 'idle',
-            actions: ['clearEmbedFromContext'],
+            actions: ['clearStatementFromContext'],
           },
         },
       },
@@ -38,21 +37,11 @@ export const hoverMachine = createMachine<HoverMachineContextType, HoverMachineE
   },
   {
     actions: {
-      // setStatementToContext: assign({
-      //   statement: (_, event) => event.target,
-      // }),
-      // clearStatementFromContext: assign((context) => {
-      //   return {
-      //     ...context,
-      //     statement: null,
-      //   }
-      // }),
-      setEmbedToContext: assign({
-        embed: (_, event) => event.payload,
+      setStatementToContext: assign({
+        statement: (_, event) => event.payload,
       }),
-      clearEmbedFromContext: assign((context) => ({
-        ...context,
-        embed: null,
+      clearStatementFromContext: assign((_) => ({
+        statement: null,
       })),
     },
   },
@@ -75,10 +64,18 @@ export function HoverProvider({children, machine = hoverMachine}: HoverProviderP
   return <HoverContext.Provider value={{service}}>{children}</HoverContext.Provider>
 }
 
-export function useEmbedHover(ref: MutableRefObject<HTMLDivElement | HTMLQuoteElement | null>, embedUrl: string) {
+export type UseHoverEventResult = {
+  send: (event: HoverMachineEvent) => void
+  statement: Pick<HoverMachineContextType, 'statement'>
+}
+
+/*
+ * @todo useHoverEvent ref type
+ */
+export function useHoverEvent(ref: any, embedUrl: string): UseHoverEventResult {
   const {service} = useContext(HoverContext)
   if (!service) {
-    throw new Error(`"useHover" must be called within a "<HoverProvider />" component`)
+    throw new Error(`"useHoverEvent" must be called within a "<HoverProvider />" component`)
   }
   const {send} = service
   const [state] = useActor(service)
@@ -86,12 +83,12 @@ export function useEmbedHover(ref: MutableRefObject<HTMLDivElement | HTMLQuoteEl
   useEffect(() => {
     function setHover(event: Event): void {
       event.stopPropagation()
-      send({type: 'MOUSEENTER_EMBED', payload: embedUrl})
+      send({type: 'MOUSEENTER_STATEMENT', payload: embedUrl})
     }
 
     function unsetHover(event: Event): void {
       event.stopPropagation()
-      send({type: 'MOUSELEAVE_EMBED', payload: embedUrl})
+      send({type: 'MOUSELEAVE_STATEMENT', payload: embedUrl})
     }
     let element = ref?.current
     const isSupported = element && element.addEventListener
@@ -108,6 +105,17 @@ export function useEmbedHover(ref: MutableRefObject<HTMLDivElement | HTMLQuoteEl
 
   return {
     send,
-    embed: state.context.embed,
+    statement: state.context,
   }
+}
+
+export function useHoverValue(): HoverMachineContextType {
+  const {service} = useContext(HoverContext)
+  if (!service) {
+    throw new Error(`"useHoverValue" must be called within a "<HoverProvider />" component`)
+  }
+
+  const [state] = useActor(service)
+
+  return state.context
 }
