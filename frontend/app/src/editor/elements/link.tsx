@@ -8,8 +8,11 @@ import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
 import * as Popover from '@radix-ui/react-popover'
+import {shell} from '@tauri-apps/api'
+import {getEmbedIds} from 'frontend/app/src/editor/elements/embed'
 import isUrl from 'is-url'
 import {FormEvent, forwardRef, useEffect, useState} from 'react'
+import {useHistory} from 'react-router'
 import type {BaseRange, BaseSelection, Range} from 'slate'
 import {Editor, Element as SlateElement, Transforms} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
@@ -21,7 +24,7 @@ import {isCollapsed} from '../utils'
 
 export const ELEMENT_LINK = 'link'
 
-const StyledLink = styled('a', {
+const StyledLink = styled('span', {
   textDecoration: 'underline',
   display: 'inline',
   color: '$text-default',
@@ -32,8 +35,19 @@ const StyledLink = styled('a', {
   },
 })
 
-export const Link = forwardRef((props, ref) => {
-  return <StyledLink ref={ref} {...props} />
+export const Link = forwardRef(({element, ...props}, ref) => {
+  const history = useHistory()
+
+  function handleClick() {
+    if (isMintterLink(element.url)) {
+      const [pubId] = getEmbedIds(element.url)
+      history.push(`/p/${pubId}`)
+    } else {
+      shell.open(element.url)
+    }
+  }
+
+  return <StyledLink ref={ref} onClick={handleClick} {...props} />
 })
 
 export const createLinkPlugin = (): EditorPlugin => ({
@@ -55,7 +69,7 @@ export const createLinkPlugin = (): EditorPlugin => ({
             </Box>
           }
         >
-          <Link href={element.url} onClick={() => window.open(element.url as string, '_blank')} {...attributes}>
+          <Link element={element} {...attributes}>
             {children}
           </Link>
         </Tooltip>
