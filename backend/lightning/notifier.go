@@ -114,7 +114,7 @@ loop:
 		if chainErr != nil {
 			select {
 			case <-d.quitChan: // Early exit on shutdown
-				d.log.Warn("Eraly exit while waiting to connect to getinfo rpc server:", zap.String("wrn", chainErr.Error()))
+				d.log.Warn("Early exit while waiting to connect to getinfo rpc server:", zap.String("wrn", chainErr.Error()))
 				return chainErr
 			default:
 				//A common error is "server still waking up"

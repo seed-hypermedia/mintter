@@ -119,7 +119,14 @@ func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string, bloc
 func (d *Ldaemon) stopDaemon(err error) {
 	d.Lock()
 	if atomic.SwapInt32(&d.daemonRunning, 0) == 0 {
-		d.Unlock()
+		if !d.daemonStopped {
+			d.Unlock()
+			d.log.Warn("Trying to stop deamon, but the stopping process has already been started. Waiting for it to finish")
+			d.wg.Wait()
+			d.log.Warn("All goroutines of the pending stopping precess have exited. We consider deamon stopped")
+		} else {
+			d.Unlock()
+		}
 		return
 	}
 	d.Unlock()
@@ -129,9 +136,10 @@ func (d *Ldaemon) stopDaemon(err error) {
 		d.log.Info("Daemon.stop() called")
 	}
 
+	// If the lnd core has returned on error , the interceptor does not have shutdownchannel
 	if d.interceptor.Alive() && d.interceptor.ShutdownChannel() != nil &&
 		atomic.SwapInt32(&d.coreRunning, 0) == 1 {
-		d.interceptor.RequestShutdown() // if daemon is doubled closed, it does strange things on restart
+		d.interceptor.RequestShutdown()
 	} else {
 		d.log.Warn("Shutdown request not sent", zap.Bool("Alive", d.interceptor.Alive()),
 			zap.Int32("coreRunning", d.coreRunning), zap.Bool("ShutdownChannel exists",
@@ -141,9 +149,9 @@ func (d *Ldaemon) stopDaemon(err error) {
 	if d.quitChan != nil {
 		close(d.quitChan)
 	} else {
-		d.log.Error("quitChan does not exists")
+		d.log.Error("quitChan does not exists while trying to stop the deamon. Goroutines won't stop")
 	}
-	d.log.Info("Waiting for all ")
+	d.log.Info("Waiting for all goroutines to finish")
 	d.wg.Wait()
 	d.Lock()
 	d.nodeID = ""
@@ -196,7 +204,6 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 				d.log.Error("Main LND core function returned with error", zap.String("err", lndErr.Error()))
 			}
 			atomic.StoreInt32(&d.coreRunning, 0)
-			time.Sleep(1 * time.Second) //Sometimes right after being stopped it still gets signals.
 			d.log.Info("LND Daemon Finished")
 			go d.stopDaemon(lndErr)
 		}()

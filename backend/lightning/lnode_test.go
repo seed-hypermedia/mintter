@@ -279,10 +279,6 @@ func TestStart(t *testing.T) {
 			t.Run(subtest.subname, func(t *testing.T) {
 				fmt.Println("TEST NAME: " + subtest.subname)
 				tt.lnconf.DisableListen = true
-				if subtest.subname == "Unlock pasword ok and macaroons" {
-					fmt.Println("TEST NAME: " + subtest.subname)
-				}
-
 				d, nodeID, errStart := checkStart(t, tt.lnconf, &subtest.credentials,
 					subtest.newPassword, subtest.RemoveCredentialsBeforeTest, false)
 				d.Stop()
