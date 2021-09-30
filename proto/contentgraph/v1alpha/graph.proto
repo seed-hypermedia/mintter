@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package com.mintter.contentgraph.v1alpha;
+
+option go_package = "mintter/backend/api/contentgraph/v1alpha;contentgraph";
+
+// Content graph services provides access to mentions (backlinks) of a document.
+// The state of backlinks is inherently local and subjective to each peer.
+service ContentGraph {
+  // List mentions of a document.
+  rpc ListMentions(ListMentionsRequest) returns (ListMentionsResponse);
+}
+
+// Request to list mentions.
+message ListMentionsRequest {
+  // Required. ID of the document to list mentions for.
+  string document_id = 1;
+
+  // Optional. Depth can be used to request transitive mentions for a document.
+  // For example depth=1 will return not only mentions of the requested document_id
+  // but also mentions of those direct mentions. The default is depth=0 and will only
+  // return direct mentions.
+  int32 depth = 2;
+
+  // Eventually we could include pagination parameters here.
+}
+
+// Response with the list of mentions.
+message ListMentionsResponse {
+  // List of mentions of the requested document.
+  repeated Mention mentions = 2;
+
+  // Eventually we could include pagination parameters here.
+}
+
+// Mention is a description of a link with the two sides specified.
+//
+// Apparently there's no single well-established unambiguous
+// way to name the two different sides of a link. In this case
+// we use the terminology described in this page: https://www.semrush.com/kb/501-backlinks-report-manual#readingyourreport,
+// i.e. source is where the link was found, target is where the link points to.
+message Mention {
+  // Required. The document ID that the foreign link points to.
+  string target_document_id = 1;
+
+  // Optional. The block ID that the foreign link points to. Can be empty
+  // if the original link was to the whole document.
+  string target_block_id = 2;
+
+  // Required. The ID of the document where the link was found.
+  string source_document_id = 3;
+
+  // Required. The ID of the block where the link was found.
+  string source_block_id = 4;
+}

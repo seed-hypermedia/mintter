@@ -4,6 +4,7 @@ filegroup(
     name = "go",
     srcs = [
         "//proto/accounts/v1alpha:go",
+        "//proto/contentgraph/v1alpha:go",
         "//proto/daemon/v1alpha:go",
         "//proto/documents/v1alpha:go",
         "//proto/networking/v1alpha:go",
@@ -15,6 +16,7 @@ filegroup(
     name = "js",
     srcs = [
         "//proto/accounts/v1alpha:js",
+        "//proto/contentgraph/v1alpha:js",
         "//proto/daemon/v1alpha:js",
         "//proto/documents/v1alpha:js",
         "//proto/networking/v1alpha:js",
