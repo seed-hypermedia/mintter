@@ -11,6 +11,15 @@
   "files.watcherExclude": {
     "bazel-*/**": true
   },
+  "gopls": {
+    "build.directoryFilters": [
+      "-node_modules",
+      "-bazel-out",
+      "-bazel-bin",
+      "-bazel-testlogs",
+      "-bazel-mintter"
+    ]
+  },
   "search.exclude": {
     "bazel-*/**": true
   },
