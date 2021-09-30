@@ -17,6 +17,12 @@ import (builtins.fetchGit {
       mkShell = super.mkShell.override {
         stdenv = super.stdenvNoCC;
       };
+      buildGo117Module = super.buildGoModule.override {
+        go = self.go;
+      };
+      please = super.callPackage ./please {
+        buildGoModule = self.buildGo117Module;
+      };
     })
   ];
 }
