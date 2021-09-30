@@ -7,7 +7,8 @@
     "distDir": "../../../bazel-bin/frontend/app/dist",
     "devPath": "http://localhost:3000",
     "beforeDevCommand": "yarn dev",
-    "beforeBuildCommand": "bazel build //frontend:app //:mintterd"
+    "beforeBuildCommand": "bazel build //frontend:app //:mintterd",
+    "withGlobalTauri": false
   },
   "tauri": {
     "bundle": {
@@ -43,7 +44,10 @@
       "active": false
     },
     "allowlist": {
-      "all": true
+      "all": false,
+      "shell": {
+        "execute": true
+      }
     },
     "windows": [
       {
