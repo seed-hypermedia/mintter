@@ -18,7 +18,7 @@
     "lint": "eslint .",
     "format": "yarn prettier --write .",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "storybook:build": "build-storybook"
   },
   "dependencies": {
     "@radix-ui/react-label": "^0.0.13",

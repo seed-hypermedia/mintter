@@ -33,3 +33,5 @@ _s*
 # Terraform
 .terraform
 
+# Storybook
+storybook-static

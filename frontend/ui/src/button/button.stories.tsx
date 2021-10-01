@@ -1,3 +1,4 @@
+import {Box} from '@mintter/ui/box'
 import type {ComponentMeta, ComponentStory} from '@storybook/react'
 import React from 'react'
 import {Button as Component} from './button'
@@ -32,6 +33,78 @@ export default {
       description: 'Defines the shape of the outside of the button',
     },
   },
+  decorators: [
+    (Story) => (
+      <Box css={{display: 'flex', gap: '$4', alignItems: 'center'}}>
+        <Story />
+      </Box>
+    ),
+  ],
 } as ComponentMeta<typeof Component>
 
-export const Button: ComponentStory<typeof Component> = (args) => <Component {...args}>Button</Component>
+export const Playground: ComponentStory<typeof Component> = (args) => <Component {...args}>Button</Component>
+
+export const Colors: ComponentStory<typeof Component> = (args) => (
+  <>
+    <Component {...args} color="primary">
+      Primary
+    </Component>
+    <Component {...args} color="secondary">
+      Secondary
+    </Component>
+    <Component {...args} color="terciary">
+      Terciary
+    </Component>
+    <Component {...args} color="success">
+      Success
+    </Component>
+    <Component {...args} color="warning">
+      Warning
+    </Component>
+    <Component {...args} color="danger">
+      Danger
+    </Component>
+    <Component {...args} color="muted">
+      Muted
+    </Component>
+  </>
+)
+
+export const Sizes: ComponentStory<typeof Component> = (args) => (
+  <>
+    <Component {...args} size="1">
+      Small Button
+    </Component>
+    <Component {...args} size="2">
+      Medium Button
+    </Component>
+    <Component {...args} size="3">
+      Large Button
+    </Component>
+  </>
+)
+
+export const Variants: ComponentStory<typeof Component> = (args) => (
+  <>
+    <Component {...args} variant="solid">
+      Solid Button
+    </Component>
+    <Component {...args} variant="outlined">
+      Outlined Button
+    </Component>
+    <Component {...args} variant="ghost">
+      Ghost Button
+    </Component>
+  </>
+)
+
+export const Shapes: ComponentStory<typeof Component> = (args) => (
+  <>
+    <Component {...args} shape="rounded">
+      Outlined Button
+    </Component>
+    <Component {...args} shape="pill">
+      Solid Button
+    </Component>
+  </>
+)
