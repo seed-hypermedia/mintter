@@ -1,9 +1,8 @@
 import {Button} from './button'
-import {Theme} from '../theme'
 import {Box} from '../box'
 import {Meta, Story, Canvas} from '@storybook/addon-docs'
 
-<Meta title="Forms/Button" />
+<Meta title="Components/Button" />
 
 export const Template = (args) => <Button {...args} />
 
@@ -20,28 +19,12 @@ import {Button} from '@mintter/ui/button'
 ## Usage
 
 <Canvas>
-  <Story name="default">
-    <Theme>
-      <Button>Default Button</Button>
-    </Theme>
-  </Story>
+  <Story name="Default">{Template.bind({children: 'hello'})}</Story>
 </Canvas>
 
 ### Size
 
 Pass a `size` prop to the `Button` component to change their size.
-
-<Canvas>
-  <Story name="size">
-    <Theme>
-      <Box css={{display: 'flex', gap: '$4', alignItems: 'center'}}>
-        <Button size="1">Small Button</Button>
-        <Button size="2">Medium Button</Button>
-        <Button size="3">Large Button</Button>
-      </Box>
-    </Theme>
-  </Story>
-</Canvas>
 
 > The default `Button` size is `medium`.
 
