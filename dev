@@ -21,7 +21,7 @@ build-frontend() {
 # Command build-desktop builds a production bundle of the desktop Tauri app for the current platform.
 build-desktop() {
     cd frontend/app
-    tauri build
+    tauri build --debug
 }
 
 # Command build-cross builds for all the supported platforms in parallel.
