@@ -1,11 +1,11 @@
 import {useInfo} from '@mintter/client/hooks'
 import {Box} from '@mintter/ui/box'
+import {Text} from '@mintter/ui/text'
 import {lazy} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import type {RouteComponentProps} from 'react-router-dom'
 import {Redirect, Route, Switch} from 'react-router-dom'
 import {AppError} from './app'
-import {AppSpinner} from './components/app-spinner'
 import {Topbar} from './components/topbar'
 
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
@@ -23,7 +23,7 @@ export function AuthorNode({path = '/'}: {path?: string}) {
   })
 
   if (info.isLoading) {
-    return <AppSpinner isFullScreen />
+    return <Text>loading...</Text>
   }
 
   if (info.isError || (info.isSuccess && !info.data)) {

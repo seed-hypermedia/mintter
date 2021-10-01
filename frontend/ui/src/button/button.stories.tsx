@@ -1,11 +1,12 @@
 import type {ComponentMeta, ComponentStory} from '@storybook/react'
 import React from 'react'
-import {Button} from './button'
+import {Button as Component} from './button'
 
 export default {
-  title: 'Button',
-  component: Button,
+  title: 'Primitives/Button',
+  component: Component,
   argTypes: {
+    onClick: {action: 'clicked'},
     color: {
       options: ['primary', 'secondary', 'terciary', 'success', 'warning', 'danger', 'muted'],
       control: {type: 'select'},
@@ -31,8 +32,6 @@ export default {
       description: 'Defines the shape of the outside of the button',
     },
   },
-} as ComponentMeta<typeof Button>
+} as ComponentMeta<typeof Component>
 
-const Template: ComponentStory<typeof Button> = (args) => <Button {...args}>Button</Button>
-
-export const Demo = Template.bind({})
+export const Button: ComponentStory<typeof Component> = (args) => <Component {...args}>Button</Component>

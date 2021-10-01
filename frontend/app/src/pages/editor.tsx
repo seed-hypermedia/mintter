@@ -7,7 +7,6 @@ import {FormEvent, useRef} from 'react'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {useHistory, useParams} from 'react-router'
-import {AppSpinner} from '../components/app-spinner'
 import {Container} from '../components/container'
 import {Separator} from '../components/separator'
 import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
@@ -52,7 +51,7 @@ export default function EditorPage() {
   useEnableSidepanel()
 
   if (state.matches('fetching')) {
-    return <AppSpinner />
+    return <Text>fetching...</Text>
   }
 
   if (state.matches('idle.errored')) {
