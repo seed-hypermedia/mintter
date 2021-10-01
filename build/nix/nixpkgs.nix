@@ -7,4 +7,22 @@ import (builtins.fetchGit {
   # to get the most recent revision.
   ref = "refs/heads/nixpkgs-unstable";
   rev = "e0ce3c683ae677cf5aab597d645520cddd13392b";
-}) {}
+}) {
+  overlays = [
+    (self: super: {
+      go = super.go_1_17;
+      nodejs = super.nodejs-16_x;
+      bazel = super.callPackage ./bazel {};
+      impure-cc = super.callPackage ./impure-cc {};
+      mkShell = super.mkShell.override {
+        stdenv = super.stdenvNoCC;
+      };
+      buildGo117Module = super.buildGoModule.override {
+        go = self.go;
+      };
+      please = super.callPackage ./please {
+        buildGoModule = self.buildGo117Module;
+      };
+    })
+  ];
+}

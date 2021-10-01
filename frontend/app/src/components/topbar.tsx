@@ -1,5 +1,5 @@
 import {Box} from '@mintter/ui/box'
-import {buttonStyles} from '@mintter/ui/button/button'
+import {Button, buttonStyles} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {TextField} from '@mintter/ui/text-field'
@@ -20,6 +20,7 @@ interface NavItemProps {
 const SettingsButton = styled(Link, buttonStyles)
 
 export function Topbar({isPublic = false}: {isPublic?: boolean}) {
+  const history = useHistory()
   return isPublic ? (
     <Box>public topbar here</Box>
   ) : (
@@ -47,6 +48,19 @@ export function Topbar({isPublic = false}: {isPublic?: boolean}) {
           justifyContent: 'space-between',
         }}
       >
+        <Box
+          css={{
+            display: 'flex',
+            marginRight: '$4',
+          }}
+        >
+          <Button color="muted" variant="ghost" size="1" onClick={() => history.goBack()}>
+            <Icon name="ArrowLeft" />
+          </Button>
+          <Button color="muted" variant="ghost" size="1" onClick={() => history.goForward()}>
+            <Icon name="ArrowRight" />
+          </Button>
+        </Box>
         <Search />
       </Container>
       <Box css={{display: 'flex', justifyContent: 'flex-end'}}>
