@@ -1,10 +1,11 @@
+import {Box} from '@mintter/ui/box'
 import type {ComponentMeta, ComponentStory} from '@storybook/react'
 import React from 'react'
-import {Icon as IconComponent, icons} from './icon'
+import {Icon as Component, icons} from './icon'
 
 export default {
   title: 'Primitives/Icon',
-  component: IconComponent,
+  component: Component,
   argTypes: {
     color: {
       options: [
@@ -38,6 +39,28 @@ export default {
       description: 'Icon name',
     },
   },
-} as ComponentMeta<typeof IconComponent>
+  decorators: [
+    (Story) => (
+      <Box
+        css={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(50px, 1fr))',
+          gap: '$6',
+          alignItems: 'center',
+        }}
+      >
+        <Story />
+      </Box>
+    ),
+  ],
+} as ComponentMeta<typeof Component>
 
-export const Icon: ComponentStory<typeof IconComponent> = (args) => <IconComponent {...args}>Button</IconComponent>
+export const Playground: ComponentStory<typeof Component> = (args) => <Component {...args} name="Mintter" />
+
+export const Names: ComponentStory<typeof Component> = (args) => (
+  <>
+    {Object.keys(icons).map((name) => (
+      <Component {...args} name={name} />
+    ))}
+  </>
+)

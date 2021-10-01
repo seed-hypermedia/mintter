@@ -1,3 +1,4 @@
+import {Box} from '@mintter/ui/box'
 import type {ComponentMeta, ComponentStory} from '@storybook/react'
 import React from 'react'
 import {TextField as Component} from './text-field'
@@ -27,9 +28,39 @@ export default {
       defaultValue: 'neutral',
     },
   },
+  decorators: [
+    (Story) => (
+      <Box css={{display: 'flex', flexDirection: 'column', gap: '$4', alignItems: 'center'}}>
+        <Story />
+      </Box>
+    ),
+  ],
 } as ComponentMeta<typeof Component>
 
-export const TextField: ComponentStory<typeof Component> = (args) => <Component {...args} type="text" />
+export const Playground: ComponentStory<typeof Component> = (args) => <Component {...args} type="text" />
+
+export const Statuses: ComponentStory<typeof Component> = (args) => (
+  <>
+    <Component {...args} type="text" status="neutral" />
+    <Component {...args} type="text" status="success" />
+    <Component {...args} type="text" status="warning" />
+    <Component {...args} type="text" status="danger" />
+  </>
+)
+
+export const Shapes: ComponentStory<typeof Component> = (args) => (
+  <>
+    <Component {...args} type="text" shape="rounded" />
+    <Component {...args} type="text" shape="pill" />
+  </>
+)
+
+export const Sizes: ComponentStory<typeof Component> = (args) => (
+  <>
+    <Component {...args} type="text" size="1" />
+    <Component {...args} type="text" size="2" />
+  </>
+)
 
 // import {TextField} from './text-field'
 // import {Meta} from '@storybook/addon-docs'
