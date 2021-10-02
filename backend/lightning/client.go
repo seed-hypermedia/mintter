@@ -14,6 +14,7 @@ import (
 	"github.com/lightningnetwork/lnd/lnrpc/signrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/walletrpc"
 	"github.com/lightningnetwork/lnd/macaroons"
+	"github.com/lightningnetwork/lnd/signal"
 	"github.com/lightningnetwork/lnd/subscribe"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -44,6 +45,7 @@ type API interface {
 	IsSynced() bool
 	WaitReadyForPayment(timeout time.Duration) error
 	GetID() string
+	GetIntercept() *signal.Interceptor
 	GetMacaroon() []byte
 	APIClient() lnrpc.LightningClient
 	NewAddress() (string, error)
@@ -140,6 +142,13 @@ func (d *Ldaemon) GetID() string {
 	d.Lock()
 	defer d.Unlock()
 	return d.nodeID
+}
+
+// GetIntercept returns the signal interceptor
+func (d *Ldaemon) GetIntercept() *signal.Interceptor {
+	d.Lock()
+	defer d.Unlock()
+	return d.interceptor
 }
 
 // GetMacaroon returns the Admin macaroon to externally control the lnd node via RPC

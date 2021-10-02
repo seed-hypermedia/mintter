@@ -137,12 +137,8 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	defer logger2.Sync()
 	logger.Named("Bob")
 	logger2.Named("Alice")
-	bob, errBob := NewLdaemon(logger, lnconfBob)
-	if errBob != nil {
-		return errBob
-	}
 
-	alice, errAlice := NewLdaemon(logger2, lnconfAlice)
+	alice, errAlice := NewLdaemon(logger2, lnconfAlice, nil)
 	if errAlice != nil {
 		return errAlice
 	}
@@ -159,7 +155,9 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 		}
 	}
 
-	if errAlice = alice.Start(credentialsAlice, "", false); errAlice != nil {
+	errAlice = alice.Start(credentialsAlice, "", false)
+
+	if errAlice != nil {
 		return errAlice
 	}
 
@@ -168,6 +166,13 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 
 	if errAlice != nil {
 		return errAlice
+	}
+
+	intercept := alice.GetIntercept()
+
+	bob, errBob := NewLdaemon(logger, lnconfBob, intercept)
+	if errBob != nil {
+		return errBob
 	}
 
 	if errBob = bob.Start(credentialsBob, "", false); errBob != nil {

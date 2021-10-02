@@ -321,7 +321,7 @@ func checkStart(t *testing.T, lnconf *config.LND, credentials *WalletSecurity,
 	defer logger.Sync()
 	logger.Named("backend")
 	var nodeID = ""
-	bob, err := NewLdaemon(logger, lnconf)
+	bob, err := NewLdaemon(logger, lnconf, nil)
 	if err != nil {
 		return bob, nodeID, err
 

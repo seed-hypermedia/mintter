@@ -53,7 +53,7 @@ type Ldaemon struct {
 	synced              bool
 	adminMacaroon       []byte
 	wg                  sync.WaitGroup
-	interceptor         signal.Interceptor
+	interceptor         *signal.Interceptor
 	lightningClient     lnrpc.LightningClient
 	unlockerClient      lnrpc.WalletUnlockerClient
 	routerClient        routerrpc.RouterClient
@@ -66,8 +66,9 @@ type Ldaemon struct {
 }
 
 // NewDaemon is used to create a new daemon that wraps a lightning
-// network daemon.
-func NewLdaemon(log *zap.Logger, cfg *config.LND) (*Ldaemon, error) {
+// network daemon. The user can provide an interceptor from
+// another running lnd instance so they share it (nil otherwise.)
+func NewLdaemon(log *zap.Logger, cfg *config.LND, interceptor *signal.Interceptor) (*Ldaemon, error) {
 
 	return &Ldaemon{
 		cfg:           cfg,
@@ -77,6 +78,7 @@ func NewLdaemon(log *zap.Logger, cfg *config.LND) (*Ldaemon, error) {
 		daemonRunning: 0,
 		coreRunning:   0,
 		synced:        false,
+		interceptor:   interceptor,
 	}, nil
 }
 
@@ -95,11 +97,12 @@ func (d *Ldaemon) Stop() {
 // then before unlocking the old wallet, the password is changed. The old
 // password must be provided in the WalletSecurity struct. This function can be either
 // blocking or non blocking based on the param flag. If blocking flag is set, the
-// function does not return until either flnd is fully up and running, or a problem
+// function does not return until either lnd is fully up and running, or a problem
 // occurs or a 1 minute timeout elapses. If non blocking instead, the function returns
 // inmediately but the user must wait for either the DaemonReadyEvent or the
-// DaemonDownEvent  by subscribing to them
-func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string, blocking bool) error {
+// DaemonDownEvent  by subscribing to them.
+func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string,
+	blocking bool) error {
 	d.startTime = time.Now()
 
 	if err := d.ntfnServer.Start(); err != nil {
@@ -109,12 +112,9 @@ func (d *Ldaemon) Start(WalletSecurity *WalletSecurity, NewPassword string, bloc
 	d.log.Info("Starting lightning daemon", zap.Bool("blocking", blocking))
 	if _, err := d.startDaemon(WalletSecurity, NewPassword, blocking); err != nil {
 		return fmt.Errorf("failed to start daemon: %v", err)
+	} else {
+		return nil
 	}
-	if blocking {
-		d.log.Info("Daemon Started")
-	}
-
-	return nil
 }
 
 func (d *Ldaemon) stopDaemon(err error) {
@@ -147,7 +147,7 @@ func (d *Ldaemon) stopDaemon(err error) {
 				d.interceptor.ShutdownChannel() != nil))
 
 		if d.interceptor.ShutdownChannel() == nil {
-			if d.interceptor, err = signal.Intercept(); err == nil {
+			if *d.interceptor, err = signal.Intercept(); err == nil {
 				d.interceptor.RequestShutdown()
 			} else {
 				ctx, Cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -190,9 +190,12 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 		return nil, fmt.Errorf("daemon must be stopped first")
 	}
 
-	var interceptErr error
-	if d.interceptor, interceptErr = signal.Intercept(); interceptErr != nil {
-		d.log.Warn("Could not hook interceptor. Already started. Check if there is another instance of lnd running on the system")
+	if d.interceptor == nil {
+		if interceptor, interceptErr := signal.Intercept(); interceptErr != nil {
+			d.log.Warn("Could not hook interceptor. Already started. Check if there is another instance of lnd running on the system")
+		} else {
+			d.interceptor = &interceptor
+		}
 	}
 
 	d.quitChan = make(chan struct{})
@@ -215,7 +218,7 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 
 			d.log.Info("Starting LND core")
 			atomic.StoreInt32(&d.coreRunning, 1)
-			lndErr = lnd.Main(lndConfig, lnd.ListenerCfg{}, d.interceptor)
+			lndErr = lnd.Main(lndConfig, lnd.ListenerCfg{}, *d.interceptor)
 			if lndErr != nil {
 				d.log.Error("Main LND core function returned with error", zap.String("err", lndErr.Error()))
 			}
@@ -516,7 +519,7 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 	cfg.LogWriter = writer
 	cfg.MinBackoff = time.Second * 20
 
-	conf, err := lnd.ValidateConfig(cfg, "", d.interceptor)
+	conf, err := lnd.ValidateConfig(cfg, "", *d.interceptor)
 	if err != nil {
 		d.log.Error("Failed to parse config", zap.String("err", err.Error()))
 		return nil, err
