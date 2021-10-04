@@ -6,6 +6,15 @@ import {DefaultElement, DefaultLeaf, withReact} from 'slate-react'
 import type {EditableProps} from 'slate-react/dist/components/editable'
 import type {EditorEventHandlers, EditorPlugin} from './types'
 
+/*
+ * @todo Add Documentation to Editor plugin utils
+ * @body While all these utils work well, are very functional and meet the purpose, it's really hard to follow because of the constant use of inline functions and "clever" solutions. This is specially important to optimize the code not only for the machine but for other developers.
+ *
+ * I don't expect to refactor and do a complete rewrite, but at least create code comments that help other developers follow along and understand what is happening and why is this way.
+ *
+ * It would be nice also to think of ways to test this code.
+ */
+
 const byApply =
   (mode: string) =>
   (plugin: EditorPlugin): boolean => {
