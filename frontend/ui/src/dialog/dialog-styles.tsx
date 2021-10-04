@@ -1,3 +1,4 @@
+import React from 'react'
 import {css, keyframes} from '../stitches.config'
 import type {TextProps} from '../text'
 import {Text} from '../text'
