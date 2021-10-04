@@ -4,12 +4,11 @@ import {blockquote, code, group, heading, ol, statement, ul} from '@mintter/mtta
 import {Icon, icons} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
-import {Fragment, useEffect} from 'react'
+import {Fragment} from 'react'
 import type {BaseRange} from 'slate'
 import {Editor, Node, Path, Transforms} from 'slate'
 import {ReactEditor, useReadOnly, useSlateStatic} from 'slate-react'
 import {Dropdown} from './dropdown'
-import {useLastEditorSelection} from './hovering-toolbar'
 import {Marker} from './marker'
 
 export const Tools = styled('div', {
@@ -116,12 +115,7 @@ const items: {
 export function StatementTools({element}: {element: MttastContent}) {
   const editor = useSlateStatic()
   const isReadOnly = useReadOnly()
-  const {lastSelection} = useLastEditorSelection()
   const path = ReactEditor.findPath(editor, element)
-
-  useEffect(() => {
-    console.log('prevSelection', editor.selection, lastSelection)
-  }, [editor.selection])
 
   return (
     <Tools contentEditable={false}>
@@ -170,8 +164,6 @@ export function StatementTools({element}: {element: MttastContent}) {
  */
 function setType(fn: any) {
   return function setToStatement(editor: Editor, element: MttastContent, at: Path, lastSelection: BaseRange | null) {
-    const prevSelection = {...lastSelection}
-    console.log('🚀 ~ prevSelection', prevSelection)
     Editor.withoutNormalizing(editor, function () {
       const {children, type, ...props} = element
       Transforms.removeNodes(editor, {at})
