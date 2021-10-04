@@ -1,8 +1,8 @@
-import React from 'react'
+import React, {PropsWithChildren} from 'react'
 import {globalStyles} from '../stitches.config'
 import {useTheme} from './use-theme'
 
-export function Theme({children}: {children: React.ReactNode}) {
+export function Theme({children}: PropsWithChildren<unknown>) {
   globalStyles()
   useTheme()
 

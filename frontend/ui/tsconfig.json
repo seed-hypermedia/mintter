@@ -1,6 +1,9 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "jsx": "react-jsx"
-  }
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "resolveJsonModule": true
+  },
+  "exclude": ["./**/*.stories.*"]
 }

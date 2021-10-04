@@ -1,6 +1,6 @@
 import type {TextProps} from '@mintter/ui/text'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
-import type {ComponentProps} from 'react'
+import type {ComponentProps, PropsWithChildren} from 'react'
 import React from 'react'
 import {Box} from '../box'
 import {Button} from '../button'
@@ -28,7 +28,7 @@ function Trigger(props: ComponentProps<typeof DialogPrimitive.Trigger> & Compone
 
 const Content = styled(DialogPrimitive.Content, dialogContentStyles)
 
-function Title(props: TextProps & {children: any}) {
+function Title(props: PropsWithChildren<TextProps>) {
   return (
     <DialogPrimitive.Title asChild>
       <DialogTitle {...props} />
@@ -36,7 +36,7 @@ function Title(props: TextProps & {children: any}) {
   )
 }
 
-function Description(props: TextProps & {children: any}) {
+function Description(props: PropsWithChildren<TextProps>) {
   return (
     <DialogPrimitive.Description asChild>
       <DialogDescription {...props} />

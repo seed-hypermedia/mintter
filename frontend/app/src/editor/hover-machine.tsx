@@ -1,5 +1,5 @@
 import {useActor, useInterpret} from '@xstate/react'
-import {createContext, useContext, useEffect} from 'react'
+import {createContext, PropsWithChildren, useContext, useEffect} from 'react'
 import {assign, createMachine, Interpreter} from 'xstate'
 
 export type HoverMachineEvent =
@@ -56,11 +56,10 @@ export interface HoverGlobalContextType {
 export const HoverContext = createContext<HoverGlobalContextType>({})
 
 export type HoverProviderProps = {
-  children: React.ReactElement
   machine?: typeof hoverMachine
 }
 
-export function HoverProvider({children, machine = hoverMachine}: HoverProviderProps) {
+export function HoverProvider({children, machine = hoverMachine}: PropsWithChildren<HoverProviderProps>) {
   const service = useInterpret(machine)
 
   return <HoverContext.Provider value={{service}}>{children}</HoverContext.Provider>

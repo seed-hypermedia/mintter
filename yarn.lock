@@ -2083,15 +2083,15 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-4.2.0.tgz#667bfc6186ae7c9e0b45a08960c551437176e1ca"
   integrity sha512-VkE3KLBmJwcCaVARtQpfuKcKv8gcBmUubrfHGF84dXuuW6jgsRYxPtzcIhPyK9WAPpRt2/xY6zkD9MnRaJzSyw==
 
-"@stitches/core@^1.0.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@stitches/core/-/core-1.2.0.tgz#5d507e1d27af1363265dbfdfd419d8e11262efce"
-  integrity sha512-UjZHg9aWpqnRGtyewmNFEwtceRAiK7O1CjAGTBtN9bbw2N02SRZFYCTLUMxpFZi4J7juBQJKxbc7yvi+Y4Qg2g==
+"@stitches/core@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@stitches/core/-/core-1.2.1.tgz#64dc228d2f6e29708fe25666fcd51f4febcc40bb"
+  integrity sha512-khmA2qkQt+YWMa3PAG5ybLmc6jSGBfXEvOOsRZV6EgxbN0UTMdvOPMqzouPepo9hsUiPeEtqLzQjKktir6hPaw==
 
-"@stitches/react@^1.0.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@stitches/react/-/react-1.2.0.tgz#cdb69256d76bcb4753417d59bc42da21fd603ba1"
-  integrity sha512-GuMh610X3oJB2pdywARg1jccjAEvrDbq4iwy1SernR/4o1FX5SOTJZIjC4CquagZQjL00KFV8Cwfq/12FS6aBg==
+"@stitches/react@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@stitches/react/-/react-1.2.1.tgz#1e6e5877ccb0151a26f27c731e03efee55e8f7c6"
+  integrity sha512-xVnYuU3ZwvI4ghdM5r21hCb4eejkTZQqxm3q5iRTBnrbiG/8jpbEWTi8gXXjZ9X4+PssjuqBrjvPSqAcPvya6w==
 
 "@storybook/addon-actions@6.3.8", "@storybook/addon-actions@^6.3.8":
   version "6.3.8"

@@ -1,9 +1,10 @@
 import * as Label from '@radix-ui/react-label'
 import type * as Stitches from '@stitches/react'
+import {css} from '@stitches/react'
 import autosize from 'autosize'
 import {nanoid} from 'nanoid'
-import type {LegacyRef, MutableRefObject} from 'react'
-import React, {forwardRef, useLayoutEffect, useRef} from 'react'
+import type {LegacyRef, MutableRefObject, PropsWithChildren, RefCallback} from 'react'
+import {forwardRef, useLayoutEffect, useRef} from 'react'
 import {Box} from '../box'
 import type {CSS} from '../stitches.config'
 import {styled} from '../stitches.config'
@@ -30,7 +31,7 @@ const InputContainer = styled(Box, {
   },
 })
 
-const Input = styled('input', {
+const inputStyles = css({
   $$backgroundColor: '$colors$background-default',
 
   all: 'unset',
@@ -126,6 +127,17 @@ const Input = styled('input', {
   },
 })
 
+const Input = styled('input', inputStyles)
+
+export type InputVariants = Stitches.VariantProps<typeof Input>
+// TODO: when passing `as` to component it complains
+export type InputProps = InputVariants
+
+// @ts-ignore
+function InputElement(props: PropsWithChildren<InputProps & {ref: any}>) {
+  return <Input {...props} />
+}
+
 const TextFieldHint = styled(Text, {
   variants: {
     status: {
@@ -149,13 +161,14 @@ const TextFieldHint = styled(Text, {
   },
 })
 
-type TextFieldProps = React.HTMLProps<HTMLInputElement> &
-  Stitches.VariantProps<typeof Input> & {
+type TextFieldProps = PropsWithChildren<
+  InputProps & {
     id?: string
     label?: string
     hint?: string
     containerCss?: CSS
   }
+>
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   ({label, status = 'neutral', hint, id = nanoid(), containerCss, ...props}: TextFieldProps, ref) => {
@@ -172,16 +185,13 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       // @ts-ignore
       <InputContainer size={props.size} css={containerCss}>
         {label ? (
-          <Label.Root as={Text} htmlFor={id} size={props.size === '1' ? '2' : props.size === '2' ? '3' : undefined}>
+          <Label.Root as={Text} htmlFor={id} size={props.size == 1 ? '2' : props.size == 2 ? '3' : undefined}>
             {label}
           </Label.Root>
         ) : null}
-        {/* 
-      TODO: Fix types
-      // @ts-ignore */}
-        <Input ref={mergeRefs([localRef, ref])} id={id} status={status} {...props} />
+        <InputElement ref={mergeRefs<HTMLInputElement>([localRef, ref])} {...props} />
         {hint ? (
-          <TextFieldHint status={status} size={props.size == '1' || props.size == '2' ? props.size : undefined}>
+          <TextFieldHint status={status} size={props.size == 1 || props.size == 2 ? props.size : undefined}>
             {hint}
           </TextFieldHint>
         ) : null}
@@ -192,7 +202,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
 TextField.displayName = 'TextField'
 
 function mergeRefs<T = any>(refs: Array<MutableRefObject<T> | LegacyRef<T>>): RefCallback<T> {
-  return (value) => {
+  return (value: T | null) => {
     refs.forEach((ref) => {
       if (typeof ref == 'function') {
         ref(value)

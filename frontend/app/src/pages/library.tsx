@@ -5,7 +5,7 @@ import {Button, buttonStyles} from '@mintter/ui/button'
 import type {CSS} from '@mintter/ui/stitches.config'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text, textStyles} from '@mintter/ui/text'
-import {useCallback} from 'react'
+import {PropsWithChildren, useCallback} from 'react'
 import {Route, Switch, useHistory, useRouteMatch} from 'react-router-dom'
 import {Container} from '../components/container'
 import {Link} from '../components/link'
@@ -171,7 +171,6 @@ const NoConnectionsBox: React.FC<{onConnect: () => void}> = ({onConnect}: any) =
 }
 
 export type NavItemProps = {
-  children: React.ReactNode
   to: string
   css?: CSS
   onlyActiveWhenExact?: boolean
@@ -181,7 +180,7 @@ const NavItemStyled = styled(Link, textStyles, {
   textDecoration: 'none',
 })
 
-function NavItem({children, to, css, onlyActiveWhenExact = false, ...props}: NavItemProps) {
+function NavItem({children, to, css, onlyActiveWhenExact = false, ...props}: PropsWithChildren<NavItemProps>) {
   const match = useRouteMatch({
     path: to,
     exact: onlyActiveWhenExact,

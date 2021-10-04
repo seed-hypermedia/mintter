@@ -1,5 +1,5 @@
 import {Box} from '@mintter/ui/box'
-import {lazy, Suspense, useMemo, useState} from 'react'
+import {lazy, PropsWithChildren, Suspense, useMemo, useState} from 'react'
 import type {Descendant} from 'slate'
 import {Editable, Slate} from 'slate-react'
 import {HoveringToolbar} from './hovering-toolbar'
@@ -18,7 +18,6 @@ interface AsyncEditorProps {
   mode: string
   value: Descendant[]
   onChange: (value: Descendant[]) => void
-  children?: unknown
   readOnly?: boolean
 }
 
@@ -26,7 +25,7 @@ const AsyncEditor = lazy(async () => {
   const resolvedPlugins = await Promise.all(plugins)
 
   return {
-    default: function AsyncEditor({value, onChange, mode, children, readOnly}: AsyncEditorProps) {
+    default: function AsyncEditor({value, onChange, mode, children, readOnly}: PropsWithChildren<AsyncEditorProps>) {
       const editor = useMemo(() => buildEditorHook(resolvedPlugins, mode), [mode])
       const renderElement = useMemo(() => buildRenderElementHook(resolvedPlugins, mode), [mode])
       const renderLeaf = useMemo(() => buildRenderLeafHook(resolvedPlugins, mode), [mode])
@@ -55,7 +54,6 @@ interface EditorProps {
   mode?: string
   value: Descendant[]
   onChange?: (value: Descendant[]) => void
-  children?: unknown
   readOnly?: boolean
 }
 
@@ -65,7 +63,7 @@ export function Editor({
   children,
   readOnly = false,
   mode = readOnly ? 'read-only' : 'default',
-}: EditorProps) {
+}: PropsWithChildren<EditorProps>) {
   const [visible, setVisible] = useState(false)
 
   return (

@@ -8,10 +8,7 @@ import {Text, textStyles} from '@mintter/ui/text'
 import type {Variants} from 'framer-motion'
 import {motion} from 'framer-motion'
 import type React from 'react'
-
-export type ReactNode<T = any> = T & {
-  children: React.ReactNode
-}
+import {PropsWithChildren} from 'react'
 export interface OnboardingStepPropsType {
   prev: () => void
   next: () => void
@@ -74,7 +71,7 @@ const OnboardingStepStyled = styled(motion.form, {
   justifyContent: 'center',
 })
 
-export function OnboardingStep(props) {
+export function OnboardingStep(props: PropsWithChildren<unknown>) {
   return (
     <OnboardingStepStyled
       variants={containerAnimationVariants}
@@ -99,8 +96,8 @@ export function OnboardingStepTitle({
   icon,
   children,
   ...props
-}: ReactNode<{
-  icon?
+}: PropsWithChildren<{
+  icon?: JSX.Element
   css?: CSS
 }>) {
   return (
