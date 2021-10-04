@@ -162,16 +162,18 @@ export function StatementTools({element}: {element: MttastContent}) {
 /*
  * @todo add correct types to builder function
  */
+/* eslint-disable */
 function setType(fn: any) {
-  return function setToStatement(editor: Editor, element: MttastContent, at: Path, lastSelection: BaseRange | null) {
+  return function setToStatement(editor: Editor, element: MttastContent, at: Path) {
     Editor.withoutNormalizing(editor, function () {
-      const {children, type, ...props} = element
+      const {children, ...props} = element
       Transforms.removeNodes(editor, {at})
       Transforms.insertNodes(editor, fn({...props}, children), {at})
     })
   }
 }
 
+/* eslint-disable */
 function setList(fn: any) {
   return function wrapWithListType(editor: Editor, element: MttastContent, at: Path) {
     const list = Node.parent(editor, at)

@@ -40,8 +40,9 @@ export default function EditorPage() {
       history.push(`/p/${context.localDraft?.id}`)
     },
     loadAnnotations: (context: DraftEditorMachineContext) => {
-      console.log('LOAD ANNOTATIONS!!')
-      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', payload: context.localDraft!.content})
+      if (!context.localDraft) return
+
+      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', payload: context.localDraft.content})
     },
     client,
   })

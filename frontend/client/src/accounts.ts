@@ -9,7 +9,7 @@ import {createGrpcClient} from './grpc-client'
  * @param rpc
  * @returns
  */
-export function generateSeed(aezeedPassphrase?: string, rpc?: GrpcClient) {
+export function generateSeed(rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
 
   const request = GenSeedRequest.fromPartial({})

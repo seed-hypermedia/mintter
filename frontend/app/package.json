@@ -13,11 +13,13 @@
     "serve": "yarn http-server dist/static",
     "lint": "eslint .",
     "format": "yarn prettier --write .",
+    "validate": "yarn lint && yarn format",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },
   "dependencies": {
     "@mintter/client": "^0.2.1",
+    "@mintter/mttast": "^0.1.0",
     "@mintter/mttast-builder": "^0.1.0",
     "@mintter/ui": "^0.2.1",
     "@radix-ui/react-accessible-icon": "0.1.0",
@@ -64,6 +66,7 @@
     "@storybook/react": "^6.3.9",
     "@tauri-apps/cli": "^1.0.0-beta.10",
     "@types/is-url": "^1.2.30",
+    "@types/lodash.isequal": "^4.5.5",
     "@types/react": "^17.0.20",
     "@types/react-copy-to-clipboard": "^5.0.1",
     "@types/react-dom": "^17.0.9",

@@ -17,7 +17,7 @@ import {createGrpcClient} from './grpc-client'
  * @param rpc RPC client
  * @returns {Promise<Document>} A promise to the Draft.
  */
-export async function createDraft(publicationId: string = '', rpc?: GrpcClient): Promise<Document> {
+export async function createDraft(publicationId = '', rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
 
   const request = CreateDraftRequest.fromPartial({existingDocumentId: publicationId})
@@ -44,7 +44,7 @@ export function deleteDraft(documentId: string, rpc?: GrpcClient) {
 export function updateDraft(entry: Document, rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
   const request = UpdateDraftRequest.fromPartial({document: entry})
-  return new DraftsClientImpl(rpc).updateDraft({document: entry})
+  return new DraftsClientImpl(rpc).updateDraft(request)
 }
 
 /**

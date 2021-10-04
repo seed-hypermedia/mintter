@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "prebuild": "yarn validate",
-    "build": "yarn app build",
+    "build": "yarn workspaces run build",
     "lint": "yarn workspaces run lint",
     "format": "yarn workspaces run format",
     "validate": "yarn workspaces run validate",

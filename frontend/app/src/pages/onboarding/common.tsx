@@ -100,7 +100,7 @@ export function OnboardingStepTitle({
   children,
   ...props
 }: ReactNode<{
-  icon?: JSX.Element
+  icon?
   css?: CSS
 }>) {
   return (
@@ -118,7 +118,7 @@ const OnboardingStepDescriptionStyled = styled(motion.p, textStyles, {
   maxWidth: '$three-quarters',
 })
 
-export function OnboardingStepDescription(props: ReactNode<TextProps>): JSX.Element {
+export function OnboardingStepDescription(props: ReactNode<TextProps>) {
   return <OnboardingStepDescriptionStyled variants={fadeAnimationVariants} {...props} />
 }
 

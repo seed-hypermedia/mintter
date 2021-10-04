@@ -35,7 +35,7 @@ const StyledLink = styled('span', {
   },
 })
 
-export const Link = forwardRef(({element, ...props}, ref) => {
+export const Link = forwardRef<HTMLSpanElement, {element: LinkType}>(({element, ...props}, ref) => {
   const history = useHistory()
 
   function handleClick() {
@@ -49,6 +49,8 @@ export const Link = forwardRef(({element, ...props}, ref) => {
 
   return <StyledLink ref={ref} onClick={handleClick} {...props} />
 })
+
+Link.displayName = 'Link'
 
 export const createLinkPlugin = (): EditorPlugin => ({
   name: ELEMENT_LINK,
@@ -130,17 +132,23 @@ export function insertLink(editor: Editor, {url, selection = editor.selection, w
     unwrapLink(editor)
   }
 
-  const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])
+  if (!selection) {
+    return
+  }
 
-  if (isCollapsed(selection!)) {
-    Transforms.insertNodes(editor, newLink, {at: selection!})
+  const newLink: LinkType = link({url}, isCollapsed(selection) ? [text(url)] : [])
+
+  if (isCollapsed(selection)) {
+    Transforms.insertNodes(editor, newLink, {at: selection})
   } else {
-    Transforms.wrapNodes(editor, newLink, {at: selection!, split: true})
+    Transforms.wrapNodes(editor, newLink, {at: selection, split: true})
     Transforms.collapse(editor, {edge: 'end'})
   }
 }
 
 export function isLinkActive(editor: Editor, selection: BaseSelection = editor.selection): boolean {
+  if (!selection) return false
+
   const [link] = Editor.nodes(editor, {
     match: (n) => !Editor.isEditor(n) && SlateElement.isElement(n) && n.type == ELEMENT_LINK,
     at: selection,
@@ -265,13 +273,14 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
 
   useEffect(() => {
     if (!editor) return
-    const linkEntry = Editor.above(editor, {
-      match: (n) => n.type == ELEMENT_LINK,
+    const linkEntry = Editor.above<LinkType>(editor, {
+      /* eslint-disable */
+      match: (n: any) => n.type == ELEMENT_LINK,
     })
     if (!linkEntry) return
     let link = linkEntry[0].url as string
     setLink(link)
-  }, [editor.selection])
+  }, [editor])
 
   return (
     <Box
@@ -302,8 +311,8 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
           name="address"
           label="Link Address"
           value={link}
-          onChange={(e) => setLink(e.target.value)}
-          size="1"
+          onChange={(e) => setLink(e.currentTarget.value)}
+          size={1}
         />
         <Box
           css={{

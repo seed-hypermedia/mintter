@@ -19,16 +19,16 @@ import {copyTextToClipboard} from '../editor/elements/statement'
 
 export type SidepanelEventsType =
   | {
+      type: 'SIDEPANEL_LOAD_ANNOTATIONS'
+      payload: Array<FlowContent>
+    }
+  | {
       type: 'SIDEPANEL_ADD_ITEM'
       payload: string
     }
   | {
       type: 'SIDEPANEL_REMOVE_ITEM'
       payload: string
-    }
-  | {
-      type: 'SIDEPANEL_LOAD_ANNOTATIONS'
-      payload: Array<FlowContent>
     }
   | {
       type: 'SIDEPANEL_ENABLE'
@@ -149,6 +149,7 @@ export const sidepanelMachine = createMachine<SidepanelContextType, SidepanelEve
 )
 
 export interface SidepanelGlobalContextType {
+  /* eslint-disable */
   service?: Interpreter<SidepanelContextType, any, SidepanelEventsType>
 }
 
@@ -198,7 +199,7 @@ export function useEnableSidepanel() {
     return () => {
       send('SIDEPANEL_DISABLE')
     }
-  }, [])
+  }, [send])
 }
 
 export type SidepanelProps = {

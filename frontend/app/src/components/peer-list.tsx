@@ -23,7 +23,7 @@ export function PeerList() {
           <Text key={id}>
             <Text as="span" color="muted" css={{display: 'inline-block', marginRight: '$4'}}>
               {index + 1}.
-            </Text>{' '}
+            </Text>
             {device.peerId}
           </Text>
         ))}
@@ -31,5 +31,5 @@ export function PeerList() {
     )
   }
 
-  return null
+  return <Text>impossible state on PeerList?</Text>
 }

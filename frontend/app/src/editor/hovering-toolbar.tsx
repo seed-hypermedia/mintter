@@ -2,7 +2,6 @@ import type {Text as MTTText} from '@mintter/mttast'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {icons} from '@mintter/ui/icon'
-import type {Ref} from 'react'
 import React, {forwardRef, useEffect, useRef, useState} from 'react'
 import ReactDOM from 'react-dom'
 import type {BaseSelection} from 'slate'
@@ -10,8 +9,6 @@ import {Editor, Range, Transforms} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {Tooltip} from '../components/tooltip'
 import {ToolbarLink} from './elements/link'
-import {ELEMENT_ORDERED_LIST} from './elements/ordered-list'
-import {ELEMENT_UNORDERED_LIST} from './elements/unordered-list'
 import {isMarkActive, toggleMark} from './utils'
 
 type FormatTypes = keyof Omit<MTTText, 'type' | 'text' | 'value' | 'data' | 'position'>
@@ -51,7 +48,7 @@ const Portal = ({children}: {children: React.ReactChildren}) => {
   return typeof document == 'object' ? ReactDOM.createPortal(children, document.body) : null
 }
 
-const Menu = forwardRef(({children, ...props}, ref: Ref<HTMLDivElement>) => (
+const Menu = forwardRef<HTMLDivElement, Record<string, unknown>>(({children, ...props}, ref) => (
   <Box
     {...props}
     ref={ref}
@@ -77,6 +74,8 @@ const Menu = forwardRef(({children, ...props}, ref: Ref<HTMLDivElement>) => (
     {children}
   </Box>
 ))
+
+Menu.displayName = 'Menu'
 
 export interface UseLastSelectionResult {
   lastSelection: Range | null
@@ -143,7 +142,7 @@ export function HoveringToolbar() {
     return () => {
       removeEventListener('keydown', escEvent)
     }
-  }, [])
+  }, [resetSelection])
 
   return (
     <Portal>
@@ -166,36 +165,4 @@ export function HoveringToolbar() {
 
 function capitalize(word: string) {
   return `${word[0].toUpperCase()}${word.slice(1)}`
-}
-
-const listFormatLabel = {
-  [ELEMENT_UNORDERED_LIST]: 'Unordered List (ul)',
-  [ELEMENT_ORDERED_LIST]: 'Ordered List (ol)',
-}
-
-function ToggleListButton({type}: {type: 'orderedList' | 'unorderedList'}) {
-  const editor = useSlateStatic()
-  return (
-    <Tooltip content={type}>
-      {/* <Button
-        css={
-          isMarkActive(editor, format)
-            ? {
-                backgroundColor: '$background-opposite',
-                color: '$text-opposite',
-              }
-            : {}
-        }
-        onMouseDown={(event) => {
-          console.log('mouse down!', event)
-
-          event.preventDefault()
-          toggleMark(editor, format)
-        }}
-        variant="ghost"
-        size="1"
-        color="muted"
-      ></Button> */}
-    </Tooltip>
-  )
 }

@@ -30,9 +30,11 @@ export const createTabPlugin = (): EditorPlugin => {
 }
 
 function moveStatement(editor: Editor, up: boolean) {
+  if (!editor.selection) return
+
   const [statement, statementPath] =
     Editor.above(editor, {
-      at: editor.selection!,
+      at: editor.selection,
       mode: 'lowest',
       match: isFlowContent,
     }) || []

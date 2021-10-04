@@ -1,9 +1,8 @@
 import {styled} from '@mintter/ui/stitches.config'
-import {forwardRef} from 'react'
 
 const DEFAULT_TAG = 'div'
 
-const StyledContainer: any = styled(DEFAULT_TAG, {
+export const Container = styled(DEFAULT_TAG, {
   // Reset
   boxSizing: 'border-box',
   flexShrink: 0,
@@ -33,6 +32,3 @@ const StyledContainer: any = styled(DEFAULT_TAG, {
     size: '2',
   },
 })
-
-export const Container: any = forwardRef((props, forwardedRef) => <StyledContainer {...props} ref={forwardedRef} />)
-Container.displayName = 'Container'

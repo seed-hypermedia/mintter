@@ -40,7 +40,8 @@ export const hoverMachine = createMachine<HoverMachineContextType, HoverMachineE
       setStatementToContext: assign({
         statement: (_, event) => event.payload,
       }),
-      clearStatementFromContext: assign((_) => ({
+      clearStatementFromContext: assign((context) => ({
+        ...context,
         statement: null,
       })),
     },
@@ -48,6 +49,7 @@ export const hoverMachine = createMachine<HoverMachineContextType, HoverMachineE
 )
 
 export interface HoverGlobalContextType {
+  /* eslint-disable */
   service?: Interpreter<HoverMachineContextType, any, HoverMachineEvent>
 }
 
@@ -72,6 +74,7 @@ export type UseHoverEventResult = {
 /*
  * @todo useHoverEvent ref type
  */
+/* eslint-disable */
 export function useHoverEvent(ref: any, embedUrl: string): UseHoverEventResult {
   const {service} = useContext(HoverContext)
   if (!service) {
@@ -91,17 +94,18 @@ export function useHoverEvent(ref: any, embedUrl: string): UseHoverEventResult {
       send({type: 'MOUSELEAVE_STATEMENT', payload: embedUrl})
     }
     let element = ref?.current
+    if (!element) return
     const isSupported = element && element.addEventListener
     if (!isSupported) return
 
-    element!.addEventListener('mouseenter', setHover)
-    element!.addEventListener('mouseleave', unsetHover)
+    element.addEventListener('mouseenter', setHover)
+    element.addEventListener('mouseleave', unsetHover)
 
     return () => {
-      element!.removeEventListener('mouseenter', setHover)
-      element!.removeEventListener('mouseleave', unsetHover)
+      element.removeEventListener('mouseenter', setHover)
+      element.removeEventListener('mouseleave', unsetHover)
     }
-  }, [ref])
+  }, [ref, embedUrl, send])
 
   return {
     send,

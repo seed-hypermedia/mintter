@@ -12,7 +12,7 @@ import {
   SecurityPackIcon,
 } from './common'
 
-export function Welcome({next}: OnboardingStepPropsType): JSX.Element {
+export function Welcome({next}: OnboardingStepPropsType) {
   return (
     <OnboardingStep>
       <OnboardingStepTitle>Welcome to Mintter</OnboardingStepTitle>
@@ -47,7 +47,7 @@ export function Welcome({next}: OnboardingStepPropsType): JSX.Element {
   )
 }
 
-const WelcomeStep = ({icon, title, description}: {icon: JSX.Element; title: string; description: string}) => {
+const WelcomeStep = ({icon, title, description}: {icon; title: string; description: string}) => {
   return (
     <Box
       css={{

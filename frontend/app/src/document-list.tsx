@@ -14,21 +14,22 @@ import {Link} from './components/link'
 import {deleteConfirmationDialogMachine} from './delete-confirmation-dialog'
 import {getDateFormat} from './utils/get-format-date'
 
-export function DocumentList({data, status, error}) {
+type ListItemType = {document: Document} & Partial<Publication>
+
+export type DocumentListData = Array<ListItemType>
+
+type DocumentListProps = {
+  data: DocumentListData
+}
+
+export function DocumentList({data}: DocumentListProps) {
   const location = useLocation()
   const isDraft = useMemo(() => location.pathname.includes('drafts'), [location.pathname])
   const toPrefix = useMemo(() => (isDraft ? '/editor' : '/p'), [isDraft])
 
-  if (status == 'loading') {
-    return <p>Loading...</p>
-  }
-  if (status == 'error') {
-    console.error('DocumentList error: ', error)
-    return <p>ERROR</p>
-  }
   return (
     <Box as="ul" css={{padding: 0}}>
-      {data.map((item: {document: Document} | Publication) => (
+      {data.map((item) => (
         <ListItem key={item.document?.id} isDraft={isDraft} item={item} toPrefix={toPrefix} />
       ))}
     </Box>
@@ -46,8 +47,13 @@ const StyledLink = styled(Link, {
     backgroundColor: '$background-muted',
   },
 })
+export type ListItemProps = {
+  item: ListItemType
+  toPrefix: string
+  isDraft: boolean
+}
 
-function ListItem({item, toPrefix, isDraft}: any) {
+function ListItem({item, toPrefix, isDraft}: ListItemProps) {
   const queryClient = useQueryClient()
   const [state, send] = useMachine(
     deleteConfirmationDialogMachine({
@@ -59,6 +65,7 @@ function ListItem({item, toPrefix, isDraft}: any) {
   )
 
   let {id, title, subtitle, author: itemAuthor} = item.document
+
   const {data: author} = useAccount(itemAuthor, {
     enabled: !!itemAuthor,
   })
@@ -154,14 +161,14 @@ function ListItem({item, toPrefix, isDraft}: any) {
                 data-testid="delete-button"
                 size="1"
                 color="danger"
-                onClick={(e: any) => {
+                onClick={(e) => {
                   e.preventDefault()
                   send({type: 'OPEN_DIALOG', payload: {entryId: item.document.id, isDraft}})
                 }}
               >
                 trash
               </Alert.Trigger>
-              <Alert.Content onClick={(e: any) => e.stopPropagation()}>
+              <Alert.Content onClick={(e) => e.stopPropagation()}>
                 <Alert.Title color="danger">Delete document</Alert.Title>
                 <Alert.Description>
                   Are you sure you want to delete this document? This action is not reversible.

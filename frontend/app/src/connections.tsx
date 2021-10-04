@@ -25,7 +25,7 @@ export function Connections() {
           error: 'Connection Error',
         })
         setPeer('')
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err.message)
       }
     }
@@ -46,11 +46,11 @@ export function Connections() {
         <Text as="h3" size="7" css={{fontWeight: '$bold'}}>
           Connections
         </Text>
-        {data!.length == 0 ? (
+        {data && data.length == 0 ? (
           <Text size="2">no connections available :(</Text>
         ) : (
           <Box as="ul" aria-label="connections" css={{marginTop: '$6', padding: 0}}>
-            {data!.map((c: Account) => (
+            {data.map((c: Account) => (
               <AccountItem key={c.id} account={c} />
             ))}
           </Box>

@@ -46,7 +46,6 @@ export {
 } from '../.generated/networking/v1alpha/networking'
 export {generateSeed, getAccount, listAccounts, registerAccount, updateAccount} from './accounts'
 export {getInfo} from './daemon'
-export {getDocument} from './documents'
 export {createDraft, deleteDraft, getDraft, listDrafts, publishDraft, updateDraft} from './drafts'
 export {createGrpcClient} from './grpc-client'
 export {connect, getPeerInfo, listPeerAddrs, listSuggestedProfiles} from './networking'

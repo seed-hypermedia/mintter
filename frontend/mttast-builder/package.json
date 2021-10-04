@@ -11,7 +11,8 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint .",
-    "format": "yarn prettier --write ."
+    "format": "yarn prettier --write .",
+    "validate": "yarn lint && yarn format"
   },
   "devDependencies": {
     "@mintter/mttast": "^0.1.0",

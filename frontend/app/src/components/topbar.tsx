@@ -3,19 +3,11 @@ import {Button, buttonStyles} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {TextField} from '@mintter/ui/text-field'
-import {useRef} from 'react'
+import {FormEvent, useRef} from 'react'
 import {useHistory} from 'react-router-dom'
 import {MINTTER_LINK_PREFIX} from '../constants'
 import {Container} from './container'
 import {Link} from './link'
-
-interface NavItemProps {
-  href: string
-  onClick: () => void
-  isActive: boolean
-  title: string
-  className?: string
-}
 
 const SettingsButton = styled(Link, buttonStyles)
 
@@ -39,7 +31,6 @@ export function Topbar({isPublic = false}: {isPublic?: boolean}) {
       <Link to={`/`}>
         <Icon name="Mintter" size="2" color="primary" />
       </Link>
-      {/* //@ts-ignore */}
       <Container
         css={{
           marginHorizontal: 'auto',
@@ -77,7 +68,7 @@ function Search() {
   const history = useHistory()
 
   // TODO: fix types
-  async function handleSearch(e: any) {
+  async function handleSearch(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     let to = ref.current?.value as string
     if (to.includes(MINTTER_LINK_PREFIX)) {
