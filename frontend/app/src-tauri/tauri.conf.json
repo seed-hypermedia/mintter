@@ -46,7 +46,8 @@
     "allowlist": {
       "all": false,
       "shell": {
-        "execute": true
+        "execute": true,
+        "open": true
       }
     },
     "windows": [
