@@ -6,7 +6,6 @@ import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 import {useEffect} from 'react'
 import {useHistory, useParams} from 'react-router-dom'
-import {AppSpinner} from '../components/app-spinner'
 import {Container} from '../components/container'
 import {Separator} from '../components/separator'
 import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
@@ -45,7 +44,7 @@ export default function Publication(): JSX.Element {
   }
 
   if (status == 'loading') {
-    return <AppSpinner />
+    return <Text>loading...</Text>
   }
 
   // start rendering

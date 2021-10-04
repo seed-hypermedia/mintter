@@ -1,5 +1,5 @@
 import type * as Stitches from '@stitches/react'
-import { css, styled } from '../stitches.config'
+import {css, styled} from '../stitches.config'
 
 export const buttonStyles = css({
   all: 'unset',

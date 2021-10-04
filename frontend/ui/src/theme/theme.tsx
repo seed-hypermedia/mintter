@@ -1,3 +1,4 @@
+import React from 'react'
 import {globalStyles} from '../stitches.config'
 import {useTheme} from './use-theme'
 

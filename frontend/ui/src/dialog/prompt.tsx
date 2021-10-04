@@ -1,6 +1,7 @@
 import type {TextProps} from '@mintter/ui/text'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import type {ComponentProps} from 'react'
+import React from 'react'
 import {Box} from '../box'
 import {Button} from '../button'
 import {styled} from '../stitches.config'
