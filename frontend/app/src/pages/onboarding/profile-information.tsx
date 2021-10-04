@@ -21,7 +21,7 @@ type ProfileInformationDataType = {
   bio: string
 }
 
-export function ProfileInformation({next}: OnboardingStepPropsType): JSX.Element {
+export function ProfileInformation({next}: OnboardingStepPropsType) {
   const updateProfile = useMutation(updateAccount)
 
   const {register, handleSubmit, errors, formState} = useForm<ProfileInformationDataType>({

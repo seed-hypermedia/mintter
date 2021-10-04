@@ -27,7 +27,7 @@ const AsyncEditor = lazy(async () => {
 
   return {
     default: function AsyncEditor({value, onChange, mode, children, readOnly}: AsyncEditorProps) {
-      const editor = useMemo(() => buildEditorHook(resolvedPlugins, mode), [])
+      const editor = useMemo(() => buildEditorHook(resolvedPlugins, mode), [mode])
       const renderElement = useMemo(() => buildRenderElementHook(resolvedPlugins, mode), [mode])
       const renderLeaf = useMemo(() => buildRenderLeafHook(resolvedPlugins, mode), [mode])
       const decorate = useMemo(() => buildDecorateHook(resolvedPlugins, mode), [mode])
@@ -54,7 +54,7 @@ const AsyncEditor = lazy(async () => {
 interface EditorProps {
   mode?: string
   value: Descendant[]
-  onChange: (value: Descendant[]) => void
+  onChange?: (value: Descendant[]) => void
   children?: unknown
   readOnly?: boolean
 }
@@ -65,7 +65,7 @@ export function Editor({
   children,
   readOnly = false,
   mode = readOnly ? 'read-only' : 'default',
-}: EditorProps): JSX.Element {
+}: EditorProps) {
   const [visible, setVisible] = useState(false)
 
   return (

@@ -1,4 +1,3 @@
-import type {Document} from '@mintter/client'
 import {createDraft} from '@mintter/client'
 import {useAccount, useInfo, usePublication} from '@mintter/client/hooks'
 import {Box} from '@mintter/ui/box'
@@ -12,7 +11,7 @@ import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepan
 import {Editor} from '../editor'
 import {getDateFormat} from '../utils/get-format-date'
 
-export default function Publication(): JSX.Element {
+export default function Publication() {
   const {docId} = useParams<{docId: string}>()
   const history = useHistory()
   const {send: sidepanelSend, isOpen: isSidepanelOpen, annotations} = useSidepanel()
@@ -103,7 +102,7 @@ export default function Publication(): JSX.Element {
       <Container css={{gridArea: 'maincontent', marginBottom: 300, padding: '$5', paddingTop: '$7'}}>
         <PublicationHeader document={data?.document} />
         <Separator />
-        <Editor onChange={() => {}} readOnly value={data?.document?.content} />
+        <Editor readOnly value={data?.document?.content} />
       </Container>
       {isSidepanelOpen && <Sidepanel gridArea={'rightside'} />}
     </Box>
@@ -111,7 +110,7 @@ export default function Publication(): JSX.Element {
   )
 }
 
-function PublicationHeader({document}: {document?: Document}) {
+function PublicationHeader({document}: {document?: EditorDocument}) {
   const {data: author} = useAccount(document?.author, {
     enabled: !!document?.author,
   })

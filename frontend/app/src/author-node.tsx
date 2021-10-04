@@ -14,7 +14,7 @@ const Editor = lazy(() => import('./pages/editor'))
 const Settings = lazy(() => import('./pages/settings'))
 const Publication = lazy(() => import('./pages/publication'))
 
-export function AuthorNode({path = '/'}: {path?: string}) {
+export function AuthorNode() {
   const info = useInfo({
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -79,5 +79,7 @@ export function AuthorNode({path = '/'}: {path?: string}) {
     )
   }
 
-  return null
+  console.log('author node info: ', info)
+
+  return <Text>author node impossible state?</Text>
 }

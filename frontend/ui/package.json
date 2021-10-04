@@ -15,10 +15,11 @@
   },
   "scripts": {
     "build": "tsc",
-    "lint": "eslint .",
+    "lint": "eslint ./src",
     "format": "yarn prettier --write .",
     "storybook": "start-storybook -p 6006",
-    "storybook:build": "build-storybook"
+    "storybook:build": "build-storybook",
+    "validate": "yarn lint && yarn format"
   },
   "dependencies": {
     "@radix-ui/react-label": "^0.0.13",

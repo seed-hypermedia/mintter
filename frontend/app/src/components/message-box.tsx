@@ -4,6 +4,7 @@ import {Button as UIButton} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 import type React from 'react'
 
+/* eslint-disable */
 export function Root({children}: any) {
   return (
     <Box
@@ -25,7 +26,7 @@ export function Root({children}: any) {
   )
 }
 
-export function Title({children}: any) {
+export function Title({children}: {children: React.ReactChild}) {
   return <Text size="7">{children}</Text>
 }
 

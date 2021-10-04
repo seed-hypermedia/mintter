@@ -109,8 +109,8 @@ export function isFirstChild(path: Path): boolean {
 export function toggleMark(
   editor: Editor,
   key: keyof Omit<Text, 'value'>,
-  value: any = true,
-  ...clears: Array<keyof Omit<Text, 'value'>>
+  value = true,
+  // ...clears: Array<keyof Omit<Text, 'value'>>
 ): void {
   if (!editor.selection) return
 

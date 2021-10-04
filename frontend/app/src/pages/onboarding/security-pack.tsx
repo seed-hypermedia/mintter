@@ -18,7 +18,7 @@ import {
   SecurityPackIcon,
 } from './common'
 
-export function SecurityPack({prev, next, generateSeed = defaultGenerateSeed}: OnboardingStepPropsType): JSX.Element {
+export function SecurityPack({prev, next, generateSeed = defaultGenerateSeed}: OnboardingStepPropsType) {
   const [ownSeed, setOwnSeed] = useState<string>('')
   const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false)
   const mnemonics = useQuery<string[], Error>(

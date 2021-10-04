@@ -66,7 +66,7 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
   return useQuery(
     ['Draft', draftId],
     async ({queryKey}) => {
-      const [_key, draftId] = queryKey as [string, string]
+      const [, draftId] = queryKey as [string, string]
       return await getDraft(draftId, options.rpc)
     },
     {
@@ -81,7 +81,7 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
  * @param options
  * @returns
  */
-export function useDraftsList(options: any = {}) {
+export function useDraftsList() {
   const draftsListQuery = useQuery<ListDraftsResponse>('DraftList', async () => {
     return listDrafts()
   })
@@ -133,7 +133,7 @@ export function usePublication(publicationId: string, options: HookOptions<Publi
   const publicationQuery = useQuery(
     ['Publication', publicationId],
     async ({queryKey}) => {
-      const [_key, publicationId] = queryKey as [string, string]
+      const [, publicationId] = queryKey as [string, string]
       return getPublication(publicationId, options.rpc)
     },
     {

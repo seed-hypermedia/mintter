@@ -1,5 +1,5 @@
 import {usePublication} from '@mintter/client/hooks'
-import type {FlowContent} from '@mintter/mttast'
+import type {Embed, FlowContent} from '@mintter/mttast'
 import {isEmbed} from '@mintter/mttast'
 import {document} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
@@ -9,7 +9,6 @@ import {forwardRef, useMemo} from 'react'
 import toast from 'react-hot-toast'
 import {useHistory} from 'react-router'
 import {Node} from 'slate'
-import {useFocused, useSelected} from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
@@ -70,83 +69,84 @@ export const createEmbedPlugin = (): EditorPlugin => ({
 /*
  * @todo InlineEmbed ref type
  */
-export const InlineEmbed = forwardRef(({embed, children = null, ...props}: any, ref) => {
-  const {data, status, error} = useEmbed(embed.url)
-  // const ref = useRef<HTMLQuoteElement | null>(null)
-  const selected = useSelected()
-  const focused = useFocused()
-  const {send} = useSidepanel()
-  const history = useHistory()
-  // const {statement: hoverEmbed} = useHoverEvent(ref, embed.url)
+export const InlineEmbed = forwardRef<HTMLSpanElement | HTMLQuoteElement, {embed: Embed}>(
+  ({embed, children = null, ...props}, ref) => {
+    const {data, status, error} = useEmbed(embed.url)
+    const {send} = useSidepanel()
+    const history = useHistory()
+    // const {statement: hoverEmbed} = useHoverEvent(ref, embed.url)
 
-  async function onCopy() {
-    await copyTextToClipboard(embed.url!)
-    toast.success('Embed Reference copied successfully', {position: 'top-center'})
-  }
+    async function onCopy() {
+      await copyTextToClipboard(embed.url)
+      toast.success('Embed Reference copied successfully', {position: 'top-center'})
+    }
 
-  function onGoToPublication(url: string) {
-    const [publicationId] = getEmbedIds(url)
-    history.push(`/p/${publicationId}`)
-  }
+    function onGoToPublication(url: string) {
+      const [publicationId] = getEmbedIds(url)
+      history.push(`/p/${publicationId}`)
+    }
 
-  if (status == 'loading') {
-    return (
-      <span {...props} contentEditable={false}>
-        ...
-        {children}
-      </span>
-    )
-  }
-
-  if (status == 'error') {
-    console.error('Embed Error: ', error)
-    return (
-      <span contentEditable={false} {...props}>
-        EMBED ERROR
-        {children}
-      </span>
-    )
-  }
-  return (
-    <EmbedStyled
-      ref={ref}
-      cite={embed.url}
-      // css={{
-      //   backgroundColor: (focused && selected) || hoverEmbed == embed.url ? '$secondary-softer' : '$background-alt',
-      // }}
-      {...props}
-    >
-      <ContextMenu.Root>
-        <ContextMenu.Trigger>
-          <Text css={{display: 'inline'}} alt contentEditable={false} size="4">
-            {data.statement.children[0].children.map((child, idx) =>
-              isEmbed(child) ? (
-                <InlineEmbed key={`${child.url}-${idx}`} embed={child} />
-              ) : (
-                <span key={`${child.type}-${idx}`}>{Node.string(child)}</span>
-              ),
-            )}
-          </Text>
+    if (status == 'loading') {
+      return (
+        <span {...props} contentEditable={false}>
+          ...
           {children}
-        </ContextMenu.Trigger>
-        <ContextMenu.Content>
-          <ContextMenu.Item onSelect={() => onGoToPublication(embed.url)}>
-            <Icon name="ArrowTopRight" size="1" />
-            <Text size="2">Open in main Panel</Text>
-          </ContextMenu.Item>
-          <ContextMenu.Item onSelect={onCopy}>
-            <Icon name="Copy" size="1" />
-            <Text size="2">Copy Embed Reference</Text>
-          </ContextMenu.Item>
-          <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: embed.url!})}>
-            <Icon name="ArrowChevronDown" size="1" />
-            <Text size="2">Add to Bookmarks</Text>
-          </ContextMenu.Item>
-        </ContextMenu.Content>
-      </ContextMenu.Root>
-    </EmbedStyled>
-  )
-})
+        </span>
+      )
+    }
+
+    if (status == 'error') {
+      console.error('Embed Error: ', error)
+      return (
+        <span contentEditable={false} {...props}>
+          EMBED ERROR
+          {children}
+        </span>
+      )
+    }
+    return (
+      <EmbedStyled
+        ref={ref}
+        cite={embed.url}
+        // css={{
+        //   backgroundColor: (focused && selected) || hoverEmbed == embed.url ? '$secondary-softer' : '$background-alt',
+        // }}
+        {...props}
+      >
+        <ContextMenu.Root>
+          <ContextMenu.Trigger>
+            <Text css={{display: 'inline'}} alt contentEditable={false} size="4">
+              {data.statement.children[0].children.map((child, idx) =>
+                isEmbed(child) ? (
+                  <InlineEmbed key={`${child.url}-${idx}`} embed={child} />
+                ) : (
+                  <span key={`${child.type}-${idx}`}>{Node.string(child)}</span>
+                ),
+              )}
+            </Text>
+            {children}
+          </ContextMenu.Trigger>
+          <ContextMenu.Content>
+            <ContextMenu.Item onSelect={() => onGoToPublication(embed.url)}>
+              <Icon name="ArrowTopRight" size="1" />
+              <Text size="2">Open in main Panel</Text>
+            </ContextMenu.Item>
+            <ContextMenu.Item onSelect={onCopy}>
+              <Icon name="Copy" size="1" />
+              <Text size="2">Copy Embed Reference</Text>
+            </ContextMenu.Item>
+            <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: embed.url})}>
+              <Icon name="ArrowChevronDown" size="1" />
+              <Text size="2">Add to Bookmarks</Text>
+            </ContextMenu.Item>
+          </ContextMenu.Content>
+        </ContextMenu.Root>
+      </EmbedStyled>
+    )
+  },
+)
+
+InlineEmbed.displayName = 'InlineEmbed'
 
 export function useEmbed(url: string) {
   if (!url) {
@@ -163,7 +163,7 @@ export function useEmbed(url: string) {
     }
 
     return temp
-  }, [publicationQuery])
+  }, [publicationQuery, blockId])
 
   return {
     ...publicationQuery,

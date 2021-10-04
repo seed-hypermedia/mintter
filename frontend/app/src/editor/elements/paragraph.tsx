@@ -62,7 +62,7 @@ export const createParagraphPlugin = (): EditorPlugin => ({
       const [node, path] = entry
       if (isParagraph(node)) {
         if (Path.hasPrevious(path)) {
-          const [parentNode, parentPath] = Editor.parent(editor, path)
+          const [parentNode] = Editor.parent(editor, path)
           const prevNode = Node.get(editor, Path.previous(path))
           if (isCode(parentNode)) {
             return

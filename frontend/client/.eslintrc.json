@@ -18,6 +18,9 @@
         "modifiers": ["destructured"],
         "format": null
       }
-    ]
+    ],
+    "no-duplicate-imports": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/ban-types": "off"
   }
 }

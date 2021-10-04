@@ -15,15 +15,13 @@ import type {EditorEventHandlers, EditorPlugin} from './types'
  * It would be nice also to think of ways to test this code.
  */
 
-const byApply =
-  (mode: string) =>
-  (plugin: EditorPlugin): boolean => {
-    if (typeof plugin.apply === 'function') {
-      return plugin.apply(mode)
-    } else {
-      return plugin.apply === undefined || plugin.apply === mode
-    }
+const byApply = (mode: string) => (plugin: EditorPlugin): boolean => {
+  if (typeof plugin.apply === 'function') {
+    return plugin.apply(mode)
+  } else {
+    return plugin.apply === undefined || plugin.apply === mode
   }
+}
 
 class PluginError extends Error {
   constructor(plugin: string, message: string) {
@@ -32,11 +30,11 @@ class PluginError extends Error {
   }
 }
 
-const hasHook =
-  (hook: keyof EditorPlugin) =>
-  (plugin: EditorPlugin): plugin is EditorPlugin & Required<Pick<EditorPlugin, typeof hook>> => {
-    return typeof plugin[hook] === 'function'
-  }
+const hasHook = (hook: keyof EditorPlugin) => (
+  plugin: EditorPlugin,
+): plugin is EditorPlugin & Required<Pick<EditorPlugin, typeof hook>> => {
+  return typeof plugin[hook] === 'function'
+}
 
 const withMode = (mode: string) => (editor: Editor) => {
   editor.mode = mode

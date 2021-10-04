@@ -81,7 +81,11 @@ export const deleteConfirmationDialogMachine = ({onSuccess}: DeleteConfirmationM
     {
       services: {
         executeAction: (context) => {
-          return context.isDraft ? deleteDraft(context.entryId!) : deletePublication(context.entryId!)
+          if (!context.entryId) {
+            throw new Error(`executeAction: "entryId" should be defined: entryId: ${context.entryId}`)
+          } else {
+            return context.isDraft ? deleteDraft(context.entryId) : deletePublication(context.entryId)
+          }
         },
       },
       actions: {
@@ -89,17 +93,20 @@ export const deleteConfirmationDialogMachine = ({onSuccess}: DeleteConfirmationM
           if (event.type != 'OPEN_DIALOG') return {}
           return event.payload
         }),
-        assignErrorMessageToContext: assign((context, event: any) => {
-          const errorMessage = event.data?.message || 'DeleteAlert: something went wrong'
+        assignErrorMessageToContext: assign((context) => {
+          const errorMessage = 'DeleteAlert: something went wrong'
           toast.error(errorMessage)
           return {
+            ...context,
             errorMessage,
           }
         }),
-        clearErrorMessage: assign((_) => ({
+        clearErrorMessage: assign((context) => ({
+          ...context,
           errorMessage: undefined,
         })),
-        clearContextEntry: assign((_) => ({
+        clearContextEntry: assign((context) => ({
+          ...context,
           entryId: undefined,
           action: undefined,
         })),

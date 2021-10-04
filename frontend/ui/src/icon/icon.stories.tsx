@@ -60,7 +60,7 @@ export const Playground: ComponentStory<typeof Component> = (args) => <Component
 export const Names: ComponentStory<typeof Component> = (args) => (
   <>
     {Object.keys(icons).map((name) => (
-      <Component {...args} name={name} />
+      <Component {...args} key={name} name={name as keyof typeof icons} />
     ))}
   </>
 )

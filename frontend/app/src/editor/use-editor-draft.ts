@@ -1,10 +1,10 @@
 import {Document, getDraft, publishDraft, updateDraft} from '@mintter/client'
+import {MttastContent} from '@mintter/mttast'
 import {createId, group, paragraph, statement, text} from '@mintter/mttast-builder'
 import {useMachine} from '@xstate/react'
 import isEqual from 'lodash.isequal'
 import {useEffect} from 'react'
 import {QueryClient, useQueryClient} from 'react-query'
-import type {Descendant} from 'slate'
 import {ActionFunction, assign, createMachine} from 'xstate'
 
 export type DraftEditorMachineEvent =
@@ -27,7 +27,7 @@ export type DraftEditorMachineEvent =
       type: 'PUBLISH'
     }
 export type EditorDocument = Document & {
-  content: Array<Descendant>
+  content: Array<MttastContent>
 }
 export type DraftEditorMachineContext = {
   retries: number
@@ -44,7 +44,7 @@ interface DraftEditorMachineProps {
 }
 
 const defaultContent = [group([statement({id: createId()}, [paragraph([text('')])])])]
-
+/* eslint-disable */
 const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: DraftEditorMachineProps) =>
   createMachine<DraftEditorMachineContext, any>(
     {
@@ -121,17 +121,17 @@ const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: 
                   target: 'debouncing',
                 },
               },
-              after: {
-                1000: [
-                  {
-                    target: 'saving',
-                    cond: 'isValueDirty',
-                  },
-                  {
-                    target: 'idle',
-                  },
-                ],
-              },
+              // after: {
+              //   1000: [
+              //     {
+              //       target: 'saving',
+              //       cond: 'isValueDirty',
+              //     },
+              //     {
+              //       target: 'idle',
+              //     },
+              //   ],
+              // },
             },
             saving: {
               invoke: {
@@ -185,11 +185,11 @@ const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: 
         fetchData: (_, event: DraftEditorMachineEvent) => () => {
           if (event.type != 'FETCH') return
           return client.fetchQuery(['Draft', event.documentId], async ({queryKey}) => {
-            const [_key, draftId] = queryKey
+            const [_, draftId] = queryKey
             return await getDraft(draftId)
           })
         },
-        saveDraft: (context: DraftEditorMachineContext, event: DraftEditorMachineEvent) => () => {
+        saveDraft: (context: DraftEditorMachineContext) => () => {
           const newDraft = {
             ...context.localDraft,
             content: JSON.stringify(context.localDraft?.content),
@@ -197,8 +197,8 @@ const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: 
           return updateDraft(newDraft as Document)
         },
         publishDraft: (context) => () => {
-          console.log('PUBLISHING', context)
-          return publishDraft(context.localDraft?.id!)
+          if (!context.localDraft) return
+          return publishDraft(context.localDraft.id)
         },
       },
       actions: {
@@ -233,7 +233,8 @@ const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: 
             },
           }
         }),
-        clearErrorMessage: assign((_) => ({
+        clearErrorMessage: assign((context) => ({
+          ...context,
           errorMessage: '',
         })),
         assignErrorToContext: assign((context, event) => {
@@ -265,6 +266,6 @@ export function useEditorDraft({documentId, ...afterActions}: UseEditorDraftPara
     if (documentId) {
       send({type: 'FETCH', documentId})
     }
-  }, [])
+  }, [send, documentId])
   return [state, send] as const
 }

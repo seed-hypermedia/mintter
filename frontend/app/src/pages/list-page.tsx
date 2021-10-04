@@ -1,13 +1,13 @@
-import type {Publication} from '@mintter/client'
 import {useDraftsList} from '@mintter/client/hooks'
 import {Text} from '@mintter/ui/text'
 import type {UseQueryResult} from 'react-query'
 import * as MessageBox from '../components/message-box'
+import type {DocumentListData} from '../document-list'
 import {DocumentList} from '../document-list'
 
 export type ListPageProps = {
   onCreateDraft: () => void
-  useDataHook: () => UseQueryResult<Array<{document: Document} | Partial<Publication>>>
+  useDataHook: () => UseQueryResult<DocumentListData>
 }
 export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
   const {status, error, data = []} = useDataHook()
@@ -24,7 +24,7 @@ export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
   return (
     <>
       {/* <Seo title="Feed" /> */}
-      {data?.length == 0 && (
+      {data.length == 0 && (
         <MessageBox.Root>
           <MessageBox.Title>No Publications (yet)</MessageBox.Title>
           <MessageBox.Button onClick={onCreateDraft}>
@@ -32,7 +32,7 @@ export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
           </MessageBox.Button>
         </MessageBox.Root>
       )}
-      <DocumentList status={status} error={error} data={data} />
+      <DocumentList data={data} />
     </>
   )
 }
@@ -60,7 +60,7 @@ export function DraftListPage({onCreateDraft}: Pick<ListPageProps, 'onCreateDraf
           </MessageBox.Button>
         </MessageBox.Root>
       )}
-      <DocumentList status={status} error={error} data={data} />
+      <DocumentList data={data} />
     </>
   )
 }

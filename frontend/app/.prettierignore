@@ -7,3 +7,7 @@ infra
 out
 scripts
 tools
+src-tauri
+public
+dist
+coverage

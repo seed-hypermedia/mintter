@@ -3,6 +3,7 @@ import {StaticRouter} from 'react-router-dom'
 import {App} from './app'
 import {AppProviders} from './app-providers'
 
+/* eslint-disable */
 export function render(url: string, context: any) {
   return renderToStringAsync(
     <AppProviders>

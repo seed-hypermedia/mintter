@@ -22,15 +22,6 @@ export async function listPeerAddrs(peerId: string, rpc?: GrpcClient): Promise<P
   return info.addrs
 }
 
-/**
- *
- * @deprecated
- */
-export function listSuggestedProfiles(pageSize?: number, pageToken?: string, rpc?: GrpcClient) {
-  console.log('listSuggestedProfiles: Implement!')
-  return {}
-}
-
 export function connect(addrs: Array<string>, rpc?: GrpcClient): Promise<ConnectResponse> {
   rpc ||= createGrpcClient()
   // console.log({addrs})
@@ -48,7 +39,7 @@ export function getConnectionStatus(objectId: string, rpc?: GrpcClient) {
 export function getPeerInfo(devices: {[key: string]: Device}, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   let peer_id: string
-  Object.entries(devices).map(([key, {peerId}]) => {
+  Object.entries(devices).map(([, {peerId}]) => {
     peer_id = peerId
   })
 
