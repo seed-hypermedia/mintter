@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {PropsWithChildren} from 'react'
 import {css, keyframes} from '../stitches.config'
 import type {TextProps} from '../text'
 import {Text} from '../text'
@@ -45,11 +45,11 @@ export const dialogContentStyles = css({
   '&:focus': {outline: 'none'},
 })
 
-export function DialogTitle(props: TextProps) {
+export function DialogTitle(props: PropsWithChildren<Omit<TextProps, 'size'>>) {
   return <Text size="7" {...props} />
 }
 
-export function DialogDescription(props: TextProps) {
+export function DialogDescription(props: PropsWithChildren<Omit<TextProps, 'size' | 'color'>>) {
   return <Text size="3" color="muted" {...props} />
 }
 

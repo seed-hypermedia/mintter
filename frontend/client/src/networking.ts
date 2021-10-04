@@ -38,7 +38,7 @@ export function getConnectionStatus(objectId: string, rpc?: GrpcClient) {
 
 export function getPeerInfo(devices: {[key: string]: Device}, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
-  let peer_id: string
+  let peer_id = ''
   Object.entries(devices).map(([, {peerId}]) => {
     peer_id = peerId
   })

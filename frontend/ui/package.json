@@ -23,8 +23,8 @@
   },
   "dependencies": {
     "@radix-ui/react-label": "^0.0.13",
-    "@stitches/core": "^1.0.0",
-    "@stitches/react": "^1.0.0",
+    "@stitches/core": "^1.2.1",
+    "@stitches/react": "^1.2.1",
     "autosize": "^5.0.0",
     "react": "^17.0.2",
     "use-dark-mode": "^2.3.1"

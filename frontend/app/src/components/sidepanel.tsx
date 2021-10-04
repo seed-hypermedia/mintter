@@ -6,7 +6,7 @@ import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
-import {createContext, useContext, useEffect, useRef} from 'react'
+import {createContext, PropsWithChildren, useContext, useEffect, useRef} from 'react'
 import toast from 'react-hot-toast'
 import {useHistory} from 'react-router'
 import {Node} from 'slate'
@@ -155,10 +155,9 @@ export interface SidepanelGlobalContextType {
 
 export const SidepanelContext = createContext<SidepanelGlobalContextType>({})
 
-export type SidepanelProviderProps = {
-  children: React.ReactElement
+export type SidepanelProviderProps = PropsWithChildren<{
   machine?: typeof sidepanelMachine
-}
+}>
 
 export function SidepanelProvider({children, machine = sidepanelMachine}: SidepanelProviderProps) {
   const service = useInterpret(machine)

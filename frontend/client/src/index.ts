@@ -48,5 +48,5 @@ export {generateSeed, getAccount, listAccounts, registerAccount, updateAccount} 
 export {getInfo} from './daemon'
 export {createDraft, deleteDraft, getDraft, listDrafts, publishDraft, updateDraft} from './drafts'
 export {createGrpcClient} from './grpc-client'
-export {connect, getPeerInfo, listPeerAddrs, listSuggestedProfiles} from './networking'
+export {connect, getPeerInfo, listPeerAddrs} from './networking'
 export {deletePublication, getPublication, listPublications} from './publications'

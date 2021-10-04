@@ -28,9 +28,9 @@ export async function deletePublication(documentId: string, rpc?: GrpcClient) {
  * @param rpc
  * @returns
  */
-export async function listPublications(pageSize?: number, pageToken?: string, view?: any, rpc?: GrpcClient) {
+export async function listPublications(rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
-  const request = ListPublicationsRequest.fromPartial({pageSize, pageToken, view})
+  const request = ListPublicationsRequest.fromPartial({})
   return await new PublicationsClientImpl(rpc).listPublications(request)
 }
 

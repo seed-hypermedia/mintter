@@ -1,5 +1,6 @@
 import {styled} from '@mintter/ui/stitches.config'
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
+import {PropsWithChildren} from 'react'
 
 const StyledContent = styled(TooltipPrimitive.Content, {
   borderRadius: '$2',
@@ -13,11 +14,10 @@ const StyledArrow = styled(TooltipPrimitive.Arrow, {
   fill: '$background-opposite',
 })
 
-export type TooltipProps = {
+export type TooltipProps = PropsWithChildren<{
   content: string | React.ReactNode
   open?: boolean
-  children: React.ReactNode
-}
+}>
 
 export function Tooltip({children, content, open, ...props}: TooltipProps) {
   return (

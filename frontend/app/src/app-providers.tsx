@@ -1,11 +1,11 @@
 import {Theme} from '@mintter/ui/theme'
-import {Suspense} from 'react'
+import {PropsWithChildren, Suspense} from 'react'
 import {Toaster} from 'react-hot-toast'
 import {QueryClient, QueryClientProvider} from 'react-query'
 
 export const queryClient = new QueryClient()
 
-export function AppProviders({children}: {children: React.ReactNode}) {
+export function AppProviders({children}: PropsWithChildren<unknown>) {
   return (
     <Theme>
       <Suspense fallback={<p>loading...</p>}>

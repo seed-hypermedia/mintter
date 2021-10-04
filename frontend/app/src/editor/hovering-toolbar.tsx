@@ -2,7 +2,7 @@ import type {Text as MTTText} from '@mintter/mttast'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {icons} from '@mintter/ui/icon'
-import React, {forwardRef, useEffect, useRef, useState} from 'react'
+import React, {forwardRef, PropsWithChildren, useEffect, useRef, useState} from 'react'
 import ReactDOM from 'react-dom'
 import type {BaseSelection} from 'slate'
 import {Editor, Range, Transforms} from 'slate'
@@ -44,7 +44,7 @@ function FormatButton({format}: {format: FormatTypes}) {
   )
 }
 
-const Portal = ({children}: {children: React.ReactChildren}) => {
+const Portal = ({children}: PropsWithChildren<unknown>) => {
   return typeof document == 'object' ? ReactDOM.createPortal(children, document.body) : null
 }
 
