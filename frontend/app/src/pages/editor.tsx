@@ -59,7 +59,7 @@ export default function EditorPage() {
     return <Text>ERROR: {context.errorMessage}</Text>
   }
 
-  if (state.matches('editing')) {
+  if (state.matches('editing') && context.localDraft?.content) {
     return (
       // <HoverProvider>
       <Box
@@ -110,9 +110,9 @@ export default function EditorPage() {
           }}
         >
           <TextField
-            // TODO: Fix types
+            // @todo: Fix types
             // @ts-ignore
-            as="textarea"
+            textarea
             data-testid="editor_title"
             name="title"
             placeholder="Document title"
@@ -126,8 +126,6 @@ export default function EditorPage() {
               })
             }
             rows={1}
-            // TODO: Fix types
-            // @ts-ignore
             css={{
               $$backgroundColor: '$colors$background-alt',
               $$borderColor: 'transparent',
@@ -139,13 +137,11 @@ export default function EditorPage() {
             }}
           />
           <TextField
-            // TODO: Fix types
-            // @ts-ignore
-            as="textarea"
+            textarea
             data-testid="editor_subtitle"
             name="subtitle"
             placeholder="about this publication..."
-            value={context?.localDraft?.subtitle}
+            value={context.localDraft.subtitle}
             onChange={(event: FormEvent<HTMLInputElement>) =>
               send({
                 type: 'UPDATE',
@@ -155,8 +151,6 @@ export default function EditorPage() {
               })
             }
             rows={1}
-            // TODO: Fix types
-            // @ts-ignore
             css={{
               $$backgroundColor: '$colors$background-alt',
               $$borderColor: 'transparent',

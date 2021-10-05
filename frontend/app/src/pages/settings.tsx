@@ -123,9 +123,7 @@ export default function Settings() {
           />
 
           <TextField
-            // TODO: fix types
-            // @ts-ignore
-            as="textarea"
+            textarea
             id="bio"
             name="bio"
             label="Bio"

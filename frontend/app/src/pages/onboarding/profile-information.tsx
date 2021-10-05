@@ -80,9 +80,7 @@ export function ProfileInformation({next}: OnboardingStepPropsType) {
           hint={errors.email?.message}
         />
         <TextField
-          // TODO: fix types
-          // @ts-ignore
-          as="textarea"
+          textarea
           id="bio"
           name="bio"
           label="Bio"

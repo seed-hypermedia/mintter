@@ -25,9 +25,7 @@ export function PeerAddrs() {
     <Box>
       <TextField
         readOnly
-        // TODO: Fix types
-        // @ts-ignore
-        as="textarea"
+        textarea
         id="addresses"
         name="addresses"
         label="Your Mintter address"

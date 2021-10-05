@@ -66,7 +66,7 @@ export function Connections() {
               <TextField
                 value={peer}
                 onChange={(event: FormEvent<HTMLInputElement>) => setPeer(event.currentTarget.value)}
-                as="textarea"
+                textarea
                 rows={3}
                 css={{
                   minHeight: 150,

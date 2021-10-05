@@ -16,7 +16,7 @@ export const Prompt: ComponentStory<typeof PromptComponent> = (args) => (
       <PromptComponent.Title>Prompt Title</PromptComponent.Title>
       <PromptComponent.Description>You can add any form element here</PromptComponent.Description>
       <TextField
-        as="textarea"
+        textarea
         rows={3}
         css={{
           minHeight: 150,

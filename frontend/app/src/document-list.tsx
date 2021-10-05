@@ -92,11 +92,14 @@ function ListItem({item, toPrefix, isDraft}: ListItemProps) {
           css={{
             flex: 1,
             display: 'grid',
-            gridTemplateAreas: `"avatar author price"
-        "content content icon"
+            gridTemplateAreas: isDraft
+              ? `"content content price"
+            "footer footer action"`
+              : `"avatar author price"
+        "content content action"
         "footer footer footer"`,
-            gridTemplateColumns: '24px 1fr auto',
-            gridTemplateRows: '24px auto auto',
+            gridTemplateColumns: isDraft ? '1fr auto' : '24px 1fr auto',
+            gridTemplateRows: isDraft ? 'auto' : '24px auto auto',
             gap: '$3',
           }}
         >
@@ -149,7 +152,7 @@ function ListItem({item, toPrefix, isDraft}: ListItemProps) {
 
           <Box
             css={{
-              gridArea: 'icon',
+              gridArea: 'action',
               display: 'flex',
               alignItems: 'center',
             }}

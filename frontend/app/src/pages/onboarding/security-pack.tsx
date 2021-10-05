@@ -56,9 +56,7 @@ export function SecurityPack({prev, next, generateSeed = defaultGenerateSeed}: O
       </OnboardingStepDescription>
       {useOwnSeed ? (
         <TextField
-          // TODO: fix types
-          // @ts-ignore
-          as="textarea"
+          textarea
           id="ownSeed"
           name="ownSeed"
           label="Your Seed"
