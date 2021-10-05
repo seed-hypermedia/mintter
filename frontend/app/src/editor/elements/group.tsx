@@ -12,7 +12,7 @@ export const groupStyle = css({
   padding: 0,
   position: 'relative',
   paddingLeft: 0,
-  boxShadow: '-0.1px 0 0 0 rgba(0,0,0,0.5)',
+  boxShadow: '-0.1px 0 0 0 $colors$background-neutral-soft',
   variants: {
     type: {
       group: {},
