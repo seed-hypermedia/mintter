@@ -1,11 +1,11 @@
 [package]
-name = "mintter"
+name = "Mintter"
 version = "0.1.0"
 description = "A publishing platform where other content creators can reuse your content keeping your authorship and royalties."
 authors = ["The mintter team"]
 license = ""
 repository = ""
-default-run = "mintter"
+default-run = "Mintter"
 edition = "2018"
 build = "build.rs"
 
