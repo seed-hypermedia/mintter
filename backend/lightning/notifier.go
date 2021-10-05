@@ -17,8 +17,39 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	ChannelEventUpdate_OPEN_CHANNEL         lnrpc.ChannelEventUpdate_UpdateType = lnrpc.ChannelEventUpdate_OPEN_CHANNEL
+	ChannelEventUpdate_CLOSED_CHANNEL       lnrpc.ChannelEventUpdate_UpdateType = lnrpc.ChannelEventUpdate_CLOSED_CHANNEL
+	ChannelEventUpdate_ACTIVE_CHANNEL       lnrpc.ChannelEventUpdate_UpdateType = lnrpc.ChannelEventUpdate_ACTIVE_CHANNEL
+	ChannelEventUpdate_INACTIVE_CHANNEL     lnrpc.ChannelEventUpdate_UpdateType = lnrpc.ChannelEventUpdate_INACTIVE_CHANNEL
+	ChannelEventUpdate_PENDING_OPEN_CHANNEL lnrpc.ChannelEventUpdate_UpdateType = lnrpc.ChannelEventUpdate_PENDING_OPEN_CHANNEL
+)
+
+type ChannelAcceptorResponse struct {
+	Accept          bool   // Whether or not to accept the incoming channel request
+	Error           string // Error msg on rejection.
+	UpfrontShutdown string // Address to close on cooperative close
+	CsvDelay        uint32 // The delay in blocks a funcing tx can be spend after a force close
+	ReserveSat      uint64 // In satoshis, minimum balance to keep on a channel to close it
+	InFlightMaxMsat uint64 // In millisatoshis, max funds to keep in unsettled htlc's
+	MaxHtlcCount    uint32 // Max number of outstanding htlcs
+	MinHtlcIn       uint64 // In millisatoshis, minimum accepted htlc
+	MinAcceptDepth  uint32 // In blocks, number of confirmation blocks to start using the channel
+}
+
 var (
-	acceptorCallback = func(req *lnrpc.ChannelAcceptRequest) bool { return true }
+	AcceptorMsgDefault = ChannelAcceptorResponse{
+		Accept:          true,
+		Error:           "",
+		UpfrontShutdown: "",
+		CsvDelay:        144,
+		ReserveSat:      10000,
+		InFlightMaxMsat: 2_000_00000000,
+		MaxHtlcCount:    450,
+		MinHtlcIn:       200,
+		MinAcceptDepth:  3,
+	}
+	acceptorCallback = func(req *lnrpc.ChannelAcceptRequest) ChannelAcceptorResponse { return AcceptorMsgDefault }
 )
 
 // DaemonReadyEvent is sent when the daemon is ready for RPC requests
@@ -168,6 +199,7 @@ func (d *Ldaemon) subscribeChannelAcceptor(ctx context.Context, client lnrpc.Lig
 		d.log.Error("Failed to get a channel acceptor", zap.String("err", err.Error()))
 		return err
 	}
+
 	for {
 		request, err := channelAcceptorClient.Recv()
 		if err == io.EOF || ctx.Err() == context.Canceled {
@@ -186,21 +218,30 @@ func (d *Ldaemon) subscribeChannelAcceptor(ctx context.Context, client lnrpc.Lig
 			continue
 		}
 		private := request.ChannelFlags&uint32(lnwire.FFAnnounceChannel) == 0
-		accepted := acceptorCallback(request)
+
+		acceptMsg := acceptorCallback(request)
 
 		err = channelAcceptorClient.Send(&lnrpc.ChannelAcceptResponse{
-			PendingChanId: request.PendingChanId,
-			Accept:        accepted,
+			Accept:          acceptMsg.Accept,
+			PendingChanId:   request.PendingChanId,
+			Error:           acceptMsg.Error,
+			UpfrontShutdown: acceptMsg.UpfrontShutdown,
+			CsvDelay:        acceptMsg.CsvDelay,
+			ReserveSat:      acceptMsg.ReserveSat,
+			InFlightMaxMsat: acceptMsg.InFlightMaxMsat,
+			MaxHtlcCount:    acceptMsg.MaxHtlcCount,
+			MinHtlcIn:       acceptMsg.MinHtlcIn,
+			MinAcceptDepth:  acceptMsg.MinAcceptDepth,
 		})
 		if err != nil {
 			d.log.Error("Error in channelAcceptorClient.Send", zap.String("PendingChanId", string(request.PendingChanId)),
 				zap.Bool("private", private), zap.String("err", err.Error()))
 			return err
 		}
-		d.log.Info("channel creation requested", zap.String("counterparty ID", string(request.NodePubkey)),
+		d.log.Info("channel creation requested", zap.String("counterparty ID", channelIdToString(request.NodePubkey)),
 			zap.Bool("private", private), zap.Uint64("amount", request.FundingAmt),
 			zap.Uint64("push_amount", request.PushAmt), zap.Uint64("fee_per_kw", request.FeePerKw),
-			zap.Uint64("min_htlc", request.MinHtlc), zap.Bool("accepted", accepted))
+			zap.Uint64("min_htlc", request.MinHtlc), zap.Bool("accepted", acceptMsg.Accept))
 	}
 }
 
@@ -257,7 +298,9 @@ func (d *Ldaemon) subscribeChannels(ctx context.Context, client lnrpc.LightningC
 			d.log.Error("Unexpected error in channel subscriptions", zap.String("err", err.Error()))
 			return err
 		}
-		d.log.Info("Channel event received", zap.String("type", string(notification.Type)))
+		d.log.Info("Channel event received", zap.String("type", notification.GetType().String()),
+			zap.String("Channel", channelIdToString(notification.GetPendingOpenChannel().GetTxid())))
+
 		if err != nil {
 			d.log.Error("subscribe channels Failed to get notification", zap.String("err", err.Error()))
 			// in case of unexpected error, we will wait a bit so we won't get

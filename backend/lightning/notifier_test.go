@@ -30,6 +30,7 @@ const (
 var (
 	bitcoindImage = "ruimarinho/bitcoin-core"
 	containerName = "bitcoinContainer"
+	walletCreated = false
 
 	bitcoindRPCBobUser       = "bob"
 	bitcoindRPCBobAsciiPass  = "2NfbXsZPYQUq5nANSCttreiyJT1gAJv8ZoUNfsU7evQ="
@@ -46,11 +47,13 @@ var (
 
 func TestPeers(t *testing.T) {
 	tests := [...]struct {
-		name             string
-		lnconfAlice      *config.LND
-		lnconfBob        *config.LND
-		credentialsAlice WalletSecurity
-		credentialsBob   WalletSecurity
+		name               string
+		lnconfAlice        *config.LND
+		lnconfBob          *config.LND
+		credentialsAlice   WalletSecurity
+		credentialsBob     WalletSecurity
+		confirmationBlocks uint32 // number of blocks to wait for a channel to be confirmed
+		blocksAfterOpening uint32 // number of blocks to mine after opening a channel (so te funding tx gets in)
 	}{
 		{
 			name: "bitcoind",
@@ -95,6 +98,8 @@ func TestPeers(t *testing.T) {
 				SeedEntropy:      testVectors[2].entropy[:],
 				StatelessInit:    true,
 			},
+			confirmationBlocks: 1,
+			blocksAfterOpening: 1,
 		},
 	}
 	log := backend.NewLogger(cfg)
@@ -103,7 +108,8 @@ func TestPeers(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := interactPeers(t, tt.lnconfAlice, tt.lnconfBob,
 				&tt.credentialsAlice, &tt.credentialsBob,
-				testVectors[2].expectedID, testVectors[0].expectedID)
+				testVectors[2].expectedID, testVectors[0].expectedID,
+				tt.confirmationBlocks, tt.blocksAfterOpening)
 
 			require.NoError(t, err, tt.name+". must succeed")
 
@@ -114,13 +120,15 @@ func TestPeers(t *testing.T) {
 
 func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	credentialsAlice *WalletSecurity, credentialsBob *WalletSecurity,
-	expectedAliceID string, expectedBobID string) error {
+	expectedAliceID string, expectedBobID string, confirmationBlocks uint32,
+	blocksAfterOpening uint32) error {
 
 	t.Helper()
 	var err error
 	var containerID string
 	var minedBlocks = 101
-
+	walletCreated = false
+	var channelOpened = false
 	//var expectedMinedAmount = coinbaseReward * minedBlocks * satsPerBtc
 
 	if err := os.RemoveAll(lnconfAlice.LndDir); !os.IsNotExist(err) && err != nil {
@@ -150,7 +158,7 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 		defer stopContainer(containerID)
 
 		// Initial mining Coinbase goes to the miner (bitcoind)
-		if err = mineBlocks(uint64(minedBlocks), "", containerID); err != nil {
+		if err = mineBlocks(uint32(minedBlocks), "", containerID); err != nil {
 			return err
 		}
 	}
@@ -188,6 +196,9 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	if errBob != nil {
 		return errBob
 	}
+
+	setAcceptor(alice, confirmationBlocks)
+	setAcceptor(bob, confirmationBlocks)
 
 	var i = 0
 	aliceReady, bobReady, aliceSynced, bobSynced, pairSent, aliceID, bobID := false, false, false, false, false, "", ""
@@ -233,12 +244,22 @@ waitLoop:
 						" but gotten:" + bobID)
 				} else {
 					fmt.Println("Alice received a peer notification from Bob:" + bobID)
-					if aliceID != "" {
-						break waitLoop
+					if aliceID != "" && !channelOpened {
+						if txid, _, err := alice.OpenChannel(bobID, int64(aliceBalance)/2, 0, true, blocksAfterOpening == 0, 0); err != nil {
+							return err
+						} else if err := mineBlocks(blocksAfterOpening, "", containerID); err != nil {
+							return err
+						} else {
+							fmt.Println(fmt.Sprint(txid))
+							channelOpened = true
+						}
 					}
 				}
 			case TransactionEvent:
 			case ChannelEvent:
+				if update.Type == ChannelEventUpdate_OPEN_CHANNEL {
+					break waitLoop
+				}
 			default:
 				return fmt.Errorf("Got unexpected Alice update")
 			}
@@ -284,12 +305,22 @@ waitLoop:
 						" but gotten:" + aliceID)
 				} else {
 					fmt.Println("Bob received a peer notification from Alice:" + aliceID)
-					if bobID != "" {
-						break waitLoop
+					if bobID != "" && !channelOpened {
+						if txid, _, err := bob.OpenChannel(aliceID, int64(bobBalance)/2, 0, true, blocksAfterOpening == 0, 0); err != nil {
+							return err
+						} else if err := mineBlocks(blocksAfterOpening, "", containerID); err != nil {
+							return err
+						} else {
+							fmt.Println(txid)
+							channelOpened = true
+						}
 					}
 				}
 			case TransactionEvent:
 			case ChannelEvent:
+				if update.Type == ChannelEventUpdate_OPEN_CHANNEL {
+					break waitLoop
+				}
 			default:
 				return fmt.Errorf("Got unexpected Bob update")
 			}
@@ -415,7 +446,12 @@ func startContainer(imageName string) (string, error) {
 	return resp.ID, nil
 }
 
-func mineBlocks(numBlocks uint64, addr string, containerID string) error {
+func mineBlocks(numBlocks uint32, addr string, containerID string) error {
+
+	if numBlocks == 0 {
+		return nil
+	}
+
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return err
@@ -426,27 +462,33 @@ func mineBlocks(numBlocks uint64, addr string, containerID string) error {
 	defer cancel()
 
 	miningCmd := []string{"bitcoin-cli", "-regtest", "-rpcuser=" + bitcoindRPCGenericUser,
-		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "generatetoaddress", strconv.FormatUint(numBlocks, 10), addr}
+		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "generatetoaddress", strconv.FormatUint(uint64(numBlocks), 10), addr}
 
 	createWalletCmd := []string{"bitcoin-cli", "-regtest", "-rpcuser=" + bitcoindRPCGenericUser,
 		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "createwallet", "bitcoindWallet"}
 
 	generateCmd := []string{"bitcoin-cli", "-regtest", "-rpcuser=" + bitcoindRPCGenericUser,
-		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "-generate", strconv.FormatUint(numBlocks, 10)}
+		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "-generate", strconv.FormatUint(uint64(numBlocks), 10)}
 
 	if addr != "" {
 		if cmdID, err = cli.ContainerExecCreate(ctx, containerID, types.ExecConfig{Cmd: miningCmd}); err != nil {
 			return err
 		}
 	} else {
-		if cmdID, err = cli.ContainerExecCreate(ctx, containerID, types.ExecConfig{Cmd: createWalletCmd}); err != nil {
-			return err
-		} else if err = cli.ContainerExecStart(ctx, cmdID.ID, types.ExecStartCheck{}); err != nil {
-			return err
-		} else if cmdID, err = cli.ContainerExecCreate(ctx, containerID, types.ExecConfig{Cmd: generateCmd}); err != nil {
+		if !walletCreated {
+			if cmdID, err = cli.ContainerExecCreate(ctx, containerID, types.ExecConfig{Cmd: createWalletCmd}); err != nil {
+				return err
+			} else if err = cli.ContainerExecStart(ctx, cmdID.ID, types.ExecStartCheck{}); err != nil {
+				return err
+			} else {
+				walletCreated = true
+				time.Sleep(5 * time.Second) // wait for the wallet to be created
+			}
+		}
+
+		if cmdID, err = cli.ContainerExecCreate(ctx, containerID, types.ExecConfig{Cmd: generateCmd}); err != nil {
 			return err
 		}
-		time.Sleep(5 * time.Second) // wait for the wallet to be created
 	}
 
 	if err := cli.ContainerExecStart(ctx, cmdID.ID, types.ExecStartCheck{}); err != nil {
@@ -485,4 +527,18 @@ func sendToAddress(amount uint64, addr string, containerID string, instantMining
 		}
 	}
 	return nil
+}
+
+func setAcceptor(node *Ldaemon, blocks2confirm uint32) {
+
+	acceptor := func(req *lnrpc.ChannelAcceptRequest) ChannelAcceptorResponse {
+		var res ChannelAcceptorResponse = AcceptorMsgDefault
+		fmt.Printf("PushAmt: %v ChannelReserve: %v CsvDelay: %v DustLimit: %v FundingAmt: %v MaxAcceptedHtlcs: %v MaxValueInFlight: %v FeePerKw: %v MinHtlc: %v",
+			req.PushAmt, req.ChannelReserve, req.CsvDelay, req.DustLimit, req.FundingAmt, req.MaxAcceptedHtlcs, req.MaxValueInFlight, req.FeePerKw, req.MinHtlc)
+		res.MinAcceptDepth = blocks2confirm
+		res.ReserveSat = uint64(float64(req.FundingAmt) / 20.0) // 5% of the capacity of the channel
+		res.InFlightMaxMsat = req.FundingAmt - res.ReserveSat
+		return res
+	}
+	node.SetAcceptorCallback(acceptor)
 }

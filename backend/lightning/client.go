@@ -198,7 +198,7 @@ func (d *Ldaemon) InvoicesClient() invoicesrpc.InvoicesClient {
 // The provided function has to decide whether to accetp (return true) or not (return false)
 // a channel request based on the information provided by the rpc request struct. The callback
 // will be called whenever the node receives a new channel request.
-func (d *Ldaemon) SetAcceptorCallback(callback func(req *lnrpc.ChannelAcceptRequest) bool) {
+func (d *Ldaemon) SetAcceptorCallback(callback func(req *lnrpc.ChannelAcceptRequest) ChannelAcceptorResponse) {
 	d.Lock()
 	defer d.Unlock()
 

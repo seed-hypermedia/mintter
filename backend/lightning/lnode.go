@@ -190,7 +190,7 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 		return nil, fmt.Errorf("daemon must be stopped first")
 	}
 
-	if d.interceptor == nil {
+	if d.interceptor == nil || !d.interceptor.Listening() {
 		if interceptor, interceptErr := signal.Intercept(); interceptErr != nil {
 			d.log.Warn("Could not hook interceptor. Already started. Check if there is another instance of lnd running on the system")
 		} else {
