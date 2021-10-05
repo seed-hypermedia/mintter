@@ -5,7 +5,7 @@ import {useMachine} from '@xstate/react'
 import isEqual from 'lodash.isequal'
 import {useEffect} from 'react'
 import {QueryClient, useQueryClient} from 'react-query'
-import {ActionFunction, assign, createMachine} from 'xstate'
+import {ActionFunction, assign, createMachine, State} from 'xstate'
 
 export type DraftEditorMachineEvent =
   | {
@@ -38,14 +38,13 @@ export type DraftEditorMachineContext = {
 
 interface DraftEditorMachineProps {
   client: QueryClient
-  afterSave: ActionFunction<DraftEditorMachineContext, DraftEditorMachineEvent>
   afterPublish: ActionFunction<DraftEditorMachineContext, DraftEditorMachineEvent>
   loadAnnotations: ActionFunction<DraftEditorMachineContext, DraftEditorMachineEvent>
 }
 
 const defaultContent = [group([statement({id: createId()}, [paragraph([text('')])])])]
 /* eslint-disable */
-const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: DraftEditorMachineProps) =>
+const draftEditorMachine = ({afterPublish, loadAnnotations, client}: DraftEditorMachineProps) =>
   createMachine<DraftEditorMachineContext, any>(
     {
       id: 'editor',
@@ -138,7 +137,6 @@ const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: 
                 src: 'saveDraft',
                 onDone: {
                   target: 'idle',
-                  actions: ['afterSave'],
                 },
                 onError: {
                   target: 'idle',
@@ -247,7 +245,6 @@ const draftEditorMachine = ({afterSave, afterPublish, loadAnnotations, client}: 
           retries: (context) => context.retries + 1,
         }),
         afterPublish,
-        afterSave,
         loadAnnotations,
       },
     },
@@ -269,3 +266,5 @@ export function useEditorDraft({documentId, ...afterActions}: UseEditorDraftPara
   }, [send, documentId])
   return [state, send] as const
 }
+
+export type DraftEditorMachineState = State<DraftEditorMachineContext, DraftEditorMachineEvent>

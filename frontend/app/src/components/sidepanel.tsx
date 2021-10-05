@@ -1,5 +1,5 @@
 import {useAccount} from '@mintter/client/hooks'
-import {FlowContent, isEmbed, isLink} from '@mintter/mttast'
+import {isEmbed, isLink} from '@mintter/mttast'
 import {document} from '@mintter/mttast-builder'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
@@ -20,7 +20,8 @@ import {copyTextToClipboard} from '../editor/elements/statement'
 export type SidepanelEventsType =
   | {
       type: 'SIDEPANEL_LOAD_ANNOTATIONS'
-      payload: Array<FlowContent>
+      // @ts-ignore
+      payload: any
     }
   | {
       type: 'SIDEPANEL_ADD_ITEM'
@@ -129,17 +130,19 @@ export const sidepanelMachine = createMachine<SidepanelContextType, SidepanelEve
       },
       getAnnotations: assign({
         annotations: (_, event) => {
+          // if (event.type != 'SIDEPANEL_LOAD_ANNOTATIONS') return
           let nodes = new Set<string>()
-          if (event.type != 'SIDEPANEL_LOAD_ANNOTATIONS') return
-          visit(
-            document(event.payload),
-            (n) => isEmbed(n) || (isLink(n) && n.url.includes(MINTTER_LINK_PREFIX)),
-            (node) => {
-              if ('url' in node) {
-                nodes.add(node.url)
-              }
-            },
-          )
+          if (event.type == 'SIDEPANEL_LOAD_ANNOTATIONS') {
+            visit(
+              document(event.payload),
+              (n) => isEmbed(n) || (isLink(n) && n.url.includes(MINTTER_LINK_PREFIX)),
+              (node) => {
+                if ('url' in node) {
+                  nodes.add(node.url)
+                }
+              },
+            )
+          }
 
           return nodes
         },
