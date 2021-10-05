@@ -3,7 +3,7 @@ import type * as Stitches from '@stitches/react'
 import {css} from '@stitches/react'
 import autosize from 'autosize'
 import {nanoid} from 'nanoid'
-import type {LegacyRef, MutableRefObject, PropsWithChildren, RefCallback} from 'react'
+import type {InputHTMLAttributes, LegacyRef, MutableRefObject, PropsWithChildren, RefCallback} from 'react'
 import {forwardRef, useLayoutEffect, useRef} from 'react'
 import {Box} from '../box'
 import type {CSS} from '../stitches.config'
@@ -128,15 +128,24 @@ const inputStyles = css({
 })
 
 const Input = styled('input', inputStyles)
+const Textarea = styled('textarea', inputStyles)
 
-export type InputVariants = Stitches.VariantProps<typeof Input>
-// TODO: when passing `as` to component it complains
+export type InputVariants = Stitches.VariantProps<typeof inputStyles>
+
 export type InputProps = InputVariants
 
 // @ts-ignore
-function InputElement(props: PropsWithChildren<InputProps & {ref: any}>) {
-  return <Input {...props} />
-}
+const InputElement = forwardRef<HTMLInputElement, PropsWithChildren<InputProps>>(function InputElement(props, ref) {
+  return <Input ref={ref} {...props} />
+})
+
+// @ts-ignore
+const TextareaElement = forwardRef<HTMLTextAreaElement, PropsWithChildren<InputProps>>(function TextareaElement(
+  props,
+  ref,
+) {
+  return <Textarea ref={ref} {...props} />
+})
 
 const TextFieldHint = styled(Text, {
   variants: {
@@ -162,23 +171,28 @@ const TextFieldHint = styled(Text, {
 })
 
 type TextFieldProps = PropsWithChildren<
-  InputProps & {
-    id?: string
-    label?: string
-    hint?: string
-    containerCss?: CSS
-  }
+  InputHTMLAttributes &
+    InputProps & {
+      id?: string
+      label?: string
+      hint?: string
+      containerCss?: CSS
+      textarea?: boolean
+    }
 >
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
-  ({label, status = 'neutral', hint, id = nanoid(), containerCss, ...props}: TextFieldProps, ref) => {
+  ({label, status = 'neutral', hint, id = nanoid(), containerCss, textarea = false, ...props}: TextFieldProps, ref) => {
     const localRef = useRef<HTMLInputElement>(null)
 
     useLayoutEffect(() => {
-      if ((props as any).as === 'textarea') {
+      if (textarea) {
+        console.log('textarea autosize!')
         autosize(localRef.current!)
       }
-    }, [props])
+    }, [textarea])
+
+    let InputComponent = textarea ? TextareaElement : InputElement
 
     return (
       // TODO: Fix types
@@ -189,7 +203,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
             {label}
           </Label.Root>
         ) : null}
-        <InputElement ref={mergeRefs<HTMLInputElement>([localRef, ref])} {...props} />
+        <InputComponent ref={mergeRefs<HTMLInputElement>([localRef, ref])} {...props} />
         {hint ? (
           <TextFieldHint status={status} size={props.size == 1 || props.size == 2 ? props.size : undefined}>
             {hint}
