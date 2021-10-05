@@ -145,31 +145,31 @@ function Mintter(props: Stitches.VariantProps<typeof Svg>) {
 
 function ArrowUp(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(90)" {...props}>
-      <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path d="M12 19L12 5M12 5L5 12M12 5L19 12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowDown(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(-90)" {...props}>
-      <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path d="M12 5L12 19M12 19L19 12M12 19L5 12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowLeft(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(0)" {...props}>
-      <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowRight(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(180)" {...props}>
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
       <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
@@ -177,90 +177,106 @@ function ArrowRight(props: Stitches.VariantProps<typeof Svg>) {
 
 function ArrowTopLeft(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(90)" {...props}>
-      <path d="M17 7L7 17M17 17H7V7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path d="M17 17L7 7M7 7L7 17M7 7L17 7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTopRight(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(180)" {...props}>
-      <path d="M17 7L7 17M17 17H7V7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowBottomLeft(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(0)" {...props}>
-      <path d="M17 7L7 17M17 17H7V7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path d="M17 7L7 17M7 17H17M7 17V7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowBottomRight(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(-90)" {...props}>
-      <path d="M17 7L7 17M17 17H7V7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path d="M7 7L17 17M17 17L17 7M17 17L7 17" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTurnTopLeft(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(180)" {...props}>
-      <path d="M15 10l5 5-5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4 4v7a4 4 0 004 4h12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path
+        d="M10 13L5 8M5 8L10 3M5 8H17C18.0609 8 19.0783 8.42143 19.8284 9.17157C20.5786 9.92172 21 10.9391 21 12V19"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   )
 }
 
 function ArrowTurnTopRight(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(180)" {...props}>
-      <path d="M9 10l-5 5 5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M20 4v7a4 4 0 01-4 4H4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path
+        d="M16 13L21 8M21 8L16 3M21 8H9C7.93913 8 6.92172 8.42143 6.17157 9.17157C5.42143 9.92172 5 10.9391 5 12V19"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   )
 }
 
 function ArrowTurnBottomLeft(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(0)" {...props}>
-      <path d="M9 10l-5 5 5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M20 4v7a4 4 0 01-4 4H4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path
+        d="M9 10L4 15M4 15L9 20M4 15H16C17.0609 15 18.0783 14.5786 18.8284 13.8284C19.5786 13.0783 20 12.0609 20 11V4"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   )
 }
 function ArrowTurnBottomRight(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(0)" {...props}>
-      <path d="M15 10l5 5-5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4 4v7a4 4 0 004 4h12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path
+        d="M15 10L20 15M20 15L15 20M20 15H8C6.93913 15 5.92172 14.5786 5.17157 13.8284C4.42143 13.0783 4 12.0609 4 11V4"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   )
 }
 
 function ArrowChevronUp(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(90)" {...props}>
-      <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path d="M18 15L12 9L6 15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowChevronDown(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(270)" {...props}>
-      <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path d="M6 9L12 15L18 9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowChevronLeft(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(0)" {...props}>
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
       <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
@@ -268,33 +284,33 @@ function ArrowChevronLeft(props: Stitches.VariantProps<typeof Svg>) {
 
 function ArrowChevronRight(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(180)" {...props}>
-      <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path d="M10 18L16 12L10 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTriangleUp(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(90)" {...props}>
-      <path d="M14 16l-6-4 6-4" fill="currentColor" />
-      <path d="M14 16l-6-4 6-4v8z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path d="M16 15L12 9L8 15" fill="currentColor" />
+      <path d="M16 15L12 9L8 15H16Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTriangleDown(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(270)" {...props}>
-      <path d="M14 16l-6-4 6-4" fill="currentColor" />
-      <path d="M14 16l-6-4 6-4v8z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path d="M8 10L12 16L16 10" fill="currentColor" />
+      <path d="M8 10L12 16L16 10H8Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
 
 function ArrowTriangleLeft(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(0)" {...props}>
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
       <path d="M14 16l-6-4 6-4" fill="currentColor" />
       <path d="M14 16l-6-4 6-4v8z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
@@ -303,9 +319,9 @@ function ArrowTriangleLeft(props: Stitches.VariantProps<typeof Svg>) {
 
 function ArrowTriangleRight(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(180)" {...props}>
-      <path d="M14 16l-6-4 6-4" fill="currentColor" />
-      <path d="M14 16l-6-4 6-4v8z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path d="M10 16L16 12L10 8" fill="currentColor" />
+      <path d="M10 16L16 12L10 8V16Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   )
 }
@@ -389,17 +405,22 @@ function AddCircle(props: Stitches.VariantProps<typeof Svg>) {
 
 function Close(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(45)" {...props}>
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+      <path
+        d="M16.9498 7.05023L12 12M12 12L7.05026 16.9497M12 12L7.05026 7.05023M12 12L16.9498 16.9497"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   )
 }
 
 function CloseCircle(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" transform="rotate(45)" {...props}>
+    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
       <path
-        d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v8M8 12h8"
+        d="M14.8284 9.17157L9.17157 14.8284M9.17157 9.17157L14.8284 14.8284M19.0711 19.0711C15.1658 22.9763 8.83418 22.9763 4.92893 19.0711C1.02369 15.1658 1.02369 8.83418 4.92893 4.92893C8.83418 1.02369 15.1658 1.02369 19.0711 4.92893C22.9763 8.83418 22.9763 15.1658 19.0711 19.0711Z"
         stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"

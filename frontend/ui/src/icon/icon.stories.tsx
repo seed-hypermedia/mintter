@@ -55,7 +55,7 @@ export default {
   ],
 } as ComponentMeta<typeof Component>
 
-export const Playground: ComponentStory<typeof Component> = (args) => <Component {...args} name="Mintter" />
+export const Playground: ComponentStory<typeof Component> = (args) => <Component {...args} />
 
 export const Names: ComponentStory<typeof Component> = (args) => (
   <>
