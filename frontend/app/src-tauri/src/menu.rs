@@ -5,6 +5,10 @@ pub fn get_menu() -> Menu {
     .add_item(CustomMenuItem::new("about", "About Mintter"))
     .add_native_item(MenuItem::Separator)
     .add_item(CustomMenuItem::new("preferences", "Preferences...").accelerator("CmdOrControl+P"))
+    .add_native_item(MenuItem::Separator)
+    .add_native_item(MenuItem::Hide)
+    .add_native_item(MenuItem::HideOthers)
+    .add_native_item(MenuItem::Separator)
     .add_native_item(MenuItem::Quit);
 
   let edit_menu = Menu::new()
