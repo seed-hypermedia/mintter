@@ -40,7 +40,12 @@ export default function Library() {
         height: '$full',
         gridTemplateAreas: `"controls controls controls"
         "leftside maincontent rightside"`,
-        gridTemplateColumns: 'minmax(350px, 25%) 1fr minmax(350px, 25%)',
+        '@bp1': {
+          gridTemplateColumns: 'minmax(200px, 25%) 1fr minmax(200px, 25%)',
+        },
+        '@bp2': {
+          gridTemplateColumns: 'minmax(350px, 25%) 1fr minmax(350px, 25%)',
+        },
         gridTemplateRows: '64px 1fr',
         gap: '$5',
       }}

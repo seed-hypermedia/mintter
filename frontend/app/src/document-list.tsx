@@ -37,9 +37,11 @@ export function DocumentList({data}: DocumentListProps) {
 }
 
 const StyledLink = styled(Link, {
-  padding: '$5',
+  $$spacing: '$space$5',
+  padding: '$$spacing',
   borderRadius: '$2',
   display: 'flex',
+  marginHorizontal: '-$$spacing',
   gap: '$5',
   textDecoration: 'none',
   transition: 'background 0.25s ease-in-out',
@@ -80,6 +82,10 @@ function ListItem({item, toPrefix, isDraft}: ListItemProps) {
             background: '$primary-muted',
             width: 220,
             height: 140,
+            display: 'none',
+            '@initial': {
+              display: 'none',
+            },
           }}
         />
         <Box
@@ -91,10 +97,10 @@ function ListItem({item, toPrefix, isDraft}: ListItemProps) {
         "footer footer footer"`,
             gridTemplateColumns: '24px 1fr auto',
             gridTemplateRows: '24px auto auto',
-            gap: '$2',
+            gap: '$3',
           }}
         >
-          {!isDraft && location.pathname !== '/library/my-publications' && (
+          {!isDraft && location.pathname != '/library/my-publications' && (
             <>
               <Avatar css={{gridArea: 'avatar'}} />
               <Text size="1" css={{gridArea: 'author', alignSelf: 'center'}}>
@@ -117,11 +123,9 @@ function ListItem({item, toPrefix, isDraft}: ListItemProps) {
               0.09$
             </Text>
           </Box>
-          <Box css={{gridArea: 'content'}}>
+          <Box css={{gridArea: 'content', display: 'flex', flexDirection: 'column', gap: '$3'}}>
             <Text
               size="7"
-              // TODO: fix types
-              // @ts-ignore
               color="default"
               css={{
                 textOverflow: 'ellipsis',

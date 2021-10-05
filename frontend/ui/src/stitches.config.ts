@@ -146,9 +146,11 @@ const stitches = createStitches({
       max: '999',
     },
   },
-  // TODO: Fix types
-  // @ts-ignore
-  media: {},
+  media: {
+    bp1: '(min-width: 768px)',
+    bp2: '(min-width: 1024px)',
+    bp3: '(min-width: 1400px)',
+  },
   utils: {
     marginHorizontal: (val: Stitches.ScaleValue<'space'> | string) => ({marginLeft: val, marginRight: val}),
     marginVertical: (val: Stitches.ScaleValue<'space'> | string) => ({marginTop: val, marginBottom: val}),
