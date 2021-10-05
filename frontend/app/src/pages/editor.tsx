@@ -10,8 +10,8 @@ import {useHistory, useParams} from 'react-router'
 import {Container} from '../components/container'
 import {Separator} from '../components/separator'
 import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
-import type {DraftEditorMachineContext} from '../editor'
 import {Editor, useEditorDraft} from '../editor'
+import type {DraftEditorMachineContext, DraftEditorMachineState} from '../editor/use-editor-draft'
 
 export default function EditorPage() {
   const {docId} = useParams<{docId: string}>()
@@ -23,13 +23,6 @@ export default function EditorPage() {
 
   const [state, send] = useEditorDraft({
     documentId: docId,
-    afterSave: () => {
-      if (!toast.current) {
-        toast.current = toastFactory.success('Draft saved!', {position: 'top-center', duration: 2000})
-      } else {
-        toastFactory.success('Draft saved!', {position: 'top-center', duration: 2000, id: toast.current})
-      }
-    },
     afterPublish: (context: DraftEditorMachineContext) => {
       if (!toast.current) {
         toast.current = toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000})
@@ -109,6 +102,7 @@ export default function EditorPage() {
             paddingTop: '$7',
           }}
         >
+          <EditorStatus state={state} />
           <TextField
             // @todo: Fix types
             // @ts-ignore
@@ -185,4 +179,42 @@ export default function EditorPage() {
   }
 
   return null
+}
+
+function EditorStatus({state}: {state: DraftEditorMachineState}) {
+  return (
+    <Box
+      css={{
+        display: 'flex',
+        gap: '$4',
+        alignItems: 'center',
+        padding: '$4',
+      }}
+    >
+      <Box
+        css={{
+          $$size: '$space$5',
+          width: '$$size',
+          height: '$$size',
+          borderRadius: '$round',
+          backgroundColor: state.matches('editing.idle')
+            ? '$success-soft'
+            : state.matches('editing.debouncing')
+            ? '$background-muted'
+            : state.matches('editing.saving')
+            ? '$warning-soft'
+            : '$danger-soft',
+        }}
+      />
+      <Text color="muted">
+        {state.matches('editing.idle')
+          ? 'saved'
+          : state.matches('editing.debouncing')
+          ? 'unsaved'
+          : state.matches('editing.saving')
+          ? 'saving...'
+          : ''}
+      </Text>
+    </Box>
+  )
 }
