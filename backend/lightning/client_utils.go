@@ -143,11 +143,10 @@ func (d *Ldaemon) OpenChannel(counterpartyID string, localAmt, remoteAmt int64,
 	}); err != nil {
 		return "", 0, err
 	} else {
-		d.log.Info("Init channel opening process",
-			zap.String("TxID", channelIdToString(res.GetFundingTxidBytes())),
-			zap.Uint32("OutputIndex", res.OutputIndex))
+		channelPoint := channelIdToString(res.GetFundingTxidBytes()) + ":" + fmt.Sprint(res.OutputIndex)
+		d.log.Info("Init channel opening process", zap.String("ChannelPoint", channelPoint))
 
-		return channelIdToString(res.GetFundingTxidBytes()) + ":" + fmt.Sprint(res.OutputIndex), satPerVbyte, nil
+		return channelPoint, satPerVbyte, nil
 	}
 }
 

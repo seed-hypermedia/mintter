@@ -54,6 +54,7 @@ func TestPeers(t *testing.T) {
 		credentialsBob     WalletSecurity
 		confirmationBlocks uint32 // number of blocks to wait for a channel to be confirmed
 		blocksAfterOpening uint32 // number of blocks to mine after opening a channel (so te funding tx gets in)
+		acceptChannel      bool   // Whether ot not accepting the incoming channel
 	}{
 		{
 			name: "bitcoind",
@@ -100,6 +101,7 @@ func TestPeers(t *testing.T) {
 			},
 			confirmationBlocks: 1,
 			blocksAfterOpening: 1,
+			acceptChannel:      true,
 		},
 	}
 	log := backend.NewLogger(cfg)
@@ -109,7 +111,8 @@ func TestPeers(t *testing.T) {
 			err := interactPeers(t, tt.lnconfAlice, tt.lnconfBob,
 				&tt.credentialsAlice, &tt.credentialsBob,
 				testVectors[2].expectedID, testVectors[0].expectedID,
-				tt.confirmationBlocks, tt.blocksAfterOpening)
+				tt.confirmationBlocks, tt.blocksAfterOpening,
+				tt.acceptChannel)
 
 			require.NoError(t, err, tt.name+". must succeed")
 
@@ -121,7 +124,7 @@ func TestPeers(t *testing.T) {
 func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	credentialsAlice *WalletSecurity, credentialsBob *WalletSecurity,
 	expectedAliceID string, expectedBobID string, confirmationBlocks uint32,
-	blocksAfterOpening uint32) error {
+	blocksAfterOpening uint32, acceptChannel bool) error {
 
 	t.Helper()
 	var err error
@@ -197,8 +200,8 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 		return errBob
 	}
 
-	setAcceptor(alice, confirmationBlocks)
-	setAcceptor(bob, confirmationBlocks)
+	setAcceptor(alice, confirmationBlocks, acceptChannel)
+	setAcceptor(bob, confirmationBlocks, acceptChannel)
 
 	var i = 0
 	aliceReady, bobReady, aliceSynced, bobSynced, pairSent, aliceID, bobID := false, false, false, false, false, "", ""
@@ -482,7 +485,7 @@ func mineBlocks(numBlocks uint32, addr string, containerID string) error {
 				return err
 			} else {
 				walletCreated = true
-				time.Sleep(5 * time.Second) // wait for the wallet to be created
+				time.Sleep(6 * time.Second) // wait for the wallet to be created
 			}
 		}
 
@@ -529,15 +532,16 @@ func sendToAddress(amount uint64, addr string, containerID string, instantMining
 	return nil
 }
 
-func setAcceptor(node *Ldaemon, blocks2confirm uint32) {
+func setAcceptor(node *Ldaemon, blocks2confirm uint32, accept bool) {
 
 	acceptor := func(req *lnrpc.ChannelAcceptRequest) ChannelAcceptorResponse {
 		var res ChannelAcceptorResponse = AcceptorMsgDefault
 		fmt.Printf("PushAmt: %v ChannelReserve: %v CsvDelay: %v DustLimit: %v FundingAmt: %v MaxAcceptedHtlcs: %v MaxValueInFlight: %v FeePerKw: %v MinHtlc: %v",
 			req.PushAmt, req.ChannelReserve, req.CsvDelay, req.DustLimit, req.FundingAmt, req.MaxAcceptedHtlcs, req.MaxValueInFlight, req.FeePerKw, req.MinHtlc)
-		res.MinAcceptDepth = blocks2confirm
+		res.MinAcceptDepth = blocks2confirm                     // TODO: When this is 0 manager.go sets NumConfsRequired to 3. Change LND code to have zero-conf channels.
 		res.ReserveSat = uint64(float64(req.FundingAmt) / 20.0) // 5% of the capacity of the channel
 		res.InFlightMaxMsat = req.FundingAmt - res.ReserveSat
+		res.Accept = accept
 		return res
 	}
 	node.SetAcceptorCallback(acceptor)
