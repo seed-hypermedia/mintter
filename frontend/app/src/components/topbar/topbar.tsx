@@ -3,19 +3,17 @@ import {Button, buttonStyles} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {TextField} from '@mintter/ui/text-field'
-import {FormEvent, useRef} from 'react'
+import {FormEvent, PropsWithChildren, useRef} from 'react'
 import {useHistory} from 'react-router-dom'
-import {MINTTER_LINK_PREFIX} from '../constants'
-import {Container} from './container'
-import {Link} from './link'
+import {MINTTER_LINK_PREFIX} from '../../constants'
+import {Container} from '../container'
+import {Link} from '../link'
 
 const SettingsButton = styled(Link, buttonStyles)
 
-export function Topbar({isPublic = false}: {isPublic?: boolean}) {
+export function Topbar(props: PropsWithChildren<unknown>) {
   const history = useHistory()
-  return isPublic ? (
-    <Box>public topbar here</Box>
-  ) : (
+  return (
     <Box
       css={{
         display: 'grid',
@@ -27,6 +25,7 @@ export function Topbar({isPublic = false}: {isPublic?: boolean}) {
         borderBottom: '1px solid $colors$background-neutral',
         alignItems: 'center',
       }}
+      {...props}
     >
       <Link to={`/`}>
         <Icon name="Mintter" size="2" color="primary" />

@@ -1,4 +1,5 @@
-import {Account, connect, ConnectionStatus, Device, getPeerInfo} from '@mintter/client'
+import {Account, connect, ConnectionStatus, getPeerInfo} from '@mintter/client'
+import type {HookOptions} from '@mintter/client/hooks'
 import {useListAccounts} from '@mintter/client/hooks'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
@@ -7,12 +8,19 @@ import {keyframes, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
 import * as HoverCard from '@radix-ui/react-hover-card'
+import {ListAccountsResponse} from 'frontend/client/.generated/accounts/v1alpha/accounts'
 import {FormEvent, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useQuery} from 'react-query'
+import {ConnectionsShell} from './connections-shell'
 
-export function Connections() {
-  const {status, data, error} = useListAccounts()
+type ConnectionsProps = {
+  queryOptions: HookOptions<ListAccountsResponse>
+}
+
+export function Connections({queryOptions = {}}: ConnectionsProps) {
+  const {status, data, error} = useListAccounts(queryOptions)
+
   const [peer, setPeer] = useState('')
 
   async function handleConnect() {
@@ -31,64 +39,57 @@ export function Connections() {
     }
   }
 
-  if (status == 'loading') {
-    return <Text>loading...</Text>
-  }
-
   if (status == 'error') {
     console.error('Connections error: ', error)
     return <Text>ERROR</Text>
   }
 
-  if (status == 'success') {
-    return (
-      <Box data-testid="connections">
-        <Text as="h3" size="7" css={{fontWeight: '$bold'}}>
-          Connections
-        </Text>
-        {data && data.length == 0 ? (
-          <Text size="2">no connections available :(</Text>
-        ) : (
-          <Box as="ul" aria-label="connections" css={{marginTop: '$6', padding: 0}}>
-            {data.map((c: Account) => (
-              <AccountItem key={c.id} account={c} />
-            ))}
-          </Box>
-        )}
-        <Box css={{marginTop: '$6', mx: '-$2'}}>
-          <Prompt.Root>
-            <Prompt.Trigger variant="outlined" color="primary" size="1">
-              + add connection
-            </Prompt.Trigger>
-            <Prompt.Content>
-              <Prompt.Title>Connect to Peer</Prompt.Title>
-              <Prompt.Description>Enter a peer address to connect</Prompt.Description>
-              <TextField
-                value={peer}
-                onChange={(event: FormEvent<HTMLInputElement>) => setPeer(event.currentTarget.value)}
-                textarea
-                rows={3}
-                css={{
-                  minHeight: 150,
-                  maxHeight: 150,
-                  overflow: 'scroll',
-                }}
-              />
-              <Prompt.Actions>
-                <Prompt.Close asChild>
-                  <Button size="2" onClick={handleConnect}>
-                    Connect
-                  </Button>
-                </Prompt.Close>
-              </Prompt.Actions>
-            </Prompt.Content>
-          </Prompt.Root>
+  return (
+    <Box data-testid="connections" css={{display: 'flex', flexDirection: 'column', gap: '$6'}}>
+      <Text as="h3" size="7" css={{fontWeight: '$bold'}}>
+        Connections
+      </Text>
+      {data?.length == 0 && <Text size="2">no connections available :(</Text>}
+      {status == 'loading' ? (
+        <ConnectionsShell />
+      ) : status == 'success' && data ? (
+        <Box as="ul" aria-label="connections" css={{padding: 0, margin: 0}}>
+          {data.map((c: Account) => (
+            <AccountItem key={c.id} account={c} />
+          ))}
         </Box>
+      ) : null}
+      <Box css={{mx: '-$2'}}>
+        <Prompt.Root>
+          <Prompt.Trigger variant="outlined" color="primary" size="1">
+            + add connection
+          </Prompt.Trigger>
+          <Prompt.Content>
+            <Prompt.Title>Connect to Peer</Prompt.Title>
+            <Prompt.Description>Enter a peer address to connect</Prompt.Description>
+            <TextField
+              value={peer}
+              onChange={(event: FormEvent<HTMLInputElement>) => setPeer(event.currentTarget.value)}
+              textarea
+              rows={3}
+              css={{
+                minHeight: 150,
+                maxHeight: 150,
+                overflow: 'scroll',
+              }}
+            />
+            <Prompt.Actions>
+              <Prompt.Close asChild>
+                <Button size="2" onClick={handleConnect}>
+                  Connect
+                </Button>
+              </Prompt.Close>
+            </Prompt.Actions>
+          </Prompt.Content>
+        </Prompt.Root>
       </Box>
-    )
-  }
-
-  return null
+    </Box>
+  )
 }
 
 /*
@@ -144,9 +145,10 @@ export type AccountItemProps = {
 }
 
 function AccountItem({account}: AccountItemProps) {
-  const {data} = useQuery(['ConnectionStatus', account.devices], ({queryKey}) => {
-    if (Object.keys(account.devices).length > 0) {
-      return getPeerInfo(queryKey[1] as {[key: string]: Device})
+  const {data} = useQuery(['ConnectionStatus', account.devices], () => {
+    let devices = Object.values(account.devices)
+    if (devices.length > 0) {
+      return getPeerInfo(devices[0])
     }
   })
 
@@ -160,8 +162,6 @@ function AccountItem({account}: AccountItemProps) {
             display: 'flex',
             gap: '$3',
             alignItems: 'center',
-            // paddingHorizontal: '$3',
-            // paddingVertical: '$2',
             padding: '$3',
             marginHorizontal: '-$3',
             borderRadius: '$3',

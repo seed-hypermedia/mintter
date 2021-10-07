@@ -18,6 +18,8 @@ import {
 } from '../src'
 import type {HookOptions} from './types'
 
+export * from './types'
+
 /**
  *
  * @param accountId
@@ -217,8 +219,8 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
 
 export function useListAccounts(options: HookOptions<ListAccountsResponse> = {}) {
   const listAccountsQuery = useQuery<ListAccountsResponse>('ListAccounts', () => listAccounts(), {
-    ...options,
     refetchInterval: 5000,
+    ...options,
   })
 
   const data = useMemo(() => listAccountsQuery.data?.accounts || [], [listAccountsQuery])

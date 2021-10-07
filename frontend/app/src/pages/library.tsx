@@ -7,11 +7,11 @@ import {styled} from '@mintter/ui/stitches.config'
 import {Text, textStyles} from '@mintter/ui/text'
 import {PropsWithChildren, useCallback} from 'react'
 import {Route, Switch, useHistory, useRouteMatch} from 'react-router-dom'
+import {Connections} from '../components/connections'
 import {Container} from '../components/container'
 import {Link} from '../components/link'
 import * as MessageBox from '../components/message-box'
 import {Separator} from '../components/separator'
-import {Connections} from '../connections'
 import {DraftListPage, ListPage} from './list-page'
 
 export default function Library() {
