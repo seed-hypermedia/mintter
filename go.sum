@@ -187,6 +187,9 @@ github.com/btcsuite/btcd v0.21.0-beta.0.20201208033208-6bd4c64a54fa/go.mod h1:Sv
 github.com/btcsuite/btcd v0.21.0-beta.0.20210426180113-7eba688b65e5/go.mod h1:9n5ntfhhHQBIhUvlhDvD3Qg6fRUj4jkN0VB8L8svzOA=
 github.com/btcsuite/btcd v0.21.0-beta.0.20210513141527-ee5896bad5be h1:vDD/JWWS2v4GJUG/RZE/50wT6Saerbujijd7mFqgsKI=
 github.com/btcsuite/btcd v0.21.0-beta.0.20210513141527-ee5896bad5be/go.mod h1:9n5ntfhhHQBIhUvlhDvD3Qg6fRUj4jkN0VB8L8svzOA=
+github.com/btcsuite/btcd v0.22.0-beta.0.20210803133449-f5a1fb9965e4/go.mod h1:9n5ntfhhHQBIhUvlhDvD3Qg6fRUj4jkN0VB8L8svzOA=
+github.com/btcsuite/btcd v0.22.0-beta.0.20210916191717-f8e6854197cd h1:Nq1fLF6IA8XfW0HTpLaVZoDKazt05J1C2AAeswYloBE=
+github.com/btcsuite/btcd v0.22.0-beta.0.20210916191717-f8e6854197cd/go.mod h1:9n5ntfhhHQBIhUvlhDvD3Qg6fRUj4jkN0VB8L8svzOA=
 github.com/btcsuite/btclog v0.0.0-20170628155309-84c8d2346e9f h1:bAs4lUbRJpnnkd9VhRV3jjAVU7DJVjMaK+IsvSeZvFo=
 github.com/btcsuite/btclog v0.0.0-20170628155309-84c8d2346e9f/go.mod h1:TdznJufoqS23FtqVCzL0ZqgP5MqXbb4fg/WgDys70nA=
 github.com/btcsuite/btcutil v0.0.0-20190207003914-4c204d697803/go.mod h1:+5NJ2+qvTyV9exUAL/rxXi3DcLg2Ts+ymUAY5y4NvMg=
@@ -202,17 +205,25 @@ github.com/btcsuite/btcwallet v0.12.1-0.20210519225359-6ab9b615576f h1:Me6OOQP2Z
 github.com/btcsuite/btcwallet v0.12.1-0.20210519225359-6ab9b615576f/go.mod h1:f1HuBGov5+OTp40Gh1vA+tvF6d7bbuLFTceJMRB7fXw=
 github.com/btcsuite/btcwallet v0.12.1-0.20210803004036-eebed51155ec h1:MAAR//aKu+I7bnxmWJZqGTX7fU7abWFBRoSzX6ty8zw=
 github.com/btcsuite/btcwallet v0.12.1-0.20210803004036-eebed51155ec/go.mod h1:LNhKxGlbwEGVQFjS4Qa7BgR6NipPhTd1/93Ay049pBw=
+github.com/btcsuite/btcwallet v0.12.1-0.20210826004415-4ef582f76b02 h1:Q8Scm1SXNRyiXzD3a7O1C6bLFIUxUQSnWAd9aat8Xd0=
+github.com/btcsuite/btcwallet v0.12.1-0.20210826004415-4ef582f76b02/go.mod h1:SdqXKJoEEi5LJq6zU67PcKiyqF97AcUOfBfyQHC7rqQ=
 github.com/btcsuite/btcwallet/wallet/txauthor v1.0.0/go.mod h1:VufDts7bd/zs3GV13f/lXc/0lXrPnvxD/NvmpG/FEKU=
 github.com/btcsuite/btcwallet/wallet/txauthor v1.0.1-0.20210329233242-e0607006dce6/go.mod h1:VufDts7bd/zs3GV13f/lXc/0lXrPnvxD/NvmpG/FEKU=
 github.com/btcsuite/btcwallet/wallet/txauthor v1.0.1-0.20210519225359-6ab9b615576f h1:uzCtWqLJ6dlufUhpmoNgaegF87Pb9kOwPmpFYEi2up4=
 github.com/btcsuite/btcwallet/wallet/txauthor v1.0.1-0.20210519225359-6ab9b615576f/go.mod h1:VufDts7bd/zs3GV13f/lXc/0lXrPnvxD/NvmpG/FEKU=
 github.com/btcsuite/btcwallet/wallet/txauthor v1.0.2-0.20210803004036-eebed51155ec h1:nuO8goa4gbgDM4iegCztF7mTq8io9NT1DAMoPrEI6S4=
 github.com/btcsuite/btcwallet/wallet/txauthor v1.0.2-0.20210803004036-eebed51155ec/go.mod h1:VufDts7bd/zs3GV13f/lXc/0lXrPnvxD/NvmpG/FEKU=
+github.com/btcsuite/btcwallet/wallet/txauthor v1.1.0 h1:8pO0pvPX1rFRfRiol4oV6kX7dY5y4chPwhfVwUfvwtk=
+github.com/btcsuite/btcwallet/wallet/txauthor v1.1.0/go.mod h1:ktYuJyumYtwG+QQ832Q+kqvxWJRAei3Nqs5qhSn4nww=
 github.com/btcsuite/btcwallet/wallet/txrules v1.0.0 h1:2VsfS0sBedcM5KmDzRMT3+b6xobqWveZGvjb+jFez5w=
 github.com/btcsuite/btcwallet/wallet/txrules v1.0.0/go.mod h1:UwQE78yCerZ313EXZwEiu3jNAtfXj2n2+c8RWiE/WNA=
+github.com/btcsuite/btcwallet/wallet/txrules v1.1.0 h1:Vg8G8zhNVjaCdwJg2QOmLoWn4RTP7K0J9xlwY8CJnLY=
+github.com/btcsuite/btcwallet/wallet/txrules v1.1.0/go.mod h1:Zn9UTqpiTH+HOd5BLzSBzULzlOPmcoeyQIA0cp0WbQQ=
 github.com/btcsuite/btcwallet/wallet/txsizes v1.0.0/go.mod h1:pauEU8UuMFiThe5PB3EO+gO5kx87Me5NvdQDsTuq6cs=
 github.com/btcsuite/btcwallet/wallet/txsizes v1.0.1-0.20210519225359-6ab9b615576f h1:bzrmHuQ3ZGWWhGDyTL0OqihQWXGXSXNuBPkDoDB8SS4=
 github.com/btcsuite/btcwallet/wallet/txsizes v1.0.1-0.20210519225359-6ab9b615576f/go.mod h1:pauEU8UuMFiThe5PB3EO+gO5kx87Me5NvdQDsTuq6cs=
+github.com/btcsuite/btcwallet/wallet/txsizes v1.1.0 h1:wZnOolEAeNOHzHTnznw/wQv+j35ftCIokNrnOTOU5o8=
+github.com/btcsuite/btcwallet/wallet/txsizes v1.1.0/go.mod h1:pauEU8UuMFiThe5PB3EO+gO5kx87Me5NvdQDsTuq6cs=
 github.com/btcsuite/btcwallet/walletdb v1.3.4/go.mod h1:oJDxAEUHVtnmIIBaa22wSBPTVcs6hUp5NKWmI8xDwwU=
 github.com/btcsuite/btcwallet/walletdb v1.3.5-0.20210513043850-3a2f12e3a954/go.mod h1:oJDxAEUHVtnmIIBaa22wSBPTVcs6hUp5NKWmI8xDwwU=
 github.com/btcsuite/btcwallet/walletdb v1.3.5 h1:SoxUPLgJUkyO1XqON6X7x+rjHJoIpRQov8o8X6gNoz8=
@@ -224,6 +235,8 @@ github.com/btcsuite/btcwallet/wtxmgr v1.3.1-0.20210706234807-aaf03fee735a h1:25o
 github.com/btcsuite/btcwallet/wtxmgr v1.3.1-0.20210706234807-aaf03fee735a/go.mod h1:UM38ixX8VwJ9qey4umf//0H3ndn5kSImFZ46V54Nd5Q=
 github.com/btcsuite/btcwallet/wtxmgr v1.3.1-0.20210803004036-eebed51155ec h1:q2OVY/GUKpdpfaVYztVrWoTRVzyzdDQftRcgHs/6cXI=
 github.com/btcsuite/btcwallet/wtxmgr v1.3.1-0.20210803004036-eebed51155ec/go.mod h1:UM38ixX8VwJ9qey4umf//0H3ndn5kSImFZ46V54Nd5Q=
+github.com/btcsuite/btcwallet/wtxmgr v1.3.1-0.20210822222949-9b5a201c344c h1:owWPexGfK4eSK4/Zy+XK2lET5qsnW7FRAc8OCOdD0Fg=
+github.com/btcsuite/btcwallet/wtxmgr v1.3.1-0.20210822222949-9b5a201c344c/go.mod h1:UM38ixX8VwJ9qey4umf//0H3ndn5kSImFZ46V54Nd5Q=
 github.com/btcsuite/go-socks v0.0.0-20170105172521-4720035b7bfd h1:R/opQEbFEy9JGkIguV40SvRY1uliPX8ifOvi6ICsFCw=
 github.com/btcsuite/go-socks v0.0.0-20170105172521-4720035b7bfd/go.mod h1:HHNXQzUsZCxOoE+CPiyCTO6x34Zs86zZUiwtpXoGdtg=
 github.com/btcsuite/golangcrypto v0.0.0-20150304025918-53f62d9b43e8/go.mod h1:tYvUd8KLhm/oXvUeSEs2VlLghFjQt9+ZaF9ghH0JNjc=
@@ -1072,10 +1085,15 @@ github.com/kkdai/bstream v0.0.0-20161212061736-f391b8402d23/go.mod h1:J+Gs4SYgM6
 github.com/kkdai/bstream v0.0.0-20181106074824-b3251f7901ec h1:n1NeQ3SgUHyISrjFFoO5dR748Is8dBL9qpaTNfphQrs=
 github.com/kkdai/bstream v0.0.0-20181106074824-b3251f7901ec/go.mod h1:J+Gs4SYgM6CZQHDETBtE9HaSEkGmuNXF86RwHhHUvq4=
 <<<<<<< HEAD
+<<<<<<< HEAD
 github.com/klauspost/compress v1.10.3/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/klauspost/compress v1.11.7 h1:0hzRabrMN4tSTvMfnL3SCv1ZGeAP23ynzodBgaHeMeg=
 github.com/klauspost/compress v1.11.7/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 =======
+=======
+github.com/kkdai/bstream v1.0.0 h1:Se5gHwgp2VT2uHfDrkbbgbgEvV9cimLELwrPJctSjg8=
+github.com/kkdai/bstream v1.0.0/go.mod h1:FDnDOHt5Yx4p3FaHcioFT0QjDOtgUpvjeZqAs+NVZZA=
+>>>>>>> dc227c5a (Update Lnd version)
 github.com/klauspost/compress v1.11.3/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/klauspost/compress v1.11.13/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 >>>>>>> 23616257 (Add Docker support for testing)
@@ -1418,6 +1436,8 @@ github.com/lightningnetwork/lightning-onion v1.0.2-0.20210520211913-522b799e65b1
 github.com/lightningnetwork/lightning-onion v1.0.2-0.20210520211913-522b799e65b1/go.mod h1:rigfi6Af/KqsF7Za0hOgcyq2PNH4AN70AaMRxcJkff4=
 github.com/lightningnetwork/lnd v0.13.2-beta h1:dWPHFuXiZDqbc8QflOr6u68mP8ZBkeB84LAq1PETnyk=
 github.com/lightningnetwork/lnd v0.13.2-beta/go.mod h1:JrIpfCD1ErII6aj2xNOC5j5Bz4VN4MWSRE/Uz/W3340=
+github.com/lightningnetwork/lnd v0.13.3-beta h1:0T2wAGTbDsZS/wmHKggXbS6IUDM4swMBJwvQaBp1hwA=
+github.com/lightningnetwork/lnd v0.13.3-beta/go.mod h1:oo4ibdS/sRDWalxM3ccZHMKUVv3dc681tDPPQ8kyHFg=
 github.com/lightningnetwork/lnd/cert v1.0.3 h1:/K2gjzLgVI8we2IIPKc0ztWTEa85uds5sWXi1K6mOT0=
 github.com/lightningnetwork/lnd/cert v1.0.3/go.mod h1:3MWXVLLPI0Mg0XETm9fT4N9Vyy/8qQLmaM5589bEggM=
 github.com/lightningnetwork/lnd/clock v1.0.1 h1:QQod8+m3KgqHdvVMV+2DRNNZS1GRFir8mHZYA+Z2hFo=

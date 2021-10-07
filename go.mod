@@ -191,7 +191,7 @@ require (
 	github.com/multiformats/go-multicodec v0.2.0 // indirect
 	github.com/libp2p/go-netroute v0.1.4 // indirect
 	github.com/libp2p/go-sockaddr v0.1.0 // indirect
-	github.com/lightningnetwork/lnd v0.13.2-beta
+	github.com/lightningnetwork/lnd v0.13.3-beta
 	github.com/multiformats/go-multiaddr v0.3.1
 	github.com/multiformats/go-multihash v0.0.15
 	github.com/multiformats/go-multistream v0.2.2 // indirect
