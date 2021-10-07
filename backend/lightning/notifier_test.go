@@ -248,7 +248,7 @@ waitLoop:
 				} else {
 					fmt.Println("Alice received a peer notification from Bob:" + bobID)
 					if aliceID != "" && !channelOpened {
-						if txid, _, err := alice.OpenChannel(bobID, int64(aliceBalance)/2, 0, true, blocksAfterOpening == 0, 0); err != nil {
+						if txid, err := alice.OpenChannel(bobID, int64(aliceBalance)/2, 0, true, blocksAfterOpening == 0, 0); err != nil {
 							return err
 						} else if err := mineBlocks(blocksAfterOpening, "", containerID); err != nil {
 							return err
@@ -309,7 +309,7 @@ waitLoop:
 				} else {
 					fmt.Println("Bob received a peer notification from Alice:" + aliceID)
 					if bobID != "" && !channelOpened {
-						if txid, _, err := bob.OpenChannel(aliceID, int64(bobBalance)/2, 0, true, blocksAfterOpening == 0, 0); err != nil {
+						if txid, err := bob.OpenChannel(aliceID, int64(bobBalance)/2, 0, true, blocksAfterOpening == 0, 0); err != nil {
 							return err
 						} else if err := mineBlocks(blocksAfterOpening, "", containerID); err != nil {
 							return err
@@ -333,7 +333,8 @@ waitLoop:
 			if aliceReady && bobReady && aliceSynced && bobSynced && !pairSent {
 
 				fmt.Println("Both Alice and Bob are ready and synced. Pairing...")
-				_, err := alice.APIClient().ConnectPeer(context.Background(), &lnrpc.ConnectPeerRequest{
+				ctx, cancel := context.WithCancel(context.Background())
+				_, err := alice.APIClient().ConnectPeer(ctx, &lnrpc.ConnectPeerRequest{
 					Addr: &lnrpc.LightningAddress{
 						Pubkey: expectedBobID,
 						Host:   lnconfBob.RawListeners[0],
@@ -341,6 +342,7 @@ waitLoop:
 					Perm:    false,
 					Timeout: 2,
 				})
+				cancel()
 				if err == nil {
 					pairSent = true
 				}

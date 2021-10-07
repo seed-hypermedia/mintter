@@ -138,11 +138,13 @@ func (d *Ldaemon) startRpcClients(macBytes []byte) error {
 // invoices updates, chain synchronization updates and channel acceptor updates
 func (d *Ldaemon) startSubscriptions() error {
 	var i = 0
+	ctxGetInfo, cancelGetInfo := context.WithCancel(context.Background())
+	defer cancelGetInfo()
 	//We need time for the LND to complete init once the rest of the servers (except from the unlocker) to be up and running
 loop:
 	for {
 		time.Sleep(waitSecondsPerAttempt * time.Second)
-		info, chainErr := d.lightningClient.GetInfo(context.Background(), &lnrpc.GetInfoRequest{})
+		info, chainErr := d.lightningClient.GetInfo(ctxGetInfo, &lnrpc.GetInfoRequest{})
 		if chainErr != nil {
 			select {
 			case <-d.quitChan: // Early exit on shutdown

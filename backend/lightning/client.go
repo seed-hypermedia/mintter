@@ -73,7 +73,11 @@ func (d *Ldaemon) HasActiveChannel() bool {
 	if lnclient == nil {
 		return false
 	}
-	channels, err := lnclient.ListChannels(context.Background(), &lnrpc.ListChannelsRequest{
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	channels, err := lnclient.ListChannels(ctx, &lnrpc.ListChannelsRequest{
 		ActiveOnly: true,
 	})
 	if err != nil {
@@ -420,7 +424,10 @@ func newLightningClient(noMacaroon bool, macBytes []byte, macPath string, certPa
 // Whether or not all the channels of the node are in active state. Not active means the counterparty is offline
 // or it is in the process of being closed.
 func (d *Ldaemon) allChannelsActive(client lnrpc.LightningClient) (bool, error) {
-	channels, err := client.ListChannels(context.Background(), &lnrpc.ListChannelsRequest{})
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	channels, err := client.ListChannels(ctx, &lnrpc.ListChannelsRequest{})
 	if err != nil {
 		d.log.Error("Error in allChannelsActive() > ListChannels()",
 			zap.String("err", err.Error()))

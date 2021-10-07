@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/lightningnetwork/lnd/lnrpc"
+	"github.com/lightningnetwork/lnd/lnrpc/invoicesrpc"
 	"go.uber.org/zap"
 )
 
@@ -43,8 +44,10 @@ func (d *Ldaemon) NewAddress(account string, addressType int32) (string, error) 
 	if lnclient == nil {
 		return "", fmt.Errorf("lnclient is not ready yet")
 	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	if addr, err := lnclient.NewAddress(context.Background(),
+	if addr, err := lnclient.NewAddress(ctx,
 		&lnrpc.NewAddressRequest{Type: lnrpc.AddressType(addressType),
 			Account: account}); err != nil {
 		d.log.Error("Error in HasActiveChannel() > ListChannels()", zap.String("err", err.Error()))
@@ -66,7 +69,10 @@ func (d *Ldaemon) GetBalance(account string) (WalletBalance, error) {
 		return WalletBalance{Accounts: balance}, fmt.Errorf("lnclient is not ready yet")
 	}
 
-	if resp, err := lnclient.WalletBalance(context.Background(),
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if resp, err := lnclient.WalletBalance(ctx,
 		&lnrpc.WalletBalanceRequest{}); err != nil {
 		return WalletBalance{Accounts: balance}, err
 	} else {
@@ -90,7 +96,9 @@ func (d *Ldaemon) EstimateFees(TargetConf, MinConfs int32, SpendUnconfirmed bool
 		return 0, fmt.Errorf("lnclient is not ready yet")
 	}
 
-	if res, err := lnclient.EstimateFee(context.Background(), &lnrpc.EstimateFeeRequest{
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	if res, err := lnclient.EstimateFee(ctx, &lnrpc.EstimateFeeRequest{
 		AddrToAmount:     outputs,
 		TargetConf:       TargetConf,
 		MinConfs:         MinConfs,
@@ -112,16 +120,14 @@ func (d *Ldaemon) EstimateFees(TargetConf, MinConfs int32, SpendUnconfirmed bool
 // This function returns a channel point (Txid:index) the associated fees (in sats per virtual
 // byte) and any error on failure
 func (d *Ldaemon) OpenChannel(counterpartyID string, localAmt, remoteAmt int64,
-	private, inmediate bool, satPerVbyte uint64) (string, uint64, error) {
+	private, inmediate bool, satPerVbyte uint64) (string, error) {
 
 	lnclient := d.APIClient()
 	if lnclient == nil {
-		return "", 0, fmt.Errorf("lnclient is not ready yet")
+		return "", fmt.Errorf("lnclient is not ready yet")
 	}
 	var MinConfs int32 = 1   // The minimum number of confirmations each one of the outputs used for the funding transaction must satisfy.
 	var TargetConf int32 = 0 // The target number of blocks that the funding transaction should be confirmed by.
-	outputs := make(map[string]int64)
-	outputs[counterpartyID] = localAmt
 
 	if inmediate {
 		MinConfs = 0
@@ -131,7 +137,10 @@ func (d *Ldaemon) OpenChannel(counterpartyID string, localAmt, remoteAmt int64,
 		TargetConf = 1
 	}
 
-	if res, err := lnclient.OpenChannelSync(context.Background(), &lnrpc.OpenChannelRequest{
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if res, err := lnclient.OpenChannelSync(ctx, &lnrpc.OpenChannelRequest{
 		SatPerVbyte:        satPerVbyte,
 		NodePubkeyString:   counterpartyID,
 		LocalFundingAmount: localAmt,
@@ -141,15 +150,77 @@ func (d *Ldaemon) OpenChannel(counterpartyID string, localAmt, remoteAmt int64,
 		MinConfs:           MinConfs,
 		SpendUnconfirmed:   MinConfs == 0,
 	}); err != nil {
-		return "", 0, err
+		return "", err
 	} else {
 		channelPoint := channelIdToString(res.GetFundingTxidBytes()) + ":" + fmt.Sprint(res.OutputIndex)
 		d.log.Info("Init channel opening process", zap.String("ChannelPoint", channelPoint))
 
-		return channelPoint, satPerVbyte, nil
+		return channelPoint, nil
 	}
 }
 
+// Simply takes a byte array, swaps it and encode the hex representation in a string
+func (d *Ldaemon) GenerateInvoice(amount int64, hash []byte) (string, error) {
+	lnclient := d.APIClient()
+	if lnclient == nil {
+		return "", fmt.Errorf("lnclient is not ready yet")
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	lnclient.AddInvoice(ctx, &lnrpc.Invoice{
+		Memo:            "",
+		RPreimage:       []byte{},
+		RHash:           hash,
+		Value:           0,
+		ValueMsat:       0,
+		Settled:         false,
+		CreationDate:    0,
+		SettleDate:      0,
+		PaymentRequest:  "",
+		DescriptionHash: hash,
+		Expiry:          0,
+		FallbackAddr:    "",
+		CltvExpiry:      0,
+		RouteHints:      []*lnrpc.RouteHint{},
+		Private:         false,
+		AddIndex:        0,
+		SettleIndex:     0,
+		AmtPaid:         0,
+		AmtPaidSat:      0,
+		AmtPaidMsat:     0,
+		State:           0,
+		Htlcs:           []*lnrpc.InvoiceHTLC{},
+		Features:        map[uint32]*lnrpc.Feature{},
+		IsKeysend:       false,
+		PaymentAddr:     []byte{},
+		IsAmp:           false,
+	})
+	return "", nil
+}
+
+// Simply takes a byte array, swaps it and encode the hex representation in a string
+func (d *Ldaemon) GenerateHoldInvoice(amount int64, hash []byte) (string, error) {
+	lnclient := d.InvoicesClient()
+	if lnclient == nil {
+		return "", fmt.Errorf("lnclient is not ready yet")
+	}
+	lnclient.AddHoldInvoice(context.Background(), &invoicesrpc.AddHoldInvoiceRequest{
+		Memo:            "",
+		Hash:            hash,
+		Value:           0,
+		ValueMsat:       0,
+		DescriptionHash: hash,
+		Expiry:          0,
+		FallbackAddr:    "",
+		CltvExpiry:      0,
+		RouteHints:      []*lnrpc.RouteHint{},
+		Private:         false,
+	})
+	return "", nil
+}
+
+// Simply takes a byte array, swap it and encode the hex representation in a string
 func channelIdToString(hash []byte) string {
 	HashSize := len(hash)
 	for i := 0; i < HashSize/2; i++ {
