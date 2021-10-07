@@ -4,10 +4,16 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"io"
 
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/invoicesrpc"
+	"github.com/lightningnetwork/lnd/lnrpc/routerrpc"
 	"go.uber.org/zap"
+)
+
+const (
+	minExpirationSecsInvoice = 1
 )
 
 type AccountBalance struct {
@@ -118,17 +124,27 @@ func (d *Ldaemon) EstimateFees(TargetConf, MinConfs int32, SpendUnconfirmed bool
 // with zero confirmations at a cost of higher fees. User can manually select the fees
 // associated with the funding transaction but it could be overiden if inmediate flag is set.
 // This function returns a channel point (Txid:index) the associated fees (in sats per virtual
-// byte) and any error on failure
+// byte) and any error on failure. If block flag is set, this function waits until the channel
+// is fully opened. It exits after pending channel otherwise
 func (d *Ldaemon) OpenChannel(counterpartyID string, localAmt, remoteAmt int64,
-	private, inmediate bool, satPerVbyte uint64) (string, error) {
+	private, inmediate bool, satPerVbyte uint64, blocking bool) (string, error) {
 
 	lnclient := d.APIClient()
 	if lnclient == nil {
 		return "", fmt.Errorf("lnclient is not ready yet")
 	}
+
+	var nodePubHex []byte
+	var err error
+	if nodePubHex, err = hex.DecodeString(counterpartyID); err != nil {
+		return "", fmt.Errorf("lnclient is not ready yet")
+	}
+
 	var MinConfs int32 = 1   // The minimum number of confirmations each one of the outputs used for the funding transaction must satisfy.
 	var TargetConf int32 = 0 // The target number of blocks that the funding transaction should be confirmed by.
 
+	// TODO: track this PR https://github.com/lightningnetwork/lnd/pull/4424
+	// as this will allow us to set a target confirmation of 0 blocks
 	if inmediate {
 		MinConfs = 0
 		TargetConf = 1
@@ -140,9 +156,9 @@ func (d *Ldaemon) OpenChannel(counterpartyID string, localAmt, remoteAmt int64,
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if res, err := lnclient.OpenChannelSync(ctx, &lnrpc.OpenChannelRequest{
+	if stream, err := lnclient.OpenChannel(ctx, &lnrpc.OpenChannelRequest{
 		SatPerVbyte:        satPerVbyte,
-		NodePubkeyString:   counterpartyID,
+		NodePubkey:         nodePubHex,
 		LocalFundingAmount: localAmt,
 		PushSat:            remoteAmt,
 		TargetConf:         TargetConf,
@@ -152,75 +168,202 @@ func (d *Ldaemon) OpenChannel(counterpartyID string, localAmt, remoteAmt int64,
 	}); err != nil {
 		return "", err
 	} else {
-		channelPoint := channelIdToString(res.GetFundingTxidBytes()) + ":" + fmt.Sprint(res.OutputIndex)
-		d.log.Info("Init channel opening process", zap.String("ChannelPoint", channelPoint))
 
-		return channelPoint, nil
+		for {
+			resp, err := stream.Recv()
+			if err == io.EOF {
+				d.log.Warn("EOF reached when reading from open channel stream")
+				return "", nil
+			} else if err != nil {
+				return "", err
+			}
+
+			switch update := resp.Update.(type) {
+			case *lnrpc.OpenStatusUpdate_ChanPending:
+				if !blocking {
+					channelPoint := channelIdToString(update.ChanPending.Txid) + ":" + fmt.Sprint(update.ChanPending.OutputIndex)
+					d.log.Info("Init channel opening process", zap.String("ChannelPoint", channelPoint))
+					return channelPoint, nil
+				}
+
+			case *lnrpc.OpenStatusUpdate_ChanOpen:
+				channelPoint := update.ChanOpen.ChannelPoint.GetFundingTxidStr() + ":" + fmt.Sprint(update.ChanOpen.ChannelPoint.GetOutputIndex())
+				d.log.Info("Init channel succeded", zap.String("ChannelPoint", channelPoint))
+				return channelPoint, nil
+			}
+		}
 	}
 }
 
-// Simply takes a byte array, swaps it and encode the hex representation in a string
-func (d *Ldaemon) GenerateInvoice(amount int64, hash []byte) (string, error) {
+// List all the channels this node has with the provided peer. If no peer
+// is provided then all channels with all peers are returned. Channels can
+// be active or inactive and can be public or private. This function returns
+// an array containing an iformation struct for each channel matching the
+// peer Id provided.
+func (d *Ldaemon) ListChannels(peer string) ([]*lnrpc.Channel, error) {
+
+	lnclient := d.APIClient()
+	if lnclient == nil {
+		return nil, fmt.Errorf("lnclient is not ready yet")
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	peerID := []byte{}
+	var err error
+
+	if peer != "" {
+		if peerID, err = hex.DecodeString(peer); err != nil {
+			return nil, fmt.Errorf("Couln't convert peerID string to byte array" + err.Error())
+		}
+	}
+	if res, err := lnclient.ListChannels(ctx, &lnrpc.ListChannelsRequest{Peer: peerID}); err != nil {
+		return nil, err
+	} else {
+		return res.Channels, nil
+	}
+}
+
+// Generates an invoice to be paid with amount in millisatoshis. The invoice is constructed
+// from the preimage indicated, and it accepts a memo so the payer knows what it this invoice
+// for. This invoice  expires in expirySeconds, after that it cannot be paid. If for some reason
+// there is a non cooperative node involved in the HTLC transmission of the payment of this invoice
+// the funds can be recovered in the fallback addres, if provided. Internal wallet addres used otherwise
+// If private flag is set, then hop hints (private channels) will be advertised to reach this node.
+func (d *Ldaemon) GenerateInvoice(amountMSat int64, preimage []byte, memo string,
+	expirySeconds int64, fallbackAddr string, private bool) (string, error) {
 	lnclient := d.APIClient()
 	if lnclient == nil {
 		return "", fmt.Errorf("lnclient is not ready yet")
 	}
 
+	if expirySeconds < minExpirationSecsInvoice {
+		expirySeconds = minExpirationSecsInvoice
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	lnclient.AddInvoice(ctx, &lnrpc.Invoice{
-		Memo:            "",
-		RPreimage:       []byte{},
-		RHash:           hash,
-		Value:           0,
-		ValueMsat:       0,
-		Settled:         false,
-		CreationDate:    0,
-		SettleDate:      0,
-		PaymentRequest:  "",
-		DescriptionHash: hash,
-		Expiry:          0,
-		FallbackAddr:    "",
-		CltvExpiry:      0,
-		RouteHints:      []*lnrpc.RouteHint{},
-		Private:         false,
-		AddIndex:        0,
-		SettleIndex:     0,
-		AmtPaid:         0,
-		AmtPaidSat:      0,
-		AmtPaidMsat:     0,
-		State:           0,
-		Htlcs:           []*lnrpc.InvoiceHTLC{},
-		Features:        map[uint32]*lnrpc.Feature{},
-		IsKeysend:       false,
-		PaymentAddr:     []byte{},
-		IsAmp:           false,
-	})
-	return "", nil
+	if res, err := lnclient.AddInvoice(ctx, &lnrpc.Invoice{
+		Memo:         memo,
+		RPreimage:    preimage,
+		ValueMsat:    amountMSat,
+		Expiry:       expirySeconds,
+		FallbackAddr: fallbackAddr,
+		Private:      private,
+		IsAmp:        false,
+	}); err != nil {
+		return "", err
+	} else {
+		return res.PaymentRequest, nil
+	}
 }
 
-// Simply takes a byte array, swaps it and encode the hex representation in a string
-func (d *Ldaemon) GenerateHoldInvoice(amount int64, hash []byte) (string, error) {
+// Generates an invoice to be paid with amount in millisatoshis. The invoice is constructed
+// without the preimage information, so only the hash is known (The preimage has to be
+// revelaed at settlement time). like regular invoices, it accepts a memo so the payer knows
+// what it this invoice for. This invoice  expires in expirySeconds, after that it cannot
+// be paid. If there is a non cooperative node involved in the HTLC transmission of the
+// payment of this invoice the funds can be recovered in the fallback addres, if provided.
+// Internal wallet addres used otherwise If private flag is set, then hop hints
+// (private channels) will be advertised to reach this node
+func (d *Ldaemon) GenerateHoldInvoice(amountMSat int64, preimageHash []byte, memo string,
+	expirySeconds int64, fallbackAddr string, private bool) (string, error) {
 	lnclient := d.InvoicesClient()
 	if lnclient == nil {
 		return "", fmt.Errorf("lnclient is not ready yet")
 	}
-	lnclient.AddHoldInvoice(context.Background(), &invoicesrpc.AddHoldInvoiceRequest{
-		Memo:            "",
-		Hash:            hash,
-		Value:           0,
-		ValueMsat:       0,
-		DescriptionHash: hash,
-		Expiry:          0,
-		FallbackAddr:    "",
-		CltvExpiry:      0,
-		RouteHints:      []*lnrpc.RouteHint{},
-		Private:         false,
-	})
-	return "", nil
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if res, err := lnclient.AddHoldInvoice(ctx, &invoicesrpc.AddHoldInvoiceRequest{
+		Memo:         memo,
+		Hash:         preimageHash,
+		ValueMsat:    amountMSat,
+		Expiry:       expirySeconds,
+		FallbackAddr: fallbackAddr,
+		Private:      private,
+	}); err != nil {
+		return "", err
+	} else {
+		return res.PaymentRequest, nil
+	}
 }
 
-// Simply takes a byte array, swap it and encode the hex representation in a string
+// Pays amtMsat millisatoshis to the invoice represented by paymentRequest. It uses the
+// OutgoingChanId channel to forward the HTLC, if provided. User can set fee limits to
+// the payment by either setting an absolute millisatoshis value or a percentage value
+// of the total amount (1-100%) if both are set, the most restrictive will be taken.
+// User can specify a pubkey to be used as a last hop of the HTLC transmission.
+// This function blocks until either the payment success or timeout in seconds is reached
+// On success, it returns the preimage of the payment hash
+func (d *Ldaemon) PayInvoice(paymentRequest string, OutgoingChanId uint64, amtMsat int64,
+	fee_limit_msat int64, fee_limit_percent int64, lastHopPubkey string, timeout int32) (string, error) {
+	routerClient := d.RouterClient()
+	if routerClient == nil {
+		return "", fmt.Errorf("routerClient is not ready yet")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	var feeLimit int64
+	totPercentFee := amtMsat * fee_limit_percent / 100
+	if totPercentFee >= fee_limit_msat {
+		feeLimit = fee_limit_msat
+	} else {
+		feeLimit = fee_limit_percent
+	}
+
+	var lastHop []byte
+	var err error
+	if lastHopPubkey != "" {
+		if lastHop, err = hex.DecodeString(lastHopPubkey); err != nil {
+			return "", fmt.Errorf("Couln't convert peerID string to byte array" + err.Error())
+		}
+	}
+	if stream, err := routerClient.SendPaymentV2(ctx, &routerrpc.SendPaymentRequest{
+		AmtMsat:          amtMsat,
+		PaymentRequest:   paymentRequest,
+		FeeLimitMsat:     feeLimit,
+		OutgoingChanId:   OutgoingChanId,
+		AllowSelfPayment: true,
+		LastHopPubkey:    lastHop,
+		TimeoutSeconds:   timeout,
+	}); err != nil {
+		return "", err
+	} else {
+		for {
+			payment, err := stream.Recv()
+			if err != nil {
+				return "", err
+			}
+			// Terminate loop if payments state is final.
+			if payment.Status != lnrpc.Payment_IN_FLIGHT {
+				if payment.Status != lnrpc.Payment_SUCCEEDED {
+					return "", fmt.Errorf("Payment didn't succed. Reason: " +
+						lnrpc.PaymentFailureReason_name[int32(payment.FailureReason)])
+				} else {
+					return payment.PaymentPreimage, nil
+				}
+
+			}
+		}
+	}
+
+}
+
+// TODO: Track this PR: https://github.com/lightningnetwork/lnd/pull/5346
+// When it is merged, we can implement direct messaging
+func (d *Ldaemon) SendDirectMessage(peerID string, message string) error {
+	lnclient := d.APIClient()
+	if lnclient == nil {
+		return fmt.Errorf("lnclient is not ready yet")
+	}
+	_, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	return nil
+}
+
+// This function takes a byte array, swaps it and encodes the hex representation in a string
 func channelIdToString(hash []byte) string {
 	HashSize := len(hash)
 	for i := 0; i < HashSize/2; i++ {

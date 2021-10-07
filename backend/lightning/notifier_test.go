@@ -248,7 +248,7 @@ waitLoop:
 				} else {
 					fmt.Println("Alice received a peer notification from Bob:" + bobID)
 					if aliceID != "" && !channelOpened {
-						if txid, err := alice.OpenChannel(bobID, int64(aliceBalance)/2, 0, true, blocksAfterOpening == 0, 0); err != nil {
+						if txid, err := alice.OpenChannel(bobID, int64(aliceBalance)/2, 0, true, blocksAfterOpening == 0, 0, false); err != nil {
 							return err
 						} else if err := mineBlocks(blocksAfterOpening, "", containerID); err != nil {
 							return err
@@ -309,7 +309,7 @@ waitLoop:
 				} else {
 					fmt.Println("Bob received a peer notification from Alice:" + aliceID)
 					if bobID != "" && !channelOpened {
-						if txid, err := bob.OpenChannel(aliceID, int64(bobBalance)/2, 0, true, blocksAfterOpening == 0, 0); err != nil {
+						if txid, err := bob.OpenChannel(aliceID, int64(bobBalance)/2, 0, true, blocksAfterOpening == 0, 0, false); err != nil {
 							return err
 						} else if err := mineBlocks(blocksAfterOpening, "", containerID); err != nil {
 							return err
@@ -540,7 +540,10 @@ func setAcceptor(node *Ldaemon, blocks2confirm uint32, accept bool) {
 		var res ChannelAcceptorResponse = AcceptorMsgDefault
 		fmt.Printf("PushAmt: %v ChannelReserve: %v CsvDelay: %v DustLimit: %v FundingAmt: %v MaxAcceptedHtlcs: %v MaxValueInFlight: %v FeePerKw: %v MinHtlc: %v",
 			req.PushAmt, req.ChannelReserve, req.CsvDelay, req.DustLimit, req.FundingAmt, req.MaxAcceptedHtlcs, req.MaxValueInFlight, req.FeePerKw, req.MinHtlc)
-		res.MinAcceptDepth = blocks2confirm                     // TODO: When this is 0 manager.go sets NumConfsRequired to 3. Change LND code to have zero-conf channels.
+
+		// TODO: track this PR https://github.com/lightningnetwork/lnd/pull/4424
+		// as this will allow us to set a target confirmation of 0 blocks
+		res.MinAcceptDepth = blocks2confirm                     // TODO: When this is 0 manager.go sets NumConfsRequired to 3.
 		res.ReserveSat = uint64(float64(req.FundingAmt) / 20.0) // 5% of the capacity of the channel
 		res.InFlightMaxMsat = req.FundingAmt - res.ReserveSat
 		res.Accept = accept
