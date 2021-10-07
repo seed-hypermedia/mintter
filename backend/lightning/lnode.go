@@ -192,7 +192,12 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 
 	if d.interceptor == nil || !d.interceptor.Listening() {
 		if interceptor, interceptErr := signal.Intercept(); interceptErr != nil {
-			d.log.Warn("Could not hook interceptor. Already started. Check if there is another instance of lnd running on the system")
+			errMsg := "Could not hook interceptor." + interceptErr.Error() +
+				".Check if there is another instance of lnd running on the system." +
+				"If you want to run vaious lnd instances, pass the interceptor on " +
+				"the first node to the second node constructor"
+			d.log.Error(errMsg)
+			return nil, fmt.Errorf(errMsg)
 		} else {
 			d.interceptor = &interceptor
 		}
