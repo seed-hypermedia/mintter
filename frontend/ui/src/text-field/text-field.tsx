@@ -171,7 +171,7 @@ const TextFieldHint = styled(Text, {
 })
 
 type TextFieldProps = PropsWithChildren<
-  InputHTMLAttributes &
+  InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> &
     InputProps & {
       id?: string
       label?: string
@@ -187,7 +187,6 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
 
     useLayoutEffect(() => {
       if (textarea) {
-        console.log('textarea autosize!')
         autosize(localRef.current!)
       }
     }, [textarea])
@@ -203,7 +202,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
             {label}
           </Label.Root>
         ) : null}
-        <InputComponent ref={mergeRefs<HTMLInputElement>([localRef, ref])} {...props} />
+        <InputComponent ref={mergeRefs<HTMLInputElement | HTMLTextAreaElement>([localRef, ref])} {...props} />
         {hint ? (
           <TextFieldHint status={status} size={props.size == 1 || props.size == 2 ? props.size : undefined}>
             {hint}
