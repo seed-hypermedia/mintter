@@ -1,6 +1,6 @@
-import {Box} from '@mintter/ui/box'
 import type {ComponentMeta, ComponentStory} from '@storybook/react'
 import React from 'react'
+import {Box} from '../box'
 import {TextField as Component} from './text-field'
 
 export default {

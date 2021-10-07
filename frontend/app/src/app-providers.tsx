@@ -3,7 +3,13 @@ import {PropsWithChildren, Suspense} from 'react'
 import {Toaster} from 'react-hot-toast'
 import {QueryClient, QueryClientProvider} from 'react-query'
 
-export const queryClient = new QueryClient()
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      useErrorBoundary: true,
+    },
+  },
+})
 
 export function AppProviders({children}: PropsWithChildren<unknown>) {
   return (

@@ -36,13 +36,9 @@ export function getConnectionStatus(objectId: string, rpc?: GrpcClient) {
   return new NetworkingClientImpl(rpc).getObjectDiscoveryStatus(request)
 }
 
-export function getPeerInfo(devices: {[key: string]: Device}, rpc?: GrpcClient) {
+export function getPeerInfo(device: Device, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
-  let peer_id = ''
-  Object.entries(devices).map(([, {peerId}]) => {
-    peer_id = peerId
-  })
 
-  const request = GetPeerInfoRequest.fromPartial({peerId: peer_id})
+  const request = GetPeerInfoRequest.fromPartial({peerId: device.peerId})
   return new NetworkingClientImpl(rpc).getPeerInfo(request)
 }

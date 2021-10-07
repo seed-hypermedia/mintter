@@ -1,24 +1,25 @@
-import {useDraftsList} from '@mintter/client/hooks'
+import {HookOptions, useDraftsList} from '@mintter/client/hooks'
 import {Text} from '@mintter/ui/text'
 import type {UseQueryResult} from 'react-query'
+import type {DocumentListData} from '../components/document-list'
+import {DocumentList, DummyListItem} from '../components/document-list'
 import * as MessageBox from '../components/message-box'
-import type {DocumentListData} from '../document-list'
-import {DocumentList} from '../document-list'
 
 export type ListPageProps = {
   onCreateDraft: () => void
-  useDataHook: () => UseQueryResult<DocumentListData>
+  useDataHook: (opts?: HookOptions<DocumentListData>) => UseQueryResult<DocumentListData>
 }
 export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
-  const {status, error, data = []} = useDataHook()
+  const {status, data = []} = useDataHook()
 
   if (status == 'loading') {
-    return <p>loading...</p>
-  }
-
-  if (status == 'error') {
-    console.error('ListPage error: ', error)
-    return <Text>ERROR</Text>
+    return (
+      <>
+        <DummyListItem />
+        <DummyListItem />
+        <DummyListItem />
+      </>
+    )
   }
 
   return (
@@ -41,12 +42,13 @@ export function DraftListPage({onCreateDraft}: Pick<ListPageProps, 'onCreateDraf
   const {status, error, data = []} = useDraftsList()
 
   if (status == 'loading') {
-    return <p>loading...</p>
-  }
-
-  if (status == 'error') {
-    console.error('ListPage error: ', error)
-    return <Text>ERROR</Text>
+    return (
+      <>
+        <DummyListItem />
+        <DummyListItem />
+        <DummyListItem />
+      </>
+    )
   }
 
   return (
