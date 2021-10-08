@@ -7,9 +7,9 @@ import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {forwardRef, useMemo} from 'react'
 import toast from 'react-hot-toast'
-import {useHistory} from 'react-router'
 import {Node} from 'slate'
 import {visit} from 'unist-util-visit'
+import {useLocation} from 'wouter'
 import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {ContextMenu} from '../context-menu'
@@ -73,7 +73,7 @@ export const InlineEmbed = forwardRef<HTMLSpanElement | HTMLQuoteElement, {embed
   ({embed, children = null, ...props}, ref) => {
     const {data, status, error} = useEmbed(embed.url)
     const {send} = useSidepanel()
-    const history = useHistory()
+    const [, setLocation] = useLocation()
     // const {statement: hoverEmbed} = useHoverEvent(ref, embed.url)
 
     async function onCopy() {
@@ -83,7 +83,7 @@ export const InlineEmbed = forwardRef<HTMLSpanElement | HTMLQuoteElement, {embed
 
     function onGoToPublication(url: string) {
       const [publicationId] = getEmbedIds(url)
-      history.push(`/p/${publicationId}`)
+      setLocation(`/p/${publicationId}`)
     }
 
     if (status == 'loading') {
@@ -155,7 +155,7 @@ export function useEmbed(url: string) {
   const [publicationId, blockId] = getEmbedIds(url)
   const publicationQuery = usePublication(publicationId)
   let statement = useMemo(() => {
-    let temp: FlowContent
+    let temp: FlowContent = []
     if (publicationQuery.data.document.content) {
       visit(document(publicationQuery.data.document.content), {id: blockId}, (node) => {
         temp = node

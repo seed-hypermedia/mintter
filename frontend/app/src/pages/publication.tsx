@@ -4,7 +4,7 @@ import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 import {useEffect} from 'react'
-import {useHistory, useParams} from 'react-router-dom'
+import {useLocation, useRoute} from 'wouter'
 import {Container} from '../components/container'
 import {Separator} from '../components/separator'
 import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
@@ -12,10 +12,10 @@ import {Editor} from '../editor'
 import {getDateFormat} from '../utils/get-format-date'
 
 export default function Publication() {
-  const {docId} = useParams<{docId: string}>()
-  const history = useHistory()
+  const [, params] = useRoute<{docId: string}>('/p/:docId')
+  const [, setLocation] = useLocation()
   const {send: sidepanelSend, isOpen: isSidepanelOpen, annotations} = useSidepanel()
-  const {status, data, error} = usePublication(docId)
+  const {status, data, error} = usePublication(params!.docId)
   const {data: author} = useAccount(data.document.author, {
     enabled: !!data?.document?.author,
   })
@@ -31,11 +31,9 @@ export default function Publication() {
 
   async function handleUpdate() {
     try {
-      const d = await createDraft(docId)
+      const d = await createDraft(params!.docId)
       if (d?.id) {
-        history.push({
-          pathname: `/editor/${d.id}`,
-        })
+        setLocation(`/editor/${d.id}`)
       }
     } catch (err) {
       console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)

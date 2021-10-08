@@ -1,8 +1,11 @@
 import {globalCss} from '@mintter/ui/stitches.config'
 import type {FallbackProps} from 'react-error-boundary'
 import {ErrorBoundary} from 'react-error-boundary'
+import {attachConsole} from 'tauri-plugin-log-api'
 import {AuthorNode} from './author-node'
 import {SidepanelProvider} from './components/sidepanel'
+
+attachConsole()
 
 const globalStyles = globalCss({
   body: {
@@ -10,6 +13,7 @@ const globalStyles = globalCss({
     color: '$text-default',
   },
 })
+
 export const App: React.FC = () => {
   globalStyles()
   return (

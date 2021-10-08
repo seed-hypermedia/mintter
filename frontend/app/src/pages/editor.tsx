@@ -6,7 +6,7 @@ import {TextField} from '@mintter/ui/text-field'
 import {FormEvent, useRef} from 'react'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
-import {useHistory, useParams} from 'react-router'
+import {useLocation, useRoute} from 'wouter'
 import {Container} from '../components/container'
 import {Separator} from '../components/separator'
 import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
@@ -14,15 +14,15 @@ import {Editor, useEditorDraft} from '../editor'
 import type {DraftEditorMachineContext, DraftEditorMachineState} from '../editor/use-editor-draft'
 
 export default function EditorPage() {
-  const {docId} = useParams<{docId: string}>()
+  const [, params] = useRoute<{docId: string}>('/editor/:docId')
   const client = useQueryClient()
-  const history = useHistory()
+  const [, setLocation] = useLocation()
   const toast = useRef('')
 
   const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
 
   const [state, send] = useEditorDraft({
-    documentId: docId,
+    documentId: params!.docId,
     afterPublish: (context: DraftEditorMachineContext) => {
       if (!toast.current) {
         toast.current = toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000})
@@ -30,7 +30,7 @@ export default function EditorPage() {
         toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000, id: toast.current})
       }
 
-      history.push(`/p/${context.localDraft?.id}`)
+      setLocation(`/p/${context.localDraft?.id}`)
     },
     loadAnnotations: (context: DraftEditorMachineContext) => {
       if (!context.localDraft) return

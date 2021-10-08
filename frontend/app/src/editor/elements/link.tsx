@@ -11,10 +11,10 @@ import * as Popover from '@radix-ui/react-popover'
 import {shell} from '@tauri-apps/api'
 import isUrl from 'is-url'
 import {FormEvent, forwardRef, useEffect, useState} from 'react'
-import {useHistory} from 'react-router'
 import type {BaseRange, BaseSelection, Range} from 'slate'
 import {Editor, Element as SlateElement, Transforms} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
+import {useLocation} from 'wouter'
 import {Tooltip} from '../../components/tooltip'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import type {UseLastSelectionResult} from '../hovering-toolbar'
@@ -36,12 +36,12 @@ const StyledLink = styled('span', {
 })
 
 export const Link = forwardRef<HTMLSpanElement, {element: LinkType}>(({element, ...props}, ref) => {
-  const history = useHistory()
+  const [, setLocation] = useLocation()
 
   function handleClick() {
     if (isMintterLink(element.url)) {
       const [pubId] = getEmbedIds(element.url)
-      history.push(`/p/${pubId}`)
+      setLocation(`/p/${pubId}`)
     } else {
       shell.open(element.url)
     }
