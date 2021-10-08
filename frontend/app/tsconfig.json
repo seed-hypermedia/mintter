@@ -4,5 +4,9 @@
     "jsx": "react-jsx",
     "noEmit": true,
     "resolveJsonModule": true
+  },
+  "typedocOptions": {
+    "entryPoints": ["./src/app.tsx"],
+    "out": "docs"
   }
 }

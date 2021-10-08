@@ -8045,7 +8045,7 @@ glob-to-regexp@^0.3.0:
   resolved "https://registry.yarnpkg.com/glob-to-regexp/-/glob-to-regexp-0.3.0.tgz#8c5a1494d2066c570cc3bfe4496175acc4d502ab"
   integrity sha1-jFoUlNIGbFcMw7/kSWF1rMTVAqs=
 
-glob@^7.1.3, glob@^7.1.4, glob@^7.1.6:
+glob@^7.1.3, glob@^7.1.4, glob@^7.1.6, glob@^7.2.0:
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.2.0.tgz#d15535af7732e02e948f4c41628bd910293f6023"
   integrity sha512-lmLf6gtyrPq8tTjSmrO94wBeQbFR3HbLHbuyD69wuyQkImp2hWqMGB47OX65FBkPffO641IP9jWa1z4ivqG26Q==
@@ -8279,7 +8279,7 @@ gzip-size@5.1.1:
     duplexer "^0.1.1"
     pify "^4.0.1"
 
-handlebars@^4.7.6:
+handlebars@^4.7.6, handlebars@^4.7.7:
   version "4.7.7"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.7.7.tgz#9ce33416aad02dbd6c8fafa8240d5d98004945a1"
   integrity sha512-aAcXm5OAfE/8IXkcZvCepKU3VzW1/39Fb5ZuqMtgI/hT8X2YgoMvBY5dLhq/cpOvw7Lk1nK/UF71aLG/ZnVYRA==
@@ -10025,6 +10025,11 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
+lunr@^2.3.9:
+  version "2.3.9"
+  resolved "https://registry.yarnpkg.com/lunr/-/lunr-2.3.9.tgz#18b123142832337dd6e964df1a5a7707b25d35e1"
+  integrity sha512-zTU3DaZaF3Rt9rhN3uBMGQD3dD2/vFQqnvZCDv4dl5iOzq2IZQqTxu90r4E5J+nP70J3ilqVCrbho2eWaeW8Ow==
+
 make-dir@^1.0.0, make-dir@^1.2.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/make-dir/-/make-dir-1.3.0.tgz#79c1033b80515bd6d24ec9933e860ca75ee27f0c"
@@ -10110,6 +10115,11 @@ markdown-to-jsx@^7.1.3:
   version "7.1.3"
   resolved "https://registry.yarnpkg.com/markdown-to-jsx/-/markdown-to-jsx-7.1.3.tgz#f00bae66c0abe7dd2d274123f84cb6bd2a2c7c6a"
   integrity sha512-jtQ6VyT7rMT5tPV0g2EJakEnXLiPksnvlYtwQsVVZ611JsWGN8bQ1tVSDX4s6JllfEH6wmsYxNjTUAMrPmNA8w==
+
+marked@^3.0.4:
+  version "3.0.7"
+  resolved "https://registry.yarnpkg.com/marked/-/marked-3.0.7.tgz#343aad9e91b96249b495c99c512ea09cfe06de1e"
+  integrity sha512-ctKqbnLuNbsHbI26cfMyOlKgXGfl1orOv1AvWWDX7AkgfMOwCWvmuYc+mVLeWhQ9W6hdWVBynOs96VkcscKo0Q==
 
 match-sorter@^6.0.2:
   version "6.3.1"
@@ -13241,7 +13251,7 @@ shellwords@^0.1.1:
   resolved "https://registry.yarnpkg.com/shellwords/-/shellwords-0.1.1.tgz#d6b9181c1a48d397324c84871efbcfc73fc0654b"
   integrity sha512-vFwSUfQvqybiICwZY5+DAWIPLKsWO31Q91JSKl3UYv+K5c2QRPzn0qzec6QPu1Qc9eHYItiP3NdJqNVqetYAww==
 
-shiki@^0.9.10:
+shiki@^0.9.10, shiki@^0.9.11:
   version "0.9.11"
   resolved "https://registry.yarnpkg.com/shiki/-/shiki-0.9.11.tgz#07d75dab2abb6dc12a01f79a397cb1c391fa22d8"
   integrity sha512-tjruNTLFhU0hruCPoJP0y+B9LKOmcqUhTpxn7pcJB3fa+04gFChuEmxmrUfOJ7ZO6Jd+HwMnDHgY3lv3Tqonuw==
@@ -14462,6 +14472,24 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
+
+typedoc-plugin-markdown@^3.11.3:
+  version "3.11.3"
+  resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-3.11.3.tgz#be340b905903f1ce552fa2fa7d677db408ab1041"
+  integrity sha512-rWiHbEIe0oZetDIsBR24XJVxGOJ91kDcHoj2KhFKxCLoJGX659EKBQkHne9QJ4W2stGhu1fRgFyQaouSBnxukA==
+  dependencies:
+    handlebars "^4.7.7"
+
+typedoc@^0.22.5:
+  version "0.22.5"
+  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.22.5.tgz#c1a7c33fcdc808f57c766584a6afb47762944229"
+  integrity sha512-KFrWGU1iKiTGw0RcyjLNYDmhd7uICU14HgBNPmFKY/sT4Pm/fraaLyWyisst9vGTUAKxqibqoDITR7+ZcAkhHg==
+  dependencies:
+    glob "^7.2.0"
+    lunr "^2.3.9"
+    marked "^3.0.4"
+    minimatch "^3.0.4"
+    shiki "^0.9.11"
 
 typescript@^4.3.5, typescript@^4.4.2:
   version "4.4.3"
