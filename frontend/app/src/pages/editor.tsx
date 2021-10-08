@@ -186,19 +186,20 @@ function EditorStatus({state}: {state: DraftEditorMachineState}) {
     <Box
       css={{
         display: 'flex',
-        gap: '$4',
+        gap: '$2',
         alignItems: 'center',
-        padding: '$4',
+        paddingHorizontal: '$4',
+        paddingVertical: '$2',
       }}
     >
       <Box
         css={{
-          $$size: '$space$5',
+          $$size: '$space$4',
           width: '$$size',
           height: '$$size',
           borderRadius: '$round',
           backgroundColor: state.matches('editing.idle')
-            ? '$success-soft'
+            ? '$success-softer'
             : state.matches('editing.debouncing')
             ? '$background-muted'
             : state.matches('editing.saving')
@@ -206,7 +207,7 @@ function EditorStatus({state}: {state: DraftEditorMachineState}) {
             : '$danger-soft',
         }}
       />
-      <Text color="muted">
+      <Text color="muted" size="1">
         {state.matches('editing.idle')
           ? 'saved'
           : state.matches('editing.debouncing')
