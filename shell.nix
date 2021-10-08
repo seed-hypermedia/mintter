@@ -49,6 +49,7 @@ in
     buildInputs = [
       (lib.optionals stdenv.isDarwin darwin.libs)
       (lib.optionals stdenv.isLinux linux.libs)
+      common.libs
     ];
     shellHook = ''
       export CURRENT_PLATFORM="$(go env GOOS)_$(go env GOARCH)"
