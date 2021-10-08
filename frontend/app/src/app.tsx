@@ -1,11 +1,13 @@
 import {globalCss} from '@mintter/ui/stitches.config'
 import type {FallbackProps} from 'react-error-boundary'
 import {ErrorBoundary} from 'react-error-boundary'
-import {attachConsole} from 'tauri-plugin-log-api'
+import {attachConsole, error} from 'tauri-plugin-log-api'
 import {AuthorNode} from './author-node'
 import {SidepanelProvider} from './components/sidepanel'
 
 attachConsole()
+
+window.addEventListener('error', (e) => error(e.message))
 
 const globalStyles = globalCss({
   body: {
