@@ -46,8 +46,6 @@
     "react-hook-form": "6",
     "react-hot-toast": "^2.1.1",
     "react-query": "^3.23.2",
-    "react-router": "^5.2.1",
-    "react-router-dom": "^5.3.0",
     "shiki": "^0.9.10",
     "show-keys": "^1.1.2",
     "slate": "https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.65.3-unist2",
@@ -56,6 +54,7 @@
     "slate-react": "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.65.3-unist2",
     "tauri-plugin-log-api": "https://github.com/JonasKruckenberg/tauri-plugin-log#target-webview",
     "unist-util-visit": "^4.0.0",
+    "wouter": "^2.8.0-alpha.1",
     "xstate": "^4.23.4"
   },
   "devDependencies": {

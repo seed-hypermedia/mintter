@@ -8,9 +8,9 @@ import {Text} from '@mintter/ui/text'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {createContext, PropsWithChildren, useContext, useEffect, useRef} from 'react'
 import toast from 'react-hot-toast'
-import {useHistory} from 'react-router'
 import {Node} from 'slate'
 import {visit} from 'unist-util-visit'
+import {useLocation} from 'wouter'
 import {assign, createMachine, Interpreter, State} from 'xstate'
 import {MINTTER_LINK_PREFIX} from '../constants'
 import {ContextMenu} from '../editor/context-menu'
@@ -261,7 +261,7 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
     enabled: !!data.document.author,
   })
   const {send} = useSidepanel()
-  const history = useHistory()
+  const [, setLocation] = useLocation()
   // const {send: sendHover, embed: embedHover} = useHoverEvent(ref, item)
   // console.log({embedHover})
   async function onCopy() {
@@ -271,7 +271,7 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
 
   function onGoToPublication(url: string) {
     const [publicationId] = getEmbedIds(url)
-    history.push(`/p/${publicationId}`)
+    setLocation(`/p/${publicationId}`)
   }
 
   if (status == 'loading') {

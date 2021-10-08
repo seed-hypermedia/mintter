@@ -7,10 +7,10 @@ import {css, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {useMemo} from 'react'
 import toast from 'react-hot-toast'
-import {useHistory, useLocation, useParams} from 'react-router'
 import type {NodeEntry} from 'slate'
 import {Editor, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
+import {useLocation, useRoute} from 'wouter'
 import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {ContextMenu} from '../context-menu'
@@ -104,22 +104,24 @@ export const createStatementPlugin = (): EditorPlugin => ({
 })
 
 function Statement({attributes, children, element}: RenderElementProps) {
-  const {docId} = useParams<{docId: string}>()
+  const [, params] = useRoute<{docId: string}>('/editor/:docId')
   const {send} = useSidepanel()
-  const location = useLocation()
-  const history = useHistory()
-  const isDraft = useMemo(() => location.pathname.includes('editor'), [location])
+  const [location, setLocation] = useLocation()
+  const isDraft = useMemo(() => location.includes('editor'), [location])
 
   async function onCopy() {
-    await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${docId}/${(element as StatementType).id}`)
+    await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${params!.docId}/${(element as StatementType).id}`)
     toast.success('Statement Reference copied successfully', {position: 'top-center'})
   }
   async function onStartDraft() {
-    send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${docId}/${element.id}`})
+    send({
+      type: 'SIDEPANEL_ADD_ITEM',
+      payload: `${MINTTER_LINK_PREFIX}${params!.docId}/${(element as StatementType).id}`,
+    })
     try {
       const newDraft = await createDraft()
       if (newDraft) {
-        history.push(`/editor/${newDraft.id}`)
+        setLocation(`/editor/${newDraft.id}`)
       }
     } catch (err) {
       throw Error('new Draft error: ')
@@ -150,7 +152,10 @@ function Statement({attributes, children, element}: RenderElementProps) {
             </ContextMenu.Item>
             <ContextMenu.Item
               onSelect={() =>
-                send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${docId}/${element.id}`})
+                send({
+                  type: 'SIDEPANEL_ADD_ITEM',
+                  payload: `${MINTTER_LINK_PREFIX}${params!.docId}/${(element as StatementType).id}`,
+                })
               }
             >
               <Icon size="1" name="ArrowBottomRight" />

@@ -8,11 +8,10 @@ import {useMachine} from '@xstate/react'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
-import {useLocation} from 'react-router-dom'
+import {Link, useLocation} from 'wouter'
 import {deleteConfirmationDialogMachine} from '../../delete-confirmation-dialog'
 import {getDateFormat} from '../../utils/get-format-date'
 import {Avatar} from '../avatar'
-import {Link} from '../link'
 import {Placeholder} from '../placeholder-box'
 
 type ListItemType = {document: Document} & Partial<Publication>
@@ -24,8 +23,8 @@ type DocumentListProps = {
 }
 
 export function DocumentList({data}: DocumentListProps) {
-  const location = useLocation()
-  const isDraft = useMemo(() => location.pathname.includes('drafts'), [location.pathname])
+  const [location] = useLocation()
+  const isDraft = useMemo(() => location.includes('drafts'), [location])
   const toPrefix = useMemo(() => (isDraft ? '/editor' : '/p'), [isDraft])
 
   return (

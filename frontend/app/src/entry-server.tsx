@@ -1,5 +1,6 @@
 import {renderToStringAsync} from 'react-async-ssr'
-import {StaticRouter} from 'react-router-dom'
+import {Router} from 'wouter'
+import useStaticLocation from 'wouter/static-location'
 import {App} from './app'
 import {AppProviders} from './app-providers'
 
@@ -7,9 +8,9 @@ import {AppProviders} from './app-providers'
 export function render(url: string, context: any) {
   return renderToStringAsync(
     <AppProviders>
-      <StaticRouter location={url} context={context}>
+      <Router hook={useStaticLocation(url)}>
         <App />
-      </StaticRouter>
+      </Router>
     </AppProviders>,
   )
 }

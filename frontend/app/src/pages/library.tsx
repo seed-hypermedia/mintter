@@ -6,26 +6,22 @@ import type {CSS} from '@mintter/ui/stitches.config'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text, textStyles} from '@mintter/ui/text'
 import {PropsWithChildren, useCallback} from 'react'
-import {Route, Switch, useHistory, useRouteMatch} from 'react-router-dom'
+import {Link, Route, Switch, useLocation, useRoute} from 'wouter'
 import {Connections} from '../components/connections'
 import {Container} from '../components/container'
-import {Link} from '../components/link'
 import * as MessageBox from '../components/message-box'
 import {Separator} from '../components/separator'
 import {DraftListPage, ListPage} from './list-page'
 
 export default function Library() {
-  const {path, url} = useRouteMatch()
-  const history = useHistory()
+  const [, setLocation] = useLocation()
   // const { connectToPeer } = useConnectionCreate();
 
   const onCreateDraft = useCallback(async () => {
     try {
       const d = await createDraft()
       if (d?.id) {
-        history.push({
-          pathname: `/editor/${d.id}`,
-        })
+        setLocation(`/editor/${d.id}`)
       }
     } catch (err) {
       console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
@@ -86,29 +82,21 @@ export default function Library() {
             marginTop: '$6',
           }}
         >
-          <NavItem to={`${url}`} onlyActiveWhenExact>
-            Feed
-          </NavItem>
-          <NavItem to={`${url}/published`}>Published</NavItem>
-          <NavItem to={`${url}/drafts`}>Drafts</NavItem>
+          <NavItem href="/library">Feed</NavItem>
+          <NavItem href="/library/published">Published</NavItem>
+          <NavItem href="/library/drafts">Drafts</NavItem>
         </Box>
         <Separator />
         <Switch>
-          <Route exact path={path}>
+          <Route path="/library">
             <ListPage onCreateDraft={onCreateDraft} useDataHook={useOthersPublicationsList} />
           </Route>
-          <Route
-            path={`${path}/published`}
-            render={() => {
-              return <ListPage onCreateDraft={onCreateDraft} useDataHook={useMyPublicationsList} />
-            }}
-          />
-          <Route
-            path={`${path}/drafts`}
-            render={() => {
-              return <DraftListPage onCreateDraft={onCreateDraft} />
-            }}
-          />
+          <Route path="/library/published">
+            <ListPage onCreateDraft={onCreateDraft} useDataHook={useMyPublicationsList} />
+          </Route>
+          <Route path="/library/drafts">
+            <DraftListPage onCreateDraft={onCreateDraft} />
+          </Route>
         </Switch>
       </Container>
     </Box>
@@ -176,7 +164,7 @@ const NoConnectionsBox: React.FC<{onConnect: () => void}> = ({onConnect}: any) =
 }
 
 export type NavItemProps = {
-  to: string
+  href: string
   css?: CSS
   onlyActiveWhenExact?: boolean
 }
@@ -185,18 +173,13 @@ const NavItemStyled = styled(Link, textStyles, {
   textDecoration: 'none',
 })
 
-function NavItem({children, to, css, onlyActiveWhenExact = false, ...props}: PropsWithChildren<NavItemProps>) {
-  const match = useRouteMatch({
-    path: to,
-    exact: onlyActiveWhenExact,
-  })
-
-  let active = match?.path === to
+function NavItem({children, href, css, onlyActiveWhenExact = false, ...props}: PropsWithChildren<NavItemProps>) {
+  const [active] = useRoute(href)
 
   return (
     <NavItemStyled
       size="5"
-      to={to}
+      href={href}
       css={{
         color: active ? '$primary-default' : '$text-default',
         fontWeight: active ? '$bold' : '$regular',

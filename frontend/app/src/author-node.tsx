@@ -3,8 +3,7 @@ import {Box} from '@mintter/ui/box'
 import {Text} from '@mintter/ui/text'
 import {lazy} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import type {RouteComponentProps} from 'react-router-dom'
-import {Redirect, Route, Switch} from 'react-router-dom'
+import {Redirect, Route, Switch} from 'wouter'
 import {AppError} from './app'
 import {Topbar} from './components/topbar'
 
@@ -29,19 +28,12 @@ export function AuthorNode() {
   if (info.isError || (info.isSuccess && !info.data)) {
     return (
       <Switch>
-        <Route exact path={'/welcome'}>
+        <Route path="/welcome/:from?">
           <OnboardingPage />
         </Route>
-        <Route
-          render={(route: RouteComponentProps) => (
-            <Redirect
-              to={{
-                pathname: `/welcome`,
-                state: {from: route.location.pathname},
-              }}
-            />
-          )}
-        />
+        <Route>
+          <Redirect to={`/welcome/${location.pathname}`} />
+        </Route>
       </Switch>
     )
   }
@@ -58,20 +50,20 @@ export function AuthorNode() {
         >
           <Topbar />
           <Switch>
-            <Route path={['/library', '/admin/library']}>
+            <Route path="/library/:tab?">
               <Library />
             </Route>
-            <Route exact path={['/editor/:docId', '/admin/editor/:docId']}>
+            <Route path="/editor/:docId">
               <Editor />
             </Route>
-            <Route path={['/p/:docId', '/admin/p/:docId']}>
+            <Route path="/p/:docId">
               <Publication />
             </Route>
-            <Route path={['/settings', '/admin/settings']}>
+            <Route path="/settings">
               <Settings />
             </Route>
             <Route>
-              <Redirect to={'/library'} />
+              <Redirect to="/library" />
             </Route>
           </Switch>
         </Box>

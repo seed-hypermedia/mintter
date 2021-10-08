@@ -4,15 +4,13 @@ import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {TextField} from '@mintter/ui/text-field'
 import {FormEvent, PropsWithChildren, useRef} from 'react'
-import {useHistory} from 'react-router-dom'
+import {Link, useLocation} from 'wouter'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {Container} from '../container'
-import {Link} from '../link'
 
 const SettingsButton = styled(Link, buttonStyles)
 
 export function Topbar(props: PropsWithChildren<unknown>) {
-  const history = useHistory()
   return (
     <Box
       css={{
@@ -44,10 +42,10 @@ export function Topbar(props: PropsWithChildren<unknown>) {
             marginRight: '$4',
           }}
         >
-          <Button color="muted" variant="ghost" size="1" onClick={() => history.goBack()}>
+          <Button color="muted" variant="ghost" size="1" onClick={() => history.back()}>
             <Icon name="ArrowLeft" />
           </Button>
-          <Button color="muted" variant="ghost" size="1" onClick={() => history.goForward()}>
+          <Button color="muted" variant="ghost" size="1" onClick={() => history.forward()}>
             <Icon name="ArrowRight" />
           </Button>
         </Box>
@@ -64,7 +62,7 @@ export function Topbar(props: PropsWithChildren<unknown>) {
 
 function Search() {
   const ref = useRef<HTMLInputElement>(null)
-  const history = useHistory()
+  const [, setLocation] = useLocation()
 
   // TODO: fix types
   async function handleSearch(e: FormEvent<HTMLFormElement>) {
@@ -79,7 +77,7 @@ function Search() {
       ref.current.value = ''
     }
 
-    history.push(`/p/${to}`)
+    setLocation(`/p/${to}`)
   }
 
   return (

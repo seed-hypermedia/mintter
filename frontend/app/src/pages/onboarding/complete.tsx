@@ -1,6 +1,6 @@
 import {useCallback} from 'react'
 import {useQueryClient} from 'react-query'
-import {useHistory, useLocation} from 'react-router'
+import {useLocation, useRoute} from 'wouter'
 import {
   OnboardingStep,
   OnboardingStepActions,
@@ -10,15 +10,15 @@ import {
 } from './common'
 
 export const Complete: React.FC = () => {
-  const history = useHistory()
-  const location = useLocation<{from?: string}>()
+  const [, setLocation] = useLocation()
+  const [, params] = useRoute<{from?: string}>('/welcome/:from')
   const queryClient = useQueryClient()
 
   const handleSubmit = useCallback(async () => {
     console.log('submit welcome!!')
     await queryClient.invalidateQueries('AccountInfo')
     // console.log({from: location.state.from})
-    history.replace(location.state.from ?? '/')
+    setLocation(params?.from ?? '/', {replace: true})
     // window.location.reload()
   }, [history, location])
 

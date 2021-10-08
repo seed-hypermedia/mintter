@@ -6,12 +6,12 @@ import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import toast from 'react-hot-toast'
-import {useParams} from 'react-router'
 import type {Highlighter, IThemeRegistration, Lang} from 'shiki'
 import {getHighlighter, setCDN} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useReadOnly, useSlateStatic} from 'slate-react'
+import {useRoute} from 'wouter'
 import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {ContextMenu} from '../context-menu'
@@ -161,7 +161,7 @@ function Code({
 }: RenderElementProps & {
   element: CodeType
 }) {
-  const {docId} = useParams<{docId: string}>()
+  const [, params] = useRoute<{docId: string}>('/editor/:docId')
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const isReadOnly = useReadOnly()
@@ -177,7 +177,7 @@ function Code({
   let lang = element.lang || ''
 
   async function onCopy() {
-    await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${docId}/${(element as CodeType).id}`)
+    await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${params!.docId}/${(element as CodeType).id}`)
     toast.success('Statement Reference copied successfully', {position: 'top-center'})
   }
 
@@ -224,7 +224,9 @@ function Code({
           <Text size="2">Copy Statement Reference</Text>
         </ContextMenu.Item>
         <ContextMenu.Item
-          onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${docId}/${element.id}`})}
+          onSelect={() =>
+            send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${params!.docId}/${element.id}`})
+          }
         >
           <Icon size="1" name="ArrowBottomRight" />
           <Text size="2">Add to Bookmarks</Text>
