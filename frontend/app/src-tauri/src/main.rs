@@ -4,7 +4,7 @@
   windows_subsystem = "windows"
 )]
 
-use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
+use tauri::{CustomMenuItem, Event, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use tauri_plugin_log::{LogTarget, LoggerBuilder};
 
 mod daemon;
@@ -13,7 +13,14 @@ mod menu;
 #[tokio::main]
 async fn main() {
   tauri::Builder::default()
-    .plugin(LoggerBuilder::new([LogTarget::AppDir, LogTarget::Stdout, LogTarget::Webview]).build())
+    .plugin(
+      LoggerBuilder::new([
+        LogTarget::AppDir("".into()),
+        LogTarget::Stdout,
+        LogTarget::Webview,
+      ])
+      .build(),
+    )
     .plugin(daemon::DaemonPlugin::new())
     .menu(menu::get_menu())
     .setup(|app| {
