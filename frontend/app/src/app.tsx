@@ -24,10 +24,9 @@ export const App: React.FC = () => {
     <ErrorBoundary
       FallbackComponent={AppError}
       onReset={() => {
-        console.log('TODO: reload app')
+        location.reload()
       }}
     >
-      {/* {isLocalNode ? <AuthorNode path="/" /> : <PublisherNode />} */}
       <SidepanelProvider>
         <AuthorNode path="/" />
       </SidepanelProvider>
