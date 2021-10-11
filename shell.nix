@@ -10,12 +10,12 @@ let
       protobuf
       go
       terraform
+      bazel
       rustc
       cargo
       rustfmt
       nodejs
       yarn
-      bazel_4
     ];
     libs = [];
   };
