@@ -10,7 +10,7 @@ let
       protobuf
       go
       terraform
-      bazel
+      bazel-wrapper
       rustc
       cargo
       rustfmt
