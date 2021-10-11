@@ -30,7 +30,7 @@ local_action(
     cmd = """
 cd app
 rm -rf dist
-vite build
+yarn generate
 mv $(pwd)/dist/ $TARGET_OUT_DIR/app/dist
 """,
     dir = True,
