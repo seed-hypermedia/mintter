@@ -12,7 +12,7 @@ import (builtins.fetchGit {
     (self: super: {
       go = super.go_1_17;
       nodejs = super.nodejs-16_x;
-      bazel = super.callPackage ./bazel {};
+      bazel-wrapper = super.callPackage ./bazel-wrapper {};
       impure-cc = super.callPackage ./impure-cc {};
       mkShell = super.mkShell.override {
         stdenv = super.stdenvNoCC;
