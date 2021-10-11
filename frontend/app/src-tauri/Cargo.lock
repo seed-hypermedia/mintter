@@ -2741,7 +2741,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-log"
 version = "0.1.0"
-source = "git+https://github.com/JonasKruckenberg/tauri-plugin-log?branch=target-webview#864a7a12574c12cf3eced7b9adbf7bdae2c0d80c"
+source = "git+https://github.com/tauri-apps/tauri-plugin-log#cb2a1401c7fd81cb72fe77f3538d35e5ae419a07"
 dependencies = [
  "byte-unit",
  "chrono",
