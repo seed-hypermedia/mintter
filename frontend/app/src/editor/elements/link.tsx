@@ -8,7 +8,7 @@ import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
 import * as Popover from '@radix-ui/react-popover'
-import {shell} from '@tauri-apps/api'
+import {open} from '@tauri-apps/api/shell'
 import isUrl from 'is-url'
 import {FormEvent, forwardRef, useEffect, useState} from 'react'
 import type {BaseRange, BaseSelection, Range} from 'slate'
@@ -39,11 +39,13 @@ export const Link = forwardRef<HTMLSpanElement, {element: LinkType}>(({element, 
   const [, setLocation] = useLocation()
 
   function handleClick() {
-    if (isMintterLink(element.url)) {
-      const [pubId] = getEmbedIds(element.url)
-      setLocation(`/p/${pubId}`)
-    } else {
-      shell.open(element.url)
+    if (!import.meta.env.SSR) {
+      if (isMintterLink(element.url)) {
+        const [pubId] = getEmbedIds(element.url)
+        setLocation(`/p/${pubId}`)
+      } else {
+        open(element.url)
+      }
     }
   }
 

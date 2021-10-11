@@ -5,9 +5,11 @@ import {attachConsole, error} from 'tauri-plugin-log-api'
 import {AuthorNode} from './author-node'
 import {SidepanelProvider} from './components/sidepanel'
 
-attachConsole()
+if (!import.meta.env.SSR) {
+  attachConsole()
 
-window.addEventListener('error', (e) => error(e.message))
+  window.addEventListener('error', (e) => error(e.message))
+}
 
 const globalStyles = globalCss({
   body: {
