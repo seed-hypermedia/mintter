@@ -17,6 +17,7 @@ export const BlockQuote = styled('li', statementStyle, {
 export const createBlockquotePlugin = (): EditorPlugin => ({
   name: ELEMENT_BLOCKQUOTE,
   configureEditor(editor) {
+    if (editor.readOnly) return
     const {deleteBackward} = editor
 
     editor.deleteBackward = (unit) => {

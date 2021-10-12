@@ -61,6 +61,7 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
   return {
     name: ELEMENT_CODE,
     configureEditor(editor) {
+      if (editor.readOnly) return
       /*
        * @todo modify paste so it will add empty lines
        * @body we need to paste code content inside the same paragraph
@@ -84,22 +85,25 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
           )
         }
       },
-    onKeyDown: (editor) => (ev) => {
-      if (ev.key == 'Enter') {
-        const code = Editor.above(editor, {match: isCode})
-        if (code) {
-          ev.preventDefault()
-          if (ev.shiftKey) {
-            const [, codePath] = code
-            Editor.withoutNormalizing(editor, () => {
-              Transforms.insertNodes(editor, statement({id: createId()}, [paragraph([text('')])]), {
-                at: Path.next(codePath),
+    onKeyDown: (editor) => {
+      if (editor.readOnly) return
+      return (ev) => {
+        if (ev.key == 'Enter') {
+          const code = Editor.above(editor, {match: isCode})
+          if (code) {
+            ev.preventDefault()
+            if (ev.shiftKey) {
+              const [, codePath] = code
+              Editor.withoutNormalizing(editor, () => {
+                Transforms.insertNodes(editor, statement({id: createId()}, [paragraph([text('')])]), {
+                  at: Path.next(codePath),
+                })
+                Transforms.select(editor, Path.next(codePath))
+                Transforms.collapse(editor, {edge: 'start'})
               })
-              Transforms.select(editor, Path.next(codePath))
-              Transforms.collapse(editor, {edge: 'start'})
-            })
-          } else {
-            Transforms.insertText(editor, '\n')
+            } else {
+              Transforms.insertText(editor, '\n')
+            }
           }
         }
       }

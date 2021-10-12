@@ -54,6 +54,7 @@ export const createParagraphPlugin = (): EditorPlugin => ({
       }
     },
   configureEditor: (editor) => {
+    if (editor.mode) return
     const {normalizeNode, insertBreak} = editor
 
     editor.insertBreak = () => {

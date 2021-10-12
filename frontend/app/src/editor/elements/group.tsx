@@ -39,6 +39,7 @@ export const createGroupPlugin = (): EditorPlugin => ({
       }
     },
   configureEditor(editor) {
+    if (editor.readOnly) return
     const {normalizeNode} = editor
 
     editor.normalizeNode = (entry) => {
