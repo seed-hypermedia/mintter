@@ -6,7 +6,7 @@ import (builtins.fetchGit {
   # Run `git ls-remote https://github.com/nixos/nixpkgs refs/heads/nixpkgs-unstable`
   # to get the most recent revision.
   ref = "refs/heads/nixpkgs-unstable";
-  rev = "e0ce3c683ae677cf5aab597d645520cddd13392b";
+  rev = "ee084c02040e864eeeb4cf4f8538d92f7c675671";
 }) {
   overlays = [
     (self: super: {
