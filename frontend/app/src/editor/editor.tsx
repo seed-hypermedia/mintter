@@ -1,5 +1,5 @@
 import {Box} from '@mintter/ui/box'
-import {lazy, PropsWithChildren, Suspense, useMemo, useState} from 'react'
+import {PropsWithChildren, Suspense, useMemo, useState} from 'react'
 import type {Descendant} from 'slate'
 import {Editable, Slate} from 'slate-react'
 import {HoveringToolbar} from './hovering-toolbar'
@@ -14,25 +14,30 @@ import {plugins} from './plugins'
 
 export type {EditorPlugin} from './types'
 
-interface AsyncEditorProps {
-  mode: string
+interface EditorProps {
+  mode?: EditorMode
   value: Descendant[]
   onChange: (value: Descendant[]) => void
   readOnly?: boolean
 }
 
-const AsyncEditor = lazy(async () => {
-  const resolvedPlugins = await Promise.all(plugins)
+export function Editor({value, onChange, children, mode = EditorMode.Draft}: PropsWithChildren<EditorProps>) {
+  const [visible, setVisible] = useState(false)
 
-  return {
-    default: function AsyncEditor({value, onChange, mode, children, readOnly}: PropsWithChildren<AsyncEditorProps>) {
-      const editor = useMemo(() => buildEditorHook(resolvedPlugins, mode), [mode])
-      const renderElement = useMemo(() => buildRenderElementHook(resolvedPlugins, mode), [mode])
-      const renderLeaf = useMemo(() => buildRenderLeafHook(resolvedPlugins, mode), [mode])
-      const decorate = useMemo(() => buildDecorateHook(resolvedPlugins, mode), [mode])
-      const eventHandlers = useMemo(() => buildEventHandlerHooks(resolvedPlugins, mode), [mode])
+  const editor = useMemo(() => buildEditorHook(plugins, mode), [mode])
+  const renderElement = useMemo(() => buildRenderElementHook(plugins, mode), [mode])
+  const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, mode), [mode])
+  const decorate = useMemo(() => buildDecorateHook(plugins, mode), [mode])
+  const eventHandlers = useMemo(() => buildEventHandlerHooks(plugins, mode), [mode])
 
-      return (
+  return (
+    <Suspense fallback={'loading'}>
+      <Box
+        css={{
+          position: 'relative',
+          marginLeft: '-$8',
+        }}
+      >
         <Slate editor={editor} value={value} onChange={onChange}>
           <HoveringToolbar />
           <Editable
@@ -45,38 +50,6 @@ const AsyncEditor = lazy(async () => {
           />
           {children}
         </Slate>
-      )
-    },
-  }
-})
-
-interface EditorProps {
-  mode?: string
-  value: Descendant[]
-  onChange?: (value: Descendant[]) => void
-  readOnly?: boolean
-}
-
-export function Editor({
-  value,
-  onChange,
-  children,
-  readOnly = false,
-  mode = readOnly ? 'read-only' : 'default',
-}: PropsWithChildren<EditorProps>) {
-  const [visible, setVisible] = useState(false)
-
-  return (
-    <Suspense fallback={'loading'}>
-      <Box
-        css={{
-          position: 'relative',
-          marginLeft: '-$8',
-        }}
-      >
-        <AsyncEditor value={value} onChange={onChange} mode={mode} readOnly={readOnly}>
-          {children}
-        </AsyncEditor>
 
         <Box css={{marginTop: 40}}>
           <button type="button" onClick={() => setVisible((v) => !v)}>
