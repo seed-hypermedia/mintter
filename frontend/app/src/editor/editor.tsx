@@ -9,6 +9,7 @@ import {
   buildEventHandlerHooks,
   buildRenderElementHook,
   buildRenderLeafHook,
+  EditorMode,
 } from './plugin-utils'
 import {plugins} from './plugins'
 
@@ -18,7 +19,6 @@ interface EditorProps {
   mode?: EditorMode
   value: Descendant[]
   onChange: (value: Descendant[]) => void
-  readOnly?: boolean
 }
 
 export function Editor({value, onChange, children, mode = EditorMode.Draft}: PropsWithChildren<EditorProps>) {
@@ -41,7 +41,7 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
         <Slate editor={editor} value={value} onChange={onChange}>
           <HoveringToolbar />
           <Editable
-            readOnly={readOnly}
+            readOnly={mode >= EditorMode.Publication}
             data-testid="editor"
             renderElement={renderElement}
             renderLeaf={renderLeaf}
