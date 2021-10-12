@@ -20,7 +20,7 @@ import {createMarkdownShortcutsPlugin} from './markdown-plugin'
 import {createTabPlugin} from './tab-plugin'
 import type {EditorPlugin} from './types'
 
-export const plugins: Array<EditorPlugin | Promise<EditorPlugin>> = [
+export const plugins: EditorPlugin[] = [
   createStrongPlugin(),
   createEmphasisPlugin(),
   createUnderlinePlugin(),
