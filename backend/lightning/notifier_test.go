@@ -2,6 +2,7 @@ package lightning
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"strconv"
@@ -25,6 +26,8 @@ const (
 	satsPerBtc     = 100000000
 	aliceBalance   = 1250000
 	bobBalance     = 5500000
+	htclAmtMsats   = 75000_000
+	feesPercent    = 5
 )
 
 var (
@@ -54,7 +57,8 @@ func TestPeers(t *testing.T) {
 		credentialsBob     WalletSecurity
 		confirmationBlocks uint32 // number of blocks to wait for a channel to be confirmed
 		blocksAfterOpening uint32 // number of blocks to mine after opening a channel (so te funding tx gets in)
-		acceptChannel      bool   // Whether ot not accepting the incoming channel
+		acceptChannel      bool   // Whether or not accepting the incoming channel
+		privateChannel     bool   // If the channel to be creaded is private or not
 	}{
 		{
 			name: "bitcoind",
@@ -89,7 +93,7 @@ func TestPeers(t *testing.T) {
 				AezeedPassphrase: testVectors[0].password,
 				AezeedMnemonics:  testVectors[0].expectedMnemonic[:],
 				SeedEntropy:      testVectors[0].entropy[:],
-				StatelessInit:    true,
+				StatelessInit:    false,
 			},
 			credentialsAlice: WalletSecurity{
 				WalletPassphrase: "passwordAlice",
@@ -97,11 +101,12 @@ func TestPeers(t *testing.T) {
 				AezeedPassphrase: testVectors[2].password,
 				AezeedMnemonics:  testVectors[2].expectedMnemonic[:],
 				SeedEntropy:      testVectors[2].entropy[:],
-				StatelessInit:    true,
+				StatelessInit:    false,
 			},
 			confirmationBlocks: 1,
 			blocksAfterOpening: 1,
 			acceptChannel:      true,
+			privateChannel:     true,
 		},
 	}
 	log := backend.NewLogger(cfg)
@@ -112,7 +117,7 @@ func TestPeers(t *testing.T) {
 				&tt.credentialsAlice, &tt.credentialsBob,
 				testVectors[2].expectedID, testVectors[0].expectedID,
 				tt.confirmationBlocks, tt.blocksAfterOpening,
-				tt.acceptChannel)
+				tt.acceptChannel, tt.privateChannel)
 
 			require.NoError(t, err, tt.name+". must succeed")
 
@@ -124,11 +129,12 @@ func TestPeers(t *testing.T) {
 func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	credentialsAlice *WalletSecurity, credentialsBob *WalletSecurity,
 	expectedAliceID string, expectedBobID string, confirmationBlocks uint32,
-	blocksAfterOpening uint32, acceptChannel bool) error {
+	blocksAfterOpening uint32, acceptChannel bool, privateChans bool) error {
 
 	t.Helper()
 	var err error
 	var containerID string
+	var payReq string
 	var minedBlocks = 101
 	walletCreated = false
 	var channelOpened = false
@@ -204,7 +210,7 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	setAcceptor(bob, confirmationBlocks, acceptChannel)
 
 	var i = 0
-	aliceReady, bobReady, aliceSynced, bobSynced, pairSent, aliceID, bobID := false, false, false, false, false, "", ""
+	aliceReady, bobReady, aliceSynced, bobSynced, pairSent, invoiceCreated, aliceID, bobID := false, false, false, false, false, false, "", ""
 waitLoop:
 	for {
 		select {
@@ -248,12 +254,14 @@ waitLoop:
 				} else {
 					fmt.Println("Alice received a peer notification from Bob:" + bobID)
 					if aliceID != "" && !channelOpened {
-						if txid, err := alice.OpenChannel(bobID, int64(aliceBalance)/2, 0, true, blocksAfterOpening == 0, 0, false); err != nil {
+						if txid, err := alice.OpenChannel(bobID, int64(aliceBalance)/2, int64(aliceBalance)/4,
+							privateChans, blocksAfterOpening == 0, 0, false); err != nil {
 							return err
 						} else if err := mineBlocks(blocksAfterOpening, "", containerID); err != nil {
 							return err
 						} else {
 							fmt.Println(fmt.Sprint(txid))
+							fmt.Println("Alice opened a channel to bob")
 							channelOpened = true
 						}
 					}
@@ -261,9 +269,32 @@ waitLoop:
 			case TransactionEvent:
 			case ChannelEvent:
 				if update.Type == ChannelEventUpdate_OPEN_CHANNEL {
-					break waitLoop
+					if !invoiceCreated {
+						if payReq, err = alice.GenerateInvoice(htclAmtMsats, []byte{},
+							"test invoice", 1000, "", privateChans); err != nil {
+							return err
+						}
+						invoiceCreated = true
+					} else {
+						if _, err = alice.PayInvoice(payReq, []uint64{}, htclAmtMsats, 0, feesPercent, "", 5); err != nil {
+							//fmt.Println("Alice tried to pay an invoice but failed: " + err.Error())
+							return err
+						} else if balance, err := alice.ChannelBalance(); err != nil {
+							return err
+						} else if balance < uint64(aliceBalance)/4-htclAmtMsats/1000-htclAmtMsats/1000/feesPercent ||
+							balance > uint64(aliceBalance)/4-htclAmtMsats/1000 {
+							fmt.Println("Bob successfully paid an invoice but failed amount")
+
+							return fmt.Errorf("Alice has a wrong balance. Expected:" +
+								strconv.FormatInt(int64(aliceBalance)/4-htclAmtMsats/1000, 10) + "sats, but got:" +
+								strconv.FormatInt(int64(balance), 10) + "sats")
+						} else {
+							break waitLoop
+						}
+					}
 				}
 			default:
+				//fmt.Println("Got unexpected Alice update")
 				return fmt.Errorf("Got unexpected Alice update")
 			}
 		case <-clientAlice.Quit():
@@ -309,12 +340,14 @@ waitLoop:
 				} else {
 					fmt.Println("Bob received a peer notification from Alice:" + aliceID)
 					if bobID != "" && !channelOpened {
-						if txid, err := bob.OpenChannel(aliceID, int64(bobBalance)/2, 0, true, blocksAfterOpening == 0, 0, false); err != nil {
+						if txid, err := bob.OpenChannel(aliceID, int64(bobBalance)/2, int64(bobBalance)/4,
+							privateChans, blocksAfterOpening == 0, 0, false); err != nil {
 							return err
 						} else if err := mineBlocks(blocksAfterOpening, "", containerID); err != nil {
 							return err
 						} else {
 							fmt.Println(txid)
+							fmt.Println("Bob opened a channel to alice")
 							channelOpened = true
 						}
 					}
@@ -322,9 +355,32 @@ waitLoop:
 			case TransactionEvent:
 			case ChannelEvent:
 				if update.Type == ChannelEventUpdate_OPEN_CHANNEL {
-					break waitLoop
+					if !invoiceCreated {
+						if payReq, err = bob.GenerateInvoice(htclAmtMsats, []byte{},
+							"test invoice", 1000, "", privateChans); err != nil {
+							return err
+						}
+						invoiceCreated = true
+					} else {
+						if _, err = bob.PayInvoice(payReq, []uint64{}, htclAmtMsats, 0, feesPercent, "", 5); err != nil {
+							//fmt.Println("Bob tried to pay an invoice but failed: " + err.Error())
+							return err
+						} else if balance, err := bob.ChannelBalance(); err != nil {
+							return err
+						} else if balance < uint64(bobBalance)/4-htclAmtMsats/1000-htclAmtMsats/1000/feesPercent ||
+							balance > uint64(bobBalance)/4-htclAmtMsats/1000 {
+							fmt.Println("Bob successfully paid an invoice but failed amount")
+
+							return fmt.Errorf("Bob has a wrong balance. Expected:" +
+								strconv.FormatInt(int64(bobBalance)/4-htclAmtMsats/1000, 10) + "sats, but got:" +
+								strconv.FormatInt(int64(balance), 10) + "sats")
+						} else {
+							break waitLoop
+						}
+					}
 				}
 			default:
+				//fmt.Println("Got unexpected Bob update")
 				return fmt.Errorf("Got unexpected Bob update")
 			}
 		case <-clientBob.Quit():
@@ -349,7 +405,7 @@ waitLoop:
 
 			}
 			i++
-			if i < 20 {
+			if i < 2000 {
 				time.Sleep(3 * time.Second)
 			} else {
 				return fmt.Errorf("Timeout reached!")
@@ -487,7 +543,7 @@ func mineBlocks(numBlocks uint32, addr string, containerID string) error {
 				return err
 			} else {
 				walletCreated = true
-				time.Sleep(6 * time.Second) // wait for the wallet to be created
+				time.Sleep(7 * time.Second) // wait for the wallet to be created
 			}
 		}
 
@@ -538,14 +594,14 @@ func setAcceptor(node *Ldaemon, blocks2confirm uint32, accept bool) {
 
 	acceptor := func(req *lnrpc.ChannelAcceptRequest) ChannelAcceptorResponse {
 		var res ChannelAcceptorResponse = AcceptorMsgDefault
-		fmt.Printf("PushAmt: %v ChannelReserve: %v CsvDelay: %v DustLimit: %v FundingAmt: %v MaxAcceptedHtlcs: %v MaxValueInFlight: %v FeePerKw: %v MinHtlc: %v",
-			req.PushAmt, req.ChannelReserve, req.CsvDelay, req.DustLimit, req.FundingAmt, req.MaxAcceptedHtlcs, req.MaxValueInFlight, req.FeePerKw, req.MinHtlc)
+		fmt.Printf("PushAmt: %v ChannelReserve: %v CsvDelay: %v DustLimit: %v FundingAmt: %v MaxAcceptedHtlcs: %v MaxValueInFlight: %v FeePerKw: %v MinHtlc: %v NodeID: %v",
+			req.PushAmt, req.ChannelReserve, req.CsvDelay, req.DustLimit, req.FundingAmt, req.MaxAcceptedHtlcs, req.MaxValueInFlight, req.FeePerKw, req.MinHtlc, hex.EncodeToString(req.NodePubkey[:]))
 
 		// TODO: track this PR https://github.com/lightningnetwork/lnd/pull/4424
 		// as this will allow us to set a target confirmation of 0 blocks
 		res.MinAcceptDepth = blocks2confirm                     // TODO: When this is 0 manager.go sets NumConfsRequired to 3.
 		res.ReserveSat = uint64(float64(req.FundingAmt) / 20.0) // 5% of the capacity of the channel
-		res.InFlightMaxMsat = req.FundingAmt - res.ReserveSat
+		//res.InFlightMaxMsat = req.FundingAmt - res.ReserveSat
 		res.Accept = accept
 		return res
 	}

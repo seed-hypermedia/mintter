@@ -46,7 +46,7 @@ var (
 		ReserveSat:      10000,
 		InFlightMaxMsat: 2_000_00000000,
 		MaxHtlcCount:    450,
-		MinHtlcIn:       200,
+		MinHtlcIn:       100,
 		MinAcceptDepth:  3,
 	}
 	acceptorCallback = func(req *lnrpc.ChannelAcceptRequest) ChannelAcceptorResponse { return AcceptorMsgDefault }
@@ -297,21 +297,33 @@ func (d *Ldaemon) subscribeChannels(ctx context.Context, client lnrpc.LightningC
 			d.log.Warn("subscribeChannels cancelled, shutting down", zap.String("err", err.Error()))
 			return nil
 		} else if err != nil {
-			d.log.Error("Unexpected error in channel subscriptions", zap.String("err", err.Error()))
-			return err
-		}
-		d.log.Info("Channel event received", zap.String("type", notification.GetType().String()),
-			zap.String("Channel", channelIdToString(notification.GetPendingOpenChannel().GetTxid())))
-
-		if err != nil {
 			d.log.Error("subscribe channels Failed to get notification", zap.String("err", err.Error()))
 			// in case of unexpected error, we will wait a bit so we won't get
 			// into infinite loop.
 			time.Sleep(2 * time.Second)
 			continue
+		} else {
+			d.ntfnServer.SendUpdate(ChannelEvent{notification})
 		}
 
-		d.ntfnServer.SendUpdate(ChannelEvent{notification})
+		if notification.GetType() == lnrpc.ChannelEventUpdate_ACTIVE_CHANNEL {
+			d.log.Info("Active channel event received",
+				zap.String("channel", channelIdToString(notification.GetActiveChannel().GetFundingTxidBytes())))
+		} else if notification.GetType() == lnrpc.ChannelEventUpdate_CLOSED_CHANNEL {
+			d.log.Info("Closedchannel event received",
+				zap.String("channel point", notification.GetClosedChannel().ChannelPoint))
+		} else if notification.GetType() == lnrpc.ChannelEventUpdate_INACTIVE_CHANNEL {
+			d.log.Info("Inactive channel event received",
+				zap.String("channel", channelIdToString(notification.GetInactiveChannel().GetFundingTxidBytes())))
+		} else if notification.GetType() == lnrpc.ChannelEventUpdate_OPEN_CHANNEL {
+			d.log.Info("Openchannel event received",
+				zap.String("channel point", notification.GetOpenChannel().ChannelPoint))
+		} else if notification.GetType() == lnrpc.ChannelEventUpdate_PENDING_OPEN_CHANNEL {
+			d.log.Info("Pending Open channel event received",
+				zap.String("Channel", channelIdToString(notification.GetPendingOpenChannel().GetTxid())))
+
+		}
+
 	}
 }
 

@@ -157,14 +157,16 @@ func (d *Ldaemon) OpenChannel(counterpartyID string, localAmt, remoteAmt int64,
 	defer cancel()
 
 	if stream, err := lnclient.OpenChannel(ctx, &lnrpc.OpenChannelRequest{
-		SatPerVbyte:        satPerVbyte,
-		NodePubkey:         nodePubHex,
-		LocalFundingAmount: localAmt,
-		PushSat:            remoteAmt,
-		TargetConf:         TargetConf,
-		Private:            private,
-		MinConfs:           MinConfs,
-		SpendUnconfirmed:   MinConfs == 0,
+		SatPerVbyte:                satPerVbyte,
+		NodePubkey:                 nodePubHex,
+		LocalFundingAmount:         localAmt,
+		PushSat:                    remoteAmt,
+		TargetConf:                 TargetConf,
+		Private:                    private,
+		MinConfs:                   MinConfs,
+		SpendUnconfirmed:           MinConfs == 0,
+		MinHtlcMsat:                100,
+		RemoteMaxValueInFlightMsat: uint64(localAmt * 1000),
 	}); err != nil {
 		return "", err
 	} else {
@@ -221,6 +223,26 @@ func (d *Ldaemon) ListChannels(peer string) ([]*lnrpc.Channel, error) {
 		return nil, err
 	} else {
 		return res.Channels, nil
+	}
+}
+
+// Get the local balance of all channels. The amount returned
+// Is an aggregation of all local funds in active and non
+// active channels
+func (d *Ldaemon) ChannelBalance() (uint64, error) {
+
+	lnclient := d.APIClient()
+	if lnclient == nil {
+		return 0, fmt.Errorf("lnclient is not ready yet")
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if res, err := lnclient.ChannelBalance(ctx, &lnrpc.ChannelBalanceRequest{}); err != nil {
+		return 0, err
+	} else {
+		return res.LocalBalance.Sat, nil
 	}
 }
 
@@ -289,15 +311,16 @@ func (d *Ldaemon) GenerateHoldInvoice(amountMSat int64, preimageHash []byte, mem
 }
 
 // Pays amtMsat millisatoshis to the invoice represented by paymentRequest. It uses the
-// OutgoingChanId channel to forward the HTLC, if provided. User can set fee limits to
+// OutgoingChanIds channels to forward the HTLC, if provided. User can set fee limits to
 // the payment by either setting an absolute millisatoshis value or a percentage value
 // of the total amount (1-100%) if both are set, the most restrictive will be taken.
 // User can specify a pubkey to be used as a last hop of the HTLC transmission.
 // This function blocks until either the payment success or timeout in seconds is reached
 // On success, it returns the preimage of the payment hash
-func (d *Ldaemon) PayInvoice(paymentRequest string, OutgoingChanId uint64, amtMsat int64,
+func (d *Ldaemon) PayInvoice(paymentRequest string, OutgoingChanIds []uint64, amtMsat int64,
 	fee_limit_msat int64, fee_limit_percent int64, lastHopPubkey string, timeout int32) (string, error) {
 	routerClient := d.RouterClient()
+	lnClient := d.APIClient()
 	if routerClient == nil {
 		return "", fmt.Errorf("routerClient is not ready yet")
 	}
@@ -305,8 +328,18 @@ func (d *Ldaemon) PayInvoice(paymentRequest string, OutgoingChanId uint64, amtMs
 	defer cancel()
 
 	var feeLimit int64
+	if res, err := lnClient.DecodePayReq(ctx, &lnrpc.PayReqString{PayReq: paymentRequest}); err != nil {
+		return "", err
+
+	} else if res.NumMsat != 0 {
+		d.log.Warn("Amt to be paid overriden due to invoice missmatch",
+			zap.String("User amount (msats):", fmt.Sprint(amtMsat)),
+			zap.String("Invoice amount (msats)", fmt.Sprint(res.NumMsat)))
+		amtMsat = 0
+	}
+
 	totPercentFee := amtMsat * fee_limit_percent / 100
-	if totPercentFee >= fee_limit_msat {
+	if totPercentFee >= fee_limit_msat && fee_limit_msat > 0 {
 		feeLimit = fee_limit_msat
 	} else {
 		feeLimit = fee_limit_percent
@@ -319,14 +352,16 @@ func (d *Ldaemon) PayInvoice(paymentRequest string, OutgoingChanId uint64, amtMs
 			return "", fmt.Errorf("Couln't convert peerID string to byte array" + err.Error())
 		}
 	}
+
+	d.log.Debug("lasrHop", zap.Binary("lastHop", lastHop))
 	if stream, err := routerClient.SendPaymentV2(ctx, &routerrpc.SendPaymentRequest{
-		AmtMsat:          amtMsat,
-		PaymentRequest:   paymentRequest,
-		FeeLimitMsat:     feeLimit,
-		OutgoingChanId:   OutgoingChanId,
-		AllowSelfPayment: true,
-		LastHopPubkey:    lastHop,
-		TimeoutSeconds:   timeout,
+		AmtMsat:        amtMsat,
+		PaymentRequest: paymentRequest,
+		FeeLimitMsat:   feeLimit,
+		//OutgoingChanIds:  OutgoingChanIds,
+		//AllowSelfPayment: true,
+		//LastHopPubkey:    lastHop,
+		TimeoutSeconds: timeout,
 	}); err != nil {
 		return "", err
 	} else {
