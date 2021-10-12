@@ -25,10 +25,10 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
   const [visible, setVisible] = useState(false)
 
   const editor = useMemo(() => buildEditorHook(plugins, mode), [mode])
-  const renderElement = useMemo(() => buildRenderElementHook(plugins, mode), [mode])
-  const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, mode), [mode])
-  const decorate = useMemo(() => buildDecorateHook(plugins, mode), [mode])
-  const eventHandlers = useMemo(() => buildEventHandlerHooks(plugins, mode), [mode])
+  const renderElement = useMemo(() => buildRenderElementHook(plugins, editor), [mode])
+  const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, editor), [mode])
+  const decorate = useMemo(() => buildDecorateHook(plugins, editor), [mode])
+  const eventHandlers = useMemo(() => buildEventHandlerHooks(plugins, editor), [mode])
 
   return (
     <Suspense fallback={'loading'}>
