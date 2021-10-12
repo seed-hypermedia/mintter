@@ -1,26 +1,20 @@
-{ 
-  lib,
-  rustPlatform,
-  fetchCrate,
-  darwin,
-  stdenv,
-}:
+{ pkgs, lib, stdenv, darwin }:
 
-rustPlatform.buildRustPackage rec {
-  pname = "tauri-cli";
-  version = "1.0.0-beta.7";
-
-  buildInputs = [
-    (lib.optionals stdenv.isDarwin [
-      darwin.apple_sdk.frameworks.CoreServices
-      darwin.apple_sdk.frameworks.Security
-    ])
-  ];
-
-  src = fetchCrate {
-    inherit pname version;
-    sha256 = "1b04fhqfqpbb110ngzy26rcys1j1xlcqvr310w2qjgzf0gkp184m";
+let
+  customBuildRustCrateForPkgs = pkgs: pkgs.buildRustCrate.override {
+    defaultCrateOverrides = pkgs.defaultCrateOverrides // {
+      tauri-cli = attrs: {
+        buildInputs = [
+          (lib.optionals stdenv.isDarwin [
+            darwin.apple_sdk.frameworks.CoreServices
+            darwin.apple_sdk.frameworks.Security
+          ])
+        ];
+      };
+    };
   };
-
-  cargoSha256 = "1969ipz0hlryykzlfg7wvlw6aq3400azaachhxj40a2kxndrm673";
-}
+  generatedBuild = import ./Cargo.nix {
+    inherit pkgs;
+    buildRustCrateForPkgs = customBuildRustCrateForPkgs;
+  };
+in generatedBuild.rootCrate.build
