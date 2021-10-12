@@ -53,40 +53,38 @@ interface CodePluginProps {
   theme?: IThemeRegistration
 }
 
-export const createCodePlugin = async (props: CodePluginProps = {}): Promise<EditorPlugin> => {
+export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
   const {theme = 'github-dark'} = props
 
   setCDN('/shiki/')
 
-  let editor: Editor
-
   return {
     name: ELEMENT_CODE,
-    configureEditor(e) {
-      editor = e
-
+    configureEditor(editor) {
       /*
        * @todo modify paste so it will add empty lines
        * @body we need to paste code content inside the same paragraph
        */
-      const {deleteBackward} = e
-      e.deleteBackward = (unit) => {
+      const {deleteBackward} = editor
+      editor.deleteBackward = (unit) => {
         if (resetFlowContent(editor)) return
         deleteBackward(unit)
       }
 
-      return e
+      return editor
     },
-    renderElement({children, element, attributes}) {
-      if (isCode(element)) {
-        return (
-          <Code element={element} attributes={attributes}>
-            {children}
-          </Code>
-        )
-      }
-    },
-    onKeyDown(ev) {
+    renderElement:
+      () =>
+      ({children, element, attributes}) => {
+        if (isCode(element)) {
+          return (
+            <Code element={element} attributes={attributes}>
+              {children}
+            </Code>
+          )
+        }
+      },
+    onKeyDown: (editor) => (ev) => {
       if (ev.key == 'Enter') {
         const code = Editor.above(editor, {match: isCode})
         if (code) {
@@ -106,51 +104,53 @@ export const createCodePlugin = async (props: CodePluginProps = {}): Promise<Edi
         }
       }
     },
-    decorate([node, path]) {
-      const ranges: Array<Range> = []
+    decorate:
+      (editor) =>
+      ([node, path]) => {
+        const ranges: Array<Range> = []
 
-      // if the codeblock has a lang attribute but no highlighter yet, attach one
-      if (isCode(node) && !node.data?.[HIGHLIGHTER] && node.lang) {
-        getHighlighter({theme, langs: [node.lang]}).then((highlighter) => {
-          Transforms.setNodes(editor, {data: {...node.data, [HIGHLIGHTER]: highlighter}}, {at: path})
-        })
-      }
+        // if the codeblock has a lang attribute but no highlighter yet, attach one
+        if (isCode(node) && !node.data?.[HIGHLIGHTER] && node.lang) {
+          getHighlighter({theme, langs: [node.lang]}).then((highlighter) => {
+            Transforms.setNodes(editor, {data: {...node.data, [HIGHLIGHTER]: highlighter}}, {at: path})
+          })
+        }
 
-      // tokenize & decorate the paragraph inside codeblock
-      if (isParagraph(node)) {
-        const [code] =
-          Editor.above(editor, {
-            at: path,
-            match: isCode,
-          }) || []
+        // tokenize & decorate the paragraph inside codeblock
+        if (isParagraph(node)) {
+          const [code] =
+            Editor.above(editor, {
+              at: path,
+              match: isCode,
+            }) || []
 
-        if (!code || !code.data?.[HIGHLIGHTER]) return []
+          if (!code || !code.data?.[HIGHLIGHTER]) return []
 
-        for (const [text, textPath] of Node.texts(node)) {
-          const tokens = (code.data?.[HIGHLIGHTER] as Highlighter)
-            .codeToThemedTokens(text.value, code.lang)
-            .flatMap((l) => l)
+          for (const [text, textPath] of Node.texts(node)) {
+            const tokens = (code.data?.[HIGHLIGHTER] as Highlighter)
+              .codeToThemedTokens(text.value, code.lang)
+              .flatMap((l) => l)
 
-          let offset = 0
+            let offset = 0
 
-          for (const token of tokens) {
-            const range: Range & Record<string, unknown> = {
-              anchor: {path: [...path, ...textPath], offset},
-              focus: {path: [...path, ...textPath], offset: offset + token.content.length},
-              color: token.color,
+            for (const token of tokens) {
+              const range: Range & Record<string, unknown> = {
+                anchor: {path: [...path, ...textPath], offset},
+                focus: {path: [...path, ...textPath], offset: offset + token.content.length},
+                color: token.color,
+              }
+
+              if (token.fontStyle == 1) range[MARK_EMPHASIS] = true
+              if (token.fontStyle == 2) range[MARK_STRONG] = true
+              if (token.fontStyle == 4) range[MARK_UNDERLINE] = true
+
+              ranges.push(range)
+              offset += token.content.length
             }
-
-            if (token.fontStyle == 1) range[MARK_EMPHASIS] = true
-            if (token.fontStyle == 2) range[MARK_STRONG] = true
-            if (token.fontStyle == 4) range[MARK_UNDERLINE] = true
-
-            ranges.push(range)
-            offset += token.content.length
           }
         }
-      }
-      return ranges
-    },
+        return ranges
+      },
   }
 }
 

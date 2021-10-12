@@ -51,19 +51,21 @@ export const createEmbedPlugin = (): EditorPlugin => ({
 
     return editor
   },
-  renderElement({attributes, children, element}) {
-    if (isEmbed(element)) {
-      if (!element.url) {
-        console.error(`Embed: element does not have a url attribute: ${JSON.stringify(element)}`)
-        return <span {...attributes}>error on embed{children}</span>
+  renderElement:
+    () =>
+    ({attributes, children, element}) => {
+      if (isEmbed(element)) {
+        if (!element.url) {
+          console.error(`Embed: element does not have a url attribute: ${JSON.stringify(element)}`)
+          return <span {...attributes}>error on embed{children}</span>
+        }
+        return (
+          <InlineEmbed embed={element} {...attributes}>
+            {children}
+          </InlineEmbed>
+        )
       }
-      return (
-        <InlineEmbed embed={element} {...attributes}>
-          {children}
-        </InlineEmbed>
-      )
-    }
-  },
+    },
 })
 
 /*

@@ -56,30 +56,32 @@ Link.displayName = 'Link'
 
 export const createLinkPlugin = (): EditorPlugin => ({
   name: ELEMENT_LINK,
-  renderElement({attributes, children, element}) {
-    if (isLink(element)) {
-      return (
-        <Tooltip
-          content={
-            <Box
-              css={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '$2',
-              }}
-            >
-              {element.url}
-              <Icon size="1" name="ExternalLink" color="opposite" />
-            </Box>
-          }
-        >
-          <Link element={element} {...attributes}>
-            {children}
-          </Link>
-        </Tooltip>
-      )
-    }
-  },
+  renderElement:
+    () =>
+    ({attributes, children, element}) => {
+      if (isLink(element)) {
+        return (
+          <Tooltip
+            content={
+              <Box
+                css={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '$2',
+                }}
+              >
+                {element.url}
+                <Icon size="1" name="ExternalLink" color="opposite" />
+              </Box>
+            }
+          >
+            <Link element={element} {...attributes}>
+              {children}
+            </Link>
+          </Tooltip>
+        )
+      }
+    },
   configureEditor(editor) {
     /**
      * - when should I create a link:

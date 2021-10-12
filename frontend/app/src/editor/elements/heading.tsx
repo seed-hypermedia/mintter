@@ -20,37 +20,24 @@ export const Heading = styled('li', statementStyle, {
 
 export const createHeadingPlugin = (): EditorPlugin => ({
   name: ELEMENT_HEADING,
-  renderElement({attributes, children, element}) {
-    // TODO: compute heading level
-    if (isHeading(element)) {
-      return (
-        <Heading {...attributes} data-element-type={element.type}>
-          <StatementTools element={element} />
-          {children}
-        </Heading>
-      )
-    }
-  },
+  renderElement:
+    () =>
+    ({attributes, children, element}) => {
+      // TODO: compute heading level
+      if (isHeading(element)) {
+        return (
+          <Heading {...attributes} data-element-type={element.type}>
+            <StatementTools element={element} />
+            {children}
+          </Heading>
+        )
+      }
+    },
   configureEditor: (editor) => {
     const {normalizeNode, deleteBackward} = editor
 
     editor.deleteBackward = (unit) => {
       if (resetFlowContent(editor)) return
-      // const {selection} = editor
-      // if (selection && isCollapsed(selection)) {
-      //   const block = Editor.above(editor, {
-      //     match: (n) => isFlowContent(n) && !isStatement(n),
-      //   })
-
-      //   if (block) {
-      //     const [node, path] = block
-
-      //     if (!Node.string(node.children[0])) {
-      //     } else {
-      //       // return
-      //     }
-      //   }
-      // }
       deleteBackward(unit)
     }
 

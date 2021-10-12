@@ -2,7 +2,7 @@ import {isBlockquote, isCode, isParagraph} from '@mintter/mttast'
 import {createId, statement} from '@mintter/mttast-builder'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
-import {Editor, Node, Path, Transforms} from 'slate'
+import {Descendant, Editor, Node, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import type {EditorPlugin} from '../types'
@@ -42,15 +42,17 @@ const ParagraphStyled = styled(Text, {
 
 export const createParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_PARAGRAPH,
-  renderElement({element, children, attributes}) {
-    if (isParagraph(element)) {
-      return (
-        <Paragraph element={element} attributes={attributes}>
-          {children}
-        </Paragraph>
-      )
-    }
-  },
+  renderElement:
+    () =>
+    ({element, children, attributes}) => {
+      if (isParagraph(element)) {
+        return (
+          <Paragraph element={element} attributes={attributes}>
+            {children}
+          </Paragraph>
+        )
+      }
+    },
   configureEditor: (editor) => {
     const {normalizeNode, insertBreak} = editor
 
@@ -101,7 +103,7 @@ function Paragraph({children, element, attributes}: RenderElementProps) {
       alt
       size="4"
       css={{paddingLeft: '$2'}}
-      data-parent={parentNode?.type ?? null}
+      data-parent={(parentNode as Descendant)?.type ?? null}
       {...attributes}
     >
       {children}

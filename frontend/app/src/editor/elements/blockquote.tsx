@@ -16,16 +16,6 @@ export const BlockQuote = styled('li', statementStyle, {
 
 export const createBlockquotePlugin = (): EditorPlugin => ({
   name: ELEMENT_BLOCKQUOTE,
-  renderElement({attributes, children, element}) {
-    if (isBlockquote(element)) {
-      return (
-        <BlockQuote data-element-type={element.type} {...attributes}>
-          <StatementTools element={element} />
-          {children}
-        </BlockQuote>
-      )
-    }
-  },
   configureEditor(editor) {
     const {deleteBackward} = editor
 
@@ -36,4 +26,16 @@ export const createBlockquotePlugin = (): EditorPlugin => ({
 
     return editor
   },
+  renderElement:
+    () =>
+    ({attributes, children, element}) => {
+      if (isBlockquote(element)) {
+        return (
+          <BlockQuote data-element-type={element.type} {...attributes}>
+            <StatementTools element={element} />
+            {children}
+          </BlockQuote>
+        )
+      }
+    },
 })

@@ -13,7 +13,7 @@ declare module 'slate' {
   }
 }
 
-export interface EditorEventHandlers {
+export interface EditableEventHandlers {
   onDOMBeforeInput?: (event: InputEvent) => void
   // now come all the event handlers, this mirrors all supported react events right now
   // for a proper plugin system we will want to trim this list somewhat
@@ -143,11 +143,15 @@ export interface EditorEventHandlers {
   onTransitionEndCapture?: React.TransitionEventHandler
 }
 
+type EditorEventHandlers = {
+  [key in keyof EditableEventHandlers]: (editor: Editor) => EditableEventHandlers[key]
+}
+
 export interface EditorPlugin extends EditorEventHandlers {
   name: string
   apply?: EditorMode | ((mode: EditorMode) => boolean)
   configureEditor?: (editor: Editor) => Editor | undefined | void
-  renderElement?: (props: RenderElementProps) => JSX.Element | undefined | void
-  renderLeaf?: (props: RenderLeafProps) => JSX.Element | undefined | void
-  decorate?: (node: NodeEntry) => Range[] | undefined | void
+  renderElement?: (editor: Editor) => (props: RenderElementProps) => JSX.Element | undefined | void
+  renderLeaf?: (editor: Editor) => (props: RenderLeafProps) => JSX.Element | undefined | void
+  decorate?: (editor: Editor) => (node: NodeEntry) => Range[] | undefined | void
 }
