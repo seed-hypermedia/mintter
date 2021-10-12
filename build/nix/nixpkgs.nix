@@ -10,6 +10,7 @@ import (builtins.fetchGit {
 }) {
   overlays = [
     (self: super: {
+      pkgs = self;
       go = super.go_1_17;
       nodejs = super.nodejs-16_x;
       bazel-wrapper = super.callPackage ./bazel-wrapper {};
