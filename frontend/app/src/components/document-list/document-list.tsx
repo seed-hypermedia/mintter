@@ -157,6 +157,7 @@ function ListItem({item, toPrefix, isDraft}: ListItemProps) {
               size="1"
               color="danger"
               onClick={(e) => {
+                e.stopPropagation()
                 e.preventDefault()
                 send({type: 'OPEN_DIALOG', payload: {entryId: item.document.id, isDraft}})
               }}

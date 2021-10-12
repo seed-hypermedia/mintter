@@ -3,6 +3,7 @@ import {useAccount, useInfo, usePublication} from '@mintter/client/hooks'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
+import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
 import {useEffect} from 'react'
 import {useLocation, useRoute} from 'wouter'
 import {Container} from '../components/container'
@@ -100,7 +101,7 @@ export default function Publication() {
       <Container css={{gridArea: 'maincontent', marginBottom: 300, padding: '$5', paddingTop: '$7'}}>
         <PublicationHeader document={data?.document} />
         <Separator />
-        <Editor readOnly value={data?.document?.content} />
+        <Editor mode={EditorMode.Publication} value={data?.document?.content} />
       </Container>
       {isSidepanelOpen && <Sidepanel gridArea={'rightside'} />}
     </Box>
