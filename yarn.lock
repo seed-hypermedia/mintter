@@ -2933,11 +2933,6 @@
   resolved "https://registry.yarnpkg.com/@types/escape-html/-/escape-html-1.0.1.tgz#b19b4646915f0ae2c306bf984dc0a59c5cfc97ba"
   integrity sha512-4mI1FuUUZiuT95fSVqvZxp/ssQK9zsa86S43h9x3zPOSU9BBJ+BfDkXwuaU7BfsD+e7U0/cUUfJFk3iW2M4okA==
 
-"@types/esrever@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@types/esrever/-/esrever-0.2.0.tgz#96404a2284b2c7527f08a1e957f8a31705f9880f"
-  integrity sha512-5NI6TeGzVEy/iBcuYtcPzzIC6EqlfQ2+UZ54vT0ulq8bPNGAy8UJD+XcsAyEOcnYFUjOVWuUV+k4/rVkxt9/XQ==
-
 "@types/faker@^5.5.6":
   version "5.5.8"
   resolved "https://registry.yarnpkg.com/@types/faker/-/faker-5.5.8.tgz#6649adfdfdbb0acf95361fc48f2d0ca6e88bd1cf"
@@ -7113,11 +7108,6 @@ esrecurse@^4.1.0, esrecurse@^4.3.0:
   dependencies:
     estraverse "^5.2.0"
 
-esrever@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/esrever/-/esrever-0.2.0.tgz#96e9d28f4f1b1a76784cd5d490eaae010e7407b8"
-  integrity sha1-lunSj08bGnZ4TNXUkOquAQ50B7g=
-
 estraverse@^4.1.1:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/estraverse/-/estraverse-4.3.0.tgz#398ad3f3c5a24948be7725e83d11a7de28cdbd1d"
@@ -8736,10 +8726,10 @@ immer@8.0.1:
   resolved "https://registry.yarnpkg.com/immer/-/immer-8.0.1.tgz#9c73db683e2b3975c424fb0572af5889877ae656"
   integrity sha512-aqXhGP7//Gui2+UrEtvxZxSquQVXTpZ7KDxfCcKAF3Vysvw0CViVaW9RZ1j1xlIYqaaaipBoqdqeibkc18PNvA==
 
-immer@^8.0.1:
-  version "8.0.4"
-  resolved "https://registry.yarnpkg.com/immer/-/immer-8.0.4.tgz#3a21605a4e2dded852fb2afd208ad50969737b7a"
-  integrity sha512-jMfL18P+/6P6epANRvRk6q8t+3gGhqsJ9EuJ25AXE+9bNTYtssvzeYbEd0mXRYWCmmXSIbnlpz6vd6iJlmGGGQ==
+immer@^9.0.6:
+  version "9.0.6"
+  resolved "https://registry.yarnpkg.com/immer/-/immer-9.0.6.tgz#7a96bf2674d06c8143e327cbf73539388ddf1a73"
+  integrity sha512-G95ivKpy+EvVAnAab4fVa4YGYn24J1SpEktnJX7JJ45Bd7xqME/SCplFzYFmTbrkwZbQ4xJK1xMTUYBkN6pWsQ==
 
 import-fresh@^3.0.0, import-fresh@^3.1.0, import-fresh@^3.2.1:
   version "3.3.0"
@@ -9259,7 +9249,7 @@ is-plain-obj@^2.0.0:
   resolved "https://registry.yarnpkg.com/is-plain-obj/-/is-plain-obj-2.1.0.tgz#45e42e37fccf1f40da8e5f76ee21515840c09287"
   integrity sha512-YWnfyRwxL/+SsrWYfOpUtz5b3YD+nyfkHvjbcanzk8zgyO4ASD67uVMRt8k5bM4lLMDnXfriRhOpemw+NfT1eA==
 
-is-plain-object@3.0.1, is-plain-object@^3.0.0:
+is-plain-object@3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/is-plain-object/-/is-plain-object-3.0.1.tgz#662d92d24c0aa4302407b0d45d21f2251c85f85b"
   integrity sha512-Xnpx182SBMrr/aBik8y+GuR4U1L9FqMSojwDQwPMmxyC6bvEqly9UBCxhauBF5vNh2gwWJNX6oDV7O+OM4z34g==
@@ -13320,40 +13310,37 @@ slash@^4.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-4.0.0.tgz#2422372176c4c6c5addb5e2ada885af984b396a7"
   integrity sha512-3dOsAHXXUkQTpOYcoAxLIorMTp4gIQr5IW3iVb7A7lFIp0VHhnynm9izx6TssdrIcVIESAlVjtnO2K8bg+Coew==
 
-"slate-history@https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.65.3-unist2":
-  version "0.65.3"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.65.3-unist2#d04bc8978743ff22977d72b7c6c669d0d416e8a8"
+"slate-history@https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.66.6-unist":
+  version "0.66.0"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.66.6-unist#6a094d39fedb6de5fd474cba02485359ea9f7057"
   dependencies:
-    is-plain-object "^3.0.0"
+    is-plain-object "^5.0.0"
 
-"slate-hyperscript@https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.65.3-unist2":
-  version "0.62.0"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.65.3-unist2#4d88ca6dba0300cb73ba5a560e309bd5b60ed83e"
+"slate-hyperscript@https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.66.6-unist":
+  version "0.66.0"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.66.6-unist#5450e006116eb61fca72f8291abc122c35d474fd"
   dependencies:
-    is-plain-object "^3.0.0"
+    is-plain-object "^5.0.0"
 
-"slate-react@https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.65.3-unist2":
-  version "0.65.3"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.65.3-unist2#e3eaa7cadcc92e6c7a9138352bf0ba7c86ff2f42"
+"slate-react@https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.66.6-unist":
+  version "0.66.6"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.66.6-unist#dec7710d4dd5006bc5954e14a644100271d63237"
   dependencies:
     "@types/is-hotkey" "^0.1.1"
     "@types/lodash" "^4.14.149"
     direction "^1.0.3"
     is-hotkey "^0.1.6"
-    is-plain-object "^3.0.0"
+    is-plain-object "^5.0.0"
     lodash "^4.17.4"
     scroll-into-view-if-needed "^2.2.20"
     tiny-invariant "1.0.6"
 
-"slate@https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.65.3-unist2":
-  version "0.65.3"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.65.3-unist2#232514625187c844d6d6385c107ed1717ee606d5"
+"slate@https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.66.6-unist":
+  version "0.66.5"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.66.6-unist#8f37bd56620e1149dbd1148f10b743533d5bceb8"
   dependencies:
-    "@types/esrever" "^0.2.0"
-    esrever "^0.2.0"
-    fast-deep-equal "^3.1.3"
-    immer "^8.0.1"
-    is-plain-object "^3.0.0"
+    immer "^9.0.6"
+    is-plain-object "^5.0.0"
     tiny-warning "^1.0.3"
 
 slice-ansi@^4.0.0:
@@ -14022,9 +14009,9 @@ tar@^6.0.2, tar@^6.1.0:
     mkdirp "^1.0.3"
     yallist "^4.0.0"
 
-"tauri-plugin-log-api@https://github.com/JonasKruckenberg/tauri-plugin-log#target-webview":
+"tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log":
   version "0.1.0"
-  resolved "https://github.com/JonasKruckenberg/tauri-plugin-log#864a7a12574c12cf3eced7b9adbf7bdae2c0d80c"
+  resolved "https://github.com/tauri-apps/tauri-plugin-log#cb2a1401c7fd81cb72fe77f3538d35e5ae419a07"
   dependencies:
     "@tauri-apps/api" "^1.0.0-beta.8"
     tslib "^2.3.1"
