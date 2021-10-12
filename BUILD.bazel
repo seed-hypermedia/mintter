@@ -14,12 +14,15 @@ local_action(
         "package.json",
         "yarn.lock",
     ],
-    outs = [".pnp.cjs"],
+    outs = [".yarn/install-state.gz"],
     cmd = """
 yarn install
-ln -s $(pwd)/.pnp.cjs $TARGET_OUT_DIR/.pnp.cjs
+ln -s $(pwd)/.yarn/install-state.gz $TARGET_OUT_DIR/.yarn/install-state.gz
 """,
-    visibility = ["//frontend:__subpackages__"],
+    visibility = [
+        "//frontend:__subpackages__",
+        "//proto:__subpackages__",
+    ],
 )
 
 filegroup(
