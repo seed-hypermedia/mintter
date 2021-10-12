@@ -16,8 +16,7 @@
     "client": "yarn workspace @mintter/client",
     "mttast": "yarn workspace @mintter/mttast",
     "builder": "yarn workspace @mintter/mttast-builder",
-    "schema": "yarn workspace @mintter/mttast-schema",
-    "clean": "gn gen out"
+    "schema": "yarn workspace @mintter/mttast-schema"
   },
   "workspaces": [
     "frontend/*"

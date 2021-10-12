@@ -32,10 +32,7 @@ bazel-*
 .bazel-*
 
 # Backend code
-backend/ui/rice-box.go-e
-
-# local backends
-_s*
+backend/ui/rice-box.go-e 
 
 # Terraform
 .terraform

@@ -165,7 +165,7 @@ function Code({
 }: RenderElementProps & {
   element: CodeType
 }) {
-  const [, params] = useRoute<{docId: string}>('/editor/:docId')
+  const [, params] = useRoute<{docId: string}>('/(editor|p)/:docId')
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const isReadOnly = useReadOnly()

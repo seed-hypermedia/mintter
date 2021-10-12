@@ -17,9 +17,7 @@ export const Complete: React.FC = () => {
   const handleSubmit = useCallback(async () => {
     console.log('submit welcome!!')
     await queryClient.invalidateQueries('AccountInfo')
-    // console.log({from: location.state.from})
     setLocation(params?.from ?? '/', {replace: true})
-    // window.location.reload()
   }, [history, location])
 
   return (
