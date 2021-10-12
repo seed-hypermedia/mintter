@@ -2,6 +2,7 @@
 with import ./build/nix/nixpkgs.nix;
 
 let 
+  protoc-gen-ts_proto = writeShellScriptBin "protoc-gen-ts_proto" "yarn run protoc-gen-ts_proto";
   shellCommon = {
     tools = [
       bash
@@ -17,14 +18,29 @@ let
       nodejs
       yarn
       tauri-cli
+      protoc-gen-ts_proto
+      # pkg-config
+      # gcc
     ];
-    libs = [];
+    libs = [
+      # libiconv
+    ];
   };
   shellDarwin = {
     tools = [
       impure-cc
     ];
-    libs = [];
+    libs = [
+      # darwin.apple_sdk.frameworks.AppKit
+      # darwin.apple_sdk.frameworks.CoreFoundation
+      # darwin.apple_sdk.frameworks.CoreVideo
+      # darwin.apple_sdk.frameworks.CoreGraphics
+      # darwin.apple_sdk.frameworks.Security
+      # darwin.apple_sdk.frameworks.WebKit
+      # darwin.apple_sdk.frameworks.Carbon
+      # darwin.apple_sdk.frameworks.QuartzCore
+      # darwin.apple_sdk.frameworks.Foundation
+    ];
   };
   shellLinux = {
     tools = [

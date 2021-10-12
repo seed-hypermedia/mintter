@@ -31,7 +31,7 @@ def _proto_compile(ctx):
 
     run_local_shell(
         ctx,
-        inputs = inputs,
+        inputs = inputs + ctx.files.deps,
         outputs = outs,
         command = """
 cd $SOURCE_ROOT_DIR
@@ -67,6 +67,11 @@ proto_compile = rule(
             allow_files = [".proto"],
             mandatory = True,
         ),
+        "deps": attr.label_list(
+            doc = "Other dependencies.",
+            allow_files = False,
+            mandatory = False,
+        ),
         "replaces": attr.string_list(
             doc = "List of replaces for .proto extension. For example .pb.go.",
             mandatory = True,
@@ -100,7 +105,7 @@ proto_compile = rule(
     },
 )
 
-def mtt_js_proto(name, srcs, visibility = ["//visibility:public"], **kwargs):
+def mtt_js_proto(name, srcs, visibility = ["//visibility:public"], deps = [], **kwargs):
     """
     Macro for Mintter specific Protobuf compilation for JavaScript.
     """
@@ -109,6 +114,7 @@ def mtt_js_proto(name, srcs, visibility = ["//visibility:public"], **kwargs):
         srcs = srcs,
         replaces = [".ts"],
         proto_root = "proto",
+        deps = deps + ["//:yarn"],
         output_root = "frontend/client/.generated/",
         protoc_flags = [
             "--plugin=`which protoc-gen-ts_proto`",
