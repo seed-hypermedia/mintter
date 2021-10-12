@@ -5,6 +5,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  cacheDir: '.vite',
   plugins: [reactRefresh(), reactJSX(), tsconfigPaths()],
   build: {
     target: 'es2021',

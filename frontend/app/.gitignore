@@ -4,3 +4,4 @@ dist
 build
 dist-ssr
 *.local
+.vite
