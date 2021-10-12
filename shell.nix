@@ -16,6 +16,7 @@ let
       rustfmt
       nodejs
       yarn
+      tauri-cli
     ];
     libs = [];
   };
