@@ -7,7 +7,7 @@ import {EditorMode} from './plugin-utils'
 
 declare module 'slate' {
   export interface CustomTypes {
-    Editor: BaseEditor & ReactEditor & HistoryEditor & {mode: EditorMode}
+    Editor: BaseEditor & ReactEditor & HistoryEditor & {mode: EditorMode; readOnly: boolean}
     Element: Exclude<MttastContent, Document | Text | Video | Image>
     Text: Text
   }
@@ -144,7 +144,7 @@ export interface EditableEventHandlers {
 }
 
 type EditorEventHandlers = {
-  [key in keyof EditableEventHandlers]: (editor: Editor) => EditableEventHandlers[key]
+  [key in keyof EditableEventHandlers]: (editor: Editor) => EditableEventHandlers[key] | undefined | void
 }
 
 export interface EditorPlugin extends EditorEventHandlers {

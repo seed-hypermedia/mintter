@@ -41,7 +41,7 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
         <Slate editor={editor} value={value} onChange={onChange}>
           <HoveringToolbar />
           <Editable
-            readOnly={mode >= EditorMode.Publication}
+            readOnly={editor.readOnly}
             data-testid="editor"
             renderElement={renderElement}
             renderLeaf={renderLeaf}
