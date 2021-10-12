@@ -1,7 +1,6 @@
-import type {GroupingContent} from '@mintter/mttast'
 import {isFlowContent, isGroup, isGroupContent} from '@mintter/mttast'
 import {css, styled} from '@mintter/ui/stitches.config'
-import type {NodeEntry} from 'slate'
+import type {Node, NodeEntry} from 'slate'
 import {Editor, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
 
@@ -28,15 +27,17 @@ export const Group = styled('ul', groupStyle)
 
 export const createGroupPlugin = (): EditorPlugin => ({
   name: ELEMENT_GROUP,
-  renderElement({attributes, children, element}) {
-    if (isGroup(element)) {
-      return (
-        <Group type={element.type} data-element-type={element.type} {...attributes}>
-          {children}
-        </Group>
-      )
-    }
-  },
+  renderElement:
+    () =>
+    ({attributes, children, element}) => {
+      if (isGroup(element)) {
+        return (
+          <Group type={element.type} data-element-type={element.type} {...attributes}>
+            {children}
+          </Group>
+        )
+      }
+    },
   configureEditor(editor) {
     const {normalizeNode} = editor
 
@@ -69,7 +70,7 @@ export const createGroupPlugin = (): EditorPlugin => ({
  *
  * when deleting statements we sometimes endup with empty groups. this methos removes them.
  */
-export function removeEmptyGroup(editor: Editor, entry: NodeEntry<GroupingContent>): boolean | undefined {
+export function removeEmptyGroup(editor: Editor, entry: NodeEntry<Node>): boolean | undefined {
   const [node, path] = entry
   if (isGroupContent(node)) {
     if (node.children.length == 1) {

@@ -11,10 +11,12 @@ export const Subscript = styled('i', {
 export function createSubscriptPlugin(): EditorPlugin {
   return {
     name: MARK_SUBSCRIPT,
-    renderLeaf({attributes, children, leaf}) {
-      if (leaf[MARK_SUBSCRIPT] && leaf.value) {
-        return <Subscript {...attributes}>{children}</Subscript>
-      }
-    },
+    renderLeaf:
+      () =>
+      ({attributes, children, leaf}) => {
+        if (leaf[MARK_SUBSCRIPT] && leaf.value) {
+          return <Subscript {...attributes}>{children}</Subscript>
+        }
+      },
   }
 }

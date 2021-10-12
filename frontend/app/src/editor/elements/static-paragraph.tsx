@@ -46,15 +46,17 @@ const headingMap: {
 
 export const createStaticParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATIC_PARAGRAPH,
-  renderElement({element, children, attributes}) {
-    if (isStaticParagraph(element)) {
-      return (
-        <StaticParagraph element={element} attributes={attributes}>
-          {children}
-        </StaticParagraph>
-      )
-    }
-  },
+  renderElement:
+    () =>
+    ({element, children, attributes}) => {
+      if (isStaticParagraph(element)) {
+        return (
+          <StaticParagraph element={element} attributes={attributes}>
+            {children}
+          </StaticParagraph>
+        )
+      }
+    },
   /*
    * @todo Demo TODO
    * @body this is an example TODO from a PR

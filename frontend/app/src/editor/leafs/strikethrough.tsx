@@ -7,13 +7,13 @@ export const Strikethrough = styled('span', {
   textDecoration: 'line-through',
 })
 
-export function createStrikethroughPlugin(): EditorPlugin {
-  return {
-    name: MARK_STRIKETHROUGH,
-    renderLeaf({attributes, children, leaf}) {
+export const createStrikethroughPlugin = (): EditorPlugin => ({
+  name: MARK_STRIKETHROUGH,
+  renderLeaf:
+    () =>
+    ({attributes, children, leaf}) => {
       if (leaf[MARK_STRIKETHROUGH] && leaf.value) {
         return <Strikethrough {...attributes}>{children}</Strikethrough>
       }
     },
-  }
-}
+})

@@ -12,10 +12,12 @@ export const Superscript = styled('i', {
 export function createSuperscriptPlugin(): EditorPlugin {
   return {
     name: MARK_SUPERSCRIPT,
-    renderLeaf({attributes, children, leaf}) {
-      if (leaf[MARK_SUPERSCRIPT] && leaf.value) {
-        return <Superscript {...attributes}>{children}</Superscript>
-      }
-    },
+    renderLeaf:
+      () =>
+      ({attributes, children, leaf}) => {
+        if (leaf[MARK_SUPERSCRIPT] && leaf.value) {
+          return <Superscript {...attributes}>{children}</Superscript>
+        }
+      },
   }
 }

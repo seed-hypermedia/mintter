@@ -7,7 +7,7 @@ import {css, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {useMemo} from 'react'
 import toast from 'react-hot-toast'
-import type {NodeEntry} from 'slate'
+import type {Node, NodeEntry} from 'slate'
 import {Editor, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {useLocation, useRoute} from 'wouter'
@@ -48,15 +48,17 @@ const StatementStyled = styled('li', statementStyle)
 
 export const createStatementPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATEMENT,
-  renderElement({element, children, attributes}) {
-    if (isStatement(element)) {
-      return (
-        <Statement element={element} data-element-type={element.type} attributes={attributes}>
-          {children}
-        </Statement>
-      )
-    }
-  },
+  renderElement:
+    () =>
+    ({element, children, attributes}) => {
+      if (isStatement(element)) {
+        return (
+          <Statement element={element} data-element-type={element.type} attributes={attributes}>
+            {children}
+          </Statement>
+        )
+      }
+    },
   configureEditor(editor) {
     const {normalizeNode} = editor
 
@@ -71,7 +73,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
           const lastChild = getLastChild(parent)
           if (isGroupContent(lastChild?.[0])) {
             // the last child of the statement is a group. we should move the new as the first child
-            Transforms.moveNodes(editor, {at: path, to: lastChild?.[1].concat(0)})
+            Transforms.moveNodes(editor, {at: path, to: lastChild?.[1].concat(0) as Path})
             return
           }
         }
@@ -175,7 +177,7 @@ function Statement({attributes, children, element}: RenderElementProps) {
   )
 }
 
-export function removeEmptyStatement(editor: Editor, entry: NodeEntry<StatementType>): boolean | undefined {
+export function removeEmptyStatement(editor: Editor, entry: NodeEntry<Node>): boolean | undefined {
   const [node, path] = entry
   if (isStatement(node)) {
     if (node.children.length == 1) {
