@@ -13284,21 +13284,21 @@ slash@^4.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-4.0.0.tgz#2422372176c4c6c5addb5e2ada885af984b396a7"
   integrity sha512-3dOsAHXXUkQTpOYcoAxLIorMTp4gIQr5IW3iVb7A7lFIp0VHhnynm9izx6TssdrIcVIESAlVjtnO2K8bg+Coew==
 
-"slate-history@https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.66.6-unist2":
+"slate-history@https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.66.6-unist3":
   version "0.66.0"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.66.6-unist2#d0f37eb921bd504ba345cd1bc2b216a546886e72"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?v0.66.6-unist3#16a7ed45fb11f8eb20068450baf20c98c586da78"
   dependencies:
     is-plain-object "^5.0.0"
 
-"slate-hyperscript@https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.66.6-unist2":
+"slate-hyperscript@https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.66.6-unist3":
   version "0.66.0"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.66.6-unist2#83e69d4c4d85d134298a8c1a014ef274b02c27c8"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?v0.66.6-unist3#ec95ca943e2e92354be2eba5be14fc9c2eaf99f5"
   dependencies:
     is-plain-object "^5.0.0"
 
-"slate-react@https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.66.6-unist2":
+"slate-react@https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.66.6-unist3":
   version "0.66.6"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.66.6-unist2#22df584daae4f976de632d66a3387b697a708aec"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?v0.66.6-unist3#052e62cdc675564deefb3735b4a322dfeb3c5984"
   dependencies:
     "@types/is-hotkey" "^0.1.1"
     "@types/lodash" "^4.14.149"
@@ -13309,9 +13309,9 @@ slash@^4.0.0:
     scroll-into-view-if-needed "^2.2.20"
     tiny-invariant "1.0.6"
 
-"slate@https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.66.6-unist2":
+"slate@https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.66.6-unist3":
   version "0.66.5"
-  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.66.6-unist2#20bcf766a1c08278ff1b313a78cebcf41df75adf"
+  resolved "https://gitpkg.now.sh/mintterteam/slate/packages/slate?v0.66.6-unist3#bc4154b7b8021c98fc9b2076eba5afcb38dd9b05"
   dependencies:
     immer "^9.0.6"
     is-plain-object "^5.0.0"
