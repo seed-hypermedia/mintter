@@ -26,7 +26,7 @@ export enum EditorMode {
 const byApply =
   (mode: EditorMode) =>
   (plugin: EditorPlugin): boolean => {
-    if (typeof plugin.apply === 'function') {
+    if (typeof plugin.apply == 'function') {
       return plugin.apply(mode)
     } else {
       return plugin.apply === undefined || plugin.apply === mode

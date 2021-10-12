@@ -28,7 +28,7 @@ export const App: React.FC = () => {
       }}
     >
       <SidepanelProvider>
-        <AuthorNode path="/" />
+        <AuthorNode />
       </SidepanelProvider>
     </ErrorBoundary>
   )

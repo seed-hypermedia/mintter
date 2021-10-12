@@ -3,57 +3,31 @@ import type {Statement as StatementType} from '@mintter/mttast'
 import {isBlockquote, isGroupContent, isHeading, isStatement} from '@mintter/mttast'
 import {group} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
-import {css, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
-import {useMemo} from 'react'
+import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
+import {useRoute} from 'frontend/app/src/utils/use-route'
 import toast from 'react-hot-toast'
 import type {Node, NodeEntry} from 'slate'
 import {Editor, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
-import {useLocation, useRoute} from 'wouter'
 import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {ContextMenu} from '../context-menu'
-import {StatementTools, Tools} from '../statement-tools'
+import {StatementTools} from '../statement-tools'
 import type {EditorPlugin} from '../types'
 import {getLastChild, isFirstChild, isLastChild} from '../utils'
+import {StatementUI} from './statement-ui'
 
 export const ELEMENT_STATEMENT = 'statement'
-
-export const statementStyle = css({
-  // backgroundColor: 'rgba(0,0,0,0.1)',
-  marginTop: '$6',
-  padding: 0,
-  listStyle: 'none',
-  display: 'grid',
-  wordBreak: 'break-word',
-  // gridTemplateColumns: 'minmax($space$8, auto) 1fr',
-  gridTemplateColumns: '$space$8 1fr',
-  gridTemplateRows: 'min-content auto',
-  gap: 0,
-  gridTemplateAreas: `"controls content"
-  ". children"`,
-  [`& > ${Tools}`]: {
-    gridArea: 'controls',
-  },
-  '& > [data-element-type="paragraph"], & > [data-element-type="code"], & > [data-element-type="staticParagraph"]': {
-    gridArea: 'content',
-  },
-  '& > ul, & > ol': {
-    gridArea: 'children',
-  },
-})
-
-const StatementStyled = styled('li', statementStyle)
 
 export const createStatementPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATEMENT,
   renderElement:
-    () =>
+    (editor) =>
     ({element, children, attributes}) => {
       if (isStatement(element)) {
         return (
-          <Statement element={element} data-element-type={element.type} attributes={attributes}>
+          <Statement mode={editor.mode} element={element} data-element-type={element.type} attributes={attributes}>
             {children}
           </Statement>
         )
@@ -106,15 +80,17 @@ export const createStatementPlugin = (): EditorPlugin => ({
   },
 })
 
-function Statement({attributes, children, element}: RenderElementProps) {
-  const [, params] = useRoute<{docId: string}>('/(editor|p)/:docId')
+function Statement({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
   const {send} = useSidepanel()
-  const [location, setLocation] = useLocation()
-  const isDraft = useMemo(() => location.includes('editor'), [location])
+  const {params} = useRoute<{docId: string}>(['/p/:docId', '/editor/:docId'])
 
   async function onCopy() {
-    await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${params!.docId}/${(element as StatementType).id}`)
-    toast.success('Statement Reference copied successfully', {position: 'top-center'})
+    if (params) {
+      await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${params.docId}/${(element as StatementType).id}`)
+      toast.success('Statement Reference copied successfully', {position: 'top-center'})
+    } else {
+      toast.error('Cannot Copy Statement Reference')
+    }
   }
   async function onStartDraft() {
     send({
@@ -131,21 +107,14 @@ function Statement({attributes, children, element}: RenderElementProps) {
     }
   }
 
-  // const onEnter = useCallback((event: MouseEvent<HTMLLIElement>) => {
-  //   console.log('onEnter: ', event)
-  // }, [])
-
-  // const onLeave = useCallback((event: MouseEvent<HTMLLIElement>) => {
-  //   console.log('onLeave: ', event)
-  // }, [])
+  if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
+    return <span {...attributes}>{children}</span>
+  }
 
   return (
-    <StatementStyled
-      {...attributes}
-      // onMouseEnter={onEnter} onMouseLeave={onLeave}
-    >
+    <StatementUI {...attributes}>
       <StatementTools element={element} />
-      {!isDraft ? (
+      {mode != EditorMode.Draft ? (
         <ContextMenu.Root modal={false}>
           <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
           <ContextMenu.Content alignOffset={-5}>
@@ -173,8 +142,7 @@ function Statement({attributes, children, element}: RenderElementProps) {
       ) : (
         children
       )}
-      {/* <Annotations element={element.children[0]} /> */}
-    </StatementStyled>
+    </StatementUI>
   )
 }
 

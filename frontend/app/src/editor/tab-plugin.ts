@@ -9,18 +9,9 @@ import type {EditorPlugin} from './types'
  * B. Or if the cursor is somewhere else, the Tab character gets inserted
  */
 export const createTabPlugin = (): EditorPlugin => {
-  let editor: Editor
   return {
     name: 'tab',
-    configureEditor: (e) => {
-      editor = e
-      return e
-    },
-    /*
-     * @todo Fix the types for the event handlers
-     * @body We need to add that the event functions accepts an extra parameter which is the editor. I dunno how to do it with the TS wizardry that is there lol (plugin-utils, line 60)
-     */
-    onKeyDown(e) {
+    onKeyDown: (editor) => (e) => {
       if (e.key === 'Tab' && editor.selection) {
         e.preventDefault()
         moveStatement(editor, e.shiftKey)

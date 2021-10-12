@@ -1,7 +1,9 @@
 import {isFlowContent, isGroup, isGroupContent} from '@mintter/mttast'
 import {css, styled} from '@mintter/ui/stitches.config'
+import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
 import type {Node, NodeEntry} from 'slate'
 import {Editor, Transforms} from 'slate'
+import {RenderElementProps} from 'slate-react'
 import type {EditorPlugin} from '../types'
 
 export const ELEMENT_GROUP = 'group'
@@ -23,16 +25,16 @@ export const groupStyle = css({
   },
 })
 
-export const Group = styled('ul', groupStyle)
+export const GroupUI = styled('ul', groupStyle)
 
 export const createGroupPlugin = (): EditorPlugin => ({
   name: ELEMENT_GROUP,
   renderElement:
-    () =>
+    (editor) =>
     ({attributes, children, element}) => {
       if (isGroup(element)) {
         return (
-          <Group type={element.type} data-element-type={element.type} {...attributes}>
+          <Group mode={editor.mode} type={element.type} data-element-type={element.type} {...attributes}>
             {children}
           </Group>
         )
@@ -84,4 +86,12 @@ export function removeEmptyGroup(editor: Editor, entry: NodeEntry<Node>): boolea
       }
     }
   }
+}
+
+function Group({mode, ...props}: RenderElementProps & {mode: EditorMode}) {
+  if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
+    return null
+  }
+
+  return <GroupUI {...props} />
 }

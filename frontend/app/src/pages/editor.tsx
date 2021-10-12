@@ -8,6 +8,7 @@ import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {useLocation, useRoute} from 'wouter'
 import {Container} from '../components/container'
+import {PageLayout} from '../components/page-layout'
 import {Separator} from '../components/separator'
 import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
 import {Editor, useEditorDraft} from '../editor'
@@ -30,7 +31,10 @@ export default function EditorPage() {
         toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000, id: toast.current})
       }
 
-      setLocation(`/p/${context.localDraft?.id}`)
+      setLocation(`/p/${context.localDraft?.id}`, {
+        // we replace the history here because the draft url will not be available after publish.
+        replace: true,
+      })
     },
     loadAnnotations: (context: DraftEditorMachineContext) => {
       if (!context.localDraft) return
@@ -55,20 +59,7 @@ export default function EditorPage() {
   if (state.matches('editing') && context.localDraft?.content) {
     return (
       // <HoverProvider>
-      <Box
-        css={{
-          display: 'grid',
-          minHeight: '$full',
-          gridTemplateAreas: isSidepanelOpen
-            ? `"controls controls controls"
-          "maincontent maincontent rightside"`
-            : `"controls controls controls"
-          "maincontent maincontent maincontent"`,
-          gridTemplateColumns: 'minmax(350px, 15%) 1fr minmax(350px, 40%)',
-          gridTemplateRows: '64px 1fr',
-        }}
-        data-testid="editor-wrapper"
-      >
+      <PageLayout isSidepanelOpen={isSidepanelOpen} data-testid="editor-wrapper">
         <Box
           css={{
             display: 'flex',
@@ -173,7 +164,7 @@ export default function EditorPage() {
           )}
         </Container>
         {isSidepanelOpen && <Sidepanel gridArea="rightside" />}
-      </Box>
+      </PageLayout>
       // </HoverProvider>
     )
   }

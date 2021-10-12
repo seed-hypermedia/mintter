@@ -84,7 +84,7 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
  * @returns
  */
 export function useDraftsList() {
-  const draftsListQuery = useQuery<ListDraftsResponse>('DraftList', async () => {
+  const draftsListQuery = useQuery<ListDraftsResponse>('DraftList', () => {
     return listDrafts()
   })
 

@@ -121,9 +121,10 @@ export type IconProps = Stitches.VariantProps<typeof Svg> & {
 
 export function Icon({name, ...props}: IconProps) {
   const Component: React.ComponentType<any> = useMemo(() => icons[name], [name])
-  const label = useMemo(() => `${Component.displayName?.replace(/([A-Z0-9])/g, ' $1').trim() ?? 'Unknown'} Icon`, [
-    Component.displayName,
-  ])
+  const label = useMemo(
+    () => `${Component.displayName?.replace(/([A-Z0-9])/g, ' $1').trim() ?? 'Unknown'} Icon`,
+    [Component.displayName],
+  )
 
   return (
     <AccessibleIcon.Root label={label}>

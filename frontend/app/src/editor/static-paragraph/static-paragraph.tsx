@@ -1,21 +1,16 @@
 import type {StaticParagraph as StaticParagraphType} from '@mintter/mttast'
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
 import {createId, paragraph, statement, text} from '@mintter/mttast-builder'
-import {styled} from '@mintter/ui/stitches.config'
 import type {TextProps} from '@mintter/ui/text'
-import {Text} from '@mintter/ui/text'
 import {Editor, Node, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useSlateStatic} from 'slate-react'
+import {ELEMENT_PARAGRAPH} from '../paragraph'
 import type {EditorPlugin} from '../types'
 import {isCollapsed} from '../utils'
-import {ELEMENT_PARAGRAPH} from './paragraph'
+import {StaticParagraphUI} from './static-paragraph-ui'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
-
-const StaticParagraphStyled = styled(Text, {
-  fontWeight: '$bold',
-})
 
 const headingMap: {
   [key: number | string]: Pick<TextProps, 'size'> & {
@@ -138,16 +133,8 @@ function StaticParagraph({children, element, attributes}: RenderElementProps) {
   const level = useHeadingLevel(element as StaticParagraphType)
   const sizeProps = headingMap[level ?? 'default']
   return (
-    <StaticParagraphStyled
-      data-element-type={element.type}
-      {...sizeProps}
-      {...attributes}
-      css={{
-        marginTop: '1.5em',
-        fontWeight: '$bold',
-      }}
-    >
+    <StaticParagraphUI data-element-type={element.type} {...sizeProps} {...attributes}>
       {children}
-    </StaticParagraphStyled>
+    </StaticParagraphUI>
   )
 }

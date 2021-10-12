@@ -7,6 +7,7 @@ import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
 import {useEffect} from 'react'
 import {useLocation, useRoute} from 'wouter'
 import {Container} from '../components/container'
+import {PageLayout} from '../components/page-layout'
 import {Separator} from '../components/separator'
 import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
 import {Editor} from '../editor'
@@ -55,22 +56,7 @@ export default function Publication() {
 
   return (
     // <HoverProvider>
-    <Box
-      css={{
-        display: 'grid',
-        minHeight: '$full',
-        gridTemplateAreas: isSidepanelOpen
-          ? `"controls controls controls"
-        "maincontent maincontent rightside"`
-          : `"controls controls controls"
-        "maincontent maincontent maincontent"`,
-        // gridTemplateAreas: `"controls controls controls"
-        // "maincontent maincontent maincontent"`,
-        gridTemplateColumns: 'minmax(350px, 15%) 1fr minmax(350px, 40%)',
-        gridTemplateRows: '64px 1fr',
-      }}
-      data-testid="publication-wrapper"
-    >
+    <PageLayout isSidepanelOpen={isSidepanelOpen} data-testid="publication-wrapper">
       <Box
         css={{
           display: 'flex',
@@ -104,7 +90,7 @@ export default function Publication() {
         <Editor mode={EditorMode.Publication} value={data?.document?.content} />
       </Container>
       {isSidepanelOpen && <Sidepanel gridArea={'rightside'} />}
-    </Box>
+    </PageLayout>
     // </HoverProvider>
   )
 }

@@ -105,7 +105,8 @@ const stitches = createStitches({
     lineHeights: {
       1: '1.2',
       2: '1.4',
-      3: '1.6',
+      3: '1.5',
+      4: '2',
     },
     radii: {
       1: '3px',

@@ -18,7 +18,7 @@ export type {EditorPlugin} from './types'
 interface EditorProps {
   mode?: EditorMode
   value: Descendant[]
-  onChange: (value: Descendant[]) => void
+  onChange?: (value: Descendant[]) => void
 }
 
 export function Editor({value, onChange, children, mode = EditorMode.Draft}: PropsWithChildren<EditorProps>) {
@@ -29,6 +29,24 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
   const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, editor), [mode])
   const decorate = useMemo(() => buildDecorateHook(plugins, editor), [mode])
   const eventHandlers = useMemo(() => buildEventHandlerHooks(plugins, editor), [mode])
+
+  if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
+    return (
+      <Suspense fallback={'loading'}>
+        <Slate editor={editor} value={value} onChange={onChange}>
+          <Editable
+            style={{display: 'inline'}}
+            readOnly={editor.readOnly}
+            data-testid="editor-embed-mode"
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+            decorate={decorate}
+            {...eventHandlers}
+          />
+        </Slate>
+      </Suspense>
+    )
+  }
 
   return (
     <Suspense fallback={'loading'}>

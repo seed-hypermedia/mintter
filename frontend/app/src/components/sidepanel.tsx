@@ -6,16 +6,17 @@ import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
+import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
 import {createContext, PropsWithChildren, useContext, useEffect, useRef} from 'react'
 import toast from 'react-hot-toast'
-import {Node} from 'slate'
 import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
 import {assign, createMachine, Interpreter, State} from 'xstate'
 import {MINTTER_LINK_PREFIX} from '../constants'
+import {Editor} from '../editor'
 import {ContextMenu} from '../editor/context-menu'
-import {getEmbedIds, InlineEmbed, useEmbed} from '../editor/elements/embed'
-import {copyTextToClipboard} from '../editor/elements/statement'
+import {getEmbedIds, useEmbed} from '../editor/embed'
+import {copyTextToClipboard} from '../editor/statement'
 
 export type SidepanelEventsType =
   | {
@@ -339,15 +340,16 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
             )}
           </Box>
 
-          <Text as="span" alt size="2" css={{display: 'inline-block'}}>
+          {/* <Text as="span" alt size="2" css={{display: 'inline-block'}}>
             {data.statement.children[0].children.map((child, idx) =>
               isEmbed(child) ? (
-                <InlineEmbed key={`${child.url}-${idx}`} embed={child} />
+                <Embed key={`${child.url}-${idx}`} embed={child} />
               ) : (
                 <span key={`${child.type}-${idx}`}>{Node.string(child)}</span>
               ),
             )}
-          </Text>
+          </Text> */}
+          <Editor value={[data.statement]} mode={EditorMode.Mention} />
         </Box>
       </ContextMenu.Trigger>
       <ContextMenu.Content alignOffset={-5}>

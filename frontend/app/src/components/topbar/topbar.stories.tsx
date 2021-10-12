@@ -1,5 +1,5 @@
+import {Theme} from '@mintter/ui/theme'
 import type {ComponentMeta, ComponentStory} from '@storybook/react'
-import {BrowserRouter as Router, Route} from 'react-router-dom'
 import {Topbar} from './topbar'
 
 export default {
@@ -7,13 +7,11 @@ export default {
   component: Topbar,
   decorators: [
     (Story) => (
-      <Router>
-        <Route>
-          <Story />
-        </Route>
-      </Router>
+      <Theme>
+        <Story />
+      </Theme>
     ),
   ],
 } as ComponentMeta<typeof Topbar>
 
-export const Demo: ComponentStory<typeof Topbar> = (args) => <Topbar {...args} />
+export const Default: ComponentStory<typeof Topbar> = (args) => <Topbar {...args} />

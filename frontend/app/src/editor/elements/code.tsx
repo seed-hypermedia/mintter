@@ -10,18 +10,19 @@ import type {Highlighter, IThemeRegistration, Lang} from 'shiki'
 import {getHighlighter, setCDN} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
-import {ReactEditor, useReadOnly, useSlateStatic} from 'slate-react'
-import {useRoute} from 'wouter'
+import {ReactEditor, useSlateStatic} from 'slate-react'
 import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
+import {useRoute} from '../../utils/use-route'
 import {ContextMenu} from '../context-menu'
 import {MARK_EMPHASIS} from '../leafs/emphasis'
 import {MARK_STRONG} from '../leafs/strong'
 import {MARK_UNDERLINE} from '../leafs/underline'
+import {EditorMode} from '../plugin-utils'
+import {copyTextToClipboard, statementStyle} from '../statement'
 import {StatementTools} from '../statement-tools'
 import type {EditorPlugin} from '../types'
 import {resetFlowContent} from '../utils'
-import {copyTextToClipboard, statementStyle} from './statement'
 
 export const ELEMENT_CODE = 'code'
 const HIGHLIGHTER = Symbol('shiki highlighter')
@@ -75,11 +76,11 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
       return editor
     },
     renderElement:
-      () =>
+      (editor) =>
       ({children, element, attributes}) => {
         if (isCode(element)) {
           return (
-            <Code element={element} attributes={attributes}>
+            <Code mode={editor.mode} element={element} data-element-type={element.type} attributes={attributes}>
               {children}
             </Code>
           )
@@ -162,13 +163,14 @@ function Code({
   children,
   element,
   attributes,
+  mode,
 }: RenderElementProps & {
   element: CodeType
+  mode: EditorMode
 }) {
-  const [, params] = useRoute<{docId: string}>('/(editor|p)/:docId')
+  const {params} = useRoute<{docId: string}>(['/p/:docId', '/editor/:docId'])
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
-  const isReadOnly = useReadOnly()
   const {send} = useSidepanel()
 
   function setLanguage(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -181,15 +183,19 @@ function Code({
   let lang = element.lang || ''
 
   async function onCopy() {
-    await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${params!.docId}/${(element as CodeType).id}`)
-    toast.success('Statement Reference copied successfully', {position: 'top-center'})
+    if (params) {
+      await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${params.docId}/${(element as CodeType).id}`)
+      toast.success('Embed Reference copied successfully', {position: 'top-center'})
+    } else {
+      toast.error('Cannot Copy Embed Reference')
+    }
   }
 
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>
         <CodeStyled data-element-type={element.type} {...attributes}>
-          {!isReadOnly ? (
+          {mode == EditorMode.Draft ? (
             <SelectorWrapper
               contentEditable={false}
               css={{

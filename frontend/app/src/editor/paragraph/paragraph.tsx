@@ -1,53 +1,22 @@
 import {isBlockquote, isCode, isParagraph} from '@mintter/mttast'
 import {createId, statement} from '@mintter/mttast-builder'
-import {styled} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
-import {Descendant, Editor, Node, Path, Transforms} from 'slate'
+import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
+import {Editor, Node, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import type {EditorPlugin} from '../types'
+import {ParagraphUI} from './paragraph-ui'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
-
-const ParagraphStyled = styled(Text, {
-  '&[data-parent=code]': {
-    fontFamily: 'monospace',
-    margin: 0,
-    padding: 0,
-  },
-  '&[data-parent=blockquote]': {
-    borderRadius: '$2',
-    paddingVertical: '$4',
-    marginHorizontal: '$2',
-    paddingLeft: '$8',
-    position: 'relative',
-    // backgroundColor: '$background-muted',
-    fontStyle: 'italic',
-    color: '$text-alt',
-    fontSize: '$5',
-    '&::before': {
-      content: '',
-      backround: 'red',
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      transform: 'translateX(-4px)',
-      width: 4,
-      borderRadius: '$2',
-      height: '$full',
-      backgroundColor: '$primary-soft',
-    },
-  },
-})
 
 export const createParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_PARAGRAPH,
   renderElement:
-    () =>
+    (editor) =>
     ({element, children, attributes}) => {
       if (isParagraph(element)) {
         return (
-          <Paragraph element={element} attributes={attributes}>
+          <Paragraph mode={editor.mode} element={element} attributes={attributes}>
             {children}
           </Paragraph>
         )
@@ -93,21 +62,28 @@ export const createParagraphPlugin = (): EditorPlugin => ({
   },
 })
 
-function Paragraph({children, element, attributes}: RenderElementProps) {
+function Paragraph({children, element, attributes, mode}: RenderElementProps & {mode: EditorMode}) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const [parentNode] = Editor.parent(editor, path)
 
   return (
-    <ParagraphStyled
-      as={isCode(parentNode) ? 'span' : isBlockquote(parentNode) ? 'blockquote' : 'p'}
-      alt
-      size="4"
-      css={{paddingLeft: '$2'}}
-      data-parent={(parentNode as Descendant)?.type ?? null}
+    <ParagraphUI
+      as={
+        mode == EditorMode.Embed || mode == EditorMode.Mention
+          ? 'span'
+          : isCode(parentNode)
+          ? 'span'
+          : isBlockquote(parentNode)
+          ? 'blockquote'
+          : 'p'
+      }
+      data-element-type={element.type}
+      data-parent-type={parentNode?.type ?? null}
+      css={{display: 'inline'}}
       {...attributes}
     >
       {children}
-    </ParagraphStyled>
+    </ParagraphUI>
   )
 }
