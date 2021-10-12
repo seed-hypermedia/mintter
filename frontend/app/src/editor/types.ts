@@ -148,10 +148,32 @@ type EditorEventHandlers = {
 }
 
 export interface EditorPlugin extends EditorEventHandlers {
+  /**
+   * The name of the plugin, for use in error messages and warnings.
+   */
   name: string
+  /**
+   * Conditionally apply the plugin based on the editors mode.
+   * Can be a plain enum variant or a function that returns wether to the plugin should be applied.
+   */
   apply?: EditorMode | ((mode: EditorMode) => boolean)
+  /**
+   * Configure the editor object before it's given to slate. Can be used to augment methods or add new fields.
+   */
   configureEditor?: (editor: Editor) => Editor | undefined | void
+  /**
+   * Render a mttast element. The hook receives the editor object and `RenderElementProps`.
+   * It can return a JSX element to be rendered on page.
+   */
   renderElement?: (editor: Editor) => (props: RenderElementProps) => JSX.Element | undefined | void
+  /**
+   * Render a mttast leaf. The hook receives the editor object and `RenderLeafProps`.
+   * It can return a JSX element to be rendered on page.
+   */
   renderLeaf?: (editor: Editor) => (props: RenderLeafProps) => JSX.Element | undefined | void
+  /**
+   * Return decoration ranges. The hook receives the editor object and a `NodeEntry`.
+   * It can return an array of ranges.
+   */
   decorate?: (editor: Editor) => (node: NodeEntry) => Range[] | undefined | void
 }
