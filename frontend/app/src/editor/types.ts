@@ -3,10 +3,11 @@ import React from 'react'
 import type {BaseEditor, Editor, NodeEntry, Range} from 'slate'
 import type {HistoryEditor} from 'slate-history'
 import type {ReactEditor, RenderElementProps, RenderLeafProps} from 'slate-react'
+import {EditorMode} from './plugin-utils'
 
 declare module 'slate' {
   export interface CustomTypes {
-    Editor: BaseEditor & ReactEditor & HistoryEditor & {mode: string}
+    Editor: BaseEditor & ReactEditor & HistoryEditor & {mode: EditorMode}
     Element: Exclude<MttastContent, Document | Text | Video | Image>
     Text: Text
   }
@@ -144,7 +145,7 @@ export interface EditorEventHandlers {
 
 export interface EditorPlugin extends EditorEventHandlers {
   name: string
-  apply?: string | ((mode: string) => boolean)
+  apply?: EditorMode | ((mode: EditorMode) => boolean)
   configureEditor?: (editor: Editor) => Editor | undefined | void
   renderElement?: (props: RenderElementProps) => JSX.Element | undefined | void
   renderLeaf?: (props: RenderLeafProps) => JSX.Element | undefined | void
