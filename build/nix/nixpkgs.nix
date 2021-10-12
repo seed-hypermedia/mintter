@@ -23,6 +23,7 @@ import (builtins.fetchGit {
       please = super.callPackage ./please {
         buildGoModule = self.buildGo117Module;
       };
+      tauri-cli = super.callPackage ./tauri-cli {};
     })
   ];
 }

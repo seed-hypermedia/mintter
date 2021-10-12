@@ -16,6 +16,7 @@ let
       rustfmt
       nodejs
       yarn
+      tauri-cli
     ];
     libs = [];
   };
@@ -55,5 +56,8 @@ in
       export CURRENT_PLATFORM="$(go env GOOS)_$(go env GOARCH)"
       export BAZEL_SH="$(which bash)"
       export CGO_ENABLED="0"
+
+      # Cleanup after migration to yarn2. Remove this after we all use yarn2 for some time.
+      rm -rf node_modules `find frontend -type d -name node_modules -prune`
     '';
   }
