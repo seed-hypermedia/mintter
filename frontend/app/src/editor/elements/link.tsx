@@ -17,10 +17,10 @@ import {ReactEditor, useSlateStatic} from 'slate-react'
 import {useLocation} from 'wouter'
 import {Tooltip} from '../../components/tooltip'
 import {MINTTER_LINK_PREFIX} from '../../constants'
+import {getEmbedIds} from '../embed'
 import type {UseLastSelectionResult} from '../hovering-toolbar'
 import type {EditorPlugin} from '../types'
 import {isCollapsed} from '../utils'
-import {getEmbedIds} from './embed'
 
 export const ELEMENT_LINK = 'link'
 

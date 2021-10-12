@@ -1,8 +1,8 @@
-import {isOrderedList} from '@mintter/mttast'
-import {styled} from '@mintter/ui/stitches.config'
-import type {EditorPlugin} from '../types'
-import {resetGroupingContent} from '../utils'
-import {groupStyle, removeEmptyGroup} from './group'
+import { isOrderedList } from '@mintter/mttast'
+import { styled } from '@mintter/ui/stitches.config'
+import type { EditorPlugin } from '../types'
+import { resetGroupingContent } from '../utils'
+import { groupStyle, removeEmptyGroup } from './group'
 
 export const ELEMENT_ORDERED_LIST = 'orderedList'
 

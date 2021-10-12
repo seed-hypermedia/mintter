@@ -140,7 +140,6 @@ export function StatementTools({element}: {element: MttastContent}) {
                     <Dropdown.Item
                       key={item.label}
                       onSelect={() => {
-                        console.log({editor})
                         item.onSelect(editor, element, path, editor.selection)
                       }}
                     >
@@ -164,7 +163,8 @@ export function StatementTools({element}: {element: MttastContent}) {
  */
 /* eslint-disable */
 function setType(fn: any) {
-  return function setToStatement(editor: Editor, element: MttastContent, at: Path) {
+  return function setToStatementType(editor: Editor, element: MttastContent, at: Path) {
+    console.log('setType: ', {fn, element, at})
     Editor.withoutNormalizing(editor, function () {
       const {children, ...props} = element
       Transforms.removeNodes(editor, {at})

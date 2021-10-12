@@ -1,9 +1,9 @@
 import {isGroupContent, isOrderedList, isParagraph, isStatement, isUnorderedList} from '@mintter/mttast'
 import {Editor, Range, Transforms} from 'slate'
-import {ELEMENT_HEADING} from './elements/heading'
 import {ELEMENT_ORDERED_LIST} from './elements/ordered-list'
-import {ELEMENT_STATIC_PARAGRAPH} from './elements/static-paragraph'
 import {ELEMENT_UNORDERED_LIST} from './elements/unordered-list'
+import {ELEMENT_HEADING} from './heading'
+import {ELEMENT_STATIC_PARAGRAPH} from './static-paragraph'
 import type {EditorPlugin} from './types'
 
 export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({

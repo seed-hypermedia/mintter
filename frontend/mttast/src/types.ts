@@ -61,7 +61,7 @@ export interface Statement extends Parent {
 export interface Heading extends Parent {
   type: 'heading'
   id: string
-  children: [Content, GroupingContent] | [Content]
+  children: [StaticContent, GroupingContent] | [StaticContent]
 }
 
 export interface Blockquote extends Parent {

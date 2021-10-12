@@ -30,12 +30,12 @@ export const textStyles = css({
         lineHeight: '$3',
       },
       5: {
-        fontSize: '$3',
+        fontSize: '$4',
         letterSpacing: '0.03em',
         lineHeight: '$2',
       },
       6: {
-        fontSize: '$4',
+        fontSize: '$5',
         letterSpacing: '0.02em',
         lineHeight: '$2',
       },

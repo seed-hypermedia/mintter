@@ -34,13 +34,15 @@ function normalizeChildren<P extends Parent>(children?: ChildrenOf<P>): P['child
 }
 
 function createParent<N extends Parent>(type: N['type'], defaults: Partial<OptionsOf<N>> = {}) {
-  return (optsOrKids: OptionsOf<N> | ChildrenOf<N>, kids?: ChildrenOf<N>): N =>
-    ({
+  return function createParentType(optsOrKids: OptionsOf<N> | ChildrenOf<N>, kids?: ChildrenOf<N>): N {
+    console.log('createParent, ', type)
+    return {
       type,
       ...defaults,
       ...(Array.isArray(optsOrKids) ? {} : optsOrKids),
       children: normalizeChildren(Array.isArray(optsOrKids) ? optsOrKids : kids),
-    } as N)
+    } as N
+  }
 }
 
 function createNode<N extends Node>(type: N['type'], defaults: Partial<OptionsOf<N>> = {}) {

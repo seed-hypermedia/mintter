@@ -1,6 +1,5 @@
 import type {ComponentMeta, ComponentStory} from '@storybook/react'
 import {QueryClient, QueryClientProvider} from 'react-query'
-import {MemoryRouter} from 'react-router-dom'
 import {DocumentList} from './document-list'
 
 const queryClient = new QueryClient({
@@ -17,11 +16,9 @@ export default {
   decorators: [
     (Story) => {
       return (
-        <MemoryRouter>
-          <QueryClientProvider client={queryClient}>
-            <Story />
-          </QueryClientProvider>
-        </MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <Story />
+        </QueryClientProvider>
       )
     },
   ],

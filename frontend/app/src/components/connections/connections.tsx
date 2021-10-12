@@ -15,7 +15,7 @@ import {useQuery} from 'react-query'
 import {ConnectionsShell} from './connections-shell'
 
 type ConnectionsProps = {
-  queryOptions: HookOptions<ListAccountsResponse>
+  queryOptions?: HookOptions<ListAccountsResponse>
 }
 
 export function Connections({queryOptions = {}}: ConnectionsProps) {
@@ -160,10 +160,11 @@ function AccountItem({account}: AccountItemProps) {
           key={account.id}
           css={{
             display: 'flex',
+
             gap: '$3',
             alignItems: 'center',
             padding: '$3',
-            marginHorizontal: '-$3',
+            marginInlineStart: '-$3',
             borderRadius: '$3',
             transition: 'background 0.25s ease-in-out',
             '&:hover': {
