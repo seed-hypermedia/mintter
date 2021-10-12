@@ -2,7 +2,7 @@
 with import ./build/nix/nixpkgs.nix;
 
 let 
-  common = {
+  shellCommon = {
     tools = [
       bash
       coreutils
@@ -20,13 +20,13 @@ let
     ];
     libs = [];
   };
-  darwin = {
+  shellDarwin = {
     tools = [
       impure-cc
     ];
     libs = [];
   };
-  linux = {
+  shellLinux = {
     tools = [
       gcc
       pkg-config
@@ -43,14 +43,14 @@ let
 in
   mkShell {
     nativeBuildInputs = [
-      (lib.optionals stdenv.isDarwin darwin.tools)
-      (lib.optionals stdenv.isLinux linux.tools)
-      common.tools
+      (lib.optionals stdenv.isDarwin shellDarwin.tools)
+      (lib.optionals stdenv.isLinux shellLinux.tools)
+      shellCommon.tools
     ];
     buildInputs = [
-      (lib.optionals stdenv.isDarwin darwin.libs)
-      (lib.optionals stdenv.isLinux linux.libs)
-      common.libs
+      (lib.optionals stdenv.isDarwin shellDarwin.libs)
+      (lib.optionals stdenv.isLinux shellLinux.libs)
+      shellCommon.libs
     ];
     shellHook = ''
       export CURRENT_PLATFORM="$(go env GOOS)_$(go env GOARCH)"
