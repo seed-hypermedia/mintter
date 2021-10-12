@@ -21,9 +21,10 @@
     ]
   },
   "search.exclude": {
-    "bazel-*/**": true
+    "bazel-*/**": true,
+    "**/.yarn": true,
+    "**/.pnp.*": true
   },
-  "typescript.tsdk": "node_modules/typescript/lib",
   "editor.formatOnSave": true,
   "[javascript]": {
     "editor.tabSize": 2
@@ -41,5 +42,9 @@
   "[terraform]": {
     "editor.defaultFormatter": "hashicorp.terraform",
     "editor.formatOnSave": true
-  }
+  },
+  "typescript.tsdk": ".yarn/sdks/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "eslint.nodePath": ".yarn/sdks",
+  "prettier.prettierPath": ".yarn/sdks/prettier/index.js"
 }
