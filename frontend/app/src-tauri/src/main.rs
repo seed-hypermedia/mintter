@@ -4,7 +4,7 @@
   windows_subsystem = "windows"
 )]
 
-use tauri::{CustomMenuItem, Event, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
+use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use tauri_plugin_log::{LogTarget, LoggerBuilder};
 
 mod daemon;
