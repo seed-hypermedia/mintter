@@ -107,7 +107,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
 })
 
 function Statement({attributes, children, element}: RenderElementProps) {
-  const [, params] = useRoute<{docId: string}>('/editor/:docId')
+  const [, params] = useRoute<{docId: string}>('/(editor|p)/:docId')
   const {send} = useSidepanel()
   const [location, setLocation] = useLocation()
   const isDraft = useMemo(() => location.includes('editor'), [location])
