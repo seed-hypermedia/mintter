@@ -62,6 +62,7 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
    * @body this is an example TODO from a PR
    */
   configureEditor: (editor) => {
+    if (editor.readOnly) return
     const {normalizeNode, insertBreak} = editor
 
     editor.insertBreak = () => {

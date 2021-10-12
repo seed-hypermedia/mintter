@@ -22,6 +22,7 @@ export const createUnorderedListPlugin = (): EditorPlugin => ({
       }
     },
   configureEditor(editor) {
+    if (editor.readOnly) return
     const {normalizeNode, deleteBackward} = editor
 
     editor.normalizeNode = (entry) => {
