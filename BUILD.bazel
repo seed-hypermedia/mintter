@@ -14,10 +14,10 @@ local_action(
         "package.json",
         "yarn.lock",
     ],
-    outs = ["node_modules/.yarn-integrity"],
+    outs = [".pnp.cjs"],
     cmd = """
 yarn install
-ln -s $(pwd)/node_modules/.yarn-integrity $TARGET_OUT_DIR/node_modules/.yarn-integrity
+ln -s $(pwd)/.pnp.cjs $TARGET_OUT_DIR/.pnp.cjs
 """,
     visibility = ["//frontend:__subpackages__"],
 )
