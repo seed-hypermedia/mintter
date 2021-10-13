@@ -1,8 +1,6 @@
 import {styled} from '@mintter/ui/stitches.config'
 
-const DEFAULT_TAG = 'div'
-
-export const Container = styled(DEFAULT_TAG, {
+export const Container = styled('div', {
   // Reset
   boxSizing: 'border-box',
   flexShrink: 0,

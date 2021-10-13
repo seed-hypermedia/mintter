@@ -8,7 +8,7 @@ import type {BaseSelection} from 'slate'
 import {Editor, Range, Transforms} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {Tooltip} from '../components/tooltip'
-import {ToolbarLink} from './elements/link'
+import {ToolbarLink} from './link'
 import {isMarkActive, toggleMark} from './utils'
 
 type FormatTypes = keyof Omit<MTTText, 'type' | 'text' | 'value' | 'data' | 'position'>

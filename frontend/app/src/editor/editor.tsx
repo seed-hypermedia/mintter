@@ -48,6 +48,49 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
     )
   }
 
+  if (mode == EditorMode.Publication) {
+    return (
+      <Suspense fallback={'loading'}>
+        <Box
+          css={{
+            position: 'relative',
+            marginLeft: '-$8',
+          }}
+        >
+          <Slate editor={editor} value={value} onChange={onChange}>
+            <Editable
+              readOnly={editor.readOnly}
+              data-testid="editor"
+              renderElement={renderElement}
+              renderLeaf={renderLeaf}
+              decorate={decorate}
+              {...eventHandlers}
+            />
+            {children}
+          </Slate>
+
+          <Box css={{marginTop: 40}}>
+            <button type="button" onClick={() => setVisible((v) => !v)}>
+              toggle Value
+            </button>
+            {visible && (
+              <Box
+                as="pre"
+                css={{
+                  padding: 20,
+                  backgroundColor: '$background-muted',
+                  overflowX: 'scroll',
+                }}
+              >
+                {JSON.stringify(value, null, 2)}
+              </Box>
+            )}
+          </Box>
+        </Box>
+      </Suspense>
+    )
+  }
+
   return (
     <Suspense fallback={'loading'}>
       <Box

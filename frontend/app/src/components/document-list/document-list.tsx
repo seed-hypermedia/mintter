@@ -8,9 +8,10 @@ import {useMachine} from '@xstate/react'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
-import {Link, useLocation} from 'wouter'
+import {Link} from 'wouter'
 import {deleteConfirmationDialogMachine} from '../../delete-confirmation-dialog'
 import {getDateFormat} from '../../utils/get-format-date'
+import {useRoute} from '../../utils/use-route'
 import {Avatar} from '../avatar'
 import {Placeholder} from '../placeholder-box'
 
@@ -23,8 +24,7 @@ type DocumentListProps = {
 }
 
 export function DocumentList({data}: DocumentListProps) {
-  const [location] = useLocation()
-  const isDraft = useMemo(() => location.includes('drafts'), [location])
+  const {match: isDraft} = useRoute('/library/drafts')
   const toPrefix = useMemo(() => (isDraft ? '/editor' : '/p'), [isDraft])
 
   return (
@@ -201,7 +201,8 @@ export function DummyListItem() {
         gridTemplateRows: '24px auto auto',
       }}
     >
-      <Placeholder css={{gridArea: 'avatar', borderRadius: '$round'}} />
+      <Placeholder css={{gridArea: 'avatar'}} />
+
       <Placeholder css={{gridArea: 'author', width: '25%'}} />
       <Placeholder css={{gridArea: 'price', width: 60}} />
       <Box css={{gridArea: 'content', display: 'flex', flexDirection: 'column', gap: '$3'}}>

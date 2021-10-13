@@ -92,7 +92,7 @@ export const sidepanelMachine = createMachine<SidepanelContextType, SidepanelEve
             actions: ['getAnnotations'],
           },
         },
-        initial: 'opened',
+        initial: 'closed',
         states: {
           closed: {
             on: {

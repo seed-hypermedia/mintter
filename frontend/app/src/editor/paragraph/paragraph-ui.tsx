@@ -10,6 +10,7 @@ export const paragraphStyles = css({
   // '&:hover': {
   //   backgroundColor: '$background-muted',
   // },
+  lineHeight: '$3',
   '&[data-parent-type=blockquote]': {
     borderRadius: '$2',
     paddingVertical: '$4',
@@ -41,5 +42,5 @@ export const ParagraphUI = forwardRef<HTMLSpanElement, PropsWithChildren<TextPro
   props,
   ref,
 ) {
-  return <Text alt size="4" className={paragraphStyles()} ref={ref} {...props} />
+  return <Text alt size="3" className={paragraphStyles()} ref={ref} {...props} />
 })
