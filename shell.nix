@@ -28,7 +28,7 @@ let
   };
   shellDarwin = {
     tools = [
-      # impure-cc
+      impure-cc
     ];
     libs = [
       # darwin.apple_sdk.frameworks.AppKit
@@ -59,13 +59,13 @@ let
 in
   mkShell {
     nativeBuildInputs = [
-      (lib.optionals hostPlatform.isMacOS shellDarwin.tools)
-      (lib.optionals hostPlatform.isLinux shellLinux.tools)
+      (lib.optionals stdenv.isDarwin shellDarwin.tools)
+      (lib.optionals stdenv.isLinux shellLinux.tools)
       shellCommon.tools
     ];
     buildInputs = [
-      (lib.optionals hostPlatform.isMacOS shellDarwin.libs)
-      (lib.optionals hostPlatform.isLinux shellLinux.libs)
+      (lib.optionals stdenv.isDarwin shellDarwin.libs)
+      (lib.optionals stdenv.isLinux shellLinux.libs)
       shellCommon.libs
     ];
     shellHook = ''
