@@ -1,5 +1,5 @@
 import {Box} from '@mintter/ui/box'
-import {PropsWithChildren, Suspense, useMemo, useState} from 'react'
+import {PropsWithChildren, Suspense, useMemo} from 'react'
 import type {Descendant} from 'slate'
 import {Editable, Slate} from 'slate-react'
 import {HoveringToolbar} from './hovering-toolbar'
@@ -22,8 +22,6 @@ interface EditorProps {
 }
 
 export function Editor({value, onChange, children, mode = EditorMode.Draft}: PropsWithChildren<EditorProps>) {
-  const [visible, setVisible] = useState(false)
-
   const editor = useMemo(() => buildEditorHook(plugins, mode), [mode])
   const renderElement = useMemo(() => buildRenderElementHook(plugins, editor), [mode])
   const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, editor), [mode])
@@ -68,24 +66,6 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
             />
             {children}
           </Slate>
-
-          <Box css={{marginTop: 40}}>
-            <button type="button" onClick={() => setVisible((v) => !v)}>
-              toggle Value
-            </button>
-            {visible && (
-              <Box
-                as="pre"
-                css={{
-                  padding: 20,
-                  backgroundColor: '$background-muted',
-                  overflowX: 'scroll',
-                }}
-              >
-                {JSON.stringify(value, null, 2)}
-              </Box>
-            )}
-          </Box>
         </Box>
       </Suspense>
     )
@@ -111,24 +91,6 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
           />
           {children}
         </Slate>
-
-        <Box css={{marginTop: 40}}>
-          <button type="button" onClick={() => setVisible((v) => !v)}>
-            toggle Value
-          </button>
-          {visible && (
-            <Box
-              as="pre"
-              css={{
-                padding: 20,
-                backgroundColor: '$background-muted',
-                overflowX: 'scroll',
-              }}
-            >
-              {JSON.stringify(value, null, 2)}
-            </Box>
-          )}
-        </Box>
       </Box>
     </Suspense>
   )

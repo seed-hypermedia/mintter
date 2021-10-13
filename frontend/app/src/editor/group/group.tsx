@@ -1,9 +1,10 @@
 import {isFlowContent, isGroup, isGroupContent} from '@mintter/mttast'
 import {css, styled} from '@mintter/ui/stitches.config'
-import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
+import {forwardRef} from 'react'
 import type {Node, NodeEntry} from 'slate'
 import {Editor, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
+import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 
 export const ELEMENT_GROUP = 'group'
@@ -88,10 +89,10 @@ export function removeEmptyGroup(editor: Editor, entry: NodeEntry<Node>): boolea
   }
 }
 
-function Group({mode, ...props}: RenderElementProps & {mode: EditorMode}) {
+export const Group = forwardRef(({mode, ...props}: RenderElementProps & {mode: EditorMode}, ref) => {
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return null
   }
 
-  return <GroupUI {...props} />
-}
+  return <GroupUI ref={ref} {...props} />
+})

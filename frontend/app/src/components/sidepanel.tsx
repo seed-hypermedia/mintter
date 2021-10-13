@@ -6,8 +6,7 @@ import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
-import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
-import {createContext, PropsWithChildren, useContext, useEffect, useRef} from 'react'
+import {createContext, PropsWithChildren, useContext, useEffect, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
@@ -16,7 +15,10 @@ import {MINTTER_LINK_PREFIX} from '../constants'
 import {Editor} from '../editor'
 import {ContextMenu} from '../editor/context-menu'
 import {getEmbedIds, useEmbed} from '../editor/embed'
+import {EditorMode} from '../editor/plugin-utils'
 import {copyTextToClipboard} from '../editor/statement'
+import {getDateFormat} from '../utils/get-format-date'
+import {Avatar} from './avatar'
 
 export type SidepanelEventsType =
   | {
@@ -257,7 +259,8 @@ export type SidepanelItemProps = {
 
 export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
   const ref = useRef<HTMLDivElement | null>(null)
-  const {status, data, error} = useEmbed(item)
+  const {status, data} = useEmbed(item)
+  const [showDocument, setShowDocument] = useState(false)
   const {data: author} = useAccount(data.document.author, {
     enabled: !!data.document.author,
   })
@@ -275,32 +278,18 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
     setLocation(`/p/${publicationId}`)
   }
 
+  function toggleDocument(e) {
+    e.preventDefault()
+    console.log(data.document.content)
+    setShowDocument((v) => !v)
+  }
+
   if (status == 'loading') {
     return <Box css={{padding: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>...</Box>
   }
 
   if (status == 'error') {
-    console.error('SidepanelItem error: ', error)
-    return (
-      <Box css={{padding: '$4', marginTop: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>
-        <Box css={{display: 'flex', gap: '$4'}}>
-          <Text size="2" css={{flex: 1}}>
-            Error
-          </Text>
-          {remove && (
-            <Button
-              size="1"
-              variant="ghost"
-              color="primary"
-              onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', payload: item})}
-            >
-              remove
-            </Button>
-          )}
-        </Box>
-        <Text as="span" alt size="2" css={{display: 'inline-block'}}>{`Error with item id: ${item}`}</Text>
-      </Box>
-    )
+    return <Text alt css={{display: 'inline-block'}}>{`Error with item id: ${item}`}</Text>
   }
 
   /*
@@ -324,32 +313,43 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
             // backgroundColor: embedHover == item ? '$secondary-softer' : '$background-alt',
           }}
         >
-          <Box css={{display: 'flex', gap: '$4'}}>
-            <Text size="2" css={{flex: 1}}>
-              <span style={{fontWeight: 'bold'}}>{data?.document?.title}</span> by {author?.profile?.alias}
+          <Box css={{display: 'flex', gap: '$4', alignItems: 'center'}}>
+            <Box css={{display: 'flex', alignItems: 'center', gap: '$3'}}>
+              <Avatar size="1" />
+              <Text size="1">{author?.profile?.alias}</Text>
+            </Box>
+            <Text size="1" color="muted">
+              |
             </Text>
+            <Text size="1" color="muted">
+              {getDateFormat(data.document, 'publishTime')}
+            </Text>
+            <Text size="1" color="muted">
+              |
+            </Text>
+            <Button size="1" color="primary" variant="ghost" onClick={toggleDocument}>
+              {showDocument ? 'Collapse' : 'Expand'} Document
+            </Button>
             {remove && (
-              <Button
-                size="1"
-                variant="ghost"
-                color="primary"
-                onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', payload: item})}
-              >
-                remove
-              </Button>
+              <>
+                <Text size="1" color="muted">
+                  |
+                </Text>
+                <Button
+                  size="1"
+                  variant="ghost"
+                  color="primary"
+                  onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', payload: item})}
+                >
+                  remove
+                </Button>
+              </>
             )}
           </Box>
-
-          {/* <Text as="span" alt size="2" css={{display: 'inline-block'}}>
-            {data.statement.children[0].children.map((child, idx) =>
-              isEmbed(child) ? (
-                <Embed key={`${child.url}-${idx}`} embed={child} />
-              ) : (
-                <span key={`${child.type}-${idx}`}>{Node.string(child)}</span>
-              ),
-            )}
-          </Text> */}
-          <Editor value={[data.statement]} mode={EditorMode.Mention} />
+          <Editor
+            value={showDocument ? data.document.content : [data.statement]}
+            mode={showDocument ? EditorMode.Publication : EditorMode.Mention}
+          />
         </Box>
       </ContextMenu.Trigger>
       <ContextMenu.Content alignOffset={-5}>

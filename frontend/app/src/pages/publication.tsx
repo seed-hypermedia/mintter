@@ -6,6 +6,7 @@ import {css, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {useEffect} from 'react'
 import {useLocation, useRoute} from 'wouter'
+import {Avatar} from '../components/avatar'
 import {PageLayout} from '../components/page-layout'
 import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
 import {Editor} from '../editor'
@@ -114,8 +115,12 @@ export default function Publication() {
           width: '90%',
           marginBottom: 300,
           padding: '$5',
-          paddingTop: '$9',
-          marginHorizontal: '$9',
+          paddingTop: '$8',
+          marginHorizontal: '$4',
+          '@bp2': {
+            paddingTop: '$9',
+            marginHorizontal: '$9',
+          },
         }}
       >
         <PublicationHeader document={data?.document} />
@@ -132,12 +137,12 @@ function PublicationHeader({document}: {document?: EditorDocument}) {
   const {data: author} = useAccount(document?.author, {
     enabled: !!document?.author,
   })
+  const {isOpen} = useSidepanel()
 
   return document ? (
     <Box
       css={{
         display: 'grid',
-
         gridTemplateColumns: '1fr',
         gridTemplateRows: '32px min-content min-content min-content',
         gridTemplateAreas: `"author"
@@ -147,9 +152,14 @@ function PublicationHeader({document}: {document?: EditorDocument}) {
         gap: '$5',
 
         '@bp2': {
-          gridTemplateColumns: '440px auto',
-          gridTemplateRows: '32px min-content min-content',
-          gridTemplateAreas: `"author author"
+          gridTemplateColumns: isOpen ? '1fr' : '440px auto',
+          gridTemplateRows: isOpen ? '32px min-content min-content min-content' : '32px min-content min-content',
+          gridTemplateAreas: isOpen
+            ? `"author"
+          "title"
+          "footer"
+          "citation-toolbar"`
+            : `"author author"
         "title citation-toolbar"
         "footer footer"`,
         },
@@ -157,14 +167,7 @@ function PublicationHeader({document}: {document?: EditorDocument}) {
     >
       {author && (
         <Box css={{gridArea: 'author', display: 'flex', gap: '$3', alignItems: 'center'}}>
-          <Box
-            css={{
-              background: '$background-neutral',
-              width: 32,
-              height: 32,
-              borderRadius: '$round',
-            }}
-          />
+          <Avatar size="3" />
           <Text size="3" fontWeight="medium">
             {author.profile?.alias}
           </Text>
@@ -195,7 +198,7 @@ function PublicationHeader({document}: {document?: EditorDocument}) {
           gridArea: 'citation-toolbar',
           marginLeft: '-$3',
           '@bp2': {
-            marginLeft: 0,
+            marginLeft: isOpen ? '-$5' : 0,
             marginTop: '-$3',
           },
         }}
@@ -209,7 +212,7 @@ function PublicationHeader({document}: {document?: EditorDocument}) {
             Mention
           </Button>
           <Text color="muted">|</Text>
-          <Button size={{'@initial': '1', '@bp2': '2'}} variant="ghost" color="muted">
+          <Button size={{'@initial': '1', '@bp2': '2'}} variant="ghost" color="success">
             Tip Author
           </Button>
         </Box>
