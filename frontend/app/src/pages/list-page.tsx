@@ -39,7 +39,7 @@ export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
 }
 
 export function DraftListPage({onCreateDraft}: Pick<ListPageProps, 'onCreateDraft'>) {
-  const {status, error, data = []} = useDraftsList()
+  const {status, data = []} = useDraftsList()
 
   if (status == 'loading') {
     return (

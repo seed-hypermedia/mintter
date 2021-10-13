@@ -4,8 +4,8 @@ import {styled} from '@mintter/ui/stitches.config'
 import type {NodeEntry} from 'slate'
 import {Editor} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
-import {ELEMENT_ORDERED_LIST} from './elements/ordered-list'
-import {ELEMENT_UNORDERED_LIST} from './elements/unordered-list'
+import {ELEMENT_ORDERED_LIST} from './ordered-list'
+import {ELEMENT_UNORDERED_LIST} from './unordered-list'
 
 export const MarkerStyled = styled('div', {
   minWidth: '$space$8',

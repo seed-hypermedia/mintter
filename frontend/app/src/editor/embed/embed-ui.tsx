@@ -11,9 +11,8 @@ export const EmbedUI = styled('q', {
   },
   '&::before, &::after': {
     fontWeight: '$bold',
-    fontSize: '$5',
+    fontSize: '1.4em',
     color: '$text-alt',
-    // backgroundColor: '$background-alt',
   },
   '&::before': {
     content: '[',

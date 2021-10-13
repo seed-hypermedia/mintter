@@ -19,7 +19,7 @@ export const Tools = styled('div', {
   WebkitUserSelect: 'none',
   transition: 'all ease-in-out 0.1s',
   flexDirection: 'row-reverse',
-  width: '$space$8',
+  width: '$space$7',
   marginRight: '$2',
 })
 
@@ -42,8 +42,8 @@ export const Tools = styled('div', {
 export const ElementDropdown = styled('button', {
   border: 'none',
   backgroundColor: '$background-default',
-  width: '$space$8',
-  height: '$space$8',
+  width: '$space$7',
+  height: '$space$7',
   display: 'flex',
   alignItems: 'center',
   zIndex: 2,

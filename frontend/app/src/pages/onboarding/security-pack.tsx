@@ -131,7 +131,7 @@ function MnemonicList({words}: {words: string[]}) {
             <Text size="1" color="muted">
               {wordIdx + 1}.
             </Text>
-            <Text size="4">{word}</Text>
+            <Text size="3">{word}</Text>
           </Box>
         ))}
       </Box>

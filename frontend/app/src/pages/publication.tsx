@@ -2,16 +2,41 @@ import {createDraft} from '@mintter/client'
 import {useAccount, useInfo, usePublication} from '@mintter/client/hooks'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
+import {css, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
-import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
 import {useEffect} from 'react'
 import {useLocation, useRoute} from 'wouter'
-import {Container} from '../components/container'
 import {PageLayout} from '../components/page-layout'
-import {Separator} from '../components/separator'
 import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
 import {Editor} from '../editor'
+import {EditorMode} from '../editor/plugin-utils'
 import {getDateFormat} from '../utils/get-format-date'
+
+const Heading = styled('h1', {
+  fontSize: '$5',
+  width: '$full',
+  maxWidth: 445,
+  margin: 0,
+  padding: 0,
+})
+
+const headerFooterStyle = css({
+  gridArea: 'footer',
+  $$gap: '$space$5',
+  display: 'flex',
+  gap: '$$gap',
+  alignItems: 'center',
+  '& span': {
+    position: 'relative',
+  },
+  '& span:not(:first-child):before': {
+    content: `"|"`,
+    color: '$text-muted',
+    position: 'absolute',
+    left: -8,
+    top: 0,
+  },
+})
 
 export default function Publication() {
   const [, params] = useRoute<{docId: string}>('/p/:docId')
@@ -55,7 +80,6 @@ export default function Publication() {
   let canUpdate = author?.id == myInfo?.accountId
 
   return (
-    // <HoverProvider>
     <PageLayout isSidepanelOpen={isSidepanelOpen} data-testid="publication-wrapper">
       <Box
         css={{
@@ -84,14 +108,23 @@ export default function Publication() {
           {`${isSidepanelOpen ? 'Close' : 'Open'} sidepanel`}
         </Button>
       </Box>
-      <Container css={{gridArea: 'maincontent', marginBottom: 300, padding: '$5', paddingTop: '$7'}}>
+      <Box
+        css={{
+          gridArea: 'maincontent',
+          width: '90%',
+          marginBottom: 300,
+          padding: '$5',
+          paddingTop: '$9',
+          marginHorizontal: '$9',
+        }}
+      >
         <PublicationHeader document={data?.document} />
-        <Separator />
-        <Editor mode={EditorMode.Publication} value={data?.document?.content} />
-      </Container>
+        <Box css={{marginTop: 50, width: '$full', maxWidth: '64ch'}}>
+          <Editor mode={EditorMode.Publication} value={data?.document?.content} />
+        </Box>
+      </Box>
       {isSidepanelOpen && <Sidepanel gridArea={'rightside'} />}
     </PageLayout>
-    // </HoverProvider>
   )
 }
 
@@ -103,36 +136,84 @@ function PublicationHeader({document}: {document?: EditorDocument}) {
   return document ? (
     <Box
       css={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$3',
-        position: 'relative',
+        display: 'grid',
+
+        gridTemplateColumns: '1fr',
+        gridTemplateRows: '32px min-content min-content min-content',
+        gridTemplateAreas: `"author"
+        "title"
+        "footer"
+        "citation-toolbar"`,
+        gap: '$5',
+
+        '@bp2': {
+          gridTemplateColumns: '440px auto',
+          gridTemplateRows: '32px min-content min-content',
+          gridTemplateAreas: `"author author"
+        "title citation-toolbar"
+        "footer footer"`,
+        },
       }}
     >
       {author && (
-        <Box css={{display: 'flex', gap: '$4', alignItems: 'center'}}>
+        <Box css={{gridArea: 'author', display: 'flex', gap: '$3', alignItems: 'center'}}>
           <Box
             css={{
               background: '$background-neutral',
-              width: 24,
-              height: 24,
+              width: 32,
+              height: 32,
               borderRadius: '$round',
             }}
           />
-          <Text size="2">{author.profile?.alias}</Text>
+          <Text size="3" fontWeight="medium">
+            {author.profile?.alias}
+          </Text>
         </Box>
       )}
-      <Text size="9" css={{fontWeight: '$bold'}}>
-        {document.title}
-      </Text>
-      {document.subtitle && (
-        <Text color="muted" size="7">
-          {document.subtitle}
+      <Heading css={{gridArea: 'title'}}>{document.title}</Heading>
+      {/* {document.subtitle && (
+          <Text color="muted" size="4">
+            {document.subtitle}
+          </Text>
+        )} */}
+      <Box className={headerFooterStyle()}>
+        <Text size="1" color="muted">
+          {getDateFormat(document, 'publishTime')}
         </Text>
-      )}
-      <Text size="2" color="alt" css={{marginTop: '$5'}}>
-        Published on: {getDateFormat(document, 'publishTime')}
-      </Text>
+        <Text size="1" color="muted">
+          Version 3
+        </Text>
+        <Text size="1" color="primary" css={{textDecoration: 'underline'}}>
+          View Versions
+        </Text>
+        <Text color="muted" size="1">
+          Tipped $0.09
+        </Text>
+      </Box>
+      <Box
+        css={{
+          gridArea: 'citation-toolbar',
+          marginLeft: '-$3',
+          '@bp2': {
+            marginLeft: 0,
+            marginTop: '-$3',
+          },
+        }}
+      >
+        <Box css={{display: 'flex', alignItems: 'center', gap: '$3'}}>
+          <Button size={{'@initial': '1', '@bp2': '2'}} variant="ghost" color="primary">
+            View Discussion (13)
+          </Button>
+          <Text color="muted">|</Text>
+          <Button size={{'@initial': '1', '@bp2': '2'}} variant="ghost" color="primary">
+            Mention
+          </Button>
+          <Text color="muted">|</Text>
+          <Button size={{'@initial': '1', '@bp2': '2'}} variant="ghost" color="muted">
+            Tip Author
+          </Button>
+        </Box>
+      </Box>
     </Box>
   ) : null
 }
