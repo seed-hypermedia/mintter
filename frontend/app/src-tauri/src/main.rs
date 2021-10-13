@@ -12,15 +12,22 @@ mod menu;
 
 #[tokio::main]
 async fn main() {
+  let log_targets = [
+    #[cfg(not(target_os = "macos"))]
+    LogTarget::AppDir("".into()),
+    #[cfg(target_os = "macos")]
+    LogTarget::Folder(
+      tauri::api::path::config_dir()
+        .unwrap()
+        .join("/Library/Logs/Mintter"),
+    ),
+    #[cfg(debug_assertions)]
+    LogTarget::Stdout,
+    #[cfg(debug_assertions)]
+    LogTarget::Webview,
+  ];
   tauri::Builder::default()
-    .plugin(
-      LoggerBuilder::new([
-        LogTarget::AppDir("".into()),
-        LogTarget::Stdout,
-        LogTarget::Webview,
-      ])
-      .build(),
-    )
+    .plugin(LoggerBuilder::new(log_targets).build())
     .plugin(daemon::DaemonPlugin::new())
     .menu(menu::get_menu())
     .setup(|app| {
