@@ -17,9 +17,9 @@ async fn main() {
     LogTarget::AppDir("".into()),
     #[cfg(target_os = "macos")]
     LogTarget::Folder(
-      tauri::api::path::config_dir()
+      tauri::api::path::home_dir()
         .unwrap()
-        .join("/Library/Logs/Mintter"),
+        .join("Library/Logs/Mintter"),
     ),
     #[cfg(debug_assertions)]
     LogTarget::Stdout,
