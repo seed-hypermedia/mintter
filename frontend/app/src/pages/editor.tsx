@@ -3,7 +3,7 @@ import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
-import {FormEvent, useRef} from 'react'
+import {FormEvent, useRef, useState} from 'react'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {useLocation, useRoute} from 'wouter'
@@ -19,6 +19,7 @@ export default function EditorPage() {
   const client = useQueryClient()
   const [, setLocation] = useLocation()
   const toast = useRef('')
+  const [visible, setVisible] = useState(false)
 
   const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
 
@@ -146,26 +147,44 @@ export default function EditorPage() {
           />
           <Separator />
           {context.localDraft?.content && (
-            <Editor
-              value={context.localDraft.content}
-              onChange={(content) => {
-                send({
-                  type: 'UPDATE',
-                  payload: {
-                    content,
-                  },
-                })
-                sidepanelSend({
-                  type: 'SIDEPANEL_LOAD_ANNOTATIONS',
-                  payload: content,
-                })
-              }}
-            />
+            <>
+              <Editor
+                value={context.localDraft.content}
+                onChange={(content) => {
+                  send({
+                    type: 'UPDATE',
+                    payload: {
+                      content,
+                    },
+                  })
+                  sidepanelSend({
+                    type: 'SIDEPANEL_LOAD_ANNOTATIONS',
+                    payload: content,
+                  })
+                }}
+              />
+              <Box css={{marginTop: 40}}>
+                <button type="button" onClick={() => setVisible((v) => !v)}>
+                  toggle Value
+                </button>
+                {visible && (
+                  <Box
+                    as="pre"
+                    css={{
+                      padding: 20,
+                      backgroundColor: '$background-muted',
+                      overflowX: 'scroll',
+                    }}
+                  >
+                    {JSON.stringify(context.localDraft.content, null, 2)}
+                  </Box>
+                )}
+              </Box>
+            </>
           )}
         </Container>
         {isSidepanelOpen && <Sidepanel gridArea="rightside" />}
       </PageLayout>
-      // </HoverProvider>
     )
   }
 

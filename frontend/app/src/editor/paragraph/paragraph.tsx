@@ -1,9 +1,9 @@
 import {isBlockquote, isCode, isParagraph} from '@mintter/mttast'
 import {createId, statement} from '@mintter/mttast-builder'
-import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
 import {Editor, Node, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useSlateStatic} from 'slate-react'
+import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {ParagraphUI} from './paragraph-ui'
 

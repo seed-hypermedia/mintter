@@ -1,5 +1,5 @@
 import {ComponentMeta, ComponentStory} from '@storybook/react'
-import {EmbedUI} from 'frontend/app/src/editor/embed'
+import {EmbedUI} from './embed-ui'
 
 export default {
   title: 'Editor Elements/Embed',

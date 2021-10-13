@@ -4,15 +4,15 @@ import {isBlockquote, isGroupContent, isHeading, isStatement} from '@mintter/mtt
 import {group} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
-import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
-import {useRoute} from 'frontend/app/src/utils/use-route'
 import toast from 'react-hot-toast'
 import type {Node, NodeEntry} from 'slate'
 import {Editor, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
+import {useRoute} from '../../utils/use-route'
 import {ContextMenu} from '../context-menu'
+import {EditorMode} from '../plugin-utils'
 import {StatementTools} from '../statement-tools'
 import type {EditorPlugin} from '../types'
 import {getLastChild, isFirstChild, isLastChild} from '../utils'
@@ -142,6 +142,26 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
       ) : (
         children
       )}
+      {/* <Box
+        contentEditable={false}
+        className="citations"
+        css={{
+          gridArea: 'citations',
+          marginHorizontal: '-$3',
+          marginVertical: '$4',
+          opacity: 0,
+        }}
+      >
+        <Button
+          variant="ghost"
+          size="1"
+          onClick={(e) => {
+            e.preventDefault()
+          }}
+        >
+          Show 3 Mentions
+        </Button>
+      </Box> */}
     </StatementUI>
   )
 }

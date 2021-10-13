@@ -5,6 +5,7 @@ export {
   DeviceRegistered,
   GetAccountRequest,
   ListAccountsRequest,
+  ListAccountsResponse,
   Profile,
   ProfileUpdated,
 } from '../.generated/accounts/v1alpha/accounts'

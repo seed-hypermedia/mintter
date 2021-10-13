@@ -1,7 +1,7 @@
-import {EmbedUI} from 'frontend/app/src/editor/embed'
-import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
 import {forwardRef, PropsWithChildren} from 'react'
 import {Editor} from '../editor'
+import {EditorMode} from '../plugin-utils'
+import {EmbedUI} from './embed-ui'
 import {useEmbed} from './use-embed'
 
 export type EmbedEditorProps = PropsWithChildren<{

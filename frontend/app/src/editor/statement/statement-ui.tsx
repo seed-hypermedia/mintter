@@ -8,10 +8,11 @@ export const statementStyle = css({
   display: 'grid',
   wordBreak: 'break-word',
   gridTemplateColumns: '$space$8 1fr',
-  gridTemplateRows: 'min-content auto',
+  gridTemplateRows: 'min-content auto min-content',
   gap: 0,
   gridTemplateAreas: `"controls content"
-    ". children"`,
+    ". children"
+    ". citations"`,
   [`& > ${Tools}`]: {
     gridArea: 'controls',
   },

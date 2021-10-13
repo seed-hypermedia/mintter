@@ -2,13 +2,13 @@ import type {Embed as EmbedType} from '@mintter/mttast'
 import {isEmbed} from '@mintter/mttast'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
-import {EmbedEditor} from 'frontend/app/src/editor/embed'
-import {PropsWithChildren} from 'react'
+import {forwardRef, PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
 import {useLocation} from 'wouter'
 import {ContextMenu} from '../context-menu'
 import {copyTextToClipboard} from '../statement'
 import type {EditorPlugin} from '../types'
+import {EmbedEditor} from './embed-editor'
 import {getEmbedIds} from './get-embed-ids'
 
 export const ELEMENT_EMBED = 'embed'
@@ -42,7 +42,10 @@ export const createEmbedPlugin = (): EditorPlugin => ({
     },
 })
 
-export function Embed({embed, children = null, ...props}: PropsWithChildren<{embed: EmbedType}>) {
+export const Embed = forwardRef(function Embed(
+  {embed, children = null, ...props}: PropsWithChildren<{embed: EmbedType}>,
+  ref,
+) {
   // const {send} = useSidepanel()
   const [, setLocation] = useLocation()
 
@@ -88,4 +91,4 @@ export function Embed({embed, children = null, ...props}: PropsWithChildren<{emb
       </ContextMenu.Content>
     </ContextMenu.Root>
   )
-}
+})
