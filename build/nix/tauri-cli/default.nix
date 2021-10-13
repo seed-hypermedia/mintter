@@ -1,11 +1,11 @@
-{ pkgs, lib, darwin, hostPlatform }:
+{ pkgs, lib, stdenv, darwin }:
 
 let
   customBuildRustCrateForPkgs = pkgs: pkgs.buildRustCrate.override {
     defaultCrateOverrides = pkgs.defaultCrateOverrides // {
       tauri-cli = attrs: {
         buildInputs = [
-          (lib.optionals hostPlatform.isMacOS [
+          (lib.optionals stdenv.isDarwin [
             darwin.apple_sdk.frameworks.CoreServices
             darwin.apple_sdk.frameworks.Security
           ])
