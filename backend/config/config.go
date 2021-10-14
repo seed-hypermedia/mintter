@@ -74,3 +74,10 @@ type LND struct {
 	Color          string `help:"The color of the node in hex format (i.e. '#3399FF'). Used to customize node appearance in intelligence services" default:"#7193FE"`
 	Autopilot      bool   `help:"Enable Autopilot so the daemon can manage liquidity on its own"`
 }
+
+type Loop struct {
+	Network        string `help:"Which network to use {mainnet,testnet,regtest (default)}."`
+	RawRPCListener string `help:"Add an interface/port/socket to listen for RPC connections" default:"127.0.0.1:11010"`
+
+	LoopDir string `help:"The base directory that contains loop's data, logs, configuration file, etc."`
+}
