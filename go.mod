@@ -191,6 +191,8 @@ require (
 	github.com/multiformats/go-multicodec v0.2.0 // indirect
 	github.com/libp2p/go-netroute v0.1.4 // indirect
 	github.com/libp2p/go-sockaddr v0.1.0 // indirect
+	github.com/lightninglabs/lndclient v0.13.0-6 // indirect
+	github.com/lightninglabs/loop v0.15.0-beta // indirect
 	github.com/lightningnetwork/lnd v0.13.3-beta
 	github.com/multiformats/go-multiaddr v0.3.1
 	github.com/multiformats/go-multihash v0.0.15
@@ -310,6 +312,10 @@ require (
 	gopkg.in/macaroon-bakery.v2 v2.0.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
+	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
+	google.golang.org/grpc v1.38.0
+	google.golang.org/protobuf v1.26.0
+	gopkg.in/macaroon.v2 v2.1.0
 )
 
 replace go.etcd.io/etcd => go.etcd.io/etcd v0.5.0-alpha.5.0.20201125193152-8a03d2e9614b
