@@ -180,7 +180,7 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 		case a := <-clientAlice.Updates():
 			switch a.(type) {
 			case DaemonReadyEvent:
-				loop.Start()
+				loop.Start(lnconfAlice.RawRPCListeners[0], lnconfAlice.LndDir)
 			default:
 				i++
 				if i < 2000 {

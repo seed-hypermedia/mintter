@@ -13,14 +13,8 @@ import (
 	"mintter/backend/config"
 )
 
-const (
-	mainnetServer = "swap.lightning.today:11010"
-	testnetServer = "test.swap.lightning.today:11010"
-)
-
-type noInterface interface{}
-
 type Loop struct {
+	//autopilotrpc signrpc walletrpc chainrpc invoicesrpc routerrpc watchtowerrpc
 	sync.Mutex
 	cfg           *config.Loop
 	log           *zap.Logger
@@ -31,8 +25,6 @@ type Loop struct {
 	wg            sync.WaitGroup
 	quitChan      chan struct{}
 	startTime     time.Time
-	daemonRunning int32
-	coreRunning   int32
 }
 
 func NewLoop(log *zap.Logger, cfg *config.Loop, interceptor *signal.Interceptor) *Loop {
@@ -47,7 +39,7 @@ func NewLoop(log *zap.Logger, cfg *config.Loop, interceptor *signal.Interceptor)
 }
 
 // Run starts the loop daemon and blocks until it's shut down again.
-func (l *Loop) Start() error {
+func (l *Loop) Start(lndhost string, lndDir string) error {
 	l.startTime = time.Now()
 	l.Lock()
 	if !l.loopStopped {
@@ -57,9 +49,13 @@ func (l *Loop) Start() error {
 
 	config := loopd.DefaultConfig()
 
-	//insert configuration where macaroon is, working dir, etc
+	config.Lnd.Host = lndhost
+	config.Lnd.MacaroonPath = lndDir + "/data/chain/bitcoin/" + l.cfg.Network + "/admin.macaroon"
+	config.Lnd.TLSPath = lndDir + "/tls.cert"
+	config.LoopDir = l.cfg.LoopDir
+	config.Network = l.cfg.Network
+	config.RPCListen = l.cfg.RawRPCListener
 
-	// Validate our config before we proceed.
 	if err := loopd.Validate(&config); err != nil {
 		return err
 	}
