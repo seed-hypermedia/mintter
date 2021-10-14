@@ -78,6 +78,13 @@ export const createStatementPlugin = (): EditorPlugin => ({
 
     return editor
   },
+  onKeyDown: (editor) => (event) => {
+    if (editor.selection && event.key == 'Enter' && event.shiftKey) {
+      event.preventDefault()
+      Transforms.insertText(editor, '\n')
+      return
+    }
+  },
 })
 
 function Statement({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
