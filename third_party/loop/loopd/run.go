@@ -48,9 +48,9 @@ type RPCConfig struct {
 	LndConn net.Conn
 }
 
-// newListenerCfg creates and returns a new listenerCfg from the passed config
+// NewListenerCfg creates and returns a new listenerCfg from the passed config
 // and RPCConfig.
-func newListenerCfg(config *Config, rpcCfg RPCConfig) *listenerCfg {
+func NewListenerCfg(config *Config, rpcCfg RPCConfig) *listenerCfg {
 	return &listenerCfg{
 		grpcListener: func(tlsCfg *tls.Config) (net.Listener, error) {
 			// If a custom RPC listener is set, we will listen on
@@ -215,7 +215,7 @@ func Run(rpcCfg RPCConfig) error {
 	// Print the version before executing either primary directive.
 	log.Infof("Version: %v", loop.Version())
 
-	lisCfg := newListenerCfg(&config, rpcCfg)
+	lisCfg := NewListenerCfg(&config, rpcCfg)
 
 	// Execute command.
 	if parser.Active == nil {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -173,5 +174,21 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	}
 	logger3, _ := zap.NewProduction() //zap.NewExample()
 	loop := NewLoop(logger3, lnconfLoopBob, intercept)
-	return loop.Start()
+	var i = 0
+	for {
+		select {
+		case a := <-clientAlice.Updates():
+			switch a.(type) {
+			case DaemonReadyEvent:
+				loop.Start()
+			default:
+				i++
+				if i < 2000 {
+					time.Sleep(3 * time.Second)
+				} else {
+					return fmt.Errorf("Timeout reached!")
+				}
+			}
+		}
+	}
 }
