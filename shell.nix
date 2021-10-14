@@ -1,5 +1,4 @@
-# We import a pinned version of nixpkgs + our custom overlays.
-with import ./build/nix/nixpkgs.nix;
+with import ./build/nix/nixpkgs.nix {};
 
 let 
   protoc-gen-ts_proto = writeShellScriptBin "protoc-gen-ts_proto" "yarn run protoc-gen-ts_proto";
