@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:lightninglabs/loop.git
+	branch = v0.15.0-beta
+	commit = 63f34ec45c88a32c8ecbd67b928cdcb29b0ad435
+	parent = 200f5371859f9b9ffea42311986c7bba24733982
+	method = merge
+	cmdver = 0.4.3
