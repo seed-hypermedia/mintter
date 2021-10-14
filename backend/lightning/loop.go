@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net"
-	"os"
 	"sync"
 	"time"
 
@@ -135,37 +134,37 @@ func (l *Loop) Start() error {
 	if err != nil {
 		return err
 	}
-
-	oldArgs := os.Args
-	defer func() { os.Args = oldArgs }()
-	os.Args = os.Args[0:0]
-
-	if err := loopd.Run(loopd.RPCConfig{}); err != nil {
-		return fmt.Errorf("loopd exited with an error" + err.Error())
-	} else {
-		return nil
-	}
 	/*
-		lisCfg := newListenerCfg(&config, *l.interceptor)
-		daemon := loopd.New(&config, &lisCfg{})
-		if err := daemon.Start(); err != nil {
-			return err
-		}
+		oldArgs := os.Args
+		defer func() { os.Args = oldArgs }()
+		os.Args = []string{os.Args[0]}
 
-		select {
-		case <-interceptor.ShutdownChannel():
-			log.Infof("Received SIGINT (Ctrl+C).")
-			daemon.Stop()
+		if err := loopd.Run(loopd.RPCConfig{}); err != nil {
+			return fmt.Errorf("loopd exited with an error" + err.Error())
+		} else {
+			return nil
+		}*/
 
-			// The above stop will return immediately. But we'll be
-			// notified on the error channel once the process is
-			// complete.
-			return <-daemon.ErrChan
+	lisCfg := newListenerCfg(&config, *l.interceptor)
+	daemon := loopd.New(&config, &lisCfg{})
+	if err := daemon.Start(); err != nil {
+		return err
+	}
 
-		case err := <-daemon.ErrChan:
-			return err
-		}
-	*/
+	select {
+	case <-l.interceptor.ShutdownChannel():
+		l.log.Info("Received SIGINT (Ctrl+C).")
+		daemon.Stop()
+
+		// The above stop will return immediately. But we'll be
+		// notified on the error channel once the process is
+		// complete.
+		return <-daemon.ErrChan
+
+	case err := <-daemon.ErrChan:
+		return err
+	}
+
 }
 
 // newListenerCfg creates and returns a new listenerCfg from the passed config
