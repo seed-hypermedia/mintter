@@ -601,7 +601,7 @@ func setAcceptor(node *Ldaemon, blocks2confirm uint32, accept bool) {
 		// as this will allow us to set a target confirmation of 0 blocks
 		res.MinAcceptDepth = blocks2confirm                     // TODO: When this is 0 manager.go sets NumConfsRequired to 3.
 		res.ReserveSat = uint64(float64(req.FundingAmt) / 20.0) // 5% of the capacity of the channel
-		//res.InFlightMaxMsat = req.FundingAmt - res.ReserveSat
+		res.InFlightMaxMsat = (req.FundingAmt - res.ReserveSat) * 1000
 		res.Accept = accept
 		return res
 	}

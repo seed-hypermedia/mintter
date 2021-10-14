@@ -353,15 +353,48 @@ func (d *Ldaemon) PayInvoice(paymentRequest string, OutgoingChanIds []uint64, am
 		}
 	}
 
-	d.log.Debug("lasrHop", zap.Binary("lastHop", lastHop))
 	if stream, err := routerClient.SendPaymentV2(ctx, &routerrpc.SendPaymentRequest{
-		AmtMsat:        amtMsat,
-		PaymentRequest: paymentRequest,
-		FeeLimitMsat:   feeLimit,
-		//OutgoingChanIds:  OutgoingChanIds,
-		//AllowSelfPayment: true,
-		//LastHopPubkey:    lastHop,
-		TimeoutSeconds: timeout,
+		AmtMsat:          amtMsat,
+		PaymentRequest:   paymentRequest,
+		FeeLimitMsat:     feeLimit,
+		OutgoingChanIds:  OutgoingChanIds,
+		AllowSelfPayment: true,
+		LastHopPubkey:    lastHop,
+		TimeoutSeconds:   timeout,
+	}); err != nil {
+		return "", err
+	} else {
+		for {
+			payment, err := stream.Recv()
+			if err != nil {
+				return "", err
+			}
+			// Terminate loop if payments state is final.
+			if payment.Status != lnrpc.Payment_IN_FLIGHT {
+				if payment.Status != lnrpc.Payment_SUCCEEDED {
+					return "", fmt.Errorf("Payment didn't succed. Reason: " +
+						lnrpc.PaymentFailureReason_name[int32(payment.FailureReason)])
+				} else {
+					return payment.PaymentPreimage, nil
+				}
+
+			}
+		}
+	}
+
+}
+
+func (d *Ldaemon) Tip(amtMsat int64, message string) (string, error) {
+	routerClient := d.RouterClient()
+	if routerClient == nil {
+		return "", fmt.Errorf("routerClient is not ready yet")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if stream, err := routerClient.SendPaymentV2(ctx, &routerrpc.SendPaymentRequest{
+		AmtMsat: amtMsat,
+		Amp:     true,
 	}); err != nil {
 		return "", err
 	} else {
