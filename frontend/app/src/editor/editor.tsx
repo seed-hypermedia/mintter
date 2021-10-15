@@ -3,12 +3,10 @@ import {PropsWithChildren, Suspense, useMemo} from 'react'
 import type {Descendant} from 'slate'
 import {Editable, Slate} from 'slate-react'
 import {HoveringToolbar} from './hovering-toolbar'
-import {MenuProvider} from './menu'
 import {
   buildDecorateHook,
   buildEditorHook,
   buildEventHandlerHooks,
-  buildGetMenu,
   buildRenderElementHook,
   buildRenderLeafHook,
   EditorMode,
@@ -29,24 +27,21 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
   const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, editor), [mode])
   const decorate = useMemo(() => buildDecorateHook(plugins, editor), [mode])
   const eventHandlers = useMemo(() => buildEventHandlerHooks(plugins, editor), [mode])
-  const getMenu = useMemo(() => buildGetMenu(plugins, editor), [mode])
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
       <Suspense fallback={'loading'}>
-        <MenuProvider value={getMenu}>
-          <Slate editor={editor} value={value} onChange={onChange}>
-            <Editable
-              style={{display: 'inline'}}
-              readOnly={editor.readOnly}
-              data-testid="editor-embed-mode"
-              renderElement={renderElement}
-              renderLeaf={renderLeaf}
-              decorate={decorate}
-              {...eventHandlers}
-            />
-          </Slate>
-        </MenuProvider>
+        <Slate editor={editor} value={value} onChange={onChange}>
+          <Editable
+            style={{display: 'inline'}}
+            readOnly={editor.readOnly}
+            data-testid="editor-embed-mode"
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+            decorate={decorate}
+            {...eventHandlers}
+          />
+        </Slate>
       </Suspense>
     )
   }
@@ -54,33 +49,6 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
   if (mode == EditorMode.Publication) {
     return (
       <Suspense fallback={'loading'}>
-        <MenuProvider value={getMenu}>
-          <Box
-            css={{
-              position: 'relative',
-              marginLeft: '-$8',
-            }}
-          >
-            <Slate editor={editor} value={value} onChange={onChange}>
-              <Editable
-                readOnly={editor.readOnly}
-                data-testid="editor"
-                renderElement={renderElement}
-                renderLeaf={renderLeaf}
-                decorate={decorate}
-                {...eventHandlers}
-              />
-              {children}
-            </Slate>
-          </Box>
-        </MenuProvider>
-      </Suspense>
-    )
-  }
-
-  return (
-    <Suspense fallback={'loading'}>
-      <MenuProvider value={getMenu}>
         <Box
           css={{
             position: 'relative',
@@ -88,7 +56,6 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
           }}
         >
           <Slate editor={editor} value={value} onChange={onChange}>
-            <HoveringToolbar />
             <Editable
               readOnly={editor.readOnly}
               data-testid="editor"
@@ -100,7 +67,31 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
             {children}
           </Slate>
         </Box>
-      </MenuProvider>
+      </Suspense>
+    )
+  }
+
+  return (
+    <Suspense fallback={'loading'}>
+      <Box
+        css={{
+          position: 'relative',
+          marginLeft: '-$8',
+        }}
+      >
+        <Slate editor={editor} value={value} onChange={onChange}>
+          <HoveringToolbar />
+          <Editable
+            readOnly={editor.readOnly}
+            data-testid="editor"
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+            decorate={decorate}
+            {...eventHandlers}
+          />
+          {children}
+        </Slate>
+      </Box>
     </Suspense>
   )
 }
