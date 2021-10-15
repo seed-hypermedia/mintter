@@ -4,6 +4,7 @@ import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {css, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
+import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {useEffect} from 'react'
 import {useLocation, useRoute} from 'wouter'
 import {Avatar} from '../components/avatar'
@@ -50,6 +51,12 @@ export default function Publication() {
   const {data: myInfo} = useInfo()
 
   useEnableSidepanel()
+
+  useEffect(() => {
+    if (data.document.title) {
+      getCurrentWindow().setTitle(data.document.title)
+    }
+  }, [data.document.title])
 
   useEffect(() => {
     if (status == 'success') {

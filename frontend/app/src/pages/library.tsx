@@ -5,7 +5,8 @@ import {Button, buttonStyles} from '@mintter/ui/button'
 import type {CSS} from '@mintter/ui/stitches.config'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text, textStyles} from '@mintter/ui/text'
-import {PropsWithChildren, useCallback} from 'react'
+import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
+import {PropsWithChildren, useCallback, useEffect} from 'react'
 import {Link, Route, Switch, useLocation, useRoute} from 'wouter'
 import {Connections} from '../components/connections'
 import {Container} from '../components/container'
@@ -15,7 +16,10 @@ import {DraftListPage, ListPage} from './list-page'
 
 export default function Library() {
   const [, setLocation] = useLocation()
-  // const { connectToPeer } = useConnectionCreate();
+
+  useEffect(() => {
+    getCurrentWindow().setTitle('Library')
+  })
 
   const onCreateDraft = useCallback(async () => {
     try {

@@ -48,6 +48,9 @@
       "shell": {
         "execute": true,
         "open": true
+      },
+      "window": {
+        "all": false
       }
     },
     "windows": [

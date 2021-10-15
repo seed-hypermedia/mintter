@@ -5,6 +5,7 @@ import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
 import {useTheme} from '@mintter/ui/theme'
+import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {useEffect} from 'react'
 import {useForm} from 'react-hook-form'
 import toast from 'react-hot-toast'
@@ -26,6 +27,10 @@ export default function Settings() {
   })
   const queryClient = useQueryClient()
   const updateProfile = useMutation(updateAccount)
+
+  useEffect(() => {
+    getCurrentWindow().setTitle('Settings')
+  })
 
   const form = useForm<ProfileInformationDataType>({
     mode: 'onChange',
