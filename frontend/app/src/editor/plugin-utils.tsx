@@ -5,6 +5,7 @@ import type {RenderElementProps, RenderLeafProps} from 'slate-react'
 import {DefaultElement, DefaultLeaf, withReact} from 'slate-react'
 import type {EditableProps} from 'slate-react/dist/components/editable'
 import {error} from 'tauri-plugin-log-api'
+import {separator} from './menu'
 import type {EditableEventHandlers, EditorPlugin} from './types'
 
 export enum EditorMode {
@@ -151,4 +152,17 @@ export function buildEventHandlerHooks(plugins: EditorPlugin[], editor: Editor):
     }
   }
   return handlers
+}
+
+export function buildGetMenu(plugins: EditorPlugin[], editor: Editor) {
+  const filteredPlugins = plugins.filter(byApply(editor.mode)).filter(hasHook('menu'))
+
+  return function getMenu(key: string) {
+    return filteredPlugins.flatMap((plugin, i, arr) => {
+      const items = plugin.menu(editor)(key) || []
+
+      if (i === arr.length - 1) return items
+      return items.concat(separator())
+    })
+  }
 }

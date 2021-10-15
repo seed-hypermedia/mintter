@@ -3,6 +3,7 @@ import React from 'react'
 import type {BaseEditor, Editor, NodeEntry, Range} from 'slate'
 import type {HistoryEditor} from 'slate-history'
 import type {ReactEditor, RenderElementProps, RenderLeafProps} from 'slate-react'
+import {MenuItem} from './menu'
 import {EditorMode} from './plugin-utils'
 
 declare module 'slate' {
@@ -176,4 +177,6 @@ export interface EditorPlugin extends EditorEventHandlers {
    * It can return an array of ranges.
    */
   decorate?: (editor: Editor) => (node: NodeEntry) => Range[] | undefined | void
+
+  menu?: (editor: Editor) => (key: string) => MenuItem[] | undefined | void
 }
