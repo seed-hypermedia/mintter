@@ -627,10 +627,11 @@ func checkVersionCompatibility(client VersionerClient,
 	if err != nil {
 		return nil, err
 	}
-	err = assertBuildTagsEnabled(version, expected.BuildTags)
-	if err != nil {
-		return nil, err
-	}
+	/*
+		err = assertBuildTagsEnabled(version, expected.BuildTags)
+		if err != nil {
+			return nil, err
+		}*/
 
 	// All check positive, version is fully compatible.
 	return version, nil
