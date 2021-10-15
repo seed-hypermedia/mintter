@@ -3,7 +3,8 @@ import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
-import {FormEvent, useRef, useState} from 'react'
+import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
+import {FormEvent, useEffect, useRef, useState} from 'react'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {useLocation, useRoute} from 'wouter'
@@ -46,6 +47,15 @@ export default function EditorPage() {
   })
 
   const {context} = state
+
+  useEffect(() => {
+    if (context.localDraft?.title) {
+      // set the window title to reflect the documents title
+      getCurrentWindow().setTitle(context.localDraft.title)
+    } else {
+      getCurrentWindow().setTitle('Untitled Document')
+    }
+  }, [context.localDraft?.title])
 
   useEnableSidepanel()
 
@@ -103,14 +113,17 @@ export default function EditorPage() {
             name="title"
             placeholder="Document title"
             value={context?.localDraft?.title}
-            onChange={(event: FormEvent<HTMLInputElement>) =>
+            onChange={(event: FormEvent<HTMLInputElement>) => {
+              // update window title as the user types
+              getCurrentWindow().setTitle(event.currentTarget.value)
+
               send({
                 type: 'UPDATE',
                 payload: {
                   title: event.currentTarget.value,
                 },
               })
-            }
+            }}
             rows={1}
             css={{
               $$backgroundColor: '$colors$background-alt',
