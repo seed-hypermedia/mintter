@@ -34,7 +34,7 @@ export const cut = (): NormalMenuItem => ({
   type: 'normal',
   id: 'cut',
   label: 'Cut',
-  accelerator: 'CmdOrControl+X',
+  // accelerator: 'CmdOrControl+X',
   enabled: true,
 })
 
@@ -42,7 +42,7 @@ export const copy = (): NormalMenuItem => ({
   type: 'normal',
   id: 'copy',
   label: 'Copy',
-  accelerator: 'CmdOrControl+C',
+  // accelerator: 'CmdOrControl+C',
   enabled: true,
 })
 
@@ -50,7 +50,7 @@ export const paste = (): NormalMenuItem => ({
   type: 'normal',
   id: 'paste',
   label: 'Paste',
-  accelerator: 'CmdOrControl+V',
+  // accelerator: 'CmdOrControl+V',
   enabled: true,
 })
 
@@ -58,7 +58,7 @@ export const undo = (): NormalMenuItem => ({
   type: 'normal',
   id: 'undo',
   label: 'Undo',
-  accelerator: 'CmdOrControl+Z',
+  // accelerator: 'CmdOrControl+Z',
   enabled: true,
 })
 
@@ -66,7 +66,7 @@ export const redo = (): NormalMenuItem => ({
   type: 'normal',
   id: 'redo',
   label: 'Redo',
-  accelerator: 'Shift+CmdOrControl+Z',
+  // accelerator: 'Shift+CmdOrControl+Z',
   enabled: true,
 })
 
