@@ -48,9 +48,6 @@
       "shell": {
         "execute": true,
         "open": true
-      },
-      "globalShortcut": {
-        "all": true
       }
     },
     "windows": [

@@ -1,9 +1,17 @@
+import {createDraft} from '@mintter/client'
+import type {Statement as StatementType} from '@mintter/mttast'
 import {isBlockquote, isGroupContent, isHeading, isStatement} from '@mintter/mttast'
 import {group} from '@mintter/mttast-builder'
+import {Icon} from '@mintter/ui/icon'
+import {Text} from '@mintter/ui/text'
+import toast from 'react-hot-toast'
 import type {Node, NodeEntry} from 'slate'
 import {Editor, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
-import {ContextMenu, copy, custom, cut, paste, separator} from '../menu'
+import {useSidepanel} from '../../components/sidepanel'
+import {MINTTER_LINK_PREFIX} from '../../constants'
+import {useRoute} from '../../utils/use-route'
+import {ContextMenu} from '../context-menu'
 import {EditorMode} from '../plugin-utils'
 import {StatementTools} from '../statement-tools'
 import type {EditorPlugin} from '../types'
@@ -77,37 +85,35 @@ export const createStatementPlugin = (): EditorPlugin => ({
       return
     }
   },
-  menu: () => (key) => {
-    if (key === 'statement') {
-      return [
-        cut(),
-        copy(),
-        paste(),
-        separator(),
-        custom({label: 'Add to bookmarks', icon: 'ArrowBottomRight'}),
-        custom({
-          label: 'Start a draft',
-          accelerator: 'CmdOrControl+D',
-          icon: 'AddCircle',
-          onClick: async () => {
-            console.log('start a draft')
-
-            // try {
-            //   const newDraft = await createDraft()
-            //   if (newDraft) {
-            //     location.pathname = `/editor/${newDraft.id}`
-            //   }
-            // } catch (err) {
-            //   throw Error('new Draft error: ')
-            // }
-          },
-        }),
-      ]
-    }
-  },
 })
 
 function Statement({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
+  const {send} = useSidepanel()
+  const {params} = useRoute<{docId: string}>(['/p/:docId', '/editor/:docId'])
+
+  async function onCopy() {
+    if (params) {
+      await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${params.docId}/${(element as StatementType).id}`)
+      toast.success('Statement Reference copied successfully', {position: 'top-center'})
+    } else {
+      toast.error('Cannot Copy Statement Reference')
+    }
+  }
+  async function onStartDraft() {
+    send({
+      type: 'SIDEPANEL_ADD_ITEM',
+      payload: `${MINTTER_LINK_PREFIX}${params!.docId}/${(element as StatementType).id}`,
+    })
+    try {
+      const newDraft = await createDraft()
+      if (newDraft) {
+        setLocation(`/editor/${newDraft.id}`)
+      }
+    } catch (err) {
+      throw Error('new Draft error: ')
+    }
+  }
+
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return <span {...attributes}>{children}</span>
   }
@@ -115,7 +121,34 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
   return (
     <StatementUI {...attributes}>
       <StatementTools element={element} />
-      <ContextMenu name="statement">{children}</ContextMenu>
+      {mode != EditorMode.Draft ? (
+        <ContextMenu.Root modal={false}>
+          <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
+          <ContextMenu.Content alignOffset={-5}>
+            <ContextMenu.Item onSelect={onCopy}>
+              <Icon name="Copy" size="1" />
+              <Text size="2">Copy Statement Reference</Text>
+            </ContextMenu.Item>
+            <ContextMenu.Item
+              onSelect={() =>
+                send({
+                  type: 'SIDEPANEL_ADD_ITEM',
+                  payload: `${MINTTER_LINK_PREFIX}${params!.docId}/${(element as StatementType).id}`,
+                })
+              }
+            >
+              <Icon size="1" name="ArrowBottomRight" />
+              <Text size="2">Add to Bookmarks</Text>
+            </ContextMenu.Item>
+            <ContextMenu.Item onSelect={onStartDraft}>
+              <Icon size="1" name="AddCircle" />
+              <Text size="2">Start a Draft</Text>
+            </ContextMenu.Item>
+          </ContextMenu.Content>
+        </ContextMenu.Root>
+      ) : (
+        children
+      )}
       {/* <Box
         contentEditable={false}
         className="citations"
