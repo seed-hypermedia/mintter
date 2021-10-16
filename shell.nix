@@ -16,7 +16,7 @@ let
       rustfmt
       nodejs
       yarn
-      tauri-cli
+      tauri.cli
       protoc-gen-ts_proto
       # pkg-config
       # gcc

@@ -2,16 +2,9 @@
 # defined in overlay.nix. This file can be imported in place of normal <nixpkgs>.
 { 
   system ? builtins.currentSystem,
-  nixpkgs ? builtins.fetchGit {
-    name = "nixpkgs-unstable";
-    url = https://github.com/nixos/nixpkgs;
-    # Commit hash for nixos-unstable as of 2021-09-22.
-    # Run `git ls-remote https://github.com/nixos/nixpkgs refs/heads/nixpkgs-unstable`
-    # to get the most recent revision.
-    ref = "refs/heads/nixpkgs-unstable";
-    rev = "ee084c02040e864eeeb4cf4f8538d92f7c675671";
-  },
-  overlay ? import ./overlay.nix,
+  sources ? import ./sources.nix,
+  nixpkgs ? sources.nixpkgs,
+  overlay ? import ./overlay.nix {},
   defaultOverlays ? [ overlay ],
   overlays ? [],
   config ? {},
