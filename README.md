@@ -68,3 +68,21 @@ all the platforms in parallel.
 - avoid creating abstractions
 - avoid creating folders, better to have files as flat as possible
 - avoid default exports, only default exports for page components (to use dynamic import)
+
+### VSCode Integration
+
+To support features like go-to-definition a plugin like ZipFS is needed.
+
+Run the following command, which will generate a new directory called .yarn/sdks:
+
+```bash
+yarn dlx @yarnpkg/sdks vscode
+```
+
+For safety reason VSCode requires you to explicitly activate the custom TS settings:
+
+1. Press `ctrl+shift+p` in a TypeScript file
+2. Choose "Select TypeScript Version"
+3. Pick "Use Workspace Version"
+
+For more and updated information about this setup, please visit [this link](https://yarnpkg.com/getting-started/editor-sdks#vscode)
