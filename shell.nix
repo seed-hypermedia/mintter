@@ -1,6 +1,6 @@
 with import ./build/nix/nixpkgs.nix {};
 
-let 
+let
   protoc-gen-ts_proto = writeShellScriptBin "protoc-gen-ts_proto" "yarn run protoc-gen-ts_proto";
   shellCommon = {
     tools = [
