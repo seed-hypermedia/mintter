@@ -19,4 +19,5 @@ self: super: {
   robo = super.callPackage ./robo {
     buildGoModule = self.buildGo117Module;
   };
+  mkLazyWrapper = super.callPackage ./mk-lazy-wrapper {};
 }
