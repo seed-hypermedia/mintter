@@ -17,7 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
-	"mintter/backend"
 	"mintter/backend/config"
 )
 
@@ -109,7 +108,8 @@ func TestPeers(t *testing.T) {
 			privateChannel:     true,
 		},
 	}
-	log := backend.NewLogger(cfg)
+	log, err := zap.NewDevelopment()
+	require.NoError(t, err)
 	defer log.Sync()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

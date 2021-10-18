@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
-	"mintter/backend"
 	"mintter/backend/config"
 )
 
@@ -266,7 +265,8 @@ func TestStart(t *testing.T) {
 			},
 		},
 	}
-	log := backend.NewLogger(cfg)
+	log, err := zap.NewDevelopment()
+	require.NoError(t, err)
 	defer log.Sync()
 	var errDocker error
 	var containerID string
