@@ -10,6 +10,7 @@ export const queryClient = new QueryClient({
     },
   },
 })
+console.log('🚀 ~ file: app-providers.tsx ~ line 13 ~ queryClient', queryClient)
 
 export function AppProviders({children}: PropsWithChildren<unknown>) {
   return (
