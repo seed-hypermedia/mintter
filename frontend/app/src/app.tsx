@@ -17,7 +17,7 @@ const globalStyles = globalCss({
   },
 })
 
-export const App: React.FC = () => {
+export function App() {
   globalStyles()
 
   return (
