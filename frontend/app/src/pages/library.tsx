@@ -7,7 +7,9 @@ import {styled} from '@mintter/ui/stitches.config'
 import {Text, textStyles} from '@mintter/ui/text'
 import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {PropsWithChildren, useCallback, useEffect} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
 import {Link, Route, Switch, useLocation, useRoute} from 'wouter'
+import {AppError} from '../app'
 import {Connections} from '../components/connections'
 import {Container} from '../components/container'
 import * as MessageBox from '../components/message-box'
@@ -99,7 +101,9 @@ export default function Library() {
             <ListPage onCreateDraft={onCreateDraft} useDataHook={useMyPublicationsList} />
           </Route>
           <Route path="/library/drafts">
-            <DraftListPage onCreateDraft={onCreateDraft} />
+            <ErrorBoundary FallbackComponent={AppError} onReset={() => window.location.reload()}>
+              <DraftListPage onCreateDraft={onCreateDraft} />
+            </ErrorBoundary>
           </Route>
         </Switch>
       </Container>
