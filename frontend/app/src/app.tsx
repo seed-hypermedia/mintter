@@ -3,7 +3,6 @@ import type {FallbackProps} from 'react-error-boundary'
 import {ErrorBoundary} from 'react-error-boundary'
 import {attachConsole, error} from 'tauri-plugin-log-api'
 import {AuthorNode} from './author-node'
-import {SidepanelProvider} from './components/sidepanel'
 
 if (!import.meta.env.SSR) {
   attachConsole()
@@ -20,6 +19,7 @@ const globalStyles = globalCss({
 
 export const App: React.FC = () => {
   globalStyles()
+
   return (
     <ErrorBoundary
       FallbackComponent={AppError}
@@ -27,9 +27,7 @@ export const App: React.FC = () => {
         location.reload()
       }}
     >
-      <SidepanelProvider>
-        <AuthorNode />
-      </SidepanelProvider>
+      <AuthorNode />
     </ErrorBoundary>
   )
 }
