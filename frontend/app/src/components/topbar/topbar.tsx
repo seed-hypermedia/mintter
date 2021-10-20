@@ -1,88 +1,157 @@
+import {createDraft} from '@mintter/client'
 import {Box} from '@mintter/ui/box'
-import {Button, buttonStyles} from '@mintter/ui/button'
+import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
-import {styled} from '@mintter/ui/stitches.config'
+import {css, styled} from '@mintter/ui/stitches.config'
+import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
-import {FormEvent, PropsWithChildren, useRef} from 'react'
+import {useCallback} from 'react'
+import {useQueryClient} from 'react-query'
 import {Link, useLocation} from 'wouter'
-import {MINTTER_LINK_PREFIX} from '../../constants'
-import {Container} from '../container'
+import {Settings} from '../settings'
+import {SIDEBAR_WIDTH} from '../sidebar'
+import {useSidepanel} from '../sidepanel'
+import {Tooltip} from '../tooltip'
 
-const SettingsButton = styled(Link, buttonStyles)
+export const TopbarStyled = styled(Box, {
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  right: 0,
+  zIndex: '$max',
+  width: '$full',
+  height: 64,
+  display: 'flex',
+})
 
-export function Topbar(props: PropsWithChildren<unknown>) {
+export const topbarSection = css({
+  height: '$full',
+  display: 'flex',
+  alignItems: 'center',
+})
+
+export function Topbar() {
+  return (
+    <TopbarStyled>
+      <SidenavBar />
+      <MainBar />
+      <TopbarActions />
+    </TopbarStyled>
+  )
+}
+
+function SidenavBar() {
   return (
     <Box
+      className={topbarSection()}
       css={{
-        display: 'grid',
-        gridAutoFlow: 'column',
-        gridTemplateColumns: '100px 1fr 100px',
-        paddingHorizontal: '$5',
-        height: 64,
-        gap: '$4',
-        borderBottom: '1px solid $colors$background-neutral',
-        alignItems: 'center',
+        width: SIDEBAR_WIDTH,
+        flex: 'none',
+        justifyContent: 'space-between',
+        paddingLeft: '$7',
+        paddingRight: '$4',
       }}
-      {...props}
     >
-      <Link to={`/`}>
-        <Icon name="Mintter" size="2" color="primary" />
+      <Link to="/">
+        <Text alt fontWeight="bold" size="5">
+          Mintter
+        </Text>
       </Link>
-      <Container
-        css={{
-          marginHorizontal: 'auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Box
-          css={{
-            display: 'flex',
-            marginRight: '$4',
-          }}
-        >
-          <Button color="muted" variant="ghost" size="1" onClick={() => history.back()}>
-            <Icon name="ArrowLeft" />
-          </Button>
-          <Button color="muted" variant="ghost" size="1" onClick={() => history.forward()}>
-            <Icon name="ArrowRight" />
-          </Button>
-        </Box>
-        <Search />
-      </Container>
-      <Box css={{display: 'flex', justifyContent: 'flex-end'}}>
-        <SettingsButton to={`/settings`} variant="ghost" size="1">
-          <Icon name="GearOutlined" size="1" />
-        </SettingsButton>
+      <Box css={{display: 'flex', gap: '$4'}}>
+        <Button variant="ghost" size="0" color="muted">
+          <Icon name="CardStackPlus" size="2" />
+        </Button>
+        <Button variant="ghost" size="0" color="muted">
+          <Icon name="Sidenav" size="2" />
+        </Button>
       </Box>
     </Box>
   )
 }
 
-function Search() {
-  const ref = useRef<HTMLInputElement>(null)
-  const [, setLocation] = useLocation()
-
-  // TODO: fix types
-  async function handleSearch(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    let to = ref.current?.value as string
-    if (to.includes(MINTTER_LINK_PREFIX)) {
-      to = to.split('/')[2]
+function MainBar() {
+  const [location, setLocation] = useLocation()
+  const client = useQueryClient()
+  const onCreateDraft = useCallback(async function onCreateDraft() {
+    try {
+      const d = await createDraft()
+      if (d?.id) {
+        client.refetchQueries('DraftsList')
+        setLocation(`/editor/${d.id}`)
+      }
+    } catch (err) {
+      console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
     }
-    // console.log('input value', {to, original: ref.current.value})
+  }, [])
+  return (
+    <Box
+      className={topbarSection()}
+      css={{
+        paddingLeft: '$7',
+        paddingRight: '$4',
+        pointerEvents: 'all',
+        flex: 1,
+        display: 'flex',
+        gap: '$5',
+        background: '$background-alt',
+        borderBottom: '1px solid rgba(0,0,0,0.1)',
+      }}
+    >
+      <Button size="1" variant="ghost" color="muted" onClick={onCreateDraft}>
+        <Icon name="PencilAdd" color="muted" />
+      </Button>
+      <TopbarNavigation />
+      <Box css={{width: '100%', maxWidth: '800px'}}>
+        <TextField value={location} />
+      </Box>
+    </Box>
+  )
+}
 
-    if (ref.current) {
-      ref.current.value = ''
-    }
+function TopbarNavigation() {
+  return (
+    <Box css={{display: 'flex'}}>
+      <Button size="1" variant="ghost" color="muted" onClick={() => window.history.back()}>
+        <Icon name="ArrowChevronLeft" color="muted" />
+      </Button>
+      <Button size="1" variant="ghost" color="muted" onClick={() => window.history.forward()}>
+        <Icon name="ArrowChevronRight" color="muted" />
+      </Button>
+    </Box>
+  )
+}
 
-    setLocation(`/p/${to}`)
+function TopbarActions() {
+  const {state, send: sidepanelSend} = useSidepanel()
+
+  const canSidepanel = state.can('SIDEPANEL_TOGGLE')
+
+  function toggleSidepanel() {
+    sidepanelSend({type: 'SIDEPANEL_TOGGLE'}, {to: 'sidepanel', id: 'sidepanel'})
   }
 
   return (
-    <Box as="form" css={{width: '100%'}} onSubmit={handleSearch}>
-      <TextField ref={ref} name="hash-search" placeholder="Enter a publication CID" shape="pill" />
+    <Box
+      className={topbarSection()}
+      css={{
+        background: '$background-alt',
+        flex: 'none',
+        paddingLeft: '$7',
+        paddingRight: '$4',
+        pointerEvents: 'all',
+        display: 'flex',
+        gap: '$4',
+        borderBottom: '1px solid rgba(0,0,0,0.1)',
+      }}
+    >
+      {canSidepanel && (
+        <Tooltip content="Toogle Sidepanel">
+          <Button size="1" variant="ghost" color="muted" onClick={toggleSidepanel}>
+            <Icon name="Sidepanel" color="muted" />
+          </Button>
+        </Tooltip>
+      )}
+      <Settings />
     </Box>
   )
 }

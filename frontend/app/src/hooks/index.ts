@@ -88,11 +88,15 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
  * @returns
  */
 export function useDraftsList() {
-  const draftsListQuery = useQuery<ListDraftsResponse>('DraftList', () => {
+  const draftsListQuery = useQuery<ListDraftsResponse>('DraftsList', () => {
     return listDrafts()
   })
+  console.log('🚀 ~ file: index.ts ~ line 90 ~ useDraftsList ~ draftsListQuery', draftsListQuery)
 
-  const data = useMemo(() => draftsListQuery.data?.documents.map((d) => ({document: d})), [draftsListQuery])
+  const data: Array<{document: Document}> = useMemo(
+    () => draftsListQuery.data?.documents?.map((d) => ({document: d})),
+    [draftsListQuery],
+  )
 
   return {
     ...draftsListQuery,
@@ -175,16 +179,9 @@ export function useOthersPublicationsList(options: HookOptions<ListPublicationsR
     },
     options,
   )
-  const data = useMemo(
-    () =>
-      myPubsListQuery.data?.publications.reduce((acc: Array<Publication>, current: Publication) => {
-        if (current.document?.author != info?.accountId) {
-          return (acc = [...acc, current])
-        }
-
-        return acc
-      }, []),
-    [myPubsListQuery, info],
+  const data: Array<Publication> = useMemo(
+    () => myPubsListQuery.data?.publications.filter((current) => current.document?.author != info?.accountId),
+    [myPubsListQuery.data, info?.accountId],
   )
 
   return {
@@ -203,16 +200,9 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
     },
     options,
   )
-  const data = useMemo(
-    () =>
-      myPubsListQuery.data?.publications.reduce((acc: Array<Publication>, current: Publication) => {
-        if (current.document?.author == info?.accountId) {
-          return (acc = [...acc, current])
-        }
-
-        return acc
-      }, []),
-    [myPubsListQuery, info],
+  const data: Array<Publication> = useMemo(
+    () => myPubsListQuery.data?.publications.filter((current) => current.document?.author == info?.accountId),
+    [myPubsListQuery.data, info?.accountId],
   )
 
   return {

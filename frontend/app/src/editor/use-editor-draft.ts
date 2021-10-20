@@ -3,7 +3,7 @@ import {MttastContent} from '@mintter/mttast'
 import {createId, group, paragraph, statement, text} from '@mintter/mttast-builder'
 import {useMachine} from '@xstate/react'
 import isEqual from 'fast-deep-equal'
-import {useEffect} from 'react'
+import {useEffect, useRef} from 'react'
 import {QueryClient, useQueryClient} from 'react-query'
 import {ActionFunction, assign, createMachine, State} from 'xstate'
 
@@ -110,6 +110,9 @@ const draftEditorMachine = ({afterPublish, loadAnnotations, client}: DraftEditor
                 },
                 PUBLISH: {
                   target: 'publishing',
+                },
+                FETCH: {
+                  target: '#fetching',
                 },
               },
             },
@@ -256,8 +259,9 @@ export type UseEditorDraftParams = DraftEditorMachineProps & {
 
 export function useEditorDraft({documentId, ...afterActions}: UseEditorDraftParams) {
   const client = useQueryClient()
+  const machine = useRef(draftEditorMachine({...afterActions, client}))
 
-  const [state, send] = useMachine(draftEditorMachine({...afterActions, client}), {devTools: true})
+  const [state, send] = useMachine(machine.current, {devTools: true})
 
   useEffect(() => {
     if (documentId) {

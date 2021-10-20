@@ -7,7 +7,7 @@ import {Button} from '../button'
 import {styled} from '../stitches.config'
 import {dialogContentStyles, DialogDescription, dialogFooterStyles, DialogTitle, overlayStyles} from './dialog-styles'
 
-const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
+export const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 
 function Root({children, ...props}: any) {
   return (

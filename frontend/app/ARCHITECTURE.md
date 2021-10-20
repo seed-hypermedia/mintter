@@ -3,7 +3,7 @@
 ## SSR
 
 With traditional web apps, it's common to see loading times and blank screens before anything will be rendered to
-screen. This doesn't feel very _native_ though, so it's important we optimize for a fast first-paint. We archieve this
+screen. This doesn't feel very _native_ though, so it's important we optimize for a fast first-paint. We achieve this
 through prerendering our entry points. The setup for this follows the
 [vite SSR guide](https://vitejs.dev/guide/ssr.html) especially the
 [react example](https://github.com/vitejs/vite/tree/main/packages/playground/ssr-react).

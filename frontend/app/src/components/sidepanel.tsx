@@ -175,8 +175,12 @@ export function isOpenSelector(state: State<SidepanelContextType>) {
   return state.matches('enabled.opened')
 }
 
-export function sidepanelItems(state: State<SidepanelContextType>) {
+export function sidepanelBookmarks(state: State<SidepanelContextType>) {
   return state.context.bookmarks
+}
+
+export function sidepanelAnnotations(state: State<SidepanelContextType>) {
+  return state.context.annotations
 }
 
 export function useSidepanel() {
@@ -187,12 +191,16 @@ export function useSidepanel() {
   }
   const {send} = service
   const isOpen = useSelector(service, isOpenSelector)
+  const bookmarks = useSelector(service, sidepanelBookmarks)
+  const annotations = useSelector(service, sidepanelAnnotations)
   const [state] = useActor(service)
+
   return {
+    state,
     isOpen,
     send,
-    bookmarks: state.context.bookmarks,
-    annotations: state.context.annotations,
+    bookmarks,
+    annotations,
   }
 }
 
