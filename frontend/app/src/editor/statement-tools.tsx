@@ -166,9 +166,16 @@ function setType(fn: any) {
   return function setToStatementType(editor: Editor, element: MttastContent, at: Path) {
     console.log('setType: ', {fn, element, at})
     Editor.withoutNormalizing(editor, function () {
-      const {children, ...props} = element
-      Transforms.removeNodes(editor, {at})
-      Transforms.insertNodes(editor, fn({...props}, children), {at})
+      const keys = Object.keys(element).filter((key) => !['type', 'id', 'children', 'data'].includes(key))
+
+      if (keys.length) {
+        Transforms.unsetNodes(editor, keys, {at})
+      }
+
+      // IDs are meant to be stable, so we shouldn't obverride it
+      const {id, ...props} = fn()
+
+      Transforms.setNodes(editor, props, {at})
     })
   }
 }
