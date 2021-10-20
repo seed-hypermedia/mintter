@@ -16,6 +16,12 @@ export const buttonStyles = css({
 
   variants: {
     size: {
+      0: {
+        '$$outlined-border-size': '1px',
+        fontSize: '$2',
+        lineHeight: '$1',
+        padding: '$1',
+      },
       1: {
         '$$outlined-border-size': '1px',
         fontSize: '$2',

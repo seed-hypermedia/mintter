@@ -5,7 +5,7 @@ import {css, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {useEffect} from 'react'
-import {useLocation, useRoute} from 'wouter'
+import {useLocation} from 'wouter'
 import {Avatar} from '../components/avatar'
 import {PageLayout} from '../components/page-layout'
 import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
@@ -40,8 +40,11 @@ const headerFooterStyle = css({
   },
 })
 
-export default function Publication() {
-  const [, params] = useRoute<{docId: string}>('/p/:docId')
+type PublicationPageProps = {
+  params: {docId: string}
+}
+
+export default function Publication({params}: PublicationPageProps) {
   const [, setLocation] = useLocation()
   const {send: sidepanelSend, isOpen: isSidepanelOpen, annotations} = useSidepanel()
   const {status, data, error} = usePublication(params!.docId)
@@ -66,7 +69,7 @@ export default function Publication() {
 
   async function handleUpdate() {
     try {
-      const d = await createDraft(params!.docId)
+      const d = await createDraft(params.docId)
       if (d?.id) {
         setLocation(`/editor/${d.id}`)
       }
@@ -91,33 +94,6 @@ export default function Publication() {
     <PageLayout isSidepanelOpen={isSidepanelOpen} data-testid="publication-wrapper">
       <Box
         css={{
-          display: 'flex',
-          gridArea: 'controls',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          gap: '$2',
-          borderBottom: '1px solid rgba(0,0,0,0.1)',
-          paddingHorizontal: '$5',
-        }}
-      >
-        {canUpdate && (
-          <Button color="success" shape="pill" size="2" onClick={handleUpdate}>
-            UPDATE
-          </Button>
-        )}
-        <Button
-          size="1"
-          color="muted"
-          variant="outlined"
-          onClick={() => {
-            sidepanelSend('SIDEPANEL_TOGGLE')
-          }}
-        >
-          {`${isSidepanelOpen ? 'Close' : 'Open'} sidepanel`}
-        </Button>
-      </Box>
-      <Box
-        css={{
           gridArea: 'maincontent',
           width: '90%',
           marginBottom: 300,
@@ -130,6 +106,11 @@ export default function Publication() {
           },
         }}
       >
+        {canUpdate && (
+          <Button variant="outlined" color="success" shape="pill" onClick={handleUpdate}>
+            Update
+          </Button>
+        )}
         <PublicationHeader document={data?.document} />
         <Box css={{marginTop: 50, width: '$full', maxWidth: '64ch'}}>
           <Editor mode={EditorMode.Publication} value={data?.document?.content} />
@@ -149,6 +130,7 @@ function PublicationHeader({document}: {document?: EditorDocument}) {
   return document ? (
     <Box
       css={{
+        marginTop: '$5',
         display: 'grid',
         gridTemplateColumns: '1fr',
         gridTemplateRows: '32px min-content min-content min-content',

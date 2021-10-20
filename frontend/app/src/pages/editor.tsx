@@ -7,16 +7,18 @@ import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {FormEvent, useEffect, useRef, useState} from 'react'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
-import {useLocation, useRoute} from 'wouter'
-import {Container} from '../components/container'
+import {useLocation} from 'wouter'
 import {PageLayout} from '../components/page-layout'
 import {Separator} from '../components/separator'
 import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
 import {Editor, useEditorDraft} from '../editor'
 import type {DraftEditorMachineContext, DraftEditorMachineState} from '../editor/use-editor-draft'
 
-export default function EditorPage() {
-  const [, params] = useRoute<{docId: string}>('/editor/:docId')
+type EditorPageProps = {
+  params: {docId: string}
+}
+
+export default function EditorPage({params}: EditorPageProps) {
   const client = useQueryClient()
   const [, setLocation] = useLocation()
   const toast = useRef('')
@@ -73,129 +75,115 @@ export default function EditorPage() {
       <PageLayout isSidepanelOpen={isSidepanelOpen} data-testid="editor-wrapper">
         <Box
           css={{
-            display: 'flex',
-            gridArea: 'controls',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            gap: '$2',
-            borderBottom: '1px solid rgba(0,0,0,0.1)',
-            paddingHorizontal: '$5',
-          }}
-        >
-          <Button color="primary" shape="pill" size="2" onClick={() => send({type: 'PUBLISH'})}>
-            PUBLISH
-          </Button>
-          <Button
-            data-testid="sidepanel-button"
-            size="1"
-            color="muted"
-            variant="outlined"
-            onClick={() => {
-              sidepanelSend('SIDEPANEL_TOGGLE')
-            }}
-          >
-            {`${isSidepanelOpen ? 'Close' : 'Open'} sidepanel`}
-          </Button>
-        </Box>
-        <Container
-          css={{
             gridArea: 'maincontent',
+            width: '90%',
             marginBottom: 300,
-            paddingTop: '$7',
+            padding: '$5',
+            paddingTop: '$8',
+            marginHorizontal: '$4',
+            '@bp2': {
+              paddingTop: '$8',
+              marginHorizontal: '$9',
+            },
           }}
         >
-          <EditorStatus state={state} />
-          <TextField
-            // @todo: Fix types
-            // @ts-ignore
-            textarea
-            data-testid="editor_title"
-            name="title"
-            placeholder="Document title"
-            value={context?.localDraft?.title}
-            onChange={(event: FormEvent<HTMLInputElement>) => {
-              // update window title as the user types
-              getCurrentWindow().setTitle(event.currentTarget.value)
+          <Box css={{width: '$full', maxWidth: '64ch'}}>
+            <Button onClick={() => send('PUBLISH')} size="2" shape="pill" variant="outlined">
+              Publish
+            </Button>
+            <EditorStatus state={state} />
+            <TextField
+              // @todo: Fix types
+              // @ts-ignore
+              textarea
+              data-testid="editor_title"
+              name="title"
+              placeholder="Document title"
+              value={context?.localDraft?.title}
+              onChange={(event: FormEvent<HTMLInputElement>) => {
+                // update window title as the user types
+                getCurrentWindow().setTitle(event.currentTarget.value)
 
-              send({
-                type: 'UPDATE',
-                payload: {
-                  title: event.currentTarget.value,
-                },
-              })
-            }}
-            rows={1}
-            css={{
-              $$backgroundColor: '$colors$background-alt',
-              $$borderColor: 'transparent',
-              $$hoveredBorderColor: 'transparent',
-              fontSize: '$7',
-              fontWeight: '$bold',
-              letterSpacing: '0.01em',
-              lineHeight: '$1',
-            }}
-          />
-          <TextField
-            textarea
-            data-testid="editor_subtitle"
-            name="subtitle"
-            placeholder="about this publication..."
-            value={context.localDraft.subtitle}
-            onChange={(event: FormEvent<HTMLInputElement>) =>
-              send({
-                type: 'UPDATE',
-                payload: {
-                  subtitle: event.currentTarget.value,
-                },
-              })
-            }
-            rows={1}
-            css={{
-              $$backgroundColor: '$colors$background-alt',
-              $$borderColor: 'transparent',
-              $$hoveredBorderColor: 'transparent',
-              fontSize: '$5',
-              lineHeight: '1.25',
-            }}
-          />
-          <Separator />
-          {context.localDraft?.content && (
-            <>
-              <Editor
-                value={context.localDraft.content}
-                onChange={(content) => {
-                  send({
-                    type: 'UPDATE',
-                    payload: {
-                      content,
-                    },
-                  })
-                  sidepanelSend({
-                    type: 'SIDEPANEL_LOAD_ANNOTATIONS',
-                    payload: content,
-                  })
-                }}
-              />
-              <Box css={{marginTop: 40}}>
-                <button type="button" onClick={() => setVisible((v) => !v)}>
-                  toggle Value
-                </button>
-                {visible && (
-                  <Box
-                    as="pre"
-                    css={{
-                      padding: 20,
-                      backgroundColor: '$background-muted',
-                      overflowX: 'scroll',
-                    }}
-                  >
-                    {JSON.stringify(context.localDraft.content, null, 2)}
-                  </Box>
-                )}
-              </Box>
-            </>
-          )}
-        </Container>
+                send({
+                  type: 'UPDATE',
+                  payload: {
+                    title: event.currentTarget.value,
+                  },
+                })
+              }}
+              rows={1}
+              css={{
+                $$backgroundColor: '$colors$background-alt',
+                $$borderColor: 'transparent',
+                $$hoveredBorderColor: 'transparent',
+                fontSize: '$7',
+                fontWeight: '$bold',
+                letterSpacing: '0.01em',
+                lineHeight: '$1',
+              }}
+            />
+            <TextField
+              textarea
+              data-testid="editor_subtitle"
+              name="subtitle"
+              placeholder="about this publication..."
+              value={context.localDraft.subtitle}
+              onChange={(event: FormEvent<HTMLInputElement>) =>
+                send({
+                  type: 'UPDATE',
+                  payload: {
+                    subtitle: event.currentTarget.value,
+                  },
+                })
+              }
+              rows={1}
+              css={{
+                $$backgroundColor: '$colors$background-alt',
+                $$borderColor: 'transparent',
+                $$hoveredBorderColor: 'transparent',
+                fontSize: '$5',
+                lineHeight: '1.25',
+              }}
+            />
+            <Separator />
+            {context.localDraft?.content && (
+              <>
+                <Editor
+                  value={context.localDraft.content}
+                  onChange={(content) => {
+                    send({
+                      type: 'UPDATE',
+                      payload: {
+                        content,
+                      },
+                    })
+                    sidepanelSend({
+                      type: 'SIDEPANEL_LOAD_ANNOTATIONS',
+                      payload: content,
+                    })
+                  }}
+                />
+                <Box css={{marginTop: 40}}>
+                  <button type="button" onClick={() => setVisible((v) => !v)}>
+                    toggle Value
+                  </button>
+                  {visible && (
+                    <Box
+                      as="pre"
+                      css={{
+                        padding: 20,
+                        backgroundColor: '$background-muted',
+                        overflowX: 'scroll',
+                      }}
+                    >
+                      {JSON.stringify(context.localDraft.content, null, 2)}
+                    </Box>
+                  )}
+                </Box>
+              </>
+            )}
+          </Box>
+        </Box>
         {isSidepanelOpen && <Sidepanel gridArea="rightside" />}
       </PageLayout>
     )
@@ -213,6 +201,7 @@ function EditorStatus({state}: {state: DraftEditorMachineState}) {
         alignItems: 'center',
         paddingHorizontal: '$4',
         paddingVertical: '$2',
+        marginTop: '$5',
       }}
     >
       <Box

@@ -64,7 +64,7 @@ function ListItem({item, toPrefix, isDraft}: ListItemProps) {
     deleteConfirmationDialogMachine({
       onSuccess: () => {
         toast.success(`${isDraft ? 'Draft' : 'Publication'} deleted successfully`)
-        queryClient.invalidateQueries(isDraft ? 'DraftList' : 'PublicationList')
+        queryClient.invalidateQueries(isDraft ? 'DraftsList' : 'PublicationList')
       },
     }),
   )
