@@ -1,6 +1,4 @@
 import {Account, connect, ConnectionStatus, getPeerInfo, ListAccountsResponse} from '@mintter/client'
-import type {HookOptions} from '@mintter/client/hooks'
-import {useListAccounts} from '@mintter/client/hooks'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Prompt} from '@mintter/ui/dialog'
@@ -11,6 +9,8 @@ import * as HoverCard from '@radix-ui/react-hover-card'
 import {FormEvent, useState} from 'react'
 import toast from 'react-hot-toast'
 import {useQuery} from 'react-query'
+import type {HookOptions} from '../../hooks'
+import {useListAccounts} from '../../hooks'
 import {ConnectionsShell} from './connections-shell'
 
 type ConnectionsProps = {

@@ -1,9 +1,9 @@
-import {HookOptions, useDraftsList} from '@mintter/client/hooks'
 import {Text} from '@mintter/ui/text'
 import type {UseQueryResult} from 'react-query'
 import type {DocumentListData} from '../components/document-list'
 import {DocumentList, DummyListItem} from '../components/document-list'
 import * as MessageBox from '../components/message-box'
+import {HookOptions, useDraftsList} from '../hooks'
 
 export type ListPageProps = {
   onCreateDraft: () => void

@@ -1,8 +1,8 @@
-import {usePublication} from '@mintter/client/hooks'
 import {FlowContent} from '@mintter/mttast'
 import {document} from '@mintter/mttast-builder'
 import {useMemo} from 'react'
 import {visit} from 'unist-util-visit'
+import {usePublication} from '../../hooks'
 import {getEmbedIds} from './get-embed-ids'
 
 export function useEmbed(url: string) {

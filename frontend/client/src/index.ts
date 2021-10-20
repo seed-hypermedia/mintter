@@ -1,4 +1,4 @@
-export {
+export type {
   Account,
   Account_DevicesEntry,
   Device,
@@ -9,7 +9,7 @@ export {
   Profile,
   ProfileUpdated,
 } from '../.generated/accounts/v1alpha/accounts'
-export {
+export type {
   GenSeedRequest,
   GenSeedResponse,
   GetInfoRequest,
@@ -32,8 +32,8 @@ export {
   PublishDraftRequest,
   UpdateDraftRequest,
 } from '../.generated/documents/v1alpha/documents'
-export {
-  ConnectionStatus,
+export {ConnectionStatus} from '../.generated/networking/v1alpha/networking'
+export type {
   ConnectRequest,
   ConnectResponse,
   GetObjectDiscoveryStatusRequest,
@@ -49,5 +49,6 @@ export {generateSeed, getAccount, listAccounts, registerAccount, updateAccount} 
 export {getInfo} from './daemon'
 export {createDraft, deleteDraft, getDraft, listDrafts, publishDraft, updateDraft} from './drafts'
 export {createGrpcClient} from './grpc-client'
+export type {GrpcClient} from './grpc-client'
 export {connect, getPeerInfo, listPeerAddrs} from './networking'
 export {deletePublication, getPublication, listPublications} from './publications'

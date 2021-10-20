@@ -2148,6 +2148,7 @@ __metadata:
     "@mintter/mttast-builder": ^0.1.0
     "@types/faker": ^5.5.6
     "@types/google-protobuf": ^3.15.2
+    "@types/long": ^4.0.1
     "@types/unist": ^2.0.6
     "@typescript-eslint/eslint-plugin": ^4.31.2
     "@typescript-eslint/parser": ^4.31.2
@@ -2160,7 +2161,6 @@ __metadata:
     long: ^4.0.0
     prettier: ^2.4.1
     protobufjs: ^6.11.2
-    react-query: ^3.23.2
     typescript: ^4.4.2
     unist-builder: ^3.0.0
   languageName: unknown

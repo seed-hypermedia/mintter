@@ -1,5 +1,4 @@
 import {createDraft} from '@mintter/client'
-import {useAccount, useMyPublicationsList, useOthersPublicationsList} from '@mintter/client/hooks'
 import {Box} from '@mintter/ui/box'
 import {Button, buttonStyles} from '@mintter/ui/button'
 import type {CSS} from '@mintter/ui/stitches.config'
@@ -14,6 +13,7 @@ import {Connections} from '../components/connections'
 import {Container} from '../components/container'
 import * as MessageBox from '../components/message-box'
 import {Separator} from '../components/separator'
+import {useAccount, useMyPublicationsList, useOthersPublicationsList} from '../hooks'
 import {DraftListPage, ListPage} from './list-page'
 
 export default function Library() {

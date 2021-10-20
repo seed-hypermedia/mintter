@@ -4,7 +4,6 @@
   "main": "index.js",
   "license": "MIT",
   "exports": {
-    "./hooks": "./hooks/index.ts",
     ".": "./src/index.ts"
   },
   "scripts": {
@@ -23,10 +22,10 @@
     "google-protobuf": "^3.17.2",
     "long": "^4.0.0",
     "protobufjs": "^6.11.2",
-    "react-query": "^3.23.2",
     "unist-builder": "^3.0.0"
   },
   "devDependencies": {
+    "@types/long": "^4.0.1",
     "@typescript-eslint/eslint-plugin": "^4.31.2",
     "@typescript-eslint/parser": "^4.31.2",
     "eslint": "^7.32.0",
