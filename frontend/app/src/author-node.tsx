@@ -1,4 +1,3 @@
-import {useInfo} from '@mintter/client/hooks'
 import {Box} from '@mintter/ui/box'
 import {Text} from '@mintter/ui/text'
 import {lazy} from 'react'
@@ -7,6 +6,7 @@ import {Redirect, Route, Switch} from 'wouter'
 import {AppError} from './app'
 import {SidepanelProvider} from './components/sidepanel'
 import {Topbar} from './components/topbar'
+import {useInfo} from './hooks'
 
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
 const Library = lazy(() => import('./pages/library'))

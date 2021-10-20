@@ -1,5 +1,4 @@
 import {updateAccount} from '@mintter/client'
-import {useAccount} from '@mintter/client/hooks'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
@@ -13,6 +12,7 @@ import {useMutation, useQueryClient} from 'react-query'
 import {Container} from '../components/container'
 import {PeerAddrs} from '../components/peer-addrs'
 import {Separator} from '../components/separator'
+import {useAccount} from '../hooks'
 
 type ProfileInformationDataType = {
   alias: string

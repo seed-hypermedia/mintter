@@ -1,5 +1,4 @@
 import {createDraft} from '@mintter/client'
-import {useAccount, useInfo, usePublication} from '@mintter/client/hooks'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {css, styled} from '@mintter/ui/stitches.config'
@@ -12,6 +11,7 @@ import {PageLayout} from '../components/page-layout'
 import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
 import {Editor} from '../editor'
 import {EditorMode} from '../editor/plugin-utils'
+import {useAccount, useInfo, usePublication} from '../hooks'
 import {getDateFormat} from '../utils/get-format-date'
 
 const Heading = styled('h1', {

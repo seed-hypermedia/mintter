@@ -1,21 +1,25 @@
-import type {FlowContent} from '@mintter/mttast'
-import {useMemo} from 'react'
-import type {UseQueryResult} from 'react-query'
-import {useQuery, useQueryClient} from 'react-query'
-import type {ListAccountsResponse} from '../.generated/accounts/v1alpha/accounts'
-import type {Account, Document, Info, PeerInfo, Publication} from '../src'
 import {
+  Account,
+  Document,
   getAccount,
   getDraft,
   getInfo,
   getPublication,
+  Info,
   listAccounts,
+  ListAccountsResponse,
   listDrafts,
   ListDraftsResponse,
   listPeerAddrs,
   listPublications,
   ListPublicationsResponse,
-} from '../src'
+  PeerInfo,
+  Publication,
+} from '@mintter/client'
+import type {FlowContent} from '@mintter/mttast'
+import {useMemo} from 'react'
+import type {UseQueryResult} from 'react-query'
+import {useQuery, useQueryClient} from 'react-query'
 import type {HookOptions} from './types'
 
 export * from './types'
@@ -164,7 +168,7 @@ export function usePublication(publicationId: string, options: HookOptions<Publi
 export function useOthersPublicationsList(options: HookOptions<ListPublicationsResponse> = {}) {
   const queryClient = useQueryClient()
   const info = queryClient.getQueryData<Info>('AccountInfo')
-  const myPubsListQuery = useQuery<ListPublicationsResponse>(
+  const myPubsListQuery = useQuery(
     ['PublicationList', 'OthersPublications'],
     async () => {
       return listPublications()
@@ -192,7 +196,7 @@ export function useOthersPublicationsList(options: HookOptions<ListPublicationsR
 export function useMyPublicationsList(options: HookOptions<ListPublicationsResponse> = {}) {
   const queryClient = useQueryClient()
   const info = queryClient.getQueryData<Info>('AccountInfo')
-  const myPubsListQuery = useQuery<ListPublicationsResponse>(
+  const myPubsListQuery = useQuery(
     ['PublicationList', 'MyPublications'],
     async () => {
       return listPublications()
@@ -218,7 +222,7 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
 }
 
 export function useListAccounts(options: HookOptions<ListAccountsResponse> = {}) {
-  const listAccountsQuery = useQuery<ListAccountsResponse>('ListAccounts', () => listAccounts(), {
+  const listAccountsQuery = useQuery('ListAccounts', () => listAccounts(), {
     refetchInterval: 5000,
     ...options,
   })

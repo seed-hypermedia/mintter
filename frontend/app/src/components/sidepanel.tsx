@@ -1,4 +1,3 @@
-import {useAccount} from '@mintter/client/hooks'
 import {isEmbed, isLink} from '@mintter/mttast'
 import {document} from '@mintter/mttast-builder'
 import {Box} from '@mintter/ui/box'
@@ -17,6 +16,7 @@ import {ContextMenu} from '../editor/context-menu'
 import {getEmbedIds, useEmbed} from '../editor/embed'
 import {EditorMode} from '../editor/plugin-utils'
 import {copyTextToClipboard} from '../editor/statement'
+import {useAccount} from '../hooks'
 import {getDateFormat} from '../utils/get-format-date'
 import {Avatar} from './avatar'
 
