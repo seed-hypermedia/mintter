@@ -1,6 +1,6 @@
 import {updateAccount} from '@mintter/client'
 import {Box} from '@mintter/ui/box'
-import {dialogContentStyles, DialogTitle, StyledOverlay} from '@mintter/ui/dialog'
+import {dialogContentStyles, DialogTitle} from '@mintter/ui/dialog'
 import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
@@ -23,10 +23,18 @@ type ProfileInformationDataType = {
   bio: string
 }
 
-export function Settings() {
+function SettingsRoot({children}: any) {
   return (
     <DialogPrimitive.Root>
-      <StyledOverlay />
+      {/* <StyledOverlay /> */}
+      {children}
+    </DialogPrimitive.Root>
+  )
+}
+
+export function Settings() {
+  return (
+    <SettingsRoot>
       <DialogPrimitive.Trigger asChild>
         <Button size="1" variant="ghost" color="muted">
           <Icon name="GearOutlined" color="muted" />
@@ -74,7 +82,7 @@ export function Settings() {
           </TabsContent>
         </StyledTabs>
       </Content>
-    </DialogPrimitive.Root>
+    </SettingsRoot>
   )
 }
 
