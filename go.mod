@@ -319,7 +319,6 @@ require (
 )
 
 replace (
-	github.com/lightninglabs/lndclient => ./third_party/lndclient
 	// github.com/lightningnetwork/lnd => ./third_party/lnd
 	github.com/lightninglabs/loop => ./third_party/loop
 	go.etcd.io/etcd => go.etcd.io/etcd v0.5.0-alpha.5.0.20201125193152-8a03d2e9614b
