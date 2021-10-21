@@ -79,5 +79,7 @@ type Loop struct {
 	Network        string `help:"Which network to use {mainnet,testnet,regtest (default)}."`
 	RawRPCListener string `help:"Add an interface/port/socket to listen for RPC connections" default:"127.0.0.1:11010"`
 
-	LoopDir string `help:"The base directory that contains loop's data, logs, configuration file, etc."`
+	LoopDir      string `help:"The base directory that contains loop's data, logs, configuration file, etc."`
+	ServerAddres string `help:"The address of the loop server. Only relevant in regtest" default:""`
+	NoTLS        bool   `help:"Disable tls for communication to the loop server" default:"false"`
 }
