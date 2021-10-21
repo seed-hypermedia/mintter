@@ -23,32 +23,33 @@ import (
 const (
 	coinbaseReward = 50
 	satsPerBtc     = 100000000
-	aliceBalance   = 1250000
+	aliceBalance   = 80000000
 	bobBalance     = 5500000
 	htclAmtMsats   = 75000_000
 	feesPercent    = 5
 )
 
 var (
-	bitcoindImage = "ruimarinho/bitcoin-core"
-	containerName = "bitcoinContainer"
-	walletCreated = false
+	bitcoindImage         = "ruimarinho/bitcoin-core"
+	bitcoindContainerName = "bitcoinContainer"
+	walletCreated         = false
+	aliceBobBitcoindCmd   = []string{"-regtest=1", "-txindex=1", "-fallbackfee=0.0002",
+		"-zmqpubrawblock=tcp://127.0.0.1:28332", "-zmqpubrawtx=tcp://127.0.0.1:28333",
+		"-rpcauth=" + bitcoindRPCGenericUser + ":" + bitcoindRPCGenericBinaryPass,
+		"-rpcauth=" + bitcoindRPCAliceUser + ":" + bitcoindRPCAliceBinaryPass,
+		"-rpcauth=" + bitcoindRPCBobUser + ":" + bitcoindRPCBobBinaryPass}
 
 	bitcoindRPCAliceUser       = "alice"
 	bitcoindRPCAliceAsciiPass  = "2NfbXsZPYQUq5nANSCttreiyJT1gAJv8ZoUNfsU7evQ="
 	bitcoindRPCAliceBinaryPass = "410905ded7ef5116b3d4bcb3cc187e77$0060c04d2a643576086971596eb3df02ca5e32acffe1caa697e96cf764a9d204"
+	gRPCAliceAddress           = "127.0.0.1:10109"
+	lndAliceAddress            = "0.0.0.0:9745"
 
 	bitcoindRPCBobUser       = "bob"
 	bitcoindRPCBobAsciiPass  = "2NfbXsZPYQUq5nANSCttreiyJT1gAJv8ZoUNfsU7evQ="
 	bitcoindRPCBobBinaryPass = "410905ded7ef5116b3d4bcb3cc187e77$0060c04d2a643576086971596eb3df02ca5e32acffe1caa697e96cf764a9d204"
-
-	bitcoindRPCCarolUser       = "carol"
-	bitcoindRPCCarolAsciiPass  = "hvkOnizG4vkoWAakJlc_deLDQblQlhmr3rikrpdty1U="
-	bitcoindRPCCarolBinaryPass = "b0b9aa23db2d181e8331e7f2ffeb69f1$9923bee41605b62997fdc9dd31dd968bd4cf27c5664e903929e640fcafe07491"
-
-	bitcoindRPCDaveUser       = "dave"
-	bitcoindRPCDaveAsciiPass  = "SG4IL6aYG2Nf2Z5fkDIRgBoUW3oU4pX1zno-8yJzCUM="
-	bitcoindRPCDaveBinaryPass = "9a894834ae2ddad8efea87ecb53148e8$ff95dda73df66a9b0dc7edfbe078ef5f82f9fae85acef511228588cc0f02596d"
+	gRPCBobAddress           = "127.0.0.1:10209"
+	lndBobAddress            = "0.0.0.0:9755"
 )
 
 func TestPeers(t *testing.T) {
@@ -69,10 +70,10 @@ func TestPeers(t *testing.T) {
 				Alias:           "alice",
 				UseNeutrino:     false,
 				Network:         "regtest",
-				LndDir:          "/tmp/lndirtests/alice",
+				LndDir:          testDir + "/alice",
 				NoNetBootstrap:  true,
-				RawRPCListeners: []string{"127.0.0.1:10009"},
-				RawListeners:    []string{"0.0.0.0:9735"},
+				RawRPCListeners: []string{gRPCAliceAddress},
+				RawListeners:    []string{lndAliceAddress},
 				BitcoindRPCUser: bitcoindRPCAliceUser,
 				BitcoindRPCPass: bitcoindRPCAliceAsciiPass,
 				DisableRest:     true,
@@ -82,10 +83,10 @@ func TestPeers(t *testing.T) {
 				Alias:           "bob",
 				UseNeutrino:     false,
 				Network:         "regtest",
-				LndDir:          "/tmp/lndirtests/bob",
+				LndDir:          testDir + "/bob",
 				NoNetBootstrap:  true,
-				RawRPCListeners: []string{"127.0.0.1:10069"},
-				RawListeners:    []string{"0.0.0.0:8735"},
+				RawRPCListeners: []string{gRPCBobAddress},
+				RawListeners:    []string{lndBobAddress},
 				BitcoindRPCUser: bitcoindRPCBobUser,
 				BitcoindRPCPass: bitcoindRPCBobAsciiPass,
 				DisableRest:     true,
@@ -165,10 +166,10 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	}
 
 	if !lnconfBob.UseNeutrino || !lnconfAlice.UseNeutrino {
-		if containerID, err = startContainer(bitcoindImage); err != nil {
+		if containerID, err = startContainer(bitcoindImage, aliceBobBitcoindCmd, bitcoindContainerName); err != nil {
 			return err
 		}
-		defer stopContainer(containerID)
+		defer stopContainer(containerID, bitcoindContainerName)
 
 		// Initial mining Coinbase goes to the miner (bitcoind)
 		if err = mineBlocks(uint32(minedBlocks), "", containerID); err != nil {
@@ -258,7 +259,7 @@ waitLoop:
 				} else {
 					fmt.Println("Alice received a peer notification from Bob:" + bobID)
 					if aliceID != "" && !channelOpened {
-						if txid, err := alice.OpenChannel(bobID, int64(aliceBalance)/2, int64(aliceBalance)/4,
+						if txid, err := alice.OpenChannel(bobID, "", int64(aliceBalance)/2, int64(aliceBalance)/4,
 							privateChans, blocksAfterOpening == 0, 0, false); err != nil {
 							return err
 						} else if err := mineBlocks(blocksAfterOpening, "", containerID); err != nil {
@@ -281,7 +282,6 @@ waitLoop:
 						invoiceCreated = true
 					} else {
 						if _, err = alice.PayInvoice(payReq, []uint64{}, htclAmtMsats, 0, feesPercent, "", 5); err != nil {
-							//fmt.Println("Alice tried to pay an invoice but failed: " + err.Error())
 							return err
 						} else if balance, err := alice.ChannelBalance(); err != nil {
 							return err
@@ -298,7 +298,6 @@ waitLoop:
 					}
 				}
 			default:
-				//fmt.Println("Got unexpected Alice update")
 				return fmt.Errorf("Got unexpected Alice update")
 			}
 		case <-clientAlice.Quit():
@@ -344,7 +343,7 @@ waitLoop:
 				} else {
 					fmt.Println("Bob received a peer notification from Alice:" + aliceID)
 					if bobID != "" && !channelOpened {
-						if txid, err := bob.OpenChannel(aliceID, int64(bobBalance)/2, int64(bobBalance)/4,
+						if txid, err := bob.OpenChannel(aliceID, "", int64(bobBalance)/2, int64(bobBalance)/4,
 							privateChans, blocksAfterOpening == 0, 0, false); err != nil {
 							return err
 						} else if err := mineBlocks(blocksAfterOpening, "", containerID); err != nil {
@@ -409,7 +408,7 @@ waitLoop:
 
 			}
 			i++
-			if i < 2000 {
+			if i < 20 {
 				time.Sleep(3 * time.Second)
 			} else {
 				return fmt.Errorf("Timeout reached!")
@@ -421,7 +420,7 @@ waitLoop:
 	return nil
 }
 
-func stopContainer(containerID string) error {
+func stopContainer(containerID string, containerName string) error {
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -447,7 +446,7 @@ func stopContainer(containerID string) error {
 	return nil
 }
 
-func startContainer(imageName string) (string, error) {
+func startContainer(imageName string, cmd []string, containerName string) (string, error) {
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -472,19 +471,14 @@ func startContainer(imageName string) (string, error) {
 			cli.ContainerRemove(ctx, container.ID, types.ContainerRemoveOptions{Force: true})
 		}
 	}
-	resp, err := cli.ContainerCreate(ctx, &container.Config{
-		Image: imageName, /*
-			ExposedPorts: nat.PortSet{
-				"18443/tcp": struct{}{},
-				"18444/tcp": struct{}{},
-			},*/
-
-		Cmd: []string{"-regtest=1", "-txindex=1", "-fallbackfee=0.0002",
+	if len(cmd) == 0 {
+		cmd = []string{"-regtest=1", "-txindex=1", "-fallbackfee=0.0002",
 			"-zmqpubrawblock=tcp://127.0.0.1:28332", "-zmqpubrawtx=tcp://127.0.0.1:28333",
-			"-rpcauth=" + bitcoindRPCGenericUser + ":" + bitcoindRPCGenericBinaryPass,
-			"-rpcauth=" + bitcoindRPCAliceUser + ":" + bitcoindRPCAliceBinaryPass,
-			"-rpcauth=" + bitcoindRPCBobUser + ":" + bitcoindRPCBobBinaryPass,
-			"-rpcauth=" + bitcoindRPCCarolUser + ":" + bitcoindRPCCarolBinaryPass},
+			"-rpcauth=" + bitcoindRPCGenericUser + ":" + bitcoindRPCGenericBinaryPass}
+	}
+	resp, err := cli.ContainerCreate(ctx, &container.Config{
+		Image: imageName,
+		Cmd:   cmd,
 	}, &container.HostConfig{NetworkMode: "host"}, nil, nil, containerName)
 	if err != nil {
 		return "", err

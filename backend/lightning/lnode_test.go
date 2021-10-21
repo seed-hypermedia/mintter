@@ -35,7 +35,10 @@ var (
 	bitcoindRPCGenericUser       = "mintter"
 	bitcoindRPCGenericAsciiPass  = "2NfbXsZPYQUq5nANSCttreiyJT1gAJv8ZoUNfsU7evQ="
 	bitcoindRPCGenericBinaryPass = "410905ded7ef5116b3d4bcb3cc187e77$0060c04d2a643576086971596eb3df02ca5e32acffe1caa697e96cf764a9d204"
+	gRPCGenericAddress           = "127.0.0.1:10009"
+	lndGenericAddress            = "0.0.0.0:9735"
 
+	testDir     = "/tmp/lndirtests"
 	cfg         config.Config
 	testEntropy = [aezeed.EntropySize]byte{
 		0x81, 0xb6, 0x37, 0xd8,
@@ -116,7 +119,7 @@ func TestStart(t *testing.T) {
 			lnconf: &config.LND{
 				UseNeutrino:     false,
 				Network:         "regtest",
-				LndDir:          "/tmp/lndirtests/startTest",
+				LndDir:          testDir + "/startTest",
 				NoNetBootstrap:  false,
 				BitcoindRPCUser: bitcoindRPCGenericUser,
 				BitcoindRPCPass: bitcoindRPCGenericAsciiPass,
@@ -165,7 +168,7 @@ func TestStart(t *testing.T) {
 			lnconf: &config.LND{
 				UseNeutrino:    true,
 				Network:        "testnet",
-				LndDir:         "/tmp/lndirtests/startTest",
+				LndDir:         testDir + "/startTest",
 				NoNetBootstrap: false,
 			},
 			subtest: []subset{
@@ -272,7 +275,7 @@ func TestStart(t *testing.T) {
 	var containerID string
 	for _, tt := range tests {
 		if !tt.lnconf.UseNeutrino {
-			containerID, errDocker = startContainer(bitcoindImage)
+			containerID, errDocker = startContainer(bitcoindImage, []string{""}, bitcoindContainerName)
 			require.NoError(t, errDocker, tt.name+". must succeed")
 		}
 		for _, subtest := range tt.subtest {
@@ -310,7 +313,7 @@ func TestStart(t *testing.T) {
 
 			})
 		}
-		stopContainer(containerID)
+		stopContainer(containerID, bitcoindContainerName)
 	}
 }
 
