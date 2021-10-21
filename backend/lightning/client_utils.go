@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/invoicesrpc"
@@ -123,10 +124,11 @@ func (d *Ldaemon) EstimateFees(TargetConf, MinConfs int32, SpendUnconfirmed bool
 // All amounts are in satoshis. If inmediate flag is set, then the channel can be created
 // with zero confirmations at a cost of higher fees. User can manually select the fees
 // associated with the funding transaction but it could be overiden if inmediate flag is set.
+// If addr provided, then we try to peer the node before opening the channel.
 // This function returns a channel point (Txid:index) the associated fees (in sats per virtual
 // byte) and any error on failure. If block flag is set, this function waits until the channel
 // is fully opened. It exits after pending channel otherwise
-func (d *Ldaemon) OpenChannel(counterpartyID string, localAmt, remoteAmt int64,
+func (d *Ldaemon) OpenChannel(counterpartyID string, addr string, localAmt, remoteAmt int64,
 	private, inmediate bool, satPerVbyte uint64, blocking bool) (string, error) {
 
 	lnclient := d.APIClient()
@@ -155,6 +157,25 @@ func (d *Ldaemon) OpenChannel(counterpartyID string, localAmt, remoteAmt int64,
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	if len(addr) != 0 {
+		address := &lnrpc.LightningAddress{
+			Pubkey: counterpartyID,
+			Host:   addr,
+		}
+
+		req := &lnrpc.ConnectPeerRequest{
+			Addr: address,
+			Perm: false,
+		}
+
+		// Check if connecting to the node was successful.
+		// We discard the peer id returned as it is not needed.
+		if _, err := lnclient.ConnectPeer(ctx, req); err != nil &&
+			!strings.Contains(err.Error(), "already connected") {
+			return "", err
+		}
+	}
 
 	if stream, err := lnclient.OpenChannel(ctx, &lnrpc.OpenChannelRequest{
 		SatPerVbyte:                satPerVbyte,
