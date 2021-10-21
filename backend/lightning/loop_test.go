@@ -3,6 +3,7 @@ package lightning
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
@@ -10,6 +11,41 @@ import (
 	"go.uber.org/zap"
 
 	"mintter/backend/config"
+)
+
+const (
+	carolBalance = 2000000
+	daveBalance  = 50000000
+)
+
+var (
+	bitcoindRPCCarolUser       = "carol"
+	bitcoindRPCCarolAsciiPass  = "hvkOnizG4vkoWAakJlc_deLDQblQlhmr3rikrpdty1U="
+	bitcoindRPCCarolBinaryPass = "b0b9aa23db2d181e8331e7f2ffeb69f1$9923bee41605b62997fdc9dd31dd968bd4cf27c5664e903929e640fcafe07491"
+	gRPCCarolAddress           = "127.0.0.1:10309"
+	lndCarolAddress            = "0.0.0.0:9765"
+
+	bitcoindRPCDaveUser       = "dave"
+	bitcoindRPCDaveAsciiPass  = "SG4IL6aYG2Nf2Z5fkDIRgBoUW3oU4pX1zno-8yJzCUM="
+	bitcoindRPCDaveBinaryPass = "9a894834ae2ddad8efea87ecb53148e8$ff95dda73df66a9b0dc7edfbe078ef5f82f9fae85acef511228588cc0f02596d"
+	gRPCDaveAddress           = "127.0.0.1:10409"
+	lndDaveAddress            = "0.0.0.0:9775"
+
+	gRPCLoopserverAddress   = "127.0.0.1:11009"
+	loopserverImage         = "lightninglabs/loopserver:latest"
+	loopserverContainerName = "loopserverContainer"
+	loopserverCmd           = []string{"--maxamt=5000000",
+		"--lnd.host=" + gRPCDaveAddress,
+		"--lnd.macaroondir=" + testDir + "/dave/data/chain/bitcoin/regtest",
+		"--lnd.tlspath=" + testDir + "/dave/tls.cert"}
+
+	aliceBobCarolDaveBitcoindCmd = []string{"-regtest=1", "-txindex=1", "-fallbackfee=0.0002",
+		"-zmqpubrawblock=tcp://127.0.0.1:28332", "-zmqpubrawtx=tcp://127.0.0.1:28333",
+		"-rpcauth=" + bitcoindRPCGenericUser + ":" + bitcoindRPCGenericBinaryPass,
+		"-rpcauth=" + bitcoindRPCAliceUser + ":" + bitcoindRPCAliceBinaryPass,
+		"-rpcauth=" + bitcoindRPCBobUser + ":" + bitcoindRPCBobBinaryPass,
+		"-rpcauth=" + bitcoindRPCCarolUser + ":" + bitcoindRPCCarolBinaryPass,
+		"-rpcauth=" + bitcoindRPCDaveUser + ":" + bitcoindRPCDaveBinaryPass}
 )
 
 func TestLoop(t *testing.T) {
@@ -35,10 +71,10 @@ func TestLoop(t *testing.T) {
 				Alias:           "alice",
 				UseNeutrino:     false,
 				Network:         "regtest",
-				LndDir:          "/tmp/lndirtests/alice",
+				LndDir:          testDir + "/alice",
 				NoNetBootstrap:  true,
-				RawRPCListeners: []string{"127.0.0.1:10009"},
-				RawListeners:    []string{"0.0.0.0:9735"},
+				RawRPCListeners: []string{gRPCAliceAddress},
+				RawListeners:    []string{lndAliceAddress},
 				BitcoindRPCUser: bitcoindRPCAliceUser,
 				BitcoindRPCPass: bitcoindRPCAliceAsciiPass,
 				DisableRest:     true,
@@ -48,10 +84,10 @@ func TestLoop(t *testing.T) {
 				Alias:           "bob",
 				UseNeutrino:     false,
 				Network:         "regtest",
-				LndDir:          "/tmp/lndirtests/bob",
+				LndDir:          testDir + "/bob",
 				NoNetBootstrap:  true,
-				RawRPCListeners: []string{"127.0.0.1:10069"},
-				RawListeners:    []string{"0.0.0.0:8735"},
+				RawRPCListeners: []string{gRPCBobAddress},
+				RawListeners:    []string{lndBobAddress},
 				BitcoindRPCUser: bitcoindRPCBobUser,
 				BitcoindRPCPass: bitcoindRPCBobAsciiPass,
 				DisableRest:     true,
@@ -60,10 +96,10 @@ func TestLoop(t *testing.T) {
 				Alias:           "carol",
 				UseNeutrino:     false,
 				Network:         "regtest",
-				LndDir:          "/tmp/lndirtests/carol",
+				LndDir:          testDir + "/carol",
 				NoNetBootstrap:  true,
-				RawRPCListeners: []string{"127.0.0.1:10049"},
-				RawListeners:    []string{"0.0.0.0:9635"},
+				RawRPCListeners: []string{gRPCCarolAddress},
+				RawListeners:    []string{lndCarolAddress},
 				BitcoindRPCUser: bitcoindRPCCarolUser,
 				BitcoindRPCPass: bitcoindRPCCarolAsciiPass,
 				DisableRest:     true,
@@ -73,15 +109,20 @@ func TestLoop(t *testing.T) {
 				Alias:           "dave",
 				UseNeutrino:     false,
 				Network:         "regtest",
-				LndDir:          "/tmp/lndirtests/dave",
+				LndDir:          testDir + "/dave",
 				NoNetBootstrap:  true,
-				RawRPCListeners: []string{"127.0.0.1:10059"},
-				RawListeners:    []string{"0.0.0.0:8635"},
+				RawRPCListeners: []string{gRPCDaveAddress},
+				RawListeners:    []string{lndDaveAddress},
 				BitcoindRPCUser: bitcoindRPCDaveUser,
 				BitcoindRPCPass: bitcoindRPCDaveAsciiPass,
 				DisableRest:     true,
 			},
-			lnconfLoopAlice: &config.Loop{Network: "regtest", LoopDir: "/tmp/lndirtests/loop"},
+			lnconfLoopAlice: &config.Loop{
+				Network:      "regtest",
+				LoopDir:      testDir + "/loop",
+				ServerAddres: gRPCLoopserverAddress,
+				NoTLS:        true,
+			},
 			credentialsBob: WalletSecurity{
 				WalletPassphrase: "passwordBob",
 				RecoveryWindow:   0,
@@ -149,7 +190,7 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 
 	t.Helper()
 	var err error
-	var containerID string
+	var bitcoindContainerID, loopServerContainerID string
 	var minedBlocks = 101
 	walletCreated = false
 	//var expectedMinedAmount = coinbaseReward * minedBlocks * satsPerBtc
@@ -186,13 +227,18 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 		return errAlice
 	}
 
-	if containerID, err = startContainer(bitcoindImage); err != nil {
+	if bitcoindContainerID, err = startContainer(bitcoindImage, aliceBobCarolDaveBitcoindCmd, bitcoindContainerName); err != nil {
 		return err
 	}
-	defer stopContainer(containerID)
+	defer stopContainer(bitcoindContainerID, bitcoindContainerName)
+
+	if loopServerContainerID, err = startContainer(loopserverImage, loopserverCmd, loopserverContainerName); err != nil {
+		return err
+	}
+	defer stopContainer(loopServerContainerID, loopserverContainerName)
 
 	// Initial mining Coinbase goes to the miner (bitcoind)
-	if err = mineBlocks(uint32(minedBlocks), "", containerID); err != nil {
+	if err = mineBlocks(uint32(minedBlocks), "", bitcoindContainerID); err != nil {
 		return err
 	}
 
@@ -267,19 +313,212 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	logger5, _ := zap.NewProduction() //zap.NewExample()
 	loop := NewLoop(logger5, lnconfLoopAlice, intercept)
 	var i = 0
+	alice2bobChan, alice2carolChan, dave2bobChan, dave2carolChan := false, false, false, false
+	aliceReady, bobReady, carolReady, daveReady, aliceID, bobID, carolID, daveID := false, false, false, false, "", "", "", ""
 	for {
 		select {
 		case a := <-clientAlice.Updates():
-			switch a.(type) {
+			switch update := a.(type) {
 			case DaemonReadyEvent:
-				loop.Start(lnconfAlice.RawRPCListeners[0], lnconfAlice.LndDir)
-			default:
-				i++
-				if i < 2000 {
-					time.Sleep(3 * time.Second)
+				aliceID = update.IdentityPubkey
+				loop.Start(lnconfAlice.RawRPCListeners[0], lnconfAlice.LndDir) // this only applies to alice
+				if aliceAddr, err := alice.NewAddress("", 0); err != nil {
+					return fmt.Errorf("Could not get new address" + err.Error())
 				} else {
-					return fmt.Errorf("Timeout reached!")
+					if err = sendToAddress(uint64(aliceBalance), aliceAddr, bitcoindContainerID, true); err != nil {
+						return fmt.Errorf("Problem mining blocks" + err.Error())
+					}
 				}
+			case ChainSychronizationEvent:
+				if update.Synced {
+					if balance, err := alice.GetBalance(""); err != nil {
+						return err
+					} else if totFunds := balance.TotalFunds(false); totFunds != int64(aliceBalance) {
+						return fmt.Errorf("Alice has a wrong balance. Expected:" +
+							strconv.FormatInt(int64(aliceBalance), 10) + "sats, but got:" +
+							strconv.FormatInt(int64(totFunds), 10) + "sats")
+					} else {
+						if bobReady && !alice2bobChan {
+							if _, err := alice.OpenChannel(bobID, lndBobAddress, int64(aliceBalance)/4, 0,
+								true, blocksAfterOpening == 0, 0, false); err != nil {
+								return err
+							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+								return err
+							} else {
+								alice2bobChan = true
+							}
+						}
+						if carolReady && !alice2carolChan {
+							if _, err := alice.OpenChannel(carolID, lndCarolAddress, int64(aliceBalance)/4, 0,
+								true, blocksAfterOpening == 0, 0, false); err != nil {
+								return err
+							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+								return err
+							} else {
+								alice2carolChan = true
+							}
+						}
+						aliceReady = true
+
+						// we need to open a channel to dave anyway so we wait for him to be ready
+						time.Sleep(10 * time.Second)
+						if _, err := alice.OpenChannel(daveID, lndDaveAddress, int64(aliceBalance)/4, 0,
+							false, blocksAfterOpening == 0, 0, false); err != nil {
+							return err
+						} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+							return err
+						}
+
+					}
+				}
+			}
+		case b := <-clientBob.Updates():
+			switch update := b.(type) {
+			case DaemonReadyEvent:
+				bobID = update.IdentityPubkey
+				if bobAddr, err := bob.NewAddress("", 0); err != nil {
+					return fmt.Errorf("Could not get new address" + err.Error())
+				} else {
+					if err = sendToAddress(uint64(bobBalance), bobAddr, bitcoindContainerID, true); err != nil {
+						return fmt.Errorf("Problem mining blocks" + err.Error())
+					}
+				}
+			case ChainSychronizationEvent:
+				if update.Synced {
+					if balance, err := bob.GetBalance(""); err != nil {
+						return err
+					} else if totFunds := balance.TotalFunds(false); totFunds != int64(bobBalance) {
+						return fmt.Errorf("Bob has a wrong balance. Expected:" +
+							strconv.FormatInt(int64(bobBalance), 10) + "sats, but got:" +
+							strconv.FormatInt(int64(totFunds), 10) + "sats")
+					} else {
+						if aliceReady && !alice2bobChan {
+							if _, err := bob.OpenChannel(aliceID, lndAliceAddress, int64(bobBalance)/4, 0,
+								true, blocksAfterOpening == 0, 0, false); err != nil {
+								return err
+							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+								return err
+							} else {
+								alice2bobChan = true
+							}
+						}
+						if daveReady && !dave2bobChan {
+							if _, err := bob.OpenChannel(daveID, lndDaveAddress, int64(bobBalance)/4, int64(bobBalance)/4,
+								false, blocksAfterOpening == 0, 0, false); err != nil {
+								return err
+							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+								return err
+							} else {
+								dave2bobChan = true
+							}
+						}
+						bobReady = true
+					}
+				}
+			}
+		case c := <-clientCarol.Updates():
+			switch update := c.(type) {
+			case DaemonReadyEvent:
+				carolID = update.IdentityPubkey
+				if carolAddr, err := carol.NewAddress("", 0); err != nil {
+					return fmt.Errorf("Could not get new address" + err.Error())
+				} else {
+					if err = sendToAddress(uint64(carolBalance), carolAddr, bitcoindContainerID, true); err != nil {
+						return fmt.Errorf("Problem mining blocks" + err.Error())
+					}
+				}
+			case ChainSychronizationEvent:
+				if update.Synced {
+					if balance, err := carol.GetBalance(""); err != nil {
+						return err
+					} else if totFunds := balance.TotalFunds(false); totFunds != int64(carolBalance) {
+						return fmt.Errorf("Carol has a wrong balance. Expected:" +
+							strconv.FormatInt(int64(carolBalance), 10) + "sats, but got:" +
+							strconv.FormatInt(int64(totFunds), 10) + "sats")
+					} else {
+						if aliceReady && !alice2carolChan {
+							if _, err := carol.OpenChannel(aliceID, lndAliceAddress, int64(carolBalance)/4, 0,
+								true, blocksAfterOpening == 0, 0, false); err != nil {
+								return err
+							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+								return err
+							} else {
+								alice2carolChan = true
+							}
+						}
+						if daveReady && !dave2carolChan {
+							if _, err := bob.OpenChannel(daveID, lndDaveAddress, int64(carolBalance)/4, int64(carolBalance)/4,
+								false, blocksAfterOpening == 0, 0, false); err != nil {
+								return err
+							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+								return err
+							} else {
+								dave2carolChan = true
+							}
+						}
+						carolReady = true
+					}
+				}
+			}
+		case d := <-clientDave.Updates():
+			switch update := d.(type) {
+			case DaemonReadyEvent:
+				daveID = update.IdentityPubkey
+				if daveAddr, err := dave.NewAddress("", 0); err != nil {
+					return fmt.Errorf("Could not get new address" + err.Error())
+				} else {
+					if err = sendToAddress(uint64(daveBalance), daveAddr, bitcoindContainerID, true); err != nil {
+						return fmt.Errorf("Problem mining blocks" + err.Error())
+					}
+				}
+			case ChainSychronizationEvent:
+				if update.Synced {
+					if balance, err := carol.GetBalance(""); err != nil {
+						return err
+					} else if totFunds := balance.TotalFunds(false); totFunds != int64(carolBalance) {
+						return fmt.Errorf("Carol has a wrong balance. Expected:" +
+							strconv.FormatInt(int64(carolBalance), 10) + "sats, but got:" +
+							strconv.FormatInt(int64(totFunds), 10) + "sats")
+					} else {
+						if bobReady && !dave2bobChan {
+							if _, err := dave.OpenChannel(bobID, lndBobAddress, int64(daveBalance)/10, int64(daveBalance)/10,
+								false, blocksAfterOpening == 0, 0, false); err != nil {
+								return err
+							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+								return err
+							} else {
+								dave2bobChan = true
+							}
+						}
+						if carolReady && !dave2carolChan {
+							if _, err := dave.OpenChannel(carolID, lndCarolAddress, int64(daveBalance)/10, int64(daveBalance)/10,
+								false, blocksAfterOpening == 0, 0, false); err != nil {
+								return err
+							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+								return err
+							} else {
+								dave2carolChan = true
+							}
+						}
+						daveReady = true
+
+						// we need to open a channel to alice anyway so we wait for him to be ready
+						time.Sleep(10 * time.Second)
+						if _, err := dave.OpenChannel(aliceID, lndAliceAddress, int64(daveBalance)/4, 0,
+							false, blocksAfterOpening == 0, 0, false); err != nil {
+							return err
+						} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+							return err
+						}
+					}
+				}
+			}
+		default:
+			i++
+			if i < 60 {
+				time.Sleep(3 * time.Second)
+			} else {
+				return fmt.Errorf("Timeout reached!")
 			}
 		}
 	}

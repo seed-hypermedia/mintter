@@ -77,12 +77,25 @@ func (l *Loop) Start(lndhost string, lndDir string) error {
 	} else {
 		config.RPCListen = l.cfg.RawRPCListener
 	}
+
+	if l.cfg.Network == "regtest" && len(l.cfg.ServerAddres) != 0 {
+		config.Server.Host = l.cfg.ServerAddres
+	} else {
+		f, found = typ.Elem().FieldByName("ServerAddres")
+		if !found {
+			return fmt.Errorf("failed to get default value of config var ServerAddres")
+		} else {
+			config.Server.Host = f.Tag.Get("default")
+			l.cfg.ServerAddres = f.Tag.Get("default")
+		}
+	}
+
+	config.Server.NoTLS = l.cfg.NoTLS
 	config.Lnd.Host = lndhost
 	config.Lnd.MacaroonPath = lndDir + "/data/chain/bitcoin/" + l.cfg.Network + "/admin.macaroon"
 	config.Lnd.TLSPath = lndDir + "/tls.cert"
 	config.LoopDir = l.cfg.LoopDir
 	config.Network = l.cfg.Network
-	//config.Server.Host = "127.0.0.1:9735"
 	if err := loopd.Validate(&config); err != nil {
 		return err
 	}
