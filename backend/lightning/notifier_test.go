@@ -34,17 +34,21 @@ var (
 	containerName = "bitcoinContainer"
 	walletCreated = false
 
-	bitcoindRPCBobUser       = "bob"
-	bitcoindRPCBobAsciiPass  = "2NfbXsZPYQUq5nANSCttreiyJT1gAJv8ZoUNfsU7evQ="
-	bitcoindRPCBobBinaryPass = "410905ded7ef5116b3d4bcb3cc187e77$0060c04d2a643576086971596eb3df02ca5e32acffe1caa697e96cf764a9d204"
-
 	bitcoindRPCAliceUser       = "alice"
 	bitcoindRPCAliceAsciiPass  = "2NfbXsZPYQUq5nANSCttreiyJT1gAJv8ZoUNfsU7evQ="
 	bitcoindRPCAliceBinaryPass = "410905ded7ef5116b3d4bcb3cc187e77$0060c04d2a643576086971596eb3df02ca5e32acffe1caa697e96cf764a9d204"
 
+	bitcoindRPCBobUser       = "bob"
+	bitcoindRPCBobAsciiPass  = "2NfbXsZPYQUq5nANSCttreiyJT1gAJv8ZoUNfsU7evQ="
+	bitcoindRPCBobBinaryPass = "410905ded7ef5116b3d4bcb3cc187e77$0060c04d2a643576086971596eb3df02ca5e32acffe1caa697e96cf764a9d204"
+
 	bitcoindRPCCarolUser       = "carol"
 	bitcoindRPCCarolAsciiPass  = "hvkOnizG4vkoWAakJlc_deLDQblQlhmr3rikrpdty1U="
 	bitcoindRPCCarolBinaryPass = "b0b9aa23db2d181e8331e7f2ffeb69f1$9923bee41605b62997fdc9dd31dd968bd4cf27c5664e903929e640fcafe07491"
+
+	bitcoindRPCDaveUser       = "dave"
+	bitcoindRPCDaveAsciiPass  = "SG4IL6aYG2Nf2Z5fkDIRgBoUW3oU4pX1zno-8yJzCUM="
+	bitcoindRPCDaveBinaryPass = "9a894834ae2ddad8efea87ecb53148e8$ff95dda73df66a9b0dc7edfbe078ef5f82f9fae85acef511228588cc0f02596d"
 )
 
 func TestPeers(t *testing.T) {

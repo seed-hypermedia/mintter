@@ -239,7 +239,7 @@ func (d *Ldaemon) startDaemon(WalletSecurity *WalletSecurity,
 	)
 
 	// We start just the unlocker client because it is needed to init the wallet and it does not need the macaroon (since it has not been created yet)
-	if grpcCon, err := newLightningClient(true, []byte(""), macPath, certPath, d.cfg.RawRPCListeners[0]); err != nil {
+	if grpcCon, err := NewgRpcClient(true, []byte(""), macPath, certPath, d.cfg.RawRPCListeners[0]); err != nil {
 		go d.stopDaemon(err)
 		return lndConfig, err
 	} else {

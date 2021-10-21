@@ -337,7 +337,7 @@ func (d *Ldaemon) initWallet(WalletSecurity *WalletSecurity) ([]byte, error) {
 // any macaroon. This only makes sense at initialization (create wallet or change password) since the admin.macaroon is not baked yet
 // Any other situation is considered risky. If noMacaroon flag is unset, then you can either provide the macaroon in binary or giving
 // the full path to find it in disk. TLS Certification full path is mandatory (with or without macaroon), as well as host IP:port
-func newLightningClient(noMacaroon bool, macBytes []byte, macPath string, certPath string, host string) (*grpc.ClientConn, error) {
+func NewgRpcClient(noMacaroon bool, macBytes []byte, macPath string, certPath string, host string) (*grpc.ClientConn, error) {
 	var err error
 	var i = 0
 

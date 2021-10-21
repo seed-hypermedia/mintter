@@ -115,7 +115,7 @@ func (d *Ldaemon) startRpcClients(macBytes []byte) error {
 		macBytes = d.adminMacaroon
 		d.Unlock()
 	}
-	grpcCon, err := newLightningClient(false, macBytes, d.cfg.LndDir+"/data/chain/bitcoin/"+d.cfg.Network+
+	grpcCon, err := NewgRpcClient(false, macBytes, d.cfg.LndDir+"/data/chain/bitcoin/"+d.cfg.Network+
 		"/"+defaultMacaroonFilename, d.cfg.LndDir+"/"+defaultTLSCertFilename, d.cfg.RawRPCListeners[0])
 	if err != nil {
 		return err
