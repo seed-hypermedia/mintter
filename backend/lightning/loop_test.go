@@ -32,12 +32,13 @@ var (
 	lndDaveAddress            = "0.0.0.0:9775"
 
 	gRPCLoopserverAddress   = "127.0.0.1:11009"
-	loopserverImage         = "lightninglabs/loopserver:latest"
+	loopserverImage         = "lightninglabs/loopserver:v0.9.21-beta"
 	loopserverContainerName = "loopserverContainer"
-	loopserverCmd           = []string{"--maxamt=5000000",
+	rootContainerDir        = "/root/.lnd"
+	loopserverCmd           = []string{"daemon", "--maxamt=5000000",
 		"--lnd.host=" + gRPCDaveAddress,
-		"--lnd.macaroondir=" + testDir + "/dave/data/chain/bitcoin/regtest",
-		"--lnd.tlspath=" + testDir + "/dave/tls.cert"}
+		"--lnd.macaroondir=" + rootContainerDir + "/dave/data/chain/bitcoin/regtest",
+		"--lnd.tlspath=" + rootContainerDir + "/dave/tls.cert"}
 
 	aliceBobCarolDaveBitcoindCmd = []string{"-regtest=1", "-txindex=1", "-fallbackfee=0.0002",
 		"-zmqpubrawblock=tcp://127.0.0.1:28332", "-zmqpubrawtx=tcp://127.0.0.1:28333",
@@ -227,15 +228,10 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 		return errAlice
 	}
 
-	if bitcoindContainerID, err = startContainer(bitcoindImage, aliceBobCarolDaveBitcoindCmd, bitcoindContainerName); err != nil {
+	if bitcoindContainerID, err = startContainer(bitcoindImage, aliceBobCarolDaveBitcoindCmd, bitcoindContainerName, []string{}); err != nil {
 		return err
 	}
 	defer stopContainer(bitcoindContainerID, bitcoindContainerName)
-
-	if loopServerContainerID, err = startContainer(loopserverImage, loopserverCmd, loopserverContainerName); err != nil {
-		return err
-	}
-	defer stopContainer(loopServerContainerID, loopserverContainerName)
 
 	// Initial mining Coinbase goes to the miner (bitcoind)
 	if err = mineBlocks(uint32(minedBlocks), "", bitcoindContainerID); err != nil {
@@ -321,6 +317,10 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 			switch update := a.(type) {
 			case DaemonReadyEvent:
 				aliceID = update.IdentityPubkey
+				if loopServerContainerID, err = startContainer(loopserverImage, loopserverCmd, loopserverContainerName, []string{testDir + ":" + rootContainerDir}); err != nil {
+					return err
+				}
+				defer stopContainer(loopServerContainerID, loopserverContainerName)
 				loop.Start(lnconfAlice.RawRPCListeners[0], lnconfAlice.LndDir) // this only applies to alice
 				if aliceAddr, err := alice.NewAddress("", 0); err != nil {
 					return fmt.Errorf("Could not get new address" + err.Error())

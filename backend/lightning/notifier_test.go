@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/stretchr/testify/require"
@@ -30,7 +32,7 @@ const (
 )
 
 var (
-	bitcoindImage         = "ruimarinho/bitcoin-core"
+	bitcoindImage         = "ruimarinho/bitcoin-core:0.21.1-alpine"
 	bitcoindContainerName = "bitcoinContainer"
 	walletCreated         = false
 	aliceBobBitcoindCmd   = []string{"-regtest=1", "-txindex=1", "-fallbackfee=0.0002",
@@ -166,7 +168,7 @@ func interactPeers(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	}
 
 	if !lnconfBob.UseNeutrino || !lnconfAlice.UseNeutrino {
-		if containerID, err = startContainer(bitcoindImage, aliceBobBitcoindCmd, bitcoindContainerName); err != nil {
+		if containerID, err = startContainer(bitcoindImage, aliceBobBitcoindCmd, bitcoindContainerName, []string{}); err != nil {
 			return err
 		}
 		defer stopContainer(containerID, bitcoindContainerName)
@@ -446,7 +448,7 @@ func stopContainer(containerID string, containerName string) error {
 	return nil
 }
 
-func startContainer(imageName string, cmd []string, containerName string) (string, error) {
+func startContainer(imageName string, cmd []string, containerName string, volumes []string) (string, error) {
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -461,7 +463,7 @@ func startContainer(imageName string, cmd []string, containerName string) (strin
 		return "", err
 	}
 
-	args := filters.Arg("ancestor", bitcoindImage)
+	args := filters.Arg("ancestor", imageName)
 	containerFilters := filters.NewArgs(args)
 
 	if cList, err := cli.ContainerList(ctx, types.ContainerListOptions{All: true, Filters: containerFilters}); err != nil {
@@ -476,10 +478,27 @@ func startContainer(imageName string, cmd []string, containerName string) (strin
 			"-zmqpubrawblock=tcp://127.0.0.1:28332", "-zmqpubrawtx=tcp://127.0.0.1:28333",
 			"-rpcauth=" + bitcoindRPCGenericUser + ":" + bitcoindRPCGenericBinaryPass}
 	}
+
+	mounts := []mount.Mount{}
+	for _, v := range volumes {
+		slice := strings.Split(v, ":")
+		if len(slice) != 2 {
+			return "", fmt.Errorf("volumes provided are not in the format of /source/path:/destination/Path")
+		} else {
+			mount := mount.Mount{
+				Type:   mount.TypeBind,
+				Source: slice[0],
+				Target: slice[1],
+			}
+			mounts = append(mounts[:], mount)
+		}
+
+	}
+
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image: imageName,
 		Cmd:   cmd,
-	}, &container.HostConfig{NetworkMode: "host"}, nil, nil, containerName)
+	}, &container.HostConfig{NetworkMode: "host", Mounts: mounts}, nil, nil, containerName)
 	if err != nil {
 		return "", err
 	}
@@ -494,6 +513,9 @@ func startContainer(imageName string, cmd []string, containerName string) (strin
 		return resp.ID, err
 
 	} else {
+		if len(cList) == 0 {
+			return resp.ID, fmt.Errorf("Containrer " + containerName + " disapeared right after init")
+		}
 		for _, container := range cList {
 
 			if container.ID == resp.ID && container.State != "running" {

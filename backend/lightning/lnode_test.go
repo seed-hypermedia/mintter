@@ -275,7 +275,7 @@ func TestStart(t *testing.T) {
 	var containerID string
 	for _, tt := range tests {
 		if !tt.lnconf.UseNeutrino {
-			containerID, errDocker = startContainer(bitcoindImage, []string{""}, bitcoindContainerName)
+			containerID, errDocker = startContainer(bitcoindImage, []string{}, bitcoindContainerName, []string{})
 			require.NoError(t, errDocker, tt.name+". must succeed")
 		}
 		for _, subtest := range tt.subtest {
