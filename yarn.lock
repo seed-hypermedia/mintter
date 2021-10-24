@@ -2076,7 +2076,7 @@ __metadata:
     "@radix-ui/react-alert-dialog": 0.1.0
     "@radix-ui/react-collapsible": ^0.1.1
     "@radix-ui/react-context-menu": 0.1.0
-    "@radix-ui/react-dialog": ^0.1.0
+    "@radix-ui/react-dialog": ^0.1.1
     "@radix-ui/react-dropdown-menu": ^0.1.0
     "@radix-ui/react-hover-card": ^0.1.0
     "@radix-ui/react-popover": ^0.1.0
@@ -2139,7 +2139,7 @@ __metadata:
     vite-react-jsx: ^1.1.2
     vite-tsconfig-paths: ^3.3.14
     wouter: ^2.8.0-alpha.1
-    xstate: ^4.23.4
+    xstate: ^4.25.0
   languageName: unknown
   linkType: soft
 
@@ -2619,6 +2619,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@radix-ui/react-dialog@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "@radix-ui/react-dialog@npm:0.1.1"
+  dependencies:
+    "@babel/runtime": ^7.13.10
+    "@radix-ui/primitive": 0.1.0
+    "@radix-ui/react-compose-refs": 0.1.0
+    "@radix-ui/react-context": 0.1.1
+    "@radix-ui/react-dismissable-layer": 0.1.1
+    "@radix-ui/react-focus-guards": 0.1.0
+    "@radix-ui/react-focus-scope": 0.1.1
+    "@radix-ui/react-id": 0.1.1
+    "@radix-ui/react-portal": 0.1.1
+    "@radix-ui/react-presence": 0.1.1
+    "@radix-ui/react-primitive": 0.1.1
+    "@radix-ui/react-use-controllable-state": 0.1.0
+    aria-hidden: ^1.1.1
+    react-remove-scroll: ^2.4.0
+  peerDependencies:
+    react: ^16.8 || ^17.0
+    react-dom: ^16.8 || ^17.0
+  checksum: 54d6d8da28dc7562c53eaa29f3e0761224bf1eba2c28ea4ebde77373f42e3266fbb553c958ff4827b5097522bd4e685215a6e0d4c68bc19a95e98e08365dd753
+  languageName: node
+  linkType: hard
+
 "@radix-ui/react-dismissable-layer@npm:0.1.0":
   version: 0.1.0
   resolution: "@radix-ui/react-dismissable-layer@npm:0.1.0"
@@ -2632,6 +2657,23 @@ __metadata:
   peerDependencies:
     react: ^16.8 || ^17.0
   checksum: caf48a6d8e0ae09a3d3fb6ab394994839039b21b04dd1bb476c0fccac3a59572fcd0bac9f6161f5bca2d25ccfa53bb367e3235c9524e9e90db4b80fb841a6ff4
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-dismissable-layer@npm:0.1.1":
+  version: 0.1.1
+  resolution: "@radix-ui/react-dismissable-layer@npm:0.1.1"
+  dependencies:
+    "@babel/runtime": ^7.13.10
+    "@radix-ui/primitive": 0.1.0
+    "@radix-ui/react-context": 0.1.1
+    "@radix-ui/react-primitive": 0.1.1
+    "@radix-ui/react-use-body-pointer-events": 0.1.0
+    "@radix-ui/react-use-callback-ref": 0.1.0
+    "@radix-ui/react-use-escape-keydown": 0.1.0
+  peerDependencies:
+    react: ^16.8 || ^17.0
+  checksum: 28d867bef01c16ea6b73165fba01c97962cf930a323078ddad4e0b2a868069d6c331a5b7a7c1620359c3c74c07429b295c1640e2b34caa6da7a2d3aec6f9ac84
   languageName: node
   linkType: hard
 
@@ -2676,6 +2718,20 @@ __metadata:
   peerDependencies:
     react: ^16.8 || ^17.0
   checksum: 968bc99d3e15648323e8aae2a0886a2887f044252343c821ee8a8a073a2d3d3ca5363046881fcf3a204712024f48b732aa8225bae16e895414fb0a2a35084f74
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-focus-scope@npm:0.1.1":
+  version: 0.1.1
+  resolution: "@radix-ui/react-focus-scope@npm:0.1.1"
+  dependencies:
+    "@babel/runtime": ^7.13.10
+    "@radix-ui/react-compose-refs": 0.1.0
+    "@radix-ui/react-primitive": 0.1.1
+    "@radix-ui/react-use-callback-ref": 0.1.0
+  peerDependencies:
+    react: ^16.8 || ^17.0
+  checksum: 9d7806620edd6942c3f41e62900e7b1bf87966733df57283588c07389cc5e88e6d31a539a4da60af0a581aa841630a01ccaf1483703f96071d6c121c8443f08e
   languageName: node
   linkType: hard
 
@@ -2843,6 +2899,20 @@ __metadata:
     react: ^16.8 || ^17.0
     react-dom: ^16.8 || ^17.0
   checksum: badcc9bbebbc3fb88d7889ea575dca9f304e8d6003bf6ab9a16a393d4ac1419ea88cbc0955a6dcfceaf5ce2e11be5c2050b17e3c2e51026572f794894662942a
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-portal@npm:0.1.1":
+  version: 0.1.1
+  resolution: "@radix-ui/react-portal@npm:0.1.1"
+  dependencies:
+    "@babel/runtime": ^7.13.10
+    "@radix-ui/react-primitive": 0.1.1
+    "@radix-ui/react-use-layout-effect": 0.1.0
+  peerDependencies:
+    react: ^16.8 || ^17.0
+    react-dom: ^16.8 || ^17.0
+  checksum: 69945a9b8f63162763422930ee88b4491e71d0084ac69953764458bfdc001f699aefd3ad9d4ce26cf11005e6d579d65f9572e8331827a06aad52fa498f4662fb
   languageName: node
   linkType: hard
 
@@ -20123,7 +20193,7 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"xstate@npm:^4.23.4":
+"xstate@npm:^4.25.0":
   version: 4.25.0
   resolution: "xstate@npm:4.25.0"
   checksum: 3a4c4e3f3172b092116b1c32ea38d23ebdfd40d1aef2f00abb09667bbece63a1b5a8bc8f340706f3fafcd7c1063316852fa98dafd3e419ed0138a0035ded7c3d

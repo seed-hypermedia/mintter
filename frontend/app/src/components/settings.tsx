@@ -1,6 +1,6 @@
 import {updateAccount} from '@mintter/client'
 import {Box} from '@mintter/ui/box'
-import {dialogContentStyles, DialogTitle} from '@mintter/ui/dialog'
+import {dialogContentStyles, DialogTitle, overlayStyles} from '@mintter/ui/dialog'
 import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
@@ -23,10 +23,12 @@ type ProfileInformationDataType = {
   bio: string
 }
 
+const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
+
 function SettingsRoot({children}: any) {
   return (
     <DialogPrimitive.Root>
-      {/* <StyledOverlay /> */}
+      <StyledOverlay />
       {children}
     </DialogPrimitive.Root>
   )
@@ -36,7 +38,7 @@ export function Settings() {
   return (
     <SettingsRoot>
       <DialogPrimitive.Trigger asChild>
-        <Button size="1" variant="ghost" color="muted">
+        <Button size="0" variant="ghost" color="muted">
           <Icon name="GearOutlined" color="muted" />
         </Button>
       </DialogPrimitive.Trigger>
@@ -86,45 +88,14 @@ export function Settings() {
   )
 }
 
-{
-  /* 
-              <Text as="h2" size="8">
-                Account
-              </Text>
-              
-              <Separator />
-              <Text as="h2" size="8">
-                Preferences
-              </Text>
-              <Box css={{alignItems: 'center', display: 'flex', gap: '$3'}}>
-                <input id="darkMode" type="checkbox" checked={theme.currentTheme === 'dark'} onChange={theme.toggle} />
-                <Text as="label" htmlFor="darkMode">
-                  Dark Mode
-                </Text>
-              </Box>
-              <Separator />
-              <Text as="h2" size="8">
-                Devices List
-              </Text>
-              <Box>
-                {Object.entries(data!.devices).map(([id, device]: [string, Device], index: number) => (
-                  <Text as="li" key={id}>
-                    <Text as="span" color="muted" css={{display: 'inline-block', marginRight: '$4'}}>
-                      {index + 1}.
-                    </Text>
-                    {device.peerId}
-                  </Text>
-                ))}
-              </Box>
-            </Box> */
-}
-
 var Content = styled(DialogPrimitive.Content, dialogContentStyles, {
   width: '100%',
   maxWidth: '70vw',
   maxHeight: '70vh',
   height: '100%',
   padding: 0,
+  borderRadius: '$3',
+  overflow: 'hidden',
 })
 
 var StyledTabs = styled(TabsPrimitive.Root, {
@@ -214,6 +185,8 @@ function ProfileForm() {
         flexDirection: 'column',
         gap: '$7',
         padding: '$5',
+        marginTop: '$8',
+        marginBottom: '$8',
       }}
     >
       <TextField
@@ -273,6 +246,8 @@ function AccountInfo() {
         flexDirection: 'column',
         gap: '$7',
         padding: '$5',
+        marginTop: '$8',
+        marginBottom: '$8',
       }}
     >
       <Text
@@ -311,7 +286,7 @@ function AccountInfo() {
 function AppSettings() {
   const theme = useTheme()
   return (
-    <Box css={{alignItems: 'center', display: 'flex', gap: '$3', padding: '$5'}}>
+    <Box css={{alignItems: 'center', display: 'flex', gap: '$3', padding: '$5', marginTop: '$8', marginBottom: '$8'}}>
       <input id="darkMode" type="checkbox" checked={theme.currentTheme === 'dark'} onChange={theme.toggle} />
       <Text as="label" htmlFor="darkMode">
         Dark Mode

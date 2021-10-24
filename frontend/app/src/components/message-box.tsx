@@ -17,7 +17,7 @@ export function Root({children}: any) {
         gridAutoFlow: 'row',
         alignItems: 'center',
         borderRadius: '$3',
-        boxShadow: 'inset 0 0 0 1px $colors$background-neutral-soft, 0 0 0 1px $colors$background-neutral-soft',
+        boxShadow: '0 0 0 1px $colors$background-neutral-soft',
         textAlign: 'center',
         gap: '$5',
       }}

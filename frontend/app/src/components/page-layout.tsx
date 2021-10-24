@@ -17,7 +17,7 @@ export function PageLayout({isSidepanelOpen = false, children, ...props}: PageLa
           : `"controls"
     "maincontent"`,
         gridTemplateColumns: isSidepanelOpen ? '1fr minmax(350px, 40%)' : '1fr',
-        gridTemplateRows: '64px 1fr',
+        gridTemplateRows: '1fr',
       }}
     >
       {children}

@@ -1,3 +1,4 @@
+import {Icon} from '@mintter/ui/icon'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 import type {PropsWithChildren} from 'react'
 // TODO: import components directly from its component file.
@@ -19,10 +20,22 @@ function Root({children, ...props}: any) {
   )
 }
 
-function Trigger(props: PropsWithChildren<ButtonProps>) {
+function Trigger({children, ...props}: PropsWithChildren<ButtonProps>) {
   return (
     <AlertDialogPrimitive.Trigger asChild>
-      <Button {...props} />
+      <Button
+        size="0"
+        color="danger"
+        css={{
+          opacity: 0,
+          '&:hover': {
+            opacity: 1,
+          },
+        }}
+        {...props}
+      >
+        <Icon name="Close" size="1" color="opposite" />
+      </Button>
     </AlertDialogPrimitive.Trigger>
   )
 }

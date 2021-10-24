@@ -5,11 +5,11 @@ import {Icon} from '@mintter/ui/icon'
 import {css, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
-import {useCallback} from 'react'
+import {FormEvent, useCallback, useEffect, useRef, useState} from 'react'
 import {useQueryClient} from 'react-query'
 import {Link, useLocation} from 'wouter'
 import {Settings} from '../settings'
-import {SIDEBAR_WIDTH} from '../sidebar'
+import {SIDEBAR_WIDTH, useSidebar} from '../sidebar'
 import {useSidepanel} from '../sidepanel'
 import {Tooltip} from '../tooltip'
 
@@ -20,8 +20,10 @@ export const TopbarStyled = styled(Box, {
   right: 0,
   zIndex: '$max',
   width: '$full',
-  height: 64,
+  height: 48,
   display: 'flex',
+  boxShadow: '0 0 0 1px $colors$background-neutral',
+  background: '$background-default',
 })
 
 export const topbarSection = css({
@@ -41,6 +43,7 @@ export function Topbar() {
 }
 
 function SidenavBar() {
+  const {toggle} = useSidebar()
   return (
     <Box
       className={topbarSection()}
@@ -48,8 +51,9 @@ function SidenavBar() {
         width: SIDEBAR_WIDTH,
         flex: 'none',
         justifyContent: 'space-between',
-        paddingLeft: '$7',
-        paddingRight: '$4',
+        backgroundColor: '$background-default',
+        paddingLeft: '$5',
+        paddingRight: '$3',
       }}
     >
       <Link to="/">
@@ -58,10 +62,10 @@ function SidenavBar() {
         </Text>
       </Link>
       <Box css={{display: 'flex', gap: '$4'}}>
-        <Button variant="ghost" size="0" color="muted">
+        {/* <Button variant="ghost" size="0" color="muted">
           <Icon name="CardStackPlus" size="2" />
-        </Button>
-        <Button variant="ghost" size="0" color="muted">
+        </Button> */}
+        <Button variant="ghost" size="0" color="muted" onClick={toggle}>
           <Icon name="Sidenav" size="2" />
         </Button>
       </Box>
@@ -70,39 +74,58 @@ function SidenavBar() {
 }
 
 function MainBar() {
-  const [location, setLocation] = useLocation()
+  const [routeLocation, setRouteLocation] = useLocation()
   const client = useQueryClient()
+  let form = useRef(null)
+  const [location, setLocation] = useState(() => routeLocation)
   const onCreateDraft = useCallback(async function onCreateDraft() {
     try {
       const d = await createDraft()
       if (d?.id) {
-        client.refetchQueries('DraftsList')
+        await client.refetchQueries('DraftsList')
+        setRouteLocation(`/editor/${d.id}`)
         setLocation(`/editor/${d.id}`)
       }
     } catch (err) {
       console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
     }
   }, [])
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (form.current) {
+      const data = new FormData(form.current)
+      let search: string = data.get('search') as string
+      let url = search.startsWith('/p/') ? search : `/p/${search}`
+
+      setLocation(url)
+    } else {
+      console.error('Search Submit ERROR: not a form attached!')
+    }
+  }
+
+  useEffect(() => {
+    setLocation(routeLocation)
+  }, [routeLocation])
+
   return (
     <Box
       className={topbarSection()}
       css={{
-        paddingLeft: '$7',
-        paddingRight: '$4',
+        paddingLeft: '$5',
+        paddingRight: '$3',
         pointerEvents: 'all',
         flex: 1,
         display: 'flex',
         gap: '$5',
-        background: '$background-alt',
-        borderBottom: '1px solid rgba(0,0,0,0.1)',
       }}
     >
-      <Button size="1" variant="ghost" color="muted" onClick={onCreateDraft}>
+      <Button size="0" variant="ghost" color="muted" onClick={onCreateDraft}>
         <Icon name="PencilAdd" color="muted" />
       </Button>
       <TopbarNavigation />
-      <Box css={{width: '100%', maxWidth: '800px'}}>
-        <TextField value={location} />
+      <Box ref={form} css={{width: '100%', maxWidth: '800px'}} as="form" onSubmit={handleSubmit}>
+        <TextField size={1} name="search" value={location} onChange={(e) => setLocation(e.target.value)} />
       </Box>
     </Box>
   )
@@ -111,10 +134,10 @@ function MainBar() {
 function TopbarNavigation() {
   return (
     <Box css={{display: 'flex'}}>
-      <Button size="1" variant="ghost" color="muted" onClick={() => window.history.back()}>
+      <Button size="0" variant="ghost" color="muted" onClick={() => window.history.back()}>
         <Icon name="ArrowChevronLeft" color="muted" />
       </Button>
-      <Button size="1" variant="ghost" color="muted" onClick={() => window.history.forward()}>
+      <Button size="0" variant="ghost" color="muted" onClick={() => window.history.forward()}>
         <Icon name="ArrowChevronRight" color="muted" />
       </Button>
     </Box>
@@ -134,7 +157,6 @@ function TopbarActions() {
     <Box
       className={topbarSection()}
       css={{
-        background: '$background-alt',
         flex: 'none',
         paddingLeft: '$7',
         paddingRight: '$4',
@@ -146,7 +168,7 @@ function TopbarActions() {
     >
       {canSidepanel && (
         <Tooltip content="Toogle Sidepanel">
-          <Button size="1" variant="ghost" color="muted" onClick={toggleSidepanel}>
+          <Button size="0" variant="ghost" color="muted" onClick={toggleSidepanel}>
             <Icon name="Sidepanel" color="muted" />
           </Button>
         </Tooltip>

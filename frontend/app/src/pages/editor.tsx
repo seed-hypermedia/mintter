@@ -79,18 +79,18 @@ export default function EditorPage({params}: EditorPageProps) {
             width: '90%',
             marginBottom: 300,
             padding: '$5',
-            paddingTop: '$8',
-            marginHorizontal: '$4',
             '@bp2': {
               paddingTop: '$8',
-              marginHorizontal: '$9',
+              marginRight: '$9',
+              marginLeft: 80,
             },
           }}
         >
+          <Button onClick={() => send('PUBLISH')} size="2" shape="pill" variant="outlined">
+            Publish
+          </Button>
+
           <Box css={{width: '$full', maxWidth: '64ch'}}>
-            <Button onClick={() => send('PUBLISH')} size="2" shape="pill" variant="outlined">
-              Publish
-            </Button>
             <EditorStatus state={state} />
             <TextField
               // @todo: Fix types
@@ -113,7 +113,7 @@ export default function EditorPage({params}: EditorPageProps) {
               }}
               rows={1}
               css={{
-                $$backgroundColor: '$colors$background-alt',
+                $$backgroundColor: 'transparent',
                 $$borderColor: 'transparent',
                 $$hoveredBorderColor: 'transparent',
                 fontSize: '$7',
@@ -138,7 +138,7 @@ export default function EditorPage({params}: EditorPageProps) {
               }
               rows={1}
               css={{
-                $$backgroundColor: '$colors$background-alt',
+                $$backgroundColor: 'transparent',
                 $$borderColor: 'transparent',
                 $$hoveredBorderColor: 'transparent',
                 fontSize: '$5',
@@ -147,7 +147,7 @@ export default function EditorPage({params}: EditorPageProps) {
             />
             <Separator />
             {context.localDraft?.content && (
-              <>
+              <Box css={{marginHorizontal: '$4'}}>
                 <Editor
                   value={context.localDraft.content}
                   onChange={(content) => {
@@ -163,6 +163,7 @@ export default function EditorPage({params}: EditorPageProps) {
                     })
                   }}
                 />
+
                 <Box css={{marginTop: 40}}>
                   <button type="button" onClick={() => setVisible((v) => !v)}>
                     toggle Value
@@ -180,7 +181,7 @@ export default function EditorPage({params}: EditorPageProps) {
                     </Box>
                   )}
                 </Box>
-              </>
+              </Box>
             )}
           </Box>
         </Box>
