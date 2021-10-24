@@ -22,7 +22,7 @@ export const textStyles = css({
       3: {
         fontSize: '$3',
         letterSpacing: '0.01em',
-        lineHeight: '$3',
+        lineHeight: '$4',
       },
       4: {
         fontSize: '$4',

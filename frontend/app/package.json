@@ -27,7 +27,7 @@
     "@radix-ui/react-alert-dialog": "0.1.0",
     "@radix-ui/react-collapsible": "^0.1.1",
     "@radix-ui/react-context-menu": "0.1.0",
-    "@radix-ui/react-dialog": "^0.1.0",
+    "@radix-ui/react-dialog": "^0.1.1",
     "@radix-ui/react-dropdown-menu": "^0.1.0",
     "@radix-ui/react-hover-card": "^0.1.0",
     "@radix-ui/react-popover": "^0.1.0",
@@ -58,7 +58,7 @@
     "tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log",
     "unist-util-visit": "^4.0.0",
     "wouter": "^2.8.0-alpha.1",
-    "xstate": "^4.23.4"
+    "xstate": "^4.25.0"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",
@@ -72,8 +72,6 @@
     "@types/react": "^17.0.20",
     "@types/react-copy-to-clipboard": "^5.0.1",
     "@types/react-dom": "^17.0.9",
-    "@types/react-router": "^5.1.16",
-    "@types/react-router-dom": "^5.1.8",
     "@typescript-eslint/eslint-plugin": "^4.31.2",
     "@typescript-eslint/parser": "^4.31.2",
     "@typescript-eslint/typescript-estree": "^4.31.0",

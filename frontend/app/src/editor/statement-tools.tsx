@@ -41,7 +41,7 @@ export const Tools = styled('div', {
 
 export const ElementDropdown = styled('button', {
   border: 'none',
-  backgroundColor: '$background-default',
+  backgroundColor: '$background-neutral',
   width: '$space$7',
   height: '$space$7',
   display: 'flex',

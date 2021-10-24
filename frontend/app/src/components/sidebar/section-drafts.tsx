@@ -13,7 +13,7 @@ export function DraftsSection() {
       ) : (
         data.map(({document}) => (
           <Link key={document?.id} href={`/editor/${document?.id}`}>
-            <SectionItem href={`/editor/${document?.id}`} document={document} />
+            <SectionItem isDraft href={`/editor/${document?.id}`} document={document} />
           </Link>
         ))
       )}
