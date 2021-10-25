@@ -11,8 +11,7 @@ let
       go
       terraform
       bazel-wrapper
-      rustc
-      cargo
+      rustup
       rustfmt
       nodejs
       yarn
