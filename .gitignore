@@ -39,3 +39,6 @@ backend/ui/rice-box.go-e
 
 # Storybook
 storybook-static
+
+# Cargo
+target
