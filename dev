@@ -20,7 +20,8 @@ build-frontend() {
 
 # Command build-desktop builds a production bundle of the desktop Tauri app for the current platform.
 build-desktop() {
-    cd frontend/app
+    bazel build //:yarn //:mintterd
+    rm -rf target/debug/mintterd*
     cargo tauri build --debug
 }
 
@@ -43,11 +44,9 @@ run-frontend() {
 
 # Command run-desktop will run Tauri in the dev mode.
 run-desktop() {
-    # We run tauri directly, not from within yarn to avoid cache invalidation issues.
-    # We also remove the previously copied mintterd binaries that Tauri copied,
-    # because otherwise we have some strange permission issues on subsequent tauri dev.
-    bazel build //:mintterd //:yarn
-    cd frontend/app && rm -rf target/debug/mintterd* && cargo tauri dev
+    bazel build //:yarn //:mintterd
+    rm -rf target/debug/mintterd*
+    cargo tauri dev
 }
 
 # Command run will do a production build for the current platform and run the resulting binary.
