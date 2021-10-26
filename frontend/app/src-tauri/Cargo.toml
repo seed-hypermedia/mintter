@@ -6,7 +6,7 @@ authors = ["The mintter team"]
 license = ""
 repository = ""
 default-run = "Mintter"
-edition = "2018"
+edition = "2021"
 build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
