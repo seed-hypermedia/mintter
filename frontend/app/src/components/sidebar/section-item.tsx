@@ -76,7 +76,6 @@ export function SectionItem({
         },
       }}
     >
-      <Icon name="File" size="1" css={{color: '$$foreground'}} />
       <Text
         size="2"
         css={{flex: '1', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', color: '$$foreground'}}

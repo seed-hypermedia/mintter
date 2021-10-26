@@ -1,4 +1,4 @@
-import {Account, connect, ConnectionStatus, getPeerInfo, ListAccountsResponse} from '@mintter/client'
+import {Account, connect, ConnectionStatus, getPeerInfo} from '@mintter/client'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Prompt} from '@mintter/ui/dialog'
@@ -7,17 +7,17 @@ import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
 import * as HoverCard from '@radix-ui/react-hover-card'
 import {FormEvent, useState} from 'react'
+import type {FallbackProps} from 'react-error-boundary'
+import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
 import {useQuery} from 'react-query'
-import type {HookOptions} from '../../hooks'
 import {useListAccounts} from '../../hooks'
+import {Section} from './section'
 
-type ConnectionsProps = {
-  queryOptions?: HookOptions<ListAccountsResponse>
-}
+export function ConnectionsSection() {
+  const {status, data = [], error} = useListAccounts()
 
-export function Connections({queryOptions = {}}: ConnectionsProps) {
-  const {status, data, error} = useListAccounts(queryOptions)
+  let title = `Connections (${data.length})`
 
   if (status == 'error') {
     console.error('Connections error: ', error)
@@ -25,24 +25,21 @@ export function Connections({queryOptions = {}}: ConnectionsProps) {
   }
 
   return (
-    <Box data-testid="connections" css={{display: 'flex', flexDirection: 'column', gap: '$6'}}>
-      <Text as="h3" size="5" fontWeight="bold">
-        Connections
-      </Text>
-      {data?.length == 0 && <Text size="2">no connections available :(</Text>}
-      {status == 'loading' ? (
-        <ConnectionsShell />
-      ) : status == 'success' && data ? (
-        <Box as="ul" aria-label="connections" css={{padding: 0, margin: 0}}>
+    <Section title={title}>
+      {!!data.length ? (
+        <ErrorBoundary
+          FallbackComponent={SectionError}
+          onReset={() => {
+            window.location.reload()
+          }}
+        >
           {data.map((c: Account) => (
             <AccountItem key={c.id} account={c} />
           ))}
-        </Box>
+        </ErrorBoundary>
       ) : null}
-      <Box css={{mx: '-$2'}}>
-        <ConnectionsPrompt />
-      </Box>
-    </Box>
+      <ConnectionsPrompt />
+    </Section>
   )
 }
 
@@ -67,7 +64,7 @@ function ConnectionsPrompt() {
 
   return (
     <Prompt.Root>
-      <Prompt.Trigger variant="outlined" color="primary" size="1">
+      <Prompt.Trigger variant="ghost" color="primary" size="1" css={{textAlign: 'left'}}>
         + add connection
       </Prompt.Trigger>
       <Prompt.Content>
@@ -140,10 +137,6 @@ const HoverCardContentStyled = styled(HoverCard.Content, {
   },
 })
 
-const StyledArrow = styled(HoverCard.Arrow, {
-  fill: 'white',
-})
-
 export type AccountItemProps = {
   account: Account
 }
@@ -160,20 +153,17 @@ function AccountItem({account}: AccountItemProps) {
     <HoverCard.Root>
       <HoverCard.Trigger asChild>
         <Box
-          as="li"
-          key={account.id}
           css={{
             display: 'flex',
-
             gap: '$3',
             alignItems: 'center',
-            padding: '$3',
-            marginInlineStart: '-$3',
-            borderRadius: '$3',
-            transition: 'background 0.25s ease-in-out',
+            paddingHorizontal: '$3',
+            paddingVertical: '$2',
+            borderRadius: '$2',
+            backgroundColor: 'transparent',
             '&:hover': {
               cursor: 'pointer',
-              backgroundColor: '$background-muted',
+              backgroundColor: '$background-neutral-strong',
             },
           }}
         >
@@ -194,11 +184,10 @@ function AccountItem({account}: AccountItemProps) {
             />
           )}
 
-          <Text data-testid="connection-alias">{`${account.profile?.alias} (${account.id.slice(-8)})`}</Text>
+          <Text size="2" data-testid="connection-alias">{`${account.profile?.alias} (${account.id.slice(-8)})`}</Text>
         </Box>
       </HoverCard.Trigger>
       <HoverCardContentStyled align="start" portalled>
-        <StyledArrow />
         <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>
           <Box css={{width: 32, height: 32, backgroundColor: '$background-neutral', borderRadius: '$round'}} />
           <Box>
@@ -240,5 +229,22 @@ function AccountItem({account}: AccountItemProps) {
         </Box>
       </HoverCardContentStyled>
     </HoverCard.Root>
+  )
+}
+
+export function SectionError({error, resetErrorBoundary}: FallbackProps) {
+  return (
+    <Box
+      role="alert"
+      css={{
+        padding: '$3',
+      }}
+    >
+      <Text size="1">Section Error</Text>
+      <Text size="1" as="pre">
+        {error.message}
+      </Text>
+      <button onClick={resetErrorBoundary}>reload</button>
+    </Box>
   )
 }
