@@ -14,11 +14,7 @@ import {useSidepanel} from '../sidepanel'
 import {Tooltip} from '../tooltip'
 
 export const TopbarStyled = styled(Box, {
-  position: 'absolute',
-  left: 0,
-  top: 0,
-  right: 0,
-  zIndex: '$max',
+  gridArea: 'topbar',
   width: '$full',
   height: 48,
   display: 'flex',
@@ -82,7 +78,7 @@ function MainBar() {
     try {
       const d = await createDraft()
       if (d?.id) {
-        await client.refetchQueries('DraftsList')
+        await client.refetchQueries('DraftList')
         setRouteLocation(`/editor/${d.id}`)
         setLocation(`/editor/${d.id}`)
       }

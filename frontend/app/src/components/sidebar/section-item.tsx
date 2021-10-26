@@ -40,7 +40,7 @@ export function SectionItem({
           }
 
           if (context.isDraft) {
-            client.refetchQueries('DraftsList')
+            client.refetchQueries('DraftList')
           } else {
             client.refetchQueries('PublicationList')
           }

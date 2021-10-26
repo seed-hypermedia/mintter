@@ -47,10 +47,6 @@ export const ScrollBarThumb = styled(ScrollAreaPrimitive.Thumb, {
   },
 })
 
-export const ScrollCorner = styled(ScrollAreaPrimitive.Corner, {
-  background: 'blue',
-})
-
 export function ScrollArea({children, orientation = 'vertical'}: any) {
   return (
     <StyledScrollArea>
@@ -58,7 +54,6 @@ export function ScrollArea({children, orientation = 'vertical'}: any) {
       <ScrollBar orientation={orientation}>
         <ScrollBarThumb />
       </ScrollBar>
-      <ScrollCorner />
     </StyledScrollArea>
   )
 }

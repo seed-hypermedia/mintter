@@ -11,7 +11,6 @@ import {useInfo} from './hooks'
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
 const Library = lazy(() => import('./pages/library'))
 const Editor = lazy(() => import('./pages/editor'))
-const Settings = lazy(() => import('./pages/settings'))
 const Publication = lazy(() => import('./pages/publication'))
 
 export function AuthorNode() {
@@ -65,9 +64,6 @@ export function AuthorNode() {
             </Route>
             <Route path="/p/:docId">
               <Publication />
-            </Route>
-            <Route path="/settings">
-              <Settings />
             </Route>
             <Route>
               <Redirect to="/library" />
