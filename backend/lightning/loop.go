@@ -22,7 +22,6 @@ const (
 )
 
 type Loop struct {
-	//autopilotrpc signrpc walletrpc chainrpc invoicesrpc routerrpc watchtowerrpc
 	sync.Mutex
 	cfg           *config.Loop
 	log           *zap.Logger
@@ -49,7 +48,9 @@ func NewLoop(log *zap.Logger, cfg *config.Loop, interceptor *signal.Interceptor)
 	}
 }
 
-// Run starts the loop daemon and blocks until it's shut down again.
+// Starts the loop daemon. It needs the address of the lnd node
+// we want to loop in/out to/from. And the base path for the
+// node directory.
 func (l *Loop) Start(lndhost string, lndDir string) error {
 	l.startTime = time.Now()
 	l.Lock()
@@ -195,7 +196,6 @@ func (l *Loop) GetTerms() (string, error) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
 	if out_terms, err := loopclient.LoopOutTerms(ctx, &looprpc.TermsRequest{}); err != nil {
 		l.log.Error("error getting terms", zap.String("err", err.Error()))
 		return "", err

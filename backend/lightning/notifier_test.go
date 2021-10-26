@@ -32,7 +32,7 @@ const (
 )
 
 var (
-	bitcoindImage         = "ruimarinho/bitcoin-core:0.21.1-alpine"
+	bitcoindImage         = "ruimarinho/bitcoin-core:latest"
 	bitcoindContainerName = "bitcoinContainer"
 	walletCreated         = false
 	aliceBobBitcoindCmd   = []string{"-regtest=1", "-txindex=1", "-fallbackfee=0.0002",
