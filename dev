@@ -47,7 +47,7 @@ run-desktop() {
     # We also remove the previously copied mintterd binaries that Tauri copied,
     # because otherwise we have some strange permission issues on subsequent tauri dev.
     bazel build //:mintterd //:yarn
-    cd frontend/app && rm -rf src-tauri/target/debug/mintterd* && cargo tauri dev
+    cd frontend/app && rm -rf target/debug/mintterd* && cargo tauri dev
 }
 
 # Command run will do a production build for the current platform and run the resulting binary.
