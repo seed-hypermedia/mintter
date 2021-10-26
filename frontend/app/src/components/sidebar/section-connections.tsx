@@ -7,12 +7,12 @@ import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
 import * as HoverCard from '@radix-ui/react-hover-card'
 import {FormEvent, useState} from 'react'
-import type {FallbackProps} from 'react-error-boundary'
 import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
 import {useQuery} from 'react-query'
 import {useListAccounts} from '../../hooks'
 import {Section} from './section'
+import {SectionError} from './section-error'
 
 export function ConnectionsSection() {
   const {status, data = [], error} = useListAccounts()
@@ -229,22 +229,5 @@ function AccountItem({account}: AccountItemProps) {
         </Box>
       </HoverCardContentStyled>
     </HoverCard.Root>
-  )
-}
-
-export function SectionError({error, resetErrorBoundary}: FallbackProps) {
-  return (
-    <Box
-      role="alert"
-      css={{
-        padding: '$3',
-      }}
-    >
-      <Text size="1">Section Error</Text>
-      <Text size="1" as="pre">
-        {error.message}
-      </Text>
-      <button onClick={resetErrorBoundary}>reload</button>
-    </Box>
   )
 }

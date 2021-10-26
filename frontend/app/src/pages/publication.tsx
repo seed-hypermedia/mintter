@@ -5,10 +5,11 @@ import {css, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {useEffect} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
 import {useLocation} from 'wouter'
+import {AppError} from '../app'
 import {Avatar} from '../components/avatar'
-import {PageLayout} from '../components/page-layout'
-import {Sidepanel, useEnableSidepanel, useSidepanel} from '../components/sidepanel'
+import {useEnableSidepanel, useSidepanel} from '../components/sidepanel'
 import {Editor} from '../editor'
 import {EditorMode} from '../editor/plugin-utils'
 import {useAccount, useInfo, usePublication} from '../hooks'
@@ -41,7 +42,7 @@ const headerFooterStyle = css({
 })
 
 type PublicationPageProps = {
-  params: {docId: string}
+  params?: {docId: string}
 }
 
 export default function Publication({params}: PublicationPageProps) {
@@ -91,15 +92,22 @@ export default function Publication({params}: PublicationPageProps) {
   let canUpdate = author?.id == myInfo?.accountId
 
   return (
-    <PageLayout isSidepanelOpen={isSidepanelOpen} data-testid="publication-wrapper">
+    <ErrorBoundary
+      FallbackComponent={AppError}
+      onReset={() => {
+        window.location.reload()
+      }}
+    >
       <Box
+        data-testid="publication-wrapper"
         css={{
-          gridArea: 'maincontent',
-          width: '90%',
-          marginBottom: 300,
+          // gridArea: 'maincontent',
+          width: '$full',
           padding: '$5',
           paddingTop: '$8',
           marginHorizontal: '$4',
+          paddingBottom: 300,
+          height: '100%',
           '@bp2': {
             paddingTop: '$9',
             marginHorizontal: '$9',
@@ -116,8 +124,7 @@ export default function Publication({params}: PublicationPageProps) {
           <Editor mode={EditorMode.Publication} value={data?.document?.content} />
         </Box>
       </Box>
-      {isSidepanelOpen && <Sidepanel gridArea={'rightside'} />}
-    </PageLayout>
+    </ErrorBoundary>
   )
 }
 

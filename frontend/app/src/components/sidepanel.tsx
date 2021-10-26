@@ -19,6 +19,7 @@ import {copyTextToClipboard} from '../editor/statement'
 import {useAccount} from '../hooks'
 import {getDateFormat} from '../utils/get-format-date'
 import {Avatar} from './avatar'
+import {ScrollArea} from './scroll-area'
 
 export type SidepanelEventsType =
   | {
@@ -219,43 +220,45 @@ export type SidepanelProps = {
   gridArea: string
 }
 
-export function Sidepanel({gridArea}: SidepanelProps) {
-  const {bookmarks, annotations} = useSidepanel()
+export function Sidepanel() {
+  const {bookmarks, annotations, isOpen} = useSidepanel()
 
   return (
     <Box
       css={{
-        top: 0,
-        gridArea,
-        zIndex: 1,
+        gridArea: 'sidepanel',
         borderLeft: '1px solid rgba(0,0,0,0.1)',
+        width: isOpen ? '30vw' : 0,
+        overflow: 'scroll',
+        position: 'relative',
       }}
     >
-      {Array.from(annotations).length ? (
-        <Box
-          css={{
-            padding: '$5',
-          }}
-        >
-          <Text fontWeight="bold">Annotations</Text>
-          {Array.from(annotations).map((item) => {
-            return <SidepanelItem key={item} item={item} remove={false} />
-          })}
-        </Box>
-      ) : null}
-
-      {Array.from(bookmarks).length ? (
-        <Box
-          css={{
-            padding: '$5',
-          }}
-        >
-          <Text fontWeight="bold">Bookmarks</Text>
-          {Array.from(bookmarks).map((item) => {
-            return <SidepanelItem key={item} item={item} />
-          })}
-        </Box>
-      ) : null}
+      <ScrollArea>
+        {Array.from(annotations).length ? (
+          <Box
+            css={{
+              padding: '$5',
+            }}
+          >
+            <Text fontWeight="bold">Annotations</Text>
+            {Array.from(annotations).map((item) => {
+              return <SidepanelItem key={item} item={item} remove={false} />
+            })}
+          </Box>
+        ) : null}
+        {Array.from(bookmarks).length ? (
+          <Box
+            css={{
+              padding: '$5',
+            }}
+          >
+            <Text fontWeight="bold">Bookmarks</Text>
+            {Array.from(bookmarks).map((item) => {
+              return <SidepanelItem key={item} item={item} />
+            })}
+          </Box>
+        ) : null}
+      </ScrollArea>
     </Box>
   )
 }
@@ -354,6 +357,9 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
               </>
             )}
           </Box>
+          <Text size="4" fontWeight="bold">
+            {data.document.title}
+          </Text>
           <Editor
             value={showDocument ? data.document.content : [data.statement]}
             mode={showDocument ? EditorMode.Publication : EditorMode.Mention}
@@ -363,7 +369,7 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
       <ContextMenu.Content alignOffset={-5}>
         <ContextMenu.Item onSelect={onCopy}>
           <Icon name="Copy" size="1" />
-          <Text size="2">Copy Statement Reference</Text>
+          <Text size="2">Copy Block Reference</Text>
         </ContextMenu.Item>
         <ContextMenu.Item onSelect={() => onGoToPublication(item)}>
           <Icon name="ArrowTopRight" size="1" />

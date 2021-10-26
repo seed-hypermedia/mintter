@@ -5,6 +5,7 @@ import {Text} from '@mintter/ui/text'
 import {forwardRef, PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
 import {useLocation} from 'wouter'
+import {useSidepanel} from '../../components/sidepanel'
 import {ContextMenu} from '../context-menu'
 import {copyTextToClipboard} from '../statement'
 import type {EditorPlugin} from '../types'
@@ -46,7 +47,7 @@ export const Embed = forwardRef(function Embed(
   {embed, children = null, ...props}: PropsWithChildren<{embed: EmbedType}>,
   ref,
 ) {
-  // const {send} = useSidepanel()
+  const {send} = useSidepanel()
   const [, setLocation] = useLocation()
 
   async function onCopy() {
@@ -57,6 +58,10 @@ export const Embed = forwardRef(function Embed(
   function onGoToPublication(url: string) {
     const [publicationId] = getEmbedIds(url)
     setLocation(`/p/${publicationId}`)
+  }
+
+  function onOpenInSidepanel() {
+    send('SIDEPANEL_OPEN')
   }
 
   return (
@@ -76,18 +81,22 @@ export const Embed = forwardRef(function Embed(
         </EmbedEditor>
       </ContextMenu.Trigger>
       <ContextMenu.Content>
+        <ContextMenu.Item onSelect={onOpenInSidepanel}>
+          <Icon name="Sidepanel" size="1" />
+          <Text size="2">Open Embed in Sidepanel</Text>
+        </ContextMenu.Item>
         <ContextMenu.Item onSelect={() => onGoToPublication(embed.url)}>
           <Icon name="ArrowTopRight" size="1" />
-          <Text size="2">Open in main Panel</Text>
+          <Text size="2">Open Embed in main Panel</Text>
         </ContextMenu.Item>
         <ContextMenu.Item onSelect={onCopy}>
           <Icon name="Copy" size="1" />
           <Text size="2">Copy Embed Reference</Text>
         </ContextMenu.Item>
-        {/* <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: embed.url})}>
+        <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: embed.url})}>
           <Icon name="ArrowChevronDown" size="1" />
           <Text size="2">Add to Bookmarks</Text>
-        </ContextMenu.Item> */}
+        </ContextMenu.Item>
       </ContextMenu.Content>
     </ContextMenu.Root>
   )

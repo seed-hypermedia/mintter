@@ -96,7 +96,7 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
       await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${params.docId}/${(element as StatementType).id}`)
       toast.success('Statement Reference copied successfully', {position: 'top-center'})
     } else {
-      toast.error('Cannot Copy Statement Reference')
+      toast.error('Cannot Copy Block Reference')
     }
   }
   async function onStartDraft() {
@@ -127,7 +127,7 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
           <ContextMenu.Content alignOffset={-5}>
             <ContextMenu.Item onSelect={onCopy}>
               <Icon name="Copy" size="1" />
-              <Text size="2">Copy Statement Reference</Text>
+              <Text size="2">Copy Block Reference</Text>
             </ContextMenu.Item>
             <ContextMenu.Item
               onSelect={() =>

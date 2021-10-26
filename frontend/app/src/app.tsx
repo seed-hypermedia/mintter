@@ -26,15 +26,13 @@ const globalStyles = globalCss({
 export function App() {
   globalStyles()
 
-  const {status, data} = useInfo({
+  const {status} = useInfo({
     useErrorBoundary: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     retry: false,
   })
-
-  console.log('== STATUS: ', status, data)
 
   if (status == 'loading') {
     return <Text>loading...</Text>

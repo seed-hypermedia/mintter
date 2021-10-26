@@ -231,7 +231,7 @@ function Code({
       <ContextMenu.Content alignOffset={-5}>
         <ContextMenu.Item onSelect={onCopy}>
           <Icon name="Copy" size="1" />
-          <Text size="2">Copy Statement Reference</Text>
+          <Text size="2">Copy Block Reference</Text>
         </ContextMenu.Item>
         <ContextMenu.Item
           onSelect={() =>

@@ -3,7 +3,7 @@ import type {UseQueryResult} from 'react-query'
 import type {DocumentListData} from '../components/document-list'
 import {DocumentList, DummyListItem} from '../components/document-list'
 import * as MessageBox from '../components/message-box'
-import {HookOptions, useDraftsList} from '../hooks'
+import {HookOptions, useDraftList} from '../hooks'
 
 export type ListPageProps = {
   onCreateDraft: () => void
@@ -39,7 +39,7 @@ export function ListPage({onCreateDraft, useDataHook}: ListPageProps) {
 }
 
 export function DraftListPage({onCreateDraft}: Pick<ListPageProps, 'onCreateDraft'>) {
-  const {status, data = []} = useDraftsList()
+  const {status, data = []} = useDraftList()
 
   if (status == 'loading') {
     return (

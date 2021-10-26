@@ -3,8 +3,8 @@ import {css} from '@mintter/ui/stitches.config'
 import {ReactNode} from 'react'
 import {Route} from 'wouter'
 import {ScrollArea} from '../components/scroll-area'
-import {Sidebar, SidebarProvider, SidebarStatus, SIDEBAR_WIDTH, useSidebar} from '../components/sidebar'
-import {SidepanelProvider} from '../components/sidepanel'
+import {Sidebar, SidebarProvider} from '../components/sidebar'
+import {Sidepanel, SidepanelProvider} from '../components/sidepanel'
 import {Topbar} from '../components/topbar'
 import EditorPage from './editor'
 import Publication from './publication'
@@ -17,11 +17,10 @@ export function MainPage() {
           <Topbar />
           <Sidebar />
           <MainWindow>
-            <ScrollArea>
-              <Route path="/p/:docId" component={Publication} />
-              <Route path="/editor/:docId">{(params) => <EditorPage params={params} />}</Route>
-            </ScrollArea>
+            <Route path="/p/:docId" component={Publication} />
+            <Route path="/editor/:docId" component={EditorPage} />
           </MainWindow>
+          <Sidepanel />
         </Box>
       </SidepanelProvider>
     </SidebarProvider>
@@ -29,32 +28,34 @@ export function MainPage() {
 }
 
 var rootPageStyle = css({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
   width: '100vw',
   height: '100vh',
-  display: 'flex',
-  position: 'relative',
+  display: 'grid',
   overflow: 'hidden',
+  gridAutoFlow: 'column',
+  gridAutoColumns: '1fr',
+  gridTemplateRows: '48px 1fr',
+  gridTemplateColumns: 'auto 1fr auto',
+  gap: 0,
+  gridTemplateAreas: `"topbar topbar topbar"
+  "sidebar main sidepanel"`,
   background: '$background-default',
-  //@ts-ignore
 })
 
 function MainWindow({children}: {children: ReactNode}) {
-  const {status} = useSidebar()
-
   return (
     <Box
       css={{
-        height: '100%',
-        width: '100%',
-        marginLeft: status == SidebarStatus.Open ? SIDEBAR_WIDTH : 0,
-        marginTop: 48,
-        transition: 'all 0.25s ease',
-        // paddingLeft: '$7',
-        // paddingRight: '$4',
-        // paddingVertical: '$5',
+        gridArea: 'main',
+        overflow: 'scroll',
       }}
     >
-      {children}
+      <ScrollArea>{children}</ScrollArea>
     </Box>
   )
 }

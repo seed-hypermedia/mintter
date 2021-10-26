@@ -40,14 +40,7 @@ export function useAccount(accountId = '', options: HookOptions<Account> = {}) {
  * @returns
  */
 export function useInfo(options: HookOptions<Info> = {}) {
-  return useQuery(
-    ['AccountInfo'],
-    async () => {
-      const resp = await getInfo(options.rpc)
-      return resp
-    },
-    options,
-  )
+  return useQuery(['AccountInfo'], () => getInfo(options.rpc), options)
 }
 
 /**
@@ -87,14 +80,13 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
  * @param options
  * @returns
  */
-export function useDraftsList() {
+export function useDraftList() {
   const draftsListQuery = useQuery<ListDraftsResponse>('DraftsList', () => {
     return listDrafts()
   })
-  console.log('🚀 ~ file: index.ts ~ line 90 ~ useDraftsList ~ draftsListQuery', draftsListQuery)
 
   const data: Array<{document: Document}> = useMemo(
-    () => draftsListQuery.data?.documents?.map((d) => ({document: d})),
+    () => draftsListQuery.data?.documents?.map((d) => ({document: d})) || [],
     [draftsListQuery],
   )
 
