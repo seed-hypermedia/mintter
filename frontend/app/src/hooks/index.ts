@@ -212,12 +212,28 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
 }
 
 export function useListAccounts(options: HookOptions<ListAccountsResponse> = {}) {
-  const listAccountsQuery = useQuery('ListAccounts', () => listAccounts(), {
+  const listAccountsQuery = useQuery(['ListAccounts'], () => listAccounts(), {
     refetchInterval: 5000,
     ...options,
   })
 
-  const data = useMemo(() => listAccountsQuery.data?.accounts || [], [listAccountsQuery])
+  // const data = useMemo(() => listAccountsQuery.data?.accounts || [], [listAccountsQuery])
+  const data: Array<Account> = [
+    {
+      id: '123456',
+      devices: {
+        '1236198740824b01983b1023102938013n0192nx210c38183810310380nx': {
+          peerId: '1236198740824b01983b1023102938013n0192nx210c38183810310380nx',
+          registerTime: undefined,
+        },
+      },
+      profile: {
+        alias: 'horacio',
+        email: 'h@h.com',
+        bio: 'lorem ipsum...',
+      },
+    },
+  ]
 
   return {
     ...listAccountsQuery,

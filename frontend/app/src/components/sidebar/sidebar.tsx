@@ -3,6 +3,7 @@ import {css} from '@mintter/ui/stitches.config'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
 import {BookmarksSection} from './section-bookmarks'
+import {ConnectionsSection} from './section-connections'
 import {DraftsSection} from './section-drafts'
 import {MyPublicationSection} from './section-my-publications'
 import {PublicationSection} from './section-publications'
@@ -33,6 +34,7 @@ export function Sidebar() {
           <Separator />
           <BookmarksSection />
           <Separator />
+          <ConnectionsSection />
         </Box>
       </ScrollArea>
     </Box>
