@@ -1,7 +1,7 @@
 use log::{error, trace};
 use std::sync::Mutex;
-use tauri::api::process::{Command, CommandEvent};
 use tauri::{
+  api::process::{Command, CommandEvent},
   plugin::{Plugin, Result as PluginResult},
   AppHandle, Invoke, Manager, Runtime,
 };
