@@ -1,5 +1,5 @@
 import {Box} from '@mintter/ui/box'
-import {Icon, icons, Svg} from '@mintter/ui/icon'
+import {Icon, icons} from '@mintter/ui/icon'
 import {css} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import * as Collapsible from '@radix-ui/react-collapsible'
@@ -30,12 +30,13 @@ export function Section({
               backgroundColor: '$background-neutral-strong',
               cursor: 'pointer',
             },
-            [`&[data-state="open"] ${Svg}`]: {
+            [`&[data-state="open"] [data-arrow]`]: {
               transform: 'rotate(90deg)',
             },
           }}
         >
           <Icon
+            data-arrow
             name="ArrowChevronRight"
             size="1"
             css={{

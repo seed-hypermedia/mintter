@@ -1,13 +1,14 @@
-import {deleteDraft, deletePublication, Document} from '@mintter/client'
+import {Document} from '@mintter/client'
 import {Box} from '@mintter/ui/box'
 import {Alert} from '@mintter/ui/dialog'
 import {Icon} from '@mintter/ui/icon'
-import {Text} from '@mintter/ui/text'
+import {styled} from '@mintter/ui/stitches.config'
 import {useMachine} from '@xstate/react'
+import {MouseEvent} from 'react'
 import {useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
 import {assign} from 'xstate'
-import {createModel} from 'xstate/lib/model'
+import {deleteDialogMachine} from '../../delete-dialog-machine'
 import {useRoute} from '../../utils/use-route'
 
 export function SectionItem({
@@ -25,11 +26,7 @@ export function SectionItem({
   const {match} = useRoute(href)
   const client = useQueryClient()
   const [deleteState, deleteSend] = useMachine(
-    machine.withConfig({
-      services: {
-        executeAction: (context) =>
-          context.isDraft ? deleteDraft(context.entryId) : deletePublication(context.entryId),
-      },
+    deleteDialogMachine.withConfig({
       actions: {
         onSuccess: assign((context) => {
           if (window.location.href.includes(context.entryId)) {
@@ -57,31 +54,10 @@ export function SectionItem({
 
   if (!document) return null
   return (
-    <Box
-      onClick={onClick}
-      css={{
-        $$bg: match ? '$colors$primary-soft' : 'transparent',
-        $$bgHover: match ? '$colors$primary-default' : '$colors$background-neutral-strong',
-        $$foreground: match ? 'white' : '$colors$text-default',
-        display: 'flex',
-        gap: '$3',
-        alignItems: 'center',
-        paddingHorizontal: '$3',
-        paddingVertical: '$2',
-        borderRadius: '$2',
-        backgroundColor: '$$bg',
-        '&:hover': {
-          cursor: 'pointer',
-          backgroundColor: '$$bgHover',
-        },
-      }}
-    >
-      <Text
-        size="2"
-        css={{flex: '1', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', color: '$$foreground'}}
-      >
+    <StyledSectionItem active={match} onClick={onClick}>
+      <StyledSectionItemTitle size="2" active={match}>
         {document.title ? document.title : 'Untitled Document'}
-      </Text>
+      </StyledSectionItemTitle>
       <Alert.Root
         id={document.id}
         open={deleteState.matches('open')}
@@ -108,7 +84,7 @@ export function SectionItem({
             <Alert.Cancel>Cancel</Alert.Cancel>
             <Alert.Action
               color="danger"
-              onClick={(e) => {
+              onClick={(e: MouseEvent<HTMLButtonElement>) => {
                 e.stopPropagation()
                 e.preventDefault()
                 deleteSend('CONFIRM')
@@ -119,107 +95,69 @@ export function SectionItem({
           </Alert.Actions>
         </Alert.Content>
       </Alert.Root>
-    </Box>
+    </StyledSectionItem>
   )
 }
 
-var deleteConfirmationModel = createModel(
+export const StyledSectionItem = styled(
+  Box,
   {
-    entryId: '',
-    isDraft: false,
-    errorMessage: '',
-  },
-  {
-    events: {
-      OPEN_DIALOG: ({entryId, isDraft}: {entryId: string; isDraft: boolean}) => ({entryId, isDraft}),
-      CANCEL: () => ({}),
-      CONFIRM: () => ({}),
+    $$bg: 'transparent',
+    $$bgHover: '$colors$background-neutral-strong',
+    display: 'flex',
+    color: '$$foreground',
+    gap: '$3',
+    alignItems: 'center',
+    paddingHorizontal: '$3',
+    paddingVertical: '$2',
+    borderRadius: '$2',
+    backgroundColor: '$$bg',
+    '&:hover': {
+      cursor: 'pointer',
+      backgroundColor: '$$bgHover',
     },
   },
-)
-
-const assignDataToContext = deleteConfirmationModel.assign(
   {
-    entryId: (_, event) => {
-      console.log(_, event)
-      return event.entryId
+    defaultVariants: {
+      active: false,
     },
-    isDraft: (_, event) => event.isDraft,
-  },
-  'OPEN_DIALOG',
-)
-
-const clearDataFromContext = deleteConfirmationModel.assign({
-  entryId: '',
-  isDraft: false,
-  errorMessage: '',
-})
-
-var machine = deleteConfirmationModel.createMachine(
-  {
-    id: 'deleteConfirmationDialog',
-    context: deleteConfirmationModel.initialContext,
-    initial: 'closed',
-    states: {
-      closed: {
-        id: 'closed',
-        on: {
-          OPEN_DIALOG: {
-            target: 'open',
-            actions: assignDataToContext,
-          },
-        },
-      },
-      open: {
-        exit: ['clearErrorMessage'],
-        initial: 'idle',
-        states: {
-          idle: {
-            on: {
-              CANCEL: {
-                target: 'dismiss',
-                actions: clearDataFromContext,
-              },
-              CONFIRM: 'confirmed',
-            },
-          },
-          confirmed: {
-            invoke: {
-              src: 'executeAction',
-              onError: {
-                target: 'idle',
-                actions: deleteConfirmationModel.assign({
-                  errorMessage: 'invoke error',
-                }),
-              },
-              onDone: {
-                target: 'dismiss',
-                actions: ['onSuccess'],
-              },
-            },
-          },
-          dismiss: {
-            type: 'final',
-          },
-        },
-        onDone: {
-          target: 'closed',
-          actions: assign((ctx, ev) => {
-            console.log('to Closed action: ', ctx, ev)
-            return {}
-          }),
+    variants: {
+      active: {
+        true: {
+          $$bg: '$colors$primary-soft',
+          $$bgHover: '$colors$primary-default',
         },
       },
     },
   },
+)
+
+export const StyledSectionItemTitle = styled(
+  'span',
   {
-    services: {
-      executeAction: (context) => (context.isDraft ? deleteDraft(context.entryId) : deletePublication(context.entryId)),
+    $$foreground: '$colors$text-default',
+    display: 'block',
+    fontFamily: '$default',
+    margin: 0,
+    fontSize: '$2',
+    letterSpacing: '0.01em',
+    lineHeight: '$2',
+    flex: '1',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    color: '$$foreground',
+  },
+  {
+    defaultVariants: {
+      active: false,
     },
-    actions: {
-      clearErrorMessage: assign({
-        errorMessage: '',
-      }),
+    variants: {
+      active: {
+        true: {
+          $$foreground: 'white',
+        },
+      },
     },
   },
 )
