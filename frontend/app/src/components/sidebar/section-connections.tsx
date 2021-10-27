@@ -13,6 +13,7 @@ import {useQuery} from 'react-query'
 import {useListAccounts} from '../../hooks'
 import {Section} from './section'
 import {SectionError} from './section-error'
+import {StyledSectionItem} from './section-item'
 
 export function ConnectionsSection() {
   const {status, data = [], error} = useListAccounts()
@@ -152,21 +153,7 @@ function AccountItem({account}: AccountItemProps) {
   return (
     <HoverCard.Root>
       <HoverCard.Trigger asChild>
-        <Box
-          css={{
-            display: 'flex',
-            gap: '$3',
-            alignItems: 'center',
-            paddingHorizontal: '$3',
-            paddingVertical: '$2',
-            borderRadius: '$2',
-            backgroundColor: 'transparent',
-            '&:hover': {
-              cursor: 'pointer',
-              backgroundColor: '$background-neutral-strong',
-            },
-          }}
-        >
+        <StyledSectionItem color="default">
           {data && (
             <Box
               css={{
@@ -185,7 +172,7 @@ function AccountItem({account}: AccountItemProps) {
           )}
 
           <Text size="2" data-testid="connection-alias">{`${account.profile?.alias} (${account.id.slice(-8)})`}</Text>
-        </Box>
+        </StyledSectionItem>
       </HoverCard.Trigger>
       <HoverCardContentStyled align="start" portalled>
         <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>
