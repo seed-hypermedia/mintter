@@ -64,7 +64,7 @@ export default function Publication({params}: PublicationPageProps) {
 
   useEffect(() => {
     if (status == 'success') {
-      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', payload: data.document.content})
+      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: data.document.content})
     }
   }, [status])
 

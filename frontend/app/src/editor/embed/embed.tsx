@@ -67,16 +67,13 @@ export const Embed = forwardRef(function Embed(
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>
-        <EmbedEditor embed={embed.url} {...props}>
-          {/* <Text css={{display: 'inline'}} alt contentEditable={false} size="4">
-              {data.statement.children[0].children.map((child, idx) =>
-                isEmbed(child) ? (
-                  <InlineEmbed key={`${child.url}-${idx}`} embed={child} />
-                ) : (
-                  <span key={`${child.type}-${idx}`}>{Node.string(child)}</span>
-                ),
-              )}
-            </Text> */}
+        <EmbedEditor
+          embed={embed.url}
+          {...props}
+          onClick={() => {
+            send('SIDEPANEL_OPEN')
+          }}
+        >
           {children}
         </EmbedEditor>
       </ContextMenu.Trigger>
@@ -93,7 +90,7 @@ export const Embed = forwardRef(function Embed(
           <Icon name="Copy" size="1" />
           <Text size="2">Copy Embed Reference</Text>
         </ContextMenu.Item>
-        <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', payload: embed.url})}>
+        <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', item: embed.url})}>
           <Icon name="ArrowChevronDown" size="1" />
           <Text size="2">Add to Bookmarks</Text>
         </ContextMenu.Item>

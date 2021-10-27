@@ -42,7 +42,7 @@ export default function EditorPage({params}: EditorPageProps) {
     loadAnnotations: (context: DraftEditorMachineContext) => {
       if (!context.localDraft) return
 
-      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', payload: context.localDraft.content})
+      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: context.localDraft.content})
     },
     client,
   })
@@ -158,7 +158,7 @@ export default function EditorPage({params}: EditorPageProps) {
                   })
                   sidepanelSend({
                     type: 'SIDEPANEL_LOAD_ANNOTATIONS',
-                    payload: content,
+                    document: content,
                   })
                 }}
               />
