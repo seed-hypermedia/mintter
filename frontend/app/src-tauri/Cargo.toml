@@ -21,6 +21,7 @@ tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next", features
 tokio = { version = "1.12.0", features = ["full"] }
 tauri-plugin-log = { git = "https://github.com/tauri-apps/tauri-plugin-log" }
 log = "0.4"
+tauri-plugin-store = { git = "https://github.com/tauri-apps/tauri-plugin-store" }
 
 [features]
 default = [ "custom-protocol" ]
