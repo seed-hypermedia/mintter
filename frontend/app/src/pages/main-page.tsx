@@ -17,7 +17,7 @@ export function MainPage() {
           <Topbar />
           <Sidebar />
           <MainWindow>
-            <Route path="/p/:docId" component={Publication} />
+            <Route path="/p/:docId/:blockId?" component={Publication} />
             <Route path="/editor/:docId" component={EditorPage} />
           </MainWindow>
           <Sidepanel />

@@ -1,8 +1,9 @@
-import {isBlockquote, isCode, isParagraph} from '@mintter/mttast'
+import {FlowContent, isBlockquote, isCode, isParagraph} from '@mintter/mttast'
 import {createId, statement} from '@mintter/mttast-builder'
 import {Editor, Node, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useSlateStatic} from 'slate-react'
+import {useRoute} from '../../utils/use-route'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {ParagraphUI} from './paragraph-ui'
@@ -67,6 +68,8 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
   const path = ReactEditor.findPath(editor, element)
   const [parentNode] = Editor.parent(editor, path)
 
+  const {params} = useRoute<{docId: string; blockId?: string}>(['/p/:docId/:blockId?'])
+
   return (
     <ParagraphUI
       as={
@@ -79,8 +82,12 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
           : 'p'
       }
       data-element-type={element.type}
-      data-parent-type={parentNode?.type ?? null}
-      css={{display: 'inline'}}
+      data-parent-type={(parentNode as FlowContent)?.type}
+      css={{
+        display: 'inline',
+        backgroundColor:
+          params?.blockId && (parentNode as FlowContent).id == params.blockId ? '$primary-muted' : 'transparent',
+      }}
       {...attributes}
     >
       {children}
