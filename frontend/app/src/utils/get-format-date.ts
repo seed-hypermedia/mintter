@@ -1,4 +1,5 @@
 import type {Document} from '@mintter/client'
+import {EditorDocument} from '../editor'
 
 type Keys<T> = {[P in keyof T]: T[P]}[typeof P]
 
@@ -6,7 +7,7 @@ type KeyOfType<T, U = Keys<T>> = {[P in keyof T]: T[P] extends U ? P : never}[ke
 
 export type DateKeys = KeyOfType<Document, Date | undefined>
 
-export function getDateFormat(document: Document, key: DateKeys) {
+export function getDateFormat(document: EditorDocument, key: DateKeys) {
   var months = [
     'January',
     'February',

@@ -102,7 +102,7 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
   async function onStartDraft() {
     send({
       type: 'SIDEPANEL_ADD_ITEM',
-      payload: `${MINTTER_LINK_PREFIX}${params!.docId}/${(element as StatementType).id}`,
+      item: `${MINTTER_LINK_PREFIX}${params!.docId}/${(element as StatementType).id}`,
     })
     try {
       const newDraft = await createDraft()
@@ -133,7 +133,7 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
               onSelect={() =>
                 send({
                   type: 'SIDEPANEL_ADD_ITEM',
-                  payload: `${MINTTER_LINK_PREFIX}${params!.docId}/${(element as StatementType).id}`,
+                  item: `${MINTTER_LINK_PREFIX}${params!.docId}/${(element as StatementType).id}`,
                 })
               }
             >

@@ -235,7 +235,7 @@ function Code({
         </ContextMenu.Item>
         <ContextMenu.Item
           onSelect={() =>
-            send({type: 'SIDEPANEL_ADD_ITEM', payload: `${MINTTER_LINK_PREFIX}${params!.docId}/${element.id}`})
+            send({type: 'SIDEPANEL_ADD_ITEM', item: `${MINTTER_LINK_PREFIX}${params!.docId}/${element.id}`})
           }
         >
           <Icon size="1" name="ArrowBottomRight" />

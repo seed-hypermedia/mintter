@@ -1,5 +1,5 @@
 import {Document, getDraft, publishDraft, updateDraft} from '@mintter/client'
-import {MttastContent} from '@mintter/mttast'
+import {FlowContent, MttastContent} from '@mintter/mttast'
 import {createId, group, paragraph, statement, text} from '@mintter/mttast-builder'
 import {useMachine} from '@xstate/react'
 import isEqual from 'fast-deep-equal'
@@ -26,8 +26,8 @@ export type DraftEditorMachineEvent =
   | {
       type: 'PUBLISH'
     }
-export type EditorDocument = Document & {
-  content: Array<MttastContent>
+export type EditorDocument = Partial<Document> & {
+  content: Array<MttastContent> | Array<FlowContent>
 }
 export type DraftEditorMachineContext = {
   retries: number

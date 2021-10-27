@@ -6,6 +6,7 @@ import {useEmbed} from './use-embed'
 
 export type EmbedEditorProps = PropsWithChildren<{
   embed: string
+  onClick?: any
 }>
 export const EmbedEditor = forwardRef<HTMLElement, EmbedEditorProps>(function ForwardedEmbedEditor(
   {embed, children, ...props},
