@@ -8,6 +8,7 @@ import toast from 'react-hot-toast'
 import type {Node, NodeEntry} from 'slate'
 import {Editor, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
+import {useLocation} from 'wouter'
 import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {useRoute} from '../../utils/use-route'
@@ -89,7 +90,8 @@ export const createStatementPlugin = (): EditorPlugin => ({
 
 function Statement({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
   const {send} = useSidepanel()
-  const {params} = useRoute<{docId: string}>(['/p/:docId', '/editor/:docId'])
+  const {params} = useRoute<{docId: string; blockId?: string}>(['/p/:docId/:blockId?', '/editor/:docId'])
+  const [, setLocation] = useLocation()
 
   async function onCopy() {
     if (params) {

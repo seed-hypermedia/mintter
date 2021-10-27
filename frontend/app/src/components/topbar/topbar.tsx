@@ -8,6 +8,7 @@ import {TextField} from '@mintter/ui/text-field'
 import {FormEvent, useCallback, useEffect, useRef, useState} from 'react'
 import {useQueryClient} from 'react-query'
 import {Link, useLocation} from 'wouter'
+import {MINTTER_LINK_PREFIX} from '../../constants'
 import {Settings} from '../settings'
 import {SIDEBAR_WIDTH, useSidebar} from '../sidebar'
 import {useSidepanel} from '../sidepanel'
@@ -91,10 +92,17 @@ function MainBar() {
     e.preventDefault()
     if (form.current) {
       const data = new FormData(form.current)
-      let search: string = data.get('search') as string
-      let url = search.startsWith('/p/') ? search : `/p/${search}`
 
+      let search: string = data.get('search') as string
+
+      let url = search.startsWith('/p/')
+        ? search
+        : search.startsWith(MINTTER_LINK_PREFIX)
+        ? `/p/${search.replace(MINTTER_LINK_PREFIX, '')}`
+        : `/p/${search}`
+      console.log('SUBMIT!!', url)
       setLocation(url)
+      setRouteLocation(url)
     } else {
       console.error('Search Submit ERROR: not a form attached!')
     }
