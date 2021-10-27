@@ -2129,6 +2129,7 @@ __metadata:
     slate-react: "github:mintterteam/slate#workspace=slate-react&tag=v0.66.6-unist3"
     storybook-builder-vite: ^0.1.0
     tauri-plugin-log-api: "github:tauri-apps/tauri-plugin-log"
+    tauri-plugin-store-api: "github:tauri-apps/tauri-plugin-store"
     typedoc: ^0.22.5
     typedoc-plugin-markdown: ^3.11.3
     typescript: ^4.4.2
@@ -4405,7 +4406,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tauri-apps/api@npm:^1.0.0-beta.8":
+"@tauri-apps/api@npm:1.0.0-beta.8, @tauri-apps/api@npm:^1.0.0-beta.8":
   version: 1.0.0-beta.8
   resolution: "@tauri-apps/api@npm:1.0.0-beta.8"
   checksum: c8e4fbe6ed6d4de0b10019336f2ad4358cb5c71ecfba8d9999cfd28ec36de8451966477161a82a91326c20e87cc5e17de9a9be6ced3f1cff3ff7944a26744470
@@ -18408,6 +18409,16 @@ resolve@^2.0.0-next.3:
     "@tauri-apps/api": ^1.0.0-beta.8
     tslib: ^2.3.1
   checksum: d8859a6088b8a5f8802a2f85d9bed120b126229090c1e5fc7dfe2f98eee5762118fade7efeb3c6e9f49214279d7ee5caf32d8a1521067e6266531f12007aa384
+  languageName: node
+  linkType: hard
+
+"tauri-plugin-store-api@github:tauri-apps/tauri-plugin-store":
+  version: 0.1.0
+  resolution: "tauri-plugin-store-api@https://github.com/tauri-apps/tauri-plugin-store.git#commit=c240599581ee32146608737916f14c2f7e53b1b0"
+  dependencies:
+    "@tauri-apps/api": 1.0.0-beta.8
+    tslib: ^2.1.0
+  checksum: 01c059ede4006bfdd7e846572e58953387b9dea275a371acf4e70a26273f92615f2c475ceec0f2e82e69be12da7b459f3444ccc3687dfad5b66ccdf88daf8e42
   languageName: node
   linkType: hard
 

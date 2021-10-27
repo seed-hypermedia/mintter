@@ -12,6 +12,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-log",
+ "tauri-plugin-store",
  "tokio",
 ]
 
@@ -2784,6 +2785,17 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_repr",
+ "tauri",
+]
+
+[[package]]
+name = "tauri-plugin-store"
+version = "0.0.0"
+source = "git+https://github.com/tauri-apps/tauri-plugin-store#c240599581ee32146608737916f14c2f7e53b1b0"
+dependencies = [
+ "bincode",
+ "serde",
+ "serde_json",
  "tauri",
 ]
 
