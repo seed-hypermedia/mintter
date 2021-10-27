@@ -67,13 +67,7 @@ export const Embed = forwardRef(function Embed(
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>
-        <EmbedEditor
-          embed={embed.url}
-          {...props}
-          onClick={() => {
-            send('SIDEPANEL_OPEN')
-          }}
-        >
+        <EmbedEditor embed={embed.url} {...props} onClick={onOpenInSidepanel}>
           {children}
         </EmbedEditor>
       </ContextMenu.Trigger>
