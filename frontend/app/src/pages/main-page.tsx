@@ -1,5 +1,6 @@
 import {Box} from '@mintter/ui/box'
 import {css} from '@mintter/ui/stitches.config'
+import {Text} from '@mintter/ui/text'
 import {ReactNode} from 'react'
 import {Route} from 'wouter'
 import {ScrollArea} from '../components/scroll-area'
@@ -19,6 +20,7 @@ export function MainPage() {
           <MainWindow>
             <Route path="/p/:docId/:blockId?" component={Publication} />
             <Route path="/editor/:docId" component={EditorPage} />
+            <Route path="/" component={Placeholder} />
           </MainWindow>
           <Sidepanel />
         </Box>
@@ -56,6 +58,39 @@ function MainWindow({children}: {children: ReactNode}) {
       }}
     >
       <ScrollArea>{children}</ScrollArea>
+    </Box>
+  )
+}
+
+function Placeholder() {
+  return (
+    <Box
+      aria-hidden
+      css={{
+        width: '$full',
+        height: '$full',
+        position: 'absolute',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        pointerEvents: 'none',
+      }}
+    >
+      <Text
+        alt
+        fontWeight="bold"
+        css={{
+          userSelect: 'none',
+          fontSize: 100,
+          opacity: 0.5,
+          color: 'transparent',
+          textShadow: '2px 2px 3px rgba(255,255,255,0.5)',
+          backgroundClip: 'text',
+          backgroundColor: '$background-neutral-strong',
+        }}
+      >
+        Mintter
+      </Text>
     </Box>
   )
 }
