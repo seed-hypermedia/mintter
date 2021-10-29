@@ -25,7 +25,7 @@ import (
 const (
 	coinbaseReward = 50
 	satsPerBtc     = 100000000
-	aliceBalance   = 80000000
+	aliceBalance   = 16000000 // close to 0.16777215 BTC wumbo channel
 	bobBalance     = 5500000
 	htclAmtMsats   = 75000_000
 	feesPercent    = 5
@@ -261,7 +261,7 @@ waitLoop:
 				} else {
 					fmt.Println("Alice received a peer notification from Bob:" + bobID)
 					if aliceID != "" && !channelOpened {
-						if txid, err := alice.OpenChannel(bobID, "", int64(aliceBalance)/2, int64(aliceBalance)/4,
+						if txid, err := alice.OpenChannel(bobID, "", int64(bobBalance)/2, int64(bobBalance)/4,
 							privateChans, blocksAfterOpening == 0, 0, false); err != nil {
 							return err
 						} else if err := mineBlocks(blocksAfterOpening, "", containerID); err != nil {
@@ -285,14 +285,15 @@ waitLoop:
 					} else {
 						if _, err = alice.PayInvoice(payReq, []uint64{}, htclAmtMsats, 0, feesPercent, "", 5); err != nil {
 							return err
-						} else if balance, err := alice.ChannelBalance(); err != nil {
+						}
+						if balance, err := alice.ChannelBalance(); err != nil {
 							return err
-						} else if balance < uint64(aliceBalance)/4-htclAmtMsats/1000-htclAmtMsats/1000/feesPercent ||
-							balance > uint64(aliceBalance)/4-htclAmtMsats/1000 {
+						} else if balance < uint64(bobBalance)/4-htclAmtMsats/1000-htclAmtMsats/1000/feesPercent ||
+							balance > uint64(bobBalance)/4-htclAmtMsats/1000 {
 							fmt.Println("Bob successfully paid an invoice but failed amount")
 
 							return fmt.Errorf("Alice has a wrong balance. Expected:" +
-								strconv.FormatInt(int64(aliceBalance)/4-htclAmtMsats/1000, 10) + "sats, but got:" +
+								strconv.FormatInt(int64(bobBalance)/4-htclAmtMsats/1000, 10) + "sats, but got:" +
 								strconv.FormatInt(int64(balance), 10) + "sats")
 						} else {
 							break waitLoop
@@ -368,9 +369,9 @@ waitLoop:
 						invoiceCreated = true
 					} else {
 						if _, err = bob.PayInvoice(payReq, []uint64{}, htclAmtMsats, 0, feesPercent, "", 5); err != nil {
-							//fmt.Println("Bob tried to pay an invoice but failed: " + err.Error())
 							return err
-						} else if balance, err := bob.ChannelBalance(); err != nil {
+						}
+						if balance, err := bob.ChannelBalance(); err != nil {
 							return err
 						} else if balance < uint64(bobBalance)/4-htclAmtMsats/1000-htclAmtMsats/1000/feesPercent ||
 							balance > uint64(bobBalance)/4-htclAmtMsats/1000 {
