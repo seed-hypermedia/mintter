@@ -6,10 +6,9 @@ import {createGrpcClient} from './grpc-client'
  * @param rpc
  * @returns
  */
-export async function getInfo(rpc?: GrpcClient) {
+export function getInfo(rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
 
   const request = GetInfoRequest.fromPartial({})
-  const response = await new DaemonClientImpl(rpc).getInfo(request)
-  return response
+  return new DaemonClientImpl(rpc).getInfo(request)
 }

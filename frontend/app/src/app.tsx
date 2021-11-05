@@ -1,11 +1,11 @@
 import {globalCss} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
+import {useMachine} from '@xstate/react'
 import {lazy} from 'react'
-import type {FallbackProps} from 'react-error-boundary'
-import {ErrorBoundary} from 'react-error-boundary'
+import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {attachConsole, error} from 'tauri-plugin-log-api'
+import {authStateMachine} from './authstate-machine'
 import {SidepanelProvider} from './components/sidepanel'
-import {useInfo} from './hooks'
 import {MainPage} from './pages/main-page'
 
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
@@ -25,35 +25,30 @@ const globalStyles = globalCss({
 
 export function App() {
   globalStyles()
+  const [state] = useMachine(authStateMachine)
 
-  const {status} = useInfo({
-    useErrorBoundary: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
-    retry: false,
-  })
-
-  if (status == 'loading') {
-    return <Text>loading...</Text>
+  if (state.matches('checkingAccount')) {
+    return <Text>Checking Account...</Text>
   }
 
-  if (status == 'error') {
+  if (state.matches('loggedOut')) {
     return <OnboardingPage />
   }
 
-  return (
-    <ErrorBoundary
-      FallbackComponent={AppError}
-      onReset={() => {
-        location.reload()
-      }}
-    >
-      <SidepanelProvider>
-        <MainPage />
-      </SidepanelProvider>
-    </ErrorBoundary>
-  )
+  if (state.matches('loggedIn')) {
+    return (
+      <ErrorBoundary
+        FallbackComponent={AppError}
+        onReset={() => {
+          location.reload()
+        }}
+      >
+        <SidepanelProvider>
+          <MainPage />
+        </SidepanelProvider>
+      </ErrorBoundary>
+    )
+  }
 }
 
 export function AppError({error, resetErrorBoundary}: FallbackProps) {

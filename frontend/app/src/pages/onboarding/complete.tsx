@@ -1,6 +1,4 @@
 import {useCallback} from 'react'
-import {useQueryClient} from 'react-query'
-import {useLocation, useRoute} from 'wouter'
 import {
   OnboardingStep,
   OnboardingStepActions,
@@ -10,14 +8,12 @@ import {
 } from './common'
 
 export const Complete: React.FC = () => {
-  const [, setLocation] = useLocation()
-  const [, params] = useRoute<{from?: string}>('/welcome/:from')
-  const queryClient = useQueryClient()
-
-  const handleSubmit = useCallback(async () => {
-    await queryClient.invalidateQueries('AccountInfo')
-    setLocation(params?.from ?? '/library', {replace: true})
-  }, [history, location])
+  const handleSubmit = useCallback(
+    function reloadOnComplete() {
+      window.location.reload()
+    },
+    [history, location],
+  )
 
   return (
     <OnboardingStep>
