@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package com.mintter.core;
+
+message DeviceRegistered {
+  bytes proof = 1;
+}
+
+message ProfileAliasChanged {
+  string new_alias = 1;
+}
+
+message ProfileEmailChanged {
+  string new_email = 1;
+}
+
+message ProfileBioChanged {
+  string new_bio = 1;
+}
+
+message Event {
+}
