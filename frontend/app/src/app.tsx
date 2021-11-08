@@ -1,10 +1,10 @@
 import {globalCss} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
-import {useMachine} from '@xstate/react'
+import {useActor} from '@xstate/react'
 import {lazy} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {attachConsole, error} from 'tauri-plugin-log-api'
-import {authStateMachine} from './authstate-machine'
+import {useAuth} from './auth-context'
 import {SidepanelProvider} from './components/sidepanel'
 import {MainPage} from './pages/main-page'
 
@@ -25,7 +25,8 @@ const globalStyles = globalCss({
 
 export function App() {
   globalStyles()
-  const [state] = useMachine(authStateMachine)
+  const authService = useAuth()
+  const [state] = useActor(authService)
 
   if (state.matches('checkingAccount')) {
     return <Text>Checking Account...</Text>
