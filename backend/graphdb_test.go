@@ -44,7 +44,26 @@ func TestGraphStoreDevice(t *testing.T) {
 
 	all, err := graph.ListAccountDevices()
 	require.NoError(t, err)
-	require.Equal(t, in, all)
+	require.Equal(t, len(in), len(all))
+
+	listsEqual := func(t *testing.T, a, b []DeviceID) {
+		t.Helper()
+		aset := make(map[string]struct{}, len(a))
+		bset := make(map[string]struct{}, len(b))
+		for _, a := range a {
+			aset[a.String()] = struct{}{}
+		}
+
+		for _, a := range b {
+			bset[a.String()] = struct{}{}
+		}
+
+		require.Equal(t, aset, bset)
+	}
+
+	for k, v := range all {
+		listsEqual(t, in[k], v)
+	}
 }
 
 func TestGraphListAccountDevices(t *testing.T) {
