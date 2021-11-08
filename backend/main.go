@@ -2,6 +2,9 @@ package backend
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"os"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-datastore"
@@ -156,7 +159,15 @@ func provideBadgerGraph(lc fx.Lifecycle, db *badger.DB) (*badgergraph.DB, error)
 }
 
 func provideRepo(cfg config.Config) (*repo, error) {
-	return newRepo(cfg.RepoPath, logging.Logger("mintter/repo", "debug"))
+	r, err := newRepo(cfg.RepoPath, logging.Logger("mintter/repo", "debug"))
+	if errors.Is(err, errRepoMigrate) {
+		fmt.Fprintf(os.Stderr, `
+This version of the software has a backward-incompatible database change!
+Please remove data inside %s or use a different repo path.
+`, cfg.RepoPath)
+		os.Exit(1)
+	}
+	return r, err
 }
 
 type fxLogger struct {
