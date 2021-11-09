@@ -5,13 +5,14 @@ import {Box} from '@mintter/ui/box'
 import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
+import {useActor} from '@xstate/react'
+import {useSidepanel} from 'frontend/app/src/components/sidepanel'
 import toast from 'react-hot-toast'
 import type {Highlighter, IThemeRegistration, Lang} from 'shiki'
 import {getHighlighter, setCDN} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useSlateStatic} from 'slate-react'
-import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {useRoute} from '../../utils/use-route'
 import {ContextMenu} from '../context-menu'
@@ -171,7 +172,8 @@ function Code({
   const {params} = useRoute<{docId: string}>(['/p/:docId', '/editor/:docId'])
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
-  const {send} = useSidepanel()
+  const sidepanelService = useSidepanel()
+  const [, sidepanelSend] = useActor(sidepanelService)
 
   function setLanguage(e: React.ChangeEvent<HTMLSelectElement>) {
     const {...newData} = element.data || {}
@@ -235,7 +237,7 @@ function Code({
         </ContextMenu.Item>
         <ContextMenu.Item
           onSelect={() =>
-            send({type: 'SIDEPANEL_ADD_ITEM', item: `${MINTTER_LINK_PREFIX}${params!.docId}/${element.id}`})
+            sidepanelSend({type: 'SIDEPANEL_ADD_ITEM', item: `${MINTTER_LINK_PREFIX}${params!.docId}/${element.id}`})
           }
         >
           <Icon size="1" name="ArrowBottomRight" />

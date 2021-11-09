@@ -1,31 +1,42 @@
 import {Box} from '@mintter/ui/box'
 import {css} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
+import {useInterpret} from '@xstate/react'
 import {ReactNode} from 'react'
+import Store from 'tauri-plugin-store-api'
 import {Route} from 'wouter'
+import {BookmarksProvider, createBookmarksMachine} from '../components/bookmarks'
 import {ScrollArea} from '../components/scroll-area'
 import {Sidebar, SidebarProvider} from '../components/sidebar'
-import {Sidepanel, SidepanelProvider} from '../components/sidepanel'
+import {sidebarMachine} from '../components/sidebar/sidebar-machine'
+import {Sidepanel, sidepanelMachine, SidepanelProvider} from '../components/sidepanel'
 import {Topbar} from '../components/topbar'
 import EditorPage from './editor'
 import Publication from './publication'
 
+const store = new Store('.app.dat')
+
 export function MainPage() {
+  const sidepanelService = useInterpret(sidepanelMachine)
+  const sidebarService = useInterpret(sidebarMachine)
+  const bookmarksService = useInterpret(createBookmarksMachine(store))
   return (
-    <SidebarProvider>
-      <SidepanelProvider>
-        <Box className={rootPageStyle()}>
-          <Topbar />
-          <Sidebar />
-          <MainWindow>
-            <Route path="/p/:docId/:blockId?" component={Publication} />
-            <Route path="/editor/:docId" component={EditorPage} />
-            <Route path="/" component={Placeholder} />
-          </MainWindow>
-          <Sidepanel />
-        </Box>
-      </SidepanelProvider>
-    </SidebarProvider>
+    <BookmarksProvider value={bookmarksService}>
+      <SidebarProvider value={sidebarService}>
+        <SidepanelProvider value={sidepanelService}>
+          <Box className={rootPageStyle()}>
+            <Topbar />
+            <Sidebar />
+            <MainWindow>
+              <Route path="/p/:docId/:blockId?" component={Publication} />
+              <Route path="/editor/:docId" component={EditorPage} />
+              <Route path="/" component={Placeholder} />
+            </MainWindow>
+            <Sidepanel />
+          </Box>
+        </SidepanelProvider>
+      </SidebarProvider>
+    </BookmarksProvider>
   )
 }
 

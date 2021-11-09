@@ -1,14 +1,16 @@
 import {createDraft} from '@mintter/client'
-import type {Statement as StatementType} from '@mintter/mttast'
+import type {FlowContent, Statement as StatementType} from '@mintter/mttast'
 import {isBlockquote, isGroupContent, isHeading, isStatement} from '@mintter/mttast'
 import {group} from '@mintter/mttast-builder'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
+import {useActor} from '@xstate/react'
 import toast from 'react-hot-toast'
 import type {Node, NodeEntry} from 'slate'
 import {Editor, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {useLocation} from 'wouter'
+import {useBookmarksService} from '../../components/bookmarks'
 import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {useRoute} from '../../utils/use-route'
@@ -89,7 +91,10 @@ export const createStatementPlugin = (): EditorPlugin => ({
 })
 
 function Statement({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
-  const {send} = useSidepanel()
+  const bookmarksService = useBookmarksService()
+  const [, send] = useActor(bookmarksService)
+  const sidepanelService = useSidepanel()
+  const [, sidepanelSend] = useActor(sidepanelService)
   const {params} = useRoute<{docId: string; blockId?: string}>(['/p/:docId/:blockId?', '/editor/:docId'])
   const [, setLocation] = useLocation()
 
@@ -101,12 +106,16 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
       toast.error('Cannot Copy Block Reference')
     }
   }
-  async function onStartDraft() {
+
+  function addBookmark(docId: string, blockId: FlowContent['id']) {
     send({
-      type: 'SIDEPANEL_ADD_ITEM',
-      item: `${MINTTER_LINK_PREFIX}${params!.docId}/${(element as StatementType).id}`,
+      type: 'ADD_BOOKMARK',
+      link: `${MINTTER_LINK_PREFIX}${docId}/${blockId}`,
     })
+  }
+  async function onStartDraft() {
     try {
+      addBookmark(params!.docId, (element as StatementType).id)
       const newDraft = await createDraft()
       if (newDraft) {
         setLocation(`/editor/${newDraft.id}`)
@@ -132,12 +141,10 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
               <Text size="2">Copy Block Reference</Text>
             </ContextMenu.Item>
             <ContextMenu.Item
-              onSelect={() =>
-                send({
-                  type: 'SIDEPANEL_ADD_ITEM',
-                  item: `${MINTTER_LINK_PREFIX}${params!.docId}/${(element as StatementType).id}`,
-                })
-              }
+              onSelect={() => {
+                addBookmark(params!.docId, (element as StatementType).id)
+                sidepanelSend('SIDEPANEL_OPEN')
+              }}
             >
               <Icon size="1" name="ArrowBottomRight" />
               <Text size="2">Add to Bookmarks</Text>

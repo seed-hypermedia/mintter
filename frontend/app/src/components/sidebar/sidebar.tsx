@@ -1,6 +1,5 @@
 import {Box} from '@mintter/ui/box'
 import {css} from '@mintter/ui/stitches.config'
-import {SidebarStatus} from 'frontend/app/src/components/sidebar'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
 import {BookmarksSection} from './section-bookmarks'
@@ -8,19 +7,19 @@ import {ConnectionsSection} from './section-connections'
 import {DraftsSection} from './section-drafts'
 import {MyPublicationSection} from './section-my-publications'
 import {PublicationSection} from './section-publications'
-import {useSidebar} from './sidebar-context'
+import {useIsSidebarOpen} from './sidebar-context'
 
 export const SIDEBAR_WIDTH = 232
 
 export function Sidebar() {
-  const {status} = useSidebar()
+  const isOpen = useIsSidebarOpen()
   return (
     <Box className={sidebarStyle()}>
       <ScrollArea>
         <Box
           css={{
-            width: status == SidebarStatus.Open ? SIDEBAR_WIDTH : 0,
-            paddingHorizontal: status == SidebarStatus.Open ? '$3' : 0,
+            width: isOpen ? 232 : 0,
+            paddingHorizontal: isOpen ? '$3' : 0,
             paddingTop: '$3',
           }}
         >

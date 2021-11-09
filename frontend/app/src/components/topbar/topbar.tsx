@@ -5,13 +5,13 @@ import {Icon} from '@mintter/ui/icon'
 import {css, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
+import {useActor} from '@xstate/react'
+import {useSidepanel} from 'frontend/app/src/components/sidepanel'
 import {FormEvent, useCallback, useEffect, useRef, useState} from 'react'
 import {useQueryClient} from 'react-query'
 import {Link, useLocation} from 'wouter'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {Settings} from '../settings'
-import {SIDEBAR_WIDTH, useSidebar} from '../sidebar'
-import {useSidepanel} from '../sidepanel'
 import {Tooltip} from '../tooltip'
 
 export const TopbarStyled = styled(Box, {
@@ -40,12 +40,12 @@ export function Topbar() {
 }
 
 function SidenavBar() {
-  const {toggle} = useSidebar()
+  // const {toggle} = useSidebar()
   return (
     <Box
       className={topbarSection()}
       css={{
-        width: SIDEBAR_WIDTH,
+        width: 232,
         flex: 'none',
         justifyContent: 'space-between',
         backgroundColor: '$background-default',
@@ -62,7 +62,7 @@ function SidenavBar() {
         {/* <Button variant="ghost" size="0" color="muted">
           <Icon name="CardStackPlus" size="2" />
         </Button> */}
-        <Button variant="ghost" size="0" color="muted" onClick={toggle}>
+        <Button variant="ghost" size="0" color="muted">
           <Icon name="Sidenav" size="2" />
         </Button>
       </Box>
@@ -149,12 +149,13 @@ function TopbarNavigation() {
 }
 
 function TopbarActions() {
-  const {state, send: sidepanelSend} = useSidepanel()
+  const service = useSidepanel()
+  const [state, send] = useActor(service)
 
-  const canSidepanel = state.can('SIDEPANEL_TOGGLE')
+  const canSidepanel = state.matches('enabled')
 
   function toggleSidepanel() {
-    sidepanelSend({type: 'SIDEPANEL_TOGGLE'}, {to: 'sidepanel', id: 'sidepanel'})
+    send('SIDEPANEL_TOGGLE')
   }
 
   return (
