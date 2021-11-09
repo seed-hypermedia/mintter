@@ -4,24 +4,26 @@ import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
-import {useActor, useInterpret, useSelector} from '@xstate/react'
-import {createContext, MouseEvent, PropsWithChildren, useContext, useEffect, useRef, useState} from 'react'
+import {useActor} from '@xstate/react'
+import {useBookmarksService} from 'frontend/app/src/components/bookmarks'
+import {MouseEvent, useEffect, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import Store from 'tauri-plugin-store-api'
 import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
-import {InterpreterFrom, StateFrom} from 'xstate'
 import {createModel} from 'xstate/lib/model'
-import {MINTTER_LINK_PREFIX} from '../constants'
-import {Editor} from '../editor'
-import {ContextMenu} from '../editor/context-menu'
-import {getEmbedIds, useEmbed} from '../editor/embed'
-import {EditorMode} from '../editor/plugin-utils'
-import {copyTextToClipboard} from '../editor/statement'
-import {useAccount} from '../hooks'
-import {getDateFormat} from '../utils/get-format-date'
-import {Avatar} from './avatar'
-import {ScrollArea} from './scroll-area'
+import {MINTTER_LINK_PREFIX} from '../../constants'
+import {Editor} from '../../editor'
+import {ContextMenu} from '../../editor/context-menu'
+import {getEmbedIds, useEmbed} from '../../editor/embed'
+import {EditorMode} from '../../editor/plugin-utils'
+import {copyTextToClipboard} from '../../editor/statement'
+import {useAccount} from '../../hooks'
+import {getDateFormat} from '../../utils/get-format-date'
+import {Avatar} from '../avatar'
+import {useBookmarks} from '../bookmarks'
+import {ScrollArea} from '../scroll-area'
+import {useAnnotations, useIsSidepanelOpen, useSidepanel} from './sidepanel-context'
 
 const store = new Store('.app.dat')
 
@@ -32,10 +34,7 @@ export const sidepanelModel = createModel(
   },
   {
     events: {
-      SIDEPANEL_LOAD_BOOKMARKS: (bookmarks: Array<string>) => ({bookmarks}),
       SIDEPANEL_LOAD_ANNOTATIONS: (document: any) => ({document}),
-      SIDEPANEL_ADD_ITEM: (item: string) => ({item}),
-      SIDEPANEL_REMOVE_ITEM: (item: string) => ({item}),
       SIDEPANEL_ENABLE: () => ({}),
       SIDEPANEL_DISABLE: () => ({}),
       SIDEPANEL_OPEN: () => ({}),
@@ -58,11 +57,6 @@ export const sidepanelMachine = sidepanelModel.createMachine({
         SIDEPANEL_ENABLE: {
           target: 'enabled.hist',
         },
-        SIDEPANEL_LOAD_BOOKMARKS: {
-          actions: sidepanelModel.assign({
-            bookmarks: (_, event) => event.bookmarks,
-          }),
-        },
       },
       entry: 'setBookmarks',
     },
@@ -71,33 +65,6 @@ export const sidepanelMachine = sidepanelModel.createMachine({
       on: {
         SIDEPANEL_DISABLE: {
           target: 'disabled',
-        },
-        SIDEPANEL_LOAD_BOOKMARKS: {
-          actions: sidepanelModel.assign({
-            bookmarks: (_, event) => event.bookmarks,
-          }),
-        },
-        SIDEPANEL_ADD_ITEM: {
-          actions: sidepanelModel.assign({
-            bookmarks: (context, event) => {
-              let newBm = [...new Set([...context.bookmarks, event.item])]
-              store.set('bookmarks', newBm)
-              return newBm
-            },
-          }),
-          target: '.opened',
-        },
-        SIDEPANEL_REMOVE_ITEM: {
-          actions: sidepanelModel.assign({
-            bookmarks: (context, event) => {
-              let newBm = [
-                ...context.bookmarks.slice(0, context.bookmarks.indexOf(event.item)),
-                ...context.bookmarks.slice(context.bookmarks.indexOf(event.item) + 1),
-              ]
-              store.set('bookmarks', newBm)
-              return newBm
-            },
-          }),
         },
         SIDEPANEL_LOAD_ANNOTATIONS: {
           actions: sidepanelModel.assign(
@@ -150,53 +117,9 @@ export const sidepanelMachine = sidepanelModel.createMachine({
   },
 })
 
-export const SidepanelContext = createContext<{service?: InterpreterFrom<typeof sidepanelMachine>}>({})
-
-export type SidepanelProviderProps = PropsWithChildren<{
-  machine?: typeof sidepanelMachine
-}>
-
-export function SidepanelProvider({children, machine = sidepanelMachine}: SidepanelProviderProps) {
-  const service = useInterpret(machine)
-
-  return <SidepanelContext.Provider value={{service}}>{children}</SidepanelContext.Provider>
-}
-
-export function isOpenSelector(state: StateFrom<typeof sidepanelMachine>) {
-  return state.matches('enabled.opened')
-}
-
-export function sidepanelBookmarks(state: StateFrom<typeof sidepanelMachine>) {
-  return state.context.bookmarks
-}
-
-export function sidepanelAnnotations(state: StateFrom<typeof sidepanelMachine>) {
-  return state.context.annotations
-}
-
-export function useSidepanel() {
-  const {service} = useContext(SidepanelContext)
-
-  if (!service) {
-    throw new Error(`"useSidepanel" must be called within a "<SidepanelProvider />" component`)
-  }
-  const {send} = service
-  const isOpen = useSelector(service, isOpenSelector)
-  const bookmarks = useSelector(service, sidepanelBookmarks)
-  const annotations = useSelector(service, sidepanelAnnotations)
-  const [state] = useActor(service)
-
-  return {
-    state,
-    isOpen,
-    send,
-    bookmarks,
-    annotations,
-  }
-}
-
 export function useEnableSidepanel() {
-  const {send} = useSidepanel()
+  const service = useSidepanel()
+  const [, send] = useActor(service)
   useEffect(() => {
     send('SIDEPANEL_ENABLE')
 
@@ -211,16 +134,13 @@ export type SidepanelProps = {
 }
 
 export function Sidepanel() {
-  const {bookmarks, annotations, isOpen, send} = useSidepanel()
+  const service = useSidepanel()
+  const [, send] = useActor(service)
+  const isOpen = useIsSidepanelOpen()
+  const bookmarksService = useBookmarksService()
+  const bookmarks = useBookmarks()
+  const annotations = useAnnotations()
 
-  async function loadBookmarks() {
-    const bookmarks = (await store.get<Array<string>>('bookmarks')) || []
-    send({type: 'SIDEPANEL_LOAD_BOOKMARKS', bookmarks})
-  }
-
-  useEffect(() => {
-    loadBookmarks()
-  }, [])
   return (
     <Box
       css={{
@@ -251,8 +171,8 @@ export function Sidepanel() {
             }}
           >
             <Text fontWeight="bold">Bookmarks</Text>
-            {bookmarks.map((item) => {
-              return <SidepanelItem key={item} item={item} />
+            {bookmarks.map(({link}) => {
+              return <SidepanelItem key={link} item={link} />
             })}
           </Box>
         ) : null}
@@ -274,6 +194,8 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
     enabled: !!data.document.author,
   })
   const {send} = useSidepanel()
+  const bookmarksService = useBookmarksService()
+  const [, bookmarksSend] = useActor(bookmarksService)
   const [, setLocation] = useLocation()
   async function onCopy() {
     await copyTextToClipboard(item)
@@ -345,7 +267,7 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
                   size="1"
                   variant="ghost"
                   color="primary"
-                  onClick={() => send({type: 'SIDEPANEL_REMOVE_ITEM', item})}
+                  onClick={() => bookmarksSend({type: 'REMOVE_BOOKMARK', link: item})}
                 >
                   remove
                 </Button>

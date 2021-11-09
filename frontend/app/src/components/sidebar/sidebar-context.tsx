@@ -1,27 +1,10 @@
-import {createContext, useCallback, useContext, useState} from 'react'
+import {InterpreterFrom} from 'xstate'
+import {createInterpreterContext} from '../../utils/machine-utils'
+import {sidebarMachine} from './sidebar-machine'
 
-export enum SidebarStatus {
-  Open,
-  Close,
-}
+const [SidebarProvider, useSidebar, createSidebarSelector] =
+  createInterpreterContext<InterpreterFrom<typeof sidebarMachine>>('Sidepanel')
 
-const SidebarContext = createContext({status: SidebarStatus.Open, toggle: () => {}, open: () => {}, close: () => {}})
+export {SidebarProvider, useSidebar}
 
-export function SidebarProvider({children}: {children: ReactNode}) {
-  const [status, setStatus] = useState(SidebarStatus.Open)
-  const toggle = useCallback(function toggleCallback() {
-    setStatus((v) => (v == SidebarStatus.Close ? SidebarStatus.Open : SidebarStatus.Close))
-  }, [])
-  const open = useCallback(function openCallback() {
-    setStatus(SidebarStatus.Open)
-  }, [])
-  const close = useCallback(function closeCallback() {
-    setStatus(SidebarStatus.Close)
-  }, [])
-
-  return <SidebarContext.Provider value={{status, toggle, open, close}}>{children}</SidebarContext.Provider>
-}
-
-export function useSidebar() {
-  return useContext(SidebarContext)
-}
+export const useIsSidebarOpen = createSidebarSelector((state) => state.matches('opened'))

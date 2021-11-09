@@ -12,7 +12,7 @@ export function useEmbed(url: string) {
   const [publicationId, blockId] = getEmbedIds(url)
   const publicationQuery = usePublication(publicationId)
   let statement = useMemo(() => {
-    let temp: FlowContent = []
+    let temp: FlowContent
     if (publicationQuery.data.document.content) {
       visit(document(publicationQuery.data.document.content), {id: blockId}, (node) => {
         temp = node

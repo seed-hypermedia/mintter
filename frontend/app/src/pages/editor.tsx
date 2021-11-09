@@ -4,12 +4,14 @@ import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
 import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
+import {useActor} from '@xstate/react'
+import {useSidepanel} from 'frontend/app/src/components/sidepanel'
 import {FormEvent, useEffect, useRef, useState} from 'react'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
 import {Separator} from '../components/separator'
-import {useEnableSidepanel, useSidepanel} from '../components/sidepanel'
+import {useEnableSidepanel} from '../components/sidepanel/sidepanel'
 import {Editor, useEditorDraft} from '../editor'
 import type {DraftEditorMachineContext, DraftEditorMachineState} from '../editor/use-editor-draft'
 
@@ -23,8 +25,8 @@ export default function EditorPage({params}: EditorPageProps) {
   const toast = useRef('')
   const [visible, setVisible] = useState(false)
 
-  const {send: sidepanelSend, isOpen: isSidepanelOpen} = useSidepanel()
-
+  const sidepanelService = useSidepanel()
+  const [, sidepanelSend] = useActor(sidepanelService)
   const [state, send] = useEditorDraft({
     documentId: params!.docId,
     afterPublish: (context: DraftEditorMachineContext) => {

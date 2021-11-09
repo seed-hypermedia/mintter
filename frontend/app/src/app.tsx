@@ -1,11 +1,10 @@
 import {globalCss} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
-import {useActor} from '@xstate/react'
+import {useMachine} from '@xstate/react'
 import {lazy} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {attachConsole, error} from 'tauri-plugin-log-api'
-import {useAuth} from './auth-context'
-import {SidepanelProvider} from './components/sidepanel'
+import {authStateMachine} from './authstate-machine'
 import {MainPage} from './pages/main-page'
 
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
@@ -25,8 +24,7 @@ const globalStyles = globalCss({
 
 export function App() {
   globalStyles()
-  const authService = useAuth()
-  const [state] = useActor(authService)
+  const [state] = useMachine(authStateMachine)
 
   if (state.matches('checkingAccount')) {
     return <Text>Checking Account...</Text>
@@ -44,9 +42,7 @@ export function App() {
           location.reload()
         }}
       >
-        <SidepanelProvider>
-          <MainPage />
-        </SidepanelProvider>
+        <MainPage />
       </ErrorBoundary>
     )
   }

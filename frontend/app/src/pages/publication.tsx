@@ -4,12 +4,13 @@ import {Button} from '@mintter/ui/button'
 import {css, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
+import {useActor} from '@xstate/react'
 import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {useLocation} from 'wouter'
 import {AppError} from '../app'
 import {Avatar} from '../components/avatar'
-import {useEnableSidepanel, useSidepanel} from '../components/sidepanel'
+import {useEnableSidepanel, useIsSidepanelOpen, useSidepanel} from '../components/sidepanel'
 import {Editor} from '../editor'
 import {EditorMode} from '../editor/plugin-utils'
 import {useAccount, useInfo, usePublication} from '../hooks'
@@ -47,7 +48,8 @@ type PublicationPageProps = {
 
 export default function Publication({params}: PublicationPageProps) {
   const [, setLocation] = useLocation()
-  const {send: sidepanelSend, isOpen: isSidepanelOpen, annotations} = useSidepanel()
+  const sidepanelService = useSidepanel()
+  const [, sidepanelSend] = useActor(sidepanelService)
   const {status, data, error} = usePublication(params!.docId)
   const {data: author} = useAccount(data.document.author, {
     enabled: !!data?.document?.author,
@@ -132,7 +134,7 @@ function PublicationHeader({document}: {document?: EditorDocument}) {
   const {data: author} = useAccount(document?.author, {
     enabled: !!document?.author,
   })
-  const {isOpen} = useSidepanel()
+  const isOpen = useIsSidepanelOpen()
 
   return document ? (
     <Box

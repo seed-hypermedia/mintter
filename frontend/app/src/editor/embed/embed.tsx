@@ -2,6 +2,7 @@ import type {Embed as EmbedType} from '@mintter/mttast'
 import {isEmbed} from '@mintter/mttast'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
+import {useActor} from '@xstate/react'
 import {forwardRef, PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
 import {useLocation} from 'wouter'
@@ -13,6 +14,57 @@ import {EmbedEditor} from './embed-editor'
 import {getEmbedIds} from './get-embed-ids'
 
 export const ELEMENT_EMBED = 'embed'
+
+export const Embed = forwardRef(function Embed(
+  {embed, children = null, ...props}: PropsWithChildren<{embed: EmbedType}>,
+  ref,
+) {
+  const sidepanelService = useSidepanel()
+  const [, sidepanelSend] = useActor(sidepanelService)
+  const [, setLocation] = useLocation()
+
+  async function onCopy() {
+    await copyTextToClipboard(embed.url)
+    toast.success('Embed Reference copied successfully', {position: 'top-center'})
+  }
+
+  function onGoToPublication(url: string) {
+    const [publicationId] = getEmbedIds(url)
+    setLocation(`/p/${publicationId}`)
+  }
+
+  function onOpenInSidepanel() {
+    sidepanelSend('SIDEPANEL_OPEN')
+  }
+
+  return (
+    <ContextMenu.Root>
+      <ContextMenu.Trigger>
+        <EmbedEditor embed={embed.url} {...props} onClick={onOpenInSidepanel}>
+          {children}
+        </EmbedEditor>
+      </ContextMenu.Trigger>
+      <ContextMenu.Content>
+        <ContextMenu.Item onSelect={onOpenInSidepanel}>
+          <Icon name="Sidepanel" size="1" />
+          <Text size="2">Open Embed in Sidepanel</Text>
+        </ContextMenu.Item>
+        <ContextMenu.Item onSelect={() => onGoToPublication(embed.url)}>
+          <Icon name="ArrowTopRight" size="1" />
+          <Text size="2">Open Embed in main Panel</Text>
+        </ContextMenu.Item>
+        <ContextMenu.Item onSelect={onCopy}>
+          <Icon name="Copy" size="1" />
+          <Text size="2">Copy Embed Reference</Text>
+        </ContextMenu.Item>
+        <ContextMenu.Item onSelect={() => sidepanelSend({type: 'SIDEPANEL_ADD_ITEM', item: embed.url})}>
+          <Icon name="ArrowChevronDown" size="1" />
+          <Text size="2">Add to Bookmarks</Text>
+        </ContextMenu.Item>
+      </ContextMenu.Content>
+    </ContextMenu.Root>
+  )
+})
 
 export const createEmbedPlugin = (): EditorPlugin => ({
   name: ELEMENT_EMBED,
@@ -41,54 +93,4 @@ export const createEmbedPlugin = (): EditorPlugin => ({
         )
       }
     },
-})
-
-export const Embed = forwardRef(function Embed(
-  {embed, children = null, ...props}: PropsWithChildren<{embed: EmbedType}>,
-  ref,
-) {
-  const {send} = useSidepanel()
-  const [, setLocation] = useLocation()
-
-  async function onCopy() {
-    await copyTextToClipboard(embed.url)
-    toast.success('Embed Reference copied successfully', {position: 'top-center'})
-  }
-
-  function onGoToPublication(url: string) {
-    const [publicationId] = getEmbedIds(url)
-    setLocation(`/p/${publicationId}`)
-  }
-
-  function onOpenInSidepanel() {
-    send('SIDEPANEL_OPEN')
-  }
-
-  return (
-    <ContextMenu.Root>
-      <ContextMenu.Trigger>
-        <EmbedEditor embed={embed.url} {...props} onClick={onOpenInSidepanel}>
-          {children}
-        </EmbedEditor>
-      </ContextMenu.Trigger>
-      <ContextMenu.Content>
-        <ContextMenu.Item onSelect={onOpenInSidepanel}>
-          <Icon name="Sidepanel" size="1" />
-          <Text size="2">Open Embed in Sidepanel</Text>
-        </ContextMenu.Item>
-        <ContextMenu.Item onSelect={() => onGoToPublication(embed.url)}>
-          <Icon name="ArrowTopRight" size="1" />
-          <Text size="2">Open Embed in main Panel</Text>
-        </ContextMenu.Item>
-        <ContextMenu.Item onSelect={onCopy}>
-          <Icon name="Copy" size="1" />
-          <Text size="2">Copy Embed Reference</Text>
-        </ContextMenu.Item>
-        <ContextMenu.Item onSelect={() => send({type: 'SIDEPANEL_ADD_ITEM', item: embed.url})}>
-          <Icon name="ArrowChevronDown" size="1" />
-          <Text size="2">Add to Bookmarks</Text>
-        </ContextMenu.Item>
-      </ContextMenu.Content>
-    </ContextMenu.Root>
-  )
 })
