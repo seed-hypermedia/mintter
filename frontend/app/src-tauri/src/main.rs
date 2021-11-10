@@ -33,7 +33,11 @@ async fn main() {
     .plugin(Store::default())
     .menu(menu::get_menu())
     .setup(|app| {
-      daemon::start_daemon(app.state::<daemon::Connection>());
+      daemon::start_daemon(
+        app.state::<daemon::Connection>(),
+        app.state::<daemon::Flags>(),
+      );
+
       Ok(())
     })
     .system_tray(
@@ -56,7 +60,10 @@ async fn main() {
             app.exit(0);
           }
           "start" => {
-            daemon::start_daemon(app.state::<daemon::Connection>());
+            daemon::start_daemon(
+              app.state::<daemon::Connection>(),
+              app.state::<daemon::Flags>(),
+            );
 
             let status_handle = app.tray_handle().get_item("status");
 
