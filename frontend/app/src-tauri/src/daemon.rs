@@ -91,8 +91,7 @@ impl<R: Runtime> Plugin<R> for DaemonPlugin<R> {
       .and_then(|matches| {
         let str = matches.args.get("daemon-flags")?.value.as_str()?;
         Some(
-          str
-            .replace('"', "")
+          str[1..str.len() - 1]
             .split_whitespace()
             .map(ToString::to_string)
             .collect::<Vec<String>>(),
