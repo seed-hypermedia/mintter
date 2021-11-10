@@ -1,7 +1,10 @@
 use log::{error, trace};
 use std::sync::Mutex;
 use tauri::{
-  api::process::{Command, CommandEvent},
+  api::{
+    cli::get_matches,
+    process::{Command, CommandEvent},
+  },
   plugin::{Plugin, Result as PluginResult},
   AppHandle, Invoke, Manager, Runtime,
 };
@@ -11,17 +14,24 @@ pub struct DaemonPlugin<R: Runtime> {
   invoke_handler: Box<dyn Fn(Invoke<R>) + Send + Sync>,
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct Connection(Mutex<Option<Sender<()>>>);
 
-pub fn start_daemon(connection: tauri::State<Connection>) {
+#[derive(Debug, Default)]
+pub struct Flags(pub(crate) Vec<String>);
+
+pub fn start_daemon(connection: tauri::State<Connection>, daemon_flags: tauri::State<Flags>) {
   let mut lock = connection.0.lock().unwrap();
   let (tx, mut rx) = mpsc::channel::<()>(1);
 
+  println!("{:?}", daemon_flags.inner());
+
   let (mut cx, child) = Command::new_sidecar("mintterd")
     .expect("failed to create `mintterd` binary command")
+    .args(daemon_flags.inner().0.iter())
     .spawn()
     .expect("failed to spawn sidecar");
+
   tauri::async_runtime::spawn(async move {
     loop {
       tokio::select! {
@@ -72,7 +82,25 @@ impl<R: Runtime> Plugin<R> for DaemonPlugin<R> {
 
   /// initialize plugin with the config provided on `tauri.conf.json > plugins > $yourPluginName` or the default value.
   fn initialize(&mut self, app: &AppHandle<R>, _: serde_json::Value) -> PluginResult<()> {
-    app.manage(Connection(Default::default()));
+    app.manage(Connection::default());
+
+    let cli_config = app.config().tauri.cli.clone().unwrap();
+
+    let flags = get_matches(&cli_config)
+      .ok()
+      .and_then(|matches| {
+        let str = matches.args.get("daemon-flags")?.value.as_str()?;
+        Some(
+          str
+            .replace('"', "")
+            .split_whitespace()
+            .map(ToString::to_string)
+            .collect::<Vec<String>>(),
+        )
+      })
+      .unwrap_or_default();
+
+    app.manage(Flags(flags));
     Ok(())
   }
 
