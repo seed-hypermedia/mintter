@@ -9,6 +9,7 @@ import {createLinkPlugin} from './link'
 import {createMarkdownShortcutsPlugin} from './markdown-plugin'
 import {createOrderedListPlugin} from './ordered-list'
 import {createParagraphPlugin} from './paragraph'
+import {createPlainTextPastePlugin} from './paste-plain-text-plugin'
 import {createStatementPlugin} from './statement'
 import {createStaticParagraphPlugin} from './static-paragraph'
 import {createStrikethroughPlugin} from './strikethrough'
@@ -47,4 +48,5 @@ export const plugins: EditorPlugin[] = [
 
   createTabPlugin(),
   createMarkdownShortcutsPlugin(),
+  createPlainTextPastePlugin(),
 ]
