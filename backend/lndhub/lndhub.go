@@ -1,4 +1,4 @@
-package lightning
+package lndhub
 
 import (
 	"bytes"
@@ -23,13 +23,31 @@ var (
 	validCredentials = regexp.MustCompile(`\/\/([0-9a-f]+):([0-9a-f]+)@(https:\/\/[A-Za-z0-9_\-\.]+$)`)
 )
 
+type InvoiceReq struct {
+	Amt  int    `json:"amt"`
+	Memo string `json:"memo"`
+}
+
+type Invoice struct {
+	payment_request string                 // bech32 encoded bitcoin payment request according to the BOLT-11 specification.
+	add_index       uint64                 //The "add" index of this invoice. Each newly created invoice will increment this index making it monotonically increasing. Callers to the SubscribeInvoices call can use this to instantly get notified of all added invoices with an add_index greater than this one.
+	r_hash          map[string]interface{} // The payment hash of the invoice.
+	pay_req         string                 //Same as payment_request. Still here for client backwards compatibility.
+}
+
+type ErrorObj struct {
+	error   bool // The millisatoshis to be paid. Zero to let the receiver decide
+	code    int  // Descriptive text og the invoice
+	message string
+}
+
 type Lndhub struct {
 	sync.Mutex
-	user          string
-	password      string
-	apiurl        string
-	refresh_token string
-	access_token  string
+	user          string // user to access lndhub when export account
+	password      string // password of the previous user to access lndhub
+	apiurl        string // base lndhum api endpoint https://lndhub.io
+	refresh_token string // token used to refresh connection
+	access_token  string // token used to authenticate any
 }
 
 func (l *Lndhub) GetAccessToken() string {
@@ -145,7 +163,7 @@ func auth(user, password, apiurl string) (string, string, error) {
 		if message_field, ok := ret["message"]; ok {
 			message = message_field.(string)
 		}
-		return refresh_token, access_token, fmt.Errorf("could't authernticate, error code " + code +
+		return refresh_token, access_token, fmt.Errorf("could't authenticate, error code " + code +
 			" message " + message)
 	} else if refresh_token, ok := ret["refresh_token"]; !ok {
 		return refresh_token.(string), access_token, fmt.Errorf("refresh_token not present in response")
@@ -154,5 +172,57 @@ func auth(user, password, apiurl string) (string, string, error) {
 	} else {
 		return refresh_token.(string), access_token.(string), nil
 	}
+}
 
+// This function creates an invoice of amount sats (in satoshis). zero amount invoices
+// are not supported, so make sure amount > 0.We also accept a short memo or description of
+// purpose of payment, to attach along with the invoice. Used for record keeping purposes
+// for the invoice's creator, and will also be set in the description field of the encoded
+// payment request if the description_hash field is not being used. The generated invoice
+// will have an expiration time of 24 hours and a random preimage
+func (l *Lndhub) CreateInvoice(amount int, memo string) (string, error) {
+	payload := &InvoiceReq{
+		Amt:  amount,
+		Memo: memo,
+	}
+	var ret map[string]interface{}
+	var invoice string
+
+	if json_data, err := json.Marshal(payload); err != nil {
+		return invoice, err
+	} else if req, err := http.NewRequest("POST", l.apiurl+createInvoiceRoute, bytes.NewBuffer(json_data)); err != nil {
+		return invoice, err
+	} else {
+		// add authorization header to the req
+		req.Header.Add("Authorization", "Bearer "+l.access_token)
+		req.Header.Add("Content-Type", `application/json`)
+		// Send req using http Client
+		client := &http.Client{}
+		if resp, err := client.Do(req); err != nil {
+			return invoice, err
+		} else {
+			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				return invoice, fmt.Errorf("Response status " + http.StatusText(resp.StatusCode) +
+					"expected " + http.StatusText(http.StatusOK))
+			} else if err := json.NewDecoder(resp.Body).Decode(&ret); err != nil {
+				return invoice, err
+			} else if err_field, ok := ret["error"]; ok && err_field.(bool) {
+				var code, message string
+				if code_field, ok := ret["code"]; ok {
+					code = fmt.Sprintf("%1.0f", code_field.(float64))
+				}
+				if message_field, ok := ret["message"]; ok {
+					message = message_field.(string)
+				}
+				return invoice, fmt.Errorf("could't authenticate, error code " + code +
+					" message " + message)
+
+			} else if pay_req, ok := ret["payment_request"]; !ok {
+				return invoice, fmt.Errorf("access_token not present in response")
+			} else {
+				return pay_req.(string), nil
+			}
+		}
+	}
 }
