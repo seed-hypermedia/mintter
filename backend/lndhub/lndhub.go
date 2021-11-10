@@ -24,15 +24,20 @@ var (
 )
 
 type InvoiceReq struct {
-	Amt  int    `json:"amt"`
+	Amt  uint64 `json:"amt"`
 	Memo string `json:"memo"`
 }
 
 type Invoice struct {
-	payment_request string                 // bech32 encoded bitcoin payment request according to the BOLT-11 specification.
-	add_index       uint64                 //The "add" index of this invoice. Each newly created invoice will increment this index making it monotonically increasing. Callers to the SubscribeInvoices call can use this to instantly get notified of all added invoices with an add_index greater than this one.
-	r_hash          map[string]interface{} // The payment hash of the invoice.
-	pay_req         string                 //Same as payment_request. Still here for client backwards compatibility.
+	Destination      string `json:"destination"`
+	Payment_hash     string `json:"payment_hash"`
+	Num_satoshis     string `json:"num_satoshis"`
+	Timestamp        string `json:"timestamp"`
+	Expiry           string `json:"expiry"`
+	Description      string `json:"description"`
+	Description_hash string `json:"description_hash"`
+	Fallback_addr    string `json:"fallback_addr"`
+	Cltv_expiry      string `json:"cltv_expiry"`
 }
 
 type ErrorObj struct {
@@ -176,11 +181,9 @@ func auth(user, password, apiurl string) (string, string, error) {
 
 // This function creates an invoice of amount sats (in satoshis). zero amount invoices
 // are not supported, so make sure amount > 0.We also accept a short memo or description of
-// purpose of payment, to attach along with the invoice. Used for record keeping purposes
-// for the invoice's creator, and will also be set in the description field of the encoded
-// payment request if the description_hash field is not being used. The generated invoice
+// purpose of payment, to attach along with the invoice. The generated invoice
 // will have an expiration time of 24 hours and a random preimage
-func (l *Lndhub) CreateInvoice(amount int, memo string) (string, error) {
+func (l *Lndhub) CreateInvoice(amount uint64, memo string) (string, error) {
 	payload := &InvoiceReq{
 		Amt:  amount,
 		Memo: memo,
@@ -222,6 +225,36 @@ func (l *Lndhub) CreateInvoice(amount int, memo string) (string, error) {
 				return invoice, fmt.Errorf("access_token not present in response")
 			} else {
 				return pay_req.(string), nil
+			}
+		}
+	}
+}
+
+// This function creates an invoice of amount sats (in satoshis). zero amount invoices
+// are not supported, so make sure amount > 0.We also accept a short memo or description of
+// purpose of payment, to attach along with the invoice. The generated invoice
+// will have an expiration time of 24 hours and a random preimage
+func (l *Lndhub) DecodeInvoice(pay_req string) (Invoice, error) {
+	var invoice Invoice
+
+	if req, err := http.NewRequest("GET", l.apiurl+decodeInvoiceRoute+"?invoice="+pay_req, nil); err != nil {
+		return invoice, err
+	} else {
+		// add authorization header to the req
+		req.Header.Add("Authorization", "Bearer "+l.access_token)
+		// Send req using http Client
+		client := &http.Client{}
+		if resp, err := client.Do(req); err != nil {
+			return invoice, err
+		} else {
+			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				return invoice, fmt.Errorf("Response status " + http.StatusText(resp.StatusCode) +
+					"expected " + http.StatusText(http.StatusOK))
+			} else if err := json.NewDecoder(resp.Body).Decode(&invoice); err != nil {
+				return invoice, err
+			} else {
+				return invoice, nil
 			}
 		}
 	}

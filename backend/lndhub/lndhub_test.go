@@ -2,6 +2,7 @@ package lndhub
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -64,15 +65,22 @@ func TestLndhub(t *testing.T) {
 func lndhubTest(t *testing.T, credentials string) error {
 
 	t.Helper()
+	memo := "test invoice"
+	amt := 100
 	if lndhub, err := NewLndhub(credentials); err != nil {
 		return err
 	} else if _, err := lndhub.GetBalance(); err != nil {
 		return err
-	} else if invo, err := lndhub.CreateInvoice(100, "test invoice"); err != nil {
+	} else if pay_req, err := lndhub.CreateInvoice(uint64(amt), memo); err != nil {
 		return err
+	} else if invoice, err := lndhub.DecodeInvoice(pay_req); err != nil {
+		return err
+	} else if invoice.Description != memo {
+		return fmt.Errorf("Decoded invoice memo " + invoice.Description + " expected:" + memo)
+	} else if n, err := strconv.ParseUint(invoice.Num_satoshis, 10, 64); err != nil || n != uint64(amt) {
+		return fmt.Errorf("Decoded invoice amt " + invoice.Num_satoshis + " expected:" + strconv.FormatInt(int64(amt), 10))
 	} else {
-		fmt.Println("Invoice: " + invo)
-		return err
+		return nil
 	}
 
 }
