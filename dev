@@ -46,7 +46,7 @@ run-frontend() {
 run-desktop() {
     bazel build //:yarn //:mintterd
     rm -rf target/debug/mintterd*
-    cargo tauri dev
+    cargo tauri dev $@
 }
 
 # Command run will do a production build for the current platform and run the resulting binary.
