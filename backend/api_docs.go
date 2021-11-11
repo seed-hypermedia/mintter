@@ -394,12 +394,17 @@ func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraft
 	p2p.prov.EnqueueProvide(ctx, feedsp.cid)
 
 	return &documents.Publication{
-		Version:  sp.cid.String(),
-		Document: doc,
+		Version:       sp.cid.String(),
+		Document:      doc,
+		LatestVersion: sp.cid.String(),
 	}, nil
 }
 
 func (srv *docsAPI) GetPublication(ctx context.Context, in *documents.GetPublicationRequest) (*documents.Publication, error) {
+	if in.Version != "" {
+		return nil, status.Error(codes.Unimplemented, "requesting specific verison is not implemented yet")
+	}
+
 	c, err := srv.parseDocumentID(in.DocumentId)
 	if err != nil {
 		return nil, err
@@ -415,9 +420,12 @@ func (srv *docsAPI) GetPublication(ctx context.Context, in *documents.GetPublica
 		return nil, err
 	}
 
+	version := state.deps[0].String() // TODO: implement case with multiple heads.
+
 	return &documents.Publication{
-		Version:  state.deps[0].String(), // TODO: implement case with multiple heads.
-		Document: doc,
+		Version:       version,
+		Document:      doc,
+		LatestVersion: version,
 	}, nil
 }
 
