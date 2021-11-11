@@ -146,6 +146,40 @@ export interface Document {
   publishTime: Date | undefined;
 }
 
+export interface ListCitationsRequest {
+  /** Required. Document ID for which citations need to be retrieved. */
+  documentId: string;
+  /**
+   * Optional. Depth can be used to request transitive closure of citations.
+   * For example depth=1 will return not only citations of the requested document_id
+   * but also citations of those direct citations. The default is depth=0 and will only
+   * return direct citations.
+   */
+  depth: number;
+}
+
+/** Response with citations. */
+export interface ListCitationsResponse {
+  /** List of links that point to the requested document, recursively, according to the requested depth. */
+  links: Link[];
+}
+
+/** Link is a description of a link inside a document. */
+export interface Link {
+  /** Required. Document ID in which link was found. */
+  sourceDocumentId: string;
+  /** Required. Exact version of the source document. */
+  sourceVersion: string;
+  /** Required. Block ID in which the link was found. */
+  sourceBlockId: string;
+  /** Required. Document ID which the link points to. */
+  targetDocumentId: string;
+  /** Required. Exact version of the target document. */
+  targetVersion: string;
+  /** Optional. Some links may point to the whole documents, so this is optional. */
+  targetBlockId: string;
+}
+
 /** Message that gets published to documents feed of the Mintter author. */
 export interface DocumentPublished {
   documentId: string;
@@ -1243,6 +1277,319 @@ export const Document = {
   },
 };
 
+const baseListCitationsRequest: object = { documentId: "", depth: 0 };
+
+export const ListCitationsRequest = {
+  encode(
+    message: ListCitationsRequest,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
+    if (message.documentId !== "") {
+      writer.uint32(10).string(message.documentId);
+    }
+    if (message.depth !== 0) {
+      writer.uint32(16).int32(message.depth);
+    }
+    return writer;
+  },
+
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): ListCitationsRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseListCitationsRequest } as ListCitationsRequest;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.documentId = reader.string();
+          break;
+        case 2:
+          message.depth = reader.int32();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ListCitationsRequest {
+    const message = { ...baseListCitationsRequest } as ListCitationsRequest;
+    if (object.documentId !== undefined && object.documentId !== null) {
+      message.documentId = String(object.documentId);
+    } else {
+      message.documentId = "";
+    }
+    if (object.depth !== undefined && object.depth !== null) {
+      message.depth = Number(object.depth);
+    } else {
+      message.depth = 0;
+    }
+    return message;
+  },
+
+  toJSON(message: ListCitationsRequest): unknown {
+    const obj: any = {};
+    message.documentId !== undefined && (obj.documentId = message.documentId);
+    message.depth !== undefined && (obj.depth = message.depth);
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<ListCitationsRequest>): ListCitationsRequest {
+    const message = { ...baseListCitationsRequest } as ListCitationsRequest;
+    if (object.documentId !== undefined && object.documentId !== null) {
+      message.documentId = object.documentId;
+    } else {
+      message.documentId = "";
+    }
+    if (object.depth !== undefined && object.depth !== null) {
+      message.depth = object.depth;
+    } else {
+      message.depth = 0;
+    }
+    return message;
+  },
+};
+
+const baseListCitationsResponse: object = {};
+
+export const ListCitationsResponse = {
+  encode(
+    message: ListCitationsResponse,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
+    for (const v of message.links) {
+      Link.encode(v!, writer.uint32(10).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): ListCitationsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseListCitationsResponse } as ListCitationsResponse;
+    message.links = [];
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.links.push(Link.decode(reader, reader.uint32()));
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ListCitationsResponse {
+    const message = { ...baseListCitationsResponse } as ListCitationsResponse;
+    message.links = [];
+    if (object.links !== undefined && object.links !== null) {
+      for (const e of object.links) {
+        message.links.push(Link.fromJSON(e));
+      }
+    }
+    return message;
+  },
+
+  toJSON(message: ListCitationsResponse): unknown {
+    const obj: any = {};
+    if (message.links) {
+      obj.links = message.links.map((e) => (e ? Link.toJSON(e) : undefined));
+    } else {
+      obj.links = [];
+    }
+    return obj;
+  },
+
+  fromPartial(
+    object: DeepPartial<ListCitationsResponse>
+  ): ListCitationsResponse {
+    const message = { ...baseListCitationsResponse } as ListCitationsResponse;
+    message.links = [];
+    if (object.links !== undefined && object.links !== null) {
+      for (const e of object.links) {
+        message.links.push(Link.fromPartial(e));
+      }
+    }
+    return message;
+  },
+};
+
+const baseLink: object = {
+  sourceDocumentId: "",
+  sourceVersion: "",
+  sourceBlockId: "",
+  targetDocumentId: "",
+  targetVersion: "",
+  targetBlockId: "",
+};
+
+export const Link = {
+  encode(message: Link, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.sourceDocumentId !== "") {
+      writer.uint32(10).string(message.sourceDocumentId);
+    }
+    if (message.sourceVersion !== "") {
+      writer.uint32(18).string(message.sourceVersion);
+    }
+    if (message.sourceBlockId !== "") {
+      writer.uint32(26).string(message.sourceBlockId);
+    }
+    if (message.targetDocumentId !== "") {
+      writer.uint32(34).string(message.targetDocumentId);
+    }
+    if (message.targetVersion !== "") {
+      writer.uint32(42).string(message.targetVersion);
+    }
+    if (message.targetBlockId !== "") {
+      writer.uint32(50).string(message.targetBlockId);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Link {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseLink } as Link;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.sourceDocumentId = reader.string();
+          break;
+        case 2:
+          message.sourceVersion = reader.string();
+          break;
+        case 3:
+          message.sourceBlockId = reader.string();
+          break;
+        case 4:
+          message.targetDocumentId = reader.string();
+          break;
+        case 5:
+          message.targetVersion = reader.string();
+          break;
+        case 6:
+          message.targetBlockId = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Link {
+    const message = { ...baseLink } as Link;
+    if (
+      object.sourceDocumentId !== undefined &&
+      object.sourceDocumentId !== null
+    ) {
+      message.sourceDocumentId = String(object.sourceDocumentId);
+    } else {
+      message.sourceDocumentId = "";
+    }
+    if (object.sourceVersion !== undefined && object.sourceVersion !== null) {
+      message.sourceVersion = String(object.sourceVersion);
+    } else {
+      message.sourceVersion = "";
+    }
+    if (object.sourceBlockId !== undefined && object.sourceBlockId !== null) {
+      message.sourceBlockId = String(object.sourceBlockId);
+    } else {
+      message.sourceBlockId = "";
+    }
+    if (
+      object.targetDocumentId !== undefined &&
+      object.targetDocumentId !== null
+    ) {
+      message.targetDocumentId = String(object.targetDocumentId);
+    } else {
+      message.targetDocumentId = "";
+    }
+    if (object.targetVersion !== undefined && object.targetVersion !== null) {
+      message.targetVersion = String(object.targetVersion);
+    } else {
+      message.targetVersion = "";
+    }
+    if (object.targetBlockId !== undefined && object.targetBlockId !== null) {
+      message.targetBlockId = String(object.targetBlockId);
+    } else {
+      message.targetBlockId = "";
+    }
+    return message;
+  },
+
+  toJSON(message: Link): unknown {
+    const obj: any = {};
+    message.sourceDocumentId !== undefined &&
+      (obj.sourceDocumentId = message.sourceDocumentId);
+    message.sourceVersion !== undefined &&
+      (obj.sourceVersion = message.sourceVersion);
+    message.sourceBlockId !== undefined &&
+      (obj.sourceBlockId = message.sourceBlockId);
+    message.targetDocumentId !== undefined &&
+      (obj.targetDocumentId = message.targetDocumentId);
+    message.targetVersion !== undefined &&
+      (obj.targetVersion = message.targetVersion);
+    message.targetBlockId !== undefined &&
+      (obj.targetBlockId = message.targetBlockId);
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<Link>): Link {
+    const message = { ...baseLink } as Link;
+    if (
+      object.sourceDocumentId !== undefined &&
+      object.sourceDocumentId !== null
+    ) {
+      message.sourceDocumentId = object.sourceDocumentId;
+    } else {
+      message.sourceDocumentId = "";
+    }
+    if (object.sourceVersion !== undefined && object.sourceVersion !== null) {
+      message.sourceVersion = object.sourceVersion;
+    } else {
+      message.sourceVersion = "";
+    }
+    if (object.sourceBlockId !== undefined && object.sourceBlockId !== null) {
+      message.sourceBlockId = object.sourceBlockId;
+    } else {
+      message.sourceBlockId = "";
+    }
+    if (
+      object.targetDocumentId !== undefined &&
+      object.targetDocumentId !== null
+    ) {
+      message.targetDocumentId = object.targetDocumentId;
+    } else {
+      message.targetDocumentId = "";
+    }
+    if (object.targetVersion !== undefined && object.targetVersion !== null) {
+      message.targetVersion = object.targetVersion;
+    } else {
+      message.targetVersion = "";
+    }
+    if (object.targetBlockId !== undefined && object.targetBlockId !== null) {
+      message.targetBlockId = object.targetBlockId;
+    } else {
+      message.targetBlockId = "";
+    }
+    return message;
+  },
+};
+
 const baseDocumentPublished: object = {
   documentId: "",
   title: "",
@@ -1714,6 +2061,60 @@ export const PublicationsListPublicationsDesc: UnaryMethodDefinitionish = {
     deserializeBinary(data: Uint8Array) {
       return {
         ...ListPublicationsResponse.decode(data),
+        toObject() {
+          return this;
+        },
+      };
+    },
+  } as any,
+};
+
+/** Content graph service provides access to citations (backlinks). */
+export interface ContentGraph {
+  listCitations(
+    request: DeepPartial<ListCitationsRequest>,
+    metadata?: grpc.Metadata
+  ): Promise<ListCitationsResponse>;
+}
+
+export class ContentGraphClientImpl implements ContentGraph {
+  private readonly rpc: Rpc;
+
+  constructor(rpc: Rpc) {
+    this.rpc = rpc;
+    this.listCitations = this.listCitations.bind(this);
+  }
+
+  listCitations(
+    request: DeepPartial<ListCitationsRequest>,
+    metadata?: grpc.Metadata
+  ): Promise<ListCitationsResponse> {
+    return this.rpc.unary(
+      ContentGraphListCitationsDesc,
+      ListCitationsRequest.fromPartial(request),
+      metadata
+    );
+  }
+}
+
+export const ContentGraphDesc = {
+  serviceName: "com.mintter.documents.v1alpha.ContentGraph",
+};
+
+export const ContentGraphListCitationsDesc: UnaryMethodDefinitionish = {
+  methodName: "ListCitations",
+  service: ContentGraphDesc,
+  requestStream: false,
+  responseStream: false,
+  requestType: {
+    serializeBinary() {
+      return ListCitationsRequest.encode(this).finish();
+    },
+  } as any,
+  responseType: {
+    deserializeBinary(data: Uint8Array) {
+      return {
+        ...ListCitationsResponse.decode(data),
         toObject() {
           return this;
         },

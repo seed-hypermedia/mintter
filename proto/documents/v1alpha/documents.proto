@@ -178,6 +178,49 @@ message Document {
   google.protobuf.Timestamp publish_time = 8;
 }
 
+// Content graph service provides access to citations (backlinks).
+service ContentGraph {
+  rpc ListCitations(ListCitationsRequest) returns (ListCitationsResponse);
+}
+
+message ListCitationsRequest {
+  // Required. Document ID for which citations need to be retrieved.
+  string document_id = 1;
+
+  // Optional. Depth can be used to request transitive closure of citations.
+  // For example depth=1 will return not only citations of the requested document_id
+  // but also citations of those direct citations. The default is depth=0 and will only
+  // return direct citations.
+  int32 depth = 2;
+}
+
+// Response with citations.
+message ListCitationsResponse {
+  // List of links that point to the requested document, recursively, according to the requested depth.
+  repeated Link links = 1;
+}
+
+// Link is a description of a link inside a document.
+message Link {
+  // Required. Document ID in which link was found.
+  string source_document_id = 1;
+
+  // Required. Exact version of the source document.
+  string source_version = 2;
+
+  // Required. Block ID in which the link was found.
+  string source_block_id = 3;
+
+  // Required. Document ID which the link points to.
+  string target_document_id = 4;
+
+  // Required. Exact version of the target document.
+  string target_version = 5;
+
+  // Optional. Some links may point to the whole documents, so this is optional.
+  string target_block_id = 6;
+}
+
 // === Events ===
 
 // Message that gets published to documents feed of the Mintter author.
