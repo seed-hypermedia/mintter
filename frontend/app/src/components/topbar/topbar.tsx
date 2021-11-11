@@ -7,6 +7,7 @@ import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
 import {useActor} from '@xstate/react'
 import {useSidepanel} from 'frontend/app/src/components/sidepanel'
+import {useRoute} from 'frontend/app/src/utils/use-route'
 import {FormEvent, useCallback, useEffect, useRef, useState} from 'react'
 import {useQueryClient} from 'react-query'
 import {Link, useLocation} from 'wouter'
@@ -152,7 +153,7 @@ function TopbarActions() {
   const service = useSidepanel()
   const [state, send] = useActor(service)
 
-  const canSidepanel = state.matches('enabled')
+  const {match: canSidepanel} = useRoute(['/p/:docId', '/editor/:docId'])
 
   function toggleSidepanel() {
     send('SIDEPANEL_TOGGLE')
