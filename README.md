@@ -86,3 +86,11 @@ For safety reason VSCode requires you to explicitly activate the custom TS setti
 3. Pick "Use Workspace Version"
 
 For more and updated information about this setup, please visit [this link](https://yarnpkg.com/getting-started/editor-sdks#vscode)
+
+### Update Slate fork
+
+1. go to the [fork repo]() and rebase against upstream/main
+2. fix buttloads of merge conflicts
+3. confirm the build still works
+4. build the project and commit the build output too! That is what we pull from github
+5. once you confirm it all works as expected create a new tag v<version>-unist was my naming scheme
