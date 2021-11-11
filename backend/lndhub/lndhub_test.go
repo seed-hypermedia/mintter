@@ -75,6 +75,13 @@ func lndhubTest(t *testing.T, credentials string) error {
 		return err
 	} else if invoice, err := lndhub.DecodeInvoice(pay_req); err != nil {
 		return err
+	} else if *invoice.Description != memo {
+		return fmt.Errorf("Decoded invoice memo " + *invoice.Description + " expected:" + memo)
+	} else if int64(invoice.MilliSat.ToSatoshis()) != int64(amt) {
+		return fmt.Errorf("Decoded invoice amt " + invoice.MilliSat.ToSatoshis().String() +
+			" expected:" + strconv.FormatInt(int64(amt), 10))
+	} else if invoice, err := lndhub.DecodeInvoiceAPI(pay_req); err != nil {
+		return err
 	} else if invoice.Description != memo {
 		return fmt.Errorf("Decoded invoice memo " + invoice.Description + " expected:" + memo)
 	} else if n, err := strconv.ParseUint(invoice.Num_satoshis, 10, 64); err != nil || n != uint64(amt) {

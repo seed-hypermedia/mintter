@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"regexp"
 	"sync"
+
+	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/lightningnetwork/lnd/zpay32"
 )
 
 const (
@@ -230,11 +233,8 @@ func (l *Lndhub) CreateInvoice(amount uint64, memo string) (string, error) {
 	}
 }
 
-// This function creates an invoice of amount sats (in satoshis). zero amount invoices
-// are not supported, so make sure amount > 0.We also accept a short memo or description of
-// purpose of payment, to attach along with the invoice. The generated invoice
-// will have an expiration time of 24 hours and a random preimage
-func (l *Lndhub) DecodeInvoice(pay_req string) (Invoice, error) {
+// This function decodes a BOLT-11 invoice in text format
+func (l *Lndhub) DecodeInvoiceAPI(pay_req string) (Invoice, error) {
 	var invoice Invoice
 
 	if req, err := http.NewRequest("GET", l.apiurl+decodeInvoiceRoute+"?invoice="+pay_req, nil); err != nil {
@@ -258,4 +258,15 @@ func (l *Lndhub) DecodeInvoice(pay_req string) (Invoice, error) {
 			}
 		}
 	}
+}
+
+// This function decodes a BOLT-11 invoice in text format. It uses the lnd functions to do it.
+func (l *Lndhub) DecodeInvoice(pay_req string) (*zpay32.Invoice, error) {
+
+	if decodedInvoice, err := zpay32.Decode(pay_req, &chaincfg.MainNetParams); err != nil {
+		return nil, err
+	} else {
+		return decodedInvoice, nil
+	}
+
 }
