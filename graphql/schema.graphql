@@ -1,0 +1,148 @@
+"""
+Built-in directive for Go's gqlgen library.
+"""
+directive @goModel(
+  model: String
+  models: [String!]
+) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+
+"""
+Built-in directive for Go's gqlgen library.
+"""
+directive @goField(
+  forceResolver: Boolean
+  name: String
+) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+
+"""
+Lightning Network payment request encoded as a string.
+Ready to be encoded as a QR code for wallets to scan and pay.
+"""
+scalar LightningPaymentRequest
+
+"""
+Mintter Account ID.
+"""
+scalar AccountID
+
+"""
+Top-level queries.
+"""
+type Query {
+  """
+  Information about the current user.
+  """
+  me: Me!
+}
+
+"""
+Information about the current user.
+"""
+type Me {
+  """
+  List configured Lightning wallets.
+  """
+  wallets: [LightningWallet!] @goField(forceResolver: true)
+}
+
+"""
+Top-level mutations.
+"""
+type Mutation {
+  """
+  Configure an LndHub compatible Lightning Wallet, e.g. BlueWallet.
+  """
+  setupLndHubWallet(input: SetupLndHubWalletInput!): SetupLndHubWalletPayload!
+
+  """
+  Request an invoice from another user in order to pay them with a separate Lightning Wallet.
+  The user from which the invoice is requested must be currently connected, otherwise this call will fail.
+  """
+  requestInvoice(input: RequestInvoiceInput!): RequestInvoicePayload!
+}
+
+"""
+Input to setup LndHub wallet.
+"""
+input SetupLndHubWalletInput {
+  """
+  Local name for this wallet.
+  """
+  name: String!
+
+  """
+  Configuration URL with credentials for an LndHub wallet.
+  """
+  url: String!
+}
+
+"""
+Response from setting up LndHub wallet.
+"""
+type SetupLndHubWalletPayload {
+  """
+  The newly created wallet.
+  """
+  wallet: LndHubWallet!
+}
+
+"""
+Input for requesting an invoice for tipping.
+"""
+input RequestInvoiceInput {
+  """
+  Mintter Account ID we want to tip.
+  """
+  account: AccountID!
+
+  """
+  Amount in Satoshis the invoice should be created for.
+  """
+  amountSats: Int!
+}
+
+"""
+Response with the invoice to pay.
+"""
+type RequestInvoicePayload {
+  """
+  Payment request is a string-encoded Lightning Network Payment Request.
+  It's ready to be used in a wallet app to pay.
+  """
+  paymentRequest: LightningPaymentRequest!
+}
+
+"""
+Common interface for Lightning wallets. We support different types.
+"""
+interface LightningWallet {
+  """
+  Name of the wallet.
+  """
+  name: String!
+
+  """
+  Balance in Satoshis.
+  """
+  balanceSats: Int!
+}
+
+"""
+Lightning wallet compatible with LndHub.
+"""
+type LndHubWallet implements LightningWallet {
+  """
+  URL of the LndHub server this wallet is connected to.
+  """
+  apiURL: String!
+
+  """
+  Name of the wallet.
+  """
+  name: String!
+
+  """
+  Balance in Satoshis.
+  """
+  balanceSats: Int!
+}
