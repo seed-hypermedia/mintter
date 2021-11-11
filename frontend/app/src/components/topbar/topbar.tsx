@@ -13,6 +13,7 @@ import {useQueryClient} from 'react-query'
 import {Link, useLocation} from 'wouter'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {Settings} from '../settings'
+import {useSidebar} from '../sidebar'
 import {Tooltip} from '../tooltip'
 
 export const TopbarStyled = styled(Box, {
@@ -41,7 +42,10 @@ export function Topbar() {
 }
 
 function SidenavBar() {
-  // const {toggle} = useSidebar()
+  const sidebarService = useSidebar()
+  const [, send] = useActor(sidebarService)
+
+  const toggle = useCallback(() => send('SIDEBAR_TOGGLE'), [send])
   return (
     <Box
       className={topbarSection()}
@@ -63,7 +67,7 @@ function SidenavBar() {
         {/* <Button variant="ghost" size="0" color="muted">
           <Icon name="CardStackPlus" size="2" />
         </Button> */}
-        <Button variant="ghost" size="0" color="muted">
+        <Button variant="ghost" size="0" color="muted" onClick={toggle}>
           <Icon name="Sidenav" size="2" />
         </Button>
       </Box>
