@@ -133,10 +133,7 @@ export type SidepanelProps = {
 }
 
 export function Sidepanel() {
-  const service = useSidepanel()
-  const [, send] = useActor(service)
   const isOpen = useIsSidepanelOpen()
-  const bookmarksService = useBookmarksService()
   const bookmarks = useBookmarks()
   const annotations = useAnnotations()
 

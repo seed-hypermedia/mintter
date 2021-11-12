@@ -168,7 +168,7 @@ const stitches = createStitches({
 })
 
 export const {styled, css, globalCss, keyframes, config, createTheme} = stitches
-export type CSS = Stitches.CSS<typeof config>
+export type CSS = Stitches.CSS<typeof config> & typeof lightTheme
 
 export const lightTheme = createTheme('light-theme', {
   colors: {

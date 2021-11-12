@@ -7,6 +7,10 @@ export const statementStyle = css({
   position: 'relative',
   [`[data-element-type="orderedList"] > &, [data-element-type="unorderedList"] > &`]: {
     listStyle: 'inherit',
+    '&:marker': {
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+    },
   },
   wordBreak: 'break-word',
 })

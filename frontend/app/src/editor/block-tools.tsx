@@ -5,19 +5,18 @@ import {Icon, icons} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {useActor} from '@xstate/react'
+import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
 import {Fragment} from 'react'
 import type {BaseRange} from 'slate'
 import {Editor, Path, Transforms} from 'slate'
-import {ReactEditor, useReadOnly, useSlateStatic} from 'slate-react'
+import {ReactEditor, useSlateStatic} from 'slate-react'
 import {Dropdown} from './dropdown'
 import {useHover} from './hover-context'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 
 export const ElementDropdown = styled('button', {
   border: 'none',
-  backgroundColor: '$background-neutral-soft',
-  width: '$space$8',
-  height: '$space$8',
+  backgroundColor: 'transparent',
   position: 'absolute',
   zIndex: 2,
   display: 'flex',
@@ -88,10 +87,9 @@ export function BlockTools({element}: {element: FlowContent}) {
   const hoverService = useHover()
   const [state, hoverSend] = useActor(hoverService)
   const editor = useSlateStatic()
-  const isReadOnly = useReadOnly()
   const path = ReactEditor.findPath(editor, element)
 
-  return (
+  return editor.mode == EditorMode.Draft ? (
     <Box
       contentEditable={false}
       css={{
@@ -100,7 +98,7 @@ export function BlockTools({element}: {element: FlowContent}) {
         position: 'absolute',
         top: 2,
         left: '-$8',
-        marginLeft: '-$1',
+        marginLeft: '-$3',
         userSelect: 'none',
         WebkitUserSelect: 'none',
         '&:hover': {
@@ -116,6 +114,8 @@ export function BlockTools({element}: {element: FlowContent}) {
           top: 0,
           left: '50%',
           zIndex: 0,
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
           transform: 'translate(-50%, 0)',
         }}
         onMouseEnter={() => {
@@ -123,11 +123,11 @@ export function BlockTools({element}: {element: FlowContent}) {
           hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
         }}
       />
-      {state.context.blockId == element.id && !isReadOnly && (
+      {state.context.blockId == element.id && (
         <Dropdown.Root modal={false}>
           <Dropdown.Trigger asChild>
             <ElementDropdown data-trigger>
-              <Icon name="Grid4" size="2" color="muted" />
+              <Icon name="Grid6" size="2" color="muted" />
             </ElementDropdown>
           </Dropdown.Trigger>
           <Dropdown.Content portalled align="start" side="bottom" css={{minWidth: 220}}>
@@ -158,7 +158,7 @@ export function BlockTools({element}: {element: FlowContent}) {
         </Dropdown.Root>
       )}
     </Box>
-  )
+  ) : null
 }
 
 /*
