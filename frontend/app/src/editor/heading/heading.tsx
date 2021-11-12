@@ -1,10 +1,10 @@
-import { isHeading, isStaticParagraph } from '@mintter/mttast'
-import { staticParagraph } from '@mintter/mttast-builder'
-import { Editor, Element, Node, Transforms } from 'slate'
-import { StatementTools } from '../statement-tools'
-import type { EditorPlugin } from '../types'
-import { isFirstChild, resetFlowContent } from '../utils'
-import { HeadingUI } from './heading-ui'
+import {isHeading, isStaticParagraph} from '@mintter/mttast'
+import {staticParagraph} from '@mintter/mttast-builder'
+import {Editor, Element, Node, Transforms} from 'slate'
+import {BlockTools} from '../block-tools'
+import type {EditorPlugin} from '../types'
+import {isFirstChild, resetFlowContent} from '../utils'
+import {HeadingUI} from './heading-ui'
 
 export const ELEMENT_HEADING = 'heading'
 
@@ -13,13 +13,12 @@ export const createHeadingPlugin = (): EditorPlugin => ({
   renderElement:
     () =>
     ({attributes, children, element}) => {
-      // TODO: compute heading level
       if (isHeading(element)) {
         return (
           <HeadingUI {...attributes} data-element-type={element.type}>
-          <StatementTools element={element} />
-          {children}
-        </HeadingUI>
+            <BlockTools element={element} />
+            {children}
+          </HeadingUI>
         )
       }
     },

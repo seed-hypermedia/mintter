@@ -1,7 +1,9 @@
 import {Box} from '@mintter/ui/box'
+import {useActor} from '@xstate/react'
 import {PropsWithChildren, Suspense, useMemo} from 'react'
 import type {Descendant} from 'slate'
 import {Editable, Slate} from 'slate-react'
+import {useHover} from './hover-context'
 import {HoveringToolbar} from './hovering-toolbar'
 import {
   buildDecorateHook,
@@ -27,6 +29,8 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
   const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, editor), [mode])
   const decorate = useMemo(() => buildDecorateHook(plugins, editor), [mode])
   const eventHandlers = useMemo(() => buildEventHandlerHooks(plugins, editor), [mode])
+  const hoverService = useHover()
+  const [, hoverSend] = useActor(hoverService)
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
@@ -78,6 +82,7 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
           position: 'relative',
           marginLeft: '-$8',
         }}
+        onMouseLeave={() => hoverSend('MOUSE_LEAVE')}
       >
         <Slate editor={editor} value={value} onChange={onChange}>
           <HoveringToolbar />

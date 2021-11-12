@@ -1,35 +1,32 @@
-import {useActor, useInterpret} from '@xstate/react'
-import {createContext, PropsWithChildren, useContext, useEffect} from 'react'
-import {assign, createMachine, Interpreter} from 'xstate'
+import {createModel} from 'xstate/lib/model'
 
-export type HoverMachineEvent =
-  | {
-      type: 'MOUSEENTER_STATEMENT'
-      payload: string
-    }
-  | {
-      type: 'MOUSELEAVE_STATEMENT'
-      payload: string
-    }
+const hoverModel = createModel(
+  {
+    blockId: null as string | null,
+  },
+  {
+    events: {
+      MOUSE_ENTER: (blockId: string) => ({blockId}),
+      MOUSE_LEAVE: () => ({}),
+    },
+  },
+)
 
-export type HoverMachineContextType = {statement: string | null}
-export const hoverMachine = createMachine<HoverMachineContextType, HoverMachineEvent>(
+export const hoverMachine = hoverModel.createMachine(
   {
     id: 'hover-machine',
-    context: {
-      statement: null,
-    },
-    initial: 'idle',
+    initial: 'ready',
+    context: hoverModel.initialContext,
     states: {
-      idle: {
+      ready: {
         on: {
-          MOUSEENTER_STATEMENT: {
-            target: 'idle',
-            actions: ['setStatementToContext'],
+          MOUSE_ENTER: {
+            actions: hoverModel.assign({
+              blockId: (_, ev) => ev.blockId,
+            }),
           },
-          MOUSELEAVE_STATEMENT: {
-            target: 'idle',
-            actions: ['clearStatementFromContext'],
+          MOUSE_LEAVE: {
+            actions: ['clearData'],
           },
         },
       },
@@ -37,88 +34,7 @@ export const hoverMachine = createMachine<HoverMachineContextType, HoverMachineE
   },
   {
     actions: {
-      setStatementToContext: assign({
-        statement: (_, event) => event.payload,
-      }),
-      clearStatementFromContext: assign((context) => ({
-        ...context,
-        statement: null,
-      })),
+      clearData: hoverModel.assign(hoverModel.initialContext),
     },
   },
 )
-
-export interface HoverGlobalContextType {
-  /* eslint-disable */
-  service?: Interpreter<HoverMachineContextType, any, HoverMachineEvent>
-}
-
-export const HoverContext = createContext<HoverGlobalContextType>({})
-
-export type HoverProviderProps = {
-  machine?: typeof hoverMachine
-}
-
-export function HoverProvider({children, machine = hoverMachine}: PropsWithChildren<HoverProviderProps>) {
-  const service = useInterpret(machine)
-
-  return <HoverContext.Provider value={{service}}>{children}</HoverContext.Provider>
-}
-
-export type UseHoverEventResult = {
-  send: (event: HoverMachineEvent) => void
-  statement: Pick<HoverMachineContextType, 'statement'>
-}
-
-/*
- * @todo useHoverEvent ref type
- */
-/* eslint-disable */
-export function useHoverEvent(ref: any, embedUrl: string): UseHoverEventResult {
-  const {service} = useContext(HoverContext)
-  if (!service) {
-    throw new Error(`"useHoverEvent" must be called within a "<HoverProvider />" component`)
-  }
-  const {send} = service
-  const [state] = useActor(service)
-
-  useEffect(() => {
-    function setHover(event: Event): void {
-      event.stopPropagation()
-      send({type: 'MOUSEENTER_STATEMENT', payload: embedUrl})
-    }
-
-    function unsetHover(event: Event): void {
-      event.stopPropagation()
-      send({type: 'MOUSELEAVE_STATEMENT', payload: embedUrl})
-    }
-    let element = ref?.current
-    if (!element) return
-    const isSupported = element && element.addEventListener
-    if (!isSupported) return
-
-    element.addEventListener('mouseenter', setHover)
-    element.addEventListener('mouseleave', unsetHover)
-
-    return () => {
-      element.removeEventListener('mouseenter', setHover)
-      element.removeEventListener('mouseleave', unsetHover)
-    }
-  }, [ref, embedUrl, send])
-
-  return {
-    send,
-    statement: state.context,
-  }
-}
-
-export function useHoverValue(): HoverMachineContextType {
-  const {service} = useContext(HoverContext)
-  if (!service) {
-    throw new Error(`"useHoverValue" must be called within a "<HoverProvider />" component`)
-  }
-
-  const [state] = useActor(service)
-
-  return state.context
-}

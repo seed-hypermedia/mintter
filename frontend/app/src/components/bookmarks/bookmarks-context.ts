@@ -1,6 +1,6 @@
-import {createBookmarksMachine} from 'frontend/app/src/components/bookmarks'
-import {createInterpreterContext} from 'frontend/app/src/utils/machine-utils'
 import {InterpreterFrom} from 'xstate'
+import {createInterpreterContext} from '../../utils/machine-utils'
+import {createBookmarksMachine} from './bookmarks-machine'
 
 const [BookmarksProvider, useBookmarksService, createBookmarksSelector] =
   createInterpreterContext<InterpreterFrom<ReturnType<typeof createBookmarksMachine>>>('Bookmarks')

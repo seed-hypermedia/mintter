@@ -1,6 +1,6 @@
 import {isFlowContent, isGroup, isGroupContent} from '@mintter/mttast'
 import {css, styled} from '@mintter/ui/stitches.config'
-import {forwardRef} from 'react'
+import {forwardRef, PropsWithChildren} from 'react'
 import type {Node, NodeEntry} from 'slate'
 import {Editor, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
@@ -10,20 +10,24 @@ import type {EditorPlugin} from '../types'
 export const ELEMENT_GROUP = 'group'
 
 export const groupStyle = css({
-  margin: 0,
-  padding: 0,
-  position: 'relative',
-  paddingLeft: 0,
-  boxShadow: '-0.1px 0 0 0 $colors$background-neutral-soft',
-  variants: {
-    type: {
-      group: {},
-      orderedList: {
-        counterReset: 'section',
-      },
-      unorderedList: {},
-    },
+  // margin: 0,
+  // padding: 0,
+  // position: 'relative',
+  paddingLeft: '$8',
+  // marginLeft: '-$8',
+  [`&[data-element-type="orderedList"], &[data-element-type="unorderedList"]`]: {
+    marginLeft: 0,
   },
+  // boxShadow: '-0.1px 0 0 0 $colors$background-neutral-soft',
+  // variants: {
+  //   type: {
+  //     group: {},
+  //     orderedList: {
+  //       counterReset: 'section',
+  //     },
+  //     unorderedList: {},
+  //   },
+  // },
 })
 
 export const GroupUI = styled('ul', groupStyle)
@@ -35,7 +39,7 @@ export const createGroupPlugin = (): EditorPlugin => ({
     ({attributes, children, element}) => {
       if (isGroup(element)) {
         return (
-          <Group mode={editor.mode} type={element.type} data-element-type={element.type} {...attributes}>
+          <Group mode={editor.mode} data-element-type={element.type} {...attributes}>
             {children}
           </Group>
         )
@@ -89,10 +93,15 @@ export function removeEmptyGroup(editor: Editor, entry: NodeEntry<Node>): boolea
   }
 }
 
-export const Group = forwardRef(({mode, ...props}: RenderElementProps & {mode: EditorMode}, ref) => {
+export type GroupProps = PropsWithChildren<{
+  mode: EditorMode
+}> &
+  Omit<RenderElementProps['attributes'], 'ref'>
+
+export const Group = forwardRef<GroupProps, any>(({mode, ...props}: GroupProps, ref) => {
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return null
   }
 
-  return <GroupUI ref={ref} {...props} />
+  return <GroupUI ref={ref as any} {...props} />
 })

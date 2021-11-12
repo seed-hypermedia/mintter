@@ -56,6 +56,8 @@ export default function Publication({params}: PublicationPageProps) {
   })
   const {data: myInfo} = useInfo()
 
+  const docId = params?.docId || data.document.id!
+
   useEnableSidepanel()
 
   useEffect(() => {
@@ -72,7 +74,7 @@ export default function Publication({params}: PublicationPageProps) {
 
   async function handleUpdate() {
     try {
-      const d = await createDraft(params.docId)
+      const d = await createDraft(docId)
       if (d?.id) {
         setLocation(`/editor/${d.id}`)
       }

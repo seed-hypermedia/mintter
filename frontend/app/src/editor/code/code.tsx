@@ -6,20 +6,20 @@ import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {useActor} from '@xstate/react'
-import {useSidepanel} from 'frontend/app/src/components/sidepanel'
 import toast from 'react-hot-toast'
 import type {Highlighter, IThemeRegistration, Lang} from 'shiki'
 import {getHighlighter, setCDN} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useSlateStatic} from 'slate-react'
+import {useBookmarksService} from '../../components/bookmarks'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {useRoute} from '../../utils/use-route'
+import {BlockTools} from '../block-tools'
 import {ContextMenu} from '../context-menu'
 import {MARK_EMPHASIS} from '../emphasis'
 import {EditorMode} from '../plugin-utils'
 import {copyTextToClipboard, statementStyle} from '../statement'
-import {StatementTools} from '../statement-tools'
 import {MARK_STRONG} from '../strong'
 import type {EditorPlugin} from '../types'
 import {MARK_UNDERLINE} from '../underline'
@@ -41,9 +41,6 @@ const SelectorWrapper = styled('div', {
 
 export const CodeStyled = styled('pre', statementStyle, {
   position: 'relative',
-  code: {
-    overflowX: 'scroll',
-  },
   '&:hover': {
     [`${SelectorWrapper}`]: {
       opacity: 1,
@@ -172,8 +169,17 @@ function Code({
   const {params} = useRoute<{docId: string}>(['/p/:docId', '/editor/:docId'])
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
-  const sidepanelService = useSidepanel()
-  const [, sidepanelSend] = useActor(sidepanelService)
+  const bookmarksService = useBookmarksService()
+  const [, bookmarkSend] = useActor(bookmarksService)
+  // const hoverService = useHover()
+  // const [, hoverSend] = useActor(hoverService)
+
+  function addBookmark(docId: string, blockId: FlowContent['id']) {
+    bookmarkSend({
+      type: 'ADD_BOOKMARK',
+      link: `${MINTTER_LINK_PREFIX}${docId}/${blockId}`,
+    })
+  }
 
   function setLanguage(e: React.ChangeEvent<HTMLSelectElement>) {
     const {...newData} = element.data || {}
@@ -216,12 +222,13 @@ function Code({
               </select>
             </SelectorWrapper>
           ) : null}
-          <StatementTools element={element} />
+          <BlockTools element={element} />
           <Box
             as="code"
             css={{
-              backgroundColor: '$background-muted',
-              padding: '$8',
+              display: 'block',
+              paddingVertical: '$4',
+              paddingHorizontal: '$6',
               borderRadius: '$2',
               position: 'relative',
             }}
@@ -235,11 +242,7 @@ function Code({
           <Icon name="Copy" size="1" />
           <Text size="2">Copy Block Reference</Text>
         </ContextMenu.Item>
-        <ContextMenu.Item
-          onSelect={() =>
-            sidepanelSend({type: 'SIDEPANEL_ADD_ITEM', item: `${MINTTER_LINK_PREFIX}${params!.docId}/${element.id}`})
-          }
-        >
+        <ContextMenu.Item onSelect={() => addBookmark(params!.docId, element.id)}>
           <Icon size="1" name="ArrowBottomRight" />
           <Text size="2">Add to Bookmarks</Text>
         </ContextMenu.Item>

@@ -1,9 +1,9 @@
-import {SectionItem} from 'frontend/app/src/components/sidebar/section-item'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Link} from 'wouter'
 import {useDraftList} from '../../hooks'
 import {Section} from './section'
 import {SectionError} from './section-error'
+import {SectionItem} from './section-item'
 
 export function DraftsSection() {
   const {data = [], status} = useDraftList()

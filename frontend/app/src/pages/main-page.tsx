@@ -2,7 +2,7 @@ import {Box} from '@mintter/ui/box'
 import {css} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {useInterpret} from '@xstate/react'
-import {ReactNode} from 'react'
+import {ReactNode, useEffect, useRef} from 'react'
 import Store from 'tauri-plugin-store-api'
 import {Route} from 'wouter'
 import {BookmarksProvider, createBookmarksMachine} from '../components/bookmarks'
@@ -11,6 +11,8 @@ import {Sidebar, SidebarProvider} from '../components/sidebar'
 import {sidebarMachine} from '../components/sidebar/sidebar-machine'
 import {Sidepanel, sidepanelMachine, SidepanelProvider} from '../components/sidepanel'
 import {Topbar} from '../components/topbar'
+import {HoverProvider} from '../editor/hover-context'
+import {hoverMachine} from '../editor/hover-machine'
 import EditorPage from './editor'
 import Publication from './publication'
 
@@ -20,23 +22,26 @@ export function MainPage() {
   const sidepanelService = useInterpret(sidepanelMachine)
   const sidebarService = useInterpret(sidebarMachine)
   const bookmarksService = useInterpret(createBookmarksMachine(store))
+  const hoverService = useInterpret(hoverMachine)
   return (
-    <BookmarksProvider value={bookmarksService}>
-      <SidebarProvider value={sidebarService}>
-        <SidepanelProvider value={sidepanelService}>
-          <Box className={rootPageStyle()}>
-            <Topbar />
-            <Sidebar />
-            <MainWindow>
-              <Route path="/p/:docId/:blockId?" component={Publication} />
-              <Route path="/editor/:docId" component={EditorPage} />
-              <Route path="/" component={Placeholder} />
-            </MainWindow>
-            <Sidepanel />
-          </Box>
-        </SidepanelProvider>
-      </SidebarProvider>
-    </BookmarksProvider>
+    <HoverProvider value={hoverService}>
+      <BookmarksProvider value={bookmarksService}>
+        <SidebarProvider value={sidebarService}>
+          <SidepanelProvider value={sidepanelService}>
+            <Box className={rootPageStyle()}>
+              <Topbar />
+              <Sidebar />
+              <MainWindow>
+                <Route path="/p/:docId/:blockId?" component={Publication} />
+                <Route path="/editor/:docId" component={EditorPage} />
+                <Route path="/" component={Placeholder} />
+              </MainWindow>
+              <Sidepanel />
+            </Box>
+          </SidepanelProvider>
+        </SidebarProvider>
+      </BookmarksProvider>
+    </HoverProvider>
   )
 }
 
@@ -61,8 +66,23 @@ var rootPageStyle = css({
 })
 
 function MainWindow({children}: {children: ReactNode}) {
+  const scrollRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    function windowListener() {
+      console.log('it scrolls!!')
+    }
+    if (scrollRef.current) {
+      scrollRef.current.addEventListener('scroll', windowListener)
+    }
+
+    return () => {
+      scrollRef.current?.removeEventListener('scroll', windowListener)
+    }
+  }, [])
   return (
     <Box
+      ref={scrollRef}
       css={{
         gridArea: 'main',
         overflow: 'scroll',
