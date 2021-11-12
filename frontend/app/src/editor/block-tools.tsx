@@ -1,25 +1,27 @@
-import {FlowContent, isGroupContent, isHeading, MttastContent} from '@mintter/mttast'
+import {FlowContent, isHeading, MttastContent} from '@mintter/mttast'
 import {blockquote, code, group, heading, ol, statement, ul} from '@mintter/mttast-builder'
 import {Box} from '@mintter/ui/box'
 import {Icon, icons} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
+import {useActor} from '@xstate/react'
 import {Fragment} from 'react'
 import type {BaseRange} from 'slate'
-import {Editor, Node, Path, Transforms} from 'slate'
+import {Editor, Path, Transforms} from 'slate'
 import {ReactEditor, useReadOnly, useSlateStatic} from 'slate-react'
 import {Dropdown} from './dropdown'
-import {useHoverBlockId} from './hover-context'
+import {useHover} from './hover-context'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 
 export const ElementDropdown = styled('button', {
   border: 'none',
-  backgroundColor: '$background-neutral',
-  width: '$space$7',
-  height: '$space$7',
+  backgroundColor: '$background-neutral-soft',
+  width: '$space$8',
+  height: '$space$8',
+  position: 'absolute',
+  zIndex: 2,
   display: 'flex',
   alignItems: 'center',
-  zIndex: 2,
   justifyContent: 'center',
   borderRadius: '$2',
   transition: 'all ease-in-out 0.1s',
@@ -83,12 +85,13 @@ const items: {
 }
 
 export function BlockTools({element}: {element: FlowContent}) {
-  const hoverId = useHoverBlockId()
+  const hoverService = useHover()
+  const [state, hoverSend] = useActor(hoverService)
   const editor = useSlateStatic()
   const isReadOnly = useReadOnly()
   const path = ReactEditor.findPath(editor, element)
 
-  return hoverId == element.id && !isReadOnly ? (
+  return (
     <Box
       contentEditable={false}
       css={{
@@ -105,40 +108,57 @@ export function BlockTools({element}: {element: FlowContent}) {
         },
       }}
     >
-      <Dropdown.Root modal={false}>
-        <Dropdown.Trigger asChild>
-          <ElementDropdown data-trigger>
-            <Icon name="Grid4" size="2" color="muted" />
-          </ElementDropdown>
-        </Dropdown.Trigger>
-        <Dropdown.Content portalled align="start" side="bottom" css={{minWidth: 220}}>
-          {Object.entries(items).map(([key, value], index, arr) => {
-            return (
-              <Fragment key={key}>
-                <Dropdown.Label>
-                  <Text color="muted" size="2" css={{marginHorizontal: '$3', marginVertical: '$2'}}>
-                    Turn {key} into:
-                  </Text>
-                </Dropdown.Label>
-                {value.map((item) => (
-                  <Dropdown.Item
-                    key={item.label}
-                    onSelect={() => {
-                      item.onSelect(editor, element, path, editor.selection)
-                    }}
-                  >
-                    <Icon size="2" name={item.iconName} />
-                    {item.label}
-                  </Dropdown.Item>
-                ))}
-                {arr.length > index + 1 && <Dropdown.Separator />}
-              </Fragment>
-            )
-          })}
-        </Dropdown.Content>
-      </Dropdown.Root>
+      <Box
+        css={{
+          position: 'absolute',
+          width: 80,
+          height: '150%',
+          top: 0,
+          left: '50%',
+          zIndex: 0,
+          transform: 'translate(-50%, 0)',
+        }}
+        onMouseEnter={() => {
+          console.log('hover enter!')
+          hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
+        }}
+      />
+      {state.context.blockId == element.id && !isReadOnly && (
+        <Dropdown.Root modal={false}>
+          <Dropdown.Trigger asChild>
+            <ElementDropdown data-trigger>
+              <Icon name="Grid4" size="2" color="muted" />
+            </ElementDropdown>
+          </Dropdown.Trigger>
+          <Dropdown.Content portalled align="start" side="bottom" css={{minWidth: 220}}>
+            {Object.entries(items).map(([key, value], index, arr) => {
+              return (
+                <Fragment key={key}>
+                  <Dropdown.Label>
+                    <Text color="muted" size="2" css={{marginHorizontal: '$3', marginVertical: '$2'}}>
+                      Turn {key} into:
+                    </Text>
+                  </Dropdown.Label>
+                  {value.map((item) => (
+                    <Dropdown.Item
+                      key={item.label}
+                      onSelect={() => {
+                        item.onSelect(editor, element, path, editor.selection)
+                      }}
+                    >
+                      <Icon size="2" name={item.iconName} />
+                      {item.label}
+                    </Dropdown.Item>
+                  ))}
+                  {arr.length > index + 1 && <Dropdown.Separator />}
+                </Fragment>
+              )
+            })}
+          </Dropdown.Content>
+        </Dropdown.Root>
+      )}
     </Box>
-  ) : null
+  )
 }
 
 /*

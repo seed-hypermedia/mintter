@@ -41,7 +41,7 @@ const SelectorWrapper = styled('div', {
 
 export const CodeStyled = styled('pre', statementStyle, {
   position: 'relative',
-  background: '$background-neutral',
+  background: '$background-neutral-soft',
   borderRadius: '$2',
   '&:hover': {
     [`${SelectorWrapper}`]: {
