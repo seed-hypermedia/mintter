@@ -1,12 +1,14 @@
 import type {Embed as EmbedType} from '@mintter/mttast'
-import {isEmbed} from '@mintter/mttast'
+import {FlowContent, isEmbed} from '@mintter/mttast'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
 import {useActor} from '@xstate/react'
 import {forwardRef, PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
 import {useLocation} from 'wouter'
+import {useBookmarksService} from '../../components/bookmarks'
 import {useSidepanel} from '../../components/sidepanel'
+import {MINTTER_LINK_PREFIX} from '../../constants'
 import {ContextMenu} from '../context-menu'
 import {copyTextToClipboard} from '../statement'
 import type {EditorPlugin} from '../types'
@@ -21,7 +23,17 @@ export const Embed = forwardRef(function Embed(
 ) {
   const sidepanelService = useSidepanel()
   const [, sidepanelSend] = useActor(sidepanelService)
+  const bookmarkService = useBookmarksService()
+  const [, bookmarkSend] = useActor(bookmarkService)
   const [, setLocation] = useLocation()
+  const [docId, blockId] = getEmbedIds(embed.url)
+
+  function addBookmark(docId: string, blockId: FlowContent['id']) {
+    bookmarkSend({
+      type: 'ADD_BOOKMARK',
+      link: `${MINTTER_LINK_PREFIX}${docId}/${blockId}`,
+    })
+  }
 
   async function onCopy() {
     await copyTextToClipboard(embed.url)
@@ -38,7 +50,7 @@ export const Embed = forwardRef(function Embed(
   }
 
   return (
-    <ContextMenu.Root>
+    <ContextMenu.Root ref={ref}>
       <ContextMenu.Trigger>
         <EmbedEditor embed={embed.url} {...props} onClick={onOpenInSidepanel}>
           {children}
@@ -57,7 +69,11 @@ export const Embed = forwardRef(function Embed(
           <Icon name="Copy" size="1" />
           <Text size="2">Copy Embed Reference</Text>
         </ContextMenu.Item>
-        <ContextMenu.Item onSelect={() => sidepanelSend({type: 'SIDEPANEL_ADD_ITEM', item: embed.url})}>
+        <ContextMenu.Item
+          onSelect={() => {
+            addBookmark(docId, blockId)
+          }}
+        >
           <Icon name="ArrowChevronDown" size="1" />
           <Text size="2">Add to Bookmarks</Text>
         </ContextMenu.Item>

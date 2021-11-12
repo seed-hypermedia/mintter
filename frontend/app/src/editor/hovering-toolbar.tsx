@@ -15,7 +15,6 @@ type FormatTypes = keyof Omit<MTTText, 'type' | 'text' | 'value' | 'data' | 'pos
 
 function FormatButton({format}: {format: FormatTypes}) {
   const editor = useSlateStatic()
-  // const iconName: Pick<IconProps, 'name'> = useMemo(() => format && capitalize(format), [format])
   const IconComponent = icons[capitalize(format)]
   return (
     <Tooltip content={format}>

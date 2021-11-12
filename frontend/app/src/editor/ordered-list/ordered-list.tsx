@@ -16,8 +16,7 @@ export const createOrderedListPlugin = (): EditorPlugin => ({
       if (isOrderedList(element)) {
         return (
           <OrderedList
-            type={element.type}
-            data-grouping-type={element.type}
+            data-element-type={element.type}
             start={element.start}
             /**
              * @todo proper handling of start property

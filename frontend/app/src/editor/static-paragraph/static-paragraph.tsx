@@ -2,9 +2,11 @@ import type {StaticParagraph as StaticParagraphType} from '@mintter/mttast'
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
 import {createId, paragraph, statement, text} from '@mintter/mttast-builder'
 import type {TextProps} from '@mintter/ui/text'
+import {useActor} from '@xstate/react'
 import {Editor, Node, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useSlateStatic} from 'slate-react'
+import {useHover} from '../hover-context'
 import {ELEMENT_PARAGRAPH} from '../paragraph'
 import type {EditorPlugin} from '../types'
 import {isCollapsed} from '../utils'
@@ -117,23 +119,38 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
   },
 })
 
-function useHeadingLevel(element: StaticParagraphType) {
+function useHeading(element: StaticParagraphType) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const parent = Editor.parent(editor, path)
   if (parent) {
     const [node, path] = parent
     if (isHeading(node)) {
-      return path.length
+      return {
+        node,
+        level: path.length,
+      }
     }
   }
 }
 
 function StaticParagraph({children, element, attributes}: RenderElementProps) {
-  const level = useHeadingLevel(element as StaticParagraphType)
-  const sizeProps = headingMap[level ?? 'default']
+  const heading = useHeading(element as StaticParagraphType)
+  const sizeProps = headingMap[heading?.level ?? 'default']
+  const hoverService = useHover()
+  const [, hoverSend] = useActor(hoverService)
+
   return (
-    <StaticParagraphUI data-element-type={element.type} {...sizeProps} {...attributes}>
+    <StaticParagraphUI
+      data-element-type={element.type}
+      {...sizeProps}
+      {...attributes}
+      onMouseEnter={() => {
+        if (heading?.node) {
+          hoverSend({type: 'MOUSE_ENTER', blockId: heading.node.id})
+        }
+      }}
+    >
       {children}
     </StaticParagraphUI>
   )

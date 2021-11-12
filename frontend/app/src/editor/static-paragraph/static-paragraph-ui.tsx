@@ -3,8 +3,8 @@ import {Text, TextProps} from '@mintter/ui/text'
 import {forwardRef, PropsWithChildren} from 'react'
 
 export const staticParagraphStyles = css({
-  fontWeight: '$bold',
-  marginTop: '1.5em',
+  // fontWeight: '$bold',
+  // marginTop: '1.5em',
 })
 
 type StaticParagraphUIProps = PropsWithChildren<

@@ -14,9 +14,9 @@ import {useBookmarksService} from '../../components/bookmarks'
 import {useSidepanel} from '../../components/sidepanel'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {useRoute} from '../../utils/use-route'
+import {BlockTools} from '../block-tools'
 import {ContextMenu} from '../context-menu'
 import {EditorMode} from '../plugin-utils'
-import {StatementTools} from '../statement-tools'
 import type {EditorPlugin} from '../types'
 import {getLastChild, isFirstChild, isLastChild} from '../utils'
 import {StatementUI} from './statement-ui'
@@ -92,7 +92,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
 
 function Statement({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
   const bookmarksService = useBookmarksService()
-  const [, send] = useActor(bookmarksService)
+  const [, bookmarkSend] = useActor(bookmarksService)
   const sidepanelService = useSidepanel()
   const [, sidepanelSend] = useActor(sidepanelService)
   const {params} = useRoute<{docId: string; blockId?: string}>(['/p/:docId/:blockId?', '/editor/:docId'])
@@ -108,7 +108,7 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
   }
 
   function addBookmark(docId: string, blockId: FlowContent['id']) {
-    send({
+    bookmarkSend({
       type: 'ADD_BOOKMARK',
       link: `${MINTTER_LINK_PREFIX}${docId}/${blockId}`,
     })
@@ -131,7 +131,7 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
 
   return (
     <StatementUI {...attributes}>
-      <StatementTools element={element} />
+      <BlockTools element={element as FlowContent} />
       {mode != EditorMode.Draft ? (
         <ContextMenu.Root modal={false}>
           <ContextMenu.Trigger>{children}</ContextMenu.Trigger>

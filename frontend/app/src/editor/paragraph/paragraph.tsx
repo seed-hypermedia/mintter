@@ -1,9 +1,10 @@
 import {FlowContent, isBlockquote, isCode, isParagraph} from '@mintter/mttast'
 import {createId, statement} from '@mintter/mttast-builder'
+import {useActor} from '@xstate/react'
 import {Editor, Node, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useSlateStatic} from 'slate-react'
-import {useRoute} from '../../utils/use-route'
+import {useHover} from '../hover-context'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {ParagraphUI} from './paragraph-ui'
@@ -67,8 +68,8 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const [parentNode] = Editor.parent(editor, path)
-
-  const {params} = useRoute<{docId: string; blockId?: string}>(['/p/:docId/:blockId?'])
+  const hoverService = useHover()
+  const [, hoverSend] = useActor(hoverService)
 
   return (
     <ParagraphUI
@@ -83,11 +84,7 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
       }
       data-element-type={element.type}
       data-parent-type={(parentNode as FlowContent)?.type}
-      css={{
-        display: 'inline',
-        backgroundColor:
-          params?.blockId && (parentNode as FlowContent).id == params.blockId ? '$primary-muted' : 'transparent',
-      }}
+      onMouseEnter={() => hoverSend({type: 'MOUSE_ENTER', blockId: (parentNode as FlowContent).id})}
       {...attributes}
     >
       {children}

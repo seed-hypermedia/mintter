@@ -5,12 +5,12 @@ import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
 import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {useActor} from '@xstate/react'
-import {useSidepanel} from 'frontend/app/src/components/sidepanel'
 import {FormEvent, useEffect, useRef, useState} from 'react'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
 import {Separator} from '../components/separator'
+import {useSidepanel} from '../components/sidepanel'
 import {useEnableSidepanel} from '../components/sidepanel/sidepanel'
 import {Editor, useEditorDraft} from '../editor'
 import type {DraftEditorMachineContext, DraftEditorMachineState} from '../editor/use-editor-draft'
@@ -148,7 +148,7 @@ export default function EditorPage({params}: EditorPageProps) {
           />
           <Separator />
           {context.localDraft?.content && (
-            <Box css={{marginHorizontal: '$4'}}>
+            <Box>
               <Editor
                 value={context.localDraft.content}
                 onChange={(content) => {

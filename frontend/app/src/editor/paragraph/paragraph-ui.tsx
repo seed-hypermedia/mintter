@@ -3,13 +3,6 @@ import {Text, TextProps} from '@mintter/ui/text'
 import {forwardRef, PropsWithChildren} from 'react'
 
 export const paragraphStyles = css({
-  // paddingHorizontal: '$4',
-  // paddingVertical: '$4',
-  // borderRadius: '$2',
-  // lineHeight: '$3',
-  // '&:hover': {
-  //   backgroundColor: '$background-muted',
-  // },
   lineHeight: '$3',
   '&[data-parent-type=blockquote]': {
     borderRadius: '$2',
