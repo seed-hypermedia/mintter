@@ -1,5 +1,5 @@
 import type {Code as CodeType} from '@mintter/mttast'
-import {isCode, isParagraph} from '@mintter/mttast'
+import {FlowContent, isCode, isParagraph} from '@mintter/mttast'
 import {createId, paragraph, statement, text} from '@mintter/mttast-builder'
 import {Box} from '@mintter/ui/box'
 import {Icon} from '@mintter/ui/icon'
@@ -41,10 +41,15 @@ const SelectorWrapper = styled('div', {
 
 export const CodeStyled = styled('pre', statementStyle, {
   position: 'relative',
+  background: '$background-neutral',
+  borderRadius: '$2',
   '&:hover': {
     [`${SelectorWrapper}`]: {
       opacity: 1,
     },
+  },
+  '& p': {
+    color: 'white !important',
   },
 })
 
@@ -171,8 +176,6 @@ function Code({
   const path = ReactEditor.findPath(editor, element)
   const bookmarksService = useBookmarksService()
   const [, bookmarkSend] = useActor(bookmarksService)
-  // const hoverService = useHover()
-  // const [, hoverSend] = useActor(hoverService)
 
   function addBookmark(docId: string, blockId: FlowContent['id']) {
     bookmarkSend({

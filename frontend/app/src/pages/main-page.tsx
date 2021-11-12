@@ -2,7 +2,7 @@ import {Box} from '@mintter/ui/box'
 import {css} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {useInterpret} from '@xstate/react'
-import {ReactNode, useEffect, useRef} from 'react'
+import {ReactNode} from 'react'
 import Store from 'tauri-plugin-store-api'
 import {Route} from 'wouter'
 import {BookmarksProvider, createBookmarksMachine} from '../components/bookmarks'
@@ -66,26 +66,12 @@ var rootPageStyle = css({
 })
 
 function MainWindow({children}: {children: ReactNode}) {
-  const scrollRef = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    function windowListener() {
-      console.log('it scrolls!!')
-    }
-    if (scrollRef.current) {
-      scrollRef.current.addEventListener('scroll', windowListener)
-    }
-
-    return () => {
-      scrollRef.current?.removeEventListener('scroll', windowListener)
-    }
-  }, [])
   return (
     <Box
-      ref={scrollRef}
       css={{
         gridArea: 'main',
         overflow: 'scroll',
+        backgroundColor: '$background-alt',
       }}
     >
       <ScrollArea>{children}</ScrollArea>

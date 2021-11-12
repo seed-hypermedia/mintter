@@ -83,6 +83,7 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
           : 'p'
       }
       data-element-type={element.type}
+      css={{display: mode == EditorMode.Embed ? 'inline' : 'inherit'}}
       data-parent-type={(parentNode as FlowContent)?.type}
       onMouseEnter={() => hoverSend({type: 'MOUSE_ENTER', blockId: (parentNode as FlowContent).id})}
       {...attributes}
