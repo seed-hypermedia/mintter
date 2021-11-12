@@ -19,6 +19,7 @@ export const ScrollBar = styled(ScrollAreaPrimitive.Scrollbar, {
   display: 'flex',
   // ensures no selection
   userSelect: 'none',
+  WebkitUserSelect: 'none',
   // disable browser handling of all panning and zooming gestures on touch devices
   touchAction: 'none',
   padding: 2,

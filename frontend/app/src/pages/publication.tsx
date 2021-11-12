@@ -132,7 +132,7 @@ export default function Publication({params}: PublicationPageProps) {
   )
 }
 
-function PublicationHeader({document}: {document?: EditorDocument}) {
+export function PublicationHeader({document}: {document?: EditorDocument}) {
   const {data: author} = useAccount(document?.author, {
     enabled: !!document?.author,
   })

@@ -1,7 +1,7 @@
-import {isBlockquote} from '@mintter/mttast'
+import {FlowContent, isBlockquote} from '@mintter/mttast'
 import {styled} from '@mintter/ui/stitches.config'
+import {BlockTools} from 'frontend/app/src/editor/block-tools'
 import {statementStyle} from '../statement'
-import {StatementTools} from '../statement-tools'
 import type {EditorPlugin} from '../types'
 import {resetFlowContent} from '../utils'
 
@@ -54,7 +54,7 @@ export const createBlockquotePlugin = (): EditorPlugin => ({
       if (isBlockquote(element)) {
         return (
           <BlockQuote data-element-type={element.type} {...attributes}>
-            <StatementTools element={element} />
+            <BlockTools element={element as FlowContent} />
             {children}
           </BlockQuote>
         )
