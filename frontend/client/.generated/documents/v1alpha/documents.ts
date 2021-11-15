@@ -164,20 +164,25 @@ export interface ListCitationsResponse {
   links: Link[];
 }
 
-/** Link is a description of a link inside a document. */
+/** Description of a link inside a document. */
 export interface Link {
-  /** Required. Document ID in which link was found. */
-  sourceDocumentId: string;
-  /** Required. Exact version of the source document. */
-  sourceVersion: string;
-  /** Required. Block ID in which the link was found. */
-  sourceBlockId: string;
-  /** Required. Document ID which the link points to. */
-  targetDocumentId: string;
-  /** Required. Exact version of the target document. */
-  targetVersion: string;
-  /** Optional. Some links may point to the whole documents, so this is optional. */
-  targetBlockId: string;
+  /** Required. Describes where link originates from. */
+  source: LinkNode | undefined;
+  /**
+   * Required. Describes where link points to.
+   * Here the block_id is optional, because the whole document can be linked.
+   */
+  target: LinkNode | undefined;
+}
+
+/** Describes "sides" of a Link. */
+export interface LinkNode {
+  /** ID of the document on one side of a Link. */
+  documentId: string;
+  /** Version of the document. */
+  version: string;
+  /** ID of the block inside the document. */
+  blockId: string;
 }
 
 /** Message that gets published to documents feed of the Mintter author. */
@@ -1425,34 +1430,15 @@ export const ListCitationsResponse = {
   },
 };
 
-const baseLink: object = {
-  sourceDocumentId: "",
-  sourceVersion: "",
-  sourceBlockId: "",
-  targetDocumentId: "",
-  targetVersion: "",
-  targetBlockId: "",
-};
+const baseLink: object = {};
 
 export const Link = {
   encode(message: Link, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.sourceDocumentId !== "") {
-      writer.uint32(10).string(message.sourceDocumentId);
+    if (message.source !== undefined) {
+      LinkNode.encode(message.source, writer.uint32(10).fork()).ldelim();
     }
-    if (message.sourceVersion !== "") {
-      writer.uint32(18).string(message.sourceVersion);
-    }
-    if (message.sourceBlockId !== "") {
-      writer.uint32(26).string(message.sourceBlockId);
-    }
-    if (message.targetDocumentId !== "") {
-      writer.uint32(34).string(message.targetDocumentId);
-    }
-    if (message.targetVersion !== "") {
-      writer.uint32(42).string(message.targetVersion);
-    }
-    if (message.targetBlockId !== "") {
-      writer.uint32(50).string(message.targetBlockId);
+    if (message.target !== undefined) {
+      LinkNode.encode(message.target, writer.uint32(18).fork()).ldelim();
     }
     return writer;
   },
@@ -1465,22 +1451,10 @@ export const Link = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.sourceDocumentId = reader.string();
+          message.source = LinkNode.decode(reader, reader.uint32());
           break;
         case 2:
-          message.sourceVersion = reader.string();
-          break;
-        case 3:
-          message.sourceBlockId = reader.string();
-          break;
-        case 4:
-          message.targetDocumentId = reader.string();
-          break;
-        case 5:
-          message.targetVersion = reader.string();
-          break;
-        case 6:
-          message.targetBlockId = reader.string();
+          message.target = LinkNode.decode(reader, reader.uint32());
           break;
         default:
           reader.skipType(tag & 7);
@@ -1492,99 +1466,135 @@ export const Link = {
 
   fromJSON(object: any): Link {
     const message = { ...baseLink } as Link;
-    if (
-      object.sourceDocumentId !== undefined &&
-      object.sourceDocumentId !== null
-    ) {
-      message.sourceDocumentId = String(object.sourceDocumentId);
+    if (object.source !== undefined && object.source !== null) {
+      message.source = LinkNode.fromJSON(object.source);
     } else {
-      message.sourceDocumentId = "";
+      message.source = undefined;
     }
-    if (object.sourceVersion !== undefined && object.sourceVersion !== null) {
-      message.sourceVersion = String(object.sourceVersion);
+    if (object.target !== undefined && object.target !== null) {
+      message.target = LinkNode.fromJSON(object.target);
     } else {
-      message.sourceVersion = "";
-    }
-    if (object.sourceBlockId !== undefined && object.sourceBlockId !== null) {
-      message.sourceBlockId = String(object.sourceBlockId);
-    } else {
-      message.sourceBlockId = "";
-    }
-    if (
-      object.targetDocumentId !== undefined &&
-      object.targetDocumentId !== null
-    ) {
-      message.targetDocumentId = String(object.targetDocumentId);
-    } else {
-      message.targetDocumentId = "";
-    }
-    if (object.targetVersion !== undefined && object.targetVersion !== null) {
-      message.targetVersion = String(object.targetVersion);
-    } else {
-      message.targetVersion = "";
-    }
-    if (object.targetBlockId !== undefined && object.targetBlockId !== null) {
-      message.targetBlockId = String(object.targetBlockId);
-    } else {
-      message.targetBlockId = "";
+      message.target = undefined;
     }
     return message;
   },
 
   toJSON(message: Link): unknown {
     const obj: any = {};
-    message.sourceDocumentId !== undefined &&
-      (obj.sourceDocumentId = message.sourceDocumentId);
-    message.sourceVersion !== undefined &&
-      (obj.sourceVersion = message.sourceVersion);
-    message.sourceBlockId !== undefined &&
-      (obj.sourceBlockId = message.sourceBlockId);
-    message.targetDocumentId !== undefined &&
-      (obj.targetDocumentId = message.targetDocumentId);
-    message.targetVersion !== undefined &&
-      (obj.targetVersion = message.targetVersion);
-    message.targetBlockId !== undefined &&
-      (obj.targetBlockId = message.targetBlockId);
+    message.source !== undefined &&
+      (obj.source = message.source
+        ? LinkNode.toJSON(message.source)
+        : undefined);
+    message.target !== undefined &&
+      (obj.target = message.target
+        ? LinkNode.toJSON(message.target)
+        : undefined);
     return obj;
   },
 
   fromPartial(object: DeepPartial<Link>): Link {
     const message = { ...baseLink } as Link;
-    if (
-      object.sourceDocumentId !== undefined &&
-      object.sourceDocumentId !== null
-    ) {
-      message.sourceDocumentId = object.sourceDocumentId;
+    if (object.source !== undefined && object.source !== null) {
+      message.source = LinkNode.fromPartial(object.source);
     } else {
-      message.sourceDocumentId = "";
+      message.source = undefined;
     }
-    if (object.sourceVersion !== undefined && object.sourceVersion !== null) {
-      message.sourceVersion = object.sourceVersion;
+    if (object.target !== undefined && object.target !== null) {
+      message.target = LinkNode.fromPartial(object.target);
     } else {
-      message.sourceVersion = "";
+      message.target = undefined;
     }
-    if (object.sourceBlockId !== undefined && object.sourceBlockId !== null) {
-      message.sourceBlockId = object.sourceBlockId;
-    } else {
-      message.sourceBlockId = "";
+    return message;
+  },
+};
+
+const baseLinkNode: object = { documentId: "", version: "", blockId: "" };
+
+export const LinkNode = {
+  encode(
+    message: LinkNode,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
+    if (message.documentId !== "") {
+      writer.uint32(10).string(message.documentId);
     }
-    if (
-      object.targetDocumentId !== undefined &&
-      object.targetDocumentId !== null
-    ) {
-      message.targetDocumentId = object.targetDocumentId;
-    } else {
-      message.targetDocumentId = "";
+    if (message.version !== "") {
+      writer.uint32(18).string(message.version);
     }
-    if (object.targetVersion !== undefined && object.targetVersion !== null) {
-      message.targetVersion = object.targetVersion;
-    } else {
-      message.targetVersion = "";
+    if (message.blockId !== "") {
+      writer.uint32(26).string(message.blockId);
     }
-    if (object.targetBlockId !== undefined && object.targetBlockId !== null) {
-      message.targetBlockId = object.targetBlockId;
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): LinkNode {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseLinkNode } as LinkNode;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.documentId = reader.string();
+          break;
+        case 2:
+          message.version = reader.string();
+          break;
+        case 3:
+          message.blockId = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): LinkNode {
+    const message = { ...baseLinkNode } as LinkNode;
+    if (object.documentId !== undefined && object.documentId !== null) {
+      message.documentId = String(object.documentId);
     } else {
-      message.targetBlockId = "";
+      message.documentId = "";
+    }
+    if (object.version !== undefined && object.version !== null) {
+      message.version = String(object.version);
+    } else {
+      message.version = "";
+    }
+    if (object.blockId !== undefined && object.blockId !== null) {
+      message.blockId = String(object.blockId);
+    } else {
+      message.blockId = "";
+    }
+    return message;
+  },
+
+  toJSON(message: LinkNode): unknown {
+    const obj: any = {};
+    message.documentId !== undefined && (obj.documentId = message.documentId);
+    message.version !== undefined && (obj.version = message.version);
+    message.blockId !== undefined && (obj.blockId = message.blockId);
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<LinkNode>): LinkNode {
+    const message = { ...baseLinkNode } as LinkNode;
+    if (object.documentId !== undefined && object.documentId !== null) {
+      message.documentId = object.documentId;
+    } else {
+      message.documentId = "";
+    }
+    if (object.version !== undefined && object.version !== null) {
+      message.version = object.version;
+    } else {
+      message.version = "";
+    }
+    if (object.blockId !== undefined && object.blockId !== null) {
+      message.blockId = object.blockId;
+    } else {
+      message.blockId = "";
     }
     return message;
   },
