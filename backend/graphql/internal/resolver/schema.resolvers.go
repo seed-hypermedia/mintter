@@ -6,6 +6,7 @@ package resolver
 import (
 	"context"
 	"fmt"
+	"math"
 	"mintter/backend/graphql/internal/generated"
 	"mintter/backend/lndhub"
 )
@@ -14,7 +15,7 @@ func (r *meResolver) Wallets(ctx context.Context, obj *generated.Me) ([]generate
 	return []generated.LightningWallet{
 		generated.LndHubWallet{
 			Name:        "Fake Blue Wallet",
-			BalanceSats: 100000,
+			BalanceSats: math.MaxInt64,
 		},
 	}, nil
 }
@@ -39,7 +40,23 @@ func (r *mutationResolver) SetupLndHubWallet(ctx context.Context, input generate
 	}, nil
 }
 
+func (r *mutationResolver) SetDefaultWallet(ctx context.Context, input generated.SetDefaultWalletInput) (*generated.SetDefaultWalletPayload, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) UpdateWallet(ctx context.Context, input generated.UpdateWalletInput) (*generated.UpdateWalletPayload, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) DeleteWallet(ctx context.Context, input generated.DeleteWalletInput) (*generated.DeleteWalletPayload, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) RequestInvoice(ctx context.Context, input generated.RequestInvoiceInput) (*generated.RequestInvoicePayload, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) PayInvoice(ctx context.Context, input generated.PayInvoiceInput) (*generated.PayInvoicePayload, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

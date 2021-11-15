@@ -21,9 +21,10 @@ Ready to be encoded as a QR code for wallets to scan and pay.
 scalar LightningPaymentRequest
 
 """
-Mintter Account ID.
+Bitcoin amount in sats.
+Should be interpreted as a large-enough unsigned integer type.
 """
-scalar AccountID
+scalar Satoshis
 
 """
 Top-level queries.
@@ -55,10 +56,31 @@ type Mutation {
   setupLndHubWallet(input: SetupLndHubWalletInput!): SetupLndHubWalletPayload!
 
   """
+  Set an existing wallet to be the default one. Initially, the first configured wallet
+  automatically becomes the default one.
+  """
+  setDefaultWallet(input: SetDefaultWalletInput!): SetDefaultWalletPayload!
+
+  """
+  Update existing wallet.
+  """
+  updateWallet(input: UpdateWalletInput!): UpdateWalletPayload!
+
+  """
+  Delete existing wallet.
+  """
+  deleteWallet(input: DeleteWalletInput!): DeleteWalletPayload!
+
+  """
   Request an invoice from another user in order to pay them with a separate Lightning Wallet.
   The user from which the invoice is requested must be currently connected, otherwise this call will fail.
   """
   requestInvoice(input: RequestInvoiceInput!): RequestInvoicePayload!
+
+  """
+  Pay invoice with a previously configured wallet.
+  """
+  payInvoice(input: PayInvoiceInput!): PayInvoicePayload!
 }
 
 """
@@ -87,18 +109,88 @@ type SetupLndHubWalletPayload {
 }
 
 """
+Input for setting the default wallet.
+"""
+input SetDefaultWalletInput {
+  """
+  ID of the wallet to become the default one.
+  """
+  id: ID!
+}
+
+"""
+Response after setting default wallet.
+"""
+type SetDefaultWalletPayload {
+  """
+  The new default wallet.
+  """
+  wallet: LightningWallet!
+}
+
+"""
+Input to update Lightning wallets.
+"""
+input UpdateWalletInput {
+  """
+  ID of the wallet to be updated.
+  """
+  id: ID!
+
+  """
+  New name for the wallet.
+  """
+  name: String!
+}
+
+"""
+Response with the updated wallet.
+"""
+type UpdateWalletPayload {
+  """
+  Updated wallet.
+  """
+  wallet: LightningWallet!
+}
+
+"""
+Input to delete a wallet.
+"""
+input DeleteWalletInput {
+  """
+  ID of the wallet to be deleted.
+  """
+  id: ID!
+}
+
+"""
+Response after deleting a wallet.
+"""
+type DeleteWalletPayload {
+  """
+  ID of the deleted wallet.
+  """
+  id: ID!
+}
+
+"""
 Input for requesting an invoice for tipping.
 """
 input RequestInvoiceInput {
   """
   Mintter Account ID we want to tip.
   """
-  account: AccountID!
+  accountID: ID!
 
   """
   Amount in Satoshis the invoice should be created for.
   """
-  amountSats: Int!
+  amountSats: Satoshis!
+
+  """
+  Optional ID of the publication we want to tip for.
+  """
+  publicationID: ID
 }
 
 """
@@ -113,24 +205,60 @@ type RequestInvoicePayload {
 }
 
 """
+Input to pay an invoice.
+"""
+input PayInvoiceInput {
+  """
+  Previously obtained payment request we want to pay for.
+  """
+  paymentRequest: LightningPaymentRequest!
+
+  """
+  Optional ID of the wallet to pay with. Otherwise the default one will be used.
+  """
+  walletID: ID
+}
+
+"""
+Response after paying an invoice.
+"""
+type PayInvoicePayload {
+  """
+  Wallet ID that was used to pay the invoice.
+  """
+  walletID: ID!
+}
+
+"""
 Common interface for Lightning wallets. We support different types.
 """
 interface LightningWallet {
   """
-  Name of the wallet.
+  Globally unique ID of the wallet.
+  """
+  id: ID!
+
+  """
+  Local-only name of the wallet. For user's convenience.
   """
   name: String!
 
   """
   Balance in Satoshis.
   """
-  balanceSats: Int!
+  balanceSats: Satoshis!
 }
 
 """
 Lightning wallet compatible with LndHub.
 """
 type LndHubWallet implements LightningWallet {
+  """
+  Globally unique ID of the wallet. Since this type of wallet doesn't have unique addresses
+  we decided to use the cryptographic hash of the credentials URL as an ID.
+  """
+  id: ID!
+
   """
   URL of the LndHub server this wallet is connected to.
   """
@@ -144,5 +272,5 @@ type LndHubWallet implements LightningWallet {
   """
   Balance in Satoshis.
   """
-  balanceSats: Int!
+  balanceSats: Satoshis!
 }

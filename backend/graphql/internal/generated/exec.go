@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mintter/backend/graphql/internal/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -44,9 +45,14 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	DeleteWalletPayload struct {
+		ID func(childComplexity int) int
+	}
+
 	LndHubWallet struct {
 		APIURL      func(childComplexity int) int
 		BalanceSats func(childComplexity int) int
+		ID          func(childComplexity int) int
 		Name        func(childComplexity int) int
 	}
 
@@ -55,8 +61,16 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		DeleteWallet      func(childComplexity int, input DeleteWalletInput) int
+		PayInvoice        func(childComplexity int, input PayInvoiceInput) int
 		RequestInvoice    func(childComplexity int, input RequestInvoiceInput) int
+		SetDefaultWallet  func(childComplexity int, input SetDefaultWalletInput) int
 		SetupLndHubWallet func(childComplexity int, input SetupLndHubWalletInput) int
+		UpdateWallet      func(childComplexity int, input UpdateWalletInput) int
+	}
+
+	PayInvoicePayload struct {
+		WalletID func(childComplexity int) int
 	}
 
 	Query struct {
@@ -67,7 +81,15 @@ type ComplexityRoot struct {
 		PaymentRequest func(childComplexity int) int
 	}
 
+	SetDefaultWalletPayload struct {
+		Wallet func(childComplexity int) int
+	}
+
 	SetupLndHubWalletPayload struct {
+		Wallet func(childComplexity int) int
+	}
+
+	UpdateWalletPayload struct {
 		Wallet func(childComplexity int) int
 	}
 }
@@ -77,7 +99,11 @@ type MeResolver interface {
 }
 type MutationResolver interface {
 	SetupLndHubWallet(ctx context.Context, input SetupLndHubWalletInput) (*SetupLndHubWalletPayload, error)
+	SetDefaultWallet(ctx context.Context, input SetDefaultWalletInput) (*SetDefaultWalletPayload, error)
+	UpdateWallet(ctx context.Context, input UpdateWalletInput) (*UpdateWalletPayload, error)
+	DeleteWallet(ctx context.Context, input DeleteWalletInput) (*DeleteWalletPayload, error)
 	RequestInvoice(ctx context.Context, input RequestInvoiceInput) (*RequestInvoicePayload, error)
+	PayInvoice(ctx context.Context, input PayInvoiceInput) (*PayInvoicePayload, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*Me, error)
@@ -98,6 +124,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "DeleteWalletPayload.id":
+		if e.complexity.DeleteWalletPayload.ID == nil {
+			break
+		}
+
+		return e.complexity.DeleteWalletPayload.ID(childComplexity), true
+
 	case "LndHubWallet.apiURL":
 		if e.complexity.LndHubWallet.APIURL == nil {
 			break
@@ -111,6 +144,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LndHubWallet.BalanceSats(childComplexity), true
+
+	case "LndHubWallet.id":
+		if e.complexity.LndHubWallet.ID == nil {
+			break
+		}
+
+		return e.complexity.LndHubWallet.ID(childComplexity), true
 
 	case "LndHubWallet.name":
 		if e.complexity.LndHubWallet.Name == nil {
@@ -126,6 +166,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Me.Wallets(childComplexity), true
 
+	case "Mutation.deleteWallet":
+		if e.complexity.Mutation.DeleteWallet == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteWallet_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteWallet(childComplexity, args["input"].(DeleteWalletInput)), true
+
+	case "Mutation.payInvoice":
+		if e.complexity.Mutation.PayInvoice == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_payInvoice_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PayInvoice(childComplexity, args["input"].(PayInvoiceInput)), true
+
 	case "Mutation.requestInvoice":
 		if e.complexity.Mutation.RequestInvoice == nil {
 			break
@@ -138,6 +202,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.RequestInvoice(childComplexity, args["input"].(RequestInvoiceInput)), true
 
+	case "Mutation.setDefaultWallet":
+		if e.complexity.Mutation.SetDefaultWallet == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_setDefaultWallet_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SetDefaultWallet(childComplexity, args["input"].(SetDefaultWalletInput)), true
+
 	case "Mutation.setupLndHubWallet":
 		if e.complexity.Mutation.SetupLndHubWallet == nil {
 			break
@@ -149,6 +225,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.SetupLndHubWallet(childComplexity, args["input"].(SetupLndHubWalletInput)), true
+
+	case "Mutation.updateWallet":
+		if e.complexity.Mutation.UpdateWallet == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateWallet_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateWallet(childComplexity, args["input"].(UpdateWalletInput)), true
+
+	case "PayInvoicePayload.walletID":
+		if e.complexity.PayInvoicePayload.WalletID == nil {
+			break
+		}
+
+		return e.complexity.PayInvoicePayload.WalletID(childComplexity), true
 
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
@@ -164,12 +259,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RequestInvoicePayload.PaymentRequest(childComplexity), true
 
+	case "SetDefaultWalletPayload.wallet":
+		if e.complexity.SetDefaultWalletPayload.Wallet == nil {
+			break
+		}
+
+		return e.complexity.SetDefaultWalletPayload.Wallet(childComplexity), true
+
 	case "SetupLndHubWalletPayload.wallet":
 		if e.complexity.SetupLndHubWalletPayload.Wallet == nil {
 			break
 		}
 
 		return e.complexity.SetupLndHubWalletPayload.Wallet(childComplexity), true
+
+	case "UpdateWalletPayload.wallet":
+		if e.complexity.UpdateWalletPayload.Wallet == nil {
+			break
+		}
+
+		return e.complexity.UpdateWalletPayload.Wallet(childComplexity), true
 
 	}
 	return 0, false
@@ -258,9 +367,10 @@ Ready to be encoded as a QR code for wallets to scan and pay.
 scalar LightningPaymentRequest
 
 """
-Mintter Account ID.
+Bitcoin amount in sats.
+Should be interpreted as a large-enough unsigned integer type.
 """
-scalar AccountID
+scalar Satoshis
 
 """
 Top-level queries.
@@ -292,10 +402,31 @@ type Mutation {
   setupLndHubWallet(input: SetupLndHubWalletInput!): SetupLndHubWalletPayload!
 
   """
+  Set an existing wallet to be the default one. Initially, the first configured wallet
+  automatically becomes the default one.
+  """
+  setDefaultWallet(input: SetDefaultWalletInput!): SetDefaultWalletPayload!
+
+  """
+  Update existing wallet.
+  """
+  updateWallet(input: UpdateWalletInput!): UpdateWalletPayload!
+
+  """
+  Delete existing wallet.
+  """
+  deleteWallet(input: DeleteWalletInput!): DeleteWalletPayload!
+
+  """
   Request an invoice from another user in order to pay them with a separate Lightning Wallet.
   The user from which the invoice is requested must be currently connected, otherwise this call will fail.
   """
   requestInvoice(input: RequestInvoiceInput!): RequestInvoicePayload!
+
+  """
+  Pay invoice with a previously configured wallet.
+  """
+  payInvoice(input: PayInvoiceInput!): PayInvoicePayload!
 }
 
 """
@@ -324,18 +455,88 @@ type SetupLndHubWalletPayload {
 }
 
 """
+Input for setting the default wallet.
+"""
+input SetDefaultWalletInput {
+  """
+  ID of the wallet to become the default one.
+  """
+  id: ID!
+}
+
+"""
+Response after setting default wallet.
+"""
+type SetDefaultWalletPayload {
+  """
+  The new default wallet.
+  """
+  wallet: LightningWallet!
+}
+
+"""
+Input to update Lightning wallets.
+"""
+input UpdateWalletInput {
+  """
+  ID of the wallet to be updated.
+  """
+  id: ID!
+
+  """
+  New name for the wallet.
+  """
+  name: String!
+}
+
+"""
+Response with the updated wallet.
+"""
+type UpdateWalletPayload {
+  """
+  Updated wallet.
+  """
+  wallet: LightningWallet!
+}
+
+"""
+Input to delete a wallet.
+"""
+input DeleteWalletInput {
+  """
+  ID of the wallet to be deleted.
+  """
+  id: ID!
+}
+
+"""
+Response after deleting a wallet.
+"""
+type DeleteWalletPayload {
+  """
+  ID of the deleted wallet.
+  """
+  id: ID!
+}
+
+"""
 Input for requesting an invoice for tipping.
 """
 input RequestInvoiceInput {
   """
   Mintter Account ID we want to tip.
   """
-  account: AccountID!
+  accountID: ID!
 
   """
   Amount in Satoshis the invoice should be created for.
   """
-  amountSats: Int!
+  amountSats: Satoshis!
+
+  """
+  Optional ID of the publication we want to tip for.
+  """
+  publicationID: ID
 }
 
 """
@@ -350,24 +551,60 @@ type RequestInvoicePayload {
 }
 
 """
+Input to pay an invoice.
+"""
+input PayInvoiceInput {
+  """
+  Previously obtained payment request we want to pay for.
+  """
+  paymentRequest: LightningPaymentRequest!
+
+  """
+  Optional ID of the wallet to pay with. Otherwise the default one will be used.
+  """
+  walletID: ID
+}
+
+"""
+Response after paying an invoice.
+"""
+type PayInvoicePayload {
+  """
+  Wallet ID that was used to pay the invoice.
+  """
+  walletID: ID!
+}
+
+"""
 Common interface for Lightning wallets. We support different types.
 """
 interface LightningWallet {
   """
-  Name of the wallet.
+  Globally unique ID of the wallet.
+  """
+  id: ID!
+
+  """
+  Local-only name of the wallet. For user's convenience.
   """
   name: String!
 
   """
   Balance in Satoshis.
   """
-  balanceSats: Int!
+  balanceSats: Satoshis!
 }
 
 """
 Lightning wallet compatible with LndHub.
 """
 type LndHubWallet implements LightningWallet {
+  """
+  Globally unique ID of the wallet. Since this type of wallet doesn't have unique addresses
+  we decided to use the cryptographic hash of the credentials URL as an ID.
+  """
+  id: ID!
+
   """
   URL of the LndHub server this wallet is connected to.
   """
@@ -381,7 +618,7 @@ type LndHubWallet implements LightningWallet {
   """
   Balance in Satoshis.
   """
-  balanceSats: Int!
+  balanceSats: Satoshis!
 }
 `, BuiltIn: false},
 }
@@ -390,6 +627,36 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_deleteWallet_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 DeleteWalletInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNDeleteWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_payInvoice_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 PayInvoiceInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNPayInvoiceInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoiceInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_requestInvoice_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -406,6 +673,21 @@ func (ec *executionContext) field_Mutation_requestInvoice_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_setDefaultWallet_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 SetDefaultWalletInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNSetDefaultWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_setupLndHubWallet_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -413,6 +695,21 @@ func (ec *executionContext) field_Mutation_setupLndHubWallet_args(ctx context.Co
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNSetupLndHubWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetupLndHubWalletInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateWallet_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 UpdateWalletInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpdateWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -473,6 +770,76 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _DeleteWalletPayload_id(ctx context.Context, field graphql.CollectedField, obj *DeleteWalletPayload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "DeleteWalletPayload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _LndHubWallet_id(ctx context.Context, field graphql.CollectedField, obj *LndHubWallet) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "LndHubWallet",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _LndHubWallet_apiURL(ctx context.Context, field graphql.CollectedField, obj *LndHubWallet) (ret graphql.Marshaler) {
 	defer func() {
@@ -574,9 +941,9 @@ func (ec *executionContext) _LndHubWallet_balanceSats(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(model.Satoshis)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNSatoshis2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Me_wallets(ctx context.Context, field graphql.CollectedField, obj *Me) (ret graphql.Marshaler) {
@@ -653,6 +1020,132 @@ func (ec *executionContext) _Mutation_setupLndHubWallet(ctx context.Context, fie
 	return ec.marshalNSetupLndHubWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetupLndHubWalletPayload(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_setDefaultWallet(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_setDefaultWallet_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SetDefaultWallet(rctx, args["input"].(SetDefaultWalletInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*SetDefaultWalletPayload)
+	fc.Result = res
+	return ec.marshalNSetDefaultWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateWallet(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateWallet_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateWallet(rctx, args["input"].(UpdateWalletInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*UpdateWalletPayload)
+	fc.Result = res
+	return ec.marshalNUpdateWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteWallet(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteWallet_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteWallet(rctx, args["input"].(DeleteWalletInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*DeleteWalletPayload)
+	fc.Result = res
+	return ec.marshalNDeleteWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletPayload(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_requestInvoice(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -693,6 +1186,83 @@ func (ec *executionContext) _Mutation_requestInvoice(ctx context.Context, field 
 	res := resTmp.(*RequestInvoicePayload)
 	fc.Result = res
 	return ec.marshalNRequestInvoicePayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐRequestInvoicePayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_payInvoice(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_payInvoice_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().PayInvoice(rctx, args["input"].(PayInvoiceInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*PayInvoicePayload)
+	fc.Result = res
+	return ec.marshalNPayInvoicePayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoicePayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PayInvoicePayload_walletID(ctx context.Context, field graphql.CollectedField, obj *PayInvoicePayload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PayInvoicePayload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.WalletID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -831,9 +1401,44 @@ func (ec *executionContext) _RequestInvoicePayload_paymentRequest(ctx context.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(model.LightningPaymentRequest)
 	fc.Result = res
-	return ec.marshalNLightningPaymentRequest2string(ctx, field.Selections, res)
+	return ec.marshalNLightningPaymentRequest2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐLightningPaymentRequest(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SetDefaultWalletPayload_wallet(ctx context.Context, field graphql.CollectedField, obj *SetDefaultWalletPayload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SetDefaultWalletPayload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Wallet, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(LightningWallet)
+	fc.Result = res
+	return ec.marshalNLightningWallet2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWallet(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SetupLndHubWalletPayload_wallet(ctx context.Context, field graphql.CollectedField, obj *SetupLndHubWalletPayload) (ret graphql.Marshaler) {
@@ -869,6 +1474,41 @@ func (ec *executionContext) _SetupLndHubWalletPayload_wallet(ctx context.Context
 	res := resTmp.(*LndHubWallet)
 	fc.Result = res
 	return ec.marshalNLndHubWallet2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLndHubWallet(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UpdateWalletPayload_wallet(ctx context.Context, field graphql.CollectedField, obj *UpdateWalletPayload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UpdateWalletPayload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Wallet, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(LightningWallet)
+	fc.Result = res
+	return ec.marshalNLightningWallet2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWallet(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -1993,6 +2633,60 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputDeleteWalletInput(ctx context.Context, obj interface{}) (DeleteWalletInput, error) {
+	var it DeleteWalletInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPayInvoiceInput(ctx context.Context, obj interface{}) (PayInvoiceInput, error) {
+	var it PayInvoiceInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "paymentRequest":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("paymentRequest"))
+			it.PaymentRequest, err = ec.unmarshalNLightningPaymentRequest2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐLightningPaymentRequest(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "walletID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("walletID"))
+			it.WalletID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputRequestInvoiceInput(ctx context.Context, obj interface{}) (RequestInvoiceInput, error) {
 	var it RequestInvoiceInput
 	asMap := map[string]interface{}{}
@@ -2002,11 +2696,11 @@ func (ec *executionContext) unmarshalInputRequestInvoiceInput(ctx context.Contex
 
 	for k, v := range asMap {
 		switch k {
-		case "account":
+		case "accountID":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("account"))
-			it.Account, err = ec.unmarshalNAccountID2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("accountID"))
+			it.AccountID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2014,7 +2708,38 @@ func (ec *executionContext) unmarshalInputRequestInvoiceInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amountSats"))
-			it.AmountSats, err = ec.unmarshalNInt2int(ctx, v)
+			it.AmountSats, err = ec.unmarshalNSatoshis2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicationID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicationID"))
+			it.PublicationID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSetDefaultWalletInput(ctx context.Context, obj interface{}) (SetDefaultWalletInput, error) {
+	var it SetDefaultWalletInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2055,6 +2780,37 @@ func (ec *executionContext) unmarshalInputSetupLndHubWalletInput(ctx context.Con
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateWalletInput(ctx context.Context, obj interface{}) (UpdateWalletInput, error) {
+	var it UpdateWalletInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -2079,6 +2835,33 @@ func (ec *executionContext) _LightningWallet(ctx context.Context, sel ast.Select
 
 // region    **************************** object.gotpl ****************************
 
+var deleteWalletPayloadImplementors = []string{"DeleteWalletPayload"}
+
+func (ec *executionContext) _DeleteWalletPayload(ctx context.Context, sel ast.SelectionSet, obj *DeleteWalletPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, deleteWalletPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DeleteWalletPayload")
+		case "id":
+			out.Values[i] = ec._DeleteWalletPayload_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var lndHubWalletImplementors = []string{"LndHubWallet", "LightningWallet"}
 
 func (ec *executionContext) _LndHubWallet(ctx context.Context, sel ast.SelectionSet, obj *LndHubWallet) graphql.Marshaler {
@@ -2090,6 +2873,11 @@ func (ec *executionContext) _LndHubWallet(ctx context.Context, sel ast.Selection
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("LndHubWallet")
+		case "id":
+			out.Values[i] = ec._LndHubWallet_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "apiURL":
 			out.Values[i] = ec._LndHubWallet_apiURL(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -2169,8 +2957,55 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "setDefaultWallet":
+			out.Values[i] = ec._Mutation_setDefaultWallet(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateWallet":
+			out.Values[i] = ec._Mutation_updateWallet(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteWallet":
+			out.Values[i] = ec._Mutation_deleteWallet(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "requestInvoice":
 			out.Values[i] = ec._Mutation_requestInvoice(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "payInvoice":
+			out.Values[i] = ec._Mutation_payInvoice(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var payInvoicePayloadImplementors = []string{"PayInvoicePayload"}
+
+func (ec *executionContext) _PayInvoicePayload(ctx context.Context, sel ast.SelectionSet, obj *PayInvoicePayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, payInvoicePayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PayInvoicePayload")
+		case "walletID":
+			out.Values[i] = ec._PayInvoicePayload_walletID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2256,6 +3091,33 @@ func (ec *executionContext) _RequestInvoicePayload(ctx context.Context, sel ast.
 	return out
 }
 
+var setDefaultWalletPayloadImplementors = []string{"SetDefaultWalletPayload"}
+
+func (ec *executionContext) _SetDefaultWalletPayload(ctx context.Context, sel ast.SelectionSet, obj *SetDefaultWalletPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, setDefaultWalletPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SetDefaultWalletPayload")
+		case "wallet":
+			out.Values[i] = ec._SetDefaultWalletPayload_wallet(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var setupLndHubWalletPayloadImplementors = []string{"SetupLndHubWalletPayload"}
 
 func (ec *executionContext) _SetupLndHubWalletPayload(ctx context.Context, sel ast.SelectionSet, obj *SetupLndHubWalletPayload) graphql.Marshaler {
@@ -2269,6 +3131,33 @@ func (ec *executionContext) _SetupLndHubWalletPayload(ctx context.Context, sel a
 			out.Values[i] = graphql.MarshalString("SetupLndHubWalletPayload")
 		case "wallet":
 			out.Values[i] = ec._SetupLndHubWalletPayload_wallet(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var updateWalletPayloadImplementors = []string{"UpdateWalletPayload"}
+
+func (ec *executionContext) _UpdateWalletPayload(ctx context.Context, sel ast.SelectionSet, obj *UpdateWalletPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, updateWalletPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UpdateWalletPayload")
+		case "wallet":
+			out.Values[i] = ec._UpdateWalletPayload_wallet(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2533,21 +3422,6 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) unmarshalNAccountID2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNAccountID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
-}
-
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -2563,13 +3437,32 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
-	res, err := graphql.UnmarshalInt(v)
+func (ec *executionContext) unmarshalNDeleteWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletInput(ctx context.Context, v interface{}) (DeleteWalletInput, error) {
+	res, err := ec.unmarshalInputDeleteWalletInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
+func (ec *executionContext) marshalNDeleteWalletPayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletPayload(ctx context.Context, sel ast.SelectionSet, v DeleteWalletPayload) graphql.Marshaler {
+	return ec._DeleteWalletPayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDeleteWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐDeleteWalletPayload(ctx context.Context, sel ast.SelectionSet, v *DeleteWalletPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._DeleteWalletPayload(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalID(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalID(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -2578,13 +3471,14 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) unmarshalNLightningPaymentRequest2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
+func (ec *executionContext) unmarshalNLightningPaymentRequest2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐLightningPaymentRequest(ctx context.Context, v interface{}) (model.LightningPaymentRequest, error) {
+	tmp, err := graphql.UnmarshalString(v)
+	res := model.LightningPaymentRequest(tmp)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNLightningPaymentRequest2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
+func (ec *executionContext) marshalNLightningPaymentRequest2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐLightningPaymentRequest(ctx context.Context, sel ast.SelectionSet, v model.LightningPaymentRequest) graphql.Marshaler {
+	res := graphql.MarshalString(string(v))
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -2627,6 +3521,25 @@ func (ec *executionContext) marshalNMe2ᚖmintterᚋbackendᚋgraphqlᚋinternal
 	return ec._Me(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNPayInvoiceInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoiceInput(ctx context.Context, v interface{}) (PayInvoiceInput, error) {
+	res, err := ec.unmarshalInputPayInvoiceInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPayInvoicePayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoicePayload(ctx context.Context, sel ast.SelectionSet, v PayInvoicePayload) graphql.Marshaler {
+	return ec._PayInvoicePayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPayInvoicePayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐPayInvoicePayload(ctx context.Context, sel ast.SelectionSet, v *PayInvoicePayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._PayInvoicePayload(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNRequestInvoiceInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐRequestInvoiceInput(ctx context.Context, v interface{}) (RequestInvoiceInput, error) {
 	res, err := ec.unmarshalInputRequestInvoiceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -2644,6 +3557,35 @@ func (ec *executionContext) marshalNRequestInvoicePayload2ᚖmintterᚋbackend�
 		return graphql.Null
 	}
 	return ec._RequestInvoicePayload(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSatoshis2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx context.Context, v interface{}) (model.Satoshis, error) {
+	var res model.Satoshis
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSatoshis2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx context.Context, sel ast.SelectionSet, v model.Satoshis) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNSetDefaultWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletInput(ctx context.Context, v interface{}) (SetDefaultWalletInput, error) {
+	res, err := ec.unmarshalInputSetDefaultWalletInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSetDefaultWalletPayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletPayload(ctx context.Context, sel ast.SelectionSet, v SetDefaultWalletPayload) graphql.Marshaler {
+	return ec._SetDefaultWalletPayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSetDefaultWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetDefaultWalletPayload(ctx context.Context, sel ast.SelectionSet, v *SetDefaultWalletPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._SetDefaultWalletPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNSetupLndHubWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetupLndHubWalletInput(ctx context.Context, v interface{}) (SetupLndHubWalletInput, error) {
@@ -2678,6 +3620,25 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNUpdateWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletInput(ctx context.Context, v interface{}) (UpdateWalletInput, error) {
+	res, err := ec.unmarshalInputUpdateWalletInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUpdateWalletPayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletPayload(ctx context.Context, sel ast.SelectionSet, v UpdateWalletPayload) graphql.Marshaler {
+	return ec._UpdateWalletPayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUpdateWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletPayload(ctx context.Context, sel ast.SelectionSet, v *UpdateWalletPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._UpdateWalletPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -2959,6 +3920,21 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return graphql.MarshalBoolean(*v)
+}
+
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalID(*v)
 }
 
 func (ec *executionContext) marshalOLightningWallet2ᚕmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐLightningWalletᚄ(ctx context.Context, sel ast.SelectionSet, v []LightningWallet) graphql.Marshaler {
