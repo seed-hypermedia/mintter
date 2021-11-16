@@ -803,6 +803,241 @@ func (x *Document) GetPublishTime() *timestamppb.Timestamp {
 	return nil
 }
 
+type ListCitationsRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Required. Document ID for which citations need to be retrieved.
+	DocumentId string `protobuf:"bytes,1,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
+	// Optional. Depth can be used to request transitive closure of citations.
+	// For example depth=1 will return not only citations of the requested document_id
+	// but also citations of those direct citations. The default is depth=0 and will only
+	// return direct citations.
+	Depth int32 `protobuf:"varint,2,opt,name=depth,proto3" json:"depth,omitempty"`
+}
+
+func (x *ListCitationsRequest) Reset() {
+	*x = ListCitationsRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_documents_v1alpha_documents_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListCitationsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListCitationsRequest) ProtoMessage() {}
+
+func (x *ListCitationsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_documents_v1alpha_documents_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListCitationsRequest.ProtoReflect.Descriptor instead.
+func (*ListCitationsRequest) Descriptor() ([]byte, []int) {
+	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ListCitationsRequest) GetDocumentId() string {
+	if x != nil {
+		return x.DocumentId
+	}
+	return ""
+}
+
+func (x *ListCitationsRequest) GetDepth() int32 {
+	if x != nil {
+		return x.Depth
+	}
+	return 0
+}
+
+// Response with citations.
+type ListCitationsResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// List of links that point to the requested document, recursively, according to the requested depth.
+	Links []*Link `protobuf:"bytes,1,rep,name=links,proto3" json:"links,omitempty"`
+}
+
+func (x *ListCitationsResponse) Reset() {
+	*x = ListCitationsResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_documents_v1alpha_documents_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ListCitationsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListCitationsResponse) ProtoMessage() {}
+
+func (x *ListCitationsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_documents_v1alpha_documents_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListCitationsResponse.ProtoReflect.Descriptor instead.
+func (*ListCitationsResponse) Descriptor() ([]byte, []int) {
+	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *ListCitationsResponse) GetLinks() []*Link {
+	if x != nil {
+		return x.Links
+	}
+	return nil
+}
+
+// Description of a link inside a document.
+type Link struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Required. Describes where link originates from.
+	Source *LinkNode `protobuf:"bytes,1,opt,name=source,proto3" json:"source,omitempty"`
+	// Required. Describes where link points to.
+	// Here the block_id is optional, because the whole document can be linked.
+	Target *LinkNode `protobuf:"bytes,2,opt,name=target,proto3" json:"target,omitempty"`
+}
+
+func (x *Link) Reset() {
+	*x = Link{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_documents_v1alpha_documents_proto_msgTypes[15]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Link) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Link) ProtoMessage() {}
+
+func (x *Link) ProtoReflect() protoreflect.Message {
+	mi := &file_documents_v1alpha_documents_proto_msgTypes[15]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Link.ProtoReflect.Descriptor instead.
+func (*Link) Descriptor() ([]byte, []int) {
+	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *Link) GetSource() *LinkNode {
+	if x != nil {
+		return x.Source
+	}
+	return nil
+}
+
+func (x *Link) GetTarget() *LinkNode {
+	if x != nil {
+		return x.Target
+	}
+	return nil
+}
+
+// Describes "sides" of a Link.
+type LinkNode struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// ID of the document on one side of a Link.
+	DocumentId string `protobuf:"bytes,1,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
+	// Version of the document.
+	Version string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+	// ID of the block inside the document.
+	BlockId string `protobuf:"bytes,3,opt,name=block_id,json=blockId,proto3" json:"block_id,omitempty"`
+}
+
+func (x *LinkNode) Reset() {
+	*x = LinkNode{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_documents_v1alpha_documents_proto_msgTypes[16]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *LinkNode) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LinkNode) ProtoMessage() {}
+
+func (x *LinkNode) ProtoReflect() protoreflect.Message {
+	mi := &file_documents_v1alpha_documents_proto_msgTypes[16]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LinkNode.ProtoReflect.Descriptor instead.
+func (*LinkNode) Descriptor() ([]byte, []int) {
+	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *LinkNode) GetDocumentId() string {
+	if x != nil {
+		return x.DocumentId
+	}
+	return ""
+}
+
+func (x *LinkNode) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *LinkNode) GetBlockId() string {
+	if x != nil {
+		return x.BlockId
+	}
+	return ""
+}
+
 // Message that gets published to documents feed of the Mintter author.
 type DocumentPublished struct {
 	state         protoimpl.MessageState
@@ -817,7 +1052,7 @@ type DocumentPublished struct {
 func (x *DocumentPublished) Reset() {
 	*x = DocumentPublished{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_documents_v1alpha_documents_proto_msgTypes[13]
+		mi := &file_documents_v1alpha_documents_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -830,7 +1065,7 @@ func (x *DocumentPublished) String() string {
 func (*DocumentPublished) ProtoMessage() {}
 
 func (x *DocumentPublished) ProtoReflect() protoreflect.Message {
-	mi := &file_documents_v1alpha_documents_proto_msgTypes[13]
+	mi := &file_documents_v1alpha_documents_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -843,7 +1078,7 @@ func (x *DocumentPublished) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentPublished.ProtoReflect.Descriptor instead.
 func (*DocumentPublished) Descriptor() ([]byte, []int) {
-	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{13}
+	return file_documents_v1alpha_documents_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *DocumentPublished) GetDocumentId() string {
@@ -964,7 +1199,32 @@ var file_documents_v1alpha_documents_proto_rawDesc = []byte{
 	0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28,
 	0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x0b, 0x70,
-	0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x54, 0x69, 0x6d, 0x65, 0x22, 0x66, 0x0a, 0x11, 0x44, 0x6f,
+	0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x54, 0x69, 0x6d, 0x65, 0x22, 0x4d, 0x0a, 0x14, 0x4c, 0x69,
+	0x73, 0x74, 0x43, 0x69, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x12, 0x1f, 0x0a, 0x0b, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e,
+	0x74, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x64, 0x65, 0x70, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x05, 0x52, 0x05, 0x64, 0x65, 0x70, 0x74, 0x68, 0x22, 0x52, 0x0a, 0x15, 0x4c, 0x69, 0x73,
+	0x74, 0x43, 0x69, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x12, 0x39, 0x0a, 0x05, 0x6c, 0x69, 0x6e, 0x6b, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28,
+	0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e,
+	0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68,
+	0x61, 0x2e, 0x4c, 0x69, 0x6e, 0x6b, 0x52, 0x05, 0x6c, 0x69, 0x6e, 0x6b, 0x73, 0x22, 0x88, 0x01,
+	0x0a, 0x04, 0x4c, 0x69, 0x6e, 0x6b, 0x12, 0x3f, 0x0a, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e,
+	0x74, 0x74, 0x65, 0x72, 0x2e, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x2e, 0x76,
+	0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4c, 0x69, 0x6e, 0x6b, 0x4e, 0x6f, 0x64, 0x65, 0x52,
+	0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x3f, 0x0a, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65,
+	0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69,
+	0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x2e,
+	0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4c, 0x69, 0x6e, 0x6b, 0x4e, 0x6f, 0x64, 0x65,
+	0x52, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x22, 0x60, 0x0a, 0x08, 0x4c, 0x69, 0x6e, 0x6b,
+	0x4e, 0x6f, 0x64, 0x65, 0x12, 0x1f, 0x0a, 0x0b, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74,
+	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x64, 0x6f, 0x63, 0x75, 0x6d,
+	0x65, 0x6e, 0x74, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12,
+	0x19, 0x0a, 0x08, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x49, 0x64, 0x22, 0x66, 0x0a, 0x11, 0x44, 0x6f,
 	0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x65, 0x64, 0x12,
 	0x1f, 0x0a, 0x0b, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x49, 0x64,
@@ -1034,11 +1294,19 @@ var file_documents_v1alpha_documents_proto_rawDesc = []byte{
 	0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x64, 0x6f, 0x63, 0x75,
 	0x6d, 0x65, 0x6e, 0x74, 0x73, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4c, 0x69,
 	0x73, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x31, 0x5a, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65,
-	0x72, 0x2f, 0x62, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x64, 0x6f,
-	0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x3b,
-	0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0x8a, 0x01, 0x0a, 0x0c, 0x43, 0x6f, 0x6e, 0x74, 0x65,
+	0x6e, 0x74, 0x47, 0x72, 0x61, 0x70, 0x68, 0x12, 0x7a, 0x0a, 0x0d, 0x4c, 0x69, 0x73, 0x74, 0x43,
+	0x69, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x33, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d,
+	0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73,
+	0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x43, 0x69, 0x74,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x34, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x64, 0x6f, 0x63, 0x75,
+	0x6d, 0x65, 0x6e, 0x74, 0x73, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4c, 0x69,
+	0x73, 0x74, 0x43, 0x69, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x42, 0x31, 0x5a, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2f, 0x62,
+	0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x64, 0x6f, 0x63, 0x75, 0x6d,
+	0x65, 0x6e, 0x74, 0x73, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x3b, 0x64, 0x6f, 0x63,
+	0x75, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1053,7 +1321,7 @@ func file_documents_v1alpha_documents_proto_rawDescGZIP() []byte {
 	return file_documents_v1alpha_documents_proto_rawDescData
 }
 
-var file_documents_v1alpha_documents_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_documents_v1alpha_documents_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_documents_v1alpha_documents_proto_goTypes = []interface{}{
 	(*CreateDraftRequest)(nil),       // 0: com.mintter.documents.v1alpha.CreateDraftRequest
 	(*DeleteDraftRequest)(nil),       // 1: com.mintter.documents.v1alpha.DeleteDraftRequest
@@ -1068,41 +1336,50 @@ var file_documents_v1alpha_documents_proto_goTypes = []interface{}{
 	(*ListPublicationsResponse)(nil), // 10: com.mintter.documents.v1alpha.ListPublicationsResponse
 	(*Publication)(nil),              // 11: com.mintter.documents.v1alpha.Publication
 	(*Document)(nil),                 // 12: com.mintter.documents.v1alpha.Document
-	(*DocumentPublished)(nil),        // 13: com.mintter.documents.v1alpha.DocumentPublished
-	(*timestamppb.Timestamp)(nil),    // 14: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),            // 15: google.protobuf.Empty
+	(*ListCitationsRequest)(nil),     // 13: com.mintter.documents.v1alpha.ListCitationsRequest
+	(*ListCitationsResponse)(nil),    // 14: com.mintter.documents.v1alpha.ListCitationsResponse
+	(*Link)(nil),                     // 15: com.mintter.documents.v1alpha.Link
+	(*LinkNode)(nil),                 // 16: com.mintter.documents.v1alpha.LinkNode
+	(*DocumentPublished)(nil),        // 17: com.mintter.documents.v1alpha.DocumentPublished
+	(*timestamppb.Timestamp)(nil),    // 18: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),            // 19: google.protobuf.Empty
 }
 var file_documents_v1alpha_documents_proto_depIdxs = []int32{
 	12, // 0: com.mintter.documents.v1alpha.UpdateDraftRequest.document:type_name -> com.mintter.documents.v1alpha.Document
 	12, // 1: com.mintter.documents.v1alpha.ListDraftsResponse.documents:type_name -> com.mintter.documents.v1alpha.Document
 	11, // 2: com.mintter.documents.v1alpha.ListPublicationsResponse.publications:type_name -> com.mintter.documents.v1alpha.Publication
 	12, // 3: com.mintter.documents.v1alpha.Publication.document:type_name -> com.mintter.documents.v1alpha.Document
-	14, // 4: com.mintter.documents.v1alpha.Document.create_time:type_name -> google.protobuf.Timestamp
-	14, // 5: com.mintter.documents.v1alpha.Document.update_time:type_name -> google.protobuf.Timestamp
-	14, // 6: com.mintter.documents.v1alpha.Document.publish_time:type_name -> google.protobuf.Timestamp
-	0,  // 7: com.mintter.documents.v1alpha.Drafts.CreateDraft:input_type -> com.mintter.documents.v1alpha.CreateDraftRequest
-	1,  // 8: com.mintter.documents.v1alpha.Drafts.DeleteDraft:input_type -> com.mintter.documents.v1alpha.DeleteDraftRequest
-	2,  // 9: com.mintter.documents.v1alpha.Drafts.GetDraft:input_type -> com.mintter.documents.v1alpha.GetDraftRequest
-	3,  // 10: com.mintter.documents.v1alpha.Drafts.UpdateDraft:input_type -> com.mintter.documents.v1alpha.UpdateDraftRequest
-	4,  // 11: com.mintter.documents.v1alpha.Drafts.ListDrafts:input_type -> com.mintter.documents.v1alpha.ListDraftsRequest
-	6,  // 12: com.mintter.documents.v1alpha.Drafts.PublishDraft:input_type -> com.mintter.documents.v1alpha.PublishDraftRequest
-	7,  // 13: com.mintter.documents.v1alpha.Publications.GetPublication:input_type -> com.mintter.documents.v1alpha.GetPublicationRequest
-	8,  // 14: com.mintter.documents.v1alpha.Publications.DeletePublication:input_type -> com.mintter.documents.v1alpha.DeletePublicationRequest
-	9,  // 15: com.mintter.documents.v1alpha.Publications.ListPublications:input_type -> com.mintter.documents.v1alpha.ListPublicationsRequest
-	12, // 16: com.mintter.documents.v1alpha.Drafts.CreateDraft:output_type -> com.mintter.documents.v1alpha.Document
-	15, // 17: com.mintter.documents.v1alpha.Drafts.DeleteDraft:output_type -> google.protobuf.Empty
-	12, // 18: com.mintter.documents.v1alpha.Drafts.GetDraft:output_type -> com.mintter.documents.v1alpha.Document
-	12, // 19: com.mintter.documents.v1alpha.Drafts.UpdateDraft:output_type -> com.mintter.documents.v1alpha.Document
-	5,  // 20: com.mintter.documents.v1alpha.Drafts.ListDrafts:output_type -> com.mintter.documents.v1alpha.ListDraftsResponse
-	11, // 21: com.mintter.documents.v1alpha.Drafts.PublishDraft:output_type -> com.mintter.documents.v1alpha.Publication
-	11, // 22: com.mintter.documents.v1alpha.Publications.GetPublication:output_type -> com.mintter.documents.v1alpha.Publication
-	15, // 23: com.mintter.documents.v1alpha.Publications.DeletePublication:output_type -> google.protobuf.Empty
-	10, // 24: com.mintter.documents.v1alpha.Publications.ListPublications:output_type -> com.mintter.documents.v1alpha.ListPublicationsResponse
-	16, // [16:25] is the sub-list for method output_type
-	7,  // [7:16] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	18, // 4: com.mintter.documents.v1alpha.Document.create_time:type_name -> google.protobuf.Timestamp
+	18, // 5: com.mintter.documents.v1alpha.Document.update_time:type_name -> google.protobuf.Timestamp
+	18, // 6: com.mintter.documents.v1alpha.Document.publish_time:type_name -> google.protobuf.Timestamp
+	15, // 7: com.mintter.documents.v1alpha.ListCitationsResponse.links:type_name -> com.mintter.documents.v1alpha.Link
+	16, // 8: com.mintter.documents.v1alpha.Link.source:type_name -> com.mintter.documents.v1alpha.LinkNode
+	16, // 9: com.mintter.documents.v1alpha.Link.target:type_name -> com.mintter.documents.v1alpha.LinkNode
+	0,  // 10: com.mintter.documents.v1alpha.Drafts.CreateDraft:input_type -> com.mintter.documents.v1alpha.CreateDraftRequest
+	1,  // 11: com.mintter.documents.v1alpha.Drafts.DeleteDraft:input_type -> com.mintter.documents.v1alpha.DeleteDraftRequest
+	2,  // 12: com.mintter.documents.v1alpha.Drafts.GetDraft:input_type -> com.mintter.documents.v1alpha.GetDraftRequest
+	3,  // 13: com.mintter.documents.v1alpha.Drafts.UpdateDraft:input_type -> com.mintter.documents.v1alpha.UpdateDraftRequest
+	4,  // 14: com.mintter.documents.v1alpha.Drafts.ListDrafts:input_type -> com.mintter.documents.v1alpha.ListDraftsRequest
+	6,  // 15: com.mintter.documents.v1alpha.Drafts.PublishDraft:input_type -> com.mintter.documents.v1alpha.PublishDraftRequest
+	7,  // 16: com.mintter.documents.v1alpha.Publications.GetPublication:input_type -> com.mintter.documents.v1alpha.GetPublicationRequest
+	8,  // 17: com.mintter.documents.v1alpha.Publications.DeletePublication:input_type -> com.mintter.documents.v1alpha.DeletePublicationRequest
+	9,  // 18: com.mintter.documents.v1alpha.Publications.ListPublications:input_type -> com.mintter.documents.v1alpha.ListPublicationsRequest
+	13, // 19: com.mintter.documents.v1alpha.ContentGraph.ListCitations:input_type -> com.mintter.documents.v1alpha.ListCitationsRequest
+	12, // 20: com.mintter.documents.v1alpha.Drafts.CreateDraft:output_type -> com.mintter.documents.v1alpha.Document
+	19, // 21: com.mintter.documents.v1alpha.Drafts.DeleteDraft:output_type -> google.protobuf.Empty
+	12, // 22: com.mintter.documents.v1alpha.Drafts.GetDraft:output_type -> com.mintter.documents.v1alpha.Document
+	12, // 23: com.mintter.documents.v1alpha.Drafts.UpdateDraft:output_type -> com.mintter.documents.v1alpha.Document
+	5,  // 24: com.mintter.documents.v1alpha.Drafts.ListDrafts:output_type -> com.mintter.documents.v1alpha.ListDraftsResponse
+	11, // 25: com.mintter.documents.v1alpha.Drafts.PublishDraft:output_type -> com.mintter.documents.v1alpha.Publication
+	11, // 26: com.mintter.documents.v1alpha.Publications.GetPublication:output_type -> com.mintter.documents.v1alpha.Publication
+	19, // 27: com.mintter.documents.v1alpha.Publications.DeletePublication:output_type -> google.protobuf.Empty
+	10, // 28: com.mintter.documents.v1alpha.Publications.ListPublications:output_type -> com.mintter.documents.v1alpha.ListPublicationsResponse
+	14, // 29: com.mintter.documents.v1alpha.ContentGraph.ListCitations:output_type -> com.mintter.documents.v1alpha.ListCitationsResponse
+	20, // [20:30] is the sub-list for method output_type
+	10, // [10:20] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_documents_v1alpha_documents_proto_init() }
@@ -1268,6 +1545,54 @@ func file_documents_v1alpha_documents_proto_init() {
 			}
 		}
 		file_documents_v1alpha_documents_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListCitationsRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_documents_v1alpha_documents_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListCitationsResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_documents_v1alpha_documents_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Link); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_documents_v1alpha_documents_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*LinkNode); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_documents_v1alpha_documents_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DocumentPublished); i {
 			case 0:
 				return &v.state
@@ -1286,9 +1611,9 @@ func file_documents_v1alpha_documents_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_documents_v1alpha_documents_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   18,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   3,
 		},
 		GoTypes:           file_documents_v1alpha_documents_proto_goTypes,
 		DependencyIndexes: file_documents_v1alpha_documents_proto_depIdxs,

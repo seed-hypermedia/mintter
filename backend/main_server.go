@@ -91,12 +91,13 @@ func registerGRPC(srv *grpc.Server,
 	nsrv networking.NetworkingServer,
 	docs DocsServer,
 ) {
+	reflection.Register(srv)
 	accounts.RegisterAccountsServer(srv, asrv)
 	networking.RegisterNetworkingServer(srv, nsrv)
 	daemon.RegisterDaemonServer(srv, dsrv)
 	documents.RegisterDraftsServer(srv, docs)
 	documents.RegisterPublicationsServer(srv, docs)
-	reflection.Register(srv)
+	documents.RegisterContentGraphServer(srv, docs)
 }
 
 // httpServer is a wrapper for HTTP server which is useful for lazy listener initialization.
