@@ -24,10 +24,11 @@ import (
 type DocsServer interface {
 	documents.DraftsServer
 	documents.PublicationsServer
+	documents.ContentGraphServer
 }
 
 type docsAPI struct {
-	documents.UnimplementedPublicationsServer
+	documents.UnimplementedContentGraphServer
 
 	feedMu sync.Mutex
 	back   *backend
