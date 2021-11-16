@@ -5,7 +5,9 @@ import (
 	"path"
 
 	"mintter/backend/config"
+	"mintter/backend/graphql"
 
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
@@ -21,6 +23,8 @@ func makeHTTPHandler(cfg config.Config, g *grpc.Server, b *backend) http.Handler
 	mux := http.NewServeMux()
 	mux.Handle("/debug/", http.DefaultServeMux) // pprof and expvar handlers are registered on the router.
 	mux.Handle("/debug/metrics", promhttp.Handler())
+	mux.Handle("/graphql", graphql.Handler(nil)) // TODO: pass some implementation to the graphql server.
+	mux.Handle("/playground", playground.Handler("GraphQL Playgorund", "/graphql"))
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if grpcWebHandler.IsAcceptableGrpcCorsRequest(r) || grpcWebHandler.IsGrpcWebRequest(r) {
