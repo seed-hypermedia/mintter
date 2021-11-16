@@ -55,8 +55,8 @@
     "slate-history": "github:mintterteam/slate#workspace=slate-history&tag=v0.70.0-unist",
     "slate-hyperscript": "github:mintterteam/slate#workspace=slate-hyperscript&tag=v0.70.0-unist",
     "slate-react": "github:mintterteam/slate#workspace=slate-react&tag=v0.70.0-unist",
-    "tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log",
-    "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store",
+    "tauri-plugin-log-api": "https://github.com/tauri-apps/tauri-plugin-log#head=fix/package-includes",
+    "tauri-plugin-store-api": "https://github.com/tauri-apps/tauri-plugin-store#head=dev",
     "unist-util-visit": "^4.0.0",
     "wouter": "^2.8.0-alpha.1",
     "xstate": "^4.25.0"

@@ -2128,8 +2128,8 @@ __metadata:
     slate-hyperscript: "github:mintterteam/slate#workspace=slate-hyperscript&tag=v0.70.0-unist"
     slate-react: "github:mintterteam/slate#workspace=slate-react&tag=v0.70.0-unist"
     storybook-builder-vite: ^0.1.0
-    tauri-plugin-log-api: "github:tauri-apps/tauri-plugin-log"
-    tauri-plugin-store-api: "github:tauri-apps/tauri-plugin-store"
+    tauri-plugin-log-api: "https://github.com/tauri-apps/tauri-plugin-log#head=fix/package-includes"
+    tauri-plugin-store-api: "https://github.com/tauri-apps/tauri-plugin-store#head=dev"
     typedoc: ^0.22.5
     typedoc-plugin-markdown: ^3.11.3
     typescript: ^4.4.2
@@ -18402,23 +18402,23 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"tauri-plugin-log-api@github:tauri-apps/tauri-plugin-log":
+"tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log#head=fix/package-includes":
   version: 0.1.0
-  resolution: "tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log.git#commit=cb2a1401c7fd81cb72fe77f3538d35e5ae419a07"
+  resolution: "tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log.git#commit=33ea94721e51fcb9319beaacfcc8f76f794cf1e5"
   dependencies:
     "@tauri-apps/api": ^1.0.0-beta.8
     tslib: ^2.3.1
-  checksum: d8859a6088b8a5f8802a2f85d9bed120b126229090c1e5fc7dfe2f98eee5762118fade7efeb3c6e9f49214279d7ee5caf32d8a1521067e6266531f12007aa384
+  checksum: f6bb3f48521cf626d4a140037ff9d310f650b520000eec0c8908806e8ea4d940d88655f03c35328fe74686fe4a60cac63546064fb740d4e5484ccd91797174cc
   languageName: node
   linkType: hard
 
-"tauri-plugin-store-api@github:tauri-apps/tauri-plugin-store":
+"tauri-plugin-store-api@https://github.com/tauri-apps/tauri-plugin-store#head=dev":
   version: 0.1.0
-  resolution: "tauri-plugin-store-api@https://github.com/tauri-apps/tauri-plugin-store.git#commit=c240599581ee32146608737916f14c2f7e53b1b0"
+  resolution: "tauri-plugin-store-api@https://github.com/tauri-apps/tauri-plugin-store.git#commit=45eed9eb9e05d2fce44c56eb4c65f3db5db480e6"
   dependencies:
     "@tauri-apps/api": 1.0.0-beta.8
     tslib: ^2.1.0
-  checksum: 01c059ede4006bfdd7e846572e58953387b9dea275a371acf4e70a26273f92615f2c475ceec0f2e82e69be12da7b459f3444ccc3687dfad5b66ccdf88daf8e42
+  checksum: 702c078aca4c88e5478ffcd0d3d82d5dd32cc3906446880adfe76012951e6b25d3a20cae202645cd8bd5306def3e67ef65df3ace38a3a58ef7f0b64f3c3d4a64
   languageName: node
   linkType: hard
 
