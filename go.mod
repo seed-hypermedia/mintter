@@ -5,6 +5,7 @@ go 1.17
 require (
 	crawshaw.io/sqlite v0.0.0
 	git.schwanenlied.me/yawning/bsaes.git v0.0.0-20180720073208-c0276d75487e // indirect
+	github.com/99designs/gqlgen v0.14.0
 	github.com/Stebalien/go-bitfield v0.0.1 // indirect
 	github.com/Yawning/aez v0.0.0-20180114000226-4dad034d9db2 // indirect
 	github.com/aead/siphash v1.0.1 // indirect
@@ -201,6 +202,7 @@ require (
 	github.com/tidwall/match v1.0.3 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tidwall/tinyqueue v0.1.1
+	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/whyrusleeping/base32 v0.0.0-20170828182744-c30ac30633cc // indirect
 	github.com/whyrusleeping/cbor-gen v0.0.0-20210422071115-ad5b82622e0f
 	github.com/whyrusleeping/chunker v0.0.0-20181014151217-fe64bd25879f // indirect
@@ -216,13 +218,13 @@ require (
 	go.uber.org/multierr v1.7.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
-	golang.org/x/mod v0.5.0 // indirect
+	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/net v0.0.0-20211011170408-caeb26a5c8c0 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20211013075003-97ac67df715c // indirect
+	golang.org/x/sys v0.0.0-20211110154304-99a53858aa08 // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.1.5 // indirect
+	golang.org/x/tools v0.1.7 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20210915214522-86cf1236ec46 // indirect
 	google.golang.org/grpc v1.40.0
@@ -232,6 +234,11 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	nhooyr.io/websocket v1.8.6 // indirect
+)
+
+require (
+	github.com/agnivade/levenshtein v1.1.1 // indirect
+	github.com/mitchellh/mapstructure v1.4.2 // indirect
 )
 
 replace crawshaw.io/sqlite => ./third_party/sqlite
