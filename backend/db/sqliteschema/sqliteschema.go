@@ -1,12 +1,19 @@
-package sqlitedb
+package sqliteschema
 
 import (
+	"fmt"
+
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
+	"go.uber.org/multierr"
 )
 
+// Migration is a type for a migration function.
+// Eventually we might want to make avaiable other things to migration handlers.
 type Migration func(conn *sqlite.Conn) error
 
+// SQLMigration is a migration function that applies one or multiple
+// SQL statements to the database.
 func SQLMigration(stmts ...string) Migration {
 	return func(conn *sqlite.Conn) error {
 		for _, s := range stmts {
@@ -20,7 +27,9 @@ func SQLMigration(stmts ...string) Migration {
 
 // The list with a global set of database migrations.
 // Append-only! DO NOT REMOVE, EDIT, OR REORDER PREVIOUS ENTRIES.
+// Do not add statements to existing SQLMigration, create new ones instead.
 var migrations = []Migration{
+	// This is the initial set of tables. Do not alter after the schema is already stable.
 	SQLMigration(
 		`-- Stores the content of IPFS blobs.
 		CREATE TABLE ipfs_blobs (
@@ -153,4 +162,67 @@ var migrations = []Migration{
 			parentcolumn = 'target_document_id'
 		);`,
 	),
+}
+
+// Migrate the database applying migrations defined in this package.
+// migration is done in a transaction.
+func Migrate(conn *sqlite.Conn) error {
+	return migrate(conn, migrations)
+}
+
+func migrate(conn *sqlite.Conn, migrations []Migration) error {
+	v, err := getUserVersion(conn)
+	if err != nil {
+		return err
+	}
+
+	if v == len(migrations) {
+		return nil
+	}
+
+	if v > len(migrations) {
+		return fmt.Errorf("refusing to migrate down from version %d to %d", v, len(migrations))
+	}
+
+	return withTx(conn, func(conn *sqlite.Conn) error {
+		for _, fn := range migrations[v:] {
+			if err := fn(conn); err != nil {
+				return err
+			}
+		}
+
+		return setUserVersion(conn, len(migrations))
+	})
+}
+
+func withTx(conn *sqlite.Conn, fn func(conn *sqlite.Conn) error) (err error) {
+	if err := sqlitex.ExecTransient(conn, "BEGIN TRANSACTION;", nil); err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		if err == nil {
+			err = sqlitex.ExecTransient(conn, "COMMIT;", nil)
+		} else {
+			err = multierr.Append(err, sqlitex.ExecTransient(conn, "ROLLBACK;", nil))
+		}
+	}()
+
+	if err := fn(conn); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getUserVersion(conn *sqlite.Conn) (int, error) {
+	var v int
+	err := sqlitex.ExecTransient(conn, "PRAGMA user_version;", func(stmt *sqlite.Stmt) error {
+		v = stmt.ColumnInt(0)
+		return nil
+	})
+	return v, err
+}
+
+func setUserVersion(conn *sqlite.Conn, v int) error {
+	return sqlitex.ExecTransient(conn, fmt.Sprintf("PRAGMA user_version = %d;", v), nil)
 }
