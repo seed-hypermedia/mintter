@@ -38,6 +38,7 @@ const (
 	autocertDir = "autocert-cache"
 
 	badgerDirPath = dbDir + "/badger-v3"
+	sqliteDirPath = dbDir + "/mintter"
 
 	providingDBPath    = dbDir + "/providing.db"
 	privKeyFilePath    = keysDir + "/libp2p_id_ed25519"
@@ -110,6 +111,7 @@ func prepareRepo(path string, log *zap.Logger) (r *repo, err error) {
 		filepath.Join(path, keysDir),
 		filepath.Join(path, dbDir),
 		filepath.Join(path, badgerDirPath),
+		filepath.Join(path, sqliteDirPath),
 		filepath.Join(path, draftsDir),
 		filepath.Join(path, autocertDir),
 	}
@@ -180,6 +182,10 @@ func (r *repo) setAccount(k crypto.PubKey) error {
 	close(r.ready)
 
 	return nil
+}
+
+func (r *repo) sqlitePath() string {
+	return filepath.Join(r.path, sqliteDirPath, "db.sqlite")
 }
 
 func (r *repo) badgerDir() string {
