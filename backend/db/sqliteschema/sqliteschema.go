@@ -47,7 +47,6 @@ var migrations = []string{
 			-- Not sure if actually useful, but might become at some point.
 			create_time TIMESTAMP DEFAULT (datetime('now')) NOT NULL
 		);
-
 		-- Stores data about Mintter Accounts.
 		CREATE TABLE accounts (
 			-- Short numerical ID to be used internally.
@@ -61,7 +60,6 @@ var migrations = []string{
 			-- Currently known value for the profile email.
 			email TEXT
 		);
-
 		-- Stores data about Mintter Devices.
 		CREATE TABLE devices (
 			-- Short numerical ID to be used internally.
@@ -76,7 +74,6 @@ var migrations = []string{
 			-- Subjective (locally perceived) time when the item was created.
 			create_time TIMESTAMP DEFAULT (datetime('now')) NOT NULL
 		);
-
 		-- Stores data about Mintter Objects.
 		CREATE TABLE objects (
 			-- Short numerical ID to be used internally.
@@ -86,7 +83,6 @@ var migrations = []string{
 			-- Reference to the Account that created the Object.
 			account_id INTEGER REFERENCES accounts NOT NULL
 		);
-
 		-- Stores changes for objects.
 		CREATE TABLE changes (
 			-- Reference to the Object being changed.
@@ -102,7 +98,6 @@ var migrations = []string{
 			-- Composite key that uniquely identifies a Change.
 			PRIMARY KEY (object_id, device_id, seq)
 		) WITHOUT ROWID;
-
 		-- Stores Mintter Documents (drafts and publications) and caches some of their attributes.
 		CREATE TABLE documents (
 			-- Short numerical ID to be used internally.
@@ -124,13 +119,10 @@ var migrations = []string{
 			-- But not all Objects are Documents.
 			FOREIGN KEY (id) REFERENCES objects
 		);
-
 		-- Index to list drafts.
 		CREATE INDEX documents_draft_content ON documents (draft_content, NOT NULL);
-
 		-- Index to list published documents.
 		CREATE INDEX documents_publish_time ON documents (publish_time, NOT NULL);
-
 		-- Index for links from Documents.
 		CREATE TABLE links (
 			-- Reference to Document ID from which link originates.
@@ -149,10 +141,8 @@ var migrations = []string{
 			-- to identify the state of the source Document.
 			source_change_id INTEGER REFERENCES changes NOT NULL
 		);
-
 		-- Index for backlinks.
 		CREATE INDEX links_target_document_id ON links (target_document_id);
-
 		-- Virtual table for backlinks.
 		CREATE VIRTUAL TABLE backlinks USING transitive_closure (
 			tablename = 'links',
@@ -161,6 +151,29 @@ var migrations = []string{
 			idcolumn = 'source_document_id',
 			parentcolumn = 'target_document_id'
 		);
+		-- Stores Lightning wallets both externals (imported wallets like bluewallet
+		-- based on lndhub) and internals (based on the LND embedded node).
+		CREATE TABLE wallets (
+			-- Wallet unique ID. Is the url hash in case of lndhub or the pubkey in case of LND.
+			id TEXT PRIMARY KEY,
+			-- Address of the LND node backing up this wallet. In case lndhub, this will be the 
+			-- URL to connect via rest api. In case LND wallet, this will be the clearnet/onion address.
+			address TEXT NOT NULL,
+			-- The type of the wallet. Either lnd or lndhub
+			type TEXT CHECK( type IN ('lnd','lndhub') ) NOT NULL DEFAULT 'lndhub',
+			-- The Authentication of the wallet. api token in case lndhub and macaroon 
+			-- bytes in case lnd. This blob should be encrypted
+			auth BLOB NOT NULL,
+			-- Human readable name to help the user identify each wallet
+			name TEXT NOT NULL,
+			-- The balance in satoshis
+			balance INTEGER DEFAULT 0
+		);
+		-- Stores global metadata/configuration about any other table
+		CREATE TABLE global_meta (
+    		key TEXT PRIMARY KEY,
+    		value TEXT
+		) WITHOUT ROWID;
 	`,
 }
 

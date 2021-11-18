@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"reflect"
 	"sync"
 	"time"
@@ -35,6 +36,7 @@ import (
 	"mintter/backend/badgergraph"
 	"mintter/backend/cleanup"
 	"mintter/backend/db/graphschema"
+	"mintter/backend/lndhub"
 )
 
 // Log messages.
@@ -65,6 +67,9 @@ type backend struct {
 	// dialOpts must only be used after P2P node is ready.
 	dialOpts []grpc.DialOption
 
+	// the client to connect to lightning wallets
+	lightningClient *lnclient
+
 	watchMu  sync.RWMutex
 	watchers map[chan<- interface{}]struct{}
 }
@@ -82,6 +87,8 @@ func newBackend(log *zap.Logger, pool *sqlitex.Pool, r *repo, store *patchStore,
 		startTime: time.Now().UTC(),
 
 		dialOpts: makeDialOpts(p2p.libp2p.Host),
+
+		lightningClient: &lnclient{Lndhub: lndhub.NewClient(&http.Client{})},
 	}
 
 	return srv

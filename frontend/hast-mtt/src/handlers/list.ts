@@ -1,9 +1,9 @@
-import {ol as buildOl, ul as buildUl} from '@mintter/mttast-builder'
-import {Element} from 'hast'
-import {hasProperty} from 'hast-util-has-property'
-import {convertElement} from 'hast-util-is-element'
-import {all} from '../all'
-import {H} from '../types'
+import { ol as buildOl, ul as buildUl } from '@mintter/mttast-builder'
+import { Element } from 'hast'
+import { hasProperty } from 'hast-util-has-property'
+import { convertElement } from 'hast-util-is-element'
+import { all } from '../all'
+import { H } from '../types'
 
 const ol = convertElement('ol')
 
@@ -15,9 +15,9 @@ export function list(h: H, node: Element) {
   if (isOrdered) {
     start = hasProperty(node, 'start')
       ? // @ts-expect-error: `props` exist.
-        Number.parseInt(String(node.properties.start), 10)
+      Number.parseInt(String(node.properties.start), 10)
       : 1
   }
 
-  return isOrdered ? buildOl({start}, children) : buildUl(children)
+  return isOrdered ? buildOl({ start }, children) : buildUl(children)
 }

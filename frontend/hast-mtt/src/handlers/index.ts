@@ -1,20 +1,20 @@
-import {all} from '../all'
-import {a} from './a'
-import {base} from './base'
-import {blockquote} from './blockquote'
-import {br} from './br'
-import {code} from './code'
-import {em} from './em'
-import {heading} from './heading'
-import {inlineCode} from './inline-code'
-import {list} from './list'
-import {listItem} from './list-item'
-import {p} from './p'
-import {root} from './root'
-import {strikethrough} from './strikethrough'
-import {strong} from './strong'
-import {text} from './text'
-import {underline} from './underline'
+import { all } from '../all'
+import { a } from './a'
+import { base } from './base'
+import { blockquote } from './blockquote'
+import { br } from './br'
+import { code } from './code'
+import { em } from './em'
+import { heading } from './heading'
+import { inlineCode } from './inline-code'
+import { list } from './list'
+import { listItem } from './list-item'
+import { p } from './p'
+import { root } from './root'
+import { strikethrough } from './strikethrough'
+import { strong } from './strong'
+import { text } from './text'
+import { underline } from './underline'
 
 export const handlers = {
   root,
@@ -170,4 +170,4 @@ export const handlers = {
   // dl,
 }
 
-function ignore() {}
+function ignore() { }

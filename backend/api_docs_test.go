@@ -122,7 +122,7 @@ func TestAPIListDrafts(t *testing.T) {
 		i := i
 		g.Go(func() error {
 			ia := strconv.Itoa(i)
-			doc := makeDraft(t, ctx, api, "My Document Title "+ia, "Subtitle "+ia)
+			doc := makeDraft(ctx, t, api, "My Document Title "+ia, "Subtitle "+ia)
 			docs[i] = doc
 			return nil
 		})
@@ -195,8 +195,8 @@ func TestAPIDeleteDraft(t *testing.T) {
 	api := newDocsAPI(back)
 	ctx := context.Background()
 
-	doc := makeDraft(t, ctx, api, "My Document 1", "Subtitle 1")
-	doc2 := makeDraft(t, ctx, api, "My Document 2", "Subtitle 2")
+	doc := makeDraft(ctx, t, api, "My Document 1", "Subtitle 1")
+	doc2 := makeDraft(ctx, t, api, "My Document 2", "Subtitle 2")
 
 	deleted, err := api.DeleteDraft(ctx, &documents.DeleteDraftRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
@@ -213,7 +213,7 @@ func TestAPIPublishDraft(t *testing.T) {
 	api := newDocsAPI(back)
 	ctx := context.Background()
 
-	doc := makeDraft(t, ctx, api, "My Document Title", "Subtitle")
+	doc := makeDraft(ctx, t, api, "My Document Title", "Subtitle")
 
 	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
@@ -257,7 +257,7 @@ func TestAPIListPublications(t *testing.T) {
 	for i := range drafts {
 		go func(i int) {
 			ia := strconv.Itoa(i)
-			drafts[i] = makeDraft(t, ctx, api, "My Document "+ia, "Subtitle "+ia)
+			drafts[i] = makeDraft(ctx, t, api, "My Document "+ia, "Subtitle "+ia)
 			wg.Done()
 		}(i)
 	}
@@ -295,7 +295,7 @@ func TestAPIDeletePublication(t *testing.T) {
 	api := newDocsAPI(back)
 	ctx := context.Background()
 
-	doc := makeDraft(t, ctx, api, "My Publication For Delete", "THIS WILL BE DELETED")
+	doc := makeDraft(ctx, t, api, "My Publication For Delete", "THIS WILL BE DELETED")
 	_, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
 
@@ -321,11 +321,11 @@ func TestAPISyncDocuments(t *testing.T) {
 	bapi := newDocsAPI(bob)
 	ctx := context.Background()
 
-	draft := makeDraft(t, ctx, aapi, "Alice Docs", "Subtitle")
+	draft := makeDraft(ctx, t, aapi, "Alice Docs", "Subtitle")
 	_, err := aapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
 
-	connectPeers(t, ctx, alice, bob, true)
+	connectPeers(ctx, t, alice, bob, true)
 
 	list, err := bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
@@ -356,7 +356,7 @@ func TestAPISyncDocuments(t *testing.T) {
 	require.Len(t, list.Publications, 1)
 }
 
-func makeDraft(t *testing.T, ctx context.Context, api DocsServer, title, subtitle string) *documents.Document {
+func makeDraft(ctx context.Context, t *testing.T, api DocsServer, title, subtitle string) *documents.Document {
 	t.Helper()
 
 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})

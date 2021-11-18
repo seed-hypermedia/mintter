@@ -6,42 +6,60 @@ package resolver
 import (
 	"context"
 	"fmt"
-	"math"
 	"mintter/backend/graphql/internal/generated"
-	"mintter/backend/lndhub"
+	"mintter/backend/graphql/internal/model"
 )
 
 func (r *meResolver) Wallets(ctx context.Context, obj *generated.Me) ([]generated.LightningWallet, error) {
-	return []generated.LightningWallet{
-		generated.LndHubWallet{
-			Name:        "Fake Blue Wallet",
-			BalanceSats: math.MaxInt64,
-		},
-	}, nil
+	wallets, err := r.svc.ListWallets(ctx)
+	ret := []generated.LightningWallet{}
+
+	if err != nil {
+		return ret, err
+	}
+
+	for _, w := range wallets {
+		ret = append(ret, generated.LndHubWallet{
+			ID:          w.ID,
+			APIURL:      w.Address,
+			Name:        w.Name,
+			BalanceSats: model.Satoshis(w.Balance),
+		})
+	}
+
+	return ret, nil
 }
 
 func (r *mutationResolver) SetupLndHubWallet(ctx context.Context, input generated.SetupLndHubWalletInput) (*generated.SetupLndHubWalletPayload, error) {
-	creds, err := lndhub.ParseCredentials(input.URL)
+	lndhubWallet, err := r.svc.InsertWallet(ctx, "lndhub", input.URL, input.Name)
 	if err != nil {
-		return nil, err
-	}
-
-	// Think if this abstraction is needed, or just use LNDHub client here and retrieve access token and wallet balance.
-	if err := r.svc.ConfigureLNDHub(ctx, creds); err != nil {
 		return nil, err
 	}
 
 	return &generated.SetupLndHubWalletPayload{
 		Wallet: &generated.LndHubWallet{
-			APIURL:      creds.ConnectionURL,
-			Name:        input.Name,
-			BalanceSats: 10, // Use real balance.
+			APIURL:      lndhubWallet.Address,
+			Name:        lndhubWallet.Name,
+			BalanceSats: model.Satoshis(lndhubWallet.Balance),
+			ID:          lndhubWallet.ID,
 		},
 	}, nil
 }
 
 func (r *mutationResolver) SetDefaultWallet(ctx context.Context, input generated.SetDefaultWalletInput) (*generated.SetDefaultWalletPayload, error) {
-	panic(fmt.Errorf("not implemented"))
+	defaultWallet, err := r.svc.SetDefaultWallet(ctx, input.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &generated.SetDefaultWalletPayload{
+		Wallet: &generated.LndHubWallet{
+			APIURL:      defaultWallet.Address,
+			Name:        defaultWallet.Name,
+			BalanceSats: model.Satoshis(defaultWallet.Balance),
+			ID:          defaultWallet.ID,
+		},
+	}, nil
 }
 
 func (r *mutationResolver) UpdateWallet(ctx context.Context, input generated.UpdateWalletInput) (*generated.UpdateWalletPayload, error) {
@@ -49,11 +67,24 @@ func (r *mutationResolver) UpdateWallet(ctx context.Context, input generated.Upd
 }
 
 func (r *mutationResolver) DeleteWallet(ctx context.Context, input generated.DeleteWalletInput) (*generated.DeleteWalletPayload, error) {
-	panic(fmt.Errorf("not implemented"))
+	if err := r.svc.DeleteWallet(ctx, input.ID); err != nil {
+		return nil, err
+	}
+
+	return &generated.DeleteWalletPayload{ID: input.ID}, nil
 }
 
 func (r *mutationResolver) RequestInvoice(ctx context.Context, input generated.RequestInvoiceInput) (*generated.RequestInvoicePayload, error) {
-	panic(fmt.Errorf("not implemented"))
+	var amount int64
+	if err := input.AmountSats.UnmarshalGQL(amount); err != nil {
+		return nil, fmt.Errorf("couldn't unmarshal amount. %s", err.Error())
+	}
+
+	payReq, err := r.svc.RequestInvoice(ctx, input.AccountID, amount, input.PublicationID)
+	if err != nil {
+		return nil, err
+	}
+	return &generated.RequestInvoicePayload{PaymentRequest: model.LightningPaymentRequest(payReq)}, nil
 }
 
 func (r *mutationResolver) PayInvoice(ctx context.Context, input generated.PayInvoiceInput) (*generated.PayInvoicePayload, error) {

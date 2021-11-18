@@ -2454,6 +2454,41 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mintter/hastmtt@^0.1.0, @mintter/hastmtt@workspace:frontend/hast-mtt":
+  version: 0.0.0-use.local
+  resolution: "@mintter/hastmtt@workspace:frontend/hast-mtt"
+  dependencies:
+    "@mintter/mttast": ^0.1.0
+    "@mintter/mttast-builder": ^0.1.0
+    "@types/jest": ^27.0.3
+    "@types/node": ^16.11.8
+    "@types/unist": ^2.0.6
+    "@typescript-eslint/eslint-plugin": ^4.31.2
+    "@typescript-eslint/parser": ^4.31.2
+    deepmerge: ^4.2.2
+    eslint: ^7.32.0
+    eslint-config-prettier: ^8.3.0
+    hast-util-is-element: ^2.1.1
+    hast-util-to-text: ^3.1.1
+    hastscript: ^7.0.2
+    is-hidden: ^2.0.0
+    jest: ^27.3.1
+    nanoid: ^3.1.25
+    prettier: ^2.4.1
+    rehype-minify-whitespace: ^5.0.0
+    rehype-parse: ^8.0.3
+    rehype-preset-minify: ^6.0.0
+    rehype-sanitize: ^5.0.0
+    trim-trailing-lines: ^2.0.0
+    ts-jest: ^27.0.7
+    typescript: 4.4.4
+    unified: ^10.1.1
+    unist-builder: ^3.0.0
+    unist-util-remove-position: ^4.0.1
+    unist-util-visit: ^4.1.0
+  languageName: unknown
+  linkType: soft
+
 "@mintter/mttast-builder@^0.1.0, @mintter/mttast-builder@workspace:frontend/mttast-builder":
   version: 0.0.0-use.local
   resolution: "@mintter/mttast-builder@workspace:frontend/mttast-builder"
@@ -10441,6 +10476,23 @@ __metadata:
   version: 5.1.1
   resolution: "execa@npm:5.1.1"
   dependencies:
+    cross-spawn: ^7.0.0
+    get-stream: ^5.0.0
+    human-signals: ^1.1.1
+    is-stream: ^2.0.0
+    merge-stream: ^2.0.0
+    npm-run-path: ^4.0.0
+    onetime: ^5.1.0
+    signal-exit: ^3.0.2
+    strip-final-newline: ^2.0.0
+  checksum: e30d298934d9c52f90f3847704fd8224e849a081ab2b517bbc02f5f7732c24e56a21f14cb96a08256deffeb2d12b2b7cb7e2b014a12fb36f8d3357e06417ed55
+  languageName: node
+  linkType: hard
+
+"execa@npm:^5.0.0":
+  version: 5.1.1
+  resolution: "execa@npm:5.1.1"
+  dependencies:
     cross-spawn: ^7.0.3
     get-stream: ^6.0.0
     human-signals: ^2.1.0
@@ -14218,6 +14270,48 @@ __metadata:
   version: 2.0.0
   resolution: "jest-transform-stub@npm:2.0.0"
   checksum: c46134257e5fb047f5952e4a4a1339925dd009da15aa8d3310ba1d3e4d22266ed6c675cd18e58c9d5ca2246718d6cc8ff00ea6a4b6f3b2a6b285b6426f6ae8fe
+  languageName: node
+  linkType: hard
+
+"jest-serializer@npm:^27.0.6":
+  version: 27.0.6
+  resolution: "jest-serializer@npm:27.0.6"
+  dependencies:
+    "@types/node": "*"
+    graceful-fs: ^4.2.4
+  checksum: 1ed5f38e88010f258bd9557d7842a89741ff15bfc578328e8ae1985933406350b817cf5e3127773e3dbc755dbe2522195378f8b98284bcc32111a723294ebbea
+  languageName: node
+  linkType: hard
+
+"jest-snapshot@npm:^27.4.2":
+  version: 27.4.2
+  resolution: "jest-snapshot@npm:27.4.2"
+  dependencies:
+    "@babel/core": ^7.7.2
+    "@babel/generator": ^7.7.2
+    "@babel/parser": ^7.7.2
+    "@babel/plugin-syntax-typescript": ^7.7.2
+    "@babel/traverse": ^7.7.2
+    "@babel/types": ^7.0.0
+    "@jest/transform": ^27.4.2
+    "@jest/types": ^27.4.2
+    "@types/babel__traverse": ^7.0.4
+    "@types/prettier": ^2.1.5
+    babel-preset-current-node-syntax: ^1.0.0
+    chalk: ^4.0.0
+    expect: ^27.4.2
+    graceful-fs: ^4.2.4
+    jest-diff: ^27.4.2
+    jest-get-type: ^27.4.0
+    jest-haste-map: ^27.4.2
+    jest-matcher-utils: ^27.4.2
+    jest-message-util: ^27.4.2
+    jest-resolve: ^27.4.2
+    jest-util: ^27.4.2
+    natural-compare: ^1.4.0
+    pretty-format: ^27.4.2
+    semver: ^7.3.2
+  checksum: 59e1c3d3477b4dc4a40bd7cc027a4cb33f848b896f9194efb00ca778ca2e82858d9ceba96f728cb4ca05ede9a9ac7cd5359db25a2b2e8044c0196d53f7116862
   languageName: node
   linkType: hard
 
@@ -18044,6 +18138,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-router-dom@npm:^6.0.0":
+  version: 6.0.2
+  resolution: "react-router-dom@npm:6.0.2"
+  dependencies:
+    history: ^5.1.0
+    react-router: 6.0.2
+  peerDependencies:
+    react: ">=16.8"
+    react-dom: ">=16.8"
+  checksum: d3680939a4fac286f8df028c1fabe5626567ba065b2029b1cc4ad64fe9444aeba186d0e5e765563fc36ea868e7d17e02fb098f2ebc0b1c70212a8470a4b58ad6
+  languageName: node
+  linkType: hard
+
+"react-router@npm:6.0.2, react-router@npm:^6.0.0":
+  version: 6.0.2
+  resolution: "react-router@npm:6.0.2"
+  dependencies:
+    history: ^5.1.0
+  peerDependencies:
+    react: ">=16.8"
+  checksum: 9d4f3a8002a90f38be022c6740e11e9bb481e60ad04c5a0ce2d6dbe685059c09b3037c45414d6e7e40eb97308842380413cfb93c5cdcb992e7ee0c50b4f7fcaa
+  languageName: node
+  linkType: hard
+
 "react-sizeme@npm:^3.0.1":
   version: 3.0.2
   resolution: "react-sizeme@npm:3.0.2"
@@ -19710,13 +19828,6 @@ __metadata:
   version: 3.0.0
   resolution: "slash@npm:3.0.0"
   checksum: 94a93fff615f25a999ad4b83c9d5e257a7280c90a32a7cb8b4a87996e4babf322e469c42b7f649fd5796edd8687652f3fb452a86dc97a816f01113183393f11c
-  languageName: node
-  linkType: hard
-
-"slash@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "slash@npm:4.0.0"
-  checksum: da8e4af73712253acd21b7853b7e0dbba776b786e82b010a5bfc8b5051a1db38ed8aba8e1e8f400dd2c9f373be91eb1c42b66e91abb407ff42b10feece5e1d2d
   languageName: node
   linkType: hard
 

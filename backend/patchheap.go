@@ -35,7 +35,6 @@ func (h patchHeap) Less(i, j int) bool {
 		}
 
 		return ii.LamportTime < jj.LamportTime
-
 	}
 	return h[i].Value().Less(h[j].Value())
 }

@@ -225,14 +225,11 @@ export const CreateDraftRequest = {
 
   fromJSON(object: any): CreateDraftRequest {
     const message = { ...baseCreateDraftRequest } as CreateDraftRequest;
-    if (
+    message.existingDocumentId =
       object.existingDocumentId !== undefined &&
       object.existingDocumentId !== null
-    ) {
-      message.existingDocumentId = String(object.existingDocumentId);
-    } else {
-      message.existingDocumentId = "";
-    }
+        ? String(object.existingDocumentId)
+        : "";
     return message;
   },
 
@@ -243,16 +240,11 @@ export const CreateDraftRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<CreateDraftRequest>): CreateDraftRequest {
+  fromPartial<I extends Exact<DeepPartial<CreateDraftRequest>, I>>(
+    object: I
+  ): CreateDraftRequest {
     const message = { ...baseCreateDraftRequest } as CreateDraftRequest;
-    if (
-      object.existingDocumentId !== undefined &&
-      object.existingDocumentId !== null
-    ) {
-      message.existingDocumentId = object.existingDocumentId;
-    } else {
-      message.existingDocumentId = "";
-    }
+    message.existingDocumentId = object.existingDocumentId ?? "";
     return message;
   },
 };
@@ -290,11 +282,10 @@ export const DeleteDraftRequest = {
 
   fromJSON(object: any): DeleteDraftRequest {
     const message = { ...baseDeleteDraftRequest } as DeleteDraftRequest;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = String(object.documentId);
-    } else {
-      message.documentId = "";
-    }
+    message.documentId =
+      object.documentId !== undefined && object.documentId !== null
+        ? String(object.documentId)
+        : "";
     return message;
   },
 
@@ -304,13 +295,11 @@ export const DeleteDraftRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<DeleteDraftRequest>): DeleteDraftRequest {
+  fromPartial<I extends Exact<DeepPartial<DeleteDraftRequest>, I>>(
+    object: I
+  ): DeleteDraftRequest {
     const message = { ...baseDeleteDraftRequest } as DeleteDraftRequest;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = object.documentId;
-    } else {
-      message.documentId = "";
-    }
+    message.documentId = object.documentId ?? "";
     return message;
   },
 };
@@ -348,11 +337,10 @@ export const GetDraftRequest = {
 
   fromJSON(object: any): GetDraftRequest {
     const message = { ...baseGetDraftRequest } as GetDraftRequest;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = String(object.documentId);
-    } else {
-      message.documentId = "";
-    }
+    message.documentId =
+      object.documentId !== undefined && object.documentId !== null
+        ? String(object.documentId)
+        : "";
     return message;
   },
 
@@ -362,13 +350,11 @@ export const GetDraftRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<GetDraftRequest>): GetDraftRequest {
+  fromPartial<I extends Exact<DeepPartial<GetDraftRequest>, I>>(
+    object: I
+  ): GetDraftRequest {
     const message = { ...baseGetDraftRequest } as GetDraftRequest;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = object.documentId;
-    } else {
-      message.documentId = "";
-    }
+    message.documentId = object.documentId ?? "";
     return message;
   },
 };
@@ -406,11 +392,10 @@ export const UpdateDraftRequest = {
 
   fromJSON(object: any): UpdateDraftRequest {
     const message = { ...baseUpdateDraftRequest } as UpdateDraftRequest;
-    if (object.document !== undefined && object.document !== null) {
-      message.document = Document.fromJSON(object.document);
-    } else {
-      message.document = undefined;
-    }
+    message.document =
+      object.document !== undefined && object.document !== null
+        ? Document.fromJSON(object.document)
+        : undefined;
     return message;
   },
 
@@ -423,13 +408,14 @@ export const UpdateDraftRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<UpdateDraftRequest>): UpdateDraftRequest {
+  fromPartial<I extends Exact<DeepPartial<UpdateDraftRequest>, I>>(
+    object: I
+  ): UpdateDraftRequest {
     const message = { ...baseUpdateDraftRequest } as UpdateDraftRequest;
-    if (object.document !== undefined && object.document !== null) {
-      message.document = Document.fromPartial(object.document);
-    } else {
-      message.document = undefined;
-    }
+    message.document =
+      object.document !== undefined && object.document !== null
+        ? Document.fromPartial(object.document)
+        : undefined;
     return message;
   },
 };
@@ -473,16 +459,14 @@ export const ListDraftsRequest = {
 
   fromJSON(object: any): ListDraftsRequest {
     const message = { ...baseListDraftsRequest } as ListDraftsRequest;
-    if (object.pageSize !== undefined && object.pageSize !== null) {
-      message.pageSize = Number(object.pageSize);
-    } else {
-      message.pageSize = 0;
-    }
-    if (object.pageToken !== undefined && object.pageToken !== null) {
-      message.pageToken = String(object.pageToken);
-    } else {
-      message.pageToken = "";
-    }
+    message.pageSize =
+      object.pageSize !== undefined && object.pageSize !== null
+        ? Number(object.pageSize)
+        : 0;
+    message.pageToken =
+      object.pageToken !== undefined && object.pageToken !== null
+        ? String(object.pageToken)
+        : "";
     return message;
   },
 
@@ -493,18 +477,12 @@ export const ListDraftsRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<ListDraftsRequest>): ListDraftsRequest {
+  fromPartial<I extends Exact<DeepPartial<ListDraftsRequest>, I>>(
+    object: I
+  ): ListDraftsRequest {
     const message = { ...baseListDraftsRequest } as ListDraftsRequest;
-    if (object.pageSize !== undefined && object.pageSize !== null) {
-      message.pageSize = object.pageSize;
-    } else {
-      message.pageSize = 0;
-    }
-    if (object.pageToken !== undefined && object.pageToken !== null) {
-      message.pageToken = object.pageToken;
-    } else {
-      message.pageToken = "";
-    }
+    message.pageSize = object.pageSize ?? 0;
+    message.pageToken = object.pageToken ?? "";
     return message;
   },
 };
@@ -549,17 +527,13 @@ export const ListDraftsResponse = {
 
   fromJSON(object: any): ListDraftsResponse {
     const message = { ...baseListDraftsResponse } as ListDraftsResponse;
-    message.documents = [];
-    if (object.documents !== undefined && object.documents !== null) {
-      for (const e of object.documents) {
-        message.documents.push(Document.fromJSON(e));
-      }
-    }
-    if (object.nextPageToken !== undefined && object.nextPageToken !== null) {
-      message.nextPageToken = String(object.nextPageToken);
-    } else {
-      message.nextPageToken = "";
-    }
+    message.documents = (object.documents ?? []).map((e: any) =>
+      Document.fromJSON(e)
+    );
+    message.nextPageToken =
+      object.nextPageToken !== undefined && object.nextPageToken !== null
+        ? String(object.nextPageToken)
+        : "";
     return message;
   },
 
@@ -577,19 +551,13 @@ export const ListDraftsResponse = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<ListDraftsResponse>): ListDraftsResponse {
+  fromPartial<I extends Exact<DeepPartial<ListDraftsResponse>, I>>(
+    object: I
+  ): ListDraftsResponse {
     const message = { ...baseListDraftsResponse } as ListDraftsResponse;
-    message.documents = [];
-    if (object.documents !== undefined && object.documents !== null) {
-      for (const e of object.documents) {
-        message.documents.push(Document.fromPartial(e));
-      }
-    }
-    if (object.nextPageToken !== undefined && object.nextPageToken !== null) {
-      message.nextPageToken = object.nextPageToken;
-    } else {
-      message.nextPageToken = "";
-    }
+    message.documents =
+      object.documents?.map((e) => Document.fromPartial(e)) || [];
+    message.nextPageToken = object.nextPageToken ?? "";
     return message;
   },
 };
@@ -627,11 +595,10 @@ export const PublishDraftRequest = {
 
   fromJSON(object: any): PublishDraftRequest {
     const message = { ...basePublishDraftRequest } as PublishDraftRequest;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = String(object.documentId);
-    } else {
-      message.documentId = "";
-    }
+    message.documentId =
+      object.documentId !== undefined && object.documentId !== null
+        ? String(object.documentId)
+        : "";
     return message;
   },
 
@@ -641,13 +608,11 @@ export const PublishDraftRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<PublishDraftRequest>): PublishDraftRequest {
+  fromPartial<I extends Exact<DeepPartial<PublishDraftRequest>, I>>(
+    object: I
+  ): PublishDraftRequest {
     const message = { ...basePublishDraftRequest } as PublishDraftRequest;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = object.documentId;
-    } else {
-      message.documentId = "";
-    }
+    message.documentId = object.documentId ?? "";
     return message;
   },
 };
@@ -694,16 +659,14 @@ export const GetPublicationRequest = {
 
   fromJSON(object: any): GetPublicationRequest {
     const message = { ...baseGetPublicationRequest } as GetPublicationRequest;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = String(object.documentId);
-    } else {
-      message.documentId = "";
-    }
-    if (object.version !== undefined && object.version !== null) {
-      message.version = String(object.version);
-    } else {
-      message.version = "";
-    }
+    message.documentId =
+      object.documentId !== undefined && object.documentId !== null
+        ? String(object.documentId)
+        : "";
+    message.version =
+      object.version !== undefined && object.version !== null
+        ? String(object.version)
+        : "";
     return message;
   },
 
@@ -714,20 +677,12 @@ export const GetPublicationRequest = {
     return obj;
   },
 
-  fromPartial(
-    object: DeepPartial<GetPublicationRequest>
+  fromPartial<I extends Exact<DeepPartial<GetPublicationRequest>, I>>(
+    object: I
   ): GetPublicationRequest {
     const message = { ...baseGetPublicationRequest } as GetPublicationRequest;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = object.documentId;
-    } else {
-      message.documentId = "";
-    }
-    if (object.version !== undefined && object.version !== null) {
-      message.version = object.version;
-    } else {
-      message.version = "";
-    }
+    message.documentId = object.documentId ?? "";
+    message.version = object.version ?? "";
     return message;
   },
 };
@@ -772,11 +727,10 @@ export const DeletePublicationRequest = {
     const message = {
       ...baseDeletePublicationRequest,
     } as DeletePublicationRequest;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = String(object.documentId);
-    } else {
-      message.documentId = "";
-    }
+    message.documentId =
+      object.documentId !== undefined && object.documentId !== null
+        ? String(object.documentId)
+        : "";
     return message;
   },
 
@@ -786,17 +740,13 @@ export const DeletePublicationRequest = {
     return obj;
   },
 
-  fromPartial(
-    object: DeepPartial<DeletePublicationRequest>
+  fromPartial<I extends Exact<DeepPartial<DeletePublicationRequest>, I>>(
+    object: I
   ): DeletePublicationRequest {
     const message = {
       ...baseDeletePublicationRequest,
     } as DeletePublicationRequest;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = object.documentId;
-    } else {
-      message.documentId = "";
-    }
+    message.documentId = object.documentId ?? "";
     return message;
   },
 };
@@ -847,16 +797,14 @@ export const ListPublicationsRequest = {
     const message = {
       ...baseListPublicationsRequest,
     } as ListPublicationsRequest;
-    if (object.pageSize !== undefined && object.pageSize !== null) {
-      message.pageSize = Number(object.pageSize);
-    } else {
-      message.pageSize = 0;
-    }
-    if (object.pageToken !== undefined && object.pageToken !== null) {
-      message.pageToken = String(object.pageToken);
-    } else {
-      message.pageToken = "";
-    }
+    message.pageSize =
+      object.pageSize !== undefined && object.pageSize !== null
+        ? Number(object.pageSize)
+        : 0;
+    message.pageToken =
+      object.pageToken !== undefined && object.pageToken !== null
+        ? String(object.pageToken)
+        : "";
     return message;
   },
 
@@ -867,22 +815,14 @@ export const ListPublicationsRequest = {
     return obj;
   },
 
-  fromPartial(
-    object: DeepPartial<ListPublicationsRequest>
+  fromPartial<I extends Exact<DeepPartial<ListPublicationsRequest>, I>>(
+    object: I
   ): ListPublicationsRequest {
     const message = {
       ...baseListPublicationsRequest,
     } as ListPublicationsRequest;
-    if (object.pageSize !== undefined && object.pageSize !== null) {
-      message.pageSize = object.pageSize;
-    } else {
-      message.pageSize = 0;
-    }
-    if (object.pageToken !== undefined && object.pageToken !== null) {
-      message.pageToken = object.pageToken;
-    } else {
-      message.pageToken = "";
-    }
+    message.pageSize = object.pageSize ?? 0;
+    message.pageToken = object.pageToken ?? "";
     return message;
   },
 };
@@ -936,17 +876,13 @@ export const ListPublicationsResponse = {
     const message = {
       ...baseListPublicationsResponse,
     } as ListPublicationsResponse;
-    message.publications = [];
-    if (object.publications !== undefined && object.publications !== null) {
-      for (const e of object.publications) {
-        message.publications.push(Publication.fromJSON(e));
-      }
-    }
-    if (object.nextPageToken !== undefined && object.nextPageToken !== null) {
-      message.nextPageToken = String(object.nextPageToken);
-    } else {
-      message.nextPageToken = "";
-    }
+    message.publications = (object.publications ?? []).map((e: any) =>
+      Publication.fromJSON(e)
+    );
+    message.nextPageToken =
+      object.nextPageToken !== undefined && object.nextPageToken !== null
+        ? String(object.nextPageToken)
+        : "";
     return message;
   },
 
@@ -964,23 +900,15 @@ export const ListPublicationsResponse = {
     return obj;
   },
 
-  fromPartial(
-    object: DeepPartial<ListPublicationsResponse>
+  fromPartial<I extends Exact<DeepPartial<ListPublicationsResponse>, I>>(
+    object: I
   ): ListPublicationsResponse {
     const message = {
       ...baseListPublicationsResponse,
     } as ListPublicationsResponse;
-    message.publications = [];
-    if (object.publications !== undefined && object.publications !== null) {
-      for (const e of object.publications) {
-        message.publications.push(Publication.fromPartial(e));
-      }
-    }
-    if (object.nextPageToken !== undefined && object.nextPageToken !== null) {
-      message.nextPageToken = object.nextPageToken;
-    } else {
-      message.nextPageToken = "";
-    }
+    message.publications =
+      object.publications?.map((e) => Publication.fromPartial(e)) || [];
+    message.nextPageToken = object.nextPageToken ?? "";
     return message;
   },
 };
@@ -1030,21 +958,18 @@ export const Publication = {
 
   fromJSON(object: any): Publication {
     const message = { ...basePublication } as Publication;
-    if (object.version !== undefined && object.version !== null) {
-      message.version = String(object.version);
-    } else {
-      message.version = "";
-    }
-    if (object.document !== undefined && object.document !== null) {
-      message.document = Document.fromJSON(object.document);
-    } else {
-      message.document = undefined;
-    }
-    if (object.latestVersion !== undefined && object.latestVersion !== null) {
-      message.latestVersion = String(object.latestVersion);
-    } else {
-      message.latestVersion = "";
-    }
+    message.version =
+      object.version !== undefined && object.version !== null
+        ? String(object.version)
+        : "";
+    message.document =
+      object.document !== undefined && object.document !== null
+        ? Document.fromJSON(object.document)
+        : undefined;
+    message.latestVersion =
+      object.latestVersion !== undefined && object.latestVersion !== null
+        ? String(object.latestVersion)
+        : "";
     return message;
   },
 
@@ -1060,23 +985,16 @@ export const Publication = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Publication>): Publication {
+  fromPartial<I extends Exact<DeepPartial<Publication>, I>>(
+    object: I
+  ): Publication {
     const message = { ...basePublication } as Publication;
-    if (object.version !== undefined && object.version !== null) {
-      message.version = object.version;
-    } else {
-      message.version = "";
-    }
-    if (object.document !== undefined && object.document !== null) {
-      message.document = Document.fromPartial(object.document);
-    } else {
-      message.document = undefined;
-    }
-    if (object.latestVersion !== undefined && object.latestVersion !== null) {
-      message.latestVersion = object.latestVersion;
-    } else {
-      message.latestVersion = "";
-    }
+    message.version = object.version ?? "";
+    message.document =
+      object.document !== undefined && object.document !== null
+        ? Document.fromPartial(object.document)
+        : undefined;
+    message.latestVersion = object.latestVersion ?? "";
     return message;
   },
 };
@@ -1177,46 +1095,36 @@ export const Document = {
 
   fromJSON(object: any): Document {
     const message = { ...baseDocument } as Document;
-    if (object.id !== undefined && object.id !== null) {
-      message.id = String(object.id);
-    } else {
-      message.id = "";
-    }
-    if (object.title !== undefined && object.title !== null) {
-      message.title = String(object.title);
-    } else {
-      message.title = "";
-    }
-    if (object.subtitle !== undefined && object.subtitle !== null) {
-      message.subtitle = String(object.subtitle);
-    } else {
-      message.subtitle = "";
-    }
-    if (object.author !== undefined && object.author !== null) {
-      message.author = String(object.author);
-    } else {
-      message.author = "";
-    }
-    if (object.content !== undefined && object.content !== null) {
-      message.content = String(object.content);
-    } else {
-      message.content = "";
-    }
-    if (object.createTime !== undefined && object.createTime !== null) {
-      message.createTime = fromJsonTimestamp(object.createTime);
-    } else {
-      message.createTime = undefined;
-    }
-    if (object.updateTime !== undefined && object.updateTime !== null) {
-      message.updateTime = fromJsonTimestamp(object.updateTime);
-    } else {
-      message.updateTime = undefined;
-    }
-    if (object.publishTime !== undefined && object.publishTime !== null) {
-      message.publishTime = fromJsonTimestamp(object.publishTime);
-    } else {
-      message.publishTime = undefined;
-    }
+    message.id =
+      object.id !== undefined && object.id !== null ? String(object.id) : "";
+    message.title =
+      object.title !== undefined && object.title !== null
+        ? String(object.title)
+        : "";
+    message.subtitle =
+      object.subtitle !== undefined && object.subtitle !== null
+        ? String(object.subtitle)
+        : "";
+    message.author =
+      object.author !== undefined && object.author !== null
+        ? String(object.author)
+        : "";
+    message.content =
+      object.content !== undefined && object.content !== null
+        ? String(object.content)
+        : "";
+    message.createTime =
+      object.createTime !== undefined && object.createTime !== null
+        ? fromJsonTimestamp(object.createTime)
+        : undefined;
+    message.updateTime =
+      object.updateTime !== undefined && object.updateTime !== null
+        ? fromJsonTimestamp(object.updateTime)
+        : undefined;
+    message.publishTime =
+      object.publishTime !== undefined && object.publishTime !== null
+        ? fromJsonTimestamp(object.publishTime)
+        : undefined;
     return message;
   },
 
@@ -1236,48 +1144,16 @@ export const Document = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Document>): Document {
+  fromPartial<I extends Exact<DeepPartial<Document>, I>>(object: I): Document {
     const message = { ...baseDocument } as Document;
-    if (object.id !== undefined && object.id !== null) {
-      message.id = object.id;
-    } else {
-      message.id = "";
-    }
-    if (object.title !== undefined && object.title !== null) {
-      message.title = object.title;
-    } else {
-      message.title = "";
-    }
-    if (object.subtitle !== undefined && object.subtitle !== null) {
-      message.subtitle = object.subtitle;
-    } else {
-      message.subtitle = "";
-    }
-    if (object.author !== undefined && object.author !== null) {
-      message.author = object.author;
-    } else {
-      message.author = "";
-    }
-    if (object.content !== undefined && object.content !== null) {
-      message.content = object.content;
-    } else {
-      message.content = "";
-    }
-    if (object.createTime !== undefined && object.createTime !== null) {
-      message.createTime = object.createTime;
-    } else {
-      message.createTime = undefined;
-    }
-    if (object.updateTime !== undefined && object.updateTime !== null) {
-      message.updateTime = object.updateTime;
-    } else {
-      message.updateTime = undefined;
-    }
-    if (object.publishTime !== undefined && object.publishTime !== null) {
-      message.publishTime = object.publishTime;
-    } else {
-      message.publishTime = undefined;
-    }
+    message.id = object.id ?? "";
+    message.title = object.title ?? "";
+    message.subtitle = object.subtitle ?? "";
+    message.author = object.author ?? "";
+    message.content = object.content ?? "";
+    message.createTime = object.createTime ?? undefined;
+    message.updateTime = object.updateTime ?? undefined;
+    message.publishTime = object.publishTime ?? undefined;
     return message;
   },
 };
@@ -1324,16 +1200,14 @@ export const ListCitationsRequest = {
 
   fromJSON(object: any): ListCitationsRequest {
     const message = { ...baseListCitationsRequest } as ListCitationsRequest;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = String(object.documentId);
-    } else {
-      message.documentId = "";
-    }
-    if (object.depth !== undefined && object.depth !== null) {
-      message.depth = Number(object.depth);
-    } else {
-      message.depth = 0;
-    }
+    message.documentId =
+      object.documentId !== undefined && object.documentId !== null
+        ? String(object.documentId)
+        : "";
+    message.depth =
+      object.depth !== undefined && object.depth !== null
+        ? Number(object.depth)
+        : 0;
     return message;
   },
 
@@ -1344,18 +1218,12 @@ export const ListCitationsRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<ListCitationsRequest>): ListCitationsRequest {
+  fromPartial<I extends Exact<DeepPartial<ListCitationsRequest>, I>>(
+    object: I
+  ): ListCitationsRequest {
     const message = { ...baseListCitationsRequest } as ListCitationsRequest;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = object.documentId;
-    } else {
-      message.documentId = "";
-    }
-    if (object.depth !== undefined && object.depth !== null) {
-      message.depth = object.depth;
-    } else {
-      message.depth = 0;
-    }
+    message.documentId = object.documentId ?? "";
+    message.depth = object.depth ?? 0;
     return message;
   },
 };
@@ -1397,12 +1265,7 @@ export const ListCitationsResponse = {
 
   fromJSON(object: any): ListCitationsResponse {
     const message = { ...baseListCitationsResponse } as ListCitationsResponse;
-    message.links = [];
-    if (object.links !== undefined && object.links !== null) {
-      for (const e of object.links) {
-        message.links.push(Link.fromJSON(e));
-      }
-    }
+    message.links = (object.links ?? []).map((e: any) => Link.fromJSON(e));
     return message;
   },
 
@@ -1416,16 +1279,11 @@ export const ListCitationsResponse = {
     return obj;
   },
 
-  fromPartial(
-    object: DeepPartial<ListCitationsResponse>
+  fromPartial<I extends Exact<DeepPartial<ListCitationsResponse>, I>>(
+    object: I
   ): ListCitationsResponse {
     const message = { ...baseListCitationsResponse } as ListCitationsResponse;
-    message.links = [];
-    if (object.links !== undefined && object.links !== null) {
-      for (const e of object.links) {
-        message.links.push(Link.fromPartial(e));
-      }
-    }
+    message.links = object.links?.map((e) => Link.fromPartial(e)) || [];
     return message;
   },
 };
@@ -1466,16 +1324,14 @@ export const Link = {
 
   fromJSON(object: any): Link {
     const message = { ...baseLink } as Link;
-    if (object.source !== undefined && object.source !== null) {
-      message.source = LinkNode.fromJSON(object.source);
-    } else {
-      message.source = undefined;
-    }
-    if (object.target !== undefined && object.target !== null) {
-      message.target = LinkNode.fromJSON(object.target);
-    } else {
-      message.target = undefined;
-    }
+    message.source =
+      object.source !== undefined && object.source !== null
+        ? LinkNode.fromJSON(object.source)
+        : undefined;
+    message.target =
+      object.target !== undefined && object.target !== null
+        ? LinkNode.fromJSON(object.target)
+        : undefined;
     return message;
   },
 
@@ -1492,18 +1348,16 @@ export const Link = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Link>): Link {
+  fromPartial<I extends Exact<DeepPartial<Link>, I>>(object: I): Link {
     const message = { ...baseLink } as Link;
-    if (object.source !== undefined && object.source !== null) {
-      message.source = LinkNode.fromPartial(object.source);
-    } else {
-      message.source = undefined;
-    }
-    if (object.target !== undefined && object.target !== null) {
-      message.target = LinkNode.fromPartial(object.target);
-    } else {
-      message.target = undefined;
-    }
+    message.source =
+      object.source !== undefined && object.source !== null
+        ? LinkNode.fromPartial(object.source)
+        : undefined;
+    message.target =
+      object.target !== undefined && object.target !== null
+        ? LinkNode.fromPartial(object.target)
+        : undefined;
     return message;
   },
 };
@@ -1553,21 +1407,18 @@ export const LinkNode = {
 
   fromJSON(object: any): LinkNode {
     const message = { ...baseLinkNode } as LinkNode;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = String(object.documentId);
-    } else {
-      message.documentId = "";
-    }
-    if (object.version !== undefined && object.version !== null) {
-      message.version = String(object.version);
-    } else {
-      message.version = "";
-    }
-    if (object.blockId !== undefined && object.blockId !== null) {
-      message.blockId = String(object.blockId);
-    } else {
-      message.blockId = "";
-    }
+    message.documentId =
+      object.documentId !== undefined && object.documentId !== null
+        ? String(object.documentId)
+        : "";
+    message.version =
+      object.version !== undefined && object.version !== null
+        ? String(object.version)
+        : "";
+    message.blockId =
+      object.blockId !== undefined && object.blockId !== null
+        ? String(object.blockId)
+        : "";
     return message;
   },
 
@@ -1579,23 +1430,11 @@ export const LinkNode = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<LinkNode>): LinkNode {
+  fromPartial<I extends Exact<DeepPartial<LinkNode>, I>>(object: I): LinkNode {
     const message = { ...baseLinkNode } as LinkNode;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = object.documentId;
-    } else {
-      message.documentId = "";
-    }
-    if (object.version !== undefined && object.version !== null) {
-      message.version = object.version;
-    } else {
-      message.version = "";
-    }
-    if (object.blockId !== undefined && object.blockId !== null) {
-      message.blockId = object.blockId;
-    } else {
-      message.blockId = "";
-    }
+    message.documentId = object.documentId ?? "";
+    message.version = object.version ?? "";
+    message.blockId = object.blockId ?? "";
     return message;
   },
 };
@@ -1649,21 +1488,18 @@ export const DocumentPublished = {
 
   fromJSON(object: any): DocumentPublished {
     const message = { ...baseDocumentPublished } as DocumentPublished;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = String(object.documentId);
-    } else {
-      message.documentId = "";
-    }
-    if (object.title !== undefined && object.title !== null) {
-      message.title = String(object.title);
-    } else {
-      message.title = "";
-    }
-    if (object.subtitle !== undefined && object.subtitle !== null) {
-      message.subtitle = String(object.subtitle);
-    } else {
-      message.subtitle = "";
-    }
+    message.documentId =
+      object.documentId !== undefined && object.documentId !== null
+        ? String(object.documentId)
+        : "";
+    message.title =
+      object.title !== undefined && object.title !== null
+        ? String(object.title)
+        : "";
+    message.subtitle =
+      object.subtitle !== undefined && object.subtitle !== null
+        ? String(object.subtitle)
+        : "";
     return message;
   },
 
@@ -1675,23 +1511,13 @@ export const DocumentPublished = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<DocumentPublished>): DocumentPublished {
+  fromPartial<I extends Exact<DeepPartial<DocumentPublished>, I>>(
+    object: I
+  ): DocumentPublished {
     const message = { ...baseDocumentPublished } as DocumentPublished;
-    if (object.documentId !== undefined && object.documentId !== null) {
-      message.documentId = object.documentId;
-    } else {
-      message.documentId = "";
-    }
-    if (object.title !== undefined && object.title !== null) {
-      message.title = object.title;
-    } else {
-      message.title = "";
-    }
-    if (object.subtitle !== undefined && object.subtitle !== null) {
-      message.subtitle = object.subtitle;
-    } else {
-      message.subtitle = "";
-    }
+    message.documentId = object.documentId ?? "";
+    message.title = object.title ?? "";
+    message.subtitle = object.subtitle ?? "";
     return message;
   },
 };
@@ -2214,6 +2040,7 @@ type Builtin =
   | number
   | boolean
   | undefined;
+
 type DeepPartial<T> = T extends Builtin
   ? T
   : T extends Array<infer U>
@@ -2223,6 +2050,14 @@ type DeepPartial<T> = T extends Builtin
   : T extends {}
   ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
+
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+type Exact<P, I extends P> = P extends Builtin
+  ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & Record<
+        Exclude<keyof I, KeysOfUnion<P>>,
+        never
+      >;
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000;

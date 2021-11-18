@@ -1,29 +1,29 @@
 // import 'show-keys'
-import {Box} from '@mintter/ui/box'
-import {Text} from '@mintter/ui/text'
+import { Box } from '@mintter/ui/box'
+import { Text } from '@mintter/ui/text'
 // import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
-import {useActor} from '@xstate/react'
-import {getDateFormat} from 'frontend/app/src/utils/get-format-date'
+import { useActor } from '@xstate/react'
+import { getDateFormat } from 'frontend/app/src/utils/get-format-date'
 import {
   FormEvent,
   // useLayoutEffect,
   useRef,
-  useState,
+  useState
 } from 'react'
 import toastFactory from 'react-hot-toast'
-import {useQueryClient} from 'react-query'
-import {useLocation} from 'wouter'
-import {useSidepanel} from '../components/sidepanel'
-import {useEnableSidepanel} from '../components/sidepanel/sidepanel'
-import {Textarea} from '../components/textarea'
-import {Editor, useEditorDraft} from '../editor'
-import type {DraftEditorMachineContext, DraftEditorMachineState} from '../editor/use-editor-draft'
+import { useQueryClient } from 'react-query'
+import { useLocation } from 'wouter'
+import { useSidepanel } from '../components/sidepanel'
+import { useEnableSidepanel } from '../components/sidepanel/sidepanel'
+import { Textarea } from '../components/textarea'
+import { Editor, useEditorDraft } from '../editor'
+import type { DraftEditorMachineContext, DraftEditorMachineState } from '../editor/use-editor-draft'
 
 type EditorPageProps = {
-  params?: {docId: string}
+  params?: { docId: string }
 }
 
-export default function EditorPage({params}: EditorPageProps) {
+export default function EditorPage({ params }: EditorPageProps) {
   const client = useQueryClient()
   const [, setLocation] = useLocation()
   const toast = useRef('')
@@ -34,9 +34,9 @@ export default function EditorPage({params}: EditorPageProps) {
     documentId: params!.docId,
     afterPublish: (context: DraftEditorMachineContext) => {
       if (!toast.current) {
-        toast.current = toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000})
+        toast.current = toastFactory.success('Draft Published!', { position: 'top-center', duration: 2000 })
       } else {
-        toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000, id: toast.current})
+        toastFactory.success('Draft Published!', { position: 'top-center', duration: 2000, id: toast.current })
       }
 
       setLocation(`/p/${context.localDraft?.id}`, {
@@ -47,12 +47,12 @@ export default function EditorPage({params}: EditorPageProps) {
     loadAnnotations: (context: DraftEditorMachineContext) => {
       if (!context.localDraft) return
 
-      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: context.localDraft.content})
+      sidepanelSend({ type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: context.localDraft.content })
     },
     client,
   })
 
-  const {context} = state
+  const { context } = state
 
   // useLayoutEffect(() => {
   //   if (context.localDraft?.title) {
@@ -90,9 +90,9 @@ export default function EditorPage({params}: EditorPageProps) {
           {/* <Button onClick={() => send('PUBLISH')} size="2" shape="pill" variant="outlined">
             Publish
           </Button> */}
-          <Box css={{width: '$full', maxWidth: '64ch'}}>
+          <Box css={{ width: '$full', maxWidth: '64ch' }}>
             <Textarea
-              css={{fontSize: '$4', color: '$text-muted'}}
+              css={{ fontSize: '$4', color: '$text-muted' }}
               data-testid="editor_title"
               name="title"
               placeholder="Document title"
@@ -147,7 +147,7 @@ export default function EditorPage({params}: EditorPageProps) {
                   }}
                 />
 
-                <Box css={{marginTop: 40}}>
+                <Box css={{ marginTop: 40 }}>
                   <button type="button" onClick={() => setVisible((v) => !v)}>
                     toggle Value
                   </button>
@@ -219,7 +219,7 @@ export default function EditorPage({params}: EditorPageProps) {
   return null
 }
 
-function EditorStatus({state}: {state: DraftEditorMachineState}) {
+function EditorStatus({ state }: { state: DraftEditorMachineState }) {
   return (
     <Box
       css={{
@@ -237,20 +237,20 @@ function EditorStatus({state}: {state: DraftEditorMachineState}) {
           backgroundColor: state.matches('editing.idle')
             ? '$success-softer'
             : state.matches('editing.debouncing')
-            ? '$background-muted'
-            : state.matches('editing.saving')
-            ? '$warning-soft'
-            : '$danger-soft',
+              ? '$background-muted'
+              : state.matches('editing.saving')
+                ? '$warning-soft'
+                : '$danger-soft',
         }}
       />
       <Text color="muted" size="1">
         {state.matches('editing.idle')
           ? 'saved'
           : state.matches('editing.debouncing')
-          ? 'unsaved'
-          : state.matches('editing.saving')
-          ? 'saving...'
-          : ''}
+            ? 'unsaved'
+            : state.matches('editing.saving')
+              ? 'saving...'
+              : ''}
       </Text>
     </Box>
   )

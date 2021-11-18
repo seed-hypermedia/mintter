@@ -1,13 +1,13 @@
-import {isFlowContent} from '@mintter/mttast'
-import {isHidden} from 'is-hidden'
+import { isFlowContent } from '@mintter/mttast'
+import { isHidden } from 'is-hidden'
 import fs from 'node:fs'
 import path from 'node:path'
 import rehypeParse from 'rehype-parse'
 import sanitize from 'rehype-sanitize'
-import {unified} from 'unified'
-import {removePosition} from 'unist-util-remove-position'
-import {visit} from 'unist-util-visit'
-import {sanitizeSchema, toMttast} from '../src'
+import { unified } from 'unified'
+import { removePosition } from 'unist-util-remove-position'
+import { visit } from 'unist-util-visit'
+import { sanitizeSchema, toMttast } from '../src'
 import * as expectations from './expectations'
 
 const fixtures = path.join('test', 'fixtures')
@@ -26,7 +26,7 @@ function check(name: string) {
     let config
     try {
       config = JSON.parse(String(fs.readFileSync(path.join(fixtures, name, 'index.json'))))
-    } catch {}
+    } catch { }
 
     let tree = removePosition(processor.runSync(processor.parse(input)), true)
 

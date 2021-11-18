@@ -1,13 +1,13 @@
-import type {StaticParagraph as StaticParagraphType} from '@mintter/mttast'
-import {isHeading, isStaticParagraph} from '@mintter/mttast'
-import type {TextProps} from '@mintter/ui/text'
-import {useActor} from '@xstate/react'
-import {Editor, NodeEntry} from 'slate'
-import type {RenderElementProps} from 'slate-react'
-import {ReactEditor, useSlateStatic} from 'slate-react'
-import {useHover} from '../hover-context'
-import type {EditorPlugin} from '../types'
-import {StaticParagraphUI} from './static-paragraph-ui'
+import type { StaticParagraph as StaticParagraphType } from '@mintter/mttast'
+import { isHeading, isStaticParagraph } from '@mintter/mttast'
+import type { TextProps } from '@mintter/ui/text'
+import { useActor } from '@xstate/react'
+import { Editor, NodeEntry } from 'slate'
+import type { RenderElementProps } from 'slate-react'
+import { ReactEditor, useSlateStatic } from 'slate-react'
+import { useHover } from '../hover-context'
+import type { EditorPlugin } from '../types'
+import { StaticParagraphUI } from './static-paragraph-ui'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
@@ -42,15 +42,15 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATIC_PARAGRAPH,
   renderElement:
     () =>
-    ({element, children, attributes}) => {
-      if (isStaticParagraph(element)) {
-        return (
-          <StaticParagraph element={element} attributes={attributes}>
-            {children}
-          </StaticParagraph>
-        )
-      }
-    },
+      ({ element, children, attributes }) => {
+        if (isStaticParagraph(element)) {
+          return (
+            <StaticParagraph element={element} attributes={attributes}>
+              {children}
+            </StaticParagraph>
+          )
+        }
+      },
 })
 
 function createParagraphOnEnter(
@@ -73,6 +73,8 @@ function useHeading(element: StaticParagraphType) {
   if (parent) {
     let [node, path] = parent
     if (isHeading(node)) {
+      console.log('heading: ', node, path)
+
       return {
         node,
         level: path.length,
@@ -81,7 +83,7 @@ function useHeading(element: StaticParagraphType) {
   }
 }
 
-function StaticParagraph({children, element, attributes}: RenderElementProps) {
+function StaticParagraph({ children, element, attributes }: RenderElementProps) {
   var heading = useHeading(element as StaticParagraphType)
   var sizeProps = headingMap[heading?.level ?? 'default']
   var hoverService = useHover()
@@ -94,7 +96,7 @@ function StaticParagraph({children, element, attributes}: RenderElementProps) {
       {...attributes}
       onMouseEnter={() => {
         if (heading?.node) {
-          hoverSend({type: 'MOUSE_ENTER', blockId: heading.node.id})
+          hoverSend({ type: 'MOUSE_ENTER', blockId: heading.node.id })
         }
       }}
     >

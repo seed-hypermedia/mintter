@@ -1,7 +1,7 @@
-import {isParagraph, MttastNode} from '@mintter/mttast'
-import {createId, statement} from '@mintter/mttast-builder'
-import {H, HastNode} from '../types'
-import {wrapChildren} from '../util/wrap-children'
+import { isParagraph, MttastNode } from '@mintter/mttast'
+import { createId, statement } from '@mintter/mttast-builder'
+import { H, HastNode } from '../types'
+import { wrapChildren } from '../util/wrap-children'
 
 export function listItem(h: H, node: HastNode): MttastNode | Array<MttastNode> {
   let children = wrapChildren(h, node) as any
@@ -21,7 +21,7 @@ export function listItem(h: H, node: HastNode): MttastNode | Array<MttastNode> {
   while (++index < children.length) {
     let child = children[index]
     if (isParagraph(child)) {
-      children[index] = statement({id: createId()}, [child])
+      children[index] = statement({ id: createId() }, [child])
     }
   }
   return children

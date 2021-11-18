@@ -60,6 +60,9 @@ const (
 
 // Table ipfs_blocks.
 const (
+	GlobalMeta           sqlitegen.Table  = "global_meta"
+	GlobalMetaKey        sqlitegen.Column = "global_meta.key"
+	GlobalMetaValue      sqlitegen.Column = "global_meta.value"
 	IPFSBlocks           sqlitegen.Table  = "ipfs_blocks"
 	IPFSBlocksCodec      sqlitegen.Column = "ipfs_blocks.codec"
 	IPFSBlocksCreateTime sqlitegen.Column = "ipfs_blocks.create_time"
@@ -85,6 +88,17 @@ const (
 	ObjectsAccountID sqlitegen.Column = "objects.account_id"
 	ObjectsCID       sqlitegen.Column = "objects.cid"
 	ObjectsID        sqlitegen.Column = "objects.id"
+)
+
+// Table wallets.
+const (
+	Wallets        sqlitegen.Table  = "wallets"
+	WalletsAddress sqlitegen.Column = "wallets.address"
+	WalletsAuth    sqlitegen.Column = "wallets.auth"
+	WalletsBalance sqlitegen.Column = "wallets.balance"
+	WalletsID      sqlitegen.Column = "wallets.id"
+	WalletsName    sqlitegen.Column = "wallets.name"
+	WalletsType    sqlitegen.Column = "wallets.type"
 )
 
 // Schema describes SQLite columns.
@@ -117,6 +131,8 @@ var Schema = sqlitegen.Schema{
 		DocumentsSubtitle:          {Table: Documents, SQLType: "TEXT"},
 		DocumentsTitle:             {Table: Documents, SQLType: "TEXT"},
 		DocumentsUpdateTime:        {Table: Documents, SQLType: "TIMESTAMP"},
+		GlobalMetaKey:              {Table: GlobalMeta, SQLType: "TEXT"},
+		GlobalMetaValue:            {Table: GlobalMeta, SQLType: "TEXT"},
 		IPFSBlocksCodec:            {Table: IPFSBlocks, SQLType: "INTEGER"},
 		IPFSBlocksCreateTime:       {Table: IPFSBlocks, SQLType: "TIMESTAMP"},
 		IPFSBlocksData:             {Table: IPFSBlocks, SQLType: "BLOB"},
@@ -131,5 +147,11 @@ var Schema = sqlitegen.Schema{
 		ObjectsAccountID:           {Table: Objects, SQLType: "INTEGER"},
 		ObjectsCID:                 {Table: Objects, SQLType: "BLOB"},
 		ObjectsID:                  {Table: Objects, SQLType: "INTEGER"},
+		WalletsAddress:             {Table: Wallets, SQLType: "TEXT"},
+		WalletsAuth:                {Table: Wallets, SQLType: "BLOB"},
+		WalletsBalance:             {Table: Wallets, SQLType: "INTEGER"},
+		WalletsID:                  {Table: Wallets, SQLType: "TEXT"},
+		WalletsName:                {Table: Wallets, SQLType: "TEXT"},
+		WalletsType:                {Table: Wallets, SQLType: "TEXT"},
 	},
 }

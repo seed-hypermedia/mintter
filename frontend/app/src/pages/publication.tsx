@@ -1,23 +1,23 @@
-import {Publication as PublicationType} from '@mintter/client'
-import {getPublication} from '@mintter/client/publications'
-import {Document, MttastContent} from '@mintter/mttast'
-import {Box} from '@mintter/ui/box'
-import {Button} from '@mintter/ui/button'
-import {css, styled} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
+import { Publication as PublicationType } from '@mintter/client'
+import { getPublication } from '@mintter/client/publications'
+import { Document, MttastContent } from '@mintter/mttast'
+import { Box } from '@mintter/ui/box'
+import { Button } from '@mintter/ui/button'
+import { css, styled } from '@mintter/ui/stitches.config'
+import { Text } from '@mintter/ui/text'
 // import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
-import {useActor, useMachine} from '@xstate/react'
-import {useEffect, useRef} from 'react'
-import {ErrorBoundary} from 'react-error-boundary'
-import {useLocation} from 'wouter'
-import {createModel} from 'xstate/lib/model'
-import {AppError} from '../app'
-import {Avatar} from '../components/avatar'
-import {useEnableSidepanel, useIsSidepanelOpen, useSidepanel} from '../components/sidepanel'
-import {Editor} from '../editor'
-import {EditorMode} from '../editor/plugin-utils'
-import {useAccount} from '../hooks'
-import {getDateFormat} from '../utils/get-format-date'
+import { useActor, useMachine } from '@xstate/react'
+import { useEffect, useRef } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
+import { useLocation } from 'wouter'
+import { createModel } from 'xstate/lib/model'
+import { AppError } from '../app'
+import { Avatar } from '../components/avatar'
+import { useEnableSidepanel, useIsSidepanelOpen, useSidepanel } from '../components/sidepanel'
+import { Editor } from '../editor'
+import { EditorMode } from '../editor/plugin-utils'
+import { useAccount } from '../hooks'
+import { getDateFormat } from '../utils/get-format-date'
 
 const Heading = styled('h1', {
   fontSize: '$5',
@@ -46,10 +46,10 @@ const headerFooterStyle = css({
 })
 
 type PublicationPageProps = {
-  params?: {docId: string}
+  params?: { docId: string }
 }
 
-export default function Publication({params}: PublicationPageProps) {
+export default function Publication({ params }: PublicationPageProps) {
   const [, setLocation] = useLocation()
   const sidepanelService = useSidepanel()
   const [, sidepanelSend] = useActor(sidepanelService)
@@ -73,7 +73,7 @@ export default function Publication({params}: PublicationPageProps) {
 
   useEffect(() => {
     if (state.matches('ready')) {
-      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: state.context.publication?.document})
+      sidepanelSend({ type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: state.context.publication?.document })
     }
   }, [state.value])
 
@@ -111,7 +111,7 @@ export default function Publication({params}: PublicationPageProps) {
           }}
         >
           <PublicationHeader document={state.context.publication?.document} />
-          <Box css={{marginTop: 50, width: '$full', maxWidth: '64ch'}}>
+          <Box css={{ marginTop: 50, width: '$full', maxWidth: '64ch' }}>
             <Editor
               mode={EditorMode.Publication}
               value={state.context.publication?.document.content as Array<MttastContent>}
@@ -125,8 +125,8 @@ export default function Publication({params}: PublicationPageProps) {
   return null
 }
 
-export function PublicationHeader({document}: {document?: Document & {content: Array<MttastContent>}}) {
-  const {data: author} = useAccount(document?.author, {
+export function PublicationHeader({ document }: { document?: Document & { content: Array<MttastContent> } }) {
+  const { data: author } = useAccount(document?.author, {
     enabled: !!document?.author,
   })
   const isOpen = useIsSidepanelOpen()
@@ -159,14 +159,14 @@ export function PublicationHeader({document}: {document?: Document & {content: A
       }}
     >
       {author && (
-        <Box css={{gridArea: 'author', display: 'flex', gap: '$3', alignItems: 'center'}}>
+        <Box css={{ gridArea: 'author', display: 'flex', gap: '$3', alignItems: 'center' }}>
           <Avatar size="3" />
           <Text size="3" fontWeight="medium">
             {author.profile?.alias}
           </Text>
         </Box>
       )}
-      <Heading css={{gridArea: 'title'}}>{document.title}</Heading>
+      <Heading css={{ gridArea: 'title' }}>{document.title}</Heading>
       {/* {document.subtitle && (
           <Text color="muted" size="4">
             {document.subtitle}
@@ -179,7 +179,7 @@ export function PublicationHeader({document}: {document?: Document & {content: A
         <Text size="1" color="muted">
           Version 3
         </Text>
-        <Text size="1" color="primary" css={{textDecoration: 'underline'}}>
+        <Text size="1" color="primary" css={{ textDecoration: 'underline' }}>
           View Versions
         </Text>
         <Text color="muted" size="1">
@@ -196,16 +196,16 @@ export function PublicationHeader({document}: {document?: Document & {content: A
           },
         }}
       >
-        <Box css={{display: 'flex', alignItems: 'center', gap: '$3'}}>
-          <Button size={{'@initial': '1', '@bp2': '2'}} variant="ghost" color="primary">
+        <Box css={{ display: 'flex', alignItems: 'center', gap: '$3' }}>
+          <Button size={{ '@initial': '1', '@bp2': '2' }} variant="ghost" color="primary">
             View Discussion (13)
           </Button>
           <Text color="muted">|</Text>
-          <Button size={{'@initial': '1', '@bp2': '2'}} variant="ghost" color="primary">
+          <Button size={{ '@initial': '1', '@bp2': '2' }} variant="ghost" color="primary">
             Cite
           </Button>
           <Text color="muted">|</Text>
-          <Button size={{'@initial': '1', '@bp2': '2'}} variant="ghost" color="success">
+          <Button size={{ '@initial': '1', '@bp2': '2' }} variant="ghost" color="success">
             Tip Author
           </Button>
         </Box>
@@ -255,9 +255,9 @@ const publicationModel = createModel(
   },
   {
     events: {
-      REPORT_DATA_REVEIVED: (publication: ClientPublication) => ({publication}),
-      REPORT_DATA_ERRORED: (errorMessage: string) => ({errorMessage}),
-      FETCH_DATA: (id: string) => ({id}),
+      REPORT_DATA_REVEIVED: (publication: ClientPublication) => ({ publication }),
+      REPORT_DATA_ERRORED: (errorMessage: string) => ({ errorMessage }),
+      FETCH_DATA: (id: string) => ({ id }),
     },
   },
 )
@@ -290,7 +290,7 @@ const publicationMachine = publicationModel.createMachine({
                 let content = JSON.parse(response.document?.content)
                 sendBack(
                   publicationModel.events.REPORT_DATA_REVEIVED(
-                    Object.assign(response, {document: {...response.document, content}}),
+                    Object.assign(response, { document: { ...response.document, content } }),
                   ),
                 )
               } else {

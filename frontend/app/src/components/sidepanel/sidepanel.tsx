@@ -1,27 +1,27 @@
-import {isEmbed, isLink} from '@mintter/mttast'
-import {document} from '@mintter/mttast-builder'
-import {Box} from '@mintter/ui/box'
-import {Button} from '@mintter/ui/button'
-import {Icon} from '@mintter/ui/icon'
-import {Text} from '@mintter/ui/text'
-import {useActor} from '@xstate/react'
-import {MouseEvent, useEffect, useRef, useState} from 'react'
+import { isEmbed, isLink } from '@mintter/mttast'
+import { document } from '@mintter/mttast-builder'
+import { Box } from '@mintter/ui/box'
+import { Button } from '@mintter/ui/button'
+import { Icon } from '@mintter/ui/icon'
+import { Text } from '@mintter/ui/text'
+import { useActor } from '@xstate/react'
+import { MouseEvent, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
-import {visit} from 'unist-util-visit'
-import {useLocation} from 'wouter'
-import {createModel} from 'xstate/lib/model'
-import {MINTTER_LINK_PREFIX} from '../../constants'
-import {Editor} from '../../editor'
-import {ContextMenu} from '../../editor/context-menu'
-import {getEmbedIds, useEmbed} from '../../editor/embed'
-import {EditorMode} from '../../editor/plugin-utils'
-import {copyTextToClipboard} from '../../editor/statement'
-import {useAccount} from '../../hooks'
-import {getDateFormat} from '../../utils/get-format-date'
-import {Avatar} from '../avatar'
-import {useBookmarks, useBookmarksService} from '../bookmarks'
-import {ScrollArea} from '../scroll-area'
-import {useAnnotations, useIsSidepanelOpen, useSidepanel} from './sidepanel-context'
+import { visit } from 'unist-util-visit'
+import { useLocation } from 'wouter'
+import { createModel } from 'xstate/lib/model'
+import { MINTTER_LINK_PREFIX } from '../../constants'
+import { Editor } from '../../editor'
+import { ContextMenu } from '../../editor/context-menu'
+import { getEmbedIds, useEmbed } from '../../editor/embed'
+import { EditorMode } from '../../editor/plugin-utils'
+import { copyTextToClipboard } from '../../editor/statement'
+import { useAccount } from '../../hooks'
+import { getDateFormat } from '../../utils/get-format-date'
+import { Avatar } from '../avatar'
+import { useBookmarks, useBookmarksService } from '../bookmarks'
+import { ScrollArea } from '../scroll-area'
+import { useAnnotations, useIsSidepanelOpen, useSidepanel } from './sidepanel-context'
 
 export const sidepanelModel = createModel(
   {
@@ -30,7 +30,7 @@ export const sidepanelModel = createModel(
   },
   {
     events: {
-      SIDEPANEL_LOAD_ANNOTATIONS: (document: any) => ({document}),
+      SIDEPANEL_LOAD_ANNOTATIONS: (document: any) => ({ document }),
       SIDEPANEL_ENABLE: () => ({}),
       SIDEPANEL_DISABLE: () => ({}),
       SIDEPANEL_OPEN: () => ({}),
@@ -164,7 +164,7 @@ export function Sidepanel() {
             }}
           >
             <Text fontWeight="bold">Bookmarks</Text>
-            {bookmarks.map(({link}) => {
+            {bookmarks.map(({ link }) => {
               return <SidepanelItem key={link} item={link} />
             })}
           </Box>
@@ -179,20 +179,20 @@ export type SidepanelItemProps = {
   remove?: boolean
 }
 
-export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
+export function SidepanelItem({ item, remove = true }: SidepanelItemProps) {
   const ref = useRef<HTMLDivElement | null>(null)
-  const {status, data} = useEmbed(item)
+  const { status, data } = useEmbed(item)
   const [showDocument, setShowDocument] = useState(false)
-  const {data: author} = useAccount(data.document.author, {
+  const { data: author } = useAccount(data.document.author, {
     enabled: !!data.document.author,
   })
-  const {send} = useSidepanel()
+  const { send } = useSidepanel()
   const bookmarksService = useBookmarksService()
   const [, bookmarksSend] = useActor(bookmarksService)
   const [, setLocation] = useLocation()
   async function onCopy() {
     await copyTextToClipboard(item)
-    toast.success('Statement Reference copied successfully', {position: 'top-center'})
+    toast.success('Statement Reference copied successfully', { position: 'top-center' })
   }
 
   function onGoToPublication(url: string) {
@@ -207,11 +207,11 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
   }
 
   if (status == 'loading') {
-    return <Box css={{padding: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2'}}>...</Box>
+    return <Box css={{ padding: '$5', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '$2' }}>...</Box>
   }
 
   if (status == 'error') {
-    return <Text alt css={{display: 'inline-block'}}>{`Error with item id: ${item}`}</Text>
+    return <Text alt css={{ display: 'inline-block' }}>{`Error with item id: ${item}`}</Text>
   }
 
   /*
@@ -234,8 +234,8 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
             transition: 'all ease-in-out 0.1s',
           }}
         >
-          <Box css={{display: 'flex', gap: '$4', alignItems: 'center'}}>
-            <Box css={{display: 'flex', alignItems: 'center', gap: '$3'}}>
+          <Box css={{ display: 'flex', gap: '$4', alignItems: 'center' }}>
+            <Box css={{ display: 'flex', alignItems: 'center', gap: '$3' }}>
               <Avatar size="1" />
               <Text size="1">{author?.profile?.alias}</Text>
             </Box>
@@ -260,7 +260,7 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
                   size="1"
                   variant="ghost"
                   color="primary"
-                  onClick={() => bookmarksSend({type: 'REMOVE_BOOKMARK', link: item})}
+                  onClick={() => bookmarksSend({ type: 'REMOVE_BOOKMARK', link: item })}
                 >
                   remove
                 </Button>

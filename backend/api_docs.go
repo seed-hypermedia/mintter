@@ -364,7 +364,10 @@ func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraft
 		return nil, fmt.Errorf("failed to delete draft from the database: %w", err)
 	}
 
-	srv.back.db.IndexPublication(ctx, c, AccountID(author), doc.Title, doc.Subtitle, doc.CreateTime.AsTime(), doc.UpdateTime.AsTime(), doc.PublishTime.AsTime())
+	if err := srv.back.db.IndexPublication(ctx, c, AccountID(author), doc.Title, doc.Subtitle,
+		doc.CreateTime.AsTime(), doc.UpdateTime.AsTime(), doc.PublishTime.AsTime()); err != nil {
+		return nil, fmt.Errorf("failed to index publications: %w", err)
+	}
 
 	docfeed := newDocumentFeedID(AccountID(author))
 

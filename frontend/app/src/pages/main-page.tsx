@@ -1,17 +1,17 @@
-import {Box} from '@mintter/ui/box'
-import {css} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
-import {useInterpret} from '@xstate/react'
-import {ReactNode, useEffect} from 'react'
-import {Route} from 'wouter'
-import {bookmarksMachine, BookmarksProvider} from '../components/bookmarks'
-import {ScrollArea} from '../components/scroll-area'
-import {Sidebar, SidebarProvider} from '../components/sidebar'
-import {sidebarMachine} from '../components/sidebar/sidebar-machine'
-import {Sidepanel, sidepanelMachine, SidepanelProvider} from '../components/sidepanel'
-import {Topbar} from '../components/topbar'
-import {HoverProvider} from '../editor/hover-context'
-import {hoverMachine} from '../editor/hover-machine'
+import { Box } from '@mintter/ui/box'
+import { css } from '@mintter/ui/stitches.config'
+import { Text } from '@mintter/ui/text'
+import { useInterpret } from '@xstate/react'
+import { ReactNode, useEffect } from 'react'
+import { Route } from 'wouter'
+import { bookmarksMachine, BookmarksProvider } from '../components/bookmarks'
+import { ScrollArea } from '../components/scroll-area'
+import { Sidebar, SidebarProvider } from '../components/sidebar'
+import { sidebarMachine } from '../components/sidebar/sidebar-machine'
+import { Sidepanel, sidepanelMachine, SidepanelProvider } from '../components/sidepanel'
+import { Topbar } from '../components/topbar'
+import { HoverProvider } from '../editor/hover-context'
+import { hoverMachine } from '../editor/hover-machine'
 import EditorPage from './editor'
 import Publication from './publication'
 
@@ -66,7 +66,7 @@ var rootPageStyle = css({
   background: '$background-default',
 })
 
-function MainWindow({children}: {children: ReactNode}) {
+function MainWindow({ children }: { children: ReactNode }) {
   return (
     <Box
       css={{

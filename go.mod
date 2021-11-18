@@ -216,15 +216,8 @@ require (
 require (
 	github.com/btcsuite/btcutil/psbt v1.0.3-0.20210527170813-e2ba6805a890 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
-	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/libp2p/go-libp2p-quic-transport v0.15.0 // indirect
-	github.com/libp2p/go-libp2p-tls v0.3.1 // indirect
-	github.com/matryer/moq v0.0.0-20200106131100-75d0ddfc0007 // indirect
-	github.com/russross/blackfriday/v2 v2.0.1 // indirect
-	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
-	github.com/urfave/cli/v2 v2.1.1 // indirect
-	github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e // indirect
-	gitlab.com/yawning/bsaes.git v0.0.0-20190805113838-0a714cd429ec // indirect
+	github.com/go-errors/errors v1.0.1 // indirect
+	github.com/mitchellh/mapstructure v1.4.2 // indirect
 )
 
 replace crawshaw.io/sqlite => ./third_party/sqlite

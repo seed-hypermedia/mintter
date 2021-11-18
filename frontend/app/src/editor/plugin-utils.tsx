@@ -42,9 +42,7 @@ export function buildEditorHook(plugins: EditorPlugin[], mode: EditorMode): Edit
     try {
       editor = configureEditor(editor) || editor
     } catch (e) {
-      if (!import.meta.env.SSR) {
-        error(`[${name}] ${e} in configureEditor hook`)
-      }
+      error(`[${name}] ${e} in configureEditor hook`)
       throw e
     }
   }

@@ -53,7 +53,7 @@ func TestAccountSync(t *testing.T) {
 	bob := makeTestBackend(t, "bob", true)
 	ctx := context.Background()
 
-	connectPeers(t, ctx, alice, bob, true)
+	connectPeers(ctx, t, alice, bob, true)
 
 	aliceAccount, err := alice.UpdateProfile(ctx, &accounts.Profile{
 		Alias: "I just updated my profile",
@@ -75,7 +75,7 @@ func TestAccountVerifiedOnConnect(t *testing.T) {
 	bob := makeTestBackend(t, "bob", true)
 	ctx := context.Background()
 
-	connectPeers(t, ctx, alice, bob, true)
+	connectPeers(ctx, t, alice, bob, true)
 
 	bobacc, err := alice.GetAccountForDevice(ctx, bob.repo.device.id)
 	require.NoError(t, err)
@@ -101,7 +101,7 @@ func TestRecoverConnections(t *testing.T) {
 	bob := makeTestBackend(t, "bob", true)
 	ctx := context.Background()
 
-	connectPeers(t, ctx, alice, bob, true)
+	connectPeers(ctx, t, alice, bob, true)
 
 	ok := alice.p2p.libp2p.ConnManager().IsProtected(bob.repo.device.id.PeerID(), protocolSupportKey)
 	require.True(t, ok)
@@ -124,8 +124,8 @@ func TestProvideAccount(t *testing.T) {
 	carol := makeTestBackend(t, "carol", true)
 	ctx := context.Background()
 
-	connectPeers(t, ctx, alice, bob, false)
-	connectPeers(t, ctx, bob, carol, false)
+	connectPeers(ctx, t, alice, bob, false)
+	connectPeers(ctx, t, bob, carol, false)
 
 	time.Sleep(2 * time.Second)
 
@@ -202,7 +202,7 @@ type Tester struct {
 	Binding AccountBinding
 }
 
-func connectPeers(t *testing.T, ctx context.Context, a, b *backend, waitVerify bool) {
+func connectPeers(ctx context.Context, t *testing.T, a, b *backend, waitVerify bool) {
 	t.Helper()
 
 	if waitVerify {

@@ -23,6 +23,9 @@ service P2P {
   // Notify remote peer about an updated object version.
   // Only updated PeerVersions can be included if desired.
   rpc UpdateObjectVersion(Version) returns (google.protobuf.Empty);
+
+  // Request a peer to issue a lightning BOLT-11 invoice
+  rpc RequestInvoice(RequestInvoiceRequest) returns (RequestInvoiceResponse);
 }
 
 message GetPeerInfoRequest {}
@@ -64,4 +67,26 @@ message WantList {
 
   // Shows whether want list is a snapshot or delta update.
   bool snapshot = 3;
+}
+
+// List of wanted and unwanted object IDs. Can be used as a snapshot or deltas.
+message RequestInvoiceRequest {
+
+  // The invoice amount in satoshis
+  int64 amount_sats = 1;  
+
+  // Optional requested memo to be attached in the invoice
+  string memo = 2;
+  
+  // True to request a hold invoice instead of a regular one. If true, then preimage_hash should be filled
+  bool hold_invoice = 3;
+  
+  // Preimage hash of the requested hold invoice. If hold_invoice is set to false this field is skipped
+  bytes preimage_hash = 4;
+
+}
+
+message RequestInvoiceResponse {
+  // Text encoded BOLT-11 Invoice
+  string pay_req = 1;
 }

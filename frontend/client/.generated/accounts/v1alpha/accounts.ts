@@ -90,11 +90,8 @@ export const GetAccountRequest = {
 
   fromJSON(object: any): GetAccountRequest {
     const message = { ...baseGetAccountRequest } as GetAccountRequest;
-    if (object.id !== undefined && object.id !== null) {
-      message.id = String(object.id);
-    } else {
-      message.id = "";
-    }
+    message.id =
+      object.id !== undefined && object.id !== null ? String(object.id) : "";
     return message;
   },
 
@@ -104,13 +101,11 @@ export const GetAccountRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<GetAccountRequest>): GetAccountRequest {
+  fromPartial<I extends Exact<DeepPartial<GetAccountRequest>, I>>(
+    object: I
+  ): GetAccountRequest {
     const message = { ...baseGetAccountRequest } as GetAccountRequest;
-    if (object.id !== undefined && object.id !== null) {
-      message.id = object.id;
-    } else {
-      message.id = "";
-    }
+    message.id = object.id ?? "";
     return message;
   },
 };
@@ -154,16 +149,14 @@ export const ListAccountsRequest = {
 
   fromJSON(object: any): ListAccountsRequest {
     const message = { ...baseListAccountsRequest } as ListAccountsRequest;
-    if (object.pageSize !== undefined && object.pageSize !== null) {
-      message.pageSize = Number(object.pageSize);
-    } else {
-      message.pageSize = 0;
-    }
-    if (object.pageToken !== undefined && object.pageToken !== null) {
-      message.pageToken = String(object.pageToken);
-    } else {
-      message.pageToken = "";
-    }
+    message.pageSize =
+      object.pageSize !== undefined && object.pageSize !== null
+        ? Number(object.pageSize)
+        : 0;
+    message.pageToken =
+      object.pageToken !== undefined && object.pageToken !== null
+        ? String(object.pageToken)
+        : "";
     return message;
   },
 
@@ -174,18 +167,12 @@ export const ListAccountsRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<ListAccountsRequest>): ListAccountsRequest {
+  fromPartial<I extends Exact<DeepPartial<ListAccountsRequest>, I>>(
+    object: I
+  ): ListAccountsRequest {
     const message = { ...baseListAccountsRequest } as ListAccountsRequest;
-    if (object.pageSize !== undefined && object.pageSize !== null) {
-      message.pageSize = object.pageSize;
-    } else {
-      message.pageSize = 0;
-    }
-    if (object.pageToken !== undefined && object.pageToken !== null) {
-      message.pageToken = object.pageToken;
-    } else {
-      message.pageToken = "";
-    }
+    message.pageSize = object.pageSize ?? 0;
+    message.pageToken = object.pageToken ?? "";
     return message;
   },
 };
@@ -233,17 +220,13 @@ export const ListAccountsResponse = {
 
   fromJSON(object: any): ListAccountsResponse {
     const message = { ...baseListAccountsResponse } as ListAccountsResponse;
-    message.accounts = [];
-    if (object.accounts !== undefined && object.accounts !== null) {
-      for (const e of object.accounts) {
-        message.accounts.push(Account.fromJSON(e));
-      }
-    }
-    if (object.nextPageToken !== undefined && object.nextPageToken !== null) {
-      message.nextPageToken = String(object.nextPageToken);
-    } else {
-      message.nextPageToken = "";
-    }
+    message.accounts = (object.accounts ?? []).map((e: any) =>
+      Account.fromJSON(e)
+    );
+    message.nextPageToken =
+      object.nextPageToken !== undefined && object.nextPageToken !== null
+        ? String(object.nextPageToken)
+        : "";
     return message;
   },
 
@@ -261,19 +244,13 @@ export const ListAccountsResponse = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<ListAccountsResponse>): ListAccountsResponse {
+  fromPartial<I extends Exact<DeepPartial<ListAccountsResponse>, I>>(
+    object: I
+  ): ListAccountsResponse {
     const message = { ...baseListAccountsResponse } as ListAccountsResponse;
-    message.accounts = [];
-    if (object.accounts !== undefined && object.accounts !== null) {
-      for (const e of object.accounts) {
-        message.accounts.push(Account.fromPartial(e));
-      }
-    }
-    if (object.nextPageToken !== undefined && object.nextPageToken !== null) {
-      message.nextPageToken = object.nextPageToken;
-    } else {
-      message.nextPageToken = "";
-    }
+    message.accounts =
+      object.accounts?.map((e) => Account.fromPartial(e)) || [];
+    message.nextPageToken = object.nextPageToken ?? "";
     return message;
   },
 };
@@ -330,22 +307,18 @@ export const Account = {
 
   fromJSON(object: any): Account {
     const message = { ...baseAccount } as Account;
-    message.devices = {};
-    if (object.id !== undefined && object.id !== null) {
-      message.id = String(object.id);
-    } else {
-      message.id = "";
-    }
-    if (object.profile !== undefined && object.profile !== null) {
-      message.profile = Profile.fromJSON(object.profile);
-    } else {
-      message.profile = undefined;
-    }
-    if (object.devices !== undefined && object.devices !== null) {
-      Object.entries(object.devices).forEach(([key, value]) => {
-        message.devices[key] = Device.fromJSON(value);
-      });
-    }
+    message.id =
+      object.id !== undefined && object.id !== null ? String(object.id) : "";
+    message.profile =
+      object.profile !== undefined && object.profile !== null
+        ? Profile.fromJSON(object.profile)
+        : undefined;
+    message.devices = Object.entries(object.devices ?? {}).reduce<{
+      [key: string]: Device;
+    }>((acc, [key, value]) => {
+      acc[key] = Device.fromJSON(value);
+      return acc;
+    }, {});
     return message;
   },
 
@@ -365,26 +338,21 @@ export const Account = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Account>): Account {
+  fromPartial<I extends Exact<DeepPartial<Account>, I>>(object: I): Account {
     const message = { ...baseAccount } as Account;
-    message.devices = {};
-    if (object.id !== undefined && object.id !== null) {
-      message.id = object.id;
-    } else {
-      message.id = "";
-    }
-    if (object.profile !== undefined && object.profile !== null) {
-      message.profile = Profile.fromPartial(object.profile);
-    } else {
-      message.profile = undefined;
-    }
-    if (object.devices !== undefined && object.devices !== null) {
-      Object.entries(object.devices).forEach(([key, value]) => {
-        if (value !== undefined) {
-          message.devices[key] = Device.fromPartial(value);
-        }
-      });
-    }
+    message.id = object.id ?? "";
+    message.profile =
+      object.profile !== undefined && object.profile !== null
+        ? Profile.fromPartial(object.profile)
+        : undefined;
+    message.devices = Object.entries(object.devices ?? {}).reduce<{
+      [key: string]: Device;
+    }>((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = Device.fromPartial(value);
+      }
+      return acc;
+    }, {});
     return message;
   },
 };
@@ -431,16 +399,12 @@ export const Account_DevicesEntry = {
 
   fromJSON(object: any): Account_DevicesEntry {
     const message = { ...baseAccount_DevicesEntry } as Account_DevicesEntry;
-    if (object.key !== undefined && object.key !== null) {
-      message.key = String(object.key);
-    } else {
-      message.key = "";
-    }
-    if (object.value !== undefined && object.value !== null) {
-      message.value = Device.fromJSON(object.value);
-    } else {
-      message.value = undefined;
-    }
+    message.key =
+      object.key !== undefined && object.key !== null ? String(object.key) : "";
+    message.value =
+      object.value !== undefined && object.value !== null
+        ? Device.fromJSON(object.value)
+        : undefined;
     return message;
   },
 
@@ -452,18 +416,15 @@ export const Account_DevicesEntry = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Account_DevicesEntry>): Account_DevicesEntry {
+  fromPartial<I extends Exact<DeepPartial<Account_DevicesEntry>, I>>(
+    object: I
+  ): Account_DevicesEntry {
     const message = { ...baseAccount_DevicesEntry } as Account_DevicesEntry;
-    if (object.key !== undefined && object.key !== null) {
-      message.key = object.key;
-    } else {
-      message.key = "";
-    }
-    if (object.value !== undefined && object.value !== null) {
-      message.value = Device.fromPartial(object.value);
-    } else {
-      message.value = undefined;
-    }
+    message.key = object.key ?? "";
+    message.value =
+      object.value !== undefined && object.value !== null
+        ? Device.fromPartial(object.value)
+        : undefined;
     return message;
   },
 };
@@ -513,21 +474,16 @@ export const Profile = {
 
   fromJSON(object: any): Profile {
     const message = { ...baseProfile } as Profile;
-    if (object.alias !== undefined && object.alias !== null) {
-      message.alias = String(object.alias);
-    } else {
-      message.alias = "";
-    }
-    if (object.bio !== undefined && object.bio !== null) {
-      message.bio = String(object.bio);
-    } else {
-      message.bio = "";
-    }
-    if (object.email !== undefined && object.email !== null) {
-      message.email = String(object.email);
-    } else {
-      message.email = "";
-    }
+    message.alias =
+      object.alias !== undefined && object.alias !== null
+        ? String(object.alias)
+        : "";
+    message.bio =
+      object.bio !== undefined && object.bio !== null ? String(object.bio) : "";
+    message.email =
+      object.email !== undefined && object.email !== null
+        ? String(object.email)
+        : "";
     return message;
   },
 
@@ -539,23 +495,11 @@ export const Profile = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Profile>): Profile {
+  fromPartial<I extends Exact<DeepPartial<Profile>, I>>(object: I): Profile {
     const message = { ...baseProfile } as Profile;
-    if (object.alias !== undefined && object.alias !== null) {
-      message.alias = object.alias;
-    } else {
-      message.alias = "";
-    }
-    if (object.bio !== undefined && object.bio !== null) {
-      message.bio = object.bio;
-    } else {
-      message.bio = "";
-    }
-    if (object.email !== undefined && object.email !== null) {
-      message.email = object.email;
-    } else {
-      message.email = "";
-    }
+    message.alias = object.alias ?? "";
+    message.bio = object.bio ?? "";
+    message.email = object.email ?? "";
     return message;
   },
 };
@@ -604,16 +548,14 @@ export const Device = {
 
   fromJSON(object: any): Device {
     const message = { ...baseDevice } as Device;
-    if (object.peerId !== undefined && object.peerId !== null) {
-      message.peerId = String(object.peerId);
-    } else {
-      message.peerId = "";
-    }
-    if (object.registerTime !== undefined && object.registerTime !== null) {
-      message.registerTime = fromJsonTimestamp(object.registerTime);
-    } else {
-      message.registerTime = undefined;
-    }
+    message.peerId =
+      object.peerId !== undefined && object.peerId !== null
+        ? String(object.peerId)
+        : "";
+    message.registerTime =
+      object.registerTime !== undefined && object.registerTime !== null
+        ? fromJsonTimestamp(object.registerTime)
+        : undefined;
     return message;
   },
 
@@ -625,18 +567,10 @@ export const Device = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Device>): Device {
+  fromPartial<I extends Exact<DeepPartial<Device>, I>>(object: I): Device {
     const message = { ...baseDevice } as Device;
-    if (object.peerId !== undefined && object.peerId !== null) {
-      message.peerId = object.peerId;
-    } else {
-      message.peerId = "";
-    }
-    if (object.registerTime !== undefined && object.registerTime !== null) {
-      message.registerTime = object.registerTime;
-    } else {
-      message.registerTime = undefined;
-    }
+    message.peerId = object.peerId ?? "";
+    message.registerTime = object.registerTime ?? undefined;
     return message;
   },
 };
@@ -675,10 +609,10 @@ export const DeviceRegistered = {
 
   fromJSON(object: any): DeviceRegistered {
     const message = { ...baseDeviceRegistered } as DeviceRegistered;
-    message.proof = new Uint8Array();
-    if (object.proof !== undefined && object.proof !== null) {
-      message.proof = bytesFromBase64(object.proof);
-    }
+    message.proof =
+      object.proof !== undefined && object.proof !== null
+        ? bytesFromBase64(object.proof)
+        : new Uint8Array();
     return message;
   },
 
@@ -691,13 +625,11 @@ export const DeviceRegistered = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<DeviceRegistered>): DeviceRegistered {
+  fromPartial<I extends Exact<DeepPartial<DeviceRegistered>, I>>(
+    object: I
+  ): DeviceRegistered {
     const message = { ...baseDeviceRegistered } as DeviceRegistered;
-    if (object.proof !== undefined && object.proof !== null) {
-      message.proof = object.proof;
-    } else {
-      message.proof = new Uint8Array();
-    }
+    message.proof = object.proof ?? new Uint8Array();
     return message;
   },
 };
@@ -735,11 +667,10 @@ export const ProfileUpdated = {
 
   fromJSON(object: any): ProfileUpdated {
     const message = { ...baseProfileUpdated } as ProfileUpdated;
-    if (object.profile !== undefined && object.profile !== null) {
-      message.profile = Profile.fromJSON(object.profile);
-    } else {
-      message.profile = undefined;
-    }
+    message.profile =
+      object.profile !== undefined && object.profile !== null
+        ? Profile.fromJSON(object.profile)
+        : undefined;
     return message;
   },
 
@@ -752,13 +683,14 @@ export const ProfileUpdated = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<ProfileUpdated>): ProfileUpdated {
+  fromPartial<I extends Exact<DeepPartial<ProfileUpdated>, I>>(
+    object: I
+  ): ProfileUpdated {
     const message = { ...baseProfileUpdated } as ProfileUpdated;
-    if (object.profile !== undefined && object.profile !== null) {
-      message.profile = Profile.fromPartial(object.profile);
-    } else {
-      message.profile = undefined;
-    }
+    message.profile =
+      object.profile !== undefined && object.profile !== null
+        ? Profile.fromPartial(object.profile)
+        : undefined;
     return message;
   },
 };
@@ -1018,6 +950,7 @@ type Builtin =
   | number
   | boolean
   | undefined;
+
 type DeepPartial<T> = T extends Builtin
   ? T
   : T extends Array<infer U>
@@ -1027,6 +960,14 @@ type DeepPartial<T> = T extends Builtin
   : T extends {}
   ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
+
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+type Exact<P, I extends P> = P extends Builtin
+  ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & Record<
+        Exclude<keyof I, KeysOfUnion<P>>,
+        never
+      >;
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000;

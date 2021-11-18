@@ -40,7 +40,7 @@ func TestAPIGetAccount_Other(t *testing.T) {
 
 	alice := newAccountsAPI(aliceb)
 
-	connectPeers(t, ctx, aliceb, bobb, true)
+	connectPeers(ctx, t, aliceb, bobb, true)
 
 	acc, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{
 		Id: bobb.repo.acc.id.String(),

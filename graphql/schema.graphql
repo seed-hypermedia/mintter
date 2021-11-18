@@ -234,7 +234,7 @@ Common interface for Lightning wallets. We support different types.
 """
 interface LightningWallet {
   """
-  Globally unique ID of the wallet.
+  Globally unique ID of the wallet. Public key.
   """
   id: ID!
 
