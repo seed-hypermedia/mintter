@@ -12,7 +12,7 @@ require (
 	github.com/alecthomas/kong v0.2.11
 	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/btcsuite/btcd v0.21.0-beta // indirect
+	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/btcsuite/btclog v0.0.0-20170628155309-84c8d2346e9f // indirect
 	github.com/btcsuite/btcutil v1.0.2 // indirect
 	github.com/btcsuite/btcwallet v0.11.1-0.20200814001439-1d31f4ea6fc5 // indirect
@@ -238,6 +238,7 @@ require (
 
 require (
 	github.com/agnivade/levenshtein v1.1.1 // indirect
+	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
 )
 

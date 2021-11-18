@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-datastore"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
@@ -16,6 +17,7 @@ import (
 	"mintter/backend/badgergraph"
 	"mintter/backend/config"
 	"mintter/backend/db/graphschema"
+	"mintter/backend/db/sqliteschema"
 	"mintter/backend/logging"
 )
 
@@ -25,6 +27,7 @@ var moduleBackend = fx.Options(
 		provideBadger,
 		provideBadgerGraph,
 		providePatchStore,
+		provideSQLite,
 		provideBackend,
 	),
 	// We have to make this trick so that we ensure proper shutdown order:
@@ -55,8 +58,30 @@ func providePatchStore(bs blockstore.Blockstore, db *badgergraph.DB) (*patchStor
 	return newPatchStore(logging.Logger("mintter/patch-store", "debug"), bs, db)
 }
 
-func provideBackend(lc fx.Lifecycle, stop fx.Shutdowner, r *repo, store *patchStore, p2p *p2pNode) (*backend, error) {
-	back := newBackend(logging.Logger("mintter/backend", "debug"), r, store, p2p)
+func provideSQLite(lc fx.Lifecycle, r *repo) (*sqlitex.Pool, error) {
+	pool, err := sqlitex.Open(r.sqlitePath(), 0, 16)
+	if err != nil {
+		return nil, err
+	}
+
+	conn := pool.Get(context.Background())
+	defer pool.Put(conn)
+
+	if err := sqliteschema.Migrate(conn); err != nil {
+		return nil, err
+	}
+
+	lc.Append(fx.Hook{
+		OnStop: func(context.Context) error {
+			return pool.Close()
+		},
+	})
+
+	return pool, nil
+}
+
+func provideBackend(lc fx.Lifecycle, pool *sqlitex.Pool, stop fx.Shutdowner, r *repo, store *patchStore, p2p *p2pNode) (*backend, error) {
+	back := newBackend(logging.Logger("mintter/backend", "debug"), pool, r, store, p2p)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	errc := make(chan error, 1)

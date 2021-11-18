@@ -171,6 +171,7 @@ func makeTestBackend(t *testing.T, name string, ready bool) *backend {
 				return ds
 			},
 			provideBadger,
+			provideSQLite,
 			provideBadgerGraph,
 			newPatchStore,
 			provideBackend,

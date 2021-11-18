@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/event"
@@ -53,6 +54,7 @@ type backend struct {
 	patches *patchStore
 	p2p     *p2pNode
 	drafts  *draftStore
+	pool    *sqlitex.Pool
 
 	startTime time.Time
 
@@ -67,7 +69,7 @@ type backend struct {
 	watchers map[chan<- interface{}]struct{}
 }
 
-func newBackend(log *zap.Logger, r *repo, store *patchStore, p2p *p2pNode) *backend {
+func newBackend(log *zap.Logger, pool *sqlitex.Pool, r *repo, store *patchStore, p2p *p2pNode) *backend {
 	srv := &backend{
 		log:     log,
 		repo:    r,
@@ -75,6 +77,7 @@ func newBackend(log *zap.Logger, r *repo, store *patchStore, p2p *p2pNode) *back
 		patches: store,
 		p2p:     p2p,
 		drafts:  &draftStore{r.draftsDir()},
+		pool:    pool,
 
 		startTime: time.Now().UTC(),
 

@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"math"
 	"mintter/backend/graphql/internal/generated"
+	"mintter/backend/graphql/internal/model"
 	"mintter/backend/lndhub"
+	"net/http"
 )
 
 func (r *meResolver) Wallets(ctx context.Context, obj *generated.Me) ([]generated.LightningWallet, error) {
@@ -27,16 +29,31 @@ func (r *mutationResolver) SetupLndHubWallet(ctx context.Context, input generate
 	}
 
 	// Think if this abstraction is needed, or just use LNDHub client here and retrieve access token and wallet balance.
-	if err := r.svc.ConfigureLNDHub(ctx, creds); err != nil {
+	/*if err := r.svc.ConfigureLNDHub(ctx, creds); err != nil {
+		return nil, err
+	}*/
+
+	lndHubClient := lndhub.NewClient(&http.Client{})
+
+	creds.Token, err = lndHubClient.Auth(ctx, creds)
+	if err != nil {
 		return nil, err
 	}
 
+	balance_sats, err := lndHubClient.GetBalance(ctx, creds)
+	if err != nil {
+		return nil, err
+	}
+	wallet := generated.LndHubWallet{
+		APIURL:      creds.ConnectionURL,
+		Name:        input.Name,
+		BalanceSats: model.Satoshis(balance_sats),
+		ID:          creds.ID,
+	}
+	// TODO: Store wallet in the database associated with the wallet ID
+
 	return &generated.SetupLndHubWalletPayload{
-		Wallet: &generated.LndHubWallet{
-			APIURL:      creds.ConnectionURL,
-			Name:        input.Name,
-			BalanceSats: 10, // Use real balance.
-		},
+		Wallet: &wallet,
 	}, nil
 }
 
