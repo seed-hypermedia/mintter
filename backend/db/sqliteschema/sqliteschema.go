@@ -10,30 +10,11 @@ import (
 	"go.uber.org/multierr"
 )
 
-// Migration is a type for a migration function.
-// Eventually we might want to make avaiable other things to migration handlers.
-type Migration func(conn *sqlite.Conn) error
-
-// SQLMigration is a migration function that applies one or multiple
-// SQL statements to the database.
-func SQLMigration(stmts ...string) Migration {
-	return func(conn *sqlite.Conn) error {
-		for _, s := range stmts {
-			if err := sqlitex.ExecTransient(conn, s, nil); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-}
-
 // The list with a global set of database migrations.
 // Append-only! DO NOT REMOVE, EDIT, OR REORDER PREVIOUS ENTRIES.
-// Do not add statements to existing SQLMigration, create new ones instead.
-var migrations = []Migration{
-	// This is the initial set of tables. Do not alter after the schema is already stable.
-	SQLMigration(
-		`-- Stores the content of IPFS blobs.
+// Do not add statements to existing migration scripts, append new ones instead.
+var migrations = []string{
+	`-- Stores the content of IPFS blobs.
 		CREATE TABLE ipfs_blobs (
 			-- Short numerical ID to be used internally.
 			id INTEGER PRIMARY KEY,
@@ -50,9 +31,9 @@ var migrations = []Migration{
 			-- Subjective (locally perceived) time when this block was fetched for the first time.
 			-- Not sure if actually useful, but might become at some point.
 			create_time TIMESTAMP DEFAULT (datetime('now')) NOT NULL
-		);`,
+		);
 
-		`-- Stores data about Mintter Accounts.
+		-- Stores data about Mintter Accounts.
 		CREATE TABLE accounts (
 			-- Short numerical ID to be used internally.
 			id INTEGER PRIMARY KEY,
@@ -64,9 +45,9 @@ var migrations = []Migration{
 			bio TEXT,
 			-- Currently known value for the profile email.
 			email TEXT
-		);`,
+		);
 
-		`-- Stores data about Mintter Devices.
+		-- Stores data about Mintter Devices.
 		CREATE TABLE devices (
 			-- Short numerical ID to be used internally.
 			id INTEGER PRIMARY KEY,
@@ -77,9 +58,9 @@ var migrations = []Migration{
 			public_key BLOB DEFAULT NULL,
 			-- Reference to the Account this Device belongs to.
 			account_id INTEGER REFERENCES accounts NOT NULL
-		);`,
+		);
 
-		`-- Stores data about Mintter Objects.
+		-- Stores data about Mintter Objects.
 		CREATE TABLE objects (
 			-- Short numerical ID to be used internally.
 			id INTEGER PRIMARY KEY,
@@ -87,9 +68,9 @@ var migrations = []Migration{
 			cid BLOB UNIQUE NOT NULL,
 			-- Reference to the Account that created the Object.
 			account_id INTEGER REFERENCES accounts NOT NULL
-		);`,
+		);
 
-		`-- Stores changes for objects.
+		-- Stores changes for objects.
 		CREATE TABLE changes (
 			-- Reference to the Object being changed.
 			object_id INTEGER REFERENCES objects NOT NULL,
@@ -103,9 +84,9 @@ var migrations = []Migration{
 			ipfs_blob_id INTEGER REFERENCES ipfs_blobs NOT NULL,
 			-- Composite key that uniquely identifies a Change.
 			PRIMARY KEY (object_id, device_id, seq)
-		) WITHOUT ROWID;`,
+		) WITHOUT ROWID;
 
-		`-- Stores Mintter Documents (drafts and publications) and caches some of their attributes.
+		-- Stores Mintter Documents (drafts and publications) and caches some of their attributes.
 		CREATE TABLE documents (
 			-- Short numerical ID to be used internally.
 			id INTEGER PRIMARY KEY,
@@ -125,15 +106,15 @@ var migrations = []Migration{
 			-- Our ID actually references objects table, because Documents are actually Objects.
 			-- But not all Objects are Documents.
 			FOREIGN KEY (id) REFERENCES objects
-		);`,
+		);
 
-		`-- Index to list drafts.
-		CREATE INDEX documents_draft_content ON documents (draft_content, NOT NULL);`,
+		-- Index to list drafts.
+		CREATE INDEX documents_draft_content ON documents (draft_content, NOT NULL);
 
-		`-- Index to list published documents.
-		CREATE INDEX documents_publish_time ON documents (publish_time, NOT NULL);`,
+		-- Index to list published documents.
+		CREATE INDEX documents_publish_time ON documents (publish_time, NOT NULL);
 
-		`-- Index for links from Documents.
+		-- Index for links from Documents.
 		CREATE TABLE links (
 			-- Reference to Document ID from which link originates.
 			source_document_id INTEGER REFERENCES documents NOT NULL,
@@ -150,20 +131,20 @@ var migrations = []Migration{
 			-- the ID of the Change is guaranteed to be a valid Version
 			-- to identify the state of the source Document.
 			source_change_id INTEGER REFERENCES changes NOT NULL
-		);`,
+		);
 
-		`-- Index for backlinks.
-		CREATE INDEX links_target_document_id ON links (target_document_id);`,
+		-- Index for backlinks.
+		CREATE INDEX links_target_document_id ON links (target_document_id);
 
-		`-- Virtual table for backlinks.
+		-- Virtual table for backlinks.
 		CREATE VIRTUAL TABLE backlinks USING transitive_closure (
 			tablename = 'links',
 			-- We need to treat target documents as parents
 			-- for transitive closure to inclide the source documents.
 			idcolumn = 'source_document_id',
 			parentcolumn = 'target_document_id'
-		);`,
-	),
+		);
+	`,
 }
 
 // Migrate the database applying migrations defined in this package.
@@ -172,7 +153,7 @@ func Migrate(conn *sqlite.Conn) error {
 	return migrate(conn, migrations)
 }
 
-func migrate(conn *sqlite.Conn, migrations []Migration) error {
+func migrate(conn *sqlite.Conn, migrations []string) error {
 	v, err := getUserVersion(conn)
 	if err != nil {
 		return err
@@ -187,8 +168,8 @@ func migrate(conn *sqlite.Conn, migrations []Migration) error {
 	}
 
 	return withTx(conn, func(conn *sqlite.Conn) error {
-		for _, fn := range migrations[v:] {
-			if err := fn(conn); err != nil {
+		for _, script := range migrations[v:] {
+			if err := sqlitex.ExecScript(conn, script); err != nil {
 				return err
 			}
 		}
