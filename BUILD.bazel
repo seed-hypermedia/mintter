@@ -31,7 +31,10 @@ filegroup(
         "go.mod",
         "go.sum",
     ] + glob(
-        ["backend/**/*.go"],
+        [
+            "backend/**/*.go",
+            "third_party/**/*.go",
+        ],
         exclude = ["**/*_test.go"],
     ),
 )
@@ -100,7 +103,7 @@ LLVM_TRIPLES = {
         cmd = """
 export GOOS={os}
 export GOARCH={arch}
-export CGO_ENABLED="0"
+export CGO_ENABLED="1"
 go build -o $TARGET_OUT_DIR/mintterd-{triple} ./backend/cmd/mintterd
 """.format(
             os = os,
