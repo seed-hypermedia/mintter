@@ -2,12 +2,14 @@ package backend
 
 import (
 	"context"
+	"net/http"
+
+	p2p "mintter/backend/api/p2p/v1alpha"
+	"mintter/backend/lndhub"
 
 	"github.com/ipfs/go-cid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	p2p "mintter/backend/api/p2p/v1alpha"
 )
 
 type p2pAPI struct {
@@ -35,8 +37,21 @@ func (srv *p2pAPI) GetObjectVersion(ctx context.Context, in *p2p.GetObjectVersio
 	return srv.back.patches.GetObjectVersion(ctx, oid)
 }
 
-func (srv *p2pAPI) GetInvoice(ctx context.Context, in *p2p.GetInvoiceRequest) (*p2p.PayReq, error) {
-	// TODO: generating the invoice here
+func (srv *p2pAPI) RequestInvoice(ctx context.Context, in *p2p.RequestInvoiceRequest) (*p2p.RequestInvoiceResponse, error) {
 
-	return &p2p.PayReq{PayReq: "fakeinvoice"}, nil
+	// TODO: obtain the wallet type and credentials (token in case lndhub and macaroon in case LND) from sqlite database
+	//conn := srv.back.pool.Get()
+	// TODO: Get the wallet type. In both cases (lndhub or LND) whe should call a CreateInvoice Method but we need to authenticate LND with macaroon
+	// both methods have to have the same signature so they can be called from interface. Change LND functions in the other branch to match lndhub!!
+
+	//TODO: now LND is not implemented
+
+	lndHubClient := lndhub.NewClient(&http.Client{})
+	pay_req, err := lndHubClient.CreateInvoice(ctx, lndhub.Credentials{
+		Token: "4e265465cac4cd3d9d50f84cacc7f4dd0cbd9ed1"}, uint64(1), "hardcoded invoice")
+	if err != nil {
+		return nil, err
+	}
+
+	return &p2p.RequestInvoiceResponse{PayReq: pay_req}, nil
 }

@@ -25,7 +25,7 @@ service P2P {
   rpc UpdateObjectVersion(Version) returns (google.protobuf.Empty);
 
   // Request a peer to issue a lightning BOLT-11 invoice
-  rpc GetInvoice(GetInvoiceRequest) returns (PayReq);
+  rpc RequestInvoice(RequestInvoiceRequest) returns (RequestInvoiceResponse);
 }
 
 message GetPeerInfoRequest {}
@@ -70,7 +70,7 @@ message WantList {
 }
 
 // List of wanted and unwanted object IDs. Can be used as a snapshot or deltas.
-message GetInvoiceRequest {
+message RequestInvoiceRequest {
 
   // The invoice amount in satoshis
   uint64 amount_sats = 1;  
@@ -82,11 +82,11 @@ message GetInvoiceRequest {
   bool hold_invoice = 3;
   
   // Preimage hash of the requested hold invoice. If hold_invoice is set to false this field is skipped
-	bytes preimage_hash = 4;
+  bytes preimage_hash = 4;
 
 }
 
-message PayReq {
+message RequestInvoiceResponse {
   // Text encoded BOLT-11 Invoice
   string pay_req = 1;
 }
