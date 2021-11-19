@@ -1,3 +1,5 @@
+// Package sqliteschema defines the Mintter-specific schema for SQLite
+// and provides utilities for executing schema migration.
 package sqliteschema
 
 import (
