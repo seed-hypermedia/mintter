@@ -30,6 +30,8 @@ type P2PClient interface {
 	// Notify remote peer about an updated object version.
 	// Only updated PeerVersions can be included if desired.
 	UpdateObjectVersion(ctx context.Context, in *Version, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Request a peer to issue a lightning BOLT-11 invoice
+	GetInvoice(ctx context.Context, in *GetInvoiceRequest, opts ...grpc.CallOption) (*PayReq, error)
 }
 
 type p2PClient struct {
@@ -85,6 +87,15 @@ func (c *p2PClient) UpdateObjectVersion(ctx context.Context, in *Version, opts .
 	return out, nil
 }
 
+func (c *p2PClient) GetInvoice(ctx context.Context, in *GetInvoiceRequest, opts ...grpc.CallOption) (*PayReq, error) {
+	out := new(PayReq)
+	err := c.cc.Invoke(ctx, "/com.mintter.p2p.v1alpha.P2P/GetInvoice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // P2PServer is the server API for P2P service.
 // All implementations should embed UnimplementedP2PServer
 // for forward compatibility
@@ -100,6 +111,8 @@ type P2PServer interface {
 	// Notify remote peer about an updated object version.
 	// Only updated PeerVersions can be included if desired.
 	UpdateObjectVersion(context.Context, *Version) (*emptypb.Empty, error)
+	// Request a peer to issue a lightning BOLT-11 invoice
+	GetInvoice(context.Context, *GetInvoiceRequest) (*PayReq, error)
 }
 
 // UnimplementedP2PServer should be embedded to have forward compatible implementations.
@@ -120,6 +133,9 @@ func (UnimplementedP2PServer) UpdateWantList(context.Context, *WantList) (*Updat
 }
 func (UnimplementedP2PServer) UpdateObjectVersion(context.Context, *Version) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateObjectVersion not implemented")
+}
+func (UnimplementedP2PServer) GetInvoice(context.Context, *GetInvoiceRequest) (*PayReq, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInvoice not implemented")
 }
 
 // UnsafeP2PServer may be embedded to opt out of forward compatibility for this service.
@@ -223,6 +239,24 @@ func _P2P_UpdateObjectVersion_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _P2P_GetInvoice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInvoiceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(P2PServer).GetInvoice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.p2p.v1alpha.P2P/GetInvoice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(P2PServer).GetInvoice(ctx, req.(*GetInvoiceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // P2P_ServiceDesc is the grpc.ServiceDesc for P2P service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -249,6 +283,10 @@ var P2P_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateObjectVersion",
 			Handler:    _P2P_UpdateObjectVersion_Handler,
+		},
+		{
+			MethodName: "GetInvoice",
+			Handler:    _P2P_GetInvoice_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

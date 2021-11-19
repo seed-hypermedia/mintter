@@ -34,3 +34,9 @@ func (srv *p2pAPI) GetObjectVersion(ctx context.Context, in *p2p.GetObjectVersio
 
 	return srv.back.patches.GetObjectVersion(ctx, oid)
 }
+
+func (srv *p2pAPI) GetInvoice(ctx context.Context, in *p2p.GetInvoiceRequest) (*p2p.PayReq, error) {
+	// TODO: generating the invoice here
+
+	return &p2p.PayReq{PayReq: "fakeinvoice"}, nil
+}
