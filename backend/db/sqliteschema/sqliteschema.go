@@ -161,6 +161,20 @@ var migrations = []Migration{
 			idcolumn = 'source_document_id',
 			parentcolumn = 'target_document_id'
 		);`,
+		`-- Stores Lightning wallets both externals (imported wallets like bluewallet
+		 -- based on lndhub) and internals (based on the LND embedded node).
+		CREATE TABLE wallets (
+			-- Wallet unique ID. Is the url hash in case of lndhub or the pubkey in case of LND.
+			id TEXT PRIMARY KEY,
+			-- The type of the wallet. Either lnd or lndhub
+			type TEXT CHECK( type IN ('lnd','lndhub') )   NOT NULL DEFAULT 'lndhub',
+			-- The mintter account ID that owns this wallet.
+			account_id BLOB REFERENCES accounts,
+			-- Human readable name to help the user identify each wallet
+			name TEXT NOT NULL,
+			-- The balance in satoshis the wallet had at the moment of creation. For audit purposes
+			initial_balance INT
+		);`,
 	),
 }
 
