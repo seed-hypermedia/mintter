@@ -137,10 +137,10 @@ func (c *Client) GetBalance(ctx context.Context, creds Credentials) (uint64, err
 // are not supported, so make sure amount > 0.We also accept a short memo or description of
 // purpose of payment, to attach along with the invoice. The generated invoice
 // will have an expiration time of 24 hours and a random preimage
-func (c *Client) CreateInvoice(ctx context.Context, creds Credentials, amount uint64, memo string) (string, error) {
+func (c *Client) CreateInvoice(ctx context.Context, creds Credentials, amount int64, memo string) (string, error) {
 
 	type createInvoiceRequest struct {
-		Amt  uint64 `json:"amt"`
+		Amt  int64  `json:"amt"`
 		Memo string `json:"memo"`
 	}
 

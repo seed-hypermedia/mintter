@@ -129,7 +129,7 @@ func lndhubTest(t *testing.T, url string, generateInvoice, payInvoice bool, time
 	}
 
 	if generateInvoice {
-		if pay_req, err := lndHubClient.CreateInvoice(ctx, creds, uint64(amt), memo); err != nil {
+		if pay_req, err := lndHubClient.CreateInvoice(ctx, creds, int64(amt), memo); err != nil {
 			return err
 
 		} else if invoice, err := DecodeInvoice(pay_req); err != nil {

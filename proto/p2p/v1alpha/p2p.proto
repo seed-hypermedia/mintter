@@ -73,7 +73,7 @@ message WantList {
 message RequestInvoiceRequest {
 
   // The invoice amount in satoshis
-  uint64 amount_sats = 1;  
+  int64 amount_sats = 1;  
 
   // Optional requested memo to be attached in the invoice
   string memo = 2;
