@@ -8,6 +8,25 @@ import (
 	"go.uber.org/multierr"
 )
 
+const (
+	walletsTable               = "`wallets`"
+	indexColumn                = "`id`"
+	defaultWalletColumn        = "`default_wallet`"
+	typeWalletColumn           = "`type`"
+	authWalletColumn           = "`auth`"
+	nameWalletColumn           = "`name`"
+	initialBalanceWalletColumn = "`initial_balance`"
+)
+
+type Wallet struct {
+	Id              string
+	Name            string
+	Type            string
+	Auth            []byte
+	Default_wallet  int64
+	Initial_balance int64
+}
+
 // Migration is a type for a migration function.
 // Eventually we might want to make avaiable other things to migration handlers.
 type Migration func(conn *sqlite.Conn) error
@@ -163,17 +182,20 @@ var migrations = []Migration{
 		);`,
 		`-- Stores Lightning wallets both externals (imported wallets like bluewallet
 		 -- based on lndhub) and internals (based on the LND embedded node).
-		CREATE TABLE wallets (
+		CREATE TABLE `+walletsTable+` (
 			-- Wallet unique ID. Is the url hash in case of lndhub or the pubkey in case of LND.
-			id TEXT PRIMARY KEY,
+			`+indexColumn+` TEXT PRIMARY KEY,
 			-- The type of the wallet. Either lnd or lndhub
-			type TEXT CHECK( type IN ('lnd','lndhub') )   NOT NULL DEFAULT 'lndhub',
-			-- The mintter account ID that owns this wallet.
-			account_id BLOB REFERENCES accounts,
+			`+typeWalletColumn+` TEXT CHECK( type IN ('lnd','lndhub') ) NOT NULL DEFAULT 'lndhub',
+			-- The Authentication of the wallet. api token in case lndhub and macaroon 
+			-- bytes in case lnd. This blob should be encrypted
+			`+authWalletColumn+` BLOB NOT NULL,
+			-- Wether or not this wallet is the default wallet. 1 default 0 non default
+			`+defaultWalletColumn+` INTEGER CHECK( default_wallet IN (0, 1) ) NOT NULL DEFAULT 0,
 			-- Human readable name to help the user identify each wallet
-			name TEXT NOT NULL,
+			`+nameWalletColumn+` TEXT NOT NULL,
 			-- The balance in satoshis the wallet had at the moment of creation. For audit purposes
-			initial_balance INT
+			`+initialBalanceWalletColumn+` INT
 		);`,
 	),
 }
