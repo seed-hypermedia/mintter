@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	p2p "mintter/backend/api/p2p/v1alpha"
+	"mintter/backend/db/sqliteschema"
 )
 
 type InvoiceRequest struct {
-	AmountSats   uint64 `help:"The invoice amount in satoshis" default:"0"`
+	AmountSats   int64  `help:"The invoice amount in satoshis" default:"0"`
 	Memo         string `help:"Optional requested memo to be attached in the invoice" default:""`
 	HoldInvoice  bool   `help:"If we request a hold invoice instead of a regular one. If true, then the following field is mandatory" default:"false"`
 	PreimageHash []byte `help:"Preimage hash of the requested hold invoice. If HoldInvoice flag is set to false this field is skipped" default:""`
@@ -64,4 +65,20 @@ func (srv *backend) RemoteInvoiceRequest(ctx context.Context, account AccountID,
 	}
 
 	return "", fmt.Errorf("couln't find account %s", account.String())
+}
+
+// UNDER CONSTRUCTION
+func (srv *backend) CreateWallet(ctx context.Context, wallet sqliteschema.Wallet) error {
+	conn := srv.pool.Get(ctx)
+	if conn == nil {
+		return fmt.Errorf("coulnd't get sqlite connector from the pool before timeout")
+	}
+	defer srv.pool.Put(conn)
+
+	return nil
+	/*
+		id, err := sqliteschema.GetDefaultWallet(conn)
+		if err != nil {
+			return nil, err
+		}*/
 }

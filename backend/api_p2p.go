@@ -2,9 +2,12 @@ package backend
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
+	"encoding/hex"
 	p2p "mintter/backend/api/p2p/v1alpha"
+	"mintter/backend/db/sqliteschema"
 	"mintter/backend/lndhub"
 
 	"github.com/ipfs/go-cid"
@@ -39,16 +42,38 @@ func (srv *p2pAPI) GetObjectVersion(ctx context.Context, in *p2p.GetObjectVersio
 
 func (srv *p2pAPI) RequestInvoice(ctx context.Context, in *p2p.RequestInvoiceRequest) (*p2p.RequestInvoiceResponse, error) {
 
-	// TODO: obtain the wallet type and credentials (token in case lndhub and macaroon in case LND) from sqlite database
-	//conn := srv.back.pool.Get()
-	// TODO: Get the wallet type. In both cases (lndhub or LND) whe should call a CreateInvoice Method but we need to authenticate LND with macaroon
-	// both methods have to have the same signature so they can be called from interface. Change LND functions in the other branch to match lndhub!!
+	conn := srv.back.pool.Get(ctx)
+	if conn == nil {
+		return nil, fmt.Errorf("coulnd't get sqlite connector from the pool before timeout")
+	}
+	defer srv.back.pool.Put(conn)
 
-	//TODO: now LND is not implemented
+	id, err := sqliteschema.GetDefaultWallet(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	wallet, err := sqliteschema.GetWallet(conn, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(wallet) != 1 {
+		return nil, fmt.Errorf("expecting one default wallet but got %d ", len(wallet))
+	}
+
+	if wallet[0].Type != "lndhub" {
+		return nil, fmt.Errorf("cannot create invoice out of a wallet of type %s ", wallet[0].Type)
+	}
+
+	if in.HoldInvoice {
+		return nil, fmt.Errorf("default wallet %s does not accept hold invoice", wallet[0].Name)
+	}
 
 	lndHubClient := lndhub.NewClient(&http.Client{})
+
 	pay_req, err := lndHubClient.CreateInvoice(ctx, lndhub.Credentials{
-		Token: "4e265465cac4cd3d9d50f84cacc7f4dd0cbd9ed1"}, uint64(1), "hardcoded invoice")
+		Token: hex.EncodeToString(wallet[0].Auth)}, in.AmountSats, in.Memo)
 	if err != nil {
 		return nil, err
 	}
