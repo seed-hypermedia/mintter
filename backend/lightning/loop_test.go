@@ -32,7 +32,7 @@ var (
 	lndDaveAddress            = "0.0.0.0:9775"
 
 	gRPCLoopserverAddress   = "127.0.0.1:11009"
-	loopserverImage         = "lightninglabs/loopserver:v0.9.21-beta"
+	loopserverImage         = "lightninglabs/loopserver:latest"
 	loopserverContainerName = "loopserverContainer"
 	rootContainerDir        = "/root/.lnd"
 	loopserverCmd           = []string{"daemon", "--maxamt=5000000",

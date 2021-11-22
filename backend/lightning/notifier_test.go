@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -460,10 +461,15 @@ func startContainer(imageName string, cmd []string, containerName string, volume
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if _, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{}); err != nil {
+	out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
+	if err != nil {
 		return "", err
 	}
 
+	defer out.Close()
+	if _, err := ioutil.ReadAll(out); err != nil {
+		panic(err)
+	}
 	args := filters.Arg("ancestor", imageName)
 	containerFilters := filters.NewArgs(args)
 
