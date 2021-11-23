@@ -468,9 +468,9 @@ func startContainer(imageName string, cmd []string, containerName string, volume
 
 	defer out.Close()
 	if _, err := ioutil.ReadAll(out); err != nil {
-		panic(err)
+		return "", err
 	}
-	args := filters.Arg("ancestor", imageName)
+	args := filters.Arg("name", containerName)
 	containerFilters := filters.NewArgs(args)
 
 	if cList, err := cli.ContainerList(ctx, types.ContainerListOptions{All: true, Filters: containerFilters}); err != nil {
@@ -521,7 +521,7 @@ func startContainer(imageName string, cmd []string, containerName string, volume
 
 	} else {
 		if len(cList) == 0 {
-			return resp.ID, fmt.Errorf("Containrer " + containerName + " disapeared right after init")
+			return resp.ID, fmt.Errorf("Container " + containerName + " disapeared right after init")
 		}
 		for _, container := range cList {
 
