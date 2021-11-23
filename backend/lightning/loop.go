@@ -128,6 +128,9 @@ func (l *Loop) Start(lndhost string, lndDir string) error {
 	} else {
 		l.log.Info("Terms", zap.String("InOut", terms))
 	}
+
+	return nil
+	//TODO: see if we can live without the below
 	select {
 	case <-l.interceptor.ShutdownChannel():
 		l.log.Info("Received SIGINT (Ctrl+C).")
