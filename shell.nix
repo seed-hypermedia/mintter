@@ -17,6 +17,7 @@ let
       yarn
       tauri.cli
       protoc-gen-ts_proto
+      golangci-lint
       # pkg-config
       # gcc
     ];
