@@ -1,0 +1,26 @@
+# Based on the official GitHub Action: https://github.com/golangci/golangci-lint-action#how-to-use
+
+name: golangci-lint
+on:
+  pull_request: {}
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+          only-new-issues: true
+
+          # Optional: golangci-lint command line arguments.
+          # args: --issues-exit-code=0
+
+          # skip-go-installation: true
+          # skip-pkg-cache: true
+          # skip-build-cache: true
