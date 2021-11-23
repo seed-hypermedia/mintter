@@ -17,9 +17,7 @@ jobs:
         with:
           version: latest
           only-new-issues: true
-
-          # Optional: golangci-lint command line arguments.
-          # args: --issues-exit-code=0
+          args: --timeout=5m
 
           # skip-go-installation: true
           # skip-pkg-cache: true
