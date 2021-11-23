@@ -211,19 +211,19 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	if err := os.RemoveAll(lnconfDave.LndDir); !os.IsNotExist(err) && err != nil {
 		return fmt.Errorf("Could not remove: " + lnconfDave.LndDir + err.Error())
 	}
-	logger, _ := zap.NewProduction()  //zap.NewExample()
-	logger2, _ := zap.NewProduction() //zap.NewExample()
-	logger3, _ := zap.NewProduction() //zap.NewExample()
-	logger4, _ := zap.NewProduction() //zap.NewExample()
-	defer logger.Sync()
-	defer logger2.Sync()
-	defer logger3.Sync()
-	defer logger4.Sync()
-	logger.Named("Bob")
-	logger2.Named("Alice")
-	logger3.Named("Carol")
-	logger4.Named("Dave")
-	alice, errAlice := NewLdaemon(logger2, lnconfAlice, nil)
+	loggerA, _ := zap.NewProduction() //zap.NewExample()
+	loggerB, _ := zap.NewProduction() //zap.NewExample()
+	loggerC, _ := zap.NewProduction() //zap.NewExample()
+	loggerD, _ := zap.NewProduction() //zap.NewExample()
+	defer loggerA.Sync()
+	defer loggerB.Sync()
+	defer loggerC.Sync()
+	defer loggerD.Sync()
+	loggerA.Named("Alice")
+	loggerB.Named("Bob")
+	loggerC.Named("Carol")
+	loggerD.Named("Dave")
+	alice, errAlice := NewLdaemon(loggerA, lnconfAlice, nil)
 	if errAlice != nil {
 		return errAlice
 	}
@@ -253,7 +253,7 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 
 	intercept := alice.GetIntercept()
 
-	bob, errBob := NewLdaemon(logger, lnconfBob, intercept)
+	bob, errBob := NewLdaemon(loggerB, lnconfBob, intercept)
 	if errBob != nil {
 		return errBob
 	}
@@ -262,7 +262,7 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 		return errBob
 	}
 
-	carol, errCarol := NewLdaemon(logger, lnconfCarol, intercept)
+	carol, errCarol := NewLdaemon(loggerC, lnconfCarol, intercept)
 	if errCarol != nil {
 		return errCarol
 	}
@@ -271,7 +271,7 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 		return errCarol
 	}
 
-	dave, errDave := NewLdaemon(logger, lnconfDave, intercept)
+	dave, errDave := NewLdaemon(loggerD, lnconfDave, intercept)
 	if errDave != nil {
 		return errDave
 	}
@@ -317,10 +317,13 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 			switch update := a.(type) {
 			case DaemonReadyEvent:
 				aliceID = update.IdentityPubkey
+				loggerA.Info("Alice ready starting loopserver")
+				time.Sleep(3 * time.Second)
 				if loopServerContainerID, err = startContainer(loopserverImage, loopserverCmd, loopserverContainerName, []string{testDir + ":" + rootContainerDir}); err != nil {
 					return err
 				}
 				defer stopContainer(loopServerContainerID, loopserverContainerName)
+				loggerA.Info("Alice ready starting loop client")
 				loop.Start(lnconfAlice.RawRPCListeners[0], lnconfAlice.LndDir) // this only applies to alice
 				if aliceAddr, err := alice.NewAddress("", 0); err != nil {
 					return fmt.Errorf("Could not get new address" + err.Error())
@@ -328,8 +331,10 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 					if err = sendToAddress(uint64(aliceBalance), aliceAddr, bitcoindContainerID, true); err != nil {
 						return fmt.Errorf("Problem mining blocks" + err.Error())
 					}
+					loggerA.Info("Alice received funds from miner ", zap.Uint64("sats", uint64(aliceBalance)))
 				}
 			case ChainSychronizationEvent:
+				loggerA.Info("Alice sync event received ", zap.Uint32("height", update.BlockHeight), zap.Bool("synced", update.Synced))
 				if update.Synced {
 					if balance, err := alice.GetBalance(""); err != nil {
 						return err
@@ -338,6 +343,8 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 							strconv.FormatInt(int64(aliceBalance), 10) + "sats, but got:" +
 							strconv.FormatInt(int64(totFunds), 10) + "sats")
 					} else {
+						loggerA.Info("Alice synced", zap.Bool("BobReady", bobReady), zap.Bool("alice2bobChan", alice2bobChan),
+							zap.Bool("carolReady", bobReady), zap.Bool("alice2carolChan", alice2bobChan))
 						if bobReady && !alice2bobChan {
 							if _, err := alice.OpenChannel(bobID, lndBobAddress, int64(aliceBalance)/4, 0,
 								true, blocksAfterOpening == 0, 0, false); err != nil {
@@ -375,6 +382,7 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 		case b := <-clientBob.Updates():
 			switch update := b.(type) {
 			case DaemonReadyEvent:
+				loggerA.Info("Bob ready")
 				bobID = update.IdentityPubkey
 				if bobAddr, err := bob.NewAddress("", 0); err != nil {
 					return fmt.Errorf("Could not get new address" + err.Error())
@@ -383,13 +391,15 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 						return fmt.Errorf("Problem mining blocks" + err.Error())
 					}
 				}
+				loggerA.Info("Bob received funds from miner ", zap.Uint64("sats", uint64(bobBalance)))
 			case ChainSychronizationEvent:
+				loggerA.Info("Bob sync event received ", zap.Uint32("height", update.BlockHeight), zap.Bool("synced", update.Synced))
 				if update.Synced {
 					if balance, err := bob.GetBalance(""); err != nil {
 						return err
-					} else if totFunds := balance.TotalFunds(false); totFunds != int64(bobBalance) {
+					} else if totFunds := balance.TotalFunds(false); totFunds != int64(bobBalance)+int64(daveBalance)/10 { //own balance plus daves pushed
 						return fmt.Errorf("Bob has a wrong balance. Expected:" +
-							strconv.FormatInt(int64(bobBalance), 10) + "sats, but got:" +
+							strconv.FormatInt(int64(bobBalance)+int64(daveBalance)/10, 10) + "sats, but got:" +
 							strconv.FormatInt(int64(totFunds), 10) + "sats")
 					} else {
 						if aliceReady && !alice2bobChan {
@@ -419,6 +429,7 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 		case c := <-clientCarol.Updates():
 			switch update := c.(type) {
 			case DaemonReadyEvent:
+				loggerA.Info("Carol ready")
 				carolID = update.IdentityPubkey
 				if carolAddr, err := carol.NewAddress("", 0); err != nil {
 					return fmt.Errorf("Could not get new address" + err.Error())
@@ -426,14 +437,16 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 					if err = sendToAddress(uint64(carolBalance), carolAddr, bitcoindContainerID, true); err != nil {
 						return fmt.Errorf("Problem mining blocks" + err.Error())
 					}
+					loggerA.Info("Carol received funds from miner ", zap.Uint64("sats", uint64(carolBalance)))
 				}
 			case ChainSychronizationEvent:
+				loggerA.Info("Carol sync event received ", zap.Uint32("height", update.BlockHeight), zap.Bool("synced", update.Synced))
 				if update.Synced {
 					if balance, err := carol.GetBalance(""); err != nil {
 						return err
-					} else if totFunds := balance.TotalFunds(false); totFunds != int64(carolBalance) {
+					} else if totFunds := balance.TotalFunds(false); totFunds != int64(carolBalance)+int64(daveBalance)/10 { //own balance plus daves pushed
 						return fmt.Errorf("Carol has a wrong balance. Expected:" +
-							strconv.FormatInt(int64(carolBalance), 10) + "sats, but got:" +
+							strconv.FormatInt(int64(carolBalance)+int64(daveBalance)/10, 10) + "sats, but got:" +
 							strconv.FormatInt(int64(totFunds), 10) + "sats")
 					} else {
 						if aliceReady && !alice2carolChan {
@@ -463,6 +476,7 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 		case d := <-clientDave.Updates():
 			switch update := d.(type) {
 			case DaemonReadyEvent:
+				loggerA.Info("Dave ready")
 				daveID = update.IdentityPubkey
 				if daveAddr, err := dave.NewAddress("", 0); err != nil {
 					return fmt.Errorf("Could not get new address" + err.Error())
@@ -470,14 +484,16 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 					if err = sendToAddress(uint64(daveBalance), daveAddr, bitcoindContainerID, true); err != nil {
 						return fmt.Errorf("Problem mining blocks" + err.Error())
 					}
+					loggerA.Info("Dave received funds from miner ", zap.Uint64("sats", uint64(daveBalance)))
 				}
 			case ChainSychronizationEvent:
+				loggerA.Info("Dave sync event received ", zap.Uint32("height", update.BlockHeight), zap.Bool("synced", update.Synced))
 				if update.Synced {
-					if balance, err := carol.GetBalance(""); err != nil {
+					if balance, err := dave.GetBalance(""); err != nil {
 						return err
-					} else if totFunds := balance.TotalFunds(false); totFunds != int64(carolBalance) {
-						return fmt.Errorf("Carol has a wrong balance. Expected:" +
-							strconv.FormatInt(int64(carolBalance), 10) + "sats, but got:" +
+					} else if totFunds := balance.TotalFunds(false); totFunds != int64(daveBalance) {
+						return fmt.Errorf("Dave has a wrong balance. Expected:" +
+							strconv.FormatInt(int64(daveBalance), 10) + "sats, but got:" +
 							strconv.FormatInt(int64(totFunds), 10) + "sats")
 					} else {
 						if bobReady && !dave2bobChan {
