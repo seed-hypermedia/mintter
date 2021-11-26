@@ -24,12 +24,13 @@ import (
 )
 
 const (
-	coinbaseReward = 50
-	satsPerBtc     = 100000000
-	aliceBalance   = 16000000 // close to 0.16777215 BTC wumbo channel
-	bobBalance     = 5500000
-	htclAmtMsats   = 75000_000
-	feesPercent    = 5
+	coinbaseReward          = 50
+	satsPerBtc              = 100000000
+	aliceBalance            = 16000000 // close to 0.16777215 BTC wumbo channel
+	bobBalance              = 5500000
+	htclAmtMsats            = 75000_000
+	feesPercent             = 5
+	blocksAfterSendingMoney = 1
 )
 
 var (
@@ -243,7 +244,7 @@ waitLoop:
 			case DaemonDownEvent:
 				return update.err
 			case ChainSychronizationEvent:
-				if update.Synced && update.BlockHeight == uint32(minedBlocks+2) { //initinal mined blocks + alice funding tx + bob funding tx
+				if update.Synced && update.BlockHeight == uint32(minedBlocks+2*blocksAfterSendingMoney) { //initinal mined blocks + alice funding tx + bob funding tx
 					if balance, err := alice.GetBalance(""); err != nil {
 						return err
 					} else if totFunds := balance.TotalFunds(false); totFunds != int64(aliceBalance) {
@@ -328,7 +329,7 @@ waitLoop:
 			case DaemonDownEvent:
 				return update.err
 			case ChainSychronizationEvent:
-				if update.Synced && update.BlockHeight == uint32(minedBlocks+2) { //initinal mined blocks + alice funding tx + bob funding tx
+				if update.Synced && update.BlockHeight == uint32(minedBlocks+2*blocksAfterSendingMoney) { //initinal mined blocks + alice funding tx + bob funding tx
 					if balance, err := bob.GetBalance(""); err != nil {
 						return err
 					} else if totFunds := balance.TotalFunds(false); totFunds != int64(bobBalance) {
@@ -598,7 +599,7 @@ func sendToAddress(amount uint64, addr string, containerID string, instantMining
 	defer cancel()
 	btcAmount := float32(amount) / float32(satsPerBtc)
 	mineCmd := []string{"bitcoin-cli", "-regtest", "-rpcuser=" + bitcoindRPCGenericUser,
-		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "-generate", "1"}
+		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "-generate", strconv.FormatInt(int64(blocksAfterSendingMoney), 10)}
 
 	sendCmd := []string{"bitcoin-cli", "-regtest", "-rpcuser=" + bitcoindRPCGenericUser,
 		"-rpcpassword=" + bitcoindRPCGenericAsciiPass, "sendtoaddress", addr, fmt.Sprintf("%v", btcAmount)}

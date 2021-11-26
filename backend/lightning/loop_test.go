@@ -3,10 +3,10 @@ package lightning
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 
+	"github.com/lightningnetwork/lnd/aezeed"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
@@ -47,6 +47,19 @@ var (
 		"-rpcauth=" + bitcoindRPCBobUser + ":" + bitcoindRPCBobBinaryPass,
 		"-rpcauth=" + bitcoindRPCCarolUser + ":" + bitcoindRPCCarolBinaryPass,
 		"-rpcauth=" + bitcoindRPCDaveUser + ":" + bitcoindRPCDaveBinaryPass}
+
+	randomentropy1 = [aezeed.EntropySize]byte{
+		0x81, 0xa3, 0x37, 0xd8,
+		0x63, 0x58, 0xe6, 0x96,
+		0x01, 0xe3, 0x95, 0xe4,
+		0x1e, 0x0b, 0x4c, 0x2a,
+	}
+	randomentropy2 = [aezeed.EntropySize]byte{
+		0x81, 0xb6, 0x37, 0x60,
+		0x63, 0x00, 0xe6, 0x96,
+		0x0d, 0xe7, 0x9f, 0xe4,
+		0x3f, 0x59, 0x4c, 0xfd,
+	}
 )
 
 func TestLoop(t *testing.T) {
@@ -145,7 +158,7 @@ func TestLoop(t *testing.T) {
 				RecoveryWindow:   0,
 				AezeedPassphrase: testVectors[0].password,
 				AezeedMnemonics:  []string{""},
-				SeedEntropy:      testVectors[0].entropy[:],
+				SeedEntropy:      randomentropy1[:],
 				StatelessInit:    false,
 			},
 			credentialsDave: WalletSecurity{
@@ -153,7 +166,7 @@ func TestLoop(t *testing.T) {
 				RecoveryWindow:   0,
 				AezeedPassphrase: testVectors[2].password,
 				AezeedMnemonics:  []string{""},
-				SeedEntropy:      testVectors[2].entropy[:],
+				SeedEntropy:      randomentropy2[:],
 				StatelessInit:    false,
 			},
 			confirmationBlocks: 1,
@@ -309,7 +322,9 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 	logger5, _ := zap.NewProduction() //zap.NewExample()
 	loop := NewLoop(logger5, lnconfLoopAlice, intercept)
 	var i = 0
-	alice2bobChan, alice2carolChan, dave2bobChan, dave2carolChan := false, false, false, false
+	alice2daveErrorChan := make(chan error)
+	dave2aliceErrorChan := make(chan error)
+	alice2bobChan, alice2carolChan, dave2bobChan, dave2carolChan, dave2aliceChan, alice2daveChan := false, false, false, false, false, false
 	aliceReady, bobReady, carolReady, daveReady, aliceID, bobID, carolID, daveID := false, false, false, false, "", "", "", ""
 	for {
 		select {
@@ -317,7 +332,7 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 			switch update := a.(type) {
 			case DaemonReadyEvent:
 				aliceID = update.IdentityPubkey
-				loggerA.Info("Alice ready starting loopserver")
+				loggerA.Info("Alice ready. starting loopserver", zap.String("ID", aliceID))
 				time.Sleep(3 * time.Second)
 				if loopServerContainerID, err = startContainer(loopserverImage, loopserverCmd, loopserverContainerName, []string{testDir + ":" + rootContainerDir}); err != nil {
 					return err
@@ -332,57 +347,68 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 						return fmt.Errorf("Problem mining blocks" + err.Error())
 					}
 					loggerA.Info("Alice received funds from miner ", zap.Uint64("sats", uint64(aliceBalance)))
+					time.Sleep(3 * time.Second)
 				}
 			case ChainSychronizationEvent:
 				loggerA.Info("Alice sync event received ", zap.Uint32("height", update.BlockHeight), zap.Bool("synced", update.Synced))
-				if update.Synced {
-					if balance, err := alice.GetBalance(""); err != nil {
-						return err
-					} else if totFunds := balance.TotalFunds(false); totFunds != int64(aliceBalance) {
-						return fmt.Errorf("Alice has a wrong balance. Expected:" +
-							strconv.FormatInt(int64(aliceBalance), 10) + "sats, but got:" +
-							strconv.FormatInt(int64(totFunds), 10) + "sats")
-					} else {
-						loggerA.Info("Alice synced", zap.Bool("BobReady", bobReady), zap.Bool("alice2bobChan", alice2bobChan),
-							zap.Bool("carolReady", bobReady), zap.Bool("alice2carolChan", alice2bobChan))
-						if bobReady && !alice2bobChan {
-							if _, err := alice.OpenChannel(bobID, lndBobAddress, int64(aliceBalance)/4, 0,
-								true, blocksAfterOpening == 0, 0, false); err != nil {
-								return err
-							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
-								return err
-							} else {
-								alice2bobChan = true
-							}
-						}
-						if carolReady && !alice2carolChan {
-							if _, err := alice.OpenChannel(carolID, lndCarolAddress, int64(aliceBalance)/4, 0,
-								true, blocksAfterOpening == 0, 0, false); err != nil {
-								return err
-							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
-								return err
-							} else {
-								alice2carolChan = true
-							}
-						}
-						aliceReady = true
+				if update.Synced && update.BlockHeight == uint32(minedBlocks+4*blocksAfterSendingMoney) { //initinal mined blocks + alice funding tx(3 confirmations) + bob funding tx(3 confirmations) + carol funding tx(3 confirmations) + dave funding tx(3 confirmations)
 
-						// we need to open a channel to dave anyway so we wait for him to be ready
-						time.Sleep(10 * time.Second)
-						if _, err := alice.OpenChannel(daveID, lndDaveAddress, int64(aliceBalance)/4, 0,
-							false, blocksAfterOpening == 0, 0, false); err != nil {
+					loggerA.Info("Alice synced", zap.Bool("BobReady", bobReady), zap.Bool("alice2bobChan", alice2bobChan),
+						zap.Bool("carolReady", bobReady), zap.Bool("alice2carolChan", alice2bobChan))
+					if bobReady && !alice2bobChan {
+						loggerA.Info("Alice trying to open a channel to Bob")
+						time.Sleep(1 * time.Second) //To give time the wallet knows it is already synced
+						if _, err := alice.OpenChannel(bobID, lndBobAddress, int64(aliceBalance)/4, 0,
+							true, blocksAfterOpening == 0, 0, false); err != nil {
 							return err
 						} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
 							return err
+						} else {
+							alice2bobChan = true
+							loggerA.Info("Alice opened a channel to Bob")
 						}
-
 					}
+					if carolReady && !alice2carolChan {
+						loggerA.Info("Alice trying to open a channel to Carol")
+						time.Sleep(1 * time.Second) //To give time the wallet knows it is already synced
+						if _, err := alice.OpenChannel(carolID, lndCarolAddress, int64(aliceBalance)/4, 0,
+							true, blocksAfterOpening == 0, 0, false); err != nil {
+							return err
+						} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+							return err
+						} else {
+							alice2carolChan = true
+							loggerA.Info("Alice opened a channel to Carol")
+						}
+					}
+					aliceReady = true
+					go func() {
+						time.Sleep(10 * time.Second) // we need to open a channel to dave anyway so we wait for him to be ready
+						if daveID == "" {
+							loggerA.Warn("Alice wanted to open a channel to Dave but Dave is not ready yet, waiting additional secs")
+							time.Sleep(10 * time.Second)
+							if daveID == "" {
+								alice2daveErrorChan <- fmt.Errorf("Dave definitely offline")
+							}
+						}
+						loggerA.Info("Alice trying to open a channel to Dave")
+						if _, err := alice.OpenChannel(daveID, lndDaveAddress, int64(aliceBalance)/4, 0,
+							false, blocksAfterOpening == 0, 0, false); err != nil {
+							alice2daveErrorChan <- err
+						} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+							alice2daveErrorChan <- err
+						}
+						loggerA.Info("Alice opened a channel to Dave")
+						alice2daveChan = true
+						alice2daveErrorChan <- nil
+					}()
+
 				}
 			}
 		case b := <-clientBob.Updates():
 			switch update := b.(type) {
 			case DaemonReadyEvent:
-				loggerA.Info("Bob ready")
+				loggerB.Info("Bob ready", zap.String("ID", update.IdentityPubkey))
 				bobID = update.IdentityPubkey
 				if bobAddr, err := bob.NewAddress("", 0); err != nil {
 					return fmt.Errorf("Could not get new address" + err.Error())
@@ -391,45 +417,33 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 						return fmt.Errorf("Problem mining blocks" + err.Error())
 					}
 				}
-				loggerA.Info("Bob received funds from miner ", zap.Uint64("sats", uint64(bobBalance)))
+				loggerB.Info("Bob received funds from miner ", zap.Uint64("sats", uint64(bobBalance)))
+				time.Sleep(3 * time.Second)
 			case ChainSychronizationEvent:
-				loggerA.Info("Bob sync event received ", zap.Uint32("height", update.BlockHeight), zap.Bool("synced", update.Synced))
-				if update.Synced {
-					if balance, err := bob.GetBalance(""); err != nil {
-						return err
-					} else if totFunds := balance.TotalFunds(false); totFunds != int64(bobBalance)+int64(daveBalance)/10 { //own balance plus daves pushed
-						return fmt.Errorf("Bob has a wrong balance. Expected:" +
-							strconv.FormatInt(int64(bobBalance)+int64(daveBalance)/10, 10) + "sats, but got:" +
-							strconv.FormatInt(int64(totFunds), 10) + "sats")
-					} else {
-						if aliceReady && !alice2bobChan {
-							if _, err := bob.OpenChannel(aliceID, lndAliceAddress, int64(bobBalance)/4, 0,
-								true, blocksAfterOpening == 0, 0, false); err != nil {
-								return err
-							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
-								return err
-							} else {
-								alice2bobChan = true
-							}
+				loggerB.Info("Bob sync event received ", zap.Uint32("height", update.BlockHeight), zap.Bool("synced", update.Synced))
+				if update.Synced && update.BlockHeight == uint32(minedBlocks+4*blocksAfterSendingMoney) { //initinal mined blocks + alice funding tx(3 confirmations) + bob funding tx(3 confirmations) + carol funding tx(3 confirmations) + dave funding tx(3 confirmations)
+
+					if aliceReady && !alice2bobChan {
+						loggerB.Info("Bob trying to open a channel to Alice")
+						time.Sleep(1 * time.Second) //To give time the wallet knows it is already synced
+						if _, err := bob.OpenChannel(aliceID, lndAliceAddress, int64(bobBalance)/4, 0,
+							true, blocksAfterOpening == 0, 0, false); err != nil {
+							return err
+						} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+							return err
+						} else {
+							alice2bobChan = true
+							loggerB.Info("Bob opened a channel to Alice")
 						}
-						if daveReady && !dave2bobChan {
-							if _, err := bob.OpenChannel(daveID, lndDaveAddress, int64(bobBalance)/4, int64(bobBalance)/4,
-								false, blocksAfterOpening == 0, 0, false); err != nil {
-								return err
-							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
-								return err
-							} else {
-								dave2bobChan = true
-							}
-						}
-						bobReady = true
 					}
+					bobReady = true
+
 				}
 			}
 		case c := <-clientCarol.Updates():
 			switch update := c.(type) {
 			case DaemonReadyEvent:
-				loggerA.Info("Carol ready")
+				loggerC.Info("Carol ready", zap.String("ID", update.IdentityPubkey))
 				carolID = update.IdentityPubkey
 				if carolAddr, err := carol.NewAddress("", 0); err != nil {
 					return fmt.Errorf("Could not get new address" + err.Error())
@@ -437,46 +451,34 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 					if err = sendToAddress(uint64(carolBalance), carolAddr, bitcoindContainerID, true); err != nil {
 						return fmt.Errorf("Problem mining blocks" + err.Error())
 					}
-					loggerA.Info("Carol received funds from miner ", zap.Uint64("sats", uint64(carolBalance)))
+					loggerC.Info("Carol received funds from miner ", zap.Uint64("sats", uint64(carolBalance)))
+					time.Sleep(3 * time.Second)
 				}
 			case ChainSychronizationEvent:
-				loggerA.Info("Carol sync event received ", zap.Uint32("height", update.BlockHeight), zap.Bool("synced", update.Synced))
-				if update.Synced {
-					if balance, err := carol.GetBalance(""); err != nil {
-						return err
-					} else if totFunds := balance.TotalFunds(false); totFunds != int64(carolBalance)+int64(daveBalance)/10 { //own balance plus daves pushed
-						return fmt.Errorf("Carol has a wrong balance. Expected:" +
-							strconv.FormatInt(int64(carolBalance)+int64(daveBalance)/10, 10) + "sats, but got:" +
-							strconv.FormatInt(int64(totFunds), 10) + "sats")
-					} else {
-						if aliceReady && !alice2carolChan {
-							if _, err := carol.OpenChannel(aliceID, lndAliceAddress, int64(carolBalance)/4, 0,
-								true, blocksAfterOpening == 0, 0, false); err != nil {
-								return err
-							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
-								return err
-							} else {
-								alice2carolChan = true
-							}
+				loggerC.Info("Carol sync event received ", zap.Uint32("height", update.BlockHeight), zap.Bool("synced", update.Synced))
+				if update.Synced && update.BlockHeight == uint32(minedBlocks+4*blocksAfterSendingMoney) { //initinal mined blocks + alice funding tx(3 confirmations) + bob funding tx(3 confirmations) + carol funding tx(3 confirmations) + dave funding tx(3 confirmations)
+
+					if aliceReady && !alice2carolChan {
+						loggerC.Info("Carol trying to open a channel to Alice")
+						time.Sleep(1 * time.Second) //To give time the wallet knows it is already synced
+						if _, err := carol.OpenChannel(aliceID, lndAliceAddress, int64(carolBalance)/4, 0,
+							true, blocksAfterOpening == 0, 0, false); err != nil {
+							return err
+						} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+							return err
+						} else {
+							alice2carolChan = true
+							loggerC.Info("Carol opened a channel to Alice")
 						}
-						if daveReady && !dave2carolChan {
-							if _, err := bob.OpenChannel(daveID, lndDaveAddress, int64(carolBalance)/4, int64(carolBalance)/4,
-								false, blocksAfterOpening == 0, 0, false); err != nil {
-								return err
-							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
-								return err
-							} else {
-								dave2carolChan = true
-							}
-						}
-						carolReady = true
 					}
+					carolReady = true
+
 				}
 			}
 		case d := <-clientDave.Updates():
 			switch update := d.(type) {
 			case DaemonReadyEvent:
-				loggerA.Info("Dave ready")
+				loggerD.Info("Dave ready", zap.String("ID", update.IdentityPubkey))
 				daveID = update.IdentityPubkey
 				if daveAddr, err := dave.NewAddress("", 0); err != nil {
 					return fmt.Errorf("Could not get new address" + err.Error())
@@ -484,52 +486,108 @@ func loopTest(t *testing.T, lnconfAlice *config.LND, lnconfBob *config.LND,
 					if err = sendToAddress(uint64(daveBalance), daveAddr, bitcoindContainerID, true); err != nil {
 						return fmt.Errorf("Problem mining blocks" + err.Error())
 					}
-					loggerA.Info("Dave received funds from miner ", zap.Uint64("sats", uint64(daveBalance)))
+					loggerD.Info("Dave received funds from miner ", zap.Uint64("sats", uint64(daveBalance)))
+					time.Sleep(3 * time.Second)
 				}
 			case ChainSychronizationEvent:
-				loggerA.Info("Dave sync event received ", zap.Uint32("height", update.BlockHeight), zap.Bool("synced", update.Synced))
-				if update.Synced {
-					if balance, err := dave.GetBalance(""); err != nil {
-						return err
-					} else if totFunds := balance.TotalFunds(false); totFunds != int64(daveBalance) {
-						return fmt.Errorf("Dave has a wrong balance. Expected:" +
-							strconv.FormatInt(int64(daveBalance), 10) + "sats, but got:" +
-							strconv.FormatInt(int64(totFunds), 10) + "sats")
-					} else {
-						if bobReady && !dave2bobChan {
-							if _, err := dave.OpenChannel(bobID, lndBobAddress, int64(daveBalance)/10, int64(daveBalance)/10,
-								false, blocksAfterOpening == 0, 0, false); err != nil {
-								return err
-							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
-								return err
-							} else {
-								dave2bobChan = true
-							}
-						}
-						if carolReady && !dave2carolChan {
-							if _, err := dave.OpenChannel(carolID, lndCarolAddress, int64(daveBalance)/10, int64(daveBalance)/10,
-								false, blocksAfterOpening == 0, 0, false); err != nil {
-								return err
-							} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
-								return err
-							} else {
-								dave2carolChan = true
-							}
-						}
-						daveReady = true
+				loggerD.Info("Dave sync event received ", zap.Uint32("height", update.BlockHeight), zap.Bool("synced", update.Synced))
+				if update.Synced && update.BlockHeight == uint32(minedBlocks+4*blocksAfterSendingMoney) { //initinal mined blocks + alice funding tx(3 confirmations) + bob funding tx(3 confirmations) + carol funding tx(3 confirmations) + dave funding tx(3 confirmations)
 
-						// we need to open a channel to alice anyway so we wait for him to be ready
-						time.Sleep(10 * time.Second)
-						if _, err := dave.OpenChannel(aliceID, lndAliceAddress, int64(daveBalance)/4, 0,
+					if bobReady && !dave2bobChan {
+						loggerD.Info("Dave trying to open a channel to Bob")
+						time.Sleep(1 * time.Second) //To give time the wallet knows it is already synced
+						if _, err := dave.OpenChannel(bobID, lndBobAddress, int64(daveBalance)/5, int64(daveBalance)/10,
 							false, blocksAfterOpening == 0, 0, false); err != nil {
 							return err
 						} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
 							return err
+						} else {
+							dave2bobChan = true
+							loggerD.Info("Dave opened a channel to Bob")
 						}
 					}
+					if carolReady && !dave2carolChan {
+						loggerD.Info("Dave trying to open a channel to Carol")
+						time.Sleep(1 * time.Second) //To give time the wallet knows it is already synced
+						if _, err := dave.OpenChannel(carolID, lndCarolAddress, int64(daveBalance)/5, int64(daveBalance)/10,
+							false, blocksAfterOpening == 0, 0, false); err != nil {
+							return err
+						} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+							return err
+						} else {
+							dave2carolChan = true
+							loggerD.Info("Dave opened a channel to Carol")
+						}
+					}
+					daveReady = true
+					aliceReady = true
+					go func() {
+						time.Sleep(10 * time.Second) // we need to open a channel to dave anyway so we wait for him to be ready
+						if aliceID == "" {
+							loggerD.Warn("Dave wanted to open a channel to Alice but Alice is not ready yet, waiting additional secs")
+							time.Sleep(10 * time.Second)
+							if aliceID == "" {
+								dave2aliceErrorChan <- fmt.Errorf("Alice definitely offline")
+							}
+						}
+						loggerD.Info("Dave trying to open a channel to Alice")
+						if _, err := dave.OpenChannel(aliceID, lndAliceAddress, int64(daveBalance)/4, 0,
+							false, blocksAfterOpening == 0, 0, false); err != nil {
+							dave2aliceErrorChan <- err
+						} else if err := mineBlocks(blocksAfterOpening, "", bitcoindContainerID); err != nil {
+							dave2aliceErrorChan <- err
+						}
+						dave2aliceChan = true
+						loggerD.Info("Dave opened a channel to Alice")
+						dave2aliceErrorChan <- nil
+					}()
+
 				}
 			}
 		default:
+			loggerD.Info("Defaulting with", zap.Bool("alice2bobChan", alice2bobChan), zap.Bool("alice2carolChan", alice2carolChan),
+				zap.Bool("dave2bobChan", dave2bobChan), zap.Bool("dave2carolChan", dave2carolChan), zap.Bool("dave2aliceChan", dave2aliceChan),
+				zap.Bool("alice2daveChan", alice2daveChan), zap.Bool("aliceReady", aliceReady), zap.Bool("daveReady", daveReady))
+			if alice2bobChan && alice2carolChan && dave2bobChan && dave2carolChan && dave2aliceChan && alice2daveChan && daveReady && aliceReady {
+				loggerD.Info("Waiting for the Alice<->Dave channel gorutine to finish")
+				if err := <-dave2aliceErrorChan; err != nil {
+					return err
+				} else if err := <-alice2daveErrorChan; err != nil {
+					return err
+				}
+				/*
+					loggerD.Info("All channels have been set up, checking balances...")
+					if balance, err := dave.GetBalance(""); err != nil {
+						return err
+					} else if totFunds := balance.TotalFunds(false); totFunds != int64(daveBalance)-int64(daveBalance)/5 {
+						return fmt.Errorf("Dave has a wrong balance. Expected:" +
+							strconv.FormatInt(int64(daveBalance)-int64(daveBalance)/5, 10) + "sats, but got:" +
+							strconv.FormatInt(int64(totFunds), 10) + "sats")
+					}50000000-10000000
+					if balance, err := carol.GetBalance(""); err != nil {
+						return err
+					} else if totFunds := balance.TotalFunds(false); totFunds != int64(carolBalance)+int64(daveBalance)/10 { //own balance plus daves pushed
+						return fmt.Errorf("Carol has a wrong balance. Expected:" +
+							strconv.FormatInt(int64(carolBalance)+int64(daveBalance)/10, 10) + "sats, but got:" +
+							strconv.FormatInt(int64(totFunds), 10) + "sats")
+					}
+					if balance, err := bob.GetBalance(""); err != nil {
+						return err
+					} else if totFunds := balance.TotalFunds(false); totFunds != int64(bobBalance)+int64(daveBalance)/10 { //own balance plus daves pushed
+						return fmt.Errorf("Bob has a wrong balance. Expected:" +
+							strconv.FormatInt(int64(bobBalance)+int64(daveBalance)/10, 10) + "sats, but got:" +
+							strconv.FormatInt(int64(totFunds), 10) + "sats")
+					}
+					if balance, err := alice.GetBalance(""); err != nil {
+						return err
+					} else if totFunds := balance.TotalFunds(false); totFunds != int64(aliceBalance) {
+						return fmt.Errorf("Alice has a wrong balance. Expected:" +
+							strconv.FormatInt(int64(aliceBalance), 10) + "sats, but got:" +
+							strconv.FormatInt(int64(totFunds), 10) + "sats")
+					}*/
+				loggerD.Info("All balances are ok, starting swap")
+
+			}
 			i++
 			if i < 60 {
 				time.Sleep(3 * time.Second)

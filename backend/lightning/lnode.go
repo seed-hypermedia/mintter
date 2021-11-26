@@ -370,6 +370,7 @@ func (d *Ldaemon) createConfig(workingDir string) (*lnd.Config, error) {
 		lndConfig.Bitcoin.MainNet = true
 	} else if d.cfg.Network == "regtest" {
 		lndConfig.Bitcoin.RegTest = true
+		lndConfig.MaxPendingChannels = 2 // Since unit tests open multiple channels very quick
 	} else {
 		lndConfig.Bitcoin.TestNet3 = true
 	}
