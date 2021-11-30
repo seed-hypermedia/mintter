@@ -12,13 +12,6 @@ import (
 	"crawshaw.io/sqlite"
 )
 
-func init() {
-	sqlitegen.AddInitialism(
-		"IPFS",
-		"CID",
-	)
-}
-
 func generateSchema() error {
 	dir, err := ioutil.TempDir("", "sqliteschema-")
 	if err != nil {

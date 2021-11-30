@@ -4,11 +4,19 @@ package sqliteschema
 
 import (
 	"fmt"
+	"mintter/backend/db/sqlitegen"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"go.uber.org/multierr"
 )
+
+func init() {
+	sqlitegen.AddInitialism(
+		"IPFS",
+		"CID",
+	)
+}
 
 // The list with a global set of database migrations.
 // Append-only! DO NOT REMOVE, EDIT, OR REORDER PREVIOUS ENTRIES.
