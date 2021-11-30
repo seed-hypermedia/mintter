@@ -2,6 +2,7 @@ with import ./build/nix/nixpkgs.nix {};
 
 let
   protoc-gen-ts_proto = writeShellScriptBin "protoc-gen-ts_proto" "yarn run protoc-gen-ts_proto";
+  gorun = callPackage ./tools/gorun {};
   shellCommon = {
     tools = [
       bash
@@ -18,6 +19,7 @@ let
       tauri.cli
       protoc-gen-ts_proto
       golangci-lint
+      gorun
       # pkg-config
       # gcc
     ];
