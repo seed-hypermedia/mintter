@@ -13,6 +13,11 @@ import (
 // The list with a global set of database migrations.
 // Append-only! DO NOT REMOVE, EDIT, OR REORDER PREVIOUS ENTRIES.
 // Do not add statements to existing migration scripts, append new ones instead.
+//
+// IMPORTANT: after modifying migrations run go generate in this package, or do it from
+// your editor if it supports it. There should be something like "run go generate" button bellow.
+//
+//go:generate gorun -tags codegen generateSchema
 var migrations = []string{
 	`-- Stores the content of IPFS blobs.
 		CREATE TABLE ipfs_blobs (
