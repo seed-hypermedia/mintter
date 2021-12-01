@@ -23,36 +23,43 @@ func TestMakeQuery(t *testing.T) {
 		},
 	}
 
-	q := MakeQuery("getWallet", schema,
-		"SELECT", Results(
-			ResultCol(WalletsColID),
-			ResultCol(WalletsColName),
-			ResultExpr(SQLFunc("COUNT", WalletsColID.String()), "count", sqlitegen.TypeInt),
-		), '\n',
-		"FROM", WalletsTableName, '\n',
-		"WHERE", WalletsColID, "=", VarCol(WalletsColID), '\n',
-		"AND", WalletsColName, "=", Var("walletName", sqlitegen.TypeString), '\n',
-	)
-
-	wantSQL := `SELECT wallets.id, wallets.name, COUNT(wallets.id) AS count
+	tests := []struct {
+		T    sqlitegen.QueryTemplate
+		Want sqlitegen.QueryTemplate
+	}{
+		{
+			T: MakeQuery(schema, "getWallet", sqlitegen.QueryKindSingle,
+				"SELECT", Results(
+					ResultCol(WalletsColID),
+					ResultCol(WalletsColName),
+					ResultExpr(SQLFunc("COUNT", WalletsColID.String()), "count", sqlitegen.TypeInt),
+				), Line,
+				"FROM", WalletsTableName, Line,
+				"WHERE", WalletsColID, "=", VarCol(WalletsColID), "AND", WalletsColName, "=", Var("walletName", sqlitegen.TypeText),
+			),
+			Want: sqlitegen.QueryTemplate{
+				Name: "getWallet",
+				Inputs: []sqlitegen.GoSymbol{
+					{Name: "walletsID", Type: sqlitegen.TypeText},
+					{Name: "walletName", Type: sqlitegen.TypeText},
+				},
+				Outputs: []sqlitegen.GoSymbol{
+					{Name: "WalletsID", Type: sqlitegen.TypeText},
+					{Name: "WalletsName", Type: sqlitegen.TypeText},
+					{Name: "Count", Type: sqlitegen.TypeInt},
+				},
+				SQL: `SELECT wallets.id, wallets.name, COUNT(wallets.id) AS count
 FROM wallets
-WHERE wallets.id = ?
-AND wallets.name = ?
-`
-	require.Equal(t, wantSQL, q.SQL())
-
-	wantInputs := []sqlitegen.GoSymbol{
-		{Name: "walletsID", Type: sqlitegen.TypeString},
-		{Name: "walletName", Type: sqlitegen.TypeString},
+WHERE wallets.id = ? AND wallets.name = ?`,
+			},
+		},
 	}
-	require.Equal(t, wantInputs, q.Inputs)
 
-	wantOutputs := []sqlitegen.GoSymbol{
-		{Name: "WalletsID", Type: sqlitegen.TypeString},
-		{Name: "WalletsName", Type: sqlitegen.TypeString},
-		{Name: "Count", Type: sqlitegen.TypeInt},
+	for _, tt := range tests {
+		t.Run(tt.Want.Name, func(t *testing.T) {
+			require.Equal(t, tt.Want, tt.T)
+		})
 	}
-	require.Equal(t, wantOutputs, q.Outputs)
 }
 
 func TestSQLFunc(t *testing.T) {

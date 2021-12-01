@@ -20,19 +20,22 @@ import (
 // Opt: Various option functions provided by this package. See docs for each.
 //
 // See qb_test.go for examples of MakeQuery.
-func MakeQuery(name string, s sqlitegen.Schema, vv ...interface{}) sqlitegen.QueryTemplate {
-	qt := sqlitegen.QueryTemplate{
-		Name: name,
+func MakeQuery(s sqlitegen.Schema, name string, kind sqlitegen.QueryKind, vv ...interface{}) sqlitegen.QueryTemplate {
+	qb := &queryBuilder{
+		qt: sqlitegen.QueryTemplate{
+			Name: name,
+			Kind: kind,
+		},
 	}
 
 	newLine := true
 	for i, v := range vv {
-		needSpace := !newLine && i > 0 && i < len(vv)-1
+		needSpace := !newLine && i < len(vv)
 		var fn func()
 
 		switch opt := v.(type) {
 		case string:
-			fn = func() { qt.WriteString(opt) }
+			fn = func() { qb.WriteString(opt) }
 			if opt == "\n" {
 				newLine = true
 				needSpace = false
@@ -40,8 +43,7 @@ func MakeQuery(name string, s sqlitegen.Schema, vv ...interface{}) sqlitegen.Que
 				newLine = false
 			}
 		case rune:
-			fn = func() { qt.WriteRune(opt) }
-			newLine = false
+			fn = func() { qb.WriteRune(opt) }
 			if opt == '\n' {
 				newLine = true
 				needSpace = false
@@ -49,41 +51,113 @@ func MakeQuery(name string, s sqlitegen.Schema, vv ...interface{}) sqlitegen.Que
 				newLine = false
 			}
 		case Opt:
-			fn = func() { opt(s, &qt) }
+			fn = func() { opt(s, qb) }
 			newLine = false
 		case sqlitegen.Column:
-			fn = func() { qt.WriteString(string(opt)) }
+			fn = func() { qb.WriteString(string(opt)) }
 			newLine = false
 		case sqlitegen.Table:
-			fn = func() { qt.WriteString(string(opt)) }
+			fn = func() { qb.WriteString(string(opt)) }
 			newLine = false
 		default:
 			panic(fmt.Sprintf("unexpected type: %T", v))
 		}
 
 		if needSpace {
-			qt.WriteString(" ")
+			qb.WriteString(" ")
 		}
 
 		fn()
 	}
 
-	return qt
+	return qb.Build()
+}
+
+// Line is a line break character.
+const Line = '\n'
+
+type queryBuilder struct {
+	b  strings.Builder
+	qt sqlitegen.QueryTemplate
+}
+
+func (qb *queryBuilder) AddInput(s sqlitegen.GoSymbol) {
+	qb.qt.Inputs = append(qb.qt.Inputs, s)
+}
+
+func (qb *queryBuilder) AddOutput(s sqlitegen.GoSymbol) {
+	qb.qt.Outputs = append(qb.qt.Outputs, s)
+}
+
+func (qb *queryBuilder) WriteString(s string) {
+	if _, err := qb.b.WriteString(s); err != nil {
+		panic(err)
+	}
+}
+
+func (qb *queryBuilder) WriteRune(r rune) {
+	if _, err := qb.b.WriteRune(r); err != nil {
+		panic(err)
+	}
+}
+
+func (qb *queryBuilder) Build() sqlitegen.QueryTemplate {
+	qb.qt.SQL = qb.b.String()
+	return qb.qt
 }
 
 // Opt is a functional option type that modifies query template.
-type Opt func(sqlitegen.Schema, *sqlitegen.QueryTemplate)
+type Opt func(sqlitegen.Schema, *queryBuilder)
+
+// Insert generates a complete insert statement.
+func Insert(cols ...sqlitegen.Column) Opt {
+	return func(s sqlitegen.Schema, qb *queryBuilder) {
+		table := s.GetColumnTable(cols[0])
+
+		qb.WriteString("INSERT INTO ")
+		qb.WriteString(string(table))
+		qb.WriteString(" (")
+
+		for i, c := range cols {
+			if table != s.GetColumnTable(c) {
+				panic("trying to insert columns from different tables")
+			}
+
+			parts := strings.Split(string(c), ".")
+			qb.WriteString(parts[1])
+			if i < len(cols)-1 {
+				qb.WriteString(", ")
+			}
+		}
+
+		qb.WriteRune(')')
+		qb.WriteRune('\n')
+		qb.WriteString("VALUES (")
+		for i, c := range cols {
+			qb.WriteRune('?')
+			if i < len(cols)-1 {
+				qb.WriteString(", ")
+			}
+
+			qb.AddInput(sqlitegen.GoSymbol{
+				Name: sqlitegen.GoNameFromSQLName(c.String(), false),
+				Type: s.GetColumnType(c),
+			})
+		}
+		qb.WriteRune(')')
+	}
+}
 
 // Results annotates SQL expressions or concrete columns to become outputs of a SQL query.
 func Results(rr ...ResultOpt) Opt {
-	return func(s sqlitegen.Schema, qt *sqlitegen.QueryTemplate) {
+	return func(s sqlitegen.Schema, qb *queryBuilder) {
 		for i, r := range rr {
 			res := r(s)
-			qt.WriteString(res.SQL)
+			qb.WriteString(res.SQL)
 			if i < len(rr)-1 {
-				qt.WriteString(", ")
+				qb.WriteString(", ")
 			}
-			qt.Outputs = append(qt.Outputs, sqlitegen.GoSymbol{
+			qb.AddOutput(sqlitegen.GoSymbol{
 				Name: sqlitegen.GoNameFromSQLName(res.ColumnName, true),
 				Type: res.Type,
 			})
@@ -140,24 +214,24 @@ func SQLFunc(funcName string, args ...string) string {
 // Var creates a binding parameter to be passed to the prepared SQL statements during execution.
 // It requires to specify the type so that we know which one to use in the generated code.
 func Var(name string, goType sqlitegen.Type) Opt {
-	return func(s sqlitegen.Schema, qt *sqlitegen.QueryTemplate) {
-		qt.Inputs = append(qt.Inputs, sqlitegen.GoSymbol{
+	return func(s sqlitegen.Schema, qb *queryBuilder) {
+		qb.AddInput(sqlitegen.GoSymbol{
 			Name: name,
 			Type: goType,
 		})
 
-		qt.WriteString("?")
+		qb.WriteString("?")
 	}
 }
 
 // VarCol creates a binding parameter to be passed when preparing SQL statement. It reuses
 // the data type of the column using the schema.
 func VarCol(col sqlitegen.Column) Opt {
-	return func(s sqlitegen.Schema, qt *sqlitegen.QueryTemplate) {
-		qt.Inputs = append(qt.Inputs, sqlitegen.GoSymbol{
+	return func(s sqlitegen.Schema, qb *queryBuilder) {
+		qb.AddInput(sqlitegen.GoSymbol{
 			Name: sqlitegen.GoNameFromSQLName(col.String(), false),
 			Type: s.GetColumnType(col),
 		})
-		qt.WriteString("?")
+		qb.WriteString("?")
 	}
 }
