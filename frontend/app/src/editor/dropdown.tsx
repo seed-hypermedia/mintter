@@ -23,7 +23,7 @@ const slideLeftAndFade = keyframes({
 
 export const dropdownContentStyle = css({
   minWidth: 220,
-  backgroundColor: 'white',
+  backgroundColor: '$background-muted',
   borderRadius: 6,
   padding: 5,
   boxShadow: '0px 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2)',
@@ -51,7 +51,7 @@ export const dropdownItemStyle = css({
   cursor: 'pointer',
   '&:focus': {
     outline: 'none',
-    backgroundColor: '$primary-muted',
+    backgroundColor: '$background-neutral',
     cursor: 'pointer',
   },
 })

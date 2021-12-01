@@ -19,8 +19,8 @@ import type {
 import {nanoid} from 'nanoid'
 import type {Node, Parent} from 'unist'
 
-type ChildrenOf<N extends Parent> = N['children'] | (() => N['children'])
-type OptionsOf<N extends Node> = Omit<N, 'type' | 'children'>
+export type ChildrenOf<N extends Parent> = N['children'] | (() => N['children'])
+export type OptionsOf<N extends Node> = Omit<N, 'type' | 'children'>
 
 function normalizeChildren<P extends Parent>(children?: ChildrenOf<P>): P['children'] {
   if (Array.isArray(children)) {
@@ -34,8 +34,9 @@ function normalizeChildren<P extends Parent>(children?: ChildrenOf<P>): P['child
 }
 
 function createParent<N extends Parent>(type: N['type'], defaults: Partial<OptionsOf<N>> = {}) {
+  //@ts-ignore
+
   return function createParentType(optsOrKids: OptionsOf<N> | ChildrenOf<N>, kids?: ChildrenOf<N>): N {
-    console.log('createParent, ', type)
     return {
       type,
       ...defaults,
@@ -55,7 +56,8 @@ function createNode<N extends Node>(type: N['type'], defaults: Partial<OptionsOf
 }
 
 export function createId() {
-  return nanoid(8)
+  let id = nanoid(8)
+  return id
 }
 
 export const document = createParent<Document>('document', {title: '', subtitle: ''})

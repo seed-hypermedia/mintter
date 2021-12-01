@@ -1,13 +1,13 @@
 import {styled} from '@mintter/ui/stitches.config'
-import * as ContextMenuDefault from '@radix-ui/react-context-menu'
+import * as ContextMenuPrimitive from '@radix-ui/react-context-menu'
 import {dropdownContentStyle, dropdownItemStyle} from './dropdown'
 
-const ContentStyled = styled(ContextMenuDefault.Content, dropdownContentStyle)
+const ContentStyled = styled(ContextMenuPrimitive.Content, dropdownContentStyle)
 
-const ItemStyled = styled(ContextMenuDefault.Item, dropdownItemStyle)
+const ItemStyled = styled(ContextMenuPrimitive.Item, dropdownItemStyle)
 
 export const ContextMenu = {
-  ...ContextMenuDefault,
+  ...ContextMenuPrimitive,
   Item: ItemStyled,
   Content: ContentStyled,
 }

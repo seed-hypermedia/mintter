@@ -1,4 +1,3 @@
-import Store from 'tauri-plugin-store-api'
 import {ActorRef, spawn} from 'xstate'
 import {createModel} from 'xstate/lib/model'
 

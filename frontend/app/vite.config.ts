@@ -1,3 +1,5 @@
+/** @type {import('vite/dist/node').UserConfig} */
+
 import reactRefresh from '@vitejs/plugin-react-refresh'
 import {defineConfig} from 'vite'
 import reactJSX from 'vite-react-jsx'

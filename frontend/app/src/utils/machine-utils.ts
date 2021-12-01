@@ -1,5 +1,5 @@
 import {useSelector} from '@xstate/react'
-import * as React from 'react'
+import {createContext, useContext as defaultUseContext} from 'react'
 import {ActionTypes, Interpreter} from 'xstate'
 
 export function isNullEvent(eventName: string) {
@@ -24,10 +24,10 @@ export function createInterpreterContext<TInterpreter extends Interpreter<any, a
 }
 
 export function createRequiredContext<TContext>(displayName: string) {
-  const context = React.createContext<TContext | null>(null)
+  const context = createContext<TContext | null>(null)
   context.displayName = displayName
   function useContext() {
-    const ctx = React.useContext(context)
+    const ctx = defaultUseContext(context)
     if (!ctx) {
       throw new Error(`use${displayName} must be called inside a ${displayName}Provider`)
     }

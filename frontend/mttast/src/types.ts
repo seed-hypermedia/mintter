@@ -1,4 +1,5 @@
 import type {Lang} from 'shiki'
+import {Position} from 'unist'
 
 // Nodes
 
@@ -6,6 +7,7 @@ interface Node {
   type: string
 
   data?: Record<string | symbol, unknown>
+  position?: Position
 }
 
 export interface Literal extends Node {
@@ -13,7 +15,7 @@ export interface Literal extends Node {
 }
 
 export interface Parent extends Node {
-  children: MttastContent[]
+  children: Array<MttastContent>
 }
 
 export interface Document extends Parent {
@@ -23,7 +25,7 @@ export interface Document extends Parent {
   author?: string
   schema?: string
   stylesheet?: string
-  children: FlowContent[]
+  children: [GroupingContent]
 }
 
 export interface Group extends Parent {
@@ -55,19 +57,19 @@ export interface StaticParagraph extends Parent {
 export interface Statement extends Parent {
   type: 'statement'
   id: string
-  children: [Content, GroupingContent] | [Content]
+  children: [Content] | [Content, GroupingContent]
 }
 
 export interface Heading extends Parent {
   type: 'heading'
   id: string
-  children: [StaticContent, GroupingContent] | [StaticContent]
+  children: [StaticContent] | [StaticContent, GroupingContent]
 }
 
 export interface Blockquote extends Parent {
   type: 'blockquote'
   id: string
-  children: [Content, GroupingContent] | [Content]
+  children: [Content] | [Content, GroupingContent]
 }
 
 export interface Code extends Parent {
@@ -75,13 +77,13 @@ export interface Code extends Parent {
   id: string
   lang?: Lang
   meta?: string
-  children: [Content, GroupingContent] | [Content]
+  children: [Content] | [Content, GroupingContent]
 }
 
 export interface Callout extends Parent {
   type: 'callout'
   id: string
-  children: [Content, GroupingContent] | [Content]
+  children: [Content] | [Content, GroupingContent]
 }
 
 export interface Video extends Alternative, Resource {
@@ -98,7 +100,7 @@ export interface Embed extends Alternative, Resource, Parent {
 
 export interface Link extends Resource, Parent {
   type: 'link'
-  children: StaticPhrasingContent[]
+  children: Array<StaticPhrasingContent>
 }
 
 export interface Text extends Literal {
@@ -109,6 +111,7 @@ export interface Text extends Literal {
   strikethrough?: boolean
   superscript?: boolean
   subscript?: boolean
+  code?: boolean
   color?: string
 }
 
@@ -127,6 +130,7 @@ export interface Resource {
 
 export type MttastContent = FlowContent | GroupingContent | Content | StaticContent | PhrasingContent | Document
 
+export type MttastNode = Parent | Literal
 export type Content = Paragraph
 
 export type StaticContent = StaticParagraph

@@ -1,6 +1,7 @@
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
 import {staticParagraph} from '@mintter/mttast-builder'
-import {Editor, Element, Node, Transforms} from 'slate'
+import {isGroupContent} from 'frontend/mttast'
+import {Editor, Element, Node, Path, Transforms} from 'slate'
 import {BlockTools} from '../block-tools'
 import type {EditorPlugin} from '../types'
 import {isFirstChild, resetFlowContent} from '../utils'
@@ -34,6 +35,15 @@ export const createHeadingPlugin = (): EditorPlugin => ({
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
       if (isHeading(node)) {
+        let parent = Node.parent(editor, path)
+
+        if (!isGroupContent(parent)) {
+          Transforms.moveNodes(editor, {
+            at: path,
+            to: Path.next(Path.parent(path)),
+          })
+          return
+        }
         for (const [child, childPath] of Node.children(editor, path)) {
           if (Element.isElement(child) && !editor.isInline(child)) {
             if (isFirstChild(childPath) && !isStaticParagraph(child)) {
