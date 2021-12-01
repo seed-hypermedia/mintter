@@ -739,6 +739,20 @@ func (stmt *Stmt) BindParamCount() int {
 	return int(C.sqlite3_bind_parameter_count(stmt.stmt))
 }
 
+// BindInt binds value to a numbered stmt parameter.
+//
+// Parameter indices start at 1.
+//
+// https://www.sqlite.org/c3ref/bind_blob.html
+func (stmt *Stmt) BindInt(param, value int) {
+	if stmt.stmt == nil {
+		return
+	}
+
+	res := C.sqlite3_bind_int64(stmt.stmt, C.int(param), C.sqlite3_int64(value))
+	stmt.handleBindErr("BindInt", res)
+}
+
 // BindInt64 binds value to a numbered stmt parameter.
 //
 // Parameter indices start at 1.
@@ -922,14 +936,25 @@ func (stmt *Stmt) ColumnInt64(col int) int64 {
 	return int64(C.sqlite3_column_int64(stmt.stmt, C.int(col)))
 }
 
-// ColumnBytes reads a query result into buf.
+// ColumnBytesCopy reads a query result into buf.
 // It reports the number of bytes read.
 //
 // Column indices start at 0.
 //
 // https://www.sqlite.org/c3ref/column_blob.html
-func (stmt *Stmt) ColumnBytes(col int, buf []byte) int {
+func (stmt *Stmt) ColumnBytesCopy(col int, buf []byte) int {
 	return copy(buf, stmt.columnBytes(col))
+}
+
+// ColumnBytes reads a query result as bytes.
+//
+// Column indices start at 0.
+//
+// https://www.sqlite.org/c3ref/column_blob.html
+func (stmt *Stmt) ColumnBytes(col int) []byte {
+	buf := make([]byte, stmt.ColumnLen(col))
+	copy(buf, stmt.columnBytes(col))
+	return buf
 }
 
 // ColumnReader creates a byte reader for a query result column.
@@ -1085,7 +1110,7 @@ func (stmt *Stmt) GetBytes(colName string, buf []byte) int {
 	if !found {
 		return 0
 	}
-	return stmt.ColumnBytes(col, buf)
+	return stmt.ColumnBytesCopy(col, buf)
 }
 
 // GetReader creates a byte reader for colName.
