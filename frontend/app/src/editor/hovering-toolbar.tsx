@@ -59,7 +59,7 @@ const Menu = forwardRef<HTMLDivElement, Record<string, unknown>>(({children, ...
       left: '-1000000000px',
       marginTop: '-6px',
       opacity: 0,
-      backgroundColor: 'black',
+      backgroundColor: '$background-muted',
       borderRadius: '4px',
       transition: 'opacity 0.5s',
       '& > *': {

@@ -3,9 +3,14 @@ import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {CSS} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
-import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
+// import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {useActor} from '@xstate/react'
-import {FormEvent, useLayoutEffect, useRef, useState} from 'react'
+import {
+  FormEvent,
+  // useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
@@ -25,7 +30,6 @@ export default function EditorPage({params}: EditorPageProps) {
   const [, setLocation] = useLocation()
   const toast = useRef('')
   const [visible, setVisible] = useState(false)
-  const titleRef = useRef<HTMLTextAreaElement>(null)
   const sidepanelService = useSidepanel()
   const [, sidepanelSend] = useActor(sidepanelService)
   const [state, send] = useEditorDraft({
@@ -52,14 +56,14 @@ export default function EditorPage({params}: EditorPageProps) {
 
   const {context} = state
 
-  useLayoutEffect(() => {
-    if (context.localDraft?.title) {
-      // set the window title to reflect the documents title
-      getCurrentWindow().setTitle(context.localDraft.title)
-    } else {
-      getCurrentWindow().setTitle('Untitled Document')
-    }
-  }, [context.localDraft?.title])
+  // useLayoutEffect(() => {
+  //   if (context.localDraft?.title) {
+  //     // set the window title to reflect the documents title
+  //     getCurrentWindow().setTitle(context.localDraft.title)
+  //   } else {
+  //     getCurrentWindow().setTitle('Untitled Document')
+  //   }
+  // }, [context.localDraft?.title])
 
   useEnableSidepanel()
 
@@ -97,7 +101,7 @@ export default function EditorPage({params}: EditorPageProps) {
             value={context?.localDraft?.title}
             onChange={(event: FormEvent<HTMLTextareaElement>) => {
               // update window title as the user types
-              getCurrentWindow().setTitle(event.currentTarget.value)
+              // getCurrentWindow().setTitle(event.currentTarget.value)
               send({
                 type: 'UPDATE',
                 payload: {
@@ -175,16 +179,14 @@ export default function EditorPage({params}: EditorPageProps) {
 function EditorStatus({state}: {state: DraftEditorMachineState}) {
   return (
     <Box
-      css={
-        {
-          display: 'flex',
-          gap: '$2',
-          alignItems: 'center',
-          paddingHorizontal: 0,
-          paddingVertical: '$2',
-          marginTop: '$5',
-        } as CSS
-      }
+      css={{
+        display: 'flex',
+        gap: '$2',
+        alignItems: 'center',
+        paddingHorizontal: 0,
+        paddingVertical: '$2',
+        marginTop: '$5',
+      }}
     >
       <Box
         css={{

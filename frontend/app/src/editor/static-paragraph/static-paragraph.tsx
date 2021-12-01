@@ -120,12 +120,14 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
 })
 
 function useHeading(element: StaticParagraphType) {
-  const editor = useSlateStatic()
-  const path = ReactEditor.findPath(editor, element)
-  const parent = Editor.parent(editor, path)
+  var editor = useSlateStatic()
+  var path = ReactEditor.findPath(editor, element)
+  var parent = Editor.parent(editor, path)
   if (parent) {
-    const [node, path] = parent
+    let [node, path] = parent
     if (isHeading(node)) {
+      console.log('heading: ', node, path)
+
       return {
         node,
         level: path.length,
@@ -135,10 +137,11 @@ function useHeading(element: StaticParagraphType) {
 }
 
 function StaticParagraph({children, element, attributes}: RenderElementProps) {
-  const heading = useHeading(element as StaticParagraphType)
-  const sizeProps = headingMap[heading?.level ?? 'default']
-  const hoverService = useHover()
-  const [, hoverSend] = useActor(hoverService)
+  var heading = useHeading(element as StaticParagraphType)
+  var sizeProps = headingMap[heading?.level ?? 'default']
+  console.log('🚀 ~ heading', {heading, sizeProps})
+  var hoverService = useHover()
+  var [, hoverSend] = useActor(hoverService)
 
   return (
     <StaticParagraphUI

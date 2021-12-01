@@ -3,7 +3,7 @@ import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {css, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
-import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
+// import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {useActor} from '@xstate/react'
 import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -11,7 +11,7 @@ import {useLocation} from 'wouter'
 import {AppError} from '../app'
 import {Avatar} from '../components/avatar'
 import {useEnableSidepanel, useIsSidepanelOpen, useSidepanel} from '../components/sidepanel'
-import {Editor} from '../editor'
+import {Editor, EditorDocument} from '../editor'
 import {EditorMode} from '../editor/plugin-utils'
 import {useAccount, useInfo, usePublication} from '../hooks'
 import {getDateFormat} from '../utils/get-format-date'
@@ -60,11 +60,11 @@ export default function Publication({params}: PublicationPageProps) {
 
   useEnableSidepanel()
 
-  useEffect(() => {
-    if (data.document.title) {
-      getCurrentWindow().setTitle(data.document.title)
-    }
-  }, [data.document.title])
+  // useEffect(() => {
+  //   if (data.document.title) {
+  //     getCurrentWindow().setTitle(data.document.title)
+  //   }
+  // }, [data.document.title])
 
   useEffect(() => {
     if (status == 'success') {

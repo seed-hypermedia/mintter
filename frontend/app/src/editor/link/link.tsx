@@ -7,7 +7,7 @@ import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
-import * as Popover from '@radix-ui/react-popover'
+import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {open} from '@tauri-apps/api/shell'
 import isUrl from 'is-url'
 import {FormEvent, forwardRef, useEffect, useState} from 'react'
@@ -214,8 +214,8 @@ export interface ToolbarLinkProps extends UseLastSelectionResult {
 export function ToolbarLink({sendStoreFocus, resetSelection, lastSelection}: ToolbarLinkProps) {
   const [open, setOpen] = useState(false)
   return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
-      <Popover.Trigger asChild>
+    <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
+      <PopoverPrimitive.Trigger asChild>
         <Button
           variant="ghost"
           size="1"
@@ -230,9 +230,9 @@ export function ToolbarLink({sendStoreFocus, resetSelection, lastSelection}: Too
         >
           <Icon name="Link" />
         </Button>
-      </Popover.Trigger>
+      </PopoverPrimitive.Trigger>
 
-      <Popover.Content>
+      <PopoverPrimitive.Content>
         <LinkModal
           lastSelection={lastSelection}
           close={() => {
@@ -240,8 +240,8 @@ export function ToolbarLink({sendStoreFocus, resetSelection, lastSelection}: Too
             resetSelection()
           }}
         />
-      </Popover.Content>
-    </Popover.Root>
+      </PopoverPrimitive.Content>
+    </PopoverPrimitive.Root>
   )
 }
 

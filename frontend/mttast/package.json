@@ -19,7 +19,7 @@
     "eslint-config-prettier": "^8.3.0",
     "prettier": "^2.4.1",
     "shiki": "^0.9.10",
-    "typescript": "^4.4.2"
+    "typescript": "4.4.4"
   },
   "dependencies": {
     "is-plain-object": "^5.0.0"

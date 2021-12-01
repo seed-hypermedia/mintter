@@ -1,5 +1,5 @@
 import {Theme} from '@mintter/ui/theme'
-import React from 'react'
+import * as React from 'react'
 export const parameters = {
   actions: {argTypesRegex: '^on[A-Z].*'},
   controls: {
