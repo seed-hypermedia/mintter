@@ -25,39 +25,36 @@ func isInitialism(s string) bool {
 	return ok
 }
 
+// QueryKind defines kinds of queries.
+type QueryKind byte
+
+const (
+	// QueryKindSingle means that query returns a single row as a result.
+	QueryKindSingle QueryKind = iota
+	// QueryKindMany means that query returns multiple rows as a result.
+	QueryKindMany
+	// QueryKindExec means that query doesn't return any rows, but only an error.
+	QueryKindExec
+)
+
 // QueryTemplate represents a template for a query.
 // See qb package for building the query template.
 type QueryTemplate struct {
-	b strings.Builder
-
 	Name    string
+	Kind    QueryKind
+	SQL     string
 	Inputs  []GoSymbol
 	Outputs []GoSymbol
-}
-
-// WriteString adds a string to the resulting query.
-func (qt *QueryTemplate) WriteString(s string) {
-	if _, err := qt.b.WriteString(s); err != nil {
-		panic(err)
-	}
-}
-
-// WriteRune adds a rune to the resulting query.
-func (qt *QueryTemplate) WriteRune(r rune) {
-	if _, err := qt.b.WriteRune(r); err != nil {
-		panic(err)
-	}
-}
-
-// SQL returns the resulting SQL statement.
-func (qt *QueryTemplate) SQL() string {
-	return qt.b.String()
 }
 
 // GoSymbol describes a Go variable with name and type.
 type GoSymbol struct {
 	Name string
 	Type Type
+}
+
+func (s GoSymbol) String() string {
+	return s.Name + " " + s.Type.goString()
 }
 
 // GoNameFromSQLName converts a column name into a Go symbol name.

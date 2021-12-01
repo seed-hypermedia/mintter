@@ -35,5 +35,4 @@ func TestGoNameFromSQLName(t *testing.T) {
 			require.Equal(t, tt.Unexported, GoNameFromSQLName(tt.In, false))
 		})
 	}
-
 }

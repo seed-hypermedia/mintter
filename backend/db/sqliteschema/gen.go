@@ -50,7 +50,10 @@ func generateSchema() error {
 		schema.Columns[col] = info
 	}
 
-	code := sqlitegen.CodegenSchema("sqliteschema", schema)
+	code, err := sqlitegen.CodegenSchema("sqliteschema", schema)
+	if err != nil {
+		return err
+	}
 
 	return ioutil.WriteFile("schema.gen.go", code, 0666)
 }

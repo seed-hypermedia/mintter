@@ -21,15 +21,26 @@ type ColumnInfo struct {
 	SQLType string
 }
 
+// GetColumnTable returns a table of a column.
+func (s *Schema) GetColumnTable(c Column) Table {
+	info := s.columnInfo(c)
+	return info.Table
+}
+
 // GetColumnType returns the type of a column.
 // It panics if column is unknown.
 func (s *Schema) GetColumnType(c Column) Type {
+	info := s.columnInfo(c)
+	return typeFromSQLType(info.SQLType)
+}
+
+func (s *Schema) columnInfo(c Column) ColumnInfo {
 	info, ok := s.Columns[c]
 	if !ok {
 		panic("unknown column " + c.String())
 	}
 
-	return typeFromSQLType(info.SQLType)
+	return info
 }
 
 func (s *Schema) addColumn(table, column, sqlType string) error {
@@ -60,16 +71,34 @@ func (c Column) String() string { return string(c) }
 // Table is a type for a SQL table name.
 type Table string
 
+var typeToGoType = map[Type]string{
+	TypeInt:   "int",
+	TypeInt32: "int32",
+	TypeInt64: "int64",
+	TypeFloat: "float64",
+	TypeText:  "string",
+	TypeBytes: "[]byte",
+}
+
 // Type defines supported Go types in the generated code.
 type Type byte
+
+func (t Type) goString() string {
+	s, ok := typeToGoType[t]
+	if !ok {
+		panic(fmt.Sprintf("invalid type: %d", t))
+	}
+
+	return s
+}
 
 // Supported types for inputs and outputs of a query.
 const (
 	TypeInt Type = iota
 	TypeInt32
 	TypeInt64
-	TypeFloat64
-	TypeString
+	TypeFloat
+	TypeText
 	TypeBytes
 )
 
@@ -77,8 +106,8 @@ const (
 // For more info see: https://www.sqlite.org/datatype3.html.
 var sqlTypes = map[string]Type{
 	"INTEGER": TypeInt,
-	"REAL":    TypeFloat64,
-	"TEXT":    TypeString,
+	"REAL":    TypeFloat,
+	"TEXT":    TypeText,
 	"BLOB":    TypeBytes,
 }
 
@@ -123,7 +152,10 @@ ORDER BY m.name, p.cid
 	return s, nil
 }
 
-func CodegenSchema(pkgName string, s Schema) []byte {
+// CodegenSchema generates Go source code describing the database schema.
+// It's supposed to be written into a separate file by some external
+// code generation process.
+func CodegenSchema(pkgName string, s Schema) ([]byte, error) {
 	tpl, err := template.New("").
 		Option("missingkey=error").
 		Funcs(map[string]interface{}{
@@ -168,7 +200,7 @@ var Schema = sqlitegen.Schema{
 }
 `)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	type tableMapping map[Table]map[Column]ColumnInfo
@@ -191,13 +223,13 @@ var Schema = sqlitegen.Schema{
 		Schema:  mapping,
 	})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	code, err := format.Source(b.Bytes())
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return code
+	return code, nil
 }
