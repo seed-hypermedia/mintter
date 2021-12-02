@@ -1,6 +1,5 @@
-import {isHeading, isStaticParagraph} from '@mintter/mttast'
+import {isGroupContent, isHeading, isStaticParagraph} from '@mintter/mttast'
 import {staticParagraph} from '@mintter/mttast-builder'
-import {isGroupContent} from 'frontend/mttast'
 import {Editor, Element, Node, Path, Transforms} from 'slate'
 import {BlockTools} from '../block-tools'
 import type {EditorPlugin} from '../types'
