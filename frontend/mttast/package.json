@@ -5,6 +5,9 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "build": "tsc",
     "lint": "eslint .",
