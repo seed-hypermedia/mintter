@@ -38,7 +38,7 @@ const StyledLink = styled('span', {
 export const Link = forwardRef<HTMLSpanElement, {element: LinkType}>(({element, ...props}, ref) => {
   const [, setLocation] = useLocation()
 
-  function handleClick() {
+  async function handleClick() {
     if (!import.meta.env.SSR) {
       if (isMintterLink(element.url)) {
         const [pubId] = getEmbedIds(element.url)
