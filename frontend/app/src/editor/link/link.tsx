@@ -39,13 +39,11 @@ export const Link = forwardRef<HTMLSpanElement, {element: LinkType}>(({element, 
   const [, setLocation] = useLocation()
 
   async function handleClick() {
-    if (!import.meta.env.SSR) {
-      if (isMintterLink(element.url)) {
-        const [pubId] = getEmbedIds(element.url)
-        setLocation(`/p/${pubId}`)
-      } else {
-        open(element.url)
-      }
+    if (isMintterLink(element.url)) {
+      const [pubId] = getEmbedIds(element.url)
+      setLocation(`/p/${pubId}`)
+    } else {
+      open(element.url)
     }
   }
 

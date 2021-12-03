@@ -53,9 +53,7 @@ export function buildEditorHook(plugins: EditorPlugin[], mode: EditorMode): Edit
     try {
       editor = configureEditor(editor) || editor
     } catch (e) {
-      if (!import.meta.env.SSR) {
-        error(`[${name}] ${e} in configureEditor hook`)
-      }
+      error(`[${name}] ${e} in configureEditor hook`)
       throw e
     }
   }
@@ -72,9 +70,7 @@ export function buildRenderElementHook(plugins: EditorPlugin[], editor: Editor):
         const element = renderElement(editor)(props)
         if (element) return element
       } catch (e) {
-        if (!import.meta.env.SSR) {
-          error(`[${name}] ${e} in renderElement hook`)
-        }
+        error(`[${name}] ${e} in renderElement hook`)
         throw error
       }
     }
@@ -94,9 +90,7 @@ export function buildRenderLeafHook(plugins: EditorPlugin[], editor: Editor): Ed
         const newChildren = renderLeaf(editor)(leafProps)
         if (newChildren) leafProps.children = newChildren
       } catch (e) {
-        if (!import.meta.env.SSR) {
-          error(`[${name}] ${e} in renderLeaf hook`)
-        }
+        error(`[${name}] ${e} in renderLeaf hook`)
         throw error
       }
     }
@@ -116,9 +110,7 @@ export function buildDecorateHook(plugins: EditorPlugin[], editor: Editor): Edit
       try {
         ranges = ranges.concat(decorate(editor)(entry) || [])
       } catch (e) {
-        if (!import.meta.env.SSR) {
-          error(`[${name}] ${e} in decorate hook`)
-        }
+        error(`[${name}] ${e} in decorate hook`)
         throw error
       }
     }
@@ -142,9 +134,7 @@ export function buildEventHandlerHooks(plugins: EditorPlugin[], editor: Editor):
           // @ts-expect-error ev has incompatible types
           hook(editor)(ev)
         } catch (e) {
-          if (!import.meta.env.SSR) {
-            error(`[${name}] ${e} in ${event} hook`)
-          }
+          error(`[${name}] ${e} in ${event} hook`)
           throw error
         }
       }
