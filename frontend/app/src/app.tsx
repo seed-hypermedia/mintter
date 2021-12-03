@@ -9,11 +9,9 @@ import {MainPage} from './pages/main-page'
 
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
 
-if (!import.meta.env.SSR) {
-  attachConsole()
+attachConsole()
 
-  window.addEventListener('error', (e) => error(e.message))
-}
+window.addEventListener('error', (e) => error(e.message))
 
 const globalStyles = globalCss({
   body: {
