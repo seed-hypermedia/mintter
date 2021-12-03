@@ -2,10 +2,9 @@ import {Box} from '@mintter/ui/box'
 import {css} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {useInterpret} from '@xstate/react'
-import {ReactNode} from 'react'
-import {Store} from 'tauri-plugin-store-api'
+import {ReactNode, useEffect} from 'react'
 import {Route} from 'wouter'
-import {BookmarksProvider, createBookmarksMachine} from '../components/bookmarks'
+import {bookmarksMachine, BookmarksProvider} from '../components/bookmarks'
 import {ScrollArea} from '../components/scroll-area'
 import {Sidebar, SidebarProvider} from '../components/sidebar'
 import {sidebarMachine} from '../components/sidebar/sidebar-machine'
@@ -16,13 +15,15 @@ import {hoverMachine} from '../editor/hover-machine'
 import EditorPage from './editor'
 import Publication from './publication'
 
-const store = new Store('.app.dat')
-
 export function MainPage() {
   const sidepanelService = useInterpret(sidepanelMachine)
   const sidebarService = useInterpret(sidebarMachine)
-  const bookmarksService = useInterpret(createBookmarksMachine(store))
+  const bookmarksService = useInterpret(bookmarksMachine)
   const hoverService = useInterpret(hoverMachine)
+
+  useEffect(() => {
+    console.log('localstorage: ', window.localStorage)
+  }, [])
   return (
     <HoverProvider value={hoverService}>
       <BookmarksProvider value={bookmarksService}>

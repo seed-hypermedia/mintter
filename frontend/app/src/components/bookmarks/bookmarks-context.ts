@@ -1,9 +1,9 @@
 import {InterpreterFrom} from 'xstate'
 import {createInterpreterContext} from '../../utils/machine-utils'
-import {createBookmarksMachine} from './bookmarks-machine'
+import {bookmarksMachine} from './bookmarks-machine'
 
 const [BookmarksProvider, useBookmarksService, createBookmarksSelector] =
-  createInterpreterContext<InterpreterFrom<ReturnType<typeof createBookmarksMachine>>>('Bookmarks')
+  createInterpreterContext<InterpreterFrom<typeof bookmarksMachine>>('Bookmarks')
 
 export {BookmarksProvider, useBookmarksService}
 
