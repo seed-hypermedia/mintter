@@ -4,10 +4,10 @@
     "version": "0.1.0"
   },
   "build": {
-    "distDir": "../dist/static",
+    "distDir": "../dist/client",
     "devPath": "http://localhost:3000",
     "beforeDevCommand": "yarn dev",
-    "beforeBuildCommand": "yarn generate",
+    "beforeBuildCommand": "yarn build:client",
     "withGlobalTauri": false
   },
   "tauri": {
