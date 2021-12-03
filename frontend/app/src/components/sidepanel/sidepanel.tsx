@@ -7,7 +7,6 @@ import {Text} from '@mintter/ui/text'
 import {useActor} from '@xstate/react'
 import {MouseEvent, useEffect, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
-import {Store} from 'tauri-plugin-store-api'
 import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
 import {createModel} from 'xstate/lib/model'
@@ -23,8 +22,6 @@ import {Avatar} from '../avatar'
 import {useBookmarks, useBookmarksService} from '../bookmarks'
 import {ScrollArea} from '../scroll-area'
 import {useAnnotations, useIsSidepanelOpen, useSidepanel} from './sidepanel-context'
-
-const store = new Store('.app.dat')
 
 export const sidepanelModel = createModel(
   {
