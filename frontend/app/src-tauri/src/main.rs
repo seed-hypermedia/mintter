@@ -6,7 +6,7 @@
 
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use tauri_plugin_log::{LogTarget, LoggerBuilder};
-use tauri_plugin_store::Store;
+use tauri_plugin_store::StorePlugin;
 
 mod daemon;
 mod menu;
@@ -30,7 +30,7 @@ async fn main() {
   tauri::Builder::default()
     .plugin(LoggerBuilder::new(log_targets).build())
     .plugin(daemon::DaemonPlugin::new())
-    .plugin(Store::default())
+    .plugin(StorePlugin::default())
     .menu(menu::get_menu())
     .setup(|app| {
       daemon::start_daemon(

@@ -2850,7 +2850,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-log"
 version = "0.1.0"
-source = "git+https://github.com/tauri-apps/tauri-plugin-log#866b97fa7046059a4c95ae95c2099e0e338192bd"
+source = "git+https://github.com/tauri-apps/tauri-plugin-log?branch=dev#8535b6352e65155a30c184bdbcc0f502669ec93d"
 dependencies = [
  "byte-unit",
  "chrono",
@@ -2865,12 +2865,13 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-store"
 version = "0.0.0"
-source = "git+https://github.com/tauri-apps/tauri-plugin-store#c240599581ee32146608737916f14c2f7e53b1b0"
+source = "git+https://github.com/tauri-apps/tauri-plugin-store?branch=dev#fc0c015507a4f175380b9b1be80719cb30bbb6a1"
 dependencies = [
  "bincode",
  "serde",
  "serde_json",
  "tauri",
+ "thiserror",
 ]
 
 [[package]]
