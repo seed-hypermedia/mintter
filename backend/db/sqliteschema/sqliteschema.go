@@ -70,7 +70,9 @@ var migrations = []string{
 			-- Mostly NULL because Ed25519 keys can be extracted from the CID.
 			public_key BLOB DEFAULT NULL,
 			-- Reference to the Account this Device belongs to.
-			account_id INTEGER REFERENCES accounts NOT NULL
+			account_id INTEGER REFERENCES accounts NOT NULL,
+			-- Subjective (locally perceived) time when the item was created.
+			create_time TIMESTAMP DEFAULT (datetime('now')) NOT NULL
 		);
 
 		-- Stores data about Mintter Objects.

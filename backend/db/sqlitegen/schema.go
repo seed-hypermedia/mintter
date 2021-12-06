@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
+	"strings"
 	"text/template"
 
 	"crawshaw.io/sqlite"
@@ -67,6 +68,16 @@ type Column string
 
 // String implements fmt.Stringer.
 func (c Column) String() string { return string(c) }
+
+// ShortName returns only the name of the column from the fully qualified column name.
+func (c Column) ShortName() string {
+	idx := strings.IndexRune(string(c), '.')
+	if idx == -1 {
+		panic("invalid column name " + string(c))
+	}
+
+	return string(c[idx+1:])
+}
 
 // Table is a type for a SQL table name.
 type Table string

@@ -31,6 +31,7 @@ import (
 	"go.uber.org/multierr"
 )
 
+var _ = errors.New
 
 func execStmt(conn *sqlite.Conn, query string, before func(*sqlite.Stmt), onStep func(int, *sqlite.Stmt) error) (err error) {
 	stmt, err := conn.Prepare(query)
