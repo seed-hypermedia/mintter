@@ -28,7 +28,7 @@ func init() {
 //go:generate gorun -tags codegen generateSchema
 var migrations = []string{
 	`-- Stores the content of IPFS blobs.
-		CREATE TABLE ipfs_blobs (
+		CREATE TABLE ipfs_blocks (
 			-- Short numerical ID to be used internally.
 			id INTEGER PRIMARY KEY,
 			-- Original multihash of the IPFS blob.
@@ -39,8 +39,10 @@ var migrations = []string{
 			-- We don't use multihash as a primary key to reduce the database size,
 			-- as there're multiple other tables referencing records from this table.
 			multihash BLOB UNIQUE NOT NULL,
-			-- Actual content of the blob.
-			content BLOB NOT NULL,
+			-- Multicodec describing the data stored in the block.
+			codec INTEGER NOT NULL,
+			-- Actual content of the block.
+			data BLOB NOT NULL,
 			-- Subjective (locally perceived) time when this block was fetched for the first time.
 			-- Not sure if actually useful, but might become at some point.
 			create_time TIMESTAMP DEFAULT (datetime('now')) NOT NULL
@@ -96,7 +98,7 @@ var migrations = []string{
 			-- Lamport timestamp of the Change.
 			lamport_time INTEGER NOT NULL,
 			-- Reference to the IPFS Blob with contents of the Change.
-			ipfs_blob_id INTEGER REFERENCES ipfs_blobs NOT NULL,
+			ipfs_blob_id INTEGER REFERENCES ipfs_blocks NOT NULL,
 			-- Composite key that uniquely identifies a Change.
 			PRIMARY KEY (object_id, device_id, seq)
 		) WITHOUT ROWID;

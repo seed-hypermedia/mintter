@@ -5,10 +5,13 @@ import (
 	"fmt"
 
 	"mintter/backend/config"
+	"mintter/backend/db/sqliteschema"
 	"mintter/backend/ipfsutil"
 	"mintter/backend/ipfsutil/providing"
+	"mintter/backend/ipfsutil/sqlitebs"
 	"mintter/backend/logging"
 
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
@@ -22,12 +25,30 @@ var moduleP2P = fx.Options(
 	fx.Provide(
 		provideLibp2p,
 		provideBootstrapPeers,
-		ipfsutil.NewBlockstore,
+		// provideBadgerBlockstore,
+		provideSQLiteBlockstore,
 		provideBitswap,
 		provideBlockService,
 		provideP2P,
 	),
 )
+
+func provideBadgerBlockstore(store datastore.Batching) (blockstore.Blockstore, error) {
+	return ipfsutil.NewBlockstore(store)
+}
+
+func provideSQLiteBlockstore(pool *sqlitex.Pool) (bs blockstore.Blockstore, err error) {
+	bs = sqlitebs.New(pool, sqlitebs.Config{
+		TableName:       string(sqliteschema.IPFSBlocks),
+		ColumnMultihash: string(sqliteschema.IPFSBlocksMultihash.ShortName()),
+		ColumnCodec:     string(sqliteschema.IPFSBlocksCodec.ShortName()),
+		ColumnData:      string(sqliteschema.IPFSBlocksData.ShortName()),
+	})
+	bs = blockstore.NewIdStore(bs)
+	bs, err = blockstore.CachedBlockstore(context.Background(), bs, blockstore.DefaultCacheOpts())
+
+	return bs, err
+}
 
 func provideBootstrapPeers(cfg config.P2P) ipfsutil.Bootstrappers {
 	if cfg.NoBootstrap {
