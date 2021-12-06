@@ -12,6 +12,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestColumnShortName(t *testing.T) {
+	tests := []struct {
+		In   Column
+		Want string
+	}{
+		{"foo.bar", "bar"},
+		{"he_ho.foo_bar", "foo_bar"},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.In), func(t *testing.T) {
+			require.Equal(t, tt.Want, tt.In.ShortName())
+		})
+	}
+}
+
 func TestIntrospectSchema(t *testing.T) {
 	dir, err := ioutil.TempDir("", "sqlitegen-")
 	require.NoError(t, err)

@@ -28,49 +28,55 @@ func MakeQuery(s sqlitegen.Schema, name string, kind sqlitegen.QueryKind, vv ...
 		},
 	}
 
-	newLine := true
-	for i, v := range vv {
-		needSpace := !newLine && i < len(vv)
-		var fn func()
+	// This is a bit cumbersome, but I haven't found a better way. The idea is that we want to
+	// add spaces between different segments, except before and after a line break. This allows us to add
+	// line breaks that would generate a more pretty SQL statements in the generated code.
+	// newSegment creates a function that is used to write into the query builder. It's done lazily, because
+	// we need to determine first whether we need to add a space that separates segments. We add space BEFORE
+	// we write the segment, which is a bit counter-intuitive. We also need to cache whether the previous segment
+	// was a line break, so that we avoid writing the space on a new line. It would probably be easier to understand
+	// if we could just step-back one space before writing the next one, but implementing it is actually a bit more complicated.
+	prevNewLine := true
+	for _, v := range vv {
+		fn, isNewLine := newSegment(s, v)
 
-		switch opt := v.(type) {
-		case string:
-			fn = func() { qb.WriteString(opt) }
-			if opt == "\n" {
-				newLine = true
-				needSpace = false
-			} else {
-				newLine = false
-			}
-		case rune:
-			fn = func() { qb.WriteRune(opt) }
-			if opt == '\n' {
-				newLine = true
-				needSpace = false
-			} else {
-				newLine = false
-			}
-		case Opt:
-			fn = func() { opt(s, qb) }
-			newLine = false
-		case sqlitegen.Column:
-			fn = func() { qb.WriteString(string(opt)) }
-			newLine = false
-		case sqlitegen.Table:
-			fn = func() { qb.WriteString(string(opt)) }
-			newLine = false
-		default:
-			panic(fmt.Sprintf("unexpected type: %T", v))
-		}
+		needSpace := !prevNewLine && !isNewLine
 
 		if needSpace {
-			qb.WriteString(" ")
+			qb.WriteRune(' ')
 		}
 
-		fn()
+		fn(qb)
+
+		prevNewLine = isNewLine
 	}
 
 	return qb.Build()
+}
+
+func newSegment(s sqlitegen.Schema, v interface{}) (writeFunc func(*queryBuilder), isNewLine bool) {
+	switch opt := v.(type) {
+	case string:
+		writeFunc = func(qb *queryBuilder) { qb.WriteString(opt) }
+		if opt == "\n" {
+			isNewLine = true
+		}
+	case rune:
+		writeFunc = func(qb *queryBuilder) { qb.WriteRune(opt) }
+		if opt == '\n' {
+			isNewLine = true
+		}
+	case Opt:
+		writeFunc = func(qb *queryBuilder) { opt(s, qb) }
+	case sqlitegen.Column:
+		writeFunc = func(qb *queryBuilder) { qb.WriteString(string(opt)) }
+	case sqlitegen.Table:
+		writeFunc = func(qb *queryBuilder) { qb.WriteString(string(opt)) }
+	default:
+		panic(fmt.Sprintf("unexpected type: %T", v))
+	}
+
+	return writeFunc, isNewLine
 }
 
 // Line is a line break character.
@@ -109,6 +115,43 @@ func (qb *queryBuilder) Build() sqlitegen.QueryTemplate {
 // Opt is a functional option type that modifies query template.
 type Opt func(sqlitegen.Schema, *queryBuilder)
 
+// List accepts the same arguments as MakeQuery, but wraps them as a SQL list.
+func List(vv ...interface{}) Opt {
+	return func(s sqlitegen.Schema, qb *queryBuilder) {
+		qb.WriteRune('(')
+		for i, v := range vv {
+			fn, _ := newSegment(s, v)
+			fn(qb)
+			if i < len(vv)-1 {
+				qb.WriteString(", ")
+			}
+		}
+		qb.WriteRune(')')
+	}
+}
+
+// Sub creates a subquery. It accepts the same arguments as MakeQuery and List.
+func Sub(vv ...interface{}) Opt {
+	return func(s sqlitegen.Schema, qb *queryBuilder) {
+		qb.WriteRune('(')
+		for i, v := range vv {
+			fn, isNewLine := newSegment(s, v)
+			if isNewLine {
+				// This is a bit stupid, will need to fix it at some point.
+				// Otherwise the statement ends up looking ugly with unnecessary white spaces.
+				panic("new line is not accepted in subqueries")
+			}
+
+			fn(qb)
+
+			if i < len(vv)-1 {
+				qb.WriteRune(' ')
+			}
+		}
+		qb.WriteRune(')')
+	}
+}
+
 // Insert generates a complete insert statement.
 func Insert(cols ...sqlitegen.Column) Opt {
 	return func(s sqlitegen.Schema, qb *queryBuilder) {
@@ -123,8 +166,7 @@ func Insert(cols ...sqlitegen.Column) Opt {
 				panic("trying to insert columns from different tables")
 			}
 
-			parts := strings.Split(string(c), ".")
-			qb.WriteString(parts[1])
+			qb.WriteString(c.ShortName())
 			if i < len(cols)-1 {
 				qb.WriteString(", ")
 			}
@@ -219,7 +261,6 @@ func Var(name string, goType sqlitegen.Type) Opt {
 			Name: name,
 			Type: goType,
 		})
-
 		qb.WriteString("?")
 	}
 }
