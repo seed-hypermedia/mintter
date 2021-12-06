@@ -35,11 +35,12 @@ const (
 
 // Table devices.
 const (
-	Devices          sqlitegen.Table  = "devices"
-	DevicesAccountID sqlitegen.Column = "devices.account_id"
-	DevicesCID       sqlitegen.Column = "devices.cid"
-	DevicesID        sqlitegen.Column = "devices.id"
-	DevicesPublicKey sqlitegen.Column = "devices.public_key"
+	Devices           sqlitegen.Table  = "devices"
+	DevicesAccountID  sqlitegen.Column = "devices.account_id"
+	DevicesCID        sqlitegen.Column = "devices.cid"
+	DevicesCreateTime sqlitegen.Column = "devices.create_time"
+	DevicesID         sqlitegen.Column = "devices.id"
+	DevicesPublicKey  sqlitegen.Column = "devices.public_key"
 )
 
 // Table documents.
@@ -57,13 +58,14 @@ const (
 	DocumentsUpdateTime    sqlitegen.Column = "documents.update_time"
 )
 
-// Table ipfs_blobs.
+// Table ipfs_blocks.
 const (
-	IPFSBlobs           sqlitegen.Table  = "ipfs_blobs"
-	IPFSBlobsContent    sqlitegen.Column = "ipfs_blobs.content"
-	IPFSBlobsCreateTime sqlitegen.Column = "ipfs_blobs.create_time"
-	IPFSBlobsID         sqlitegen.Column = "ipfs_blobs.id"
-	IPFSBlobsMultihash  sqlitegen.Column = "ipfs_blobs.multihash"
+	IPFSBlocks           sqlitegen.Table  = "ipfs_blocks"
+	IPFSBlocksCodec      sqlitegen.Column = "ipfs_blocks.codec"
+	IPFSBlocksCreateTime sqlitegen.Column = "ipfs_blocks.create_time"
+	IPFSBlocksData       sqlitegen.Column = "ipfs_blocks.data"
+	IPFSBlocksID         sqlitegen.Column = "ipfs_blocks.id"
+	IPFSBlocksMultihash  sqlitegen.Column = "ipfs_blocks.multihash"
 )
 
 // Table links.
@@ -102,6 +104,7 @@ var Schema = sqlitegen.Schema{
 		ChangesSeq:                 {Table: Changes, SQLType: "INTEGER"},
 		DevicesAccountID:           {Table: Devices, SQLType: "INTEGER"},
 		DevicesCID:                 {Table: Devices, SQLType: "BLOB"},
+		DevicesCreateTime:          {Table: Devices, SQLType: "TIMESTAMP"},
 		DevicesID:                  {Table: Devices, SQLType: "INTEGER"},
 		DevicesPublicKey:           {Table: Devices, SQLType: "BLOB"},
 		DocumentsCreateTime:        {Table: Documents, SQLType: "TIMESTAMP"},
@@ -114,10 +117,11 @@ var Schema = sqlitegen.Schema{
 		DocumentsSubtitle:          {Table: Documents, SQLType: "TEXT"},
 		DocumentsTitle:             {Table: Documents, SQLType: "TEXT"},
 		DocumentsUpdateTime:        {Table: Documents, SQLType: "TIMESTAMP"},
-		IPFSBlobsContent:           {Table: IPFSBlobs, SQLType: "BLOB"},
-		IPFSBlobsCreateTime:        {Table: IPFSBlobs, SQLType: "TIMESTAMP"},
-		IPFSBlobsID:                {Table: IPFSBlobs, SQLType: "INTEGER"},
-		IPFSBlobsMultihash:         {Table: IPFSBlobs, SQLType: "BLOB"},
+		IPFSBlocksCodec:            {Table: IPFSBlocks, SQLType: "INTEGER"},
+		IPFSBlocksCreateTime:       {Table: IPFSBlocks, SQLType: "TIMESTAMP"},
+		IPFSBlocksData:             {Table: IPFSBlocks, SQLType: "BLOB"},
+		IPFSBlocksID:               {Table: IPFSBlocks, SQLType: "INTEGER"},
+		IPFSBlocksMultihash:        {Table: IPFSBlocks, SQLType: "BLOB"},
 		LinksSourceBlockID:         {Table: Links, SQLType: "TEXT"},
 		LinksSourceChangeID:        {Table: Links, SQLType: "INTEGER"},
 		LinksSourceDocumentID:      {Table: Links, SQLType: "INTEGER"},
