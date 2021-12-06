@@ -47,5 +47,6 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "eslint.nodePath": ".yarn/sdks",
   "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
-  "rust-analyzer.updates.channel": "nightly"
+  "rust-analyzer.updates.channel": "nightly",
+  "go.lintTool": "golangci-lint"
 }

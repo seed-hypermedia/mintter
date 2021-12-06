@@ -1,4 +1,21 @@
 linters:
   enable:
     - revive
+    - gosec
     - whitespace
+    - godot
+    - misspell
+    - bodyclose
+issues:
+  include:
+    # Include revive rules that check comments on exported identifiers. These rules
+    # are excluded by default, and IMHO this doesn't serve well the Go community.
+    - EXC0011
+    - EXC0012
+    - EXC0013
+    - EXC0014
+    - EXC0015
+    # gosec: Too relaxed permission for created files and directories.
+    - EXC0009
+    # staticcheck: Unnecessary breaks in switch statements.
+    - EXC0005

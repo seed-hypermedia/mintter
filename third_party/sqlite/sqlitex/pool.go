@@ -16,6 +16,7 @@ package sqlitex
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"runtime/trace"
 	"sync"
@@ -106,6 +107,28 @@ func Open(uri string, flags sqlite.OpenFlags, poolSize int) (pool *Pool, err err
 	}
 
 	return p, nil
+}
+
+// Conn is a like Get, but returns an error instead of nil Conn. It also returns
+// the cancel func as a second value for convenience.
+//
+// So a typical usage could be something like:
+//
+// ```
+// conn, release, err := pool.Conn(ctx)
+// if err != nil {
+//   // Handle error.
+// }
+// defer release()
+// // Use conn normally.
+// ```
+func (p *Pool) Conn(ctx context.Context) (*sqlite.Conn, context.CancelFunc, error) {
+	conn := p.Get(ctx)
+	if conn == nil {
+		return nil, nil, errors.New("unable to get connection")
+	}
+
+	return conn, func() { p.Put(conn) }, nil
 }
 
 // Get returns an SQLite connection from the Pool.
