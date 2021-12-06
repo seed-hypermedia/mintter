@@ -3,9 +3,6 @@ package sqlitebs
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -17,6 +14,8 @@ import (
 )
 
 func TestGet(t *testing.T) {
+	t.Parallel()
+
 	bs := newBlockstore(t)
 
 	data := []byte("some data")
@@ -43,6 +42,8 @@ func TestGet(t *testing.T) {
 }
 
 func TestGet_Missing(t *testing.T) {
+	t.Parallel()
+
 	bs := newBlockstore(t)
 
 	c := makeCID(t, []byte("missing-data"))
@@ -60,12 +61,16 @@ func TestGet_Missing(t *testing.T) {
 }
 
 func TestHashOnRead(t *testing.T) {
+	t.Parallel()
+
 	bs := newBlockstore(t)
 
 	require.Panics(t, func() { bs.HashOnRead(true) })
 }
 
 func TestHas(t *testing.T) {
+	t.Parallel()
+
 	bs := newBlockstore(t)
 
 	orig := blocks.NewBlock([]byte("some data"))
@@ -82,6 +87,8 @@ func TestHas(t *testing.T) {
 }
 
 func TestCidv0v1(t *testing.T) {
+	t.Parallel()
+
 	bs := newBlockstore(t)
 
 	orig := blocks.NewBlock([]byte("some data"))
@@ -95,6 +102,8 @@ func TestCidv0v1(t *testing.T) {
 }
 
 func TestAllKeysSimple(t *testing.T) {
+	t.Parallel()
+
 	bs := newBlockstore(t)
 
 	keys := insertBlocks(t, bs, 100)
@@ -108,6 +117,8 @@ func TestAllKeysSimple(t *testing.T) {
 }
 
 func TestAllKeysRespectsContext(t *testing.T) {
+	t.Parallel()
+
 	bs := newBlockstore(t)
 
 	keys := insertBlocks(t, bs, 100)
@@ -130,11 +141,13 @@ func TestAllKeysRespectsContext(t *testing.T) {
 	received := 0
 	for range ch {
 		received++
-		require.LessOrEqual(t, received, 10, "expected query to be canceled")
+		require.LessOrEqual(t, received, 20, "expected query to be canceled")
 	}
 }
 
 func TestPutMany(t *testing.T) {
+	t.Parallel()
+
 	bs := newBlockstore(t)
 
 	blks := []blocks.Block{
@@ -163,6 +176,8 @@ func TestPutMany(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
+	t.Parallel()
+
 	bs := newBlockstore(t)
 
 	blks := []blocks.Block{
@@ -194,14 +209,11 @@ func TestDelete(t *testing.T) {
 func newBlockstore(t testing.TB) *Blockstore {
 	t.Helper()
 
-	dir, err := ioutil.TempDir("", "sqlitebs")
-	require.NoError(t, err)
-
-	pool, err := sqlitex.Open(filepath.Join(dir, "db.sqlite"), 0, 16)
+	pool, err := sqlitex.Open("file::memory:?mode=memory", 0, 1)
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		require.NoError(t, os.RemoveAll(dir))
+		require.NoError(t, pool.Close())
 	})
 
 	bs := New(pool, DefaultConfig())
