@@ -9,7 +9,6 @@ require (
 	github.com/aead/siphash v1.0.1 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/alecthomas/kong v0.2.11
-	github.com/alecthomas/units v0.0.0-20210927113745-59d0afb8317a // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd v0.22.0-beta.0.20211005184431-e3449998be39 // indirect
@@ -29,7 +28,6 @@ require (
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
-	github.com/crackcomm/go-gitignore v0.0.0-20170627025303-887ab5e44cc3 // indirect
 	github.com/cskr/pubsub v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c // indirect
@@ -57,7 +55,6 @@ require (
 	github.com/huin/goupnp v1.0.2 // indirect
 	github.com/improbable-eng/grpc-web v0.14.1
 	github.com/ipfs/bbloom v0.0.4 // indirect
-	github.com/ipfs/go-bitfield v1.0.0 // indirect
 	github.com/ipfs/go-bitswap v0.5.1
 	github.com/ipfs/go-block-format v0.0.3
 	github.com/ipfs/go-blockservice v0.2.1
@@ -67,14 +64,10 @@ require (
 	github.com/ipfs/go-detect-race v0.0.1 // indirect
 	github.com/ipfs/go-fetcher v1.6.1 // indirect
 	github.com/ipfs/go-ipfs-blockstore v1.1.1
-	github.com/ipfs/go-ipfs-chunker v0.0.5
 	github.com/ipfs/go-ipfs-config v0.18.0
 	github.com/ipfs/go-ipfs-delay v0.0.1 // indirect
 	github.com/ipfs/go-ipfs-ds-help v1.1.0 // indirect
 	github.com/ipfs/go-ipfs-exchange-interface v0.1.0
-	github.com/ipfs/go-ipfs-exchange-offline v0.1.1
-	github.com/ipfs/go-ipfs-files v0.0.9 // indirect
-	github.com/ipfs/go-ipfs-posinfo v0.0.1 // indirect
 	github.com/ipfs/go-ipfs-pq v0.0.2 // indirect
 	github.com/ipfs/go-ipfs-provider v0.7.1
 	github.com/ipfs/go-ipfs-util v0.0.2 // indirect
@@ -87,7 +80,6 @@ require (
 	github.com/ipfs/go-merkledag v0.5.1
 	github.com/ipfs/go-metrics-interface v0.0.1 // indirect
 	github.com/ipfs/go-peertaskqueue v0.7.0 // indirect
-	github.com/ipfs/go-unixfs v0.3.1
 	github.com/ipfs/go-verifcid v0.0.1 // indirect
 	github.com/ipfs/interface-go-ipfs-core v0.5.2 // indirect
 	github.com/ipld/go-codec-dagpb v1.3.0 // indirect
@@ -124,7 +116,6 @@ require (
 	github.com/libp2p/go-libp2p-record v0.1.3
 	github.com/libp2p/go-libp2p-routing-helpers v0.2.3 // indirect
 	github.com/libp2p/go-libp2p-swarm v0.8.0
-	github.com/libp2p/go-libp2p-tls v0.3.1
 	github.com/libp2p/go-libp2p-transport-upgrader v0.5.0 // indirect
 	github.com/libp2p/go-libp2p-yamux v0.6.0 // indirect
 	github.com/libp2p/go-maddr-filter v0.1.0 // indirect
@@ -193,7 +184,6 @@ require (
 	github.com/tidwall/tinyqueue v0.1.1
 	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/whyrusleeping/cbor-gen v0.0.0-20211110122933-f57984553008
-	github.com/whyrusleeping/chunker v0.0.0-20181014151217-fe64bd25879f // indirect
 	github.com/whyrusleeping/go-keyspace v0.0.0-20160322163242-5b898ac5add1 // indirect
 	github.com/whyrusleeping/multiaddr-filter v0.0.0-20160516205228-e903e4adabd7 // indirect
 	go.etcd.io/bbolt v1.3.6
@@ -227,6 +217,7 @@ require (
 	github.com/btcsuite/btcutil/psbt v1.0.3-0.20210527170813-e2ba6805a890 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/libp2p/go-libp2p-quic-transport v0.15.0 // indirect
+	github.com/libp2p/go-libp2p-tls v0.3.1 // indirect
 	gitlab.com/yawning/bsaes.git v0.0.0-20190805113838-0a714cd429ec // indirect
 )
 
