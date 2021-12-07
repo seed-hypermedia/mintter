@@ -14,10 +14,10 @@ local_action(
         "package.json",
         "yarn.lock",
     ],
-    outs = [".yarn/install-state.gz"],
+    outs = ["node_modules/.yarn-state.yml"],
     cmd = """
 yarn install
-ln -s $(pwd)/.yarn/install-state.gz $TARGET_OUT_DIR/.yarn/install-state.gz
+ln -s $(pwd)/node_modules/.yarn-state.yml $TARGET_OUT_DIR/node_modules/.yarn-state.yml
 """,
     visibility = [
         "//frontend:__subpackages__",
