@@ -53,10 +53,10 @@ func diff(ctx context.Context, all, subset <-chan cid.Cid) chan cid.Cid {
 				case svk > avk:
 					send(av)
 				case svk < avk:
-					panic("Should never happend")
+					panic("Should never happened")
 					// This means we've deleted a block that we've provided previously. Probably should just ignore and continue.
 				default:
-					panic("should never happend")
+					panic("should never happened")
 				}
 			}
 		}

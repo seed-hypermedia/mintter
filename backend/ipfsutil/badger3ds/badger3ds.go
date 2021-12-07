@@ -18,7 +18,7 @@ import (
 )
 
 // badgerLog is a local wrapper for go-log to make the interface
-// compatible with badger.Logger (namely, aliasing Warnf to Warningf)
+// compatible with badger.Logger (namely, aliasing Warnf to Warningf).
 type badgerLog struct {
 	*logger.ZapEventLogger
 }
@@ -29,8 +29,10 @@ func (b *badgerLog) Warningf(format string, args ...interface{}) {
 
 var log = logger.Logger("badger")
 
+// ErrClosed is returned when using closed datastore.
 var ErrClosed = errors.New("datastore closed")
 
+// Datastore implements datastore interface using Badger v3.
 type Datastore struct {
 	DB *badger.DB
 
@@ -134,7 +136,7 @@ func NewDatastore(opts Options) (*Datastore, error) {
 	return ds, nil
 }
 
-// Keep scheduling GC's AFTER `gcInterval` has passed since the previous GC
+// Keep scheduling GC's AFTER `gcInterval` has passed since the previous GC.
 func (d *Datastore) periodicGC() {
 	gcTimeout := time.NewTimer(d.gcInterval)
 	defer gcTimeout.Stop()
@@ -182,6 +184,7 @@ func (d *Datastore) newImplicitTransaction(readOnly bool) *txn {
 	return &txn{d, d.DB.NewTransaction(!readOnly), true}
 }
 
+// Put implements datastore interface.
 func (d *Datastore) Put(ctx context.Context, key ds.Key, value []byte) error {
 	d.closeLk.RLock()
 	defer d.closeLk.RUnlock()
@@ -199,6 +202,7 @@ func (d *Datastore) Put(ctx context.Context, key ds.Key, value []byte) error {
 	return txn.commit()
 }
 
+// Sync implements datastore interface.
 func (d *Datastore) Sync(ctx context.Context, prefix ds.Key) error {
 	d.closeLk.RLock()
 	defer d.closeLk.RUnlock()
@@ -213,6 +217,7 @@ func (d *Datastore) Sync(ctx context.Context, prefix ds.Key) error {
 	return d.DB.Sync()
 }
 
+// PutWithTTL implements datastore interface.
 func (d *Datastore) PutWithTTL(ctx context.Context, key ds.Key, value []byte, ttl time.Duration) error {
 	d.closeLk.RLock()
 	defer d.closeLk.RUnlock()
@@ -230,6 +235,7 @@ func (d *Datastore) PutWithTTL(ctx context.Context, key ds.Key, value []byte, tt
 	return txn.commit()
 }
 
+// SetTTL implements datastore interface.
 func (d *Datastore) SetTTL(ctx context.Context, key ds.Key, ttl time.Duration) error {
 	d.closeLk.RLock()
 	defer d.closeLk.RUnlock()
@@ -247,6 +253,7 @@ func (d *Datastore) SetTTL(ctx context.Context, key ds.Key, ttl time.Duration) e
 	return txn.commit()
 }
 
+// GetExpiration implements datastore interface.
 func (d *Datastore) GetExpiration(ctx context.Context, key ds.Key) (time.Time, error) {
 	d.closeLk.RLock()
 	defer d.closeLk.RUnlock()
@@ -260,6 +267,7 @@ func (d *Datastore) GetExpiration(ctx context.Context, key ds.Key) (time.Time, e
 	return txn.getExpiration(key)
 }
 
+// Get implements datastore interface.
 func (d *Datastore) Get(ctx context.Context, key ds.Key) (value []byte, err error) {
 	d.closeLk.RLock()
 	defer d.closeLk.RUnlock()
@@ -273,6 +281,7 @@ func (d *Datastore) Get(ctx context.Context, key ds.Key) (value []byte, err erro
 	return txn.get(key)
 }
 
+// Has implements datastore interface.
 func (d *Datastore) Has(ctx context.Context, key ds.Key) (bool, error) {
 	d.closeLk.RLock()
 	defer d.closeLk.RUnlock()
@@ -286,6 +295,7 @@ func (d *Datastore) Has(ctx context.Context, key ds.Key) (bool, error) {
 	return txn.has(key)
 }
 
+// GetSize implements datastore interface.
 func (d *Datastore) GetSize(ctx context.Context, key ds.Key) (size int, err error) {
 	d.closeLk.RLock()
 	defer d.closeLk.RUnlock()
@@ -299,6 +309,7 @@ func (d *Datastore) GetSize(ctx context.Context, key ds.Key) (size int, err erro
 	return txn.getSize(key)
 }
 
+// Delete implements datastore interface.
 func (d *Datastore) Delete(ctx context.Context, key ds.Key) error {
 	d.closeLk.RLock()
 	defer d.closeLk.RUnlock()
@@ -314,6 +325,7 @@ func (d *Datastore) Delete(ctx context.Context, key ds.Key) error {
 	return txn.commit()
 }
 
+// Query implements datastore interface.
 func (d *Datastore) Query(ctx context.Context, q dsq.Query) (dsq.Results, error) {
 	d.closeLk.RLock()
 	defer d.closeLk.RUnlock()
@@ -340,6 +352,7 @@ func (d *Datastore) DiskUsage(ctx context.Context) (uint64, error) {
 	return uint64(lsm + vlog), nil
 }
 
+// Close implements io.Closer.
 func (d *Datastore) Close() error {
 	d.closeOnce.Do(func() {
 		close(d.closing)
@@ -373,6 +386,7 @@ func (d *Datastore) Batch(ctx context.Context) (ds.Batch, error) {
 	return b, nil
 }
 
+// CollectGarbage implements datastore interface.
 func (d *Datastore) CollectGarbage(ctx context.Context) (err error) {
 	// The idea is to keep calling DB.RunValueLogGC() till Badger no longer has any log files
 	// to GC(which would be indicated by an error, please refer to Badger GC docs).
@@ -539,7 +553,6 @@ func (t *txn) setTTL(key ds.Key, ttl time.Duration) error {
 	return item.Value(func(data []byte) error {
 		return t.putWithTTL(key, data, ttl)
 	})
-
 }
 
 func (t *txn) Get(ctx context.Context, key ds.Key) ([]byte, error) {
@@ -693,7 +706,6 @@ func (t *txn) query(q dsq.Query) (dsq.Results, error) {
 				case <-qrb.Process.Closing():
 				}
 			}
-
 		}()
 		if t.ds.closed {
 			closedEarly = true
@@ -825,7 +837,7 @@ func (t *txn) commit() error {
 	return t.txn.Commit()
 }
 
-// Alias to commit
+// Alias to commit.
 func (t *txn) Close() error {
 	t.ds.closeLk.RLock()
 	defer t.ds.closeLk.RUnlock()
@@ -853,7 +865,7 @@ func (t *txn) discard() {
 	t.txn.Discard()
 }
 
-// filter returns _true_ if we should filter (skip) the entry
+// filter returns _true_ if we should filter (skip) the entry.
 func filter(filters []dsq.Filter, entry dsq.Entry) bool {
 	for _, f := range filters {
 		if !f.Filter(entry) {
