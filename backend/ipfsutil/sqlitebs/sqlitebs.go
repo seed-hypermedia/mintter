@@ -79,7 +79,7 @@ func New(db *sqlitex.Pool, cfg Config) *Blockstore {
 // CreateTables will attempt to create the tables according to the config.
 // Users that want the blockstore to create tables should call this before using the blockstore.
 func (b *Blockstore) CreateTables(ctx context.Context) error {
-	conn, release, err := b.connWithTimeout()
+	conn, release, err := b.connWithTimeout(ctx)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ CREATE TABLE `+b.cfg.TableName+` (
 func (b *Blockstore) Has(ctx context.Context, cid cid.Cid) (bool, error) {
 	var out bool
 
-	err := b.exec(b.queries.Has, func(stmt *sqlite.Stmt) error {
+	err := b.exec(ctx, b.queries.Has, func(stmt *sqlite.Stmt) error {
 		out = true
 		return nil
 	}, cid.Hash())
@@ -112,7 +112,7 @@ func (b *Blockstore) Has(ctx context.Context, cid cid.Cid) (bool, error) {
 // Get implements blockstore.Blockstore interface.
 func (b *Blockstore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error) {
 	var data []byte
-	err := b.exec(b.queries.Get, func(stmt *sqlite.Stmt) error {
+	err := b.exec(ctx, b.queries.Get, func(stmt *sqlite.Stmt) error {
 		data = stmt.ColumnBytes(0)
 		return nil
 	}, cid.Hash())
@@ -130,7 +130,7 @@ func (b *Blockstore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error)
 // GetSize implements blockstore.Blockstore interface.
 func (b *Blockstore) GetSize(ctx context.Context, cid cid.Cid) (int, error) {
 	var size int
-	err := b.exec(b.queries.GetSize, func(stmt *sqlite.Stmt) error {
+	err := b.exec(ctx, b.queries.GetSize, func(stmt *sqlite.Stmt) error {
 		size = stmt.ColumnInt(0)
 		return nil
 	}, cid.Hash())
@@ -147,7 +147,7 @@ func (b *Blockstore) GetSize(ctx context.Context, cid cid.Cid) (int, error) {
 
 // Put implements blockstore.Blockstore interface.
 func (b *Blockstore) Put(ctx context.Context, block blocks.Block) error {
-	conn, release, err := b.connWithTimeout()
+	conn, release, err := b.connWithTimeout(ctx)
 	if err != nil {
 		return err
 	}
@@ -158,7 +158,7 @@ func (b *Blockstore) Put(ctx context.Context, block blocks.Block) error {
 
 // PutMany implements blockstore.Blockstore interface.
 func (b *Blockstore) PutMany(ctx context.Context, blocks []blocks.Block) error {
-	conn, release, err := b.connWithTimeout()
+	conn, release, err := b.connWithTimeout(ctx)
 	if err != nil {
 		return err
 	}
@@ -190,7 +190,7 @@ func (b *Blockstore) putBlock(conn *sqlite.Conn, block blocks.Block) error {
 
 // DeleteBlock implements blockstore.Blockstore interface.
 func (b *Blockstore) DeleteBlock(ctx context.Context, cid cid.Cid) error {
-	return b.exec(b.queries.Delete, nil, cid.Hash())
+	return b.exec(ctx, b.queries.Delete, nil, cid.Hash())
 }
 
 // AllKeysChan returns a channel with all the keys stored. Failing to drain the channel
@@ -229,8 +229,8 @@ func (b *Blockstore) HashOnRead(bool) {
 	panic("hash on read is not implemented for sqlite blockstore")
 }
 
-func (b *Blockstore) exec(query string, fn func(*sqlite.Stmt) error, args ...interface{}) error {
-	conn, release, err := b.connWithTimeout()
+func (b *Blockstore) exec(ctx context.Context, query string, fn func(*sqlite.Stmt) error, args ...interface{}) error {
+	conn, release, err := b.connWithTimeout(ctx)
 	if err != nil {
 		return err
 	}
@@ -239,8 +239,8 @@ func (b *Blockstore) exec(query string, fn func(*sqlite.Stmt) error, args ...int
 	return sqlitex.Exec(conn, query, fn, args...)
 }
 
-func (b *Blockstore) connWithTimeout() (*sqlite.Conn, context.CancelFunc, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+func (b *Blockstore) connWithTimeout(ctx context.Context) (*sqlite.Conn, context.CancelFunc, error) {
+	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
 	conn, release, err := b.db.Conn(ctx)
 	return conn, func() {
 		cancel()
