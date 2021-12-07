@@ -28,7 +28,9 @@ const (
 var logger = log.Logger("providing").Desugar()
 
 func init() {
-	log.SetLogLevel("providing", "debug")
+	if err := log.SetLogLevel("providing", "debug"); err != nil {
+		panic(err)
+	}
 }
 
 // Strategy is a function that returns items to be reprovided.
@@ -220,9 +222,7 @@ func (p *Provider) Provide(ctx context.Context, c cid.Cid) error {
 	}
 
 	if err := p.db.Update(func(txn *bbolt.Tx) error {
-		txn.Bucket(bucketProvided).Put(c.Bytes(), encodeUint64(uint64(time.Now().Unix())))
-
-		return nil
+		return txn.Bucket(bucketProvided).Put(c.Bytes(), encodeUint64(uint64(time.Now().Unix())))
 	}); err != nil {
 		return fmt.Errorf("failed to store provide record %s: %w", c, err)
 	}
@@ -310,7 +310,6 @@ func (p *Provider) reprovideAll(ctx context.Context, batchSize int) error {
 			}
 
 			return nil
-
 		})
 
 		nextBatch = make([]cid.Cid, 0, batchSize)

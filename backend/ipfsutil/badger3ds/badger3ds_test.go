@@ -3,9 +3,9 @@ package badger3ds
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"sort"
 	"testing"
@@ -14,6 +14,7 @@ import (
 	ds "github.com/ipfs/go-datastore"
 	dsq "github.com/ipfs/go-datastore/query"
 	dstest "github.com/ipfs/go-datastore/test"
+	"github.com/stretchr/testify/require"
 )
 
 var _ ds.Datastore = (*Datastore)(nil)
@@ -336,7 +337,7 @@ func TestBatching(t *testing.T) {
 
 	_, err = d.Get(context.Background(), ds.NewKey(key))
 	if err == nil {
-		t.Fatal("expected error trying to get uncommited data")
+		t.Fatal("expected error trying to get uncommitted data")
 	}
 }
 
@@ -368,7 +369,8 @@ func TestBatchingRequired(t *testing.T) {
 	var puts int
 	for ; puts < 10000000; puts++ {
 		buf := make([]byte, valSize)
-		rand.Read(buf)
+		_, err = rand.Read(buf)
+		require.NoError(t, err)
 		err = tx.Put(context.Background(), ds.NewKey(fmt.Sprintf("/key%d", puts)), buf)
 		if err != nil {
 			break
@@ -391,7 +393,8 @@ func TestBatchingRequired(t *testing.T) {
 	}
 	for i := 0; i < puts; i++ {
 		buf := make([]byte, valSize)
-		rand.Read(buf)
+		_, err := rand.Read(buf)
+		require.NoError(t, err)
 		err = b.Put(context.Background(), ds.NewKey(fmt.Sprintf("/key%d", i)), buf)
 		if err != nil {
 			t.Fatal(err)
@@ -498,7 +501,8 @@ func TestManyKeysAndQuery(t *testing.T) {
 		keystrs = append(keystrs, dsk.String())
 		keys = append(keys, dsk)
 		buf := make([]byte, 64)
-		rand.Read(buf)
+		_, err := rand.Read(buf)
+		require.NoError(t, err)
 		values = append(values, buf)
 	}
 
@@ -579,7 +583,8 @@ func TestGC(t *testing.T) {
 	t.Logf("putting %d values", count)
 	for i := 0; i < count; i++ {
 		buf := make([]byte, 6400)
-		rand.Read(buf)
+		_, err := rand.Read(buf)
+		require.NoError(t, err)
 		err = b.Put(context.Background(), ds.NewKey(fmt.Sprintf("/key%d", i)), buf)
 		if err != nil {
 			t.Fatal(err)
@@ -864,7 +869,7 @@ func TestExpirations(t *testing.T) {
 	}
 
 	if err = txn.Commit(context.Background()); err != nil {
-		t.Fatalf("commiting transaction failed: %v", err)
+		t.Fatalf("committing transaction failed: %v", err)
 	}
 
 	// Second transaction to retrieve expirations.
