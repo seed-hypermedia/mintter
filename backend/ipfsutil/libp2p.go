@@ -3,7 +3,6 @@ package ipfsutil
 import (
 	"context"
 	"fmt"
-	"io"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -11,29 +10,22 @@ import (
 	"mintter/backend/cleanup"
 
 	"github.com/ipfs/go-datastore"
-	"github.com/ipfs/go-ipfs/core/node"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/libp2p/go-libp2p-peerstore/pstoreds"
 	"github.com/libp2p/go-libp2p/config"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
 
 	ipfsconfig "github.com/ipfs/go-ipfs-config"
-	ipfsp2p "github.com/ipfs/go-ipfs/core/node/libp2p"
-	ipns "github.com/ipfs/go-ipns"
 	connmgr "github.com/libp2p/go-libp2p-connmgr"
 	routing "github.com/libp2p/go-libp2p-core/routing"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
-	libp2pquic "github.com/libp2p/go-libp2p-quic-transport"
 	record "github.com/libp2p/go-libp2p-record"
 	libp2ptls "github.com/libp2p/go-libp2p-tls"
 )
-
-var dhtFactory = ipfsp2p.DHTOption
 
 // Bootstrappers is a convenience alias for a list of bootstrap addresses.
 // It is to provide some semantic meaning to otherwise unclear slice of addresses.
@@ -90,7 +82,7 @@ func SetupLibp2p(
 		return nil, nil, fmt.Errorf("failed to apply libp2p options: %w", err)
 	}
 
-	h, err := cfg.NewNode(ctx)
+	h, err := cfg.NewNode()
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create libp2p node: %w", err)
 	}
@@ -98,16 +90,16 @@ func SetupLibp2p(
 	return h, ddht, nil
 }
 
-func newDHT(ctx context.Context, h host.Host, ds datastore.Batching) (*dualdht.DHT, error) {
+func newDHT(ctx context.Context, h host.Host, ds datastore.Batching, opts ...dualdht.Option) (*dualdht.DHT, error) {
 	dhtOpts := []dualdht.Option{
 		dualdht.DHTOption(dht.NamespacedValidator("pk", record.PublicKeyValidator{})),
-		dualdht.DHTOption(dht.NamespacedValidator("ipns", ipns.Validator{KeyBook: h.Peerstore()})),
 		dualdht.DHTOption(dht.Concurrency(10)),
 		dualdht.DHTOption(dht.Mode(dht.ModeAuto)),
 	}
 	if ds != nil {
 		dhtOpts = append(dhtOpts, dualdht.DHTOption(dht.Datastore(ds)))
 	}
+	dhtOpts = append(dhtOpts, opts...)
 
 	return dualdht.New(ctx, h, dhtOpts...)
 }
@@ -132,10 +124,7 @@ func EnableTLS(cfg *config.Config) error {
 
 // TransportOpts set sane options for transport.
 func TransportOpts(cfg *config.Config) error {
-	return cfg.Apply(
-		libp2p.Transport(libp2pquic.NewTransport),
-		libp2p.DefaultTransports,
-	)
+	return cfg.Apply(libp2p.DefaultTransports)
 }
 
 // BootstrapResult is a result of the bootstrap process.
@@ -224,37 +213,25 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.A
 		return nil
 	})
 
-	ps, err := pstoreds.NewPeerstore(ctx, ds, pstoreds.DefaultOpts())
-	if err != nil {
-		return nil, err
-	}
-	n.clean.Add(ps)
-
 	o := []libp2p.Option{
 		libp2p.Identity(key),
-		libp2p.Peerstore(ps),
 		libp2p.NoListenAddrs, // Users must explicitly start listening.
 		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
-			r, err := dhtFactory(
-				ctx, h,
-				ds,
-				node.RecordValidator(ps),
-				bootstrap...,
-			)
+			r, err := newDHT(ctx, h, ds, dualdht.WanDHTOption(dht.BootstrapPeers(bootstrap...)))
+			if err != nil {
+				return nil, err
+			}
 
 			n.Routing = r
 
 			// Routing interface from IPFS doesn't expose Close method,
-			// so it actually never gets closed propertly, even inside IPFS.
+			// so it actually never gets closed properly, even inside IPFS.
 			// This ugly trick attempts to solve this.
 			n.clean.AddErrFunc(func() error {
-				if c, ok := n.Routing.(io.Closer); ok {
-					return c.Close()
-				}
-				return nil
+				return r.Close()
 			})
 
-			return r, err
+			return r, nil
 		}),
 		libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute)),
 		TransportOpts,
@@ -265,7 +242,7 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.A
 
 	o = append(o, opts...)
 
-	n.Host, err = libp2p.New(ctx, o...)
+	n.Host, err = libp2p.New(o...)
 	if err != nil {
 		return nil, err
 	}

@@ -8,12 +8,10 @@ import (
 	accounts "mintter/backend/api/accounts/v1alpha"
 	daemon "mintter/backend/api/daemon/v1alpha"
 	networking "mintter/backend/api/networking/v1alpha"
-	"mintter/backend/badger3ds"
 	"mintter/backend/config"
 	"mintter/backend/ipfsutil"
 	"mintter/backend/testutil"
 
-	"github.com/ipfs/go-datastore"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
@@ -28,11 +26,6 @@ func TestLibp2p(t *testing.T) {
 		NoMetrics:   true,
 	}
 
-	opts := badger3ds.DefaultOptions("")
-	opts.InMemory = true
-	ds, err := badger3ds.NewDatastore(opts)
-	require.NoError(t, err)
-
 	tt := makeTester(t, "alice")
 
 	repo := makeTestRepo(t, tt)
@@ -45,10 +38,10 @@ func TestLibp2p(t *testing.T) {
 		fx.Supply(cfg),
 		fx.Supply(repo),
 		fx.Provide(
-			func() datastore.Batching {
-				return ds
-			},
 			ipfsutil.DefaultBootstrapPeers,
+			provideDatastore,
+			providePeerstore,
+			provideBadger,
 			provideLibp2p,
 		),
 		fx.Populate(&n),

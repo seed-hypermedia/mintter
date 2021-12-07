@@ -44,11 +44,11 @@ func TestDAG(t *testing.T) {
 	err = p2.Remove(ctx, node.Cid())
 	require.NoError(t, err)
 
-	ok, err := p1.BlockStore().Has(node.Cid())
+	ok, err := p1.BlockStore().Has(ctx, node.Cid())
 	require.False(t, ok, "block must have been deleted")
 	require.NoError(t, err)
 
-	ok, err = p2.BlockStore().Has(node.Cid())
+	ok, err = p2.BlockStore().Has(ctx, node.Cid())
 	require.False(t, ok, "block must have been deleted")
 	require.NoError(t, err)
 }

@@ -9,6 +9,7 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-datastore"
+	dssync "github.com/ipfs/go-datastore/sync"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -151,7 +152,23 @@ func provideP2PConfig(cfg config.Config) config.P2P {
 	return cfg.P2P
 }
 
-func provideDatastore(lc fx.Lifecycle, r *repo) (datastore.Batching, error) {
+func provideDatastore(lc fx.Lifecycle) datastore.Batching {
+	// TODO: revisit this to understand whether using an inmemory datastore
+	// actually breaks anything from IPFS. Apparently a lot of the state that we were storing
+	// in Badger is actually quite ephemeral even in the upstream IPFS implementation.
+	// We'll see if any issues would appear during usage and adapt.
+	ds := dssync.MutexWrap(datastore.NewMapDatastore())
+
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			return ds.Close()
+		},
+	})
+
+	return ds
+}
+
+func provideBadger(lc fx.Lifecycle, r *repo) (*badger.DB, error) {
 	ds, err := badger3ds.NewDatastore(badger3ds.DefaultOptions(r.badgerDir()))
 	if err != nil {
 		return nil, err
@@ -163,11 +180,7 @@ func provideDatastore(lc fx.Lifecycle, r *repo) (datastore.Batching, error) {
 		},
 	})
 
-	return ds, nil
-}
-
-func provideBadger(ds datastore.Batching) *badger.DB {
-	return ds.(*badger3ds.Datastore).DB
+	return ds.DB, nil
 }
 
 func provideBadgerGraph(lc fx.Lifecycle, db *badger.DB) (*badgergraph.DB, error) {

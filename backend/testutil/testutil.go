@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -90,11 +91,11 @@ type fakeTxn struct {
 	datastore.Datastore
 }
 
-func (txn *fakeTxn) Commit() error {
+func (txn *fakeTxn) Commit(ctx context.Context) error {
 	return nil
 }
 
-func (txn *fakeTxn) Discard() {}
+func (txn *fakeTxn) Discard(ctx context.Context) {}
 
 // ProtoEqual will check if want and got are equal Protobuf messages.
 // For some weird reason they made Messages uncomparable using normal mechanisms.

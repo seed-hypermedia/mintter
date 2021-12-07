@@ -17,12 +17,15 @@ import (
 	"github.com/ipfs/go-datastore"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p-core/peerstore"
+	"github.com/libp2p/go-libp2p-peerstore/pstoremem"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 )
 
 var moduleP2P = fx.Options(
 	fx.Provide(
+		providePeerstore,
 		provideLibp2p,
 		provideBootstrapPeers,
 		// provideBadgerBlockstore,
@@ -58,12 +61,28 @@ func provideBootstrapPeers(cfg config.P2P) ipfsutil.Bootstrappers {
 	return ipfsutil.DefaultBootstrapPeers()
 }
 
+func providePeerstore(lc fx.Lifecycle) (peerstore.Peerstore, error) {
+	pstoremem, err := pstoremem.NewPeerstore()
+	if err != nil {
+		return nil, err
+	}
+
+	lc.Append(fx.Hook{
+		OnStart: func(context.Context) error {
+			return pstoremem.Close()
+		},
+	})
+
+	return nil, nil
+}
+
 // provideLibp2p assembles libp2p node ready to use. Listening must be started elsewhere.
-func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ds datastore.Batching, r *repo, boot ipfsutil.Bootstrappers) (*ipfsutil.Libp2p, error) {
+func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ps peerstore.Peerstore, ds datastore.Batching, r *repo, boot ipfsutil.Bootstrappers) (*ipfsutil.Libp2p, error) {
 	m := ipfsutil.NewLibp2pMetrics()
 
 	opts := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
+		libp2p.Peerstore(ps),
 	}
 
 	if !cfg.NoRelay {

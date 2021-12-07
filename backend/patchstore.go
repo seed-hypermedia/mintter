@@ -198,7 +198,7 @@ func (s *patchStore) AddPatch(ctx context.Context, sp signedPatch) error {
 		return fmt.Errorf("failed to store head: %w", err)
 	}
 
-	if err := s.bs.Put(sp.blk); err != nil {
+	if err := s.bs.Put(ctx, sp.blk); err != nil {
 		return fmt.Errorf("failed to store patch block: %w", err)
 	}
 

@@ -21,7 +21,7 @@ func TestGenSeed(t *testing.T) {
 
 	resp, err := srv.GenSeed(ctx, &daemon.GenSeedRequest{})
 	require.NoError(t, err)
-	require.Equal(t, aezeed.NummnemonicWords, len(resp.Mnemonic))
+	require.Equal(t, aezeed.NumMnemonicWords, len(resp.Mnemonic))
 }
 
 func TestRegister(t *testing.T) {
