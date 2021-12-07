@@ -2,7 +2,6 @@ package ipfsutil
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -24,7 +23,6 @@ import (
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
 	record "github.com/libp2p/go-libp2p-record"
-	libp2ptls "github.com/libp2p/go-libp2p-tls"
 )
 
 // Bootstrappers is a convenience alias for a list of bootstrap addresses.
@@ -41,55 +39,6 @@ func DefaultBootstrapPeers() Bootstrappers {
 	return peers
 }
 
-// SetupLibp2p returns a routed host and DHT instances that can be used to
-// easily create a ipfslite Peer. You may consider to use Peer.Bootstrap()
-// after creating the IPFS-Lite Peer to connect to other peers. When the
-// datastore parameter is nil, the DHT will use an in-memory datastore, so all
-// provider records are lost on program shutdown.
-//
-// Additional libp2p options can be passed. Note that the Identity,
-// ListenAddrs and PrivateNetwork options will be setup automatically.
-// Interesting options to pass: NATPortMap() EnableAutoRelay(),
-// libp2p.EnableNATService(), DisableRelay(), ConnectionManager(...)... see
-// https://godoc.org/github.com/libp2p/go-libp2p#Option for more info.
-//
-// Deprecated: Use NewLibp2pNode().
-func SetupLibp2p(
-	ctx context.Context,
-	hostKey crypto.PrivKey,
-	listenAddrs []multiaddr.Multiaddr,
-	dsDHT datastore.Batching,
-	opts ...libp2p.Option,
-) (host.Host, *dualdht.DHT, error) {
-	var ddht *dualdht.DHT
-	opts = append(opts,
-		libp2p.Identity(hostKey),
-		libp2p.ListenAddrs(listenAddrs...),
-		// This is a weird circular dependency here. Libp2p host depends on
-		// the routing system, and routing depends on the host.
-		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
-			d, err := newDHT(ctx, h, dsDHT)
-			if err != nil {
-				return nil, fmt.Errorf("failed to create DHT: %w", err)
-			}
-			ddht = d
-			return d, nil
-		}),
-	)
-
-	var cfg libp2p.Config
-	if err := cfg.Apply(append(opts, libp2p.FallbackDefaults)...); err != nil {
-		return nil, nil, fmt.Errorf("failed to apply libp2p options: %w", err)
-	}
-
-	h, err := cfg.NewNode()
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create libp2p node: %w", err)
-	}
-
-	return h, ddht, nil
-}
-
 func newDHT(ctx context.Context, h host.Host, ds datastore.Batching, opts ...dualdht.Option) (*dualdht.DHT, error) {
 	dhtOpts := []dualdht.Option{
 		dualdht.DHTOption(dht.NamespacedValidator("pk", record.PublicKeyValidator{})),
@@ -102,24 +51,6 @@ func newDHT(ctx context.Context, h host.Host, ds datastore.Batching, opts ...dua
 	dhtOpts = append(dhtOpts, opts...)
 
 	return dualdht.New(ctx, h, dhtOpts...)
-}
-
-// EnableRelay set sane options for enabling circuit-relay.
-//
-// Deprecated: pass options explicitly.
-func EnableRelay(cfg *config.Config) error {
-	return cfg.Apply(
-		libp2p.EnableRelay(),
-		libp2p.EnableAutoRelay(),
-		libp2p.DefaultStaticRelays(),
-	)
-}
-
-// EnableTLS set sane options for security.
-//
-// Deprecated: Use libp2p.DefaultSecurity.
-func EnableTLS(cfg *config.Config) error {
-	return cfg.Apply(libp2p.Security(libp2ptls.ID, libp2ptls.New))
 }
 
 // TransportOpts set sane options for transport.
@@ -253,8 +184,11 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.A
 
 // Bootstrap blocks, and performs bootstrapping process for the node,
 // including the underlying routing system.
-func (n *Libp2p) Bootstrap(ctx context.Context) BootstrapResult {
-	return Bootstrap(ctx, n.Host, n.Routing, n.bootstrappers)
+func (n *Libp2p) Bootstrap(ctx context.Context, bootstrappers ...peer.AddrInfo) BootstrapResult {
+	if bootstrappers == nil {
+		bootstrappers = n.bootstrappers
+	}
+	return Bootstrap(ctx, n.Host, n.Routing, bootstrappers)
 }
 
 // Close the node and all the underlying systems.
