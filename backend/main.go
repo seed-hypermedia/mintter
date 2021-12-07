@@ -14,11 +14,11 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
-	"mintter/backend/badger3ds"
 	"mintter/backend/badgergraph"
 	"mintter/backend/config"
 	"mintter/backend/db/graphschema"
 	"mintter/backend/db/sqliteschema"
+	"mintter/backend/ipfsutil/badger3ds"
 	"mintter/backend/logging"
 )
 

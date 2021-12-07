@@ -16,8 +16,8 @@ import (
 	"go.uber.org/zap"
 
 	accounts "mintter/backend/api/accounts/v1alpha"
-	"mintter/backend/badger3ds"
 	"mintter/backend/config"
+	"mintter/backend/ipfsutil/badger3ds"
 	"mintter/backend/testutil"
 )
 
