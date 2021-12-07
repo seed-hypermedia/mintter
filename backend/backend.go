@@ -416,8 +416,8 @@ func (srv *backend) Register(ctx context.Context, m aezeed.Mnemonic, passphraze 
 	srv.registerMu.Lock()
 	defer srv.registerMu.Unlock()
 
-	if len(m) != aezeed.NummnemonicWords {
-		return AccountID{}, fmt.Errorf("mnemonic must be exactly %d words, got %d", aezeed.NummnemonicWords, len(m))
+	if len(m) != aezeed.NumMnemonicWords {
+		return AccountID{}, fmt.Errorf("mnemonic must be exactly %d words, got %d", aezeed.NumMnemonicWords, len(m))
 	}
 
 	select {
@@ -661,7 +661,7 @@ func (srv *backend) CreateDraft(ctx context.Context, perma signedPermanode, data
 		return cid.Undef, err
 	}
 
-	if err := p2p.bs.Blockstore().Put(perma.blk); err != nil {
+	if err := p2p.bs.Blockstore().Put(ctx, perma.blk); err != nil {
 		return cid.Undef, fmt.Errorf("failed to add permanode block: %w", err)
 	}
 

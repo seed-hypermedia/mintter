@@ -542,7 +542,7 @@ func (srv *docsAPI) DeletePublication(ctx context.Context, in *documents.DeleteP
 	// It doesn't matter if these deletes are not atomic, because we're deleting patches from the beginning,
 	// and we still keep the head around. Although eventually we should do this in a single transaction when possible.
 	for _, p := range state.Merge() {
-		if err := srv.back.patches.bs.DeleteBlock(p.cid); err != nil {
+		if err := srv.back.patches.bs.DeleteBlock(ctx, p.cid); err != nil {
 			return nil, fmt.Errorf("failed to delete patch %s: %w", p.cid, err)
 		}
 	}

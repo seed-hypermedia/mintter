@@ -95,7 +95,7 @@ CREATE TABLE `+b.cfg.TableName+` (
 }
 
 // Has implements blockstore.Blockstore interface.
-func (b *Blockstore) Has(cid cid.Cid) (bool, error) {
+func (b *Blockstore) Has(ctx context.Context, cid cid.Cid) (bool, error) {
 	var out bool
 
 	err := b.exec(b.queries.Has, func(stmt *sqlite.Stmt) error {
@@ -110,7 +110,7 @@ func (b *Blockstore) Has(cid cid.Cid) (bool, error) {
 }
 
 // Get implements blockstore.Blockstore interface.
-func (b *Blockstore) Get(cid cid.Cid) (blocks.Block, error) {
+func (b *Blockstore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error) {
 	var data []byte
 	err := b.exec(b.queries.Get, func(stmt *sqlite.Stmt) error {
 		data = stmt.ColumnBytes(0)
@@ -128,7 +128,7 @@ func (b *Blockstore) Get(cid cid.Cid) (blocks.Block, error) {
 }
 
 // GetSize implements blockstore.Blockstore interface.
-func (b *Blockstore) GetSize(cid cid.Cid) (int, error) {
+func (b *Blockstore) GetSize(ctx context.Context, cid cid.Cid) (int, error) {
 	var size int
 	err := b.exec(b.queries.GetSize, func(stmt *sqlite.Stmt) error {
 		size = stmt.ColumnInt(0)
@@ -146,7 +146,7 @@ func (b *Blockstore) GetSize(cid cid.Cid) (int, error) {
 }
 
 // Put implements blockstore.Blockstore interface.
-func (b *Blockstore) Put(block blocks.Block) error {
+func (b *Blockstore) Put(ctx context.Context, block blocks.Block) error {
 	conn, release, err := b.connWithTimeout()
 	if err != nil {
 		return err
@@ -157,7 +157,7 @@ func (b *Blockstore) Put(block blocks.Block) error {
 }
 
 // PutMany implements blockstore.Blockstore interface.
-func (b *Blockstore) PutMany(blocks []blocks.Block) error {
+func (b *Blockstore) PutMany(ctx context.Context, blocks []blocks.Block) error {
 	conn, release, err := b.connWithTimeout()
 	if err != nil {
 		return err
@@ -189,7 +189,7 @@ func (b *Blockstore) putBlock(conn *sqlite.Conn, block blocks.Block) error {
 }
 
 // DeleteBlock implements blockstore.Blockstore interface.
-func (b *Blockstore) DeleteBlock(cid cid.Cid) error {
+func (b *Blockstore) DeleteBlock(ctx context.Context, cid cid.Cid) error {
 	return b.exec(b.queries.Delete, nil, cid.Hash())
 }
 

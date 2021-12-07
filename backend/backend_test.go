@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/ipfs/go-cid"
-	"github.com/ipfs/go-datastore"
 
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
@@ -35,7 +34,7 @@ func TestBackendCreateDraft(t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, cid.Undef.Equals(c))
 
-	permablk, err := alice.p2p.bs.Blockstore().Get(c)
+	permablk, err := alice.p2p.bs.Blockstore().Get(ctx, c)
 	require.NoError(t, err)
 
 	require.Equal(t, pn.blk.RawData(), permablk.RawData(), "retrieved permanode must match the created one")
@@ -147,9 +146,6 @@ func makeTestBackend(t *testing.T, name string, ready bool) *backend {
 	dsopts := badger3ds.DefaultOptions("")
 	dsopts.InMemory = true
 
-	ds, err := badger3ds.NewDatastore(dsopts)
-	require.NoError(t, err)
-
 	log, err := zap.NewDevelopment()
 	require.NoError(t, err)
 
@@ -167,9 +163,7 @@ func makeTestBackend(t *testing.T, name string, ready bool) *backend {
 			repo,
 		),
 		fx.Provide(
-			func() datastore.Batching {
-				return ds
-			},
+			provideDatastore,
 			provideBadger,
 			provideSQLite,
 			provideBadgerGraph,

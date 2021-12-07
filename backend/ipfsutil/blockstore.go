@@ -33,26 +33,26 @@ func NewNetworkBlockStore(bs blockservice.BlockService) *NetworkBlockStore {
 }
 
 // DeleteBlock implements block store interface.
-func (s *NetworkBlockStore) DeleteBlock(c cid.Cid) error {
-	return s.bs.DeleteBlock(c)
+func (s *NetworkBlockStore) DeleteBlock(ctx context.Context, c cid.Cid) error {
+	return s.bs.DeleteBlock(ctx, c)
 }
 
 // Has implements block store interface.
-func (s *NetworkBlockStore) Has(c cid.Cid) (bool, error) {
-	return s.bs.Blockstore().Has(c)
+func (s *NetworkBlockStore) Has(ctx context.Context, c cid.Cid) (bool, error) {
+	return s.bs.Blockstore().Has(ctx, c)
 }
 
 // Get implements block store interface.
-func (s *NetworkBlockStore) Get(c cid.Cid) (blocks.Block, error) {
-	ctx, cancel := context.WithTimeout(context.TODO(), s.timeout)
+func (s *NetworkBlockStore) Get(ctx context.Context, c cid.Cid) (blocks.Block, error) {
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
 	return s.bs.GetBlock(ctx, c)
 }
 
 // GetSize implements block store interface.
-func (s *NetworkBlockStore) GetSize(c cid.Cid) (int, error) {
-	n, err := s.bs.Blockstore().GetSize(c)
+func (s *NetworkBlockStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
+	n, err := s.bs.Blockstore().GetSize(ctx, c)
 	if err == nil {
 		return n, nil
 	}
@@ -67,17 +67,17 @@ func (s *NetworkBlockStore) GetSize(c cid.Cid) (int, error) {
 		return 0, err
 	}
 
-	return s.bs.Blockstore().GetSize(c)
+	return s.bs.Blockstore().GetSize(ctx, c)
 }
 
 // Put implements block store interface.
-func (s *NetworkBlockStore) Put(b blocks.Block) error {
-	return s.bs.AddBlock(b)
+func (s *NetworkBlockStore) Put(ctx context.Context, b blocks.Block) error {
+	return s.bs.AddBlock(ctx, b)
 }
 
 // PutMany implements block store interface.
-func (s *NetworkBlockStore) PutMany(bs []blocks.Block) error {
-	return s.bs.AddBlocks(bs)
+func (s *NetworkBlockStore) PutMany(ctx context.Context, bs []blocks.Block) error {
+	return s.bs.AddBlocks(ctx, bs)
 }
 
 // AllKeysChan implements block store interface.
@@ -116,7 +116,7 @@ type blockStoreGetter struct {
 }
 
 func (b *blockStoreGetter) GetBlock(ctx context.Context, c cid.Cid) (blocks.Block, error) {
-	return b.Get(c)
+	return b.Get(ctx, c)
 }
 
 func (b *blockStoreGetter) GetBlocks(ctx context.Context, cids []cid.Cid) <-chan blocks.Block {
@@ -130,7 +130,7 @@ func (b *blockStoreGetter) GetBlocks(ctx context.Context, cids []cid.Cid) <-chan
 			case <-ctx.Done():
 				return
 			default:
-				block, err := b.Get(c)
+				block, err := b.Get(ctx, c)
 				if err != nil {
 					// TODO(burdiyan): log or return the error here.
 					_ = err

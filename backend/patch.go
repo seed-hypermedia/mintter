@@ -84,7 +84,7 @@ type blockstoreGetter struct {
 }
 
 func (bg *blockstoreGetter) GetBlock(ctx context.Context, c cid.Cid) (blocks.Block, error) {
-	return bg.Get(c)
+	return bg.Get(ctx, c)
 }
 
 func resolvePatches(ctx context.Context, obj cid.Cid, ver *p2p.Version, bgetter blockGetter) (*state, error) {
