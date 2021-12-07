@@ -68,7 +68,7 @@ func providePeerstore(lc fx.Lifecycle) (peerstore.Peerstore, error) {
 	}
 
 	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
+		OnStop: func(context.Context) error {
 			return pstoremem.Close()
 		},
 	})
