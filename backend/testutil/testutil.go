@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"mintter/backend/badger3ds"
+	"mintter/backend/ipfsutil/badger3ds"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
