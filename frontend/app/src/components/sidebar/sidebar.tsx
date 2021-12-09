@@ -38,7 +38,7 @@ export function Sidebar() {
 
 var sidebarStyle = css({
   transition: 'all 0.25s ease',
-  backgroundColor: '$background-neutral',
+  backgroundColor: '$background-default',
   gridArea: 'sidebar',
   overflow: 'scroll',
 })

@@ -1,10 +1,10 @@
 // import 'show-keys'
 import {Box} from '@mintter/ui/box'
-import {Button} from '@mintter/ui/button'
 import {CSS} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 // import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {useActor} from '@xstate/react'
+import {getDateFormat} from 'frontend/app/src/utils/get-format-date'
 import {
   FormEvent,
   // useLayoutEffect,
@@ -14,7 +14,6 @@ import {
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
-import {Separator} from '../components/separator'
 import {useSidepanel} from '../components/sidepanel'
 import {useEnableSidepanel} from '../components/sidepanel/sidepanel'
 import {Textarea} from '../components/textarea'
@@ -77,99 +76,144 @@ export default function EditorPage({params}: EditorPageProps) {
 
   if (state.matches('editing') && context.localDraft?.content) {
     return (
-      <Box
-        css={{
-          marginBottom: 300,
-          padding: '$5',
-          '@bp2': {
-            paddingTop: '$8',
-            marginRight: '$9',
-            marginLeft: 80,
-          },
-        }}
-      >
-        <Button onClick={() => send('PUBLISH')} size="2" shape="pill" variant="outlined">
-          Publish
-        </Button>
-        <Box css={{width: '$full', maxWidth: '64ch'}}>
-          <EditorStatus state={state} />
-          <Textarea
-            css={{fontWeight: '$bold', fontSize: '$5', marginTop: '$6'} as CSS}
-            data-testid="editor_title"
-            name="title"
-            placeholder="Document title"
-            value={context?.localDraft?.title}
-            onChange={(event: FormEvent<HTMLTextAreaElement>) => {
-              // update window title as the user types
-              // getCurrentWindow().setTitle(event.currentTarget.value)
-              send({
-                type: 'UPDATE',
-                payload: {
-                  title: event.currentTarget.value,
-                },
-              })
-            }}
-          />
-          <Textarea
-            css={
-              {
-                color: '$text-muted',
-                fontSize: '$4',
-              } as CSS
-            }
-            data-testid="editor_subtitle"
-            name="subtitle"
-            placeholder="about this publication..."
-            value={context.localDraft.subtitle}
-            onChange={(event) =>
-              send({
-                type: 'UPDATE',
-                payload: {
-                  subtitle: event.currentTarget.value,
-                },
-              })
-            }
-          />
-          <Separator css={{margin: '10px 0'}} />
-          {context.localDraft?.content && (
-            <Box css={{backgroundColor: 'red'}}>
-              <Editor
-                value={context.localDraft.content}
-                onChange={(content) => {
-                  send({
-                    type: 'UPDATE',
-                    payload: {
-                      content,
-                    },
-                  })
-                  sidepanelSend({
-                    type: 'SIDEPANEL_LOAD_ANNOTATIONS',
-                    document: content,
-                  })
-                }}
-              />
+      <>
+        <Box
+          css={{
+            marginBottom: 300,
+            padding: '$5',
+            '@bp2': {
+              paddingTop: '$8',
+              marginRight: '$9',
+              marginLeft: 80,
+            },
+          }}
+        >
+          {/* <Button onClick={() => send('PUBLISH')} size="2" shape="pill" variant="outlined">
+            Publish
+          </Button> */}
+          <Box css={{width: '$full', maxWidth: '64ch'}}>
+            <Textarea
+              css={{fontSize: '$4'} as CSS}
+              data-testid="editor_title"
+              name="title"
+              placeholder="Document title"
+              value={context?.localDraft?.title}
+              onChange={(event: FormEvent<HTMLTextAreaElement>) => {
+                // update window title as the user types
+                // getCurrentWindow().setTitle(event.currentTarget.value)
+                send({
+                  type: 'UPDATE',
+                  payload: {
+                    title: event.currentTarget.value,
+                  },
+                })
+              }}
+            />
+            {/* <Textarea
+              css={
+                {
+                  color: '$text-muted',
+                  fontSize: '$4',
+                } as CSS
+              }
+              data-testid="editor_subtitle"
+              name="subtitle"
+              placeholder="about this publication..."
+              value={context.localDraft.subtitle}
+              onChange={(event) =>
+                send({
+                  type: 'UPDATE',
+                  payload: {
+                    subtitle: event.currentTarget.value,
+                  },
+                })
+              }
+            /> */}
+            {/* <Separator css={{margin: '10px 0'}} /> */}
+            {context.localDraft?.content && (
+              <Box>
+                <Editor
+                  value={context.localDraft.content}
+                  onChange={(content) => {
+                    send({
+                      type: 'UPDATE',
+                      payload: {
+                        content,
+                      },
+                    })
+                    sidepanelSend({
+                      type: 'SIDEPANEL_LOAD_ANNOTATIONS',
+                      document: content,
+                    })
+                  }}
+                />
 
-              <Box css={{marginTop: 40}}>
-                <button type="button" onClick={() => setVisible((v) => !v)}>
-                  toggle Value
-                </button>
-                {visible && (
-                  <Box
-                    as="pre"
-                    css={{
-                      padding: 20,
-                      backgroundColor: '$background-muted',
-                      overflowX: 'scroll',
-                    }}
-                  >
-                    {JSON.stringify(context.localDraft.content, null, 2)}
-                  </Box>
-                )}
+                <Box css={{marginTop: 40}}>
+                  <button type="button" onClick={() => setVisible((v) => !v)}>
+                    toggle Value
+                  </button>
+                  {visible && (
+                    <Box
+                      as="pre"
+                      css={{
+                        padding: 20,
+                        backgroundColor: '$background-muted',
+                        overflowX: 'scroll',
+                      }}
+                    >
+                      {JSON.stringify(context.localDraft.content, null, 2)}
+                    </Box>
+                  )}
+                </Box>
               </Box>
-            </Box>
-          )}
+            )}
+          </Box>
         </Box>
-      </Box>
+        <Box
+          css={{
+            background: '$background-alt',
+            width: '$full',
+            position: 'absolute',
+            bottom: 0,
+            zIndex: '$max',
+            padding: '$5',
+            '@bp2': {
+              paddingLeft: 96,
+            },
+            '&:after': {
+              content: '',
+              position: 'absolute',
+              width: '$full',
+              height: 20,
+              background: 'linear-gradient(0deg, $colors$background-alt 0%, rgba(255,255,255,0) 100%)',
+              top: -20,
+              left: 0,
+            },
+            $$gap: '24px',
+            display: 'flex',
+            gap: '$$gap',
+            alignItems: 'center',
+            '& > span': {
+              position: 'relative',
+            },
+            '& > span:before': {
+              content: `"|"`,
+              color: '$text-muted',
+              position: 'absolute',
+              right: -15,
+              top: 0,
+            },
+          }}
+        >
+          <Text size="1" color="muted">
+            Created on: {getDateFormat(context.localDraft, 'createTime')}
+          </Text>
+          <Text size="1" color="muted">
+            Last modified: {getDateFormat(context.localDraft, 'updateTime')}
+          </Text>
+          <EditorStatus state={state} />
+        </Box>
+      </>
     )
   }
 
@@ -183,9 +227,6 @@ function EditorStatus({state}: {state: DraftEditorMachineState}) {
         display: 'flex',
         gap: '$2',
         alignItems: 'center',
-        paddingHorizontal: '$0',
-        paddingVertical: '$2',
-        marginTop: '$5',
       }}
     >
       <Box

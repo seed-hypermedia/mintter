@@ -3,12 +3,11 @@ import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
 import {css, styled} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
 import {useActor} from '@xstate/react'
 import {FormEvent, useCallback, useEffect, useRef, useState} from 'react'
 import {useQueryClient} from 'react-query'
-import {Link, useLocation} from 'wouter'
+import {useLocation} from 'wouter'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {useRoute} from '../../utils/use-route'
 import {Settings} from '../settings'
@@ -21,8 +20,9 @@ export const TopbarStyled = styled(Box, {
   width: '$full',
   height: 48,
   display: 'flex',
-  boxShadow: '0 0 0 1px $colors$background-neutral',
-  background: '$background-default',
+  // boxShadow: '0 0 0 1px $colors$background-neutral',
+  borderBottom: '1px solid rgba(0,0,0,0.1)',
+  background: '$background-alt',
 })
 
 export const topbarSection = css({
@@ -51,25 +51,19 @@ function SidenavBar() {
       className={topbarSection()}
       css={{
         width: 232,
-        flex: 'none',
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '$background-default',
         paddingLeft: '$5',
         paddingRight: '$3',
       }}
     >
-      <Link to="/">
-        <Text alt fontWeight="bold" size="5">
-          Mintter
-        </Text>
-      </Link>
-      <Box css={{display: 'flex', gap: '$4'}}>
-        {/* <Button variant="ghost" size="0" color="muted">
-          <Icon name="CardStackPlus" size="2" />
-        </Button> */}
+      <span style={{flex: 1}} />
+      <Box css={{display: 'flex', alignItems: 'center', gap: '$4'}}>
         <Button variant="ghost" size="0" color="muted" onClick={toggle}>
           <Icon name="Sidenav" size="2" />
         </Button>
+        <TopbarNavigation />
       </Box>
     </Box>
   )
@@ -80,18 +74,6 @@ function MainBar() {
   const client = useQueryClient()
   let form = useRef(null)
   const [location, setLocation] = useState(() => routeLocation)
-  const onCreateDraft = useCallback(async function onCreateDraft() {
-    try {
-      const d = await createDraft()
-      if (d?.id) {
-        await client.refetchQueries('DraftList')
-        setRouteLocation(`/editor/${d.id}`)
-        setLocation(`/editor/${d.id}`)
-      }
-    } catch (err) {
-      console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
-    }
-  }, [])
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -129,10 +111,6 @@ function MainBar() {
         gap: '$5',
       }}
     >
-      <Button size="0" variant="ghost" color="muted" onClick={onCreateDraft}>
-        <Icon name="PencilAdd" color="muted" />
-      </Button>
-      <TopbarNavigation />
       <Box ref={form} css={{width: '100%', maxWidth: '800px'}} as="form" onSubmit={handleSubmit}>
         <TextField size={1} name="search" value={location} onChange={(e) => setLocation(e.target.value)} />
       </Box>
@@ -156,6 +134,20 @@ function TopbarNavigation() {
 function TopbarActions() {
   const service = useSidepanel()
   const [state, send] = useActor(service)
+  const [routeLocation, setRouteLocation] = useLocation()
+  const [location, setLocation] = useState(() => routeLocation)
+  const onCreateDraft = useCallback(async function onCreateDraft() {
+    try {
+      const d = await createDraft()
+      if (d?.id) {
+        await client.refetchQueries('DraftList')
+        setRouteLocation(`/editor/${d.id}`)
+        setLocation(`/editor/${d.id}`)
+      }
+    } catch (err) {
+      console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
+    }
+  }, [])
 
   const {match: canSidepanel} = useRoute(['/p/:docId', '/editor/:docId'])
 
@@ -173,7 +165,6 @@ function TopbarActions() {
         pointerEvents: 'all',
         display: 'flex',
         gap: '$4',
-        borderBottom: '1px solid rgba(0,0,0,0.1)',
       }}
     >
       {canSidepanel && (
@@ -183,6 +174,9 @@ function TopbarActions() {
           </Button>
         </Tooltip>
       )}
+      <Button size="0" variant="ghost" color="muted" onClick={onCreateDraft}>
+        <Icon name="PencilAdd" color="muted" />
+      </Button>
       <Settings />
     </Box>
   )
