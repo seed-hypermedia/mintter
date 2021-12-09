@@ -3,8 +3,7 @@ import {Icon, icons} from '@mintter/ui/icon'
 import {css} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import * as Collapsible from '@radix-ui/react-collapsible'
-import {PropsWithChildren, useRef, useState} from 'react'
-import {useRoute} from '../../utils/use-route'
+import {PropsWithChildren} from 'react'
 
 export function Section({
   title,
@@ -78,18 +77,4 @@ export function EmptyList() {
       </Text>
     </Box>
   )
-}
-
-export function useSection({data}: {data: Array<{document: Document}>}): Collapsible.CollapsibleProps {
-  const {match, params} = useRoute<{docId: string}>('/p/:docId')
-  const [open, setOpen] = useState(false)
-  const props = useRef<Collapsible.CollapsibleProps>({open: true, disabled: false, 'aria-disabled': false})
-
-  if (data.length == 0) {
-    return {
-      open: false,
-      disabled: true,
-      'aria-disabled': true,
-    }
-  }
 }

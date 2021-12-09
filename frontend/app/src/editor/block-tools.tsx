@@ -125,7 +125,7 @@ export function BlockTools({element}: {element: FlowContent}) {
         <Dropdown.Root modal={false}>
           <Dropdown.Trigger asChild>
             <ElementDropdown data-trigger>
-              <Icon name="Grid6" size="2" color="muted" />
+              <Icon name="Grid4" size="2" color="muted" />
             </ElementDropdown>
           </Dropdown.Trigger>
           <Dropdown.Content portalled align="start" side="bottom" css={{minWidth: 220}}>

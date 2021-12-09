@@ -1,6 +1,5 @@
 // import 'show-keys'
 import {Box} from '@mintter/ui/box'
-import {CSS} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 // import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {useActor} from '@xstate/react'
@@ -93,7 +92,7 @@ export default function EditorPage({params}: EditorPageProps) {
           </Button> */}
           <Box css={{width: '$full', maxWidth: '64ch'}}>
             <Textarea
-              css={{fontSize: '$4'} as CSS}
+              css={{fontSize: '$4', color: '$text-muted'}}
               data-testid="editor_title"
               name="title"
               placeholder="Document title"
