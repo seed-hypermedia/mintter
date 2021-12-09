@@ -1,5 +1,4 @@
 import type {EditorPlugin} from '../types'
-import {toggleMark} from '../utils'
 
 export const MARK_COLOR = 'color'
 
@@ -16,10 +15,11 @@ export const createColorPlugin = (): EditorPlugin => ({
         )
       }
     },
-  onDOMBeforeInput: (editor) => (ev) => {
-    if (ev.inputType == 'formatFontColor' && editor.selection) {
-      ev.preventDefault()
-      toggleMark(editor, 'color', ev.data)
-    }
-  },
+  // onDOMBeforeInput: (editor) => (ev) => {
+  //   if (ev.inputType == 'formatFontColor' && editor.selection) {
+  //     ev.preventDefault()
+  //     //@ts-ignore
+  //     toggleMark(editor, 'color', ev.data)
+  //   }
+  // },
 })

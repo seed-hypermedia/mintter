@@ -3,7 +3,7 @@ import {FlowContent, isEmbed} from '@mintter/mttast'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
 import {useActor} from '@xstate/react'
-import {forwardRef, PropsWithChildren} from 'react'
+import {PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
 import {useLocation} from 'wouter'
 import {useBookmarksService} from '../../components/bookmarks'
@@ -17,10 +17,7 @@ import {getEmbedIds} from './get-embed-ids'
 
 export const ELEMENT_EMBED = 'embed'
 
-export const Embed = forwardRef(function Embed(
-  {embed, children = null, ...props}: PropsWithChildren<{embed: EmbedType}>,
-  ref,
-) {
+export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{embed: EmbedType}>) => {
   const sidepanelService = useSidepanel()
   const [, sidepanelSend] = useActor(sidepanelService)
   const bookmarkService = useBookmarksService()
@@ -50,7 +47,7 @@ export const Embed = forwardRef(function Embed(
   }
 
   return (
-    <ContextMenu.Root ref={ref}>
+    <ContextMenu.Root>
       <ContextMenu.Trigger>
         <EmbedEditor embed={embed.url} {...props} onClick={onOpenInSidepanel}>
           {children}
@@ -80,7 +77,7 @@ export const Embed = forwardRef(function Embed(
       </ContextMenu.Content>
     </ContextMenu.Root>
   )
-})
+}
 
 export const createEmbedPlugin = (): EditorPlugin => ({
   name: ELEMENT_EMBED,

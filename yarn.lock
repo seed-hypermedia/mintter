@@ -2339,7 +2339,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^4.31.2
     "@typescript-eslint/parser": ^4.31.2
     "@typescript-eslint/typescript-estree": ^4.31.0
-    "@vitejs/plugin-react-refresh": ^1.3.6
+    "@vitejs/plugin-react": ^1.1.1
     "@xstate/inspect": ^0.5.0
     "@xstate/react": ^1.6.1
     babel-loader: ^8.2.2
@@ -2352,7 +2352,10 @@ __metadata:
     hast: ^1.0.0
     hast-util-sanitize: ^4.0.0
     http-server: ^13.0.2
+    identity-obj-proxy: ^3.0.0
     is-url: ^1.2.4
+    jest: ^27.4.3
+    jest-environment-jsdom: ^27.4.3
     prettier: ^2.4.0
     react: ^17.0.2
     react-async-ssr: ^0.7.2
@@ -2381,6 +2384,7 @@ __metadata:
     unified: ^10.1.0
     unist-util-visit: ^4.0.0
     vite: ^2.5.6
+    vite-jest: ^0.1.3
     vite-react-jsx: ^1.1.2
     vite-tsconfig-paths: ^3.3.14
     wouter: ^2.8.0-alpha.1
@@ -2428,6 +2432,7 @@ __metadata:
     deepmerge: ^4.2.2
     eslint: ^7.32.0
     eslint-config-prettier: ^8.3.0
+    hast-util-has-property: ^2.0.0
     hast-util-is-element: ^2.1.1
     hast-util-to-text: ^3.1.1
     hastscript: ^7.0.2
@@ -5578,7 +5583,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-react-refresh@npm:^1.3.5, @vitejs/plugin-react-refresh@npm:^1.3.6":
+"@vitejs/plugin-react-refresh@npm:^1.3.5":
   version: 1.3.6
   resolution: "@vitejs/plugin-react-refresh@npm:1.3.6"
   dependencies:
@@ -5604,6 +5609,22 @@ __metadata:
     react-refresh: ^0.11.0
     resolve: ^1.20.0
   checksum: 056d4819d013031234a29a6ac15944b561ef3c7be48ce3a30b38314211417fcfef153f70c036914da55f19c3285c542074bb9845a4ca82382ea9a08fe6a2e3ae
+  languageName: node
+  linkType: hard
+
+"@vitejs/plugin-react@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@vitejs/plugin-react@npm:1.1.1"
+  dependencies:
+    "@babel/core": ^7.16.0
+    "@babel/plugin-transform-react-jsx": ^7.16.0
+    "@babel/plugin-transform-react-jsx-development": ^7.16.0
+    "@babel/plugin-transform-react-jsx-self": ^7.16.0
+    "@babel/plugin-transform-react-jsx-source": ^7.16.0
+    "@rollup/pluginutils": ^4.1.1
+    react-refresh: ^0.11.0
+    resolve: ^1.20.0
+  checksum: 397b0d8f5ab9cb08b600f55048208281f2267a72aa53ef85cf9f836e2389696e28a8b1a2bf93ef9009e2ad9bf43f58ab5e9da054a09babefb5ee91fc82bab54a
   languageName: node
   linkType: hard
 
@@ -9412,6 +9433,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"es-module-lexer@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "es-module-lexer@npm:0.6.0"
+  checksum: ef04832d0f118e07c5aafc3824f274df380e9f86915a2d665884d9498f580b1f5607bc633504460a6c6247b7689aaa774b024d6733de28614d1fab72991a6fc3
+  languageName: node
+  linkType: hard
+
 "es-module-lexer@npm:^0.7.1":
   version: 0.7.1
   resolution: "es-module-lexer@npm:0.7.1"
@@ -10409,7 +10437,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"execa@npm:^5.0.0":
+"execa@npm:^5.0.0, execa@npm:^5.1.1":
   version: 5.1.1
   resolution: "execa@npm:5.1.1"
   dependencies:
@@ -11804,6 +11832,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"harmony-reflect@npm:^1.4.6":
+  version: 1.6.2
+  resolution: "harmony-reflect@npm:1.6.2"
+  checksum: 2e5bae414cd2bfae5476147f9935dc69ee9b9a413206994dcb94c5b3208d4555da3d4313aff6fd14bd9991c1e3ef69cdda5c8fac1eb1d7afc064925839339b8c
+  languageName: node
+  linkType: hard
+
 "has-ansi@npm:^2.0.0":
   version: 2.0.0
   resolution: "has-ansi@npm:2.0.0"
@@ -12573,6 +12608,15 @@ __metadata:
   dependencies:
     postcss: ^7.0.14
   checksum: a4ca2c6b82cb3eb879d635bd4028d74bca174edc49ee48ef5f01988489747d340a389d5a0ac6f6887a5c24ab8fc4386c781daab32a7ade5344a2edff66207635
+  languageName: node
+  linkType: hard
+
+"identity-obj-proxy@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "identity-obj-proxy@npm:3.0.0"
+  dependencies:
+    harmony-reflect: ^1.4.6
+  checksum: 97559f8ea2aeaa1a880d279d8c49550dce01148321e00a2102cda5ddf9ce622fa1d7f3efc7bed63458af78889de888fdaebaf31c816312298bb3fdd0ef8aaf2c
   languageName: node
   linkType: hard
 
@@ -14170,6 +14214,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jest-transform-stub@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "jest-transform-stub@npm:2.0.0"
+  checksum: c46134257e5fb047f5952e4a4a1339925dd009da15aa8d3310ba1d3e4d22266ed6c675cd18e58c9d5ca2246718d6cc8ff00ea6a4b6f3b2a6b285b6426f6ae8fe
+  languageName: node
+  linkType: hard
+
 "jest-util@npm:^26.6.2":
   version: 26.6.2
   resolution: "jest-util@npm:26.6.2"
@@ -14249,7 +14300,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest@npm:^27.3.1":
+"jest@npm:^27.3.1, jest@npm:^27.4.3":
   version: 27.4.3
   resolution: "jest@npm:27.4.3"
   dependencies:
@@ -14920,6 +14971,15 @@ __metadata:
   version: 2.3.9
   resolution: "lunr@npm:2.3.9"
   checksum: 176719e24fcce7d3cf1baccce9dd5633cd8bdc1f41ebe6a180112e5ee99d80373fe2454f5d4624d437e5a8319698ca6837b9950566e15d2cae5f2a543a3db4b8
+  languageName: node
+  linkType: hard
+
+"magic-string@npm:^0.25.7":
+  version: 0.25.7
+  resolution: "magic-string@npm:0.25.7"
+  dependencies:
+    sourcemap-codec: ^1.4.4
+  checksum: 727a1fb70f9610304fe384f1df0251eb7d1d9dd779c07ef1225690361b71b216f26f5d934bfb11c919b5b0e7ba50f6240c823a6f2e44cfd33d4a07d7747ca829
   languageName: node
   linkType: hard
 
@@ -19653,6 +19713,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"slash@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "slash@npm:4.0.0"
+  checksum: da8e4af73712253acd21b7853b7e0dbba776b786e82b010a5bfc8b5051a1db38ed8aba8e1e8f400dd2c9f373be91eb1c42b66e91abb407ff42b10feece5e1d2d
+  languageName: node
+  linkType: hard
+
 "slate-history@github:mintterteam/slate#workspace=slate-history&tag=v0.70.0-unist":
   version: 0.66.0
   resolution: "slate-history@https://github.com/mintterteam/slate.git#workspace=slate-history&commit=888fb9b3a87478db0da3b2a4be75d49a83408f15"
@@ -19870,6 +19937,13 @@ __metadata:
   version: 0.7.3
   resolution: "source-map@npm:0.7.3"
   checksum: cd24efb3b8fa69b64bf28e3c1b1a500de77e84260c5b7f2b873f88284df17974157cc88d386ee9b6d081f08fdd8242f3fc05c953685a6ad81aad94c7393dedea
+  languageName: node
+  linkType: hard
+
+"sourcemap-codec@npm:^1.4.4":
+  version: 1.4.8
+  resolution: "sourcemap-codec@npm:1.4.8"
+  checksum: b57981c05611afef31605732b598ccf65124a9fcb03b833532659ac4d29ac0f7bfacbc0d6c5a28a03e84c7510e7e556d758d0bb57786e214660016fb94279316
   languageName: node
   linkType: hard
 
@@ -22040,6 +22114,24 @@ __metadata:
     unist-util-stringify-position: ^3.0.0
     vfile-message: ^3.0.0
   checksum: 9a2fc257ecc0329fe7598ab5deba2fcca26f476279ce8a779d58722aed28f9c6726196ff718f23ed430b30b0dbd04d5ab3983f33b70ec540a685f4f6415f8a37
+  languageName: node
+  linkType: hard
+
+"vite-jest@npm:^0.1.3":
+  version: 0.1.3
+  resolution: "vite-jest@npm:0.1.3"
+  dependencies:
+    es-module-lexer: ^0.6.0
+    execa: ^5.1.1
+    jest-transform-stub: ^2.0.0
+    magic-string: ^0.25.7
+    slash: ^4.0.0
+  peerDependencies:
+    jest: ^27.0.0
+    vite: ^2.4.2
+  bin:
+    vite-jest: bin/vite-jest.js
+  checksum: 70319b03ebac106158328ec47260e67ccf33e9165c6fc9c06c26252365aed131405dca6b10515b95e2ef9e9a952a54d5ed0625175d2ae3a2089c79ff43ea3dc4
   languageName: node
   linkType: hard
 

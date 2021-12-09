@@ -1,5 +1,7 @@
-import {isUnorderedList} from '@mintter/mttast'
+import {isFlowContent, isUnorderedList} from '@mintter/mttast'
+import {createId, statement} from '@mintter/mttast-builder'
 import {styled} from '@mintter/ui/stitches.config'
+import {Element, Node, Transforms} from 'slate'
 import {groupStyle, removeEmptyGroup} from '../group'
 import type {EditorPlugin} from '../types'
 import {resetGroupingContent} from '../utils'
@@ -26,7 +28,16 @@ export const createUnorderedListPlugin = (): EditorPlugin => ({
     const {normalizeNode, deleteBackward} = editor
 
     editor.normalizeNode = (entry) => {
-      if (removeEmptyGroup(editor, entry)) return
+      const [node, path] = entry
+      if (Element.isElement(node) && isUnorderedList(node)) {
+        if (removeEmptyGroup(editor, entry)) return
+        for (const [child, childPath] of Node.children(editor, path)) {
+          if (Element.isElement(child) && !isFlowContent(child)) {
+            Transforms.wrapNodes(editor, statement({id: createId()}), {at: childPath})
+            return
+          }
+        }
+      }
       normalizeNode(entry)
     }
 

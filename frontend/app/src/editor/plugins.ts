@@ -5,6 +5,7 @@ import {createEmbedPlugin} from './embed'
 import {createEmphasisPlugin} from './emphasis'
 import {createGroupPlugin} from './group'
 import {createHeadingPlugin} from './heading'
+import {createInlineCodePlugin} from './inline-code'
 import {createLinkPlugin} from './link'
 import {createMarkdownShortcutsPlugin} from './markdown-plugin'
 import {createOrderedListPlugin} from './ordered-list'
@@ -29,6 +30,7 @@ export const plugins: EditorPlugin[] = [
   createSuperscriptPlugin(),
   createSubscriptPlugin(),
   createColorPlugin(),
+  createInlineCodePlugin(),
 
   createLinkPlugin(),
   createEmbedPlugin(),

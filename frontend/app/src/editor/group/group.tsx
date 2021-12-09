@@ -1,8 +1,9 @@
 import {isFlowContent, isGroup, isGroupContent} from '@mintter/mttast'
+import {createId, statement} from '@mintter/mttast-builder'
 import {css, styled} from '@mintter/ui/stitches.config'
+import {resetGroupingContent} from 'frontend/app/src/editor/utils'
 import {forwardRef, PropsWithChildren} from 'react'
-import type {Node, NodeEntry} from 'slate'
-import {Editor, Transforms} from 'slate'
+import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
@@ -47,17 +48,22 @@ export const createGroupPlugin = (): EditorPlugin => ({
     },
   configureEditor(editor) {
     if (editor.readOnly) return
-    const {normalizeNode} = editor
+    const {normalizeNode, deleteBackward} = editor
+
+    editor.deleteBackward = (unit) => {
+      if (resetGroupingContent(editor)) return
+      deleteBackward(unit)
+    }
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
-      if (isGroupContent(node)) {
+      if (Element.isElement(node) && isGroupContent(node)) {
         if (removeEmptyGroup(editor, entry)) return
-        const parent = Editor.parent(editor, path)
-        if (parent) {
-          const [parentNode] = parent
-          if (isGroupContent(parentNode)) {
-            Transforms.unwrapNodes(editor, {at: path})
+
+        for (const [child, childPath] of Node.children(editor, path)) {
+          if (Element.isElement(child) && !isFlowContent(child)) {
+            console.log('inside group and not a flowcontent', child, childPath)
+            Transforms.wrapNodes(editor, statement({id: createId()}), {at: childPath})
             return
           }
         }

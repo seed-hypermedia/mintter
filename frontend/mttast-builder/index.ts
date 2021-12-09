@@ -16,7 +16,7 @@ import type {
   UnorderedList,
   Video,
 } from '@mintter/mttast'
-import {nanoid} from 'nanoid'
+import {nanoid} from 'nanoid/non-secure'
 import type {Node, Parent} from 'unist'
 
 export type ChildrenOf<N extends Parent> = N['children'] | (() => N['children'])

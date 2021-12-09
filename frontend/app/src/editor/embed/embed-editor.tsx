@@ -1,4 +1,4 @@
-import {forwardRef, PropsWithChildren} from 'react'
+import {PropsWithChildren} from 'react'
 import {Editor} from '../editor'
 import {EditorMode} from '../plugin-utils'
 import {EmbedUI} from './embed-ui'
@@ -8,10 +8,7 @@ export type EmbedEditorProps = PropsWithChildren<{
   embed: string
   onClick?: any
 }>
-export const EmbedEditor = forwardRef<HTMLElement, EmbedEditorProps>(function ForwardedEmbedEditor(
-  {embed, children, ...props},
-  ref,
-) {
+export const EmbedEditor = ({embed, children, ...props}: EmbedEditorProps) => {
   const {status, data, error} = useEmbed(embed)
 
   if (status == 'loading') {
@@ -33,9 +30,9 @@ export const EmbedEditor = forwardRef<HTMLElement, EmbedEditorProps>(function Fo
   }
 
   return (
-    <EmbedUI ref={ref} cite={embed} {...props} contentEditable={false}>
+    <EmbedUI cite={embed} {...props} contentEditable={false}>
       <Editor mode={EditorMode.Embed} value={[data.statement]} />
       {children}
     </EmbedUI>
   )
-})
+}

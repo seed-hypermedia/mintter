@@ -1,8 +1,6 @@
-import {FlowContent, isBlockquote, isCode, isParagraph} from '@mintter/mttast'
-import {createId, statement} from '@mintter/mttast-builder'
+import {FlowContent, isBlockquote, isCode, isParagraph, isPhrasingContent} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
-import {Editor, Node, Path, Transforms} from 'slate'
-import type {RenderElementProps} from 'slate-react'
+import {Editor, Element, Node, Path, Transforms} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {useHover} from '../hover-context'
 import {EditorMode} from '../plugin-utils'
@@ -34,28 +32,36 @@ export const createParagraphPlugin = (): EditorPlugin => ({
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
-      if (isParagraph(node)) {
-        if (Path.hasPrevious(path)) {
-          const [parentNode] = Editor.parent(editor, path)
-          const prevNode = Node.get(editor, Path.previous(path))
-          if (isCode(parentNode)) {
+      if (Element.isElement(node) && isParagraph(node)) {
+        for (const [child, childPath] of Node.children(editor, path)) {
+          if (Element.isElement(child) && !isPhrasingContent(child)) {
+            console.log('is paragraph child and not phrasing: ', child, childPath)
+            Transforms.moveNodes(editor, {at: childPath, to: Path.next(path)})
             return
           }
-          /*
-           * @todo if the selection is in the beginning, then wrap the first paragraph with a new statement
-           * @body Issue Body
-           */
-          let id = createId()
-          Editor.withoutNormalizing(editor, () => {
-            let targetPath = Editor.isEmpty(editor, prevNode) ? Path.previous(path) : path
-            Transforms.wrapNodes(editor, statement({id}), {
-              at: targetPath,
-            })
-            Transforms.setNodes(editor, {id: createId()}, {at: targetPath})
-          })
-
-          return
         }
+
+        //   if (Path.hasPrevious(path)) {
+        //     const [parentNode] = Editor.parent(editor, path)
+        //     const prevNode = Node.get(editor, Path.previous(path))
+        //     if (isCode(parentNode)) {
+        //       return
+        //     }
+        //     /*
+        //      * @todo if the selection is in the beginning, then wrap the first paragraph with a new statement
+        //      * @body Issue Body
+        //      */
+        //     let id = createId()
+        //     Editor.withoutNormalizing(editor, () => {
+        //       let targetPath = Editor.isEmpty(editor, prevNode) ? Path.previous(path) : path
+        //       Transforms.wrapNodes(editor, statement({id}), {
+        //         at: targetPath,
+        //       })
+        //       Transforms.setNodes(editor, {id: createId()}, {at: targetPath})
+        //     })
+
+        //     return
+        //   }
       }
       normalizeNode(entry)
     }

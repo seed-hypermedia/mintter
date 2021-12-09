@@ -1,13 +1,11 @@
 import {createDraft} from '@mintter/client'
 import type {FlowContent, Statement as StatementType} from '@mintter/mttast'
-import {isBlockquote, isGroupContent, isHeading, isStatement} from '@mintter/mttast'
-import {group} from '@mintter/mttast-builder'
+import {isFlowContent, isGroupContent, isParagraph, isStatement} from '@mintter/mttast'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
 import {useActor} from '@xstate/react'
 import toast from 'react-hot-toast'
-import type {Node, NodeEntry} from 'slate'
-import {Editor, Path, Transforms} from 'slate'
+import {Editor, Element, Node, NodeEntry, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {useLocation} from 'wouter'
 import {useBookmarksService} from '../../components/bookmarks'
@@ -18,7 +16,7 @@ import {BlockTools} from '../block-tools'
 import {ContextMenu} from '../context-menu'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
-import {getLastChild, isFirstChild, isLastChild} from '../utils'
+import {isFirstChild} from '../utils'
 import {StatementUI} from './statement-ui'
 
 export const ELEMENT_STATEMENT = 'statement'
@@ -42,38 +40,58 @@ export const createStatementPlugin = (): EditorPlugin => ({
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
-      if (isStatement(node)) {
-        if (removeEmptyStatement(editor, entry)) return
-        // check if there's a group below, if so, move inside that group
-        const parent = Editor.parent(editor, path)
+      if (Element.isElement(node) && isStatement(node)) {
+        if (removeEmptyStatement(editor, entry as NodeEntry<StatementType>)) return
 
-        if (!isLastChild(parent, path)) {
-          const lastChild = getLastChild(parent)
-          if (isGroupContent(lastChild?.[0])) {
-            // the last child of the statement is a group. we should move the new as the first child
-            Transforms.moveNodes(editor, {at: path, to: lastChild?.[1].concat(0) as Path})
+        if (addParagraphToNestedGroup(editor, entry as NodeEntry<StatementType>)) return
+        for (const [child, childPath] of Node.children(editor, path, {reverse: true})) {
+          if (isFirstChild(childPath)) {
+            if (isFlowContent(child)) {
+              Transforms.unwrapNodes(editor, {at: childPath})
+              return
+            }
+
+            if (!isParagraph(child)) {
+              Transforms.setNodes(editor, {type: 'paragraph'}, {at: childPath})
+              return
+            }
+          }
+
+          if (isFlowContent(child)) {
+            Transforms.moveNodes(editor, {at: childPath, to: Path.next(path)})
             return
           }
-        }
 
-        const [parentNode, parentPath] = parent
-        if (isStatement(parentNode) || isBlockquote(parentNode)) {
-          // if parent is a statement and is the last child (because the previous if is false) then we can move the new statement to the next position of it's parent
-          Transforms.moveNodes(editor, {
-            at: path,
-            to: isFirstChild(path) ? parentPath : Path.next(parentPath),
-          })
-          return
-        }
-        if (isHeading(parentNode)) {
-          // this statement should be part of a group inside the heading, we need to wrap it!
-          Transforms.wrapNodes(editor, group([]), {at: path})
-          return
-        }
+          if (childPath[childPath.length - 1] == 1) {
+            console.log('statement second child', child)
+            if (isParagraph(child)) {
+              let index = childPath[childPath.length - 1]
+              let nextChild = node.children[index + 1]
+              console.log('siguiente child es grupo!', {node, nextChild, child})
+              if (isGroupContent(nextChild)) {
+                Transforms.moveNodes(editor, {at: childPath, to: Path.next(childPath).concat(0)})
+                return
+              } else if (!isGroupContent(child)) {
+                Transforms.moveNodes(editor, {at: childPath, to: Path.next(path)})
+                return
+              }
+            }
+          }
 
-        if (isGroupContent(node.children[0])) {
-          Transforms.unwrapNodes(editor, {at: path})
-          return
+          if (childPath[childPath.length - 1] > 1) {
+            console.log('statement greater than 2 child', child)
+            Transforms.moveNodes(editor, {at: childPath, to: Path.next(path)})
+            return
+          }
+
+          if (isGroupContent(child)) {
+            let prev = Editor.previous(editor, {at: childPath, match: isFlowContent})
+            if (prev) {
+              let [, pPath] = prev
+              Transforms.moveNodes(editor, {at: childPath, to: pPath.concat(1)})
+              return
+            }
+          }
         }
       }
       normalizeNode(entry)
@@ -82,13 +100,24 @@ export const createStatementPlugin = (): EditorPlugin => ({
     return editor
   },
   onKeyDown: (editor) => (event) => {
-    if (editor.selection && event.key == 'Enter' && event.shiftKey) {
-      event.preventDefault()
-      Transforms.insertText(editor, '\n')
-      return
+    if (editor.selection && event.key == 'Enter') {
+      if (event.shiftKey) {
+        event.preventDefault()
+        Transforms.insertText(editor, '\n')
+        return
+      }
     }
   },
 })
+
+function addParagraphToNestedGroup(editor: Editor, entry: NodeEntry<StatementType>): boolean | undefined {
+  let [node, path] = entry
+  //@ts-ignore
+  if (node.children.length > 2 && isParagraph(node.children[1]) && isGroupContent(node.children[2])) {
+    Transforms.moveNodes(editor, {at: path.concat(1), to: path.concat(2, 0)})
+    return true
+  }
+}
 
 function Statement({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
   const bookmarksService = useBookmarksService()
@@ -182,17 +211,15 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
   )
 }
 
-export function removeEmptyStatement(editor: Editor, entry: NodeEntry<Node>): boolean | undefined {
+export function removeEmptyStatement(editor: Editor, entry: NodeEntry<StatementType>): boolean | undefined {
   const [node, path] = entry
-  if (isStatement(node)) {
-    if (node.children.length == 1) {
-      const children = Editor.node(editor, path.concat(0))
-      if (!('type' in children[0])) {
-        Transforms.removeNodes(editor, {
-          at: path,
-        })
-        return true
-      }
+  if (node.children.length == 1) {
+    const children = Editor.node(editor, path.concat(0))
+    if (!('type' in children[0])) {
+      Transforms.removeNodes(editor, {
+        at: path,
+      })
+      return true
     }
   }
 }
