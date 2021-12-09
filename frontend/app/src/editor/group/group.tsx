@@ -62,7 +62,7 @@ export const createGroupPlugin = (): EditorPlugin => ({
 
         for (const [child, childPath] of Node.children(editor, path)) {
           if (Element.isElement(child) && !isFlowContent(child)) {
-            console.log('inside group and not a flowcontent', child, childPath)
+            // inside group and not a flowcontent
             Transforms.wrapNodes(editor, statement({id: createId()}), {at: childPath})
             return
           }

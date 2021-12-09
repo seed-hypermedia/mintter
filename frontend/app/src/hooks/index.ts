@@ -24,6 +24,19 @@ import type {HookOptions} from './types'
 
 export * from './types'
 
+export const queryKeys = {
+  GET_DRAFT_LIST: 'GET_DRAFT_LIST',
+  GET_ACCOUNT: 'GET_ACCOUNT',
+  GET_ACCOUNT_LIST: 'GET_ACCOUNT_LIST',
+  GET_ACCOUNT_INFO: 'GET_ACCOUNT_INFO',
+  GET_DRAFT: 'GET_DRAFT',
+  GET_PEER_ADDRS: 'GET_PEER_ADDRS',
+  GET_PUBLICATION: 'GET_PUBLICATION',
+  GET_PUBLICATION_LIST: 'GET_PUBLICATION_LIST',
+  OTHERS_PUBLICATION_LIST: 'OTHERS_PUBLICATION_LIST',
+  MY_PUBLICATION_LIST: 'MY_PUBLICATION_LIST',
+}
+
 /**
  *
  * @param accountId
@@ -31,7 +44,7 @@ export * from './types'
  * @returns
  */
 export function useAccount(accountId = '', options: HookOptions<Account> = {}) {
-  return useQuery(['Account', accountId], () => getAccount(accountId, options.rpc), options)
+  return useQuery([queryKeys.GET_ACCOUNT, accountId], () => getAccount(accountId, options.rpc), options)
 }
 
 /**
@@ -40,7 +53,7 @@ export function useAccount(accountId = '', options: HookOptions<Account> = {}) {
  * @returns
  */
 export function useInfo(options: HookOptions<Info> = {}) {
-  return useQuery(['AccountInfo'], () => getInfo(options.rpc), options)
+  return useQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo(options.rpc), options)
 }
 
 /**
@@ -63,7 +76,7 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
   }
 
   return useQuery(
-    ['Draft', draftId],
+    [queryKeys.GET_DRAFT, draftId],
     async ({queryKey}) => {
       const [, draftId] = queryKey as [string, string]
       return await getDraft(draftId, options.rpc)
@@ -81,7 +94,7 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
  * @returns
  */
 export function useDraftList() {
-  const draftsListQuery = useQuery<ListDraftsResponse>('DraftsList', () => {
+  const draftsListQuery = useQuery<ListDraftsResponse>(queryKeys.GET_DRAFT_LIST, () => {
     return listDrafts()
   })
 
@@ -107,15 +120,19 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
 
   let requestId: string
   if (!peerId) {
-    const info = queryClient.getQueryData<Info>('AccountInfo')
+    const info = queryClient.getQueryData<Info>(queryKeys.GET_ACCOUNT_INFO)
     requestId = info?.peerId as string
   } else {
     requestId = peerId
   }
-  const peerAddrsQuery = useQuery(['PeerAddrs', requestId], () => listPeerAddrs(requestId, options.rpc as any), {
-    enabled: !!requestId,
-    ...options,
-  })
+  const peerAddrsQuery = useQuery(
+    [queryKeys.GET_PEER_ADDRS, requestId],
+    () => listPeerAddrs(requestId, options.rpc as any),
+    {
+      enabled: !!requestId,
+      ...options,
+    },
+  )
 
   const data = useMemo(() => peerAddrsQuery.data, [peerAddrsQuery])
 
@@ -133,7 +150,7 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
  */
 export function usePublication(publicationId: string, options: HookOptions<Publication> = {}) {
   const publicationQuery = useQuery(
-    ['Publication', publicationId],
+    [queryKeys.GET_PUBLICATION, publicationId],
     async ({queryKey}) => {
       const [, publicationId] = queryKey as [string, string]
       return getPublication(publicationId, options.rpc)
@@ -163,9 +180,9 @@ export function usePublication(publicationId: string, options: HookOptions<Publi
 
 export function useOthersPublicationsList(options: HookOptions<ListPublicationsResponse> = {}) {
   const queryClient = useQueryClient()
-  const info = queryClient.getQueryData<Info>('AccountInfo')
+  const info = queryClient.getQueryData<Info>(queryKeys.GET_ACCOUNT_INFO)
   const myPubsListQuery = useQuery(
-    ['PublicationList', 'OthersPublications'],
+    [queryKeys.GET_PUBLICATION_LIST, queryKeys.OTHERS_PUBLICATION_LIST],
     async () => {
       return listPublications()
     },
@@ -186,7 +203,7 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
   const queryClient = useQueryClient()
   const info = queryClient.getQueryData<Info>('AccountInfo')
   const myPubsListQuery = useQuery(
-    ['PublicationList', 'MyPublications'],
+    [queryKeys.GET_PUBLICATION_LIST, queryKeys.MY_PUBLICATION_LIST],
     async () => {
       return listPublications()
     },
@@ -204,7 +221,7 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
 }
 
 export function useListAccounts(options: HookOptions<ListAccountsResponse> = {}) {
-  const listAccountsQuery = useQuery(['ListAccounts'], () => listAccounts(), {
+  const listAccountsQuery = useQuery([queryKeys.GET_ACCOUNT_LIST], () => listAccounts(), {
     refetchInterval: 5000,
     ...options,
   })

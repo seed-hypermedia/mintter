@@ -63,11 +63,11 @@ export const createStatementPlugin = (): EditorPlugin => ({
           }
 
           if (childPath[childPath.length - 1] == 1) {
-            console.log('statement second child', child)
+            // statement second child
             if (isParagraph(child)) {
               let index = childPath[childPath.length - 1]
               let nextChild = node.children[index + 1]
-              console.log('siguiente child es grupo!', {node, nextChild, child})
+              // next child is grupo!
               if (isGroupContent(nextChild)) {
                 Transforms.moveNodes(editor, {at: childPath, to: Path.next(childPath).concat(0)})
                 return

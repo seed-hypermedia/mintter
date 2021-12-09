@@ -209,7 +209,7 @@ export function PublicationHeader({document}: {document?: EditorDocument}) {
           </Button>
           <Text color="muted">|</Text>
           <Button size={{'@initial': '1', '@bp2': '2'}} variant="ghost" color="primary">
-            Mention
+            Cite
           </Button>
           <Text color="muted">|</Text>
           <Button size={{'@initial': '1', '@bp2': '2'}} variant="ghost" color="success">

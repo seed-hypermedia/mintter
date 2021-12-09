@@ -9,6 +9,7 @@ import {useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
 import {assign} from 'xstate'
 import {deleteDialogMachine} from '../../delete-dialog-machine'
+import {queryKeys} from '../../hooks'
 import {useRoute} from '../../utils/use-route'
 
 export function SectionItem({
@@ -37,9 +38,9 @@ export function SectionItem({
           }
 
           if (context.isDraft) {
-            client.refetchQueries('DraftList')
+            client.refetchQueries(queryKeys.GET_DRAFT_LIST)
           } else {
-            client.refetchQueries('PublicationList')
+            client.refetchQueries(queryKeys.GET_PUBLICATION_LIST)
           }
 
           return {
