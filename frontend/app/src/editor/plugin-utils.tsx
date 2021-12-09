@@ -1,11 +1,9 @@
-import type {NodeEntry} from 'slate'
-import {createEditor, Editor, Range} from 'slate'
+import {createEditor, Editor, NodeEntry, Range} from 'slate'
 import {withHistory} from 'slate-history'
-import type {RenderElementProps, RenderLeafProps} from 'slate-react'
-import {DefaultElement, DefaultLeaf, withReact} from 'slate-react'
-import type {EditableProps} from 'slate-react/dist/components/editable'
+import {DefaultElement, DefaultLeaf, RenderElementProps, RenderLeafProps, withReact} from 'slate-react'
+import {EditableProps} from 'slate-react/dist/components/editable'
 import {error} from 'tauri-plugin-log-api'
-import type {EditableEventHandlers, EditorPlugin} from './types'
+import {EditableEventHandlers, EditorPlugin} from './types'
 
 export enum EditorMode {
   Draft,
@@ -44,7 +42,6 @@ export function buildEditorHook(plugins: EditorPlugin[], mode: EditorMode): Edit
     try {
       editor = configureEditor(editor) || editor
     } catch (e) {
-      console.log('import.meta.env', import.meta.env.MODE)
       if (!import.meta.env.SSR) {
         error(`[${name}] ${e} in configureEditor hook`)
       }

@@ -26,13 +26,17 @@ import type {
   Video,
 } from './types'
 
-const isOneOfTypes = <T extends MttastContent>(types: string[]) => (value: unknown): value is T => {
-  return isPlainObject(value) && types.includes((value as Node).type)
-}
+const isOneOfTypes =
+  <T extends MttastContent>(types: string[]) =>
+  (value: unknown): value is T => {
+    return isPlainObject(value) && types.includes((value as Node).type)
+  }
 
-const isType = <T extends MttastContent>(type: string) => (value: unknown): value is T => {
-  return isPlainObject(value) && (value as Node).type == type
-}
+const isType =
+  <T extends MttastContent>(type: string) =>
+  (value: unknown): value is T => {
+    return isPlainObject(value) && (value as Node).type == type
+  }
 export const isParent = (value: unknown): value is Parent =>
   isPlainObject(value) && typeof (value as Parent).type === 'string' && Array.isArray((value as Parent).children)
 
