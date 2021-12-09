@@ -40,28 +40,6 @@ export const createParagraphPlugin = (): EditorPlugin => ({
             return
           }
         }
-
-        //   if (Path.hasPrevious(path)) {
-        //     const [parentNode] = Editor.parent(editor, path)
-        //     const prevNode = Node.get(editor, Path.previous(path))
-        //     if (isCode(parentNode)) {
-        //       return
-        //     }
-        //     /*
-        //      * @todo if the selection is in the beginning, then wrap the first paragraph with a new statement
-        //      * @body Issue Body
-        //      */
-        //     let id = createId()
-        //     Editor.withoutNormalizing(editor, () => {
-        //       let targetPath = Editor.isEmpty(editor, prevNode) ? Path.previous(path) : path
-        //       Transforms.wrapNodes(editor, statement({id}), {
-        //         at: targetPath,
-        //       })
-        //       Transforms.setNodes(editor, {id: createId()}, {at: targetPath})
-        //     })
-
-        //     return
-        //   }
       }
       normalizeNode(entry)
     }
@@ -94,6 +72,14 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
       onMouseEnter={() => hoverSend({type: 'MOUSE_ENTER', blockId: (parentNode as FlowContent).id})}
       {...attributes}
     >
+      {!Node.string(element) && (
+        <span
+          contentEditable={false}
+          style={{position: 'absolute', opacity: 0.5, userSelect: 'none', WebkitUserSelect: 'none'}}
+        >
+          Start typing here...
+        </span>
+      )}
       {children}
     </ParagraphUI>
   )
