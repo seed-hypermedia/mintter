@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "build:client && yarn build:server",
+    "build": "yarn build:client && yarn build:server",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
     "generate": "vite build --outDir dist/static && yarn build:server && yarn node prerender.mjs",
@@ -93,7 +93,7 @@
     "babel-loader": "^8.2.2",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-react": "^7.25.1",
+    "eslint-plugin-react": "^7.27.1",
     "eslint-plugin-react-hooks": "^4.2.0",
     "http-server": "^13.0.2",
     "identity-obj-proxy": "^3.0.0",
