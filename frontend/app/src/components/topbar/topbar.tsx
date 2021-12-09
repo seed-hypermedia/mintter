@@ -71,7 +71,6 @@ function SidenavBar() {
 
 function MainBar() {
   const [routeLocation, setRouteLocation] = useLocation()
-  const client = useQueryClient()
   let form = useRef(null)
   const [location, setLocation] = useState(() => routeLocation)
 
@@ -135,7 +134,8 @@ function TopbarActions() {
   const service = useSidepanel()
   const [state, send] = useActor(service)
   const [routeLocation, setRouteLocation] = useLocation()
-  const [location, setLocation] = useState(() => routeLocation)
+  const [, setLocation] = useState(() => routeLocation)
+  const client = useQueryClient()
   const onCreateDraft = useCallback(async function onCreateDraft() {
     try {
       const d = await createDraft()
