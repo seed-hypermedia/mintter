@@ -2,7 +2,7 @@ import {code, ol as buildOl, paragraph, statement, text} from '@mintter/mttast-b
 import {u} from 'unist-builder'
 
 export const ol = u('root', [
-  buildOl([
+  buildOl({start: 2}, [
     statement({id: 'id'}, [paragraph([text('Alpha')])]),
     statement({id: 'id'}, [paragraph([text('Bravo')])]),
     code(
@@ -13,13 +13,13 @@ export const ol = u('root', [
     ),
   ]),
   paragraph([text('Foo.')]),
-  buildOl([
+  buildOl({start: 1}, [
     statement({id: 'id'}, [paragraph([text('Alpha')])]),
     statement({id: 'id'}, [paragraph([text('Bravo')])]),
     statement({id: 'id'}, [paragraph([text('Charlie')])]),
   ]),
   paragraph([text('Bar.')]),
-  buildOl([
+  buildOl({start: 3}, [
     statement({id: 'id'}, [paragraph([text('Alpha')])]),
     statement({id: 'id'}, [paragraph([text('Bravo')])]),
     statement({id: 'id'}, [paragraph([text('Charlie')])]),
@@ -28,13 +28,13 @@ export const ol = u('root', [
     statement({id: 'id'}, [paragraph([text('Foxtrot')])]),
   ]),
   paragraph([text('Baz.')]),
-  buildOl([statement({id: 'id'}, [paragraph([text('Something else')])])]),
+  buildOl({start: 1}, [statement({id: 'id'}, [paragraph([text('Something else')])])]),
   paragraph([text('Qux.')]),
-  buildOl([statement({id: 'id'}, [paragraph([text('Something else')])])]),
+  buildOl({start: 1}, [statement({id: 'id'}, [paragraph([text('Something else')])])]),
   paragraph([text('Quux.')]),
-  buildOl([statement({id: 'id'}, [paragraph([text('Something else')])])]),
+  buildOl({start: 1}, [statement({id: 'id'}, [paragraph([text('Something else')])])]),
   paragraph([text('Quuux.')]),
-  buildOl([
+  buildOl({start: 1}, [
     statement({id: 'id'}, [paragraph([text(' Bravo')])]),
     statement({id: 'id'}, [paragraph([text(' Charlie')])]),
     statement({id: 'id'}, [paragraph([text(' Delta')])]),
@@ -43,13 +43,13 @@ export const ol = u('root', [
     statement({id: 'id'}, [paragraph([text(' '), text('Golf', {strong: true})])]),
   ]),
   paragraph([text('Nested.')]),
-  buildOl([
+  buildOl({start: 1}, [
     statement({id: 'id'}, [paragraph([text('Alpha')])]),
     // @ts-ignore
-    buildOl([
+    buildOl({start: 1}, [
       statement({id: 'id'}, [paragraph([text('Bravo')])]),
       // @ts-ignore
-      buildOl([statement({id: 'id'}, [paragraph([text('Charlie')])])]),
+      buildOl({start: 1}, [statement({id: 'id'}, [paragraph([text('Charlie')])])]),
     ]),
   ]),
 ])

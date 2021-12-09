@@ -40,7 +40,7 @@ function check(name: string) {
       node.id = 'id'
     })
 
-    // if (name == 'blockquote') {
+    // if (name == 'ul2') {
     //   console.log('result: ', JSON.stringify({tree, expected, result}, null, 4))
     // }
 

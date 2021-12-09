@@ -23,7 +23,13 @@ export function createPlainTextPastePlugin(): EditorPlugin {
         if (html) {
           let hast = processor.runSync(processor.parse(html))
           let mttast = removeEmptyText(toMttast(hast))
+          console.log('🚀 ~ file: paste-plugin.ts ~ line 27 ~ customInsertData ~ mttast', mttast)
+
           Transforms.insertFragment(editor, mttast.children)
+
+          // Transforms.insertFragment(editor, mttast.children, {at: [0, 0]})
+          console.log('editor: ', editor)
+
           return
         }
 

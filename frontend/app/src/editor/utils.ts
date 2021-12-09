@@ -1,5 +1,5 @@
 import type {GroupingContent} from '@mintter/mttast'
-import {isFlowContent, isGroup, isGroupContent, isStatement} from '@mintter/mttast'
+import {isFlowContent, isGroup, isGroupContent, isStatement, Statement} from '@mintter/mttast'
 import {group, statement} from '@mintter/mttast-builder'
 import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
 import {Editor, Node, Path, Range, Text, Transforms} from 'slate'
@@ -109,7 +109,7 @@ export function isFirstChild(path: Path): boolean {
 export function toggleMark(
   editor: Editor,
   key: keyof Omit<Text, 'value'>,
-  value = true,
+  value = true, // TODO: if key == 'color', value is a string
   // ...clears: Array<keyof Omit<Text, 'value'>>
 ): void {
   if (!editor.selection) return
@@ -157,7 +157,7 @@ export function removeMark(editor: Editor, key: keyof Omit<Text, 'value'>): void
 export function resetFlowContent(editor: Editor): boolean | undefined {
   const {selection} = editor
   if (selection && isCollapsed(selection)) {
-    const block = Editor.above(editor, {
+    const block = Editor.above<Statement>(editor, {
       match: (n) => isFlowContent(n) && !isStatement(n),
     })
 

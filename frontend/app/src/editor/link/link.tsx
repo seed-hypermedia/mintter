@@ -10,7 +10,7 @@ import {TextField} from '@mintter/ui/text-field'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {open} from '@tauri-apps/api/shell'
 import isUrl from 'is-url'
-import {FormEvent, forwardRef, useEffect, useState} from 'react'
+import {FormEvent, PropsWithChildren, useEffect, useState} from 'react'
 import type {BaseRange, BaseSelection, Range} from 'slate'
 import {Editor, Element as SlateElement, Transforms} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
@@ -35,7 +35,7 @@ const StyledLink = styled('span', {
   },
 })
 
-export const Link = forwardRef<HTMLSpanElement, {element: LinkType}>(({element, ...props}, ref) => {
+export const Link = ({element, ...props}: PropsWithChildren<{element: LinkType}>) => {
   const [, setLocation] = useLocation()
 
   async function handleClick() {
@@ -47,8 +47,8 @@ export const Link = forwardRef<HTMLSpanElement, {element: LinkType}>(({element, 
     }
   }
 
-  return <StyledLink ref={ref} onClick={handleClick} {...props} />
-})
+  return <StyledLink onClick={handleClick} {...props} />
+}
 
 Link.displayName = 'Link'
 

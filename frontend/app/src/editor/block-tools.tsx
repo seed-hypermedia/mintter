@@ -1,22 +1,21 @@
-import {FlowContent, isHeading, MttastContent} from '@mintter/mttast'
+import {FlowContent, isGroupContent, isHeading, MttastContent} from '@mintter/mttast'
 import {blockquote, code, group, heading, ol, statement, ul} from '@mintter/mttast-builder'
 import {Box} from '@mintter/ui/box'
 import {Icon, icons} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {useActor} from '@xstate/react'
-import {EditorMode} from 'frontend/app/src/editor/plugin-utils'
 import {Fragment} from 'react'
-import type {BaseRange} from 'slate'
-import {Editor, Path, Transforms} from 'slate'
+import {BaseRange, Editor, Node, Path, Transforms} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {Dropdown} from './dropdown'
 import {useHover} from './hover-context'
 import {ELEMENT_PARAGRAPH} from './paragraph'
+import {EditorMode} from './plugin-utils'
 
 export const ElementDropdown = styled('button', {
   border: 'none',
-  backgroundColor: 'transparent',
+  backgroundColor: '$background-alt',
   position: 'absolute',
   zIndex: 2,
   display: 'flex',
@@ -119,7 +118,6 @@ export function BlockTools({element}: {element: FlowContent}) {
           transform: 'translate(-50%, 0)',
         }}
         onMouseEnter={() => {
-          console.log('hover enter!')
           hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
         }}
       />

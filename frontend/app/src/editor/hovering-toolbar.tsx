@@ -154,6 +154,7 @@ export function HoveringToolbar() {
         <FormatButton format="strong" />
         <FormatButton format="emphasis" />
         <FormatButton format="underline" />
+        {/* <FormatButton format="code" /> */}
         <ToolbarLink lastSelection={lastSelection} resetSelection={resetSelection} sendStoreFocus={sendStoreFocus} />
         {/* <ToggleListButton type="orderedList" />
         <ToggleListButton type="unorderedList" /> */}

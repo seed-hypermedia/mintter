@@ -1,14 +1,18 @@
 /** @type {import('vite/dist/node').UserConfig} */
 
-import reactRefresh from '@vitejs/plugin-react-refresh'
+import react from '@vitejs/plugin-react'
 import {defineConfig} from 'vite'
-import reactJSX from 'vite-react-jsx'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   cacheDir: '.vite',
-  plugins: [reactRefresh(), reactJSX(), tsconfigPaths()],
+  plugins: [
+    tsconfigPaths(),
+    react({
+      fastRefresh: process.env.NODE_ENV != 'test',
+    }),
+  ],
   build: {
     target: 'es2021',
     minify: !process.env.TAURI_DEBUG && 'esbuild',
