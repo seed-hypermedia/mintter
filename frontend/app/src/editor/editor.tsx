@@ -1,3 +1,4 @@
+import {FlowContent, MttastContent} from '@mintter/mttast'
 import {Box} from '@mintter/ui/box'
 import {useActor} from '@xstate/react'
 import {PropsWithChildren, Suspense, useMemo} from 'react'
@@ -19,7 +20,7 @@ export type {EditorPlugin} from './types'
 
 interface EditorProps {
   mode?: EditorMode
-  value: Descendant[]
+  value: Array<MttastContent> | Array<FlowContent>
   onChange?: (value: Descendant[]) => void
 }
 

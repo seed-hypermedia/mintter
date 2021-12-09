@@ -99,7 +99,7 @@ export default function EditorPage({params}: EditorPageProps) {
             name="title"
             placeholder="Document title"
             value={context?.localDraft?.title}
-            onChange={(event: FormEvent<HTMLTextareaElement>) => {
+            onChange={(event: FormEvent<HTMLTextAreaElement>) => {
               // update window title as the user types
               // getCurrentWindow().setTitle(event.currentTarget.value)
               send({
@@ -132,7 +132,7 @@ export default function EditorPage({params}: EditorPageProps) {
           />
           <Separator css={{margin: '10px 0'}} />
           {context.localDraft?.content && (
-            <Box>
+            <Box css={{backgroundColor: 'red'}}>
               <Editor
                 value={context.localDraft.content}
                 onChange={(content) => {
@@ -183,7 +183,7 @@ function EditorStatus({state}: {state: DraftEditorMachineState}) {
         display: 'flex',
         gap: '$2',
         alignItems: 'center',
-        paddingHorizontal: 0,
+        paddingHorizontal: '$0',
         paddingVertical: '$2',
         marginTop: '$5',
       }}
