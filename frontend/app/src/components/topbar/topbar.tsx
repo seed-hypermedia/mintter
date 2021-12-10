@@ -1,4 +1,4 @@
-import {createDraft} from '@mintter/client'
+import {createDraft, publishDraft} from '@mintter/client'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
@@ -9,6 +9,7 @@ import {FormEvent, useCallback, useEffect, useRef, useState} from 'react'
 import {useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
 import {MINTTER_LINK_PREFIX} from '../../constants'
+import {queryKeys, useInfo, usePublication} from '../../hooks'
 import {useRoute} from '../../utils/use-route'
 import {Settings} from '../settings'
 import {useSidebar} from '../sidebar'
@@ -131,8 +132,6 @@ function TopbarNavigation() {
 }
 
 function TopbarActions() {
-  const service = useSidepanel()
-  const [state, send] = useActor(service)
   const [routeLocation, setRouteLocation] = useLocation()
   const [, setLocation] = useState(() => routeLocation)
   const client = useQueryClient()
@@ -140,7 +139,7 @@ function TopbarActions() {
     try {
       const d = await createDraft()
       if (d?.id) {
-        await client.refetchQueries('DraftList')
+        await client.refetchQueries(queryKeys.GET_DRAFT_LIST)
         setRouteLocation(`/editor/${d.id}`)
         setLocation(`/editor/${d.id}`)
       }
@@ -148,12 +147,6 @@ function TopbarActions() {
       console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
     }
   }, [])
-
-  const {match: canSidepanel} = useRoute(['/p/:docId', '/editor/:docId'])
-
-  function toggleSidepanel() {
-    send('SIDEPANEL_TOGGLE')
-  }
 
   return (
     <Box
@@ -167,17 +160,80 @@ function TopbarActions() {
         gap: '$4',
       }}
     >
-      {canSidepanel && (
+      <DocumentActions />
+      <Button size="0" variant="ghost" color="muted" onClick={onCreateDraft}>
+        <Icon name="PencilAdd" color="muted" />
+      </Button>
+      <Settings />
+    </Box>
+  )
+}
+
+function DocumentActions() {
+  const client = useQueryClient()
+  const service = useSidepanel()
+  const [, send] = useActor(service)
+  const [, setLocation] = useLocation()
+  const {match: isDocumentOpen} = useRoute<{docId: string}>(['/p/:docId', '/editor/:docId'])
+  const {match: isPublication, params: publicationParams} = useRoute<{docId: string}>(['/p/:docId'])
+  const {match: isDraft, params: draftParams} = useRoute<{docId: string}>(['/editor/:docId'])
+
+  console.log('document actions', {isDocumentOpen, publicationParams, draftParams})
+
+  // @ts-ignore
+  const {data: publication} = usePublication(publicationParams?.docId, {
+    enabled: !!publicationParams?.docId,
+  })
+  const {data: myInfo} = useInfo()
+
+  function toggleSidepanel() {
+    send('SIDEPANEL_TOGGLE')
+  }
+
+  let canUpdate = myInfo?.accountId == publication.document.author
+
+  async function handlePublish() {
+    let publication = await publishDraft(draftParams?.docId)
+    client.invalidateQueries(queryKeys.GET_PUBLICATION)
+
+    if (publication) {
+      setLocation(`/p/${publication!.document?.id}`, {
+        replace: true,
+      })
+    }
+  }
+
+  async function handleUpdate() {
+    try {
+      const d = await createDraft(publicationParams?.docId)
+      if (d?.id) {
+        setLocation(`/editor/${d.id}`)
+      }
+    } catch (err) {
+      console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
+    }
+  }
+
+  return (
+    <>
+      {isDraft && (
+        <Button onClick={handlePublish} variant="ghost" color="primary" size="1">
+          Publish
+        </Button>
+      )}
+      {isPublication && canUpdate && (
+        <Button onClick={handleUpdate} variant="ghost" color="success" size="1">
+          Update
+        </Button>
+      )}
+
+      {isDocumentOpen && (
         <Tooltip content="Toogle Sidepanel">
           <Button size="0" variant="ghost" color="muted" onClick={toggleSidepanel}>
             <Icon name="Sidepanel" color="muted" />
           </Button>
         </Tooltip>
       )}
-      <Button size="0" variant="ghost" color="muted" onClick={onCreateDraft}>
-        <Icon name="PencilAdd" color="muted" />
-      </Button>
-      <Settings />
-    </Box>
+    </>
   )
 }

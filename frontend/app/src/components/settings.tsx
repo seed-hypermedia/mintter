@@ -13,7 +13,7 @@ import {useEffect} from 'react'
 import {useForm} from 'react-hook-form'
 import toast from 'react-hot-toast'
 import {useMutation, useQueryClient} from 'react-query'
-import {useAccount} from '../hooks'
+import {queryKeys, useAccount} from '../hooks'
 import {PeerAddrs} from './peer-addrs'
 import {ScrollArea} from './scroll-area'
 
@@ -171,7 +171,7 @@ function ProfileForm() {
         error: 'Error updating profile',
       })
       .finally(() => {
-        queryClient.invalidateQueries('Account')
+        queryClient.invalidateQueries(queryKeys.GET_ACCOUNT)
       })
 
     console.log('edit complete!')

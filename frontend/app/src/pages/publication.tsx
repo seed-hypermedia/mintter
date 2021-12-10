@@ -1,19 +1,22 @@
-import {createDraft} from '@mintter/client'
+import {Publication as PublicationType} from '@mintter/client'
+import {getPublication} from '@mintter/client/publications'
+import {Document, MttastContent} from '@mintter/mttast'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {css, styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 // import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
-import {useActor} from '@xstate/react'
-import {useEffect} from 'react'
+import {useActor, useMachine} from '@xstate/react'
+import {useEffect, useRef} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {useLocation} from 'wouter'
+import {createModel} from 'xstate/lib/model'
 import {AppError} from '../app'
 import {Avatar} from '../components/avatar'
 import {useEnableSidepanel, useIsSidepanelOpen, useSidepanel} from '../components/sidepanel'
-import {Editor, EditorDocument} from '../editor'
+import {Editor} from '../editor'
 import {EditorMode} from '../editor/plugin-utils'
-import {useAccount, useInfo, usePublication} from '../hooks'
+import {useAccount} from '../hooks'
 import {getDateFormat} from '../utils/get-format-date'
 
 const Heading = styled('h1', {
@@ -50,15 +53,17 @@ export default function Publication({params}: PublicationPageProps) {
   const [, setLocation] = useLocation()
   const sidepanelService = useSidepanel()
   const [, sidepanelSend] = useActor(sidepanelService)
-  const {status, data, error} = usePublication(params!.docId)
-  const {data: author} = useAccount(data.document.author, {
-    enabled: !!data?.document?.author,
-  })
-  const {data: myInfo} = useInfo()
-
-  const docId = params?.docId || data.document.id!
+  // const {status, data, error} = usePublication(params!.docId)
+  const [state, send] = usePagePublication(params?.docId)
+  console.log('🚀 ~ file: publication.tsx ~ line 58 ~ Publication ~ state', state)
 
   useEnableSidepanel()
+
+  useEffect(() => {
+    if (params?.docId) {
+      send(publicationModel.events.FETCH_DATA(params?.docId))
+    }
+  }, [params?.docId])
 
   // useEffect(() => {
   //   if (data.document.title) {
@@ -67,72 +72,60 @@ export default function Publication({params}: PublicationPageProps) {
   // }, [data.document.title])
 
   useEffect(() => {
-    if (status == 'success') {
-      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: data.document.content})
+    if (state.matches('ready')) {
+      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: state.context.publication?.document})
     }
-  }, [status])
+  }, [state.value])
 
-  async function handleUpdate() {
-    try {
-      const d = await createDraft(docId)
-      if (d?.id) {
-        setLocation(`/editor/${d.id}`)
-      }
-    } catch (err) {
-      console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
-    }
-  }
-
-  if (status == 'loading') {
+  if (state.matches('fetching')) {
     return <Text>loading...</Text>
   }
 
   // start rendering
-  if (status == 'error') {
-    console.error('usePublication error: ', error)
+  if (state.matches('errored')) {
     return <Text>Publication ERROR</Text>
   }
 
-  let canUpdate = author?.id == myInfo?.accountId
-
-  return (
-    <ErrorBoundary
-      FallbackComponent={AppError}
-      onReset={() => {
-        window.location.reload()
-      }}
-    >
-      <Box
-        data-testid="publication-wrapper"
-        css={{
-          // gridArea: 'maincontent',
-          width: '$full',
-          padding: '$5',
-          paddingTop: '$8',
-          marginHorizontal: '$4',
-          paddingBottom: 300,
-          height: '100%',
-          '@bp2': {
-            paddingTop: '$9',
-            marginHorizontal: '$9',
-          },
+  if (state.matches('ready')) {
+    return (
+      <ErrorBoundary
+        FallbackComponent={AppError}
+        onReset={() => {
+          window.location.reload()
         }}
       >
-        {canUpdate && (
-          <Button variant="outlined" color="success" shape="pill" onClick={handleUpdate}>
-            Update
-          </Button>
-        )}
-        <PublicationHeader document={data?.document} />
-        <Box css={{marginTop: 50, width: '$full', maxWidth: '64ch'}}>
-          <Editor mode={EditorMode.Publication} value={data?.document?.content} />
+        <Box
+          data-testid="publication-wrapper"
+          css={{
+            // gridArea: 'maincontent',
+            width: '$full',
+            padding: '$5',
+            paddingTop: '$8',
+            marginHorizontal: '$4',
+            paddingBottom: 300,
+            height: '100%',
+            '@bp2': {
+              paddingTop: '$9',
+              marginHorizontal: '$9',
+            },
+          }}
+        >
+          <PublicationHeader document={state.context.publication?.document} />
+          <Box css={{marginTop: 50, width: '$full', maxWidth: '64ch'}}>
+            <Editor
+              mode={EditorMode.Publication}
+              value={state.context.publication?.document.content as Array<MttastContent>}
+            />
+          </Box>
         </Box>
-      </Box>
-    </ErrorBoundary>
-  )
+      </ErrorBoundary>
+    )
+  }
+
+  return null
 }
 
-export function PublicationHeader({document}: {document?: EditorDocument}) {
+export function PublicationHeader({document}: {document?: Document & {content: Array<MttastContent>}}) {
   const {data: author} = useAccount(document?.author, {
     enabled: !!document?.author,
   })
@@ -220,3 +213,136 @@ export function PublicationHeader({document}: {document?: EditorDocument}) {
     </Box>
   ) : null
 }
+
+function usePagePublication(docId?: string) {
+  // const client = useQueryClient()
+  const machine = useRef(publicationMachine)
+  const [state, send] = useMachine(machine.current)
+
+  useEffect(() => {
+    if (docId) {
+      send(publicationModel.events.FETCH_DATA(docId))
+    }
+  }, [send, docId])
+
+  return [state, send] as const
+}
+
+// export function useEditorDraft({documentId, ...afterActions}: UseEditorDraftParams) {
+//   const client = useQueryClient()
+//   const machine = useRef(draftEditorMachine({...afterActions, client}))
+
+//   const [state, send] = useMachine(machine.current, {devTools: true})
+
+//   useEffect(() => {
+//     if (documentId) {
+//       send({type: 'FETCH', documentId})
+//     }
+//   }, [send, documentId])
+//   return [state, send] as const
+// }
+
+type ClientPublication = PublicationType & {
+  document: {
+    content: Array<MttastContent>
+  }
+}
+const publicationModel = createModel(
+  {
+    id: '',
+    publication: null as ClientPublication | null,
+    errorMessage: '',
+  },
+  {
+    events: {
+      REPORT_DATA_REVEIVED: (publication: ClientPublication) => ({publication}),
+      REPORT_DATA_ERRORED: (errorMessage: string) => ({errorMessage}),
+      FETCH_DATA: (id: string) => ({id}),
+    },
+  },
+)
+
+const publicationMachine = publicationModel.createMachine({
+  id: 'publication-machine',
+  context: publicationModel.initialContext,
+  initial: 'idle',
+  states: {
+    idle: {
+      on: {
+        FETCH_DATA: {
+          target: 'fetching',
+          actions: [
+            publicationModel.assign({
+              id: (_, event) => event.id,
+            }),
+          ],
+        },
+      },
+    },
+    fetching: {
+      invoke: {
+        src: (ctx) => (sendBack) => {
+          console.log('invoke fetching!', ctx)
+
+          getPublication(ctx.id)
+            .then((response) => {
+              if (response.document?.content) {
+                let content = JSON.parse(response.document?.content)
+                sendBack(
+                  publicationModel.events.REPORT_DATA_REVEIVED(
+                    Object.assign(response, {document: {...response.document, content}}),
+                  ),
+                )
+              } else {
+                console.log('error parsing content', response)
+
+                sendBack(publicationModel.events.REPORT_DATA_ERRORED('error parsing content'))
+              }
+            })
+            .catch((err) => {
+              console.log('publication fetch error', err)
+              sendBack(publicationModel.events.REPORT_DATA_ERRORED('error fetching'))
+            })
+        },
+      },
+      on: {
+        REPORT_DATA_REVEIVED: {
+          target: 'ready',
+          actions: publicationModel.assign({
+            publication: (_, ev) => ev.publication,
+          }),
+        },
+        REPORT_DATA_ERRORED: {
+          target: 'errored',
+          actions: publicationModel.assign({
+            errorMessage: (_, ev) => ev.errorMessage,
+          }),
+        },
+      },
+    },
+    ready: {
+      on: {
+        FETCH_DATA: {
+          target: 'fetching',
+          actions: [
+            publicationModel.assign({
+              id: (_, event) => event.id,
+            }),
+          ],
+        },
+      },
+    },
+    errored: {
+      on: {
+        FETCH_DATA: {
+          target: 'fetching',
+          actions: [
+            publicationModel.assign({
+              id: (_, event) => event.id,
+            }),
+          ],
+        },
+      },
+    },
+  },
+})
