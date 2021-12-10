@@ -3,6 +3,7 @@ import {FlowContent, MttastContent} from '@mintter/mttast'
 import {createId, group, paragraph, statement, text} from '@mintter/mttast-builder'
 import {useMachine} from '@xstate/react'
 import isEqual from 'fast-deep-equal'
+import {queryKeys} from 'frontend/app/src/hooks'
 import {useEffect, useRef} from 'react'
 import {QueryClient, useQueryClient} from 'react-query'
 import {ActionFunction, assign, createMachine, State} from 'xstate'
@@ -27,7 +28,7 @@ export type DraftEditorMachineEvent =
       type: 'PUBLISH'
     }
 export type EditorDocument = Partial<Document> & {
-  content: Array<MttastContent> | Array<FlowContent>
+  document: {content: Array<MttastContent> | Array<FlowContent>}
 }
 export type DraftEditorMachineContext = {
   retries: number
@@ -185,7 +186,7 @@ const draftEditorMachine = ({afterPublish, loadAnnotations, client}: DraftEditor
       services: {
         fetchData: (_, event: DraftEditorMachineEvent) => () => {
           if (event.type != 'FETCH') return
-          return client.fetchQuery(['Draft', event.documentId], async ({queryKey}) => {
+          return client.fetchQuery([queryKeys.GET_DRAFT, event.documentId], async ({queryKey}) => {
             const [_, draftId] = queryKey
             return await getDraft(draftId)
           })

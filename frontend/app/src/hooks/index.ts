@@ -201,7 +201,7 @@ export function useOthersPublicationsList(options: HookOptions<ListPublicationsR
 
 export function useMyPublicationsList(options: HookOptions<ListPublicationsResponse> = {}) {
   const queryClient = useQueryClient()
-  const info = queryClient.getQueryData<Info>('AccountInfo')
+  const info = queryClient.getQueryData<Info>(queryKeys.GET_ACCOUNT_INFO)
   const myPubsListQuery = useQuery(
     [queryKeys.GET_PUBLICATION_LIST, queryKeys.MY_PUBLICATION_LIST],
     async () => {

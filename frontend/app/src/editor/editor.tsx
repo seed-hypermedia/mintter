@@ -1,7 +1,7 @@
 import {FlowContent, MttastContent} from '@mintter/mttast'
 import {Box} from '@mintter/ui/box'
 import {useActor} from '@xstate/react'
-import {PropsWithChildren, Suspense, useMemo} from 'react'
+import {PropsWithChildren, Suspense, useEffect, useMemo} from 'react'
 import type {Descendant} from 'slate'
 import {Editable, Slate} from 'slate-react'
 import {useHover} from './hover-context'
@@ -33,10 +33,14 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
   const hoverService = useHover()
   const [, hoverSend] = useActor(hoverService)
 
+  useEffect(() => {
+    console.log('something!', value)
+  }, [value])
+
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
       <Suspense fallback={'loading'}>
-        <Slate editor={editor} value={value} onChange={onChange}>
+        <Slate editor={editor} value={[...value]} onChange={onChange}>
           <Editable
             style={{display: 'inline'}}
             readOnly={editor.readOnly}
@@ -60,7 +64,7 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
             marginLeft: '-$8',
           }}
         >
-          <Slate editor={editor} value={value} onChange={onChange}>
+          <Slate editor={editor} value={[...value]} onChange={onChange}>
             <Editable
               readOnly={editor.readOnly}
               data-testid="editor"
@@ -85,7 +89,7 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
         }}
         onMouseLeave={() => hoverSend('MOUSE_LEAVE')}
       >
-        <Slate editor={editor} value={value} onChange={onChange}>
+        <Slate editor={editor} value={[...value]} onChange={onChange}>
           <HoveringToolbar />
           <Editable
             readOnly={editor.readOnly}

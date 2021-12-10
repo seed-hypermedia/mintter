@@ -3,6 +3,7 @@ import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, Suspense} from 'react'
 import {Toaster} from 'react-hot-toast'
 import {dehydrate, Hydrate, QueryClient, QueryClientProvider} from 'react-query'
+import {ReactQueryDevtools} from 'react-query/devtools'
 import {AuthProvider} from './auth-context'
 import {authStateMachine} from './authstate-machine'
 
@@ -28,7 +29,7 @@ export function AppProviders({children}: PropsWithChildren<unknown>) {
               {children}
               <Toaster position="bottom-right" />
               {/** @TODO Uncommenting this causes an error with react-query. We should fix this */}
-              {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+              <ReactQueryDevtools initialIsOpen={false} />
             </Hydrate>
           </QueryClientProvider>
         </Suspense>
