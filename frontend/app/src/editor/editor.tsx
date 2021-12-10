@@ -40,7 +40,7 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
       <Suspense fallback={'loading'}>
-        <Slate editor={editor} value={[...value]} onChange={onChange}>
+        <Slate editor={editor} value={value} onChange={onChange}>
           <Editable
             style={{display: 'inline'}}
             readOnly={editor.readOnly}
@@ -64,7 +64,7 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
             marginLeft: '-$8',
           }}
         >
-          <Slate editor={editor} value={[...value]} onChange={onChange}>
+          <Slate editor={editor} value={value} onChange={onChange}>
             <Editable
               readOnly={editor.readOnly}
               data-testid="editor"
@@ -89,7 +89,7 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
         }}
         onMouseLeave={() => hoverSend('MOUSE_LEAVE')}
       >
-        <Slate editor={editor} value={[...value]} onChange={onChange}>
+        <Slate editor={editor} value={value} onChange={onChange}>
           <HoveringToolbar />
           <Editable
             readOnly={editor.readOnly}

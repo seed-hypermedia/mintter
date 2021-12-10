@@ -11,24 +11,11 @@ import type {EditorPlugin} from '../types'
 export const ELEMENT_GROUP = 'group'
 
 export const groupStyle = css({
-  // margin: 0,
-  // padding: 0,
-  // position: 'relative',
   paddingLeft: '$8',
-  // marginLeft: '-$8',
+  // listStyleType: 'none',
   [`&[data-element-type="orderedList"], &[data-element-type="unorderedList"]`]: {
     marginLeft: 0,
   },
-  // boxShadow: '-0.1px 0 0 0 $colors$background-neutral-soft',
-  // variants: {
-  //   type: {
-  //     group: {},
-  //     orderedList: {
-  //       counterReset: 'section',
-  //     },
-  //     unorderedList: {},
-  //   },
-  // },
 })
 
 export const GroupUI = styled('ul', groupStyle)

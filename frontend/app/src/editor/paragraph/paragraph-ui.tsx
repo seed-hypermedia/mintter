@@ -35,5 +35,5 @@ export const ParagraphUI = forwardRef<HTMLSpanElement, PropsWithChildren<TextPro
   props,
   ref,
 ) {
-  return <Text alt size="3" className={paragraphStyles()} ref={ref} {...props} />
+  return <Text alt size="3" className={paragraphStyles()} style={{display: 'initial'}} ref={ref} {...props} />
 })

@@ -187,26 +187,6 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
       ) : (
         children
       )}
-      {/* <Box
-        contentEditable={false}
-        className="citations"
-        css={{
-          gridArea: 'citations',
-          marginHorizontal: '-$3',
-          marginVertical: '$4',
-          opacity: 0,
-        }}
-      >
-        <Button
-          variant="ghost"
-          size="1"
-          onClick={(e) => {
-            e.preventDefault()
-          }}
-        >
-          Show 3 Mentions
-        </Button>
-      </Box> */}
     </StatementUI>
   )
 }
