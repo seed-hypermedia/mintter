@@ -2,6 +2,7 @@ with import ./build/nix/nixpkgs.nix {};
 
 let
   protoc-gen-ts_proto = writeShellScriptBin "protoc-gen-ts_proto" "yarn run protoc-gen-ts_proto";
+  gqlgen = writeShellScriptBin "gqlgen" "go run github.com/99designs/gqlgen";
   gorun = callPackage ./tools/gorun {};
   shellCommon = {
     tools = [
@@ -20,6 +21,7 @@ let
       protoc-gen-ts_proto
       golangci-lint
       gorun
+      gqlgen
       # pkg-config
       # gcc
     ];
