@@ -3,293 +3,119 @@ package backend
 import (
 	"context"
 	"fmt"
-	"time"
+	"mintter/backend/ipfs"
 
-	"github.com/dgraph-io/badger/v3"
+	"crawshaw.io/sqlite"
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
-
-	"mintter/backend/badgergraph"
-	"mintter/backend/db/graphschema"
 )
 
 type graphdb struct {
-	db *badgergraph.DB
+	pool *sqlitex.Pool
 }
 
 // StoreDevice stores the binding between account and device.
-func (db *graphdb) StoreDevice(ctx context.Context, aid AccountID, did DeviceID) error {
-retry:
-	err := db.db.Update(func(txn *badgergraph.Txn) error {
-		auid, err := txn.UID(graphschema.TypeAccount, aid.Hash())
-		if err != nil {
-			return err
-		}
+func (db *graphdb) StoreDevice(ctx context.Context, aid AccountID, did DeviceID) (err error) {
+	acodec, ahash := ipfs.DecodeCID(cid.Cid(aid))
 
-		puid, err := txn.UID(graphschema.TypePeer, did.Hash())
-		if err != nil {
-			return err
-		}
+	dcodec, dhash := ipfs.DecodeCID(cid.Cid(did))
 
-		if err := txn.WriteTriple(auid, graphschema.PredAccountPeer, puid); err != nil {
-			return err
-		}
+	conn, release, err := db.pool.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
 
-		return nil
-	})
-	if err == nil {
-		return nil
+	defer sqlitex.Save(conn)(&err)
+
+	if err := accountsInsertOrIgnore(conn, ahash, int(acodec)); err != nil {
+		return err
 	}
 
-	if err == badger.ErrConflict {
-		goto retry
+	if err := devicesInsertOrIgnore(conn, dhash, int(dcodec), ahash); err != nil {
+		return err
 	}
 
-	return fmt.Errorf("failed to store account-device binding %s-%s: %w", aid, did, err)
+	return nil
 }
 
-func (db *graphdb) GetDeviceAccount(ctx context.Context, did DeviceID) (aid AccountID, err error) {
-	if err := db.db.View(func(txn *badgergraph.Txn) error {
-		puid, err := txn.UID(graphschema.TypePeer, did.Hash())
-		if err != nil {
-			return err
-		}
+func (db *graphdb) GetAccountForDevice(ctx context.Context, did DeviceID) (aid AccountID, err error) {
+	conn, release, err := db.pool.Conn(ctx)
+	if err != nil {
+		return AccountID{}, err
+	}
+	defer release()
 
-		auids, err := txn.ListReverseRelations(graphschema.PredAccountPeer, puid)
-		if err != nil {
-			return err
-		}
-
-		if len(auids) > 1 {
-			return fmt.Errorf("found more than one account for peer %s", did)
-		}
-
-		ahash, err := txn.XID(graphschema.TypeAccount, auids[0])
-		if err != nil {
-			return err
-		}
-
-		aid = AccountID(cid.NewCidV1(codecAccountID, ahash))
-
-		return nil
-	}); err != nil {
-		return AccountID{}, fmt.Errorf("failed to get account for device %s: %w", did, err)
+	res, err := accountsGetForDevice(conn, did.Hash())
+	if err != nil {
+		return AccountID{}, err
 	}
 
-	return aid, nil
+	if res.AccountsMultihash == nil {
+		return AccountID{}, errNotFound
+	}
+
+	if res.AccountsCodec != int(codecAccountID) {
+		return AccountID{}, fmt.Errorf("bad account codec %s", cid.CodecToStr[uint64(res.AccountsCodec)])
+	}
+
+	return AccountID(cid.NewCidV1(uint64(res.AccountsCodec), res.AccountsMultihash)), nil
 }
 
-func (db *graphdb) TouchDraft(ctx context.Context, docID cid.Cid, title, subtitle string, t time.Time) error {
-	return db.db.Update(func(txn *badgergraph.Txn) error {
-		uid, err := txn.UIDRead(graphschema.TypeDraft, docID.Hash())
-		if err != nil {
-			return err
-		}
+func (db *graphdb) IndexPublication(ctx context.Context, docID cid.Cid, pub Publication) error {
+	conn, release, err := db.pool.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
 
-		if err := txn.WriteTriple(uid, graphschema.PredDocumentUpdateTime, t); err != nil {
-			return err
-		}
+	dcodec, dhash := ipfs.DecodeCID(docID)
+	if dcodec != codecDocumentID {
+		panic("BUG: wrong codec for publication " + cid.CodecToStr[dcodec])
+	}
 
-		// TODO: this implies that the user won't be able to remove title nor subtitle after it's written.
-		// Is it worth it?
-
-		if title != "" {
-			if err := txn.WriteTriple(uid, graphschema.PredDocumentTitle, title); err != nil {
-				return err
-			}
-		}
-
-		if subtitle != "" {
-			if err := txn.WriteTriple(uid, graphschema.PredDocumentSubtitle, subtitle); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	})
+	return publicationsIndex(conn, dcodec, dhash, pub)
 }
 
-func (db *graphdb) IndexDraft(ctx context.Context,
-	docID cid.Cid,
-	author AccountID,
-	title, subtitle string,
-	createTime, updateTime time.Time,
-) error {
-	dhash := docID.Hash()
-	ahash := author.Hash()
-
-retry:
-
-	err := db.db.Update(func(txn *badgergraph.Txn) error {
-		duid, err := txn.UID(graphschema.TypeDraft, dhash)
-		if err != nil {
-			return err
-		}
-
-		auid, err := txn.UID(graphschema.TypeAccount, ahash)
-		if err != nil {
-			return err
-		}
-
-		if err := txn.WriteTriple(duid, graphschema.PredDocumentAuthor, auid); err != nil {
-			return err
-		}
-
-		if err := txn.WriteTriple(duid, graphschema.PredDocumentTitle, title); err != nil {
-			return err
-		}
-
-		if err := txn.WriteTriple(duid, graphschema.PredDocumentSubtitle, subtitle); err != nil {
-			return err
-		}
-
-		if err := txn.WriteTriple(duid, graphschema.PredDocumentCreateTime, createTime); err != nil {
-			return err
-		}
-
-		if err := txn.WriteTriple(duid, graphschema.PredDocumentUpdateTime, updateTime); err != nil {
-			return err
-		}
-
-		return nil
-	})
-	if err == nil {
-		return nil
-	}
-
-	if err == badger.ErrConflict {
-		goto retry
-	}
-
-	return fmt.Errorf("failed to index document %s: %w", docID, err)
+func publicationsIndex(conn *sqlite.Conn, ocodec uint64, ohash []byte, pub Publication) error {
+	return publicationsUpsert(conn, ohash, int(ocodec),
+		pub.Title,
+		pub.Subtitle,
+		int(pub.CreateTime.Unix()),
+		int(pub.UpdateTime.Unix()),
+		int(pub.PublishTime.Unix()),
+		pub.Version,
+	)
 }
 
-func (db *graphdb) IndexPublication(ctx context.Context,
-	docID cid.Cid,
-	author AccountID,
-	title, subtitle string,
-	createTime, updateTime, publishTime time.Time,
-) error {
-	dhash := docID.Hash()
-	ahash := author.Hash()
-
-retry:
-
-	err := db.db.Update(func(txn *badgergraph.Txn) error {
-		duid, err := txn.UID(graphschema.TypePublication, dhash)
-		if err != nil {
-			return err
-		}
-
-		auid, err := txn.UID(graphschema.TypeAccount, ahash)
-		if err != nil {
-			return err
-		}
-
-		if err := txn.WriteTriple(duid, graphschema.PredDocumentAuthor, auid); err != nil {
-			return err
-		}
-
-		if err := txn.WriteTriple(duid, graphschema.PredDocumentTitle, title); err != nil {
-			return err
-		}
-
-		if err := txn.WriteTriple(duid, graphschema.PredDocumentSubtitle, subtitle); err != nil {
-			return err
-		}
-
-		if err := txn.WriteTriple(duid, graphschema.PredDocumentCreateTime, createTime); err != nil {
-			return err
-		}
-
-		if err := txn.WriteTriple(duid, graphschema.PredDocumentUpdateTime, updateTime); err != nil {
-			return err
-		}
-
-		if err := txn.WriteTriple(duid, graphschema.PredDocumentPublishTime, publishTime); err != nil {
-			return err
-		}
-
-		return nil
-	})
-	if err == nil {
-		return nil
+func (db *graphdb) ListAccountDevices(ctx context.Context) (map[AccountID][]DeviceID, error) {
+	conn, release, err := db.pool.Conn(ctx)
+	if err != nil {
+		return nil, err
 	}
+	defer release()
 
-	if err == badger.ErrConflict {
-		goto retry
-	}
-
-	return fmt.Errorf("failed to index document %s: %w", docID, err)
-}
-
-func (db *graphdb) ListAccountDevices() (map[AccountID][]DeviceID, error) {
-	var out map[AccountID][]DeviceID
-	if err := db.db.View(func(txn *badgergraph.Txn) error {
-		auids, err := txn.ListNodesOfType(graphschema.TypeAccount)
-		if err != nil && err != badger.ErrKeyNotFound {
-			return err
-		}
-
-		if err == badger.ErrKeyNotFound {
-			return nil
-		}
-
-		out = make(map[AccountID][]DeviceID, len(auids))
-		for _, auid := range auids {
-			ahash, err := txn.XID(graphschema.TypeAccount, auid)
-			if err != nil {
-				return err
-			}
-
-			aid := AccountID(cid.NewCidV1(codecAccountID, ahash))
-
-			duids, err := txn.ListRelations(auid, graphschema.PredAccountPeer)
-			if err != nil {
-				return err
-			}
-
-			out[aid] = make([]DeviceID, len(duids))
-
-			for i, duid := range duids {
-				dhash, err := txn.XID(graphschema.TypePeer, duid)
-				if err != nil {
-					return err
-				}
-
-				out[aid][i] = DeviceID(cid.NewCidV1(cid.Libp2pKey, dhash))
-			}
-		}
-
-		return nil
-	}); err != nil {
+	list, err := devicesList(conn)
+	if err != nil {
 		return nil, err
 	}
 
-	return out, nil
-}
+	out := make(map[AccountID][]DeviceID)
 
-func (db *graphdb) ListAccounts(ctx context.Context) (objects []cid.Cid, err error) {
-	if err := db.db.View(func(txn *badgergraph.Txn) error {
-		uids, err := txn.ListNodesOfType(graphschema.TypeAccount)
-		if err != nil {
-			return err
+	for _, l := range list {
+		if l.DevicesCodec != cid.Libp2pKey {
+			return nil, fmt.Errorf("invalid device codec: %s", cid.CodecToStr[uint64(l.DevicesCodec)])
 		}
 
-		objects = make([]cid.Cid, len(uids))
-
-		for i, u := range uids {
-			hash, err := txn.XID(graphschema.TypeAccount, u)
-			if err != nil {
-				return err
-			}
-
-			objects[i] = cid.NewCidV1(codecAccountID, hash)
+		if l.AccountsCodec != int(codecAccountID) {
+			return nil, fmt.Errorf("invalid account codec: %s", cid.CodecToStr[uint64(l.DevicesCodec)])
 		}
 
-		return nil
-	}); err != nil {
-		return nil, fmt.Errorf("failed to get account uids: %w", err)
+		did := DeviceID(cid.NewCidV1(uint64(l.DevicesCodec), l.DevicesMultihash))
+		aid := AccountID(cid.NewCidV1(uint64(l.AccountsCodec), l.AccountsMultihash))
+
+		out[aid] = append(out[aid], did)
 	}
 
-	return objects, nil
+	return out, nil
 }

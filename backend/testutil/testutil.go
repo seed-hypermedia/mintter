@@ -7,14 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"mintter/backend/ipfsutil/badger3ds"
-
-	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/sync"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
-	"github.com/ipfs/go-log/v2"
 	"github.com/multiformats/go-multihash"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
@@ -34,22 +30,6 @@ func MakeCIDWithCodec(t *testing.T, codec uint64, data string) cid.Cid {
 	require.NoError(t, err)
 
 	return cid.NewCidV1(codec, mh)
-}
-
-// MakeBadgerV3 creates an in-memory instance of Badger v3.
-func MakeBadgerV3(t *testing.T) *badger.DB {
-	opts := badger3ds.DefaultOptions("")
-	opts.InMemory = true
-	log.SetLogLevel("badger", "ERROR")
-	ds, err := badger3ds.NewDatastore(opts)
-	require.NoError(t, err)
-
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, ds.Close())
-	})
-
-	return ds.DB
 }
 
 // MakeRepoPath for testing..

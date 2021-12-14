@@ -2,30 +2,26 @@ package backend
 
 import (
 	"context"
-	"strconv"
+	"path/filepath"
 	"testing"
 	"time"
 
-	"mintter/backend/badgergraph"
-	"mintter/backend/db/graphschema"
+	"mintter/backend/db/sqliteschema"
+	"mintter/backend/ipfs/sqlitebs"
 	"mintter/backend/testutil"
 
 	"github.com/ipfs/go-cid"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
-func init() {
+func TestPatchStore_LoadEmpty(t *testing.T) {
 	nowFunc = func() func() time.Time {
 		return func() time.Time {
 			var t time.Time
 			return t.Add(1 * time.Second)
 		}
 	}()
-}
 
-func TestPatchStore_LoadEmpty(t *testing.T) {
 	alice := makeTestPatchStore(t, "alice")
 	ctx := context.Background()
 	obj := testutil.MakeCID(t, "obj-1")
@@ -36,13 +32,47 @@ func TestPatchStore_LoadEmpty(t *testing.T) {
 	require.True(t, s.IsEmpty())
 }
 
-func TestPatchStore_AddPatchLoadState(t *testing.T) {
+func TestPatchStore_AddPatch(t *testing.T) {
+	nowFunc = func() func() time.Time {
+		return func() time.Time {
+			var t time.Time
+			return t.Add(1 * time.Second)
+		}
+	}()
+
 	alice := makeTestPatchStore(t, "alice")
 	oid := testutil.MakeCID(t, "obj-1")
 	kind := PatchKind("test-patch")
 	ctx := context.Background()
 
-	as := newState(oid, nil)
+	s := newChangeset(oid, nil)
+	p1 := mustNewPatch(s.NewPatch(cid.Cid(alice.Tester.Account.id), alice.Tester.Device.priv, kind, []byte("p-1")))
+	p2 := mustNewPatch(s.NewPatch(cid.Cid(alice.Tester.Account.id), alice.Tester.Device.priv, kind, []byte("p-2")))
+
+	require.NoError(t, alice.AddPatch(ctx, p1))
+	require.NoError(t, alice.AddPatch(ctx, p2))
+
+	loaded, err := alice.LoadState(ctx, oid)
+	require.NoError(t, err)
+
+	list := loaded.Merge()
+	require.Len(t, list, 2)
+}
+
+func TestPatchStore_AddPatchLoadState(t *testing.T) {
+	nowFunc = func() func() time.Time {
+		return func() time.Time {
+			var t time.Time
+			return t.Add(1 * time.Second)
+		}
+	}()
+
+	alice := makeTestPatchStore(t, "alice")
+	oid := testutil.MakeCID(t, "obj-1")
+	kind := PatchKind("test-patch")
+	ctx := context.Background()
+
+	as := newChangeset(oid, nil)
 	ap := []signedPatch{
 		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.id), alice.Tester.Device.priv, kind, []byte("alice-patch-1"))),
 		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.id), alice.Tester.Device.priv, kind, []byte("alice-patch-2"))),
@@ -56,7 +86,7 @@ func TestPatchStore_AddPatchLoadState(t *testing.T) {
 	require.NoError(t, alice.AddPatch(ctx, ap[2]))
 
 	bob := makeTester(t, "bob")
-	bs := newState(oid, nil)
+	bs := newChangeset(oid, nil)
 
 	bp := []signedPatch{
 		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.id), bob.Device.priv, kind, []byte("bob-patch-1"))),
@@ -72,33 +102,6 @@ func TestPatchStore_AddPatchLoadState(t *testing.T) {
 	require.Equal(t, 6, ss.size)
 	require.Equal(t, ap, ss.byPeer[0])
 	require.Equal(t, bp, ss.byPeer[1])
-}
-
-func TestPatchStore_ListObjects(t *testing.T) {
-	t.SkipNow() // TODO: fix the test.
-
-	alice := makeTester(t, "alice")
-	store := makeTestPatchStore(t, "alice")
-	kind := PatchKind("test-patch")
-	ctx := context.Background()
-
-	objects := []*state{
-		newState(testutil.MakeCID(t, "obj-1"), nil),
-		newState(testutil.MakeCID(t, "obj-2"), nil),
-		newState(testutil.MakeCID(t, "obj-3"), nil),
-	}
-
-	for i, o := range objects {
-		sp := mustNewPatch(o.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("patch-"+strconv.Itoa(i))))
-		require.NoError(t, store.AddPatch(ctx, sp))
-	}
-
-	cids, err := store.ListObjects(ctx, cid.Raw)
-	require.NoError(t, err)
-
-	for i, o := range objects {
-		require.Equal(t, o.obj, cids[i])
-	}
 }
 
 // TODO: add this replicate missing test.
@@ -137,28 +140,38 @@ func TestPatchStore_ListObjects(t *testing.T) {
 // 	}
 // }
 
+type testPS interface {
+	AddPatch(ctx context.Context, sps ...signedPatch) error
+	LoadState(ctx context.Context, obj cid.Cid) (*changeset, error)
+}
+
 type testPatchStore struct {
-	*patchStore
+	testPS
 	Tester Tester
 }
 
 func makeTestPatchStore(t *testing.T, name string) *testPatchStore {
-	t.Helper()
+	dir := testutil.MakeRepoPath(t)
 
-	ds := testutil.MakeDatastore(t)
-	bs := blockstore.NewBlockstore(ds)
-
-	db, err := badgergraph.NewDB(testutil.MakeBadgerV3(t), "!mtttest", graphschema.Schema())
+	pool, err := sqliteschema.Open(filepath.Join(dir, "db.sqlite"), 0, 10)
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		require.NoError(t, db.Close())
+		require.NoError(t, pool.Close())
 	})
 
-	store, err := newPatchStore(zap.NewNop(), bs, db)
+	conn, release, err := pool.Conn(context.Background())
+	require.NoError(t, err)
+	defer release()
+
+	require.NoError(t, sqliteschema.Migrate(conn))
+
+	bs := sqlitebs.New(pool, sqlitebs.DefaultConfig())
+
+	store, err := newSQLitePatchStore(pool, bs)
 	require.NoError(t, err)
 
 	return &testPatchStore{
-		patchStore: store,
-		Tester:     makeTester(t, name),
+		testPS: store,
+		Tester: makeTester(t, name),
 	}
 }

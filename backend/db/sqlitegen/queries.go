@@ -25,42 +25,14 @@ func CodegenQueries(pkgName string, queries ...QueryTemplate) ([]byte, error) {
 package {{.PackageName}}
 
 import (
+	"fmt"
 	"errors"
 
 	"crawshaw.io/sqlite"
-	"go.uber.org/multierr"
+	"mintter/backend/db/sqlitegen"
 )
 
 var _ = errors.New
-
-func execStmt(conn *sqlite.Conn, query string, before func(*sqlite.Stmt), onStep func(int, *sqlite.Stmt) error) (err error) {
-	stmt, err := conn.Prepare(query)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err = multierr.Append(err, stmt.Reset())
-	}()
-
-	before(stmt)
-
-	for i := 0; true; i++ {
-		hasRow, err := stmt.Step()
-		if err != nil {
-			return err
-		}
-
-		if !hasRow {
-			break
-		}
-
-		if err := onStep(i, stmt); err != nil {
-			return err
-		}
-	}
-
-	return err
-}
 {{end}}
 
 {{define "result-struct"}}
@@ -97,11 +69,9 @@ type {{.Name}}Result struct {
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return out, err
-	}
+	{{template "exec-stmt" .}}
 
-	return out, nil
+	return out, err
 }
 {{end}}
 
@@ -126,11 +96,16 @@ type {{.Name}}Result struct {
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return nil, err
-	}
+	{{template "exec-stmt" .}}
 
-	return out, nil
+	return out, err
+}
+{{end}}
+
+{{define "exec-stmt"}}
+err := sqlitegen.ExecStmt(conn, query, before, onStep)
+if err != nil {
+	err = fmt.Errorf("failed query: {{.Name}}: %w", err)
 }
 {{end}}
 
@@ -148,11 +123,9 @@ type {{.Name}}Result struct {
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return err
-	}
+	{{template "exec-stmt" .}}
 
-	return nil
+	return err
 }
 {{end}}
 `

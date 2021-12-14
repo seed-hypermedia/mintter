@@ -159,11 +159,10 @@ export const StartObjectDiscoveryRequest = {
     const message = {
       ...baseStartObjectDiscoveryRequest,
     } as StartObjectDiscoveryRequest;
-    if (object.objectId !== undefined && object.objectId !== null) {
-      message.objectId = String(object.objectId);
-    } else {
-      message.objectId = "";
-    }
+    message.objectId =
+      object.objectId !== undefined && object.objectId !== null
+        ? String(object.objectId)
+        : "";
     return message;
   },
 
@@ -173,17 +172,13 @@ export const StartObjectDiscoveryRequest = {
     return obj;
   },
 
-  fromPartial(
-    object: DeepPartial<StartObjectDiscoveryRequest>
+  fromPartial<I extends Exact<DeepPartial<StartObjectDiscoveryRequest>, I>>(
+    object: I
   ): StartObjectDiscoveryRequest {
     const message = {
       ...baseStartObjectDiscoveryRequest,
     } as StartObjectDiscoveryRequest;
-    if (object.objectId !== undefined && object.objectId !== null) {
-      message.objectId = object.objectId;
-    } else {
-      message.objectId = "";
-    }
+    message.objectId = object.objectId ?? "";
     return message;
   },
 };
@@ -230,8 +225,8 @@ export const StartObjectDiscoveryResponse = {
     return obj;
   },
 
-  fromPartial(
-    _: DeepPartial<StartObjectDiscoveryResponse>
+  fromPartial<I extends Exact<DeepPartial<StartObjectDiscoveryResponse>, I>>(
+    _: I
   ): StartObjectDiscoveryResponse {
     const message = {
       ...baseStartObjectDiscoveryResponse,
@@ -280,11 +275,10 @@ export const StopObjectDiscoveryRequest = {
     const message = {
       ...baseStopObjectDiscoveryRequest,
     } as StopObjectDiscoveryRequest;
-    if (object.objectId !== undefined && object.objectId !== null) {
-      message.objectId = String(object.objectId);
-    } else {
-      message.objectId = "";
-    }
+    message.objectId =
+      object.objectId !== undefined && object.objectId !== null
+        ? String(object.objectId)
+        : "";
     return message;
   },
 
@@ -294,17 +288,13 @@ export const StopObjectDiscoveryRequest = {
     return obj;
   },
 
-  fromPartial(
-    object: DeepPartial<StopObjectDiscoveryRequest>
+  fromPartial<I extends Exact<DeepPartial<StopObjectDiscoveryRequest>, I>>(
+    object: I
   ): StopObjectDiscoveryRequest {
     const message = {
       ...baseStopObjectDiscoveryRequest,
     } as StopObjectDiscoveryRequest;
-    if (object.objectId !== undefined && object.objectId !== null) {
-      message.objectId = object.objectId;
-    } else {
-      message.objectId = "";
-    }
+    message.objectId = object.objectId ?? "";
     return message;
   },
 };
@@ -351,8 +341,8 @@ export const StopObjectDiscoveryResponse = {
     return obj;
   },
 
-  fromPartial(
-    _: DeepPartial<StopObjectDiscoveryResponse>
+  fromPartial<I extends Exact<DeepPartial<StopObjectDiscoveryResponse>, I>>(
+    _: I
   ): StopObjectDiscoveryResponse {
     const message = {
       ...baseStopObjectDiscoveryResponse,
@@ -401,11 +391,10 @@ export const GetObjectDiscoveryStatusRequest = {
     const message = {
       ...baseGetObjectDiscoveryStatusRequest,
     } as GetObjectDiscoveryStatusRequest;
-    if (object.objectId !== undefined && object.objectId !== null) {
-      message.objectId = String(object.objectId);
-    } else {
-      message.objectId = "";
-    }
+    message.objectId =
+      object.objectId !== undefined && object.objectId !== null
+        ? String(object.objectId)
+        : "";
     return message;
   },
 
@@ -415,17 +404,13 @@ export const GetObjectDiscoveryStatusRequest = {
     return obj;
   },
 
-  fromPartial(
-    object: DeepPartial<GetObjectDiscoveryStatusRequest>
+  fromPartial<I extends Exact<DeepPartial<GetObjectDiscoveryStatusRequest>, I>>(
+    object: I
   ): GetObjectDiscoveryStatusRequest {
     const message = {
       ...baseGetObjectDiscoveryStatusRequest,
     } as GetObjectDiscoveryStatusRequest;
-    if (object.objectId !== undefined && object.objectId !== null) {
-      message.objectId = object.objectId;
-    } else {
-      message.objectId = "";
-    }
+    message.objectId = object.objectId ?? "";
     return message;
   },
 };
@@ -463,11 +448,10 @@ export const GetPeerInfoRequest = {
 
   fromJSON(object: any): GetPeerInfoRequest {
     const message = { ...baseGetPeerInfoRequest } as GetPeerInfoRequest;
-    if (object.peerId !== undefined && object.peerId !== null) {
-      message.peerId = String(object.peerId);
-    } else {
-      message.peerId = "";
-    }
+    message.peerId =
+      object.peerId !== undefined && object.peerId !== null
+        ? String(object.peerId)
+        : "";
     return message;
   },
 
@@ -477,13 +461,11 @@ export const GetPeerInfoRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<GetPeerInfoRequest>): GetPeerInfoRequest {
+  fromPartial<I extends Exact<DeepPartial<GetPeerInfoRequest>, I>>(
+    object: I
+  ): GetPeerInfoRequest {
     const message = { ...baseGetPeerInfoRequest } as GetPeerInfoRequest;
-    if (object.peerId !== undefined && object.peerId !== null) {
-      message.peerId = object.peerId;
-    } else {
-      message.peerId = "";
-    }
+    message.peerId = object.peerId ?? "";
     return message;
   },
 };
@@ -522,12 +504,7 @@ export const ConnectRequest = {
 
   fromJSON(object: any): ConnectRequest {
     const message = { ...baseConnectRequest } as ConnectRequest;
-    message.addrs = [];
-    if (object.addrs !== undefined && object.addrs !== null) {
-      for (const e of object.addrs) {
-        message.addrs.push(String(e));
-      }
-    }
+    message.addrs = (object.addrs ?? []).map((e: any) => String(e));
     return message;
   },
 
@@ -541,14 +518,11 @@ export const ConnectRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<ConnectRequest>): ConnectRequest {
+  fromPartial<I extends Exact<DeepPartial<ConnectRequest>, I>>(
+    object: I
+  ): ConnectRequest {
     const message = { ...baseConnectRequest } as ConnectRequest;
-    message.addrs = [];
-    if (object.addrs !== undefined && object.addrs !== null) {
-      for (const e of object.addrs) {
-        message.addrs.push(e);
-      }
-    }
+    message.addrs = object.addrs?.map((e) => e) || [];
     return message;
   },
 };
@@ -588,7 +562,9 @@ export const ConnectResponse = {
     return obj;
   },
 
-  fromPartial(_: DeepPartial<ConnectResponse>): ConnectResponse {
+  fromPartial<I extends Exact<DeepPartial<ConnectResponse>, I>>(
+    _: I
+  ): ConnectResponse {
     const message = { ...baseConnectResponse } as ConnectResponse;
     return message;
   },
@@ -640,27 +616,15 @@ export const PeerInfo = {
 
   fromJSON(object: any): PeerInfo {
     const message = { ...basePeerInfo } as PeerInfo;
-    message.addrs = [];
-    if (object.addrs !== undefined && object.addrs !== null) {
-      for (const e of object.addrs) {
-        message.addrs.push(String(e));
-      }
-    }
-    if (
-      object.connectionStatus !== undefined &&
-      object.connectionStatus !== null
-    ) {
-      message.connectionStatus = connectionStatusFromJSON(
-        object.connectionStatus
-      );
-    } else {
-      message.connectionStatus = 0;
-    }
-    if (object.accountId !== undefined && object.accountId !== null) {
-      message.accountId = String(object.accountId);
-    } else {
-      message.accountId = "";
-    }
+    message.addrs = (object.addrs ?? []).map((e: any) => String(e));
+    message.connectionStatus =
+      object.connectionStatus !== undefined && object.connectionStatus !== null
+        ? connectionStatusFromJSON(object.connectionStatus)
+        : 0;
+    message.accountId =
+      object.accountId !== undefined && object.accountId !== null
+        ? String(object.accountId)
+        : "";
     return message;
   },
 
@@ -677,27 +641,11 @@ export const PeerInfo = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<PeerInfo>): PeerInfo {
+  fromPartial<I extends Exact<DeepPartial<PeerInfo>, I>>(object: I): PeerInfo {
     const message = { ...basePeerInfo } as PeerInfo;
-    message.addrs = [];
-    if (object.addrs !== undefined && object.addrs !== null) {
-      for (const e of object.addrs) {
-        message.addrs.push(e);
-      }
-    }
-    if (
-      object.connectionStatus !== undefined &&
-      object.connectionStatus !== null
-    ) {
-      message.connectionStatus = object.connectionStatus;
-    } else {
-      message.connectionStatus = 0;
-    }
-    if (object.accountId !== undefined && object.accountId !== null) {
-      message.accountId = object.accountId;
-    } else {
-      message.accountId = "";
-    }
+    message.addrs = object.addrs?.map((e) => e) || [];
+    message.connectionStatus = object.connectionStatus ?? 0;
+    message.accountId = object.accountId ?? "";
     return message;
   },
 };
@@ -739,12 +687,7 @@ export const ObjectDiscoveryStatus = {
 
   fromJSON(object: any): ObjectDiscoveryStatus {
     const message = { ...baseObjectDiscoveryStatus } as ObjectDiscoveryStatus;
-    message.peers = [];
-    if (object.peers !== undefined && object.peers !== null) {
-      for (const e of object.peers) {
-        message.peers.push(String(e));
-      }
-    }
+    message.peers = (object.peers ?? []).map((e: any) => String(e));
     return message;
   },
 
@@ -758,16 +701,11 @@ export const ObjectDiscoveryStatus = {
     return obj;
   },
 
-  fromPartial(
-    object: DeepPartial<ObjectDiscoveryStatus>
+  fromPartial<I extends Exact<DeepPartial<ObjectDiscoveryStatus>, I>>(
+    object: I
   ): ObjectDiscoveryStatus {
     const message = { ...baseObjectDiscoveryStatus } as ObjectDiscoveryStatus;
-    message.peers = [];
-    if (object.peers !== undefined && object.peers !== null) {
-      for (const e of object.peers) {
-        message.peers.push(e);
-      }
-    }
+    message.peers = object.peers?.map((e) => e) || [];
     return message;
   },
 };
@@ -1068,6 +1006,7 @@ type Builtin =
   | number
   | boolean
   | undefined;
+
 type DeepPartial<T> = T extends Builtin
   ? T
   : T extends Array<infer U>
@@ -1077,6 +1016,14 @@ type DeepPartial<T> = T extends Builtin
   : T extends {}
   ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
+
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+type Exact<P, I extends P> = P extends Builtin
+  ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & Record<
+        Exclude<keyof I, KeysOfUnion<P>>,
+        never
+      >;
 
 if (_m0.util.Long !== Long) {
   _m0.util.Long = Long as any;

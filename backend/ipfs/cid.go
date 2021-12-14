@@ -1,4 +1,4 @@
-package ipfsutil
+package ipfs
 
 import (
 	"encoding/binary"

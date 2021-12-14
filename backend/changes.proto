@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package mintter.changes;
+
+option go_package = ".;backend";
+
+import "google/protobuf/timestamp.proto";
+
+message DocumentChange {
+  string title_updated = 1;
+
+  string subtitle_updated = 2;
+
+  bytes content_updated = 3;
+
+  // Only set on the first patch ever by the original author.
+  string author = 4;
+
+  // Only set on the first patch ever by the original author.
+  google.protobuf.Timestamp create_time = 5;
+
+  google.protobuf.Timestamp update_time = 6;
+}
+
+message DocumentFeedChange {
+  string document_published = 1;
+}
+
+message AccountChange {
+  string new_device_proof = 1;
+
+  string new_email = 2;
+
+  string new_bio = 3;
+
+  string new_alias = 4;
+}

@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	networking "mintter/backend/api/networking/v1alpha"
-	"mintter/backend/ipfsutil"
+	"mintter/backend/ipfs"
 )
 
 type networkingAPI struct {
@@ -66,7 +66,7 @@ func (srv *networkingAPI) GetPeerInfo(ctx context.Context, in *networking.GetPee
 	}
 
 	resp := &networking.PeerInfo{
-		Addrs:            ipfsutil.StringAddrs(mas),
+		Addrs:            ipfs.StringAddrs(mas),
 		ConnectionStatus: networking.ConnectionStatus(connectedness), // ConnectionStatus is a 1-to-1 mapping for the libp2p connectedness.
 		AccountId:        aid.String(),
 	}

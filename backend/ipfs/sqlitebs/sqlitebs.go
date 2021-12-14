@@ -3,7 +3,6 @@ package sqlitebs
 
 import (
 	"context"
-	"time"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -44,8 +43,6 @@ type queries struct {
 	SelectAll string
 }
 
-const defaultTimeout = time.Minute
-
 // DefaultConfig creates a default config.
 func DefaultConfig() Config {
 	return Config{
@@ -79,19 +76,16 @@ func New(db *sqlitex.Pool, cfg Config) *Blockstore {
 // CreateTables will attempt to create the tables according to the config.
 // Users that want the blockstore to create tables should call this before using the blockstore.
 func (b *Blockstore) CreateTables(ctx context.Context) error {
-	conn, release, err := b.connWithTimeout(ctx)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	return sqlitex.ExecScript(conn, `
+	return b.withConn(ctx, func(conn *sqlite.Conn) error {
+		return sqlitex.ExecScript(conn, `
 CREATE TABLE `+b.cfg.TableName+` (
 	`+b.cfg.ColumnMultihash+` BLOB PRIMARY KEY,
 	`+b.cfg.ColumnCodec+` INTEGER,
 	`+b.cfg.ColumnData+` BYTES
 ) WITHOUT ROWID;
 `)
+	})
+
 }
 
 // Has implements blockstore.Blockstore interface.
@@ -147,30 +141,21 @@ func (b *Blockstore) GetSize(ctx context.Context, cid cid.Cid) (int, error) {
 
 // Put implements blockstore.Blockstore interface.
 func (b *Blockstore) Put(ctx context.Context, block blocks.Block) error {
-	conn, release, err := b.connWithTimeout(ctx)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	return b.putBlock(conn, block)
+	return b.withConn(ctx, func(conn *sqlite.Conn) error {
+		return b.putBlock(conn, block)
+	})
 }
 
 // PutMany implements blockstore.Blockstore interface.
 func (b *Blockstore) PutMany(ctx context.Context, blocks []blocks.Block) error {
-	conn, release, err := b.connWithTimeout(ctx)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	for _, blk := range blocks {
-		if err := b.putBlock(conn, blk); err != nil {
-			return err
+	return b.withConn(ctx, func(conn *sqlite.Conn) error {
+		for _, blk := range blocks {
+			if err := b.putBlock(conn, blk); err != nil {
+				return err
+			}
 		}
-	}
-
-	return nil
+		return nil
+	})
 }
 
 func (b *Blockstore) putBlock(conn *sqlite.Conn, block blocks.Block) error {
@@ -230,20 +215,22 @@ func (b *Blockstore) HashOnRead(bool) {
 }
 
 func (b *Blockstore) exec(ctx context.Context, query string, fn func(*sqlite.Stmt) error, args ...interface{}) error {
-	conn, release, err := b.connWithTimeout(ctx)
+	return b.withConn(ctx, func(conn *sqlite.Conn) error {
+		return sqlitex.Exec(conn, query, fn, args...)
+	})
+}
+
+func (b *Blockstore) withConn(ctx context.Context, fn func(*sqlite.Conn) error) error {
+	conn, ok := ConnFromContext(ctx)
+	if ok {
+		return fn(conn)
+	}
+
+	conn, release, err := b.db.Conn(ctx)
 	if err != nil {
 		return err
 	}
 	defer release()
 
-	return sqlitex.Exec(conn, query, fn, args...)
-}
-
-func (b *Blockstore) connWithTimeout(ctx context.Context) (*sqlite.Conn, context.CancelFunc, error) {
-	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
-	conn, release, err := b.db.Conn(ctx)
-	return conn, func() {
-		cancel()
-		release()
-	}, err
+	return fn(conn)
 }

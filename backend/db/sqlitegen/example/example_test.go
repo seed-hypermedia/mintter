@@ -1,13 +1,14 @@
 package example
 
 import (
+	"mintter/backend/db/sqlitegen/example/schema"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestQueries(t *testing.T) {
-	conn, closer, err := makeConn()
+	conn, closer, err := schema.MakeConn()
 	require.NoError(t, err)
 
 	defer func() { require.NoError(t, closer()) }()
