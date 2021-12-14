@@ -1,7 +1,7 @@
-// Package ipfsutil provides a lightweight IPFS node that can deal with IPLDs.
-// Most of the content of this package is highly borrowed from https://github.com/hsanjuan/ipfs-lite.
-// Some of the changes include better error handlling and graceful shutdown.
-package ipfsutil
+// Package ipfs provides a lightweight IPFS node.
+// Some ideas are borrowed from https://github.com/hsanjuan/ipfs-lite, but here we
+// care a bit more about error handling and graceful shutdown.
+package ipfs
 
 import (
 	"context"
@@ -17,8 +17,6 @@ import (
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/routing"
-	dht "github.com/libp2p/go-libp2p-kad-dht"
-	"github.com/libp2p/go-libp2p-kad-dht/dual"
 
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	provider "github.com/ipfs/go-ipfs-provider"
@@ -28,15 +26,22 @@ import (
 
 const defaultReprovideInterval = 12 * time.Hour
 
-// NewBlock creates a new IPFS block assuming data is dag-cbor. It uses
-// blake2 as the hash function as looks like this is what the community is going for now.
-func NewBlock(codec uint64, data []byte) (blocks.Block, error) {
+// NewBlock creates a new IPFS block using blake2 as the hash function.
+// Apparently IPFS comunity is leaning towards using it in place of SHA256.
+// It can panic if invalid codec is used, or data is bad (too large or whatever).
+// Mostly it means that there's a bug somewhere.
+func NewBlock(codec uint64, data []byte) blocks.Block {
 	id, err := NewCID(codec, multihash.BLAKE2B_MIN+31, data)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	return blocks.NewBlockWithCid(data, id)
+	blk, err := blocks.NewBlockWithCid(data, id)
+	if err != nil {
+		panic(err)
+	}
+
+	return blk
 }
 
 // NewBlockstore creates a new Block Store from a given datastore.
@@ -114,32 +119,4 @@ func NewProviderSystem(bs blockstore.Blockstore, ds datastore.Datastore, rt rout
 	sp := simple.NewReprovider(ctx, defaultReprovideInterval, rt, simple.NewBlockstoreProvider(bs))
 
 	return provider.NewSystem(prov, sp), nil
-}
-
-// WaitRouting blocks until the content routing is ready. It's best-effort.
-func WaitRouting(ctx context.Context, rti routing.ContentRouting) error {
-	var rt *dht.IpfsDHT
-
-	switch d := rti.(type) {
-	case *dht.IpfsDHT:
-		rt = d
-	case *dual.DHT:
-		rt = d.WAN
-	default:
-		return nil
-	}
-
-	ticker := time.NewTicker(50 * time.Millisecond)
-	defer ticker.Stop()
-
-	for rt.RoutingTable().Size() <= 0 {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-ticker.C:
-			continue
-		}
-	}
-
-	return nil
 }

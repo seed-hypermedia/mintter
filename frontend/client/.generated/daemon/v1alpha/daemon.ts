@@ -74,14 +74,10 @@ export const GenSeedRequest = {
 
   fromJSON(object: any): GenSeedRequest {
     const message = { ...baseGenSeedRequest } as GenSeedRequest;
-    if (
-      object.aezeedPassphrase !== undefined &&
-      object.aezeedPassphrase !== null
-    ) {
-      message.aezeedPassphrase = String(object.aezeedPassphrase);
-    } else {
-      message.aezeedPassphrase = "";
-    }
+    message.aezeedPassphrase =
+      object.aezeedPassphrase !== undefined && object.aezeedPassphrase !== null
+        ? String(object.aezeedPassphrase)
+        : "";
     return message;
   },
 
@@ -92,16 +88,11 @@ export const GenSeedRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<GenSeedRequest>): GenSeedRequest {
+  fromPartial<I extends Exact<DeepPartial<GenSeedRequest>, I>>(
+    object: I
+  ): GenSeedRequest {
     const message = { ...baseGenSeedRequest } as GenSeedRequest;
-    if (
-      object.aezeedPassphrase !== undefined &&
-      object.aezeedPassphrase !== null
-    ) {
-      message.aezeedPassphrase = object.aezeedPassphrase;
-    } else {
-      message.aezeedPassphrase = "";
-    }
+    message.aezeedPassphrase = object.aezeedPassphrase ?? "";
     return message;
   },
 };
@@ -140,12 +131,7 @@ export const GenSeedResponse = {
 
   fromJSON(object: any): GenSeedResponse {
     const message = { ...baseGenSeedResponse } as GenSeedResponse;
-    message.mnemonic = [];
-    if (object.mnemonic !== undefined && object.mnemonic !== null) {
-      for (const e of object.mnemonic) {
-        message.mnemonic.push(String(e));
-      }
-    }
+    message.mnemonic = (object.mnemonic ?? []).map((e: any) => String(e));
     return message;
   },
 
@@ -159,14 +145,11 @@ export const GenSeedResponse = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<GenSeedResponse>): GenSeedResponse {
+  fromPartial<I extends Exact<DeepPartial<GenSeedResponse>, I>>(
+    object: I
+  ): GenSeedResponse {
     const message = { ...baseGenSeedResponse } as GenSeedResponse;
-    message.mnemonic = [];
-    if (object.mnemonic !== undefined && object.mnemonic !== null) {
-      for (const e of object.mnemonic) {
-        message.mnemonic.push(e);
-      }
-    }
+    message.mnemonic = object.mnemonic?.map((e) => e) || [];
     return message;
   },
 };
@@ -211,20 +194,11 @@ export const RegisterRequest = {
 
   fromJSON(object: any): RegisterRequest {
     const message = { ...baseRegisterRequest } as RegisterRequest;
-    message.mnemonic = [];
-    if (object.mnemonic !== undefined && object.mnemonic !== null) {
-      for (const e of object.mnemonic) {
-        message.mnemonic.push(String(e));
-      }
-    }
-    if (
-      object.aezeedPassphrase !== undefined &&
-      object.aezeedPassphrase !== null
-    ) {
-      message.aezeedPassphrase = String(object.aezeedPassphrase);
-    } else {
-      message.aezeedPassphrase = "";
-    }
+    message.mnemonic = (object.mnemonic ?? []).map((e: any) => String(e));
+    message.aezeedPassphrase =
+      object.aezeedPassphrase !== undefined && object.aezeedPassphrase !== null
+        ? String(object.aezeedPassphrase)
+        : "";
     return message;
   },
 
@@ -240,22 +214,12 @@ export const RegisterRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<RegisterRequest>): RegisterRequest {
+  fromPartial<I extends Exact<DeepPartial<RegisterRequest>, I>>(
+    object: I
+  ): RegisterRequest {
     const message = { ...baseRegisterRequest } as RegisterRequest;
-    message.mnemonic = [];
-    if (object.mnemonic !== undefined && object.mnemonic !== null) {
-      for (const e of object.mnemonic) {
-        message.mnemonic.push(e);
-      }
-    }
-    if (
-      object.aezeedPassphrase !== undefined &&
-      object.aezeedPassphrase !== null
-    ) {
-      message.aezeedPassphrase = object.aezeedPassphrase;
-    } else {
-      message.aezeedPassphrase = "";
-    }
+    message.mnemonic = object.mnemonic?.map((e) => e) || [];
+    message.aezeedPassphrase = object.aezeedPassphrase ?? "";
     return message;
   },
 };
@@ -293,11 +257,10 @@ export const RegisterResponse = {
 
   fromJSON(object: any): RegisterResponse {
     const message = { ...baseRegisterResponse } as RegisterResponse;
-    if (object.accountId !== undefined && object.accountId !== null) {
-      message.accountId = String(object.accountId);
-    } else {
-      message.accountId = "";
-    }
+    message.accountId =
+      object.accountId !== undefined && object.accountId !== null
+        ? String(object.accountId)
+        : "";
     return message;
   },
 
@@ -307,13 +270,11 @@ export const RegisterResponse = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<RegisterResponse>): RegisterResponse {
+  fromPartial<I extends Exact<DeepPartial<RegisterResponse>, I>>(
+    object: I
+  ): RegisterResponse {
     const message = { ...baseRegisterResponse } as RegisterResponse;
-    if (object.accountId !== undefined && object.accountId !== null) {
-      message.accountId = object.accountId;
-    } else {
-      message.accountId = "";
-    }
+    message.accountId = object.accountId ?? "";
     return message;
   },
 };
@@ -353,7 +314,9 @@ export const GetInfoRequest = {
     return obj;
   },
 
-  fromPartial(_: DeepPartial<GetInfoRequest>): GetInfoRequest {
+  fromPartial<I extends Exact<DeepPartial<GetInfoRequest>, I>>(
+    _: I
+  ): GetInfoRequest {
     const message = { ...baseGetInfoRequest } as GetInfoRequest;
     return message;
   },
@@ -406,21 +369,18 @@ export const Info = {
 
   fromJSON(object: any): Info {
     const message = { ...baseInfo } as Info;
-    if (object.accountId !== undefined && object.accountId !== null) {
-      message.accountId = String(object.accountId);
-    } else {
-      message.accountId = "";
-    }
-    if (object.peerId !== undefined && object.peerId !== null) {
-      message.peerId = String(object.peerId);
-    } else {
-      message.peerId = "";
-    }
-    if (object.startTime !== undefined && object.startTime !== null) {
-      message.startTime = fromJsonTimestamp(object.startTime);
-    } else {
-      message.startTime = undefined;
-    }
+    message.accountId =
+      object.accountId !== undefined && object.accountId !== null
+        ? String(object.accountId)
+        : "";
+    message.peerId =
+      object.peerId !== undefined && object.peerId !== null
+        ? String(object.peerId)
+        : "";
+    message.startTime =
+      object.startTime !== undefined && object.startTime !== null
+        ? fromJsonTimestamp(object.startTime)
+        : undefined;
     return message;
   },
 
@@ -433,23 +393,11 @@ export const Info = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Info>): Info {
+  fromPartial<I extends Exact<DeepPartial<Info>, I>>(object: I): Info {
     const message = { ...baseInfo } as Info;
-    if (object.accountId !== undefined && object.accountId !== null) {
-      message.accountId = object.accountId;
-    } else {
-      message.accountId = "";
-    }
-    if (object.peerId !== undefined && object.peerId !== null) {
-      message.peerId = object.peerId;
-    } else {
-      message.peerId = "";
-    }
-    if (object.startTime !== undefined && object.startTime !== null) {
-      message.startTime = object.startTime;
-    } else {
-      message.startTime = undefined;
-    }
+    message.accountId = object.accountId ?? "";
+    message.peerId = object.peerId ?? "";
+    message.startTime = object.startTime ?? undefined;
     return message;
   },
 };
@@ -678,6 +626,7 @@ type Builtin =
   | number
   | boolean
   | undefined;
+
 type DeepPartial<T> = T extends Builtin
   ? T
   : T extends Array<infer U>
@@ -687,6 +636,14 @@ type DeepPartial<T> = T extends Builtin
   : T extends {}
   ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
+
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+type Exact<P, I extends P> = P extends Builtin
+  ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & Record<
+        Exclude<keyof I, KeysOfUnion<P>>,
+        never
+      >;
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000;

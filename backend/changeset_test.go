@@ -14,7 +14,7 @@ func TestPatchRDTState_NewPatch(t *testing.T) {
 	obj := testutil.MakeCID(t, "document-1")
 	kind := PatchKind("test-patch")
 
-	s := newState(obj, nil)
+	s := newChangeset(obj, nil)
 
 	ap1 := mustNewPatch(s.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("alice-patch-1")))
 	require.True(t, ap1.Author.Equals(cid.Cid(alice.Account.id)))
@@ -48,7 +48,7 @@ func TestPatchRDTState_Concurrent(t *testing.T) {
 	obj := testutil.MakeCID(t, "document-1")
 	kind := PatchKind("test-patch")
 
-	as := newState(obj, nil)
+	as := newChangeset(obj, nil)
 	ap := []signedPatch{
 		mustNewPatch(as.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("alice-patch-1"))),
 		mustNewPatch(as.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("alice-patch-2"))),
@@ -56,7 +56,7 @@ func TestPatchRDTState_Concurrent(t *testing.T) {
 		mustNewPatch(as.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("alice-patch-4"))),
 	}
 
-	bs := newState(obj, nil)
+	bs := newChangeset(obj, nil)
 	bp := []signedPatch{
 		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.id), bob.Device.priv, kind, []byte("bob-patch-1"))),
 		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.id), bob.Device.priv, kind, []byte("bob-patch-2"))),
@@ -65,7 +65,7 @@ func TestPatchRDTState_Concurrent(t *testing.T) {
 		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.id), bob.Device.priv, kind, []byte("bob-patch-5"))),
 	}
 
-	merged := newState(obj, [][]signedPatch{ap, bp})
+	merged := newChangeset(obj, [][]signedPatch{ap, bp})
 	require.Equal(t, len(ap)+len(bp), merged.size)
 
 	// TODO: see if we need to solve interleaving.
@@ -90,7 +90,7 @@ func TestPatchRDTState_Concurrent(t *testing.T) {
 	require.Equal(t, uint64(11), ap[5].LogTime)
 	require.Equal(t, []cid.Cid{ap[4].cid}, ap[5].Deps)
 
-	merged = newState(obj, [][]signedPatch{bp, ap})
+	merged = newChangeset(obj, [][]signedPatch{bp, ap})
 	expected = []string{"alice-patch-1", "bob-patch-1", "alice-patch-2", "bob-patch-2",
 		"alice-patch-3", "bob-patch-3", "alice-patch-4", "bob-patch-4", "bob-patch-5", "alice-patch-5", "alice-patch-6"}
 

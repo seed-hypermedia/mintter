@@ -3,6 +3,7 @@ package example
 import (
 	"io/ioutil"
 	"mintter/backend/db/sqlitegen"
+	"mintter/backend/db/sqlitegen/example/schema"
 	"mintter/backend/db/sqlitegen/qb"
 )
 
@@ -11,41 +12,41 @@ var _ = generateQueries
 //go:generate gorun -tags codegen generateQueries
 func generateQueries() error {
 	code, err := sqlitegen.CodegenQueries("example",
-		qb.MakeQuery(Schema, "insertWallet", sqlitegen.QueryKindExec,
-			qb.Insert(WalletsID, WalletsName),
+		qb.MakeQuery(schema.Schema, "insertWallet", sqlitegen.QueryKindExec,
+			qb.Insert(schema.WalletsID, schema.WalletsName),
 		),
 
-		qb.MakeQuery(Schema, "getWallet", sqlitegen.QueryKindSingle,
+		qb.MakeQuery(schema.Schema, "getWallet", sqlitegen.QueryKindSingle,
 			"SELECT", qb.Results(
-				qb.ResultCol(WalletsID),
-				qb.ResultCol(WalletsName),
+				qb.ResultCol(schema.WalletsID),
+				qb.ResultCol(schema.WalletsName),
 			), qb.Line,
-			"FROM", Wallets, qb.Line,
-			"WHERE", WalletsID, "=", qb.VarCol(WalletsID),
+			"FROM", schema.Wallets, qb.Line,
+			"WHERE", schema.WalletsID, "=", qb.VarCol(schema.WalletsID),
 		),
 
-		qb.MakeQuery(Schema, "listWallets", sqlitegen.QueryKindMany,
+		qb.MakeQuery(schema.Schema, "listWallets", sqlitegen.QueryKindMany,
 			"SELECT", qb.Results(
-				qb.ResultCol(WalletsID),
-				qb.ResultCol(WalletsName),
+				qb.ResultCol(schema.WalletsID),
+				qb.ResultCol(schema.WalletsName),
 			),
-			"FROM", Wallets,
-			"WHERE", WalletsID, ">", qb.Var("cursor", sqlitegen.TypeText),
+			"FROM", schema.Wallets,
+			"WHERE", schema.WalletsID, ">", qb.Var("cursor", sqlitegen.TypeText),
 			"LIMIT", qb.Var("limit", sqlitegen.TypeInt),
 		),
 
-		qb.MakeQuery(Schema, "insertUser", sqlitegen.QueryKindExec,
-			qb.Insert(UsersID, UsersName, UsersAvatar),
+		qb.MakeQuery(schema.Schema, "insertUser", sqlitegen.QueryKindExec,
+			qb.Insert(schema.UsersID, schema.UsersName, schema.UsersAvatar),
 		),
 
-		qb.MakeQuery(Schema, "getUser", sqlitegen.QueryKindSingle,
+		qb.MakeQuery(schema.Schema, "getUser", sqlitegen.QueryKindSingle,
 			"SELECT", qb.Results(
-				qb.ResultCol(UsersID),
-				qb.ResultCol(UsersName),
-				qb.ResultCol(UsersAvatar),
+				qb.ResultCol(schema.UsersID),
+				qb.ResultCol(schema.UsersName),
+				qb.ResultCol(schema.UsersAvatar),
 			), qb.Line,
-			"FROM", Users, qb.Line,
-			"WHERE", UsersID, "=", qb.VarCol(UsersID),
+			"FROM", schema.Users, qb.Line,
+			"WHERE", schema.UsersID, "=", qb.VarCol(schema.UsersID),
 		),
 	)
 	if err != nil {

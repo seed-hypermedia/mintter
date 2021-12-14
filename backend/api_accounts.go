@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	accounts "mintter/backend/api/accounts/v1alpha"
+	"mintter/backend/ipfs"
 )
 
 type accountsAPI struct {
@@ -34,12 +35,22 @@ func (srv *accountsAPI) GetAccount(ctx context.Context, in *accounts.GetAccountR
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "can't decode account id as CID: %v", err)
 		}
+
+		acodec, _ := ipfs.DecodeCID(c)
+		if acodec != codecAccountID {
+			return nil, fmt.Errorf("wrong codec for account")
+		}
+
 		aid = AccountID(c)
 	}
 
 	state, err := srv.back.GetAccountState(ctx, aid)
 	if err != nil {
 		return nil, err
+	}
+
+	if state.size == 0 {
+		return nil, fmt.Errorf("no information about account: %s", aid.String())
 	}
 
 	account, err := accountFromState(state)

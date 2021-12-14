@@ -206,6 +206,27 @@ func TestDelete(t *testing.T) {
 	require.False(t, has)
 }
 
+func TestContext(t *testing.T) {
+	bs := newBlockstore(t)
+	ctx := context.Background()
+
+	conn, release, err := bs.db.Conn(ctx)
+	require.NoError(t, err)
+	defer release()
+
+	cctx := ContextWithConn(ctx, conn)
+
+	blks := []blocks.Block{
+		blocks.NewBlock([]byte("foo1")),
+		blocks.NewBlock([]byte("foo2")),
+		blocks.NewBlock([]byte("foo3")),
+	}
+
+	for _, blk := range blks {
+		require.NoError(t, bs.Put(cctx, blk))
+	}
+}
+
 func newBlockstore(t testing.TB) *Blockstore {
 	t.Helper()
 

@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package com.mintter.accounts.v1alpha;
 
-import "google/protobuf/timestamp.proto";
-
 option go_package = "mintter/backend/api/accounts/v1alpha;accounts";
 
 // Accounts API service.
@@ -60,17 +58,4 @@ message Profile {
 message Device {
   // CID-encoded Peer ID of this device.
   string peer_id = 1;
-
-  // Time when this device was registered.
-  google.protobuf.Timestamp register_time = 2;
-}
-
-// === Events ===
-
-message DeviceRegistered {
-  bytes proof = 1;
-}
-
-message ProfileUpdated {
-  Profile profile = 2;
 }

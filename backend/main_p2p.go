@@ -6,9 +6,9 @@ import (
 
 	"mintter/backend/config"
 	"mintter/backend/db/sqliteschema"
-	"mintter/backend/ipfsutil"
-	"mintter/backend/ipfsutil/providing"
-	"mintter/backend/ipfsutil/sqlitebs"
+	"mintter/backend/ipfs"
+	"mintter/backend/ipfs/providing"
+	"mintter/backend/ipfs/sqlitebs"
 	"mintter/backend/logging"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -28,17 +28,12 @@ var moduleP2P = fx.Options(
 		providePeerstore,
 		provideLibp2p,
 		provideBootstrapPeers,
-		// provideBadgerBlockstore,
 		provideSQLiteBlockstore,
 		provideBitswap,
 		provideBlockService,
 		provideP2P,
 	),
 )
-
-func provideBadgerBlockstore(store datastore.Batching) (blockstore.Blockstore, error) {
-	return ipfsutil.NewBlockstore(store)
-}
 
 func provideSQLiteBlockstore(pool *sqlitex.Pool) (bs blockstore.Blockstore, err error) {
 	bs = sqlitebs.New(pool, sqlitebs.Config{
@@ -53,12 +48,12 @@ func provideSQLiteBlockstore(pool *sqlitex.Pool) (bs blockstore.Blockstore, err 
 	return bs, err
 }
 
-func provideBootstrapPeers(cfg config.P2P) ipfsutil.Bootstrappers {
+func provideBootstrapPeers(cfg config.P2P) ipfs.Bootstrappers {
 	if cfg.NoBootstrap {
 		return nil
 	}
 
-	return ipfsutil.DefaultBootstrapPeers()
+	return ipfs.DefaultBootstrapPeers()
 }
 
 func providePeerstore(lc fx.Lifecycle) (peerstore.Peerstore, error) {
@@ -77,8 +72,8 @@ func providePeerstore(lc fx.Lifecycle) (peerstore.Peerstore, error) {
 }
 
 // provideLibp2p assembles libp2p node ready to use. Listening must be started elsewhere.
-func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ps peerstore.Peerstore, ds datastore.Batching, r *repo, boot ipfsutil.Bootstrappers) (*ipfsutil.Libp2p, error) {
-	m := ipfsutil.NewLibp2pMetrics()
+func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ps peerstore.Peerstore, ds datastore.Batching, r *repo, boot ipfs.Bootstrappers) (*ipfs.Libp2p, error) {
+	m := ipfs.NewLibp2pMetrics()
 
 	opts := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
@@ -101,7 +96,7 @@ func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ps peerstore.Peerstore, ds d
 		opts = append(opts, libp2p.BandwidthReporter(m))
 	}
 
-	node, err := ipfsutil.NewLibp2pNode(r.Device().priv, ds, boot, opts...)
+	node, err := ipfs.NewLibp2pNode(r.Device().priv, ds, boot, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -121,8 +116,8 @@ func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ps peerstore.Peerstore, ds d
 	return node, nil
 }
 
-func provideBitswap(lc fx.Lifecycle, n *ipfsutil.Libp2p, bs blockstore.Blockstore) (*ipfsutil.Bitswap, error) {
-	bswap, err := ipfsutil.NewBitswap(n.Host, n.Routing, bs)
+func provideBitswap(lc fx.Lifecycle, n *ipfs.Libp2p, bs blockstore.Blockstore) (*ipfs.Bitswap, error) {
+	bswap, err := ipfs.NewBitswap(n.Host, n.Routing, bs)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +131,7 @@ func provideBitswap(lc fx.Lifecycle, n *ipfsutil.Libp2p, bs blockstore.Blockstor
 	return bswap, nil
 }
 
-func provideBlockService(bs blockstore.Blockstore, bswap *ipfsutil.Bitswap) (blockservice.BlockService, error) {
+func provideBlockService(bs blockstore.Blockstore, bswap *ipfs.Bitswap) (blockservice.BlockService, error) {
 	blksvc := blockservice.New(bs, bswap)
 
 	// No need to call Close() for block service, because it's only closing the exchange,
@@ -145,8 +140,8 @@ func provideBlockService(bs blockstore.Blockstore, bswap *ipfsutil.Bitswap) (blo
 	return blksvc, nil
 }
 
-func provideP2P(lc fx.Lifecycle, patches *patchStore, bs blockservice.BlockService, repo *repo, cfg config.P2P, libp2p *ipfsutil.Libp2p, boot ipfsutil.Bootstrappers) (*p2pNode, error) {
-	prov, err := providing.New(repo.providingDBPath(), libp2p.Routing, makeStrategy(bs.Blockstore(), patches))
+func provideP2P(lc fx.Lifecycle, bs blockservice.BlockService, repo *repo, cfg config.P2P, libp2p *ipfs.Libp2p, boot ipfs.Bootstrappers) (*p2pNode, error) {
+	prov, err := providing.New(repo.providingDBPath(), libp2p.Routing, makeStrategy(bs.Blockstore()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create provider: %w", err)
 	}
@@ -164,32 +159,8 @@ func provideP2P(lc fx.Lifecycle, patches *patchStore, bs blockservice.BlockServi
 
 // makeStrategy creates a providing strategy that merges blocks from the block store
 // and objects from the patch store.
-func makeStrategy(bs blockstore.Blockstore, patches *patchStore) providing.Strategy {
+func makeStrategy(bs blockstore.Blockstore) providing.Strategy {
 	return func(ctx context.Context) (<-chan cid.Cid, error) {
-		oc, err := patches.AllObjectsChan(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		bc, err := bs.AllKeysChan(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		out := make(chan cid.Cid)
-
-		go func() {
-			defer close(out)
-
-			for c := range oc {
-				out <- c
-			}
-
-			for c := range bc {
-				out <- c
-			}
-		}()
-
-		return out, nil
+		return bs.AllKeysChan(ctx)
 	}
 }

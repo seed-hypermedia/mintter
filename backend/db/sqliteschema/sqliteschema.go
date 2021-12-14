@@ -3,6 +3,7 @@
 package sqliteschema
 
 import (
+	"context"
 	"fmt"
 	"mintter/backend/db/sqlitegen"
 
@@ -22,6 +23,8 @@ func init() {
 // Append-only! DO NOT REMOVE, EDIT, OR REORDER PREVIOUS ENTRIES.
 // Do not add statements to existing migration scripts, append new ones instead.
 //
+// We store timestamps as INTEGER SQLite types, so use `strftime('%s', 'now')` as a default value if needed.
+//
 // IMPORTANT: after modifying migrations run go generate in this package, or do it from
 // your editor if it supports it. There should be something like "run go generate" button bellow.
 //
@@ -38,22 +41,25 @@ var migrations = []string{
 			-- so UNIQUE constraint is needed here.
 			-- We don't use multihash as a primary key to reduce the database size,
 			-- as there're multiple other tables referencing records from this table.
-			multihash BLOB UNIQUE NOT NULL,
+			multihash BLOB NOT NULL,
 			-- Multicodec describing the data stored in the block.
 			codec INTEGER NOT NULL,
 			-- Actual content of the block.
 			data BLOB NOT NULL,
 			-- Subjective (locally perceived) time when this block was fetched for the first time.
 			-- Not sure if actually useful, but might become at some point.
-			create_time TIMESTAMP DEFAULT (datetime('now')) NOT NULL
+			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+			UNIQUE (multihash, codec)
 		);
 
 		-- Stores data about Mintter Accounts.
 		CREATE TABLE accounts (
 			-- Short numerical ID to be used internally.
 			id INTEGER PRIMARY KEY,
-			-- Bytes of the CID-encoded Mintter Account ID.
-			cid BLOB UNIQUE NOT NULL,
+			-- Multihash part of the Account ID.
+			multihash BLOB UNIQUE NOT NULL,
+			-- Codec part of the Account ID.
+			codec INTEGER NOT NULL,
 			-- Currently known value for the profile alias.
 			alias TEXT,
 			-- Currently known value for the profile bio.
@@ -66,79 +72,95 @@ var migrations = []string{
 		CREATE TABLE devices (
 			-- Short numerical ID to be used internally.
 			id INTEGER PRIMARY KEY,
-			-- Bytes of the CID-encoded device ID.
-			cid BLOB UNIQUE NOT NULL,
+			-- Multihash part of the Device ID.
+			multihash BLOB UNIQUE NOT NULL,
+			-- Codec part of the Device ID.
+			codec INTEGER NOT NULL,
 			-- Bytes of the public key.
 			-- Mostly NULL because Ed25519 keys can be extracted from the CID.
 			public_key BLOB DEFAULT NULL,
 			-- Reference to the Account this Device belongs to.
 			account_id INTEGER REFERENCES accounts NOT NULL,
 			-- Subjective (locally perceived) time when the item was created.
-			create_time TIMESTAMP DEFAULT (datetime('now')) NOT NULL
+			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 		);
+
+		CREATE INDEX idx_devices_by_account ON devices (account_id);
 
 		-- Stores data about Mintter Objects.
 		CREATE TABLE objects (
 			-- Short numerical ID to be used internally.
 			id INTEGER PRIMARY KEY,
-			-- Bytes of the CID-encoded Object ID.
-			cid BLOB UNIQUE NOT NULL,
+			-- Multihash part of the Object ID.
+			multihash BLOB NOT NULL,
+			-- Codec part of the Object ID.
+			codec INTEGER NOT NULL,
 			-- Reference to the Account that created the Object.
-			account_id INTEGER REFERENCES accounts NOT NULL
+			account_id INTEGER REFERENCES accounts NOT NULL,
+			-- Subjective (locally perceived) time when the item was created.
+			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+			UNIQUE (multihash, codec)
+		);
+
+		-- Temporary table prior to refactor.
+		CREATE TABLE heads (
+			object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
+			device_id INTEGER REFERENCES devices ON DELETE CASCADE NOT NULL,
+			seq INTEGER CHECK (seq > 0) NOT NULL,
+			lamport_time INTEGER CHECK (lamport_time > 0) NOT NULL,
+			ipfs_block_id INTEGER REFERENCES ipfs_blocks NOT NULL,
+			PRIMARY KEY (object_id, device_id)
 		);
 
 		-- Stores changes for objects.
 		CREATE TABLE changes (
+			-- Alias to the rowid for simpler indexing.
+			id INTEGER PRIMARY KEY,
 			-- Reference to the Object being changed.
-			object_id INTEGER REFERENCES objects NOT NULL,
+			object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
 			-- Reference to the Device that signed the Change.
 			device_id INTEGER REFERENCES devices NOT NULL,
 			-- Sequence number from the Change.
-			seq INTEGER NOT NULL,
+			seq INTEGER CHECK (seq > 0),
 			-- Lamport timestamp of the Change.
-			lamport_time INTEGER NOT NULL,
+			lamport_time INTEGER CHECK (lamport_time > 0),
 			-- Reference to the IPFS Blob with contents of the Change.
-			ipfs_blob_id INTEGER REFERENCES ipfs_blocks NOT NULL,
+			ipfs_block_id INTEGER REFERENCES ipfs_blocks NOT NULL,
 			-- Composite key that uniquely identifies a Change.
-			PRIMARY KEY (object_id, device_id, seq)
-		) WITHOUT ROWID;
-
-		-- Stores Mintter Documents (drafts and publications) and caches some of their attributes.
-		CREATE TABLE documents (
-			-- Short numerical ID to be used internally.
-			id INTEGER PRIMARY KEY,
-			-- The following properties are basically a cache of the most recently known values.
-			-- Useful for list views to avoid reading and resolving Changes of all the Documents.
-			title TEXT,
-			subtitle TEXT,
-			draft_title TEXT,
-			draft_subtitle TEXT,
-			draft_content BLOB,
-			create_time TIMESTAMP NOT NULL,
-			update_time TIMESTAMP NOT NULL,
-			publish_time TIMESTAMP,
-			-- The most up to date version we know about the Document.
-			-- Useful for detecting that we're reading an out of date version.
-			latest_version TEXT,
-			-- Our ID actually references objects table, because Documents are actually Objects.
-			-- But not all Objects are Documents.
-			FOREIGN KEY (id) REFERENCES objects
+			UNIQUE (object_id, device_id, seq)
 		);
 
-		-- Index to list drafts.
-		CREATE INDEX documents_draft_content ON documents (draft_content, NOT NULL);
+		-- Stores draft-related attributes of an Object.
+		CREATE TABLE drafts (
+			id INTEGER PRIMARY KEY,
+			title TEXT NOT NULL,
+			subtitle TEXT NOT NULL,
+			content BLOB,
+			create_time INTEGER NOT NULL CHECK (create_time > 500),
+			update_time INTEGER NOT NULL CHECK (update_time > 500),
+			FOREIGN KEY (id) REFERENCES objects ON DELETE CASCADE
+		);
 
-		-- Index to list published documents.
-		CREATE INDEX documents_publish_time ON documents (publish_time, NOT NULL);
+		-- Stores publication-related attributes of an Object.
+		CREATE TABLE publications (
+			id INTEGER PRIMARY KEY,
+			title TEXT NOT NULL,
+			subtitle TEXT NOT NULL,
+			create_time INTEGER NOT NULL CHECK (create_time > 500),
+			update_time INTEGER NOT NULL CHECK (update_time > 500),
+			publish_time INTEGER NOT NULL CHECK (publish_time > 500),
+			latest_version TEXT NOT NULL,
+			FOREIGN KEY (id) REFERENCES objects ON DELETE CASCADE
+		);
 
 		-- Index for links from Documents.
 		CREATE TABLE links (
 			-- Reference to Document ID from which link originates.
-			source_document_id INTEGER REFERENCES documents NOT NULL,
+			source_document_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
 			-- Block ID inside the Document which contains the link.
 			source_block_id TEXT NOT NULL,
 			-- Reference to Document ID that is linked.
-			target_document_id INTEGER REFERENCES documents NOT NULL,
+			target_document_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
 			-- Block ID that is linked. Can be NULL if links is to the whole Document.
 			target_block_id TEXT,
 			-- Version of the target Document that is linked.
@@ -147,11 +169,19 @@ var migrations = []string{
 			-- Since each Change references all the dependant changes
 			-- the ID of the Change is guaranteed to be a valid Version
 			-- to identify the state of the source Document.
-			source_change_id INTEGER REFERENCES changes NOT NULL
+			source_change INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE,
+			-- Reference to the draft if the link is in the draft.
+			source_draft INTEGER REFERENCES drafts ON DELETE CASCADE,
+			-- Only allow one of the two columns to be set.
+			CHECK ((source_change IS NULL AND source_draft IS NOT NULL) OR (source_change IS NOT NULL AND source_draft IS NULL))
 		);
 
+		-- Index to query links on drafts.
+		CREATE INDEX idx_links_source_draft ON links (source_draft)
+		WHERE source_draft IS NOT NULL;
+
 		-- Index for backlinks.
-		CREATE INDEX links_target_document_id ON links (target_document_id);
+		CREATE INDEX idx_links_target_document_id ON links (target_document_id);
 
 		-- Virtual table for backlinks.
 		CREATE VIRTUAL TABLE backlinks USING transitive_closure (
@@ -164,10 +194,51 @@ var migrations = []string{
 	`,
 }
 
+// Open a connection pool for SQLite, enabling some needed functionality for our schema
+// like foreign keys.
+func Open(uri string, flags sqlite.OpenFlags, poolSize int) (*sqlitex.Pool, error) {
+	pool, err := sqlitex.Open(uri, flags, poolSize)
+	if err != nil {
+		return nil, err
+	}
+
+	prelude := []string{
+		"PRAGMA foreign_keys = ON;",
+		"PRAGMA synchronous = NORMAL;",
+		"PRAGMA journal_mode = WAL;",
+	}
+
+	if err := pool.ForEach(func(conn *sqlite.Conn) error {
+		for _, stmt := range prelude {
+			if err := sqlitex.ExecTransient(conn, stmt, nil); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return pool, nil
+}
+
 // Migrate the database applying migrations defined in this package.
 // migration is done in a transaction.
 func Migrate(conn *sqlite.Conn) error {
 	return migrate(conn, migrations)
+}
+
+// MigratePool is like Migrate but accepts a pool instead of a conn.
+// Often it's more convenient.
+func MigratePool(ctx context.Context, pool *sqlitex.Pool) error {
+	conn, release, err := pool.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	return Migrate(conn)
 }
 
 func migrate(conn *sqlite.Conn, migrations []string) error {

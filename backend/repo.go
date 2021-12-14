@@ -23,21 +23,17 @@ Repo layout v1 file tree:
 -- libp2p_id_ed25519 => device private key
 -- mintter_id_ed25519.pub => account public key
 - /db/
--- badger-v3/ => directory with badger-related data
 -- providing.db => BoltDB database for DHT provider
-- /drafts/ => directory with drafts
 - /autocert-cache/ => directory with autocert cache
 */
 
 const (
-	currentRepoLayoutVersion = "dev-11" // TODO: when layout is stable set a correct version here.
+	currentRepoLayoutVersion = "dev-18" // TODO: when layout is stable set a correct version here.
 
 	keysDir     = "keys"
 	dbDir       = "db"
-	draftsDir   = "drafts"
 	autocertDir = "autocert-cache"
 
-	badgerDirPath = dbDir + "/badger-v3"
 	sqliteDirPath = dbDir + "/mintter"
 
 	providingDBPath    = dbDir + "/providing.db"
@@ -110,9 +106,7 @@ func prepareRepo(path string, log *zap.Logger) (r *repo, err error) {
 		path,
 		filepath.Join(path, keysDir),
 		filepath.Join(path, dbDir),
-		filepath.Join(path, badgerDirPath),
 		filepath.Join(path, sqliteDirPath),
-		filepath.Join(path, draftsDir),
 		filepath.Join(path, autocertDir),
 	}
 
@@ -188,20 +182,12 @@ func (r *repo) sqlitePath() string {
 	return filepath.Join(r.path, sqliteDirPath, "db.sqlite")
 }
 
-func (r *repo) badgerDir() string {
-	return filepath.Join(r.path, badgerDirPath)
-}
-
 func (r *repo) providingDBPath() string {
 	return filepath.Join(r.path, providingDBPath)
 }
 
 func (r *repo) autocertDir() string {
 	return filepath.Join(r.path, autocertDir)
-}
-
-func (r *repo) draftsDir() string {
-	return filepath.Join(r.path, draftsDir)
 }
 
 func (r *repo) deviceKeyFromFile() (crypto.PrivKey, error) {

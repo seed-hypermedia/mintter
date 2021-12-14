@@ -5,7 +5,6 @@ import Long from "long";
 import { grpc } from "@improbable-eng/grpc-web";
 import _m0 from "protobufjs/minimal";
 import { BrowserHeaders } from "browser-headers";
-import { Timestamp } from "../../google/protobuf/timestamp";
 
 export interface GetAccountRequest {
   /** ID of the Account to be looked up. If empty - our own account will be returned. */
@@ -45,16 +44,6 @@ export interface Profile {
 export interface Device {
   /** CID-encoded Peer ID of this device. */
   peerId: string;
-  /** Time when this device was registered. */
-  registerTime: Date | undefined;
-}
-
-export interface DeviceRegistered {
-  proof: Uint8Array;
-}
-
-export interface ProfileUpdated {
-  profile: Profile | undefined;
 }
 
 const baseGetAccountRequest: object = { id: "" };
@@ -90,11 +79,8 @@ export const GetAccountRequest = {
 
   fromJSON(object: any): GetAccountRequest {
     const message = { ...baseGetAccountRequest } as GetAccountRequest;
-    if (object.id !== undefined && object.id !== null) {
-      message.id = String(object.id);
-    } else {
-      message.id = "";
-    }
+    message.id =
+      object.id !== undefined && object.id !== null ? String(object.id) : "";
     return message;
   },
 
@@ -104,13 +90,11 @@ export const GetAccountRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<GetAccountRequest>): GetAccountRequest {
+  fromPartial<I extends Exact<DeepPartial<GetAccountRequest>, I>>(
+    object: I
+  ): GetAccountRequest {
     const message = { ...baseGetAccountRequest } as GetAccountRequest;
-    if (object.id !== undefined && object.id !== null) {
-      message.id = object.id;
-    } else {
-      message.id = "";
-    }
+    message.id = object.id ?? "";
     return message;
   },
 };
@@ -154,16 +138,14 @@ export const ListAccountsRequest = {
 
   fromJSON(object: any): ListAccountsRequest {
     const message = { ...baseListAccountsRequest } as ListAccountsRequest;
-    if (object.pageSize !== undefined && object.pageSize !== null) {
-      message.pageSize = Number(object.pageSize);
-    } else {
-      message.pageSize = 0;
-    }
-    if (object.pageToken !== undefined && object.pageToken !== null) {
-      message.pageToken = String(object.pageToken);
-    } else {
-      message.pageToken = "";
-    }
+    message.pageSize =
+      object.pageSize !== undefined && object.pageSize !== null
+        ? Number(object.pageSize)
+        : 0;
+    message.pageToken =
+      object.pageToken !== undefined && object.pageToken !== null
+        ? String(object.pageToken)
+        : "";
     return message;
   },
 
@@ -174,18 +156,12 @@ export const ListAccountsRequest = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<ListAccountsRequest>): ListAccountsRequest {
+  fromPartial<I extends Exact<DeepPartial<ListAccountsRequest>, I>>(
+    object: I
+  ): ListAccountsRequest {
     const message = { ...baseListAccountsRequest } as ListAccountsRequest;
-    if (object.pageSize !== undefined && object.pageSize !== null) {
-      message.pageSize = object.pageSize;
-    } else {
-      message.pageSize = 0;
-    }
-    if (object.pageToken !== undefined && object.pageToken !== null) {
-      message.pageToken = object.pageToken;
-    } else {
-      message.pageToken = "";
-    }
+    message.pageSize = object.pageSize ?? 0;
+    message.pageToken = object.pageToken ?? "";
     return message;
   },
 };
@@ -233,17 +209,13 @@ export const ListAccountsResponse = {
 
   fromJSON(object: any): ListAccountsResponse {
     const message = { ...baseListAccountsResponse } as ListAccountsResponse;
-    message.accounts = [];
-    if (object.accounts !== undefined && object.accounts !== null) {
-      for (const e of object.accounts) {
-        message.accounts.push(Account.fromJSON(e));
-      }
-    }
-    if (object.nextPageToken !== undefined && object.nextPageToken !== null) {
-      message.nextPageToken = String(object.nextPageToken);
-    } else {
-      message.nextPageToken = "";
-    }
+    message.accounts = (object.accounts ?? []).map((e: any) =>
+      Account.fromJSON(e)
+    );
+    message.nextPageToken =
+      object.nextPageToken !== undefined && object.nextPageToken !== null
+        ? String(object.nextPageToken)
+        : "";
     return message;
   },
 
@@ -261,19 +233,13 @@ export const ListAccountsResponse = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<ListAccountsResponse>): ListAccountsResponse {
+  fromPartial<I extends Exact<DeepPartial<ListAccountsResponse>, I>>(
+    object: I
+  ): ListAccountsResponse {
     const message = { ...baseListAccountsResponse } as ListAccountsResponse;
-    message.accounts = [];
-    if (object.accounts !== undefined && object.accounts !== null) {
-      for (const e of object.accounts) {
-        message.accounts.push(Account.fromPartial(e));
-      }
-    }
-    if (object.nextPageToken !== undefined && object.nextPageToken !== null) {
-      message.nextPageToken = object.nextPageToken;
-    } else {
-      message.nextPageToken = "";
-    }
+    message.accounts =
+      object.accounts?.map((e) => Account.fromPartial(e)) || [];
+    message.nextPageToken = object.nextPageToken ?? "";
     return message;
   },
 };
@@ -330,22 +296,18 @@ export const Account = {
 
   fromJSON(object: any): Account {
     const message = { ...baseAccount } as Account;
-    message.devices = {};
-    if (object.id !== undefined && object.id !== null) {
-      message.id = String(object.id);
-    } else {
-      message.id = "";
-    }
-    if (object.profile !== undefined && object.profile !== null) {
-      message.profile = Profile.fromJSON(object.profile);
-    } else {
-      message.profile = undefined;
-    }
-    if (object.devices !== undefined && object.devices !== null) {
-      Object.entries(object.devices).forEach(([key, value]) => {
-        message.devices[key] = Device.fromJSON(value);
-      });
-    }
+    message.id =
+      object.id !== undefined && object.id !== null ? String(object.id) : "";
+    message.profile =
+      object.profile !== undefined && object.profile !== null
+        ? Profile.fromJSON(object.profile)
+        : undefined;
+    message.devices = Object.entries(object.devices ?? {}).reduce<{
+      [key: string]: Device;
+    }>((acc, [key, value]) => {
+      acc[key] = Device.fromJSON(value);
+      return acc;
+    }, {});
     return message;
   },
 
@@ -365,26 +327,21 @@ export const Account = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Account>): Account {
+  fromPartial<I extends Exact<DeepPartial<Account>, I>>(object: I): Account {
     const message = { ...baseAccount } as Account;
-    message.devices = {};
-    if (object.id !== undefined && object.id !== null) {
-      message.id = object.id;
-    } else {
-      message.id = "";
-    }
-    if (object.profile !== undefined && object.profile !== null) {
-      message.profile = Profile.fromPartial(object.profile);
-    } else {
-      message.profile = undefined;
-    }
-    if (object.devices !== undefined && object.devices !== null) {
-      Object.entries(object.devices).forEach(([key, value]) => {
-        if (value !== undefined) {
-          message.devices[key] = Device.fromPartial(value);
-        }
-      });
-    }
+    message.id = object.id ?? "";
+    message.profile =
+      object.profile !== undefined && object.profile !== null
+        ? Profile.fromPartial(object.profile)
+        : undefined;
+    message.devices = Object.entries(object.devices ?? {}).reduce<{
+      [key: string]: Device;
+    }>((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = Device.fromPartial(value);
+      }
+      return acc;
+    }, {});
     return message;
   },
 };
@@ -431,16 +388,12 @@ export const Account_DevicesEntry = {
 
   fromJSON(object: any): Account_DevicesEntry {
     const message = { ...baseAccount_DevicesEntry } as Account_DevicesEntry;
-    if (object.key !== undefined && object.key !== null) {
-      message.key = String(object.key);
-    } else {
-      message.key = "";
-    }
-    if (object.value !== undefined && object.value !== null) {
-      message.value = Device.fromJSON(object.value);
-    } else {
-      message.value = undefined;
-    }
+    message.key =
+      object.key !== undefined && object.key !== null ? String(object.key) : "";
+    message.value =
+      object.value !== undefined && object.value !== null
+        ? Device.fromJSON(object.value)
+        : undefined;
     return message;
   },
 
@@ -452,18 +405,15 @@ export const Account_DevicesEntry = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Account_DevicesEntry>): Account_DevicesEntry {
+  fromPartial<I extends Exact<DeepPartial<Account_DevicesEntry>, I>>(
+    object: I
+  ): Account_DevicesEntry {
     const message = { ...baseAccount_DevicesEntry } as Account_DevicesEntry;
-    if (object.key !== undefined && object.key !== null) {
-      message.key = object.key;
-    } else {
-      message.key = "";
-    }
-    if (object.value !== undefined && object.value !== null) {
-      message.value = Device.fromPartial(object.value);
-    } else {
-      message.value = undefined;
-    }
+    message.key = object.key ?? "";
+    message.value =
+      object.value !== undefined && object.value !== null
+        ? Device.fromPartial(object.value)
+        : undefined;
     return message;
   },
 };
@@ -513,21 +463,16 @@ export const Profile = {
 
   fromJSON(object: any): Profile {
     const message = { ...baseProfile } as Profile;
-    if (object.alias !== undefined && object.alias !== null) {
-      message.alias = String(object.alias);
-    } else {
-      message.alias = "";
-    }
-    if (object.bio !== undefined && object.bio !== null) {
-      message.bio = String(object.bio);
-    } else {
-      message.bio = "";
-    }
-    if (object.email !== undefined && object.email !== null) {
-      message.email = String(object.email);
-    } else {
-      message.email = "";
-    }
+    message.alias =
+      object.alias !== undefined && object.alias !== null
+        ? String(object.alias)
+        : "";
+    message.bio =
+      object.bio !== undefined && object.bio !== null ? String(object.bio) : "";
+    message.email =
+      object.email !== undefined && object.email !== null
+        ? String(object.email)
+        : "";
     return message;
   },
 
@@ -539,23 +484,11 @@ export const Profile = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Profile>): Profile {
+  fromPartial<I extends Exact<DeepPartial<Profile>, I>>(object: I): Profile {
     const message = { ...baseProfile } as Profile;
-    if (object.alias !== undefined && object.alias !== null) {
-      message.alias = object.alias;
-    } else {
-      message.alias = "";
-    }
-    if (object.bio !== undefined && object.bio !== null) {
-      message.bio = object.bio;
-    } else {
-      message.bio = "";
-    }
-    if (object.email !== undefined && object.email !== null) {
-      message.email = object.email;
-    } else {
-      message.email = "";
-    }
+    message.alias = object.alias ?? "";
+    message.bio = object.bio ?? "";
+    message.email = object.email ?? "";
     return message;
   },
 };
@@ -570,12 +503,6 @@ export const Device = {
     if (message.peerId !== "") {
       writer.uint32(10).string(message.peerId);
     }
-    if (message.registerTime !== undefined) {
-      Timestamp.encode(
-        toTimestamp(message.registerTime),
-        writer.uint32(18).fork()
-      ).ldelim();
-    }
     return writer;
   },
 
@@ -589,11 +516,6 @@ export const Device = {
         case 1:
           message.peerId = reader.string();
           break;
-        case 2:
-          message.registerTime = fromTimestamp(
-            Timestamp.decode(reader, reader.uint32())
-          );
-          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -604,161 +526,22 @@ export const Device = {
 
   fromJSON(object: any): Device {
     const message = { ...baseDevice } as Device;
-    if (object.peerId !== undefined && object.peerId !== null) {
-      message.peerId = String(object.peerId);
-    } else {
-      message.peerId = "";
-    }
-    if (object.registerTime !== undefined && object.registerTime !== null) {
-      message.registerTime = fromJsonTimestamp(object.registerTime);
-    } else {
-      message.registerTime = undefined;
-    }
+    message.peerId =
+      object.peerId !== undefined && object.peerId !== null
+        ? String(object.peerId)
+        : "";
     return message;
   },
 
   toJSON(message: Device): unknown {
     const obj: any = {};
     message.peerId !== undefined && (obj.peerId = message.peerId);
-    message.registerTime !== undefined &&
-      (obj.registerTime = message.registerTime.toISOString());
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Device>): Device {
+  fromPartial<I extends Exact<DeepPartial<Device>, I>>(object: I): Device {
     const message = { ...baseDevice } as Device;
-    if (object.peerId !== undefined && object.peerId !== null) {
-      message.peerId = object.peerId;
-    } else {
-      message.peerId = "";
-    }
-    if (object.registerTime !== undefined && object.registerTime !== null) {
-      message.registerTime = object.registerTime;
-    } else {
-      message.registerTime = undefined;
-    }
-    return message;
-  },
-};
-
-const baseDeviceRegistered: object = {};
-
-export const DeviceRegistered = {
-  encode(
-    message: DeviceRegistered,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
-    if (message.proof.length !== 0) {
-      writer.uint32(10).bytes(message.proof);
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): DeviceRegistered {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseDeviceRegistered } as DeviceRegistered;
-    message.proof = new Uint8Array();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          message.proof = reader.bytes();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(object: any): DeviceRegistered {
-    const message = { ...baseDeviceRegistered } as DeviceRegistered;
-    message.proof = new Uint8Array();
-    if (object.proof !== undefined && object.proof !== null) {
-      message.proof = bytesFromBase64(object.proof);
-    }
-    return message;
-  },
-
-  toJSON(message: DeviceRegistered): unknown {
-    const obj: any = {};
-    message.proof !== undefined &&
-      (obj.proof = base64FromBytes(
-        message.proof !== undefined ? message.proof : new Uint8Array()
-      ));
-    return obj;
-  },
-
-  fromPartial(object: DeepPartial<DeviceRegistered>): DeviceRegistered {
-    const message = { ...baseDeviceRegistered } as DeviceRegistered;
-    if (object.proof !== undefined && object.proof !== null) {
-      message.proof = object.proof;
-    } else {
-      message.proof = new Uint8Array();
-    }
-    return message;
-  },
-};
-
-const baseProfileUpdated: object = {};
-
-export const ProfileUpdated = {
-  encode(
-    message: ProfileUpdated,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
-    if (message.profile !== undefined) {
-      Profile.encode(message.profile, writer.uint32(18).fork()).ldelim();
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): ProfileUpdated {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseProfileUpdated } as ProfileUpdated;
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 2:
-          message.profile = Profile.decode(reader, reader.uint32());
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(object: any): ProfileUpdated {
-    const message = { ...baseProfileUpdated } as ProfileUpdated;
-    if (object.profile !== undefined && object.profile !== null) {
-      message.profile = Profile.fromJSON(object.profile);
-    } else {
-      message.profile = undefined;
-    }
-    return message;
-  },
-
-  toJSON(message: ProfileUpdated): unknown {
-    const obj: any = {};
-    message.profile !== undefined &&
-      (obj.profile = message.profile
-        ? Profile.toJSON(message.profile)
-        : undefined);
-    return obj;
-  },
-
-  fromPartial(object: DeepPartial<ProfileUpdated>): ProfileUpdated {
-    const message = { ...baseProfileUpdated } as ProfileUpdated;
-    if (object.profile !== undefined && object.profile !== null) {
-      message.profile = Profile.fromPartial(object.profile);
-    } else {
-      message.profile = undefined;
-    }
+    message.peerId = object.peerId ?? "";
     return message;
   },
 };
@@ -976,40 +759,6 @@ export class GrpcWebImpl {
   }
 }
 
-declare var self: any | undefined;
-declare var window: any | undefined;
-declare var global: any | undefined;
-var globalThis: any = (() => {
-  if (typeof globalThis !== "undefined") return globalThis;
-  if (typeof self !== "undefined") return self;
-  if (typeof window !== "undefined") return window;
-  if (typeof global !== "undefined") return global;
-  throw "Unable to locate global object";
-})();
-
-const atob: (b64: string) => string =
-  globalThis.atob ||
-  ((b64) => globalThis.Buffer.from(b64, "base64").toString("binary"));
-function bytesFromBase64(b64: string): Uint8Array {
-  const bin = atob(b64);
-  const arr = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; ++i) {
-    arr[i] = bin.charCodeAt(i);
-  }
-  return arr;
-}
-
-const btoa: (bin: string) => string =
-  globalThis.btoa ||
-  ((bin) => globalThis.Buffer.from(bin, "binary").toString("base64"));
-function base64FromBytes(arr: Uint8Array): string {
-  const bin: string[] = [];
-  for (const byte of arr) {
-    bin.push(String.fromCharCode(byte));
-  }
-  return btoa(bin.join(""));
-}
-
 type Builtin =
   | Date
   | Function
@@ -1018,6 +767,7 @@ type Builtin =
   | number
   | boolean
   | undefined;
+
 type DeepPartial<T> = T extends Builtin
   ? T
   : T extends Array<infer U>
@@ -1028,27 +778,13 @@ type DeepPartial<T> = T extends Builtin
   ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
-function toTimestamp(date: Date): Timestamp {
-  const seconds = date.getTime() / 1_000;
-  const nanos = (date.getTime() % 1_000) * 1_000_000;
-  return { seconds, nanos };
-}
-
-function fromTimestamp(t: Timestamp): Date {
-  let millis = t.seconds * 1_000;
-  millis += t.nanos / 1_000_000;
-  return new Date(millis);
-}
-
-function fromJsonTimestamp(o: any): Date {
-  if (o instanceof Date) {
-    return o;
-  } else if (typeof o === "string") {
-    return new Date(o);
-  } else {
-    return fromTimestamp(Timestamp.fromJSON(o));
-  }
-}
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+type Exact<P, I extends P> = P extends Builtin
+  ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & Record<
+        Exclude<keyof I, KeysOfUnion<P>>,
+        never
+      >;
 
 if (_m0.util.Long !== Long) {
   _m0.util.Long = Long as any;

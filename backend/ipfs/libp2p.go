@@ -1,4 +1,4 @@
-package ipfsutil
+package ipfs
 
 import (
 	"context"
@@ -180,6 +180,13 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.A
 	n.clean.Add(n.Host)
 
 	return n, nil
+}
+
+func (n *Libp2p) AddrInfo() peer.AddrInfo {
+	return peer.AddrInfo{
+		ID:    n.Host.ID(),
+		Addrs: n.Host.Addrs(),
+	}
 }
 
 // Bootstrap blocks, and performs bootstrapping process for the node,

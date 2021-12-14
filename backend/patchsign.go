@@ -1,7 +1,7 @@
 package backend
 
 import (
-	"mintter/backend/ipfsutil"
+	"mintter/backend/ipfs"
 
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
@@ -39,10 +39,7 @@ func signPatch(p Patch, k crypto.PrivKey) (signedPatch, error) {
 		return signedPatch{}, err
 	}
 
-	blk, err := ipfsutil.NewBlock(cid.DagCBOR, signed.data)
-	if err != nil {
-		return signedPatch{}, err
-	}
+	blk := ipfs.NewBlock(cid.DagCBOR, signed.data)
 
 	pid, err := peer.IDFromPublicKey(signed.pubKey)
 	if err != nil {

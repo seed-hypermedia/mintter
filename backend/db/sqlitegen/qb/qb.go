@@ -130,8 +130,19 @@ func List(vv ...interface{}) Opt {
 	}
 }
 
-// Sub creates a subquery. It accepts the same arguments as MakeQuery and List.
-func Sub(vv ...interface{}) Opt {
+// ListColShort is a SQL list of column names without their table identifiers.
+func ListColShort(cols ...sqlitegen.Column) Opt {
+	short := make([]interface{}, len(cols))
+
+	for i, c := range cols {
+		short[i] = c.ShortName()
+	}
+
+	return List(short...)
+}
+
+// SubQuery creates a subquery. It accepts the same arguments as MakeQuery and List.
+func SubQuery(vv ...interface{}) Opt {
 	return func(s sqlitegen.Schema, qb *queryBuilder) {
 		qb.WriteRune('(')
 		for i, v := range vv {

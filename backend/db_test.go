@@ -7,21 +7,21 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 
-	"mintter/backend/badgergraph"
-	"mintter/backend/db/graphschema"
+	"mintter/backend/db/sqliteschema"
 	"mintter/backend/testutil"
 )
 
 func TestGraphStoreDevice(t *testing.T) {
-	bdb := testutil.MakeBadgerV3(t)
-	db, err := badgergraph.NewDB(bdb, "mtt-test", graphschema.Schema())
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, db.Close())
-	})
 	ctx := context.Background()
 
-	graph := &graphdb{db: db}
+	pool, err := sqliteschema.Open("file::memory:?mode=memory", 0, 1)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, pool.Close())
+	})
+	require.NoError(t, sqliteschema.MigratePool(ctx, pool))
+
+	graph := &graphdb{pool: pool}
 
 	in := map[AccountID][]DeviceID{
 		AccountID(testutil.MakeCIDWithCodec(t, codecAccountID, "a1")): {
@@ -42,7 +42,7 @@ func TestGraphStoreDevice(t *testing.T) {
 		}
 	}
 
-	all, err := graph.ListAccountDevices()
+	all, err := graph.ListAccountDevices(ctx)
 	require.NoError(t, err)
 	require.Equal(t, len(in), len(all))
 
@@ -64,19 +64,4 @@ func TestGraphStoreDevice(t *testing.T) {
 	for k, v := range all {
 		listsEqual(t, in[k], v)
 	}
-}
-
-func TestGraphListAccountDevices(t *testing.T) {
-	bdb := testutil.MakeBadgerV3(t)
-	db, err := badgergraph.NewDB(bdb, "mtt-test", graphschema.Schema())
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, db.Close())
-	})
-
-	graph := &graphdb{db: db}
-
-	list, err := graph.ListAccountDevices()
-	require.NoError(t, err)
-	require.Nil(t, list)
 }

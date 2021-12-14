@@ -109,6 +109,18 @@ func Open(uri string, flags sqlite.OpenFlags, poolSize int) (pool *Pool, err err
 	return p, nil
 }
 
+// ForEach applies fn to all connections in the pool. Can be used to enable some
+// functionality (like foreign keys), before actually using the pool.
+func (p *Pool) ForEach(fn func(conn *sqlite.Conn) error) error {
+	for conn := range p.all {
+		if err := fn(conn); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Conn is a like Get, but returns an error instead of nil Conn. It also returns
 // the cancel func as a second value for convenience.
 //

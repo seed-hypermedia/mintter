@@ -3,15 +3,14 @@ package backend
 import (
 	"container/heap"
 	"fmt"
-
-	"mintter/backend/ipfsutil"
+	"mintter/backend/ipfs"
 
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"google.golang.org/protobuf/proto"
 )
 
-type state struct {
+type changeset struct {
 	obj  cid.Cid
 	size int
 	pos  int
@@ -24,8 +23,8 @@ type state struct {
 	seqs        map[cid.Cid]uint64
 }
 
-func newState(obj cid.Cid, byPeer [][]signedPatch) *state {
-	s := state{
+func newChangeset(obj cid.Cid, byPeer [][]signedPatch) *changeset {
+	s := changeset{
 		obj:    obj,
 		byPeer: byPeer,
 		seqs:   make(map[cid.Cid]uint64, len(byPeer)),
@@ -49,13 +48,13 @@ func newState(obj cid.Cid, byPeer [][]signedPatch) *state {
 }
 
 // IsEmpty checks wether CRDT state is empty.
-func (s *state) IsEmpty() bool {
+func (s *changeset) IsEmpty() bool {
 	return s.size == 0
 }
 
 // Merge the underlying logs from multiple peers according to their logical timestamps.
 // This is a convenience function. For more efficiency use the iterator methods provided by this type.
-func (s *state) Merge() []signedPatch {
+func (s *changeset) Merge() []signedPatch {
 	if s.size == 0 {
 		return nil
 	}
@@ -71,16 +70,16 @@ func (s *state) Merge() []signedPatch {
 }
 
 // Next checks if there's another item in the iterator.
-func (s *state) Next() bool {
+func (s *changeset) Next() bool {
 	return s.heap.Len() != 0
 }
 
 // Item returns the item on the current position of the iterator.
-func (s *state) Item() signedPatch {
+func (s *changeset) Item() signedPatch {
 	curr := heap.Pop(s.heap).(patchHeapItem)
 
 	if !curr.SignedValue().ObjectID.Equals(s.obj) {
-		panic("BUG: not the same object")
+		panic("BUG: not the same object want: " + s.obj.String() + " got: " + curr.SignedValue().ObjectID.String())
 	}
 
 	sp := curr.SignedValue()
@@ -102,12 +101,12 @@ func (s *state) Item() signedPatch {
 
 // NewPatch creates a new patch with the dependencies and logical timestamps that were in the CRDT state.
 // This must only be called after iterating over all the existing patches, otherwise it will panic.
-func (s *state) NewPatch(author cid.Cid, key crypto.PrivKey, k PatchKind, body []byte) (signedPatch, error) {
+func (s *changeset) NewPatch(author cid.Cid, key crypto.PrivKey, k PatchKind, body []byte) (signedPatch, error) {
 	if s.pos != s.size {
 		panic("BUG: must call new patch only after iterating over all the existing patches")
 	}
 
-	peer, err := ipfsutil.PubKeyAsCID(key.GetPublic())
+	peer, err := ipfs.PubKeyAsCID(key.GetPublic())
 	if err != nil {
 		return signedPatch{}, err
 	}
@@ -142,8 +141,18 @@ func (s *state) NewPatch(author cid.Cid, key crypto.PrivKey, k PatchKind, body [
 	return signed, nil
 }
 
-func (s *state) NewProtoPatch(author cid.Cid, key crypto.PrivKey, msg proto.Message) (signedPatch, error) {
-	data, err := proto.Marshal(msg)
+func (s *changeset) NewProtoPatch(author cid.Cid, key crypto.PrivKey, msg proto.Message) (signedPatch, error) {
+	var (
+		data []byte
+		err  error
+	)
+
+	if vtmsg, ok := msg.(interface{ MarshalVT() ([]byte, error) }); ok {
+		data, err = vtmsg.MarshalVT()
+	} else {
+		data, err = proto.Marshal(msg)
+	}
+
 	if err != nil {
 		return signedPatch{}, err
 	}

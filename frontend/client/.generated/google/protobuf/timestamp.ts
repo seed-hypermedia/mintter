@@ -150,16 +150,14 @@ export const Timestamp = {
 
   fromJSON(object: any): Timestamp {
     const message = { ...baseTimestamp } as Timestamp;
-    if (object.seconds !== undefined && object.seconds !== null) {
-      message.seconds = Number(object.seconds);
-    } else {
-      message.seconds = 0;
-    }
-    if (object.nanos !== undefined && object.nanos !== null) {
-      message.nanos = Number(object.nanos);
-    } else {
-      message.nanos = 0;
-    }
+    message.seconds =
+      object.seconds !== undefined && object.seconds !== null
+        ? Number(object.seconds)
+        : 0;
+    message.nanos =
+      object.nanos !== undefined && object.nanos !== null
+        ? Number(object.nanos)
+        : 0;
     return message;
   },
 
@@ -170,18 +168,12 @@ export const Timestamp = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Timestamp>): Timestamp {
+  fromPartial<I extends Exact<DeepPartial<Timestamp>, I>>(
+    object: I
+  ): Timestamp {
     const message = { ...baseTimestamp } as Timestamp;
-    if (object.seconds !== undefined && object.seconds !== null) {
-      message.seconds = object.seconds;
-    } else {
-      message.seconds = 0;
-    }
-    if (object.nanos !== undefined && object.nanos !== null) {
-      message.nanos = object.nanos;
-    } else {
-      message.nanos = 0;
-    }
+    message.seconds = object.seconds ?? 0;
+    message.nanos = object.nanos ?? 0;
     return message;
   },
 };
@@ -205,6 +197,7 @@ type Builtin =
   | number
   | boolean
   | undefined;
+
 type DeepPartial<T> = T extends Builtin
   ? T
   : T extends Array<infer U>
@@ -214,6 +207,14 @@ type DeepPartial<T> = T extends Builtin
   : T extends {}
   ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
+
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+type Exact<P, I extends P> = P extends Builtin
+  ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & Record<
+        Exclude<keyof I, KeysOfUnion<P>>,
+        never
+      >;
 
 function longToNumber(long: Long): number {
   if (long.gt(Number.MAX_SAFE_INTEGER)) {
