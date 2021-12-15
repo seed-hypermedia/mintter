@@ -27,7 +27,7 @@ func TestResolvePatchesE2E(t *testing.T) {
 
 	b1 := changes[len(changes)-1].blk
 
-	connectPeers(t, ctx, alice, bob, false)
+	connectPeers(ctx, t, alice, bob, false)
 
 	{
 		_, err := bob.p2p.bs.Blockstore().Get(ctx, b1.Cid())

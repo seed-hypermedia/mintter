@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"reflect"
 	"sync"
 	"time"
@@ -33,6 +34,7 @@ import (
 	"mintter/backend/cleanup"
 	"mintter/backend/ipfs"
 	"mintter/backend/ipfs/sqlitebs"
+	"mintter/backend/lndhub"
 )
 
 // Log messages.
@@ -48,12 +50,11 @@ const accountsPullInterval = time.Minute
 type backend struct {
 	sqlitePatchStore
 
-	log  *zap.Logger
-	repo *repo
-	db   *graphdb
-	p2p  *p2pNode
-	pool *sqlitex.Pool
-
+	log       *zap.Logger
+	repo      *repo
+	db        *graphdb
+	p2p       *p2pNode
+	pool      *sqlitex.Pool
 	startTime time.Time
 
 	// We don't want any concurrent registration calls happening,
@@ -66,6 +67,9 @@ type backend struct {
 	rpc grpcConnections
 	// dialOpts must only be used after P2P node is ready.
 	dialOpts []grpc.DialOption
+
+	// the client to connect to lightning wallets
+	lightningClient *lnclient
 
 	watchMu  sync.RWMutex
 	watchers map[chan<- interface{}]struct{}
@@ -82,6 +86,8 @@ func newBackend(log *zap.Logger, pool *sqlitex.Pool, r *repo, p2p *p2pNode) *bac
 		startTime: time.Now().UTC(),
 
 		dialOpts: makeDialOpts(p2p.libp2p.Host),
+
+		lightningClient: &lnclient{Lndhub: lndhub.NewClient(&http.Client{})},
 
 		sqlitePatchStore: sqlitePatchStore{db: pool, bs: p2p.bs.Blockstore()},
 	}
