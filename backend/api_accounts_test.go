@@ -37,7 +37,7 @@ func TestAPIGetAccount_Other(t *testing.T) {
 
 	alice := newAccountsAPI(aliceb)
 
-	connectPeers(t, ctx, aliceb, bobb, true)
+	connectPeers(ctx, t, aliceb, bobb, true)
 
 	acc, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{
 		Id: bobb.repo.acc.id.String(),
@@ -79,7 +79,7 @@ func TestAPIListAccounts(t *testing.T) {
 	bob := makeTestBackend(t, "bob", true)
 	bapi := newAccountsAPI(bob)
 
-	connectPeers(t, ctx, alice, bob, true)
+	connectPeers(ctx, t, alice, bob, true)
 
 	list, err = bapi.ListAccounts(ctx, &accounts.ListAccountsRequest{})
 	require.NoError(t, err)

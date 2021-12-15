@@ -2,7 +2,7 @@ package resolver
 
 import (
 	"context"
-	"mintter/backend/lndhub"
+	"mintter/backend/wallet"
 )
 
 // This file will not be regenerated automatically.
@@ -13,7 +13,14 @@ import (
 // implementing domain business logic inside the resolver. Think if this abstraction is needed at all.
 // But let's be careful, and not make the resolver be very aware of the intricacies of our domain logic.
 type Service interface {
-	ConfigureLNDHub(context.Context, lndhub.Credentials) error
+	InsertWallet(context.Context, string, string, string) (wallet.Wallet, error)
+	ListWallets(context.Context) ([]wallet.Wallet, error)
+	DeleteWallet(context.Context, string) error
+	UpdateWalletName(context.Context, string, string) (wallet.Wallet, error)
+	SetDefaultWallet(context.Context, string) (wallet.Wallet, error)
+	GetDefaultWallet(context.Context) (wallet.Wallet, error)
+	RequestInvoice(context.Context, string, int64, *string) (string, error)
+	PayInvoice(context.Context, string, *string, *uint64) (string, error)
 }
 
 // Resolver is the root of the GraphQL API.

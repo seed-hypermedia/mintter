@@ -22,14 +22,21 @@ func (b Satoshis) MarshalGQL(w io.Writer) {
 // UnmarshalGQL implements the graphql.Unmarshaler interface found in
 // gqlgen, allowing the type to be received by a graphql client and unmarshaled.
 func (b *Satoshis) UnmarshalGQL(v interface{}) error {
-	check, ok := v.(json.Number)
-	if !ok {
-		return errors.New("BigInt must be a valid integer value")
-	}
+	var err error
 
-	conv, err := check.Int64()
-	if err != nil {
-		return err
+	// check first if it is already in int64
+	conv, ok := v.(int64)
+
+	if !ok {
+		check, ok := v.(json.Number)
+		if !ok {
+			return errors.New("BigInt must be a valid integer value")
+		}
+
+		conv, err = check.Int64()
+		if err != nil {
+			return err
+		}
 	}
 
 	*b = Satoshis(conv)

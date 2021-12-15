@@ -51,7 +51,6 @@ var migrations = []string{
 			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
 			UNIQUE (multihash, codec)
 		);
-
 		-- Stores data about Mintter Accounts.
 		CREATE TABLE accounts (
 			-- Short numerical ID to be used internally.
@@ -67,7 +66,6 @@ var migrations = []string{
 			-- Currently known value for the profile email.
 			email TEXT
 		);
-
 		-- Stores data about Mintter Devices.
 		CREATE TABLE devices (
 			-- Short numerical ID to be used internally.
@@ -111,7 +109,6 @@ var migrations = []string{
 			ipfs_block_id INTEGER REFERENCES ipfs_blocks NOT NULL,
 			PRIMARY KEY (object_id, device_id)
 		);
-
 		-- Stores changes for objects.
 		CREATE TABLE changes (
 			-- Alias to the rowid for simpler indexing.
@@ -191,6 +188,29 @@ var migrations = []string{
 			idcolumn = 'source_document_id',
 			parentcolumn = 'target_document_id'
 		);
+		-- Stores Lightning wallets both externals (imported wallets like bluewallet
+		-- based on lndhub) and internals (based on the LND embedded node).
+		CREATE TABLE wallets (
+			-- Wallet unique ID. Is the url hash in case of lndhub or the pubkey in case of LND.
+			id TEXT PRIMARY KEY,
+			-- Address of the LND node backing up this wallet. In case lndhub, this will be the 
+			-- URL to connect via rest api. In case LND wallet, this will be the clearnet/onion address.
+			address TEXT NOT NULL,
+			-- The type of the wallet. Either lnd or lndhub
+			type TEXT CHECK( type IN ('lnd','lndhub') ) NOT NULL DEFAULT 'lndhub',
+			-- The Authentication of the wallet. api token in case lndhub and macaroon 
+			-- bytes in case lnd. This blob should be encrypted
+			auth BLOB NOT NULL,
+			-- Human readable name to help the user identify each wallet
+			name TEXT NOT NULL,
+			-- The balance in satoshis
+			balance INTEGER DEFAULT 0
+		);
+		-- Stores global metadata/configuration about any other table
+		CREATE TABLE global_meta (
+    		key TEXT PRIMARY KEY,
+    		value TEXT
+		) WITHOUT ROWID;
 	`,
 }
 
