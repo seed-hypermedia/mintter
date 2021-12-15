@@ -1,10 +1,11 @@
 import { isEmbed, isLink } from '@mintter/mttast'
 import { document } from '@mintter/mttast-builder'
 import { Box } from '@mintter/ui/box'
-import { Button } from '@mintter/ui/button'
 import { Icon } from '@mintter/ui/icon'
+import { styled } from '@mintter/ui/stitches.config'
 import { Text } from '@mintter/ui/text'
 import { useActor } from '@xstate/react'
+import { getDateFormat } from 'frontend/app/src/utils/get-format-date'
 import { MouseEvent, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { visit } from 'unist-util-visit'
@@ -12,13 +13,11 @@ import { useLocation } from 'wouter'
 import { createModel } from 'xstate/lib/model'
 import { MINTTER_LINK_PREFIX } from '../../constants'
 import { Editor } from '../../editor'
-import { ContextMenu } from '../../editor/context-menu'
+import { Dropdown } from '../../editor/dropdown'
 import { getEmbedIds, useEmbed } from '../../editor/embed'
 import { EditorMode } from '../../editor/plugin-utils'
 import { copyTextToClipboard } from '../../editor/statement'
 import { useAccount } from '../../hooks'
-import { getDateFormat } from '../../utils/get-format-date'
-import { Avatar } from '../avatar'
 import { useBookmarks, useBookmarksService } from '../bookmarks'
 import { ScrollArea } from '../scroll-area'
 import { useAnnotations, useIsSidepanelOpen, useSidepanel } from './sidepanel-context'
@@ -186,7 +185,6 @@ export function SidepanelItem({ item, remove = true }: SidepanelItemProps) {
   const { data: author } = useAccount(data.document.author, {
     enabled: !!data.document.author,
   })
-  const { send } = useSidepanel()
   const bookmarksService = useBookmarksService()
   const [, bookmarksSend] = useActor(bookmarksService)
   const [, setLocation] = useLocation()
@@ -219,73 +217,107 @@ export function SidepanelItem({ item, remove = true }: SidepanelItemProps) {
    * @body this context menu code is repeated in many components now, we need a wrapper
    */
   return (
-    <ContextMenu.Root>
-      <ContextMenu.Trigger>
-        <Box
-          ref={ref}
-          css={{
-            padding: '$4',
-            marginTop: '$5',
-            border: '1px solid rgba(0,0,0,0.1)',
-            borderRadius: '$2',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '$4',
-            transition: 'all ease-in-out 0.1s',
-          }}
-        >
-          <Box css={{ display: 'flex', gap: '$4', alignItems: 'center' }}>
-            <Box css={{ display: 'flex', alignItems: 'center', gap: '$3' }}>
-              <Avatar size="1" />
-              <Text size="1">{author?.profile?.alias}</Text>
-            </Box>
-            <Text size="1" color="muted">
-              |
+    <Box
+      ref={ref}
+      css={{
+        position: 'relative',
+        marginTop: '$5',
+        border: '1px solid rgba(0,0,0,0.1)',
+        borderRadius: '$2',
+        display: 'flex',
+        overflow: 'hidden',
+        flexDirection: 'column',
+        gap: '$4',
+        transition: 'all ease-in-out 0.1s',
+        backgroundColor: '$background-alt',
+      }}
+    >
+      <Box css={{ flex: 1, paddingVertical: '$6', paddingHorizontal: '$4' }}>
+        <Editor
+          value={showDocument ? data.document.content : [data.statement]}
+          mode={showDocument ? EditorMode.Publication : EditorMode.Mention}
+        />
+      </Box>
+      <Box
+        css={{
+          background: '$background-alt',
+          flex: 'none',
+          borderTop: '1px solid rgba(0,0,0,0.1)',
+          padding: '$4',
+          $$gap: '16px',
+          display: 'flex',
+          gap: '$$gap',
+          alignItems: 'center',
+          '& *': {
+            position: 'relative',
+          },
+          '& *:not(:first-child):before': {
+            content: `"|"`,
+            color: '$text-muted',
+            opacity: 0.5,
+            position: 'absolute',
+            left: '-10px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+          },
+        }}
+      >
+        {author && (
+          <>
+            <Text size="1" color="muted" css={{ paddingRight: '$3' }}>
+              <span>Signed by </span>
+              <span style={{ textDecoration: 'underline' }}>{author.profile?.alias}</span>
             </Text>
-            <Text size="1" color="muted">
-              {getDateFormat(data.document, 'publishTime')}
-            </Text>
-            <Text size="1" color="muted">
-              |
-            </Text>
-            <Button size="1" color="primary" variant="ghost" onClick={toggleDocument}>
-              {showDocument ? 'Collapse' : 'Expand'} Document
-            </Button>
-            {remove && (
-              <>
-                <Text size="1" color="muted">
-                  |
-                </Text>
-                <Button
-                  size="1"
-                  variant="ghost"
-                  color="primary"
-                  onClick={() => bookmarksSend({ type: 'REMOVE_BOOKMARK', link: item })}
-                >
-                  remove
-                </Button>
-              </>
-            )}
-          </Box>
-          <Text size="4" fontWeight="bold">
-            {data.document.title}
-          </Text>
-          <Editor
-            value={showDocument ? data.document.content : [data.statement]}
-            mode={showDocument ? EditorMode.Publication : EditorMode.Mention}
-          />
-        </Box>
-      </ContextMenu.Trigger>
-      <ContextMenu.Content alignOffset={-5}>
-        <ContextMenu.Item onSelect={onCopy}>
-          <Icon name="Copy" size="1" />
-          <Text size="2">Copy Block Reference</Text>
-        </ContextMenu.Item>
-        <ContextMenu.Item onSelect={() => onGoToPublication(item)}>
-          <Icon name="ArrowTopRight" size="1" />
-          <Text size="2">Open in main Panel</Text>
-        </ContextMenu.Item>
-      </ContextMenu.Content>
-    </ContextMenu.Root>
+          </>
+        )}
+        <Text size="1" color="muted" css={{ paddingRight: '$3' }}>
+          Created on: {getDateFormat(data.document, 'publishTime')}
+        </Text>
+      </Box>
+      <Dropdown.Root modal={false}>
+        <Dropdown.Trigger asChild>
+          <ElementDropdown data-trigger>
+            <Icon name="MoreHorizontal" size="1" color="muted" />
+          </ElementDropdown>
+        </Dropdown.Trigger>
+        <Dropdown.Content portalled align="start" side="bottom" css={{ minWidth: 220 }}>
+          <Dropdown.Item onSelect={onCopy}>
+            <Icon name="Copy" size="1" />
+            <Text size="2">Copy Block Reference</Text>
+          </Dropdown.Item>
+          <Dropdown.Item onSelect={() => onGoToPublication(item)}>
+            <Icon name="ArrowTopRight" size="1" />
+            <Text size="2">Open in main Panel</Text>
+          </Dropdown.Item>
+          {remove && (
+            <Dropdown.Item onSelect={() => bookmarksSend({ type: 'REMOVE_BOOKMARK', link: item })}>
+              <Icon name="Close" size="1" />
+              <Text size="2">Remove</Text>
+            </Dropdown.Item>
+          )}
+          <Dropdown.Item onSelect={toggleDocument}>
+            <Icon name={showDocument ? 'ArrowDown' : 'ArrowUp'} size="1" />
+            <Text size="2">{showDocument ? 'Collapse' : 'Expand'} Document</Text>
+          </Dropdown.Item>
+        </Dropdown.Content>
+      </Dropdown.Root>
+    </Box>
   )
 }
+
+var ElementDropdown = styled('button', {
+  border: 'none',
+  position: 'absolute',
+  right: 4,
+  top: 4,
+  backgroundColor: '$background-alt',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: '$2',
+  transition: 'all ease-in-out 0.1s',
+  '&:hover': {
+    cursor: 'pointer',
+    backgroundColor: '$background-muted',
+  },
+})

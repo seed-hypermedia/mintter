@@ -8,12 +8,13 @@ import (
 
 // Table accounts.
 const (
-	Accounts      sqlitegen.Table  = "accounts"
-	AccountsAlias sqlitegen.Column = "accounts.alias"
-	AccountsBio   sqlitegen.Column = "accounts.bio"
-	AccountsCID   sqlitegen.Column = "accounts.cid"
-	AccountsEmail sqlitegen.Column = "accounts.email"
-	AccountsID    sqlitegen.Column = "accounts.id"
+	Accounts          sqlitegen.Table  = "accounts"
+	AccountsAlias     sqlitegen.Column = "accounts.alias"
+	AccountsBio       sqlitegen.Column = "accounts.bio"
+	AccountsCodec     sqlitegen.Column = "accounts.codec"
+	AccountsEmail     sqlitegen.Column = "accounts.email"
+	AccountsID        sqlitegen.Column = "accounts.id"
+	AccountsMultihash sqlitegen.Column = "accounts.multihash"
 )
 
 // Table backlinks.
@@ -27,7 +28,8 @@ const (
 const (
 	Changes            sqlitegen.Table  = "changes"
 	ChangesDeviceID    sqlitegen.Column = "changes.device_id"
-	ChangesIPFSBlobID  sqlitegen.Column = "changes.ipfs_blob_id"
+	ChangesID          sqlitegen.Column = "changes.id"
+	ChangesIPFSBlockID sqlitegen.Column = "changes.ipfs_block_id"
 	ChangesLamportTime sqlitegen.Column = "changes.lamport_time"
 	ChangesObjectID    sqlitegen.Column = "changes.object_id"
 	ChangesSeq         sqlitegen.Column = "changes.seq"
@@ -37,25 +39,32 @@ const (
 const (
 	Devices           sqlitegen.Table  = "devices"
 	DevicesAccountID  sqlitegen.Column = "devices.account_id"
-	DevicesCID        sqlitegen.Column = "devices.cid"
+	DevicesCodec      sqlitegen.Column = "devices.codec"
 	DevicesCreateTime sqlitegen.Column = "devices.create_time"
 	DevicesID         sqlitegen.Column = "devices.id"
+	DevicesMultihash  sqlitegen.Column = "devices.multihash"
 	DevicesPublicKey  sqlitegen.Column = "devices.public_key"
 )
 
-// Table documents.
+// Table drafts.
 const (
-	Documents              sqlitegen.Table  = "documents"
-	DocumentsCreateTime    sqlitegen.Column = "documents.create_time"
-	DocumentsDraftContent  sqlitegen.Column = "documents.draft_content"
-	DocumentsDraftSubtitle sqlitegen.Column = "documents.draft_subtitle"
-	DocumentsDraftTitle    sqlitegen.Column = "documents.draft_title"
-	DocumentsID            sqlitegen.Column = "documents.id"
-	DocumentsLatestVersion sqlitegen.Column = "documents.latest_version"
-	DocumentsPublishTime   sqlitegen.Column = "documents.publish_time"
-	DocumentsSubtitle      sqlitegen.Column = "documents.subtitle"
-	DocumentsTitle         sqlitegen.Column = "documents.title"
-	DocumentsUpdateTime    sqlitegen.Column = "documents.update_time"
+	Drafts           sqlitegen.Table  = "drafts"
+	DraftsContent    sqlitegen.Column = "drafts.content"
+	DraftsCreateTime sqlitegen.Column = "drafts.create_time"
+	DraftsID         sqlitegen.Column = "drafts.id"
+	DraftsSubtitle   sqlitegen.Column = "drafts.subtitle"
+	DraftsTitle      sqlitegen.Column = "drafts.title"
+	DraftsUpdateTime sqlitegen.Column = "drafts.update_time"
+)
+
+// Table heads.
+const (
+	Heads            sqlitegen.Table  = "heads"
+	HeadsDeviceID    sqlitegen.Column = "heads.device_id"
+	HeadsIPFSBlockID sqlitegen.Column = "heads.ipfs_block_id"
+	HeadsLamportTime sqlitegen.Column = "heads.lamport_time"
+	HeadsObjectID    sqlitegen.Column = "heads.object_id"
+	HeadsSeq         sqlitegen.Column = "heads.seq"
 )
 
 // Table ipfs_blocks.
@@ -75,8 +84,9 @@ const (
 const (
 	Links                      sqlitegen.Table  = "links"
 	LinksSourceBlockID         sqlitegen.Column = "links.source_block_id"
-	LinksSourceChangeID        sqlitegen.Column = "links.source_change_id"
+	LinksSourceChange          sqlitegen.Column = "links.source_change"
 	LinksSourceDocumentID      sqlitegen.Column = "links.source_document_id"
+	LinksSourceDraft           sqlitegen.Column = "links.source_draft"
 	LinksTargetBlockID         sqlitegen.Column = "links.target_block_id"
 	LinksTargetDocumentID      sqlitegen.Column = "links.target_document_id"
 	LinksTargetDocumentVersion sqlitegen.Column = "links.target_document_version"
@@ -84,10 +94,24 @@ const (
 
 // Table objects.
 const (
-	Objects          sqlitegen.Table  = "objects"
-	ObjectsAccountID sqlitegen.Column = "objects.account_id"
-	ObjectsCID       sqlitegen.Column = "objects.cid"
-	ObjectsID        sqlitegen.Column = "objects.id"
+	Objects           sqlitegen.Table  = "objects"
+	ObjectsAccountID  sqlitegen.Column = "objects.account_id"
+	ObjectsCodec      sqlitegen.Column = "objects.codec"
+	ObjectsCreateTime sqlitegen.Column = "objects.create_time"
+	ObjectsID         sqlitegen.Column = "objects.id"
+	ObjectsMultihash  sqlitegen.Column = "objects.multihash"
+)
+
+// Table publications.
+const (
+	Publications              sqlitegen.Table  = "publications"
+	PublicationsCreateTime    sqlitegen.Column = "publications.create_time"
+	PublicationsID            sqlitegen.Column = "publications.id"
+	PublicationsLatestVersion sqlitegen.Column = "publications.latest_version"
+	PublicationsPublishTime   sqlitegen.Column = "publications.publish_time"
+	PublicationsSubtitle      sqlitegen.Column = "publications.subtitle"
+	PublicationsTitle         sqlitegen.Column = "publications.title"
+	PublicationsUpdateTime    sqlitegen.Column = "publications.update_time"
 )
 
 // Table wallets.
@@ -106,46 +130,50 @@ var Schema = sqlitegen.Schema{
 	Columns: map[sqlitegen.Column]sqlitegen.ColumnInfo{
 		AccountsAlias:              {Table: Accounts, SQLType: "TEXT"},
 		AccountsBio:                {Table: Accounts, SQLType: "TEXT"},
-		AccountsCID:                {Table: Accounts, SQLType: "BLOB"},
+		AccountsCodec:              {Table: Accounts, SQLType: "INTEGER"},
 		AccountsEmail:              {Table: Accounts, SQLType: "TEXT"},
 		AccountsID:                 {Table: Accounts, SQLType: "INTEGER"},
+		AccountsMultihash:          {Table: Accounts, SQLType: "BLOB"},
 		BacklinksDepth:             {Table: Backlinks, SQLType: "INTEGER"},
 		BacklinksID:                {Table: Backlinks, SQLType: "INTEGER"},
 		ChangesDeviceID:            {Table: Changes, SQLType: "INTEGER"},
-		ChangesIPFSBlobID:          {Table: Changes, SQLType: "INTEGER"},
+		ChangesID:                  {Table: Changes, SQLType: "INTEGER"},
+		ChangesIPFSBlockID:         {Table: Changes, SQLType: "INTEGER"},
 		ChangesLamportTime:         {Table: Changes, SQLType: "INTEGER"},
 		ChangesObjectID:            {Table: Changes, SQLType: "INTEGER"},
 		ChangesSeq:                 {Table: Changes, SQLType: "INTEGER"},
 		DevicesAccountID:           {Table: Devices, SQLType: "INTEGER"},
-		DevicesCID:                 {Table: Devices, SQLType: "BLOB"},
-		DevicesCreateTime:          {Table: Devices, SQLType: "TIMESTAMP"},
+		DevicesCodec:               {Table: Devices, SQLType: "INTEGER"},
+		DevicesCreateTime:          {Table: Devices, SQLType: "INTEGER"},
 		DevicesID:                  {Table: Devices, SQLType: "INTEGER"},
+		DevicesMultihash:           {Table: Devices, SQLType: "BLOB"},
 		DevicesPublicKey:           {Table: Devices, SQLType: "BLOB"},
-		DocumentsCreateTime:        {Table: Documents, SQLType: "TIMESTAMP"},
-		DocumentsDraftContent:      {Table: Documents, SQLType: "BLOB"},
-		DocumentsDraftSubtitle:     {Table: Documents, SQLType: "TEXT"},
-		DocumentsDraftTitle:        {Table: Documents, SQLType: "TEXT"},
-		DocumentsID:                {Table: Documents, SQLType: "INTEGER"},
-		DocumentsLatestVersion:     {Table: Documents, SQLType: "TEXT"},
-		DocumentsPublishTime:       {Table: Documents, SQLType: "TIMESTAMP"},
-		DocumentsSubtitle:          {Table: Documents, SQLType: "TEXT"},
-		DocumentsTitle:             {Table: Documents, SQLType: "TEXT"},
-		DocumentsUpdateTime:        {Table: Documents, SQLType: "TIMESTAMP"},
-		GlobalMetaKey:              {Table: GlobalMeta, SQLType: "TEXT"},
-		GlobalMetaValue:            {Table: GlobalMeta, SQLType: "TEXT"},
+		DraftsContent:              {Table: Drafts, SQLType: "BLOB"},
+		DraftsCreateTime:           {Table: Drafts, SQLType: "INTEGER"},
+		DraftsID:                   {Table: Drafts, SQLType: "INTEGER"},
+		DraftsSubtitle:             {Table: Drafts, SQLType: "TEXT"},
+		DraftsTitle:                {Table: Drafts, SQLType: "TEXT"},
+		DraftsUpdateTime:           {Table: Drafts, SQLType: "INTEGER"},
+		HeadsDeviceID:              {Table: Heads, SQLType: "INTEGER"},
+		HeadsIPFSBlockID:           {Table: Heads, SQLType: "INTEGER"},
+		HeadsLamportTime:           {Table: Heads, SQLType: "INTEGER"},
+		HeadsObjectID:              {Table: Heads, SQLType: "INTEGER"},
+		HeadsSeq:                   {Table: Heads, SQLType: "INTEGER"},
 		IPFSBlocksCodec:            {Table: IPFSBlocks, SQLType: "INTEGER"},
-		IPFSBlocksCreateTime:       {Table: IPFSBlocks, SQLType: "TIMESTAMP"},
+		IPFSBlocksCreateTime:       {Table: IPFSBlocks, SQLType: "INTEGER"},
 		IPFSBlocksData:             {Table: IPFSBlocks, SQLType: "BLOB"},
 		IPFSBlocksID:               {Table: IPFSBlocks, SQLType: "INTEGER"},
 		IPFSBlocksMultihash:        {Table: IPFSBlocks, SQLType: "BLOB"},
 		LinksSourceBlockID:         {Table: Links, SQLType: "TEXT"},
-		LinksSourceChangeID:        {Table: Links, SQLType: "INTEGER"},
+		LinksSourceChange:          {Table: Links, SQLType: "INTEGER"},
 		LinksSourceDocumentID:      {Table: Links, SQLType: "INTEGER"},
+		LinksSourceDraft:           {Table: Links, SQLType: "INTEGER"},
 		LinksTargetBlockID:         {Table: Links, SQLType: "TEXT"},
 		LinksTargetDocumentID:      {Table: Links, SQLType: "INTEGER"},
 		LinksTargetDocumentVersion: {Table: Links, SQLType: "TEXT"},
 		ObjectsAccountID:           {Table: Objects, SQLType: "INTEGER"},
-		ObjectsCID:                 {Table: Objects, SQLType: "BLOB"},
+		ObjectsCodec:               {Table: Objects, SQLType: "INTEGER"},
+		ObjectsCreateTime:          {Table: Objects, SQLType: "INTEGER"},
 		ObjectsID:                  {Table: Objects, SQLType: "INTEGER"},
 		WalletsAddress:             {Table: Wallets, SQLType: "TEXT"},
 		WalletsAuth:                {Table: Wallets, SQLType: "BLOB"},
@@ -153,5 +181,13 @@ var Schema = sqlitegen.Schema{
 		WalletsID:                  {Table: Wallets, SQLType: "TEXT"},
 		WalletsName:                {Table: Wallets, SQLType: "TEXT"},
 		WalletsType:                {Table: Wallets, SQLType: "TEXT"},
+		ObjectsMultihash:           {Table: Objects, SQLType: "BLOB"},
+		PublicationsCreateTime:     {Table: Publications, SQLType: "INTEGER"},
+		PublicationsID:             {Table: Publications, SQLType: "INTEGER"},
+		PublicationsLatestVersion:  {Table: Publications, SQLType: "TEXT"},
+		PublicationsPublishTime:    {Table: Publications, SQLType: "INTEGER"},
+		PublicationsSubtitle:       {Table: Publications, SQLType: "TEXT"},
+		PublicationsTitle:          {Table: Publications, SQLType: "TEXT"},
+		PublicationsUpdateTime:     {Table: Publications, SQLType: "INTEGER"},
 	},
 }

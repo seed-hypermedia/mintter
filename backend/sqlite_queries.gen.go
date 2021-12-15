@@ -4,58 +4,550 @@ package backend
 
 import (
 	"errors"
+	"fmt"
 
 	"crawshaw.io/sqlite"
-	"go.uber.org/multierr"
+	"mintter/backend/db/sqlitegen"
 )
 
 var _ = errors.New
 
-func execStmt(conn *sqlite.Conn, query string, before func(*sqlite.Stmt), onStep func(int, *sqlite.Stmt) error) (err error) {
-	stmt, err := conn.Prepare(query)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err = multierr.Append(err, stmt.Reset())
-	}()
-
-	before(stmt)
-
-	for i := 0; true; i++ {
-		hasRow, err := stmt.Step()
-		if err != nil {
-			return err
-		}
-
-		if !hasRow {
-			break
-		}
-
-		if err := onStep(i, stmt); err != nil {
-			return err
-		}
-	}
-
-	return err
-}
-
-func insertDevice(conn *sqlite.Conn, devicesCID []byte, accountsCID []byte) error {
-	const query = `INSERT INTO devices (cid, account_id)
-VALUES (?, (SELECT accounts.id FROM accounts WHERE accounts.cid = ?))`
+func accountsInsertOrIgnore(conn *sqlite.Conn, accountsMultihash []byte, accountsCodec int) error {
+	const query = `INSERT OR IGNORE INTO accounts (multihash, codec)
+VALUES (?, ?)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, devicesCID)
-		stmt.BindBytes(2, accountsCID)
+		stmt.BindBytes(1, accountsMultihash)
+		stmt.BindInt(2, accountsCodec)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: accountsInsertOrIgnore: %w", err)
 	}
 
-	return nil
+	return err
+}
+
+func devicesInsertOrIgnore(conn *sqlite.Conn, devicesMultihash []byte, devicesCodec int, accountsMultihash []byte) error {
+	const query = `INSERT OR IGNORE INTO devices (multihash, codec, account_id)
+VALUES (?, ?, (SELECT accounts.id FROM accounts WHERE accounts.multihash = ?))`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.BindBytes(1, devicesMultihash)
+		stmt.BindInt(2, devicesCodec)
+		stmt.BindBytes(3, accountsMultihash)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: devicesInsertOrIgnore: %w", err)
+	}
+
+	return err
+}
+
+func objectsInsertOrIgnore(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, accountsMultihash []byte) error {
+	const query = `INSERT OR IGNORE INTO objects (multihash, codec, account_id)
+VALUES (?, ?, (SELECT accounts.id FROM accounts WHERE accounts.multihash = ?))`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.BindBytes(1, objectsMultihash)
+		stmt.BindInt(2, objectsCodec)
+		stmt.BindBytes(3, accountsMultihash)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: objectsInsertOrIgnore: %w", err)
+	}
+
+	return err
+}
+
+func draftsUpsert(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, draftsTitle string, draftsSubtitle string, draftsContent []byte, draftsCreateTime int, draftsUpdateTime int) error {
+	const query = `INSERT INTO drafts (id, title, subtitle, content, create_time, update_time)
+VALUES ((SELECT objects.id FROM objects WHERE objects.multihash = ? AND objects.codec = ?), ?, ?, ?, ?, ?)
+ON CONFLICT (id) DO UPDATE
+SET (title, subtitle, content, update_time) = (excluded.title, excluded.subtitle, excluded.content, excluded.update_time)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.BindBytes(1, objectsMultihash)
+		stmt.BindInt(2, objectsCodec)
+		stmt.BindText(3, draftsTitle)
+		stmt.BindText(4, draftsSubtitle)
+		stmt.BindBytes(5, draftsContent)
+		stmt.BindInt(6, draftsCreateTime)
+		stmt.BindInt(7, draftsUpdateTime)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: draftsUpsert: %w", err)
+	}
+
+	return err
+}
+
+type draftsGetResult struct {
+	DraftsTitle      string
+	DraftsSubtitle   string
+	DraftsContent    []byte
+	DraftsCreateTime int
+	DraftsUpdateTime int
+}
+
+func draftsGet(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int) (draftsGetResult, error) {
+	const query = `SELECT drafts.title, drafts.subtitle, drafts.content, drafts.create_time, drafts.update_time
+FROM drafts
+WHERE drafts.id = (SELECT objects.id FROM objects WHERE objects.multihash = ? AND objects.codec = ?)`
+
+	var out draftsGetResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.BindBytes(1, objectsMultihash)
+		stmt.BindInt(2, objectsCodec)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("draftsGet: more than one result return for a single-kind query")
+		}
+
+		out.DraftsTitle = stmt.ColumnText(0)
+		out.DraftsSubtitle = stmt.ColumnText(1)
+		out.DraftsContent = stmt.ColumnBytes(2)
+		out.DraftsCreateTime = stmt.ColumnInt(3)
+		out.DraftsUpdateTime = stmt.ColumnInt(4)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: draftsGet: %w", err)
+	}
+
+	return out, err
+}
+
+func draftsDelete(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int) error {
+	const query = `DELETE FROM drafts
+WHERE drafts.id = (SELECT objects.id FROM objects WHERE objects.multihash = ? AND objects.codec = ?)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.BindBytes(1, objectsMultihash)
+		stmt.BindInt(2, objectsCodec)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: draftsDelete: %w", err)
+	}
+
+	return err
+}
+
+type draftsListResult struct {
+	ObjectsMultihash []byte
+	ObjectsCodec     int
+	DraftsTitle      string
+	DraftsSubtitle   string
+	DraftsCreateTime int
+	DraftsUpdateTime int
+}
+
+func draftsList(conn *sqlite.Conn) ([]draftsListResult, error) {
+	const query = `SELECT objects.multihash, objects.codec, drafts.title, drafts.subtitle, drafts.create_time, drafts.update_time
+FROM drafts
+JOIN objects ON objects.id = drafts.id
+`
+
+	var out []draftsListResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, draftsListResult{})
+		out[i].ObjectsMultihash = stmt.ColumnBytes(0)
+		out[i].ObjectsCodec = stmt.ColumnInt(1)
+		out[i].DraftsTitle = stmt.ColumnText(2)
+		out[i].DraftsSubtitle = stmt.ColumnText(3)
+		out[i].DraftsCreateTime = stmt.ColumnInt(4)
+		out[i].DraftsUpdateTime = stmt.ColumnInt(5)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: draftsList: %w", err)
+	}
+
+	return out, err
+}
+
+func publicationsUpsert(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, publicationsTitle string, publicationsSubtitle string, publicationsCreateTime int, publicationsUpdateTime int, publicationsPublishTime int, publicationsLatestVersion string) error {
+	const query = `INSERT INTO publications (id, title, subtitle, create_time, update_time, publish_time, latest_version)
+VALUES ((SELECT objects.id FROM objects WHERE objects.multihash = ? AND objects.codec = ?), ?, ?, ?, ?, ?, ?)
+ON CONFLICT (id) DO UPDATE
+SET (title, subtitle, create_time, update_time, publish_time, latest_version) = (excluded.title, excluded.subtitle, excluded.create_time, excluded.update_time, excluded.publish_time, excluded.latest_version)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.BindBytes(1, objectsMultihash)
+		stmt.BindInt(2, objectsCodec)
+		stmt.BindText(3, publicationsTitle)
+		stmt.BindText(4, publicationsSubtitle)
+		stmt.BindInt(5, publicationsCreateTime)
+		stmt.BindInt(6, publicationsUpdateTime)
+		stmt.BindInt(7, publicationsPublishTime)
+		stmt.BindText(8, publicationsLatestVersion)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: publicationsUpsert: %w", err)
+	}
+
+	return err
+}
+
+type publicationsListResult struct {
+	ObjectsMultihash          []byte
+	ObjectsCodec              int
+	PublicationsTitle         string
+	PublicationsSubtitle      string
+	PublicationsCreateTime    int
+	PublicationsUpdateTime    int
+	PublicationsPublishTime   int
+	PublicationsLatestVersion string
+}
+
+func publicationsList(conn *sqlite.Conn) ([]publicationsListResult, error) {
+	const query = `SELECT objects.multihash, objects.codec, publications.title, publications.subtitle, publications.create_time, publications.update_time, publications.publish_time, publications.latest_version
+FROM publications
+JOIN objects ON objects.id = publications.id
+`
+
+	var out []publicationsListResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, publicationsListResult{})
+		out[i].ObjectsMultihash = stmt.ColumnBytes(0)
+		out[i].ObjectsCodec = stmt.ColumnInt(1)
+		out[i].PublicationsTitle = stmt.ColumnText(2)
+		out[i].PublicationsSubtitle = stmt.ColumnText(3)
+		out[i].PublicationsCreateTime = stmt.ColumnInt(4)
+		out[i].PublicationsUpdateTime = stmt.ColumnInt(5)
+		out[i].PublicationsPublishTime = stmt.ColumnInt(6)
+		out[i].PublicationsLatestVersion = stmt.ColumnText(7)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: publicationsList: %w", err)
+	}
+
+	return out, err
+}
+
+func objectsDelete(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int) error {
+	const query = `DELETE FROM objects
+WHERE objects.multihash = ? AND objects.codec = ?`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.BindBytes(1, objectsMultihash)
+		stmt.BindInt(2, objectsCodec)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: objectsDelete: %w", err)
+	}
+
+	return err
+}
+
+type devicesListResult struct {
+	DevicesCodec      int
+	DevicesMultihash  []byte
+	AccountsCodec     int
+	AccountsMultihash []byte
+}
+
+func devicesList(conn *sqlite.Conn) ([]devicesListResult, error) {
+	const query = `SELECT devices.codec, devices.multihash, accounts.codec, accounts.multihash
+FROM devices
+JOIN accounts ON accounts.id = devices.account_id`
+
+	var out []devicesListResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, devicesListResult{})
+		out[i].DevicesCodec = stmt.ColumnInt(0)
+		out[i].DevicesMultihash = stmt.ColumnBytes(1)
+		out[i].AccountsCodec = stmt.ColumnInt(2)
+		out[i].AccountsMultihash = stmt.ColumnBytes(3)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: devicesList: %w", err)
+	}
+
+	return out, err
+}
+
+type accountsGetForDeviceResult struct {
+	AccountsMultihash []byte
+	AccountsCodec     int
+}
+
+func accountsGetForDevice(conn *sqlite.Conn, devicesMultihash []byte) (accountsGetForDeviceResult, error) {
+	const query = `SELECT accounts.multihash, accounts.codec
+FROM accounts
+WHERE accounts.id = (SELECT devices.account_id FROM devices WHERE devices.multihash = ?)`
+
+	var out accountsGetForDeviceResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.BindBytes(1, devicesMultihash)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("accountsGetForDevice: more than one result return for a single-kind query")
+		}
+
+		out.AccountsMultihash = stmt.ColumnBytes(0)
+		out.AccountsCodec = stmt.ColumnInt(1)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: accountsGetForDevice: %w", err)
+	}
+
+	return out, err
+}
+
+type accountsListResult struct {
+	AccountsCodec     int
+	AccountsMultihash []byte
+	AccountsAlias     string
+	AccountsEmail     string
+	AccountsBio       string
+}
+
+func accountsList(conn *sqlite.Conn, ownAccountMultihash []byte) ([]accountsListResult, error) {
+	const query = `SELECT accounts.codec, accounts.multihash, accounts.alias, accounts.email, accounts.bio
+FROM accounts
+WHERE accounts.multihash != ?`
+
+	var out []accountsListResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.BindBytes(1, ownAccountMultihash)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, accountsListResult{})
+		out[i].AccountsCodec = stmt.ColumnInt(0)
+		out[i].AccountsMultihash = stmt.ColumnBytes(1)
+		out[i].AccountsAlias = stmt.ColumnText(2)
+		out[i].AccountsEmail = stmt.ColumnText(3)
+		out[i].AccountsBio = stmt.ColumnText(4)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: accountsList: %w", err)
+	}
+
+	return out, err
+}
+
+func headsUpsert(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, devicesMultihash []byte, headsSeq int, headsLamportTime int, ipfsBlocksMultihash []byte, ipfsBlocksCodec int) error {
+	const query = `INSERT INTO heads (object_id, device_id, seq, lamport_time, ipfs_block_id)
+VALUES ((SELECT objects.id FROM objects WHERE objects.multihash = ? AND objects.codec = ?), (SELECT devices.id FROM devices WHERE devices.multihash = ?), ?, ?, (SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.multihash = ? AND ipfs_blocks.codec = ?))
+ON CONFLICT (object_id, device_id) DO UPDATE
+SET (object_id, device_id, seq, lamport_time, ipfs_block_id) = (excluded.object_id, excluded.device_id, excluded.seq, excluded.lamport_time, excluded.ipfs_block_id)
+WHERE (excluded.seq - seq = 1)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.BindBytes(1, objectsMultihash)
+		stmt.BindInt(2, objectsCodec)
+		stmt.BindBytes(3, devicesMultihash)
+		stmt.BindInt(4, headsSeq)
+		stmt.BindInt(5, headsLamportTime)
+		stmt.BindBytes(6, ipfsBlocksMultihash)
+		stmt.BindInt(7, ipfsBlocksCodec)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: headsUpsert: %w", err)
+	}
+
+	return err
+}
+
+type headsListForObjectResult struct {
+	DevicesMultihash    []byte
+	DevicesCodec        int
+	IPFSBlocksMultihash []byte
+	IPFSBlocksCodec     int
+	HeadsSeq            int
+	HeadsLamportTime    int
+}
+
+func headsListForObject(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int) ([]headsListForObjectResult, error) {
+	const query = `SELECT devices.multihash, devices.codec, ipfs_blocks.multihash, ipfs_blocks.codec, heads.seq, heads.lamport_time
+FROM heads
+JOIN objects ON objects.id = heads.object_id
+JOIN devices ON devices.id = heads.device_id
+JOIN ipfs_blocks ON ipfs_blocks.id = heads.ipfs_block_id
+WHERE objects.multihash = ? AND objects.codec = ?
+`
+
+	var out []headsListForObjectResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.BindBytes(1, objectsMultihash)
+		stmt.BindInt(2, objectsCodec)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, headsListForObjectResult{})
+		out[i].DevicesMultihash = stmt.ColumnBytes(0)
+		out[i].DevicesCodec = stmt.ColumnInt(1)
+		out[i].IPFSBlocksMultihash = stmt.ColumnBytes(2)
+		out[i].IPFSBlocksCodec = stmt.ColumnInt(3)
+		out[i].HeadsSeq = stmt.ColumnInt(4)
+		out[i].HeadsLamportTime = stmt.ColumnInt(5)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: headsListForObject: %w", err)
+	}
+
+	return out, err
+}
+
+type headsGetForObjectAndDeviceResult struct {
+	DevicesMultihash    []byte
+	DevicesCodec        int
+	IPFSBlocksMultihash []byte
+	IPFSBlocksCodec     int
+	HeadsSeq            int
+	HeadsLamportTime    int
+}
+
+func headsGetForObjectAndDevice(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, devicesMultihash []byte) (headsGetForObjectAndDeviceResult, error) {
+	const query = `SELECT devices.multihash, devices.codec, ipfs_blocks.multihash, ipfs_blocks.codec, heads.seq, heads.lamport_time
+FROM heads
+JOIN objects ON objects.id = heads.object_id
+JOIN devices ON devices.id = heads.device_id
+JOIN ipfs_blocks ON ipfs_blocks.id = heads.ipfs_block_id
+WHERE objects.multihash = ?
+AND objects.codec = ?
+AND devices.multihash = ?`
+
+	var out headsGetForObjectAndDeviceResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.BindBytes(1, objectsMultihash)
+		stmt.BindInt(2, objectsCodec)
+		stmt.BindBytes(3, devicesMultihash)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("headsGetForObjectAndDevice: more than one result return for a single-kind query")
+		}
+
+		out.DevicesMultihash = stmt.ColumnBytes(0)
+		out.DevicesCodec = stmt.ColumnInt(1)
+		out.IPFSBlocksMultihash = stmt.ColumnBytes(2)
+		out.IPFSBlocksCodec = stmt.ColumnInt(3)
+		out.HeadsSeq = stmt.ColumnInt(4)
+		out.HeadsLamportTime = stmt.ColumnInt(5)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: headsGetForObjectAndDevice: %w", err)
+	}
+
+	return out, err
+}
+
+func linksInsertFromDraft(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, linksSourceDocumentID int, linksSourceBlockID string, linksTargetDocumentID int, linksTargetBlockID string, linksTargetDocumentVersion string) error {
+	const query = `INSERT INTO links (source_draft, source_document_id, source_block_id, target_document_id, target_block_id, target_document_version)
+VALUES ((SELECT objects.id FROM objects WHERE objects.multihash = ? AND objects.codec = ? LIMIT 1), ?, ?, ?, ?, ?)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.BindBytes(1, objectsMultihash)
+		stmt.BindInt(2, objectsCodec)
+		stmt.BindInt(3, linksSourceDocumentID)
+		stmt.BindText(4, linksSourceBlockID)
+		stmt.BindInt(5, linksTargetDocumentID)
+		stmt.BindText(6, linksTargetBlockID)
+		stmt.BindText(7, linksTargetDocumentVersion)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: linksInsertFromDraft: %w", err)
+	}
+
+	return err
 }

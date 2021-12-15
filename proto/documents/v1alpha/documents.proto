@@ -18,7 +18,7 @@ service Drafts {
   // Gets a single draft if exists.
   rpc GetDraft(GetDraftRequest) returns (Document);
 
-  // Updates a draft instance. Supports partial updates.
+  // Updates a draft instance. Does NOT support partial updates.
   rpc UpdateDraft(UpdateDraftRequest) returns (Document);
 
   // List currently stored drafts.
@@ -220,15 +220,4 @@ message LinkNode {
 
   // ID of the block inside the document.
   string block_id = 3;
-}
-
-// === Events ===
-
-// Message that gets published to documents feed of the Mintter author.
-message DocumentPublished {
-  string document_id = 1;
-
-  string title = 2;
-
-  string subtitle = 3;
 }

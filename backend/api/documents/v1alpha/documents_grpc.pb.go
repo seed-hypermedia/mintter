@@ -25,7 +25,7 @@ type DraftsClient interface {
 	DeleteDraft(ctx context.Context, in *DeleteDraftRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Gets a single draft if exists.
 	GetDraft(ctx context.Context, in *GetDraftRequest, opts ...grpc.CallOption) (*Document, error)
-	// Updates a draft instance. Supports partial updates.
+	// Updates a draft instance. Does NOT support partial updates.
 	UpdateDraft(ctx context.Context, in *UpdateDraftRequest, opts ...grpc.CallOption) (*Document, error)
 	// List currently stored drafts.
 	ListDrafts(ctx context.Context, in *ListDraftsRequest, opts ...grpc.CallOption) (*ListDraftsResponse, error)
@@ -105,7 +105,7 @@ type DraftsServer interface {
 	DeleteDraft(context.Context, *DeleteDraftRequest) (*emptypb.Empty, error)
 	// Gets a single draft if exists.
 	GetDraft(context.Context, *GetDraftRequest) (*Document, error)
-	// Updates a draft instance. Supports partial updates.
+	// Updates a draft instance. Does NOT support partial updates.
 	UpdateDraft(context.Context, *UpdateDraftRequest) (*Document, error)
 	// List currently stored drafts.
 	ListDrafts(context.Context, *ListDraftsRequest) (*ListDraftsResponse, error)

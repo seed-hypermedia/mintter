@@ -5,12 +5,19 @@ import {TextField} from '@mintter/ui/text-field'
 import {useMemo} from 'react'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import toast from 'react-hot-toast'
-import {usePeerAddrs} from '../hooks'
+import {useInfo, usePeerAddrs} from '../hooks'
 
 export function PeerAddrs() {
+  const info = useInfo({
+    retryOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: false,
+  })
+  console.log('component info', info)
+
   const peerAddrs = usePeerAddrs()
-  const addrs = useMemo(() => peerAddrs.data, [peerAddrs])
-  const copyText = useMemo(() => addrs?.join(','), [addrs])
+
+  const copyText = useMemo(() => peerAddrs.data?.join(','), [peerAddrs.data])
 
   if (peerAddrs.isLoading) {
     return <Text>Loading...</Text>
@@ -30,7 +37,7 @@ export function PeerAddrs() {
         name="addresses"
         label="Your Mintter address"
         rows={4}
-        value={addrs?.join('\n\n')}
+        value={peerAddrs.data}
         css={{fontSize: '$2'}}
       />
       <CopyToClipboard

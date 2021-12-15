@@ -9,7 +9,7 @@ import (
 	daemon "mintter/backend/api/daemon/v1alpha"
 	networking "mintter/backend/api/networking/v1alpha"
 	"mintter/backend/config"
-	"mintter/backend/ipfsutil"
+	"mintter/backend/ipfs"
 	"mintter/backend/testutil"
 
 	"github.com/stretchr/testify/require"
@@ -33,15 +33,14 @@ func TestLibp2p(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	var n *ipfsutil.Libp2p
+	var n *ipfs.Libp2p
 	app := fx.New(
 		fx.Supply(cfg),
 		fx.Supply(repo),
 		fx.Provide(
-			ipfsutil.DefaultBootstrapPeers,
+			ipfs.DefaultBootstrapPeers,
 			provideDatastore,
 			providePeerstore,
-			provideBadger,
 			provideLibp2p,
 		),
 		fx.Populate(&n),
@@ -122,7 +121,6 @@ func TestDaemonEndToEnd(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, reg.AccountId, acc.Id, "must return account after registration")
 	require.Equal(t, 1, len(acc.Devices), "must return our own device after registration")
-	require.Nil(t, acc.Profile, "must have no profile right after registration")
 
 	profileUpdate := &accounts.Profile{
 		Alias: "fulanito",

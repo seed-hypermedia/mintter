@@ -4,41 +4,13 @@ package example
 
 import (
 	"errors"
+	"fmt"
 
 	"crawshaw.io/sqlite"
-	"go.uber.org/multierr"
+	"mintter/backend/db/sqlitegen"
 )
 
 var _ = errors.New
-
-func execStmt(conn *sqlite.Conn, query string, before func(*sqlite.Stmt), onStep func(int, *sqlite.Stmt) error) (err error) {
-	stmt, err := conn.Prepare(query)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err = multierr.Append(err, stmt.Reset())
-	}()
-
-	before(stmt)
-
-	for i := 0; true; i++ {
-		hasRow, err := stmt.Step()
-		if err != nil {
-			return err
-		}
-
-		if !hasRow {
-			break
-		}
-
-		if err := onStep(i, stmt); err != nil {
-			return err
-		}
-	}
-
-	return err
-}
 
 func insertWallet(conn *sqlite.Conn, walletsID string, walletsName string) error {
 	const query = `INSERT INTO wallets (id, name)
@@ -53,11 +25,12 @@ VALUES (?, ?)`
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: insertWallet: %w", err)
 	}
 
-	return nil
+	return err
 }
 
 type getWalletResult struct {
@@ -86,11 +59,12 @@ WHERE wallets.id = ?`
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return out, err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: getWallet: %w", err)
 	}
 
-	return out, nil
+	return out, err
 }
 
 type listWalletsResult struct {
@@ -115,11 +89,12 @@ func listWallets(conn *sqlite.Conn, cursor string, limit int) ([]listWalletsResu
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return nil, err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: listWallets: %w", err)
 	}
 
-	return out, nil
+	return out, err
 }
 
 func insertUser(conn *sqlite.Conn, usersID int, usersName string, usersAvatar []byte) error {
@@ -136,11 +111,12 @@ VALUES (?, ?, ?)`
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: insertUser: %w", err)
 	}
 
-	return nil
+	return err
 }
 
 type getUserResult struct {
@@ -171,9 +147,10 @@ WHERE users.id = ?`
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return out, err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: getUser: %w", err)
 	}
 
-	return out, nil
+	return out, err
 }

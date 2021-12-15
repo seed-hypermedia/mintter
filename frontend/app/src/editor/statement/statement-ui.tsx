@@ -3,8 +3,7 @@ import {css, styled} from '@mintter/ui/stitches.config'
 export const statementStyle = css({
   marginTop: '$6',
   padding: 0,
-  // listStyle: 'none',
-  listStyleType: '*',
+
   wordBreak: 'break-word',
   position: 'relative',
   '&::marker': {

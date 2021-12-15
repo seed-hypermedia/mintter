@@ -10,7 +10,6 @@ import (
 
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"golang.org/x/sync/errgroup"
 )
@@ -80,18 +79,20 @@ type blockGetter interface {
 }
 
 type blockstoreGetter struct {
-	blockstore.Blockstore
+	blockstore interface {
+		Get(context.Context, cid.Cid) (blocks.Block, error)
+	}
 }
 
-func (bg *blockstoreGetter) GetBlock(ctx context.Context, c cid.Cid) (blocks.Block, error) {
-	return bg.Get(ctx, c)
+func (bg blockstoreGetter) GetBlock(ctx context.Context, c cid.Cid) (blocks.Block, error) {
+	return bg.blockstore.Get(ctx, c)
 }
 
-func resolvePatches(ctx context.Context, obj cid.Cid, ver *p2p.Version, bgetter blockGetter) (*state, error) {
+func resolvePatches(ctx context.Context, obj cid.Cid, ver *p2p.Version, bgetter blockGetter) (*changeset, error) {
 	// TODO: create bitswap session for the ID of the object
 	heads := ver.VersionVector
 	if heads == nil {
-		return newState(obj, nil), nil
+		return newChangeset(obj, nil), nil
 	}
 
 	g, ctx := errgroup.WithContext(ctx)
@@ -149,7 +150,7 @@ func resolvePatches(ctx context.Context, obj cid.Cid, ver *p2p.Version, bgetter 
 		return nil, err
 	}
 
-	return newState(obj, out), nil
+	return newChangeset(obj, out), nil
 }
 
 func mergeVersions(vers ...*p2p.Version) *p2p.Version {

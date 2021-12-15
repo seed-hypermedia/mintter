@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
@@ -15,19 +16,6 @@ import (
 	documents "mintter/backend/api/documents/v1alpha"
 	"mintter/backend/testutil"
 )
-
-func TestAPICreateDraft(t *testing.T) {
-	back := makeTestBackend(t, "alice", true)
-	api := newDocsAPI(back)
-	ctx := context.Background()
-
-	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
-	require.NoError(t, err)
-	require.NotEqual(t, "", doc.Id)
-	require.Equal(t, back.repo.acc.id.String(), doc.Author)
-	require.False(t, doc.UpdateTime.AsTime().IsZero())
-	require.False(t, doc.CreateTime.AsTime().IsZero())
-}
 
 func TestAPIUpdatePublicationE2E(t *testing.T) {
 	// Create draft, update content, publish, then update the publication.
@@ -71,6 +59,8 @@ func TestAPIUpdatePublicationE2E(t *testing.T) {
 	require.Len(t, publist.Publications, 1, "previous publication must be in the list after updating")
 	require.Equal(t, pub.Document.Title, publist.Publications[0].Document.Title)
 
+	time.Sleep(time.Second)
+
 	// Change the content.
 	gotDraft, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
@@ -110,6 +100,19 @@ func TestAPIUpdatePublicationE2E(t *testing.T) {
 	// testutil.ProtoEqual(t, gotPub, publist.Publications[0], "listed publication doesn't match")
 }
 
+func TestAPICreateDraft(t *testing.T) {
+	back := makeTestBackend(t, "alice", true)
+	api := newDocsAPI(back)
+	ctx := context.Background()
+
+	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	require.NotEqual(t, "", doc.Id)
+	require.Equal(t, back.repo.acc.id.String(), doc.Author)
+	require.False(t, doc.UpdateTime.AsTime().IsZero())
+	require.False(t, doc.CreateTime.AsTime().IsZero())
+}
+
 func TestAPIListDrafts(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
 	api := newDocsAPI(back)
@@ -117,12 +120,12 @@ func TestAPIListDrafts(t *testing.T) {
 
 	var docs [5]*documents.Document
 
-	g, ctx := errgroup.WithContext(ctx)
+	g, gctx := errgroup.WithContext(ctx)
 	for i := range docs {
 		i := i
 		g.Go(func() error {
 			ia := strconv.Itoa(i)
-			doc := makeDraft(ctx, t, api, "My Document Title "+ia, "Subtitle "+ia)
+			doc := makeDraft(gctx, t, api, "My Document Title "+ia, "Subtitle "+ia)
 			docs[i] = doc
 			return nil
 		})
@@ -209,6 +212,10 @@ func TestAPIDeleteDraft(t *testing.T) {
 }
 
 func TestAPIPublishDraft(t *testing.T) {
+	// Move clock back a bit so that timestamps generated in tests
+	// are clearly after the test start.
+	start := nowTruncated().Add(time.Second * 10 * -1)
+
 	back := makeTestBackend(t, "alice", true)
 	api := newDocsAPI(back)
 	ctx := context.Background()
@@ -223,20 +230,31 @@ func TestAPIPublishDraft(t *testing.T) {
 	docid, err := cid.Decode(doc.Id)
 	require.NoError(t, err)
 
-	version, err := back.patches.GetObjectVersion(ctx, docid)
+	version, err := back.GetObjectVersion(ctx, docid)
 	require.NoError(t, err)
 
 	require.Equal(t, doc.Id, version.ObjectId)
 	require.Len(t, version.VersionVector, 1)
 	require.Equal(t, published.Version, version.VersionVector[0].Head)
+	require.Equal(t, published.Version, published.LatestVersion)
+
+	require.True(t, start.Before(published.Document.CreateTime.AsTime()), "create time must be after test start")
+	require.True(t, start.Before(published.Document.UpdateTime.AsTime()), "update time must be after test start")
+	require.True(t, start.Before(published.Document.PublishTime.AsTime()), "publish time must be after test start")
 
 	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Documents, 0, "published draft must be removed from drafts")
 
-	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
+	draft, err := api.GetDraft(ctx, &documents.GetDraftRequest{
+		DocumentId: doc.Id,
+	})
+	require.Nil(t, draft, "draft must be removed after publishing")
+	require.Error(t, err, "must fail to get published draft")
+
+	got, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
 	require.NoError(t, err, "must get document after publishing")
-	testutil.ProtoEqual(t, published, pub, "published document doesn't match")
+	testutil.ProtoEqual(t, published, got, "published document doesn't match")
 }
 
 func TestAPIListPublications(t *testing.T) {
@@ -310,8 +328,8 @@ func TestAPIDeletePublication(t *testing.T) {
 	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
 	s, ok := status.FromError(err)
 	require.True(t, ok)
-	require.Equal(t, codes.NotFound, s.Code())
 	require.Nil(t, pub)
+	require.Equal(t, codes.NotFound, s.Code())
 }
 
 func TestAPISyncDocuments(t *testing.T) {
@@ -346,14 +364,14 @@ func TestAPISyncDocuments(t *testing.T) {
 
 	require.NoError(t, bob.SyncAccounts(ctx))
 
+	list, err = bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 1)
+
 	pub, err = bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
 	draft.PublishTime = pub.Document.PublishTime // Draft doesn't have publish time.
 	testutil.ProtoEqual(t, draft, pub.Document, "fetched draft must be equal")
-
-	list, err = bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
-	require.NoError(t, err)
-	require.Len(t, list.Publications, 1)
 }
 
 func makeDraft(ctx context.Context, t *testing.T, api DocsServer, title, subtitle string) *documents.Document {

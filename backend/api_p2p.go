@@ -22,7 +22,7 @@ type p2pAPI struct {
 }
 
 func (srv *p2pAPI) GetPeerInfo(ctx context.Context, in *p2p.GetPeerInfoRequest) (*p2p.PeerInfo, error) {
-	acc, err := srv.back.repo.Account()
+	acc, err := srv.back.Account()
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (srv *p2pAPI) GetObjectVersion(ctx context.Context, in *p2p.GetObjectVersio
 		return nil, status.Errorf(codes.InvalidArgument, "can't decode object ID %s: %v", in.ObjectId, err)
 	}
 
-	return srv.back.patches.GetObjectVersion(ctx, oid)
+	return srv.back.GetObjectVersion(ctx, oid)
 }
 
 func (srv *p2pAPI) RequestInvoice(ctx context.Context, in *p2p.RequestInvoiceRequest) (*p2p.RequestInvoiceResponse, error) {

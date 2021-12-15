@@ -1,4 +1,4 @@
-package example
+package schema
 
 import (
 	"io/ioutil"
@@ -16,7 +16,7 @@ var _ = generateSchema
 
 //go:generate gorun -tags codegen generateSchema
 func generateSchema() (err error) {
-	conn, closer, err := makeConn()
+	conn, closer, err := MakeConn()
 	if err != nil {
 		return err
 	}
@@ -29,15 +29,16 @@ func generateSchema() (err error) {
 		return err
 	}
 
-	code, err := sqlitegen.CodegenSchema("example", schema)
+	code, err := sqlitegen.CodegenSchema("schema", schema)
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile("schema.gen.go", code, 0666)
+	return ioutil.WriteFile("schema.gen.go", code, 0600)
 }
 
-func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
+// MakeConn creates a test connection with an example schema.
+func MakeConn() (conn *sqlite.Conn, closer func() error, err error) {
 	dir, err := ioutil.TempDir("", "sqlitegen-")
 	if err != nil {
 		return nil, nil, err

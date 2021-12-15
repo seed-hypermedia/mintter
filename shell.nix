@@ -3,6 +3,8 @@ with import ./build/nix/nixpkgs.nix {};
 let
   protoc-gen-ts_proto = writeShellScriptBin "protoc-gen-ts_proto" "yarn run protoc-gen-ts_proto";
   gqlgen = writeShellScriptBin "gqlgen" "go run github.com/99designs/gqlgen";
+  protoc-gen-go = writeShellScriptBin "protoc-gen-go" "go run google.golang.org/protobuf/cmd/protoc-gen-go $@";
+  protoc-gen-go-vtproto = writeShellScriptBin "protoc-gen-go-vtproto" "go run github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto $@";
   gorun = callPackage ./tools/gorun {};
   shellCommon = {
     tools = [
@@ -19,6 +21,8 @@ let
       yarn
       tauri.cli
       protoc-gen-ts_proto
+      protoc-gen-go
+      protoc-gen-go-vtproto
       golangci-lint
       gorun
       gqlgen

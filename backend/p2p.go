@@ -10,8 +10,8 @@ import (
 	"go.uber.org/zap"
 
 	"mintter/backend/config"
-	"mintter/backend/ipfsutil"
-	"mintter/backend/ipfsutil/providing"
+	"mintter/backend/ipfs"
+	"mintter/backend/ipfs/providing"
 )
 
 // Prototcol values.
@@ -30,9 +30,9 @@ var userAgent = "mintter/" + Version
 // so all the components must only be accessed after making sure node is ready.
 type p2pNode struct {
 	cfg    config.P2P
-	boot   ipfsutil.Bootstrappers
+	boot   ipfs.Bootstrappers
 	log    *zap.Logger
-	libp2p *ipfsutil.Libp2p
+	libp2p *ipfs.Libp2p
 	prov   *providing.Provider
 	bs     blockservice.BlockService
 
@@ -40,7 +40,7 @@ type p2pNode struct {
 }
 
 // newP2PNode creates a new Mintter P2P wrapper.
-func newP2PNode(cfg config.P2P, log *zap.Logger, bs blockservice.BlockService, libp2p *ipfsutil.Libp2p, prov *providing.Provider, boot ipfsutil.Bootstrappers) *p2pNode {
+func newP2PNode(cfg config.P2P, log *zap.Logger, bs blockservice.BlockService, libp2p *ipfs.Libp2p, prov *providing.Provider, boot ipfs.Bootstrappers) *p2pNode {
 	p2p := &p2pNode{
 		cfg:    cfg,
 		boot:   boot,
@@ -68,7 +68,7 @@ func (n *p2pNode) Start(ctx context.Context) error {
 	}
 
 	if !n.cfg.NoBootstrap {
-		res := ipfsutil.Bootstrap(ctx, n.libp2p, n.libp2p.Routing, n.boot)
+		res := ipfs.Bootstrap(ctx, n.libp2p, n.libp2p.Routing, n.boot)
 		n.log.Info("BootstrapEnded",
 			zap.NamedError("dhtError", res.RoutingErr),
 			zap.Int("peersTotal", len(n.boot)),

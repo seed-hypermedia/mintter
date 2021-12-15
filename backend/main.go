@@ -7,27 +7,19 @@ import (
 	"os"
 
 	"crawshaw.io/sqlite/sqlitex"
-	"github.com/dgraph-io/badger/v3"
 	"github.com/ipfs/go-datastore"
 	dssync "github.com/ipfs/go-datastore/sync"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
-	"mintter/backend/badgergraph"
 	"mintter/backend/config"
-	"mintter/backend/db/graphschema"
 	"mintter/backend/db/sqliteschema"
-	"mintter/backend/ipfsutil/badger3ds"
 	"mintter/backend/logging"
 )
 
 var moduleBackend = fx.Options(
 	fx.Provide(
 		provideRepo,
-		provideBadger,
-		provideBadgerGraph,
-		providePatchStore,
 		provideSQLite,
 		provideBackend,
 	),
@@ -55,12 +47,8 @@ func Module(cfg config.Config) fx.Option {
 	)
 }
 
-func providePatchStore(bs blockstore.Blockstore, db *badgergraph.DB) (*patchStore, error) {
-	return newPatchStore(logging.Logger("mintter/patch-store", "debug"), bs, db)
-}
-
 func provideSQLite(lc fx.Lifecycle, r *repo) (*sqlitex.Pool, error) {
-	pool, err := sqlitex.Open(r.sqlitePath(), 0, 16)
+	pool, err := sqliteschema.Open(r.sqlitePath(), 0, 16)
 	if err != nil {
 		return nil, err
 	}
@@ -81,8 +69,8 @@ func provideSQLite(lc fx.Lifecycle, r *repo) (*sqlitex.Pool, error) {
 	return pool, nil
 }
 
-func provideBackend(lc fx.Lifecycle, pool *sqlitex.Pool, stop fx.Shutdowner, r *repo, store *patchStore, p2p *p2pNode) (*backend, error) {
-	back := newBackend(logging.Logger("mintter/backend", "debug"), pool, r, store, p2p)
+func provideBackend(lc fx.Lifecycle, pool *sqlitex.Pool, stop fx.Shutdowner, r *repo, p2p *p2pNode) (*backend, error) {
+	back := newBackend(logging.Logger("mintter/backend", "debug"), pool, r, p2p)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	errc := make(chan error, 1)
@@ -166,34 +154,6 @@ func provideDatastore(lc fx.Lifecycle) datastore.Batching {
 	})
 
 	return ds
-}
-
-func provideBadger(lc fx.Lifecycle, r *repo) (*badger.DB, error) {
-	ds, err := badger3ds.NewDatastore(badger3ds.DefaultOptions(r.badgerDir()))
-	if err != nil {
-		return nil, err
-	}
-
-	lc.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
-			return ds.Close()
-		},
-	})
-
-	return ds.DB, nil
-}
-
-func provideBadgerGraph(lc fx.Lifecycle, db *badger.DB) (*badgergraph.DB, error) {
-	gdb, err := badgergraph.NewDB(db, "mintter", graphschema.Schema())
-	if err != nil {
-		return nil, err
-	}
-	lc.Append(fx.Hook{
-		OnStop: func(context.Context) error {
-			return gdb.Close()
-		},
-	})
-	return gdb, nil
 }
 
 func provideRepo(cfg config.Config) (*repo, error) {

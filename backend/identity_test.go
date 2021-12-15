@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"mintter/backend/ipfsutil"
+	"mintter/backend/ipfs"
 	"mintter/backend/slip10"
 
 	"github.com/ipfs/go-cid"
@@ -36,7 +36,7 @@ func TestNewAccount(t *testing.T) {
 	acc, err := NewAccount(tester.Account.priv)
 	require.NoError(t, err)
 
-	codec, ahash := ipfsutil.DecodeCID(cid.Cid(acc.id))
+	codec, ahash := ipfs.DecodeCID(cid.Cid(acc.id))
 	require.Equal(t, codecAccountID, codec)
 	require.Equal(t, "0020eacf5a07bef50d1c0cea8bee269a5236efb99b0c9033418fac30a5c722fe1960", ahash.String())
 	require.True(t, tester.Account.id.Equals(acc.id))

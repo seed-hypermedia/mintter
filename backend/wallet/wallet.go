@@ -12,6 +12,9 @@ const (
 
 	// AlreadyExistsError can be used to check if inserting wallet failed because of al existing wallet.
 	AlreadyExistsError = "UNIQUE constraint failed"
+
+	// NotEnoughBalance can be used to check the typical error of not having enough balance.
+	NotEnoughBalance = "not enough balance"
 )
 
 type Wallet struct {

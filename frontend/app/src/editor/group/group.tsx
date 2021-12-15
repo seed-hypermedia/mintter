@@ -12,7 +12,6 @@ export const ELEMENT_GROUP = 'group'
 
 export const groupStyle = css({
   paddingLeft: '$8',
-  // listStyleType: 'none',
   [`&[data-element-type="orderedList"], &[data-element-type="unorderedList"]`]: {
     marginLeft: 0,
   },
@@ -27,7 +26,7 @@ export const createGroupPlugin = (): EditorPlugin => ({
     ({attributes, children, element}) => {
       if (isGroup(element)) {
         return (
-          <Group mode={editor.mode} data-element-type={element.type} {...attributes}>
+          <Group mode={editor.mode} data-element-type={element.type} {...attributes} css={{listStyleType: 'none'}}>
             {children}
           </Group>
         )

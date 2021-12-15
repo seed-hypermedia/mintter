@@ -19,7 +19,7 @@ export const createOrderedListPlugin = (): EditorPlugin => ({
         return (
           <OrderedList
             data-element-type={element.type}
-            // start={element.start}
+            start={element.start}
             /**
              * @todo proper handling of start property
              * @body OrderedLists now have a start property that indicates at which number the enumeration should start. The handling of this is quite hacky atm though. We should improve this.

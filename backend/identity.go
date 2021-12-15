@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"mintter/backend/ipfsutil"
+	"mintter/backend/ipfs"
 	"mintter/backend/slip10"
 
 	"github.com/ipfs/go-cid"
@@ -177,6 +177,19 @@ func NewAccountFromSeed(rand []byte) (Account, error) {
 	return NewAccount(priv)
 }
 
+func accountIDFromString(s string) (AccountID, error) {
+	c, err := cid.Decode(s)
+	if err != nil {
+		return AccountID{}, err
+	}
+
+	if codec := c.Prefix().Codec; codec != codecAccountID {
+		return AccountID{}, fmt.Errorf("wrong codec for account id: %s", cid.CodecToStr[codec])
+	}
+
+	return AccountID(c), nil
+}
+
 // NewAccount creates a new Mintter Account from a private key.
 func NewAccount(pk crypto.PrivKey) (Account, error) {
 	if _, ok := pk.(*crypto.Ed25519PrivateKey); !ok {
@@ -208,7 +221,7 @@ func AccountIDFromPubKey(pub crypto.PubKey) (AccountID, error) {
 		return AccountID{}, err
 	}
 
-	acid, err := ipfsutil.NewCID(codecAccountID, multihash.IDENTITY, pubBytes)
+	acid, err := ipfs.NewCID(codecAccountID, multihash.IDENTITY, pubBytes)
 	if err != nil {
 		return AccountID{}, err
 	}

@@ -33,16 +33,18 @@ type InvoiceRequest struct {
 func (srv *backend) RemoteInvoiceRequest(ctx context.Context, account AccountID,
 	request InvoiceRequest) (string, error) {
 	if _, err := srv.readyIPFS(); err != nil {
-		return "", fmt.Errorf("account %s not ready yet. %s", account.String(), err.Error())
+		srv.log.Warn("Account not ready yet", zap.String("Mintter account ID", account.String()), zap.String("Error", err.Error()))
+		return "", fmt.Errorf("account %s not ready yet.", account.String())
 	}
 
 	if account.Equals(srv.repo.acc.id) {
 		return "", fmt.Errorf("cannot remotely issue an invoice to myself")
 	}
 
-	all, err := srv.db.ListAccountDevices()
+	all, err := srv.db.ListAccountDevices(ctx)
 	if err != nil {
-		return "", fmt.Errorf("couldn't list devices from account ID %s. %s", account.String(), err.Error())
+		srv.log.Warn("couldn't list devices", zap.String("Mintter account ID", account.String()), zap.String("Error", err.Error()))
+		return "", fmt.Errorf("couldn't list devices from account ID %s.", account.String())
 	}
 
 	if devices, found := all[account]; found {
@@ -61,7 +63,8 @@ func (srv *backend) RemoteInvoiceRequest(ctx context.Context, account AccountID,
 			})
 
 			if err != nil {
-				return "", fmt.Errorf("request invoice failed. %s", err.Error())
+				srv.log.Warn("coulnd't request invoice", zap.String("Error", err.Error()))
+				return "", fmt.Errorf("request invoice failed.")
 			}
 
 			if remoteInvoice.PayReq == "" {
@@ -95,7 +98,8 @@ func (srv *backend) InsertWallet(ctx context.Context, walletType, credentialsURL
 	// Trying to authenticate with the provided credentials
 	creds.Token, err = srv.lightningClient.Lndhub.Auth(ctx, creds)
 	if err != nil {
-		return ret, fmt.Errorf("couldn't authenticate new wallet %s. Please check provided credentials %s", name, err.Error())
+		srv.log.Warn("couldn't authenticate new wallet", zap.String("Error", err.Error()))
+		return ret, fmt.Errorf("couldn't authenticate new wallet %s. Please check provided credentials", name)
 	}
 
 	balanceSats, err := srv.lightningClient.Lndhub.GetBalance(ctx, creds)
@@ -116,7 +120,8 @@ func (srv *backend) InsertWallet(ctx context.Context, walletType, credentialsURL
 	binaryToken, err := hex.DecodeString(creds.Token) // TODO: encrypt the token before storing
 
 	if err != nil {
-		return ret, fmt.Errorf("couldn't decode token before insert %s in the database. Err %s", name, err.Error())
+		srv.log.Warn("could not decode Token", zap.String("Error", err.Error()))
+		return ret, fmt.Errorf("couldn't decode token before insert the wallet in the database.")
 	}
 
 	if err = wallet.InsertWallet(conn, ret, binaryToken); err != nil {
@@ -156,7 +161,8 @@ func (srv *backend) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 			}
 			balance, err := srv.lightningClient.Lndhub.GetBalance(ctx, creds)
 			if err != nil {
-				return nil, fmt.Errorf("couldn't get balance %s. %s", w.Name, err.Error())
+				srv.log.Warn("couldn't get balance", zap.String("Wallet", w.Name), zap.String("Error", err.Error()))
+				return nil, fmt.Errorf("couldn't get balance from wallet", w.Name)
 			}
 			w.Balance = int64(balance)
 		}
@@ -176,7 +182,8 @@ func (srv *backend) DeleteWallet(ctx context.Context, walletID string) error {
 	}
 	defer srv.pool.Put(conn)
 	if err := wallet.RemoveWallet(conn, walletID); err != nil {
-		return err
+		srv.log.Warn("couldn't remove wallet", zap.String("WalletID", walletID), zap.String("Error", err.Error()))
+		return fmt.Errorf("couldn't remove wallet", walletID)
 	}
 	return nil
 }
@@ -193,7 +200,8 @@ func (srv *backend) UpdateWalletName(ctx context.Context, walletID string, newNa
 	}
 	defer srv.pool.Put(conn)
 	if ret, err = wallet.UpdateWalletName(conn, walletID, newName); err != nil {
-		return ret, err
+		srv.log.Warn("couldn't update wallet", zap.String("WalletID", walletID), zap.String("Error", err.Error()))
+		return ret, fmt.Errorf("couldn't update wallet", walletID)
 	}
 
 	return ret, nil
@@ -212,7 +220,8 @@ func (srv *backend) SetDefaultWallet(ctx context.Context, walletID string) (wall
 
 	defaultWallet, err := wallet.UpdateDefaultWallet(conn, walletID)
 	if err != nil {
-		return wallet.Wallet{}, fmt.Errorf("fail to update default wallet %s", err.Error())
+		srv.log.Warn("failed to update default wallet", zap.String("Error", err.Error()))
+		return wallet.Wallet{}, fmt.Errorf("failed to update default wallet")
 	}
 
 	return defaultWallet, nil
@@ -230,7 +239,8 @@ func (srv *backend) GetDefaultWallet(ctx context.Context) (wallet.Wallet, error)
 
 	defaultWallet, err := wallet.GetDefaultWallet(conn)
 	if err != nil {
-		return wallet.Wallet{}, err
+		srv.log.Warn("failed to get default wallet", zap.String("Error", err.Error()))
+		return wallet.Wallet{}, fmt.Errorf("failed to get default wallet")
 	}
 
 	return defaultWallet, nil
@@ -252,7 +262,8 @@ func (srv *backend) RequestInvoice(ctx context.Context, accountID string, amount
 	}
 	cID, err := cid.Decode(accountID)
 	if err != nil {
-		return "", fmt.Errorf("couldn't parse accountID string [%s], please check it is a proper accountID. %s", accountID, err.Error())
+		srv.log.Warn("couldn't parse accountID string", zap.String("Mintter Account ID", accountID), zap.String("Error", err.Error()))
+		return "", fmt.Errorf("couldn't parse accountID string [%s], please check it is a proper accountID.", accountID)
 	}
 
 	payReq, err := srv.RemoteInvoiceRequest(ctx, AccountID(cID),
@@ -263,7 +274,7 @@ func (srv *backend) RequestInvoice(ctx context.Context, accountID string, amount
 			PreimageHash: []byte{}, // Only aplicable to hold invoices
 		})
 	if err != nil {
-		return "", fmt.Errorf("couldn't request remote invoice. %s", err.Error())
+		return "", fmt.Errorf("couldn't request remote invoice.")
 	}
 	return payReq, nil
 }
@@ -285,23 +296,26 @@ func (srv *backend) PayInvoice(ctx context.Context, payReq string, walletID *str
 	if walletID != nil {
 		walletToPay, err = wallet.GetWallet(conn, *walletID)
 		if err != nil {
-			return "", err
+			srv.log.Warn("couldn't get wallet", zap.String("Wallet ID", *walletID), zap.String("Error", err.Error()))
+			return "", fmt.Errorf("couldn't get wallet %s", *walletID)
 		}
 	} else {
 		walletToPay, err = srv.GetDefaultWallet(ctx)
 		if err != nil {
-			return "", err
+			srv.log.Warn("couldn't get default wallet", zap.String("Error", err.Error()))
+			return "", fmt.Errorf("couldn't get default wallet")
 		}
 	}
 
 	if walletToPay.Type != lndhub.LndhubWalletType {
-		return "", fmt.Errorf("%s type not supported to pay invoices (yet)", walletToPay.Type)
+		return "", fmt.Errorf("wallet type [%s] not supported to pay (yet)", walletToPay.Type)
 	}
 
 	if amountSats == nil {
 		invoice, err := lndhub.DecodeInvoice(payReq)
 		if err != nil {
-			return "", nil
+			srv.log.Warn("couldn't decode invoice", zap.String("Error", err.Error()))
+			return "", fmt.Errorf("couldn't decode invoice [%s], please make sure it is a bolt-11 complatible invoice", payReq)
 		}
 		amountToPay = uint64(invoice.MilliSat.ToSatoshis())
 	} else {
@@ -310,14 +324,19 @@ func (srv *backend) PayInvoice(ctx context.Context, payReq string, walletID *str
 
 	binaryToken, err := wallet.GetAuth(conn, walletToPay.ID)
 	if err != nil {
-		return "", err
+		srv.log.Warn("couldn't get autorization to pay", zap.String("Wallet ID", walletToPay.ID), zap.String("Error", err.Error()))
+		return "", fmt.Errorf("couldn't get autorization to pay with wallet ID [%s]", walletToPay.ID)
 	}
 
 	if err = srv.lightningClient.Lndhub.PayInvoice(ctx, lndhub.Credentials{
 		ConnectionURL: walletToPay.Address,
 		Token:         hex.EncodeToString(binaryToken),
 	}, payReq, amountToPay); err != nil {
-		return "", err
+		srv.log.Warn("couldn't pay invoice", zap.String("Error", err.Error()))
+		if strings.Contains(err.Error(), wallet.NotEnoughBalance) {
+			return "", fmt.Errorf("couldn't pay invoice. Insufficient balance in wallet name %s", walletToPay.Name)
+		}
+		return "", fmt.Errorf("couldn't pay invoice. Unknown reason")
 	}
 
 	return walletToPay.ID, nil

@@ -23,7 +23,7 @@ func makeHTTPHandler(cfg config.Config, g *grpc.Server, b *backend) http.Handler
 	mux := http.NewServeMux()
 	mux.Handle("/debug/", http.DefaultServeMux) // pprof and expvar handlers are registered on the router.
 	mux.Handle("/debug/metrics", promhttp.Handler())
-	mux.Handle("/graphql", graphql.Handler(b)) // TODO: should I pass backend this way?
+	mux.Handle("/graphql", graphql.Handler(b))
 	mux.Handle("/playground", playground.Handler("GraphQL Playgorund", "/graphql"))
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

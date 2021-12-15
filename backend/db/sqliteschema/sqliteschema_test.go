@@ -2,9 +2,6 @@ package sqliteschema
 
 import (
 	"context"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -15,16 +12,33 @@ func TestMigrate(t *testing.T) {
 	pool := makeDB(t)
 	conn := pool.Get(context.Background())
 	defer pool.Put(conn)
-	require.NoError(t, migrate(conn, migrations))
+	require.NoError(t, Migrate(conn))
 	require.Error(t, migrate(conn, nil), "must refuse to rollback migrations")
 }
 
-func makeDB(t *testing.T) *sqlitex.Pool {
-	dir, err := ioutil.TempDir("", "sqlitedb")
+func TestOpen_ForeignKeys(t *testing.T) {
+	pool := makeDB(t)
+	conn, release, err := pool.Conn(context.Background())
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, os.RemoveAll(dir)) })
+	defer release()
 
-	p, err := sqlitex.Open(filepath.Join(dir, "db.sqlite"), 0, 5)
+	err = sqlitex.ExecScript(conn, `
+CREATE TABLE a (id INTEGER PRIMARY KEY, name TEXT NOT NULL);
+CREATE TABLE b (id INTEGER PRIMARY KEY, name TEXT NOT NULL, a_id REFERENCES a NOT NULL);
+`)
 	require.NoError(t, err)
-	return p
+
+	err = sqlitex.Exec(conn, `INSERT INTO a VALUES (?, ?);`, nil, 1, "a-1")
+	require.NoError(t, err)
+
+	err = sqlitex.Exec(conn, `INSERT INTO b VALUES (?, ?, ?)`, nil, 1, "b-1", 22)
+	require.Error(t, err)
+}
+
+func makeDB(t *testing.T) *sqlitex.Pool {
+	pool, err := Open("file::memory:?mode=memory", 0, 1)
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, pool.Close()) })
+
+	return pool
 }

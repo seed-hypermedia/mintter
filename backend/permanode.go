@@ -2,11 +2,11 @@ package backend
 
 import (
 	"crypto/rand"
+	"mintter/backend/ipfs"
 	"time"
 
-	"mintter/backend/ipfsutil"
-
 	blocks "github.com/ipfs/go-block-format"
+	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p-core/crypto"
 )
@@ -20,18 +20,15 @@ type signedPermanode struct {
 	perma permanode
 }
 
-func newSignedPermanode(codec uint64, k crypto.PrivKey) (signedPermanode, error) {
-	pn := newPermanode()
+func newSignedPermanode(codec uint64, aid AccountID, k crypto.PrivKey) (signedPermanode, error) {
+	pn := newPermanode(aid)
 
 	signed, err := SignCBOR(pn, k)
 	if err != nil {
 		return signedPermanode{}, err
 	}
 
-	blk, err := ipfsutil.NewBlock(codec, signed.data)
-	if err != nil {
-		return signedPermanode{}, err
-	}
+	blk := ipfs.NewBlock(codec, signed.data)
 
 	return signedPermanode{
 		blk:   blk,
@@ -47,6 +44,7 @@ func newSignedPermanode(codec uint64, k crypto.PrivKey) (signedPermanode, error)
 // signing the permanode will introduce enough entropy to the resulting ID.
 type permanode struct {
 	Random     []byte
+	AccountID  cid.Cid
 	CreateTime time.Time
 }
 
@@ -54,7 +52,7 @@ func (p permanode) IsZero() bool {
 	return len(p.Random) == 0 && p.CreateTime.IsZero()
 }
 
-func newPermanode() permanode {
+func newPermanode(aid AccountID) permanode {
 	var buf [10]byte
 	n, err := rand.Read(buf[:])
 
@@ -67,6 +65,7 @@ func newPermanode() permanode {
 	}
 
 	return permanode{
+		AccountID:  cid.Cid(aid),
 		Random:     buf[:],
 		CreateTime: nowTruncated(),
 	}

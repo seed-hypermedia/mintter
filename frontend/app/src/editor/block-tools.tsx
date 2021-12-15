@@ -13,7 +13,7 @@ import {useHover} from './hover-context'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 import {EditorMode} from './plugin-utils'
 
-export const ElementDropdown = styled('button', {
+const ElementDropdown = styled('button', {
   border: 'none',
   backgroundColor: '$background-alt',
   position: 'absolute',
