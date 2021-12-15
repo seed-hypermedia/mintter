@@ -53,7 +53,13 @@ export function useAccount(accountId = '', options: HookOptions<Account> = {}) {
  * @returns
  */
 export function useInfo(options: HookOptions<Info> = {}) {
-  return useQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo(options.rpc), options)
+  return useQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo(options.rpc), {
+    ...options,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: false,
+    retryOnMount: false,
+  })
 }
 
 /**
@@ -121,10 +127,14 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
   let requestId: string
   if (!peerId) {
     const info = queryClient.getQueryData<Info>(queryKeys.GET_ACCOUNT_INFO)
+    console.log('info', info)
+
     requestId = info?.peerId as string
   } else {
     requestId = peerId
   }
+  console.log('requestId', requestId)
+
   const peerAddrsQuery = useQuery(
     [queryKeys.GET_PEER_ADDRS, requestId],
     () => listPeerAddrs(requestId, options.rpc as any),
@@ -133,6 +143,8 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
       ...options,
     },
   )
+
+  console.log('peerAddrsQuery: ', peerAddrsQuery)
 
   const data = useMemo(() => peerAddrsQuery.data, [peerAddrsQuery])
 
