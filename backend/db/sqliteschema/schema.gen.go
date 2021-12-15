@@ -57,6 +57,13 @@ const (
 	DraftsUpdateTime sqlitegen.Column = "drafts.update_time"
 )
 
+// Table global_meta.
+const (
+	GlobalMeta      sqlitegen.Table  = "global_meta"
+	GlobalMetaKey   sqlitegen.Column = "global_meta.key"
+	GlobalMetaValue sqlitegen.Column = "global_meta.value"
+)
+
 // Table heads.
 const (
 	Heads            sqlitegen.Table  = "heads"
@@ -69,9 +76,6 @@ const (
 
 // Table ipfs_blocks.
 const (
-	GlobalMeta           sqlitegen.Table  = "global_meta"
-	GlobalMetaKey        sqlitegen.Column = "global_meta.key"
-	GlobalMetaValue      sqlitegen.Column = "global_meta.value"
 	IPFSBlocks           sqlitegen.Table  = "ipfs_blocks"
 	IPFSBlocksCodec      sqlitegen.Column = "ipfs_blocks.codec"
 	IPFSBlocksCreateTime sqlitegen.Column = "ipfs_blocks.create_time"
@@ -154,6 +158,8 @@ var Schema = sqlitegen.Schema{
 		DraftsSubtitle:             {Table: Drafts, SQLType: "TEXT"},
 		DraftsTitle:                {Table: Drafts, SQLType: "TEXT"},
 		DraftsUpdateTime:           {Table: Drafts, SQLType: "INTEGER"},
+		GlobalMetaKey:              {Table: GlobalMeta, SQLType: "TEXT"},
+		GlobalMetaValue:            {Table: GlobalMeta, SQLType: "TEXT"},
 		HeadsDeviceID:              {Table: Heads, SQLType: "INTEGER"},
 		HeadsIPFSBlockID:           {Table: Heads, SQLType: "INTEGER"},
 		HeadsLamportTime:           {Table: Heads, SQLType: "INTEGER"},
@@ -175,12 +181,6 @@ var Schema = sqlitegen.Schema{
 		ObjectsCodec:               {Table: Objects, SQLType: "INTEGER"},
 		ObjectsCreateTime:          {Table: Objects, SQLType: "INTEGER"},
 		ObjectsID:                  {Table: Objects, SQLType: "INTEGER"},
-		WalletsAddress:             {Table: Wallets, SQLType: "TEXT"},
-		WalletsAuth:                {Table: Wallets, SQLType: "BLOB"},
-		WalletsBalance:             {Table: Wallets, SQLType: "INTEGER"},
-		WalletsID:                  {Table: Wallets, SQLType: "TEXT"},
-		WalletsName:                {Table: Wallets, SQLType: "TEXT"},
-		WalletsType:                {Table: Wallets, SQLType: "TEXT"},
 		ObjectsMultihash:           {Table: Objects, SQLType: "BLOB"},
 		PublicationsCreateTime:     {Table: Publications, SQLType: "INTEGER"},
 		PublicationsID:             {Table: Publications, SQLType: "INTEGER"},
@@ -189,5 +189,11 @@ var Schema = sqlitegen.Schema{
 		PublicationsSubtitle:       {Table: Publications, SQLType: "TEXT"},
 		PublicationsTitle:          {Table: Publications, SQLType: "TEXT"},
 		PublicationsUpdateTime:     {Table: Publications, SQLType: "INTEGER"},
+		WalletsAddress:             {Table: Wallets, SQLType: "TEXT"},
+		WalletsAuth:                {Table: Wallets, SQLType: "BLOB"},
+		WalletsBalance:             {Table: Wallets, SQLType: "INTEGER"},
+		WalletsID:                  {Table: Wallets, SQLType: "TEXT"},
+		WalletsName:                {Table: Wallets, SQLType: "TEXT"},
+		WalletsType:                {Table: Wallets, SQLType: "TEXT"},
 	},
 }

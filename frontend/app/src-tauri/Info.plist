@@ -10,5 +10,7 @@
     <true/>
     <key>com.apple.developer.networking.multicast</key>
     <true/>
+    <key>NSCameraUsageDescription</key>
+    <string>APPNAME requires access to your phone’s camera.</string>
 </dict>
 </plist>

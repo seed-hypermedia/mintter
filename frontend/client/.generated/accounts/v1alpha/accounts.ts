@@ -3,8 +3,6 @@
 /* eslint-disable */
 import { grpc } from "@improbable-eng/grpc-web";
 import { BrowserHeaders } from "browser-headers";
-import Long from "long";
-import _m0 from "protobufjs/minimal";
 
 export interface GetAccountRequest {
   /** ID of the Account to be looked up. If empty - our own account will be returned. */
