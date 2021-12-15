@@ -52,6 +52,11 @@ message GetDraftRequest {
 message UpdateDraftRequest {
   // Instance of the document to be updated.
   Document document = 1;
+
+  // The outgoing links of this document. These links will be stored
+  // and indexed for retrieval using ContentGraph service. In the "source"
+  // LinkNode only blockID is required, because the rest can be derived.
+  repeated Link links = 2;
 }
 
 // Request to list stored drafts.

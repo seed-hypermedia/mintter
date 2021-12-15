@@ -34,6 +34,12 @@ export interface GetDraftRequest {
 export interface UpdateDraftRequest {
   /** Instance of the document to be updated. */
   document: Document | undefined;
+  /**
+   * The outgoing links of this document. These links will be stored
+   * and indexed for retrieval using ContentGraph service. In the "source"
+   * LinkNode only blockID is required, because the rest can be derived.
+   */
+  links: Link[];
 }
 
 /** Request to list stored drafts. */
@@ -362,6 +368,9 @@ export const UpdateDraftRequest = {
     if (message.document !== undefined) {
       Document.encode(message.document, writer.uint32(10).fork()).ldelim();
     }
+    for (const v of message.links) {
+      Link.encode(v!, writer.uint32(18).fork()).ldelim();
+    }
     return writer;
   },
 
@@ -369,11 +378,15 @@ export const UpdateDraftRequest = {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseUpdateDraftRequest } as UpdateDraftRequest;
+    message.links = [];
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
           message.document = Document.decode(reader, reader.uint32());
+          break;
+        case 2:
+          message.links.push(Link.decode(reader, reader.uint32()));
           break;
         default:
           reader.skipType(tag & 7);
@@ -389,6 +402,7 @@ export const UpdateDraftRequest = {
       object.document !== undefined && object.document !== null
         ? Document.fromJSON(object.document)
         : undefined;
+    message.links = (object.links ?? []).map((e: any) => Link.fromJSON(e));
     return message;
   },
 
@@ -398,6 +412,11 @@ export const UpdateDraftRequest = {
       (obj.document = message.document
         ? Document.toJSON(message.document)
         : undefined);
+    if (message.links) {
+      obj.links = message.links.map((e) => (e ? Link.toJSON(e) : undefined));
+    } else {
+      obj.links = [];
+    }
     return obj;
   },
 
@@ -409,6 +428,7 @@ export const UpdateDraftRequest = {
       object.document !== undefined && object.document !== null
         ? Document.fromPartial(object.document)
         : undefined;
+    message.links = object.links?.map((e) => Link.fromPartial(e)) || [];
     return message;
   },
 };
