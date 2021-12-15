@@ -162,7 +162,7 @@ func (srv *backend) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 			balance, err := srv.lightningClient.Lndhub.GetBalance(ctx, creds)
 			if err != nil {
 				srv.log.Warn("couldn't get balance", zap.String("Wallet", w.Name), zap.String("Error", err.Error()))
-				return nil, fmt.Errorf("couldn't get balance from wallet", w.Name)
+				return nil, fmt.Errorf("couldn't get balance from wallet %s", w.Name)
 			}
 			w.Balance = int64(balance)
 		}
@@ -183,7 +183,7 @@ func (srv *backend) DeleteWallet(ctx context.Context, walletID string) error {
 	defer srv.pool.Put(conn)
 	if err := wallet.RemoveWallet(conn, walletID); err != nil {
 		srv.log.Warn("couldn't remove wallet", zap.String("WalletID", walletID), zap.String("Error", err.Error()))
-		return fmt.Errorf("couldn't remove wallet", walletID)
+		return fmt.Errorf("couldn't remove wallet %s", walletID)
 	}
 	return nil
 }
@@ -201,7 +201,7 @@ func (srv *backend) UpdateWalletName(ctx context.Context, walletID string, newNa
 	defer srv.pool.Put(conn)
 	if ret, err = wallet.UpdateWalletName(conn, walletID, newName); err != nil {
 		srv.log.Warn("couldn't update wallet", zap.String("WalletID", walletID), zap.String("Error", err.Error()))
-		return ret, fmt.Errorf("couldn't update wallet", walletID)
+		return ret, fmt.Errorf("couldn't update wallet %s", walletID)
 	}
 
 	return ret, nil
