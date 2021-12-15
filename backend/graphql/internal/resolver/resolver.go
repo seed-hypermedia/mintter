@@ -17,7 +17,9 @@ type Service interface {
 	ListWallets(context.Context) ([]wallet.Wallet, error)
 	DeleteWallet(context.Context, string) error
 	SetDefaultWallet(context.Context, string) (wallet.Wallet, error)
+	GetDefaultWallet(context.Context) (wallet.Wallet, error)
 	RequestInvoice(context.Context, string, int64, *string) (string, error)
+	PayInvoice(context.Context, string, *string, *uint64) (string, error)
 }
 
 // Resolver is the root of the GraphQL API.

@@ -170,12 +170,13 @@ func DecodeInvoice(payReq string) (*zpay32.Invoice, error) {
 
 }
 
-// This function tries to pay the invoice provided. With the amount provided in satoshis. The
-// enconded amount in the invoice should match the provided amount as a double check
+// PayInvoice tries to pay the invoice provided. With the amount provided in satoshis. The
+// enconded amount in the invoice should match the provided amount as a double check in case
+// the amount on the invoice is different than 0.
 func (c *Client) PayInvoice(ctx context.Context, creds Credentials, payReq string, sats uint64) error {
 	if invoice, err := DecodeInvoice(payReq); err != nil {
 		return nil
-	} else if uint64(invoice.MilliSat.ToSatoshis()) != sats {
+	} else if uint64(invoice.MilliSat.ToSatoshis()) != 0 && uint64(invoice.MilliSat.ToSatoshis()) != sats {
 		return fmt.Errorf("amount mismatch. Invoice amt is " + invoice.MilliSat.ToSatoshis().String() +
 			"sats and provided amount is " + strconv.FormatInt(int64(sats), 10))
 	}

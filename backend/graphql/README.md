@@ -37,24 +37,33 @@ query {
   }
 }
 ```
-To setup a new wallet
+To Request invoice with query variables
 ```graphql
-mutation SetupLndHubWallet($input: SetupLndHubWalletInput!) {
-  setupLndHubWallet(input : $input){
-    wallet {
-      name
-      apiURL
-      id
-      balanceSats
-      __typename
-    }
+mutation RequestInvoice($input: RequestInvoiceInput!) {
+  requestInvoice(input : $input){
+    paymentRequest 
   }
 }
 ```
-With query variables:
+Query variables:
 ```graphql
 { "input": {
-  "name": "my first Wallet",
-  "url": "lndhub://c02fa7989240c12194fc:7d06cfd829af4790116f@https://lndhub.io"
+  "accountID": "b3972ae93c1c386769ea6453c7c42cbf936401e439cba129fa8373594eff74ae",
+  "amountSats": 0,
+  "publicationID": "memo test"
+}}
+```
+To pay an invoice
+```graphql
+mutation PayInvoice($input: PayInvoiceInput!) {
+  payInvoice(input : $input){
+    walletID 
+  }
+}
+```
+Query variables:
+```graphql
+{ "input": {
+  "paymentRequest": "lnbc1500n1psm3c9qpp5xmhxxnh7jj9apr0ne7wkvc0rcnfxqql40a96cz62dxxqwng68l4qdpa2fjkzep6yp2x7upqxyczqmt0wd6zqatnv4n82mpqw35xjmn8wvs8gmeqv3hjqcqzpgxqr23ssp5353mj0hx08lhjzn7l9afkv88ham0dyr4d2h5nx6dmn9739ejaq2q9qyyssqenm9wk9vgwl6xr3kt23p4we0v9nkm3g8jrx6kz5vj2nfvkgmx4wr96nsakeex0y7glwpdxnxk3wzfvgc33yyhx5u32r4qekrs7uch4sqejfltp"
 }}
 ```

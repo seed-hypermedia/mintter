@@ -17,6 +17,10 @@ func (r *meResolver) Wallets(ctx context.Context, obj *generated.Me) ([]generate
 	if err != nil {
 		return ret, err
 	}
+	defaultWallet, err := r.svc.GetDefaultWallet(ctx)
+	if err != nil {
+		return ret, err
+	}
 
 	for _, w := range wallets {
 		ret = append(ret, generated.LndHubWallet{
@@ -24,6 +28,7 @@ func (r *meResolver) Wallets(ctx context.Context, obj *generated.Me) ([]generate
 			APIURL:      w.Address,
 			Name:        w.Name,
 			BalanceSats: model.Satoshis(w.Balance),
+			IsDefault:   w.ID == defaultWallet.ID,
 		})
 	}
 
@@ -88,7 +93,27 @@ func (r *mutationResolver) RequestInvoice(ctx context.Context, input generated.R
 }
 
 func (r *mutationResolver) PayInvoice(ctx context.Context, input generated.PayInvoiceInput) (*generated.PayInvoicePayload, error) {
-	panic(fmt.Errorf("not implemented"))
+	var amount uint64
+	if input.AmountSats != nil {
+		if err := (*(input.AmountSats)).UnmarshalGQL(amount); err != nil {
+			return nil, fmt.Errorf("couldn't unmarshal amount. %s", err.Error())
+		}
+	} else {
+		amount = 0
+	}
+
+	var amount2Pay *uint64
+	if amount != 0 {
+		*amount2Pay = amount
+	}
+	walletID, err := r.svc.PayInvoice(ctx, string(input.PaymentRequest), input.WalletID, amount2Pay)
+	if err != nil {
+		return nil, err
+	}
+
+	return &generated.PayInvoicePayload{
+		WalletID: walletID,
+	}, nil
 }
 
 func (r *queryResolver) Me(ctx context.Context) (*generated.Me, error) {

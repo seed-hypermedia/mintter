@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/ipfs/go-cid"
+	"go.uber.org/zap"
 )
 
 type lnclient struct {
@@ -78,7 +79,7 @@ func (srv *backend) RemoteInvoiceRequest(ctx context.Context, account AccountID,
 // InsertWallet first tries to connect to the wallet with the provided credentials. On
 // success, gets the wallet balance and inserts all that information in the database.
 // InsertWallet returns the wallet actually inserted on success. The credentias are stored
-// in plain text at the moment
+// in plain text at the moment.
 func (srv *backend) InsertWallet(ctx context.Context, walletType, credentialsURL, name string) (wallet.Wallet, error) {
 	var err error
 	var ret wallet.Wallet
@@ -101,7 +102,6 @@ func (srv *backend) InsertWallet(ctx context.Context, walletType, credentialsURL
 	if err != nil {
 		return ret, err
 	}
-
 	conn := srv.pool.Get(ctx)
 	if conn == nil {
 		return ret, fmt.Errorf("couldn't get sqlite connector from the pool before timeout. New wallet %s has not been inserted in database", name)
@@ -120,8 +120,13 @@ func (srv *backend) InsertWallet(ctx context.Context, walletType, credentialsURL
 	}
 
 	if err = wallet.InsertWallet(conn, ret, binaryToken); err != nil {
-		return ret, fmt.Errorf("couldn't insert wallet %s in the database. Err %s", name, err.Error())
+		srv.log.Warn("couldn't insert wallet in the database", zap.String("Error", err.Error()))
+		if strings.Contains(err.Error(), wallet.AlreadyExistsError) {
+			return ret, fmt.Errorf("couldn't insert wallet %s in the database. ID already exists", name)
+		}
+		return ret, fmt.Errorf("couldn't insert wallet %s in the database. Unknown reason", name)
 	}
+
 	return ret, err
 }
 
@@ -134,13 +139,15 @@ func (srv *backend) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 	defer srv.pool.Put(conn)
 	wallets, err := wallet.ListWallets(conn, -1)
 	if err != nil {
-		return nil, err
+		srv.log.Warn("couldn't list wallets", zap.String("Error", err.Error()))
+		return nil, fmt.Errorf("couldn't list wallets")
 	}
 	for _, w := range wallets {
 		if strings.ToLower(w.Type) == lndhub.LndhubWalletType {
 			token, err := wallet.GetAuth(conn, w.ID)
 			if err != nil {
-				return nil, fmt.Errorf("couldn't get auth from wallet %s Error %s", w.Name, err.Error())
+				srv.log.Warn("couldn't get auth", zap.String("Wallet", w.Name), zap.String("Error", err.Error()))
+				return nil, fmt.Errorf("couldn't get auth from wallet %s.", w.Name)
 			}
 			creds := lndhub.Credentials{
 				ConnectionURL: w.Address,
@@ -149,7 +156,7 @@ func (srv *backend) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 			}
 			balance, err := srv.lightningClient.Lndhub.GetBalance(ctx, creds)
 			if err != nil {
-				return nil, fmt.Errorf("couldn't get balance %s Error %s", w.Name, err.Error())
+				return nil, fmt.Errorf("couldn't get balance %s. %s", w.Name, err.Error())
 			}
 			w.Balance = int64(balance)
 		}
@@ -160,7 +167,7 @@ func (srv *backend) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 // DeleteWallet removes the wallet given a valid ID string representing
 // the url hash in case of Lndhub-type wallet or the pubkey in case of LND.
 // If the removed wallet was the default wallet, a random wallet will be
-// chosen as new default. Altough it is advised that the user manually
+// chosen as new default. Although it is advised that the user manually
 // changes the default wallet after removing the previous default
 func (srv *backend) DeleteWallet(ctx context.Context, walletID string) error {
 	conn := srv.pool.Get(ctx)
@@ -227,7 +234,7 @@ func (srv *backend) RequestInvoice(ctx context.Context, accountID string, amount
 	}
 	cID, err := cid.Decode(accountID)
 	if err != nil {
-		return "", fmt.Errorf("couldn't parse accountID string (%s), please check that is a valid accountID. %s", accountID, err.Error())
+		return "", fmt.Errorf("couldn't parse accountID string [%s], please check it is a proper accountID. %s", accountID, err.Error())
 	}
 
 	payReq, err := srv.RemoteInvoiceRequest(ctx, AccountID(cID),
@@ -241,4 +248,60 @@ func (srv *backend) RequestInvoice(ctx context.Context, accountID string, amount
 		return "", fmt.Errorf("couldn't request remote invoice. %s", err.Error())
 	}
 	return payReq, nil
+}
+
+// PayInvoice tries to pay the provided invoice. If a walletID is provided, that wallet will be used instead of the default one
+// If amountSats is provided, the invoice will be paid with that amount. This amount should be equal to the amount on the invoice
+// unless the amount on the invoice is 0.
+func (srv *backend) PayInvoice(ctx context.Context, payReq string, walletID *string, amountSats *uint64) (string, error) {
+	var walletToPay wallet.Wallet
+	var err error
+	var amountToPay uint64
+	conn := srv.pool.Get(ctx)
+
+	if conn == nil {
+		return "", fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
+	}
+	defer srv.pool.Put(conn)
+
+	if walletID != nil {
+		walletToPay, err = wallet.GetWallet(conn, *walletID)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		walletToPay, err = srv.GetDefaultWallet(ctx)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if walletToPay.Type != lndhub.LndhubWalletType {
+		return "", fmt.Errorf("%s type not supported to pay invoices (yet)", walletToPay.Type)
+	}
+
+	if amountSats == nil {
+		invoice, err := lndhub.DecodeInvoice(payReq)
+		if err != nil {
+			return "", nil
+		}
+		amountToPay = uint64(invoice.MilliSat.ToSatoshis())
+	} else {
+		amountToPay = *amountSats
+	}
+
+	binaryToken, err := wallet.GetAuth(conn, walletToPay.ID)
+	if err != nil {
+		return "", err
+	}
+
+	if err = srv.lightningClient.Lndhub.PayInvoice(ctx, lndhub.Credentials{
+		ConnectionURL: walletToPay.Address,
+		Token:         hex.EncodeToString(binaryToken),
+	}, payReq, amountToPay); err != nil {
+		return "", err
+	}
+
+	return walletToPay.ID, nil
+
 }

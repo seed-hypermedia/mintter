@@ -9,6 +9,8 @@ import (
 	"go.uber.org/multierr"
 )
 
+var _ = errors.New
+
 func execStmt(conn *sqlite.Conn, query string, before func(*sqlite.Stmt), onStep func(int, *sqlite.Stmt) error) (err error) {
 	stmt, err := conn.Prepare(query)
 	if err != nil {
@@ -105,10 +107,11 @@ type listWalletsResult struct {
 	WalletsAddress string
 	WalletsName    string
 	WalletsType    string
+	WalletsBalance int
 }
 
 func listWallets(conn *sqlite.Conn, cursor string, limit int) ([]listWalletsResult, error) {
-	const query = `SELECT wallets.id, wallets.address, wallets.name, wallets.type FROM wallets WHERE wallets.id > ? LIMIT ?`
+	const query = `SELECT wallets.id, wallets.address, wallets.name, wallets.type, wallets.balance FROM wallets WHERE wallets.id > ? LIMIT ?`
 
 	var out []listWalletsResult
 
@@ -123,6 +126,7 @@ func listWallets(conn *sqlite.Conn, cursor string, limit int) ([]listWalletsResu
 		out[i].WalletsAddress = stmt.ColumnText(1)
 		out[i].WalletsName = stmt.ColumnText(2)
 		out[i].WalletsType = stmt.ColumnText(3)
+		out[i].WalletsBalance = stmt.ColumnInt(4)
 		return nil
 	}
 

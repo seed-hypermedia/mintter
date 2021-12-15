@@ -34,6 +34,8 @@ type LndHubWallet struct {
 	Name string `json:"name"`
 	// Balance in Satoshis.
 	BalanceSats model.Satoshis `json:"balanceSats"`
+	// If this wallet is the default wallet to send/receive automatic payments
+	IsDefault bool `json:"isDefault"`
 }
 
 func (LndHubWallet) IsLightningWallet() {}
@@ -48,6 +50,11 @@ type Me struct {
 type PayInvoiceInput struct {
 	// Previously obtained payment request we want to pay for.
 	PaymentRequest model.LightningPaymentRequest `json:"paymentRequest"`
+	// Optional amount in satoshis to pay. In case this is not defined,
+	// The amount showed in the invoice will be paid. If amountSats is
+	// provided, then the invoice amount will be override. This will cause
+	// an error unless both amounts are the same or the invoice amount is 0.
+	AmountSats *model.Satoshis `json:"amountSats"`
 	// Optional ID of the wallet to pay with. Otherwise the default one will be used.
 	WalletID *string `json:"walletID"`
 }

@@ -39,6 +39,7 @@ func generateQueries() error {
 				qb.ResultCol(sqliteschema.WalletsAddress),
 				qb.ResultCol(sqliteschema.WalletsName),
 				qb.ResultCol(sqliteschema.WalletsType),
+				qb.ResultCol(sqliteschema.WalletsBalance),
 			),
 			"FROM", sqliteschema.Wallets,
 			"WHERE", sqliteschema.WalletsID, ">", qb.Var("cursor", sqlitegen.TypeText),

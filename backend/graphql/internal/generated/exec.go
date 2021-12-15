@@ -53,6 +53,7 @@ type ComplexityRoot struct {
 		APIURL      func(childComplexity int) int
 		BalanceSats func(childComplexity int) int
 		ID          func(childComplexity int) int
+		IsDefault   func(childComplexity int) int
 		Name        func(childComplexity int) int
 	}
 
@@ -151,6 +152,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LndHubWallet.ID(childComplexity), true
+
+	case "LndHubWallet.isDefault":
+		if e.complexity.LndHubWallet.IsDefault == nil {
+			break
+		}
+
+		return e.complexity.LndHubWallet.IsDefault(childComplexity), true
 
 	case "LndHubWallet.name":
 		if e.complexity.LndHubWallet.Name == nil {
@@ -560,6 +568,14 @@ input PayInvoiceInput {
   paymentRequest: LightningPaymentRequest!
 
   """
+  Optional amount in satoshis to pay. In case this is not defined, 
+  The amount showed in the invoice will be paid. If amountSats is 
+  provided, then the invoice amount will be override. This will cause
+  an error unless both amounts are the same or the invoice amount is 0.
+  """
+  amountSats: Satoshis
+
+  """
   Optional ID of the wallet to pay with. Otherwise the default one will be used.
   """
   walletID: ID
@@ -580,7 +596,7 @@ Common interface for Lightning wallets. We support different types.
 """
 interface LightningWallet {
   """
-  Globally unique ID of the wallet.
+  Globally unique ID of the wallet. Public key.
   """
   id: ID!
 
@@ -593,6 +609,11 @@ interface LightningWallet {
   Balance in Satoshis.
   """
   balanceSats: Satoshis!
+
+  """
+  If this wallet is the default wallet to send/receive automatic payments
+  """
+  isDefault: Boolean!
 }
 
 """
@@ -619,6 +640,11 @@ type LndHubWallet implements LightningWallet {
   Balance in Satoshis.
   """
   balanceSats: Satoshis!
+  
+  """
+  If this wallet is the default wallet to send/receive automatic payments
+  """
+  isDefault: Boolean!
 }
 `, BuiltIn: false},
 }
@@ -944,6 +970,41 @@ func (ec *executionContext) _LndHubWallet_balanceSats(ctx context.Context, field
 	res := resTmp.(model.Satoshis)
 	fc.Result = res
 	return ec.marshalNSatoshis2mintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _LndHubWallet_isDefault(ctx context.Context, field graphql.CollectedField, obj *LndHubWallet) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "LndHubWallet",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsDefault, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Me_wallets(ctx context.Context, field graphql.CollectedField, obj *Me) (ret graphql.Marshaler) {
@@ -2673,6 +2734,14 @@ func (ec *executionContext) unmarshalInputPayInvoiceInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
+		case "amountSats":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amountSats"))
+			it.AmountSats, err = ec.unmarshalOSatoshis2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "walletID":
 			var err error
 
@@ -2890,6 +2959,11 @@ func (ec *executionContext) _LndHubWallet(ctx context.Context, sel ast.Selection
 			}
 		case "balanceSats":
 			out.Values[i] = ec._LndHubWallet_balanceSats(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "isDefault":
+			out.Values[i] = ec._LndHubWallet_isDefault(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3982,6 +4056,22 @@ func (ec *executionContext) marshalOLightningWallet2ᚕmintterᚋbackendᚋgraph
 	}
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalOSatoshis2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx context.Context, v interface{}) (*model.Satoshis, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.Satoshis)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOSatoshis2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋmodelᚐSatoshis(ctx context.Context, sel ast.SelectionSet, v *model.Satoshis) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

@@ -9,6 +9,9 @@ import (
 
 const (
 	idcharLength = 64
+
+	// AlreadyExistsError can be used to check if inserting wallet failed because of al existing wallet.
+	AlreadyExistsError = "UNIQUE constraint failed"
 )
 
 type Wallet struct {
@@ -47,8 +50,7 @@ func GetWallet(conn *sqlite.Conn, id string) (Wallet, error) {
 // If there are no wallets, an empty slice will be returned
 // If there are wallets to show, ListWallets will return up
 // to limit wallets. In case limit <=0, ListWallets will return
-// all wallets available. The returned wallets only contain ID,
-// Name and Type information. For a complete wallet info, use GetWallet
+// all wallets available.
 func ListWallets(conn *sqlite.Conn, limit int) ([]Wallet, error) {
 	var resultArray []Wallet
 
@@ -64,6 +66,7 @@ func ListWallets(conn *sqlite.Conn, limit int) ([]Wallet, error) {
 				Address: s.WalletsAddress,
 				Name:    s.WalletsName,
 				Type:    s.WalletsType,
+				Balance: int64(s.WalletsBalance),
 			})
 	}
 
@@ -168,7 +171,7 @@ func UpdateWalletName(conn *sqlite.Conn, id string, newName string) (Wallet, err
 }
 
 // RemoveWallet deletes the wallet with index id. If that wallet was the default
-// wallet, a random wallet will be chosen as new default. Altough it is advised
+// wallet, a random wallet will be chosen as new default. Although it is advised
 // that the user manually changes the default wallet after removing the previous
 // default
 func RemoveWallet(conn *sqlite.Conn, id string) error {
