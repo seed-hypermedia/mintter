@@ -7,7 +7,7 @@ type KeyOfType<T, U = Keys<T>> = {[P in keyof T]: T[P] extends U ? P : never}[ke
 
 export type DateKeys = KeyOfType<Document, Date | undefined>
 
-export function getDateFormat(document: EditorDocument, key: DateKeys) {
+export function getDateFormat(document: EditorDocument | Document | undefined, key: DateKeys) {
   var months = [
     'January',
     'February',
@@ -22,6 +22,8 @@ export function getDateFormat(document: EditorDocument, key: DateKeys) {
     'November',
     'December',
   ]
+
+  if (!document) return ''
 
   var date = new Date(document[key]!)
 

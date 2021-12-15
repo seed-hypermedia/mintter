@@ -1,4 +1,4 @@
-import {createDraft, publishDraft} from '@mintter/client'
+import {createDraft} from '@mintter/client'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
@@ -9,7 +9,7 @@ import {FormEvent, useCallback, useEffect, useRef, useState} from 'react'
 import {useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
 import {MINTTER_LINK_PREFIX} from '../../constants'
-import {queryKeys, useInfo, usePublication} from '../../hooks'
+import {queryKeys} from '../../hooks'
 import {useRoute} from '../../utils/use-route'
 import {Settings} from '../settings'
 import {useSidebar} from '../sidebar'
@@ -21,7 +21,6 @@ export const TopbarStyled = styled(Box, {
   width: '$full',
   height: 48,
   display: 'flex',
-  // boxShadow: '0 0 0 1px $colors$background-neutral',
   borderBottom: '1px solid rgba(0,0,0,0.1)',
   background: '$background-alt',
 })
@@ -135,6 +134,14 @@ function TopbarActions() {
   const [routeLocation, setRouteLocation] = useLocation()
   const [, setLocation] = useState(() => routeLocation)
   const client = useQueryClient()
+  const service = useSidepanel()
+  const [, send] = useActor(service)
+  const {match: isDocumentOpen} = useRoute<{docId: string}>(['/p/:docId', '/editor/:docId'])
+
+  function toggleSidepanel() {
+    send('SIDEPANEL_TOGGLE')
+  }
+
   const onCreateDraft = useCallback(async function onCreateDraft() {
     try {
       const d = await createDraft()
@@ -160,73 +167,6 @@ function TopbarActions() {
         gap: '$4',
       }}
     >
-      <DocumentActions />
-      <Button size="0" variant="ghost" color="muted" onClick={onCreateDraft}>
-        <Icon name="PencilAdd" color="muted" />
-      </Button>
-      <Settings />
-    </Box>
-  )
-}
-
-function DocumentActions() {
-  const client = useQueryClient()
-  const service = useSidepanel()
-  const [, send] = useActor(service)
-  const [, setLocation] = useLocation()
-  const {match: isDocumentOpen} = useRoute<{docId: string}>(['/p/:docId', '/editor/:docId'])
-  const {match: isPublication, params: publicationParams} = useRoute<{docId: string}>(['/p/:docId'])
-  const {match: isDraft, params: draftParams} = useRoute<{docId: string}>(['/editor/:docId'])
-
-  console.log('document actions', {isDocumentOpen, publicationParams, draftParams})
-
-  // @ts-ignore
-  const {data: publication} = usePublication(publicationParams?.docId, {
-    enabled: !!publicationParams?.docId,
-  })
-  const {data: myInfo} = useInfo()
-
-  function toggleSidepanel() {
-    send('SIDEPANEL_TOGGLE')
-  }
-
-  let canUpdate = myInfo?.accountId == publication.document.author
-
-  async function handlePublish() {
-    let publication = await publishDraft(draftParams?.docId)
-    client.invalidateQueries(queryKeys.GET_PUBLICATION)
-
-    if (publication) {
-      setLocation(`/p/${publication!.document?.id}`, {
-        replace: true,
-      })
-    }
-  }
-
-  async function handleUpdate() {
-    try {
-      const d = await createDraft(publicationParams?.docId)
-      if (d?.id) {
-        setLocation(`/editor/${d.id}`)
-      }
-    } catch (err) {
-      console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
-    }
-  }
-
-  return (
-    <>
-      {isDraft && (
-        <Button onClick={handlePublish} variant="ghost" color="primary" size="1">
-          Publish
-        </Button>
-      )}
-      {isPublication && canUpdate && (
-        <Button onClick={handleUpdate} variant="ghost" color="success" size="1">
-          Update
-        </Button>
-      )}
-
       {isDocumentOpen && (
         <Tooltip content="Toogle Sidepanel">
           <Button size="0" variant="ghost" color="muted" onClick={toggleSidepanel}>
@@ -234,6 +174,10 @@ function DocumentActions() {
           </Button>
         </Tooltip>
       )}
-    </>
+      <Button size="0" variant="ghost" color="muted" onClick={onCreateDraft}>
+        <Icon name="PencilAdd" color="muted" />
+      </Button>
+      <Settings />
+    </Box>
   )
 }
