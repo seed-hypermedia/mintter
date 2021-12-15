@@ -32,7 +32,7 @@
         "useBootstrapper": false,
         "exceptionDomain": "localhost",
         "signingIdentity": null,
-        "entitlements": "./entitlements.plist"
+        "entitlements": "Info.plist"
       },
       "windows": {
         "certificateThumbprint": null,
