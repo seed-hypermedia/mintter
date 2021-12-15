@@ -181,6 +181,24 @@ func (srv *backend) DeleteWallet(ctx context.Context, walletID string) error {
 	return nil
 }
 
+// UpdateWalletName updates an existing wallet's name with the one provided.
+// If the wallet represented by the id id does not exist, this function
+// returns error. nil otherwise, along with the updated wallet.
+func (srv *backend) UpdateWalletName(ctx context.Context, walletID string, newName string) (wallet.Wallet, error) {
+	var ret wallet.Wallet
+	var err error
+	conn := srv.pool.Get(ctx)
+	if conn == nil {
+		return ret, fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
+	}
+	defer srv.pool.Put(conn)
+	if ret, err = wallet.UpdateWalletName(conn, walletID, newName); err != nil {
+		return ret, err
+	}
+
+	return ret, nil
+}
+
 // SetDefaultWallet sets the default wallet to the one that matches walletID.
 // Previous default wallet is replaced by the new one so only one can be
 // the default at any given time. The default wallet is the first wallet ever

@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// MakeQuery creates a query template that later can be used for generating the code that uses the query.
+// MakeQuery creates a query templats that later can be used for generating the code that uses the query.
 // The function will be generated using name, and parameters of the query can be of the following types:
 //
 // string: Useful for raw SQL fragments.
@@ -130,8 +130,19 @@ func List(vv ...interface{}) Opt {
 	}
 }
 
-// Sub creates a subquery. It accepts the same arguments as MakeQuery and List.
-func Sub(vv ...interface{}) Opt {
+// ListColShort is a SQL list of column names without their table identifiers.
+func ListColShort(cols ...sqlitegen.Column) Opt {
+	short := make([]interface{}, len(cols))
+
+	for i, c := range cols {
+		short[i] = c.ShortName()
+	}
+
+	return List(short...)
+}
+
+// SubQuery creates a subquery. It accepts the same arguments as MakeQuery and List.
+func SubQuery(vv ...interface{}) Opt {
 	return func(s sqlitegen.Schema, qb *queryBuilder) {
 		qb.WriteRune('(')
 		for i, v := range vv {
@@ -147,44 +158,6 @@ func Sub(vv ...interface{}) Opt {
 			if i < len(vv)-1 {
 				qb.WriteRune(' ')
 			}
-		}
-		qb.WriteRune(')')
-	}
-}
-
-// InsertOrReplace generates a complete insert or replace statement.
-func InsertOrReplace(cols ...sqlitegen.Column) Opt {
-	return func(s sqlitegen.Schema, qb *queryBuilder) {
-		table := s.GetColumnTable(cols[0])
-
-		qb.WriteString("INSERT OR REPLACE INTO ")
-		qb.WriteString(string(table))
-		qb.WriteString(" (")
-
-		for i, c := range cols {
-			if table != s.GetColumnTable(c) {
-				panic("trying to insert columns from different tables")
-			}
-
-			qb.WriteString(c.ShortName())
-			if i < len(cols)-1 {
-				qb.WriteString(", ")
-			}
-		}
-
-		qb.WriteRune(')')
-		qb.WriteRune('\n')
-		qb.WriteString("VALUES (")
-		for i, c := range cols {
-			qb.WriteRune('?')
-			if i < len(cols)-1 {
-				qb.WriteString(", ")
-			}
-
-			qb.AddInput(sqlitegen.GoSymbol{
-				Name: sqlitegen.GoNameFromSQLName(c.String(), false),
-				Type: s.GetColumnType(c),
-			})
 		}
 		qb.WriteRune(')')
 	}

@@ -68,7 +68,19 @@ func (r *mutationResolver) SetDefaultWallet(ctx context.Context, input generated
 }
 
 func (r *mutationResolver) UpdateWallet(ctx context.Context, input generated.UpdateWalletInput) (*generated.UpdateWalletPayload, error) {
-	panic(fmt.Errorf("not implemented"))
+	newWallet, err := r.svc.UpdateWalletName(ctx, input.ID, input.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &generated.UpdateWalletPayload{
+		Wallet: &generated.LndHubWallet{
+			APIURL:      newWallet.Address,
+			Name:        newWallet.Name,
+			BalanceSats: model.Satoshis(newWallet.Balance),
+			ID:          newWallet.ID,
+		},
+	}, nil
 }
 
 func (r *mutationResolver) DeleteWallet(ctx context.Context, input generated.DeleteWalletInput) (*generated.DeleteWalletPayload, error) {

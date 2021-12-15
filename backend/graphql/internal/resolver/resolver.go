@@ -16,6 +16,7 @@ type Service interface {
 	InsertWallet(context.Context, string, string, string) (wallet.Wallet, error)
 	ListWallets(context.Context) ([]wallet.Wallet, error)
 	DeleteWallet(context.Context, string) error
+	UpdateWalletName(context.Context, string, string) (wallet.Wallet, error)
 	SetDefaultWallet(context.Context, string) (wallet.Wallet, error)
 	GetDefaultWallet(context.Context) (wallet.Wallet, error)
 	RequestInvoice(context.Context, string, int64, *string) (string, error)

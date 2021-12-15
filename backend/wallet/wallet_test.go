@@ -102,6 +102,10 @@ func TestQueries(t *testing.T) {
 		defaultWallet, err = GetDefaultWallet(conn)
 		require.NoError(t, err)
 		require.Equal(t, defaultWallet.ID, id1)
+
+		newwallet1, err := UpdateWalletName(conn, id1, name2)
+		require.NoError(t, err)
+		require.Equal(t, newwallet1.Name, name2)
 	}
 }
 

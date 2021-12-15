@@ -10,6 +10,7 @@ import (
 var _ = generateQueries
 
 const (
+	// DefaultWalletKey is the column name of the meta table where the default wallet id is stored
 	DefaultWalletKey = "default_wallet"
 )
 
@@ -63,7 +64,14 @@ func generateQueries() error {
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "setDefaultWallet", sqlitegen.QueryKindExec,
-			qb.InsertOrReplace(sqliteschema.GlobalMetaKey, sqliteschema.GlobalMetaValue),
+			"INSERT OR REPLACE INTO", sqliteschema.GlobalMeta, qb.ListColShort(
+				sqliteschema.GlobalMetaKey,
+				sqliteschema.GlobalMetaValue,
+			), qb.Line,
+			"VALUES", qb.List(
+				qb.VarCol(sqliteschema.GlobalMetaKey),
+				qb.VarCol(sqliteschema.GlobalMetaValue),
+			),
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "removeDefaultWallet", sqlitegen.QueryKindExec,
@@ -72,9 +80,11 @@ func generateQueries() error {
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "updateWalletName", sqlitegen.QueryKindExec,
-			"UPDATE", sqliteschema.Wallets, qb.Line,
-			"SET", sqliteschema.WalletsName, "=", qb.VarCol(sqliteschema.WalletsName), qb.Line,
-			"WHERE", sqliteschema.WalletsID, "=", qb.VarCol(sqliteschema.WalletsID),
+			"UPDATE", sqliteschema.Wallets, "SET", qb.ListColShort(
+				sqliteschema.WalletsName,
+			), qb.Line,
+			"=(", qb.VarCol(sqliteschema.WalletsName),
+			") WHERE", sqliteschema.WalletsID, "=", qb.VarCol(sqliteschema.WalletsID),
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "removeWallet", sqlitegen.QueryKindExec,

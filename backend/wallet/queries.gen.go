@@ -219,9 +219,8 @@ func removeDefaultWallet(conn *sqlite.Conn, key string) error {
 }
 
 func updateWalletName(conn *sqlite.Conn, walletsName string, walletsID string) error {
-	const query = `UPDATE wallets
-SET wallets.name = ?
-WHERE wallets.id = ?`
+	const query = `UPDATE wallets SET (name)
+=( ? ) WHERE wallets.id = ?`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.BindText(1, walletsName)

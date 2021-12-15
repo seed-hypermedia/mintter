@@ -26,12 +26,12 @@ type Wallet struct {
 // id is the string representation of the credential hash of the lndhub wallet or the
 // string representation of the public key in an lnd wallet. In case there isn't any
 // wallet identified with id an error will be returned.
-func GetWallet(conn *sqlite.Conn, id string) (Wallet, error) {
-	if len(id) != idcharLength {
-		return Wallet{}, fmt.Errorf("wallet id must be a %d character string. Got %d", idcharLength, len(id))
+func GetWallet(conn *sqlite.Conn, walletID string) (Wallet, error) {
+	if len(walletID) != idcharLength {
+		return Wallet{}, fmt.Errorf("wallet id must be a %d character string. Got %d", idcharLength, len(walletID))
 	}
 
-	wallet, err := getWallet(conn, id)
+	wallet, err := getWallet(conn, walletID)
 	if err != nil {
 		return Wallet{}, err
 	}
@@ -135,7 +135,7 @@ func GetAuth(conn *sqlite.Conn, id string) ([]byte, error) {
 // UpdateDefaultWallet sets the default wallet to the one that matches newIdx
 // previous default wallet is replaced by the new one so only one can be
 // the default at any given time. The default wallet is the first wallet ever
-// created until manually changed
+// created until manually changed.
 func UpdateDefaultWallet(conn *sqlite.Conn, newID string) (Wallet, error) {
 	var err error
 
@@ -157,17 +157,17 @@ func UpdateDefaultWallet(conn *sqlite.Conn, newID string) (Wallet, error) {
 
 // UpdateWalletName updates an existing wallet's name with the one provided.
 // If the wallet represented by the id id does not exist, this function
-// returns error. nil otherwise, along with the updated wallet
-func UpdateWalletName(conn *sqlite.Conn, id string, newName string) (Wallet, error) {
-	if len(id) != idcharLength {
-		return Wallet{}, fmt.Errorf("wallet id must be a %d character string. Got %d", idcharLength, len(id))
+// returns error. nil otherwise, along with the updated wallet.
+func UpdateWalletName(conn *sqlite.Conn, walletID string, newName string) (Wallet, error) {
+	if len(walletID) != idcharLength {
+		return Wallet{}, fmt.Errorf("wallet id must be a %d character string. Got %d", idcharLength, len(walletID))
 	}
 
-	if err := updateWalletName(conn, newName, id); err != nil {
+	if err := updateWalletName(conn, newName, walletID); err != nil {
 		return Wallet{}, err
 	}
 
-	return GetWallet(conn, id)
+	return GetWallet(conn, walletID)
 }
 
 // RemoveWallet deletes the wallet with index id. If that wallet was the default
