@@ -1,15 +1,17 @@
 // import 'show-keys'
 import {Box} from '@mintter/ui/box'
+import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 // import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {useActor} from '@xstate/react'
-import {getDateFormat} from 'frontend/app/src/utils/get-format-date'
+import {AppError} from 'frontend/app/src/app'
 import {
   FormEvent,
   // useLayoutEffect,
   useRef,
   useState,
 } from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
@@ -18,12 +20,10 @@ import {useEnableSidepanel} from '../components/sidepanel/sidepanel'
 import {Textarea} from '../components/textarea'
 import {Editor, useEditorDraft} from '../editor'
 import type {DraftEditorMachineContext, DraftEditorMachineState} from '../editor/use-editor-draft'
+import {getDateFormat} from '../utils/get-format-date'
+import {PageProps} from './types'
 
-type EditorPageProps = {
-  params?: {docId: string}
-}
-
-export default function EditorPage({params}: EditorPageProps) {
+export default function EditorPage({params}: PageProps) {
   const client = useQueryClient()
   const [, setLocation] = useLocation()
   const toast = useRef('')
@@ -75,24 +75,56 @@ export default function EditorPage({params}: EditorPageProps) {
 
   if (state.matches('editing') && context.localDraft?.content) {
     return (
-      <>
+      <ErrorBoundary FallbackComponent={AppError} onReset={() => window.location.reload()}>
         <Box
           css={{
-            marginBottom: 300,
+            background: '$background-alt',
+            borderBottom: '1px solid rgba(0,0,0,0.1)',
+            position: 'sticky',
+            top: 0,
+            zIndex: '$max',
             padding: '$5',
             '@bp2': {
-              paddingTop: '$8',
-              marginRight: '$9',
-              marginLeft: 80,
+              paddingLeft: 80,
+            },
+            $$gap: '16px',
+            display: 'flex',
+            gap: '$$gap',
+            alignItems: 'center',
+            '& *': {
+              position: 'relative',
+            },
+            '& *:not(:first-child):before': {
+              content: `"|"`,
+              color: '$text-muted',
+              opacity: 0.5,
+              position: 'absolute',
+              left: '-10px',
+              top: '50%',
+              transform: 'translateY(-50%)',
             },
           }}
         >
-          {/* <Button onClick={() => send('PUBLISH')} size="2" shape="pill" variant="outlined">
+          <Button size="1" variant="ghost" onClick={() => send('PUBLISH')}>
             Publish
-          </Button> */}
+          </Button>
+        </Box>
+        <Box
+          data-testid="editor-wrapper"
+          css={{
+            padding: '$5',
+            paddingTop: '$8',
+            marginHorizontal: '$4',
+            paddingBottom: 300,
+            height: '100%',
+            '@bp2': {
+              marginHorizontal: '$9',
+            },
+          }}
+        >
           <Box css={{width: '$full', maxWidth: '64ch'}}>
             <Textarea
-              css={{fontSize: '$4', color: '$text-muted'}}
+              css={{fontSize: '$2', color: '$text-muted'}}
               data-testid="editor_title"
               name="title"
               placeholder="Document title"
@@ -108,6 +140,7 @@ export default function EditorPage({params}: EditorPageProps) {
                 })
               }}
             />
+
             {/* <Textarea
               css={
                 {
@@ -130,7 +163,7 @@ export default function EditorPage({params}: EditorPageProps) {
             /> */}
             {/* <Separator css={{margin: '10px 0'}} /> */}
             {context.localDraft?.content && (
-              <Box>
+              <>
                 <Editor
                   value={context.localDraft.content}
                   onChange={(content) => {
@@ -164,7 +197,7 @@ export default function EditorPage({params}: EditorPageProps) {
                     </Box>
                   )}
                 </Box>
-              </Box>
+              </>
             )}
           </Box>
         </Box>
@@ -177,7 +210,7 @@ export default function EditorPage({params}: EditorPageProps) {
             zIndex: '$max',
             padding: '$5',
             '@bp2': {
-              paddingLeft: 96,
+              paddingLeft: 80,
             },
             '&:after': {
               content: '',
@@ -212,7 +245,7 @@ export default function EditorPage({params}: EditorPageProps) {
           </Text>
           <EditorStatus state={state} />
         </Box>
-      </>
+      </ErrorBoundary>
     )
   }
 

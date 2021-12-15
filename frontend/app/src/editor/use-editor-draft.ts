@@ -28,7 +28,7 @@ export type DraftEditorMachineEvent =
       type: 'PUBLISH'
     }
 export type EditorDocument = Partial<Document> & {
-  document: {content: Array<MttastContent> | Array<FlowContent>}
+  content: Array<MttastContent> | Array<FlowContent>
 }
 export type DraftEditorMachineContext = {
   retries: number

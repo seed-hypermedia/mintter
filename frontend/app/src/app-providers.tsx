@@ -14,7 +14,6 @@ export const queryClient = new QueryClient({
     },
   },
 })
-console.log('🚀 ~ file: app-providers.tsx ~ line 13 ~ queryClient', queryClient)
 
 const dehydrateState = dehydrate(queryClient)
 

@@ -12,27 +12,6 @@ export const ELEMENT_BLOCKQUOTE = 'blockquote'
 export const BlockQuote = styled('li', statementStyle, {
   marginTop: '$6',
   marginBottom: '$6',
-
-  '& [data-element-type=paragraph]': {
-    borderRadius: '$2',
-    paddingVertical: '$4',
-    marginHorizontal: '$2',
-    paddingLeft: '$5',
-    position: 'relative',
-    fontStyle: 'italic',
-    color: '$text-alt',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      transform: 'translateX(-4px)',
-      width: 4,
-      borderRadius: '$2',
-      height: '$full',
-      backgroundColor: '$primary-soft',
-    },
-  },
 })
 
 export const createBlockquotePlugin = (): EditorPlugin => ({
