@@ -1,7 +1,7 @@
 import {Box, Text} from '@mintter/ui'
-import {EditorDocument} from 'frontend/app/src/editor'
-import {ClientPublication} from 'frontend/app/src/pages/publication'
+import {EditorDocument} from '../editor'
 import {useAccount} from '../hooks'
+import {ClientPublication} from '../pages/publication'
 import {Avatar} from './avatar'
 
 export type PageDocumentHeaderProps = Pick<ClientPublication, 'document'>
