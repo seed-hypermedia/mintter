@@ -31,7 +31,10 @@ export async function deletePublication(documentId: string, rpc?: GrpcClient) {
 export async function listPublications(rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   const request = ListPublicationsRequest.fromPartial({})
-  return await new PublicationsClientImpl(rpc).listPublications(request)
+  let result = await new PublicationsClientImpl(rpc).listPublications(request)
+  console.log('list publications', result)
+
+  return result
 }
 
 /**
@@ -42,7 +45,12 @@ export async function listPublications(rpc?: GrpcClient) {
  * @returns Publication (Promise)
  */
 export async function getPublication(documentId: string, rpc?: GrpcClient): Promise<Publication> {
+  console.log('getPublication: docId', documentId)
+
   rpc ||= createGrpcClient()
   const request = GetPublicationRequest.fromPartial({documentId})
-  return await new PublicationsClientImpl(rpc).getPublication(request)
+  console.log('getPublication: request', request)
+  const result = await new PublicationsClientImpl(rpc).getPublication(request)
+  console.log('getPublication: result', result)
+  return result
 }

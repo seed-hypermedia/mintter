@@ -2,17 +2,20 @@
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
+import {TextField} from '@mintter/ui/text-field'
 // import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {useActor} from '@xstate/react'
-import {FormEvent, useRef, useState} from 'react'
+import {buildEditorHook, EditorMode} from 'frontend/app/src/editor/plugin-utils'
+import {plugins} from 'frontend/app/src/editor/plugins'
+import {FormEvent, KeyboardEvent, useMemo, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
+import {ReactEditor} from 'slate-react'
 import {useLocation} from 'wouter'
 import {AppError} from '../app'
 import {useSidepanel} from '../components/sidepanel'
 import {useEnableSidepanel} from '../components/sidepanel/sidepanel'
-import {Textarea} from '../components/textarea'
 import {Editor, useEditorDraft} from '../editor'
 import type {DraftEditorMachineContext, DraftEditorMachineState} from '../editor/use-editor-draft'
 import {getDateFormat} from '../utils/get-format-date'
@@ -46,6 +49,7 @@ export default function EditorPage({params}: PageProps) {
     },
     client,
   })
+  const editor = useMemo(() => buildEditorHook(plugins, EditorMode.Draft), [])
 
   const {context} = state
 
@@ -89,20 +93,43 @@ export default function EditorPage({params}: PageProps) {
             '& *': {
               position: 'relative',
             },
-            '& *:not(:first-child):before': {
-              content: `"|"`,
-              color: '$text-muted',
-              opacity: 0.5,
-              position: 'absolute',
-              left: '-10px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-            },
+            // '& *:not(:first-child):before': {
+            //   content: `"|"`,
+            //   color: '$text-muted',
+            //   opacity: 0.5,
+            //   position: 'absolute',
+            //   left: '-10px',
+            //   top: '50%',
+            //   transform: 'translateY(-50%)',
+            // },
           }}
         >
           <Button size="1" variant="ghost" onClick={() => send('PUBLISH')}>
             Publish
           </Button>
+          <TextField
+            size="1"
+            data-testid="editor_title"
+            name="title"
+            placeholder="Document title"
+            value={context?.localDraft?.title}
+            onKeyPress={(event: KeyboardEvent<HTMLInputElement>) => {
+              if (event.key == 'Enter') {
+                event.preventDefault()
+                ReactEditor.focus(editor)
+              }
+            }}
+            onChange={(event: FormEvent<HTMLTextAreaElement>) => {
+              // update window title as the user types
+              // getCurrentWindow().setTitle(event.currentTarget.value)
+              send({
+                type: 'UPDATE',
+                payload: {
+                  title: event.currentTarget.value,
+                },
+              })
+            }}
+          />
         </Box>
         <Box
           data-testid="editor-wrapper"
@@ -118,24 +145,6 @@ export default function EditorPage({params}: PageProps) {
           }}
         >
           <Box css={{width: '$full', maxWidth: '64ch'}}>
-            <Textarea
-              css={{fontSize: '$2', color: '$text-muted'}}
-              data-testid="editor_title"
-              name="title"
-              placeholder="Document title"
-              value={context?.localDraft?.title}
-              onChange={(event: FormEvent<HTMLTextAreaElement>) => {
-                // update window title as the user types
-                // getCurrentWindow().setTitle(event.currentTarget.value)
-                send({
-                  type: 'UPDATE',
-                  payload: {
-                    title: event.currentTarget.value,
-                  },
-                })
-              }}
-            />
-
             {/* <Textarea
               css={
                 {
@@ -160,6 +169,7 @@ export default function EditorPage({params}: PageProps) {
             {context.localDraft?.content && (
               <>
                 <Editor
+                  editor={editor}
                   value={context.localDraft.content}
                   onChange={(content) => {
                     send({

@@ -1,21 +1,21 @@
-import {createDraft, getInfo, getPublication, Publication as PublicationType} from '@mintter/client'
-import {MttastContent} from '@mintter/mttast'
-import {Box} from '@mintter/ui/box'
-import {Button} from '@mintter/ui/button'
-import {Text} from '@mintter/ui/text'
+import { createDraft, getInfo, getPublication, Publication as PublicationType } from '@mintter/client'
+import { MttastContent } from '@mintter/mttast'
+import { Box } from '@mintter/ui/box'
+import { Button } from '@mintter/ui/button'
+import { Text } from '@mintter/ui/text'
 // import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
-import {useActor, useMachine} from '@xstate/react'
-import {useEffect, useRef} from 'react'
-import {ErrorBoundary} from 'react-error-boundary'
-import {useLocation} from 'wouter'
-import {createModel} from 'xstate/lib/model'
-import {AppError} from '../app'
-import {useEnableSidepanel, useSidepanel} from '../components/sidepanel'
-import {Editor, EditorDocument} from '../editor'
-import {EditorMode} from '../editor/plugin-utils'
-import {useAccount} from '../hooks'
-import {getDateFormat} from '../utils/get-format-date'
-import {PageProps} from './types'
+import { useActor, useMachine } from '@xstate/react'
+import { useEffect, useRef } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
+import { useLocation } from 'wouter'
+import { createModel } from 'xstate/lib/model'
+import { AppError } from '../app'
+import { useEnableSidepanel, useSidepanel } from '../components/sidepanel'
+import { Editor, EditorDocument } from '../editor'
+import { EditorMode } from '../editor/plugin-utils'
+import { useAccount } from '../hooks'
+import { getDateFormat } from '../utils/get-format-date'
+import { PageProps } from './types'
 
 export default function Publication({params}: PageProps) {
   const [, setLocation] = useLocation()
@@ -64,7 +64,16 @@ export default function Publication({params}: PageProps) {
 
   // start rendering
   if (state.matches('errored')) {
-    return <Text>Publication ERROR</Text>
+    return (
+      <Box css={{
+        padding: '$5',
+      }}>
+        <Text>Publication ERROR</Text>
+        <Button onClick={() => send(publicationModel.events.FETCH_DATA(state.context.id))} color="muted">
+          try again
+        </Button>
+      </Box>
+    )
   }
 
   if (state.matches('ready')) {
@@ -205,7 +214,6 @@ function usePagePublication(docId?: string) {
   // const client = useQueryClient()
   const machine = useRef(publicationMachine)
   const [state, send] = useMachine(machine.current)
-  console.log('state:', state)
 
   useEffect(() => {
     if (docId) {
@@ -257,6 +265,8 @@ const publicationMachine = publicationModel.createMachine({
         src: (ctx) => (sendBack) => {
           Promise.all([getPublication(ctx.id), getInfo()])
             .then(([publication, info]) => {
+              console.log('publication response: ', publication, info)
+
               if (publication.document?.content) {
                 let content = JSON.parse(publication.document?.content)
                 sendBack(

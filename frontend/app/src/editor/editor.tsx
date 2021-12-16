@@ -1,35 +1,45 @@
-import {FlowContent, MttastContent} from '@mintter/mttast'
-import {Box} from '@mintter/ui/box'
-import {useActor} from '@xstate/react'
-import {PropsWithChildren, Suspense, useEffect, useMemo} from 'react'
-import type {Descendant} from 'slate'
-import {Editable, Slate} from 'slate-react'
-import {useHover} from './hover-context'
-import {HoveringToolbar} from './hovering-toolbar'
+import { FlowContent, MttastContent } from '@mintter/mttast'
+import { Box } from '@mintter/ui/box'
+import { useActor } from '@xstate/react'
+import { EditorPlugin } from 'frontend/app/src/editor'
+import { PropsWithChildren, Suspense, useEffect, useMemo } from 'react'
+import type { Descendant, Editor as EditorType } from 'slate'
+import { Editable, Slate } from 'slate-react'
+import { useHover } from './hover-context'
+import { HoveringToolbar } from './hovering-toolbar'
 import {
   buildDecorateHook,
   buildEditorHook,
   buildEventHandlerHooks,
   buildRenderElementHook,
   buildRenderLeafHook,
-  EditorMode,
+  EditorMode
 } from './plugin-utils'
-import {plugins} from './plugins'
+import { plugins as defaultPlugins } from './plugins'
 
-export type {EditorPlugin} from './types'
+export type { EditorPlugin } from './types'
 
 interface EditorProps {
   mode?: EditorMode
   value: Array<MttastContent> | Array<FlowContent>
   onChange?: (value: Descendant[]) => void
+  editor?: EditorType
+  plugins?: Array<EditorPlugin>
 }
 
-export function Editor({value, onChange, children, mode = EditorMode.Draft}: PropsWithChildren<EditorProps>) {
-  const editor = useMemo(() => buildEditorHook(plugins, mode), [mode])
-  const renderElement = useMemo(() => buildRenderElementHook(plugins, editor), [mode])
-  const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, editor), [mode])
-  const decorate = useMemo(() => buildDecorateHook(plugins, editor), [mode])
-  const eventHandlers = useMemo(() => buildEventHandlerHooks(plugins, editor), [mode])
+export function Editor({
+  value,
+  onChange,
+  children,
+  mode = EditorMode.Draft,
+  editor,
+  plugins = defaultPlugins,
+}: PropsWithChildren<EditorProps>) {
+  const _editor = editor ?? useMemo(() => buildEditorHook(plugins, mode), [mode])
+  const renderElement = useMemo(() => buildRenderElementHook(plugins, _editor), [mode])
+  const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, _editor), [mode])
+  const decorate = useMemo(() => buildDecorateHook(plugins, _editor), [mode])
+  const eventHandlers = useMemo(() => buildEventHandlerHooks(plugins, _editor), [mode])
   const hoverService = useHover()
   const [, hoverSend] = useActor(hoverService)
 
@@ -40,10 +50,10 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
       <Suspense fallback={'loading'}>
-        <Slate editor={editor} value={value} onChange={onChange}>
+        <Slate editor={_editor} value={value} onChange={onChange}>
           <Editable
             style={{display: 'inline'}}
-            readOnly={editor.readOnly}
+            readOnly={_editor.readOnly}
             data-testid="editor-embed-mode"
             renderElement={renderElement}
             renderLeaf={renderLeaf}
@@ -64,9 +74,9 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
             marginLeft: '-$8',
           }}
         >
-          <Slate editor={editor} value={value} onChange={onChange}>
+          <Slate editor={_editor} value={value} onChange={onChange}>
             <Editable
-              readOnly={editor.readOnly}
+              readOnly={_editor.readOnly}
               data-testid="editor"
               renderElement={renderElement}
               renderLeaf={renderLeaf}
@@ -89,10 +99,10 @@ export function Editor({value, onChange, children, mode = EditorMode.Draft}: Pro
         }}
         onMouseLeave={() => hoverSend('MOUSE_LEAVE')}
       >
-        <Slate editor={editor} value={value} onChange={onChange}>
+        <Slate editor={_editor} value={value} onChange={onChange}>
           <HoveringToolbar />
           <Editable
-            readOnly={editor.readOnly}
+            readOnly={_editor.readOnly}
             data-testid="editor"
             renderElement={renderElement}
             renderLeaf={renderLeaf}
