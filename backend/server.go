@@ -13,6 +13,16 @@ import (
 	"google.golang.org/grpc"
 )
 
+// CorsMiddleware allows different host/origins
+func CorsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// allow cross domain AJAX requests
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+		next.ServeHTTP(w, r)
+	})
+}
+
 func makeHTTPHandler(cfg config.Config, g *grpc.Server, b *backend) http.Handler {
 	grpcWebHandler := grpcweb.WrapServer(g, grpcweb.WithOriginFunc(func(origin string) bool {
 		return true
@@ -23,8 +33,8 @@ func makeHTTPHandler(cfg config.Config, g *grpc.Server, b *backend) http.Handler
 	mux := http.NewServeMux()
 	mux.Handle("/debug/", http.DefaultServeMux) // pprof and expvar handlers are registered on the router.
 	mux.Handle("/debug/metrics", promhttp.Handler())
-	mux.Handle("/graphql", graphql.Handler(b))
-	mux.Handle("/playground", playground.Handler("GraphQL Playgorund", "/graphql"))
+	mux.Handle("/graphql", CorsMiddleware(graphql.Handler(b)))
+	mux.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if grpcWebHandler.IsAcceptableGrpcCorsRequest(r) || grpcWebHandler.IsGrpcWebRequest(r) {
