@@ -4,17 +4,12 @@ import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 // import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
 import {useActor} from '@xstate/react'
-import {AppError} from 'frontend/app/src/app'
-import {
-  FormEvent,
-  // useLayoutEffect,
-  useRef,
-  useState,
-} from 'react'
+import {FormEvent, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
+import {AppError} from '../app'
 import {useSidepanel} from '../components/sidepanel'
 import {useEnableSidepanel} from '../components/sidepanel/sidepanel'
 import {Textarea} from '../components/textarea'

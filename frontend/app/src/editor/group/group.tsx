@@ -1,12 +1,12 @@
 import {isFlowContent, isGroup, isGroupContent} from '@mintter/mttast'
 import {createId, statement} from '@mintter/mttast-builder'
 import {css, styled} from '@mintter/ui/stitches.config'
-import {resetGroupingContent} from 'frontend/app/src/editor/utils'
 import {forwardRef, PropsWithChildren} from 'react'
 import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
+import {resetGroupingContent} from '../utils'
 
 export const ELEMENT_GROUP = 'group'
 

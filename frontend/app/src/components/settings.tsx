@@ -16,6 +16,7 @@ import {useMutation, useQueryClient} from 'react-query'
 import {queryKeys, useAccount} from '../hooks'
 import {PeerAddrs} from './peer-addrs'
 import {ScrollArea} from './scroll-area'
+import {WalletList} from './wallet-list'
 
 type ProfileInformationDataType = {
   alias: string
@@ -67,6 +68,7 @@ export function Settings() {
           <StyledTabsList aria-label="Manage your node">
             <TabTrigger value="profile">Profile</TabTrigger>
             <TabTrigger value="account">Account Info</TabTrigger>
+            <TabTrigger value="wallets">Wallets</TabTrigger>
             <TabTrigger value="settings">Settings</TabTrigger>
           </StyledTabsList>
           <TabsContent value="profile">
@@ -77,6 +79,11 @@ export function Settings() {
           <TabsContent value="account">
             <ScrollArea>
               <AccountInfo />
+            </ScrollArea>
+          </TabsContent>
+          <TabsContent value="wallets">
+            <ScrollArea>
+              <WalletsInfo />
             </ScrollArea>
           </TabsContent>
           <TabsContent value="settings">
@@ -269,7 +276,7 @@ function AccountInfo() {
       <Text as="h4" size="6">
         Devices List
       </Text>
-      <Box>
+      <Box as="ul">
         {Object.entries(data?.devices).map(([id, device]: [string, Device], index: number) => (
           <Text as="li" key={id}>
             <Text as="span" color="muted" css={{display: 'inline-block', marginRight: '$4'}}>
@@ -291,6 +298,23 @@ function AppSettings() {
       <Text as="label" htmlFor="darkMode">
         Dark Mode
       </Text>
+    </Box>
+  )
+}
+
+function WalletsInfo() {
+  return (
+    <Box
+      css={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '$7',
+        padding: '$5',
+        marginTop: '$8',
+        marginBottom: '$8',
+      }}
+    >
+      <WalletList />
     </Box>
   )
 }
