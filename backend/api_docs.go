@@ -274,9 +274,7 @@ func pubToProto(id string, pub Publication) *documents.Publication {
 }
 
 func (srv *docsAPI) GetPublication(ctx context.Context, in *documents.GetPublicationRequest) (*documents.Publication, error) {
-	if in.Version != "" {
-		return nil, status.Error(codes.Unimplemented, "requesting specific version is not implemented yet")
-	}
+	// TODO: implement getting specific version of the publication.
 
 	c, err := srv.parseDocumentID(in.DocumentId)
 	if err != nil {
