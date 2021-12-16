@@ -7,6 +7,16 @@ option go_package = ".;backend";
 import "google/protobuf/timestamp.proto";
 
 message DocumentChange {
+  message Link {
+    string source_block_id = 1;
+
+    string target_document_id = 2;
+
+    string target_block_id = 3;
+
+    string target_version = 4;
+  }
+
   string title_updated = 1;
 
   string subtitle_updated = 2;
@@ -20,6 +30,10 @@ message DocumentChange {
   google.protobuf.Timestamp create_time = 5;
 
   google.protobuf.Timestamp update_time = 6;
+
+  repeated Link links_added = 7;
+
+  repeated Link links_removed = 8;
 }
 
 message DocumentFeedChange {

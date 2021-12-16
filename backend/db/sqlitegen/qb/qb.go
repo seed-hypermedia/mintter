@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// MakeQuery creates a query templats that later can be used for generating the code that uses the query.
+// MakeQuery creates a query template that later can be used for generating the code that uses the query.
 // The function will be generated using name, and parameters of the query can be of the following types:
 //
 // string: Useful for raw SQL fragments.
@@ -21,13 +21,31 @@ import (
 //
 // See qb_test.go for examples of MakeQuery.
 func MakeQuery(s sqlitegen.Schema, name string, kind sqlitegen.QueryKind, vv ...interface{}) sqlitegen.QueryTemplate {
-	qb := &queryBuilder{
+	qb := newBuilder(s, name, kind)
+
+	qb.writeSegments(vv...)
+
+	return qb.Build()
+}
+
+func newBuilder(s sqlitegen.Schema, name string, kind sqlitegen.QueryKind) *queryBuilder {
+	return &queryBuilder{
+		schema:      s,
+		prevNewLine: true,
 		qt: sqlitegen.QueryTemplate{
 			Name: name,
 			Kind: kind,
 		},
 	}
+}
 
+func (qb *queryBuilder) writeSegments(vv ...interface{}) {
+	for _, v := range vv {
+		qb.writeSegment(v)
+	}
+}
+
+func (qb *queryBuilder) writeSegment(v interface{}) {
 	// This is a bit cumbersome, but I haven't found a better way. The idea is that we want to
 	// add spaces between different segments, except before and after a line break. This allows us to add
 	// line breaks that would generate a more pretty SQL statements in the generated code.
@@ -36,22 +54,18 @@ func MakeQuery(s sqlitegen.Schema, name string, kind sqlitegen.QueryKind, vv ...
 	// we write the segment, which is a bit counter-intuitive. We also need to cache whether the previous segment
 	// was a line break, so that we avoid writing the space on a new line. It would probably be easier to understand
 	// if we could just step-back one space before writing the next one, but implementing it is actually a bit more complicated.
-	prevNewLine := true
-	for _, v := range vv {
-		fn, isNewLine := newSegment(s, v)
 
-		needSpace := !prevNewLine && !isNewLine
+	fn, isNewLine := newSegment(qb.schema, v)
 
-		if needSpace {
-			qb.WriteRune(' ')
-		}
+	needSpace := !qb.prevNewLine && !isNewLine
 
-		fn(qb)
-
-		prevNewLine = isNewLine
+	if needSpace {
+		qb.WriteRune(' ')
 	}
 
-	return qb.Build()
+	fn(qb)
+
+	qb.prevNewLine = isNewLine
 }
 
 func newSegment(s sqlitegen.Schema, v interface{}) (writeFunc func(*queryBuilder), isNewLine bool) {
@@ -67,7 +81,7 @@ func newSegment(s sqlitegen.Schema, v interface{}) (writeFunc func(*queryBuilder
 			isNewLine = true
 		}
 	case Opt:
-		writeFunc = func(qb *queryBuilder) { opt(s, qb) }
+		writeFunc = func(qb *queryBuilder) { opt(qb) }
 	case sqlitegen.Column:
 		writeFunc = func(qb *queryBuilder) { qb.WriteString(string(opt)) }
 	case sqlitegen.Table:
@@ -83,8 +97,10 @@ func newSegment(s sqlitegen.Schema, v interface{}) (writeFunc func(*queryBuilder
 const Line = '\n'
 
 type queryBuilder struct {
-	b  strings.Builder
-	qt sqlitegen.QueryTemplate
+	prevNewLine bool
+	schema      sqlitegen.Schema
+	b           strings.Builder
+	qt          sqlitegen.QueryTemplate
 }
 
 func (qb *queryBuilder) AddInput(s sqlitegen.GoSymbol) {
@@ -113,14 +129,14 @@ func (qb *queryBuilder) Build() sqlitegen.QueryTemplate {
 }
 
 // Opt is a functional option type that modifies query template.
-type Opt func(sqlitegen.Schema, *queryBuilder)
+type Opt func(*queryBuilder)
 
 // List accepts the same arguments as MakeQuery, but wraps them as a SQL list.
 func List(vv ...interface{}) Opt {
-	return func(s sqlitegen.Schema, qb *queryBuilder) {
+	return func(qb *queryBuilder) {
 		qb.WriteRune('(')
 		for i, v := range vv {
-			fn, _ := newSegment(s, v)
+			fn, _ := newSegment(qb.schema, v)
 			fn(qb)
 			if i < len(vv)-1 {
 				qb.WriteString(", ")
@@ -143,10 +159,10 @@ func ListColShort(cols ...sqlitegen.Column) Opt {
 
 // SubQuery creates a subquery. It accepts the same arguments as MakeQuery and List.
 func SubQuery(vv ...interface{}) Opt {
-	return func(s sqlitegen.Schema, qb *queryBuilder) {
+	return func(qb *queryBuilder) {
 		qb.WriteRune('(')
 		for i, v := range vv {
-			fn, isNewLine := newSegment(s, v)
+			fn, isNewLine := newSegment(qb.schema, v)
 			if isNewLine {
 				// This is a bit stupid, will need to fix it at some point.
 				// Otherwise the statement ends up looking ugly with unnecessary white spaces.
@@ -165,47 +181,36 @@ func SubQuery(vv ...interface{}) Opt {
 
 // Insert generates a complete insert statement.
 func Insert(cols ...sqlitegen.Column) Opt {
-	return func(s sqlitegen.Schema, qb *queryBuilder) {
-		table := s.GetColumnTable(cols[0])
+	if len(cols) == 0 {
+		panic("INSERT statement must have columns to insert")
+	}
+	return func(qb *queryBuilder) {
+		var table sqlitegen.Table
 
-		qb.WriteString("INSERT INTO ")
-		qb.WriteString(string(table))
-		qb.WriteString(" (")
-
+		varCols := make([]interface{}, len(cols))
 		for i, c := range cols {
-			if table != s.GetColumnTable(c) {
-				panic("trying to insert columns from different tables")
+			if i == 0 {
+				table = qb.schema.GetColumnTable(c)
+			} else {
+				if table != qb.schema.GetColumnTable(c) {
+					panic("BUG: inserting columns from unrelated tables")
+				}
 			}
-
-			qb.WriteString(c.ShortName())
-			if i < len(cols)-1 {
-				qb.WriteString(", ")
-			}
+			varCols[i] = VarCol(c)
 		}
 
-		qb.WriteRune(')')
-		qb.WriteRune('\n')
-		qb.WriteString("VALUES (")
-		for i, c := range cols {
-			qb.WriteRune('?')
-			if i < len(cols)-1 {
-				qb.WriteString(", ")
-			}
-
-			qb.AddInput(sqlitegen.GoSymbol{
-				Name: sqlitegen.GoNameFromSQLName(c.String(), false),
-				Type: s.GetColumnType(c),
-			})
-		}
-		qb.WriteRune(')')
+		qb.writeSegments(
+			"INSERT INTO", table, ListColShort(cols...), Line,
+			"VALUES", List(varCols...),
+		)
 	}
 }
 
 // Results annotates SQL expressions or concrete columns to become outputs of a SQL query.
 func Results(rr ...ResultOpt) Opt {
-	return func(s sqlitegen.Schema, qb *queryBuilder) {
+	return func(qb *queryBuilder) {
 		for i, r := range rr {
-			res := r(s)
+			res := r(qb.schema)
 			qb.WriteString(res.SQL)
 			if i < len(rr)-1 {
 				qb.WriteString(", ")
@@ -267,23 +272,25 @@ func SQLFunc(funcName string, args ...string) string {
 // Var creates a binding parameter to be passed to the prepared SQL statements during execution.
 // It requires to specify the type so that we know which one to use in the generated code.
 func Var(name string, goType sqlitegen.Type) Opt {
-	return func(s sqlitegen.Schema, qb *queryBuilder) {
-		qb.AddInput(sqlitegen.GoSymbol{
+	return func(qb *queryBuilder) {
+		sym := sqlitegen.GoSymbol{
 			Name: name,
 			Type: goType,
-		})
-		qb.WriteString("?")
+		}
+		qb.AddInput(sym)
+		qb.WriteString(":" + sym.Name)
 	}
 }
 
 // VarCol creates a binding parameter to be passed when preparing SQL statement. It reuses
 // the data type of the column using the schema.
 func VarCol(col sqlitegen.Column) Opt {
-	return func(s sqlitegen.Schema, qb *queryBuilder) {
-		qb.AddInput(sqlitegen.GoSymbol{
+	return func(qb *queryBuilder) {
+		sym := sqlitegen.GoSymbol{
 			Name: sqlitegen.GoNameFromSQLName(col.String(), false),
-			Type: s.GetColumnType(col),
-		})
-		qb.WriteString("?")
+			Type: qb.schema.GetColumnType(col),
+		}
+		qb.AddInput(sym)
+		qb.WriteString(":" + sym.Name)
 	}
 }

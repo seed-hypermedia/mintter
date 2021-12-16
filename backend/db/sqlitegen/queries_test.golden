@@ -25,7 +25,7 @@ WHERE wallets.id = ?`
 	var out getWalletResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindInt(1, walletID)
+		stmt.SetInt(":walletID", walletID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -59,8 +59,8 @@ WHERE wallets.id > ? LIMIT ?`
 	var out []listWalletsResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindText(1, cursor)
-		stmt.BindInt(2, limit)
+		stmt.SetText(":cursor", cursor)
+		stmt.SetInt(":limit", limit)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -82,8 +82,8 @@ func insertWallet(conn *sqlite.Conn, id int, name string) error {
 	const query = `INSERT INTO wallets (id, name) VALUES (?, ?)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindInt(1, id)
-		stmt.BindText(2, name)
+		stmt.SetInt(":id", id)
+		stmt.SetText(":name", name)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {

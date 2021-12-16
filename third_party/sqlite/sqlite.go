@@ -871,6 +871,11 @@ func (stmt *Stmt) SetInt64(param string, value int64) {
 	stmt.BindInt64(stmt.findBindName("SetInt64", param), value)
 }
 
+// SetInt64 binds an int to a parameter using a column name.
+func (stmt *Stmt) SetInt(param string, value int) {
+	stmt.BindInt64(stmt.findBindName("SetInt64", param), int64(value))
+}
+
 // SetBool binds a value (as a 0 or 1) to a parameter using a column name.
 func (stmt *Stmt) SetBool(param string, value bool) {
 	stmt.BindBool(stmt.findBindName("SetBool", param), value)

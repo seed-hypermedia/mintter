@@ -35,13 +35,13 @@ func TestMakeQuery(t *testing.T) {
 					ResultExpr(SQLFunc("COUNT", WalletsColID.String()), "count", sqlitegen.TypeInt),
 				), Line,
 				"FROM", WalletsTableName, Line,
-				"WHERE", WalletsColID, "=", VarCol(WalletsColID), "AND", WalletsColName, "=", Var("walletName", sqlitegen.TypeText),
+				"WHERE", WalletsColID, "=", VarCol(WalletsColID), "AND", WalletsColName, "=", Var("walletsName", sqlitegen.TypeText),
 			),
 			Want: sqlitegen.QueryTemplate{
 				Name: "getWallet",
 				Inputs: []sqlitegen.GoSymbol{
 					{Name: "walletsID", Type: sqlitegen.TypeText},
-					{Name: "walletName", Type: sqlitegen.TypeText},
+					{Name: "walletsName", Type: sqlitegen.TypeText},
 				},
 				Outputs: []sqlitegen.GoSymbol{
 					{Name: "WalletsID", Type: sqlitegen.TypeText},
@@ -50,7 +50,7 @@ func TestMakeQuery(t *testing.T) {
 				},
 				SQL: `SELECT wallets.id, wallets.name, COUNT(wallets.id) AS count
 FROM wallets
-WHERE wallets.id = ? AND wallets.name = ?`,
+WHERE wallets.id = :walletsID AND wallets.name = :walletsName`,
 			},
 		},
 	}
