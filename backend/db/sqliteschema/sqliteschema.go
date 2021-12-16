@@ -153,40 +153,39 @@ var migrations = []string{
 		-- Index for links from Documents.
 		CREATE TABLE links (
 			-- Reference to Document ID from which link originates.
-			source_document_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
+			source_object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
 			-- Block ID inside the Document which contains the link.
 			source_block_id TEXT NOT NULL,
 			-- Reference to Document ID that is linked.
-			target_document_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
+			target_object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
 			-- Block ID that is linked. Can be NULL if links is to the whole Document.
 			target_block_id TEXT,
 			-- Version of the target Document that is linked.
-			target_document_version TEXT NOT NULL,
-			-- Reference to Change that created a link.
-			-- Since each Change references all the dependant changes
-			-- the ID of the Change is guaranteed to be a valid Version
-			-- to identify the state of the source Document.
-			source_change INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE,
+			target_version TEXT NOT NULL,
+			-- Reference to the IPFS block of the change that introduced the link.
+			-- Only required for publications.
+			ipfs_block_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE,
 			-- Reference to the draft if the link is in the draft.
-			source_draft INTEGER REFERENCES drafts ON DELETE CASCADE,
+			-- Only required for drafts.
+			draft_id INTEGER REFERENCES drafts ON DELETE CASCADE,
 			-- Only allow one of the two columns to be set.
-			CHECK ((source_change IS NULL AND source_draft IS NOT NULL) OR (source_change IS NOT NULL AND source_draft IS NULL))
+			CHECK ((ipfs_block_id IS NULL AND draft_id IS NOT NULL) OR (ipfs_block_id IS NOT NULL AND draft_id IS NULL))
 		);
 
 		-- Index to query links on drafts.
-		CREATE INDEX idx_links_source_draft ON links (source_draft)
-		WHERE source_draft IS NOT NULL;
+		CREATE INDEX idx_links_draft_id ON links (draft_id)
+		WHERE draft_id IS NOT NULL;
 
 		-- Index for backlinks.
-		CREATE INDEX idx_links_target_document_id ON links (target_document_id);
+		CREATE INDEX idx_links_target_object_id ON links (target_object_id);
 
 		-- Virtual table for backlinks.
 		CREATE VIRTUAL TABLE backlinks USING transitive_closure (
 			tablename = 'links',
 			-- We need to treat target documents as parents
 			-- for transitive closure to inclide the source documents.
-			idcolumn = 'source_document_id',
-			parentcolumn = 'target_document_id'
+			idcolumn = 'source_object_id',
+			parentcolumn = 'target_object_id'
 		);
 		-- Stores Lightning wallets both externals (imported wallets like bluewallet
 		-- based on lndhub) and internals (based on the LND embedded node).

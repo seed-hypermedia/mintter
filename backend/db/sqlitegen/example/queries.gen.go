@@ -14,11 +14,11 @@ var _ = errors.New
 
 func insertWallet(conn *sqlite.Conn, walletsID string, walletsName string) error {
 	const query = `INSERT INTO wallets (id, name)
-VALUES (?, ?)`
+VALUES (:walletsID, :walletsName)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindText(1, walletsID)
-		stmt.BindText(2, walletsName)
+		stmt.SetText(":walletsID", walletsID)
+		stmt.SetText(":walletsName", walletsName)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -41,12 +41,12 @@ type getWalletResult struct {
 func getWallet(conn *sqlite.Conn, walletsID string) (getWalletResult, error) {
 	const query = `SELECT wallets.id, wallets.name
 FROM wallets
-WHERE wallets.id = ?`
+WHERE wallets.id = :walletsID`
 
 	var out getWalletResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindText(1, walletsID)
+		stmt.SetText(":walletsID", walletsID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -73,13 +73,13 @@ type listWalletsResult struct {
 }
 
 func listWallets(conn *sqlite.Conn, cursor string, limit int) ([]listWalletsResult, error) {
-	const query = `SELECT wallets.id, wallets.name FROM wallets WHERE wallets.id > ? LIMIT ?`
+	const query = `SELECT wallets.id, wallets.name FROM wallets WHERE wallets.id > :cursor LIMIT :limit`
 
 	var out []listWalletsResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindText(1, cursor)
-		stmt.BindInt(2, limit)
+		stmt.SetText(":cursor", cursor)
+		stmt.SetInt(":limit", limit)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -99,12 +99,12 @@ func listWallets(conn *sqlite.Conn, cursor string, limit int) ([]listWalletsResu
 
 func insertUser(conn *sqlite.Conn, usersID int, usersName string, usersAvatar []byte) error {
 	const query = `INSERT INTO users (id, name, avatar)
-VALUES (?, ?, ?)`
+VALUES (:usersID, :usersName, :usersAvatar)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindInt(1, usersID)
-		stmt.BindText(2, usersName)
-		stmt.BindBytes(3, usersAvatar)
+		stmt.SetInt(":usersID", usersID)
+		stmt.SetText(":usersName", usersName)
+		stmt.SetBytes(":usersAvatar", usersAvatar)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -128,12 +128,12 @@ type getUserResult struct {
 func getUser(conn *sqlite.Conn, usersID int) (getUserResult, error) {
 	const query = `SELECT users.id, users.name, users.avatar
 FROM users
-WHERE users.id = ?`
+WHERE users.id = :usersID`
 
 	var out getUserResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindInt(1, usersID)
+		stmt.SetInt(":usersID", usersID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {

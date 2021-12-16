@@ -53,7 +53,7 @@ type {{.Name}}Result struct {
 
 	before := func(stmt *sqlite.Stmt) {
 		{{range $i, $in := .Inputs -}}
-		stmt.{{typeMethod "Bind" $in.Type}}({{inc $i}}, {{$in.Name}})
+		stmt.{{typeMethod "Set" $in.Type}}(":{{$in.Name}}", {{$in.Name}})
 		{{end -}}
 	}
 
@@ -83,7 +83,7 @@ type {{.Name}}Result struct {
 
 	before := func(stmt *sqlite.Stmt) {
 		{{range $i, $in := .Inputs -}}
-		stmt.{{typeMethod "Bind" $in.Type}}({{inc $i}}, {{$in.Name}})
+		stmt.{{typeMethod "Set" $in.Type}}(":{{$in.Name}}", {{$in.Name}})
 		{{end -}}
 	}
 
@@ -115,7 +115,7 @@ if err != nil {
 
 	before := func(stmt *sqlite.Stmt) {
 		{{range $i, $in := .Inputs -}}
-		stmt.{{typeMethod "Bind" $in.Type}}({{inc $i}}, {{$in.Name}})
+		stmt.{{typeMethod "Set" $in.Type}}(":{{$in.Name}}", {{$in.Name}})
 		{{end -}}
 	}
 

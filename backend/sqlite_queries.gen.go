@@ -14,11 +14,11 @@ var _ = errors.New
 
 func accountsInsertOrIgnore(conn *sqlite.Conn, accountsMultihash []byte, accountsCodec int) error {
 	const query = `INSERT OR IGNORE INTO accounts (multihash, codec)
-VALUES (?, ?)`
+VALUES (:accountsMultihash, :accountsCodec)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, accountsMultihash)
-		stmt.BindInt(2, accountsCodec)
+		stmt.SetBytes(":accountsMultihash", accountsMultihash)
+		stmt.SetInt(":accountsCodec", accountsCodec)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -35,12 +35,12 @@ VALUES (?, ?)`
 
 func devicesInsertOrIgnore(conn *sqlite.Conn, devicesMultihash []byte, devicesCodec int, accountsMultihash []byte) error {
 	const query = `INSERT OR IGNORE INTO devices (multihash, codec, account_id)
-VALUES (?, ?, (SELECT accounts.id FROM accounts WHERE accounts.multihash = ?))`
+VALUES (:devicesMultihash, :devicesCodec, (SELECT accounts.id FROM accounts WHERE accounts.multihash = :accountsMultihash))`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, devicesMultihash)
-		stmt.BindInt(2, devicesCodec)
-		stmt.BindBytes(3, accountsMultihash)
+		stmt.SetBytes(":devicesMultihash", devicesMultihash)
+		stmt.SetInt(":devicesCodec", devicesCodec)
+		stmt.SetBytes(":accountsMultihash", accountsMultihash)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -57,12 +57,12 @@ VALUES (?, ?, (SELECT accounts.id FROM accounts WHERE accounts.multihash = ?))`
 
 func objectsInsertOrIgnore(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, accountsMultihash []byte) error {
 	const query = `INSERT OR IGNORE INTO objects (multihash, codec, account_id)
-VALUES (?, ?, (SELECT accounts.id FROM accounts WHERE accounts.multihash = ?))`
+VALUES (:objectsMultihash, :objectsCodec, (SELECT accounts.id FROM accounts WHERE accounts.multihash = :accountsMultihash))`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, objectsMultihash)
-		stmt.BindInt(2, objectsCodec)
-		stmt.BindBytes(3, accountsMultihash)
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
+		stmt.SetBytes(":accountsMultihash", accountsMultihash)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -79,18 +79,18 @@ VALUES (?, ?, (SELECT accounts.id FROM accounts WHERE accounts.multihash = ?))`
 
 func draftsUpsert(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, draftsTitle string, draftsSubtitle string, draftsContent []byte, draftsCreateTime int, draftsUpdateTime int) error {
 	const query = `INSERT INTO drafts (id, title, subtitle, content, create_time, update_time)
-VALUES ((SELECT objects.id FROM objects WHERE objects.multihash = ? AND objects.codec = ?), ?, ?, ?, ?, ?)
+VALUES ((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec), :draftsTitle, :draftsSubtitle, :draftsContent, :draftsCreateTime, :draftsUpdateTime)
 ON CONFLICT (id) DO UPDATE
 SET (title, subtitle, content, update_time) = (excluded.title, excluded.subtitle, excluded.content, excluded.update_time)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, objectsMultihash)
-		stmt.BindInt(2, objectsCodec)
-		stmt.BindText(3, draftsTitle)
-		stmt.BindText(4, draftsSubtitle)
-		stmt.BindBytes(5, draftsContent)
-		stmt.BindInt(6, draftsCreateTime)
-		stmt.BindInt(7, draftsUpdateTime)
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
+		stmt.SetText(":draftsTitle", draftsTitle)
+		stmt.SetText(":draftsSubtitle", draftsSubtitle)
+		stmt.SetBytes(":draftsContent", draftsContent)
+		stmt.SetInt(":draftsCreateTime", draftsCreateTime)
+		stmt.SetInt(":draftsUpdateTime", draftsUpdateTime)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -116,13 +116,13 @@ type draftsGetResult struct {
 func draftsGet(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int) (draftsGetResult, error) {
 	const query = `SELECT drafts.title, drafts.subtitle, drafts.content, drafts.create_time, drafts.update_time
 FROM drafts
-WHERE drafts.id = (SELECT objects.id FROM objects WHERE objects.multihash = ? AND objects.codec = ?)`
+WHERE drafts.id = (SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec)`
 
 	var out draftsGetResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, objectsMultihash)
-		stmt.BindInt(2, objectsCodec)
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -148,11 +148,11 @@ WHERE drafts.id = (SELECT objects.id FROM objects WHERE objects.multihash = ? AN
 
 func draftsDelete(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int) error {
 	const query = `DELETE FROM drafts
-WHERE drafts.id = (SELECT objects.id FROM objects WHERE objects.multihash = ? AND objects.codec = ?)`
+WHERE drafts.id = (SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, objectsMultihash)
-		stmt.BindInt(2, objectsCodec)
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -208,19 +208,19 @@ JOIN objects ON objects.id = drafts.id
 
 func publicationsUpsert(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, publicationsTitle string, publicationsSubtitle string, publicationsCreateTime int, publicationsUpdateTime int, publicationsPublishTime int, publicationsLatestVersion string) error {
 	const query = `INSERT INTO publications (id, title, subtitle, create_time, update_time, publish_time, latest_version)
-VALUES ((SELECT objects.id FROM objects WHERE objects.multihash = ? AND objects.codec = ?), ?, ?, ?, ?, ?, ?)
+VALUES ((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec), :publicationsTitle, :publicationsSubtitle, :publicationsCreateTime, :publicationsUpdateTime, :publicationsPublishTime, :publicationsLatestVersion)
 ON CONFLICT (id) DO UPDATE
 SET (title, subtitle, create_time, update_time, publish_time, latest_version) = (excluded.title, excluded.subtitle, excluded.create_time, excluded.update_time, excluded.publish_time, excluded.latest_version)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, objectsMultihash)
-		stmt.BindInt(2, objectsCodec)
-		stmt.BindText(3, publicationsTitle)
-		stmt.BindText(4, publicationsSubtitle)
-		stmt.BindInt(5, publicationsCreateTime)
-		stmt.BindInt(6, publicationsUpdateTime)
-		stmt.BindInt(7, publicationsPublishTime)
-		stmt.BindText(8, publicationsLatestVersion)
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
+		stmt.SetText(":publicationsTitle", publicationsTitle)
+		stmt.SetText(":publicationsSubtitle", publicationsSubtitle)
+		stmt.SetInt(":publicationsCreateTime", publicationsCreateTime)
+		stmt.SetInt(":publicationsUpdateTime", publicationsUpdateTime)
+		stmt.SetInt(":publicationsPublishTime", publicationsPublishTime)
+		stmt.SetText(":publicationsLatestVersion", publicationsLatestVersion)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -280,11 +280,11 @@ JOIN objects ON objects.id = publications.id
 
 func objectsDelete(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int) error {
 	const query = `DELETE FROM objects
-WHERE objects.multihash = ? AND objects.codec = ?`
+WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, objectsMultihash)
-		stmt.BindInt(2, objectsCodec)
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -341,12 +341,12 @@ type accountsGetForDeviceResult struct {
 func accountsGetForDevice(conn *sqlite.Conn, devicesMultihash []byte) (accountsGetForDeviceResult, error) {
 	const query = `SELECT accounts.multihash, accounts.codec
 FROM accounts
-WHERE accounts.id = (SELECT devices.account_id FROM devices WHERE devices.multihash = ?)`
+WHERE accounts.id = (SELECT devices.account_id FROM devices WHERE devices.multihash = :devicesMultihash)`
 
 	var out accountsGetForDeviceResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, devicesMultihash)
+		stmt.SetBytes(":devicesMultihash", devicesMultihash)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -378,12 +378,12 @@ type accountsListResult struct {
 func accountsList(conn *sqlite.Conn, ownAccountMultihash []byte) ([]accountsListResult, error) {
 	const query = `SELECT accounts.codec, accounts.multihash, accounts.alias, accounts.email, accounts.bio
 FROM accounts
-WHERE accounts.multihash != ?`
+WHERE accounts.multihash != :ownAccountMultihash`
 
 	var out []accountsListResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, ownAccountMultihash)
+		stmt.SetBytes(":ownAccountMultihash", ownAccountMultihash)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -406,19 +406,19 @@ WHERE accounts.multihash != ?`
 
 func headsUpsert(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, devicesMultihash []byte, headsSeq int, headsLamportTime int, ipfsBlocksMultihash []byte, ipfsBlocksCodec int) error {
 	const query = `INSERT INTO heads (object_id, device_id, seq, lamport_time, ipfs_block_id)
-VALUES ((SELECT objects.id FROM objects WHERE objects.multihash = ? AND objects.codec = ?), (SELECT devices.id FROM devices WHERE devices.multihash = ?), ?, ?, (SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.multihash = ? AND ipfs_blocks.codec = ?))
+VALUES ((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec), (SELECT devices.id FROM devices WHERE devices.multihash = :devicesMultihash), :headsSeq, :headsLamportTime, (SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash AND ipfs_blocks.codec = :ipfsBlocksCodec))
 ON CONFLICT (object_id, device_id) DO UPDATE
 SET (object_id, device_id, seq, lamport_time, ipfs_block_id) = (excluded.object_id, excluded.device_id, excluded.seq, excluded.lamport_time, excluded.ipfs_block_id)
 WHERE (excluded.seq - seq = 1)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, objectsMultihash)
-		stmt.BindInt(2, objectsCodec)
-		stmt.BindBytes(3, devicesMultihash)
-		stmt.BindInt(4, headsSeq)
-		stmt.BindInt(5, headsLamportTime)
-		stmt.BindBytes(6, ipfsBlocksMultihash)
-		stmt.BindInt(7, ipfsBlocksCodec)
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
+		stmt.SetBytes(":devicesMultihash", devicesMultihash)
+		stmt.SetInt(":headsSeq", headsSeq)
+		stmt.SetInt(":headsLamportTime", headsLamportTime)
+		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
+		stmt.SetInt(":ipfsBlocksCodec", ipfsBlocksCodec)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -448,14 +448,14 @@ FROM heads
 JOIN objects ON objects.id = heads.object_id
 JOIN devices ON devices.id = heads.device_id
 JOIN ipfs_blocks ON ipfs_blocks.id = heads.ipfs_block_id
-WHERE objects.multihash = ? AND objects.codec = ?
+WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec
 `
 
 	var out []headsListForObjectResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, objectsMultihash)
-		stmt.BindInt(2, objectsCodec)
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -492,16 +492,16 @@ FROM heads
 JOIN objects ON objects.id = heads.object_id
 JOIN devices ON devices.id = heads.device_id
 JOIN ipfs_blocks ON ipfs_blocks.id = heads.ipfs_block_id
-WHERE objects.multihash = ?
-AND objects.codec = ?
-AND devices.multihash = ?`
+WHERE objects.multihash = :objectsMultihash
+AND objects.codec = :objectsCodec
+AND devices.multihash = :devicesMultihash`
 
 	var out headsGetForObjectAndDeviceResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, objectsMultihash)
-		stmt.BindInt(2, objectsCodec)
-		stmt.BindBytes(3, devicesMultihash)
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
+		stmt.SetBytes(":devicesMultihash", devicesMultihash)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -524,30 +524,4 @@ AND devices.multihash = ?`
 	}
 
 	return out, err
-}
-
-func linksInsertFromDraft(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, linksSourceDocumentID int, linksSourceBlockID string, linksTargetDocumentID int, linksTargetBlockID string, linksTargetDocumentVersion string) error {
-	const query = `INSERT INTO links (source_draft, source_document_id, source_block_id, target_document_id, target_block_id, target_document_version)
-VALUES ((SELECT objects.id FROM objects WHERE objects.multihash = ? AND objects.codec = ? LIMIT 1), ?, ?, ?, ?, ?)`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.BindBytes(1, objectsMultihash)
-		stmt.BindInt(2, objectsCodec)
-		stmt.BindInt(3, linksSourceDocumentID)
-		stmt.BindText(4, linksSourceBlockID)
-		stmt.BindInt(5, linksTargetDocumentID)
-		stmt.BindText(6, linksTargetBlockID)
-		stmt.BindText(7, linksTargetDocumentVersion)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: linksInsertFromDraft: %w", err)
-	}
-
-	return err
 }

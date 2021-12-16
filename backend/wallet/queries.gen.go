@@ -4,64 +4,37 @@ package wallet
 
 import (
 	"errors"
+	"fmt"
 
 	"crawshaw.io/sqlite"
-	"go.uber.org/multierr"
+	"mintter/backend/db/sqlitegen"
 )
 
 var _ = errors.New
-
-func execStmt(conn *sqlite.Conn, query string, before func(*sqlite.Stmt), onStep func(int, *sqlite.Stmt) error) (err error) {
-	stmt, err := conn.Prepare(query)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err = multierr.Append(err, stmt.Reset())
-	}()
-
-	before(stmt)
-
-	for i := 0; true; i++ {
-		hasRow, err := stmt.Step()
-		if err != nil {
-			return err
-		}
-
-		if !hasRow {
-			break
-		}
-
-		if err := onStep(i, stmt); err != nil {
-			return err
-		}
-	}
-
-	return err
-}
 
 func insertWallet(conn *sqlite.Conn, walletsID string, walletsAddress string, walletsType string, walletsAuth []byte, walletsName string, walletsBalance int) error {
 	const query = `INSERT INTO wallets (id, address, type, auth, name, balance)
 VALUES (?, ?, ?, ?, ?, ?)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindText(1, walletsID)
-		stmt.BindText(2, walletsAddress)
-		stmt.BindText(3, walletsType)
-		stmt.BindBytes(4, walletsAuth)
-		stmt.BindText(5, walletsName)
-		stmt.BindInt(6, walletsBalance)
+		stmt.SetText(":walletsID", walletsID)
+		stmt.SetText(":walletsAddress", walletsAddress)
+		stmt.SetText(":walletsType", walletsType)
+		stmt.SetBytes(":walletsAuth", walletsAuth)
+		stmt.SetText(":walletsName", walletsName)
+		stmt.SetInt(":walletsBalance", walletsBalance)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: insertWallet: %w", err)
 	}
 
-	return nil
+	return err
 }
 
 type getWalletResult struct {
@@ -74,12 +47,12 @@ type getWalletResult struct {
 
 func getWallet(conn *sqlite.Conn, walletsID string) (getWalletResult, error) {
 	const query = `SELECT wallets.id, wallets.address, wallets.name, wallets.balance, wallets.type
-FROM wallets WHERE wallets.id = ?`
+FROM wallets WHERE wallets.id = :walletsID`
 
 	var out getWalletResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindText(1, walletsID)
+		stmt.SetText(":walletsID", walletsID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -95,11 +68,12 @@ FROM wallets WHERE wallets.id = ?`
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return out, err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: getWallet: %w", err)
 	}
 
-	return out, nil
+	return out, err
 }
 
 type listWalletsResult struct {
@@ -111,13 +85,13 @@ type listWalletsResult struct {
 }
 
 func listWallets(conn *sqlite.Conn, cursor string, limit int) ([]listWalletsResult, error) {
-	const query = `SELECT wallets.id, wallets.address, wallets.name, wallets.type, wallets.balance FROM wallets WHERE wallets.id > ? LIMIT ?`
+	const query = `SELECT wallets.id, wallets.address, wallets.name, wallets.type, wallets.balance FROM wallets WHERE wallets.id > :cursor LIMIT :limit`
 
 	var out []listWalletsResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindText(1, cursor)
-		stmt.BindInt(2, limit)
+		stmt.SetText(":cursor", cursor)
+		stmt.SetInt(":limit", limit)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -130,11 +104,12 @@ func listWallets(conn *sqlite.Conn, cursor string, limit int) ([]listWalletsResu
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return nil, err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: listWallets: %w", err)
 	}
 
-	return out, nil
+	return out, err
 }
 
 type getDefaultWalletResult struct {
@@ -151,12 +126,12 @@ func getDefaultWallet(conn *sqlite.Conn, key string) (getDefaultWalletResult, er
 FROM wallets
 WHERE wallets.id IN (SELECT global_meta.value
 FROM global_meta
-WHERE global_meta.key = ? )`
+WHERE global_meta.key = :key )`
 
 	var out getDefaultWalletResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindText(1, key)
+		stmt.SetText(":key", key)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -173,87 +148,92 @@ WHERE global_meta.key = ? )`
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return out, err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: getDefaultWallet: %w", err)
 	}
 
-	return out, nil
+	return out, err
 }
 
 func setDefaultWallet(conn *sqlite.Conn, globalMetaKey string, globalMetaValue string) error {
 	const query = `INSERT OR REPLACE INTO global_meta (key, value)
-VALUES (?, ?)`
+VALUES (:globalMetaKey, :globalMetaValue)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindText(1, globalMetaKey)
-		stmt.BindText(2, globalMetaValue)
+		stmt.SetText(":globalMetaKey", globalMetaKey)
+		stmt.SetText(":globalMetaValue", globalMetaValue)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: setDefaultWallet: %w", err)
 	}
 
-	return nil
+	return err
 }
 
 func removeDefaultWallet(conn *sqlite.Conn, key string) error {
-	const query = `DELETE FROM global_meta WHERE global_meta.key = ? `
+	const query = `DELETE FROM global_meta WHERE global_meta.key = :key `
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindText(1, key)
+		stmt.SetText(":key", key)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: removeDefaultWallet: %w", err)
 	}
 
-	return nil
+	return err
 }
 
 func updateWalletName(conn *sqlite.Conn, walletsName string, walletsID string) error {
 	const query = `UPDATE wallets SET (name)
-=( ? ) WHERE wallets.id = ?`
+=( :walletsName ) WHERE wallets.id = :walletsID`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindText(1, walletsName)
-		stmt.BindText(2, walletsID)
+		stmt.SetText(":walletsName", walletsName)
+		stmt.SetText(":walletsID", walletsID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: updateWalletName: %w", err)
 	}
 
-	return nil
+	return err
 }
 
 func removeWallet(conn *sqlite.Conn, walletsID string) error {
-	const query = `DELETE FROM wallets WHERE wallets.id = ?`
+	const query = `DELETE FROM wallets WHERE wallets.id = :walletsID`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindText(1, walletsID)
+		stmt.SetText(":walletsID", walletsID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: removeWallet: %w", err)
 	}
 
-	return nil
+	return err
 }
 
 type getWalletCountResult struct {
@@ -277,11 +257,12 @@ func getWalletCount(conn *sqlite.Conn) (getWalletCountResult, error) {
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return out, err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: getWalletCount: %w", err)
 	}
 
-	return out, nil
+	return out, err
 }
 
 type getWalletAuthResult struct {
@@ -289,12 +270,12 @@ type getWalletAuthResult struct {
 }
 
 func getWalletAuth(conn *sqlite.Conn, walletsID string) (getWalletAuthResult, error) {
-	const query = `SELECT wallets.auth FROM wallets WHERE wallets.id = ?`
+	const query = `SELECT wallets.auth FROM wallets WHERE wallets.id = :walletsID`
 
 	var out getWalletAuthResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.BindText(1, walletsID)
+		stmt.SetText(":walletsID", walletsID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -306,9 +287,10 @@ func getWalletAuth(conn *sqlite.Conn, walletsID string) (getWalletAuthResult, er
 		return nil
 	}
 
-	if err := execStmt(conn, query, before, onStep); err != nil {
-		return out, err
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: getWalletAuth: %w", err)
 	}
 
-	return out, nil
+	return out, err
 }

@@ -380,30 +380,58 @@ func generateQueries() error {
 			"AND", s.DevicesMultihash, "=", qb.VarCol(s.DevicesMultihash),
 		),
 
-		qb.MakeQuery(s.Schema, "linksInsertFromDraft", sgen.QueryKindExec,
-			"INSERT INTO", s.Links, qb.ListColShort(
-				s.LinksSourceDraft,
-				s.LinksSourceDocumentID,
-				s.LinksSourceBlockID,
-				s.LinksTargetDocumentID,
-				s.LinksTargetBlockID,
-				s.LinksTargetDocumentVersion,
-			), qb.Line,
-			"VALUES", qb.List(
-				qb.SubQuery(
-					"SELECT", s.ObjectsID,
-					"FROM", s.Objects,
-					"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
-					"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
-					"LIMIT 1",
-				),
-				qb.VarCol(s.LinksSourceDocumentID),
-				qb.VarCol(s.LinksSourceBlockID),
-				qb.VarCol(s.LinksTargetDocumentID),
-				qb.VarCol(s.LinksTargetBlockID),
-				qb.VarCol(s.LinksTargetDocumentVersion),
-			),
-		),
+		// qb.MakeQuery(s.Schema, "linksInsertFromDraft", sgen.QueryKindExec,
+		// 	"INSERT INTO", s.Links, qb.ListColShort(
+		// 		s.LinksDraftID,
+		// 		s.LinksSourceObjectID,
+		// 		s.LinksSourceBlockID,
+		// 		s.LinksTargetObjectID,
+		// 		s.LinksTargetBlockID,
+		// 		s.LinksTargetVersion,
+		// 	), qb.Line,
+		// 	"VALUES", qb.List(
+		// 		qb.SubQuery(
+		// 			"SELECT", s.ObjectsID,
+		// 			"FROM", s.Objects,
+		// 			"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
+		// 			"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+		// 			"LIMIT 1",
+		// 		),
+		// 		qb.SubQuery(
+		// 			"SELECT",
+		// 		),
+		// 		qb.VarCol(s.LinksSourceObjectID),
+		// 		qb.VarCol(s.LinksSourceBlockID),
+		// 		qb.VarCol(s.LinksTargetDocumentID),
+		// 		qb.VarCol(s.LinksTargetBlockID),
+		// 		qb.VarCol(s.LinksTargetVersion),
+		// 	),
+		// ),
+
+		// qb.MakeQuery(s.Schema, "linksInsertFromChange", sgen.QueryKindExec,
+		// 	"INSERT INTO", s.Links, qb.ListColShort(
+		// 		s.LinksIPFSBlockID,
+		// 		s.LinksSourceDocumentID,
+		// 		s.LinksSourceBlockID,
+		// 		s.LinksTargetDocumentID,
+		// 		s.LinksTargetBlockID,
+		// 		s.LinksTargetVersion,
+		// 	), qb.Line,
+		// 	"VALUES", qb.List(
+		// 		qb.SubQuery(
+		// 			"SELECT", s.IPFSB,
+		// 			"FROM", s.Objects,
+		// 			"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
+		// 			"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+		// 			"LIMIT 1",
+		// 		),
+		// 		qb.VarCol(s.LinksSourceDocumentID),
+		// 		qb.VarCol(s.LinksSourceBlockID),
+		// 		qb.VarCol(s.LinksTargetDocumentID),
+		// 		qb.VarCol(s.LinksTargetBlockID),
+		// 		qb.VarCol(s.LinksTargetVersion),
+		// 	),
+		// ),
 
 		// delete draft links
 
