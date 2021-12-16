@@ -14,7 +14,7 @@ var _ = errors.New
 
 func insertWallet(conn *sqlite.Conn, walletsID string, walletsAddress string, walletsType string, walletsAuth []byte, walletsName string, walletsBalance int) error {
 	const query = `INSERT INTO wallets (id, address, type, auth, name, balance)
-VALUES (?, ?, ?, ?, ?, ?)`
+VALUES (:walletsID, :walletsAddress, :walletsType, :walletsAuth, :walletsName, :walletsBalance)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":walletsID", walletsID)

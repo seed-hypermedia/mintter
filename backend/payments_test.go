@@ -17,6 +17,8 @@ const (
 )
 
 func TestReqInvoice(t *testing.T) {
+	t.Skip("Uncomment skip to run integration tests with BlueWallet")
+
 	alice := makeTestBackend(t, "alice", true)
 	bob := makeTestBackend(t, "bob", true)
 
@@ -49,6 +51,8 @@ func TestReqInvoice(t *testing.T) {
 }
 
 func TestModifyWallets(t *testing.T) {
+	t.Skip("Uncomment skip to run integration tests with BlueWallet")
+
 	alice := makeTestBackend(t, "alice", true)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)

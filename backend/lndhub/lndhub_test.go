@@ -20,6 +20,8 @@ const (
 )
 
 func TestLndhub(t *testing.T) {
+	t.Skip("Uncomment skip to run integration tests with BlueWallet")
+
 	tests := [...]struct {
 		name            string
 		credentials     string
