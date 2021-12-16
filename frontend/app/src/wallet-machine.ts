@@ -248,7 +248,9 @@ export function createWalletMachine({id, name, balanceSats, isDefault}: Wallet) 
               let mutation = gql`
                 mutation setDefaultWallet($input: SetDefaultWalletInput!) {
                   setDefaultWallet(input: $input) {
-                    id
+                    wallet {
+                      id
+                    }
                   }
                 }
               `
@@ -262,6 +264,12 @@ export function createWalletMachine({id, name, balanceSats, isDefault}: Wallet) 
                 .catch((err) => {
                   sendBack(walletModel.events['REPORT.ERROR'](err))
                 })
+            },
+          },
+          on: {
+            'REPORT.DEFAULT.SUCCESS': {
+              target: 'idle',
+              actions: 'commit',
             },
           },
         },
@@ -291,10 +299,6 @@ export function createWalletMachine({id, name, balanceSats, isDefault}: Wallet) 
             'REPORT.DELETE.SUCCESS': 'deleted',
             'REPORT.ERROR': {
               actions: 'setError',
-            },
-            'REPORT.DEFAULT.SUCCESS': {
-              target: 'idle',
-              actions: 'commit',
             },
           },
         },
