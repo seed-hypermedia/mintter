@@ -2,12 +2,10 @@ export type {
   Account,
   Account_DevicesEntry,
   Device,
-  DeviceRegistered,
   GetAccountRequest,
   ListAccountsRequest,
   ListAccountsResponse,
   Profile,
-  ProfileUpdated,
 } from '../.generated/accounts/v1alpha/accounts'
 export type {
   GenSeedRequest,
@@ -45,6 +43,7 @@ export type {
   StopObjectDiscoveryRequest,
   StopObjectDiscoveryResponse,
 } from '../.generated/networking/v1alpha/networking'
+export * from '../.generated/types'
 export {generateSeed, getAccount, listAccounts, registerAccount, updateAccount} from './accounts'
 export {getInfo} from './daemon'
 export {createDraft, deleteDraft, getDraft, listDrafts, publishDraft, updateDraft} from './drafts'

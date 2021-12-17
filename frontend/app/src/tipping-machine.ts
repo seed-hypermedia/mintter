@@ -171,7 +171,7 @@ export const tippingMachine = tippingModel.createMachine({
               request<{walletID: string}>(MINTTER_GRAPHQL_API_URL, mutation, {
                 input: {
                   paymentRequest: context.invoice,
-                  // amountSats: context.amount,
+                  amountSats: context.amount,
                 },
               })
                 .then((response) => {
