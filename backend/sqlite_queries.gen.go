@@ -77,11 +77,35 @@ VALUES (:objectsMultihash, :objectsCodec, (SELECT accounts.id FROM accounts WHER
 	return err
 }
 
-func draftsUpsert(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, draftsTitle string, draftsSubtitle string, draftsContent []byte, draftsCreateTime int, draftsUpdateTime int) error {
+func draftsUpdate(conn *sqlite.Conn, draftsTitle string, draftsSubtitle string, draftsContent []byte, draftsUpdateTime int, objectsMultihash []byte, objectsCodec int) error {
+	const query = `UPDATE drafts
+SET (title, subtitle, content, update_time) = (:draftsTitle, :draftsSubtitle, :draftsContent, :draftsUpdateTime)
+WHERE drafts.id = (SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":draftsTitle", draftsTitle)
+		stmt.SetText(":draftsSubtitle", draftsSubtitle)
+		stmt.SetBytes(":draftsContent", draftsContent)
+		stmt.SetInt(":draftsUpdateTime", draftsUpdateTime)
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: draftsUpdate: %w", err)
+	}
+
+	return err
+}
+
+func draftsInsert(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, draftsTitle string, draftsSubtitle string, draftsContent []byte, draftsCreateTime int, draftsUpdateTime int) error {
 	const query = `INSERT INTO drafts (id, title, subtitle, content, create_time, update_time)
-VALUES ((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec), :draftsTitle, :draftsSubtitle, :draftsContent, :draftsCreateTime, :draftsUpdateTime)
-ON CONFLICT (id) DO UPDATE
-SET (title, subtitle, content, update_time) = (excluded.title, excluded.subtitle, excluded.content, excluded.update_time)`
+VALUES ((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec), :draftsTitle, :draftsSubtitle, :draftsContent, :draftsCreateTime, :draftsUpdateTime)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetBytes(":objectsMultihash", objectsMultihash)
@@ -99,7 +123,7 @@ SET (title, subtitle, content, update_time) = (excluded.title, excluded.subtitle
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: draftsUpsert: %w", err)
+		err = fmt.Errorf("failed query: draftsInsert: %w", err)
 	}
 
 	return err

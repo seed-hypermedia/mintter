@@ -115,7 +115,28 @@ func generateQueries() error {
 		// 	"AND", s.DevicesMultihash, "=", qb.VarCol(s.DevicesMultihash),
 		// ),
 
-		qb.MakeQuery(s.Schema, "draftsUpsert", sgen.QueryKindExec,
+		qb.MakeQuery(s.Schema, "draftsUpdate", sgen.QueryKindExec,
+			"UPDATE", s.Drafts, qb.Line,
+			"SET", qb.ListColShort(
+				s.DraftsTitle,
+				s.DraftsSubtitle,
+				s.DraftsContent,
+				s.DraftsUpdateTime,
+			), "=", qb.List(
+				qb.VarCol(s.DraftsTitle),
+				qb.VarCol(s.DraftsSubtitle),
+				qb.VarCol(s.DraftsContent),
+				qb.VarCol(s.DraftsUpdateTime),
+			), qb.Line,
+			"WHERE", s.DraftsID, "=", qb.SubQuery(
+				"SELECT", s.ObjectsID,
+				"FROM", s.Objects,
+				"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
+				"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+			),
+		),
+
+		qb.MakeQuery(s.Schema, "draftsInsert", sgen.QueryKindExec,
 			"INSERT INTO", s.Drafts, qb.ListColShort(
 				s.DraftsID,
 				s.DraftsTitle,
@@ -136,18 +157,6 @@ func generateQueries() error {
 				qb.VarCol(s.DraftsContent),
 				qb.VarCol(s.DraftsCreateTime),
 				qb.VarCol(s.DraftsUpdateTime),
-			), qb.Line,
-			"ON CONFLICT", qb.ListColShort(s.DraftsID), "DO UPDATE", qb.Line,
-			"SET", qb.ListColShort(
-				s.DraftsTitle,
-				s.DraftsSubtitle,
-				s.DraftsContent,
-				s.DraftsUpdateTime,
-			), "=", qb.List(
-				"excluded."+s.DraftsTitle.ShortName(),
-				"excluded."+s.DraftsSubtitle.ShortName(),
-				"excluded."+s.DraftsContent.ShortName(),
-				"excluded."+s.DraftsUpdateTime.ShortName(),
 			),
 		),
 
