@@ -1,4 +1,4 @@
-use log::{error, trace};
+use log::{error, info};
 use std::sync::Mutex;
 use tauri::{
   api::{
@@ -41,11 +41,12 @@ pub fn start_daemon(connection: tauri::State<Connection>, daemon_flags: tauri::S
         }
         Some(event) = cx.recv() => {
           match event {
-            CommandEvent::Stdout(out) => trace!("{}", out),
-            CommandEvent::Stderr(err) | CommandEvent::Error(err) => trace!("{}", err),
+            CommandEvent::Stdout(out) => info!("{}", out),
+            CommandEvent::Stderr(out) => info!("{}", out),
+            CommandEvent::Error(err) => error!("{}", err),
             CommandEvent::Terminated(reason) => {
               match reason.code {
-                Some(code) if code == 0 => trace!("daemon terminated"),
+                Some(code) if code == 0 => error!("daemon terminated"),
                 Some(code) => error!("daemon crashed with exit code {}", code),
                 None => error!("daemon crashed without exit code")
               }

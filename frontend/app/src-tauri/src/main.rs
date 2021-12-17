@@ -4,6 +4,8 @@
   windows_subsystem = "windows"
 )]
 
+use std::str::FromStr;
+
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use tauri_plugin_log::{LogTarget, LoggerBuilder};
 use tauri_plugin_store::StorePlugin;
@@ -13,22 +15,31 @@ mod menu;
 
 #[tokio::main]
 async fn main() {
-  let log_targets = [
-    #[cfg(not(target_os = "macos"))]
-    LogTarget::AppDir("".into()),
-    #[cfg(target_os = "macos")]
-    LogTarget::Folder(
-      tauri::api::path::home_dir()
-        .unwrap()
-        .join("Library/Logs/Mintter"),
-    ),
-    #[cfg(debug_assertions)]
-    LogTarget::Stdout,
-    #[cfg(debug_assertions)]
-    LogTarget::Webview,
-  ];
+  let log_plugin = {
+    let targets = [
+      #[cfg(not(target_os = "macos"))]
+      LogTarget::AppDir("".into()),
+      #[cfg(target_os = "macos")]
+      LogTarget::Folder(
+        tauri::api::path::home_dir()
+          .unwrap()
+          .join("Library/Logs/Mintter"),
+      ),
+      #[cfg(debug_assertions)]
+      LogTarget::Stdout,
+      #[cfg(debug_assertions)]
+      LogTarget::Webview,
+    ];
+
+    let filter = std::env::var("RUST_LOG")
+      .map(|str| log::LevelFilter::from_str(&str).expect("failed to construct level filter"))
+      .unwrap_or(log::LevelFilter::Debug);
+
+    LoggerBuilder::new(targets).level(filter).build()
+  };
+
   tauri::Builder::default()
-    .plugin(LoggerBuilder::new(log_targets).build())
+    .plugin(log_plugin)
     .plugin(daemon::DaemonPlugin::new())
     .plugin(StorePlugin::default())
     .menu(menu::get_menu())
@@ -52,8 +63,8 @@ async fn main() {
           .add_item(CustomMenuItem::new("exit_app", "Quit")),
       ),
     )
-    .on_system_tray_event(|app, event| match event {
-      SystemTrayEvent::MenuItemClick { id, .. } => {
+    .on_system_tray_event(|app, event| {
+      if let SystemTrayEvent::MenuItemClick { id, .. } = event {
         match id.as_str() {
           "exit_app" => {
             // exit the app
@@ -84,7 +95,6 @@ async fn main() {
           _ => {}
         }
       }
-      _ => {}
     })
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
