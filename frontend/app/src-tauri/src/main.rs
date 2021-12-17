@@ -17,14 +17,7 @@ mod menu;
 async fn main() {
   let log_plugin = {
     let targets = [
-      #[cfg(not(target_os = "macos"))]
-      LogTarget::AppDir("".into()),
-      #[cfg(target_os = "macos")]
-      LogTarget::Folder(
-        tauri::api::path::home_dir()
-          .unwrap()
-          .join("Library/Logs/Mintter"),
-      ),
+      LogTarget::LogDir,
       #[cfg(debug_assertions)]
       LogTarget::Stdout,
       #[cfg(debug_assertions)]
