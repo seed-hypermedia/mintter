@@ -5,15 +5,11 @@ import {TextField} from '@mintter/ui/text-field'
 import {useMemo} from 'react'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import toast from 'react-hot-toast'
-import {useInfo, usePeerAddrs} from '../hooks'
+import {useAccountInfo} from '../auth-context'
+import {usePeerAddrs} from '../hooks'
 
 export function PeerAddrs() {
-  const info = useInfo({
-    retryOnMount: false,
-    refetchOnWindowFocus: false,
-    retry: false,
-  })
-  console.log('component info', info)
+  const info = useAccountInfo()
 
   const peerAddrs = usePeerAddrs()
 

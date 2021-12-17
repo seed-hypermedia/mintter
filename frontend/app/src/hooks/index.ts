@@ -17,6 +17,7 @@ import {
   Publication,
 } from '@mintter/client'
 import type {FlowContent} from '@mintter/mttast'
+import {useAccountInfo} from 'frontend/app/src/auth-context'
 import {useMemo} from 'react'
 import type {UseQueryResult} from 'react-query'
 import {useQuery, useQueryClient} from 'react-query'
@@ -126,14 +127,12 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
 
   let requestId: string
   if (!peerId) {
-    const info = queryClient.getQueryData<Info>(queryKeys.GET_ACCOUNT_INFO)
-    console.log('info', info)
+    const info = useAccountInfo()
 
     requestId = info?.peerId as string
   } else {
     requestId = peerId
   }
-  console.log('requestId', requestId)
 
   const peerAddrsQuery = useQuery(
     [queryKeys.GET_PEER_ADDRS, requestId],
@@ -190,9 +189,24 @@ export function usePublication(publicationId: string, options: HookOptions<Publi
   }
 }
 
+export function useFiles(options: HookOptions<ListPublicationsResponse> = {}) {
+  const fileListQuery = useQuery(
+    [queryKeys.GET_PUBLICATION_LIST, queryKeys.OTHERS_PUBLICATION_LIST],
+    async () => {
+      return listPublications()
+    },
+    options,
+  )
+  const data = useMemo(() => fileListQuery.data?.publications, [fileListQuery.data])
+
+  return {
+    ...fileListQuery,
+    data,
+  }
+}
+
 export function useOthersPublicationsList(options: HookOptions<ListPublicationsResponse> = {}) {
-  const queryClient = useQueryClient()
-  const info = queryClient.getQueryData<Info>(queryKeys.GET_ACCOUNT_INFO)
+  const info = useAccountInfo()
   const myPubsListQuery = useQuery(
     [queryKeys.GET_PUBLICATION_LIST, queryKeys.OTHERS_PUBLICATION_LIST],
     async () => {
@@ -201,9 +215,15 @@ export function useOthersPublicationsList(options: HookOptions<ListPublicationsR
     options,
   )
   const data: Array<Publication> = useMemo(
-    () => myPubsListQuery.data?.publications.filter((current) => current.document?.author != info?.accountId),
+    () =>
+      myPubsListQuery.data?.publications.filter((current) => {
+        if (!info) return false
+        return current.document?.author != info.accountId
+      }) || [],
     [myPubsListQuery.data, info?.accountId],
   )
+
+  console.log('useOthersPublicationsList', data)
 
   return {
     ...myPubsListQuery,
@@ -212,8 +232,7 @@ export function useOthersPublicationsList(options: HookOptions<ListPublicationsR
 }
 
 export function useMyPublicationsList(options: HookOptions<ListPublicationsResponse> = {}) {
-  const queryClient = useQueryClient()
-  const info = queryClient.getQueryData<Info>(queryKeys.GET_ACCOUNT_INFO)
+  const info = useAccountInfo()
   const myPubsListQuery = useQuery(
     [queryKeys.GET_PUBLICATION_LIST, queryKeys.MY_PUBLICATION_LIST],
     async () => {
@@ -222,9 +241,15 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
     options,
   )
   const data: Array<Publication> = useMemo(
-    () => myPubsListQuery.data?.publications.filter((current) => current.document?.author == info?.accountId),
-    [myPubsListQuery.data, info?.accountId],
+    () =>
+      myPubsListQuery.data?.publications.filter((current) => {
+        if (!info) return false
+        return current.document?.author == info.accountId
+      }) || [],
+    [myPubsListQuery.data, info],
   )
+
+  console.log('useMyPublicationsList', data)
 
   return {
     ...myPubsListQuery,

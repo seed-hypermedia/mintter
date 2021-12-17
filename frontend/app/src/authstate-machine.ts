@@ -7,10 +7,8 @@ export const authModel = createModel(
   },
   {
     events: {
-      LOGGED_IN: (accountInfo: Info) => ({accountInfo}),
-      LOGGED_OUT: () => ({}),
-      REPORT_DEVICE_INFO_PRESENT: (accountInfo: Info) => ({accountInfo}),
-      REPORT_DEVICE_INFO_MISSING: () => ({}),
+      'REPORT.DEVICE.INFO.PRESENT': (accountInfo: Info) => ({accountInfo}),
+      'REPORT.DEVICE.INFO.MISSING': () => ({}),
     },
   },
 )
@@ -27,7 +25,7 @@ export const authStateMachine = authModel.createMachine(
           src: 'fetchInfo',
         },
         on: {
-          REPORT_DEVICE_INFO_PRESENT: {
+          'REPORT.DEVICE.INFO.PRESENT': {
             target: 'loggedIn',
             actions: [
               authModel.assign({
@@ -35,7 +33,7 @@ export const authStateMachine = authModel.createMachine(
               }),
             ],
           },
-          REPORT_DEVICE_INFO_MISSING: {
+          'REPORT.DEVICE.INFO.MISSING': {
             target: 'loggedOut',
             actions: [
               authModel.assign({
@@ -51,13 +49,13 @@ export const authStateMachine = authModel.createMachine(
   },
   {
     services: {
-      fetchInfo: () => (sendParent) => {
+      fetchInfo: () => (sendBack) => {
         return getInfo()
           .then(function (accountInfo) {
-            sendParent({type: 'REPORT_DEVICE_INFO_PRESENT', accountInfo})
+            sendBack(authModel.events['REPORT.DEVICE.INFO.PRESENT'](accountInfo))
           })
           .catch(function (err) {
-            sendParent('REPORT_DEVICE_INFO_MISSING')
+            sendBack(authModel.events['REPORT.DEVICE.INFO.MISSING']())
           })
       },
     },
