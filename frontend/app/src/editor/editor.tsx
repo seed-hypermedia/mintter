@@ -1,23 +1,23 @@
-import { FlowContent, MttastContent } from '@mintter/mttast'
-import { Box } from '@mintter/ui/box'
-import { useActor } from '@xstate/react'
-import { EditorPlugin } from 'frontend/app/src/editor'
-import { PropsWithChildren, Suspense, useEffect, useMemo } from 'react'
-import type { Descendant, Editor as EditorType } from 'slate'
-import { Editable, Slate } from 'slate-react'
-import { useHover } from './hover-context'
-import { HoveringToolbar } from './hovering-toolbar'
+import {FlowContent, MttastContent} from '@mintter/mttast'
+import {Box} from '@mintter/ui/box'
+import {useActor} from '@xstate/react'
+import {PropsWithChildren, Suspense, useEffect, useMemo} from 'react'
+import type {Descendant, Editor as EditorType} from 'slate'
+import {Editable, Slate} from 'slate-react'
+import {EditorPlugin} from '.'
+import {useHover} from './hover-context'
+import {HoveringToolbar} from './hovering-toolbar'
 import {
   buildDecorateHook,
   buildEditorHook,
   buildEventHandlerHooks,
   buildRenderElementHook,
   buildRenderLeafHook,
-  EditorMode
+  EditorMode,
 } from './plugin-utils'
-import { plugins as defaultPlugins } from './plugins'
+import {plugins as defaultPlugins} from './plugins'
 
-export type { EditorPlugin } from './types'
+export type {EditorPlugin} from './types'
 
 interface EditorProps {
   mode?: EditorMode

@@ -5,8 +5,7 @@ import {Separator} from '../separator'
 import {BookmarksSection} from './section-bookmarks'
 import {ConnectionsSection} from './section-connections'
 import {DraftsSection} from './section-drafts'
-import {MyPublicationSection} from './section-my-publications'
-import {PublicationSection} from './section-publications'
+import {FilesSection} from './section-files'
 import {useIsSidebarOpen} from './sidebar-context'
 
 export const SIDEBAR_WIDTH = 232
@@ -23,8 +22,7 @@ export function Sidebar() {
             paddingTop: '$3',
           }}
         >
-          <PublicationSection />
-          <MyPublicationSection />
+          <FilesSection />
           <DraftsSection />
           <Separator />
           <ConnectionsSection />
