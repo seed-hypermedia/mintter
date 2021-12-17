@@ -19,6 +19,25 @@ func init() {
 	)
 }
 
+// We'll need this table in the future, but not now.
+// -- Stores changes for objects.
+// 		CREATE TABLE changes (
+// 			-- Alias to the rowid for simpler indexing.
+// 			id INTEGER PRIMARY KEY,
+// 			-- Reference to the Object being changed.
+// 			object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
+// 			-- Reference to the Device that signed the Change.
+// 			device_id INTEGER REFERENCES devices NOT NULL,
+// 			-- Sequence number from the Change.
+// 			seq INTEGER CHECK (seq > 0),
+// 			-- Lamport timestamp of the Change.
+// 			lamport_time INTEGER CHECK (lamport_time > 0),
+// 			-- Reference to the IPFS Blob with contents of the Change.
+// 			ipfs_block_id INTEGER REFERENCES ipfs_blocks NOT NULL,
+// 			-- Composite key that uniquely identifies a Change.
+// 			UNIQUE (object_id, device_id, seq)
+// 		);
+
 // The list with a global set of database migrations.
 // Append-only! DO NOT REMOVE, EDIT, OR REORDER PREVIOUS ENTRIES.
 // Do not add statements to existing migration scripts, append new ones instead.
@@ -51,6 +70,7 @@ var migrations = []string{
 			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
 			UNIQUE (multihash, codec)
 		);
+
 		-- Stores data about Mintter Accounts.
 		CREATE TABLE accounts (
 			-- Short numerical ID to be used internally.
@@ -66,6 +86,7 @@ var migrations = []string{
 			-- Currently known value for the profile email.
 			email TEXT
 		);
+
 		-- Stores data about Mintter Devices.
 		CREATE TABLE devices (
 			-- Short numerical ID to be used internally.
@@ -83,6 +104,7 @@ var migrations = []string{
 			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 		);
 
+		-- Index to support querying devices by account.
 		CREATE INDEX idx_devices_by_account ON devices (account_id);
 
 		-- Stores data about Mintter Objects.
@@ -108,23 +130,6 @@ var migrations = []string{
 			lamport_time INTEGER CHECK (lamport_time > 0) NOT NULL,
 			ipfs_block_id INTEGER REFERENCES ipfs_blocks NOT NULL,
 			PRIMARY KEY (object_id, device_id)
-		);
-		-- Stores changes for objects.
-		CREATE TABLE changes (
-			-- Alias to the rowid for simpler indexing.
-			id INTEGER PRIMARY KEY,
-			-- Reference to the Object being changed.
-			object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
-			-- Reference to the Device that signed the Change.
-			device_id INTEGER REFERENCES devices NOT NULL,
-			-- Sequence number from the Change.
-			seq INTEGER CHECK (seq > 0),
-			-- Lamport timestamp of the Change.
-			lamport_time INTEGER CHECK (lamport_time > 0),
-			-- Reference to the IPFS Blob with contents of the Change.
-			ipfs_block_id INTEGER REFERENCES ipfs_blocks NOT NULL,
-			-- Composite key that uniquely identifies a Change.
-			UNIQUE (object_id, device_id, seq)
 		);
 
 		-- Stores draft-related attributes of an Object.

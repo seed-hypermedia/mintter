@@ -2,9 +2,7 @@ package backend
 
 import (
 	"context"
-	"fmt"
 	"sync"
-	"time"
 
 	"github.com/ipfs/go-cid"
 	"google.golang.org/grpc/codes"
@@ -23,31 +21,23 @@ type DocsServer interface {
 }
 
 type docsService interface {
+	CreateDraft(context.Context) (Draft, error)
+	CreateDraftFromPublication(context.Context, cid.Cid) (Draft, error)
 	GetDraft(context.Context, cid.Cid) (Draft, error)
-	Account() (PublicAccount, error)
-	GetPermanode(context.Context, cid.Cid) (signedPermanode, error)
-	SaveDraft(
-		ctx context.Context,
-		perma signedPermanode,
-		title string,
-		subtitle string,
-		createTime time.Time,
-		updateTime time.Time,
-		content []byte,
-	) (err error)
-	NewDocumentPermanode() (signedPermanode, error)
+	UpdateDraft(ctx context.Context, c cid.Cid, title, subtitle string, content []byte) (Draft, error)
+	PublishDraft(ctx context.Context, c cid.Cid) (Publication, error)
 	ListDrafts(context.Context) ([]draftsListResult, error)
 	DeleteDraft(context.Context, cid.Cid) error
-	PublishDraft(ctx context.Context, c cid.Cid) (Publication, error)
+
+	Account() (PublicAccount, error)
+
+	GetPublication(context.Context, cid.Cid) (Publication, error)
 	LoadState(ctx context.Context, obj cid.Cid) (*changeset, error)
 	ListPublications(ctx context.Context) ([]publicationsListResult, error)
 	DeletePublication(ctx context.Context, c cid.Cid) (err error)
 }
 
 type docsAPI struct {
-	// TODO: implement content graph.
-	documents.UnimplementedContentGraphServer
-
 	feedMu sync.Mutex
 	back   docsService
 }
@@ -89,80 +79,37 @@ func (srv *docsAPI) GetDraft(ctx context.Context, in *documents.GetDraftRequest)
 
 func (srv *docsAPI) CreateDraft(ctx context.Context, in *documents.CreateDraftRequest) (*documents.Document, error) {
 	if in.ExistingDocumentId != "" {
-		pub, err := srv.GetPublication(ctx, &documents.GetPublicationRequest{
-			DocumentId: in.ExistingDocumentId,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		acc, err := srv.back.Account()
-		if err != nil {
-			return nil, err
-		}
-
-		// TODO: remove this when we implement this properly.
-		if pub.Document.Author != acc.id.String() {
-			return nil, status.Error(codes.PermissionDenied, "can't update publications from other authors yet")
-		}
-
 		docid, err := srv.parseDocumentID(in.ExistingDocumentId)
 		if err != nil {
 			return nil, err
 		}
 
-		pub.Document.PublishTime = nil
-
-		perma, err := srv.back.GetPermanode(ctx, docid)
+		draft, err := srv.back.CreateDraftFromPublication(ctx, docid)
 		if err != nil {
 			return nil, err
 		}
 
-		if err := srv.back.SaveDraft(
-			ctx,
-			perma,
-			pub.Document.Title,
-			pub.Document.Subtitle,
-			pub.Document.CreateTime.AsTime(),
-			pub.Document.UpdateTime.AsTime(),
-			[]byte(pub.Document.Content),
-		); err != nil {
-			return nil, err
-		}
-
-		return pub.Document, nil
+		return draftToProto(draft), nil
 	}
 
-	pn, err := srv.back.NewDocumentPermanode()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create permanode: %v", err)
-	}
-
-	acc, err := srv.back.Account()
+	d, err := srv.back.CreateDraft(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	doc := &documents.Document{
-		Id:         pn.blk.Cid().String(),
-		Author:     acc.id.String(),
-		CreateTime: timestamppb.New(pn.perma.CreateTime),
-		UpdateTime: timestamppb.New(pn.perma.CreateTime),
-	}
+	return draftToProto(d), nil
+}
 
-	if err := srv.back.SaveDraft(
-		ctx,
-		pn,
-		doc.Title,
-		doc.Subtitle,
-		doc.CreateTime.AsTime(),
-		doc.UpdateTime.AsTime(),
-		[]byte(doc.Content),
-	); err != nil {
-		return nil, err
+func draftToProto(d Draft) *documents.Document {
+	return &documents.Document{
+		Id:         d.ID.String(),
+		Author:     d.Author.String(),
+		Title:      d.Title,
+		Subtitle:   d.Subtitle,
+		Content:    string(d.Content),
+		CreateTime: timestamppb.New(d.CreateTime),
+		UpdateTime: timestamppb.New(d.UpdateTime),
 	}
-
-	return doc, nil
 }
 
 func (srv *docsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
@@ -202,29 +149,12 @@ func (srv *docsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRe
 		return nil, err
 	}
 
-	perma, err := srv.back.GetPermanode(ctx, c)
+	d, err := srv.back.UpdateDraft(ctx, c, in.Document.Title, in.Document.Subtitle, []byte(in.Document.Content))
 	if err != nil {
 		return nil, err
 	}
 
-	now := nowTruncated()
-
-	if err := srv.back.SaveDraft(
-		ctx,
-		perma,
-		in.Document.Title,
-		in.Document.Subtitle,
-		perma.perma.CreateTime,
-		now,
-		[]byte(in.Document.Content),
-	); err != nil {
-		return nil, err
-	}
-
-	in.Document.CreateTime = timestamppb.New(perma.perma.CreateTime)
-	in.Document.UpdateTime = timestamppb.New(now)
-
-	return in.Document, nil
+	return draftToProto(d), nil
 }
 
 func (srv *docsAPI) DeleteDraft(ctx context.Context, in *documents.DeleteDraftRequest) (*emptypb.Empty, error) {
@@ -281,16 +211,7 @@ func (srv *docsAPI) GetPublication(ctx context.Context, in *documents.GetPublica
 		return nil, err
 	}
 
-	state, err := srv.back.LoadState(ctx, c)
-	if err != nil {
-		return nil, err
-	}
-
-	if state.size == 0 {
-		return nil, status.Errorf(codes.NotFound, "publication with id %s is not found", in.DocumentId)
-	}
-
-	pub, err := publicationFromChanges(state)
+	pub, err := srv.back.GetPublication(ctx, c)
 	if err != nil {
 		return nil, err
 	}
