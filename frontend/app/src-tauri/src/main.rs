@@ -5,13 +5,13 @@
 )]
 
 use std::str::FromStr;
-
-use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
+use tauri::Manager;
 use tauri_plugin_log::{LogTarget, LoggerBuilder};
 use tauri_plugin_store::StorePlugin;
 
 mod daemon;
 mod menu;
+mod system_tray;
 
 #[tokio::main]
 async fn main() {
@@ -44,51 +44,8 @@ async fn main() {
 
       Ok(())
     })
-    .system_tray(
-      SystemTray::new().with_menu(
-        SystemTrayMenu::new()
-          .add_item(
-            CustomMenuItem::new("status", "Online")
-              .native_image(tauri::NativeImage::StatusAvailable),
-          )
-          .add_item(CustomMenuItem::new("start", "Start Daemon"))
-          .add_item(CustomMenuItem::new("stop", "Stop Daemon"))
-          .add_item(CustomMenuItem::new("exit_app", "Quit")),
-      ),
-    )
-    .on_system_tray_event(|app, event| {
-      if let SystemTrayEvent::MenuItemClick { id, .. } = event {
-        match id.as_str() {
-          "exit_app" => {
-            // exit the app
-            app.exit(0);
-          }
-          "start" => {
-            daemon::start_daemon(
-              app.state::<daemon::Connection>(),
-              app.state::<daemon::Flags>(),
-            );
-
-            let status_handle = app.tray_handle().get_item("status");
-
-            status_handle.set_title("Online").unwrap();
-            status_handle
-              .set_native_image(tauri::NativeImage::StatusAvailable)
-              .unwrap();
-          }
-          "stop" => {
-            daemon::stop_daemon(app.state::<daemon::Connection>());
-            let item_handle = app.tray_handle().get_item("status");
-
-            item_handle.set_title("Offline").unwrap();
-            item_handle
-              .set_native_image(tauri::NativeImage::StatusNone)
-              .unwrap();
-          }
-          _ => {}
-        }
-      }
-    })
+    .system_tray(system_tray::get_tray())
+    .on_system_tray_event(system_tray::event_handler)
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
