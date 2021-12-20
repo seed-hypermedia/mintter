@@ -274,7 +274,7 @@ func (srv *backend) RequestInvoice(ctx context.Context, accountID string, amount
 			PreimageHash: []byte{}, // Only aplicable to hold invoices
 		})
 	if err != nil {
-		return "", fmt.Errorf("couldn't request remote invoice.")
+		return "", err
 	}
 	return payReq, nil
 }

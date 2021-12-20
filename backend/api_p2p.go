@@ -53,6 +53,10 @@ func (srv *p2pAPI) RequestInvoice(ctx context.Context, in *p2p.RequestInvoiceReq
 		return nil, err
 	}
 
+	if defaultWallet.ID == "" {
+		return nil, fmt.Errorf("user didn't set default wallet. Couldn't issue invoice")
+	}
+
 	if strings.ToLower(defaultWallet.Type) != lndhub.LndhubWalletType {
 		return nil, fmt.Errorf("cannot create invoice out of a wallet of type %s ", defaultWallet.Type)
 	}
@@ -68,13 +72,8 @@ func (srv *p2pAPI) RequestInvoice(ctx context.Context, in *p2p.RequestInvoiceReq
 		return nil, fmt.Errorf("couldn't get auth info from default wallet. Error %s", err.Error())
 	}
 
-	wallet, err := wallet.GetWallet(conn, defaultWallet.ID)
-	if err != nil {
-		return nil, fmt.Errorf("couldn't get default wallet info. Error %s", err.Error())
-	}
-
 	payReq, err := lndHubClient.CreateInvoice(ctx, lndhub.Credentials{
-		ConnectionURL: wallet.Address,
+		ConnectionURL: defaultWallet.Address,
 		Token:         hex.EncodeToString(auth)}, in.AmountSats, in.Memo)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create invoice. %s", err.Error())

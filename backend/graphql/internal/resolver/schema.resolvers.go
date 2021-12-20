@@ -92,12 +92,11 @@ func (r *mutationResolver) DeleteWallet(ctx context.Context, input generated.Del
 }
 
 func (r *mutationResolver) RequestInvoice(ctx context.Context, input generated.RequestInvoiceInput) (*generated.RequestInvoicePayload, error) {
-	var amount int64
-	if err := input.AmountSats.UnmarshalGQL(amount); err != nil {
+	if err := input.AmountSats.UnmarshalGQL(int64(input.AmountSats)); err != nil {
 		return nil, fmt.Errorf("couldn't unmarshal amount. %s", err.Error())
 	}
 
-	payReq, err := r.svc.RequestInvoice(ctx, input.AccountID, amount, input.PublicationID)
+	payReq, err := r.svc.RequestInvoice(ctx, input.AccountID, int64(input.AmountSats), input.PublicationID)
 	if err != nil {
 		return nil, err
 	}
@@ -107,9 +106,10 @@ func (r *mutationResolver) RequestInvoice(ctx context.Context, input generated.R
 func (r *mutationResolver) PayInvoice(ctx context.Context, input generated.PayInvoiceInput) (*generated.PayInvoicePayload, error) {
 	var amount uint64
 	if input.AmountSats != nil {
-		if err := (*(input.AmountSats)).UnmarshalGQL(amount); err != nil {
+		if err := input.AmountSats.UnmarshalGQL(int64(*input.AmountSats)); err != nil {
 			return nil, fmt.Errorf("couldn't unmarshal amount. %s", err.Error())
 		}
+		amount = uint64(*input.AmountSats)
 	} else {
 		amount = 0
 	}
