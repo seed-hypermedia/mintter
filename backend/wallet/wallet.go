@@ -15,6 +15,9 @@ const (
 
 	// NotEnoughBalance can be used to check the typical error of not having enough balance.
 	NotEnoughBalance = "not enough balance"
+
+	// InvoiceQttyMissmatch can be used to check if the user tried to pay an invoice with the wrong amount
+	InvoiceQttyMissmatch = "and provided amount is"
 )
 
 type Wallet struct {
