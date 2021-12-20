@@ -1,21 +1,19 @@
-import { createDraft, getInfo, getPublication, Publication as PublicationType } from '@mintter/client'
-import { MttastContent } from '@mintter/mttast'
-import { Box } from '@mintter/ui/box'
-import { Button } from '@mintter/ui/button'
-import { Text } from '@mintter/ui/text'
+import {createDraft, getInfo, getPublication, Publication as PublicationType} from '@mintter/client'
+import {MttastContent} from '@mintter/mttast'
+import {Box} from '@mintter/ui/box'
+import {Button} from '@mintter/ui/button'
+import {Text} from '@mintter/ui/text'
 // import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
-import { useActor, useMachine } from '@xstate/react'
-import { useEffect, useRef } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
-import { useLocation } from 'wouter'
-import { createModel } from 'xstate/lib/model'
-import { AppError } from '../app'
-import { useEnableSidepanel, useSidepanel } from '../components/sidepanel'
-import { Editor, EditorDocument } from '../editor'
-import { EditorMode } from '../editor/plugin-utils'
-import { useAccount } from '../hooks'
-import { getDateFormat } from '../utils/get-format-date'
-import { PageProps } from './types'
+import {useActor, useMachine} from '@xstate/react'
+import {useEffect, useRef} from 'react'
+import {useLocation} from 'wouter'
+import {createModel} from 'xstate/lib/model'
+import {useEnableSidepanel, useSidepanel} from '../components/sidepanel'
+import {Editor, EditorDocument} from '../editor'
+import {EditorMode} from '../editor/plugin-utils'
+import {useAccount} from '../hooks'
+import {getDateFormat} from '../utils/get-format-date'
+import {PageProps} from './types'
 
 export default function Publication({params}: PageProps) {
   const [, setLocation] = useLocation()
@@ -65,10 +63,13 @@ export default function Publication({params}: PageProps) {
   // start rendering
   if (state.matches('errored')) {
     return (
-      <Box css={{
-        padding: '$5',
-      }}>
+      <Box
+        css={{
+          padding: '$5',
+        }}
+      >
         <Text>Publication ERROR</Text>
+        <Text>{state.context.errorMessage}</Text>
         <Button onClick={() => send(publicationModel.events.FETCH_DATA(state.context.id))} color="muted">
           try again
         </Button>
@@ -78,12 +79,7 @@ export default function Publication({params}: PageProps) {
 
   if (state.matches('ready')) {
     return (
-      <ErrorBoundary
-        FallbackComponent={AppError}
-        onReset={() => {
-          window.location.reload()
-        }}
-      >
+      <>
         <Box
           css={{
             background: '$background-alt',
@@ -203,7 +199,7 @@ export default function Publication({params}: PageProps) {
             Last modified: {getDateFormat(state.context.publication?.document, 'updateTime')}
           </Text>
         </Box>
-      </ErrorBoundary>
+      </>
     )
   }
 
@@ -276,11 +272,15 @@ const publicationMachine = publicationModel.createMachine({
                   }),
                 )
               } else {
-                sendBack(publicationModel.events.REPORT_DATA_ERRORED('error parsing content'))
+                if (publication.document?.content === '') {
+                  sendBack(publicationModel.events.REPORT_DATA_ERRORED('Content is Empty'))
+                } else {
+                  sendBack(publicationModel.events.REPORT_DATA_ERRORED('error parsing content'))
+                }
               }
             })
             .catch((err) => {
-              console.log('publication fetch error', err)
+              console.log('=== CATCH ERROR: publication fetch error', err)
               sendBack(publicationModel.events.REPORT_DATA_ERRORED('error fetching'))
             })
         },

@@ -3,6 +3,7 @@ import {css} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {useInterpret} from '@xstate/react'
 import {ReactNode, useEffect} from 'react'
+import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {Route} from 'wouter'
 import {bookmarksMachine, BookmarksProvider} from '../components/bookmarks'
 import {ScrollArea} from '../components/scroll-area'
@@ -33,9 +34,16 @@ export function MainPage() {
               <Topbar />
               <Sidebar />
               <MainWindow>
-                <Route path="/p/:docId/:blockId?" component={Publication} />
-                <Route path="/editor/:docId" component={EditorPage} />
-                <Route path="/" component={Placeholder} />
+                <ErrorBoundary
+                  FallbackComponent={PageError}
+                  onReset={() => {
+                    window.location.reload()
+                  }}
+                >
+                  <Route path="/p/:docId/:blockId?" component={Publication} />
+                  <Route path="/editor/:docId" component={EditorPage} />
+                  <Route path="/" component={Placeholder} />
+                </ErrorBoundary>
               </MainWindow>
               <Sidepanel />
             </Box>
@@ -111,5 +119,15 @@ function Placeholder() {
         Mintter
       </Text>
     </Box>
+  )
+}
+
+function PageError({error, resetErrorBoundary}: FallbackProps) {
+  return (
+    <div role="alert">
+      <p>Publication Error</p>
+      <pre>{error.message}</pre>
+      <button onClick={resetErrorBoundary}>reload page</button>
+    </div>
   )
 }

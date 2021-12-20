@@ -175,44 +175,55 @@ function AccountItem({account}: AccountItemProps) {
         </StyledSectionItem>
       </HoverCard.Trigger>
       <HoverCardContentStyled align="start" portalled>
+        <Box css={{width: 32, height: 32, backgroundColor: '$background-neutral', borderRadius: '$round'}} />
         <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>
-          <Box css={{width: 32, height: 32, backgroundColor: '$background-neutral', borderRadius: '$round'}} />
-          <Box>
-            <Text fontWeight="bold">{account.profile?.alias}</Text>
-            <Text
-              color="muted"
-              css={{
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-                overflow: 'hidden',
-              }}
-            >
-              {account.profile?.bio}
-            </Text>
-            <Text size="1" css={{marginTop: '$3'}}>
-              {account.profile?.email}
-            </Text>
-            <Text
-              size="1"
-              css={{
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-                overflow: 'hidden',
-              }}
-            >
-              <b>Acc. ID:</b> {account.id}
-            </Text>
-            <Text
-              size="1"
-              css={{
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-                overflow: 'hidden',
-              }}
-            >
-              <b>device ID:</b> {Object.keys(account.devices)[0]}
-            </Text>
-          </Box>
+          <Text fontWeight="bold">{account.profile?.alias}</Text>
+          <Text
+            color="muted"
+            css={{
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+            }}
+          >
+            {account.profile?.bio}
+          </Text>
+          <Text size="1">{account.profile?.email}</Text>
+          <Text size="1" fontWeight="bold">
+            (
+            {data?.connectionStatus == ConnectionStatus.CONNECTED
+              ? 'connected'
+              : data?.connectionStatus == ConnectionStatus.NOT_CONNECTED
+              ? 'not_connected'
+              : data?.connectionStatus == ConnectionStatus.CANNOT_CONNECT
+              ? 'cannot_connect'
+              : data?.connectionStatus == ConnectionStatus.UNRECOGNIZED
+              ? 'unrecognized'
+              : data?.connectionStatus == ConnectionStatus.CAN_CONNECT
+              ? 'can_connect'
+              : 'no connection data'}
+            )
+          </Text>
+          <Text
+            size="1"
+            css={{
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+            }}
+          >
+            <b>Acc. ID:</b> {account.id}
+          </Text>
+          <Text
+            size="1"
+            css={{
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+            }}
+          >
+            <b>device ID:</b> {Object.keys(account.devices)[0]}
+          </Text>
         </Box>
       </HoverCardContentStyled>
     </HoverCard.Root>
