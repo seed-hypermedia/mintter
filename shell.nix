@@ -55,11 +55,14 @@ let
       pkg-config
     ];
     libs = [
-      gtk3
-      openssl
-      webkitgtk
-      libappindicator
-      libappindicator-gtk3
+      gtk3.dev
+      openssl.dev
+      webkitgtk.dev
+      glib.dev
+      cairo.dev
+      pango.dev
+      libappindicator.dev
+      libappindicator-gtk3.dev
       libcanberra
     ];
   };
