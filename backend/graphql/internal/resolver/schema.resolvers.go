@@ -5,7 +5,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 	"mintter/backend/graphql/internal/generated"
 	"mintter/backend/graphql/internal/model"
 )
@@ -92,10 +91,6 @@ func (r *mutationResolver) DeleteWallet(ctx context.Context, input generated.Del
 }
 
 func (r *mutationResolver) RequestInvoice(ctx context.Context, input generated.RequestInvoiceInput) (*generated.RequestInvoicePayload, error) {
-	if err := input.AmountSats.UnmarshalGQL(int64(input.AmountSats)); err != nil {
-		return nil, fmt.Errorf("couldn't unmarshal amount. %s", err.Error())
-	}
-
 	payReq, err := r.svc.RequestInvoice(ctx, input.AccountID, int64(input.AmountSats), input.PublicationID)
 	if err != nil {
 		return nil, err
@@ -106,19 +101,12 @@ func (r *mutationResolver) RequestInvoice(ctx context.Context, input generated.R
 func (r *mutationResolver) PayInvoice(ctx context.Context, input generated.PayInvoiceInput) (*generated.PayInvoicePayload, error) {
 	var amount uint64
 	if input.AmountSats != nil {
-		if err := input.AmountSats.UnmarshalGQL(int64(*input.AmountSats)); err != nil {
-			return nil, fmt.Errorf("couldn't unmarshal amount. %s", err.Error())
-		}
 		amount = uint64(*input.AmountSats)
 	} else {
 		amount = 0
 	}
 
-	var amount2Pay *uint64
-	if amount != 0 {
-		*amount2Pay = amount
-	}
-	walletID, err := r.svc.PayInvoice(ctx, string(input.PaymentRequest), input.WalletID, amount2Pay)
+	walletID, err := r.svc.PayInvoice(ctx, string(input.PaymentRequest), input.WalletID, &amount)
 	if err != nil {
 		return nil, err
 	}

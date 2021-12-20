@@ -336,6 +336,9 @@ func (srv *backend) PayInvoice(ctx context.Context, payReq string, walletID *str
 		if strings.Contains(err.Error(), wallet.NotEnoughBalance) {
 			return "", fmt.Errorf("couldn't pay invoice. Insufficient balance in wallet name %s", walletToPay.Name)
 		}
+		if strings.Contains(err.Error(), wallet.InvoiceQttyMissmatch) {
+			return "", fmt.Errorf("couldn't pay invoice. %s", err.Error())
+		}
 		return "", fmt.Errorf("couldn't pay invoice. Unknown reason")
 	}
 

@@ -178,7 +178,7 @@ func (c *Client) PayInvoice(ctx context.Context, creds Credentials, payReq strin
 		return nil
 	} else if uint64(invoice.MilliSat.ToSatoshis()) != 0 && uint64(invoice.MilliSat.ToSatoshis()) != sats {
 		return fmt.Errorf("amount mismatch. Invoice amt is " + invoice.MilliSat.ToSatoshis().String() +
-			"sats and provided amount is " + strconv.FormatInt(int64(sats), 10))
+			" and provided amount is " + strconv.FormatInt(int64(sats), 10) + " sats")
 	}
 
 	type payInvoiceRequest struct {
