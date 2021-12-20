@@ -15,6 +15,9 @@ export const groupStyle = css({
   [`&[data-element-type="orderedList"], &[data-element-type="unorderedList"]`]: {
     marginLeft: 0,
   },
+  '& p': {
+    listStyleType: 'none',
+  },
 })
 
 export const GroupUI = styled('ul', groupStyle)
