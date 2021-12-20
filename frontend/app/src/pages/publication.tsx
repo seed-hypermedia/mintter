@@ -86,7 +86,7 @@ export default function Publication({params}: PageProps) {
             borderBottom: '1px solid rgba(0,0,0,0.1)',
             position: 'sticky',
             top: 0,
-            zIndex: '$max',
+            zIndex: '$3',
             padding: '$5',
             '@bp2': {
               paddingLeft: 80,
@@ -161,7 +161,7 @@ export default function Publication({params}: PageProps) {
             width: '$full',
             position: 'absolute',
             bottom: 0,
-            zIndex: '$max',
+            zIndex: '$3',
             padding: '$5',
 
             '@bp2': {

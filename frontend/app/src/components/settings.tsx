@@ -170,6 +170,8 @@ function ProfileForm() {
     }
   }, [data, form])
 
+  console.log('form: ', form)
+
   const onSubmit = form.handleSubmit(async (data) => {
     await toast
       .promise(updateProfile.mutateAsync(data), {
