@@ -3,7 +3,6 @@ use tauri::Manager;
 use tauri::{AppHandle, SystemTrayEvent};
 use tauri::{CustomMenuItem, SystemTray, SystemTrayMenu};
 
-#[cfg(target_os = "macos")]
 pub fn get_tray() -> SystemTray {
   let tray = SystemTray::new();
   let tray_menu = SystemTrayMenu::new();
@@ -24,7 +23,6 @@ pub fn get_tray() -> SystemTray {
   tray.with_menu(tray_menu)
 }
 
-#[cfg(target_os = "macos")]
 pub fn event_handler(app: &AppHandle, event: SystemTrayEvent) {
   if let SystemTrayEvent::MenuItemClick { id, .. } = event {
     match id.as_str() {
