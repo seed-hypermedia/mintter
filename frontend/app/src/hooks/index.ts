@@ -45,7 +45,15 @@ export const queryKeys = {
  * @returns
  */
 export function useAccount(accountId = '', options: HookOptions<Account> = {}) {
-  return useQuery([queryKeys.GET_ACCOUNT, accountId], () => getAccount(accountId, options.rpc), options)
+  return useQuery(
+    [queryKeys.GET_ACCOUNT, accountId],
+    async () => {
+      let result = await getAccount(accountId, options.rpc)
+      console.log('result = ', result)
+      return result
+    },
+    options,
+  )
 }
 
 /**

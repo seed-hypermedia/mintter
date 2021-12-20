@@ -1,22 +1,22 @@
-import {updateAccount} from '@mintter/client'
-import {Box} from '@mintter/ui/box'
-import {Button} from '@mintter/ui/button'
-import {dialogContentStyles, DialogTitle, overlayStyles} from '@mintter/ui/dialog'
-import {Icon} from '@mintter/ui/icon'
-import {styled} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
-import {TextField} from '@mintter/ui/text-field'
-import {useTheme} from '@mintter/ui/theme'
+import { updateAccount } from '@mintter/client'
+import { Box } from '@mintter/ui/box'
+import { Button } from '@mintter/ui/button'
+import { dialogContentStyles, DialogTitle, overlayStyles } from '@mintter/ui/dialog'
+import { Icon } from '@mintter/ui/icon'
+import { styled } from '@mintter/ui/stitches.config'
+import { Text } from '@mintter/ui/text'
+import { TextField } from '@mintter/ui/text-field'
+import { useTheme } from '@mintter/ui/theme'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
-import {useEffect} from 'react'
-import {useForm} from 'react-hook-form'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import {useMutation, useQueryClient} from 'react-query'
-import {queryKeys, useAccount} from '../hooks'
-import {PeerAddrs} from './peer-addrs'
-import {ScrollArea} from './scroll-area'
-import {WalletList} from './wallet-list'
+import { useMutation, useQueryClient } from 'react-query'
+import { queryKeys, useAccount } from '../hooks'
+import { PeerAddrs } from './peer-addrs'
+import { ScrollArea } from './scroll-area'
+import { WalletList } from './wallet-list'
 
 type ProfileInformationDataType = {
   alias: string
@@ -149,6 +149,7 @@ function ProfileForm() {
   const {data} = useAccount('', {
     useErrorBoundary: true,
   })
+
   const queryClient = useQueryClient()
   const updateProfile = useMutation(updateAccount)
 
@@ -164,9 +165,14 @@ function ProfileForm() {
   useEffect(() => {
     if (data?.profile) {
       const {alias = '', email = '', bio = ''} = data?.profile
-      form.setValue('alias', alias)
-      form.setValue('email', email)
-      form.setValue('bio', bio)
+      // form.setValue('alias', alias)
+      // form.setValue('email', email)
+      // form.setValue('bio', bio)
+      form.reset({
+        alias,
+        email,
+        bio,
+      })
     }
   }, [data, form])
 
