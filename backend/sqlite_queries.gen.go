@@ -617,7 +617,8 @@ WHERE links.source_object_id = COALESCE((SELECT objects.id FROM objects WHERE ob
 }
 
 func linksInsertFromDraft(conn *sqlite.Conn, sourceObjectMultihash []byte, sourceObjectCodec int, linksSourceBlockID string, targetObjectMultihash []byte, targetObjectCodec int, linksTargetBlockID string, linksTargetVersion string) error {
-	const query = `INSERT INTO links (source_object_id, source_block_id, target_object_id, target_block_id, target_version)
+	const query = `INSERT OR IGNORE
+INTO links (source_object_id, source_block_id, target_object_id, target_block_id, target_version)
 VALUES (COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :sourceObjectMultihash AND objects.codec = :sourceObjectCodec LIMIT 1), -1000), :linksSourceBlockID, COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :targetObjectMultihash AND objects.codec = :targetObjectCodec LIMIT 1), -1000), :linksTargetBlockID, :linksTargetVersion)`
 
 	before := func(stmt *sqlite.Stmt) {
@@ -643,7 +644,8 @@ VALUES (COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :sour
 }
 
 func linksInsertFromPublication(conn *sqlite.Conn, sourceObjectMultihash []byte, sourceObjectCodec int, linksSourceBlockID string, sourceChangeCodec int, sourceChangeMultihash []byte, targetObjectMultihash []byte, targetObjectCodec int, linksTargetBlockID string, linksTargetVersion string) error {
-	const query = `INSERT INTO links (source_object_id, source_block_id, source_ipfs_block_id, target_object_id, target_block_id, target_version)
+	const query = `INSERT OR IGNORE
+INTO links (source_object_id, source_block_id, source_ipfs_block_id, target_object_id, target_block_id, target_version)
 VALUES (COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :sourceObjectMultihash AND objects.codec = :sourceObjectCodec LIMIT 1), -1000), :linksSourceBlockID, COALESCE((SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.codec = :sourceChangeCodec AND ipfs_blocks.multihash = :sourceChangeMultihash LIMIT 1), -1000), COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :targetObjectMultihash AND objects.codec = :targetObjectCodec LIMIT 1), -1000), :linksTargetBlockID, :linksTargetVersion)`
 
 	before := func(stmt *sqlite.Stmt) {

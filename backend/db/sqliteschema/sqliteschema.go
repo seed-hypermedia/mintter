@@ -169,9 +169,10 @@ var migrations = []string{
 			-- Reference to Document ID that is linked.
 			target_object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
 			-- Block ID that is linked. Can be NULL if links is to the whole Document.
-			target_block_id TEXT CHECK (target_block_id IS NULL OR (target_block_id != '')),
+			target_block_id TEXT NOT NULL DEFAULT '',
 			-- Version of the target Document that is linked.
-			target_version TEXT NOT NULL CHECK (target_version != '')
+			target_version TEXT NOT NULL CHECK (target_version != ''),
+			UNIQUE (source_object_id, source_block_id, target_object_id, target_block_id, target_version)
 		);
 
 		-- Trigger to delete links when drafts are deleted.

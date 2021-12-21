@@ -313,7 +313,8 @@ func generateQueries() error {
 		),
 
 		qb.MakeQuery(s.Schema, "linksInsertFromDraft", sgen.QueryKindExec,
-			"INSERT INTO", s.Links, qb.ListColShort(
+			"INSERT OR IGNORE", qb.Line,
+			"INTO", s.Links, qb.ListColShort(
 				s.LinksSourceObjectID,
 				s.LinksSourceBlockID,
 				s.LinksTargetObjectID,
@@ -336,7 +337,8 @@ func generateQueries() error {
 		),
 
 		qb.MakeQuery(s.Schema, "linksInsertFromPublication", sgen.QueryKindExec,
-			"INSERT INTO", s.Links, qb.ListColShort(
+			"INSERT OR IGNORE", qb.Line,
+			"INTO", s.Links, qb.ListColShort(
 				s.LinksSourceObjectID,
 				s.LinksSourceBlockID,
 				s.LinksSourceIPFSBlockID,

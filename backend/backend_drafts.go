@@ -131,7 +131,7 @@ func (srv *backend) UpdateDraft(ctx context.Context, id cid.Cid, title, subtitle
 			return d, fmt.Errorf("bad CID codec for linked document %s: %s", l.TargetDocumentID, cid.CodecToStr[tcodec])
 		}
 		if err := linksInsertFromDraft(conn, ohash, int(ocodec), l.SourceBlockID, thash, int(tcodec), l.TargetBlockID, l.TargetVersion.String()); err != nil {
-			return d, fmt.Errorf("failed to insert link %s", l)
+			return d, fmt.Errorf("failed to insert link %s: %w", l, err)
 		}
 	}
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-datastore"
 	dssync "github.com/ipfs/go-datastore/sync"
@@ -48,7 +49,7 @@ func Module(cfg config.Config) fx.Option {
 }
 
 func provideSQLite(lc fx.Lifecycle, r *repo) (*sqlitex.Pool, error) {
-	pool, err := sqliteschema.Open(r.sqlitePath(), 0, 16)
+	pool, err := sqliteschema.Open(r.sqlitePath(), sqlite.OpenFlagsDefault|sqlite.SQLITE_OPEN_SHAREDCACHE, 16)
 	if err != nil {
 		return nil, err
 	}

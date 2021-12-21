@@ -11,7 +11,7 @@ func (srv *docsAPI) ListCitations(ctx context.Context, in *documents.ListCitatio
 		return nil, err
 	}
 
-	links, err := srv.back.ListBacklinks(ctx, c)
+	links, err := srv.back.ListBacklinks(ctx, c, int(in.Depth))
 	if err != nil {
 		return nil, err
 	}

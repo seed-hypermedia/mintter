@@ -6,6 +6,7 @@ import (
 	"fmt"
 	p2p "mintter/backend/api/p2p/v1alpha"
 	"mintter/backend/ipfs"
+	"sync"
 
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
@@ -177,6 +178,35 @@ func (srv *backend) syncObject(ctx context.Context, oid cid.Cid, pid peer.ID) er
 			})
 			if err != nil {
 				return err
+			}
+
+			// Ensure linked documents are all synced with the given peer.
+			visited := make(map[cid.Cid]int, len(links))
+			errs := make([]error, len(links))
+			var wg sync.WaitGroup
+			for i, l := range links {
+				if _, ok := visited[l.TargetDocumentID]; ok {
+					continue
+				}
+
+				wg.Add(1)
+
+				go func(i int, c cid.Cid) {
+					defer wg.Done()
+					err := srv.syncObject(ctx, c, pid)
+					if err == nil {
+						return
+					}
+					errs[i] = fmt.Errorf("failed to sync document %s linked in %s: %w", c, oid, err)
+				}(i, l.TargetDocumentID)
+			}
+
+			wg.Wait()
+
+			for _, err := range errs {
+				if err != nil {
+					return err
+				}
 			}
 
 			return srv.db.IndexPublication(ctx, pub, links)

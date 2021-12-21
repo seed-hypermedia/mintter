@@ -21,7 +21,7 @@ func (b Backlink) IsSourceDraft() bool {
 	return !b.SourceChange.Defined()
 }
 
-func (srv *backend) ListBacklinks(ctx context.Context, pubid cid.Cid) ([]Backlink, error) {
+func (srv *backend) ListBacklinks(ctx context.Context, pubid cid.Cid, depth int) ([]Backlink, error) {
 	conn, release, err := srv.pool.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (srv *backend) ListBacklinks(ctx context.Context, pubid cid.Cid) ([]Backlin
 
 	ocodec, ohash := ipfs.DecodeCID(pubid)
 
-	list, err := backlinksListForPublication(conn, 1, ohash, int(ocodec))
+	list, err := backlinksListForPublication(conn, depth+1, ohash, int(ocodec))
 	release()
 	if err != nil {
 		return nil, err
