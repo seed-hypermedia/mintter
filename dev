@@ -32,7 +32,6 @@ build-cross() {
 
 # Command run-backend will run the backend for development.
 run-backend() {
-    echo "Please run the frontend in a separate terminal and use it's URL in the browser!"
     exec go run ./backend/cmd/mintterd --no-open-browser $@
 }
 
