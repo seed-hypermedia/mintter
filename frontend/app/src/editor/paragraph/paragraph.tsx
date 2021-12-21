@@ -1,7 +1,7 @@
 import {FlowContent, isBlockquote, isCode, isParagraph, isPhrasingContent} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
 import {Editor, Element, Node, Path, Transforms} from 'slate'
-import {ReactEditor, useFocused, useSelected, useSlateStatic} from 'slate-react'
+import {ReactEditor, RenderElementProps, useFocused, useSelected, useSlateStatic} from 'slate-react'
 import {useHover} from '../hover-context'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
@@ -59,7 +59,12 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
   const focused = useFocused()
 
   let showPlaceholder =
-    selected && focused && mode == EditorMode.Draft && !Node.string(element) && isCollapsed(editor.selection!)
+    selected &&
+    focused &&
+    mode == EditorMode.Draft &&
+    !Node.string(element) &&
+    isCollapsed(editor.selection!) &&
+    !hasEmbed(editor, element)
 
   return (
     <ParagraphUI
@@ -96,4 +101,8 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
       {children}
     </ParagraphUI>
   )
+}
+
+function hasEmbed(element: Element, path: Path) {
+  return false
 }
