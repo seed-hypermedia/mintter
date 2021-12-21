@@ -263,6 +263,8 @@ const publicationMachine = publicationModel.createMachine({
               console.log('publication response: ', publication, info)
 
               if (publication.document?.content) {
+                console.log('pub content: ', publication.document?.content)
+
                 let content = JSON.parse(publication.document?.content)
                 sendBack(
                   publicationModel.events.REPORT_DATA_REVEIVED({
