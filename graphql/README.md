@@ -13,3 +13,19 @@ On the configured HTTP port the Daemon exposes two routes:
 
 1. `/playground` - the GraphQL Playground UI. Useful to test the API in the browser.
 2. `/graphql` - the actual API endpoint for GraphQL.
+
+## Typescript Codegen
+
+Based on the [GraphQL Schema](./schema.graphql) we generate all the Typescript Types using [graphql-codegen](https://github.com/dotansimha/graphql-code-generator).
+
+```bash
+cd <PROJECT_ROOT>
+yarn codegen
+```
+
+The above command generates a `types.d.ts` file in `frontend/client/.generated` (checkout [codegen.yml](../codegen.yml) for more info about the config.)
+
+### Additional Resources
+
+- https://egghead.io/lessons/graphql-generate-typescript-types-from-a-graphql-schema
+- https://github.com/dotansimha/graphql-code-generator
