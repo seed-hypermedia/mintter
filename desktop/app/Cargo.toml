@@ -1,11 +1,11 @@
 [package]
-name = "Mintter"
+name = "mintter"
 version = "0.1.0"
 description = "A publishing platform where other content creators can reuse your content keeping your authorship and royalties."
 authors = ["The mintter team"]
 license = ""
 repository = ""
-default-run = "Mintter"
+default-run = "mintter"
 edition = "2021"
 build = "build.rs"
 
@@ -15,13 +15,16 @@ build = "build.rs"
 tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
 
 [dependencies]
-serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
 tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next", features = ["cli", "shell-execute", "shell-open", "system-tray"] }
-tokio = { version = "1.12.0", features = ["full"] }
 tauri-plugin-log = { git = "https://github.com/tauri-apps/tauri-plugin-log", branch = "dev" }
-log = "0.4"
 tauri-plugin-store = { git = "https://github.com/tauri-apps/tauri-plugin-store", branch = "dev" }
+tokio = { version = "1.12.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+log = "0.4"
+cap-std = "0.22.0"
+anyhow = "1.0.51"
+extension-host = { path = "../extension-host" }
 
 [features]
 default = [ "custom-protocol" ]
