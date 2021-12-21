@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
+	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/event"
 	"github.com/libp2p/go-libp2p-core/host"
@@ -28,6 +29,7 @@ import (
 	accounts "mintter/backend/api/accounts/v1alpha"
 	p2p "mintter/backend/api/p2p/v1alpha"
 	"mintter/backend/ipfs"
+	"mintter/backend/ipfs/sqlitebs"
 	"mintter/backend/lndhub"
 )
 
@@ -388,6 +390,54 @@ func (srv *backend) Account() (PublicAccount, error) {
 	return srv.repo.Account()
 }
 
+func (srv *backend) InitObject(ctx context.Context, aid AccountID, did DeviceID, oid cid.Cid, permablk blocks.Block) (err error) {
+	s := srv.sqlitePatchStore
+
+	ocodec, ohash := ipfs.DecodeCID(oid)
+
+	acodec, ahash := ipfs.DecodeCID(cid.Cid(aid))
+	if acodec != codecAccountID {
+		panic("BUG: wrong codec for account")
+	}
+
+	dcodec, dhash := ipfs.DecodeCID(cid.Cid(did))
+	if dcodec != cid.Libp2pKey {
+		panic("BUG: wrong codec for device")
+	}
+
+	conn, ok := sqlitebs.ConnFromContext(ctx)
+	if !ok {
+		c, release, err := s.db.Conn(ctx)
+		if err != nil {
+			return err
+		}
+		defer release()
+		conn = c
+	}
+
+	defer sqlitex.Save(conn)(&err)
+
+	if err := accountsInsertOrIgnore(conn, ahash, int(acodec)); err != nil {
+		return err
+	}
+
+	if err := devicesInsertOrIgnore(conn, dhash, int(dcodec), ahash, int(acodec)); err != nil {
+		return err
+	}
+
+	if err := objectsInsertOrIgnore(conn, ohash, int(ocodec), ahash, int(acodec)); err != nil {
+		return err
+	}
+
+	if permablk != nil {
+		if err := s.bs.Put(sqlitebs.ContextWithConn(ctx, conn), permablk); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // GetPermanode from the underlying storage.
 func (srv *backend) GetPermanode(ctx context.Context, c cid.Cid) (signedPermanode, error) {
 	// This is all quite messy. Need to clean up.
@@ -466,8 +516,6 @@ func (srv *backend) handleMintterPeer(ctx context.Context, evt event.EvtPeerIden
 
 	pid := evt.Peer
 
-	srv.p2p.libp2p.Host.ConnManager().Protect(pid, protocolSupportKey)
-
 	conn, err := srv.dialPeer(ctx, pid)
 	if err != nil {
 		return err
@@ -521,6 +569,8 @@ func (srv *backend) dialPeer(ctx context.Context, pid peer.ID) (*grpc.ClientConn
 	if ok {
 		sw.Backoff().Clear(pid)
 	}
+
+	srv.p2p.libp2p.Host.ConnManager().Protect(pid, protocolSupportKey)
 
 	return srv.rpc.Dial(ctx, pid, srv.dialOpts)
 }

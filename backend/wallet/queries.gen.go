@@ -95,12 +95,14 @@ func listWallets(conn *sqlite.Conn, cursor string, limit int) ([]listWalletsResu
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, listWalletsResult{})
-		out[i].WalletsID = stmt.ColumnText(0)
-		out[i].WalletsAddress = stmt.ColumnText(1)
-		out[i].WalletsName = stmt.ColumnText(2)
-		out[i].WalletsType = stmt.ColumnText(3)
-		out[i].WalletsBalance = stmt.ColumnInt(4)
+		out = append(out, listWalletsResult{
+			WalletsID:      stmt.ColumnText(0),
+			WalletsAddress: stmt.ColumnText(1),
+			WalletsName:    stmt.ColumnText(2),
+			WalletsType:    stmt.ColumnText(3),
+			WalletsBalance: stmt.ColumnInt(4),
+		})
+
 		return nil
 	}
 

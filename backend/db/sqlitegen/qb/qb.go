@@ -146,6 +146,19 @@ func List(vv ...interface{}) Opt {
 	}
 }
 
+// Enumeration is like List but without parens.
+func Enumeration(vv ...interface{}) Opt {
+	return func(qb *queryBuilder) {
+		for i, v := range vv {
+			fn, _ := newSegment(qb.schema, v)
+			fn(qb)
+			if i < len(vv)-1 {
+				qb.WriteString(", ")
+			}
+		}
+	}
+}
+
 // ListColShort is a SQL list of column names without their table identifiers.
 func ListColShort(cols ...sqlitegen.Column) Opt {
 	short := make([]interface{}, len(cols))
@@ -247,6 +260,17 @@ func ResultCol(col sqlitegen.Column) ResultOpt {
 	}
 }
 
+// ResultColAlias renames a column with an alias.
+func ResultColAlias(col sqlitegen.Column, as string) ResultOpt {
+	return func(s sqlitegen.Schema) Result {
+		return Result{
+			SQL:        string(col) + " AS " + as,
+			ColumnName: as,
+			Type:       s.GetColumnType(col),
+		}
+	}
+}
+
 // ResultExpr is a SQL expression that is annotated as a query result.
 //
 // For example: ResultExpr("COUNT(*)", "count", sqlitegen.Int).
@@ -293,4 +317,32 @@ func VarCol(col sqlitegen.Column) Opt {
 		qb.AddInput(sym)
 		qb.WriteString(":" + sym.Name)
 	}
+}
+
+// Coalesce wraps a nd b into a COALESCE SQL function.
+func Coalesce(a, b interface{}) Opt {
+	if a == nil || b == nil {
+		panic("BUG: bad coalesce, must pass two args")
+	}
+
+	return func(qb *queryBuilder) {
+		afn, _ := newSegment(qb.schema, a)
+		bfn, _ := newSegment(qb.schema, b)
+
+		qb.WriteString("COALESCE(")
+		afn(qb)
+		qb.WriteString(", ")
+		bfn(qb)
+		qb.WriteString(")")
+	}
+}
+
+// LookupSubQuery is a subquery to lookup a single value of c in t
+// wrapped in a coalesce to ensure NULL is detected properly.
+func LookupSubQuery(c sqlitegen.Column, t sqlitegen.Table, extra ...interface{}) Opt {
+	sq := []interface{}{"SELECT", c, "FROM", t}
+	sq = append(sq, extra...)
+	sq = append(sq, "LIMIT 1")
+
+	return Coalesce(SubQuery(sq...), "-1000")
 }

@@ -113,7 +113,6 @@ func logAppLifecycle(lc fx.Lifecycle, stop fx.Shutdowner, cfg config.Config, grp
 					zap.String("grpcListener", grpc.lis.Addr().String()),
 					zap.String("httpListener", srv.lis.Addr().String()),
 					zap.String("repoPath", cfg.RepoPath),
-					zap.String("version", Version),
 				)
 				<-back.p2p.Ready()
 				addrs, err := back.p2p.libp2p.Network().InterfaceListenAddresses()

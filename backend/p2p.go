@@ -24,7 +24,7 @@ const (
 	protocolSupportKey = "mintter-support" // This is what we use as a key to protect the connection in ConnManager.
 )
 
-var userAgent = "mintter/" + Version
+var userAgent = "mintter/<dev>"
 
 // p2pNode wraps IPFS node that would be only initialized after account is registered within the node,
 // so all the components must only be accessed after making sure node is ready.

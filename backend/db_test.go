@@ -11,7 +11,7 @@ import (
 	"mintter/backend/testutil"
 )
 
-func TestGraphStoreDevice(t *testing.T) {
+func TestDBStoreDevice(t *testing.T) {
 	ctx := context.Background()
 
 	pool, err := sqliteschema.Open("file::memory:?mode=memory", 0, 1)

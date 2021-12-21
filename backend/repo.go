@@ -18,7 +18,7 @@ import (
 /*
 Repo layout v1 file tree:
 
-- /VERSION => v1
+- /VERSION => compatibility version
 - /keys/
 -- libp2p_id_ed25519 => device private key
 -- mintter_id_ed25519.pub => account public key
@@ -28,7 +28,7 @@ Repo layout v1 file tree:
 */
 
 const (
-	currentRepoLayoutVersion = "dev-19" // TODO: when layout is stable set a correct version here.
+	currentRepoLayoutVersion = "2021-12-21T13:35:00Z"
 
 	keysDir     = "keys"
 	dbDir       = "db"

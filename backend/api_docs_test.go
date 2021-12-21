@@ -95,9 +95,10 @@ func TestAPIUpdatePublicationE2E(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, publist.Publications, 1, "must have published document in the list")
 
-	// TODO: return version in the list response.
-	// gotPub.Document.Content = ""
-	// testutil.ProtoEqual(t, gotPub, publist.Publications[0], "listed publication doesn't match")
+	for _, pub := range publist.Publications {
+		require.NotEqual(t, "", pub.Version)
+		require.NotEqual(t, "", pub.LatestVersion)
+	}
 }
 
 func TestAPICreateDraft(t *testing.T) {
@@ -227,6 +228,12 @@ func TestAPIPublishDraft(t *testing.T) {
 	doc.PublishTime = published.Document.PublishTime // This is the only field that should differ.
 	testutil.ProtoEqual(t, doc, published.Document, "published document doesn't match")
 
+	require.NotEqual(t, "", published.Document.Id, "publication must have id")
+	require.NotEqual(t, "", published.Version, "publication must have version")
+	require.NotEqual(t, "", published.LatestVersion, "publication must have latest version")
+	require.Equal(t, doc.Id, published.Document.Id)
+	require.Equal(t, published.Version, published.LatestVersion, "published version must be the last one")
+
 	docid, err := cid.Decode(doc.Id)
 	require.NoError(t, err)
 
@@ -257,7 +264,58 @@ func TestAPIPublishDraft(t *testing.T) {
 	testutil.ProtoEqual(t, published, got, "published document doesn't match")
 }
 
-func TestAPIListPublications(t *testing.T) {
+func TestAPIListPublications_Simple(t *testing.T) {
+	back := makeTestBackend(t, "alice", true)
+	api := newDocsAPI(back)
+	ctx := context.Background()
+
+	pubs := map[string]*documents.Publication{}
+	{
+		draft := makeDraft(ctx, t, api, "doc-1", "")
+		p, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+		require.NoError(t, err)
+		pubs[p.Document.Id] = p
+		draft.PublishTime = p.Document.PublishTime
+		testutil.ProtoEqual(t, draft, p.Document, "published document must be the same as draft")
+	}
+	{
+		draft := makeDraft(ctx, t, api, "doc-2", "")
+		p, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+		require.NoError(t, err)
+		pubs[p.Document.Id] = p
+		draft.PublishTime = p.Document.PublishTime
+		testutil.ProtoEqual(t, draft, p.Document, "published document must be the same as draft")
+	}
+	{
+		draft := makeDraft(ctx, t, api, "doc-3", "")
+		p, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+		require.NoError(t, err)
+		pubs[p.Document.Id] = p
+		draft.PublishTime = p.Document.PublishTime
+		testutil.ProtoEqual(t, draft, p.Document, "published document must be the same as draft")
+	}
+
+	{
+		list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+		require.NoError(t, err)
+		require.Len(t, list.Documents, 0)
+	}
+
+	{
+		require.Len(t, pubs, 3)
+
+		list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+		require.NoError(t, err)
+		require.Len(t, list.Publications, len(pubs))
+
+		for _, pub := range list.Publications {
+			orig := pubs[pub.Document.Id]
+			testutil.ProtoEqual(t, orig, pub, "publication in list must match the original")
+		}
+	}
+}
+
+func TestAPIListPublications_Concurrent(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
 	api := newDocsAPI(back)
 	ctx := context.Background()
@@ -339,39 +397,77 @@ func TestAPISyncDocuments(t *testing.T) {
 	bapi := newDocsAPI(bob)
 	ctx := context.Background()
 
-	draft := makeDraft(ctx, t, aapi, "Alice Docs", "Subtitle")
-	_, err := aapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
-	require.NoError(t, err)
+	pubs := map[string]*documents.Publication{}
+
+	// Create some publications in Alice.
+	{
+		draft := makeDraft(ctx, t, aapi, "Doc-1", "Sub-1")
+		p, err := aapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+		require.NoError(t, err)
+		pubs[p.Document.Id] = p
+	}
+	{
+		draft := makeDraft(ctx, t, aapi, "Doc-2", "Sub-2")
+		p, err := aapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+		require.NoError(t, err)
+		pubs[p.Document.Id] = p
+	}
+	{
+		draft := makeDraft(ctx, t, aapi, "Doc-3", "Sub-3")
+		p, err := aapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+		require.NoError(t, err)
+		pubs[p.Document.Id] = p
+	}
 
 	connectPeers(ctx, t, alice, bob, true)
 
-	list, err := bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
-	require.NoError(t, err)
-	require.Len(t, list.Publications, 0)
+	// Check Bob doesn't have anything before sync.
+	{
+		list, err := bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
+		require.NoError(t, err)
+		require.Len(t, list.Publications, 0)
+	}
 
 	require.NoError(t, bob.SyncAccounts(ctx))
 
-	pub, err := bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
-	require.NoError(t, err)
-	draft.PublishTime = pub.Document.PublishTime // Draft doesn't have publish time.
-	testutil.ProtoEqual(t, draft, pub.Document, "fetched draft must be equal")
+	// Check Bob synced everything from Alice exactly as published.
+	{
+		require.Len(t, pubs, 3)
 
-	list, err = bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
-	require.NoError(t, err)
-	require.Len(t, list.Publications, 1)
+		for _, orig := range pubs {
+			pub, err := bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: orig.Document.Id})
+			require.NoError(t, err)
+			testutil.ProtoEqual(t, orig, pub, "bob must fetch exactly the same publication as published by alice")
+		}
+
+		list, err := bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
+		require.NoError(t, err)
+		require.Len(t, list.Publications, len(pubs))
+
+		for _, pub := range list.Publications {
+			testutil.ProtoEqual(t, pubs[pub.Document.Id], pub, "bob synced publications don't match in list")
+		}
+	}
 
 	// Try to sync again. Nothing new has to appear.
-
 	require.NoError(t, bob.SyncAccounts(ctx))
+	{
+		require.Len(t, pubs, 3)
 
-	list, err = bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
-	require.NoError(t, err)
-	require.Len(t, list.Publications, 1)
+		for _, orig := range pubs {
+			pub, err := bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: orig.Document.Id})
+			require.NoError(t, err)
+			testutil.ProtoEqual(t, orig, pub, "bob must fetch exactly the same publication as published by alice")
+		}
 
-	pub, err = bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
-	require.NoError(t, err)
-	draft.PublishTime = pub.Document.PublishTime // Draft doesn't have publish time.
-	testutil.ProtoEqual(t, draft, pub.Document, "fetched draft must be equal")
+		list, err := bapi.ListPublications(ctx, &documents.ListPublicationsRequest{})
+		require.NoError(t, err)
+		require.Len(t, list.Publications, len(pubs))
+
+		for _, pub := range list.Publications {
+			testutil.ProtoEqual(t, pubs[pub.Document.Id], pub, "bob synced publications don't match in list")
+		}
+	}
 }
 
 func makeDraft(ctx context.Context, t *testing.T, api DocsServer, title, subtitle string) *documents.Document {

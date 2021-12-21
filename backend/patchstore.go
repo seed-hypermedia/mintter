@@ -55,14 +55,20 @@ func (s *sqlitePatchStore) AddPatch(ctx context.Context, sps ...signedPatch) (er
 		if err := accountsInsertOrIgnore(conn, ahash, int(acodec)); err != nil {
 			return err
 		}
+		if acodec != codecAccountID {
+			panic("BUG: wrong codec for account")
+		}
 
 		dcodec, dhash := ipfs.DecodeCID(sp.peer)
-		if err := devicesInsertOrIgnore(conn, dhash, int(dcodec), ahash); err != nil {
+		if err := devicesInsertOrIgnore(conn, dhash, int(dcodec), ahash, int(acodec)); err != nil {
 			return err
+		}
+		if dcodec != cid.Libp2pKey {
+			panic("BUG: wrong codec for device")
 		}
 
 		ocodec, ohash := ipfs.DecodeCID(sp.ObjectID)
-		if err := objectsInsertOrIgnore(conn, ohash, int(ocodec), ahash); err != nil {
+		if err := objectsInsertOrIgnore(conn, ohash, int(ocodec), ahash, int(acodec)); err != nil {
 			return err
 		}
 
@@ -129,7 +135,7 @@ func (s *sqlitePatchStore) StoreVersion(ctx context.Context, ver *p2p.Version) (
 			return fmt.Errorf("failed to get account for device %s", vv.Peer)
 		}
 
-		if err := objectsInsertOrIgnore(conn, ohash, int(ocodec), acc.AccountsMultihash); err != nil {
+		if err := objectsInsertOrIgnore(conn, ohash, int(ocodec), acc.AccountsMultihash, acc.AccountsCodec); err != nil {
 			return err
 		}
 
@@ -161,41 +167,6 @@ func (s *sqlitePatchStore) LoadState(ctx context.Context, obj cid.Cid) (*changes
 	}
 
 	return nil, err
-}
-
-func (s *sqlitePatchStore) InitObject(ctx context.Context, sp signedPermanode) (err error) {
-	ocodec, ohash := ipfs.DecodeCID(sp.blk.Cid())
-	if ocodec != codecDocumentID {
-		panic("BUG: init object not document " + cid.CodecToStr[ocodec])
-	}
-
-	acodec, ahash := ipfs.DecodeCID(cid.Cid(sp.perma.AccountID))
-
-	conn, ok := sqlitebs.ConnFromContext(ctx)
-	if !ok {
-		c, release, err := s.db.Conn(ctx)
-		if err != nil {
-			return err
-		}
-		defer release()
-		conn = c
-	}
-
-	defer sqlitex.Save(conn)(&err)
-
-	if err := accountsInsertOrIgnore(conn, ahash, int(acodec)); err != nil {
-		return err
-	}
-
-	if err := objectsInsertOrIgnore(conn, ohash, int(ocodec), ahash); err != nil {
-		return err
-	}
-
-	if err := s.bs.Put(sqlitebs.ContextWithConn(ctx, conn), sp.blk); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (s *sqlitePatchStore) GetObjectVersion(ctx context.Context, obj cid.Cid) (*p2p.Version, error) {

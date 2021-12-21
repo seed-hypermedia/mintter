@@ -485,7 +485,8 @@ export const ListDraftsRequest = {
 
   toJSON(message: ListDraftsRequest): unknown {
     const obj: any = {};
-    message.pageSize !== undefined && (obj.pageSize = message.pageSize);
+    message.pageSize !== undefined &&
+      (obj.pageSize = Math.round(message.pageSize));
     message.pageToken !== undefined && (obj.pageToken = message.pageToken);
     return obj;
   },
@@ -823,7 +824,8 @@ export const ListPublicationsRequest = {
 
   toJSON(message: ListPublicationsRequest): unknown {
     const obj: any = {};
-    message.pageSize !== undefined && (obj.pageSize = message.pageSize);
+    message.pageSize !== undefined &&
+      (obj.pageSize = Math.round(message.pageSize));
     message.pageToken !== undefined && (obj.pageToken = message.pageToken);
     return obj;
   },
@@ -1227,7 +1229,7 @@ export const ListCitationsRequest = {
   toJSON(message: ListCitationsRequest): unknown {
     const obj: any = {};
     message.documentId !== undefined && (obj.documentId = message.documentId);
-    message.depth !== undefined && (obj.depth = message.depth);
+    message.depth !== undefined && (obj.depth = Math.round(message.depth));
     return obj;
   },
 

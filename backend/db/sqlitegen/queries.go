@@ -88,10 +88,11 @@ type {{.Name}}Result struct {
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, {{.Name}}Result{})
-		{{range $i, $out := .Outputs -}}
-		out[i].{{$out.Name}} = stmt.{{typeMethod "Column" $out.Type}}({{$i}})
-		{{end -}}
+		out = append(out, {{.Name}}Result{
+			{{range $i, $out := .Outputs -}}
+			{{$out.Name}}: stmt.{{typeMethod "Column" $out.Type}}({{$i}}),
+			{{end -}}
+		})
 
 		return nil
 	}

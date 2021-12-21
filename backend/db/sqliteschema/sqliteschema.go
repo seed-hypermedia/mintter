@@ -145,7 +145,7 @@ var migrations = []string{
 
 		-- Stores publication-related attributes of an Object.
 		CREATE TABLE publications (
-			id INTEGER PRIMARY KEY,
+			id INTEGER NOT NULL PRIMARY KEY,
 			title TEXT NOT NULL,
 			subtitle TEXT NOT NULL,
 			create_time INTEGER NOT NULL CHECK (create_time > 500),
@@ -157,29 +157,33 @@ var migrations = []string{
 
 		-- Index for links from Documents.
 		CREATE TABLE links (
+			-- Alias to the rowid so we can delete links efficiently.
+			id INTEGER PRIMARY KEY,
 			-- Reference to Document ID from which link originates.
 			source_object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
 			-- Block ID inside the Document which contains the link.
-			source_block_id TEXT NOT NULL,
+			source_block_id TEXT NOT NULL CHECK (source_block_id != ''),
+			-- Reference to the IPFS block of the change that introduced the link.
+			-- Only required for publications. Otherwise the link is from the current draft.
+			source_ipfs_block_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE,
 			-- Reference to Document ID that is linked.
 			target_object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
 			-- Block ID that is linked. Can be NULL if links is to the whole Document.
-			target_block_id TEXT,
+			target_block_id TEXT CHECK (target_block_id IS NULL OR (target_block_id != '')),
 			-- Version of the target Document that is linked.
-			target_version TEXT NOT NULL,
-			-- Reference to the IPFS block of the change that introduced the link.
-			-- Only required for publications.
-			ipfs_block_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE,
-			-- Reference to the draft if the link is in the draft.
-			-- Only required for drafts.
-			draft_id INTEGER REFERENCES drafts ON DELETE CASCADE,
-			-- Only allow one of the two columns to be set.
-			CHECK ((ipfs_block_id IS NULL AND draft_id IS NOT NULL) OR (ipfs_block_id IS NOT NULL AND draft_id IS NULL))
+			target_version TEXT NOT NULL CHECK (target_version != '')
 		);
 
-		-- Index to query links on drafts.
-		CREATE INDEX idx_links_draft_id ON links (draft_id)
-		WHERE draft_id IS NOT NULL;
+		-- Trigger to delete links when drafts are deleted.
+		CREATE TRIGGER trg_drafts_delete_links AFTER DELETE ON drafts
+		BEGIN
+			DELETE FROM links
+			WHERE source_object_id = old.id
+			AND source_ipfs_block_id IS NULL;
+		END;
+
+		-- Index to request outgoing links by source object ID.
+		CREATE INDEX idx_links_source_object_id ON links (source_object_id);
 
 		-- Index for backlinks.
 		CREATE INDEX idx_links_target_object_id ON links (target_object_id);
@@ -192,6 +196,7 @@ var migrations = []string{
 			idcolumn = 'source_object_id',
 			parentcolumn = 'target_object_id'
 		);
+
 		-- Stores Lightning wallets both externals (imported wallets like bluewallet
 		-- based on lndhub) and internals (based on the LND embedded node).
 		CREATE TABLE wallets (
@@ -210,6 +215,7 @@ var migrations = []string{
 			-- The balance in satoshis
 			balance INTEGER DEFAULT 0
 		);
+
 		-- Stores global metadata/configuration about any other table
 		CREATE TABLE global_meta (
     		key TEXT PRIMARY KEY,
@@ -221,15 +227,17 @@ var migrations = []string{
 // Open a connection pool for SQLite, enabling some needed functionality for our schema
 // like foreign keys.
 func Open(uri string, flags sqlite.OpenFlags, poolSize int) (*sqlitex.Pool, error) {
-	pool, err := sqlitex.Open(uri, flags, poolSize)
-	if err != nil {
-		return nil, err
-	}
-
-	prelude := []string{
+	return open(uri, flags, poolSize,
 		"PRAGMA foreign_keys = ON;",
 		"PRAGMA synchronous = NORMAL;",
 		"PRAGMA journal_mode = WAL;",
+	)
+}
+
+func open(uri string, flags sqlite.OpenFlags, poolSize int, prelude ...string) (*sqlitex.Pool, error) {
+	pool, err := sqlitex.Open(uri, flags, poolSize)
+	if err != nil {
+		return nil, err
 	}
 
 	if err := pool.ForEach(func(conn *sqlite.Conn) error {

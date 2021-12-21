@@ -151,7 +151,8 @@ export const ListAccountsRequest = {
 
   toJSON(message: ListAccountsRequest): unknown {
     const obj: any = {};
-    message.pageSize !== undefined && (obj.pageSize = message.pageSize);
+    message.pageSize !== undefined &&
+      (obj.pageSize = Math.round(message.pageSize));
     message.pageToken !== undefined && (obj.pageToken = message.pageToken);
     return obj;
   },
