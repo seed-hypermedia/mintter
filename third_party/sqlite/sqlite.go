@@ -1248,3 +1248,12 @@ func log_fn(_ unsafe.Pointer, code C.int, msg *C.char) {
 //
 // It is very noisy.
 var Logger func(code ErrorCode, msg []byte)
+
+func ExpandedSQL(stmt *Stmt) string {
+	cstr := C.sqlite3_expanded_sql(stmt.stmt)
+	gostr := C.GoString(cstr)
+
+	C.sqlite3_free(unsafe.Pointer(cstr))
+
+	return gostr
+}
