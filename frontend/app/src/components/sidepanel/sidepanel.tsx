@@ -4,7 +4,6 @@ import {Box} from '@mintter/ui/box'
 import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
-import {useActor} from '@xstate/react'
 import {MouseEvent, useEffect, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {visit} from 'unist-util-visit'
@@ -114,14 +113,13 @@ export const sidepanelMachine = sidepanelModel.createMachine({
 
 export function useEnableSidepanel() {
   const service = useSidepanel()
-  const [, send] = useActor(service)
   useEffect(() => {
-    send('SIDEPANEL_ENABLE')
+    service.send('SIDEPANEL_ENABLE')
 
     return () => {
-      send('SIDEPANEL_DISABLE')
+      service.send('SIDEPANEL_DISABLE')
     }
-  }, [send])
+  }, [service])
 }
 
 export type SidepanelProps = {
@@ -186,7 +184,6 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
     enabled: !!data.document.author,
   })
   const bookmarksService = useBookmarksService()
-  const [, bookmarksSend] = useActor(bookmarksService)
   const [, setLocation] = useLocation()
   async function onCopy() {
     await copyTextToClipboard(item)
@@ -290,7 +287,7 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
             <Text size="2">Open in main Panel</Text>
           </Dropdown.Item>
           {remove && (
-            <Dropdown.Item onSelect={() => bookmarksSend({type: 'REMOVE_BOOKMARK', link: item})}>
+            <Dropdown.Item onSelect={() => bookmarksService.send({type: 'REMOVE_BOOKMARK', link: item})}>
               <Icon name="Close" size="1" />
               <Text size="2">Remove</Text>
             </Dropdown.Item>

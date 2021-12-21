@@ -3,8 +3,6 @@ import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
-// import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
-import {useActor} from '@xstate/react'
 import {buildEditorHook, EditorMode} from 'frontend/app/src/editor/plugin-utils'
 import {plugins} from 'frontend/app/src/editor/plugins'
 import {FormEvent, KeyboardEvent, useMemo, useRef, useState} from 'react'
@@ -27,7 +25,6 @@ export default function EditorPage({params}: PageProps) {
   const toast = useRef('')
   const [visible, setVisible] = useState(false)
   const sidepanelService = useSidepanel()
-  const [, sidepanelSend] = useActor(sidepanelService)
   const [state, send] = useEditorDraft({
     documentId: params!.docId,
     afterPublish: (context: DraftEditorMachineContext) => {
@@ -45,7 +42,7 @@ export default function EditorPage({params}: PageProps) {
     loadAnnotations: (context: DraftEditorMachineContext) => {
       if (!context.localDraft) return
 
-      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: context.localDraft.content})
+      sidepanelService.send({type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: context.localDraft.content})
     },
     client,
   })
@@ -178,7 +175,7 @@ export default function EditorPage({params}: PageProps) {
                         content,
                       },
                     })
-                    sidepanelSend({
+                    sidepanelService.send({
                       type: 'SIDEPANEL_LOAD_ANNOTATIONS',
                       document: content,
                     })

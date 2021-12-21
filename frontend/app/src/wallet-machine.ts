@@ -1,6 +1,6 @@
 import {MINTTER_API_URL_DEFAULT} from '@mintter/client'
 import {gql, request} from 'graphql-request'
-import {EventFrom, Sender, sendParent, spawn} from 'xstate'
+import {ActorRefFrom, EventFrom, Sender, sendParent, spawn} from 'xstate'
 import {createModel} from 'xstate/lib/model'
 
 export const MINTTER_GRAPHQL_API_URL = `${MINTTER_API_URL_DEFAULT}/graphql`
@@ -33,7 +33,7 @@ export const listModel = createModel(
   },
 )
 
-export type WalletRef = ReturnType<typeof createWalletRef>
+export type WalletRef = ActorRefFrom<ReturnType<typeof createWalletMachine>>
 
 export type Wallet = {
   id: string
@@ -107,6 +107,7 @@ export const listMachine = listModel.createMachine(
     initial: 'loading',
     states: {
       loading: {
+        tags: ['pending'],
         invoke: {
           src: 'fetchWallets',
         },
@@ -138,6 +139,7 @@ export const listMachine = listModel.createMachine(
         },
       },
       submitting: {
+        tags: ['pending'],
         entry: listModel.assign({
           errorMessage: null,
         }),
@@ -243,6 +245,7 @@ export function createWalletMachine({id, name, balanceSats, isDefault}: Wallet) 
         },
         editing: {},
         settingDefault: {
+          tags: ['pending'],
           invoke: {
             src: (context) => (sendBack) => {
               let mutation = gql`
@@ -274,6 +277,7 @@ export function createWalletMachine({id, name, balanceSats, isDefault}: Wallet) 
           },
         },
         deleting: {
+          tags: ['pending'],
           invoke: {
             src: (context) => (sendBack) => {
               let mutation = gql`
@@ -310,7 +314,6 @@ export function createWalletMachine({id, name, balanceSats, isDefault}: Wallet) 
     {
       actions: {
         commit: sendParent(listModel.events['WALLET.COMMIT']()),
-        focusInput: () => {},
       },
     },
   )

@@ -4,15 +4,14 @@ import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
 import {css, styled} from '@mintter/ui/stitches.config'
 import {TextField} from '@mintter/ui/text-field'
-import {useActor} from '@xstate/react'
 import {FormEvent, useCallback, useEffect, useRef, useState} from 'react'
 import {useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
 import {MINTTER_LINK_PREFIX} from '../../constants'
 import {queryKeys} from '../../hooks'
+import {useSidebar} from '../../main-page-context'
 import {useRoute} from '../../utils/use-route'
 import {Settings} from '../settings'
-import {useSidebar} from '../sidebar'
 import {useSidepanel} from '../sidepanel'
 import {Tooltip} from '../tooltip'
 
@@ -43,9 +42,8 @@ export function Topbar() {
 
 function SidenavBar() {
   const sidebarService = useSidebar()
-  const [, send] = useActor(sidebarService)
 
-  const toggle = useCallback(() => send('SIDEBAR_TOGGLE'), [send])
+  const toggle = useCallback(() => sidebarService.send('SIDEBAR_TOGGLE'), [sidebarService])
   return (
     <Box
       className={topbarSection()}
@@ -138,11 +136,10 @@ function TopbarActions() {
   const [, setLocation] = useState(() => routeLocation)
   const client = useQueryClient()
   const service = useSidepanel()
-  const [, send] = useActor(service)
   const {match: isDocumentOpen} = useRoute<{docId: string}>(['/p/:docId', '/editor/:docId'])
 
   function toggleSidepanel() {
-    send('SIDEPANEL_TOGGLE')
+    service.send('SIDEPANEL_TOGGLE')
   }
 
   const onCreateDraft = useCallback(async function onCreateDraft() {

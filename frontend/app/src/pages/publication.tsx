@@ -4,7 +4,7 @@ import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 // import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
-import {useActor, useMachine} from '@xstate/react'
+import {useMachine} from '@xstate/react'
 import {useEffect, useRef} from 'react'
 import {useLocation} from 'wouter'
 import {createModel} from 'xstate/lib/model'
@@ -18,7 +18,6 @@ import {PageProps} from './types'
 export default function Publication({params}: PageProps) {
   const [, setLocation] = useLocation()
   const sidepanelService = useSidepanel()
-  const [, sidepanelSend] = useActor(sidepanelService)
   // const {status, data, error} = usePublication(params!.docId)
   const [state, send] = usePagePublication(params?.docId)
   const {data: author} = useAccount(state.context.publication?.document?.author, {
@@ -41,7 +40,7 @@ export default function Publication({params}: PageProps) {
 
   useEffect(() => {
     if (state.matches('ready')) {
-      sidepanelSend({type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: state.context.publication?.document})
+      sidepanelService.send({type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: state.context.publication?.document})
     }
   }, [state.value])
 
