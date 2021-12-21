@@ -388,21 +388,22 @@ function TippingModal({
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Content>
         {state.matches('open.setAmount') && <SetAmount state={state} send={send} />}
-        {state.matches('open.requestInvoice') && (
-          <Box
-            css={{
-              padding: '$5',
-              width: '300px',
-              backgroundColor: '$background-muted',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '$4',
-              boxShadow: '$3',
-            }}
-          >
-            <Text>...</Text>
-          </Box>
-        )}
+        {state.matches('open.requestInvoice') ||
+          (state.matches('open.paying') && (
+            <Box
+              css={{
+                padding: '$5',
+                width: '300px',
+                backgroundColor: '$background-muted',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '$4',
+                boxShadow: '$3',
+              }}
+            >
+              <Text>...</Text>
+            </Box>
+          ))}
         {state.matches('open.errored') && (
           <Box
             css={{
