@@ -36,7 +36,7 @@ type docsService interface {
 	ListPublications(ctx context.Context) ([]publicationsListResult, error)
 	DeletePublication(ctx context.Context, c cid.Cid) (err error)
 
-	ListBacklinks(context.Context, cid.Cid) ([]Backlink, error)
+	ListBacklinks(context.Context, cid.Cid, int) ([]Backlink, error)
 }
 
 type docsAPI struct {

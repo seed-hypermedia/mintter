@@ -239,10 +239,70 @@ func TestAPICitations_E2E(t *testing.T) {
 		require.Equal(t, wantLinks, cits.Links)
 	}
 
-	// TODO:
-	// Bob reuses from alice.
+	// Bob reuses from Alice which also reuses from another Alice's doc.
+	var bobpub *documents.Publication
+	{
+		d, err := bapi.UpdateDraft(ctx, &documents.UpdateDraftRequest{
+			Document: makeDraft(ctx, t, bapi, "Bob Reuses From Alice", ""),
+			Links: []*documents.Link{
+				{
+					Source: &documents.LinkNode{
+						BlockId: "bob-block-1",
+					},
+					Target: &documents.LinkNode{
+						DocumentId: pub2.Document.Id,
+						Version:    pub2.Version,
+					},
+				},
+			},
+		})
+		require.NoError(t, err)
+
+		p, err := bapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: d.Id})
+		require.NoError(t, err)
+		bobpub = p
+
+		wantLinks := []*documents.Link{
+			{
+				Source: &documents.LinkNode{
+					DocumentId: p.Document.Id,
+					BlockId:    "bob-block-1",
+					Version:    p.LatestVersion,
+				},
+				Target: &documents.LinkNode{
+					DocumentId: pub2.Document.Id,
+					Version:    pub2.Version,
+				},
+			},
+		}
+
+		// Check citations for Alice's doc appear in Bob.
+		cits, err := bapi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub2.Document.Id})
+		require.NoError(t, err)
+
+		require.Equal(t, wantLinks, cits.Links)
+	}
 
 	// Carol connects to bob.
+	carol := makeTestBackend(t, "carol", true)
+	capi := newDocsAPI(carol)
 
-	// Carol sees Bob with reused stuff from Alice.
+	connectPeers(ctx, t, bob, carol, true)
+	require.NoError(t, carol.SyncAccounts(ctx))
+
+	// Carol sees Bob's stuff with reused stuff from Alice.
+	{
+		p, err := capi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: bobpub.Document.Id})
+		require.NoError(t, err)
+
+		testutil.ProtoEqual(t, bobpub, p, "carol must fetch bob's stuff as published")
+
+		list, err := capi.ListPublications(ctx, &documents.ListPublicationsRequest{})
+		require.NoError(t, err)
+		require.Len(t, list.Publications, 3, "carol must get 3 pubs")
+
+		cits, err := capi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub.Document.Id, Depth: 2})
+		require.NoError(t, err)
+		require.Len(t, cits.Links, 2, "alice's original document must have 2 citations in carol")
+	}
 }

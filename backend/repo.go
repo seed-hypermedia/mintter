@@ -28,7 +28,9 @@ Repo layout v1 file tree:
 */
 
 const (
-	currentRepoLayoutVersion = "2021-12-21T13:35:00Z"
+	// This is changed when breaking changes are made. Eventually we'd want
+	// to support some migration mechanisms to help with backward-compatibility.
+	compatibilityVersion = "2021-12-21.02"
 
 	keysDir     = "keys"
 	dbDir       = "db"
@@ -275,7 +277,7 @@ func migrateRepo(path string) error {
 
 	ver, err := ioutil.ReadFile(versionFile)
 	if err != nil {
-		v := []byte(currentRepoLayoutVersion)
+		v := []byte(compatibilityVersion)
 		if err := ioutil.WriteFile(versionFile, v, 0644); err != nil {
 			return fmt.Errorf("failed to create repo version file: %w", err)
 		}
@@ -283,8 +285,8 @@ func migrateRepo(path string) error {
 		ver = v
 	}
 
-	if !bytes.Equal(ver, []byte(currentRepoLayoutVersion)) {
-		return fmt.Errorf("incompatible repo version: got = %s, want = %s; try a different directory for repo path", ver, currentRepoLayoutVersion)
+	if !bytes.Equal(ver, []byte(compatibilityVersion)) {
+		return fmt.Errorf("incompatible repo version: got = %s, want = %s; try a different directory for repo path", ver, compatibilityVersion)
 	}
 
 	return nil
