@@ -102,7 +102,7 @@ export const tippingMachine = tippingModel.createMachine({
                   }
                 }
               `
-              request<{paymentRequest: string}>(MINTTER_GRAPHQL_API_URL, mutation, {
+              request<{requestInvoice: {paymentRequest: string}}>(MINTTER_GRAPHQL_API_URL, mutation, {
                 input: {
                   amountSats: context.amount,
                   accountID: context.accountID,
@@ -111,7 +111,7 @@ export const tippingMachine = tippingModel.createMachine({
               })
                 .then((response) => {
                   console.log('mutation response: ', response)
-                  sendBack(tippingModel.events.REPORT_INVOICE_RECEIVED(response.paymentRequest))
+                  sendBack(tippingModel.events.REPORT_INVOICE_RECEIVED(response.requestInvoice.paymentRequest))
                 })
                 .catch((err) => {
                   console.log('ERROR: ', err)
@@ -129,7 +129,10 @@ export const tippingMachine = tippingModel.createMachine({
               target: 'readyToPay',
               actions: [
                 tippingModel.assign({
-                  invoice: (_, event) => event.invoice,
+                  invoice: (_, event) => {
+                    console.log('INVOICE: ', event.invoice)
+                    return event.invoice
+                  },
                 }),
               ],
             },
@@ -164,6 +167,7 @@ export const tippingMachine = tippingModel.createMachine({
               request<{walletID: string}>(MINTTER_GRAPHQL_API_URL, mutation, {
                 input: {
                   paymentRequest: context.invoice,
+                  amountSats: context.amount,
                 },
               })
                 .then((response) => {
