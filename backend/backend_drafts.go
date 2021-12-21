@@ -8,6 +8,7 @@ import (
 	"mintter/backend/ipfs/sqlitebs"
 	"time"
 
+	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -20,23 +21,97 @@ type Draft struct {
 	Title      string
 	Subtitle   string
 	Content    []byte
+	Links      map[Link]struct{}
 	CreateTime time.Time
 	UpdateTime time.Time
 }
 
-func (srv *backend) UpdateDraft(ctx context.Context, id cid.Cid, title, subtitle string, content []byte) (Draft, error) {
+func (d *Draft) AddLink(l Link) {
+	if d.Links == nil {
+		d.Links = map[Link]struct{}{}
+	}
+	d.Links[l] = struct{}{}
+}
+
+func (d *Draft) RemoveLink(l Link) {
+	if d.Links != nil {
+		delete(d.Links, l)
+	}
+}
+
+// ContentWithLinks represents a draft content with links.
+type ContentWithLinks struct {
+	Content []byte
+	Links   map[Link]struct{}
+}
+
+// Link from a draft to another document.
+type Link struct {
+	SourceBlockID    string
+	SourceChangeID   cid.Cid
+	TargetDocumentID cid.Cid
+	TargetBlockID    string
+	TargetVersion    Version
+}
+
+func (l Link) String() string {
+	return "mintter://" + l.TargetDocumentID.String() + "/" + l.TargetVersion.String() + "/" + l.TargetBlockID
+}
+
+func (srv *backend) UpdateDraft(ctx context.Context, id cid.Cid, title, subtitle string, content ContentWithLinks) (d Draft, err error) {
+	ocodec, ohash := ipfs.DecodeCID(id)
+	if ocodec != codecDocumentID {
+		return Draft{}, fmt.Errorf("wrong doc ID for updating draft %s: %s", id, cid.CodecToStr[ocodec])
+	}
+
 	conn, release, err := srv.pool.Conn(ctx)
 	if err != nil {
 		return Draft{}, err
 	}
 	defer release()
 
-	ocodec, ohash := ipfs.DecodeCID(id)
-	if ocodec != codecDocumentID {
-		return Draft{}, fmt.Errorf("wrong doc ID for updating draft %s: %s", id, cid.CodecToStr[ocodec])
+	incomingLinks := content.Links
+
+	dbLinks, err := linksListBySource(conn, ohash, int(ocodec))
+	if err != nil {
+		return Draft{}, err
 	}
 
-	if err := draftsUpdate(conn, title, subtitle, content, int(nowFunc().Unix()), ohash, int(ocodec)); err != nil {
+	var existingLinks map[Link]int
+	if dbLinks != nil {
+		existingLinks = make(map[Link]int, len(dbLinks))
+
+		for _, l := range dbLinks {
+			// We only want draft links which won't have reference to the IPFS block.
+			if l.IsDraft == 0 {
+				continue
+			}
+			ll := Link{
+				SourceBlockID:    l.LinksSourceBlockID,
+				TargetDocumentID: cid.NewCidV1(uint64(l.TargetObjectCodec), l.TargetObjectMultihash),
+				TargetBlockID:    l.LinksTargetBlockID,
+				TargetVersion:    Version(l.LinksTargetVersion),
+			}
+			existingLinks[ll] = l.LinksID
+		}
+	}
+
+	// Diff existing and incoming links. We'll leave the ones to insert
+	// in the incoming map, and the ones to delete in the existing map.
+	for l := range incomingLinks {
+		_, ok := existingLinks[l]
+		if !ok {
+			continue
+		}
+		// Existing links don't need to be inserted,
+		// nor they have to be deleted.
+		delete(incomingLinks, l)
+		delete(existingLinks, l)
+	}
+
+	defer sqlitex.Save(conn)(&err)
+
+	if err := draftsUpdate(conn, title, subtitle, content.Content, int(nowFunc().Unix()), ohash, int(ocodec)); err != nil {
 		return Draft{}, err
 	}
 
@@ -44,7 +119,28 @@ func (srv *backend) UpdateDraft(ctx context.Context, id cid.Cid, title, subtitle
 		return Draft{}, fmt.Errorf("couldn't update draft in the database, no records found")
 	}
 
-	return srv.GetDraft(ctx, id)
+	for _, id := range existingLinks {
+		if err := linksDeleteByID(conn, id); err != nil {
+			return d, fmt.Errorf("failed to delete link %d: %w", id, err)
+		}
+	}
+
+	for l := range incomingLinks {
+		tcodec, thash := ipfs.DecodeCID(l.TargetDocumentID)
+		if tcodec != codecDocumentID {
+			return d, fmt.Errorf("bad CID codec for linked document %s: %s", l.TargetDocumentID, cid.CodecToStr[tcodec])
+		}
+		if err := linksInsertFromDraft(conn, ohash, int(ocodec), l.SourceBlockID, thash, int(tcodec), l.TargetBlockID, l.TargetVersion.String()); err != nil {
+			return d, fmt.Errorf("failed to insert link %s", l)
+		}
+	}
+
+	acc, err := srv.repo.Account()
+	if err != nil {
+		return d, err
+	}
+
+	return draftFromSQLite(conn, id, acc.id)
 }
 
 // CreateDraft creates a new permanode and stores it in the block store.
@@ -72,7 +168,7 @@ func (srv *backend) CreateDraft(ctx context.Context) (d Draft, err error) {
 
 	defer sqlitex.Save(conn)(&err)
 
-	if err := srv.InitObject(sqlitebs.ContextWithConn(ctx, conn), sp); err != nil {
+	if err := srv.InitObject(sqlitebs.ContextWithConn(ctx, conn), acc.id, srv.repo.device.id, sp.blk.Cid(), sp.blk); err != nil {
 		return Draft{}, err
 	}
 
@@ -132,30 +228,70 @@ func (srv *backend) CreateDraftFromPublication(ctx context.Context, pubid cid.Ci
 }
 
 func (srv *backend) GetDraft(ctx context.Context, c cid.Cid) (Draft, error) {
-	conn, release, err := srv.pool.Conn(ctx)
-	if err != nil {
-		return Draft{}, err
-	}
-
-	ocodec, hash := ipfs.DecodeCID(c)
-
-	result, err := draftsGet(conn, hash, int(ocodec))
-	release()
-	if err != nil {
-		return Draft{}, err
-	}
-	if result.DraftsCreateTime == 0 {
-		return Draft{}, errNotFound
-	}
-
 	acc, err := srv.repo.Account()
 	if err != nil {
 		return Draft{}, err
 	}
 
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
+		return Draft{}, err
+	}
+	defer release()
+
+	return draftFromSQLite(conn, c, acc.id)
+}
+
+func (srv *backend) getLinks(ctx context.Context, c cid.Cid, draftsOnly bool) (map[Link]struct{}, error) {
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	return linksFromSQLite(conn, c, draftsOnly)
+}
+
+func linksFromSQLite(conn *sqlite.Conn, c cid.Cid, draftsOnly bool) (map[Link]struct{}, error) {
+	ocodec, ohash := ipfs.DecodeCID(c)
+
+	dbLinks, err := linksListBySource(conn, ohash, int(ocodec))
+
+	if err != nil {
+		return nil, err
+	}
+
+	out := make(map[Link]struct{}, len(dbLinks))
+	for _, l := range dbLinks {
+		if draftsOnly && l.IsDraft == 0 {
+			continue
+		}
+		ll := Link{
+			SourceBlockID:    l.LinksSourceBlockID,
+			TargetDocumentID: cid.NewCidV1(uint64(l.TargetObjectCodec), l.TargetObjectMultihash),
+			TargetBlockID:    l.LinksTargetBlockID,
+			TargetVersion:    Version(l.LinksTargetVersion),
+		}
+		out[ll] = struct{}{}
+	}
+
+	return out, nil
+}
+
+func draftFromSQLite(conn *sqlite.Conn, id cid.Cid, author AccountID) (d Draft, err error) {
+	ocodec, ohash := ipfs.DecodeCID(id)
+
+	result, err := draftsGet(conn, ohash, int(ocodec))
+	if err != nil {
+		return d, err
+	}
+	if result.DraftsCreateTime == 0 {
+		return d, errNotFound
+	}
+
 	return Draft{
-		ID:         c,
-		Author:     cid.Cid(acc.id),
+		ID:         id,
+		Author:     cid.Cid(author),
 		Title:      result.DraftsTitle,
 		Subtitle:   result.DraftsSubtitle,
 		Content:    result.DraftsContent,
@@ -199,7 +335,7 @@ func (srv *backend) ListDrafts(ctx context.Context) ([]draftsListResult, error) 
 	return draftsList(conn)
 }
 
-func (srv *backend) PublishDraft(ctx context.Context, c cid.Cid) (Publication, error) {
+func (srv *backend) PublishDraft(ctx context.Context, c cid.Cid) (pub Publication, err error) {
 	srv.mu.Lock()
 	defer srv.mu.Unlock()
 
@@ -218,7 +354,7 @@ func (srv *backend) PublishDraft(ctx context.Context, c cid.Cid) (Publication, e
 		return Publication{}, err
 	}
 
-	pub, err := publicationFromChanges(pubchanges)
+	pub, err = publicationFromChanges(pubchanges)
 	if err != nil {
 		return Publication{}, err
 	}
@@ -260,6 +396,30 @@ func (srv *backend) PublishDraft(ctx context.Context, c cid.Cid) (Publication, e
 		if !bytes.Equal(draft.Content, pub.Content) {
 			change.ContentUpdated = draft.Content
 		}
+
+		existingLinks := pub.Links
+
+		incomingLinks, err := srv.getLinks(ctx, c, true)
+		if err != nil {
+			return pub, err
+		}
+
+		for l := range incomingLinks {
+			_, ok := existingLinks[l]
+			if !ok {
+				continue
+			}
+			delete(incomingLinks, l)
+			delete(existingLinks, l)
+		}
+
+		for l := range existingLinks {
+			change.LinksRemoved = append(change.LinksRemoved, l.Proto())
+		}
+
+		for l := range incomingLinks {
+			change.LinksAdded = append(change.LinksAdded, l.Proto())
+		}
 	}
 
 	docChange, err := pubchanges.NewProtoPatch(cid.Cid(acc.id), srv.repo.device.priv, &change)
@@ -267,7 +427,7 @@ func (srv *backend) PublishDraft(ctx context.Context, c cid.Cid) (Publication, e
 		return Publication{}, err
 	}
 
-	if err := pub.applyChange(docChange); err != nil {
+	if err := pub.apply(docChange); err != nil {
 		return Publication{}, err
 	}
 
@@ -307,11 +467,17 @@ func (srv *backend) PublishDraft(ctx context.Context, c cid.Cid) (Publication, e
 			panic("BUG: bad codec for publication " + cid.CodecToStr[ocodec])
 		}
 
+		ccodec, chash := ipfs.DecodeCID(docChange.blk.Cid())
+
+		if err := linksUpdatePublication(conn, chash, int(ccodec), ohash, int(ocodec)); err != nil {
+			return err
+		}
+
 		if err := draftsDelete(conn, ohash, int(ocodec)); err != nil {
 			return err
 		}
 
-		if err := publicationsIndex(conn, ocodec, ohash, pub); err != nil {
+		if err := publicationsIndex(conn, pub); err != nil {
 			return err
 		}
 

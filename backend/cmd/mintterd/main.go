@@ -16,13 +16,16 @@ import (
 	"go.uber.org/fx"
 )
 
+// Version could be replaced by passing linker flags.
+var Version = "<dev>"
+
 func main() {
 	var cfg config.Config
 
 	kong.Parse(&cfg,
 		kong.Name("mintterd"),
 		kong.Resolvers(kongcli.EnvResolver("")),
-		kong.Description("Version: "+backend.Version),
+		kong.Description("Version: "+Version),
 	)
 
 	mainutil.Run(func() error {

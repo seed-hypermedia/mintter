@@ -17,8 +17,14 @@ type graphdb struct {
 // StoreDevice stores the binding between account and device.
 func (db *graphdb) StoreDevice(ctx context.Context, aid AccountID, did DeviceID) (err error) {
 	acodec, ahash := ipfs.DecodeCID(cid.Cid(aid))
+	if acodec != codecAccountID {
+		panic("BUG: wrong codec for account")
+	}
 
 	dcodec, dhash := ipfs.DecodeCID(cid.Cid(did))
+	if dcodec != cid.Libp2pKey {
+		panic("BUG: wrong codec for device")
+	}
 
 	conn, release, err := db.pool.Conn(ctx)
 	if err != nil {
@@ -32,7 +38,7 @@ func (db *graphdb) StoreDevice(ctx context.Context, aid AccountID, did DeviceID)
 		return err
 	}
 
-	if err := devicesInsertOrIgnore(conn, dhash, int(dcodec), ahash); err != nil {
+	if err := devicesInsertOrIgnore(conn, dhash, int(dcodec), ahash, int(acodec)); err != nil {
 		return err
 	}
 
@@ -62,29 +68,53 @@ func (db *graphdb) GetAccountForDevice(ctx context.Context, did DeviceID) (aid A
 	return AccountID(cid.NewCidV1(uint64(res.AccountsCodec), res.AccountsMultihash)), nil
 }
 
-func (db *graphdb) IndexPublication(ctx context.Context, docID cid.Cid, pub Publication) error {
+func (db *graphdb) IndexPublication(ctx context.Context, pub Publication, newLinks []Link) error {
 	conn, release, err := db.pool.Conn(ctx)
 	if err != nil {
 		return err
 	}
 	defer release()
 
-	dcodec, dhash := ipfs.DecodeCID(docID)
+	dcodec, dhash := ipfs.DecodeCID(pub.ID)
 	if dcodec != codecDocumentID {
 		panic("BUG: wrong codec for publication " + cid.CodecToStr[dcodec])
 	}
 
-	return publicationsIndex(conn, dcodec, dhash, pub)
+	if err := publicationsIndex(conn, pub); err != nil {
+		return err
+	}
+
+	for _, l := range newLinks {
+		ccodec, chash := ipfs.DecodeCID(l.SourceChangeID)
+		tcodec, thash := ipfs.DecodeCID(l.TargetDocumentID)
+		if err := linksInsertFromPublication(conn,
+			dhash, int(dcodec),
+			l.SourceBlockID,
+			int(ccodec), chash,
+			thash, int(tcodec),
+			l.TargetBlockID,
+			l.TargetVersion.String(),
+		); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-func publicationsIndex(conn *sqlite.Conn, ocodec uint64, ohash []byte, pub Publication) error {
-	return publicationsUpsert(conn, ohash, int(ocodec),
+func publicationsIndex(conn *sqlite.Conn, pub Publication) error {
+	pcodec, phash := ipfs.DecodeCID(pub.ID)
+	if pcodec != codecDocumentID {
+		panic("BUG: bad codec for publication")
+	}
+
+	return publicationsUpsert(conn, phash, int(pcodec),
 		pub.Title,
 		pub.Subtitle,
 		int(pub.CreateTime.Unix()),
 		int(pub.UpdateTime.Unix()),
 		int(pub.PublishTime.Unix()),
-		pub.Version,
+		pub.Version.String(),
 	)
 }
 

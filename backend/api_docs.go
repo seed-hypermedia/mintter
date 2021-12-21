@@ -24,7 +24,7 @@ type docsService interface {
 	CreateDraft(context.Context) (Draft, error)
 	CreateDraftFromPublication(context.Context, cid.Cid) (Draft, error)
 	GetDraft(context.Context, cid.Cid) (Draft, error)
-	UpdateDraft(ctx context.Context, c cid.Cid, title, subtitle string, content []byte) (Draft, error)
+	UpdateDraft(ctx context.Context, c cid.Cid, title, subtitle string, content ContentWithLinks) (Draft, error)
 	PublishDraft(ctx context.Context, c cid.Cid) (Publication, error)
 	ListDrafts(context.Context) ([]draftsListResult, error)
 	DeleteDraft(context.Context, cid.Cid) error
@@ -35,6 +35,8 @@ type docsService interface {
 	LoadState(ctx context.Context, obj cid.Cid) (*changeset, error)
 	ListPublications(ctx context.Context) ([]publicationsListResult, error)
 	DeletePublication(ctx context.Context, c cid.Cid) (err error)
+
+	ListBacklinks(context.Context, cid.Cid) ([]Backlink, error)
 }
 
 type docsAPI struct {
@@ -149,7 +151,31 @@ func (srv *docsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRe
 		return nil, err
 	}
 
-	d, err := srv.back.UpdateDraft(ctx, c, in.Document.Title, in.Document.Subtitle, []byte(in.Document.Content))
+	cwl := ContentWithLinks{
+		Content: []byte(in.Document.Content),
+	}
+	if in.Links != nil {
+		cwl.Links = make(map[Link]struct{}, len(in.Links))
+	}
+
+	for _, l := range in.Links {
+		target, err := cid.Decode(l.GetTarget().DocumentId)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "failed to parse target document ID: %v", err)
+		}
+
+		// TODO: improve input validation here and return meaningful errors.
+		ll := Link{
+			SourceBlockID:    l.GetSource().GetBlockId(),
+			TargetDocumentID: target,
+			TargetBlockID:    l.GetTarget().BlockId,
+			TargetVersion:    Version(l.GetTarget().Version),
+		}
+
+		cwl.Links[ll] = struct{}{}
+	}
+
+	d, err := srv.back.UpdateDraft(ctx, c, in.Document.Title, in.Document.Subtitle, cwl)
 	if err != nil {
 		return nil, err
 	}
@@ -198,8 +224,8 @@ func pubToProto(id string, pub Publication) *documents.Publication {
 			UpdateTime:  timestamppb.New(pub.UpdateTime),
 			PublishTime: timestamppb.New(pub.PublishTime),
 		},
-		Version:       pub.Version,
-		LatestVersion: pub.Version,
+		Version:       pub.Version.String(),
+		LatestVersion: pub.Version.String(),
 	}
 }
 
@@ -229,18 +255,16 @@ func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPubl
 		Publications: make([]*documents.Publication, len(list)),
 	}
 
-	acc, err := srv.back.Account()
-	if err != nil {
-		return nil, err
-	}
-
-	aid := acc.id.String()
-
 	for i, l := range list {
+		if l.AccountsCodec != int(codecAccountID) {
+			panic("BUG: wrong codec for account")
+		}
+		aid := cid.NewCidV1(uint64(l.AccountsCodec), l.AccountsMultihash)
+		pubid := cid.NewCidV1(uint64(l.ObjectsCodec), l.ObjectsMultihash).String()
 		out.Publications[i] = &documents.Publication{
 			Document: &documents.Document{
-				Id:          cid.NewCidV1(uint64(l.ObjectsCodec), l.ObjectsMultihash).String(),
-				Author:      aid,
+				Id:          pubid,
+				Author:      aid.String(),
 				Title:       l.PublicationsTitle,
 				Subtitle:    l.PublicationsSubtitle,
 				CreateTime:  timestamppb.New(timeFromSeconds(l.PublicationsCreateTime)),

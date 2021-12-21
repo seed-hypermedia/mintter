@@ -7,6 +7,7 @@ import (
 	p2p "mintter/backend/api/p2p/v1alpha"
 	"mintter/backend/ipfs"
 
+	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"go.uber.org/zap"
@@ -86,13 +87,31 @@ func (srv *backend) SyncAccounts(ctx context.Context) error {
 	return nil
 }
 
-func (srv *backend) syncObject(ctx context.Context, oid cid.Cid, pid peer.ID) error {
-	ocodec, _ := ipfs.DecodeCID(oid)
+type versionVector struct {
+	*p2p.Version
+}
 
-	var handleFunc func(context.Context, *changeset) error
+func (vv versionVector) Has(c cid.Cid) bool {
+	if vv.Version == nil {
+		return false
+	}
+
+	cs := c.String()
+	for _, v := range vv.VersionVector {
+		if v.Head == cs {
+			return true
+		}
+	}
+	return false
+}
+
+func (srv *backend) syncObject(ctx context.Context, oid cid.Cid, pid peer.ID) error {
+	ocodec, ohash := ipfs.DecodeCID(oid)
+
+	var handleFunc func(context.Context, *p2p.Version, *changeset) error
 	switch ocodec {
 	case codecAccountID:
-		handleFunc = func(ctx context.Context, cs *changeset) error {
+		handleFunc = func(ctx context.Context, localVer *p2p.Version, cs *changeset) error {
 			account, err := accountFromState(cs)
 			if err != nil {
 				return fmt.Errorf("failed to apply account changes: %w", err)
@@ -110,7 +129,7 @@ func (srv *backend) syncObject(ctx context.Context, oid cid.Cid, pid peer.ID) er
 			return nil
 		}
 	case codecDocumentFeed:
-		handleFunc = func(ctx context.Context, cs *changeset) error {
+		handleFunc = func(ctx context.Context, localVer *p2p.Version, cs *changeset) error {
 			for cs.Next() {
 				var dfc DocumentFeedChange
 				change := cs.Item()
@@ -135,13 +154,32 @@ func (srv *backend) syncObject(ctx context.Context, oid cid.Cid, pid peer.ID) er
 			return nil
 		}
 	case codecDocumentID:
-		handleFunc = func(ctx context.Context, cs *changeset) error {
-			pub, err := publicationFromChanges(cs)
+		handleFunc = func(ctx context.Context, localVer *p2p.Version, cs *changeset) error {
+			// TODO: FIIIIX THIS UGLY SHIT. No time now.
+			vv := versionVector{localVer}
+			var links []Link
+			pub, err := publicationFromChanges(cs, func(meta changeMetadata, evt *DocumentChange) error {
+				if vv.Has(meta.CID) {
+					return nil
+				}
+
+				for _, l := range evt.LinksAdded {
+					ll, err := l.ToLink()
+					if err != nil {
+						return err
+					}
+					ll.SourceChangeID = meta.CID
+
+					links = append(links, ll)
+				}
+
+				return nil
+			})
 			if err != nil {
 				return err
 			}
 
-			return srv.db.IndexPublication(ctx, oid, pub)
+			return srv.db.IndexPublication(ctx, pub, links)
 		}
 	default:
 		return fmt.Errorf("attempting to sync unsupported object type: %s", cid.CodecToStr[ocodec])
@@ -167,6 +205,37 @@ func (srv *backend) syncObject(ctx context.Context, oid cid.Cid, pid peer.ID) er
 		return fmt.Errorf("failed to get local object version for device %s: %w", peer.ToCid(pid), err)
 	}
 
+	// There was a very subtle bug that required to add this ugliness.
+	// When we sync an object for the first time, we need to have a record for it in the database
+	// in order to index everything properly. Need to create some facility to assemble everything in memory
+	// and defer the database interaction to the last moment when everything is verified and collected.
+	// TODO(burdiyan): need to clean this up.
+	if localVer == nil {
+		var aid AccountID
+		var blk blocks.Block
+		switch ocodec {
+		case codecAccountID:
+			aid = AccountID(oid)
+		case codecDocumentFeed:
+			aid = AccountID(cid.NewCidV1(codecAccountID, ohash))
+		case codecDocumentID:
+			b, err := srv.p2p.bs.GetBlock(ctx, oid)
+			if err != nil {
+				return err
+			}
+			perma, err := decodePermanodeBlock(b)
+			if err != nil {
+				return err
+			}
+			aid = AccountID(perma.AccountID)
+			blk = b
+		}
+
+		if err := srv.InitObject(ctx, aid, DeviceID(peer.ToCid(pid)), oid, blk); err != nil {
+			return fmt.Errorf("failed to init new object %s: %w", oid, err)
+		}
+	}
+
 	// TODO: for some reason when this check is removed, we are getting duplicate
 	// publications after syncing multiple times. This should not happen.
 
@@ -184,7 +253,7 @@ func (srv *backend) syncObject(ctx context.Context, oid cid.Cid, pid peer.ID) er
 		return err
 	}
 
-	if err := handleFunc(ctx, changes); err != nil {
+	if err := handleFunc(ctx, localVer, changes); err != nil {
 		return err
 	}
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"testing"
-	"time"
 
 	"github.com/ipfs/go-cid"
 
@@ -67,8 +66,6 @@ func TestAccountVerifiedOnConnect(t *testing.T) {
 }
 
 func TestRecoverConnections(t *testing.T) {
-	t.Skip("fix flaky test")
-
 	alice := makeTestBackend(t, "alice", true)
 	bob := makeTestBackend(t, "bob", true)
 	ctx := context.Background()
@@ -91,18 +88,14 @@ func TestRecoverConnections(t *testing.T) {
 }
 
 func TestProvideAccount(t *testing.T) {
-	t.Skip("fix flaky test")
-
 	alice := makeTestBackend(t, "alice", true)
 	bob := makeTestBackend(t, "bob", true)
 
 	carol := makeTestBackend(t, "carol", true)
 	ctx := context.Background()
 
-	connectPeers(ctx, t, alice, bob, false)
-	connectPeers(ctx, t, bob, carol, false)
-
-	time.Sleep(2 * time.Second)
+	connectPeers(ctx, t, alice, bob, true)
+	connectPeers(ctx, t, bob, carol, true)
 
 	var i int
 	addrs := carol.p2p.libp2p.Routing.FindProvidersAsync(ctx, cid.Cid(alice.repo.acc.id), 100)

@@ -24,17 +24,6 @@ const (
 	BacklinksID    sqlitegen.Column = "backlinks.id"
 )
 
-// Table changes.
-const (
-	Changes            sqlitegen.Table  = "changes"
-	ChangesDeviceID    sqlitegen.Column = "changes.device_id"
-	ChangesID          sqlitegen.Column = "changes.id"
-	ChangesIPFSBlockID sqlitegen.Column = "changes.ipfs_block_id"
-	ChangesLamportTime sqlitegen.Column = "changes.lamport_time"
-	ChangesObjectID    sqlitegen.Column = "changes.object_id"
-	ChangesSeq         sqlitegen.Column = "changes.seq"
-)
-
 // Table devices.
 const (
 	Devices           sqlitegen.Table  = "devices"
@@ -86,14 +75,14 @@ const (
 
 // Table links.
 const (
-	Links               sqlitegen.Table  = "links"
-	LinksDraftID        sqlitegen.Column = "links.draft_id"
-	LinksIPFSBlockID    sqlitegen.Column = "links.ipfs_block_id"
-	LinksSourceBlockID  sqlitegen.Column = "links.source_block_id"
-	LinksSourceObjectID sqlitegen.Column = "links.source_object_id"
-	LinksTargetBlockID  sqlitegen.Column = "links.target_block_id"
-	LinksTargetObjectID sqlitegen.Column = "links.target_object_id"
-	LinksTargetVersion  sqlitegen.Column = "links.target_version"
+	Links                  sqlitegen.Table  = "links"
+	LinksID                sqlitegen.Column = "links.id"
+	LinksSourceBlockID     sqlitegen.Column = "links.source_block_id"
+	LinksSourceIPFSBlockID sqlitegen.Column = "links.source_ipfs_block_id"
+	LinksSourceObjectID    sqlitegen.Column = "links.source_object_id"
+	LinksTargetBlockID     sqlitegen.Column = "links.target_block_id"
+	LinksTargetObjectID    sqlitegen.Column = "links.target_object_id"
+	LinksTargetVersion     sqlitegen.Column = "links.target_version"
 )
 
 // Table objects.
@@ -140,12 +129,6 @@ var Schema = sqlitegen.Schema{
 		AccountsMultihash:         {Table: Accounts, SQLType: "BLOB"},
 		BacklinksDepth:            {Table: Backlinks, SQLType: "INTEGER"},
 		BacklinksID:               {Table: Backlinks, SQLType: "INTEGER"},
-		ChangesDeviceID:           {Table: Changes, SQLType: "INTEGER"},
-		ChangesID:                 {Table: Changes, SQLType: "INTEGER"},
-		ChangesIPFSBlockID:        {Table: Changes, SQLType: "INTEGER"},
-		ChangesLamportTime:        {Table: Changes, SQLType: "INTEGER"},
-		ChangesObjectID:           {Table: Changes, SQLType: "INTEGER"},
-		ChangesSeq:                {Table: Changes, SQLType: "INTEGER"},
 		DevicesAccountID:          {Table: Devices, SQLType: "INTEGER"},
 		DevicesCodec:              {Table: Devices, SQLType: "INTEGER"},
 		DevicesCreateTime:         {Table: Devices, SQLType: "INTEGER"},
@@ -170,9 +153,9 @@ var Schema = sqlitegen.Schema{
 		IPFSBlocksData:            {Table: IPFSBlocks, SQLType: "BLOB"},
 		IPFSBlocksID:              {Table: IPFSBlocks, SQLType: "INTEGER"},
 		IPFSBlocksMultihash:       {Table: IPFSBlocks, SQLType: "BLOB"},
-		LinksDraftID:              {Table: Links, SQLType: "INTEGER"},
-		LinksIPFSBlockID:          {Table: Links, SQLType: "INTEGER"},
+		LinksID:                   {Table: Links, SQLType: "INTEGER"},
 		LinksSourceBlockID:        {Table: Links, SQLType: "TEXT"},
+		LinksSourceIPFSBlockID:    {Table: Links, SQLType: "INTEGER"},
 		LinksSourceObjectID:       {Table: Links, SQLType: "INTEGER"},
 		LinksTargetBlockID:        {Table: Links, SQLType: "TEXT"},
 		LinksTargetObjectID:       {Table: Links, SQLType: "INTEGER"},
