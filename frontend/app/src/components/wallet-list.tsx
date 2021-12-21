@@ -7,8 +7,9 @@ import {TextField} from '@mintter/ui/text-field'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useActor, useInterpret} from '@xstate/react'
 import {FormEvent, useRef} from 'react'
+import {ActorRefFrom} from 'xstate'
 // import BarcodeScannerComponent from 'react-qr-barcode-scanner'
-import {listMachine, listModel, Wallet} from '../wallet-machine'
+import {createWalletMachine, listMachine, listModel, Wallet} from '../wallet-machine'
 export function WalletList() {
   // const [data, setData] = useState('Not Found')
   const service = useInterpret(listMachine, {devTools: true})
@@ -76,10 +77,16 @@ export function WalletList() {
           css={{flex: 1}}
         />
 
-        <Button size="2" type="submit">
+        <Button size="2" type="submit" disabled={state.hasTag('pending')}>
           Submit
         </Button>
-        <Button size="2" variant="outlined" type="button" onClick={() => send(listModel.events['CAMERA.ACTIVATE']())}>
+        <Button
+          size="2"
+          variant="outlined"
+          type="button"
+          onClick={() => send(listModel.events['CAMERA.ACTIVATE']())}
+          disabled={state.hasTag('pending')}
+        >
           ScanQR
         </Button>
       </Box>
@@ -92,11 +99,9 @@ export function WalletList() {
         <Text>loading wallets...</Text>
       ) : wallets.length > 0 ? (
         <Box as="ol" css={{listStyleType: 'decimal'}}>
-          {wallets.map((wallet: Wallet) => {
-            console.log('>> map wallets', wallet, wallets)
-
-            return <WalletItem key={wallet.id} walletRef={wallet.ref} />
-          })}
+          {wallets.map((wallet: Wallet) => (
+            <WalletItem key={wallet.id} walletRef={wallet.ref} />
+          ))}
         </Box>
       ) : (
         <Box>
@@ -149,9 +154,8 @@ export function WalletList() {
   )
 }
 
-function WalletItem({walletRef}: {walletRef: any}) {
+function WalletItem({walletRef}: {walletRef: ActorRefFrom<ReturnType<typeof createWalletMachine>>}) {
   const [state, send] = useActor(walletRef)
-  console.log('=== Wallet:', state.context)
 
   const {name, balanceSats, isDefault, errorMessage} = state.context
   return (
@@ -179,6 +183,7 @@ function WalletItem({walletRef}: {walletRef: any}) {
               send('SET_DEFAULT')
             }}
             variant="outlined"
+            disabled={state.hasTag('pending')}
           >
             {state.matches('settingDefault') ? '...' : 'set as default'}
           </Button>

@@ -1,12 +1,12 @@
 import {Box} from '@mintter/ui/box'
 import {css} from '@mintter/ui/stitches.config'
+import {useIsSidebarOpen} from '../../main-page-context'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
 import {BookmarksSection} from './section-bookmarks'
 import {ConnectionsSection} from './section-connections'
 import {DraftsSection} from './section-drafts'
 import {FilesSection} from './section-files'
-import {useIsSidebarOpen} from './sidebar-context'
 
 export const SIDEBAR_WIDTH = 232
 

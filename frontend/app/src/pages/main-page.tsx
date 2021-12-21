@@ -2,33 +2,31 @@ import {Box} from '@mintter/ui/box'
 import {css} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {useInterpret} from '@xstate/react'
-import {ReactNode, useEffect} from 'react'
+import {ReactNode} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {Route} from 'wouter'
 import {bookmarksMachine, BookmarksProvider} from '../components/bookmarks'
 import {ScrollArea} from '../components/scroll-area'
-import {Sidebar, SidebarProvider} from '../components/sidebar'
-import {sidebarMachine} from '../components/sidebar/sidebar-machine'
+import {Sidebar} from '../components/sidebar'
 import {Sidepanel, sidepanelMachine, SidepanelProvider} from '../components/sidepanel'
 import {Topbar} from '../components/topbar'
 import {HoverProvider} from '../editor/hover-context'
 import {hoverMachine} from '../editor/hover-machine'
+import {MainPageProvider} from '../main-page-context'
+import {mainPageMachine} from '../main-page-machine'
 import EditorPage from './editor'
 import Publication from './publication'
 
 export function MainPage() {
   const sidepanelService = useInterpret(sidepanelMachine)
-  const sidebarService = useInterpret(sidebarMachine)
   const bookmarksService = useInterpret(bookmarksMachine)
   const hoverService = useInterpret(hoverMachine)
+  const mainPageService = useInterpret(mainPageMachine, {devTools: true})
 
-  useEffect(() => {
-    console.log('localstorage: ', window.localStorage)
-  }, [])
   return (
-    <HoverProvider value={hoverService}>
-      <BookmarksProvider value={bookmarksService}>
-        <SidebarProvider value={sidebarService}>
+    <MainPageProvider value={mainPageService}>
+      <HoverProvider value={hoverService}>
+        <BookmarksProvider value={bookmarksService}>
           <SidepanelProvider value={sidepanelService}>
             <Box className={rootPageStyle()}>
               <Topbar />
@@ -48,9 +46,9 @@ export function MainPage() {
               <Sidepanel />
             </Box>
           </SidepanelProvider>
-        </SidebarProvider>
-      </BookmarksProvider>
-    </HoverProvider>
+        </BookmarksProvider>
+      </HoverProvider>
+    </MainPageProvider>
   )
 }
 

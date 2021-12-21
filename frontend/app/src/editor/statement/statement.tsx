@@ -3,7 +3,6 @@ import type {FlowContent, Statement as StatementType} from '@mintter/mttast'
 import {isFlowContent, isGroupContent, isParagraph, isStatement} from '@mintter/mttast'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
-import {useActor} from '@xstate/react'
 import toast from 'react-hot-toast'
 import {Editor, Element, Node, NodeEntry, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
@@ -121,9 +120,7 @@ function addParagraphToNestedGroup(editor: Editor, entry: NodeEntry<StatementTyp
 
 function Statement({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
   const bookmarksService = useBookmarksService()
-  const [, bookmarkSend] = useActor(bookmarksService)
   const sidepanelService = useSidepanel()
-  const [, sidepanelSend] = useActor(sidepanelService)
   const {params} = useRoute<{docId: string; blockId?: string}>(['/p/:docId/:blockId?', '/editor/:docId'])
   const [, setLocation] = useLocation()
 
@@ -137,7 +134,7 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
   }
 
   function addBookmark(docId: string, blockId: FlowContent['id']) {
-    bookmarkSend({
+    bookmarksService.send({
       type: 'ADD_BOOKMARK',
       link: `${MINTTER_LINK_PREFIX}${docId}/${blockId}`,
     })
@@ -172,7 +169,7 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
             <ContextMenu.Item
               onSelect={() => {
                 addBookmark(params!.docId, (element as StatementType).id)
-                sidepanelSend('SIDEPANEL_OPEN')
+                sidepanelService.send('SIDEPANEL_OPEN')
               }}
             >
               <Icon size="1" name="ArrowBottomRight" />

@@ -9,7 +9,7 @@ export function DraftsSection() {
   const {data = [], status} = useDraftList()
 
   return (
-    <Section title="Drafts" disabled={status != 'success'}>
+    <Section title="Drafts" open={true} disabled={status != 'success'}>
       {!!data.length ? (
         <ErrorBoundary
           FallbackComponent={SectionError}

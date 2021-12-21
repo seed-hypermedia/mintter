@@ -5,7 +5,6 @@ import {Box} from '@mintter/ui/box'
 import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
-import {useActor} from '@xstate/react'
 import toast from 'react-hot-toast'
 import type {Highlighter, IThemeRegistration, Lang} from 'shiki'
 import {getHighlighter, setCDN} from 'shiki'
@@ -175,10 +174,9 @@ function Code({
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const bookmarksService = useBookmarksService()
-  const [, bookmarkSend] = useActor(bookmarksService)
 
   function addBookmark(docId: string, blockId: FlowContent['id']) {
-    bookmarkSend({
+    bookmarksService.send({
       type: 'ADD_BOOKMARK',
       link: `${MINTTER_LINK_PREFIX}${docId}/${blockId}`,
     })

@@ -2,7 +2,6 @@ import type {Embed as EmbedType} from '@mintter/mttast'
 import {FlowContent, isEmbed} from '@mintter/mttast'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
-import {useActor} from '@xstate/react'
 import {PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
 import {useLocation} from 'wouter'
@@ -19,14 +18,12 @@ export const ELEMENT_EMBED = 'embed'
 
 export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{embed: EmbedType}>) => {
   const sidepanelService = useSidepanel()
-  const [, sidepanelSend] = useActor(sidepanelService)
-  const bookmarkService = useBookmarksService()
-  const [, bookmarkSend] = useActor(bookmarkService)
+  const bookmarksService = useBookmarksService()
   const [, setLocation] = useLocation()
   const [docId, blockId] = getEmbedIds(embed.url)
 
   function addBookmark(docId: string, blockId: FlowContent['id']) {
-    bookmarkSend({
+    bookmarksService.send({
       type: 'ADD_BOOKMARK',
       link: `${MINTTER_LINK_PREFIX}${docId}/${blockId}`,
     })
@@ -43,7 +40,7 @@ export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{emb
   }
 
   function onOpenInSidepanel() {
-    sidepanelSend('SIDEPANEL_OPEN')
+    sidepanelService.send('SIDEPANEL_OPEN')
   }
 
   return (
