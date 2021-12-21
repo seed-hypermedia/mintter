@@ -10,6 +10,7 @@ import {FormEvent, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
 import {useQuery} from 'react-query'
+import {useAccountInfo} from '../../auth-context'
 import {useListAccounts} from '../../hooks'
 import {Section} from './section'
 import {SectionError} from './section-error'
@@ -17,8 +18,11 @@ import {StyledSectionItem} from './section-item'
 
 export function ConnectionsSection() {
   const {status, data = [], error} = useListAccounts()
+  const info = useAccountInfo()
 
   let title = `Connections (${data.length})`
+
+  console.log('connection section: ', {data, info})
 
   if (status == 'error') {
     console.error('Connections error: ', error)
@@ -143,12 +147,20 @@ export type AccountItemProps = {
 }
 
 function AccountItem({account}: AccountItemProps) {
-  const {data} = useQuery(['ConnectionStatus', account.devices], () => {
-    let devices = Object.values(account.devices)
-    if (devices.length > 0) {
-      return getPeerInfo(devices[0])
-    }
-  })
+  const {data} = useQuery(
+    ['ConnectionStatus', account.devices],
+    () => {
+      let devices = Object.values(account.devices)
+      if (devices.length > 0) {
+        console.log('devices', devices)
+
+        return getPeerInfo(devices[0])
+      }
+    },
+    {
+      refetchInterval: 1000,
+    },
+  )
 
   return (
     <HoverCard.Root>

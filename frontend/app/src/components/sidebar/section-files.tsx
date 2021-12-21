@@ -1,7 +1,7 @@
-import {useFiles} from 'frontend/app/src/main-page-context'
-import {PublicationRef} from 'frontend/app/src/main-page-machine'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Link} from 'wouter'
+import {useFiles} from '../../main-page-context'
+import {PublicationRef} from '../../main-page-machine'
 import {Section} from './section'
 import {SectionError} from './section-error'
 import {SectionItem} from './section-item'
@@ -20,6 +20,8 @@ export function FilesSection() {
         >
           {files.map((publication: PublicationRef) => {
             let {ref, document} = publication
+            console.log('document item: ', document)
+
             return (
               <Link href={`/p/${document?.id}`}>
                 <SectionItem key={document?.id} href={`/p/${document?.id}`} document={document} />
