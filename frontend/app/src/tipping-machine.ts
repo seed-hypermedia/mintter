@@ -42,6 +42,7 @@ export const tippingMachine = tippingModel.createMachine({
   },
   states: {
     close: {
+      id: 'close',
       on: {
         OPEN: [
           {
@@ -54,6 +55,9 @@ export const tippingMachine = tippingModel.createMachine({
       initial: 'setAmount',
       on: {
         CLOSE: 'close',
+      },
+      onDone: {
+        target: 'close',
       },
       states: {
         setAmount: {
@@ -167,7 +171,7 @@ export const tippingMachine = tippingModel.createMachine({
               request<{walletID: string}>(MINTTER_GRAPHQL_API_URL, mutation, {
                 input: {
                   paymentRequest: context.invoice,
-                  amountSats: context.amount,
+                  // amountSats: context.amount,
                 },
               })
                 .then((response) => {
@@ -185,7 +189,7 @@ export const tippingMachine = tippingModel.createMachine({
           },
           on: {
             REPORT_PAID: {
-              target: 'paid',
+              target: 'success',
             },
             REPORT_PAID_ERRORED: {
               target: 'errored',
@@ -194,6 +198,13 @@ export const tippingMachine = tippingModel.createMachine({
                   errorMessage: (_, event) => event.errorMessage,
                 }),
               ],
+            },
+          },
+        },
+        success: {
+          after: {
+            3000: {
+              target: 'paid',
             },
           },
         },
