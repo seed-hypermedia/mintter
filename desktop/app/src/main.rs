@@ -10,6 +10,7 @@ use tauri_plugin_log::{LogTarget, LoggerBuilder};
 use tauri_plugin_store::StorePlugin;
 
 mod daemon;
+mod extension_host;
 mod menu;
 mod system_tray;
 
@@ -35,6 +36,7 @@ async fn main() {
     .plugin(log_plugin)
     .plugin(daemon::DaemonPlugin::new())
     .plugin(StorePlugin::default())
+    .plugin(extension_host::PluginHost::default())
     .menu(menu::get_menu())
     .setup(|app| {
       daemon::start_daemon(

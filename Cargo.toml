@@ -1,2 +1,10 @@
 [workspace]
-members = ["frontend/app/src-tauri"]
+members = ["desktop/app", "desktop/extension-host"]
+
+# default to small, optimized workspace release binaries
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+incremental = false
+opt-level = "s"
