@@ -2343,6 +2343,7 @@ __metadata:
     react-hook-form: ^6.15.8
     react-hot-toast: ^2.1.1
     react-qr-barcode-scanner: ^1.0.6
+    react-qr-code: ^2.0.3
     react-query: ^3.34.5
     rehype: ^12.0.0
     rehype-parse: ^8.0.3
@@ -17239,6 +17240,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"qr.js@npm:0.0.0":
+  version: 0.0.0
+  resolution: "qr.js@npm:0.0.0"
+  checksum: 5ac6c393967bdeaa660e7fd3a501a25eb538c1f6008a4d30ab2b97bbe520e5c236530090773f1578aa0a523cdaa6923c866615e21143f9e7cd22abd41c789b69
+  languageName: node
+  linkType: hard
+
 "qs@npm:6.9.6":
   version: 6.9.6
   resolution: "qs@npm:6.9.6"
@@ -17658,6 +17666,19 @@ __metadata:
     react: ^16.13.1
     react-dom: ^16.13.1
   checksum: 950c1bcc257c504e96a5e42d581e54080fd608ccad18204a92083923dcac750b22e0f7e7247293843b9bae0bf34cfa552cbeedddee41489601453f8312fd9fd1
+  languageName: node
+  linkType: hard
+
+"react-qr-code@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "react-qr-code@npm:2.0.3"
+  dependencies:
+    prop-types: ^15.7.2
+    qr.js: 0.0.0
+  peerDependencies:
+    react: ^16.x || ^17.x
+    react-native-svg: "*"
+  checksum: d82d3c2e8929bc40fdcbab714d088890744bc67aa5de5a998c14352f1fe56ca10032613abb49ea649bd9b8363ed5f482a942e5ed5e676a6f5e0b00a7e9960cb0
   languageName: node
   linkType: hard
 

@@ -10,7 +10,7 @@ export const listModel = createModel(
     walletName: '',
     walletUrl: '',
     wallets: [] as Array<Wallet>,
-    errorMessage: null as string | null,
+    errorMessage: '',
   },
   {
     events: {
