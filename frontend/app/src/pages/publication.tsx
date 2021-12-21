@@ -2,6 +2,7 @@ import {createDraft, getInfo, getPublication, Publication as PublicationType} fr
 import {MttastContent} from '@mintter/mttast'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
+import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
@@ -450,6 +451,22 @@ function TippingModal({
             <Button size="1" css={{width: '$full'}} onClick={() => send(tippingModel.events.PAY_INVOICE())}>
               Pay Directly
             </Button>
+          </Box>
+        )}
+        {state.matches('open.success') && (
+          <Box
+            css={{
+              padding: '$5',
+              width: '300px',
+              backgroundColor: '$background-muted',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '$4',
+              boxShadow: '$3',
+            }}
+          >
+            <Icon name="Star" />
+            <Text>Payment Success!</Text>
           </Box>
         )}
       </PopoverPrimitive.Content>
