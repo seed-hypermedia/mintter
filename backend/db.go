@@ -8,6 +8,7 @@ import (
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
+	"go.uber.org/multierr"
 )
 
 type graphdb struct {
@@ -26,23 +27,12 @@ func (db *graphdb) StoreDevice(ctx context.Context, aid AccountID, did DeviceID)
 		panic("BUG: wrong codec for device")
 	}
 
-	conn, release, err := db.pool.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	defer sqlitex.Save(conn)(&err)
-
-	if err := accountsInsertOrIgnore(conn, ahash, int(acodec)); err != nil {
-		return err
-	}
-
-	if err := devicesInsertOrIgnore(conn, dhash, int(dcodec), ahash, int(acodec)); err != nil {
-		return err
-	}
-
-	return nil
+	return db.pool.WithTx(ctx, func(conn *sqlite.Conn) error {
+		return multierr.Combine(
+			accountsInsertOrIgnore(conn, ahash, int(acodec)),
+			devicesInsertOrIgnore(conn, dhash, int(dcodec), ahash, int(acodec)),
+		)
+	})
 }
 
 func (db *graphdb) GetAccountForDevice(ctx context.Context, did DeviceID) (aid AccountID, err error) {

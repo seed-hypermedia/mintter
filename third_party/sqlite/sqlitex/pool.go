@@ -16,7 +16,6 @@ package sqlitex
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"runtime/trace"
 	"sync"
@@ -137,7 +136,12 @@ func (p *Pool) ForEach(fn func(conn *sqlite.Conn) error) error {
 func (p *Pool) Conn(ctx context.Context) (*sqlite.Conn, context.CancelFunc, error) {
 	conn := p.Get(ctx)
 	if conn == nil {
-		return nil, nil, errors.New("unable to get connection")
+		err := ctx.Err()
+		if err == context.Canceled {
+			return nil, nil, err
+		}
+
+		panic("unable to get connection: probably using a closed pool " + err.Error())
 	}
 
 	return conn, func() { p.Put(conn) }, nil

@@ -143,7 +143,9 @@ func startLibp2pEventHandling(ctx context.Context, sub event.Subscription, log *
 			seen[evt] = struct{}{}
 
 			wg.Add(1)
-			go func() {
+			go func(ctx context.Context, evt interface{}) {
+				defer wg.Done()
+
 				err := fn(ctx, evt)
 				if err != nil {
 					log.Error("FailedToHandleLibp2pEvent",
@@ -152,14 +154,17 @@ func startLibp2pEventHandling(ctx context.Context, sub event.Subscription, log *
 						zap.Error(err),
 					)
 				}
-				wg.Done()
 
 				// We'll sleep for some arbitrary amount of time so that potential duplicate
-				// event have time to be deduped. We're doing this after wg.Done
-				// because we don't to wait for this if we want to exit the app.
-				time.Sleep(time.Second)
+				// event have time to be deduped. We don't use time.Sleep because
+				// we don't want to wait here when we're closing the app, so we need to select
+				// on the context too to prevent that.
+				select {
+				case <-ctx.Done():
+				case <-time.After(time.Second):
+				}
 				handled <- evt
-			}()
+			}(ctx, evt)
 		}
 	}
 }
