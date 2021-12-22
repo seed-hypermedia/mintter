@@ -14,6 +14,7 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
+	"go.uber.org/multierr"
 )
 
 // nowFunc is overwritten in tests.
@@ -39,11 +40,27 @@ func newSQLitePatchStore(db *sqlitex.Pool, bs blockStore) (*sqlitePatchStore, er
 }
 
 func (s *sqlitePatchStore) AddPatch(ctx context.Context, sps ...signedPatch) (err error) {
-	conn, release, err := s.db.Conn(ctx)
-	if err != nil {
-		return nil
+	conn, ok := sqlitebs.ConnFromContext(ctx)
+	if !ok {
+		c, release, err := s.db.Conn(ctx)
+		if err != nil {
+			return nil
+		}
+		defer release()
+		conn = c
+
+		if err := sqlitex.Exec(conn, "BEGIN IMMEDIATE TRANSACTION", nil); err != nil {
+			return err
+		}
+
+		defer func() {
+			if err != nil {
+				err = multierr.Append(err, sqlitex.Exec(conn, "ROLLBACK", nil))
+			} else {
+				err = sqlitex.Exec(conn, "COMMIT", nil)
+			}
+		}()
 	}
-	defer release()
 
 	defer sqlitex.Save(conn)(&err)
 
@@ -91,14 +108,6 @@ func (s *sqlitePatchStore) AddPatch(ctx context.Context, sps ...signedPatch) (er
 }
 
 func (s *sqlitePatchStore) StoreVersion(ctx context.Context, ver *p2p.Version) (err error) {
-	conn, release, err := s.db.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	defer sqlitex.Save(conn)(&err)
-
 	oid, err := cid.Decode(ver.ObjectId)
 	if err != nil {
 		return err
@@ -109,48 +118,50 @@ func (s *sqlitePatchStore) StoreVersion(ctx context.Context, ver *p2p.Version) (
 		return fmt.Errorf("invalid object codec %s", cid.CodecToStr[ocodec])
 	}
 
-	for _, vv := range ver.VersionVector {
-		did, err := cid.Decode(vv.Peer)
-		if err != nil {
-			return err
+	return s.db.WithTx(ctx, func(conn *sqlite.Conn) error {
+		for _, vv := range ver.VersionVector {
+			did, err := cid.Decode(vv.Peer)
+			if err != nil {
+				return err
+			}
+
+			dcodec, dhash := ipfs.DecodeCID(did)
+			if dcodec != cid.Libp2pKey {
+				return fmt.Errorf("wrong codec for device in version %s", cid.CodecToStr[dcodec])
+			}
+
+			bid, err := cid.Decode(vv.Head)
+			if err != nil {
+				return err
+			}
+
+			bcodec, bhash := ipfs.DecodeCID(bid)
+			if bcodec != cid.DagCBOR {
+				return fmt.Errorf("wront codec for patch to be stored %s", cid.CodecToStr[bcodec])
+			}
+
+			acc, err := accountsGetForDevice(conn, dhash)
+			if err != nil {
+				return fmt.Errorf("failed to get account for device %s", vv.Peer)
+			}
+
+			if err := objectsInsertOrIgnore(conn, ohash, int(ocodec), acc.AccountsMultihash, acc.AccountsCodec); err != nil {
+				return err
+			}
+
+			if err := headsUpsert(conn, ohash, int(ocodec), dhash, int(vv.Seq), int(vv.LamportTime), bhash, int(bcodec)); err != nil {
+				return err
+			}
+
+			// TODO: is this needed
+
+			// if conn.Changes() != 1 {
+			// 	return fmt.Errorf("failed to store version, something is missing")
+			// }
 		}
 
-		dcodec, dhash := ipfs.DecodeCID(did)
-		if dcodec != cid.Libp2pKey {
-			return fmt.Errorf("wrong codec for device in version %s", cid.CodecToStr[dcodec])
-		}
-
-		bid, err := cid.Decode(vv.Head)
-		if err != nil {
-			return err
-		}
-
-		bcodec, bhash := ipfs.DecodeCID(bid)
-		if bcodec != cid.DagCBOR {
-			return fmt.Errorf("wront codec for patch to be stored %s", cid.CodecToStr[bcodec])
-		}
-
-		acc, err := accountsGetForDevice(conn, dhash)
-		if err != nil {
-			return fmt.Errorf("failed to get account for device %s", vv.Peer)
-		}
-
-		if err := objectsInsertOrIgnore(conn, ohash, int(ocodec), acc.AccountsMultihash, acc.AccountsCodec); err != nil {
-			return err
-		}
-
-		if err := headsUpsert(conn, ohash, int(ocodec), dhash, int(vv.Seq), int(vv.LamportTime), bhash, int(bcodec)); err != nil {
-			return err
-		}
-
-		// TODO: is this needed
-
-		// if conn.Changes() != 1 {
-		// 	return fmt.Errorf("failed to store version, something is missing")
-		// }
-	}
-
-	return nil
+		return nil
+	})
 }
 
 var errNotFound = errors.New("not found")

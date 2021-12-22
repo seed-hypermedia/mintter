@@ -6,7 +6,7 @@ import (
 	"mintter/backend/ipfs"
 	"time"
 
-	"crawshaw.io/sqlite/sqlitex"
+	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -159,19 +159,9 @@ func (srv *backend) GetPublication(ctx context.Context, c cid.Cid) (Publication,
 func (srv *backend) DeletePublication(ctx context.Context, c cid.Cid) (err error) {
 	codec, hash := ipfs.DecodeCID(c)
 
-	conn, release, err := srv.pool.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	defer sqlitex.Save(conn)(&err)
-
-	if err := objectsDelete(conn, hash, int(codec)); err != nil {
-		return err
-	}
-
-	return nil
+	return srv.pool.WithTx(ctx, func(conn *sqlite.Conn) error {
+		return objectsDelete(conn, hash, int(codec))
+	})
 }
 
 func (srv *backend) ListPublications(ctx context.Context) ([]publicationsListResult, error) {

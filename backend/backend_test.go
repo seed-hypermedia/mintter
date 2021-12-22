@@ -3,6 +3,7 @@ package backend
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"testing"
 
 	"github.com/ipfs/go-cid"
@@ -136,7 +137,9 @@ func makeTestBackend(t *testing.T, name string, ready bool) *backend {
 
 	t.Cleanup(func() {
 		err := app.Stop(context.Background())
-		require.Equal(t, context.Canceled, err)
+		if !errors.Is(err, context.Canceled) {
+			panic(err)
+		}
 	})
 
 	if ready {

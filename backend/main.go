@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-datastore"
 	dssync "github.com/ipfs/go-datastore/sync"
@@ -49,7 +48,7 @@ func Module(cfg config.Config) fx.Option {
 }
 
 func provideSQLite(lc fx.Lifecycle, r *repo) (*sqlitex.Pool, error) {
-	pool, err := sqliteschema.Open(r.sqlitePath(), sqlite.OpenFlagsDefault|sqlite.SQLITE_OPEN_SHAREDCACHE, 16)
+	pool, err := sqliteschema.Open(r.sqlitePath(), 0, 16)
 	if err != nil {
 		return nil, err
 	}
@@ -79,12 +78,18 @@ func provideBackend(lc fx.Lifecycle, pool *sqlitex.Pool, stop fx.Shutdowner, r *
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			go func() {
+				// Since the backend starts inside a goroutine, we need some way
+				// to bubble up the error in case the initialization fails.
+				// When unexpected error happens we want to short-circuit the application startup.
+				// The only expected error is when context gets canceled, which could be caused by CTRL+C.
 				err := back.Start(ctx)
-				if err != nil && err != context.Canceled {
+				if err != nil && !errors.Is(err, context.Canceled) {
 					if err := stop.Shutdown(); err != nil {
 						panic(err)
 					}
 				}
+				// In all the cases we want to send the return value so that we can wait in OnStop hook
+				// until everything actually shuts down cleanly.
 				errc <- err
 			}()
 			return nil

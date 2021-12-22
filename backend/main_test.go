@@ -9,53 +9,12 @@ import (
 	daemon "mintter/backend/api/daemon/v1alpha"
 	networking "mintter/backend/api/networking/v1alpha"
 	"mintter/backend/config"
-	"mintter/backend/ipfs"
 	"mintter/backend/testutil"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 )
-
-func TestLibp2p(t *testing.T) {
-	cfg := config.P2P{
-		Addr:        "/ip4/0.0.0.0/tcp/0",
-		NoBootstrap: true,
-		NoRelay:     true,
-		NoTLS:       true,
-		NoMetrics:   true,
-	}
-
-	tt := makeTester(t, "alice")
-
-	repo := makeTestRepo(t, tt)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	var n *ipfs.Libp2p
-	app := fx.New(
-		fx.Supply(cfg),
-		fx.Supply(repo),
-		fx.Provide(
-			ipfs.DefaultBootstrapPeers,
-			provideDatastore,
-			providePeerstore,
-			provideLibp2p,
-		),
-		fx.Populate(&n),
-	)
-
-	require.NoError(t, app.Start(ctx))
-	defer func() {
-		stopCtx, cancel := context.WithTimeout(context.Background(), time.Second*30)
-		defer cancel()
-		require.NoError(t, app.Stop(stopCtx))
-	}()
-
-	require.NotNil(t, n.Host)
-	require.NotNil(t, n.Routing)
-}
 
 func TestDaemonEndToEnd(t *testing.T) {
 	cfg := config.Config{

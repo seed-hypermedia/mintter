@@ -11,6 +11,7 @@ import (
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
+	"go.uber.org/multierr"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -109,38 +110,44 @@ func (srv *backend) UpdateDraft(ctx context.Context, id cid.Cid, title, subtitle
 		delete(existingLinks, l)
 	}
 
-	defer sqlitex.Save(conn)(&err)
-
-	if err := draftsUpdate(conn, title, subtitle, content.Content, int(nowFunc().Unix()), ohash, int(ocodec)); err != nil {
-		return Draft{}, err
-	}
-
-	if conn.Changes() != 1 {
-		return Draft{}, fmt.Errorf("couldn't update draft in the database, no records found")
-	}
-
-	for _, id := range existingLinks {
-		if err := linksDeleteByID(conn, id); err != nil {
-			return d, fmt.Errorf("failed to delete link %d: %w", id, err)
-		}
-	}
-
-	for l := range incomingLinks {
-		tcodec, thash := ipfs.DecodeCID(l.TargetDocumentID)
-		if tcodec != codecDocumentID {
-			return d, fmt.Errorf("bad CID codec for linked document %s: %s", l.TargetDocumentID, cid.CodecToStr[tcodec])
-		}
-		if err := linksInsertFromDraft(conn, ohash, int(ocodec), l.SourceBlockID, thash, int(tcodec), l.TargetBlockID, l.TargetVersion.String()); err != nil {
-			return d, fmt.Errorf("failed to insert link %s: %w", l, err)
-		}
-	}
-
 	acc, err := srv.repo.Account()
 	if err != nil {
 		return d, err
 	}
 
-	return draftFromSQLite(conn, id, acc.id)
+	if err := sqlitex.WithTx(conn, func(conn *sqlite.Conn) error {
+		if err := draftsUpdate(conn, title, subtitle, content.Content, int(nowFunc().Unix()), ohash, int(ocodec)); err != nil {
+			return err
+		}
+
+		if conn.Changes() != 1 {
+			return fmt.Errorf("couldn't update draft in the database, no records found")
+		}
+
+		for _, id := range existingLinks {
+			if err := linksDeleteByID(conn, id); err != nil {
+				return fmt.Errorf("failed to delete link %d: %w", id, err)
+			}
+		}
+
+		for l := range incomingLinks {
+			tcodec, thash := ipfs.DecodeCID(l.TargetDocumentID)
+			if tcodec != codecDocumentID {
+				return fmt.Errorf("bad CID codec for linked document %s: %s", l.TargetDocumentID, cid.CodecToStr[tcodec])
+			}
+			if err := linksInsertFromDraft(conn, ohash, int(ocodec), l.SourceBlockID, thash, int(tcodec), l.TargetBlockID, l.TargetVersion.String()); err != nil {
+				return fmt.Errorf("failed to insert link %s: %w", l, err)
+			}
+		}
+
+		draft, err := draftFromSQLite(conn, id, acc.id)
+		d = draft
+		return err
+	}); err != nil {
+		return d, err
+	}
+
+	return d, nil
 }
 
 // CreateDraft creates a new permanode and stores it in the block store.
@@ -160,18 +167,6 @@ func (srv *backend) CreateDraft(ctx context.Context) (d Draft, err error) {
 		return Draft{}, err
 	}
 
-	conn, release, err := srv.pool.Conn(ctx)
-	if err != nil {
-		return Draft{}, err
-	}
-	defer release()
-
-	defer sqlitex.Save(conn)(&err)
-
-	if err := srv.InitObject(sqlitebs.ContextWithConn(ctx, conn), acc.id, srv.repo.device.id, sp.blk.Cid(), sp.blk); err != nil {
-		return Draft{}, err
-	}
-
 	d = Draft{
 		ID:         sp.blk.Cid(),
 		Author:     cid.Cid(acc.id),
@@ -181,11 +176,19 @@ func (srv *backend) CreateDraft(ctx context.Context) (d Draft, err error) {
 
 	ocodec, ohash := ipfs.DecodeCID(sp.blk.Cid())
 
-	if err := draftsInsert(conn, ohash, int(ocodec), d.Title, d.Subtitle, d.Content, int(d.CreateTime.Unix()), int(d.UpdateTime.Unix())); err != nil {
-		return Draft{}, err
-	}
+	err = srv.pool.WithTx(ctx, func(conn *sqlite.Conn) error {
+		if err := srv.InitObject(sqlitebs.ContextWithConn(ctx, conn), acc.id, srv.repo.device.id, sp.blk.Cid(), sp.blk); err != nil {
+			return err
+		}
 
-	return d, nil
+		if err := draftsInsert(conn, ohash, int(ocodec), d.Title, d.Subtitle, d.Content, int(d.CreateTime.Unix()), int(d.UpdateTime.Unix())); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return d, err
 }
 
 func (srv *backend) CreateDraftFromPublication(ctx context.Context, pubid cid.Cid) (Draft, error) {
@@ -301,28 +304,15 @@ func draftFromSQLite(conn *sqlite.Conn, id cid.Cid, author AccountID) (d Draft, 
 }
 
 func (srv *backend) DeleteDraft(ctx context.Context, c cid.Cid) (err error) {
-	// Because we store drafts and publications in the same table, in order to
-	// delete a draft we have to do a bit of a workaround here.
-	// We first clear the draft-related fields, and only delete the record
-	// if there's no publication with the same document ID.
-
-	conn, release, err := srv.pool.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	defer sqlitex.Save(conn)(&err)
-
 	codec, hash := ipfs.DecodeCID(c)
-
 	if codec != codecDocumentID {
 		panic("BUG: wrong codec for draft")
 	}
 
-	// TODO: if we don't have any publications also delete the object.
-
-	return draftsDelete(conn, hash, int(codec))
+	// TODO: if we don't have any publications for the CID also delete the object.
+	return srv.pool.WithTx(ctx, func(conn *sqlite.Conn) error {
+		return draftsDelete(conn, hash, int(codec))
+	})
 }
 
 func (srv *backend) ListDrafts(ctx context.Context) ([]draftsListResult, error) {
@@ -446,44 +436,21 @@ func (srv *backend) PublishDraft(ctx context.Context, c cid.Cid) (pub Publicatio
 		return Publication{}, fmt.Errorf("failed to create document feed patch: %w", err)
 	}
 
-	err = func() (err error) {
-		conn, release, err := srv.pool.Conn(ctx)
-		if err != nil {
-			return err
-		}
-		defer release()
+	ocodec, ohash := ipfs.DecodeCID(c)
+	if ocodec != codecDocumentID {
+		panic("BUG: bad codec for publication " + cid.CodecToStr[ocodec])
+	}
 
-		defer sqlitex.Save(conn)(&err)
+	ccodec, chash := ipfs.DecodeCID(docChange.blk.Cid())
 
-		cctx := sqlitebs.ContextWithConn(ctx, conn)
-
-		if err := srv.AddPatch(cctx, docChange, feedChange); err != nil {
-			return err
-		}
-
-		ocodec, ohash := ipfs.DecodeCID(c)
-
-		if ocodec != codecDocumentID {
-			panic("BUG: bad codec for publication " + cid.CodecToStr[ocodec])
-		}
-
-		ccodec, chash := ipfs.DecodeCID(docChange.blk.Cid())
-
-		if err := linksUpdatePublication(conn, chash, int(ccodec), ohash, int(ocodec)); err != nil {
-			return err
-		}
-
-		if err := draftsDelete(conn, ohash, int(ocodec)); err != nil {
-			return err
-		}
-
-		if err := publicationsIndex(conn, pub); err != nil {
-			return err
-		}
-
-		return nil
-	}()
-	if err != nil {
+	if err = srv.pool.WithTx(ctx, func(conn *sqlite.Conn) error {
+		return multierr.Combine(
+			srv.AddPatch(sqlitebs.ContextWithConn(ctx, conn), docChange, feedChange),
+			linksUpdatePublication(conn, chash, int(ccodec), ohash, int(ocodec)),
+			draftsDelete(conn, ohash, int(ocodec)),
+			publicationsIndex(conn, pub),
+		)
+	}); err != nil {
 		return Publication{}, err
 	}
 
