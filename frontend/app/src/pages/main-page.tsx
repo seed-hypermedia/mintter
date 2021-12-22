@@ -38,7 +38,7 @@ export function MainPage() {
                     window.location.reload()
                   }}
                 >
-                  <Route path="/p/:docId/:blockId?" component={Publication} />
+                  <Route path="/p/:docId/:version/:blockId?" component={Publication} />
                   <Route path="/editor/:docId" component={EditorPage} />
                   <Route path="/" component={Placeholder} />
                 </ErrorBoundary>

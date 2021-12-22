@@ -10,6 +10,7 @@ export enum EditorMode {
   Publication,
   Embed,
   Mention,
+  Discussion,
 }
 
 const byApply =

@@ -3,13 +3,13 @@ import {Box} from '@mintter/ui/box'
 import {Alert} from '@mintter/ui/dialog'
 import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
-import {useMachine} from '@xstate/react'
+import {useActor, useMachine} from '@xstate/react'
 import {MouseEvent} from 'react'
-import {useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
-import {assign} from 'xstate'
+import {ActorRefFrom, assign} from 'xstate'
 import {deleteDialogMachine} from '../../delete-dialog-machine'
-import {queryKeys} from '../../hooks'
+import {useMainPage} from '../../main-page-context'
+import {createPublicationMachine} from '../../main-page-machine'
 import {useRoute} from '../../utils/use-route'
 
 export function SectionItem({
@@ -22,25 +22,24 @@ export function SectionItem({
   onClick?: any
   href: string
   isDraft?: boolean
+  actorRef?: ActorRefFrom<ReturnType<typeof createPublicationMachine>>
 }) {
+  // TODO: include delete machine to publicationMachine
   const [, setLocation] = useLocation()
   const {match} = useRoute(href)
-  const client = useQueryClient()
+  const mainService = useMainPage()
+  const [mainState] = useActor(mainService)
   const [deleteState, deleteSend] = useMachine(
     deleteDialogMachine.withConfig({
       actions: {
         onSuccess: assign((context) => {
           if (window.location.href.includes(context.entryId)) {
-            console.log('SI QUE INCLUYE!', window.location.href, context.entryId)
             setLocation('/library')
-          } else {
-            console.log('NOO QUE INCLUYE!', window.location.href, context.entryId)
           }
-
           if (context.isDraft) {
-            client.refetchQueries(queryKeys.GET_DRAFT_LIST)
+            mainState.context.drafts.send('RECONCILE')
           } else {
-            client.refetchQueries(queryKeys.GET_PUBLICATION_LIST)
+            mainState.context.files.send('RECONCILE')
           }
 
           return {

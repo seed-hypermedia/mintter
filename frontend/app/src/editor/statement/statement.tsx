@@ -121,12 +121,17 @@ function addParagraphToNestedGroup(editor: Editor, entry: NodeEntry<StatementTyp
 function Statement({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
   const bookmarksService = useBookmarksService()
   const sidepanelService = useSidepanel()
-  const {params} = useRoute<{docId: string; blockId?: string}>(['/p/:docId/:blockId?', '/editor/:docId'])
+  const {params} = useRoute<{docId: string; version: string; blockId?: string}>([
+    '/p/:docId/:version/:blockId?',
+    '/editor/:docId',
+  ])
   const [, setLocation] = useLocation()
 
   async function onCopy() {
     if (params) {
-      await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${params.docId}/${(element as StatementType).id}`)
+      await copyTextToClipboard(
+        `${MINTTER_LINK_PREFIX}${params.docId}/${params.version}/${(element as StatementType).id}`,
+      )
       toast.success('Statement Reference copied successfully', {position: 'top-center'})
     } else {
       toast.error('Cannot Copy Block Reference')

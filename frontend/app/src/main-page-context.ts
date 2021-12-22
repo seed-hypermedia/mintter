@@ -12,6 +12,15 @@ export function useFiles() {
   return useSelector(ref, (state) => state.context.data)
 }
 
+export let useFilesService = createMainPageSelector((state) => state.context.files)
+
+export function useDrafts() {
+  let ref = createMainPageSelector((state) => state.context.drafts)()
+  return useSelector(ref, (state) => state.context.data)
+}
+
+export let useDraftsService = createMainPageSelector((state) => state.context.drafts)
+
 export const useSidebar = createMainPageSelector((state) => state.context.sidebar)
 
 export function useIsSidebarOpen() {

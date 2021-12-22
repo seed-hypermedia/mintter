@@ -3,19 +3,20 @@ import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
-import {buildEditorHook, EditorMode} from 'frontend/app/src/editor/plugin-utils'
-import {plugins} from 'frontend/app/src/editor/plugins'
 import {FormEvent, KeyboardEvent, useMemo, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {ReactEditor} from 'slate-react'
 import {useLocation} from 'wouter'
+import {ContextFrom} from 'xstate'
 import {AppError} from '../app'
 import {useSidepanel} from '../components/sidepanel'
 import {useEnableSidepanel} from '../components/sidepanel/sidepanel'
 import {Editor, useEditorDraft} from '../editor'
-import type {DraftEditorMachineContext, DraftEditorMachineState} from '../editor/use-editor-draft'
+import {buildEditorHook, EditorMode} from '../editor/plugin-utils'
+import {plugins} from '../editor/plugins'
+import {draftEditorMachine} from '../editor/use-editor-draft'
 import {getDateFormat} from '../utils/get-format-date'
 import {PageProps} from './types'
 
@@ -25,16 +26,17 @@ export default function EditorPage({params}: PageProps) {
   const toast = useRef('')
   const [visible, setVisible] = useState(false)
   const sidepanelService = useSidepanel()
+  const editor = useMemo(() => buildEditorHook(plugins, EditorMode.Draft), [])
   const [state, send] = useEditorDraft({
     documentId: params!.docId,
-    afterPublish: (context: DraftEditorMachineContext) => {
+    afterPublish: (context: ContextFrom<ReturnType<typeof draftEditorMachine>>) => {
       if (!toast.current) {
         toast.current = toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000})
       } else {
         toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000, id: toast.current})
       }
 
-      setLocation(`/p/${context.localDraft?.id}`, {
+      setLocation(`/p/${context.localDraft?.id}/${context.publication.version}`, {
         // we replace the history here because the draft url will not be available after publish.
         replace: true,
       })
@@ -46,7 +48,6 @@ export default function EditorPage({params}: PageProps) {
     },
     client,
   })
-  const editor = useMemo(() => buildEditorHook(plugins, EditorMode.Draft), [])
 
   const {context} = state
 

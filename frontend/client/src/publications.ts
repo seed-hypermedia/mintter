@@ -1,8 +1,10 @@
-import type {Publication} from '../.generated/documents/v1alpha/documents'
 import {
+  ContentGraphClientImpl,
   DeletePublicationRequest,
   GetPublicationRequest,
+  ListCitationsRequest,
   ListPublicationsRequest,
+  Publication,
   PublicationsClientImpl,
 } from '../.generated/documents/v1alpha/documents'
 import type {GrpcClient} from './grpc-client'
@@ -53,4 +55,10 @@ export async function getPublication(documentId: string, rpc?: GrpcClient): Prom
   const result = await new PublicationsClientImpl(rpc).getPublication(request)
   console.log('getPublication: result', result)
   return result
+}
+
+export function listCitations(documentId: string, rpc?: GrpcClient) {
+  rpc ||= createGrpcClient()
+  const request = ListCitationsRequest.fromPartial({documentId, depth: 1})
+  return new ContentGraphClientImpl(rpc).listCitations(request)
 }

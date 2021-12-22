@@ -1,4 +1,12 @@
-import {createDraft, getInfo, getPublication, Publication as PublicationType} from '@mintter/client'
+import {
+  createDraft,
+  getInfo,
+  getPublication,
+  Link,
+  LinkNode,
+  listCitations,
+  Publication as PublicationType,
+} from '@mintter/client'
 import {MttastContent} from '@mintter/mttast'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
@@ -6,18 +14,20 @@ import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
-// import {getCurrent as getCurrentWindow} from '@tauri-apps/api/window'
-import {useActor, useInterpret, useMachine} from '@xstate/react'
-import {tippingMachine, tippingModel} from 'frontend/app/src/tipping-machine'
-import {useEffect, useRef} from 'react'
+import {useActor, useInterpret} from '@xstate/react'
+import {document, group} from 'frontend/mttast-builder/dist'
+import {FlowContent} from 'frontend/mttast/dist'
+import {useEffect} from 'react'
 import QRCode from 'react-qr-code'
+import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
 import {StateFrom} from 'xstate'
 import {createModel} from 'xstate/lib/model'
 import {useEnableSidepanel, useSidepanel} from '../components/sidepanel'
-import {Editor, EditorDocument} from '../editor'
+import {Editor} from '../editor'
 import {EditorMode} from '../editor/plugin-utils'
 import {useAccount} from '../hooks'
+import {tippingMachine, tippingModel} from '../tipping-machine'
 import {getDateFormat} from '../utils/get-format-date'
 import {PageProps} from './types'
 
@@ -29,6 +39,8 @@ export default function Publication({params}: PageProps) {
   const {data: author} = useAccount(state.context.publication?.document?.author, {
     enabled: !!state.context.publication?.document?.author,
   })
+
+  console.log('PUBLICATION STATE', state)
 
   useEnableSidepanel()
 
@@ -82,62 +94,67 @@ export default function Publication({params}: PageProps) {
     )
   }
 
-  if (state.matches('ready')) {
-    return (
-      <>
-        <Box
-          css={{
-            background: '$background-alt',
-            borderBottom: '1px solid rgba(0,0,0,0.1)',
-            position: 'sticky',
-            top: 0,
-            zIndex: '$3',
-            padding: '$5',
-            '@bp2': {
-              paddingLeft: 80,
-            },
-            $$gap: '16px',
-            display: 'flex',
-            gap: '$$gap',
-            alignItems: 'center',
-            '& *': {
-              position: 'relative',
-            },
-            '& *:not(:first-child):before': {
-              content: `"|"`,
-              color: '$text-muted',
-              opacity: 0.5,
-              position: 'absolute',
-              left: '-10px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-            },
-          }}
-        >
-          {author && (
-            <>
-              <Text size="1" color="muted" css={{paddingRight: '$3'}}>
-                <span>Signed by </span>
-                <span style={{textDecoration: 'underline'}}>
-                  {state.context.canUpdate ? 'you' : author.profile?.alias}
-                </span>
-              </Text>
-            </>
-          )}
-          {state.context.canUpdate && (
-            <Button size="1" variant="ghost" onClick={handleUpdate}>
-              Update
-            </Button>
-          )}
-          <Button size="1" variant="ghost">
-            View Discussion
+  return (
+    <>
+      <Box
+        css={{
+          background: '$background-alt',
+          borderBottom: '1px solid rgba(0,0,0,0.1)',
+          position: 'sticky',
+          top: 0,
+          zIndex: '$3',
+          padding: '$5',
+          '@bp2': {
+            paddingLeft: 80,
+          },
+          $$gap: '16px',
+          display: 'flex',
+          gap: '$$gap',
+          alignItems: 'center',
+          '& *': {
+            position: 'relative',
+          },
+          '& *:not(:first-child):before': {
+            content: `"|"`,
+            color: '$text-muted',
+            opacity: 0.5,
+            position: 'absolute',
+            left: '-10px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+          },
+        }}
+      >
+        {author && (
+          <>
+            <Text size="1" color="muted" css={{paddingRight: '$3'}}>
+              <span>Signed by </span>
+              <span style={{textDecoration: 'underline'}}>
+                {state.context.canUpdate ? 'you' : author.profile?.alias}
+              </span>
+            </Text>
+          </>
+        )}
+        {state.context.canUpdate && (
+          <Button size="1" variant="ghost" onClick={handleUpdate} disabled={state.hasTag('pending')}>
+            Update
           </Button>
-          <TippingModal
-            publicationId={params?.docId}
-            accountId={state.context.publication?.document.author}
-            visible={!state.context.canUpdate}
-          />
-        </Box>
+        )}
+        <Button
+          size="1"
+          variant={state.matches('discussion') ? 'solid' : 'ghost'}
+          onClick={() => send(publicationModel.events['TOGGLE.DISCUSSION']())}
+          disabled={state.hasTag('pending')}
+        >
+          Toggle Discussion
+        </Button>
+        <TippingModal
+          publicationId={params?.docId}
+          accountId={state.context.publication?.document.author}
+          visible={!state.context.canUpdate}
+        />
+      </Box>
+      {state.matches('ready') && (
         <Box
           data-testid="publication-wrapper"
           css={{
@@ -160,61 +177,85 @@ export default function Publication({params}: PageProps) {
             />
           </Box>
         </Box>
+      )}
+      {state.matches('discussion') && (
         <Box
+          data-testid="publication-wrapper"
           css={{
-            background: '$background-alt',
-            width: '$full',
-            position: 'absolute',
-            bottom: 0,
-            zIndex: '$3',
             padding: '$5',
-
+            paddingTop: '$8',
+            marginHorizontal: '$4',
+            paddingBottom: 300,
+            height: '100%',
             '@bp2': {
-              paddingLeft: 80,
-            },
-            '&:after': {
-              content: '',
-              position: 'absolute',
-              width: '$full',
-              height: 20,
-              background: 'linear-gradient(0deg, $colors$background-alt 0%, rgba(255,255,255,0) 100%)',
-              top: -20,
-              left: 0,
-            },
-            $$gap: '24px',
-            display: 'flex',
-            gap: '$$gap',
-            alignItems: 'center',
-            '& > span': {
-              position: 'relative',
-            },
-            '& > span:before': {
-              content: `"|"`,
-              color: '$text-muted',
-              position: 'absolute',
-              right: -15,
-              top: 0,
+              marginHorizontal: '$9',
             },
           }}
         >
-          <Text size="1" color="muted">
-            Created on: {getDateFormat(state.context.publication?.document, 'createTime')}
-          </Text>
-          <Text size="1" color="muted">
-            Last modified: {getDateFormat(state.context.publication?.document, 'updateTime')}
-          </Text>
+          <Box css={{width: '$full', maxWidth: '64ch'}}>
+            {state.matches('discussion.ready') && state.context.links?.length != 0 ? (
+              <Editor mode={EditorMode.Discussion} value={state.context.discussion.children as Array<MttastContent>} />
+            ) : (
+              <>
+                <Text>There's no Discussion yet.</Text>
+                <Button size="1">Start one</Button>
+              </>
+            )}
+          </Box>
         </Box>
-      </>
-    )
-  }
+      )}
+      <Box
+        css={{
+          background: '$background-alt',
+          width: '$full',
+          position: 'absolute',
+          bottom: 0,
+          zIndex: '$3',
+          padding: '$5',
 
-  return null
+          '@bp2': {
+            paddingLeft: 80,
+          },
+          '&:after': {
+            content: '',
+            position: 'absolute',
+            width: '$full',
+            height: 20,
+            background: 'linear-gradient(0deg, $colors$background-alt 0%, rgba(255,255,255,0) 100%)',
+            top: -20,
+            left: 0,
+          },
+          $$gap: '24px',
+          display: 'flex',
+          gap: '$$gap',
+          alignItems: 'center',
+          '& > span': {
+            position: 'relative',
+          },
+          '& > span:before': {
+            content: `"|"`,
+            color: '$text-muted',
+            position: 'absolute',
+            right: -15,
+            top: 0,
+          },
+        }}
+      >
+        <Text size="1" color="muted">
+          Created on: {getDateFormat(state.context.publication?.document, 'createTime')}
+        </Text>
+        <Text size="1" color="muted">
+          Last modified: {getDateFormat(state.context.publication?.document, 'updateTime')}
+        </Text>
+      </Box>
+    </>
+  )
 }
 
 function usePagePublication(docId?: string) {
   // const client = useQueryClient()
-  const machine = useRef(publicationMachine)
-  const [state, send] = useMachine(machine.current)
+  const service = useInterpret(publicationMachine)
+  const [state, send] = useActor(service)
 
   useEffect(() => {
     if (docId) {
@@ -233,12 +274,17 @@ const publicationModel = createModel(
     publication: null as ClientPublication | null,
     errorMessage: '',
     canUpdate: false,
+    links: undefined as Array<Link> | undefined,
+    discussion: null as any,
   },
   {
     events: {
-      REPORT_DATA_REVEIVED: (props: {publication: ClientPublication; canUpdate: boolean}) => props,
-      REPORT_DATA_ERRORED: (errorMessage: string) => ({errorMessage}),
+      'REPORT.DATA.SUCCESS': (props: {publication: ClientPublication; canUpdate: boolean}) => props,
+      'REPORT.DATA.ERROR': (errorMessage: string) => ({errorMessage}),
       FETCH_DATA: (id: string) => ({id}),
+      'TOGGLE.DISCUSSION': () => ({}),
+      'REPORT.DISCUSSION.SUCCESS': (links: Array<Link>, discussion: any) => ({links, discussion}),
+      'REPORT.DISCUSSION.ERROR': (errorMessage: string) => ({errorMessage}),
     },
   },
 )
@@ -247,7 +293,6 @@ const publicationMachine = publicationModel.createMachine({
   id: 'publication-machine',
   context: publicationModel.initialContext,
   initial: 'idle',
-  entry: () => {},
   states: {
     idle: {
       on: {
@@ -255,6 +300,7 @@ const publicationMachine = publicationModel.createMachine({
           target: 'fetching',
           actions: [
             publicationModel.assign({
+              ...publicationModel.initialContext,
               id: (_, event) => event.id,
             }),
           ],
@@ -262,45 +308,43 @@ const publicationMachine = publicationModel.createMachine({
       },
     },
     fetching: {
+      tags: ['pending'],
       invoke: {
         src: (ctx) => (sendBack) => {
           Promise.all([getPublication(ctx.id), getInfo()])
             .then(([publication, info]) => {
-              console.log('publication response: ', publication, info)
-
               if (publication.document?.content) {
-                console.log('pub content: ', publication.document?.content)
-
                 let content = JSON.parse(publication.document?.content)
                 sendBack(
-                  publicationModel.events.REPORT_DATA_REVEIVED({
+                  publicationModel.events['REPORT.DATA.SUCCESS']({
                     publication: Object.assign(publication, {document: {...publication.document, content}}),
                     canUpdate: info.accountId == publication.document.author,
                   }),
                 )
               } else {
                 if (publication.document?.content === '') {
-                  sendBack(publicationModel.events.REPORT_DATA_ERRORED('Content is Empty'))
+                  sendBack(publicationModel.events['REPORT.DATA.ERROR']('Content is Empty'))
                 } else {
-                  sendBack(publicationModel.events.REPORT_DATA_ERRORED('error parsing content'))
+                  sendBack(publicationModel.events['REPORT.DATA.ERROR']('error parsing content'))
                 }
               }
             })
             .catch((err) => {
               console.log('=== CATCH ERROR: publication fetch error', err)
-              sendBack(publicationModel.events.REPORT_DATA_ERRORED('error fetching'))
+              sendBack(publicationModel.events['REPORT.DATA.ERROR']('error fetching'))
             })
         },
       },
       on: {
-        REPORT_DATA_REVEIVED: {
+        'REPORT.DATA.SUCCESS': {
           target: 'ready',
           actions: publicationModel.assign((_, ev) => ({
             publication: ev.publication,
             canUpdate: ev.canUpdate,
+            errorMessage: '',
           })),
         },
-        REPORT_DATA_ERRORED: {
+        'REPORT.DATA.ERROR': {
           target: 'errored',
           actions: publicationModel.assign({
             errorMessage: (_, ev) => ev.errorMessage,
@@ -309,20 +353,102 @@ const publicationMachine = publicationModel.createMachine({
       },
     },
     ready: {
-      entry: (ctx) => {
-        getInfo().then((response) => {
-          if (response.accountId == ctx.publication?.document.author) {
-          }
-        })
-      },
       on: {
         FETCH_DATA: {
           target: 'fetching',
           actions: [
             publicationModel.assign({
               id: (_, event) => event.id,
+              errorMessage: '',
             }),
           ],
+        },
+        'TOGGLE.DISCUSSION': {
+          target: 'discussion',
+        },
+      },
+    },
+    discussion: {
+      initial: 'idle',
+      onDone: [
+        {
+          target: 'errored',
+          cond: (context) => !!context.errorMessage,
+        },
+        {
+          target: 'ready',
+        },
+      ],
+      states: {
+        idle: {
+          always: [
+            {
+              target: 'ready',
+              cond: (context) => typeof context.links != 'undefined',
+            },
+            {
+              target: 'fetching',
+            },
+          ],
+        },
+        fetching: {
+          tags: ['pending'],
+          invoke: {
+            src: (context) => (sendBack) => {
+              listCitations(context.id)
+                .then((response) => {
+                  Promise.all(response.links.map(({source}) => getBlock(source))).then((result: Array<FlowContent>) => {
+                    let discussion = document([group(result)])
+                    sendBack(publicationModel.events['REPORT.DISCUSSION.SUCCESS'](response.links, discussion))
+                  })
+
+                  async function getBlock(entry: LinkNode): FlowContent {
+                    let pub = await getPublication(entry.documentId)
+
+                    let block: FlowContent
+                    visit(JSON.parse(pub.document?.content!)[0], {id: entry.blockId}, (node) => {
+                      block = node
+                    })
+
+                    //@ts-ignore
+                    return block
+                  }
+                })
+                .catch((error) => {
+                  sendBack(publicationModel.events['REPORT.DISCUSSION.ERROR'](error))
+                })
+            },
+          },
+          on: {
+            'REPORT.DISCUSSION.SUCCESS': {
+              target: 'ready',
+              actions: [
+                publicationModel.assign((_, event) => ({
+                  links: event.links,
+                  discussion: event.discussion,
+                  errorMessage: '',
+                })),
+              ],
+            },
+            'REPORT.DISCUSSION.ERROR': {
+              target: 'finish',
+              actions: [
+                publicationModel.assign({
+                  errorMessage: (_, event) => JSON.stringify(event.errorMessage),
+                }),
+              ],
+            },
+          },
+        },
+        ready: {
+          on: {
+            'TOGGLE.DISCUSSION': {
+              target: 'finish',
+            },
+          },
+        },
+        finish: {
+          type: 'final',
         },
       },
     },
@@ -347,15 +473,19 @@ function TippingModal({
   accountId,
 }: {
   visible: boolean
-  publicationId: string
-  accountId: string
+  publicationId?: string
+  accountId?: string
 }) {
   // if (!visible) return null
 
   const service = useInterpret(tippingMachine)
-
   const [state, send] = useActor(service)
-  console.log('tipping state:', state)
+
+  if (typeof publicationId == 'undefined' || typeof accountId == 'undefined') {
+    console.error(`Tipping Modal ERROR: invalid publicationId or accountId: ${{publicationId, accountId}}`)
+
+    return null
+  }
 
   useEffect(() => {
     send(tippingModel.events.SET_TIP_DATA(publicationId, accountId))

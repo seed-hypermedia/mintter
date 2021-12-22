@@ -191,8 +191,8 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
   }
 
   function onGoToPublication(url: string) {
-    const [publicationId] = getEmbedIds(url)
-    setLocation(`/p/${publicationId}`)
+    const [publicationId, version] = getEmbedIds(url)
+    setLocation(`/p/${publicationId}/${version}`)
   }
 
   function toggleDocument(e: MouseEvent<HTMLButtonElement>) {
