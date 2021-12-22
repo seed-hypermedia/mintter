@@ -7,17 +7,21 @@ import {
   listCitations,
   Publication as PublicationType,
 } from '@mintter/client'
-import {MttastContent} from '@mintter/mttast'
+import {FlowContent, MttastContent} from '@mintter/mttast'
+import {document, group} from '@mintter/mttast-builder'
 import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Icon} from '@mintter/ui/icon'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
-import {useActor, useInterpret} from '@xstate/react'
-import {document, group} from 'frontend/mttast-builder/dist'
-import {FlowContent} from 'frontend/mttast/dist'
+import {useActor, useInterpret, useMachine} from '@xstate/react'
+import {useBookmarksService} from 'frontend/app/src/components/bookmarks'
+import {MINTTER_LINK_PREFIX} from 'frontend/app/src/constants'
+import {ContextMenu} from 'frontend/app/src/editor/context-menu'
+import {copyTextToClipboard} from 'frontend/app/src/editor/statement'
 import {useEffect} from 'react'
+import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
@@ -194,7 +198,8 @@ export default function Publication({params}: PageProps) {
         >
           <Box css={{width: '$full', maxWidth: '64ch'}}>
             {state.matches('discussion.ready') && state.context.links?.length != 0 ? (
-              <Editor mode={EditorMode.Discussion} value={state.context.discussion.children as Array<MttastContent>} />
+              // <Editor mode={EditorMode.Discussion} value={state.context.discussion.children as Array<MttastContent>} />
+              <Discussion links={state.context.links} />
             ) : (
               <>
                 <Text>There's no Discussion yet.</Text>
@@ -232,11 +237,11 @@ export default function Publication({params}: PageProps) {
           '& > span': {
             position: 'relative',
           },
-          '& > span:before': {
+          '& *:not(:first-child):before': {
             content: `"|"`,
             color: '$text-muted',
             position: 'absolute',
-            right: -15,
+            left: -14,
             top: 0,
           },
         }}
@@ -401,18 +406,6 @@ const publicationMachine = publicationModel.createMachine({
                     let discussion = document([group(result)])
                     sendBack(publicationModel.events['REPORT.DISCUSSION.SUCCESS'](response.links, discussion))
                   })
-
-                  async function getBlock(entry: LinkNode): FlowContent {
-                    let pub = await getPublication(entry.documentId)
-
-                    let block: FlowContent
-                    visit(JSON.parse(pub.document?.content!)[0], {id: entry.blockId}, (node) => {
-                      block = node
-                    })
-
-                    //@ts-ignore
-                    return block
-                  }
                 })
                 .catch((error) => {
                   sendBack(publicationModel.events['REPORT.DISCUSSION.ERROR'](error))
@@ -444,6 +437,14 @@ const publicationMachine = publicationModel.createMachine({
           on: {
             'TOGGLE.DISCUSSION': {
               target: 'finish',
+            },
+            FETCH_DATA: {
+              target: 'finish',
+              actions: [
+                publicationModel.assign({
+                  links: undefined,
+                }),
+              ],
             },
           },
         },
@@ -652,3 +653,220 @@ function SetAmount({send, state}: {state: StateFrom<typeof tippingMachine>; send
     </Box>
   )
 }
+
+function Discussion({links = []}: {links: Array<Link>}) {
+  return (
+    <Box
+      css={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '$4',
+      }}
+    >
+      {links.map((link) => (
+        <DiscussionItem link={link} />
+      ))}
+    </Box>
+  )
+}
+
+function DiscussionItem({link}: {link: Link}) {
+  const [state, send] = useMachine(discussionItemMachine)
+  const {data: author} = useAccount(state?.context?.publication?.document?.author)
+  const bookmarkService = useBookmarksService()
+  const sidepanelService = useSidepanel()
+  const [, setLocation] = useLocation()
+
+  function addBookmark() {
+    bookmarkService.send({
+      type: 'ADD_BOOKMARK',
+      link: `${MINTTER_LINK_PREFIX}${link.source?.documentId}/${link.source?.version}/${link.source?.blockId}`,
+    })
+  }
+
+  async function onCopy() {
+    await copyTextToClipboard(embed.url)
+    toast.success('Embed Reference copied successfully', {position: 'top-center'})
+  }
+
+  function onGoToPublication() {
+    setLocation(`/p/${link.source?.documentId}/${link.source?.version}`)
+  }
+
+  function onOpenInSidepanel() {
+    sidepanelService.send('SIDEPANEL_OPEN')
+  }
+
+  useEffect(() => {
+    send(discussionItemModel.events.FETCH(link))
+  }, [])
+
+  if (state.hasTag('pending')) {
+    return <span>loading...</span>
+  }
+
+  const {block, publication} = state.context
+
+  if (state.matches('ready')) {
+    return (
+      <ContextMenu.Root>
+        <ContextMenu.Trigger>
+          <Box
+            css={{
+              borderBottom: '1px solid rgba(0,0,0,0.1)',
+              '&:hover': {
+                cursor: 'pointer',
+              },
+            }}
+          >
+            <Editor mode={EditorMode.Embed} value={[block as FlowContent]} />
+            <Box
+              css={{
+                paddingVertical: '$6',
+                $$gap: '16px',
+                display: 'flex',
+                gap: '$$gap',
+                alignItems: 'center',
+                '& *': {
+                  position: 'relative',
+                },
+                '& *:not(:first-child):before': {
+                  content: `"|"`,
+                  color: '$text-muted',
+                  opacity: 0.5,
+                  position: 'absolute',
+                  left: '-10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                },
+              }}
+            >
+              <Text size="1" color="muted">
+                {publication?.document?.title}
+              </Text>
+              {author && (
+                <Text size="1" color="muted" css={{paddingRight: '$3'}}>
+                  <span>Signed by </span>
+                  <span style={{textDecoration: 'underline'}}>{author.profile?.alias}</span>
+                </Text>
+              )}
+
+              <Text size="1" color="muted">
+                Created on: {getDateFormat(state.context.publication?.document, 'createTime')}
+              </Text>
+              {/* <Text size="1" color="muted">
+            Last modified: {getDateFormat(state.context.publication?.document, 'updateTime')}
+          </Text> */}
+            </Box>
+          </Box>
+        </ContextMenu.Trigger>
+        <ContextMenu.Content>
+          <ContextMenu.Item onSelect={onCopy}>
+            <Icon name="Copy" size="1" />
+            <Text size="2">Copy Embed Reference</Text>
+          </ContextMenu.Item>
+          <ContextMenu.Item
+            onSelect={() => {
+              addBookmark()
+              sidepanelService.send('SIDEPANEL_OPEN')
+            }}
+          >
+            <Icon name="ArrowChevronDown" size="1" />
+            <Text size="2">Add to Bookmarks</Text>
+          </ContextMenu.Item>
+          <ContextMenu.Item onSelect={() => onGoToPublication()}>
+            <Icon name="ArrowTopRight" size="1" />
+            <Text size="2">Open Embed in main Panel</Text>
+          </ContextMenu.Item>
+        </ContextMenu.Content>
+      </ContextMenu.Root>
+    )
+  }
+
+  return null
+}
+
+async function getBlock(entry?: LinkNode): Promise<FlowContent> {
+  if (!entry) return
+  let pub = await getPublication(entry.documentId)
+
+  let block: FlowContent
+  visit(JSON.parse(pub.document?.content!)[0], {id: entry.blockId}, (node) => {
+    block = node
+  })
+
+  //@ts-ignore
+  return block
+}
+
+const discussionItemModel = createModel(
+  {
+    link: null as Link | null,
+    publication: null as PublicationType | null,
+    block: null as FlowContent | null,
+    errorMessage: '',
+  },
+  {
+    events: {
+      FETCH: (link: Link) => ({link}),
+      'REPORT.FETCH.SUCCESS': (publication: PublicationType, block: FlowContent) => ({publication, block}),
+      'REPORT.FETCH.ERROR': (errorMessage: string) => ({errorMessage}),
+    },
+  },
+)
+
+const discussionItemMachine = discussionItemModel.createMachine({
+  initial: 'idle',
+  context: discussionItemModel.initialContext,
+  states: {
+    idle: {
+      tags: ['pending'],
+      on: {
+        FETCH: {
+          target: 'fetching',
+          actions: discussionItemModel.assign({
+            link: (_, event) => event.link,
+          }),
+        },
+      },
+    },
+    fetching: {
+      tags: ['pending'],
+      invoke: {
+        src: (context) => (sendBack) => {
+          ;(async () => {
+            if (!context.link?.source) {
+              sendBack(discussionItemModel.events['REPORT.FETCH.ERROR']('Error on Discussion Link'))
+            } else {
+              let publication = await getPublication(context.link!.source!.documentId!)
+              let block = await getBlock(context.link!.source!)
+              console.log('invoke result: ', {publication, block})
+              sendBack(discussionItemModel.events['REPORT.FETCH.SUCCESS'](publication, block))
+            }
+          })()
+        },
+      },
+      on: {
+        'REPORT.FETCH.SUCCESS': {
+          target: 'ready',
+          actions: [
+            discussionItemModel.assign((_, event) => ({
+              publication: event.publication,
+              block: event.block,
+            })),
+          ],
+        },
+        'REPORT.FETCH.ERROR': {
+          actions: [
+            discussionItemModel.assign({
+              errorMessage: (_, event) => event.errorMessage,
+            }),
+          ],
+          target: 'errored',
+        },
+      },
+    },
+    errored: {},
+    ready: {},
+  },
+})
