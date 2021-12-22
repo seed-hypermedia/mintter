@@ -1,7 +1,6 @@
 import {createBlockquotePlugin} from './blockquote'
 import {createCodePlugin} from './code'
 import {createColorPlugin} from './color'
-import {createDiscussionBlock} from './discussion-block'
 import {createEmbedPlugin} from './embed'
 import {createEmphasisPlugin} from './emphasis'
 import {createGroupPlugin} from './group'
@@ -52,5 +51,4 @@ export const plugins: EditorPlugin[] = [
   createTabPlugin(),
   createMarkdownShortcutsPlugin(),
   createPlainTextPastePlugin(),
-  createDiscussionBlock(),
 ]

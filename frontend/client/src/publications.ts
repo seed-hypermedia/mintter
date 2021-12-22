@@ -59,6 +59,6 @@ export async function getPublication(documentId: string, rpc?: GrpcClient): Prom
 
 export function listCitations(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
-  const request = ListCitationsRequest.fromPartial({documentId, depth: 1})
+  const request = ListCitationsRequest.fromPartial({documentId, depth: 2})
   return new ContentGraphClientImpl(rpc).listCitations(request)
 }
