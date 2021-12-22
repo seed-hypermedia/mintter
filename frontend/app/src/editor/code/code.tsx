@@ -170,7 +170,7 @@ function Code({
   element: CodeType
   mode: EditorMode
 }) {
-  const {params} = useRoute<{docId: string}>(['/p/:docId', '/editor/:docId'])
+  const {params} = useRoute<{docId: string; version: string}>(['/p/:docId/:version', '/editor/:docId'])
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const bookmarksService = useBookmarksService()

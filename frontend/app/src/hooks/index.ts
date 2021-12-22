@@ -17,10 +17,10 @@ import {
   Publication,
 } from '@mintter/client'
 import type {FlowContent} from '@mintter/mttast'
-import {useAccountInfo} from 'frontend/app/src/auth-context'
 import {useMemo} from 'react'
 import type {UseQueryResult} from 'react-query'
 import {useQuery, useQueryClient} from 'react-query'
+import {useAccountInfo} from '../auth-context'
 import type {HookOptions} from './types'
 
 export * from './types'
@@ -49,7 +49,6 @@ export function useAccount(accountId = '', options: HookOptions<Account> = {}) {
     [queryKeys.GET_ACCOUNT, accountId],
     async () => {
       let result = await getAccount(accountId, options.rpc)
-      console.log('result = ', result)
       return result
     },
     options,

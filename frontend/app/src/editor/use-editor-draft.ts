@@ -1,100 +1,139 @@
-import {Document, getDraft, publishDraft, updateDraft} from '@mintter/client'
-import {FlowContent, MttastContent} from '@mintter/mttast'
+import {Document, getDraft, Link, publishDraft, updateDraft} from '@mintter/client'
+import {FlowContent, isEmbed, isFlowContent, MttastContent} from '@mintter/mttast'
 import {createId, group, paragraph, statement, text} from '@mintter/mttast-builder'
-import {useMachine} from '@xstate/react'
+import {useActor, useInterpret} from '@xstate/react'
 import isEqual from 'fast-deep-equal'
-import {queryKeys} from 'frontend/app/src/hooks'
-import {useEffect, useRef} from 'react'
+import {useEffect} from 'react'
 import {QueryClient, useQueryClient} from 'react-query'
-import {ActionFunction, assign, createMachine, State} from 'xstate'
+import {visit} from 'unist-util-visit'
+import {createModel} from 'xstate/lib/model'
+import {queryKeys} from '../hooks'
+import {getEmbedIds} from './embed'
 
-export type DraftEditorMachineEvent =
-  | {
-      type: 'FETCH'
-      documentId: string
-    }
-  | {
-      type: 'RECEIVE_DATA'
-      data: Document
-    }
-  | {
-      type: 'UPDATE'
-      payload: Document
-    }
-  | {
-      type: 'CANCEL'
-    }
-  | {
-      type: 'PUBLISH'
-    }
 export type EditorDocument = Partial<Document> & {
   content: Array<MttastContent> | Array<FlowContent>
 }
-export type DraftEditorMachineContext = {
-  retries: number
-  prevDraft: EditorDocument | null
-  localDraft: EditorDocument | null
-  errorMessage: string
-}
+
+export const editorModel = createModel(
+  {
+    retries: 0,
+    prevDraft: null as EditorDocument | null,
+    localDraft: null as EditorDocument | null,
+    errorMessage: '',
+    publication: null as Publication | null,
+  },
+  {
+    events: {
+      FETCH: (documentId: string) => ({documentId}),
+      'REPORT.FETCH.RECEIVED': (data: Document) => ({data}),
+      'REPORT.FETCH.ERROR': (errorMessage: string) => ({errorMessage}),
+      UPDATE: (payload: EditorDocument) => ({payload}),
+      CANCEL: () => ({}),
+      PUBLISH: () => ({}),
+      'REPORT.PUBLISH.SUCCESS': (publication: Publication) => ({publication}),
+      'REPORT.PUBLISH.ERROR': (errorMessage: string) => ({errorMessage}),
+      'REPORT.UPDATE.SUCCESS': () => ({}),
+      'REPORT.UPDATE.ERROR': (errorMessage: string) => ({errorMessage}),
+    },
+  },
+)
 
 interface DraftEditorMachineProps {
   client: QueryClient
-  afterPublish: ActionFunction<DraftEditorMachineContext, DraftEditorMachineEvent>
-  loadAnnotations: ActionFunction<DraftEditorMachineContext, DraftEditorMachineEvent>
+  afterPublish: any
+  loadAnnotations: any
 }
 
 const defaultContent = [group([statement({id: createId()}, [paragraph([text('')])])])]
-/* eslint-disable */
-const draftEditorMachine = ({afterPublish, loadAnnotations, client}: DraftEditorMachineProps) =>
-  createMachine<DraftEditorMachineContext, any>(
+
+const updateValueToContext = editorModel.assign(
+  {
+    localDraft: (context, event) => {
+      return {
+        ...context.localDraft,
+        ...event.payload,
+      }
+    },
+  },
+  'UPDATE',
+)
+
+export const draftEditorMachine = ({afterPublish, loadAnnotations, client}: DraftEditorMachineProps) =>
+  editorModel.createMachine(
     {
       id: 'editor',
       initial: 'idle',
-      context: {
-        retries: 0,
-        prevDraft: null,
-        localDraft: null,
-        errorMessage: '',
-      },
+      context: editorModel.initialContext,
       states: {
         idle: {
-          initial: 'noError',
-          states: {
-            noError: {
-              entry: ['clearErrorMessage', 'clearAnnotations'],
-            },
-            errored: {
-              on: {
-                FETCH: {
-                  target: '#fetching',
-                  actions: ['incrementRetries'],
-                },
-              },
-            },
-          },
           on: {
             FETCH: {
               target: 'fetching',
             },
           },
         },
+        errored: {
+          on: {
+            FETCH: [
+              {
+                target: 'failed',
+                cond: (context) => context.retries == 5,
+                actions: ['displayFailedMessage'],
+              },
+              {
+                target: 'fetching',
+                actions: [
+                  editorModel.assign({
+                    retries: (context) => context.retries++,
+                  }),
+                ],
+              },
+            ],
+          },
+        },
         fetching: {
           id: 'fetching',
           on: {
-            FETCH: {},
             CANCEL: {
               target: 'idle',
             },
+            'REPORT.FETCH.RECEIVED': {
+              target: 'editing',
+              actions: [
+                editorModel.assign((_, event) => {
+                  let newValue = {
+                    ...event.data,
+                    content: event.data.content ? JSON.parse(event.data.content) : defaultContent,
+                  }
+                  return {
+                    prevDraft: newValue,
+                    localDraft: newValue,
+                  }
+                }),
+                'loadAnnotations',
+              ],
+            },
+            'REPORT.FETCH.ERROR': {
+              target: 'errored',
+              actions: [
+                editorModel.assign({
+                  errorMessage: (_, event) => JSON.stringify(event.errorMessage),
+                }),
+              ],
+            },
           },
           invoke: {
-            src: 'fetchData',
-            onError: {
-              target: 'idle.errored',
-              actions: 'assignErrorToContext',
-            },
-            onDone: {
-              target: '#editing',
-              actions: ['assignDataToContext', 'loadAnnotations'],
+            src: (_, event) => (sendBack) => {
+              if (event.type != 'FETCH') return
+              ;(async () => {
+                try {
+                  let draft = await getDraft(event.documentId)
+                  client.setQueryData([queryKeys.GET_DRAFT, event.documentId], draft)
+                  sendBack(editorModel.events['REPORT.FETCH.RECEIVED'](draft))
+                } catch (err: any) {
+                  sendBack(editorModel.events['REPORT.FETCH.ERROR'](err))
+                }
+              })()
             },
           },
         },
@@ -103,10 +142,9 @@ const draftEditorMachine = ({afterPublish, loadAnnotations, client}: DraftEditor
           initial: 'idle',
           states: {
             idle: {
-              // entry: 'checkContext',
               on: {
                 UPDATE: {
-                  actions: ['updateValueToContext'],
+                  actions: [updateValueToContext],
                   target: 'debouncing',
                 },
                 PUBLISH: {
@@ -120,8 +158,7 @@ const draftEditorMachine = ({afterPublish, loadAnnotations, client}: DraftEditor
             debouncing: {
               on: {
                 UPDATE: {
-                  actions: ['updateValueToContext'],
-                  target: 'debouncing',
+                  actions: [updateValueToContext],
                 },
               },
               after: {
@@ -138,25 +175,74 @@ const draftEditorMachine = ({afterPublish, loadAnnotations, client}: DraftEditor
             },
             saving: {
               invoke: {
-                src: 'saveDraft',
-                onDone: {
-                  target: 'idle',
+                src: (context) => (sendBack) => {
+                  ;(async () => {
+                    let newDraft = {
+                      ...context.localDraft,
+                      content: JSON.stringify(context.localDraft?.content),
+                    }
+                    let links = buildLinks(context.localDraft!)
+
+                    try {
+                      await updateDraft(newDraft as Document, links)
+                      sendBack(editorModel.events['REPORT.UPDATE.SUCCESS']())
+                    } catch (err: any) {
+                      sendBack(editorModel.events['REPORT.UPDATE.ERROR'](err))
+                    }
+                  })()
                 },
                 onError: {
                   target: 'idle',
                   actions: ['assignErrorToContext'],
                 },
               },
+              on: {
+                'REPORT.UPDATE.SUCCESS': {
+                  actions: [
+                    // todo: add success save
+                  ],
+                  target: 'idle',
+                },
+                'REPORT.UPDATE.ERROR': {
+                  target: 'idle',
+                  actions: [
+                    editorModel.assign({
+                      errorMessage: (_, event) => JSON.stringify(event.errorMessage),
+                    }),
+                  ],
+                },
+              },
             },
             publishing: {
               invoke: {
-                src: 'publishDraft',
-                onDone: {
-                  target: 'published',
+                src: (context) => (sendBack) => {
+                  if (!context.localDraft) return
+
+                  publishDraft(context.localDraft.id!)
+                    .then((publication) => {
+                      sendBack(editorModel.events['REPORT.PUBLISH.SUCCESS'](publication))
+                    })
+                    .catch((err: any) => {
+                      sendBack(editorModel.events['REPORT.PUBLISH.ERROR'](err))
+                    })
                 },
-                onError: {
+              },
+              on: {
+                'REPORT.PUBLISH.SUCCESS': {
+                  target: 'published',
+                  actions: [
+                    editorModel.assign({
+                      publication: (_, event) => event.publication,
+                    }),
+                  ],
+                },
+                'REPORT.PUBLISH.ERROR': {
                   target: 'idle',
-                  actions: ['assignErrorToContext'],
+                  actions: [
+                    editorModel.assign({
+                      errorMessage: (_, event) => JSON.stringify(event.errorMessage),
+                    }),
+                  ],
                 },
               },
             },
@@ -172,6 +258,9 @@ const draftEditorMachine = ({afterPublish, loadAnnotations, client}: DraftEditor
           entry: ['afterPublish'],
           type: 'final',
         },
+        failed: {
+          type: 'final',
+        },
       },
     },
     {
@@ -183,71 +272,7 @@ const draftEditorMachine = ({afterPublish, loadAnnotations, client}: DraftEditor
           return isContentNotEqual || isTitleNotEqual || isSubtitleNotEqual
         },
       },
-      services: {
-        fetchData: (_, event: DraftEditorMachineEvent) => () => {
-          if (event.type != 'FETCH') return
-          return client.fetchQuery([queryKeys.GET_DRAFT, event.documentId], async ({queryKey}) => {
-            const [_, draftId] = queryKey
-            return await getDraft(draftId)
-          })
-        },
-        saveDraft: (context: DraftEditorMachineContext) => () => {
-          const newDraft = {
-            ...context.localDraft,
-            content: JSON.stringify(context.localDraft?.content),
-          }
-          return updateDraft(newDraft as Document)
-        },
-        publishDraft: (context) => () => {
-          if (!context.localDraft) return
-          return publishDraft(context.localDraft.id)
-        },
-      },
       actions: {
-        updateValueToContext: assign({
-          localDraft: (context, event) => {
-            return {
-              ...context.localDraft,
-              ...event.payload,
-            }
-          },
-        }),
-        assignDataToContext: assign((context, event) => {
-          if (event.type == 'done.invoke.fetchData') {
-            const value = {
-              ...event.data,
-              content: event.data.content ? JSON.parse(event.data.content) : defaultContent,
-            }
-            return {
-              prevDraft: value,
-              localDraft: value,
-            }
-          }
-          console.log('not fetch event', event)
-          return {
-            localDraft: {
-              ...context.localDraft,
-              ...event.data,
-            },
-            prevDraft: {
-              ...context.prevDraft,
-              ...event.data,
-            },
-          }
-        }),
-        clearErrorMessage: assign((context) => ({
-          ...context,
-          errorMessage: '',
-        })),
-        assignErrorToContext: assign((context, event) => {
-          console.log('assignErrorToContext', {context, event})
-          return {
-            errorMessage: event.data?.message || 'An unknown error occurred',
-          }
-        }),
-        incrementRetries: assign<DraftEditorMachineContext, DraftEditorMachineEvent>({
-          retries: (context) => context.retries + 1,
-        }),
         afterPublish,
         loadAnnotations,
       },
@@ -258,11 +283,11 @@ export type UseEditorDraftParams = DraftEditorMachineProps & {
   documentId: string
 }
 
-export function useEditorDraft({documentId, ...afterActions}: UseEditorDraftParams) {
+export function useEditorDraft({editor, documentId, ...afterActions}: UseEditorDraftParams) {
   const client = useQueryClient()
-  const machine = useRef(draftEditorMachine({...afterActions, client}))
+  const service = useInterpret(draftEditorMachine({...afterActions, client}))
 
-  const [state, send] = useMachine(machine.current, {devTools: true})
+  const [state, send] = useActor(service)
 
   useEffect(() => {
     if (documentId) {
@@ -272,4 +297,28 @@ export function useEditorDraft({documentId, ...afterActions}: UseEditorDraftPara
   return [state, send] as const
 }
 
-export type DraftEditorMachineState = State<DraftEditorMachineContext, DraftEditorMachineEvent>
+function buildLinks(draft: EditorDocument): Array<Link> {
+  let links: Array<Link> = []
+
+  visit(draft.content[0], isFlowContent, (block) => {
+    visit(block, isEmbed, (node) => {
+      let [documentId, version, blockId] = getEmbedIds(node.url)
+      console.log('ids: ', {documentId, version, blockId})
+
+      links.push({
+        target: {
+          documentId,
+          version,
+          blockId,
+        },
+        source: {
+          blockId: block.id,
+          version: '',
+          documentId: '',
+        },
+      })
+    })
+  })
+
+  return links
+}

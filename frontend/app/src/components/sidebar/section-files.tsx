@@ -8,7 +8,6 @@ import {SectionItem} from './section-item'
 
 export function FilesSection() {
   const files = useFiles()
-  // let files = []
   return (
     <Section title="Files" open={true}>
       {!!files.length ? (
@@ -19,12 +18,16 @@ export function FilesSection() {
           }}
         >
           {files.map((publication: PublicationRef) => {
-            let {ref, document} = publication
-            console.log('document item: ', document)
+            let {ref, document, version} = publication
 
             return (
-              <Link href={`/p/${document?.id}`}>
-                <SectionItem key={document?.id} href={`/p/${document?.id}`} document={document} />
+              <Link key={document?.id} href={`/p/${document?.id}/${version}`}>
+                <SectionItem
+                  actorRef={ref}
+                  key={document?.id}
+                  href={`/p/${document?.id}/${version}`}
+                  document={document}
+                />
               </Link>
             )
           })}

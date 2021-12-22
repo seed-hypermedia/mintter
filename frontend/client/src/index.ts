@@ -22,6 +22,8 @@ export {
   Document,
   GetDraftRequest,
   GetPublicationRequest,
+  Link,
+  LinkNode,
   ListDraftsRequest,
   ListDraftsResponse,
   ListPublicationsRequest,
@@ -50,4 +52,4 @@ export {createDraft, deleteDraft, getDraft, listDrafts, publishDraft, updateDraf
 export {createGrpcClient, MINTTER_API_URL_DEFAULT} from './grpc-client'
 export type {GrpcClient} from './grpc-client'
 export {connect, getPeerInfo, listPeerAddrs} from './networking'
-export {deletePublication, getPublication, listPublications} from './publications'
+export {deletePublication, getPublication, listCitations, listPublications} from './publications'

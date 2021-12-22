@@ -17,7 +17,9 @@
     "mttast": "yarn workspace @mintter/mttast",
     "builder": "yarn workspace @mintter/mttast-builder",
     "hastmtt": "yarn workspace @mintter/hastmtt",
-    "codegen": "graphql-codegen"
+    "codegen": "graphql-codegen",
+    "start": "./dev run-desktop",
+    "start:s2": "./dev run-desktop -- --daemon-flags=\"--repo-path=~/.mtt2 --http-port='56001' --grpc-port='56002' --p2p.addr='/ip4/0.0.0.0/tcp/56000'\""
   },
   "workspaces": [
     "frontend/*"

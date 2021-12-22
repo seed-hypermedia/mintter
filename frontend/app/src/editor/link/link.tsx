@@ -40,8 +40,8 @@ export const Link = ({element, ...props}: PropsWithChildren<{element: LinkType}>
 
   async function handleClick() {
     if (isMintterLink(element.url)) {
-      const [pubId] = getEmbedIds(element.url)
-      setLocation(`/p/${pubId}`)
+      const [pubId, version] = getEmbedIds(element.url)
+      setLocation(`/p/${pubId}/${version}`)
     } else {
       open(element.url)
     }
@@ -195,6 +195,7 @@ function isMintterLink(text: string) {
 
 function wrapMintterLink(editor: Editor, url: string) {
   const {selection} = editor
+
   const newEmbed: Embed = embed({url}, [text('')])
   // const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])
 
