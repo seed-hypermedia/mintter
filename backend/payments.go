@@ -147,7 +147,7 @@ func (srv *backend) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 		srv.log.Warn("couldn't list wallets", zap.String("Error", err.Error()))
 		return nil, fmt.Errorf("couldn't list wallets")
 	}
-	for _, w := range wallets {
+	for i, w := range wallets {
 		if strings.ToLower(w.Type) == lndhub.LndhubWalletType {
 			token, err := wallet.GetAuth(conn, w.ID)
 			if err != nil {
@@ -164,7 +164,7 @@ func (srv *backend) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 				srv.log.Warn("couldn't get balance", zap.String("Wallet", w.Name), zap.String("Error", err.Error()))
 				return nil, fmt.Errorf("couldn't get balance from wallet %s", w.Name)
 			}
-			w.Balance = int64(balance)
+			wallets[i].Balance = int64(balance)
 		}
 	}
 	return wallets, nil
@@ -311,7 +311,7 @@ func (srv *backend) PayInvoice(ctx context.Context, payReq string, walletID *str
 		return "", fmt.Errorf("wallet type [%s] not supported to pay (yet)", walletToPay.Type)
 	}
 
-	if amountSats == nil {
+	if amountSats == nil || *amountSats == 0 {
 		invoice, err := lndhub.DecodeInvoice(payReq)
 		if err != nil {
 			srv.log.Warn("couldn't decode invoice", zap.String("Error", err.Error()))
