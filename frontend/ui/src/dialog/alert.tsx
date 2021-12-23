@@ -1,7 +1,6 @@
 import {Icon} from '@mintter/ui/icon'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 import type {PropsWithChildren} from 'react'
-// TODO: import components directly from its component file.
 import {Box} from '../box'
 import type {ButtonProps} from '../button'
 import {Button} from '../button'

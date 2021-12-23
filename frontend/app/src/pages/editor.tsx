@@ -3,20 +3,20 @@ import {Box} from '@mintter/ui/box'
 import {Button} from '@mintter/ui/button'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
-import {FormEvent, KeyboardEvent, useMemo, useRef, useState} from 'react'
+import {KeyboardEvent, useMemo, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {ReactEditor} from 'slate-react'
 import {useLocation} from 'wouter'
-import {ContextFrom} from 'xstate'
+import {ContextFrom, StateFrom} from 'xstate'
 import {AppError} from '../app'
 import {useSidepanel} from '../components/sidepanel'
 import {useEnableSidepanel} from '../components/sidepanel/sidepanel'
-import {Editor, useEditorDraft} from '../editor'
+import {Editor, EditorDocument, useEditorDraft} from '../editor'
 import {buildEditorHook, EditorMode} from '../editor/plugin-utils'
 import {plugins} from '../editor/plugins'
-import {draftEditorMachine} from '../editor/use-editor-draft'
+import {draftEditorMachine, editorModel} from '../editor/use-editor-draft'
 import {getDateFormat} from '../utils/get-format-date'
 import {PageProps} from './types'
 
@@ -41,7 +41,7 @@ export default function EditorPage({params}: PageProps) {
         replace: true,
       })
     },
-    loadAnnotations: (context: DraftEditorMachineContext) => {
+    loadAnnotations: (context: ContextFrom<ReturnType<typeof draftEditorMachine>>) => {
       if (!context.localDraft) return
 
       sidepanelService.send({type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: context.localDraft.content})
@@ -91,22 +91,13 @@ export default function EditorPage({params}: PageProps) {
             '& *': {
               position: 'relative',
             },
-            // '& *:not(:first-child):before': {
-            //   content: `"|"`,
-            //   color: '$text-muted',
-            //   opacity: 0.5,
-            //   position: 'absolute',
-            //   left: '-10px',
-            //   top: '50%',
-            //   transform: 'translateY(-50%)',
-            // },
           }}
         >
           <Button size="1" variant="ghost" onClick={() => send('PUBLISH')}>
             Publish
           </Button>
           <TextField
-            size="1"
+            size={1}
             data-testid="editor_title"
             name="title"
             placeholder="Document title"
@@ -117,15 +108,10 @@ export default function EditorPage({params}: PageProps) {
                 ReactEditor.focus(editor)
               }
             }}
-            onChange={(event: FormEvent<HTMLTextAreaElement>) => {
+            onChange={(event) => {
               // update window title as the user types
               // getCurrentWindow().setTitle(event.currentTarget.value)
-              send({
-                type: 'UPDATE',
-                payload: {
-                  title: event.currentTarget.value,
-                },
-              })
+              send(editorModel.events.UPDATE({title: event.currentTarget.value} as EditorDocument))
             }}
           />
         </Box>
@@ -170,12 +156,8 @@ export default function EditorPage({params}: PageProps) {
                   editor={editor}
                   value={context.localDraft.content}
                   onChange={(content) => {
-                    send({
-                      type: 'UPDATE',
-                      payload: {
-                        content,
-                      },
-                    })
+                    //@ts-ignore
+                    send(editorModel.events.UPDATE({content}))
                     sidepanelService.send({
                       type: 'SIDEPANEL_LOAD_ANNOTATIONS',
                       document: content,
@@ -255,7 +237,7 @@ export default function EditorPage({params}: PageProps) {
   return null
 }
 
-function EditorStatus({state}: {state: DraftEditorMachineState}) {
+function EditorStatus({state}: {state: StateFrom<ReturnType<typeof draftEditorMachine>>}) {
   return (
     <Box
       css={{

@@ -145,11 +145,6 @@ export function HoveringToolbar() {
 
   return (
     <Portal>
-      {/*
-      /*
-       * @todo fix types on Menu component.
-       * @body Children complains about something... 
-       * @ts-ignore */}
       <Menu ref={ref}>
         <FormatButton format="strong" />
         <FormatButton format="emphasis" />

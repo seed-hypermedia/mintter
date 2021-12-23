@@ -194,8 +194,6 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
     let InputComponent = textarea ? TextareaElement : InputElement
 
     return (
-      // TODO: Fix types
-      // @ts-ignore
       <InputContainer size={props.size} css={containerCss}>
         {label ? (
           <Label.Root as={Text} htmlFor={id} size={props.size == 1 ? '2' : props.size == 2 ? '3' : undefined}>

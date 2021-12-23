@@ -37,10 +37,6 @@ export const sidepanelModel = createModel(
   },
 )
 
-/*
- * @todo add types to services and actions
- * @body Issue Body
- */
 export const sidepanelMachine = sidepanelModel.createMachine({
   id: 'sidepanel',
   initial: 'disabled',
@@ -209,10 +205,6 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
     return <Text alt css={{display: 'inline-block'}}>{`Error with item id: ${item}`}</Text>
   }
 
-  /*
-   * @todo refactor statement context menu
-   * @body this context menu code is repeated in many components now, we need a wrapper
-   */
   return (
     <Box
       ref={ref}

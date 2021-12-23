@@ -10,9 +10,5 @@ export function useRoute<T = DefaultParams>(patterns: Array<string> | string): U
   const [path] = useLocation()
   const [match, params] = multipathMatcher<T>(patterns, path)
 
-  /*
-   * @todo Fix types
-   */
-  // @ts-ignore
   return {match, params}
 }
