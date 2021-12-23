@@ -12,10 +12,7 @@ export function multipathMatcher<T = DefaultParams>(
 ): [boolean, T | null] {
   for (let pattern of [patterns].flat()) {
     const [match, params] = defaultMatcher(pattern, path)
-    /*
-     * @todo Fix types
-     */
-    // @ts-ignore
+
     if (match) return [match, params]
   }
 

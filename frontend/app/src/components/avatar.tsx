@@ -26,5 +26,3 @@ export const Avatar = styled(Box, {
 })
 
 export type AvatarProps = React.ComponentProps<typeof Avatar>
-
-// TODO: receive the author (forwardRef)

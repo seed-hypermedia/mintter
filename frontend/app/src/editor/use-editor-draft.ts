@@ -198,9 +198,6 @@ export const draftEditorMachine = ({afterPublish, loadAnnotations, client}: Draf
               },
               on: {
                 'REPORT.UPDATE.SUCCESS': {
-                  actions: [
-                    // todo: add success save
-                  ],
                   target: 'idle',
                 },
                 'REPORT.UPDATE.ERROR': {
