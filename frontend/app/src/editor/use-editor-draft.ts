@@ -300,7 +300,7 @@ function buildLinks(draft: EditorDocument): Array<Link> {
 
   visit(draft.content[0], isFlowContent, (block) => {
     visit(
-      block,
+      block.children[0],
       (node) => (isEmbed(node) || isLink(node)) && node.url.includes(MINTTER_LINK_PREFIX),
       (node) => {
         let [documentId, version, blockId] = getEmbedIds((node as Embed | Link).url)
