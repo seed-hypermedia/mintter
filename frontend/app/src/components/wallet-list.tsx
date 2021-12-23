@@ -7,8 +7,8 @@ import {TextField} from '@mintter/ui/text-field'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useActor, useInterpret} from '@xstate/react'
 import {FormEvent, useRef} from 'react'
+import BarcodeScannerComponent from 'react-qr-barcode-scanner'
 import {ActorRefFrom} from 'xstate'
-// import BarcodeScannerComponent from 'react-qr-barcode-scanner'
 import {createWalletMachine, listMachine, listModel, Wallet} from '../wallet-machine'
 export function WalletList() {
   // const [data, setData] = useState('Not Found')
@@ -77,7 +77,11 @@ export function WalletList() {
           css={{flex: 1}}
         />
 
-        <Button size="2" type="submit" disabled={state.hasTag('pending')}>
+        <Button
+          size="2"
+          type="submit"
+          disabled={state.hasTag('pending') || (!state.context.walletName && !state.context.walletUrl)}
+        >
           Submit
         </Button>
         <Button
@@ -108,18 +112,8 @@ export function WalletList() {
           <Text>No wallets</Text>
         </Box>
       )}
-      {/* <BarcodeScannerComponent
-        onError={console.error}
-        width={300}
-        height={300}
-        onUpdate={(err, result: any) => {
-          if (result) setData(result.text)
-          else setData('Not Found')
-        }}
-      />
-      <p>{data}</p> */}
       <CameraDialog
-        open={state.matches('new.opened.camera')}
+        open={state.matches('camera')}
         onOpenChange={(value) => {
           if (!value) {
             send(listModel.events['CAMERA.CLOSE']())
@@ -135,10 +129,6 @@ export function WalletList() {
                 alignItems: 'center',
                 paddingHorizontal: '$5',
                 borderBottom: '1px solid rgba(0,0,0,0.1)',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
                 background: '$background-default',
                 zIndex: '$max',
               }}
@@ -146,7 +136,25 @@ export function WalletList() {
               Scan QR
             </DialogTitle>
           </DialogPrimitive.Title>
-          <Box>camera here</Box>
+          <Box
+            css={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <BarcodeScannerComponent
+              onError={console.error}
+              width={340}
+              height={340}
+              onUpdate={(err, result: any) => {
+                if (result) {
+                  console.log('scan correct!', result)
+                  send(listModel.events['REPORT.CAMERA.SUCCESS'](result.text))
+                }
+              }}
+            />
+          </Box>
         </Content>
       </CameraDialog>
       <pre>{JSON.stringify(state.context, null, 2)}</pre>

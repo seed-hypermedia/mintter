@@ -20,7 +20,7 @@ export const listModel = createModel(
   {
     walletName: '',
     walletUrl: '',
-    wallets: [] as Maybe<Array<Wallet>>,
+    wallets: [] as Array<Wallet>,
     errorMessage: null as Maybe<String>,
   },
   {
@@ -37,6 +37,7 @@ export const listModel = createModel(
       'CAMERA.ACTIVATE': () => ({}),
       'CAMERA.CLOSE': () => ({}),
       'REPORT.CAMERA.SUCCESS': (url: string) => ({url}),
+      'REPORT.CAMERA.ERROR': (error: string) => ({error}),
       'NEW.CHANGE.NAME': (value: string) => ({value}),
       'NEW.CHANGE.URL': (value: string) => ({value}),
       'WALLET.COMMIT': () => ({}),
@@ -50,7 +51,7 @@ export type Wallet = LightningWallet & {
 
 type MePayload = {
   me: Me & {
-    wallets: Maybe<Array<Wallet>>
+    wallets: Array<Wallet>
   }
 }
 
@@ -142,6 +143,7 @@ export const listMachine = listModel.createMachine(
             }),
           },
           'NEW.WALLET.COMMIT': 'submitting',
+          'CAMERA.ACTIVATE': 'camera',
         },
       },
       submitting: {
@@ -190,6 +192,36 @@ export const listMachine = listModel.createMachine(
               errorMessage: (_, event) => event.error,
             }),
           },
+        },
+      },
+      camera: {
+        after: {
+          30000: {
+            target: 'ready',
+            actions: [
+              listModel.assign({
+                errorMessage: 'Camera Timeout',
+              }),
+            ],
+          },
+        },
+        on: {
+          'REPORT.CAMERA.SUCCESS': {
+            target: 'ready',
+            actions: [
+              listModel.assign({
+                walletUrl: (_, event) => event.url,
+              }),
+            ],
+          },
+          'REPORT.CAMERA.ERROR': {
+            actions: [
+              listModel.assign({
+                errorMessage: (_, event) => JSON.stringify(event.error),
+              }),
+            ],
+          },
+          'CAMERA.CLOSE': 'ready',
         },
       },
     },
