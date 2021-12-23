@@ -179,7 +179,7 @@ export const tippingMachine = tippingModel.createMachine({
                   sendBack(tippingModel.events.REPORT_PAID())
                 })
                 .catch((err) => {
-                  console.log('ERROR: ', err)
+                  console.log('PAYMENT ERROR: ', err)
 
                   sendBack(
                     tippingModel.events.REPORT_PAID_ERRORED(err.response.errors.map((e: any) => e.message).join(' | ')),

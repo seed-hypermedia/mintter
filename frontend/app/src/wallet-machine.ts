@@ -95,13 +95,9 @@ const fetchWallets =
     `
     request<MePayload>(MINTTER_GRAPHQL_API_URL, query)
       .then(({me: {wallets}}) => {
-        if (wallets?.length) {
-          sendBack(listModel.events['REPORT.LIST.SUCCESS'](wallets))
-        } else {
-          sendBack(
-            listModel.events['REPORT.LIST.ERROR'](`FetchWalletList error: list is empty: ${JSON.stringify(wallets)}`),
-          )
-        }
+        console.log('wallets: ', wallets)
+
+        sendBack(listModel.events['REPORT.LIST.SUCCESS'](wallets))
       })
       .catch((err: any) => {
         sendBack(listModel.events['REPORT.LIST.ERROR'](err))
