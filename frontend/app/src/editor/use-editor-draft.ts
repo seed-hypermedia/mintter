@@ -1,5 +1,5 @@
-import {Document, getDraft, Link, publishDraft, updateDraft} from '@mintter/client'
-import {FlowContent, isEmbed, isFlowContent, MttastContent} from '@mintter/mttast'
+import {Document, getDraft, Link, Publication, publishDraft, updateDraft} from '@mintter/client'
+import {FlowContent, isEmbed, isFlowContent, isLink, MttastContent} from '@mintter/mttast'
 import {createId, group, paragraph, statement, text} from '@mintter/mttast-builder'
 import {useActor, useInterpret} from '@xstate/react'
 import isEqual from 'fast-deep-equal'
@@ -7,6 +7,7 @@ import {useEffect} from 'react'
 import {QueryClient, useQueryClient} from 'react-query'
 import {visit} from 'unist-util-visit'
 import {createModel} from 'xstate/lib/model'
+import {MINTTER_LINK_PREFIX} from '../constants'
 import {queryKeys} from '../hooks'
 import {getEmbedIds} from './embed'
 
@@ -280,7 +281,7 @@ export type UseEditorDraftParams = DraftEditorMachineProps & {
   documentId: string
 }
 
-export function useEditorDraft({editor, documentId, ...afterActions}: UseEditorDraftParams) {
+export function useEditorDraft({documentId, ...afterActions}: UseEditorDraftParams) {
   const client = useQueryClient()
   const service = useInterpret(draftEditorMachine({...afterActions, client}))
 
@@ -298,23 +299,26 @@ function buildLinks(draft: EditorDocument): Array<Link> {
   let links: Array<Link> = []
 
   visit(draft.content[0], isFlowContent, (block) => {
-    visit(block, isEmbed, (node) => {
-      let [documentId, version, blockId] = getEmbedIds(node.url)
-      console.log('ids: ', {documentId, version, blockId})
+    visit(
+      block,
+      (node) => (isEmbed(node) || isLink(node)) && node.url.includes(MINTTER_LINK_PREFIX),
+      (node) => {
+        let [documentId, version, blockId] = getEmbedIds((node as Embed | Link).url)
 
-      links.push({
-        target: {
-          documentId,
-          version,
-          blockId,
-        },
-        source: {
-          blockId: block.id,
-          version: '',
-          documentId: '',
-        },
-      })
-    })
+        links.push({
+          target: {
+            documentId,
+            version,
+            blockId,
+          },
+          source: {
+            blockId: block.id,
+            version: '',
+            documentId: '',
+          },
+        })
+      },
+    )
   })
 
   return links
