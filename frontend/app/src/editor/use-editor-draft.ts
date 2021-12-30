@@ -43,7 +43,13 @@ interface DraftEditorMachineProps {
   loadAnnotations: ActionFunction<DraftEditorMachineContext, DraftEditorMachineEvent>
 }
 
-const defaultContent = [group([statement({id: createId()}, [paragraph([text('')])])])]
+const defaultContent = [
+  group([
+    statement({id: createId()}, [paragraph([text('')])]),
+    {type: 'extension:twitter', children: [text('')]},
+    {type: 'extension:youtube', children: [text('')]},
+  ]),
+]
 /* eslint-disable */
 const draftEditorMachine = ({afterPublish, loadAnnotations, client}: DraftEditorMachineProps) =>
   createMachine<DraftEditorMachineContext, any>(

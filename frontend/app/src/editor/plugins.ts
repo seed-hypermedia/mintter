@@ -3,6 +3,7 @@ import {createCodePlugin} from './code'
 import {createColorPlugin} from './color'
 import {createEmbedPlugin} from './embed'
 import {createEmphasisPlugin} from './emphasis'
+import {extensionsPlugin} from './extensions-plugin'
 import {createGroupPlugin} from './group'
 import {createHeadingPlugin} from './heading'
 import {createInlineCodePlugin} from './inline-code'
@@ -51,4 +52,5 @@ export const plugins: EditorPlugin[] = [
   createTabPlugin(),
   createMarkdownShortcutsPlugin(),
   createPlainTextPastePlugin(),
+  extensionsPlugin(['./ext_twitter.wasm', './ext_youtube.wasm']),
 ]

@@ -22,8 +22,6 @@ export function ConnectionsSection() {
 
   let title = `Connections (${data.length})`
 
-  console.log('connection section: ', {data, info})
-
   if (status == 'error') {
     console.error('Connections error: ', error)
     return <Text>ERROR</Text>
