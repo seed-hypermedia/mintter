@@ -3,10 +3,10 @@ name: Rust Clippy
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
     paths:
       - ".github/workflows/lint.yml"
       - "desktop/**"
