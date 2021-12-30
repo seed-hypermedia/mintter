@@ -7,7 +7,7 @@ use crate::Error;
 
 #[async_trait]
 pub trait ModuleLoader: Debug {
-    async fn load(&self, specifier: &str) -> Result<Vec<u8>, Error>;
+  async fn load(&self, specifier: &str) -> Result<Vec<u8>, Error>;
 }
 
 #[derive(Debug)]
@@ -16,29 +16,29 @@ pub struct NoopModuleLoader;
 
 #[async_trait]
 impl ModuleLoader for NoopModuleLoader {
-    async fn load(&self, _specifier: &str) -> Result<Vec<u8>, Error> {
-        Err(Error::ModuleLoadingDisabled)
-    }
+  async fn load(&self, _specifier: &str) -> Result<Vec<u8>, Error> {
+    Err(Error::ModuleLoadingDisabled)
+  }
 }
 
 #[derive(Debug)]
 pub struct FsModuleLoader {
-    dir: Dir,
+  dir: Dir,
 }
 
 impl FsModuleLoader {
-    pub fn new(dir: Dir) -> Self {
-        Self { dir }
-    }
+  pub fn new(dir: Dir) -> Self {
+    Self { dir }
+  }
 }
 
 #[async_trait]
 impl ModuleLoader for FsModuleLoader {
-    #[instrument(level = "trace")]
-    async fn load(&self, specifier: &str) -> Result<Vec<u8>, Error> {
-        let mut file = self.dir.open(specifier)?;
-        let mut buf = Vec::new();
-        file.read_to_end(&mut buf)?;
-        Ok(buf)
-    }
+  #[instrument(level = "trace")]
+  async fn load(&self, specifier: &str) -> Result<Vec<u8>, Error> {
+    let mut file = self.dir.open(specifier)?;
+    let mut buf = Vec::new();
+    file.read_to_end(&mut buf)?;
+    Ok(buf)
+  }
 }
