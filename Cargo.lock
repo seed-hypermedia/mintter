@@ -567,6 +567,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "common"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "const-sha1"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1095,6 +1103,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7531096570974c3a9dcf9e4b8e1cede1ec26cf5046219fb3b9d897503b9be59"
 
 [[package]]
+name = "ext-twitter"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "serde_json",
+]
+
+[[package]]
+name = "ext-youtube"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "serde_json",
+]
+
+[[package]]
 name = "extension-host"
 version = "0.1.0"
 dependencies = [
@@ -1103,6 +1127,7 @@ dependencies = [
  "bitflags",
  "cached",
  "cap-std 0.22.0",
+ "common",
  "env_logger 0.9.0",
  "futures-util",
  "semver 1.0.4",
@@ -1112,7 +1137,6 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
- "url",
  "wasi-common",
  "wasmtime",
  "wasmtime-wasi",
@@ -2122,6 +2146,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "cap-std 0.22.0",
+ "common",
+ "env_logger 0.9.0",
  "extension-host",
  "log",
  "serde",

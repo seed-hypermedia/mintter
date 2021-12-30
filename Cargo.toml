@@ -1,5 +1,5 @@
 [workspace]
-members = ["desktop/app", "desktop/extension-host"]
+members = ["desktop/app", "desktop/extension-host", "desktop/ext-twitter", "desktop/ext-youtube", "desktop/common"]
 
 # default to small, optimized workspace release binaries
 [profile.release]

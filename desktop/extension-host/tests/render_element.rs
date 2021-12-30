@@ -1,8 +1,6 @@
 use cap_std::fs::Dir;
-use extension_host::{
-  hooks::render_element::HostExt, Element, FsModuleLoader, Host, RenderElementAttributes,
-  RenderElementProps,
-};
+use common::{Element, RenderElementAttributes, RenderElementProps};
+use extension_host::{hooks::render_element::HostExt, FsModuleLoader, Host};
 use tracing_subscriber;
 
 #[tokio::test]

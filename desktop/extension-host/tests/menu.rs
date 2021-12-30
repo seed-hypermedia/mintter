@@ -1,5 +1,6 @@
 use cap_std::fs::Dir;
-use extension_host::{hooks::menu::HostExt, FsModuleLoader, Host, MenuItem, MenuKind};
+use common::{MenuItem, MenuKind};
+use extension_host::{hooks::menu::HostExt, FsModuleLoader, Host};
 use tracing_subscriber;
 
 #[tokio::test]
