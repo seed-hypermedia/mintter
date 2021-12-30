@@ -64,7 +64,7 @@ func TestModifyWallets(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, firstWallet, defaultWallet)
 	err = alice.DeleteWallet(ctx, defaultWallet.ID)
+	require.NoError(t, err)
 	_, err = alice.GetDefaultWallet(ctx)
 	require.NoError(t, err)
-
 }

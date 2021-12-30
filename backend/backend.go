@@ -413,6 +413,18 @@ func (srv *backend) InitObject(ctx context.Context, aid AccountID, did DeviceID,
 		}
 		defer release()
 		conn = c
+
+		if err := sqlitex.Exec(conn, "BEGIN IMMEDIATE TRANSACTION", nil); err != nil {
+			return err
+		}
+
+		defer func() {
+			if err != nil {
+				err = multierr.Append(err, sqlitex.Exec(conn, "ROLLBACK", nil))
+			} else {
+				err = sqlitex.Exec(conn, "COMMIT", nil)
+			}
+		}()
 	}
 
 	defer sqlitex.Save(conn)(&err)

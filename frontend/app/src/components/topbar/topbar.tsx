@@ -136,7 +136,7 @@ function TopbarActions() {
   const [, setLocation] = useState(() => routeLocation)
   const client = useQueryClient()
   const service = useSidepanel()
-  const {match: isDocumentOpen} = useRoute<{docId: string}>(['/p/:docId', '/editor/:docId'])
+  const {match: isDocumentOpen} = useRoute<{docId: string; version: string}>(['/p/:docId/:version', '/editor/:docId'])
 
   function toggleSidepanel() {
     service.send('SIDEPANEL_TOGGLE')

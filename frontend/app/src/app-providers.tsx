@@ -27,7 +27,6 @@ export function AppProviders({children}: PropsWithChildren<unknown>) {
             <Hydrate state={dehydrateState}>
               {children}
               <Toaster position="bottom-right" />
-              {/** @TODO Uncommenting this causes an error with react-query. We should fix this */}
               <ReactQueryDevtools initialIsOpen={false} />
             </Hydrate>
           </QueryClientProvider>

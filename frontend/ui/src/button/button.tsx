@@ -171,5 +171,4 @@ export const buttonStyles = css({
 export const Button = styled('button', buttonStyles)
 
 export type ButtonVariants = Stitches.VariantProps<typeof Button>
-// TODO: when passing `as` to component it complains
 export type ButtonProps = ButtonVariants

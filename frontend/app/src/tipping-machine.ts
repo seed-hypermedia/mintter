@@ -42,6 +42,7 @@ export const tippingMachine = tippingModel.createMachine({
   },
   states: {
     close: {
+      id: 'close',
       on: {
         OPEN: [
           {
@@ -54,6 +55,9 @@ export const tippingMachine = tippingModel.createMachine({
       initial: 'setAmount',
       on: {
         CLOSE: 'close',
+      },
+      onDone: {
+        target: 'close',
       },
       states: {
         setAmount: {
@@ -175,7 +179,7 @@ export const tippingMachine = tippingModel.createMachine({
                   sendBack(tippingModel.events.REPORT_PAID())
                 })
                 .catch((err) => {
-                  console.log('ERROR: ', err)
+                  console.log('PAYMENT ERROR: ', err)
 
                   sendBack(
                     tippingModel.events.REPORT_PAID_ERRORED(err.response.errors.map((e: any) => e.message).join(' | ')),
@@ -185,7 +189,7 @@ export const tippingMachine = tippingModel.createMachine({
           },
           on: {
             REPORT_PAID: {
-              target: 'paid',
+              target: 'success',
             },
             REPORT_PAID_ERRORED: {
               target: 'errored',
@@ -194,6 +198,13 @@ export const tippingMachine = tippingModel.createMachine({
                   errorMessage: (_, event) => event.errorMessage,
                 }),
               ],
+            },
+          },
+        },
+        success: {
+          after: {
+            3000: {
+              target: 'paid',
             },
           },
         },

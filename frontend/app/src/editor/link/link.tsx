@@ -40,8 +40,8 @@ export const Link = ({element, ...props}: PropsWithChildren<{element: LinkType}>
 
   async function handleClick() {
     if (isMintterLink(element.url)) {
-      const [pubId] = getEmbedIds(element.url)
-      setLocation(`/p/${pubId}`)
+      const [pubId, version] = getEmbedIds(element.url)
+      setLocation(`/p/${pubId}/${version}`)
     } else {
       open(element.url)
     }
@@ -123,14 +123,6 @@ export interface InsertLinkOptions {
 }
 
 export function insertLink(editor: Editor, {url, selection = editor.selection, wrap = false}: InsertLinkOptions): void {
-  console.log('insertLink: ', url, selection, wrap)
-
-  /*
-   * @todo Refactor wrapLink
-   * @body this code below is the same as the `wrapLink` implementation just that here we are passing the current selection. I tried to refactor it but got errors.
-   *
-   * Either you can paste a link at it will wrap it in a link component or create a link from the link modal. both does not wotk if you use wrapLink here.
-   */
   if (isLinkActive(editor)) {
     unwrapLink(editor)
   }
@@ -195,6 +187,7 @@ function isMintterLink(text: string) {
 
 function wrapMintterLink(editor: Editor, url: string) {
   const {selection} = editor
+
   const newEmbed: Embed = embed({url}, [text('')])
   // const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])
 

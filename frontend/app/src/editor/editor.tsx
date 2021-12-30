@@ -1,7 +1,7 @@
 import {FlowContent, MttastContent} from '@mintter/mttast'
 import {Box} from '@mintter/ui/box'
 import {useActor} from '@xstate/react'
-import {PropsWithChildren, Suspense, useEffect, useMemo} from 'react'
+import {PropsWithChildren, Suspense, useMemo} from 'react'
 import type {Descendant, Editor as EditorType} from 'slate'
 import {Editable, Slate} from 'slate-react'
 import {EditorPlugin} from '.'
@@ -43,10 +43,6 @@ export function Editor({
   const hoverService = useHover()
   const [, hoverSend] = useActor(hoverService)
 
-  useEffect(() => {
-    console.log('something!', value)
-  }, [value])
-
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
       <Suspense fallback={'loading'}>
@@ -65,7 +61,7 @@ export function Editor({
     )
   }
 
-  if (mode == EditorMode.Publication) {
+  if (mode == EditorMode.Publication || mode == EditorMode.Discussion) {
     return (
       <Suspense fallback={'loading'}>
         <Box
@@ -76,7 +72,7 @@ export function Editor({
         >
           <Slate editor={_editor} value={value} onChange={onChange}>
             <Editable
-              readOnly={_editor.readOnly}
+              readOnly={true}
               data-testid="editor"
               renderElement={renderElement}
               renderLeaf={renderLeaf}

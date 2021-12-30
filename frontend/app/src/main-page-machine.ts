@@ -1,4 +1,11 @@
-import {Document, listPublications, ListPublicationsResponse, Publication} from '@mintter/client'
+import {
+  Document,
+  listDrafts,
+  ListDraftsResponse,
+  listPublications,
+  ListPublicationsResponse,
+  Publication,
+} from '@mintter/client'
 import {ActorRefFrom, createMachine, spawn} from 'xstate'
 import {createModel} from 'xstate/lib/model'
 import {sidebarMachine} from './components/sidebar/sidebar-machine'
@@ -14,6 +21,7 @@ let filesModel = createModel(
   {
     events: {
       'REPORT.DATA.SUCCESS': (data: Array<PublicationRef>) => ({data}),
+      RECONCILE: () => ({}),
     },
   },
 )
@@ -45,7 +53,62 @@ export let filesMachine = filesModel.createMachine({
         },
       },
     },
-    ready: {},
+    ready: {
+      on: {
+        RECONCILE: 'idle',
+      },
+    },
+  },
+})
+
+export type DraftRef = Document & {
+  ref: string // TODO: ActorRefFrom<ReturnType<typeof createDraftMachine>>
+}
+
+let draftsModel = createModel(
+  {
+    data: [] as Array<DraftRef>,
+  },
+  {
+    events: {
+      'REPORT.DATA.SUCCESS': (data: Array<DraftRef>) => ({data}),
+      RECONCILE: () => ({}),
+    },
+  },
+)
+
+export let draftsMachine = draftsModel.createMachine({
+  initial: 'idle',
+  context: draftsModel.initialContext,
+  states: {
+    idle: {
+      invoke: [
+        {
+          src: () => (sendBack) => {
+            listDrafts().then(function filesResponse(response: ListDraftsResponse) {
+              let items = response.documents.map((doc) => ({
+                ...doc,
+                ref: 'TODO',
+              }))
+              sendBack(draftsModel.events['REPORT.DATA.SUCCESS'](items))
+            })
+          },
+        },
+      ],
+      on: {
+        'REPORT.DATA.SUCCESS': {
+          actions: draftsModel.assign({
+            data: (_, event) => event.data,
+          }),
+          target: 'ready',
+        },
+      },
+    },
+    ready: {
+      on: {
+        RECONCILE: 'idle',
+      },
+    },
   },
 })
 
@@ -60,7 +123,7 @@ let publicationModel = createModel(
   },
 )
 
-function createPublicationMachine(publication: Publication) {
+export function createPublicationMachine(publication: Publication) {
   return publicationModel.createMachine({
     id: `publication-${publication.document?.id}`,
     context: {
@@ -73,6 +136,7 @@ export let mainPageMachine = createMachine({
   initial: 'idle',
   context: () => ({
     files: spawn(filesMachine, 'files'),
+    drafts: spawn(draftsMachine, 'drafts'),
     sidebar: spawn(sidebarMachine, 'sidebar'),
   }),
   states: {

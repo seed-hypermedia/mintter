@@ -95,11 +95,6 @@ function ConnectionsPrompt() {
     </Prompt.Root>
   )
 }
-
-/*
- * @todo context menu styles copied
- * @body This is copied from the context menu file
- */
 const slideUpAndFade = keyframes({
   '0%': {opacity: 0, transform: 'translateY(2px)'},
   '100%': {opacity: 1, transform: 'translateY(0)'},

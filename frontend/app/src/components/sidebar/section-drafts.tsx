@@ -1,23 +1,23 @@
+import {useDrafts} from 'frontend/app/src/main-page-context'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Link} from 'wouter'
-import {useDraftList} from '../../hooks'
 import {Section} from './section'
 import {SectionError} from './section-error'
 import {SectionItem} from './section-item'
 
 export function DraftsSection() {
-  const {data = [], status} = useDraftList()
+  const drafts = useDrafts()
 
   return (
     <Section title="Drafts" open={true} disabled={status != 'success'}>
-      {!!data.length ? (
+      {!!drafts.length ? (
         <ErrorBoundary
           FallbackComponent={SectionError}
           onReset={() => {
             window.location.reload()
           }}
         >
-          {data.map(({document}) => (
+          {drafts.map((document) => (
             <Link key={document?.id} href={`/editor/${document?.id}`}>
               <SectionItem isDraft href={`/editor/${document?.id}`} document={document} />
             </Link>

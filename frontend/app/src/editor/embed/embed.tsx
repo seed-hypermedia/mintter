@@ -20,12 +20,12 @@ export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{emb
   const sidepanelService = useSidepanel()
   const bookmarksService = useBookmarksService()
   const [, setLocation] = useLocation()
-  const [docId, blockId] = getEmbedIds(embed.url)
+  const [docId, version, blockId] = getEmbedIds(embed.url)
 
   function addBookmark(docId: string, blockId: FlowContent['id']) {
     bookmarksService.send({
       type: 'ADD_BOOKMARK',
-      link: `${MINTTER_LINK_PREFIX}${docId}/${blockId}`,
+      link: `${MINTTER_LINK_PREFIX}${docId}/${version}/${blockId}`,
     })
   }
 
@@ -35,8 +35,8 @@ export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{emb
   }
 
   function onGoToPublication(url: string) {
-    const [publicationId] = getEmbedIds(url)
-    setLocation(`/p/${publicationId}`)
+    const [publicationId, version] = getEmbedIds(url)
+    setLocation(`/p/${publicationId}/${version}`)
   }
 
   function onOpenInSidepanel() {
@@ -51,14 +51,6 @@ export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{emb
         </EmbedEditor>
       </ContextMenu.Trigger>
       <ContextMenu.Content>
-        <ContextMenu.Item onSelect={onOpenInSidepanel}>
-          <Icon name="Sidepanel" size="1" />
-          <Text size="2">Open Embed in Sidepanel</Text>
-        </ContextMenu.Item>
-        <ContextMenu.Item onSelect={() => onGoToPublication(embed.url)}>
-          <Icon name="ArrowTopRight" size="1" />
-          <Text size="2">Open Embed in main Panel</Text>
-        </ContextMenu.Item>
         <ContextMenu.Item onSelect={onCopy}>
           <Icon name="Copy" size="1" />
           <Text size="2">Copy Embed Reference</Text>
@@ -66,10 +58,15 @@ export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{emb
         <ContextMenu.Item
           onSelect={() => {
             addBookmark(docId, blockId)
+            sidepanelService.send('SIDEPANEL_OPEN')
           }}
         >
           <Icon name="ArrowChevronDown" size="1" />
           <Text size="2">Add to Bookmarks</Text>
+        </ContextMenu.Item>
+        <ContextMenu.Item onSelect={() => onGoToPublication(embed.url)}>
+          <Icon name="ArrowTopRight" size="1" />
+          <Text size="2">Open Embed in main Panel</Text>
         </ContextMenu.Item>
       </ContextMenu.Content>
     </ContextMenu.Root>

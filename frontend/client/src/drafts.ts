@@ -41,9 +41,9 @@ export function deleteDraft(documentId: string, rpc?: GrpcClient) {
  * @param rpc
  * @returns
  */
-export function updateDraft(entry: Document, rpc?: GrpcClient): Promise<Document> {
+export function updateDraft(entry: Document, links: any[] = [], rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
-  const request = UpdateDraftRequest.fromPartial({document: entry})
+  const request = UpdateDraftRequest.fromPartial({document: entry, links})
   return new DraftsClientImpl(rpc).updateDraft(request)
 }
 

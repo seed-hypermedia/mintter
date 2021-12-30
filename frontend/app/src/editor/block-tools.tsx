@@ -159,9 +159,6 @@ export function BlockTools({element}: {element: FlowContent}) {
   ) : null
 }
 
-/*
- * @todo add correct types to builder function
- */
 /* eslint-disable */
 function setType(fn: any) {
   return function setToStatementType(editor: Editor, element: MttastContent, at: Path) {
