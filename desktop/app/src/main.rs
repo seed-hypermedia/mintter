@@ -7,7 +7,7 @@
 use std::str::FromStr;
 use tauri::Manager;
 use tauri_plugin_log::{LogTarget, LoggerBuilder};
-use tauri_plugin_store::StorePlugin;
+use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
 
 mod daemon;
 mod extensions;
@@ -35,7 +35,7 @@ async fn main() {
   tauri::Builder::default()
     .plugin(log_plugin)
     .plugin(daemon::Plugin::default())
-    .plugin(StorePlugin::default())
+    .plugin(StorePluginBuilder::default().build())
     .plugin(extensions::Plugin::default())
     .menu(menu::get_menu())
     .setup(|app| {
