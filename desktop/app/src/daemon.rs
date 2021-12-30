@@ -85,7 +85,7 @@ impl<R: Runtime> TauriPlugin<R> for Plugin<R> {
 
     let cli_config = app.config().tauri.cli.clone().unwrap();
 
-    let flags = get_matches(&cli_config)
+    let flags = get_matches(&cli_config, app.package_info())
       .ok()
       .and_then(|matches| {
         let str = matches.args.get("daemon-flags")?.value.as_str()?;
