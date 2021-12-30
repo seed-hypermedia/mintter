@@ -5,12 +5,12 @@ use tauri::{
     cli::get_matches,
     process::{Command, CommandEvent},
   },
-  plugin::{Plugin, Result as PluginResult},
+  plugin::{Plugin as TauriPlugin, Result as PluginResult},
   AppHandle, Invoke, Manager, Runtime,
 };
 use tokio::sync::mpsc::{self, Sender};
 
-pub struct DaemonPlugin<R: Runtime> {
+pub struct Plugin<R: Runtime> {
   invoke_handler: Box<dyn Fn(Invoke<R>) + Send + Sync>,
 }
 
@@ -65,17 +65,15 @@ pub fn stop_daemon(connection: tauri::State<'_, Connection>) {
   *lock = None;
 }
 
-impl<R: Runtime> DaemonPlugin<R> {
-  // you can add configuration fields here,
-  // see https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
-  pub fn new() -> Self {
+impl<R: Runtime> Default for Plugin<R> {
+  fn default() -> Self {
     Self {
       invoke_handler: Box::new(tauri::generate_handler![]),
     }
   }
 }
 
-impl<R: Runtime> Plugin<R> for DaemonPlugin<R> {
+impl<R: Runtime> TauriPlugin<R> for Plugin<R> {
   /// The plugin name. Must be defined and used on the `invoke` calls.
   fn name(&self) -> &'static str {
     "daemon"

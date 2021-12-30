@@ -10,7 +10,7 @@ use tauri_plugin_log::{LogTarget, LoggerBuilder};
 use tauri_plugin_store::StorePlugin;
 
 mod daemon;
-mod extension_host;
+mod extensions;
 mod menu;
 mod system_tray;
 
@@ -27,16 +27,16 @@ async fn main() {
 
     let filter = std::env::var("RUST_LOG")
       .map(|str| log::LevelFilter::from_str(&str).expect("failed to construct level filter"))
-      .unwrap_or(log::LevelFilter::Debug);
+      .unwrap_or(log::LevelFilter::Info);
 
     LoggerBuilder::new(targets).level(filter).build()
   };
 
   tauri::Builder::default()
     .plugin(log_plugin)
-    .plugin(daemon::DaemonPlugin::new())
+    .plugin(daemon::Plugin::default())
     .plugin(StorePlugin::default())
-    .plugin(extension_host::PluginHost::default())
+    .plugin(extensions::Plugin::default())
     .menu(menu::get_menu())
     .setup(|app| {
       daemon::start_daemon(
