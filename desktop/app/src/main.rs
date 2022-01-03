@@ -51,7 +51,8 @@ async fn main() {
 
   // During testing the frontend isn't build, so `tauri::generate_context!()` would fail.
   if !cfg!(test) {
-    app.run(tauri::generate_context!())
-    .expect("error while running tauri application");
+    app
+      .run(tauri::generate_context!())
+      .expect("error while running tauri application");
   }
 }
