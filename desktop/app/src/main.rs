@@ -32,7 +32,7 @@ async fn main() {
     LoggerBuilder::new(targets).level(filter).build()
   };
 
-  tauri::Builder::default()
+  let app = tauri::Builder::default()
     .plugin(log_plugin)
     .plugin(daemon::Plugin::default())
     .plugin(StorePluginBuilder::default().build())
@@ -47,7 +47,11 @@ async fn main() {
       Ok(())
     })
     .system_tray(system_tray::get_tray())
-    .on_system_tray_event(system_tray::event_handler)
-    .run(tauri::generate_context!())
+    .on_system_tray_event(system_tray::event_handler);
+
+  // During testing the frontend isn't build, so `tauri::generate_context!()` would fail.
+  if !cfg!(test) {
+    app.run(tauri::generate_context!())
     .expect("error while running tauri application");
+  }
 }
