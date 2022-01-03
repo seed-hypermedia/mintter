@@ -1,7 +1,5 @@
 use crate::daemon;
-use tauri::Manager;
-use tauri::{AppHandle, SystemTrayEvent};
-use tauri::{CustomMenuItem, SystemTray, SystemTrayMenu};
+use tauri::{AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 
 pub fn get_tray() -> SystemTray {
   let tray = SystemTray::new();

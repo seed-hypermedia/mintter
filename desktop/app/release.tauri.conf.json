@@ -4,9 +4,9 @@
     "version": "0.1.0"
   },
   "build": {
-    "distDir": "../../../bazel-bin/frontend/app/dist/static",
+    "distDir": "../../bazel-bin/frontend/app/dist",
     "devPath": "http://localhost:3000",
-    "beforeDevCommand": "yarn dev",
+    "beforeDevCommand": "cd ../../frontend/app && yarn dev",
     "beforeBuildCommand": "bazel build //frontend:app //:mintterd",
     "withGlobalTauri": false
   },
@@ -15,9 +15,15 @@
       "active": true,
       "targets": "all",
       "identifier": "com.mintter.dev",
-      "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
       "resources": [],
-      "externalBin": ["../../../bazel-bin/mintterd"],
+      "externalBin": ["../../bazel-bin/mintterd"],
       "copyright": "",
       "category": "DeveloperTool",
       "shortDescription": "",

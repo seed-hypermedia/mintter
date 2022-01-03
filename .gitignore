@@ -42,3 +42,6 @@ storybook-static
 
 # Cargo
 target
+
+# JetBrains project files
+.idea/
