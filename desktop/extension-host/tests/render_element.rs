@@ -1,7 +1,6 @@
 use cap_std::fs::Dir;
 use common::{Element, RenderElementAttributes, RenderElementProps};
 use extension_host::{hooks::render_element::HostExt, FsModuleLoader, Host};
-use tracing_subscriber;
 
 #[tokio::test]
 pub async fn main() -> anyhow::Result<()> {

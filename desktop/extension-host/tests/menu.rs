@@ -1,7 +1,6 @@
 use cap_std::fs::Dir;
 use common::{MenuItem, MenuKind};
 use extension_host::{hooks::menu::HostExt, FsModuleLoader, Host};
-use tracing_subscriber;
 
 #[tokio::test]
 pub async fn main() -> anyhow::Result<()> {
