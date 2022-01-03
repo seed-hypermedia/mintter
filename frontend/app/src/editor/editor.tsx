@@ -35,11 +35,11 @@ export function Editor({
   editor,
   plugins = defaultPlugins,
 }: PropsWithChildren<EditorProps>) {
-  const _editor = editor ?? useMemo(() => buildEditorHook(plugins, mode), [mode])
-  const renderElement = useMemo(() => buildRenderElementHook(plugins, _editor), [mode])
-  const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, _editor), [mode])
-  const decorate = useMemo(() => buildDecorateHook(plugins, _editor), [mode])
-  const eventHandlers = useMemo(() => buildEventHandlerHooks(plugins, _editor), [mode])
+  const _editor = useMemo(() => editor ?? buildEditorHook(plugins, mode), [editor, plugins, mode])
+  const renderElement = useMemo(() => buildRenderElementHook(plugins, _editor), [plugins, _editor])
+  const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, _editor), [plugins, _editor])
+  const decorate = useMemo(() => buildDecorateHook(plugins, _editor), [plugins, _editor])
+  const eventHandlers = useMemo(() => buildEventHandlerHooks(plugins, _editor), [plugins, _editor])
   const hoverService = useHover()
   const [, hoverSend] = useActor(hoverService)
 
