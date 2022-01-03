@@ -71,8 +71,6 @@ jobs:
           restore-keys: |
             ${{ matrix.os }}-cargo-build-target-${{ hashFiles('**/Cargo.toml') }}
             ${{ matrix.os }}-cargo-build-target-
-      - name: Mock dist directory
-        run: mkdir -r bazel-bin/frontend/app/dist
 
       - name: Run tests
         uses: actions-rs/cargo@v1

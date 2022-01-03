@@ -71,8 +71,6 @@ jobs:
           restore-keys: |
             ubuntu-latest-cargo-build-target-${{ hashFiles('**/Cargo.toml') }}
             ubuntu-latest-cargo-build-target-
-      - name: Mock dist directory
-        run: mkdir -r bazel-bin/frontend/app/dist
 
       - uses: actions-rs/clippy-check@v1
         with:
