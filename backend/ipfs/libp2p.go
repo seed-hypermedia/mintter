@@ -144,6 +144,13 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.A
 		return nil
 	})
 
+	mustConnMgr := func(mgr *connmgr.BasicConnMgr, err error) *connmgr.BasicConnMgr {
+		if err != nil {
+			panic(err)
+		}
+		return mgr
+	}
+
 	o := []libp2p.Option{
 		libp2p.Identity(key),
 		libp2p.NoListenAddrs, // Users must explicitly start listening.
@@ -164,7 +171,9 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.A
 
 			return r, nil
 		}),
-		libp2p.ConnectionManager(connmgr.NewConnManager(50, 100, 10*time.Minute)),
+		libp2p.ConnectionManager(mustConnMgr(connmgr.NewConnManager(50, 100,
+			connmgr.WithGracePeriod(10*time.Minute),
+		))),
 		TransportOpts,
 		libp2p.NATPortMap(),
 		libp2p.EnableNATService(),
