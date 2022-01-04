@@ -1,6 +1,7 @@
 use cap_std::{ambient_authority, fs::Dir};
 use common::{MenuItem, MenuKind, RenderElementProps, RenderLeafProps};
 use extension_host::{FsModuleLoader, Host};
+use log::info;
 use std::sync::Arc;
 use tauri::{plugin::Plugin as TauriPlugin, Invoke, Manager, Runtime, State};
 use tokio::sync::Mutex;
@@ -87,17 +88,14 @@ impl<R: Runtime> TauriPlugin<R> for Plugin<R> {
     app: &tauri::AppHandle<R>,
     _: serde_json::Value,
   ) -> tauri::plugin::Result<()> {
-    // let mut app_dir = app.path_resolver().app_dir().unwrap();
-    // app_dir.push("extensions");
+    let mut app_dir = app.path_resolver().app_dir().unwrap();
+    app_dir.push("extensions");
 
-    // std::fs::create_dir_all(app_dir.clone()).unwrap();
+    std::fs::create_dir_all(app_dir.clone()).unwrap();
 
-    // debug!("extension dir {:?}", app_dir);
+    info!("extension dir {:?}", app_dir);
 
-    let dir = Dir::open_ambient_dir(
-      "/Users/jonaskruckenberg/Documents/GitHub/mintter/target/wasm32-wasi/debug",
-      ambient_authority(),
-    )?;
+    let dir = Dir::open_ambient_dir(app_dir, ambient_authority())?;
     let host = Host::new(FsModuleLoader::new(dir));
 
     app.manage(PluginHostWrapper(Arc::new(Mutex::new(host))));
