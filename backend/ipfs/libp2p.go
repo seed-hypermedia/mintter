@@ -164,7 +164,7 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.A
 
 			return r, nil
 		}),
-		libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute)),
+		libp2p.ConnectionManager(connmgr.NewConnManager(50, 100, 10*time.Minute)),
 		TransportOpts,
 		libp2p.NATPortMap(),
 		libp2p.EnableNATService(),
