@@ -14,11 +14,7 @@
     "lint": "eslint .",
     "format": "yarn prettier --write .",
     "validate": "yarn lint && yarn format",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook",
-    "docs": "typedoc",
-    "test": "vite-jest --no-cache",
-    "test:w": "yarn test --watch"
+    "docs": "typedoc"
   },
   "dependencies": {
     "@mintter/client": "^0.2.1",
@@ -79,11 +75,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",
-    "@storybook/addon-actions": "^6.3.9",
-    "@storybook/addon-essentials": "^6.3.9",
-    "@storybook/addon-links": "^6.3.9",
-    "@storybook/core-common": "^6.3.11",
-    "@storybook/react": "^6.3.9",
     "@tauri-apps/cli": "=1.0.0-beta.10",
     "@types/is-url": "^1.2.30",
     "@types/react": "^17.0.37",
@@ -100,17 +91,12 @@
     "eslint-plugin-react": "^7.27.1",
     "eslint-plugin-react-hooks": "^4.3.0",
     "http-server": "^13.0.2",
-    "identity-obj-proxy": "^3.0.0",
-    "jest": "^27.4.3",
-    "jest-environment-jsdom": "^27.4.3",
     "prettier": "^2.5.1",
     "react-async-ssr": "^0.7.2",
-    "storybook-builder-vite": "^0.1.0",
     "typedoc": "^0.22.5",
     "typedoc-plugin-markdown": "^3.11.3",
     "typescript": "4.4.4",
     "vite": "^2.7.5",
-    "vite-jest": "^0.1.3",
     "vite-react-jsx": "^1.1.2",
     "vite-tsconfig-paths": "^3.3.17"
   }
