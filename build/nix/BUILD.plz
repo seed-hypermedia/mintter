@@ -1,0 +1,66 @@
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+)
+
+def nixpkgs_binary(
+        name: str,
+        entrypoint: str = "$PKG/nixpkgs.nix",
+        nix_attribute: str = None,
+        bin: str = None):
+    """
+    Exposes a binary from Nix to the build system.
+
+    Args:
+        name: name of the target.
+        entrypoint: nixpkgs entrypoint.
+        nix_attribute: nix attribute to build. Same as name if not specified.
+        bin: name of the resulting binary to expose. Same as name if not specified.
+    Returns:
+        Build rule.
+    """
+    if not nix_attribute:
+        nix_attribute = name
+    if not bin:
+        bin = name
+
+    return build_rule(
+        name = name,
+        srcs = [":srcs"],
+        outs = [name],
+        binary = True,
+        cmd = """
+set -e
+HOME=$(eval echo ~$(whoami))
+STORE_PATH="$($HOME/.nix-profile/bin/nix-build --no-out-link $entrypoint -A $nix_attribute)"
+cat > $OUT <<EOF
+#!/bin/sh
+exec $STORE_PATH/bin/$bin $(echo '$@')
+EOF
+""",
+        env = {
+            "nix_attribute": nix_attribute,
+            "entrypoint": entrypoint,
+            "bin": bin,
+        },
+        output_is_complete = True,
+        visibility = ["PUBLIC"],
+    )
+
+nixpkgs_binary(
+    name = "go",
+)
+
+nixpkgs_binary(
+    name = "md5sum",
+    nix_attribute = "coreutils",
+)
+
+nixpkgs_binary(
+    name = "yarn",
+)
+
+nixpkgs_binary(
+    name = "protoc",
+    nix_attribute = "protobuf",
+)

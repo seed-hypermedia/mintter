@@ -352,7 +352,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../../graphql/schema.graphql", Input: `"""
+	{Name: "./schema.graphql", Input: `"""
 Built-in directive for Go's gqlgen library.
 """
 directive @goModel(

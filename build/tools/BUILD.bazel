@@ -1,9 +1,0 @@
-load("//build:rules.bzl", "executable")
-
-package(default_visibility = ["//visibility:public"])
-
-executable(
-    name = "cachehash",
-    srcs = glob(["cachehash/**"]),
-    cmd = "cd cachehash && go build -o $TARGET_OUT_DIR/cachehash .",
-)

@@ -1,8 +1,0 @@
-load("//build:rules.bzl", "go_tool")
-
-package(default_visibility = ["//visibility:public"])
-
-go_tool(
-    name = "protoc-gen-go",
-    go_pkg = "google.golang.org/protobuf/cmd/protoc-gen-go",
-)

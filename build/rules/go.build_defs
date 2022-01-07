@@ -1,0 +1,107 @@
+def gomod(
+        name: str,
+        srcs = ["go.mod", "go.sum"],
+        deps = [],
+        labels = [],
+        workdir = "",
+        visibility: list = None):
+    """
+    Downloads Go dependencies specified in the go.mod file.
+    """
+
+    fg = filegroup(
+        name = name,
+        tag = "srcs",
+        srcs = srcs,
+    )
+
+    workdir = join_path(package_name(), workdir)
+
+    return build_rule(
+        name = name,
+        srcs = [fg],
+        exported_deps = [fg],
+        outs = ["gomod.sum"],
+        output_is_complete = False,
+        env = {
+            "workdir": workdir,
+        },
+        cmd = """
+HOME=$(eval echo ~$(whoami))
+TMPDIR="/tmp"
+cd $WORKSPACE/$workdir
+$TOOLS_GO mod download
+$TOOLS_MD5SUM go.sum > $OUT
+    """,
+        tools = {
+            "go": [CONFIG.GO_TOOL],
+            "md5sum": [CONFIG.MD5SUM_TOOL],
+        },
+        deps = deps,
+        labels = labels + ["gomod"],
+        visibility = visibility,
+    )
+
+def go_binary(
+        name: str,
+        srcs: list,
+        gomod: str,  # Label to the gomod rule.
+        out: str = None,  # Name of the output binary. Same as name if unspecified.
+        workdir: str = "",
+        cgo = False,
+        package = "./",  # Path to the Go package.
+        deps = [],
+        labels = [],
+        visibility: list = None):
+    """
+    Builds a Go binary.
+    """
+
+    if not out:
+        out = name
+
+    workdir = join_path(package_name(), workdir)
+
+    env = {
+        "CGO_ENABLED": "0" if not cgo else "1",
+        "workdir": workdir,
+    }
+
+    def pre_build(label):
+        if not has_label(gomod, "gomod"):
+            log.fatal("Attribute gomod must point to a gomod rule")
+
+    return build_rule(
+        name = name,
+        srcs = srcs,
+        pre_build = pre_build,
+        outs = [out],
+        cmd = """
+TMPDIR=/tmp
+HOME=$(eval echo ~$(whoami))
+cd $workdir
+$TOOLS_GO build -o $OUT {package}
+""".format(package = package),
+        binary = True,
+        building_description = "Building Go binary...",
+        output_is_complete = True,
+        tools = {
+            "go": [CONFIG.GO_TOOL],
+        },
+        env = env,
+        deps = deps + [gomod],
+        labels = labels + ["binary", "go_binary"],
+        visibility = visibility,
+    )
+
+# Mapping of Go's OS/ARCH to LLVM triple.
+LLVM_TRIPLES = {
+    "darwin/amd64": "x86_64-apple-darwin",
+    "darwin/arm64": "aarch64-apple-darwin",
+    "windows/amd64": "x86_64-pc-windows-msvc",
+    "linux/amd64": "x86_64-unknown-linux-gnu",
+    "linux/arm64": "aarch64-unknown-linux-gnu",
+}
+
+def target_platform_triple() -> str:
+    return LLVM_TRIPLES[CONFIG.TARGET_OS + "/" + CONFIG.TARGET_ARCH]

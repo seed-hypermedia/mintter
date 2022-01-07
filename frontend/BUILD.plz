@@ -1,0 +1,42 @@
+filegroup(
+    name = "srcs",
+    # TODO(burdiyan): if we'd have better conventions we could just glob the sources.
+    # But right now all the packages are a bit different from one another so we can't glob them easily.
+    srcs = [
+        "app/index.html",
+        "app/package.json",
+        "app/public",
+        "app/src",
+        "app/tsconfig.json",
+        "app/vite.config.ts",
+        "client/.generated",
+        "client/package.json",
+        "client/src",
+        "client/tsconfig.json",
+        "hast-mtt/index.ts",
+        "hast-mtt/package.json",
+        "hast-mtt/src",
+        "hast-mtt/tsconfig.json",
+        "mttast-builder/index.ts",
+        "mttast-builder/package.json",
+        "mttast-builder/tsconfig.json",
+        "mttast/package.json",
+        "mttast/src",
+        "mttast/tsconfig.json",
+        "ui/package.json",
+        "ui/src",
+        "ui/tsconfig.json",
+    ],
+)
+
+yarn_script(
+    name = "app",
+    srcs = [
+        ":srcs",
+        "//:tsconfig",
+    ],
+    outs = ["dist"],
+    script_name = "build:client",
+    workdir = "./app",
+    yarn_deps = "//:yarn",
+)

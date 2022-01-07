@@ -11,8 +11,13 @@
     "arcanis.vscode-zipfs",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "matklad.rust-analyzer"
+    "matklad.rust-analyzer",
+    "bazelbuild.vscode-bazel"
   ],
   // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
-  "unwantedRecommendations": ["rust-lang.rust"]
+  "unwantedRecommendations": [
+    "rust-lang.rust",
+    // This one doesn't work well or at all.
+    "rubymaniac.vscode-direnv"
+  ]
 }

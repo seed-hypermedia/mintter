@@ -1,11 +1,6 @@
 with import ./build/nix/nixpkgs.nix {};
 
 let
-  protoc-gen-ts_proto = writeShellScriptBin "protoc-gen-ts_proto" "yarn run protoc-gen-ts_proto";
-  gqlgen = writeShellScriptBin "gqlgen" "go run github.com/99designs/gqlgen";
-  protoc-gen-go = writeShellScriptBin "protoc-gen-go" "go run google.golang.org/protobuf/cmd/protoc-gen-go $@";
-  protoc-gen-go-vtproto = writeShellScriptBin "protoc-gen-go-vtproto" "go run github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto $@";
-  gorun = callPackage ./tools/gorun {};
   shellCommon = {
     tools = [
       bash
@@ -13,21 +8,14 @@ let
       findutils
       protobuf
       go
-      terraform
-      bazel-wrapper
       rustup
       rustfmt
       nodejs
       yarn
       tauri.cli
-      protoc-gen-ts_proto
-      protoc-gen-go
-      protoc-gen-go-vtproto
       golangci-lint
-      gorun
-      gqlgen
-      # pkg-config
-      # gcc
+      please
+      bazel-buildtools
     ];
     libs = [
       # libiconv
@@ -79,8 +67,10 @@ in
       shellCommon.libs
     ];
     shellHook = ''
-      export CURRENT_PLATFORM="$(go env GOOS)_$(go env GOARCH)"
-      export BAZEL_SH="$(which bash)"
       export CGO_ENABLED="1"
+      export WORKSPACE="$(pwd)"
+      mkdir -p plz-out
+      touch plz-out/go.mod
+      rm -rf bazel-* .bazel-cache bin
     '';
   }

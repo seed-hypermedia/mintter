@@ -1,0 +1,11 @@
+# This is a configuration file for graphql-codegen tool that generates TypeScript
+# code based on the GraphQL schema.
+
+overwrite: true
+schema:
+  - ./schema.graphql
+
+generates:
+  ../frontend/client/.generated/types.ts:
+    plugins:
+      - typescript

@@ -1,0 +1,37 @@
+# Installs Go dependencies.
+gomod(
+    name = "gomod",
+    visibility = [
+        "//backend/...",
+        "//build/tools/...",
+    ],
+)
+
+# Installs yarn dependencies.
+yarn_install(
+    name = "yarn",
+    visibility = [
+        "//build/tools/...",
+        "//frontend/...",
+    ],
+)
+
+# Exposes tsconfig to the frontend targets.
+filegroup(
+    name = "tsconfig",
+    srcs = [
+        "tsconfig.base.json",
+        "tsconfig.json",
+    ],
+    visibility = ["//frontend/..."],
+)
+
+# Exposes the tools file to the build tools targets.
+# This is a common convention in Go to have a file named tools.go
+# with blank imports of Go tools, so that `go mod tidy` doesn't remove
+# them from your `go.mod` file.
+export_file(
+    name = "tools.go",
+    src = "tools.go",
+    visibility = ["//build/tools/..."],
+)

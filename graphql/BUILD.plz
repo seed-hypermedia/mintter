@@ -1,0 +1,44 @@
+# Generates Go code from the GraphQL schema
+# using the gqlgen tool.
+generated(
+    name = "go",
+    srcs = [
+        "gqlgen.yml",
+        "schema.graphql",
+    ],
+    outs = [
+        "exec.go",
+        "models_gen.go",
+    ],
+    cmd = """
+export GOROOT="$($TOOLS_GO env GOROOT)"
+export PATH="$PATH:${GOROOT%/share/go}/bin"
+cd $PKG
+$TOOLS_GQLGEN generate
+""",
+    out_dir = "//backend/graphql/internal/generated",
+    tools = [
+        "//build/nix:go",
+        "//build/tools:gqlgen",
+    ],
+)
+
+# Generates TypeScript code from the GraphQL schema.
+generated(
+    name = "js",
+    srcs = [
+        "codegen.yml",
+        "schema.graphql",
+    ],
+    outs = [
+        "types.ts",
+    ],
+    cmd = """
+cd $PKG
+$TOOLS_GRAPHQL_CODEGEN
+""",
+    out_dir = "//frontend/client/.generated",
+    tools = [
+        "//build/tools:graphql-codegen",
+    ],
+)

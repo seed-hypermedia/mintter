@@ -1,8 +1,8 @@
 # Mintter
 
-This is main repository for the Mintter project.
+This is the main repository for the Mintter project.
 
-For more info about the architecture see [this](/docs/architecture/README.md).
+For more info see the [architecture diagram](/docs/architecture/README.md) (UPDATED 2022-01-07: it's quite out of date. A more recent document could be the [Mintter White Paper](https://www.notion.so/mintter/Mintter-Design-Document-bed174849106466cbec2a12dabddd701), although it also doesn't reflect the most up to date architecture, as everything is still in flux a bit.).
 
 ## Prerequisites
 
@@ -22,12 +22,12 @@ To setup Nix see [this](/docs/nix.md).
 
 We've been changing the way we build the project quite a few times already. Initially we've been using
 [redo](https://github.com/apenwarr/redo), then
-[GN](https://chromium.googlesource.com/chromium/src/tools/gn/+/48062805e19b4697c5fbd926dc649c78b6aaa138/README.md) and
-Ninja, and now we're using [Bazel](https://bazel.build).
+[GN](https://chromium.googlesource.com/chromium/src/tools/gn/+/48062805e19b4697c5fbd926dc649c78b6aaa138/README.md), then
+[Bazel](https://bazel.build), and now we're using [Please](https://please.build).
 
-But don't be confused, we're not using Bazel in a conventional way.
+Yep, that's quite a lot of change, but right now it seems like the developer experience is quite good, and the project can be built in just a few simple commands, having the fewest number of tools preinstalled. Also @burdiyan is a build systems nerd. Reach out to @burdiyan for more info, or look around the `BUILD.plz` and the `build` directory.
 
-Reach out to @burdiyan for more info, or look around the `BUILD.bazel` files and our custom rules yourself.
+See some [more info about the build system](/docs/build-system.md).
 
 ## Overview
 
@@ -43,24 +43,17 @@ Backend is running on user's machine, and Frontend is a web application that's u
 
 We're using Protobuf and GRPC for our API definitions. Look inside `proto` to see available APIs.
 
-### Getting Started
+## Getting Started
 
 Assuming you have the prerequisites:
 
 1. Clone the repo.
-2. Make sure Nix and Direnv are installed (see above).
-3. Run `./dev run` to make a production build and run it locally.
+2. Make sure Nix and direnv are installed (see above).
+3. Run `./dev` and see the help information to see the list of available commands.
 
-During development it might be easier to run frontend and backend separately though.
+If Nix and direnv are properly installed, you should not need anything else. Report any issues you might have.
 
-Run `./dev` with no argument to see available commands.
-
-## Cross Compilation
-
-We support cross compilation for Linux, Windows, and macOS at the moment. Run `./dev build-cross` to cross-compile for
-all the platforms in parallel.
-
-### Frontend Code Conventions
+## Frontend Code Conventions
 
 - files and folders are all `kebab-case`
 - variables are `camelCase`
@@ -68,29 +61,3 @@ all the platforms in parallel.
 - avoid creating abstractions
 - avoid creating folders, better to have files as flat as possible
 - avoid default exports, only default exports for page components (to use dynamic import)
-
-### VSCode Integration
-
-To support features like go-to-definition a plugin like ZipFS is needed.
-
-Run the following command, which will generate a new directory called .yarn/sdks:
-
-```bash
-yarn dlx @yarnpkg/sdks vscode
-```
-
-For safety reason VSCode requires you to explicitly activate the custom TS settings:
-
-1. Press `ctrl+shift+p` in a TypeScript file
-2. Choose "Select TypeScript Version"
-3. Pick "Use Workspace Version"
-
-For more and updated information about this setup, please visit [this link](https://yarnpkg.com/getting-started/editor-sdks#vscode)
-
-### Update Slate fork
-
-1. go to the [fork repo]() and rebase against upstream/main
-2. fix buttloads of merge conflicts
-3. confirm the build still works
-4. build the project and commit the build output too! That is what we pull from github
-5. once you confirm it all works as expected create a new tag v<version>-unist was my naming scheme
