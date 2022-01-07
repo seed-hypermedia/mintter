@@ -1,0 +1,15 @@
+filegroup(
+    name = "sqlite",
+    srcs = glob(
+        [
+            "sqlite/**/*.go",
+            "sqlite/**/*.c",
+            "sqlite/**/*.h",
+        ],
+        exclude = ["sqlite/**/*_test.go"],
+    ) + [
+        "sqlite/go.mod",
+        "sqlite/go.sum",
+    ],
+    visibility = ["PUBLIC"],
+)

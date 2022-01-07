@@ -1,0 +1,116 @@
+def generated(
+        name: str,
+        srcs: list,
+        outs: list,
+        out_dir = "",
+        cmd: str,
+        tools: list = None):
+    """
+    Codegen that outputs files into the workspace tree.
+
+    Supposed to be executed with `plz run`.
+    """
+
+    # Out dir must be workspace-absolute path or nothing.
+    if out_dir == "":
+        out_dir = "//" + package_name()
+
+    if "//" not in out_dir:
+        log.fatal(
+            "Attribute out_dir must be workspace absolute path ('//<something') or empty string.",
+        )
+
+    # Reformat outs to include the workspace-relative path to the output files.
+    out_dir = out_dir.lstrip("//")
+    outs = [join_path(out_dir, x) for x in outs]
+
+    # We want the resulting scripts and outputs be free of user-specific absolute paths.
+    # Unfortunately Please expands location for tools to absolute paths. So here we format
+    # the paths for tools based on their label names. We use the convention that the target name
+    # is the name of the binary, and package name is the path to it inside plz-out.
+
+    def format_tool(t: str):
+        parts = (decompose(canonicalise(t)))
+        return 'export TOOLS_{}="{}"'.format(parts[1].replace("-", "_").upper(), join_path("plz-out/bin", parts[0], parts[1]))
+
+    aliases = [format_tool(t) for t in tools]
+
+    # Config rule prepares all the information that's only available during 'plz build', so that
+    # gen, clean and check rules can use it while being executed with 'plz run'. We also avoid depending on
+    # tools explicitly here, so that checking if codegen is up to date doesn't need any tools to be built.
+    cfg = build_rule(
+        name = name,
+        srcs = srcs,
+        outs = [name + ".env"],
+        env = {
+            "gen_outs": " ".join(outs),
+            "macro_name": name,
+        },
+        cmd = """
+cat > $OUT <<EOF
+export SRCS="$SRCS"
+export OUTS="$gen_outs"
+export PKG="$PKG"
+export NAME="$macro_name"
+export CHECKSUM_FILE="$PKG/$macro_name.gensum"
+""" + "\n".join(aliases) + """
+EOF
+""",
+        labels = ["manual", "generated:config"],
+        tag = "config",
+    )
+
+    # Gen rule is the one that executes the provided cmd and builds outs using srcs.
+    gen_name = name + ".gen"
+    gen_target = build_rule(
+        name = gen_name,
+        outs = [gen_name + ".sh"],
+        _file_content = """#!/bin/sh
+set -e
+. $(out_location {cfg})
+python3 $(location //build/rules:codegen.py) --action=gen '{cmd}'
+""".format(
+            cfg = cfg,
+            cmd = cmd,
+        ),
+        binary = True,
+        env = {
+            "OUT_DIR": out_dir,
+        },
+        labels = ["manual", "generated:gen"],
+        tools = tools,
+        deps = [cfg, "//build/rules:codegen.py"],
+    )
+
+    check_name = name + ".check"
+    build_rule(
+        name = check_name,
+        outs = [check_name + ".sh"],
+        _file_content = """#!/bin/sh
+set -e
+. $WORKSPACE/plz-out/gen/$(location {cfg})
+python3 $(location //build/rules:codegen.py) --action=check || echo "Failed to check codegen target. Run 'plz run {gen_target}'"
+""".format(
+            cfg = cfg,
+            gen_target = canonicalise(gen_target),
+        ),
+        binary = True,
+        labels = ["manual", "generated:check"],
+        deps = [cfg, "//build/rules:codegen.py"],
+    )
+
+    clean_name = name + ".clean"
+    build_rule(
+        name = clean_name,
+        outs = [clean_name + ".sh"],
+        _file_content = """#!/bin/sh
+set -e
+. $WORKSPACE/plz-out/gen/$(location {cfg})
+env python3 $(location //build/rules:codegen.py) --action=clean
+""".format(cfg = cfg),
+        binary = True,
+        labels = ["manual", "generated:clean"],
+        deps = [cfg, "//build/rules:codegen.py"],
+    )
+
+    return

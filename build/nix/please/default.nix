@@ -3,23 +3,27 @@
 let 
   please = buildGoModule rec {
     pname = "please";
-    version = "16.10.1";
-    vendorSha256 = "1vcfb0621g86bhqs36z4cqndj9mpi6lfczwy59124rv7fhdb3z40";
+    version = "16.17.1";
+    vendorSha256 = "0q7sr7rvl9794s03lj7i28q9hyc6smx56hz810q7ph2qm25s3c9z";
 
     src = fetchFromGitHub {
       owner = "thought-machine";
       repo = pname;
       rev = "v${version}";
-      sha256 = "1zw74ppviacn0y0290qwrs0y2wz2lm4f5vk9fffpqnzh7mixzg75";
+      sha256 = "0a2rv7bj7jl7k3ifixb94nly020vvbqgdnizrlfni9rcwv0hbg49";
     };
 
     subPackages = [
       "src"
     ];
+
+    postInstall = "mv $out/bin/src $out/bin/plz";
   };
+
+  doCheck = false;
+
   runScript = writeShellScriptBin "plz" ''
-    export PLZ_RAND=$(date)
-    ${please}/bin/src $@
+    exec ${please}/bin/src $@
   '';
 in
-  runScript
+  please

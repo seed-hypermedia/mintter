@@ -45,3 +45,8 @@ target
 
 # JetBrains project files
 .idea/
+
+# Please
+.plz-cache
+plz-out
+.plzconfig.local

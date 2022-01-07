@@ -4,10 +4,9 @@
     "version": "0.1.0"
   },
   "build": {
-    "distDir": "../../bazel-bin/frontend/app/dist",
+    "distDir": "../../plz-out/gen/frontend/dist",
     "devPath": "http://localhost:3000",
     "beforeDevCommand": "cd ../frontend/app && yarn dev",
-    "beforeBuildCommand": "bazel build //frontend:app //:mintterd",
     "withGlobalTauri": true
   },
   "tauri": {
@@ -23,7 +22,7 @@
         "icons/icon.ico"
       ],
       "resources": [],
-      "externalBin": ["../../bazel-bin/mintterd"],
+      "externalBin": ["../../plz-out/bin/backend/mintterd"],
       "copyright": "",
       "category": "DeveloperTool",
       "shortDescription": "",

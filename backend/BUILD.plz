@@ -1,0 +1,95 @@
+# Builds the mintterd binary. It depends on all the non-test
+# Go files inside the `backend` directory.
+go_binary(
+    name = "mintterd",
+    srcs = glob(
+        ["**/*.go"],
+        exclude = ["**/*_test.go"],
+    ),
+    out = "mintterd-" + target_platform_triple(),
+    cgo = True,
+    gomod = "//:gomod",
+    package = "./cmd/mintterd",
+    deps = [
+        "//third_party:sqlite",
+    ],
+)
+
+# Generates code based on the SQLite schema we have defined.
+generated(
+    name = "sqliteschema",
+    srcs = ["db/sqliteschema/sqliteschema.go"],
+    outs = ["db/sqliteschema/schema.gen.go"],
+    cmd = """
+export GOROOT="$($TOOLS_GO env GOROOT)"
+export PATH="$PATH:${GOROOT%/share/go}/bin"
+cd $PKG/db/sqliteschema
+$TOOLS_GORUN -tags codegen generateSchema
+""",
+    tools = [
+        "//build/nix:go",
+        "//build/tools:gorun",
+    ],
+)
+
+# Generates SQLite queries for the backend package.
+generated(
+    name = "sqlite_queries",
+    srcs = ["sqlite_queries.go"],
+    outs = ["sqlite_queries.gen.go"],
+    cmd = """
+export GOROOT="$($TOOLS_GO env GOROOT)"
+export PATH="$PATH:${GOROOT%/share/go}/bin"
+cd $PKG
+$TOOLS_GORUN -tags codegen generateQueries
+""",
+    tools = [
+        "//build/nix:go",
+        "//build/tools:gorun",
+    ],
+)
+
+# Generates SQLite queries for the wallet package.
+# This could be defined inside the package itself,
+# but then the Go source files would need to be
+# exposed and depended on in the `mintterd` rule.
+generated(
+    name = "wallet_queries",
+    srcs = ["wallet/queries.go"],
+    outs = ["wallet/queries.gen.go"],
+    cmd = """
+export GOROOT="$($TOOLS_GO env GOROOT)"
+export PATH="$PATH:${GOROOT%/share/go}/bin"
+cd $PKG/wallet
+$TOOLS_GORUN -tags codegen generateQueries
+""",
+    tools = [
+        "//build/nix:go",
+        "//build/tools:gorun",
+    ],
+)
+
+# Generates Go code from changes.proto file.
+generated(
+    name = "changes_proto",
+    srcs = ["changes.proto"],
+    outs = [
+        "changes.pb.go",
+        "changes_vtproto.pb.go",
+    ],
+    cmd = """
+cd $PKG
+$TOOLS_PROTOC \
+    --plugin=protoc-gen-go=$TOOLS_PROTOC_GEN_GO \
+    --plugin=protoc-gen-go-vtproto=$TOOLS_PROTOC_GEN_GO_VTPROTO \
+    --go_out=:. \
+    --go-vtproto_out=:. \
+    --go-vtproto_opt=features=pool+marshal+unmarshal+size \
+    changes.proto
+""",
+    tools = [
+        "//build/nix:protoc",
+        "//build/tools:protoc-gen-go",
+        "//build/tools:protoc-gen-go-vtproto",
+    ],
+)

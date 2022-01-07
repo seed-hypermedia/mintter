@@ -150,7 +150,6 @@ require (
 	github.com/multiformats/go-multihash v0.1.0
 	github.com/multiformats/go-multistream v0.2.2 // indirect
 	github.com/multiformats/go-varint v0.0.6 // indirect
-	github.com/nkovacs/rei v0.0.0-20170810075744-e2017f51c90f
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect

@@ -73,7 +73,7 @@ jobs:
             ubuntu-latest-cargo-build-target-
 
       - name: Mock dist dir
-        run: mkdir -p bazel-bin/frontend/app/dist
+        run: mkdir -p plz-out/gen/frontend/dist
 
       - uses: actions-rs/clippy-check@v1
         with:

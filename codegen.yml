@@ -1,8 +1,0 @@
-overwrite: true
-schema:
-  - graphql/schema.graphql
-
-generates:
-  frontend/client/.generated/types.ts:
-    plugins:
-      - typescript

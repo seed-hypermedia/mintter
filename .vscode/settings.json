@@ -9,19 +9,24 @@
     "bazel-mintter/**": true
   },
   "files.watcherExclude": {
-    "bazel-*/**": true
+    "bazel-*/**": true,
+    "plz-out/**": true,
+    ".plz-cache/**": true
   },
   "gopls": {
+    "build.experimentalWorkspaceModule": true,
     "build.directoryFilters": [
-      "-node_modules",
-      "-bazel-out",
-      "-bazel-bin",
-      "-bazel-testlogs",
-      "-bazel-mintter"
+      "-",
+      "-plz-out",
+      "+backend",
+      "+third_party",
+      "+proto",
+      "+build"
     ]
   },
   "search.exclude": {
     "bazel-*/**": true,
+    "plz-out/**": true,
     "**/.yarn": true,
     "**/.pnp.*": true
   },
@@ -48,5 +53,9 @@
   "eslint.nodePath": ".yarn/sdks",
   "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
   "rust-analyzer.updates.channel": "nightly",
-  "go.lintTool": "golangci-lint"
+  "go.lintTool": "golangci-lint",
+  "files.associations": {
+    "*.plz": "starlark",
+    "*.build_defs": "starlark"
+  }
 }

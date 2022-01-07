@@ -1,8 +1,0 @@
-load("//build:rules.bzl", "go_tool")
-
-package(default_visibility = ["//visibility:public"])
-
-go_tool(
-    name = "rei",
-    go_pkg = "github.com/nkovacs/rei",
-)

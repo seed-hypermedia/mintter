@@ -1,0 +1,59 @@
+package(default_visibility = ["PUBLIC"])
+
+go_binary(
+    name = "protoc-gen-go",
+    srcs = ["//:tools.go"],
+    gomod = "//:gomod",
+    package = "google.golang.org/protobuf/cmd/protoc-gen-go",
+    workdir = "../..",
+)
+
+go_binary(
+    name = "protoc-gen-go-grpc",
+    srcs = ["//:tools.go"],
+    gomod = "//:gomod",
+    package = "google.golang.org/grpc/cmd/protoc-gen-go-grpc",
+    workdir = "../..",
+)
+
+go_binary(
+    name = "gqlgen",
+    srcs = ["//:tools.go"],
+    gomod = "//:gomod",
+    package = "github.com/99designs/gqlgen",
+    workdir = "../..",
+)
+
+yarn_binary(
+    name = "protoc-gen-ts_proto",
+    yarn_deps = "//:yarn",
+)
+
+yarn_binary(
+    name = "graphql-codegen",
+    yarn_deps = "//:yarn",
+)
+
+gomod(
+    name = tag("gorun", "gomod"),
+    srcs = [
+        "gorun/go.mod",
+        "gorun/go.sum",
+    ],
+    workdir = "gorun",
+)
+
+go_binary(
+    name = "gorun",
+    srcs = ["gorun/main.go"],
+    gomod = ":" + tag("gorun", "gomod"),
+    workdir = "gorun",
+)
+
+go_binary(
+    name = "protoc-gen-go-vtproto",
+    srcs = ["//:tools.go"],
+    gomod = "//:gomod",
+    package = "github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto",
+    workdir = "../../",
+)
