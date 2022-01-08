@@ -1,4 +1,6 @@
-{ sources ? import ./sources.nix }:
+{ 
+  sources ? import ./sources.nix,
+}:
 
 self: super: {
   naersk = super.callPackage sources.naersk {};
@@ -20,4 +22,5 @@ self: super: {
     buildGoModule = self.buildGo117Module;
   };
   mkLazyWrapper = super.callPackage ./mk-lazy-wrapper {};
+  mintterRust = (super.rustChannelOf { date = "2021-12-02"; channel = "stable"; }).rust;
 }

@@ -6,9 +6,8 @@ let
       bash
       coreutils
       findutils
-      protobuf
       go
-      rustup
+      mintterRust # We define the rust version we want to use for Mintter in /build/nix/overlay.nix.
       rustfmt
       nodejs
       yarn

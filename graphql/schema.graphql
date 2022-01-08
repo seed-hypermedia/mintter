@@ -214,8 +214,8 @@ input PayInvoiceInput {
   paymentRequest: LightningPaymentRequest!
 
   """
-  Optional amount in satoshis to pay. In case this is not defined, 
-  The amount showed in the invoice will be paid. If amountSats is 
+  Optional amount in satoshis to pay. In case this is not defined,
+  The amount showed in the invoice will be paid. If amountSats is
   provided, then the invoice amount will be override. This will cause
   an error unless both amounts are the same or the invoice amount is 0.
   """
@@ -286,7 +286,7 @@ type LndHubWallet implements LightningWallet {
   Balance in Satoshis.
   """
   balanceSats: Satoshis!
-  
+
   """
   If this wallet is the default wallet to send/receive automatic payments
   """
