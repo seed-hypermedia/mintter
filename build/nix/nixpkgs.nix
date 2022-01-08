@@ -4,8 +4,14 @@
   system ? builtins.currentSystem,
   sources ? import ./sources.nix,
   nixpkgs ? sources.nixpkgs,
+  moz_overlay ? import sources.nixpkgs-mozilla,
   overlay ? import ./overlay.nix {},
-  defaultOverlays ? [ overlay ],
+  defaultOverlays ? [ 
+    # The order matters here. We use rust from Mozilla overlay inside our own overlay.
+    # It's a mess.
+    moz_overlay
+    overlay
+  ],
   overlays ? [],
   config ? {},
 }:

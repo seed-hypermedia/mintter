@@ -64,3 +64,13 @@ nixpkgs_binary(
     name = "protoc",
     nix_attribute = "protobuf",
 )
+
+nixpkgs_binary(
+    name = "cargo",
+    nix_attribute = "mintterRust",
+)
+
+nixpkgs_binary(
+    name = "rustc",
+    nix_attribute = "mintterRust",
+)

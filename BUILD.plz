@@ -35,3 +35,10 @@ export_file(
     src = "tools.go",
     visibility = ["//build/tools/..."],
 )
+
+cargo_fetch(
+    name = "cargo",
+    visibility = [
+        "//desktop/...",
+    ],
+)
