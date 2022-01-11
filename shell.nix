@@ -7,8 +7,8 @@ let
       coreutils
       findutils
       go
-      mintterRust # We define the rust version we want to use for Mintter in /build/nix/overlay.nix.
-      rustfmt
+      # We define the rust version we want to use for Mintter in /build/nix/overlay.nix. We add rust-src for editor support.
+      (mintterRust.override { extensions = ["rust-src"]; })
       nodejs
       yarn
       tauri.cli
