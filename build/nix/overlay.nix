@@ -22,5 +22,6 @@ self: super: {
     buildGoModule = self.buildGo117Module;
   };
   mkLazyWrapper = super.callPackage ./mk-lazy-wrapper {};
-  mintterRust = (super.rustChannelOf { date = "2021-12-02"; channel = "stable"; }).rust;
+  mintterRustChannel = (super.rustChannelOf { date = "2021-12-02"; channel = "stable"; });
+  mintterRust = self.mintterRustChannel.rust;
 }
