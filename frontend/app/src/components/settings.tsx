@@ -6,14 +6,15 @@ import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {TextField} from '@mintter/ui/text-field'
-import {useTheme} from '@mintter/ui/theme'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
+import {useActor} from '@xstate/react'
 import {useEffect} from 'react'
 import {useForm} from 'react-hook-form'
 import toast from 'react-hot-toast'
 import {useMutation, useQueryClient} from 'react-query'
 import {queryKeys, useAccount} from '../hooks'
+import {useTheme} from '../theme'
 import {PeerAddrs} from './peer-addrs'
 import {ScrollArea} from './scroll-area'
 import {WalletList} from './wallet-list'
@@ -300,10 +301,11 @@ function AccountInfo() {
 }
 
 function AppSettings() {
-  const theme = useTheme()
+  const themeService = useTheme()
+  const [state, send] = useActor(themeService)
   return (
     <Box css={{alignItems: 'center', display: 'flex', gap: '$3', padding: '$5', marginTop: '$8', marginBottom: '$8'}}>
-      <input id="darkMode" type="checkbox" checked={theme.currentTheme === 'dark'} onChange={theme.toggle} />
+      <input id="darkMode" type="checkbox" checked={state.context.current == 'dark'} onChange={() => send('TOGGLE')} />
       <Text as="label" htmlFor="darkMode">
         Dark Mode
       </Text>
