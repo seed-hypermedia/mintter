@@ -10,7 +10,6 @@
     "./icon": "./src/icon/index.ts",
     "./text": "./src/text/index.ts",
     "./text-field": "./src/text-field/index.ts",
-    "./theme": "./src/theme/index.ts",
     "./stitches.config": "./src/stitches.config.ts"
   },
   "scripts": {

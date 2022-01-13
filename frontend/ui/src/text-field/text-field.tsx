@@ -196,8 +196,8 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
     return (
       <InputContainer size={props.size} css={containerCss}>
         {label ? (
-          <Label.Root as={Text} htmlFor={id} size={props.size == 1 ? '2' : props.size == 2 ? '3' : undefined}>
-            {label}
+          <Label.Root asChild htmlFor={id}>
+            <Text size={props.size == 1 ? '2' : props.size == 2 ? '3' : undefined}>{label}</Text>
           </Label.Root>
         ) : null}
         <InputComponent ref={mergeRefs<HTMLInputElement | HTMLTextAreaElement>([localRef, ref])} {...props} />
