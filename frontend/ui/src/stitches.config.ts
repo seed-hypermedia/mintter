@@ -1,5 +1,5 @@
 import type * as Stitches from '@stitches/react'
-import { createStitches, defaultThemeMap } from '@stitches/react'
+import {createStitches, defaultThemeMap} from '@stitches/react'
 import basierCircleBoldItalic from './fonts/basier-circle/bold-italic.woff2'
 import basierCircleBold from './fonts/basier-circle/bold.woff2'
 import basierCircleMediumItalic from './fonts/basier-circle/medium-italic.woff2'
@@ -84,6 +84,7 @@ const stitches = createStitches({
       'danger-contrast': '',
     },
     fonts: {
+      // default: '"Basier Circle", apple-system, sans-serif',
       default: 'apple-system, sans-serif',
       alt: '"Lora", serif',
     },
