@@ -5,6 +5,7 @@ import {Icon} from '@mintter/ui/icon'
 import {styled} from '@mintter/ui/stitches.config'
 import {Text} from '@mintter/ui/text'
 import {MouseEvent, useEffect, useRef, useState} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
 import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
@@ -146,7 +147,11 @@ export function Sidepanel() {
           >
             <Text fontWeight="bold">Annotations</Text>
             {annotations.map((item) => {
-              return <SidepanelItem key={item} item={item} remove={false} />
+              return (
+                <ErrorBoundary fallback={<span>sidepanel item fallback</span>}>
+                  <SidepanelItem key={item} item={item} remove={false} />
+                </ErrorBoundary>
+              )
             })}
           </Box>
         ) : null}
@@ -158,7 +163,11 @@ export function Sidepanel() {
           >
             <Text fontWeight="bold">Bookmarks</Text>
             {bookmarks.map(({link}) => {
-              return <SidepanelItem key={link} item={link} />
+              return (
+                <ErrorBoundary fallback={<span>sidepanel item fallback</span>}>
+                  <SidepanelItem key={link} item={link} />
+                </ErrorBoundary>
+              )
             })}
           </Box>
         ) : null}
