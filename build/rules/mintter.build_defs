@@ -40,6 +40,7 @@ $TOOLS_PROTOC -I proto \
     --ts_proto_opt=addGrpcMetadata=true \
     --ts_proto_opt=outputClientImpl=grpc-web \
     --ts_proto_opt=exportCommonSymbols=false \
+    --ts_proto_opt=oneof=unions \
     --ts_proto_out=frontend/client/.generated/ \
     $SRCS
 for o in $OUTS; do
