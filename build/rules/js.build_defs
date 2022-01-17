@@ -26,6 +26,7 @@ def yarn_install(
         srcs = [fg],
         exported_deps = [fg],
         output_is_complete = False,
+        building_description = "Installing Yarn dependencies...",
         outs = ["yarn.state"],
         cmd = """
 HOME=$(eval echo ~$(whoami))
@@ -65,6 +66,7 @@ def yarn_script(
         srcs = srcs,
         pre_build = pre_build,
         outs = outs,
+        building_description = "Running Yarn script...",
         env = {
             "workdir": workdir,
             "script_name": script_name,

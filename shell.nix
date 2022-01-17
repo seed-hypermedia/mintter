@@ -14,6 +14,7 @@ let
       tauri.cli
       golangci-lint
       please
+      python3
       bazel-buildtools
     ];
     libs = [
