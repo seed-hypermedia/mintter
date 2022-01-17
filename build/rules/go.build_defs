@@ -23,6 +23,7 @@ def gomod(
         exported_deps = [fg],
         outs = ["gomod.sum"],
         output_is_complete = False,
+        building_description = "Installing Go dependencies...",
         env = {
             "workdir": workdir,
         },
@@ -80,6 +81,7 @@ def go_binary(
 TMPDIR=/tmp
 HOME=$(eval echo ~$(whoami))
 cd $workdir
+export CC="$TOOLS_GCC"
 $TOOLS_GO build -o $OUT {package}
 """.format(package = package),
         binary = True,
@@ -87,6 +89,7 @@ $TOOLS_GO build -o $OUT {package}
         output_is_complete = True,
         tools = {
             "go": [CONFIG.GO_TOOL],
+            "gcc": [CONFIG.GCC_TOOL],
         },
         env = env,
         deps = deps + [gomod],

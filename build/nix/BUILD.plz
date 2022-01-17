@@ -74,3 +74,12 @@ nixpkgs_binary(
     name = "rustc",
     nix_attribute = "mintterRust",
 )
+
+nixpkgs_binary(
+    name = "gcc",
+)
+
+nixpkgs_binary(
+    name = "clang",
+    nix_attribute = "impure-cc",
+)

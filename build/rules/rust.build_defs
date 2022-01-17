@@ -35,6 +35,7 @@ $TOOLS_MD5SUM Cargo.lock > $OUT
             "rustc": [CONFIG.RUSTC_TOOL],
             "md5sum": [CONFIG.MD5SUM_TOOL],
         },
+        building_description = "Installing Cargo dependencies...",
         deps = deps,
         labels = labels + ["cargo_fetch"],
         visibility = visibility,

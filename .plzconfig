@@ -18,6 +18,7 @@ BlacklistDirs = "third_party"
 ExitOnError = true
 Path = "/bin:/usr/bin"
 PassUnsafeEnv = "WORKSPACE" ; This is expected to be set via nix-shell to point to the absolute path to the workspace. Needed to do some nasty but useful work around.
+PassUnsafeEnv = "NIX_SSL_CERT_FILE"
 
 [cache]
 Dir = ".plz-cache"
