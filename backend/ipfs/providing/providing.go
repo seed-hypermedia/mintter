@@ -25,13 +25,7 @@ const (
 	LogMsgReprovideFailed = "ReprovideFailed"
 )
 
-var logger = log.Logger("providing").Desugar()
-
-func init() {
-	if err := log.SetLogLevel("providing", "debug"); err != nil {
-		panic(err)
-	}
-}
+var logger = log.Logger("ipfs/providing").Desugar()
 
 // Strategy is a function that returns items to be reprovided.
 type Strategy func(context.Context) (<-chan cid.Cid, error)
