@@ -181,11 +181,12 @@ func (srv *backend) syncObject(ctx context.Context, oid cid.Cid, pid peer.ID) er
 			}
 
 			// Ensure linked documents are all synced with the given peer.
-			visited := make(map[cid.Cid]int, len(links))
 			errs := make([]error, len(links))
 			var wg sync.WaitGroup
 			for i, l := range links {
-				if _, ok := visited[l.TargetDocumentID]; ok {
+				// Don't attempt to sync documents we're already syncing.
+				// Otherwise it will hang in the infinite loop.
+				if l.TargetDocumentID.Equals(oid) {
 					continue
 				}
 
