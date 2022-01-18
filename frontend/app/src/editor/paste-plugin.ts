@@ -1,4 +1,4 @@
-import {sanitizeSchema, toMttast} from '@mintter/hastmtt'
+import {sanitizeSchema, toMttast} from '@mintter/mttast'
 import rehypeParse from 'rehype-parse'
 import sanitize from 'rehype-sanitize'
 import {Transforms} from 'slate'

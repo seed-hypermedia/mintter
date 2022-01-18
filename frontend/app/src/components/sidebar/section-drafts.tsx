@@ -1,4 +1,4 @@
-import {useDrafts} from 'frontend/app/src/main-page-context'
+import {useDrafts} from '@app/main-page-context'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Link} from 'wouter'
 import {Section} from './section'
@@ -10,7 +10,7 @@ export function DraftsSection() {
 
   return (
     <Section title="Drafts" open={true} disabled={status != 'success'}>
-      {!!drafts.length ? (
+      {drafts.length ? (
         <ErrorBoundary
           FallbackComponent={SectionError}
           onReset={() => {

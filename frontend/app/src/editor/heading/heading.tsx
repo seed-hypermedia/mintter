@@ -1,5 +1,4 @@
-import {Heading, isGroupContent, isHeading, isStaticParagraph} from '@mintter/mttast'
-import {createId, statement} from '@mintter/mttast-builder'
+import {createId, Heading, isGroupContent, isHeading, isStaticParagraph, statement} from '@mintter/mttast'
 import {Editor, Element, NodeEntry, Transforms} from 'slate'
 import {BlockTools} from '../block-tools'
 import type {EditorPlugin} from '../types'

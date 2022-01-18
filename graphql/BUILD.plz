@@ -37,7 +37,7 @@ generated(
 cd $PKG
 $TOOLS_GRAPHQL_CODEGEN
 """,
-    out_dir = "//frontend/client/.generated",
+    out_dir = "//frontend/app/src/client/.generated",
     tools = [
         "//build/tools:graphql-codegen",
     ],

@@ -1,16 +1,16 @@
-import {createDraft} from '@mintter/client'
+import {createDraft} from '@app/client'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {useRoute} from '@app/utils/use-route'
+import {useBookmarksService} from '@components/bookmarks'
+import {Icon} from '@components/icon'
+import {useSidepanel} from '@components/sidepanel'
+import {Text} from '@components/text'
 import type {FlowContent, Statement as StatementType} from '@mintter/mttast'
 import {isFlowContent, isGroupContent, isParagraph, isStatement} from '@mintter/mttast'
-import {Icon} from '@mintter/ui/icon'
-import {Text} from '@mintter/ui/text'
 import toast from 'react-hot-toast'
 import {Editor, Element, Node, NodeEntry, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {useLocation} from 'wouter'
-import {useBookmarksService} from '../../components/bookmarks'
-import {useSidepanel} from '../../components/sidepanel'
-import {MINTTER_LINK_PREFIX} from '../../constants'
-import {useRoute} from '../../utils/use-route'
 import {BlockTools} from '../block-tools'
 import {ContextMenu} from '../context-menu'
 import {EditorMode} from '../plugin-utils'
@@ -140,7 +140,7 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
 
   function addBookmark(docId: string, blockId: FlowContent['id']) {
     bookmarksService.send({
-      type: 'ADD_BOOKMARK',
+      type: 'ADD.BOOKMARK',
       link: `${MINTTER_LINK_PREFIX}${docId}/${blockId}`,
     })
   }

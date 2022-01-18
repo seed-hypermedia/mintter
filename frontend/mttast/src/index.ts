@@ -1,4 +1,6 @@
 export * from './assertions'
+export * from './builder'
+export * from './hast-mtt'
 export type {
   Blockquote,
   Callout,

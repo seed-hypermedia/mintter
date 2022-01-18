@@ -1,20 +1,32 @@
+import {Button} from '@components/button'
+import {useActor} from '@xstate/react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {Bookmark, useBookmarks} from '../bookmarks'
+import {Bookmark, bookmarksModel, useBookmarksService} from '../bookmarks'
 import {Section} from './section'
 import {SectionError} from './section-error'
 
 export function BookmarksSection() {
-  const bookmarks = useBookmarks()
+  const service = useBookmarksService()
+  const [state, send] = useActor(service)
 
   return (
     <Section title="Bookmarks" icon="Star">
-      {!!bookmarks.length ? (
+      {state.context?.bookmarks?.length ? (
         <ErrorBoundary FallbackComponent={SectionError} onReset={onReset}>
-          {bookmarks.map((bookmark) => (
+          {state.context.bookmarks.map((bookmark) => (
             <BookmarkItem key={bookmark.link} bookmark={bookmark} />
           ))}
         </ErrorBoundary>
       ) : null}
+      <Button
+        onClick={() => send(bookmarksModel.events['CLEAR.BOOKMARKS']())}
+        variant="ghost"
+        color="primary"
+        size="1"
+        css={{textAlign: 'left'}}
+      >
+        clear bookmarks
+      </Button>
     </Section>
   )
 }

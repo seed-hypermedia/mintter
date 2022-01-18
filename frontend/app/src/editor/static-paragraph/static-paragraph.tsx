@@ -1,6 +1,6 @@
+import type {TextProps} from '@components/text'
 import type {StaticParagraph as StaticParagraphType} from '@mintter/mttast'
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
-import type {TextProps} from '@mintter/ui/text'
 import {useActor} from '@xstate/react'
 import {Editor, NodeEntry} from 'slate'
 import type {RenderElementProps} from 'slate-react'

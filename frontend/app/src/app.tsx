@@ -1,17 +1,16 @@
-import {globalCss} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
-import {useMachine} from '@xstate/react'
+import {useAuth} from '@app/auth-context'
+import {Text} from '@components/text'
+import {useActor} from '@xstate/react'
 import {lazy} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {attachConsole, error} from 'tauri-plugin-log-api'
-import {authStateMachine} from './authstate-machine'
 import {MainPage} from './pages/main-page'
+import {globalCss} from './stitches.config'
 
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
 
-attachConsole()
+// attachConsole()
 
-window.addEventListener('error', (e) => error(e.message))
+// window.addEventListener('error', (e) => error(e.message))
 
 const globalStyles = globalCss({
   body: {
@@ -22,7 +21,8 @@ const globalStyles = globalCss({
 
 export function App() {
   globalStyles()
-  const [state] = useMachine(authStateMachine)
+  const service = useAuth()
+  const [state] = useActor(service)
 
   if (state.matches('checkingAccount')) {
     return <Text>Checking Account...</Text>
@@ -44,6 +44,10 @@ export function App() {
       </ErrorBoundary>
     )
   }
+
+  console.error('ERROR: no state match on MainPage')
+
+  return null
 }
 
 export function AppError({error, resetErrorBoundary}: FallbackProps) {

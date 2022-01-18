@@ -1,5 +1,4 @@
-import {isGroupContent, isOrderedList, isParagraph, isStatement} from '@mintter/mttast'
-import {ol, ul} from '@mintter/mttast-builder'
+import {isGroupContent, isOrderedList, isParagraph, isStatement, ol, ul} from '@mintter/mttast'
 import {Editor, Path, Range, Transforms} from 'slate'
 import {ELEMENT_HEADING} from './heading'
 import {ELEMENT_ORDERED_LIST} from './ordered-list'

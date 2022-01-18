@@ -1,16 +1,17 @@
-import {Box} from '@mintter/ui/box'
-import type {ButtonProps} from '@mintter/ui/button'
-import {Button} from '@mintter/ui/button'
-import type {CSS} from '@mintter/ui/stitches.config'
-import {styled} from '@mintter/ui/stitches.config'
-import type {TextProps} from '@mintter/ui/text'
-import {Text, textStyles} from '@mintter/ui/text'
+import {GenSeedResponse} from '@app/client'
+import type {CSS} from '@app/stitches.config'
+import {styled} from '@app/stitches.config'
+import {Box} from '@components/box'
+import type {ButtonProps} from '@components/button'
+import {Button} from '@components/button'
+import type {TextProps} from '@components/text'
+import {Text, textStyles} from '@components/text'
 import type {Variants} from 'framer-motion'
 import {motion} from 'framer-motion'
 import type React from 'react'
 import {PropsWithChildren} from 'react'
 export interface OnboardingStepPropsType {
-  prev: () => void
+  prev?: () => void
   next: () => void
   generateSeed?: () => Promise<GenSeedResponse>
 }
@@ -71,7 +72,7 @@ const OnboardingStepStyled = styled(motion.form, {
   justifyContent: 'center',
 })
 
-export function OnboardingStep(props: PropsWithChildren<unknown>) {
+export function OnboardingStep(props: PropsWithChildren<{onSubmit: any}>) {
   return (
     <OnboardingStepStyled
       variants={containerAnimationVariants}
@@ -101,7 +102,7 @@ export function OnboardingStepTitle({
   css?: CSS
 }>) {
   return (
-    <OnboardingStepTitleStyled variants={slideDownAnimationVariants} data-cy="welcome-title" {...props}>
+    <OnboardingStepTitleStyled variants={slideDownAnimationVariants} data-cy="title" {...props}>
       {icon}
       <Text alt as="h1" size="9" css={{textAlign: 'center'}}>
         {children}

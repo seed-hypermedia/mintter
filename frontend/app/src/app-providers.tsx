@@ -2,9 +2,9 @@ import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, Suspense} from 'react'
 import {Toaster} from 'react-hot-toast'
 import {dehydrate, Hydrate, QueryClient, QueryClientProvider} from 'react-query'
-import {ReactQueryDevtools} from 'react-query/devtools'
 import {AuthProvider} from './auth-context'
-import {authStateMachine} from './authstate-machine'
+import {createAuthMachine} from './authstate-machine'
+import * as localApi from './client'
 import {themeMachine, ThemeProvider} from './theme'
 
 export const queryClient = new QueryClient({
@@ -17,22 +17,26 @@ export const queryClient = new QueryClient({
 
 const dehydrateState = dehydrate(queryClient)
 
-export function AppProviders({children}: PropsWithChildren<unknown>) {
-  const authService = useInterpret(authStateMachine)
-  const themeService = useInterpret(themeMachine)
+type AppProvidersProps = {
+  client?: QueryClient
+  api?: any
+}
+
+export function AppProviders({children, client = queryClient, api = localApi}: PropsWithChildren<AppProvidersProps>) {
+  const authService = useInterpret(() => createAuthMachine({getInfo: api.getInfo}))
+  const themeService = useInterpret(() => themeMachine)
   return (
-    <AuthProvider value={authService}>
-      <ThemeProvider value={themeService}>
-        <Suspense fallback={<p>loading...</p>}>
-          <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={client}>
+      <AuthProvider value={authService}>
+        <ThemeProvider value={themeService}>
+          <Suspense fallback={<p>loading...</p>}>
             <Hydrate state={dehydrateState}>
               {children}
               <Toaster position="bottom-right" />
-              <ReactQueryDevtools initialIsOpen={false} />
             </Hydrate>
-          </QueryClientProvider>
-        </Suspense>
-      </ThemeProvider>
-    </AuthProvider>
+          </Suspense>
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   )
 }

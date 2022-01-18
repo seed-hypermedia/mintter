@@ -1,5 +1,5 @@
-import {Box} from '@mintter/ui/box'
-import {styled} from '@mintter/ui/stitches.config'
+import {styled} from '@app/stitches.config'
+import {Box} from './box'
 
 export const Avatar = styled(Box, {
   $$size: '$space$6',

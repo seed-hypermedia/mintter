@@ -1,19 +1,18 @@
+import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {styled} from '@app/stitches.config'
+import {useRoute} from '@app/utils/use-route'
+import {useBookmarksService} from '@components/bookmarks'
+import {Box} from '@components/box'
+import {Icon} from '@components/icon'
+import {Text} from '@components/text'
 import type {Code as CodeType} from '@mintter/mttast'
-import {FlowContent, isCode, isParagraph} from '@mintter/mttast'
-import {createId, paragraph, statement, text} from '@mintter/mttast-builder'
-import {Box} from '@mintter/ui/box'
-import {Icon} from '@mintter/ui/icon'
-import {styled} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
+import {createId, FlowContent, isCode, isParagraph, paragraph, statement, text} from '@mintter/mttast'
 import toast from 'react-hot-toast'
 import type {Highlighter, IThemeRegistration, Lang} from 'shiki'
 import {getHighlighter, setCDN} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useSlateStatic} from 'slate-react'
-import {useBookmarksService} from '../../components/bookmarks'
-import {MINTTER_LINK_PREFIX} from '../../constants'
-import {useRoute} from '../../utils/use-route'
 import {BlockTools} from '../block-tools'
 import {ContextMenu} from '../context-menu'
 import {MARK_EMPHASIS} from '../emphasis'
@@ -177,7 +176,7 @@ function Code({
 
   function addBookmark(docId: string, blockId: FlowContent['id']) {
     bookmarksService.send({
-      type: 'ADD_BOOKMARK',
+      type: 'ADD.BOOKMARK',
       link: `${MINTTER_LINK_PREFIX}${docId}/${blockId}`,
     })
   }

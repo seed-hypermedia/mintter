@@ -1,6 +1,6 @@
-import {Box} from '@mintter/ui/box'
-import {Text} from '@mintter/ui/text'
 import {FallbackProps} from 'react-error-boundary'
+import {Box} from '../box'
+import {Text} from '../text'
 
 export function SectionError({error, resetErrorBoundary}: FallbackProps) {
   return (

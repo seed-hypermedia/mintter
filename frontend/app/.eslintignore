@@ -5,3 +5,4 @@ build
 dist-ssr
 *.local
 jest.config.js
+cypress/plugins/index.js

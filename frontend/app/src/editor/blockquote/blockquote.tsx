@@ -1,5 +1,5 @@
+import {styled} from '@app/stitches.config'
 import {FlowContent, isBlockquote} from '@mintter/mttast'
-import {styled} from '@mintter/ui/stitches.config'
 import {BlockTools} from '../block-tools'
 import {statementStyle} from '../statement'
 import type {EditorPlugin} from '../types'

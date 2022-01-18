@@ -1,5 +1,5 @@
-import {deleteDraft, deletePublication} from '@mintter/client'
 import {createModel} from 'xstate/lib/model'
+import {deleteDraft, deletePublication} from './client'
 
 export const deleteConfirmationModel = createModel(
   {

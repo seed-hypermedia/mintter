@@ -1,8 +1,8 @@
-import {generateSeed as defaultGenerateSeed, registerAccount} from '@mintter/client'
-import {Box} from '@mintter/ui/box'
-import {Button} from '@mintter/ui/button'
-import {Text} from '@mintter/ui/text'
-import {TextField} from '@mintter/ui/text-field'
+import {generateSeed as defaultGenerateSeed, registerAccount} from '@app/client'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Text} from '@components/text'
+import {TextField} from '@components/text-field'
 import {useCallback, useState} from 'react'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import toast from 'react-hot-toast'
@@ -87,10 +87,14 @@ export function SecurityPack({prev, next, generateSeed = defaultGenerateSeed}: O
         <Text css={{textDecoration: 'underline', display: 'inline-block'}}>provide your own seed</Text>
       </Button>
       <OnboardingStepActions>
-        <OnboardingStepButton variant="outlined" onClick={prev}>
+        <OnboardingStepButton variant="outlined" onClick={prev} data-cy="prev-btn">
           Back
         </OnboardingStepButton>
-        <OnboardingStepButton disabled={mnemonics.isLoading || !mnemonics.data?.length} onClick={handleSubmit}>
+        <OnboardingStepButton
+          disabled={mnemonics.isLoading || !mnemonics.data?.length}
+          onClick={handleSubmit}
+          data-cy="next-btn"
+        >
           Next
         </OnboardingStepButton>
       </OnboardingStepActions>

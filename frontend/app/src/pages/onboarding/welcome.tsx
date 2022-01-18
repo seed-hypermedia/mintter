@@ -1,5 +1,5 @@
-import {Box} from '@mintter/ui/box'
-import {Text} from '@mintter/ui/text'
+import {Box} from '@components/box'
+import {Text} from '@components/text'
 import type {OnboardingStepPropsType} from './common'
 import {
   OnboardingStep,
@@ -39,7 +39,7 @@ export function Welcome({next}: OnboardingStepPropsType) {
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
-        <OnboardingStepButton onClick={next} data-cy="start">
+        <OnboardingStepButton onClick={next} data-cy="next-btn">
           Start
         </OnboardingStepButton>
       </OnboardingStepActions>

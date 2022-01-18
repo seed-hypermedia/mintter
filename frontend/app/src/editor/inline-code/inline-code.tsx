@@ -1,5 +1,5 @@
 // import {toggleMark} from '../utils'
-import {css} from '@mintter/ui/stitches.config'
+import {css} from '@app/stitches.config'
 import type {EditorPlugin} from '../types'
 
 export const MARK_CODE = 'code'

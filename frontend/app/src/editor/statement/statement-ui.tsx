@@ -1,4 +1,4 @@
-import {css, styled} from '@mintter/ui/stitches.config'
+import {css, styled} from '@app/stitches.config'
 
 export const statementStyle = css({
   marginTop: '$6',

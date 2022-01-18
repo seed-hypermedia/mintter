@@ -3,10 +3,17 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "noEmit": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["vitest/global", "cypress"],
+    "baseUrl": "src",
+    "paths": {
+      "@components/*": ["components/*"],
+      "@app/*": ["./*"]
+    }
   },
   "typedocOptions": {
     "entryPoints": ["./src/app.tsx"],
     "out": "docs"
-  }
+  },
+  "exclude": ["./**/*.stories.*"]
 }

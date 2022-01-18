@@ -1,4 +1,4 @@
-import {styled} from '@mintter/ui/stitches.config'
+import {styled} from '@app/stitches.config'
 import type {EditorPlugin} from '../types'
 
 export const MARK_STRIKETHROUGH = 'strikethrough'

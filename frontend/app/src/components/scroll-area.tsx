@@ -1,4 +1,4 @@
-import {styled} from '@mintter/ui/stitches.config'
+import {styled} from '@app/stitches.config'
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area'
 
 const SCROLLBAR_SIZE = 6

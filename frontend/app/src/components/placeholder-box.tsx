@@ -1,4 +1,4 @@
-import {css, keyframes, styled} from '@mintter/ui/stitches.config'
+import {css, keyframes, styled} from '@app/stitches.config'
 
 const loadingAnimation = keyframes({
   '100%': {transform: 'translateX(100%)'},

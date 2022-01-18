@@ -1,4 +1,4 @@
-import {Box} from '@mintter/ui/box'
+import {Box} from '@components/box'
 import {useMachine} from '@xstate/react'
 import {useMemo} from 'react'
 import {createMachine} from 'xstate'
@@ -8,42 +8,40 @@ import {ProfileInformation} from './profile-information'
 import {SecurityPack} from './security-pack'
 import {Welcome} from './welcome'
 
-const makeMachine = (machine = {}) =>
-  createMachine({
-    id: 'onboarding',
-    initial: 'welcome',
-    states: {
-      // loading: {
-      //   on: {
-      //     NEXT: 'welcome',
-      //   },
-      // },
-      welcome: {
-        on: {
-          NEXT: 'securityPack',
-        },
-      },
-      securityPack: {
-        on: {
-          PREV: 'welcome',
-          NEXT: 'profileInformation',
-        },
-      },
-      profileInformation: {
-        on: {
-          PREV: 'securityPack',
-          NEXT: 'complete',
-        },
-      },
-      complete: {
-        type: 'final',
+let onboardingMachine = createMachine({
+  id: 'onboarding',
+  initial: 'welcome',
+  states: {
+    // loading: {
+    //   on: {
+    //     NEXT: 'welcome',
+    //   },
+    // },
+    welcome: {
+      on: {
+        NEXT: 'securityPack',
       },
     },
-    ...machine,
-  })
+    securityPack: {
+      on: {
+        PREV: 'welcome',
+        NEXT: 'profileInformation',
+      },
+    },
+    profileInformation: {
+      on: {
+        PREV: 'securityPack',
+        NEXT: 'complete',
+      },
+    },
+    complete: {
+      type: 'final',
+    },
+  },
+})
 
-export default function OnboardingPage({machine = {}}: {machine?: any}) {
-  const [onboardingMachineState, send] = useMachine(makeMachine(machine))
+export default function OnboardingPage({machineConfig = {}}: {machineConfig?: any}) {
+  const [onboardingMachineState, send] = useMachine(() => onboardingMachine.withConfig(machineConfig))
 
   const onboardingStepProps: OnboardingStepPropsType = useMemo(
     () => ({

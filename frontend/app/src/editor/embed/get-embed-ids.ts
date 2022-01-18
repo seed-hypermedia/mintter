@@ -1,4 +1,4 @@
-import {MINTTER_LINK_PREFIX} from '../../constants'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
 
 export function getEmbedIds(entry: string): [docId: string, version: string, blockId: string] {
   if (!entry.startsWith(MINTTER_LINK_PREFIX)) {

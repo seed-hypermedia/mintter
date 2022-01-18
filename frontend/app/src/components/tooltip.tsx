@@ -1,4 +1,4 @@
-import {styled} from '@mintter/ui/stitches.config'
+import {styled} from '@app/stitches.config'
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import {PropsWithChildren} from 'react'
 

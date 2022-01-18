@@ -1,6 +1,5 @@
 import type {GroupingContent} from '@mintter/mttast'
-import {isFlowContent, isGroup, isGroupContent, isStatement, Statement} from '@mintter/mttast'
-import {group, statement} from '@mintter/mttast-builder'
+import {group, isFlowContent, isGroup, isGroupContent, isStatement, Statement, statement} from '@mintter/mttast'
 import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
 import {Editor, Node, Path, Range, Text, Transforms} from 'slate'
 

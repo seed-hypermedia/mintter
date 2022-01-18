@@ -1,5 +1,5 @@
-import {updateAccount} from '@mintter/client'
-import {TextField} from '@mintter/ui/text-field'
+import {updateAccount} from '@app/client'
+import {TextField} from '@components/text-field'
 import {useCallback} from 'react'
 import {useForm} from 'react-hook-form'
 import toast from 'react-hot-toast'
@@ -23,7 +23,7 @@ type ProfileInformationDataType = {
 
 export function ProfileInformation({next}: OnboardingStepPropsType) {
   const updateProfile = useMutation(updateAccount)
-
+  console.log('=== PROFILE INFORMATION')
   const {register, handleSubmit, errors, formState} = useForm<ProfileInformationDataType>({
     mode: 'onChange',
     defaultValues: {
@@ -40,7 +40,6 @@ export function ProfileInformation({next}: OnboardingStepPropsType) {
         success: 'Profile updated',
         error: 'Error updating profile',
       })
-      console.log('edit complete!')
       next()
     },
     [next, updateProfile],
@@ -91,11 +90,7 @@ export function ProfileInformation({next}: OnboardingStepPropsType) {
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
-        <OnboardingStepButton
-          type="submit"
-          data-testid="next-button"
-          disabled={!formState.isValid || formState.isSubmitting}
-        >
+        <OnboardingStepButton type="submit" data-cy="next-btn" disabled={!formState.isValid || formState.isSubmitting}>
           Next
         </OnboardingStepButton>
       </OnboardingStepActions>

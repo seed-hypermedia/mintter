@@ -1,22 +1,23 @@
+import {createStore} from '@app/store'
 import {ActorRef, spawn} from 'xstate'
 import {createModel} from 'xstate/lib/model'
-import {createStore} from '../../store'
 
 export type Bookmark = {link: string; ref?: ActorRef<ReturnType<typeof createBookmarkMachine>>}
 
 const store = createStore('.bookmarks.dat')
 
-const bookmarksModel = createModel(
+export const bookmarksModel = createModel(
   {
     bookmarks: [] as Array<Bookmark>,
     errorMessage: '',
   },
   {
     events: {
-      GET_BOOKMARKS_SUCCESS: (bookmarks: Array<string>) => ({bookmarks}),
-      GET_BOOKMARKS_FAIL: (errorMessage: Error['message']) => ({errorMessage}),
-      ADD_BOOKMARK: (link: string) => ({link}),
-      REMOVE_BOOKMARK: (link: string) => ({link}),
+      'GET.BOOKMARKS.SUCCESS': (bookmarks: Array<string>) => ({bookmarks}),
+      'GET.BOOKMARKS.FAIL': (errorMessage: Error['message']) => ({errorMessage}),
+      'ADD.BOOKMARK': (link: string) => ({link}),
+      'REMOVE.BOOKMARK': (link: string) => ({link}),
+      'CLEAR.BOOKMARKS': () => ({}),
     },
   },
 )
@@ -31,6 +32,16 @@ export const bookmarksMachine = bookmarksModel.createMachine(
   {
     initial: 'loading',
     context: bookmarksModel.initialContext,
+    on: {
+      'CLEAR.BOOKMARKS': {
+        actions: [
+          bookmarkModel.assign({
+            bookmarks: [],
+          }),
+          'persist',
+        ],
+      },
+    },
     states: {
       loading: {
         invoke: {
@@ -39,15 +50,15 @@ export const bookmarksMachine = bookmarksModel.createMachine(
             store
               .get<Array<string>>('bookmarks')
               .then((result) => {
-                sendBack({type: 'GET_BOOKMARKS_SUCCESS', bookmarks: result || []})
+                sendBack({type: 'GET.BOOKMARKS.SUCCESS', bookmarks: result || []})
               })
               .catch((e: Error) => {
-                sendBack({type: 'GET_BOOKMARKS_FAIL', errorMessage: e.message})
+                sendBack({type: 'GET.BOOKMARKS.FAIL', errorMessage: e.message})
               })
           },
         },
         on: {
-          GET_BOOKMARKS_SUCCESS: {
+          'GET.BOOKMARKS.SUCCESS': {
             target: 'ready',
             actions: bookmarksModel.assign({
               bookmarks: (_, event) => {
@@ -58,7 +69,7 @@ export const bookmarksMachine = bookmarksModel.createMachine(
               },
             }),
           },
-          GET_BOOKMARKS_FAIL: {
+          'GET.BOOKMARKS.FAIL': {
             target: 'errored',
             actions: bookmarksModel.assign({
               errorMessage: (_, event) => event.errorMessage,
@@ -68,7 +79,7 @@ export const bookmarksMachine = bookmarksModel.createMachine(
       },
       ready: {
         on: {
-          ADD_BOOKMARK: {
+          'ADD.BOOKMARK': {
             actions: [
               bookmarksModel.assign({
                 bookmarks: (context, event) => {
@@ -88,7 +99,7 @@ export const bookmarksMachine = bookmarksModel.createMachine(
               'persist',
             ],
           },
-          REMOVE_BOOKMARK: {
+          'REMOVE.BOOKMARK': {
             actions: [
               bookmarksModel.assign({
                 bookmarks: (context, event) => context.bookmarks.filter((bookmark) => bookmark.link != event.link),

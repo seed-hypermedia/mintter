@@ -22,7 +22,7 @@ export const Complete: React.FC = () => {
         You just created your Mintter account. Please share it with others and help us spread the word.
       </OnboardingStepDescription>
       <OnboardingStepActions>
-        <OnboardingStepButton color="success" onClick={handleSubmit}>
+        <OnboardingStepButton color="success" onClick={handleSubmit} data-cy="next-btn">
           Open Mintter App
         </OnboardingStepButton>
       </OnboardingStepActions>

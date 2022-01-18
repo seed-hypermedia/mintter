@@ -1,4 +1,4 @@
-import {CSS, styled} from '@mintter/ui/stitches.config'
+import {CSS, styled} from '@app/stitches.config'
 import {FormEvent, useCallback, useEffect, useLayoutEffect, useRef} from 'react'
 
 const StyledTextarea = styled(

@@ -1,18 +1,19 @@
-import {Box} from '@mintter/ui/box'
-import {Button} from '@mintter/ui/button'
-import {dialogContentStyles, DialogTitle, overlayStyles} from '@mintter/ui/dialog'
-import {styled} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
-import {TextField} from '@mintter/ui/text-field'
+import {styled} from '@app/stitches.config'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useActor, useInterpret} from '@xstate/react'
 import {FormEvent, useRef} from 'react'
 import BarcodeScannerComponent from 'react-qr-barcode-scanner'
 import {ActorRefFrom} from 'xstate'
 import {createWalletMachine, listMachine, listModel, Wallet} from '../wallet-machine'
+import {Box} from './box'
+import {Button} from './button'
+import {dialogContentStyles, DialogTitle, overlayStyles} from './dialog-styles'
+import {Text} from './text'
+import {TextField} from './text-field'
+
 export function WalletList() {
   // const [data, setData] = useState('Not Found')
-  const service = useInterpret(listMachine, {devTools: true})
+  const service = useInterpret(() => listMachine, {devTools: true})
   const [state, send] = useActor(service)
   console.log('list state', state)
 

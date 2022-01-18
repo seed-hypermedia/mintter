@@ -1,11 +1,13 @@
-import {Store as TauriStore} from 'tauri-plugin-store-api'
+// import {Store as TauriStore} from 'tauri-plugin-store-api'
 
-export function createStore(path: string): TauriStore | LocalStore {
-  if (!import.meta.env.SSR) {
-    return new TauriStore(path)
-  } else {
-    return new LocalStore(path)
-  }
+// export function createStore(path: string): TauriStore | LocalStore {
+export function createStore(path: string): LocalStore {
+  return new LocalStore(path)
+  // if (!import.meta.env.SSR) {
+  //   return new TauriStore(path)
+  // } else {
+  //   return new LocalStore(path)
+  // }
 }
 
 type LocalStorageStore<T = unknown> = {
@@ -68,6 +70,7 @@ type GetParams = {
 }
 
 function getFallback<T>({path, key}: GetParams): Promise<T | null> {
+  //@ts-ignore
   return getStoreFallback(path)
     .then(getValueFallback)
     .catch((err) => {

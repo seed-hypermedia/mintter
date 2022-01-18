@@ -1,24 +1,22 @@
-import {Account, connect, ConnectionStatus, getPeerInfo} from '@mintter/client'
-import {Box} from '@mintter/ui/box'
-import {Button} from '@mintter/ui/button'
-import {Prompt} from '@mintter/ui/dialog'
-import {keyframes, styled} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
-import {TextField} from '@mintter/ui/text-field'
+import {Account, connect, ConnectionStatus, getPeerInfo} from '@app/client'
+import {useListAccounts} from '@app/hooks'
+import {keyframes, styled} from '@app/stitches.config'
 import * as HoverCard from '@radix-ui/react-hover-card'
 import {FormEvent, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
 import {useQuery} from 'react-query'
-import {useAccountInfo} from '../../auth-context'
-import {useListAccounts} from '../../hooks'
+import {Box} from '../box'
+import {Button} from '../button'
+import {Prompt} from '../prompt'
+import {Text} from '../text'
+import {TextField} from '../text-field'
 import {Section} from './section'
 import {SectionError} from './section-error'
 import {StyledSectionItem} from './section-item'
 
 export function ConnectionsSection() {
   const {status, data = [], error} = useListAccounts()
-  const info = useAccountInfo()
 
   let title = `Connections (${data.length})`
 
@@ -29,7 +27,7 @@ export function ConnectionsSection() {
 
   return (
     <Section title={title}>
-      {!!data.length ? (
+      {data.length ? (
         <ErrorBoundary
           FallbackComponent={SectionError}
           onReset={() => {

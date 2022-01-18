@@ -4,7 +4,11 @@
     "noEmit": false,
     "outDir": "dist",
     "declaration": true,
-    "declarationDir": "dist"
+    "skipLibCheck": true,
+    "declarationDir": "dist",
+    "baseUrl": "src",
+    "types": ["vitest"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/hast-mtt/test/*", "**/*.d.ts"]
 }

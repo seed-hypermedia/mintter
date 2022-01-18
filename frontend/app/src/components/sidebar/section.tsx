@@ -1,9 +1,9 @@
-import {Box} from '@mintter/ui/box'
-import {Icon, icons} from '@mintter/ui/icon'
-import {css} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
+import {css} from '@app/stitches.config'
 import * as Collapsible from '@radix-ui/react-collapsible'
 import {PropsWithChildren} from 'react'
+import {Box} from '../box'
+import {Icon, icons} from '../icon'
+import {Text} from '../text'
 
 export function Section({
   title,

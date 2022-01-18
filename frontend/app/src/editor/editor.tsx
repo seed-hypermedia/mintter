@@ -1,5 +1,5 @@
+import {Box} from '@components/box'
 import {FlowContent, MttastContent} from '@mintter/mttast'
-import {Box} from '@mintter/ui/box'
 import {useActor} from '@xstate/react'
 import {PropsWithChildren, Suspense, useMemo} from 'react'
 import type {Descendant, Editor as EditorType} from 'slate'

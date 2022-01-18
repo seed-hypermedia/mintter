@@ -1,3 +1,6 @@
+import {sidebarMachine} from '@components/sidebar/sidebar-machine'
+import {ActorRefFrom, createMachine, spawn} from 'xstate'
+import {createModel} from 'xstate/lib/model'
 import {
   Document,
   listDrafts,
@@ -5,10 +8,7 @@ import {
   listPublications,
   ListPublicationsResponse,
   Publication,
-} from '@mintter/client'
-import {ActorRefFrom, createMachine, spawn} from 'xstate'
-import {createModel} from 'xstate/lib/model'
-import {sidebarMachine} from './components/sidebar/sidebar-machine'
+} from './client'
 
 export type PublicationRef = Publication & {
   ref: ActorRefFrom<ReturnType<typeof createPublicationMachine>>
