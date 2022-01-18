@@ -1,6 +1,5 @@
-import {isFlowContent, isGroup, isGroupContent} from '@mintter/mttast'
-import {createId, statement} from '@mintter/mttast-builder'
-import {css, styled} from '@mintter/ui/stitches.config'
+import {css, styled} from '@app/stitches.config'
+import {createId, isFlowContent, isGroup, isGroupContent, statement} from '@mintter/mttast'
 import {forwardRef, PropsWithChildren} from 'react'
 import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'

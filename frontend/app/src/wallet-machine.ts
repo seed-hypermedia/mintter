@@ -1,3 +1,6 @@
+import {gql, request} from 'graphql-request'
+import {EventFrom, Sender, sendParent, spawn} from 'xstate'
+import {createModel} from 'xstate/lib/model'
 import {
   DeleteWalletPayload,
   LightningWallet,
@@ -9,10 +12,7 @@ import {
   MutationSetupLndHubWalletArgs,
   SetDefaultWalletPayload,
   SetupLndHubWalletPayload,
-} from '@mintter/client'
-import {gql, request} from 'graphql-request'
-import {EventFrom, Sender, sendParent, spawn} from 'xstate'
-import {createModel} from 'xstate/lib/model'
+} from './client'
 
 export const MINTTER_GRAPHQL_API_URL = `${MINTTER_API_URL_DEFAULT}/graphql`
 
@@ -21,7 +21,7 @@ export const listModel = createModel(
     walletName: '',
     walletUrl: '',
     wallets: [] as Array<Wallet>,
-    errorMessage: null as Maybe<String>,
+    errorMessage: null as Maybe<string>,
   },
   {
     events: {

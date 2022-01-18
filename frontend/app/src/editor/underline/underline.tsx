@@ -1,10 +1,10 @@
-import {styled} from '@mintter/ui/stitches.config'
+import {styled} from '@app/stitches.config'
 import type {EditorPlugin} from '../types'
 import {toggleMark} from '../utils'
 
 export const MARK_UNDERLINE = 'underline'
 
-export const Underline = styled('span', {
+export const Underline = styled('u', {
   textDecoration: 'underline',
 })
 
@@ -14,7 +14,7 @@ export const createUnderlinePlugin = (): EditorPlugin => ({
     () =>
     ({attributes, children, leaf}) => {
       if (leaf[MARK_UNDERLINE] && leaf.value) {
-        return <u {...attributes}>{children}</u>
+        return <Underline {...attributes}>{children}</Underline>
       }
     },
   onDOMBeforeInput: (editor) => (ev) => {

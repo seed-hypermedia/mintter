@@ -3,9 +3,6 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "@mintter/ui/*": ["frontend/ui/src/*"],
-      "@mintter/client/*": ["frontend/client/src/*"],
-      "@mintter/mttast-builder": ["frontend/mttast-builder"],
       "@mintter/*": ["frontend/*/src"]
     }
   }

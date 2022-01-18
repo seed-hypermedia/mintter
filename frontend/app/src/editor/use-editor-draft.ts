@@ -1,14 +1,24 @@
-import {Document, getDraft, Link, Publication, publishDraft, updateDraft} from '@mintter/client'
-import {FlowContent, isEmbed, isFlowContent, isLink, MttastContent} from '@mintter/mttast'
-import {createId, group, paragraph, statement, text} from '@mintter/mttast-builder'
+import {Document, getDraft, Link, Publication, publishDraft, updateDraft} from '@app/client'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {queryKeys} from '@app/hooks'
+import {
+  createId,
+  FlowContent,
+  group,
+  isEmbed,
+  isFlowContent,
+  isLink,
+  MttastContent,
+  paragraph,
+  statement,
+  text,
+} from '@mintter/mttast'
 import {useActor, useInterpret} from '@xstate/react'
 import isEqual from 'fast-deep-equal'
 import {useEffect} from 'react'
 import {QueryClient, useQueryClient} from 'react-query'
 import {visit} from 'unist-util-visit'
 import {createModel} from 'xstate/lib/model'
-import {MINTTER_LINK_PREFIX} from '../constants'
-import {queryKeys} from '../hooks'
 import {getEmbedIds} from './embed'
 
 export type EditorDocument = Partial<Document> & {
@@ -283,7 +293,7 @@ export type UseEditorDraftParams = DraftEditorMachineProps & {
 
 export function useEditorDraft({documentId, ...afterActions}: UseEditorDraftParams) {
   const client = useQueryClient()
-  const service = useInterpret(draftEditorMachine({...afterActions, client}))
+  const service = useInterpret(() => draftEditorMachine({...afterActions, client}))
 
   const [state, send] = useActor(service)
 

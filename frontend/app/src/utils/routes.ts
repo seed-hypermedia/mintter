@@ -1,4 +1,4 @@
-import {ADMIN_ROUTE} from '../constants'
+import {ADMIN_ROUTE} from '@app/constants'
 
 export const createPath = (url: string, path: string): string => {
   if (path.split('')[0] === '/') {

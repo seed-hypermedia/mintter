@@ -1,4 +1,4 @@
-import {styled} from '@mintter/ui/stitches.config'
+import {styled} from '@app/stitches.config'
 
 export const EmbedUI = styled('q', {
   borderRadius: '$1',

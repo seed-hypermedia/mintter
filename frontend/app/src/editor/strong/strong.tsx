@@ -1,7 +1,10 @@
+import {styled} from '@app/stitches.config'
 import type {EditorPlugin} from '../types'
 import {toggleMark} from '../utils'
 
 export const MARK_STRONG = 'strong'
+
+const Strong = styled('strong', {})
 
 export const createStrongPlugin = (): EditorPlugin => ({
   name: MARK_STRONG,
@@ -9,7 +12,7 @@ export const createStrongPlugin = (): EditorPlugin => ({
     () =>
     ({attributes, children, leaf}) => {
       if (leaf[MARK_STRONG] && leaf.value) {
-        return <strong {...attributes}>{children}</strong>
+        return <Strong {...attributes}>{children}</Strong>
       }
     },
   onDOMBeforeInput: (editor) => (ev) => {

@@ -11,11 +11,12 @@ const routesToPrerender = ['/']
   for (const url of routesToPrerender) {
     const context = {}
     const appHtml = await render(url, context)
+    console.log('🚀 ~ file: prerender.mjs ~ line 14 ~ ; ~ appHtml', appHtml)
     const html = template.replace(`<!--app-html-->`, appHtml)
 
     const filePath = `dist/static${url === '/' ? '/index' : url}.html`
     fs.writeFileSync(path.resolve(filePath), html)
-    console.log('pre-rendered:', filePath)
+    console.log('>>>>>>> pre-rendered:', filePath)
   }
   process.exit(0)
 })()

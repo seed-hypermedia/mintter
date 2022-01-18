@@ -1,4 +1,4 @@
-import {styled} from '@mintter/ui/stitches.config'
+import {styled} from '@app/stitches.config'
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu'
 import {dropdownContentStyle, dropdownItemStyle} from './dropdown'
 

@@ -1,11 +1,8 @@
-import {updateAccount} from '@mintter/client'
-import {Box} from '@mintter/ui/box'
-import {Button} from '@mintter/ui/button'
-import {dialogContentStyles, DialogTitle, overlayStyles} from '@mintter/ui/dialog'
-import {Icon} from '@mintter/ui/icon'
-import {styled} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
-import {TextField} from '@mintter/ui/text-field'
+import {Device, updateAccount} from '@app/client'
+import {queryKeys, useAccount} from '@app/hooks'
+import {styled} from '@app/stitches.config'
+import {useTheme} from '@app/theme'
+import {dialogContentStyles, DialogTitle, overlayStyles} from '@components/dialog-styles'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {useActor} from '@xstate/react'
@@ -13,10 +10,13 @@ import {useEffect} from 'react'
 import {useForm} from 'react-hook-form'
 import toast from 'react-hot-toast'
 import {useMutation, useQueryClient} from 'react-query'
-import {queryKeys, useAccount} from '../hooks'
-import {useTheme} from '../theme'
+import {Box} from './box'
+import {Button} from './button'
+import {Icon} from './icon'
 import {PeerAddrs} from './peer-addrs'
 import {ScrollArea} from './scroll-area'
+import {Text} from './text'
+import {TextField} from './text-field'
 import {WalletList} from './wallet-list'
 
 type ProfileInformationDataType = {
@@ -47,6 +47,7 @@ export function Settings() {
       <Content>
         <DialogPrimitive.Title asChild>
           <DialogTitle
+            //@ts-ignore
             css={{
               height: 64,
               display: 'flex',

@@ -23,7 +23,7 @@ cd <PROJECT_ROOT>
 yarn codegen
 ```
 
-The above command generates a `types.d.ts` file in `frontend/client/.generated` (checkout [codegen.yml](../codegen.yml) for more info about the config.)
+The above command generates a `types.d.ts` file in `frontend/app/src/client/.generated` (checkout [codegen.yml](../codegen.yml) for more info about the config.)
 
 ### Additional Resources
 

@@ -1,13 +1,13 @@
+import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {useBookmarksService} from '@components/bookmarks'
+import {Icon} from '@components/icon'
+import {useSidepanel} from '@components/sidepanel'
+import {Text} from '@components/text'
 import type {Embed as EmbedType} from '@mintter/mttast'
 import {FlowContent, isEmbed} from '@mintter/mttast'
-import {Icon} from '@mintter/ui/icon'
-import {Text} from '@mintter/ui/text'
 import {PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
 import {useLocation} from 'wouter'
-import {useBookmarksService} from '../../components/bookmarks'
-import {useSidepanel} from '../../components/sidepanel'
-import {MINTTER_LINK_PREFIX} from '../../constants'
 import {ContextMenu} from '../context-menu'
 import {copyTextToClipboard} from '../statement'
 import type {EditorPlugin} from '../types'
@@ -24,7 +24,7 @@ export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{emb
 
   function addBookmark(docId: string, blockId: FlowContent['id']) {
     bookmarksService.send({
-      type: 'ADD_BOOKMARK',
+      type: 'ADD.BOOKMARK',
       link: `${MINTTER_LINK_PREFIX}${docId}/${version}/${blockId}`,
     })
   }

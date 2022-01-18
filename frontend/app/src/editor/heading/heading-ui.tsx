@@ -1,4 +1,4 @@
-import {styled} from '@mintter/ui/stitches.config'
+import {styled} from '@app/stitches.config'
 import {statementStyle} from '../statement'
 
 export const HeadingUI = styled('li', statementStyle, {

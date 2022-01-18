@@ -1,8 +1,8 @@
-import { FlowContent } from '@mintter/mttast'
-import { useMemo } from 'react'
-import { visit } from 'unist-util-visit'
-import { usePublication } from '../../hooks'
-import { getEmbedIds } from './get-embed-ids'
+import {usePublication} from '@app/hooks'
+import {FlowContent} from '@mintter/mttast'
+import {useMemo} from 'react'
+import {visit} from 'unist-util-visit'
+import {getEmbedIds} from './get-embed-ids'
 
 export function useEmbed(url: string) {
   if (!url) {

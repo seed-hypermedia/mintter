@@ -1,4 +1,4 @@
-import {css, keyframes, styled} from '@mintter/ui/stitches.config'
+import {css, keyframes, styled} from '@app/stitches.config'
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
 
 const slideUpAndFade = keyframes({

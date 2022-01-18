@@ -1,10 +1,9 @@
-/** @type {import('vite/dist/node').UserConfig} */
+/// <reference types="vitest" />
 
 import react from '@vitejs/plugin-react'
 import {defineConfig} from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   cacheDir: '.vite',
   plugins: [
@@ -18,5 +17,10 @@ export default defineConfig({
     minify: !process.env.TAURI_DEBUG && 'esbuild',
     sourcemap: !process.env.TAURI_DEBUG,
     chunkSizeWarningLimit: 2048,
+  },
+  test: {
+    global: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
   },
 })

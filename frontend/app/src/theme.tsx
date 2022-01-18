@@ -1,6 +1,6 @@
-import {darkTheme, lightTheme} from '@mintter/ui/stitches.config'
 import {InterpreterFrom} from 'xstate'
 import {createModel} from 'xstate/lib/model'
+import {darkTheme, lightTheme} from './stitches.config'
 import {createStore} from './store'
 import {createInterpreterContext} from './utils/machine-utils'
 

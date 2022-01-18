@@ -7,16 +7,13 @@
   "private": true,
   "scripts": {
     "prebuild": "yarn validate",
-    "build": "yarn workspaces foreach -ptR --from '{@mintter/client,@mintter/ui,@mintter/mttast,@mintter/mttast-builder,@mintter/hastmtt,@mintter/app}' run build",
-    "lint": "yarn workspaces foreach -ptR --from '{@mintter/client,@mintter/ui,@mintter/mttast,@mintter/mttast-builder,@mintter/hastmtt,@mintter/app}' run lint",
-    "format": "yarn workspaces foreach -ptR --from '{@mintter/client,@mintter/ui,@mintter/mttast,@mintter/mttast-builder,@mintter/hastmtt,@mintter/app}' run format",
-    "validate": "yarn workspaces foreach -ptR --from '{@mintter/client,@mintter/ui,@mintter/mttast,@mintter/mttast-builder,@mintter/hastmtt,@mintter/app}' run validate",
-    "ui": "yarn workspace @mintter/ui",
+    "build": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run build",
+    "lint": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run lint",
+    "format": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run format",
+    "validate": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run validate",
+    "test": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run test",
     "app": "yarn workspace @mintter/app",
-    "client": "yarn workspace @mintter/client",
     "mttast": "yarn workspace @mintter/mttast",
-    "builder": "yarn workspace @mintter/mttast-builder",
-    "hastmtt": "yarn workspace @mintter/hastmtt",
     "codegen": "graphql-codegen",
     "start": "./dev run-desktop",
     "start:s2": "./dev run-desktop -- --daemon-flags=\"--repo-path=~/.mtt2 --http-port='56001' --grpc-port='56002' --p2p.addr='/ip4/0.0.0.0/tcp/56000'\""
@@ -25,10 +22,13 @@
     "frontend/*"
   ],
   "devDependencies": {
+    "@types/wouter": "^2.2.0",
+    "app": "^0.1.0",
     "covector": "^0.7.2",
     "eslint": "^8.5.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.5.1",
+    "rollup": "^2.64.0",
     "ts-proto": "^1.83.0",
     "typescript": "4.4.4"
   },

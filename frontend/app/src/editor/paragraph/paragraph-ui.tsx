@@ -1,5 +1,5 @@
-import {css} from '@mintter/ui/stitches.config'
-import {Text, TextProps} from '@mintter/ui/text'
+import {css} from '@app/stitches.config'
+import {Text, TextProps} from '@components/text'
 import {forwardRef, PropsWithChildren} from 'react'
 
 export const paragraphStyles = css({

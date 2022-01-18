@@ -1,5 +1,5 @@
+import {createInterpreterContext} from '@app/utils/machine-utils'
 import {InterpreterFrom} from 'xstate'
-import {createInterpreterContext} from '../../utils/machine-utils'
 import {bookmarksMachine} from './bookmarks-machine'
 
 const [BookmarksProvider, useBookmarksService, createBookmarksSelector] =

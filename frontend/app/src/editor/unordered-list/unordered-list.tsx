@@ -1,6 +1,5 @@
-import {isFlowContent, isUnorderedList} from '@mintter/mttast'
-import {createId, statement} from '@mintter/mttast-builder'
-import {styled} from '@mintter/ui/stitches.config'
+import {styled} from '@app/stitches.config'
+import {createId, isFlowContent, isUnorderedList, statement} from '@mintter/mttast'
 import {Element, Node, Transforms} from 'slate'
 import {groupStyle, removeEmptyGroup} from '../group'
 import type {EditorPlugin} from '../types'

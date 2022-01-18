@@ -6,20 +6,25 @@ import {
   LinkNode,
   listCitations,
   Publication as PublicationType,
-} from '@mintter/client'
-import {FlowContent, MttastContent} from '@mintter/mttast'
-import {document, group} from '@mintter/mttast-builder'
-import {Box} from '@mintter/ui/box'
-import {Button} from '@mintter/ui/button'
-import {Icon} from '@mintter/ui/icon'
-import {Text} from '@mintter/ui/text'
-import {TextField} from '@mintter/ui/text-field'
+} from '@app/client'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {ContextMenu} from '@app/editor/context-menu'
+import {Editor} from '@app/editor/editor'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {copyTextToClipboard} from '@app/editor/statement'
+import {useAccount} from '@app/hooks'
+import {tippingMachine, tippingModel} from '@app/tipping-machine'
+import {getDateFormat} from '@app/utils/get-format-date'
+import {useBookmarksService} from '@components/bookmarks'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon} from '@components/icon'
+import {useEnableSidepanel, useSidepanel} from '@components/sidepanel'
+import {Text} from '@components/text'
+import {TextField} from '@components/text-field'
+import {document, FlowContent, group, MttastContent} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
-import {useBookmarksService} from 'frontend/app/src/components/bookmarks'
-import {MINTTER_LINK_PREFIX} from 'frontend/app/src/constants'
-import {ContextMenu} from 'frontend/app/src/editor/context-menu'
-import {copyTextToClipboard} from 'frontend/app/src/editor/statement'
 import {useEffect} from 'react'
 import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
@@ -27,12 +32,6 @@ import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
 import {StateFrom} from 'xstate'
 import {createModel} from 'xstate/lib/model'
-import {useEnableSidepanel, useSidepanel} from '../components/sidepanel'
-import {Editor} from '../editor'
-import {EditorMode} from '../editor/plugin-utils'
-import {useAccount} from '../hooks'
-import {tippingMachine, tippingModel} from '../tipping-machine'
-import {getDateFormat} from '../utils/get-format-date'
 import {PageProps} from './types'
 
 export default function Publication({params}: PageProps) {
@@ -202,7 +201,7 @@ export default function Publication({params}: PageProps) {
               <Discussion links={state.context.links} />
             ) : (
               <>
-                <Text>There's no Discussion yet.</Text>
+                <Text>There is no Discussion yet.</Text>
                 <Button size="1">Start one</Button>
               </>
             )}
@@ -259,7 +258,7 @@ export default function Publication({params}: PageProps) {
 
 function usePagePublication(docId?: string) {
   // const client = useQueryClient()
-  const service = useInterpret(publicationMachine)
+  const service = useInterpret(() => publicationMachine)
   const [state, send] = useActor(service)
 
   useEffect(() => {
@@ -479,18 +478,18 @@ function TippingModal({
 }) {
   // if (!visible) return null
 
-  const service = useInterpret(tippingMachine)
+  const service = useInterpret(() => tippingMachine)
   const [state, send] = useActor(service)
+
+  useEffect(() => {
+    send(tippingModel.events.SET_TIP_DATA(publicationId, accountId))
+  }, [publicationId, accountId])
 
   if (typeof publicationId == 'undefined' || typeof accountId == 'undefined') {
     console.error(`Tipping Modal ERROR: invalid publicationId or accountId: ${{publicationId, accountId}}`)
 
     return null
   }
-
-  useEffect(() => {
-    send(tippingModel.events.SET_TIP_DATA(publicationId, accountId))
-  }, [publicationId, accountId])
 
   return (
     <PopoverPrimitive.Root
@@ -664,14 +663,14 @@ function Discussion({links = []}: {links: Array<Link>}) {
       }}
     >
       {links.map((link) => (
-        <DiscussionItem link={link} />
+        <DiscussionItem key={link} link={link} />
       ))}
     </Box>
   )
 }
 
 function DiscussionItem({link}: {link: Link}) {
-  const [state, send] = useMachine(discussionItemMachine)
+  const [state, send] = useMachine(() => discussionItemMachine)
   const {data: author} = useAccount(state?.context?.publication?.document?.author)
   const bookmarkService = useBookmarksService()
   const sidepanelService = useSidepanel()
@@ -679,7 +678,7 @@ function DiscussionItem({link}: {link: Link}) {
 
   function addBookmark() {
     bookmarkService.send({
-      type: 'ADD_BOOKMARK',
+      type: 'ADD.BOOKMARK',
       link: `${MINTTER_LINK_PREFIX}${link.source?.documentId}/${link.source?.version}/${link.source?.blockId}`,
     })
   }
@@ -786,14 +785,16 @@ function DiscussionItem({link}: {link: Link}) {
   return null
 }
 
-async function getBlock(entry?: LinkNode): Promise<FlowContent> {
+async function getBlock(entry?: LinkNode): Promise<FlowContent | undefined> {
   if (!entry) return
   let pub = await getPublication(entry.documentId)
 
   let block: FlowContent
-  visit(JSON.parse(pub.document?.content!)[0], {id: entry.blockId}, (node) => {
-    block = node
-  })
+  if (pub.document?.content) {
+    visit(JSON.parse(pub.document.content)[0], {id: entry.blockId}, (node) => {
+      block = node
+    })
+  }
 
   //@ts-ignore
   return block

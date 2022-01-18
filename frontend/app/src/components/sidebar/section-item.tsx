@@ -1,16 +1,16 @@
-import {Document} from '@mintter/client'
-import {Box} from '@mintter/ui/box'
-import {Alert} from '@mintter/ui/dialog'
-import {Icon} from '@mintter/ui/icon'
-import {styled} from '@mintter/ui/stitches.config'
+import {Document} from '@app/client'
+import {deleteDialogMachine} from '@app/delete-dialog-machine'
+import {useMainPage} from '@app/main-page-context'
+import {createPublicationMachine} from '@app/main-page-machine'
+import {styled} from '@app/stitches.config'
+import {useRoute} from '@app/utils/use-route'
 import {useActor, useMachine} from '@xstate/react'
 import {MouseEvent} from 'react'
 import {useLocation} from 'wouter'
 import {ActorRefFrom, assign} from 'xstate'
-import {deleteDialogMachine} from '../../delete-dialog-machine'
-import {useMainPage} from '../../main-page-context'
-import {createPublicationMachine} from '../../main-page-machine'
-import {useRoute} from '../../utils/use-route'
+import {Alert} from '../alert'
+import {Box} from '../box'
+import {Icon} from '../icon'
 
 export function SectionItem({
   document,
@@ -29,7 +29,7 @@ export function SectionItem({
   const {match} = useRoute(href)
   const mainService = useMainPage()
   const [mainState] = useActor(mainService)
-  const [deleteState, deleteSend] = useMachine(
+  const [deleteState, deleteSend] = useMachine(() =>
     deleteDialogMachine.withConfig({
       actions: {
         onSuccess: assign((context) => {

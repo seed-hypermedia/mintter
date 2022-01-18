@@ -1,25 +1,24 @@
-import {isEmbed, isLink} from '@mintter/mttast'
-import {document} from '@mintter/mttast-builder'
-import {Box} from '@mintter/ui/box'
-import {Icon} from '@mintter/ui/icon'
-import {styled} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {Dropdown} from '@app/editor/dropdown'
+import {Editor} from '@app/editor/editor'
+import {getEmbedIds, useEmbed} from '@app/editor/embed'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {copyTextToClipboard} from '@app/editor/statement'
+import {useAccount} from '@app/hooks'
+import {styled} from '@app/stitches.config'
+import {getDateFormat} from '@app/utils/get-format-date'
+import {document, isEmbed, isLink} from '@mintter/mttast'
 import {MouseEvent, useEffect, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
 import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
 import {createModel} from 'xstate/lib/model'
-import {MINTTER_LINK_PREFIX} from '../../constants'
-import {Editor} from '../../editor'
-import {Dropdown} from '../../editor/dropdown'
-import {getEmbedIds, useEmbed} from '../../editor/embed'
-import {EditorMode} from '../../editor/plugin-utils'
-import {copyTextToClipboard} from '../../editor/statement'
-import {useAccount} from '../../hooks'
-import {getDateFormat} from '../../utils/get-format-date'
 import {useBookmarks, useBookmarksService} from '../bookmarks'
+import {Box} from '../box'
+import {Icon} from '../icon'
 import {ScrollArea} from '../scroll-area'
+import {Text} from '../text'
 import {useAnnotations, useIsSidepanelOpen, useSidepanel} from './sidepanel-context'
 
 export const sidepanelModel = createModel(
@@ -148,7 +147,7 @@ export function Sidepanel() {
             <Text fontWeight="bold">Annotations</Text>
             {annotations.map((item) => {
               return (
-                <ErrorBoundary fallback={<span>sidepanel item fallback</span>}>
+                <ErrorBoundary key={item} fallback={<span>sidepanel item fallback</span>}>
                   <SidepanelItem key={item} item={item} remove={false} />
                 </ErrorBoundary>
               )
@@ -164,7 +163,7 @@ export function Sidepanel() {
             <Text fontWeight="bold">Bookmarks</Text>
             {bookmarks.map(({link}) => {
               return (
-                <ErrorBoundary fallback={<span>sidepanel item fallback</span>}>
+                <ErrorBoundary key={link} fallback={<span>sidepanel item fallback</span>}>
                   <SidepanelItem key={link} item={link} />
                 </ErrorBoundary>
               )
@@ -288,7 +287,7 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
             <Text size="2">Open in main Panel</Text>
           </Dropdown.Item>
           {remove && (
-            <Dropdown.Item onSelect={() => bookmarksService.send({type: 'REMOVE_BOOKMARK', link: item})}>
+            <Dropdown.Item onSelect={() => bookmarksService.send({type: 'REMOVE.BOOKMARK', link: item})}>
               <Icon name="Close" size="1" />
               <Text size="2">Remove</Text>
             </Dropdown.Item>

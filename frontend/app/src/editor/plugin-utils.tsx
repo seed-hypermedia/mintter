@@ -2,7 +2,7 @@ import {createEditor, Editor, NodeEntry, Range} from 'slate'
 import {withHistory} from 'slate-history'
 import {DefaultElement, DefaultLeaf, RenderElementProps, RenderLeafProps, withReact} from 'slate-react'
 import {EditableProps} from 'slate-react/dist/components/editable'
-// import {error} from 'tauri-plugin-log-api'
+import {error} from 'tauri-plugin-log-api'
 import {EditableEventHandlers, EditorPlugin} from './types'
 
 export enum EditorMode {
@@ -44,7 +44,7 @@ export function buildEditorHook(plugins: EditorPlugin[], mode: EditorMode): Edit
       editor = configureEditor(editor) || editor
     } catch (e) {
       if (!import.meta.env.SSR) {
-        // error(`[${name}] ${e} in configureEditor hook`)
+        error(`[${name}] ${e} in configureEditor hook`)
       }
       throw e
     }
@@ -62,8 +62,8 @@ export function buildRenderElementHook(plugins: EditorPlugin[], editor: Editor):
         const element = renderElement(editor)(props)
         if (element) return element
       } catch (e) {
-        // error(`[${name}] ${e} in renderElement hook`)
-        // throw error
+        error(`[${name}] ${e} in renderElement hook`)
+        throw error
       }
     }
     return <DefaultElement {...props} />
@@ -82,8 +82,8 @@ export function buildRenderLeafHook(plugins: EditorPlugin[], editor: Editor): Ed
         const newChildren = renderLeaf(editor)(leafProps)
         if (newChildren) leafProps.children = newChildren
       } catch (e) {
-        // error(`[${name}] ${e} in renderLeaf hook`)
-        // throw error
+        error(`[${name}] ${e} in renderLeaf hook`)
+        throw error
       }
     }
 
@@ -102,8 +102,8 @@ export function buildDecorateHook(plugins: EditorPlugin[], editor: Editor): Edit
       try {
         ranges = ranges.concat(decorate(editor)(entry) || [])
       } catch (e) {
-        // error(`[${name}] ${e} in decorate hook`)
-        // throw error
+        error(`[${name}] ${e} in decorate hook`)
+        throw error
       }
     }
     return ranges
@@ -126,8 +126,8 @@ export function buildEventHandlerHooks(plugins: EditorPlugin[], editor: Editor):
           // @ts-expect-error ev has incompatible types
           hook(editor)(ev)
         } catch (e) {
-          // error(`[${name}] ${e} in ${event} hook`)
-          // throw error
+          error(`[${name}] ${e} in ${event} hook`)
+          throw error
         }
       }
     }

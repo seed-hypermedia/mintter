@@ -1,27 +1,27 @@
-import {Box} from '@mintter/ui/box'
-import {css} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
+import {HoverProvider} from '@app/editor/hover-context'
+import {hoverMachine} from '@app/editor/hover-machine'
+import {MainPageProvider} from '@app/main-page-context'
+import {mainPageMachine} from '@app/main-page-machine'
+import {css} from '@app/stitches.config'
+import {bookmarksMachine, BookmarksProvider} from '@components/bookmarks'
+import {Box} from '@components/box'
+import {ScrollArea} from '@components/scroll-area'
+import {Sidebar} from '@components/sidebar'
+import {Sidepanel, sidepanelMachine, SidepanelProvider} from '@components/sidepanel'
+import {Text} from '@components/text'
+import {Topbar} from '@components/topbar'
 import {useInterpret} from '@xstate/react'
 import {ReactNode} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {Route} from 'wouter'
-import {bookmarksMachine, BookmarksProvider} from '../components/bookmarks'
-import {ScrollArea} from '../components/scroll-area'
-import {Sidebar} from '../components/sidebar'
-import {Sidepanel, sidepanelMachine, SidepanelProvider} from '../components/sidepanel'
-import {Topbar} from '../components/topbar'
-import {HoverProvider} from '../editor/hover-context'
-import {hoverMachine} from '../editor/hover-machine'
-import {MainPageProvider} from '../main-page-context'
-import {mainPageMachine} from '../main-page-machine'
 import EditorPage from './editor'
 import Publication from './publication'
 
 export function MainPage() {
-  const sidepanelService = useInterpret(sidepanelMachine)
-  const bookmarksService = useInterpret(bookmarksMachine)
-  const hoverService = useInterpret(hoverMachine)
-  const mainPageService = useInterpret(mainPageMachine, {devTools: true})
+  const sidepanelService = useInterpret(() => sidepanelMachine)
+  const bookmarksService = useInterpret(() => bookmarksMachine)
+  const hoverService = useInterpret(() => hoverMachine)
+  const mainPageService = useInterpret(() => mainPageMachine, {devTools: true})
 
   return (
     <MainPageProvider value={mainPageService}>

@@ -1,3 +1,8 @@
+import {useAccountInfo} from '@app/auth-context'
+import type {FlowContent} from '@mintter/mttast'
+import {useMemo} from 'react'
+import type {UseQueryResult} from 'react-query'
+import {useQuery, useQueryClient} from 'react-query'
 import {
   Account,
   Document,
@@ -15,12 +20,7 @@ import {
   ListPublicationsResponse,
   PeerInfo,
   Publication,
-} from '@mintter/client'
-import type {FlowContent} from '@mintter/mttast'
-import {useMemo} from 'react'
-import type {UseQueryResult} from 'react-query'
-import {useQuery, useQueryClient} from 'react-query'
-import {useAccountInfo} from '../auth-context'
+} from '../client'
 import type {HookOptions} from './types'
 
 export * from './types'
@@ -133,9 +133,8 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
   const queryClient = useQueryClient()
 
   let requestId: string
+  const info = useAccountInfo()
   if (!peerId) {
-    const info = useAccountInfo()
-
     requestId = info?.peerId as string
   } else {
     requestId = peerId

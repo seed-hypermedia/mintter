@@ -1,9 +1,20 @@
-import {FlowContent, isGroupContent, isHeading, MttastContent} from '@mintter/mttast'
-import {blockquote, code, group, heading, ol, statement, ul} from '@mintter/mttast-builder'
-import {Box} from '@mintter/ui/box'
-import {Icon, icons} from '@mintter/ui/icon'
-import {styled} from '@mintter/ui/stitches.config'
-import {Text} from '@mintter/ui/text'
+import {styled} from '@app/stitches.config'
+import {Box} from '@components/box'
+import {Icon, icons} from '@components/icon'
+import {Text} from '@components/text'
+import {
+  blockquote,
+  code,
+  FlowContent,
+  group,
+  heading,
+  isGroupContent,
+  isHeading,
+  MttastContent,
+  ol,
+  statement,
+  ul,
+} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
 import {Fragment} from 'react'
 import {BaseRange, Editor, Node, Path, Transforms} from 'slate'

@@ -1,0 +1,10 @@
+{
+  "component": {
+    "testFiles": "**/*.test.ct.tsx",
+    "componentFolder": "src",
+    "viewportWidth": 800,
+    "viewportHeight": 600
+  },
+  "screenshotsFolder": "./cypress/snapshots/actual",
+  "trashAssetsBeforeRuns": true
+}
