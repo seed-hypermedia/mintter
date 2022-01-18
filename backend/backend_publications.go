@@ -159,6 +159,15 @@ func (srv *backend) GetPublication(ctx context.Context, c cid.Cid) (Publication,
 func (srv *backend) DeletePublication(ctx context.Context, c cid.Cid) (err error) {
 	codec, hash := ipfs.DecodeCID(c)
 
+	cits, err := srv.ListBacklinks(ctx, c, 0)
+	if err != nil {
+		return err
+	}
+
+	if len(cits) != 0 {
+		return fmt.Errorf("refuse to delete a publication reused elsewhere")
+	}
+
 	return srv.pool.WithTx(ctx, func(conn *sqlite.Conn) error {
 		return objectsDelete(conn, hash, int(codec))
 	})
