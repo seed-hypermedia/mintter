@@ -74,11 +74,11 @@ jobs:
 
       - name: Mock dist dir
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
-        run: mkdir -p plz-out/gen/frontend/dist
+        run: mkdir -p plz-out/gen/frontend/dist/client
 
       - name: Mock dist dir
         if: matrix.os == 'windows-latest'
-        run: mkdir plz-out/gen/frontend/dist
+        run: mkdir plz-out/gen/frontend/dist/client
 
       - name: Run tests
         uses: actions-rs/cargo@v1
