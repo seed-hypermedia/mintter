@@ -5,6 +5,7 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {draftEditorMachine, EditorDocument, editorModel, useEditorDraft} from '@app/editor/use-editor-draft'
 import {getDateFormat} from '@app/utils/get-format-date'
+import {useLoadAnnotations} from '@app/utils/use-load-annotations'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {sidepanelModel, useSidepanel} from '@components/sidepanel'
@@ -42,13 +43,6 @@ export default function EditorPage({params}: PageProps) {
         replace: true,
       })
     },
-    loadAnnotations: (context: ContextFrom<ReturnType<typeof draftEditorMachine>>) => {
-      if (!context.localDraft || typeof context.localDraft.content == 'string') return
-
-      sidepanelService.send(
-        sidepanelModel.events.SIDEPANEL_LOAD_ANNOTATIONS(context.localDraft.content as ChildrenOf<Document>),
-      )
-    },
     client,
   })
 
@@ -64,6 +58,7 @@ export default function EditorPage({params}: PageProps) {
   // }, [context.localDraft?.title])
 
   useEnableSidepanel()
+  useLoadAnnotations(state.context.localDraft)
 
   if (state.matches('fetching')) {
     return <Text>fetching...</Text>

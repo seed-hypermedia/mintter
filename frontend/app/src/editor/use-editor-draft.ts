@@ -1,18 +1,7 @@
-import {getDraft, Link, Publication, publishDraft, updateDraft} from '@app/client'
+import {Document, getDraft, Link, Publication, publishDraft, updateDraft} from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {queryKeys} from '@app/hooks'
-import {
-  ChildrenOf,
-  createId,
-  Document,
-  group,
-  isEmbed,
-  isFlowContent,
-  isLink,
-  paragraph,
-  statement,
-  text,
-} from '@mintter/mttast'
+import {createId, group, isEmbed, isFlowContent, isLink, paragraph, statement, text} from '@mintter/mttast'
 import {useActor, useInterpret} from '@xstate/react'
 import isEqual from 'fast-deep-equal'
 import {useEffect} from 'react'
@@ -23,7 +12,7 @@ import {getEmbedIds} from './embed'
 
 export type EditorDocument = Partial<Document> & {
   id?: string
-  content: ChildrenOf<Document>
+  content: any
 }
 
 export const editorModel = createModel(
@@ -53,7 +42,6 @@ export const editorModel = createModel(
 interface DraftEditorMachineProps {
   client: QueryClient
   afterPublish: any
-  loadAnnotations: any
 }
 
 const defaultContent = [group([statement({id: createId()}, [paragraph([text('')])])])]
@@ -70,7 +58,7 @@ const updateValueToContext = editorModel.assign(
   'UPDATE',
 )
 
-export const draftEditorMachine = ({afterPublish, loadAnnotations, client}: DraftEditorMachineProps) =>
+export const draftEditorMachine = ({afterPublish, client}: DraftEditorMachineProps) =>
   editorModel.createMachine(
     {
       id: 'editor',
@@ -122,7 +110,6 @@ export const draftEditorMachine = ({afterPublish, loadAnnotations, client}: Draf
                     localDraft: newValue,
                   }
                 }),
-                'loadAnnotations',
               ],
             },
             'REPORT.FETCH.ERROR': {
@@ -283,7 +270,6 @@ export const draftEditorMachine = ({afterPublish, loadAnnotations, client}: Draf
       },
       actions: {
         afterPublish,
-        loadAnnotations,
       },
     },
   )
