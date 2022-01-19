@@ -37,7 +37,9 @@ const StyledLink = styled('span', {
 export const Link = ({element, ...props}: PropsWithChildren<{element: LinkType}>) => {
   const [, setLocation] = useLocation()
 
-  async function handleClick() {
+  function handleClick(e: any) {
+    e.preventDefault()
+    console.log('MINTTER CLICK!')
     if (isMintterLink(element.url)) {
       const [pubId, version] = getEmbedIds(element.url)
       setLocation(`/p/${pubId}/${version}`)

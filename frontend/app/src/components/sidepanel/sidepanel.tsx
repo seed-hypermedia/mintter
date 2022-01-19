@@ -7,6 +7,7 @@ import {copyTextToClipboard} from '@app/editor/statement'
 import {useAccount} from '@app/hooks'
 import {styled} from '@app/stitches.config'
 import {getDateFormat} from '@app/utils/get-format-date'
+import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
 import {ChildrenOf, Document, document, isLink} from '@mintter/mttast'
 import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -178,6 +179,7 @@ export type SidepanelItemProps = {
 export function SidepanelItem({item}: SidepanelItemProps) {
   const ref = useRef<HTMLDivElement | null>(null)
   const {status, data} = useEmbed(item)
+  const bookmarksService = useBookmarksService()
   const [showDocument, setShowDocument] = useState(false)
   const {data: author} = useAccount(data.document.author, {
     enabled: !!data.document.author,
@@ -279,6 +281,14 @@ export function SidepanelItem({item}: SidepanelItemProps) {
           <Dropdown.Item onSelect={() => onGoToPublication(item)}>
             <Icon name="ArrowTopRight" size="1" />
             <Text size="2">Open in main Panel</Text>
+          </Dropdown.Item>
+          <Dropdown.Item
+            onSelect={() => {
+              bookmarksService.send(bookmarksModel.events['ADD.BOOKMARK'](item))
+            }}
+          >
+            <Icon size="1" name="ArrowBottomRight" />
+            <Text size="2">Add to Bookmarks</Text>
           </Dropdown.Item>
           <Dropdown.Item onSelect={toggleDocument}>
             <Icon name={showDocument ? 'ArrowDown' : 'ArrowUp'} size="1" />
