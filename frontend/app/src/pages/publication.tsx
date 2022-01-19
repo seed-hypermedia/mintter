@@ -341,7 +341,6 @@ const publicationMachine = publicationModel.createMachine({
               canUpdate: ev.canUpdate,
               errorMessage: '',
             })),
-            'loadAnnotations',
           ],
         },
         'REPORT.DATA.ERROR': {

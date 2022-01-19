@@ -1,7 +1,7 @@
 import {createDraft} from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {useRoute} from '@app/utils/use-route'
-import {useBookmarksService} from '@components/bookmarks'
+import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
 import {Icon} from '@components/icon'
 import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
@@ -139,14 +139,10 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
   }
 
   function addBookmark(docId: string, blockId: FlowContent['id']) {
-    bookmarksService.send({
-      type: 'ADD.BOOKMARK',
-      link: `${MINTTER_LINK_PREFIX}${docId}/${blockId}`,
-    })
+    bookmarksService.send(bookmarksModel.events['ADD.BOOKMARK'](`${MINTTER_LINK_PREFIX}${docId}/${blockId}`))
   }
   async function onStartDraft() {
     try {
-      addBookmark(params!.docId, (element as StatementType).id)
       const newDraft = await createDraft()
       if (newDraft) {
         setLocation(`/editor/${newDraft.id}`)
