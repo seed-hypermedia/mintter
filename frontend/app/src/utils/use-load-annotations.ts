@@ -2,7 +2,7 @@ import {EditorDocument} from '@app/editor/use-editor-draft'
 import {sidepanelModel, useSidepanel} from '@components/sidepanel'
 import {useEffect} from 'react'
 
-export function useLoadAnnotations(document?: EditorDocument) {
+export function useLoadAnnotations(document?: EditorDocument | null) {
   const sidepanelService = useSidepanel()
 
   useEffect(() => {
