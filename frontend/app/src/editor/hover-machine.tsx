@@ -1,6 +1,6 @@
 import {createModel} from 'xstate/lib/model'
 
-const hoverModel = createModel(
+export const hoverModel = createModel(
   {
     blockId: null as string | null,
   },

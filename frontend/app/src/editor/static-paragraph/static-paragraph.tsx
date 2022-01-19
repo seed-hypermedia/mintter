@@ -1,8 +1,10 @@
+import {hoverModel} from '@app/editor/hover-machine'
+import {EditorMode} from '@app/editor/plugin-utils'
 import type {TextProps} from '@components/text'
 import type {StaticParagraph as StaticParagraphType} from '@mintter/mttast'
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
-import {Editor, NodeEntry} from 'slate'
+import {Editor} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {useHover} from '../hover-context'
@@ -41,30 +43,17 @@ const headingMap: {
 export const createStaticParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATIC_PARAGRAPH,
   renderElement:
-    () =>
+    (editor) =>
     ({element, children, attributes}) => {
       if (isStaticParagraph(element)) {
         return (
-          <StaticParagraph element={element} attributes={attributes}>
+          <StaticParagraph mode={editor.mode} element={element} attributes={attributes}>
             {children}
           </StaticParagraph>
         )
       }
     },
 })
-
-function createParagraphOnEnter(
-  editor: Editor,
-  parent: NodeEntry<StaticParagraphType>,
-  grandParent: NodeEntry<Heading>,
-) {
-  return function paragraphCreator() {
-    let [pNode, pPath] = parent
-    let [gpNode, gpPath] = grandParent
-
-    let targetPath = [...gpPath, 1, 0]
-  }
-}
 
 function useHeading(element: StaticParagraphType) {
   var editor = useSlateStatic()
@@ -81,7 +70,7 @@ function useHeading(element: StaticParagraphType) {
   }
 }
 
-function StaticParagraph({children, element, attributes}: RenderElementProps) {
+function StaticParagraph({children, element, attributes, mode}: RenderElementProps & {mode: EditorMode}) {
   var heading = useHeading(element as StaticParagraphType)
   var sizeProps = headingMap[heading?.level ?? 'default']
   var hoverService = useHover()
@@ -90,11 +79,12 @@ function StaticParagraph({children, element, attributes}: RenderElementProps) {
   return (
     <StaticParagraphUI
       data-element-type={element.type}
+      css={{display: mode == EditorMode.Embed ? 'inline' : 'inherit'}}
       {...sizeProps}
       {...attributes}
       onMouseEnter={() => {
         if (heading?.node) {
-          hoverSend({type: 'MOUSE_ENTER', blockId: heading.node.id})
+          hoverSend(hoverModel.events.MOUSE_ENTER(heading.node.id))
         }
       }}
     >

@@ -89,14 +89,11 @@ export const sidepanelMachine = sidepanelModel.createMachine({
             let nodes = [] as Array<string>
 
             let doc = document(event.content)
-            console.log('doc: load annotations', doc, event.content)
 
             visit(
-              document(event.content),
+              doc,
               (n) => n.type == 'embed',
               (node) => {
-                console.log('NODE FOUND: load annotations', node)
-
                 if ('url' in node) {
                   nodes.push(node.url)
                 }
@@ -104,17 +101,14 @@ export const sidepanelMachine = sidepanelModel.createMachine({
             )
 
             visit(
-              document(event.content),
+              doc,
               (n) => isLink(n) && n.url.includes(MINTTER_LINK_PREFIX),
               (node) => {
-                console.log('NODE FOUND: load annotations', node)
-
                 if ('url' in node) {
                   nodes.push(node.url)
                 }
               },
             )
-            console.log('MACHINE load annotations', nodes)
 
             return nodes
           },
@@ -280,7 +274,7 @@ export function SidepanelItem({item}: SidepanelItemProps) {
         <Dropdown.Content portalled align="start" side="bottom" css={{minWidth: 220}}>
           <Dropdown.Item onSelect={onCopy}>
             <Icon name="Copy" size="1" />
-            <Text size="2">Copy Block Reference</Text>
+            <Text size="2">Copy Block ID</Text>
           </Dropdown.Item>
           <Dropdown.Item onSelect={() => onGoToPublication(item)}>
             <Icon name="ArrowTopRight" size="1" />
