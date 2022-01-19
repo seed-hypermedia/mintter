@@ -1,0 +1,47 @@
+name: Build and test
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build-and-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    container:
+      image: nixos/nix:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+        with:
+          submodules: recursive
+      # Setup Nix and tools.
+      - name: Cache Nix store
+        id: cache-nix-store
+        uses: actions/cache@v1
+        with:
+          path: /nix
+          key: ${{ runner.os }}-nix-v5-${{ hashFiles('**/*/*.nix') }}
+          restore-keys: |
+            ${{ runner.os }}-nix-v5-
+      - name: Setup Nix
+        run: |
+          nix-channel --update
+          which git || nix-env -i git
+      - name: Install Nix shell tools
+        if: steps.cache-nix-store.outputs.cache-hit != 'true'
+        run: |
+          nix-env -f shell.nix -i
+      # Go steps.
+      - name: Cache Go dependencies
+        uses: actions/cache@v1
+        id: go-cache
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Fetch Go dependencies
+        if: steps.go-cache.outputs.cache-hit != 'true'
+        run: go mod download
+      - name: Run go tests
+        run: CGO_ENABLED=0 go test ./...

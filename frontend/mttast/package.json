@@ -11,10 +11,10 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint .",
-    "format": "yarn prettier --write .",
-    "validate": "yarn lint && yarn format",
-    "test": "vitest",
-    "test:w": "yarn test --watch"
+    "format": "nr prettier --write .",
+    "validate": "nr lint && nr format",
+    "test": "vitest --run",
+    "test:watch": "nr test --watch"
   },
   "devDependencies": {
     "@mintter/mttast": "^0.1.0",
@@ -25,6 +25,7 @@
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "is-hidden": "^2.0.0",
+    "ni": "^0.0.2",
     "prettier": "^2.5.1",
     "rehype-preset-minify": "^6.0.0",
     "shiki": "^0.9.10",

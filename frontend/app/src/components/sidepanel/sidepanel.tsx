@@ -8,13 +8,12 @@ import {useAccount} from '@app/hooks'
 import {styled} from '@app/stitches.config'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {ChildrenOf, Document, document, isLink} from '@mintter/mttast'
-import {MouseEvent, useEffect, useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
 import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
 import {createModel} from 'xstate/lib/model'
-import {useBookmarks, useBookmarksService} from '../bookmarks'
 import {Box} from '../box'
 import {Icon} from '../icon'
 import {ScrollArea} from '../scroll-area'
@@ -24,7 +23,6 @@ import {useAnnotations, useIsSidepanelOpen, useSidepanel} from './sidepanel-cont
 export const sidepanelModel = createModel(
   {
     annotations: [] as Array<string>,
-    bookmarks: [] as Array<string>,
   },
   {
     events: {
@@ -144,7 +142,6 @@ export type SidepanelProps = {
 
 export function Sidepanel() {
   const isOpen = useIsSidepanelOpen()
-  const bookmarks = useBookmarks()
   const annotations = useAnnotations()
 
   return (
@@ -174,22 +171,6 @@ export function Sidepanel() {
             })}
           </Box>
         ) : null}
-        {bookmarks.length ? (
-          <Box
-            css={{
-              padding: '$5',
-            }}
-          >
-            <Text fontWeight="bold">Bookmarks</Text>
-            {bookmarks.map(({link}) => {
-              return (
-                <ErrorBoundary key={link} fallback={<span>sidepanel item fallback</span>}>
-                  <SidepanelItem key={link} item={link} />
-                </ErrorBoundary>
-              )
-            })}
-          </Box>
-        ) : null}
       </ScrollArea>
     </Box>
   )
@@ -200,14 +181,13 @@ export type SidepanelItemProps = {
   remove?: boolean
 }
 
-export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
+export function SidepanelItem({item}: SidepanelItemProps) {
   const ref = useRef<HTMLDivElement | null>(null)
   const {status, data} = useEmbed(item)
   const [showDocument, setShowDocument] = useState(false)
   const {data: author} = useAccount(data.document.author, {
     enabled: !!data.document.author,
   })
-  const bookmarksService = useBookmarksService()
   const [, setLocation] = useLocation()
   async function onCopy() {
     await copyTextToClipboard(item)
@@ -219,7 +199,7 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
     setLocation(`/p/${publicationId}/${version}`)
   }
 
-  function toggleDocument(e: MouseEvent<HTMLButtonElement>) {
+  function toggleDocument(e: Event) {
     e.preventDefault()
     console.log(data.document.content)
     setShowDocument((v) => !v)
@@ -306,12 +286,6 @@ export function SidepanelItem({item, remove = true}: SidepanelItemProps) {
             <Icon name="ArrowTopRight" size="1" />
             <Text size="2">Open in main Panel</Text>
           </Dropdown.Item>
-          {remove && (
-            <Dropdown.Item onSelect={() => bookmarksService.send({type: 'REMOVE.BOOKMARK', link: item})}>
-              <Icon name="Close" size="1" />
-              <Text size="2">Remove</Text>
-            </Dropdown.Item>
-          )}
           <Dropdown.Item onSelect={toggleDocument}>
             <Icon name={showDocument ? 'ArrowDown' : 'ArrowUp'} size="1" />
             <Text size="2">{showDocument ? 'Collapse' : 'Expand'} Document</Text>

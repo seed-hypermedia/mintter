@@ -75,7 +75,7 @@ const testModel = createModel(onboardingMachine).withEvents({
 context('Feedback App', () => {
   const testPlans = testModel.getSimplePathPlans()
   testPlans.forEach((plan) => {
-    describe(plan.description, () => {
+    describe.skip(plan.description, () => {
       plan.paths.forEach((path) => {
         const mockedClient = new QueryClient()
         mockedClient.setQueryData<Array<string>>(['onboarding', 'mnemonics'], ['foo', 'bar', 'baz'])
