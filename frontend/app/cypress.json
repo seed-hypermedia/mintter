@@ -1,4 +1,5 @@
 {
+  "projectId": "d3nyda",
   "component": {
     "testFiles": "**/*.test.ct.tsx",
     "componentFolder": "src",

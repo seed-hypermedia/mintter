@@ -1,8 +1,5 @@
-import '@testing-library/jest-dom'
-import {cleanup} from '@testing-library/react'
-import {vi} from 'vitest'
+import {afterEach, vi} from 'vitest'
 
 afterEach(() => {
-  cleanup()
   vi.clearAllMocks()
 })

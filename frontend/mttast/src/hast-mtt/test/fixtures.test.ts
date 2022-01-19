@@ -26,9 +26,7 @@ function check(name: string) {
     let config
     try {
       config = JSON.parse(String(fs.readFileSync(path.join(fixtures, name, 'index.json'))))
-    } catch {
-      console.error('check error')
-    }
+    } catch {}
 
     const tree = removePosition(processor.runSync(processor.parse(input)), true)
 
