@@ -24,7 +24,7 @@ func (srv *backend) SyncAccounts(ctx context.Context) error {
 		return err
 	}
 
-	all, err := srv.db.ListAccountDevices(ctx)
+	all, err := srv.ListAccountDevices(ctx)
 	if err != nil {
 		return err
 	}
@@ -123,7 +123,7 @@ func (srv *backend) syncObject(ctx context.Context, oid cid.Cid, pid peer.ID) er
 				return fmt.Errorf("device %s is not found in account %s", deviceID, oid)
 			}
 
-			if err := srv.db.StoreDevice(ctx, AccountID(oid), DeviceID(deviceID)); err != nil {
+			if err := srv.StoreDevice(ctx, AccountID(oid), DeviceID(deviceID)); err != nil {
 				return fmt.Errorf("failed to store device of the connected peer %s: %w", deviceID, err)
 			}
 
@@ -210,7 +210,7 @@ func (srv *backend) syncObject(ctx context.Context, oid cid.Cid, pid peer.ID) er
 				}
 			}
 
-			return srv.db.IndexPublication(ctx, pub, links)
+			return srv.IndexPublication(ctx, pub, links)
 		}
 	default:
 		return fmt.Errorf("attempting to sync unsupported object type: %s", cid.CodecToStr[ocodec])

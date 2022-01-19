@@ -45,10 +45,10 @@ const accountsPullInterval = time.Minute
 // Eventually this will need to be cleaned up.
 type backend struct {
 	sqlitePatchStore
+	*graphdb
 
 	log       *zap.Logger
 	repo      *repo
-	db        *graphdb
 	p2p       *p2pNode
 	pool      *sqlitex.Pool
 	startTime time.Time
@@ -73,11 +73,11 @@ type backend struct {
 
 func newBackend(log *zap.Logger, pool *sqlitex.Pool, r *repo, p2p *p2pNode) *backend {
 	srv := &backend{
-		log:  log,
-		repo: r,
-		db:   &graphdb{pool: pool},
-		p2p:  p2p,
-		pool: pool,
+		log:     log,
+		repo:    r,
+		graphdb: &graphdb{pool: pool},
+		p2p:     p2p,
+		pool:    pool,
 
 		startTime: time.Now().UTC(),
 
@@ -263,7 +263,7 @@ func (srv *backend) GetAccountForDevice(ctx context.Context, d DeviceID) (Accoun
 		return acc.id, nil
 	}
 
-	return srv.db.GetAccountForDevice(ctx, d)
+	return srv.graphdb.GetAccountForDevice(ctx, d)
 }
 
 func (srv *backend) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) error {
@@ -303,10 +303,7 @@ func (srv *backend) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) e
 	return nil
 }
 
-func (srv *backend) ListAccounts(ctx context.Context) ([]*accounts.Account, error) {
-	// N+1 is not that big of a deal in SQLite.
-	// https://www.sqlite.org/np1queryprob.html
-
+func (srv *backend) ListAccounts(ctx context.Context) ([]accountsListResult, error) {
 	conn, release, err := srv.pool.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -323,45 +320,7 @@ func (srv *backend) ListAccounts(ctx context.Context) ([]*accounts.Account, erro
 		return nil, err
 	}
 
-	out := make([]*accounts.Account, len(accs))
-
-	for i, a := range accs {
-		if a.AccountsCodec != int(codecAccountID) {
-			return nil, fmt.Errorf("invalid codec for account %s", cid.CodecToStr[uint64(a.AccountsCodec)])
-		}
-
-		aid := cid.NewCidV1(uint64(a.AccountsCodec), a.AccountsMultihash)
-
-		out[i] = &accounts.Account{
-			Id: aid.String(),
-			Profile: &accounts.Profile{
-				Email: a.AccountsEmail,
-				Bio:   a.AccountsBio,
-				Alias: a.AccountsAlias,
-			},
-		}
-
-		devices, err := devicesList(conn)
-		if err != nil {
-			return nil, err
-		}
-
-		out[i].Devices = make(map[string]*accounts.Device, len(devices))
-
-		for _, d := range devices {
-			if d.DevicesCodec != cid.Libp2pKey {
-				return nil, fmt.Errorf("invalid codec for device %s", cid.CodecToStr[uint64(d.DevicesCodec)])
-			}
-
-			did := cid.NewCidV1(uint64(d.DevicesCodec), d.DevicesMultihash).String()
-
-			out[i].Devices[did] = &accounts.Device{
-				PeerId: did,
-			}
-		}
-	}
-
-	return out, nil
+	return accs, nil
 }
 
 // Notify will notify the given channel about the underlying events. Messages can get dropped for slow receivers.
@@ -538,7 +497,7 @@ func (srv *backend) handleMintterPeer(ctx context.Context, evt event.EvtPeerIden
 	// TODO: check if we knew this peer before, so we don't need to fetch its account here,
 	// as it will be performed automatically in the background process.
 
-	_, err = srv.db.GetAccountForDevice(ctx, DeviceID(peer.ToCid(pid)))
+	_, err = srv.graphdb.GetAccountForDevice(ctx, DeviceID(peer.ToCid(pid)))
 	if err == nil {
 		return nil
 	}
@@ -597,7 +556,7 @@ func (srv *backend) register(ctx context.Context, state *changeset, binding Acco
 		return fmt.Errorf("failed to create a patch: %w", err)
 	}
 
-	if err := srv.db.StoreDevice(ctx, AccountID(binding.Account), DeviceID(binding.Member)); err != nil {
+	if err := srv.graphdb.StoreDevice(ctx, AccountID(binding.Account), DeviceID(binding.Member)); err != nil {
 		return fmt.Errorf("failed to store own device-account relationship: %w", err)
 	}
 

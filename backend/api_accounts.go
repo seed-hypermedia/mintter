@@ -71,7 +71,35 @@ func (srv *accountsAPI) ListAccounts(ctx context.Context, in *accounts.ListAccou
 		return nil, err
 	}
 
+	devices, err := srv.back.ListAccountDevices(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*accounts.Account, len(accs))
+
+	for i, a := range accs {
+		aid := cid.NewCidV1(uint64(a.AccountsCodec), a.AccountsMultihash)
+		devs := devices[AccountID(aid)]
+		acc := &accounts.Account{
+			Id: aid.String(),
+			Profile: &accounts.Profile{
+				Email: a.AccountsEmail,
+				Bio:   a.AccountsBio,
+				Alias: a.AccountsAlias,
+			},
+			Devices: make(map[string]*accounts.Device, len(devs)),
+		}
+		for _, d := range devs {
+			acc.Devices[d.String()] = &accounts.Device{
+				PeerId: d.String(),
+			}
+		}
+
+		out[i] = acc
+	}
+
 	return &accounts.ListAccountsResponse{
-		Accounts: accs,
+		Accounts: out,
 	}, nil
 }

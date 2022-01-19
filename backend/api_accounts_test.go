@@ -83,5 +83,7 @@ func TestAPIListAccounts(t *testing.T) {
 
 	list, err = bapi.ListAccounts(ctx, &accounts.ListAccountsRequest{})
 	require.NoError(t, err)
-	require.Len(t, list.Accounts, 1) // TODO: add more asserts here.
+	require.Len(t, list.Accounts, 1, "bob must only have one account after connecting to alice")
+	require.Len(t, list.Accounts[0].Devices, 1, "bob must only list devices from alice on her account")
+	require.Equal(t, alice.repo.device.id.String(), list.Accounts[0].Devices[alice.repo.device.id.String()].PeerId, "bob must have alice's device id")
 }
