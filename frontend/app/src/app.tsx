@@ -3,14 +3,15 @@ import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
 import {lazy} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
+import {attachConsole, error} from 'tauri-plugin-log-api'
 import {MainPage} from './pages/main-page'
 import {globalCss} from './stitches.config'
 
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
 
-// attachConsole()
+attachConsole()
 
-// window.addEventListener('error', (e) => error(e.message))
+window.addEventListener('error', (e) => error(e.message))
 
 const globalStyles = globalCss({
   body: {

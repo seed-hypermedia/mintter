@@ -7,10 +7,11 @@ import {draftEditorMachine, EditorDocument, editorModel, useEditorDraft} from '@
 import {getDateFormat} from '@app/utils/get-format-date'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
-import {useSidepanel} from '@components/sidepanel'
+import {sidepanelModel, useSidepanel} from '@components/sidepanel'
 import {useEnableSidepanel} from '@components/sidepanel/sidepanel'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
+import {ChildrenOf, Document} from '@mintter/mttast'
 import {KeyboardEvent, useMemo, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toastFactory from 'react-hot-toast'
@@ -36,15 +37,17 @@ export default function EditorPage({params}: PageProps) {
         toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000, id: toast.current})
       }
 
-      setLocation(`/p/${context.localDraft?.id}/${context.publication.version}`, {
+      setLocation(`/p/${context.localDraft?.id}/${context.publication?.version}`, {
         // we replace the history here because the draft url will not be available after publish.
         replace: true,
       })
     },
     loadAnnotations: (context: ContextFrom<ReturnType<typeof draftEditorMachine>>) => {
-      if (!context.localDraft) return
+      if (!context.localDraft || typeof context.localDraft.content == 'string') return
 
-      sidepanelService.send({type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: context.localDraft.content})
+      sidepanelService.send(
+        sidepanelModel.events.SIDEPANEL_LOAD_ANNOTATIONS(context.localDraft.content as ChildrenOf<Document>),
+      )
     },
     client,
   })
@@ -155,13 +158,11 @@ export default function EditorPage({params}: PageProps) {
                 <Editor
                   editor={editor}
                   value={context.localDraft.content}
-                  onChange={(content) => {
-                    //@ts-ignore
+                  //@ts-ignore
+                  onChange={(content: ChildrenOf<Document>) => {
+                    if (!content && typeof content == 'string') return
                     send(editorModel.events.UPDATE({content}))
-                    sidepanelService.send({
-                      type: 'SIDEPANEL_LOAD_ANNOTATIONS',
-                      document: content,
-                    })
+                    sidepanelService.send(sidepanelModel.events.SIDEPANEL_LOAD_ANNOTATIONS(content))
                   }}
                 />
 

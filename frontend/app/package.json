@@ -12,12 +12,17 @@
     "generate": "vite build --outDir dist/static && yarn build:server && yarn node prerender.mjs",
     "serve": "yarn http-server dist/static",
     "lint": "eslint .",
-    "format": "yarn prettier --write .",
-    "validate": "yarn lint && yarn format",
+    "format": "nr prettier --write .",
+    "validate": "nr lint && nr format",
     "docs": "typedoc",
-    "test": "yarn test:unit && yarn test:ct",
+    "test": "yarn test:unit:run && yarn test:ui:run",
+    "test:watch": "yarn test:unit:watch && yarn test:ui:watch",
     "test:unit": "vitest",
-    "test:ct": "cypress open-ct"
+    "test:unit:run": "yarn test:unit --run",
+    "test:unit:watch": "yarn test:unit watch",
+    "test:ui": "cypress",
+    "test:ui:run": "yarn test:ui run-ct",
+    "test:ui:open": "yarn test:ui open-ct"
   },
   "dependencies": {
     "@improbable-eng/grpc-web": "^0.14.1",

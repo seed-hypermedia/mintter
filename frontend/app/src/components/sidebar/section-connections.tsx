@@ -17,6 +17,7 @@ import {StyledSectionItem} from './section-item'
 
 export function ConnectionsSection() {
   const {status, data = [], error} = useListAccounts()
+  console.log('🚀 ~ ConnectionsSection ~ data', data)
 
   let title = `Connections (${data.length})`
 
@@ -152,6 +153,8 @@ function AccountItem({account}: AccountItemProps) {
       refetchInterval: 1000,
     },
   )
+
+  console.log('data: ', {account, data})
 
   return (
     <HoverCard.Root>

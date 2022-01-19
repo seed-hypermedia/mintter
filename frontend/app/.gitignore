@@ -7,3 +7,4 @@ dist-ssr
 .vite
 .vite-jest-cache
 cypress/snapshots
+cypress/videos

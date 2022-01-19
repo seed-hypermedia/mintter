@@ -81,13 +81,13 @@ describe('Onboarding Process', () => {
       plan.paths.forEach((path, i) => {
         test(
           path.description,
-          async () => {
+          function () {
             render(
               <AppProviders>
                 <OnboardingPage />
               </AppProviders>,
             )
-            await path.test(screen)
+            path.test(screen)
           },
           10000,
         )
