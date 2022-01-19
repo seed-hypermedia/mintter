@@ -41,7 +41,7 @@ func (srv *backend) RemoteInvoiceRequest(ctx context.Context, account AccountID,
 		return "", fmt.Errorf("cannot remotely issue an invoice to myself")
 	}
 
-	all, err := srv.db.ListAccountDevices(ctx)
+	all, err := srv.graphdb.ListAccountDevices(ctx)
 	if err != nil {
 		srv.log.Warn("couldn't list devices", zap.String("Mintter account ID", account.String()), zap.String("Error", err.Error()))
 		return "", fmt.Errorf("couldn't list devices from account ID %s.", account.String())

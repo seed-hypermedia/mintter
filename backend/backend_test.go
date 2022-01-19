@@ -56,7 +56,7 @@ func TestAccountVerifiedOnConnect(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, accs, 1)
 
-		accsMap, err := local.db.ListAccountDevices(ctx)
+		accsMap, err := local.ListAccountDevices(ctx)
 		require.NoError(t, err)
 		delete(accsMap, local.repo.acc.id)
 		require.Len(t, accs, 1)
