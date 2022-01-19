@@ -134,7 +134,7 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
       )
       toast.success('Statement Reference copied successfully', {position: 'top-center'})
     } else {
-      toast.error('Cannot Copy Block Reference')
+      toast.error('Cannot Copy Block ID')
     }
   }
 
@@ -169,7 +169,7 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
           <ContextMenu.Content alignOffset={-5}>
             <ContextMenu.Item onSelect={onCopy}>
               <Icon name="Copy" size="1" />
-              <Text size="2">Copy Block Reference</Text>
+              <Text size="2">Copy Block ID</Text>
             </ContextMenu.Item>
             <ContextMenu.Item
               onSelect={() => {

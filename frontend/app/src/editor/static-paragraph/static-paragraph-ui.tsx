@@ -1,4 +1,4 @@
-import {css} from '@app/stitches.config'
+import {CSS, css} from '@app/stitches.config'
 import {Text, TextProps} from '@components/text'
 import {forwardRef, MouseEventHandler, PropsWithChildren} from 'react'
 
@@ -9,6 +9,7 @@ export const staticParagraphStyles = css({
 
 type StaticParagraphUIProps = PropsWithChildren<
   TextProps & {
+    css?: CSS
     as: 'h2' | 'h3' | 'h4' | 'h5' | 'p'
     className?: string
     onMouseEnter?: MouseEventHandler<HTMLHeadingElement>

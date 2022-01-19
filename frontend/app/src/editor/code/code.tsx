@@ -240,7 +240,7 @@ function Code({
       <ContextMenu.Content alignOffset={-5}>
         <ContextMenu.Item onSelect={onCopy}>
           <Icon name="Copy" size="1" />
-          <Text size="2">Copy Block Reference</Text>
+          <Text size="2">Copy Block ID</Text>
         </ContextMenu.Item>
         <ContextMenu.Item onSelect={() => addBookmark(params!.docId, element.id)}>
           <Icon size="1" name="ArrowBottomRight" />

@@ -1,7 +1,9 @@
-import {FlowContent, isBlockquote, isCode, isParagraph, isPhrasingContent} from '@mintter/mttast'
+import {hoverModel} from '@app/editor/hover-machine'
+import {FlowContent, isBlockquote, isCode, isEmbed, isParagraph, isPhrasingContent} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
 import {Editor, Element, Node, Path, Transforms} from 'slate'
 import {ReactEditor, RenderElementProps, useFocused, useSelected, useSlateStatic} from 'slate-react'
+import {visit} from 'unist-util-visit'
 import {useHover} from '../hover-context'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
@@ -64,7 +66,7 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
     mode == EditorMode.Draft &&
     !Node.string(element) &&
     isCollapsed(editor.selection!) &&
-    !hasEmbed(editor, element)
+    !hasEmbed(element)
 
   return (
     <ParagraphUI
@@ -81,7 +83,7 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
       css={{display: mode == EditorMode.Embed ? 'inline' : 'inherit'}}
       style={{paddingLeft: isBlockquote(parentNode) ? '24px' : '0'}}
       data-parent-type={(parentNode as FlowContent)?.type}
-      onMouseEnter={() => hoverSend({type: 'MOUSE_ENTER', blockId: (parentNode as FlowContent).id})}
+      onMouseEnter={() => hoverSend(hoverModel.events.MOUSE_ENTER((parentNode as FlowContent).id))}
       {...attributes}
     >
       {showPlaceholder && (
@@ -103,6 +105,11 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
   )
 }
 
-function hasEmbed(element: Element, path: Path) {
-  return false
+function hasEmbed(element: Element) {
+  let value = false
+  visit(element, isEmbed, (node) => {
+    value = true
+  })
+
+  return value
 }
