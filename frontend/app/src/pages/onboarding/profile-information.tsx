@@ -23,7 +23,6 @@ type ProfileInformationDataType = {
 
 export function ProfileInformation({next}: OnboardingStepPropsType) {
   const updateProfile = useMutation(updateAccount)
-  console.log('=== PROFILE INFORMATION')
   const {register, handleSubmit, errors, formState} = useForm<ProfileInformationDataType>({
     mode: 'onChange',
     defaultValues: {

@@ -1,5 +1,5 @@
 import {Box} from '@components/box'
-import {FlowContent, MttastContent} from '@mintter/mttast'
+import {ChildrenOf, Document} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
 import {PropsWithChildren, Suspense, useMemo} from 'react'
 import type {Descendant, Editor as EditorType} from 'slate'
@@ -16,12 +16,11 @@ import {
   EditorMode,
 } from './plugin-utils'
 import {plugins as defaultPlugins} from './plugins'
-
 export type {EditorPlugin} from './types'
 
 interface EditorProps {
   mode?: EditorMode
-  value: Array<MttastContent> | Array<FlowContent>
+  value: ChildrenOf<Document>
   onChange?: (value: Descendant[]) => void
   editor?: EditorType
   plugins?: Array<EditorPlugin>
@@ -46,7 +45,7 @@ export function Editor({
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
       <Suspense fallback={'loading'}>
-        <Slate editor={_editor} value={value} onChange={onChange}>
+        <Slate editor={_editor} value={value as Array<Descendant>} onChange={onChange as any}>
           <Editable
             style={{display: 'inline'}}
             readOnly={_editor.readOnly}
@@ -70,7 +69,7 @@ export function Editor({
             marginLeft: '-$8',
           }}
         >
-          <Slate editor={_editor} value={value} onChange={onChange}>
+          <Slate editor={_editor} value={value as Array<Descendant>} onChange={onChange as any}>
             <Editable
               readOnly={true}
               data-testid="editor"
@@ -95,7 +94,7 @@ export function Editor({
         }}
         onMouseLeave={() => hoverSend('MOUSE_LEAVE')}
       >
-        <Slate editor={_editor} value={value} onChange={onChange}>
+        <Slate editor={_editor} value={value as Array<Descendant>} onChange={onChange as any}>
           <HoveringToolbar />
           <Editable
             readOnly={_editor.readOnly}

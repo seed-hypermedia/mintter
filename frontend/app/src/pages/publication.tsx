@@ -12,9 +12,11 @@ import {ContextMenu} from '@app/editor/context-menu'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {copyTextToClipboard} from '@app/editor/statement'
+import {EditorDocument} from '@app/editor/use-editor-draft'
 import {useAccount} from '@app/hooks'
 import {tippingMachine, tippingModel} from '@app/tipping-machine'
 import {getDateFormat} from '@app/utils/get-format-date'
+import {useLoadAnnotations} from '@app/utils/use-load-annotations'
 import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -36,16 +38,16 @@ import {PageProps} from './types'
 
 export default function Publication({params}: PageProps) {
   const [, setLocation] = useLocation()
-  const sidepanelService = useSidepanel()
   // const {status, data, error} = usePublication(params!.docId)
   const [state, send] = usePagePublication(params?.docId)
+
+  // TEMP: load annotations in the sidepanel
+  useEnableSidepanel()
+  useLoadAnnotations(state.context.publication?.document)
+
   const {data: author} = useAccount(state.context.publication?.document?.author, {
     enabled: !!state.context.publication?.document?.author,
   })
-
-  console.log('PUBLICATION STATE', state)
-
-  useEnableSidepanel()
 
   useEffect(() => {
     if (params?.docId) {
@@ -58,12 +60,6 @@ export default function Publication({params}: PageProps) {
   //     getCurrentWindow().setTitle(data.document.title)
   //   }
   // }, [data.document.title])
-
-  useEffect(() => {
-    if (state.matches('ready')) {
-      sidepanelService.send({type: 'SIDEPANEL_LOAD_ANNOTATIONS', document: state.context.publication?.document})
-    }
-  }, [state.value])
 
   async function handleUpdate() {
     try {
@@ -117,7 +113,7 @@ export default function Publication({params}: PageProps) {
           '& *': {
             position: 'relative',
           },
-          '& *:not(:first-child):before': {
+          '& > *:not(:first-child):before': {
             content: `"|"`,
             color: '$text-muted',
             opacity: 0.5,
@@ -171,8 +167,6 @@ export default function Publication({params}: PageProps) {
             },
           }}
         >
-          {/* <PublicationHeader document={state.context.publication?.document} /> */}
-
           <Box css={{width: '$full', maxWidth: '64ch'}}>
             <Editor
               mode={EditorMode.Publication}
@@ -257,7 +251,6 @@ export default function Publication({params}: PageProps) {
 }
 
 function usePagePublication(docId?: string) {
-  // const client = useQueryClient()
   const service = useInterpret(() => publicationMachine)
   const [state, send] = useActor(service)
 
@@ -342,11 +335,14 @@ const publicationMachine = publicationModel.createMachine({
       on: {
         'REPORT.DATA.SUCCESS': {
           target: 'ready',
-          actions: publicationModel.assign((_, ev) => ({
-            publication: ev.publication,
-            canUpdate: ev.canUpdate,
-            errorMessage: '',
-          })),
+          actions: [
+            publicationModel.assign((_, ev) => ({
+              publication: ev.publication,
+              canUpdate: ev.canUpdate,
+              errorMessage: '',
+            })),
+            'loadAnnotations',
+          ],
         },
         'REPORT.DATA.ERROR': {
           target: 'errored',
@@ -401,10 +397,12 @@ const publicationMachine = publicationModel.createMachine({
             src: (context) => (sendBack) => {
               listCitations(context.id)
                 .then((response) => {
-                  Promise.all(response.links.map(({source}) => getBlock(source))).then((result: Array<FlowContent>) => {
-                    let discussion = document([group(result)])
-                    sendBack(publicationModel.events['REPORT.DISCUSSION.SUCCESS'](response.links, discussion))
-                  })
+                  Promise.all(response.links.map(({source}) => getBlock(source)))
+                    //@ts-ignore
+                    .then((result: Array<FlowContent>) => {
+                      let discussion = document([group(result)])
+                      sendBack(publicationModel.events['REPORT.DISCUSSION.SUCCESS'](response.links, discussion))
+                    })
                 })
                 .catch((error) => {
                   sendBack(publicationModel.events['REPORT.DISCUSSION.ERROR'](error))
@@ -653,19 +651,21 @@ function SetAmount({send, state}: {state: StateFrom<typeof tippingMachine>; send
   )
 }
 
-function Discussion({links = []}: {links: Array<Link>}) {
+function Discussion({links = []}: {links?: Array<Link>}) {
   return (
-    <Box
-      css={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$4',
-      }}
-    >
-      {links.map((link) => (
-        <DiscussionItem key={link} link={link} />
-      ))}
-    </Box>
+    links.length && (
+      <Box
+        css={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '$4',
+        }}
+      >
+        {links.map((link) => (
+          <DiscussionItem key={link} link={link} />
+        ))}
+      </Box>
+    )
   )
 }
 

@@ -7,7 +7,7 @@ import {copyTextToClipboard} from '@app/editor/statement'
 import {useAccount} from '@app/hooks'
 import {styled} from '@app/stitches.config'
 import {getDateFormat} from '@app/utils/get-format-date'
-import {document, isEmbed, isLink} from '@mintter/mttast'
+import {ChildrenOf, Document, document, isLink} from '@mintter/mttast'
 import {MouseEvent, useEffect, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
@@ -28,7 +28,7 @@ export const sidepanelModel = createModel(
   },
   {
     events: {
-      SIDEPANEL_LOAD_ANNOTATIONS: (document: any) => ({document}),
+      SIDEPANEL_LOAD_ANNOTATIONS: (content: ChildrenOf<Document>) => ({content}),
       SIDEPANEL_ENABLE: () => ({}),
       SIDEPANEL_DISABLE: () => ({}),
       SIDEPANEL_OPEN: () => ({}),
@@ -56,28 +56,6 @@ export const sidepanelMachine = sidepanelModel.createMachine({
         SIDEPANEL_DISABLE: {
           target: 'disabled',
         },
-        SIDEPANEL_LOAD_ANNOTATIONS: {
-          actions: sidepanelModel.assign(
-            {
-              annotations: (_, event) => {
-                let nodes = [] as Array<string>
-
-                visit(
-                  document(event.document),
-                  (n) => isEmbed(n) || (isLink(n) && n.url.includes(MINTTER_LINK_PREFIX)),
-                  (node) => {
-                    if ('url' in node) {
-                      nodes.push(node.url)
-                    }
-                  },
-                )
-
-                return nodes
-              },
-            },
-            'SIDEPANEL_LOAD_ANNOTATIONS',
-          ),
-        },
       },
       initial: 'closed',
       states: {
@@ -103,6 +81,48 @@ export const sidepanelMachine = sidepanelModel.createMachine({
           history: 'shallow',
         },
       },
+    },
+  },
+  on: {
+    SIDEPANEL_LOAD_ANNOTATIONS: {
+      actions: sidepanelModel.assign(
+        {
+          annotations: (_, event) => {
+            let nodes = [] as Array<string>
+
+            let doc = document(event.content)
+            console.log('doc: load annotations', doc, event.content)
+
+            visit(
+              document(event.content),
+              (n) => n.type == 'embed',
+              (node) => {
+                console.log('NODE FOUND: load annotations', node)
+
+                if ('url' in node) {
+                  nodes.push(node.url)
+                }
+              },
+            )
+
+            visit(
+              document(event.content),
+              (n) => isLink(n) && n.url.includes(MINTTER_LINK_PREFIX),
+              (node) => {
+                console.log('NODE FOUND: load annotations', node)
+
+                if ('url' in node) {
+                  nodes.push(node.url)
+                }
+              },
+            )
+            console.log('MACHINE load annotations', nodes)
+
+            return nodes
+          },
+        },
+        'SIDEPANEL_LOAD_ANNOTATIONS',
+      ),
     },
   },
 })

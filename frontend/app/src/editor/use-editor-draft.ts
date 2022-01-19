@@ -1,14 +1,14 @@
-import {Document, getDraft, Link, Publication, publishDraft, updateDraft} from '@app/client'
+import {getDraft, Link, Publication, publishDraft, updateDraft} from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {queryKeys} from '@app/hooks'
 import {
+  ChildrenOf,
   createId,
-  FlowContent,
+  Document,
   group,
   isEmbed,
   isFlowContent,
   isLink,
-  MttastContent,
   paragraph,
   statement,
   text,
@@ -22,7 +22,8 @@ import {createModel} from 'xstate/lib/model'
 import {getEmbedIds} from './embed'
 
 export type EditorDocument = Partial<Document> & {
-  content: Array<MttastContent> | Array<FlowContent>
+  id?: string
+  content: ChildrenOf<Document>
 }
 
 export const editorModel = createModel(
