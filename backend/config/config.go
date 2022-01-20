@@ -9,7 +9,6 @@ type Config struct {
 	NoOpenBrowser bool   `help:"If true - do not open the browser to access the UI"`
 
 	P2P         P2P         `prefix:"p2p." embed:""`
-	UI          UI          `prefix:"ui." embed:""`
 	LetsEncrypt LetsEncrypt `prefix:"lets-encrypt." embed:""`
 }
 
@@ -26,11 +25,4 @@ type P2P struct {
 	NoRelay     bool   `help:"Disable libp2p circuit relay"`
 	NoBootstrap bool   `help:"Disable IPFS bootstrapping"`
 	NoMetrics   bool   `help:"Disable Prometheus metrics collection"`
-}
-
-// UI configuration for the node.
-type UI struct {
-	LogoURI     string `help:"URI of the primary logo image"`
-	HomePageURI string `help:"URI of the home page"`
-	AssetsPath  string `help:"Path to the bundled web app" default:"frontend/app/dist"`
 }
