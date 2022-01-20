@@ -7,6 +7,13 @@ linters:
     - misspell
     - bodyclose
 issues:
+  exclude-rules:
+    # For test helpers it's often convenient to pass *testing.T as the first parameter.
+    # We don't care if context is not the first argument here.
+    - path: _test\.go
+      text: context-as-argument
+      linters:
+        - revive
   include:
     # Include revive rules that check comments on exported identifiers. These rules
     # are excluded by default, and IMHO this doesn't serve well the Go community.
