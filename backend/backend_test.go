@@ -107,6 +107,31 @@ func TestProvideAccount(t *testing.T) {
 	require.Greater(t, i, 0, "carol must find alice's account via bob")
 }
 
+type testBackend struct {
+	*backend
+}
+
+func (tb testBackend) TAddPublication(t *testing.T, ctx context.Context, title, subtitle string, content []byte, links map[Link]struct{}) Publication {
+	d, err := tb.CreateDraft(ctx)
+	require.NoError(t, err)
+
+	d, err = tb.UpdateDraft(ctx, d.ID, title, subtitle, ContentWithLinks{
+		Content: content,
+		Links:   links,
+	})
+	require.NoError(t, err)
+
+	pub, err := tb.PublishDraft(ctx, d.ID)
+	require.NoError(t, err)
+
+	return pub
+}
+func (tb testBackend) TGetPublication(t *testing.T, ctx context.Context, c cid.Cid) Publication {
+	pub, err := tb.backend.GetPublication(ctx, c)
+	require.NoError(t, err)
+	return pub
+}
+
 func makeTestBackend(t *testing.T, name string, ready bool) *backend {
 	t.Helper()
 

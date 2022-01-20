@@ -148,7 +148,8 @@ func (srv *backend) syncObject(ctx context.Context, oid cid.Cid, pid peer.ID) er
 				}
 
 				if err := srv.syncObject(ctx, docid, pid); err != nil {
-					return fmt.Errorf("failed to sync document %s: %w", docid, err)
+					srv.log.Debug("FailedToSyncDocumentFromCatalog", zap.String("id", docid.String()), zap.Error(err))
+					continue
 				}
 			}
 
