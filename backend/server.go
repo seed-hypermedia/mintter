@@ -38,30 +38,13 @@ func makeHTTPHandler(cfg config.Config, g *grpc.Server, b *backend) http.Handler
 	router.Handle("/graphql", CorsMiddleware(graphql.Handler(b)))
 	router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
 
-	// We want to see an index of all the registered routes when we open the home page with the web browser.
-	// This way it's easier to discover all those different URLs.
 	nav := newNavigationHandler(router)
 
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if grpcWebHandler.IsAcceptableGrpcCorsRequest(r) || grpcWebHandler.IsGrpcWebRequest(r) {
-			grpcWebHandler.ServeHTTP(w, r)
-			return
-		}
+	router.MatcherFunc(mux.MatcherFunc(func(r *http.Request, match *mux.RouteMatch) bool {
+		return grpcWebHandler.IsAcceptableGrpcCorsRequest(r) || grpcWebHandler.IsGrpcWebRequest(r)
+	})).Handler(grpcWebHandler)
 
-		nav.ServeHTTP(w, r)
-	})
-
-	err := router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		u, err := route.URL()
-		if err != nil {
-			return err
-		}
-		fmt.Println(u.String())
-		return nil
-	})
-	if err != nil {
-		panic(err)
-	}
+	router.Handle("/", nav)
 
 	return router
 }

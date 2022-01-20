@@ -10,6 +10,7 @@ go_binary(
     cgo = True,
     gomod = "//:gomod",
     package = "./cmd/mintterd",
+    visibility = ["PUBLIC"],
     deps = [
         "//third_party:sqlite",
     ],
