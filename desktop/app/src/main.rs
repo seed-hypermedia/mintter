@@ -5,6 +5,7 @@
 )]
 
 use env_logger::filter::Builder as FilterBuilder;
+use log::LevelFilter;
 use tauri::Manager;
 use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget, LoggerBuilder};
 use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
@@ -27,17 +28,14 @@ async fn main() {
 
     let colors = ColoredLevelConfig::default();
 
-    let mut builder = FilterBuilder::new();
-
-    // Parse a directives string from an environment variable
-    if let Ok(ref filter) = std::env::var("RUST_LOG") {
-      builder.parse(filter);
-    }
+    let filter = std::env::var("RUST_LOG")
+      .map(|ref filter| FilterBuilder::new().parse(filter).build().filter())
+      .unwrap_or(LevelFilter::Trace);
 
     LoggerBuilder::new()
       .with_colors(colors)
       .targets(targets)
-      .level(builder.build().filter())
+      .level(filter)
       .build()
   };
 
