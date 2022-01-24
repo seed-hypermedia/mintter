@@ -2,9 +2,10 @@
 # defined in overlay.nix. This file can be imported in place of normal <nixpkgs>.
 { 
   system ? builtins.currentSystem,
-  sources ? import ./sources.nix,
-  nixpkgs ? sources.nixpkgs,
-  moz_overlay ? import sources.nixpkgs-mozilla,
+  # Nixpkgs as of 2021-10-16.
+  nixpkgs ? (builtins.fetchTarball https://github.com/NixOS/nixpkgs/archive/ee084c02040e864eeeb4cf4f8538d92f7c675671.tar.gz),
+  # Mozilla overlay commit as of 2022-01-24.
+  moz_overlay ? import (builtins.fetchTarball https://github.com/mozilla/nixpkgs-mozilla/archive/7c1e8b1dd6ed0043fb4ee0b12b815256b0b9de6f.tar.gz),
   overlay ? import ./overlay.nix {},
   defaultOverlays ? [ 
     # The order matters here. We use rust from Mozilla overlay inside our own overlay.

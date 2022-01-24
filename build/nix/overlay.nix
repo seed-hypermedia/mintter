@@ -1,9 +1,6 @@
-{ 
-  sources ? import ./sources.nix,
-}:
+{}:
 
 self: super: {
-  naersk = super.callPackage sources.naersk {};
   go = super.go_1_17;
   nodejs = super.nodejs-16_x;
   bazel-wrapper = super.callPackage ./bazel-wrapper {};
@@ -17,11 +14,15 @@ self: super: {
   please = super.callPackage ./please {
     buildGoModule = self.buildGo117Module;
   };
-  tauri = super.callPackage ./tauri {};
   robo = super.callPackage ./robo {
     buildGoModule = self.buildGo117Module;
   };
   mkLazyWrapper = super.callPackage ./mk-lazy-wrapper {};
   mintterRustChannel = (super.rustChannelOf { date = "2021-12-02"; channel = "stable"; });
   mintterRust = self.mintterRustChannel.rust;
+  tauri-cli = (super.callPackage ./tauri-cli {}).override {
+    extraNativeBuildInputs = [
+      self.mintterRust
+    ];
+  };
 }
