@@ -7,16 +7,17 @@ let
       coreutils
       findutils
       go
-      # We define the rust version we want to use for Mintter in /build/nix/overlay.nix. We add rust-src for editor support.
-      (mintterRust.override { extensions = ["rust-src"]; })
       nodejs
       yarn
-      tauri-cli
       golangci-lint
       please
       python3
       bazel-buildtools
       nix-prefetch
+      (rust-stable.override {
+        extensions = ["rust-src"];
+      })
+      tauri-cli
     ];
     libs = [
       # libiconv

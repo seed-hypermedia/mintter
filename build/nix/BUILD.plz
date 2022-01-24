@@ -67,12 +67,12 @@ nixpkgs_binary(
 
 nixpkgs_binary(
     name = "cargo",
-    nix_attribute = "mintterRust",
+    nix_attribute = "rust-stable",
 )
 
 nixpkgs_binary(
     name = "rustc",
-    nix_attribute = "mintterRust",
+    nix_attribute = "rust-stable",
 )
 
 nixpkgs_binary(

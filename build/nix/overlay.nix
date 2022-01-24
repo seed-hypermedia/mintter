@@ -1,5 +1,3 @@
-{}:
-
 self: super: {
   go = super.go_1_17;
   nodejs = super.nodejs-16_x;
@@ -18,11 +16,14 @@ self: super: {
     buildGoModule = self.buildGo117Module;
   };
   mkLazyWrapper = super.callPackage ./mk-lazy-wrapper {};
-  mintterRustChannel = (super.rustChannelOf { date = "2021-12-02"; channel = "stable"; });
-  mintterRust = self.mintterRustChannel.rust;
+  rust-stable = (super.rust-bin.stable.latest.default.overrideAttrs (oldAttrs: {
+    propagatedBuildInputs = [];
+    depsHostHostPropagated = [];
+    depsTargetTargetPropagated = [];
+  }));
   tauri-cli = (super.callPackage ./tauri-cli {}).override {
     extraNativeBuildInputs = [
-      self.mintterRust
+      self.rust-stable
     ];
   };
 }
