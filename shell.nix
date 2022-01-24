@@ -16,6 +16,7 @@ let
       please
       python3
       bazel-buildtools
+      nix-prefetch
     ];
     libs = [
       # libiconv

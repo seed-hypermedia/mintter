@@ -1,6 +1,9 @@
 { pkgs, lib, naersk, fetchFromGitHub }:
 
 rec {
+  # == How To Update ==
+  # 1. Run `nix-prefetch fetchFromGitHub --owner tauri-apps --repo tauri --rev <COMMIT>`. This will print the sha256.
+  # 2. Change the values of `rev` and `sha256` in this file accordingly.
   src = fetchFromGitHub {
     owner = "tauri-apps";
     repo = "tauri";
