@@ -11,7 +11,7 @@ let
       (mintterRust.override { extensions = ["rust-src"]; })
       nodejs
       yarn
-      tauri.cli
+      tauri-cli
       golangci-lint
       please
       python3
