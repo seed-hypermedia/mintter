@@ -1,10 +1,11 @@
+import {getInfo} from '@app/client'
+import {queryKeys} from '@app/hooks'
 import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, Suspense} from 'react'
 import {Toaster} from 'react-hot-toast'
 import {dehydrate, Hydrate, QueryClient, QueryClientProvider} from 'react-query'
 import {AuthProvider} from './auth-context'
-import {createAuthMachine} from './authstate-machine'
-import * as localApi from './client'
+import {authMachine, authModel} from './auth-machine'
 import {themeMachine, ThemeProvider} from './theme'
 
 export const queryClient = new QueryClient({
@@ -19,11 +20,26 @@ const dehydrateState = dehydrate(queryClient)
 
 type AppProvidersProps = {
   client?: QueryClient
-  api?: any
 }
 
-export function AppProviders({children, client = queryClient, api = localApi}: PropsWithChildren<AppProvidersProps>) {
-  const authService = useInterpret(() => createAuthMachine({getInfo: api.getInfo}))
+export function AppProviders({children, client = queryClient}: PropsWithChildren<AppProvidersProps>) {
+  const authService = useInterpret(() =>
+    authMachine.withConfig({
+      services: {
+        fetchInfo: () => (sendBack) => {
+          client
+            .fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo())
+            .then(function (accountInfo) {
+              console.log('getInfo === ', accountInfo)
+              sendBack(authModel.events['REPORT.DEVICE.INFO.PRESENT'](accountInfo))
+            })
+            .catch(function (err) {
+              sendBack(authModel.events['REPORT.DEVICE.INFO.MISSING']())
+            })
+        },
+      },
+    }),
+  )
   const themeService = useInterpret(() => themeMachine)
   return (
     <QueryClientProvider client={client}>

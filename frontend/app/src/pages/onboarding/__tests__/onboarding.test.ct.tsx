@@ -1,6 +1,8 @@
 /// <reference types="cypress" />
 
 import {AppProviders} from '@app/app-providers'
+import {Info} from '@app/client'
+import {queryKeys} from '@app/hooks'
 import OnboardingPage from '@app/pages/onboarding'
 import {mount} from '@cypress/react'
 import {createModel} from '@xstate/test'
@@ -77,19 +79,29 @@ context('Feedback App', () => {
   testPlans.forEach((plan) => {
     describe.skip(plan.description, () => {
       plan.paths.forEach((path) => {
-        const mockedClient = new QueryClient()
+        const mockedClient = new QueryClient({
+          defaultOptions: {
+            queries: {
+              refetchOnMount: false,
+              refetchOnWindowFocus: false,
+              retry: false,
+              retryOnMount: false,
+            },
+          },
+        })
+
+        mockedClient.setQueryData<Info>([queryKeys.GET_ACCOUNT_INFO], {
+          peerId: 'testpeerid',
+          accountId: 'testaccountid',
+          startTime: undefined,
+        })
+
         mockedClient.setQueryData<Array<string>>(['onboarding', 'mnemonics'], ['foo', 'bar', 'baz'])
         it(path.description, function () {
           console.log('path: ', path)
 
           mount(
-            <AppProviders
-              api={{
-                getInfo: cy.stub().returns(Promise.resolve(undefined)),
-                genSeed: cy.stub().returns(Promise.resolve({mnemonic: ['foo', 'bar', 'baz']})),
-              }}
-              client={mockedClient}
-            >
+            <AppProviders client={mockedClient}>
               <OnboardingPage />
             </AppProviders>,
           ).then(path.test)

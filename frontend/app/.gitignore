@@ -6,5 +6,8 @@ dist-ssr
 *.local
 .vite
 .vite-jest-cache
-cypress/snapshots
+
 cypress/videos
+cypress/downloads
+cypress/screenshots
+cypress/snapshots
