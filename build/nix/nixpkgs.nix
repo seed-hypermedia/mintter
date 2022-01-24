@@ -1,28 +1,38 @@
 # This file assembles a pinned version of nixpkgs with our custom overlay
 # defined in overlay.nix. This file can be imported in place of normal <nixpkgs>.
+let
+  pkgs = import <nixpkgs> {};
+  # Nixpkgs as of 2022-01-24.
+  # Update sha256 with `nix-prefetch --owner NixOS --repo nixpkgs --rev <commit>`.
+  pinnedNixpkgs = pkgs.fetchFromGitHub {
+    owner = "NixOS";
+    repo = "nixpkgs";
+    rev = "cc68710784ffe0ee035ee7b726656c44566cac94";
+    sha256 = "0j1hngbqf4h9pm4pkkrw6fxrifwjj5vbq52gf4i9hwc2z2wxn6pj";
+  };
+  # Rust overlay as of 2022-01-24.
+  # Update sha256 with `nix-prefetch --owner oxalica --repo rust-overlay --rev <commit>`.
+  rustOverlay = import (pkgs.fetchFromGitHub {
+    owner = "oxalica";
+    repo = "rust-overlay";
+    rev = "9fb49daf1bbe1d91e6c837706c481f9ebb3d8097";
+    sha256 = "1h8v9346kw70glmsg58dz3fa260iy38p9kdf73nxphnnf6dy2yd4";
+  });
+  mintterOverlay = import ./overlay.nix;
+in
+
 { 
   system ? builtins.currentSystem,
-  # Nixpkgs as of 2021-10-16.
-  nixpkgs ? (builtins.fetchTarball https://github.com/NixOS/nixpkgs/archive/ee084c02040e864eeeb4cf4f8538d92f7c675671.tar.gz),
-  # Mozilla overlay commit as of 2022-01-24.
-  moz_overlay ? import (builtins.fetchTarball https://github.com/mozilla/nixpkgs-mozilla/archive/7c1e8b1dd6ed0043fb4ee0b12b815256b0b9de6f.tar.gz),
-  overlay ? import ./overlay.nix {},
-  defaultOverlays ? [ 
-    # The order matters here. We use rust from Mozilla overlay inside our own overlay.
-    # It's a mess.
-    moz_overlay
-    overlay
-  ],
-  overlays ? [],
+  nixpkgs ? pinnedNixpkgs,
   config ? {},
 }:
 
 import nixpkgs {
-  overlays = defaultOverlays ++ overlays;
+  overlays = [
+    # Order matters here. We use rust overlay inside our custom overlay.
+    rustOverlay
+    mintterOverlay
+  ];
   inherit system;
-  config = {
-    # Go 1.17 is not yet supported on x86_64-darwin, so we explicitly allow it here
-    # only for this platform.
-    allowUnsupportedSystem = if system == "x86_64-darwin" then true else false;
-  } // config;
+  config = config;
 }
