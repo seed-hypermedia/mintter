@@ -20,23 +20,23 @@ let
       tauri-cli
     ];
     libs = [
-      # libiconv
+      libiconv
     ];
   };
   shellDarwin = {
     tools = [
-      impure-cc
+      # impure-cc
     ];
     libs = [
-      # darwin.apple_sdk.frameworks.AppKit
-      # darwin.apple_sdk.frameworks.CoreFoundation
-      # darwin.apple_sdk.frameworks.CoreVideo
-      # darwin.apple_sdk.frameworks.CoreGraphics
-      # darwin.apple_sdk.frameworks.Security
-      # darwin.apple_sdk.frameworks.WebKit
-      # darwin.apple_sdk.frameworks.Carbon
-      # darwin.apple_sdk.frameworks.QuartzCore
-      # darwin.apple_sdk.frameworks.Foundation
+      darwin.apple_sdk.frameworks.AppKit
+      darwin.apple_sdk.frameworks.CoreFoundation
+      darwin.apple_sdk.frameworks.CoreVideo
+      darwin.apple_sdk.frameworks.CoreGraphics
+      darwin.apple_sdk.frameworks.Security
+      darwin.apple_sdk.frameworks.WebKit
+      darwin.apple_sdk.frameworks.Carbon
+      darwin.apple_sdk.frameworks.QuartzCore
+      darwin.apple_sdk.frameworks.Foundation
     ];
   };
   shellLinux = {

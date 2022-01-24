@@ -63,11 +63,6 @@ def go_binary(
 
     workdir = join_path(package_name(), workdir)
 
-    env = {
-        "CGO_ENABLED": "0" if not cgo else "1",
-        "workdir": workdir,
-    }
-
     def pre_build(label):
         if not has_label(gomod, "gomod"):
             log.fatal("Attribute gomod must point to a gomod rule")
@@ -81,7 +76,6 @@ def go_binary(
 TMPDIR=/tmp
 HOME=$(eval echo ~$(whoami))
 cd $workdir
-export CC="$TOOLS_GCC"
 $TOOLS_GO build -o $OUT {package}
 """.format(package = package),
         binary = True,
@@ -89,9 +83,11 @@ $TOOLS_GO build -o $OUT {package}
         output_is_complete = True,
         tools = {
             "go": [CONFIG.GO_TOOL],
-            "gcc": [CONFIG.GCC_TOOL],
         },
-        env = env,
+        env = {
+            "CGO_ENABLED": "0" if not cgo else "1",
+            "workdir": workdir,
+        },
         deps = deps + [gomod],
         labels = labels + ["binary", "go_binary"],
         visibility = visibility,
