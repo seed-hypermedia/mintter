@@ -1,4 +1,4 @@
-import {Device, updateAccount} from '@app/client'
+import * as localApi from '@app/client'
 import {queryKeys, useAccount} from '@app/hooks'
 import {styled} from '@app/stitches.config'
 import {useTheme} from '@app/theme'
@@ -36,11 +36,11 @@ function SettingsRoot({children}: any) {
   )
 }
 
-export function Settings() {
+export function Settings({api = localApi}: {api: Partial<typeof localApi>}) {
   return (
     <SettingsRoot>
       <DialogPrimitive.Trigger asChild>
-        <Button size="0" variant="ghost" color="muted">
+        <Button size="0" variant="ghost" color="muted" data-cy="settings-trigger">
           <Icon name="GearOutlined" color="muted" />
         </Button>
       </DialogPrimitive.Trigger>
@@ -75,7 +75,7 @@ export function Settings() {
           </StyledTabsList>
           <TabsContent value="profile">
             <ScrollArea>
-              <ProfileForm />
+              <ProfileForm updateAccount={api.updateAccount} />
             </ScrollArea>
           </TabsContent>
           <TabsContent value="account">
@@ -148,8 +148,10 @@ var TabsContent = styled(TabsPrimitive.Content, {
   background: '$background-muted',
 })
 
-function ProfileForm() {
-  const {data} = useAccount('', {
+function ProfileForm({updateAccount}: {updateAccount: any}) {
+  console.log('UPDATEACCOUNT: ', updateAccount)
+
+  const {data, isSuccess} = useAccount('', {
     useErrorBoundary: true,
   })
 
@@ -166,20 +168,15 @@ function ProfileForm() {
   })
 
   useEffect(() => {
-    if (data?.profile) {
+    if (data?.profile && isSuccess) {
       const {alias = '', email = '', bio = ''} = data?.profile
-      // form.setValue('alias', alias)
-      // form.setValue('email', email)
-      // form.setValue('bio', bio)
       form.reset({
         alias,
         email,
         bio,
       })
     }
-  }, [data, form])
-
-  console.log('form: ', form)
+  }, [isSuccess])
 
   const onSubmit = form.handleSubmit(async (data) => {
     await toast
@@ -191,8 +188,6 @@ function ProfileForm() {
       .finally(() => {
         queryClient.invalidateQueries(queryKeys.GET_ACCOUNT)
       })
-
-    console.log('edit complete!')
   })
   return (
     <Box
@@ -209,11 +204,12 @@ function ProfileForm() {
     >
       <TextField
         type="text"
-        label="Username"
+        label="Alias"
+        data-cy="input-alias"
         id="alias"
         name="alias"
         ref={form.register}
-        placeholder="Readable alias or alias. Doesn't have to be unique."
+        placeholder="Readable alias or username. Doesn't have to be unique."
       />
       <TextField
         type="email"
@@ -221,6 +217,7 @@ function ProfileForm() {
         label="Email"
         id="email"
         name="email"
+        data-cy="input-email"
         ref={form.register({
           // pattern: {
           //   // eslint-disable-next-line no-control-regex
@@ -237,6 +234,7 @@ function ProfileForm() {
         id="bio"
         name="bio"
         label="Bio"
+        data-cy="input-bio"
         ref={form.register}
         rows={4}
         placeholder="A little bit about yourself..."
@@ -247,6 +245,7 @@ function ProfileForm() {
         size="2"
         shape="pill"
         color="success"
+        data-cy="submit"
         css={{alignSelf: 'flex-start'}}
       >
         Save
