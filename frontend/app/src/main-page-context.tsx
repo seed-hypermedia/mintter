@@ -21,9 +21,9 @@ export function useDrafts() {
 
 export let useDraftsService = createMainPageSelector((state) => state.context.drafts)
 
-export const useSidebar = createMainPageSelector((state) => state.context.sidebar)
+export const useLibrary = createMainPageSelector((state) => state.context.library)
 
-export function useIsSidebarOpen() {
-  let ref = createMainPageSelector((state) => state.context.sidebar)()
+export function useIsLibraryOpen() {
+  let ref = createMainPageSelector((state) => state.context.library)()
   return useSelector(ref, (state) => state.matches('opened'))
 }

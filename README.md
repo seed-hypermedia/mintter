@@ -61,3 +61,26 @@ If Nix and direnv are properly installed, you should not need anything else. Rep
 - avoid creating abstractions
 - avoid creating folders, better to have files as flat as possible
 - avoid default exports, only default exports for page components (to use dynamic import)
+
+## TODOs
+
+- [ ] There are two different options: Open in side-panel, and Add to bookmarks.
+- [ ] Add Context Menu to the Bookmarks.
+- [ ] persist sidepanel elements as bookmarks
+- [ ] Add Context Menu to BlockQuotes
+- [ ] Add Context Menu to Codeblocks
+- [ ] Add Context Menu to Library items in Files.
+  - [ ] Copy Document ID (Document ID)
+  - [ ] Open in Main Panel
+  - [ ] Open in Side Panel
+  - [ ] Delete
+  - [ ] Start a Draft (with the target opened in the sidepanel)
+- [ ] Start a Draft in Context Menu doesn’t render the document until you expand the document in the side panel.
+- [ ] Add a three dots icon at the top right of each block with the context menu.
+- [ ] Add Context Menu to Library items Bookmarks
+  - [ ] Copy Block ID (Block ID)
+  - [ ] Open in Main Panel
+  - [ ] Open in Side Panel
+  - [ ] Delete
+  - [ ] Start a Draft (with the target opened in the side panel)
+  - [ ] Remove bookmark from the Bookmarks section Library.

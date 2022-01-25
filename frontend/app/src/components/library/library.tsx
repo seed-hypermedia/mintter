@@ -1,4 +1,4 @@
-import {useIsSidebarOpen} from '@app/main-page-context'
+import {useIsLibraryOpen} from '@app/main-page-context'
 import {css} from '@app/stitches.config'
 import {Box} from '../box'
 import {ScrollArea} from '../scroll-area'
@@ -8,17 +8,16 @@ import {ConnectionsSection} from './section-connections'
 import {DraftsSection} from './section-drafts'
 import {FilesSection} from './section-files'
 
-export const SIDEBAR_WIDTH = 232
-
-export function Sidebar() {
-  const isOpen = useIsSidebarOpen()
+export function Library() {
+  const isOpen = useIsLibraryOpen()
   return (
-    <Box className={sidebarStyle()}>
+    <Box className={libraryStyle()} data-cy="library">
       <ScrollArea>
         <Box
           css={{
             width: isOpen ? 232 : 0,
-            paddingHorizontal: isOpen ? '$3' : 0,
+            paddingLeft: isOpen ? '$3' : 0,
+            paddingRight: isOpen ? '$3' : 0,
             paddingTop: '$3',
           }}
         >
@@ -34,9 +33,9 @@ export function Sidebar() {
   )
 }
 
-var sidebarStyle = css({
+var libraryStyle = css({
   transition: 'all 0.25s ease',
   backgroundColor: '$background-default',
-  gridArea: 'sidebar',
+  gridArea: 'library',
   overflow: 'scroll',
 })

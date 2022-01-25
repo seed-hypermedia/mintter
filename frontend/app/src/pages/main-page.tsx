@@ -5,8 +5,8 @@ import {mainPageMachine} from '@app/main-page-machine'
 import {css} from '@app/stitches.config'
 import {bookmarksMachine, BookmarksProvider} from '@components/bookmarks'
 import {Box} from '@components/box'
+import {Library} from '@components/library'
 import {ScrollArea} from '@components/scroll-area'
-import {Sidebar} from '@components/sidebar'
 import {Sidepanel, sidepanelMachine, SidepanelProvider} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {Topbar} from '@components/topbar'
@@ -30,7 +30,7 @@ export function MainPage() {
           <SidepanelProvider value={sidepanelService}>
             <Box className={rootPageStyle()}>
               <Topbar />
-              <Sidebar />
+              <Library />
               <MainWindow>
                 <ErrorBoundary
                   FallbackComponent={PageError}
@@ -68,7 +68,7 @@ var rootPageStyle = css({
   gridTemplateColumns: 'auto 1fr auto',
   gap: 0,
   gridTemplateAreas: `"topbar topbar topbar"
-  "sidebar main sidepanel"`,
+  "library main sidepanel"`,
   background: '$background-default',
 })
 

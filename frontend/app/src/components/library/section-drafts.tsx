@@ -1,9 +1,8 @@
 import {useDrafts} from '@app/main-page-context'
+import {LibraryItem} from '@components/library/library-item'
 import {ErrorBoundary} from 'react-error-boundary'
-import {Link} from 'wouter'
 import {Section} from './section'
 import {SectionError} from './section-error'
-import {SectionItem} from './section-item'
 
 export function DraftsSection() {
   const drafts = useDrafts()
@@ -18,9 +17,7 @@ export function DraftsSection() {
           }}
         >
           {drafts.map((document) => (
-            <Link key={document?.id} href={`/editor/${document?.id}`}>
-              <SectionItem isDraft href={`/editor/${document?.id}`} document={document} />
-            </Link>
+            <LibraryItem key={document?.id} href={`/editor/${document?.id}`} draft={document} />
           ))}
         </ErrorBoundary>
       ) : null}
