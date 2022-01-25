@@ -1,11 +1,10 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {Dropdown} from '@app/editor/dropdown'
+import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {Editor} from '@app/editor/editor'
 import {getEmbedIds, useEmbed} from '@app/editor/embed'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {copyTextToClipboard} from '@app/editor/statement'
 import {useAccount} from '@app/hooks'
-import {styled} from '@app/stitches.config'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
 import {ChildrenOf, Document, document, isLink} from '@mintter/mttast'
@@ -269,7 +268,18 @@ export function SidepanelItem({item}: SidepanelItemProps) {
       </Box>
       <Dropdown.Root modal={false}>
         <Dropdown.Trigger asChild>
-          <ElementDropdown data-trigger>
+          <ElementDropdown
+            data-trigger
+            css={{
+              position: 'absolute',
+              right: 4,
+              top: 4,
+              backgroundColor: '$background-alt',
+              '&:hover': {
+                backgroundColor: '$background-muted',
+              },
+            }}
+          >
             <Icon name="MoreHorizontal" size="1" color="muted" />
           </ElementDropdown>
         </Dropdown.Trigger>
@@ -299,20 +309,3 @@ export function SidepanelItem({item}: SidepanelItemProps) {
     </Box>
   )
 }
-
-var ElementDropdown = styled('button', {
-  border: 'none',
-  position: 'absolute',
-  right: 4,
-  top: 4,
-  backgroundColor: '$background-alt',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: '$2',
-  transition: 'all ease-in-out 0.1s',
-  '&:hover': {
-    cursor: 'pointer',
-    backgroundColor: '$background-muted',
-  },
-})

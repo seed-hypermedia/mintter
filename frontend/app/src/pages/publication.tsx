@@ -11,10 +11,10 @@ import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {ContextMenu} from '@app/editor/context-menu'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {copyTextToClipboard} from '@app/editor/statement'
 import {EditorDocument} from '@app/editor/use-editor-draft'
 import {useAccount} from '@app/hooks'
 import {tippingMachine, tippingModel} from '@app/tipping-machine'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {useLoadAnnotations} from '@app/utils/use-load-annotations'
 import {useBookmarksService} from '@components/bookmarks'
@@ -24,7 +24,7 @@ import {Icon} from '@components/icon'
 import {useEnableSidepanel, useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
-import {document, FlowContent, group, MttastContent} from '@mintter/mttast'
+import {document, FlowContent, group} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
 import {useEffect} from 'react'
@@ -38,7 +38,7 @@ import {PageProps} from './types'
 
 export default function Publication({params}: PageProps) {
   const [, setLocation] = useLocation()
-  // const {status, data, error} = usePublication(params!.docId)
+
   const [state, send] = usePagePublication(params?.docId)
 
   // TEMP: load annotations in the sidepanel
@@ -168,10 +168,7 @@ export default function Publication({params}: PageProps) {
           }}
         >
           <Box css={{width: '$full', maxWidth: '64ch'}}>
-            <Editor
-              mode={EditorMode.Publication}
-              value={state.context.publication?.document.content as Array<MttastContent>}
-            />
+            <Editor mode={EditorMode.Publication} value={state.context.publication?.document.content} />
           </Box>
         </Box>
       )}
@@ -479,7 +476,9 @@ function TippingModal({
   const [state, send] = useActor(service)
 
   useEffect(() => {
-    send(tippingModel.events.SET_TIP_DATA(publicationId, accountId))
+    if (publicationId && accountId) {
+      send(tippingModel.events.SET_TIP_DATA(publicationId, accountId))
+    }
   }, [publicationId, accountId])
 
   if (typeof publicationId == 'undefined' || typeof accountId == 'undefined') {
@@ -651,20 +650,20 @@ function SetAmount({send, state}: {state: StateFrom<typeof tippingMachine>; send
 }
 
 function Discussion({links = []}: {links?: Array<Link>}) {
+  if (!links.length) return null
+
   return (
-    links.length && (
-      <Box
-        css={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '$4',
-        }}
-      >
-        {links.map((link) => (
-          <DiscussionItem key={link} link={link} />
-        ))}
-      </Box>
-    )
+    <Box
+      css={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '$4',
+      }}
+    >
+      {links.map((link) => (
+        <DiscussionItem key={`${link.source?.documentId}-${link.target?.documentId}`} link={link} />
+      ))}
+    </Box>
   )
 }
 
@@ -683,7 +682,9 @@ function DiscussionItem({link}: {link: Link}) {
   }
 
   async function onCopy() {
-    await copyTextToClipboard(embed.url)
+    await copyTextToClipboard(
+      `${MINTTER_LINK_PREFIX}${link.source?.documentId}/${link.source?.version}/${link.source?.blockId}`,
+    )
     toast.success('Embed Reference copied successfully', {position: 'top-center'})
   }
 
@@ -717,7 +718,7 @@ function DiscussionItem({link}: {link: Link}) {
               },
             }}
           >
-            <Editor mode={EditorMode.Embed} value={[block as FlowContent]} />
+            <Editor mode={EditorMode.Embed} value={[block]} />
             <Box
               css={{
                 paddingVertical: '$6',
@@ -840,8 +841,9 @@ const discussionItemMachine = discussionItemModel.createMachine({
             } else {
               let publication = await getPublication(context.link!.source!.documentId!)
               let block = await getBlock(context.link!.source!)
-              console.log('invoke result: ', {publication, block})
-              sendBack(discussionItemModel.events['REPORT.FETCH.SUCCESS'](publication, block))
+              if (block) {
+                sendBack(discussionItemModel.events['REPORT.FETCH.SUCCESS'](publication, block))
+              }
             }
           })()
         },

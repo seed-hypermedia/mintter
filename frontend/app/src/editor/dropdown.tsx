@@ -42,12 +42,15 @@ export const dropdownContentStyle = css({
 
 export const dropdownItemStyle = css({
   display: 'flex',
+  fontSize: '$2',
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'start',
+  fontFamily: '$default',
   gap: '$4',
-  paddingVertical: '$2',
+  paddingVertical: '$3',
   paddingHorizontal: '$4',
+  borderRadius: '$2',
   cursor: 'pointer',
   '&:focus': {
     outline: 'none',
@@ -71,3 +74,15 @@ export const Dropdown = {
   Item: DropdownItem,
   Separator: StyledSeparator,
 }
+
+export var ElementDropdown = styled('button', {
+  border: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: '$2',
+  transition: 'all ease-in-out 0.1s',
+  '&:hover': {
+    cursor: 'pointer',
+  },
+})

@@ -2,6 +2,7 @@ import {createDraft} from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {ContextMenu} from '@app/editor/context-menu'
 import {EditorMode} from '@app/editor/plugin-utils'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useRoute} from '@app/utils/use-route'
 import {useBookmarksService} from '@components/bookmarks'
 import {Icon} from '@components/icon'
@@ -177,48 +178,4 @@ function removeEmptyHeading(editor: Editor, entry: NodeEntry<Heading>): boolean 
       return true
     }
   }
-}
-
-function copyTextToClipboard(text: string) {
-  return new Promise((resolve, reject) => {
-    if (!navigator.clipboard) {
-      return fallbackCopyTextToClipboard(text)
-    }
-    return navigator.clipboard.writeText(text).then(
-      () => {
-        resolve(text)
-      },
-      (err) => {
-        console.error('Async: Could not copy text: ', err)
-        reject(err)
-      },
-    )
-  })
-}
-
-function fallbackCopyTextToClipboard(text: string) {
-  return new Promise((resolve, reject) => {
-    const textArea = document.createElement('textarea')
-    textArea.value = text
-
-    // Avoid scrolling to bottom
-    textArea.style.top = '0'
-    textArea.style.left = '0'
-    textArea.style.position = 'fixed'
-    textArea.style.opacity = '0'
-
-    document.body.appendChild(textArea)
-    textArea.focus()
-    textArea.select()
-
-    try {
-      document.execCommand('copy')
-    } catch (err) {
-      console.error('Fallback: Oops, unable to copy', err)
-      reject(err)
-    }
-
-    document.body.removeChild(textArea)
-    resolve(true)
-  })
 }

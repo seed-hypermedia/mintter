@@ -1,4 +1,4 @@
-import {sidebarMachine} from '@components/sidebar/sidebar-machine'
+import {libraryMachine} from '@components/library/library-machine'
 import {ActorRefFrom, createMachine, spawn} from 'xstate'
 import {createModel} from 'xstate/lib/model'
 import {
@@ -35,6 +35,8 @@ export let filesMachine = filesModel.createMachine({
         {
           src: () => (sendBack) => {
             listPublications().then(function filesResponse(response: ListPublicationsResponse) {
+              console.log('publications: ', response.publications)
+
               let items = response.publications.map((pub) => ({
                 ...pub,
                 ref: spawn(createPublicationMachine(pub), `publication-${pub.document?.id}`),
@@ -137,7 +139,7 @@ export let mainPageMachine = createMachine({
   context: () => ({
     files: spawn(filesMachine, 'files'),
     drafts: spawn(draftsMachine, 'drafts'),
-    sidebar: spawn(sidebarMachine, 'sidebar'),
+    library: spawn(libraryMachine, 'library'),
   }),
   states: {
     idle: {},

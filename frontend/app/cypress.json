@@ -1,11 +1,12 @@
 {
   "projectId": "d3nyda",
-  "component": {
-    "testFiles": "**/*.test.ct.tsx",
-    "componentFolder": "src",
-    "viewportWidth": 800,
-    "viewportHeight": 600
-  },
+  "testFiles": "**/*.cy.tsx",
+  "componentFolder": "src",
+  "viewportWidth": 800,
+  "viewportHeight": 600,
+  "pluginsFile": "cypress/plugins/index.js",
+  "fixturesFolder": false,
+
   "screenshotsFolder": "./cypress/snapshots/actual",
   "trashAssetsBeforeRuns": true
 }

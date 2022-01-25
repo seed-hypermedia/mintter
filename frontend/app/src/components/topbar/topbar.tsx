@@ -1,7 +1,7 @@
 import {createDraft} from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {queryKeys} from '@app/hooks'
-import {useSidebar} from '@app/main-page-context'
+import {useLibrary} from '@app/main-page-context'
 import {css, styled} from '@app/stitches.config'
 import {useRoute} from '@app/utils/use-route'
 import {FormEvent, useCallback, useEffect, useRef, useState} from 'react'
@@ -41,9 +41,9 @@ export function Topbar() {
 }
 
 function SidenavBar() {
-  const sidebarService = useSidebar()
+  const libraryService = useLibrary()
 
-  const toggle = useCallback(() => sidebarService.send('SIDEBAR_TOGGLE'), [sidebarService])
+  const toggle = useCallback(() => libraryService.send('LIBRARY_TOGGLE'), [libraryService])
   return (
     <Box
       className={topbarSection()}

@@ -56,7 +56,7 @@ export function SectionItem({
   return (
     <StyledSectionItem active={match} onClick={onClick}>
       <StyledSectionItemTitle size="2" active={match}>
-        {document.title ? document.title : 'Untitled Document'}
+        {document.title || 'Untitled Document'}
       </StyledSectionItemTitle>
       <Alert.Root
         id={document.id}

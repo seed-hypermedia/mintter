@@ -1,10 +1,11 @@
 import {createStore} from '@app/store'
-import {ActorRef, spawn} from 'xstate'
+import {createInterpreterContext} from '@app/utils/machine-utils'
+import {ActorRef, InterpreterFrom, spawn} from 'xstate'
 import {createModel} from 'xstate/lib/model'
 
-export type Bookmark = {link: string; ref?: ActorRef<ReturnType<typeof createBookmarkMachine>>}
-
 const store = createStore('.bookmarks.dat')
+
+export type Bookmark = {link: string; ref?: ActorRef<ReturnType<typeof createBookmarkMachine>>}
 
 export const bookmarksModel = createModel(
   {
@@ -13,8 +14,8 @@ export const bookmarksModel = createModel(
   },
   {
     events: {
-      'GET.BOOKMARKS.SUCCESS': (bookmarks: Array<string>) => ({bookmarks}),
-      'GET.BOOKMARKS.FAIL': (errorMessage: Error['message']) => ({errorMessage}),
+      'REPORT.GET.BOOKMARKS.SUCCESS': (bookmarks: Array<string>) => ({bookmarks}),
+      'REPORT.GET.BOOKMARKS.ERROR': (errorMessage: Error['message']) => ({errorMessage}),
       'ADD.BOOKMARK': (link: string) => ({link}),
       'REMOVE.BOOKMARK': (link: string) => ({link}),
       'CLEAR.BOOKMARKS': () => ({}),
@@ -50,15 +51,15 @@ export const bookmarksMachine = bookmarksModel.createMachine(
             store
               .get<Array<string>>('bookmarks')
               .then((result) => {
-                sendBack({type: 'GET.BOOKMARKS.SUCCESS', bookmarks: result || []})
+                sendBack({type: 'REPORT.GET.BOOKMARKS.SUCCESS', bookmarks: result || []})
               })
               .catch((e: Error) => {
-                sendBack({type: 'GET.BOOKMARKS.FAIL', errorMessage: e.message})
+                sendBack({type: 'REPORT.GET.BOOKMARKS.ERROR', errorMessage: e.message})
               })
           },
         },
         on: {
-          'GET.BOOKMARKS.SUCCESS': {
+          'REPORT.GET.BOOKMARKS.SUCCESS': {
             target: 'ready',
             actions: bookmarksModel.assign({
               bookmarks: (_, event) => {
@@ -69,7 +70,7 @@ export const bookmarksMachine = bookmarksModel.createMachine(
               },
             }),
           },
-          'GET.BOOKMARKS.FAIL': {
+          'REPORT.GET.BOOKMARKS.ERROR': {
             target: 'errored',
             actions: bookmarksModel.assign({
               errorMessage: (_, event) => event.errorMessage,
@@ -124,3 +125,10 @@ export const bookmarksMachine = bookmarksModel.createMachine(
     },
   },
 )
+
+const [BookmarksProvider, useBookmarksService, createBookmarksSelector] =
+  createInterpreterContext<InterpreterFrom<typeof bookmarksMachine>>('Bookmarks')
+
+export {BookmarksProvider, useBookmarksService}
+
+export const useBookmarks = createBookmarksSelector((state) => state.context.bookmarks)
