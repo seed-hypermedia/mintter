@@ -1,3 +1,5 @@
+subinclude("//build/rules/js:defs")
+
 filegroup(
     name = "srcs",
     # TODO(burdiyan): if we'd have better conventions we could just glob the sources.

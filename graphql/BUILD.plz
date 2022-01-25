@@ -1,3 +1,5 @@
+subinclude("//build/rules/codegen:defs")
+
 # Generates Go code from the GraphQL schema
 # using the gqlgen tool.
 generated(

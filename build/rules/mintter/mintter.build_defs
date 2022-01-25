@@ -1,4 +1,6 @@
 def mtt_proto_codegen(srcs: list, languages: list):
+    subinclude("//build/rules/codegen:defs")
+
     for s in srcs:
         if "//" in s or ":" in s:
             log.fatal("proto srcs can only be files")
