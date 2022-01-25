@@ -7,6 +7,7 @@ import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
+import {info} from 'tauri-plugin-log-api'
 import {Link, useLocation} from 'wouter'
 
 export type LibraryItemProps = {
@@ -42,9 +43,15 @@ export function LibraryItem({publication, draft, href}: PropsWithChildren<Librar
     setLocation(href)
   }
 
-  function onSidepanel() {}
-  function onDelete() {}
-  function onStartDraft() {}
+  function onSidepanel() {
+    info('onSidepanel: TBD')
+  }
+  function onDelete() {
+    info('onDelete: TBD')
+  }
+  function onStartDraft() {
+    info('onStartDraft: TBD')
+  }
 
   let title = publication ? publication.document?.title : draft ? draft?.title : 'Untitled Document'
 
