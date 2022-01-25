@@ -1,0 +1,7 @@
+filegroup(
+    name = "defs",
+    srcs = [
+        "go.build_defs",
+    ],
+    visibility = ["PUBLIC"],
+)

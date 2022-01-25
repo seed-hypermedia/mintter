@@ -68,7 +68,7 @@ EOF
         _file_content = """#!/bin/sh
 set -e
 . $(out_location {cfg})
-python3 $(location //build/rules:codegen.py) --action=gen '{cmd}'
+python3 $(location //build/rules/codegen:codegen.py) --action=gen '{cmd}'
 """.format(
             cfg = cfg,
             cmd = cmd,
@@ -79,7 +79,7 @@ python3 $(location //build/rules:codegen.py) --action=gen '{cmd}'
         },
         labels = ["manual", "generated:gen"],
         tools = tools,
-        deps = [cfg, "//build/rules:codegen.py"],
+        deps = [cfg, "//build/rules/codegen:codegen.py"],
     )
 
     check_name = name + ".check"
@@ -89,14 +89,14 @@ python3 $(location //build/rules:codegen.py) --action=gen '{cmd}'
         _file_content = """#!/bin/sh
 set -e
 . $WORKSPACE/plz-out/gen/$(location {cfg})
-python3 $(location //build/rules:codegen.py) --action=check || echo "Failed to check codegen target. Run 'plz run {gen_target}'"
+python3 $(location //build/rules/codegen:codegen.py) --action=check || echo "Failed to check codegen target. Run 'plz run {gen_target}'"
 """.format(
             cfg = cfg,
             gen_target = canonicalise(gen_target),
         ),
         binary = True,
         labels = ["manual", "generated:check"],
-        deps = [cfg, "//build/rules:codegen.py"],
+        deps = [cfg, "//build/rules/codegen:codegen.py"],
     )
 
     clean_name = name + ".clean"
@@ -106,11 +106,11 @@ python3 $(location //build/rules:codegen.py) --action=check || echo "Failed to c
         _file_content = """#!/bin/sh
 set -e
 . $WORKSPACE/plz-out/gen/$(location {cfg})
-env python3 $(location //build/rules:codegen.py) --action=clean
+env python3 $(location //build/rules/codegen:codegen.py) --action=clean
 """.format(cfg = cfg),
         binary = True,
         labels = ["manual", "generated:clean"],
-        deps = [cfg, "//build/rules:codegen.py"],
+        deps = [cfg, "//build/rules/codegen:codegen.py"],
     )
 
     return

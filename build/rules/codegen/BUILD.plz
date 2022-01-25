@@ -1,0 +1,13 @@
+filegroup(
+    name = "defs",
+    srcs = [
+        "codegen.build_defs",
+    ],
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "codegen.py",
+    src = "codegen.py",
+    visibility = ["PUBLIC"],
+)

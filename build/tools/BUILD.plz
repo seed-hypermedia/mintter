@@ -1,3 +1,8 @@
+subinclude(
+    "//build/rules/go:defs",
+    "//build/rules/js:defs",
+)
+
 package(default_visibility = ["PUBLIC"])
 
 go_binary(
