@@ -470,6 +470,184 @@ func TestAPISyncDocuments(t *testing.T) {
 	}
 }
 
+func TestAPIUpdateDraftV2(t *testing.T) {
+	back := makeTestBackend(t, "alice", true)
+	api := newDocsAPI(back)
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	// === Add some content to the draft ===
+	{
+		_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+			DocumentId: draft.Id,
+			Changes: []*documents.DocumentChange{
+				{Op: &documents.DocumentChange_SetTitle{
+					SetTitle: "Hello Drafts V2",
+				}},
+				{Op: &documents.DocumentChange_SetSubtitle{
+					SetSubtitle: "This is a more granular drafts API",
+				}},
+				{Op: &documents.DocumentChange_AddBlock_{
+					AddBlock: &documents.DocumentChange_AddBlock{
+						Block: &documents.Block{
+							Id:   "b1",
+							Text: "This is the first paragraph.",
+						},
+					},
+				}},
+				{Op: &documents.DocumentChange_AddBlock_{
+					AddBlock: &documents.DocumentChange_AddBlock{
+						Block: &documents.Block{
+							Id:   "b1.1",
+							Text: "This is a child of the first paragraph.",
+						},
+						Parent: "b1",
+					},
+				}},
+				{Op: &documents.DocumentChange_AddBlock_{
+					AddBlock: &documents.DocumentChange_AddBlock{
+						Block: &documents.Block{
+							Id:   "b2",
+							Text: "This is inserted before the first paragraph.",
+						},
+					},
+				}},
+			},
+		})
+		require.NoError(t, err)
+
+		doc, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+		require.NoError(t, err)
+
+		want := &documents.Document{
+			Id:         draft.Id,
+			Author:     draft.Author,
+			Title:      "Hello Drafts V2",
+			Subtitle:   "This is a more granular drafts API",
+			CreateTime: draft.CreateTime,
+			UpdateTime: doc.UpdateTime,
+			Children: []*documents.BlockNode{
+				{
+					Block: &documents.Block{
+						Id:   "b2",
+						Text: "This is inserted before the first paragraph.",
+					},
+				},
+				{
+					Block: &documents.Block{
+						Id:   "b1",
+						Text: "This is the first paragraph.",
+					},
+					Children: []*documents.BlockNode{
+						{
+							Block: &documents.Block{
+								Id:   "b1.1",
+								Text: "This is a child of the first paragraph.",
+							},
+						},
+					},
+				},
+			},
+		}
+
+		testutil.ProtoEqual(t, want, doc, "draft doesn't match after the first update")
+	}
+
+	// === Now reparent b1.1 ===
+	{
+		_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+			DocumentId: draft.Id,
+			Changes: []*documents.DocumentChange{
+				{Op: &documents.DocumentChange_MoveBlock_{
+					MoveBlock: &documents.DocumentChange_MoveBlock{
+						BlockId:     "b1.1",
+						Parent:      "",
+						LeftSibling: "b2",
+					},
+				}},
+			},
+		})
+		require.NoError(t, err)
+
+		doc, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+		require.NoError(t, err)
+
+		want := &documents.Document{
+			Id:         draft.Id,
+			Author:     draft.Author,
+			Title:      "Hello Drafts V2",
+			Subtitle:   "This is a more granular drafts API",
+			CreateTime: draft.CreateTime,
+			UpdateTime: doc.UpdateTime,
+			Children: []*documents.BlockNode{
+				{
+					Block: &documents.Block{
+						Id:   "b2",
+						Text: "This is inserted before the first paragraph.",
+					},
+				},
+				{
+					Block: &documents.Block{
+						Id:   "b1.1",
+						Text: "This is a child of the first paragraph.",
+					},
+				},
+				{
+					Block: &documents.Block{
+						Id:   "b1",
+						Text: "This is the first paragraph.",
+					},
+				},
+			},
+		}
+
+		testutil.ProtoEqual(t, want, doc, "draft doesn't match after the first update")
+	}
+
+	// === Now delete b1.1 ===
+	{
+		_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+			DocumentId: draft.Id,
+			Changes: []*documents.DocumentChange{
+				{Op: &documents.DocumentChange_DeleteBlock{
+					DeleteBlock: "b1.1",
+				}},
+			},
+		})
+		require.NoError(t, err)
+
+		doc, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+		require.NoError(t, err)
+
+		want := &documents.Document{
+			Id:         draft.Id,
+			Author:     draft.Author,
+			Title:      "Hello Drafts V2",
+			Subtitle:   "This is a more granular drafts API",
+			CreateTime: draft.CreateTime,
+			UpdateTime: doc.UpdateTime,
+			Children: []*documents.BlockNode{
+				{
+					Block: &documents.Block{
+						Id:   "b2",
+						Text: "This is inserted before the first paragraph.",
+					},
+				},
+				{
+					Block: &documents.Block{
+						Id:   "b1",
+						Text: "This is the first paragraph.",
+					},
+				},
+			},
+		}
+
+		testutil.ProtoEqual(t, want, doc, "draft doesn't match after the first update")
+	}
+}
+
 func makeDraft(ctx context.Context, t *testing.T, api DocsServer, title, subtitle string) *documents.Document {
 	t.Helper()
 

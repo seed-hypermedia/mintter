@@ -2,7 +2,9 @@ package backend
 
 import (
 	"context"
+	"fmt"
 	"sync"
+	"time"
 
 	"github.com/ipfs/go-cid"
 	"google.golang.org/grpc/codes"
@@ -11,6 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	documents "mintter/backend/api/documents/v1alpha"
+	"mintter/backend/crdt"
 )
 
 // DocsServer combines Drafts and Publications servers.
@@ -42,15 +45,30 @@ type docsService interface {
 type docsAPI struct {
 	feedMu sync.Mutex
 	back   docsService
+
+	draftsMu sync.Mutex
+	drafts   map[string]*draftState
 }
 
 func newDocsAPI(back *backend) DocsServer {
 	return &docsAPI{
-		back: back,
+		back:   back,
+		drafts: map[string]*draftState{},
 	}
 }
 
 func (srv *docsAPI) GetDraft(ctx context.Context, in *documents.GetDraftRequest) (*documents.Document, error) {
+	// This will be changed when we switched to granular draft updates everywhere.
+	{
+		var ds *draftState
+		srv.draftsMu.Lock()
+		ds = srv.drafts[in.DocumentId]
+		srv.draftsMu.Unlock()
+		if ds != nil {
+			return ds.toProto(), nil
+		}
+	}
+
 	c, err := srv.parseDocumentID(in.DocumentId)
 	if err != nil {
 		return nil, err
@@ -290,8 +308,231 @@ func (srv *docsAPI) DeletePublication(ctx context.Context, in *documents.DeleteP
 	return &emptypb.Empty{}, err
 }
 
-// TODO(burdiyan): implement a delete publication.
-// How can we delete if there's no single version?
+func (srv *docsAPI) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftRequestV2) (*emptypb.Empty, error) {
+	// This is work in progress, and quite a mess.
+
+	if in.DocumentId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "document_id must be specified")
+	}
+
+	if len(in.Changes) == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "must send changes to update a draft")
+	}
+
+	// We should only be able to update one draft at a time anyway. Will keep the lock here,
+	// although it's probably too pessimistic. Locking a single document should be enough.
+	srv.draftsMu.Lock()
+	defer srv.draftsMu.Unlock()
+
+	acc, err := srv.back.Account()
+	if err != nil {
+		return nil, err
+	}
+
+	ds, ok := srv.drafts[in.DocumentId]
+	if !ok {
+		c, err := srv.parseDocumentID(in.DocumentId)
+		if err != nil {
+			return nil, err
+		}
+
+		draft, err := srv.back.GetDraft(ctx, c)
+		if err != nil {
+			return nil, err
+		}
+
+		ds, err = newDraftState(&documents.Document{
+			Id:         in.DocumentId,
+			Author:     acc.id.String(),
+			CreateTime: timestamppb.New(draft.CreateTime),
+			UpdateTime: timestamppb.New(draft.UpdateTime),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to create draft state: %w", err)
+		}
+
+		srv.drafts[in.DocumentId] = ds
+	}
+
+	for _, c := range in.Changes {
+		switch op := c.Op.(type) {
+		case *documents.DocumentChange_SetTitle:
+			ds.SetTitle(op.SetTitle)
+		case *documents.DocumentChange_SetSubtitle:
+			ds.SetSubtitle(op.SetSubtitle)
+		case *documents.DocumentChange_AddBlock_:
+			if err := ds.AddBlock(op.AddBlock.Block, op.AddBlock.Parent, op.AddBlock.LeftSibling); err != nil {
+				return nil, err
+			}
+		case *documents.DocumentChange_MoveBlock_:
+			if err := ds.MoveBlock(op.MoveBlock.BlockId, op.MoveBlock.Parent, op.MoveBlock.LeftSibling); err != nil {
+				return nil, err
+			}
+		case *documents.DocumentChange_ReplaceBlock:
+			if err := ds.ReplaceBlock(op.ReplaceBlock); err != nil {
+				return nil, err
+			}
+		case *documents.DocumentChange_DeleteBlock:
+			if err := ds.DeleteBlock(op.DeleteBlock); err != nil {
+				return nil, err
+			}
+		default:
+			return nil, fmt.Errorf("invalid draft update operation %T: %+v", c, c)
+		}
+	}
+	ds.updateTime = nowTruncated()
+
+	return &emptypb.Empty{}, nil
+}
+
+type draftState struct {
+	id         string
+	author     string
+	title      string
+	subtitle   string
+	createTime time.Time
+	updateTime time.Time
+	tree       *crdt.Tree
+	blocks     map[string]*documents.Block
+}
+
+func newDraftState(d *documents.Document) (*draftState, error) {
+	ds := &draftState{
+		id:         d.Id,
+		author:     d.Author,
+		title:      d.Title,
+		subtitle:   d.Subtitle,
+		createTime: d.CreateTime.AsTime(),
+		updateTime: d.UpdateTime.AsTime(),
+		tree:       crdt.NewTree(crdt.NewVectorClock()),
+		blocks:     map[string]*documents.Block{},
+	}
+
+	if err := ds.fillBlocks(crdt.RootNodeID, d.Children); err != nil {
+		return nil, err
+	}
+
+	return ds, nil
+}
+
+func (ds *draftState) SetTitle(title string) {
+	ds.title = title
+}
+
+func (ds *draftState) SetSubtitle(subtitle string) {
+	ds.subtitle = subtitle
+}
+
+func (ds *draftState) AddBlock(blk *documents.Block, parent, left string) error {
+	if blk.Id == "" {
+		return fmt.Errorf("blocks without ID are not allowed")
+	}
+
+	if _, ok := ds.blocks[blk.Id]; ok {
+		return fmt.Errorf("adding duplicate block id %s", blk.Id)
+	}
+
+	if parent == "" {
+		parent = crdt.RootNodeID
+	}
+
+	if err := ds.tree.SetNodePosition(ds.author, blk.Id, parent, left); err != nil {
+		return err
+	}
+
+	ds.blocks[blk.Id] = blk
+
+	return nil
+}
+
+func (ds *draftState) MoveBlock(blockID, parent, left string) error {
+	if parent == "" {
+		parent = crdt.RootNodeID
+	}
+
+	return ds.tree.SetNodePosition(ds.author, blockID, parent, left)
+}
+
+func (ds *draftState) ReplaceBlock(blk *documents.Block) error {
+	if _, ok := ds.blocks[blk.Id]; !ok {
+		return fmt.Errorf("block %s not found", blk.Id)
+	}
+
+	ds.blocks[blk.Id] = blk
+
+	return nil
+}
+
+func (ds *draftState) DeleteBlock(blockID string) error {
+	if _, ok := ds.blocks[blockID]; !ok {
+		return fmt.Errorf("block %s not found", blockID)
+	}
+
+	delete(ds.blocks, blockID)
+
+	return ds.tree.DeleteNode(ds.author, blockID)
+}
+
+func (ds *draftState) toProto() *documents.Document {
+	d := &documents.Document{
+		Id:         ds.id,
+		Title:      ds.title,
+		Subtitle:   ds.subtitle,
+		Author:     ds.author,
+		CreateTime: timestamppb.New(ds.createTime),
+		UpdateTime: timestamppb.New(ds.updateTime),
+	}
+
+	blockMap := map[string]*documents.BlockNode{}
+
+	appendChild := func(parent string, child *documents.BlockNode) {
+		if parent == crdt.RootNodeID {
+			d.Children = append(d.Children, child)
+			return
+		}
+
+		blk, ok := blockMap[parent]
+		if !ok {
+			panic("BUG: no parent " + parent + " was found yet while iterating")
+		}
+
+		blk.Children = append(blk.Children, child)
+	}
+
+	it := ds.tree.Iterator()
+
+	for cur := it.NextItem(); !cur.IsZero(); cur = it.NextItem() {
+		blk, ok := ds.blocks[cur.NodeID]
+		if !ok {
+			panic("BUG: node id " + cur.NodeID + " doesn't have block in the map")
+		}
+
+		child := &documents.BlockNode{Block: blk}
+		appendChild(cur.Parent, child)
+		blockMap[cur.NodeID] = child
+	}
+
+	return d
+}
+
+func (ds *draftState) fillBlocks(parent string, blocks []*documents.BlockNode) error {
+	var left string
+	for _, blk := range blocks {
+		if err := ds.tree.SetNodePosition("me", blk.Block.Id, parent, left); err != nil {
+			return err
+		}
+
+		left = blk.Block.Id
+
+		if blk.Children != nil {
+			if err := ds.fillBlocks(blk.Block.Id, blk.Children); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
 
 func (srv *docsAPI) parseDocumentID(id string) (cid.Cid, error) {
 	c, err := cid.Decode(id)

@@ -27,6 +27,8 @@ type DraftsClient interface {
 	GetDraft(ctx context.Context, in *GetDraftRequest, opts ...grpc.CallOption) (*Document, error)
 	// Updates a draft instance. Does NOT support partial updates.
 	UpdateDraft(ctx context.Context, in *UpdateDraftRequest, opts ...grpc.CallOption) (*Document, error)
+	// Updates a draft using granular update operations.
+	UpdateDraftV2(ctx context.Context, in *UpdateDraftRequestV2, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// List currently stored drafts.
 	ListDrafts(ctx context.Context, in *ListDraftsRequest, opts ...grpc.CallOption) (*ListDraftsResponse, error)
 	// Publishes a draft. I.e. draft will become a publication, and will no longer appear in drafts section.
@@ -77,6 +79,15 @@ func (c *draftsClient) UpdateDraft(ctx context.Context, in *UpdateDraftRequest, 
 	return out, nil
 }
 
+func (c *draftsClient) UpdateDraftV2(ctx context.Context, in *UpdateDraftRequestV2, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.Drafts/UpdateDraftV2", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *draftsClient) ListDrafts(ctx context.Context, in *ListDraftsRequest, opts ...grpc.CallOption) (*ListDraftsResponse, error) {
 	out := new(ListDraftsResponse)
 	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.Drafts/ListDrafts", in, out, opts...)
@@ -107,6 +118,8 @@ type DraftsServer interface {
 	GetDraft(context.Context, *GetDraftRequest) (*Document, error)
 	// Updates a draft instance. Does NOT support partial updates.
 	UpdateDraft(context.Context, *UpdateDraftRequest) (*Document, error)
+	// Updates a draft using granular update operations.
+	UpdateDraftV2(context.Context, *UpdateDraftRequestV2) (*emptypb.Empty, error)
 	// List currently stored drafts.
 	ListDrafts(context.Context, *ListDraftsRequest) (*ListDraftsResponse, error)
 	// Publishes a draft. I.e. draft will become a publication, and will no longer appear in drafts section.
@@ -128,6 +141,9 @@ func (UnimplementedDraftsServer) GetDraft(context.Context, *GetDraftRequest) (*D
 }
 func (UnimplementedDraftsServer) UpdateDraft(context.Context, *UpdateDraftRequest) (*Document, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateDraft not implemented")
+}
+func (UnimplementedDraftsServer) UpdateDraftV2(context.Context, *UpdateDraftRequestV2) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateDraftV2 not implemented")
 }
 func (UnimplementedDraftsServer) ListDrafts(context.Context, *ListDraftsRequest) (*ListDraftsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListDrafts not implemented")
@@ -219,6 +235,24 @@ func _Drafts_UpdateDraft_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Drafts_UpdateDraftV2_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDraftRequestV2)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DraftsServer).UpdateDraftV2(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.documents.v1alpha.Drafts/UpdateDraftV2",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DraftsServer).UpdateDraftV2(ctx, req.(*UpdateDraftRequestV2))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Drafts_ListDrafts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListDraftsRequest)
 	if err := dec(in); err != nil {
@@ -277,6 +311,10 @@ var Drafts_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateDraft",
 			Handler:    _Drafts_UpdateDraft_Handler,
+		},
+		{
+			MethodName: "UpdateDraftV2",
+			Handler:    _Drafts_UpdateDraftV2_Handler,
 		},
 		{
 			MethodName: "ListDrafts",
