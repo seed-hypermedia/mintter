@@ -21,6 +21,9 @@ service Drafts {
   // Updates a draft instance. Does NOT support partial updates.
   rpc UpdateDraft(UpdateDraftRequest) returns (Document);
 
+  // Updates a draft using granular update operations.
+  rpc UpdateDraftV2(UpdateDraftRequestV2) returns (google.protobuf.Empty);
+
   // List currently stored drafts.
   rpc ListDrafts(ListDraftsRequest) returns (ListDraftsResponse);
 
@@ -57,6 +60,61 @@ message UpdateDraftRequest {
   // and indexed for retrieval using ContentGraph service. In the "source"
   // LinkNode only blockID is required, because the rest can be derived.
   repeated Link links = 2;
+}
+
+// Request to update an existing draft using granular operations.
+message UpdateDraftRequestV2 {
+  // ID of the document to be updated.
+  string document_id = 3;
+
+  // List of document changes that must be applied to the existing document.
+  repeated DocumentChange changes = 4;
+}
+
+// Granular document change.
+message DocumentChange {
+  // Operation to add a new block to the document to a specified position.
+  message AddBlock {
+    Block block = 1;
+
+    // ID of the parent block, or empty if it's root of the document.
+    string parent = 2;
+
+    // IF of the left sibling block, or empty if it's the first block in the children list.
+    string left_sibling = 3;
+  }
+
+  // Operation to move an existing block to a different place in the document.
+  message MoveBlock {
+    // ID of the block to move.
+    string block_id = 1;
+
+    // ID of the new parent for the block being moved.
+    string parent = 2;
+
+    // ID of the new left sibling for the block being moved.
+    string left_sibling = 3;
+  }
+
+  oneof op {
+    // New document title.
+    string set_title = 1;
+
+    // New document subtitle.
+    string set_subtitle = 2;
+
+    // New block to add. Block ID must not repeat.
+    AddBlock add_block = 3;
+
+    // Block move to another position in the document.
+    MoveBlock move_block = 4;
+
+    // Replace existing block with its new state.
+    Block replace_block = 5;
+
+    // ID of a block to delete.
+    string delete_block = 6;
+  }
 }
 
 // Request to list stored drafts.
@@ -173,6 +231,9 @@ message Document {
   // which must be of type GroupingContent.
   string content = 5;
 
+  // This is WIP feature for block-aware API. It will supersede the `content` field.
+  repeated BlockNode children = 9;
+
   // Output only. Time when document was created.
   google.protobuf.Timestamp create_time = 6;
 
@@ -181,6 +242,48 @@ message Document {
 
   // Output only. Time when this version was published. Not present in drafts.
   google.protobuf.Timestamp publish_time = 8;
+}
+
+// Content block with children.
+message BlockNode {
+  // Content block.
+  Block block = 1;
+
+  // Child blocks.
+  repeated BlockNode children = 2;
+}
+
+// Content block.
+message Block {
+  // Block ID. Must be unique within the document.
+  string id = 1;
+
+  // Type of the block. Specific to the renderer.
+  string type = 2;
+
+  // Text of the content block.
+  string text = 3;
+
+  // Annotation spans of a block.
+  repeated Span annotations = 4;
+
+  // Arbitrary attributes of the block.
+  map<string, string> attributes = 5;
+}
+
+// Annotation span.
+message Span {
+  // Type of the span.
+  string type = 1;
+
+  // Start offset of the span. Must be expressed in Unicode Code Points.
+  int32 start = 2;
+
+  // End offset of the span. Must be expressed in Unicode Code Points.
+  int32 end = 3;
+
+  // Arbitrary attributes of the block.
+  map<string, string> attributes = 4;
 }
 
 // Content graph service provides access to citations (backlinks).

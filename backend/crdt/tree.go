@@ -343,3 +343,27 @@ START:
 
 	return blk
 }
+
+// TreeIteratorItem is an item returned by TreeIterator.
+type TreeIteratorItem struct {
+	Parent string
+	NodeID string
+}
+
+// IsZero checks if item is zero value.
+func (t *TreeIteratorItem) IsZero() bool {
+	return t.NodeID == "" && t.Parent == ""
+}
+
+// NextID returns the next node ID, or empty string when reached end of the tree.
+func (it *TreeIterator) NextItem() TreeIteratorItem {
+	next := it.Next()
+	if next == nil {
+		return TreeIteratorItem{}
+	}
+
+	return TreeIteratorItem{
+		Parent: next.pos.list.id,
+		NodeID: next.id,
+	}
+}
