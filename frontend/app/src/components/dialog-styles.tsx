@@ -1,7 +1,4 @@
 import {css, keyframes} from '@app/stitches.config'
-import React, {PropsWithChildren} from 'react'
-import type {TextProps} from './text'
-import {Text} from './text'
 
 export const overlayShow = keyframes({
   '0%': {opacity: 0},
@@ -46,14 +43,6 @@ export const dialogContentStyles = css({
   },
   '&:focus': {outline: 'none'},
 })
-
-export function DialogTitle(props: PropsWithChildren<Omit<TextProps, 'size'>>) {
-  return <Text size="7" {...props} />
-}
-
-export function DialogDescription(props: PropsWithChildren<Omit<TextProps, 'size' | 'color'>>) {
-  return <Text size="3" color="muted" {...props} />
-}
 
 export const dialogFooterStyles = css({
   display: 'flex',

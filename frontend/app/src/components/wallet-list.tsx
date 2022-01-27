@@ -7,7 +7,7 @@ import {ActorRefFrom} from 'xstate'
 import {createWalletMachine, listMachine, listModel, Wallet} from '../wallet-machine'
 import {Box} from './box'
 import {Button} from './button'
-import {dialogContentStyles, DialogTitle, overlayStyles} from './dialog-styles'
+import {dialogContentStyles, overlayStyles} from './dialog-styles'
 import {Text} from './text'
 import {TextField} from './text-field'
 
@@ -123,7 +123,8 @@ export function WalletList() {
       >
         <Content>
           <DialogPrimitive.Title asChild>
-            <DialogTitle
+            <Text
+              size="7"
               css={{
                 height: 64,
                 display: 'flex',
@@ -135,7 +136,7 @@ export function WalletList() {
               }}
             >
               Scan QR
-            </DialogTitle>
+            </Text>
           </DialogPrimitive.Title>
           <Box
             css={{

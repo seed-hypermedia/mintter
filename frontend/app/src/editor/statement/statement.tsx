@@ -171,7 +171,7 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
             <ContextMenu.Item
               onSelect={() => {
                 addBookmark(params!.docId, (element as StatementType).id)
-                sidepanelService.send('SIDEPANEL_OPEN')
+                sidepanelService.send('SIDEPANEL.OPEN')
               }}
             >
               <Icon size="1" name="ArrowBottomRight" />

@@ -16,12 +16,11 @@ import {useAccount} from '@app/hooks'
 import {tippingMachine, tippingModel} from '@app/tipping-machine'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getDateFormat} from '@app/utils/get-format-date'
-import {useLoadAnnotations} from '@app/utils/use-load-annotations'
 import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
-import {useEnableSidepanel, useSidepanel} from '@components/sidepanel'
+import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import {document, FlowContent, group} from '@mintter/mttast'
@@ -40,10 +39,6 @@ export default function Publication({params}: PageProps) {
   const [, setLocation] = useLocation()
 
   const [state, send] = usePagePublication(params?.docId)
-
-  // TEMP: load annotations in the sidepanel
-  useEnableSidepanel()
-  useLoadAnnotations(state.context.publication?.document)
 
   const {data: author} = useAccount(state.context.publication?.document?.author, {
     enabled: !!state.context.publication?.document?.author,
@@ -693,7 +688,7 @@ function DiscussionItem({link}: {link: Link}) {
   }
 
   function onOpenInSidepanel() {
-    sidepanelService.send('SIDEPANEL_OPEN')
+    sidepanelService.send('SIDEPANEL.OPEN')
   }
 
   useEffect(() => {
@@ -767,7 +762,7 @@ function DiscussionItem({link}: {link: Link}) {
           <ContextMenu.Item
             onSelect={() => {
               addBookmark()
-              sidepanelService.send('SIDEPANEL_OPEN')
+              sidepanelService.send('SIDEPANEL.OPEN')
             }}
           >
             <Icon name="ArrowChevronDown" size="1" />
@@ -825,9 +820,11 @@ const discussionItemMachine = discussionItemModel.createMachine({
       on: {
         FETCH: {
           target: 'fetching',
-          actions: discussionItemModel.assign({
-            link: (_, event) => event.link,
-          }),
+          actions: [
+            discussionItemModel.assign({
+              link: (_, event) => event.link,
+            }),
+          ],
         },
       },
     },

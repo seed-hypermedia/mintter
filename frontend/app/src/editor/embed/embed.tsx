@@ -40,7 +40,7 @@ export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{emb
   }
 
   function onOpenInSidepanel() {
-    sidepanelService.send('SIDEPANEL_OPEN')
+    sidepanelService.send('SIDEPANEL.OPEN')
   }
 
   return (
@@ -58,7 +58,7 @@ export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{emb
         <ContextMenu.Item
           onSelect={() => {
             addBookmark(docId, blockId)
-            sidepanelService.send('SIDEPANEL_OPEN')
+            sidepanelService.send('SIDEPANEL.OPEN')
           }}
         >
           <Icon name="ArrowChevronDown" size="1" />

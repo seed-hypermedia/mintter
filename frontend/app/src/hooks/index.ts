@@ -160,12 +160,12 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
  * @param options
  * @returns
  */
-export function usePublication(publicationId: string, options: HookOptions<Publication> = {}) {
+export function usePublication(publicationId: string, version?: string, options: HookOptions<Publication> = {}) {
   const publicationQuery = useQuery(
     [queryKeys.GET_PUBLICATION, publicationId],
     async ({queryKey}) => {
       const [, publicationId] = queryKey as [string, string]
-      return getPublication(publicationId, options.rpc)
+      return getPublication(publicationId, version, options.rpc)
     },
     {
       refetchOnWindowFocus: false,
@@ -260,7 +260,7 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
 
 export function useListAccounts(options: HookOptions<ListAccountsResponse> = {}) {
   const listAccountsQuery = useQuery([queryKeys.GET_ACCOUNT_LIST], () => listAccounts(), {
-    refetchInterval: 5000,
+    refetchInterval: 10000,
     ...options,
   })
 

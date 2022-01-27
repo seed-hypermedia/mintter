@@ -2,7 +2,7 @@ import * as localApi from '@app/client'
 import {queryKeys, useAccount} from '@app/hooks'
 import {styled} from '@app/stitches.config'
 import {useTheme} from '@app/theme'
-import {dialogContentStyles, DialogTitle, overlayStyles} from '@components/dialog-styles'
+import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {useActor} from '@xstate/react'
@@ -46,7 +46,8 @@ export function Settings({api = localApi}: {api: Partial<typeof localApi>}) {
       </DialogPrimitive.Trigger>
       <Content>
         <DialogPrimitive.Title asChild>
-          <DialogTitle
+          <Text
+            size="7"
             //@ts-ignore
             css={{
               height: 64,
@@ -63,7 +64,7 @@ export function Settings({api = localApi}: {api: Partial<typeof localApi>}) {
             }}
           >
             Settings
-          </DialogTitle>
+          </Text>
         </DialogPrimitive.Title>
 
         <StyledTabs defaultValue="profile" orientation="vertical">

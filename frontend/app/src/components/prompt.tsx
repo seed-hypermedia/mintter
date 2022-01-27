@@ -1,11 +1,11 @@
 import {styled} from '@app/stitches.config'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import type {ComponentProps, PropsWithChildren} from 'react'
-import React from 'react'
 import {Box} from './box'
 import {Button} from './button'
-import {dialogContentStyles, DialogDescription, dialogFooterStyles, DialogTitle, overlayStyles} from './dialog-styles'
+import {dialogContentStyles, dialogFooterStyles, overlayStyles} from './dialog-styles'
 import type {TextProps} from './text'
+import {Text} from './text'
 
 export const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 
@@ -31,7 +31,7 @@ const Content = styled(DialogPrimitive.Content, dialogContentStyles)
 function Title(props: PropsWithChildren<TextProps>) {
   return (
     <DialogPrimitive.Title asChild>
-      <DialogTitle {...props} />
+      <Text size="7" {...props} />
     </DialogPrimitive.Title>
   )
 }
@@ -39,7 +39,7 @@ function Title(props: PropsWithChildren<TextProps>) {
 function Description(props: PropsWithChildren<TextProps>) {
   return (
     <DialogPrimitive.Description asChild>
-      <DialogDescription {...props} />
+      <Text size="3" color="muted" {...props} />
     </DialogPrimitive.Description>
   )
 }

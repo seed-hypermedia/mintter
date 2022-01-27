@@ -5,11 +5,9 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {draftEditorMachine, EditorDocument, editorModel, useEditorDraft} from '@app/editor/use-editor-draft'
 import {getDateFormat} from '@app/utils/get-format-date'
-import {useLoadAnnotations} from '@app/utils/use-load-annotations'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
-import {sidepanelModel, useSidepanel} from '@components/sidepanel'
-import {useEnableSidepanel} from '@components/sidepanel/sidepanel'
+import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import {ChildrenOf, Document} from '@mintter/mttast'
@@ -56,9 +54,6 @@ export default function EditorPage({params}: PageProps) {
   //     getCurrentWindow().setTitle('Untitled Document')
   //   }
   // }, [context.localDraft?.title])
-
-  useEnableSidepanel()
-  useLoadAnnotations(state.context.localDraft)
 
   if (state.matches('fetching')) {
     return <Text>fetching...</Text>
@@ -157,7 +152,6 @@ export default function EditorPage({params}: PageProps) {
                   onChange={(content: ChildrenOf<Document>) => {
                     if (!content && typeof content == 'string') return
                     send(editorModel.events.UPDATE({content}))
-                    sidepanelService.send(sidepanelModel.events.SIDEPANEL_LOAD_ANNOTATIONS(content))
                   }}
                 />
 
