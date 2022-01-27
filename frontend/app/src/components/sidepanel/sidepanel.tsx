@@ -1,134 +1,155 @@
-import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {Editor} from '@app/editor/editor'
 import {getEmbedIds, useEmbed} from '@app/editor/embed'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {useAccount} from '@app/hooks'
+import {createStore} from '@app/store'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
-import {ChildrenOf, Document, document, isLink} from '@mintter/mttast'
-import {useEffect, useRef, useState} from 'react'
+import {useSidepanel} from '@components/sidepanel'
+import {useActor} from '@xstate/react'
+import {useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
-import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
 import {createModel} from 'xstate/lib/model'
 import {Box} from '../box'
 import {Icon} from '../icon'
 import {ScrollArea} from '../scroll-area'
 import {Text} from '../text'
-import {useAnnotations, useIsSidepanelOpen, useSidepanel} from './sidepanel-context'
+import {useIsSidepanelOpen} from './sidepanel-context'
+
+const store = createStore('.sidepanel.dat')
 
 export const sidepanelModel = createModel(
   {
-    annotations: [] as Array<string>,
+    items: [] as Array<string>,
+    errorMessage: '',
   },
   {
     events: {
-      SIDEPANEL_LOAD_ANNOTATIONS: (content: ChildrenOf<Document>) => ({content}),
-      SIDEPANEL_ENABLE: () => ({}),
-      SIDEPANEL_DISABLE: () => ({}),
-      SIDEPANEL_OPEN: () => ({}),
-      SIDEPANEL_TOGGLE: () => ({}),
+      RETRY: () => ({}),
+      'REPORT.SIDEPANEL.GET.SUCCESS': (items: Array<string>) => ({items}),
+      'REPORT.SIDEPANEL.GET.ERROR': (errorMessage: Error['message']) => ({errorMessage}),
+      'SIDEPANEL.OPEN': () => ({}),
+      'SIDEPANEL.TOGGLE': () => ({}),
+      'SIDEPANEL.CLOSE': () => ({}),
+      'SIDEPANEL.ADD': (item: string) => ({item}),
+      'SIDEPANEL.REMOVE': (item: string) => ({item}),
+      'SIDEPANEL.CLEAR': () => ({}),
     },
   },
 )
 
-export const sidepanelMachine = sidepanelModel.createMachine({
-  id: 'sidepanel',
-  initial: 'disabled',
-  context: sidepanelModel.initialContext,
-  states: {
-    disabled: {
-      on: {
-        SIDEPANEL_ENABLE: {
-          target: 'enabled.hist',
+export const sidepanelMachine = sidepanelModel.createMachine(
+  {
+    id: 'Sidepanel',
+    initial: 'idle',
+    states: {
+      idle: {
+        invoke: {
+          id: 'fetchSidepanel',
+          src: () => (sendBack) => {
+            store
+              .get<Array<string>>('sidepanel')
+              .then((result) => {
+                console.log('sidepanel store: ', result)
+
+                sendBack(sidepanelModel.events['REPORT.SIDEPANEL.GET.SUCCESS'](result || []))
+              })
+              .catch((e: Error) => {
+                sendBack(sidepanelModel.events['REPORT.SIDEPANEL.GET.ERROR'](`SidepanelFetch Error: ${e.message}`))
+              })
+          },
+        },
+        on: {
+          'REPORT.SIDEPANEL.GET.ERROR': {
+            target: 'errored',
+            actions: [
+              sidepanelModel.assign({
+                errorMessage: (_, event) => event.errorMessage,
+              }),
+            ],
+          },
+          'REPORT.SIDEPANEL.GET.SUCCESS': {
+            target: 'ready',
+            actions: [
+              sidepanelModel.assign({
+                items: (_, event) => event.items,
+              }),
+            ],
+          },
         },
       },
-      entry: 'setBookmarks',
-    },
-    enabled: {
-      id: 'enabled',
-      on: {
-        SIDEPANEL_DISABLE: {
-          target: 'disabled',
+      errored: {
+        on: {
+          RETRY: 'idle',
         },
       },
-      initial: 'closed',
-      states: {
-        closed: {
-          on: {
-            SIDEPANEL_OPEN: {
-              target: 'opened',
+      ready: {
+        initial: 'closed',
+        states: {
+          closed: {
+            on: {
+              'SIDEPANEL.OPEN': {
+                target: 'opened',
+              },
+              'SIDEPANEL.TOGGLE': {
+                target: 'opened',
+              },
             },
-            SIDEPANEL_TOGGLE: {
-              target: 'opened',
+          },
+          opened: {
+            on: {
+              'SIDEPANEL.CLOSE': {
+                target: 'closed',
+              },
+              'SIDEPANEL.TOGGLE': {
+                target: 'closed',
+              },
             },
           },
         },
-        opened: {
-          on: {
-            SIDEPANEL_TOGGLE: {
-              target: 'closed',
-            },
+        on: {
+          'SIDEPANEL.ADD': {
+            actions: [
+              sidepanelModel.assign({
+                items: (context, event) => {
+                  let isIncluded = context.items.filter((current) => current == event.item)
+
+                  if (isIncluded.length) return context.items
+
+                  return [...context.items, event.item]
+                },
+              }),
+              'persist',
+            ],
           },
-        },
-        hist: {
-          type: 'history',
-          history: 'shallow',
+          'SIDEPANEL.REMOVE': {
+            actions: [
+              sidepanelModel.assign({
+                items: (context, event) => context.items.filter((current) => current != event.item),
+              }),
+              'persist',
+            ],
+          },
         },
       },
     },
   },
-  on: {
-    SIDEPANEL_LOAD_ANNOTATIONS: {
-      actions: sidepanelModel.assign(
-        {
-          annotations: (_, event) => {
-            let nodes = [] as Array<string>
-
-            let doc = document(event.content)
-
-            visit(
-              doc,
-              (n) => n.type == 'embed',
-              (node) => {
-                if ('url' in node) {
-                  nodes.push(node.url)
-                }
-              },
-            )
-
-            visit(
-              doc,
-              (n) => isLink(n) && n.url.includes(MINTTER_LINK_PREFIX),
-              (node) => {
-                if ('url' in node) {
-                  nodes.push(node.url)
-                }
-              },
-            )
-
-            return nodes
-          },
-        },
-        'SIDEPANEL_LOAD_ANNOTATIONS',
-      ),
+  {
+    actions: {
+      persist: (ctx) => {
+        try {
+          store.set('sidepanel', ctx.items)
+        } catch (e) {
+          console.error(e)
+        }
+      },
     },
   },
-})
-
-export function useEnableSidepanel() {
-  const service = useSidepanel()
-  useEffect(() => {
-    service.send('SIDEPANEL_ENABLE')
-
-    return () => {
-      service.send('SIDEPANEL_DISABLE')
-    }
-  }, [service])
-}
+)
 
 export type SidepanelProps = {
   gridArea: string
@@ -136,8 +157,8 @@ export type SidepanelProps = {
 
 export function Sidepanel() {
   const isOpen = useIsSidepanelOpen()
-  const annotations = useAnnotations()
-
+  const service = useSidepanel()
+  const [state, send] = useActor(service)
   return (
     <Box
       css={{
@@ -149,14 +170,13 @@ export function Sidepanel() {
       }}
     >
       <ScrollArea>
-        {annotations.length ? (
+        {state.context.items.length ? (
           <Box
             css={{
               padding: '$5',
             }}
           >
-            <Text fontWeight="bold">Annotations</Text>
-            {annotations.map((item) => {
+            {state.context.items.map((item) => {
               return (
                 <ErrorBoundary key={item} fallback={<span>sidepanel item fallback</span>}>
                   <SidepanelItem key={item} item={item} remove={false} />

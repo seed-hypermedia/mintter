@@ -57,5 +57,6 @@
   "files.associations": {
     "*.plz": "starlark",
     "*.build_defs": "starlark"
-  }
+  },
+  "xstate.showVisualEditorWarnings": false
 }

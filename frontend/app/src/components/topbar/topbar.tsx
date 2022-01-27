@@ -139,7 +139,7 @@ function TopbarActions() {
   const {match: isDocumentOpen} = useRoute<{docId: string; version: string}>(['/p/:docId/:version', '/editor/:docId'])
 
   function toggleSidepanel() {
-    service.send('SIDEPANEL_TOGGLE')
+    service.send('SIDEPANEL.TOGGLE')
   }
 
   const onCreateDraft = useCallback(async function onCreateDraft() {

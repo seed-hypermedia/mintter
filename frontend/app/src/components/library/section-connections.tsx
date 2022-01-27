@@ -17,7 +17,6 @@ import {StyledSectionItem} from './section-item'
 
 export function ConnectionsSection() {
   const {status, data = [], error} = useListAccounts()
-  console.log('🚀 ~ ConnectionsSection ~ data', data)
 
   let title = `Connections (${data.length})`
 

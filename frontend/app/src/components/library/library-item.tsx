@@ -1,10 +1,14 @@
-import {Document, Publication} from '@app/client'
+import {deleteDraft, deletePublication, Document, Publication} from '@app/client'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
+import {useMainPage} from '@app/main-page-context'
 import {styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useRoute} from '@app/utils/use-route'
+import {DeleteDialog} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
+import {sidepanelModel, useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
+import {useActor} from '@xstate/react'
 import {PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
 import {info} from 'tauri-plugin-log-api'
@@ -19,6 +23,9 @@ export type LibraryItemProps = {
 export function LibraryItem({publication, draft, href}: PropsWithChildren<LibraryItemProps>) {
   const {match} = useRoute(href)
   const [, setLocation] = useLocation()
+  const sidepanelService = useSidepanel()
+  const mainService = useMainPage()
+  const [mainState] = useActor(mainService)
   async function onCopy(event: Event) {
     // let link = publication
     //   ? `mtt://${publication.document?.id}/${publication.version}`
@@ -44,10 +51,19 @@ export function LibraryItem({publication, draft, href}: PropsWithChildren<Librar
   }
 
   function onSidepanel() {
-    info('onSidepanel: TBD')
+    if (publication) {
+      sidepanelService.send(
+        sidepanelModel.events['SIDEPANEL.ADD'](`mtt://${publication.document?.id}/${publication.version}`),
+      )
+      sidepanelService.send('SIDEPANEL.OPEN')
+    }
   }
   function onDelete() {
-    info('onDelete: TBD')
+    if (match) {
+      setLocation('/')
+    }
+    mainState.context.drafts.send('RECONCILE')
+    mainState.context.files.send('RECONCILE')
   }
   function onStartDraft() {
     info('onStartDraft: TBD')
@@ -81,7 +97,13 @@ export function LibraryItem({publication, draft, href}: PropsWithChildren<Librar
           <Dropdown.Item onSelect={onCopy}>Copy Document ID</Dropdown.Item>
           <Dropdown.Item onSelect={onMainPanel}>Open in main panel</Dropdown.Item>
           <Dropdown.Item onSelect={onSidepanel}>Open in sidepanel</Dropdown.Item>
-          <Dropdown.Item onSelect={onDelete}>Delete</Dropdown.Item>
+          <DeleteDialog
+            entryId={publication ? publication.document?.id : draft?.id}
+            handleDelete={publication ? deletePublication : deleteDraft}
+            onSuccess={onDelete}
+          >
+            <Dropdown.Item onSelect={(e) => e.preventDefault()}>Delete</Dropdown.Item>
+          </DeleteDialog>
           <Dropdown.Item onSelect={onStartDraft}>Start a Draft</Dropdown.Item>
         </Dropdown.Content>
       </Dropdown.Root>

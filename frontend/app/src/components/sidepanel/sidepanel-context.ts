@@ -7,6 +7,4 @@ const [SidepanelProvider, useSidepanel, createSidepanelSelector] =
 
 export {SidepanelProvider, useSidepanel}
 
-export const useIsSidepanelOpen = createSidepanelSelector((state) => state.matches('enabled.opened'))
-
-export const useAnnotations = createSidepanelSelector((state) => state.context.annotations)
+export const useIsSidepanelOpen = createSidepanelSelector((state) => state.matches('ready.opened'))

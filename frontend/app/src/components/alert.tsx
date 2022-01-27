@@ -4,9 +4,9 @@ import type {PropsWithChildren} from 'react'
 import {Box} from './box'
 import type {ButtonProps} from './button'
 import {Button} from './button'
-import {dialogContentStyles, DialogDescription, dialogFooterStyles, DialogTitle, overlayStyles} from './dialog-styles'
-import {Icon} from './icon'
+import {dialogContentStyles, dialogFooterStyles, overlayStyles} from './dialog-styles'
 import type {TextProps} from './text'
+import {Text} from './text'
 
 const StyledOverlay = styled(AlertDialogPrimitive.Overlay, overlayStyles)
 
@@ -19,32 +19,12 @@ function Root({children, ...props}: any) {
   )
 }
 
-function Trigger({children, ...props}: PropsWithChildren<ButtonProps>) {
-  return (
-    <AlertDialogPrimitive.Trigger asChild>
-      <Button
-        size="0"
-        color="danger"
-        css={{
-          opacity: 0,
-          '&:hover': {
-            opacity: 1,
-          },
-        }}
-        {...props}
-      >
-        <Icon name="Close" size="1" color="opposite" />
-      </Button>
-    </AlertDialogPrimitive.Trigger>
-  )
-}
-
 const StyledContent = styled(AlertDialogPrimitive.Content, dialogContentStyles)
 
 function Title(props: PropsWithChildren<TextProps>) {
   return (
     <AlertDialogPrimitive.Title asChild>
-      <DialogTitle {...props} />
+      <Text size="7" {...props} />
     </AlertDialogPrimitive.Title>
   )
 }
@@ -52,32 +32,36 @@ function Title(props: PropsWithChildren<TextProps>) {
 function Description(props: PropsWithChildren<TextProps>) {
   return (
     <AlertDialogPrimitive.Description asChild>
-      <DialogDescription {...props} />
+      <Text size="3" color="muted" {...props} />
     </AlertDialogPrimitive.Description>
   )
 }
 
 const Actions = styled(Box, dialogFooterStyles)
 
-function Cancel(props: PropsWithChildren<Omit<ButtonProps, 'variant' | 'color' | 'size'>>) {
+function Cancel({
+  disabled = false,
+  ...props
+}: PropsWithChildren<Omit<ButtonProps, 'variant' | 'color' | 'size'> & {disabled?: boolean}>) {
   return (
     <AlertDialogPrimitive.Cancel asChild>
-      <Button variant="ghost" color="muted" size="1" {...props} />
+      <Button variant="ghost" color="muted" size="1" disabled={disabled} {...props} />
     </AlertDialogPrimitive.Cancel>
   )
 }
 
-function Action(props: PropsWithChildren<Omit<ButtonProps, 'size'>>) {
+function Action({disabled = false, ...props}: PropsWithChildren<Omit<ButtonProps, 'size'> & {disabled?: boolean}>) {
   return (
     <AlertDialogPrimitive.Action asChild>
-      <Button size="1" {...props} />
+      <Button size="1" disabled={disabled} {...props} />
     </AlertDialogPrimitive.Action>
   )
 }
 
 export const Alert = {
+  ...AlertDialogPrimitive,
   Root,
-  Trigger,
+  Trigger: AlertDialogPrimitive.Trigger,
   Content: StyledContent,
   Title,
   Description,

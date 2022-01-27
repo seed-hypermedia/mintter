@@ -9,7 +9,7 @@ export function useEmbed(url: string) {
     throw new Error(`useEmbed: "url" must be a valid URL string. got "${url}"`)
   }
   const [publicationId, version, blockId] = getEmbedIds(url)
-  const publicationQuery = usePublication(publicationId)
+  const publicationQuery = usePublication(publicationId, version)
   let statement = useMemo(() => {
     let temp: FlowContent
     if (publicationQuery.data.document.content) {

@@ -11,7 +11,7 @@ import {embed, isLink, link, text} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {open} from '@tauri-apps/api/shell'
 import isUrl from 'is-url'
-import {FormEvent, PropsWithChildren, useEffect, useState} from 'react'
+import {FormEvent, forwardRef, PropsWithChildren, useEffect, useState} from 'react'
 import type {BaseRange, BaseSelection, Range} from 'slate'
 import {Editor, Element as SlateElement, Transforms} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
@@ -34,7 +34,7 @@ const StyledLink = styled('span', {
   },
 })
 
-export const Link = ({element, ...props}: PropsWithChildren<{element: LinkType}>) => {
+export const Link = forwardRef(({element, ...props}: PropsWithChildren<{element: LinkType}>, ref) => {
   const [, setLocation] = useLocation()
 
   function handleClick(e: any) {
@@ -48,8 +48,8 @@ export const Link = ({element, ...props}: PropsWithChildren<{element: LinkType}>
     }
   }
 
-  return <StyledLink onClick={handleClick} {...props} />
-}
+  return <StyledLink ref={ref} onClick={handleClick} {...props} />
+})
 
 Link.displayName = 'Link'
 
