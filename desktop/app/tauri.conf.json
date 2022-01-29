@@ -7,7 +7,7 @@
     "distDir": "../../plz-out/gen/frontend/dist/client",
     "devPath": "http://localhost:3000",
     "beforeDevCommand": "cd ../frontend/app && yarn dev",
-    "withGlobalTauri": true
+    "withGlobalTauri": false
   },
   "tauri": {
     "bundle": {
