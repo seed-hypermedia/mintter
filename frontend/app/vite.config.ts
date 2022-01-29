@@ -13,9 +13,9 @@ export default defineConfig({
     }),
   ],
   build: {
-    target: 'es2021',
+    target: ['es2021', 'chrome97', 'safari13'],
     minify: !process.env.TAURI_DEBUG && 'esbuild',
-    sourcemap: !process.env.TAURI_DEBUG,
+    sourcemap: !!process.env.TAURI_DEBUG,
     chunkSizeWarningLimit: 2048,
   },
   test: {
