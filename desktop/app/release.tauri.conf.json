@@ -4,10 +4,9 @@
     "version": "0.1.0"
   },
   "build": {
-    "distDir": "../../bazel-bin/frontend/app/dist",
+    "distDir": "../../plz-out/gen/frontend/dist/client",
     "devPath": "http://localhost:3000",
-    "beforeDevCommand": "cd ../../frontend/app && yarn dev",
-    "beforeBuildCommand": "bazel build //frontend:app //:mintterd",
+    "beforeDevCommand": "cd ../frontend/app && yarn dev",
     "withGlobalTauri": false
   },
   "tauri": {
