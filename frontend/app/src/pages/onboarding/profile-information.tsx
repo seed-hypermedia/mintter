@@ -89,7 +89,11 @@ export function ProfileInformation({next}: OnboardingStepPropsType) {
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
-        <OnboardingStepButton type="submit" data-cy="next-btn" disabled={!formState.isValid || formState.isSubmitting}>
+        <OnboardingStepButton
+          type="submit"
+          data-testid="next-btn"
+          disabled={!formState.isValid || formState.isSubmitting}
+        >
           Next
         </OnboardingStepButton>
       </OnboardingStepActions>

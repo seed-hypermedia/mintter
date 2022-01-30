@@ -25,7 +25,7 @@ let onboardingMachine = createMachine({
       meta: {
         test: function () {
           cy.log('META: meta 1')
-          cy.get('[data-cy=title]').contains(/welcome to mintter/i)
+          cy.get('[data-testid=title]').contains(/welcome to mintter/i)
         },
       },
     },
@@ -37,7 +37,7 @@ let onboardingMachine = createMachine({
       meta: {
         test: function () {
           cy.log('META: meta 2')
-          cy.get('[data-cy=title]').contains(/Security Pack/i)
+          cy.get('[data-testid=title]').contains(/Security Pack/i)
         },
       },
     },
@@ -49,7 +49,7 @@ let onboardingMachine = createMachine({
       meta: {
         test: function () {
           cy.log('META: meta 3')
-          cy.get('[data-cy=title]').contains(/Profile Information/i)
+          cy.get('[data-testid=title]').contains(/Profile Information/i)
         },
       },
     },
@@ -58,7 +58,7 @@ let onboardingMachine = createMachine({
       meta: {
         test: function () {
           cy.log('META: meta 4')
-          cy.get('[data-cy=title]').contains(/Thank You/i)
+          cy.get('[data-testid=title]').contains(/Thank You/i)
         },
       },
     },
@@ -67,10 +67,10 @@ let onboardingMachine = createMachine({
 
 const testModel = createModel(onboardingMachine).withEvents({
   NEXT: function () {
-    cy.get('[data-cy=next-btn]').click()
+    cy.get('[data-testid=next-btn]').click()
   },
   PREV: function () {
-    cy.get('[data-cy=prev-btn]').click()
+    cy.get('[data-testid=prev-btn]').click()
   },
 })
 

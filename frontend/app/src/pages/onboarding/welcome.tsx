@@ -39,7 +39,7 @@ export function Welcome({next}: OnboardingStepPropsType) {
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
-        <OnboardingStepButton onClick={next} data-cy="next-btn">
+        <OnboardingStepButton onClick={next} data-testid="next-btn">
           Start
         </OnboardingStepButton>
       </OnboardingStepActions>
