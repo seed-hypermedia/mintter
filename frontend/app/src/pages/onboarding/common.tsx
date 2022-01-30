@@ -102,7 +102,7 @@ export function OnboardingStepTitle({
   css?: CSS
 }>) {
   return (
-    <OnboardingStepTitleStyled variants={slideDownAnimationVariants} data-cy="title" {...props}>
+    <OnboardingStepTitleStyled variants={slideDownAnimationVariants} data-testid="title" {...props}>
       {icon}
       <Text alt as="h1" size="9" css={{textAlign: 'center'}}>
         {children}

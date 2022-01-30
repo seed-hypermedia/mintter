@@ -57,6 +57,9 @@ export const dropdownItemStyle = css({
     backgroundColor: '$background-neutral',
     cursor: 'pointer',
   },
+  '&:disabled': {
+    opacity: 0.5,
+  },
 })
 
 const DropdownContent = styled(DropdownMenuPrimitive.Content, dropdownContentStyle)

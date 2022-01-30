@@ -1,7 +1,7 @@
 import {HoverProvider} from '@app/editor/hover-context'
 import {hoverMachine} from '@app/editor/hover-machine'
 import {MainPageProvider} from '@app/main-page-context'
-import {mainPageMachine} from '@app/main-page-machine'
+import {createMainPageMachine} from '@app/main-page-machine'
 import {css} from '@app/stitches.config'
 import {bookmarksMachine, BookmarksProvider} from '@components/bookmarks'
 import {Box} from '@components/box'
@@ -13,15 +13,17 @@ import {Topbar} from '@components/topbar'
 import {useInterpret} from '@xstate/react'
 import {ReactNode} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
+import {useQueryClient} from 'react-query'
 import {Route} from 'wouter'
 import EditorPage from './editor'
 import Publication from './publication'
 
 export function MainPage() {
+  const client = useQueryClient()
   const sidepanelService = useInterpret(() => sidepanelMachine)
   const bookmarksService = useInterpret(() => bookmarksMachine)
   const hoverService = useInterpret(() => hoverMachine)
-  const mainPageService = useInterpret(() => mainPageMachine, {devTools: true})
+  const mainPageService = useInterpret(() => createMainPageMachine(client))
 
   return (
     <MainPageProvider value={mainPageService}>

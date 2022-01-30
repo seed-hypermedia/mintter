@@ -87,13 +87,13 @@ export function SecurityPack({prev, next, generateSeed = defaultGenerateSeed}: O
         <Text css={{textDecoration: 'underline', display: 'inline-block'}}>provide your own seed</Text>
       </Button>
       <OnboardingStepActions>
-        <OnboardingStepButton variant="outlined" onClick={prev} data-cy="prev-btn">
+        <OnboardingStepButton variant="outlined" onClick={prev} data-testid="prev-btn">
           Back
         </OnboardingStepButton>
         <OnboardingStepButton
           disabled={mnemonics.isLoading || !mnemonics.data?.length}
           onClick={handleSubmit}
-          data-cy="next-btn"
+          data-testid="next-btn"
         >
           Next
         </OnboardingStepButton>

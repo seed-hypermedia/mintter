@@ -1,9 +1,9 @@
 import {useSelector} from '@xstate/react'
 import {InterpreterFrom} from 'xstate'
-import {mainPageMachine} from './main-page-machine'
+import {createMainPageMachine} from './main-page-machine'
 import {createInterpreterContext} from './utils/machine-utils'
 const [MainPageProvider, useMainPage, createMainPageSelector] =
-  createInterpreterContext<InterpreterFrom<typeof mainPageMachine>>('MainPage')
+  createInterpreterContext<InterpreterFrom<ReturnType<typeof createMainPageMachine>>>('MainPage')
 
 export {MainPageProvider, useMainPage}
 

@@ -43,7 +43,7 @@ export function Topbar() {
 function SidenavBar() {
   const libraryService = useLibrary()
 
-  const toggle = useCallback(() => libraryService.send('LIBRARY_TOGGLE'), [libraryService])
+  const toggle = useCallback(() => libraryService.send('LIBRARY.TOGGLE'), [libraryService])
   return (
     <Box
       className={topbarSection()}

@@ -11,7 +11,7 @@ import {FilesSection} from './section-files'
 export function Library() {
   const isOpen = useIsLibraryOpen()
   return (
-    <Box className={libraryStyle()} data-cy="library">
+    <Box className={libraryStyle()} data-testid="library">
       <ScrollArea>
         <Box
           css={{

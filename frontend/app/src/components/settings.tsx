@@ -40,7 +40,7 @@ export function Settings({api = localApi}: {api: Partial<typeof localApi>}) {
   return (
     <SettingsRoot>
       <DialogPrimitive.Trigger asChild>
-        <Button size="0" variant="ghost" color="muted" data-cy="settings-trigger">
+        <Button size="0" variant="ghost" color="muted" data-testid="settings-trigger">
           <Icon name="GearOutlined" color="muted" />
         </Button>
       </DialogPrimitive.Trigger>
@@ -150,8 +150,6 @@ var TabsContent = styled(TabsPrimitive.Content, {
 })
 
 function ProfileForm({updateAccount}: {updateAccount: any}) {
-  console.log('UPDATEACCOUNT: ', updateAccount)
-
   const {data, isSuccess} = useAccount('', {
     useErrorBoundary: true,
   })
@@ -206,7 +204,7 @@ function ProfileForm({updateAccount}: {updateAccount: any}) {
       <TextField
         type="text"
         label="Alias"
-        data-cy="input-alias"
+        data-testid="input-alias"
         id="alias"
         name="alias"
         ref={form.register}
@@ -218,7 +216,7 @@ function ProfileForm({updateAccount}: {updateAccount: any}) {
         label="Email"
         id="email"
         name="email"
-        data-cy="input-email"
+        data-testid="input-email"
         ref={form.register({
           // pattern: {
           //   // eslint-disable-next-line no-control-regex
@@ -235,7 +233,7 @@ function ProfileForm({updateAccount}: {updateAccount: any}) {
         id="bio"
         name="bio"
         label="Bio"
-        data-cy="input-bio"
+        data-testid="input-bio"
         ref={form.register}
         rows={4}
         placeholder="A little bit about yourself..."
@@ -246,7 +244,7 @@ function ProfileForm({updateAccount}: {updateAccount: any}) {
         size="2"
         shape="pill"
         color="success"
-        data-cy="submit"
+        data-testid="submit"
         css={{alignSelf: 'flex-start'}}
       >
         Save

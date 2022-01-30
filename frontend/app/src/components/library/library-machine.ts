@@ -4,9 +4,9 @@ export const libraryModel = createModel(
   {},
   {
     events: {
-      LIBRARY_OPEN: () => ({}),
-      LIBRARY_CLOSE: () => ({}),
-      LIBRARY_TOGGLE: () => ({}),
+      'LIBRARY.OPEN': () => ({}),
+      'LIBRARY.CLOSE': () => ({}),
+      'LIBRARY.TOGGLE': () => ({}),
     },
   },
 )
@@ -17,14 +17,14 @@ export const libraryMachine = libraryModel.createMachine({
   states: {
     opened: {
       on: {
-        LIBRARY_CLOSE: 'closed',
-        LIBRARY_TOGGLE: 'closed',
+        'LIBRARY.CLOSE': 'closed',
+        'LIBRARY.TOGGLE': 'closed',
       },
     },
     closed: {
       on: {
-        LIBRARY_OPEN: 'opened',
-        LIBRARY_TOGGLE: 'opened',
+        'LIBRARY.OPEN': 'opened',
+        'LIBRARY.TOGGLE': 'opened',
       },
     },
   },

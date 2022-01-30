@@ -1,8 +1,13 @@
-import {deleteDraft, deletePublication, Document, Publication} from '@app/client'
+import {
+  deleteDraft as defaultDeleteDraft,
+  deletePublication as defaultDeletePublication,
+  Document,
+  Publication,
+} from '@app/client'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useMainPage} from '@app/main-page-context'
 import {styled} from '@app/stitches.config'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {copyTextToClipboard as defaultCopyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useRoute} from '@app/utils/use-route'
 import {DeleteDialog} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
@@ -18,27 +23,26 @@ export type LibraryItemProps = {
   publication?: Publication
   draft?: Document
   href: string
+  deleteDraft?: typeof defaultDeleteDraft
+  deletePublication?: typeof defaultDeletePublication
+  copyTextToClipboard?: typeof defaultCopyTextToClipboard
 }
 
-export function LibraryItem({publication, draft, href}: PropsWithChildren<LibraryItemProps>) {
+export function LibraryItem({
+  publication,
+  draft,
+  href,
+  deleteDraft = defaultDeleteDraft,
+  deletePublication = defaultDeletePublication,
+  copyTextToClipboard = defaultCopyTextToClipboard,
+}: PropsWithChildren<LibraryItemProps>) {
   const {match} = useRoute(href)
   const [, setLocation] = useLocation()
   const sidepanelService = useSidepanel()
   const mainService = useMainPage()
   const [mainState] = useActor(mainService)
-  async function onCopy(event: Event) {
-    // let link = publication
-    //   ? `mtt://${publication.document?.id}/${publication.version}`
-    //   : draft
-    //   ? `mtt://${draft.id}`
-    //   : ''
 
-    // if (link) {
-    //   copyTextToClipboard(link).then(() => {
-    //     toast.success('Document ID copied successfully', {position: 'top-center'})
-    //   })
-    // }
-
+  async function onCopy() {
     if (publication) {
       copyTextToClipboard(`mtt://${publication.document?.id}/${publication.version}`).then(() => {
         toast.success('Document ID copied successfully', {position: 'top-center'})
@@ -65,6 +69,7 @@ export function LibraryItem({publication, draft, href}: PropsWithChildren<Librar
     mainState.context.drafts.send('RECONCILE')
     mainState.context.files.send('RECONCILE')
   }
+
   function onStartDraft() {
     info('onStartDraft: TBD')
   }
@@ -72,7 +77,7 @@ export function LibraryItem({publication, draft, href}: PropsWithChildren<Librar
   let title = publication ? publication.document?.title : draft ? draft?.title : 'Untitled Document'
 
   return (
-    <StyledItem active={match}>
+    <StyledItem active={match} data-testid="library-item">
       <Link href={href}>
         <Text size="2" className="title" color="primary">
           {title}
@@ -93,16 +98,24 @@ export function LibraryItem({publication, draft, href}: PropsWithChildren<Librar
             <Icon name="MoreHorizontal" size="1" color="muted" />
           </ElementDropdown>
         </Dropdown.Trigger>
-        <Dropdown.Content align="start">
-          <Dropdown.Item onSelect={onCopy}>Copy Document ID</Dropdown.Item>
-          <Dropdown.Item onSelect={onMainPanel}>Open in main panel</Dropdown.Item>
-          <Dropdown.Item onSelect={onSidepanel}>Open in sidepanel</Dropdown.Item>
+        <Dropdown.Content align="start" data-testid="library-item-dropdown-root">
+          <Dropdown.Item data-testid="copy-item" disabled={!!draft} onSelect={onCopy}>
+            Copy Document ID
+          </Dropdown.Item>
+          <Dropdown.Item data-testid="mainpanel-item" onSelect={onMainPanel}>
+            Open in main panel
+          </Dropdown.Item>
+          <Dropdown.Item data-testid="sidepanel-item" onSelect={onSidepanel}>
+            Open in sidepanel
+          </Dropdown.Item>
           <DeleteDialog
             entryId={publication ? publication.document?.id : draft?.id}
             handleDelete={publication ? deletePublication : deleteDraft}
             onSuccess={onDelete}
           >
-            <Dropdown.Item onSelect={(e) => e.preventDefault()}>Delete</Dropdown.Item>
+            <Dropdown.Item data-testid="delete-item" onSelect={(e) => e.preventDefault()}>
+              Delete
+            </Dropdown.Item>
           </DeleteDialog>
           <Dropdown.Item onSelect={onStartDraft}>Start a Draft</Dropdown.Item>
         </Dropdown.Content>
