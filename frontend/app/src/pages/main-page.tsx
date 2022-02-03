@@ -7,7 +7,7 @@ import {bookmarksMachine, BookmarksProvider} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Library} from '@components/library'
 import {ScrollArea} from '@components/scroll-area'
-import {Sidepanel, sidepanelMachine, SidepanelProvider} from '@components/sidepanel'
+import {createSidepanelMachine, Sidepanel, SidepanelProvider} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {Topbar} from '@components/topbar'
 import {useInterpret} from '@xstate/react'
@@ -20,7 +20,7 @@ import Publication from './publication'
 
 export function MainPage() {
   const client = useQueryClient()
-  const sidepanelService = useInterpret(() => sidepanelMachine)
+  const sidepanelService = useInterpret(() => createSidepanelMachine(client))
   const bookmarksService = useInterpret(() => bookmarksMachine)
   const hoverService = useInterpret(() => hoverMachine)
   const mainPageService = useInterpret(() => createMainPageMachine(client))
@@ -54,7 +54,7 @@ export function MainPage() {
   )
 }
 
-var rootPageStyle = css({
+export var rootPageStyle = css({
   position: 'absolute',
   top: 0,
   left: 0,

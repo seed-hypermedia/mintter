@@ -1,6 +1,6 @@
 import {css, styled} from '@app/stitches.config'
 import {createId, isFlowContent, isGroup, isGroupContent, statement} from '@mintter/mttast'
-import {forwardRef, PropsWithChildren} from 'react'
+import {forwardRef} from 'react'
 import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
@@ -28,7 +28,7 @@ export const createGroupPlugin = (): EditorPlugin => ({
     ({attributes, children, element}) => {
       if (isGroup(element)) {
         return (
-          <Group mode={editor.mode} data-element-type={element.type} {...attributes} css={{listStyleType: 'none'}}>
+          <Group mode={editor.mode} element={element} attributes={attributes} css={{listStyleType: 'none'}}>
             {children}
           </Group>
         )
@@ -87,15 +87,14 @@ export function removeEmptyGroup(editor: Editor, entry: NodeEntry<Node>): boolea
   }
 }
 
-export type GroupProps = PropsWithChildren<{
+export type GroupProps = RenderElementProps & {
   mode: EditorMode
-}> &
-  Omit<RenderElementProps['attributes'], 'ref'>
+}
 
-export const Group = forwardRef<GroupProps, any>(({mode, ...props}: GroupProps, ref) => {
+export const Group = forwardRef<GroupProps, any>(({mode, attributes, element, ...props}: GroupProps, ref) => {
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return null
   }
 
-  return <GroupUI ref={ref as any} {...props} />
+  return <GroupUI data-element-type={element.type} {...attributes} ref={ref as any} {...props} />
 })

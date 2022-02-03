@@ -30,13 +30,11 @@ export async function deletePublication(documentId: string, rpc?: GrpcClient) {
  * @param rpc
  * @returns
  */
-export async function listPublications(rpc?: GrpcClient) {
+export function listPublications(rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   const request = ListPublicationsRequest.fromPartial({})
-  let result = await new PublicationsClientImpl(rpc).listPublications(request)
-  console.log('list publications', result)
 
-  return result
+  return new PublicationsClientImpl(rpc).listPublications(request)
 }
 
 /**

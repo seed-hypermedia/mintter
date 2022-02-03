@@ -31,7 +31,13 @@ export const EmbedEditor = ({embed, children, ...props}: EmbedEditorProps) => {
 
   return (
     <EmbedUI cite={embed} {...props} contentEditable={false}>
-      <Editor mode={EditorMode.Embed} value={[data.statement]} />
+      <Editor
+        mode={EditorMode.Embed}
+        value={[data.statement]}
+        onChange={() => {
+          // noop
+        }}
+      />
       {children}
     </EmbedUI>
   )

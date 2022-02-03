@@ -1,6 +1,7 @@
 import {Account, connect, ConnectionStatus, getPeerInfo} from '@app/client'
 import {useListAccounts} from '@app/hooks'
 import {keyframes, styled} from '@app/stitches.config'
+import {StyledItem} from '@components/library/library-item'
 import * as HoverCard from '@radix-ui/react-hover-card'
 import {FormEvent, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -13,7 +14,6 @@ import {Text} from '../text'
 import {TextField} from '../text-field'
 import {Section} from './section'
 import {SectionError} from './section-error'
-import {StyledSectionItem} from './section-item'
 
 export function ConnectionsSection() {
   const {status, data = [], error} = useListAccounts()
@@ -158,7 +158,14 @@ function AccountItem({account}: AccountItemProps) {
   return (
     <HoverCard.Root>
       <HoverCard.Trigger asChild>
-        <StyledSectionItem color="default">
+        <StyledItem
+          color="default"
+          css={{
+            gap: '$3',
+            paddingVertical: '$2',
+            paddingHorizontal: '$3',
+          }}
+        >
           {data && (
             <Box
               css={{
@@ -177,7 +184,7 @@ function AccountItem({account}: AccountItemProps) {
           )}
 
           <Text size="2" data-testid="connection-alias">{`${account.profile?.alias} (${account.id.slice(-8)})`}</Text>
-        </StyledSectionItem>
+        </StyledItem>
       </HoverCard.Trigger>
       <HoverCardContentStyled align="start" portalled>
         <Box css={{width: 32, height: 32, backgroundColor: '$background-neutral', borderRadius: '$round'}} />

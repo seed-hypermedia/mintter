@@ -33,8 +33,6 @@ export function createFilesMachine(client: QueryClient) {
                   return listPublications()
                 })
                 .then(function filesResponse(response) {
-                  console.log('publications: ', response.publications)
-
                   let items = response.publications.map((pub) => ({
                     ...pub,
                     ref: 'TODO',
@@ -90,8 +88,6 @@ function createDraftsMachine(client: QueryClient) {
               client
                 .fetchQuery([queryKeys.GET_DRAFT_LIST], () => listDrafts())
                 .then(function filesResponse(response) {
-                  console.log('DRAFTS RESULT: ', response)
-
                   let items = response.documents.map((doc) => ({
                     ...doc,
                     ref: 'TODO',

@@ -32,6 +32,17 @@ export class LocalStore {
   entries<T>(): Promise<{[key: string]: T}> {
     return getStoreFallback<T>(this.path)
   }
+
+  clear(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        window.localStorage.setItem(this.path, JSON.stringify({}))
+        resolve()
+      } catch (e) {
+        reject(`Error on Store.clear(): ${e}`)
+      }
+    })
+  }
 }
 
 function getStoreFallback<T = unknown>(path: string): Promise<LocalStorageStore<T>> {

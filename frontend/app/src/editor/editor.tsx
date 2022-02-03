@@ -1,5 +1,5 @@
 import {Box} from '@components/box'
-import {ChildrenOf, Document} from '@mintter/mttast'
+import {ChildrenOf, Document, FlowContent} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
 import {PropsWithChildren, Suspense, useMemo} from 'react'
 import type {Descendant, Editor as EditorType} from 'slate'
@@ -20,7 +20,7 @@ export type {EditorPlugin} from './types'
 
 interface EditorProps {
   mode?: EditorMode
-  value: ChildrenOf<Document>
+  value: ChildrenOf<Document> | Array<FlowContent>
   onChange?: (value: Descendant[]) => void
   editor?: EditorType
   plugins?: Array<EditorPlugin>

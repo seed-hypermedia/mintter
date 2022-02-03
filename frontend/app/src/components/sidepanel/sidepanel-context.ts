@@ -1,9 +1,9 @@
 import {createInterpreterContext} from '@app/utils/machine-utils'
 import {InterpreterFrom} from 'xstate'
-import {sidepanelMachine} from './sidepanel'
+import {createSidepanelMachine} from './sidepanel'
 
 const [SidepanelProvider, useSidepanel, createSidepanelSelector] =
-  createInterpreterContext<InterpreterFrom<typeof sidepanelMachine>>('Sidepanel')
+  createInterpreterContext<InterpreterFrom<ReturnType<typeof createSidepanelMachine>>>('Sidepanel')
 
 export {SidepanelProvider, useSidepanel}
 

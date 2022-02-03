@@ -1,21 +1,14 @@
-import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {BlockWrapper} from '@app/editor/block-wrapper'
 import {styled} from '@app/stitches.config'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {useRoute} from '@app/utils/use-route'
-import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
-import {Icon} from '@components/icon'
-import {Text} from '@components/text'
 import type {Code as CodeType} from '@mintter/mttast'
-import {createId, FlowContent, isCode, isParagraph, paragraph, statement, text} from '@mintter/mttast'
-import toast from 'react-hot-toast'
+import {createId, isCode, isParagraph, paragraph, statement, text} from '@mintter/mttast'
 import type {Highlighter, IThemeRegistration, Lang} from 'shiki'
 import {getHighlighter, setCDN} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {BlockTools} from '../block-tools'
-import {ContextMenu} from '../context-menu'
 import {MARK_EMPHASIS} from '../emphasis'
 import {EditorMode} from '../plugin-utils'
 import {statementStyle} from '../statement'
@@ -82,7 +75,7 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
       ({children, element, attributes}) => {
         if (isCode(element)) {
           return (
-            <Code mode={editor.mode} element={element} data-element-type={element.type} attributes={attributes}>
+            <Code mode={editor.mode} element={element} attributes={attributes}>
               {children}
             </Code>
           )
@@ -170,17 +163,8 @@ function Code({
   element: CodeType
   mode: EditorMode
 }) {
-  const {params} = useRoute<{docId: string; version: string}>(['/p/:docId/:version', '/editor/:docId'])
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
-  const bookmarksService = useBookmarksService()
-
-  function addBookmark(docId: string, blockId: FlowContent['id']) {
-    bookmarksService.send({
-      type: 'ADD.BOOKMARK',
-      link: `${MINTTER_LINK_PREFIX}${docId}/${blockId}`,
-    })
-  }
 
   function setLanguage(e: React.ChangeEvent<HTMLSelectElement>) {
     const {...newData} = element.data || {}
@@ -191,63 +175,42 @@ function Code({
 
   let lang = element.lang || ''
 
-  async function onCopy() {
-    if (params) {
-      await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${params.docId}/${(element as CodeType).id}`)
-      toast.success('Embed Reference copied successfully', {position: 'top-center'})
-    } else {
-      toast.error('Cannot Copy Embed Reference')
-    }
-  }
-
   return (
-    <ContextMenu.Root>
-      <ContextMenu.Trigger>
-        <CodeStyled data-element-type={element.type} {...attributes}>
-          {mode == EditorMode.Draft ? (
-            <SelectorWrapper
-              contentEditable={false}
-              css={{
-                position: 'absolute',
-                right: 0,
-                top: 0,
-                transform: 'translate(8px, -8px)',
-                zIndex: 2,
-              }}
-            >
-              <select id="lang-selection" name="lang-selection" value={lang} onChange={setLanguage}>
-                <option value="">Select a Language</option>
-                <option value="javascript">JavaScript</option>
-                <option value="typescript">TypeScript</option>
-                <option value="go">Golang</option>
-              </select>
-            </SelectorWrapper>
-          ) : null}
-          <BlockTools element={element} />
-          <Box
-            as="code"
-            css={{
-              display: 'block',
-              paddingVertical: '$4',
-              paddingHorizontal: '$6',
-              borderRadius: '$2',
-              position: 'relative',
-            }}
-          >
-            {children}
-          </Box>
-        </CodeStyled>
-      </ContextMenu.Trigger>
-      <ContextMenu.Content alignOffset={-5}>
-        <ContextMenu.Item onSelect={onCopy}>
-          <Icon name="Copy" size="1" />
-          <Text size="2">Copy Block ID</Text>
-        </ContextMenu.Item>
-        <ContextMenu.Item onSelect={() => addBookmark(params!.docId, element.id)}>
-          <Icon size="1" name="ArrowBottomRight" />
-          <Text size="2">Add to Bookmarks</Text>
-        </ContextMenu.Item>
-      </ContextMenu.Content>
-    </ContextMenu.Root>
+    <CodeStyled data-element-type={element.type} {...attributes}>
+      {mode == EditorMode.Draft ? (
+        <SelectorWrapper
+          contentEditable={false}
+          css={{
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            transform: 'translate(8px, -8px)',
+            zIndex: 2,
+          }}
+        >
+          <select id="lang-selection" name="lang-selection" value={lang} onChange={setLanguage}>
+            <option value="">Select a Language</option>
+            <option value="javascript">JavaScript</option>
+            <option value="typescript">TypeScript</option>
+            <option value="go">Golang</option>
+          </select>
+        </SelectorWrapper>
+      ) : null}
+      <BlockTools element={element} />
+      <BlockWrapper element={element} attributes={attributes} mode={mode}>
+        <Box
+          as="code"
+          css={{
+            display: 'block',
+            paddingVertical: '$4',
+            paddingHorizontal: '$6',
+            borderRadius: '$2',
+            position: 'relative',
+          }}
+        >
+          {children}
+        </Box>
+      </BlockWrapper>
+    </CodeStyled>
   )
 }
