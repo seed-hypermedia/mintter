@@ -1,9 +1,11 @@
 import {
+  createDraft,
   deleteDraft as defaultDeleteDraft,
   deletePublication as defaultDeletePublication,
   Document,
   Publication,
 } from '@app/client'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useMainPage} from '@app/main-page-context'
 import {styled} from '@app/stitches.config'
@@ -59,7 +61,7 @@ export function LibraryItem({
       sidepanelService.send(
         sidepanelModel.events['SIDEPANEL.ADD']({
           type: 'publication',
-          url: `mtt://${publication.document?.id}/${publication.version}`,
+          url: `${MINTTER_LINK_PREFIX}${publication.document?.id}/${publication.version}`,
         }),
       )
       sidepanelService.send('SIDEPANEL.OPEN')
@@ -73,11 +75,21 @@ export function LibraryItem({
     mainState.context.files.send('RECONCILE')
   }
 
-  function onStartDraft() {
+  async function onStartDraft() {
     info('onStartDraft: TBD')
+    try {
+      const newDraft = await createDraft()
+      if (newDraft) {
+        onSidepanel()
+        setLocation(`/editor/${newDraft.id}`)
+      }
+    } catch (err) {
+      throw Error('new Draft error: ')
+    }
   }
 
-  let title = publication ? publication.document?.title : draft ? draft?.title : 'Untitled Document'
+  let title = publication ? publication.document?.title : draft && draft.title ? draft?.title : 'Untitled Document'
+  console.log('🚀 ~ file: library-item.tsx ~ line 92 ~ title', title, draft)
 
   return (
     <StyledItem active={match} data-testid="library-item">

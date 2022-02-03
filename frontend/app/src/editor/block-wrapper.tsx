@@ -46,11 +46,23 @@ export function BlockWrapper({
     try {
       const newDraft = await createDraft()
       if (newDraft) {
+        onSidepanel()
         setLocation(`/editor/${newDraft.id}`)
       }
     } catch (err) {
       throw Error('new Draft error: ')
     }
+  }
+
+  function onSidepanel() {
+    sidepanelService.send(
+      sidepanelModel.events['SIDEPANEL.ADD']({
+        type: 'block',
+        //@ts-ignore
+        url: `mtt://${params?.docId}/${params?.version}/${element.id}`,
+      }),
+    )
+    sidepanelService.send('SIDEPANEL.OPEN')
   }
 
   return mode == EditorMode.Draft ? (
@@ -73,18 +85,7 @@ export function BlockWrapper({
           <Icon size="1" name="ArrowBottomRight" />
           <Text size="2">Add to Bookmarks</Text>
         </ContextMenu.Item>
-        <ContextMenu.Item
-          onSelect={() => {
-            sidepanelService.send(
-              sidepanelModel.events['SIDEPANEL.ADD']({
-                type: 'block',
-                //@ts-ignore
-                url: `mtt://${params?.docId}/${params?.version}/${element.id}`,
-              }),
-            )
-            sidepanelService.send('SIDEPANEL.OPEN')
-          }}
-        >
+        <ContextMenu.Item onSelect={onSidepanel}>
           <Icon size="1" name="ArrowTopRight" />
           <Text size="2">Add to Sidepanel</Text>
         </ContextMenu.Item>
