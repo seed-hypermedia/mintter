@@ -30,7 +30,6 @@ export function AppProviders({children, client = queryClient}: PropsWithChildren
           client
             .fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo())
             .then(function (accountInfo) {
-              console.log('getInfo === ', accountInfo)
               sendBack(authModel.events['REPORT.DEVICE.INFO.PRESENT'](accountInfo))
             })
             .catch(function (err) {

@@ -2,7 +2,7 @@ import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useBookmarksService} from '@components/bookmarks'
 import {Icon} from '@components/icon'
-import {useSidepanel} from '@components/sidepanel'
+import {sidepanelModel, useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import type {Embed as EmbedType} from '@mintter/mttast'
 import {FlowContent, isEmbed} from '@mintter/mttast'
@@ -40,6 +40,7 @@ export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{emb
   }
 
   function onOpenInSidepanel() {
+    sidepanelService.send(sidepanelModel.events['SIDEPANEL.ADD']({type: 'block', url: embed.url}))
     sidepanelService.send('SIDEPANEL.OPEN')
   }
 
@@ -68,6 +69,10 @@ export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{emb
           <Icon name="ArrowTopRight" size="1" />
           <Text size="2">Open Embed in main Panel</Text>
         </ContextMenu.Item>
+        <ContextMenu.Item onSelect={onOpenInSidepanel}>
+          <Icon name="ArrowTopRight" size="1" />
+          <Text size="2">Open Embed in sidepanel</Text>
+        </ContextMenu.Item>
       </ContextMenu.Content>
     </ContextMenu.Root>
   )
@@ -92,11 +97,9 @@ export const createEmbedPlugin = (): EditorPlugin => ({
           return <span {...attributes}>error on embed{children}</span>
         }
         return (
-          <>
-            <Embed embed={element} {...attributes}>
-              {children}
-            </Embed>
-          </>
+          <Embed embed={element} {...attributes}>
+            {children}
+          </Embed>
         )
       }
     },

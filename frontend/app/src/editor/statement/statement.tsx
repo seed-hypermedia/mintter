@@ -1,19 +1,9 @@
-import {createDraft} from '@app/client'
-import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {useRoute} from '@app/utils/use-route'
-import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
-import {Icon} from '@components/icon'
-import {useSidepanel} from '@components/sidepanel'
-import {Text} from '@components/text'
-import type {FlowContent, Statement as StatementType} from '@mintter/mttast'
+import {BlockWrapper} from '@app/editor/block-wrapper'
+import type {Statement as StatementType} from '@mintter/mttast'
 import {isFlowContent, isGroupContent, isParagraph, isStatement} from '@mintter/mttast'
-import toast from 'react-hot-toast'
 import {Editor, Element, Node, NodeEntry, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
-import {useLocation} from 'wouter'
 import {BlockTools} from '../block-tools'
-import {ContextMenu} from '../context-menu'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {isFirstChild} from '../utils'
@@ -28,7 +18,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
     ({element, children, attributes}) => {
       if (isStatement(element)) {
         return (
-          <Statement mode={editor.mode} element={element} data-element-type={element.type} attributes={attributes}>
+          <Statement mode={editor.mode} element={element} attributes={attributes}>
             {children}
           </Statement>
         )
@@ -120,72 +110,16 @@ function addParagraphToNestedGroup(editor: Editor, entry: NodeEntry<StatementTyp
 }
 
 function Statement({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
-  const bookmarksService = useBookmarksService()
-  const sidepanelService = useSidepanel()
-  const {params} = useRoute<{docId: string; version: string; blockId?: string}>([
-    '/p/:docId/:version/:blockId?',
-    '/editor/:docId',
-  ])
-  const [, setLocation] = useLocation()
-
-  async function onCopy() {
-    if (params) {
-      await copyTextToClipboard(
-        `${MINTTER_LINK_PREFIX}${params.docId}/${params.version}/${(element as StatementType).id}`,
-      )
-      toast.success('Statement Reference copied successfully', {position: 'top-center'})
-    } else {
-      toast.error('Cannot Copy Block ID')
-    }
-  }
-
-  function addBookmark(docId: string, blockId: FlowContent['id']) {
-    bookmarksService.send(bookmarksModel.events['ADD.BOOKMARK'](`${MINTTER_LINK_PREFIX}${docId}/${blockId}`))
-  }
-  async function onStartDraft() {
-    try {
-      const newDraft = await createDraft()
-      if (newDraft) {
-        setLocation(`/editor/${newDraft.id}`)
-      }
-    } catch (err) {
-      throw Error('new Draft error: ')
-    }
-  }
-
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return <span {...attributes}>{children}</span>
   }
 
   return (
-    <StatementUI {...attributes}>
-      <BlockTools element={element as FlowContent} />
-      {mode != EditorMode.Draft ? (
-        <ContextMenu.Root modal={false}>
-          <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
-          <ContextMenu.Content alignOffset={-5}>
-            <ContextMenu.Item onSelect={onCopy}>
-              <Icon name="Copy" size="1" />
-              <Text size="2">Copy Block ID</Text>
-            </ContextMenu.Item>
-            <ContextMenu.Item
-              onSelect={() => {
-                addBookmark(params!.docId, (element as StatementType).id)
-                sidepanelService.send('SIDEPANEL.OPEN')
-              }}
-            >
-              <Icon size="1" name="ArrowBottomRight" />
-              <Text size="2">Add to Bookmarks</Text>
-            </ContextMenu.Item>
-            <ContextMenu.Item onSelect={onStartDraft}>
-              <Icon size="1" name="AddCircle" />
-              <Text size="2">Start a Draft</Text>
-            </ContextMenu.Item>
-          </ContextMenu.Content>
-        </ContextMenu.Root>
-      ) : (
-        children
-      )}
+    <StatementUI data-element-type={element.type} {...attributes}>
+      <BlockTools element={element} />
+      <BlockWrapper element={element} mode={mode} attributes={attributes}>
+        {children}
+      </BlockWrapper>
     </StatementUI>
   )
 }

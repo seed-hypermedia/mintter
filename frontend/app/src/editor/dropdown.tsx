@@ -84,6 +84,7 @@ export var ElementDropdown = styled('button', {
   alignItems: 'center',
   justifyContent: 'center',
   borderRadius: '$2',
+  padding: '$2',
   transition: 'all ease-in-out 0.1s',
   '&:hover': {
     cursor: 'pointer',

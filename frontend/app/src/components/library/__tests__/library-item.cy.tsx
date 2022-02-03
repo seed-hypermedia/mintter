@@ -1,14 +1,9 @@
 import {Document, ListDraftsResponse, ListPublicationsResponse, Publication} from '@app/client'
 import {queryKeys} from '@app/hooks'
-import {MainPageProvider} from '@app/main-page-context'
-import {createMainPageMachine} from '@app/main-page-machine'
-import {mountWithAccount} from '@app/test/utils'
+import {MainPageProviders, mountWithAccount} from '@app/test/utils'
 import {LibraryItem} from '@components/library/library-item'
-import {sidepanelMachine, SidepanelProvider} from '@components/sidepanel'
-import {useInterpret} from '@xstate/react'
 import Sinon from 'cypress/types/sinon'
-import {PropsWithChildren} from 'react'
-import {QueryClient, setLogger} from 'react-query'
+import {setLogger} from 'react-query'
 
 setLogger({
   log: console.log,
@@ -18,16 +13,6 @@ setLogger({
     // noop
   },
 })
-
-function MainPageProviders({children, client}: PropsWithChildren<{client: QueryClient}>) {
-  const sidepanelService = useInterpret(() => sidepanelMachine)
-  const mainPageService = useInterpret(() => createMainPageMachine(client))
-  return (
-    <MainPageProvider value={mainPageService}>
-      <SidepanelProvider value={sidepanelService}>{children}</SidepanelProvider>
-    </MainPageProvider>
-  )
-}
 
 describe('<LibraryItem />', () => {
   beforeEach(() => {

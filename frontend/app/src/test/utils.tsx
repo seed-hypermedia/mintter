@@ -1,8 +1,12 @@
 import {AppProviders} from '@app/app-providers'
 import {Account, Info, Profile} from '@app/client'
 import {queryKeys} from '@app/hooks'
+import {MainPageProvider} from '@app/main-page-context'
+import {createMainPageMachine} from '@app/main-page-machine'
+import {createSidepanelMachine, SidepanelProvider} from '@components/sidepanel'
 import {mount} from '@cypress/react'
-import {ReactNode, useState} from 'react'
+import {useInterpret} from '@xstate/react'
+import {PropsWithChildren, ReactNode, useState} from 'react'
 import {QueryClient} from 'react-query'
 
 export const memoryLocation =
@@ -78,4 +82,14 @@ export function mountWithAccount({
     accountId,
     profile,
   }
+}
+
+export function MainPageProviders({children, client}: PropsWithChildren<{client: QueryClient}>) {
+  const sidepanelService = useInterpret(() => createSidepanelMachine(client))
+  const mainPageService = useInterpret(() => createMainPageMachine(client))
+  return (
+    <MainPageProvider value={mainPageService}>
+      <SidepanelProvider value={sidepanelService}>{children}</SidepanelProvider>
+    </MainPageProvider>
+  )
 }

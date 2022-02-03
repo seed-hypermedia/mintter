@@ -1,25 +1,15 @@
-import {createDraft} from '@app/client'
-import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {ContextMenu} from '@app/editor/context-menu'
+import {BlockWrapper} from '@app/editor/block-wrapper'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {useRoute} from '@app/utils/use-route'
-import {useBookmarksService} from '@components/bookmarks'
-import {Icon} from '@components/icon'
-import {Text} from '@components/text'
 import {
   createId,
-  FlowContent,
   Heading as HeadingType,
   isGroupContent,
   isHeading,
   isStaticParagraph,
   statement,
 } from '@mintter/mttast'
-import toast from 'react-hot-toast'
 import {Editor, Element, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
-import {useLocation} from 'wouter'
 import {BlockTools} from '../block-tools'
 import type {EditorPlugin} from '../types'
 import {isFirstChild, resetFlowContent} from '../utils'
@@ -34,7 +24,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
     ({attributes, children, element}) => {
       if (isHeading(element)) {
         return (
-          <Heading mode={editor.mode} element={element} data-element-type={element.type} attributes={attributes}>
+          <Heading mode={editor.mode} element={element} attributes={attributes}>
             {children}
           </Heading>
         )
@@ -90,81 +80,16 @@ export const createHeadingPlugin = (): EditorPlugin => ({
 })
 
 function Heading({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
-  const bookmarksService = useBookmarksService()
-
-  const {params} = useRoute<{docId: string; version: string; blockId?: string}>([
-    '/p/:docId/:version/:blockId?',
-    '/editor/:docId',
-  ])
-  const [, setLocation] = useLocation()
-
-  async function onCopy() {
-    if (params) {
-      await copyTextToClipboard(
-        `${MINTTER_LINK_PREFIX}${params.docId}/${params.version}/${(element as HeadingType).id}`,
-      )
-      toast.success('Statement Reference copied successfully', {position: 'top-center'})
-    } else {
-      toast.error('Cannot Copy Block ID')
-    }
-  }
-
-  function addBookmark(docId: string, blockId: FlowContent['id']) {
-    bookmarksService.send({
-      type: 'ADD.BOOKMARK',
-      link: `${MINTTER_LINK_PREFIX}${docId}/${blockId}`,
-    })
-  }
-
-  async function onStartDraft() {
-    try {
-      addBookmark(params!.docId, (element as HeadingType).id)
-      const newDraft = await createDraft()
-      if (newDraft) {
-        setLocation(`/editor/${newDraft.id}`)
-      }
-    } catch (err) {
-      throw Error('new Draft error: ')
-    }
-  }
-
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
-    return (
-      <span className="DEMODEMO" {...attributes}>
-        {children}
-      </span>
-    )
+    return <span {...attributes}>{children}</span>
   }
 
   return (
     <HeadingUI {...attributes} data-element-type={element.type}>
       <BlockTools element={element} />
-      {mode != EditorMode.Draft ? (
-        <ContextMenu.Root modal={false}>
-          <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
-          <ContextMenu.Content alignOffset={-5}>
-            <ContextMenu.Item onSelect={onCopy}>
-              <Icon name="Copy" size="1" />
-              <Text size="2">Copy Block ID</Text>
-            </ContextMenu.Item>
-            <ContextMenu.Item
-              onSelect={() => {
-                addBookmark(params!.docId, (element as HeadingType).id)
-                toast.success('Bookmark added!')
-              }}
-            >
-              <Icon size="1" name="ArrowBottomRight" />
-              <Text size="2">Add to Bookmarks</Text>
-            </ContextMenu.Item>
-            <ContextMenu.Item onSelect={onStartDraft}>
-              <Icon size="1" name="AddCircle" />
-              <Text size="2">Start a Draft</Text>
-            </ContextMenu.Item>
-          </ContextMenu.Content>
-        </ContextMenu.Root>
-      ) : (
-        children
-      )}
+      <BlockWrapper element={element} attributes={attributes} mode={mode}>
+        {children}
+      </BlockWrapper>
     </HeadingUI>
   )
 }

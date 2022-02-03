@@ -5,12 +5,12 @@ import {Text} from '@components/text'
 import {
   blockquote,
   code,
-  FlowContent,
   group,
   heading,
   isGroupContent,
   isHeading,
   MttastContent,
+  MttastNode,
   ol,
   statement,
   ul,
@@ -93,7 +93,7 @@ const items: {
   ],
 }
 
-export function BlockTools({element}: {element: FlowContent}) {
+export function BlockTools({element}: {element: MttastNode}) {
   const hoverService = useHover()
   const [state, hoverSend] = useActor(hoverService)
   const editor = useSlateStatic()

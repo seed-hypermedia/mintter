@@ -16,7 +16,7 @@ export const createUnorderedListPlugin = (): EditorPlugin => ({
     ({attributes, children, element}) => {
       if (isUnorderedList(element)) {
         return (
-          <UnorderedList {...attributes} data-element-type={element.type}>
+          <UnorderedList data-element-type={element.type} {...attributes}>
             {children}
           </UnorderedList>
         )

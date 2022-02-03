@@ -1,13 +1,12 @@
 import {Document} from '@app/client'
-import {deleteDialogMachine} from '@app/delete-dialog-machine'
 import {useMainPage} from '@app/main-page-context'
-import {createPublicationMachine} from '@app/main-page-machine'
 import {styled} from '@app/stitches.config'
 import {useRoute} from '@app/utils/use-route'
-import {useActor, useMachine} from '@xstate/react'
+import {StyledItem} from '@components/library/library-item'
+import {Text} from '@components/text'
+import {useActor} from '@xstate/react'
 import {MouseEvent} from 'react'
 import {useLocation} from 'wouter'
-import {ActorRefFrom, assign} from 'xstate'
 import {Alert} from '../alert'
 import {Box} from '../box'
 import {Icon} from '../icon'
@@ -22,42 +21,17 @@ export function SectionItem({
   onClick?: any
   href: string
   isDraft?: boolean
-  actorRef?: ActorRefFrom<ReturnType<typeof createPublicationMachine>>
 }) {
   // TODO: include delete machine to publicationMachine
   const [, setLocation] = useLocation()
   const {match} = useRoute(href)
   const mainService = useMainPage()
   const [mainState] = useActor(mainService)
-  const [deleteState, deleteSend] = useMachine(() =>
-    deleteDialogMachine.withConfig({
-      actions: {
-        onSuccess: assign((context) => {
-          if (window.location.href.includes(context.entryId)) {
-            setLocation('/library')
-          }
-          if (context.isDraft) {
-            mainState.context.drafts.send('RECONCILE')
-          } else {
-            mainState.context.files.send('RECONCILE')
-          }
-
-          return {
-            entryId: '',
-            errorMessage: '',
-            isDraft: false,
-          }
-        }),
-      },
-    }),
-  )
 
   if (!document) return null
   return (
-    <StyledSectionItem active={match} onClick={onClick}>
-      <StyledSectionItemTitle size="2" active={match}>
-        {document.title || 'Untitled Document'}
-      </StyledSectionItemTitle>
+    <StyledItem onClick={onClick}>
+      <Text size="2">{document.title || 'Untitled Document'}</Text>
       <Alert.Root
         id={document.id}
         open={deleteState.matches('open')}
@@ -95,7 +69,7 @@ export function SectionItem({
           </Alert.Actions>
         </Alert.Content>
       </Alert.Root>
-    </StyledSectionItem>
+    </StyledItem>
   )
 }
 

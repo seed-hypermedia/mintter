@@ -258,7 +258,7 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
 
 export function useListAccounts(options: HookOptions<ListAccountsResponse> = {}) {
   const listAccountsQuery = useQuery([queryKeys.GET_ACCOUNT_LIST], () => listAccounts(), {
-    refetchInterval: 10000,
+    // refetchInterval: 10000,
     ...options,
   })
 

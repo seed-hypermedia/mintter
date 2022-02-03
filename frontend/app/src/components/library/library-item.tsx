@@ -8,6 +8,7 @@ import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useMainPage} from '@app/main-page-context'
 import {styled} from '@app/stitches.config'
 import {copyTextToClipboard as defaultCopyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {info} from '@app/utils/logger'
 import {useRoute} from '@app/utils/use-route'
 import {DeleteDialog} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
@@ -16,7 +17,6 @@ import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
 import {PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
-import {info} from 'tauri-plugin-log-api'
 import {Link, useLocation} from 'wouter'
 
 export type LibraryItemProps = {
@@ -57,7 +57,10 @@ export function LibraryItem({
   function onSidepanel() {
     if (publication) {
       sidepanelService.send(
-        sidepanelModel.events['SIDEPANEL.ADD'](`mtt://${publication.document?.id}/${publication.version}`),
+        sidepanelModel.events['SIDEPANEL.ADD']({
+          type: 'publication',
+          url: `mtt://${publication.document?.id}/${publication.version}`,
+        }),
       )
       sidepanelService.send('SIDEPANEL.OPEN')
     }
@@ -124,14 +127,13 @@ export function LibraryItem({
   )
 }
 
-var StyledItem = styled(
+export var StyledItem = styled(
   'li',
   {
     $$bg: 'transparent',
     $$bgHover: '$colors$background-neutral-strong',
     $$foreground: '$colors$text-default',
     display: 'flex',
-    // gap: '$3',
     alignItems: 'center',
     position: 'relative',
     borderRadius: '$2',

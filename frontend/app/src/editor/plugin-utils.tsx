@@ -1,8 +1,8 @@
+import {error} from '@app/utils/logger'
 import {createEditor, Editor, NodeEntry, Range} from 'slate'
 import {withHistory} from 'slate-history'
 import {DefaultElement, DefaultLeaf, RenderElementProps, RenderLeafProps, withReact} from 'slate-react'
 import {EditableProps} from 'slate-react/dist/components/editable'
-import {error} from 'tauri-plugin-log-api'
 import {EditableEventHandlers, EditorPlugin} from './types'
 
 export enum EditorMode {

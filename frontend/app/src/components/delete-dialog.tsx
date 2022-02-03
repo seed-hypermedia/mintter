@@ -2,17 +2,15 @@ import {Alert} from '@components/alert'
 import {overlayStyles} from '@components/dialog-styles'
 import {useMachine} from '@xstate/react'
 import {MouseEvent, PropsWithChildren} from 'react'
-import {QueryClient} from 'react-query'
 import {createModel} from 'xstate/lib/model'
 
 export type DeleteDialogProps = PropsWithChildren<{
   entryId?: string
   handleDelete: any // Promise that deletes entry
   onSuccess: any // execute this after delete is successful;
-  client?: QueryClient
 }>
 
-export function DeleteDialog({children, entryId, handleDelete, onSuccess, client}: DeleteDialogProps) {
+export function DeleteDialog({children, entryId, handleDelete, onSuccess}: DeleteDialogProps) {
   const [state, send] = useMachine(
     deleteDialogMachine.withConfig({
       services: {
@@ -28,8 +26,6 @@ export function DeleteDialog({children, entryId, handleDelete, onSuccess, client
       id={entryId}
       open={state.matches('opened')}
       onOpenChange={(value: boolean) => {
-        console.log('open change!: ', value)
-
         if (value) {
           send('DELETE.DIALOG.OPEN')
         } else {
@@ -48,7 +44,9 @@ export function DeleteDialog({children, entryId, handleDelete, onSuccess, client
               Are you sure you want to delete this document? This action is not reversible.
             </Alert.Description>
             {state.matches('opened.errored') && (
-              <Alert.Description color="danger">Something went wrong on deletion</Alert.Description>
+              <Alert.Description data-testid="delete-dialog-error" color="danger">
+                Something went wrong on deletion
+              </Alert.Description>
             )}
             <Alert.Actions>
               <Alert.Cancel data-testid="delete-dialog-cancel" disabled={state.hasTag('pending')}>
@@ -96,7 +94,7 @@ const deleteDialogMachine = deleteDialogModel.createMachine({
     closed: {
       on: {
         'DELETE.DIALOG.OPEN': {
-          target: '#deleteDialogMachine.opened',
+          target: 'opened',
         },
       },
     },
@@ -106,10 +104,10 @@ const deleteDialogMachine = deleteDialogModel.createMachine({
         idle: {
           on: {
             'DELETE.DIALOG.CONFIRM': {
-              target: '#deleteDialogMachine.opened.deleting',
+              target: 'deleting',
             },
             'DELETE.DIALOG.CANCEL': {
-              target: '#deleteDialogMachine.opened.dismiss',
+              target: 'dismiss',
             },
           },
         },
@@ -120,12 +118,12 @@ const deleteDialogMachine = deleteDialogModel.createMachine({
             onDone: [
               {
                 actions: 'onSuccess',
-                target: '#deleteDialogMachine.opened.dismiss',
+                target: 'dismiss',
               },
             ],
             onError: [
               {
-                target: '#deleteDialogMachine.opened.errored',
+                target: 'errored',
               },
             ],
           },
@@ -133,10 +131,10 @@ const deleteDialogMachine = deleteDialogModel.createMachine({
         errored: {
           on: {
             'DELETE.DIALOG.CONFIRM': {
-              target: '#deleteDialogMachine.opened.deleting',
+              target: 'deleting',
             },
             'DELETE.DIALOG.CANCEL': {
-              target: '#deleteDialogMachine.opened.dismiss',
+              target: 'dismiss',
             },
           },
         },
@@ -148,7 +146,7 @@ const deleteDialogMachine = deleteDialogModel.createMachine({
         },
       },
       onDone: {
-        target: '#deleteDialogMachine.closed',
+        target: 'closed',
       },
     },
   },
