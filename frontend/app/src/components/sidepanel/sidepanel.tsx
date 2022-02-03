@@ -155,8 +155,8 @@ export function createSidepanelMachine(client: QueryClient) {
                     }
 
                     return [
-                      ...context.items,
                       {...event.item, ref: spawn(createSidepanelItemMachine(client, event.item))},
+                      ...context.items,
                     ]
                   },
                 }),
@@ -202,7 +202,7 @@ export type SidepanelProps = {
 export function Sidepanel() {
   const isOpen = useIsSidepanelOpen()
   const service = useSidepanel()
-  const [state] = useActor(service)
+  const [state, send] = useActor(service)
 
   return (
     <Box
@@ -217,6 +217,13 @@ export function Sidepanel() {
         visibility: isOpen ? 'visible' : 'hidden',
       }}
     >
+      <button
+        onClick={() => {
+          send('SIDEPANEL.CLEAR')
+        }}
+      >
+        clear sidepanel
+      </button>
       <ScrollArea>
         {state.context.items.length ? (
           <Box

@@ -35,38 +35,37 @@ export function DeleteDialog({children, entryId, handleDelete, onSuccess}: Delet
     >
       <Alert.Trigger asChild>{children}</Alert.Trigger>
       <Alert.Portal>
-        <Alert.Overlay className={overlayStyles()}>
-          <Alert.Content>
-            <Alert.Title color="danger" data-testid="delete-dialog-title">
-              Delete document
-            </Alert.Title>
-            <Alert.Description>
-              Are you sure you want to delete this document? This action is not reversible.
+        <Alert.Overlay className={overlayStyles()} />
+        <Alert.Content>
+          <Alert.Title color="danger" data-testid="delete-dialog-title">
+            Delete document
+          </Alert.Title>
+          <Alert.Description>
+            Are you sure you want to delete this document? This action is not reversible.
+          </Alert.Description>
+          {state.matches('opened.errored') && (
+            <Alert.Description data-testid="delete-dialog-error" color="danger">
+              Something went wrong on deletion
             </Alert.Description>
-            {state.matches('opened.errored') && (
-              <Alert.Description data-testid="delete-dialog-error" color="danger">
-                Something went wrong on deletion
-              </Alert.Description>
-            )}
-            <Alert.Actions>
-              <Alert.Cancel data-testid="delete-dialog-cancel" disabled={state.hasTag('pending')}>
-                Cancel
-              </Alert.Cancel>
-              <Alert.Action
-                color="danger"
-                data-testid="delete-dialog-confirm"
-                disabled={state.hasTag('pending')}
-                onClick={(e: MouseEvent<HTMLButtonElement>) => {
-                  e.stopPropagation()
-                  e.preventDefault()
-                  send('DELETE.DIALOG.CONFIRM')
-                }}
-              >
-                Delete
-              </Alert.Action>
-            </Alert.Actions>
-          </Alert.Content>
-        </Alert.Overlay>
+          )}
+          <Alert.Actions>
+            <Alert.Cancel data-testid="delete-dialog-cancel" disabled={state.hasTag('pending')}>
+              Cancel
+            </Alert.Cancel>
+            <Alert.Action
+              color="danger"
+              data-testid="delete-dialog-confirm"
+              disabled={state.hasTag('pending')}
+              onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                e.stopPropagation()
+                e.preventDefault()
+                send('DELETE.DIALOG.CONFIRM')
+              }}
+            >
+              Delete
+            </Alert.Action>
+          </Alert.Actions>
+        </Alert.Content>
       </Alert.Portal>
     </Alert.Root>
   )
