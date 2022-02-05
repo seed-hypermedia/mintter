@@ -98,7 +98,7 @@ export function BlockWrapper({
             <Icon name="MoreHorizontal" size="1" color="muted" />
           </Button>
         </Dropdown.Trigger>
-        <Dropdown.Content alignOffset={-5} align="start">
+        <Dropdown.Content alignOffset={-5} align="end">
           <Dropdown.Item onSelect={onCopy}>
             <Icon name="Copy" size="1" />
             <Text size="2">Copy Block ID</Text>
