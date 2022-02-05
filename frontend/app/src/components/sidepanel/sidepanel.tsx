@@ -2,6 +2,7 @@ import {Account, getAccount, getPublication} from '@app/client'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {Editor} from '@app/editor/editor'
 import {getEmbedIds} from '@app/editor/embed'
+import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {queryKeys} from '@app/hooks'
 import {ClientPublication} from '@app/pages/publication'
@@ -39,7 +40,7 @@ export type SidepanelItemWithRef = SidepanelItem & {
   ref?: ActorRefFrom<ReturnType<typeof createSidepanelItemMachine>>
 }
 
-export var sidepanelModel = createModel(
+export let sidepanelModel = createModel(
   {
     items: [] as Array<SidepanelItemWithRef>,
     errorMessage: '',
@@ -267,6 +268,8 @@ export function PublicationItem({itemRef}: {itemRef: SidepanelItemRef}) {
   const bookmarksService = useBookmarksService()
   const sidepanelService = useSidepanel()
   const [, setLocation] = useLocation()
+  const hoverService = useHover()
+  const [hoverState] = useActor(hoverService)
 
   const isExpanded = state.matches('expanded')
 
@@ -311,7 +314,18 @@ export function PublicationItem({itemRef}: {itemRef: SidepanelItemRef}) {
         </Text>
       </Box>
       {isExpanded && (
-        <Box css={{flex: 1, paddingVertical: '$6', paddingHorizontal: '$4'}}>
+        <Box
+          className="EDITORRR"
+          css={{
+            flex: 1,
+            paddingVertical: '$6',
+            paddingHorizontal: '$4',
+            [`& [data-element-id="${state.context.block?.id}"] [data-element-type="paragraph"], & [data-element-id="${state.context.block?.id}"] [data-element-type="static-paragraph"]`]:
+              {
+                backgroundColor: '$secondary-muted',
+              },
+          }}
+        >
           {state.matches('loading') ? null : (
             <Editor
               value={state.context.publication.document.content}
@@ -463,7 +477,17 @@ export function BlockItem({itemRef}: {itemRef: SidepanelItemRef}) {
           Block
         </Text>
       </Box>
-      <Box css={{flex: 1, paddingVertical: '$6', paddingHorizontal: '$4'}}>
+      <Box
+        css={{
+          flex: 1,
+          paddingVertical: '$6',
+          paddingHorizontal: '$4',
+          [`& [data-element-id="${state.context.block?.id}"] > span >  [data-element-type="paragraph"], & [data-element-id="${state.context.block?.id}"] > span > [data-element-type="static-paragraph"]`]:
+            {
+              backgroundColor: '$secondary-muted',
+            },
+        }}
+      >
         {!state.matches('loading') && (
           <Editor
             value={isExpanded ? state.context.publication?.document?.content : [state.context.block]}

@@ -10,7 +10,7 @@ import {resetGroupingContent} from '../utils'
 export const ELEMENT_GROUP = 'group'
 
 export const groupStyle = css({
-  paddingLeft: '$8',
+  paddingLeft: 0,
   [`&[data-element-type="orderedList"], &[data-element-type="unorderedList"]`]: {
     marginLeft: 0,
   },

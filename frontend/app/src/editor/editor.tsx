@@ -45,17 +45,19 @@ export function Editor({
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
       <Suspense fallback={'loading'}>
-        <Slate editor={_editor} value={value as Array<Descendant>} onChange={onChange as any}>
-          <Editable
-            style={{display: 'inline'}}
-            readOnly={_editor.readOnly}
-            data-testid="editor-embed-mode"
-            renderElement={renderElement}
-            renderLeaf={renderLeaf}
-            decorate={decorate}
-            {...eventHandlers}
-          />
-        </Slate>
+        <span onMouseLeave={() => hoverSend('MOUSE_LEAVE')}>
+          <Slate editor={_editor} value={value as Array<Descendant>} onChange={onChange as any}>
+            <Editable
+              style={{display: 'inline'}}
+              readOnly={_editor.readOnly}
+              data-testid="editor-embed-mode"
+              renderElement={renderElement}
+              renderLeaf={renderLeaf}
+              decorate={decorate}
+              {...eventHandlers}
+            />
+          </Slate>
+        </span>
       </Suspense>
     )
   }
@@ -68,6 +70,7 @@ export function Editor({
             position: 'relative',
             marginLeft: '-$8',
           }}
+          onMouseLeave={() => hoverSend('MOUSE_LEAVE')}
         >
           <Slate editor={_editor} value={value as Array<Descendant>} onChange={onChange as any}>
             <Editable

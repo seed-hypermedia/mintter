@@ -10,7 +10,6 @@ import {
 } from '@mintter/mttast'
 import {Editor, Element, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
-import {BlockTools} from '../block-tools'
 import type {EditorPlugin} from '../types'
 import {isFirstChild, resetFlowContent} from '../utils'
 import {HeadingUI} from './heading-ui'
@@ -32,7 +31,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
     },
   configureEditor: (editor) => {
     if (editor.readOnly) return
-    const {normalizeNode, deleteBackward, insertBreak} = editor
+    const {normalizeNode, deleteBackward} = editor
 
     editor.deleteBackward = (unit) => {
       if (resetFlowContent(editor)) return
@@ -86,7 +85,6 @@ function Heading({attributes, children, element, mode}: RenderElementProps & {mo
 
   return (
     <HeadingUI {...attributes} data-element-type={element.type}>
-      <BlockTools element={element} />
       <BlockWrapper element={element} attributes={attributes} mode={mode}>
         {children}
       </BlockWrapper>

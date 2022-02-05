@@ -1,10 +1,13 @@
 import {createDraft} from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {ContextMenu} from '@app/editor/context-menu'
+import {BlockTools} from '@app/editor/block-tools'
+import {Dropdown} from '@app/editor/dropdown'
+import {useHoverBlockId} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useRoute} from '@app/utils/use-route'
 import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
+import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {sidepanelModel, useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
@@ -15,7 +18,6 @@ import {useLocation} from 'wouter'
 
 export function BlockWrapper({
   element,
-  attributes,
   children,
   mode,
 }: RenderElementProps & {
@@ -23,6 +25,7 @@ export function BlockWrapper({
 }) {
   const bookmarksService = useBookmarksService()
   const sidepanelService = useSidepanel()
+  const hoverId = useHoverBlockId()
   const {params} = useRoute<{docId: string; version: string; blockId?: string}>([
     '/p/:docId/:version/:blockId?',
     '/editor/:docId',
@@ -66,34 +69,61 @@ export function BlockWrapper({
   }
 
   return mode == EditorMode.Draft ? (
-    children
+    <>
+      <BlockTools element={element} />
+      {children}
+    </>
   ) : (
-    <ContextMenu.Root modal={false}>
-      <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
-      <ContextMenu.Content alignOffset={-5}>
-        <ContextMenu.Item onSelect={onCopy}>
-          <Icon name="Copy" size="1" />
-          <Text size="2">Copy Block ID</Text>
-        </ContextMenu.Item>
-        <ContextMenu.Item
-          onSelect={() => {
-            //@ts-ignore
-            addBookmark(params!.docId, element.id)
-            sidepanelService.send('SIDEPANEL.OPEN')
-          }}
-        >
-          <Icon size="1" name="ArrowBottomRight" />
-          <Text size="2">Add to Bookmarks</Text>
-        </ContextMenu.Item>
-        <ContextMenu.Item onSelect={onSidepanel}>
-          <Icon size="1" name="ArrowTopRight" />
-          <Text size="2">Add to Sidepanel</Text>
-        </ContextMenu.Item>
-        <ContextMenu.Item onSelect={onStartDraft}>
-          <Icon size="1" name="AddCircle" />
-          <Text size="2">Start a Draft</Text>
-        </ContextMenu.Item>
-      </ContextMenu.Content>
-    </ContextMenu.Root>
+    <>
+      <Dropdown.Root modal={false}>
+        <Dropdown.Trigger asChild>
+          <Button
+            variant="ghost"
+            size="1"
+            color="muted"
+            css={{
+              opacity: hoverId == (element as FlowContent).id ? 1 : 0,
+              padding: '$1',
+              backgroundColor: '$background-alt',
+              position: 'absolute',
+              width: '24px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              right: 4,
+              top: 4,
+            }}
+          >
+            <Icon name="MoreHorizontal" size="1" color="muted" />
+          </Button>
+        </Dropdown.Trigger>
+        <Dropdown.Content alignOffset={-5} align="start">
+          <Dropdown.Item onSelect={onCopy}>
+            <Icon name="Copy" size="1" />
+            <Text size="2">Copy Block ID</Text>
+          </Dropdown.Item>
+          <Dropdown.Item
+            onSelect={() => {
+              //@ts-ignore
+              addBookmark(params!.docId, element.id)
+              sidepanelService.send('SIDEPANEL.OPEN')
+            }}
+          >
+            <Icon size="1" name="ArrowBottomRight" />
+            <Text size="2">Add to Bookmarks</Text>
+          </Dropdown.Item>
+          <Dropdown.Item onSelect={onSidepanel}>
+            <Icon size="1" name="ArrowTopRight" />
+            <Text size="2">Add to Sidepanel</Text>
+          </Dropdown.Item>
+          <Dropdown.Item onSelect={onStartDraft}>
+            <Icon size="1" name="AddCircle" />
+            <Text size="2">Start a Draft</Text>
+          </Dropdown.Item>
+        </Dropdown.Content>
+      </Dropdown.Root>
+      {children}
+    </>
   )
 }

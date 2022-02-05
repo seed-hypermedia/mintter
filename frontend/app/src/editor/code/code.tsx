@@ -8,7 +8,6 @@ import {getHighlighter, setCDN} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {ReactEditor, useSlateStatic} from 'slate-react'
-import {BlockTools} from '../block-tools'
 import {MARK_EMPHASIS} from '../emphasis'
 import {EditorMode} from '../plugin-utils'
 import {statementStyle} from '../statement'
@@ -176,7 +175,7 @@ function Code({
   let lang = element.lang || ''
 
   return (
-    <CodeStyled data-element-type={element.type} {...attributes}>
+    <CodeStyled data-element-type={element.type} data-element-id={element.id} {...attributes}>
       {mode == EditorMode.Draft ? (
         <SelectorWrapper
           contentEditable={false}
@@ -196,7 +195,6 @@ function Code({
           </select>
         </SelectorWrapper>
       ) : null}
-      <BlockTools element={element} />
       <BlockWrapper element={element} attributes={attributes} mode={mode}>
         <Box
           as="code"

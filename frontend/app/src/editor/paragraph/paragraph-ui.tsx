@@ -4,9 +4,12 @@ import {forwardRef, PropsWithChildren} from 'react'
 
 export const paragraphStyles = css({
   lineHeight: '$3',
+  display: 'inline-block',
+  width: '$full',
+  borderRadius: '$3',
   '&[data-parent-type=blockquote]': {
     borderRadius: '$2',
-    paddingVertical: '$4',
+    paddingVertical: '$5',
     marginHorizontal: '$2',
     position: 'relative',
     fontStyle: 'italic',
@@ -14,12 +17,13 @@ export const paragraphStyles = css({
     '&::before': {
       content: '""',
       position: 'absolute',
-      left: 0,
-      top: 0,
+      left: '-$7',
+      top: '-$5',
+      bottom: 0,
       transform: 'translateX(-4px)',
       width: 4,
       borderRadius: '$2',
-      height: '$full',
+      // height: '$full',
       backgroundColor: '$primary-soft',
     },
   },
@@ -34,5 +38,5 @@ export const ParagraphUI = forwardRef<HTMLSpanElement, PropsWithChildren<TextPro
   props,
   ref,
 ) {
-  return <Text alt size="3" className={paragraphStyles()} style={{display: 'initial'}} ref={ref} {...props} />
+  return <Text alt size="3" className={paragraphStyles()} ref={ref} {...props} />
 })

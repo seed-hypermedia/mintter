@@ -67,6 +67,7 @@ export const createLinkPlugin = (): EditorPlugin => ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '$2',
+                  fontFamily: '$default',
                 }}
               >
                 {element.url}

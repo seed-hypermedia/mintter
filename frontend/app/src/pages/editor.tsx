@@ -7,7 +7,6 @@ import {draftEditorMachine, EditorDocument, editorModel, useEditorDraft} from '@
 import {getDateFormat} from '@app/utils/get-format-date'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
-import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import {ChildrenOf, Document} from '@mintter/mttast'
@@ -18,15 +17,16 @@ import {useQueryClient} from 'react-query'
 import {ReactEditor} from 'slate-react'
 import {useLocation} from 'wouter'
 import {ContextFrom, StateFrom} from 'xstate'
-import {PageProps} from './types'
+import {EditorPageProps} from './types'
 
-export default function EditorPage({params}: PageProps) {
+export default function EditorPage({params, editor: propEditor}: EditorPageProps) {
   const client = useQueryClient()
   const [, setLocation] = useLocation()
   const toast = useRef('')
   const [visible, setVisible] = useState(false)
-  const sidepanelService = useSidepanel()
-  const editor = useMemo(() => buildEditorHook(plugins, EditorMode.Draft), [])
+  const localEditor = useMemo(() => buildEditorHook(plugins, EditorMode.Draft), [])
+
+  const editor = propEditor ?? localEditor
   const [state, send] = useEditorDraft({
     documentId: params!.docId,
     afterPublish: (context: ContextFrom<ReturnType<typeof draftEditorMachine>>) => {
