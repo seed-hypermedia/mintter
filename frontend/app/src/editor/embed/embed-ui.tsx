@@ -5,7 +5,7 @@ export const EmbedUI = styled('q', {
   transition: 'all ease-in-out 0.1s',
   backgroundColor: '$background-alt',
   '&:hover': {
-    backgroundColor: '$secondary-softer',
+    backgroundColor: '$secondary-muted',
     cursor: 'pointer',
     // color: '$text-contrast',
   },

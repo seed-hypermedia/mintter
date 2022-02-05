@@ -126,11 +126,12 @@ export const draftEditorMachine = ({afterPublish, client}: DraftEditorMachinePro
               if (event.type != 'FETCH') return
               ;(async () => {
                 try {
-                  let draft = await getDraft(event.documentId)
-                  client.setQueryData([queryKeys.GET_DRAFT, event.documentId], draft)
+                  let draft = await client.fetchQuery([queryKeys.GET_DRAFT, event.documentId], () =>
+                    getDraft(event.documentId),
+                  )
                   sendBack(editorModel.events['REPORT.FETCH.RECEIVED'](draft))
                 } catch (err: any) {
-                  sendBack(editorModel.events['REPORT.FETCH.ERROR'](err))
+                  sendBack(editorModel.events['REPORT.FETCH.ERROR'](err.message))
                 }
               })()
             },

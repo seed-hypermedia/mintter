@@ -20,7 +20,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
         const block = Editor.above(editor, {
           match: (n) => Editor.isBlock(editor, n),
         })
-        console.log('🚀 ~ file: markdown-plugin.ts ~ line 22 ~ configureEditor ~ block', block)
+
         const path = block ? block[1] : []
         const start = Editor.start(editor, path)
         const range = {anchor, focus: start}

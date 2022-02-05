@@ -1,3 +1,4 @@
+import {hoverModel} from '@app/editor/hover-machine'
 import {styled} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Icon, icons} from '@components/icon'
@@ -10,7 +11,6 @@ import {
   isGroupContent,
   isHeading,
   MttastContent,
-  MttastNode,
   ol,
   statement,
   ul,
@@ -18,11 +18,10 @@ import {
 import {useActor} from '@xstate/react'
 import {Fragment} from 'react'
 import {BaseRange, Editor, Node, Path, Transforms} from 'slate'
-import {ReactEditor, useSlateStatic} from 'slate-react'
+import {ReactEditor, RenderElementProps, useSlateStatic} from 'slate-react'
 import {Dropdown} from './dropdown'
 import {useHover} from './hover-context'
 import {ELEMENT_PARAGRAPH} from './paragraph'
-import {EditorMode} from './plugin-utils'
 
 const ElementDropdown = styled('button', {
   border: 'none',
@@ -39,6 +38,9 @@ const ElementDropdown = styled('button', {
   },
   '[data-element-type="code"] &': {
     marginTop: '$4',
+  },
+  '[data-element-type="blockquote"] &': {
+    left: '-$7',
   },
   '&:hover': {
     cursor: 'pointer',
@@ -93,21 +95,21 @@ const items: {
   ],
 }
 
-export function BlockTools({element}: {element: MttastNode}) {
+export function BlockTools({element}: {element: RenderElementProps['element']}) {
   const hoverService = useHover()
   const [state, hoverSend] = useActor(hoverService)
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
 
-  return editor.mode == EditorMode.Draft ? (
+  return (
     <Box
       contentEditable={false}
       css={{
         width: '$space$8',
         height: '$space$8',
         position: 'absolute',
-        top: 2,
-        left: '-$8',
+        top: '$5',
+        left: '-$5',
         marginLeft: '-$3',
         userSelect: 'none',
         WebkitUserSelect: 'none',
@@ -129,7 +131,7 @@ export function BlockTools({element}: {element: MttastNode}) {
           transform: 'translate(-50%, 0)',
         }}
         onMouseEnter={() => {
-          hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
+          hoverSend(hoverModel.events['MOUSE_ENTER'](element.id))
         }}
       />
       {state.context.blockId == element.id && (
@@ -167,7 +169,7 @@ export function BlockTools({element}: {element: MttastNode}) {
         </Dropdown.Root>
       )}
     </Box>
-  ) : null
+  )
 }
 
 /* eslint-disable */

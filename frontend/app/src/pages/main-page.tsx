@@ -13,13 +13,15 @@ import {Topbar} from '@components/topbar'
 import {useInterpret} from '@xstate/react'
 import {ReactNode} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {useQueryClient} from 'react-query'
+import {QueryClient, useQueryClient} from 'react-query'
 import {Route} from 'wouter'
 import EditorPage from './editor'
 import Publication from './publication'
 
-export function MainPage() {
-  const client = useQueryClient()
+export function MainPage({client: propClient}: {client?: QueryClient}) {
+  // eslint-disable-line
+  const localClient = useQueryClient()
+  const client = propClient ?? localClient
   const sidepanelService = useInterpret(() => createSidepanelMachine(client))
   const bookmarksService = useInterpret(() => bookmarksMachine)
   const hoverService = useInterpret(() => hoverMachine)

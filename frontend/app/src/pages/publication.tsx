@@ -34,9 +34,9 @@ import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
 import {StateFrom} from 'xstate'
 import {createModel} from 'xstate/lib/model'
-import {PageProps} from './types'
+import {PublicationPageProps} from './types'
 
-export default function Publication({params}: PageProps) {
+export default function Publication({params}: PublicationPageProps) {
   const [, setLocation] = useLocation()
   const client = useQueryClient()
   const [state, send] = usePagePublication(client, params?.docId)
@@ -94,7 +94,7 @@ export default function Publication({params}: PageProps) {
       <Box
         css={{
           background: '$background-alt',
-          borderBottom: '1px solid rgba(0,0,0,0.1)',
+          borderBottom: '1px solid $colors$block-hover',
           position: 'sticky',
           top: 0,
           zIndex: '$3',

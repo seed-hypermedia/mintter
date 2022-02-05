@@ -27,11 +27,7 @@ export const createParagraphPlugin = (): EditorPlugin => ({
     },
   configureEditor: (editor) => {
     if (editor.mode) return
-    const {normalizeNode, insertBreak} = editor
-
-    editor.insertBreak = () => {
-      insertBreak()
-    }
+    const {normalizeNode} = editor
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
@@ -56,7 +52,7 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
   const path = ReactEditor.findPath(editor, element)
   const [parentNode] = Editor.parent(editor, path)
   const hoverService = useHover()
-  const [, hoverSend] = useActor(hoverService)
+  const [hoverState, hoverSend] = useActor(hoverService)
   const selected = useSelected()
   const focused = useFocused()
 
@@ -80,8 +76,10 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
           : 'p'
       }
       data-element-type={element.type}
-      css={{display: mode == EditorMode.Embed ? 'inline' : 'inherit'}}
-      style={{paddingLeft: isBlockquote(parentNode) ? '24px' : '0'}}
+      css={{
+        display: mode == EditorMode.Embed ? 'inline' : 'inherit',
+      }}
+      // style={{paddingLeft: isBlockquote(parentNode) ? '24px' : '0'}}
       data-parent-type={(parentNode as FlowContent)?.type}
       onMouseEnter={() => hoverSend(hoverModel.events.MOUSE_ENTER((parentNode as FlowContent).id))}
       {...attributes}
@@ -90,6 +88,7 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
         <span
           contentEditable={false}
           style={{
+            display: 'inline-block',
             position: 'absolute',
             opacity: 0.4,
             userSelect: 'none',

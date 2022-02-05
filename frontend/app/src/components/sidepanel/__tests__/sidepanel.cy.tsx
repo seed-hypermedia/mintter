@@ -7,39 +7,6 @@ import {useInterpret} from '@xstate/react'
 import {PropsWithChildren} from 'react'
 import {QueryClient} from 'react-query'
 
-function SidepanelTestProvider({children, client}: PropsWithChildren<{client: QueryClient}>) {
-  const sidepanel = useInterpret(() => createSidepanelMachine(client))
-
-  return (
-    <SidepanelProvider value={sidepanel}>
-      <Box
-        css={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          width: '100vw',
-          height: '100vh',
-          display: 'grid',
-          overflow: 'hidden',
-          gridAutoFlow: 'column',
-          gridAutoColumns: '1fr',
-          gridTemplateRows: '48px 1fr',
-          gridTemplateColumns: 'auto 1fr auto',
-          gap: 0,
-          gridTemplateAreas: `"topbar topbar topbar"
-          "library main sidepanel"`,
-          background: '$background-default',
-        }}
-      >
-        <button onClick={() => sidepanel.send('SIDEPANEL.TOGGLE')}>sidepanel</button>
-        {children}
-      </Box>
-    </SidepanelProvider>
-  )
-}
-
 describe('<Sidepanel />', () => {
   it('should work', () => {
     const {render, client} = mountWithAccount()
@@ -84,3 +51,36 @@ describe('<Sidepanel />', () => {
     )
   })
 })
+
+function SidepanelTestProvider({children, client}: PropsWithChildren<{client: QueryClient}>) {
+  const sidepanel = useInterpret(() => createSidepanelMachine(client))
+
+  return (
+    <SidepanelProvider value={sidepanel}>
+      <Box
+        css={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh',
+          display: 'grid',
+          overflow: 'hidden',
+          gridAutoFlow: 'column',
+          gridAutoColumns: '1fr',
+          gridTemplateRows: '48px 1fr',
+          gridTemplateColumns: 'auto 1fr auto',
+          gap: 0,
+          gridTemplateAreas: `"topbar topbar topbar"
+          "library main sidepanel"`,
+          background: '$background-default',
+        }}
+      >
+        <button onClick={() => sidepanel.send('SIDEPANEL.TOGGLE')}>sidepanel</button>
+        {children}
+      </Box>
+    </SidepanelProvider>
+  )
+}

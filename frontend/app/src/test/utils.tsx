@@ -1,8 +1,11 @@
 import {AppProviders} from '@app/app-providers'
-import {Account, Info, Profile} from '@app/client'
+import {Account, Info, ListAccountsResponse, ListDraftsResponse, ListPublicationsResponse, Profile} from '@app/client'
+import {HoverProvider} from '@app/editor/hover-context'
+import {hoverMachine} from '@app/editor/hover-machine'
 import {queryKeys} from '@app/hooks'
 import {MainPageProvider} from '@app/main-page-context'
 import {createMainPageMachine} from '@app/main-page-machine'
+import {bookmarksMachine, BookmarksProvider} from '@components/bookmarks'
 import {createSidepanelMachine, SidepanelProvider} from '@components/sidepanel'
 import {mount} from '@cypress/react'
 import {useInterpret} from '@xstate/react'
@@ -85,11 +88,33 @@ export function mountWithAccount({
 }
 
 export function MainPageProviders({children, client}: PropsWithChildren<{client: QueryClient}>) {
-  const sidepanelService = useInterpret(() => createSidepanelMachine(client))
-  const mainPageService = useInterpret(() => createMainPageMachine(client))
+  let sidepanel = useInterpret(() => createSidepanelMachine(client))
+  let mainPageService = useInterpret(() => createMainPageMachine(client))
+  let hover = useInterpret(() => hoverMachine)
+  let bookmarks = useInterpret(() => bookmarksMachine)
+
+  client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
+    publications: [],
+    nextPageToken: '',
+  })
+
+  client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
+    documents: [],
+    nextPageToken: '',
+  })
+
+  client.setQueryData<ListAccountsResponse>([queryKeys.GET_ACCOUNT_LIST], {
+    accounts: [],
+    nextPageToken: '',
+  })
+
   return (
     <MainPageProvider value={mainPageService}>
-      <SidepanelProvider value={sidepanelService}>{children}</SidepanelProvider>
+      <HoverProvider value={hover}>
+        <BookmarksProvider value={bookmarks}>
+          <SidepanelProvider value={sidepanel}>{children}</SidepanelProvider>
+        </BookmarksProvider>
+      </HoverProvider>
     </MainPageProvider>
   )
 }

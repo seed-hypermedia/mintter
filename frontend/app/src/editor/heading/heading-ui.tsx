@@ -6,4 +6,7 @@ export const HeadingUI = styled('li', statementStyle, {
   //   marginLeft: '-$8',
   //   boxShadow: 'none',
   // },
+  '&:hover': {
+    backgroundColor: '$block-hover',
+  },
 })
