@@ -8,9 +8,11 @@ export type DeleteDialogProps = PropsWithChildren<{
   entryId?: string
   handleDelete: any // Promise that deletes entry
   onSuccess: any // execute this after delete is successful;
+  title: string
+  description: string
 }>
 
-export function DeleteDialog({children, entryId, handleDelete, onSuccess}: DeleteDialogProps) {
+export function DeleteDialog({children, entryId, handleDelete, onSuccess, title, description}: DeleteDialogProps) {
   const [state, send] = useMachine(
     deleteDialogMachine.withConfig({
       services: {
@@ -38,11 +40,9 @@ export function DeleteDialog({children, entryId, handleDelete, onSuccess}: Delet
         <Alert.Overlay className={overlayStyles()} />
         <Alert.Content>
           <Alert.Title color="danger" data-testid="delete-dialog-title">
-            Delete document
+            {title}
           </Alert.Title>
-          <Alert.Description>
-            Are you sure you want to delete this document? This action is not reversible.
-          </Alert.Description>
+          <Alert.Description>{description}</Alert.Description>
           {state.matches('opened.errored') && (
             <Alert.Description data-testid="delete-dialog-error" color="danger">
               Something went wrong on deletion

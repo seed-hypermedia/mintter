@@ -3,7 +3,7 @@ import {hoverMachine} from '@app/editor/hover-machine'
 import {MainPageProvider} from '@app/main-page-context'
 import {createMainPageMachine} from '@app/main-page-machine'
 import {css} from '@app/stitches.config'
-import {bookmarksMachine, BookmarksProvider} from '@components/bookmarks'
+import {BookmarksProvider, createBookmarksMachine} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Library} from '@components/library'
 import {ScrollArea} from '@components/scroll-area'
@@ -23,7 +23,7 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
   const localClient = useQueryClient()
   const client = propClient ?? localClient
   const sidepanelService = useInterpret(() => createSidepanelMachine(client))
-  const bookmarksService = useInterpret(() => bookmarksMachine)
+  const bookmarksService = useInterpret(() => createBookmarksMachine(client))
   const hoverService = useInterpret(() => hoverMachine)
   const mainPageService = useInterpret(() => createMainPageMachine(client))
 

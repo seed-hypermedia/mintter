@@ -120,6 +120,9 @@ export default function Publication({params}: PublicationPageProps) {
           },
         }}
       >
+        <Text size="1" color="muted" css={{paddingRight: '$3'}}>
+          {state.context.publication?.document.title}
+        </Text>
         {author && (
           <>
             <Text size="1" color="muted" css={{paddingRight: '$3'}}>
@@ -681,8 +684,8 @@ function DiscussionItem({link}: {link: Link}) {
 
   function addBookmark() {
     bookmarkService.send({
-      type: 'ADD.BOOKMARK',
-      link: `${MINTTER_LINK_PREFIX}${link.source?.documentId}/${link.source?.version}/${link.source?.blockId}`,
+      type: 'BOOKMARK.ADD',
+      url: `${MINTTER_LINK_PREFIX}${link.source?.documentId}/${link.source?.version}/${link.source?.blockId}`,
     })
   }
 
@@ -695,10 +698,6 @@ function DiscussionItem({link}: {link: Link}) {
 
   function onGoToPublication() {
     setLocation(`/p/${link.source?.documentId}/${link.source?.version}`)
-  }
-
-  function onOpenInSidepanel() {
-    sidepanelService.send('SIDEPANEL.OPEN')
   }
 
   useEffect(() => {
@@ -723,7 +722,7 @@ function DiscussionItem({link}: {link: Link}) {
               },
             }}
           >
-            <Editor mode={EditorMode.Embed} value={[block]} />
+            {block ? <Editor mode={EditorMode.Embed} value={[block]} /> : null}
             <Box
               css={{
                 paddingVertical: '$6',
@@ -769,12 +768,7 @@ function DiscussionItem({link}: {link: Link}) {
             <Icon name="Copy" size="1" />
             <Text size="2">Copy Embed Reference</Text>
           </ContextMenu.Item>
-          <ContextMenu.Item
-            onSelect={() => {
-              addBookmark()
-              sidepanelService.send('SIDEPANEL.OPEN')
-            }}
-          >
+          <ContextMenu.Item onSelect={addBookmark}>
             <Icon name="ArrowChevronDown" size="1" />
             <Text size="2">Add to Bookmarks</Text>
           </ContextMenu.Item>

@@ -404,7 +404,7 @@ export function PublicationItem({itemRef}: {itemRef: SidepanelItemRef}) {
           </Dropdown.Item>
           <Dropdown.Item
             onSelect={() => {
-              bookmarksService.send(bookmarksModel.events['ADD.BOOKMARK'](state.context.url))
+              bookmarksService.send(bookmarksModel.events['BOOKMARK.ADD'](state.context.url))
             }}
           >
             <Icon size="1" name="ArrowBottomRight" />
@@ -565,7 +565,7 @@ export function BlockItem({itemRef}: {itemRef: SidepanelItemRef}) {
           </Dropdown.Item>
           <Dropdown.Item
             onSelect={() => {
-              bookmarksService.send(bookmarksModel.events['ADD.BOOKMARK'](state.context.url))
+              bookmarksService.send(bookmarksModel.events['BOOKMARK.ADD'](state.context.url))
             }}
           >
             <Icon size="1" name="ArrowBottomRight" />

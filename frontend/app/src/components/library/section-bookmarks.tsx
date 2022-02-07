@@ -1,7 +1,8 @@
 import {Button} from '@components/button'
+import {BookmarkItem} from '@components/library/bookmark-item'
 import {useActor} from '@xstate/react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {Bookmark, bookmarksModel, useBookmarksService} from '../bookmarks'
+import {bookmarksModel, useBookmarksService} from '../bookmarks'
 import {Section} from './section'
 import {SectionError} from './section-error'
 
@@ -14,12 +15,12 @@ export function BookmarksSection() {
       {state.context?.bookmarks?.length ? (
         <ErrorBoundary FallbackComponent={SectionError} onReset={onReset}>
           {state.context.bookmarks.map((bookmark) => (
-            <BookmarkItem key={bookmark.link} bookmark={bookmark} />
+            <BookmarkItem key={bookmark.url} itemRef={bookmark.ref} />
           ))}
         </ErrorBoundary>
       ) : null}
       <Button
-        onClick={() => send(bookmarksModel.events['CLEAR.BOOKMARKS']())}
+        onClick={() => send(bookmarksModel.events['BOOKMARK.CLEARALL']())}
         variant="ghost"
         color="primary"
         size="1"
@@ -68,6 +69,8 @@ function onReset() {
 //   )
 // }
 
-function BookmarkItem({bookmark}: {bookmark: Bookmark}) {
-  return <p>{bookmark.link}</p>
-}
+// function BookmarkItem({bookmark}: {bookmark: Bookmark}) {
+//   console.log('bookmark: ', bookmark)
+
+//   return <p>{bookmark.url}</p>
+// }

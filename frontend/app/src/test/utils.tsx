@@ -5,7 +5,7 @@ import {hoverMachine} from '@app/editor/hover-machine'
 import {queryKeys} from '@app/hooks'
 import {MainPageProvider} from '@app/main-page-context'
 import {createMainPageMachine} from '@app/main-page-machine'
-import {bookmarksMachine, BookmarksProvider} from '@components/bookmarks'
+import {BookmarksProvider, createBookmarksMachine} from '@components/bookmarks'
 import {createSidepanelMachine, SidepanelProvider} from '@components/sidepanel'
 import {mount} from '@cypress/react'
 import {useInterpret} from '@xstate/react'
@@ -91,7 +91,7 @@ export function MainPageProviders({children, client}: PropsWithChildren<{client:
   let sidepanel = useInterpret(() => createSidepanelMachine(client))
   let mainPageService = useInterpret(() => createMainPageMachine(client))
   let hover = useInterpret(() => hoverMachine)
-  let bookmarks = useInterpret(() => bookmarksMachine)
+  let bookmarks = useInterpret(() => createBookmarksMachine(client))
 
   client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
     publications: [],
