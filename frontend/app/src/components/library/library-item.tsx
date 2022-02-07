@@ -46,9 +46,8 @@ export function LibraryItem({
 
   async function onCopy() {
     if (publication) {
-      copyTextToClipboard(`mtt://${publication.document?.id}/${publication.version}`).then(() => {
-        toast.success('Document ID copied successfully', {position: 'top-center'})
-      })
+      await copyTextToClipboard(`mtt://${publication.document?.id}/${publication.version}`)
+      toast.success('Document ID copied successfully', {position: 'top-center'})
     }
   }
 
@@ -67,7 +66,7 @@ export function LibraryItem({
       sidepanelService.send('SIDEPANEL.OPEN')
     }
   }
-  function onDelete() {
+  function afterDelete() {
     if (match) {
       setLocation('/')
     }
@@ -89,7 +88,6 @@ export function LibraryItem({
   }
 
   let title = publication ? publication.document?.title : draft && draft.title ? draft?.title : 'Untitled Document'
-  console.log('🚀 ~ file: library-item.tsx ~ line 92 ~ title', title, draft)
 
   return (
     <StyledItem active={match} data-testid="library-item">
@@ -105,9 +103,6 @@ export function LibraryItem({
             className="dropdown"
             css={{
               backgroundColor: 'transparent',
-              '&:hover': {
-                color: 'inherit',
-              },
             }}
           >
             <Icon name="MoreHorizontal" size="1" color="muted" />
@@ -115,24 +110,33 @@ export function LibraryItem({
         </Dropdown.Trigger>
         <Dropdown.Content align="start" data-testid="library-item-dropdown-root">
           <Dropdown.Item data-testid="copy-item" disabled={!!draft} onSelect={onCopy}>
-            Copy Document ID
+            <Icon name="Copy" size="1" />
+            <Text size="2">Copy Document ID</Text>
           </Dropdown.Item>
           <Dropdown.Item data-testid="mainpanel-item" onSelect={onMainPanel}>
-            Open in main panel
+            <Icon size="1" name="ArrowTopRight" />
+            <Text size="2">Open in main panel</Text>
           </Dropdown.Item>
           <Dropdown.Item data-testid="sidepanel-item" onSelect={onSidepanel}>
-            Open in sidepanel
+            <Icon size="1" name="ArrowBottomRight" />
+            <Text size="2">Open in sidepanel</Text>
           </Dropdown.Item>
           <DeleteDialog
             entryId={publication ? publication.document?.id : draft?.id}
             handleDelete={publication ? deletePublication : deleteDraft}
-            onSuccess={onDelete}
+            onSuccess={afterDelete}
+            title="Delete document"
+            description="Are you sure you want to delete this document? This action is not reversible."
           >
             <Dropdown.Item data-testid="delete-item" onSelect={(e) => e.preventDefault()}>
-              Delete
+              <Icon size="1" name="Close" />
+              <Text size="2">Delete Document</Text>
             </Dropdown.Item>
           </DeleteDialog>
-          <Dropdown.Item onSelect={onStartDraft}>Start a Draft</Dropdown.Item>
+          <Dropdown.Item onSelect={onStartDraft}>
+            <Icon size="1" name="AddCircle" />
+            <Text size="2">Start a Draft</Text>
+          </Dropdown.Item>
         </Dropdown.Content>
       </Dropdown.Root>
     </StyledItem>

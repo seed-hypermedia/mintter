@@ -42,9 +42,10 @@ export function BlockWrapper({
     }
   }
 
-  function addBookmark(docId: string, blockId: FlowContent['id']) {
-    bookmarksService.send(bookmarksModel.events['ADD.BOOKMARK'](`${MINTTER_LINK_PREFIX}${docId}/${blockId}`))
+  function addBookmark(docId: string, version: string, blockId: FlowContent['id']) {
+    bookmarksService.send(bookmarksModel.events['BOOKMARK.ADD'](`${MINTTER_LINK_PREFIX}${docId}/${version}/${blockId}`))
   }
+
   async function onStartDraft() {
     try {
       const newDraft = await createDraft()
@@ -106,8 +107,7 @@ export function BlockWrapper({
           <Dropdown.Item
             onSelect={() => {
               //@ts-ignore
-              addBookmark(params!.docId, element.id)
-              sidepanelService.send('SIDEPANEL.OPEN')
+              addBookmark(params!.docId, params?.version, element.id)
             }}
           >
             <Icon size="1" name="ArrowBottomRight" />

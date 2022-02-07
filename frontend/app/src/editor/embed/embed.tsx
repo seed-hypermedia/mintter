@@ -1,4 +1,3 @@
-import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useBookmarksService} from '@components/bookmarks'
 import {Icon} from '@components/icon'
@@ -24,8 +23,8 @@ export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{emb
 
   function addBookmark(docId: string, blockId: FlowContent['id']) {
     bookmarksService.send({
-      type: 'ADD.BOOKMARK',
-      link: `${MINTTER_LINK_PREFIX}${docId}/${version}/${blockId}`,
+      type: 'BOOKMARK.ADD',
+      url: embed.url,
     })
   }
 
@@ -59,7 +58,6 @@ export const Embed = ({embed, children = null, ...props}: PropsWithChildren<{emb
         <ContextMenu.Item
           onSelect={() => {
             addBookmark(docId, blockId)
-            sidepanelService.send('SIDEPANEL.OPEN')
           }}
         >
           <Icon name="ArrowChevronDown" size="1" />

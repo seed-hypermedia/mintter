@@ -81,6 +81,7 @@
     "tauri-plugin-store-api": "https://github.com/tauri-apps/tauri-plugin-store#head=dev",
     "unified": "^10.1.1",
     "unist-builder": "^3.0.0",
+    "unist-util-to-string-with-nodes": "^0.1.1",
     "unist-util-visit": "^4.1.0",
     "wouter": "^2.8.0-alpha.2",
     "xstate": "^4.26.1"

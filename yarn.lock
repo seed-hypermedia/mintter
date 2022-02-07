@@ -1853,6 +1853,7 @@ __metadata:
     typescript: 4.4.4
     unified: ^10.1.1
     unist-builder: ^3.0.0
+    unist-util-to-string-with-nodes: ^0.1.1
     unist-util-visit: ^4.1.0
     vite: 2.7.10
     vite-react-jsx: ^1.1.2
@@ -5142,6 +5143,13 @@ __metadata:
   version: 1.0.4
   resolution: "clone@npm:1.0.4"
   checksum: d06418b7335897209e77bdd430d04f882189582e67bd1f75a04565f3f07f5b3f119a9d670c943b6697d0afb100f03b866b3b8a1f91d4d02d72c4ecf2bb64b5dd
+  languageName: node
+  linkType: hard
+
+"co@npm:3.1.0":
+  version: 3.1.0
+  resolution: "co@npm:3.1.0"
+  checksum: b7c685595103663317be1cbe3a00386b0b3643a6a859aaeb20ca2a7fa8b0d5c5f744de55d8b0b44bb07635c86bcd48d64684fcfccf52381ede3de55ed374dc80
   languageName: node
   linkType: hard
 
@@ -14864,7 +14872,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sliced@npm:1.0.1":
+"sliced@npm:1.0.1, sliced@npm:^1.0.1":
   version: 1.0.1
   resolution: "sliced@npm:1.0.1"
   checksum: 84528d23279985ead75809eeec5d601b0fb6bc28348c6627f4feb40747533a1e36a75e8bc60f9079528079b21c434890b397e8fc5c24a649165cc0bbe90b4d70
@@ -16277,6 +16285,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unified-lint-rule@npm:^1.0.3":
+  version: 1.0.6
+  resolution: "unified-lint-rule@npm:1.0.6"
+  dependencies:
+    wrapped: ^1.0.1
+  checksum: fb3fa8a08bab260e8200a40de48180d422cc7beb118cd74352490a6e8e42346ffbaed47e43593df4b5519eead0f67d71d1e4031b1b100a9aaf5f42d7b6135d54
+  languageName: node
+  linkType: hard
+
 "unified@npm:^10.0.0, unified@npm:^10.1.1":
   version: 10.1.1
   resolution: "unified@npm:10.1.1"
@@ -16384,6 +16401,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unist-util-generated@npm:^1.1.6":
+  version: 1.1.6
+  resolution: "unist-util-generated@npm:1.1.6"
+  checksum: 86239ff88a08800d52198f2f0e15911f05bab2dad17cef95550f7c2728f15ebb0344694fcc3101d05762d88adaf86cb85aa7a3300fedabd0b6d7d00b41cdcb7f
+  languageName: node
+  linkType: hard
+
+"unist-util-is@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "unist-util-is@npm:3.0.0"
+  checksum: d24a5dd80c670f763b2ae608651cf062317456aa81be51f66f45cbd7d440a2ab18356e4f48aeac6b5e3d391c69d3c3452ade5fe5aa9574bec4a2de0b10122ed5
+  languageName: node
+  linkType: hard
+
 "unist-util-is@npm:^5.0.0":
   version: 5.1.1
   resolution: "unist-util-is@npm:5.1.1"
@@ -16419,6 +16450,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unist-util-to-list-of-char@npm:^0.1.3":
+  version: 0.1.3
+  resolution: "unist-util-to-list-of-char@npm:0.1.3"
+  dependencies:
+    unist-util-generated: ^1.1.6
+    unist-util-visit: ^1.4.0
+  checksum: 9921e07c57948aedff43891c771330110cd1f00a668386d0cdb3af5da6580893c56785c5ed7f599ca0378c51a6a1cc1e1211682e488d9e12d750729e0a58cbe0
+  languageName: node
+  linkType: hard
+
+"unist-util-to-string-with-nodes@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "unist-util-to-string-with-nodes@npm:0.1.1"
+  dependencies:
+    unified-lint-rule: ^1.0.3
+    unist-util-to-list-of-char: ^0.1.3
+  checksum: db222a8993c2809a7be443d68b4de85908da92a846844ab33e67a689bc09977e84683195ca16d47504d8582dff4ba902202d29f47353b4f069acf0f73117247b
+  languageName: node
+  linkType: hard
+
+"unist-util-visit-parents@npm:^2.0.0":
+  version: 2.1.2
+  resolution: "unist-util-visit-parents@npm:2.1.2"
+  dependencies:
+    unist-util-is: ^3.0.0
+  checksum: 048edbb590a8c4bc0043eec9f50d3fe76faa58f1ac663a7e6dee5e895ddd0ce8bc52f2cfe2e633849fa93671e8de021070667acb1518e3d40220768c7f70a3d3
+  languageName: node
+  linkType: hard
+
 "unist-util-visit-parents@npm:^5.0.0":
   version: 5.1.0
   resolution: "unist-util-visit-parents@npm:5.1.0"
@@ -16426,6 +16486,15 @@ __metadata:
     "@types/unist": ^2.0.0
     unist-util-is: ^5.0.0
   checksum: 7c413dbb3dfcb679109fa8f0965d9abf117c3c53fa7b8823f68cac0ea53adbe98c1ce954d36c034e086c966b48b1d44d42c85f7bf6b42a032f728ac338929513
+  languageName: node
+  linkType: hard
+
+"unist-util-visit@npm:^1.4.0":
+  version: 1.4.1
+  resolution: "unist-util-visit@npm:1.4.1"
+  dependencies:
+    unist-util-visit-parents: ^2.0.0
+  checksum: e9395205b6908c8d0fe71bc44e65d89d4781d1bb2d453a33cb67ed4124bad0b89d6b1d526ebaecb82a7c48e211bdf6f24351449b8cc115327b345f4617c18728
   languageName: node
   linkType: hard
 
@@ -17207,6 +17276,16 @@ __metadata:
     string-width: ^4.1.0
     strip-ansi: ^6.0.0
   checksum: a790b846fd4505de962ba728a21aaeda189b8ee1c7568ca5e817d85930e06ef8d1689d49dbf0e881e8ef84436af3a88bc49115c2e2788d841ff1b8b5b51a608b
+  languageName: node
+  linkType: hard
+
+"wrapped@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "wrapped@npm:1.0.1"
+  dependencies:
+    co: 3.1.0
+    sliced: ^1.0.1
+  checksum: 549d3a0dae46f97eae15f749dc9c512cbbb0db716e1f2bc48e3e134123c941750ed008bb2799d154406154e69fb3b2e504964d9bd8e3c63e99ac4991cfd00ae8
   languageName: node
   linkType: hard
 
