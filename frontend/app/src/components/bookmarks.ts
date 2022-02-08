@@ -1,16 +1,13 @@
-import {Account, getAccount, getPublication} from '@app/client'
+import {Account, getAccount, getPublication, listBookmarks, updateListBookmarks} from '@app/client'
 import {queryKeys} from '@app/hooks'
 import {ClientPublication} from '@app/pages/publication'
-import {createStore} from '@app/store'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {createInterpreterContext} from '@app/utils/machine-utils'
-import {FlowContent, GroupingContent} from '@mintter/mttast'
+import {FlowContent} from '@mintter/mttast'
 import {QueryClient} from 'react-query'
 import {visit} from 'unist-util-visit'
 import {ActorRefFrom, InterpreterFrom, sendParent, spawn} from 'xstate'
 import {createModel} from 'xstate/lib/model'
-
-const store = createStore('.bookmarks.dat')
 
 export type Bookmark = {url: string; ref: ActorRefFrom<ReturnType<typeof createBookmarkMachine>>}
 
@@ -26,6 +23,7 @@ export const bookmarksModel = createModel(
       'BOOKMARK.ADD': (url: string) => ({url}),
       'BOOKMARK.REMOVE': (url: string) => ({url}),
       'BOOKMARK.CLEARALL': () => ({}),
+      'BOOKMARK.RESET': () => ({}),
     },
   },
 )
@@ -44,15 +42,20 @@ export function createBookmarksMachine(client: QueryClient) {
             'persist',
           ],
         },
+        'BOOKMARK.RESET': {
+          target: 'loading',
+        },
       },
       states: {
         loading: {
           invoke: {
             id: 'bookmarks-fetch',
             src: () => (sendBack) => {
-              store
-                .get<Array<string>>('bookmarks')
+              client
+                .fetchQuery([queryKeys.GET_BOOKMARK_LIST], listBookmarks)
                 .then((result) => {
+                  console.log('RESULT!', result)
+
                   sendBack({type: 'REPORT.BOOKMARKS.SUCCESS', bookmarks: result || []})
                 })
                 .catch((e: Error) => {
@@ -119,7 +122,7 @@ export function createBookmarksMachine(client: QueryClient) {
       actions: {
         persist: (ctx) => {
           try {
-            store.set('bookmarks', ctx.bookmarks.map(({url}) => url) || [])
+            updateListBookmarks(ctx.bookmarks.map(({url}) => url) || [])
           } catch (e) {
             console.error(e)
           }
@@ -213,39 +216,41 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
     },
     {
       services: {
-        fetchItemData: (context) => async (sendBack) => {
-          let [documentId, version, blockId] = getIdsfromUrl(context.url)
-          console.log('🚀 ~ file: bookmarks.ts ~ line 208 ~ fetchItemData: ~ blockId', blockId)
+        fetchItemData: (context) => (sendBack) => {
+          console.log('FETCH ITEM HERE')
+          ;(async () => {
+            let [documentId, version, blockId] = getIdsfromUrl(context.url)
 
-          let publication: ClientPublication = await client.fetchQuery(
-            [queryKeys.GET_PUBLICATION, documentId, version],
-            async () => {
-              let pub = await getPublication(documentId, version)
-              let content: [GroupingContent] = pub.document?.content ? JSON.parse(pub.document?.content) : null
+            let publication: ClientPublication = await client.fetchQuery(
+              [queryKeys.GET_PUBLICATION, documentId, version],
+              async () => {
+                let pub = await getPublication(documentId, version)
+                let content: [GroupingContent] = pub.document?.content ? JSON.parse(pub.document?.content) : null
 
-              return {
-                ...pub,
-                document: {
-                  ...pub.document,
-                  content,
-                },
-              }
-            },
-          )
+                return {
+                  ...pub,
+                  document: {
+                    ...pub.document,
+                    content,
+                  },
+                }
+              },
+            )
 
-          let author = await client.fetchQuery([queryKeys.GET_ACCOUNT, publication.document?.author], () =>
-            getAccount(publication.document?.author as string),
-          )
+            let author = await client.fetchQuery([queryKeys.GET_ACCOUNT, publication.document?.author], () =>
+              getAccount(publication.document?.author as string),
+            )
 
-          let block: FlowContent | null = null
+            let block: FlowContent | null = null
 
-          if (publication.document.content) {
-            visit(publication.document.content[0], {id: blockId}, (node) => {
-              block = node
-            })
-          }
+            if (publication.document.content) {
+              visit(publication.document.content[0], {id: blockId}, (node) => {
+                block = node
+              })
+            }
 
-          sendBack(bookmarkModel.events['REPORT.BOOKMARK.ITEM.SUCCESS'](publication, author, block))
+            sendBack(bookmarkModel.events['REPORT.BOOKMARK.ITEM.SUCCESS'](publication, author, block))
+          })()
         },
       },
     },

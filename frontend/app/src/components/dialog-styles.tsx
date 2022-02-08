@@ -15,7 +15,7 @@ export const overlayStyles = css({
   opacity: 0.75,
   position: 'fixed',
   inset: 0,
-  zIndex: '$max',
+  zIndex: '9999999999',
   '@media (prefers-reduced-motion: no-preference)': {
     animation: `${overlayShow} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
   },
@@ -26,7 +26,7 @@ export const dialogContentStyles = css({
   borderRadius: 6,
   boxShadow: 'hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px',
   position: 'fixed',
-  zIndex: '$max',
+  zIndex: '99999999999',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',

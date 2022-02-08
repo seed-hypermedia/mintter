@@ -17,6 +17,7 @@ export function Section({
     <Collapsible.Root open={open} onOpenChange={onOpenChange} disabled={disabled}>
       <Collapsible.Trigger asChild>
         <Box
+          data-testid="bookmarks-section-trigger"
           css={{
             display: 'flex',
             gap: '$3',

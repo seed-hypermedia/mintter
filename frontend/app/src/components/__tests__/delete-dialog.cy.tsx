@@ -28,7 +28,9 @@ describe('<DeleteDialog />', () => {
             },
             meta: {
               test: () => {
-                cy.get('[data-testid="delete-dialog-title"]').should('be.visible').contains('Delete document')
+                cy.get('[data-testid="delete-dialog-title"]')
+                  .should('be.visible')
+                  .contains(/Delete document/i)
               },
             },
           },
@@ -106,7 +108,13 @@ describe('<DeleteDialog />', () => {
           let onSuccess = cy.spy()
 
           render(
-            <DeleteDialog entryId="testentry" handleDelete={handleDelete} onSuccess={onSuccess}>
+            <DeleteDialog
+              entryId="testentry"
+              handleDelete={handleDelete}
+              onSuccess={onSuccess}
+              title="Delete document"
+              description="test description"
+            >
               <button data-testid="delete-dialog-trigger">test dialog</button>
             </DeleteDialog>,
           ).then(() => {

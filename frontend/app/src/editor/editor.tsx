@@ -50,7 +50,7 @@ export function Editor({
             <Editable
               style={{display: 'inline'}}
               readOnly={_editor.readOnly}
-              data-testid="editor-embed-mode"
+              data-testid="editor"
               renderElement={renderElement}
               renderLeaf={renderLeaf}
               decorate={decorate}
@@ -68,7 +68,6 @@ export function Editor({
         <Box
           css={{
             position: 'relative',
-            marginLeft: '-$8',
           }}
           onMouseLeave={() => hoverSend('MOUSE_LEAVE')}
         >
@@ -93,7 +92,6 @@ export function Editor({
       <Box
         css={{
           position: 'relative',
-          marginLeft: '-$8',
         }}
         onMouseLeave={() => hoverSend('MOUSE_LEAVE')}
       >
