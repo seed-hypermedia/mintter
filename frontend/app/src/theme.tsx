@@ -1,7 +1,7 @@
+import {store} from '@app/client/store'
 import {InterpreterFrom} from 'xstate'
 import {createModel} from 'xstate/lib/model'
 import {darkTheme, lightTheme} from './stitches.config'
-import {createStore} from './store'
 import {createInterpreterContext} from './utils/machine-utils'
 
 const [ThemeProvider, useTheme, createThemeSelector] =
@@ -11,8 +11,6 @@ export {ThemeProvider, useTheme}
 
 export const useCurrentTheme = createThemeSelector((state) => state.context.current)
 export const useOppositeTheme = createThemeSelector((state) => (state.context.current == 'dark' ? 'light' : 'dark'))
-
-const store = createStore('.settings.dat')
 
 type keys = 'light' | 'dark'
 

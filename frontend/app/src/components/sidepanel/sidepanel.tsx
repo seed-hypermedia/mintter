@@ -1,19 +1,26 @@
-import {Account, getAccount, getPublication} from '@app/client'
+import {
+  Account,
+  getAccount,
+  getPublication,
+  listSidepanel,
+  SidepanelItem as SidepanelItemType,
+  updateListSidepanel,
+} from '@app/client'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {Editor} from '@app/editor/editor'
 import {getEmbedIds} from '@app/editor/embed'
-import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {queryKeys} from '@app/hooks'
 import {ClientPublication} from '@app/pages/publication'
-import {createStore} from '@app/store'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
+import {DeleteDialog} from '@components/delete-dialog'
 import {useSidepanel} from '@components/sidepanel'
 import {FlowContent, GroupingContent} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
+import {PropsWithChildren} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
 import {QueryClient} from 'react-query'
@@ -27,16 +34,9 @@ import {ScrollArea} from '../scroll-area'
 import {Text} from '../text'
 import {useIsSidepanelOpen} from './sidepanel-context'
 
-var store = createStore('.sidepanel.dat')
-
 type SidepanelItemRef = ActorRefFrom<ReturnType<typeof createSidepanelItemMachine>>
 
-export type SidepanelItem = {
-  type: 'block' | 'publication' | undefined
-  url: string
-}
-
-export type SidepanelItemWithRef = SidepanelItem & {
+export type SidepanelItemWithRef = SidepanelItemType & {
   ref?: ActorRefFrom<ReturnType<typeof createSidepanelItemMachine>>
 }
 
@@ -71,10 +71,10 @@ export function createSidepanelMachine(client: QueryClient) {
           invoke: {
             id: 'fetchSidepanel',
             src: () => (sendBack) => {
-              store
-                .get<Array<SidepanelItem>>('sidepanel')
+              client
+                .fetchQuery([queryKeys.GET_SIDEPANEL_LIST], listSidepanel)
                 .then((result) => {
-                  sendBack(sidepanelModel.events['REPORT.SIDEPANEL.SUCCESS'](result || []))
+                  sendBack(sidepanelModel.events['REPORT.SIDEPANEL.SUCCESS'](result.items || []))
                 })
                 .catch((e: Error) => {
                   sendBack(sidepanelModel.events['REPORT.SIDEPANEL.ERROR'](`fetchSidepanel Error: ${e.message}`))
@@ -180,8 +180,7 @@ export function createSidepanelMachine(client: QueryClient) {
       actions: {
         persist: (ctx) => {
           try {
-            store.set(
-              'sidepanel',
+            updateListSidepanel(
               ctx.items.map(({url, type}) => ({
                 url,
                 type,
@@ -196,14 +195,14 @@ export function createSidepanelMachine(client: QueryClient) {
   )
 }
 
-export type SidepanelProps = {
-  gridArea: string
+type SidepanelProps = {
+  copy: (url: string) => Promise<void>
 }
 
-export function Sidepanel() {
-  const isOpen = useIsSidepanelOpen()
+export function Sidepanel({copy}: SidepanelProps) {
   const service = useSidepanel()
   const [state, send] = useActor(service)
+  const isOpen = useIsSidepanelOpen()
 
   return (
     <Box
@@ -229,6 +228,7 @@ export function Sidepanel() {
         {state.context.items.length ? (
           <Box
             as="ul"
+            data-testid="sidepanel-list"
             css={{
               padding: '$5',
               margin: 0,
@@ -238,7 +238,7 @@ export function Sidepanel() {
               return (
                 <ErrorBoundary key={`${item.type}-${item.url}`} fallback={<li>sidepanel item fallback</li>}>
                   {item.ref ? (
-                    <SidepanelItem key={`${item.type}-${item.url}`} itemRef={item.ref} />
+                    <SidepanelItem key={`${item.type}-${item.url}`} itemRef={item.ref} copy={copy} />
                   ) : (
                     <Text>ref is not defined on item</Text>
                   )}
@@ -256,37 +256,119 @@ export type BlockItemProps = {
   ref: SidepanelItemRef
 }
 
-export function SidepanelItem({itemRef}: {itemRef: SidepanelItemRef}) {
-  const [state] = useActor(itemRef)
-  let isPublication = state.context.type == 'publication'
+export type SidepanelItemProps = PropsWithChildren<{
+  itemRef: SidepanelItemRef
+}>
 
-  return isPublication ? <PublicationItem itemRef={itemRef} /> : <BlockItem itemRef={itemRef} />
-}
-
-export function PublicationItem({itemRef}: {itemRef: SidepanelItemRef}) {
+export function SidepanelItem({
+  itemRef,
+  copy = copyTextToClipboard,
+}: {
+  itemRef: SidepanelItemRef
+  copy?: (url: string) => Promise<unknown>
+}) {
   const [state, send] = useActor(itemRef)
-  const bookmarksService = useBookmarksService()
-  const sidepanelService = useSidepanel()
   const [, setLocation] = useLocation()
-  const hoverService = useHover()
-  const [hoverState] = useActor(hoverService)
+  const bookmarkService = useBookmarksService()
+  const sidepanelService = useSidepanel()
 
-  const isExpanded = state.matches('expanded')
-
-  async function onCopy() {
-    await copyTextToClipboard(state.context.url)
+  async function localCopy() {
+    await copy(state.context.url)
     toast.success('Statement Reference copied successfully', {position: 'top-center'})
   }
 
-  function onGoToPublication(url: string) {
+  function navigate(url: string) {
     const [publicationId, version] = getEmbedIds(url)
     setLocation(`/p/${publicationId}/${version}`)
   }
 
-  function toggleDocument(e: Event) {
+  function toggle(e: Event) {
     e.preventDefault()
     send(sidepanelItemModel.events['SIDEPANEL.ITEM.TOGGLE']())
   }
+
+  function bookmark(url: string) {
+    bookmarkService.send(bookmarksModel.events['BOOKMARK.ADD'](url))
+  }
+
+  function deleteItem(url: string) {
+    sidepanelService.send(sidepanelModel.events['SIDEPANEL.REMOVE'](url))
+  }
+
+  let isExpanded = state.matches('expanded')
+
+  if (state.matches('loading')) return <span>...</span>
+
+  let dropdown = (
+    <Dropdown.Root modal={false}>
+      <Dropdown.Trigger asChild>
+        <ElementDropdown
+          data-trigger
+          css={{
+            position: 'absolute',
+            right: 4,
+            top: 4,
+            backgroundColor: '$background-alt',
+            '&:hover': {
+              backgroundColor: '$background-muted',
+            },
+          }}
+        >
+          <Icon name="MoreHorizontal" size="1" color="muted" />
+        </ElementDropdown>
+      </Dropdown.Trigger>
+      <Dropdown.Content align="start" side="bottom" css={{minWidth: 220}} data-testid="sidepanel-dropdown-content">
+        <Dropdown.Item onSelect={localCopy} data-testid="copy-item">
+          <Icon name="Copy" size="1" />
+          <Text size="2">Copy Block ID</Text>
+        </Dropdown.Item>
+        <Dropdown.Item onSelect={() => navigate?.(state.context.url)}>
+          <Icon name="ArrowTopRight" size="1" />
+          <Text size="2">Open in main Panel</Text>
+        </Dropdown.Item>
+        <Dropdown.Item
+          onSelect={() => {
+            bookmark?.(state.context.url)
+          }}
+        >
+          <Icon size="1" name="ArrowBottomRight" />
+          <Text size="2">Add to Bookmarks</Text>
+        </Dropdown.Item>
+        <Dropdown.Item onSelect={toggle}>
+          <Icon name={isExpanded ? 'ArrowDown' : 'ArrowUp'} size="1" />
+          <Text size="2">{isExpanded ? 'Collapse' : 'Expand'} Document</Text>
+        </Dropdown.Item>
+        <DeleteDialog
+          entryId={state.context.url}
+          handleDelete={deleteItem}
+          title="Delete item"
+          description="Are you sure you want to delete this item? This action is not reversible."
+          onSuccess={() => toast.success('Sidepanel item deleted successfully')}
+        >
+          <Dropdown.Item
+            onSelect={(e) => {
+              e.preventDefault()
+            }}
+            data-testid="delete-item"
+          >
+            <Icon name="CloseCircle" size="1" />
+            <Text size="2">Delete from sidepanel</Text>
+          </Dropdown.Item>
+        </DeleteDialog>
+      </Dropdown.Content>
+    </Dropdown.Root>
+  )
+
+  return state.context.type == 'publication' ? (
+    <PublicationItem itemRef={itemRef}>{dropdown}</PublicationItem>
+  ) : (
+    <BlockItem itemRef={itemRef}>{dropdown}</BlockItem>
+  )
+}
+
+export function PublicationItem({itemRef, children}: SidepanelItemProps) {
+  const [state] = useActor(itemRef)
+  const isExpanded = state.matches('expanded')
 
   return (
     <Box
@@ -309,13 +391,12 @@ export function PublicationItem({itemRef}: {itemRef: SidepanelItemRef}) {
           padding: '$4',
         }}
       >
-        <Text size="1" color="muted">
+        <Text size="1" color="muted" data-testid="sidepanel-item-type">
           Publication
         </Text>
       </Box>
       {isExpanded && (
         <Box
-          className="EDITORRR"
           css={{
             flex: 1,
             paddingVertical: '$6',
@@ -376,82 +457,20 @@ export function PublicationItem({itemRef}: {itemRef: SidepanelItemRef}) {
           Created on: {getDateFormat(state.context.publication?.document, 'publishTime')}
         </Text>
       </Box>
-      <Dropdown.Root modal={false}>
-        <Dropdown.Trigger asChild>
-          <ElementDropdown
-            data-trigger
-            css={{
-              position: 'absolute',
-              right: 4,
-              top: 4,
-              backgroundColor: '$background-alt',
-              '&:hover': {
-                backgroundColor: '$background-muted',
-              },
-            }}
-          >
-            <Icon name="MoreHorizontal" size="1" color="muted" />
-          </ElementDropdown>
-        </Dropdown.Trigger>
-        <Dropdown.Content portalled align="start" side="bottom" css={{minWidth: 220}}>
-          <Dropdown.Item onSelect={onCopy}>
-            <Icon name="Copy" size="1" />
-            <Text size="2">Copy Block ID</Text>
-          </Dropdown.Item>
-          <Dropdown.Item onSelect={() => onGoToPublication(state.context.url)}>
-            <Icon name="ArrowTopRight" size="1" />
-            <Text size="2">Open in main Panel</Text>
-          </Dropdown.Item>
-          <Dropdown.Item
-            onSelect={() => {
-              bookmarksService.send(bookmarksModel.events['BOOKMARK.ADD'](state.context.url))
-            }}
-          >
-            <Icon size="1" name="ArrowBottomRight" />
-            <Text size="2">Add to Bookmarks</Text>
-          </Dropdown.Item>
-          <Dropdown.Item onSelect={toggleDocument}>
-            <Icon name={isExpanded ? 'ArrowDown' : 'ArrowUp'} size="1" />
-            <Text size="2">{isExpanded ? 'Collapse' : 'Expand'} Document</Text>
-          </Dropdown.Item>
-          <Dropdown.Item
-            onSelect={() => sidepanelService.send(sidepanelModel.events['SIDEPANEL.REMOVE'](state.context.url))}
-          >
-            <Icon name="CloseCircle" size="1" />
-            <Text size="2">Delete from sidepanel</Text>
-          </Dropdown.Item>
-        </Dropdown.Content>
-      </Dropdown.Root>
+      {children}
     </Box>
   )
 }
 
-export function BlockItem({itemRef}: {itemRef: SidepanelItemRef}) {
-  const [state, send] = useActor(itemRef)
-  const bookmarksService = useBookmarksService()
-  const sidepanelService = useSidepanel()
-  const [, setLocation] = useLocation()
+export function BlockItem({itemRef, children}: SidepanelItemProps) {
+  const [state] = useActor(itemRef)
 
   const isExpanded = state.matches('expanded')
-
-  async function onCopy() {
-    await copyTextToClipboard(state.context.url)
-    toast.success('Statement Reference copied successfully', {position: 'top-center'})
-  }
-
-  function onGoToPublication(url: string) {
-    const [publicationId, version] = getEmbedIds(url)
-    setLocation(`/p/${publicationId}/${version}`)
-  }
-
-  function toggleDocument(e: Event) {
-    e.preventDefault()
-    send(sidepanelItemModel.events['SIDEPANEL.ITEM.TOGGLE']())
-  }
 
   return (
     <Box
       as="li"
+      data-testid="sidepanel-item"
       css={{
         position: 'relative',
         marginTop: '$5',
@@ -473,7 +492,7 @@ export function BlockItem({itemRef}: {itemRef: SidepanelItemRef}) {
           padding: '$4',
         }}
       >
-        <Text size="1" color="muted">
+        <Text size="1" color="muted" data-testid="sidepanel-item-type">
           Block
         </Text>
       </Box>
@@ -488,7 +507,7 @@ export function BlockItem({itemRef}: {itemRef: SidepanelItemRef}) {
             },
         }}
       >
-        {!state.matches('loading') && (
+        {state.matches('loading') ? null : (
           <Editor
             value={isExpanded ? state.context.publication?.document?.content : [state.context.block]}
             mode={isExpanded ? EditorMode.Publication : EditorMode.Mention}
@@ -537,52 +556,7 @@ export function BlockItem({itemRef}: {itemRef: SidepanelItemRef}) {
           Created on: {getDateFormat(state.context.publication?.document, 'publishTime')}
         </Text>
       </Box>
-      <Dropdown.Root modal={false}>
-        <Dropdown.Trigger asChild>
-          <ElementDropdown
-            data-trigger
-            css={{
-              position: 'absolute',
-              right: 4,
-              top: 4,
-              backgroundColor: '$background-alt',
-              '&:hover': {
-                backgroundColor: '$background-muted',
-              },
-            }}
-          >
-            <Icon name="MoreHorizontal" size="1" color="muted" />
-          </ElementDropdown>
-        </Dropdown.Trigger>
-        <Dropdown.Content portalled align="start" side="bottom" css={{minWidth: 220}}>
-          <Dropdown.Item onSelect={onCopy}>
-            <Icon name="Copy" size="1" />
-            <Text size="2">Copy Block ID</Text>
-          </Dropdown.Item>
-          <Dropdown.Item onSelect={() => onGoToPublication(state.context.url)}>
-            <Icon name="ArrowTopRight" size="1" />
-            <Text size="2">Open in main Panel</Text>
-          </Dropdown.Item>
-          <Dropdown.Item
-            onSelect={() => {
-              bookmarksService.send(bookmarksModel.events['BOOKMARK.ADD'](state.context.url))
-            }}
-          >
-            <Icon size="1" name="ArrowBottomRight" />
-            <Text size="2">Add to Bookmarks</Text>
-          </Dropdown.Item>
-          <Dropdown.Item onSelect={toggleDocument}>
-            <Icon name={isExpanded ? 'ArrowDown' : 'ArrowUp'} size="1" />
-            <Text size="2">{isExpanded ? 'Collapse' : 'Expand'} Document</Text>
-          </Dropdown.Item>
-          <Dropdown.Item
-            onSelect={() => sidepanelService.send(sidepanelModel.events['SIDEPANEL.REMOVE'](state.context.url))}
-          >
-            <Icon name="CloseCircle" size="1" />
-            <Text size="2">Delete from sidepanel</Text>
-          </Dropdown.Item>
-        </Dropdown.Content>
-      </Dropdown.Root>
+      {children}
     </Box>
   )
 }
@@ -617,7 +591,7 @@ var sidepanelItemModel = createModel(
   },
 )
 
-export function createSidepanelItemMachine(client: QueryClient, item: SidepanelItem) {
+export function createSidepanelItemMachine(client: QueryClient, item: SidepanelItemType) {
   return sidepanelItemModel.createMachine(
     {
       initial: 'loading',
@@ -707,6 +681,8 @@ export function createSidepanelItemMachine(client: QueryClient, item: SidepanelI
             [queryKeys.GET_PUBLICATION, documentId, version],
             async () => {
               let pub = await getPublication(documentId, version)
+              console.log('content prev: ', pub.document?.content)
+
               let content: [GroupingContent] = pub.document?.content ? JSON.parse(pub.document?.content) : null
 
               return {
@@ -718,6 +694,8 @@ export function createSidepanelItemMachine(client: QueryClient, item: SidepanelI
               }
             },
           )
+
+          console.log({publication})
 
           let author = await client.fetchQuery([queryKeys.GET_ACCOUNT, publication.document?.author], () =>
             getAccount(publication.document?.author as string),

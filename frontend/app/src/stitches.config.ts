@@ -395,4 +395,7 @@ export const globalStyles = globalCss({
     '-webkit-font-smoothing': 'antialiased',
     '-moz-osx-font-smoothing': 'grayscale',
   },
+  '*:focus': {
+    boxShadow: '$focus',
+  },
 })

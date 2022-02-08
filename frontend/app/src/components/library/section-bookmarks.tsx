@@ -9,6 +9,11 @@ import {SectionError} from './section-error'
 export function BookmarksSection() {
   const service = useBookmarksService()
   const [state, send] = useActor(service)
+  console.log('🚀 ~ file: section-bookmarks.tsx ~ line 12 ~ BookmarksSection ~ state', state)
+
+  function onReset() {
+    send('BOOKMARK.RESET')
+  }
 
   return (
     <Section title="Bookmarks" icon="Star">
@@ -23,6 +28,7 @@ export function BookmarksSection() {
         onClick={() => send(bookmarksModel.events['BOOKMARK.CLEARALL']())}
         variant="ghost"
         color="primary"
+        data-testid="clear-bookmarks"
         size="1"
         css={{textAlign: 'left'}}
       >
@@ -31,46 +37,3 @@ export function BookmarksSection() {
     </Section>
   )
 }
-
-function onReset() {
-  console.log('implement me: bookmarks onReset')
-}
-
-// function BookmarkItem({item}: {item: string}) {
-//   const {data, status} = useEmbed(item)
-
-//   if (status == 'loading') {
-//     return (
-//       <StyledSectionItem>
-//         <StyledSectionItemTitle>...</StyledSectionItemTitle>
-//       </StyledSectionItem>
-//     )
-//   }
-
-//   if (status == 'error') {
-//     return (
-//       <StyledSectionItem>
-//         <StyledSectionItemTitle>ERROR</StyledSectionItemTitle>
-//       </StyledSectionItem>
-//     )
-//   }
-
-//   return (
-//     <Link
-//       href={`/p/${data.document.id}`}
-//       onClick={(e) => {
-//         console.log('shift?', e.shiftKey)
-//       }}
-//     >
-//       <StyledSectionItem>
-//         <StyledSectionItemTitle>{Node.string(data.statement.children[0])}</StyledSectionItemTitle>
-//       </StyledSectionItem>
-//     </Link>
-//   )
-// }
-
-// function BookmarkItem({bookmark}: {bookmark: Bookmark}) {
-//   console.log('bookmark: ', bookmark)
-
-//   return <p>{bookmark.url}</p>
-// }

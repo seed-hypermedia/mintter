@@ -17,7 +17,7 @@ import {ActorRefFrom} from 'xstate'
 
 export function BookmarkItem({itemRef}: {itemRef: ActorRefFrom<ReturnType<typeof createBookmarkMachine>>}) {
   const sidepanelService = useSidepanel()
-  const [state, send] = useActor(itemRef)
+  const [state] = useActor(itemRef)
   const bookmarks = useBookmarksService()
   const [, setLocation] = useLocation()
   console.log('bookmark state: ', state)
@@ -93,7 +93,7 @@ export function BookmarkItem({itemRef}: {itemRef: ActorRefFrom<ReturnType<typeof
             <Icon size="1" name="ArrowTopRight" />
             <Text size="2">Open in main panel</Text>
           </Dropdown.Item>
-          <Dropdown.Item onSelect={onSidePanel}>
+          <Dropdown.Item data-testid="sidepanel-item" onSelect={onSidePanel}>
             <Icon size="1" name="ArrowBottomRight" />
             <Text size="2">Open in sidepanel</Text>
           </Dropdown.Item>

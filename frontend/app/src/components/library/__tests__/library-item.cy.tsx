@@ -205,7 +205,7 @@ describe('<LibraryItem /> with Publication', () => {
       .click()
       .get('[data-testid="delete-dialog-title"]')
       .should('be.visible')
-      .contains('Delete document')
+      .contains(/Delete document/i)
       .get('[data-testid="delete-dialog-cancel"]')
       .should('be.visible')
       .should('be.enabled')
@@ -218,7 +218,7 @@ describe('<LibraryItem /> with Publication', () => {
       })
   })
 
-  it('should Copy to Clipboard be disabled on drafts', async () => {
+  it('should Copy to Clipboard', () => {
     cy.get('[data-testid="library-item"]')
       .get('[data-trigger]')
       .click()
@@ -226,7 +226,7 @@ describe('<LibraryItem /> with Publication', () => {
       .click()
       .then(() => {
         expect(copyTextToClipboard).to.have.been.calledOnce
-        expect(copyTextToClipboard).to.have.been.calledWith(`mtt://${publication.document.id}/${publication.version}`)
+        expect(copyTextToClipboard).to.have.been.calledWith(`mtt://${publication.document?.id}/${publication.version}`)
       })
   })
 })

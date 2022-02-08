@@ -147,7 +147,7 @@ export default function Publication({params}: PublicationPageProps) {
           Toggle Discussion
         </Button>
         <TippingModal
-          publicationId={params?.docId}
+          publicationId={state.context.publication?.document.id}
           accountId={state.context.publication?.document.author}
           visible={!state.context.canUpdate}
         />
@@ -166,7 +166,7 @@ export default function Publication({params}: PublicationPageProps) {
             },
           }}
         >
-          <Box css={{width: '$full', maxWidth: '64ch'}}>
+          <Box css={{width: '$full', maxWidth: '64ch', marginLeft: '-$7'}}>
             <Editor mode={EditorMode.Publication} value={state.context.publication?.document.content} />
           </Box>
         </Box>
@@ -490,7 +490,7 @@ function TippingModal({
   }, [publicationId, accountId])
 
   if (typeof publicationId == 'undefined' || typeof accountId == 'undefined') {
-    console.error(`Tipping Modal ERROR: invalid publicationId or accountId: ${{publicationId, accountId}}`)
+    // console.error(`Tipping Modal ERROR: invalid publicationId or accountId: ${{publicationId, accountId}}`)
 
     return null
   }

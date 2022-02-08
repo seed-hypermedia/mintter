@@ -121,28 +121,7 @@ export default function EditorPage({params, editor: propEditor}: EditorPageProps
             },
           }}
         >
-          <Box css={{width: '$full', maxWidth: '64ch'}}>
-            {/* <Textarea
-              css={
-                {
-                  color: '$text-muted',
-                  fontSize: '$4',
-                } as CSS
-              }
-              data-testid="editor_subtitle"
-              name="subtitle"
-              placeholder="about this publication..."
-              value={context.localDraft.subtitle}
-              onChange={(event) =>
-                send({
-                  type: 'UPDATE',
-                  payload: {
-                    subtitle: event.currentTarget.value,
-                  },
-                })
-              }
-            /> */}
-            {/* <Separator css={{margin: '10px 0'}} /> */}
+          <Box css={{width: '$full', maxWidth: '64ch', marginLeft: '-$7'}}>
             {context.localDraft?.content && (
               <>
                 <Editor

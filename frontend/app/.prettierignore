@@ -1,13 +1,21 @@
 # ignore backend code
 api
 backend
+
+# build code
 build
-docs
-infra
-out
-scripts
-tools
+dist
 src-tauri
 public
-dist
+out
+
+# Project files
+docs
+infra
+scripts
+tools
+
+# Generated files
 coverage
+src/client/.generated
+.vite
