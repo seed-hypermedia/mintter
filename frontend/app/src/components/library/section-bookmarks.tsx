@@ -9,7 +9,6 @@ import {SectionError} from './section-error'
 export function BookmarksSection() {
   const service = useBookmarksService()
   const [state, send] = useActor(service)
-  console.log('🚀 ~ file: section-bookmarks.tsx ~ line 12 ~ BookmarksSection ~ state', state)
 
   function onReset() {
     send('BOOKMARK.RESET')

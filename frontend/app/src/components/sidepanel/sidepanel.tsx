@@ -681,7 +681,6 @@ export function createSidepanelItemMachine(client: QueryClient, item: SidepanelI
             [queryKeys.GET_PUBLICATION, documentId, version],
             async () => {
               let pub = await getPublication(documentId, version)
-              console.log('content prev: ', pub.document?.content)
 
               let content: [GroupingContent] = pub.document?.content ? JSON.parse(pub.document?.content) : null
 
@@ -694,8 +693,6 @@ export function createSidepanelItemMachine(client: QueryClient, item: SidepanelI
               }
             },
           )
-
-          console.log({publication})
 
           let author = await client.fetchQuery([queryKeys.GET_ACCOUNT, publication.document?.author], () =>
             getAccount(publication.document?.author as string),

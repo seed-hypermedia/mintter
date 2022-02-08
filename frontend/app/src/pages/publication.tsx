@@ -167,7 +167,13 @@ export default function Publication({params}: PublicationPageProps) {
           }}
         >
           <Box css={{width: '$full', maxWidth: '64ch', marginLeft: '-$7'}}>
-            <Editor mode={EditorMode.Publication} value={state.context.publication?.document.content} />
+            <Editor
+              mode={EditorMode.Publication}
+              value={state.context.publication?.document.content}
+              onChange={() => {
+                // noop
+              }}
+            />
           </Box>
         </Box>
       )}

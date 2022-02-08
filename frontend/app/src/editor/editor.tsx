@@ -24,6 +24,7 @@ interface EditorProps {
   onChange?: (value: Descendant[]) => void
   editor?: EditorType
   plugins?: Array<EditorPlugin>
+  as?: any
 }
 
 export function Editor({
@@ -33,6 +34,7 @@ export function Editor({
   mode = EditorMode.Draft,
   editor,
   plugins = defaultPlugins,
+  as = 'div',
 }: PropsWithChildren<EditorProps>) {
   const _editor = useMemo(() => editor ?? buildEditorHook(plugins, mode), [editor, plugins, mode])
   const renderElement = useMemo(() => buildRenderElementHook(plugins, _editor), [plugins, _editor])
@@ -48,6 +50,7 @@ export function Editor({
         <span onMouseLeave={() => hoverSend('MOUSE_LEAVE')}>
           <Slate editor={_editor} value={value as Array<Descendant>} onChange={onChange as any}>
             <Editable
+              as={as}
               style={{display: 'inline'}}
               readOnly={_editor.readOnly}
               data-testid="editor"

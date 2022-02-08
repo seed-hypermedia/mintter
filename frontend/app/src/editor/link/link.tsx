@@ -1,5 +1,6 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {styled} from '@app/stitches.config'
+import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
@@ -11,12 +12,11 @@ import {embed, isLink, link, text} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {open} from '@tauri-apps/api/shell'
 import isUrl from 'is-url'
-import {FormEvent, forwardRef, PropsWithChildren, useEffect, useState} from 'react'
+import {FormEvent, ForwardedRef, forwardRef, MouseEvent, useEffect, useState} from 'react'
 import type {BaseRange, BaseSelection, Range} from 'slate'
 import {Editor, Element as SlateElement, Transforms} from 'slate'
-import {ReactEditor, useSlateStatic} from 'slate-react'
+import {ReactEditor, RenderElementProps, useSlateStatic} from 'slate-react'
 import {useLocation} from 'wouter'
-import {getEmbedIds} from '../embed'
 import type {UseLastSelectionResult} from '../hovering-toolbar'
 import type {EditorPlugin} from '../types'
 import {isCollapsed} from '../utils'
@@ -25,6 +25,7 @@ export const ELEMENT_LINK = 'link'
 
 const StyledLink = styled('span', {
   textDecoration: 'underline',
+  appearance: 'none',
   display: 'inline',
   color: '$text-default',
   width: 'auto',
@@ -34,22 +35,58 @@ const StyledLink = styled('span', {
   },
 })
 
-export const Link = forwardRef(({element, ...props}: PropsWithChildren<{element: LinkType}>, ref) => {
+type LinkProps = Omit<RenderElementProps, 'element'> & {element: LinkType}
+
+function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
+  return isMintterLink(props.element.url) ? <MintterLink ref={ref} {...props} /> : <WebLink ref={ref} {...props} />
+}
+
+const MintterLink = forwardRef(renderMintterLink)
+const WebLink = forwardRef(renderWebLink)
+
+function renderMintterLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   const [, setLocation] = useLocation()
 
-  function handleClick(e: any) {
-    e.preventDefault()
-    console.log('MINTTER CLICK!')
-    if (isMintterLink(element.url)) {
-      const [pubId, version] = getEmbedIds(element.url)
-      setLocation(`/p/${pubId}/${version}`)
-    } else {
-      open(element.url)
-    }
+  const [docId, version, blockId] = getIdsfromUrl(props.element.url)
+
+  function onClick(event: MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault()
+
+    setLocation(`/p/${docId}/${version}${blockId ? `/${blockId}` : ''}`)
   }
 
-  return <StyledLink ref={ref} onClick={handleClick} {...props} />
-})
+  return <StyledLink ref={ref} {...props} onClick={onClick} />
+}
+
+function renderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
+  function onClick(event: MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault()
+
+    open(props.element.url)
+  }
+
+  return (
+    <Tooltip
+      content={
+        <Box
+          css={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '$2',
+            fontFamily: '$default',
+          }}
+        >
+          {props.element.url}
+          <Icon size="1" name="ExternalLink" color="opposite" />
+        </Box>
+      }
+    >
+      <StyledLink ref={ref} onClick={onClick} {...props} />
+    </Tooltip>
+  )
+}
+
+export const Link = forwardRef(renderLink)
 
 Link.displayName = 'Link'
 
@@ -57,28 +94,12 @@ export const createLinkPlugin = (): EditorPlugin => ({
   name: ELEMENT_LINK,
   renderElement:
     () =>
-    ({attributes, children, element}) => {
+    ({children, attributes, element}) => {
       if (isLink(element)) {
         return (
-          <Tooltip
-            content={
-              <Box
-                css={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '$2',
-                  fontFamily: '$default',
-                }}
-              >
-                {element.url}
-                <Icon size="1" name="ExternalLink" color="opposite" />
-              </Box>
-            }
-          >
-            <Link element={element} {...attributes}>
-              {children}
-            </Link>
-          </Tooltip>
+          <Link attributes={attributes} element={element}>
+            {children}
+          </Link>
         )
       }
     },
