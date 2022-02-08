@@ -27,11 +27,7 @@ export function createFilesMachine(client: QueryClient) {
           {
             src: () => (sendBack) => {
               client
-                .fetchQuery([queryKeys.GET_PUBLICATION_LIST], () => {
-                  console.log('ENTRO EN FETCHER!!')
-
-                  return listPublications()
-                })
+                .fetchQuery([queryKeys.GET_PUBLICATION_LIST], () => listPublications())
                 .then(function filesResponse(response) {
                   let items = response.publications.map((pub) => ({
                     ...pub,

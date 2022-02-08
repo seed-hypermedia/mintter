@@ -54,8 +54,6 @@ export function createBookmarksMachine(client: QueryClient) {
               client
                 .fetchQuery([queryKeys.GET_BOOKMARK_LIST], listBookmarks)
                 .then((result) => {
-                  console.log('RESULT!', result)
-
                   sendBack({type: 'REPORT.BOOKMARKS.SUCCESS', bookmarks: result || []})
                 })
                 .catch((e: Error) => {
@@ -217,7 +215,6 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
     {
       services: {
         fetchItemData: (context) => (sendBack) => {
-          console.log('FETCH ITEM HERE')
           ;(async () => {
             let [documentId, version, blockId] = getIdsfromUrl(context.url)
 

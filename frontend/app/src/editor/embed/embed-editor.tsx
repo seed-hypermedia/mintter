@@ -1,19 +1,26 @@
-import {PropsWithChildren} from 'react'
+import {ForwardedRef, forwardRef} from 'react'
+import {RenderElementProps} from 'slate-react'
 import {Editor} from '../editor'
 import {EditorMode} from '../plugin-utils'
 import {EmbedUI} from './embed-ui'
 import {useEmbed} from './use-embed'
 
-export type EmbedEditorProps = PropsWithChildren<{
+export type EmbedEditorProps = Pick<RenderElementProps, 'attributes' | 'children'> & {
   embed: string
   onClick?: any
-}>
-export const EmbedEditor = ({embed, children, ...props}: EmbedEditorProps) => {
+}
+
+export const EmbedEditor = forwardRef(renderEmbedEditor)
+
+function renderEmbedEditor(
+  {embed, children, attributes, ...props}: EmbedEditorProps,
+  ref: ForwardedRef<HTMLQuoteElement>,
+) {
   const {status, data, error} = useEmbed(embed)
 
   if (status == 'loading') {
     return (
-      <span {...props} contentEditable={false}>
+      <span {...props} {...attributes} ref={ref} contentEditable={false}>
         ...
         {children}
       </span>
@@ -22,7 +29,7 @@ export const EmbedEditor = ({embed, children, ...props}: EmbedEditorProps) => {
   if (status == 'error') {
     console.error('Embed Error: ', error)
     return (
-      <span contentEditable={false} {...props}>
+      <span contentEditable={false} {...props} {...attributes} ref={ref}>
         EMBED ERROR
         {children}
       </span>
@@ -30,8 +37,9 @@ export const EmbedEditor = ({embed, children, ...props}: EmbedEditorProps) => {
   }
 
   return (
-    <EmbedUI cite={embed} {...props} contentEditable={false}>
+    <EmbedUI cite={embed} {...props} {...attributes} contentEditable={false} ref={ref}>
       <Editor
+        as="span"
         mode={EditorMode.Embed}
         value={[data.statement]}
         onChange={() => {
