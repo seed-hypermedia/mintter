@@ -44,7 +44,7 @@
     "@radix-ui/react-tooltip": "0.1.6",
     "@stitches/core": "^1.2.6",
     "@stitches/react": "^1.2.6",
-    "@tauri-apps/api": "=1.0.0-beta.8",
+    "@tauri-apps/api": "1.0.0-rc.1",
     "@xstate/react": "^1.6.3",
     "autosize": "^5.0.0",
     "browser-headers": "^0.4.1",
