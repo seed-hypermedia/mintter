@@ -22,7 +22,7 @@
         "icons/icon.ico"
       ],
       "resources": [],
-      "externalBin": ["../../bazel-bin/mintterd"],
+      "externalBin": ["../../plz-out/bin/backend/mintterd"],
       "copyright": "",
       "category": "DeveloperTool",
       "shortDescription": "",
@@ -53,26 +53,33 @@
       "shell": {
         "execute": true,
         "open": true
-      },
-      "window": {
-        "all": false
       }
     },
     "windows": [
       {
         "title": "Mintter",
         "width": 1000,
-        "height": 600,
+        "height": 800,
         "resizable": true,
         "fullscreen": false
       }
     ],
     "security": {
-      "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'"
+      "freezePrototype": false,
+      "devCsp": "default-src 'self' style-src 'unsafe-inline' connect-src http://localhost:55001",
+      "csp": "default-src 'self' style-src 'unsafe-inline' connect-src http://localhost:55001"
     },
     "systemTray": {
       "iconPath": "./icons/tray_icon_with_transparency.png",
       "iconAsTemplate": true
+    },
+    "cli": {
+      "args": [
+        {
+          "name": "daemon-flags",
+          "takesValue": true
+        }
+      ]
     }
   }
 }
