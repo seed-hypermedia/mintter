@@ -96,6 +96,18 @@ message DocumentChange {
     string left_sibling = 3;
   }
 
+  // Operation that can express create/move/replace operations in one.
+  message UpsertBlock {
+    // Complete block being inserted or updated.
+    Block block = 1;
+
+    // ID of the parent block, or empty if it's on the root level.
+    string parent = 2;
+
+    // ID of the left sibling block, or empty if this block is the first one in the children list.
+    string left_sibling = 3;
+  }
+
   oneof op {
     // New document title.
     string set_title = 1;
@@ -114,6 +126,9 @@ message DocumentChange {
 
     // ID of a block to delete.
     string delete_block = 6;
+
+    // Insert a block or update an existing one.
+    UpsertBlock upsert_block = 7;
   }
 }
 

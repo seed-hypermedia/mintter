@@ -158,7 +158,7 @@ func (d *Tree) integrateMove(id ID, nodeID, parentID string, ref ID) error {
 	}
 
 	if right := refPos.Next(); right != nil && right.value != nil && right.value.(*node).id == nodeID {
-		return fmt.Errorf("node %s is already next to position %v", nodeID, ref)
+		return nil
 	}
 
 	// We can safely update clock here, because we've checked all the invariants up to this point.
