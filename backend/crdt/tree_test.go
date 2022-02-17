@@ -215,7 +215,7 @@ func TestMove_Duplicate(t *testing.T) {
 	d := NewTree(NewVectorClock())
 
 	require.NoError(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
-	require.Error(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
+	require.NoError(t, d.MoveNode("alice", "b1", RootNodeID, listStart))
 	require.Equal(t, 1, d.vclock.maxClock)
 }
 

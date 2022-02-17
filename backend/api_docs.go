@@ -376,6 +376,10 @@ func (srv *docsAPI) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraft
 			if err := ds.DeleteBlock(op.DeleteBlock); err != nil {
 				return nil, err
 			}
+		case *documents.DocumentChange_UpsertBlock_:
+			if err := ds.UpsertBlock(op.UpsertBlock.Block, op.UpsertBlock.Parent, op.UpsertBlock.LeftSibling); err != nil {
+				return nil, err
+			}
 		default:
 			return nil, fmt.Errorf("invalid draft update operation %T: %+v", c, c)
 		}
@@ -424,12 +428,16 @@ func (ds *draftState) SetSubtitle(subtitle string) {
 }
 
 func (ds *draftState) AddBlock(blk *documents.Block, parent, left string) error {
-	if blk.Id == "" {
-		return fmt.Errorf("blocks without ID are not allowed")
-	}
-
 	if _, ok := ds.blocks[blk.Id]; ok {
 		return fmt.Errorf("adding duplicate block id %s", blk.Id)
+	}
+
+	return ds.UpsertBlock(blk, parent, left)
+}
+
+func (ds *draftState) UpsertBlock(blk *documents.Block, parent, left string) error {
+	if blk.Id == "" {
+		return fmt.Errorf("blocks without ID are not allowed")
 	}
 
 	if parent == "" {
