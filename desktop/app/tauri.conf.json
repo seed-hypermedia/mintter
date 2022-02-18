@@ -4,7 +4,7 @@
     "version": "0.1.0"
   },
   "build": {
-    "distDir": "../plz-out/gen/frontend/dist/client",
+    "distDir": "../../plz-out/gen/frontend/dist/client",
     "devPath": "http://localhost:3000",
     "beforeDevCommand": "cd ../frontend/app && yarn dev",
     "withGlobalTauri": false
@@ -68,9 +68,7 @@
       }
     ],
     "security": {
-      "freezePrototype": false,
-      "devCsp": "default-src 'self' style-src 'unsafe-inline' connect-src http://localhost:55001",
-      "csp": "default-src 'self' style-src 'unsafe-inline' connect-src http://localhost:55001"
+      "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'"
     },
     "systemTray": {
       "iconPath": "./icons/tray_icon_with_transparency.png",
