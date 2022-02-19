@@ -128,6 +128,6 @@
     "vite": "2.7.10",
     "vite-react-jsx": "^1.1.2",
     "vite-tsconfig-paths": "^3.3.17",
-    "vitest": "0.1.12"
+    "vitest": "0.3.5"
   }
 }

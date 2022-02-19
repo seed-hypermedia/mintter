@@ -16,7 +16,7 @@ import {EmbedEditor} from './embed-editor'
 
 export const ELEMENT_EMBED = 'embed'
 
-export const Embed = forwardRef(renderEmbed)
+export const Embed = forwardRef(RenderEmbed)
 
 export const createEmbedPlugin = (): EditorPlugin => ({
   name: ELEMENT_EMBED,
@@ -47,7 +47,7 @@ export const createEmbedPlugin = (): EditorPlugin => ({
 
 type EmbedProps = Omit<RenderElementProps, 'element'> & {element: EmbedType}
 
-function renderEmbed({element, attributes, children}: EmbedProps, ref: ForwardedRef<HTMLQuoteElement>) {
+function RenderEmbed({element, attributes, children}: EmbedProps, ref: ForwardedRef<HTMLQuoteElement>) {
   const sidepanelService = useSidepanel()
   const bookmarksService = useBookmarksService()
   const [, setLocation] = useLocation()

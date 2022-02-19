@@ -41,10 +41,10 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   return isMintterLink(props.element.url) ? <MintterLink ref={ref} {...props} /> : <WebLink ref={ref} {...props} />
 }
 
-const MintterLink = forwardRef(renderMintterLink)
-const WebLink = forwardRef(renderWebLink)
+const MintterLink = forwardRef(RenderMintterLink)
+const WebLink = forwardRef(RenderWebLink)
 
-function renderMintterLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
+function RenderMintterLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   const [, setLocation] = useLocation()
 
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
@@ -58,7 +58,7 @@ function renderMintterLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement
   return <StyledLink ref={ref} {...props} onClick={onClick} />
 }
 
-function renderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
+function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
 

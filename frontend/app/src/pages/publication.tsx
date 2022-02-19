@@ -1,13 +1,13 @@
-import {
-  createDraft,
-  getInfo,
-  getPublication,
-  Link,
-  LinkNode,
-  listCitations,
-  Publication as PublicationType,
-} from '@app/client'
+import {createDraft, getInfo, getPublication, Link, listCitations, Publication as PublicationType} from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {
+  citationsMachine,
+  citationsModel,
+  CitationsProvider,
+  CITATIONS_FETCH,
+  CITATIONS_FETCH_ERROR,
+  CITATIONS_FETCH_SUCCESS,
+} from '@app/editor/citations'
 import {ContextMenu} from '@app/editor/context-menu'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
@@ -15,6 +15,7 @@ import {EditorDocument} from '@app/editor/use-editor-draft'
 import {queryKeys, useAccount} from '@app/hooks'
 import {tippingMachine, tippingModel} from '@app/tipping-machine'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {getBlock} from '@app/utils/get-block'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
@@ -30,15 +31,49 @@ import {useEffect} from 'react'
 import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 import {QueryClient, useQueryClient} from 'react-query'
-import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
 import {StateFrom} from 'xstate'
 import {createModel} from 'xstate/lib/model'
 import {PublicationPageProps} from './types'
 
 export default function Publication({params}: PublicationPageProps) {
-  const [, setLocation] = useLocation()
   const client = useQueryClient()
+  //@ts-ignore
+  const citations = useInterpret(() =>
+    citationsMachine.withConfig({
+      actions: {
+        assignPublicationIds: citationsModel.assign({
+          documentId: (_, event) => event.documentId,
+          version: (_, event) => event.version ?? '',
+        }),
+        assignCitations: citationsModel.assign({
+          citations: (_, event) => event.citations,
+        }),
+        assignErrorMessage: citationsModel.assign({
+          errorMessage: (_, event) => event.errorMessage,
+        }),
+        clearErrorMessage: citationsModel.assign({
+          errorMessage: '',
+        }),
+      },
+      services: {
+        fetchCitations: (context) => (sendBack) => {
+          console.log('init fetch: ', context)
+
+          client.fetchQuery([queryKeys.GET_PUBLICATION_ANNOTATIONS, context.documentId, context.version], async () => {
+            try {
+              let resp = await listCitations(context.documentId)
+              sendBack(citationsModel.events[CITATIONS_FETCH_SUCCESS](resp.links))
+            } catch (error) {
+              sendBack(citationsModel.events[CITATIONS_FETCH_ERROR](`Fetch Citations error: ${error}`))
+            }
+          })
+        },
+      },
+    }),
+  )
+  const [, setLocation] = useLocation()
+
   const [state, send] = usePagePublication(client, params?.docId)
 
   const {data: author} = useAccount(state.context.publication?.document?.author, {
@@ -47,7 +82,8 @@ export default function Publication({params}: PublicationPageProps) {
 
   useEffect(() => {
     if (params?.docId) {
-      send(publicationModel.events.FETCH_DATA(params?.docId))
+      send(publicationModel.events[PUBLICATION_FETCH_DATA](params.docId, params.version))
+      citations.send(citationsModel.events[CITATIONS_FETCH](params.docId, params.version))
     }
   }, [params?.docId])
 
@@ -82,7 +118,7 @@ export default function Publication({params}: PublicationPageProps) {
       >
         <Text>Publication ERROR</Text>
         <Text>{state.context.errorMessage}</Text>
-        <Button onClick={() => send(publicationModel.events.FETCH_DATA(state.context.id))} color="muted">
+        <Button onClick={() => send(publicationModel.events[PUBLICATION_FETCH_DATA](state.context.id))} color="muted">
           try again
         </Button>
       </Box>
@@ -90,7 +126,7 @@ export default function Publication({params}: PublicationPageProps) {
   }
 
   return (
-    <>
+    <CitationsProvider value={citations}>
       <Box
         css={{
           background: '$background-alt',
@@ -141,7 +177,7 @@ export default function Publication({params}: PublicationPageProps) {
         <Button
           size="1"
           variant={state.matches('discussion') ? 'solid' : 'ghost'}
-          onClick={() => send(publicationModel.events['TOGGLE.DISCUSSION']())}
+          onClick={() => send(publicationModel.events[PUBLICATION_TOGGLE_DISCUSSION]())}
           disabled={state.hasTag('pending')}
         >
           Toggle Discussion
@@ -248,7 +284,7 @@ export default function Publication({params}: PublicationPageProps) {
           Last modified: {getDateFormat(state.context.publication?.document, 'updateTime')}
         </Text>
       </Box>
-    </>
+    </CitationsProvider>
   )
 }
 
@@ -258,7 +294,7 @@ function usePagePublication(client: QueryClient, docId?: string) {
 
   useEffect(() => {
     if (docId) {
-      send(publicationModel.events.FETCH_DATA(docId))
+      send(publicationModel.events[PUBLICATION_FETCH_DATA](docId))
     }
   }, [send, docId])
 
@@ -267,6 +303,10 @@ function usePagePublication(client: QueryClient, docId?: string) {
 
 export type ClientPublication = Omit<PublicationType, 'document'> & {document: EditorDocument}
 
+export const PUBLICATION_FETCH_DATA = 'PUBLICATION.FETCH.DATA'
+export const PUBLICATION_REPORT_SUCCESS = 'PUBLICATION.REPORT.SUCCESS'
+export const PUBLICATION_REPORT_ERROR = 'PUBLICATION.REPORT.ERROR'
+export const PUBLICATION_TOGGLE_DISCUSSION = 'TOGGLE.DISCUSSION'
 const publicationModel = createModel(
   {
     id: '',
@@ -279,10 +319,10 @@ const publicationModel = createModel(
   },
   {
     events: {
-      'REPORT.DATA.SUCCESS': (props: {publication: ClientPublication; canUpdate: boolean}) => props,
-      'REPORT.DATA.ERROR': (errorMessage: string) => ({errorMessage}),
-      FETCH_DATA: (id: string, version?: string) => ({id, version}),
-      'TOGGLE.DISCUSSION': () => ({}),
+      [PUBLICATION_REPORT_SUCCESS]: (props: {publication: ClientPublication; canUpdate: boolean}) => props,
+      [PUBLICATION_REPORT_ERROR]: (errorMessage: string) => ({errorMessage}),
+      [PUBLICATION_FETCH_DATA]: (id: string, version?: string) => ({id, version}),
+      [PUBLICATION_TOGGLE_DISCUSSION]: () => ({}),
       'REPORT.DISCUSSION.SUCCESS': (links: Array<Link>, discussion: any) => ({links, discussion}),
       'REPORT.DISCUSSION.ERROR': (errorMessage: string) => ({errorMessage}),
     },
@@ -291,19 +331,19 @@ const publicationModel = createModel(
 
 function createPublicationMachine(client: QueryClient) {
   return publicationModel.createMachine({
+    tsTypes: {} as import('./publication.typegen').Typegen0,
     id: 'publication-machine',
     context: publicationModel.initialContext,
     initial: 'idle',
     states: {
       idle: {
         on: {
-          FETCH_DATA: {
+          [PUBLICATION_FETCH_DATA]: {
             target: 'fetching',
             actions: [
               publicationModel.assign({
-                ...publicationModel.initialContext,
                 id: (_, event) => event.id,
-                version: (_, event) => event.version,
+                version: (_, event) => event.version ?? '',
               }),
             ],
           },
@@ -323,27 +363,27 @@ function createPublicationMachine(client: QueryClient) {
                 if (publication.document?.content) {
                   let content = JSON.parse(publication.document?.content)
                   sendBack(
-                    publicationModel.events['REPORT.DATA.SUCCESS']({
+                    publicationModel.events[PUBLICATION_REPORT_SUCCESS]({
                       publication: Object.assign(publication, {document: {...publication.document, content}}),
                       canUpdate: info.accountId == publication.document.author,
                     }),
                   )
                 } else {
                   if (publication.document?.content === '') {
-                    sendBack(publicationModel.events['REPORT.DATA.ERROR']('Content is Empty'))
+                    sendBack(publicationModel.events[PUBLICATION_REPORT_ERROR]('Content is Empty'))
                   } else {
-                    sendBack(publicationModel.events['REPORT.DATA.ERROR']('error parsing content'))
+                    sendBack(publicationModel.events[PUBLICATION_REPORT_ERROR]('error parsing content'))
                   }
                 }
               })
               .catch((err) => {
                 console.log('=== CATCH ERROR: publication fetch error', err)
-                sendBack(publicationModel.events['REPORT.DATA.ERROR']('error fetching'))
+                sendBack(publicationModel.events[PUBLICATION_REPORT_ERROR]('error fetching'))
               })
           },
         },
         on: {
-          'REPORT.DATA.SUCCESS': {
+          [PUBLICATION_REPORT_SUCCESS]: {
             target: 'ready',
             actions: [
               publicationModel.assign((_, ev) => ({
@@ -353,7 +393,7 @@ function createPublicationMachine(client: QueryClient) {
               })),
             ],
           },
-          'REPORT.DATA.ERROR': {
+          [PUBLICATION_REPORT_ERROR]: {
             target: 'errored',
             actions: publicationModel.assign({
               errorMessage: (_, ev) => ev.errorMessage,
@@ -363,7 +403,7 @@ function createPublicationMachine(client: QueryClient) {
       },
       ready: {
         on: {
-          FETCH_DATA: {
+          [PUBLICATION_FETCH_DATA]: {
             target: 'fetching',
             actions: [
               publicationModel.assign({
@@ -372,7 +412,7 @@ function createPublicationMachine(client: QueryClient) {
               }),
             ],
           },
-          'TOGGLE.DISCUSSION': {
+          [PUBLICATION_TOGGLE_DISCUSSION]: {
             target: 'discussion',
           },
         },
@@ -441,10 +481,10 @@ function createPublicationMachine(client: QueryClient) {
           },
           ready: {
             on: {
-              'TOGGLE.DISCUSSION': {
+              [PUBLICATION_TOGGLE_DISCUSSION]: {
                 target: 'finish',
               },
-              FETCH_DATA: {
+              [PUBLICATION_FETCH_DATA]: {
                 target: 'finish',
                 actions: [
                   publicationModel.assign({
@@ -461,7 +501,7 @@ function createPublicationMachine(client: QueryClient) {
       },
       errored: {
         on: {
-          FETCH_DATA: {
+          [PUBLICATION_FETCH_DATA]: {
             target: 'fetching',
             actions: [
               publicationModel.assign({
@@ -486,7 +526,7 @@ function TippingModal({
 }) {
   // if (!visible) return null
 
-  const service = useInterpret(() => tippingMachine)
+  const service = useInterpret(tippingMachine)
   const [state, send] = useActor(service)
 
   useEffect(() => {
@@ -790,21 +830,6 @@ function DiscussionItem({link}: {link: Link}) {
   return null
 }
 
-async function getBlock(entry?: LinkNode): Promise<FlowContent | undefined> {
-  if (!entry) return
-  let pub = await getPublication(entry.documentId)
-
-  let block: FlowContent
-  if (pub.document?.content) {
-    visit(JSON.parse(pub.document.content)[0], {id: entry.blockId}, (node) => {
-      block = node
-    })
-  }
-
-  //@ts-ignore
-  return block
-}
-
 const discussionItemModel = createModel(
   {
     link: null as Link | null,
@@ -817,6 +842,7 @@ const discussionItemModel = createModel(
       FETCH: (link: Link) => ({link}),
       'REPORT.FETCH.SUCCESS': (publication: PublicationType, block: FlowContent) => ({publication, block}),
       'REPORT.FETCH.ERROR': (errorMessage: string) => ({errorMessage}),
+      RETRY: () => ({}),
     },
   },
 )
@@ -847,9 +873,9 @@ const discussionItemMachine = discussionItemModel.createMachine({
               sendBack(discussionItemModel.events['REPORT.FETCH.ERROR']('Error on Discussion Link'))
             } else {
               let publication = await getPublication(context.link!.source!.documentId!)
-              let block = await getBlock(context.link!.source!)
-              if (block) {
-                sendBack(discussionItemModel.events['REPORT.FETCH.SUCCESS'](publication, block))
+              let data = await getBlock(context.link!.source!)
+              if (data && data.block) {
+                sendBack(discussionItemModel.events['REPORT.FETCH.SUCCESS'](data.publication, data.block))
               }
             }
           })()
@@ -875,7 +901,11 @@ const discussionItemMachine = discussionItemModel.createMachine({
         },
       },
     },
-    errored: {},
+    errored: {
+      on: {
+        RETRY: 'fetching',
+      },
+    },
     ready: {},
   },
 })

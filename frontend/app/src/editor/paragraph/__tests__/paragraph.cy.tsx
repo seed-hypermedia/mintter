@@ -1,3 +1,4 @@
+import {CitationsProvider, useCitationService} from '@app/editor/citations'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
@@ -10,18 +11,22 @@ import {QueryClient} from 'react-query'
 function TestEditor({value, client}: {value: any; client: QueryClient}) {
   const editor = useMemo(() => buildEditorHook(plugins, EditorMode.Publication), [])
 
+  const citations = useCitationService()
+
   return (
     <Box css={{padding: '$9'}}>
-      <MainPageProviders client={client}>
-        <Editor
-          mode={EditorMode.Publication}
-          editor={editor}
-          value={value}
-          onChange={() => {
-            // noop
-          }}
-        />
-      </MainPageProviders>
+      <CitationsProvider value={citations}>
+        <MainPageProviders client={client}>
+          <Editor
+            mode={EditorMode.Publication}
+            editor={editor}
+            value={value}
+            onChange={() => {
+              // noop
+            }}
+          />
+        </MainPageProviders>
+      </CitationsProvider>
     </Box>
   )
 }
