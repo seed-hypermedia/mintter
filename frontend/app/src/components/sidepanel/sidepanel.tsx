@@ -48,12 +48,12 @@ export let sidepanelModel = createModel(
   {
     events: {
       RETRY: () => ({}),
-      'REPORT.SIDEPANEL.SUCCESS': (items: Array<SidepanelItem>) => ({items}),
+      'REPORT.SIDEPANEL.SUCCESS': (items: Array<SidepanelItemWithRef>) => ({items}),
       'REPORT.SIDEPANEL.ERROR': (errorMessage: Error['message']) => ({errorMessage}),
       'SIDEPANEL.OPEN': () => ({}),
       'SIDEPANEL.TOGGLE': () => ({}),
       'SIDEPANEL.CLOSE': () => ({}),
-      'SIDEPANEL.ADD': (item: SidepanelItem) => ({item}),
+      'SIDEPANEL.ADD': (item: SidepanelItemWithRef) => ({item}),
       'SIDEPANEL.REMOVE': (url: string) => ({url}),
       'SIDEPANEL.CLEAR': () => ({}),
     },
@@ -63,6 +63,7 @@ export let sidepanelModel = createModel(
 export function createSidepanelMachine(client: QueryClient) {
   return sidepanelModel.createMachine(
     {
+      tsTypes: {} as import('./sidepanel.typegen').Typegen0,
       id: 'Sidepanel',
       initial: 'idle',
       context: sidepanelModel.initialContext,
@@ -196,10 +197,10 @@ export function createSidepanelMachine(client: QueryClient) {
 }
 
 type SidepanelProps = {
-  copy: (url: string) => Promise<void>
+  copy: (url: string) => Promise<unknown>
 }
 
-export function Sidepanel({copy}: SidepanelProps) {
+export function Sidepanel({copy = copyTextToClipboard}: SidepanelProps) {
   const service = useSidepanel()
   const [state, send] = useActor(service)
   const isOpen = useIsSidepanelOpen()

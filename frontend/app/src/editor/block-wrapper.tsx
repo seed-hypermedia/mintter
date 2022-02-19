@@ -1,5 +1,6 @@
 import {createDraft} from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {BlockCitations} from '@app/editor/block-citations'
 import {BlockTools} from '@app/editor/block-tools'
 import {Dropdown} from '@app/editor/dropdown'
 import {useHoverBlockId} from '@app/editor/hover-context'
@@ -124,6 +125,7 @@ export function BlockWrapper({
         </Dropdown.Content>
       </Dropdown.Root>
       {children}
+      <BlockCitations blockId={(element as FlowContent).id} />
     </>
   )
 }

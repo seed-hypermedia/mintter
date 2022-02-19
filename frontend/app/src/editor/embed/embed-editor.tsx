@@ -10,9 +10,9 @@ export type EmbedEditorProps = Pick<RenderElementProps, 'attributes' | 'children
   onClick?: any
 }
 
-export const EmbedEditor = forwardRef(renderEmbedEditor)
+export const EmbedEditor = forwardRef(RenderEmbedEditor)
 
-function renderEmbedEditor(
+function RenderEmbedEditor(
   {embed, children, attributes, ...props}: EmbedEditorProps,
   ref: ForwardedRef<HTMLQuoteElement>,
 ) {
