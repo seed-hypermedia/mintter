@@ -49,6 +49,7 @@ export const createGroupPlugin = (): EditorPlugin => ({
         if (removeEmptyGroup(editor, entry)) return
 
         for (const [child, childPath] of Node.children(editor, path)) {
+          // addParentData(editor, entry)
           if (Element.isElement(child) && !isFlowContent(child)) {
             // inside group and not a flowcontent
             Transforms.wrapNodes(editor, statement({id: createId()}), {at: childPath})
@@ -98,3 +99,17 @@ export const Group = forwardRef<GroupProps, any>(({mode, attributes, element, ..
 
   return <GroupUI data-element-type={element.type} {...attributes} ref={ref as any} {...props} />
 })
+
+// function addParentData(editor: Editor, entry: NodeEntry<GroupingContent>) {
+//   const [node, path] = entry
+//   if (!node?.data?.parent) {
+//     const parent = Editor.above(editor, {
+//       match: isFlowContent,
+//       at: path,
+//     })
+//     if (parent) {
+//       let [parentNode] = parent
+//       Transforms.setNodes(editor, {data: {parent: parentNode.id}}, {at: path})
+//     }
+//   }
+// }

@@ -1,5 +1,4 @@
 import {useFiles} from '@app/main-page-context'
-import {PublicationRef} from '@app/main-page-machine'
 import {LibraryItem} from '@components/library/library-item'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Section} from './section'
@@ -17,7 +16,7 @@ export function FilesSection() {
             window.location.reload()
           }}
         >
-          {files.map((publication: PublicationRef) => {
+          {files.map((publication) => {
             let {document, version} = publication
             return <LibraryItem key={document?.id} href={`/p/${document?.id}/${version}`} publication={publication} />
           })}

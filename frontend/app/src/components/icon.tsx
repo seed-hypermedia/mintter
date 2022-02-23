@@ -1,4 +1,4 @@
-import {styled} from '@app/stitches.config'
+import {CSS, styled} from '@app/stitches.config'
 import * as AccessibleIcon from '@radix-ui/react-accessible-icon'
 import type * as Stitches from '@stitches/react'
 import React, {useMemo} from 'react'
@@ -123,6 +123,7 @@ export const icons = {
 
 export type IconProps = Stitches.VariantProps<typeof Svg> & {
   name: keyof typeof icons
+  css?: CSS
 }
 
 export function Icon({name, ...props}: IconProps) {

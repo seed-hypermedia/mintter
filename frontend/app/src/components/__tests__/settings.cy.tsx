@@ -11,27 +11,25 @@ describe('<Settings />', () => {
       email: 'test@demo.com',
       bio: 'demo bio',
     }
-    let api = {
-      updateAccount: cy.stub().resolves({
-        id: accountId,
-        profile: {
-          ...profile,
-          alias: newAlias,
+    let updateAccount: any = cy.stub().resolves({
+      id: accountId,
+      profile: {
+        ...profile,
+        alias: newAlias,
+      },
+      devices: {
+        foo: {
+          peerId: 'foopeerid',
         },
-        devices: {
-          foo: {
-            peerId: 'foopeerid',
-          },
-        },
-      } as Account),
-    }
+      },
+    } as Account)
 
     const {render} = mountWithAccount({
       profile,
       accountId,
     })
 
-    render(<Settings api={api} />)
+    render(<Settings updateAccount={updateAccount} />)
       .get('[data-testid="settings-trigger"]')
       .click()
       .get('[data-testid="input-alias"]')

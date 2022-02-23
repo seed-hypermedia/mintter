@@ -50,7 +50,10 @@ function Cancel({
   )
 }
 
-function Action({disabled = false, ...props}: PropsWithChildren<Omit<ButtonProps, 'size'> & {disabled?: boolean}>) {
+function Action({
+  disabled = false,
+  ...props
+}: PropsWithChildren<Omit<ButtonProps, 'size'> & {disabled?: boolean} & {onClick: any}>) {
   return (
     <AlertDialogPrimitive.Action asChild>
       <Button size="1" disabled={disabled} {...props} />

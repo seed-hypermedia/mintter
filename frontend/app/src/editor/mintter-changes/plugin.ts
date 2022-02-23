@@ -1,14 +1,14 @@
-import {EditorPlugin} from '@app/editor/types'
-import {isStatement, Statement} from '@mintter/mttast'
-import {Editor, NodeEntry, Operation} from 'slate'
-import {interpret} from 'xstate'
-import {createModel} from 'xstate/lib/model'
+import { EditorPlugin } from '@app/editor/types'
+import { FlowContent } from '@mintter/mttast'
+import { Editor, NodeEntry, Operation } from 'slate'
+import { interpret } from 'xstate'
+import { createModel } from 'xstate/lib/model'
 
 export function createMintterChangesPlugin(): EditorPlugin {
   return {
     name: 'mintter',
     configureEditor(editor) {
-      const {apply} = editor
+      const { apply } = editor
 
       editor.apply = mintterApply(editor, apply)
 
@@ -18,86 +18,87 @@ export function createMintterChangesPlugin(): EditorPlugin {
 }
 
 export const ADD_BLOCK = 'ADD.BLOCK'
+export const REMOVE_BLOCK = 'REMOVE.BLOCK'
 
-const changesModel = createModel(
-  {
-    blocks: [] as Array<NodeEntry<Statement>>,
-  },
-  {
-    events: {
-      [ADD_BLOCK]: (block: NodeEntry<Statement>) => ({block}),
-    },
-  },
-)
+const changesModel = createModel({
+  upsertBlocks: {} as { [key: string]: Path | null },
+  deleteBlocks: [] as Array<string>
+}, {
+  events: {
+    [ADD_BLOCK]: (id: string, path: Path) => ({ id, path }),
+    [REMOVE_BLOCK]: (id: string) => ({ id }),
+    reset: () => ({})
+  }
+})
 
-export const changesMachine = changesModel.createMachine(
-  {
-    initial: 'ready',
-    context: changesModel.initialContext,
-    states: {
-      ready: {
-        on: {
-          [ADD_BLOCK]: {
-            actions: ['addBlockToList'],
-          },
+export const changesMachine = changesModel.createMachine({
+  initial: 'ready',
+  context: changesModel.initialContext,
+  states: {
+    ready: {
+      on: {
+        [ADD_BLOCK]: {
+          actions: [changesModel.assign({
+            upsertBlocks: (context, event) => ({
+              ...context.upsertBlocks,
+              [event.id]: event.path
+            })
+          })]
         },
-      },
-    },
-  },
-  {
-    actions: {
-      addBlockToList: changesModel.assign({
-        blocks: (context, event) => {
-          let isIncluded = context.blocks.filter(checkBlockId)
-
-          if (isIncluded.length) {
-            // check if path is the same, if not, change it
-            return checkBlockPath({list: context.blocks, currentEntry: isIncluded[0], newEntry: event.block})
-          } else {
-            return [...context.blocks, event.block]
-          }
-
-          function checkBlockId(entry: NodeEntry<Statement>): boolean {
-            if (typeof entry == 'undefined') return false
-            const [entryNode] = entry
-            const [eventNode] = event.block
-            return entryNode.id == eventNode.id
-          }
+        [REMOVE_BLOCK]: {
+          actions: [changesModel.assign((context, event) => ({
+            upsertBlocks: context.upsertBlocks[event.id] ? { ...context.upsertBlocks, [event.id]: null } : context.upsertBlocks,
+            deleteBlocks: context.deleteBlocks.includes(event.id) ? context.deleteBlocks : [...context.deleteBlocks, event.id]
+          }))]
         },
-      }),
+        reset: {
+          actions: [changesModel.assign({
+            upsertBlocks: {},
+            deleteBlocks: []
+          })]
+        }
+      }
     },
-  },
-)
+  }
+})
 
-export function createChangesService() {
-  return interpret(changesMachine)
-}
+export let changesService = interpret(changesMachine)
+
 
 function mintterApply(editor: Editor, cb: (op: Operation) => void) {
-  let service = createChangesService().start()
-  //@ts-ignore
-  window.service = service
+  let service = changesService.start()
   return function apply(operation: Operation) {
-    let block = Editor.above(editor, {
-      match: isStatement,
-    })
 
-    if (block) {
-      service.send(changesModel.events[ADD_BLOCK](block))
+    if (operation.type != 'set_selection') {
+      let block = Editor.above(editor, {
+        match: isFlowContent,
+      })
+
+      if (block) {
+        let [node, path] = block
+
+        if (operation.type == 'remove_node') {
+          service.send(changesModel.events[REMOVE_BLOCK](node.id))
+        } else {
+          service.send(changesModel.events[ADD_BLOCK](node.id, path))
+        }
+
+      }
     }
+
 
     cb(operation)
   }
 }
 
 type ComparePathParams = {
-  list: Array<NodeEntry<Statement>>
-  currentEntry: NodeEntry<Statement>
-  newEntry: NodeEntry<Statement>
+  list: Array<NodeEntry<FlowContent>>
+  currentEntry: NodeEntry<FlowContent>
+  newEntry: NodeEntry<FlowContent>
 }
 
-export function checkBlockPath({list, currentEntry, newEntry}: ComparePathParams): Array<NodeEntry<Statement>> {
-  let newList: Array<NodeEntry<Statement>> = [...list]
+export function checkBlockPath({ list, currentEntry, newEntry }: ComparePathParams): Array<NodeEntry<FlowContent>> {
+  let newList: Array<NodeEntry<FlowContent>> = [...list]
   let elIndex = newList.indexOf(currentEntry)
   if (currentEntry[1] != newEntry[1]) {
     newList[elIndex] = newEntry

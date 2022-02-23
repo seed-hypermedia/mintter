@@ -4,7 +4,6 @@ import {useActor} from '@xstate/react'
 import {PropsWithChildren, Suspense, useMemo} from 'react'
 import type {Descendant, Editor as EditorType} from 'slate'
 import {Editable, Slate} from 'slate-react'
-import {EditorPlugin} from '.'
 import {useHover} from './hover-context'
 import {HoveringToolbar} from './hovering-toolbar'
 import {
@@ -16,7 +15,7 @@ import {
   EditorMode,
 } from './plugin-utils'
 import {plugins as defaultPlugins} from './plugins'
-export type {EditorPlugin} from './types'
+import type {EditorPlugin} from './types'
 
 interface EditorProps {
   mode?: EditorMode

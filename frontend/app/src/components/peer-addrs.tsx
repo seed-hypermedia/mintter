@@ -1,5 +1,6 @@
 import {useAccountInfo} from '@app/auth-context'
 import {usePeerAddrs} from '@app/hooks'
+import {CSS} from '@app/stitches.config'
 import {useMemo} from 'react'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import toast from 'react-hot-toast'
@@ -34,7 +35,7 @@ export function PeerAddrs() {
         label="Your Mintter address"
         rows={4}
         value={peerAddrs.data}
-        css={{fontSize: '$2'}}
+        containerCss={{fontSize: '$2'} as CSS}
       />
       <CopyToClipboard
         text={copyText as string}

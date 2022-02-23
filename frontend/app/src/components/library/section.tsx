@@ -1,4 +1,4 @@
-import {css} from '@app/stitches.config'
+import {CSS, css} from '@app/stitches.config'
 import * as Collapsible from '@radix-ui/react-collapsible'
 import {PropsWithChildren} from 'react'
 import {Box} from '../box'
@@ -39,9 +39,11 @@ export function Section({
             data-arrow
             name="ArrowChevronRight"
             size="1"
-            css={{
-              transition: 'all 0.15s ease-in-out',
-            }}
+            css={
+              {
+                transition: 'all 0.15s ease-in-out',
+              } as CSS
+            }
           />
           {icon && <Icon color="primary" name={icon} size="1" />}
           <Text size="2" fontWeight="medium">
