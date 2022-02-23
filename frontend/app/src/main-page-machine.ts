@@ -111,17 +111,6 @@ function createDraftsMachine(client: QueryClient) {
   })
 }
 
-let publicationModel = createModel(
-  {
-    document: undefined as Document | undefined,
-    version: '',
-    latestVersion: '',
-  },
-  {
-    events: {},
-  },
-)
-
 export function createMainPageMachine(client: QueryClient) {
   return createMachine({
     initial: 'idle',

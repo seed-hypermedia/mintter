@@ -1,9 +1,9 @@
 import {Account, connect, ConnectionStatus, getPeerInfo} from '@app/client'
 import {useListAccounts} from '@app/hooks'
-import {keyframes, styled} from '@app/stitches.config'
+import {CSS, keyframes, styled} from '@app/stitches.config'
 import {StyledItem} from '@components/library/library-item'
 import * as HoverCard from '@radix-ui/react-hover-card'
-import {FormEvent, useState} from 'react'
+import {useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
 import {useQuery} from 'react-query'
@@ -57,7 +57,7 @@ function ConnectionsPrompt() {
           error: 'Connection Error',
         })
         setPeer('')
-      } catch (err: unknown) {
+      } catch (err: any) {
         console.error(err.message)
       }
     }
@@ -73,14 +73,16 @@ function ConnectionsPrompt() {
         <Prompt.Description>Enter a peer address to connect</Prompt.Description>
         <TextField
           value={peer}
-          onChange={(event: FormEvent<HTMLInputElement>) => setPeer(event.currentTarget.value)}
+          onChange={(event: any) => setPeer(event.currentTarget.value)}
           textarea
           rows={3}
-          css={{
-            minHeight: 150,
-            maxHeight: 150,
-            overflow: 'scroll',
-          }}
+          containerCss={
+            {
+              minHeight: 150,
+              maxHeight: 150,
+              overflow: 'scroll',
+            } as CSS
+          }
         />
         <Prompt.Actions>
           <Prompt.Close asChild>

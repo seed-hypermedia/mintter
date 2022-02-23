@@ -36,7 +36,9 @@ function SettingsRoot({children}: any) {
   )
 }
 
-export function Settings({api = localApi}: {api: Partial<typeof localApi>}) {
+export function Settings({updateAccount}: {updateAccount: typeof localApi.updateAccount}) {
+  updateAccount ||= localApi.updateAccount
+
   return (
     <SettingsRoot>
       <DialogPrimitive.Trigger asChild>
@@ -76,7 +78,7 @@ export function Settings({api = localApi}: {api: Partial<typeof localApi>}) {
           </StyledTabsList>
           <TabsContent value="profile">
             <ScrollArea>
-              <ProfileForm updateAccount={api.updateAccount} />
+              <ProfileForm updateAccount={updateAccount} />
             </ScrollArea>
           </TabsContent>
           <TabsContent value="account">
@@ -149,7 +151,7 @@ var TabsContent = styled(TabsPrimitive.Content, {
   background: '$background-muted',
 })
 
-function ProfileForm({updateAccount}: {updateAccount: any}) {
+function ProfileForm({updateAccount}: {updateAccount: typeof localApi.updateAccount}) {
   const {data, isSuccess} = useAccount('', {
     useErrorBoundary: true,
   })
@@ -254,7 +256,7 @@ function ProfileForm({updateAccount}: {updateAccount: any}) {
 }
 
 function AccountInfo() {
-  const {data = {devices: {}}} = useAccount()
+  const {data} = useAccount()
   return (
     <Box
       css={{
@@ -286,14 +288,16 @@ function AccountInfo() {
         Devices List
       </Text>
       <Box as="ul">
-        {Object.entries(data?.devices).map(([id, device]: [string, Device], index: number) => (
-          <Text as="li" key={id}>
-            <Text as="span" color="muted" css={{display: 'inline-block', marginRight: '$4'}}>
-              {index + 1}.
-            </Text>
-            {device.peerId}
-          </Text>
-        ))}
+        {data?.devices && Object.keys(data?.devices).length
+          ? Object.entries(data?.devices).map(([id, device]: [string, localApi.Device], index: number) => (
+              <Text as="li" key={id}>
+                <Text as="span" color="muted" css={{display: 'inline-block', marginRight: '$4'}}>
+                  {index + 1}.
+                </Text>
+                {device.peerId}
+              </Text>
+            ))
+          : null}
       </Box>
     </Box>
   )

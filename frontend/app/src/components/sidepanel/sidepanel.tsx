@@ -26,7 +26,7 @@ import toast from 'react-hot-toast'
 import {QueryClient} from 'react-query'
 import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
-import {ActorRefFrom, spawn} from 'xstate'
+import {ActorRefFrom, spawn, StateFrom} from 'xstate'
 import {createModel} from 'xstate/lib/model'
 import {Box} from '../box'
 import {Icon} from '../icon'
@@ -410,7 +410,10 @@ export function PublicationItem({itemRef, children}: SidepanelItemProps) {
         >
           {state.matches('loading') ? null : (
             <Editor
-              value={state.context.publication.document.content}
+              value={
+                (state as StateFrom<ReturnType<typeof createSidepanelItemMachine>>).context?.publication?.document
+                  .content
+              }
               mode={isExpanded ? EditorMode.Publication : EditorMode.Mention}
               onChange={() => {
                 // noop

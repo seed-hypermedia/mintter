@@ -17,7 +17,6 @@ import {QueryClient, useQueryClient} from 'react-query'
 import {Route} from 'wouter'
 import EditorPage from './editor'
 import Publication from './publication'
-
 export function MainPage({client: propClient}: {client?: QueryClient}) {
   // eslint-disable-line
   const localClient = useQueryClient()

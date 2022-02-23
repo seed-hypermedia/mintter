@@ -1,0 +1,399 @@
+{
+  "basicStatement": {
+    "entry": {
+      "type": "statement",
+      "id": "foo",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "hello world"
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "id": "foo",
+      "type": "statement",
+      "text": "hello world",
+      "annotations": [],
+      "attributes": {}
+    }
+  },
+  "basicHeading": {
+    "type": "heading",
+    "id": "foo",
+    "children": [
+      {
+        "type": "staticParagraph",
+        "children": [
+          {
+            "type": "text",
+            "value": "hello heading"
+          }
+        ]
+      }
+    ]
+  },
+  "basicBlockQuote": {
+    "type": "blockquote",
+    "id": "foo",
+    "children": [
+      {
+        "type": "paragraph",
+        "children": [
+          {
+            "type": "text",
+            "value": "hello blockquote"
+          }
+        ]
+      }
+    ]
+  },
+  "basicCodeblock": {
+    "type": "code",
+    "id": "foo",
+    "children": [
+      {
+        "type": "paragraph",
+        "children": [
+          {
+            "type": "text",
+            "value": "hello code"
+          }
+        ]
+      }
+    ]
+  },
+  "simpleMarks": {
+    "entry": {
+      "type": "statement",
+      "id": "foo",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "A ",
+              "strong": true
+            },
+            {
+              "type": "text",
+              "value": "B ",
+              "emphasis": true
+            },
+            {
+              "type": "text",
+              "value": "C ",
+              "underline": true
+            },
+            {
+              "type": "text",
+              "value": "D ",
+              "strikethrough": true
+            },
+            {
+              "type": "text",
+              "value": "E ",
+              "superscript": true
+            },
+            {
+              "type": "text",
+              "value": "F",
+              "subscript": true
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "id": "foo",
+      "text": "A B C D E F",
+      "annotations": [
+        {
+          "type": "strong",
+          "start": 0,
+          "end": 2
+        },
+        {
+          "type": "emphasis",
+          "start": 2,
+          "end": 4
+        },
+        {
+          "type": "underline",
+          "start": 4,
+          "end": 6
+        },
+        {
+          "type": "strikethrough",
+          "start": 6,
+          "end": 8
+        },
+        {
+          "type": "superscript",
+          "start": 8,
+          "end": 10
+        },
+        {
+          "type": "subscript",
+          "start": 10,
+          "end": 11
+        }
+      ]
+    }
+  },
+  "simpleLink": {
+    "type": "statement",
+    "id": "mvI_BFYn",
+    "children": [
+      {
+        "type": "paragraph",
+        "children": [
+          {
+            "type": "text",
+            "value": "hello "
+          },
+          {
+            "type": "link",
+            "url": "https://mintter.com",
+            "children": [
+              {
+                "type": "text",
+                "value": "Mintter"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "simpleEmbed": {
+    "type": "statement",
+    "id": "mvI_BFYn",
+    "children": [
+      {
+        "type": "paragraph",
+        "children": [
+          {
+            "type": "embed",
+            "url": "mtt://doc1/block1",
+            "children": [
+              {
+                "type": "text",
+                "value": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "overlapMarks": {
+    "entry": {
+      "type": "statement",
+      "id": "foo",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Mintter ",
+              "strong": true
+            },
+            {
+              "type": "text",
+              "value": "is",
+              "strong": true,
+              "emphasis": true
+            },
+            {
+              "type": "text",
+              "value": " Awesome",
+              "emphasis": true
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "type": "statement",
+      "text": "Mintter is Awesome",
+      "annotations": [
+        {
+          "type": "strong",
+          "start": 0,
+          "end": 10
+        },
+        {
+          "type": "emphasis",
+          "start": 8,
+          "end": 18
+        }
+      ],
+      "id": "foo",
+      "attributes": {}
+    }
+  },
+  "noAsciiCharsAndMarks": {
+    "entry": {
+      "type": "statement",
+      "id": "foo",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "hello "
+            },
+            {
+              "type": "text",
+              "value": "from 👨‍👩‍👧‍👦 family",
+              "strong": true
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {}
+  },
+  "linkWithMarks": {
+    "entry": {
+      "type": "statement",
+      "id": "mvI_BFYn",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "hello "
+            },
+            {
+              "type": "link",
+              "url": "https://mintter.com",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Mintter "
+                },
+                {
+                  "type": "text",
+                  "value": "team!",
+                  "strong": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "id": "foo",
+      "type": "statement",
+      "text": "hello Mintter team!",
+      "annotations": [
+        {
+          "type": "link",
+          "attributes": {
+            "url": "https://mintter.com"
+          },
+          "start": 6,
+          "end": 20
+        },
+        {
+          "type": "strong",
+          "start": 14,
+          "end": 20
+        }
+      ],
+      "attributes": {}
+    }
+  },
+  "multipleEmbeds": {
+    "entry": {
+      "type": "statement",
+      "id": "mvI_BFYn",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "first embed: "
+            },
+            {
+              "type": "embed",
+              "url": "mtt://doc1/block1",
+              "children": [
+                {
+                  "type": "text",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "value": " and second embed: "
+            },
+            {
+              "type": "embed",
+              "url": "mtt://doc2/block2",
+              "children": [
+                {
+                  "type": "text",
+                  "value": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "id": "foo",
+      "type": "statement",
+      "attributes": {},
+      "text": "first embed: ￼ and second embed: ￼",
+      "annotations": [
+        {
+          "type": "embed",
+          "attributes": {
+            "url": "mtt://doc1/block1"
+          },
+          "start": 13,
+          "end": 14
+        },
+        {
+          "type": "embed",
+          "attributes": {
+            "url": "mtt://doc2/block2"
+          },
+          "start": 33,
+          "end": 34
+        }
+      ]
+    }
+  },
+  "emojis": {
+    "type": "statement",
+    "id": "mvI_BFYn",
+    "children": [
+      {
+        "type": "paragraph",
+        "children": [
+          {
+            "type": "text",
+            "value": "😀 😎 👨‍👩‍👧‍👦"
+          }
+        ]
+      }
+    ]
+  }
+}

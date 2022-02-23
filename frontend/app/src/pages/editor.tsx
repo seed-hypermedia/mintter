@@ -3,7 +3,14 @@ import {AppError} from '@app/app'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
-import {draftEditorMachine, EditorDocument, editorModel, useEditorDraft} from '@app/editor/use-editor-draft'
+import {
+  draftEditorMachine,
+  EditorDocument,
+  editorModel,
+  EDITOR_PUBLISH,
+  EDITOR_UPDATE,
+  useEditorDraft,
+} from '@app/editor/use-editor-draft'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -86,7 +93,7 @@ export default function EditorPage({params, editor: propEditor}: EditorPageProps
             },
           }}
         >
-          <Button size="1" variant="ghost" onClick={() => send('PUBLISH')}>
+          <Button size="1" variant="ghost" onClick={() => send(EDITOR_PUBLISH)}>
             Publish
           </Button>
           <TextField
@@ -104,7 +111,7 @@ export default function EditorPage({params, editor: propEditor}: EditorPageProps
             onChange={(event) => {
               // update window title as the user types
               // getCurrentWindow().setTitle(event.currentTarget.value)
-              send(editorModel.events.UPDATE({title: event.currentTarget.value} as EditorDocument))
+              send(editorModel.events[EDITOR_UPDATE]({title: event.currentTarget.value} as EditorDocument))
             }}
           />
         </Box>
@@ -130,7 +137,7 @@ export default function EditorPage({params, editor: propEditor}: EditorPageProps
                   //@ts-ignore
                   onChange={(content: ChildrenOf<Document>) => {
                     if (!content && typeof content == 'string') return
-                    send(editorModel.events.UPDATE({content}))
+                    send(editorModel.events[EDITOR_UPDATE]({content} as EditorDocument))
                   }}
                 />
 
