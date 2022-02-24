@@ -21,7 +21,6 @@ export function PeerAddrs() {
   }
 
   if (peerAddrs.isError) {
-    console.log('error: ', peerAddrs.error)
     return <Text>ERROR</Text>
   }
 

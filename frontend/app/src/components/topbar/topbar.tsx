@@ -82,7 +82,6 @@ function MainBar() {
         : search.startsWith(MINTTER_LINK_PREFIX)
         ? `/p/${search.replace(MINTTER_LINK_PREFIX, '')}`
         : `/p/${search}`
-      console.log('SUBMIT!!', url)
       setLocation(url)
       setRouteLocation(url)
     } else {

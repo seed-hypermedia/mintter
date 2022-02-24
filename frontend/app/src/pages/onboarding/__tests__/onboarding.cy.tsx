@@ -98,7 +98,6 @@ const testModel = createModel(onboardingMachine).withEvents({
 
 //         mockedClient.setQueryData<Array<string>>(['onboarding', 'mnemonics'], ['foo', 'bar', 'baz'])
 //         it(path.description, function () {
-//           console.log('path: ', path)
 
 //           mount(
 //             <AppProviders client={mockedClient}>

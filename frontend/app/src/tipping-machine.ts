@@ -114,12 +114,9 @@ export const tippingMachine = tippingModel.createMachine({
                 },
               })
                 .then((response) => {
-                  console.log('mutation response: ', response)
                   sendBack(tippingModel.events.REPORT_INVOICE_RECEIVED(response.requestInvoice.paymentRequest))
                 })
                 .catch((err) => {
-                  console.log('ERROR: ', err)
-
                   sendBack(
                     tippingModel.events.REPORT_INVOICE_ERRORED(
                       err.response.errors.map((e: any) => e.message).join(' | '),
@@ -133,10 +130,7 @@ export const tippingMachine = tippingModel.createMachine({
               target: 'readyToPay',
               actions: [
                 tippingModel.assign({
-                  invoice: (_, event) => {
-                    console.log('INVOICE: ', event.invoice)
-                    return event.invoice
-                  },
+                  invoice: (_, event) => event.invoice
                 }),
               ],
             },
@@ -175,12 +169,9 @@ export const tippingMachine = tippingModel.createMachine({
                 },
               })
                 .then((response) => {
-                  console.log('mutation response: ', response)
                   sendBack(tippingModel.events.REPORT_PAID())
                 })
                 .catch((err) => {
-                  console.log('PAYMENT ERROR: ', err)
-
                   sendBack(
                     tippingModel.events.REPORT_PAID_ERRORED(err.response.errors.map((e: any) => e.message).join(' | ')),
                   )

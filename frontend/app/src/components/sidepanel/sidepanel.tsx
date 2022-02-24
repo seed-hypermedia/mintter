@@ -26,8 +26,7 @@ import toast from 'react-hot-toast'
 import {QueryClient} from 'react-query'
 import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
-import {ActorRefFrom, spawn, StateFrom} from 'xstate'
-import {createModel} from 'xstate/lib/model'
+import {ActorRefFrom, assign, createMachine, spawn, StateFrom} from 'xstate'
 import {Box} from '../box'
 import {Icon} from '../icon'
 import {ScrollArea} from '../scroll-area'
@@ -40,33 +39,36 @@ export type SidepanelItemWithRef = SidepanelItemType & {
   ref?: ActorRefFrom<ReturnType<typeof createSidepanelItemMachine>>
 }
 
-export let sidepanelModel = createModel(
-  {
-    items: [] as Array<SidepanelItemWithRef>,
-    errorMessage: '',
-  },
-  {
-    events: {
-      RETRY: () => ({}),
-      'REPORT.SIDEPANEL.SUCCESS': (items: Array<SidepanelItemWithRef>) => ({items}),
-      'REPORT.SIDEPANEL.ERROR': (errorMessage: Error['message']) => ({errorMessage}),
-      'SIDEPANEL.OPEN': () => ({}),
-      'SIDEPANEL.TOGGLE': () => ({}),
-      'SIDEPANEL.CLOSE': () => ({}),
-      'SIDEPANEL.ADD': (item: SidepanelItemWithRef) => ({item}),
-      'SIDEPANEL.REMOVE': (url: string) => ({url}),
-      'SIDEPANEL.CLEAR': () => ({}),
-    },
-  },
-)
+export type SidepanelContextType = {
+  items: Array<SidepanelItemWithRef>
+  errorMessage: string
+}
+
+export type SidepanelEvent =
+  | {type: 'RETRY'}
+  | {type: 'REPORT.SIDEPANEL.SUCCESS'; items: Array<SidepanelItemWithRef>}
+  | {type: 'REPORT.SIDEPANEL.ERROR'; errorMessage: string}
+  | {type: 'SIDEPANEL.ADD'; item: SidepanelItemType}
+  | {type: 'SIDEPANEL.OPEN'}
+  | {type: 'SIDEPANEL.TOGGLE'}
+  | {type: 'SIDEPANEL.CLOSE'}
+  | {type: 'SIDEPANEL.REMOVE'; url: string}
+  | {type: 'SIDEPANEL.CLEAR'}
 
 export function createSidepanelMachine(client: QueryClient) {
-  return sidepanelModel.createMachine(
+  return createMachine(
     {
       tsTypes: {} as import('./sidepanel.typegen').Typegen0,
+      schema: {
+        context: {} as SidepanelContextType,
+        events: {} as SidepanelEvent,
+      },
       id: 'Sidepanel',
       initial: 'idle',
-      context: sidepanelModel.initialContext,
+      context: {
+        items: [],
+        errorMessage: '',
+      },
       states: {
         idle: {
           invoke: {
@@ -74,35 +76,22 @@ export function createSidepanelMachine(client: QueryClient) {
             src: () => (sendBack) => {
               client
                 .fetchQuery([queryKeys.GET_SIDEPANEL_LIST], listSidepanel)
-                .then((result) => {
-                  sendBack(sidepanelModel.events['REPORT.SIDEPANEL.SUCCESS'](result.items || []))
+                .then(({items}) => {
+                  sendBack({type: 'REPORT.SIDEPANEL.SUCCESS', items})
                 })
                 .catch((e: Error) => {
-                  sendBack(sidepanelModel.events['REPORT.SIDEPANEL.ERROR'](`fetchSidepanel Error: ${e.message}`))
+                  sendBack({type: 'REPORT.SIDEPANEL.ERROR', errorMessage: `fetchSidepanel Error: ${e.message}`})
                 })
             },
           },
           on: {
             'REPORT.SIDEPANEL.ERROR': {
               target: 'errored',
-              actions: [
-                sidepanelModel.assign({
-                  errorMessage: (_, event) => event.errorMessage,
-                }),
-              ],
+              actions: ['assignError'],
             },
             'REPORT.SIDEPANEL.SUCCESS': {
               target: 'ready',
-              actions: [
-                sidepanelModel.assign({
-                  items: (_, event) => {
-                    return event.items.map((item) => ({
-                      ...item,
-                      ref: spawn(createSidepanelItemMachine(client, item)),
-                    }))
-                  },
-                }),
-              ],
+              actions: ['assignSidepanelItems'],
             },
           },
         },
@@ -133,45 +122,17 @@ export function createSidepanelMachine(client: QueryClient) {
                   target: 'closed',
                 },
                 'SIDEPANEL.CLEAR': {
-                  actions: [
-                    sidepanelModel.assign({
-                      items: [],
-                    }),
-                    'persist',
-                  ],
+                  actions: ['clearItems', 'persist'],
                 },
               },
             },
           },
           on: {
             'SIDEPANEL.ADD': {
-              actions: [
-                sidepanelModel.assign({
-                  items: (context, event) => {
-                    var isIncluded = context.items.filter((current) => current.url == event.item.url)
-
-                    if (isIncluded.length) {
-                      console.log('isIncluded', isIncluded)
-
-                      return context.items
-                    }
-
-                    return [
-                      {...event.item, ref: spawn(createSidepanelItemMachine(client, event.item))},
-                      ...context.items,
-                    ]
-                  },
-                }),
-                'persist',
-              ],
+              actions: ['addItemToSidepanel', 'persist'],
             },
             'SIDEPANEL.REMOVE': {
-              actions: [
-                sidepanelModel.assign({
-                  items: (context, event) => context.items.filter((current) => current.url != event.url),
-                }),
-                'persist',
-              ],
+              actions: ['removeItemFromSidepanel', 'persist'],
             },
           },
         },
@@ -191,6 +152,34 @@ export function createSidepanelMachine(client: QueryClient) {
             console.error(e)
           }
         },
+        assignError: assign({
+          errorMessage: (_, event) => event.errorMessage,
+        }),
+        assignSidepanelItems: assign({
+          items: (_, event) => {
+            return event.items.map((item) => ({
+              ...item,
+              ref: spawn(createSidepanelItemMachine(client, item)),
+            }))
+          },
+        }),
+        clearItems: assign({
+          items: [],
+        }),
+        addItemToSidepanel: assign({
+          items: (context, event) => {
+            var isIncluded = context.items.filter((current) => current.url == event.item.url)
+
+            if (isIncluded.length) {
+              return context.items
+            }
+
+            return [{...event.item, ref: spawn(createSidepanelItemMachine(client, event.item))}, ...context.items]
+          },
+        }),
+        removeItemFromSidepanel: assign({
+          items: (context, event) => context.items.filter((current) => current.url != event.url),
+        }),
       },
     },
   )
@@ -285,7 +274,7 @@ export function SidepanelItem({
 
   function toggle(e: Event) {
     e.preventDefault()
-    send(sidepanelItemModel.events['SIDEPANEL.ITEM.TOGGLE']())
+    send({type: 'SIDEPANEL.ITEM.TOGGLE'})
   }
 
   function bookmark(url: string) {
@@ -293,7 +282,7 @@ export function SidepanelItem({
   }
 
   function deleteItem(url: string) {
-    sidepanelService.send(sidepanelModel.events['SIDEPANEL.REMOVE'](url))
+    sidepanelService.send({type: 'SIDEPANEL.REMOVE', url})
   }
 
   let isExpanded = state.matches('expanded')
@@ -565,43 +554,40 @@ export function BlockItem({itemRef, children}: SidepanelItemProps) {
   )
 }
 
-var sidepanelItemModel = createModel(
-  {
-    type: undefined as 'publication' | 'block' | undefined,
-    url: '',
-    publication: null as ClientPublication | null,
-    block: null as FlowContent | null,
-    author: null as Account | null,
-    errorMessage: '',
-  },
-  {
-    events: {
-      RETRY: () => ({}),
-      'SIDEPANEL.ITEM.EXPAND': () => ({}),
-      'SIDEPANEL.ITEM.COLLAPSE': () => ({}),
-      'SIDEPANEL.ITEM.DELETE': () => ({}),
-      'SIDEPANEL.ITEM.TOGGLE': () => ({}),
-      'REPORT.SIDEPANEL.ITEM.SUCCESS': (
-        publication: ClientPublication,
-        author: Account,
-        block: FlowContent | null,
-      ) => ({
-        publication,
-        author,
-        block,
-      }),
-      'REPORT.SIDEPANEL.ITEM.ERROR': (errorMessage: Error['message']) => ({errorMessage}),
-    },
-  },
-)
+export type SidepanelItemContextType = {
+  type: 'publication' | 'block' | undefined
+  url: string
+  publication: ClientPublication | null
+  block: FlowContent | null
+  author: Account | null
+  errorMessage: string
+}
+
+export type SidepanelItemEventType =
+  | {type: 'SIDEPANEL.ITEM.EXPAND'}
+  | {type: 'SIDEPANEL.ITEM.COLLAPSE'}
+  | {type: 'SIDEPANEL.ITEM.DELETE'}
+  | {type: 'SIDEPANEL.ITEM.TOGGLE'}
+  | {type: 'REPORT.SIDEPANEL.ITEM.SUCCESS'; publication: ClientPublication; author: Account; block: FlowContent | null}
+  | {type: 'REPORT.SIDEPANEL.ITEM.ERROR'; errorMessage: string}
+  | {type: 'RETRY'}
 
 export function createSidepanelItemMachine(client: QueryClient, item: SidepanelItemType) {
-  return sidepanelItemModel.createMachine(
+  return createMachine(
     {
+      tsTypes: {} as import('./sidepanel.typegen').Typegen1,
+      schema: {
+        context: {} as SidepanelItemContextType,
+        events: {} as SidepanelItemEventType,
+      },
       initial: 'loading',
       context: {
-        ...sidepanelItemModel.initialContext,
-        ...item,
+        type: item.type,
+        url: item.url,
+        publication: null,
+        block: null,
+        author: null,
+        errorMessage: '',
       },
       states: {
         loading: {
@@ -614,31 +600,16 @@ export function createSidepanelItemMachine(client: QueryClient, item: SidepanelI
               {
                 target: 'expanded',
                 cond: (context) => context.type == 'publication',
-                actions: [
-                  sidepanelItemModel.assign({
-                    publication: (_, event) => event.publication,
-                    author: (_, event) => event.author,
-                  }),
-                ],
+                actions: ['assignPublication', 'assignAuthor'],
               },
               {
                 target: 'collapsed',
-                actions: [
-                  sidepanelItemModel.assign({
-                    publication: (_, event) => event.publication,
-                    block: (_, event) => event.block,
-                    author: (_, event) => event.author,
-                  }),
-                ],
+                actions: ['assignPublication', 'assignAuthor', 'assignBlock'],
               },
             ],
             'REPORT.SIDEPANEL.ITEM.ERROR': {
               target: 'errored',
-              actions: [
-                sidepanelItemModel.assign({
-                  errorMessage: (_, event) => event.errorMessage,
-                }),
-              ],
+              actions: ['assignError'],
             },
           },
         },
@@ -646,11 +617,7 @@ export function createSidepanelItemMachine(client: QueryClient, item: SidepanelI
           on: {
             RETRY: {
               target: 'loading',
-              actions: [
-                sidepanelItemModel.assign({
-                  errorMessage: '',
-                }),
-              ],
+              actions: ['clearError'],
             },
           },
         },
@@ -712,8 +679,25 @@ export function createSidepanelItemMachine(client: QueryClient, item: SidepanelI
             }
           }
 
-          sendBack(sidepanelItemModel.events['REPORT.SIDEPANEL.ITEM.SUCCESS'](publication, author, block))
+          sendBack({type: 'REPORT.SIDEPANEL.ITEM.SUCCESS', publication, author, block})
         },
+      },
+      actions: {
+        assignAuthor: assign({
+          author: (_, event) => event.author,
+        }),
+        assignPublication: assign({
+          publication: (_, event) => event.publication,
+        }),
+        assignBlock: assign({
+          block: (_, event) => event.block,
+        }),
+        assignError: assign({
+          errorMessage: (_, event) => event.errorMessage,
+        }),
+        clearError: assign({
+          errorMessage: '',
+        }),
       },
     },
   )

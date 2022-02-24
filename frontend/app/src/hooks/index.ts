@@ -145,8 +145,6 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
     },
   )
 
-  console.log('peerAddrsQuery: ', peerAddrsQuery)
-
   const data = useMemo(() => peerAddrsQuery.data, [peerAddrsQuery])
 
   return {
@@ -225,8 +223,6 @@ export function useOthersPublicationsList(options: HookOptions<ListPublicationsR
     [myPubsListQuery.data, info?.accountId],
   )
 
-  console.log('useOthersPublicationsList', data)
-
   return {
     ...myPubsListQuery,
     data,
@@ -250,8 +246,6 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
       }) || [],
     [myPubsListQuery.data, info],
   )
-
-  console.log('useMyPublicationsList', data)
 
   return {
     ...myPubsListQuery,

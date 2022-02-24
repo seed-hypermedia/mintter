@@ -1,6 +1,6 @@
 import {createDraft, getInfo, getPublication, Link, listCitations, Publication as PublicationType} from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {citationsMachine, CitationsProvider} from '@app/editor/citations'
+import {useCitationService} from '@app/editor/citations'
 import {ContextMenu} from '@app/editor/context-menu'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
@@ -25,44 +25,15 @@ import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 import {QueryClient, useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
-import {assign, StateFrom} from 'xstate'
+import {StateFrom} from 'xstate'
 import {createModel} from 'xstate/lib/model'
 import {PublicationPageProps} from './types'
 
 export default function Publication({params}: PublicationPageProps) {
   const client = useQueryClient()
   //@ts-ignore
-  const citations = useInterpret(() => citationsMachine, {
-    actions: {
-      assignPublicationIds: assign((_, event) => ({
-        documentId: event.documentId,
-        version: event.version,
-      })),
-      assignCitations: assign({
-        citations: (_, event) => event.citations,
-      }),
-      assignErrorMessage: assign({
-        errorMessage: (_, event) => event.errorMessage,
-      }),
-      clearErrorMessage: assign({
-        errorMessage: '',
-      }),
-    },
-    services: {
-      fetchCitations: (context) => (sendBack) => {
-        client.fetchQuery([queryKeys.GET_PUBLICATION_ANNOTATIONS, context.documentId, context.version], async () => {
-          try {
-            let resp = await listCitations(context.documentId)
-            console.log('🚀 ~ file: publication.tsx ~ line 57 ~ client.fetchQuery ~ listCitations', listCitations)
-            sendBack({type: 'CITATIONS.FETCH.SUCCESS', citations: resp.links})
-          } catch (error) {
-            sendBack({type: 'CITATIONS.FETCH.ERROR', errorMessage: `Fetch Citations error: ${error}`})
-          }
-        })
-      },
-    },
-  })
   const [, setLocation] = useLocation()
+  const citations = useCitationService()
 
   const [state, send] = usePagePublication(client, params?.docId)
 
@@ -116,7 +87,7 @@ export default function Publication({params}: PublicationPageProps) {
   }
 
   return (
-    <CitationsProvider value={citations}>
+    <>
       <Box
         css={{
           background: '$background-alt',
@@ -274,7 +245,7 @@ export default function Publication({params}: PublicationPageProps) {
           Last modified: {getDateFormat(state.context.publication?.document, 'updateTime')}
         </Text>
       </Box>
-    </CitationsProvider>
+    </>
   )
 }
 
@@ -367,7 +338,6 @@ function createPublicationMachine(client: QueryClient) {
                 }
               })
               .catch((err) => {
-                console.log('=== CATCH ERROR: publication fetch error', err)
                 sendBack(publicationModel.events[PUBLICATION_REPORT_ERROR]('error fetching'))
               })
           },
@@ -548,8 +518,6 @@ function TippingModal({
           variant="ghost"
           color="success"
           onClick={() => {
-            console.log('open modal')
-
             send(tippingModel.events.OPEN())
           }}
         >

@@ -5,7 +5,6 @@ import {EditorPlugin} from './editor'
 export const extensionsPlugin = (plugins: string[]): EditorPlugin => {
   plugins.map(async (specifier) => {
     await invoke('plugin:extensions|load_extension', {specifier})
-    console.log('Successfully loaded plugin', specifier)
   })
 
   return {

@@ -34,7 +34,6 @@ export const createParagraphPlugin = (): EditorPlugin => ({
       if (Element.isElement(node) && isParagraph(node)) {
         for (const [child, childPath] of Node.children(editor, path)) {
           if (Element.isElement(child) && !isPhrasingContent(child)) {
-            console.log('is paragraph child and not phrasing: ', child, childPath)
             Transforms.moveNodes(editor, {at: childPath, to: Path.next(path)})
             return
           }

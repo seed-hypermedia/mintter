@@ -284,7 +284,6 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
 
   function handleRemove() {
     if (isLinkActive(editor, lastSelection)) {
-      console.log('remove link!', editor)
       unwrapLink(editor, lastSelection)
     }
     close()

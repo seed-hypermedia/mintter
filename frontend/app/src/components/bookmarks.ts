@@ -217,6 +217,7 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
       services: {
         fetchItemData: (context) => (sendBack) => {
           ; (async () => {
+
             let [documentId, version, blockId] = getIdsfromUrl(context.url)
 
             let publication: ClientPublication = await client.fetchQuery(

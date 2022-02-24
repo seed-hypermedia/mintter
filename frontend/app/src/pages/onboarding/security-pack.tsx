@@ -34,7 +34,6 @@ export function SecurityPack({prev, next, generateSeed = defaultGenerateSeed}: O
   )
 
   const handleSubmit = useCallback(async () => {
-    console.log({useOwnSeed, ownSeed})
     const words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data
     if (words) {
       try {

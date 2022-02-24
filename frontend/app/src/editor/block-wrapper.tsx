@@ -10,7 +10,7 @@ import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {useCreateDraft} from '@components/library/use-create-draft'
-import {sidepanelModel, useSidepanel} from '@components/sidepanel'
+import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {FlowContent} from '@mintter/mttast'
 import toast from 'react-hot-toast'
@@ -53,13 +53,15 @@ export function BlockWrapper({
   }
 
   function onSidepanel() {
-    sidepanelService.send(
-      sidepanelModel.events['SIDEPANEL.ADD']({
+    let url = `mtt://${params?.docId}/${params?.version}/${element.id}`
+    sidepanelService.send({
+      type: 'SIDEPANEL.ADD',
+      item: {
         type: 'block',
         //@ts-ignore
-        url: `mtt://${params?.docId}/${params?.version}/${element.id}`,
-      }),
-    )
+        url,
+      },
+    })
     sidepanelService.send('SIDEPANEL.OPEN')
   }
 

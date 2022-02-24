@@ -28,8 +28,6 @@ function FormatButton({format}: {format: FormatTypes}) {
             : {}
         }
         onMouseDown={(event) => {
-          console.log('mouse down!', event)
-
           event.preventDefault()
           toggleMark(editor, format)
         }}

@@ -69,7 +69,6 @@ export const createStatementPlugin = (): EditorPlugin => ({
           }
 
           if (childPath[childPath.length - 1] > 1) {
-            console.log('statement greater than 2 child', child)
             Transforms.moveNodes(editor, {at: childPath, to: Path.next(path)})
             return
           }
