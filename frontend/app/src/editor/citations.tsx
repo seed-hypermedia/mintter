@@ -1,10 +1,11 @@
-import {Link} from '@app/client'
+import {Link, listCitations} from '@app/client'
+import {queryKeys} from '@app/hooks'
 import {createInterpreterContext} from '@app/utils/machine-utils'
-import {createMachine, Interpreter} from 'xstate'
+import {QueryClient} from 'react-query'
+import {assign, createMachine, InterpreterFrom} from 'xstate'
 
-export const citationsMachine =
-  /** @xstate-layout N4IgpgJg5mDOIC5QAoC2BDAxgCwJYDswBKAOgBsB7dCAqAYgGEBJAFQEEWmB5AOQGUSAMQCiLBgAkSfAKoMGwvn0SgADhVi4ALrgr5lIAB6IATAAYAHCQAsARisA2AOwBmWwE4bAVnPP7AGhAAT0QAWmdTElMrYytwt2NPN19TZwBfVIC0LDxCUkpqWkZWDm5+IVEJEmEAJWquav01DW1dfSMEMMcrEmMvTxsXBMdjFwDgjqtzSzNzK0cU43NTUyTPdMyMHAJiEgAnMGpAkjADFXR8CEgi9k5eAQYuABlHtgAFPmFG9S0dPSRDRD2cxuEi+TzOeZWbyeFJjUL2CJQqJWUxA8yeGGuKzrEBZLa5PYHCBHE5nC5XZg3UoCFhcADidMen3+TR+rX+7XmnhIjjcjns4M89l6nlicI6CQiziFjmBGOi-JsOLxOR2+0OJEwFDIZHQKlgFOKtzKwgAGq82DwACJfZq-NqA4GggUQqLQ2FBUI2cyOSKipzOYwC+YWRzKzaq0jq4ma7W6-WGql3Ei0hlM21sv6gdpAkFg11Q9Ee8YhGzGZw8zwJIV8xxloXYjK4iPbUhgXa7Cj7CDXErJkRiSTVUTVACaGZaWYBEtFlccw2Wdlsg3Fpb5JCrwvMZd55hFYabKtbveNAgHEgn9o5oRi0xRELcPjcczsq6DJHRiS8dbsopSaxxfAKEueB-iPAlcAgMgwEvdls1CCEK0cGEg2MEZjHiatV0DYwSG9FxA1MfD+iScNslbcgqBofAoFgqd2jCEh7AfBx7BsIFwRiAZV29GwmOrJY3GY58bDcNwyPxNUiRJU5zkuCA6IdBB4m5AUrELex7GiRI3B4lxQX5edn2BCw3FMYwJMjQkNS1HU9QNBSWW+SclNFX1XAsH0XF-NC32cPj7HifzpSSPdmPsSyKOjcZVGcq94IQKsKw8qZ538qFfM9DpA2SxZ2JsZxHyhUUAI2ciCXbTtu0U69soFHp4kC-zvGMzxHD0isnGiNjvG89TItyGqErCR8ej6AZAzakZnFXNqKwGIremGb1zAi9JUiAA */
-  createMachine(
+export function createCitationsMachine(client: QueryClient) {
+  return createMachine(
     {
       context: {documentId: '', version: '', citations: [], errorMessage: ''},
       tsTypes: {} as import('./citations.typegen').Typegen0,
@@ -22,7 +23,7 @@ export const citationsMachine =
         idle: {
           on: {
             'CITATIONS.FETCH': {
-              actions: 'assignPublicationIds',
+              actions: ['assignDocumentId', 'assignVersion'],
               target: 'loading',
             },
           },
@@ -80,16 +81,40 @@ export const citationsMachine =
     },
     {
       actions: {
-        assignPublicationIds: (_, event) => ({
-          documentId: event.documentId,
-          version: event.version,
+        assignDocumentId: assign({
+          documentId: (_, event) => event.documentId,
         }),
+        assignVersion: assign({
+          version: (_, event) => event.version || '',
+        }),
+        assignCitations: assign({
+          citations: (_, event) => event.citations,
+        }),
+        assignErrorMessage: assign({
+          errorMessage: (_, event) => event.errorMessage,
+        }),
+        clearErrorMessage: assign({
+          errorMessage: (context) => '',
+        }),
+      },
+      services: {
+        fetchCitations: (context) => (sendBack) => {
+          client.fetchQuery([queryKeys.GET_PUBLICATION_ANNOTATIONS, context.documentId, context.version], async () => {
+            try {
+              let resp = await listCitations(context.documentId)
+              sendBack({type: 'CITATIONS.FETCH.SUCCESS', citations: resp.links})
+            } catch (error) {
+              sendBack({type: 'CITATIONS.FETCH.ERROR', errorMessage: `Fetch Citations error: ${error}`})
+            }
+          })
+        },
       },
     },
   )
+}
 
 const [CitationsProvider, useCitationService, createCitationsSelector] =
-  createInterpreterContext<Interpreter<typeof citationsMachine>>('Citation')
+  createInterpreterContext<InterpreterFrom<ReturnType<typeof createCitationsMachine>>>('Citation')
 
 export {CitationsProvider, useCitationService}
 

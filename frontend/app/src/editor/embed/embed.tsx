@@ -2,7 +2,7 @@ import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {useBookmarksService} from '@components/bookmarks'
 import {Icon} from '@components/icon'
-import {sidepanelModel, useSidepanel} from '@components/sidepanel'
+import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import type {Embed as EmbedType} from '@mintter/mttast'
 import {isEmbed} from '@mintter/mttast'
@@ -70,7 +70,7 @@ function RenderEmbed({element, attributes, children}: EmbedProps, ref: Forwarded
   }
 
   function onOpenInSidepanel() {
-    sidepanelService.send(sidepanelModel.events['SIDEPANEL.ADD']({type: 'block', url: element.url}))
+    sidepanelService.send({type: 'SIDEPANEL.ADD', item: {type: 'block', url: element.url}})
     sidepanelService.send('SIDEPANEL.OPEN')
   }
 

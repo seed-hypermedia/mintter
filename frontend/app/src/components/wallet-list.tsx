@@ -15,8 +15,6 @@ export function WalletList() {
   // const [data, setData] = useState('Not Found')
   const service = useInterpret(() => listMachine, {devTools: true})
   const [state, send] = useActor(service)
-  console.log('list state', state)
-
   const formRef = useRef<HTMLFormElement>(null)
 
   function handleWalletSubmit(event: FormEvent<HTMLFormElement>) {
@@ -151,7 +149,6 @@ export function WalletList() {
               height={340}
               onUpdate={(err, result: any) => {
                 if (result) {
-                  console.log('scan correct!', result)
                   send(listModel.events['REPORT.CAMERA.SUCCESS'](result.text))
                 }
               }}

@@ -49,7 +49,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
           return
         } else if (node.children.length > 2) {
           let secondChild = node.children[1]
-          console.log('==== segundo heading child: ', node.children[1])
+
           if (isStaticParagraph(secondChild)) {
             Editor.withoutNormalizing(editor, () => {
               let at = path.concat(1)

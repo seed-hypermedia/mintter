@@ -167,16 +167,11 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
                     }
 
                     let changes = createUpdate(context.localDraft!)
-                    console.log("🚀 ~ CHANGES: ", changes)
-
-                    // let changes = await buildChanges()
                     let links = buildLinks(context.localDraft!)
 
                     try {
                       // await updateDraftV2(changes)
-
                       await updateDraft(newDraft as Document, links)
-                      console.log('SAVED!!');
 
                       sendBack('EDITOR.UPDATE.SUCCESS')
                       changesService.send('reset')

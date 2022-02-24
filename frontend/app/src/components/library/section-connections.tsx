@@ -145,8 +145,6 @@ function AccountItem({account}: AccountItemProps) {
     () => {
       let devices = Object.values(account.devices)
       if (devices.length > 0) {
-        console.log('devices', devices)
-
         return getPeerInfo(devices[0])
       }
     },
@@ -154,8 +152,6 @@ function AccountItem({account}: AccountItemProps) {
       refetchInterval: 1000,
     },
   )
-
-  console.log('data: ', {account, data})
 
   return (
     <HoverCard.Root>

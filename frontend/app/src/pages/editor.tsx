@@ -27,7 +27,6 @@ export default function EditorPage({params, editor: propEditor}: EditorPageProps
   const [visible, setVisible] = useState(false)
   const localEditor = useMemo(() => buildEditorHook(plugins, EditorMode.Draft), [])
   const mainPageService = useMainPage()
-  console.log('🚀 ~ file: editor.tsx ~ line 30 ~ EditorPage ~ mainPageService', mainPageService)
 
   const editor = propEditor ?? localEditor
   const [state, send] = useEditorDraft({

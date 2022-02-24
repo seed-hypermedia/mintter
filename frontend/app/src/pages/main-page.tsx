@@ -1,3 +1,4 @@
+import {CitationsProvider, createCitationsMachine} from '@app/editor/citations'
 import {HoverProvider} from '@app/editor/hover-context'
 import {hoverMachine} from '@app/editor/hover-machine'
 import {MainPageProvider} from '@app/main-page-context'
@@ -24,6 +25,7 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
   const sidepanelService = useInterpret(() => createSidepanelMachine(client))
   const bookmarksService = useInterpret(() => createBookmarksMachine(client))
   const hoverService = useInterpret(() => hoverMachine)
+  const citationsService = useInterpret(() => createCitationsMachine(client))
   const mainPageService = useInterpret(() => createMainPageMachine(client), {
     actions: {
       reconcileLibrary: (context) => {
@@ -35,29 +37,31 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
 
   return (
     <MainPageProvider value={mainPageService}>
-      <HoverProvider value={hoverService}>
-        <BookmarksProvider value={bookmarksService}>
-          <SidepanelProvider value={sidepanelService}>
-            <Box className={rootPageStyle()}>
-              <Topbar />
-              <Library />
-              <MainWindow>
-                <ErrorBoundary
-                  FallbackComponent={PageError}
-                  onReset={() => {
-                    window.location.reload()
-                  }}
-                >
-                  <Route path="/p/:docId/:version/:blockId?" component={Publication} />
-                  <Route path="/editor/:docId" component={EditorPage} />
-                  <Route path="/" component={Placeholder} />
-                </ErrorBoundary>
-              </MainWindow>
-              <Sidepanel />
-            </Box>
-          </SidepanelProvider>
-        </BookmarksProvider>
-      </HoverProvider>
+      <CitationsProvider value={citationsService}>
+        <HoverProvider value={hoverService}>
+          <BookmarksProvider value={bookmarksService}>
+            <SidepanelProvider value={sidepanelService}>
+              <Box className={rootPageStyle()}>
+                <Topbar />
+                <Library />
+                <MainWindow>
+                  <ErrorBoundary
+                    FallbackComponent={PageError}
+                    onReset={() => {
+                      window.location.reload()
+                    }}
+                  >
+                    <Route path="/p/:docId/:version/:blockId?" component={Publication} />
+                    <Route path="/editor/:docId" component={EditorPage} />
+                    <Route path="/" component={Placeholder} />
+                  </ErrorBoundary>
+                </MainWindow>
+                <Sidepanel />
+              </Box>
+            </SidepanelProvider>
+          </BookmarksProvider>
+        </HoverProvider>
+      </CitationsProvider>
     </MainPageProvider>
   )
 }

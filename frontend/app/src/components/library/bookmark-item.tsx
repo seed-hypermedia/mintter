@@ -7,7 +7,7 @@ import {DeleteDialog} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {StyledItem} from '@components/library/library-item'
 import {useCreateDraft} from '@components/library/use-create-draft'
-import {sidepanelModel, useSidepanel} from '@components/sidepanel'
+import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
 import toast from 'react-hot-toast'
@@ -22,7 +22,6 @@ export function BookmarkItem({itemRef}: {itemRef: ActorRefFrom<ReturnType<typeof
   const {createDraft} = useCreateDraft()
 
   const [, setLocation] = useLocation()
-  console.log('bookmark state: ', state)
 
   async function onCopy() {
     await copyTextToClipboard(state.context.url)
@@ -35,17 +34,18 @@ export function BookmarkItem({itemRef}: {itemRef: ActorRefFrom<ReturnType<typeof
   }
 
   function onSidePanel() {
-    sidepanelService.send(
-      sidepanelModel.events['SIDEPANEL.ADD']({
+    sidepanelService.send({
+      type: 'SIDEPANEL.ADD',
+      item: {
         type: 'block',
         url: state.context.url,
-      }),
-    )
+      },
+    })
     sidepanelService.send('SIDEPANEL.OPEN')
   }
 
   function afterDelete() {
-    console.log('delete success')
+    // TODO: implement me
   }
 
   async function onStartDraft() {

@@ -13,7 +13,7 @@ import {useRoute} from '@app/utils/use-route'
 import {DeleteDialog} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {useCreateDraft} from '@components/library/use-create-draft'
-import {sidepanelModel, useSidepanel} from '@components/sidepanel'
+import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
@@ -55,12 +55,13 @@ export function LibraryItem({
 
   function onSidepanel() {
     if (publication) {
-      sidepanelService.send(
-        sidepanelModel.events['SIDEPANEL.ADD']({
+      sidepanelService.send({
+        type: 'SIDEPANEL.ADD',
+        item: {
           type: 'publication',
           url: `${MINTTER_LINK_PREFIX}${publication.document?.id}/${publication.version}`,
-        }),
-      )
+        },
+      })
       sidepanelService.send('SIDEPANEL.OPEN')
     }
   }

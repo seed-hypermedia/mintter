@@ -60,4 +60,4 @@ If Nix and direnv are properly installed, you should not need anything else. Rep
 - components and editor plugins are `PascalCase`
 - avoid creating abstractions
 - avoid creating folders, better to have files as flat as possible
-- avoid default exports, only default exports for page components (to use dynamic import)
+- avoid default exports, only default exports for page components (to use dynamic import).

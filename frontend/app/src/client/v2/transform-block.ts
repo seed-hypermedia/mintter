@@ -198,7 +198,6 @@ function slateToAPI(slateBlock: any): Block {
 
   // We'll have to count our current position in code points.
   let pos = 0;
-  console.log("🚀 ~ file: transform-block.ts ~ line 204 ~ slateToAPI ~ leaves", leaves)
   // Iterate over all the leaves.
   for (let leaf of leaves) {
 

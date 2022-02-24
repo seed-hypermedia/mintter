@@ -3,7 +3,8 @@
 export interface Typegen0 {
   '@@xstate/typegen': true
   eventsCausingActions: {
-    assignPublicationIds: 'CITATIONS.FETCH'
+    assignDocumentId: 'CITATIONS.FETCH'
+    assignVersion: 'CITATIONS.FETCH'
     assignCitations: 'CITATIONS.FETCH.SUCCESS'
     assignErrorMessage: 'CITATIONS.FETCH.ERROR'
     clearErrorMessage: 'CITATIONS.FETCH.RETRY'
@@ -21,8 +22,8 @@ export interface Typegen0 {
     fetchCitations: 'done.invoke.fetchCitations'
   }
   missingImplementations: {
-    actions: 'assignCitations' | 'assignErrorMessage' | 'clearErrorMessage'
-    services: 'fetchCitations'
+    actions: never
+    services: never
     guards: never
     delays: never
   }

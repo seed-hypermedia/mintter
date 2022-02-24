@@ -1,10 +1,10 @@
-import {sanitizeSchema, toMttast} from '@mintter/mttast'
+import { sanitizeSchema, toMttast } from '@mintter/mttast'
 import rehypeParse from 'rehype-parse'
 import sanitize from 'rehype-sanitize'
-import {Transforms} from 'slate'
-import {unified} from 'unified'
-import {visit} from 'unist-util-visit'
-import {EditorPlugin} from './types'
+import { Transforms } from 'slate'
+import { unified } from 'unified'
+import { visit } from 'unist-util-visit'
+import { EditorPlugin } from './types'
 
 var processor = unified().use(rehypeParse).use(sanitize, sanitizeSchema).freeze()
 
@@ -13,7 +13,7 @@ export function createPlainTextPastePlugin(): EditorPlugin {
     name: 'PastePlainTextPlugin',
     configureEditor(editor) {
       if (editor.readOnly) return
-      var {insertData} = editor
+      var { insertData } = editor
 
       editor.insertData = customInsertData
 
@@ -23,12 +23,9 @@ export function createPlainTextPastePlugin(): EditorPlugin {
         if (html) {
           let hast = processor.runSync(processor.parse(html))
           let mttast = removeEmptyText(toMttast(hast))
-          console.log('🚀 ~ file: paste-plugin.ts ~ line 27 ~ customInsertData ~ mttast', mttast)
-
           Transforms.insertFragment(editor, mttast.children)
 
           // Transforms.insertFragment(editor, mttast.children, {at: [0, 0]})
-          console.log('editor: ', editor)
 
           return
         }
