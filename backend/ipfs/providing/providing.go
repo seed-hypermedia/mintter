@@ -78,7 +78,7 @@ func New(filename string, rt Routing, s Strategy) (*Provider, error) {
 
 	db, err := bbolt.Open(filename, 0666, &opts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open bolt database: %w", err)
+		return nil, fmt.Errorf("there's probably another process using the database: failed to open bolt database: %w", err)
 	}
 
 	prov := &Provider{
