@@ -1,6 +1,6 @@
 { 
   pkgs,
-  fetchFromGitHub,
+  fetchCrate,
   rustPlatform,
   openssl,
   darwin,
@@ -9,33 +9,26 @@
   extraNativeBuildInputs ? []
 }:
 
-let
-  # == How To Update ==
-  # 1. Run `nix-prefetch fetchFromGitHub --owner tauri-apps --repo tauri --rev <COMMIT>`. This will print the sha256.
-  # 2. Change the values of `rev` and `sha256` in this file accordingly.
-  src = fetchFromGitHub {
-    owner = "tauri-apps";
-    repo = "tauri";
-    rev = "080755b5377a3c0a17adf1d03e63555350422f0a";
-    sha256 = "yVCReAfuWAkp0Rf5f0/0zwJ0WN2MM156fwXQjpdJwDg=";
+rustPlatform.buildRustPackage rec {
+  pname = "tauri-cli";
+  version = "1.0.0-rc.6";
+  src = fetchCrate {
+    crateName = pname;
+    version = version;
+    # To update the hash run nix-prefetch fetchCreate --crateName tauri-cli --version <desired-version>.
+    sha256 = "sha256-KWcd3a5MCs545A9IV/jtHYCcCtapaV2MA09po/2JQWw=";
   };
-in
-  rustPlatform.buildRustPackage {
-    pname = "tauri-cli";
-    version = src.rev;
-    src = src;
-    sourceRoot = "source/tooling/cli";
-    cargoLock = {
-      lockFile = "${src}/tooling/cli/Cargo.lock";
-    };
-    buildInputs = [
-      (lib.optionals hostPlatform.isMacOS [
-        darwin.apple_sdk.frameworks.Security
-        darwin.apple_sdk.frameworks.CoreServices
-      ])
-    ];
-    nativeBuildInputs = [
-      openssl
-    ] ++ extraNativeBuildInputs;
-    doCheck = false;
-  }
+  cargoLock = {
+    lockFile = "${src}/Cargo.lock";
+  };
+  buildInputs = [
+    (lib.optionals hostPlatform.isMacOS [
+      darwin.apple_sdk.frameworks.Security
+      darwin.apple_sdk.frameworks.CoreServices
+    ])
+  ];
+  nativeBuildInputs = [
+    openssl
+  ] ++ extraNativeBuildInputs;
+  doCheck = false;
+}
