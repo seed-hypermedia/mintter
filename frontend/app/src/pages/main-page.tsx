@@ -24,7 +24,14 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
   const sidepanelService = useInterpret(() => createSidepanelMachine(client))
   const bookmarksService = useInterpret(() => createBookmarksMachine(client))
   const hoverService = useInterpret(() => hoverMachine)
-  const mainPageService = useInterpret(() => createMainPageMachine(client))
+  const mainPageService = useInterpret(() => createMainPageMachine(client), {
+    actions: {
+      reconcileLibrary: (context) => {
+        context.files.send('RECONCILE')
+        context.drafts.send('RECONCILE')
+      },
+    },
+  })
 
   return (
     <MainPageProvider value={mainPageService}>

@@ -7,14 +7,14 @@ import type {Highlighter, IThemeRegistration, Lang} from 'shiki'
 import {getHighlighter, setCDN} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
-import {ReactEditor, useSlateStatic} from 'slate-react'
+import {useSlateStatic} from 'slate-react'
 import {MARK_EMPHASIS} from '../emphasis'
 import {EditorMode} from '../plugin-utils'
 import {statementStyle} from '../statement'
 import {MARK_STRONG} from '../strong'
 import type {EditorPlugin} from '../types'
 import {MARK_UNDERLINE} from '../underline'
-import {resetFlowContent} from '../utils'
+import {findPath, resetFlowContent} from '../utils'
 
 export const ELEMENT_CODE = 'code'
 const HIGHLIGHTER = Symbol('shiki highlighter')
@@ -163,7 +163,7 @@ function Code({
   mode: EditorMode
 }) {
   const editor = useSlateStatic()
-  const path = ReactEditor.findPath(editor, element)
+  const path = findPath(element)
 
   function setLanguage(e: React.ChangeEvent<HTMLSelectElement>) {
     const {...newData} = element.data || {}

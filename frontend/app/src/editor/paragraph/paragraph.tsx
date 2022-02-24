@@ -1,13 +1,13 @@
 import {hoverModel} from '@app/editor/hover-machine'
 import {FlowContent, isBlockquote, isCode, isEmbed, isParagraph, isPhrasingContent} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
-import {Editor, Element, Node, Path, Transforms} from 'slate'
-import {ReactEditor, RenderElementProps, useFocused, useSelected, useSlateStatic} from 'slate-react'
+import {Element, Node, Path, Transforms} from 'slate'
+import {RenderElementProps, useFocused, useSelected, useSlateStatic} from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {useHover} from '../hover-context'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
-import {isCollapsed} from '../utils'
+import {findPath, isCollapsed} from '../utils'
 import {ParagraphUI} from './paragraph-ui'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
@@ -49,10 +49,10 @@ export const createParagraphPlugin = (): EditorPlugin => ({
 
 function Paragraph({children, element, attributes, mode}: RenderElementProps & {mode: EditorMode}) {
   const editor = useSlateStatic()
-  const path = ReactEditor.findPath(editor, element)
-  const [parentNode] = Editor.parent(editor, path)
+  const path = findPath(element)
+  const parentNode = Node.parent(editor, path)
   const hoverService = useHover()
-  const [hoverState, hoverSend] = useActor(hoverService)
+  const [, hoverSend] = useActor(hoverService)
   const selected = useSelected()
   const focused = useFocused()
 

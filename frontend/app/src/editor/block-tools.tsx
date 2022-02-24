@@ -1,4 +1,5 @@
 import {hoverModel} from '@app/editor/hover-machine'
+import {findPath} from '@app/editor/utils'
 import {styled} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Icon, icons} from '@components/icon'
@@ -18,7 +19,7 @@ import {
 import {useActor} from '@xstate/react'
 import {Fragment} from 'react'
 import {BaseRange, Editor, Node, Path, Transforms} from 'slate'
-import {ReactEditor, RenderElementProps, useSlateStatic} from 'slate-react'
+import {RenderElementProps} from 'slate-react'
 import {Dropdown} from './dropdown'
 import {useHover} from './hover-context'
 import {ELEMENT_PARAGRAPH} from './paragraph'
@@ -98,8 +99,7 @@ const items: {
 export function BlockTools({element}: {element: RenderElementProps['element']}) {
   const hoverService = useHover()
   const [state, hoverSend] = useActor(hoverService)
-  const editor = useSlateStatic()
-  const path = ReactEditor.findPath(editor, element)
+  const path = findPath(element)
 
   return (
     <Box

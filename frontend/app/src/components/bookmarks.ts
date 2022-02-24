@@ -1,15 +1,16 @@
-import {Account, getAccount, getPublication, listBookmarks, updateListBookmarks} from '@app/client'
-import {queryKeys} from '@app/hooks'
-import {ClientPublication} from '@app/pages/publication'
-import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
-import {createInterpreterContext} from '@app/utils/machine-utils'
-import {FlowContent, GroupingContent} from '@mintter/mttast'
-import {QueryClient} from 'react-query'
-import {visit} from 'unist-util-visit'
-import {ActorRefFrom, InterpreterFrom, sendParent, spawn} from 'xstate'
-import {createModel} from 'xstate/lib/model'
 
-export type Bookmark = {url: string; ref: ActorRefFrom<ReturnType<typeof createBookmarkMachine>>}
+import { Account, getAccount, getPublication, listBookmarks, updateListBookmarks } from '@app/client'
+import { queryKeys } from '@app/hooks'
+import { ClientPublication } from '@app/pages/publication'
+import { getIdsfromUrl } from '@app/utils/get-ids-from-url'
+import { createInterpreterContext } from '@app/utils/machine-utils'
+import { FlowContent, GroupingContent } from '@mintter/mttast'
+import { QueryClient } from 'react-query'
+import { visit } from 'unist-util-visit'
+import { ActorRefFrom, InterpreterFrom, sendParent, spawn } from 'xstate'
+import { createModel } from 'xstate/lib/model'
+
+export type Bookmark = { url: string; ref: ActorRefFrom<ReturnType<typeof createBookmarkMachine>> }
 
 export const bookmarksModel = createModel(
   {
@@ -18,10 +19,10 @@ export const bookmarksModel = createModel(
   },
   {
     events: {
-      'REPORT.BOOKMARKS.SUCCESS': (bookmarks: Array<string>) => ({bookmarks}),
-      'REPORT.BOOKMARKS.ERROR': (errorMessage: Error['message']) => ({errorMessage}),
-      'BOOKMARK.ADD': (url: string) => ({url}),
-      'BOOKMARK.REMOVE': (url: string) => ({url}),
+      'REPORT.BOOKMARKS.SUCCESS': (bookmarks: Array<string>) => ({ bookmarks }),
+      'REPORT.BOOKMARKS.ERROR': (errorMessage: Error['message']) => ({ errorMessage }),
+      'BOOKMARK.ADD': (url: string) => ({ url }),
+      'BOOKMARK.REMOVE': (url: string) => ({ url }),
       'BOOKMARK.CLEARALL': () => ({}),
       'BOOKMARK.RESET': () => ({}),
     },
@@ -54,10 +55,10 @@ export function createBookmarksMachine(client: QueryClient) {
               client
                 .fetchQuery([queryKeys.GET_BOOKMARK_LIST], listBookmarks)
                 .then((result) => {
-                  sendBack({type: 'REPORT.BOOKMARKS.SUCCESS', bookmarks: result || []})
+                  sendBack({ type: 'REPORT.BOOKMARKS.SUCCESS', bookmarks: result || [] })
                 })
                 .catch((e: Error) => {
-                  sendBack({type: 'REPORT.BOOKMARKS.ERROR', errorMessage: e.message})
+                  sendBack({ type: 'REPORT.BOOKMARKS.ERROR', errorMessage: e.message })
                 })
             },
           },
@@ -120,7 +121,7 @@ export function createBookmarksMachine(client: QueryClient) {
       actions: {
         persist: (ctx) => {
           try {
-            updateListBookmarks(ctx.bookmarks.map(({url}) => url) || [])
+            updateListBookmarks(ctx.bookmarks.map(({ url }) => url) || [])
           } catch (e) {
             console.error(e)
           }
@@ -141,13 +142,13 @@ export const bookmarkModel = createModel(
   {
     events: {
       RETRY: () => ({}),
-      'BOOKMARK.ITEM.DELETE': (url: string) => ({url}),
+      'BOOKMARK.ITEM.DELETE': (url: string) => ({ url }),
       'REPORT.BOOKMARK.ITEM.SUCCESS': (publication: ClientPublication, author: Account, block: FlowContent | null) => ({
         publication,
         author,
         block,
       }),
-      'REPORT.BOOKMARK.ITEM.ERROR': (errorMessage: Error['message']) => ({errorMessage}),
+      'REPORT.BOOKMARK.ITEM.ERROR': (errorMessage: Error['message']) => ({ errorMessage }),
     },
   },
 )
@@ -215,7 +216,7 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
     {
       services: {
         fetchItemData: (context) => (sendBack) => {
-          ;(async () => {
+          ; (async () => {
             let [documentId, version, blockId] = getIdsfromUrl(context.url)
 
             let publication: ClientPublication = await client.fetchQuery(
@@ -241,7 +242,7 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
             let block: FlowContent | null = null
 
             if (publication.document.content) {
-              visit(publication.document.content[0], {id: blockId}, (node) => {
+              visit(publication.document.content[0], { id: blockId }, (node) => {
                 block = node
               })
             }
@@ -257,6 +258,6 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
 const [BookmarksProvider, useBookmarksService, createBookmarksSelector] =
   createInterpreterContext<InterpreterFrom<ReturnType<typeof createBookmarksMachine>>>('Bookmarks')
 
-export {BookmarksProvider, useBookmarksService}
+export { BookmarksProvider, useBookmarksService }
 
 export const useBookmarks = createBookmarksSelector((state) => state.context.bookmarks)

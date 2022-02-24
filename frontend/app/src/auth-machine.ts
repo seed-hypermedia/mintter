@@ -1,21 +1,27 @@
-import {createModel} from 'xstate/lib/model'
-import {Info} from './client'
+import { createMachine } from 'xstate'
+import { Info } from './client'
 
-export const authModel = createModel(
-  {
-    accountInfo: undefined as Info | undefined,
-  },
-  {
-    events: {
-      'REPORT.DEVICE.INFO.PRESENT': (accountInfo: Info) => ({accountInfo}),
-      'REPORT.DEVICE.INFO.MISSING': () => ({}),
-    },
-  },
-)
+type AuthContext = {
+  accountInfo?: Info
+}
 
-export const authMachine = authModel.createMachine({
+type AuthEvent = {
+  type: 'REPORT.DEVICE.INFO.PRESENT';
+  accountInfo: Info
+} | {
+  type: 'REPORT.DEVICE.INFO.MISSING'
+}
+
+export const authMachine = createMachine({
   id: 'authStateMachine',
-  context: authModel.initialContext,
+  tsTypes: {} as import("./auth-machine.typegen").Typegen0,
+  schema: {
+    context: {} as AuthContext,
+    events: {} as AuthEvent
+  },
+  context: {
+    accountInfo: undefined
+  },
   initial: 'checkingAccount',
   states: {
     checkingAccount: {
@@ -26,19 +32,11 @@ export const authMachine = authModel.createMachine({
       on: {
         'REPORT.DEVICE.INFO.PRESENT': {
           target: 'loggedIn',
-          actions: [
-            authModel.assign({
-              accountInfo: (_, ev) => ev.accountInfo,
-            }),
-          ],
+          actions: 'assignAccountInfo'
         },
         'REPORT.DEVICE.INFO.MISSING': {
           target: 'loggedOut',
-          actions: [
-            authModel.assign({
-              accountInfo: undefined,
-            }),
-          ],
+          actions: 'removeAccountInfo'
         },
       },
     },

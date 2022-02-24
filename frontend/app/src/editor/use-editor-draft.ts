@@ -1,15 +1,16 @@
-import { Document, getDraft, Link, Publication, publishDraft, updateDraftV2 } from '@app/client'
+import { Document, getDraft, Link, Publication, publishDraft, updateDraft } from '@app/client'
 import { createUpdate } from '@app/client/v2/create-changes'
 import { MINTTER_LINK_PREFIX } from '@app/constants'
 import { changesService } from '@app/editor/mintter-changes/plugin'
 import { queryKeys } from '@app/hooks'
-import { createId, Embed, group, isEmbed, isFlowContent, isLink, paragraph, statement, text } from '@mintter/mttast'
-import { useActor, useInterpret } from '@xstate/react'
+import { useMainPage } from '@app/main-page-context'
+import { createId, group, isEmbed, isFlowContent, isLink, paragraph, statement, text } from '@mintter/mttast'
+import { useMachine } from '@xstate/react'
 import isEqual from 'fast-deep-equal'
 import { useEffect } from 'react'
 import { QueryClient, useQueryClient } from 'react-query'
 import { visit } from 'unist-util-visit'
-import { createModel } from 'xstate/lib/model'
+import { assign, createMachine, MachineOptionsFrom } from 'xstate'
 import { getEmbedIds } from './embed'
 
 export type EditorDocument = Partial<Document> & {
@@ -17,65 +18,49 @@ export type EditorDocument = Partial<Document> & {
   content: any
 }
 
-export const EDITOR_REPORT_FETCH_SUCCESS = 'EDITOR.REPORT.FETCH.SUCCESS'
-export const EDITOR_REPORT_FETCH_ERROR = 'EDITOR.REPORT.FETCH.ERROR'
-export const EDITOR_UPDATE = 'EDITOR.UPDATE'
-export const EDITOR_UPDATE_SUCCESS = 'EDITOR.UPDATE.SUCCESS'
-export const EDITOR_UPDATE_ERROR = 'EDITOR.UPDATE.ERROR'
-export const EDITOR_CANCEL = 'EDITOR.CANCEL'
-export const EDITOR_PUBLISH = 'EDITOR.PUBLISH'
-export const EDITOR_PUBLISH_SUCCESS = 'EDITOR.PUBLISH.SUCCESS'
-export const EDITOR_PUBLISH_ERROR = 'EDITOR.PUBLISH.ERROR'
-
-export const editorModel = createModel(
-  {
-    retries: 0,
-    prevDraft: null as EditorDocument | null,
-    localDraft: null as EditorDocument | null,
-    errorMessage: '',
-    publication: null as Publication | null,
-  },
-  {
-    events: {
-      FETCH: (documentId: string) => ({ documentId }),
-      [EDITOR_REPORT_FETCH_SUCCESS]: (data: Document) => ({ data }),
-      [EDITOR_REPORT_FETCH_ERROR]: (errorMessage: string) => ({ errorMessage }),
-      [EDITOR_UPDATE]: (payload: EditorDocument) => ({ payload }),
-      [EDITOR_CANCEL]: () => ({}),
-      [EDITOR_PUBLISH]: () => ({}),
-      [EDITOR_PUBLISH_SUCCESS]: (publication: Publication) => ({ publication }),
-      [EDITOR_PUBLISH_ERROR]: (errorMessage: string) => ({ errorMessage }),
-      [EDITOR_UPDATE_SUCCESS]: () => ({}),
-      [EDITOR_UPDATE_ERROR]: (errorMessage: Error['message']) => ({ errorMessage }),
-    },
-  },
-)
+export type EditorContext = {
+  retries: number;
+  prevDraft: EditorDocument | null;
+  localDraft: EditorDocument | null;
+  errorMessage: string;
+  publication: Publication | null
+}
+export type EditorEvent = { type: 'FETCH'; documentId: string } | {
+  type: 'EDITOR.REPORT.FETCH.SUCCESS'; data: Document
+} | { type: 'EDITOR.REPORT.FETCH.ERROR'; errorMessage: Error['message'] } |
+{ type: 'EDITOR.UPDATE'; payload: Partial<EditorDocument> } |
+{ type: 'EDITOR.UPDATE.SUCCESS' } |
+{ type: 'EDITOR.UPDATE.ERROR'; errorMessage: Error['message'] } |
+{ type: 'EDITOR.CANCEL' } |
+{ type: 'EDITOR.PUBLISH' } |
+{ type: 'EDITOR.PUBLISH.SUCCESS'; publication: Publication } |
+{ type: 'EDITOR.PUBLISH.ERROR'; errorMessage: Error['message'] }
 
 interface DraftEditorMachineProps {
-  client: QueryClient
-  afterPublish: any
+  client: QueryClient;
+  mainPageService: ReturnType<typeof useMainPage>
 }
 
 const defaultContent = [group({ data: { parent: "" } }, [statement({ id: createId() }, [paragraph([text('')])])])]
 
-const updateValueToContext = editorModel.assign(
-  {
-    localDraft: (context, event) => {
-      return {
-        ...context.localDraft,
-        ...event.payload,
-      }
-    },
-  },
-  EDITOR_UPDATE,
-)
 
-export const draftEditorMachine = ({ afterPublish, client }: DraftEditorMachineProps) =>
-  editorModel.createMachine(
+export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachineProps) =>
+  createMachine(
     {
+      tsTypes: {} as import("./use-editor-draft.typegen").Typegen0,
+      schema: {
+        context: {} as EditorContext,
+        events: {} as EditorEvent
+      },
       id: 'editor',
       initial: 'idle',
-      context: editorModel.initialContext,
+      context: {
+        retries: 0,
+        localDraft: null,
+        prevDraft: null,
+        errorMessage: '',
+        publication: null
+      },
       states: {
         idle: {
           on: {
@@ -95,9 +80,7 @@ export const draftEditorMachine = ({ afterPublish, client }: DraftEditorMachineP
               {
                 target: 'fetching',
                 actions: [
-                  editorModel.assign({
-                    retries: (context) => context.retries++,
-                  }),
+                  'incrementRetries'
                 ],
               },
             ],
@@ -110,45 +93,32 @@ export const draftEditorMachine = ({ afterPublish, client }: DraftEditorMachineP
               if (event.type != 'FETCH') return
                 ; (async () => {
                   try {
-                    let draft = await client.fetchQuery([queryKeys.GET_DRAFT, event.documentId], () =>
+                    let data = await client.fetchQuery([queryKeys.GET_DRAFT, event.documentId], () =>
                       getDraft(event.documentId),
                     )
-                    console.log("🚀 ~ file: use-editor-draft.ts ~ line 116 ~ ; ~ draft", draft)
-                    sendBack(editorModel.events[EDITOR_REPORT_FETCH_SUCCESS](draft))
+                    sendBack({ type: 'EDITOR.REPORT.FETCH.SUCCESS', data })
                   } catch (err: any) {
-                    sendBack(editorModel.events[EDITOR_REPORT_FETCH_ERROR](err.message))
+                    sendBack({ type: 'EDITOR.REPORT.FETCH.ERROR', errorMessage: err.message })
                   }
                 })()
             },
           },
           on: {
-            [EDITOR_CANCEL]: {
+            'EDITOR.CANCEL': {
               target: 'idle',
             },
-            [EDITOR_REPORT_FETCH_SUCCESS]: {
+            'EDITOR.REPORT.FETCH.SUCCESS': {
               target: 'editing',
               actions: [
-                editorModel.assign((_, event) => {
-                  // TODO: make sure we add the default content in the changes array
-                  let newValue = {
-                    ...event.data,
-                    content: event.data.content ? JSON.parse(event.data.content) : defaultContent,
-                  }
-                  return {
-                    prevDraft: newValue,
-                    localDraft: newValue,
-                  }
-                }),
+                'assignDraftsValue'
               ],
             },
-            [EDITOR_REPORT_FETCH_ERROR]: {
+            'EDITOR.REPORT.FETCH.ERROR': {
               target: 'errored',
               actions: [
-                editorModel.assign({
-                  errorMessage: (_, event) => JSON.stringify(event.errorMessage),
-                }),
+                'assignError'
               ],
-            },
+            }
           },
         },
         editing: {
@@ -157,11 +127,11 @@ export const draftEditorMachine = ({ afterPublish, client }: DraftEditorMachineP
           states: {
             idle: {
               on: {
-                [EDITOR_UPDATE]: {
-                  actions: [updateValueToContext],
+                'EDITOR.UPDATE': {
+                  actions: ['updateValueToContext'],
                   target: 'debouncing',
                 },
-                [EDITOR_PUBLISH]: {
+                'EDITOR.PUBLISH': {
                   target: 'publishing',
                 },
                 FETCH: {
@@ -171,8 +141,8 @@ export const draftEditorMachine = ({ afterPublish, client }: DraftEditorMachineP
             },
             debouncing: {
               on: {
-                [EDITOR_UPDATE]: {
-                  actions: [updateValueToContext],
+                'EDITOR.UPDATE': {
+                  actions: ['updateValueToContext'],
                 },
               },
               after: {
@@ -203,12 +173,15 @@ export const draftEditorMachine = ({ afterPublish, client }: DraftEditorMachineP
                     let links = buildLinks(context.localDraft!)
 
                     try {
-                      await updateDraftV2(changes)
-                      // await updateDraft(newDraft as Document, links)
-                      sendBack(editorModel.events[EDITOR_UPDATE_SUCCESS]())
+                      // await updateDraftV2(changes)
+
+                      await updateDraft(newDraft as Document, links)
+                      console.log('SAVED!!');
+
+                      sendBack('EDITOR.UPDATE.SUCCESS')
                       changesService.send('reset')
                     } catch (err: any) {
-                      sendBack(editorModel.events[EDITOR_UPDATE_ERROR](err.message))
+                      sendBack({ type: 'EDITOR.UPDATE.ERROR', errorMessage: err.message })
                     }
                   })()
                 },
@@ -218,15 +191,14 @@ export const draftEditorMachine = ({ afterPublish, client }: DraftEditorMachineP
                 },
               },
               on: {
-                [EDITOR_UPDATE_SUCCESS]: {
+                'EDITOR.UPDATE.SUCCESS': {
                   target: 'idle',
+                  actions: 'updateLibrary'
                 },
-                [EDITOR_UPDATE_ERROR]: {
+                'EDITOR.UPDATE.ERROR': {
                   target: 'idle',
                   actions: [
-                    editorModel.assign({
-                      errorMessage: (_, event) => JSON.stringify(event.errorMessage),
-                    }),
+                    'assignError'
                   ],
                 },
               },
@@ -238,28 +210,24 @@ export const draftEditorMachine = ({ afterPublish, client }: DraftEditorMachineP
 
                   publishDraft(context.localDraft.id!)
                     .then((publication) => {
-                      sendBack(editorModel.events[EDITOR_PUBLISH_SUCCESS](publication))
+                      sendBack('EDITOR.PUBLISH.SUCCESS')
                     })
                     .catch((err: any) => {
-                      sendBack(editorModel.events[EDITOR_PUBLISH_ERROR](err))
+                      sendBack({ type: 'EDITOR.PUBLISH.ERROR', errorMessage: err.message })
                     })
                 },
               },
               on: {
-                [EDITOR_PUBLISH_SUCCESS]: {
+                'EDITOR.PUBLISH.SUCCESS': {
                   target: 'published',
                   actions: [
-                    editorModel.assign({
-                      publication: (_, event) => event.publication,
-                    }),
+                    'assignPublication'
                   ],
                 },
-                [EDITOR_PUBLISH_ERROR]: {
+                'EDITOR.PUBLISH.ERROR': {
                   target: 'idle',
                   actions: [
-                    editorModel.assign({
-                      errorMessage: (_, event) => JSON.stringify(event.errorMessage),
-                    }),
+                    'assignError'
                   ],
                 },
               },
@@ -291,20 +259,53 @@ export const draftEditorMachine = ({ afterPublish, client }: DraftEditorMachineP
         },
       },
       actions: {
-        afterPublish,
+        incrementRetries: assign({
+          retries: (context) => context.retries++,
+        }),
+        assignDraftsValue: assign((_, event) => {
+          // TODO: make sure we add the default content in the changes array
+          let newValue = {
+            ...event.data,
+            content: event.data.content ? JSON.parse(event.data.content) : defaultContent,
+          }
+          return {
+            prevDraft: newValue,
+            localDraft: newValue,
+          }
+        }),
+        assignError: assign({
+          errorMessage: (_, event) => JSON.stringify(event.errorMessage),
+        }),
+        updateValueToContext: assign({
+          localDraft: (context, event) => {
+            return {
+              ...context.localDraft,
+              ...event.payload,
+              content: event.payload.content || context.localDraft?.content,
+
+            }
+          },
+        }
+        ),
+        assignPublication: assign({
+          publication: (_, event) => event.publication,
+        }),
+        updateLibrary: () => {
+          mainPageService.send('RECONCILE')
+        }
       },
     },
   )
 
 export type UseEditorDraftParams = DraftEditorMachineProps & {
   documentId: string
+  options: MachineOptionsFrom<ReturnType<typeof draftEditorMachine>>
+  mainPageService: ReturnType<typeof useMainPage>
 }
 
-export function useEditorDraft({ documentId, ...afterActions }: UseEditorDraftParams) {
+export function useEditorDraft({ documentId, mainPageService, options }: UseEditorDraftParams) {
   const client = useQueryClient()
-  const service = useInterpret(() => draftEditorMachine({ ...afterActions, client }))
-
-  const [state, send] = useActor(service)
+  const [state, send] = useMachine(() => draftEditorMachine({ client, mainPageService }), options)
 
   useEffect(() => {
     if (documentId) {
@@ -322,7 +323,7 @@ function buildLinks(draft: EditorDocument): Array<Link> {
       block.children[0],
       (node) => (isEmbed(node) || isLink(node)) && node.url.includes(MINTTER_LINK_PREFIX),
       (node) => {
-        let [documentId, version, blockId] = getEmbedIds((node as Embed | Link).url)
+        let [documentId, version, blockId] = getEmbedIds(node.url)
 
         links.push({
           target: {

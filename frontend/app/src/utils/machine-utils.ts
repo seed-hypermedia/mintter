@@ -1,6 +1,6 @@
-import {useSelector} from '@xstate/react'
-import {createContext, useContext as defaultUseContext} from 'react'
-import {ActionTypes, Interpreter} from 'xstate'
+import { useSelector } from '@xstate/react'
+import { createContext, useContext as defaultUseContext } from 'react'
+import { ActionTypes, Interpreter } from 'xstate'
 
 export function isNullEvent(eventName: string) {
   return eventName == ActionTypes.NullEvent
@@ -11,14 +11,14 @@ export function isInternalEvent(eventName: string) {
   return allEventsExceptNull.some((prefix) => eventName.startsWith(prefix))
 }
 
-export function createInterpreterContext<TInterpreter extends Interpreter<any, any, any>>(displayName: string) {
+export function createInterpreterContext<TInterpreter extends Interpreter<any, any, any, any, any>>(displayName: string) {
   const [Provider, useContext] = createRequiredContext<TInterpreter>(displayName)
 
   const createUseSelector =
     <Data>(selector: (state: TInterpreter['state']) => Data) =>
-    () => {
-      return useSelector(useContext(), selector)
-    }
+      () => {
+        return useSelector(useContext(), selector)
+      }
 
   return [Provider, useContext, createUseSelector] as const
 }

@@ -1,5 +1,4 @@
 import {
-  createDraft,
   deleteDraft as defaultDeleteDraft,
   deletePublication as defaultDeletePublication,
   Document,
@@ -10,13 +9,12 @@ import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useMainPage} from '@app/main-page-context'
 import {styled} from '@app/stitches.config'
 import {copyTextToClipboard as defaultCopyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {info} from '@app/utils/logger'
 import {useRoute} from '@app/utils/use-route'
 import {DeleteDialog} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
+import {useCreateDraft} from '@components/library/use-create-draft'
 import {sidepanelModel, useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
-import {useActor} from '@xstate/react'
 import {PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
 import {Link, useLocation} from 'wouter'
@@ -42,7 +40,7 @@ export function LibraryItem({
   const [, setLocation] = useLocation()
   const sidepanelService = useSidepanel()
   const mainService = useMainPage()
-  const [mainState] = useActor(mainService)
+  const {createDraft} = useCreateDraft()
 
   async function onCopy() {
     if (publication) {
@@ -70,21 +68,11 @@ export function LibraryItem({
     if (match) {
       setLocation('/')
     }
-    mainState.context.drafts.send('RECONCILE')
-    mainState.context.files.send('RECONCILE')
+    mainService.send('RECONCILE')
   }
 
   async function onStartDraft() {
-    info('onStartDraft: TBD')
-    try {
-      const newDraft = await createDraft()
-      if (newDraft) {
-        onSidepanel()
-        setLocation(`/editor/${newDraft.id}`)
-      }
-    } catch (err) {
-      throw Error('new Draft error: ')
-    }
+    createDraft(onSidepanel)
   }
 
   let title = publication ? publication.document?.title : draft && draft.title ? draft?.title : 'Untitled Document'

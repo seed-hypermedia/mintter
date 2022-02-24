@@ -1,5 +1,4 @@
 import {FlowContent} from '@app/../../mttast/dist'
-import {createDraft} from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
@@ -7,6 +6,7 @@ import {bookmarksModel, createBookmarkMachine, useBookmarksService} from '@compo
 import {DeleteDialog} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {StyledItem} from '@components/library/library-item'
+import {useCreateDraft} from '@components/library/use-create-draft'
 import {sidepanelModel, useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
@@ -19,6 +19,8 @@ export function BookmarkItem({itemRef}: {itemRef: ActorRefFrom<ReturnType<typeof
   const sidepanelService = useSidepanel()
   const [state] = useActor(itemRef)
   const bookmarks = useBookmarksService()
+  const {createDraft} = useCreateDraft()
+
   const [, setLocation] = useLocation()
   console.log('bookmark state: ', state)
 
@@ -47,16 +49,7 @@ export function BookmarkItem({itemRef}: {itemRef: ActorRefFrom<ReturnType<typeof
   }
 
   async function onStartDraft() {
-    // info('onStartDraft: TBD')
-    try {
-      const newDraft = await createDraft()
-      if (newDraft) {
-        onSidePanel()
-        setLocation(`/editor/${newDraft.id}`)
-      }
-    } catch (err) {
-      throw Error('new Draft error: ')
-    }
+    createDraft(onSidePanel)
   }
 
   return (
