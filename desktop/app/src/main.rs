@@ -8,7 +8,7 @@ use env_logger::filter::Builder as FilterBuilder;
 use log::LevelFilter;
 use tauri::Manager;
 use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget, LoggerBuilder};
-use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
+use tauri_plugin_store::Builder as StorePluginBuilder;
 
 mod daemon;
 mod extensions;
