@@ -16,17 +16,17 @@ let
   src = fetchFromGitHub {
     owner = "tauri-apps";
     repo = "tauri";
-    rev = "9bb68973dd10f3cb98d2a95e5432bfc765d77064";
-    sha256 = "hjGf/pFms9FJcsz0EmZC80cs6Gs5pS8qpnzn/+8aaek=";
+    rev = "080755b5377a3c0a17adf1d03e63555350422f0a";
+    sha256 = "yVCReAfuWAkp0Rf5f0/0zwJ0WN2MM156fwXQjpdJwDg=";
   };
 in
   rustPlatform.buildRustPackage {
     pname = "tauri-cli";
     version = src.rev;
     src = src;
-    sourceRoot = "source/tooling/cli.rs";
+    sourceRoot = "source/tooling/cli";
     cargoLock = {
-      lockFile = "${src}/tooling/cli.rs/Cargo.lock";
+      lockFile = "${src}/tooling/cli/Cargo.lock";
     };
     buildInputs = [
       (lib.optionals hostPlatform.isMacOS [
