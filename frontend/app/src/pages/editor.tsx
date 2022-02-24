@@ -3,14 +3,8 @@ import {AppError} from '@app/app'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
-import {
-  draftEditorMachine,
-  EditorDocument,
-  editorModel,
-  EDITOR_PUBLISH,
-  EDITOR_UPDATE,
-  useEditorDraft,
-} from '@app/editor/use-editor-draft'
+import {draftEditorMachine, useEditorDraft} from '@app/editor/use-editor-draft'
+import {useMainPage} from '@app/main-page-context'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -23,7 +17,7 @@ import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {ReactEditor} from 'slate-react'
 import {useLocation} from 'wouter'
-import {ContextFrom, StateFrom} from 'xstate'
+import {StateFrom} from 'xstate'
 import {EditorPageProps} from './types'
 
 export default function EditorPage({params, editor: propEditor}: EditorPageProps) {
@@ -32,23 +26,30 @@ export default function EditorPage({params, editor: propEditor}: EditorPageProps
   const toast = useRef('')
   const [visible, setVisible] = useState(false)
   const localEditor = useMemo(() => buildEditorHook(plugins, EditorMode.Draft), [])
+  const mainPageService = useMainPage()
+  console.log('🚀 ~ file: editor.tsx ~ line 30 ~ EditorPage ~ mainPageService', mainPageService)
 
   const editor = propEditor ?? localEditor
   const [state, send] = useEditorDraft({
     documentId: params!.docId,
-    afterPublish: (context: ContextFrom<ReturnType<typeof draftEditorMachine>>) => {
-      if (!toast.current) {
-        toast.current = toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000})
-      } else {
-        toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000, id: toast.current})
-      }
-
-      setLocation(`/p/${context.localDraft?.id}/${context.publication?.version}`, {
-        // we replace the history here because the draft url will not be available after publish.
-        replace: true,
-      })
-    },
     client,
+    mainPageService,
+    options: {
+      actions: {
+        afterPublish: (context) => {
+          if (!toast.current) {
+            toast.current = toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000})
+          } else {
+            toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000, id: toast.current})
+          }
+
+          setLocation(`/p/${context.localDraft?.id}/${context.publication?.version}`, {
+            // we replace the history here because the draft url will not be available after publish.
+            replace: true,
+          })
+        },
+      },
+    },
   })
 
   const {context} = state
@@ -93,7 +94,7 @@ export default function EditorPage({params, editor: propEditor}: EditorPageProps
             },
           }}
         >
-          <Button size="1" variant="ghost" onClick={() => send(EDITOR_PUBLISH)}>
+          <Button size="1" variant="ghost" onClick={() => send('EDITOR.PUBLISH')}>
             Publish
           </Button>
           <TextField
@@ -111,7 +112,7 @@ export default function EditorPage({params, editor: propEditor}: EditorPageProps
             onChange={(event) => {
               // update window title as the user types
               // getCurrentWindow().setTitle(event.currentTarget.value)
-              send(editorModel.events[EDITOR_UPDATE]({title: event.currentTarget.value} as EditorDocument))
+              send({type: 'EDITOR.UPDATE', payload: {title: event.currentTarget.value}})
             }}
           />
         </Box>
@@ -137,7 +138,7 @@ export default function EditorPage({params, editor: propEditor}: EditorPageProps
                   //@ts-ignore
                   onChange={(content: ChildrenOf<Document>) => {
                     if (!content && typeof content == 'string') return
-                    send(editorModel.events[EDITOR_UPDATE]({content} as EditorDocument))
+                    send({type: 'EDITOR.UPDATE', payload: {content}})
                   }}
                 />
 

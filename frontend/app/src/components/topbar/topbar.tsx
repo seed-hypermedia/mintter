@@ -1,11 +1,9 @@
-import {createDraft} from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {queryKeys} from '@app/hooks'
 import {useLibrary} from '@app/main-page-context'
 import {css, styled} from '@app/stitches.config'
 import {useRoute} from '@app/utils/use-route'
+import {useCreateDraft} from '@components/library/use-create-draft'
 import {FormEvent, useCallback, useEffect, useRef, useState} from 'react'
-import {useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
 import {Box} from '../box'
 import {Button} from '../button'
@@ -132,28 +130,17 @@ function TopbarNavigation() {
 }
 
 function TopbarActions() {
-  const [routeLocation, setRouteLocation] = useLocation()
-  const [, setLocation] = useState(() => routeLocation)
-  const client = useQueryClient()
   const service = useSidepanel()
   const {match: isDocumentOpen} = useRoute<{docId: string; version: string}>(['/p/:docId/:version', '/editor/:docId'])
+  const {createDraft} = useCreateDraft()
 
   function toggleSidepanel() {
     service.send('SIDEPANEL.TOGGLE')
   }
 
-  const onCreateDraft = useCallback(async function onCreateDraft() {
-    try {
-      const d = await createDraft()
-      if (d?.id) {
-        await client.refetchQueries(queryKeys.GET_DRAFT_LIST)
-        setRouteLocation(`/editor/${d.id}`)
-        setLocation(`/editor/${d.id}`)
-      }
-    } catch (err) {
-      console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
-    }
-  }, [])
+  function onCreateDraft() {
+    createDraft()
+  }
 
   return (
     <Box

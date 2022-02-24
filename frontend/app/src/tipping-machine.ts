@@ -1,6 +1,6 @@
-import request, {gql} from 'graphql-request'
-import {createModel} from 'xstate/lib/model'
-import {MINTTER_GRAPHQL_API_URL} from './wallet-machine'
+import request, { gql } from 'graphql-request'
+import { createModel } from 'xstate/lib/model'
+import { MINTTER_GRAPHQL_API_URL } from './wallet-machine'
 
 export const tippingModel = createModel(
   {
@@ -15,14 +15,14 @@ export const tippingModel = createModel(
       OPEN: () => ({}),
       CLOSE: () => ({}),
       RETRY: () => ({}),
-      SET_TIP_DATA: (publicationID: string, accountID: string) => ({publicationID, accountID}),
-      UPDATE_AMOUNT: (amount: number) => ({amount}),
+      SET_TIP_DATA: (publicationID: string, accountID: string) => ({ publicationID, accountID }),
+      UPDATE_AMOUNT: (amount: number) => ({ amount }),
       REQUEST_INVOICE: () => ({}),
-      REPORT_INVOICE_RECEIVED: (invoice: string) => ({invoice}),
-      REPORT_INVOICE_ERRORED: (errorMessage: string) => ({errorMessage}),
+      REPORT_INVOICE_RECEIVED: (invoice: string) => ({ invoice }),
+      REPORT_INVOICE_ERRORED: (errorMessage: string) => ({ errorMessage }),
       PAY_INVOICE: () => ({}),
       REPORT_PAID: () => ({}),
-      REPORT_PAID_ERRORED: (errorMessage: string) => ({errorMessage}),
+      REPORT_PAID_ERRORED: (errorMessage: string) => ({ errorMessage }),
     },
   },
 )
@@ -106,7 +106,7 @@ export const tippingMachine = tippingModel.createMachine({
                   }
                 }
               `
-              request<{requestInvoice: {paymentRequest: string}}>(MINTTER_GRAPHQL_API_URL, mutation, {
+              request<{ requestInvoice: { paymentRequest: string } }>(MINTTER_GRAPHQL_API_URL, mutation, {
                 input: {
                   amountSats: context.amount,
                   accountID: context.accountID,
@@ -168,7 +168,7 @@ export const tippingMachine = tippingModel.createMachine({
                   }
                 }
               `
-              request<{walletID: string}>(MINTTER_GRAPHQL_API_URL, mutation, {
+              request<{ walletID: string }>(MINTTER_GRAPHQL_API_URL, mutation, {
                 input: {
                   paymentRequest: context.invoice,
                   amountSats: context.amount,

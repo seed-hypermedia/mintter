@@ -1,12 +1,13 @@
 import {hoverModel} from '@app/editor/hover-machine'
 import {EditorMode} from '@app/editor/plugin-utils'
+import {findPath} from '@app/editor/utils'
 import type {TextProps} from '@components/text'
 import type {StaticParagraph as StaticParagraphType} from '@mintter/mttast'
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
 import {Editor} from 'slate'
 import type {RenderElementProps} from 'slate-react'
-import {ReactEditor, useSlateStatic} from 'slate-react'
+import {useSlateStatic} from 'slate-react'
 import {useHover} from '../hover-context'
 import type {EditorPlugin} from '../types'
 import {StaticParagraphUI} from './static-paragraph-ui'
@@ -57,7 +58,7 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
 
 function useHeading(element: StaticParagraphType) {
   var editor = useSlateStatic()
-  var path = ReactEditor.findPath(editor, element)
+  var path = findPath(element)
   var parent = Editor.parent(editor, path)
   if (parent) {
     let [node, path] = parent

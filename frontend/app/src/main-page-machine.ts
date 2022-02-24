@@ -1,26 +1,20 @@
-import {queryKeys} from '@app/hooks'
-import {libraryMachine} from '@components/library/library-machine'
-import {QueryClient} from 'react-query'
-import {createMachine, spawn} from 'xstate'
-import {createModel} from 'xstate/lib/model'
-import {Document, listDrafts, listPublications, Publication} from './client'
-
-let filesModel = createModel(
-  {
-    data: [] as Array<Publication>,
-  },
-  {
-    events: {
-      'REPORT.DATA.SUCCESS': (data: Array<Publication>) => ({data}),
-      RECONCILE: () => ({}),
-    },
-  },
-)
+import { queryKeys } from '@app/hooks'
+import { libraryMachine } from '@components/library/library-machine'
+import { QueryClient } from 'react-query'
+import { ActorRefFrom, assign, createMachine, spawn } from 'xstate'
+import { Document, listDrafts, listPublications, Publication } from './client'
 
 export function createFilesMachine(client: QueryClient) {
-  return filesModel.createMachine({
+  return createMachine({
+    tsTypes: {} as import("./main-page-machine.typegen").Typegen0,
+    schema: {
+      context: {} as FilesContext<Publication>,
+      events: {} as FilesEvent<Publication>
+    },
     initial: 'idle',
-    context: filesModel.initialContext,
+    context: {
+      data: []
+    },
     states: {
       idle: {
         invoke: [
@@ -29,20 +23,18 @@ export function createFilesMachine(client: QueryClient) {
               client
                 .fetchQuery([queryKeys.GET_PUBLICATION_LIST], () => listPublications())
                 .then(function filesResponse(response) {
-                  let items = response.publications.map((pub) => ({
+                  let data = response.publications.map((pub) => ({
                     ...pub,
                     ref: 'TODO',
                   }))
-                  sendBack(filesModel.events['REPORT.DATA.SUCCESS'](items))
+                  sendBack({ type: 'REPORT.DATA.SUCCESS', data })
                 })
             },
           },
         ],
         on: {
           'REPORT.DATA.SUCCESS': {
-            actions: filesModel.assign({
-              data: (_, event) => event.data,
-            }),
+            actions: 'assignData',
             target: 'ready',
           },
         },
@@ -53,6 +45,12 @@ export function createFilesMachine(client: QueryClient) {
         },
       },
     },
+  }, {
+    actions: {
+      assignData: assign({
+        data: (_, event) => event.data
+      })
+    }
   })
 }
 
@@ -60,22 +58,26 @@ export type DraftRef = Document & {
   ref: string // TODO: ActorRefFrom<ReturnType<typeof createDraftMachine>>
 }
 
-let draftsModel = createModel(
-  {
-    data: [] as Array<DraftRef>,
-  },
-  {
-    events: {
-      'REPORT.DATA.SUCCESS': (data: Array<DraftRef>) => ({data}),
-      RECONCILE: () => ({}),
-    },
-  },
-)
+type FilesContext<T = any> = {
+  data: Array<T>
+}
+
+type FilesEvent<T = any> = {
+  type: 'REPORT.DATA.SUCCESS'; data: Array<T>
+} | { type: "RECONCILE" }
+
 
 function createDraftsMachine(client: QueryClient) {
-  return draftsModel.createMachine({
+  return createMachine({
+    tsTypes: {} as import("./main-page-machine.typegen").Typegen1,
+    schema: {
+      context: {} as FilesContext<Document>,
+      events: {} as FilesEvent<Document>
+    },
     initial: 'idle',
-    context: draftsModel.initialContext,
+    context: {
+      data: []
+    },
     states: {
       idle: {
         invoke: [
@@ -84,20 +86,18 @@ function createDraftsMachine(client: QueryClient) {
               client
                 .fetchQuery([queryKeys.GET_DRAFT_LIST], () => listDrafts())
                 .then(function filesResponse(response) {
-                  let items = response.documents.map((doc) => ({
+                  let data = response.documents.map((doc) => ({
                     ...doc,
                     ref: 'TODO',
                   }))
-                  sendBack(draftsModel.events['REPORT.DATA.SUCCESS'](items))
+                  sendBack({ type: 'REPORT.DATA.SUCCESS', data })
                 })
             },
           },
         ],
         on: {
           'REPORT.DATA.SUCCESS': {
-            actions: draftsModel.assign({
-              data: (_, event) => event.data,
-            }),
+            actions: 'assignData',
             target: 'ready',
           },
         },
@@ -108,11 +108,30 @@ function createDraftsMachine(client: QueryClient) {
         },
       },
     },
+  }, {
+    actions: {
+      assignData: assign({
+        data: (_, event) => event.data
+      })
+    }
   })
 }
 
+type MainPageContext = {
+  files: ActorRefFrom<ReturnType<typeof createFilesMachine>>;
+  drafts: ActorRefFrom<ReturnType<typeof createDraftsMachine>>;
+  library: ActorRefFrom<typeof libraryMachine>;
+}
+
+type MainPageEvent = { type: 'RECONCILE' }
+
 export function createMainPageMachine(client: QueryClient) {
   return createMachine({
+    tsTypes: {} as import("./main-page-machine.typegen").Typegen2,
+    schema: {
+      context: {} as MainPageContext,
+      events: {} as MainPageEvent
+    },
     initial: 'idle',
     context: () => ({
       files: spawn(createFilesMachine(client), 'files'),
@@ -120,7 +139,13 @@ export function createMainPageMachine(client: QueryClient) {
       library: spawn(libraryMachine, 'library'),
     }),
     states: {
-      idle: {},
+      idle: {
+        on: {
+          RECONCILE: {
+            actions: 'reconcileLibrary'
+          }
+        }
+      },
     },
   })
 }

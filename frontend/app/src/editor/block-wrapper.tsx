@@ -1,4 +1,3 @@
-import {createDraft} from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {BlockCitations} from '@app/editor/block-citations'
 import {BlockTools} from '@app/editor/block-tools'
@@ -10,6 +9,7 @@ import {useRoute} from '@app/utils/use-route'
 import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
+import {useCreateDraft} from '@components/library/use-create-draft'
 import {sidepanelModel, useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {FlowContent} from '@mintter/mttast'
@@ -26,6 +26,7 @@ export function BlockWrapper({
 }) {
   const bookmarksService = useBookmarksService()
   const sidepanelService = useSidepanel()
+  const {createDraft} = useCreateDraft()
   const hoverId = useHoverBlockId()
   const {params} = useRoute<{docId: string; version: string; blockId?: string}>([
     '/p/:docId/:version/:blockId?',
@@ -47,16 +48,8 @@ export function BlockWrapper({
     bookmarksService.send(bookmarksModel.events['BOOKMARK.ADD'](`${MINTTER_LINK_PREFIX}${docId}/${version}/${blockId}`))
   }
 
-  async function onStartDraft() {
-    try {
-      const newDraft = await createDraft()
-      if (newDraft) {
-        onSidepanel()
-        setLocation(`/editor/${newDraft.id}`)
-      }
-    } catch (err) {
-      throw Error('new Draft error: ')
-    }
+  function onStartDraft() {
+    createDraft(onSidepanel)
   }
 
   function onSidepanel() {

@@ -36,9 +36,7 @@ function SettingsRoot({children}: any) {
   )
 }
 
-export function Settings({updateAccount}: {updateAccount: typeof localApi.updateAccount}) {
-  updateAccount ||= localApi.updateAccount
-
+export function Settings({updateAccount = localApi.updateAccount}: {updateAccount: typeof localApi.updateAccount}) {
   return (
     <SettingsRoot>
       <DialogPrimitive.Trigger asChild>

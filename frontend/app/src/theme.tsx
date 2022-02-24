@@ -1,6 +1,5 @@
 import {store} from '@app/client/store'
-import {InterpreterFrom} from 'xstate'
-import {createModel} from 'xstate/lib/model'
+import {assign, createMachine, InterpreterFrom} from 'xstate'
 import {darkTheme, lightTheme} from './stitches.config'
 import {createInterpreterContext} from './utils/machine-utils'
 
@@ -19,22 +18,22 @@ let theme = {
   dark: darkTheme,
 }
 
-let themeModel = createModel(
-  {
-    current: 'light' as keys,
-  },
-  {
-    events: {
-      CHANGE: (newTheme: keys) => ({newTheme}),
-      TOGGLE: () => ({}),
-      'REPORT.THEME.SUCCESS': (theme: keys) => ({theme}),
-    },
-  },
-)
+type ThemeContextType = {
+  current: keys
+}
 
-export let themeMachine = themeModel.createMachine(
+type ThemeEvent = {type: 'CHANGE'; theme: keys} | {type: 'TOGGLE'} | {type: 'REPORT.THEME.SUCCESS'; theme: keys}
+
+export let themeMachine = createMachine(
   {
-    context: themeModel.initialContext,
+    tsTypes: {} as import('./theme.typegen').Typegen0,
+    schema: {
+      context: {} as ThemeContextType,
+      events: {} as ThemeEvent,
+    },
+    context: {
+      current: 'light',
+    },
     initial: 'loading',
     states: {
       loading: {
@@ -43,47 +42,30 @@ export let themeMachine = themeModel.createMachine(
           src: () => (sendBack) => {
             store
               .get<keys>('theme')
-              .then((result: keys | null) => {
-                result = result ?? 'light'
+              .then((theme: keys | null) => {
+                theme = theme ?? 'light'
 
-                sendBack(themeModel.events['REPORT.THEME.SUCCESS'](result))
+                sendBack({type: 'REPORT.THEME.SUCCESS', theme})
               })
               .catch(() => {
-                sendBack(themeModel.events['REPORT.THEME.SUCCESS']('light'))
+                sendBack({type: 'CHANGE', theme: 'light'})
               })
           },
         },
         on: {
           'REPORT.THEME.SUCCESS': {
             target: 'ready',
-            actions: [
-              themeModel.assign({
-                current: (_, event) => (event.theme == 'light' ? 'light' : 'dark'),
-              }),
-              'applyToDom',
-            ],
+            actions: ['assignTheme', 'applyToDom'],
           },
         },
       },
       ready: {
         on: {
           TOGGLE: {
-            actions: [
-              themeModel.assign({
-                current: (context) => (context.current == 'light' ? 'dark' : 'light'),
-              }),
-              'applyToDom',
-              'persist',
-            ],
+            actions: ['toggleTheme', 'applyToDom', 'persist'],
           },
           CHANGE: {
-            actions: [
-              themeModel.assign({
-                current: (_, event) => event.newTheme,
-              }),
-              'applyToDom',
-              'persist',
-            ],
+            actions: ['assignTheme', 'applyToDom', 'persist'],
           },
         },
       },
@@ -105,6 +87,12 @@ export let themeMachine = themeModel.createMachine(
           console.error(e)
         }
       },
+      assignTheme: assign({
+        current: (_, event) => event.theme,
+      }),
+      toggleTheme: assign({
+        current: (context, event) => (context.current == 'dark' ? 'light' : 'dark'),
+      }),
     },
   },
 )

@@ -1,6 +1,6 @@
 import { EditorPlugin } from '@app/editor/types'
-import { FlowContent } from '@mintter/mttast'
-import { Editor, NodeEntry, Operation } from 'slate'
+import { FlowContent, isFlowContent } from '@mintter/mttast'
+import { Editor, NodeEntry, Operation, Path } from 'slate'
 import { interpret } from 'xstate'
 import { createModel } from 'xstate/lib/model'
 
