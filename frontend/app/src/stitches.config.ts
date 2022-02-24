@@ -1,15 +1,3 @@
-import basierCircleBoldItalic from '@app/static/fonts/basier-circle/bold-italic.woff2'
-import basierCircleBold from '@app/static/fonts/basier-circle/bold.woff2'
-import basierCircleMediumItalic from '@app/static/fonts/basier-circle/medium-italic.woff2'
-import basierCircleMedium from '@app/static/fonts/basier-circle/medium.woff2'
-import basierCircleRegularItalic from '@app/static/fonts/basier-circle/regular-italic.woff2'
-import basierCircleRegular from '@app/static/fonts/basier-circle/regular.woff2'
-import loraBoldIatlic from '@app/static/fonts/lora/bold-italic.ttf'
-import loraBold from '@app/static/fonts/lora/bold.ttf'
-import loraMediumItalic from '@app/static/fonts/lora/medium-italic.ttf'
-import loraMedium from '@app/static/fonts/lora/medium.ttf'
-import loraRegularItalic from '@app/static/fonts/lora/regular-italic.ttf'
-import loraRegular from '@app/static/fonts/lora/regular.ttf'
 import type * as Stitches from '@stitches/react'
 import {createStitches, defaultThemeMap} from '@stitches/react'
 
@@ -85,9 +73,11 @@ const stitches = createStitches({
       'block-hover': 'rgba(0,0,0,0.02)',
     },
     fonts: {
-      // default: '"Basier Circle", apple-system, sans-serif',
-      default: 'apple-system, sans-serif',
-      alt: '"Lora", serif',
+      default: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+      sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'`,
+      alt: `Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid
+      Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe
+      UI Symbol`,
     },
     fontSizes: {
       1: '12px',
@@ -311,80 +301,6 @@ export const darkTheme = createTheme('dark-theme', {
 })
 
 export const globalStyles = globalCss({
-  '@font-face': [
-    {
-      fontFamily: 'Basier Circle',
-      src: `url('${basierCircleRegular}') format('woff2')`,
-      fontWeight: '400',
-      fontStyle: 'normal',
-    },
-    {
-      fontFamily: 'Basier Circle',
-      src: `url('${basierCircleRegularItalic}') format('woff2')`,
-      fontWeight: '400',
-      fontStyle: 'italic',
-    },
-    {
-      fontFamily: 'Basier Circle',
-      src: `url('${basierCircleMedium}') format('woff2')`,
-      fontWeight: '500',
-      fontStyle: 'normal',
-    },
-    {
-      fontFamily: 'Basier Circle',
-      src: `url('${basierCircleMediumItalic}') format('woff2')`,
-      fontWeight: '500',
-      fontStyle: 'italic',
-    },
-    {
-      fontFamily: 'Basier Circle',
-      src: `url('${basierCircleBold}') format('woff2')`,
-      fontWeight: '700',
-      fontStyle: 'normal',
-    },
-    {
-      fontFamily: 'Basier Circle',
-      src: `url('${basierCircleBoldItalic}') format('woff2')`,
-      fontWeight: '700',
-      fontStyle: 'italic',
-    },
-    {
-      fontFamily: 'Lora',
-      src: `url('${loraRegular}') format('truetype')`,
-      fontWeight: '400',
-      fontStyle: 'normal',
-    },
-    {
-      fontFamily: 'Lora',
-      src: `url('${loraRegularItalic}') format('truetype')`,
-      fontWeight: '400',
-      fontStyle: 'italic',
-    },
-    {
-      fontFamily: 'Lora',
-      src: `url('${loraMedium}') format('truetype')`,
-      fontWeight: '500',
-      fontStyle: 'normal',
-    },
-    {
-      fontFamily: 'Lora',
-      src: `url('${loraMediumItalic}') format('truetype')`,
-      fontWeight: '500',
-      fontStyle: 'italic',
-    },
-    {
-      fontFamily: 'Lora',
-      src: `url('${loraBold}') format('truetype')`,
-      fontWeight: '700',
-      fontStyle: 'normal',
-    },
-    {
-      fontFamily: 'Lora',
-      src: `url('${loraBoldIatlic}') format('truetype')`,
-      fontWeight: '700',
-      fontStyle: 'italic',
-    },
-  ],
   body: {
     backgroundColor: '$background-alt',
     color: '$text-default',
