@@ -24,7 +24,7 @@ type AppProvidersProps = {
 }
 
 export function AppProviders({children, client = queryClient}: PropsWithChildren<AppProvidersProps>) {
-  const authService = useInterpret(authMachine, {
+  const authService = useInterpret(() => authMachine, {
     services: {
       fetchInfo: () => (sendBack) => {
         client

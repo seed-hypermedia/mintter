@@ -1,13 +1,13 @@
-import {Account, getAccount, Link, Publication} from '@app/client'
+import {Account, getAccount, Link, Publication, SidepanelItem} from '@app/client'
 import {useBlockCitations} from '@app/editor/citations'
 import {css} from '@app/stitches.config'
 import {getBlock} from '@app/utils/get-block'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
+import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {FlowContent} from '@mintter/mttast'
 import {useMachine} from '@xstate/react'
-import {useQueryClient} from 'react-query'
 import {assign, createMachine} from 'xstate'
 
 export type BlockCitationsProps = {
@@ -116,45 +116,55 @@ type BlockCitationItemProps = {
 }
 
 function BlockCitationItem({citation}: BlockCitationItemProps) {
-  const client = useQueryClient()
-
+  const sidepanelService = useSidepanel()
   const [state, send] = useMachine(
     //@ts-ignore
-    () =>
-      blockCitationMachine.withConfig({
-        services: {
-          fetchCitation: () => (sendBack) => {
-            ;(async () => {
-              let data = await getBlock(citation.source)
-              let author = await getAccount(data?.publication.document?.author || '')
-              if (data) {
-                sendBack({
-                  type: 'CITATION.FETCH.SUCCESS',
-                  data: {
-                    ...data,
-                    author,
-                  },
-                })
-              } else {
-                sendBack({type: 'CITATION.FETCH.ERROR'})
-              }
-            })()
-          },
+    () => blockCitationMachine,
+    {
+      services: {
+        fetchCitation: () => (sendBack) => {
+          ;(async () => {
+            let data = await getBlock(citation.source)
+            let author = await getAccount(data?.publication.document?.author || '')
+            if (data) {
+              sendBack({
+                type: 'CITATION.FETCH.SUCCESS',
+                data: {
+                  ...data,
+                  author,
+                },
+              })
+            } else {
+              sendBack({type: 'CITATION.FETCH.ERROR'})
+            }
+          })()
         },
-        actions: {
-          assignContextValue: assign({
-            publication: (_, event) => event.data.publication,
-            block: (_, event) => event.data.block,
-            author: (_, event) => event.data.author,
-          }),
-          assignFetchError: assign({
-            errorMessage: (context) => 'Error fetching',
-          }),
-          clearErrorMessage: assign({
-            errorMessage: (context) => '',
-          }),
+      },
+      actions: {
+        assignAuthor: assign({
+          author: (_, event) => event.author,
+        }),
+        assignBlock: assign({
+          block: (_, event) => event.block,
+        }),
+        assignPublication: assign({
+          publication: (_, event) => event.publication,
+        }),
+        assignError: assign({
+          errorMessage: (context) => 'Error fetching',
+        }),
+        clearError: assign({
+          errorMessage: (context) => '',
+        }),
+        openInSidepanel: (_, event) => {
+          sidepanelService.send({
+            type: 'SIDEPANEL.ADD',
+            item: event.item,
+          })
+          sidepanelService.send('SIDEPANEL.OPEN')
         },
-      }),
+      },
+    },
   )
 
   let title = state.context?.publication?.document?.title || 'Untitled Document'
@@ -165,9 +175,20 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
       css={{
         display: 'flex',
         alignItems: 'center',
+        borderRadius: '$3',
+        '&:hover': {
+          background: '$block-hover',
+          cursor: 'pointer',
+        },
       }}
       onClick={() => {
-        console.log('CLICKED!')
+        send({
+          type: 'OPEN.IN.SIDEPANEL',
+          item: {
+            type: 'block',
+            url: `mtt://${citation.source?.documentId}/${citation.source?.version}/${citation.source?.blockId}`,
+          },
+        })
       }}
     >
       <Box
@@ -200,7 +221,23 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
   )
 }
 
+type BlockCitationEvent =
+  | {type: 'CITATION.FETCH.SUCCESS'; publication: Publication; block: FlowContent; author: Account}
+  | {type: 'CITATION.FETCH.ERROR'}
+  | {type: 'RETRY'}
+  | {type: 'OPEN.IN.SIDEPANEL'; item: SidepanelItem}
+
 const blockCitationMachine = createMachine({
+  tsTypes: {} as import('./block-citations.typegen').Typegen0,
+  schema: {
+    context: {} as {
+      publication: Publication | null
+      block: FlowContent | null
+      author: Account | null
+      errorMessage: string
+    },
+    events: {} as BlockCitationEvent,
+  },
   initial: 'loading',
   context: {
     publication: null as Publication | null,
@@ -215,22 +252,28 @@ const blockCitationMachine = createMachine({
         src: 'fetchCitation',
       },
       on: {
-        ['CITATION.FETCH.SUCCESS']: {
+        'CITATION.FETCH.SUCCESS': {
           target: 'ready',
-          actions: ['assignContextValue'],
+          actions: ['assignPublication', 'assignBlock', 'assignAuthor'],
         },
-        ['CITATION.FETCH.ERROR']: {
+        'CITATION.FETCH.ERROR': {
           target: 'errored',
-          actions: ['assignFetchError'],
+          actions: ['assignError'],
         },
       },
     },
-    ready: {},
+    ready: {
+      on: {
+        'OPEN.IN.SIDEPANEL': {
+          actions: ['openInSidepanel'],
+        },
+      },
+    },
     errored: {
       on: {
         RETRY: {
           target: 'loading',
-          actions: ['clearErrorMessage'],
+          actions: ['clearError'],
         },
       },
     },
