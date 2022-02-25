@@ -1,19 +1,16 @@
-import {createModel} from 'xstate/lib/model'
+import { createMachine } from "xstate"
 
-export const libraryModel = createModel(
-  {},
-  {
-    events: {
-      'LIBRARY.OPEN': () => ({}),
-      'LIBRARY.CLOSE': () => ({}),
-      'LIBRARY.TOGGLE': () => ({}),
-    },
-  },
-)
+type LibraryEvent =
+  | { type: 'LIBRARY.OPEN' }
+  | { type: 'LIBRARY.CLOSE' }
+  | { type: 'LIBRARY.TOGGLE' }
 
-export const libraryMachine = libraryModel.createMachine({
+export const libraryMachine = createMachine({
   initial: 'opened',
-  context: libraryModel.initialContext,
+  tsTypes: {} as import("./library-machine.typegen").Typegen0,
+  schema: {
+    events: {} as LibraryEvent
+  },
   states: {
     opened: {
       on: {

@@ -76,7 +76,7 @@ export function LibraryItem({
     createDraft(onSidepanel)
   }
 
-  let title = publication ? publication.document?.title : draft && draft.title ? draft?.title : 'Untitled Document'
+  let title = publication ? publication.document?.title : draft && draft.title ? draft?.title : 'New Document'
 
   return (
     <StyledItem active={match} data-testid="library-item">

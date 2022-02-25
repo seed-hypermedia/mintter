@@ -6,7 +6,7 @@ import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {EditorDocument} from '@app/editor/use-editor-draft'
 import {queryKeys, useAccount} from '@app/hooks'
-import {tippingMachine, tippingModel} from '@app/tipping-machine'
+import {tippingMachine} from '@app/tipping-machine'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getBlock} from '@app/utils/get-block'
 import {getDateFormat} from '@app/utils/get-format-date'
@@ -25,8 +25,7 @@ import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 import {QueryClient, useQueryClient} from 'react-query'
 import {useLocation} from 'wouter'
-import {StateFrom} from 'xstate'
-import {createModel} from 'xstate/lib/model'
+import {assign, createMachine, StateFrom} from 'xstate'
 import {PublicationPageProps} from './types'
 
 export default function Publication({params}: PublicationPageProps) {
@@ -35,7 +34,7 @@ export default function Publication({params}: PublicationPageProps) {
   const [, setLocation] = useLocation()
   const citations = useCitationService()
 
-  const [state, send] = usePagePublication(client, params?.docId)
+  const [state, send] = usePagePublication(client, params?.docId, params?.version)
 
   const {data: author} = useAccount(state.context.publication?.document?.author, {
     enabled: !!state.context.publication?.document?.author,
@@ -43,7 +42,7 @@ export default function Publication({params}: PublicationPageProps) {
 
   useEffect(() => {
     if (params?.docId) {
-      send(publicationModel.events[PUBLICATION_FETCH_DATA](params.docId, params.version))
+      send({type: 'PUBLICATION.FETCH.DATA', id: params.docId, version: params.version})
       citations.send({type: 'CITATIONS.FETCH', documentId: params.docId, version: params.version})
     }
   }, [params?.docId])
@@ -79,7 +78,10 @@ export default function Publication({params}: PublicationPageProps) {
       >
         <Text>Publication ERROR</Text>
         <Text>{state.context.errorMessage}</Text>
-        <Button onClick={() => send(publicationModel.events[PUBLICATION_FETCH_DATA](state.context.id))} color="muted">
+        <Button
+          onClick={() => send({type: 'PUBLICATION.FETCH.DATA', id: state.context.id, version: state.context.version})}
+          color="muted"
+        >
           try again
         </Button>
       </Box>
@@ -138,7 +140,7 @@ export default function Publication({params}: PublicationPageProps) {
         <Button
           size="1"
           variant={state.matches('discussion') ? 'solid' : 'ghost'}
-          onClick={() => send(publicationModel.events[PUBLICATION_TOGGLE_DISCUSSION]())}
+          onClick={() => send('TOGGLE.DISCUSSION')}
           disabled={state.hasTag('pending')}
         >
           Toggle Discussion
@@ -249,13 +251,13 @@ export default function Publication({params}: PublicationPageProps) {
   )
 }
 
-function usePagePublication(client: QueryClient, docId?: string) {
+function usePagePublication(client: QueryClient, docId?: string, version?: string) {
   const service = useInterpret(() => createPublicationMachine(client))
   const [state, send] = useActor(service)
 
   useEffect(() => {
     if (docId) {
-      send(publicationModel.events[PUBLICATION_FETCH_DATA](docId))
+      send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})
     }
   }, [send, docId])
 
@@ -264,215 +266,226 @@ function usePagePublication(client: QueryClient, docId?: string) {
 
 export type ClientPublication = Omit<PublicationType, 'document'> & {document: EditorDocument}
 
-export const PUBLICATION_FETCH_DATA = 'PUBLICATION.FETCH.DATA'
-export const PUBLICATION_REPORT_SUCCESS = 'PUBLICATION.REPORT.SUCCESS'
-export const PUBLICATION_REPORT_ERROR = 'PUBLICATION.REPORT.ERROR'
-export const PUBLICATION_TOGGLE_DISCUSSION = 'TOGGLE.DISCUSSION'
-const publicationModel = createModel(
-  {
-    id: '',
-    version: '',
-    publication: null as ClientPublication | null,
-    errorMessage: '',
-    canUpdate: false,
-    links: undefined as Array<Link> | undefined,
-    discussion: null as any,
-  },
-  {
-    events: {
-      [PUBLICATION_REPORT_SUCCESS]: (props: {publication: ClientPublication; canUpdate: boolean}) => props,
-      [PUBLICATION_REPORT_ERROR]: (errorMessage: string) => ({errorMessage}),
-      [PUBLICATION_FETCH_DATA]: (id: string, version?: string) => ({id, version}),
-      [PUBLICATION_TOGGLE_DISCUSSION]: () => ({}),
-      'REPORT.DISCUSSION.SUCCESS': (links: Array<Link>, discussion: any) => ({links, discussion}),
-      'REPORT.DISCUSSION.ERROR': (errorMessage: string) => ({errorMessage}),
-    },
-  },
-)
+export type PublicationContextType = {
+  id: string
+  version: string
+  publication: ClientPublication | null
+  errorMessage: string
+  canUpdate: boolean
+  links: Array<Link> | null
+  discussion: Document | null
+}
+
+export type PublicationEvent =
+  | {type: 'PUBLICATION.FETCH.DATA'; id: string; version?: string}
+  | {type: 'PUBLICATION.REPORT.SUCCESS'; publication: ClientPublication; canUpdate?: boolean}
+  | {type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string}
+  | {type: 'TOGGLE.DISCUSSION'}
+  | {type: 'REPORT.DISCUSSION.SUCCESS'; links: Array<Link>; discussion: any}
+  | {type: 'REPORT.DISCUSSION.ERROR'; errorMessage: string}
 
 function createPublicationMachine(client: QueryClient) {
-  return publicationModel.createMachine({
-    tsTypes: {} as import('./publication.typegen').Typegen0,
-    id: 'publication-machine',
-    context: publicationModel.initialContext,
-    initial: 'idle',
-    states: {
-      idle: {
-        on: {
-          [PUBLICATION_FETCH_DATA]: {
-            target: 'fetching',
-            actions: [
-              publicationModel.assign({
-                id: (_, event) => event.id,
-                version: (_, event) => event.version ?? '',
-              }),
-            ],
+  return createMachine(
+    {
+      tsTypes: {} as import('./publication.typegen').Typegen0,
+      schema: {
+        context: {} as PublicationContextType,
+        events: {} as PublicationEvent,
+      },
+      id: 'publication-machine',
+      context: {
+        id: '',
+        version: '',
+        publication: null,
+        errorMessage: '',
+        canUpdate: false,
+        links: null,
+        discussion: null,
+      },
+      initial: 'idle',
+      states: {
+        idle: {
+          on: {
+            'PUBLICATION.FETCH.DATA': {
+              target: 'fetching',
+              actions: ['assignId', 'assignVersion'],
+            },
           },
         },
-      },
-      fetching: {
-        tags: ['pending'],
-        invoke: {
-          src: (ctx) => (sendBack) => {
-            Promise.all([
-              client.fetchQuery([queryKeys.GET_PUBLICATION, ctx.id, ctx.version], () =>
-                getPublication(ctx.id, ctx.version),
-              ),
-              client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo()),
-            ])
-              .then(([publication, info]) => {
-                if (publication.document?.content) {
-                  let content = JSON.parse(publication.document?.content)
-                  sendBack(
-                    publicationModel.events[PUBLICATION_REPORT_SUCCESS]({
-                      publication: Object.assign(publication, {document: {...publication.document, content}}),
+        fetching: {
+          tags: ['pending'],
+          invoke: {
+            src: (context) => (sendBack) => {
+              Promise.all([
+                client.fetchQuery([queryKeys.GET_PUBLICATION, context.id, context.version], () =>
+                  getPublication(context.id, context.version),
+                ),
+                client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo()),
+              ])
+                .then(([publication, info]) => {
+                  if (publication.document?.content) {
+                    let content = JSON.parse(publication.document?.content)
+                    sendBack({
+                      type: 'PUBLICATION.REPORT.SUCCESS',
+                      publication: Object.assign(publication, {
+                        document: {
+                          ...publication.document,
+                          content,
+                        },
+                      }),
                       canUpdate: info.accountId == publication.document.author,
-                    }),
-                  )
-                } else {
-                  if (publication.document?.content === '') {
-                    sendBack(publicationModel.events[PUBLICATION_REPORT_ERROR]('Content is Empty'))
+                    })
                   } else {
-                    sendBack(publicationModel.events[PUBLICATION_REPORT_ERROR]('error parsing content'))
+                    if (publication.document?.content === '') {
+                      sendBack({type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'Content is Empty'})
+                    } else {
+                      sendBack({type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'error parsing content'})
+                    }
                   }
-                }
-              })
-              .catch((err) => {
-                sendBack(publicationModel.events[PUBLICATION_REPORT_ERROR]('error fetching'))
-              })
+                })
+                .catch((err) => {
+                  sendBack({type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'error fetching'})
+                })
+            },
+          },
+          on: {
+            'PUBLICATION.REPORT.SUCCESS': {
+              target: 'ready',
+              actions: ['assignPublication', 'assignCanUpdate'],
+            },
+            'PUBLICATION.REPORT.ERROR': {
+              target: 'errored',
+              actions: ['assignError'],
+            },
           },
         },
-        on: {
-          [PUBLICATION_REPORT_SUCCESS]: {
-            target: 'ready',
-            actions: [
-              publicationModel.assign((_, ev) => ({
-                publication: ev.publication,
-                canUpdate: ev.canUpdate,
-                errorMessage: '',
-              })),
-            ],
-          },
-          [PUBLICATION_REPORT_ERROR]: {
-            target: 'errored',
-            actions: publicationModel.assign({
-              errorMessage: (_, ev) => ev.errorMessage,
-            }),
+        ready: {
+          on: {
+            'PUBLICATION.FETCH.DATA': {
+              target: 'fetching',
+              actions: ['assignId', 'assignVersion'],
+            },
+            'TOGGLE.DISCUSSION': {
+              target: 'discussion',
+            },
           },
         },
-      },
-      ready: {
-        on: {
-          [PUBLICATION_FETCH_DATA]: {
-            target: 'fetching',
-            actions: [
-              publicationModel.assign({
-                id: (_, event) => event.id,
-                errorMessage: '',
-              }),
-            ],
-          },
-          [PUBLICATION_TOGGLE_DISCUSSION]: {
-            target: 'discussion',
-          },
-        },
-      },
-      discussion: {
-        initial: 'idle',
-        onDone: [
-          {
-            target: 'errored',
-            cond: (context) => !!context.errorMessage,
-          },
-          {
-            target: 'ready',
-          },
-        ],
-        states: {
-          idle: {
-            always: [
-              {
-                target: 'ready',
-                cond: (context) => typeof context.links != 'undefined',
-              },
-              {
-                target: 'fetching',
-              },
-            ],
-          },
-          fetching: {
-            tags: ['pending'],
-            invoke: {
-              src: (context) => (sendBack) => {
-                listCitations(context.id)
-                  .then((response) => {
-                    Promise.all(response.links.map(({source}) => getBlock(source)))
-                      //@ts-ignore
-                      .then((result: Array<FlowContent>) => {
-                        let discussion = document([group(result)])
-                        sendBack(publicationModel.events['REPORT.DISCUSSION.SUCCESS'](response.links, discussion))
+        discussion: {
+          initial: 'idle',
+          onDone: [
+            {
+              target: 'errored',
+              cond: (context) => !!context.errorMessage,
+            },
+            {
+              target: 'ready',
+            },
+          ],
+          states: {
+            idle: {
+              always: [
+                {
+                  target: 'ready',
+                  cond: (context) => typeof context.links != 'undefined',
+                },
+                {
+                  target: 'fetching',
+                },
+              ],
+            },
+            fetching: {
+              tags: ['pending'],
+              invoke: {
+                src: (context) => (sendBack) => {
+                  listCitations(context.id)
+                    .then((response) => {
+                      Promise.all(response.links.map(({source}) => getBlock(source)))
+                        //@ts-ignore
+                        .then((result: Array<FlowContent>) => {
+                          let discussion = document([group(result)])
+                          sendBack({type: 'REPORT.DISCUSSION.SUCCESS', links: response.links, discussion})
+                        })
+                    })
+                    .catch((error: any) => {
+                      sendBack({
+                        type: 'REPORT.DISCUSSION.ERROR',
+                        errorMessage: `Error fetching Discussion: ${error.message}`,
                       })
-                  })
-                  .catch((error) => {
-                    sendBack(publicationModel.events['REPORT.DISCUSSION.ERROR'](error))
-                  })
+                    })
+                },
+              },
+              on: {
+                'REPORT.DISCUSSION.SUCCESS': {
+                  target: 'ready',
+                  actions: ['assignLinks', 'assignDiscussion'],
+                },
+                'REPORT.DISCUSSION.ERROR': {
+                  target: 'finish',
+                  actions: ['assignError'],
+                },
               },
             },
-            on: {
-              'REPORT.DISCUSSION.SUCCESS': {
-                target: 'ready',
-                actions: [
-                  publicationModel.assign((_, event) => ({
-                    links: event.links,
-                    discussion: event.discussion,
-                    errorMessage: '',
-                  })),
-                ],
-              },
-              'REPORT.DISCUSSION.ERROR': {
-                target: 'finish',
-                actions: [
-                  publicationModel.assign({
-                    errorMessage: (_, event) => JSON.stringify(event.errorMessage),
-                  }),
-                ],
+            ready: {
+              on: {
+                'TOGGLE.DISCUSSION': {
+                  target: 'finish',
+                },
+                'PUBLICATION.FETCH.DATA': {
+                  target: 'finish',
+                  actions: ['clearLinks', 'clearDiscussion', 'clearError'],
+                },
               },
             },
-          },
-          ready: {
-            on: {
-              [PUBLICATION_TOGGLE_DISCUSSION]: {
-                target: 'finish',
-              },
-              [PUBLICATION_FETCH_DATA]: {
-                target: 'finish',
-                actions: [
-                  publicationModel.assign({
-                    links: undefined,
-                  }),
-                ],
-              },
+            finish: {
+              type: 'final',
             },
-          },
-          finish: {
-            type: 'final',
           },
         },
-      },
-      errored: {
-        on: {
-          [PUBLICATION_FETCH_DATA]: {
-            target: 'fetching',
-            actions: [
-              publicationModel.assign({
-                id: (_, event) => event.id,
-              }),
-            ],
+        errored: {
+          on: {
+            'PUBLICATION.FETCH.DATA': {
+              target: 'fetching',
+              actions: ['assignId', 'assignVersion'],
+            },
           },
         },
       },
     },
-  })
+    {
+      actions: {
+        assignId: assign({
+          id: (_, event) => event.id,
+        }),
+        assignVersion: assign({
+          version: (_, event) => event.version || '',
+        }),
+        assignPublication: assign({
+          publication: (_, event) => event.publication,
+        }),
+        assignCanUpdate: assign({
+          canUpdate: (_, event) => Boolean(event.canUpdate),
+        }),
+        assignDiscussion: assign({
+          discussion: (_, event) => event.discussion,
+        }),
+        assignLinks: assign({
+          links: (_, event) => event.links,
+        }),
+        assignError: assign({
+          errorMessage: (_, event) => event.errorMessage,
+        }),
+        clearDiscussion: assign({
+          discussion: (context) => null,
+        }),
+        clearError: assign({
+          errorMessage: (context) => '',
+        }),
+        clearLinks: assign({
+          links: (context) => null,
+        }),
+      },
+    },
+  )
 }
 
 function TippingModal({
@@ -491,7 +504,7 @@ function TippingModal({
 
   useEffect(() => {
     if (publicationId && accountId) {
-      send(tippingModel.events.SET_TIP_DATA(publicationId, accountId))
+      send({type: 'TIPPING.SET.TIP.DATA', publicationID: publicationId, accountID: accountId})
     }
   }, [publicationId, accountId])
 
@@ -506,9 +519,9 @@ function TippingModal({
       open={state.matches('open')}
       onOpenChange={(newVal) => {
         if (newVal) {
-          send(tippingModel.events.OPEN())
+          send('OPEN')
         } else {
-          send(tippingModel.events.CLOSE())
+          send('CLOSE')
         }
       }}
     >
@@ -518,7 +531,7 @@ function TippingModal({
           variant="ghost"
           color="success"
           onClick={() => {
-            send(tippingModel.events.OPEN())
+            send('OPEN')
           }}
         >
           Tip Author
@@ -558,7 +571,7 @@ function TippingModal({
             <Text size="1" color="danger">
               {JSON.stringify(state.context.errorMessage)}
             </Text>
-            <Button size="1" type="submit" css={{width: '$full'}} onClick={() => send(tippingModel.events.RETRY())}>
+            <Button size="1" type="submit" css={{width: '$full'}} onClick={() => send('RETRY')}>
               Retry
             </Button>
           </Box>
@@ -587,7 +600,7 @@ function TippingModal({
                 {state.context.invoice}
               </Text>
             </Box>
-            <Button size="1" css={{width: '$full'}} onClick={() => send(tippingModel.events.PAY_INVOICE())}>
+            <Button size="1" css={{width: '$full'}} onClick={() => send('TIPPING.PAY.INVOICE')}>
               Pay Directly
             </Button>
           </Box>
@@ -636,7 +649,7 @@ function SetAmount({send, state}: {state: StateFrom<typeof tippingMachine>; send
             label="Invoice Amount"
             size={1}
             value={state.context.amount}
-            onChange={(e) => send(tippingModel.events.UPDATE_AMOUNT(Number(e.target.value)))}
+            onChange={(e) => send({type: 'TIPPING.UPDATE.AMOUNT', amount: Number(e.target.value)})}
           />
           <Box
             css={{
@@ -650,7 +663,7 @@ function SetAmount({send, state}: {state: StateFrom<typeof tippingMachine>; send
               type="submit"
               disabled={state.hasTag('pending')}
               css={{width: '$full'}}
-              onClick={() => send(tippingModel.events.REQUEST_INVOICE())}
+              onClick={() => send('TIPPING.REQUEST.INVOICE')}
             >
               Request Invoice
             </Button>
@@ -788,82 +801,93 @@ function DiscussionItem({link}: {link: Link}) {
   return null
 }
 
-const discussionItemModel = createModel(
-  {
-    link: null as Link | null,
-    publication: null as PublicationType | null,
-    block: null as FlowContent | null,
-    errorMessage: '',
-  },
-  {
-    events: {
-      FETCH: (link: Link) => ({link}),
-      'REPORT.FETCH.SUCCESS': (publication: PublicationType, block: FlowContent) => ({publication, block}),
-      'REPORT.FETCH.ERROR': (errorMessage: string) => ({errorMessage}),
-      RETRY: () => ({}),
-    },
-  },
-)
+type DiscussionContextType = {
+  link: Link | null
+  publication: PublicationType | null
+  block: FlowContent | null
+  errorMessage: string
+}
 
-const discussionItemMachine = discussionItemModel.createMachine({
-  initial: 'idle',
-  context: discussionItemModel.initialContext,
-  states: {
-    idle: {
-      tags: ['pending'],
-      on: {
-        FETCH: {
-          target: 'fetching',
-          actions: [
-            discussionItemModel.assign({
-              link: (_, event) => event.link,
-            }),
-          ],
-        },
+type DiscussionEvent =
+  | {type: 'FETCH'; link: Link}
+  | {type: 'REPORT.FETCH.SUCCESS'; publication: PublicationType; block: FlowContent}
+  | {type: 'REPORT.FETCH.ERROR'; errorMessage: Error['message']}
+  | {type: 'RETRY'}
+
+export function createDiscussionMachine(client: QueryClient) {
+  return createMachine(
+    {
+      tsTypes: {} as import('./publication.typegen').Typegen1,
+      schema: {
+        context: {} as DiscussionContextType,
+        events: {} as DiscussionEvent,
       },
-    },
-    fetching: {
-      tags: ['pending'],
-      invoke: {
-        src: (context) => (sendBack) => {
-          ;(async () => {
-            if (!context.link?.source) {
-              sendBack(discussionItemModel.events['REPORT.FETCH.ERROR']('Error on Discussion Link'))
-            } else {
-              let publication = await getPublication(context.link!.source!.documentId!)
-              let data = await getBlock(context.link!.source!)
-              if (data && data.block) {
-                sendBack(discussionItemModel.events['REPORT.FETCH.SUCCESS'](data.publication, data.block))
+      initial: 'idle',
+      context: {
+        link: null,
+        publication: null,
+        block: null,
+        errorMessage: '',
+      },
+      states: {
+        idle: {
+          tags: ['pending'],
+          on: {
+            FETCH: {
+              target: 'fetching',
+              actions: ['assignLink'],
+            },
+          },
+        },
+        fetching: {
+          tags: ['pending'],
+          invoke: {
+            src: (context) => (sendBack) => {
+              if (!context.link?.source) {
+                sendBack({type: 'REPORT.FETCH.ERROR', errorMessage: 'Error on Discussion Link'})
+              } else {
+                getBlock(context.link!.source!).then((data) => {
+                  if (data && data.block) {
+                    sendBack({type: 'REPORT.FETCH.SUCCESS', publication: data.publication, block: data.block})
+                  }
+                })
               }
-            }
-          })()
+            },
+          },
+          on: {
+            'REPORT.FETCH.SUCCESS': {
+              target: 'ready',
+              actions: ['assignPublication', 'assignBlock'],
+            },
+            'REPORT.FETCH.ERROR': {
+              actions: ['assignError'],
+              target: 'errored',
+            },
+          },
         },
-      },
-      on: {
-        'REPORT.FETCH.SUCCESS': {
-          target: 'ready',
-          actions: [
-            discussionItemModel.assign((_, event) => ({
-              publication: event.publication,
-              block: event.block,
-            })),
-          ],
+        errored: {
+          on: {
+            RETRY: 'fetching',
+          },
         },
-        'REPORT.FETCH.ERROR': {
-          actions: [
-            discussionItemModel.assign({
-              errorMessage: (_, event) => event.errorMessage,
-            }),
-          ],
-          target: 'errored',
-        },
+        ready: {},
       },
     },
-    errored: {
-      on: {
-        RETRY: 'fetching',
+    {
+      actions: {
+        assignLink: assign({
+          link: (_, event) => event.link,
+        }),
+        assignBlock: assign({
+          block: (_, event) => event.block,
+        }),
+        assignPublication: assign({
+          publication: (_, event) => event.publication,
+        }),
+        assignError: assign({
+          errorMessage: (_, event) => event.errorMessage,
+        }),
       },
     },
-    ready: {},
-  },
-})
+  )
+}

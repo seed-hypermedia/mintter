@@ -148,10 +148,10 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
             author: (_, event) => event.data.author,
           }),
           assignFetchError: assign({
-            errorMessage: 'Error fetching',
+            errorMessage: (context) => 'Error fetching',
           }),
           clearErrorMessage: assign({
-            errorMessage: '',
+            errorMessage: (context) => '',
           }),
         },
       }),
@@ -163,28 +163,38 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
   return (
     <Box
       css={{
-        padding: '$3',
-        // background: '$block-hover',
-        borderRadius: '$2',
         display: 'flex',
-        flexDirection: 'column',
-        gap: '$2',
+        alignItems: 'center',
+      }}
+      onClick={() => {
+        console.log('CLICKED!')
       }}
     >
-      <Text size="1" fontWeight="bold" color="default">
-        {title}
-      </Text>
       <Box
         css={{
+          padding: '$3',
+          // background: '$block-hover',
+          borderRadius: '$2',
           display: 'flex',
+          flexDirection: 'column',
           gap: '$2',
-          alignItems: 'center',
         }}
       >
-        <Avatar size="1" />
-        <Text size="1" color="muted">
-          {authorAlias}
+        <Text size="1" fontWeight="bold" color="default">
+          {title}
         </Text>
+        <Box
+          css={{
+            display: 'flex',
+            gap: '$2',
+            alignItems: 'center',
+          }}
+        >
+          <Avatar size="1" />
+          <Text size="1" color="muted">
+            {authorAlias}
+          </Text>
+        </Box>
       </Box>
     </Box>
   )
