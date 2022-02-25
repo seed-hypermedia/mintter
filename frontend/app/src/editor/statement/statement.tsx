@@ -26,7 +26,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
     },
   configureEditor(editor) {
     if (editor.readOnly) return
-    const {normalizeNode} = editor
+    const {normalizeNode, deleteBackward, apply} = editor
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
@@ -86,6 +86,17 @@ export const createStatementPlugin = (): EditorPlugin => ({
       normalizeNode(entry)
     }
 
+    editor.apply = (operation) => {
+      console.log('operation: ', operation)
+      apply(operation)
+    }
+
+    editor.deleteBackward = (unit) => {
+      console.log('deleteBackward', unit)
+
+      deleteBackward(unit)
+    }
+
     return editor
   },
   onKeyDown: (editor) => (event) => {
@@ -137,8 +148,8 @@ function Statement({attributes, children, element, mode}: RenderElementProps & {
 export function removeEmptyStatement(editor: Editor, entry: NodeEntry<StatementType>): boolean | undefined {
   const [node, path] = entry
   if (node.children.length == 1) {
-    const children = Editor.node(editor, path.concat(0))
-    if (!('type' in children[0])) {
+    const child = Editor.node(editor, path.concat(0))
+    if (!('type' in child[0])) {
       Transforms.removeNodes(editor, {
         at: path,
       })

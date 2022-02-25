@@ -1,42 +1,48 @@
 import request, { gql } from 'graphql-request'
-import { createModel } from 'xstate/lib/model'
+import { assign, createMachine } from 'xstate'
 import { MINTTER_GRAPHQL_API_URL } from './wallet-machine'
 
-export const tippingModel = createModel(
-  {
+type TippingContextType = {
+  amount: number;
+  accountID: string;
+  publicationID: string;
+  invoice: string;
+  errorMessage: string;
+}
+
+type TippingEvent =
+  | { type: 'OPEN' }
+  | { type: 'CLOSE' }
+  | { type: 'RETRY' }
+  | { type: 'TIPPING.SET.TIP.DATA'; publicationID: string; accountID: string }
+  | { type: 'TIPPING.UPDATE.AMOUNT', amount: number; }
+  | { type: 'TIPPING.REQUEST.INVOICE' }
+  | { type: 'REPORT.TIPPING.REQUEST.INVOICE.SUCCESS'; invoice: string }
+  | { type: 'REPORT.TIPPING.REQUEST.INVOICE.ERROR'; errorMessage: string }
+  | { type: 'TIPPING.PAY.INVOICE' }
+  | { type: 'REPORT.TIPPING.PAYMENT.SUCCESS' }
+  | { type: 'REPORT.TIPPING.PAYMENT.ERROR'; errorMessage: string }
+
+export const tippingMachine = createMachine({
+  tsTypes: {} as import("./tipping-machine.typegen").Typegen0,
+  schema: {
+    context: {} as TippingContextType,
+    events: {} as TippingEvent
+  },
+  initial: 'close',
+  context: {
     amount: 0,
+    invoice: '',
     accountID: '',
     publicationID: '',
-    invoice: '',
-    errorMessage: '',
+    errorMessage: ''
   },
-  {
-    events: {
-      OPEN: () => ({}),
-      CLOSE: () => ({}),
-      RETRY: () => ({}),
-      SET_TIP_DATA: (publicationID: string, accountID: string) => ({ publicationID, accountID }),
-      UPDATE_AMOUNT: (amount: number) => ({ amount }),
-      REQUEST_INVOICE: () => ({}),
-      REPORT_INVOICE_RECEIVED: (invoice: string) => ({ invoice }),
-      REPORT_INVOICE_ERRORED: (errorMessage: string) => ({ errorMessage }),
-      PAY_INVOICE: () => ({}),
-      REPORT_PAID: () => ({}),
-      REPORT_PAID_ERRORED: (errorMessage: string) => ({ errorMessage }),
-    },
-  },
-)
-
-export const tippingMachine = tippingModel.createMachine({
-  initial: 'close',
-  context: tippingModel.initialContext,
   on: {
-    SET_TIP_DATA: {
+
+    'TIPPING.SET.TIP.DATA': {
       actions: [
-        tippingModel.assign((_, event) => ({
-          publicationID: event.publicationID,
-          accountID: event.accountID,
-        })),
+        'assignPublicationID',
+        'assignAccountID'
       ],
     },
   },
@@ -62,14 +68,12 @@ export const tippingMachine = tippingModel.createMachine({
       states: {
         setAmount: {
           on: {
-            REQUEST_INVOICE: {
+            'TIPPING.REQUEST.INVOICE': {
               target: 'requestInvoice',
             },
-            UPDATE_AMOUNT: {
+            'TIPPING.UPDATE.AMOUNT': {
               actions: [
-                tippingModel.assign({
-                  amount: (_, event) => event.amount,
-                }),
+                'assignAmount'
               ],
             },
           },
@@ -80,17 +84,13 @@ export const tippingMachine = tippingModel.createMachine({
             RETRY: {
               target: 'setAmount',
               actions: [
-                tippingModel.assign({
-                  errorMessage: '',
-                }),
+                'clearError'
               ],
             },
-            REQUEST_INVOICE: {
+            'TIPPING.REQUEST.INVOICE': {
               target: 'requestInvoice',
               actions: [
-                tippingModel.assign({
-                  errorMessage: '',
-                }),
+                'clearError'
               ],
             },
           },
@@ -114,41 +114,33 @@ export const tippingMachine = tippingModel.createMachine({
                 },
               })
                 .then((response) => {
-                  sendBack(tippingModel.events.REPORT_INVOICE_RECEIVED(response.requestInvoice.paymentRequest))
+                  sendBack({ type: 'REPORT.TIPPING.REQUEST.INVOICE.SUCCESS', invoice: response.requestInvoice.paymentRequest })
                 })
                 .catch((err) => {
                   sendBack(
-                    tippingModel.events.REPORT_INVOICE_ERRORED(
-                      err.response.errors.map((e: any) => e.message).join(' | '),
-                    ),
+                    { type: 'REPORT.TIPPING.REQUEST.INVOICE.ERROR', errorMessage: err.response.errors.map((e: any) => e.message).join(' | ') }
                   )
                 })
             },
           },
           on: {
-            REPORT_INVOICE_RECEIVED: {
+            'REPORT.TIPPING.REQUEST.INVOICE.SUCCESS': {
               target: 'readyToPay',
               actions: [
-                tippingModel.assign({
-                  invoice: (_, event) => event.invoice
-                }),
+                'assignInvoice'
               ],
             },
-            REPORT_INVOICE_ERRORED: {
+            'REPORT.TIPPING.REQUEST.INVOICE.ERROR': {
               target: 'errored',
               actions: [
-                tippingModel.assign({
-                  errorMessage: (_, event) => event.errorMessage,
-                }),
+                'assignError'
               ],
             },
           },
         },
         readyToPay: {
           on: {
-            PAY_INVOICE: {
-              target: 'paying',
-            },
+            'TIPPING.PAY.INVOICE': 'paying',
           },
         },
         paying: {
@@ -169,25 +161,21 @@ export const tippingMachine = tippingModel.createMachine({
                 },
               })
                 .then((response) => {
-                  sendBack(tippingModel.events.REPORT_PAID())
+                  sendBack('REPORT.TIPPING.PAYMENT.SUCCESS')
                 })
                 .catch((err) => {
                   sendBack(
-                    tippingModel.events.REPORT_PAID_ERRORED(err.response.errors.map((e: any) => e.message).join(' | ')),
+                    { type: 'REPORT.TIPPING.PAYMENT.ERROR', errorMessage: err.response.errors.map((e: any) => e.message).join(' | ') }
                   )
                 })
             },
           },
           on: {
-            REPORT_PAID: {
-              target: 'success',
-            },
-            REPORT_PAID_ERRORED: {
+            'REPORT.TIPPING.PAYMENT.SUCCESS': 'success',
+            'REPORT.TIPPING.PAYMENT.ERROR': {
               target: 'errored',
               actions: [
-                tippingModel.assign({
-                  errorMessage: (_, event) => event.errorMessage,
-                }),
+                'assignError'
               ],
             },
           },
@@ -205,4 +193,25 @@ export const tippingMachine = tippingModel.createMachine({
       },
     },
   },
+}, {
+  actions: {
+    assignAccountID: assign({
+      accountID: (_, event) => event.accountID
+    }),
+    assignAmount: assign({
+      amount: (_, event) => event.amount
+    }),
+    assignError: assign({
+      errorMessage: (_, event) => event.errorMessage
+    }),
+    assignInvoice: assign({
+      invoice: (_, event) => event.invoice
+    }),
+    assignPublicationID: assign({
+      publicationID: (_, event) => event.publicationID
+    }),
+    clearError: assign({
+      errorMessage: (context) => ''
+    })
+  }
 })
