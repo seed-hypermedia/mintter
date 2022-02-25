@@ -89,7 +89,14 @@ export function mountWithAccount({
 
 export function MainPageProviders({children, client}: PropsWithChildren<{client: QueryClient}>) {
   let sidepanel = useInterpret(() => createSidepanelMachine(client))
-  let mainPageService = useInterpret(() => createMainPageMachine(client))
+  let mainPageService = useInterpret(() => createMainPageMachine(client), {
+    actions: {
+      reconcileLibrary: (context) => {
+        context.files.send('RECONCILE')
+        context.drafts.send('RECONCILE')
+      },
+    },
+  })
   let hover = useInterpret(() => hoverMachine)
   let bookmarks = useInterpret(() => createBookmarksMachine(client))
 
