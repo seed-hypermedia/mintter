@@ -1,34 +1,33 @@
-import {createDraft, getInfo, getPublication, Link, listCitations, Publication as PublicationType} from '@app/client'
-import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {useCitationService} from '@app/editor/citations'
-import {ContextMenu} from '@app/editor/context-menu'
-import {Editor} from '@app/editor/editor'
-import {EditorMode} from '@app/editor/plugin-utils'
-import {EditorDocument} from '@app/editor/use-editor-draft'
-import {queryKeys, useAccount} from '@app/hooks'
-import {tippingMachine} from '@app/tipping-machine'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {getBlock} from '@app/utils/get-block'
-import {getDateFormat} from '@app/utils/get-format-date'
-import {useBookmarksService} from '@components/bookmarks'
-import {Box} from '@components/box'
-import {Button} from '@components/button'
-import {Icon} from '@components/icon'
-import {useSidepanel} from '@components/sidepanel'
-import {Text} from '@components/text'
-import {TextField} from '@components/text-field'
-import {document, FlowContent, group} from '@mintter/mttast'
+import { createDraft, getInfo, getPublication, Link, listCitations, Publication as PublicationType } from '@app/client'
+import { MINTTER_LINK_PREFIX } from '@app/constants'
+import { useCitationService } from '@app/editor/citations'
+import { ContextMenu } from '@app/editor/context-menu'
+import { Editor } from '@app/editor/editor'
+import { EditorMode } from '@app/editor/plugin-utils'
+import { EditorDocument } from '@app/editor/use-editor-draft'
+import { queryKeys, useAccount } from '@app/hooks'
+import { tippingMachine } from '@app/tipping-machine'
+import { copyTextToClipboard } from '@app/utils/copy-to-clipboard'
+import { getBlock } from '@app/utils/get-block'
+import { getDateFormat } from '@app/utils/get-format-date'
+import { useBookmarksService } from '@components/bookmarks'
+import { Box } from '@components/box'
+import { Button } from '@components/button'
+import { Icon } from '@components/icon'
+import { Text } from '@components/text'
+import { TextField } from '@components/text-field'
+import { document, FlowContent, group } from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
-import {useActor, useInterpret, useMachine} from '@xstate/react'
-import {useEffect} from 'react'
+import { useActor, useInterpret, useMachine } from '@xstate/react'
+import { useEffect } from 'react'
 import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
-import {QueryClient, useQueryClient} from 'react-query'
-import {useLocation} from 'wouter'
-import {assign, createMachine, StateFrom} from 'xstate'
-import {PublicationPageProps} from './types'
+import { QueryClient, useQueryClient } from 'react-query'
+import { useLocation } from 'wouter'
+import { assign, createMachine, StateFrom } from 'xstate'
+import { PublicationPageProps } from './types'
 
-export default function Publication({params}: PublicationPageProps) {
+export default function Publication({ params }: PublicationPageProps) {
   const client = useQueryClient()
   //@ts-ignore
   const [, setLocation] = useLocation()
@@ -36,14 +35,14 @@ export default function Publication({params}: PublicationPageProps) {
 
   const [state, send] = usePagePublication(client, params?.docId, params?.version)
 
-  const {data: author} = useAccount(state.context.publication?.document?.author, {
+  const { data: author } = useAccount(state.context.publication?.document?.author, {
     enabled: !!state.context.publication?.document?.author,
   })
 
   useEffect(() => {
     if (params?.docId) {
-      send({type: 'PUBLICATION.FETCH.DATA', id: params.docId, version: params.version})
-      citations.send({type: 'CITATIONS.FETCH', documentId: params.docId, version: params.version})
+      send({ type: 'PUBLICATION.FETCH.DATA', id: params.docId, version: params.version })
+      citations.send({ type: 'CITATIONS.FETCH', documentId: params.docId, version: params.version })
     }
   }, [params?.docId])
 
@@ -79,7 +78,7 @@ export default function Publication({params}: PublicationPageProps) {
         <Text>Publication ERROR</Text>
         <Text>{state.context.errorMessage}</Text>
         <Button
-          onClick={() => send({type: 'PUBLICATION.FETCH.DATA', id: state.context.id, version: state.context.version})}
+          onClick={() => send({ type: 'PUBLICATION.FETCH.DATA', id: state.context.id, version: state.context.version })}
           color="muted"
         >
           try again
@@ -119,14 +118,14 @@ export default function Publication({params}: PublicationPageProps) {
           },
         }}
       >
-        <Text size="1" color="muted" css={{paddingRight: '$3'}}>
+        <Text size="1" color="muted" css={{ paddingRight: '$3' }}>
           {state.context.publication?.document.title}
         </Text>
         {author && (
           <>
-            <Text size="1" color="muted" css={{paddingRight: '$3'}}>
+            <Text size="1" color="muted" css={{ paddingRight: '$3' }}>
               <span>Signed by </span>
-              <span style={{textDecoration: 'underline'}}>
+              <span style={{ textDecoration: 'underline' }}>
                 {state.context.canUpdate ? 'you' : author.profile?.alias}
               </span>
             </Text>
@@ -165,7 +164,7 @@ export default function Publication({params}: PublicationPageProps) {
             },
           }}
         >
-          <Box css={{width: '$full', maxWidth: '64ch', marginLeft: '-$7'}}>
+          <Box css={{ width: '$full', maxWidth: '64ch', marginLeft: '-$7' }}>
             <Editor
               mode={EditorMode.Publication}
               value={state.context.publication?.document.content}
@@ -190,7 +189,7 @@ export default function Publication({params}: PublicationPageProps) {
             },
           }}
         >
-          <Box css={{width: '$full', maxWidth: '64ch'}}>
+          <Box css={{ width: '$full', maxWidth: '64ch' }}>
             {state.matches('discussion.ready') && state.context.links?.length != 0 ? (
               // <Editor mode={EditorMode.Discussion} value={state.context.discussion.children as Array<MttastContent>} />
               <Discussion links={state.context.links} />
@@ -257,14 +256,14 @@ function usePagePublication(client: QueryClient, docId?: string, version?: strin
 
   useEffect(() => {
     if (docId) {
-      send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})
+      send({ type: 'PUBLICATION.FETCH.DATA', id: docId, version })
     }
   }, [send, docId])
 
   return [state, send] as const
 }
 
-export type ClientPublication = Omit<PublicationType, 'document'> & {document: EditorDocument}
+export type ClientPublication = Omit<PublicationType, 'document'> & { document: EditorDocument }
 
 export type PublicationContextType = {
   id: string
@@ -277,12 +276,12 @@ export type PublicationContextType = {
 }
 
 export type PublicationEvent =
-  | {type: 'PUBLICATION.FETCH.DATA'; id: string; version?: string}
-  | {type: 'PUBLICATION.REPORT.SUCCESS'; publication: ClientPublication; canUpdate?: boolean}
-  | {type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string}
-  | {type: 'TOGGLE.DISCUSSION'}
-  | {type: 'REPORT.DISCUSSION.SUCCESS'; links: Array<Link>; discussion: any}
-  | {type: 'REPORT.DISCUSSION.ERROR'; errorMessage: string}
+  | { type: 'PUBLICATION.FETCH.DATA'; id: string; version?: string }
+  | { type: 'PUBLICATION.REPORT.SUCCESS'; publication: ClientPublication; canUpdate?: boolean }
+  | { type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string }
+  | { type: 'TOGGLE.DISCUSSION' }
+  | { type: 'REPORT.DISCUSSION.SUCCESS'; links: Array<Link>; discussion: any }
+  | { type: 'REPORT.DISCUSSION.ERROR'; errorMessage: string }
 
 function createPublicationMachine(client: QueryClient) {
   return createMachine(
@@ -337,14 +336,14 @@ function createPublicationMachine(client: QueryClient) {
                     })
                   } else {
                     if (publication.document?.content === '') {
-                      sendBack({type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'Content is Empty'})
+                      sendBack({ type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'Content is Empty' })
                     } else {
-                      sendBack({type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'error parsing content'})
+                      sendBack({ type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'error parsing content' })
                     }
                   }
                 })
                 .catch((err) => {
-                  sendBack({type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'error fetching'})
+                  sendBack({ type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'error fetching' })
                 })
             },
           },
@@ -399,11 +398,11 @@ function createPublicationMachine(client: QueryClient) {
                 src: (context) => (sendBack) => {
                   listCitations(context.id)
                     .then((response) => {
-                      Promise.all(response.links.map(({source}) => getBlock(source)))
+                      Promise.all(response.links.map(({ source }) => getBlock(source)))
                         //@ts-ignore
                         .then((result: Array<FlowContent>) => {
                           let discussion = document([group(result)])
-                          sendBack({type: 'REPORT.DISCUSSION.SUCCESS', links: response.links, discussion})
+                          sendBack({ type: 'REPORT.DISCUSSION.SUCCESS', links: response.links, discussion })
                         })
                     })
                     .catch((error: any) => {
@@ -504,7 +503,7 @@ function TippingModal({
 
   useEffect(() => {
     if (publicationId && accountId) {
-      send({type: 'TIPPING.SET.TIP.DATA', publicationID: publicationId, accountID: accountId})
+      send({ type: 'TIPPING.SET.TIP.DATA', publicationID: publicationId, accountID: accountId })
     }
   }, [publicationId, accountId])
 
@@ -571,7 +570,7 @@ function TippingModal({
             <Text size="1" color="danger">
               {JSON.stringify(state.context.errorMessage)}
             </Text>
-            <Button size="1" type="submit" css={{width: '$full'}} onClick={() => send('RETRY')}>
+            <Button size="1" type="submit" css={{ width: '$full' }} onClick={() => send('RETRY')}>
               Retry
             </Button>
           </Box>
@@ -596,11 +595,11 @@ function TippingModal({
               <Text size="1" fontWeight="bold">
                 Invoice:
               </Text>
-              <Text size="1" css={{wordBreak: 'break-all', wordWrap: 'break-word'}}>
+              <Text size="1" css={{ wordBreak: 'break-all', wordWrap: 'break-word' }}>
                 {state.context.invoice}
               </Text>
             </Box>
-            <Button size="1" css={{width: '$full'}} onClick={() => send('TIPPING.PAY.INVOICE')}>
+            <Button size="1" css={{ width: '$full' }} onClick={() => send('TIPPING.PAY.INVOICE')}>
               Pay Directly
             </Button>
           </Box>
@@ -626,7 +625,7 @@ function TippingModal({
   )
 }
 
-function SetAmount({send, state}: {state: StateFrom<typeof tippingMachine>; send: any}) {
+function SetAmount({ send, state }: { state: StateFrom<typeof tippingMachine>; send: any }) {
   return (
     <Box
       css={{
@@ -641,7 +640,7 @@ function SetAmount({send, state}: {state: StateFrom<typeof tippingMachine>; send
     >
       <Text size="4">Tip this Author</Text>
       {
-        <Box css={{display: 'flex', flexDirection: 'column', gap: '$3'}}>
+        <Box css={{ display: 'flex', flexDirection: 'column', gap: '$3' }}>
           <TextField
             type="number"
             id="amount"
@@ -649,7 +648,7 @@ function SetAmount({send, state}: {state: StateFrom<typeof tippingMachine>; send
             label="Invoice Amount"
             size={1}
             value={state.context.amount}
-            onChange={(e) => send({type: 'TIPPING.UPDATE.AMOUNT', amount: Number(e.target.value)})}
+            onChange={(e) => send({ type: 'TIPPING.UPDATE.AMOUNT', amount: Number(e.target.value) })}
           />
           <Box
             css={{
@@ -662,7 +661,7 @@ function SetAmount({send, state}: {state: StateFrom<typeof tippingMachine>; send
               size="1"
               type="submit"
               disabled={state.hasTag('pending')}
-              css={{width: '$full'}}
+              css={{ width: '$full' }}
               onClick={() => send('TIPPING.REQUEST.INVOICE')}
             >
               Request Invoice
@@ -674,8 +673,10 @@ function SetAmount({send, state}: {state: StateFrom<typeof tippingMachine>; send
   )
 }
 
-function Discussion({links = []}: {links?: Array<Link>}) {
-  if (!links.length) return null
+function Discussion({ links = [] }: { links?: Array<Link> }) {
+  console.log({ links });
+
+  if (!links?.length) return null
 
   return (
     <Box
@@ -692,11 +693,11 @@ function Discussion({links = []}: {links?: Array<Link>}) {
   )
 }
 
-function DiscussionItem({link}: {link: Link}) {
-  const [state, send] = useMachine(() => discussionItemMachine)
-  const {data: author} = useAccount(state?.context?.publication?.document?.author)
+function DiscussionItem({ link }: { link: Link }) {
+  const client = useQueryClient()
+  const [state, send] = useMachine(() => createDiscussionMachine(client))
+  const { data: author } = useAccount(state?.context?.publication?.document?.author)
   const bookmarkService = useBookmarksService()
-  const sidepanelService = useSidepanel()
   const [, setLocation] = useLocation()
 
   function addBookmark() {
@@ -710,7 +711,7 @@ function DiscussionItem({link}: {link: Link}) {
     await copyTextToClipboard(
       `${MINTTER_LINK_PREFIX}${link.source?.documentId}/${link.source?.version}/${link.source?.blockId}`,
     )
-    toast.success('Embed Reference copied successfully', {position: 'top-center'})
+    toast.success('Embed Reference copied successfully', { position: 'top-center' })
   }
 
   function onGoToPublication() {
@@ -718,14 +719,14 @@ function DiscussionItem({link}: {link: Link}) {
   }
 
   useEffect(() => {
-    send(discussionItemModel.events.FETCH(link))
+    send({ type: 'FETCH', link })
   }, [])
 
   if (state.hasTag('pending')) {
     return <span>loading...</span>
   }
 
-  const {block, publication} = state.context
+  const { block, publication } = state.context
 
   if (state.matches('ready')) {
     return (
@@ -765,9 +766,9 @@ function DiscussionItem({link}: {link: Link}) {
                 {publication?.document?.title}
               </Text>
               {author && (
-                <Text size="1" color="muted" css={{paddingRight: '$3'}}>
+                <Text size="1" color="muted" css={{ paddingRight: '$3' }}>
                   <span>Signed by </span>
-                  <span style={{textDecoration: 'underline'}}>{author.profile?.alias}</span>
+                  <span style={{ textDecoration: 'underline' }}>{author.profile?.alias}</span>
                 </Text>
               )}
 
@@ -809,10 +810,10 @@ type DiscussionContextType = {
 }
 
 type DiscussionEvent =
-  | {type: 'FETCH'; link: Link}
-  | {type: 'REPORT.FETCH.SUCCESS'; publication: PublicationType; block: FlowContent}
-  | {type: 'REPORT.FETCH.ERROR'; errorMessage: Error['message']}
-  | {type: 'RETRY'}
+  | { type: 'FETCH'; link: Link }
+  | { type: 'REPORT.FETCH.SUCCESS'; publication: PublicationType; block: FlowContent }
+  | { type: 'REPORT.FETCH.ERROR'; errorMessage: Error['message'] }
+  | { type: 'RETRY' }
 
 export function createDiscussionMachine(client: QueryClient) {
   return createMachine(
@@ -844,11 +845,11 @@ export function createDiscussionMachine(client: QueryClient) {
           invoke: {
             src: (context) => (sendBack) => {
               if (!context.link?.source) {
-                sendBack({type: 'REPORT.FETCH.ERROR', errorMessage: 'Error on Discussion Link'})
+                sendBack({ type: 'REPORT.FETCH.ERROR', errorMessage: 'Error on Discussion Link' })
               } else {
                 getBlock(context.link!.source!).then((data) => {
                   if (data && data.block) {
-                    sendBack({type: 'REPORT.FETCH.SUCCESS', publication: data.publication, block: data.block})
+                    sendBack({ type: 'REPORT.FETCH.SUCCESS', publication: data.publication, block: data.block })
                   }
                 })
               }
