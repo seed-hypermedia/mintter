@@ -1,41 +1,33 @@
-import { paragraph, statement, Statement, text } from '@mintter/mttast'
-import { NodeEntry } from 'slate'
-import { describe, expect, it } from 'vitest'
-import { changesService, CHANGES_ADD_BLOCK } from '../plugin'
+import { afterEach, describe, expect, it } from 'vitest'
+import { ADD_BLOCK, changesService } from '../plugin'
 
 describe('Mark blocks as dirty', () => {
+
+  afterEach(() => {
+    changesService.stop()
+  })
   it('add new block', (done) => {
-    let entry: NodeEntry<Statement> = [
-      statement([paragraph([text('hello')])]), [0, 0]
-    ]
-    let expected = [
-      entry
-    ]
+
+    let expected = { block: [0, 0] }
 
     changesService.onTransition(state => {
       setTimeout(() => {
         done()
       }, 150);
-
-
     })
 
     changesService.start()
-    changesService.send({ type: CHANGES_ADD_BLOCK, block: entry })
+    changesService.send({ type: ADD_BLOCK, id: 'block', path: [0, 0] })
 
-    expect(changesService.getSnapshot().context.blocks).toEqual(expected)
+    expect(changesService.getSnapshot().context.upsertBlocks).toEqual(expected)
   })
 
   it('move block', (done) => {
-    let entry1: NodeEntry<Statement> = [
-      statement([paragraph([text('hello')])]), [0, 0]
-    ]
-    let entry2: NodeEntry<Statement> = [
-      statement([paragraph([text('hello')])]), [0, 0, 1, 0]
-    ]
-    let expected = [
-      entry2
-    ]
+
+    let expected = {
+
+      block1: [0, 0, 1, 0]
+    }
 
     changesService.onTransition(state => {
       setTimeout(() => {
@@ -44,12 +36,11 @@ describe('Mark blocks as dirty', () => {
 
 
     })
-
     changesService.start()
-    changesService.send({ type: CHANGES_ADD_BLOCK, block: entry1 })
-    changesService.send({ type: CHANGES_ADD_BLOCK, block: entry2 })
+    changesService.send({ type: ADD_BLOCK, id: 'block1', path: [0, 0] })
+    changesService.send({ type: ADD_BLOCK, id: 'block1', path: [0, 0, 1, 0] })
 
-    expect(changesService.getSnapshot().context.blocks).toEqual(expected)
+    expect(changesService.getSnapshot().context.upsertBlocks).toEqual(expected)
   })
 })
 

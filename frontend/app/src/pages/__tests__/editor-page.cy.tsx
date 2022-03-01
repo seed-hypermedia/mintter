@@ -1,4 +1,6 @@
 import {Account, Document} from '@app/client'
+import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
+import {plugins} from '@app/editor/plugins'
 import {queryKeys} from '@app/hooks'
 import EditorPage from '@app/pages/editor'
 import {MainPageProviders, mountWithAccount} from '@app/test/utils'
@@ -33,9 +35,11 @@ describe('Editor Page', () => {
         },
       },
     })
+
+    let elEditor = buildEditorHook(plugins, EditorMode.Draft)
     render(
       <MainPageProviders client={client}>
-        <EditorPage params={{docId: 'foo', blockId: 'block'}} />
+        <EditorPage params={{docId: 'foo', blockId: 'block'}} editor={elEditor} />
       </MainPageProviders>,
     )
 

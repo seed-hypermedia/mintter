@@ -1,22 +1,23 @@
-import {CitationsProvider, useCitationService} from '@app/editor/citations'
+import {CitationsProvider, createCitationsMachine} from '@app/editor/citations'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {MainPageProviders, mountWithAccount} from '@app/test/utils'
 import {Box} from '@components/box'
 import {group, ol, paragraph, statement, text, ul} from '@mintter/mttast'
+import {useInterpret} from '@xstate/react'
 import {useMemo} from 'react'
 import {QueryClient} from 'react-query'
 
 function TestEditor({value, client}: {value: any; client: QueryClient}) {
   const editor = useMemo(() => buildEditorHook(plugins, EditorMode.Publication), [])
 
-  const citations = useCitationService()
+  const citations = useInterpret(() => createCitationsMachine(client))
 
   return (
     <Box css={{padding: '$9'}}>
-      <CitationsProvider value={citations}>
-        <MainPageProviders client={client}>
+      <MainPageProviders client={client}>
+        <CitationsProvider value={citations}>
           <Editor
             mode={EditorMode.Publication}
             editor={editor}
@@ -25,8 +26,8 @@ function TestEditor({value, client}: {value: any; client: QueryClient}) {
               // noop
             }}
           />
-        </MainPageProviders>
-      </CitationsProvider>
+        </CitationsProvider>
+      </MainPageProviders>
     </Box>
   )
 }
