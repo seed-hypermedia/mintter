@@ -35,7 +35,7 @@ describe('<LibraryItem />', () => {
     )
   })
   it('default item', () => {
-    cy.get('[data-testid="library-item"]').contains('Untitled Document')
+    cy.get('[data-testid="library-item"]').contains('New Document')
   })
 
   it('should open dropdown element', () => {
