@@ -87,6 +87,10 @@ export default function Publication({ params }: PublicationPageProps) {
     )
   }
 
+
+  console.log('context: ', state);
+
+
   return (
     <>
       <Box
@@ -251,7 +255,61 @@ export default function Publication({ params }: PublicationPageProps) {
 }
 
 function usePagePublication(client: QueryClient, docId?: string, version?: string) {
-  const service = useInterpret(() => createPublicationMachine(client))
+  const service = useInterpret(() => publicationMachine, {
+    services: {
+      fetchPublicationData: (context) => (sendBack) => {
+        Promise.all([
+          client.fetchQuery([queryKeys.GET_PUBLICATION, context.id, context.version], () =>
+            getPublication(context.id, context.version),
+          ),
+          client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo()),
+        ])
+          .then(([publication, info]) => {
+            if (publication.document?.content) {
+              let content = JSON.parse(publication.document?.content)
+              sendBack({
+                type: 'PUBLICATION.REPORT.SUCCESS',
+                publication: Object.assign(publication, {
+                  document: {
+                    ...publication.document,
+                    content,
+                  },
+                }),
+                canUpdate: info.accountId == publication.document.author,
+              })
+            } else {
+              if (publication.document?.content === '') {
+                sendBack({ type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'Content is Empty' })
+              } else {
+                sendBack({ type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'error parsing content' })
+              }
+            }
+          })
+          .catch((err) => {
+            sendBack({ type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'error fetching' })
+          })
+      },
+      fetchDiscussionData: (context) => (sendBack) => {
+        client.fetchQuery([queryKeys.GET_PUBLICATION_DISCUSSION, context.id, context.version, ''], () => listCitations(context.id)).then((response) => {
+          Promise.all(response.links.map(({ source }) => getBlock(source)))
+            //@ts-ignore
+            .then((result: Array<FlowContent>) => {
+              let discussion = document([group(result)])
+              console.log('discussion result: ', { result, discussion });
+
+              sendBack({ type: 'REPORT.DISCUSSION.SUCCESS', links: response.links, discussion })
+            })
+        })
+          .catch((error: any) => {
+            sendBack({
+              type: 'REPORT.DISCUSSION.ERROR',
+              errorMessage: `Error fetching Discussion: ${error.message}`,
+            })
+          })
+
+      }
+    }
+  })
   const [state, send] = useActor(service)
 
   useEffect(() => {
@@ -283,174 +341,128 @@ export type PublicationEvent =
   | { type: 'REPORT.DISCUSSION.SUCCESS'; links: Array<Link>; discussion: any }
   | { type: 'REPORT.DISCUSSION.ERROR'; errorMessage: string }
 
-function createPublicationMachine(client: QueryClient) {
-  return createMachine(
+export const publicationMachine =
+  /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBaAW31wAtsywA6bCTMAYgAUBVAIQAyASQDCAQQAqwgPIA5ZgDEAopNEAJZgBEp4xChKxsxcvpAAPRAEYADAGZmdgBx2A7K6tOnANjsAWK28AGhAAT0QnPxtmG1cAVjsATlinBNdEqwBfTJC0LDwiUkoaekYWADMwQlKyKB4BEQlpeWYAJWVuGVbJZgBlXlFRZV7es2RDYyKzSwQrOL9mVz8EqyWrAJtvOIAmEPCEKLjmLdXtn1tvG0TE7NyMHAITYtoGJmZK6te6viExKVkFO1Ot1mMpWq0umMJk9pohEu5Fr4lps7Ns4ok-MEwhFIo4-B43C4rIltoFbiA8g9CuRqC8yswAE5gfAQUL1X5NAFKVQabS6KFGGFICyIdHMQKJOLpNFOGx+JxWXbYhBxBLMdHwnZLHbbbbkykFJ60mosJkstmSGQAcStgmU2mEvVEvBGAIFk1MwpmEpi3nWNily02cyx+1WrmY2xsNlszlW0dcTn190NRWNrxYEGwsFwqFgRnIrHYXHdQtAM3cVnVkpc3m88ICdjse2sdiOHlJdjrXfsVk8yfyjzTJQzzCzObzBbI7yqNTqQK6PS0judrpa-UGw1GwvGgqmXsQrm8Ee2qP883xfjOVhbCDjzFlq0iXlWbciA6pRpH9PHufzRRnT5GHnDpFwdJ0XV6LkwQhVpS33cscW2Rw7BjK85gDTFXFvOIFWOWUThjbwr3fHIKRTIcaW-N5f0nACzVZThLRtO1wNXKD5Hgz1ENmPsjlPHZJVQpxT0CW8u2QpsRL9RJZXhOUP1TKi6Ro7M-ynRlmUYn5Gn+FoVDUTQdEkPQd2hBCRV4uZIzbbYhJsES7DE5ViSrTZtVJOIHNiXDFMo54TTHNS6PITgIHIFhYEIIgWANfz0x-YL-24ilzJS70vOQuUX0CfwuzmcT4RiJJ3FiJsjz9PzqQC0cwAZBkSCZCB2V05oFAM3ljNMgw93SuFEwfWTOz9Y9PNvesnEcESPD8VDEyWPVyTIEgIDgMYKOqhK3jYDguLIWEDiVfYZuOVw0VwlwMS87wqq-FSKlnL49oOzE3NcNxzpJdZsOVLwsqc-Ekl8P0llu4d7s081noPO8I3xbwXCWZIPqiPxb1caIEauXDvDOexElRMHlMC2jkunHawGhnjfAWWSolkjGrFsm9lTRZDkc2aa7MuEkiZqxKJzJwC5ypyytXFU8AnibmlmbZVVXZ5ZtnQ08m2VvmtszJKNIY-Yeo9faYdsTxxWDD6-sVW80USdVcNVfxtj9dEyTIuLNuorXBY08pGGzOhRe9NwHF8D6djlV6Wf2Nw3N1HxMS2bs7A1j2gq9izdwNg6vIcRV-FWQTjyvH79lxxYoiPfEMlSTwbldja7sCuqGqagPrDSSMnETRUbDs+x4lvTvvEjTYolieJLi2ZP7tb2YHHhxG-GRs7UdvChbBsgN6z9FwFVJbJsiAA */
+  createMachine(
     {
+      context: { id: '', version: '', publication: null, errorMessage: '', canUpdate: false, links: [], discussion: null },
       tsTypes: {} as import('./publication.typegen').Typegen0,
-      schema: {
-        context: {} as PublicationContextType,
-        events: {} as PublicationEvent,
-      },
+      schema: { context: {} as PublicationContextType, events: {} as PublicationEvent },
       id: 'publication-machine',
-      context: {
-        id: '',
-        version: '',
-        publication: null,
-        errorMessage: '',
-        canUpdate: false,
-        links: null,
-        discussion: null,
-      },
       initial: 'idle',
       states: {
         idle: {
           on: {
             'PUBLICATION.FETCH.DATA': {
-              target: 'fetching',
               actions: ['assignId', 'assignVersion'],
+              target: '#publication-machine.fetching',
             },
           },
         },
         fetching: {
-          tags: ['pending'],
           invoke: {
-            src: (context) => (sendBack) => {
-              Promise.all([
-                client.fetchQuery([queryKeys.GET_PUBLICATION, context.id, context.version], () =>
-                  getPublication(context.id, context.version),
-                ),
-                client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo()),
-              ])
-                .then(([publication, info]) => {
-                  if (publication.document?.content) {
-                    let content = JSON.parse(publication.document?.content)
-                    sendBack({
-                      type: 'PUBLICATION.REPORT.SUCCESS',
-                      publication: Object.assign(publication, {
-                        document: {
-                          ...publication.document,
-                          content,
-                        },
-                      }),
-                      canUpdate: info.accountId == publication.document.author,
-                    })
-                  } else {
-                    if (publication.document?.content === '') {
-                      sendBack({ type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'Content is Empty' })
-                    } else {
-                      sendBack({ type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'error parsing content' })
-                    }
-                  }
-                })
-                .catch((err) => {
-                  sendBack({ type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'error fetching' })
-                })
-            },
+            src: 'fetchPublicationData',
           },
           on: {
             'PUBLICATION.REPORT.SUCCESS': {
-              target: 'ready',
               actions: ['assignPublication', 'assignCanUpdate'],
+              target: '#publication-machine.ready',
             },
             'PUBLICATION.REPORT.ERROR': {
-              target: 'errored',
-              actions: ['assignError'],
+              actions: 'assignError',
+              target: '#publication-machine.errored',
             },
           },
         },
         ready: {
           on: {
             'PUBLICATION.FETCH.DATA': {
-              target: 'fetching',
               actions: ['assignId', 'assignVersion'],
+              target: '#publication-machine.fetching',
             },
             'TOGGLE.DISCUSSION': {
-              target: 'discussion',
+              target: '#publication-machine.discussion',
             },
           },
         },
         discussion: {
           initial: 'idle',
-          onDone: [
-            {
-              target: 'errored',
-              cond: (context) => !!context.errorMessage,
-            },
-            {
-              target: 'ready',
-            },
-          ],
           states: {
             idle: {
               always: [
                 {
-                  target: 'ready',
-                  cond: (context) => typeof context.links != 'undefined',
+                  cond: 'isDiscussionFetched',
+                  target: '#publication-machine.discussion.fetching',
                 },
                 {
-                  target: 'fetching',
+                  target: '#publication-machine.discussion.ready',
                 },
+
+
               ],
             },
             fetching: {
-              tags: ['pending'],
               invoke: {
-                src: (context) => (sendBack) => {
-                  listCitations(context.id)
-                    .then((response) => {
-                      Promise.all(response.links.map(({ source }) => getBlock(source)))
-                        //@ts-ignore
-                        .then((result: Array<FlowContent>) => {
-                          let discussion = document([group(result)])
-                          sendBack({ type: 'REPORT.DISCUSSION.SUCCESS', links: response.links, discussion })
-                        })
-                    })
-                    .catch((error: any) => {
-                      sendBack({
-                        type: 'REPORT.DISCUSSION.ERROR',
-                        errorMessage: `Error fetching Discussion: ${error.message}`,
-                      })
-                    })
-                },
+                src: 'fetchDiscussionData',
+                id: 'fetchDiscussionData',
               },
               on: {
                 'REPORT.DISCUSSION.SUCCESS': {
-                  target: 'ready',
                   actions: ['assignLinks', 'assignDiscussion'],
+                  target: '#publication-machine.discussion.ready',
                 },
                 'REPORT.DISCUSSION.ERROR': {
-                  target: 'finish',
-                  actions: ['assignError'],
+                  actions: 'assignError',
+                  target: '#publication-machine.discussion.finish',
                 },
               },
             },
             ready: {
               on: {
                 'TOGGLE.DISCUSSION': {
-                  target: 'finish',
+                  target: '#publication-machine.discussion.finish',
                 },
                 'PUBLICATION.FETCH.DATA': {
-                  target: 'finish',
                   actions: ['clearLinks', 'clearDiscussion', 'clearError'],
+                  target: '#publication-machine.discussion.finish',
                 },
               },
+            },
+            errored: {
+              on: {
+                'TOGGLE.DISCUSSION': {
+                  actions: ['clearLinks', 'clearDiscussion', 'clearError'],
+                  target: '#publication-machine.discussion.fetching',
+                },
+              }
             },
             finish: {
               type: 'final',
             },
           },
+          onDone: [
+            {
+              target: '#publication-machine.ready',
+            },
+          ],
         },
         errored: {
           on: {
             'PUBLICATION.FETCH.DATA': {
-              target: 'fetching',
               actions: ['assignId', 'assignVersion'],
+              target: '#publication-machine.fetching',
             },
           },
         },
       },
     },
     {
+      guards: {
+        isDiscussionFetched: (context) => {
+          console.log({ context });
+          return context.links != null
+        }
+      },
       actions: {
         assignId: assign({
           id: (_, event) => event.id,
@@ -481,11 +493,11 @@ function createPublicationMachine(client: QueryClient) {
         }),
         clearLinks: assign({
           links: (context) => null,
-        }),
-      },
+        })
+      }
     },
   )
-}
+
 
 function TippingModal({
   visible = false,
@@ -673,11 +685,8 @@ function SetAmount({ send, state }: { state: StateFrom<typeof tippingMachine>; s
   )
 }
 
-function Discussion({ links = [] }: { links?: Array<Link> }) {
-  console.log({ links });
-
-  if (!links?.length) return null
-
+function Discussion({ links }: { links: Array<Link> | null }) {
+  if (!links) return null
   return (
     <Box
       css={{
@@ -687,7 +696,7 @@ function Discussion({ links = [] }: { links?: Array<Link> }) {
       }}
     >
       {links.map((link) => (
-        <DiscussionItem key={`${link.source?.documentId}-${link.target?.documentId}`} link={link} />
+        <DiscussionItem key={`${link.source?.documentId}-${link.target?.documentId}-${link.target?.blockId}`} link={link} />
       ))}
     </Box>
   )
