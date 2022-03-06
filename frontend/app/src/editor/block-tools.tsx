@@ -1,9 +1,9 @@
-import {hoverModel} from '@app/editor/hover-machine'
-import {findPath} from '@app/editor/utils'
-import {styled} from '@app/stitches.config'
-import {Box} from '@components/box'
-import {Icon, icons} from '@components/icon'
-import {Text} from '@components/text'
+import { hoverModel } from '@app/editor/hover-machine'
+import { findPath } from '@app/editor/utils'
+import { styled } from '@app/stitches.config'
+import { Box } from '@components/box'
+import { Icon, icons } from '@components/icon'
+import { Text } from '@components/text'
 import {
   blockquote,
   code,
@@ -14,15 +14,15 @@ import {
   MttastContent,
   ol,
   statement,
-  ul,
+  ul
 } from '@mintter/mttast'
-import {useActor} from '@xstate/react'
-import {Fragment} from 'react'
-import {BaseRange, Editor, Node, Path, Transforms} from 'slate'
-import {RenderElementProps} from 'slate-react'
-import {Dropdown} from './dropdown'
-import {useHover} from './hover-context'
-import {ELEMENT_PARAGRAPH} from './paragraph'
+import { useActor } from '@xstate/react'
+import { Fragment } from 'react'
+import { BaseRange, Editor, Node, Path, Transforms } from 'slate'
+import { RenderElementProps, useSlateStatic } from 'slate-react'
+import { Dropdown } from './dropdown'
+import { useHover } from './hover-context'
+import { ELEMENT_PARAGRAPH } from './paragraph'
 
 const ElementDropdown = styled('button', {
   border: 'none',
@@ -96,7 +96,12 @@ const items: {
   ],
 }
 
-export function BlockTools({element}: {element: RenderElementProps['element']}) {
+type BlockToolsProps = {
+  element: RenderElementProps['element'];
+}
+
+export function BlockTools({ element }: BlockToolsProps) {
+  const editor = useSlateStatic()
   const hoverService = useHover()
   const [state, hoverSend] = useActor(hoverService)
   const path = findPath(element)
@@ -141,12 +146,12 @@ export function BlockTools({element}: {element: RenderElementProps['element']}) 
               <Icon name="Grid4" size="2" color="muted" />
             </ElementDropdown>
           </Dropdown.Trigger>
-          <Dropdown.Content portalled align="start" side="bottom" css={{minWidth: 220}}>
+          <Dropdown.Content portalled align="start" side="bottom" css={{ minWidth: 220 }}>
             {Object.entries(items).map(([key, value], index, arr) => {
               return (
                 <Fragment key={key}>
                   <Dropdown.Label>
-                    <Text color="muted" size="2" css={{marginHorizontal: '$3', marginVertical: '$2'}}>
+                    <Text color="muted" size="2" css={{ marginHorizontal: '$3', marginVertical: '$2' }}>
                       Turn {key} into:
                     </Text>
                   </Dropdown.Label>
@@ -179,17 +184,17 @@ function setType(fn: any) {
       const keys = Object.keys(element).filter((key) => !['type', 'id', 'children', 'data'].includes(key))
 
       if (isHeading(element)) {
-        Transforms.setNodes(editor, {type: ELEMENT_PARAGRAPH}, {at: [...at, 0]})
+        Transforms.setNodes(editor, { type: ELEMENT_PARAGRAPH }, { at: [...at, 0] })
       }
 
       if (keys.length) {
-        Transforms.unsetNodes(editor, keys, {at})
+        Transforms.unsetNodes(editor, keys, { at })
       }
 
       // IDs are meant to be stable, so we shouldn't obverride it
-      const {id, ...props} = fn()
+      const { id, ...props } = fn()
 
-      Transforms.setNodes(editor, props, {at})
+      Transforms.setNodes(editor, props, { at })
     })
   }
 }
@@ -201,9 +206,9 @@ function setList(fn: any) {
 
     if (list && isGroupContent(list)) {
       Editor.withoutNormalizing(editor, () => {
-        const {children} = list
-        Transforms.removeNodes(editor, {at: Path.parent(at)})
-        Transforms.insertNodes(editor, fn(children), {at: Path.parent(at)})
+        const { children } = list
+        Transforms.removeNodes(editor, { at: Path.parent(at) })
+        Transforms.insertNodes(editor, fn(children), { at: Path.parent(at) })
       })
     }
   }

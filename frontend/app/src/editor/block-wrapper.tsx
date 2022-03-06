@@ -1,21 +1,21 @@
-import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {BlockCitations} from '@app/editor/block-citations'
-import {BlockTools} from '@app/editor/block-tools'
-import {Dropdown} from '@app/editor/dropdown'
-import {useHoverBlockId} from '@app/editor/hover-context'
-import {EditorMode} from '@app/editor/plugin-utils'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {useRoute} from '@app/utils/use-route'
-import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
-import {Button} from '@components/button'
-import {Icon} from '@components/icon'
-import {useCreateDraft} from '@components/library/use-create-draft'
-import {useSidepanel} from '@components/sidepanel'
-import {Text} from '@components/text'
-import {FlowContent} from '@mintter/mttast'
+import { MINTTER_LINK_PREFIX } from '@app/constants'
+import { BlockCitations } from '@app/editor/block-citations'
+import { BlockTools } from '@app/editor/block-tools'
+import { Dropdown } from '@app/editor/dropdown'
+import { useHoverBlockId } from '@app/editor/hover-context'
+import { EditorMode } from '@app/editor/plugin-utils'
+import { copyTextToClipboard } from '@app/utils/copy-to-clipboard'
+import { useRoute } from '@app/utils/use-route'
+import { bookmarksModel, useBookmarksService } from '@components/bookmarks'
+import { Button } from '@components/button'
+import { Icon } from '@components/icon'
+import { useCreateDraft } from '@components/library/use-create-draft'
+import { useSidepanel } from '@components/sidepanel'
+import { Text } from '@components/text'
+import { FlowContent } from '@mintter/mttast'
 import toast from 'react-hot-toast'
-import {RenderElementProps} from 'slate-react'
-import {useLocation} from 'wouter'
+import { RenderElementProps } from 'slate-react'
+import { useLocation } from 'wouter'
 
 export function BlockWrapper({
   element,
@@ -26,9 +26,9 @@ export function BlockWrapper({
 }) {
   const bookmarksService = useBookmarksService()
   const sidepanelService = useSidepanel()
-  const {createDraft} = useCreateDraft()
+  const { createDraft } = useCreateDraft()
   const hoverId = useHoverBlockId()
-  const {params} = useRoute<{docId: string; version: string; blockId?: string}>([
+  const { params } = useRoute<{ docId: string; version: string; blockId?: string }>([
     '/p/:docId/:version/:blockId?',
     '/editor/:docId',
   ])
@@ -38,7 +38,7 @@ export function BlockWrapper({
     if (params) {
       //@ts-ignore
       await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${params.docId}/${params.version}/${element.id}`)
-      toast.success('Statement Reference copied successfully', {position: 'top-center'})
+      toast.success('Statement Reference copied successfully', { position: 'top-center' })
     } else {
       toast.error('Cannot Copy Block ID')
     }

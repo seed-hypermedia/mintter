@@ -1,8 +1,8 @@
-import {Alert} from '@components/alert'
-import {overlayStyles} from '@components/dialog-styles'
-import {useMachine} from '@xstate/react'
-import {MouseEvent, PropsWithChildren} from 'react'
-import {createModel} from 'xstate/lib/model'
+import { Alert } from '@components/alert'
+import { overlayStyles } from '@components/dialog-styles'
+import { useMachine } from '@xstate/react'
+import { MouseEvent, PropsWithChildren } from 'react'
+import { createModel } from 'xstate/lib/model'
 
 export type DeleteDialogProps = PropsWithChildren<{
   entryId?: string
@@ -12,7 +12,7 @@ export type DeleteDialogProps = PropsWithChildren<{
   description: string
 }>
 
-export function DeleteDialog({children, entryId, handleDelete, onSuccess, title, description}: DeleteDialogProps) {
+export function DeleteDialog({ children, entryId, handleDelete, onSuccess, title, description }: DeleteDialogProps) {
   const [state, send] = useMachine(
     deleteDialogMachine.withConfig({
       services: {
@@ -20,6 +20,9 @@ export function DeleteDialog({children, entryId, handleDelete, onSuccess, title,
       },
       actions: {
         onSuccess,
+        onError: (_, event) => {
+          console.log('ERROR', event)
+        }
       },
     }),
   )
@@ -122,6 +125,7 @@ const deleteDialogMachine = deleteDialogModel.createMachine({
             onError: [
               {
                 target: 'errored',
+                actions: ['onError']
               },
             ],
           },
