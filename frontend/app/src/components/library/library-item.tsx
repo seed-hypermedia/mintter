@@ -2,22 +2,22 @@ import {
   deleteDraft as defaultDeleteDraft,
   deletePublication as defaultDeletePublication,
   Document,
-  Publication,
+  Publication
 } from '@app/client'
-import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
-import {useMainPage} from '@app/main-page-context'
-import {styled} from '@app/stitches.config'
-import {copyTextToClipboard as defaultCopyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {useRoute} from '@app/utils/use-route'
-import {DeleteDialog} from '@components/delete-dialog'
-import {Icon} from '@components/icon'
-import {useCreateDraft} from '@components/library/use-create-draft'
-import {useSidepanel} from '@components/sidepanel'
-import {Text} from '@components/text'
-import {PropsWithChildren} from 'react'
+import { MINTTER_LINK_PREFIX } from '@app/constants'
+import { Dropdown, ElementDropdown } from '@app/editor/dropdown'
+import { useMainPage } from '@app/main-page-context'
+import { styled } from '@app/stitches.config'
+import { copyTextToClipboard as defaultCopyTextToClipboard } from '@app/utils/copy-to-clipboard'
+import { useRoute } from '@app/utils/use-route'
+import { DeleteDialog } from '@components/delete-dialog'
+import { Icon } from '@components/icon'
+import { useCreateDraft } from '@components/library/use-create-draft'
+import { useSidepanel } from '@components/sidepanel'
+import { Text } from '@components/text'
+import { PropsWithChildren } from 'react'
 import toast from 'react-hot-toast'
-import {Link, useLocation} from 'wouter'
+import { Link, useLocation } from 'wouter'
 
 export type LibraryItemProps = {
   publication?: Publication
@@ -36,16 +36,16 @@ export function LibraryItem({
   deletePublication = defaultDeletePublication,
   copyTextToClipboard = defaultCopyTextToClipboard,
 }: PropsWithChildren<LibraryItemProps>) {
-  const {match} = useRoute(href)
+  const { match } = useRoute(href)
   const [, setLocation] = useLocation()
   const sidepanelService = useSidepanel()
   const mainService = useMainPage()
-  const {createDraft} = useCreateDraft()
+  const { createDraft } = useCreateDraft()
 
   async function onCopy() {
     if (publication) {
       await copyTextToClipboard(`mtt://${publication.document?.id}/${publication.version}`)
-      toast.success('Document ID copied successfully', {position: 'top-center'})
+      toast.success('Document ID copied successfully', { position: 'top-center' })
     }
   }
 
@@ -151,6 +151,7 @@ export var StyledItem = styled(
       },
     },
     '.title': {
+      userSelect: 'none',
       letterSpacing: '0.01em',
       lineHeight: '$2',
       textOverflow: 'ellipsis',
