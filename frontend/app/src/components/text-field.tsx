@@ -1,14 +1,14 @@
-import type {CSS} from '@app/stitches.config'
-import {styled} from '@app/stitches.config'
+import type { CSS } from '@app/stitches.config'
+import { styled } from '@app/stitches.config'
 import * as Label from '@radix-ui/react-label'
 import type * as Stitches from '@stitches/react'
-import {css} from '@stitches/react'
+import { css } from '@stitches/react'
 import autosize from 'autosize'
-import {nanoid} from 'nanoid/non-secure'
-import type {InputHTMLAttributes, LegacyRef, MutableRefObject, PropsWithChildren, RefCallback} from 'react'
-import {forwardRef, useLayoutEffect, useRef} from 'react'
-import {Box} from './box'
-import {Text} from './text'
+import { nanoid } from 'nanoid/non-secure'
+import type { InputHTMLAttributes, LegacyRef, MutableRefObject, PropsWithChildren, RefCallback } from 'react'
+import { forwardRef, useLayoutEffect, useRef } from 'react'
+import { Box } from './box'
+import { Text } from './text'
 
 const InputContainer = styled(Box, {
   display: 'flex',
@@ -172,18 +172,18 @@ const TextFieldHint = styled(Text, {
 
 type TextFieldProps = PropsWithChildren<
   InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> &
-    InputProps & {
-      id?: string
-      label?: string
-      hint?: string
-      containerCss?: CSS
-      textarea?: boolean
-      rows?: number
-    }
+  InputProps & {
+    id?: string
+    label?: string
+    hint?: string
+    containerCss?: CSS
+    textarea?: boolean
+    rows?: number
+  }
 >
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
-  ({label, status = 'neutral', hint, id = nanoid(), containerCss, textarea = false, ...props}: TextFieldProps, ref) => {
+  ({ label, status = 'neutral', hint, id = nanoid(), containerCss, textarea = false, ...props }: TextFieldProps, ref) => {
     const localRef = useRef<HTMLInputElement>(null)
 
     useLayoutEffect(() => {
@@ -219,7 +219,7 @@ function mergeRefs<T = any>(refs: Array<MutableRefObject<T> | LegacyRef<T>>): Re
       if (typeof ref == 'function') {
         ref(value)
       } else if (ref != null) {
-        ;(ref as MutableRefObject<T | null>).current = value
+        ; (ref as MutableRefObject<T | null>).current = value
       }
     })
   }
