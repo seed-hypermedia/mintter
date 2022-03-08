@@ -1,13 +1,5 @@
-import { toSlateMachine } from "@app/client/v2/block-to-slate-machine";
 import { FlowContent } from "@mintter/mttast";
-import { interpret } from "xstate";
 import { Block, Layer, layerContains } from "./types";
-
-function main() {
-  let service = interpret(toSlateMachine).start()
-}
-
-main()
 
 export function blockToSlate(blk: Block): FlowContent {
 
