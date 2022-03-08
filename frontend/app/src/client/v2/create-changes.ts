@@ -1,6 +1,6 @@
 import { FlowContent } from "@app/../../mttast/dist";
 import { DocumentChange, Span, UpdateDraftRequestV2 } from "@app/client";
-import { transformBlock } from "@app/client/v2/transform-block";
+import { blockToApi } from "@app/client/v2/block-to-api";
 import { changesService } from "@app/editor/mintter-changes/plugin";
 import { EditorDocument } from "@app/editor/use-editor-draft";
 import { Node, Path } from "slate";
@@ -68,7 +68,7 @@ function createBlockChanges(next: EditorDocument, upsertBlocks: { [key: string]:
 }
 
 function tempBlock(entry: any) {
-  let { layers, ...rest } = transformBlock(entry as FlowContent)
+  let { layers, ...rest } = blockToApi(entry as FlowContent)
 
   return layers ? {
     ...rest,
