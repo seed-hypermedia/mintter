@@ -1,9 +1,10 @@
 
 import { embed, heading, Heading, link, paragraph, Statement, statement, staticParagraph, text } from '@mintter/mttast'
 import { describe, expect, test } from 'vitest'
-import { Block, transformBlock } from '../transform-block'
+import { blockToApi } from '../block-to-api'
+import { Block } from '../types'
 
-describe('createBlockSpans()', () => {
+describe.only('Transform: blockToApi', () => {
   test('should return an empty annotations list', () => {
     let input: Statement = statement({ id: 'blockId' }, [
       paragraph([text('Hello world')])
@@ -15,7 +16,7 @@ describe('createBlockSpans()', () => {
       text: 'Hello world',
     }
 
-    expect(transformBlock(input)).toEqual(output)
+    expect(blockToApi(input)).toEqual(output)
   })
 
   test('should return a heading block', () => {
@@ -29,7 +30,7 @@ describe('createBlockSpans()', () => {
       text: 'Hello world',
     }
 
-    expect(transformBlock(input)).toEqual(output)
+    expect(blockToApi(input)).toEqual(output)
   })
 
   test('should return all the possible marks', () => {
@@ -56,7 +57,7 @@ describe('createBlockSpans()', () => {
       ],
     }
 
-    expect(transformBlock(input)).toEqual(output)
+    expect(blockToApi(input)).toEqual(output)
   })
 
   test('should generate overlapping marks', () => {
@@ -76,7 +77,7 @@ describe('createBlockSpans()', () => {
       ],
     }
 
-    expect(transformBlock(input)).toEqual(output)
+    expect(blockToApi(input)).toEqual(output)
   })
 
   test('should transform no ASCII characters (emojis)', () => {
@@ -96,7 +97,7 @@ describe('createBlockSpans()', () => {
       ],
     }
 
-    expect(transformBlock(input)).toEqual(output)
+    expect(blockToApi(input)).toEqual(output)
   })
 
   test('Links: simple', () => {
@@ -118,7 +119,7 @@ describe('createBlockSpans()', () => {
       ]
     }
 
-    expect(transformBlock(input)).toEqual(output)
+    expect(blockToApi(input)).toEqual(output)
   })
 
   test('Links: multiple links together', () => {
@@ -143,7 +144,7 @@ describe('createBlockSpans()', () => {
       ]
     }
 
-    expect(transformBlock(input)).toEqual(output)
+    expect(blockToApi(input)).toEqual(output)
   })
 
   test('Links: with marks', () => {
@@ -166,7 +167,7 @@ describe('createBlockSpans()', () => {
       ]
     }
 
-    expect(transformBlock(input)).toEqual(output)
+    expect(blockToApi(input)).toEqual(output)
   })
 
   test('Embeds: simple', () => {
@@ -187,7 +188,7 @@ describe('createBlockSpans()', () => {
       }]
     }
 
-    expect(transformBlock(input)).toEqual(output)
+    expect(blockToApi(input)).toEqual(output)
   })
 
   test('Embeds: multiple embeds together', () => {
@@ -213,7 +214,7 @@ describe('createBlockSpans()', () => {
       }]
     }
 
-    expect(transformBlock(input)).toEqual(output)
+    expect(blockToApi(input)).toEqual(output)
   })
 
   test('Embeds: multiple embeds separated by marks', () => {
@@ -242,7 +243,7 @@ describe('createBlockSpans()', () => {
       }]
     }
 
-    expect(transformBlock(input)).toEqual(output)
+    expect(blockToApi(input)).toEqual(output)
   })
 
   test('emojis', () => {
@@ -264,6 +265,29 @@ describe('createBlockSpans()', () => {
       ]
     }
 
-    expect(transformBlock(input)).toEqual(output)
+    expect(blockToApi(input)).toEqual(output)
+  })
+
+  test('combining layers', () => {
+    let input: Statement = statement({ id: 'blockId' }, [
+      paragraph([
+        text('Alice', { strong: true }),
+        text(', Bob and '),
+        text('Carol', { strong: true }),
+      ])
+    ])
+
+    let output = {
+      id: 'blockId',
+      type: 'statement',
+      text: 'Alice, Bob and Carol',
+      layers: [
+        {
+          type: 'strong', starts: [0, 15], ends: [5, 20], attributes: null
+        }
+      ]
+    }
+
+    expect(blockToApi(input)).toEqual(output)
   })
 })

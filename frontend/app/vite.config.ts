@@ -1,10 +1,12 @@
 /// <reference types="vitest" />
 
 import react from '@vitejs/plugin-react'
-import {defineConfig} from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
-export default defineConfig({
+/**
+ * @type {import('vite').UserConfig}
+ */
+export default {
   cacheDir: '.vite',
   // prevent vite from obscuring rust errors
   clearScreen: false,
@@ -38,4 +40,4 @@ export default defineConfig({
   test: {
     setupFiles: ['./src/test/setup.ts'],
   },
-})
+}
