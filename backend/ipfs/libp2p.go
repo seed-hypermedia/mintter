@@ -9,11 +9,12 @@ import (
 	"mintter/backend/cleanup"
 
 	"github.com/ipfs/go-datastore"
+	"github.com/ipfs/go-ipns"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/libp2p/go-libp2p/config"
+	record "github.com/libp2p/go-libp2p-record"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
 
@@ -21,8 +22,8 @@ import (
 	connmgr "github.com/libp2p/go-libp2p-connmgr"
 	routing "github.com/libp2p/go-libp2p-core/routing"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
+	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
-	record "github.com/libp2p/go-libp2p-record"
 )
 
 // Bootstrappers is a convenience alias for a list of bootstrap addresses.
@@ -37,25 +38,6 @@ func DefaultBootstrapPeers() Bootstrappers {
 		panic(err)
 	}
 	return peers
-}
-
-func newDHT(ctx context.Context, h host.Host, ds datastore.Batching, opts ...dualdht.Option) (*dualdht.DHT, error) {
-	dhtOpts := []dualdht.Option{
-		dualdht.DHTOption(dht.NamespacedValidator("pk", record.PublicKeyValidator{})),
-		dualdht.DHTOption(dht.Concurrency(10)),
-		dualdht.DHTOption(dht.Mode(dht.ModeAuto)),
-	}
-	if ds != nil {
-		dhtOpts = append(dhtOpts, dualdht.DHTOption(dht.Datastore(ds)))
-	}
-	dhtOpts = append(dhtOpts, opts...)
-
-	return dualdht.New(ctx, h, dhtOpts...)
-}
-
-// TransportOpts set sane options for transport.
-func TransportOpts(cfg *config.Config) error {
-	return cfg.Apply(libp2p.DefaultTransports)
 }
 
 // BootstrapResult is a result of the bootstrap process.
@@ -127,7 +109,11 @@ type Libp2p struct {
 	clean         cleanup.Stack
 }
 
-// NewLibp2pNode creates a new node.
+// NewLibp2pNode creates a new node. It's a convenience wrapper around the main libp2p package.
+// It allows to start listening on the network as a separate call, and provides some convenience for bootstrapping.
+// It forces one to pass the peer private key, datastore, bootstrap peers.
+// To the default options of the libp2p package it also adds DHT Routing, Connection Manager, Relay protocol support.
+// To actually enable relay you also need to pass EnableAutoRelay, and NATPortMap.
 func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.AddrInfo, opts ...libp2p.Option) (n *Libp2p, err error) {
 	n = &Libp2p{
 		bootstrappers: bootstrap,
@@ -154,13 +140,31 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.A
 	o := []libp2p.Option{
 		libp2p.Identity(key),
 		libp2p.NoListenAddrs, // Users must explicitly start listening.
+		libp2p.EnableRelay(),
+		libp2p.ConnectionManager(mustConnMgr(connmgr.NewConnManager(50, 100,
+			connmgr.WithGracePeriod(10*time.Minute),
+		))),
 		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
-			r, err := newDHT(ctx, h, ds, dualdht.WanDHTOption(dht.BootstrapPeers(bootstrap...)))
+			if ds == nil {
+				panic("BUG: must provide datastore for DHT")
+			}
+
+			r, err := dualdht.New(
+				ctx, h,
+				dualdht.DHTOption(
+					dht.Concurrency(10),
+					dht.Mode(dht.ModeAuto),
+					dht.Datastore(ds),
+					dht.Validator(record.NamespacedValidator{
+						"pk":   record.PublicKeyValidator{},
+						"ipns": ipns.Validator{KeyBook: h.Peerstore()},
+					}),
+				),
+				dual.WanDHTOption(dht.BootstrapPeers(bootstrap...)),
+			)
 			if err != nil {
 				return nil, err
 			}
-
-			n.Routing = r
 
 			// Routing interface from IPFS doesn't expose Close method,
 			// so it actually never gets closed properly, even inside IPFS.
@@ -169,15 +173,10 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.A
 				return r.Close()
 			})
 
+			n.Routing = r
+
 			return r, nil
 		}),
-		libp2p.ConnectionManager(mustConnMgr(connmgr.NewConnManager(50, 100,
-			connmgr.WithGracePeriod(10*time.Minute),
-		))),
-		TransportOpts,
-		libp2p.NATPortMap(),
-		libp2p.EnableNATService(),
-		libp2p.DisableRelay(),
 	}
 
 	o = append(o, opts...)

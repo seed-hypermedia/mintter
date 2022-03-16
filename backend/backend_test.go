@@ -143,7 +143,6 @@ func makeTestBackend(t *testing.T, name string, ready bool) *backend {
 		fx.Supply(
 			config.P2P{
 				Addr:        "/ip4/0.0.0.0/tcp/0",
-				NoTLS:       true,
 				NoRelay:     true,
 				NoBootstrap: true,
 				NoMetrics:   true,

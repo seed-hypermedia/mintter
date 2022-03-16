@@ -70,10 +70,13 @@ func provideSQLite(lc fx.Lifecycle, r *repo) (*sqlitex.Pool, error) {
 }
 
 func provideBackend(lc fx.Lifecycle, pool *sqlitex.Pool, stop fx.Shutdowner, r *repo, p2p *p2pNode) (*backend, error) {
-	back := newBackend(logging.Logger("mintter/backend", "debug"), pool, r, p2p)
+	back := newBackend(logging.New("mintter/backend", "debug"), pool, r, p2p)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	errc := make(chan error, 1)
+
+	logging.SetLogLevel("p2p-circuit", "debug")
+	logging.SetLogLevel("p2p-holepunch", "debug")
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
@@ -104,7 +107,7 @@ func provideBackend(lc fx.Lifecycle, pool *sqlitex.Pool, stop fx.Shutdowner, r *
 }
 
 func logAppLifecycle(lc fx.Lifecycle, stop fx.Shutdowner, cfg config.Config, grpc *grpcServer, srv *httpServer, back *backend) {
-	log := logging.Logger("mintter/daemon", "debug")
+	log := logging.New("mintter/daemon", "debug")
 
 	if cfg.LetsEncrypt.Domain != "" {
 		log.Warn("Let's Encrypt is enabled, HTTP-port configuration value is ignored, will listen on the default TLS port (443)")
@@ -162,7 +165,7 @@ func provideDatastore(lc fx.Lifecycle) datastore.Batching {
 }
 
 func provideRepo(cfg config.Config) (*repo, error) {
-	r, err := newRepo(cfg.RepoPath, logging.Logger("mintter/repo", "debug"))
+	r, err := newRepo(cfg.RepoPath, logging.New("mintter/repo", "debug"))
 	if errors.Is(err, errRepoMigrate) {
 		fmt.Fprintf(os.Stderr, `
 This version of the software has a backward-incompatible database change!
