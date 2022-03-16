@@ -78,18 +78,15 @@ func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ps peerstore.Peerstore, ds d
 	opts := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
 		libp2p.Peerstore(ps),
+		libp2p.EnableNATService(),
 	}
 
 	if !cfg.NoRelay {
 		opts = append(opts,
-			libp2p.EnableRelay(), // TODO: enable OptHop for public nodes.
 			libp2p.EnableAutoRelay(),
-			libp2p.DefaultStaticRelays(),
+			libp2p.NATPortMap(),
+			libp2p.EnableHolePunching(),
 		)
-	}
-
-	if !cfg.NoTLS {
-		opts = append(opts, libp2p.DefaultSecurity)
 	}
 
 	if !cfg.NoMetrics {
@@ -146,7 +143,7 @@ func provideP2P(lc fx.Lifecycle, bs blockservice.BlockService, repo *repo, cfg c
 		return nil, fmt.Errorf("failed to create provider: %w", err)
 	}
 
-	p2p := newP2PNode(cfg, logging.Logger("mintter/p2p", "debug"), bs, libp2p, prov, boot)
+	p2p := newP2PNode(cfg, logging.New("mintter/p2p", "debug"), bs, libp2p, prov, boot)
 
 	lc.Append(fx.Hook{
 		OnStop: func(context.Context) error {

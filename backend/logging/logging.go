@@ -6,11 +6,12 @@ package logging
 import (
 	"github.com/ipfs/go-log/v2"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-// Logger creates a new named logger with the specified level.
+// New creates a new named logger with the specified level.
 // If logger was created before it will just set the level.
-func Logger(subsystem, level string) *zap.Logger {
+func New(subsystem, level string) *zap.Logger {
 	l := log.Logger(subsystem).Desugar()
 
 	if err := log.SetLogLevel(subsystem, level); err != nil {
@@ -51,4 +52,21 @@ func DefaultConfig() Config {
 		Level:  log.LevelError,
 		Labels: map[string]string{},
 	}
+}
+
+// ListLogNames of the underlying IPFS global logger.
+func ListLogNames() []string {
+	return log.GetSubsystems()
+}
+
+// GetGlobalConfig returns globel logging configuration.
+// It's pain that there's no way to not use global here.
+func GetGlobalConfig() log.Config {
+	return log.GetConfig()
+}
+
+// LevelToString returns string representation of the log level, to avoid
+// callers depending on the zapcore package.
+func LevelToString(l log.LogLevel) string {
+	return zapcore.Level(l).String()
 }

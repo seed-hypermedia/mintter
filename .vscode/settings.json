@@ -6,12 +6,14 @@
     "**/CVS": true,
     "**/.DS_Store": true,
     "**/*.env": true,
-    "bazel-mintter/**": true
+    "bazel-mintter/**": true,
+    ".git/**": true
   },
   "files.watcherExclude": {
     "bazel-*/**": true,
     "plz-out/**": true,
-    ".plz-cache/**": true
+    ".plz-cache/**": true,
+    ".git/**": true
   },
   "gopls": {
     "build.experimentalWorkspaceModule": true,
@@ -28,7 +30,8 @@
     "bazel-*/**": true,
     "plz-out/**": true,
     "**/.yarn": true,
-    "**/.pnp.*": true
+    "**/.pnp.*": true,
+    ".git/**": true
   },
   "editor.formatOnSave": true,
   "[javascript]": {

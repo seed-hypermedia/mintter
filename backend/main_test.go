@@ -26,7 +26,6 @@ func TestDaemonEndToEnd(t *testing.T) {
 			Addr:        "/ip4/0.0.0.0/tcp/0",
 			NoBootstrap: true,
 			NoRelay:     true,
-			NoTLS:       true,
 			NoMetrics:   true,
 		},
 	}
