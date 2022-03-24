@@ -68,6 +68,7 @@ in
       (lib.optionals hostPlatform.isLinux shellLinux.libs)
       shellCommon.libs
     ];
+    hardeningDisable = ["fortify"];
     shellHook = ''
       export CGO_ENABLED="1"
       export WORKSPACE="$(pwd)"
