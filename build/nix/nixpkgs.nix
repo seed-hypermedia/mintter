@@ -2,21 +2,21 @@
 # defined in overlay.nix. This file can be imported in place of normal <nixpkgs>.
 let
   pkgs = import <nixpkgs> {};
-  # Nixpkgs as of 2022-01-24.
-  # Update sha256 with `nix-prefetch --owner NixOS --repo nixpkgs --rev <commit>`.
+  # Nixpkgs as of 2022-03-28.
+  # Update sha256 with `nix-prefetch fetchFromGitHub --owner NixOS --repo nixpkgs --rev <commit>`.
   pinnedNixpkgs = pkgs.fetchFromGitHub {
     owner = "NixOS";
     repo = "nixpkgs";
-    rev = "cc68710784ffe0ee035ee7b726656c44566cac94";
-    sha256 = "0j1hngbqf4h9pm4pkkrw6fxrifwjj5vbq52gf4i9hwc2z2wxn6pj";
+    rev = "30d3d79b7d3607d56546dd2a6b49e156ba0ec634";
+    sha256 = "sha256-Ctij+dOi0ZZIfX5eMhgwugfvB+WZSrvVNAyAuANOsnQ=";
   };
   # Rust overlay as of 2022-01-24.
-  # Update sha256 with `nix-prefetch --owner oxalica --repo rust-overlay --rev <commit>`.
+  # Update sha256 with `nix-prefetch fetchFromGitHub --owner oxalica --repo rust-overlay --rev <commit>`.
   rustOverlay = import (pkgs.fetchFromGitHub {
     owner = "oxalica";
     repo = "rust-overlay";
-    rev = "9fb49daf1bbe1d91e6c837706c481f9ebb3d8097";
-    sha256 = "1h8v9346kw70glmsg58dz3fa260iy38p9kdf73nxphnnf6dy2yd4";
+    rev = "d477108aefccc46e4b7acc8008f03d4e823da7b0";
+    sha256 = "sha256-rTpgRsgIeCYY4e4Qj+gMT1H80E0f7ITNyseOaPSiyrM=";
   });
   mintterOverlay = import ./overlay.nix;
 in
