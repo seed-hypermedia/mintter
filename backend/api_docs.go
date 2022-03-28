@@ -360,10 +360,6 @@ func (srv *docsAPI) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraft
 			ds.SetTitle(op.SetTitle)
 		case *documents.DocumentChange_SetSubtitle:
 			ds.SetSubtitle(op.SetSubtitle)
-		case *documents.DocumentChange_AddBlock_:
-			if err := ds.AddBlock(op.AddBlock.Block, op.AddBlock.Parent, op.AddBlock.LeftSibling); err != nil {
-				return nil, err
-			}
 		case *documents.DocumentChange_MoveBlock_:
 			if err := ds.MoveBlock(op.MoveBlock.BlockId, op.MoveBlock.Parent, op.MoveBlock.LeftSibling); err != nil {
 				return nil, err
@@ -374,10 +370,6 @@ func (srv *docsAPI) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraft
 			}
 		case *documents.DocumentChange_DeleteBlock:
 			if err := ds.DeleteBlock(op.DeleteBlock); err != nil {
-				return nil, err
-			}
-		case *documents.DocumentChange_UpsertBlock_:
-			if err := ds.UpsertBlock(op.UpsertBlock.Block, op.UpsertBlock.Parent, op.UpsertBlock.LeftSibling); err != nil {
 				return nil, err
 			}
 		default:
@@ -427,38 +419,26 @@ func (ds *draftState) SetSubtitle(subtitle string) {
 	ds.subtitle = subtitle
 }
 
-func (ds *draftState) AddBlock(blk *documents.Block, parent, left string) error {
-	if _, ok := ds.blocks[blk.Id]; ok {
-		return fmt.Errorf("adding duplicate block id %s", blk.Id)
-	}
-
-	return ds.UpsertBlock(blk, parent, left)
-}
-
-func (ds *draftState) UpsertBlock(blk *documents.Block, parent, left string) error {
-	if blk.Id == "" {
-		return fmt.Errorf("blocks without ID are not allowed")
-	}
-
-	if parent == "" {
-		parent = crdt.RootNodeID
-	}
-
-	if err := ds.tree.SetNodePosition(ds.author, blk.Id, parent, left); err != nil {
-		return err
-	}
-
-	ds.blocks[blk.Id] = blk
-
-	return nil
-}
-
 func (ds *draftState) MoveBlock(blockID, parent, left string) error {
 	if parent == "" {
 		parent = crdt.RootNodeID
 	}
 
-	return ds.tree.SetNodePosition(ds.author, blockID, parent, left)
+	if blockID == "" {
+		return fmt.Errorf("blocks without ID are not allowed")
+	}
+
+	if err := ds.tree.SetNodePosition(ds.author, blockID, parent, left); err != nil {
+		return err
+	}
+
+	if ds.blocks[blockID] == nil {
+		ds.blocks[blockID] = &documents.Block{
+			Id: blockID,
+		}
+	}
+
+	return nil
 }
 
 func (ds *draftState) ReplaceBlock(blk *documents.Block) error {

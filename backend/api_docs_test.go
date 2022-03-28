@@ -489,29 +489,44 @@ func TestAPIUpdateDraftV2(t *testing.T) {
 				{Op: &documents.DocumentChange_SetSubtitle{
 					SetSubtitle: "This is a more granular drafts API",
 				}},
-				{Op: &documents.DocumentChange_AddBlock_{
-					AddBlock: &documents.DocumentChange_AddBlock{
-						Block: &documents.Block{
-							Id:   "b1",
-							Text: "This is the first paragraph.",
-						},
+				{Op: &documents.DocumentChange_MoveBlock_{
+					MoveBlock: &documents.DocumentChange_MoveBlock{
+						BlockId:     "b1",
+						Parent:      "",
+						LeftSibling: "",
 					},
 				}},
-				{Op: &documents.DocumentChange_AddBlock_{
-					AddBlock: &documents.DocumentChange_AddBlock{
-						Block: &documents.Block{
-							Id:   "b1.1",
-							Text: "This is a child of the first paragraph.",
-						},
-						Parent: "b1",
+				{Op: &documents.DocumentChange_ReplaceBlock{
+					ReplaceBlock: &documents.Block{
+						Id:   "b1",
+						Text: "This is the first paragraph.",
 					},
 				}},
-				{Op: &documents.DocumentChange_AddBlock_{
-					AddBlock: &documents.DocumentChange_AddBlock{
-						Block: &documents.Block{
-							Id:   "b2",
-							Text: "This is inserted before the first paragraph.",
-						},
+				{Op: &documents.DocumentChange_MoveBlock_{
+					MoveBlock: &documents.DocumentChange_MoveBlock{
+						BlockId:     "b1.1",
+						Parent:      "b1",
+						LeftSibling: "",
+					},
+				}},
+				{Op: &documents.DocumentChange_ReplaceBlock{
+					ReplaceBlock: &documents.Block{
+						Id:   "b1.1",
+						Text: "This is a child of the first paragraph.",
+					},
+				}},
+
+				{Op: &documents.DocumentChange_MoveBlock_{
+					MoveBlock: &documents.DocumentChange_MoveBlock{
+						BlockId:     "b2",
+						Parent:      "",
+						LeftSibling: "",
+					},
+				}},
+				{Op: &documents.DocumentChange_ReplaceBlock{
+					ReplaceBlock: &documents.Block{
+						Id:   "b2",
+						Text: "This is inserted before the first paragraph.",
 					},
 				}},
 			},
