@@ -84,7 +84,7 @@ def main():
     @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
     def run_desktop(args):
         run("plz build //backend:mintterd //:yarn")
-        return run("cargo tauri dev", args=args)
+        return run("cd desktop/app && cargo tauri dev", args=args)
 
     if len(sys.argv) == 1:
         cli.print_help()
