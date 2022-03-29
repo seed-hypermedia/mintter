@@ -128,11 +128,11 @@
     "typedoc": "^0.22.5",
     "typedoc-plugin-markdown": "^3.11.3",
     "typescript": "4.4.4",
-    "vite": "2.8.5",
+    "vite": "^2.8.6",
     "vite-plugin-checker": "^0.4.0",
     "vite-react-jsx": "^1.1.2",
     "vite-tsconfig-paths": "^3.3.17",
-    "vitest": "0.3.5"
+    "vitest": "^0.7.11"
   },
   "peerDependencies": {
     "typescript": "4.4.4"

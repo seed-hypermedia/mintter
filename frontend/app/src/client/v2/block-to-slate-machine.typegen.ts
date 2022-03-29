@@ -7,7 +7,6 @@ export interface Typegen0 {
     incrementIndex: ''
     commit: ''
     printFinal: ''
-    resetTickValues: ''
   }
   internalEvents: {
     '': {type: ''}
@@ -15,13 +14,15 @@ export interface Typegen0 {
   }
   invokeSrcNameMap: {}
   missingImplementations: {
-    actions: 'resetTickValues'
+    actions: never
     services: never
     guards: never
     delays: never
   }
   eventsCausingServices: {}
-  eventsCausingGuards: {}
+  eventsCausingGuards: {
+    isLessThanLength: ''
+  }
   eventsCausingDelays: {}
   matchesStates: 'tick' | 'finish'
   tags: never

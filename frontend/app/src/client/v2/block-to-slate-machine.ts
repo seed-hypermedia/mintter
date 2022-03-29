@@ -28,16 +28,15 @@ export const toSlateMachine = createMachine({
     text: 'Hello World',
     leaf: null,
     textStart: 0,
-    i: 0,
-    pos: 0,
+    i: -1,
+    pos: -1,
     leafLayers: new Set<Layer>()
   },
   initial: 'tick',
   states: {
     tick: {
-      entry: 'resetTickValues',
       always: [{
-        cond: (context) => context.i > context.text.length,
+        cond: 'isLessThanLength',
         target: 'tick',
         actions: ['incrementPos', 'incrementIndex', 'commit']
       }, {
@@ -57,13 +56,16 @@ export const toSlateMachine = createMachine({
     incrementPos: assign({
       pos: (context) => context.pos + 1
     }),
-    commit: (context) => {
-      console.log('COMMIT: ', context.text);
-
-    },
+    commit: assign((context) => {
+      console.log('COMMIT: ', context.text.substring(context.i, context.i + 1))
+      return {}
+    }),
     printFinal: (context) => {
       console.log('MACHINE FINAL: ');
 
-    },
+    }
+  },
+  guards: {
+    isLessThanLength: (context) => context.i < context.text.length - 1
   }
 })

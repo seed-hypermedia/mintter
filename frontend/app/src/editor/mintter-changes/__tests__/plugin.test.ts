@@ -43,7 +43,3 @@ describe('Mark blocks as dirty', () => {
     expect(changesService.getSnapshot().context.upsertBlocks).toEqual(expected)
   })
 })
-
-describe('create document changes', () => {
-
-})

@@ -1,5 +1,13 @@
-import { FlowContent } from "@mintter/mttast";
+// import { toSlateMachine } from "@app/client/v2/block-to-slate-machine";
+import { FlowContent, PhrasingContent } from "@mintter/mttast";
+// import { interpret } from "xstate";
 import { Block, Layer, layerContains } from "./types";
+
+// function main() {
+//   let service = interpret(toSlateMachine).start()
+// }
+
+// main()
 
 export function blockToSlate(blk: Block): FlowContent {
 
@@ -12,7 +20,7 @@ export function blockToSlate(blk: Block): FlowContent {
     children: [
       {
         type: blk.type == 'heading' ? 'staticParagraph' : 'paragraph',
-        children: [],
+        children: [] as Array<PhrasingContent>,
       },
     ],
   };
@@ -80,7 +88,7 @@ export function blockToSlate(blk: Block): FlowContent {
         linkOrEmbed = null
       }
 
-      return out;
+      return out as FlowContent;
     }
 
     // On the first iteration we won't have the leaf.
@@ -132,7 +140,6 @@ export function blockToSlate(blk: Block): FlowContent {
       if (['strong', 'emphasis', 'strikethrough', 'underline', 'superscript', 'subscript'].includes(l.type)) {
         leaf[l.type] = true
       }
-      // TODO: identity check
     });
 
     if (linkLayer) {
@@ -141,15 +148,15 @@ export function blockToSlate(blk: Block): FlowContent {
         if (linkChangedIdentity(linkLayer)) {
           leaves.push(linkOrEmbed)
           linkOrEmbed = {
-            type: linkLayer.type,
-            ...linkLayer.attributes,
+            type: (linkLayer as Layer).type,
+            ...(linkLayer as Layer).attributes,
             children: []
           }
         }
       } else {
         linkOrEmbed = {
-          type: linkLayer.type,
-          ...linkLayer.attributes,
+          type: (linkLayer as Layer).type,
+          ...(linkLayer as Layer).attributes,
           children: []
         }
       }
@@ -159,29 +166,6 @@ export function blockToSlate(blk: Block): FlowContent {
         linkOrEmbed = null
       }
     }
-    // if (linkLayer) {
-    //   if (!linkOrEmbed) {
-    //     linkOrEmbed = {
-    //       type: linkLayer.type,
-    //       ...linkLayer.attributes,
-    //       children: []
-    //     }
-    //   } else {
-    //     if (linkLayer.attributes.url != linkOrEmbed.url) {
-    //       linkOrEmbed = {
-    //         type: linkLayer.type,
-    //         ...linkLayer.attributes,
-    //         children: []
-    //       }
-    //     }
-    //   }
-    // } else {
-    //   if (linkOrEmbed) {
-    //     leaves.push(linkOrEmbed)
-    //     linkOrEmbed = null
-    //   }
-
-    // }
   };
 
   function linkChangedIdentity(layer: Layer): boolean {

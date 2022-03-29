@@ -2,6 +2,7 @@ import * as localApi from '@app/client'
 import { queryKeys, useAccount } from '@app/hooks'
 import { styled } from '@app/stitches.config'
 import { useTheme } from '@app/theme'
+import { ObjectKeys } from '@app/utils/object-keys'
 import { dialogContentStyles, overlayStyles } from '@components/dialog-styles'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
@@ -286,7 +287,7 @@ function AccountInfo() {
         Devices List
       </Text>
       <Box as="ul">
-        {data?.devices && Object.keys(data?.devices).length
+        {data?.devices && ObjectKeys(data?.devices).length
           ? Object.entries(data?.devices).map(([id, device]: [string, localApi.Device], index: number) => (
             <Text as="li" key={id}>
               <Text as="span" color="muted" css={{ display: 'inline-block', marginRight: '$4' }}>

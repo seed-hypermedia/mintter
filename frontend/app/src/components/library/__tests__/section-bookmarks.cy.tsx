@@ -1,10 +1,10 @@
-import {Account, ListDraftsResponse, ListPublicationsResponse} from '@app/client'
-import {ListBookmarksResponse} from '@app/client/bookmarks'
-import {queryKeys} from '@app/hooks'
-import {MainPageProviders, mountWithAccount} from '@app/test/utils'
-import {BookmarksSection} from '@components/library/section-bookmarks'
-import {group, paragraph, statement, text} from '@mintter/mttast'
-import {setLogger} from 'react-query'
+import { Account, ListDraftsResponse, ListPublicationsResponse } from '@app/client'
+import { ListBookmarksResponse } from '@app/client/bookmarks'
+import { queryKeys } from '@app/hooks'
+import { MainPageProviders, mountWithAccount } from '@app/test/utils'
+import { BookmarksSection } from '@components/library/section-bookmarks'
+import { group, paragraph, statement, text } from '@mintter/mttast'
+import { setLogger } from 'react-query'
 
 setLogger({
   log: console.log,
@@ -24,7 +24,7 @@ describe.only('<BookmarkItem />', () => {
       title: 'demo title',
       subtitle: 'demo subtitle',
       author: 'author',
-      content: [group([statement({id: 'b1'}, [paragraph([text('Hello World')])])])],
+      content: [group([statement({ id: 'b1' }, [paragraph([text('Hello World')])])])],
       publishTime: undefined,
       updateTime: undefined,
       children: [],
@@ -34,7 +34,7 @@ describe.only('<BookmarkItem />', () => {
 
   let copyTextToClipboard: any
   beforeEach(() => {
-    let {client, render} = mountWithAccount()
+    let { client, render } = mountWithAccount()
 
     client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
       publications: [],
@@ -70,7 +70,7 @@ describe.only('<BookmarkItem />', () => {
       </MainPageProviders>,
     )
 
-    cy.get('[data-testid="bookmarks-section-trigger"]').click()
+    cy.get('[data-testid="bookmarks-section-trigger"]').click({ force: true })
   })
 
   it('default item', () => {
@@ -120,7 +120,7 @@ describe.only('<BookmarkItem />', () => {
     cy.get('[data-testid="bookmark-item"]')
       .should('exist')
       .get('[data-testid="clear-bookmarks"]')
-      .click()
+      .click({ force: true })
       .get('[data-testid="bookmark-item"]')
       .should('not.exist')
   })

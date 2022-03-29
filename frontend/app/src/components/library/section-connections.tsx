@@ -1,22 +1,23 @@
-import {Account, connect, ConnectionStatus, getPeerInfo} from '@app/client'
-import {useListAccounts} from '@app/hooks'
-import {CSS, keyframes, styled} from '@app/stitches.config'
-import {StyledItem} from '@components/library/library-item'
+import { Account, connect, ConnectionStatus, getPeerInfo } from '@app/client'
+import { useListAccounts } from '@app/hooks'
+import { CSS, keyframes, styled } from '@app/stitches.config'
+import { ObjectKeys } from '@app/utils/object-keys'
+import { StyledItem } from '@components/library/library-item'
 import * as HoverCard from '@radix-ui/react-hover-card'
-import {useState} from 'react'
-import {ErrorBoundary} from 'react-error-boundary'
+import { useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import toast from 'react-hot-toast'
-import {useQuery} from 'react-query'
-import {Box} from '../box'
-import {Button} from '../button'
-import {Prompt} from '../prompt'
-import {Text} from '../text'
-import {TextField} from '../text-field'
-import {Section} from './section'
-import {SectionError} from './section-error'
+import { useQuery } from 'react-query'
+import { Box } from '../box'
+import { Button } from '../button'
+import { Prompt } from '../prompt'
+import { Text } from '../text'
+import { TextField } from '../text-field'
+import { Section } from './section'
+import { SectionError } from './section-error'
 
 export function ConnectionsSection() {
-  const {status, data = [], error} = useListAccounts()
+  const { status, data = [], error } = useListAccounts()
 
   let title = `Connections (${data.length})`
 
@@ -65,7 +66,7 @@ function ConnectionsPrompt() {
 
   return (
     <Prompt.Root>
-      <Prompt.Trigger variant="ghost" color="primary" size="1" css={{textAlign: 'left'}}>
+      <Prompt.Trigger variant="ghost" color="primary" size="1" css={{ textAlign: 'left' }}>
         + add connection
       </Prompt.Trigger>
       <Prompt.Content>
@@ -96,23 +97,23 @@ function ConnectionsPrompt() {
   )
 }
 const slideUpAndFade = keyframes({
-  '0%': {opacity: 0, transform: 'translateY(2px)'},
-  '100%': {opacity: 1, transform: 'translateY(0)'},
+  '0%': { opacity: 0, transform: 'translateY(2px)' },
+  '100%': { opacity: 1, transform: 'translateY(0)' },
 })
 
 const slideRightAndFade = keyframes({
-  '0%': {opacity: 0, transform: 'translateX(-2px)'},
-  '100%': {opacity: 1, transform: 'translateX(0)'},
+  '0%': { opacity: 0, transform: 'translateX(-2px)' },
+  '100%': { opacity: 1, transform: 'translateX(0)' },
 })
 
 const slideDownAndFade = keyframes({
-  '0%': {opacity: 0, transform: 'translateY(-2px)'},
-  '100%': {opacity: 1, transform: 'translateY(0)'},
+  '0%': { opacity: 0, transform: 'translateY(-2px)' },
+  '100%': { opacity: 1, transform: 'translateY(0)' },
 })
 
 const slideLeftAndFade = keyframes({
-  '0%': {opacity: 0, transform: 'translateX(2px)'},
-  '100%': {opacity: 1, transform: 'translateX(0)'},
+  '0%': { opacity: 0, transform: 'translateX(2px)' },
+  '100%': { opacity: 1, transform: 'translateX(0)' },
 })
 
 const HoverCardContentStyled = styled(HoverCard.Content, {
@@ -127,10 +128,10 @@ const HoverCardContentStyled = styled(HoverCard.Content, {
     animationTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
     willChange: 'transform, opacity',
     '&[data-state="open"]': {
-      '&[data-side="top"]': {animationName: slideDownAndFade},
-      '&[data-side="right"]': {animationName: slideLeftAndFade},
-      '&[data-side="bottom"]': {animationName: slideUpAndFade},
-      '&[data-side="left"]': {animationName: slideRightAndFade},
+      '&[data-side="top"]': { animationName: slideDownAndFade },
+      '&[data-side="right"]': { animationName: slideLeftAndFade },
+      '&[data-side="bottom"]': { animationName: slideUpAndFade },
+      '&[data-side="left"]': { animationName: slideRightAndFade },
     },
   },
 })
@@ -139,8 +140,8 @@ export type AccountItemProps = {
   account: Account
 }
 
-function AccountItem({account}: AccountItemProps) {
-  const {data} = useQuery(
+function AccountItem({ account }: AccountItemProps) {
+  const { data } = useQuery(
     ['ConnectionStatus', account.devices],
     () => {
       let devices = Object.values(account.devices)
@@ -175,8 +176,8 @@ function AccountItem({account}: AccountItemProps) {
                   data.connectionStatus == ConnectionStatus.CONNECTED
                     ? '$success-default'
                     : data.connectionStatus == ConnectionStatus.NOT_CONNECTED
-                    ? '$danger-default'
-                    : '$background-default',
+                      ? '$danger-default'
+                      : '$background-default',
               }}
             />
           )}
@@ -185,8 +186,8 @@ function AccountItem({account}: AccountItemProps) {
         </StyledItem>
       </HoverCard.Trigger>
       <HoverCardContentStyled align="start" portalled>
-        <Box css={{width: 32, height: 32, backgroundColor: '$background-neutral', borderRadius: '$round'}} />
-        <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>
+        <Box css={{ width: 32, height: 32, backgroundColor: '$background-neutral', borderRadius: '$round' }} />
+        <Box css={{ display: 'flex', flexDirection: 'column', gap: '$2' }}>
           <Text fontWeight="bold">{account.profile?.alias}</Text>
           <Text
             color="muted"
@@ -204,14 +205,14 @@ function AccountItem({account}: AccountItemProps) {
             {data?.connectionStatus == ConnectionStatus.CONNECTED
               ? 'connected'
               : data?.connectionStatus == ConnectionStatus.NOT_CONNECTED
-              ? 'not_connected'
-              : data?.connectionStatus == ConnectionStatus.CANNOT_CONNECT
-              ? 'cannot_connect'
-              : data?.connectionStatus == ConnectionStatus.UNRECOGNIZED
-              ? 'unrecognized'
-              : data?.connectionStatus == ConnectionStatus.CAN_CONNECT
-              ? 'can_connect'
-              : 'no connection data'}
+                ? 'not_connected'
+                : data?.connectionStatus == ConnectionStatus.CANNOT_CONNECT
+                  ? 'cannot_connect'
+                  : data?.connectionStatus == ConnectionStatus.UNRECOGNIZED
+                    ? 'unrecognized'
+                    : data?.connectionStatus == ConnectionStatus.CAN_CONNECT
+                      ? 'can_connect'
+                      : 'no connection data'}
             )
           </Text>
           <Text
@@ -232,7 +233,7 @@ function AccountItem({account}: AccountItemProps) {
               overflow: 'hidden',
             }}
           >
-            <b>device ID:</b> {Object.keys(account.devices)[0]}
+            <b>device ID:</b> {ObjectKeys(account.devices)[0]}
           </Text>
         </Box>
       </HoverCardContentStyled>

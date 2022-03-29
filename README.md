@@ -61,3 +61,9 @@ If Nix and direnv are properly installed, you should not need anything else. Rep
 - avoid creating abstractions
 - avoid creating folders, better to have files as flat as possible
 - avoid default exports, only default exports for page components (to use dynamic import).
+
+## Frontend testing
+
+```
+yarn test
+```

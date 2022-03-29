@@ -3,19 +3,19 @@ import {
   ListAccountsResponse,
   ListDraftsResponse,
   ListPublicationsResponse,
-  ListSidepanelResponse,
+  ListSidepanelResponse
 } from '@app/client'
-import {HoverProvider} from '@app/editor/hover-context'
-import {hoverMachine} from '@app/editor/hover-machine'
-import {queryKeys} from '@app/hooks'
-import {mountWithAccount} from '@app/test/utils'
-import {BookmarksProvider, createBookmarksMachine} from '@components/bookmarks'
-import {Box} from '@components/box'
-import {createSidepanelMachine, Sidepanel, SidepanelProvider} from '@components/sidepanel'
-import {group, paragraph, statement, text} from '@mintter/mttast'
-import {useInterpret} from '@xstate/react'
-import {PropsWithChildren} from 'react'
-import {QueryClient} from 'react-query'
+import { HoverProvider } from '@app/editor/hover-context'
+import { hoverMachine } from '@app/editor/hover-machine'
+import { queryKeys } from '@app/hooks'
+import { mountWithAccount } from '@app/test/utils'
+import { BookmarksProvider, createBookmarksMachine } from '@components/bookmarks'
+import { Box } from '@components/box'
+import { createSidepanelMachine, Sidepanel, SidepanelProvider } from '@components/sidepanel'
+import { group, paragraph, statement, text } from '@mintter/mttast'
+import { useInterpret } from '@xstate/react'
+import { PropsWithChildren } from 'react'
+import { QueryClient } from 'react-query'
 
 describe('<Sidepanel />', () => {
   let pub = {
@@ -26,7 +26,7 @@ describe('<Sidepanel />', () => {
       title: 'demo title',
       subtitle: 'demo subtitle',
       author: 'author',
-      content: [group([statement({id: 'b1'}, [paragraph([text('Hello World')])])])],
+      content: [group([statement({ id: 'b1' }, [paragraph([text('Hello World')])])])],
       publishTime: undefined,
       updateTime: undefined,
       children: [],
@@ -37,7 +37,7 @@ describe('<Sidepanel />', () => {
   let copyTextToClipboard: any
 
   beforeEach(() => {
-    const {render, client} = mountWithAccount()
+    const { render, client } = mountWithAccount()
 
     client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
       publications: [],
@@ -143,7 +143,7 @@ describe('<Sidepanel />', () => {
   })
 })
 
-function SidepanelTestProvider({children, client}: PropsWithChildren<{client: QueryClient}>) {
+function SidepanelTestProvider({ children, client }: PropsWithChildren<{ client: QueryClient }>) {
   const sidepanel = useInterpret(() => createSidepanelMachine(client))
   const bookmarks = useInterpret(() => createBookmarksMachine(client))
   const hover = useInterpret(() => hoverMachine)

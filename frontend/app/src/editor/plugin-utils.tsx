@@ -1,9 +1,10 @@
-import {error} from '@app/utils/logger'
-import {createEditor, Editor, NodeEntry, Range} from 'slate'
-import {withHistory} from 'slate-history'
-import {DefaultElement, DefaultLeaf, RenderElementProps, RenderLeafProps, withReact} from 'slate-react'
-import {EditableProps} from 'slate-react/dist/components/editable'
-import {EditableEventHandlers, EditorPlugin} from './types'
+import { error } from '@app/utils/logger'
+import { ObjectKeys } from '@app/utils/object-keys'
+import { createEditor, Editor, NodeEntry, Range } from 'slate'
+import { withHistory } from 'slate-history'
+import { DefaultElement, DefaultLeaf, RenderElementProps, RenderLeafProps, withReact } from 'slate-react'
+import { EditableProps } from 'slate-react/dist/components/editable'
+import { EditableEventHandlers, EditorPlugin } from './types'
 
 export enum EditorMode {
   Draft,
@@ -15,19 +16,19 @@ export enum EditorMode {
 
 const byApply =
   (mode: EditorMode) =>
-  (plugin: EditorPlugin): boolean => {
-    if (typeof plugin.apply == 'function') {
-      return plugin.apply(mode)
-    } else {
-      return plugin.apply === undefined || plugin.apply === mode
+    (plugin: EditorPlugin): boolean => {
+      if (typeof plugin.apply == 'function') {
+        return plugin.apply(mode)
+      } else {
+        return plugin.apply === undefined || plugin.apply === mode
+      }
     }
-  }
 
 const hasHook =
   (hook: keyof EditorPlugin) =>
-  (plugin: EditorPlugin): plugin is EditorPlugin & Required<Pick<EditorPlugin, typeof hook>> => {
-    return typeof plugin[hook] === 'function'
-  }
+    (plugin: EditorPlugin): plugin is EditorPlugin & Required<Pick<EditorPlugin, typeof hook>> => {
+      return typeof plugin[hook] === 'function'
+    }
 
 const withMode = (mode: EditorMode) => (editor: Editor) => {
   editor.mode = mode
@@ -39,7 +40,7 @@ export function buildEditorHook(plugins: EditorPlugin[], mode: EditorMode): Edit
   const filteredPlugins = plugins.filter(byApply(mode)).filter(hasHook('configureEditor'))
 
   let editor = withMode(mode)(withHistory(withReact(createEditor())))
-  for (const {name, configureEditor} of filteredPlugins) {
+  for (const { name, configureEditor } of filteredPlugins) {
     try {
       editor = configureEditor(editor) || editor
     } catch (e) {
@@ -57,7 +58,7 @@ export function buildRenderElementHook(plugins: EditorPlugin[], editor: Editor):
   if (!filteredPlugins.length) return undefined
 
   return function SlateElement(props: RenderElementProps) {
-    for (const {name, renderElement} of filteredPlugins) {
+    for (const { name, renderElement } of filteredPlugins) {
       try {
         const element = renderElement(editor)(props)
         if (element) return element
@@ -75,9 +76,9 @@ export function buildRenderLeafHook(plugins: EditorPlugin[], editor: Editor): Ed
   if (!filteredPlugins.length) return undefined
 
   return function SlateLeaf(props: RenderLeafProps) {
-    const leafProps = {...props}
+    const leafProps = { ...props }
 
-    for (const {name, renderLeaf} of filteredPlugins) {
+    for (const { name, renderLeaf } of filteredPlugins) {
       try {
         const newChildren = renderLeaf(editor)(leafProps)
         if (newChildren) leafProps.children = newChildren
@@ -98,7 +99,7 @@ export function buildDecorateHook(plugins: EditorPlugin[], editor: Editor): Edit
   return function decorate(entry: NodeEntry) {
     let ranges: Range[] = []
 
-    for (const {name, decorate} of filteredPlugins) {
+    for (const { name, decorate } of filteredPlugins) {
       try {
         ranges = ranges.concat(decorate(editor)(entry) || [])
       } catch (e) {
@@ -113,7 +114,7 @@ export function buildDecorateHook(plugins: EditorPlugin[], editor: Editor): Edit
 export function buildEventHandlerHooks(plugins: EditorPlugin[], editor: Editor): EditableEventHandlers {
   const handlers: EditableEventHandlers = {}
   const filteredPlugins = plugins.filter(byApply(editor.mode))
-  const events = filteredPlugins.flatMap((p) => Object.keys(p).filter((k) => k.startsWith('on'))) as Array<
+  const events = filteredPlugins.flatMap((p) => ObjectKeys(p).filter((k) => k.startsWith('on'))) as Array<
     keyof EditableEventHandlers
   >
 
@@ -121,7 +122,7 @@ export function buildEventHandlerHooks(plugins: EditorPlugin[], editor: Editor):
     const pluginsWithHook = filteredPlugins.filter(hasHook(event))
 
     handlers[event] = function (ev) {
-      for (const {name, [event]: hook} of pluginsWithHook) {
+      for (const { name, [event]: hook } of pluginsWithHook) {
         try {
           // @ts-expect-error ev has incompatible types
           hook(editor)(ev)

@@ -1,16 +1,15 @@
-import {hoverModel} from '@app/editor/hover-machine'
-import {EditorMode} from '@app/editor/plugin-utils'
-import {findPath} from '@app/editor/utils'
-import type {TextProps} from '@components/text'
-import type {StaticParagraph as StaticParagraphType} from '@mintter/mttast'
-import {isHeading, isStaticParagraph} from '@mintter/mttast'
-import {useActor} from '@xstate/react'
-import {Editor} from 'slate'
-import type {RenderElementProps} from 'slate-react'
-import {useSlateStatic} from 'slate-react'
-import {useHover} from '../hover-context'
-import type {EditorPlugin} from '../types'
-import {StaticParagraphUI} from './static-paragraph-ui'
+import { hoverModel } from '@app/editor/hover-machine'
+import { EditorMode } from '@app/editor/plugin-utils'
+import { findPath } from '@app/editor/utils'
+import type { TextProps } from '@components/text'
+import type { StaticParagraph as StaticParagraphType } from '@mintter/mttast'
+import { isHeading, isStaticParagraph } from '@mintter/mttast'
+import { Editor } from 'slate'
+import type { RenderElementProps } from 'slate-react'
+import { useSlateStatic } from 'slate-react'
+import { useHover } from '../hover-context'
+import type { EditorPlugin } from '../types'
+import { StaticParagraphUI } from './static-paragraph-ui'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
@@ -45,15 +44,15 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATIC_PARAGRAPH,
   renderElement:
     (editor) =>
-    ({element, children, attributes}) => {
-      if (isStaticParagraph(element)) {
-        return (
-          <StaticParagraph mode={editor.mode} element={element} attributes={attributes}>
-            {children}
-          </StaticParagraph>
-        )
-      }
-    },
+      ({ element, children, attributes }) => {
+        if (isStaticParagraph(element)) {
+          return (
+            <StaticParagraph mode={editor.mode} element={element} attributes={attributes}>
+              {children}
+            </StaticParagraph>
+          )
+        }
+      },
 })
 
 function useHeading(element: StaticParagraphType) {
@@ -71,11 +70,10 @@ function useHeading(element: StaticParagraphType) {
   }
 }
 
-function StaticParagraph({children, element, attributes, mode}: RenderElementProps & {mode: EditorMode}) {
+function StaticParagraph({ children, element, attributes, mode }: RenderElementProps & { mode: EditorMode }) {
   var heading = useHeading(element as StaticParagraphType)
   var sizeProps = headingMap[heading?.level ?? 'default']
   var hoverService = useHover()
-  var [, hoverSend] = useActor(hoverService)
 
   return (
     <StaticParagraphUI
@@ -88,7 +86,7 @@ function StaticParagraph({children, element, attributes, mode}: RenderElementPro
       {...attributes}
       onMouseEnter={() => {
         if (heading?.node) {
-          hoverSend(hoverModel.events.MOUSE_ENTER(heading.node.id))
+          hoverService.send(hoverModel.events.MOUSE_ENTER(heading.node.id))
         }
       }}
     >

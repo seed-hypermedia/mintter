@@ -1,10 +1,11 @@
-import {TextProps} from '../types'
+import { TextProps } from '../types'
+import { ObjectKeys } from './object-keys'
 
 export function filterProps(entry: TextProps): TextProps {
   const result: TextProps = {}
 
-  Object.keys(entry).forEach((key) => {
-    //@ts-ignore
+  ObjectKeys(entry).forEach((key) => {
+
     if (entry[key] === true) {
       //@ts-ignore
       result[key] = true
