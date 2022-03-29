@@ -14,6 +14,7 @@ mod daemon;
 mod extensions;
 mod menu;
 mod system_tray;
+mod window_management;
 
 #[tokio::main]
 async fn main() {
