@@ -443,7 +443,7 @@ func (ds *draftState) MoveBlock(blockID, parent, left string) error {
 
 func (ds *draftState) ReplaceBlock(blk *documents.Block) error {
 	if _, ok := ds.blocks[blk.Id]; !ok {
-		return fmt.Errorf("block %s not found", blk.Id)
+		return fmt.Errorf("can't replace block %s: not found", blk.Id)
 	}
 
 	ds.blocks[blk.Id] = blk
@@ -453,10 +453,8 @@ func (ds *draftState) ReplaceBlock(blk *documents.Block) error {
 
 func (ds *draftState) DeleteBlock(blockID string) error {
 	if _, ok := ds.blocks[blockID]; !ok {
-		return fmt.Errorf("block %s not found", blockID)
+		return fmt.Errorf("can't delete block %s: not found", blockID)
 	}
-
-	delete(ds.blocks, blockID)
 
 	return ds.tree.DeleteNode(ds.author, blockID)
 }
