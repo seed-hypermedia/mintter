@@ -1,4 +1,6 @@
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
+use crate::window_management::{close_all_windows, new_window};
+use log::error;
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowMenuEvent};
 
 pub fn get_menu() -> Menu {
   let app_menu = Menu::new()
@@ -10,6 +12,15 @@ pub fn get_menu() -> Menu {
     .add_native_item(MenuItem::HideOthers)
     .add_native_item(MenuItem::Separator)
     .add_native_item(MenuItem::Quit);
+
+  let file_menu = Menu::new()
+    .add_item(CustomMenuItem::new("new_window", "New Window").accelerator("CmdOrControl+N"))
+    .add_native_item(MenuItem::Separator)
+    .add_native_item(MenuItem::CloseWindow)
+    .add_item(
+      CustomMenuItem::new("close_all_windows", "Close All Windows")
+        .accelerator("Alt+Shift+CmdOrControl+W"),
+    );
 
   let edit_menu = Menu::new()
     .add_native_item(MenuItem::Undo)
@@ -29,8 +40,25 @@ pub fn get_menu() -> Menu {
     .add_item(CustomMenuItem::new("acknowledgements", "Acknowledgements"));
 
   Menu::new()
-    .add_submenu(Submenu::new("My App", app_menu))
+    .add_submenu(Submenu::new("Mintter", app_menu))
+    .add_submenu(Submenu::new("File", file_menu))
     .add_submenu(Submenu::new("Edit", edit_menu))
     .add_submenu(Submenu::new("View", view_menu))
     .add_submenu(Submenu::new("Help", help_menu))
+}
+
+pub fn event_handler(event: WindowMenuEvent) {
+  match event.menu_item_id() {
+    "new_window" => {
+      if let Err(err) = new_window(event.window()) {
+        error!("Failed to create window {}", err);
+      }
+    }
+    "close_all_windows" => {
+      if let Err(err) = close_all_windows(event.window()) {
+        error!("Failed to close all windows {}", err);
+      }
+    }
+    _ => panic!("unknown menu item ID! This is bug."),
+  }
 }
