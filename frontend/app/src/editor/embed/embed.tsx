@@ -6,6 +6,7 @@ import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import type {Embed as EmbedType} from '@mintter/mttast'
 import {isEmbed} from '@mintter/mttast'
+import {invoke} from '@tauri-apps/api'
 import {ForwardedRef, forwardRef} from 'react'
 import toast from 'react-hot-toast'
 import {RenderElementProps} from 'slate-react'
@@ -74,6 +75,10 @@ function RenderEmbed({element, attributes, children}: EmbedProps, ref: Forwarded
     sidepanelService.send('SIDEPANEL.OPEN')
   }
 
+  async function onOpenInNewWindow() {
+    await invoke('open_in_new_window', {url: `/p/${pubId}/${version}/${blockId}`})
+  }
+
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>
@@ -97,6 +102,10 @@ function RenderEmbed({element, attributes, children}: EmbedProps, ref: Forwarded
         <ContextMenu.Item onSelect={onOpenInSidepanel}>
           <Icon name="ArrowTopRight" size="1" />
           <Text size="2">Open Embed in sidepanel</Text>
+        </ContextMenu.Item>
+        <ContextMenu.Item onSelect={onOpenInNewWindow}>
+          <Icon name="OpenInNewWindow" size="1" />
+          <Text size="2">Open Embed in new Window</Text>
         </ContextMenu.Item>
       </ContextMenu.Content>
     </ContextMenu.Root>
