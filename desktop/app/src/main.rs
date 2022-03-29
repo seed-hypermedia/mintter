@@ -49,6 +49,9 @@ async fn main() {
     .on_menu_event(menu::event_handler)
     .system_tray(system_tray::get_tray())
     .on_system_tray_event(system_tray::event_handler)
+    .invoke_handler(tauri::generate_handler![
+      window_management::open_in_new_window
+    ])
     .setup(|app| {
       daemon::start_daemon(
         app.state::<daemon::Connection>(),

@@ -4,34 +4,35 @@ import {
   getPublication,
   listSidepanel,
   SidepanelItem as SidepanelItemType,
-  updateListSidepanel
+  updateListSidepanel,
 } from '@app/client'
-import { Dropdown, ElementDropdown } from '@app/editor/dropdown'
-import { Editor } from '@app/editor/editor'
-import { getEmbedIds } from '@app/editor/embed'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { queryKeys } from '@app/hooks'
-import { ClientPublication } from '@app/pages/publication'
-import { copyTextToClipboard } from '@app/utils/copy-to-clipboard'
-import { getDateFormat } from '@app/utils/get-format-date'
-import { getIdsfromUrl } from '@app/utils/get-ids-from-url'
-import { bookmarksModel, useBookmarksService } from '@components/bookmarks'
-import { DeleteDialog, deleteDialogMachine } from '@components/delete-dialog'
-import { useSidepanel } from '@components/sidepanel'
-import { FlowContent, GroupingContent } from '@mintter/mttast'
-import { useActor, useMachine } from '@xstate/react'
-import { PropsWithChildren } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
+import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
+import {Editor} from '@app/editor/editor'
+import {getEmbedIds} from '@app/editor/embed'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {queryKeys} from '@app/hooks'
+import {ClientPublication} from '@app/pages/publication'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {getDateFormat} from '@app/utils/get-format-date'
+import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
+import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
+import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
+import {useSidepanel} from '@components/sidepanel'
+import {FlowContent, GroupingContent} from '@mintter/mttast'
+import {invoke} from '@tauri-apps/api'
+import {useActor, useMachine} from '@xstate/react'
+import {PropsWithChildren} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
-import { QueryClient } from 'react-query'
-import { visit } from 'unist-util-visit'
-import { useLocation } from 'wouter'
-import { ActorRefFrom, assign, createMachine, spawn, StateFrom } from 'xstate'
-import { Box } from '../box'
-import { Icon } from '../icon'
-import { ScrollArea } from '../scroll-area'
-import { Text } from '../text'
-import { useIsSidepanelOpen } from './sidepanel-context'
+import {QueryClient} from 'react-query'
+import {visit} from 'unist-util-visit'
+import {useLocation} from 'wouter'
+import {ActorRefFrom, assign, createMachine, spawn, StateFrom} from 'xstate'
+import {Box} from '../box'
+import {Icon} from '../icon'
+import {ScrollArea} from '../scroll-area'
+import {Text} from '../text'
+import {useIsSidepanelOpen} from './sidepanel-context'
 
 type SidepanelItemRef = ActorRefFrom<ReturnType<typeof createSidepanelItemMachine>>
 
@@ -45,15 +46,15 @@ export type SidepanelContextType = {
 }
 
 export type SidepanelEvent =
-  | { type: 'RETRY' }
-  | { type: 'REPORT.SIDEPANEL.SUCCESS'; items: Array<SidepanelItemWithRef> }
-  | { type: 'REPORT.SIDEPANEL.ERROR'; errorMessage: string }
-  | { type: 'SIDEPANEL.ADD'; item: SidepanelItemType }
-  | { type: 'SIDEPANEL.OPEN' }
-  | { type: 'SIDEPANEL.TOGGLE' }
-  | { type: 'SIDEPANEL.CLOSE' }
-  | { type: 'SIDEPANEL.REMOVE'; url: string }
-  | { type: 'SIDEPANEL.CLEAR' }
+  | {type: 'RETRY'}
+  | {type: 'REPORT.SIDEPANEL.SUCCESS'; items: Array<SidepanelItemWithRef>}
+  | {type: 'REPORT.SIDEPANEL.ERROR'; errorMessage: string}
+  | {type: 'SIDEPANEL.ADD'; item: SidepanelItemType}
+  | {type: 'SIDEPANEL.OPEN'}
+  | {type: 'SIDEPANEL.TOGGLE'}
+  | {type: 'SIDEPANEL.CLOSE'}
+  | {type: 'SIDEPANEL.REMOVE'; url: string}
+  | {type: 'SIDEPANEL.CLEAR'}
 
 export function createSidepanelMachine(client: QueryClient) {
   return createMachine(
@@ -76,11 +77,11 @@ export function createSidepanelMachine(client: QueryClient) {
             src: () => (sendBack) => {
               client
                 .fetchQuery([queryKeys.GET_SIDEPANEL_LIST], listSidepanel)
-                .then(({ items }) => {
-                  sendBack({ type: 'REPORT.SIDEPANEL.SUCCESS', items })
+                .then(({items}) => {
+                  sendBack({type: 'REPORT.SIDEPANEL.SUCCESS', items})
                 })
                 .catch((e: Error) => {
-                  sendBack({ type: 'REPORT.SIDEPANEL.ERROR', errorMessage: `fetchSidepanel Error: ${e.message}` })
+                  sendBack({type: 'REPORT.SIDEPANEL.ERROR', errorMessage: `fetchSidepanel Error: ${e.message}`})
                 })
             },
           },
@@ -143,7 +144,7 @@ export function createSidepanelMachine(client: QueryClient) {
         persist: (ctx) => {
           try {
             updateListSidepanel(
-              ctx.items.map(({ url, type }) => ({
+              ctx.items.map(({url, type}) => ({
                 url,
                 type,
               })),
@@ -164,7 +165,7 @@ export function createSidepanelMachine(client: QueryClient) {
           },
         }),
         clearItems: assign({
-          items: () => []
+          items: () => [],
         }),
         addItemToSidepanel: assign({
           items: (context, event) => {
@@ -174,7 +175,7 @@ export function createSidepanelMachine(client: QueryClient) {
               return context.items
             }
 
-            return [{ ...event.item, ref: spawn(createSidepanelItemMachine(client, event.item)) }, ...context.items]
+            return [{...event.item, ref: spawn(createSidepanelItemMachine(client, event.item))}, ...context.items]
           },
         }),
         removeItemFromSidepanel: assign({
@@ -189,7 +190,7 @@ type SidepanelProps = {
   copy: (url: string) => Promise<unknown>
 }
 
-export function Sidepanel({ copy = copyTextToClipboard }: SidepanelProps) {
+export function Sidepanel({copy = copyTextToClipboard}: SidepanelProps) {
   const service = useSidepanel()
   const [state, send] = useActor(service)
   const isOpen = useIsSidepanelOpen()
@@ -207,27 +208,30 @@ export function Sidepanel({ copy = copyTextToClipboard }: SidepanelProps) {
         visibility: isOpen ? 'visible' : 'hidden',
       }}
     >
-      <Box css={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '$4',
-        paddingHorizontal: '$4'
-      }}>
-        <Box css={{ flex: 1, paddingVertical: '$4' }}>
-          <Text size="1" color="muted">Sidepanel</Text>
+      <Box
+        css={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '$4',
+          paddingHorizontal: '$4',
+        }}
+      >
+        <Box css={{flex: 1, paddingVertical: '$4'}}>
+          <Text size="1" color="muted">
+            Sidepanel
+          </Text>
         </Box>
         <Dropdown.Root>
           <Dropdown.Trigger asChild>
-            <ElementDropdown
-              data-trigger
-              css={{ background: 'transparent' }}>
+            <ElementDropdown data-trigger css={{background: 'transparent'}}>
               <Icon name="MoreHorizontal" size="1" color="muted" />
             </ElementDropdown>
           </Dropdown.Trigger>
           <Dropdown.Content>
             <Dropdown.Item data-testid="clear-sidepanel" onSelect={() => send('SIDEPANEL.CLEAR')}>
               <Icon size="1" name="Close" />
-              <Text size="2">Clear Items</Text></Dropdown.Item>
+              <Text size="2">Clear Items</Text>
+            </Dropdown.Item>
           </Dropdown.Content>
         </Dropdown.Root>
       </Box>
@@ -280,16 +284,16 @@ export function SidepanelItem({
   const sidepanelService = useSidepanel()
   const [deleteState, deleteSend] = useMachine(deleteDialogMachine, {
     services: {
-      deleteEntry: () => new Promise(() => sidepanelService.send({ type: 'SIDEPANEL.REMOVE', url: state.context.url }))
+      deleteEntry: () => new Promise(() => sidepanelService.send({type: 'SIDEPANEL.REMOVE', url: state.context.url})),
     },
     actions: {
-      onSuccess: () => toast.success('Sidepanel item deleted successfully')
-    }
+      onSuccess: () => toast.success('Sidepanel item deleted successfully'),
+    },
   })
 
   async function localCopy() {
     await copy(state.context.url)
-    toast.success('Statement Reference copied successfully', { position: 'top-center' })
+    toast.success('Statement Reference copied successfully', {position: 'top-center'})
   }
 
   function navigate(url: string) {
@@ -299,15 +303,16 @@ export function SidepanelItem({
 
   function toggle(e: Event) {
     e.preventDefault()
-    send({ type: 'SIDEPANEL.ITEM.TOGGLE' })
+    send({type: 'SIDEPANEL.ITEM.TOGGLE'})
   }
 
   function bookmark(url: string) {
     bookmarkService.send(bookmarksModel.events['BOOKMARK.ADD'](url))
   }
 
-  function deleteItem(url: string) {
-
+  async function onOpenInNewWindow() {
+    const [publicationId, version] = getEmbedIds(state.context.url)
+    await invoke('open_in_new_window', {url: `/p/${publicationId}/${version}`})
   }
 
   let isExpanded = state.matches('expanded')
@@ -332,7 +337,13 @@ export function SidepanelItem({
           <Icon name="MoreHorizontal" size="1" color="muted" />
         </ElementDropdown>
       </Dropdown.Trigger>
-      <Dropdown.Content align="start" side="bottom" css={{ minWidth: 220 }} data-testid="sidepanel-dropdown-content" hidden={deleteState.matches('opened')}>
+      <Dropdown.Content
+        align="start"
+        side="bottom"
+        css={{minWidth: 220}}
+        data-testid="sidepanel-dropdown-content"
+        hidden={deleteState.matches('opened')}
+      >
         <Dropdown.Item onSelect={localCopy} data-testid="copy-item">
           <Icon name="Copy" size="1" />
           <Text size="2">Copy Block ID</Text>
@@ -340,6 +351,10 @@ export function SidepanelItem({
         <Dropdown.Item onSelect={() => navigate?.(state.context.url)}>
           <Icon name="ArrowTopRight" size="1" />
           <Text size="2">Open in main Panel</Text>
+        </Dropdown.Item>
+        <Dropdown.Item onSelect={onOpenInNewWindow}>
+          <Icon name="OpenInNewWindow" size="1" />
+          <Text size="2">Open in new Window</Text>
         </Dropdown.Item>
         <Dropdown.Item
           onSelect={() => {
@@ -380,7 +395,7 @@ export function SidepanelItem({
   )
 }
 
-export function PublicationItem({ itemRef, children }: SidepanelItemProps) {
+export function PublicationItem({itemRef, children}: SidepanelItemProps) {
   const [state] = useActor(itemRef)
   const isExpanded = state.matches('expanded')
 
@@ -416,9 +431,9 @@ export function PublicationItem({ itemRef, children }: SidepanelItemProps) {
             paddingVertical: '$6',
             paddingHorizontal: '$4',
             [`& [data-element-id="${state.context.block?.id}"] [data-element-type="paragraph"], & [data-element-id="${state.context.block?.id}"] [data-element-type="static-paragraph"]`]:
-            {
-              backgroundColor: '$secondary-muted',
-            },
+              {
+                backgroundColor: '$secondary-muted',
+              },
           }}
         >
           {state.matches('loading') ? null : (
@@ -461,16 +476,16 @@ export function PublicationItem({ itemRef, children }: SidepanelItemProps) {
       >
         {state.context.author && (
           <>
-            <Text size="1" color="muted" css={{ paddingRight: '$3' }}>
+            <Text size="1" color="muted" css={{paddingRight: '$3'}}>
               <span>Signed by </span>
-              <span style={{ textDecoration: 'underline' }}>{state.context.author.profile?.alias}</span>
+              <span style={{textDecoration: 'underline'}}>{state.context.author.profile?.alias}</span>
             </Text>
           </>
         )}
         <Text size="1" color="muted">
           {state.context.publication?.document.title}
         </Text>
-        <Text size="1" color="muted" css={{ paddingRight: '$3' }}>
+        <Text size="1" color="muted" css={{paddingRight: '$3'}}>
           Created on: {getDateFormat(state.context.publication?.document, 'publishTime')}
         </Text>
       </Box>
@@ -479,7 +494,7 @@ export function PublicationItem({ itemRef, children }: SidepanelItemProps) {
   )
 }
 
-export function BlockItem({ itemRef, children }: SidepanelItemProps) {
+export function BlockItem({itemRef, children}: SidepanelItemProps) {
   const [state] = useActor(itemRef)
 
   const isExpanded = state.matches('expanded')
@@ -519,9 +534,9 @@ export function BlockItem({ itemRef, children }: SidepanelItemProps) {
           paddingVertical: '$6',
           paddingHorizontal: '$4',
           [`& [data-element-id="${state.context.block?.id}"] > span >  [data-element-type="paragraph"], & [data-element-id="${state.context.block?.id}"] > span > [data-element-type="static-paragraph"]`]:
-          {
-            backgroundColor: '$secondary-muted',
-          },
+            {
+              backgroundColor: '$secondary-muted',
+            },
         }}
       >
         {state.matches('loading') ? null : (
@@ -560,16 +575,16 @@ export function BlockItem({ itemRef, children }: SidepanelItemProps) {
       >
         {state.context.author && (
           <>
-            <Text size="1" color="muted" css={{ paddingRight: '$3' }}>
+            <Text size="1" color="muted" css={{paddingRight: '$3'}}>
               <span>Signed by </span>
-              <span style={{ textDecoration: 'underline' }}>{state.context.author.profile?.alias}</span>
+              <span style={{textDecoration: 'underline'}}>{state.context.author.profile?.alias}</span>
             </Text>
           </>
         )}
         <Text size="1" color="muted">
           {state.context.publication?.document.title}
         </Text>
-        <Text size="1" color="muted" css={{ paddingRight: '$3' }}>
+        <Text size="1" color="muted" css={{paddingRight: '$3'}}>
           Created on: {getDateFormat(state.context.publication?.document, 'publishTime')}
         </Text>
       </Box>
@@ -588,13 +603,13 @@ export type SidepanelItemContextType = {
 }
 
 export type SidepanelItemEventType =
-  | { type: 'SIDEPANEL.ITEM.EXPAND' }
-  | { type: 'SIDEPANEL.ITEM.COLLAPSE' }
-  | { type: 'SIDEPANEL.ITEM.DELETE' }
-  | { type: 'SIDEPANEL.ITEM.TOGGLE' }
-  | { type: 'REPORT.SIDEPANEL.ITEM.SUCCESS'; publication: ClientPublication; author: Account; block: FlowContent | null }
-  | { type: 'REPORT.SIDEPANEL.ITEM.ERROR'; errorMessage: string }
-  | { type: 'RETRY' }
+  | {type: 'SIDEPANEL.ITEM.EXPAND'}
+  | {type: 'SIDEPANEL.ITEM.COLLAPSE'}
+  | {type: 'SIDEPANEL.ITEM.DELETE'}
+  | {type: 'SIDEPANEL.ITEM.TOGGLE'}
+  | {type: 'REPORT.SIDEPANEL.ITEM.SUCCESS'; publication: ClientPublication; author: Account; block: FlowContent | null}
+  | {type: 'REPORT.SIDEPANEL.ITEM.ERROR'; errorMessage: string}
+  | {type: 'RETRY'}
 
 export function createSidepanelItemMachine(client: QueryClient, item: SidepanelItemType) {
   return createMachine(
@@ -697,13 +712,13 @@ export function createSidepanelItemMachine(client: QueryClient, item: SidepanelI
 
           if (context.type == 'block') {
             if (blockId && publication.document.content) {
-              visit(publication.document.content[0], { id: blockId }, (node) => {
+              visit(publication.document.content[0], {id: blockId}, (node) => {
                 block = node
               })
             }
           }
 
-          sendBack({ type: 'REPORT.SIDEPANEL.ITEM.SUCCESS', publication, author, block })
+          sendBack({type: 'REPORT.SIDEPANEL.ITEM.SUCCESS', publication, author, block})
         },
       },
       actions: {

@@ -2,23 +2,24 @@ import {
   deleteDraft as defaultDeleteDraft,
   deletePublication as defaultDeletePublication,
   Document,
-  Publication
+  Publication,
 } from '@app/client'
-import { MINTTER_LINK_PREFIX } from '@app/constants'
-import { Dropdown, ElementDropdown } from '@app/editor/dropdown'
-import { useMainPage } from '@app/main-page-context'
-import { styled } from '@app/stitches.config'
-import { copyTextToClipboard as defaultCopyTextToClipboard } from '@app/utils/copy-to-clipboard'
-import { useRoute } from '@app/utils/use-route'
-import { DeleteDialog, deleteDialogMachine } from '@components/delete-dialog'
-import { Icon } from '@components/icon'
-import { useCreateDraft } from '@components/library/use-create-draft'
-import { useSidepanel } from '@components/sidepanel'
-import { Text } from '@components/text'
-import { useMachine } from '@xstate/react'
-import { PropsWithChildren } from 'react'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
+import {useMainPage} from '@app/main-page-context'
+import {styled} from '@app/stitches.config'
+import {copyTextToClipboard as defaultCopyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {useRoute} from '@app/utils/use-route'
+import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
+import {Icon} from '@components/icon'
+import {useCreateDraft} from '@components/library/use-create-draft'
+import {useSidepanel} from '@components/sidepanel'
+import {Text} from '@components/text'
+import {invoke} from '@tauri-apps/api'
+import {useMachine} from '@xstate/react'
+import {PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
-import { Link, useLocation } from 'wouter'
+import {Link, useLocation} from 'wouter'
 
 export type LibraryItemProps = {
   publication?: Publication
@@ -37,25 +38,26 @@ export function LibraryItem({
   deletePublication = defaultDeletePublication,
   copyTextToClipboard = defaultCopyTextToClipboard,
 }: PropsWithChildren<LibraryItemProps>) {
-  const { match } = useRoute(href)
+  const {match} = useRoute(href)
   const [, setLocation] = useLocation()
   const sidepanelService = useSidepanel()
   const mainService = useMainPage()
-  const { createDraft } = useCreateDraft()
+  const {createDraft} = useCreateDraft()
 
   const [deleteState, deleteSend] = useMachine(deleteDialogMachine, {
     services: {
-      deleteEntry: () => publication ? deletePublication(publication.document?.id as string) : deleteDraft(draft?.id as string)
+      deleteEntry: () =>
+        publication ? deletePublication(publication.document?.id as string) : deleteDraft(draft?.id as string),
     },
     actions: {
-      onSuccess: afterDelete
-    }
+      onSuccess: afterDelete,
+    },
   })
 
   async function onCopy() {
     if (publication) {
       await copyTextToClipboard(`mtt://${publication.document?.id}/${publication.version}`)
-      toast.success('Document ID copied successfully', { position: 'top-center' })
+      toast.success('Document ID copied successfully', {position: 'top-center'})
     }
   }
 
@@ -84,6 +86,10 @@ export function LibraryItem({
 
   async function onStartDraft() {
     createDraft(onSidepanel)
+  }
+
+  async function onOpenInNewWindow() {
+    await invoke('open_in_new_window', {url: href})
   }
 
   let title = publication ? publication.document?.title : draft && draft.title ? draft?.title : 'New Document'
@@ -119,6 +125,10 @@ export function LibraryItem({
           <Dropdown.Item data-testid="sidepanel-item" onSelect={onSidepanel}>
             <Icon size="1" name="ArrowBottomRight" />
             <Text size="2">Open in sidepanel</Text>
+          </Dropdown.Item>
+          <Dropdown.Item data-testid="sidepanel-item" onSelect={onOpenInNewWindow}>
+            <Icon size="1" name="OpenInNewWindow" />
+            <Text size="2">Open in new Window</Text>
           </Dropdown.Item>
           <DeleteDialog
             state={deleteState}
