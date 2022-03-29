@@ -6,7 +6,10 @@
   "viewportHeight": 600,
   "pluginsFile": "cypress/plugins/index.js",
   "fixturesFolder": false,
-
   "screenshotsFolder": "./cypress/snapshots/actual",
-  "trashAssetsBeforeRuns": true
+  "trashAssetsBeforeRuns": true,
+  "retries": {
+    "runMode": 2,
+    "openMode": 0
+  }
 }
