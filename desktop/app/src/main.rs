@@ -45,6 +45,9 @@ async fn main() {
     .plugin(StorePluginBuilder::default().build())
     .plugin(extensions::Plugin::default())
     .menu(menu::get_menu())
+    .on_menu_event(menu::event_handler)
+    .system_tray(system_tray::get_tray())
+    .on_system_tray_event(system_tray::event_handler)
     .setup(|app| {
       daemon::start_daemon(
         app.state::<daemon::Connection>(),
@@ -53,8 +56,6 @@ async fn main() {
 
       Ok(())
     })
-    .system_tray(system_tray::get_tray())
-    .on_system_tray_event(system_tray::event_handler)
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
