@@ -29,7 +29,7 @@ export {
   ListPublicationsRequest,
   ListPublicationsResponse,
   Publication,
-  PublishDraftRequest, Span, UpdateDraftRequest,
+  PublishDraftRequest, UpdateDraftRequest,
   UpdateDraftRequestV2
 } from './.generated/documents/v1alpha/documents'
 export { ConnectionStatus } from './.generated/networking/v1alpha/networking'
