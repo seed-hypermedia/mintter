@@ -74,7 +74,7 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
             FETCH: [
               {
                 target: 'failed',
-                cond: (context) => context.retries == 5,
+                cond: 'maxRetriesReached',
                 actions: ['displayFailedMessage'],
               },
               {
@@ -89,19 +89,8 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
         fetching: {
           id: 'fetching',
           invoke: {
-            src: (_, event) => (sendBack) => {
-              if (event.type != 'FETCH') return
-                ; (async () => {
-                  try {
-                    let data = await client.fetchQuery([queryKeys.GET_DRAFT, event.documentId], () =>
-                      getDraft(event.documentId),
-                    )
-                    sendBack({ type: 'EDITOR.REPORT.FETCH.SUCCESS', data })
-                  } catch (err: any) {
-                    sendBack({ type: 'EDITOR.REPORT.FETCH.ERROR', errorMessage: err.message })
-                  }
-                })()
-            },
+            src: 'fetchDocument',
+            id: 'fetchDocument'
           },
           on: {
             'EDITOR.CANCEL': {
@@ -159,27 +148,7 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
             },
             saving: {
               invoke: {
-                src: (context) => (sendBack) => {
-                  ; (async () => {
-                    let newDraft = {
-                      ...context.localDraft,
-                      content: JSON.stringify(context.localDraft?.content),
-                    }
-
-                    let changes = createUpdate(context.localDraft!)
-                    let links = buildLinks(context.localDraft!)
-
-                    try {
-                      // await updateDraftV2(changes)
-                      await updateDraft(newDraft as Document, links)
-
-                      sendBack('EDITOR.UPDATE.SUCCESS')
-                      changesService.send('reset')
-                    } catch (err: any) {
-                      sendBack({ type: 'EDITOR.UPDATE.ERROR', errorMessage: err.message })
-                    }
-                  })()
-                },
+                src: 'saveDraft',
                 onError: {
                   target: 'idle',
                   actions: ['assignErrorToContext'],
@@ -252,10 +221,11 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
           const isSubtitleNotEqual = !isEqual(context.localDraft?.subtitle, context.prevDraft?.subtitle)
           return isContentNotEqual || isTitleNotEqual || isSubtitleNotEqual
         },
+        maxRetriesReached: (context) => context.retries == 5
       },
       actions: {
         incrementRetries: assign({
-          retries: (context) => context.retries++,
+          retries: (context) => context.retries + 1,
         }),
         assignDraftsValue: assign((_, event) => {
           // TODO: make sure we add the default content in the changes array
@@ -289,6 +259,42 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
           mainPageService.send('RECONCILE')
         }
       },
+      services: {
+        fetchDocument: (_, event) => (sendBack) => {
+          ; (async () => {
+            try {
+              let data = await client.fetchQuery([queryKeys.GET_DRAFT, event.documentId], () =>
+                getDraft(event.documentId),
+              )
+              sendBack({ type: 'EDITOR.REPORT.FETCH.SUCCESS', data })
+            } catch (err: any) {
+              sendBack({ type: 'EDITOR.REPORT.FETCH.ERROR', errorMessage: err.message })
+            }
+          })()
+        },
+        saveDraft: (context) => (sendBack) => {
+          ; (async () => {
+            let newDraft = {
+              ...context.localDraft,
+              content: JSON.stringify(context.localDraft?.content),
+            }
+
+            let changes = createUpdate(context.localDraft!)
+            console.log("🚀 ~ file: use-editor-draft.ts ~ line 283 ~ ; ~ changes", changes)
+            let links = buildLinks(context.localDraft!)
+
+            try {
+              // await updateDraftV2(changes)
+              await updateDraft(newDraft as Document, links)
+
+              sendBack('EDITOR.UPDATE.SUCCESS')
+              changesService.send('reset')
+            } catch (err: any) {
+              sendBack({ type: 'EDITOR.UPDATE.ERROR', errorMessage: err.message })
+            }
+          })()
+        }
+      }
     },
   )
 

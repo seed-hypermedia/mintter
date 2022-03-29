@@ -1,95 +1,76 @@
 import { Alert } from '@components/alert'
 import { overlayStyles } from '@components/dialog-styles'
-import { useMachine } from '@xstate/react'
 import { MouseEvent, PropsWithChildren } from 'react'
-import { createModel } from 'xstate/lib/model'
+import { createMachine } from 'xstate'
 
 export type DeleteDialogProps = PropsWithChildren<{
-  entryId?: string
-  handleDelete: any // Promise that deletes entry
-  onSuccess: any // execute this after delete is successful;
   title: string
   description: string
+  state: any
+  send: any
 }>
 
-export function DeleteDialog({ children, entryId, handleDelete, onSuccess, title, description }: DeleteDialogProps) {
-  const [state, send] = useMachine(
-    deleteDialogMachine.withConfig({
-      services: {
-        deleteEntry: () => handleDelete(entryId),
-      },
-      actions: {
-        onSuccess,
-        onError: (_, event) => {
-          console.log('ERROR', event)
-        }
-      },
-    }),
-  )
+export function DeleteDialog({ children, state, send, title, description }: DeleteDialogProps) {
+
+
   return (
     <Alert.Root
-      id={entryId}
       open={state.matches('opened')}
-      onOpenChange={(value: boolean) => {
-        if (value) {
-          send('DELETE.DIALOG.OPEN')
-        } else {
-          send('DELETE.DIALOG.CANCEL')
-        }
-      }}
+      onOpenChange={(newVal: boolean) => newVal ? send('DELETE.DIALOG.OPEN') : send('DELETE.DIALOG.CANCEL')}
     >
       <Alert.Trigger asChild>{children}</Alert.Trigger>
       <Alert.Portal>
-        <Alert.Overlay className={overlayStyles()} />
-        <Alert.Content>
-          <Alert.Title color="danger" data-testid="delete-dialog-title">
-            {title}
-          </Alert.Title>
-          <Alert.Description>{description}</Alert.Description>
-          {state.matches('opened.errored') && (
-            <Alert.Description data-testid="delete-dialog-error" color="danger">
-              Something went wrong on deletion
-            </Alert.Description>
-          )}
-          <Alert.Actions>
-            <Alert.Cancel data-testid="delete-dialog-cancel" disabled={state.hasTag('pending')}>
-              Cancel
-            </Alert.Cancel>
-            <Alert.Action
-              color="danger"
-              data-testid="delete-dialog-confirm"
-              disabled={state.hasTag('pending')}
-              onClick={(e: MouseEvent<HTMLButtonElement>) => {
-                e.stopPropagation()
-                e.preventDefault()
-                send('DELETE.DIALOG.CONFIRM')
-              }}
-            >
-              Delete
-            </Alert.Action>
-          </Alert.Actions>
-        </Alert.Content>
+        <Alert.Overlay className={overlayStyles()}>
+          <Alert.Content>
+            <Alert.Title color="danger" data-testid="delete-dialog-title">
+              {title}
+            </Alert.Title>
+            <Alert.Description>{description}</Alert.Description>
+            {state.matches('opened.errored') && (
+              <Alert.Description data-testid="delete-dialog-error" color="danger">
+                Something went wrong on deletion
+              </Alert.Description>
+            )}
+            <Alert.Actions>
+              <Alert.Cancel data-testid="delete-dialog-cancel" disabled={state.hasTag('pending')}>
+                Cancel
+              </Alert.Cancel>
+              <Alert.Action
+                color="danger"
+                data-testid="delete-dialog-confirm"
+                disabled={state.hasTag('pending')}
+                onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  send('DELETE.DIALOG.CONFIRM')
+                }}
+              >
+                Delete
+              </Alert.Action>
+            </Alert.Actions>
+          </Alert.Content>
+        </Alert.Overlay>
       </Alert.Portal>
     </Alert.Root>
   )
 }
 
-const deleteDialogModel = createModel(
-  {
-    entryId: '',
-    errorMessage: '',
-  },
-  {
-    events: {
-      'DELETE.DIALOG.OPEN': () => ({}),
-      'DELETE.DIALOG.CANCEL': () => ({}),
-      'DELETE.DIALOG.CONFIRM': () => ({}),
-    },
-  },
-)
+type DeleteDialogEvent = {
+  type: 'DELETE.DIALOG.OPEN'
+} | { type: 'DELETE.DIALOG.CANCEL' }
+  | { type: 'DELETE.DIALOG.CONFIRM' }
 
-const deleteDialogMachine = deleteDialogModel.createMachine({
+type DeleteDialogContext = {
+  entryId: string;
+  errorMessage: string
+}
+export const deleteDialogMachine = createMachine({
   id: 'deleteDialogMachine',
+  tsTypes: {} as import("./delete-dialog.typegen").Typegen0,
+  schema: {
+    context: {} as DeleteDialogContext,
+    events: {} as DeleteDialogEvent
+  },
   initial: 'closed',
   states: {
     closed: {
@@ -152,4 +133,10 @@ const deleteDialogMachine = deleteDialogModel.createMachine({
       },
     },
   },
+}, {
+  actions: {
+    onError: (_, event) => {
+      console.log('DELETE ERROR: ', event)
+    },
+  }
 })

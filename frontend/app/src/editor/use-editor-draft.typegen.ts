@@ -20,16 +20,29 @@ export interface Typegen0 {
     }
     'xstate.after(1000)#editor.editing.debouncing': {type: 'xstate.after(1000)#editor.editing.debouncing'}
     'xstate.init': {type: 'xstate.init'}
+    'done.invoke.fetchDocument': {
+      type: 'done.invoke.fetchDocument'
+      data: unknown
+      __tip: 'See the XState TS docs to learn how to strongly type this.'
+    }
+    'error.platform.fetchDocument': {type: 'error.platform.fetchDocument'; data: unknown}
   }
-  invokeSrcNameMap: {}
+  invokeSrcNameMap: {
+    fetchDocument: 'done.invoke.fetchDocument'
+    saveDraft: 'done.invoke.editor.editing.saving:invocation[0]'
+  }
   missingImplementations: {
     actions: 'displayFailedMessage' | 'assignErrorToContext' | 'afterPublish'
     services: never
     guards: never
     delays: never
   }
-  eventsCausingServices: {}
+  eventsCausingServices: {
+    fetchDocument: 'FETCH'
+    saveDraft: 'xstate.after(1000)#editor.editing.debouncing'
+  }
   eventsCausingGuards: {
+    maxRetriesReached: 'FETCH'
     isValueDirty: 'xstate.after(1000)#editor.editing.debouncing'
   }
   eventsCausingDelays: {}

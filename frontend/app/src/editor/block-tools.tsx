@@ -1,6 +1,7 @@
 import { hoverModel } from '@app/editor/hover-machine'
 import { findPath } from '@app/editor/utils'
 import { styled } from '@app/stitches.config'
+import { ObjectKeys } from '@app/utils/object-keys'
 import { Box } from '@components/box'
 import { Icon, icons } from '@components/icon'
 import { Text } from '@components/text'
@@ -181,7 +182,7 @@ export function BlockTools({ element }: BlockToolsProps) {
 function setType(fn: any) {
   return function setToStatementType(editor: Editor, element: MttastContent, at: Path) {
     Editor.withoutNormalizing(editor, function () {
-      const keys = Object.keys(element).filter((key) => !['type', 'id', 'children', 'data'].includes(key))
+      const keys = ObjectKeys(element).filter((key) => !['type', 'id', 'children', 'data'].includes(key))
 
       if (isHeading(element)) {
         Transforms.setNodes(editor, { type: ELEMENT_PARAGRAPH }, { at: [...at, 0] })

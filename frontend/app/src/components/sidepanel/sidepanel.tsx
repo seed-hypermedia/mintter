@@ -16,10 +16,10 @@ import { copyTextToClipboard } from '@app/utils/copy-to-clipboard'
 import { getDateFormat } from '@app/utils/get-format-date'
 import { getIdsfromUrl } from '@app/utils/get-ids-from-url'
 import { bookmarksModel, useBookmarksService } from '@components/bookmarks'
-import { DeleteDialog } from '@components/delete-dialog'
+import { DeleteDialog, deleteDialogMachine } from '@components/delete-dialog'
 import { useSidepanel } from '@components/sidepanel'
 import { FlowContent, GroupingContent } from '@mintter/mttast'
-import { useActor } from '@xstate/react'
+import { useActor, useMachine } from '@xstate/react'
 import { PropsWithChildren } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import toast from 'react-hot-toast'
@@ -164,7 +164,7 @@ export function createSidepanelMachine(client: QueryClient) {
           },
         }),
         clearItems: assign({
-          items: [],
+          items: () => []
         }),
         addItemToSidepanel: assign({
           items: (context, event) => {
@@ -278,6 +278,14 @@ export function SidepanelItem({
   const [, setLocation] = useLocation()
   const bookmarkService = useBookmarksService()
   const sidepanelService = useSidepanel()
+  const [deleteState, deleteSend] = useMachine(deleteDialogMachine, {
+    services: {
+      deleteEntry: () => new Promise(() => sidepanelService.send({ type: 'SIDEPANEL.REMOVE', url: state.context.url }))
+    },
+    actions: {
+      onSuccess: () => toast.success('Sidepanel item deleted successfully')
+    }
+  })
 
   async function localCopy() {
     await copy(state.context.url)
@@ -299,7 +307,7 @@ export function SidepanelItem({
   }
 
   function deleteItem(url: string) {
-    sidepanelService.send({ type: 'SIDEPANEL.REMOVE', url })
+
   }
 
   let isExpanded = state.matches('expanded')
@@ -324,7 +332,7 @@ export function SidepanelItem({
           <Icon name="MoreHorizontal" size="1" color="muted" />
         </ElementDropdown>
       </Dropdown.Trigger>
-      <Dropdown.Content align="start" side="bottom" css={{ minWidth: 220 }} data-testid="sidepanel-dropdown-content">
+      <Dropdown.Content align="start" side="bottom" css={{ minWidth: 220 }} data-testid="sidepanel-dropdown-content" hidden={deleteState.matches('opened')}>
         <Dropdown.Item onSelect={localCopy} data-testid="copy-item">
           <Icon name="Copy" size="1" />
           <Text size="2">Copy Block ID</Text>
@@ -346,11 +354,10 @@ export function SidepanelItem({
           <Text size="2">{isExpanded ? 'Collapse' : 'Expand'} Document</Text>
         </Dropdown.Item>
         <DeleteDialog
-          entryId={state.context.url}
-          handleDelete={deleteItem}
+          state={deleteState}
+          send={deleteSend}
           title="Delete item"
           description="Are you sure you want to delete this item? This action is not reversible."
-          onSuccess={() => toast.success('Sidepanel item deleted successfully')}
         >
           <Dropdown.Item
             onSelect={(e) => {

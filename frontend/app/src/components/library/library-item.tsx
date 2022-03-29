@@ -10,11 +10,12 @@ import { useMainPage } from '@app/main-page-context'
 import { styled } from '@app/stitches.config'
 import { copyTextToClipboard as defaultCopyTextToClipboard } from '@app/utils/copy-to-clipboard'
 import { useRoute } from '@app/utils/use-route'
-import { DeleteDialog } from '@components/delete-dialog'
+import { DeleteDialog, deleteDialogMachine } from '@components/delete-dialog'
 import { Icon } from '@components/icon'
 import { useCreateDraft } from '@components/library/use-create-draft'
 import { useSidepanel } from '@components/sidepanel'
 import { Text } from '@components/text'
+import { useMachine } from '@xstate/react'
 import { PropsWithChildren } from 'react'
 import toast from 'react-hot-toast'
 import { Link, useLocation } from 'wouter'
@@ -41,6 +42,15 @@ export function LibraryItem({
   const sidepanelService = useSidepanel()
   const mainService = useMainPage()
   const { createDraft } = useCreateDraft()
+
+  const [deleteState, deleteSend] = useMachine(deleteDialogMachine, {
+    services: {
+      deleteEntry: () => publication ? deletePublication(publication.document?.id as string) : deleteDraft(draft?.id as string)
+    },
+    actions: {
+      onSuccess: afterDelete
+    }
+  })
 
   async function onCopy() {
     if (publication) {
@@ -85,7 +95,7 @@ export function LibraryItem({
           {title}
         </Text>
       </Link>
-      <Dropdown.Root>
+      <Dropdown.Root modal={false}>
         <Dropdown.Trigger asChild>
           <ElementDropdown
             data-trigger
@@ -97,7 +107,7 @@ export function LibraryItem({
             <Icon name="MoreHorizontal" size="1" color="muted" />
           </ElementDropdown>
         </Dropdown.Trigger>
-        <Dropdown.Content align="start" data-testid="library-item-dropdown-root">
+        <Dropdown.Content align="start" data-testid="library-item-dropdown-root" hidden={deleteState.matches('opened')}>
           <Dropdown.Item data-testid="copy-item" disabled={!!draft} onSelect={onCopy}>
             <Icon name="Copy" size="1" />
             <Text size="2">Copy Document ID</Text>
@@ -111,9 +121,8 @@ export function LibraryItem({
             <Text size="2">Open in sidepanel</Text>
           </Dropdown.Item>
           <DeleteDialog
-            entryId={publication ? publication.document?.id : draft?.id}
-            handleDelete={publication ? deletePublication : deleteDraft}
-            onSuccess={afterDelete}
+            state={deleteState}
+            send={deleteSend}
             title="Delete document"
             description="Are you sure you want to delete this document? This action is not reversible."
           >

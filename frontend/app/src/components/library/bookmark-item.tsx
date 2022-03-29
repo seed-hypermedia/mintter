@@ -1,31 +1,43 @@
-import {FlowContent} from '@app/../../mttast/dist'
-import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {bookmarksModel, createBookmarkMachine, useBookmarksService} from '@components/bookmarks'
-import {DeleteDialog} from '@components/delete-dialog'
-import {Icon} from '@components/icon'
-import {StyledItem} from '@components/library/library-item'
-import {useCreateDraft} from '@components/library/use-create-draft'
-import {useSidepanel} from '@components/sidepanel'
-import {Text} from '@components/text'
-import {useActor} from '@xstate/react'
+import { FlowContent } from '@app/../../mttast/dist'
+import { MINTTER_LINK_PREFIX } from '@app/constants'
+import { Dropdown, ElementDropdown } from '@app/editor/dropdown'
+import { copyTextToClipboard } from '@app/utils/copy-to-clipboard'
+import { bookmarksModel, createBookmarkMachine, useBookmarksService } from '@components/bookmarks'
+import { DeleteDialog, deleteDialogMachine } from '@components/delete-dialog'
+import { Icon } from '@components/icon'
+import { StyledItem } from '@components/library/library-item'
+import { useCreateDraft } from '@components/library/use-create-draft'
+import { useSidepanel } from '@components/sidepanel'
+import { Text } from '@components/text'
+import { useActor, useMachine } from '@xstate/react'
 import toast from 'react-hot-toast'
-import {visit} from 'unist-util-visit'
-import {useLocation} from 'wouter'
-import {ActorRefFrom} from 'xstate'
+import { visit } from 'unist-util-visit'
+import { useLocation } from 'wouter'
+import { ActorRefFrom } from 'xstate'
 
-export function BookmarkItem({itemRef}: {itemRef: ActorRefFrom<ReturnType<typeof createBookmarkMachine>>}) {
+export function BookmarkItem({ itemRef }: { itemRef: ActorRefFrom<ReturnType<typeof createBookmarkMachine>> }) {
   const sidepanelService = useSidepanel()
   const [state] = useActor(itemRef)
   const bookmarks = useBookmarksService()
-  const {createDraft} = useCreateDraft()
+  const { createDraft } = useCreateDraft()
 
   const [, setLocation] = useLocation()
 
+  const [deleteState, deleteSend] = useMachine(deleteDialogMachine, {
+    services: {
+      deleteEntry: () => new Promise(() => {
+        console.log("BOOKMARK REMOVE!")
+        bookmarks.send(bookmarksModel.events['BOOKMARK.REMOVE'](state.context.url))
+      })
+    },
+    actions: {
+      onSuccess: afterDelete,
+    }
+  })
+
   async function onCopy() {
     await copyTextToClipboard(state.context.url)
-    toast.success('Bookmark ID copied successfully', {position: 'top-center'})
+    toast.success('Bookmark ID copied successfully', { position: 'top-center' })
   }
 
   function onMainPanel() {
@@ -58,8 +70,8 @@ export function BookmarkItem({itemRef}: {itemRef: ActorRefFrom<ReturnType<typeof
         {state.context.publication?.document.title
           ? state.context.publication?.document.title
           : state.context.block
-          ? toString(state.context.block)
-          : 'Untitled bookmark'}
+            ? toString(state.context.block)
+            : 'Untitled bookmark'}
       </Text>
       <Dropdown.Root>
         <Dropdown.Trigger asChild>
@@ -77,7 +89,7 @@ export function BookmarkItem({itemRef}: {itemRef: ActorRefFrom<ReturnType<typeof
             <Icon name="MoreHorizontal" size="1" color="muted" />
           </ElementDropdown>
         </Dropdown.Trigger>
-        <Dropdown.Content align="start" data-testid="bookmark-item-dropdown-root">
+        <Dropdown.Content align="start" data-testid="bookmark-item-dropdown-root" hidden={deleteState.matches('opened')}>
           <Dropdown.Item onSelect={onCopy}>
             <Icon name="Copy" size="1" />
             <Text size="2">Copy Bookmark ID</Text>
@@ -91,11 +103,8 @@ export function BookmarkItem({itemRef}: {itemRef: ActorRefFrom<ReturnType<typeof
             <Text size="2">Open in sidepanel</Text>
           </Dropdown.Item>
           <DeleteDialog
-            entryId={state.context.url}
-            handleDelete={() => {
-              bookmarks.send(bookmarksModel.events['BOOKMARK.REMOVE'](state.context.url))
-            }}
-            onSuccess={afterDelete}
+            state={deleteState}
+            send={deleteSend}
             title="Delete Bookmark"
             description="Are you sure you want to delete this bookmark? This action is not reversible."
           >

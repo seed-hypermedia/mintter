@@ -1,24 +1,24 @@
-import {CitationsProvider, createCitationsMachine} from '@app/editor/citations'
-import {HoverProvider} from '@app/editor/hover-context'
-import {hoverMachine} from '@app/editor/hover-machine'
-import {MainPageProvider} from '@app/main-page-context'
-import {createMainPageMachine} from '@app/main-page-machine'
-import {css} from '@app/stitches.config'
-import {BookmarksProvider, createBookmarksMachine} from '@components/bookmarks'
-import {Box} from '@components/box'
-import {Library} from '@components/library'
-import {ScrollArea} from '@components/scroll-area'
-import {createSidepanelMachine, Sidepanel, SidepanelProvider} from '@components/sidepanel'
-import {Text} from '@components/text'
-import {Topbar} from '@components/topbar'
-import {useInterpret} from '@xstate/react'
-import {ReactNode} from 'react'
-import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {QueryClient, useQueryClient} from 'react-query'
-import {Route} from 'wouter'
+import { CitationsProvider, createCitationsMachine } from '@app/editor/citations'
+import { HoverProvider } from '@app/editor/hover-context'
+import { hoverMachine } from '@app/editor/hover-machine'
+import { MainPageProvider } from '@app/main-page-context'
+import { createMainPageMachine } from '@app/main-page-machine'
+import { css } from '@app/stitches.config'
+import { BookmarksProvider, createBookmarksMachine } from '@components/bookmarks'
+import { Box } from '@components/box'
+import { Library } from '@components/library'
+import { ScrollArea } from '@components/scroll-area'
+import { createSidepanelMachine, Sidepanel, SidepanelProvider } from '@components/sidepanel'
+import { Text } from '@components/text'
+import { Topbar } from '@components/topbar'
+import { useInterpret } from '@xstate/react'
+import { ReactNode } from 'react'
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
+import { QueryClient, useQueryClient } from 'react-query'
+import { Route } from 'wouter'
 import EditorPage from './editor'
 import Publication from './publication'
-export function MainPage({client: propClient}: {client?: QueryClient}) {
+export function MainPage({ client: propClient }: { client?: QueryClient }) {
   // eslint-disable-line
   const localClient = useQueryClient()
   const client = propClient ?? localClient
@@ -53,7 +53,7 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
                   >
                     <Route path="/p/:docId/:version/:blockId?" component={Publication} />
                     <Route path="/editor/:docId" component={EditorPage} />
-                    <Route path="/" component={Placeholder} />
+                    {/* <Route path="/" component={Placeholder} /> */}
                   </ErrorBoundary>
                 </MainWindow>
                 <Sidepanel />
@@ -86,7 +86,7 @@ export var rootPageStyle = css({
   background: '$background-default',
 })
 
-function MainWindow({children}: {children: ReactNode}) {
+function MainWindow({ children }: { children: ReactNode }) {
   return (
     <Box
       css={{
@@ -134,7 +134,7 @@ function Placeholder() {
   )
 }
 
-function PageError({error, resetErrorBoundary}: FallbackProps) {
+function PageError({ error, resetErrorBoundary }: FallbackProps) {
   return (
     <div role="alert">
       <p>Publication Error</p>
