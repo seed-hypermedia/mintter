@@ -6,11 +6,10 @@
     "**/CVS": true,
     "**/.DS_Store": true,
     "**/*.env": true,
-    "bazel-mintter/**": true,
     ".git/**": true
   },
   "files.watcherExclude": {
-    "bazel-*/**": true,
+    ".bazel/**": true,
     "plz-out/**": true,
     ".plz-cache/**": true,
     ".git/**": true
@@ -27,7 +26,7 @@
     ]
   },
   "search.exclude": {
-    "bazel-*/**": true,
+    ".bazel/**": true,
     "plz-out/**": true,
     "**/.yarn": true,
     "**/.pnp.*": true,

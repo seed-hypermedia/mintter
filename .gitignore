@@ -30,6 +30,7 @@ rice-box.go
 user.bazelrc
 bazel-*
 .bazel-*
+.bazel
 
 # Backend code
 backend/ui/rice-box.go-e 
