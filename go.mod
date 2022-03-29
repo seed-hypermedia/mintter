@@ -45,7 +45,7 @@ require (
 	github.com/tidwall/gjson v1.9.0
 	github.com/tidwall/tinyqueue v0.1.1
 	github.com/vektah/gqlparser/v2 v2.2.0
-	github.com/whyrusleeping/cbor-gen v0.0.0-20220302191723-37c43cae8e14
+	github.com/whyrusleeping/cbor-gen v0.0.0-20220323183124-98fa8256a799
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/fx v1.13.1
 	go.uber.org/multierr v1.8.0
@@ -217,7 +217,7 @@ require (
 	go.uber.org/dig v1.10.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
 	golang.org/x/net v0.0.0-20220325170049-de3da57026de // indirect
-	golang.org/x/sys v0.0.0-20220328115105-d36c6a25d886 // indirect
+	golang.org/x/sys v0.0.0-20220329152356-43be30ef3008 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.10 // indirect

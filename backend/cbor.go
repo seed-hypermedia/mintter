@@ -293,7 +293,7 @@ func readBytesField(scratch []byte, r io.Reader, key string) ([]byte, error) {
 		return nil, err
 	}
 
-	if extra > typegen.ByteArrayMaxLen {
+	if extra > 2<<20 { // Max byte array length.
 		return nil, fmt.Errorf("cbor field %s is too large (%d)", key, extra)
 	}
 	if maj != typegen.MajByteString {
