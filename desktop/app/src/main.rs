@@ -22,8 +22,8 @@ async fn main() {
       LogTarget::LogDir,
       #[cfg(debug_assertions)]
       LogTarget::Stdout,
-      #[cfg(debug_assertions)]
-      LogTarget::Webview,
+      // #[cfg(debug_assertions)]
+      // LogTarget::Webview,
     ];
 
     let colors = ColoredLevelConfig::default();
