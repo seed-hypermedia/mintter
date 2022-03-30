@@ -17,8 +17,11 @@ import (
 	"github.com/ipfs/go-datastore"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/peerstore"
 	"github.com/libp2p/go-libp2p-peerstore/pstoremem"
+	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
+	"github.com/multiformats/go-multiaddr"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 )
@@ -46,6 +49,38 @@ func provideSQLiteBlockstore(pool *sqlitex.Pool) (bs blockstore.Blockstore, err 
 	bs, err = blockstore.CachedBlockstore(context.Background(), bs, blockstore.DefaultCacheOpts())
 
 	return bs, err
+}
+
+// provideBootstrapRelays hardcodes a list of relays to connect in case
+// a node is not reachable from outside
+func provideBootstrapRelays() ([]peer.AddrInfo, error) {
+	relays := map[string][]string{
+		"12D3KooWDEy9x2MkUtDMLwb38isNhWMap39xeKVqL8Wb9AHYPYM7": {
+			"/ip4/18.158.173.157/tcp/4002",
+			"/ip4/18.158.173.157/udp/4002/quic",
+		},
+	}
+	relaysInfo := []peer.AddrInfo{}
+
+	for ID, Addrs := range relays {
+		newID, err := peer.Decode(ID)
+		if err != nil {
+			return nil, err
+		}
+		newRelay := peer.AddrInfo{
+			ID:    newID,
+			Addrs: []multiaddr.Multiaddr{},
+		}
+		for _, addr := range Addrs {
+			ma, err := multiaddr.NewMultiaddr(addr)
+			if err != nil {
+				return nil, err
+			}
+			newRelay.Addrs = append(newRelay.Addrs, ma)
+		}
+		relaysInfo = append(relaysInfo, newRelay)
+	}
+	return relaysInfo, nil
 }
 
 func provideBootstrapPeers(cfg config.P2P) ipfs.Bootstrappers {
@@ -82,10 +117,15 @@ func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ps peerstore.Peerstore, ds d
 	}
 
 	if !cfg.NoRelay {
+		realaysInfo, err := provideBootstrapRelays()
+		if err != nil {
+			return nil, err
+		}
 		opts = append(opts,
-			libp2p.EnableAutoRelay(),
 			libp2p.NATPortMap(),
 			libp2p.EnableHolePunching(),
+			libp2p.EnableNATService(),
+			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(realaysInfo)),
 		)
 	}
 

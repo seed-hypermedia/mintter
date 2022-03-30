@@ -57,7 +57,7 @@ func (r *Relay) Start() error {
 
 	// generate the options from the configuration passed at init time
 	opts = append(opts,
-		libp2p.UserAgent("relayd/1.0"),
+		libp2p.UserAgent("MintterRelay/0.1"),
 		libp2p.Identity(r.privKey),
 		libp2p.DisableRelay(),
 		libp2p.ListenAddrStrings(r.cfg.Network.ListenAddrs...),
@@ -118,15 +118,15 @@ func (r *Relay) Start() error {
 	}
 	r.log.Info("Relay information", addresses...)
 
-	/*acl, err := NewACL(r.host, r.cfg.ACL)
+	acl, err := NewACL(r.host, r.cfg.ACL)
 	if err != nil {
 		return err
-	}*/
+	}
 
 	if r.cfg.RelayV1.Enabled {
 		_, err = relay_v1.NewRelay(r.host,
-			relay_v1.WithResources(r.cfg.RelayV1.Resources), /*
-				relay_v1.WithACL(acl)*/)
+			relay_v1.WithResources(r.cfg.RelayV1.Resources),
+			relay_v1.WithACL(acl))
 		if err != nil {
 			return err
 		}
@@ -135,8 +135,8 @@ func (r *Relay) Start() error {
 
 	if r.cfg.RelayV2.Enabled {
 		_, err = relay_v2.New(r.host,
-			relay_v2.WithResources(r.cfg.RelayV2.Resources), /*
-				relay_v2.WithACL(acl)*/)
+			relay_v2.WithResources(r.cfg.RelayV2.Resources),
+			relay_v2.WithACL(acl))
 		if err != nil {
 			return err
 		}

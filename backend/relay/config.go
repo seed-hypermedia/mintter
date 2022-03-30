@@ -15,11 +15,6 @@ type Config struct {
 	RelayV1 relayV1Config
 	RelayV2 relayV2Config
 	ACL     aclConfig
-	Daemon  daemonConfig
-}
-
-type daemonConfig struct {
-	PprofPort int
 }
 
 type networkConfig struct {
@@ -70,9 +65,6 @@ func defaultConfig() Config {
 		RelayV2: relayV2Config{
 			Enabled:   true,
 			Resources: relayv2.DefaultResources(),
-		},
-		Daemon: daemonConfig{
-			PprofPort: 6060,
 		},
 	}
 }
