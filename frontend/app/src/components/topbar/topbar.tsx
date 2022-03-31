@@ -9,6 +9,7 @@ import {useLocation} from 'wouter'
 import {Box} from '../box'
 import {Button} from '../button'
 import {Icon} from '../icon'
+import {Settings} from '../settings'
 import {useSidepanel} from '../sidepanel'
 import {TextField} from '../text-field'
 import {Tooltip} from '../tooltip'
@@ -166,6 +167,7 @@ function TopbarActions() {
       <Button size="0" variant="ghost" color="muted" onClick={onCreateDraft}>
         <Icon name="PencilAdd" color="muted" />
       </Button>
+      <Settings />
     </Box>
   )
 }
