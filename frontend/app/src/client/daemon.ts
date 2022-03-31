@@ -1,6 +1,7 @@
-import {DaemonClientImpl, GetInfoRequest} from './.generated/daemon/v1alpha/daemon'
+import {DaemonClientImpl, ForceSyncRequest, GetInfoRequest} from './.generated/daemon/v1alpha/daemon'
 import type {GrpcClient} from './grpc-client'
 import {createGrpcClient} from './grpc-client'
+
 /**
  *
  * @param rpc
@@ -11,4 +12,16 @@ export function getInfo(rpc?: GrpcClient) {
 
   const request = GetInfoRequest.fromPartial({})
   return new DaemonClientImpl(rpc).getInfo(request)
+}
+
+/**
+ *
+ * @param rpc
+ * @returns
+ */
+export function forceSync(rpc?: GrpcClient) {
+  rpc ||= createGrpcClient()
+
+  const request = ForceSyncRequest.fromPartial({})
+  return new DaemonClientImpl(rpc).forceSync(request)
 }

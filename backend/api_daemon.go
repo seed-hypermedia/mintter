@@ -2,10 +2,13 @@ package backend
 
 import (
 	"context"
+	"time"
 
 	"github.com/lightningnetwork/lnd/aezeed"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	daemon "mintter/backend/api/daemon/v1alpha"
@@ -61,4 +64,15 @@ func (srv *daemonAPI) GetInfo(ctx context.Context, in *daemon.GetInfoRequest) (*
 	}
 
 	return resp, nil
+}
+
+func (srv *daemonAPI) ForceSync(ctx context.Context, in *daemon.ForceSyncRequest) (*emptypb.Empty, error) {
+	go func() {
+		start := time.Now()
+		srv.back.log.Debug("ForceSyncStarted")
+		err := srv.back.SyncAccounts(context.Background())
+		srv.back.log.Debug("ForceSyncStopped", zap.Error(err), zap.Duration("elapsed", time.Since(start)))
+	}()
+
+	return &emptypb.Empty{}, nil
 }
